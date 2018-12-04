@@ -6,35 +6,46 @@ import { assert } from "./util";
 
 export async function* serve(addr: string) {
   const listener = listen("tcp", addr);
-  while (true) {
-    const c = await listener.accept();
-    yield* serveConn(c);
-  }
-  listener.close();
-}
+  // For racing promises
+  const pool: Promise<any>[] = [];
+  const untrackFromPool = (p: Promise<any>) => {
+    const requestIndex = pool.indexOf(p);
+    if (requestIndex >= 0) {
+      pool.splice(requestIndex, 1);
+    }
+  };
+  // Push conn promise also to pool to avoid starving
+  let trackedConnPromise = listener.accept().then(conn => [
+    conn,
+    untrackFromPool.bind(null, trackedConnPromise),
+  ]);
+  pool.push(trackedConnPromise);
 
-export async function* serveConn(c: Conn) {
-  let bufr = new BufReader(c);
-  let bufw = new BufWriter(c);
-  try {
-    while (true) {
-      const [req, err] = await readRequest(bufr);
-      if (err == "EOF") {
-        break;
-      }
-      if (err == "ShortWrite") {
-        console.log("ShortWrite error");
-        break;
-      }
-      if (err) {
-        throw err;
-      }
-      req.w = bufw;
+  while (true) {
+    const [reqOrConn, untrack] = await Promise.race(pool);
+    untrack(); // remove from pool
+    if (!Array.isArray(reqOrConn)) {
+      // result is not array, means from connPromise
+      // Push readRequest promise for conn
+      const trackedReqPromise = readRequest(reqOrConn)
+        .then((maybeReq) => [
+          maybeReq,
+          untrackFromPool.bind(null, trackedReqPromise)
+        ]);
+      pool.push(trackedReqPromise);
+      // Prepared to accept another connection (avoid starving)
+      trackedConnPromise = listener.accept().then(conn => [
+        conn,
+        untrackFromPool.bind(null, trackedConnPromise),
+      ]);
+      pool.push(trackedConnPromise);
+    } else {
+      // TODO: handle _err
+      const [req, _err] = reqOrConn as [ServerRequest, BufState];
       yield req;
     }
-  } finally {
-    c.close();
   }
+  listener.close();
 }
 
 interface Response {
@@ -60,6 +71,7 @@ class ServerRequest {
   proto: string;
   headers: Headers;
   w: BufWriter;
+  _conn: Conn;
 
   async respond(r: Response): Promise<void> {
     const protoMajor = 1;
@@ -75,7 +87,7 @@ class ServerRequest {
     setContentLength(r);
 
     if (r.headers) {
-      for (let [key, value] of r.headers) {
+      for (const [key, value] of r.headers) {
         out += `${key}: ${value}\r\n`;
       }
     }
@@ -90,12 +102,18 @@ class ServerRequest {
     }
 
     await this.w.flush();
+    // TODO: handle keep alive
+    this._conn.close();
   }
 }
 
-async function readRequest(b: BufReader): Promise<[ServerRequest, BufState]> {
-  const tp = new TextProtoReader(b);
+async function readRequest(c: Conn): Promise<[ServerRequest, BufState]> {
+  const bufr = new BufReader(c);
+  const bufw = new BufWriter(c);
   const req = new ServerRequest();
+  req.w = bufw;
+  req._conn = c;
+  const tp = new TextProtoReader(bufr);
 
   let s: string;
   let err: BufState;
@@ -108,6 +126,8 @@ async function readRequest(b: BufReader): Promise<[ServerRequest, BufState]> {
   [req.method, req.url, req.proto] = s.split(" ", 3);
 
   [req.headers, err] = await tp.readMIMEHeader();
+
+  // TODO: handle body
 
   return [req, err];
 }
