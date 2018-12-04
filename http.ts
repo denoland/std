@@ -23,19 +23,15 @@ function deferred(): Deferred {
 
 export async function* serve(addr: string) {
   const listener = listen("tcp", addr);
-  let nextTaskId = 0;
-  const resultMap: Map<number, any> = new Map();
   let serveDeferred = deferred();
-  let queue: number[] = []; // in case multiple promises are ready
+  let queue: any[] = []; // in case multiple promises are ready
 
   const scheduleAccept = () => {
     listener.accept().then((conn) => {
-      queue.push(nextTaskId);
-      resultMap.set(nextTaskId, conn);
+      queue.push(conn);
       scheduleAccept(); // self schedule next accept
       serveDeferred.resolve(); // hint loop to run
-    })
-    nextTaskId++;
+    });
   }
 
   scheduleAccept(); // start accept
@@ -45,22 +41,18 @@ export async function* serve(addr: string) {
     serveDeferred = deferred(); // use a new deferred
     let queueToProcess = queue;
     queue = [];
-    for (const resultId of queueToProcess) {
-      const result = resultMap.get(resultId);
-      resultMap.delete(resultId);
+    for (const result of queueToProcess) {
       if (Array.isArray(result)) {
         const [req, _err] = result as [ServerRequest, BufState];
-        if (!_err) {
+        if (!_err) { // TODO: check _err
           yield req;
         }
       } else {
         const conn = result as Conn;
         readRequest(conn).then((maybeReq) => {
-          queue.push(nextTaskId);
-          resultMap.set(nextTaskId, maybeReq);
+          queue.push(maybeReq);
           serveDeferred.resolve();
         });
-        nextTaskId++;
       }
     }
   }
