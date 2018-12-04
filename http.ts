@@ -4,45 +4,64 @@ import { TextProtoReader } from "./textproto.ts";
 import { STATUS_TEXT } from "./http_status";
 import { assert } from "./util";
 
+interface Deferred {
+  promise: Promise<{}>;
+  resolve: () => void;
+  reject: () => void;
+}
+
+function deferred(): Deferred {
+  let resolve, reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return {
+    promise, resolve, reject,
+  };
+}
+
 export async function* serve(addr: string) {
   const listener = listen("tcp", addr);
-  // For racing promises
-  const pool: Promise<any>[] = [];
-  const untrackFromPool = (p: Promise<any>) => {
-    const requestIndex = pool.indexOf(p);
-    if (requestIndex >= 0) {
-      pool.splice(requestIndex, 1);
-    }
-  };
-  // Push conn promise also to pool to avoid starving
-  let trackedConnPromise = listener.accept().then(conn => [
-    conn,
-    untrackFromPool.bind(null, trackedConnPromise),
-  ]);
-  pool.push(trackedConnPromise);
+  let nextTaskId = 0;
+  const resultMap: Map<number, any> = new Map();
+  let serveDeferred = deferred();
+  let queue: number[] = []; // in case multiple promises are ready
+
+  const scheduleAccept = () => {
+    listener.accept().then((conn) => {
+      queue.push(nextTaskId);
+      resultMap.set(nextTaskId, conn);
+      scheduleAccept(); // self schedule next accept
+      serveDeferred.resolve(); // hint loop to run
+    })
+    nextTaskId++;
+  }
+
+  scheduleAccept(); // start accept
 
   while (true) {
-    const [reqOrConn, untrack] = await Promise.race(pool);
-    untrack(); // remove from pool
-    if (!Array.isArray(reqOrConn)) {
-      // result is not array, means from connPromise
-      // Push readRequest promise for conn
-      const trackedReqPromise = readRequest(reqOrConn)
-        .then((maybeReq) => [
-          maybeReq,
-          untrackFromPool.bind(null, trackedReqPromise)
-        ]);
-      pool.push(trackedReqPromise);
-      // Prepared to accept another connection (avoid starving)
-      trackedConnPromise = listener.accept().then(conn => [
-        conn,
-        untrackFromPool.bind(null, trackedConnPromise),
-      ]);
-      pool.push(trackedConnPromise);
-    } else {
-      // TODO: handle _err
-      const [req, _err] = reqOrConn as [ServerRequest, BufState];
-      yield req;
+    await serveDeferred.promise;
+    serveDeferred = deferred(); // use a new deferred
+    let queueToProcess = queue;
+    queue = [];
+    for (const resultId of queueToProcess) {
+      const result = resultMap.get(resultId);
+      resultMap.delete(resultId);
+      if (Array.isArray(result)) {
+        const [req, _err] = result as [ServerRequest, BufState];
+        if (!_err) {
+          yield req;
+        }
+      } else {
+        const conn = result as Conn;
+        readRequest(conn).then((maybeReq) => {
+          queue.push(nextTaskId);
+          resultMap.set(nextTaskId, maybeReq);
+          serveDeferred.resolve();
+        });
+        nextTaskId++;
+      }
     }
   }
   listener.close();
