@@ -43,13 +43,18 @@ interface Response {
   body?: Uint8Array;
 }
 
-function setContentLength(r: Response): void {
+function setHeaders(r: Response): void {
   if (r.body) {
     if (!r.headers) {
       r.headers = new Headers();
     }
     if (!r.headers.has("content-length")) {
       r.headers.append("Content-Length", r.body.byteLength.toString());
+    }
+    // set the content-type only if not yet set
+    if (!r.headers.has("content-type")) {
+      const body = new TextDecoder().decode(r.body);
+      r.headers.append("Content-Type", /^\s*</.test(body) ? 'html' : 'text');
     }
   }
 }
@@ -72,7 +77,7 @@ class ServerRequest {
 
     let out = `HTTP/${protoMajor}.${protoMinor} ${r.status} ${statusText}\r\n`;
 
-    setContentLength(r);
+    setHeaders(r);
 
     if (r.headers) {
       for (let [key, value] of r.headers) {
