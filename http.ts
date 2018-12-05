@@ -26,15 +26,25 @@ export async function* serve(addr: string) {
   let serveDeferred = deferred();
   let queue: any[] = []; // in case multiple promises are ready
 
-  const scheduleAccept = () => {
-    listener.accept().then((conn) => {
-      queue.push(conn);
-      scheduleAccept(); // self schedule next accept
-      serveDeferred.resolve(); // hint loop to run
-    });
+  const handleMaybeReq = (maybeReq: any) => {
+    queue.push(maybeReq);
+    serveDeferred.resolve();
   }
 
-  scheduleAccept(); // start accept
+  // routine that keeps calling accept
+  const acceptRoutine = () => {
+    const handleConn = (conn: Conn) => {
+      queue.push(conn);
+      scheduleAccept(); // schedule next accept
+      serveDeferred.resolve(); // hint loop to run
+    }
+    const scheduleAccept = () => {
+      listener.accept().then(handleConn);
+    }
+    scheduleAccept();
+  }
+
+  acceptRoutine();
 
   while (true) {
     await serveDeferred.promise;
@@ -49,10 +59,7 @@ export async function* serve(addr: string) {
         }
       } else {
         const conn = result as Conn;
-        readRequest(conn).then((maybeReq) => {
-          queue.push(maybeReq);
-          serveDeferred.resolve();
-        });
+        readRequest(conn).then(handleMaybeReq);
       }
     }
   }
