@@ -24,19 +24,29 @@ function deferred(): Deferred {
 export async function* serve(addr: string) {
   const listener = listen("tcp", addr);
   let serveDeferred = deferred();
-  let queue: any[] = []; // in case multiple promises are ready
+  let reqQueue: ServerRequest[] = []; // in case multiple promises are ready
 
-  const handleMaybeReq = (maybeReq: any) => {
-    queue.push(maybeReq);
-    serveDeferred.resolve();
+  // Continuously read more requests from conn until EOF
+  // Mutually calling with handleReq
+  const readRequestsFromConn = async (conn: Conn) => {
+    const [req, _err] = await readRequest(conn);
+    if (_err) {
+      conn.close(); // assume EOF, for now
+      return;
+    }
+    handleReq(conn, req);
+  }
+  const handleReq = (conn: Conn, req: ServerRequest) => {
+    reqQueue.push(req); // push req to queue
+    readRequestsFromConn(conn); // try read more (reusing connection)
+    serveDeferred.resolve(); // signal while loop to process it
   }
 
-  // routine that keeps calling accept
+  // Routine that keeps calling accept
   const acceptRoutine = () => {
     const handleConn = (conn: Conn) => {
-      queue.push(conn);
+      readRequestsFromConn(conn); // don't block
       scheduleAccept(); // schedule next accept
-      serveDeferred.resolve(); // hint loop to run
     }
     const scheduleAccept = () => {
       listener.accept().then(handleConn);
@@ -46,21 +56,14 @@ export async function* serve(addr: string) {
 
   acceptRoutine();
 
+  // Loop hack to allow yield (yield won't work in callbacks)
   while (true) {
     await serveDeferred.promise;
     serveDeferred = deferred(); // use a new deferred
-    let queueToProcess = queue;
-    queue = [];
+    let queueToProcess = reqQueue;
+    reqQueue = [];
     for (const result of queueToProcess) {
-      if (Array.isArray(result)) {
-        const [req, _err] = result as [ServerRequest, BufState];
-        if (!_err) { // TODO: check _err
-          yield req;
-        }
-      } else {
-        const conn = result as Conn;
-        readRequest(conn).then(handleMaybeReq);
-      }
+      yield result;
     }
   }
   listener.close();
@@ -89,7 +92,6 @@ class ServerRequest {
   proto: string;
   headers: Headers;
   w: BufWriter;
-  _conn: Conn;
 
   async respond(r: Response): Promise<void> {
     const protoMajor = 1;
@@ -120,8 +122,6 @@ class ServerRequest {
     }
 
     await this.w.flush();
-    // TODO: handle keep alive
-    this._conn.close();
   }
 }
 
@@ -130,7 +130,6 @@ async function readRequest(c: Conn): Promise<[ServerRequest, BufState]> {
   const bufw = new BufWriter(c);
   const req = new ServerRequest();
   req.w = bufw;
-  req._conn = c;
   const tp = new TextProtoReader(bufr);
 
   let s: string;
