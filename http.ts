@@ -21,31 +21,42 @@ function deferred(): Deferred {
   };
 }
 
+interface ServeEnv {
+  reqQueue: ServerRequest[];
+  serveDeferred: Deferred;
+}
+
+// Continuously read more requests from conn until EOF
+// Mutually calling with maybeHandleReq
+// TODO: make them async function after this change is done
+// https://github.com/tc39/ecma262/pull/1250
+// See https://v8.dev/blog/fast-async
+export function serveConn(env: ServeEnv, conn: Conn) {
+  readRequest(conn).then(maybeHandleReq.bind(null, env, conn));
+}
+function maybeHandleReq(env: ServeEnv, conn: Conn, maybeReq: any) {
+  const [req, _err] = maybeReq;
+  if (_err) {
+    conn.close(); // assume EOF for now...
+    return;
+  }
+  env.reqQueue.push(req); // push req to queue
+  env.serveDeferred.resolve(); // signal while loop to process it
+  // TODO: protection against client req flooding
+  serveConn(env, conn); // try read more (reusing connection)
+}
+
 export async function* serve(addr: string) {
   const listener = listen("tcp", addr);
-  let serveDeferred = deferred();
-  let reqQueue: ServerRequest[] = []; // in case multiple promises are ready
-
-  // Continuously read more requests from conn until EOF
-  // Mutually calling with handleReq
-  const readRequestsFromConn = async (conn: Conn) => {
-    const [req, _err] = await readRequest(conn);
-    if (_err) {
-      conn.close(); // assume EOF, for now
-      return;
-    }
-    handleReq(conn, req);
-  }
-  const handleReq = (conn: Conn, req: ServerRequest) => {
-    reqQueue.push(req); // push req to queue
-    readRequestsFromConn(conn); // try read more (reusing connection)
-    serveDeferred.resolve(); // signal while loop to process it
-  }
+  const env: ServeEnv = {
+    reqQueue: [], // in case multiple promises are ready
+    serveDeferred: deferred(),
+  };
 
   // Routine that keeps calling accept
   const acceptRoutine = () => {
     const handleConn = (conn: Conn) => {
-      readRequestsFromConn(conn); // don't block
+      serveConn(env, conn); // don't block
       scheduleAccept(); // schedule next accept
     }
     const scheduleAccept = () => {
@@ -58,10 +69,10 @@ export async function* serve(addr: string) {
 
   // Loop hack to allow yield (yield won't work in callbacks)
   while (true) {
-    await serveDeferred.promise;
-    serveDeferred = deferred(); // use a new deferred
-    let queueToProcess = reqQueue;
-    reqQueue = [];
+    await env.serveDeferred.promise;
+    env.serveDeferred = deferred(); // use a new deferred
+    let queueToProcess = env.reqQueue;
+    env.reqQueue = [];
     for (const result of queueToProcess) {
       yield result;
     }
