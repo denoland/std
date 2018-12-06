@@ -17,7 +17,9 @@ function deferred(): Deferred {
     reject = rej;
   });
   return {
-    promise, resolve, reject,
+    promise,
+    resolve,
+    reject
   };
 }
 
@@ -50,7 +52,7 @@ export async function* serve(addr: string) {
   const listener = listen("tcp", addr);
   const env: ServeEnv = {
     reqQueue: [], // in case multiple promises are ready
-    serveDeferred: deferred(),
+    serveDeferred: deferred()
   };
 
   // Routine that keeps calling accept
@@ -58,12 +60,12 @@ export async function* serve(addr: string) {
     const handleConn = (conn: Conn) => {
       serveConn(env, conn); // don't block
       scheduleAccept(); // schedule next accept
-    }
+    };
     const scheduleAccept = () => {
       listener.accept().then(handleConn);
-    }
+    };
     scheduleAccept();
-  }
+  };
 
   acceptRoutine();
 
