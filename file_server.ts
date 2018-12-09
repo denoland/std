@@ -1,3 +1,11 @@
+#!/usr/bin/env deno --allow-net
+
+// This program serves files in the current directory over HTTP.
+// TODO Supply the directory to serve as a CLI argument.
+// TODO Stream responses instead of reading them into memory.
+// TODO Add tests like these:
+// https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
+
 import { listenAndServe } from "./http.ts";
 import { cwd, readFile, DenoError, ErrorKind } from "deno";
 
