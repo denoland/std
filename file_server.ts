@@ -6,16 +6,7 @@
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 import { listenAndServe, ServerRequest, setContentLength } from "./http";
-import {
-  cwd,
-  readFile,
-  DenoError,
-  ErrorKind,
-  args,
-  stat,
-  readDir,
-  FileInfo
-} from "deno";
+import { cwd, readFile, DenoError, ErrorKind, args, stat, readDir } from "deno";
 
 const dirViewerTemplate = `
 <!DOCTYPE html>
@@ -44,12 +35,12 @@ const dirViewerTemplate = `
 </html>
 `;
 
-const addr = "0.0.0.0:4500";
 let currentDir = cwd();
 const target = args[1];
 if (target) {
   currentDir = `${currentDir}/${target}`;
 }
+const addr = `0.0.0.0:${args[2] || 4500}`;
 const encoder = new TextEncoder();
 
 function modeToString(isDir: boolean, maybeMode: number | null) {
@@ -129,7 +120,7 @@ async function serveDir(req: ServerRequest, dirPath: string, dirName: string) {
     listEntry.push(
       createDirEntryDisplay(
         info.name,
-        dirName + '/' + info.name,
+        dirName + "/" + info.name,
         info.isFile() ? info.len : null,
         mode,
         info.isDirectory()
