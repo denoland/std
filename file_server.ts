@@ -5,8 +5,8 @@
 // TODO Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
-import { listenAndServe, ServerRequest, setContentLength, Response } from "./http";
-import { cwd, readFile, DenoError, ErrorKind, args, stat, readDir } from "deno";
+import { listenAndServe, ServerRequest, setContentLength } from "./http";
+import { cwd, DenoError, ErrorKind, args, stat, readDir, open } from "deno";
 
 const dirViewerTemplate = `
 <!DOCTYPE html>
@@ -146,7 +146,7 @@ async function serveDir(req: ServerRequest, dirPath: string, dirName: string) {
 }
 
 async function serveFile(req: ServerRequest, filename: string) {
-  let file = await readFile(filename);
+  let file = await open(filename);
   const headers = new Headers();
   headers.set("content-type", "octet-stream");
 

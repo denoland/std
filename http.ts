@@ -1,4 +1,4 @@
-import { listen, Conn } from "deno";
+import { listen, Conn, toAsyncIterator, Reader } from "deno";
 import { BufReader, BufState, BufWriter } from "./bufio.ts";
 import { TextProtoReader } from "./textproto.ts";
 import { STATUS_TEXT } from "./http_status";
@@ -96,16 +96,23 @@ export async function listenAndServe(
 export interface Response {
   status?: number;
   headers?: Headers;
-  body?: Uint8Array;
+  body?: Uint8Array | Reader; // TODO: maybe BufReader?
 }
 
 export function setContentLength(r: Response): void {
   if (!r.headers) {
     r.headers = new Headers();
   }
-  if (!r.headers.has("content-length")) {
-    const bodyLength = r.body ? r.body.byteLength : 0;
-    r.headers.append("Content-Length", bodyLength.toString());
+
+  if (r.body) {
+    if (r.body instanceof Uint8Array) {
+      if (!r.headers.has("content-length")) {
+        const bodyLength = r.body.byteLength;
+        r.headers.append("Content-Length", bodyLength.toString());
+      }
+    } else {
+      r.headers.append("Transfer-Encoding", "chunked");
+    }
   }
 }
 
@@ -140,8 +147,23 @@ export class ServerRequest {
     let n = await this.w.write(header);
     assert(header.byteLength == n);
     if (r.body) {
-      n = await this.w.write(r.body);
-      assert(r.body.byteLength == n);
+      if (r.body instanceof Uint8Array) {
+        n = await this.w.write(r.body);
+        assert(r.body.byteLength == n);
+      } else {
+        const encoder = new TextEncoder();
+        
+        for await (const chunk of toAsyncIterator(r.body)) {
+          const start = encoder.encode(`${chunk.byteLength.toString(16)}\r\n`);
+          const end = encoder.encode("\r\n");
+          await this.w.write(start);
+          await this.w.write(chunk);
+          await this.w.write(end);
+        }
+
+        const endChunk = encoder.encode("0\r\n\r\n");
+        await this.w.write(endChunk);
+      }
     }
 
     await this.w.flush();
