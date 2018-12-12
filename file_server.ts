@@ -43,15 +43,8 @@ if (target) {
 const addr = `0.0.0.0:${args[2] || 4500}`;
 const encoder = new TextEncoder();
 
-<<<<<<< HEAD
 function modeToString(isDir: boolean, maybeMode: number | null) {
   const modeMap = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
-=======
-listenAndServe(addr, async req => {
-  const fileName = req.url.replace(/\/$/, '/index.html');
-  const filePath = currentDir + fileName;
-  let file;
->>>>>>> remove unused var
 
   if (maybeMode === null) {
     return "(unknown mode)";
