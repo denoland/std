@@ -179,8 +179,8 @@ async function serveFallback(req: ServerRequest, e: Error) {
 function serverLog(req: ServerRequest, res: Response) {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
-  const fmt = `${dateFmt} "${req.method} ${req.url} ${req.proto}" ${res.status}`;
-  console.log(fmt);
+  const s = `${dateFmt} "${req.method} ${req.url} ${req.proto}" ${res.status}`;
+  console.log(s);
 }
 
 listenAndServe(addr, async req => {
