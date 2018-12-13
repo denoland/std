@@ -146,10 +146,11 @@ async function serveDir(req: ServerRequest, dirPath: string, dirName: string) {
 }
 
 async function serveFile(req: ServerRequest, filename: string) {
-  let file = await open(filename);
+  const file = await open(filename);
+  const fileInfo = await stat(filename)
   const headers = new Headers();
-  headers.set("content-type", "octet-stream");
-
+  headers.set("content-length", fileInfo.len.toString());
+  
   const res = {
     status: 200,
     body: file,

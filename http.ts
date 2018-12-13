@@ -96,7 +96,7 @@ export async function listenAndServe(
 export interface Response {
   status?: number;
   headers?: Headers;
-  body?: Uint8Array | Reader; // TODO: maybe BufReader?
+  body?: Uint8Array | Reader;
 }
 
 export function setContentLength(r: Response): void {
@@ -105,13 +105,13 @@ export function setContentLength(r: Response): void {
   }
 
   if (r.body) {
-    if (r.body instanceof Uint8Array) {
-      if (!r.headers.has("content-length")) {
+    if (!r.headers.has("content-length")) {
+      if (r.body instanceof Uint8Array) {
         const bodyLength = r.body.byteLength;
         r.headers.append("Content-Length", bodyLength.toString());
+      } else {
+        r.headers.append("Transfer-Encoding", "chunked");
       }
-    } else {
-      r.headers.append("Transfer-Encoding", "chunked");
     }
   }
 }
@@ -122,6 +122,29 @@ export class ServerRequest {
   proto: string;
   headers: Headers;
   w: BufWriter;
+
+  private async _streamBody(body: Reader, bodyLength: number) {
+    let n = 0;
+    for await (const chunk of toAsyncIterator(body)) {
+      n += await this.w.write(chunk);
+    }
+    assert(n == bodyLength);
+  }
+
+  private async _streamChunkedBody(body: Reader) {
+    const encoder = new TextEncoder();
+
+    for await (const chunk of toAsyncIterator(body)) {
+      const start = encoder.encode(`${chunk.byteLength.toString(16)}\r\n`);
+      const end = encoder.encode("\r\n");
+      await this.w.write(start);
+      await this.w.write(chunk);
+      await this.w.write(end);
+    }
+
+    const endChunk = encoder.encode("0\r\n\r\n");
+    await this.w.write(endChunk);
+  }
 
   async respond(r: Response): Promise<void> {
     const protoMajor = 1;
@@ -146,23 +169,17 @@ export class ServerRequest {
     const header = new TextEncoder().encode(out);
     let n = await this.w.write(header);
     assert(header.byteLength == n);
+
     if (r.body) {
       if (r.body instanceof Uint8Array) {
         n = await this.w.write(r.body);
         assert(r.body.byteLength == n);
       } else {
-        const encoder = new TextEncoder();
-        
-        for await (const chunk of toAsyncIterator(r.body)) {
-          const start = encoder.encode(`${chunk.byteLength.toString(16)}\r\n`);
-          const end = encoder.encode("\r\n");
-          await this.w.write(start);
-          await this.w.write(chunk);
-          await this.w.write(end);
+        if (r.headers.has("content-length")) {
+          await this._streamBody(r.body, parseInt(r.headers.get("content-length")));
+        } else {
+          await this._streamChunkedBody(r.body);
         }
-
-        const endChunk = encoder.encode("0\r\n\r\n");
-        await this.w.write(endChunk);
       }
     }
 
