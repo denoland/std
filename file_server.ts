@@ -5,7 +5,7 @@
 // TODO Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
-import { listenAndServe, ServerRequest, setContentLength } from "./http";
+import { listenAndServe, ServerRequest, setContentLength, Response } from "./http";
 import { cwd, DenoError, ErrorKind, args, stat, readDir, open } from "deno";
 
 const dirViewerTemplate = `
