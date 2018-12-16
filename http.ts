@@ -1,4 +1,4 @@
-import { listen, Conn, toAsyncIterator, Reader } from "deno";
+import { listen, Conn, toAsyncIterator, Reader, copy } from "deno";
 import { BufReader, BufState, BufWriter } from "./bufio.ts";
 import { TextProtoReader } from "./textproto.ts";
 import { STATUS_TEXT } from "./http_status";
@@ -124,10 +124,7 @@ export class ServerRequest {
   w: BufWriter;
 
   private async _streamBody(body: Reader, bodyLength: number) {
-    let n = 0;
-    for await (const chunk of toAsyncIterator(body)) {
-      n += await this.w.write(chunk);
-    }
+    const n = await copy(this.w, body);
     assert(n == bodyLength);
   }
 
