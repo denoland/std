@@ -173,7 +173,10 @@ export class ServerRequest {
         assert(r.body.byteLength == n);
       } else {
         if (r.headers.has("content-length")) {
-          await this._streamBody(r.body, parseInt(r.headers.get("content-length")));
+          await this._streamBody(
+            r.body,
+            parseInt(r.headers.get("content-length"))
+          );
         } else {
           await this._streamChunkedBody(r.body);
         }
