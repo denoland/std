@@ -28,11 +28,14 @@ interface ServeEnv {
   serveDeferred: Deferred;
 }
 
-// Continuously read more requests from conn until EOF
-// Mutually calling with maybeHandleReq
-// TODO: make them async function after this change is done
-// https://github.com/tc39/ecma262/pull/1250
-// See https://v8.dev/blog/fast-async
+/** Continuously read more requests from conn until EOF
+ * Calls maybeHandleReq.
+ * bufr is empty on a fresh TCP connection.
+ * Would be passed around and reused for later request on same conn
+ * TODO: make them async function after this change is done
+ * https://github.com/tc39/ecma262/pull/1250
+ * See https://v8.dev/blog/fast-async
+ */
 function serveConn(env: ServeEnv, conn: Conn, bufr?: BufReader) {
   readRequest(conn, bufr).then(maybeHandleReq.bind(null, env, conn));
 }
