@@ -126,7 +126,6 @@ export class ServerRequest {
   r: BufReader;
   w: BufWriter;
 
-  // TODO: implement stream request body
   public async *readChunk() {
     if (this.headers.has("content-length")) {
       const len = +this.headers.get("content-length");
@@ -145,8 +144,6 @@ export class ServerRequest {
       yield buf.subarray(0, rr.nread);
     } else if (this.headers.get("transfer-encoding") === "chunked") {
       // Based on https://tools.ietf.org/html/rfc2616#section-19.4.6
-      let len = 0;
-      const chunks = [];
       const tp = new TextProtoReader(this.r);
       let [line, _] = await tp.readLine();
       // TODO: handle chunk extension
@@ -162,7 +159,6 @@ export class ServerRequest {
           throw new Error("Chunk data does not match size");
         }
         yield data;
-        len += chunkSize;
         await this.r.readLine(); // Consume \r\n
         [line, _] = await tp.readLine();
         chunkSize = parseInt(line, 16);
@@ -197,77 +193,7 @@ export class ServerRequest {
 
   // Read the body of the request into a single Uint8Array
   public async readAll(): Promise<Uint8Array> {
-    if (this.headers.has("content-length")) {
-      const len = +this.headers.get("content-length");
-      if (Number.isNaN(len)) {
-        return new Uint8Array(0);
-      }
-      const body = new Uint8Array(len);
-      let rr = await this.r.read(body);
-      let nread = rr.nread;
-      while (!rr.eof && nread < len) {
-        rr = await this.r.read(body.subarray(nread));
-        nread += rr.nread;
-      }
-      return body;
-    } else if (this.headers.get("transfer-encoding") === "chunked") {
-      // Based on https://tools.ietf.org/html/rfc2616#section-19.4.6
-      let len = 0;
-      const chunks = [];
-      const tp = new TextProtoReader(this.r);
-      let [line, _] = await tp.readLine();
-      // TODO: handle chunk extension
-      let [chunkSizeString, optExt] = line.split(";");
-      let chunkSize = parseInt(chunkSizeString, 16);
-      if (Number.isNaN(chunkSize) || chunkSize < 0) {
-        throw new Error("Invalid chunk size");
-      }
-      while (chunkSize > 0) {
-        let data = new Uint8Array(chunkSize);
-        let [nread, err] = await this.r.readFull(data);
-        if (nread !== chunkSize) {
-          throw new Error("Chunk data does not match size");
-        }
-        chunks.push(data);
-        len += chunkSize;
-        await this.r.readLine(); // Consume \r\n
-        [line, _] = await tp.readLine();
-        chunkSize = parseInt(line, 16);
-      }
-      const [entityHeaders, err] = await tp.readMIMEHeader();
-      if (!err) {
-        for (let [k, v] of entityHeaders) {
-          this.headers.set(k, v);
-        }
-      }
-      // TODO: should we set content-length?
-      const body = new Uint8Array(len);
-      let offset = 0;
-      for (let chunk of chunks) {
-        body.set(chunk, offset);
-        offset += chunk.length;
-      }
-      return body;
-      /* Pseudo code from https://tools.ietf.org/html/rfc2616#section-19.4.6
-      length := 0
-      read chunk-size, chunk-extension (if any) and CRLF
-      while (chunk-size > 0) {
-        read chunk-data and CRLF
-        append chunk-data to entity-body
-        length := length + chunk-size
-        read chunk-size and CRLF
-      }
-      read entity-header
-      while (entity-header not empty) {
-        append entity-header to existing header fields
-        read entity-header
-      }
-      Content-Length := length
-      Remove "chunked" from Transfer-Encoding
-      */
-    } else {
-      return new Uint8Array(0);
-    }
+    return collect(this.readChunk());
   }
 
   private async _streamBody(body: Reader, bodyLength: number) {
