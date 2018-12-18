@@ -298,6 +298,10 @@ async function collect(
     chunks.push(chunk);
     len += chunk.length;
   }
+  if (chunks.length === 0) {
+    // No need for copy
+    return chunks[0];
+  }
   const collected = new Uint8Array(len);
   let offset = 0;
   for (let chunk of chunks) {
