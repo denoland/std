@@ -145,52 +145,61 @@ export class ServerRequest {
         nread += rr.nread;
       }
       yield buf.subarray(0, rr.nread);
-    } else if (this.headers.get("transfer-encoding") === "chunked") {
-      // TODO: handle other transfer-encoding types and support comma list
-      // Based on https://tools.ietf.org/html/rfc2616#section-19.4.6
-      const tp = new TextProtoReader(this.r);
-      let [line, _] = await tp.readLine();
-      // TODO: handle chunk extension
-      let [chunkSizeString, optExt] = line.split(";");
-      let chunkSize = parseInt(chunkSizeString, 16);
-      if (Number.isNaN(chunkSize) || chunkSize < 0) {
-        throw new Error("Invalid chunk size");
-      }
-      while (chunkSize > 0) {
-        let data = new Uint8Array(chunkSize);
-        let [nread, err] = await this.r.readFull(data);
-        if (nread !== chunkSize) {
-          throw new Error("Chunk data does not match size");
-        }
-        yield data;
-        await this.r.readLine(); // Consume \r\n
-        [line, _] = await tp.readLine();
-        chunkSize = parseInt(line, 16);
-      }
-      const [entityHeaders, err] = await tp.readMIMEHeader();
-      if (!err) {
-        for (let [k, v] of entityHeaders) {
-          this.headers.set(k, v);
-        }
-      }
-      /* Pseudo code from https://tools.ietf.org/html/rfc2616#section-19.4.6
-      length := 0
-      read chunk-size, chunk-extension (if any) and CRLF
-      while (chunk-size > 0) {
-        read chunk-data and CRLF
-        append chunk-data to entity-body
-        length := length + chunk-size
-        read chunk-size and CRLF
-      }
-      read entity-header
-      while (entity-header not empty) {
-        append entity-header to existing header fields
-        read entity-header
-      }
-      Content-Length := length
-      Remove "chunked" from Transfer-Encoding
-      */
     } else {
+      if (this.headers.has("transfer-encoding")) {
+        const transferEncodings = this.headers
+          .get("transfer-encoding")
+          .split(",")
+          .map(e => e.trim().toLowerCase());
+        if (transferEncodings.includes("chunked")) {
+          // Based on https://tools.ietf.org/html/rfc2616#section-19.4.6
+          const tp = new TextProtoReader(this.r);
+          let [line, _] = await tp.readLine();
+          // TODO: handle chunk extension
+          let [chunkSizeString, optExt] = line.split(";");
+          let chunkSize = parseInt(chunkSizeString, 16);
+          if (Number.isNaN(chunkSize) || chunkSize < 0) {
+            throw new Error("Invalid chunk size");
+          }
+          while (chunkSize > 0) {
+            let data = new Uint8Array(chunkSize);
+            let [nread, err] = await this.r.readFull(data);
+            if (nread !== chunkSize) {
+              throw new Error("Chunk data does not match size");
+            }
+            yield data;
+            await this.r.readLine(); // Consume \r\n
+            [line, _] = await tp.readLine();
+            chunkSize = parseInt(line, 16);
+          }
+          const [entityHeaders, err] = await tp.readMIMEHeader();
+          if (!err) {
+            for (let [k, v] of entityHeaders) {
+              this.headers.set(k, v);
+            }
+          }
+          /* Pseudo code from https://tools.ietf.org/html/rfc2616#section-19.4.6
+          length := 0
+          read chunk-size, chunk-extension (if any) and CRLF
+          while (chunk-size > 0) {
+            read chunk-data and CRLF
+            append chunk-data to entity-body
+            length := length + chunk-size
+            read chunk-size and CRLF
+          }
+          read entity-header
+          while (entity-header not empty) {
+            append entity-header to existing header fields
+            read entity-header
+          }
+          Content-Length := length
+          Remove "chunked" from Transfer-Encoding
+          */
+          return; // Must return here to avoid fall through
+        }
+        // TODO: handle other transfer-encoding types
+      }
+      // Otherwise...
       yield new Uint8Array(0);
     }
   }
