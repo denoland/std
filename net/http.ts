@@ -146,6 +146,7 @@ export class ServerRequest {
       }
       yield buf.subarray(0, rr.nread);
     } else if (this.headers.get("transfer-encoding") === "chunked") {
+      // TODO: handle other transfer-encoding types and support comma list
       // Based on https://tools.ietf.org/html/rfc2616#section-19.4.6
       const tp = new TextProtoReader(this.r);
       let [line, _] = await tp.readLine();
