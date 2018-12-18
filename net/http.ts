@@ -196,7 +196,7 @@ export class ServerRequest {
 
   // Read the body of the request into a single Uint8Array
   public async readAll(): Promise<Uint8Array> {
-    return collect(this.readChunk());
+    return readAllIterator(this.readChunk());
   }
 
   private async _streamBody(body: Reader, bodyLength: number) {
@@ -292,7 +292,7 @@ async function readRequest(
   return [req, err];
 }
 
-async function collect(
+async function readAllIterator(
   it: AsyncIterableIterator<Uint8Array>
 ): Promise<Uint8Array> {
   const chunks = [];
