@@ -4,11 +4,17 @@ import { run } from "deno";
 // colors tests
 import "colors/main_test.ts";
 
+// flags tests
+import "flags/test.ts";
+
 // net tests
 import "net/bufio_test.ts";
 import "net/http_test.ts";
 import "net/textproto_test.ts";
 import { runTests, completePromise } from "net/file_server_test.ts";
+
+// logging tests
+import "logging/test.ts";
 
 // file server test
 const fileServer = run({
