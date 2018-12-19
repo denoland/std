@@ -4,6 +4,7 @@ import { run } from "deno";
 import "net/bufio_test.ts";
 import "net/http_test.ts";
 import "net/textproto_test.ts";
+import "examples/test.ts";
 import { runTests, completePromise } from "net/file_server_test.ts";
 
 // file server test
