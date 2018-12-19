@@ -1,3 +1,6 @@
+// Copyright the Browserify authors. MIT License.
+// Ported from https://github.com/browserify/path-browserify/
+
 import {
   CHAR_UPPERCASE_A,
   CHAR_LOWERCASE_A,
