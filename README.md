@@ -5,11 +5,12 @@
 This repository contains collections of modules that create a standard library
 for Deno.
 
-| Collection                   | Description                                                     |
-| ---------------------------- | --------------------------------------------------------------- |
-| [colors](./colors/README.md) | Modules that generate ANSI color codes for the console.         |
-| [net](./net/README.md)       | A framework for creating HTTP/HTTPS servers inspired by GoLang. |
-| [path](./path/README.md)     | A path manipulation library.                                    |
+| Collection                    | Description                                                     |
+| ----------------------------- | --------------------------------------------------------------- |
+| [colors](./colors/README.md)  | Modules that generate ANSI color codes for the console.         |
+| [net](./net/README.md)        | A framework for creating HTTP/HTTPS servers inspired by GoLang. |
+| [path](./path/README.md)      | A path manipulation library.                                    |
+| [logging](./logging/README.md)| Logging library inspired by Python.                             |
 
 ---
 
