@@ -11,14 +11,19 @@ const fileServer = run({
   args: ["deno", "--allow-net", "net/file_server.ts", "."]
 });
 // path test
-const pathTest = run({
-  args: ["deno", "path/test/index.ts"]
-});
+import "path/basename_test.ts";
+import "path/dirname_test.ts";
+import "path/extname_test.ts";
+import "path/isabsolute_test.ts";
+import "path/join_test.ts";
+import "path/parse_format_test.ts";
+import "path/relative_test.ts";
+import "path/resolve_test.ts";
+import "path/zero_length_strings_test.ts";
+
 // I am also too lazy to do this properly LOL
 runTests(new Promise(res => setTimeout(res, 5000)));
 (async () => {
   await completePromise;
   fileServer.close();
-  const s = await pathTest.status();
-  exit(s.code);
 })();
