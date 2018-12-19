@@ -1,7 +1,7 @@
 import { test, assertEqual } from "https://deno.land/x/testing/testing.ts";
 import * as path from "./index";
 
-var relativeTests = {
+const relativeTests = {
   win32:
     // arguments                     result
     [
@@ -54,16 +54,16 @@ var relativeTests = {
 
 test(function relative() {
   relativeTests.posix.forEach(function(p) {
-    var expected = p[2];
-    var actual = path.posix.relative(p[0], p[1]);
+    const expected = p[2];
+    const actual = path.posix.relative(p[0], p[1]);
     assertEqual(actual, expected);
   });
 });
 
 test(function relativeWin32() {
   relativeTests.win32.forEach(function(p) {
-    var expected = p[2];
-    var actual = path.win32.relative(p[0], p[1]);
+    const expected = p[2];
+    const actual = path.win32.relative(p[0], p[1]);
     assertEqual(actual, expected);
   });
 });

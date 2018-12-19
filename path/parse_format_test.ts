@@ -155,3 +155,19 @@ function checkFormat(path, testCases) {
     assertEqual(path.format(testCase[0]), testCase[1]);
   });
 }
+
+test(function parseTrailingWin32() {
+  windowsTrailingTests.forEach(function (p) {
+    const actual = path.win32.parse(p[0]);
+    const expected = p[1];
+    assertEqual(actual, expected)
+  });
+});
+
+test(function parseTrailing() {
+  posixTrailingTests.forEach(function (p) {
+    const actual = path.posix.parse(p[0]);
+    const expected = p[1];
+    assertEqual(actual, expected)
+  });
+});
