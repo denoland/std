@@ -129,7 +129,7 @@ export class ServerRequest {
   r: BufReader;
   w: BufWriter;
 
-  public async *readChunk() {
+  public async *bodyStream() {
     if (this.headers.has("content-length")) {
       const len = +this.headers.get("content-length");
       if (Number.isNaN(len)) {
@@ -205,8 +205,8 @@ export class ServerRequest {
   }
 
   // Read the body of the request into a single Uint8Array
-  public async readAll(): Promise<Uint8Array> {
-    return readAllIterator(this.readChunk());
+  public async body(): Promise<Uint8Array> {
+    return readAllIterator(this.bodyStream());
   }
 
   private async _streamBody(body: Reader, bodyLength: number) {

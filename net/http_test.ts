@@ -60,14 +60,14 @@ test(async function responseWrite() {
   }
 });
 
-test(async function requestReadBodyWithContentLength() {
+test(async function requestBodyWithContentLength() {
   {
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("content-length", "5");
     const buf = new Buffer(enc.encode("Hello"));
     req.r = new BufReader(buf);
-    const body = dec.decode(await req.readAll());
+    const body = dec.decode(await req.body());
     assertEqual(body, "Hello");
   }
 
@@ -79,12 +79,12 @@ test(async function requestReadBodyWithContentLength() {
     req.headers.set("Content-Length", "5000");
     const buf = new Buffer(enc.encode(longText));
     req.r = new BufReader(buf);
-    const body = dec.decode(await req.readAll());
+    const body = dec.decode(await req.body());
     assertEqual(body, longText);
   }
 });
 
-test(async function requestReadBodyWithTransferEncoding() {
+test(async function requestBodyWithTransferEncoding() {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
@@ -104,7 +104,7 @@ test(async function requestReadBodyWithTransferEncoding() {
     chunksData += "0\r\n\r\n";
     const buf = new Buffer(enc.encode(chunksData));
     req.r = new BufReader(buf);
-    const body = dec.decode(await req.readAll());
+    const body = dec.decode(await req.body());
     assertEqual(body, shortText);
   }
 
@@ -128,12 +128,12 @@ test(async function requestReadBodyWithTransferEncoding() {
     chunksData += "0\r\n\r\n";
     const buf = new Buffer(enc.encode(chunksData));
     req.r = new BufReader(buf);
-    const body = dec.decode(await req.readAll());
+    const body = dec.decode(await req.body());
     assertEqual(body, longText);
   }
 });
 
-test(async function requestReadStreamWithContentLength() {
+test(async function requestBodyStreamWithContentLength() {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
@@ -141,7 +141,7 @@ test(async function requestReadStreamWithContentLength() {
     req.headers.set("content-length", "" + shortText.length);
     const buf = new Buffer(enc.encode(shortText));
     req.r = new BufReader(buf);
-    const it = await req.readChunk();
+    const it = await req.bodyStream();
     let offset = 0;
     for await (const chunk of it) {
       const s = dec.decode(chunk);
@@ -158,7 +158,7 @@ test(async function requestReadStreamWithContentLength() {
     req.headers.set("Content-Length", "5000");
     const buf = new Buffer(enc.encode(longText));
     req.r = new BufReader(buf);
-    const it = await req.readChunk();
+    const it = await req.bodyStream();
     let offset = 0;
     for await (const chunk of it) {
       const s = dec.decode(chunk);
@@ -168,7 +168,7 @@ test(async function requestReadStreamWithContentLength() {
   }
 });
 
-test(async function requestReadStreamWithTransferEncoding() {
+test(async function requestBodyStreamWithTransferEncoding() {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
@@ -188,7 +188,7 @@ test(async function requestReadStreamWithTransferEncoding() {
     chunksData += "0\r\n\r\n";
     const buf = new Buffer(enc.encode(chunksData));
     req.r = new BufReader(buf);
-    const it = await req.readChunk();
+    const it = await req.bodyStream();
     let offset = 0;
     for await (const chunk of it) {
       const s = dec.decode(chunk);
@@ -217,7 +217,7 @@ test(async function requestReadStreamWithTransferEncoding() {
     chunksData += "0\r\n\r\n";
     const buf = new Buffer(enc.encode(chunksData));
     req.r = new BufReader(buf);
-    const it = await req.readChunk();
+    const it = await req.bodyStream();
     let offset = 0;
     for await (const chunk of it) {
       const s = dec.decode(chunk);
