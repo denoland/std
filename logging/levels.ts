@@ -26,6 +26,6 @@ export function getLevelByName(name) {
   return byName[name];
 }
 
-export function getLevelName(level) {
+export function getNameByLevel(level) {
   return byLevel[level];
 }
