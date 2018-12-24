@@ -11,7 +11,7 @@ const byName = {
   INFO: LogLevel.INFO,
   WARNING: LogLevel.WARNING,
   ERROR: LogLevel.ERROR,
-  CRITICAL: LogLevel.DEBUG
+  CRITICAL: LogLevel.CRITICAL
 };
 
 const byLevel = {
