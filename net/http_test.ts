@@ -239,8 +239,14 @@ test(async function requestRespondWithoutReadingBodyStream() {
       body: enc.encode("World")
     });
     // Body should have been secretly consumed by here
-    const body = dec.decode(await req.body());
-    assertEqual(body, "");
+    let err;
+    try {
+      await req.body();
+    } catch (e) {
+      err = e;
+    }
+    assert(!!err);
+    assert(err.message, "Error: Request body has already been consumed");
   }
 
   // Larger than internal buf
@@ -269,7 +275,13 @@ test(async function requestRespondWithoutReadingBodyStream() {
       body: enc.encode("World")
     });
     // Body should have been secretly consumed by here
-    const body = dec.decode(await req.body());
-    assertEqual(body, "");
+    let err;
+    try {
+      await req.body();
+    } catch (e) {
+      err = e;
+    }
+    assert(!!err);
+    assert(err.message, "Error: Request body has already been consumed");
   }
 });

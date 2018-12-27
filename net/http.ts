@@ -213,6 +213,9 @@ export class ServerRequest {
   /** Get an async iterator on the request body
    */
   public bodyStream(): AsyncIterableIterator<Uint8Array> {
+    if (this._bodyConsumed) {
+      throw new Error("Request body has already been consumed");
+    }
     if (this._bodyStreamAsyncIter) {
       return this._bodyStreamAsyncIter;
     }
