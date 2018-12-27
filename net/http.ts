@@ -129,8 +129,11 @@ export class ServerRequest {
   r: BufReader;
   w: BufWriter;
 
-  public async *bodyStream() {
-    if (this.headers.has("content-length")) {
+  private _bodyStreamAsyncIter: AsyncIterableIterator<Uint8Array>;
+  private _bodyConsumed: boolean = false;
+
+  private async *_getBodyStreamAsyncIter() {
+    if (this.headers && this.headers.has("content-length")) {
       const len = +this.headers.get("content-length");
       if (Number.isNaN(len)) {
         return new Uint8Array(0);
@@ -145,8 +148,9 @@ export class ServerRequest {
         nread += rr.nread;
       }
       yield buf.subarray(0, rr.nread);
+      this._bodyConsumed = true;
     } else {
-      if (this.headers.has("transfer-encoding")) {
+      if (this.headers && this.headers.has("transfer-encoding")) {
         const transferEncodings = this.headers
           .get("transfer-encoding")
           .split(",")
@@ -195,16 +199,30 @@ export class ServerRequest {
           Content-Length := length
           Remove "chunked" from Transfer-Encoding
           */
+          this._bodyConsumed = true;
           return; // Must return here to avoid fall through
         }
         // TODO: handle other transfer-encoding types
       }
       // Otherwise...
       yield new Uint8Array(0);
+      this._bodyConsumed = true;
     }
   }
 
-  // Read the body of the request into a single Uint8Array
+  /** Get an async iterator on the request body
+   */
+  public bodyStream(): AsyncIterableIterator<Uint8Array> {
+    if (this._bodyStreamAsyncIter) {
+      return this._bodyStreamAsyncIter;
+    }
+    const iter = this._getBodyStreamAsyncIter();
+    this._bodyStreamAsyncIter = iter;
+    return iter;
+  }
+
+  /** Read the body of the request into a single Uint8Array
+   */
   public async body(): Promise<Uint8Array> {
     return readAllIterator(this.bodyStream());
   }
@@ -230,6 +248,11 @@ export class ServerRequest {
   }
 
   async respond(r: Response): Promise<void> {
+    if (!this._bodyConsumed) {
+      await this.body(); // discard body
+      this._bodyConsumed = true;
+    }
+
     const protoMajor = 1;
     const protoMinor = 1;
     const statusCode = r.status || 200;

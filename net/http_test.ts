@@ -225,3 +225,51 @@ test(async function requestBodyStreamWithTransferEncoding() {
     }
   }
 });
+
+test(async function requestRespondWithoutReadingBodyStream() {
+  {
+    const req = new ServerRequest();
+    req.headers = new Headers();
+    req.headers.set("content-length", "5");
+    const rbuf = new Buffer(enc.encode("Hello"));
+    req.r = new BufReader(rbuf);
+    const wbuf = new Buffer(new Uint8Array(1024));
+    req.w = new BufWriter(wbuf);
+    await req.respond({
+      body: enc.encode("World")
+    });
+    // Body should have been secretly consumed by here
+    const body = dec.decode(await req.body());
+    assertEqual(body, "");
+  }
+
+  // Larger than internal buf
+  {
+    const longText = "1234\n".repeat(1000);
+    const req = new ServerRequest();
+    req.headers = new Headers();
+    req.headers.set("transfer-encoding", "chunked");
+    let chunksData = "";
+    let chunkOffset = 0;
+    const maxChunkSize = 70;
+    while (chunkOffset < longText.length) {
+      const chunkSize = Math.min(maxChunkSize, longText.length - chunkOffset);
+      chunksData += `${chunkSize.toString(16)}\r\n${longText.substr(
+        chunkOffset,
+        chunkSize
+      )}\r\n`;
+      chunkOffset += chunkSize;
+    }
+    chunksData += "0\r\n\r\n";
+    const rbuf = new Buffer(enc.encode(chunksData));
+    req.r = new BufReader(rbuf);
+    const wbuf = new Buffer(new Uint8Array(1024));
+    req.w = new BufWriter(wbuf);
+    await req.respond({
+      body: enc.encode("World")
+    });
+    // Body should have been secretly consumed by here
+    const body = dec.decode(await req.body());
+    assertEqual(body, "");
+  }
+});
