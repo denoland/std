@@ -1,4 +1,5 @@
 export const LogLevel = {
+  NOTSET: 0,
   DEBUG: 10,
   INFO: 20,
   WARNING: 30,
@@ -7,6 +8,7 @@ export const LogLevel = {
 };
 
 const byName = {
+  NOTSET: LogLevel.NOTSET,
   DEBUG: LogLevel.DEBUG,
   INFO: LogLevel.INFO,
   WARNING: LogLevel.WARNING,
@@ -15,6 +17,7 @@ const byName = {
 };
 
 const byLevel = {
+  [LogLevel.NOTSET]: "NOTSET",
   [LogLevel.DEBUG]: "DEBUG",
   [LogLevel.INFO]: "INFO",
   [LogLevel.WARNING]: "WARNING",

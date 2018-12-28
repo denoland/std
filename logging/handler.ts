@@ -15,4 +15,6 @@ export class BaseHandler {
   }
 
   _log(level, ...args) {}
+  async setup() { }
+  async destroy() { }
 }

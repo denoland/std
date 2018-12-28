@@ -1,12 +1,7 @@
 import { Logger } from "./logger.ts";
 import { BaseHandler } from "./handler.ts";
 import { ConsoleHandler } from "./handlers/console.ts";
-
-export interface HandlerConfig {
-  // TODO: replace with type describing class derived from BaseHandler
-  class: typeof BaseHandler;
-  level?: string;
-}
+import { FileHandler } from "./handlers/file.ts";
 
 export class LoggerConfig {
   level?: string;
@@ -15,7 +10,7 @@ export class LoggerConfig {
 
 export interface LoggingConfig {
   handlers?: {
-    [name: string]: HandlerConfig;
+    [name: string]: BaseHandler;
   };
   loggers?: {
     [name: string]: LoggerConfig;
@@ -26,53 +21,27 @@ const DEFAULT_LEVEL = "INFO";
 const DEFAULT_NAME = "";
 const DEFAULT_CONFIG: LoggingConfig = {
   handlers: {
-    [DEFAULT_NAME]: {
-      level: DEFAULT_LEVEL,
-      class: ConsoleHandler
-    }
+    "": new ConsoleHandler("INFO"),
   },
 
   loggers: {
-    [DEFAULT_NAME]: {
-      level: DEFAULT_LEVEL,
-      handlers: [DEFAULT_NAME]
+    "": {
+      level: "INFO",
+      handlers: [""],
     }
   }
 };
 
 const state = {
+  handlers: new Map(),
   loggers: new Map(),
-  config: DEFAULT_CONFIG
+  config: DEFAULT_CONFIG,
 };
 
-function createNewHandler(name: string) {
-  let handlerConfig = state.config.handlers[name];
-
-  if (!handlerConfig) {
-    handlerConfig = state.config.handlers[DEFAULT_NAME];
-  }
-
-  const constructor = handlerConfig.class;
-  console.log(constructor);
-  const handler = new constructor(handlerConfig.level);
-  return handler;
-}
-
-function createNewLogger(name: string) {
-  let loggerConfig = state.config.loggers[name];
-
-  if (!loggerConfig) {
-    loggerConfig = state.config.loggers[DEFAULT_NAME];
-  }
-
-  const handlers = (loggerConfig.handlers || []).map(createNewHandler);
-  const levelName = loggerConfig.level || DEFAULT_LEVEL;
-  return new Logger(levelName, handlers);
-}
-
 export const handlers = {
-  BaseHandler: BaseHandler,
-  ConsoleHandler: ConsoleHandler
+  BaseHandler,
+  ConsoleHandler,
+  FileHandler,
 };
 
 export function getLogger(name?: string) {
@@ -81,21 +50,52 @@ export function getLogger(name?: string) {
   }
 
   if (!state.loggers.has(name)) {
-    return createNewLogger(name);
+    const logger = new Logger("NOTSET", []);
+    state.loggers.set(name, logger);
+    return logger;
   }
 
   return state.loggers.get(name);
 }
 
-export function setup(config: LoggingConfig) {
-  state.config = {
-    handlers: {
-      ...DEFAULT_CONFIG.handlers,
-      ...config.handlers!
-    },
-    loggers: {
-      ...DEFAULT_CONFIG.loggers,
-      ...config.loggers!
-    }
-  };
+export async function setup(config: LoggingConfig) {
+  state.config = config;
+
+  // tear down existing handlers
+  state.handlers.forEach(handler => {
+    handler.destroy();
+  });
+  state.handlers.clear();
+
+  // setup handlers
+  const handlers = state.config.handlers || {};
+
+  for (const handlerName in handlers) {
+    const handler = handlers[handlerName];
+    await handler.setup();
+    state.handlers.set(handlerName, handler);
+  }
+
+  // remove existing loggers
+  state.loggers.clear();
+
+  // setup loggers
+  const loggers = state.config.loggers || {};
+  for (const loggerName in loggers) {
+    const loggerConfig = loggers[loggerName];
+    const handlerNames = loggerConfig.handlers || [];
+    const handlers = [];
+
+    handlerNames.forEach(handlerName => {
+      if (state.handlers.has(handlerName)) {
+        handlers.push(state.handlers.get(handlerName));
+      }
+    });
+
+    const levelName = loggerConfig.level || DEFAULT_LEVEL;
+    const logger = new Logger(levelName, handlers);
+    state.loggers.set(loggerName, logger);
+  }
 }
+
+setup(DEFAULT_CONFIG);
