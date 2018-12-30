@@ -117,6 +117,8 @@ export function setContentLength(r: Response): void {
         r.headers.append("Transfer-Encoding", "chunked");
       }
     }
+  } else {
+    r.headers.append("Content-Length", "0");
   }
 }
 
