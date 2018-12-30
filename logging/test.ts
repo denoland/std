@@ -16,6 +16,17 @@ class TestHandler extends logging.handlers.BaseHandler {
   }
 }
 
+test(function testDefaultLoggingMethods() {
+  logging.debug("Foobar");
+  logging.info("Foobar");
+  logging.warning("Foobar");
+  logging.error("Foobar");
+  logging.critical("Foobar");
+
+  const logger = logging.getLogger('');
+  console.log(logger);
+});
+
 test(async function basicTest() {
   await logging.setup({
     handlers: {

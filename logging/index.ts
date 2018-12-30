@@ -19,7 +19,7 @@ const DEFAULT_LEVEL = "INFO";
 const DEFAULT_NAME = "";
 const DEFAULT_CONFIG: LoggingConfig = {
   handlers: {
-    "": new ConsoleHandler("INFO"),
+    
   },
 
   loggers: {
@@ -30,7 +30,12 @@ const DEFAULT_CONFIG: LoggingConfig = {
   }
 };
 
+const defaultHandler = new ConsoleHandler("INFO");
+const defaultLogger = new Logger("INFO", [defaultHandler]);
+
 const state = {
+  defaultHandler,
+  defaultLogger,
   handlers: new Map(),
   loggers: new Map(),
   config: DEFAULT_CONFIG,
@@ -43,9 +48,15 @@ export const handlers = {
   FileHandler,
 };
 
+export const debug = (msg: string, ...args: any[]) => defaultLogger.debug(msg, ...args);
+export const info = (msg: string, ...args: any[]) => defaultLogger.info(msg, ...args);
+export const warning = (msg: string, ...args: any[]) => defaultLogger.warning(msg, ...args);
+export const error = (msg: string, ...args: any[]) => defaultLogger.error(msg, ...args);
+export const critical = (msg: string, ...args: any[]) => defaultLogger.critical(msg, ...args);
+
 export function getLogger(name?: string) {
   if (!name) {
-    name = DEFAULT_NAME;
+    return defaultLogger;
   }
 
   if (!state.loggers.has(name)) {
