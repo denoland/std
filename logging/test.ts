@@ -1,13 +1,13 @@
 import { remove, open, readAll } from "deno";
 import { assertEqual, test } from "https://deno.land/x/testing/testing.ts";
 
-import * as logging from "index.ts";
+import * as log from "index.ts";
 import { FileHandler } from "./handlers.ts";
 
 // TODO: establish something more sophisticated
 let testOutput = "";
 
-class TestHandler extends logging.handlers.BaseHandler {
+class TestHandler extends log.handlers.BaseHandler {
   constructor(levelName: string) {
     super(levelName);
   }
@@ -17,21 +17,21 @@ class TestHandler extends logging.handlers.BaseHandler {
   }
 }
 
-test(function testDefaultLoggingMethods() {
-  logging.debug("Foobar");
-  logging.info("Foobar");
-  logging.warning("Foobar");
-  logging.error("Foobar");
-  logging.critical("Foobar");
+test(function testDefaultlogMethods() {
+  log.debug("Foobar");
+  log.info("Foobar");
+  log.warning("Foobar");
+  log.error("Foobar");
+  log.critical("Foobar");
 
-  const logger = logging.getLogger('');
+  const logger = log.getLogger('');
   console.log(logger);
 });
 
 test(async function basicTest() {
   const testFile = './log.txt';
 
-  await logging.setup({
+  await log.setup({
     handlers: {
       debug: new TestHandler("DEBUG"),
       info: new TestHandler("INFO"),
@@ -51,9 +51,9 @@ test(async function basicTest() {
     }
   });
 
-  const fooLogger = logging.getLogger("foo");
-  const barLogger = logging.getLogger("bar");
-  const bazzLogger = logging.getLogger("bazz");
+  const fooLogger = log.getLogger("foo");
+  const barLogger = log.getLogger("bar");
+  const bazzLogger = log.getLogger("bazz");
   
 
   fooLogger.debug("I should be logged.");
@@ -75,7 +75,7 @@ test(async function basicTest() {
   const fileOutput = new TextDecoder().decode(bytes);
   await f.close();
   await remove(testFile);
-  
+
   const fileExpectedOutput = 
     "DEBUG I should be logged.\n" +
     "DEBUG I should be logged.\n";

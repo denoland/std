@@ -6,7 +6,7 @@ export class LoggerConfig {
   handlers?: string[];
 }
 
-export interface LoggingConfig {
+export interface LogConfig {
   handlers?: {
     [name: string]: BaseHandler;
   };
@@ -17,7 +17,7 @@ export interface LoggingConfig {
 
 const DEFAULT_LEVEL = "INFO";
 const DEFAULT_NAME = "";
-const DEFAULT_CONFIG: LoggingConfig = {
+const DEFAULT_CONFIG: LogConfig = {
   handlers: {
     
   },
@@ -68,7 +68,7 @@ export function getLogger(name?: string) {
   return state.loggers.get(name);
 }
 
-export async function setup(config: LoggingConfig) {
+export async function setup(config: LogConfig) {
   state.config = config;
 
   // tear down existing handlers
