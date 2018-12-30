@@ -1,3 +1,4 @@
+import { remove, open, readAll } from "deno";
 import { assertEqual, test } from "https://deno.land/x/testing/testing.ts";
 
 import * as logging from "index.ts";
@@ -28,11 +29,13 @@ test(function testDefaultLoggingMethods() {
 });
 
 test(async function basicTest() {
+  const testFile = './log.txt';
+
   await logging.setup({
     handlers: {
       debug: new TestHandler("DEBUG"),
       info: new TestHandler("INFO"),
-      // file: new FileHandler("DEBUG", "./log.txt"),
+      file: new FileHandler("DEBUG", testFile),
     },
 
     loggers: {
@@ -53,15 +56,29 @@ test(async function basicTest() {
   const bazzLogger = logging.getLogger("bazz");
   
 
-  fooLogger.debug("I should be printed.");
-  barLogger.debug("I should not be printed.");
-  barLogger.info("And I should be printed as well.");
-  bazzLogger.critical("I shouldn't be printed neither.")
+  fooLogger.debug("I should be logged.");
+  fooLogger.debug("I should be logged.");
+  barLogger.debug("I should not be logged.");
+  barLogger.info("And I should be logged as well.");
+  bazzLogger.critical("I shouldn't be logged neither.")
   
-
   const expectedOutput =
-    "DEBUG I should be printed.\n" +
-    "INFO And I should be printed as well.\n";
+    "DEBUG I should be logged.\n" +
+    "DEBUG I should be logged.\n" +
+    "INFO And I should be logged as well.\n";
 
   assertEqual(testOutput, expectedOutput);
+
+  // same check for file handler
+  const f = await open(testFile);
+  const bytes = await readAll(f);
+  const fileOutput = new TextDecoder().decode(bytes);
+  await f.close();
+  await remove(testFile);
+  
+  const fileExpectedOutput = 
+    "DEBUG I should be logged.\n" +
+    "DEBUG I should be logged.\n";
+
+  assertEqual(fileOutput, fileExpectedOutput);
 });
