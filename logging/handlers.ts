@@ -1,4 +1,4 @@
-import { open, File } from "deno";
+import { open, File, Writer } from "deno";
 import { getLevelByName } from "./levels.ts";
 import { LogRecord } from "./logger.ts";
 
@@ -33,9 +33,18 @@ export class ConsoleHandler extends BaseHandler {
 }
 
 
-// TODO: abstract away as `WriterHandler` that requires
-// subclasses to provide '_writer' field
-export class FileHandler extends BaseHandler {
+export abstract class WriterHandler extends BaseHandler {
+  protected _writer: Writer;
+
+  log(msg: string) {
+    const encoder = new TextEncoder();
+    // promise is intentionally not awaited
+    this._writer.write(encoder.encode(msg));
+  }
+}
+
+
+export class FileHandler extends WriterHandler {
   private _file: File;
   private _filename: string;
 
@@ -44,14 +53,10 @@ export class FileHandler extends BaseHandler {
     this._filename = filename;
   }
 
-  log(msg: string) {
-    const encoder = new TextEncoder();
-    this._file.write(encoder.encode(msg));
-  }
-
   async setup() {
     // open file in append mode - write only
     this._file = await open(this._filename, 'a');
+    this._writer = this._file;
   }
 
   async destroy() {

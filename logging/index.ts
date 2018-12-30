@@ -1,5 +1,5 @@
 import { Logger } from "./logger.ts";
-import { BaseHandler, ConsoleHandler, FileHandler } from "./handlers.ts";
+import { BaseHandler, ConsoleHandler, WriterHandler, FileHandler } from "./handlers.ts";
 
 export class LoggerConfig {
   level?: string;
@@ -39,6 +39,7 @@ const state = {
 export const handlers = {
   BaseHandler,
   ConsoleHandler,
+  WriterHandler,
   FileHandler,
 };
 
