@@ -13,7 +13,7 @@ const byName = {
   INFO: LogLevel.INFO,
   WARNING: LogLevel.WARNING,
   ERROR: LogLevel.ERROR,
-  CRITICAL: LogLevel.DEBUG
+  CRITICAL: LogLevel.CRITICAL
 };
 
 const byLevel = {
@@ -25,10 +25,10 @@ const byLevel = {
   [LogLevel.CRITICAL]: "CRITICAL"
 };
 
-export function getLevelByName(name) {
+export function getLevelByName(name: string): number {
   return byName[name];
 }
 
-export function getLevelName(level) {
+export function getLevelName(level: number): string {
   return byLevel[level];
 }

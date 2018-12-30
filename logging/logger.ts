@@ -1,5 +1,5 @@
 import { LogLevel, getLevelByName, getLevelName } from "./levels.ts";
-import { BaseHandler } from "./handler.ts";
+import { BaseHandler } from "./handlers.ts";
 
 export interface LogRecord {
   msg: string;

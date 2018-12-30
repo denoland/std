@@ -1,7 +1,7 @@
 import { assertEqual, test } from "https://deno.land/x/testing/testing.ts";
 
 import * as logging from "index.ts";
-import { FileHandler } from "./handlers/file.ts";
+import { FileHandler } from "./handlers.ts";
 
 // TODO: establish something more sophisticated
 let testOutput = "";
@@ -21,7 +21,7 @@ test(async function basicTest() {
     handlers: {
       debug: new TestHandler("DEBUG"),
       info: new TestHandler("INFO"),
-      file: new FileHandler("DEBUG"),
+      // file: new FileHandler("DEBUG", "./log.txt"),
     },
 
     loggers: {

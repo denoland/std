@@ -1,7 +1,5 @@
 import { Logger } from "./logger.ts";
-import { BaseHandler } from "./handler.ts";
-import { ConsoleHandler } from "./handlers/console.ts";
-import { FileHandler } from "./handlers/file.ts";
+import { BaseHandler, ConsoleHandler, FileHandler } from "./handlers.ts";
 
 export class LoggerConfig {
   level?: string;
