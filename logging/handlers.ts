@@ -39,7 +39,7 @@ export abstract class WriterHandler extends BaseHandler {
   log(msg: string) {
     const encoder = new TextEncoder();
     // promise is intentionally not awaited
-    this._writer.write(encoder.encode(msg));
+    this._writer.write(encoder.encode(msg + "\n"));
   }
 }
 
