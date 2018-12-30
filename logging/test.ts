@@ -7,20 +7,16 @@ import { FileHandler } from "./handlers/file.ts";
 let testOutput = "";
 
 class TestHandler extends logging.handlers.BaseHandler {
-  constructor(levelName) {
+  constructor(levelName: string) {
     super(levelName);
   }
 
-  _log(level, ...args) {
-    testOutput += `${level} ${args[0]}\n`;
+  log(msg: string) {
+    testOutput += `${msg}\n`;
   }
 }
 
 test(async function basicTest() {
-  const rootLogger = logging.getLogger();
-  rootLogger.critical("CRITICAL");
-  console.log(rootLogger);
-
   await logging.setup({
     handlers: {
       debug: new TestHandler("DEBUG"),
@@ -53,7 +49,8 @@ test(async function basicTest() {
   
 
   const expectedOutput =
-    "10 I should be printed.\n20 And I should be printed as well.\n";
+    "DEBUG I should be printed.\n" +
+    "INFO And I should be printed as well.\n";
 
   assertEqual(testOutput, expectedOutput);
 });

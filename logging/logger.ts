@@ -1,6 +1,14 @@
 import { LogLevel, getLevelByName, getLevelName } from "./levels.ts";
 import { BaseHandler } from "./handler.ts";
 
+export interface LogRecord {
+  msg: string;
+  args: any[];
+  datetime: Date;
+  level: number;
+  levelName: string;
+};
+
 export class Logger {
   level: number;
   levelName: string;
@@ -13,30 +21,42 @@ export class Logger {
     this.handlers = handlers || [];
   }
 
-  _log(level, ...args) {
+  _log(level: number, msg: string, ...args: any[]) {
     if (this.level > level) return;
+
+    // TODO: it'd be a good idea to make it immutable, so 
+    // no handler mangles it by mistake
+    // TODO: iterpolate msg with values
+    const record: LogRecord = {
+      msg: msg,
+      args: args,
+      datetime: new Date(),
+      level: level,
+      levelName: getLevelName(level),
+    }
+
     this.handlers.forEach(handler => {
-      handler.handle(level, ...args);
+      handler.handle(record);
     });
   }
 
-  debug(...args) {
-    return this._log(LogLevel.DEBUG, ...args);
+  debug(msg: string, ...args: any[]) {
+    return this._log(LogLevel.DEBUG, msg, ...args);
   }
 
-  info(...args) {
-    return this._log(LogLevel.INFO, ...args);
+  info(msg: string, ...args: any[]) {
+    return this._log(LogLevel.INFO, msg, ...args);
   }
 
-  warning(...args) {
-    return this._log(LogLevel.WARNING, ...args);
+  warning(msg: string, ...args: any[]) {
+    return this._log(LogLevel.WARNING, msg, ...args);
   }
 
-  error(...args) {
-    return this._log(LogLevel.ERROR, ...args);
+  error(msg: string, ...args: any[]) {
+    return this._log(LogLevel.ERROR, msg, ...args);
   }
 
-  critical(...args) {
-    return this._log(LogLevel.CRITICAL, ...args);
+  critical(msg: string, ...args: any[]) {
+    return this._log(LogLevel.CRITICAL, msg, ...args);
   }
 }

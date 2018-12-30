@@ -1,6 +1,5 @@
 import { open, File } from "deno";
 import { BaseHandler } from "../handler.ts";
-import { LogLevel } from "../levels.ts";
 
 export class FileHandler extends BaseHandler {
     private _file: File;
@@ -12,9 +11,8 @@ export class FileHandler extends BaseHandler {
         this._file = await open(filename, 'a');
     }
 
-    _log(level, ...args) {
+    log(msg: string) {
         const encoder = new TextEncoder();
-        const msg = encoder.encode(args[0] + '\n');
-        this._file.write(msg);
+        this._file.write(encoder.encode(msg));
     }
 }
