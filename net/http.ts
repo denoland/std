@@ -100,7 +100,7 @@ export async function listenAndServe(
 export interface Response {
   status?: number;
   headers?: Headers;
-  body?: Uint8Array | Object | Reader;
+  body?: Uint8Array | Reader | Object;
 }
 
 export function setContentLength(r: Response): void {
@@ -113,11 +113,11 @@ export function setContentLength(r: Response): void {
       if (r.body instanceof Uint8Array) {
         const bodyLength = r.body.byteLength;
         r.headers.append("Content-Length", bodyLength.toString());
-      } else if (r.body instanceof Object) {
+      } else if ('read' in r.body && typeof r.body["read"] === "function") {
+        r.headers.append("Transfer-Encoding", "chunked");
+      } else {
         const body = new TextEncoder().encode(JSON.stringify(r.body));
         r.headers.append("Content-Length", body.byteLength.toString());
-      } else {
-        r.headers.append("Transfer-Encoding", "chunked");
       }
     }
   }
@@ -260,11 +260,7 @@ export class ServerRequest {
       if (r.body instanceof Uint8Array) {
         n = await this.w.write(r.body);
         assert(r.body.byteLength == n);
-      } else if (r.body instanceof Object) {
-        const body = new TextEncoder().encode(JSON.stringify(r.body));        
-        n = await this.w.write(body);
-        assert(body.byteLength == n);
-      } else {
+      } else if ('read' in r.body && typeof r.body["read"] === "function") {
         if (r.headers.has("content-length")) {
           await this._streamBody(
             r.body,
@@ -273,6 +269,10 @@ export class ServerRequest {
         } else {
           await this._streamChunkedBody(r.body);
         }
+      } else {
+        const body = new TextEncoder().encode(JSON.stringify(r.body));        
+        n = await this.w.write(body);
+        assert(body.byteLength == n);
       }
     }
 
