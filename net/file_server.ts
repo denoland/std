@@ -209,30 +209,32 @@ function setCORS(res: Response) {
   );
 }
 
-listenAndServe(addr, async req => {
-  const fileName = req.url.replace(/\/$/, "");
-  const filePath = currentDir + fileName;
-
-  let response: Response;
-
-  try {
-    const fileInfo = await stat(filePath);
-    if (fileInfo.isDirectory()) {
-      // Bug with deno.stat: name and path not populated
-      // Yuck!
-      response = await serveDir(req, filePath, fileName);
-    } else {
-      response = await serveFile(req, filePath);
+export default function FileServer() {
+  listenAndServe(addr, async req => {
+    const fileName = req.url.replace(/\/$/, "");
+    const filePath = currentDir + fileName;
+  
+    let response: Response;
+  
+    try {
+      const fileInfo = await stat(filePath);
+      if (fileInfo.isDirectory()) {
+        // Bug with deno.stat: name and path not populated
+        // Yuck!
+        response = await serveDir(req, filePath, fileName);
+      } else {
+        response = await serveFile(req, filePath);
+      }
+    } catch (e) {
+      response = await serveFallback(req, e);
+    } finally {
+      if (CORSEnabled) {
+        setCORS(response);
+      }
+      serverLog(req, response);
+      req.respond(response);
     }
-  } catch (e) {
-    response = await serveFallback(req, e);
-  } finally {
-    if (CORSEnabled) {
-      setCORS(response);
-    }
-    serverLog(req, response);
-    req.respond(response);
-  }
-});
+  });
+}
 
 console.log(`HTTP server listening on http://${addr}/`);

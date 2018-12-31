@@ -3,6 +3,7 @@ import { BufReader, BufState, BufWriter } from "./bufio.ts";
 import { TextProtoReader } from "./textproto.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "./util.ts";
+import FileServer from "./file_server";
 
 interface Deferred {
   promise: Promise<{}>;
@@ -323,3 +324,13 @@ async function readAllIterator(
   }
   return collected;
 }
+
+const http = {
+  Handle: function() {
+
+  },
+  FileServer,
+};
+
+export default http;
+
