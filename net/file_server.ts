@@ -235,6 +235,7 @@ export default function FileServer() {
       req.respond(response);
     }
   });
+  console.log(`HTTP server listening on http://${addr}/`);
 }
 
-console.log(`HTTP server listening on http://${addr}/`);
+FileServer();
