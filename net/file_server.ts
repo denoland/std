@@ -5,6 +5,7 @@
 // TODO Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
+<<<<<<< HEAD
 import {
   listenAndServe,
   ServerRequest,
@@ -14,33 +15,13 @@ import {
 import { cwd, DenoError, ErrorKind, args, stat, readDir, open } from "deno";
 import { extname } from "../path/index.ts";
 import * as extensionsMap from "./extension_map.json";
+=======
+>>>>>>> code for fileServer is moved to http.ts
 
-const dirViewerTemplate = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Deno File Server</title>
-  <style>
-    td {
-      padding: 0 1rem;
-    }
-    td.mode {
-      font-family: Courier;
-    }
-  </style>
-</head>
-<body>
-  <h1>Index of <%DIRNAME%></h1>
-  <table>
-    <tr><th>Mode</th><th>Size</th><th>Name</th></tr>
-    <%CONTENTS%>
-  </table>
-</body>
-</html>
-`;
+import { cwd, args } from "deno";
+import { fileServer } from "./http.ts";
+
+
 
 const serverArgs = args.slice();
 let CORSEnabled = false;
@@ -58,6 +39,7 @@ if (target) {
   currentDir = `${currentDir}/${target}`;
 }
 const addr = `0.0.0.0:${serverArgs[2] || 4500}`;
+<<<<<<< HEAD
 const encoder = new TextEncoder();
 
 function modeToString(isDir: boolean, maybeMode: number | null) {
@@ -258,5 +240,9 @@ export default function FileServer() {
   });
   console.log(`HTTP server listening on http://${addr}/`);
 }
+=======
+>>>>>>> code for fileServer is moved to http.ts
 
-FileServer();
+fileServer(currentDir, addr, {
+  cors: CORSEnabled,
+});
