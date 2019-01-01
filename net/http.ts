@@ -534,3 +534,4 @@ export function fileServer(currentDir, addr, { cors }) {
   });
   console.log(`HTTP server listening on http://${addr}/`);
 }
+
