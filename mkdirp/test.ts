@@ -1,9 +1,8 @@
-import { lstat, makeTempDirSync, removeAll, platform, FileInfo } from "deno";
+import { cwd, lstat, makeTempDirSync, removeAll, FileInfo } from "deno";
 import { test, assert } from "https://deno.land/x/testing/testing.ts";
 import { mkdirp } from "./mkdirp.ts";
 
-let root: string =
-  platform.os !== "mac" ? makeTempDirSync() : `/tmp/${Date.now()}`;
+let root: string = `${cwd()}/${Date.now()}`; //makeTempDirSync();
 
 test(async function createsNestedDirs(): Promise<void> {
   const leaf: string = `${root}/levelx/levely`;
