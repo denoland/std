@@ -1,3 +1,0 @@
-{
-  "compilerOptions": { "types": ["./deno.d.ts"] }
-}
