@@ -93,6 +93,17 @@ parentheses. Example:
 // TODO(#123) Support Windows.
 ```
 
+### Copyright headers
+
+Most files in `deno_std` should have the following copyright header:
+
+```
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+```
+
+If the code originiates elsewhere, ensure that the file has the proper copyright
+headers. We only allows MIT, BSD, and Apache licensed code in `deno_std`.
+
 ### Top level functions should not use arrow syntax
 
 Top level functions should use the `function` keyword. Arrow syntax should be
