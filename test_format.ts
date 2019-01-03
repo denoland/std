@@ -4,10 +4,14 @@ import { run, exit } from "deno";
 
 async function main() {
   const p = run({
-    args: ["deno", "format.ts"]
+    args: ["deno", "format.ts", "--allow-run"]
   });
-  await p.status();
+  const status = await p.status();
   p.close();
+
+  if (!status.success) {
+    exit(1);
+  }
 
   const git = run({
     args: ["git", "status", "-uno", "--porcelain"],

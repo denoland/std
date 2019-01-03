@@ -5,31 +5,31 @@
 This repository contains collections of modules that create a standard library
 for Deno.
 
-* **[colors](./colors/)**
+- **[colors](./colors/)**
 
   Modules that generate ANSI color codes for the console.
 
-* **[flags](./flags/)**
+- **[flags](./flags/)**
 
   Command line arguments parser.
 
-* **[logging](./logging/)**
+- **[logging](./logging/)**
 
   Command line logging
 
-* **[mkdirp](./mkdirp/)**
+- **[mkdirp](./mkdirp/)**
 
-  Make directory branches. 
+  Make directory branches.
 
-* **[net](./net/)**
+- **[net](./net/)**
 
   A framework for creating HTTP/HTTPS servers inspired by GoLang.
 
-* **[path](./path/)**
+- **[path](./path/)**
 
   File path manipulation.
 
-* **[testing](./testing/)**
+- **[testing](./testing/)**
 
   Testing
 
