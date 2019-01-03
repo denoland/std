@@ -61,12 +61,10 @@ export function parseDateTime(datetimeStr: string, format: string): Date {
  * @return {number} Number of current day in year
  */
 export function currentDayOfYear(): number {
-  return Math.floor(
-    (new Date().getMilliseconds() -
-      new Date(new Date().getFullYear(), 0, 0).getMilliseconds()) /
-      1000 /
-      60 /
-      60 /
-      24
+  return (
+    Math.ceil(new Date().getTime() / 86400000) -
+    Math.floor(
+      new Date().setFullYear(new Date().getFullYear(), 0, 1) / 86400000
+    )
   );
 }
