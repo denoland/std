@@ -13,3 +13,12 @@ test(function parseDate() {
     new Date(2019, 1, 3)
   );
 });
+test(function currentDayOfYear() {
+  assertEqual(
+    datetime.currentDayOfYear(),
+    Math.ceil(new Date().getTime() / 86400000) -
+      Math.floor(
+        new Date().setFullYear(new Date().getFullYear(), 0, 1) / 86400000
+      )
+  );
+});
