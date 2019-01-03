@@ -9,6 +9,18 @@ for Deno.
 
   Modules that generate ANSI color codes for the console.
 
+* **[flags](./flags/)**
+
+  Command line arguments parser.
+
+* **[logging](./logging/)**
+
+  Command line logging
+
+* **[mkdirp](./mkdirp/)**
+
+  Make directory branches. 
+
 * **[net](./net/)**
 
   A framework for creating HTTP/HTTPS servers inspired by GoLang.
@@ -17,13 +29,9 @@ for Deno.
 
   File path manipulation.
 
-* **[flags](./flags/)**
+* **[testing](./testing/)**
 
-  Command line arguments parser.
-
-* **[logging](./logging/)**
-
-  Command line logging
+  Testing
 
 ---
 
