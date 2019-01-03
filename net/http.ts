@@ -3,7 +3,8 @@ import { BufReader, BufState, BufWriter } from "./bufio.ts";
 import { TextProtoReader } from "./textproto.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "./util.ts";
-
+import { extname } from "../path/index.ts";
+import * as extensionsMap from "./extension_map.json";
 
 const dirViewerTemplate = `
 <!DOCTYPE html>
@@ -457,12 +458,30 @@ async function serveDir(req: ServerRequest, dirPath: string, dirName: string) {
   return res;
 }
 
+function guessContentType(filename: string): string {
+  let extension = extname(filename);
+  let contentType = extensionsMap[extension];
+
+  if (contentType) {
+    return contentType;
+  }
+
+  extension = extension.toLowerCase();
+  contentType = extensionsMap[extension];
+
+  if (contentType) {
+    return contentType;
+  }
+
+  return extensionsMap[""];
+}
+
 async function serveFile(req: ServerRequest, filename: string) {
   const file = await open(filename);
   const fileInfo = await stat(filename);
   const headers = new Headers();
   headers.set("content-length", fileInfo.len.toString());
-
+  headers.set("content-type", guessContentType(filename));
   const res = {
     status: 200,
     body: file,
@@ -506,7 +525,10 @@ function setCORS(res: Response) {
   );
 }
 
-export function fileServer(currentDir, addr, { cors }) {
+
+export function fileServer(currentDir, addr: string, options: {
+  cors: boolean
+}) {
   listenAndServe(addr, async req => {
     const fileName = req.url.replace(/\/$/, "");
     const filePath = currentDir + fileName;
@@ -525,7 +547,7 @@ export function fileServer(currentDir, addr, { cors }) {
     } catch (e) {
       response = await serveFallback(req, e);
     } finally {
-      if (cors) {
+      if (options.cors) {
         setCORS(response);
       }
       serverLog(req, response);

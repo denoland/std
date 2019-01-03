@@ -243,6 +243,9 @@ export default function FileServer() {
 =======
 >>>>>>> code for fileServer is moved to http.ts
 
-fileServer(currentDir, addr, {
-  cors: CORSEnabled,
-});
+if (fileServer) {
+  fileServer(currentDir, addr, {
+    cors: CORSEnabled,
+  });
+}
+
