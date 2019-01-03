@@ -1,4 +1,11 @@
-export const parseDate = (dateStr: string, format: string): Date => {
+/**
+ * Parse date from string using format string
+ *
+ * @param {string} dateStr - date string
+ * @param {string} format - format string
+ * @return {Date} Parsed date
+ */
+export function parseDate (dateStr: string, format: string): Date {
   let m, d, y: string;
 
   if (format === "mm-dd-yyyy") {
@@ -15,7 +22,14 @@ export const parseDate = (dateStr: string, format: string): Date => {
   return new Date(Number(y), Number(m) - 1, Number(d));
 };
 
-export const parseDateTime = (datetimeStr: string, format: string): Date => {
+/**
+ * Parse date & time from string using format string
+ *
+ * @param {string} dateStr - date & time string
+ * @param {string} format - format string
+ * @return {Date} Parsed date
+ */
+export function parseDateTime (datetimeStr: string, format: string): Date {
   let m, d, y, ho, mi: string;
 
   if (format === "mm-dd-yyyy hh:mm") {
@@ -41,8 +55,13 @@ export const parseDateTime = (datetimeStr: string, format: string): Date => {
   return new Date(Number(y), Number(m) - 1, Number(d), Number(ho), Number(mi));
 };
 
-export const currentDayOfYear = () =>
-  Math.floor(
+/**
+ * Get number of current day in year
+ *
+ * @return {number} Number of current day in year
+ */
+export function currentDayOfYear (): number {
+  return Math.floor(
     (new Date().getMilliseconds() -
       new Date(new Date().getFullYear(), 0, 0).getMilliseconds()) /
       1000 /
@@ -50,3 +69,4 @@ export const currentDayOfYear = () =>
       60 /
       24
   );
+};
