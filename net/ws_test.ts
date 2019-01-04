@@ -18,7 +18,7 @@ import {
 } from "./ws.ts";
 import {serve} from "./http.ts";
 
-test(async function testReadFrame() {
+test(async function testReadUnmaskedTextFrame() {
     // unmasked single text frame with payload "Hello"
     const buf = new BufReader(new Buffer(new Uint8Array([
         0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f
@@ -30,7 +30,7 @@ test(async function testReadFrame() {
     assertEqual(frame.isLastFrame, true);
 });
 
-test(async function testReadFrame2() {
+test(async function testReadMakedTextFrame() {
     //a masked single text frame with payload "Hello"
     const buf = new BufReader(new Buffer(new Uint8Array([
         0x81, 0x85, 0x37, 0xfa, 0x21, 0x3d, 0x7f, 0x9f, 0x4d, 0x51, 0x58
@@ -43,7 +43,7 @@ test(async function testReadFrame2() {
     assertEqual(frame.isLastFrame, true);
 });
 
-test(async function testReadUnmaskedSplittedFrames() {
+test(async function testReadUnmaskedSplittedTextFrames() {
     const buf1 = new BufReader(new Buffer(new Uint8Array([
         0x01, 0x03, 0x48, 0x65, 0x6c
     ])));
@@ -64,7 +64,7 @@ test(async function testReadUnmaskedSplittedFrames() {
     assertEqual(new Buffer(f2.payload).toString(), "lo")
 });
 
-test(async function testReadUnmaksedPingFrame() {
+test(async function testReadUnmaksedPingPongFrame() {
     // unmasked ping with payload "Hello"
     const buf = new BufReader(new Buffer(new Uint8Array([
         0x89, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f,
@@ -83,7 +83,7 @@ test(async function testReadUnmaksedPingFrame() {
     assertEqual(new Buffer(pong.payload).toString(), "Hello")
 });
 
-test(async function testReadUnmaksedBinaryFrame() {
+test(async function testReadUnmaksedBigBinaryFrame() {
     let a = [0x82, 0x7E, 0x01, 0x00];
     for (let i = 0; i < 256; i++) {
         a.push(i);
@@ -96,7 +96,7 @@ test(async function testReadUnmaksedBinaryFrame() {
     assertEqual(bin.payload.length, 256);
 });
 
-test(async function testReadMaskedBinaryFrame() {
+test(async function testReadUnmaskedBigBigBinaryFrame() {
     let a = [0x82, 0x7F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00];
     for (let i = 0; i < 0xffff; i++) {
         a.push(i);
