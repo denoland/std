@@ -25,8 +25,6 @@ if (target) {
 }
 const addr = `0.0.0.0:${serverArgs[2] || 4500}`;
 
-if (fileServer) {
-  fileServer(currentDir, addr, {
-    cors: CORSEnabled,
-  });
-}
+fileServer(currentDir, addr, {
+  cors: CORSEnabled,
+});
