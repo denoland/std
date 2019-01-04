@@ -1,11 +1,9 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
 type Subscriber = (...args: unknown[]) => void
 
-/**
- * Very basic implementation of EventEmitter.
- *
- * @export
- * @class EventEmitter
- */
+
+/** EventEmitter allows for event-based programming. */
 export class EventEmitter {
   private _subscribers: { [key: string]: Subscriber[] };
 
