@@ -3,8 +3,7 @@ import { Buffer, Writer, Conn } from "deno";
 import { ServerRequest } from "./http.ts";
 import { BufReader, BufWriter } from "./bufio.ts";
 import { readLong, readShort, sliceLongToBytes } from "./ioutil.ts";
-import { Sha1 } from "./crypt.ts";
-import { SocketClosedError } from "./errors.ts";
+import { Sha1 } from "./sha1.ts";
 
 export const OpCodeContinue = 0x0;
 export const OpCodeTextFrame = 0x1;
@@ -40,6 +39,8 @@ export type WebSocketPongEvent = ["pong", Uint8Array];
 export function isWebSocketPongEvent(a): a is WebSocketPongEvent {
   return Array.isArray(a) && a[0] === "pong" && a[1] instanceof Uint8Array;
 }
+
+export class SocketClosedError extends Error {}
 
 export type WebSocketFrame = {
   isLastFrame: boolean;
