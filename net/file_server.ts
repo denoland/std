@@ -6,7 +6,7 @@
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 import { cwd, args } from "deno";
-import { fileServer } from "./http";
+import { fileServer } from "./http.ts";
 
 const serverArgs = args.slice();
 let CORSEnabled = false;
