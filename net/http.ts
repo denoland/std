@@ -237,12 +237,6 @@ export class ServerRequest {
     r.headers.append('Connection', 'keep-alive');
     r.headers.append('Cache-Control', 'no-cache');
 
-  r.headers!.append("access-control-allow-origin", "*");
-  r.headers!.append(
-    "access-control-allow-headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Range"
-);
-
     const protoMajor = 1;
     const protoMinor = 1;
     const statusCode = r.status || 200;
@@ -266,18 +260,16 @@ export class ServerRequest {
     const writer = this.w;
     let id = 0;
 
-    async function send (data: string | string[], retry: number = 1000): Promise<number> {
+    async function send (data: string, retry: number = 1000): Promise<number> {
+      const _data = data.split('\n');
+
       let msg: string = "";
 
       msg += `retry: ${retry}\n`;
 
-      if (data instanceof Array) {
-        data.forEach(str => {
-          msg += `data: ${str}\n`;
-        });
-      } else {
-        msg += `data: ${data}\n\n`;
-      }
+      _data.forEach(str => {
+        msg += `data: ${str}\n`;
+      });
 
       msg += `id: ${id}\n\n`;
 
