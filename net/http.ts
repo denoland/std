@@ -229,6 +229,74 @@ export class ServerRequest {
     await this.w.write(endChunk);
   }
 
+  async respondSSE(r?: Response): Promise<Function> {
+    r = r || {};
+    r.headers = r.headers || new Headers();
+
+    r.headers.append('Content-Type', 'text/event-stream');
+    r.headers.append('Connection', 'keep-alive');
+    r.headers.append('Cache-Control', 'no-cache');
+
+  r.headers!.append("access-control-allow-origin", "*");
+  r.headers!.append(
+    "access-control-allow-headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Range"
+);
+
+    const protoMajor = 1;
+    const protoMinor = 1;
+    const statusCode = r.status || 200;
+    const statusText = STATUS_TEXT.get(statusCode);
+    if (!statusText) {
+      throw Error("bad status code");
+    }
+
+    let out = `HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`;
+
+    for (const [key, value] of r.headers) {
+      out += `${key}: ${value}\r\n`;
+    }
+    out += "\r\n";
+
+    const header = new TextEncoder().encode(out);
+    let n = await this.w.write(header);
+    assert(header.byteLength == n);
+
+    const encoder = new TextEncoder();
+    const writer = this.w;
+    let id = 0;
+
+    async function send (data: string | string[], retry: number = 1000): Promise<number> {
+      let msg: string = "";
+
+      msg += `retry: ${retry}\n`;
+
+      if (data instanceof Array) {
+        data.forEach(str => {
+          msg += `data: ${str}\n`;
+        });
+      } else {
+        msg += `data: ${data}\n\n`;
+      }
+
+      msg += `id: ${id}\n\n`;
+
+      const body = encoder.encode(msg);
+
+      try {
+        const n = await writer.write(body);
+        await writer.flush();
+        assert(n == body.byteLength);
+        id++;
+        return n;
+      } catch(err) {
+        return -1;
+      }
+    }
+
+    return send;
+  }
+
   async respond(r: Response): Promise<void> {
     const protoMajor = 1;
     const protoMinor = 1;
