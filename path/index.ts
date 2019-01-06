@@ -15,14 +15,6 @@ import {
 import { cwd, env, platform } from "deno";
 import { FormatInputPathObject, ParsedPath } from "./interface.ts";
 
-function assertPath(path: string) {
-  if (typeof path !== "string") {
-    throw new TypeError(
-      `Path must be a string. Received ${JSON.stringify(path)}`
-    );
-  }
-}
-
 function isPathSeparator(code: number) {
   return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
 }
@@ -150,8 +142,6 @@ const win32 = {
         }
       }
 
-      assertPath(path);
-
       // Skip empty entries
       if (path.length === 0) {
         continue;
@@ -272,7 +262,6 @@ const win32 = {
   },
 
   normalize: function normalize(path: string) {
-    assertPath(path);
     const len = path.length;
     if (len === 0) return ".";
     let rootEnd = 0;
@@ -385,7 +374,6 @@ const win32 = {
   },
 
   isAbsolute: function isAbsolute(path: string) {
-    assertPath(path);
     const len = path.length;
     if (len === 0) return false;
 
@@ -409,7 +397,6 @@ const win32 = {
     let firstPart: string;
     for (let i = 0; i < arguments.length; ++i) {
       let arg = arguments[i];
-      assertPath(arg);
       if (arg.length > 0) {
         if (joined === undefined) joined = firstPart = arg;
         else joined += `\\${arg}`;
@@ -467,9 +454,6 @@ const win32 = {
   //  to = 'C:\\orandea\\impl\\bbb'
   // The output of the function should be: '..\\..\\impl\\bbb'
   relative: function relative(from: string, to: string) {
-    assertPath(from);
-    assertPath(to);
-
     if (from === to) return "";
 
     let fromOrig = win32.resolve(from);
@@ -608,7 +592,6 @@ const win32 = {
   },
 
   dirname: function dirname(path: string) {
-    assertPath(path);
     const len = path.length;
     if (len === 0) return ".";
     let rootEnd = -1;
@@ -696,9 +679,6 @@ const win32 = {
   },
 
   basename: function basename(path: string, ext = "") {
-    if (ext !== undefined && typeof ext !== "string")
-      throw new TypeError('"ext" argument must be a string');
-    assertPath(path);
     let start = 0;
     let end = -1;
     let matchedSlash = true;
@@ -778,7 +758,6 @@ const win32 = {
   },
 
   extname: function extname(path: string) {
-    assertPath(path);
     let start = 0;
     let startDot = -1;
     let startPart = 0;
@@ -851,8 +830,6 @@ const win32 = {
   },
 
   parse: function parse(path: string) {
-    assertPath(path);
-
     let ret = { root: "", dir: "", base: "", ext: "", name: "" } as ParsedPath;
     if (path.length === 0) return ret;
 
@@ -1017,8 +994,6 @@ const posix = {
         path = cwd();
       }
 
-      assertPath(path);
-
       // Skip empty entries
       if (path.length === 0) {
         continue;
@@ -1050,8 +1025,6 @@ const posix = {
   },
 
   normalize: function normalize(path: string) {
-    assertPath(path);
-
     if (path.length === 0) return ".";
 
     const isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
@@ -1069,7 +1042,6 @@ const posix = {
   },
 
   isAbsolute: function isAbsolute(path: string) {
-    assertPath(path);
     return path.length > 0 && path.charCodeAt(0) === CHAR_FORWARD_SLASH;
   },
 
@@ -1078,7 +1050,6 @@ const posix = {
     let joined: string;
     for (let i = 0; i < arguments.length; ++i) {
       let arg = arguments[i];
-      assertPath(arg);
       if (arg.length > 0) {
         if (joined === undefined) joined = arg;
         else joined += `/${arg}`;
@@ -1089,9 +1060,6 @@ const posix = {
   },
 
   relative: function relative(from: string, to: string) {
-    assertPath(from);
-    assertPath(to);
-
     if (from === to) return "";
 
     from = posix.resolve(from);
@@ -1176,7 +1144,6 @@ const posix = {
   },
 
   dirname: function dirname(path: string) {
-    assertPath(path);
     if (path.length === 0) return ".";
     const hasRoot = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
     let end = -1;
@@ -1199,10 +1166,6 @@ const posix = {
   },
 
   basename: function basename(path: string, ext = "") {
-    if (ext !== undefined && typeof ext !== "string")
-      throw new TypeError('"ext" argument must be a string');
-    assertPath(path);
-
     let start = 0;
     let end = -1;
     let matchedSlash = true;
@@ -1272,7 +1235,6 @@ const posix = {
   },
 
   extname: function extname(path: string) {
-    assertPath(path);
     let startDot = -1;
     let startPart = 0;
     let end = -1;
@@ -1331,8 +1293,6 @@ const posix = {
   },
 
   parse: function parse(path: string) {
-    assertPath(path);
-
     let ret = { root: "", dir: "", base: "", ext: "", name: "" } as ParsedPath;
     if (path.length === 0) return ret;
     let isAbsolute = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
