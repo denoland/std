@@ -1422,7 +1422,6 @@ posix.win32 = win32.win32 = win32;
 posix.posix = win32.posix = posix;
 
 const module = platform.os === "win" ? win32 : posix;
-export default module;
 
 export const resolve = module.resolve;
 export const normalize = module.normalize;
