@@ -1,7 +1,4 @@
-export type DateFormat = 
-  "mm-dd-yyyy"
-  | "dd-mm-yyyy" 
-  | "yyyy-mm-dd"
+export type DateFormat = "mm-dd-yyyy" | "dd-mm-yyyy" | "yyyy-mm-dd";
 
 /**
  * Parse date from string using format string
@@ -27,13 +24,13 @@ export function parseDate(dateStr: string, format: DateFormat): Date {
   return new Date(Number(y), Number(m) - 1, Number(d));
 }
 
-export type DateTimeFormat = 
-  "mm-dd-yyyy hh:mm"
-  | "dd-mm-yyyy hh:mm" 
+export type DateTimeFormat =
+  | "mm-dd-yyyy hh:mm"
+  | "dd-mm-yyyy hh:mm"
   | "yyyy-mm-dd hh:mm"
   | "hh:mm mm-dd-yyyy"
   | "hh:mm dd-mm-yyyy"
-  | "hh:mm yyyy-mm-dd"
+  | "hh:mm yyyy-mm-dd";
 
 /**
  * Parse date & time from string using format string
@@ -42,7 +39,10 @@ export type DateTimeFormat =
  * @param {DateTimeFormat} format - format string
  * @return {Date} Parsed date
  */
-export function parseDateTime(datetimeStr: string, format: DateTimeFormat): Date {
+export function parseDateTime(
+  datetimeStr: string,
+  format: DateTimeFormat
+): Date {
   let m, d, y, ho, mi: string;
 
   if (format === "mm-dd-yyyy hh:mm") {
