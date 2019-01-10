@@ -1,5 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { listen, Listener, Conn } from "deno";
+import { TextProtoReader } from "../net/textproto.ts";
+import { BufReader, BufWriter } from "../net/bufio.ts";
 
 // ensures that there are no crashes if a wrong
 // property on a MessageData object, as a try-catch
@@ -154,7 +156,6 @@ const utf8Decoder = new TextDecoder();
 const utf8Encoder = new TextEncoder();
 const DEFAULT_BUFFER_SIZE = 1024;
 
-
 export enum UserMode {
   Invisible = "+i",
   Operator = "+o",
@@ -164,8 +165,8 @@ export enum UserMode {
 }
 
 export class User {
-  private _conn: Conn;
-  private _buf: Uint8Array;
+  private _reader: TextProtoReader;
+  private _writer: BufWriter;
 
   private _userModes: Set<UserMode> = new Set();
   public nickname = "";
@@ -175,32 +176,31 @@ export class User {
   public id = "";
 
   constructor(conn: Conn) {
-    this._conn = conn;
-    this._buf = new Uint8Array(DEFAULT_BUFFER_SIZE);
+    this._reader = new TextProtoReader(new BufReader(conn));
+    this._writer = new BufWriter(conn);
   }
 
   async *readMessages(): AsyncIterableIterator<string> {
     while (true) {
-      const rr = await this._conn.read(this._buf);
-      if (rr.eof) {
+      const [plaintext, err] = await this._reader.readLine();
+
+      if (err === "EOF") {
         return;
       }
 
-      const plaintext = utf8Decoder.decode(this._buf.buffer.slice(0, rr.nread));
-      // TODO(fancyplants) figure out how to split incoming multiple messages
-      const ircMessages = plaintext.split("\r\n");
-
-      for (const msg of ircMessages) {
-        if (msg) {
-          yield msg;
-        }
-      }
+      yield plaintext;
     }
   }
 
-  write(msg: string): Promise<number> {
+  /** Writes message to underlying BufWriter */
+  write(msg: string) {
     const encoded = utf8Encoder.encode(msg);
-    return this._conn.write(encoded);
+    return this._writer.write(encoded);
+  }
+
+  /** Flushes buffered writes into underlying connection */
+  flush() {
+    return this._writer.flush();
   }
 
   get modes() {
@@ -313,10 +313,16 @@ export class IrcDatabase {
     }
   }
 
-  private _replyToUser(user: User, command: string, params: string[]) {
+  private _replyToUser(user: User, command: string, params: string[], flush = true) {
     // for unregistered users, most servers just put an asterisk in the <client> spot
     const nickname = user.nickname || "*";
-    return user.write(`:${this._host} ${command} ${nickname} ${params}\r\n`);
+    let n = user.write(`:${this._host} ${command} ${nickname} ${params}\r\n`);
+
+    // optional flush if there's a big message, like a MOTD
+    if (flush) {
+      user.flush();
+    }
+    return n;
   }
 
   private _attemptRegisterUser(user: User) {
@@ -374,6 +380,7 @@ export class IrcDatabase {
         }
 
         currUser.write(nicknameUpdateMsg);
+        currUser.flush();
       }
     } else {
       user.nickname = nickname;
