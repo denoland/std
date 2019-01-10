@@ -1,6 +1,64 @@
-import { dial } from "deno";
-import { assertEqual, test } from "./package.ts";
-import { IrcServer } from "./mod.ts";
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
+import { Conn, dial } from "deno";
+import { assert, assertEqual, test } from "../testing/mod.ts";
+import { User, parse, IrcServer } from "./irc.ts";
+
+test(function userModes() {
+  // use empty object, as we're not testing connections here
+  const user = new User({} as Conn);
+  assert(!user.isInvisible);
+  assert(!user.isOp);
+  assert(!user.isLocalOp);
+  assert(!user.isWallops);
+
+  user.isInvisible = true;
+  user.isOp = true;
+
+  assert(user.isInvisible);
+  assert(user.isOp);
+
+  user.isInvisible = false;
+  user.isOp = false;
+  assert(!user.isInvisible);
+  assert(!user.isOp);
+
+  user.isLocalOp = true;
+  user.isWallops = true;
+  assert(user.isLocalOp);
+  assert(user.isWallops);
+
+  user.isLocalOp = false;
+  user.isWallops = false;
+  assert(!user.isLocalOp);
+  assert(!user.isWallops);
+});
+
+// tests using valid IRC messages
+test(function message252() {
+  const message252 =
+    "@url=sdf :verne.freenode.net 252 rahat2 33 :IRC Operators online";
+  const parsed252 = parse(message252);
+
+  assertEqual(parsed252, {
+    tags: { url: "sdf" },
+    prefix: ":verne.freenode.net",
+    command: "252",
+    params: ["rahat2", "33", ":IRC Operators online"]
+  });
+});
+
+test(function messageUSER() {
+  const messageUser = "USER rahat_ahmed these_params dont_matter :Rahat Ahmed";
+  const parsedUser = parse(messageUser);
+
+  assertEqual(parsedUser, {
+    tags: {},
+    prefix: "",
+    command: "USER",
+    params: ["rahat_ahmed", "these_params", "dont_matter", ":Rahat Ahmed"]
+  });
+});
 
 const TEST_ADDRESS = "127.0.0.1:";
 
@@ -79,7 +137,10 @@ test(async function USERerrors() {
   let rr = await client1.read(readBuffer);
   let decodedMsg = decoder.decode(readBuffer.buffer.slice(0, rr.nread));
 
-  assertEqual(decodedMsg, ":127.0.0.1 461 * :Wrong params for USER command\r\n");
+  assertEqual(
+    decodedMsg,
+    ":127.0.0.1 461 * :Wrong params for USER command\r\n"
+  );
 
   // then test if user is already registered
 
@@ -93,7 +154,10 @@ test(async function USERerrors() {
 
   rr = await client1.read(readBuffer);
   decodedMsg = decoder.decode(readBuffer.buffer.slice(0, rr.nread));
-  assertEqual(decodedMsg, ":127.0.0.1 001 nickname :Welcome to the server nickname\r\n");
+  assertEqual(
+    decodedMsg,
+    ":127.0.0.1 001 nickname :Welcome to the server nickname\r\n"
+  );
 
   rr = await client1.read(readBuffer);
   decodedMsg = decoder.decode(readBuffer.buffer.slice(0, rr.nread));
