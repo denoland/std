@@ -67,8 +67,8 @@ test(async function basicTest() {
     "INFO And I should be logged as well.\n";
 
   // TODO(ry) Re-enable this test. Disabled because it was failing on Linux.
-  console.log('testOutput:', testOutput);
-  console.log('ExpOutput:', expectedOutput);
+  // console.log('testOutput:', testOutput);
+  // console.log('ExpOutput:', expectedOutput);
   assertEqual(testOutput, expectedOutput);
 
   // same check for file handler
