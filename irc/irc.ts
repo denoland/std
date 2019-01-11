@@ -368,12 +368,11 @@ export class IrcDatabase {
       }
     }
 
-    this._attemptRegisterUser(user);
-
     if (user.nickname) {
       // let other users know that a user changed their nickname
       const oldNickname = user.nickname;
       user.nickname = nickname;
+      this._attemptRegisterUser(user);
       const nicknameUpdateMsg = `:${oldNickname} NICK ${nickname}\r\n`;
 
       // maybe handle automatic updates to other user through Proxying User?
@@ -387,6 +386,7 @@ export class IrcDatabase {
       }
     } else {
       user.nickname = nickname;
+      this._attemptRegisterUser(user);
     }
   }
 

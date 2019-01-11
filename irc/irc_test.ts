@@ -158,7 +158,6 @@ test(async function USERerrors() {
 
   await client1.write(nickMsg);
   await client1.write(firstUserMsg);
-  await client1.write(secondUserMsg);
 
   [incomingMsg, err] = await client1reader.readLine();
   if (err === "EOF") {
@@ -169,6 +168,8 @@ test(async function USERerrors() {
     incomingMsg,
     ":127.0.0.1 001 nickname :Welcome to the server nickname"
   );
+
+  await client1.write(secondUserMsg);
 
   [incomingMsg, err] = await client1reader.readLine();
   if (err === "EOF") {
