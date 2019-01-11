@@ -12,8 +12,8 @@ import {
   Response
 } from "./http.ts";
 import { cwd, DenoError, ErrorKind, args, stat, readDir, open } from "deno";
-import { extname } from "../path/index.ts";
-import * as extensionsMap from "./extension_map.json";
+import { extname } from "../fs/path.ts";
+import { contentType } from "../media_types/mod.ts";
 
 const dirViewerTemplate = `
 <!DOCTYPE html>
@@ -162,30 +162,12 @@ async function serveDir(req: ServerRequest, dirPath: string, dirName: string) {
   return res;
 }
 
-function guessContentType(filename: string): string {
-  let extension = extname(filename);
-  let contentType = extensionsMap[extension];
-
-  if (contentType) {
-    return contentType;
-  }
-
-  extension = extension.toLowerCase();
-  contentType = extensionsMap[extension];
-
-  if (contentType) {
-    return contentType;
-  }
-
-  return extensionsMap[""];
-}
-
 async function serveFile(req: ServerRequest, filename: string) {
   const file = await open(filename);
   const fileInfo = await stat(filename);
   const headers = new Headers();
   headers.set("content-length", fileInfo.len.toString());
-  headers.set("content-type", guessContentType(filename));
+  headers.set("content-type", contentType(extname(filename)) || "text/plain");
 
   const res = {
     status: 200,
