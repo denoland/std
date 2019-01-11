@@ -3,6 +3,8 @@
 import { Conn, dial } from "deno";
 import { assert, assertEqual, test } from "../testing/mod.ts";
 import { User, parse, IrcServer } from "./irc.ts";
+import { TextProtoReader } from "../net/textproto.ts";
+import { BufReader, BufState } from "../net/bufio.ts";
 
 test(function userModes() {
   // use empty object, as we're not testing connections here
@@ -61,8 +63,8 @@ test(function messageUSER() {
 });
 
 const TEST_ADDRESS = "127.0.0.1:";
-
 let PORT = 25567;
+const disconnectError = new Error("Client was disconnected.");
 
 // ! test hangs for some reason
 test(async function NICKerrors() {
@@ -75,19 +77,23 @@ test(async function NICKerrors() {
   }, 3000);
   server.start();
   const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
   const client1 = await dial("tcp", THIS_ADDRESS);
-  const readBuffer = new Uint8Array(1024);
+  const client1reader = new TextProtoReader(new BufReader(client1));
 
   // no nickname given
   const nickError431 = "NICK \r\n";
 
   let encodedMsg = encoder.encode(nickError431);
   await client1.write(encodedMsg);
-  let rr = await client1.read(readBuffer);
 
-  let decodedResp = decoder.decode(readBuffer.buffer.slice(0, rr.nread));
-  assertEqual(decodedResp, ":127.0.0.1 431 * :No nickname given\r\n");
+  let incomingMsg: string;
+  let err: BufState;
+
+  [incomingMsg, err] = await client1reader.readLine();
+  if (err === "EOF") {
+    throw disconnectError;
+  }
+  assertEqual(incomingMsg, ":127.0.0.1 431 * :No nickname given");
 
   // now test two users attempting to register the same nickname
 
@@ -95,15 +101,18 @@ test(async function NICKerrors() {
   encodedMsg = encoder.encode(nickError433);
 
   await client1.write(encodedMsg);
-
   const client2 = await dial("tcp", THIS_ADDRESS);
-
+  const client2reader = new TextProtoReader(new BufReader(client2));
   await client2.write(encodedMsg);
-  rr = await client2.read(readBuffer);
-  decodedResp = decoder.decode(readBuffer.buffer.slice(0, rr.nread));
+
+  [incomingMsg, err] = await client2reader.readLine();
+  if (err === "EOF") {
+    throw disconnectError;
+  }
+
   assertEqual(
-    decodedResp,
-    ':127.0.0.1 433 * :Nickname "nickname" has already been taken.\r\n'
+    incomingMsg,
+    ':127.0.0.1 433 * :Nickname "nickname" has already been taken.'
   );
 
   clearTimeout(timerID);
@@ -123,23 +132,23 @@ test(async function USERerrors() {
   server.start();
 
   const client1 = await dial("tcp", THIS_ADDRESS);
+  const client1reader = new TextProtoReader(new BufReader(client1));
   const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
 
   // not enough params
   const userError461 = "USER\r\n";
   let encodedMsg = encoder.encode(userError461);
   await client1.write(encodedMsg);
 
-  const readBuffer = new Uint8Array(1024);
+  let incomingMsg: string;
+  let err: BufState;
 
-  let rr = await client1.read(readBuffer);
-  let decodedMsg = decoder.decode(readBuffer.buffer.slice(0, rr.nread));
+  [incomingMsg, err] = await client1reader.readLine();
+  if (err === "EOF") {
+    throw disconnectError;
+  }
 
-  assertEqual(
-    decodedMsg,
-    ":127.0.0.1 461 * :Wrong params for USER command\r\n"
-  );
+  assertEqual(incomingMsg, ":127.0.0.1 461 * :Wrong params for USER command");
 
   // then test if user is already registered
 
@@ -151,17 +160,22 @@ test(async function USERerrors() {
   await client1.write(firstUserMsg);
   await client1.write(secondUserMsg);
 
-  rr = await client1.read(readBuffer);
-  decodedMsg = decoder.decode(readBuffer.buffer.slice(0, rr.nread));
+  [incomingMsg, err] = await client1reader.readLine();
+  if (err === "EOF") {
+    throw disconnectError;
+  }
+
   assertEqual(
-    decodedMsg,
-    ":127.0.0.1 001 nickname :Welcome to the server nickname\r\n"
+    incomingMsg,
+    ":127.0.0.1 001 nickname :Welcome to the server nickname"
   );
 
-  rr = await client1.read(readBuffer);
-  decodedMsg = decoder.decode(readBuffer.buffer.slice(0, rr.nread));
+  [incomingMsg, err] = await client1reader.readLine();
+  if (err === "EOF") {
+    throw disconnectError;
+  }
 
-  assertEqual(decodedMsg, ":127.0.0.1 462 nickname :Cannot register twice\r\n");
+  assertEqual(incomingMsg, ":127.0.0.1 462 nickname :Cannot register twice");
 
   clearTimeout(timerID);
   client1.close();
