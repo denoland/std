@@ -19,6 +19,8 @@ export function parseDate(dateStr: string, format: DateFormat): Date {
   } else if (format === "yyyy-mm-dd") {
     const datePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
     [, y, m, d] = datePattern.exec(dateStr);
+  } else {
+    throw new Error("Invalid date format!");
   }
 
   return new Date(Number(y), Number(m) - 1, Number(d));
@@ -63,6 +65,8 @@ export function parseDateTime(
   } else if (format === "hh:mm yyyy-mm-dd") {
     const datePattern = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/;
     [, ho, mi, y, m, d] = datePattern.exec(datetimeStr);
+  } else {
+    throw new Error("Invalid datetime format!");
   }
 
   return new Date(Number(y), Number(m) - 1, Number(d), Number(ho), Number(mi));
