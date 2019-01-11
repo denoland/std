@@ -2,38 +2,38 @@
 
 import { Conn, dial } from "deno";
 import { assert, assertEqual, test } from "../testing/mod.ts";
-import { User, parse, IrcServer } from "./irc.ts";
+import { ServerConn, parse, IrcServer } from "./irc.ts";
 import { TextProtoReader } from "../net/textproto.ts";
 import { BufReader, BufState } from "../net/bufio.ts";
 
 test(function userModes() {
   // use empty object, as we're not testing connections here
-  const user = new User({} as Conn);
-  assert(!user.isInvisible);
-  assert(!user.isOp);
-  assert(!user.isLocalOp);
-  assert(!user.isWallops);
+  const conn = new ServerConn({} as Conn);
+  assert(!conn.isInvisible);
+  assert(!conn.isOp);
+  assert(!conn.isLocalOp);
+  assert(!conn.isWallops);
 
-  user.isInvisible = true;
-  user.isOp = true;
+  conn.isInvisible = true;
+  conn.isOp = true;
 
-  assert(user.isInvisible);
-  assert(user.isOp);
+  assert(conn.isInvisible);
+  assert(conn.isOp);
 
-  user.isInvisible = false;
-  user.isOp = false;
-  assert(!user.isInvisible);
-  assert(!user.isOp);
+  conn.isInvisible = false;
+  conn.isOp = false;
+  assert(!conn.isInvisible);
+  assert(!conn.isOp);
 
-  user.isLocalOp = true;
-  user.isWallops = true;
-  assert(user.isLocalOp);
-  assert(user.isWallops);
+  conn.isLocalOp = true;
+  conn.isWallops = true;
+  assert(conn.isLocalOp);
+  assert(conn.isWallops);
 
-  user.isLocalOp = false;
-  user.isWallops = false;
-  assert(!user.isLocalOp);
-  assert(!user.isWallops);
+  conn.isLocalOp = false;
+  conn.isWallops = false;
+  assert(!conn.isLocalOp);
+  assert(!conn.isWallops);
 });
 
 // tests using valid IRC messages

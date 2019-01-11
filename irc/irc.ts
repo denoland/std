@@ -20,19 +20,25 @@ const messageProxyHandler: ProxyHandler<MessageData> = {
 
 export class IrcServer {
   private _listener: Listener;
-  private _db: IrcDatabase;
+  private _channels: Map<string, Channel> = new Map();
+  /** Maps usernames to user objects */
+  private _conns: Map<string, ServerConn> = new Map();
+  private _host: string;
 
   constructor(address: string) {
     this._listener = listen("tcp", address);
 
     // Host prefixes for replies don't have the port usually
-    this._db = new IrcDatabase(address.substring(0, address.indexOf(":")));
+    this._host = address.substring(0, address.indexOf(":"));
   }
   /** Allows server to begin accepting connections and messages */
   async start() {
     while (true) {
       const conn = await this._listener.accept();
       const newServerConn = new ServerConn(conn);
+      const id = generateID();
+      this._conns.set(id, newServerConn);
+      newServerConn.id = id;
       this._handleUserMessages(newServerConn);
     }
   }
@@ -41,18 +47,138 @@ export class IrcServer {
     for await (const msg of conn.readMessages()) {
       try {
         const parsedMsg = new Proxy(parse(msg), messageProxyHandler);
-        this._db.handleMsg(conn, parsedMsg);
+        switch (parsedMsg.command) {
+          case "NICK":
+            const nickname = parsedMsg.params[0];
+            // TODO make sure nickname is sound
+            this.NICK(conn, nickname);
+            break;
+
+          case "USER":
+            const username = parsedMsg.params[0];
+            const fullname = parsedMsg.params[3];
+            this.USER(conn, username, fullname);
+            break;
+        }
       } catch (err) {
         console.error(err);
         return;
       }
     }
 
-    this._db.removeConnection(conn);
+    this.removeConnection(conn);
   }
 
   close() {
     this._listener.close();
+    for (const [_, conn] of this._conns) {
+      conn.close();
+    }
+  }
+
+  removeConnection(conn: ServerConn) {
+    if (conn.username) {
+      this._conns.delete(conn.username);
+    }
+
+    if (conn.id) {
+      this._conns.delete(conn.id);
+    }
+  }
+
+  private _replyToConn(
+    conn: ServerConn,
+    command: string,
+    params: string[],
+    flush = true
+  ) {
+    // for unregistered users, most servers just put an asterisk in the <client> spot
+    const nickname = conn.nickname || "*";
+    let n = conn.write(`:${this._host} ${command} ${nickname} ${params}\r\n`);
+
+    // optional flush if there's a big message, like a MOTD
+    if (flush) {
+      conn.flush();
+    }
+    return n;
+  }
+
+  private _attemptRegisterConn(conn: ServerConn) {
+    if (!conn.nickname || !conn.username || !conn.fullname) {
+      // can only register with all three
+      return;
+    }
+
+    this._conns.set(conn.username, conn);
+    conn.isRegistered = true;
+
+    if (this._conns.has(conn.id)) {
+      this._conns.delete(conn.id);
+    }
+
+    this._replyToConn(conn, "001", [`:Welcome to the server ${conn.nickname}`]);
+  }
+
+  NICK(conn: ServerConn, nickname: string) {
+    if (!nickname) {
+      this._replyToConn(conn, "431", [":No nickname given"]);
+      return;
+    }
+
+    // check if any registered users got that nickname
+    for (const [_, currConn] of this._conns) {
+      if (currConn.nickname === nickname) {
+        // TODO move all numeric replies to something like a Typescript enum
+        this._replyToConn(conn, "433", [
+          `:Nickname "${nickname}" has already been taken.`
+        ]);
+        return;
+      }
+    }
+
+    if (conn.nickname) {
+      // let other users know that a user changed their nickname
+      const oldNickname = conn.nickname;
+      conn.nickname = nickname;
+      this._attemptRegisterConn(conn);
+      const nicknameUpdateMsg = `:${oldNickname} NICK ${nickname}\r\n`;
+
+      // maybe handle automatic updates to other user through Proxying User?
+      for (const [_, currConn] of this._conns) {
+        if (conn === currConn) {
+          continue;
+        }
+
+        currConn.write(nicknameUpdateMsg);
+        currConn.flush();
+      }
+    } else {
+      conn.nickname = nickname;
+      this._attemptRegisterConn(conn);
+    }
+  }
+
+  USER(conn: ServerConn, username: string, fullname: string) {
+    if (!username || !fullname) {
+      this._replyToConn(conn, "461", [":Wrong params for USER command"]);
+      return;
+    }
+
+    if (conn.isRegistered) {
+      this._replyToConn(conn, "462", [":Cannot register twice"]);
+      return;
+    }
+
+    for (const [_, currConn] of this._conns) {
+      if (currConn.username === username) {
+        this._replyToConn(conn, "462", [":Cannot register twice"]);
+        return;
+      }
+    }
+
+    conn.username = username;
+    conn.fullname = fullname;
+    this._attemptRegisterConn(conn);
   }
 }
 
@@ -165,6 +291,7 @@ export enum UserMode {
 export class ServerConn {
   private _reader: TextProtoReader;
   private _writer: BufWriter;
+  private _conn: Conn;
 
   private _userModes: Set<UserMode> = new Set();
   public nickname = "";
@@ -174,6 +301,7 @@ export class ServerConn {
   public id = "";
 
   constructor(conn: Conn) {
+    this._conn = conn;
     this._reader = new TextProtoReader(new BufReader(conn));
     this._writer = new BufWriter(conn);
   }
@@ -199,6 +327,10 @@ export class ServerConn {
   /** Flushes buffered writes into underlying connection */
   flush() {
     return this._writer.flush();
+  }
+
+  close() {
+    this._conn.close();
   }
 
   get modes() {
@@ -271,145 +403,4 @@ export class Channel {
 
 function generateID() {
   return new Date().toJSON() + Math.random();
-}
-
-export class IrcDatabase {
-  private _channels: Map<string, Channel> = new Map();
-
-  /** Maps usernames to user objects */
-  private _conns: Map<string, ServerConn> = new Map();
-
-  private _host: string;
-
-  constructor(host: string) {
-    this._host = host;
-  }
-
-  handleMsg(conn: ServerConn, msg: MessageData) {
-    switch (msg.command) {
-      case "NICK":
-        const nickname = msg.params[0];
-        // TODO make sure nickname is sound
-        this.NICK(conn, nickname);
-        break;
-
-      case "USER":
-        const username = msg.params[0];
-        const fullname = msg.params[3];
-        this.USER(conn, username, fullname);
-        break;
-    }
-  }
-
-  removeConnection(conn: ServerConn) {
-    if (conn.username) {
-      this._conns.delete(conn.username);
-    }
-
-    if (conn.id) {
-      this._conns.delete(conn.id);
-    }
-  }
-
-  private _replyToConn(
-    conn: ServerConn,
-    command: string,
-    params: string[],
-    flush = true
-  ) {
-    // for unregistered users, most servers just put an asterisk in the <client> spot
-    const nickname = conn.nickname || "*";
-    let n = conn.write(`:${this._host} ${command} ${nickname} ${params}\r\n`);
-
-    // optional flush if there's a big message, like a MOTD
-    if (flush) {
-      conn.flush();
-    }
-    return n;
-  }
-
-  private _attemptRegisterConn(conn: ServerConn) {
-    if (!conn.nickname || !conn.username || !conn.fullname) {
-      // can only register with all three
-
-      // attempt to give this socket a unique ID
-      if (!conn.id) {
-        const uid = generateID();
-        conn.id = uid;
-        this._conns.set(uid, conn);
-      }
-      return;
-    }
-
-    this._conns.set(conn.username, conn);
-    conn.isRegistered = true;
-
-    if (this._conns.has(conn.id)) {
-      this._conns.delete(conn.id);
-    }
-
-    this._replyToConn(conn, "001", [`:Welcome to the server ${conn.nickname}`]);
-  }
-
-  NICK(conn: ServerConn, nickname: string) {
-    if (!nickname) {
-      this._replyToConn(conn, "431", [":No nickname given"]);
-      return;
-    }
-
-    // check if any registered users got that nickname
-    for (const [_, currConn] of this._conns) {
-      if (currConn.nickname === nickname) {
-        // TODO move all numeric replies to something like a Typescript enum
-        this._replyToConn(conn, "433", [
-          `:Nickname "${nickname}" has already been taken.`
-        ]);
-        return;
-      }
-    }
-
-    if (conn.nickname) {
-      // let other users know that a user changed their nickname
-      const oldNickname = conn.nickname;
-      conn.nickname = nickname;
-      this._attemptRegisterConn(conn);
-      const nicknameUpdateMsg = `:${oldNickname} NICK ${nickname}\r\n`;
-
-      // maybe handle automatic updates to other user through Proxying User?
-      for (const [_, currConn] of this._conns) {
-        if (conn === currConn) {
-          continue;
-        }
-
-        currConn.write(nicknameUpdateMsg);
-        currConn.flush();
-      }
-    } else {
-      conn.nickname = nickname;
-      this._attemptRegisterConn(conn);
-    }
-  }
-
-  USER(conn: ServerConn, username: string, fullname: string) {
-    if (!username || !fullname) {
-      this._replyToConn(conn, "461", [":Wrong params for USER command"]);
-      return;
-    }
-
-    if (conn.isRegistered) {
-      this._replyToConn(conn, "462", [":Cannot register twice"]);
-      return;
-    }
-
-    for (const [_, currConn] of this._conns) {
-      if (currConn.username === username) {
-        this._replyToConn(conn, "462", [":Cannot register twice"]);
-        return;
-      }
-    }
-
-    conn.username = username;
-    conn.fullname = fullname;
-    this._attemptRegisterConn(conn);
-  }
 }
