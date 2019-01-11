@@ -20,6 +20,7 @@ import "path/relative_test.ts";
 import "path/resolve_test.ts";
 import "path/zero_length_strings_test.ts";
 import "testing/test.ts";
+import "irc/irc_test.ts";
 
 import { runTests, completePromise } from "net/file_server_test.ts";
 

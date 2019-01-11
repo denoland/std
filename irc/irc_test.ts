@@ -67,12 +67,12 @@ let PORT = 25567;
 // ! test hangs for some reason
 test(async function NICKerrors() {
   const THIS_ADDRESS = TEST_ADDRESS + PORT++;
+
+  const server = new IrcServer(THIS_ADDRESS);
   // test SHOULD complete in this time
   const timerID = setTimeout(() => {
     throw new Error("Test did not complete in time.");
   }, 3000);
-
-  const server = new IrcServer(THIS_ADDRESS);
   server.start();
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
@@ -112,15 +112,14 @@ test(async function NICKerrors() {
   server.close();
 });
 
-// ! gives an OS error
 test(async function USERerrors() {
   const THIS_ADDRESS = TEST_ADDRESS + PORT++;
+
+  const server = new IrcServer(THIS_ADDRESS);
   // test SHOULD complete in this time
   const timerID = setTimeout(() => {
     throw new Error("Test did not complete in time.");
   }, 3000);
-
-  const server = new IrcServer(THIS_ADDRESS);
   server.start();
 
   const client1 = await dial("tcp", THIS_ADDRESS);

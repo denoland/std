@@ -152,9 +152,7 @@ function parseTagsToJSON(tags: string): ParsedTags {
 /** Indicates that there was an invalid message passed to `parse` */
 export class InvalidMessageException extends Error {}
 
-const utf8Decoder = new TextDecoder();
 const utf8Encoder = new TextEncoder();
-const DEFAULT_BUFFER_SIZE = 1024;
 
 export enum UserMode {
   Invisible = "+i",
@@ -313,7 +311,12 @@ export class IrcDatabase {
     }
   }
 
-  private _replyToUser(user: User, command: string, params: string[], flush = true) {
+  private _replyToUser(
+    user: User,
+    command: string,
+    params: string[],
+    flush = true
+  ) {
     // for unregistered users, most servers just put an asterisk in the <client> spot
     const nickname = user.nickname || "*";
     let n = user.write(`:${this._host} ${command} ${nickname} ${params}\r\n`);
