@@ -32,23 +32,23 @@ export class IrcServer {
   async start() {
     while (true) {
       const conn = await this._listener.accept();
-      const newUser = new User(conn);
-      this._handleUserMessages(newUser);
+      const newServerConn = new ServerConn(conn);
+      this._handleUserMessages(newServerConn);
     }
   }
 
-  private async _handleUserMessages(user: User) {
-    for await (const msg of user.readMessages()) {
+  private async _handleUserMessages(conn: ServerConn) {
+    for await (const msg of conn.readMessages()) {
       try {
         const parsedMsg = new Proxy(parse(msg), messageProxyHandler);
-        this._db.handleMsg(user, parsedMsg);
+        this._db.handleMsg(conn, parsedMsg);
       } catch (err) {
         console.error(err);
         return;
       }
     }
 
-    this._db.removeUser(user);
+    this._db.removeConnection(conn);
   }
 
   close() {
@@ -162,7 +162,7 @@ export enum UserMode {
   Wallops = "+w"
 }
 
-export class User {
+export class ServerConn {
   private _reader: TextProtoReader;
   private _writer: BufWriter;
 
@@ -277,7 +277,7 @@ export class IrcDatabase {
   private _channels: Map<string, Channel> = new Map();
 
   /** Maps usernames to user objects */
-  private _users: Map<string, User> = new Map();
+  private _conns: Map<string, ServerConn> = new Map();
 
   private _host: string;
 
@@ -285,131 +285,131 @@ export class IrcDatabase {
     this._host = host;
   }
 
-  handleMsg(user: User, msg: MessageData) {
+  handleMsg(conn: ServerConn, msg: MessageData) {
     switch (msg.command) {
       case "NICK":
         const nickname = msg.params[0];
         // TODO make sure nickname is sound
-        this.NICK(user, nickname);
+        this.NICK(conn, nickname);
         break;
 
       case "USER":
         const username = msg.params[0];
         const fullname = msg.params[3];
-        this.USER(user, username, fullname);
+        this.USER(conn, username, fullname);
         break;
     }
   }
 
-  removeUser(user: User) {
-    if (user.username) {
-      this._users.delete(user.username);
+  removeConnection(conn: ServerConn) {
+    if (conn.username) {
+      this._conns.delete(conn.username);
     }
 
-    if (user.id) {
-      this._users.delete(user.id);
+    if (conn.id) {
+      this._conns.delete(conn.id);
     }
   }
 
-  private _replyToUser(
-    user: User,
+  private _replyToConn(
+    conn: ServerConn,
     command: string,
     params: string[],
     flush = true
   ) {
     // for unregistered users, most servers just put an asterisk in the <client> spot
-    const nickname = user.nickname || "*";
-    let n = user.write(`:${this._host} ${command} ${nickname} ${params}\r\n`);
+    const nickname = conn.nickname || "*";
+    let n = conn.write(`:${this._host} ${command} ${nickname} ${params}\r\n`);
 
     // optional flush if there's a big message, like a MOTD
     if (flush) {
-      user.flush();
+      conn.flush();
     }
     return n;
   }
 
-  private _attemptRegisterUser(user: User) {
-    if (!user.nickname || !user.username || !user.fullname) {
+  private _attemptRegisterConn(conn: ServerConn) {
+    if (!conn.nickname || !conn.username || !conn.fullname) {
       // can only register with all three
 
       // attempt to give this socket a unique ID
-      if (!user.id) {
+      if (!conn.id) {
         const uid = generateID();
-        user.id = uid;
-        this._users.set(uid, user);
+        conn.id = uid;
+        this._conns.set(uid, conn);
       }
       return;
     }
 
-    this._users.set(user.username, user);
-    user.isRegistered = true;
+    this._conns.set(conn.username, conn);
+    conn.isRegistered = true;
 
-    if (this._users.has(user.id)) {
-      this._users.delete(user.id);
+    if (this._conns.has(conn.id)) {
+      this._conns.delete(conn.id);
     }
 
-    this._replyToUser(user, "001", [`:Welcome to the server ${user.nickname}`]);
+    this._replyToConn(conn, "001", [`:Welcome to the server ${conn.nickname}`]);
   }
 
-  NICK(user: User, nickname: string) {
+  NICK(conn: ServerConn, nickname: string) {
     if (!nickname) {
-      this._replyToUser(user, "431", [":No nickname given"]);
+      this._replyToConn(conn, "431", [":No nickname given"]);
       return;
     }
 
     // check if any registered users got that nickname
-    for (const [_, currUser] of this._users) {
-      if (currUser.nickname === nickname) {
+    for (const [_, currConn] of this._conns) {
+      if (currConn.nickname === nickname) {
         // TODO move all numeric replies to something like a Typescript enum
-        this._replyToUser(user, "433", [
+        this._replyToConn(conn, "433", [
           `:Nickname "${nickname}" has already been taken.`
         ]);
         return;
       }
     }
 
-    if (user.nickname) {
+    if (conn.nickname) {
       // let other users know that a user changed their nickname
-      const oldNickname = user.nickname;
-      user.nickname = nickname;
-      this._attemptRegisterUser(user);
+      const oldNickname = conn.nickname;
+      conn.nickname = nickname;
+      this._attemptRegisterConn(conn);
       const nicknameUpdateMsg = `:${oldNickname} NICK ${nickname}\r\n`;
 
       // maybe handle automatic updates to other user through Proxying User?
-      for (const [_, currUser] of this._users) {
-        if (user === currUser) {
+      for (const [_, currConn] of this._conns) {
+        if (conn === currConn) {
           continue;
         }
 
-        currUser.write(nicknameUpdateMsg);
-        currUser.flush();
+        currConn.write(nicknameUpdateMsg);
+        currConn.flush();
       }
     } else {
-      user.nickname = nickname;
-      this._attemptRegisterUser(user);
+      conn.nickname = nickname;
+      this._attemptRegisterConn(conn);
     }
   }
 
-  USER(user: User, username: string, fullname: string) {
+  USER(conn: ServerConn, username: string, fullname: string) {
     if (!username || !fullname) {
-      this._replyToUser(user, "461", [":Wrong params for USER command"]);
+      this._replyToConn(conn, "461", [":Wrong params for USER command"]);
       return;
     }
 
-    if (user.isRegistered) {
-      this._replyToUser(user, "462", [":Cannot register twice"]);
+    if (conn.isRegistered) {
+      this._replyToConn(conn, "462", [":Cannot register twice"]);
       return;
     }
 
-    for (const [_, currUser] of this._users) {
-      if (currUser.username === username) {
-        this._replyToUser(user, "462", [":Cannot register twice"]);
+    for (const [_, currConn] of this._conns) {
+      if (currConn.username === username) {
+        this._replyToConn(conn, "462", [":Cannot register twice"]);
         return;
       }
     }
 
-    user.username = username;
-    user.fullname = fullname;
-    this._attemptRegisterUser(user);
+    conn.username = username;
+    conn.fullname = fullname;
+    this._attemptRegisterConn(conn);
   }
 }
