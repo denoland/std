@@ -5,7 +5,7 @@
 ## Import
 
 ```ts
-import { mkdirp } from "https://deno.land/x/std/mkdirp/mkdirp.ts";
+import { mkdirp } from "https://deno.land/x/std/fs/mkdirp.ts";
 ```
 
 ## API

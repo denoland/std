@@ -1,6 +1,6 @@
 import { cwd, lstat, makeTempDirSync, removeAll, FileInfo } from "deno";
-import { test, assert } from "../testing/mod.ts";
-import { mkdirp } from "./mkdirp.ts";
+import { test, assert } from "../../testing/mod.ts";
+import { mkdirp } from "./mod.ts";
 
 let root: string = `${cwd()}/${Date.now()}`; //makeTempDirSync();
 
