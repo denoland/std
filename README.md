@@ -18,7 +18,7 @@
 
   A library for resolving media types (MIME types) and extensions.
 
-- **[mkdirp](./fs/mkdirp/)**
+- **[mkdirp](./fs/)**
 
   Make directory branches.
 

@@ -10,7 +10,7 @@ import "media_types/test.ts";
 import "net/bufio_test.ts";
 import "net/http_test.ts";
 import "net/textproto_test.ts";
-import "fs/mkdirp/test.ts";
+import "fs/mkdirp_test.ts";
 import "fs/path/basename_test.ts";
 import "fs/path/dirname_test.ts";
 import "fs/path/extname_test.ts";
