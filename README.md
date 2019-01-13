@@ -10,9 +10,9 @@
 
   Command line arguments parser.
 
-- **[logging](./logging/)**
+- **[log](./log/)**
 
-  Command line logging
+  Command line logging with different logging levels.
 
 - **[media_types](./media_types/)**
 
