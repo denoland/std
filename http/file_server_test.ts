@@ -1,6 +1,8 @@
 import { readFile, run } from "deno";
 
 import { test, assert, assertEqual, setUp, tearDown } from "../testing/mod.ts";
+import { BufReader } from "../io/bufio.ts";
+import { TextProtoReader } from "../textproto/mod.ts";
 
 let fileServer;
 setUp(async function startFileServer() {
@@ -8,13 +10,11 @@ setUp(async function startFileServer() {
     args: ["deno", "--allow-net", "http/file_server.ts", ".", "--cors"],
     stdout: "piped"
   });
-  await until(async function() {
-    // fileServer writes to stdout once it's serving.
-    const data = new Uint8Array(50);
-    const r = await fileServer.stdout.read(data);
-    const s = new TextDecoder().decode(data.subarray(0, r.nread));
-    return s.includes("server listening");
-  });
+  // Once fileServer is ready it will write to its stdout.
+  const r = new TextProtoReader(new BufReader(fileServer.stdout));
+  const [s, err] = await r.readLine();
+  assert(err == null);
+  assert(s.includes("server listening"))
 });
 tearDown(function killFileServer() {
   fileServer.close();
@@ -46,21 +46,3 @@ test(async function serveFallback() {
   assert(res.headers.has("access-control-allow-headers"));
   assertEqual(res.status, 404);
 });
-
-async function until(
-  isReady: () => boolean | Promise<boolean>,
-  timeout: number = 10000
-): Promise<void> {
-  let t = 0;
-  while (!(await isReady())) {
-    await delay(1000);
-    t += 1000;
-    if (t > timeout) {
-      throw Error(`Timeout waiting for ${isReady}`);
-    }
-  }
-}
-
-async function delay(ms: number): Promise<void> {
-  await new Promise(res => setTimeout(res, ms));
-}
