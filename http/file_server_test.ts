@@ -14,10 +14,11 @@ setUp(async function startFileServer() {
   const r = new TextProtoReader(new BufReader(fileServer.stdout));
   const [s, err] = await r.readLine();
   assert(err == null);
-  assert(s.includes("server listening"))
+  assert(s.includes("server listening"));
 });
 tearDown(function killFileServer() {
   fileServer.close();
+  fileServer.stdout.close();
 });
 
 test(async function serveFile() {
