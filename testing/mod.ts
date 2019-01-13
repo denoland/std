@@ -73,10 +73,19 @@ export const exitOnFail = true;
 
 let filterRegExp: RegExp | null;
 const tests: TestDefinition[] = [];
+const setUps: TestFunction[] = [];
+const tearDowns: TestFunction[] = [];
 
 let filtered = 0;
 const ignored = 0;
 const measured = 0;
+
+export function setUp(t: TestFunction): void {
+  setUps.push(t);
+}
+export function tearDown(t: TestFunction): void {
+  tearDowns.push(t);
+}
 
 // Must be called before any test() that needs to be filtered.
 export function setFilter(s: string): void {
@@ -117,13 +126,16 @@ function green_ok() {
   return FG_GREEN + "ok" + RESET;
 }
 
-async function runTests() {
+export async function runTests() {
   let passed = 0;
   let failed = 0;
 
+  for (let s of setUps) {
+    await s();
+  }
   console.log("running", tests.length, "tests");
-  for (let i = 0; i < tests.length; i++) {
-    const { fn, name } = tests[i];
+  for (let t of tests) {
+    const { fn, name } = t;
     let result = green_ok();
     // See https://github.com/denoland/deno/pull/1452
     // about this usage of groupCollapsed
@@ -144,6 +156,9 @@ async function runTests() {
       }
     }
   }
+  for (let t of tearDowns) {
+    await t();
+  }
 
   // Attempting to match the output of Rust's test runner.
   const result = failed > 0 ? red_failed() : green_ok();
@@ -163,4 +178,7 @@ async function runTests() {
   }
 }
 
-setTimeout(runTests, 0);
+const t = setTimeout(runTests, 0);
+export function cancelTests() {
+  clearTimeout(t);
+}
