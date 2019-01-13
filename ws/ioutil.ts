@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { BufReader } from "./bufio.ts";
+import { BufReader } from "../io/bufio.ts";
 
 /* Read big endian 16bit short from BufReader */
 export async function readShort(buf: BufReader): Promise<number> {

@@ -1,7 +1,7 @@
 import { Reader, ReadResult } from "deno";
 import { assertEqual, test } from "../testing/mod.ts";
 import { readInt, readLong, readShort, sliceLongToBytes } from "./ioutil.ts";
-import { BufReader } from "./bufio.ts";
+import { BufReader } from "../io/bufio.ts";
 
 class BinaryReader implements Reader {
   index = 0;

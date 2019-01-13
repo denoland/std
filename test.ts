@@ -21,6 +21,8 @@ import "log/test.ts";
 import "media_types/test.ts";
 import "testing/test.ts";
 import "textproto/test.ts";
+import "ws/ioutil_test.ts";
+import "ws/sha1_test.ts";
 import "ws/test.ts";
 
 import { runTests, completePromise } from "http/file_server_test.ts";

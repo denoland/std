@@ -1,8 +1,8 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { Buffer, Writer, Conn } from "deno";
-import { ServerRequest } from "../http/http.ts";
+import { ServerRequest } from "../http/mod.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
-import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
+import { readLong, readShort, sliceLongToBytes } from "./ioutil.ts";
 import { Sha1 } from "./sha1.ts";
 
 export const OpCodeContinue = 0x0;
