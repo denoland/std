@@ -3,6 +3,12 @@ import { listen, Listener, Conn } from "deno";
 import { TextProtoReader } from "../net/textproto.ts";
 import { BufReader, BufWriter } from "../net/bufio.ts";
 
+declare module "deno" {
+  interface Conn {
+    rid: number;
+  }
+}
+
 // ensures that there are no crashes if a wrong
 // property on a MessageData object, as a try-catch
 // block does not catch
@@ -17,6 +23,29 @@ const messageProxyHandler: ProxyHandler<MessageData> = {
     return target[property];
   }
 };
+
+enum RPL {
+  WELCOME = "001",
+  YOURHOST = "002",
+  CREATED = "003",
+  MYINFO = "004",
+  ISUPPORT = "005",
+  LUSERCLIENT = "251",
+  LUSEROP = "252",
+  LUSERUNKNOWN = "253",
+  LUSERCHANNELS = "254",
+  LUSERME = "255",
+  LOCALUSERS = "265",
+  GLOBALUSERS = "266"
+}
+
+enum ERR {
+  NONICKNAMEGIVEN = "431",
+  ERRONEUSNICKNAME = "432",
+  NICKNAMEINUSE = "433",
+  NEEDMOREPARAMS = "461",
+  ALREADYREGISTERED = "462",
+}
 
 export class IrcServer {
   private _listener: Listener;
@@ -36,12 +65,34 @@ export class IrcServer {
     while (true) {
       const conn = await this._listener.accept();
       const newServerConn = new ServerConn(conn);
-      const id = generateID();
+      const id = conn.rid.toString();
       this._conns.set(id, newServerConn);
       newServerConn.id = id;
       this._handleUserMessages(newServerConn);
     }
   }
+
+  // start() {
+  //   const acceptRoutine = () => {
+  //     const handleConn = (conn: Conn) => {
+  //       const newServerConn = new ServerConn(conn);
+  //       // TODO(fancyplants) replace id with conn.rid when implemented
+  //       const id = generateID();
+  //       this._conns.set(id, newServerConn);
+  //       newServerConn.id = id;
+  //       this._handleUserMessages(newServerConn);
+  //       scheduleAccept();
+  //     };
+
+  //     const scheduleAccept = () => {
+  //       this._listener.accept().then(handleConn);
+  //     };
+
+  //     scheduleAccept();
+  //   };
+
+  //   acceptRoutine();
+  // }
 
   private async _handleUserMessages(conn: ServerConn) {
     for await (const msg of conn.readMessages()) {
@@ -116,12 +167,71 @@ export class IrcServer {
       this._conns.delete(conn.id);
     }
 
-    this._replyToConn(conn, "001", [`:Welcome to the server ${conn.nickname}`]);
+    // after successful registration, multiple mandated responses from server
+    this._replyToConn(
+      conn,
+      RPL.WELCOME,
+      [`:Welcome to the server ${conn.nickname}`],
+      false
+    );
+    this._replyToConn(
+      conn,
+      RPL.YOURHOST,
+      [":Your host is PLACEHOLDER, running version PLACEHOLDER"],
+      false
+    );
+    this._replyToConn(
+      conn,
+      RPL.CREATED,
+      [":This server was created PLACEHOLDER"],
+      false
+    );
+    this._replyToConn(conn, RPL.MYINFO, ["Misc information here"], false);
+    this._replyToConn(conn, RPL.ISUPPORT, [
+      "PLACEHOLDER :are supported by this server."
+    ]);
+    this._replyToLUSERS(conn);
+    this._sendMOTD(conn);
+  }
+
+  private _sendMOTD(conn: ServerConn) {
+    // TODO(fancyplants) send actual MOTD message
+    this._replyToConn(conn, "422", [":MOTD is missing"]);
+  }
+
+  private _replyToLUSERS(conn: ServerConn) {
+    this._replyToConn(
+      conn,
+      RPL.LUSERCLIENT,
+      [":There are PLACEHOLDER users and PLACEHOLDER invisible on 1 server"],
+      false
+    );
+    this._replyToConn(
+      conn,
+      RPL.LUSEROP,
+      [":PLACEHOLDER :operators online"],
+      false
+    );
+    this._replyToConn(
+      conn,
+      RPL.LUSERUNKNOWN,
+      ["PLACEHOLDER :unknown connections"],
+      false
+    );
+    this._replyToConn(
+      conn,
+      RPL.LUSERCHANNELS,
+      [`${this._channels.size} :channels formed`],
+      false
+    );
+    this._replyToConn(conn, RPL.LUSERME, [
+      ":I have PLACEHOLDER clients and 1 server"
+    ]);
   }
 
   NICK(conn: ServerConn, nickname: string) {
     if (!nickname) {
-      this._replyToConn(conn, "431", [":No nickname given"]);
+      this._replyToConn(conn, ERR.NONICKNAMEGIVEN, [":No nickname given"]);
       return;
     }
 
@@ -129,7 +239,7 @@ export class IrcServer {
     for (const [_, currConn] of this._conns) {
       if (currConn.nickname === nickname) {
         // TODO move all numeric replies to something like a Typescript enum
-        this._replyToConn(conn, "433", [
+        this._replyToConn(conn, ERR.NICKNAMEINUSE, [
           `:Nickname "${nickname}" has already been taken.`
         ]);
         return;
@@ -160,18 +270,18 @@ export class IrcServer {
 
   USER(conn: ServerConn, username: string, fullname: string) {
     if (!username || !fullname) {
-      this._replyToConn(conn, "461", [":Wrong params for USER command"]);
+      this._replyToConn(conn, ERR.NEEDMOREPARAMS, [":Wrong params for USER command"]);
       return;
     }
 
     if (conn.isRegistered) {
-      this._replyToConn(conn, "462", [":Cannot register twice"]);
+      this._replyToConn(conn, ERR.ALREADYREGISTERED, [":Cannot register twice"]);
       return;
     }
 
     for (const [_, currConn] of this._conns) {
       if (currConn.username === username) {
-        this._replyToConn(conn, "462", [":Cannot register twice"]);
+        this._replyToConn(conn, ERR.ALREADYREGISTERED, [":Cannot register twice"]);
         return;
       }
     }
@@ -399,8 +509,4 @@ export class Channel {
   constructor(name: string) {
     this.name = name;
   }
-}
-
-function generateID() {
-  return new Date().toJSON() + Math.random();
 }

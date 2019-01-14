@@ -169,6 +169,11 @@ test(async function USERerrors() {
     ":127.0.0.1 001 nickname :Welcome to the server nickname"
   );
 
+  // TODO(fancyplants) add tests for messages 002-005 when actually implemented
+  for (let i = 0; i < 4; i++) {
+    await client1reader.readLine();
+  }
+
   await client1.write(secondUserMsg);
 
   [incomingMsg, err] = await client1reader.readLine();
