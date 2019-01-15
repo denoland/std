@@ -36,15 +36,21 @@ enum RPL {
   LUSERCHANNELS = "254",
   LUSERME = "255",
   LOCALUSERS = "265",
-  GLOBALUSERS = "266"
+  GLOBALUSERS = "266",
+  NOTOPIC = "331",
+  TOPIC = "332",
+  NAMREPLY = "353"
 }
 
 enum ERR {
+  UNKNOWNCOMMAND = "421",
+  NOMOTD = "422",
   NONICKNAMEGIVEN = "431",
   ERRONEUSNICKNAME = "432",
   NICKNAMEINUSE = "433",
+  NOTONCHANNEL = "442",
   NEEDMOREPARAMS = "461",
-  ALREADYREGISTERED = "462",
+  ALREADYREGISTERED = "462"
 }
 
 export class IrcServer {
@@ -98,6 +104,7 @@ export class IrcServer {
     for await (const msg of conn.readMessages()) {
       try {
         const parsedMsg = new Proxy(parse(msg), messageProxyHandler);
+
         switch (parsedMsg.command) {
           case "NICK":
             const nickname = parsedMsg.params[0];
@@ -109,6 +116,25 @@ export class IrcServer {
             const username = parsedMsg.params[0];
             const fullname = parsedMsg.params[3];
             this.USER(conn, username, fullname);
+            break;
+
+          case "JOIN":
+            const channels = parseChannels(parsedMsg.params[0]);
+            const keys = parseKeys(parsedMsg.params[1]);
+            this.JOIN(conn, channels, keys);
+            break;
+
+          case "PART":
+            const channelsToLeave = parseChannels(parsedMsg.params[0]);
+            this.PART(conn, channelsToLeave, parsedMsg.params[1]);
+            break;
+
+          default:
+            console.log(parsedMsg);
+            this._replyToConn(conn, ERR.UNKNOWNCOMMAND, [
+              parsedMsg.command,
+              ":Unknown/unimplemented command"
+            ]);
             break;
         }
       } catch (err) {
@@ -135,6 +161,19 @@ export class IrcServer {
     if (conn.id) {
       this._conns.delete(conn.id);
     }
+
+    for (const [name, channel] of conn.joinedChannels) {
+      channel.leaveChannel(conn);
+    }
+  }
+
+  private _sendMsg(
+    conn: ServerConn,
+    prefix: string,
+    command: string,
+    params: string[]
+  ) {
+    return conn.write(`:${prefix} ${command} ${params}\r\n`);
   }
 
   private _replyToConn(
@@ -145,7 +184,9 @@ export class IrcServer {
   ) {
     // for unregistered users, most servers just put an asterisk in the <client> spot
     const nickname = conn.nickname || "*";
-    let n = conn.write(`:${this._host} ${command} ${nickname} ${params}\r\n`);
+    let n = conn.write(
+      `:${this._host} ${command} ${nickname} ${params.join(" ")}\r\n`
+    );
 
     // optional flush if there's a big message, like a MOTD
     if (flush) {
@@ -196,7 +237,7 @@ export class IrcServer {
 
   private _sendMOTD(conn: ServerConn) {
     // TODO(fancyplants) send actual MOTD message
-    this._replyToConn(conn, "422", [":MOTD is missing"]);
+    this._replyToConn(conn, ERR.NOMOTD, [":MOTD is missing"]);
   }
 
   private _replyToLUSERS(conn: ServerConn) {
@@ -227,6 +268,24 @@ export class IrcServer {
     this._replyToConn(conn, RPL.LUSERME, [
       ":I have PLACEHOLDER clients and 1 server"
     ]);
+  }
+
+  private _replyToNAMES(conn: ServerConn, channels: string[]) {
+    for (const channelName of channels) {
+      const channel = this._channels.get(channelName);
+      if (!channel) {
+        continue;
+      }
+      const usersString = channel.users
+        .map(userConn => userConn.nickname)
+        .reduce((prev, curr) => `${prev} ${curr}`);
+      this._replyToConn(conn, RPL.NAMREPLY, ["=", channel.name, usersString]);
+    }
+  }
+
+  private _replyToTOPIC(conn: ServerConn, channelName: string) {
+    // TODO(fancyplants) implement channel topics
+    this._replyToConn(conn, RPL.NOTOPIC, [":No topic is set (TODO)"]);
   }
 
   NICK(conn: ServerConn, nickname: string) {
@@ -270,18 +329,24 @@ export class IrcServer {
 
   USER(conn: ServerConn, username: string, fullname: string) {
     if (!username || !fullname) {
-      this._replyToConn(conn, ERR.NEEDMOREPARAMS, [":Wrong params for USER command"]);
+      this._replyToConn(conn, ERR.NEEDMOREPARAMS, [
+        ":Wrong params for USER command"
+      ]);
       return;
     }
 
     if (conn.isRegistered) {
-      this._replyToConn(conn, ERR.ALREADYREGISTERED, [":Cannot register twice"]);
+      this._replyToConn(conn, ERR.ALREADYREGISTERED, [
+        ":Cannot register twice"
+      ]);
       return;
     }
 
     for (const [_, currConn] of this._conns) {
       if (currConn.username === username) {
-        this._replyToConn(conn, ERR.ALREADYREGISTERED, [":Cannot register twice"]);
+        this._replyToConn(conn, ERR.ALREADYREGISTERED, [
+          ":Cannot register twice"
+        ]);
         return;
       }
     }
@@ -289,6 +354,57 @@ export class IrcServer {
     conn.username = username;
     conn.fullname = fullname;
     this._attemptRegisterConn(conn);
+  }
+
+  JOIN(conn: ServerConn, channels: string[], keys: string[]) {
+    if (channels.length === 0) {
+      this._replyToConn(conn, ERR.NEEDMOREPARAMS, []);
+      return;
+    }
+
+    for (let i = 0; i < channels.length; i++) {
+      const channelName = channels[i];
+      const key = keys[i];
+      if (key) {
+        throw new Error("Not ready for keys yet!");
+      }
+
+      let channel = this._channels.get(channelName);
+      if (!channel) {
+        channel = new Channel(channelName);
+        channel.topic = "PLACEHOLDER";
+        this._channels.set(channelName, channel);
+      }
+
+      channel.joinChannel(conn);
+      this._sendMsg(conn, conn.nickname, "JOIN", [channelName]);
+      this._replyToNAMES(conn, [channelName]);
+      this._replyToTOPIC(conn, channelName);
+    }
+  }
+
+  PART(conn: ServerConn, channels: string[], reason?: string) {
+    // first check if user is actually within each channel
+    for (const channelName of channels) {
+      const isInChannel = conn.joinedChannels.has(channelName);
+      if (!isInChannel) {
+        this._replyToConn(conn, ERR.NOTONCHANNEL, [
+          channelName,
+          ":You're not on that channel"
+        ]);
+        return;
+      }
+    }
+
+    for (const channelName of channels) {
+      const channel = conn.joinedChannels.get(channelName);
+      channel.leaveChannel(conn);
+      conn.joinedChannels.delete(channelName);
+      // notify users in channel that this person has left
+      for (const userConn of channel.users) {
+        this._sendMsg(userConn, conn.nickname, "PART", [channelName, reason]);
+      }
+    }
   }
 }
 
@@ -301,6 +417,14 @@ export interface MessageData {
   prefix: string;
   command: string;
   params: string[];
+}
+
+function parseChannels(channels: string) {
+  return channels ? channels.split(",").filter(channel => channel !== "") : [];
+}
+
+function parseKeys(keys: string) {
+  return keys ? keys.split(",").filter(key => key !== "") : [];
 }
 
 const RFC1459MaxMessageLength = 512;
@@ -404,6 +528,7 @@ export class ServerConn {
   private _conn: Conn;
 
   private _userModes: Set<UserMode> = new Set();
+  public joinedChannels: Map<string, Channel> = new Map();
   public nickname = "";
   public username = "";
   public fullname = "";
@@ -431,7 +556,7 @@ export class ServerConn {
   /** Writes message to underlying BufWriter */
   write(msg: string) {
     const encoded = utf8Encoder.encode(msg);
-    return this._writer.write(encoded);
+    return this._conn.write(encoded);
   }
 
   /** Flushes buffered writes into underlying connection */
@@ -503,10 +628,26 @@ export enum ChannelMode {
 
 export class Channel {
   public name: string;
+  public topic: string;
 
   public types: Set<ChannelMode> = new Set();
+  private _users: Set<ServerConn> = new Set();
 
   constructor(name: string) {
     this.name = name;
+  }
+
+  joinChannel(conn: ServerConn) {
+    this._users.add(conn);
+    conn.joinedChannels.set(this.name, this);
+  }
+
+  leaveChannel(conn: ServerConn) {
+    this._users.delete(conn);
+    conn.joinedChannels.delete(this.name);
+  }
+
+  get users() {
+    return Array.from(this._users);
   }
 }
