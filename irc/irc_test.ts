@@ -170,7 +170,7 @@ test(async function USERerrors() {
   );
 
   // TODO(fancyplants) add tests for messages 002-005 when actually implemented
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 10; i++) {
     await client1reader.readLine();
   }
 

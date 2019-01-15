@@ -39,10 +39,12 @@ enum RPL {
   GLOBALUSERS = "266",
   NOTOPIC = "331",
   TOPIC = "332",
-  NAMREPLY = "353"
+  NAMREPLY = "353",
+  ENDOFNAMES = "366"
 }
 
 enum ERR {
+  NOSUCHNICK = "401",
   UNKNOWNCOMMAND = "421",
   NOMOTD = "422",
   NONICKNAMEGIVEN = "431",
@@ -56,7 +58,7 @@ enum ERR {
 export class IrcServer {
   private _listener: Listener;
   private _channels: Map<string, Channel> = new Map();
-  /** Maps usernames to user objects */
+  /** Maps nicknames to user objects */
   private _conns: Map<string, ServerConn> = new Map();
   private _host: string;
 
@@ -119,14 +121,24 @@ export class IrcServer {
             break;
 
           case "JOIN":
-            const channels = parseChannels(parsedMsg.params[0]);
-            const keys = parseKeys(parsedMsg.params[1]);
+            const channels = parseCSV(parsedMsg.params[0]);
+            const keys = parseCSV(parsedMsg.params[1]);
             this.JOIN(conn, channels, keys);
             break;
 
           case "PART":
-            const channelsToLeave = parseChannels(parsedMsg.params[0]);
-            this.PART(conn, channelsToLeave, parsedMsg.params[1]);
+            const partChannels = parseCSV(parsedMsg.params[0]);
+            this.PART(conn, partChannels, parsedMsg.params[1]);
+            break;
+
+          case "PRIVMSG":
+            const targets = parseCSV(parsedMsg.params[0]);
+            this.PRIVMSG(conn, targets, parsedMsg.params[1]);
+            break;
+
+          case "NAMES":
+            const nameChannels = parseCSV(parsedMsg.params[0]);
+            this.NAMES(conn, nameChannels);
             break;
 
           default:
@@ -154,8 +166,8 @@ export class IrcServer {
   }
 
   removeConnection(conn: ServerConn) {
-    if (conn.username) {
-      this._conns.delete(conn.username);
+    if (conn.nickname) {
+      this._conns.delete(conn.nickname);
     }
 
     if (conn.id) {
@@ -163,6 +175,9 @@ export class IrcServer {
     }
 
     for (const [name, channel] of conn.joinedChannels) {
+      for (const userConn of channel.users) {
+        this._sendMsg(userConn, conn.nickname, "PART", [name]);
+      }
       channel.leaveChannel(conn);
     }
   }
@@ -173,7 +188,7 @@ export class IrcServer {
     command: string,
     params: string[]
   ) {
-    return conn.write(`:${prefix} ${command} ${params}\r\n`);
+    return conn.write(`:${prefix} ${command} ${params.join(" ")}\r\n`);
   }
 
   private _replyToConn(
@@ -201,7 +216,7 @@ export class IrcServer {
       return;
     }
 
-    this._conns.set(conn.username, conn);
+    this._conns.set(conn.nickname, conn);
     conn.isRegistered = true;
 
     if (this._conns.has(conn.id)) {
@@ -276,10 +291,14 @@ export class IrcServer {
       if (!channel) {
         continue;
       }
-      const usersString = channel.users
-        .map(userConn => userConn.nickname)
-        .reduce((prev, curr) => `${prev} ${curr}`);
-      this._replyToConn(conn, RPL.NAMREPLY, ["=", channel.name, usersString]);
+      
+      const userNicks = channel.users.map(user => user.nickname);
+
+      for (const nick of userNicks) {
+        this._replyToConn(conn, RPL.NAMREPLY, ["=", channel.name, `:${nick}`]);
+      }
+
+      this._replyToConn(conn, RPL.ENDOFNAMES, [channel.name, ":End of /NAMES list"]);
     }
   }
 
@@ -297,7 +316,6 @@ export class IrcServer {
     // check if any registered users got that nickname
     for (const [_, currConn] of this._conns) {
       if (currConn.nickname === nickname) {
-        // TODO move all numeric replies to something like a Typescript enum
         this._replyToConn(conn, ERR.NICKNAMEINUSE, [
           `:Nickname "${nickname}" has already been taken.`
         ]);
@@ -377,9 +395,12 @@ export class IrcServer {
       }
 
       channel.joinChannel(conn);
-      this._sendMsg(conn, conn.nickname, "JOIN", [channelName]);
       this._replyToNAMES(conn, [channelName]);
       this._replyToTOPIC(conn, channelName);
+      // notify other users on channel that a new user has entered
+      for (const userConn of channel.users) {
+        this._sendMsg(userConn, conn.nickname, "JOIN", [channelName]);
+      }
     }
   }
 
@@ -402,9 +423,48 @@ export class IrcServer {
       conn.joinedChannels.delete(channelName);
       // notify users in channel that this person has left
       for (const userConn of channel.users) {
+        if (userConn === conn) {
+          continue;
+        }
         this._sendMsg(userConn, conn.nickname, "PART", [channelName, reason]);
       }
     }
+  }
+
+  PRIVMSG(conn: ServerConn, targets: string[], message: string) {
+    for (const target of targets) {
+      // TODO(fancyplants) target other channel prefixes
+      if (target.startsWith("#")) {
+        const channel = this._channels.get(target);
+        if (!channel) {
+          this._replyToConn(conn, ERR.NOSUCHNICK, [":No such channel"]);
+        }
+
+        for (const userConn of channel.users) {
+          if (userConn === conn) {
+            continue;
+          }
+
+          this._sendMsg(userConn, conn.nickname, "PRIVMSG", [
+            channel.name,
+            message
+          ]);
+        }
+      } else {
+        const targetConn = this._conns.get(target);
+        if (!targetConn) {
+          this._replyToConn(conn, ERR.NOSUCHNICK, [":No such nick"]);
+        }
+        this._sendMsg(targetConn, conn.nickname, "PRIVMSG", [
+          targetConn.nickname,
+          message
+        ]);
+      }
+    }
+  }
+
+  NAMES(conn: ServerConn, channels: string[]) {
+    this._replyToNAMES(conn, channels);
   }
 }
 
@@ -419,12 +479,8 @@ export interface MessageData {
   params: string[];
 }
 
-function parseChannels(channels: string) {
-  return channels ? channels.split(",").filter(channel => channel !== "") : [];
-}
-
-function parseKeys(keys: string) {
-  return keys ? keys.split(",").filter(key => key !== "") : [];
+function parseCSV(input: string) {
+  return input ? input.split(",").filter(channel => channel !== "") : [];
 }
 
 const RFC1459MaxMessageLength = 512;
