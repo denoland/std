@@ -30,7 +30,7 @@ TS/JS code.
 
 ### Do not use the filename `index.ts` nor `index.js`
 
-Deno does not treat "index.js" or "index.ts" differently. By using these
+Deno does not treat "index.js" or "index.ts" in a special way. By using these
 filenames, it suggests that they can be left out of the module specifier when
 they cannot. This is confusing.
 
