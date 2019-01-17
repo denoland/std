@@ -5,6 +5,7 @@ import "colors/test.ts";
 import "datetime/test.ts";
 import "examples/test.ts";
 import "flags/test.ts";
+import "http/file_server_test.ts";
 import "fs/mkdirp_test.ts";
 import "fs/path/basename_test.ts";
 import "fs/path/dirname_test.ts";
@@ -22,15 +23,3 @@ import "media_types/test.ts";
 import "testing/test.ts";
 import "textproto/test.ts";
 import "ws/test.ts";
-
-import { runTests, completePromise } from "http/file_server_test.ts";
-
-const fileServer = run({
-  args: ["deno", "--allow-net", "http/file_server.ts", ".", "--cors"]
-});
-
-runTests(new Promise(res => setTimeout(res, 5000)));
-(async () => {
-  await completePromise;
-  fileServer.close();
-})();
