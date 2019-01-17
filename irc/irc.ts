@@ -3,12 +3,6 @@ import { listen, Listener, Conn } from "deno";
 import { TextProtoReader } from "../net/textproto.ts";
 import { BufReader, BufWriter } from "../net/bufio.ts";
 
-declare module "deno" {
-  interface Conn {
-    rid: number;
-  }
-}
-
 // ensures that there are no crashes if a wrong
 // property on a MessageData object, as a try-catch
 // block does not catch
@@ -37,14 +31,19 @@ enum RPL {
   LUSERME = "255",
   LOCALUSERS = "265",
   GLOBALUSERS = "266",
+  ENDOFWHO = "315",
+  CHANNELMODEIS = "324",
   NOTOPIC = "331",
   TOPIC = "332",
+  WHOREPLY = "352",
   NAMREPLY = "353",
   ENDOFNAMES = "366"
 }
 
 enum ERR {
   NOSUCHNICK = "401",
+  NOSUCHSERVER = "402",
+  NOSUCHCHANNEL = "403",
   UNKNOWNCOMMAND = "421",
   NOMOTD = "422",
   NONICKNAMEGIVEN = "431",
@@ -71,7 +70,14 @@ export class IrcServer {
   /** Allows server to begin accepting connections and messages */
   async start() {
     while (true) {
-      const conn = await this._listener.accept();
+      let conn: Conn;
+      try {
+        conn = await this._listener.accept();
+      } catch (e) {
+        console.error(e.toString());
+        break;
+      }
+
       const newServerConn = new ServerConn(conn);
       const id = conn.rid.toString();
       this._conns.set(id, newServerConn);
@@ -141,8 +147,27 @@ export class IrcServer {
             this.NAMES(conn, nameChannels);
             break;
 
+          case "WHO":
+            const channelName = parsedMsg.params[0];
+            this.WHO(conn, channelName);
+            break;
+
+          case "QUIT":
+            const reason = parsedMsg.params[0];
+            this.QUIT(conn, reason);
+            break;
+
+          case "MODE":
+            const target = parsedMsg.params[0];
+            this.MODE(conn, target);
+            break;
+
+          case "PING":
+            this.PING(conn);
+            break;
+
           default:
-            console.log(parsedMsg);
+            console.log(`${conn.nickname}:`, parsedMsg);
             this._replyToConn(conn, ERR.UNKNOWNCOMMAND, [
               parsedMsg.command,
               ":Unknown/unimplemented command"
@@ -151,34 +176,16 @@ export class IrcServer {
         }
       } catch (err) {
         console.error(err);
-        return;
       }
     }
 
-    this.removeConnection(conn);
+    this.QUIT(conn);
   }
 
   close() {
     this._listener.close();
     for (const [_, conn] of this._conns) {
       conn.close();
-    }
-  }
-
-  removeConnection(conn: ServerConn) {
-    if (conn.nickname) {
-      this._conns.delete(conn.nickname);
-    }
-
-    if (conn.id) {
-      this._conns.delete(conn.id);
-    }
-
-    for (const [name, channel] of conn.joinedChannels) {
-      for (const userConn of channel.users) {
-        this._sendMsg(userConn, conn.nickname, "PART", [name]);
-      }
-      channel.leaveChannel(conn);
     }
   }
 
@@ -291,14 +298,20 @@ export class IrcServer {
       if (!channel) {
         continue;
       }
-      
-      const userNicks = channel.users.map(user => user.nickname);
+
+      const channelOps = channel.ops;
+      const userNicks = channel.users.map(user =>
+        channelOps.includes(user) ? `@${user.nickname}` : user.nickname
+      );
 
       for (const nick of userNicks) {
         this._replyToConn(conn, RPL.NAMREPLY, ["=", channel.name, `:${nick}`]);
       }
 
-      this._replyToConn(conn, RPL.ENDOFNAMES, [channel.name, ":End of /NAMES list"]);
+      this._replyToConn(conn, RPL.ENDOFNAMES, [
+        channel.name,
+        ":End of /NAMES list"
+      ]);
     }
   }
 
@@ -387,6 +400,10 @@ export class IrcServer {
         throw new Error("Not ready for keys yet!");
       }
 
+      if (!channelName.startsWith("#") && !channelName.startsWith("&")) {
+        continue;
+      }
+
       let channel = this._channels.get(channelName);
       if (!channel) {
         channel = new Channel(channelName);
@@ -396,7 +413,7 @@ export class IrcServer {
 
       channel.joinChannel(conn);
       this._replyToNAMES(conn, [channelName]);
-      this._replyToTOPIC(conn, channelName);
+      // this._replyToTOPIC(conn, channelName);
       // notify other users on channel that a new user has entered
       for (const userConn of channel.users) {
         this._sendMsg(userConn, conn.nickname, "JOIN", [channelName]);
@@ -419,15 +436,11 @@ export class IrcServer {
 
     for (const channelName of channels) {
       const channel = conn.joinedChannels.get(channelName);
-      channel.leaveChannel(conn);
-      conn.joinedChannels.delete(channelName);
       // notify users in channel that this person has left
       for (const userConn of channel.users) {
-        if (userConn === conn) {
-          continue;
-        }
         this._sendMsg(userConn, conn.nickname, "PART", [channelName, reason]);
       }
+      channel.leaveChannel(conn);
     }
   }
 
@@ -454,6 +467,7 @@ export class IrcServer {
         const targetConn = this._conns.get(target);
         if (!targetConn) {
           this._replyToConn(conn, ERR.NOSUCHNICK, [":No such nick"]);
+          continue;
         }
         this._sendMsg(targetConn, conn.nickname, "PRIVMSG", [
           targetConn.nickname,
@@ -465,6 +479,67 @@ export class IrcServer {
 
   NAMES(conn: ServerConn, channels: string[]) {
     this._replyToNAMES(conn, channels);
+  }
+
+  WHO(conn: ServerConn, channelName: string) {
+    const channel = this._channels.get(channelName);
+    if (!channel) {
+      this._replyToConn(conn, ERR.NOSUCHSERVER, [":No such server"]);
+      return;
+    }
+    for (const userConn of channel.users) {
+      this._replyToConn(conn, RPL.WHOREPLY, [
+        channelName,
+        userConn.username,
+        "PLACEHOLDER", // host of user
+        this._host,
+        userConn.nickname,
+        "G",
+        `:0 ${userConn.fullname}`
+      ]);
+    }
+    this._replyToConn(conn, RPL.ENDOFWHO, [channelName, ":End of /WHO list"]);
+  }
+
+  QUIT(conn: ServerConn, reason = "User has exited server") {
+    if (conn.nickname) {
+      this._conns.delete(conn.nickname);
+    }
+
+    if (conn.id) {
+      this._conns.delete(conn.id);
+    }
+
+    for (const [name, channel] of conn.joinedChannels) {
+      channel.leaveChannel(conn);
+      for (const userConn of channel.users) {
+        this._sendMsg(userConn, conn.nickname, "PART", [name]);
+      }
+    }
+    for (const [name, userConn] of this._conns) {
+      this._sendMsg(userConn, conn.nickname, "QUIT", [`:Quit: ${reason}`]);
+    }
+  }
+
+  MODE(conn: ServerConn, target: string) {
+    if (target.startsWith("#") || target.startsWith("&")) {
+      const channel = this._channels.get(target);
+      if (!channel) {
+        this._replyToConn(conn, ERR.NOSUCHCHANNEL, [":No such channel"]);
+        return;
+      }
+
+      this._replyToConn(conn, RPL.CHANNELMODEIS, [
+        target,
+        `+c${channel.modes.join("")}`
+      ]);
+    } else {
+      // TODO
+    }
+  }
+
+  PING(conn: ServerConn) {
+    this._replyToConn(conn, "PONG", []);
   }
 }
 
@@ -624,6 +699,10 @@ export class ServerConn {
     this._conn.close();
   }
 
+  get addr() {
+    return this._conn.remoteAddr;
+  }
+
   get modes() {
     return Array.from(this._userModes);
   }
@@ -686,7 +765,8 @@ export class Channel {
   public name: string;
   public topic: string;
 
-  public types: Set<ChannelMode> = new Set();
+  private _modes: Set<ChannelMode> = new Set();
+  private _ops: Set<ServerConn> = new Set();
   private _users: Set<ServerConn> = new Set();
 
   constructor(name: string) {
@@ -694,6 +774,9 @@ export class Channel {
   }
 
   joinChannel(conn: ServerConn) {
+    if (this._users.size === 0) {
+      this._ops.add(conn);
+    }
     this._users.add(conn);
     conn.joinedChannels.set(this.name, this);
   }
@@ -701,9 +784,20 @@ export class Channel {
   leaveChannel(conn: ServerConn) {
     this._users.delete(conn);
     conn.joinedChannels.delete(this.name);
+    if (this._users.size === 0) {
+      this._ops.delete(conn);
+    }
   }
 
   get users() {
     return Array.from(this._users);
+  }
+
+  get ops() {
+    return Array.from(this._ops);
+  }
+
+  get modes() {
+    return Array.from(this._modes);
   }
 }

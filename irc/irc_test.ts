@@ -116,8 +116,6 @@ test(async function NICKerrors() {
   );
 
   clearTimeout(timerID);
-  client1.close();
-  client2.close();
   server.close();
 });
 
@@ -139,7 +137,7 @@ test(async function USERerrors() {
   const userError461 = "USER\r\n";
   let encodedMsg = encoder.encode(userError461);
   await client1.write(encodedMsg);
-
+  
   let incomingMsg: string;
   let err: BufState;
 
@@ -184,6 +182,5 @@ test(async function USERerrors() {
   assertEqual(incomingMsg, ":127.0.0.1 462 nickname :Cannot register twice");
 
   clearTimeout(timerID);
-  client1.close();
   server.close();
 });
