@@ -151,6 +151,8 @@ export type TestFunction = () => void | Promise<void>;
 export interface TestDefinition {
   fn: TestFunction;
   name: string;
+  setup: TestFunction;
+  teardown: TestFunction;
 }
 
 export const exitOnFail = true;
@@ -167,15 +169,26 @@ export function setFilter(s: string): void {
   filterRegExp = new RegExp(s, "i");
 }
 
-export function test(t: TestDefinition | TestFunction): void {
+export interface TestOptions {
+  setup: TestFunction;
+  teardown: TestFunction;
+}
+
+export function test(
+  t: TestDefinition | TestFunction,
+  options: TestOptions = { setup: function() {}, teardown: function() {} }
+): void {
   const fn: TestFunction = typeof t === "function" ? t : t.fn;
   const name: string = t.name;
+  const setup: TestFunction = typeof t === "function" ? options.setup : t.setup;
+  const teardown: TestFunction =
+    typeof t === "function" ? options.teardown : t.teardown;
 
   if (!name) {
     throw new Error("Test function may not be anonymous");
   }
   if (filter(name)) {
-    tests.push({ fn, name });
+    tests.push({ fn, name, setup, teardown });
   } else {
     filtered++;
   }
@@ -207,12 +220,13 @@ async function runTests() {
 
   console.log("running", tests.length, "tests");
   for (let i = 0; i < tests.length; i++) {
-    const { fn, name } = tests[i];
+    const { fn, name, setup, teardown } = tests[i];
     let result = green_ok();
     // See https://github.com/denoland/deno/pull/1452
     // about this usage of groupCollapsed
     console.groupCollapsed(`test ${name} `);
     try {
+      await setup();
       await fn();
       passed++;
       console.log("...", result);
@@ -226,6 +240,8 @@ async function runTests() {
       if (exitOnFail) {
         break;
       }
+    } finally {
+      await teardown();
     }
   }
 

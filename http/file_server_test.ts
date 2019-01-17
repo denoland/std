@@ -21,9 +21,8 @@ function killFileServer() {
   fileServer.stdout.close();
 }
 
-test(async function serveFile() {
-  await startFileServer();
-  try {
+test(
+  async function serveFile() {
     const res = await fetch("http://localhost:4500/azure-pipelines.yml");
     assert(res.headers.has("access-control-allow-origin"));
     assert(res.headers.has("access-control-allow-headers"));
@@ -33,32 +32,27 @@ test(async function serveFile() {
       await readFile("./azure-pipelines.yml")
     );
     assertEqual(downloadedFile, localFile);
-  } finally {
-    killFileServer();
-  }
-});
+  },
+  { setup: startFileServer, teardown: killFileServer }
+);
 
-test(async function serveDirectory() {
-  await startFileServer();
-  try {
+test(
+  async function serveDirectory() {
     const res = await fetch("http://localhost:4500/");
     assert(res.headers.has("access-control-allow-origin"));
     assert(res.headers.has("access-control-allow-headers"));
     const page = await res.text();
     assert(page.includes("azure-pipelines.yml"));
-  } finally {
-    killFileServer();
-  }
-});
+  },
+  { setup: startFileServer, teardown: killFileServer }
+);
 
-test(async function serveFallback() {
-  await startFileServer();
-  try {
+test(
+  async function serveFallback() {
     const res = await fetch("http://localhost:4500/badfile.txt");
     assert(res.headers.has("access-control-allow-origin"));
     assert(res.headers.has("access-control-allow-headers"));
     assertEqual(res.status, 404);
-  } finally {
-    killFileServer();
-  }
-});
+  },
+  { setup: startFileServer, teardown: killFileServer }
+);
