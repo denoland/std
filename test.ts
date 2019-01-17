@@ -1,6 +1,4 @@
 #!/usr/bin/env deno --allow-run --allow-net --allow-write
-import { run } from "deno";
-
 import "colors/test.ts";
 import "datetime/test.ts";
 import "examples/test.ts";

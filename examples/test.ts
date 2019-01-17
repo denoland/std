@@ -14,7 +14,7 @@ test(function t2() {
 test(async function catSmoke() {
   const p = run({
     args: ["deno", "examples/cat.ts", "README.md"],
-    stdout: "piped",
+    stdout: "piped"
   });
   const s = await p.status();
   assertEqual(s.code, 0);

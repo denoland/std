@@ -15,11 +15,11 @@ async function startFileServer() {
   const [s, err] = await r.readLine();
   assert(err == null);
   assert(s.includes("server listening"));
-};
+}
 function killFileServer() {
   fileServer.close();
   fileServer.stdout.close();
-};
+}
 
 test(async function serveFile() {
   await startFileServer();
