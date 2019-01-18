@@ -1,4 +1,5 @@
-import { Buffer, Reader } from "deno";
+import { Reader } from "deno";
+import { Buffer } from "buffer.ts";
 
 // `off` is the offset into `dst` where it will at which to begin writing values
 // from `src`.
