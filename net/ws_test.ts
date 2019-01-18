@@ -11,8 +11,8 @@ import {
   OpCodeTextFrame,
   readFrame,
   unmask
-} from "./mod.ts";
-import { serve } from "../http/http.ts";
+} from "ws.ts";
+import { serve } from "http.ts";
 
 test(async function testReadUnmaskedTextFrame() {
   // unmasked single text frame with payload "Hello"

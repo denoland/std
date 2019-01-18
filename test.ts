@@ -1,6 +1,4 @@
 #!/usr/bin/env deno --allow-run --allow-net --allow-write
-import "colors/test.ts";
-import "datetime/test.ts";
 import "examples/test.ts";
 import "flags/test.ts";
 import "fs/path/basename_test.ts";
@@ -14,11 +12,13 @@ import "fs/path/resolve_test.ts";
 import "fs/path/zero_length_strings_test.ts";
 import "io/bufio_test.ts";
 import "io/ioutil_test.ts";
-import "http/http_test.ts";
-import "http/file_server_test.ts";
 import "log/test.ts";
 import "media_types/test.ts";
+import "net/file_server_test.ts";
+import "net/http_test.ts";
+import "net/ws_test.ts";
 import "testing/test.ts";
 import "textproto/test.ts";
-import "ws/sha1_test.ts";
-import "ws/test.ts";
+import "colors/test.ts";
+import "util/datetime_test.ts";
+import "util/sha1_test.ts";

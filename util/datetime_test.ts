@@ -1,5 +1,5 @@
 import { test, assertEqual, assert } from "../testing/mod.ts";
-import * as datetime from "mod.ts";
+import * as datetime from "datetime.ts";
 
 test(function parseDateTime() {
   assertEqual(
@@ -31,7 +31,7 @@ test(function parseDateTime() {
 test(function invalidParseDateTimeFormatThrows() {
   try {
     (datetime as any).parseDateTime("2019-01-01 00:00", "x-y-z");
-    assert(false, 'no exception was thrown');
+    assert(false, "no exception was thrown");
   } catch (e) {
     assertEqual(e.message, "Invalid datetime format!");
   }
@@ -55,7 +55,7 @@ test(function parseDate() {
 test(function invalidParseDateFormatThrows() {
   try {
     (datetime as any).parseDate("2019-01-01", "x-y-z");
-    assert(false, 'no exception was thrown');
+    assert(false, "no exception was thrown");
   } catch (e) {
     assertEqual(e.message, "Invalid date format!");
   }
