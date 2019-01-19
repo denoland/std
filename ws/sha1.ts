@@ -9,20 +9,20 @@
 /*jslint bitwise: true */
 
 const HEX_CHARS = "0123456789abcdef".split("");
-const EXTRA = [-2147483648, 8388608, 32768, 128];
-const SHIFT = [24, 16, 8, 0];
+const EXTRA = Int32Array.of(-2147483648, 8388608, 32768, 128);
+const SHIFT = Uint32Array.of(24, 16, 8, 0);
 
 const blocks = [];
 
 export class Sha1 {
-  blocks;
-  block;
-  start;
-  bytes;
-  hBytes;
-  finalized;
-  hashed;
-  first;
+  blocks: number[];
+  block: number;
+  start: number;
+  bytes: number;
+  hBytes: number;
+  finalized: boolean;
+  hashed: boolean;
+  first: boolean;
 
   h0 = 0x67452301;
   h1 = 0xefcdab89;
@@ -31,9 +31,13 @@ export class Sha1 {
   h4 = 0xc3d2e1f0;
   lastByteIndex = 0;
 
-  constructor(sharedMemory: boolean = false) {
+  constructor(sharedMemory = false) {
     if (sharedMemory) {
-      blocks[0] = blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      blocks[0]  =
+      blocks[16] = blocks[1]  = blocks[2]  = blocks[3]  =
+      blocks[4]  = blocks[5]  = blocks[6]  = blocks[7]  =
+      blocks[8]  = blocks[9]  = blocks[10] = blocks[11] =
+      blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
       this.blocks = blocks;
     } else {
       this.blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -50,14 +54,18 @@ export class Sha1 {
     this.first = true;
   }
 
-  update(data: string | ArrayBuffer) {
+  update(data: string | ArrayBuffer | ArrayBufferView) {
     if (this.finalized) {
-      return;
+      return this;
     }
     let message;
     let notString = typeof data !== "string";
-    if (notString && data instanceof ArrayBuffer) {
-      message = new Uint8Array(data);
+    if (notString) {
+      if (data instanceof ArrayBuffer) {
+        message = new Uint8Array(data);
+      } else if (ArrayBuffer.isView(data)) {
+        message = new Uint8Array(data.buffer);
+      }
     } else {
       message = data;
     }
@@ -71,7 +79,10 @@ export class Sha1 {
       if (this.hashed) {
         this.hashed = false;
         blocks[0] = this.block;
-        blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+        blocks[16] = blocks[1]  = blocks[2]  = blocks[3]  =
+        blocks[4]  = blocks[5]  = blocks[6]  = blocks[7]  =
+        blocks[8]  = blocks[9]  = blocks[10] = blocks[11] =
+        blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
       }
 
       if (notString) {
@@ -114,8 +125,8 @@ export class Sha1 {
       }
     }
     if (this.bytes > 4294967295) {
-      this.hBytes += (this.bytes / 4294967296) << 0;
-      this.bytes = this.bytes % 4294967296;
+      this.hBytes += (this.bytes / 4294967296) >>> 0;
+      this.bytes = (this.bytes & -1) >>> 0;
     }
     return this;
   }
@@ -135,7 +146,10 @@ export class Sha1 {
         this.hash();
       }
       blocks[0] = this.block;
-      blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      blocks[16] = blocks[1]  = blocks[2]  = blocks[3]  =
+      blocks[4]  = blocks[5]  = blocks[6]  = blocks[7]  =
+      blocks[8]  = blocks[9]  = blocks[10] = blocks[11] =
+      blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
     }
     blocks[14] = (this.hBytes << 3) | (this.bytes >>> 29);
     blocks[15] = this.bytes << 3;
@@ -266,11 +280,11 @@ export class Sha1 {
       c = (c << 30) | (c >>> 2);
     }
 
-    this.h0 = (this.h0 + a) << 0;
-    this.h1 = (this.h1 + b) << 0;
-    this.h2 = (this.h2 + c) << 0;
-    this.h3 = (this.h3 + d) << 0;
-    this.h4 = (this.h4 + e) << 0;
+    this.h0 = (this.h0 + a) >>> 0;
+    this.h1 = (this.h1 + b) >>> 0;
+    this.h2 = (this.h2 + c) >>> 0;
+    this.h3 = (this.h3 + d) >>> 0;
+    this.h4 = (this.h4 + e) >>> 0;
   }
 
   hex() {
@@ -370,13 +384,12 @@ export class Sha1 {
   arrayBuffer() {
     this.finalize();
 
-    let buffer = new ArrayBuffer(20);
-    let dataView = new DataView(buffer);
-    dataView.setUint32(0, this.h0);
-    dataView.setUint32(4, this.h1);
-    dataView.setUint32(8, this.h2);
-    dataView.setUint32(12, this.h3);
-    dataView.setUint32(16, this.h4);
-    return buffer;
+    let array = new Uint32Array(5);
+    array[0] = this.h0;
+    array[1] = this.h1;
+    array[2] = this.h2;
+    array[3] = this.h3;
+    array[4] = this.h4;
+    return array.buffer;
   }
 }
