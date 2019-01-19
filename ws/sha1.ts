@@ -126,7 +126,7 @@ export class Sha1 {
     }
     if (this.bytes > 4294967295) {
       this.hBytes += (this.bytes / 4294967296) >>> 0;
-      this.bytes = (this.bytes & -1) >>> 0;
+      this.bytes = this.bytes >>> 0;
     }
     return this;
   }
