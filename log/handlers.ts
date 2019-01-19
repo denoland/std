@@ -3,15 +3,16 @@ import { getLevelByName } from "./levels.ts";
 import { LogRecord } from "./logger.ts";
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
+type FormatterFunction = (logRecord: LogRecord) => string;
 
 interface HandlerOptions {
-  formatter?: Function | string;
+  formatter?: string | FormatterFunction;
 }
 
 export class BaseHandler {
   level: number;
   levelName: string;
-  formatter: Function | string;
+  formatter: string | FormatterFunction;
 
   constructor(levelName: string, options: HandlerOptions = {}) {
     this.level = getLevelByName(levelName);
