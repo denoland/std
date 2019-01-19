@@ -74,7 +74,7 @@ export class FileHandler extends WriterHandler {
 
   constructor(
     levelName: string, 
-    options: FileHandlerOptions = { filename: "log.txt" }
+    options: FileHandlerOptions,
   ) {
     super(levelName, options);
     this._filename = options.filename;
