@@ -199,10 +199,12 @@ export async function* receiveFrame(
   conn: Conn
 ): AsyncIterableIterator<WebSocketFrame> {
   let receiving = true;
+  let isLastFrame = true;
   const reader = new BufReader(conn);
   while (receiving) {
     const frame = await readFrame(reader);
-    switch (frame.opcode) {
+    const { opcode, payload } = frame;
+    switch (opcode) {
       case OpCodeTextFrame:
       case OpCodeBinaryFrame:
       case OpCodeContinue:
@@ -211,9 +213,9 @@ export async function* receiveFrame(
       case OpCodeClose:
         await writeFrame(
           {
-            isLastFrame: true,
-            opcode: OpCodeClose,
-            payload: frame.payload
+            opcode,
+            payload,
+            isLastFrame
           },
           conn
         );
@@ -224,9 +226,9 @@ export async function* receiveFrame(
       case OpcodePing:
         await writeFrame(
           {
-            isLastFrame: true,
-            opcode: OpcodePong,
-            payload: frame.payload
+            payload,
+            isLastFrame,
+            opcode: OpcodePong
           },
           conn
         );
