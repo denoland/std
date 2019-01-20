@@ -15,21 +15,20 @@ const SHIFT = Uint32Array.of(24, 16, 8, 0);
 const blocks = [];
 
 export class Sha1 {
-  blocks: number[];
-  block: number;
-  start: number;
-  bytes: number;
-  hBytes: number;
-  finalized: boolean;
-  hashed: boolean;
-  first: boolean;
+  private blocks: number[];
+  private block: number;
+  private start: number;
+  private bytes: number;
+  private hBytes: number;
+  private finalized: boolean;
+  private hashed: boolean;
 
-  h0 = 0x67452301;
-  h1 = 0xefcdab89;
-  h2 = 0x98badcfe;
-  h3 = 0x10325476;
-  h4 = 0xc3d2e1f0;
-  lastByteIndex = 0;
+  private h0 = 0x67452301;
+  private h1 = 0xefcdab89;
+  private h2 = 0x98badcfe;
+  private h3 = 0x10325476;
+  private h4 = 0xc3d2e1f0;
+  private lastByteIndex = 0;
 
   constructor(sharedMemory = false) {
     if (sharedMemory) {
@@ -51,7 +50,6 @@ export class Sha1 {
 
     this.block = this.start = this.bytes = this.hBytes = 0;
     this.finalized = this.hashed = false;
-    this.first = true;
   }
 
   update(data: string | ArrayBuffer | ArrayBufferView) {
