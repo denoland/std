@@ -273,6 +273,7 @@ export function unmask(payload: Uint8Array, mask: Uint8Array) {
 
 export function acceptable(req: ServerRequest): boolean {
   return (
+    req.headers.get("connection") === "Upgrade" &&
     req.headers.get("upgrade") === "websocket" &&
     req.headers.has("sec-websocket-key")
   );
