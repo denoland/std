@@ -4,10 +4,6 @@ import { Buffer, Reader } from "deno";
 // from `src`.
 // Returns the number of bytes copied.
 export function copyBytes(dst: Uint8Array, src: Uint8Array, off = 0): number {
-  const r = dst.byteLength - off;
-  if (src.byteLength > r) {
-    src = src.subarray(0, r);
-  }
   dst.set(src, off);
   return src.byteLength;
 }
