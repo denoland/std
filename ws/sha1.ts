@@ -32,7 +32,7 @@ export class Sha1 {
 
   constructor(sharedMemory = false) {
     if (sharedMemory) {
-      this.blocks = (<any>blocks).fill(0);
+      this.blocks = (<any>blocks).fill(0, 0, 17);
     } else {
       this.blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     }
@@ -72,7 +72,7 @@ export class Sha1 {
       if (this.hashed) {
         this.hashed = false;
         blocks[0] = this.block;
-        (<any>blocks).fill(0, 1);
+        (<any>blocks).fill(0, 1, 17);
       }
 
       if (notString) {
@@ -135,7 +135,7 @@ export class Sha1 {
         this.hash();
       }
       blocks[0] = this.block;
-      (<any>blocks).fill(0, 1);
+      (<any>blocks).fill(0, 1, 17);
     }
     blocks[14] = (this.hBytes << 3) | (this.bytes >>> 29);
     blocks[15] = this.bytes << 3;
