@@ -54,7 +54,7 @@ export class Sha1 {
 
   update(data: string | ArrayBuffer | ArrayBufferView) {
     if (this.finalized) {
-      return this;
+      return;
     }
     let notString = true;
     let message;
@@ -125,7 +125,6 @@ export class Sha1 {
       this.hBytes += (this.bytes / 4294967296) >>> 0;
       this.bytes = this.bytes >>> 0;
     }
-    return this;
   }
 
   finalize() {
