@@ -58,12 +58,10 @@ export class Sha1 {
     }
     let message;
     let notString = typeof data !== "string";
-    if (notString) {
-      if (data instanceof ArrayBuffer) {
-        message = new Uint8Array(data);
-      } else if (ArrayBuffer.isView(data)) {
-        message = new Uint8Array(data.buffer);
-      }
+    if (data instanceof ArrayBuffer) {
+      message = new Uint8Array(data);
+    } else if (ArrayBuffer.isView(data)) {
+      message = new Uint8Array(data.buffer);
     } else {
       message = data;
     }
@@ -381,13 +379,8 @@ export class Sha1 {
 
   arrayBuffer() {
     this.finalize();
-
-    let array = new Uint32Array(5);
-    array[0] = this.h0;
-    array[1] = this.h1;
-    array[2] = this.h2;
-    array[3] = this.h3;
-    array[4] = this.h4;
-    return array.buffer;
+    return Uint32Array.of(
+      this.h0, this.h1, this.h2, this.h3, this.h4
+    ).buffer;
   }
 }
