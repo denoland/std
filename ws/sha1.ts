@@ -64,7 +64,7 @@ export class Sha1 {
       message = new Uint8Array(data.buffer);
     } else {
       notString = false;
-      message = data;
+      message = String(data);
     }
     let code,
       index = 0,
