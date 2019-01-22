@@ -1,5 +1,5 @@
 import { test, assert } from "../testing/mod.ts";
-import { copyBytes } from "./util";
+import { copyBytes } from "./util.ts";
 
 test(function testCopyBytes() {
   let dst = new Uint8Array(4);
