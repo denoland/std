@@ -9,13 +9,13 @@
 /*jslint bitwise: true */
 
 const HEX_CHARS = "0123456789abcdef".split("");
-const EXTRA = Int32Array.of(-2147483648, 8388608, 32768, 128);
+const EXTRA = Uint32Array.of(-2147483648, 8388608, 32768, 128);
 const SHIFT = Uint32Array.of(24, 16, 8, 0);
 
-const blocks = new Uint32Array(17);
+const blocks: number[] = [];
 
 export class Sha1 {
-  private blocks: Uint32Array;
+  private blocks: number[];
   private block: number;
   private start: number;
   private bytes: number;
@@ -32,9 +32,9 @@ export class Sha1 {
 
   constructor(sharedMemory = false) {
     if (sharedMemory) {
-      this.blocks = blocks.fill(0);
+      this.blocks = (<any>blocks).fill(0);
     } else {
-      this.blocks = Uint32Array.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+      this.blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     }
 
     this.h0 = 0x67452301;
@@ -72,7 +72,7 @@ export class Sha1 {
       if (this.hashed) {
         this.hashed = false;
         blocks[0] = this.block;
-        blocks.fill(0, 1);
+        (<any>blocks).fill(0, 1);
       }
 
       if (notString) {
@@ -135,7 +135,7 @@ export class Sha1 {
         this.hash();
       }
       blocks[0] = this.block;
-      blocks.fill(0, 1);
+      (<any>blocks).fill(0, 1);
     }
     blocks[14] = (this.hBytes << 3) | (this.bytes >>> 29);
     blocks[15] = this.bytes << 3;
@@ -161,108 +161,108 @@ export class Sha1 {
     for (j = 0; j < 20; j += 5) {
       f = (b & c) | (~b & d);
       t = (a << 5) | (a >>> 27);
-      e = (t + f + e + 1518500249 + blocks[j]) << 0;
+      e = (t + f + e + 1518500249 + blocks[j]) >>> 0;
       b = (b << 30) | (b >>> 2);
 
       f = (a & b) | (~a & c);
       t = (e << 5) | (e >>> 27);
-      d = (t + f + d + 1518500249 + blocks[j + 1]) << 0;
+      d = (t + f + d + 1518500249 + blocks[j + 1]) >>> 0;
       a = (a << 30) | (a >>> 2);
 
       f = (e & a) | (~e & b);
       t = (d << 5) | (d >>> 27);
-      c = (t + f + c + 1518500249 + blocks[j + 2]) << 0;
+      c = (t + f + c + 1518500249 + blocks[j + 2]) >>> 0;
       e = (e << 30) | (e >>> 2);
 
       f = (d & e) | (~d & a);
       t = (c << 5) | (c >>> 27);
-      b = (t + f + b + 1518500249 + blocks[j + 3]) << 0;
+      b = (t + f + b + 1518500249 + blocks[j + 3]) >>> 0;
       d = (d << 30) | (d >>> 2);
 
       f = (c & d) | (~c & e);
       t = (b << 5) | (b >>> 27);
-      a = (t + f + a + 1518500249 + blocks[j + 4]) << 0;
+      a = (t + f + a + 1518500249 + blocks[j + 4]) >>> 0;
       c = (c << 30) | (c >>> 2);
     }
 
     for (; j < 40; j += 5) {
       f = b ^ c ^ d;
       t = (a << 5) | (a >>> 27);
-      e = (t + f + e + 1859775393 + blocks[j]) << 0;
+      e = (t + f + e + 1859775393 + blocks[j]) >>> 0;
       b = (b << 30) | (b >>> 2);
 
       f = a ^ b ^ c;
       t = (e << 5) | (e >>> 27);
-      d = (t + f + d + 1859775393 + blocks[j + 1]) << 0;
+      d = (t + f + d + 1859775393 + blocks[j + 1]) >>> 0;
       a = (a << 30) | (a >>> 2);
 
       f = e ^ a ^ b;
       t = (d << 5) | (d >>> 27);
-      c = (t + f + c + 1859775393 + blocks[j + 2]) << 0;
+      c = (t + f + c + 1859775393 + blocks[j + 2]) >>> 0;
       e = (e << 30) | (e >>> 2);
 
       f = d ^ e ^ a;
       t = (c << 5) | (c >>> 27);
-      b = (t + f + b + 1859775393 + blocks[j + 3]) << 0;
+      b = (t + f + b + 1859775393 + blocks[j + 3]) >>> 0;
       d = (d << 30) | (d >>> 2);
 
       f = c ^ d ^ e;
       t = (b << 5) | (b >>> 27);
-      a = (t + f + a + 1859775393 + blocks[j + 4]) << 0;
+      a = (t + f + a + 1859775393 + blocks[j + 4]) >>> 0;
       c = (c << 30) | (c >>> 2);
     }
 
     for (; j < 60; j += 5) {
       f = (b & c) | (b & d) | (c & d);
       t = (a << 5) | (a >>> 27);
-      e = (t + f + e - 1894007588 + blocks[j]) << 0;
+      e = (t + f + e - 1894007588 + blocks[j]) >>> 0;
       b = (b << 30) | (b >>> 2);
 
       f = (a & b) | (a & c) | (b & c);
       t = (e << 5) | (e >>> 27);
-      d = (t + f + d - 1894007588 + blocks[j + 1]) << 0;
+      d = (t + f + d - 1894007588 + blocks[j + 1]) >>> 0;
       a = (a << 30) | (a >>> 2);
 
       f = (e & a) | (e & b) | (a & b);
       t = (d << 5) | (d >>> 27);
-      c = (t + f + c - 1894007588 + blocks[j + 2]) << 0;
+      c = (t + f + c - 1894007588 + blocks[j + 2]) >>> 0;
       e = (e << 30) | (e >>> 2);
 
       f = (d & e) | (d & a) | (e & a);
       t = (c << 5) | (c >>> 27);
-      b = (t + f + b - 1894007588 + blocks[j + 3]) << 0;
+      b = (t + f + b - 1894007588 + blocks[j + 3]) >>> 0;
       d = (d << 30) | (d >>> 2);
 
       f = (c & d) | (c & e) | (d & e);
       t = (b << 5) | (b >>> 27);
-      a = (t + f + a - 1894007588 + blocks[j + 4]) << 0;
+      a = (t + f + a - 1894007588 + blocks[j + 4]) >>> 0;
       c = (c << 30) | (c >>> 2);
     }
 
     for (; j < 80; j += 5) {
       f = b ^ c ^ d;
       t = (a << 5) | (a >>> 27);
-      e = (t + f + e - 899497514 + blocks[j]) << 0;
+      e = (t + f + e - 899497514 + blocks[j]) >>> 0;
       b = (b << 30) | (b >>> 2);
 
       f = a ^ b ^ c;
       t = (e << 5) | (e >>> 27);
-      d = (t + f + d - 899497514 + blocks[j + 1]) << 0;
+      d = (t + f + d - 899497514 + blocks[j + 1]) >>> 0;
       a = (a << 30) | (a >>> 2);
 
       f = e ^ a ^ b;
       t = (d << 5) | (d >>> 27);
-      c = (t + f + c - 899497514 + blocks[j + 2]) << 0;
+      c = (t + f + c - 899497514 + blocks[j + 2]) >>> 0;
       e = (e << 30) | (e >>> 2);
 
       f = d ^ e ^ a;
       t = (c << 5) | (c >>> 27);
-      b = (t + f + b - 899497514 + blocks[j + 3]) << 0;
+      b = (t + f + b - 899497514 + blocks[j + 3]) >>> 0;
       d = (d << 30) | (d >>> 2);
 
       f = c ^ d ^ e;
       t = (b << 5) | (b >>> 27);
-      a = (t + f + a - 899497514 + blocks[j + 4]) << 0;
+      a = (t + f + a - 899497514 + blocks[j + 4]) >>> 0;
       c = (c << 30) | (c >>> 2);
     }
 
