@@ -12,10 +12,10 @@ const HEX_CHARS = "0123456789abcdef".split("");
 const EXTRA = Int32Array.of(-2147483648, 8388608, 32768, 128);
 const SHIFT = Uint32Array.of(24, 16, 8, 0);
 
-const blocks = [];
+const blocks = new Uint32Array(17);
 
 export class Sha1 {
-  private blocks: number[];
+  private blocks: Uint32Array;
   private block: number;
   private start: number;
   private bytes: number;
@@ -32,14 +32,9 @@ export class Sha1 {
 
   constructor(sharedMemory = false) {
     if (sharedMemory) {
-      blocks[0]  =
-      blocks[16] = blocks[1]  = blocks[2]  = blocks[3]  =
-      blocks[4]  = blocks[5]  = blocks[6]  = blocks[7]  =
-      blocks[8]  = blocks[9]  = blocks[10] = blocks[11] =
-      blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
-      this.blocks = blocks;
+      this.blocks = blocks.fill(0);
     } else {
-      this.blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      this.blocks = Uint32Array.of(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     this.h0 = 0x67452301;
@@ -143,10 +138,7 @@ export class Sha1 {
         this.hash();
       }
       blocks[0] = this.block;
-      blocks[16] = blocks[1]  = blocks[2]  = blocks[3]  =
-      blocks[4]  = blocks[5]  = blocks[6]  = blocks[7]  =
-      blocks[8]  = blocks[9]  = blocks[10] = blocks[11] =
-      blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      blocks.fill(0, 1);
     }
     blocks[14] = (this.hBytes << 3) | (this.bytes >>> 29);
     blocks[15] = this.bytes << 3;
