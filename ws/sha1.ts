@@ -69,6 +69,7 @@ export class Sha1 {
     let code,
       index = 0,
       i,
+      start  = this.start,
       length = message.length || 0,
       blocks = this.blocks;
 
@@ -83,11 +84,11 @@ export class Sha1 {
       }
 
       if (notString) {
-        for (i = this.start; index < length && i < 64; ++index) {
+        for (i = start; index < length && i < 64; ++index) {
           blocks[i >> 2] |= message[index] << SHIFT[i++ & 3];
         }
       } else {
-        for (i = this.start; index < length && i < 64; ++index) {
+        for (i = start; index < length && i < 64; ++index) {
           code = message.charCodeAt(index);
           if (code < 0x80) {
             blocks[i >> 2] |= code << SHIFT[i++ & 3];
@@ -111,7 +112,7 @@ export class Sha1 {
       }
 
       this.lastByteIndex = i;
-      this.bytes += i - this.start;
+      this.bytes += i - start;
       if (i >= 64) {
         this.block = blocks[16];
         this.start = i - 64;
