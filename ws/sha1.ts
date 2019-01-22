@@ -56,13 +56,14 @@ export class Sha1 {
     if (this.finalized) {
       return this;
     }
-    let message;
-    let notString = typeof data !== "string";
+    let notString = true;
+    let message: Uint8Array | string;
     if (data instanceof ArrayBuffer) {
       message = new Uint8Array(data);
     } else if (ArrayBuffer.isView(data)) {
       message = new Uint8Array(data.buffer);
     } else {
+      notString = false;
       message = data;
     }
     let code,
