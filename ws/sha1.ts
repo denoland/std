@@ -15,40 +15,40 @@ const SHIFT = Uint32Array.of(24, 16, 8, 0);
 const blocks = new Uint32Array(80);
 
 export class Sha1 {
-  private blocks: Uint32Array;
-  private block: number;
-  private start: number;
-  private bytes: number;
-  private hBytes: number;
-  private finalized: boolean;
-  private hashed: boolean;
+  private _blocks: Uint32Array;
+  private _block: number;
+  private _start: number;
+  private _bytes: number;
+  private _hBytes: number;
+  private _finalized: boolean;
+  private _hashed: boolean;
 
-  private h0 = 0x67452301;
-  private h1 = 0xefcdab89;
-  private h2 = 0x98badcfe;
-  private h3 = 0x10325476;
-  private h4 = 0xc3d2e1f0;
-  private lastByteIndex = 0;
+  private _h0 = 0x67452301;
+  private _h1 = 0xefcdab89;
+  private _h2 = 0x98badcfe;
+  private _h3 = 0x10325476;
+  private _h4 = 0xc3d2e1f0;
+  private _lastByteIndex = 0;
 
   constructor(sharedMemory = false) {
     if (sharedMemory) {
-      this.blocks = blocks.fill(0, 0, 17);
+      this._blocks = blocks.fill(0, 0, 17);
     } else {
-      this.blocks = new Uint32Array(80);
+      this._blocks = new Uint32Array(80);
     }
 
-    this.h0 = 0x67452301;
-    this.h1 = 0xefcdab89;
-    this.h2 = 0x98badcfe;
-    this.h3 = 0x10325476;
-    this.h4 = 0xc3d2e1f0;
+    this._h0 = 0x67452301;
+    this._h1 = 0xefcdab89;
+    this._h2 = 0x98badcfe;
+    this._h3 = 0x10325476;
+    this._h4 = 0xc3d2e1f0;
 
-    this.block = this.start = this.bytes = this.hBytes = 0;
-    this.finalized = this.hashed = false;
+    this._block = this._start = this._bytes = this._hBytes = 0;
+    this._finalized = this._hashed = false;
   }
 
   update(data: string | ArrayBuffer | ArrayBufferView) {
-    if (this.finalized) {
+    if (this._finalized) {
       return;
     }
     let notString = true;
@@ -64,14 +64,14 @@ export class Sha1 {
     let code,
       index = 0,
       i,
-      start  = this.start,
+      start  = this._start,
       length = message.length || 0,
-      blocks = this.blocks;
+      blocks = this._blocks;
 
     while (index < length) {
-      if (this.hashed) {
-        this.hashed = false;
-        blocks[0] = this.block;
+      if (this._hashed) {
+        this._hashed = false;
+        blocks[0] = this._block;
         blocks.fill(0, 1, 17);
       }
 
@@ -103,55 +103,55 @@ export class Sha1 {
         }
       }
 
-      this.lastByteIndex = i;
-      this.bytes += i - start;
+      this._lastByteIndex = i;
+      this._bytes += i - start;
       if (i >= 64) {
-        this.block = blocks[16];
-        this.start = i - 64;
+        this._block = blocks[16];
+        this._start = i - 64;
         this.hash();
-        this.hashed = true;
+        this._hashed = true;
       } else {
-        this.start = i;
+        this._start = i;
       }
     }
-    if (this.bytes > 4294967295) {
-      this.hBytes += (this.bytes / 4294967296) >>> 0;
-      this.bytes = this.bytes >>> 0;
+    if (this._bytes > 4294967295) {
+      this._hBytes += (this._bytes / 4294967296) >>> 0;
+      this._bytes = this._bytes >>> 0;
     }
   }
 
   finalize() {
-    if (this.finalized) {
+    if (this._finalized) {
       return;
     }
-    this.finalized = true;
-    let blocks = this.blocks,
-      i = this.lastByteIndex;
-    blocks[16] = this.block;
+    this._finalized = true;
+    let blocks = this._blocks,
+      i = this._lastByteIndex;
+    blocks[16] = this._block;
     blocks[i >> 2] |= EXTRA[i & 3];
-    this.block = blocks[16];
+    this._block = blocks[16];
     if (i >= 56) {
-      if (!this.hashed) {
+      if (!this._hashed) {
         this.hash();
       }
-      blocks[0] = this.block;
+      blocks[0] = this._block;
       blocks.fill(0, 1, 17);
     }
-    blocks[14] = (this.hBytes << 3) | (this.bytes >>> 29);
-    blocks[15] = this.bytes << 3;
+    blocks[14] = (this._hBytes << 3) | (this._bytes >>> 29);
+    blocks[15] = this._bytes << 3;
     this.hash();
   }
 
   hash() {
-    let a = this.h0,
-      b = this.h1,
-      c = this.h2,
-      d = this.h3,
-      e = this.h4;
+    let a = this._h0,
+      b = this._h1,
+      c = this._h2,
+      d = this._h3,
+      e = this._h4;
     let f,
       j,
       t,
-      blocks = this.blocks;
+      blocks = this._blocks;
 
     for (j = 16; j < 80; ++j) {
       t = blocks[j - 3] ^ blocks[j - 8] ^ blocks[j - 14] ^ blocks[j - 16];
@@ -266,21 +266,21 @@ export class Sha1 {
       c = (c << 30) | (c >>> 2);
     }
 
-    this.h0 = (this.h0 + a) >>> 0;
-    this.h1 = (this.h1 + b) >>> 0;
-    this.h2 = (this.h2 + c) >>> 0;
-    this.h3 = (this.h3 + d) >>> 0;
-    this.h4 = (this.h4 + e) >>> 0;
+    this._h0 = (this._h0 + a) >>> 0;
+    this._h1 = (this._h1 + b) >>> 0;
+    this._h2 = (this._h2 + c) >>> 0;
+    this._h3 = (this._h3 + d) >>> 0;
+    this._h4 = (this._h4 + e) >>> 0;
   }
 
   hex() {
     this.finalize();
 
-    let h0 = this.h0,
-      h1 = this.h1,
-      h2 = this.h2,
-      h3 = this.h3,
-      h4 = this.h4;
+    let h0 = this._h0,
+      h1 = this._h1,
+      h2 = this._h2,
+      h3 = this._h3,
+      h4 = this._h4;
 
     return (
       HEX_CHARS[(h0 >> 28) & 0x0f] +
@@ -333,11 +333,11 @@ export class Sha1 {
   digest() {
     this.finalize();
 
-    let h0 = this.h0,
-      h1 = this.h1,
-      h2 = this.h2,
-      h3 = this.h3,
-      h4 = this.h4;
+    let h0 = this._h0,
+      h1 = this._h1,
+      h2 = this._h2,
+      h3 = this._h3,
+      h4 = this._h4;
 
     return [
       (h0 >> 24) & 0xff,
@@ -370,7 +370,7 @@ export class Sha1 {
   arrayBuffer() {
     this.finalize();
     return Uint32Array.of(
-      this.h0, this.h1, this.h2, this.h3, this.h4
+      this._h0, this._h1, this._h2, this._h3, this._h4
     ).buffer;
   }
 }
