@@ -15,7 +15,7 @@ import {
   CHAR_QUESTION_MARK
 } from "./constants.ts";
 
-function assertPath(path: string) {
+function assertPath(path: string): void {
   if (typeof path !== "string") {
     throw new TypeError(
       `Path must be a string. Received ${JSON.stringify(path)}`
@@ -23,15 +23,15 @@ function assertPath(path: string) {
   }
 }
 
-function isPosixPathSeparator(code: number) {
+function isPosixPathSeparator(code: number): boolean {
   return code === CHAR_FORWARD_SLASH;
 }
 
-function isPathSeparator(code: number) {
+function isPathSeparator(code: number): boolean {
   return isPosixPathSeparator(code) || code === CHAR_BACKWARD_SLASH;
 }
 
-function isWindowsDeviceRoot(code: number) {
+function isWindowsDeviceRoot(code: number): boolean {
   return (
     (code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z) ||
     (code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z)
@@ -44,7 +44,7 @@ function normalizeString(
   allowAboveRoot: boolean,
   separator: string,
   isPathSeparator: (code: number) => boolean
-) {
+): string {
   let res = "";
   let lastSegmentLength = 0;
   let lastSlash = -1;
@@ -106,22 +106,18 @@ function normalizeString(
   return res;
 }
 
-function _format(sep: string, pathObject: FormatInputPathObject) {
-  const dir = pathObject.dir || pathObject.root;
-  const base =
+function _format(sep: string, pathObject: FormatInputPathObject): string {
+  const dir: string | null = pathObject.dir || pathObject.root;
+  const base: string =
     pathObject.base || (pathObject.name || "") + (pathObject.ext || "");
-  if (!dir) {
-    return base;
-  }
-  if (dir === pathObject.root) {
-    return dir + base;
-  }
+  if (!dir) return base;
+  if (dir === pathObject.root) return dir + base;
   return dir + sep + base;
 }
 
 export const win32 = {
   // path.resolve([from ...], to)
-  resolve(...pathSegments: string[]) {
+  resolve(...pathSegments: string[]): string {
     let resolvedDevice = "";
     let resolvedTail = "";
     let resolvedAbsolute = false;
@@ -268,7 +264,7 @@ export const win32 = {
     );
   },
 
-  normalize(path: string) {
+  normalize(path: string): string {
     assertPath(path);
     const len = path.length;
     if (len === 0) return ".";
@@ -381,7 +377,7 @@ export const win32 = {
     }
   },
 
-  isAbsolute(path: string) {
+  isAbsolute(path: string): boolean {
     assertPath(path);
     const len = path.length;
     if (len === 0) return false;
@@ -399,7 +395,7 @@ export const win32 = {
     return false;
   },
 
-  join(...paths: string[]) {
+  join(...paths: string[]): string {
     const pathsCount = paths.length;
     if (pathsCount === 0) return ".";
 
@@ -464,7 +460,7 @@ export const win32 = {
   //  from = 'C:\\orandea\\test\\aaa'
   //  to = 'C:\\orandea\\impl\\bbb'
   // The output of the function should be: '..\\..\\impl\\bbb'
-  relative(from: string, to: string) {
+  relative(from: string, to: string): string {
     assertPath(from);
     assertPath(to);
 
@@ -568,7 +564,7 @@ export const win32 = {
     }
   },
 
-  toNamespacedPath(path: string) {
+  toNamespacedPath(path: string): string {
     // Note: this will *probably* throw somewhere.
     if (typeof path !== "string") return path;
     if (path.length === 0) return "";
@@ -602,7 +598,7 @@ export const win32 = {
     return path;
   },
 
-  dirname(path: string) {
+  dirname(path: string): string {
     assertPath(path);
     const len = path.length;
     if (len === 0) return ".";
@@ -690,7 +686,7 @@ export const win32 = {
     return path.slice(0, end);
   },
 
-  basename(path: string, ext = "") {
+  basename(path: string, ext = ""): string {
     if (ext !== undefined && typeof ext !== "string")
       throw new TypeError('"ext" argument must be a string');
 
@@ -774,7 +770,7 @@ export const win32 = {
     }
   },
 
-  extname(path: string) {
+  extname(path: string): string {
     assertPath(path);
     let start = 0;
     let startDot = -1;
@@ -838,7 +834,7 @@ export const win32 = {
     return path.slice(startDot, end);
   },
 
-  format(pathObject: FormatInputPathObject) {
+  format(pathObject: FormatInputPathObject): string {
     if (pathObject === null || typeof pathObject !== "object") {
       throw new TypeError(
         `The "pathObject" argument must be of type Object. Received type ${typeof pathObject}`
@@ -847,13 +843,14 @@ export const win32 = {
     return _format("\\", pathObject);
   },
 
-  parse(path: string) {
+  parse(path: string): ParsedPath {
     assertPath(path);
 
     let ret = { root: "", dir: "", base: "", ext: "", name: "" } as ParsedPath;
-    if (path.length === 0) return ret;
 
-    let len = path.length;
+    const len = path.length;
+    if (len === 0) return ret;
+
     let rootEnd = 0;
     let code = path.charCodeAt(0);
 
@@ -1003,7 +1000,7 @@ export const win32 = {
 
 export const posix = {
   // path.resolve([from ...], to)
-  resolve(...pathSegments: string[]) {
+  resolve(...pathSegments: string[]): string {
     let resolvedPath = "";
     let resolvedAbsolute = false;
 
@@ -1042,7 +1039,7 @@ export const posix = {
     else return ".";
   },
 
-  normalize(path: string) {
+  normalize(path: string): string {
     assertPath(path);
 
     if (path.length === 0) return ".";
@@ -1081,7 +1078,7 @@ export const posix = {
     return posix.normalize(joined);
   },
 
-  relative(from: string, to: string) {
+  relative(from: string, to: string): string {
     assertPath(from);
     assertPath(to);
 
@@ -1094,10 +1091,10 @@ export const posix = {
 
     // Trim any leading backslashes
     let fromStart = 1;
-    for (; fromStart < from.length; ++fromStart) {
+    let fromEnd = from.length;
+    for (; fromStart < fromEnd; ++fromStart) {
       if (from.charCodeAt(fromStart) !== CHAR_FORWARD_SLASH) break;
     }
-    let fromEnd = from.length;
     let fromLen = fromEnd - fromStart;
 
     // Trim any leading backslashes
@@ -1163,12 +1160,12 @@ export const posix = {
     }
   },
 
-  toNamespacedPath(path: string) {
+  toNamespacedPath(path: string): string {
     // Non-op on posix systems
     return path;
   },
 
-  dirname(path: string) {
+  dirname(path: string): string {
     assertPath(path);
     if (path.length === 0) return ".";
     const hasRoot = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
@@ -1191,7 +1188,7 @@ export const posix = {
     return path.slice(0, end);
   },
 
-  basename(path: string, ext = "") {
+  basename(path: string, ext = ""): string {
     if (ext !== undefined && typeof ext !== "string")
       throw new TypeError('"ext" argument must be a string');
     assertPath(path);
@@ -1264,7 +1261,7 @@ export const posix = {
     }
   },
 
-  extname(path: string) {
+  extname(path: string): string {
     assertPath(path);
     let startDot = -1;
     let startPart = 0;
@@ -1314,7 +1311,7 @@ export const posix = {
     return path.slice(startDot, end);
   },
 
-  format(pathObject: FormatInputPathObject) {
+  format(pathObject: FormatInputPathObject): string {
     if (pathObject === null || typeof pathObject !== "object") {
       throw new TypeError(
         `The "pathObject" argument must be of type Object. Received type ${typeof pathObject}`
@@ -1323,7 +1320,7 @@ export const posix = {
     return _format("/", pathObject);
   },
 
-  parse(path: string) {
+  parse(path: string): ParsedPath {
     assertPath(path);
 
     let ret = { root: "", dir: "", base: "", ext: "", name: "" } as ParsedPath;
