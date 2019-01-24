@@ -2,35 +2,25 @@
 
 [![Build Status](https://dev.azure.com/denoland/deno_std/_apis/build/status/denoland.deno_std?branchName=master)](https://dev.azure.com/denoland/deno_std/_build/latest?definitionId=2?branchName=master)
 
-- **[colors](./colors/)**
+These modules do not have external dependencies and they are reviewed by the
+Deno core team. The intention is to have a standard set of high quality code
+that all Deno projects can use fearlessly.
 
-  Modules that generate ANSI color codes for the console.
+Contributions are welcome!
 
-- **[flags](./flags/)**
+## How to use
 
-  Command line arguments parser.
+These modules are tagged in accordance with Deno releases. So, for example, the
+v0.2.6 tag is guaranteed to work with deno v0.2.6.
+You can link to v0.2.6 using the URL `https://deno.land/x/std@v0.2.6/`
 
-- **[logging](./logging/)**
-
-  Command line logging
-
-- **[mkdirp](./mkdirp/)**
-
-  Make directory branches.
-
-- **[net](./net/)**
-
-  A framework for creating HTTP/HTTPS servers inspired by GoLang.
-
-- **[path](./path/)**
-
-  File path manipulation.
-
-- **[testing](./testing/)**
-
-  Testing
+It's strongly recommended that you link to tagged releases rather than the
+master branch. The project is still young and we expect disruptive renames in
+the future.
 
 ## Style Guide
+
+### Use TypeScript
 
 ### Use the term "module" instead of "library" or "package"
 
@@ -38,12 +28,15 @@ For clarity and consistency avoid the terms "library" and "package". Instead use
 "module" to refer to a single JS or TS file and also to refer to a directory of
 TS/JS code.
 
-### Use the filename "mod.ts" as the default entry point to a directory of code
+### Do not use the filename `index.ts` nor `index.js`
 
-`index.ts` comes with the wrong connotations - and `main.ts` should be reserved
-for executable programs. The filename `mod.ts` follows Rust’s convention, is
-shorter than `index.ts`, and doesn’t come with any preconceived notions about
-how it might work.
+Deno does not treat "index.js" or "index.ts" in a special way. By using these
+filenames, it suggests that they can be left out of the module specifier when
+they cannot. This is confusing.
+
+If a directory of code needs a default entry point, use the filename `mod.ts`.
+The filename `mod.ts` follows Rust’s convention, is shorter than `index.ts`, and
+doesn’t come with any preconceived notions about how it might work.
 
 ### Within `deno_std`, do not depend on external code
 
@@ -124,6 +117,19 @@ export function foo(): string {
   return "bar";
 }
 ```
+
+### Meta-programming is discouraged. Including the use of Proxy.
+
+Be explicit even when it means more code.
+
+There are some situations where it may make sense to use such techniques, but in
+the vast majority of cases it does not.
+
+### If a filename starts with underscore, do not link to it: `_foo.ts`
+
+Sometimes there maybe situations where an internal module is necessary but its
+API is not meant to be stable or linked to. In this case prefix it with an
+underscore. By convention, only files in its own directory should import it.
 
 ### When referencing Deno online, use the #denoland tag.
 

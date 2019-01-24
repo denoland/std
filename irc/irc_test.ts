@@ -3,8 +3,8 @@
 import { Conn, dial } from "deno";
 import { assert, assertEqual, test } from "../testing/mod.ts";
 import { ServerConn, parse, IrcServer } from "./irc.ts";
-import { TextProtoReader } from "../net/textproto.ts";
-import { BufReader, BufState } from "../net/bufio.ts";
+import { TextProtoReader } from "../textproto/mod.ts";
+import { BufReader, BufState } from "../io/bufio.ts";
 
 test(function userModes() {
   // use empty object, as we're not testing connections here

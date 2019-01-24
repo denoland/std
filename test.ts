@@ -1,35 +1,26 @@
 #!/usr/bin/env deno --allow-run --allow-net --allow-write
-import { run } from "deno";
-
-import "colors/main_test.ts";
+import "colors/test.ts";
 import "datetime/test.ts";
 import "examples/test.ts";
 import "flags/test.ts";
-import "logging/test.ts";
-import "mkdirp/test.ts";
-import "net/bufio_test.ts";
-import "net/http_test.ts";
-import "net/textproto_test.ts";
-import "path/basename_test.ts";
-import "path/dirname_test.ts";
-import "path/extname_test.ts";
-import "path/isabsolute_test.ts";
-import "path/join_test.ts";
-import "path/parse_format_test.ts";
-import "path/relative_test.ts";
-import "path/resolve_test.ts";
-import "path/zero_length_strings_test.ts";
+import "fs/path/basename_test.ts";
+import "fs/path/dirname_test.ts";
+import "fs/path/extname_test.ts";
+import "fs/path/isabsolute_test.ts";
+import "fs/path/join_test.ts";
+import "fs/path/parse_format_test.ts";
+import "fs/path/relative_test.ts";
+import "fs/path/resolve_test.ts";
+import "fs/path/zero_length_strings_test.ts";
+import "io/bufio_test.ts";
+import "io/ioutil_test.ts";
+import "io/util_test.ts";
+import "http/http_test.ts";
+import "http/file_server_test.ts";
+import "log/test.ts";
+import "media_types/test.ts";
 import "testing/test.ts";
+import "textproto/test.ts";
+import "ws/sha1_test.ts";
+import "ws/test.ts";
 import "irc/irc_test.ts";
-
-import { runTests, completePromise } from "net/file_server_test.ts";
-
-const fileServer = run({
-  args: ["deno", "--allow-net", "net/file_server.ts", ".", "--cors"]
-});
-
-runTests(new Promise(res => setTimeout(res, 5000)));
-(async () => {
-  await completePromise;
-  fileServer.close();
-})();

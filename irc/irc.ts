@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { listen, Listener, Conn } from "deno";
-import { TextProtoReader } from "../net/textproto.ts";
-import { BufReader, BufWriter } from "../net/bufio.ts";
+import { TextProtoReader } from "../textproto/mod.ts";
+import { BufReader, BufWriter } from "../io/bufio.ts";
 
 // ensures that there are no crashes if a wrong
 // property on a MessageData object, as a try-catch
@@ -167,7 +167,6 @@ export class IrcServer {
             break;
 
           default:
-            console.log(`${conn.nickname}:`, parsedMsg);
             this._replyToConn(conn, ERR.UNKNOWNCOMMAND, [
               parsedMsg.command,
               ":Unknown/unimplemented command"
