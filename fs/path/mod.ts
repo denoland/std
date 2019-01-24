@@ -1058,18 +1058,18 @@ export const posix = {
     return path;
   },
 
-  isAbsolute(path: string) {
+  isAbsolute(path: string): boolean {
     assertPath(path);
     return path.length > 0 && path.charCodeAt(0) === CHAR_FORWARD_SLASH;
   },
 
-  join(...paths: string[]) {
+  join(...paths: string[]): string {
     if (paths.length === 0) return ".";
     let joined: string | undefined;
     for (let i = 0, len = paths.length; i < len; ++i) {
       let path = paths[i];
       assertPath(path);
-      if (len > 0) {
+      if (path.length > 0) {
         if (!joined) joined = path;
         else joined += `/${path}`;
       }
