@@ -4,6 +4,7 @@
 import { cwd, env, platform } from "deno";
 import { FormatInputPathObject, ParsedPath } from "./interface.ts";
 import {
+  isWindows,
   CHAR_UPPERCASE_A,
   CHAR_LOWERCASE_A,
   CHAR_UPPERCASE_Z,
@@ -1381,9 +1382,11 @@ export const posix = {
       (preDotState === 1 && startDot === end - 1 && startDot === startPart + 1)
     ) {
       if (end !== -1) {
-        if (startPart === 0 && isAbsolute)
+        if (startPart === 0 && isAbsolute) {
           ret.base = ret.name = path.slice(1, end);
-        else ret.base = ret.name = path.slice(startPart, end);
+        } else {
+          ret.base = ret.name = path.slice(startPart, end);
+        }
       }
     } else {
       if (startPart === 0 && isAbsolute) {
@@ -1411,7 +1414,7 @@ export const posix = {
 posix.win32 = win32.win32 = win32;
 posix.posix = win32.posix = posix;
 
-const module = platform.os === "win" ? win32 : posix;
+const module = isWindows ? win32 : posix;
 
 export const resolve = module.resolve;
 export const normalize = module.normalize;
