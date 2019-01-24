@@ -1,6 +1,8 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 
+import { cwd, env, platform } from "deno";
+import { FormatInputPathObject, ParsedPath } from "./interface.ts";
 import {
   CHAR_UPPERCASE_A,
   CHAR_LOWERCASE_A,
@@ -12,8 +14,6 @@ import {
   CHAR_COLON,
   CHAR_QUESTION_MARK
 } from "./constants.ts";
-import { cwd, env, platform } from "deno";
-import { FormatInputPathObject, ParsedPath } from "./interface.ts";
 
 function assertPath(path: string) {
   if (typeof path !== "string") {
@@ -23,18 +23,18 @@ function assertPath(path: string) {
   }
 }
 
-function isPathSeparator(code: number) {
-  return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
-}
-
 function isPosixPathSeparator(code: number) {
   return code === CHAR_FORWARD_SLASH;
 }
 
+function isPathSeparator(code: number) {
+  return isPosixPathSeparator(code) || code === CHAR_BACKWARD_SLASH;
+}
+
 function isWindowsDeviceRoot(code: number) {
   return (
-    (code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z) ||
-    (code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z)
+    (code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z) ||
+    (code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z)
   );
 }
 
@@ -50,8 +50,8 @@ function normalizeString(
   let lastSlash = -1;
   let dots = 0;
   let code: number;
-  for (let i = 0; i <= path.length; ++i) {
-    if (i < path.length) code = path.charCodeAt(i);
+  for (let i = 0, len = path.length; i <= len; ++i) {
+    if (i < len) code = path.charCodeAt(i);
     else if (isPathSeparator(code)) break;
     else code = CHAR_FORWARD_SLASH;
 
@@ -121,15 +121,15 @@ function _format(sep: string, pathObject: FormatInputPathObject) {
 
 export const win32 = {
   // path.resolve([from ...], to)
-  resolve: function resolve(...pathSegments: string[]) {
+  resolve(...pathSegments: string[]) {
     let resolvedDevice = "";
     let resolvedTail = "";
     let resolvedAbsolute = false;
 
-    for (let i = arguments.length - 1; i >= -1; i--) {
+    for (let i = pathSegments.length - 1; i >= -1; i--) {
       let path: string;
       if (i >= 0) {
-        path = arguments[i];
+        path = pathSegments[i];
       } else if (!resolvedDevice) {
         path = cwd();
       } else {
@@ -152,12 +152,11 @@ export const win32 = {
 
       assertPath(path);
 
-      // Skip empty entries
-      if (path.length === 0) {
-        continue;
-      }
+      const len = path.length;
 
-      let len = path.length;
+      // Skip empty entries
+      if (len === 0) continue;
+
       let rootEnd = 0;
       let device = "";
       let isAbsolute = false;
@@ -249,9 +248,7 @@ export const win32 = {
         resolvedAbsolute = isAbsolute;
       }
 
-      if (resolvedDevice.length > 0 && resolvedAbsolute) {
-        break;
-      }
+      if (resolvedAbsolute && resolvedDevice.length > 0) break;
     }
 
     // At this point the path should be resolved to a full absolute path,
@@ -271,7 +268,7 @@ export const win32 = {
     );
   },
 
-  normalize: function normalize(path: string) {
+  normalize(path: string) {
     assertPath(path);
     const len = path.length;
     if (len === 0) return ".";
@@ -384,7 +381,7 @@ export const win32 = {
     }
   },
 
-  isAbsolute: function isAbsolute(path: string) {
+  isAbsolute(path: string) {
     assertPath(path);
     const len = path.length;
     if (len === 0) return false;
@@ -402,17 +399,18 @@ export const win32 = {
     return false;
   },
 
-  join: function join(...paths: string[]) {
-    if (arguments.length === 0) return ".";
+  join(...paths: string[]) {
+    const pathsCount = paths.length;
+    if (pathsCount === 0) return ".";
 
     let joined: string;
     let firstPart: string;
-    for (let i = 0; i < arguments.length; ++i) {
-      let arg = arguments[i];
-      assertPath(arg);
-      if (arg.length > 0) {
-        if (joined === undefined) joined = firstPart = arg;
-        else joined += `\\${arg}`;
+    for (let i = 0; i < pathsCount; ++i) {
+      let path = paths[i];
+      assertPath(path);
+      if (path.length > 0) {
+        if (joined === undefined) joined = firstPart = path;
+        else joined += `\\${path}`;
       }
     }
 
@@ -466,7 +464,7 @@ export const win32 = {
   //  from = 'C:\\orandea\\test\\aaa'
   //  to = 'C:\\orandea\\impl\\bbb'
   // The output of the function should be: '..\\..\\impl\\bbb'
-  relative: function relative(from: string, to: string) {
+  relative(from: string, to: string) {
     assertPath(from);
     assertPath(to);
 
@@ -484,11 +482,11 @@ export const win32 = {
 
     // Trim any leading backslashes
     let fromStart = 0;
-    for (; fromStart < from.length; ++fromStart) {
+    let fromEnd = from.length;
+    for (; fromStart < fromEnd; ++fromStart) {
       if (from.charCodeAt(fromStart) !== CHAR_BACKWARD_SLASH) break;
     }
     // Trim trailing backslashes (applicable to UNC paths only)
-    let fromEnd = from.length;
     for (; fromEnd - 1 > fromStart; --fromEnd) {
       if (from.charCodeAt(fromEnd - 1) !== CHAR_BACKWARD_SLASH) break;
     }
@@ -496,11 +494,11 @@ export const win32 = {
 
     // Trim any leading backslashes
     let toStart = 0;
-    for (; toStart < to.length; ++toStart) {
+    let toEnd = to.length;
+    for (; toStart < toEnd; ++toStart) {
       if (to.charCodeAt(toStart) !== CHAR_BACKWARD_SLASH) break;
     }
     // Trim trailing backslashes (applicable to UNC paths only)
-    let toEnd = to.length;
     for (; toEnd - 1 > toStart; --toEnd) {
       if (to.charCodeAt(toEnd - 1) !== CHAR_BACKWARD_SLASH) break;
     }
@@ -570,13 +568,10 @@ export const win32 = {
     }
   },
 
-  toNamespacedPath: function toNamespacedPath(path: string) {
+  toNamespacedPath(path: string) {
     // Note: this will *probably* throw somewhere.
     if (typeof path !== "string") return path;
-
-    if (path.length === 0) {
-      return "";
-    }
+    if (path.length === 0) return "";
 
     const resolvedPath = win32.resolve(path);
 
@@ -607,7 +602,7 @@ export const win32 = {
     return path;
   },
 
-  dirname: function dirname(path: string) {
+  dirname(path: string) {
     assertPath(path);
     const len = path.length;
     if (len === 0) return ".";
@@ -695,10 +690,12 @@ export const win32 = {
     return path.slice(0, end);
   },
 
-  basename: function basename(path: string, ext = "") {
+  basename(path: string, ext = "") {
     if (ext !== undefined && typeof ext !== "string")
       throw new TypeError('"ext" argument must be a string');
+
     assertPath(path);
+
     let start = 0;
     let end = -1;
     let matchedSlash = true;
@@ -777,7 +774,7 @@ export const win32 = {
     }
   },
 
-  extname: function extname(path: string) {
+  extname(path: string) {
     assertPath(path);
     let start = 0;
     let startDot = -1;
@@ -841,7 +838,7 @@ export const win32 = {
     return path.slice(startDot, end);
   },
 
-  format: function format(pathObject: FormatInputPathObject) {
+  format(pathObject: FormatInputPathObject) {
     if (pathObject === null || typeof pathObject !== "object") {
       throw new TypeError(
         `The "pathObject" argument must be of type Object. Received type ${typeof pathObject}`
@@ -850,7 +847,7 @@ export const win32 = {
     return _format("\\", pathObject);
   },
 
-  parse: function parse(path: string) {
+  parse(path: string) {
     assertPath(path);
 
     let ret = { root: "", dir: "", base: "", ext: "", name: "" } as ParsedPath;
@@ -985,15 +982,15 @@ export const win32 = {
     } else {
       ret.name = path.slice(startPart, startDot);
       ret.base = path.slice(startPart, end);
-      ret.ext = path.slice(startDot, end);
+      ret.ext  = path.slice(startDot, end);
     }
 
     // If the directory is the root, use the entire root as the `dir` including
     // the trailing slash if any (`C:\abc` -> `C:\`). Otherwise, strip out the
     // trailing slash (`C:\abc\def` -> `C:\abc`).
-    if (startPart > 0 && startPart !== rootEnd)
+    if (startPart > 0 && startPart !== rootEnd) {
       ret.dir = path.slice(0, startPart - 1);
-    else ret.dir = ret.root;
+    } else ret.dir = ret.root;
 
     return ret;
   },
@@ -1006,16 +1003,15 @@ export const win32 = {
 
 export const posix = {
   // path.resolve([from ...], to)
-  resolve: function resolve(...pathSegments: string[]) {
+  resolve(...pathSegments: string[]) {
     let resolvedPath = "";
     let resolvedAbsolute = false;
 
-    for (let i = arguments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
+    for (let i = pathSegments.length - 1; i >= -1 && !resolvedAbsolute; i--) {
       let path: string;
-      if (i >= 0) path = arguments[i];
-      else {
-        path = cwd();
-      }
+
+      if (i >= 0) path = pathSegments[i];
+      else path = cwd();
 
       assertPath(path);
 
@@ -1042,14 +1038,11 @@ export const posix = {
     if (resolvedAbsolute) {
       if (resolvedPath.length > 0) return `/${resolvedPath}`;
       else return "/";
-    } else if (resolvedPath.length > 0) {
-      return resolvedPath;
-    } else {
-      return ".";
-    }
+    } else if (resolvedPath.length > 0) return resolvedPath;
+    else return ".";
   },
 
-  normalize: function normalize(path: string) {
+  normalize(path: string) {
     assertPath(path);
 
     if (path.length === 0) return ".";
@@ -1068,27 +1061,27 @@ export const posix = {
     return path;
   },
 
-  isAbsolute: function isAbsolute(path: string) {
+  isAbsolute(path: string) {
     assertPath(path);
     return path.length > 0 && path.charCodeAt(0) === CHAR_FORWARD_SLASH;
   },
 
-  join: function join(...paths: string[]) {
-    if (arguments.length === 0) return ".";
-    let joined: string;
-    for (let i = 0; i < arguments.length; ++i) {
-      let arg = arguments[i];
+  join(...paths: string[]) {
+    if (paths.length === 0) return ".";
+    let joined: string | undefined;
+    for (let i = 0, len = paths.length; i < len; ++i) {
+      let arg = paths[i];
       assertPath(arg);
       if (arg.length > 0) {
-        if (joined === undefined) joined = arg;
+        if (!joined) joined = arg;
         else joined += `/${arg}`;
       }
     }
-    if (joined === undefined) return ".";
+    if (!joined) return ".";
     return posix.normalize(joined);
   },
 
-  relative: function relative(from: string, to: string) {
+  relative(from: string, to: string) {
     assertPath(from);
     assertPath(to);
 
@@ -1109,10 +1102,10 @@ export const posix = {
 
     // Trim any leading backslashes
     let toStart = 1;
-    for (; toStart < to.length; ++toStart) {
+    const toEnd = to.length;
+    for (; toStart < toEnd; ++toStart) {
       if (to.charCodeAt(toStart) !== CHAR_FORWARD_SLASH) break;
     }
-    let toEnd = to.length;
     let toLen = toEnd - toStart;
 
     // Compare paths to find the longest common path from root
@@ -1170,12 +1163,12 @@ export const posix = {
     }
   },
 
-  toNamespacedPath: function toNamespacedPath(path: string) {
+  toNamespacedPath(path: string) {
     // Non-op on posix systems
     return path;
   },
 
-  dirname: function dirname(path: string) {
+  dirname(path: string) {
     assertPath(path);
     if (path.length === 0) return ".";
     const hasRoot = path.charCodeAt(0) === CHAR_FORWARD_SLASH;
@@ -1198,7 +1191,7 @@ export const posix = {
     return path.slice(0, end);
   },
 
-  basename: function basename(path: string, ext = "") {
+  basename(path: string, ext = "") {
     if (ext !== undefined && typeof ext !== "string")
       throw new TypeError('"ext" argument must be a string');
     assertPath(path);
@@ -1271,7 +1264,7 @@ export const posix = {
     }
   },
 
-  extname: function extname(path: string) {
+  extname(path: string) {
     assertPath(path);
     let startDot = -1;
     let startPart = 0;
@@ -1321,7 +1314,7 @@ export const posix = {
     return path.slice(startDot, end);
   },
 
-  format: function format(pathObject: FormatInputPathObject) {
+  format(pathObject: FormatInputPathObject) {
     if (pathObject === null || typeof pathObject !== "object") {
       throw new TypeError(
         `The "pathObject" argument must be of type Object. Received type ${typeof pathObject}`
@@ -1330,7 +1323,7 @@ export const posix = {
     return _format("/", pathObject);
   },
 
-  parse: function parse(path: string) {
+  parse(path: string) {
     assertPath(path);
 
     let ret = { root: "", dir: "", base: "", ext: "", name: "" } as ParsedPath;
