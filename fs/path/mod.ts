@@ -1,7 +1,7 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 
-import { cwd, env, platform } from "deno";
+import { cwd, env } from "deno";
 import { FormatInputPathObject, ParsedPath } from "./interface.ts";
 import {
   isWindows,
