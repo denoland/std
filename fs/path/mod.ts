@@ -1067,11 +1067,11 @@ export const posix = {
     if (paths.length === 0) return ".";
     let joined: string | undefined;
     for (let i = 0, len = paths.length; i < len; ++i) {
-      let arg = paths[i];
-      assertPath(arg);
-      if (arg.length > 0) {
-        if (!joined) joined = arg;
-        else joined += `/${arg}`;
+      let path = paths[i];
+      assertPath(path);
+      if (len > 0) {
+        if (!joined) joined = path;
+        else joined += `/${path}`;
       }
     }
     if (!joined) return ".";
