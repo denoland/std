@@ -12,7 +12,7 @@ const { prettier, prettierPlugins } = window as any;
 function xrun(opts) {
   return run({
     ...opts,
-    args: platform.os === "win" ? ["", "/c", ...opts.args] : opts.args
+    args: platform.os === "win" ? ["cmd.exe", "/c", ...opts.args] : opts.args
   });
 }
 
