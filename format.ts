@@ -3,7 +3,8 @@
 import "./prettier/prettier.js";
 import "./prettier/parser_typescript.js";
 import "./prettier/parser_markdown.js";
-import { platform, readAll, exit, run, readFile, writeFile } from "deno";
+import { args, platform, readAll, exit, run, readFile, writeFile } from "deno";
+import { parse } from "./flags/mod.ts";
 
 // TODO: provide decent type declarions for these
 const { prettier, prettierPlugins } = window as any;
@@ -16,44 +17,87 @@ function xrun(opts) {
   });
 }
 
-const decoder = new TextDecoder();
-const encoder = new TextEncoder();
-
-function decode(data) {
-  return decoder.decode(data);
-}
-
-function encode(str) {
-  return encoder.encode(str);
-}
-
 // Gets the source files in the repository
 async function getSourceFiles() {
-  return decode(
-    await readAll(
-      xrun({
-        args: ["git", "ls-files"],
-        stdout: "piped"
-      }).stdout
+  return new TextDecoder()
+    .decode(
+      await readAll(
+        xrun({
+          args: ["git", "ls-files"],
+          stdout: "piped"
+        }).stdout
+      )
     )
-  )
     .trim()
     .split(/\r?\n/);
 }
 
-async function formatFile(filename, parser: "typescript" | "markdown") {
-  const text = decode(await readFile(filename));
+/**
+ * Checks if the file has been formatted with prettier.
+ */
+async function checkFile(
+  filename: string,
+  parser: "typescript" | "markdown"
+): Promise<boolean> {
+  const text = new TextDecoder().decode(await readFile(filename));
+  const formatted = prettier.check(text, {
+    parser,
+    plugins: prettierPlugins
+  });
+
+  if (!formatted) {
+    console.log(`${filename} ... Not formatted`);
+  }
+
+  return formatted;
+}
+
+/**
+ * Formats the given file.
+ */
+async function formatFile(
+  filename: string,
+  parser: "typescript" | "markdown"
+): Promise<void> {
+  const text = new TextDecoder().decode(await readFile(filename));
   const formatted = prettier.format(text, {
     parser,
     plugins: prettierPlugins
   });
 
   if (text !== formatted) {
-    await writeFile(filename, encode(formatted));
+    console.log(`Formatting ${filename}`);
+    await writeFile(filename, new TextEncoder().encode(formatted));
   }
 }
 
-async function main() {
+/**
+ * Checks if the all files have been formatted with prettier.
+ */
+async function checkSourceFiles() {
+  const checks = [];
+
+  (await getSourceFiles()).forEach(file => {
+    if (/\.ts$/.test(file)) {
+      checks.push(checkFile(file, "typescript"));
+    } else if (/\.md$/.test(file)) {
+      checks.push(checkFile(file, "markdown"));
+    }
+  });
+
+  const results = await Promise.all(checks);
+
+  if (results.every(result => result)) {
+    exit(0);
+  } else {
+    exit(1);
+  }
+}
+
+/**
+ * Formats the all files with prettier.
+ */
+async function formatSourceFiles() {
   const formats = [];
 
   (await getSourceFiles()).forEach(file => {
@@ -64,13 +108,21 @@ async function main() {
     }
   });
 
+  await Promise.all(formats);
+  exit(0);
+}
+
+async function main(opts) {
   try {
-    await Promise.all(formats);
-    exit(0);
+    if (opts.check) {
+      await checkSourceFiles();
+    } else {
+      await formatSourceFiles();
+    }
   } catch (e) {
     console.log(e);
     exit(1);
   }
 }
 
-main();
+main(parse(args));
