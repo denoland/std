@@ -1,5 +1,13 @@
 #!/usr/bin/env deno --allow-run --allow-write
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+/**
+ * This script formats the source files in the repository.
+ *
+ * Usage: deno format.ts [--check]
+ *
+ * Options:
+ *   --check          Checks if the source files are formatted.
+ */
 import "./prettier/prettier.js";
 import "./prettier/parser_typescript.js";
 import "./prettier/parser_markdown.js";
