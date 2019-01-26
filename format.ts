@@ -1,8 +1,8 @@
 #!/usr/bin/env deno --allow-run --allow-write
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import "./prettier/prettier.js";
-import "./prettier/parser-typescript.js";
-import "./prettier/parser-markdown.js";
+import "./prettier/parser_typescript.js";
+import "./prettier/parser_markdown.js";
 import { platform, readAll, exit, run, readFile, writeFile } from "deno";
 
 // TODO: provide decent type declarions for these
