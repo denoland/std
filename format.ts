@@ -57,7 +57,8 @@ async function checkFile(
   });
 
   if (!formatted) {
-    console.log(`${filename} ... Not formatted`);
+    // TODO: print some diff info here to show why this failed
+    console.error(`${filename} ... Not formatted`);
   }
 
   return formatted;
