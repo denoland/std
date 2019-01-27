@@ -8,14 +8,9 @@
  * Options:
  *   --check          Checks if the source files are formatted.
  */
-import "./prettier/prettier.js";
-import "./prettier/parser_typescript.js";
-import "./prettier/parser_markdown.js";
 import { args, platform, readAll, exit, run, readFile, writeFile } from "deno";
 import { parse } from "./flags/mod.ts";
-
-// TODO: provide decent type declarions for these
-const { prettier, prettierPlugins } = window as any;
+import { prettier, prettierPlugins } from "./prettier/prettier.ts";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
