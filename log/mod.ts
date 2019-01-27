@@ -21,7 +21,6 @@ export interface LogConfig {
 }
 
 const DEFAULT_LEVEL = "INFO";
-const DEFAULT_NAME = "";
 const DEFAULT_CONFIG: LogConfig = {
   handlers: {
     "default": new ConsoleHandler(DEFAULT_LEVEL)
@@ -31,10 +30,6 @@ const DEFAULT_CONFIG: LogConfig = {
     "default": {
       level: DEFAULT_LEVEL,
       handlers: ["default"]
-    },
-    "": {
-      level: DEFAULT_LEVEL,
-      handlers: [""]
     }
   }
 };
