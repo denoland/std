@@ -17,6 +17,9 @@ import { parse } from "./flags/mod.ts";
 // TODO: provide decent type declarions for these
 const { prettier, prettierPlugins } = window as any;
 
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
 // Runs commands in cross-platform way
 function xrun(opts) {
   return run({
@@ -27,7 +30,7 @@ function xrun(opts) {
 
 // Gets the source files in the repository
 async function getSourceFiles() {
-  return new TextDecoder()
+  return decoder
     .decode(
       await readAll(
         xrun({
@@ -47,7 +50,7 @@ async function checkFile(
   filename: string,
   parser: "typescript" | "markdown"
 ): Promise<boolean> {
-  const text = new TextDecoder().decode(await readFile(filename));
+  const text = decoder.decode(await readFile(filename));
   const formatted = prettier.check(text, {
     parser,
     plugins: prettierPlugins
@@ -67,7 +70,7 @@ async function formatFile(
   filename: string,
   parser: "typescript" | "markdown"
 ): Promise<void> {
-  const text = new TextDecoder().decode(await readFile(filename));
+  const text = decoder.decode(await readFile(filename));
   const formatted = prettier.format(text, {
     parser,
     plugins: prettierPlugins
@@ -75,7 +78,7 @@ async function formatFile(
 
   if (text !== formatted) {
     console.log(`Formatting ${filename}`);
-    await writeFile(filename, new TextEncoder().encode(formatted));
+    await writeFile(filename, encoder.encode(formatted));
   }
 }
 
