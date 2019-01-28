@@ -211,7 +211,12 @@ export function setFilter(s: string): void {
   filterRegExp = new RegExp(s, "i");
 }
 
+let testTimeout;
 export function test(t: TestDefinition | TestFunction): void {
+  if (!testTimeout) {
+    testTimeout = setTimeout(runTests, 0);
+  }
+
   const fn: TestFunction = typeof t === "function" ? t : t.fn;
   const name: string = t.name;
 
