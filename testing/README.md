@@ -42,7 +42,12 @@ compatibility.
 Basic usage:
 
 ```ts
-import { runTests, test, assert, equal } from "https://deno.land/x/testing/mod.ts";
+import {
+  runTests,
+  test,
+  assert,
+  equal
+} from "https://deno.land/x/testing/mod.ts";
 
 test({
   name: "testing example",
