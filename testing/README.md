@@ -37,7 +37,7 @@ functions:
 `assertEqual()` is the same as `assert.equal()` but maintained for backwards
 compatibility.
 
-`runTests()` executes the tests in the current file (and will likely become unnecessary in a future release).
+`runTests()` executes the declared tests.
 
 Basic usage:
 
