@@ -1,5 +1,5 @@
 import { run } from "deno";
-import { test, assertEqual } from "../testing/mod.ts";
+import { test, assertEqual, runTests } from "../testing/mod.ts";
 
 /** Example of how to do basic tests */
 test(function t1() {
@@ -9,6 +9,8 @@ test(function t1() {
 test(function t2() {
   assertEqual("world", "world");
 });
+
+runTests();
 
 /** A more complicated test that runs a subprocess. */
 /* TODO re-enable this test. Seems to be broken on Windows.
