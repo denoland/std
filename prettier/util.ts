@@ -8,3 +8,5 @@ export function xrun(opts) {
     args: platform.os === "win" ? ["cmd.exe", "/c", ...opts.args] : opts.args
   });
 }
+
+export const executableSuffix = platform.os === "win" ? ".exe" : "";

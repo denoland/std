@@ -1,5 +1,6 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, assertEqual } from "../testing/mod.ts";
-import { xrun } from "./util.ts";
+import { xrun, executableSuffix } from "./util.ts";
 import { readAll } from "deno";
 
 const decoder = new TextDecoder();
@@ -13,7 +14,12 @@ async function run(args: string[]) {
   return { stdout, code };
 }
 
-const cmd = ["deno", "--allow-run", "--allow-write", "prettier/main.ts"];
+const cmd = [
+  `deno${executableSuffix}`,
+  "--allow-run",
+  "--allow-write",
+  "prettier/main.ts"
+];
 const testdata = "prettier/testdata";
 
 function normalizeOutput(output: string): string {

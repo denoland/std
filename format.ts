@@ -2,11 +2,11 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { exit, args } from "deno";
 import { parse } from "./flags/mod.ts";
-import { xrun } from "./prettier/util.ts";
+import { xrun, executableSuffix } from "./prettier/util.ts";
 
 async function main(opts) {
   const args = [
-    "deno",
+    `deno${executableSuffix}`,
     "--allow-write",
     "--allow-run",
     "prettier/main.ts",
