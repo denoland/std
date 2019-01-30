@@ -1,7 +1,6 @@
 #!/usr/bin/env deno --allow-run --allow-net --allow-write
 import "colors/test.ts";
 import "datetime/test.ts";
-import "examples/test.ts";
 import "flags/test.ts";
 import "fs/path/basename_test.ts";
 import "fs/path/dirname_test.ts";
