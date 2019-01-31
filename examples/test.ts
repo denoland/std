@@ -13,7 +13,7 @@ test(function t2() {
 /** A more complicated test that runs a subprocess. */
 test(async function catSmoke() {
   const p = run({
-    args: ["deno", "examples/cat.ts", "README.md"],
+    args: ["deno", "https://deno.land/x/examples/cat.ts", "README.md"],
     stdout: "piped"
   });
   const s = await p.status();
