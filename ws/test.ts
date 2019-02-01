@@ -12,7 +12,7 @@ import {
   readFrame,
   unmask
 } from "./mod.ts";
-import { serve } from "../http/http.ts";
+import { serve } from "../http/server.ts";
 
 test(async function testReadUnmaskedTextFrame() {
   // unmasked single text frame with payload "Hello"
