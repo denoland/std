@@ -5,7 +5,7 @@
 ```ts
 import * as log from "https://deno.land/x/std/log/mod.ts";
 
-// simple default logger, you can customize it 
+// simple default logger, you can customize it
 // by overriding logger and handler named "default"
 log.debug("Hello world");
 log.info("Hello world");
@@ -17,12 +17,12 @@ log.critical("500 Internal server error");
 await log.setup({
   handlers: {
     console: new log.handlers.ConsoleHandler("DEBUG"),
-    
-    file: new log.handlers.FileHandler("WARNING", { 
+
+    file: new log.handlers.FileHandler("WARNING", {
       filename: "./log.txt",
       // you can change format of output message
-      formatter: "{levelName} {msg}",
-    }),
+      formatter: "{levelName} {msg}"
+    })
   },
 
   loggers: {
@@ -34,7 +34,7 @@ await log.setup({
 
     tasks: {
       level: "ERROR",
-      handlers: ["console"],
+      handlers: ["console"]
     }
   }
 });
@@ -61,9 +61,11 @@ unknownLogger.info("foobar"); // no-op
 ## Advanced usage
 
 ### Loggers
+
 Loggers are objects that you interact with. When you use logger method it constructs a `LogRecord` and passes it down to its handlers for output. To create custom loggers speficify them in `loggers` when calling `log.setup`.
 
 #### `LogRecord`
+
 `LogRecord` is an object that encapsulates provided message and arguments as well some meta data that can be later used when formatting a message.
 
 ```ts
@@ -77,16 +79,20 @@ interface LogRecord {
 ```
 
 ### Handlers
-Handlers are responsible for actual output of log messages. When handler is called by logger it firstly checks that `LogRecord`'s level is not lower than level of the handler. If level check passes, handlers formats log record into string and outputs it to target. 
 
-`log` module comes with two built-in handlers: 
-- `ConsoleHandler`
+Handlers are responsible for actual output of log messages. When handler is called by logger it firstly checks that `LogRecord`'s level is not lower than level of the handler. If level check passes, handlers formats log record into string and outputs it to target.
+
+`log` module comes with two built-in handlers:
+
+- `ConsoleHandler` - (default)
 - `FileHandler`
 
 #### Custom message format
+
 If you want to override default format of message you can define `formatter` option for handler. It can be either simple string-based format that uses `LogRecord` fields or more complicated function-based one that takes `LogRecord` as argument and outputs string.
 
 Eg.
+
 ```ts
 await log.setup({
   handlers: {
@@ -106,7 +112,7 @@ await log.setup({
       }
     }),
   },
-  
+
   loggers: {
      default: {
          level: "DEBUG",
@@ -123,10 +129,13 @@ log.debug("Hello, world!", 1, "two", [3, 4, 5]);
 ```
 
 #### Custom handlers
-Custom handlers can be implemented by subclassing `BaseHandler` or `WriterHandler`. 
 
-`BaseHandler` is bare-bones handler that has no output logic at all, 
+Custom handlers can be implemented by subclassing `BaseHandler` or `WriterHandler`.
+
+`BaseHandler` is bare-bones handler that has no output logic at all,
 
 `WriterHandler` is an abstract class that supports any target with `Writer` interface.
+
+During setup async hooks `setup` and `destroy` are called, you can use them to open and close file/HTTP connection or any other action you might need.
 
 For examples check source code of `FileHandler` and `TestHandler`.
