@@ -96,7 +96,7 @@ test(async function testReadUnmaksedPingPongFrame() {
 });
 
 test(async function testReadUnmaksedBigBinaryFrame() {
-  let a = [0x82, 0x7e, 0x01, 0x00];
+  const a = [0x82, 0x7e, 0x01, 0x00];
   for (let i = 0; i < 256; i++) {
     a.push(i);
   }
@@ -109,7 +109,7 @@ test(async function testReadUnmaksedBigBinaryFrame() {
 });
 
 test(async function testReadUnmaskedBigBigBinaryFrame() {
-  let a = [0x82, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00];
+  const a = [0x82, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00];
   for (let i = 0; i < 0xffff; i++) {
     a.push(i);
   }
