@@ -46,8 +46,12 @@ export type WebSocketMessage = string | Uint8Array;
 
 // TODO move this to common/util module
 export function append(a: Uint8Array, b: Uint8Array) {
-  if (a == null || !a.length) return b;
-  if (b == null || !b.length) return a;
+  if (a == null || !a.length) {
+    return b;
+  }
+  if (b == null || !b.length) {
+    return a;
+  }
   const output = new Uint8Array(a.length + b.length);
   output.set(a, 0);
   output.set(b, a.length);
@@ -118,6 +122,7 @@ class WebSocketImpl implements WebSocket {
         case OpCode.Pong:
           yield ["pong", frame.payload] as WebSocketPongEvent;
           break;
+        default:
       }
     }
   }
@@ -188,7 +193,10 @@ class WebSocketImpl implements WebSocket {
   }
 
   private ensureSocketClosed(): Error {
-    if (this.isClosed) return;
+    if (this.isClosed) {
+      return;
+    }
+
     try {
       this.conn.close();
     } catch (e) {
@@ -241,6 +249,7 @@ export async function* receiveFrame(
       case OpCode.Pong:
         yield frame;
         break;
+      default:
     }
   }
 }
