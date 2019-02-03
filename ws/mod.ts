@@ -203,7 +203,7 @@ export async function* receiveFrame(
   conn: Conn
 ): AsyncIterableIterator<WebSocketFrame> {
   let receiving = true;
-  let isLastFrame = true;
+  const isLastFrame = true;
   const reader = new BufReader(conn);
   while (receiving) {
     const frame = await readFrame(reader);
@@ -246,7 +246,7 @@ export async function* receiveFrame(
 }
 
 export async function writeFrame(frame: WebSocketFrame, writer: Writer) {
-  let payloadLength = frame.payload.byteLength;
+  const payloadLength = frame.payload.byteLength;
   let header: Uint8Array;
   const hasMask = frame.mask ? 0x80 : 0;
   if (payloadLength < 126) {
