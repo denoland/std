@@ -42,6 +42,8 @@ export function isWebSocketPongEvent(a): a is WebSocketPongEvent {
   return Array.isArray(a) && a[0] === "pong" && a[1] instanceof Uint8Array;
 }
 
+export type WebSocketMessage = string | Uint8Array;
+
 // TODO move this to common/util module
 export function append(a: Uint8Array, b: Uint8Array) {
   if (a == null || !a.length) return b;
@@ -64,8 +66,8 @@ export type WebSocketFrame = {
 export type WebSocket = {
   readonly isClosed: boolean;
   receive(): AsyncIterableIterator<WebSocketEvent>;
-  send(data: string | Uint8Array): Promise<void>;
-  ping(data?: string | Uint8Array): Promise<void>;
+  send(data: WebSocketMessage): Promise<void>;
+  ping(data?: WebSocketMessage): Promise<void>;
   close(code: number, reason?: string): Promise<void>;
 };
 
@@ -120,7 +122,7 @@ class WebSocketImpl implements WebSocket {
     }
   }
 
-  async send(data: string | Uint8Array): Promise<void> {
+  async send(data: WebSocketMessage): Promise<void> {
     if (this.isClosed) {
       throw new SocketClosedError("socket has been closed");
     }
@@ -139,7 +141,7 @@ class WebSocketImpl implements WebSocket {
     );
   }
 
-  async ping(data: string | Uint8Array): Promise<void> {
+  async ping(data: WebSocketMessage): Promise<void> {
     const payload = typeof data === "string" ? this.encoder.encode(data) : data;
     await writeFrame(
       {
