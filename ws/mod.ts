@@ -58,7 +58,7 @@ export class SocketClosedError extends Error {}
 
 export type WebSocketFrame = {
   isLastFrame: boolean;
-  opcode: number;
+  opcode: OpCode;
   mask?: Uint8Array;
   payload: Uint8Array;
 };
