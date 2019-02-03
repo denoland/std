@@ -1,9 +1,8 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "deno";
 import { BufReader } from "../io/bufio.ts";
-import { test, assert, assertEqual } from "../testing/mod.ts";
+import { test, assert } from "../testing/mod.ts";
 import { createSecAccept, OpCode, readFrame, unmask } from "./mod.ts";
-import { serve } from "../http/server.ts";
 
 test(async function testReadUnmaskedTextFrame() {
   // unmasked single text frame with payload "Hello"
@@ -11,10 +10,10 @@ test(async function testReadUnmaskedTextFrame() {
     new Buffer(new Uint8Array([0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f]))
   );
   const frame = await readFrame(buf);
-  assertEqual(frame.opcode, OpCode.TextFrame);
-  assertEqual(frame.mask, undefined);
-  assertEqual(new Buffer(frame.payload).toString(), "Hello");
-  assertEqual(frame.isLastFrame, true);
+  assert.equal(frame.opcode, OpCode.TextFrame);
+  assert.equal(frame.mask, undefined);
+  assert.equal(new Buffer(frame.payload).toString(), "Hello");
+  assert.equal(frame.isLastFrame, true);
 });
 
 test(async function testReadMakedTextFrame() {
@@ -38,10 +37,10 @@ test(async function testReadMakedTextFrame() {
   );
   const frame = await readFrame(buf);
   console.dir(frame);
-  assertEqual(frame.opcode, OpCode.TextFrame);
+  assert.equal(frame.opcode, OpCode.TextFrame);
   unmask(frame.payload, frame.mask);
-  assertEqual(new Buffer(frame.payload).toString(), "Hello");
-  assertEqual(frame.isLastFrame, true);
+  assert.equal(new Buffer(frame.payload).toString(), "Hello");
+  assert.equal(frame.isLastFrame, true);
 });
 
 test(async function testReadUnmaskedSplittedTextFrames() {
@@ -52,15 +51,15 @@ test(async function testReadUnmaskedSplittedTextFrames() {
     new Buffer(new Uint8Array([0x80, 0x02, 0x6c, 0x6f]))
   );
   const [f1, f2] = await Promise.all([readFrame(buf1), readFrame(buf2)]);
-  assertEqual(f1.isLastFrame, false);
-  assertEqual(f1.mask, undefined);
-  assertEqual(f1.opcode, OpCode.TextFrame);
-  assertEqual(new Buffer(f1.payload).toString(), "Hel");
+  assert.equal(f1.isLastFrame, false);
+  assert.equal(f1.mask, undefined);
+  assert.equal(f1.opcode, OpCode.TextFrame);
+  assert.equal(new Buffer(f1.payload).toString(), "Hel");
 
-  assertEqual(f2.isLastFrame, true);
-  assertEqual(f2.mask, undefined);
-  assertEqual(f2.opcode, OpCode.Continue);
-  assertEqual(new Buffer(f2.payload).toString(), "lo");
+  assert.equal(f2.isLastFrame, true);
+  assert.equal(f2.mask, undefined);
+  assert.equal(f2.opcode, OpCode.Continue);
+  assert.equal(new Buffer(f2.payload).toString(), "lo");
 });
 
 test(async function testReadUnmaksedPingPongFrame() {
@@ -69,8 +68,8 @@ test(async function testReadUnmaksedPingPongFrame() {
     new Buffer(new Uint8Array([0x89, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f]))
   );
   const ping = await readFrame(buf);
-  assertEqual(ping.opcode, OpCode.Ping);
-  assertEqual(new Buffer(ping.payload).toString(), "Hello");
+  assert.equal(ping.opcode, OpCode.Ping);
+  assert.equal(new Buffer(ping.payload).toString(), "Hello");
 
   const buf2 = new BufReader(
     new Buffer(
@@ -90,10 +89,10 @@ test(async function testReadUnmaksedPingPongFrame() {
     )
   );
   const pong = await readFrame(buf2);
-  assertEqual(pong.opcode, OpCode.Pong);
+  assert.equal(pong.opcode, OpCode.Pong);
   assert(pong.mask !== undefined);
   unmask(pong.payload, pong.mask);
-  assertEqual(new Buffer(pong.payload).toString(), "Hello");
+  assert.equal(new Buffer(pong.payload).toString(), "Hello");
 });
 
 test(async function testReadUnmaksedBigBinaryFrame() {
@@ -103,10 +102,10 @@ test(async function testReadUnmaksedBigBinaryFrame() {
   }
   const buf = new BufReader(new Buffer(new Uint8Array(a)));
   const bin = await readFrame(buf);
-  assertEqual(bin.opcode, OpCode.BinaryFrame);
-  assertEqual(bin.isLastFrame, true);
-  assertEqual(bin.mask, undefined);
-  assertEqual(bin.payload.length, 256);
+  assert.equal(bin.opcode, OpCode.BinaryFrame);
+  assert.equal(bin.isLastFrame, true);
+  assert.equal(bin.mask, undefined);
+  assert.equal(bin.payload.length, 256);
 });
 
 test(async function testReadUnmaskedBigBigBinaryFrame() {
@@ -116,14 +115,14 @@ test(async function testReadUnmaskedBigBigBinaryFrame() {
   }
   const buf = new BufReader(new Buffer(new Uint8Array(a)));
   const bin = await readFrame(buf);
-  assertEqual(bin.opcode, OpCode.BinaryFrame);
-  assertEqual(bin.isLastFrame, true);
-  assertEqual(bin.mask, undefined);
-  assertEqual(bin.payload.length, 0xffff + 1);
+  assert.equal(bin.opcode, OpCode.BinaryFrame);
+  assert.equal(bin.isLastFrame, true);
+  assert.equal(bin.mask, undefined);
+  assert.equal(bin.payload.length, 0xffff + 1);
 });
 
 test(async function testCreateSecAccept() {
   const nonce = "dGhlIHNhbXBsZSBub25jZQ==";
   const d = createSecAccept(nonce);
-  assertEqual(d, "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
+  assert.equal(d, "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
 });
