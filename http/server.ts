@@ -170,7 +170,7 @@ export class ServerRequest {
             }
             yield data;
             await this.r.readLine(); // Consume \r\n
-            [line, _] = await tp.readLine();
+            [line,] = await tp.readLine();
             chunkSize = parseInt(line, 16);
           }
           const [entityHeaders, err] = await tp.readMIMEHeader();
