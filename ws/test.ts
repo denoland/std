@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import "ws/sha1_test.ts";
+import "./sha1_test.ts";
 
 import { Buffer } from "deno";
 import { BufReader } from "../io/bufio.ts";
