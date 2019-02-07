@@ -51,25 +51,41 @@ export class BaseHandler {
   async destroy() {}
 }
 
+interface ConsoleHandlerOptions extends HandlerOptions {
+  colors: boolean;
+}
+
 export class ConsoleHandler extends BaseHandler {
+  colors = true;
+
+  constructor(levelName: string, options?: ConsoleHandlerOptions) {
+    super(levelName);
+
+    if (options && !options.colors) {
+      this.colors = false;
+    }
+  }
+
   format(logRecord: LogRecord): string {
     let msg = super.format(logRecord);
 
-    switch (logRecord.level) {
-      case LogLevel.INFO:
-        msg = blue(msg);
-        break;
-      case LogLevel.WARNING:
-        msg = yellow(msg);
-        break;
-      case LogLevel.ERROR:
-        msg = red(msg);
-        break;
-      case LogLevel.CRITICAL:
-        msg = bold(red(msg));
-        break;
-      default:
-        break;
+    if (this.colors) {
+      switch (logRecord.level) {
+        case LogLevel.INFO:
+          msg = blue(msg);
+          break;
+        case LogLevel.WARNING:
+          msg = yellow(msg);
+          break;
+        case LogLevel.ERROR:
+          msg = red(msg);
+          break;
+        case LogLevel.CRITICAL:
+          msg = bold(red(msg));
+          break;
+        default:
+          break;
+      }
     }
 
     return msg;
