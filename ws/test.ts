@@ -1,8 +1,14 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import {Buffer} from "deno";
-import {BufReader} from "../io/bufio.ts";
-import {assert, assertEqual, runTests, test} from "../testing/mod.ts";
-import {createSecAccept, OpCode, readFrame, unmask} from "./mod.ts";
+import { Buffer } from "deno";
+import { BufReader } from "../io/bufio.ts";
+import { assert, assertEqual, runTests, test } from "../testing/mod.ts";
+import {
+  acceptable,
+  createSecAccept,
+  OpCode,
+  readFrame,
+  unmask
+} from "./mod.ts";
 
 test(async function testReadUnmaskedTextFrame() {
   // unmasked single text frame with payload "Hello"
@@ -127,4 +133,30 @@ test(async function testCreateSecAccept() {
   assertEqual(d, "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
 });
 
-setTimeout(runTests,0)
+test(function testAcceptable() {
+  const ret = acceptable({
+    headers: new Headers({
+      upgrade: "websocket",
+      "sec-websocket-key": "aaa"
+    })
+  });
+  assertEqual(ret, true);
+});
+
+const invalidHeaders = [
+  { "sec-websocket-key": "aaa" },
+  { upgrade: "websocket" },
+  { upgrade: "invalid", "sec-websocket-key": "aaa" },
+  { upgrade: "websocket", "sec-websocket-ky": "" }
+];
+
+test(function testAcceptableInvalid() {
+  for (const pat of invalidHeaders) {
+    const ret = acceptable({
+      headers: new Headers(pat)
+    });
+    assertEqual(ret, false);
+  }
+});
+
+setTimeout(runTests, 0);

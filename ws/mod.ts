@@ -279,9 +279,11 @@ export function unmask(payload: Uint8Array, mask?: Uint8Array) {
   }
 }
 
-export function acceptable(headers: Headers): boolean {
+export function acceptable(req: { headers: Headers }): boolean {
   return (
-    headers.get("upgrade") === "websocket" && headers.has("sec-websocket-key")
+    req.headers.get("upgrade") === "websocket" &&
+    req.headers.has("sec-websocket-key") &&
+    req.headers.get("sec-websocket-key").length > 0
   );
 }
 
@@ -290,7 +292,7 @@ export async function acceptWebSocket(req: {
   headers: Headers;
 }): Promise<WebSocket> {
   const { conn, headers } = req;
-  if (acceptable(headers)) {
+  if (acceptable(req)) {
     const sock = new WebSocketImpl(conn);
     const secKey = headers.get("sec-websocket-key");
     const secAccept = createSecAccept(secKey);
