@@ -1,3 +1,6 @@
+import "./handlers_test.ts";
+import "./logger_test.ts";
+
 import { assertEqual, test } from "../testing/mod.ts";
 import * as log from "./mod.ts";
 import { BaseHandler } from "./handlers.ts";
