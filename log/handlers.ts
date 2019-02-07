@@ -52,7 +52,7 @@ export class BaseHandler {
 }
 
 interface ConsoleHandlerOptions extends HandlerOptions {
-  colors: boolean;
+  colors?: boolean;
 }
 
 export class ConsoleHandler extends BaseHandler {
