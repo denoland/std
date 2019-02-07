@@ -59,7 +59,7 @@ export class ConsoleHandler extends BaseHandler {
   colors = true;
 
   constructor(levelName: string, options?: ConsoleHandlerOptions) {
-    super(levelName);
+    super(levelName, options);
 
     if (options && !options.colors) {
       this.colors = false;
