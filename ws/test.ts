@@ -1,9 +1,8 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Buffer } from "deno";
-import { BufReader } from "../io/bufio.ts";
-import { test, assert, assertEqual } from "../testing/mod.ts";
-import { createSecAccept, OpCode, readFrame, unmask } from "./mod.ts";
-import { serve } from "../http/server.ts";
+import {Buffer} from "deno";
+import {BufReader} from "../io/bufio.ts";
+import {assert, assertEqual, runTests, test} from "../testing/mod.ts";
+import {createSecAccept, OpCode, readFrame, unmask} from "./mod.ts";
 
 test(async function testReadUnmaskedTextFrame() {
   // unmasked single text frame with payload "Hello"
@@ -127,3 +126,5 @@ test(async function testCreateSecAccept() {
   const d = createSecAccept(nonce);
   assertEqual(d, "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
 });
+
+setTimeout(runTests,0)

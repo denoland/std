@@ -6,7 +6,7 @@
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
 import { Buffer } from "deno";
-import { test, assert, assertEqual } from "../testing/mod.ts";
+import { test, assert, assertEqual, runTests } from "../testing/mod.ts";
 import {
   listenAndServe,
   ServerRequest,
@@ -221,3 +221,5 @@ test(async function requestBodyStreamWithTransferEncoding() {
     }
   }
 });
+
+setTimeout(runTests, 0);
