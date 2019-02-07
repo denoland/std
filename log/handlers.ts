@@ -53,20 +53,7 @@ export class BaseHandler {
 
 export class ConsoleHandler extends BaseHandler {
   format(logRecord: LogRecord): string {
-    if (this.formatter instanceof Function) {
-      return this.formatter(logRecord);
-    }
-
-    let msg = this.formatter.replace(/{(\S+)}/g, (match, p1) => {
-      const value = logRecord[p1];
-
-      // do not interpolate missing values
-      if (!value) {
-        return match;
-      }
-
-      return value;
-    });
+    let msg = super.format(logRecord);
 
     switch (logRecord.level) {
       case LogLevel.INFO:
