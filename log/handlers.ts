@@ -1,6 +1,7 @@
 import { open, File, Writer } from "deno";
-import { getLevelByName } from "./levels.ts";
+import { getLevelByName, LogLevel } from "./levels.ts";
 import { LogRecord } from "./logger.ts";
+import { red, yellow, blue, bold } from "../colors/mod.ts"
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
 type FormatterFunction = (logRecord: LogRecord) => string;
@@ -51,6 +52,41 @@ export class BaseHandler {
 }
 
 export class ConsoleHandler extends BaseHandler {
+  format(logRecord: LogRecord): string {
+    if (this.formatter instanceof Function) {
+      return this.formatter(logRecord);
+    }
+
+    let msg = this.formatter.replace(/{(\S+)}/g, (match, p1) => {
+      const value = logRecord[p1];
+
+      // do not interpolate missing values
+      if (!value) {
+        return match;
+      }
+
+      return value;
+    });
+
+    switch (logRecord.level) {
+      case LogLevel.INFO:
+        msg = blue(msg);
+        break;
+      case LogLevel.WARNING:
+        msg = yellow(msg);
+        break;
+      case LogLevel.ERROR:
+        msg = red(msg);
+        break;
+      case LogLevel.CRITICAL:
+        msg = bold(red(msg));
+        break;
+      default: break;
+    }
+
+    return msg;
+  }
+
   log(msg: string) {
     console.log(msg);
   }
