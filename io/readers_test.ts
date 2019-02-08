@@ -1,17 +1,19 @@
-import { assert, runTests, test } from "../testing/mod.ts";
+import { assert, test } from "../testing/mod.ts";
 import { MultiReader, StringReader } from "./readers.ts";
 import { StringWriter } from "./writers.ts";
 import { copy } from "deno";
 import { copyN } from "./ioutil.ts";
 
 const d = new TextDecoder();
-test(async function testStringReader() {
+
+test(async function ioStringReader() {
   const r = new StringReader("abcdef");
   const { nread, eof } = await r.read(new Uint8Array(6));
   assert.equal(nread, 6);
   assert.equal(eof, true);
 });
-test(async function testStringReader() {
+
+test(async function ioStringReader() {
   const r = new StringReader("abcdef");
   const buf = new Uint8Array(3);
   let res1 = await r.read(buf);
@@ -23,7 +25,8 @@ test(async function testStringReader() {
   assert.equal(res2.eof, true);
   assert.equal(d.decode(buf), "def");
 });
-test(async function testMultiReader() {
+
+test(async function ioMultiReader() {
   const r = new MultiReader(new StringReader("abc"), new StringReader("def"));
   const w = new StringWriter();
   const n = await copyN(w, r, 4);

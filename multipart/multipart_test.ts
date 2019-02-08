@@ -1,11 +1,11 @@
-import { assertEqual, runTests, setFilter, test } from "../testing/mod.ts";
+import { assertEqual, test } from "../testing/mod.ts";
 import {
   matchAfterPrefix,
   MultipartReader,
   MultipartWriter,
   scanUntilBoundary
 } from "./multipart.ts";
-import { args, Buffer, cwd, open } from "deno";
+import { Buffer, open } from "deno";
 import * as path from "../fs/path.ts";
 
 const e = new TextEncoder();
@@ -13,7 +13,8 @@ const d = new TextDecoder();
 const boundary = "--abcde";
 const dashBoundary = e.encode("--" + boundary);
 const nlDashBoundary = e.encode("\r\n--" + boundary);
-test(function testScanUntilBoundary1() {
+
+test(function multipartScanUntilBoundary1() {
   const data = `--${boundary}`;
   const [n, err] = scanUntilBoundary(
     e.encode(data),
@@ -25,7 +26,8 @@ test(function testScanUntilBoundary1() {
   assertEqual(n, 0);
   assertEqual(err, "EOF");
 });
-test(function testScanUntilBoundary2() {
+
+test(function multipartScanUntilBoundary2() {
   const data = `foo\r\n--${boundary}`;
   const [n, err] = scanUntilBoundary(
     e.encode(data),
@@ -37,7 +39,8 @@ test(function testScanUntilBoundary2() {
   assertEqual(n, 3);
   assertEqual(err, "EOF");
 });
-test(function testScanUntilBoundary4() {
+
+test(function multipartScanUntilBoundary4() {
   const data = `foo\r\n--`;
   const [n, err] = scanUntilBoundary(
     e.encode(data),
@@ -49,7 +52,8 @@ test(function testScanUntilBoundary4() {
   assertEqual(n, 3);
   assertEqual(err, null);
 });
-test(function testScanUntilBoundary3() {
+
+test(function multipartScanUntilBoundary3() {
   const data = `foobar`;
   const [n, err] = scanUntilBoundary(
     e.encode(data),
@@ -62,22 +66,25 @@ test(function testScanUntilBoundary3() {
   assertEqual(err, null);
 });
 
-test(function testMatchAfterPrefix1() {
+test(function multipartMatchAfterPrefix1() {
   const data = `${boundary}\r`;
   const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
   assertEqual(v, 1);
 });
-test(function testMatchAfterPrefix2() {
+
+test(function multipartMatchAfterPrefix2() {
   const data = `${boundary}hoge`;
   const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
   assertEqual(v, -1);
 });
-test(function testMatchAfterPrefix3() {
+
+test(function multipartMatchAfterPrefix3() {
   const data = `${boundary}`;
   const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
   assertEqual(v, 0);
 });
-test(async function testWriter() {
+
+test(async function multipartMultipartWriter() {
   const buf = new Buffer();
   const mw = new MultipartWriter(buf);
   await mw.writeField("foo", "foo");
@@ -86,7 +93,8 @@ test(async function testWriter() {
   await mw.writeFile("file", "tsconfig.json", f);
   await mw.close();
 });
-test(async function testReader() {
+
+test(async function multipartMultipartReader() {
   // FIXME: path resolution
   const o = await open(path.resolve("./multipart/fixtures/sample.txt"));
   const mr = new MultipartReader(

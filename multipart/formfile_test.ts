@@ -1,9 +1,8 @@
-import { assert, runTests, test } from "../testing/mod.ts";
+import { assert, test } from "../testing/mod.ts";
 import { FormFile } from "./formfile.ts";
 import * as path from "../fs/path.ts";
-import { args, cwd } from "deno";
 
-test(async function testFormFile1() {
+test(async function multipartFormFile1() {
   const f = new FormFile({
     filename: "file",
     headers: new Headers({
@@ -19,7 +18,7 @@ test(async function testFormFile1() {
   file.close();
 });
 
-test(async function testFormFile2() {
+test(async function multipartFormFile2() {
   const f = new FormFile({
     filename: "__sample.txt",
     headers: new Headers({
