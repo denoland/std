@@ -1,6 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import {Buffer, File, open, Reader, stat} from "deno";
-import {StringReader} from "./readers.ts";
 
 // `off` is the offset into `dst` where it will at which to begin writing values
 // from `src`.
