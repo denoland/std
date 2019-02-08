@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import {BufReader, BufWriter} from "./bufio.ts";
-import {Reader, Writer} from "deno";
-import {assert} from "../testing/mod.ts";
+import { BufReader, BufWriter } from "./bufio.ts";
+import { Reader, Writer } from "deno";
+import { assert } from "../testing/mod.ts";
 
 /* copy N size at the most. If read size is lesser than N, then returns nread */
 export async function copyN(
@@ -15,7 +15,7 @@ export async function copyN(
     if (size - bytesRead < 1024) {
       buf = new Uint8Array(size - bytesRead);
     }
-    const {nread, eof} = await r.read(buf);
+    const { nread, eof } = await r.read(buf);
     bytesRead += nread;
     if (nread > 0) {
       const n = await dest.write(buf.slice(0, nread));

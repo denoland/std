@@ -1,7 +1,7 @@
-import {assert, runTests, test} from "../testing/mod.ts";
-import {FormFile} from "./formfile.ts";
-import * as path from "../fs/path.ts"
-import {args, cwd} from "deno";
+import { assert, runTests, test } from "../testing/mod.ts";
+import { FormFile } from "./formfile.ts";
+import * as path from "../fs/path.ts";
+import { args, cwd } from "deno";
 
 test(async function testFormFile1() {
   const f = new FormFile({
@@ -13,7 +13,7 @@ test(async function testFormFile1() {
   });
   assert.equal(f.size, 4);
   assert.equal(f.name, "file");
-  assert.equal(f.type, "text/plain")
+  assert.equal(f.type, "text/plain");
   const file = await f.open();
   assert.assert(!!file);
   file.close();
@@ -28,9 +28,9 @@ test(async function testFormFile2() {
     // FIXME: path cannot be resolved unless test executed by project root
     tempfile: path.resolve("./multipart/fixtures/sample.txt")
   });
-  assert.equal(f.size, null)
-  assert.equal(f.name, "__sample.txt")
-  assert.equal(f.type, "text/plain")
+  assert.equal(f.size, null);
+  assert.equal(f.name, "__sample.txt");
+  assert.equal(f.type, "text/plain");
   const file = await f.open();
   assert.assert(!!file);
   file.close();

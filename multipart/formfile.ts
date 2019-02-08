@@ -1,4 +1,4 @@
-import {Buffer, Closer, open, Reader} from "deno";
+import { Buffer, Closer, open, Reader } from "deno";
 
 export type FileHeader = {
   filename: string;
@@ -20,9 +20,8 @@ export class FormFile implements domTypes.DomFile {
       const r = new Buffer(this.header.content);
       return {
         read: p => r.read(p),
-        close: () => {
-        }
-      }
+        close: () => {}
+      };
     } else if (this.header.tempfile) {
       return await open(this.header.tempfile);
     }
@@ -34,10 +33,10 @@ export class FormFile implements domTypes.DomFile {
 
   get size(): number | null {
     if (Number.isInteger(this.header.size)) {
-      return this.header.size
+      return this.header.size;
     }
     if (this.header.content) {
-      return this.header.size = this.header.content.byteLength
+      return (this.header.size = this.header.content.byteLength);
     }
     return null;
   }

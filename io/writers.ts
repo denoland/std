@@ -1,4 +1,4 @@
-import {Writer} from "deno";
+import { Writer } from "deno";
 
 const e = new TextEncoder();
 const d = new TextDecoder();
@@ -23,7 +23,7 @@ export class StringWriter implements Writer {
 
   toString(): string {
     if (this.cache) {
-      return this.cache
+      return this.cache;
     }
     const buf = new Uint8Array(this.byteLength);
     let offs = 0;

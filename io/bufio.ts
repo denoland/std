@@ -3,9 +3,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import {Reader, ReadResult, Writer} from "deno";
-import {charCode, copyBytes} from "./util.ts";
-import {assert} from "../testing/mod.ts";
+import { Reader, ReadResult, Writer } from "deno";
+import { charCode, copyBytes } from "./util.ts";
+import { assert } from "../testing/mod.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 const MIN_BUF_SIZE = 16;
@@ -110,7 +110,7 @@ export class BufReader implements Reader {
    * To read exactly len(p) bytes, use io.ReadFull(b, p).
    */
   async read(p: Uint8Array): Promise<ReadResult> {
-    let rr: ReadResult = {nread: p.byteLength, eof: false};
+    let rr: ReadResult = { nread: p.byteLength, eof: false };
     if (rr.nread === 0) {
       if (this.err) {
         throw this._readErr();
@@ -331,7 +331,7 @@ export class BufReader implements Reader {
       this.w - this.r < n &&
       this.w - this.r < this.buf.byteLength &&
       this.err == null
-      ) {
+    ) {
       await this._fill(); // this.w - this.r < len(this.buf) => buffer is not full
     }
 

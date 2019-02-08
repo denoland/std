@@ -1,12 +1,12 @@
-import {assertEqual, runTests, setFilter, test} from "../testing/mod.ts";
+import { assertEqual, runTests, setFilter, test } from "../testing/mod.ts";
 import {
   matchAfterPrefix,
   MultipartReader,
   MultipartWriter,
   scanUntilBoundary
 } from "./multipart.ts";
-import {args, Buffer, cwd, open} from "deno";
-import * as path from "../fs/path.ts"
+import { args, Buffer, cwd, open } from "deno";
+import * as path from "../fs/path.ts";
 
 const e = new TextEncoder();
 const d = new TextDecoder();
