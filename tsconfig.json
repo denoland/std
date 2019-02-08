@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "baseUrl": ".",
+    "paths": {
+      "deno": ["./deno.d.ts"]
+    }
+  }
+}

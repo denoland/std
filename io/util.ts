@@ -1,4 +1,6 @@
-import { Buffer, Reader } from "deno";
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+import {Buffer, File, open, Reader, stat} from "deno";
+import {StringReader} from "./readers.ts";
 
 // `off` is the offset into `dst` where it will at which to begin writing values
 // from `src`.
@@ -17,8 +19,19 @@ export function charCode(s: string): number {
   return s.charCodeAt(0);
 }
 
-const encoder = new TextEncoder();
 export function stringsReader(s: string): Reader {
-  const ui8 = encoder.encode(s);
-  return new Buffer(ui8.buffer as ArrayBuffer);
+  return new StringReader(s)
+}
+
+export async function tempFile(
+  dir: string,
+  opts: {
+    prefix?: string,
+    postfix?: string,
+  } = {prefix: "", postfix: ""}
+): Promise<{ file: File; filepath: string }> {
+  const r = ~~(Math.random() * 1000000);
+  const filepath = `${dir}/${opts.prefix}${r}${opts.postfix}`;
+  const file = await open(filepath);
+  return {file, filepath};
 }
