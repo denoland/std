@@ -158,5 +158,3 @@ test(function testAcceptableInvalid() {
     assertEqual(ret, false);
   }
 });
-
-setTimeout(runTests, 0);

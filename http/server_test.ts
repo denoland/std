@@ -221,5 +221,3 @@ test(async function requestBodyStreamWithTransferEncoding() {
     }
   }
 });
-
-setTimeout(runTests, 0);
