@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "deno";
 import { BufReader } from "../io/bufio.ts";
-import { assert, assertEqual, runTests, test } from "../testing/mod.ts";
+import { assert, assertEqual, test } from "../testing/mod.ts";
 import {
   acceptable,
   createSecAccept,
