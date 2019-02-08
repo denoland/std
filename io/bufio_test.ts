@@ -28,7 +28,7 @@ async function readBytes(buf: BufReader): Promise<string> {
 
 test(async function bufioReaderSimple() {
   const data = "hello world";
-  const b = new BufReader(new Buffer(encoder.encode(data).buffer as ArrayBuffer));
+  const b = new BufReader(stringsReader(data));
   const s = await readBytes(b);
   assert.equal(s, data);
 });

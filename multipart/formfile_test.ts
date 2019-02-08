@@ -20,13 +20,13 @@ test(async function testFormFile1() {
 });
 
 test(async function testFormFile2() {
-  const dir = path.dirname(path.resolve(cwd(), args[0]));
   const f = new FormFile({
     filename: "__sample.txt",
     headers: new Headers({
       "content-type": "text/plain"
     }),
-    tempfile: path.resolve(dir, "./fixtures/sample.txt")
+    // FIXME: path cannot be resolved unless test executed by project root
+    tempfile: path.resolve("./multipart/fixtures/sample.txt")
   });
   assert.equal(f.size, null)
   assert.equal(f.name, "__sample.txt")

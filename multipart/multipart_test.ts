@@ -87,9 +87,8 @@ test(async function testWriter() {
   await mw.close();
 });
 test(async function testReader() {
-  const __file__ = path.resolve(cwd(), args[0]);
-  const __dir__ = path.dirname(__file__);
-  const o = await open(path.resolve(__dir__, "./fixtures/sample.txt"));
+  // FIXME: path resolution
+  const o = await open(path.resolve("./multipart/fixtures/sample.txt"));
   const mr = new MultipartReader(
     o,
     "--------------------------434049563556637648550474"

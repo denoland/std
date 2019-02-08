@@ -19,8 +19,9 @@ export function charCode(s: string): number {
   return s.charCodeAt(0);
 }
 
+const encoder = new TextEncoder();
 export function stringsReader(s: string): Reader {
-  return new StringReader(s)
+  return new Buffer(encoder.encode(s).buffer)
 }
 
 export async function tempFile(
