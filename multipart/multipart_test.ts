@@ -89,8 +89,8 @@ test(async function multipartMultipartWriter() {
   const mw = new MultipartWriter(buf);
   await mw.writeField("foo", "foo");
   await mw.writeField("bar", "bar");
-  const f = await open("./tsconfig.json", "r");
-  await mw.writeFile("file", "tsconfig.json", f);
+  const f = await open(path.resolve("./multipart/fixtures/sample.txt"), "r");
+  await mw.writeFile("file", "sample.txt", f);
   await mw.close();
 });
 
