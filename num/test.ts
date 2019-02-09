@@ -1,16 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, assertEqual, assert } from "../testing/mod.ts";
-import {isNegativeZero, clamp} from "mod.ts";
-
-test(function checkNegativeZero() {
-    assertEqual(isNegativeZero(-0), true);
-    assertEqual(isNegativeZero(+0), false);
-    assertEqual(isNegativeZero(-1), false);
-    assertEqual(isNegativeZero(+1), false);
-    assertEqual(isNegativeZero(Number.NEGATIVE_INFINITY), false);
-    assertEqual(isNegativeZero(Number.POSITIVE_INFINITY), false);
-    assertEqual(isNegativeZero(NaN), false);
-});
+import { clamp } from "mod.ts";
 
 test(function clampNumber() {
     // Numbers between ranges go untouched
@@ -26,7 +16,7 @@ test(function clampNumber() {
     );
 
     assertEqual(
-        isNegativeZero(clamp(0, {min: -0, max: 100})),
+        Object.is(clamp(0, {min: -0, max: 100}), -0),
         false
     );
 
@@ -58,7 +48,7 @@ test(function clampNumber() {
     );
 
     assertEqual(
-        isNegativeZero(clamp(-0, {min: 0, max: 100})),
+        Object.is(clamp(-0, {min: 0, max: 100}), -0),
         false
     );
 
@@ -75,7 +65,7 @@ test(function clampNumber() {
     );
 
     assertEqual(
-        isNegativeZero(clamp(+0, {min: -100, max: -0})),
+        Object.is(clamp(+0, {min: -100, max: -0}), -0),
         true
     );
 
@@ -98,7 +88,7 @@ test(function clampNumber() {
     );
 
     assertEqual(
-        isNegativeZero(clamp(+0, {min: -0, max: -100})),
+        Object.is(clamp(+0, {min: -0, max: -100}), -0),
         true
     );
 

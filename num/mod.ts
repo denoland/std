@@ -22,37 +22,21 @@ export function clamp(number: number, config: ClampConfig): number {
         min = Number.NEGATIVE_INFINITY;
     }
 
-    if (max < min || (max === 0 && isNegativeZero(max))) {
+    if (max < min || (max === min && Object.is(max, -0))) {
         let tmp = max;
         max = min;
         min = tmp;
     }
 
-    // If number & max are both zero, make sure a maximum of negative zero is respected
-    if (number === max && max === 0 && isNegativeZero(max)) {
-        number = max;
+    if (number === 0 && min === 0) {
+        return Object.is(min, -0) ? number : min;
+
+    } else if (number === 0 && max === 0) {
+        return Object.is(max, -0) ? max : number;
+
+    } else {
+        number = number > max ? max : number;
+        number = number < min ? min : number;
+        return number;
     }
-
-    if (number > max) {
-        number = max;
-    }
-
-    // Similarly, if number and min are both zero, make sure a minimum of positive zero is respected
-    if (number === min && min === 0 && !isNegativeZero(min)) {
-        number = min;
-    }
-
-    if (number < min) {
-        number = min;
-    }
-
-    return number;
-}
-
-/**
- * Is this number negative zero?
- * @param {number} number - Number to test 
- */
-export function isNegativeZero(number: number): boolean {
-    return 1 / number === Number.NEGATIVE_INFINITY;
 }
