@@ -10,6 +10,7 @@ import "http/server_test.ts";
 import "http/file_server_test.ts";
 import "log/test.ts";
 import "media_types/test.ts";
+import "num/test.ts";
 import "prettier/main_test.ts";
 import "testing/test.ts";
 import "textproto/test.ts";
