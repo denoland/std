@@ -1,5 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Buffer, File, open, Reader, stat } from "deno";
+import { Buffer, File, open, Reader } from "deno";
+import { encode } from "../strings/strings.ts";
 
 // `off` is the offset into `dst` where it will at which to begin writing values
 // from `src`.
@@ -18,11 +19,11 @@ export function charCode(s: string): number {
   return s.charCodeAt(0);
 }
 
-const encoder = new TextEncoder();
 export function stringsReader(s: string): Reader {
-  return new Buffer(encoder.encode(s).buffer);
+  return new Buffer(encode(s).buffer);
 }
 
+/** Create or open a temporal file at specified directory with prefix and postfix  */
 export async function tempFile(
   dir: string,
   opts: {

@@ -12,9 +12,7 @@ import { MultiReader } from "../io/readers.ts";
 import { tempFile } from "../io/util.ts";
 import { BufReader, BufState, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
+import { encoder } from "../strings/strings.ts";
 
 function randomBoundary() {
   let boundary = "--------------------------";
@@ -24,6 +22,7 @@ function randomBoundary() {
   return boundary;
 }
 
+/** Reader for parsing multipart/form-data */
 export class MultipartReader {
   readonly newLine = encoder.encode("\r\n");
   readonly newLineDashBoundary = encoder.encode(`\r\n--${this.boundary}`);
@@ -374,6 +373,7 @@ class PartWriter implements Writer {
   }
 }
 
+/** Writer for creating multipart/form-data */
 export class MultipartWriter {
   private _boundary: string;
 

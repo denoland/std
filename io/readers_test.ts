@@ -3,8 +3,7 @@ import { MultiReader, StringReader } from "./readers.ts";
 import { StringWriter } from "./writers.ts";
 import { copy } from "deno";
 import { copyN } from "./ioutil.ts";
-
-const d = new TextDecoder();
+import {decode} from "../strings/strings.ts";
 
 test(async function ioStringReader() {
   const r = new StringReader("abcdef");
@@ -19,11 +18,11 @@ test(async function ioStringReader() {
   let res1 = await r.read(buf);
   assert.equal(res1.nread, 3);
   assert.equal(res1.eof, false);
-  assert.equal(d.decode(buf), "abc");
+  assert.equal(decode(buf), "abc");
   let res2 = await r.read(buf);
   assert.equal(res2.nread, 3);
   assert.equal(res2.eof, true);
-  assert.equal(d.decode(buf), "def");
+  assert.equal(decode(buf), "def");
 });
 
 test(async function ioMultiReader() {

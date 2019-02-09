@@ -1,10 +1,10 @@
-import { Buffer, Closer, read, Reader, ReadResult, Writer } from "deno";
+import { Reader, ReadResult } from "deno";
+import { encode } from "../strings/strings.ts";
 
-const encoder = new TextEncoder();
-
+/** Reader utility for strings */
 export class StringReader implements Reader {
   private offs = 0;
-  private buf = new Uint8Array(encoder.encode(this.s));
+  private buf = new Uint8Array(encode(this.s));
 
   constructor(private readonly s: string) {}
 
@@ -16,6 +16,7 @@ export class StringReader implements Reader {
   }
 }
 
+/** Reader utility for combining multiple readers */
 export class MultiReader implements Reader {
   private readonly readers: Reader[];
   private currentIndex = 0;

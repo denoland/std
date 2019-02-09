@@ -1,13 +1,13 @@
 import { Writer } from "deno";
+import { decode, encode } from "../strings/strings.ts";
 
-const e = new TextEncoder();
-const d = new TextDecoder();
+/** Writer utility for buffering string chunks */
 export class StringWriter implements Writer {
   private chunks: Uint8Array[] = [];
   private byteLength: number = 0;
 
   constructor(private base: string = "") {
-    const c = e.encode(base);
+    const c = encode(base);
     this.chunks.push(c);
     this.byteLength += c.byteLength;
   }
@@ -31,7 +31,7 @@ export class StringWriter implements Writer {
       buf.set(chunk, offs);
       offs += chunk.byteLength;
     }
-    this.cache = d.decode(buf);
+    this.cache = decode(buf);
     return this.cache;
   }
 }

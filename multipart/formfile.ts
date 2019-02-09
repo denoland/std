@@ -8,6 +8,7 @@ export type FileHeader = {
   tempfile?: string;
 };
 
+/** File object for FormData */
 export class FormFile implements domTypes.DomFile {
   readonly lastModified: number;
 
