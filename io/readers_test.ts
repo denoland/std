@@ -3,7 +3,7 @@ import { MultiReader, StringReader } from "./readers.ts";
 import { StringWriter } from "./writers.ts";
 import { copy } from "deno";
 import { copyN } from "./ioutil.ts";
-import {decode} from "../strings/strings.ts";
+import { decode } from "../strings/strings.ts";
 
 test(async function ioStringReader() {
   const r = new StringReader("abcdef");
