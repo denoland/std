@@ -98,6 +98,76 @@ test(async function multipartMultipartWriter() {
   await mw.close();
 });
 
+test(function multipartMultipartWriter2() {
+  const w = new StringWriter();
+  assert.throws(
+    () => new MultipartWriter(w, ""),
+    Error,
+    "invalid boundary length"
+  );
+  assert.throws(
+    () =>
+      new MultipartWriter(
+        w,
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ),
+    Error,
+    "invalid boundary length"
+  );
+  assert.throws(
+    () => new MultipartWriter(w, "aaa aaa"),
+    Error,
+    "invalid boundary character"
+  );
+  assert.throws(
+    () => new MultipartWriter(w, "boundary¥¥"),
+    Error,
+    "invalid boundary character"
+  );
+});
+
+test(async function multipartMultipartWriter3() {
+  const w = new StringWriter();
+  const mw = new MultipartWriter(w);
+  await mw.writeField("foo", "foo");
+  await mw.close();
+  await assert.throwsAsync(
+    async () => {
+      await mw.close();
+    },
+    Error,
+    "closed"
+  );
+  await assert.throwsAsync(
+    async () => {
+      await mw.writeFile("bar", "file", null);
+    },
+    Error,
+    "closed"
+  );
+  await assert.throwsAsync(
+    async () => {
+      await mw.writeField("bar", "bar");
+    },
+    Error,
+    "closed"
+  );
+  assert.throws(
+    () => {
+      mw.createFormField("bar");
+    },
+    Error,
+    "closed"
+  );
+  assert.throws(
+    () => {
+      mw.createFormFile("bar", "file");
+    },
+    Error,
+    "closed"
+  );
+});
+
 test(async function multipartMultipartReader() {
   // FIXME: path resolution
   const o = await open(path.resolve("./multipart/fixtures/sample.txt"));

@@ -37,6 +37,10 @@ export class MultipartReader {
     this.bufReader = new BufReader(reader);
   }
 
+  /** Read all form data from stream.
+   * If total size of stored data in memory exceed maxMemory,
+   * overflowed file data will be written to temporal files.
+   * String field values are never written to files */
   async readForm(
     maxMemory: number
   ): Promise<{ [key: string]: string | FormFile }> {
@@ -104,10 +108,10 @@ export class MultipartReader {
     return result;
   }
 
-  currentPart: PartReader;
-  partsRead: number;
+  private currentPart: PartReader;
+  private partsRead: number;
 
-  async nextPart(): Promise<PartReader> {
+  private async nextPart(): Promise<PartReader> {
     if (this.currentPart) {
       this.currentPart.close();
     }
@@ -385,53 +389,49 @@ class PartWriter implements Writer {
   }
 }
 
+function checkBoundary(b: string) {
+  if (b.length < 1 || b.length > 70) {
+    throw new Error("invalid boundary length: " + b.length);
+  }
+  const end = b.length - 1;
+  for (let i = 0; i < end; i++) {
+    const c = b.charAt(i);
+    if (!c.match(/[a-zA-Z0-9'()+_,\-./:=?]/) || (c === " " && i !== end)) {
+      throw new Error("invalid boundary character: " + c);
+    }
+  }
+  return b;
+}
+
 /** Writer for creating multipart/form-data */
 export class MultipartWriter {
-  private _boundary: string;
-
-  setBoundary(b: string) {
-    if (this.lastPart) {
-      throw new Error("setBoundary called after write");
-    }
-    if (b.length < 1 || b.length > 70) {
-      throw new TypeError("invalid boundary length: " + b.length);
-    }
-    const end = b.length - 1;
-    for (let i = 0; i < end; i++) {
-      if (
-        !b.charAt(i).match(/[a-zA-Z0-9'()+_,\-./:=?]/) ||
-        (b.charAt(i) === " " && i != end)
-      ) {
-        throw new Error("invalid boundary character: " + b.charAt(i));
-      }
-    }
-    this._boundary = b;
-  }
+  private readonly _boundary: string;
 
   get boundary() {
     return this._boundary;
   }
 
   private lastPart: PartWriter;
-  bufWriter: BufWriter;
+  private bufWriter: BufWriter;
+  private isClosed: boolean = false;
 
-  constructor(readonly writer: Writer) {
-    this._boundary = randomBoundary();
+  constructor(private readonly writer: Writer, boundary?: string) {
+    if (boundary !== void 0) {
+      this._boundary = checkBoundary(boundary);
+    } else {
+      this._boundary = randomBoundary();
+    }
     this.bufWriter = new BufWriter(writer);
   }
 
-  flush(): Promise<BufState> {
-    return this.bufWriter.flush();
-  }
-
   formDataContentType(): string {
-    if (this.boundary.match(/[()<>@,;:"/\[\]?= ]/)) {
-      this._boundary = `"${this.boundary}"`;
-    }
     return `multipart/form-data; boundary=${this.boundary}`;
   }
 
-  createPart(headers: Headers): Writer {
+  private createPart(headers: Headers): Writer {
+    if (this.isClosed) {
+      throw new Error("multipart: writer is closed");
+    }
     if (this.lastPart) {
       this.lastPart.close();
     }
@@ -472,12 +472,21 @@ export class MultipartWriter {
     await copy(f, file);
   }
 
+  private flush(): Promise<BufState> {
+    return this.bufWriter.flush();
+  }
+
+  /** Close writer. No additional data can be writen to stream */
   async close() {
+    if (this.isClosed) {
+      throw new Error("multipart: writer is closed");
+    }
     if (this.lastPart) {
       this.lastPart.close();
       this.lastPart = void 0;
     }
     await this.writer.write(encoder.encode(`\r\n--${this.boundary}--\r\n`));
     await this.flush();
+    this.isClosed = true;
   }
 }
