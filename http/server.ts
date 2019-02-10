@@ -124,7 +124,7 @@ async function readAllIterator(
   return collected;
 }
 
-// maxPostHandlerReadBytes is the max number of Request.Body bytes not
+// maxPostHandlerReadBytes is the max number of ServerRequest.r bytes not
 // consumed by a handler that the server will read from the client
 // in order to keep a connection alive. If there are more bytes than
 // this then the server to be paranoid instead sends a "Connection:
@@ -242,14 +242,21 @@ export class ServerRequest {
   }
 
   private async _finishRequest() {
+    // We need to check if body was read from connection
+    // before responding to request. If body wasn't consumed
+    // we'll need to handle it.
     if (this._bodyConsumed) {
       return;
     }
 
     if (this.headers.has("content-length")) {
-      const ct = parseInt(this.headers.get("content-length"), 10);
-      if (ct > maxPostHandlerReadBytes) {
+      const bodyLen = parseInt(this.headers.get("content-length"), 10);
+      // if body is bigger than acceptable threshold - we'll close this connection
+      if (bodyLen > maxPostHandlerReadBytes) {
         this.closeConnectionEarly = true;
+      } else {
+        // consume body
+        await this.body();
       }
     } else {
       // try to read `maxPostHandlerReadBytes` bytes of the body looking for EOF
@@ -259,7 +266,6 @@ export class ServerRequest {
         len += chunk.length;
         if (len >= maxPostHandlerReadBytes) {
           this.closeConnectionEarly = true;
-          console.log("too large!");
           break;
         }
       }
@@ -268,7 +274,7 @@ export class ServerRequest {
     this._bodyConsumed = true;
   }
 
-  private async _shouldReuseConnection() {
+  private _shouldReuseConnection() {
     if (this.closeConnectionEarly) {
       return false;
     }

@@ -277,7 +277,7 @@ test(async function requestUnreadSmallBody() {
 test(async function requestUnreadBigBody() {
   {
     const req = new ServerRequest();
-    // body is smaller than `maxPostHandlerReadBytes`
+    // body is greater than `maxPostHandlerReadBytes`
     const body = "x\n".repeat(1 << 20);
 
     req.headers = new Headers();
