@@ -221,6 +221,7 @@ test(async function requestBodyStreamWithTransferEncoding() {
 test(async function requestUnreadSmallBody() {
   {
     const req = new ServerRequest();
+    // body is smaller than `maxPostHandlerReadBytes`
     const body = "x\n".repeat(100 << 10);
 
     req.headers = new Headers();
@@ -244,14 +245,17 @@ test(async function requestUnreadSmallBody() {
     assert(err.message, "Error: Request body has already been consumed");
 
     const response = wbuf.toString();
-    console.log("response\n\n", response);
+
     if (response.indexOf("connection: close") > -1) {
       throw new Error("Unexpected \"Connection: close\" header.")
     }
   }
+});
 
+test(async function requestUnreadBigBody() {
   {
     const req = new ServerRequest();
+    // body is smaller than `maxPostHandlerReadBytes`
     const body = "x\n".repeat(1 << 20);
 
     req.headers = new Headers();
@@ -275,7 +279,6 @@ test(async function requestUnreadSmallBody() {
     assert(err.message, "Error: Request body has already been consumed");
 
     const response = wbuf.toString();
-    console.log("response\n\n", response);
     
     if (response.indexOf("connection: close") === -1) {
       throw new Error("Expected \"Connection: close\" header.")
