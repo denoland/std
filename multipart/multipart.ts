@@ -1,6 +1,8 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
 import { Buffer, Closer, copy, Reader, ReadResult, remove, Writer } from "deno";
 
-import { FileHeader, FormFile } from "./formfile.ts";
+import { FormFile } from "./formfile.ts";
 import {
   bytesFindIndex,
   bytesFindLastIndex,
@@ -13,6 +15,7 @@ import { tempFile } from "../io/util.ts";
 import { BufReader, BufState, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { encoder } from "../strings/strings.ts";
+import * as path from "../fs/path.ts";
 
 function randomBoundary() {
   let boundary = "--------------------------";
@@ -34,8 +37,10 @@ export class MultipartReader {
     this.bufReader = new BufReader(reader);
   }
 
-  async readForm(maxMemory: number): Promise<FormData> {
-    const form = new FormData();
+  async readForm(
+    maxMemory: number
+  ): Promise<{ [key: string]: string | FormFile }> {
+    const result = Object.create(null);
     let maxValueBytes = maxMemory + (10 << 20);
     const buf = new Buffer(new Uint8Array(maxValueBytes));
     for (;;) {
@@ -55,19 +60,18 @@ export class MultipartReader {
           throw new RangeError("message too large");
         }
         const value = buf.toString();
-        form.set(p.formName, value);
+        result[p.formName] = value;
         continue;
       }
       // file
-      const fileHeader: FileHeader = {
-        filename: p.fileName,
-        headers: p.headers
-      };
+      let formFile: FormFile;
       const n = await copy(buf, p);
       if (n > maxMemory) {
         // too big, write to disk and flush buffer
-        const { file, filepath } = await tempFile("", {
-          prefix: "multipart-"
+        const ext = path.extname(p.fileName);
+        const { file, filepath } = await tempFile(".", {
+          prefix: "multipart-",
+          postfix: ext
         });
         try {
           const size = await copyN(
@@ -76,20 +80,28 @@ export class MultipartReader {
             maxValueBytes
           );
           file.close();
-          fileHeader.tempfile = filepath;
-          fileHeader.size = size;
+          formFile = {
+            filename: p.fileName,
+            type: p.headers.get("content-type"),
+            tempfile: filepath,
+            size
+          };
         } catch (e) {
           await remove(filepath);
         }
       } else {
-        fileHeader.content = buf.bytes();
-        fileHeader.size = fileHeader.content.byteLength;
+        formFile = {
+          filename: p.fileName,
+          type: p.headers.get("content-type"),
+          content: buf.bytes(),
+          size: buf.bytes().byteLength
+        };
         maxMemory -= n;
         maxValueBytes -= n;
       }
-      form.set(p.formName, new FormFile(fileHeader), p.fileName);
+      result[p.formName] = formFile;
     }
-    return form;
+    return result;
   }
 
   currentPart: PartReader;

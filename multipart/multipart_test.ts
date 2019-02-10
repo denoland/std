@@ -1,12 +1,16 @@
-import { assertEqual, test } from "../testing/mod.ts";
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
+import { assert, test } from "../testing/mod.ts";
 import {
   matchAfterPrefix,
   MultipartReader,
   MultipartWriter,
   scanUntilBoundary
 } from "./multipart.ts";
-import { Buffer, open } from "deno";
+import { Buffer, copy, open, remove } from "deno";
 import * as path from "../fs/path.ts";
+import { FormFile, isFormFile } from "./formfile.ts";
+import { StringWriter } from "../io/writers.ts";
 
 const e = new TextEncoder();
 const d = new TextDecoder();
@@ -23,8 +27,8 @@ test(function multipartScanUntilBoundary1() {
     0,
     "EOF"
   );
-  assertEqual(n, 0);
-  assertEqual(err, "EOF");
+  assert.equal(n, 0);
+  assert.equal(err, "EOF");
 });
 
 test(function multipartScanUntilBoundary2() {
@@ -36,8 +40,8 @@ test(function multipartScanUntilBoundary2() {
     0,
     "EOF"
   );
-  assertEqual(n, 3);
-  assertEqual(err, "EOF");
+  assert.equal(n, 3);
+  assert.equal(err, "EOF");
 });
 
 test(function multipartScanUntilBoundary4() {
@@ -49,8 +53,8 @@ test(function multipartScanUntilBoundary4() {
     0,
     null
   );
-  assertEqual(n, 3);
-  assertEqual(err, null);
+  assert.equal(n, 3);
+  assert.equal(err, null);
 });
 
 test(function multipartScanUntilBoundary3() {
@@ -62,26 +66,26 @@ test(function multipartScanUntilBoundary3() {
     0,
     null
   );
-  assertEqual(n, data.length);
-  assertEqual(err, null);
+  assert.equal(n, data.length);
+  assert.equal(err, null);
 });
 
 test(function multipartMatchAfterPrefix1() {
   const data = `${boundary}\r`;
   const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
-  assertEqual(v, 1);
+  assert.equal(v, 1);
 });
 
 test(function multipartMatchAfterPrefix2() {
   const data = `${boundary}hoge`;
   const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
-  assertEqual(v, -1);
+  assert.equal(v, -1);
 });
 
 test(function multipartMatchAfterPrefix3() {
   const data = `${boundary}`;
   const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
-  assertEqual(v, 0);
+  assert.equal(v, 0);
 });
 
 test(async function multipartMultipartWriter() {
@@ -102,6 +106,33 @@ test(async function multipartMultipartReader() {
     "--------------------------434049563556637648550474"
   );
   const form = await mr.readForm(10 << 20);
-  assertEqual(form.get("foo"), "foo");
-  assertEqual(form.get("bar"), "bar");
+  assert.equal(form["foo"], "foo");
+  assert.equal(form["bar"], "bar");
+  const file = form["file"] as FormFile;
+  assert.equal(isFormFile(file), true);
+  assert.assert(file.content !== void 0);
+});
+
+test(async function multipartMultipartReader2() {
+  const o = await open(path.resolve("./multipart/fixtures/sample.txt"));
+  const mr = new MultipartReader(
+    o,
+    "--------------------------434049563556637648550474"
+  );
+  const form = await mr.readForm(20); //
+  try {
+    assert.equal(form["foo"], "foo");
+    assert.equal(form["bar"], "bar");
+    const file = form["file"] as FormFile;
+    assert.equal(file.type, "application/octet-stream");
+    const f = await open(file.tempfile);
+    const w = new StringWriter();
+    await copy(w, f);
+    const json = JSON.parse(w.toString());
+    assert.equal(json["compilerOptions"]["target"], "es2018");
+    f.close();
+  } finally {
+    const file = form["file"] as FormFile;
+    await remove(file.tempfile);
+  }
 });

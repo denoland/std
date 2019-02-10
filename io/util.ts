@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Buffer, File, open, Reader } from "deno";
+import { Buffer, File, mkdir, open, Reader } from "deno";
 import { encode } from "../strings/strings.ts";
-
+import * as path from "../fs/path.ts";
 // `off` is the offset into `dst` where it will at which to begin writing values
 // from `src`.
 // Returns the number of bytes copied.
@@ -31,8 +31,11 @@ export async function tempFile(
     postfix?: string;
   } = { prefix: "", postfix: "" }
 ): Promise<{ file: File; filepath: string }> {
-  const r = ~~(Math.random() * 1000000);
-  const filepath = `${dir}/${opts.prefix}${r}${opts.postfix}`;
-  const file = await open(filepath);
+  const r = Math.floor(Math.random() * 1000000);
+  const filepath = path.resolve(
+    `${dir}/${opts.prefix || ""}${r}${opts.postfix || ""}`
+  );
+  await mkdir(path.dirname(filepath), true);
+  const file = await open(filepath, "a");
   return { file, filepath };
 }
