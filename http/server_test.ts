@@ -23,7 +23,10 @@ const responseTests: ResponseTest[] = [
   // Default response
   {
     response: {},
-    raw: "HTTP/1.1 200 OK\r\n" + "\r\n"
+    raw: 
+      "HTTP/1.1 200 OK\r\n" + 
+      "content-length: 0\r\n" +
+      "\r\n"
   },
   // HTTP/1.1, chunked coding; empty trailer; close
   {
@@ -39,6 +42,7 @@ const responseTests: ResponseTest[] = [
   }
 ];
 
+<<<<<<< HEAD
 // test(async function responseWrite() {
 //   for (const testCase of responseTests) {
 //     const buf = new Buffer();
@@ -49,6 +53,20 @@ const responseTests: ResponseTest[] = [
 //     assertEqual(buf.toString(), testCase.raw);
 //   }
 // });
+=======
+test(async function responseWrite() {
+  for (const testCase of responseTests) {
+    const buf = new Buffer();
+    const bufw = new BufWriter(buf);
+    const request = new ServerRequest();
+    request.headers = new Headers();
+    request.w = bufw;
+
+    await request.respond(testCase.response);
+    assertEqual(buf.toString(), testCase.raw);
+  }
+});
+>>>>>>> handle bodyless response
 
 
 test(async function requestBodyWithContentLength() {

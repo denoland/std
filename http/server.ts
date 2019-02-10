@@ -41,6 +41,7 @@ export function setHeaders(r: Response, req: ServerRequest): void {
     }
   } else {
     r.headers.append("content-length", "0");
+<<<<<<< HEAD
   } 
 }
 async function writeChunkedBody(w: Writer, r: Reader): Promise<void> {
@@ -96,6 +97,8 @@ export async function writeResponse(w: Writer, r: Response, req: ServerRequest):
         await writeChunkedBody(writer, r.body);
       }
     }
+=======
+>>>>>>> handle bodyless response
   }
   await writer.flush();
 }
