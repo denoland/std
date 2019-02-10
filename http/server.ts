@@ -148,7 +148,7 @@ export class ServerRequest {
 
   public async *bodyStream(): AsyncIterableIterator<Uint8Array> {
     if (this._bodyConsumed) {
-      throw new Error("Request body has already been consumed.")
+      throw new Error("Request body has already been consumed.");
     }
 
     if (this.headers.has("content-length")) {
@@ -244,7 +244,7 @@ export class ServerRequest {
   private async _finishRequest() {
     if (this._bodyConsumed) {
       return;
-    } 
+    }
 
     if (this.headers.has("content-length")) {
       const ct = parseInt(this.headers.get("content-length"), 10);
@@ -264,7 +264,7 @@ export class ServerRequest {
         }
       }
     }
-    
+
     this._bodyConsumed = true;
   }
 

@@ -5,11 +5,18 @@
 // Ported from
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
+<<<<<<< HEAD
 const { Buffer } = Deno;
 import { test } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import { Response, ServerRequest } from "./server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
+=======
+import { Buffer } from "deno";
+import { test, assert, assertEqual } from "../testing/mod.ts";
+import { ServerRequest, Response } from "./server.ts";
+import { BufWriter, BufReader } from "../io/bufio.ts";
+>>>>>>> format
 
 interface ResponseTest {
   response: Response;
@@ -23,10 +30,7 @@ const responseTests: ResponseTest[] = [
   // Default response
   {
     response: {},
-    raw: 
-      "HTTP/1.1 200 OK\r\n" + 
-      "content-length: 0\r\n" +
-      "\r\n"
+    raw: "HTTP/1.1 200 OK\r\n" + "content-length: 0\r\n" + "\r\n"
   },
   // HTTP/1.1, chunked coding; empty trailer; close
   {
@@ -265,7 +269,7 @@ test(async function requestUnreadSmallBody() {
     const response = wbuf.toString();
 
     if (response.indexOf("connection: close") > -1) {
-      throw new Error("Unexpected \"Connection: close\" header.")
+      throw new Error('Unexpected "Connection: close" header.');
     }
   }
 });
@@ -297,9 +301,9 @@ test(async function requestUnreadBigBody() {
     assert(err.message, "Error: Request body has already been consumed");
 
     const response = wbuf.toString();
-    
+
     if (response.indexOf("connection: close") === -1) {
-      throw new Error("Expected \"Connection: close\" header.")
+      throw new Error('Expected "Connection: close" header.');
     }
   }
 });
