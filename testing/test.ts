@@ -52,7 +52,7 @@ test(function testingAssertEqualActualUncoercable() {
   } catch (e) {
     didThrow = true;
     console.log(e.message);
-    assert(e.message === "actual: [Cannot display] expected: bar");
+    assert(e.message === 'actual: Object {} expected: "bar"');
   }
   assert(didThrow);
 });
@@ -65,7 +65,7 @@ test(function testingAssertEqualExpectedUncoercable() {
   } catch (e) {
     didThrow = true;
     console.log(e.message);
-    assert(e.message === "actual: bar expected: [Cannot display]");
+    assert(e.message === 'actual: "bar" expected: Object {}');
   }
   assert(didThrow);
 });
