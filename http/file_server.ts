@@ -10,7 +10,7 @@ const { ErrorKind, cwd, args, stat, readDir, open } = Deno;
 import {
   listenAndServe,
   ServerRequest,
-  setContentLength,
+  setHeaders,
   Response
 } from "./server.ts";
 import { extname } from "../fs/path.ts";
@@ -181,7 +181,7 @@ async function serveDir(
     body: page,
     headers
   };
-  setContentLength(res);
+  setHeaders(res, req);
   return res;
 }
 
