@@ -7,10 +7,7 @@
 
 import { Buffer } from "deno";
 import { test, assert } from "../testing/mod.ts";
-import {
-  ServerRequest,
-  Response
-} from "./server.ts";
+import { ServerRequest, Response } from "./server.ts";
 import { BufWriter, BufReader } from "../io/bufio.ts";
 
 interface ResponseTest {

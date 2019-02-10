@@ -40,7 +40,11 @@ function serveConn(env: ServeEnv, conn: Conn, bufr?: BufReader) {
   readRequest(conn, bufr).then(maybeHandleReq.bind(null, env, conn));
 }
 
-function maybeHandleReq(env: ServeEnv, conn: Conn, maybeReq: [ServerRequest, BufState]) {
+function maybeHandleReq(
+  env: ServeEnv,
+  conn: Conn,
+  maybeReq: [ServerRequest, BufState]
+) {
   const [req, _err] = maybeReq;
   if (_err) {
     conn.close(); // assume EOF for now...
@@ -50,7 +54,9 @@ function maybeHandleReq(env: ServeEnv, conn: Conn, maybeReq: [ServerRequest, Buf
   env.serveDeferred.resolve(); // signal while loop to process it
 }
 
-export async function* serve(addr: string): AsyncIterableIterator<ServerRequest> {
+export async function* serve(
+  addr: string
+): AsyncIterableIterator<ServerRequest> {
   const listener = listen("tcp", addr);
   const env: ServeEnv = {
     reqQueue: [], // in case multiple promises are ready
@@ -155,22 +161,22 @@ export class ServerRequest {
         if (transferEncodings.includes("chunked")) {
           // Based on https://tools.ietf.org/html/rfc2616#section-19.4.6
           const tp = new TextProtoReader(this.r);
-          let [line,] = await tp.readLine();
+          let [line] = await tp.readLine();
           // TODO: handle chunk extension
-          let [chunkSizeString,] = line.split(";");
+          let [chunkSizeString] = line.split(";");
           let chunkSize = parseInt(chunkSizeString, 16);
           if (Number.isNaN(chunkSize) || chunkSize < 0) {
             throw new Error("Invalid chunk size");
           }
           while (chunkSize > 0) {
             let data = new Uint8Array(chunkSize);
-            let [nread,] = await this.r.readFull(data);
+            let [nread] = await this.r.readFull(data);
             if (nread !== chunkSize) {
               throw new Error("Chunk data does not match size");
             }
             yield data;
             await this.r.readLine(); // Consume \r\n
-            [line,] = await tp.readLine();
+            [line] = await tp.readLine();
             chunkSize = parseInt(line, 16);
           }
           const [entityHeaders, err] = await tp.readMIMEHeader();
