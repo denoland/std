@@ -7,6 +7,7 @@ import { BufReader, BufState, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "../testing/asserts.ts";
+import { reset } from "colors/mod";
 
 interface Deferred {
   promise: Promise<{}>;
@@ -20,9 +21,13 @@ function bufWriter(w: Writer): BufWriter {
     return new BufWriter(w);
   }
 }
-export function setContentLength(r: Response): void {
+export function setHeaders(r: Response, req: ServerRequest): void {
   if (!r.headers) {
     r.headers = new Headers();
+  }
+
+  if (req.closeConnectionEarly) {
+    r.headers.append("Connection", "close");
   }
 
   if (r.body) {
@@ -34,7 +39,9 @@ export function setContentLength(r: Response): void {
         r.headers.append("Transfer-Encoding", "chunked");
       }
     }
-  }
+  } else {
+    r.headers.append("content-length", "0");
+  } 
 }
 async function writeChunkedBody(w: Writer, r: Reader): Promise<void> {
   const writer = bufWriter(w);
@@ -51,7 +58,7 @@ async function writeChunkedBody(w: Writer, r: Reader): Promise<void> {
   const endChunk = encoder.encode("0\r\n\r\n");
   await writer.write(endChunk);
 }
-export async function writeResponse(w: Writer, r: Response): Promise<void> {
+export async function writeResponse(w: Writer, r: Response, req: ServerRequest): Promise<void> {
   const protoMajor = 1;
   const protoMinor = 1;
   const statusCode = r.status || 200;
@@ -63,7 +70,7 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
 
   let out = `HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`;
 
-  setContentLength(r);
+  setHeaders(r, req);
 
   if (r.headers) {
     for (const [key, value] of r.headers) {
@@ -114,6 +121,17 @@ async function readAllIterator(
   return collected;
 }
 
+// maxPostHandlerReadBytes is the max number of Request.Body bytes not
+// consumed by a handler that the server will read from the client
+// in order to keep a connection alive. If there are more bytes than
+// this then the server to be paranoid instead sends a "Connection:
+// close" response.
+//
+// This number is approximately what a typical machine's TCP buffer
+// size is anyway.  (if we have the bytes on the machine, we might as
+// well read them)
+const maxPostHandlerReadBytes = 256 << 10;
+
 export class ServerRequest {
   url: string;
   method: string;
@@ -122,8 +140,14 @@ export class ServerRequest {
   conn: Conn;
   r: BufReader;
   w: BufWriter;
+  private _bodyConsumed = false;
+  closeConnectionEarly = false;
 
   public async *bodyStream(): AsyncIterableIterator<Uint8Array> {
+    if (this._bodyConsumed) {
+      throw new Error("Request body has already been consumed.")
+    }
+
     if (this.headers.has("content-length")) {
       const len = +this.headers.get("content-length");
       if (Number.isNaN(len)) {
@@ -139,6 +163,7 @@ export class ServerRequest {
         nread += rr.nread;
       }
       yield buf.subarray(0, rr.nread);
+      this._bodyConsumed = true;
     } else {
       if (this.headers.has("transfer-encoding")) {
         const transferEncodings = this.headers
@@ -189,12 +214,14 @@ export class ServerRequest {
           Content-Length := length
           Remove "chunked" from Transfer-Encoding
           */
+          this._bodyConsumed = true;
           return; // Must return here to avoid fall through
         }
         // TODO: handle other transfer-encoding types
       }
       // Otherwise...
       yield new Uint8Array(0);
+      this._bodyConsumed = true;
     }
   }
 
@@ -204,7 +231,46 @@ export class ServerRequest {
   }
 
   async respond(r: Response): Promise<void> {
-    return writeResponse(this.w, r);
+    await this._finishRequest();
+    await writeResponse(this.w, r, this);
+    if (!this._shouldReuseConnection()) {
+      this.conn.close();
+    }
+  }
+
+  private async _finishRequest() {
+    if (this._bodyConsumed) {
+      return;
+    } 
+
+    if (this.headers.has("content-length")) {
+      const ct = parseInt(this.headers.get("content-length"), 10);
+      if (ct > maxPostHandlerReadBytes) {
+        this.closeConnectionEarly = true;
+      }
+    } else {
+      // try to read `maxPostHandlerReadBytes` bytes of the body looking for EOF
+      // so we can re-use this connection
+      let len = 0;
+      for await (const chunk of this.bodyStream()) {
+        len += chunk.length;
+        if (len >= maxPostHandlerReadBytes) {
+          this.closeConnectionEarly = true;
+          console.log("too large!");
+          break;
+        }
+      }
+    }
+    
+    this._bodyConsumed = true;
+  }
+
+  private async _shouldReuseConnection() {
+    if (this.closeConnectionEarly) {
+      return false;
+    }
+
+    return true;
   }
 }
 
