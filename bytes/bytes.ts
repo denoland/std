@@ -1,3 +1,5 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
 /** Find first index of binary pattern from a. If not found, then return -1 **/
 export function bytesFindIndex(a: Uint8Array, pat: Uint8Array): number {
   const s = pat[0];
