@@ -4,17 +4,23 @@ export type Deferred<T = any, R = Error> = {
   promise: Promise<T>;
   resolve: (t?: T) => void;
   reject: (r?: R) => void;
+  readonly handled: boolean
 };
 
 /** Create deferred promise that can be resolved and rejected by outside */
 export function defer<T>(): Deferred<T> {
-  let resolve = () => {};
-  let reject = () => {};
+  let handled = false;
+  let resolve = () => {
+    handled = true
+  };
+  let reject = () => {
+    handled = true
+  };
   const promise = new Promise<T>((res, rej) => {
     resolve = res;
     reject = rej;
   });
-  return { promise, resolve, reject };
+  return { promise, resolve, reject, handled };
 }
 
 export function isDeferred(x): x is Deferred {
