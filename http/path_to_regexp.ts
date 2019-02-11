@@ -75,7 +75,10 @@ export interface PathFunctionOptions {
 
 export type Token = string | Key;
 export type Path = string | RegExp | Array<string | RegExp>;
-export type PathFunction <P extends object = object> = (data?: P, options?: PathFunctionOptions) => string;
+export type PathFunction<P extends object = object> = (
+  data?: P,
+  options?: PathFunctionOptions
+) => string;
 
 /**
  * Default configs.
@@ -109,7 +112,10 @@ const PATH_REGEXP = new RegExp(
  * @param  {Object=} options
  * @return {!Array}
  */
-export function parse(str: string, options?: ParseOptions & RegExpOptions): Token[] {
+export function parse(
+  str: string,
+  options?: ParseOptions & RegExpOptions
+): Token[] {
   var tokens = [];
   var key = 0;
   var index = 0;
@@ -195,20 +201,25 @@ export function parse(str: string, options?: ParseOptions & RegExpOptions): Toke
  * @param  {Object=}            options
  * @return {!function(Object=, Object=)}
  */
-export function compile<P extends object = object>(str: string, options?: ParseOptions): PathFunction<P> {
+export function compile<P extends object = object>(
+  str: string,
+  options?: ParseOptions
+): PathFunction<P> {
   return tokensToFunction(parse(str, options));
 }
 
 /**
  * Expose a method for transforming tokens into the path function.
  */
-export function tokensToFunction<P extends object = object>(tokens: Token[]): PathFunction<P> {
+export function tokensToFunction<P extends object = object>(
+  tokens: Token[]
+): PathFunction<P> {
   // Compile all the tokens into regexps.
   var matches = new Array(tokens.length);
 
   // Compile all the patterns before compilation.
   for (var i = 0; i < tokens.length; i++) {
-    const token = tokens[i]
+    const token = tokens[i];
     if (typeof token !== "string") {
       matches[i] = new RegExp("^(?:" + token.pattern + ")$");
     }
@@ -387,8 +398,6 @@ function stringToRegexp(path, keys, options) {
   return tokensToRegExp(parse(path, options), keys, options);
 }
 
-
-
 /**
  * Expose a function for taking tokens and returning a RegExp.
  *
@@ -397,7 +406,11 @@ function stringToRegexp(path, keys, options) {
  * @param  {Object=} options
  * @return {!RegExp}
  */
-export function tokensToRegExp(tokens: Token[], keys?: Key[], options?: RegExpOptions): RegExp {
+export function tokensToRegExp(
+  tokens: Token[],
+  keys?: Key[],
+  options?: RegExpOptions
+): RegExp {
   options = options || {};
 
   var strict = options.strict;

@@ -5,12 +5,18 @@
 // Ported from
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
-import { Buffer, copy, run } from "deno";
+import { Buffer, copy } from "deno";
 import { assert, assertEqual, runTests, test } from "../testing/mod.ts";
-import { readRequest, ServerResponse, writeResponse } from "./server.ts";
+import {
+  createServer,
+  readRequest,
+  ServerResponse,
+  writeResponse
+} from "./server.ts";
 import { encode } from "../strings/strings.ts";
 import { StringReader } from "../io/readers.ts";
 import { StringWriter } from "../io/writers.ts";
+import { defer } from "../async/deferred.ts";
 
 interface ResponseTest {
   response: ServerResponse;
@@ -93,4 +99,37 @@ test(async function httpReadRequestChunkedBody() {
   await copy(dest, req.body);
   assert.equal(dest.toString(), "deno.land");
 });
-// setTimeout(runTests, 0)
+
+test(async function httpServer() {
+  const server = createServer();
+  server.handle("/", async req => {
+    await req.respond({
+      status: 200,
+      body: encode("ok")
+    });
+  });
+  server.handle("/foo/:id", async req => {
+    await req.respond({
+      status: 200,
+      headers: new Headers({
+        "content-type": "application/json"
+      }),
+      body: encode(JSON.stringify({ id: req.params.id }))
+    });
+  });
+  const cancel = defer<void>();
+  try {
+    server.listen("127.0.0.1:8080", cancel);
+    const res1 = await fetch("http://127.0.0.1:8080");
+    const text = await res1.body.text();
+    assert.equal(res1.status, 200);
+    assert.equal(text, "ok");
+    const res2 = await fetch("http://127.0.0.1:8080/foo/123");
+    const json = await res2.body.json();
+    assert.equal(res2.status, 200);
+    assert.equal(res2.headers.get("content-type"), "application/json");
+    assert.equal(json["id"], "123");
+  } finally {
+    cancel.resolve();
+  }
+});

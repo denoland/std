@@ -1,3 +1,5 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
 export type Deferred<T = any, R = Error> = {
   promise: Promise<T>;
   resolve: (t?: T) => void;
@@ -13,4 +15,13 @@ export function defer<T>(): Deferred<T> {
     reject = rej;
   });
   return { promise, resolve, reject };
+}
+
+export function isDeferred(x): x is Deferred {
+  return (
+    typeof x === "object" &&
+    x.promise instanceof Promise &&
+    typeof x["resolve"] === "function" &&
+    typeof x["reject"] === "function"
+  );
 }

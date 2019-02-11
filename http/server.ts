@@ -5,8 +5,8 @@ import { BufReader, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "../testing/mod.ts";
-import { Deferred } from "../async/deferred.ts";
-import { pathToRegexp } from "./path_to_regexp.ts";
+import { defer, Deferred } from "../async/deferred.ts";
+import { Key, pathToRegexp } from "./path_to_regexp.ts";
 import { BodyReader, ChunkedBodyReader } from "./readers.ts";
 
 export type HttpHandler = (req: ServerRequest) => Promise<any>;
@@ -16,6 +16,7 @@ export type ServerRequest = {
   method: string;
   proto: string;
   headers: Headers;
+  params: { [key: string]: string };
   body: Reader;
   respond: ServerResponder;
 };
@@ -29,18 +30,23 @@ export interface ServerResponse {
 }
 
 export async function* serve(
-  addr: string
+  addr: string,
+  cancel: Deferred<void> = defer<void>()
 ): AsyncIterableIterator<ServerRequest> {
   const listener = listen("tcp", addr);
   while (true) {
-    let conn: Conn;
-    yield listener.accept().then(async c => {
-      conn = c;
-      return readRequest(conn, async response => {
-        await writeResponse(conn, response);
-      });
+    const raced = await Promise.race<Conn | void>([
+      listener.accept(),
+      cancel.promise
+    ]);
+    if (!raced) {
+      break;
+    }
+    yield readRequest(raced, async response => {
+      await writeResponse(raced, response);
     });
   }
+  listener.close();
 }
 
 export async function listenAndServe(addr: string, handler: HttpHandler) {
@@ -51,10 +57,12 @@ export async function listenAndServe(addr: string, handler: HttpHandler) {
   }
 }
 
+export type HttpServerHandler = HttpHandler;
+
 export interface HttpServer {
   handle(pattern: string, handler: HttpHandler);
 
-  listen(addr): Deferred;
+  listen(addr: string, cancel?: Deferred<void>): Promise<void>;
 }
 
 export function createServer(): HttpServer {
@@ -66,41 +74,40 @@ class HttpServerImpl implements HttpServer {
     [key: string]: {
       pattern: string;
       regexp: RegExp;
+      keys?: Key[];
       handler: HttpHandler;
     };
   } = Object.create(null);
 
   handle(pattern: string, handler: HttpHandler) {
+    const keys = [];
+    const regexp = pathToRegexp(pattern, keys);
     this.handlers[pattern] = {
       pattern,
-      regexp: pathToRegexp(pattern),
+      regexp,
+      keys,
       handler
     };
   }
 
-  listen(addr: string): Deferred<void> {
-    const listener = listen("tcp", addr);
+  async listen(addr: string, cancel: Deferred<void> = defer<void>()) {
     // Loop hack to allow yield (yield won't work in callbacks)
-    let resolve = () => {};
-    let reject = () => {};
-    const promise = new Promise<void>(async (res, rej) => {
-      resolve = res;
-      reject = rej;
-      try {
-        for await (const req of serve(addr)) {
-          for (const [_, val] of Object.entries(this.handlers)) {
-            const { regexp, handler } = val;
-            if (req.url.match(regexp)) {
-              await handler(req);
-              break;
-            }
+    const handlers = this.handlers;
+    for await (const req of serve(addr, cancel)) {
+      for (const val of Object.values(handlers)) {
+        const { regexp, keys, handler } = val;
+        const m = req.url.match(regexp);
+        if (m) {
+          m.shift();
+          for (let i = 0; i < m.length; i++) {
+            const key = keys[i];
+            req.params[key.name] = m[i];
           }
+          await handler(req);
+          break;
         }
-      } finally {
-        listener.close();
       }
-    });
-    return { promise, reject, resolve };
+    }
   }
 }
 
@@ -225,5 +232,6 @@ export async function readRequest(
     headers.get("transfer-encoding") === "chunked"
       ? new ChunkedBodyReader(bufr)
       : new BodyReader(bufr, parseInt(contentLength));
-  return { method, url, proto, headers, body, respond };
+  const params = Object.create(null);
+  return { method, url, proto, headers, body, params, respond };
 }
