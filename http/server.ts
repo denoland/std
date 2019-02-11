@@ -67,35 +67,53 @@ export async function* serve(
   cancel: Deferred<void> = defer<void>()
 ): AsyncIterableIterator<ServerRequest> {
   const listener = listen("tcp", addr);
-  let readRequestQueue: Deferred<ServerRequest>[] = [];
+  let serveDeferred = defer<"readable">();
+  let readRequestQueue: { req: ServerRequest, conn: Conn }[] = [];
+  const acceptRoutine = () => {
+    const scheduleAccept = () => {
+      listener.accept().then(conn => {
+        readRequestQueue.push({req: null, conn});
+        serveDeferred.resolve("readable");
+        scheduleAccept(); // schedule next accept
+      });
+    };
+    scheduleAccept();
+  };
+  acceptRoutine();
   while (true) {
     // do promise race between accept() and cancellation of serving.
     // normally, accept() wins
     try {
-      const raced = await Promise.race<Conn | ServerRequest | void>([
-        listener.accept(),
-        Promise.race(readRequestQueue.map(r => r.promise)),
-        cancel.promise
-      ]);
-      if (!raced) {
-        break;
-      } else if (isServerRequest(raced)) {
-        yield raced
-      } else {
-        const conn: Conn = raced;
-        const d = defer<ServerRequest>();
-        readRequest(conn, new ServerResponderImpl(conn)).then(req => {
-          d.resolve(req);
+      // const raced = await Promise.race<"readable" | void>([
+      //   serveDeferred.promise,
+      //   cancel.promise
+      // ]);
+      // if (!raced) {
+      //   break;
+      // }
+      await serveDeferred.promise;
+      // on read request end
+      serveDeferred = defer<"readable">();
+      for (const {req, conn} of readRequestQueue) {
+        if (req) {
+          yield req;
+        }
+        // prepare for next http request on same connection
+        readRequest(
+          conn, new ServerResponderImpl(conn)
+        ).then(req => {
+          readRequestQueue.push({req, conn});
+          serveDeferred.resolve("readable");
         }).catch(e => {
+          // close if got error, usually EOF
+          console.error("err" + e);
           conn.close();
-          d.reject(e);
         });
-        readRequestQueue.push(d)
       }
+      readRequestQueue = [];
     } catch (e) {
-      
-    } finally {
-      readRequestQueue = readRequestQueue.filter(r => !r.handled);
+      // ignore
+      console.error(e)
     }
   }
   listener.close();
@@ -182,6 +200,7 @@ class HttpServerImpl implements HttpServer {
     }
   }
 }
+
 
 class ServerResponderImpl implements ServerResponder {
   constructor(private w: Writer) {
