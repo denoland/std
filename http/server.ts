@@ -1,111 +1,110 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { listen, Conn, toAsyncIterator, Reader, Writer, copy } from "deno";
-import { BufReader, BufState, BufWriter } from "../io/bufio.ts";
+
+import { Conn, copy, listen, Reader, toAsyncIterator, Writer } from "deno";
+import { BufReader, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "../testing/mod.ts";
+import { Deferred } from "../async/deferred.ts";
+import { pathToRegexp } from "./path_to_regexp.ts";
+import { BodyReader, ChunkedBodyReader } from "./readers.ts";
 
-interface Deferred {
-  promise: Promise<{}>;
-  resolve: () => void;
-  reject: () => void;
-}
+export type HttpHandler = (req: ServerRequest) => Promise<any>;
 
-function deferred(): Deferred {
-  let resolve, reject;
-  const promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-  return {
-    promise,
-    resolve,
-    reject
-  };
-}
+export type ServerRequest = {
+  url: string;
+  method: string;
+  proto: string;
+  headers: Headers;
+  body: Reader;
+  respond: ServerResponder;
+};
 
-interface ServeEnv {
-  reqQueue: ServerRequest[];
-  serveDeferred: Deferred;
-}
+export type ServerResponder = (response: ServerResponse) => Promise<any>;
 
-/** Continuously read more requests from conn until EOF
- * Calls maybeHandleReq.
- * bufr is empty on a fresh TCP connection.
- * Would be passed around and reused for later request on same conn
- * TODO: make them async function after this change is done
- * https://github.com/tc39/ecma262/pull/1250
- * See https://v8.dev/blog/fast-async
- */
-function serveConn(env: ServeEnv, conn: Conn, bufr?: BufReader) {
-  readRequest(conn, bufr).then(maybeHandleReq.bind(null, env, conn));
-}
-
-function maybeHandleReq(env: ServeEnv, conn: Conn, maybeReq: any) {
-  const [req, _err] = maybeReq;
-  if (_err) {
-    conn.close(); // assume EOF for now...
-    return;
-  }
-  env.reqQueue.push(req); // push req to queue
-  env.serveDeferred.resolve(); // signal while loop to process it
-}
-
-export async function* serve(addr: string) {
-  const listener = listen("tcp", addr);
-  const env: ServeEnv = {
-    reqQueue: [], // in case multiple promises are ready
-    serveDeferred: deferred()
-  };
-
-  // Routine that keeps calling accept
-  const acceptRoutine = () => {
-    const handleConn = (conn: Conn) => {
-      serveConn(env, conn); // don't block
-      scheduleAccept(); // schedule next accept
-    };
-    const scheduleAccept = () => {
-      listener.accept().then(handleConn);
-    };
-    scheduleAccept();
-  };
-
-  acceptRoutine();
-
-  // Loop hack to allow yield (yield won't work in callbacks)
-  while (true) {
-    await env.serveDeferred.promise;
-    env.serveDeferred = deferred(); // use a new deferred
-    let queueToProcess = env.reqQueue;
-    env.reqQueue = [];
-    for (const result of queueToProcess) {
-      yield result;
-      // Continue read more from conn when user is done with the current req
-      // Moving this here makes it easier to manage
-      serveConn(env, result.conn, result.r);
-    }
-  }
-  listener.close();
-}
-
-export async function listenAndServe(
-  addr: string,
-  handler: (req: ServerRequest) => void
-) {
-  const server = serve(addr);
-
-  for await (const request of server) {
-    await handler(request);
-  }
-}
-
-export interface Response {
+export interface ServerResponse {
   status?: number;
   headers?: Headers;
   body?: Uint8Array | Reader;
 }
 
-export function setContentLength(r: Response): void {
+export async function* serve(
+  addr: string
+): AsyncIterableIterator<ServerRequest> {
+  const listener = listen("tcp", addr);
+  while (true) {
+    let conn: Conn;
+    yield listener.accept().then(async c => {
+      conn = c;
+      return readRequest(conn, async response => {
+        await writeResponse(conn, response);
+      });
+    });
+  }
+}
+
+export async function listenAndServe(addr: string, handler: HttpHandler) {
+  const server = serve(addr);
+
+  for await (const req of server) {
+    await handler(req);
+  }
+}
+
+export interface HttpServer {
+  handle(pattern: string, handler: HttpHandler);
+
+  listen(addr): Deferred;
+}
+
+export function createServer(): HttpServer {
+  return new HttpServerImpl();
+}
+
+class HttpServerImpl implements HttpServer {
+  private handlers: {
+    [key: string]: {
+      pattern: string;
+      regexp: RegExp;
+      handler: HttpHandler;
+    };
+  } = Object.create(null);
+
+  handle(pattern: string, handler: HttpHandler) {
+    this.handlers[pattern] = {
+      pattern,
+      regexp: pathToRegexp(pattern),
+      handler
+    };
+  }
+
+  listen(addr: string): Deferred<void> {
+    const listener = listen("tcp", addr);
+    // Loop hack to allow yield (yield won't work in callbacks)
+    let resolve = () => {};
+    let reject = () => {};
+    const promise = new Promise<void>(async (res, rej) => {
+      resolve = res;
+      reject = rej;
+      try {
+        for await (const req of serve(addr)) {
+          for (const [_, val] of Object.entries(this.handlers)) {
+            const { regexp, handler } = val;
+            if (req.url.match(regexp)) {
+              await handler(req);
+              break;
+            }
+          }
+        }
+      } finally {
+        listener.close();
+      }
+    });
+    return { promise, reject, resolve };
+  }
+}
+
+export function setContentLength(r: ServerResponse): void {
   if (!r.headers) {
     r.headers = new Headers();
   }
@@ -122,98 +121,17 @@ export function setContentLength(r: Response): void {
   }
 }
 
-export class ServerRequest {
-  url: string;
-  method: string;
-  proto: string;
-  headers: Headers;
-  conn: Conn;
-  r: BufReader;
-  w: BufWriter;
+class ServerRequestInternal {
+  constructor(public req: ServerRequest, public conn: Conn) {}
+}
 
-  public async *bodyStream() {
-    if (this.headers.has("content-length")) {
-      const len = +this.headers.get("content-length");
-      if (Number.isNaN(len)) {
-        return new Uint8Array(0);
-      }
-      let buf = new Uint8Array(1024);
-      let rr = await this.r.read(buf);
-      let nread = rr.nread;
-      while (!rr.eof && nread < len) {
-        yield buf.subarray(0, rr.nread);
-        buf = new Uint8Array(1024);
-        rr = await this.r.read(buf);
-        nread += rr.nread;
-      }
-      yield buf.subarray(0, rr.nread);
-    } else {
-      if (this.headers.has("transfer-encoding")) {
-        const transferEncodings = this.headers
-          .get("transfer-encoding")
-          .split(",")
-          .map(e => e.trim().toLowerCase());
-        if (transferEncodings.includes("chunked")) {
-          // Based on https://tools.ietf.org/html/rfc2616#section-19.4.6
-          const tp = new TextProtoReader(this.r);
-          let [line, _] = await tp.readLine();
-          // TODO: handle chunk extension
-          let [chunkSizeString, optExt] = line.split(";");
-          let chunkSize = parseInt(chunkSizeString, 16);
-          if (Number.isNaN(chunkSize) || chunkSize < 0) {
-            throw new Error("Invalid chunk size");
-          }
-          while (chunkSize > 0) {
-            let data = new Uint8Array(chunkSize);
-            let [nread, err] = await this.r.readFull(data);
-            if (nread !== chunkSize) {
-              throw new Error("Chunk data does not match size");
-            }
-            yield data;
-            await this.r.readLine(); // Consume \r\n
-            [line, _] = await tp.readLine();
-            chunkSize = parseInt(line, 16);
-          }
-          const [entityHeaders, err] = await tp.readMIMEHeader();
-          if (!err) {
-            for (let [k, v] of entityHeaders) {
-              this.headers.set(k, v);
-            }
-          }
-          /* Pseudo code from https://tools.ietf.org/html/rfc2616#section-19.4.6
-          length := 0
-          read chunk-size, chunk-extension (if any) and CRLF
-          while (chunk-size > 0) {
-            read chunk-data and CRLF
-            append chunk-data to entity-body
-            length := length + chunk-size
-            read chunk-size and CRLF
-          }
-          read entity-header
-          while (entity-header not empty) {
-            append entity-header to existing header fields
-            read entity-header
-          }
-          Content-Length := length
-          Remove "chunked" from Transfer-Encoding
-          */
-          return; // Must return here to avoid fall through
-        }
-        // TODO: handle other transfer-encoding types
-      }
-      // Otherwise...
-      yield new Uint8Array(0);
-    }
-  }
-
-  // Read the body of the request into a single Uint8Array
-  public async body(): Promise<Uint8Array> {
-    return readAllIterator(this.bodyStream());
-  }
-
-  async respond(r: Response): Promise<void> {
-    return writeResponse(this.w, r);
-  }
+function isServerRequest(x): x is ServerRequest {
+  return (
+    typeof x === "object" &&
+    x.hasOwnProperty("url") &&
+    x.hasOwnProperty("method") &&
+    x.hasOwnProperty("proto")
+  );
 }
 
 function bufWriter(w: Writer): BufWriter {
@@ -224,7 +142,10 @@ function bufWriter(w: Writer): BufWriter {
   }
 }
 
-export async function writeResponse(w: Writer, r: Response): Promise<void> {
+export async function writeResponse(
+  w: Writer,
+  r: ServerResponse
+): Promise<void> {
   const protoMajor = 1;
   const protoMinor = 1;
   const statusCode = r.status || 200;
@@ -282,53 +203,27 @@ async function writeChunkedBody(w: Writer, r: Reader) {
   await writer.write(endChunk);
 }
 
-async function readRequest(
-  c: Conn,
-  bufr?: BufReader
-): Promise<[ServerRequest, BufState]> {
-  if (!bufr) {
-    bufr = new BufReader(c);
-  }
-  const bufw = new BufWriter(c);
-  const req = new ServerRequest();
-  req.conn = c;
-  req.r = bufr!;
-  req.w = bufw;
+export async function readRequest(
+  conn: Reader,
+  respond: ServerResponder
+): Promise<ServerRequest> {
+  const bufr = new BufReader(conn);
   const tp = new TextProtoReader(bufr!);
 
-  let s: string;
-  let err: BufState;
-
   // First line: GET /index.html HTTP/1.0
-  [s, err] = await tp.readLine();
-  if (err) {
-    return [null, err];
+  const [line, lineErr] = await tp.readLine();
+  if (lineErr) {
+    throw lineErr;
   }
-  [req.method, req.url, req.proto] = s.split(" ", 3);
-
-  [req.headers, err] = await tp.readMIMEHeader();
-
-  return [req, err];
-}
-
-async function readAllIterator(
-  it: AsyncIterableIterator<Uint8Array>
-): Promise<Uint8Array> {
-  const chunks = [];
-  let len = 0;
-  for await (const chunk of it) {
-    chunks.push(chunk);
-    len += chunk.length;
+  const [method, url, proto] = line.split(" ", 3);
+  const [headers, headersErr] = await tp.readMIMEHeader();
+  if (headersErr) {
+    throw headersErr;
   }
-  if (chunks.length === 0) {
-    // No need for copy
-    return chunks[0];
-  }
-  const collected = new Uint8Array(len);
-  let offset = 0;
-  for (let chunk of chunks) {
-    collected.set(chunk, offset);
-    offset += chunk.length;
-  }
-  return collected;
+  const contentLength = headers.get("content-length");
+  const body =
+    headers.get("transfer-encoding") === "chunked"
+      ? new ChunkedBodyReader(bufr)
+      : new BodyReader(bufr, parseInt(contentLength));
+  return { method, url, proto, headers, body, respond };
 }
