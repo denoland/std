@@ -1,14 +1,14 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import {Conn, copy, listen, Reader, toAsyncIterator, Writer} from "deno";
-import {BufReader, BufWriter} from "../io/bufio.ts";
-import {TextProtoReader} from "../textproto/mod.ts";
-import {STATUS_TEXT} from "./http_status.ts";
-import {assert} from "../testing/mod.ts";
-import {defer, Deferred} from "../async/deferred.ts";
-import {Key, pathToRegexp} from "./path_to_regexp.ts";
-import {BodyReader, ChunkedBodyReader} from "./readers.ts";
-import {encode} from "../strings/strings.ts";
+import { Conn, copy, listen, Reader, toAsyncIterator, Writer } from "deno";
+import { BufReader, BufWriter } from "../io/bufio.ts";
+import { TextProtoReader } from "../textproto/mod.ts";
+import { STATUS_TEXT } from "./http_status.ts";
+import { assert } from "../testing/mod.ts";
+import { defer, Deferred } from "../async/deferred.ts";
+import { Key, pathToRegexp } from "./path_to_regexp.ts";
+import { BodyReader, ChunkedBodyReader } from "./readers.ts";
+import { encode } from "../strings/strings.ts";
 
 /** basic handler for http request */
 export type HttpHandler = (req: ServerRequest) => Promise<any>;
@@ -57,6 +57,30 @@ export interface ServerResponse {
   body?: Uint8Array | Reader;
 }
 
+interface ServeEnv {
+  reqQueue: { req: ServerRequest; conn: Conn }[];
+  serveDeferred: Deferred;
+}
+
+/** Continuously read more requests from conn until EOF
+ * Calls maybeHandleReq.
+ * TODO: make them async function after this change is done
+ * https://github.com/tc39/ecma262/pull/1250
+ * See https://v8.dev/blog/fast-async
+ */
+function serveConn(env: ServeEnv, conn: Conn) {
+  readRequest(conn, new ServerResponderImpl(conn))
+    .then(maybeHandleReq.bind(null, env, conn))
+    .catch(e => {
+      conn.close();
+    });
+}
+
+function maybeHandleReq(env: ServeEnv, conn: Conn, req: ServerRequest) {
+  env.reqQueue.push({ conn, req }); // push req to queue
+  env.serveDeferred.resolve(); // signal while loop to process it
+}
+
 /**
  * iterate new http request asynchronously
  * @param addr listening address. like 127.0.0.1:80
@@ -67,58 +91,40 @@ export async function* serve(
   cancel: Deferred<void> = defer<void>()
 ): AsyncIterableIterator<ServerRequest> {
   const listener = listen("tcp", addr);
-  let serveDeferred = defer<"readable">();
-  let readRequestQueue: { req: ServerRequest, conn: Conn }[] = [];
-  const acceptRoutine = () => {
-    const scheduleAccept = () => {
-      listener.accept().then(conn => {
-        readRequestQueue.push({req: null, conn});
-        serveDeferred.resolve("readable");
-        scheduleAccept(); // schedule next accept
-      });
-    };
-    scheduleAccept();
+  const env: ServeEnv = {
+    reqQueue: [], // in case multiple promises are ready
+    serveDeferred: defer()
   };
-  acceptRoutine();
+  let acceptPromise: Promise<Conn> = listener.accept();
   while (true) {
-    // do promise race between accept() and cancellation of serving.
-    // normally, accept() wins
-    try {
-      // const raced = await Promise.race<"readable" | void>([
-      //   serveDeferred.promise,
-      //   cancel.promise
-      // ]);
-      // if (!raced) {
-      //   break;
-      // }
-      await serveDeferred.promise;
-      // on read request end
-      serveDeferred = defer<"readable">();
-      for (const {req, conn} of readRequestQueue) {
+    // do race between accept, serveDeferred and cancel
+    const raced = await Promise.race<void | Conn>([
+      acceptPromise,
+      env.serveDeferred.promise,
+      cancel.promise
+    ]);
+    if (!raced) {
+      // cancellation deferred resolved
+      if (cancel.handled) {
+        break;
+      }
+      // next serve deferred
+      env.serveDeferred = defer();
+      const queueToProcess = env.reqQueue;
+      env.reqQueue = [];
+      for (const { req, conn } of queueToProcess) {
         if (req) {
           yield req;
         }
-        // prepare for next http request on same connection
-        readRequest(
-          conn, new ServerResponderImpl(conn)
-        ).then(req => {
-          readRequestQueue.push({req, conn});
-          serveDeferred.resolve("readable");
-        }).catch(e => {
-          // close if got error, usually EOF
-          console.error("err" + e);
-          conn.close();
-        });
+        serveConn(env, conn);
       }
-      readRequestQueue = [];
-    } catch (e) {
-      // ignore
-      console.error(e)
+    } else {
+      serveConn(env, raced);
+      acceptPromise = listener.accept();
     }
   }
   listener.close();
 }
-
 
 export async function listenAndServe(addr: string, handler: HttpHandler) {
   const server = serve(addr);
@@ -140,21 +146,23 @@ export function createServer(): HttpServer {
 }
 
 export function isServerRequest(x): x is ServerRequest {
-  return typeof x === "object" && typeof x.url === "string"
+  return typeof x === "object" && typeof x.url === "string";
 }
 
 export function createResponder(w: Writer): ServerResponder {
-  return new ServerResponderImpl(w)
+  return new ServerResponderImpl(w);
 }
 
 class HttpServerImpl implements HttpServer {
-  private handlers: Map<string,
+  private handlers: Map<
+    string,
     {
       pattern: string;
       regexp: RegExp;
       keys?: Key[];
       handler: HttpHandler;
-    }> = new Map();
+    }
+  > = new Map();
 
   handle(pattern: string, handler: HttpHandler) {
     const keys = [];
@@ -172,7 +180,7 @@ class HttpServerImpl implements HttpServer {
     for await (const req of serve(addr, cancel)) {
       let matched = false;
       for (const [_, val] of handlers.entries()) {
-        const {regexp, keys, handler} = val;
+        const { regexp, keys, handler } = val;
         const m = req.url.match(regexp);
         if (m) {
           matched = true;
@@ -201,10 +209,8 @@ class HttpServerImpl implements HttpServer {
   }
 }
 
-
 class ServerResponderImpl implements ServerResponder {
-  constructor(private w: Writer) {
-  }
+  constructor(private w: Writer) {}
 
   private _responded: boolean = false;
 
@@ -342,20 +348,18 @@ async function writeChunkedBody(w: Writer, r: Reader) {
 export async function readRequest(
   conn: Reader,
   responder: ServerResponder
-): Promise<ServerRequest | null> {
+): Promise<ServerRequest> {
   const bufr = new BufReader(conn);
   const tp = new TextProtoReader(bufr!);
 
   // First line: GET /index.html HTTP/1.0
   const [line, lineErr] = await tp.readLine();
   if (lineErr) {
-    console.error("http: error on read status line: " + lineErr);
     throw lineErr;
   }
   const [method, url, proto] = line.split(" ", 3);
   const [headers, headersErr] = await tp.readMIMEHeader();
   if (headersErr) {
-    console.error("http: error on read headers: " + headers);
     throw headersErr;
   }
   const contentLength = headers.get("content-length");
@@ -376,9 +380,7 @@ export async function readRequest(
   };
 }
 
-export async function readResponse(
-  conn: Reader
-): Promise<ServerResponse> {
+export async function readResponse(conn: Reader): Promise<ServerResponse> {
   const bufr = new BufReader(conn);
   const tp = new TextProtoReader(bufr!);
   // First line: HTTP/1,1 200 OK
@@ -396,5 +398,5 @@ export async function readResponse(
     headers.get("transfer-encoding") === "chunked"
       ? new ChunkedBodyReader(bufr)
       : new BodyReader(bufr, parseInt(contentLength));
-  return {status: parseInt(status), headers, body}
+  return { status: parseInt(status), headers, body };
 }

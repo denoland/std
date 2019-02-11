@@ -5,19 +5,20 @@
 // Ported from
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
-import {Buffer, copy, Reader} from "deno";
-import {assert, assertEqual, runTests, test} from "../testing/mod.ts";
+import { Buffer, copy, Reader } from "deno";
+import { assert, assertEqual, runTests, test } from "../testing/mod.ts";
 import {
   createResponder,
   createServer,
-  readRequest, readResponse,
+  readRequest,
+  readResponse,
   ServerResponse,
   writeResponse
 } from "./server.ts";
-import {decode, encode} from "../strings/strings.ts";
-import {StringReader} from "../io/readers.ts";
-import {StringWriter} from "../io/writers.ts";
-import {defer} from "../async/deferred.ts";
+import { decode, encode } from "../strings/strings.ts";
+import { StringReader } from "../io/readers.ts";
+import { StringWriter } from "../io/writers.ts";
+import { defer } from "../async/deferred.ts";
 
 interface ResponseTest {
   response: ServerResponse;
@@ -45,7 +46,7 @@ const responseTests: ResponseTest[] = [
 ];
 
 test(async function httpWriteResponse() {
-  for (const {raw, response} of responseTests) {
+  for (const { raw, response } of responseTests) {
     const buf = new Buffer();
     await writeResponse(buf, response);
     assertEqual(buf.toString(), raw);
@@ -115,11 +116,10 @@ test(async function httpServer() {
       headers: new Headers({
         "content-type": "application/json"
       }),
-      body: encode(JSON.stringify({id: req.params.id}))
+      body: encode(JSON.stringify({ id: req.params.id }))
     });
   });
-  server.handle("/no-response", async req => {
-  });
+  server.handle("/no-response", async req => {});
   const cancel = defer<void>();
   try {
     server.listen("127.0.0.1:8080", cancel);
@@ -170,7 +170,7 @@ test(async function httpServerResponder() {
   assert.equal(resp.headers.get("content-type"), "text/plain");
   const sw = new StringWriter();
   await copy(sw, resp.body as Reader);
-  assert.equal(sw.toString(), "ok")
+  assert.equal(sw.toString(), "ok");
 });
 
 test(async function httpServerResponderRespondJson() {
@@ -183,9 +183,12 @@ test(async function httpServerResponderRespondJson() {
     }
   };
   assert.assert(!res.isResponded);
-  await res.respondJson(json, new Headers({
-    "deno": "land"
-  }));
+  await res.respondJson(
+    json,
+    new Headers({
+      deno: "land"
+    })
+  );
   assert.assert(res.isResponded);
   const resp = await readResponse(w);
   assert.equal(resp.status, 200);
@@ -193,17 +196,20 @@ test(async function httpServerResponderRespondJson() {
   const sw = new StringWriter();
   await copy(sw, resp.body as Reader);
   const resJson = JSON.parse(sw.toString());
-  assert.equal(resJson, json)
-  assert.equal(resp.headers.get("deno"), "land")
+  assert.equal(resJson, json);
+  assert.equal(resp.headers.get("deno"), "land");
 });
 
 test(async function httpServerResponderRespondText() {
   const w = new Buffer();
   const res = createResponder(w);
   assert.assert(!res.isResponded);
-  await res.respondText("deno.land", new Headers({
-    "deno": "land"
-  }));
+  await res.respondText(
+    "deno.land",
+    new Headers({
+      deno: "land"
+    })
+  );
   assert.assert(res.isResponded);
   const resp = await readResponse(w);
   assert.equal(resp.status, 200);
@@ -211,7 +217,7 @@ test(async function httpServerResponderRespondText() {
   const sw = new StringWriter();
   await copy(sw, resp.body as Reader);
   assert.equal(sw.toString(), "deno.land");
-  assert.equal(resp.headers.get("deno"), "land")
+  assert.equal(resp.headers.get("deno"), "land");
 });
 
 test(async function httpServerResponderShouldThrow() {
@@ -221,22 +227,58 @@ test(async function httpServerResponderShouldThrow() {
     await res.respond({
       body: null
     });
-    await assert.throwsAsync(async () => res.respond({body: null}), Error, "responded")
-    await assert.throwsAsync(async () => res.respondJson({}), Error, "responded")
-    await assert.throwsAsync(async () => res.respondText(""), Error, "responded")
-
+    await assert.throwsAsync(
+      async () => res.respond({ body: null }),
+      Error,
+      "responded"
+    );
+    await assert.throwsAsync(
+      async () => res.respondJson({}),
+      Error,
+      "responded"
+    );
+    await assert.throwsAsync(
+      async () => res.respondText(""),
+      Error,
+      "responded"
+    );
   }
   {
     const res = createResponder(w);
     await res.respondText("");
-    await assert.throwsAsync(async () => res.respond({body: null}), Error, "responded")
-    await assert.throwsAsync(async () => res.respondJson({}), Error, "responded")
-    await assert.throwsAsync(async () => res.respondText(""), Error, "responded")  }
+    await assert.throwsAsync(
+      async () => res.respond({ body: null }),
+      Error,
+      "responded"
+    );
+    await assert.throwsAsync(
+      async () => res.respondJson({}),
+      Error,
+      "responded"
+    );
+    await assert.throwsAsync(
+      async () => res.respondText(""),
+      Error,
+      "responded"
+    );
+  }
   {
     const res = createResponder(w);
     await res.respondJson({});
-    await assert.throwsAsync(async () => res.respond({body: null}), Error, "responded")
-    await assert.throwsAsync(async () => res.respondJson({}), Error, "responded")
-    await assert.throwsAsync(async () => res.respondText(""), Error, "responded")
+    await assert.throwsAsync(
+      async () => res.respond({ body: null }),
+      Error,
+      "responded"
+    );
+    await assert.throwsAsync(
+      async () => res.respondJson({}),
+      Error,
+      "responded"
+    );
+    await assert.throwsAsync(
+      async () => res.respondText(""),
+      Error,
+      "responded"
+    );
   }
 });
