@@ -95,32 +95,34 @@ export async function* serve(
     reqQueue: [], // in case multiple promises are ready
     serveDeferred: defer()
   };
-  let acceptPromise: Promise<Conn> = listener.accept();
+  // Routine that keeps calling accept
+  const acceptRoutine = () => {
+    const handleConn = (conn: Conn) => {
+      serveConn(env, conn); // don't block
+      scheduleAccept(); // schedule next accept
+    };
+    const scheduleAccept = () => {
+      Promise.race([cancel.promise, listener.accept().then(handleConn)]);
+    };
+    scheduleAccept();
+  };
+  acceptRoutine();
   while (true) {
     // do race between accept, serveDeferred and cancel
-    const raced = await Promise.race<void | Conn>([
-      acceptPromise,
-      env.serveDeferred.promise,
-      cancel.promise
-    ]);
-    if (!raced) {
-      // cancellation deferred resolved
-      if (cancel.handled) {
-        break;
+    await Promise.race([env.serveDeferred.promise, cancel.promise]);
+    // cancellation deferred resolved
+    if (cancel.handled) {
+      break;
+    }
+    // next serve deferred
+    env.serveDeferred = defer();
+    const queueToProcess = env.reqQueue;
+    env.reqQueue = [];
+    for (const { req, conn } of queueToProcess) {
+      if (req) {
+        yield req;
       }
-      // next serve deferred
-      env.serveDeferred = defer();
-      const queueToProcess = env.reqQueue;
-      env.reqQueue = [];
-      for (const { req, conn } of queueToProcess) {
-        if (req) {
-          yield req;
-        }
-        serveConn(env, conn);
-      }
-    } else {
-      serveConn(env, raced);
-      acceptPromise = listener.accept();
+      serveConn(env, conn);
     }
   }
   listener.close();
