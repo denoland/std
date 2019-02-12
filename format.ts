@@ -1,36 +1,27 @@
-#!/usr/bin/env deno --allow-run
+#!/usr/bin/env deno --allow-run --allow-write --allow-read
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+import { exit, args } from "deno";
+import { parse } from "./flags/mod.ts";
+import { xrun, executableSuffix } from "./prettier/util.ts";
 
-import { readAll, exit, run } from "deno";
+async function main(opts) {
+  const args = [
+    `deno${executableSuffix}`,
+    "--allow-write",
+    "--allow-run",
+    "--allow-read",
+    "prettier/main.ts",
+    "--ignore",
+    "testdata",
+    "--ignore",
+    "vendor"
+  ];
 
-async function checkVersion() {
-  const prettierVersion = run({
-    args: ["bash", "-c", "prettier --version"],
-    stdout: "piped"
-  });
-  const b = await readAll(prettierVersion.stdout);
-  const s = await prettierVersion.status();
-  if (s.code != 0) {
-    console.log("error calling prettier --version error");
-    exit(s.code);
+  if (opts.check) {
+    args.push("--check");
   }
-  const version = new TextDecoder().decode(b).trim();
-  const requiredVersion = "1.15";
-  if (!version.startsWith(requiredVersion)) {
-    console.log(`Required prettier version: ${requiredVersion}`);
-    console.log(`Installed prettier version: ${version}`);
-    exit(1);
-  }
+
+  exit((await xrun({ args }).status()).code);
 }
 
-async function main() {
-  await checkVersion();
-
-  const prettier = run({
-    args: ["bash", "-c", "prettier --write '**/*.ts' '**/*.md'"]
-  });
-  const s = await prettier.status();
-  exit(s.code);
-}
-
-main();
+main(parse(args));

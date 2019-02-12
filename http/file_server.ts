@@ -1,4 +1,5 @@
 #!/usr/bin/env deno --allow-net
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 // This program serves files in the current directory over HTTP.
 // TODO Stream responses instead of reading them into memory.
@@ -10,7 +11,7 @@ import {
   ServerRequest,
   setContentLength,
   Response
-} from "./mod.ts";
+} from "./server.ts";
 import { cwd, DenoError, ErrorKind, args, stat, readDir, open } from "deno";
 import { extname } from "../fs/path.ts";
 import { contentType } from "../media_types/mod.ts";

@@ -74,6 +74,13 @@ const assertions = {
     }
   },
 
+  /**
+   * Forcefully throws a failed assertion
+   */
+  fail(msg?: string): void {
+    assert(false, `Failed assertion${msg ? `: ${msg}` : "."}`);
+  },
+
   /** Executes a function, expecting it to throw.  If it does not, then it
    * throws.  An error class and a string that should be included in the
    * error message can also be asserted.
@@ -238,7 +245,7 @@ function green_ok() {
   return FG_GREEN + "ok" + RESET;
 }
 
-async function runTests() {
+export async function runTests() {
   let passed = 0;
   let failed = 0;
 
@@ -283,5 +290,3 @@ async function runTests() {
     }, 0);
   }
 }
-
-setTimeout(runTests, 0);

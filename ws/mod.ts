@@ -1,16 +1,18 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { Buffer, Writer, Conn } from "deno";
-import { ServerRequest } from "../http/http.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
 import { Sha1 } from "./sha1.ts";
+import { writeResponse } from "../http/server.ts";
 
-export const OpCodeContinue = 0x0;
-export const OpCodeTextFrame = 0x1;
-export const OpCodeBinaryFrame = 0x2;
-export const OpCodeClose = 0x8;
-export const OpcodePing = 0x9;
-export const OpcodePong = 0xa;
+export enum OpCode {
+  Continue = 0x0,
+  TextFrame = 0x1,
+  BinaryFrame = 0x2,
+  Close = 0x8,
+  Ping = 0x9,
+  Pong = 0xa
+}
 
 export type WebSocketEvent =
   | string
@@ -69,6 +71,7 @@ export type WebSocket = {
 
 class WebSocketImpl implements WebSocket {
   encoder = new TextEncoder();
+
   constructor(private conn: Conn, private mask?: Uint8Array) {}
 
   async *receive(): AsyncIterableIterator<WebSocketEvent> {
@@ -77,9 +80,9 @@ class WebSocketImpl implements WebSocket {
     for await (const frame of receiveFrame(this.conn)) {
       unmask(frame.payload, frame.mask);
       switch (frame.opcode) {
-        case OpCodeTextFrame:
-        case OpCodeBinaryFrame:
-        case OpCodeContinue:
+        case OpCode.TextFrame:
+        case OpCode.BinaryFrame:
+        case OpCode.Continue:
           frames.push(frame);
           payloadsLength += frame.payload.length;
           if (frame.isLastFrame) {
@@ -89,7 +92,7 @@ class WebSocketImpl implements WebSocket {
               concat.set(frame.payload, offs);
               offs += frame.payload.length;
             }
-            if (frames[0].opcode === OpCodeTextFrame) {
+            if (frames[0].opcode === OpCode.TextFrame) {
               // text
               yield new Buffer(concat).toString();
             } else {
@@ -100,7 +103,7 @@ class WebSocketImpl implements WebSocket {
             payloadsLength = 0;
           }
           break;
-        case OpCodeClose:
+        case OpCode.Close:
           const code = (frame.payload[0] << 16) | frame.payload[1];
           const reason = new Buffer(
             frame.payload.subarray(2, frame.payload.length)
@@ -108,10 +111,10 @@ class WebSocketImpl implements WebSocket {
           this._isClosed = true;
           yield { code, reason };
           return;
-        case OpcodePing:
+        case OpCode.Ping:
           yield ["ping", frame.payload] as WebSocketPingEvent;
           break;
-        case OpcodePong:
+        case OpCode.Pong:
           yield ["pong", frame.payload] as WebSocketPongEvent;
           break;
       }
@@ -123,7 +126,7 @@ class WebSocketImpl implements WebSocket {
       throw new SocketClosedError("socket has been closed");
     }
     const opcode =
-      typeof data === "string" ? OpCodeTextFrame : OpCodeBinaryFrame;
+      typeof data === "string" ? OpCode.TextFrame : OpCode.BinaryFrame;
     const payload = typeof data === "string" ? this.encoder.encode(data) : data;
     const isLastFrame = true;
     await writeFrame(
@@ -142,7 +145,7 @@ class WebSocketImpl implements WebSocket {
     await writeFrame(
       {
         isLastFrame: true,
-        opcode: OpCodeClose,
+        opcode: OpCode.Close,
         mask: this.mask,
         payload
       },
@@ -170,7 +173,7 @@ class WebSocketImpl implements WebSocket {
       await writeFrame(
         {
           isLastFrame: true,
-          opcode: OpCodeClose,
+          opcode: OpCode.Close,
           mask: this.mask,
           payload
         },
@@ -205,12 +208,12 @@ export async function* receiveFrame(
     const frame = await readFrame(reader);
     const { opcode, payload } = frame;
     switch (opcode) {
-      case OpCodeTextFrame:
-      case OpCodeBinaryFrame:
-      case OpCodeContinue:
+      case OpCode.TextFrame:
+      case OpCode.BinaryFrame:
+      case OpCode.Continue:
         yield frame;
         break;
-      case OpCodeClose:
+      case OpCode.Close:
         await writeFrame(
           {
             opcode,
@@ -223,18 +226,18 @@ export async function* receiveFrame(
         yield frame;
         receiving = false;
         break;
-      case OpcodePing:
+      case OpCode.Ping:
         await writeFrame(
           {
             payload,
             isLastFrame,
-            opcode: OpcodePong
+            opcode: OpCode.Pong
           },
           conn
         );
         yield frame;
         break;
-      case OpcodePong:
+      case OpCode.Pong:
         yield frame;
         break;
     }
@@ -276,19 +279,24 @@ export function unmask(payload: Uint8Array, mask?: Uint8Array) {
   }
 }
 
-export function acceptable(req: ServerRequest): boolean {
+export function acceptable(req: { headers: Headers }): boolean {
   return (
     req.headers.get("upgrade") === "websocket" &&
-    req.headers.has("sec-websocket-key")
+    req.headers.has("sec-websocket-key") &&
+    req.headers.get("sec-websocket-key").length > 0
   );
 }
 
-export async function acceptWebSocket(req: ServerRequest): Promise<WebSocket> {
+export async function acceptWebSocket(req: {
+  conn: Conn;
+  headers: Headers;
+}): Promise<WebSocket> {
+  const { conn, headers } = req;
   if (acceptable(req)) {
-    const sock = new WebSocketImpl(req.conn);
-    const secKey = req.headers.get("sec-websocket-key");
+    const sock = new WebSocketImpl(conn);
+    const secKey = headers.get("sec-websocket-key");
     const secAccept = createSecAccept(secKey);
-    await req.respond({
+    await writeResponse(conn, {
       status: 101,
       headers: new Headers({
         Upgrade: "websocket",

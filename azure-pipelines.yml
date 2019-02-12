@@ -1,5 +1,5 @@
 variables:
-  DENO_VERSION: 'v0.2.8'
+  DENO_VERSION: 'v0.2.11'
 
 jobs:
 
@@ -9,7 +9,8 @@ jobs:
   steps:
   - script: curl -L https://deno.land/x/install/install.sh | sh -s $(DENO_VERSION)
   - script: echo '##vso[task.prependpath]$(HOME)/.deno/bin/'
-  - script: deno test.ts --allow-run --allow-net --allow-write
+  - script: deno test.ts --allow-run --allow-net --allow-write --allow-read
+  - script: deno format.ts --allow-run --allow-write --allow-read --check
 
 - job: 'Mac'
   pool:
@@ -17,12 +18,14 @@ jobs:
   steps:
   - script: curl -L https://deno.land/x/install/install.sh | sh -s $(DENO_VERSION)
   - script: echo '##vso[task.prependpath]$(HOME)/.deno/bin/'
-  - script: deno test.ts --allow-run --allow-net --allow-write
+  - script: deno test.ts --allow-run --allow-net --allow-write --allow-read
+  - script: deno format.ts --allow-run --allow-write --allow-read --check
 
 - job: 'Windows'
   pool:
     vmImage: 'vs2017-win2016'
   steps:
   - powershell: iwr https://deno.land/x/install/install.ps1 -out install.ps1; .\install.ps1 $(DENO_VERSION)
-  - script: echo '##vso[task.prependpath]C:\Users\VssAdministrator\.deno\bin\'
-  - script: 'C:\Users\VssAdministrator\.deno\bin\deno.exe test.ts --allow-run --allow-net --allow-write'
+  - bash: echo "##vso[task.prependpath]C:\Users\VssAdministrator\.deno\\bin"
+  - bash: deno.exe test.ts --allow-run --allow-net --allow-write --allow-read
+  - bash: deno.exe format.ts --allow-run --allow-write --allow-read --check
