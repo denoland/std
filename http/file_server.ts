@@ -213,7 +213,7 @@ function setCORS(res: ServerResponse) {
   );
 }
 
-listenAndServe(addr, async req => {
+listenAndServe(addr, async (req, res) => {
   const fileName = req.url.replace(/\/$/, "");
   const filePath = currentDir + fileName;
 
@@ -235,7 +235,7 @@ listenAndServe(addr, async req => {
       setCORS(response);
     }
     serverLog(req, response);
-    req.respond(response);
+    res.respond(response);
   }
 });
 

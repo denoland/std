@@ -11,11 +11,12 @@ import { BodyReader, ChunkedBodyReader } from "./readers.ts";
 import { encode } from "../strings/strings.ts";
 
 /** basic handler for http request */
-export type HttpHandler = (req: ServerRequest) => Promise<any>;
+export type HttpHandler = (req: ServerRequest, res: ServerResponder) => unknown;
 
 export type ServerRequest = {
   /** request path with queries. always begin with / */
   url: string;
+  /** HTTP method */
   method: string;
   /** requested protocol. like HTTP/1.1 */
   proto: string;
@@ -25,11 +26,6 @@ export type ServerRequest = {
   params: { [key: string]: string };
   /** body stream. body with "transfer-encoding: chunked" will automatically be combined into original data */
   body: Reader;
-  /** @deprecated
-   * use responder.respond instead */
-  respond: (response: ServerResponse) => Promise<any>;
-  /** responder object */
-  responder: ServerResponder;
 };
 
 /** basic responder for http response */
@@ -42,11 +38,6 @@ export interface ServerResponder {
 
   readonly isResponded: boolean;
 }
-
-/**
- * @deprecated
- * use ServerResponse instead */
-export type Response = ServerResponse;
 
 export interface ServerResponse {
   /**
@@ -69,7 +60,7 @@ interface ServeEnv {
  * See https://v8.dev/blog/fast-async
  */
 function serveConn(env: ServeEnv, conn: Conn) {
-  readRequest(conn, new ServerResponderImpl(conn))
+  readRequest(conn)
     .then(maybeHandleReq.bind(null, env, conn))
     .catch(e => {
       conn.close();
@@ -88,8 +79,8 @@ function maybeHandleReq(env: ServeEnv, conn: Conn, req: ServerRequest) {
  * */
 export async function* serve(
   addr: string,
-  cancel: Deferred<void> = defer<void>()
-): AsyncIterableIterator<ServerRequest> {
+  cancel: Deferred = defer()
+): AsyncIterableIterator<{ req: ServerRequest; res: ServerResponder }> {
   const listener = listen("tcp", addr);
   const env: ServeEnv = {
     reqQueue: [], // in case multiple promises are ready
@@ -120,7 +111,8 @@ export async function* serve(
     env.reqQueue = [];
     for (const { req, conn } of queueToProcess) {
       if (req) {
-        yield req;
+        const res = createResponder(conn);
+        yield { req, res };
       }
       serveConn(env, conn);
     }
@@ -131,15 +123,15 @@ export async function* serve(
 export async function listenAndServe(addr: string, handler: HttpHandler) {
   const server = serve(addr);
 
-  for await (const req of server) {
-    await handler(req);
+  for await (const { req, res } of server) {
+    await handler(req, res);
   }
 }
 
 export interface HttpServer {
   handle(pattern: string, handler: HttpHandler);
 
-  listen(addr: string, cancel?: Deferred<void>): Promise<void>;
+  listen(addr: string, cancel?: Deferred): Promise<void>;
 }
 
 /** create HttpServer object */
@@ -147,10 +139,7 @@ export function createServer(): HttpServer {
   return new HttpServerImpl();
 }
 
-export function isServerRequest(x): x is ServerRequest {
-  return typeof x === "object" && typeof x.url === "string";
-}
-
+/** create ServerResponder object */
 export function createResponder(w: Writer): ServerResponder {
   return new ServerResponderImpl(w);
 }
@@ -177,9 +166,9 @@ class HttpServerImpl implements HttpServer {
     });
   }
 
-  async listen(addr: string, cancel: Deferred<void> = defer<void>()) {
+  async listen(addr: string, cancel: Deferred = defer()) {
     const handlers = this.handlers;
-    for await (const req of serve(addr, cancel)) {
+    for await (const { req, res } of serve(addr, cancel)) {
       let matched = false;
       for (const [_, val] of handlers.entries()) {
         const { regexp, keys, handler } = val;
@@ -191,9 +180,9 @@ class HttpServerImpl implements HttpServer {
             const key = keys[i];
             req.params[key.name] = m[i];
           }
-          await handler(req);
-          if (!req.responder.isResponded) {
-            await req.responder.respond({
+          await handler(req, res);
+          if (!res.isResponded) {
+            await res.respond({
               status: 500,
               body: encode("Not Responded")
             });
@@ -202,7 +191,7 @@ class HttpServerImpl implements HttpServer {
         }
       }
       if (!matched) {
-        await req.responder.respond({
+        await res.respond({
           status: 404,
           body: encode("Not Found")
         });
@@ -233,27 +222,23 @@ class ServerResponderImpl implements ServerResponder {
   }
 
   respondJson(obj: any, headers: Headers = new Headers()): Promise<void> {
-    this.checkIfResponded();
     const body = encode(JSON.stringify(obj));
     if (!headers.has("content-type")) {
       headers.set("content-type", "application/json");
     }
-    this._responded = true;
-    return writeResponse(this.w, {
+    return this.respond({
       status: 200,
-      headers,
-      body
+      body,
+      headers
     });
   }
 
   respondText(text: string, headers: Headers = new Headers()): Promise<void> {
-    this.checkIfResponded();
     const body = encode(text);
     if (!headers.has("content-type")) {
       headers.set("content-type", "text/plain");
     }
-    this._responded = true;
-    return writeResponse(this.w, {
+    return this.respond({
       status: 200,
       headers,
       body
@@ -347,10 +332,7 @@ async function writeChunkedBody(w: Writer, r: Reader) {
   await writer.write(endChunk);
 }
 
-export async function readRequest(
-  conn: Reader,
-  responder: ServerResponder
-): Promise<ServerRequest> {
+export async function readRequest(conn: Reader): Promise<ServerRequest> {
   const bufr = new BufReader(conn);
   const tp = new TextProtoReader(bufr!);
 
@@ -376,9 +358,7 @@ export async function readRequest(
     proto,
     headers,
     body,
-    params,
-    respond: res => responder.respond(res),
-    responder
+    params
   };
 }
 

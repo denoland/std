@@ -64,7 +64,7 @@ test(async function httpReadRequest() {
   ];
   let msg = lines.join("\r\n");
   msg += body;
-  const req = await readRequest(new StringReader(`${msg}`), null);
+  const req = await readRequest(new StringReader(`${msg}`));
   assert.equal(req.url, "/index.html?deno=land");
   assert.equal(req.method, "GET");
   assert.equal(req.proto, "HTTP/1.1");
@@ -90,7 +90,7 @@ test(async function httpReadRequestChunkedBody() {
   await buf.write(encode("4\r\ndeno\r\n"));
   await buf.write(encode("5\r\n.land\r\n"));
   await buf.write(encode("0\r\n\r\n"));
-  const req = await readRequest(buf, null);
+  const req = await readRequest(buf);
   assert.equal(req.url, "/index.html?deno=land");
   assert.equal(req.method, "GET");
   assert.equal(req.proto, "HTTP/1.1");
@@ -104,14 +104,14 @@ test(async function httpReadRequestChunkedBody() {
 
 test(async function httpServer() {
   const server = createServer();
-  server.handle("/", async req => {
-    await req.respond({
+  server.handle("/", async (req, res) => {
+    await res.respond({
       status: 200,
       body: encode("ok")
     });
   });
-  server.handle("/foo/:id", async req => {
-    await req.respond({
+  server.handle("/foo/:id", async (req, res) => {
+    await res.respond({
       status: 200,
       headers: new Headers({
         "content-type": "application/json"
@@ -119,7 +119,7 @@ test(async function httpServer() {
       body: encode(JSON.stringify({ id: req.params.id }))
     });
   });
-  server.handle("/no-response", async req => {});
+  server.handle("/no-response", async (req, res) => {});
   const cancel = defer<void>();
   try {
     server.listen("127.0.0.1:8080", cancel);
