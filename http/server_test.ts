@@ -6,7 +6,7 @@
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
 import { Buffer, copy, Reader } from "deno";
-import { assert, assertEqual, runTests, test } from "../testing/mod.ts";
+import { assert, assertEqual, test } from "../testing/mod.ts";
 import {
   createResponder,
   createServer,
@@ -15,7 +15,7 @@ import {
   ServerResponse,
   writeResponse
 } from "./server.ts";
-import { decode, encode } from "../strings/strings.ts";
+import { encode } from "../strings/strings.ts";
 import { StringReader } from "../io/readers.ts";
 import { StringWriter } from "../io/writers.ts";
 import { defer } from "../async/deferred.ts";
@@ -104,19 +104,20 @@ test(async function httpReadRequestChunkedBody() {
 
 test(async function httpServer() {
   const server = createServer();
-  server.handle("/", async (req, res) => {
+  server.handle("/index", async (req, res) => {
     await res.respond({
       status: 200,
       body: encode("ok")
     });
   });
-  server.handle("/foo/:id", async (req, res) => {
+  server.handle(new RegExp("/foo/(?<id>.+)"), async (req, res) => {
+    const { id } = req.match.groups;
     await res.respond({
       status: 200,
       headers: new Headers({
         "content-type": "application/json"
       }),
-      body: encode(JSON.stringify({ id: req.params.id }))
+      body: encode(JSON.stringify({ id }))
     });
   });
   server.handle("/no-response", async (req, res) => {});
@@ -124,7 +125,7 @@ test(async function httpServer() {
   try {
     server.listen("127.0.0.1:8080", cancel);
     {
-      const res1 = await fetch("http://127.0.0.1:8080");
+      const res1 = await fetch("http://127.0.0.1:8080/index");
       const text = await res1.body.text();
       assert.equal(res1.status, 200);
       assert.equal(text, "ok");

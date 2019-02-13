@@ -6,7 +6,6 @@ import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "../testing/mod.ts";
 import { defer, Deferred } from "../async/deferred.ts";
-import { Key, pathToRegexp } from "./path_to_regexp.ts";
 import { BodyReader, ChunkedBodyReader } from "./readers.ts";
 import { encode } from "../strings/strings.ts";
 
@@ -22,8 +21,8 @@ export type ServerRequest = {
   proto: string;
   /** HTTP Headers */
   headers: Headers;
-  /** used for storing parsed params in HttpServer.handle  */
-  params: { [key: string]: string };
+  /** matched result for path pattern  */
+  match: RegExpMatchArray;
   /** body stream. body with "transfer-encoding: chunked" will automatically be combined into original data */
   body: Reader;
 };
@@ -129,7 +128,7 @@ export async function listenAndServe(addr: string, handler: HttpHandler) {
 }
 
 export interface HttpServer {
-  handle(pattern: string, handler: HttpHandler);
+  handle(pattern: string | RegExp, handler: HttpHandler);
 
   listen(addr: string, cancel?: Deferred): Promise<void>;
 }
@@ -145,52 +144,40 @@ export function createResponder(w: Writer): ServerResponder {
 }
 
 class HttpServerImpl implements HttpServer {
-  private handlers: Map<
-    string,
-    {
-      pattern: string;
-      regexp: RegExp;
-      keys?: Key[];
-      handler: HttpHandler;
-    }
-  > = new Map();
+  private handlers: { pattern: string | RegExp; handler: HttpHandler }[] = [];
 
-  handle(pattern: string, handler: HttpHandler) {
-    const keys = [];
-    const regexp = pathToRegexp(pattern, keys);
-    this.handlers.set(pattern, {
-      pattern,
-      regexp,
-      keys,
-      handler
-    });
+  handle(pattern: string | RegExp, handler: HttpHandler) {
+    this.handlers.push({ pattern, handler });
   }
 
   async listen(addr: string, cancel: Deferred = defer()) {
-    const handlers = this.handlers;
     for await (const { req, res } of serve(addr, cancel)) {
-      let matched = false;
-      for (const [_, val] of handlers.entries()) {
-        const { regexp, keys, handler } = val;
-        const m = req.url.match(regexp);
-        if (m) {
-          matched = true;
-          m.shift();
-          for (let i = 0; i < m.length; i++) {
-            const key = keys[i];
-            req.params[key.name] = m[i];
-          }
-          await handler(req, res);
-          if (!res.isResponded) {
-            await res.respond({
-              status: 500,
-              body: encode("Not Responded")
-            });
-          }
-          break;
+      let lastMatch: RegExpMatchArray;
+      let lastHandler: HttpHandler;
+      for (const { pattern, handler } of this.handlers) {
+        const match = req.url.match(pattern);
+        if (!match) {
+          continue;
+        }
+        if (!lastMatch) {
+          lastMatch = match;
+          lastHandler = handler;
+        } else if (match[0].length > lastMatch[0].length) {
+          // use longest match
+          lastMatch = match;
+          lastHandler = handler;
         }
       }
-      if (!matched) {
+      req.match = lastMatch;
+      if (lastHandler) {
+        await lastHandler(req, res);
+        if (!res.isResponded) {
+          await res.respond({
+            status: 500,
+            body: encode("Not Responded")
+          });
+        }
+      } else {
         await res.respond({
           status: 404,
           body: encode("Not Found")
@@ -351,14 +338,13 @@ export async function readRequest(conn: Reader): Promise<ServerRequest> {
     headers.get("transfer-encoding") === "chunked"
       ? new ChunkedBodyReader(bufr)
       : new BodyReader(bufr, parseInt(contentLength));
-  const params = Object.create(null);
   return {
     method,
     url,
     proto,
     headers,
     body,
-    params
+    match: null
   };
 }
 
