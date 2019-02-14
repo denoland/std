@@ -22,7 +22,7 @@ export interface WalkOptions {
 
 /** Generate all files in a directory recursively.
  *
- *      for async const fileInfo of walk() {
+ *      for await (const fileInfo of walk()) {
  *        console.log(fileInfo.path);
  *        assert(fileInfo.isFile());
  *      };
@@ -62,7 +62,7 @@ export async function* walk(
 
 /** Generate all files in a directory recursively.
  *
- *      for const fileInfo of walkSync() {
+ *      for (const fileInfo of walkSync()) {
  *        console.log(fileInfo.path);
  *        assert(fileInfo.isFile());
  *      };
