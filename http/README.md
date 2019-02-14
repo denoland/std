@@ -10,20 +10,15 @@ import { encode } from "https://deno.land/x/strings/strings.ts";
 
 async function main() {
   const server = createServer();
-  server.handle("/", async req => {
-    await req.respond({
+  server.handle("/", async (req, res) => {
+    await res.respond({
       status: 200,
       body: encode("ok")
     });
   });
-  server.handle("/foo/:id", async req => {
-    await req.respond({
-      status: 200,
-      headers: new Headers({
-        "content-type": "application/json"
-      }),
-      body: encode(JSON.stringify({ id: req.params.id }))
-    });
+  server.handle(new RegExp("/foo/(?<id>.+)"), async (req, res) => {
+    const { id } = req.match.groups;
+    await res.respondJson({id});
   });
   server.listen("127.0.0.1:8080");
 }
