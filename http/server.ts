@@ -5,7 +5,7 @@ import { BufReader, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "../testing/mod.ts";
-import { defer, Deferred } from "../async/deferred.ts";
+import { defer, Deferred } from "../util/deferred.ts";
 import { BodyReader, ChunkedBodyReader } from "./readers.ts";
 import { encode } from "../strings/strings.ts";
 
