@@ -7,9 +7,7 @@ import { assertEqual } from "./pretty.ts";
 const createHeader = () => [
   "",
   "",
-  `    ${gray(bold("[Diff]"))} ${red(bold("Left"))} / ${green(
-    bold("Right")
-  )}`,
+  `    ${gray(bold("[Diff]"))} ${red(bold("Left"))} / ${green(bold("Right"))}`,
   "",
   ""
 ];
