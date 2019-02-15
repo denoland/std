@@ -18,7 +18,7 @@ async function main() {
   });
   server.handle(new RegExp("/foo/(?<id>.+)"), async (req, res) => {
     const { id } = req.match.groups;
-    await res.respondJson({id});
+    await res.respondJson({ id });
   });
   server.listen("127.0.0.1:8080");
 }
