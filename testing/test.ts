@@ -1,6 +1,9 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 import { test, assert, assertEqual, equal } from "./mod.ts";
+import "./format.test.ts";
+import "./diff.test.ts";
+import "./pretty.test.ts";
 
 test(function testingEqual() {
   assert(equal("world", "world"));
@@ -52,7 +55,7 @@ test(function testingAssertEqualActualUncoercable() {
   } catch (e) {
     didThrow = true;
     console.log(e.message);
-    assert(e.message === 'actual: Object {} expected: "bar"');
+    assert(e.message === "actual: [Cannot display] expected: bar");
   }
   assert(didThrow);
 });
@@ -65,7 +68,7 @@ test(function testingAssertEqualExpectedUncoercable() {
   } catch (e) {
     didThrow = true;
     console.log(e.message);
-    assert(e.message === 'actual: "bar" expected: Object {}');
+    assert(e.message === "actual: bar expected: [Cannot display]");
   }
   assert(didThrow);
 });
