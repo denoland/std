@@ -1,3 +1,5 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
 import { equal } from "./mod.ts";
 import { red, green, white, gray, bold } from "../colors/mod.ts";
 import diff, { DiffType, DiffResult } from "./diff.ts";
@@ -40,8 +42,8 @@ function buildMessage(diffResult: ReadonlyArray<DiffResult<string>>) {
   messages.push("");
   messages.push("");
   messages.push(
-    `    ${gray(bold("[Diff]"))} ${green(bold("Added"))} / ${red(
-      bold("Removed")
+    `    ${gray(bold("[Diff]"))} ${red(bold("Left"))} / ${green(
+      bold("Right")
     )}`
   );
   messages.push("");

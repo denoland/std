@@ -1,3 +1,5 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
 import { test, assert } from "./mod.ts";
 import { red, green, white, gray, bold } from "../colors/mod.ts";
 import { assertEqual } from "./pretty.ts";
@@ -5,8 +7,8 @@ import { assertEqual } from "./pretty.ts";
 const createHeader = () => [
   "",
   "",
-  `    ${gray(bold("[Diff]"))} ${green(bold("Added"))} / ${red(
-    bold("Removed")
+  `    ${gray(bold("[Diff]"))} ${red(bold("Left"))} / ${green(
+    bold("Right")
   )}`,
   "",
   ""
