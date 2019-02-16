@@ -20,4 +20,3 @@ test(async function catSmoke() {
   const s = await p.status();
   assertEqual(s.code, 0);
 });
-
