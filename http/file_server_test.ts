@@ -12,7 +12,7 @@ async function startFileServer() {
       "deno",
       "--allow-read",
       "--allow-net",
-      "http/file_server.ts",
+      "examples/file_server.ts",
       ".",
       "--cors"
     ],
@@ -22,7 +22,7 @@ async function startFileServer() {
   const r = new TextProtoReader(new BufReader(fileServer.stdout));
   const [s, err] = await r.readLine();
   assert(err == null);
-  assert(s.includes("server listening"));
+  assert(s.includes("fileServer listening"));
 }
 function killFileServer() {
   fileServer.close();

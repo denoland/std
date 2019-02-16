@@ -44,25 +44,9 @@ const dirViewerTemplate = `
 </html>
 `;
 
-const serverArgs = args.slice();
-let CORSEnabled = false;
-// TODO: switch to flags if we later want to add more options
-for (let i = 0; i < serverArgs.length; i++) {
-  if (serverArgs[i] === "--cors") {
-    CORSEnabled = true;
-    serverArgs.splice(i, 1);
-    break;
-  }
-}
-let currentDir = cwd();
-const target = serverArgs[1];
-if (target) {
-  currentDir = `${currentDir}/${target}`;
-}
-const addr = `0.0.0.0:${serverArgs[2] || 4500}`;
 const encoder = new TextEncoder();
 
-function modeToString(isDir: boolean, maybeMode: number | null) {
+function modeToString(isDir: boolean, maybeMode: number | null): string {
   const modeMap = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
 
   if (maybeMode === null) {
@@ -84,7 +68,7 @@ function modeToString(isDir: boolean, maybeMode: number | null) {
   return output;
 }
 
-function fileLenToString(len: number) {
+function fileLenToString(len: number): string {
   const multipler = 1024;
   let base = 1;
   const suffix = ["B", "K", "M", "G", "T"];
@@ -107,7 +91,7 @@ function createDirEntryDisplay(
   size: number | null,
   mode: number | null,
   isDir: boolean
-) {
+): string {
   const sizeStr = size === null ? "" : "" + fileLenToString(size!);
   return `
   <tr><td class="mode">${modeToString(
@@ -121,7 +105,11 @@ function createDirEntryDisplay(
 }
 
 // TODO: simplify this after deno.stat and deno.readDir are fixed
-async function serveDir(req: ServerRequest, dirPath: string, dirName: string) {
+async function serveDir(
+  req: ServerRequest,
+  dirPath: string,
+  dirName: string
+): Promise<Response> {
   // dirname has no prefix
   const listEntry: string[] = [];
   const fileInfos = await readDir(dirPath);
@@ -146,7 +134,7 @@ async function serveDir(req: ServerRequest, dirPath: string, dirName: string) {
     );
   }
 
-  const page = new TextEncoder().encode(
+  const page = encoder.encode(
     dirViewerTemplate
       .replace("<%DIRNAME%>", dirName + "/")
       .replace("<%CONTENTS%>", listEntry.join(""))
@@ -179,7 +167,7 @@ async function serveFile(req: ServerRequest, filename: string) {
   return res;
 }
 
-async function serveFallback(req: ServerRequest, e: Error) {
+async function serveFallback(req: ServerRequest, e: Error): Promise<Response> {
   if (
     e instanceof DenoError &&
     (e as DenoError<any>).kind === ErrorKind.NotFound
@@ -196,7 +184,7 @@ async function serveFallback(req: ServerRequest, e: Error) {
   }
 }
 
-function serverLog(req: ServerRequest, res: Response) {
+function serverLog(req: ServerRequest, res: Response): void {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const s = `${dateFmt} "${req.method} ${req.url} ${req.proto}" ${res.status}`;
@@ -214,30 +202,49 @@ function setCORS(res: Response) {
   );
 }
 
-listenAndServe(addr, async req => {
-  const fileName = req.url.replace(/\/$/, "");
-  const filePath = currentDir + fileName;
+export interface FileServerOptions {
+  CORSEnabled?: Boolean;
+  dir?: string;
+  fallback?: (ServerRequest, Error) => Promise<Response>;
+  logger?: (ServerRequest, Response) => void;
+  port?: number;
+}
+const defaultOptions: FileServerOptions = {
+  CORSEnabled: false,
+  dir: ".",
+  fallback: serveFallback,
+  logger: serverLog,
+  port: 4500
+};
 
-  let response: Response;
+export async function fileServer(options: FileServerOptions = {}) {
+  options = { ...defaultOptions, ...options };
+  const addr = `0.0.0.0:${options.port}`;
 
-  try {
-    const fileInfo = await stat(filePath);
-    if (fileInfo.isDirectory()) {
-      // Bug with deno.stat: name and path not populated
-      // Yuck!
-      response = await serveDir(req, filePath, fileName);
-    } else {
-      response = await serveFile(req, filePath);
+  console.log(`fileServer listening on http://${addr}/`);
+  await listenAndServe(addr, async req => {
+    const fileName = req.url.replace(/\/$/, "");
+    const filePath = options.dir + fileName;
+
+    let response: Response;
+
+    try {
+      const fileInfo = await stat(filePath);
+      if (fileInfo.isDirectory()) {
+        // Bug with deno.stat: name and path not populated
+        // Yuck!
+        response = await serveDir(req, filePath, fileName);
+      } else {
+        response = await serveFile(req, filePath);
+      }
+    } catch (e) {
+      response = await options.fallback(req, e);
+    } finally {
+      if (options.CORSEnabled) {
+        setCORS(response);
+      }
+      options.logger(req, response);
+      req.respond(response);
     }
-  } catch (e) {
-    response = await serveFallback(req, e);
-  } finally {
-    if (CORSEnabled) {
-      setCORS(response);
-    }
-    serverLog(req, response);
-    req.respond(response);
-  }
-});
-
-console.log(`HTTP server listening on http://${addr}/`);
+  });
+}
