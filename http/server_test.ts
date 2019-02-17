@@ -314,4 +314,3 @@ test(async function httpServerResponderShouldThrow() {
     );
   }
 });
-setTimeout(runTests, 0);
