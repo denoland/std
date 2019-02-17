@@ -110,7 +110,7 @@ test(function httpMatchNearest() {
   );
   assert.equal(
     findLongestAndNearestMatch("/foo", ["/foo", "/foo/bar"]).index,
-    0,
+    0
   );
   assert.equal(
     findLongestAndNearestMatch("/foo/bar", [
@@ -136,14 +136,14 @@ test(function httpMatchNearest() {
     1
   );
   assert.equal(findLongestAndNearestMatch("/foo", ["/", "/a/foo"]).index, 0);
-  assert.equal(findLongestAndNearestMatch("/foo", [
-    /\/foo/,
-    /\/bar\/foo/
-  ]).index, 0)
-  assert.equal(findLongestAndNearestMatch("/foo",[
-    /\/a\/foo/,
-    /\/foo/
-  ]).index, 1)
+  assert.equal(
+    findLongestAndNearestMatch("/foo", [/\/foo/, /\/bar\/foo/]).index,
+    0
+  );
+  assert.equal(
+    findLongestAndNearestMatch("/foo", [/\/a\/foo/, /\/foo/]).index,
+    1
+  );
 });
 
 test(async function httpServer() {
