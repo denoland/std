@@ -18,7 +18,7 @@ import {
 import { encode } from "../strings/strings.ts";
 import { StringReader } from "../io/readers.ts";
 import { StringWriter } from "../io/writers.ts";
-import { defer } from "../util/deferred.ts";
+import { defer } from "../promises/mod.ts";
 
 interface ResponseTest {
   response: ServerResponse;
