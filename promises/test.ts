@@ -32,17 +32,17 @@ test(async function asyncIsDeferred() {
 });
 
 test(async function delayed() {
-  const t = await timeTaken(async () => await delay(200));
-  assert(t > 100);
-  assert(t < 300);
+  const t = await timeTaken(async () => await delay(100));
+  assert(t >= 100);
+  assert(t < 200);
 });
 
 test(async function race() {
-  const p = delay(200, "x");
-  const err = timeout(500);
+  const p = delay(100, "x");
+  const err = timeout(300);
   const t = await timeTaken(async () => await Promise.race([p, err]));
-  assert(t > 100);
-  assert(t < 300);
+  assert(t >= 100);
+  assert(t < 200);
   const ret = await Promise.race([p, err]);
   assert.equal(ret, "x");
 });
@@ -50,11 +50,11 @@ test(async function race() {
 test(async function timedout() {
   let isRejected;
   const t = await timeTaken(async () => {
-    await timeout(200).catch(() => {
+    await timeout(100).catch(() => {
       isRejected = true;
     });
   });
-  assert(t > 100);
-  assert(t < 300);
+  assert(t >= 100);
+  assert(t < 200);
   assert(isRejected);
 });
