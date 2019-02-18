@@ -31,3 +31,27 @@ export function defer<T>(): Deferred<T> {
     }
   };
 }
+
+export function delay<T>(ms: number, value?: T): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    setTimeout(() => {
+      resolve(value);
+    }, ms);
+  });
+}
+
+export class TimeoutError extends Error {
+  constructor(ms: number) {
+    const message = `Timeout after ${ms}ms`;
+    super(message);
+    this.name = "TimeoutError";
+  }
+}
+
+export function timeout<T>(ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    setTimeout(() => {
+      reject(new TimeoutError(ms));
+    }, ms);
+  });
+}
