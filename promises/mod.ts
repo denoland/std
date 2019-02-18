@@ -31,12 +31,3 @@ export function defer<T>(): Deferred<T> {
     }
   };
 }
-
-export function isDeferred(x): x is Deferred {
-  return (
-    typeof x === "object" &&
-    x.promise instanceof Promise &&
-    typeof x["resolve"] === "function" &&
-    typeof x["reject"] === "function"
-  );
-}
