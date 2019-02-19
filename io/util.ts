@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Buffer, File, mkdir, open, Reader } from "deno";
+const { Buffer, mkdir, open } = Deno;
 import { encode } from "../strings/strings.ts";
 import * as path from "../fs/path.ts";
 // `off` is the offset into `dst` where it will at which to begin writing values
@@ -19,7 +19,7 @@ export function charCode(s: string): number {
   return s.charCodeAt(0);
 }
 
-export function stringsReader(s: string): Reader {
+export function stringsReader(s: string): Deno.Reader {
   return new Buffer(encode(s).buffer);
 }
 
@@ -30,7 +30,7 @@ export async function tempFile(
     prefix?: string;
     postfix?: string;
   } = { prefix: "", postfix: "" }
-): Promise<{ file: File; filepath: string }> {
+): Promise<{ file: Deno.File; filepath: string }> {
   const r = Math.floor(Math.random() * 1000000);
   const filepath = path.resolve(
     `${dir}/${opts.prefix || ""}${r}${opts.postfix || ""}`

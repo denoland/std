@@ -1,14 +1,13 @@
-import {
+const {
   cwd,
   chdir,
-  FileInfo,
   makeTempDir,
   mkdir,
   open,
   platform,
   remove,
   symlink
-} from "deno";
+} = Deno;
 
 import { walk, walkSync, WalkOptions } from "./walk.ts";
 import { test, assert, TestFunction } from "../testing/mod.ts";
@@ -44,7 +43,7 @@ async function walkArray(
     arr.push(f.path.replace(/\\/g, "/"));
   }
   arr.sort();
-  const arr_sync = Array.from(walkSync(dirname, options), (f: FileInfo) =>
+  const arr_sync = Array.from(walkSync(dirname, options), (f: Deno.FileInfo) =>
     f.path.replace(/\\/g, "/")
   ).sort();
   assert.equal(arr, arr_sync);
@@ -55,7 +54,7 @@ async function touch(path: string): Promise<void> {
   await open(path, "w");
 }
 function assertReady(expectedLength: number) {
-  const arr = Array.from(walkSync(), (f: FileInfo) => f.path);
+  const arr = Array.from(walkSync(), (f: Deno.FileInfo) => f.path);
   assert.equal(arr.length, expectedLength);
 }
 

@@ -3,7 +3,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { Reader, ReadResult, Writer } from "deno";
 import { charCode, copyBytes } from "./util.ts";
 import { assert } from "../testing/mod.ts";
 
@@ -22,16 +21,16 @@ export type BufState =
   | Error;
 
 /** BufReader implements buffering for a Reader object. */
-export class BufReader implements Reader {
+export class BufReader implements Deno.Reader {
   private buf: Uint8Array;
-  private rd: Reader; // Reader provided by caller.
+  private rd: Deno.Reader; // Reader provided by caller.
   private r = 0; // buf read position.
   private w = 0; // buf write position.
   private lastByte: number;
   private lastCharSize: number;
   private err: BufState;
 
-  constructor(rd: Reader, size = DEFAULT_BUF_SIZE) {
+  constructor(rd: Deno.Reader, size = DEFAULT_BUF_SIZE) {
     if (size < MIN_BUF_SIZE) {
       size = MIN_BUF_SIZE;
     }
@@ -68,7 +67,7 @@ export class BufReader implements Reader {
 
     // Read new data: try a limited number of times.
     for (let i = MAX_CONSECUTIVE_EMPTY_READS; i > 0; i--) {
-      let rr: ReadResult;
+      let rr: Deno.ReadResult;
       try {
         rr = await this.rd.read(this.buf.subarray(this.w));
       } catch (e) {
@@ -91,11 +90,11 @@ export class BufReader implements Reader {
   /** Discards any buffered data, resets all state, and switches
    * the buffered reader to read from r.
    */
-  reset(r: Reader): void {
+  reset(r: Deno.Reader): void {
     this._reset(this.buf, r);
   }
 
-  private _reset(buf: Uint8Array, rd: Reader): void {
+  private _reset(buf: Uint8Array, rd: Deno.Reader): void {
     this.buf = buf;
     this.rd = rd;
     this.lastByte = -1;
@@ -109,8 +108,8 @@ export class BufReader implements Reader {
    * At EOF, the count will be zero and err will be io.EOF.
    * To read exactly len(p) bytes, use io.ReadFull(b, p).
    */
-  async read(p: Uint8Array): Promise<ReadResult> {
-    let rr: ReadResult = { nread: p.byteLength, eof: false };
+  async read(p: Uint8Array): Promise<Deno.ReadResult> {
+    let rr: Deno.ReadResult = { nread: p.byteLength, eof: false };
     if (rr.nread === 0) {
       if (this.err) {
         throw this._readErr();
@@ -361,12 +360,12 @@ export class BufReader implements Reader {
  * flush() method to guarantee all data has been forwarded to
  * the underlying deno.Writer.
  */
-export class BufWriter implements Writer {
+export class BufWriter implements Deno.Writer {
   buf: Uint8Array;
   n: number = 0;
   err: null | BufState = null;
 
-  constructor(private wr: Writer, size = DEFAULT_BUF_SIZE) {
+  constructor(private wr: Deno.Writer, size = DEFAULT_BUF_SIZE) {
     if (size <= 0) {
       size = DEFAULT_BUF_SIZE;
     }
@@ -381,7 +380,7 @@ export class BufWriter implements Writer {
   /** Discards any unflushed buffered data, clears any error, and
    * resets b to write its output to w.
    */
-  reset(w: Writer): void {
+  reset(w: Deno.Writer): void {
     this.err = null;
     this.n = 0;
     this.wr = w;

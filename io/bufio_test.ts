@@ -3,7 +3,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { Buffer, Reader, ReadResult } from "deno";
+const { Buffer } = Deno;
 import { test, assert, assertEqual } from "../testing/mod.ts";
 import { BufReader, BufState, BufWriter } from "./bufio.ts";
 import * as iotest from "./iotest.ts";
@@ -33,7 +33,7 @@ test(async function bufioReaderSimple() {
   assert.equal(s, data);
 });
 
-type ReadMaker = { name: string; fn: (r: Reader) => Reader };
+type ReadMaker = { name: string; fn: (r: Deno.Reader) => Deno.Reader };
 
 const readMakers: ReadMaker[] = [
   { name: "full", fn: r => r },
@@ -151,10 +151,10 @@ const testInputrn = encoder.encode(
 const testOutput = encoder.encode("0123456789abcdefghijklmnopqrstuvwxy");
 
 // TestReader wraps a Uint8Array and returns reads of a specific length.
-class TestReader implements Reader {
+class TestReader implements Deno.Reader {
   constructor(private data: Uint8Array, private stride: number) {}
 
-  async read(buf: Uint8Array): Promise<ReadResult> {
+  async read(buf: Uint8Array): Promise<Deno.ReadResult> {
     let nread = this.stride;
     if (nread > this.data.byteLength) {
       nread = this.data.byteLength;

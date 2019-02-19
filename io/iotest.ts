@@ -3,15 +3,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import { Reader, ReadResult } from "deno";
-
 /** OneByteReader returns a Reader that implements
  * each non-empty Read by reading one byte from r.
  */
-export class OneByteReader implements Reader {
-  constructor(readonly r: Reader) {}
+export class OneByteReader implements Deno.Reader {
+  constructor(readonly r: Deno.Reader) {}
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<Deno.ReadResult> {
     if (p.byteLength === 0) {
       return { nread: 0, eof: false };
     }
@@ -25,10 +23,10 @@ export class OneByteReader implements Reader {
 /** HalfReader returns a Reader that implements Read
  * by reading half as many requested bytes from r.
  */
-export class HalfReader implements Reader {
-  constructor(readonly r: Reader) {}
+export class HalfReader implements Deno.Reader {
+  constructor(readonly r: Deno.Reader) {}
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<Deno.ReadResult> {
     if (!(p instanceof Uint8Array)) {
       throw Error("expected Uint8Array");
     }
@@ -47,11 +45,11 @@ export class ErrTimeout extends Error {
 /** TimeoutReader returns ErrTimeout on the second read
  * with no data. Subsequent calls to read succeed.
  */
-export class TimeoutReader implements Reader {
+export class TimeoutReader implements Deno.Reader {
   count = 0;
-  constructor(readonly r: Reader) {}
+  constructor(readonly r: Deno.Reader) {}
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<Deno.ReadResult> {
     this.count++;
     if (this.count === 2) {
       throw new ErrTimeout();

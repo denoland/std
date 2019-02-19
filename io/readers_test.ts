@@ -1,7 +1,7 @@
 import { assert, test } from "../testing/mod.ts";
 import { MultiReader, StringReader } from "./readers.ts";
 import { StringWriter } from "./writers.ts";
-import { copy } from "deno";
+const { copy } = Deno;
 import { copyN } from "./ioutil.ts";
 import { decode } from "../strings/strings.ts";
 

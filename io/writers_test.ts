@@ -2,7 +2,7 @@ import { assert, test } from "../testing/mod.ts";
 import { StringWriter } from "./writers.ts";
 import { StringReader } from "./readers.ts";
 import { copyN } from "./ioutil.ts";
-import { copy } from "deno";
+const { copy } = Deno;
 
 test(async function ioStringWriter() {
   const w = new StringWriter("base");

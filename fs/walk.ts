@@ -1,13 +1,4 @@
-import {
-  FileInfo,
-  cwd,
-  readDir,
-  readDirSync,
-  readlink,
-  readlinkSync,
-  stat,
-  statSync
-} from "deno";
+const { readDir, readDirSync, readlink, readlinkSync, stat, statSync } = Deno;
 import { relative } from "path.ts";
 
 export interface WalkOptions {
@@ -22,17 +13,17 @@ export interface WalkOptions {
 
 /** Generate all files in a directory recursively.
  *
- *      for await (const fileInfo of walk()) {
- *        console.log(fileInfo.path);
- *        assert(fileInfo.isFile());
+ *      for await (const Deno.FileInfo of walk()) {
+ *        console.log(Deno.FileInfo.path);
+ *        assert(Deno.FileInfo.isFile());
  *      };
  */
 export async function* walk(
   dir: string = ".",
   options: WalkOptions = {}
-): AsyncIterableIterator<FileInfo> {
+): AsyncIterableIterator<Deno.FileInfo> {
   options.maxDepth -= 1;
-  let ls: FileInfo[] = [];
+  let ls: Deno.FileInfo[] = [];
   try {
     ls = await readDir(dir);
   } catch (err) {
@@ -62,17 +53,17 @@ export async function* walk(
 
 /** Generate all files in a directory recursively.
  *
- *      for (const fileInfo of walkSync()) {
- *        console.log(fileInfo.path);
- *        assert(fileInfo.isFile());
+ *      for (const Deno.FileInfo of walkSync()) {
+ *        console.log(Deno.FileInfo.path);
+ *        assert(Deno.FileInfo.isFile());
  *      };
  */
 export function* walkSync(
   dir: string = ".",
   options: WalkOptions = {}
-): IterableIterator<FileInfo> {
+): IterableIterator<Deno.FileInfo> {
   options.maxDepth -= 1;
-  let ls: FileInfo[] = [];
+  let ls: Deno.FileInfo[] = [];
   try {
     ls = readDirSync(dir);
   } catch (err) {
@@ -100,7 +91,7 @@ export function* walkSync(
   }
 }
 
-function include(f: FileInfo, options: WalkOptions): Boolean {
+function include(f: Deno.FileInfo, options: WalkOptions): Boolean {
   if (options.exts && !options.exts.some(ext => f.path.endsWith(ext))) {
     return false;
   }
@@ -113,7 +104,7 @@ function include(f: FileInfo, options: WalkOptions): Boolean {
   return true;
 }
 
-async function resolve(f: FileInfo): Promise<FileInfo> {
+async function resolve(f: Deno.FileInfo): Promise<Deno.FileInfo> {
   // This is the full path, unfortunately if we were to make it relative
   // it could resolve to a symlink and cause an infinite loop.
   const fpath = await readlink(f.path);
@@ -123,7 +114,7 @@ async function resolve(f: FileInfo): Promise<FileInfo> {
   return f;
 }
 
-function resolveSync(f: FileInfo): FileInfo {
+function resolveSync(f: Deno.FileInfo): Deno.FileInfo {
   // This is the full path, unfortunately if we were to make it relative
   // it could resolve to a symlink and cause an infinite loop.
   const fpath = readlinkSync(f.path);

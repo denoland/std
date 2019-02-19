@@ -1,9 +1,8 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Writer } from "deno";
 import { decode, encode } from "../strings/strings.ts";
 
 /** Writer utility for buffering string chunks */
-export class StringWriter implements Writer {
+export class StringWriter implements Deno.Writer {
   private chunks: Uint8Array[] = [];
   private byteLength: number = 0;
 

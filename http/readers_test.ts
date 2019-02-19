@@ -1,7 +1,7 @@
 import { assert, runTests, test } from "../testing/mod.ts";
 import { ChunkedBodyReader } from "./readers.ts";
 import { StringReader } from "../io/readers.ts";
-import { Buffer, copy } from "deno";
+const { Buffer, copy } = Deno;
 
 test(async function httpChunkedBodyReader() {
   const chunked = "3\r\nabc\r\n5\r\ndefgh\r\n0\r\n\r\n";

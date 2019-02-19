@@ -7,7 +7,7 @@ import {
   MultipartWriter,
   scanUntilBoundary
 } from "./multipart.ts";
-import { Buffer, copy, open, remove } from "deno";
+const { Buffer, copy, open, remove } = Deno;
 import * as path from "../fs/path.ts";
 import { FormFile, isFormFile } from "./formfile.ts";
 import { StringWriter } from "../io/writers.ts";

@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Buffer, Writer, Conn } from "deno";
+const { Buffer } = Deno;
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
 import { Sha1 } from "./sha1.ts";
@@ -72,7 +72,7 @@ export type WebSocket = {
 class WebSocketImpl implements WebSocket {
   encoder = new TextEncoder();
 
-  constructor(private conn: Conn, private mask?: Uint8Array) {}
+  constructor(private conn: Deno.Conn, private mask?: Uint8Array) {}
 
   async *receive(): AsyncIterableIterator<WebSocketEvent> {
     let frames: WebSocketFrame[] = [];
@@ -199,7 +199,7 @@ class WebSocketImpl implements WebSocket {
 }
 
 export async function* receiveFrame(
-  conn: Conn
+  conn: Deno.Conn
 ): AsyncIterableIterator<WebSocketFrame> {
   let receiving = true;
   let isLastFrame = true;
@@ -244,7 +244,7 @@ export async function* receiveFrame(
   }
 }
 
-export async function writeFrame(frame: WebSocketFrame, writer: Writer) {
+export async function writeFrame(frame: WebSocketFrame, writer: Deno.Writer) {
   let payloadLength = frame.payload.byteLength;
   let header: Uint8Array;
   const hasMask = frame.mask ? 0x80 : 0;
@@ -288,7 +288,7 @@ export function acceptable(req: { headers: Headers }): boolean {
 }
 
 export async function acceptWebSocket(req: {
-  conn: Conn;
+  conn: Deno.Conn;
   headers: Headers;
 }): Promise<WebSocket> {
   const { conn, headers } = req;

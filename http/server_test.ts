@@ -5,7 +5,7 @@
 // Ported from
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
-import { Buffer, copy, Reader } from "deno";
+const { Buffer, copy } = Deno;
 import { assert, assertEqual, runTests, test } from "../testing/mod.ts";
 import {
   createResponder,
@@ -214,7 +214,7 @@ test(async function httpServerResponder() {
   assert.equal(resp.status, 200);
   assert.equal(resp.headers.get("content-type"), "text/plain");
   const sw = new StringWriter();
-  await copy(sw, resp.body as Reader);
+  await copy(sw, resp.body as Deno.Reader);
   assert.equal(sw.toString(), "ok");
 });
 
@@ -239,7 +239,7 @@ test(async function httpServerResponderRespondJson() {
   assert.equal(resp.status, 200);
   assert.equal(resp.headers.get("content-type"), "application/json");
   const sw = new StringWriter();
-  await copy(sw, resp.body as Reader);
+  await copy(sw, resp.body as Deno.Reader);
   const resJson = JSON.parse(sw.toString());
   assert.equal(resJson, json);
   assert.equal(resp.headers.get("deno"), "land");
@@ -260,7 +260,7 @@ test(async function httpServerResponderRespondText() {
   assert.equal(resp.status, 200);
   assert.equal(resp.headers.get("content-type"), "text/plain");
   const sw = new StringWriter();
-  await copy(sw, resp.body as Reader);
+  await copy(sw, resp.body as Deno.Reader);
   assert.equal(sw.toString(), "deno.land");
   assert.equal(resp.headers.get("deno"), "land");
 });

@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { Buffer, Closer, copy, Reader, ReadResult, remove, Writer } from "deno";
+const { Buffer, copy, remove } = Deno;
 
 import { FormFile } from "./formfile.ts";
 import {
@@ -25,7 +25,7 @@ function randomBoundary() {
   return boundary;
 }
 
-/** Reader for parsing multipart/form-data */
+/** Deno.Reader for parsing multipart/form-data */
 export class MultipartReader {
   readonly newLine = encoder.encode("\r\n");
   readonly newLineDashBoundary = encoder.encode(`\r\n--${this.boundary}`);
@@ -33,7 +33,7 @@ export class MultipartReader {
   readonly dashBoundary = encoder.encode(`--${this.boundary}`);
   readonly bufReader: BufReader;
 
-  constructor(private reader: Reader, private boundary: string) {
+  constructor(private reader: Deno.Reader, private boundary: string) {
     this.bufReader = new BufReader(reader);
   }
 
@@ -186,7 +186,7 @@ function skipLWSPChar(u: Uint8Array): Uint8Array {
 
 let i = 0;
 
-class PartReader implements Reader, Closer {
+class PartReader implements Deno.Reader, Deno.Closer {
   n: number = 0;
   total: number = 0;
   bufState: BufState = null;
@@ -194,9 +194,12 @@ class PartReader implements Reader, Closer {
 
   constructor(private mr: MultipartReader, public readonly headers: Headers) {}
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<Deno.ReadResult> {
     const br = this.mr.bufReader;
-    const returnResult = (nread: number, bufState: BufState): ReadResult => {
+    const returnResult = (
+      nread: number,
+      bufState: BufState
+    ): Deno.ReadResult => {
       if (bufState && bufState !== "EOF") {
         throw bufState;
       }
@@ -349,13 +352,13 @@ export function matchAfterPrefix(
   return -1;
 }
 
-class PartWriter implements Writer {
+class PartWriter implements Deno.Writer {
   closed = false;
   private readonly partHeader: string;
   private headersWritten: boolean = false;
 
   constructor(
-    private writer: Writer,
+    private writer: Deno.Writer,
     readonly boundary: string,
     public headers: Headers,
     isFirstBoundary: boolean
@@ -403,7 +406,7 @@ function checkBoundary(b: string) {
   return b;
 }
 
-/** Writer for creating multipart/form-data */
+/** Deno.Writer for creating multipart/form-data */
 export class MultipartWriter {
   private readonly _boundary: string;
 
@@ -415,7 +418,7 @@ export class MultipartWriter {
   private bufWriter: BufWriter;
   private isClosed: boolean = false;
 
-  constructor(private readonly writer: Writer, boundary?: string) {
+  constructor(private readonly writer: Deno.Writer, boundary?: string) {
     if (boundary !== void 0) {
       this._boundary = checkBoundary(boundary);
     } else {
@@ -428,7 +431,7 @@ export class MultipartWriter {
     return `multipart/form-data; boundary=${this.boundary}`;
   }
 
-  private createPart(headers: Headers): Writer {
+  private createPart(headers: Headers): Deno.Writer {
     if (this.isClosed) {
       throw new Error("multipart: writer is closed");
     }
@@ -445,7 +448,7 @@ export class MultipartWriter {
     return part;
   }
 
-  createFormFile(field: string, filename: string): Writer {
+  createFormFile(field: string, filename: string): Deno.Writer {
     const h = new Headers();
     h.set(
       "Content-Disposition",
@@ -455,7 +458,7 @@ export class MultipartWriter {
     return this.createPart(h);
   }
 
-  createFormField(field: string): Writer {
+  createFormField(field: string): Deno.Writer {
     const h = new Headers();
     h.set("Content-Disposition", `form-data; name="${field}"`);
     h.set("Content-Type", "application/octet-stream");
@@ -467,7 +470,7 @@ export class MultipartWriter {
     await f.write(encoder.encode(value));
   }
 
-  async writeFile(field: string, filename: string, file: Reader) {
+  async writeFile(field: string, filename: string, file: Deno.Reader) {
     const f = await this.createFormFile(field, filename);
     await copy(f, file);
   }

@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Buffer, Reader, ReadResult } from "deno";
+const { Buffer } = Deno;
 import { assert, assertEqual, runTests, test } from "../testing/mod.ts";
 import {
   copyN,
@@ -11,12 +11,12 @@ import {
 import { BufReader } from "./bufio.ts";
 import { stringsReader } from "./util.ts";
 
-class BinaryReader implements Reader {
+class BinaryReader implements Deno.Reader {
   index = 0;
 
   constructor(private bytes: Uint8Array = new Uint8Array(0)) {}
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<Deno.ReadResult> {
     p.set(this.bytes.subarray(this.index, p.byteLength));
     this.index += p.byteLength;
     return { nread: p.byteLength, eof: false };

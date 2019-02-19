@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { open, File, Writer } from "deno";
+const { open } = Deno;
 import { getLevelByName, LogLevel } from "./levels.ts";
 import { LogRecord } from "./logger.ts";
 import { red, yellow, blue, bold } from "../colors/mod.ts";
@@ -82,7 +82,7 @@ export class ConsoleHandler extends BaseHandler {
 }
 
 export abstract class WriterHandler extends BaseHandler {
-  protected _writer: Writer;
+  protected _writer: Deno.Writer;
   private _encoder = new TextEncoder();
 
   log(msg: string) {
@@ -95,7 +95,7 @@ interface FileHandlerOptions extends HandlerOptions {
 }
 
 export class FileHandler extends WriterHandler {
-  private _file: File;
+  private _file: Deno.File;
   private _filename: string;
 
   constructor(levelName: string, options: FileHandlerOptions) {

@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { Conn, copy, listen, Reader, toAsyncIterator, Writer } from "deno";
+const { copy, listen, toAsyncIterator } = Deno;
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
@@ -24,7 +24,7 @@ export type ServerRequest = {
   /** matched result for path pattern  */
   match: RegExpMatchArray;
   /** body stream. body with "transfer-encoding: chunked" will automatically be combined into original data */
-  body: Reader;
+  body: Deno.Reader;
 };
 
 /** basic responder for http response */
@@ -44,21 +44,21 @@ export interface ServerResponse {
    * @default 200 */
   status?: number;
   headers?: Headers;
-  body?: Uint8Array | Reader;
+  body?: Uint8Array | Deno.Reader;
 }
 
 interface ServeEnv {
-  reqQueue: { req: ServerRequest; conn: Conn }[];
+  reqQueue: { req: ServerRequest; conn: Deno.Conn }[];
   serveDeferred: Deferred;
 }
 
-/** Continuously read more requests from conn until EOF
+/** Continuously read more requests from Conn until EOF
  * Calls maybeHandleReq.
  * TODO: make them async function after this change is done
  * https://github.com/tc39/ecma262/pull/1250
  * See https://v8.dev/blog/fast-async
  */
-function serveConn(env: ServeEnv, conn: Conn) {
+function serveConn(env: ServeEnv, conn: Deno.Conn) {
   readRequest(conn)
     .then(maybeHandleReq.bind(null, env, conn))
     .catch(e => {
@@ -66,7 +66,7 @@ function serveConn(env: ServeEnv, conn: Conn) {
     });
 }
 
-function maybeHandleReq(env: ServeEnv, conn: Conn, req: ServerRequest) {
+function maybeHandleReq(env: ServeEnv, conn: Deno.Conn, req: ServerRequest) {
   env.reqQueue.push({ conn, req }); // push req to queue
   env.serveDeferred.resolve(); // signal while loop to process it
 }
@@ -87,7 +87,7 @@ export async function* serve(
   };
   // Routine that keeps calling accept
   const acceptRoutine = () => {
-    const handleConn = (conn: Conn) => {
+    const handleConn = (conn: Deno.Conn) => {
       serveConn(env, conn); // don't block
       scheduleAccept(); // schedule next accept
     };
@@ -139,7 +139,7 @@ export function createServer(): HttpServer {
 }
 
 /** create ServerResponder object */
-export function createResponder(w: Writer): ServerResponder {
+export function createResponder(w: Deno.Writer): ServerResponder {
   return new ServerResponderImpl(w);
 }
 
@@ -208,7 +208,7 @@ export function findLongestAndNearestMatch(
 }
 
 class ServerResponderImpl implements ServerResponder {
-  constructor(private w: Writer) {}
+  constructor(private w: Deno.Writer) {}
 
   private _responded: boolean = false;
 
@@ -270,7 +270,7 @@ export function setContentLength(r: ServerResponse): void {
   }
 }
 
-function bufWriter(w: Writer): BufWriter {
+function bufWriter(w: Deno.Writer): BufWriter {
   if (w instanceof BufWriter) {
     return w;
   } else {
@@ -279,7 +279,7 @@ function bufWriter(w: Writer): BufWriter {
 }
 
 export async function writeResponse(
-  w: Writer,
+  w: Deno.Writer,
   r: ServerResponse
 ): Promise<void> {
   const protoMajor = 1;
@@ -323,7 +323,7 @@ export async function writeResponse(
   await writer.flush();
 }
 
-async function writeChunkedBody(w: Writer, r: Reader) {
+async function writeChunkedBody(w: Deno.Writer, r: Deno.Reader) {
   const writer = bufWriter(w);
   const encoder = new TextEncoder();
 
@@ -339,7 +339,7 @@ async function writeChunkedBody(w: Writer, r: Reader) {
   await writer.write(endChunk);
 }
 
-export async function readRequest(conn: Reader): Promise<ServerRequest> {
+export async function readRequest(conn: Deno.Reader): Promise<ServerRequest> {
   const bufr = new BufReader(conn);
   const tp = new TextProtoReader(bufr!);
 
@@ -368,7 +368,7 @@ export async function readRequest(conn: Reader): Promise<ServerRequest> {
   };
 }
 
-export async function readResponse(conn: Reader): Promise<ServerResponse> {
+export async function readResponse(conn: Deno.Reader): Promise<ServerResponse> {
   const bufr = new BufReader(conn);
   const tp = new TextProtoReader(bufr!);
   // First line: HTTP/1,1 200 OK

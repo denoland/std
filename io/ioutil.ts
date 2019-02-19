@@ -1,12 +1,11 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { BufReader } from "./bufio.ts";
-import { Reader, Writer } from "deno";
 import { assert } from "../testing/mod.ts";
 
 /** copy N size at the most. If read size is lesser than N, then returns nread */
 export async function copyN(
-  dest: Writer,
-  r: Reader,
+  dest: Deno.Writer,
+  r: Deno.Reader,
   size: number
 ): Promise<number> {
   let bytesRead = 0;

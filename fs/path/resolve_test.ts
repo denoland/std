@@ -3,7 +3,7 @@
 
 import { test, assertEqual } from "../../testing/mod.ts";
 import * as path from "./mod.ts";
-import { cwd } from "deno";
+const { cwd } = Deno;
 
 const windowsTests =
   // arguments                               result

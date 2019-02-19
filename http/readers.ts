@@ -1,18 +1,17 @@
-import { Reader, ReadResult } from "deno";
 import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { assert } from "../testing/mod.ts";
 
-export class BodyReader implements Reader {
+export class BodyReader implements Deno.Reader {
   total: number;
   bufReader: BufReader;
 
-  constructor(reader: Reader, private contentLength: number) {
+  constructor(reader: Deno.Reader, private contentLength: number) {
     this.total = 0;
     this.bufReader = new BufReader(reader);
   }
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<Deno.ReadResult> {
     if (p.length > this.contentLength - this.total) {
       const buf = new Uint8Array(this.contentLength - this.total);
       const [nread, err] = await this.bufReader.readFull(buf);
@@ -34,17 +33,17 @@ export class BodyReader implements Reader {
   }
 }
 
-export class ChunkedBodyReader implements Reader {
+export class ChunkedBodyReader implements Deno.Reader {
   bufReader = new BufReader(this.reader);
   tpReader = new TextProtoReader(this.bufReader);
 
-  constructor(private reader: Reader) {}
+  constructor(private reader: Deno.Reader) {}
 
   chunks: Uint8Array[] = [];
   crlfBuf = new Uint8Array(2);
   finished: boolean = false;
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<Deno.ReadResult> {
     const [line, sizeErr] = await this.tpReader.readLine();
     if (sizeErr) {
       throw sizeErr;
