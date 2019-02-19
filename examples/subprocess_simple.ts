@@ -2,12 +2,7 @@
 
 async function main() {
   const p = Deno.run({
-    args: [
-      "deno",
-      "--allow-read",
-      "https://deno.land/x/examples/cat.ts",
-      "README.md"
-    ]
+    args: ["deno", "https://deno.land/welcome.ts"]
   });
 
   // start subprocess
