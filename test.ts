@@ -1,6 +1,8 @@
 #!/usr/bin/env deno -A
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import "benching/test.ts";
+import "collections/queue_test.ts";
+import "collections/stack_test.ts";
 import "colors/test.ts";
 import "datetime/test.ts";
 import "examples/test.ts";
