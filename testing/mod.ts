@@ -6,11 +6,18 @@ interface Constructor {
   new (...args: any[]): any;
 }
 
+export class AssertionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AssertionError";
+  }
+}
+
 const assertions = {
   /** Make an assertion, if not `true`, then throw. */
   assert(expr: boolean, msg = ""): void {
     if (!expr) {
-      throw new Error(msg);
+      throw new AssertionError(msg);
     }
   },
 
@@ -40,7 +47,7 @@ const assertions = {
       if (!msg) {
         msg = `actual: ${actualString} expected: ${expectedString}`;
       }
-      throw new Error(msg);
+      throw new AssertionError(msg);
     }
   },
 
@@ -70,7 +77,7 @@ const assertions = {
       if (!msg) {
         msg = `actual: ${actualString} expected: ${expectedString}`;
       }
-      throw new Error(msg);
+      throw new AssertionError(msg);
     }
   },
 
@@ -95,25 +102,25 @@ const assertions = {
     try {
       fn();
     } catch (e) {
-      if (ErrorClass && !(Object.getPrototypeOf(e) === ErrorClass.prototype)) {
+      if (ErrorClass && !(e instanceof ErrorClass)) {
         msg = `Expected error to be instance of "${ErrorClass.name}"${
           msg ? `: ${msg}` : "."
         }`;
-        throw new Error(msg);
+        throw new AssertionError(msg);
       }
       if (msgIncludes) {
         if (!e.message.includes(msgIncludes)) {
           msg = `Expected error message to include "${msgIncludes}", but got "${
             e.message
           }"${msg ? `: ${msg}` : "."}`;
-          throw new Error(msg);
+          throw new AssertionError(msg);
         }
       }
       doesThrow = true;
     }
     if (!doesThrow) {
       msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
-      throw new Error(msg);
+      throw new AssertionError(msg);
     }
   },
 
@@ -127,25 +134,25 @@ const assertions = {
     try {
       await fn();
     } catch (e) {
-      if (ErrorClass && !(Object.getPrototypeOf(e) === ErrorClass.prototype)) {
+      if (ErrorClass && !(e instanceof ErrorClass)) {
         msg = `Expected error to be instance of "${ErrorClass.name}"${
           msg ? `: ${msg}` : "."
         }`;
-        throw new Error(msg);
+        throw new AssertionError(msg);
       }
       if (msgIncludes) {
         if (!e.message.includes(msgIncludes)) {
           msg = `Expected error message to include "${msgIncludes}", but got "${
             e.message
           }"${msg ? `: ${msg}` : "."}`;
-          throw new Error(msg);
+          throw new AssertionError(msg);
         }
       }
       doesThrow = true;
     }
     if (!doesThrow) {
       msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
-      throw new Error(msg);
+      throw new AssertionError(msg);
     }
   }
 };
@@ -265,6 +272,7 @@ export async function runTests() {
       result = red_failed();
       console.log("...", result);
       console.groupEnd();
+      console.log();
       console.error(e);
       failed++;
       if (exitOnFail) {
@@ -286,7 +294,8 @@ export async function runTests() {
     // Use setTimeout to avoid the error being ignored due to unhandled
     // promise rejections being swallowed.
     setTimeout(() => {
-      throw new Error(`There were ${failed} test failures.`);
+      console.error(`There were ${failed} test failures.`);
+      Deno.exit(1);
     }, 0);
   }
 }
