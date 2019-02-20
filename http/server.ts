@@ -42,6 +42,7 @@ function serveConn(env: ServeEnv, conn: Deno.Conn, bufr?: BufReader) {
 }
 
 function maybeHandleReq(env: ServeEnv, conn: Deno.Conn, maybeReq: any) {
+
   const [req, _err] = maybeReq;
   if (_err) {
     conn.close(); // assume EOF for now...
