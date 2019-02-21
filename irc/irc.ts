@@ -1,7 +1,79 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { listen, Listener, Conn } from "deno";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { BufReader, BufWriter } from "../io/bufio.ts";
+import { BufReader } from "../io/bufio.ts";
+import { encode, decode } from "../strings/strings.ts";
+import { WebSocket, OpCode } from "../ws/mod.ts";
+
+/** Represents some underlying connection, so we can use Websockets too. */
+interface MessageSource {
+  close(): void;
+  write(msg: string | Uint8Array): Promise<void>;
+  messages(): AsyncIterableIterator<string>;
+}
+
+class TcpSource implements MessageSource {
+  private _conn: Conn;
+  private _reader: TextProtoReader;
+
+  constructor(conn: Conn) {
+    this._conn = conn;
+    this._reader = new TextProtoReader(new BufReader(conn));
+  }
+
+  close() {
+    this._conn.close();
+  }
+
+  async write(msg: string | Uint8Array): Promise<void> {
+    let encoded: Uint8Array;
+    if (typeof msg === "string") {
+      encoded = encode(msg);
+    } else {
+      encoded = msg;
+    }
+
+    await this._conn.write(encoded);
+  }
+
+  async *messages(): AsyncIterableIterator<string> {
+    while (true) {
+      const [plaintext, err] = await this._reader.readLine();
+
+      if (err === "EOF") {
+        return;
+      }
+
+      yield plaintext;
+    }
+  }
+}
+
+class WebSocketSource implements MessageSource {
+  private _ws: WebSocket;
+
+  constructor(ws: WebSocket) {
+    this._ws = ws;
+  }
+
+  close() {
+    this._ws.close(OpCode.Close);
+  }
+
+  write(msg: string | Uint8Array): Promise<void> {
+    return this._ws.send(msg);
+  }
+
+  async *messages(): AsyncIterableIterator<string> {
+    for await (const event of this._ws.receive()) {
+      if (typeof event === "string") {
+        yield event;
+      } else if (event instanceof Uint8Array) {
+        yield decode(event);
+      }
+    }
+  }
+}
 
 // ensures that there are no crashes if a wrong
 // property on a MessageData object, as a try-catch
@@ -67,6 +139,7 @@ export class IrcServer {
     // Host prefixes for replies don't have the port usually
     this._host = address.substring(0, address.indexOf(":"));
   }
+
   /** Allows server to begin accepting connections and messages */
   async start() {
     while (true) {
@@ -78,7 +151,7 @@ export class IrcServer {
         break;
       }
 
-      const newServerConn = new ServerConn(conn);
+      const newServerConn = new ServerConn(new TcpSource(conn));
       const id = conn.rid.toString();
       this._conns.set(id, newServerConn);
       newServerConn.id = id;
@@ -197,22 +270,13 @@ export class IrcServer {
     return conn.write(`:${prefix} ${command} ${params.join(" ")}\r\n`);
   }
 
-  private _replyToConn(
-    conn: ServerConn,
-    command: string,
-    params: string[],
-    flush = true
-  ) {
+  private _replyToConn(conn: ServerConn, command: string, params: string[]) {
     // for unregistered users, most servers just put an asterisk in the <client> spot
     const nickname = conn.nickname || "*";
     let n = conn.write(
       `:${this._host} ${command} ${nickname} ${params.join(" ")}\r\n`
     );
 
-    // optional flush if there's a big message, like a MOTD
-    if (flush) {
-      conn.flush();
-    }
     return n;
   }
 
@@ -230,25 +294,16 @@ export class IrcServer {
     }
 
     // after successful registration, multiple mandated responses from server
-    this._replyToConn(
-      conn,
-      RPL.WELCOME,
-      [`:Welcome to the server ${conn.nickname}`],
-      false
-    );
-    this._replyToConn(
-      conn,
-      RPL.YOURHOST,
-      [":Your host is PLACEHOLDER, running version PLACEHOLDER"],
-      false
-    );
-    this._replyToConn(
-      conn,
-      RPL.CREATED,
-      [":This server was created PLACEHOLDER"],
-      false
-    );
-    this._replyToConn(conn, RPL.MYINFO, ["Misc information here"], false);
+    this._replyToConn(conn, RPL.WELCOME, [
+      `:Welcome to the server ${conn.nickname}`
+    ]);
+    this._replyToConn(conn, RPL.YOURHOST, [
+      ":Your host is PLACEHOLDER, running version PLACEHOLDER"
+    ]);
+    this._replyToConn(conn, RPL.CREATED, [
+      ":This server was created PLACEHOLDER"
+    ]);
+    this._replyToConn(conn, RPL.MYINFO, ["Misc information here"]);
     this._replyToConn(conn, RPL.ISUPPORT, [
       "PLACEHOLDER :are supported by this server."
     ]);
@@ -262,30 +317,16 @@ export class IrcServer {
   }
 
   private _replyToLUSERS(conn: ServerConn) {
-    this._replyToConn(
-      conn,
-      RPL.LUSERCLIENT,
-      [":There are PLACEHOLDER users and PLACEHOLDER invisible on 1 server"],
-      false
-    );
-    this._replyToConn(
-      conn,
-      RPL.LUSEROP,
-      [":PLACEHOLDER :operators online"],
-      false
-    );
-    this._replyToConn(
-      conn,
-      RPL.LUSERUNKNOWN,
-      ["PLACEHOLDER :unknown connections"],
-      false
-    );
-    this._replyToConn(
-      conn,
-      RPL.LUSERCHANNELS,
-      [`${this._channels.size} :channels formed`],
-      false
-    );
+    this._replyToConn(conn, RPL.LUSERCLIENT, [
+      ":There are PLACEHOLDER users and PLACEHOLDER invisible on 1 server"
+    ]);
+    this._replyToConn(conn, RPL.LUSEROP, [":PLACEHOLDER :operators online"]);
+    this._replyToConn(conn, RPL.LUSERUNKNOWN, [
+      "PLACEHOLDER :unknown connections"
+    ]);
+    this._replyToConn(conn, RPL.LUSERCHANNELS, [
+      `${this._channels.size} :channels formed`
+    ]);
     this._replyToConn(conn, RPL.LUSERME, [
       ":I have PLACEHOLDER clients and 1 server"
     ]);
@@ -349,7 +390,6 @@ export class IrcServer {
         }
 
         currConn.write(nicknameUpdateMsg);
-        currConn.flush();
       }
     } else {
       conn.nickname = nickname;
@@ -642,8 +682,6 @@ function parseTagsToJSON(tags: string): ParsedTags {
 /** Indicates that there was an invalid message passed to `parse` */
 export class InvalidMessageException extends Error {}
 
-const utf8Encoder = new TextEncoder();
-
 export enum UserMode {
   Invisible = "+i",
   Operator = "+o",
@@ -653,11 +691,9 @@ export enum UserMode {
 }
 
 export class ServerConn {
-  private _reader: TextProtoReader;
-  private _writer: BufWriter;
-  private _conn: Conn;
-
+  private _source: MessageSource;
   private _userModes: Set<UserMode> = new Set();
+
   public joinedChannels: Map<string, Channel> = new Map();
   public nickname = "";
   public username = "";
@@ -665,41 +701,22 @@ export class ServerConn {
   public isRegistered = false;
   public id = "";
 
-  constructor(conn: Conn) {
-    this._conn = conn;
-    this._reader = new TextProtoReader(new BufReader(conn));
-    this._writer = new BufWriter(conn);
+  constructor(source: MessageSource) {
+    this._source = source;
+    this._source.write("hello fuck");
   }
 
-  async *readMessages(): AsyncIterableIterator<string> {
-    while (true) {
-      const [plaintext, err] = await this._reader.readLine();
-
-      if (err === "EOF") {
-        return;
-      }
-
-      yield plaintext;
-    }
+  readMessages(): AsyncIterableIterator<string> {
+    return this._source.messages();
   }
 
   /** Writes message to underlying BufWriter */
-  write(msg: string) {
-    const encoded = utf8Encoder.encode(msg);
-    return this._conn.write(encoded);
-  }
-
-  /** Flushes buffered writes into underlying connection */
-  flush() {
-    return this._writer.flush();
+  write(msg: string | Uint8Array) {
+    this._source.write(msg);
   }
 
   close() {
-    this._conn.close();
-  }
-
-  get addr() {
-    return this._conn.remoteAddr;
+    this._source.close();
   }
 
   get modes() {
