@@ -1,14 +1,14 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { Conn, dial } from "deno";
+import { dial } from "deno";
 import { assert, assertEqual, test } from "../testing/mod.ts";
-import { ServerConn, parse, IrcServer } from "./irc.ts";
+import { ServerConn, parse, IrcServer, MessageSource } from "./irc.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { BufReader, BufState } from "../io/bufio.ts";
 
 test(function userModes() {
   // use empty object, as we're not testing connections here
-  const conn = new ServerConn({} as Conn);
+  const conn = new ServerConn({} as MessageSource);
   assert(!conn.isInvisible);
   assert(!conn.isOp);
   assert(!conn.isLocalOp);

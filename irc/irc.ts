@@ -6,7 +6,7 @@ import { encode, decode } from "../strings/strings.ts";
 import { WebSocket, OpCode } from "../ws/mod.ts";
 
 /** Represents some underlying connection, so we can use Websockets too. */
-interface MessageSource {
+export interface MessageSource {
   close(): void;
   write(msg: string | Uint8Array): Promise<void>;
   messages(): AsyncIterableIterator<string>;
@@ -123,7 +123,8 @@ enum ERR {
   NICKNAMEINUSE = "433",
   NOTONCHANNEL = "442",
   NEEDMOREPARAMS = "461",
-  ALREADYREGISTERED = "462"
+  ALREADYREGISTERED = "462",
+  BANNEDFROMCHAN = "474"
 }
 
 export class IrcServer {
@@ -449,8 +450,21 @@ export class IrcServer {
         channel.topic = "PLACEHOLDER";
         this._channels.set(channelName, channel);
       }
+      try {
+        channel.joinChannel(conn);
+      } catch (e) {
+        if (e instanceof ChannelBannedError) {
+          this._replyToConn(conn, ERR.BANNEDFROMCHAN, [
+            conn.username,
+            channelName,
+            ":Cannot join channel (+b)"
+          ]);
+        }
 
-      channel.joinChannel(conn);
+        // if joining failed, just try to join the next one
+        continue;
+      }
+
       this._replyToNAMES(conn, [channelName]);
       // this._replyToTOPIC(conn, channelName);
       // notify other users on channel that a new user has entered
@@ -703,7 +717,6 @@ export class ServerConn {
 
   constructor(source: MessageSource) {
     this._source = source;
-    this._source.write("hello fuck");
   }
 
   readMessages(): AsyncIterableIterator<string> {
@@ -764,6 +777,8 @@ export class ServerConn {
   }
 }
 
+export class ChannelBannedError extends Error {}
+
 export enum ChannelMode {
   Ban = "+b",
   Exception = "+e",
@@ -781,20 +796,37 @@ export class Channel {
   public name: string;
   public topic: string;
 
+  // for now, bannedUsers will just be attached to username, as a user
+  // cannot change that without disconnecting
+  private _banMode: { enabled: boolean; bannedUsers: string[] };
+
   private _modes: Set<ChannelMode> = new Set();
   private _ops: Set<ServerConn> = new Set();
   private _users: Set<ServerConn> = new Set();
 
   constructor(name: string) {
     this.name = name;
+    this._banMode = {
+      enabled: false,
+      bannedUsers: []
+    };
   }
 
   joinChannel(conn: ServerConn) {
     if (this._users.size === 0) {
       this._ops.add(conn);
     }
+
+    if (
+      this._banMode.enabled &&
+      this._banMode.bannedUsers.includes(conn.username)
+    ) {
+      throw new ChannelBannedError();
+    }
+
     this._users.add(conn);
     conn.joinedChannels.set(this.name, this);
+    return;
   }
 
   leaveChannel(conn: ServerConn) {
@@ -815,5 +847,13 @@ export class Channel {
 
   get modes() {
     return Array.from(this._modes);
+  }
+
+  set banMode(bool: boolean) {
+    this._banMode.enabled = bool;
+  }
+
+  get banMode() {
+    return this._banMode.enabled;
   }
 }
