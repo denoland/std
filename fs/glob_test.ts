@@ -31,23 +31,31 @@ test({
     assert.equal(glob("unicorn.*")[0] instanceof RegExp, true);
     assert.equal(glob("unicorn.*")[0].test("poney.ts"), false);
     assert.equal(glob("unicorn.*")[0].test("unicorn.py"), true);
-    assert.equal(glob("*.ts")[0].test("poney.ts"),
+    assert.equal(glob("*.ts")[0].test("poney.ts"), true);
+    assert.equal(glob("*.ts")[0].test("unicorn.js"), false);
+    assert.equal(
+      glob("unicorn/**/cathedral.ts")[0].test("unicorn/in/the/cathedral.ts"),
       true
     );
-    assert.equal(glob("*.ts")[0].test("unicorn.js"),
+    assert.equal(
+      glob("unicorn/**/cathedral.ts")[0].test("unicorn/in/the/kitchen.ts"),
       false
     );
     assert.equal(
-      glob("unicorn/**/cathedral.ts")[0].test('unicorn/in/the/cathedral.ts'),
+      glob("unicorn/**/bathroom.*")[0].test("unicorn/sleeping/in/bathroom.py"),
       true
     );
     assert.equal(
-      glob("unicorn/**/cathedral.ts")[0].test('unicorn/in/the/kitchen.ts'),
+      glob("unicorn/!(sleeping)/bathroom.ts", { extended: true })[0].test(
+        "unicorn/flying/bathroom.ts"
+      ),
+      true
+    );
+    assert.equal(
+      glob("unicorn/(!sleeping)/bathroom.ts", { extended: true })[0].test(
+        "unicorn/sleeping/bathroom.ts"
+      ),
       false
-    );
-    assert.equal(
-      glob("unicorn/**/bathroom.*")[0].test('unicorn/sleeping/in/bathroom.py'),
-      true
     );
   }
 });
