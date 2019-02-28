@@ -29,20 +29,26 @@ test({
   name: "glob: glob to regex",
   fn() {
     assert.equal(glob("unicorn.*")[0] instanceof RegExp, true);
+    assert.equal(glob("unicorn.*")[0].test("poney.ts"), false);
+    assert.equal(glob("unicorn.*")[0].test("unicorn.py"), true);
+    assert.equal(glob("*.ts")[0].test("poney.ts"),
+      true
+    );
+    assert.equal(glob("*.ts")[0].test("unicorn.js"),
+      false
+    );
     assert.equal(
-      glob("unicorn.*")[0].toString() == RegExp(/^unicorn\..*$/).toString(),
+      glob("unicorn/**/cathedral.ts")[0].test('unicorn/in/the/cathedral.ts'),
       true
     );
     assert.equal(
-      glob("*.ts")[0].toString() == RegExp(/^.*\.ts$/).toString(),
-      true
+      glob("unicorn/**/cathedral.ts")[0].test('unicorn/in/the/kitchen.ts'),
+      false
     );
     assert.equal(
-      glob("unicorn/in/the/cathedral.ts")[0].toString() ==
-        RegExp(/^unicorn\/in\/the\/cathedral\.ts$/).toString(),
+      glob("unicorn/**/bathroom.*")[0].test('unicorn/sleeping/in/bathroom.py'),
       true
     );
-    assert.equal(glob("")[0].toString() == RegExp(/^$/).toString(), true);
   }
 });
 
@@ -94,7 +100,7 @@ testWalk(
     await touch(d + "/a/yo/x.ts");
   },
   async function globInWalkFolderWildcard() {
-    const arr = await walkArray(".", { match: glob("/a/**/x.*") });
+    const arr = await walkArray(".", { match: glob("./a/**/*.ts") });
     assert.equal(arr.length, 1);
     assert.equal(arr[0], "./a/yo/x.ts");
   }
