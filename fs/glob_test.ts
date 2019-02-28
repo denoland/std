@@ -2,6 +2,7 @@ const { mkdir, open } = Deno;
 import { FileInfo } from "deno";
 import { test, assert } from "../testing/mod.ts";
 import { glob } from "./glob.ts";
+import { join } from "./path.ts";
 import { testWalk } from "./walk_test.ts";
 import { walk, walkSync, WalkOptions } from "./walk.ts";
 
@@ -34,26 +35,28 @@ test({
     assert.equal(glob("*.ts")[0].test("poney.ts"), true);
     assert.equal(glob("*.ts")[0].test("unicorn.js"), false);
     assert.equal(
-      glob("unicorn/**/cathedral.ts")[0].test("unicorn/in/the/cathedral.ts"),
-      true
-    );
-    assert.equal(
-      glob("unicorn/**/cathedral.ts")[0].test("unicorn/in/the/kitchen.ts"),
-      false
-    );
-    assert.equal(
-      glob("unicorn/**/bathroom.*")[0].test("unicorn/sleeping/in/bathroom.py"),
-      true
-    );
-    assert.equal(
-      glob("unicorn/!(sleeping)/bathroom.ts", { extended: true })[0].test(
-        "unicorn/flying/bathroom.ts"
+      glob(join("unicorn","**","cathedral.ts"))[0].test(
+        join("unicorn", "in", "the", "cathedral.ts")
       ),
       true
     );
     assert.equal(
-      glob("unicorn/(!sleeping)/bathroom.ts", { extended: true })[0].test(
-        "unicorn/sleeping/bathroom.ts"
+      glob(join("unicorn","**","cathedral.ts"))[0].test(join("unicorn","in","the","kitchen.ts")),
+      false
+    );
+    assert.equal(
+      glob(join("unicorn","**","bathroom.*"))[0].test(join("unicorn","sleeping","in","bathroom.py")),
+      true
+    );
+    assert.equal(
+      glob(join("unicorn","!(sleeping)","bathroom.ts"), { extended: true })[0].test(
+        join("unicorn","flying","bathroom.ts")
+      ),
+      true
+    );
+    assert.equal(
+      glob(join("unicorn","(!sleeping)","bathroom.ts"), { extended: true })[0].test(
+        join("unicorn","sleeping","bathroom.ts")
       ),
       false
     );
@@ -78,6 +81,7 @@ testWalk(
     await mkdir(d + "/b");
     await touch(d + "/a/x.ts");
     await touch(d + "/b/z.ts");
+    await touch(d + "/b/z.js");
   },
   async function globInWalkWildcardFiles() {
     const arr = await walkArray(".", { match: glob("*.ts") });
@@ -108,7 +112,7 @@ testWalk(
     await touch(d + "/a/yo/x.ts");
   },
   async function globInWalkFolderWildcard() {
-    const arr = await walkArray(".", { match: glob("./a/**/*.ts") });
+    const arr = await walkArray(".", { match: glob(join(".","a","**","*.ts")) });
     assert.equal(arr.length, 1);
     assert.equal(arr[0], "./a/yo/x.ts");
   }
