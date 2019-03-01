@@ -31,7 +31,7 @@ export async function* walk(
       options.onError(err);
     }
   }
-  for (var i = 0; i < ls.length; i++) {
+  for (var i = ls.length-1; i >= 0; i--) {
     let f = ls[i]
     if (f.isSymlink()) {
       if (options.followSymlinks) {
@@ -72,7 +72,7 @@ export function* walkSync(
       options.onError(err);
     }
   }
-  for (var i = 0; i < ls.length; i++) {
+  for (var i = ls.length-1; i >= 0; i--) {
     let f = ls[i]
     if (f.isSymlink()) {
       if (options.followSymlinks) {
