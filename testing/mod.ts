@@ -2,6 +2,8 @@
 
 // Do not add imports in this file in order to be compatible with Node.
 
+import { green, red } from "../colors/mod.ts"; // see https://github.com/denoland/deno_std/issues/222
+
 interface Constructor {
   new (...args: any[]): any;
 }
@@ -233,16 +235,12 @@ function filter(name: string): boolean {
   }
 }
 
-const RESET = "\x1b[0m";
-const FG_RED = "\x1b[31m";
-const FG_GREEN = "\x1b[32m";
-
 function red_failed() {
-  return FG_RED + "FAILED" + RESET;
+  return red("FAILED");
 }
 
 function green_ok() {
-  return FG_GREEN + "ok" + RESET;
+  return green("ok");
 }
 
 export async function runTests() {
