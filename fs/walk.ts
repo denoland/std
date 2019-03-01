@@ -95,7 +95,14 @@ function include(f: FileInfo, options: WalkOptions): Boolean {
   if (options.exts && !options.exts.some(ext => f.path.endsWith(ext))) {
     return false;
   }
-  if (options.match && !options.match.some(pattern => pattern.test(f.path))) {
+  if (
+    options.match &&
+    !options.match.some(pattern => {
+      let r = pattern.test(f.path);
+      pattern.lastIndex = 0;
+      return r;
+    })
+  ) {
     return false;
   }
   if (options.skip && options.skip.some(pattern => pattern.test(f.path))) {
