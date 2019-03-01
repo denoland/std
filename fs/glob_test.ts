@@ -122,7 +122,7 @@ testWalk(
     });
     console.log(arr)
     assert.equal(arr.length, 2);
-    assert.equal(arr[0], "./x.ts");
-    assert.equal(arr[1], "./x.js");
+    assert.equal(arr[0], "./x.js");
+    assert.equal(arr[1], "./x.ts");
   }
 );
