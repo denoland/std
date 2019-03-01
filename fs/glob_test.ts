@@ -112,14 +112,15 @@ testWalk(
 
 testWalk(
   async (d: string) => {
-    await touch(d + "x.ts");
-    await touch(d + "x.js");
-    await touch(d + "b.js");
+    await touch(d + "/x.ts");
+    await touch(d + "/x.js");
+    await touch(d + "/b.js");
   },
   async function globInWalkWildcardExtension() {
     const arr = await walkArray(".", {
       match: glob("x.*", { flags:'g',extended:true, globstar: true })
     });
+    console.log(arr)
     assert.equal(arr.length, 2);
     assert.equal(arr[0], "./x.ts");
     assert.equal(arr[1], "./x.js");
