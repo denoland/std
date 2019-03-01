@@ -1,4 +1,6 @@
 // This file is ported from globrex@0.1.2
+// MIT License
+// Copyright (c) 2018 Terkel Gjervig Nielsen
 
 import * as deno from "deno";
 
