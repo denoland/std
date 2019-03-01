@@ -31,8 +31,8 @@ export async function* walk(
       options.onError(err);
     }
   }
-  for (var i = ls.length-1; i >= 0; i--) {
-    let f = ls[i]
+  for (var i = ls.length - 1; i >= 0; i--) {
+    let f = ls[i];
     if (f.isSymlink()) {
       if (options.followSymlinks) {
         f = await resolve(f);
@@ -72,8 +72,8 @@ export function* walkSync(
       options.onError(err);
     }
   }
-  for (var i = ls.length-1; i >= 0; i--) {
-    let f = ls[i]
+  for (var i = ls.length - 1; i >= 0; i--) {
+    let f = ls[i];
     if (f.isSymlink()) {
       if (options.followSymlinks) {
         f = resolveSync(f);
