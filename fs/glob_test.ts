@@ -88,7 +88,7 @@ testWalk(
     await touch(d + "/b/z.js");
   },
   async function globInWalkWildcardFiles() {
-    const arr = await walkArray(".", { match: [glob("*.ts") ]});
+    const arr = await walkArray(".", { match: [glob("*.ts")] });
     assert.equal(arr.length, 2);
     assert.equal(arr[0], "./a/x.ts");
     assert.equal(arr[1], "./b/z.ts");
@@ -103,7 +103,13 @@ testWalk(
   },
   async function globInWalkFolderWildcard() {
     const arr = await walkArray(".", {
-      match: [glob(join( "a", "**", "*.ts"), { flags:'g', extended:true, globstar: true })]
+      match: [
+        glob(join("a", "**", "*.ts"), {
+          flags: "g",
+          extended: true,
+          globstar: true
+        })
+      ]
     });
     assert.equal(arr.length, 1);
     assert.equal(arr[0], "./a/yo/x.ts");
@@ -118,9 +124,9 @@ testWalk(
   },
   async function globInWalkWildcardExtension() {
     const arr = await walkArray(".", {
-      match: [glob("x.*", { flags:'g',extended:true, globstar: true })]
+      match: [glob("x.*", { flags: "g", extended: true, globstar: true })]
     });
-    console.log(arr)
+    console.log(arr);
     assert.equal(arr.length, 2);
     assert.equal(arr[0], "./x.js");
     assert.equal(arr[1], "./x.ts");
