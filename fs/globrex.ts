@@ -1,3 +1,5 @@
+// This file is ported from globrex@0.1.2
+
 import * as deno from "deno";
 
 const isWin = deno.platform.os === 'win';
