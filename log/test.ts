@@ -1,8 +1,12 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { assertEqual, test } from "../testing/mod.ts";
 import * as log from "./mod.ts";
 import { BaseHandler } from "./handlers.ts";
 import { LogRecord } from "./logger.ts";
 import { LogLevel } from "./levels.ts";
+
+import "./handlers_test.ts";
+import "./logger_test.ts";
 
 // constructor(levelName: string, options: HandlerOptions = {}) {
 //   this.level = getLevelByName(levelName);

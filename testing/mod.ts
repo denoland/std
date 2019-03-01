@@ -265,7 +265,7 @@ export async function runTests() {
       result = red_failed();
       console.log("...", result);
       console.groupEnd();
-      console.error((e && e.stack) || e);
+      console.error(e);
       failed++;
       if (exitOnFail) {
         break;
@@ -286,7 +286,14 @@ export async function runTests() {
     // Use setTimeout to avoid the error being ignored due to unhandled
     // promise rejections being swallowed.
     setTimeout(() => {
-      throw new Error(`There were ${failed} test failures.`);
+      console.error(`There were ${failed} test failures.`);
+      Deno.exit(1);
     }, 0);
+  }
+}
+
+export async function runIfMain(meta: ImportMeta) {
+  if (meta.main) {
+    runTests();
   }
 }

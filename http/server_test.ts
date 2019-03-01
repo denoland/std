@@ -5,15 +5,10 @@
 // Ported from
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
-import { Buffer } from "deno";
-import { test, assert, assertEqual } from "../testing/mod.ts";
-import {
-  listenAndServe,
-  ServerRequest,
-  setContentLength,
-  Response
-} from "./server.ts";
-import { BufWriter, BufReader } from "../io/bufio.ts";
+const { Buffer } = Deno;
+import { assertEqual, test } from "../testing/mod.ts";
+import { Response, ServerRequest } from "./server.ts";
+import { BufReader, BufWriter } from "../io/bufio.ts";
 
 interface ResponseTest {
   response: Response;

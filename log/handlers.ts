@@ -1,6 +1,9 @@
-import { open, File, Writer } from "deno";
-import { getLevelByName } from "./levels.ts";
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+const { open } = Deno;
+import { File, Writer } from "deno";
+import { getLevelByName, LogLevel } from "./levels.ts";
 import { LogRecord } from "./logger.ts";
+import { red, yellow, blue, bold } from "../colors/mod.ts";
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
 type FormatterFunction = (logRecord: LogRecord) => string;
@@ -51,6 +54,29 @@ export class BaseHandler {
 }
 
 export class ConsoleHandler extends BaseHandler {
+  format(logRecord: LogRecord): string {
+    let msg = super.format(logRecord);
+
+    switch (logRecord.level) {
+      case LogLevel.INFO:
+        msg = blue(msg);
+        break;
+      case LogLevel.WARNING:
+        msg = yellow(msg);
+        break;
+      case LogLevel.ERROR:
+        msg = red(msg);
+        break;
+      case LogLevel.CRITICAL:
+        msg = bold(red(msg));
+        break;
+      default:
+        break;
+    }
+
+    return msg;
+  }
+
   log(msg: string) {
     console.log(msg);
   }
