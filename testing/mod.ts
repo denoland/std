@@ -1,7 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-// Do not add imports in this file in order to be compatible with Node.
-
 import { green, red } from "../colors/mod.ts"; // see https://github.com/denoland/deno_std/issues/222
 
 interface Constructor {
