@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { green, red } from "../colors/mod.ts"; // see https://github.com/denoland/deno_std/issues/222
+import { green, red } from "../colors/mod.ts";
 
 interface Constructor {
   new (...args: any[]): any;
