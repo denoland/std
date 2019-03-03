@@ -142,7 +142,7 @@ test(function testAcceptable() {
       "sec-websocket-key": "aaa"
     })
   });
-  assertEqual(ret, true);
+  assert.equal(ret, true);
 });
 
 const invalidHeaders = [
@@ -157,6 +157,6 @@ test(function testAcceptableInvalid() {
     const ret = acceptable({
       headers: new Headers(pat)
     });
-    assertEqual(ret, false);
+    assert.equal(ret, false);
   }
 });
