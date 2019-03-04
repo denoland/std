@@ -55,7 +55,7 @@ function buildMessage(diffResult: ReadonlyArray<DiffResult<string>>) {
   return messages;
 }
 
-export function assertEqual(actual: unknown, expected: unknown) {
+export function assertEqual(actual: unknown, expected: unknown, msg?: string) {
   if (equal(actual, expected)) {
     return;
   }
@@ -70,6 +70,9 @@ export function assertEqual(actual: unknown, expected: unknown) {
     message = buildMessage(diffResult).join("\n");
   } catch (e) {
     message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
+  }
+  if (msg) {
+    message = msg;
   }
   throw new Error(message);
 }
