@@ -158,7 +158,10 @@ Object.assign(assertions.assert, assertions);
 
 export const assert = assertions.assert as Assert;
 
-// Alias to pretty.assertEqual
+/**
+ * Alias to pretty.assertEqual
+ * @deprecated
+ */
 export const assertEqual = prettyAssertEqual;
 
 export function equal(c: unknown, d: unknown): boolean {
