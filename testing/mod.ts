@@ -1,6 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 import { green, red } from "../colors/mod.ts";
+import { assertEqual as prettyAssertEqual } from "./pretty.ts";
 
 interface Constructor {
   new (...args: any[]): any;
@@ -157,11 +158,8 @@ Object.assign(assertions.assert, assertions);
 
 export const assert = assertions.assert as Assert;
 
-/**
- * An alias to assert.equal
- * @deprecated
- */
-export const assertEqual = assert.equal;
+// Alias to pretty.assertEqual
+export const assertEqual = prettyAssertEqual;
 
 export function equal(c: unknown, d: unknown): boolean {
   const seen = new Map();
