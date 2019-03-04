@@ -19,30 +19,7 @@ const assertions = {
    * deeply equal, then throw.
    */
   equal(actual: unknown, expected: unknown, msg?: string): void {
-    if (!equal(actual, expected)) {
-      let actualString: string;
-      let expectedString: string;
-      try {
-        actualString = String(actual);
-      } catch (e) {
-        actualString = "[Cannot display]";
-      }
-      try {
-        expectedString = String(expected);
-      } catch (e) {
-        expectedString = "[Cannot display]";
-      }
-      console.error(
-        "assertEqual failed. actual =",
-        actualString,
-        "expected =",
-        expectedString
-      );
-      if (!msg) {
-        msg = `actual: ${actualString} expected: ${expectedString}`;
-      }
-      throw new Error(msg);
-    }
+    prettyAssertEqual(actual, expected, msg);
   },
 
   /** Make an assertion that `actual` and `expected` are strictly equal.  If
