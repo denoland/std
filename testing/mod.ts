@@ -4,7 +4,35 @@ import { green, red } from "../colors/mod.ts";
 import { assertEqual as prettyAssertEqual } from "./pretty.ts";
 
 interface Constructor {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   new (...args: any[]): any;
+}
+
+export function equal(c: unknown, d: unknown): boolean {
+  const seen = new Map();
+  return (function compare(a: unknown, b: unknown) {
+    if (Object.is(a, b)) {
+      return true;
+    }
+    if (a && typeof a === "object" && b && typeof b === "object") {
+      if (seen.get(a) === b) {
+        return true;
+      }
+      if (Object.keys(a || {}).length !== Object.keys(b || {}).length) {
+        return false;
+      }
+      const merged = { ...a, ...b };
+      for (const key in merged) {
+        type Key = keyof typeof merged;
+        if (!compare(a && a[key as Key], b && b[key as Key])) {
+          return false;
+        }
+      }
+      seen.set(a, b);
+      return true;
+    }
+    return false;
+  })(c, d);
 }
 
 const assertions = {
@@ -56,6 +84,7 @@ const assertions = {
    * Forcefully throws a failed assertion
    */
   fail(msg?: string): void {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     assert(false, `Failed assertion${msg ? `: ${msg}` : "."}`);
   },
 
@@ -141,33 +170,6 @@ export const assert = assertions.assert as Assert;
  */
 export const assertEqual = prettyAssertEqual;
 
-export function equal(c: unknown, d: unknown): boolean {
-  const seen = new Map();
-  return (function compare(a: unknown, b: unknown) {
-    if (Object.is(a, b)) {
-      return true;
-    }
-    if (a && typeof a === "object" && b && typeof b === "object") {
-      if (seen.get(a) === b) {
-        return true;
-      }
-      if (Object.keys(a || {}).length !== Object.keys(b || {}).length) {
-        return false;
-      }
-      const merged = { ...a, ...b };
-      for (const key in merged) {
-        type Key = keyof typeof merged;
-        if (!compare(a && a[key as Key], b && b[key as Key])) {
-          return false;
-        }
-      }
-      seen.set(a, b);
-      return true;
-    }
-    return false;
-  })(c, d);
-}
-
 export type TestFunction = () => void | Promise<void>;
 
 export interface TestDefinition {
@@ -181,12 +183,18 @@ let filterRegExp: RegExp | null;
 const tests: TestDefinition[] = [];
 
 let filtered = 0;
-const ignored = 0;
-const measured = 0;
 
 // Must be called before any test() that needs to be filtered.
 export function setFilter(s: string): void {
   filterRegExp = new RegExp(s, "i");
+}
+
+function filter(name: string): boolean {
+  if (filterRegExp) {
+    return filterRegExp.test(name);
+  } else {
+    return true;
+  }
 }
 
 export function test(t: TestDefinition | TestFunction): void {
@@ -203,21 +211,8 @@ export function test(t: TestDefinition | TestFunction): void {
   }
 }
 
-function filter(name: string): boolean {
-  if (filterRegExp) {
-    return filterRegExp.test(name);
-  } else {
-    return true;
-  }
-}
-
-function red_failed() {
-  return red("FAILED");
-}
-
-function green_ok() {
-  return green("ok");
-}
+const RED_FAILED = red("FAILED");
+const GREEN_OK = green("ok");
 
 interface TestStats {
   filtered: number;
@@ -239,7 +234,7 @@ interface TestResults {
   cases: Map<number, TestResult>;
 }
 
-function createTestResults(tests: Array<TestDefinition>): TestResults {
+function createTestResults(tests: TestDefinition[]): TestResults {
   return tests.reduce(
     (acc: TestResults, { name }: TestDefinition, i: number): TestResults => {
       acc.keys.set(name, i);
@@ -252,10 +247,10 @@ function createTestResults(tests: Array<TestDefinition>): TestResults {
 
 function report(result: TestResult): void {
   if (result.ok) {
-    console.log(`test ${result.name} ... ${green_ok()}`);
+    console.log(`test ${result.name} ... ${GREEN_OK}`);
   } else if (result.error) {
     console.error(
-      `test ${result.name} ... ${red_failed()}\n${result.error.stack}`
+      `test ${result.name} ... ${RED_FAILED}\n${result.error.stack}`
     );
   } else {
     console.log(`test ${result.name} ... unresolved`);
@@ -280,7 +275,7 @@ function printResults(
   }
   // Attempting to match the output of Rust's test runner.
   console.log(
-    `\ntest result: ${stats.failed ? red_failed() : green_ok()}. ` +
+    `\ntest result: ${stats.failed ? RED_FAILED : GREEN_OK}. ` +
       `${stats.passed} passed; ${stats.failed} failed; ` +
       `${stats.ignored} ignored; ${stats.measured} measured; ` +
       `${stats.filtered} filtered out\n`
@@ -320,7 +315,7 @@ async function createTestCase(
 function initTestCases(
   stats: TestStats,
   results: TestResults,
-  tests: Array<TestDefinition>
+  tests: TestDefinition[]
 ): Array<Promise<void>> {
   return tests.map(createTestCase.bind(null, stats, results));
 }
@@ -328,7 +323,7 @@ function initTestCases(
 async function runTestsParallel(
   stats: TestStats,
   results: TestResults,
-  tests: Array<TestDefinition>
+  tests: TestDefinition[]
 ): Promise<void> {
   try {
     await Promise.all(initTestCases(stats, results, tests));
@@ -340,7 +335,7 @@ async function runTestsParallel(
 
 async function runTestsSerial(
   stats: TestStats,
-  tests: Array<TestDefinition>
+  tests: TestDefinition[]
 ): Promise<void> {
   for (const { fn, name } of tests) {
     // See https://github.com/denoland/deno/pull/1452
@@ -349,10 +344,10 @@ async function runTestsSerial(
     try {
       await fn();
       stats.passed++;
-      console.log("...", green_ok());
+      console.log("...", GREEN_OK);
       console.groupEnd();
     } catch (err) {
-      console.log("...", red_failed());
+      console.log("...", RED_FAILED);
       console.groupEnd();
       console.error(err.stack);
       stats.failed++;
