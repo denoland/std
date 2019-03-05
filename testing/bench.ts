@@ -1,7 +1,7 @@
 import { bench, runBenchmarks } from "./../benching/mod.ts";
 import { runTests } from "./mod.ts";
 
-import "./assert_test.ts";
+import "./asserts_test.ts";
 
 bench(async function testingSerial(b) {
   b.start();

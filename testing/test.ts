@@ -1,10 +1,10 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-
 import { test, assert, assertEqual, equal, runIfMain } from "./mod.ts";
 import { assertEqual as prettyAssertEqual } from "./pretty.ts";
 import "./format_test.ts";
 import "./diff_test.ts";
 import "./pretty_test.ts";
+import "./asserts_test.ts";
 
 test(function testingEqual() {
   assert(equal("world", "world"));
@@ -285,42 +285,5 @@ test(async function testingThrowsAsyncMsgNotIncludes() {
   assert(didThrow);
 });
 
-test(function testingAssertStringContains() {
-  assert.assertStrContains("Denosaurus", "saur");
-  assert.assertStrContains("Denosaurus", "Deno");
-  assert.assertStrContains("Denosaurus", "rus");
-});
-
-test(function testingAssertStringContainsThrow() {
-  let didThrow = false;
-  try {
-    assert.assertStrContains("Denosaurus from Jurassic", "Raptor");
-  } catch (e) {
-    assert(
-      e.message ===
-        `actual: "Denosaurus from Jurassic" expected to contains: "Raptor"`
-    );
-    didThrow = true;
-  }
-  assert(didThrow);
-});
-
-test(function testingAssertStringMatching() {
-  assert.assertMatch("foobar@deno.com", RegExp(/[a-zA-Z]+@[a-zA-Z]+.com/));
-});
-
-test(function testingAssertStringMatchingThrows() {
-  let didThrow = false;
-  try {
-    assert.assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
-  } catch (e) {
-    assert(
-      e.message ===
-        `actual: "Denosaurus from Jurassic" expected to match: "/Raptor/"`
-    );
-    didThrow = true;
-  }
-  assert(didThrow);
-});
 
 runIfMain(import.meta, { parallel: true });

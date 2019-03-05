@@ -22,7 +22,7 @@ import "./media_types/test.ts";
 import "./multipart/formfile_test.ts";
 import "./multipart/multipart_test.ts";
 import "./prettier/main_test.ts";
-import "./testing/assert_test.ts";
+import "./testing/test.ts";
 import "./textproto/test.ts";
 import "./ws/test.ts";
 

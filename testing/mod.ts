@@ -11,7 +11,7 @@ import {
   fail,
   assertThrows,
   assertThrowsAsync
-} from "./assert.ts";
+} from "./asserts.ts";
 
 export function equal(c: unknown, d: unknown): boolean {
   const seen = new Map();
