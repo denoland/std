@@ -25,7 +25,7 @@ export function equal(actual: unknown, expected: unknown, msg?: string): void {
  * Make an assertion that `actual` and `expected` are strictly equal.  If
  * not then throw.
  */
-export function strictEqual(
+export function assertStrictEq(
   actual: unknown,
   expected: unknown,
   msg?: string
@@ -60,7 +60,7 @@ export function strictEqual(
  * Make an assertion that actual contains expected. If not
  * then thrown.
  */
-export function stringContains(
+export function assertStrContains(
   actual: string,
   expected: string,
   msg?: string
@@ -83,7 +83,7 @@ export function stringContains(
  * Make an assertion that `actual` match RegExp `expected`. If not
  * then thrown
  */
-export function stringMatch(
+export function assertMatch(
   actual: string,
   expected: RegExp,
   msg?: string
@@ -114,7 +114,7 @@ export function fail(msg?: string): void {
  * throws.  An error class and a string that should be included in the
  * error message can also be asserted.
  */
-export function throws(
+export function assertThrows(
   fn: () => void,
   ErrorClass?: Constructor,
   msgIncludes = "",
@@ -146,7 +146,7 @@ export function throws(
   }
 }
 
-export async function throwsAsync(
+export async function assertThrowsAsync(
   fn: () => Promise<void>,
   ErrorClass?: Constructor,
   msgIncludes = "",

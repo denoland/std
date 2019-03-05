@@ -5,12 +5,12 @@ import { assertEqual as prettyAssertEqual } from "./pretty.ts";
 import {
   assert as assertImport,
   equal as AssertEqual,
-  strictEqual,
-  stringContains,
-  stringMatch,
+  assertStrictEq,
+  assertStrContains,
+  assertMatch,
   fail,
-  throws,
-  throwsAsync
+  assertThrows,
+  assertThrowsAsync
 } from "./assert.ts";
 
 export function equal(c: unknown, d: unknown): boolean {
@@ -43,12 +43,12 @@ export function equal(c: unknown, d: unknown): boolean {
 const assertions = {
   assert: assertImport,
   equal: AssertEqual,
-  strictEqual: strictEqual,
-  stringContains: stringContains,
-  stringMatch: stringMatch,
+  strictEqual: assertStrictEq,
+  assertStrContains: assertStrContains,
+  assertMatch: assertMatch,
   fail: fail,
-  throws: throws,
-  throwsAsync: throwsAsync
+  throws: assertThrows,
+  throwsAsync: assertThrowsAsync
 };
 
 type Assert = typeof assertions.assert & typeof assertions;

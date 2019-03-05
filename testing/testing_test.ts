@@ -286,15 +286,15 @@ test(async function testingThrowsAsyncMsgNotIncludes() {
 });
 
 test(function testingAssertStringContains() {
-  assert.stringContains("Denosaurus", "saur");
-  assert.stringContains("Denosaurus", "Deno");
-  assert.stringContains("Denosaurus", "rus");
+  assert.assertStrContains("Denosaurus", "saur");
+  assert.assertStrContains("Denosaurus", "Deno");
+  assert.assertStrContains("Denosaurus", "rus");
 });
 
 test(function testingAssertStringContainsThrow() {
   let didThrow = false;
   try {
-    assert.stringContains("Denosaurus from Jurassic", "Raptor");
+    assert.assertStrContains("Denosaurus from Jurassic", "Raptor");
   } catch (e) {
     assert(
       e.message ===
@@ -306,13 +306,13 @@ test(function testingAssertStringContainsThrow() {
 });
 
 test(function testingAssertStringMatching() {
-  assert.stringMatch("foobar@deno.com", RegExp(/[a-zA-Z]+@[a-zA-Z]+.com/));
+  assert.assertMatch("foobar@deno.com", RegExp(/[a-zA-Z]+@[a-zA-Z]+.com/));
 });
 
 test(function testingAssertStringMatchingThrows() {
   let didThrow = false;
   try {
-    assert.stringMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
+    assert.assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
   } catch (e) {
     assert(
       e.message ===
