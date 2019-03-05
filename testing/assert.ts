@@ -12,6 +12,7 @@ export function assert(expr: boolean, msg = ""): void {
     throw new Error(msg);
   }
 }
+
 /**
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
  * deeply equal, then throw.
