@@ -285,4 +285,42 @@ test(async function testingThrowsAsyncMsgNotIncludes() {
   assert(didThrow);
 });
 
+test(function testingAssertStringContains() {
+  assert.stringContains("Denosaurus", "saur");
+  assert.stringContains("Denosaurus", "Deno");
+  assert.stringContains("Denosaurus", "rus");
+});
+
+test(function testingAssertStringContainsThrow() {
+  let didThrow = false;
+  try {
+    assert.stringContains("Denosaurus from Jurassic", "Raptor");
+  } catch (e) {
+    assert(
+      e.message ===
+        `actual: "Denosaurus from Jurassic" expected to contains: "Raptor"`
+    );
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
+test(function testingAssertStringMatching() {
+  assert.stringMatch("foobar@deno.com", RegExp(/[a-zA-Z]+@[a-zA-Z]+.com/));
+});
+
+test(function testingAssertStringMatchingThrows() {
+  let didThrow = false;
+  try {
+    assert.stringMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
+  } catch (e) {
+    assert(
+      e.message ===
+        `actual: "Denosaurus from Jurassic" expected to match: "/Raptor/"`
+    );
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
 runIfMain(import.meta, { parallel: true });

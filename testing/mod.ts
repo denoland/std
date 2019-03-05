@@ -43,17 +43,19 @@ const assertions = {
     }
   },
 
-  /** Make an assertion that `actual` and `expected` are equal, deeply. If not
+  /**
+   * Make an assertion that `actual` and `expected` are equal, deeply. If not
    * deeply equal, then throw.
    */
   equal(actual: unknown, expected: unknown, msg?: string): void {
     prettyAssertEqual(actual, expected, msg);
   },
 
-  /** Make an assertion that `actual` and `expected` are strictly equal.  If
+  /**
+   * Make an assertion that `actual` and `expected` are strictly equal.  If
    * not then throw.
    */
-  strictEqual(actual: unknown, expected: unknown, msg = ""): void {
+  strictEqual(actual: unknown, expected: unknown, msg?: string): void {
     if (actual !== expected) {
       let actualString: string;
       let expectedString: string;
@@ -81,6 +83,44 @@ const assertions = {
   },
 
   /**
+   * Make an assertion that actual contains expected. If not
+   * then thrown.
+   */
+  stringContains(actual: string, expected: string, msg?: string): void {
+    if (!actual.includes(expected)) {
+      console.error(
+        "stringContains failed. actual =",
+        actual,
+        "not containing ",
+        expected
+      );
+      if (!msg) {
+        msg = `actual: "${actual}" expected to contains: "${expected}"`;
+      }
+      throw new Error(msg);
+    }
+  },
+
+  /**
+   * Make an assertion that `actual` match RegExp `expected`. If not
+   * then thrown
+   */
+  stringMatch(actual: string, expected: RegExp, msg?: string): void {
+    if (!expected.test(actual)) {
+      console.error(
+        "stringMatching failed. actual =",
+        actual,
+        "not matching RegExp ",
+        expected
+      );
+      if (!msg) {
+        msg = `actual: "${actual}" expected to match: "${expected}"`;
+      }
+      throw new Error(msg);
+    }
+  },
+
+  /**
    * Forcefully throws a failed assertion
    */
   fail(msg?: string): void {
@@ -96,7 +136,7 @@ const assertions = {
     fn: () => void,
     ErrorClass?: Constructor,
     msgIncludes = "",
-    msg = ""
+    msg?: string
   ): void {
     let doesThrow = false;
     try {
@@ -128,7 +168,7 @@ const assertions = {
     fn: () => Promise<void>,
     ErrorClass?: Constructor,
     msgIncludes = "",
-    msg = ""
+    msg?: string
   ): Promise<void> {
     let doesThrow = false;
     try {
