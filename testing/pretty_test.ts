@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { test, assert } from "./mod.ts";
+import { test } from "./mod.ts";
 import { red, green, white, gray, bold } from "../colors/mod.ts";
 import { assertEqual } from "./pretty.ts";
 import { assertThrows } from "./asserts.ts";

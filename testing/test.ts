@@ -8,40 +8,10 @@ import {
   assertThrowsAsync,
   fail
 } from "../testing/asserts.ts";
-import { assertEqual as prettyAssertEqual } from "./pretty.ts";
 import "./format_test.ts";
 import "./diff_test.ts";
 import "./pretty_test.ts";
 import "./asserts_test.ts";
-
-// test(function testingEqual() {
-//   assert(equal("world", "world"));
-//   assert(!equal("hello", "world"));
-//   assert(equal(5, 5));
-//   assert(!equal(5, 6));
-//   assert(equal(NaN, NaN));
-//   assert(equal({ hello: "world" }, { hello: "world" }));
-//   assert(!equal({ world: "hello" }, { hello: "world" }));
-//   assert(
-//     equal(
-//       { hello: "world", hi: { there: "everyone" } },
-//       { hello: "world", hi: { there: "everyone" } }
-//     )
-//   );
-//   assert(
-//     !equal(
-//       { hello: "world", hi: { there: "everyone" } },
-//       { hello: "world", hi: { there: "everyone else" } }
-//     )
-//   );
-// });
-
-// test(function testingAssertEqual() {
-//   const a = Object.create(null);
-//   a.b = "foo";
-//   assertEqual(a, a);
-//   assert(assertEqual === prettyAssertEqual);
-// });
 
 test(function testingAssertFail() {
   assertThrows(fail, Error, "Failed assertion.");
