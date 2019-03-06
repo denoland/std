@@ -37,14 +37,8 @@ Asserts are exposed in `testing/asserts.ts` module.
 Basic usage:
 
 ```ts
-import {
-  runTests,
-  test,
-  equal
-} from "https://deno.land/x/testing/mod.ts";
-import {
-  assert
-} from "https://deno.land/x/testing/asserts.ts";
+import { runTests, test, equal } from "https://deno.land/x/testing/mod.ts";
+import { assert } from "https://deno.land/x/testing/asserts.ts";
 
 test({
   name: "testing example",

@@ -17,7 +17,11 @@ export function assert(expr: boolean, msg = ""): void {
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
  * deeply equal, then throw.
  */
-export function assertEqual(actual: unknown, expected: unknown, msg?: string): void {
+export function assertEqual(
+  actual: unknown,
+  expected: unknown,
+  msg?: string
+): void {
   prettyAssertEqual(actual, expected, msg);
 }
 
