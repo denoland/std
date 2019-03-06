@@ -3,6 +3,7 @@
 import { test, assert } from "./mod.ts";
 import { red, green, white, gray, bold } from "../colors/mod.ts";
 import { assertEqual } from "./pretty.ts";
+import { assertThrows } from "./asserts.ts";
 
 const createHeader = (): string[] => [
   "",
@@ -29,7 +30,7 @@ test({
 test({
   name: "failed with number",
   fn() {
-    assert.throws(
+    assertThrows(
       () => assertEqual(1, 2),
       Error,
       [...createHeader(), removed(`-   1`), added(`+   2`), ""].join("\n")
@@ -40,7 +41,7 @@ test({
 test({
   name: "failed with number vs string",
   fn() {
-    assert.throws(
+    assertThrows(
       () => assertEqual(1, "1"),
       Error,
       [...createHeader(), removed(`-   1`), added(`+   "1"`)].join("\n")
@@ -51,7 +52,7 @@ test({
 test({
   name: "failed with array",
   fn() {
-    assert.throws(
+    assertThrows(
       () => assertEqual([1, "2", 3], ["1", "2", 3]),
       Error,
       [
@@ -71,7 +72,7 @@ test({
 test({
   name: "failed with object",
   fn() {
-    assert.throws(
+    assertThrows(
       () => assertEqual({ a: 1, b: "2", c: 3 }, { a: 1, b: 2, c: [3] }),
       Error,
       [

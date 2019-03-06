@@ -46,8 +46,8 @@ const assertions = {
   // assertStrContains: assertStrContains,
   // assertMatch: assertMatch,
   // fail: fail,
-  throws: assertThrows,
-  throwsAsync: assertThrowsAsync
+  // throws: assertThrows,
+  // throwsAsync: assertThrowsAsync
 };
 
 type Assert = typeof assertions.assert & typeof assertions;

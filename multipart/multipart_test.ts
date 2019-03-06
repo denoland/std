@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 const { Buffer, copy, open, remove } = Deno;
-import { assertEqual } from "../testing/asserts.ts";
+import { assertEqual, assertThrows, assertThrowsAsync } from "../testing/asserts.ts";
 import { assert, test } from "../testing/mod.ts";
 import {
   matchAfterPrefix,
@@ -100,12 +100,12 @@ test(async function multipartMultipartWriter() {
 
 test(function multipartMultipartWriter2() {
   const w = new StringWriter();
-  assert.throws(
+  assertThrows(
     () => new MultipartWriter(w, ""),
     Error,
     "invalid boundary length"
   );
-  assert.throws(
+  assertThrows(
     () =>
       new MultipartWriter(
         w,
@@ -114,12 +114,12 @@ test(function multipartMultipartWriter2() {
     Error,
     "invalid boundary length"
   );
-  assert.throws(
+  assertThrows(
     () => new MultipartWriter(w, "aaa aaa"),
     Error,
     "invalid boundary character"
   );
-  assert.throws(
+  assertThrows(
     () => new MultipartWriter(w, "boundary¥¥"),
     Error,
     "invalid boundary character"
@@ -131,35 +131,35 @@ test(async function multipartMultipartWriter3() {
   const mw = new MultipartWriter(w);
   await mw.writeField("foo", "foo");
   await mw.close();
-  await assert.throwsAsync(
+  await assertThrowsAsync(
     async () => {
       await mw.close();
     },
     Error,
     "closed"
   );
-  await assert.throwsAsync(
+  await assertThrowsAsync(
     async () => {
       await mw.writeFile("bar", "file", null);
     },
     Error,
     "closed"
   );
-  await assert.throwsAsync(
+  await assertThrowsAsync(
     async () => {
       await mw.writeField("bar", "bar");
     },
     Error,
     "closed"
   );
-  assert.throws(
+  assertThrows(
     () => {
       mw.createFormField("bar");
     },
     Error,
     "closed"
   );
-  assert.throws(
+  assertThrows(
     () => {
       mw.createFormFile("bar", "file");
     },

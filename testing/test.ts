@@ -1,6 +1,12 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, assert, runIfMain } from "./mod.ts";
-import { assertEqual, assertStrictEq, fail } from "../testing/asserts.ts";
+import {
+  assertEqual,
+  assertStrictEq,
+  assertThrows,
+  assertThrowsAsync,
+  fail
+} from "../testing/asserts.ts";
 import { assertEqual as prettyAssertEqual } from "./pretty.ts";
 import "./format_test.ts";
 import "./diff_test.ts";
@@ -37,8 +43,8 @@ import "./asserts_test.ts";
 // });
 
 test(function testingAssertFail() {
-  assert.throws(fail, Error, "Failed assertion.");
-  assert.throws(
+  assertThrows(fail, Error, "Failed assertion.");
+  assertThrows(
     () => {
       fail("foo");
     },
@@ -90,7 +96,7 @@ test(function testingAssertNotStrictEqual() {
 
 test(function testingDoesThrow() {
   let count = 0;
-  assert.throws(() => {
+  assertThrows(() => {
     count++;
     throw new Error();
   });
@@ -101,7 +107,7 @@ test(function testingDoesNotThrow() {
   let count = 0;
   let didThrow = false;
   try {
-    assert.throws(() => {
+    assertThrows(() => {
       count++;
       console.log("Hello world");
     });
@@ -115,7 +121,7 @@ test(function testingDoesNotThrow() {
 
 test(function testingThrowsErrorType() {
   let count = 0;
-  assert.throws(() => {
+  assertThrows(() => {
     count++;
     throw new TypeError();
   }, TypeError);
@@ -126,7 +132,7 @@ test(function testingThrowsNotErrorType() {
   let count = 0;
   let didThrow = false;
   try {
-    assert.throws(() => {
+    assertThrows(() => {
       count++;
       throw new TypeError();
     }, RangeError);
@@ -140,7 +146,7 @@ test(function testingThrowsNotErrorType() {
 
 test(function testingThrowsMsgIncludes() {
   let count = 0;
-  assert.throws(
+  assertThrows(
     () => {
       count++;
       throw new TypeError("Hello world!");
@@ -155,7 +161,7 @@ test(function testingThrowsMsgNotIncludes() {
   let count = 0;
   let didThrow = false;
   try {
-    assert.throws(
+    assertThrows(
       () => {
         count++;
         throw new TypeError("Hello world!");
@@ -176,7 +182,7 @@ test(function testingThrowsMsgNotIncludes() {
 
 test(async function testingDoesThrowAsync() {
   let count = 0;
-  await assert.throwsAsync(async () => {
+  await assertThrowsAsync(async () => {
     count++;
     throw new Error();
   });
@@ -185,7 +191,7 @@ test(async function testingDoesThrowAsync() {
 
 test(async function testingDoesReject() {
   let count = 0;
-  await assert.throwsAsync(() => {
+  await assertThrowsAsync(() => {
     count++;
     return Promise.reject(new Error());
   });
@@ -196,7 +202,7 @@ test(async function testingDoesNotThrowAsync() {
   let count = 0;
   let didThrow = false;
   try {
-    await assert.throwsAsync(async () => {
+    await assertThrowsAsync(async () => {
       count++;
       console.log("Hello world");
     });
@@ -212,7 +218,7 @@ test(async function testingDoesNotRejectAsync() {
   let count = 0;
   let didThrow = false;
   try {
-    await assert.throwsAsync(() => {
+    await assertThrowsAsync(() => {
       count++;
       console.log("Hello world");
       return Promise.resolve();
@@ -227,7 +233,7 @@ test(async function testingDoesNotRejectAsync() {
 
 test(async function testingThrowsAsyncErrorType() {
   let count = 0;
-  await assert.throwsAsync(async () => {
+  await assertThrowsAsync(async () => {
     count++;
     throw new TypeError();
   }, TypeError);
@@ -238,7 +244,7 @@ test(async function testingThrowsAsyncNotErrorType() {
   let count = 0;
   let didThrow = false;
   try {
-    await assert.throwsAsync(async () => {
+    await assertThrowsAsync(async () => {
       count++;
       throw new TypeError();
     }, RangeError);
@@ -252,7 +258,7 @@ test(async function testingThrowsAsyncNotErrorType() {
 
 test(async function testingThrowsAsyncMsgIncludes() {
   let count = 0;
-  await assert.throwsAsync(
+  await assertThrowsAsync(
     async () => {
       count++;
       throw new TypeError("Hello world!");
@@ -267,7 +273,7 @@ test(async function testingThrowsAsyncMsgNotIncludes() {
   let count = 0;
   let didThrow = false;
   try {
-    await assert.throwsAsync(
+    await assertThrowsAsync(
       async () => {
         count++;
         throw new TypeError("Hello world!");
