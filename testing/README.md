@@ -35,18 +35,14 @@ Asserts are exposed in `testing/asserts.ts` module.
 Basic usage:
 
 ```ts
-import { runTests, test, equal } from "https://deno.land/x/testing/mod.ts";
-import { assert } from "https://deno.land/x/testing/asserts.ts";
+import { runTests, test } from "https://deno.land/std/testing/mod.ts";
+import { assertEq } from "https://deno.land/std/testing/asserts.ts";
 
 test({
   name: "testing example",
   fn() {
-    assert(equal("world", "world"));
-    assert(!equal("hello", "world"));
-    assert(equal({ hello: "world" }, { hello: "world" }));
-    assert(!equal({ world: "hello" }, { hello: "world" }));
-    assert.equal("world", "world");
-    assert.equal({ hello: "world" }, { hello: "world" });
+    assertEq("world", "world"));
+    assertEq({ hello: "world" }, { hello: "world" }));
   }
 });
 
@@ -57,12 +53,8 @@ Short syntax (named function instead of object):
 
 ```ts
 test(function example() {
-  assert(equal("world", "world"));
-  assert(!equal("hello", "world"));
-  assert(equal({ hello: "world" }, { hello: "world" }));
-  assert(!equal({ world: "hello" }, { hello: "world" }));
-  assert.equal("world", "world");
-  assert.equal({ hello: "world" }, { hello: "world" });
+    assertEq("world", "world"));
+    assertEq({ hello: "world" }, { hello: "world" }));
 });
 ```
 
