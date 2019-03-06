@@ -1,6 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 const { Buffer, copy, open, remove } = Deno;
+import { assertEqual } from "../testing/asserts.ts";
 import { assert, test } from "../testing/mod.ts";
 import {
   matchAfterPrefix,
@@ -26,8 +27,8 @@ test(function multipartScanUntilBoundary1() {
     0,
     "EOF"
   );
-  assert.equal(n, 0);
-  assert.equal(err, "EOF");
+  assertEqual(n, 0);
+  assertEqual(err, "EOF");
 });
 
 test(function multipartScanUntilBoundary2() {
@@ -39,8 +40,8 @@ test(function multipartScanUntilBoundary2() {
     0,
     "EOF"
   );
-  assert.equal(n, 3);
-  assert.equal(err, "EOF");
+  assertEqual(n, 3);
+  assertEqual(err, "EOF");
 });
 
 test(function multipartScanUntilBoundary4() {
@@ -52,8 +53,8 @@ test(function multipartScanUntilBoundary4() {
     0,
     null
   );
-  assert.equal(n, 3);
-  assert.equal(err, null);
+  assertEqual(n, 3);
+  assertEqual(err, null);
 });
 
 test(function multipartScanUntilBoundary3() {
@@ -65,26 +66,26 @@ test(function multipartScanUntilBoundary3() {
     0,
     null
   );
-  assert.equal(n, data.length);
-  assert.equal(err, null);
+  assertEqual(n, data.length);
+  assertEqual(err, null);
 });
 
 test(function multipartMatchAfterPrefix1() {
   const data = `${boundary}\r`;
   const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
-  assert.equal(v, 1);
+  assertEqual(v, 1);
 });
 
 test(function multipartMatchAfterPrefix2() {
   const data = `${boundary}hoge`;
   const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
-  assert.equal(v, -1);
+  assertEqual(v, -1);
 });
 
 test(function multipartMatchAfterPrefix3() {
   const data = `${boundary}`;
   const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
-  assert.equal(v, 0);
+  assertEqual(v, 0);
 });
 
 test(async function multipartMultipartWriter() {
@@ -175,10 +176,10 @@ test(async function multipartMultipartReader() {
     "--------------------------434049563556637648550474"
   );
   const form = await mr.readForm(10 << 20);
-  assert.equal(form["foo"], "foo");
-  assert.equal(form["bar"], "bar");
+  assertEqual(form["foo"], "foo");
+  assertEqual(form["bar"], "bar");
   const file = form["file"] as FormFile;
-  assert.equal(isFormFile(file), true);
+  assertEqual(isFormFile(file), true);
   assert.assert(file.content !== void 0);
 });
 
@@ -190,15 +191,15 @@ test(async function multipartMultipartReader2() {
   );
   const form = await mr.readForm(20); //
   try {
-    assert.equal(form["foo"], "foo");
-    assert.equal(form["bar"], "bar");
+    assertEqual(form["foo"], "foo");
+    assertEqual(form["bar"], "bar");
     const file = form["file"] as FormFile;
-    assert.equal(file.type, "application/octet-stream");
+    assertEqual(file.type, "application/octet-stream");
     const f = await open(file.tempfile);
     const w = new StringWriter();
     await copy(w, f);
     const json = JSON.parse(w.toString());
-    assert.equal(json["compilerOptions"]["target"], "es2018");
+    assertEqual(json["compilerOptions"]["target"], "es2018");
     f.close();
   } finally {
     const file = form["file"] as FormFile;

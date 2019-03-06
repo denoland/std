@@ -2,7 +2,8 @@
 // Ported from https://github.com/browserify/path-browserify/
 
 const { cwd } = Deno;
-import { test, assertEqual } from "../../testing/mod.ts";
+import { test } from "../../testing/mod.ts";
+import { assertEqual } from "../../testing/asserts.ts";
 import * as path from "./mod.ts";
 
 const pwd = cwd();

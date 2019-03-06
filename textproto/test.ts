@@ -6,7 +6,8 @@
 import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader, append } from "./mod.ts";
 import { stringsReader } from "../io/util.ts";
-import { test, assert, assertEqual } from "../testing/mod.ts";
+import { assertEqual } from "../testing/asserts.ts";
+import { test, assert } from "../testing/mod.ts";
 
 function reader(s: string): TextProtoReader {
   return new TextProtoReader(new BufReader(stringsReader(s)));

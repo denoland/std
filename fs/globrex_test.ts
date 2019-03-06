@@ -3,11 +3,12 @@
 // Copyright (c) 2018 Terkel Gjervig Nielsen
 
 import * as deno from "deno";
-import { test, assert } from "../testing/mod.ts";
+import { test } from "../testing/mod.ts";
+import { assertEqual } from "../testing/asserts.ts";
 import { globrex } from "./globrex.ts";
 
 const isWin = deno.platform.os === "win";
-const t = { equal: assert.equal, is: assert.equal };
+const t = { equal: assertEqual, is: assertEqual };
 
 function match(glob, strUnix, strWin?, opts = {}) {
   if (typeof strWin === "object") {

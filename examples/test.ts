@@ -1,6 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 const { run } = Deno;
-import { test, assertEqual } from "../testing/mod.ts";
+import { test } from "../testing/mod.ts";
+import { assertEqual } from "../testing/asserts.ts";
 
 /** Example of how to do basic tests */
 test(function t1() {

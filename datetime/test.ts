@@ -1,5 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, assertEqual, assert } from "../testing/mod.ts";
+import { test } from "../testing/mod.ts";
+import { assert, assertEqual } from "../testing/asserts.ts";
 import * as datetime from "./mod.ts";
 
 test(function parseDateTime() {

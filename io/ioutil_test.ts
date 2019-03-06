@@ -1,7 +1,8 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 const { Buffer } = Deno;
 import { Reader, ReadResult } from "deno";
-import { assert, assertEqual, test } from "../testing/mod.ts";
+import { test } from "../testing/mod.ts";
+import { assertEqual } from "../testing/asserts.ts";
 import {
   copyN,
   readInt,
@@ -74,14 +75,14 @@ test(async function testCopyN1() {
   const w = new Buffer();
   const r = stringsReader("abcdefghij");
   const n = await copyN(w, r, 3);
-  assert.equal(n, 3);
-  assert.equal(w.toString(), "abc");
+  assertEqual(n, 3);
+  assertEqual(w.toString(), "abc");
 });
 
 test(async function testCopyN2() {
   const w = new Buffer();
   const r = stringsReader("abcdefghij");
   const n = await copyN(w, r, 11);
-  assert.equal(n, 10);
-  assert.equal(w.toString(), "abcdefghij");
+  assertEqual(n, 10);
+  assertEqual(w.toString(), "abcdefghij");
 });

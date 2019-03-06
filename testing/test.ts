@@ -1,39 +1,40 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, assert, assertEqual, equal, runIfMain } from "./mod.ts";
+import { test, assert, runIfMain } from "./mod.ts";
+import { assertEqual } from "../testing/asserts.ts";
 import { assertEqual as prettyAssertEqual } from "./pretty.ts";
 import "./format_test.ts";
 import "./diff_test.ts";
 import "./pretty_test.ts";
 import "./asserts_test.ts";
 
-test(function testingEqual() {
-  assert(equal("world", "world"));
-  assert(!equal("hello", "world"));
-  assert(equal(5, 5));
-  assert(!equal(5, 6));
-  assert(equal(NaN, NaN));
-  assert(equal({ hello: "world" }, { hello: "world" }));
-  assert(!equal({ world: "hello" }, { hello: "world" }));
-  assert(
-    equal(
-      { hello: "world", hi: { there: "everyone" } },
-      { hello: "world", hi: { there: "everyone" } }
-    )
-  );
-  assert(
-    !equal(
-      { hello: "world", hi: { there: "everyone" } },
-      { hello: "world", hi: { there: "everyone else" } }
-    )
-  );
-});
+// test(function testingEqual() {
+//   assert(equal("world", "world"));
+//   assert(!equal("hello", "world"));
+//   assert(equal(5, 5));
+//   assert(!equal(5, 6));
+//   assert(equal(NaN, NaN));
+//   assert(equal({ hello: "world" }, { hello: "world" }));
+//   assert(!equal({ world: "hello" }, { hello: "world" }));
+//   assert(
+//     equal(
+//       { hello: "world", hi: { there: "everyone" } },
+//       { hello: "world", hi: { there: "everyone" } }
+//     )
+//   );
+//   assert(
+//     !equal(
+//       { hello: "world", hi: { there: "everyone" } },
+//       { hello: "world", hi: { there: "everyone else" } }
+//     )
+//   );
+// });
 
-test(function testingAssertEqual() {
-  const a = Object.create(null);
-  a.b = "foo";
-  assert.equal(a, a);
-  assert(assertEqual === prettyAssertEqual);
-});
+// test(function testingAssertEqual() {
+//   const a = Object.create(null);
+//   a.b = "foo";
+//   assertEqual(a, a);
+//   assert(assertEqual === prettyAssertEqual);
+// });
 
 test(function testingAssertFail() {
   assert.throws(assert.fail, Error, "Failed assertion.");
@@ -50,7 +51,7 @@ test(function testingAssertEqualActualUncoercable() {
   let didThrow = false;
   const a = Object.create(null);
   try {
-    assert.equal(a, "bar");
+    assertEqual(a, "bar");
   } catch (e) {
     didThrow = true;
   }
@@ -61,7 +62,7 @@ test(function testingAssertEqualExpectedUncoercable() {
   let didThrow = false;
   const a = Object.create(null);
   try {
-    assert.equal("bar", a);
+    assertEqual("bar", a);
   } catch (e) {
     didThrow = true;
   }

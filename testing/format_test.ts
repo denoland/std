@@ -6,7 +6,8 @@
  * LICENSE file in the root directory of this source tree.
  *
  */
-import { test, assertEqual } from "./mod.ts";
+import { test } from "./mod.ts";
+import { assertEqual } from "../testing/asserts.ts";
 import { format } from "./format.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any

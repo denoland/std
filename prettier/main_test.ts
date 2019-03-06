@@ -1,6 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, assertEqual } from "../testing/mod.ts";
+import { test } from "../testing/mod.ts";
 import { xrun, executableSuffix } from "./util.ts";
+import { assertEqual } from "../testing/asserts.ts";
 const { readAll } = Deno;
 
 const decoder = new TextDecoder();

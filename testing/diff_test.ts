@@ -1,5 +1,6 @@
 import diff from "./diff.ts";
-import { test, assertEqual } from "./mod.ts";
+import { assertEqual } from "../testing/asserts.ts";
+import { test } from "./mod.ts";
 
 test({
   name: "empty",

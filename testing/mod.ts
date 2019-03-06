@@ -4,7 +4,6 @@ import { green, red } from "../colors/mod.ts";
 import { assertEqual as prettyAssertEqual } from "./pretty.ts";
 import {
   assert as assertImport,
-  equal as AssertEqual,
   assertStrictEq,
   assertStrContains,
   assertMatch,
@@ -42,7 +41,7 @@ export function equal(c: unknown, d: unknown): boolean {
 
 const assertions = {
   assert: assertImport,
-  equal: AssertEqual,
+  // equal: AssertEqual,
   strictEqual: assertStrictEq,
   assertStrContains: assertStrContains,
   assertMatch: assertMatch,
@@ -58,11 +57,11 @@ Object.assign(assertions.assert, assertions);
 
 export const assert = assertions.assert as Assert;
 
-/**
- * Alias to pretty.assertEqual
- * @deprecated
- */
-export const assertEqual = prettyAssertEqual;
+// /**
+//  * Alias to pretty.assertEqual
+//  * @deprecated
+//  */
+// export const assertEqual = prettyAssertEqual;
 
 export type TestFunction = () => void | Promise<void>;
 

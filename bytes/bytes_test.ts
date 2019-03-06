@@ -4,7 +4,8 @@ import {
   bytesEqual,
   bytesHasPrefix
 } from "./bytes.ts";
-import { assertEqual, test } from "./deps.ts";
+import { test } from "../testing/mod.ts";
+import { assertEqual } from "../testing/asserts.ts";
 
 test(function bytesBytesFindIndex() {
   const i = bytesFindIndex(

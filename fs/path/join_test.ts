@@ -1,4 +1,5 @@
-import { test, assertEqual } from "../../testing/mod.ts";
+import { test } from "../../testing/mod.ts";
+import { assertEqual } from "../../testing/asserts.ts";
 import * as path from "./mod.ts";
 
 const backslashRE = /\\/g;
