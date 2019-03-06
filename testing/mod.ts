@@ -43,9 +43,9 @@ const assertions = {
   assert: assertImport,
   // equal: AssertEqual,
   // strictEqual: assertStrictEq,
-  assertStrContains: assertStrContains,
-  assertMatch: assertMatch,
-  fail: fail,
+  // assertStrContains: assertStrContains,
+  // assertMatch: assertMatch,
+  // fail: fail,
   throws: assertThrows,
   throwsAsync: assertThrowsAsync
 };

@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, assert, runIfMain } from "./mod.ts";
-import { assertEqual, assertStrictEq } from "../testing/asserts.ts";
+import { assertEqual, assertStrictEq, fail } from "../testing/asserts.ts";
 import { assertEqual as prettyAssertEqual } from "./pretty.ts";
 import "./format_test.ts";
 import "./diff_test.ts";
@@ -37,10 +37,10 @@ import "./asserts_test.ts";
 // });
 
 test(function testingAssertFail() {
-  assert.throws(assert.fail, Error, "Failed assertion.");
+  assert.throws(fail, Error, "Failed assertion.");
   assert.throws(
     () => {
-      assert.fail("foo");
+      fail("foo");
     },
     Error,
     "Failed assertion: foo"
