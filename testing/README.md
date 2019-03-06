@@ -16,7 +16,7 @@ Asserts are exposed in `testing/asserts.ts` module.
 - `equal` - Deep comparision function, where `actual` and `expected` are
   compared deeply, and if they vary, `equal` returns `false`.
 - `assert()` - Expects a boolean value, throws if the value is `false`.
-- `assertEqual()` - Uses the `equal` comparison and throws if the `actual` and
+- `assertEq()` - Uses the `equal` comparison and throws if the `actual` and
   `expected` are not equal.
 - `assertStrictEq()` - Compares `actual` and `expected` strictly, therefore
   for non-primitives the values must reference the same instance.

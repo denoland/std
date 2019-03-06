@@ -4,11 +4,11 @@
 
 import * as deno from "deno";
 import { test } from "../testing/mod.ts";
-import { assertEqual } from "../testing/asserts.ts";
+import { assertEq } from "../testing/asserts.ts";
 import { globrex } from "./globrex.ts";
 
 const isWin = deno.platform.os === "win";
-const t = { equal: assertEqual, is: assertEqual };
+const t = { equal: assertEq, is: assertEq };
 
 function match(glob, strUnix, strWin?, opts = {}) {
   if (typeof strWin === "object") {

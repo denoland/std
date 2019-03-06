@@ -1,24 +1,24 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test } from "../../testing/mod.ts";
-import { assertEqual } from "../../testing/asserts.ts";
+import { assertEq } from "../../testing/asserts.ts";
 import { parse } from "../mod.ts";
 
 test(function hyphen() {
-  assertEqual(parse(["-n", "-"]), { n: "-", _: [] });
-  assertEqual(parse(["-"]), { _: ["-"] });
-  assertEqual(parse(["-f-"]), { f: "-", _: [] });
-  assertEqual(parse(["-b", "-"], { boolean: "b" }), { b: true, _: ["-"] });
-  assertEqual(parse(["-s", "-"], { string: "s" }), { s: "-", _: [] });
+  assertEq(parse(["-n", "-"]), { n: "-", _: [] });
+  assertEq(parse(["-"]), { _: ["-"] });
+  assertEq(parse(["-f-"]), { f: "-", _: [] });
+  assertEq(parse(["-b", "-"], { boolean: "b" }), { b: true, _: ["-"] });
+  assertEq(parse(["-s", "-"], { string: "s" }), { s: "-", _: [] });
 });
 
 test(function doubleDash() {
-  assertEqual(parse(["-a", "--", "b"]), { a: true, _: ["b"] });
-  assertEqual(parse(["--a", "--", "b"]), { a: true, _: ["b"] });
-  assertEqual(parse(["--a", "--", "b"]), { a: true, _: ["b"] });
+  assertEq(parse(["-a", "--", "b"]), { a: true, _: ["b"] });
+  assertEq(parse(["--a", "--", "b"]), { a: true, _: ["b"] });
+  assertEq(parse(["--a", "--", "b"]), { a: true, _: ["b"] });
 });
 
 test(function moveArgsAfterDoubleDashIntoOwnArray() {
-  assertEqual(
+  assertEq(
     parse(["--name", "John", "before", "--", "after"], { "--": true }),
     { name: "John", _: ["before"], "--": ["after"] }
   );

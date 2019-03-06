@@ -11,7 +11,7 @@ const {
 import { FileInfo } from "deno";
 import { walk, walkSync, WalkOptions } from "./walk.ts";
 import { test, TestFunction } from "../testing/mod.ts";
-import { assert, assertEqual } from "../testing/asserts.ts";
+import { assert, assertEq } from "../testing/asserts.ts";
 
 const isWindows = platform.os === "win";
 
@@ -47,7 +47,7 @@ async function walkArray(
   const arr_sync = Array.from(walkSync(dirname, options), (f: FileInfo) =>
     f.path.replace(/\\/g, "/")
   ).sort();
-  assertEqual(arr, arr_sync);
+  assertEq(arr, arr_sync);
   return arr;
 }
 
@@ -56,7 +56,7 @@ async function touch(path: string): Promise<void> {
 }
 function assertReady(expectedLength: number) {
   const arr = Array.from(walkSync(), (f: FileInfo) => f.path);
-  assertEqual(arr.length, expectedLength);
+  assertEq(arr.length, expectedLength);
 }
 
 testWalk(
@@ -65,7 +65,7 @@ testWalk(
   },
   async function emptyDir() {
     const arr = await walkArray();
-    assertEqual(arr.length, 0);
+    assertEq(arr.length, 0);
   }
 );
 
@@ -75,8 +75,8 @@ testWalk(
   },
   async function singleFile() {
     const arr = await walkArray();
-    assertEqual(arr.length, 1);
-    assertEqual(arr[0], "./x");
+    assertEq(arr.length, 1);
+    assertEq(arr[0], "./x");
   }
 );
 
@@ -89,11 +89,11 @@ testWalk(
     for (const f of walkSync()) {
       count += 1;
     }
-    assertEqual(count, 1);
+    assertEq(count, 1);
     for await (const f of walk()) {
       count += 1;
     }
-    assertEqual(count, 2);
+    assertEq(count, 2);
   }
 );
 
@@ -104,8 +104,8 @@ testWalk(
   },
   async function nestedSingleFile() {
     const arr = await walkArray();
-    assertEqual(arr.length, 1);
-    assertEqual(arr[0], "./a/x");
+    assertEq(arr.length, 1);
+    assertEq(arr[0], "./a/x");
   }
 );
 
@@ -117,10 +117,10 @@ testWalk(
   async function depth() {
     assertReady(1);
     const arr_3 = await walkArray(".", { maxDepth: 3 });
-    assertEqual(arr_3.length, 0);
+    assertEq(arr_3.length, 0);
     const arr_5 = await walkArray(".", { maxDepth: 5 });
-    assertEqual(arr_5.length, 1);
-    assertEqual(arr_5[0], "./a/b/c/d/x");
+    assertEq(arr_5.length, 1);
+    assertEq(arr_5[0], "./a/b/c/d/x");
   }
 );
 
@@ -132,8 +132,8 @@ testWalk(
   async function ext() {
     assertReady(2);
     const arr = await walkArray(".", { exts: [".ts"] });
-    assertEqual(arr.length, 1);
-    assertEqual(arr[0], "./x.ts");
+    assertEq(arr.length, 1);
+    assertEq(arr[0], "./x.ts");
   }
 );
 
@@ -146,9 +146,9 @@ testWalk(
   async function extAny() {
     assertReady(3);
     const arr = await walkArray(".", { exts: [".rs", ".ts"] });
-    assertEqual(arr.length, 2);
-    assertEqual(arr[0], "./x.ts");
-    assertEqual(arr[1], "./y.rs");
+    assertEq(arr.length, 2);
+    assertEq(arr[0], "./x.ts");
+    assertEq(arr[1], "./y.rs");
   }
 );
 
@@ -160,8 +160,8 @@ testWalk(
   async function match() {
     assertReady(2);
     const arr = await walkArray(".", { match: [/x/] });
-    assertEqual(arr.length, 1);
-    assertEqual(arr[0], "./x");
+    assertEq(arr.length, 1);
+    assertEq(arr[0], "./x");
   }
 );
 
@@ -174,9 +174,9 @@ testWalk(
   async function matchAny() {
     assertReady(3);
     const arr = await walkArray(".", { match: [/x/, /y/] });
-    assertEqual(arr.length, 2);
-    assertEqual(arr[0], "./x");
-    assertEqual(arr[1], "./y");
+    assertEq(arr.length, 2);
+    assertEq(arr[0], "./x");
+    assertEq(arr[1], "./y");
   }
 );
 
@@ -188,8 +188,8 @@ testWalk(
   async function skip() {
     assertReady(2);
     const arr = await walkArray(".", { skip: [/x/] });
-    assertEqual(arr.length, 1);
-    assertEqual(arr[0], "./y");
+    assertEq(arr.length, 1);
+    assertEq(arr[0], "./y");
   }
 );
 
@@ -202,8 +202,8 @@ testWalk(
   async function skipAny() {
     assertReady(3);
     const arr = await walkArray(".", { skip: [/x/, /y/] });
-    assertEqual(arr.length, 1);
-    assertEqual(arr[0], "./z");
+    assertEq(arr.length, 1);
+    assertEq(arr[0], "./z");
   }
 );
 
@@ -218,19 +218,19 @@ testWalk(
   async function subDir() {
     assertReady(3);
     const arr = await walkArray("b");
-    assertEqual(arr.length, 1);
-    assertEqual(arr[0], "b/z");
+    assertEq(arr.length, 1);
+    assertEq(arr[0], "b/z");
   }
 );
 
 testWalk(async (d: string) => {}, async function onError() {
   assertReady(0);
   const ignored = await walkArray("missing");
-  assertEqual(ignored.length, 0);
+  assertEq(ignored.length, 0);
   let errors = 0;
   const arr = await walkArray("missing", { onError: e => (errors += 1) });
   // It's 2 since walkArray iterates over both sync and async.
-  assertEqual(errors, 2);
+  assertEq(errors, 2);
 });
 
 testWalk(
@@ -255,11 +255,11 @@ testWalk(
 
     assertReady(3);
     const files = await walkArray("a");
-    assertEqual(files.length, 2);
+    assertEq(files.length, 2);
     assert(!files.includes("a/bb/z"));
 
     const arr = await walkArray("a", { followSymlinks: true });
-    assertEqual(arr.length, 3);
+    assertEq(arr.length, 3);
     assert(arr.some(f => f.endsWith("/b/z")));
   }
 );

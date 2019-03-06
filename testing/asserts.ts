@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { assertEqual as prettyAssertEqual } from "./pretty.ts";
+import { assertEq as prettyAssertEqual } from "./pretty.ts";
 
 interface Constructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,7 +44,7 @@ export function assert(expr: boolean, msg = ""): void {
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
  * deeply equal, then throw.
  */
-export function assertEqual(
+export function assertEq(
   actual: unknown,
   expected: unknown,
   msg?: string
