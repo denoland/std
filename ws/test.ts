@@ -3,8 +3,8 @@ import "./sha1_test.ts";
 
 const { Buffer } = Deno;
 import { BufReader } from "../io/bufio.ts";
-import { assertEqual } from "../testing/asserts.ts";
-import { test, assert } from "../testing/mod.ts";
+import { assert, assertEqual } from "../testing/asserts.ts";
+import { test } from "../testing/mod.ts";
 import {
   acceptable,
   createSecAccept,

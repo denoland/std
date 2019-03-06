@@ -5,8 +5,8 @@
 
 const { Buffer } = Deno;
 import { Reader, ReadResult } from "deno";
-import { test, assert } from "../testing/mod.ts";
-import { assertEqual } from "../testing/asserts.ts";
+import { test } from "../testing/mod.ts";
+import { assert, assertEqual } from "../testing/asserts.ts";
 import { BufReader, BufWriter } from "./bufio.ts";
 import * as iotest from "./iotest.ts";
 import { charCode, copyBytes, stringsReader } from "./util.ts";

@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 const { remove } = Deno;
-import { test, assert } from "../testing/mod.ts";
-import { assertEqual } from "../testing/asserts.ts";
+import { test } from "../testing/mod.ts";
+import { assert, assertEqual } from "../testing/asserts.ts";
 import { copyBytes, tempFile } from "./util.ts";
 import * as path from "../fs/path.ts";
 
@@ -46,6 +46,6 @@ test(async function ioTempfile() {
   });
   console.log(f.file, f.filepath);
   const base = path.basename(f.filepath);
-  assert.assert(!!base.match(/^prefix-.+?-postfix$/));
+  assert(!!base.match(/^prefix-.+?-postfix$/));
   await remove(f.filepath);
 });

@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { assertStrContains, assertMatch } from "./asserts.ts";
-import { test, assert } from "./mod.ts";
+import { assert, assertStrContains, assertMatch } from "./asserts.ts";
+import { test } from "./mod.ts";
 // import { assertEqual as prettyAssertEqual } from "./pretty.ts";
 // import "./format_test.ts";
 // import "./diff_test.ts";

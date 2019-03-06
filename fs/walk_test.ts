@@ -10,8 +10,8 @@ const {
 } = Deno;
 import { FileInfo } from "deno";
 import { walk, walkSync, WalkOptions } from "./walk.ts";
-import { test, assert, TestFunction } from "../testing/mod.ts";
-import { assertEqual } from "../testing/asserts.ts";
+import { test, TestFunction } from "../testing/mod.ts";
+import { assert, assertEqual } from "../testing/asserts.ts";
 
 const isWindows = platform.os === "win";
 

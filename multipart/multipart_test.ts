@@ -1,8 +1,13 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 const { Buffer, copy, open, remove } = Deno;
-import { assertEqual, assertThrows, assertThrowsAsync } from "../testing/asserts.ts";
-import { assert, test } from "../testing/mod.ts";
+import {
+  assert,
+  assertEqual,
+  assertThrows,
+  assertThrowsAsync
+} from "../testing/asserts.ts";
+import { test } from "../testing/mod.ts";
 import {
   matchAfterPrefix,
   MultipartReader,
@@ -180,7 +185,7 @@ test(async function multipartMultipartReader() {
   assertEqual(form["bar"], "bar");
   const file = form["file"] as FormFile;
   assertEqual(isFormFile(file), true);
-  assert.assert(file.content !== void 0);
+  assert(file.content !== void 0);
 });
 
 test(async function multipartMultipartReader2() {

@@ -1,6 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, assert, runIfMain } from "./mod.ts";
+import { test, runIfMain } from "./mod.ts";
 import {
+  assert,
   assertEqual,
   assertStrictEq,
   assertThrows,
