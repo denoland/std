@@ -58,7 +58,7 @@ test(function example() {
 });
 ```
 
-Using `assert.strictEqual()`:
+Using `assertStrictEq()`:
 
 ```ts
 test(function isStrictlyEqual() {
@@ -75,7 +75,7 @@ test(function isNotStrictlyEqual() {
 });
 ```
 
-Using `assert.throws()`:
+Using `assertThrows()`:
 
 ```ts
 test(function doesThrow() {
