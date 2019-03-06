@@ -6,6 +6,33 @@ interface Constructor {
   new (...args: any[]): any;
 }
 
+export function equal(c: unknown, d: unknown): boolean {
+  const seen = new Map();
+  return (function compare(a: unknown, b: unknown) {
+    if (Object.is(a, b)) {
+      return true;
+    }
+    if (a && typeof a === "object" && b && typeof b === "object") {
+      if (seen.get(a) === b) {
+        return true;
+      }
+      if (Object.keys(a || {}).length !== Object.keys(b || {}).length) {
+        return false;
+      }
+      const merged = { ...a, ...b };
+      for (const key in merged) {
+        type Key = keyof typeof merged;
+        if (!compare(a && a[key as Key], b && b[key as Key])) {
+          return false;
+        }
+      }
+      seen.set(a, b);
+      return true;
+    }
+    return false;
+  })(c, d);
+}
+
 /** Make an assertion, if not `true`, then throw. */
 export function assert(expr: boolean, msg = ""): void {
   if (!expr) {

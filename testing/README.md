@@ -10,13 +10,11 @@ accepts either a function (including async functions) or an object which
 contains a `name` property and a `fn` property. When running tests and
 outputting the results, the name of the past function is used, or if the
 object is passed, the `name` property is used to identify the test.
-The module also exports `equal`.
-
-`equal` is a deep comparision function, where `actual` and `expected` are
-compared deeply, and if they vary, `equal` returns `false`.
 
 Asserts are exposed in `testing/asserts.ts` module.
 
+- `equal` - Deep comparision function, where `actual` and `expected` are
+  compared deeply, and if they vary, `equal` returns `false`.
 - `assert()` - Expects a boolean value, throws if the value is `false`.
 - `assertEqual()` - Uses the `equal` comparison and throws if the `actual` and
   `expected` are not equal.
