@@ -18,8 +18,9 @@ test(function doubleDash() {
 });
 
 test(function moveArgsAfterDoubleDashIntoOwnArray() {
-  assertEq(
-    parse(["--name", "John", "before", "--", "after"], { "--": true }),
-    { name: "John", _: ["before"], "--": ["after"] }
-  );
+  assertEq(parse(["--name", "John", "before", "--", "after"], { "--": true }), {
+    name: "John",
+    _: ["before"],
+    "--": ["after"]
+  });
 });

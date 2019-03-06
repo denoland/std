@@ -32,10 +32,7 @@ test(function basename() {
   assertEq(path.basename("//a"), "a");
 
   // On unix a backslash is just treated as any other character.
-  assertEq(
-    path.posix.basename("\\dir\\basename.ext"),
-    "\\dir\\basename.ext"
-  );
+  assertEq(path.posix.basename("\\dir\\basename.ext"), "\\dir\\basename.ext");
   assertEq(path.posix.basename("\\basename.ext"), "\\basename.ext");
   assertEq(path.posix.basename("basename.ext"), "basename.ext");
   assertEq(path.posix.basename("basename.ext\\"), "basename.ext\\");
