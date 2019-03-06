@@ -42,7 +42,7 @@ export function equal(c: unknown, d: unknown): boolean {
 const assertions = {
   assert: assertImport,
   // equal: AssertEqual,
-  strictEqual: assertStrictEq,
+  // strictEqual: assertStrictEq,
   assertStrContains: assertStrContains,
   assertMatch: assertMatch,
   fail: fail,
