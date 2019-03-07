@@ -62,7 +62,7 @@ if (target) {
 const addr = `0.0.0.0:${serverArgs[2] || 4500}`;
 const encoder = new TextEncoder();
 
-function modeToString(isDir: boolean, maybeMode: number | null) {
+function modeToString(isDir: boolean, maybeMode: number | null): string {
   const modeMap = ["---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx"];
 
   if (maybeMode === null) {
@@ -84,7 +84,7 @@ function modeToString(isDir: boolean, maybeMode: number | null) {
   return output;
 }
 
-function fileLenToString(len: number) {
+function fileLenToString(len: number): string {
   const multipler = 1024;
   let base = 1;
   const suffix = ["B", "K", "M", "G", "T"];
@@ -107,7 +107,7 @@ function createDirEntryDisplay(
   size: number | null,
   mode: number | null,
   isDir: boolean
-) {
+): string {
   const sizeStr = size === null ? "" : "" + fileLenToString(size!);
   return `
   <tr><td class="mode">${modeToString(
@@ -196,14 +196,14 @@ async function serveFallback(req: ServerRequest, e: Error) {
   }
 }
 
-function serverLog(req: ServerRequest, res: Response) {
+function serverLog(req: ServerRequest, res: Response): void {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const s = `${dateFmt} "${req.method} ${req.url} ${req.proto}" ${res.status}`;
   console.log(s);
 }
 
-function setCORS(res: Response) {
+function setCORS(res: Response): void {
   if (!res.headers) {
     res.headers = new Headers();
   }
