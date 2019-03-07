@@ -283,3 +283,8 @@ export async function assertThrowsAsync(
     throw new Error(msg);
   }
 }
+
+/** Use this to stub out methods that will throw when invoked. */
+export function unimplemented(msg?: string): never {
+  throw new Error(msg || "unimplemented");
+}
