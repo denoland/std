@@ -288,3 +288,8 @@ export async function assertThrowsAsync(
 export function unimplemented(msg?: string): never {
   throw new Error(msg || "unimplemented");
 }
+
+/** Use this to assert unreachable code. */
+export function unreachable(): never {
+  throw new Error("unreachable");
+}

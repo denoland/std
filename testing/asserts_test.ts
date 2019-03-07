@@ -8,7 +8,8 @@ import {
   assertArrayContains,
   assertMatch,
   assertEquals,
-  unimplemented
+  unimplemented,
+  unreachable
 } from "./asserts.ts";
 import { test } from "./mod.ts";
 // import { assertEquals as prettyAssertEqual } from "./pretty.ts";
@@ -114,12 +115,23 @@ test(function testingAssertStringMatchingThrows() {
   assert(didThrow);
 });
 
-test(function testingUnimplemented() {
+test(function testingAssertsUnimplemented() {
   let didThrow = false;
   try {
     unimplemented();
   } catch (e) {
     assert(e.message === "unimplemented");
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
+test(function testingAssertsUnreachable() {
+  let didThrow = false;
+  try {
+    unreachable();
+  } catch (e) {
+    assert(e.message === "unreachable");
     didThrow = true;
   }
   assert(didThrow);
