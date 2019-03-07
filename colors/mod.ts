@@ -9,6 +9,11 @@ interface Code {
 
 let enabled = false;
 
+function termSupportColor(term: string): boolean {
+  const supportedTerms: string[] = ["xterm", "xterm-256color"];
+  return supportedTerms.some(t => t == term);
+}
+
 if (!noColor && permissions().env) {
   if (env()["TERM"]) {
     const term = env()["TERM"];
@@ -16,11 +21,6 @@ if (!noColor && permissions().env) {
       enabled = true;
     }
   }
-}
-
-function termSupportColor(term: string) {
-  const supportedTerms: string[] = ["xterm", "xterm-256color"];
-  return supportedTerms.some(t => t == term);
 }
 
 export function setEnabled(value: boolean): void {
