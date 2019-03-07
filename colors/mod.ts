@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-const { noColor } = Deno;
+const { noColor, env, permissions } = Deno;
 
 interface Code {
   open: string;
@@ -7,7 +7,21 @@ interface Code {
   regexp: RegExp;
 }
 
-let enabled = !noColor;
+let enabled = false;
+
+if (!noColor && permissions().env) {
+  if (env()["TERM"]) {
+    const term = env()["TERM"];
+    if (term && termSupportColor(term)) {
+      enabled = true;
+    }
+  }
+}
+
+function termSupportColor(term: string) {
+  const supportedTerms: string[] = ["xterm", "xterm-256color"];
+  return supportedTerms.some(t => t == term);
+}
 
 export function setEnabled(value: boolean): void {
   if (noColor) {
