@@ -120,6 +120,21 @@ function createDirEntryDisplay(
   `;
 }
 
+async function serveFile(req: ServerRequest, filename: string): Promise<Response> {
+  const file = await open(filename);
+  const fileInfo = await stat(filename);
+  const headers = new Headers();
+  headers.set("content-length", fileInfo.len.toString());
+  headers.set("content-type", contentType(extname(filename)) || "text/plain");
+
+  const res = {
+    status: 200,
+    body: file,
+    headers
+  };
+  return res;
+}
+
 // TODO: simplify this after deno.stat and deno.readDir are fixed
 async function serveDir(req: ServerRequest, dirPath: string, dirName: string): Promise<Response> {
   // dirname has no prefix
@@ -161,21 +176,6 @@ async function serveDir(req: ServerRequest, dirPath: string, dirName: string): P
     headers
   };
   setContentLength(res);
-  return res;
-}
-
-async function serveFile(req: ServerRequest, filename: string): Promise<Response> {
-  const file = await open(filename);
-  const fileInfo = await stat(filename);
-  const headers = new Headers();
-  headers.set("content-length", fileInfo.len.toString());
-  headers.set("content-type", contentType(extname(filename)) || "text/plain");
-
-  const res = {
-    status: 200,
-    body: file,
-    headers
-  };
   return res;
 }
 
