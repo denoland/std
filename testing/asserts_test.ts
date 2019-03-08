@@ -48,6 +48,7 @@ test(function testingNotEquals() {
     assertNotEquals("Raptor", "Raptor");
     didThrow = false;
   } catch (e) {
+    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assertEquals(didThrow, true);
@@ -62,6 +63,7 @@ test(function testingAssertStringContains() {
     assertStrContains("Denosaurus", "Raptor");
     didThrow = false;
   } catch (e) {
+    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assertEquals(didThrow, true);
@@ -77,6 +79,7 @@ test(function testingArrayContains() {
     assertArrayContains(fixtureObject, [{ deno: "node" }]);
     didThrow = false;
   } catch (e) {
+    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assertEquals(didThrow, true);
@@ -91,6 +94,7 @@ test(function testingAssertStringContainsThrow() {
       e.message ===
         `actual: "Denosaurus from Jurassic" expected to contains: "Raptor"`
     );
+    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assert(didThrow);
@@ -109,6 +113,7 @@ test(function testingAssertStringMatchingThrows() {
       e.message ===
         `actual: "Denosaurus from Jurassic" expected to match: "/Raptor/"`
     );
+    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assert(didThrow);
@@ -120,6 +125,7 @@ test(function testingAssertsUnimplemented() {
     unimplemented();
   } catch (e) {
     assert(e.message === "unimplemented");
+    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assert(didThrow);
@@ -131,6 +137,7 @@ test(function testingAssertsUnreachable() {
     unreachable();
   } catch (e) {
     assert(e.message === "unreachable");
+    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assert(didThrow);
