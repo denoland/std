@@ -12,7 +12,9 @@ import {
   assertDefined,
   assertUndefined,
   assertType,
-  assertArrayLength
+  assertArrayLength,
+  unimplemented,
+  unreachable
 } from "./asserts.ts";
 import { test } from "./mod.ts";
 // import { assertEquals as prettyAssertEqual } from "./pretty.ts";
@@ -131,6 +133,17 @@ test(function testingCloseTo() {
   assert(didThrow);
 });
 
+test(function testingAssertsUnimplemented() {
+  let didThrow = false;
+  try {
+    unimplemented();
+  } catch (e) {
+    assert(e.message === "unimplemented");
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
 test(function testingDefined() {
   assertDefined(1337);
   assertDefined("Denosaurus");
@@ -193,6 +206,17 @@ test(function testingArrayLength() {
     assertArrayLength(["Denosaurus"], 2);
     didThrow = false;
   } catch (e) {
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
+test(function testingAssertsUnreachable() {
+  let didThrow = false;
+  try {
+    unreachable();
+  } catch (e) {
+    assert(e.message === "unreachable");
     didThrow = true;
   }
   assert(didThrow);
