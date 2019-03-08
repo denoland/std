@@ -160,14 +160,20 @@ test(function testingType() {
   assertType(undefined, "undefined");
   assertType("Denosaurus", "string");
   assertType(1337, "number");
-  assertType({
-    name: "John",
-    surname: "Doe"
-  }, "object");
-  assertType(() => ({
-    name: "John",
-    surname: "Doe"
-  }), "function");
+  assertType(
+    {
+      name: "John",
+      surname: "Doe"
+    },
+    "object"
+  );
+  assertType(
+    () => ({
+      name: "John",
+      surname: "Doe"
+    }),
+    "function"
+  );
   let didThrow;
   try {
     assertType("Denosaurus", "number");

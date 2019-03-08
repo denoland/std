@@ -306,10 +306,7 @@ export function assertCloseTo(
  * Make an assertion that `actual` is defined. If not
  * then thrown
  */
-export function assertDefined(
-  actual: any,
-  msg?: string
-): void {
+export function assertDefined(actual: any, msg?: string): void {
   if (typeof actual === "undefined") {
     console.error("expected", actual, "to be defined");
     if (!msg) {
@@ -323,10 +320,7 @@ export function assertDefined(
  * Make an assertion that `actual` is undefined. If not
  * then thrown
  */
-export function assertUndefined(
-  actual: any,
-  msg?: string
-): void {
+export function assertUndefined(actual: any, msg?: string): void {
   if (typeof actual !== "undefined") {
     console.error("expected", actual, "not to be defined");
     if (!msg) {
@@ -340,11 +334,7 @@ export function assertUndefined(
  * Make an assertion that typeof `actual` is `type`. If not
  * then thrown
  */
-export function assertType(
-  actual: any,
-  type: string,
-  msg?: string
-): void {
+export function assertType(actual: any, type: string, msg?: string): void {
   if (typeof actual !== type) {
     console.error("expected", actual, "to be instance of type ", type);
     if (!msg) {
