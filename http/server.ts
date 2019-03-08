@@ -38,8 +38,33 @@ interface ServeEnv {
  * https://github.com/tc39/ecma262/pull/1250
  * See https://v8.dev/blog/fast-async
  */
-function serveConn(env: ServeEnv, conn: Conn, bufr?: BufReader) {
-  readRequest(conn, bufr).then(maybeHandleReq.bind(null, env, conn));
+async function readRequest(
+  c: Conn,
+  bufr?: BufReader
+): Promise<[ServerRequest, BufState]> {
+  if (!bufr) {
+    bufr = new BufReader(c);
+  }
+  const bufw = new BufWriter(c);
+  const req = new ServerRequest();
+  req.conn = c;
+  req.r = bufr!;
+  req.w = bufw;
+  const tp = new TextProtoReader(bufr!);
+
+  let s: string;
+  let err: BufState;
+
+  // First line: GET /index.html HTTP/1.0
+  [s, err] = await tp.readLine();
+  if (err) {
+    return [null, err];
+  }
+  [req.method, req.url, req.proto] = s.split(" ", 3);
+
+  [req.headers, err] = await tp.readMIMEHeader();
+
+  return [req, err];
 }
 
 function maybeHandleReq(env: ServeEnv, conn: Conn, maybeReq: any) {
@@ -52,6 +77,10 @@ function maybeHandleReq(env: ServeEnv, conn: Conn, maybeReq: any) {
   env.serveDeferred.resolve(); // signal while loop to process it
 }
 
+function serveConn(env: ServeEnv, conn: Conn, bufr?: BufReader) {
+  readRequest(conn, bufr).then(maybeHandleReq.bind(null, env, conn));
+}
+
 export async function* serve(addr: string) {
   const listener = listen("tcp", addr);
   const env: ServeEnv = {
@@ -61,12 +90,12 @@ export async function* serve(addr: string) {
 
   // Routine that keeps calling accept
   const acceptRoutine = () => {
+    const scheduleAccept = () => {
+      listener.accept().then(handleConn);
+    };
     const handleConn = (conn: Conn) => {
       serveConn(env, conn); // don't block
       scheduleAccept(); // schedule next accept
-    };
-    const scheduleAccept = () => {
-      listener.accept().then(handleConn);
     };
     scheduleAccept();
   };
@@ -121,6 +150,86 @@ export function setContentLength(r: Response): void {
       }
     }
   }
+}
+
+async function readAllIterator(
+  it: AsyncIterableIterator<Uint8Array>
+): Promise<Uint8Array> {
+  const chunks = [];
+  let len = 0;
+  for await (const chunk of it) {
+    chunks.push(chunk);
+    len += chunk.length;
+  }
+  if (chunks.length === 0) {
+    // No need for copy
+    return chunks[0];
+  }
+  const collected = new Uint8Array(len);
+  let offset = 0;
+  for (let chunk of chunks) {
+    collected.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return collected;
+}
+
+async function writeChunkedBody(w: Writer, r: Reader) {
+  const writer = bufWriter(w);
+  const encoder = new TextEncoder();
+
+  for await (const chunk of toAsyncIterator(r)) {
+    const start = encoder.encode(`${chunk.byteLength.toString(16)}\r\n`);
+    const end = encoder.encode("\r\n");
+    await writer.write(start);
+    await writer.write(chunk);
+    await writer.write(end);
+  }
+
+  const endChunk = encoder.encode("0\r\n\r\n");
+  await writer.write(endChunk);
+}
+
+export async function writeResponse(w: Writer, r: Response): Promise<void> {
+  const protoMajor = 1;
+  const protoMinor = 1;
+  const statusCode = r.status || 200;
+  const statusText = STATUS_TEXT.get(statusCode);
+  const writer = bufWriter(w);
+  if (!statusText) {
+    throw Error("bad status code");
+  }
+
+  let out = `HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`;
+
+  setContentLength(r);
+
+  if (r.headers) {
+    for (const [key, value] of r.headers) {
+      out += `${key}: ${value}\r\n`;
+    }
+  }
+  out += "\r\n";
+
+  const header = new TextEncoder().encode(out);
+  let n = await writer.write(header);
+  assert(header.byteLength == n);
+
+  if (r.body) {
+    if (r.body instanceof Uint8Array) {
+      n = await writer.write(r.body);
+      assert(r.body.byteLength == n);
+    } else {
+      if (r.headers.has("content-length")) {
+        const bodyLength = parseInt(r.headers.get("content-length"));
+        const n = await copy(writer, r.body);
+        assert(n == bodyLength);
+      } else {
+        await writeChunkedBody(writer, r.body);
+      }
+    }
+  }
+  await writer.flush();
 }
 
 export class ServerRequest {
@@ -223,113 +332,4 @@ function bufWriter(w: Writer): BufWriter {
   } else {
     return new BufWriter(w);
   }
-}
-
-export async function writeResponse(w: Writer, r: Response): Promise<void> {
-  const protoMajor = 1;
-  const protoMinor = 1;
-  const statusCode = r.status || 200;
-  const statusText = STATUS_TEXT.get(statusCode);
-  const writer = bufWriter(w);
-  if (!statusText) {
-    throw Error("bad status code");
-  }
-
-  let out = `HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`;
-
-  setContentLength(r);
-
-  if (r.headers) {
-    for (const [key, value] of r.headers) {
-      out += `${key}: ${value}\r\n`;
-    }
-  }
-  out += "\r\n";
-
-  const header = new TextEncoder().encode(out);
-  let n = await writer.write(header);
-  assert(header.byteLength == n);
-
-  if (r.body) {
-    if (r.body instanceof Uint8Array) {
-      n = await writer.write(r.body);
-      assert(r.body.byteLength == n);
-    } else {
-      if (r.headers.has("content-length")) {
-        const bodyLength = parseInt(r.headers.get("content-length"));
-        const n = await copy(writer, r.body);
-        assert(n == bodyLength);
-      } else {
-        await writeChunkedBody(writer, r.body);
-      }
-    }
-  }
-  await writer.flush();
-}
-
-async function writeChunkedBody(w: Writer, r: Reader) {
-  const writer = bufWriter(w);
-  const encoder = new TextEncoder();
-
-  for await (const chunk of toAsyncIterator(r)) {
-    const start = encoder.encode(`${chunk.byteLength.toString(16)}\r\n`);
-    const end = encoder.encode("\r\n");
-    await writer.write(start);
-    await writer.write(chunk);
-    await writer.write(end);
-  }
-
-  const endChunk = encoder.encode("0\r\n\r\n");
-  await writer.write(endChunk);
-}
-
-async function readRequest(
-  c: Conn,
-  bufr?: BufReader
-): Promise<[ServerRequest, BufState]> {
-  if (!bufr) {
-    bufr = new BufReader(c);
-  }
-  const bufw = new BufWriter(c);
-  const req = new ServerRequest();
-  req.conn = c;
-  req.r = bufr!;
-  req.w = bufw;
-  const tp = new TextProtoReader(bufr!);
-
-  let s: string;
-  let err: BufState;
-
-  // First line: GET /index.html HTTP/1.0
-  [s, err] = await tp.readLine();
-  if (err) {
-    return [null, err];
-  }
-  [req.method, req.url, req.proto] = s.split(" ", 3);
-
-  [req.headers, err] = await tp.readMIMEHeader();
-
-  return [req, err];
-}
-
-async function readAllIterator(
-  it: AsyncIterableIterator<Uint8Array>
-): Promise<Uint8Array> {
-  const chunks = [];
-  let len = 0;
-  for await (const chunk of it) {
-    chunks.push(chunk);
-    len += chunk.length;
-  }
-  if (chunks.length === 0) {
-    // No need for copy
-    return chunks[0];
-  }
-  const collected = new Uint8Array(len);
-  let offset = 0;
-  for (let chunk of chunks) {
-    collected.set(chunk, offset);
-    offset += chunk.length;
-  }
-  return collected;
 }
