@@ -2,20 +2,19 @@
 
 import {
   assert,
-  equal,
   assertNotEquals,
   assertStrContains,
   assertArrayContains,
   assertMatch,
   assertEquals,
+  assertThrows,
+  AssertionError,
+  equal,
+  fail,
   unimplemented,
   unreachable
 } from "./asserts.ts";
 import { test } from "./mod.ts";
-// import { assertEquals as prettyAssertEqual } from "./pretty.ts";
-// import "./format_test.ts";
-// import "./diff_test.ts";
-// import "./pretty_test.ts";
 
 test(function testingEqual() {
   assert(equal("world", "world"));
@@ -135,4 +134,15 @@ test(function testingAssertsUnreachable() {
     didThrow = true;
   }
   assert(didThrow);
+});
+
+test(function testingAssertFail() {
+  assertThrows(fail, AssertionError, "Failed assertion.");
+  assertThrows(
+    () => {
+      fail("foo");
+    },
+    AssertionError,
+    "Failed assertion: foo"
+  );
 });
