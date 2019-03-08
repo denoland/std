@@ -175,7 +175,8 @@ async function main(opts): Promise<void> {
   const skip = Array.isArray(ignore)
     ? ignore.map((i: string) => glob(i, options))
     : [glob(ignore, options)];
-  const match = args.map((a: string) => glob(a, options));
+  const match =
+    args.length > 0 ? args.map((a: string) => glob(a, options)) : undefined;
   const files = walk(".", { match, skip });
   try {
     if (check) {

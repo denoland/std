@@ -44,7 +44,7 @@ async function clearTestdataChanges(): Promise<void> {
 test(async function testPrettierCheckAndFormatFiles() {
   await clearTestdataChanges();
 
-  const files = [join(testdata, '0.ts'), join(testdata, '1.js')];
+  const files = [join(testdata, "0.ts"), join(testdata, "1.js")];
 
   var { code, stdout } = await run([...cmd, "--check", ...files]);
   assertEquals(code, 1);
@@ -68,7 +68,7 @@ Formatting ./prettier/testdata/1.js`
 test(async function testPrettierCheckAndFormatDirs() {
   await clearTestdataChanges();
 
-  const dirs = [join(testdata, 'foo'), join(testdata, 'bar')];
+  const dirs = [join(testdata, "foo"), join(testdata, "bar")];
 
   var { code, stdout } = await run([...cmd, "--check", ...dirs]);
   assertEquals(code, 1);
