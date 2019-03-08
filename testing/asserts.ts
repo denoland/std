@@ -243,13 +243,11 @@ export function assertThrows(
       }`;
       throw new AssertionError(msg);
     }
-    if (msgIncludes) {
-      if (!e.message.includes(msgIncludes)) {
-        msg = `Expected error message to include "${msgIncludes}", but got "${
-          e.message
-        }"${msg ? `: ${msg}` : "."}`;
-        throw new AssertionError(msg);
-      }
+    if (msgIncludes && !e.message.includes(msgIncludes)) {
+      msg = `Expected error message to include "${msgIncludes}", but got "${
+        e.message
+      }"${msg ? `: ${msg}` : "."}`;
+      throw new AssertionError(msg);
     }
     doesThrow = true;
   }
@@ -275,13 +273,11 @@ export async function assertThrowsAsync(
       }`;
       throw new AssertionError(msg);
     }
-    if (msgIncludes) {
-      if (!e.message.includes(msgIncludes)) {
-        msg = `Expected error message to include "${msgIncludes}", but got "${
-          e.message
-        }"${msg ? `: ${msg}` : "."}`;
-        throw new AssertionError(msg);
-      }
+    if (msgIncludes && !e.message.includes(msgIncludes)) {
+      msg = `Expected error message to include "${msgIncludes}", but got "${
+        e.message
+      }"${msg ? `: ${msg}` : "."}`;
+      throw new AssertionError(msg);
     }
     doesThrow = true;
   }
