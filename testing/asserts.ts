@@ -283,3 +283,91 @@ export async function assertThrowsAsync(
     throw new Error(msg);
   }
 }
+
+/**
+ * Make an assertion that `actual` is close to `expected`. If not
+ * then thrown
+ */
+export function assertCloseTo(
+  actual: number,
+  expected: number,
+  msg?: string
+): void {
+  if (expected !== Math.round(actual)) {
+    console.error("expected", actual, "to be close to: ", expected);
+    if (!msg) {
+      msg = `actual: "${actual}" expected to be close to: "${expected}"`;
+    }
+    throw new Error(msg);
+  }
+}
+
+/**
+ * Make an assertion that `actual` is defined. If not
+ * then thrown
+ */
+export function assertDefined(
+  actual: any,
+  msg?: string
+): void {
+  if (typeof actual === "undefined") {
+    console.error("expected", actual, "to be defined");
+    if (!msg) {
+      msg = `actual: "${actual}" expected to be defined"`;
+    }
+    throw new Error(msg);
+  }
+}
+
+/**
+ * Make an assertion that `actual` is undefined. If not
+ * then thrown
+ */
+export function assertUndefined(
+  actual: any,
+  msg?: string
+): void {
+  if (typeof actual !== "undefined") {
+    console.error("expected", actual, "not to be defined");
+    if (!msg) {
+      msg = `actual: "${actual}" expected not to be defined"`;
+    }
+    throw new Error(msg);
+  }
+}
+
+/**
+ * Make an assertion that typeof `actual` is `type`. If not
+ * then thrown
+ */
+export function assertType(
+  actual: any,
+  type: string,
+  msg?: string
+): void {
+  if (typeof actual !== type) {
+    console.error("expected", actual, "to be instance of type ", type);
+    if (!msg) {
+      msg = `actual: "${actual}" expected to be instance of type "${type}"`;
+    }
+    throw new Error(msg);
+  }
+}
+
+/**
+ * Make an assertion that length of `actual` array equals to `length`. If not
+ * then thrown
+ */
+export function assertArrayLength(
+  actual: any[],
+  length: number,
+  msg?: string
+): void {
+  if (actual.length !== length) {
+    console.error("expected", actual, "to have length: ", length);
+    if (!msg) {
+      msg = `actual: "${actual}" expected to have length: "${length}"`;
+    }
+    throw new Error(msg);
+  }
+}

@@ -7,7 +7,12 @@ import {
   assertStrContains,
   assertArrayContains,
   assertMatch,
-  assertEquals
+  assertEquals,
+  assertCloseTo,
+  assertDefined,
+  assertUndefined,
+  assertType,
+  assertArrayLength
 } from "./asserts.ts";
 import { test } from "./mod.ts";
 // import { assertEquals as prettyAssertEqual } from "./pretty.ts";
@@ -108,6 +113,80 @@ test(function testingAssertStringMatchingThrows() {
       e.message ===
         `actual: "Denosaurus from Jurassic" expected to match: "/Raptor/"`
     );
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
+test(function testingCloseTo() {
+  assertCloseTo(7.8, 8);
+  assertCloseTo(2.3, 2);
+  let didThrow;
+  try {
+    assertCloseTo(6.5, 6);
+    didThrow = false;
+  } catch (e) {
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
+test(function testingDefined() {
+  assertDefined(1337);
+  assertDefined("Denosaurus");
+  let didThrow;
+  try {
+    assertDefined(undefined);
+    didThrow = false;
+  } catch (e) {
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
+test(function testingUndefined() {
+  assertUndefined(undefined);
+  let didThrow;
+  try {
+    assertUndefined(1337);
+    didThrow = false;
+  } catch (e) {
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
+test(function testingType() {
+  assertType(undefined, "undefined");
+  assertType("Denosaurus", "string");
+  assertType(1337, "number");
+  assertType({
+    name: "John",
+    surname: "Doe"
+  }, "object");
+  assertType(() => ({
+    name: "John",
+    surname: "Doe"
+  }), "function");
+  let didThrow;
+  try {
+    assertType("Denosaurus", "number");
+    didThrow = false;
+  } catch (e) {
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
+test(function testingArrayLength() {
+  assertArrayLength([1, 2, 3], 3);
+  assertArrayLength([1], 1);
+  assertArrayLength(["Denosaurus"], 1);
+  let didThrow;
+  try {
+    assertArrayLength(["Denosaurus"], 2);
+    didThrow = false;
+  } catch (e) {
     didThrow = true;
   }
   assert(didThrow);
