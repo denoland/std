@@ -121,7 +121,7 @@ function createDirEntryDisplay(
 }
 
 // TODO: simplify this after deno.stat and deno.readDir are fixed
-async function serveDir(req: ServerRequest, dirPath: string, dirName: string) {
+async function serveDir(req: ServerRequest, dirPath: string, dirName: string): Promise<Response> {
   // dirname has no prefix
   const listEntry: string[] = [];
   const fileInfos = await readDir(dirPath);
@@ -164,7 +164,7 @@ async function serveDir(req: ServerRequest, dirPath: string, dirName: string) {
   return res;
 }
 
-async function serveFile(req: ServerRequest, filename: string) {
+async function serveFile(req: ServerRequest, filename: string): Promise<Response> {
   const file = await open(filename);
   const fileInfo = await stat(filename);
   const headers = new Headers();
@@ -179,7 +179,7 @@ async function serveFile(req: ServerRequest, filename: string) {
   return res;
 }
 
-async function serveFallback(req: ServerRequest, e: Error) {
+async function serveFallback(req: ServerRequest, e: Error): Promise<Response> {
   if (
     e instanceof DenoError &&
     (e as DenoError<any>).kind === ErrorKind.NotFound
