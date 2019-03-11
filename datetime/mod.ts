@@ -92,10 +92,19 @@ export function parseDateTime(
  * @return {number} Number of current day in year
  */
 export function currentDayOfYear(): number {
-  return (
-    Math.ceil(new Date().getTime() / 86400000) -
-    Math.floor(
-      new Date().setFullYear(new Date().getFullYear(), 0, 1) / 86400000
-    )
-  );
+  return dayOfYear(new Date());
+}
+
+/**
+ * Get number of the day in the year
+ * @return {number} Number of the day in year
+ */
+export function dayOfYear(date: Date): any {
+  const dayMs = 1000 * 60 * 60 * 24;
+  const yearStart = new Date(date.getFullYear(), 0, 0);
+  const diff =
+    date.getTime() -
+    yearStart.getTime() +
+    (yearStart.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
+  return Math.floor(diff / dayMs);
 }
