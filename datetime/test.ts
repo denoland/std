@@ -66,9 +66,9 @@ test(function invalidParseDateFormatThrows() {
 });
 
 test(function DayOfYear() {
-  assertEquals(1, datetime.dayOfYear(new Date('2019-01-01T03:24:00')));
-  assertEquals(70, datetime.dayOfYear(new Date('2019-03-11T03:24:00')));
-  assertEquals(365, datetime.dayOfYear(new Date('2019-12-31T03:24:00')));
+  assertEquals(1, datetime.dayOfYear(new Date("2019-01-01T03:24:00")));
+  assertEquals(70, datetime.dayOfYear(new Date("2019-03-11T03:24:00")));
+  assertEquals(365, datetime.dayOfYear(new Date("2019-12-31T03:24:00")));
 });
 
 test(function currentDayOfYear() {
