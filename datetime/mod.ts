@@ -87,15 +87,6 @@ export function parseDateTime(
 }
 
 /**
- * Get number of current day in year
- *
- * @return {number} Number of current day in year
- */
-export function currentDayOfYear(): number {
-  return dayOfYear(new Date());
-}
-
-/**
  * Get number of the day in the year
  * @return {number} Number of the day in year
  */
@@ -107,4 +98,13 @@ export function dayOfYear(date: Date): any {
     yearStart.getTime() +
     (yearStart.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
   return Math.floor(diff / dayMs);
+}
+
+/**
+ * Get number of current day in year
+ *
+ * @return {number} Number of current day in year
+ */
+export function currentDayOfYear(): number {
+  return dayOfYear(new Date());
 }
