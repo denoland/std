@@ -5,7 +5,7 @@
  * @param {string} filePath
  * @returns {Promise<boolean>}
  */
-export async function pathExists(filePath: string): Promise<boolean> {
+export async function exists(filePath: string): Promise<boolean> {
   return Deno.stat(filePath)
     .then(() => true)
     .catch(() => false);
@@ -17,7 +17,7 @@ export async function pathExists(filePath: string): Promise<boolean> {
  * @param {string} filePath
  * @returns {boolean}
  */
-export function pathExistsSync(filePath: string): boolean {
+export function existsSync(filePath: string): boolean {
   try {
     Deno.statSync(filePath);
     return true;
