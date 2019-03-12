@@ -23,7 +23,6 @@ test(function testingAssertEqualActualUncoercable() {
   assert(didThrow);
 });
 
-
 test(function testingDoesThrow() {
   let count = 0;
   assertThrows(() => {

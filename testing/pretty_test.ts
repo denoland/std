@@ -1,22 +1,22 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 import { test } from "./mod.ts";
-import { red, green, white, gray, bold } from "../colors/mod.ts";
-import { buildMessage, buildDiffMessage } from "./pretty.ts";
-import { assertThrows, assertEquals } from "./asserts.ts";
+import { red, green, white, bold } from "../colors/mod.ts";
+import { buildMessage } from "./pretty.ts";
+import { assertEquals } from "./asserts.ts";
 
-const createHeader = (): string[] => [
-  "",
-  "",
-  `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${green(
-    bold("Expected")
-  )}`,
-  "",
-  ""
-];
+// const createHeader = (): string[] => [
+//   "",
+//   "",
+//   `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${green(
+//     bold("Expected")
+//   )}`,
+//   "",
+//   ""
+// ];
 
-const added: (s: string) => string = (s: string): string => green(bold(s));
-const removed: (s: string) => string = (s: string): string => red(bold(s));
+// const added: (s: string) => string = (s: string): string => green(bold(s));
+// const removed: (s: string) => string = (s: string): string => red(bold(s));
 
 test({
   name: "buildMessage",

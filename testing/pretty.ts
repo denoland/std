@@ -1,8 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { equal } from "./asserts.ts";
 import { red, green, white, gray, bold } from "../colors/mod.ts";
-import diff, { DiffType, DiffResult } from "./diff.ts";
+import { DiffType, DiffResult } from "./diff.ts";
 import { format } from "./format.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";

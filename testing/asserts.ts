@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { createStr, buildDiffMessage, buildMessage } from "./pretty.ts";
-import diff, { DiffType, DiffResult } from "./diff.ts";
+import diff, { DiffResult } from "./diff.ts";
 
 interface Constructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
