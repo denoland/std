@@ -46,6 +46,15 @@ function createSign(diffType: DiffType): string {
   }
 }
 
+/**
+ * Build the message to be associated with the Assertion Error
+ * This method just prompt in a standard format the parameters.
+ *
+ * @param assertionType Name the assertion building the message
+ * @param actual Actual object to be compared
+ * @param expected Expected object to be compared with
+ * @param message Message to be added to the Assertion error
+ */
 export function buildMessage(
   assertionType: string,
   actual: unknown,
@@ -61,6 +70,14 @@ export function buildMessage(
   return messages;
 }
 
+/**
+ * Build the message to be associated with the Assertion error
+ * with the diff comparison of actual / expected.
+ *
+ * @param assertionType Name of the assertion building the message
+ * @param diffResult result of the diff(actual,expected) see testing/diff.ts
+ * @returns A string array of the builded message
+ */
 export function buildDiffMessage(
   assertionType: string,
   diffResult: ReadonlyArray<DiffResult<string>>
