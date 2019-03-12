@@ -1,5 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { assertEquals as prettyAssertEqual } from "./pretty.ts";
+import { createStr, buildDiffMessage, buildMessage } from "./pretty.ts";
+import diff, { DiffType, DiffResult } from "./diff.ts";
 
 interface Constructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -7,9 +8,9 @@ interface Constructor {
 }
 
 export class AssertionError extends Error {
-  constructor(message: string) {
+  constructor(message?: string) {
     super(message);
-    this.name = "AssertionError";
+    this.name = "Assertion Error";
   }
 }
 
@@ -56,7 +57,25 @@ export function assertEquals(
   expected: unknown,
   msg?: string
 ): void {
-  prettyAssertEqual(actual, expected, msg);
+  if (equal(actual, expected)) {
+    return;
+  }
+  if (msg) {
+    throw new AssertionError(msg);
+  }
+  let message = "";
+  const actualString = createStr(actual);
+  const expectedString = createStr(expected);
+  try {
+    const diffResult: ReadonlyArray<DiffResult<string>> = diff(
+      actualString.split("\n"),
+      expectedString.split("\n")
+    );
+    message = buildDiffMessage("assertEquals", diffResult).join("\n");
+  } catch (e) {
+    message = `\n${"[Cannot display]"} + \n\n`;
+  }
+  throw new AssertionError(message);
 }
 
 /**
@@ -71,27 +90,15 @@ export function assertNotEquals(
   if (!equal(actual, expected)) {
     return;
   }
-  let actualString: string;
-  let expectedString: string;
-  try {
-    actualString = String(actual);
-  } catch (e) {
-    actualString = "[Cannot display]";
+  if (msg) {
+    throw new AssertionError(msg);
   }
-  try {
-    expectedString = String(expected);
-  } catch (e) {
-    expectedString = "[Cannot display]";
-  }
-  console.error(
-    "Not Equals failed. actual =",
-    actualString,
-    "expected =",
-    expectedString
-  );
-  if (!msg) {
-    msg = `actual: ${actualString} expected: ${expectedString}`;
-  }
+  msg = buildMessage(
+    "assertNotEquals",
+    actual,
+    expected,
+    "Expected actual to be different than expected"
+  ).join("\n");
   throw new AssertionError(msg);
 }
 
@@ -105,27 +112,15 @@ export function assertStrictEq(
   msg?: string
 ): void {
   if (actual !== expected) {
-    let actualString: string;
-    let expectedString: string;
-    try {
-      actualString = String(actual);
-    } catch (e) {
-      actualString = "[Cannot display]";
+    if (msg) {
+      throw new AssertionError(msg);
     }
-    try {
-      expectedString = String(expected);
-    } catch (e) {
-      expectedString = "[Cannot display]";
-    }
-    console.error(
-      "strictEqual failed. actual =",
-      actualString,
-      "expected =",
-      expectedString
-    );
-    if (!msg) {
-      msg = `actual: ${actualString} expected: ${expectedString}`;
-    }
+    msg = buildMessage(
+      "assertStrictEq",
+      actual,
+      expected,
+      "Actual must be strict equal === to Expected"
+    ).join("\n");
     throw new AssertionError(msg);
   }
 }
@@ -140,15 +135,15 @@ export function assertStrContains(
   msg?: string
 ): void {
   if (!actual.includes(expected)) {
-    console.error(
-      "stringContains failed. actual =",
-      actual,
-      "not containing ",
-      expected
-    );
-    if (!msg) {
-      msg = `actual: "${actual}" expected to contains: "${expected}"`;
+    if (msg) {
+      throw new AssertionError(msg);
     }
+    msg = buildMessage(
+      "assertStrContains",
+      actual,
+      expected,
+      "Expected must contains Actual"
+    ).join("\n");
     throw new AssertionError(msg);
   }
 }
@@ -202,15 +197,15 @@ export function assertMatch(
   msg?: string
 ): void {
   if (!expected.test(actual)) {
-    console.error(
-      "stringMatching failed. actual =",
-      actual,
-      "not matching RegExp ",
-      expected
-    );
-    if (!msg) {
-      msg = `actual: "${actual}" expected to match: "${expected}"`;
+    if (msg) {
+      throw new AssertionError(msg);
     }
+    msg = buildMessage(
+      "assertMatch",
+      actual,
+      expected,
+      "Actual has to match the Expected RegExp pattern"
+    ).join("\n");
     throw new AssertionError(msg);
   }
 }

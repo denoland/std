@@ -3,7 +3,6 @@ import { test, runIfMain } from "./mod.ts";
 import {
   assert,
   assertEquals,
-  assertStrictEq,
   assertThrows,
   assertThrowsAsync
 } from "../testing/asserts.ts";
@@ -24,35 +23,6 @@ test(function testingAssertEqualActualUncoercable() {
   assert(didThrow);
 });
 
-test(function testingAssertEqualExpectedUncoercable() {
-  let didThrow = false;
-  const a = Object.create(null);
-  try {
-    assertStrictEq("bar", a);
-  } catch (e) {
-    didThrow = true;
-  }
-  assert(didThrow);
-});
-
-test(function testingAssertStrictEqual() {
-  const a = {};
-  const b = a;
-  assertStrictEq(a, b);
-});
-
-test(function testingAssertNotStrictEqual() {
-  let didThrow = false;
-  const a = {};
-  const b = {};
-  try {
-    assertStrictEq(a, b);
-  } catch (e) {
-    assert(e.message === "actual: [object Object] expected: [object Object]");
-    didThrow = true;
-  }
-  assert(didThrow);
-});
 
 test(function testingDoesThrow() {
   let count = 0;

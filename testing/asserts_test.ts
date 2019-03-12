@@ -7,6 +7,7 @@ import {
   assertArrayContains,
   assertMatch,
   assertEquals,
+  assertStrictEq,
   assertThrows,
   AssertionError,
   equal,
@@ -90,10 +91,6 @@ test(function testingAssertStringContainsThrow() {
   try {
     assertStrContains("Denosaurus from Jurassic", "Raptor");
   } catch (e) {
-    assert(
-      e.message ===
-        `actual: "Denosaurus from Jurassic" expected to contains: "Raptor"`
-    );
     assert(e instanceof AssertionError);
     didThrow = true;
   }
@@ -109,10 +106,6 @@ test(function testingAssertStringMatchingThrows() {
   try {
     assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
   } catch (e) {
-    assert(
-      e.message ===
-        `actual: "Denosaurus from Jurassic" expected to match: "/Raptor/"`
-    );
     assert(e instanceof AssertionError);
     didThrow = true;
   }
@@ -152,4 +145,33 @@ test(function testingAssertFail() {
     AssertionError,
     "Failed assertion: foo"
   );
+});
+
+test(function testingAssertStrictEqual() {
+  const a = {};
+  const b = a;
+  assertStrictEq(a, b);
+});
+
+test(function testingAssertNotStrictEqual() {
+  let didThrow = false;
+  const a = {};
+  const b = {};
+  try {
+    assertStrictEq(a, b);
+  } catch (e) {
+    didThrow = true;
+  }
+  assert(didThrow);
+});
+
+test(function testingAssertEqualExpectedUncoercable() {
+  let didThrow = false;
+  const a = Object.create(null);
+  try {
+    assertStrictEq("bar", a);
+  } catch (e) {
+    didThrow = true;
+  }
+  assert(didThrow);
 });
