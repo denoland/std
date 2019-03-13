@@ -8,13 +8,18 @@ import { exists, existsSync } from "./exists.ts";
  * @export
  * @param {string} src
  * @param {string} dest
+ * @param {string} type
  * @returns {Promise<void>}
  */
-export async function ensureSyslink(src: string, dest: string): Promise<void> {
+export async function ensureSyslink(
+  src: string,
+  dest: string,
+  type?: string
+): Promise<void> {
   src = path.resolve(src);
   dest = path.resolve(dest);
 
-  const srcStat = await Deno.lstat(src);
+  await Deno.lstat(src);
 
   if (await exists(dest)) {
     return;
@@ -22,7 +27,7 @@ export async function ensureSyslink(src: string, dest: string): Promise<void> {
 
   await ensureDir(path.dirname(dest));
 
-  await Deno.symlink(src, dest, srcStat.isDirectory() ? "dir" : "file");
+  await Deno.symlink(src, dest, type);
 }
 
 /**
@@ -31,13 +36,18 @@ export async function ensureSyslink(src: string, dest: string): Promise<void> {
  * @export
  * @param {string} src
  * @param {string} dest
+ * @param {string} type
  * @returns {void}
  */
-export function ensureSyslinkSync(src: string, dest: string): void {
+export function ensureSyslinkSync(
+  src: string,
+  dest: string,
+  type?: string
+): void {
   src = path.resolve(src);
   dest = path.resolve(dest);
 
-  const srcStat = Deno.lstatSync(src);
+  Deno.lstatSync(src);
 
   if (existsSync(dest)) {
     return;
@@ -45,5 +55,5 @@ export function ensureSyslinkSync(src: string, dest: string): void {
 
   ensureDirSync(path.dirname(dest));
 
-  Deno.symlinkSync(src, dest, srcStat.isDirectory() ? "dir" : "file");
+  Deno.symlinkSync(src, dest, type);
 }
