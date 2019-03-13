@@ -10,6 +10,14 @@ import * as path from "./path/mod.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
 
+test(async function readJsonFileNotExists() {
+  const emptyJsonFile = path.join(testdataDir, "json_not_exists.json");
+
+  await assertThrowsAsync(async () => {
+    await readJson(emptyJsonFile);
+  });
+});
+
 test(async function readEmptyJsonFile() {
   const emptyJsonFile = path.join(testdataDir, "json_empty.json");
 
@@ -40,6 +48,14 @@ test(async function readValidJsonFile() {
   const json = await readJson(invalidJsonFile);
 
   assertEquals(json, { key1: "value1", key2: "value2" });
+});
+
+test(function readJsonFileNotExistsSync() {
+  const emptyJsonFile = path.join(testdataDir, "json_not_exists.json");
+
+  assertThrows(() => {
+    readJsonSync(emptyJsonFile);
+  });
 });
 
 test(function readEmptyJsonFileSync() {
