@@ -28,8 +28,8 @@ export interface GlobrexResult {
  * @param [opts.extended=false] Support advanced ext globbing
  * @param [opts.globstar=false] Support globstar
  * @param [opts.strict=true] be laissez faire about mutiple slashes
- * @param [opts.filepath=''] Parse as filepath for extra path related features
- * @param [opts.flags=''] RegExp globs
+ * @param [opts.filepath=""] Parse as filepath for extra path related features
+ * @param [opts.flags=""] RegExp globs
  * @returns Converted object with string, segments and RegExp object
  */
 export function globrex(
