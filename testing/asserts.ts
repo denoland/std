@@ -173,17 +173,17 @@ export function assertArrayContains(
   if (missing.length === 0) {
     return;
   }
-  console.error(
-    "assertArrayContains failed. actual=",
-    actual,
-    "not containing ",
-    expected
-  );
-  if (!msg) {
-    msg = `actual: "${actual}" expected to contains: "${expected}"`;
-    msg += "\n";
-    msg += `missing: ${missing}`;
+  if (msg) {
+    throw new AssertionError(msg);
   }
+  let errorMsg = ["Actual Must contains expected values. "];
+  errorMsg.push(`Missing value(s): ${missing}`);
+  msg = buildMessage(
+    "assertArrayContains",
+    actual,
+    expected,
+    errorMsg.join('')
+  ).join("\n");
   throw new AssertionError(msg);
 }
 

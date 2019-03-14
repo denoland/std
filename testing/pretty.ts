@@ -18,7 +18,16 @@ function header(assertionType: string): string[] {
 
 export function createStr(v: unknown): string {
   try {
-    return format(v);
+    let s = format(v);
+    // if
+    if (s.split("\n").length > 1) {
+      let arrS = s.split("\n");
+      for (let i = 1; i < arrS.length; i++) {
+        arrS[i] = `${TAB}${arrS[i]}`;
+      }
+      s = arrS.join("\n");
+    }
+    return s;
   } catch (e) {
     return red(CAN_NOT_DISPLAY);
   }
@@ -38,11 +47,11 @@ function createColor(diffType: DiffType): (s: string) => string {
 function createSign(diffType: DiffType): string {
   switch (diffType) {
     case DiffType.added:
-      return `${TAB}+   `;
+      return `+${TAB}`;
     case DiffType.removed:
-      return `${TAB}-   `;
+      return `-${TAB}`;
     default:
-      return `${TAB}   `;
+      return `${TAB}`;
   }
 }
 
