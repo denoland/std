@@ -16,6 +16,26 @@ function isSrcSubdir(src: string, dest: string): boolean {
   }, true);
 }
 
+/* copy file to dest */
+async function copyFile(src: string, dest: string): Promise<void> {
+  await Deno.copyFile(src, dest);
+}
+
+function copyFileSync(src: string, dest: string): void {
+  Deno.copyFileSync(src, dest);
+}
+
+/* copy link to dest */
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+async function copyLink(src: string, dest: string): Promise<void> {
+  throw new Error("Not implemented copy link");
+}
+
+/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+function copyLinkSync(src: string, dest: string): void {
+  throw new Error("Not implemented copy link");
+}
+
 /* copy folder from src to dest. */
 async function copyDir(src: string, dest: string): Promise<void> {
   const files = await Deno.readDir(src);
@@ -49,24 +69,6 @@ function copyDirSync(src: string, dest: string): void {
   }
 }
 
-/* copy file to dest */
-async function copyFile(src: string, dest: string): Promise<void> {
-  await Deno.copyFile(src, dest);
-}
-
-function copyFileSync(src: string, dest: string): void {
-  Deno.copyFileSync(src, dest);
-}
-
-/* copy link to dest */
-async function copyLink(src: string, dest: string): Promise<void> {
-  throw new Error("Not implemented copy link");
-}
-
-function copyLinkSync(src: string, dest: string): void {
-  throw new Error("Not implemented copy link");
-}
-
 /**
  * Copy a file or directory. The directory can have contents. Like `cp -r`.
  * @param src the file/directory path. Note that if `src` is a directory it will copy everything inside of this directory, not the entire directory itself
@@ -93,9 +95,9 @@ export async function copy(
     );
   }
 
-  const destStat = await Deno.stat(dest).catch(v => null);
+  const destStat = await Deno.stat(dest).catch(() => null);
 
-  async function destOverwriteCheck() {
+  async function destOverwriteCheck(): Promise<void> {
     // if dest exists
     if (destStat) {
       if (!options.overwrite) {
@@ -166,7 +168,7 @@ export function copySync(
     destStat = null;
   }
 
-  function destOverwriteCheck() {
+  function destOverwriteCheck(): void {
     // if dest exists
     if (destStat) {
       if (!options.overwrite) {
