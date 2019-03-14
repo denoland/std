@@ -88,7 +88,7 @@ export function parseDateTime(
  * Get number of the day in the year
  * @return Number of the day in year
  */
-export function dayOfYear(date: Date): any {
+export function dayOfYear(date: Date): number {
   const dayMs = 1000 * 60 * 60 * 24;
   const yearStart = new Date(date.getFullYear(), 0, 0);
   const diff =
