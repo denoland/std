@@ -10,7 +10,7 @@ const createHeader = (): string[] => [
   `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${green(
     bold("Expected")
   )}`,
-  "",
+  ""
 ];
 
 const added: (s: string) => string = (s: string): string => green(bold(s));
