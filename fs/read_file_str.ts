@@ -4,7 +4,7 @@
  * Read file synchronously and output it as a string.
  *
  * @param filename File to read
- * @param encoding Encoding of the file. Default = "utf-8"
+ * @param [encoding="utf-8"] encoding Encoding of the file
  */
 export function readFileStrSync(
   filename: string,
@@ -18,7 +18,7 @@ export function readFileStrSync(
  * Read file and output it as a string.
  *
  * @param filename File to read
- * @param encoding Encoding of the file. Default = "utf-8"
+ * @param [encoding="utf-8"] Encoding of the file
  */
 export async function readFileStr(
   filename: string,
