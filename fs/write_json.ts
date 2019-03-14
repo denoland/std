@@ -3,7 +3,7 @@ import * as path from "./path/mod.ts";
 
 type Replacer = (key: string, value: any) => any;
 
-export interface WriteJsonOption {
+export interface WriteJsonOptions {
   spaces?: number | string;
   replacer?: Array<number | string> | Replacer;
 }
