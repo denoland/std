@@ -1,6 +1,6 @@
 variables:
-  DENO_VERSION: "v0.3.2"
-  TS_VERSION: "3.2.1"
+  DENO_VERSION: "v0.3.3"
+  TS_VERSION: "3.3.3333"
 
 # TODO DRY up the jobs
 # TODO Try to get eslint to run under Deno, like prettier
