@@ -5,16 +5,14 @@ import { exists, existsSync } from "./exists.ts";
 /**
  * Ensures that the link exists.
  * If the directory structure does not exist, it is created.
- * @export
- * @param {string} src
- * @param {string} dest
- * @param {string} type
- * @returns {Promise<void>}
+ * @param src the source file path
+ * @param dest the destination link path
+ * @param type only available on `Windows` (ignored on other platforms).
  */
 export async function ensureSymlink(
   src: string,
   dest: string,
-  type?: string
+  type?: "dir" | "file"
 ): Promise<void> {
   src = path.resolve(src);
   dest = path.resolve(dest);
@@ -33,16 +31,14 @@ export async function ensureSymlink(
 /**
  * Ensures that the link exists.
  * If the directory structure does not exist, it is created.
- * @export
- * @param {string} src
- * @param {string} dest
- * @param {string} type
- * @returns {void}
+ * @param src the source file path
+ * @param dest the destination link path
+ * @param type only available on `Windows` (ignored on other platforms).
  */
 export function ensureSymlinkSync(
   src: string,
   dest: string,
-  type?: string
+  type?: "dir" | "file"
 ): void {
   src = path.resolve(src);
   dest = path.resolve(dest);
