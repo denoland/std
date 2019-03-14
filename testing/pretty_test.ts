@@ -19,7 +19,7 @@ import { assertEquals } from "./asserts.ts";
 // const removed: (s: string) => string = (s: string): string => red(bold(s));
 
 test({
-  name: "buildMessage",
+  name: "buildMessage String value",
   fn() {
     const expected = [
       "",

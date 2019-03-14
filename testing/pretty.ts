@@ -16,10 +16,12 @@ function header(assertionType: string): string[] {
   return messages;
 }
 
+/** Create a pretty formatted string of a var */
 export function createStr(v: unknown): string {
   try {
     let s = format(v);
-    // if
+    // if the formatted object is multiline we add
+    // tabs to fit the formatting
     if (s.split("\n").length > 1) {
       let arrS = s.split("\n");
       for (let i = 1; i < arrS.length; i++) {
