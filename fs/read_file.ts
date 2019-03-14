@@ -23,7 +23,7 @@ export function readFileSync(filename: string, opts: ReadOptions = {}): string {
  */
 export async function readFile(
   filename: string,
-  opts: ReadOptions = { }
+  opts: ReadOptions = {}
 ): Promise<string> {
   const decoder = new TextDecoder(opts.encoding);
   return decoder.decode(await Deno.readFile(filename));
