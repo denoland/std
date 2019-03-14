@@ -12,7 +12,7 @@ export interface WriteJsonOptions {
 export async function writeJson(
   filePath: string,
   object: any,
-  options: WriteJsonOption = {}
+  options: WriteJsonOptions = {}
 ): Promise<void> {
   filePath = path.resolve(filePath);
 
@@ -36,7 +36,7 @@ export async function writeJson(
 export function writeJsonSync(
   filePath: string,
   object: any,
-  options: WriteJsonOption = {}
+  options: WriteJsonOptions = {}
 ): void {
   filePath = path.resolve(filePath);
 
