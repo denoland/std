@@ -53,7 +53,7 @@ function createSign(diffType: DiffType): string {
     case DiffType.removed:
       return `-${TAB}`;
     default:
-      return `${TAB}`;
+      return ` ${TAB}`;
   }
 }
 

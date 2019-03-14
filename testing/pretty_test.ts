@@ -1,22 +1,34 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 import { test } from "./mod.ts";
-import { red, green, white, bold } from "../colors/mod.ts";
-import { buildMessage } from "./pretty.ts";
+import { red, green, white, bold, gray } from "../colors/mod.ts";
+import { buildDiffMessage, buildMessage, createStr } from "./pretty.ts";
 import { assertEquals } from "./asserts.ts";
+import diff, { DiffResult } from "./diff.ts";
 
-// const createHeader = (): string[] => [
-//   "",
-//   "",
-//   `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${green(
-//     bold("Expected")
-//   )}`,
-//   "",
-//   ""
-// ];
+const createHeader = (): string[] => [
+  `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${green(
+    bold("Expected")
+  )}`,
+  "",
+];
 
-// const added: (s: string) => string = (s: string): string => green(bold(s));
-// const removed: (s: string) => string = (s: string): string => red(bold(s));
+const added: (s: string) => string = (s: string): string => green(bold(s));
+const removed: (s: string) => string = (s: string): string => red(bold(s));
+
+test({
+  name: "Create Str test",
+  fn() {
+    const expected1 = '"foo"';
+    const expected2 = "2";
+    const expected3 = ["Array [", "      1,", "      2,", "    ]"].join("\n");
+    const expected4 = ["Object {", '      "foo": "bar",', "    }"].join("\n");
+    assertEquals(createStr("foo"), expected1);
+    assertEquals(createStr(2), expected2);
+    assertEquals(createStr([1, 2]), expected3);
+    assertEquals(createStr({ foo: "bar" }), expected4);
+  }
+});
 
 test({
   name: "buildMessage String value",
@@ -43,67 +55,33 @@ test({
   }
 });
 
-// test({
-//   name: "failed with number",
-//   fn() {
-//     assertThrows(
-//       () => assertEquals(1, 2),
-//       Error,
-//       [...createHeader(), removed(`-   1`), added(`+   2`), ""].join("\n")
-//     );
-//   }
-// });
-
-// test({
-//   name: "failed with number vs string",
-//   fn() {
-//     assertThrows(
-//       () => assertEquals(1, "1"),
-//       Error,
-//       [...createHeader(), removed(`-   1`), added(`+   "1"`)].join("\n")
-//     );
-//   }
-// });
-
-// test({
-//   name: "failed with array",
-//   fn() {
-//     assertThrows(
-//       () => assertEquals([1, "2", 3], ["1", "2", 3]),
-//       Error,
-//       [
-//         ...createHeader(),
-//         white("    Array ["),
-//         removed(`-     1,`),
-//         added(`+     "1",`),
-//         white('      "2",'),
-//         white("      3,"),
-//         white("    ]"),
-//         ""
-//       ].join("\n")
-//     );
-//   }
-// });
-
-// test({
-//   name: "failed with object",
-//   fn() {
-//     assertThrows(
-//       () => assertEquals({ a: 1, b: "2", c: 3 }, { a: 1, b: 2, c: [3] }),
-//       Error,
-//       [
-//         ...createHeader(),
-//         white("    Object {"),
-//         white(`      "a": 1,`),
-//         added(`+     "b": 2,`),
-//         added(`+     "c": Array [`),
-//         added(`+       3,`),
-//         added(`+     ],`),
-//         removed(`-     "b": "2",`),
-//         removed(`-     "c": 3,`),
-//         white("    }"),
-//         ""
-//       ].join("\n")
-//     );
-//   }
-// });
+test({
+  name: "Build Diff Message",
+  fn() {
+    const actualString = createStr({ a: 1, b: "2", c: 3 });
+    const expectedString = createStr({ a: 1, b: 2, c: [3] });
+    const diffResult: ReadonlyArray<DiffResult<string>> = diff(
+      actualString.split("\n"),
+      expectedString.split("\n")
+    );
+    const out = buildDiffMessage("assertEquals", diffResult).join("\n");
+    const testExpect = [
+      "",
+      "",
+      `${red(bold("FAIL"))} : assertEquals`,
+      "",
+      ...createHeader(),
+      white("     Object {"),
+      white(`           "a": 1,`),
+      added(`+          "b": 2,`),
+      added(`+          "c": Array [`),
+      added(`+            3,`),
+      added(`+          ],`),
+      removed(`-          "b": "2",`),
+      removed(`-          "c": 3,`),
+      white("         }"),
+      ""
+    ].join("\n");
+    assertEquals(out, testExpect);
+  }
+});
