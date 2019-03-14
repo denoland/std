@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as path from "./path/mod.ts";
-
 type Replacer = (key: string, value: any) => any;
 
 export interface WriteJsonOptions {
@@ -16,7 +16,7 @@ export async function writeJson(
 ): Promise<void> {
   filePath = path.resolve(filePath);
 
-  let contentRaw: string = "";
+  let contentRaw = "";
 
   try {
     contentRaw = JSON.stringify(
@@ -40,7 +40,7 @@ export function writeJsonSync(
 ): void {
   filePath = path.resolve(filePath);
 
-  let contentRaw: string = "";
+  let contentRaw = "";
 
   try {
     contentRaw = JSON.stringify(
