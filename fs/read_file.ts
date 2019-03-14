@@ -1,16 +1,17 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
+export interface ReadOptions {
+  encoding?: string;
+}
+
 /**
  * Read file synchronously and output it as a string.
  *
  * @param filename File to read
- * @param [encoding="utf-8"] encoding Encoding of the file
+ * @param opts Read options
  */
-export function readFileStrSync(
-  filename: string,
-  encoding: string = "utf-8"
-): string {
-  const decoder = new TextDecoder(encoding);
+export function readFileSync(filename: string, opts: ReadOptions = {}): string {
+  const decoder = new TextDecoder(opts.encoding);
   return decoder.decode(Deno.readFileSync(filename));
 }
 
@@ -18,12 +19,12 @@ export function readFileStrSync(
  * Read file and output it as a string.
  *
  * @param filename File to read
- * @param [encoding="utf-8"] Encoding of the file
+ * @param opts Read options
  */
-export async function readFileStr(
+export async function readFile(
   filename: string,
-  encoding: string = "utf-8"
+  opts: ReadOptions = { }
 ): Promise<string> {
-  const decoder = new TextDecoder(encoding);
+  const decoder = new TextDecoder(opts.encoding);
   return decoder.decode(await Deno.readFile(filename));
 }
