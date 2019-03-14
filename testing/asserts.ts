@@ -182,7 +182,7 @@ export function assertArrayContains(
     "assertArrayContains",
     actual,
     expected,
-    errorMsg.join('')
+    errorMsg.join("")
   ).join("\n");
   throw new AssertionError(msg);
 }
