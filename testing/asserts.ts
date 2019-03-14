@@ -10,7 +10,7 @@ interface Constructor {
 export class AssertionError extends Error {
   constructor(message?: string) {
     super(message);
-    this.name = "Assertion Error";
+    this.name = "AssertionError";
   }
 }
 
