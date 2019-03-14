@@ -11,7 +11,7 @@ import { exists, existsSync } from "./exists.ts";
  * @param {string} type
  * @returns {Promise<void>}
  */
-export async function ensureSyslink(
+export async function ensureSymlink(
   src: string,
   dest: string,
   type?: string
@@ -39,7 +39,7 @@ export async function ensureSyslink(
  * @param {string} type
  * @returns {void}
  */
-export function ensureSyslinkSync(
+export function ensureSymlinkSync(
   src: string,
   dest: string,
   type?: string
