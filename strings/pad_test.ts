@@ -11,31 +11,20 @@ test(function padTest() {
   const expected6 = "sorusrex";
   const expected7 = "den...";
   const expected8 = "...rex";
+  assertEquals(pad("deno", 6, { char: "*", side: Side.Left }), expected1);
+  assertEquals(pad("deno", 4, { char: "*", side: Side.Left }), expected2);
+  assertEquals(pad("deno", 6, { char: "*", side: Side.Right }), expected3);
   assertEquals(
-    pad("deno", { char: "*", strLen: 6, side: Side.Left }),
-    expected1
-  );
-  assertEquals(
-    pad("deno", { char: "*", strLen: 4, side: Side.Left }),
-    expected2
-  );
-  assertEquals(
-    pad("deno", { char: "*", strLen: 6, side: Side.Right }),
-    expected3
-  );
-  assertEquals(
-    pad("denosorusrex", {
+    pad("denosorusrex", 4, {
       char: "*",
-      strLen: 4,
       side: Side.Right,
       strict: false
     }),
     expected4
   );
   assertEquals(
-    pad("denosorusrex", {
+    pad("denosorusrex", 9, {
       char: "*",
-      strLen: 9,
       side: Side.Left,
       strict: true,
       strictSide: Side.Right
@@ -43,9 +32,8 @@ test(function padTest() {
     expected5
   );
   assertEquals(
-    pad("denosorusrex", {
+    pad("denosorusrex", 8, {
       char: "*",
-      strLen: 8,
       side: Side.Left,
       strict: true,
       strictSide: Side.Left
@@ -53,9 +41,8 @@ test(function padTest() {
     expected6
   );
   assertEquals(
-    pad("denosorusrex", {
+    pad("denosorusrex", 6, {
       char: "*",
-      strLen: 6,
       side: Side.Left,
       strict: true,
       strictSide: Side.Right,
@@ -64,9 +51,8 @@ test(function padTest() {
     expected7
   );
   assertEquals(
-    pad("denosorusrex", {
+    pad("denosorusrex", 6, {
       char: "*",
-      strLen: 6,
       side: Side.Left,
       strict: true,
       strictSide: Side.Left,
@@ -75,9 +61,8 @@ test(function padTest() {
     expected8
   );
   assertEquals(
-    pad("deno", {
+    pad("deno", 4, {
       char: "*",
-      strLen: 4,
       side: Side.Left,
       strict: true,
       strictSide: Side.Right,

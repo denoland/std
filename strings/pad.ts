@@ -4,8 +4,6 @@
 export interface FillOption {
   /** Char to fill in */
   char: string;
-  /** Final string max lenght */
-  strLen: number;
   /** Side to fill in */
   side: Side;
   /** If strict, output string can't be greater than strLen*/
@@ -21,26 +19,46 @@ export enum Side {
   Right = "right"
 }
 
-/** pad helper for strings. Also resolve substring  */
-export function pad(input: string, opts: FillOption): string {
+/**
+ * pad helper for strings. Also resolve substring
+ * @param input Input string
+ * @param strLen Output string lenght
+ * @param opts Configuration object
+ * @param [opts.char=" "] Support advanced ext globbing
+ * @param [opts.side=Side.Left] Support advanced ext globbing
+ * @param [opts.strict=false] Support advanced ext globbing
+ * @param [opts.strictChar=""] Support advanced ext globbing
+ * @param [opts.strictSide=Side.Right] Support advanced ext globbing
+ */
+export function pad(
+  input: string,
+  strLen: number,
+  opts: FillOption = {
+    char: " ",
+    strict: false,
+    side: Side.Left,
+    strictChar: "",
+    strictSide: Side.Right
+  }
+): string {
   let out = input;
   const outL = out.length;
-  if (outL < opts.strLen) {
+  if (outL < strLen) {
     if (opts.side === Side.Left) {
-      out = out.padStart(opts.strLen, opts.char);
+      out = out.padStart(strLen, opts.char);
     } else {
-      out = out.padEnd(opts.strLen, opts.char);
+      out = out.padEnd(strLen, opts.char);
     }
-  } else if (opts.strict && outL > opts.strLen) {
+  } else if (opts.strict && outL > strLen) {
     let addChar = opts.strictChar ? opts.strictChar : "";
     if (opts.strictSide === Side.Left) {
-      let toDrop = outL - opts.strLen;
+      let toDrop = outL - strLen;
       if (opts.strictChar) {
         toDrop += opts.strictChar.length;
       }
       out = `${addChar}${out.slice(toDrop, outL)}`;
     } else {
-      out = `${out.substring(0, opts.strLen - addChar.length)}${addChar}`;
+      out = `${out.substring(0, strLen - addChar.length)}${addChar}`;
     }
   }
   return out;
