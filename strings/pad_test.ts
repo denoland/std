@@ -74,4 +74,15 @@ test(function padTest() {
     }),
     expected8
   );
+  assertEquals(
+    pad("deno", {
+      char: "*",
+      strLen: 4,
+      side: Side.Left,
+      strict: true,
+      strictSide: Side.Right,
+      strictChar: "..."
+    }),
+    expected2
+  );
 });
