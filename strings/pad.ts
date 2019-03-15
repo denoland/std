@@ -29,13 +29,13 @@ export interface FillOption {
  * @param [opts.strictSide="right"] Side to truncate
  * @example
  * ```typescript
- * pad("deno", 6, { char: "*", side: Side.Left }) // output : "**deno"
- * pad("deno", 6, { char: "*", side: Side.Right}) // output : "deno**"
+ * pad("deno", 6, { char: "*", side: "left" }) // output : "**deno"
+ * pad("deno", 6, { char: "*", side: "right"}) // output : "deno**"
  * pad("denosorusrex", 6 {
  *  char: "*",
- *  side: Side.Left,
+ *  side: "left",
  *  strict: true,
- *  strictSide: Side.Right,
+ *  strictSide: "right",
  *  strictChar: "..."
  * }) // output : "den..."
  * ```
