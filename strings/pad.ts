@@ -19,6 +19,18 @@ export interface FillOption {
  * Input string is processed to output a string with a minimal length.
  * If the parameter `strict` is set to true, the output string length
  * is equal to the `strLen` parameter.
+ * Example:
+ *
+ *    pad("deno", 6, { char: "*", side: "left" }) // output : "**deno"
+ *    pad("deno", 6, { char: "*", side: "right"}) // output : "deno**"
+ *    pad("denosorusrex", 6 {
+ *      char: "*",
+ *      side: "left",
+ *      strict: true,
+ *      strictSide: "right",
+ *      strictChar: "..."
+ *    }) // output : "den..."
+ *
  * @param input Input string
  * @param strLen Output string lenght
  * @param opts Configuration object
@@ -27,18 +39,6 @@ export interface FillOption {
  * @param [opts.strict=false] Flag to truncate the string if length > strLen
  * @param [opts.strictChar=""] Character to add if string is truncated
  * @param [opts.strictSide="right"] Side to truncate
- * @example
- * ```typescript
- * pad("deno", 6, { char: "*", side: "left" }) // output : "**deno"
- * pad("deno", 6, { char: "*", side: "right"}) // output : "deno**"
- * pad("denosorusrex", 6 {
- *  char: "*",
- *  side: "left",
- *  strict: true,
- *  strictSide: "right",
- *  strictChar: "..."
- * }) // output : "den..."
- * ```
  */
 export function pad(
   input: string,
