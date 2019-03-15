@@ -15,15 +15,30 @@ export interface FillOption {
 }
 
 /**
- * pad helper for strings. Also resolve substring
+ * Pad helper for strings.
+ * Input string is processed to output a string with a minimal length.
+ * If the parameter `strict` is set to true, the output string length
+ * is equal to the `strLen` parameter.
  * @param input Input string
  * @param strLen Output string lenght
  * @param opts Configuration object
- * @param [opts.char=" "] Support advanced ext globbing
- * @param [opts.side="left"] Support advanced ext globbing
- * @param [opts.strict=false] Support advanced ext globbing
- * @param [opts.strictChar=""] Support advanced ext globbing
- * @param [opts.strictSide="right"] Support advanced ext globbing
+ * @param [opts.char=" "] Character used to fill in
+ * @param [opts.side="left"] Side to fill in
+ * @param [opts.strict=false] Flag to truncate the string if length > strLen
+ * @param [opts.strictChar=""] Character to add if string is truncated
+ * @param [opts.strictSide="right"] Side to truncate
+ * @example
+ * ```typescript
+ * pad("deno", 6, { char: "*", side: Side.Left }) // output : "**deno"
+ * pad("deno", 6, { char: "*", side: Side.Right}) // output : "deno**"
+ * pad("denosorusrex", 6 {
+ *  char: "*",
+ *  side: Side.Left,
+ *  strict: true,
+ *  strictSide: Side.Right,
+ *  strictChar: "..."
+ * }) // output : "den..."
+ * ```
  */
 export function pad(
   input: string,
