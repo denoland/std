@@ -4,17 +4,17 @@
 import { test } from "../../testing/mod.ts";
 import { assertEquals } from "../../testing/asserts.ts";
 import { isSubdir } from "./_is_sub_dir.ts";
-import { isWindows } from "./constants.ts";
+import * as path from "./mod.ts";
 
 const pairs = [
-  ["", "", false, "/"],
-  ["/first/second", "/first", false, "/"],
-  ["/first", "/first", false, "/"],
-  ["/first", "/first/second", true, "/"],
-  ["first", "first/second", true, "/"],
-  ["../first", "../first/second", true, "/"],
-  ["c:\\\\first", "c:\\\\first", false, "\\\\"],
-  ["c:\\\\first", "c:\\\\first\\\\second", true, "\\\\"]
+  ["", "", false, path.posix.sep],
+  ["/first/second", "/first", false, path.posix.sep],
+  ["/first", "/first", false, path.posix.sep],
+  ["/first", "/first/second", true, path.posix.sep],
+  ["first", "first/second", true, path.posix.sep],
+  ["../first", "../first/second", true, path.posix.sep],
+  ["c:\\first", "c:\\first", false, path.win32.sep],
+  ["c:\\first", "c:\\first\\second", true, path.win32.sep]
 ];
 
 test(function _isSubdir() {
@@ -22,9 +22,9 @@ test(function _isSubdir() {
     const src = p[0] as string;
     const dest = p[1] as string;
     const expected = p[2] as Boolean;
-    const sep = p[3] ? p[3] : isWindows ? "\\\\" : "/";
+    const sep = p[3] as string;
     assertEquals(
-      isSubdir(src, dest, sep as string),
+      isSubdir(src, dest, sep),
       expected,
       `'${src}' should be parent dir of '${dest}'`
     );

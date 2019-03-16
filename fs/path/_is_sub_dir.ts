@@ -1,6 +1,4 @@
-import { isWindows } from "./constants.ts";
-
-const sysSep = isWindows ? "\\\\" : "/";
+import * as path from "./mod.ts";
 
 /**
  * Test whether or not `dest` is a sub-directory of `src`
@@ -11,7 +9,7 @@ const sysSep = isWindows ? "\\\\" : "/";
 export function isSubdir(
   src: string,
   dest: string,
-  sep: string = sysSep
+  sep: string = path.sep
 ): boolean {
   if (src === dest) {
     return false;
