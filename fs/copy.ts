@@ -1,6 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import * as path from "./path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
+import { unimplemented } from "../testing/asserts";
 
 export interface CopyOptions {
   /* overwrite existing file or directory, default is false */
@@ -28,12 +29,12 @@ function copyFileSync(src: string, dest: string): void {
 /* copy link to dest */
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 async function copyLink(src: string, dest: string): Promise<void> {
-  throw new Error("Not implemented copy link");
+  unimplemented();
 }
 
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 function copyLinkSync(src: string, dest: string): void {
-  throw new Error("Not implemented copy link");
+  unimplemented();
 }
 
 /* copy folder from src to dest. */
