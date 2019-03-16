@@ -26,7 +26,7 @@ test(function _isSubdir() {
     assertEquals(
       isSubdir(src, dest, sep),
       expected,
-      `'${src}' should be parent dir of '${dest}'`
+      `'${src}' should ${expected ? "" : "not"} be parent dir of '${dest}'`
     );
   });
 });
