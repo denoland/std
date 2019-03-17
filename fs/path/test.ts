@@ -7,4 +7,3 @@ import "./parse_format_test.ts";
 import "./relative_test.ts";
 import "./resolve_test.ts";
 import "./zero_length_strings_test.ts";
-import "./_is_sub_dir_test.ts";

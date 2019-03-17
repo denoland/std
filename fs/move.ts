@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import * as path from "./path/mod.ts";
 import { exists, existsSync } from "./exists.ts";
-import { isSubdir } from "./path/_is_sub_dir.ts";
+import { isSubdir } from "./utils.ts";
 
 interface MoveOptions {
   overwrite?: boolean;
