@@ -20,7 +20,7 @@ test(function _isSubdir() {
   pairs.forEach(function(p) {
     const src = p[0] as string;
     const dest = p[1] as string;
-    const expected = p[2] as Boolean;
+    const expected = p[2] as boolean;
     const sep = p[3] as string;
     assertEquals(
       isSubdir(src, dest, sep),
