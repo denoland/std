@@ -7,7 +7,6 @@ import { BufReader, BufState, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "../testing/asserts.ts";
-import { reset } from "colors/mod";
 
 interface Deferred {
   promise: Promise<{}>;
@@ -41,7 +40,6 @@ export function setHeaders(r: Response, req: ServerRequest): void {
     }
   } else {
     r.headers.append("content-length", "0");
-<<<<<<< HEAD
   } 
 }
 async function writeChunkedBody(w: Writer, r: Reader): Promise<void> {
@@ -97,8 +95,6 @@ export async function writeResponse(w: Writer, r: Response, req: ServerRequest):
         await writeChunkedBody(writer, r.body);
       }
     }
-=======
->>>>>>> handle bodyless response
   }
   await writer.flush();
 }
@@ -234,9 +230,11 @@ export class ServerRequest {
   }
 
   async respond(r: Response): Promise<void> {
+    console.log('   connection:', this.conn);
     await this._finishRequest();
     await writeResponse(this.w, r, this);
     if (!this._shouldReuseConnection()) {
+      console.log(this.conn);
       this.conn.close();
     }
   }
@@ -245,6 +243,7 @@ export class ServerRequest {
     // We need to check if body was read from connection
     // before responding to request. If body wasn't consumed
     // we'll need to handle it.
+    console.log('finish req', this._bodyConsumed);
     if (this._bodyConsumed) {
       return;
     }
@@ -275,6 +274,7 @@ export class ServerRequest {
   }
 
   private _shouldReuseConnection() {
+    console.log('should reuse', this.closeConnectionEarly);
     if (this.closeConnectionEarly) {
       return false;
     }

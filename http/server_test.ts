@@ -5,18 +5,11 @@
 // Ported from
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
-<<<<<<< HEAD
 const { Buffer } = Deno;
 import { test } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals } from "../testing/asserts.ts";
 import { Response, ServerRequest } from "./server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
-=======
-import { Buffer } from "deno";
-import { test, assert, assertEqual } from "../testing/mod.ts";
-import { ServerRequest, Response } from "./server.ts";
-import { BufWriter, BufReader } from "../io/bufio.ts";
->>>>>>> format
 
 interface ResponseTest {
   response: Response;
@@ -46,18 +39,6 @@ const responseTests: ResponseTest[] = [
   }
 ];
 
-<<<<<<< HEAD
-// test(async function responseWrite() {
-//   for (const testCase of responseTests) {
-//     const buf = new Buffer();
-//     const bufw = new BufWriter(buf);
-//     const request = new ServerRequest();
-//     request.w = bufw;
-//     await request.respond(testCase.response);
-//     assertEqual(buf.toString(), testCase.raw);
-//   }
-// });
-=======
 test(async function responseWrite() {
   for (const testCase of responseTests) {
     const buf = new Buffer();
@@ -67,10 +48,9 @@ test(async function responseWrite() {
     request.w = bufw;
 
     await request.respond(testCase.response);
-    assertEqual(buf.toString(), testCase.raw);
+    assertEquals(buf.toString(), testCase.raw);
   }
 });
->>>>>>> handle bodyless response
 
 
 test(async function requestBodyWithContentLength() {
@@ -264,7 +244,7 @@ test(async function requestUnreadSmallBody() {
       err = e;
     }
     assert(!!err);
-    assert(err.message, "Error: Request body has already been consumed");
+    assertEquals(err.message, "Request body has already been consumed.");
 
     const response = wbuf.toString();
 
@@ -298,7 +278,7 @@ test(async function requestUnreadBigBody() {
       err = e;
     }
     assert(!!err);
-    assert(err.message, "Error: Request body has already been consumed");
+    assertEquals(err.message, "Error: Request body has already been consumed");
 
     const response = wbuf.toString();
 
