@@ -2,19 +2,11 @@
 import * as path from "./path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { unimplemented } from "../testing/asserts.ts";
+import { isSubdir } from "./utils.ts";
 
 export interface CopyOptions {
   /* overwrite existing file or directory, default is false */
   overwrite?: boolean;
-}
-
-function isSrcSubdir(src: string, dest: string): boolean {
-  const srcArray = src.split(path.sep);
-  const destArray = dest.split(path.sep);
-
-  return srcArray.reduce((acc, current, i) => {
-    return acc && destArray[i] === current;
-  }, true);
 }
 
 /* copy file to dest */
@@ -90,7 +82,7 @@ export async function copy(
 
   const srcStat = await Deno.stat(src);
 
-  if (srcStat.isDirectory() && isSrcSubdir(src, dest)) {
+  if (srcStat.isDirectory() && isSubdir(src, dest)) {
     throw new Error(
       `Cannot copy '${src}' to a subdirectory of itself, '${dest}'.`
     );
@@ -155,7 +147,7 @@ export function copySync(
 
   const srcStat = Deno.statSync(src);
 
-  if (srcStat.isDirectory() && isSrcSubdir(src, dest)) {
+  if (srcStat.isDirectory() && isSubdir(src, dest)) {
     throw new Error(
       `Cannot copy '${src}' to a subdirectory of itself, '${dest}'.`
     );
