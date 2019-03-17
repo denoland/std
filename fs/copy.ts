@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import * as path from "./path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { unimplemented } from "../testing/asserts";
+import { unimplemented } from "../testing/asserts.ts";
 
 export interface CopyOptions {
   /* overwrite existing file or directory, default is false */
