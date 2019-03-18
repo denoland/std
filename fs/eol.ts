@@ -7,8 +7,6 @@ export enum EOL {
 }
 
 const regDetect = /(?:\r?\n)/g;
-const regCRLF = /\r\n/g;
-const regLF = /\n/g;
 
 /**
  * Detect the EOL character for string input.
@@ -29,16 +27,5 @@ export function detect(content: string): EOL | null {
 
 /** Format the file to the targeted EOL */
 export function format(content: string, eol: EOL): string {
-  const _eol = detect(content);
-  if (!_eol) {
-    return content;
-  } else if (_eol === eol) {
-    return content;
-  } else {
-    if (_eol === EOL.CRLF) {
-      return content.replace(regCRLF, eol);
-    } else {
-      return content.replace(regLF, eol);
-    }
-  }
+  return content.replace(regDetect, eol);
 }
