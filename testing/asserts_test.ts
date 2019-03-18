@@ -8,6 +8,9 @@ import {
   assertMatch,
   assertEquals,
   assertThrows,
+  assertNotThrows,
+  assertThrowsAsync,
+  assertNotThrowsAsync,
   AssertionError,
   equal,
   fail,
@@ -151,5 +154,57 @@ test(function testingAssertFail() {
     },
     AssertionError,
     "Failed assertion: foo"
+  );
+});
+
+test(function testingAssertThrows() {
+  assertThrows(fail, AssertionError, "Failed assertion.");
+  assertThrows(
+    () => {
+      fail("foo");
+    },
+    AssertionError,
+    "Failed assertion: foo"
+  );
+});
+
+test(function testingAssertNotThrows() {
+  assertNotThrows(() => {
+    // empty function.
+    // id doest not throw
+  });
+
+  assertThrows(
+    () => {
+      assertNotThrows(fail);
+    },
+    AssertionError,
+    "Expected function to do not throw."
+  );
+});
+
+test(async function testingAssertThrowsAsync() {
+  await assertThrowsAsync(
+    async () => {
+      fail();
+    },
+    AssertionError,
+    "Failed assertion."
+  );
+});
+
+test(async function testingAssertNotThrowsAsync() {
+  await assertNotThrowsAsync(async () => {
+    // empty function.
+    // id doest not throw
+  });
+
+  await assertThrowsAsync(
+    async () => {
+      // this should throw an error
+      await assertNotThrowsAsync(async () => fail());
+    },
+    AssertionError,
+    "Expected function to do not throw."
   );
 });

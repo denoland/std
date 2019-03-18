@@ -223,15 +223,15 @@ export function fail(msg?: string): void {
   assert(false, `Failed assertion${msg ? `: ${msg}` : "."}`);
 }
 
-/** Executes a function, expecting it to throw.  If it does not, then it
- * throws.  An error class and a string that should be included in the
- * error message can also be asserted.
+/**
+ * Executes a function, expecting it should throw or not.
  */
-export function assertThrows(
+function _throwsAssertion(
   fn: () => void,
   ErrorClass?: Constructor,
   msgIncludes = "",
-  msg?: string
+  msg?: string,
+  shouldThrow: boolean = true
 ): void {
   let doesThrow = false;
   try {
@@ -251,17 +251,23 @@ export function assertThrows(
     }
     doesThrow = true;
   }
-  if (!doesThrow) {
-    msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
+  if (shouldThrow !== doesThrow) {
+    msg = `Expected function to ${!shouldThrow ? "do not " : ""}throw${
+      msg ? `: ${msg}` : "."
+    }`;
     throw new AssertionError(msg);
   }
 }
 
-export async function assertThrowsAsync(
+/**
+ * Executes a function asynchronous, expecting it should throw or not.
+ */
+async function _throwsAsyncAssertion(
   fn: () => Promise<void>,
   ErrorClass?: Constructor,
   msgIncludes = "",
-  msg?: string
+  msg?: string,
+  shouldThrow: boolean = true
 ): Promise<void> {
   let doesThrow = false;
   try {
@@ -281,10 +287,64 @@ export async function assertThrowsAsync(
     }
     doesThrow = true;
   }
-  if (!doesThrow) {
-    msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
+  if (shouldThrow !== doesThrow) {
+    msg = `Expected function to ${!shouldThrow ? "do not " : ""}throw${
+      msg ? `: ${msg}` : "."
+    }`;
     throw new AssertionError(msg);
   }
+}
+
+/** Executes a function, expecting it to throw.  If it does not, then it
+ * throws.  An error class and a string that should be included in the
+ * error message can also be asserted.
+ */
+export function assertThrows(
+  fn: () => void,
+  ErrorClass?: Constructor,
+  msgIncludes = "",
+  msg?: string
+): void {
+  _throwsAssertion(fn, ErrorClass, msgIncludes, msg, true);
+}
+
+/** Executes a function, expecting it does not to throw.  If it does, then it
+ * throws.  An error class and a string that should be included in the
+ * error message can also be asserted.
+ */
+export function assertNotThrows(
+  fn: () => void,
+  ErrorClass?: Constructor,
+  msgIncludes = "",
+  msg?: string
+): void {
+  _throwsAssertion(fn, ErrorClass, msgIncludes, msg, false);
+}
+
+/** Executes a function asynchronous, expecting it to throw.  If it does not, then it
+ * throws.  An error class and a string that should be included in the
+ * error message can also be asserted.
+ */
+export async function assertThrowsAsync(
+  fn: () => Promise<void>,
+  ErrorClass?: Constructor,
+  msgIncludes = "",
+  msg?: string
+): Promise<void> {
+  await _throwsAsyncAssertion(fn, ErrorClass, msgIncludes, msg, true);
+}
+
+/** Executes a function asynchronous, expecting it does not to throw.  If it does, then it
+ * throws.  An error class and a string that should be included in the
+ * error message can also be asserted.
+ */
+export async function assertNotThrowsAsync(
+  fn: () => Promise<void>,
+  ErrorClass?: Constructor,
+  msgIncludes = "",
+  msg?: string
+): Promise<void> {
+  await _throwsAsyncAssertion(fn, ErrorClass, msgIncludes, msg, false);
 }
 
 /** Use this to stub out methods that will throw when invoked. */
