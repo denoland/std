@@ -34,3 +34,11 @@ test(function existsDirectorySync() {
   );
   assertEquals(existsSync(testdataDir), true);
 });
+
+test(function existsLinkSync() {
+  assertEquals(existsSync(path.join(testdataDir, "0-link.ts")), true);
+});
+
+test(async function existsLink() {
+  assertEquals(await exists(path.join(testdataDir, "0-link.ts")), true);
+});
