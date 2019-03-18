@@ -1,7 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import * as path from "./path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { unimplemented } from "../testing/asserts.ts";
 import { isSubdir } from "./utils.ts";
 
 export interface CopyOptions {
@@ -21,12 +20,24 @@ function copyFileSync(src: string, dest: string): void {
 /* copy link to dest */
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 async function copyLink(src: string, dest: string): Promise<void> {
-  unimplemented();
+  let type = "";
+  const originSrcFilePath = await Deno.readlink(src);
+  if (Deno.platform.os === "win") {
+    const srcStat = await Deno.stat(src);
+    type = srcStat.isDirectory() ? "dir" : "file";
+  }
+  await Deno.symlink(originSrcFilePath, dest, type);
 }
 
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 function copyLinkSync(src: string, dest: string): void {
-  unimplemented();
+  let type = "";
+  const originSrcFilePath = Deno.readlinkSync(src);
+  if (Deno.platform.os === "win") {
+    const srcStat = Deno.statSync(src);
+    type = srcStat.isDirectory() ? "dir" : "file";
+  }
+  Deno.symlinkSync(originSrcFilePath, dest, type);
 }
 
 /* copy folder from src to dest. */
@@ -80,7 +91,7 @@ export async function copy(
     throw new Error("Source and destination must not be the same.");
   }
 
-  const srcStat = await Deno.stat(src);
+  const srcStat = await Deno.lstat(src);
 
   if (srcStat.isDirectory() && isSubdir(src, dest)) {
     throw new Error(
@@ -88,7 +99,7 @@ export async function copy(
     );
   }
 
-  const destStat = await Deno.stat(dest).catch(() => null);
+  const destStat = await Deno.lstat(dest).catch(() => null);
 
   async function destOverwriteCheck(): Promise<void> {
     // if dest exists

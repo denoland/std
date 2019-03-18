@@ -163,6 +163,24 @@ test(async function copyDirectory() {
   await Deno.remove(destDir, { recursive: true });
 });
 
+test(async function copyLinkFile() {
+  const dir = path.join(testdataDir, "copy_dir_link_file");
+  const srcLink = path.join(dir, "0.txt"); // this is a file link
+  const destLink = path.join(dir, "0-copy.txt"); // this is a file link
+
+  await copy(srcLink, destLink);
+  await Deno.remove(destLink, { recursive: true });
+});
+
+test(async function copyLinkDir() {
+  const dir = path.join(testdataDir, "copy_dir_link_file");
+  const srcLink = path.join(dir, "0.txt"); // this is a file link
+  const destLink = path.join(dir, "0-copy.txt"); // this is a file link
+
+  await copy(srcLink, destLink);
+  await Deno.remove(destLink, { recursive: true });
+});
+
 test(function copySyncIfNotExists() {
   const srcFile = path.join(testdataDir, "copy_file_not_exists_sync.txt");
   const destFile = path.join(testdataDir, "copy_file_not_exists_1_sync.txt");
