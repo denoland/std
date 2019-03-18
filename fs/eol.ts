@@ -30,7 +30,9 @@ export function detect(content: string): EOL | null {
 /** Format the file to the targeted EOL */
 export function format(content: string, eol: EOL): string {
   const _eol = detect(content);
-  if (_eol === eol) {
+  if (!_eol) {
+    return content;
+  } else if (_eol === eol) {
     return content;
   } else {
     if (_eol === EOL.CRLF) {

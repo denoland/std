@@ -5,6 +5,7 @@ import { format, detect, EOL } from "./eol.ts";
 
 const CRLFinput = "deno\r\nis not\r\nnode";
 const LFinput = "deno\nis not\nnode";
+const NoNLinput = "deno is not node";
 
 test(function detectCRLF() {
   assertEquals(detect(CRLFinput), EOL.CRLF);
@@ -13,12 +14,13 @@ test(function detectLF() {
   assertEquals(detect(LFinput), EOL.LF);
 });
 test(function detectNoNewLine() {
-  const input = "deno is not node";
-  assertEquals(detect(input), null);
+  assertEquals(detect(NoNLinput), null);
 });
 test(function testFormat() {
   assertEquals(format(CRLFinput, EOL.LF), LFinput);
   assertEquals(format(LFinput, EOL.LF), LFinput);
   assertEquals(format(LFinput, EOL.CRLF), CRLFinput);
   assertEquals(format(CRLFinput, EOL.CRLF), CRLFinput);
+  assertEquals(format(CRLFinput, EOL.CRLF), CRLFinput);
+  assertEquals(format(NoNLinput, EOL.CRLF), NoNLinput);
 });
