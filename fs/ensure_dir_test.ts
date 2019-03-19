@@ -13,7 +13,7 @@ test(async function ensureDirIfItNotExist() {
 
   await ensureDir(testDir);
 
-  assertThrowsAsync(async () => {
+  await assertThrowsAsync(async () => {
     await Deno.stat(testDir).then(() => {
       throw new Error("test dir should exists.");
     });
@@ -70,7 +70,7 @@ test(async function ensureDirIfItAsFile() {
 
   await ensureFile(testFile);
 
-  assertThrowsAsync(
+  await assertThrowsAsync(
     async () => {
       await ensureDir(testFile);
     },
