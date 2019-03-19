@@ -28,6 +28,7 @@ export enum PathType {
   symlink = "symlink"
 }
 
+/* Get a human readable file type string */
 export function getFileInfoType(fileInfo: Deno.FileInfo): PathType | null {
   return fileInfo.isFile()
     ? PathType.file
