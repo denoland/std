@@ -12,7 +12,7 @@ test(async function ensureFileIfItNotExist() {
 
   await ensureFile(testFile);
 
-  assertThrowsAsync(async () => {
+  await assertThrowsAsync(async () => {
     await Deno.stat(testFile).then(() => {
       throw new Error("test file should exists.");
     });
@@ -44,7 +44,7 @@ test(async function ensureFileIfItExist() {
 
   await ensureFile(testFile);
 
-  assertThrowsAsync(async () => {
+  await assertThrowsAsync(async () => {
     await Deno.stat(testFile).then(() => {
       throw new Error("test file should exists.");
     });
@@ -75,7 +75,7 @@ test(async function ensureFileIfItExistAsDir() {
 
   await Deno.mkdir(testDir, true);
 
-  assertThrowsAsync(
+  await assertThrowsAsync(
     async () => {
       await ensureFile(testDir);
     },
@@ -83,7 +83,7 @@ test(async function ensureFileIfItExistAsDir() {
     `Ensure path exists, expected 'file', got 'dir'`
   );
 
-  Deno.removeSync(testDir, { recursive: true });
+  await Deno.remove(testDir, { recursive: true });
 });
 
 test(function ensureFileSyncIfItExistAsDir() {

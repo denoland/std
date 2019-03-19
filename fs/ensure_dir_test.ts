@@ -28,10 +28,7 @@ test(function ensureDirSyncIfItNotExist() {
 
   ensureDirSync(testDir);
 
-  assertThrows(() => {
-    Deno.statSync(testDir);
-    throw new Error("test dir should exists.");
-  });
+  Deno.statSync(testDir);
 
   Deno.removeSync(baseDir, { recursive: true });
 });
@@ -45,11 +42,7 @@ test(async function ensureDirIfItExist() {
 
   await ensureDir(testDir);
 
-  assertThrowsAsync(async () => {
-    await Deno.stat(testDir).then(() => {
-      throw new Error("test dir should still exists.");
-    });
-  });
+  Deno.stat(testDir);
 
   await Deno.remove(baseDir, { recursive: true });
 });
