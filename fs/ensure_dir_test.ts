@@ -42,7 +42,11 @@ test(async function ensureDirIfItExist() {
 
   await ensureDir(testDir);
 
-  Deno.stat(testDir);
+  await assertThrowsAsync(async () => {
+    await Deno.stat(testDir).then(() => {
+      throw new Error("test dir should still exists.");
+    });
+  });
 
   await Deno.remove(baseDir, { recursive: true });
 });
