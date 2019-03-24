@@ -49,7 +49,7 @@ test(async function testPrettierCheckAndFormatFiles() {
   await clearTestdataChanges();
 
   const files = [
-    join(testdata, "0.ts"), 
+    join(testdata, "0.ts"),
     join(testdata, "1.js"),
     join(testdata, "2.ts")
   ];
