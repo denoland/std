@@ -124,8 +124,8 @@ function previousPrinted(name: string, results: TestResults): boolean {
 async function createTestCase(
   stats: TestStats,
   results: TestResults,
-  { fn, name }: TestDefinition,
-  exitOnFail: boolean
+  exitOnFail: boolean,
+  { fn, name }: TestDefinition
 ): Promise<void> {
   const result: TestResult = results.cases.get(results.keys.get(name));
   try {
