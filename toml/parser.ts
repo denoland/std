@@ -39,11 +39,11 @@ class Parser {
   _mergeMultilines(): void {
     function multilineArrayStart(line: string): boolean {
       const reg = /.*=\s*\[/g;
-      return reg.test(line) && !line.endsWith(']');
+      return reg.test(line) && !(line[line.length - 1] === "]");
     }
 
     function multilineArrayEnd(line: string): boolean {
-      return line.endsWith("]");
+      return line[line.length - 1] === "]";
     }
 
     function multilineStringStart(line: string): boolean {
@@ -144,7 +144,7 @@ class Parser {
   }
   _isGroup(line: string): boolean {
     const t = line.trim();
-    return t.startsWith("[") && t.endsWith("]");
+    return t[0] === "[" && t[t.length - 1] === "]";
   }
   _isDeclaration(line: string): boolean {
     return line.split("=").length > 1;
@@ -193,7 +193,7 @@ class Parser {
       return NaN;
     }
     // inline table
-    if (dataString.startsWith("{") && dataString.endsWith("}")) {
+    if (dataString[0] === "{" && dataString[dataString.length - 1] === "}") {
       const reg = /([a-zA-Z0-9-_\.]*) (=)/gi;
       let result;
       while ((result = reg.exec(dataString))) {
@@ -208,19 +208,14 @@ class Parser {
     }
     // If binary / octal / hex
     if (
-      dataString.startsWith("0b") ||
-      dataString.startsWith("0o") ||
-      dataString.startsWith("0x")
+      dataString[0] === "0" &&
+      (dataString[1] === "b" || dataString[1] === "o" || dataString[1] === "x")
     ) {
       return dataString;
     }
 
     if (this._isParsableNumber(dataString)) {
-      if (isNaN(parseFloat(dataString))) {
-        return eval(dataString);
-      } else {
-        return parseFloat(dataString.replace(/_/g, ""));
-      }
+      return eval(dataString.replace(/_/g, ""));
     }
 
     // Handle First and last EOL for multiline strings
@@ -242,8 +237,8 @@ class Parser {
     return reg.test(str);
   }
   _isParsableNumber(dataString: string): boolean {
-    let d = dataString.replace("_", "");
-    return !isNaN(parseFloat(d.replace("_", "")));
+    let d = dataString.replace(/_/g, "");
+    return !isNaN(parseFloat(d));
   }
   _isDate(dateStr: string): boolean {
     const reg = /\d{4}-\d{2}-\d{2}/;
