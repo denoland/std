@@ -37,7 +37,10 @@ Asserts are exposed in `testing/asserts.ts` module.
 - `unimplemented()` - Use this to stub out methods that will throw when invoked
 - `unreachable()` - Used to assert unreachable code
 
-`runTests()` executes the declared tests.
+`runTests()` executes the declared tests. It accepts a `RunOptions` parameter:
+
+- parallel : Execute tests in a parallel way.
+- exitOnFail : if one test fails, test will throw an error and stop the tests. If not all tests will be processed.
 
 Basic usage:
 
