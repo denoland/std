@@ -205,7 +205,7 @@ export interface RunOptions {
  */
 export async function runTests({
   parallel = false,
-  exitOnFail = true
+  exitOnFail = false
 }: RunOptions = {}): Promise<void> {
   const stats: TestStats = {
     measured: 0,
