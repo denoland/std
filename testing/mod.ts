@@ -10,7 +10,7 @@ export interface TestDefinition {
 }
 
 let filterRegExp: RegExp | null;
-const tests: TestDefinition[] = [];
+let tests: TestDefinition[] = [];
 
 let filtered = 0;
 
@@ -221,6 +221,7 @@ export async function runTests({
   } else {
     await runTestsSerial(stats, tests, exitOnFail);
   }
+  tests = [];
   printResults(stats, results, parallel, exitOnFail);
   if (stats.failed) {
     // Use setTimeout to avoid the error being ignored due to unhandled
