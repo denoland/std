@@ -1,18 +1,24 @@
 # TOML
 
-This module parse TOML files. It follows as much as possible the [TOML specs](https://github.com/toml-lang/toml). Be sure to read the supported types as not every specs is supported at the moment and the handling in TypeScript side is a bit different.
+This module parse TOML files. It follows as much as possible the
+[TOML specs](https://github.com/toml-lang/toml). Be sure to read the supported
+types as not every specs is supported at the moment and the handling in
+TypeScript side is a bit different.
 
 ## Supported types and handling
 
 - :heavy_check_mark: [Keys](https://github.com/toml-lang/toml#string)
 - :exclamation: [String](https://github.com/toml-lang/toml#string)
-- :heavy_check_mark: [Multiline String](https://github.com/toml-lang/toml#string)
+- :heavy_check_mark:
+[Multiline String](https://github.com/toml-lang/toml#string)
 - :heavy_check_mark: [Literal String](https://github.com/toml-lang/toml#string)
 - :exclamation: [Integer](https://github.com/toml-lang/toml#integer)
 - :heavy_check_mark: [Float](https://github.com/toml-lang/toml#float)
 - :heavy_check_mark: [Boolean](https://github.com/toml-lang/toml#boolean)
-- :heavy_check_mark: [Offset Date-time](https://github.com/toml-lang/toml#offset-date-time)
-- :heavy_check_mark: [Local Date-time](https://github.com/toml-lang/toml#local-date-time)
+- :heavy_check_mark:
+[Offset Date-time](https://github.com/toml-lang/toml#offset-date-time)
+- :heavy_check_mark:
+[Local Date-time](https://github.com/toml-lang/toml#local-date-time)
 - :heavy_check_mark: [Local Date](https://github.com/toml-lang/toml#local-date)
 - :exclamation: [Local Time](https://github.com/toml-lang/toml#local-time)
 - :heavy_check_mark: [Table](https://github.com/toml-lang/toml#table)
@@ -25,11 +31,13 @@ This module parse TOML files. It follows as much as possible the [TOML specs](ht
 
 #### String
 
-- Regex : Due to the spec, there is no flag to detect regex properly in a TOML declaration. So the regex is stored as string.
+- Regex : Due to the spec, there is no flag to detect regex properly
+  in a TOML declaration. So the regex is stored as string.
 
 #### Integer
 
-For **Binary** / **Octal** / **Hexadecimal** numbers, they are stored as string to be not interpreted as Decimal.
+For **Binary** / **Octal** / **Hexadecimal** numbers,
+they are stored as string to be not interpreted as Decimal.
 
 #### Local Time
 
@@ -41,7 +49,8 @@ Inline tables are supported but nested inline property name are **not**. See bel
 
 ```toml
 animal = { type = { name = "pug" } } # Supported
-animal = { type.name = "pug" } # not supported. Will output { "animal" : {"type.name":"pug"} }
+animal = { type.name = "pug" }
+# not supported. Will output { "animal" : {"type.name":"pug"} }
 ```
 
 ## Usage
