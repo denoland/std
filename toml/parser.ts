@@ -2,7 +2,6 @@
 import { existsSync } from "../fs/exists.ts";
 import { deepAssign } from "../util/deep_assign.ts";
 
-const regGroup = /\[.*\]/;
 class KeyValuePair {
   key: string;
   value: unknown;
@@ -37,16 +36,16 @@ class Parser {
   }
 
   _mergeMultilines(): void {
-    function multilineArrayStart(line: string): boolean {
+    function arrayStart(line: string): boolean {
       const reg = /.*=\s*\[/g;
       return reg.test(line) && !(line[line.length - 1] === "]");
     }
 
-    function multilineArrayEnd(line: string): boolean {
+    function arrayEnd(line: string): boolean {
       return line[line.length - 1] === "]";
     }
 
-    function multilineStringStart(line: string): boolean {
+    function stringStart(line: string): boolean {
       const m = line.match(/.*=\s*(?:\"\"\"|''')/);
       if (!m) {
         return false;
@@ -54,7 +53,7 @@ class Parser {
       return !line.endsWith(`"""`) || !line.endsWith(`'''`);
     }
 
-    function multilineStringEnd(line: string): boolean {
+    function stringEnd(line: string): boolean {
       return line.endsWith(`'''`) || line.endsWith(`"""`);
     }
 
@@ -72,16 +71,16 @@ class Parser {
     for (let i = 0; i < this.tomlLines.length; i++) {
       const line = this.tomlLines[i];
       const trimmed = line.trim();
-      if (!capture && multilineArrayStart(trimmed)) {
+      if (!capture && arrayStart(trimmed)) {
         capture = true;
         captureType = "array";
-      } else if (!capture && multilineStringStart(trimmed)) {
+      } else if (!capture && stringStart(trimmed)) {
         isLiteral = isLiteralString(trimmed);
         capture = true;
         captureType = "string";
-      } else if (capture && multilineArrayEnd(trimmed)) {
+      } else if (capture && arrayEnd(trimmed)) {
         merge = true;
-      } else if (capture && multilineStringEnd(trimmed)) {
+      } else if (capture && stringEnd(trimmed)) {
         merge = true;
       }
 
@@ -156,7 +155,7 @@ class Parser {
     }
     let g = new ParserGroup();
     g.name = line.match(captureReg)[1];
-    if (g.name.match(regGroup)) {
+    if (g.name.match(/\[.*\]/)) {
       g.type = "array";
       g.name = g.name.match(captureReg)[1];
     } else {

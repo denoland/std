@@ -6,6 +6,24 @@ import * as path from "../fs/path/mod.ts";
 const testFilesDir = path.resolve("toml", "test");
 
 test({
+  name: "[TOML] Strings",
+  fn() {
+    const expected = {
+      strings: {
+        str0: "deno",
+        str1: "Roses are not Deno\nViolets are not Deno either",
+        str2: "Roses are not Deno\nViolets are not Deno either",
+        str3: "Roses are not Deno\r\nViolets are not Deno either",
+        str4: "this is a \"quote\"",
+        lines: "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved."
+      }
+    };
+    const actual = parseFile(path.join(testFilesDir, "string.toml"));
+    assertEquals(actual, expected);
+  }
+});
+
+test({
   name: "[TOML] CRLF",
   fn() {
     const expected = { boolean: { bool1: true, bool2: false } };
