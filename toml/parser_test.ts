@@ -199,6 +199,7 @@ test({
     assertEquals(actual, expected);
   }
 });
+
 test({
   name: "[TOML] Array of Tables",
   fn() {
@@ -210,6 +211,51 @@ test({
       nib: [{ name: "node", path: "not_found" }]
     };
     const actual = parseFile(path.join(testFilesDir, "arrayTable.toml"));
+    assertEquals(actual, expected);
+  }
+});
+
+test({
+  name: "[TOML] Cargo",
+  fn() {
+    const expected = {
+      workspace: { members: ["./", "core"] },
+      bin: [{ name: "deno", path: "cli/main.rs" }],
+      package: { name: "deno", version: "0.3.4", edition: "2018" },
+      dependencies: {
+        deno_core: { path: "./core" },
+        ansi_term: "0.11.0",
+        atty: "0.2.11",
+        dirs: "1.0.5",
+        flatbuffers: "0.5.0",
+        futures: "0.1.25",
+        getopts: "0.2.18",
+        http: "0.1.16",
+        hyper: "0.12.24",
+        "hyper-rustls": "0.16.0",
+        "integer-atomics": "1.0.2",
+        lazy_static: "1.3.0",
+        libc: "0.2.49",
+        log: "0.4.6",
+        rand: "0.6.5",
+        regex: "1.1.0",
+        remove_dir_all: "0.5.1",
+        ring: "0.14.6",
+        rustyline: "3.0.0",
+        serde_json: "1.0.38",
+        "source-map-mappings": "0.5.0",
+        tempfile: "3.0.7",
+        tokio: "0.1.15",
+        "tokio-executor": "0.1.6",
+        "tokio-fs": "0.1.5",
+        "tokio-io": "0.1.11",
+        "tokio-process": "0.2.3",
+        "tokio-threadpool": "0.1.11",
+        url: "1.7.2"
+      },
+      target: { "cfg(windows)": { dependencies: { winapi: "0.3.6" } } }
+    };
+    const actual = parseFile(path.join(testFilesDir, "cargo.toml"));
     assertEquals(actual, expected);
   }
 });

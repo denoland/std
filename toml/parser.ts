@@ -136,7 +136,10 @@ class Parser {
     }
   }
   _groupToOutput(): void {
-    const arrProperty = this.context.currentGroup.name.split(".");
+    const arrProperty = this.context.currentGroup.name
+      .replace(/"/g, "")
+      .replace(/'/g, "")
+      .split(".");
     let u = {};
     if (this.context.currentGroup.type === "array") {
       u = this._unflat(arrProperty, this.context.currentGroup.arrValues);
