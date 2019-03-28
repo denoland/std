@@ -45,18 +45,18 @@ str3 = "Roses are red\r\nViolets are blue"
 str4 = "The quick brown fox jumps over the lazy dog."
 str5 = "this is a \"quote\""
 
-# str5 = """
-# The quick brown \
+str5 = """
+The quick brown \
 
 
-#   fox jumps over \
-#     the lazy dog."""
+  fox jumps over \
+    the lazy dog."""
 
-# str6 = """\
-#        The quick brown \
-#        fox jumps over \
-#        the lazy dog.\
-#        """
+str6 = """\
+       The quick brown \
+       fox jumps over \
+       the lazy dog.\
+       """
 lines  = '''
 The first newline is
 trimmed in raw strings.

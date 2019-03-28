@@ -85,21 +85,23 @@ class Parser {
       }
 
       if (capture) {
-        acc.push(line);
+        if (isLiteral) {
+          acc.push(line);
+        } else {
+          acc.push(trimmed);
+        }
       } else {
-        merged.push(line);
+        if (isLiteral) {
+          merged.push(line);
+        } else {
+          merged.push(trimmed);
+        }
       }
 
       if (merge) {
         capture = false;
         merge = false;
         if (captureType === "string") {
-          // see TOML specs for literal parsing
-          if (!isLiteral) {
-            for (let i = 0; i < acc.length; i++) {
-              acc[i] = acc[i].trim();
-            }
-          }
           merged.push(
             acc
               .join("\n")
@@ -229,6 +231,8 @@ class Parser {
       dataString = dataString.replace(`\\n'`, `'`);
     }
 
+    // dataString = dataString.replace(/\\/, "\\\\");
+
     return eval(dataString);
   }
   _isLocalTime(str: string): boolean {
@@ -279,7 +283,7 @@ class Parser {
 
 export function parse(tomlString: string): object {
   // File is potentially using EOL CRLF
-  tomlString = tomlString.replace(/\r\n/g, "\n");
+  tomlString = tomlString.replace(/\r\n/g, "\n").replace(/\\\n/g, "\n");
   return new Parser(tomlString).parse();
 }
 export function parseFile(filePath: string): object {

@@ -15,6 +15,8 @@ test({
         str2: "Roses are not Deno\nViolets are not Deno either",
         str3: "Roses are not Deno\r\nViolets are not Deno either",
         str4: "this is a \"quote\"",
+        str5: "The quick brown\nfox jumps over\nthe lazy dog.",
+        str6: "The quick brown\nfox jumps over\nthe lazy dog.",
         lines: "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved."
       }
     };

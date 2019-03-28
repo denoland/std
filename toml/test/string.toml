@@ -10,18 +10,18 @@ str2 = "Roses are not Deno\nViolets are not Deno either"
 str3 = "Roses are not Deno\r\nViolets are not Deno either"
 str4 = "this is a \"quote\""
 
-# str5 = """
-# The quick brown \
+str5 = """
+The quick brown \
 
 
-#   fox jumps over \
-#     the lazy dog."""
+  fox jumps over \
+    the lazy dog."""
 
-# str6 = """\
-#        The quick brown \
-#        fox jumps over \
-#        the lazy dog.\
-#        """
+str6 = """\
+       The quick brown \
+       fox jumps over \
+       the lazy dog.\
+       """
 lines  = '''
 The first newline is
 trimmed in raw strings.
