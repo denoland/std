@@ -218,6 +218,7 @@ test({
 test({
   name: "[TOML] Cargo",
   fn() {
+    /* eslint-disable @typescript-eslint/camelcase */
     const expected = {
       workspace: { members: ["./", "core"] },
       bin: [{ name: "deno", path: "cli/main.rs" }],
@@ -255,6 +256,7 @@ test({
       },
       target: { "cfg(windows)": { dependencies: { winapi: "0.3.6" } } }
     };
+    /* eslint-enable @typescript-eslint/camelcase */
     const actual = parseFile(path.join(testFilesDir, "cargo.toml"));
     assertEquals(actual, expected);
   }
