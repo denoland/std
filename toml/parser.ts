@@ -6,16 +6,19 @@ class KeyValuePair {
   key: string;
   value: unknown;
 }
+
 class ParserGroup {
   type: string;
   name: string;
   arrValues: unknown[] = [];
   objValues: object = {};
 }
+
 class ParserContext {
   currentGroup?: ParserGroup;
   output: object = {};
 }
+
 class Parser {
   tomlLines: string[];
   context: ParserContext;
@@ -286,6 +289,7 @@ export function parse(tomlString: string): object {
   tomlString = tomlString.replace(/\r\n/g, "\n").replace(/\\\n/g, "\n");
   return new Parser(tomlString).parse();
 }
+
 export function parseFile(filePath: string): object {
   if (!existsSync(filePath)) {
     throw new Error("File not found");
