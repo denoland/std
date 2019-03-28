@@ -10,15 +10,15 @@ TypeScript side is a bit different.
 - :heavy_check_mark: [Keys](https://github.com/toml-lang/toml#string)
 - :exclamation: [String](https://github.com/toml-lang/toml#string)
 - :heavy_check_mark:
-[Multiline String](https://github.com/toml-lang/toml#string)
+  [Multiline String](https://github.com/toml-lang/toml#string)
 - :heavy_check_mark: [Literal String](https://github.com/toml-lang/toml#string)
 - :exclamation: [Integer](https://github.com/toml-lang/toml#integer)
 - :heavy_check_mark: [Float](https://github.com/toml-lang/toml#float)
 - :heavy_check_mark: [Boolean](https://github.com/toml-lang/toml#boolean)
 - :heavy_check_mark:
-[Offset Date-time](https://github.com/toml-lang/toml#offset-date-time)
+  [Offset Date-time](https://github.com/toml-lang/toml#offset-date-time)
 - :heavy_check_mark:
-[Local Date-time](https://github.com/toml-lang/toml#local-date-time)
+  [Local Date-time](https://github.com/toml-lang/toml#local-date-time)
 - :heavy_check_mark: [Local Date](https://github.com/toml-lang/toml#local-date)
 - :exclamation: [Local Time](https://github.com/toml-lang/toml#local-time)
 - :heavy_check_mark: [Table](https://github.com/toml-lang/toml#table)
