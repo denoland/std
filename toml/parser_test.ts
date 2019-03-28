@@ -3,7 +3,7 @@ import { test } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import { parseFile } from "./parser.ts";
 import * as path from "../fs/path/mod.ts";
-const testFilesDir = path.resolve("toml", "test");
+const testFilesDir = path.resolve("toml", "testdata");
 
 test({
   name: "[TOML] Strings",
