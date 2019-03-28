@@ -199,3 +199,17 @@ test({
     assertEquals(actual, expected);
   }
 });
+test({
+  name: "[TOML] Array of Tables",
+  fn() {
+    const expected = {
+      bin: [
+        { name: "deno", path: "cli/main.rs" },
+        { name: "deno_core", path: "src/foo.rs" }
+      ],
+      nib: [{ name: "node", path: "not_found" }]
+    };
+    const actual = parseFile(path.join(testFilesDir, "arrayTable.toml"));
+    assertEquals(actual, expected);
+  }
+});

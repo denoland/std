@@ -23,7 +23,7 @@ TypeScript side is a bit different.
 - :exclamation: [Local Time](https://github.com/toml-lang/toml#local-time)
 - :heavy_check_mark: [Table](https://github.com/toml-lang/toml#table)
 - :exclamation: [Inline Table](https://github.com/toml-lang/toml#inline-table)
-- :x: [Array of Tables](https://github.com/toml-lang/toml#array-of-tables)
+- :exclamation: [Array of Tables](https://github.com/toml-lang/toml#array-of-tables)
 
 :exclamation: _Supported with warnings see [Warning](#Warning)._
 
@@ -51,6 +51,36 @@ Inline tables are supported but nested inline property name are **not**. See bel
 animal = { type = { name = "pug" } } # Supported
 animal = { type.name = "pug" }
 # not supported. Will output { "animal" : {"type.name":"pug"} }
+```
+
+#### Array of Tables
+
+At the moment only simple declarations like below are supported:
+
+```toml
+[[bin]]
+name = "deno"
+path = "cli/main.rs"
+
+[[bin]]
+name = "deno_core"
+path = "src/foo.rs"
+
+[[nib]]
+name = "node"
+path = "not_found"
+```
+
+will output:
+
+```json
+{
+  "bin": [
+    { "name": "deno", "path": "cli/main.rs" },
+    { "name": "deno_core", "path": "src/foo.rs" }
+  ],
+  "nib": [{ "name": "node", "path": "not_found" }]
+}
 ```
 
 ## Usage

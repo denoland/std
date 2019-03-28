@@ -137,7 +137,12 @@ class Parser {
   }
   _groupToOutput(): void {
     const arrProperty = this.context.currentGroup.name.split(".");
-    let u = this._unflat(arrProperty, this.context.currentGroup.objValues);
+    let u = {};
+    if (this.context.currentGroup.type === "array") {
+      u = this._unflat(arrProperty, this.context.currentGroup.arrValues);
+    } else {
+      u = this._unflat(arrProperty, this.context.currentGroup.objValues);
+    }
     deepAssign(this.context.output, u);
     delete this.context.currentGroup;
   }
@@ -253,27 +258,46 @@ class Parser {
   _parseLines(): void {
     for (let i = 0; i < this.tomlLines.length; i++) {
       const line = this.tomlLines[i];
+
+      // TODO (zekth) Handle unflat of array of tables
       if (this._isGroup(line)) {
-        this._createGroup(line);
-        continue;
+        // if the current group is an array we push the
+        // parsed objects in it.
+        if (
+          this.context.currentGroup &&
+          this.context.currentGroup.type === "array"
+        ) {
+          this.context.currentGroup.arrValues.push(
+            this.context.currentGroup.objValues
+          );
+          this.context.currentGroup.objValues = {};
+        }
+        // If we need to create a group or to change group
+        if (
+          !this.context.currentGroup ||
+          (this.context.currentGroup &&
+            this.context.currentGroup.name !==
+              line.replace(/\[/g, "").replace(/\]/g, ""))
+        ) {
+          this._createGroup(line);
+          continue;
+        }
       }
       if (this._isDeclaration(line)) {
         let kv = this._processDeclaration(line);
         if (!this.context.currentGroup) {
           this.context.output[kv.key] = kv.value;
         } else {
-          if (this.context.currentGroup.type === "array") {
-            // TODO (zekth) : handle array [[fruit]]
-            let out = {};
-            out[kv.key] = kv.value;
-            this.context.currentGroup.arrValues.push(out);
-          } else {
-            this.context.currentGroup.objValues[kv.key] = kv.value;
-          }
+          this.context.currentGroup.objValues[kv.key] = kv.value;
         }
       }
     }
     if (this.context.currentGroup) {
+      if (this.context.currentGroup.type === "array") {
+        this.context.currentGroup.arrValues.push(
+          this.context.currentGroup.objValues
+        );
+      }
       this._groupToOutput();
     }
   }
