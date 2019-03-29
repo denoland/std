@@ -157,7 +157,7 @@ class Parser {
   }
   _isGroup(line: string): boolean {
     const t = line.trim();
-    return t[0] === "[" && t[t.length - 1] === "]";
+    return t[0] === "[" && /\[(.*)\]/.exec(t) ? true : false;
   }
   _isDeclaration(line: string): boolean {
     return line.split("=").length > 1;
