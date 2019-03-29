@@ -8,4 +8,4 @@ async function main() {
   await runTests({ parallel: true, only: /^testing/ });
 }
 
-main();
+main().then(() => process.exit(0));
