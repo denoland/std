@@ -1,7 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 import { green, red } from "../colors/mod.ts";
-
 export type TestFunction = () => void | Promise<void>;
 
 export interface TestDefinition {
@@ -9,9 +8,49 @@ export interface TestDefinition {
   name: string;
 }
 
+const noopConsole = {
+  assert: function() {},
+  debug: function() {},
+  dir: function() {},
+  error: function() {},
+  info: function() {},
+  log: function() {},
+  time: function() {},
+  timeEnd: function() {},
+  warn: function() {}
+};
+
+const saveConsole = {
+  assert: console.assert,
+  debug: console.debug,
+  dir: console.dir,
+  error: console.error,
+  info: console.info,
+  log: console.log,
+  time: console.time,
+  timeEnd: console.timeEnd,
+  warn: console.warn
+};
+
+type DisableAction = "restore" | "disable";
+
+function consoleDisabler(action: DisableAction = "disable") {
+  let src;
+  if (action == "restore") {
+    src = saveConsole;
+  } else {
+    src = noopConsole;
+  }
+  for (const key in console) {
+    if (src[key]) {
+      console[key] = src[key];
+    }
+  }
+}
+
 let filterRegExp: RegExp | null;
 const candidates: TestDefinition[] = [];
-
+// const noop = function() {};
 let filtered = 0;
 
 // Must be called before any test() that needs to be filtered.
@@ -42,7 +81,7 @@ export function test(t: TestDefinition | TestFunction): void {
 }
 
 const RED_FAILED = red("FAILED");
-const GREEN_OK = green("ok");
+const GREEN_OK = green("OK");
 
 interface TestStats {
   filtered: number;
@@ -77,13 +116,11 @@ function createTestResults(tests: TestDefinition[]): TestResults {
 
 function report(result: TestResult): void {
   if (result.ok) {
-    console.log(`test ${result.name} ... ${GREEN_OK}`);
+    saveConsole.log(`${GREEN_OK}     ${result.name}`);
   } else if (result.error) {
-    console.error(
-      `test ${result.name} ... ${RED_FAILED}\n${result.error.stack}`
-    );
+    saveConsole.log(`${RED_FAILED} ${result.name}\n${result.error.stack}`);
   } else {
-    console.log(`test ${result.name} ... unresolved`);
+    saveConsole.log(`test ${result.name} ... unresolved`);
   }
   result.printed = true;
 }
@@ -148,42 +185,60 @@ function initTestCases(
   stats: TestStats,
   results: TestResults,
   tests: TestDefinition[],
-  exitOnFail: boolean
+  exitOnFail: boolean,
 ): Array<Promise<void>> {
-  return tests.map(createTestCase.bind(null, stats, results, exitOnFail));
+  return tests.map(
+    createTestCase.bind(null, stats, results, exitOnFail)
+  );
 }
 
 async function runTestsParallel(
   stats: TestStats,
   results: TestResults,
   tests: TestDefinition[],
+  disableLog: boolean,
   exitOnFail: boolean
 ): Promise<void> {
   try {
-    await Promise.all(initTestCases(stats, results, tests, exitOnFail));
+    if (disableLog) {
+      consoleDisabler("disable");
+    }
+    await Promise.all(
+      initTestCases(stats, results, tests, exitOnFail)
+    );
   } catch (_) {
     // The error was thrown to stop awaiting all promises if exitOnFail === true
     // stats.failed has been incremented and the error stored in results
+  }
+  if (disableLog) {
+    consoleDisabler("restore");
   }
 }
 
 async function runTestsSerial(
   stats: TestStats,
   tests: TestDefinition[],
-  exitOnFail: boolean
+  exitOnFail: boolean,
+  disableLog: boolean
 ): Promise<void> {
   for (const { fn, name } of tests) {
     // See https://github.com/denoland/deno/pull/1452
     // about this usage of groupCollapsed
-    console.groupCollapsed(`test ${name} `);
+    if (disableLog) {
+      consoleDisabler("disable");
+    }
     try {
       await fn();
+      if (disableLog) {
+        consoleDisabler("restore");
+      }
       stats.passed++;
-      console.log("...", GREEN_OK);
-      console.groupEnd();
+      console.log(GREEN_OK + "    ", name);
     } catch (err) {
-      console.log("...", RED_FAILED);
-      console.groupEnd();
+      if (disableLog) {
+        consoleDisabler("restore");
+      }
+      console.log(RED_FAILED, name);
       console.error(err.stack);
       stats.failed++;
       if (exitOnFail) {
@@ -199,6 +254,7 @@ export interface RunOptions {
   exitOnFail?: boolean;
   only?: RegExp;
   skip?: RegExp;
+  disableLog?: boolean;
 }
 
 /**
@@ -209,7 +265,8 @@ export async function runTests({
   parallel = false,
   exitOnFail = false,
   only = /[^\s]/,
-  skip = /^\s*$/
+  skip = /^\s*$/,
+  disableLog = false
 }: RunOptions = {}): Promise<void> {
   const tests: TestDefinition[] = candidates.filter(
     ({ name }): boolean => only.test(name) && !skip.test(name)
@@ -224,9 +281,9 @@ export async function runTests({
   const results: TestResults = createTestResults(tests);
   console.log(`running ${tests.length} tests`);
   if (parallel) {
-    await runTestsParallel(stats, results, tests, exitOnFail);
+    await runTestsParallel(stats, results, tests, disableLog, exitOnFail);
   } else {
-    await runTestsSerial(stats, tests, exitOnFail);
+    await runTestsSerial(stats, tests, exitOnFail, disableLog);
   }
   printResults(stats, results, parallel, exitOnFail);
   if (stats.failed) {
