@@ -30,7 +30,7 @@ test(async function benching() {
     b.start();
     await Promise.all(urls.map(async (denoland: string) => {
       let r = await fetch(denoland);
-      let b = await r.text();
+      await r.text();
     }));
     b.stop();
   });
