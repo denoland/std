@@ -20,7 +20,7 @@ test(async function benching() {
     b.start();
     for (let i = 0; i < 10; i++) {
       let r = await fetch("https://deno.land/");
-      let b = await r.text();
+      await r.text();
     }
     b.stop();
   });
