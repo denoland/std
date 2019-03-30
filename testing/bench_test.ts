@@ -28,10 +28,12 @@ test(async function benching() {
   bench(async function promiseAllFetchDenolandX10(b) {
     const urls = new Array(10).fill("https://deno.land/");
     b.start();
-    await Promise.all(urls.map(async (denoland: string) => {
-      let r = await fetch(denoland);
-      await r.text();
-    }));
+    await Promise.all(
+      urls.map(async (denoland: string) => {
+        let r = await fetch(denoland);
+        await r.text();
+      })
+    );
     b.stop();
   });
 
