@@ -85,6 +85,8 @@ will output:
 
 ## Usage
 
+### Parse
+
 ```ts
 import { parseFile, parse } from "./parser.ts";
 
@@ -92,4 +94,18 @@ const tomlObject = parseFile("file.toml");
 
 const tomlString = 'foo.bar = "Deno"';
 const tomlObject22 = parse(tomlString);
+```
+
+### Dump
+
+```ts
+import { dump } from "./parser.ts";
+const obj = {
+  bin: [
+    { name: "deno", path: "cli/main.rs" },
+    { name: "deno_core", path: "src/foo.rs" }
+  ],
+  nib: [{ name: "node", path: "not_found" }]
+};
+const tomlString = dump(obj);
 ```
