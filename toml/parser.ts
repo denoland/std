@@ -357,9 +357,24 @@ class Parser {
       this._groupToOutput();
     }
   }
+  _cleanOutput(): void {
+    this._propertyClean(this.context.output);
+  }
+  _propertyClean(obj: object): void {
+    const keys = Object.keys(obj);
+    for (let i = 0; i < keys.length; i++) {
+      const k = keys[i];
+      const v = obj[k];
+      console.log(`k:${k} v:${v}\n`);
+      if(v instanceof Object){
+        this._propertyClean(v)
+      }
+    }
+  }
   parse(): object {
     this._sanitize();
     this._parseLines();
+    this._cleanOutput();
     return this.context.output;
   }
 }
