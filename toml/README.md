@@ -49,13 +49,13 @@ Inline tables are supported. See below:
 
 ```toml
 animal = { type = { name = "pug" } }
-# Supported
+# Output
 animal = { type.name = "pug" }
-# not supported. Will output { animal : { type : { name : "pug" } }
+# Output { animal : { type : { name : "pug" } }
 animal.as.leaders = "tosin"
-# Supported will output { animal: { as: { leaders: "tosin" } } }
+# Output { animal: { as: { leaders: "tosin" } } }
 "tosin.abasi" = "guitarist"
-# Supported will output
+# Output
 "tosin.abasi" : "guitarist"
 ```
 
