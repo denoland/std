@@ -63,8 +63,8 @@ Short syntax (named function instead of object):
 
 ```ts
 test(function example() {
-    assertEquals("world", "world");
-    assertEquals({ hello: "world" }, { hello: "world" });
+  assertEquals("world", "world");
+  assertEquals({ hello: "world" }, { hello: "world" });
 });
 ```
 
