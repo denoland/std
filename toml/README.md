@@ -96,7 +96,7 @@ const tomlString = 'foo.bar = "Deno"';
 const tomlObject22 = parse(tomlString);
 ```
 
-### Dump
+### Stringify
 
 ```ts
 import { stringify } from "./parser.ts";
