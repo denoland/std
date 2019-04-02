@@ -4,4 +4,4 @@ point = { x = 1, y = 2 }
 dog = { type = { name = "pug" } }
 animal.as.leaders = "tosin"
 "tosin.abasi" = "guitarist"
-nile = { derek.roddy = "drummer", also = { malevolant.creation = "drummer" } }
+nile = { derek.roddy = "drummer", also = { malevolant.creation = { drum.kit = "Tama" } } }

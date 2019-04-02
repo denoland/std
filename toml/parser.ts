@@ -333,14 +333,8 @@ class Parser {
       }
       if (this._isDeclaration(line)) {
         let kv = this._processDeclaration(line);
-        let pathDeclaration = this._parseDeclarationName(kv.key);
         let key = kv.key;
         let value = kv.value;
-        if (pathDeclaration.length > 1) {
-          key = pathDeclaration.shift();
-          value = this._unflat(pathDeclaration, value as object);
-        }
-        key = key.replace(/"/g, "");
         if (!this.context.currentGroup) {
           this.context.output[key] = value;
         } else {
@@ -363,11 +357,20 @@ class Parser {
   _propertyClean(obj: object): void {
     const keys = Object.keys(obj);
     for (let i = 0; i < keys.length; i++) {
-      const k = keys[i];
-      const v = obj[k];
-      console.log(`k:${k} v:${v}\n`);
-      if(v instanceof Object){
-        this._propertyClean(v)
+      let k = keys[i];
+      let v = obj[k];
+      let pathDeclaration = this._parseDeclarationName(k);
+      delete obj[k];
+      if (pathDeclaration.length > 1) {
+        k = pathDeclaration.shift();
+        k = k.replace(/"/g, "");
+        v = this._unflat(pathDeclaration, v as object);
+      } else {
+        k = k.replace(/"/g, "");
+      }
+      obj[k] = v;
+      if (v instanceof Object) {
+        this._propertyClean(v);
       }
     }
   }

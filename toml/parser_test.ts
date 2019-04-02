@@ -181,6 +181,20 @@ test({
   fn() {
     const expected = {
       inlinetable: {
+        nile: {
+          also: {
+            malevolant: {
+              creation: {
+                drum: {
+                  kit: "Tama"
+                }
+              }
+            }
+          },
+          derek: {
+            roddy: "drummer"
+          }
+        },
         name: {
           first: "Tom",
           last: "Preston-Werner"
