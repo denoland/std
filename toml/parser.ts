@@ -271,6 +271,38 @@ class Parser {
     const reg = /\d{4}-\d{2}-\d{2}/;
     return reg.test(dateStr);
   }
+  _parseDeclarationName(declaration: string): string[] {
+    const out = [];
+    let acc = [];
+    let inLitteral = false;
+    for (let i = 0; i < declaration.length; i++) {
+      const c = declaration[i];
+      switch (c) {
+        case ".":
+          if (!inLitteral) {
+            out.push(acc.join(""));
+            acc = [];
+          } else {
+            acc.push(c);
+          }
+          break;
+        case `"`:
+          if (inLitteral) {
+            inLitteral = false;
+          } else {
+            inLitteral = true;
+          }
+          break;
+        default:
+          acc.push(c);
+          break;
+      }
+    }
+    if (acc.length !== 0) {
+      out.push(acc.join(""));
+    }
+    return out;
+  }
   _parseLines(): void {
     for (let i = 0; i < this.tomlLines.length; i++) {
       const line = this.tomlLines[i];
@@ -301,10 +333,18 @@ class Parser {
       }
       if (this._isDeclaration(line)) {
         let kv = this._processDeclaration(line);
+        let pathDeclaration = this._parseDeclarationName(kv.key);
+        let key = kv.key;
+        let value = kv.value;
+        if (pathDeclaration.length > 1) {
+          key = pathDeclaration.shift();
+          value = this._unflat(pathDeclaration, value as object);
+        }
+        key = key.replace(/"/g, "");
         if (!this.context.currentGroup) {
-          this.context.output[kv.key] = kv.value;
+          this.context.output[key] = value;
         } else {
-          this.context.currentGroup.objValues[kv.key] = kv.value;
+          this.context.currentGroup.objValues[key] = value;
         }
       }
     }

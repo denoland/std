@@ -189,9 +189,15 @@ test({
           x: 1,
           y: 2
         },
-        animal: {
+        dog: {
           type: {
             name: "pug"
+          }
+        },
+        "tosin.abasi": "guitarist",
+        animal: {
+          as: {
+            leaders: "tosin"
           }
         }
       }

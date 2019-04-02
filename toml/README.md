@@ -48,9 +48,15 @@ Because local time does not exist in JavaScript, the local time is stored as a s
 Inline tables are supported but nested inline property name are **not**. See below:
 
 ```toml
-animal = { type = { name = "pug" } } # Supported
+animal = { type = { name = "pug" } } 
+# Supported
 animal = { type.name = "pug" }
 # not supported. Will output { "animal" : {"type.name":"pug"} }
+animal.as.leaders = "tosin"
+# Supported will output animal: { as: { leaders: "tosin" } }
+"tosin.abasi" = "guitarist"
+# Supported will output
+"tosin.abasi": "guitarist"
 ```
 
 #### Array of Tables
