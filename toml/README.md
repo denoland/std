@@ -105,7 +105,7 @@ const tomlObject22 = parse(tomlString);
 ### Dump
 
 ```ts
-import { dump } from "./parser.ts";
+import { stringify } from "./parser.ts";
 const obj = {
   bin: [
     { name: "deno", path: "cli/main.rs" },
@@ -113,5 +113,5 @@ const obj = {
   ],
   nib: [{ name: "node", path: "not_found" }]
 };
-const tomlString = dump(obj);
+const tomlString = stringify(obj);
 ```

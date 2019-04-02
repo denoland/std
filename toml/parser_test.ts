@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
-import { parseFile, dump } from "./parser.ts";
+import { parseFile, stringify } from "./parser.ts";
 import * as path from "../fs/path/mod.ts";
 const testFilesDir = path.resolve("toml", "testdata");
 
@@ -284,7 +284,7 @@ test({
 });
 
 test({
-  name: "[TOML] Dump",
+  name: "[TOML] Stringify",
   fn() {
     const src = {
       foo: { bar: "deno" },
@@ -372,7 +372,7 @@ stuff   = "in"
 [[arrayObjects]]
 the     = "array"
 `;
-    const actual = dump(src);
+    const actual = stringify(src);
     assertEquals(actual, expected);
   }
 });
