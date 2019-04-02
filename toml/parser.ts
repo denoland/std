@@ -469,7 +469,7 @@ class Dumper {
   }
 }
 
-export function dump(srcObj: object): string {
+export function stringify(srcObj: object): string {
   let out: string[] = [];
   out = new Dumper(srcObj).dump();
   return out.join("\n");
