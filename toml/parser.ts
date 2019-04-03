@@ -238,7 +238,6 @@ class Parser {
           .replace(result[2], ":");
         dataString = dataString.replace(ogVal, newVal);
       }
-      // TODO : unflat if necessary
       return JSON.parse(dataString);
     }
 
