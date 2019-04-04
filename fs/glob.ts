@@ -29,9 +29,10 @@ export interface GlobOptions {
  *
  *     Looking for all the `.json` files in any subfolder:
  *     walkSync(".", {
- *       match: [glob(join("a", "**", "*.json"),flags: "g",
- *       extended: true,
- *       globstar: true
+ *       match: [glob(join("a", "**", "*.json"),{
+ *         flags: "g",
+ *         extended: true,
+ *         globstar: true
  *       })]
  *     })
  *
