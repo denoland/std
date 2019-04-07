@@ -1,10 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test } from "../testing/mod.ts";
-import {
-  assertEquals,
-  assertThrowsAsync,
-  assertThrows
-} from "../testing/asserts.ts";
+import { assertEquals } from "../testing/asserts.ts";
 import { remove, removeSync } from "./remove.ts";
 import { exists, existsSync } from "./exists.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
