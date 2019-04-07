@@ -33,15 +33,7 @@ test(async function removeDirectory() {
 
   assertEquals(await exists(testFile), true);
 
-  // can not remove without recursive options
-  await assertThrowsAsync(async () => {
-    await remove(testFolder);
-  });
-
-  assertEquals(await exists(testFile), true);
-  assertEquals(await exists(testFolder), true);
-
-  await remove(testFolder, { recursive: true });
+  await remove(testFolder);
 
   assertEquals(await exists(testFile), false);
   assertEquals(await exists(testFolder), false);
@@ -68,15 +60,7 @@ test(function removeDirectorySync() {
 
   assertEquals(existsSync(testFile), true);
 
-  // can not remove without recursive options
-  assertThrows(() => {
-    removeSync(testFolder);
-  });
-
-  assertEquals(existsSync(testFile), true);
-  assertEquals(existsSync(testFolder), true);
-
-  removeSync(testFolder, { recursive: true });
+  removeSync(testFolder);
 
   assertEquals(existsSync(testFile), false);
   assertEquals(existsSync(testFolder), false);

@@ -12,3 +12,4 @@ import "./move_test.ts";
 import "./read_json_test.ts";
 import "./write_json_test.ts";
 import "./utils_test.ts";
+import "./remove_test.ts";
