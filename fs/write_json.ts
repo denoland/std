@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { JSONValue } from "./read_json.ts"
+import { JSONValue } from "./read_json.ts";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Replacer = (key: string, value: any) => any;
 
