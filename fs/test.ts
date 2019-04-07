@@ -3,7 +3,6 @@ import "./path/test.ts";
 import "./walk_test.ts";
 import "./globrex_test.ts";
 import "./glob_test.ts";
-import "./eol_test.ts";
 import "./exists_test.ts";
 import "./empty_dir_test.ts";
 import "./ensure_dir_test.ts";

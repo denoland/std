@@ -2,12 +2,12 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import "./colors/test.ts";
 import "./datetime/test.ts";
+import "./encoding/test.ts";
 import "./examples/test.ts";
 import "./flags/test.ts";
-import "./io/test.ts";
 import "./fs/test.ts";
-import "./io/test.ts";
 import "./http/test.ts";
+import "./io/test.ts";
 import "./log/test.ts";
 import "./media_types/test.ts";
 import "./multipart/test.ts";
