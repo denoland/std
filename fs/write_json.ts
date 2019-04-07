@@ -1,4 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+import { JSONValue } from "./read_json.ts"
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Replacer = (key: string, value: any) => any;
 
@@ -10,7 +11,7 @@ export interface WriteJsonOptions {
 /* Writes an object to a JSON file. */
 export async function writeJson(
   filePath: string,
-  object: any,
+  object: JSONValue,
   options: WriteJsonOptions = {}
 ): Promise<void> {
   let contentRaw = "";
@@ -32,7 +33,7 @@ export async function writeJson(
 /* Writes an object to a JSON file. */
 export function writeJsonSync(
   filePath: string,
-  object: any,
+  object: JSONValue,
   options: WriteJsonOptions = {}
 ): void {
   let contentRaw = "";
