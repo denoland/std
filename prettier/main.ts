@@ -174,15 +174,15 @@ function selectParser(path: string): ParserLabel | null {
  * If paths are empty, then checks all the files.
  */
 async function checkSourceFiles(
-  files: AsyncIterableIterator<FileInfo>,
+  files: AsyncIterableIterator<FileInfoWithName>,
   prettierOpts: PrettierOptions
 ): Promise<void> {
   const checks: Array<Promise<boolean>> = [];
 
-  for await (const file of files) {
-    const parser = selectParser(file.path);
+  for await (const { info, name } of files) {
+    const parser = selectParser(name);
     if (parser) {
-      checks.push(checkFile(file.path, parser, prettierOpts));
+      checks.push(checkFile(name, parser, prettierOpts));
     }
   }
 
@@ -197,20 +197,24 @@ async function checkSourceFiles(
   }
 }
 
+type FileInfoWithName = { info: FileInfo; name: string };
+
 /**
  * Formats the files of the given paths with prettier.
  * If paths are empty, then formats all the files.
  */
 async function formatSourceFiles(
-  files: AsyncIterableIterator<FileInfo>,
+  files: AsyncIterableIterator<FileInfoWithName>,
   prettierOpts: PrettierOptions
 ): Promise<void> {
   const formats: Array<Promise<void>> = [];
 
-  for await (const file of files) {
-    const parser = selectParser(file.path);
+  for await (const { name, info } of files) {
+    const parser = selectParser(name);
     if (parser) {
-      formats.push(formatFile(file.path, parser, prettierOpts));
+      formats.push(formatFile(name, parser, prettierOpts));
+    } else {
+      console.log("skipping file", name);
     }
   }
 
@@ -242,9 +246,19 @@ async function main(opts): Promise<void> {
   const skip = Array.isArray(ignore)
     ? ignore.map((i: string) => glob(i, options))
     : [glob(ignore, options)];
-  const match =
-    args.length > 0 ? args.map((a: string) => glob(a, options)) : undefined;
-  const files = walk(".", { match, skip });
+
+  const files =
+    args.length > 0
+      ? args.map((name: string) => {
+          return { info: Deno.stat(name), name };
+        })
+      : walk(".", { match: [/.*/], skip });
+  /* TODO Fix glob.
+    const match =
+      args.length > 0 ? args.map((a: string) => glob(a, options)) : undefined;
+    console.log("match", match);
+    const files = walk(".", { match, skip });
+  */
   try {
     if (check) {
       await checkSourceFiles(files, prettierOpts);
