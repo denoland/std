@@ -1,4 +1,3 @@
-// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 const { dial, run } = Deno;
 
 import { test } from "../testing/mod.ts";
@@ -9,7 +8,7 @@ import { TextProtoReader } from "../textproto/mod.ts";
 let server;
 async function startServer(): Promise<void> {
   server = run({
-    args: ["deno", "--A", "http/racing_server.ts"],
+    args: ["deno", "-A", "http/racing_server.ts"],
     stdout: "piped"
   });
   // Once fileServer is ready it will write to its stdout.
@@ -27,15 +26,26 @@ let input = `GET / HTTP/1.1
 
 GET / HTTP/1.1
 
+GET / HTTP/1.1
+
+GET / HTTP/1.1
+
 `;
+const HUGE_BODY_SIZE = 1024 * 1024;
 let output = `HTTP/1.1 200 OK
 content-length: 8
 
 Hello 1
 HTTP/1.1 200 OK
+content-length: ${HUGE_BODY_SIZE}
+
+${"a".repeat(HUGE_BODY_SIZE)}HTTP/1.1 200 OK
+content-length: ${HUGE_BODY_SIZE}
+
+${"b".repeat(HUGE_BODY_SIZE)}HTTP/1.1 200 OK
 content-length: 8
 
-World 2
+World 4
 `;
 
 test(async function serverPipelineRace(): Promise<void> {

@@ -5,7 +5,7 @@ const addr = Deno.args[1] || "127.0.0.1:4501";
 const server = serve(addr);
 
 const body = new TextEncoder().encode("Hello 1\n");
-const body2 = new TextEncoder().encode("World 2\n");
+const body4 = new TextEncoder().encode("World 4\n");
 
 function sleep(ms: number): Promise<void> {
   return new Promise(res => setTimeout(res, ms));
@@ -16,15 +16,35 @@ async function delayedRespond(request: ServerRequest): Promise<void> {
   await request.respond({ status: 200, body });
 }
 
+async function largeRespond(request: ServerRequest, c: string): Promise<void> {
+  const b = new Uint8Array(1024 * 1024);
+  b.fill(c.charCodeAt(0));
+  await request.respond({ status: 200, body: b });
+}
+
 async function main(): Promise<void> {
-  let isFirst = true;
+  let step = 1;
   for await (const request of server) {
-    if (isFirst) {
-      isFirst = false;
-      delayedRespond(request);
-    } else {
-      request.respond({ status: 200, body: body2 });
+    switch (step) {
+      case 1:
+        // Try to wait long enough.
+        // For pipelining, this should cause all the following response
+        // to block.
+        delayedRespond(request);
+        break;
+      case 2:
+        // HUGE body.
+        largeRespond(request, "a");
+        break;
+      case 3:
+        // HUGE body.
+        largeRespond(request, "b");
+        break;
+      default:
+        request.respond({ status: 200, body: body4 });
+        break;
     }
+    step++;
   }
 }
 
