@@ -221,12 +221,11 @@ test(async function testPrettierPrintToStdout() {
   // the output will be formatted code
   assertEquals(stdout, "console.log(0);\n");
 
-  const { stdout:formattedCode } = await run([...cmd, file1]);
+  const { stdout: formattedCode } = await run([...cmd, file1]);
   // the source file will not change without `--write` flags
   assertEquals(await getSourceCode(file1), "console.log(0);\n");
   // the output will be empty string. because the formatted content is same with before
   assertEquals(formattedCode, "");
-
 
   await clearTestdataChanges();
 });
