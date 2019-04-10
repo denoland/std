@@ -205,3 +205,28 @@ incididunt ut labore et dolore magna aliqua.
 
   await clearTestdataChanges();
 });
+
+test(async function testPrettierPrintToStdout() {
+  await clearTestdataChanges();
+
+  const file0 = join(testdata, "0.ts");
+  const file1 = join(testdata, "formatted.ts");
+
+  const getSourceCode = async (f: string) =>
+    decoder.decode(await Deno.readFile(f));
+
+  const { stdout } = await run([...cmd, file0]);
+  // the source file will not change without `--write` flags
+  assertEquals(await getSourceCode(file0), "console.log (0)\n");
+  // the output will be formatted code
+  assertEquals(stdout, "console.log(0);\n");
+
+  const { stdout:formattedCode } = await run([...cmd, file1]);
+  // the source file will not change without `--write` flags
+  assertEquals(await getSourceCode(file1), "console.log(0);\n");
+  // the output will be empty string. because the formatted content is same with before
+  assertEquals(formattedCode, "");
+
+
+  await clearTestdataChanges();
+});
