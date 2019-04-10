@@ -11,7 +11,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 // This script formats the given source files. If the files are omitted, it
 // formats the all files in the repository.
-const { args, exit, readFile, writeFile } = Deno;
+const { args, exit, readFile, writeFile, stdout } = Deno;
 type FileInfo = Deno.FileInfo;
 import { glob } from "../fs/glob.ts";
 import { walk } from "../fs/walk.ts";
@@ -79,6 +79,7 @@ interface PrettierOptions {
   arrowParens: string;
   proseWrap: string;
   endOfLine: string;
+  write: boolean;
 }
 
 const encoder = new TextEncoder();
@@ -140,15 +141,20 @@ async function formatFile(
     return;
   }
 
-  const formatted = prettier.format(text, {
+  const formatted: string = prettier.format(text, {
     ...prettierOpts,
     parser,
     plugins: prettierPlugins
   });
 
   if (text !== formatted) {
-    console.log(`Formatting ${filename}`);
-    await writeFile(filename, encoder.encode(formatted));
+    const fileUnit8 = encoder.encode(formatted);
+    if (prettierOpts.write) {
+      console.log(`Formatting ${filename}`);
+      await writeFile(filename, fileUnit8);
+    } else {
+      await stdout.write(fileUnit8);
+    }
   }
 }
 
@@ -231,7 +237,8 @@ async function main(opts): Promise<void> {
     bracketSpacing: Boolean(opts["bracket-spacing"]),
     arrowParens: opts["arrow-parens"],
     proseWrap: opts["prose-wrap"],
-    endOfLine: opts["end-of-line"]
+    endOfLine: opts["end-of-line"],
+    write: opts["write"]
   };
 
   if (help) {
@@ -274,7 +281,8 @@ main(
       "semi",
       "use-tabs",
       "single-quote",
-      "bracket-spacing"
+      "bracket-spacing",
+      "write"
     ],
     default: {
       ignore: [],
@@ -287,7 +295,8 @@ main(
       "bracket-spacing": true,
       "arrow-parens": "avoid",
       "prose-wrap": "preserve",
-      "end-of-line": "auto"
+      "end-of-line": "auto",
+      write: false
     },
     alias: {
       H: "help"
