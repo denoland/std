@@ -1,5 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { join } from "../fs/path.ts";
+import { EOL } from "../fs/path/constants.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import { test } from "../testing/mod.ts";
 import { xrun } from "./util.ts";
@@ -217,13 +218,13 @@ test(async function testPrettierPrintToStdout() {
 
   const { stdout } = await run([...cmd, file0]);
   // the source file will not change without `--write` flags
-  assertEquals(await getSourceCode(file0), "console.log (0)\r\n");
+  assertEquals(await getSourceCode(file0), "console.log (0)" + EOL);
   // the output will be formatted code
-  assertEquals(stdout, "console.log(0);\r\n");
+  assertEquals(stdout, "console.log(0);" + EOL);
 
   const { stdout: formattedCode } = await run([...cmd, file1]);
   // the source file will not change without `--write` flags
-  assertEquals(await getSourceCode(file1), "console.log(0);\r\n");
+  assertEquals(await getSourceCode(file1), "console.log(0);" + EOL);
   // the output will be empty string. because the formatted content is same with before
   assertEquals(formattedCode, "");
 
