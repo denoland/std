@@ -2,11 +2,12 @@ const puppeteer = require("puppeteer");
 const assert = require("assert");
 (async () => {
   // TODO (zekth) Fix chrome Path for all envs
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath:
-      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-  });
+  // const browser = await puppeteer.launch({
+  //   headless: true,
+  //   executablePath:
+  //     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+  // });
+  const browser = await puppeteer.launch();
   const page = await browser.newPage();
   const logs = [];
   page.on("console", msg => logs.push(msg.text()));
