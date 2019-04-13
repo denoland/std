@@ -223,12 +223,12 @@ test(function requestCookieHandling() {
   req.headers = new Headers();
   assertEquals(req.cookie(), {});
   req.headers = new Headers();
-  req.headers.set("cookie", "foo=bar");
+  req.headers.set("Cookie", "foo=bar");
   assertEquals(req.cookie(), { foo: "bar" });
   req.headers = new Headers();
-  req.headers.set("cookie", "full=of  ; tasty=chocolate");
+  req.headers.set("Cookie", "full=of  ; tasty=chocolate");
   assertEquals(req.cookie(), { full: "of  ", tasty: "chocolate" });
   req.headers = new Headers();
-  req.headers.set("cookie", "igot=99; problems=but...");
+  req.headers.set("Cookie", "igot=99; problems=but...");
   assertEquals(req.cookie(), { igot: "99", problems: "but..." });
 });

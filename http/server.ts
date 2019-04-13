@@ -124,9 +124,9 @@ export class ServerRequest {
   w: BufWriter;
 
   public cookie(): object {
-    if (this.headers.has("cookie")) {
+    if (this.headers.has("Cookie")) {
       let out: object = {};
-      const c = this.headers.get("cookie").split(";");
+      const c = this.headers.get("Cookie").split(";");
       for (let i = 0; i < c.length; i++) {
         const cookieVal = c[i].split("=");
         const key = cookieVal.shift().trim();
