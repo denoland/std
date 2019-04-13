@@ -123,7 +123,7 @@ export class ServerRequest {
   r: BufReader;
   w: BufWriter;
 
-  public cookie(): object {
+  get cookie(): object {
     if (this.headers.has("Cookie")) {
       let out: object = {};
       const c = this.headers.get("Cookie").split(";");
