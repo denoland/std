@@ -219,15 +219,20 @@ test(async function requestBodyStreamWithTransferEncoding() {
 });
 
 test(function requestCookieHandling() {
-  const req = new ServerRequest();
+  // cache handling
+  let req = new ServerRequest();
   req.headers = new Headers();
   assertEquals(req.cookie, {});
   req.headers = new Headers();
   req.headers.set("Cookie", "foo=bar");
-  assertEquals(req.cookie, { foo: "bar" });
+  assertEquals(req.cookie, {});
+
+  req = new ServerRequest();
   req.headers = new Headers();
   req.headers.set("Cookie", "full=of  ; tasty=chocolate");
   assertEquals(req.cookie, { full: "of  ", tasty: "chocolate" });
+
+  req = new ServerRequest();
   req.headers = new Headers();
   req.headers.set("Cookie", "igot=99; problems=but...");
   assertEquals(req.cookie, { igot: "99", problems: "but..." });

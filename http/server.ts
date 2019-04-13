@@ -122,8 +122,12 @@ export class ServerRequest {
   conn: Conn;
   r: BufReader;
   w: BufWriter;
+  private _cookie: object;
 
   get cookie(): object {
+    if (this._cookie) {
+      return this._cookie;
+    }
     if (this.headers.has("Cookie")) {
       let out: object = {};
       const c = this.headers.get("Cookie").split(";");
@@ -132,8 +136,10 @@ export class ServerRequest {
         const key = cookieVal.shift().trim();
         out[key] = cookieVal.join("");
       }
+      this._cookie = out;
       return out;
     }
+    this._cookie = {};
     return {};
   }
 
