@@ -6,7 +6,7 @@ fs module is made to provide helpers to manipulate the filesystem.
 
 All the following modules are exposed in `mod.ts`
 
-### empty_dir
+### emptyDir
 
 Ensures that a directory is empty. Deletes directory contents if the directory is not empty.
 If the directory does not exist, it is created.
@@ -19,7 +19,7 @@ emptyDir("./foo"); // returns a promise
 emptyDirSync("./foo"); // void
 ```
 
-### ensure_dir
+### ensureDir
 
 Ensures that the directory exists.
 If the directory structure does not exist, it is created. Like mkdir -p.
@@ -28,7 +28,7 @@ If the directory structure does not exist, it is created. Like mkdir -p.
 import { ensureDir, ensureDirSync } from "https://deno.land/std/fs/mod.ts";
 
 ensureDir("./bar"); // returns a promise
-ensureDir("./ensureDirSync"); // void
+ensureDirSync("./ensureDirSync"); // void
 ```
 
 ### ensure_file
@@ -106,7 +106,7 @@ moveSync("./foo", "./existingFolder", { overwrite: true });
 // Will overwrite existingFolder
 ```
 
-### read_json
+### readJson
 
 Reads a JSON file and then parses it into an object
 
@@ -115,20 +115,6 @@ import { readJson, readJsonSync } from "https://deno.land/std/fs/mod.ts";
 
 const f = await readJson("./foo.json");
 const foo = readJsonSync("./foo.json");
-```
-
-### utils
-
-Some utils helpers
-
-```ts
-import { isSubdir, getFileInfoType } from "https://deno.land/std/fs/mod.ts";
-
-// Test whether or not `dest` is a sub-directory of `src`
-isSubdir("/first", "/first/second");
-
-// Get a human readable file type string
-getFileInfoType("./foo");
 ```
 
 ### walk
@@ -152,9 +138,14 @@ for (const fileInfo of walk()) {
 
 Writes an object to a JSON file.
 
+__WriteJsonOptions__
+- replacer : An array of strings and numbers that acts as a approved list for selecting the object properties that will be stringified.
+- space : Adds indentation, white space, and line break characters to the return-value JSON text to make it easier to read.
+
 ```ts
 import { writeJson, writeJsonSync } from "https://deno.land/std/fs/mod.ts";
 
-writeJson("./target.dat", { foo: "bar" }); // returns a promise
-writeJsonSync("./target.dat", { foo: "bar" }); // void
+writeJson("./target.dat", { foo: "bar" }, { spaces: 2 }); // returns a promise
+writeJsonSync("./target.dat", { foo: "bar" }, { replacer: ["foo"] }); 
+// void
 ```
