@@ -61,18 +61,17 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
     throw Error("bad status code");
   }
 
-  let out = `HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`;
+  const out = [];
+  out.push(`HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`);
 
   setContentLength(r);
 
   if (r.headers) {
-    for (const [key, value] of r.headers) {
-      out += `${key}: ${value}\r\n`;
-    }
+    r.headers.forEach((v, k) => out.push(`${k}: ${v}\r\n`));
   }
-  out += "\r\n";
+  out.push("\r\n");
 
-  const header = new TextEncoder().encode(out);
+  const header = new TextEncoder().encode(out.join(""));
   let n = await writer.write(header);
   assert(header.byteLength == n);
 
