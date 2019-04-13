@@ -217,3 +217,18 @@ test(async function requestBodyStreamWithTransferEncoding() {
     }
   }
 });
+
+test(function requestCookieHandling() {
+  const req = new ServerRequest();
+  req.headers = new Headers();
+  assertEquals(req.cookie(), {});
+  req.headers = new Headers();
+  req.headers.set("cookie", "foo=bar");
+  assertEquals(req.cookie(), { foo: "bar" });
+  req.headers = new Headers();
+  req.headers.set("cookie", "full=of  ; tasty=chocolate");
+  assertEquals(req.cookie(), { full: "of  ", tasty: "chocolate" });
+  req.headers = new Headers();
+  req.headers.set("cookie", "igot=99; problems=but...");
+  assertEquals(req.cookie(), { igot: "99", problems: "but..." });
+});

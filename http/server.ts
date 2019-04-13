@@ -123,6 +123,20 @@ export class ServerRequest {
   r: BufReader;
   w: BufWriter;
 
+  public cookie(): object {
+    if (this.headers.has("cookie")) {
+      let out: object = {};
+      const c = this.headers.get("cookie").split(";");
+      for (let i = 0; i < c.length; i++) {
+        const cookieVal = c[i].split("=");
+        const key = cookieVal.shift().trim();
+        out[key] = cookieVal.join("");
+      }
+      return out;
+    }
+    return {};
+  }
+
   public async *bodyStream(): AsyncIterableIterator<Uint8Array> {
     if (this.headers.has("content-length")) {
       const len = +this.headers.get("content-length");
