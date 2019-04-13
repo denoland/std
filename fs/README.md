@@ -138,7 +138,8 @@ for (const fileInfo of walk()) {
 
 Writes an object to a JSON file.
 
-__WriteJsonOptions__
+**WriteJsonOptions**
+
 - replacer : An array of strings and numbers that acts as a approved list for selecting the object properties that will be stringified.
 - space : Adds indentation, white space, and line break characters to the return-value JSON text to make it easier to read.
 
@@ -146,6 +147,6 @@ __WriteJsonOptions__
 import { writeJson, writeJsonSync } from "https://deno.land/std/fs/mod.ts";
 
 writeJson("./target.dat", { foo: "bar" }, { spaces: 2 }); // returns a promise
-writeJsonSync("./target.dat", { foo: "bar" }, { replacer: ["foo"] }); 
+writeJsonSync("./target.dat", { foo: "bar" }, { replacer: ["foo"] });
 // void
 ```
