@@ -114,6 +114,8 @@ async function readAllIterator(
   return collected;
 }
 
+export type Cookie = { [key: string]: string };
+
 export class ServerRequest {
   url: string;
   method: string;
@@ -122,14 +124,14 @@ export class ServerRequest {
   conn: Conn;
   r: BufReader;
   w: BufWriter;
-  private _cookie: object;
+  private _cookie: Cookie;
 
-  get cookie(): object {
+  get cookie(): Cookie {
     if (this._cookie) {
       return this._cookie;
     }
     if (this.headers.has("Cookie")) {
-      const out: { [key: string]: string } = {};
+      const out: Cookie = {};
       const c = this.headers.get("Cookie").split(";");
       for (const kv of c) {
         const cookieVal = kv.split("=");
