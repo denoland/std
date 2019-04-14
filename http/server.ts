@@ -129,7 +129,7 @@ export class ServerRequest {
       return this._cookie;
     }
     if (this.headers.has("Cookie")) {
-      const out: {[key:string]: string} = {};
+      const out: { [key: string]: string } = {};
       const c = this.headers.get("Cookie").split(";");
       for (const kv of c) {
         const cookieVal = kv.split("=");
