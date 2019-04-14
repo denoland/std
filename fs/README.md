@@ -161,8 +161,8 @@ Read file and output it as a string.
 ```ts
 import { readFileStr, readFileStrSync } from "https://deno.land/std/fs/mod.ts";
 
-readFileStr("./target.dat", { encoding: 'utf8' }); // returns a promise
-readFileStrSync("./target.dat", { encoding: 'utf8' }); // void
+readFileStr("./target.dat", { encoding: "utf8" }); // returns a promise
+readFileStrSync("./target.dat", { encoding: "utf8" }); // void
 ```
 
 ### writeFileStr
@@ -170,7 +170,10 @@ readFileStrSync("./target.dat", { encoding: 'utf8' }); // void
 Write the string to file.
 
 ```ts
-import { writeFileStr, writeFileStrSync } from "https://deno.land/std/fs/mod.ts";
+import {
+  writeFileStr,
+  writeFileStrSync
+} from "https://deno.land/std/fs/mod.ts";
 
 writeFileStr("./target.dat", "file content"); // returns a promise
 writeFileStrSync("./target.dat", "file content"); // void
