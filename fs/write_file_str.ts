@@ -5,6 +5,7 @@
  *
  * @param filename File to write
  * @param content The content write to file
+ * @returns void
  */
 export function writeFileStrSync(filename: string, content: string): void {
   const encoder = new TextEncoder();
@@ -16,6 +17,7 @@ export function writeFileStrSync(filename: string, content: string): void {
  *
  * @param filename File to write
  * @param content The content write to file
+ * @returns Promise<void>
  */
 export async function writeFileStr(
   filename: string,

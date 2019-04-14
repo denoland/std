@@ -1,5 +1,5 @@
 import { test } from "../testing/mod.ts";
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../testing/asserts.ts";
 import { writeFileStr, writeFileStrSync } from "./write_file_str.ts";
 import * as path from "./path/mod.ts";
 
