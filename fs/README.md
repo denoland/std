@@ -51,10 +51,21 @@ Ensures that the link exists.
 If the directory structure does not exist, it is created.
 
 ```ts
-import { ensureSymlink, ensureSymlinkSync } from "https://deno.land/std/fs/mod.ts";
+import {
+  ensureSymlink,
+  ensureSymlinkSync
+} from "https://deno.land/std/fs/mod.ts";
 
-ensureSymlink("./folder/targetFile.dat", "./folder/targetFile.link.dat", "file"); // returns promise
-ensureSymlinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat", "file"); // void
+ensureSymlink(
+  "./folder/targetFile.dat",
+  "./folder/targetFile.link.dat",
+  "file"
+); // returns promise
+ensureSymlinkSync(
+  "./folder/targetFile.dat",
+  "./folder/targetFile.link.dat",
+  "file"
+); // void
 ```
 
 ### eol
