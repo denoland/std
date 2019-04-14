@@ -129,10 +129,10 @@ export class ServerRequest {
       return this._cookie;
     }
     if (this.headers.has("Cookie")) {
-      let out: object = {};
+      const out: object = {};
       const c = this.headers.get("Cookie").split(";");
-      for (let i = 0; i < c.length; i++) {
-        const cookieVal = c[i].split("=");
+      for (const kv of c) {
+        const cookieVal = kv.split("=");
         const key = cookieVal.shift().trim();
         out[key] = cookieVal.join("");
       }
