@@ -12,7 +12,7 @@ test(async function ensureFileIfItNotExist() {
 
   await ensureFile(testFile);
 
-  assertThrowsAsync(async () => {
+  await assertThrowsAsync(async () => {
     await Deno.stat(testFile).then(() => {
       throw new Error("test file should exists.");
     });
@@ -44,7 +44,7 @@ test(async function ensureFileIfItExist() {
 
   await ensureFile(testFile);
 
-  assertThrowsAsync(async () => {
+  await assertThrowsAsync(async () => {
     await Deno.stat(testFile).then(() => {
       throw new Error("test file should exists.");
     });
@@ -66,6 +66,38 @@ test(function ensureFileSyncIfItExist() {
     Deno.statSync(testFile);
     throw new Error("test file should exists.");
   });
+
+  Deno.removeSync(testDir, { recursive: true });
+});
+
+test(async function ensureFileIfItExistAsDir() {
+  const testDir = path.join(testdataDir, "ensure_file_5");
+
+  await Deno.mkdir(testDir, true);
+
+  await assertThrowsAsync(
+    async () => {
+      await ensureFile(testDir);
+    },
+    Error,
+    `Ensure path exists, expected 'file', got 'dir'`
+  );
+
+  await Deno.remove(testDir, { recursive: true });
+});
+
+test(function ensureFileSyncIfItExistAsDir() {
+  const testDir = path.join(testdataDir, "ensure_file_6");
+
+  Deno.mkdirSync(testDir, true);
+
+  assertThrows(
+    () => {
+      ensureFileSync(testDir);
+    },
+    Error,
+    `Ensure path exists, expected 'file', got 'dir'`
+  );
 
   Deno.removeSync(testDir, { recursive: true });
 });
