@@ -10,15 +10,7 @@ import * as path from "./path/mod.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
 
-// TODO(axetroy): Deno@0.3.3 not support symlink in windows
-// In order to pass the CI test, we ignore it in windows.
-// Should be removed when support
-const shouldSkip = Deno.platform.os === "win";
-
 test(async function ensureSymlinkIfItNotExist() {
-  if (shouldSkip) {
-    return;
-  }
   const testDir = path.join(testdataDir, "link_file_1");
   const testFile = path.join(testDir, "test.txt");
 
@@ -34,9 +26,6 @@ test(async function ensureSymlinkIfItNotExist() {
 });
 
 test(function ensureSymlinkSyncIfItNotExist() {
-  if (shouldSkip) {
-    return;
-  }
   const testDir = path.join(testdataDir, "link_file_2");
   const testFile = path.join(testDir, "test.txt");
 
@@ -51,9 +40,6 @@ test(function ensureSymlinkSyncIfItNotExist() {
 });
 
 test(async function ensureSymlinkIfItExist() {
-  if (shouldSkip) {
-    return;
-  }
   const testDir = path.join(testdataDir, "link_file_3");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
@@ -73,9 +59,6 @@ test(async function ensureSymlinkIfItExist() {
 });
 
 test(function ensureSymlinkSyncIfItExist() {
-  if (shouldSkip) {
-    return;
-  }
   const testDir = path.join(testdataDir, "link_file_4");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
@@ -96,9 +79,6 @@ test(function ensureSymlinkSyncIfItExist() {
 });
 
 test(async function ensureSymlinkDirectoryIfItExist() {
-  if (shouldSkip) {
-    return;
-  }
   const testDir = path.join(testdataDir, "link_file_origin_3");
   const linkDir = path.join(testdataDir, "link_file_link_3");
   const testFile = path.join(testDir, "test.txt");
@@ -121,9 +101,6 @@ test(async function ensureSymlinkDirectoryIfItExist() {
 });
 
 test(function ensureSymlinkSyncDirectoryIfItExist() {
-  if (shouldSkip) {
-    return;
-  }
   const testDir = path.join(testdataDir, "link_file_origin_3");
   const linkDir = path.join(testdataDir, "link_file_link_3");
   const testFile = path.join(testDir, "test.txt");
