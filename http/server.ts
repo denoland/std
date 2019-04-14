@@ -114,7 +114,9 @@ async function readAllIterator(
   return collected;
 }
 
-export type Cookie = { [key: string]: string };
+export interface Cookie {
+  [key: string]: string;
+}
 
 export class ServerRequest {
   url: string;
