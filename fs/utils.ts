@@ -23,11 +23,7 @@ export function isSubdir(
   }, true);
 }
 
-export enum PathType {
-  file = "file",
-  dir = "dir",
-  symlink = "symlink"
-}
+export type PathType = "file" | "dir" | "symlink";
 
 /**
  * Get a human readable file type string.
@@ -37,10 +33,10 @@ export enum PathType {
  */
 export function getFileInfoType(fileInfo: Deno.FileInfo): PathType | void {
   return fileInfo.isFile()
-    ? PathType.file
+    ? "file"
     : fileInfo.isDirectory()
-    ? PathType.dir
+    ? "dir"
     : fileInfo.isSymlink()
-    ? PathType.symlink
+    ? "symlink"
     : undefined;
 }
