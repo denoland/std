@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { green, red, gray, italic } from "../colors/mod.ts";
+import { green, red, gray, yellow, italic } from "../colors/mod.ts";
 export type TestFunction = () => void | Promise<void>;
 
 export interface TestDefinition {
@@ -239,6 +239,9 @@ async function runTestsSerial(
     // See https://github.com/denoland/deno/pull/1452
     // about this usage of groupCollapsed
     if (disableLog) {
+      Deno.stdout.writeSync(
+        new TextEncoder().encode(`${yellow("RUNNING")} ${name}`)
+      );
       consoleDisabler("disable");
     }
     try {
@@ -247,12 +250,14 @@ async function runTestsSerial(
       await fn();
       end = performance.now();
       if (disableLog) {
+        Deno.stdout.writeSync(new TextEncoder().encode("\x1b[2K\r"));
         consoleDisabler("restore");
       }
       stats.passed++;
       console.log(GREEN_OK + "    ", name, promptTestTime(end - start));
     } catch (err) {
       if (disableLog) {
+        Deno.stdout.writeSync(new TextEncoder().encode("\x1b[2K\r"));
         consoleDisabler("restore");
       }
       console.log(RED_FAILED, name);
