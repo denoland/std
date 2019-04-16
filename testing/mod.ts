@@ -8,6 +8,7 @@ export interface TestDefinition {
   name: string;
 }
 
+// Replacement of the global `console` to be in silent mode
 const noopConsole = {
   assert: function() {},
   debug: function() {},
@@ -20,7 +21,8 @@ const noopConsole = {
   warn: function() {}
 };
 
-const saveConsole = {
+// Save of the global `console` in case of silent mode
+const defaultConsole = {
   assert: console.assert,
   debug: console.debug,
   dir: console.dir,
@@ -32,18 +34,18 @@ const saveConsole = {
   warn: console.warn
 };
 
-type DisableAction = "restore" | "disable";
-
-function consoleDisabler(action: DisableAction = "disable") {
-  let src;
-  if (action == "restore") {
-    src = saveConsole;
-  } else {
-    src = noopConsole;
-  }
+function enableConsole(): void {
   for (const key in console) {
-    if (src[key]) {
-      console[key] = src[key];
+    if (defaultConsole[key]) {
+      console[key] = defaultConsole[key];
+    }
+  }
+}
+
+function disableConsole(): void {
+  for (const key in console) {
+    if (noopConsole[key]) {
+      console[key] = noopConsole[key];
     }
   }
 }
@@ -126,13 +128,13 @@ function promptTestTime(time: number = 0) {
 
 function report(result: TestResult): void {
   if (result.ok) {
-    saveConsole.log(
+    defaultConsole.log(
       `${GREEN_OK}     ${result.name} ${promptTestTime(result.timeElapsed)}`
     );
   } else if (result.error) {
-    saveConsole.log(`${RED_FAILED} ${result.name}\n${result.error.stack}`);
+    defaultConsole.log(`${RED_FAILED} ${result.name}\n${result.error.stack}`);
   } else {
-    saveConsole.log(`test ${result.name} ... unresolved`);
+    defaultConsole.log(`test ${result.name} ... unresolved`);
   }
   result.printed = true;
 }
@@ -180,10 +182,9 @@ async function createTestCase(
 ): Promise<void> {
   const result: TestResult = results.cases.get(results.keys.get(name)!)!;
   try {
-    let start, end;
-    start = performance.now();
+    const start = performance.now();
     await fn();
-    end = performance.now();
+    const end = performance.now();
     stats.passed++;
     result.ok = true;
     result.timeElapsed = end - start;
@@ -212,20 +213,13 @@ async function runTestsParallel(
   stats: TestStats,
   results: TestResults,
   tests: TestDefinition[],
-  disableLog: boolean,
   exitOnFail: boolean
 ): Promise<void> {
   try {
-    if (disableLog) {
-      consoleDisabler("disable");
-    }
     await Promise.all(initTestCases(stats, results, tests, exitOnFail));
   } catch (_) {
     // The error was thrown to stop awaiting all promises if exitOnFail === true
     // stats.failed has been incremented and the error stored in results
-  }
-  if (disableLog) {
-    consoleDisabler("restore");
   }
 }
 
@@ -236,13 +230,11 @@ async function runTestsSerial(
   disableLog: boolean
 ): Promise<void> {
   for (const { fn, name } of tests) {
-    // See https://github.com/denoland/deno/pull/1452
-    // about this usage of groupCollapsed
+    // Displaying the currently running test if silent mode
     if (disableLog) {
       Deno.stdout.writeSync(
         new TextEncoder().encode(`${yellow("RUNNING")} ${name}`)
       );
-      consoleDisabler("disable");
     }
     try {
       let start, end;
@@ -250,18 +242,17 @@ async function runTestsSerial(
       await fn();
       end = performance.now();
       if (disableLog) {
+        // Rewriting the current prompt line to erase `running ....`
         Deno.stdout.writeSync(new TextEncoder().encode("\x1b[2K\r"));
-        consoleDisabler("restore");
       }
       stats.passed++;
-      console.log(GREEN_OK + "    ", name, promptTestTime(end - start));
+      defaultConsole.log(GREEN_OK + "    ", name, promptTestTime(end - start));
     } catch (err) {
       if (disableLog) {
         Deno.stdout.writeSync(new TextEncoder().encode("\x1b[2K\r"));
-        consoleDisabler("restore");
       }
-      console.log(RED_FAILED, name);
-      console.error(err.stack);
+      defaultConsole.log(RED_FAILED, name);
+      defaultConsole.error(err.stack);
       stats.failed++;
       if (exitOnFail) {
         break;
@@ -303,12 +294,18 @@ export async function runTests({
   const results: TestResults = createTestResults(tests);
   console.log(`running ${tests.length} tests`);
   const start = performance.now();
+  if (disableLog) {
+    disableConsole();
+  }
   if (parallel) {
-    await runTestsParallel(stats, results, tests, disableLog, exitOnFail);
+    await runTestsParallel(stats, results, tests, exitOnFail);
   } else {
     await runTestsSerial(stats, tests, exitOnFail, disableLog);
   }
   const end = performance.now();
+  if (disableLog) {
+    enableConsole();
+  }
   printResults(stats, results, parallel, exitOnFail, end - start);
   if (stats.failed) {
     // Use setTimeout to avoid the error being ignored due to unhandled
