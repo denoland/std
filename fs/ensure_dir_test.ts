@@ -113,3 +113,15 @@ test(async function ensureDirIfItAsSymlink() {
     `Ensure path exists, expected 'dir', got 'symlink'`
   );
 });
+
+test(function ensureDirSyncIfItAsSymlink() {
+  const testFile = path.join(testdataDir, "0-link.ts");
+
+  assertThrows(
+    () => {
+      ensureDirSync(testFile);
+    },
+    Error,
+    `Ensure path exists, expected 'dir', got 'symlink'`
+  );
+});
