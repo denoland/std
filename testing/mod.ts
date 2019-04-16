@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { green, red } from "../colors/mod.ts";
+import { green, red, gray, italic } from "../colors/mod.ts";
 export type TestFunction = () => void | Promise<void>;
 
 export interface TestDefinition {
@@ -91,6 +91,7 @@ interface TestStats {
 }
 
 interface TestResult {
+  timeElapsed?: number;
   name: string;
   error?: Error;
   ok: boolean;
@@ -113,9 +114,21 @@ function createTestResults(tests: TestDefinition[]): TestResults {
   );
 }
 
+function promptTestTime(time: number = 0) {
+  let timeStr = "";
+  if (time >= 1000) {
+    timeStr = `${time / 1000}s`;
+  } else {
+    timeStr = `${time}ms`;
+  }
+  return gray(italic(`(${timeStr})`));
+}
+
 function report(result: TestResult): void {
   if (result.ok) {
-    saveConsole.log(`${GREEN_OK}     ${result.name}`);
+    saveConsole.log(
+      `${GREEN_OK}     ${result.name} ${promptTestTime(result.timeElapsed)}`
+    );
   } else if (result.error) {
     saveConsole.log(`${RED_FAILED} ${result.name}\n${result.error.stack}`);
   } else {
@@ -128,7 +141,8 @@ function printResults(
   stats: TestStats,
   results: TestResults,
   flush: boolean,
-  exitOnFail: boolean
+  exitOnFail: boolean,
+  timeElapsed: number
 ): void {
   if (flush) {
     for (const result of results.cases.values()) {
@@ -145,7 +159,8 @@ function printResults(
     `\ntest result: ${stats.failed ? RED_FAILED : GREEN_OK}. ` +
       `${stats.passed} passed; ${stats.failed} failed; ` +
       `${stats.ignored} ignored; ${stats.measured} measured; ` +
-      `${stats.filtered} filtered out\n`
+      `${stats.filtered} filtered out ` +
+      `${promptTestTime(timeElapsed)}\n`
   );
 }
 
@@ -165,9 +180,13 @@ async function createTestCase(
 ): Promise<void> {
   const result: TestResult = results.cases.get(results.keys.get(name)!)!;
   try {
+    let start, end;
+    start = performance.now();
     await fn();
+    end = performance.now();
     stats.passed++;
     result.ok = true;
+    result.timeElapsed = end - start;
   } catch (err) {
     stats.failed++;
     result.error = err;
@@ -223,12 +242,15 @@ async function runTestsSerial(
       consoleDisabler("disable");
     }
     try {
+      let start, end;
+      start = performance.now();
       await fn();
+      end = performance.now();
       if (disableLog) {
         consoleDisabler("restore");
       }
       stats.passed++;
-      console.log(GREEN_OK + "    ", name);
+      console.log(GREEN_OK + "    ", name, promptTestTime(end - start));
     } catch (err) {
       if (disableLog) {
         consoleDisabler("restore");
@@ -275,12 +297,14 @@ export async function runTests({
   };
   const results: TestResults = createTestResults(tests);
   console.log(`running ${tests.length} tests`);
+  const start = performance.now();
   if (parallel) {
     await runTestsParallel(stats, results, tests, disableLog, exitOnFail);
   } else {
     await runTestsSerial(stats, tests, exitOnFail, disableLog);
   }
-  printResults(stats, results, parallel, exitOnFail);
+  const end = performance.now();
+  printResults(stats, results, parallel, exitOnFail, end - start);
   if (stats.failed) {
     // Use setTimeout to avoid the error being ignored due to unhandled
     // promise rejections being swallowed.
