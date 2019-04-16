@@ -105,7 +105,7 @@ test(function ensureFileSyncIfItExistAsDir() {
 test(async function ensureFileIfItExistAsSymlink() {
   const testLink = path.join(testdataDir, "0-link.ts");
 
-  await assertThrows(
+  await assertThrowsAsync(
     async () => {
       await ensureFile(testLink);
     },
