@@ -50,7 +50,6 @@ function consoleDisabler(action: DisableAction = "disable") {
 
 let filterRegExp: RegExp | null;
 const candidates: TestDefinition[] = [];
-// const noop = function() {};
 let filtered = 0;
 
 // Must be called before any test() that needs to be filtered.
@@ -185,11 +184,9 @@ function initTestCases(
   stats: TestStats,
   results: TestResults,
   tests: TestDefinition[],
-  exitOnFail: boolean,
+  exitOnFail: boolean
 ): Array<Promise<void>> {
-  return tests.map(
-    createTestCase.bind(null, stats, results, exitOnFail)
-  );
+  return tests.map(createTestCase.bind(null, stats, results, exitOnFail));
 }
 
 async function runTestsParallel(
@@ -203,9 +200,7 @@ async function runTestsParallel(
     if (disableLog) {
       consoleDisabler("disable");
     }
-    await Promise.all(
-      initTestCases(stats, results, tests, exitOnFail)
-    );
+    await Promise.all(initTestCases(stats, results, tests, exitOnFail));
   } catch (_) {
     // The error was thrown to stop awaiting all promises if exitOnFail === true
     // stats.failed has been incremented and the error stored in results
