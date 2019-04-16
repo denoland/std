@@ -5,7 +5,6 @@ import * as path from "./path/mod.ts";
  * @param src src file path
  * @param dest dest file path
  * @param sep path separator
- * @returns boolean
  */
 export function isSubdir(
   src: string,
@@ -29,7 +28,6 @@ export type PathType = "file" | "dir" | "symlink";
  * Get a human readable file type string.
  *
  * @param fileInfo A FileInfo describes a file and is returned by `stat`, `lstat`
- * @returns PathType | void
  */
 export function getFileInfoType(fileInfo: Deno.FileInfo): PathType | void {
   return fileInfo.isFile()
