@@ -40,7 +40,7 @@ export function ensureFileSync(filePath: string): void {
   let pathExists = false;
   try {
     // if file exists
-    const stat = Deno.statSync(filePath);
+    const stat = Deno.lstatSync(filePath);
     pathExists = true;
     if (!stat.isFile()) {
       throw new Error(

@@ -8,7 +8,7 @@ export async function ensureDir(dir: string): Promise<void> {
   let pathExists = false;
   try {
     // if dir exists
-    const stat = await Deno.stat(dir);
+    const stat = await Deno.lstat(dir);
     pathExists = true;
     if (!stat.isDirectory()) {
       throw new Error(
@@ -32,7 +32,7 @@ export function ensureDirSync(dir: string): void {
   let pathExists = false;
   try {
     // if dir exists
-    const stat = Deno.statSync(dir);
+    const stat = Deno.lstatSync(dir);
     pathExists = true;
     if (!stat.isDirectory()) {
       throw new Error(

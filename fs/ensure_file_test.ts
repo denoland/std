@@ -101,3 +101,15 @@ test(function ensureFileSyncIfItExistAsDir() {
 
   Deno.removeSync(testDir, { recursive: true });
 });
+
+test(function ensureFileSyncIfItExistAsSymlink() {
+  const testLink = path.join(testdataDir, "0-link.ts");
+
+  assertThrows(
+    () => {
+      ensureFileSync(testLink);
+    },
+    Error,
+    `Ensure path exists, expected 'file', got 'symlink'`
+  );
+});
