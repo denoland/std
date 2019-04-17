@@ -12,19 +12,17 @@ const isWindows = Deno.platform.os === "win";
  *
  * @param src the source file path
  * @param dest the destination link path
- * @returns Promise<void>
  */
 export async function ensureSymlink(src: string, dest: string): Promise<void> {
-  src = path.resolve(src);
-  dest = path.resolve(dest);
-
-  const statInfo = await Deno.lstat(src);
-  const filePathType = getFileInfoType(statInfo);
+  const srcStatInfo = await Deno.lstat(src);
+  const srcFilePathType = getFileInfoType(srcStatInfo);
 
   if (await exists(dest)) {
-    if (filePathType !== PathType.symlink) {
+    const destStatInfo = await Deno.lstat(dest);
+    const destFilePathType = getFileInfoType(destStatInfo);
+    if (destFilePathType !== PathType.symlink) {
       throw new Error(
-        `Ensure path exists, expected 'symlink', got '${filePathType}'`
+        `Ensure path exists, expected 'symlink', got '${destFilePathType}'`
       );
     }
     return;
@@ -33,7 +31,7 @@ export async function ensureSymlink(src: string, dest: string): Promise<void> {
   await ensureDir(path.dirname(dest));
 
   if (isWindows) {
-    await Deno.symlink(src, dest, filePathType || undefined);
+    await Deno.symlink(src, dest, srcFilePathType || undefined);
   } else {
     await Deno.symlink(src, dest);
   }
@@ -45,19 +43,17 @@ export async function ensureSymlink(src: string, dest: string): Promise<void> {
  *
  * @param src the source file path
  * @param dest the destination link path
- * @returns void
  */
 export function ensureSymlinkSync(src: string, dest: string): void {
-  src = path.resolve(src);
-  dest = path.resolve(dest);
-
-  const statInfo = Deno.lstatSync(src);
-  const filePathType = getFileInfoType(statInfo);
+  const srcStatInfo = Deno.lstatSync(src);
+  const srcFilePathType = getFileInfoType(srcStatInfo);
 
   if (existsSync(dest)) {
-    if (filePathType !== PathType.symlink) {
+    const destStatInfo = Deno.lstatSync(dest);
+    const destFilePathType = getFileInfoType(destStatInfo);
+    if (destFilePathType !== PathType.symlink) {
       throw new Error(
-        `Ensure path exists, expected 'symlink', got '${filePathType}'`
+        `Ensure path exists, expected 'symlink', got '${destFilePathType}'`
       );
     }
     return;
@@ -66,7 +62,7 @@ export function ensureSymlinkSync(src: string, dest: string): void {
   ensureDirSync(path.dirname(dest));
 
   if (isWindows) {
-    Deno.symlinkSync(src, dest, filePathType || undefined);
+    Deno.symlinkSync(src, dest, srcFilePathType || undefined);
   } else {
     Deno.symlinkSync(src, dest);
   }
