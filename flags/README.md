@@ -58,12 +58,12 @@ options can be:
   ```ts
   const { args } = Deno;
   import { parse } from "https://deno.land/std/flags/mod.ts";
-
-  console.dir(parse(args, { "--": false })); // options['--'] is set to false
+  // options['--'] is now set to false
+  console.dir(parse(args, { "--": false }));
   // $ deno example.ts -- a arg1
   // output: { _: [ "example.ts", "a", "arg1" ] }
-
-  console.dir(parse(args, { "--": true })); // options['--'] is set to true
+  // options['--'] is now set to true
+  console.dir(parse(args, { "--": true }));
   // $ deno example.ts -- a arg1
   // output: { _: [ "example.ts" ], --: [ "a", "arg1" ] }
   ```
