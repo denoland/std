@@ -171,6 +171,12 @@ test(function testingAssertSetEquals() {
     AssertionError,
     "Expected set to equal"
   );
+
+  assertThrows(
+    () => assertSetEquals(setA, setB, "test"),
+    AssertionError,
+    "test"
+  );
 });
 
 test(function testingAssertNotSetEquals() {
@@ -183,5 +189,11 @@ test(function testingAssertNotSetEquals() {
     () => assertNotSetEquals(setA, setC),
     AssertionError,
     "Expected set not to equal"
+  );
+
+  assertThrows(
+    () => assertNotSetEquals(setA, setC, "test"),
+    AssertionError,
+    "test"
   );
 });
