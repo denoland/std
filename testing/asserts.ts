@@ -306,3 +306,39 @@ export function unimplemented(msg?: string): never {
 export function unreachable(): never {
   throw new AssertionError("unreachable");
 }
+
+export function assertSetEquals(actual: Set<any>, expected: Set<any>): void {
+  const msg = `Expected set to equal ${JSON.stringify(
+    expected
+  )}, but got ${JSON.stringify(actual)}.`;
+
+  if (actual.size !== expected.size) {
+    throw new AssertionError(msg);
+  }
+  for (const item of actual) {
+    if (!expected.has(item)) {
+      throw new AssertionError(msg);
+    }
+  }
+}
+
+export function assertNotSetEquals(actual: Set<any>, expected: Set<any>): void {
+  const msg = `Expected set not to equal ${JSON.stringify(
+    expected
+  )}, but got ${JSON.stringify(actual)}.`;
+  let result = true;
+
+  if (actual.size !== expected.size) {
+    result = false;
+  }
+  for (const item of actual) {
+    if (!expected.has(item)) {
+      result = false;
+      break;
+    }
+  }
+
+  if (result) {
+    throw new AssertionError(msg);
+  }
+}

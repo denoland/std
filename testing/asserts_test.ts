@@ -12,7 +12,9 @@ import {
   equal,
   fail,
   unimplemented,
-  unreachable
+  unreachable,
+  assertSetEquals,
+  assertNotSetEquals
 } from "./asserts.ts";
 import { test } from "./mod.ts";
 
@@ -155,5 +157,31 @@ test(function testingAssertFail() {
     },
     AssertionError,
     "Failed assertion: foo"
+  );
+});
+
+test(function testingAssertSetEquals() {
+  const setA = new Set([1, 2, 3]);
+  const setB = new Set([1]);
+  const setC = new Set([3, 2, 1]);
+  assertSetEquals(setA, setC);
+
+  assertThrows(
+    () => assertSetEquals(setA, setB),
+    AssertionError,
+    "Expected set to equal"
+  );
+});
+
+test(function testingAssertNotSetEquals() {
+  const setA = new Set([1, 2, 3]);
+  const setB = new Set([1]);
+  const setC = new Set([3, 2, 1]);
+  assertNotSetEquals(setA, setB);
+
+  assertThrows(
+    () => assertNotSetEquals(setA, setC),
+    AssertionError,
+    "Expected set not to equal"
   );
 });
