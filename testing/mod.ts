@@ -8,46 +8,33 @@ export interface TestDefinition {
   name: string;
 }
 
-// Replacement of the global `console` to be in silent mode
-const noopConsole = {
-  assert: function() {},
-  debug: function() {},
-  dir: function() {},
-  error: function() {},
-  info: function() {},
-  log: function() {},
-  time: function() {},
-  timeEnd: function() {},
-  warn: function() {}
-};
+// Replacement of the global `console` function to be in silent mode
+const noopConsole = function() {};
 
-// Save of the global `console` in case of silent mode
-const defaultConsole = {
-  assert: console.assert,
-  debug: console.debug,
-  dir: console.dir,
-  error: console.error,
-  info: console.info,
-  log: console.log,
-  time: console.time,
-  timeEnd: console.timeEnd,
-  warn: console.warn
-};
+// Save Object of the global `console` in case of silent mode
+let defaultConsole = {};
 
 function enableConsole(): void {
-  for (const key in console) {
-    if (defaultConsole[key]) {
-      console[key] = defaultConsole[key];
-    }
+  for (const key in defaultConsole) {
+    console[key] = defaultConsole[key];
   }
 }
 
 function disableConsole(): void {
   for (const key in console) {
-    if (noopConsole[key]) {
-      console[key] = noopConsole[key];
+    if (console[key] instanceof Function) {
+      defaultConsole[key] = console[key];
+      console[key] = noopConsole;
     }
   }
+}
+
+const encoder = new TextEncoder();
+function print(txt: string, carriageReturn: boolean = true): void {
+  if (carriageReturn) {
+    txt += "\n";
+  }
+  Deno.stdout.writeSync(encoder.encode(`${txt}`));
 }
 
 let filterRegExp: RegExp | null;
@@ -128,13 +115,13 @@ function promptTestTime(time: number = 0) {
 
 function report(result: TestResult): void {
   if (result.ok) {
-    defaultConsole.log(
+    print(
       `${GREEN_OK}     ${result.name} ${promptTestTime(result.timeElapsed)}`
     );
   } else if (result.error) {
-    defaultConsole.log(`${RED_FAILED} ${result.name}\n${result.error.stack}`);
+    print(`${RED_FAILED} ${result.name}\n${result.error.stack}`);
   } else {
-    defaultConsole.log(`test ${result.name} ... unresolved`);
+    print(`test ${result.name} ... unresolved`);
   }
   result.printed = true;
 }
@@ -157,7 +144,7 @@ function printResults(
     }
   }
   // Attempting to match the output of Rust's test runner.
-  console.log(
+  print(
     `\ntest result: ${stats.failed ? RED_FAILED : GREEN_OK}. ` +
       `${stats.passed} passed; ${stats.failed} failed; ` +
       `${stats.ignored} ignored; ${stats.measured} measured; ` +
@@ -232,9 +219,7 @@ async function runTestsSerial(
   for (const { fn, name } of tests) {
     // Displaying the currently running test if silent mode
     if (disableLog) {
-      Deno.stdout.writeSync(
-        new TextEncoder().encode(`${yellow("RUNNING")} ${name}`)
-      );
+      print(`${yellow("RUNNING")} ${name}`, false);
     }
     try {
       let start, end;
@@ -243,16 +228,16 @@ async function runTestsSerial(
       end = performance.now();
       if (disableLog) {
         // Rewriting the current prompt line to erase `running ....`
-        Deno.stdout.writeSync(new TextEncoder().encode("\x1b[2K\r"));
+        print("\x1b[2K\r", false);
       }
       stats.passed++;
-      defaultConsole.log(GREEN_OK + "    ", name, promptTestTime(end - start));
+      print(GREEN_OK + "     " + name + " " + promptTestTime(end - start));
     } catch (err) {
       if (disableLog) {
-        Deno.stdout.writeSync(new TextEncoder().encode("\x1b[2K\r"));
+        print("\x1b[2K\r", false);
       }
-      defaultConsole.log(RED_FAILED, name);
-      defaultConsole.error(err.stack);
+      print(`${RED_FAILED} ${name}`);
+      print(err.stack);
       stats.failed++;
       if (exitOnFail) {
         break;
@@ -292,7 +277,7 @@ export async function runTests({
     failed: 0
   };
   const results: TestResults = createTestResults(tests);
-  console.log(`running ${tests.length} tests`);
+  print(`running ${tests.length} tests`);
   const start = performance.now();
   if (disableLog) {
     disableConsole();
