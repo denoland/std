@@ -30,6 +30,7 @@ export async function ensureSymlink(src: string, dest: string): Promise<void> {
 
   await ensureDir(path.dirname(dest));
 
+  // TODO(axetroy): remove this if condition. refs: https://github.com/denoland/deno/issues/2169
   if (isWindows) {
     await Deno.symlink(src, dest, srcFilePathType || undefined);
   } else {
@@ -61,6 +62,7 @@ export function ensureSymlinkSync(src: string, dest: string): void {
 
   ensureDirSync(path.dirname(dest));
 
+  // TODO(axetroy): remove this if condition. refs: https://github.com/denoland/deno/issues/2169
   if (isWindows) {
     Deno.symlinkSync(src, dest, srcFilePathType || undefined);
   } else {
