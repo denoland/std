@@ -1,4 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+// TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
 import { test } from "../testing/mod.ts";
 import {
   assertEquals,
@@ -9,6 +10,7 @@ import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 import * as path from "./path/mod.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
+const isWindows = Deno.platform.os === "win";
 
 test(async function ensureSymlinkIfItNotExist() {
   const testDir = path.join(testdataDir, "link_file_1");
@@ -47,7 +49,17 @@ test(async function ensureSymlinkIfItExist() {
   await Deno.mkdir(testDir, true);
   await Deno.writeFile(testFile, new Uint8Array());
 
-  await ensureSymlink(testFile, linkFile);
+  if (isWindows) {
+    await assertThrowsAsync(
+      () => ensureSymlink(testFile, linkFile),
+      Error,
+      "Not implemented"
+    );
+    await Deno.remove(testDir, { recursive: true });
+    return;
+  } else {
+    await ensureSymlink(testFile, linkFile);
+  }
 
   const srcStat = await Deno.lstat(testFile);
   const linkStat = await Deno.lstat(linkFile);
@@ -66,7 +78,17 @@ test(function ensureSymlinkSyncIfItExist() {
   Deno.mkdirSync(testDir, true);
   Deno.writeFileSync(testFile, new Uint8Array());
 
-  ensureSymlinkSync(testFile, linkFile);
+  if (isWindows) {
+    assertThrows(
+      () => ensureSymlinkSync(testFile, linkFile),
+      Error,
+      "Not implemented"
+    );
+    Deno.removeSync(testDir, { recursive: true });
+    return;
+  } else {
+    ensureSymlinkSync(testFile, linkFile);
+  }
 
   const srcStat = Deno.lstatSync(testFile);
 
@@ -86,7 +108,17 @@ test(async function ensureSymlinkDirectoryIfItExist() {
   await Deno.mkdir(testDir, true);
   await Deno.writeFile(testFile, new Uint8Array());
 
-  await ensureSymlink(testDir, linkDir);
+  if (isWindows) {
+    await assertThrowsAsync(
+      () => ensureSymlink(testDir, linkDir),
+      Error,
+      "Not implemented"
+    );
+    await Deno.remove(testDir, { recursive: true });
+    return;
+  } else {
+    await ensureSymlink(testDir, linkDir);
+  }
 
   const testDirStat = await Deno.lstat(testDir);
   const linkDirStat = await Deno.lstat(linkDir);
@@ -108,7 +140,17 @@ test(function ensureSymlinkSyncDirectoryIfItExist() {
   Deno.mkdirSync(testDir, true);
   Deno.writeFileSync(testFile, new Uint8Array());
 
-  ensureSymlinkSync(testDir, linkDir);
+  if (isWindows) {
+    assertThrows(
+      () => ensureSymlinkSync(testDir, linkDir),
+      Error,
+      "Not implemented"
+    );
+    Deno.removeSync(testDir, { recursive: true });
+    return;
+  } else {
+    ensureSymlinkSync(testDir, linkDir);
+  }
 
   const testDirStat = Deno.lstatSync(testDir);
   const linkDirStat = Deno.lstatSync(linkDir);
