@@ -45,7 +45,7 @@ test(function testingEqual() {
   assert(equal(new Set([1, 2, 3]), new Set([3, 2, 1])));
   assert(!equal(new Set([1, 2]), new Set([3, 2, 1])));
   assert(!equal(new Set([1, 2, 3]), new Set([4, 5, 6])));
-  assert(equal(new Set('denosaurus'), new Set('denosaurussss')));
+  assert(equal(new Set("denosaurus"), new Set("denosaurussss")));
 });
 
 test(function testingNotEquals() {
