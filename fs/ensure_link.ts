@@ -8,7 +8,7 @@ import { PathType, getFileInfoType } from "./utils.ts";
  * Ensures that the hard link exists.
  * If the directory structure does not exist, it is created.
  *
- * @param src the source file path. directory are not allow.
+ * @param src the source file path. Directory hard links are not allowed.
  * @param dest the destination link path
  */
 export async function ensureLink(src: string, dest: string): Promise<void> {
@@ -32,7 +32,7 @@ export async function ensureLink(src: string, dest: string): Promise<void> {
  * Ensures that the hard link exists.
  * If the directory structure does not exist, it is created.
  *
- * @param src the source file path. directory are not allow.
+ * @param src the source file path. Directory hard links are not allowed.
  * @param dest the destination link path
  */
 export function ensureLinkSync(src: string, dest: string): void {
