@@ -16,6 +16,17 @@ export class AssertionError extends Error {
 export function equal(c: unknown, d: unknown): boolean {
   const seen = new Map();
   return (function compare(a: unknown, b: unknown) {
+    if (a && a instanceof Set && b && b instanceof Set) {
+      if (a.size !== b.size) {
+        return false;
+      }
+      for (const item of b) {
+        if (!a.has(item)) {
+          return false;
+        }
+      }
+      return true;
+    }
     // Have to render RegExp & Date for string comparison
     // unless it's mistreated as object
     if (
@@ -305,52 +316,4 @@ export function unimplemented(msg?: string): never {
 /** Use this to assert unreachable code. */
 export function unreachable(): never {
   throw new AssertionError("unreachable");
-}
-
-export function assertSetEquals(
-  actual: Set<any>,
-  expected: Set<any>,
-  msg?: string
-): void {
-  msg =
-    msg ||
-    `Expected set to equal ${JSON.stringify(
-      expected
-    )}, but got ${JSON.stringify(actual)}.`;
-
-  if (actual.size !== expected.size) {
-    throw new AssertionError(msg);
-  }
-  for (const item of actual) {
-    if (!expected.has(item)) {
-      throw new AssertionError(msg);
-    }
-  }
-}
-
-export function assertNotSetEquals(
-  actual: Set<any>,
-  expected: Set<any>,
-  msg?: string
-): void {
-  msg =
-    msg ||
-    `Expected set not to equal ${JSON.stringify(
-      expected
-    )}, but got ${JSON.stringify(actual)}.`;
-  let result = true;
-
-  if (actual.size !== expected.size) {
-    result = false;
-  }
-  for (const item of actual) {
-    if (!expected.has(item)) {
-      result = false;
-      break;
-    }
-  }
-
-  if (result) {
-    throw new AssertionError(msg);
-  }
 }

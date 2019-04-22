@@ -12,9 +12,7 @@ import {
   equal,
   fail,
   unimplemented,
-  unreachable,
-  assertSetEquals,
-  assertNotSetEquals
+  unreachable
 } from "./asserts.ts";
 import { test } from "./mod.ts";
 
@@ -42,6 +40,12 @@ test(function testingEqual() {
   assert(!equal(/deno/, /node/));
   assert(equal(new Date(2019, 0, 3), new Date(2019, 0, 3)));
   assert(!equal(new Date(2019, 0, 3), new Date(2019, 1, 3)));
+  assert(equal(new Set([1]), new Set([1])));
+  assert(!equal(new Set([1]), new Set([2])));
+  assert(equal(new Set([1, 2, 3]), new Set([3, 2, 1])));
+  assert(!equal(new Set([1, 2]), new Set([3, 2, 1])));
+  assert(!equal(new Set([1, 2, 3]), new Set([4, 5, 6])));
+  assert(equal(new Set('denosaurus'), new Set('denosaurussss')));
 });
 
 test(function testingNotEquals() {
@@ -157,43 +161,5 @@ test(function testingAssertFail() {
     },
     AssertionError,
     "Failed assertion: foo"
-  );
-});
-
-test(function testingAssertSetEquals() {
-  const setA = new Set([1, 2, 3]);
-  const setB = new Set([1]);
-  const setC = new Set([3, 2, 1]);
-  assertSetEquals(setA, setC);
-
-  assertThrows(
-    () => assertSetEquals(setA, setB),
-    AssertionError,
-    "Expected set to equal"
-  );
-
-  assertThrows(
-    () => assertSetEquals(setA, setB, "test"),
-    AssertionError,
-    "test"
-  );
-});
-
-test(function testingAssertNotSetEquals() {
-  const setA = new Set([1, 2, 3]);
-  const setB = new Set([1]);
-  const setC = new Set([3, 2, 1]);
-  assertNotSetEquals(setA, setB);
-
-  assertThrows(
-    () => assertNotSetEquals(setA, setC),
-    AssertionError,
-    "Expected set not to equal"
-  );
-
-  assertThrows(
-    () => assertNotSetEquals(setA, setC, "test"),
-    AssertionError,
-    "test"
   );
 });
