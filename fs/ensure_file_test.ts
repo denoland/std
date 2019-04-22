@@ -1,12 +1,10 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-// TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
 import { test } from "../testing/mod.ts";
 import { assertThrows, assertThrowsAsync } from "../testing/asserts.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 import * as path from "./path/mod.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
-const isWindows = Deno.platform.os === "win";
 
 test(async function ensureFileIfItNotExist() {
   const testDir = path.join(testdataDir, "ensure_file_1");
@@ -112,9 +110,7 @@ test(async function ensureFileIfItExistAsSymlink() {
       await ensureFile(testLink);
     },
     Error,
-    isWindows
-      ? "Not implemented"
-      : `Ensure path exists, expected 'file', got 'symlink'`
+    `Ensure path exists, expected 'file', got 'symlink'`
   );
 });
 
@@ -126,8 +122,6 @@ test(function ensureFileSyncIfItExistAsSymlink() {
       ensureFileSync(testLink);
     },
     Error,
-    isWindows
-      ? "Not implemented"
-      : `Ensure path exists, expected 'file', got 'symlink'`
+    `Ensure path exists, expected 'file', got 'symlink'`
   );
 });
