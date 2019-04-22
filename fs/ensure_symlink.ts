@@ -20,7 +20,7 @@ export async function ensureSymlink(src: string, dest: string): Promise<void> {
   if (await exists(dest)) {
     const destStatInfo = await Deno.lstat(dest);
     const destFilePathType = getFileInfoType(destStatInfo);
-    if (destFilePathType !== PathType.symlink) {
+    if (destFilePathType !== "symlink") {
       throw new Error(
         `Ensure path exists, expected 'symlink', got '${destFilePathType}'`
       );
@@ -52,7 +52,7 @@ export function ensureSymlinkSync(src: string, dest: string): void {
   if (existsSync(dest)) {
     const destStatInfo = Deno.lstatSync(dest);
     const destFilePathType = getFileInfoType(destStatInfo);
-    if (destFilePathType !== PathType.symlink) {
+    if (destFilePathType !== "symlink") {
       throw new Error(
         `Ensure path exists, expected 'symlink', got '${destFilePathType}'`
       );
