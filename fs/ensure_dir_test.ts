@@ -114,7 +114,7 @@ test(async function ensureDirIfItAsSymlink() {
     Error,
     isWindows
       ? "Not implemented"
-      : `Ensure path exists, expected 'file', got 'symlink'`
+      : `Ensure path exists, expected 'dir', got 'symlink'`
   );
 });
 
@@ -128,6 +128,6 @@ test(function ensureDirSyncIfItAsSymlink() {
     Error,
     isWindows
       ? "Not implemented"
-      : `Ensure path exists, expected 'file', got 'symlink'`
+      : `Ensure path exists, expected 'dir', got 'symlink'`
   );
 });
