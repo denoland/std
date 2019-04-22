@@ -29,7 +29,7 @@ export type PathType = "file" | "dir" | "symlink";
  *
  * @param fileInfo A FileInfo describes a file and is returned by `stat`, `lstat`
  */
-export function getFileInfoType(fileInfo: Deno.FileInfo): PathType | void {
+export function getFileInfoType(fileInfo: Deno.FileInfo): PathType {
   return fileInfo.isFile()
     ? "file"
     : fileInfo.isDirectory()
