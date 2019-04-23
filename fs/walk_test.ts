@@ -35,8 +35,9 @@ async function walkArray(
     arr.push(f.path.replace(/\\/g, "/"));
   }
   arr.sort();
-  const arrSync = Array.from(walkSync(dirname, options), (f: FileInfo) =>
-    f.path.replace(/\\/g, "/")
+  const arrSync = Array.from(
+    walkSync(dirname, options),
+    (f: FileInfo): string => f.path.replace(/\\/g, "/")
   ).sort();
   assertEquals(arr, arrSync);
   return arr;
@@ -46,25 +47,25 @@ async function touch(path: string): Promise<void> {
   await open(path, "w");
 }
 function assertReady(expectedLength: number): void {
-  const arr = Array.from(walkSync(), (f: FileInfo) => f.path);
+  const arr = Array.from(walkSync(), (f: FileInfo): string => f.path);
   assertEquals(arr.length, expectedLength);
 }
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await mkdir(d + "/empty");
   },
-  async function emptyDir() {
+  async function emptyDir(): Promise<void> {
     const arr = await walkArray();
     assertEquals(arr.length, 0);
   }
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await touch(d + "/x");
   },
-  async function singleFile() {
+  async function singleFile(): Promise<void> {
     const arr = await walkArray();
     assertEquals(arr.length, 1);
     assertEquals(arr[0], "./x");
@@ -72,10 +73,10 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await touch(d + "/x");
   },
-  async function iteratable() {
+  async function iteratable(): Promise<void> {
     let count = 0;
     for (const _ of walkSync()) {
       count += 1;
@@ -89,11 +90,11 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await mkdir(d + "/a");
     await touch(d + "/a/x");
   },
-  async function nestedSingleFile() {
+  async function nestedSingleFile(): Promise<void> {
     const arr = await walkArray();
     assertEquals(arr.length, 1);
     assertEquals(arr[0], "./a/x");
@@ -101,11 +102,11 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await mkdir(d + "/a/b/c/d", true);
     await touch(d + "/a/b/c/d/x");
   },
-  async function depth() {
+  async function depth(): Promise<void> {
     assertReady(1);
     const arr3 = await walkArray(".", { maxDepth: 3 });
     assertEquals(arr3.length, 0);
@@ -116,11 +117,11 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await touch(d + "/x.ts");
     await touch(d + "/y.rs");
   },
-  async function ext() {
+  async function ext(): Promise<void> {
     assertReady(2);
     const arr = await walkArray(".", { exts: [".ts"] });
     assertEquals(arr.length, 1);
@@ -129,12 +130,12 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await touch(d + "/x.ts");
     await touch(d + "/y.rs");
     await touch(d + "/z.py");
   },
-  async function extAny() {
+  async function extAny(): Promise<void> {
     assertReady(3);
     const arr = await walkArray(".", { exts: [".rs", ".ts"] });
     assertEquals(arr.length, 2);
@@ -144,11 +145,11 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await touch(d + "/x");
     await touch(d + "/y");
   },
-  async function match() {
+  async function match(): Promise<void> {
     assertReady(2);
     const arr = await walkArray(".", { match: [/x/] });
     assertEquals(arr.length, 1);
