@@ -42,9 +42,12 @@ interface ReadMaker {
 }
 
 const readMakers: ReadMaker[] = [
-  { name: "full", fn: r => r },
-  { name: "byte", fn: r => new iotest.OneByteReader(r) },
-  { name: "half", fn: r => new iotest.HalfReader(r) }
+  { name: "full", fn: (r): Reader => r },
+  {
+    name: "byte",
+    fn: (r): iotest.OneByteReader => new iotest.OneByteReader(r)
+  },
+  { name: "half", fn: (r): iotest.HalfReader => new iotest.HalfReader(r) }
   // TODO { name: "data+err", r => new iotest.DataErrReader(r) },
   // { name: "timeout", fn: r => new iotest.TimeoutReader(r) },
 ];
@@ -70,12 +73,12 @@ interface NamedBufReader {
 }
 
 const bufreaders: NamedBufReader[] = [
-  { name: "1", fn: (b: BufReader) => reads(b, 1) },
-  { name: "2", fn: (b: BufReader) => reads(b, 2) },
-  { name: "3", fn: (b: BufReader) => reads(b, 3) },
-  { name: "4", fn: (b: BufReader) => reads(b, 4) },
-  { name: "5", fn: (b: BufReader) => reads(b, 5) },
-  { name: "7", fn: (b: BufReader) => reads(b, 7) },
+  { name: "1", fn: (b: BufReader): Promise<string> => reads(b, 1) },
+  { name: "2", fn: (b: BufReader): Promise<string> => reads(b, 2) },
+  { name: "3", fn: (b: BufReader): Promise<string> => reads(b, 3) },
+  { name: "4", fn: (b: BufReader): Promise<string> => reads(b, 4) },
+  { name: "5", fn: (b: BufReader): Promise<string> => reads(b, 5) },
+  { name: "7", fn: (b: BufReader): Promise<string> => reads(b, 7) },
   { name: "bytes", fn: readBytes }
   // { name: "lines", fn: readLines },
 ];

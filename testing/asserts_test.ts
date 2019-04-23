@@ -156,7 +156,7 @@ test(function testingAssertsUnreachable(): void {
 test(function testingAssertFail(): void {
   assertThrows(fail, AssertionError, "Failed assertion.");
   assertThrows(
-    () => {
+    (): void => {
       fail("foo");
     },
     AssertionError,

@@ -20,8 +20,9 @@ async function walkArray(
     arr.push(f.path.replace(/\\/g, "/"));
   }
   arr.sort();
-  const arrSync = Array.from(walkSync(dirname, options), (f: FileInfo) =>
-    f.path.replace(/\\/g, "/")
+  const arrSync = Array.from(
+    walkSync(dirname, options),
+    (f: FileInfo): string => f.path.replace(/\\/g, "/")
   ).sort();
   assertEquals(arr, arrSync);
   return arr;
@@ -97,12 +98,12 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await mkdir(d + "/a");
     await mkdir(d + "/a/yo");
     await touch(d + "/a/yo/x.ts");
   },
-  async function globInWalkFolderWildcard() {
+  async function globInWalkFolderWildcard(): Promise<void> {
     const arr = await walkArray(".", {
       match: [
         glob(join("a", "**", "*.ts"), {

@@ -13,25 +13,31 @@ const testdataDir = path.resolve("fs", "testdata");
 test(async function readJsonFileNotExists(): Promise<void> {
   const emptyJsonFile = path.join(testdataDir, "json_not_exists.json");
 
-  await assertThrowsAsync(async () => {
-    await readJson(emptyJsonFile);
-  });
+  await assertThrowsAsync(
+    async (): Promise<void> => {
+      await readJson(emptyJsonFile);
+    }
+  );
 });
 
 test(async function readEmptyJsonFile(): Promise<void> {
   const emptyJsonFile = path.join(testdataDir, "json_empty.json");
 
-  await assertThrowsAsync(async () => {
-    await readJson(emptyJsonFile);
-  });
+  await assertThrowsAsync(
+    async (): Promise<void> => {
+      await readJson(emptyJsonFile);
+    }
+  );
 });
 
 test(async function readInvalidJsonFile(): Promise<void> {
   const invalidJsonFile = path.join(testdataDir, "json_invalid.json");
 
-  await assertThrowsAsync(async () => {
-    await readJson(invalidJsonFile);
-  });
+  await assertThrowsAsync(
+    async (): Promise<void> => {
+      await readJson(invalidJsonFile);
+    }
+  );
 });
 
 test(async function readValidArrayJsonFile(): Promise<void> {
@@ -59,25 +65,31 @@ test(async function readValidObjJsonFileWithRelativePath(): Promise<void> {
 test(function readJsonFileNotExistsSync(): void {
   const emptyJsonFile = path.join(testdataDir, "json_not_exists.json");
 
-  assertThrows(() => {
-    readJsonSync(emptyJsonFile);
-  });
+  assertThrows(
+    (): void => {
+      readJsonSync(emptyJsonFile);
+    }
+  );
 });
 
 test(function readEmptyJsonFileSync(): void {
   const emptyJsonFile = path.join(testdataDir, "json_empty.json");
 
-  assertThrows(() => {
-    readJsonSync(emptyJsonFile);
-  });
+  assertThrows(
+    (): void => {
+      readJsonSync(emptyJsonFile);
+    }
+  );
 });
 
 test(function readInvalidJsonFile(): void {
   const invalidJsonFile = path.join(testdataDir, "json_invalid.json");
 
-  assertThrows(() => {
-    readJsonSync(invalidJsonFile);
-  });
+  assertThrows(
+    (): void => {
+      readJsonSync(invalidJsonFile);
+    }
+  );
 });
 
 test(function readValidArrayJsonFileSync(): void {

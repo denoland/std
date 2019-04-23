@@ -30,10 +30,12 @@ interface Deferred {
 function deferred(isResolved = false): Deferred {
   let resolve: Handler = (): void => void 0;
   let reject: Handler = (): void => void 0;
-  const promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
+  const promise = new Promise(
+    (res, rej): void => {
+      resolve = res;
+      reject = rej;
+    }
+  );
   if (isResolved) {
     resolve();
   }

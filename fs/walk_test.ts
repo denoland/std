@@ -158,12 +158,12 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await touch(d + "/x");
     await touch(d + "/y");
     await touch(d + "/z");
   },
-  async function matchAny() {
+  async function matchAny(): Promise<void> {
     assertReady(3);
     const arr = await walkArray(".", { match: [/x/, /y/] });
     assertEquals(arr.length, 2);
@@ -173,11 +173,11 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await touch(d + "/x");
     await touch(d + "/y");
   },
-  async function skip() {
+  async function skip(): Promise<void> {
     assertReady(2);
     const arr = await walkArray(".", { skip: [/x/] });
     assertEquals(arr.length, 1);
@@ -186,12 +186,12 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await touch(d + "/x");
     await touch(d + "/y");
     await touch(d + "/z");
   },
-  async function skipAny() {
+  async function skipAny(): Promise<void> {
     assertReady(3);
     const arr = await walkArray(".", { skip: [/x/, /y/] });
     assertEquals(arr.length, 1);
@@ -200,14 +200,14 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await mkdir(d + "/a");
     await mkdir(d + "/b");
     await touch(d + "/a/x");
     await touch(d + "/a/y");
     await touch(d + "/b/z");
   },
-  async function subDir() {
+  async function subDir(): Promise<void> {
     assertReady(3);
     const arr = await walkArray("b");
     assertEquals(arr.length, 1);
@@ -215,18 +215,21 @@ testWalk(
   }
 );
 
-testWalk(async (_d: string) => {}, async function onError() {
-  assertReady(0);
-  const ignored = await walkArray("missing");
-  assertEquals(ignored.length, 0);
-  let errors = 0;
-  await walkArray("missing", { onError: _e => (errors += 1) });
-  // It's 2 since walkArray iterates over both sync and async.
-  assertEquals(errors, 2);
-});
+testWalk(
+  async (_d: string): Promise<void> => {},
+  async function onError(): Promise<void> {
+    assertReady(0);
+    const ignored = await walkArray("missing");
+    assertEquals(ignored.length, 0);
+    let errors = 0;
+    await walkArray("missing", { onError: (_e): number => (errors += 1) });
+    // It's 2 since walkArray iterates over both sync and async.
+    assertEquals(errors, 2);
+  }
+);
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await mkdir(d + "/a");
     await mkdir(d + "/b");
     await touch(d + "/a/x");
@@ -239,7 +242,7 @@ testWalk(
       assert(err.message, "Not implemented");
     }
   },
-  async function symlink() {
+  async function symlink(): Promise<void> {
     // symlink is not yet implemented on Windows.
     if (isWindows) {
       return;
@@ -252,6 +255,6 @@ testWalk(
 
     const arr = await walkArray("a", { followSymlinks: true });
     assertEquals(arr.length, 3);
-    assert(arr.some(f => f.endsWith("/b/z")));
+    assert(arr.some((f): boolean => f.endsWith("/b/z")));
   }
 );

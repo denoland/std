@@ -97,7 +97,7 @@ test(async function writeJsonWithSpaces(): Promise<void> {
   assertEquals(new TextDecoder().decode(content), `{\n  "a": "1"\n}`);
 });
 
-test(async function writeJsonWithReplacer() {
+test(async function writeJsonWithReplacer(): Promise<void> {
   const existsJsonFile = path.join(testdataDir, "file_write_replacer.json");
 
   const invalidJsonContent = new TextEncoder().encode();
@@ -190,14 +190,14 @@ test(function writeJsonSyncIfExistsAnInvalidJson(): void {
   assertEquals(new TextDecoder().decode(content), `{"a":"1"}`);
 });
 
-test(function writeJsonWithSpaces() {
+test(function writeJsonWithSpaces(): void {
   const existsJsonFile = path.join(testdataDir, "file_write_spaces_sync.json");
 
   const invalidJsonContent = new TextEncoder().encode();
   Deno.writeFileSync(existsJsonFile, invalidJsonContent);
 
   assertThrows(
-    () => {
+    (): void => {
       writeJsonSync(existsJsonFile, { a: "1" }, { spaces: 2 });
       throw new Error("should write success");
     },
@@ -212,7 +212,7 @@ test(function writeJsonWithSpaces() {
   assertEquals(new TextDecoder().decode(content), `{\n  "a": "1"\n}`);
 });
 
-test(function writeJsonWithReplacer() {
+test(function writeJsonWithReplacer(): void {
   const existsJsonFile = path.join(
     testdataDir,
     "file_write_replacer_sync.json"
@@ -222,7 +222,7 @@ test(function writeJsonWithReplacer() {
   Deno.writeFileSync(existsJsonFile, invalidJsonContent);
 
   assertThrows(
-    () => {
+    (): void => {
       writeJsonSync(
         existsJsonFile,
         { a: "1", b: "2", c: "3" },

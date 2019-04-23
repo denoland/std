@@ -31,7 +31,7 @@ test({
   name: "failed with number",
   fn(): void {
     assertThrows(
-      ():void => assertEquals(1, 2),
+      (): void => assertEquals(1, 2),
       Error,
       [...createHeader(), removed(`-   1`), added(`+   2`), ""].join("\n")
     );
