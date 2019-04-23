@@ -38,8 +38,8 @@ function hasKey(obj, keys): boolean {
 export function parse(
   args,
   initialOptions?: ArgParsingOptions
-): { [key: string]: unknown } {
-  // eslint-disable-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): { [key: string]: any } {
   const options: ArgParsingOptions = {
     ...DEFAULT_OPTIONS,
     ...(initialOptions || {})
