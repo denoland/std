@@ -128,10 +128,7 @@ export class ServerRequest {
   w: BufWriter;
   private _cookie: Cookie;
 
-  get cookie(): Cookie {
-    if (this._cookie) {
-      return this._cookie;
-    }
+  private _getCookie(): Cookie {
     if (this.headers.has("Cookie")) {
       const out: Cookie = {};
       const c = this.headers.get("Cookie").split(";");
@@ -140,11 +137,23 @@ export class ServerRequest {
         const key = cookieVal.shift().trim();
         out[key] = cookieVal.join("");
       }
-      this._cookie = out;
       return out;
     }
-    this._cookie = {};
     return {};
+  }
+
+  // Cookie is parsed and stored into a cached property
+  get cookie(): Cookie {
+    if (this._cookie) {
+      return this._cookie;
+    }
+    this._cookie =  this._getCookie();
+    return this._cookie
+  }
+
+  // Force the parsing of the cookie
+  public getCookie(): Cookie {
+    return this._getCookie();
   }
 
   public async *bodyStream(): AsyncIterableIterator<Uint8Array> {
