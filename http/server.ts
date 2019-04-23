@@ -147,8 +147,8 @@ export class ServerRequest {
     if (this._cookie) {
       return this._cookie;
     }
-    this._cookie =  this._getCookie();
-    return this._cookie
+    this._cookie = this._getCookie();
+    return this._cookie;
   }
 
   // Force the parsing of the cookie
