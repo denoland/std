@@ -217,26 +217,3 @@ test(async function requestBodyStreamWithTransferEncoding() {
     }
   }
 });
-
-test(function requestCookieHandling() {
-  // Cache handling
-  let req = new ServerRequest();
-  req.headers = new Headers();
-  assertEquals(req.cookie, {});
-  req.headers = new Headers();
-  req.headers.set("Cookie", "foo=bar");
-  // This is good because we ask for the cache
-  assertEquals(req.cookie, {});
-  // We force the parsing of the cookie
-  assertEquals(req.getCookie(), { foo: "bar" });
-
-  req = new ServerRequest();
-  req.headers = new Headers();
-  req.headers.set("Cookie", "full=of  ; tasty=chocolate");
-  assertEquals(req.cookie, { full: "of  ", tasty: "chocolate" });
-
-  req = new ServerRequest();
-  req.headers = new Headers();
-  req.headers.set("Cookie", "igot=99; problems=but...");
-  assertEquals(req.cookie, { igot: "99", problems: "but..." });
-});

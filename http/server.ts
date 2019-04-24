@@ -114,10 +114,6 @@ async function readAllIterator(
   return collected;
 }
 
-export interface Cookie {
-  [key: string]: string;
-}
-
 export class ServerRequest {
   url: string;
   method: string;
@@ -126,35 +122,6 @@ export class ServerRequest {
   conn: Conn;
   r: BufReader;
   w: BufWriter;
-  private _cookie: Cookie;
-
-  private _getCookie(): Cookie {
-    if (this.headers.has("Cookie")) {
-      const out: Cookie = {};
-      const c = this.headers.get("Cookie").split(";");
-      for (const kv of c) {
-        const cookieVal = kv.split("=");
-        const key = cookieVal.shift().trim();
-        out[key] = cookieVal.join("");
-      }
-      return out;
-    }
-    return {};
-  }
-
-  // Cookie is parsed and stored into a cached property
-  get cookie(): Cookie {
-    if (this._cookie) {
-      return this._cookie;
-    }
-    this._cookie = this._getCookie();
-    return this._cookie;
-  }
-
-  // Force the parsing of the cookie
-  public getCookie(): Cookie {
-    return this._getCookie();
-  }
 
   public async *bodyStream(): AsyncIterableIterator<Uint8Array> {
     if (this.headers.has("content-length")) {
