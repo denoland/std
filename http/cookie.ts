@@ -27,48 +27,6 @@ export interface CookieOptions {
 
 export type SameSite = "Strict" | "Lax";
 
-/* Parse the cookie of the Server Request */
-export function getCookie(rq: ServerRequest): Cookie {
-  if (rq.headers.has(COOKIE)) {
-    const out: Cookie = {};
-    const c = rq.headers.get(COOKIE).split(";");
-    for (const kv of c) {
-      const cookieVal = kv.split("=");
-      const key = cookieVal.shift().trim();
-      out[key] = cookieVal.join("");
-    }
-    return out;
-  }
-  return {};
-}
-
-/* Set the cookie header properly in the Response */
-export function setCookie(
-  res: Response,
-  cookie: CookieValue,
-  opt: CookieOptions = {}
-): void {
-  if (!res.headers) {
-    res.headers = new Headers();
-  }
-  // TODO (zekth) : Add proper parsing of Set-Cookie headers
-  // Parsing cookie headers to make consistent set-cookie header
-  // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
-  res.headers.set(SETCOOKIE, cookieStringFormat(cookie, opt));
-}
-
-/* Set the cookie header properly in the Response to delete it */
-export function delCookie(res: Response, CookieName: string): void {
-  if (!res.headers) {
-    res.headers = new Headers();
-  }
-  const c: CookieValue = {
-    name: CookieName,
-    value: ""
-  };
-  res.headers.set(SETCOOKIE, cookieStringFormat(c, { Expires: new Date(0) }));
-}
-
 function cookieStringFormat(cookie: CookieValue, opt: CookieOptions): string {
   function dtPad(v: string, lPad: number = 2): string {
     return pad(v, lPad, { char: "0" });
@@ -135,4 +93,46 @@ function cookieStringFormat(cookie: CookieValue, opt: CookieOptions): string {
     out.push(`Expires=${dateString}`);
   }
   return out.join("; ");
+}
+
+/* Parse the cookie of the Server Request */
+export function getCookie(rq: ServerRequest): Cookie {
+  if (rq.headers.has(COOKIE)) {
+    const out: Cookie = {};
+    const c = rq.headers.get(COOKIE).split(";");
+    for (const kv of c) {
+      const cookieVal = kv.split("=");
+      const key = cookieVal.shift().trim();
+      out[key] = cookieVal.join("");
+    }
+    return out;
+  }
+  return {};
+}
+
+/* Set the cookie header properly in the Response */
+export function setCookie(
+  res: Response,
+  cookie: CookieValue,
+  opt: CookieOptions = {}
+): void {
+  if (!res.headers) {
+    res.headers = new Headers();
+  }
+  // TODO (zekth) : Add proper parsing of Set-Cookie headers
+  // Parsing cookie headers to make consistent set-cookie header
+  // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
+  res.headers.set(SETCOOKIE, cookieStringFormat(cookie, opt));
+}
+
+/* Set the cookie header properly in the Response to delete it */
+export function delCookie(res: Response, CookieName: string): void {
+  if (!res.headers) {
+    res.headers = new Headers();
+  }
+  const c: CookieValue = {
+    name: CookieName,
+    value: ""
+  };
+  res.headers.set(SETCOOKIE, cookieStringFormat(c, { Expires: new Date(0) }));
 }
