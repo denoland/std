@@ -159,7 +159,7 @@ Basic usage:
 ```ts
 import { runBenchmarks, bench } from "https://deno.land/std/testing/bench.ts";
 
-bench(function forIncrementX1e9(b) {
+bench(function forIncrementX1e9(b): void {
   b.start();
   for (let i = 0; i < 1e9; i++);
   b.stop();
@@ -174,7 +174,7 @@ Averaging execution time over multiple runs:
 bench({
   name: "runs100ForIncrementX1e6",
   runs: 100,
-  func(b) {
+  func(b): void {
     b.start();
     for (let i = 0; i < 1e6; i++);
     b.stop();
