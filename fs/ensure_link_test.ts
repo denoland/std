@@ -17,11 +17,9 @@ test(async function ensureLinkIfItNotExist(): Promise<void> {
   const testFile = path.join(srcDir, "test.txt");
   const linkFile = path.join(destDir, "link.txt");
 
-  await assertThrowsAsync(
-    (): Promise<void> => {
-      await ensureLink(testFile, linkFile);
-    }
-  );
+  await assertThrowsAsync(async () => {
+    await ensureLink(testFile, linkFile);
+  });
 
   await Deno.remove(destDir, { recursive: true });
 });
