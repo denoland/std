@@ -3,9 +3,6 @@ import { ServerRequest, Response } from "./server.ts";
 import { assert } from "../testing/asserts.ts";
 import { pad } from "../strings/pad.ts";
 
-const SETCOOKIE = "Set-Cookie";
-const COOKIE = "Cookie";
-
 export interface Cookie {
   [key: string]: string;
 }
@@ -97,9 +94,9 @@ function cookieStringFormat(cookie: CookieValue, opt: CookieOptions): string {
 
 /* Parse the cookie of the Server Request */
 export function getCookie(rq: ServerRequest): Cookie {
-  if (rq.headers.has(COOKIE)) {
+  if (rq.headers.has("Cookie")) {
     const out: Cookie = {};
-    const c = rq.headers.get(COOKIE).split(";");
+    const c = rq.headers.get("Cookie").split(";");
     for (const kv of c) {
       const cookieVal = kv.split("=");
       const key = cookieVal.shift().trim();
@@ -122,7 +119,7 @@ export function setCookie(
   // TODO (zekth) : Add proper parsing of Set-Cookie headers
   // Parsing cookie headers to make consistent set-cookie header
   // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
-  res.headers.set(SETCOOKIE, cookieStringFormat(cookie, opt));
+  res.headers.set("Set-Cookie", cookieStringFormat(cookie, opt));
 }
 
 /* Set the cookie header properly in the Response to delete it */
@@ -134,5 +131,8 @@ export function delCookie(res: Response, CookieName: string): void {
     name: CookieName,
     value: ""
   };
-  res.headers.set(SETCOOKIE, cookieStringFormat(c, { Expires: new Date(0) }));
+  res.headers.set(
+    "Set-Cookie",
+    cookieStringFormat(c, { Expires: new Date(0) })
+  );
 }
