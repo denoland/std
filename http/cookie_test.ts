@@ -157,7 +157,7 @@ test({
         MaxAge: 2,
         Domain: "deno.land",
         Path: "/",
-        Expires: new Date(1983, 0, 7, 16, 32)
+        Expires: new Date(Date.UTC(1983, 0, 7, 15, 32))
       }
     );
     assertEquals(
