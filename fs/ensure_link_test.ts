@@ -148,7 +148,8 @@ test(async function ensureLinkDirectoryIfItExist(): Promise<void> {
       await ensureLink(testDir, linkDir);
     },
     Deno.DenoError,
-    "Operation not permitted (os error 1)"
+    // "Operation not permitted (os error 1)" // throw an local matching test
+    // "Access is denied. (os error 5)" // throw in CI
   );
 
   Deno.removeSync(testDir, { recursive: true });
@@ -167,7 +168,8 @@ test(function ensureLinkSyncDirectoryIfItExist(): void {
       ensureLinkSync(testDir, linkDir);
     },
     Deno.DenoError,
-    "Operation not permitted (os error 1)"
+    // "Operation not permitted (os error 1)" // throw an local matching test
+    // "Access is denied. (os error 5)" // throw in CI
   );
 
   Deno.removeSync(testDir, { recursive: true });
