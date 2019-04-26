@@ -147,7 +147,7 @@ test(async function ensureLinkDirectoryIfItExist(): Promise<void> {
     async (): Promise<void> => {
       await ensureLink(testDir, linkDir);
     },
-    Deno.DenoError,
+    Deno.DenoError
     // "Operation not permitted (os error 1)" // throw an local matching test
     // "Access is denied. (os error 5)" // throw in CI
   );
@@ -167,7 +167,7 @@ test(function ensureLinkSyncDirectoryIfItExist(): void {
     (): void => {
       ensureLinkSync(testDir, linkDir);
     },
-    Deno.DenoError,
+    Deno.DenoError
     // "Operation not permitted (os error 1)" // throw an local matching test
     // "Access is denied. (os error 5)" // throw in CI
   );
