@@ -24,7 +24,10 @@ export interface CookieOptions {
 
 export type SameSite = "Strict" | "Lax";
 
-function cookieStringFormat(cookie: CookieValue, opt: CookieOptions): string {
+export function cookieStringFormat(
+  cookie: CookieValue,
+  opt: CookieOptions
+): string {
   function dtPad(v: string, lPad: number = 2): string {
     return pad(v, lPad, { char: "0" });
   }
@@ -92,7 +95,10 @@ function cookieStringFormat(cookie: CookieValue, opt: CookieOptions): string {
   return out.join("; ");
 }
 
-/* Parse the cookie of the Server Request */
+/**
+ * Parse the cookie of the Server Request
+ * @param rq Server Request
+ */
 export function getCookie(rq: ServerRequest): Cookie {
   if (rq.headers.has("Cookie")) {
     const out: Cookie = {};
@@ -107,7 +113,24 @@ export function getCookie(rq: ServerRequest): Cookie {
   return {};
 }
 
-/* Set the cookie header properly in the Response */
+/**
+ * Set the cookie header properly in the Response
+ * @param res Server Response
+ * @param cookie Cookie to set
+ * @param opt Cookie options
+ * @param [opt.Expires] Expiration Date of the cookie
+ * @param [opt.MaxAge] Max-Age of the Cookie. Must be integer superior to 0
+ * @param [opt.Domain] Specifies those hosts to which the cookie will be sent
+ * @param [opt.Path] Indicates a URL path that must exist in the request.
+ * @param [opt.Secure] Indicates if the cookie is made using SSL & HTTPS.
+ * @param [opt.HttpOnly] Indicates that cookie is not accessible via Javascript
+ * @param [opt.SameSite] Allows servers to assert that a cookie ought not to be
+ *  sent along with cross-site requests
+ * Example:
+ *
+ *     setCookie(response, { name: 'deno', value: 'runtime' },
+ *        { HttpOnly: true, Secure: true, MaxAge: 2, Domain: "deno.land" });
+ */
 export function setCookie(
   res: Response,
   cookie: CookieValue,
@@ -122,7 +145,14 @@ export function setCookie(
   res.headers.set("Set-Cookie", cookieStringFormat(cookie, opt));
 }
 
-/* Set the cookie header properly in the Response to delete it */
+/**
+ *  Set the cookie header properly in the Response to delete it
+ * @param res Server Response
+ * @param CookieName Name of the cookie to Delete
+ * Example:
+ *
+ *     delCookie(res,'foo');
+ */
 export function delCookie(res: Response, CookieName: string): void {
   if (!res.headers) {
     res.headers = new Headers();
