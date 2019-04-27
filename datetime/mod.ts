@@ -111,6 +111,9 @@ export function currentDayOfYear(): number {
 /**
  * Parse a date to return a IMF formated string date
  * RFC: https://tools.ietf.org/html/rfc7231#section-7.1.1.1
+ * IMF is the time format to use when generating times in HTTP
+ * headers. The time being formatted must be in UTC for Format to
+ * generate the correct format.
  * @param date Date to parse
  * @return IMF date formated string
  */
