@@ -14,18 +14,6 @@ test({
 });
 
 test({
-  name: "[HTTP] Cookie Delete",
-  fn(): void {
-    let res: Response = {};
-    delCookie(res, "deno");
-    assertEquals(
-      res.headers.get("Set-Cookie"),
-      "deno=; Expires=Thus, 01 Jan 1970 00:00:00 GMT"
-    );
-  }
-});
-
-test({
   name: "[HTTP] Cookie parser",
   fn(): void {
     let req = new ServerRequest();
