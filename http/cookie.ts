@@ -124,10 +124,9 @@ export function setCookie(res: Response, cookie: Cookie): void {
  *     delCookie(res,'foo');
  */
 export function delCookie(res: Response, name: string): void {
-  const c: Cookie = {
+  setCookie(res, {
     name: name,
     value: "",
     expires: new Date(0)
-  };
-  setCookie(res, c);
+  });
 }
