@@ -24,14 +24,36 @@ export interface CookieOptions {
 
 export type SameSite = "Strict" | "Lax";
 
-export function cookieStringFormat(
-  cookie: CookieValue,
-  opt: CookieOptions
-): string {
+export function cookieDateFormat(date: Date): string {
   function dtPad(v: string, lPad: number = 2): string {
     return pad(v, lPad, { char: "0" });
   }
+  const d = dtPad(date.getUTCDate().toString());
+  const h = dtPad(date.getUTCHours().toString());
+  const min = dtPad(date.getUTCMinutes().toString());
+  const s = dtPad(date.getUTCSeconds().toString());
+  const y = date.getUTCFullYear();
+  // See Date format: https://tools.ietf.org/html/rfc7231#section-7.1.1.1
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thus", "Fri", "Sat"];
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+  ];
+  return `${days[date.getDay()]}, ${d} ${
+    months[date.getUTCMonth()]
+  } ${y} ${h}:${min}:${s} GMT`;
+}
 
+function cookieStringFormat(cookie: CookieValue, opt: CookieOptions): string {
   const out: string[] = [];
   out.push(`${cookie.name}=${cookie.value}`);
 
@@ -66,30 +88,7 @@ export function cookieStringFormat(
     out.push(`Path=${opt.Path}`);
   }
   if (opt.Expires) {
-    let dateString = "";
-    let d = dtPad(opt.Expires.getUTCDate().toString());
-    const h = dtPad(opt.Expires.getUTCHours().toString());
-    const min = dtPad(opt.Expires.getUTCMinutes().toString());
-    const s = dtPad(opt.Expires.getUTCSeconds().toString());
-    const y = opt.Expires.getUTCFullYear();
-    // See Date format: https://tools.ietf.org/html/rfc7231#section-7.1.1.1
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thus", "Fri", "Sat"];
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec"
-    ];
-    dateString += `${days[opt.Expires.getDay()]}, ${d} ${
-      months[opt.Expires.getUTCMonth()]
-    } ${y} ${h}:${min}:${s} GMT`;
+    let dateString = cookieDateFormat(opt.Expires);
     out.push(`Expires=${dateString}`);
   }
   return out.join("; ");

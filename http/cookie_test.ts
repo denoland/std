@@ -1,8 +1,29 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { ServerRequest, Response } from "./server.ts";
-import { getCookie, delCookie, setCookie } from "./cookie.ts";
+import { getCookie, delCookie, setCookie, cookieDateFormat } from "./cookie.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { test } from "../testing/mod.ts";
+
+test({
+  name: "[HTTP] Cookie Date Format",
+  fn(): void {
+    const actual = cookieDateFormat(new Date(Date.UTC(1994, 3, 5, 15, 32)));
+    const expected = "Tue, 05 May 1994 15:32:00 GMT";
+    assertEquals(actual, expected);
+  }
+});
+
+test({
+  name: "[HTTP] Cookie Delete",
+  fn(): void {
+    let res: Response = {};
+    delCookie(res, "deno");
+    assertEquals(
+      res.headers.get("Set-Cookie"),
+      "deno=; Expires=Thus, 01 Jan 1970 00:00:00 GMT"
+    );
+  }
+});
 
 test({
   name: "[HTTP] Cookie parser",
