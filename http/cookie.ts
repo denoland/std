@@ -124,9 +124,6 @@ export function setCookie(res: Response, cookie: Cookie): void {
  *     delCookie(res,'foo');
  */
 export function delCookie(res: Response, name: string): void {
-  if (!res.headers) {
-    res.headers = new Headers();
-  }
   const c: Cookie = {
     name: name,
     value: "",
