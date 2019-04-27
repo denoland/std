@@ -7,13 +7,13 @@ A framework for creating HTTP/HTTPS server.
 Helper to manipulate `Cookie` throught `ServerRequest` and `Response`.
 
 ```ts
-import { getCookie } from "https://deno.land/std/http/cookie.ts";
+import { getCookies } from "https://deno.land/std/http/cookie.ts";
 
 let req = new ServerRequest();
 req.headers = new Headers();
 req.headers.set("Cookie", "full=of; tasty=chocolate");
 
-const c = getCookie(request);
+const c = getCookies(request);
 // c = { full: "of", tasty: "chocolate" }
 ```
 

@@ -1,106 +1,78 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { ServerRequest, Response } from "./server.ts";
 import { assert } from "../testing/asserts.ts";
-import { pad } from "../strings/pad.ts";
+import { toIMF } from "../datetime/mod.ts";
 
-export interface Cookie {
+export interface Cookies {
   [key: string]: string;
 }
 
-export interface CookieValue {
+export interface Cookie {
   name: string;
   value: string;
-}
-
-export interface CookieOptions {
-  Expires?: Date;
-  MaxAge?: number;
-  Domain?: string;
-  Path?: string;
-  Secure?: boolean;
-  HttpOnly?: boolean;
-  SameSite?: SameSite;
+  expires?: Date;
+  maxAge?: number;
+  domain?: string;
+  path?: string;
+  secure?: boolean;
+  httpOnly?: boolean;
+  sameSite?: SameSite;
+  unparsed?: string[];
 }
 
 export type SameSite = "Strict" | "Lax";
 
-export function cookieDateFormat(date: Date): string {
-  function dtPad(v: string, lPad: number = 2): string {
-    return pad(v, lPad, { char: "0" });
-  }
-  const d = dtPad(date.getUTCDate().toString());
-  const h = dtPad(date.getUTCHours().toString());
-  const min = dtPad(date.getUTCMinutes().toString());
-  const s = dtPad(date.getUTCSeconds().toString());
-  const y = date.getUTCFullYear();
-  // See Date format: https://tools.ietf.org/html/rfc7231#section-7.1.1.1
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thus", "Fri", "Sat"];
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec"
-  ];
-  return `${days[date.getDay()]}, ${d} ${
-    months[date.getUTCMonth()]
-  } ${y} ${h}:${min}:${s} GMT`;
-}
-
-function cookieStringFormat(cookie: CookieValue, opt: CookieOptions): string {
+function cookieStringFormat(cookie: Cookie): string {
   const out: string[] = [];
   out.push(`${cookie.name}=${cookie.value}`);
 
   // Fallback for invalid Set-Cookie
   // ref: https://tools.ietf.org/html/draft-ietf-httpbis-cookie-prefixes-00#section-3.1
   if (cookie.name.startsWith("__Secure")) {
-    opt.Secure = true;
+    cookie.secure = true;
   }
   if (cookie.name.startsWith("__Host")) {
-    opt.Path = "/";
-    opt.Secure = true;
-    delete opt.Domain;
+    cookie.path = "/";
+    cookie.secure = true;
+    delete cookie.domain;
   }
 
-  if (opt.Secure) {
+  if (cookie.secure) {
     out.push("Secure");
   }
-  if (opt.HttpOnly) {
+  if (cookie.httpOnly) {
     out.push("HttpOnly");
   }
-  if (Number.isInteger(opt.MaxAge)) {
-    assert(opt.MaxAge > 0, "Max-Age must be an integer superior to 0");
-    out.push(`Max-Age=${opt.MaxAge}`);
+  if (Number.isInteger(cookie.maxAge)) {
+    assert(cookie.maxAge > 0, "Max-Age must be an integer superior to 0");
+    out.push(`Max-Age=${cookie.maxAge}`);
   }
-  if (opt.Domain) {
-    out.push(`Domain=${opt.Domain}`);
+  if (cookie.domain) {
+    out.push(`Domain=${cookie.domain}`);
   }
-  if (opt.SameSite) {
-    out.push(`SameSite=${opt.SameSite}`);
+  if (cookie.sameSite) {
+    out.push(`SameSite=${cookie.sameSite}`);
   }
-  if (opt.Path) {
-    out.push(`Path=${opt.Path}`);
+  if (cookie.path) {
+    out.push(`Path=${cookie.path}`);
   }
-  if (opt.Expires) {
-    let dateString = cookieDateFormat(opt.Expires);
+  if (cookie.expires) {
+    let dateString = toIMF(cookie.expires);
     out.push(`Expires=${dateString}`);
+  }
+  if (cookie.unparsed) {
+    out.push(cookie.unparsed.join("; "));
   }
   return out.join("; ");
 }
 
 /**
- * Parse the cookie of the Server Request
+ * Parse the cookies of the Server Request
  * @param rq Server Request
  */
-export function getCookie(rq: ServerRequest): Cookie {
+export function getCookies(rq: ServerRequest): Cookies {
   if (rq.headers.has("Cookie")) {
-    const out: Cookie = {};
+    const out: Cookies = {};
     const c = rq.headers.get("Cookie").split(";");
     for (const kv of c) {
       const cookieVal = kv.split("=");
@@ -116,32 +88,29 @@ export function getCookie(rq: ServerRequest): Cookie {
  * Set the cookie header properly in the Response
  * @param res Server Response
  * @param cookie Cookie to set
- * @param opt Cookie options
- * @param [opt.Expires] Expiration Date of the cookie
- * @param [opt.MaxAge] Max-Age of the Cookie. Must be integer superior to 0
- * @param [opt.Domain] Specifies those hosts to which the cookie will be sent
- * @param [opt.Path] Indicates a URL path that must exist in the request.
- * @param [opt.Secure] Indicates if the cookie is made using SSL & HTTPS.
- * @param [opt.HttpOnly] Indicates that cookie is not accessible via Javascript
- * @param [opt.SameSite] Allows servers to assert that a cookie ought not to be
+ * @param [cookie.name] Name of the cookie
+ * @param [cookie.value] Value of the cookie
+ * @param [cookie.expires] Expiration Date of the cookie
+ * @param [cookie.maxAge] Max-Age of the Cookie. Must be integer superior to 0
+ * @param [cookie.domain] Specifies those hosts to which the cookie will be sent
+ * @param [cookie.path] Indicates a URL path that must exist in the request.
+ * @param [cookie.secure] Indicates if the cookie is made using SSL & HTTPS.
+ * @param [cookie.httpOnly] Indicates that cookie is not accessible via Javascript
+ * @param [cookie.sameSite] Allows servers to assert that a cookie ought not to be
  *  sent along with cross-site requests
  * Example:
  *
- *     setCookie(response, { name: 'deno', value: 'runtime' },
- *        { HttpOnly: true, Secure: true, MaxAge: 2, Domain: "deno.land" });
+ *     setCookie(response, { name: 'deno', value: 'runtime',
+ *        httpOnly: true, secure: true, maxAge: 2, domain: "deno.land" });
  */
-export function setCookie(
-  res: Response,
-  cookie: CookieValue,
-  opt: CookieOptions = {}
-): void {
+export function setCookie(res: Response, cookie: Cookie): void {
   if (!res.headers) {
     res.headers = new Headers();
   }
   // TODO (zekth) : Add proper parsing of Set-Cookie headers
   // Parsing cookie headers to make consistent set-cookie header
   // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
-  res.headers.set("Set-Cookie", cookieStringFormat(cookie, opt));
+  res.headers.set("Set-Cookie", cookieStringFormat(cookie));
 }
 
 /**
@@ -156,12 +125,10 @@ export function delCookie(res: Response, CookieName: string): void {
   if (!res.headers) {
     res.headers = new Headers();
   }
-  const c: CookieValue = {
+  const c: Cookie = {
     name: CookieName,
-    value: ""
+    value: "",
+    expires: new Date(0)
   };
-  res.headers.set(
-    "Set-Cookie",
-    cookieStringFormat(c, { Expires: new Date(0) })
-  );
+  res.headers.set("Set-Cookie", cookieStringFormat(c));
 }
