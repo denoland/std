@@ -24,7 +24,7 @@ export interface Cookie {
 
 export type SameSite = "Strict" | "Lax";
 
-function cookieStringFormat(cookie: Cookie): string {
+function toString(cookie: Cookie): string {
   const out: string[] = [];
   out.push(`${cookie.name}=${cookie.value}`);
 
@@ -70,12 +70,12 @@ function cookieStringFormat(cookie: Cookie): string {
 
 /**
  * Parse the cookies of the Server Request
- * @param rq Server Request
+ * @param req Server Request
  */
-export function getCookies(rq: ServerRequest): Cookies {
-  if (rq.headers.has("Cookie")) {
+export function getCookies(req: ServerRequest): Cookies {
+  if (req.headers.has("Cookie")) {
     const out: Cookies = {};
-    const c = rq.headers.get("Cookie").split(";");
+    const c = req.headers.get("Cookie").split(";");
     for (const kv of c) {
       const cookieVal = kv.split("=");
       const key = cookieVal.shift().trim();
@@ -112,25 +112,25 @@ export function setCookie(res: Response, cookie: Cookie): void {
   // TODO (zekth) : Add proper parsing of Set-Cookie headers
   // Parsing cookie headers to make consistent set-cookie header
   // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
-  res.headers.set("Set-Cookie", cookieStringFormat(cookie));
+  res.headers.set("Set-Cookie", toString(cookie));
 }
 
 /**
  *  Set the cookie header properly in the Response to delete it
  * @param res Server Response
- * @param CookieName Name of the cookie to Delete
+ * @param name Name of the cookie to Delete
  * Example:
  *
  *     delCookie(res,'foo');
  */
-export function delCookie(res: Response, CookieName: string): void {
+export function delCookie(res: Response, name: string): void {
   if (!res.headers) {
     res.headers = new Headers();
   }
   const c: Cookie = {
-    name: CookieName,
+    name: name,
     value: "",
     expires: new Date(0)
   };
-  res.headers.set("Set-Cookie", cookieStringFormat(c));
+  setCookie(res, c);
 }
