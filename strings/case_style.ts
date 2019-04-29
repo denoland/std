@@ -14,6 +14,11 @@ const validators = {
   kebabCase: /[a-z][a-z0-9]+(?:[-][a-z][a-z0-9]+)*/
 };
 
+/**
+ * Validate the string into the caseStyle wanted
+ * @param str String to validate
+ * @param caseStyle caseStyle to validate the string into
+ */
 export function validate(str: string, style: caseStyle): boolean {
   const m = validators[style].exec(str);
   return m[0] === str;
