@@ -82,7 +82,7 @@ test({
   async fn(): Promise<void> {
     const data = [];
     // Go test is 16*1024. But seems it can't handle more
-    for (let i = 0; i < 256; i++) {
+    for (let i = 0; i < 1024; i++) {
       data.push("x");
     }
     const sdata = data.join("");
