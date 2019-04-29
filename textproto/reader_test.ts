@@ -6,7 +6,7 @@
 import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader, ProtocolError } from "./mod.ts";
 import { stringsReader } from "../io/util.ts";
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 import { test } from "../testing/mod.ts";
 
 function reader(s: string): TextProtoReader {
@@ -96,9 +96,6 @@ test({
 
 // Test that we read slightly-bogus MIME headers seen in the wild,
 // with spaces before colons, and spaces in keys.
-// TODO Re-enable With Audio Mode
-// TypeError: audio mode is not a legal HTTP header name
-// due to Headers()
 test({
   name: "[textproto] Reader : MIME Header Non compliant",
   async fn(): Promise<void> {
@@ -106,16 +103,21 @@ test({
       "Foo: bar\r\n" +
       "Content-Language: en\r\n" +
       "SID : 0\r\n" +
-      // "Audio Mode : None\r\n" +
+      "Audio Mode : None\r\n" +
       "Privilege : 127\r\n\r\n";
     const r = reader(input);
     let [m, err] = await r.readMIMEHeader();
     assertEquals(m.get("Foo"), "bar");
     assertEquals(m.get("Content-Language"), "en");
     assertEquals(m.get("SID"), "0");
-    // assertEquals(m.get("Audio Mode"), "None");
     assertEquals(m.get("Privilege"), "127");
     assert(!err);
+    // Not a legal http header
+    assertThrows(
+      (): void => {
+        assertEquals(m.get("Audio Mode"), "None");
+      }
+    );
   }
 });
 
