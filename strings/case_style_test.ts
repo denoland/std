@@ -11,5 +11,8 @@ test({
     assert(validate("jaimeLesFruitsAuSirop", caseStyle.camelCase));
     assert(validate("JaimeLesFruitsAuSirop", caseStyle.pascalCase));
     assert(!validate("OhMyGodASnake", caseStyle.snakeCase));
+    assert(!validate("imNotPascal", caseStyle.pascalCase));
+    assert(!validate("SmokingIsBad", caseStyle.camelCase));
+    assert(!validate("salade_TomateOignons", caseStyle.kebabCase));
   }
 });
