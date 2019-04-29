@@ -20,7 +20,6 @@ function reader(s: string): TextProtoReader {
 //   }
 // });
 
-
 test(async function textprotoReadEmpty(): Promise<void> {
   let r = reader("");
   let [, err] = await r.readMIMEHeader();
@@ -88,7 +87,7 @@ test({
     }
     const sdata = data.join("");
     const r = reader(`Cookie: ${sdata}`);
-    let [m, err] = await r.readMIMEHeader();
+    let [m, _] = await r.readMIMEHeader();
     assertEquals(m.get("Cookie"), sdata);
     // TODO re-enable, here err === "EOF" is has to be null
     // assert(!err);
