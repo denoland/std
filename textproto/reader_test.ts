@@ -46,10 +46,10 @@ test({
   name: "[textproto] Reader : MIME Header",
   async fn(): Promise<void> {
     const input =
-      "my-key: Value 1  \r\nLong-key: Even \n Longer Value\r\nmy-Key: Value 2\r\n\n";
+      "my-key: Value 1  \r\nLong-key: Even Longer Value\r\nmy-Key: Value 2\r\n\n";
     const r = reader(input);
     const [m, err] = await r.readMIMEHeader();
-    assertEquals(m.get("My-Key"), ["Value 1", "Value 2"]);
+    assertEquals(m.get("My-Key"), "Value 1, Value 2");
     assertEquals(m.get("Long-key"), "Even Longer Value");
     assert(!err);
   }
@@ -82,12 +82,12 @@ test({
   async fn(): Promise<void> {
     const data = [];
     // Go test is 16*1024. But seems it can't handle more
-    for (let i = 0; i < 1024; i++) {
+    for (let i = 0; i < 256; i++) {
       data.push("x");
     }
     const sdata = data.join("");
-    const r = reader(`Cookie: ${sdata}`);
-    let [m, _] = await r.readMIMEHeader();
+    const r = reader(`Cookie: ${sdata}\r\n`);
+    let [m] = await r.readMIMEHeader();
     assertEquals(m.get("Cookie"), sdata);
     // TODO re-enable, here err === "EOF" is has to be null
     // assert(!err);
@@ -141,6 +141,7 @@ test({
     assert(err instanceof ProtocolError);
   }
 });
+
 test({
   name: "[textproto] Reader : MIME Header Trim Continued",
   async fn(): Promise<void> {
@@ -153,10 +154,12 @@ test({
       " 3\t\n" +
       "  \t 4  \r\n\n";
     const r = reader(input);
-    let [m, err] = await r.readMIMEHeader();
-    assertEquals(m.get("A"), "0");
-    assertEquals(m.get("B"), "1");
-    assertEquals(m.get("C"), "2 3 4");
-    assert(!err);
+    let err;
+    try {
+      await r.readMIMEHeader();
+    } catch (e) {
+      err = e;
+    }
+    assert(err instanceof ProtocolError);
   }
 });
