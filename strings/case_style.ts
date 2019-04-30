@@ -1,11 +1,17 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 export enum caseStyle {
+  // eg : LastName
   pascalCase = "pascalCase",
+  // eg : lastName
   camelCase = "camelCase",
+  // eg : last_name
   snakeCase = "snakeCase",
+  // eg : last-name
   kebabCase = "kebabCase",
+  // eg : LAST_NAME
   screamingSnakeCase = "screamingSnakeCase",
+  // eg : LAST-NAME
   screamingKebabCase = "screamingKebabCase"
 }
 
@@ -32,40 +38,35 @@ export function validate(str: string, style: caseStyle): boolean {
  * Format the string into the caseStyle wanted
  * @param str String to format
  * @param caseStyle caseStyle to format the string into
+ * TODO (zekth): handle diacritics
  */
 export function format(str: string, style: caseStyle): string {
   const acc = [];
   const reg = /([a-zA-Z0-9À-ž]+)/gm;
-  str = str.trim();
+  str = str.trim().toLowerCase();
   const m = str.match(reg);
-  for (let i = 0; i < m.length; i++) {
-    let match = m[i];
-    if (style === caseStyle.camelCase && i === 0) {
-      acc.push(match[0].toLowerCase() + match.slice(1));
-    } else if (
-      style === caseStyle.pascalCase ||
-      style === caseStyle.camelCase
-    ) {
-      acc.push(match[0].toUpperCase() + match.slice(1).toLowerCase());
-    } else if (
-      style === caseStyle.screamingSnakeCase ||
-      style === caseStyle.screamingKebabCase
-    ) {
-      acc.push(match[0].toUpperCase() + match.slice(1).toUpperCase());
-    } else {
-      acc.push(match[0].toLowerCase() + match.slice(1).toLowerCase());
-    }
-  }
   switch (style) {
     case caseStyle.pascalCase:
     case caseStyle.camelCase:
+      for (let i = 0; i < m.length; i++) {
+        if (
+          style === caseStyle.pascalCase ||
+          (style === caseStyle.camelCase && i !== 0)
+        ) {
+          acc.push(m[i][0].toUpperCase() + m[i].slice(1));
+        } else {
+          acc.push(m[i]);
+        }
+      }
       return acc.join("");
     case caseStyle.snakeCase:
-    case caseStyle.screamingSnakeCase:
-      return acc.join("_");
+      return m.join("_");
     case caseStyle.kebabCase:
+      return m.join("-");
+    case caseStyle.screamingSnakeCase:
+      return m.join("_").toUpperCase();
     case caseStyle.screamingKebabCase:
-      return acc.join("-");
+      return m.join("-").toUpperCase();
     default:
       throw Error("Unknown case style");
   }
