@@ -16,3 +16,4 @@ import "./write_json_test.ts";
 import "./read_file_str_test.ts";
 import "./write_file_str_test.ts";
 import "./utils_test.ts";
+import "./chmod_test.ts"
