@@ -16,5 +16,6 @@ import "./testing/test.ts";
 import "./textproto/test.ts";
 import "./toml/test.ts";
 import "./ws/test.ts";
+import "./math/test.ts";
 
 import "./testing/main.ts";
