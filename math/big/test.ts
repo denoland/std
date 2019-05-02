@@ -1,1 +1,1 @@
-import "./plus_test.ts"
+import "./plus_test.ts";

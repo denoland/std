@@ -1,1 +1,1 @@
-import "./big/test.ts"
+import "./big/test.ts";
