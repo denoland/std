@@ -5,7 +5,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "noEmit": true,
-    "lib": ["esnext"],
+    "noLib": true,
     "pretty": true,
     "resolveJsonModule": true,
     "strict": true,
