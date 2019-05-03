@@ -698,8 +698,8 @@ export class Big {
    * Big.PE, or a negative exponent equal to or less than Big.NE.
    * Include the sign for negative zero.
    */
-  public valueOf(): number {
-    return +stringify(this, 4);
+  public valueOf(): string {
+    return stringify(this, 4);
   }
 }
 

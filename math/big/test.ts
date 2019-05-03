@@ -12,3 +12,4 @@ import "./sqrt_test.ts";
 import "./to_exponential_test.ts";
 import "./to_fixed_test.ts";
 import "./to_precision_test.ts";
+import "./to_string_test.ts";
