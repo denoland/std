@@ -1,3 +1,5 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
 export * from "./big/mod.ts";
 export * from "./div.ts";
 export * from "./minus.ts";
