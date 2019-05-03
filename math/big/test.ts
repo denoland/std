@@ -8,3 +8,4 @@ import "./cmp_test.ts";
 import "./mod_test.ts";
 import "./pow_test.ts";
 import "./round_test.ts";
+import "./sqrt_test.ts";
