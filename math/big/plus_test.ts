@@ -1,4 +1,9 @@
-// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+/*
+ *  big.js v5.2.2
+ *  A small, fast, easy-to-use library for arbitrary-precision decimal arithmetic.
+ *  Copyright (c) 2018 Michael Mclaughlin <M8ch88l@gmail.com>
+ *  https://github.com/MikeMcl/big.js/LICENCE
+ */
 import { test } from "../../testing/mod.ts";
 import { assertEquals, assert, assertThrows } from "../../testing/asserts.ts";
 import { Big, BigSource } from "./mod.ts";

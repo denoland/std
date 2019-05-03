@@ -1,3 +1,9 @@
+/*
+ *  big.js v5.2.2
+ *  A small, fast, easy-to-use library for arbitrary-precision decimal arithmetic.
+ *  Copyright (c) 2018 Michael Mclaughlin <M8ch88l@gmail.com>
+ *  https://github.com/MikeMcl/big.js/LICENCE
+ */
 /************************************** EDITABLE DEFAULTS *****************************************/
 
 // The default values below must be integers within the stated ranges.
