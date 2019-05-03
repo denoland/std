@@ -8,7 +8,7 @@ import { test } from "../../testing/mod.ts";
 import { assertEquals, assertThrows } from "../../testing/asserts.ts";
 import { Big, BigSource } from "./mod.ts";
 
-function T(root: BigSource, value: BigSource) {
+function T(root: string, value: BigSource) {
   assertEquals(root, new Big(value).sqrt().toString());
 }
 
