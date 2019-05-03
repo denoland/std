@@ -4,3 +4,4 @@ import "./minus_test.ts";
 import "./times_test.ts";
 import "./div_test.ts";
 import "./abs_test.ts";
+import "./cmp_test.ts";
