@@ -5,6 +5,7 @@
  *  https://github.com/MikeMcl/big.js/blob/master/LICENCE
  *  MIT License
  */
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test } from "../../testing/mod.ts";
 import { assertEquals } from "../../testing/asserts.ts";
 import { Big, BigSource, Comparison } from "./mod.ts";

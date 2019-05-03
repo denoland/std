@@ -5,6 +5,8 @@
  *  https://github.com/MikeMcl/big.js/blob/master/LICENCE
  *  MIT License
  */
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
 /************************************** EDITABLE DEFAULTS *****************************************/
 
 // The default values below must be integers within the stated ranges.
