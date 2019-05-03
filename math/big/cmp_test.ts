@@ -9,26 +9,26 @@ import { assertEquals } from "../../testing/asserts.ts";
 import { Big, BigSource, Comparison } from "./mod.ts";
 
 function T(a: BigSource, b: BigSource, expected: Comparison) {
-  assertEquals(String(expected), String(new Big(a).cmp(b)));
+  assertEquals(String(new Big(a).cmp(b)), String(expected));
 
   if (expected === 1) {
-    assertEquals(true, new Big(a).gt(b));
-    assertEquals(true, new Big(a).gte(b));
-    assertEquals(false, new Big(a).eq(b));
-    assertEquals(false, new Big(a).lt(b));
-    assertEquals(false, new Big(a).lte(b));
+    assertEquals(new Big(a).gt(b), true);
+    assertEquals(new Big(a).gte(b), true);
+    assertEquals(new Big(a).eq(b), false);
+    assertEquals(new Big(a).lt(b), false);
+    assertEquals(new Big(a).lte(b), false);
   } else if (expected === -1) {
-    assertEquals(true, new Big(a).lt(b));
-    assertEquals(true, new Big(a).lte(b));
-    assertEquals(false, new Big(a).eq(b));
-    assertEquals(false, new Big(a).gt(b));
-    assertEquals(false, new Big(a).gte(b));
+    assertEquals(new Big(a).lt(b), true);
+    assertEquals(new Big(a).lte(b), true);
+    assertEquals(new Big(a).eq(b), false);
+    assertEquals(new Big(a).gt(b), false);
+    assertEquals(new Big(a).gte(b), false);
   } else if (expected === 0) {
-    assertEquals(true, new Big(a).eq(b));
-    assertEquals(true, new Big(a).gte(b));
-    assertEquals(true, new Big(a).lte(b));
-    assertEquals(false, new Big(a).lt(b));
-    assertEquals(false, new Big(a).gt(b));
+    assertEquals(new Big(a).eq(b), true);
+    assertEquals(new Big(a).gte(b), true);
+    assertEquals(new Big(a).lte(b), true);
+    assertEquals(new Big(a).lt(b), false);
+    assertEquals(new Big(a).gt(b), false);
   }
 }
 

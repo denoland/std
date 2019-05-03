@@ -9,7 +9,7 @@ import { assertEquals } from "../../testing/asserts.ts";
 import { Big, BigSource } from "./mod.ts";
 
 function T(expected: BigSource, value: BigSource) {
-  assertEquals(String(expected), new Big(String(value)).abs().toString());
+  assertEquals(new Big(String(value)).abs().toString(), String(expected));
 }
 
 function isMinusZero(n: Big) {

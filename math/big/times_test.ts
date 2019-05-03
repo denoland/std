@@ -14,12 +14,12 @@ function T(
   expected: BigSource
 ) {
   assertEquals(
-    String(expected),
-    String(new Big(multiplicand).times(multiplier))
+    String(new Big(multiplicand).times(multiplier)),
+    String(expected)
   );
   assertEquals(
-    String(expected),
-    String(new Big(multiplicand).times(new Big(multiplier)))
+    String(new Big(multiplicand).times(new Big(multiplier))),
+    String(expected)
   );
 }
 

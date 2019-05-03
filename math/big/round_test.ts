@@ -15,8 +15,8 @@ function T(
   roundingMode?: RoundingMode
 ) {
   assertEquals(
-    String(expected),
-    new Big(String(value)).round(decimalPlaces, roundingMode).toString()
+    new Big(String(value)).round(decimalPlaces, roundingMode).toString(),
+    String(expected)
   );
 }
 

@@ -9,7 +9,7 @@ import { assertEquals, assertThrows } from "../../testing/asserts.ts";
 import { Big, BigSource } from "./mod.ts";
 
 function T(expected: string, value: BigSource, decimalPlaces?: number) {
-  assertEquals(String(expected), new Big(value).toFixed(decimalPlaces));
+  assertEquals(new Big(value).toFixed(decimalPlaces), String(expected));
 }
 
 test({

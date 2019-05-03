@@ -9,7 +9,7 @@ import { assertEquals, assertThrows } from "../../testing/asserts.ts";
 import { Big, BigSource } from "./mod.ts";
 
 function T(expected: string, value: BigSource, precision?: number) {
-  assertEquals(String(expected), new Big(value).toPrecision(precision));
+  assertEquals(new Big(value).toPrecision(precision), String(expected));
 }
 
 test({

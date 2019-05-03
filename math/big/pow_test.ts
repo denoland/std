@@ -9,7 +9,7 @@ import { assertEquals, assertThrows } from "../../testing/asserts.ts";
 import { Big, BigSource } from "./mod.ts";
 
 function T(expected: BigSource, n: BigSource, exp: number) {
-  assertEquals(String(expected), String(new Big(n).pow(exp)));
+  assertEquals(String(new Big(n).pow(exp)), String(expected));
 }
 
 const MAX_POWER = 1e6;

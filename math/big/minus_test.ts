@@ -9,10 +9,10 @@ import { assertEquals, assert, assertThrows } from "../../testing/asserts.ts";
 import { Big, BigSource } from "./mod.ts";
 
 function T(minuend: BigSource, subtrahend: BigSource, expected: BigSource) {
-  assertEquals(String(expected), String(new Big(minuend).minus(subtrahend)));
+  assertEquals(String(new Big(minuend).minus(subtrahend)), String(expected));
   assertEquals(
-    String(expected),
-    String(new Big(minuend).minus(new Big(subtrahend)))
+    String(new Big(minuend).minus(new Big(subtrahend))),
+    String(expected)
   );
 }
 
