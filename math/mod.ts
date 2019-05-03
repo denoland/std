@@ -11,6 +11,9 @@ export * from "./to_exponential.ts";
 export * from "./to_fixed.ts";
 export * from "./to_precision.ts";
 
+// extra
+export * from "./sum.ts";
+
 // compare
 export * from "./equal.ts";
 export * from "./greater_than.ts";
