@@ -2,6 +2,11 @@
 
 import { BigSource, Big } from "./big/mod.ts";
 
+/**
+ * Returns the absolute value of a `BigSource`
+ * @param value a type in `BigSource`
+ * @returns absolute value string
+ */
 export function abs(value: BigSource): string {
   return (value instanceof Big ? value : new Big(value)).abs().toString();
 }

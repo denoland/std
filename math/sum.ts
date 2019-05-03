@@ -2,6 +2,11 @@
 
 import { BigSource, Big } from "./big/mod.ts";
 
+/**
+ * Returns a numeric whose value is the sum of `values`.
+ * Throws if this `values` contains a invalid numeric.
+ * @param values
+ */
 export function sum(values: BigSource[]): string {
   if (!values.length) {
     return "0";

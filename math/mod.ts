@@ -20,8 +20,8 @@ export * from "./min.ts";
 export * from "./max.ts";
 
 // compare
-export * from "./equal.ts";
-export * from "./greater_than.ts";
-export * from "./greater_than_or_equal.ts";
-export * from "./less_then.ts";
-export * from "./less_then_or_equal.ts";
+export * from "./eq.ts";
+export * from "./gt.ts";
+export * from "./gte.ts";
+export * from "./lt.ts";
+export * from "./lte.ts";

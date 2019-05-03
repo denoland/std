@@ -54,8 +54,17 @@ export const DP = 20, // 0 to MAX_DP
 export type BigSource = string | number | Big | BigInt;
 
 export const enum Comparison {
+  /**
+   * If `a` is greater than `b`.
+   */
   GT = 1,
+  /**
+   * If `a` and `b` have same value
+   */
   EQ = 0,
+  /**
+   * If `a` is less than `b`
+   */
   LT = -1
 }
 
