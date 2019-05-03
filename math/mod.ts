@@ -13,6 +13,7 @@ export * from "./to_precision.ts";
 
 // extra
 export * from "./sum.ts";
+export * from "./abs.ts";
 
 // compare
 export * from "./equal.ts";
