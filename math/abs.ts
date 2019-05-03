@@ -3,7 +3,7 @@
 import { BigSource, Big } from "./big/mod.ts";
 
 /**
- * Returns the absolute value of a `BigSource`
+ * Returns the absolute value of a `numberic`
  * @param value a type in `BigSource`
  * @returns absolute value string
  */
