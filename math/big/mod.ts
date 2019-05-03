@@ -21,7 +21,7 @@ export const DP = 20, // 0 to MAX_DP
    *  2  To nearest neighbour. If equidistant, to even.   (ROUND_HALF_EVEN)
    *  3  Away from zero.                                  (ROUND_UP)
    */
-  RM = 1, // 0, 1, 2 or 3
+  RM: RoundingMode = 1, // 0, 1, 2 or 3
   // The maximum value of DP and Big.DP.
   MAX_DP = 1e6, // 0 to 1000000
   // The maximum magnitude of the exponent argument to the pow method.
