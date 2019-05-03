@@ -51,7 +51,7 @@ test({
     T(0, minusZero);
 
     assertEquals(isMinusZero(new Big("-0")), true);
-    assertEquals(isMinusZero(new Big('-' + minusZero)), true);
+    assertEquals(isMinusZero(new Big("-" + minusZero)), true);
     assertEquals(isMinusZero(new Big(-0).abs()), false);
     assertEquals(isMinusZero(new Big(minusZero).abs()), false);
     assertEquals(!isMinusZero(new Big("-0").abs()), true);
