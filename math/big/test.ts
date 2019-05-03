@@ -6,3 +6,4 @@ import "./div_test.ts";
 import "./abs_test.ts";
 import "./cmp_test.ts";
 import "./mod_test.ts";
+import "./pow_test.ts";
