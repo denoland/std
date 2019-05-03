@@ -15,6 +15,7 @@ export * from "./to_precision.ts";
 export * from "./sum.ts";
 export * from "./abs.ts";
 export * from "./min.ts";
+export * from "./max.ts";
 
 // compare
 export * from "./equal.ts";
