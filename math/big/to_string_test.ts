@@ -2457,9 +2457,9 @@ test({
 
     T("0", "-0");
     // TODO: issue: https://github.com/denoland/deno/issues/2276
-    assertEquals(new Big(-0).valueOf(), '0');
-    assertEquals(new Big("-0").valueOf(), '-0');
-    assertEquals(new Big("-0.0000000000").valueOf(), '-0');
+    assertEquals(new Big(-0).valueOf(), "0");
+    assertEquals(new Big("-0").valueOf(), "-0");
+    assertEquals(new Big("-0.0000000000").valueOf(), "-0");
 
     Big.NE = Big.PE = 0;
 
