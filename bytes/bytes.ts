@@ -6,7 +6,8 @@ export function bytesFindIndex(a: Uint8Array, pat: Uint8Array): number {
   for (let i = 0; i < a.length; i++) {
     if (a[i] !== s) continue;
     const pin = i;
-    let matched = 1, j = i;
+    let matched = 1,
+      j = i;
     while (matched < pat.length) {
       j++;
       if (a[j] !== pat[j - pin]) {
@@ -27,7 +28,8 @@ export function bytesFindLastIndex(a: Uint8Array, pat: Uint8Array): number {
   for (let i = a.length - 1; i >= 0; i--) {
     if (a[i] !== e) continue;
     const pin = i;
-    let matched = 1, j = i;
+    let matched = 1,
+      j = i;
     while (matched < pat.length) {
       j--;
       if (a[j] !== pat[pat.length - 1 - (pin - j)]) {
