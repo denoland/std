@@ -1,6 +1,15 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { green, red, gray, yellow, italic } from "../colors/mod.ts";
+import {
+  bgRed,
+  white,
+  bold,
+  green,
+  red,
+  gray,
+  yellow,
+  italic
+} from "../colors/mod.ts";
 export type TestFunction = () => void | Promise<void>;
 
 export interface TestDefinition {
@@ -9,7 +18,7 @@ export interface TestDefinition {
 }
 
 // Replacement of the global `console` function to be in silent mode
-const noopConsole = function() {};
+const noopConsole = function(): void {};
 
 // Save Object of the global `console` in case of silent mode
 let defaultConsole = {};
@@ -103,20 +112,31 @@ function createTestResults(tests: TestDefinition[]): TestResults {
   );
 }
 
-function promptTestTime(time: number = 0) {
-  let timeStr = "";
+function formatTestTime(time: number = 0): string {
   if (time >= 1000) {
-    timeStr = `${time / 1000}s`;
+    return `${time / 1000}s`;
   } else {
-    timeStr = `${time}ms`;
+    return `${time}ms`;
   }
-  return gray(italic(`(${timeStr})`));
+}
+
+function promptTestTime(time: number = 0, displayWarning = false): string {
+  // if time > 5s we display a warning
+  // only for test time, not the full runtime
+  if (displayWarning && time >= 5000) {
+    return bgRed(white(bold(`(${formatTestTime(time)})`)));
+  } else {
+    return gray(italic(`(${formatTestTime(time)})`));
+  }
 }
 
 function report(result: TestResult): void {
   if (result.ok) {
     print(
-      `${GREEN_OK}     ${result.name} ${promptTestTime(result.timeElapsed)}`
+      `${GREEN_OK}     ${result.name} ${promptTestTime(
+        result.timeElapsed,
+        true
+      )}`
     );
   } else if (result.error) {
     print(`${RED_FAILED} ${result.name}\n${result.error.stack}`);
@@ -231,7 +251,9 @@ async function runTestsSerial(
         print("\x1b[2K\r", false);
       }
       stats.passed++;
-      print(GREEN_OK + "     " + name + " " + promptTestTime(end - start));
+      print(
+        GREEN_OK + "     " + name + " " + promptTestTime(end - start, true)
+      );
     } catch (err) {
       if (disableLog) {
         print("\x1b[2K\r", false);
