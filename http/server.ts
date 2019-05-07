@@ -8,6 +8,8 @@ import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "../testing/asserts.ts";
 
+export let listener: Deno.Listener;
+
 interface Deferred {
   promise: Promise<{}>;
   resolve: () => void;
@@ -333,7 +335,7 @@ function serveConn(env: ServeEnv, conn: HttpConn, bufr?: BufReader): void {
 export async function* serve(
   addr: string
 ): AsyncIterableIterator<ServerRequest> {
-  const listener = listen("tcp", addr);
+  listener = listen("tcp", addr);
   const env: ServeEnv = {
     reqQueue: [], // in case multiple promises are ready
     serveDeferred: deferred()
