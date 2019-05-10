@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 import { MultiReader } from "../io/readers.ts";
+import { BufReader } from "../io/bufio.ts";
 
 const recordSize = 512;
 
@@ -117,29 +118,40 @@ const structure: { field: string; length: number }[] = [
 ];
 
 export interface TarData {
-  fileName: string;
-  fileMode: string;
-  uid: string;
-  gid: string;
-  fileSize: string;
-  mtime: string;
-  checksum: string;
-  type: string;
-  ustar: string;
-  owner: string;
-  group: string;
+  fileName?: string;
+  fileMode?: string;
+  uid?: string;
+  gid?: string;
+  fileSize?: string;
+  mtime?: string;
+  checksum?: string;
+  type?: string;
+  ustar?: string;
+  owner?: string;
+  group?: string;
+}
 
+export interface TarDataWithSource extends TarData {
   /**
    * file to read
    */
-  filePath: string;
+  filePath?: string;
   /**
    * buffer to read
    */
-  reader: Deno.Reader;
+  reader?: Deno.Reader;
 }
 
-export interface TarOptions {
+export interface TarInfo {
+  fileMode?: number;
+  mtime?: number;
+  uid?: number;
+  gid?: number;
+  owner?: string;
+  group?: string;
+}
+
+export interface TarOptions extends TarInfo {
   /**
    * append file
    */
@@ -154,20 +166,17 @@ export interface TarOptions {
    * size of the content to be appended
    */
   contentSize?: number;
+}
 
-  mode?: number;
-  mtime?: number;
-  uid?: number;
-  gid?: number;
-  owner?: string;
-  group?: string;
+export interface UntarOptions extends TarInfo {
+  fileName: string;
 }
 
 /**
- * A class that represents a tar archive
+ * A class to create a tar archive
  */
 export class Tar {
-  data: TarData[];
+  data: TarDataWithSource[];
   written: number;
   out: Uint8Array;
   private blockSize: number;
@@ -189,7 +198,7 @@ export class Tar {
 
     const info = opts.filePath && (await Deno.stat(opts.filePath));
 
-    let mode = opts.mode || (info && info.mode) || parseInt("777", 8) & 0xfff,
+    let mode = opts.fileMode || (info && info.mode) || parseInt("777", 8) & 0xfff,
       mtime =
         opts.mtime ||
         (info && info.modified) ||
@@ -197,7 +206,7 @@ export class Tar {
       uid = opts.uid || 0,
       gid = opts.gid || 0;
 
-    const tarData = {
+    const tarData: TarDataWithSource = {
       fileName,
       fileMode: pad(mode, 7),
       uid: pad(uid, 7),
@@ -211,7 +220,7 @@ export class Tar {
       group: opts.group || "",
       filePath: opts.filePath,
       reader: opts.reader
-    } as TarData;
+    };
 
     // calculate the checksum
     let checksum = 0;
@@ -233,7 +242,7 @@ export class Tar {
     const readers: Deno.Reader[] = [];
     this.data.forEach(tarData => {
       let { filePath, reader } = tarData,
-        headerArr = format(tarData);
+        headerArr = formatHeader(tarData);
       readers.push(new Deno.Buffer(headerArr));
       if (!reader) {
         reader = new FileReader(filePath);
@@ -254,6 +263,64 @@ export class Tar {
     // append 2 empty records
     readers.push(new Deno.Buffer(clean(recordSize * 2)));
     return new MultiReader(...readers);
+  }
+}
+
+/**
+ * A class to create a tar archive
+ */
+export class Untar {
+  reader: BufReader;
+  block: Uint8Array;
+
+  constructor(reader: Deno.Reader) {
+    this.reader = new BufReader(reader);
+    this.block = new Uint8Array(recordSize);
+  }
+
+  async deflate(writer: Deno.Writer): Promise<UntarOptions> {
+    await this.reader.readFull(this.block);
+    const header = parseHeader(this.block);
+
+    // calculate the checksum
+    let checksum = 0;
+    const encoder = new TextEncoder(), decoder = new TextDecoder("ascii");
+    Object.keys(header)
+      .filter(key => key !== "checksum")
+      .forEach(function(key) {
+        checksum += header[key].reduce((p, c) => p + c, 0);
+      });
+    checksum += encoder.encode("        ").reduce((p, c) => p + c, 0);
+    if (parseInt(decoder.decode(header.checksum), 8) !== checksum) {
+      throw new Error("checksum error");
+    }
+
+    // get meta data
+    const meta: UntarOptions = { fileName: decoder.decode(trim(header.fileName)) };
+    ["fileMode", "mtime", "uid", "gid"].forEach(key => {
+      const arr = trim(header[key]);
+      if (arr.byteLength > 0) {
+        meta[key] = parseInt(decoder.decode(arr), 8);
+      }
+    });
+    ["owner", "group"].forEach(key => {
+      const arr = trim(header[key]);
+      if (arr.byteLength > 0) {
+        meta[key] = decoder.decode(arr);
+      }
+    });
+
+    // read the file content
+    const len = parseInt(decoder.decode(header.fileSize), 8);
+    let rest = len;
+    while (rest > 0) {
+      await this.reader.readFull(this.block);
+      const arr = rest < recordSize ? this.block.subarray(0, rest) : this.block;
+      await Deno.copy(writer, new Deno.Buffer(arr));
+      rest -= recordSize;
+    }
+
+    return meta;
   }
 }
 
@@ -300,7 +367,7 @@ export class FileWriter implements Deno.Writer {
 /**
  * Create header for a file in a tar archive
  */
-function format(data: TarData) {
+function formatHeader(data: TarData) {
   const encoder = new TextEncoder(),
     buffer = clean(512);
   let offset = 0;
@@ -310,6 +377,31 @@ function format(data: TarData) {
     offset += value.length; // space it out with nulls
   });
   return buffer;
+}
+
+/**
+ * Parse file header in a tar archive
+ * @param length
+ */
+function parseHeader(buffer: Uint8Array) {
+  const data: { [key: string]: Uint8Array } = {};
+  let offset = 0;
+  structure.forEach(function(value) {
+    const arr = buffer.subarray(offset, offset + value.length);
+    data[value.field] = arr;
+    offset += value.length;
+  });
+  return data;
+}
+
+/**
+ * Remove the trailing null codes
+ * @param buffer
+ */
+function trim(buffer: Uint8Array) {
+  const index = buffer.findIndex((v) => v === 0);
+  if (index < 0) return buffer;
+  return buffer.subarray(0, index);
 }
 
 /**

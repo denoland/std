@@ -10,7 +10,7 @@
 import { test, runIfMain } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
-import { Tar } from "./tar.ts";
+import { Tar, Untar } from "./tar.ts";
 import { resolve } from "../fs/path/mod.ts";
 
 const filePath = resolve("archive", "testdata", "example.txt");
@@ -36,6 +36,30 @@ test (async function createTarArchive(): Promise<void> {
 
   // 3072 = 512 (header) + 512 (content) + 512 (header) + 512 (content) + 1024 (footer)
   assertEquals(wrote, 3072);
+});
+
+test (async function deflatTarArchive(): Promise<void> {
+  const fileName = "output.txt";
+  const text = "hello tar world!";
+
+  // create a tar archive
+  const tar = new Tar();
+  const content = new TextEncoder().encode(text);
+  await tar
+    .append(fileName, {
+      reader: new Deno.Buffer(content),
+      contentSize: content.byteLength
+    });
+
+  // read data from a tar archive
+  const untar = new Untar(tar.getReader());
+  const buf = new Deno.Buffer();
+  const result = await untar.deflate(buf);
+  const untarText = new TextDecoder("utf-8").decode(buf.bytes());
+
+  // tests
+  assertEquals(result.fileName, fileName);
+  assertEquals(untarText, text);
 });
 
 runIfMain(import.meta);
