@@ -2,7 +2,8 @@
  * Tar test
  *
  * **test summary**
- * create a tar archive in memory containing output.txt and dir/tar.ts.
+ * - create a tar archive in memory containing output.txt and dir/tar.ts.
+ * - read and deflate a tar archive containing output.txt
  *
  * **to run this test**
  * deno run --allow-read archive/tar_test.ts
@@ -38,7 +39,7 @@ test (async function createTarArchive(): Promise<void> {
   assertEquals(wrote, 3072);
 });
 
-test (async function deflatTarArchive(): Promise<void> {
+test (async function deflateTarArchive(): Promise<void> {
   const fileName = "output.txt";
   const text = "hello tar world!";
 
