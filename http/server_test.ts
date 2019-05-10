@@ -267,7 +267,7 @@ test(async function writeUint8ArrayResponse(): Promise<void> {
   const shortText = "Hello";
 
   const body = new TextEncoder().encode(shortText);
-  const res = { body } as Response;
+  const res: Response = { body };
 
   const buf = new Deno.Buffer();
   await writeResponse(buf, res);
@@ -296,7 +296,7 @@ test(async function writeStringReaderResponse(): Promise<void> {
   const shortText = "Hello";
 
   const body = new StringReader(shortText);
-  const res = { body } as Response;
+  const res: Response = { body };
 
   const buf = new Deno.Buffer();
   await writeResponse(buf, res);
