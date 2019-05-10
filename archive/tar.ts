@@ -30,6 +30,69 @@ import { BufReader } from "../io/bufio.ts";
 
 const recordSize = 512;
 
+/**
+ * Simple file reader
+ */
+export class FileReader implements Deno.Reader {
+  private file: Deno.File;
+  constructor(private filePath: string, private mode: Deno.OpenMode = "r") {}
+  public async read(p: Uint8Array): Promise<Deno.ReadResult> {
+    if (!this.file) {
+      this.file = await Deno.open(this.filePath, this.mode);
+    }
+    const res = await Deno.read(this.file.rid, p);
+    if (res.eof) {
+      await Deno.close(this.file.rid);
+      this.file = null;
+    }
+    return res;
+  }
+}
+
+/**
+ * Simple file writer (call FileWriter.dispose() after use)
+ */
+export class FileWriter implements Deno.Writer {
+  private file: Deno.File;
+  constructor(private filePath: string, private mode: Deno.OpenMode = "w") {}
+  public async write(p: Uint8Array): Promise<number> {
+    if (!this.file) {
+      this.file = await Deno.open(this.filePath, this.mode);
+    }
+    return Deno.write(this.file.rid, p);
+  }
+  public dispose(): void {
+    if (!this.file) return;
+    Deno.close(this.file.rid);
+    this.file = null;
+  }
+}
+
+/**
+ * Remove the trailing null codes
+ * @param buffer
+ */
+function trim(buffer: Uint8Array): Uint8Array {
+  const index = buffer.findIndex(v => v === 0);
+  if (index < 0) return buffer;
+  return buffer.subarray(0, index);
+}
+
+/**
+ * Initialize Uint8Array of the specified length filled with 0
+ * @param length
+ */
+function clean(length: number): Uint8Array {
+  const buffer = new Uint8Array(length);
+  buffer.fill(0, 0, length - 1);
+  return buffer;
+}
+
+function pad(num: number, bytes: number, base?: number): string {
+  var numString = num.toString(base || 8);
+  return "000000000000".substr(numString.length + 12 - bytes) + numString;
+}
+
 /*
 struct posix_header {           // byte offset
 	char name[100];               //   0
@@ -52,7 +115,7 @@ struct posix_header {           // byte offset
 };
 */
 
-const structure: { field: string; length: number }[] = [
+const structure: Array<{ field: string; length: number }> = [
   {
     field: "fileName",
     length: 100
@@ -118,6 +181,36 @@ const structure: { field: string; length: number }[] = [
     length: 12
   }
 ];
+
+/**
+ * Create header for a file in a tar archive
+ */
+function formatHeader(data: TarData): Uint8Array {
+  const encoder = new TextEncoder(),
+    buffer = clean(512);
+  let offset = 0;
+  structure.forEach(function(value) {
+    const entry = encoder.encode(data[value.field] || "");
+    buffer.set(entry, offset);
+    offset += value.length; // space it out with nulls
+  });
+  return buffer;
+}
+
+/**
+ * Parse file header in a tar archive
+ * @param length
+ */
+function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
+  const data: { [key: string]: Uint8Array } = {};
+  let offset = 0;
+  structure.forEach(function(value) {
+    const arr = buffer.subarray(offset, offset + value.length);
+    data[value.field] = arr;
+    offset += value.length;
+  });
+  return data;
+}
 
 export interface TarData {
   fileName?: string;
@@ -195,7 +288,7 @@ export class Tar {
    * @param fileName file name (e.g., test.txt; use slash for directory separators)
    * @param opts options
    */
-  async append(fileName: string, opts: TarOptions) {
+  async append(fileName: string, opts: TarOptions): Promise<void> {
     opts = opts || {};
 
     const info = opts.filePath && (await Deno.stat(opts.filePath));
@@ -241,7 +334,7 @@ export class Tar {
   /**
    * Get a Reader instance for this tar data
    */
-  getReader() {
+  getReader(): Deno.Reader {
     const readers: Deno.Reader[] = [];
     this.data.forEach(tarData => {
       let { filePath, reader } = tarData,
@@ -328,97 +421,4 @@ export class Untar {
 
     return meta;
   }
-}
-
-/**
- * Simple file reader
- */
-export class FileReader implements Deno.Reader {
-  private file: Deno.File;
-  constructor(private filePath: string, private mode: Deno.OpenMode = "r") {}
-  public async read(p: Uint8Array) {
-    if (!this.file) {
-      this.file = await Deno.open(this.filePath, this.mode);
-    }
-    const res = await Deno.read(this.file.rid, p);
-    if (res.eof) {
-      await Deno.close(this.file.rid);
-      this.file = null;
-    }
-    return res;
-  }
-}
-
-/**
- * Simple file writer (call FileWriter.dispose() after use)
- */
-export class FileWriter implements Deno.Writer {
-  private file: Deno.File;
-  constructor(private filePath: string, private mode: Deno.OpenMode = "w") {}
-  public async write(p: Uint8Array) {
-    if (!this.file) {
-      this.file = await Deno.open(this.filePath, this.mode);
-    }
-    return Deno.write(this.file.rid, p);
-  }
-  public async dispose() {
-    if (!this.file) return;
-    Deno.close(this.file.rid);
-    this.file = null;
-  }
-}
-
-/**
- * Create header for a file in a tar archive
- */
-function formatHeader(data: TarData) {
-  const encoder = new TextEncoder(),
-    buffer = clean(512);
-  let offset = 0;
-  structure.forEach(function(value) {
-    const entry = encoder.encode(data[value.field] || "");
-    buffer.set(entry, offset);
-    offset += value.length; // space it out with nulls
-  });
-  return buffer;
-}
-
-/**
- * Parse file header in a tar archive
- * @param length
- */
-function parseHeader(buffer: Uint8Array) {
-  const data: { [key: string]: Uint8Array } = {};
-  let offset = 0;
-  structure.forEach(function(value) {
-    const arr = buffer.subarray(offset, offset + value.length);
-    data[value.field] = arr;
-    offset += value.length;
-  });
-  return data;
-}
-
-/**
- * Remove the trailing null codes
- * @param buffer
- */
-function trim(buffer: Uint8Array) {
-  const index = buffer.findIndex(v => v === 0);
-  if (index < 0) return buffer;
-  return buffer.subarray(0, index);
-}
-
-/**
- * Initialize Uint8Array of the specified length filled with 0
- * @param length
- */
-function clean(length: number) {
-  const buffer = new Uint8Array(length);
-  buffer.fill(0, 0, length - 1);
-  return buffer;
-}
-
-function pad(num: number, bytes: number, base?: number) {
-  var numString = num.toString(base || 8);
-  return "000000000000".substr(numString.length + 12 - bytes) + numString;
 }
