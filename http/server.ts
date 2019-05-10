@@ -80,6 +80,7 @@ async function writeChunkedBody(w: Writer, r: Reader): Promise<void> {
   const encoder = new TextEncoder();
 
   for await (const chunk of toAsyncIterator(r)) {
+    if (chunk.byteLength <= 0) continue;
     const start = encoder.encode(`${chunk.byteLength.toString(16)}\r\n`);
     const end = encoder.encode("\r\n");
     await writer.write(start);
