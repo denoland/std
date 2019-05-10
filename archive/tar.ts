@@ -200,7 +200,8 @@ export class Tar {
 
     const info = opts.filePath && (await Deno.stat(opts.filePath));
 
-    let mode = opts.fileMode || (info && info.mode) || parseInt("777", 8) & 0xfff,
+    let mode =
+        opts.fileMode || (info && info.mode) || parseInt("777", 8) & 0xfff,
       mtime =
         opts.mtime ||
         (info && info.modified) ||
@@ -286,7 +287,8 @@ export class Untar {
 
     // calculate the checksum
     let checksum = 0;
-    const encoder = new TextEncoder(), decoder = new TextDecoder("ascii");
+    const encoder = new TextEncoder(),
+      decoder = new TextDecoder("ascii");
     Object.keys(header)
       .filter(key => key !== "checksum")
       .forEach(function(key) {
@@ -298,7 +300,9 @@ export class Untar {
     }
 
     // get meta data
-    const meta: UntarOptions = { fileName: decoder.decode(trim(header.fileName)) };
+    const meta: UntarOptions = {
+      fileName: decoder.decode(trim(header.fileName))
+    };
     ["fileMode", "mtime", "uid", "gid"].forEach(key => {
       const arr = trim(header[key]);
       if (arr.byteLength > 0) {
@@ -331,8 +335,7 @@ export class Untar {
  */
 export class FileReader implements Deno.Reader {
   private file: Deno.File;
-  constructor(private filePath: string, private mode: Deno.OpenMode = "r") {
-  }
+  constructor(private filePath: string, private mode: Deno.OpenMode = "r") {}
   public async read(p: Uint8Array) {
     if (!this.file) {
       this.file = await Deno.open(this.filePath, this.mode);
@@ -351,8 +354,7 @@ export class FileReader implements Deno.Reader {
  */
 export class FileWriter implements Deno.Writer {
   private file: Deno.File;
-  constructor(private filePath: string, private mode: Deno.OpenMode = "w") {
-  }
+  constructor(private filePath: string, private mode: Deno.OpenMode = "w") {}
   public async write(p: Uint8Array) {
     if (!this.file) {
       this.file = await Deno.open(this.filePath, this.mode);
@@ -401,7 +403,7 @@ function parseHeader(buffer: Uint8Array) {
  * @param buffer
  */
 function trim(buffer: Uint8Array) {
-  const index = buffer.findIndex((v) => v === 0);
+  const index = buffer.findIndex(v => v === 0);
   if (index < 0) return buffer;
   return buffer.subarray(0, index);
 }

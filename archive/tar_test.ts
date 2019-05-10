@@ -16,17 +16,16 @@ import { resolve } from "../fs/path/mod.ts";
 
 const filePath = resolve("archive", "testdata", "example.txt");
 
-test (async function createTarArchive(): Promise<void> {
+test(async function createTarArchive(): Promise<void> {
   // initialize
   const tar = new Tar();
 
   // put data on memory
   const content = new TextEncoder().encode("hello tar world!");
-  await tar
-    .append("output.txt", {
-      reader: new Deno.Buffer(content),
-      contentSize: content.byteLength
-    });
+  await tar.append("output.txt", {
+    reader: new Deno.Buffer(content),
+    contentSize: content.byteLength
+  });
 
   // put a file
   await tar.append("dir/tar.ts", { filePath });
@@ -39,18 +38,17 @@ test (async function createTarArchive(): Promise<void> {
   assertEquals(wrote, 3072);
 });
 
-test (async function deflateTarArchive(): Promise<void> {
+test(async function deflateTarArchive(): Promise<void> {
   const fileName = "output.txt";
   const text = "hello tar world!";
 
   // create a tar archive
   const tar = new Tar();
   const content = new TextEncoder().encode(text);
-  await tar
-    .append(fileName, {
-      reader: new Deno.Buffer(content),
-      contentSize: content.byteLength
-    });
+  await tar.append(fileName, {
+    reader: new Deno.Buffer(content),
+    contentSize: content.byteLength
+  });
 
   // read data from a tar archive
   const untar = new Untar(tar.getReader());
