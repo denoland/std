@@ -1,9 +1,11 @@
 /**
- * Tar implementation ported and modified from https://github.com/beatgammit/tar-js
- * under The MIT License
+ * Ported and modified from: https://github.com/jshttp/mime-types and licensed as:
+ *
+ * (The MIT License)
  *
  * Copyright (c) 2011 T. Jameson Little
  * Copyright (c) 2019 Jun Kato
+ * Copyright (c) 2019 the Deno authors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
