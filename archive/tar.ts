@@ -73,7 +73,7 @@ export class FileWriter implements Deno.Writer {
  * @param buffer
  */
 function trim(buffer: Uint8Array): Uint8Array {
-  const index = buffer.findIndex(v => v === 0);
+  const index = buffer.findIndex((v): boolean => v === 0);
   if (index < 0) return buffer;
   return buffer.subarray(0, index);
 }
@@ -189,7 +189,7 @@ function formatHeader(data: TarData): Uint8Array {
   const encoder = new TextEncoder(),
     buffer = clean(512);
   let offset = 0;
-  structure.forEach(function(value) {
+  structure.forEach(function(value): void {
     const entry = encoder.encode(data[value.field] || "");
     buffer.set(entry, offset);
     offset += value.length; // space it out with nulls
@@ -204,7 +204,7 @@ function formatHeader(data: TarData): Uint8Array {
 function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
   const data: { [key: string]: Uint8Array } = {};
   let offset = 0;
-  structure.forEach(function(value) {
+  structure.forEach(function(value): void {
     const arr = buffer.subarray(offset, offset + value.length);
     data[value.field] = arr;
     offset += value.length;
@@ -322,9 +322,11 @@ export class Tar {
     let checksum = 0;
     const encoder = new TextEncoder();
     Object.keys(tarData)
-      .filter(key => ["filePath", "reader"].indexOf(key) < 0)
-      .forEach(function(key) {
-        checksum += encoder.encode(tarData[key]).reduce((p, c) => p + c, 0);
+      .filter((key): boolean => ["filePath", "reader"].indexOf(key) < 0)
+      .forEach(function(key): void {
+        checksum += encoder
+          .encode(tarData[key])
+          .reduce((p, c): number => p + c, 0);
       });
 
     tarData.checksum = pad(checksum, 6) + "\u0000 ";
@@ -336,25 +338,27 @@ export class Tar {
    */
   getReader(): Deno.Reader {
     const readers: Deno.Reader[] = [];
-    this.data.forEach(tarData => {
-      let { filePath, reader } = tarData,
-        headerArr = formatHeader(tarData);
-      readers.push(new Deno.Buffer(headerArr));
-      if (!reader) {
-        reader = new FileReader(filePath);
-      }
-      readers.push(reader);
+    this.data.forEach(
+      (tarData): void => {
+        let { filePath, reader } = tarData,
+          headerArr = formatHeader(tarData);
+        readers.push(new Deno.Buffer(headerArr));
+        if (!reader) {
+          reader = new FileReader(filePath);
+        }
+        readers.push(reader);
 
-      // to the nearest multiple of recordSize
-      readers.push(
-        new Deno.Buffer(
-          clean(
-            recordSize -
-              (parseInt(tarData.fileSize, 8) % recordSize || recordSize)
+        // to the nearest multiple of recordSize
+        readers.push(
+          new Deno.Buffer(
+            clean(
+              recordSize -
+                (parseInt(tarData.fileSize, 8) % recordSize || recordSize)
+            )
           )
-        )
-      );
-    });
+        );
+      }
+    );
 
     // append 2 empty records
     readers.push(new Deno.Buffer(clean(recordSize * 2)));
@@ -383,11 +387,11 @@ export class Untar {
     const encoder = new TextEncoder(),
       decoder = new TextDecoder("ascii");
     Object.keys(header)
-      .filter(key => key !== "checksum")
-      .forEach(function(key) {
-        checksum += header[key].reduce((p, c) => p + c, 0);
+      .filter((key): boolean => key !== "checksum")
+      .forEach(function(key): void {
+        checksum += header[key].reduce((p, c): number => p + c, 0);
       });
-    checksum += encoder.encode("        ").reduce((p, c) => p + c, 0);
+    checksum += encoder.encode("        ").reduce((p, c): number => p + c, 0);
     if (parseInt(decoder.decode(header.checksum), 8) !== checksum) {
       throw new Error("checksum error");
     }
@@ -396,18 +400,22 @@ export class Untar {
     const meta: UntarOptions = {
       fileName: decoder.decode(trim(header.fileName))
     };
-    ["fileMode", "mtime", "uid", "gid"].forEach(key => {
-      const arr = trim(header[key]);
-      if (arr.byteLength > 0) {
-        meta[key] = parseInt(decoder.decode(arr), 8);
+    ["fileMode", "mtime", "uid", "gid"].forEach(
+      (key): void => {
+        const arr = trim(header[key]);
+        if (arr.byteLength > 0) {
+          meta[key] = parseInt(decoder.decode(arr), 8);
+        }
       }
-    });
-    ["owner", "group"].forEach(key => {
-      const arr = trim(header[key]);
-      if (arr.byteLength > 0) {
-        meta[key] = decoder.decode(arr);
+    );
+    ["owner", "group"].forEach(
+      (key): void => {
+        const arr = trim(header[key]);
+        if (arr.byteLength > 0) {
+          meta[key] = decoder.decode(arr);
+        }
       }
-    });
+    );
 
     // read the file content
     const len = parseInt(decoder.decode(header.fileSize), 8);
