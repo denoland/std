@@ -1,8 +1,9 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-const { listen, toAsyncIterator, copy } = Deno;
+const { listen, copy } = Deno;
 type Conn = Deno.Conn;
 type Reader = Deno.Reader;
 type Writer = Deno.Writer;
+import { toAsyncIterator } from "./async_iterator.ts";
 import { BufReader, BufState, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
