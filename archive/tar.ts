@@ -174,7 +174,7 @@ const ustarStructure: Array<{ field: string; length: number }> = [
     length: 8
   },
   {
-    field: "filenamePrefix",
+    field: "fileNamePrefix",
     length: 155
   },
   {
@@ -215,6 +215,7 @@ function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
 
 export interface TarData {
   fileName?: string;
+  fileNamePrefix?: string;
   fileMode?: string;
   uid?: string;
   gid?: string;
@@ -292,10 +293,27 @@ export class Tar {
   async append(fileName: string, opts: TarOptions): Promise<void> {
     if (typeof fileName !== "string")
       throw new Error("file name not specified");
-    if (fileName.length >= 100)
-      throw new Error(
-        "ustar format does not allow file name length >= 100 bytes"
-      );
+
+    // separate file name into two parts if needed
+    let fileNamePrefix: string;
+    if (fileName.length > 100) {
+      let i = fileName.length;
+      while (i >= 0) {
+        i = fileName.lastIndexOf("/", i);
+        if (i <= 155) {
+          fileNamePrefix = fileName.substr(0, i);
+          fileName = fileName.substr(i + 1);
+          break;
+        }
+        i --;
+      }
+      if (i < 0) {
+        throw new Error(
+          "ustar format does not allow a long file name (length of [file name prefix] + / + [file name] must be shorter than 256 bytes)"
+        );
+      }
+    }
+
     opts = opts || {};
 
     // set meta data
@@ -322,6 +340,7 @@ export class Tar {
 
     const tarData: TarDataWithSource = {
       fileName,
+      fileNamePrefix,
       fileMode: pad(mode, 7),
       uid: pad(uid, 7),
       gid: pad(gid, 7),
@@ -424,6 +443,10 @@ export class Untar {
     const meta: UntarOptions = {
       fileName: decoder.decode(trim(header.fileName))
     };
+    const fileNamePrefix = trim(header.fileNamePrefix);
+    if(fileNamePrefix.byteLength > 0) {
+      meta.fileName = decoder.decode(fileNamePrefix) + "/" + meta.fileName;
+    }
     ["fileMode", "mtime", "uid", "gid"].forEach(
       (key): void => {
         const arr = trim(header[key]);

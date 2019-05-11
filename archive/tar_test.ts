@@ -61,4 +61,28 @@ test(async function deflateTarArchive(): Promise<void> {
   assertEquals(untarText, text);
 });
 
+test(async function appendFileWithLongNameToTarArchive(): Promise<void> {
+  // 9 * 15 + 13 = 148 bytes
+  const fileName = new Array(10).join("long-file-name/") + "file-name.txt";
+  const text = "hello tar world!";
+
+  // create a tar archive
+  const tar = new Tar();
+  const content = new TextEncoder().encode(text);
+  await tar.append(fileName, {
+    reader: new Deno.Buffer(content),
+    contentSize: content.byteLength
+  });
+
+  // read data from a tar archive
+  const untar = new Untar(tar.getReader());
+  const buf = new Deno.Buffer();
+  const result = await untar.extract(buf);
+  const untarText = new TextDecoder("utf-8").decode(buf.bytes());
+
+  // tests
+  assertEquals(result.fileName, fileName);
+  assertEquals(untarText, text);
+});
+
 runIfMain(import.meta);
