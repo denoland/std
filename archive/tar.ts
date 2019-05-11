@@ -291,9 +291,9 @@ export class Tar {
   async append(fileName: string, opts: TarOptions): Promise<void> {
     if (typeof fileName !== "string")
       throw new Error("file name not specified");
-    if (fileName.length > 100)
+    if (fileName.length >= 100)
       throw new Error(
-        "utar format does not allow file name longer than 100 bytes"
+        "utar format does not allow file name length >= 100 bytes"
       );
     opts = opts || {};
 
@@ -308,6 +308,16 @@ export class Tar {
         Math.floor(new Date().getTime() / 1000),
       uid = opts.uid || 0,
       gid = opts.gid || 0;
+    if (typeof opts.owner === "string" && opts.owner.length >= 32) {
+      throw new Error(
+        "utar format does not allow owner name length >= 32 bytes"
+      );
+    }
+    if (typeof opts.group === "string" && opts.group.length >= 32) {
+      throw new Error(
+        "utar format does not allow group name length >= 32 bytes"
+      );
+    }
 
     const tarData: TarDataWithSource = {
       fileName,
