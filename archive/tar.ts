@@ -305,7 +305,7 @@ export class Tar {
           fileName = fileName.substr(i + 1);
           break;
         }
-        i --;
+        i--;
       }
       if (i < 0 || fileName.length > 100 || fileNamePrefix.length > 155) {
         throw new Error(
@@ -434,7 +434,7 @@ export class Untar {
       throw new Error("checksum error");
     }
 
-    const magic = decoder.decode(header.ustar)
+    const magic = decoder.decode(header.ustar);
     if (magic !== ustar) {
       throw new Error(`unsupported archive format: ${magic}`);
     }
@@ -444,7 +444,7 @@ export class Untar {
       fileName: decoder.decode(trim(header.fileName))
     };
     const fileNamePrefix = trim(header.fileNamePrefix);
-    if(fileNamePrefix.byteLength > 0) {
+    if (fileNamePrefix.byteLength > 0) {
       meta.fileName = decoder.decode(fileNamePrefix) + "/" + meta.fileName;
     }
     ["fileMode", "mtime", "uid", "gid"].forEach(
