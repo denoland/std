@@ -289,6 +289,12 @@ export class Tar {
    * @param opts options
    */
   async append(fileName: string, opts: TarOptions): Promise<void> {
+    if (typeof fileName !== "string")
+      throw new Error("file name not specified");
+    if (fileName.length > 100)
+      throw new Error(
+        "utar format does not allow file name longer than 100 bytes"
+      );
     opts = opts || {};
 
     // set meta data
