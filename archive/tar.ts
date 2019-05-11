@@ -29,6 +29,7 @@ import { MultiReader } from "../io/readers.ts";
 import { BufReader } from "../io/bufio.ts";
 
 const recordSize = 512;
+const ustar = "ustar\u000000";
 
 /**
  * Simple file reader
@@ -328,7 +329,7 @@ export class Tar {
       mtime: pad(mtime, 11),
       checksum: "        ",
       type: "0", // just a file
-      ustar: "ustar\u000000\u0000",
+      ustar,
       owner: opts.owner || "",
       group: opts.group || "",
       filePath: opts.filePath,
@@ -412,6 +413,11 @@ export class Untar {
 
     if (parseInt(decoder.decode(header.checksum), 8) !== checksum) {
       throw new Error("checksum error");
+    }
+
+    const magic = decoder.decode(header.ustar)
+    if (magic !== ustar) {
+      throw new Error(`unsupported archive format: ${magic}`);
     }
 
     // get meta data
