@@ -115,7 +115,7 @@ struct posix_header {           // byte offset
 };
 */
 
-const utarStructure: Array<{ field: string; length: number }> = [
+const ustarStructure: Array<{ field: string; length: number }> = [
   {
     field: "fileName",
     length: 100
@@ -189,7 +189,7 @@ function formatHeader(data: TarData): Uint8Array {
   const encoder = new TextEncoder(),
     buffer = clean(512);
   let offset = 0;
-  utarStructure.forEach(function(value): void {
+  ustarStructure.forEach(function(value): void {
     const entry = encoder.encode(data[value.field] || "");
     buffer.set(entry, offset);
     offset += value.length; // space it out with nulls
@@ -204,7 +204,7 @@ function formatHeader(data: TarData): Uint8Array {
 function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
   const data: { [key: string]: Uint8Array } = {};
   let offset = 0;
-  utarStructure.forEach(function(value): void {
+  ustarStructure.forEach(function(value): void {
     const arr = buffer.subarray(offset, offset + value.length);
     data[value.field] = arr;
     offset += value.length;
@@ -293,7 +293,7 @@ export class Tar {
       throw new Error("file name not specified");
     if (fileName.length >= 100)
       throw new Error(
-        "utar format does not allow file name length >= 100 bytes"
+        "ustar format does not allow file name length >= 100 bytes"
       );
     opts = opts || {};
 
@@ -310,12 +310,12 @@ export class Tar {
       gid = opts.gid || 0;
     if (typeof opts.owner === "string" && opts.owner.length >= 32) {
       throw new Error(
-        "utar format does not allow owner name length >= 32 bytes"
+        "ustar format does not allow owner name length >= 32 bytes"
       );
     }
     if (typeof opts.group === "string" && opts.group.length >= 32) {
       throw new Error(
-        "utar format does not allow group name length >= 32 bytes"
+        "ustar format does not allow group name length >= 32 bytes"
       );
     }
 
