@@ -307,7 +307,7 @@ export class Tar {
         }
         i --;
       }
-      if (i < 0) {
+      if (i < 0 || fileName.length > 100 || fileNamePrefix.length > 155) {
         throw new Error(
           "ustar format does not allow a long file name (length of [file name prefix] + / + [file name] must be shorter than 256 bytes)"
         );
