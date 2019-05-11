@@ -115,7 +115,7 @@ struct posix_header {           // byte offset
 };
 */
 
-const structure: Array<{ field: string; length: number }> = [
+const utarStructure: Array<{ field: string; length: number }> = [
   {
     field: "fileName",
     length: 100
@@ -189,7 +189,7 @@ function formatHeader(data: TarData): Uint8Array {
   const encoder = new TextEncoder(),
     buffer = clean(512);
   let offset = 0;
-  structure.forEach(function(value): void {
+  utarStructure.forEach(function(value): void {
     const entry = encoder.encode(data[value.field] || "");
     buffer.set(entry, offset);
     offset += value.length; // space it out with nulls
@@ -204,7 +204,7 @@ function formatHeader(data: TarData): Uint8Array {
 function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
   const data: { [key: string]: Uint8Array } = {};
   let offset = 0;
-  structure.forEach(function(value): void {
+  utarStructure.forEach(function(value): void {
     const arr = buffer.subarray(offset, offset + value.length);
     data[value.field] = arr;
     offset += value.length;
@@ -291,6 +291,7 @@ export class Tar {
   async append(fileName: string, opts: TarOptions): Promise<void> {
     opts = opts || {};
 
+    // set meta data
     const info = opts.filePath && (await Deno.stat(opts.filePath));
 
     let mode =
@@ -378,7 +379,7 @@ export class Untar {
     this.block = new Uint8Array(recordSize);
   }
 
-  async deflate(writer: Deno.Writer): Promise<UntarOptions> {
+  async extract(writer: Deno.Writer): Promise<UntarOptions> {
     await this.reader.readFull(this.block);
     const header = parseHeader(this.block);
 
@@ -392,6 +393,7 @@ export class Untar {
         checksum += header[key].reduce((p, c): number => p + c, 0);
       });
     checksum += encoder.encode("        ").reduce((p, c): number => p + c, 0);
+
     if (parseInt(decoder.decode(header.checksum), 8) !== checksum) {
       throw new Error("checksum error");
     }

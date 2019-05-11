@@ -53,7 +53,7 @@ test(async function deflateTarArchive(): Promise<void> {
   // read data from a tar archive
   const untar = new Untar(tar.getReader());
   const buf = new Deno.Buffer();
-  const result = await untar.deflate(buf);
+  const result = await untar.extract(buf);
   const untarText = new TextDecoder("utf-8").decode(buf.bytes());
 
   // tests
