@@ -1,17 +1,19 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import "./sha1_test.ts";
-
-const { Buffer } = Deno;
 import { BufReader } from "../io/bufio.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
-import { test } from "../testing/mod.ts";
+import { runIfMain, test } from "../testing/mod.ts";
 import {
   acceptable,
   createSecAccept,
   OpCode,
   readFrame,
-  unmask
+  unmask,
+  writeFrame
 } from "./mod.ts";
+import { encode } from "../strings/strings.ts";
+
+const { Buffer } = Deno;
 
 test(async function testReadUnmaskedTextFrame(): Promise<void> {
   // unmasked single text frame with payload "Hello"
@@ -25,7 +27,7 @@ test(async function testReadUnmaskedTextFrame(): Promise<void> {
   assertEquals(frame.isLastFrame, true);
 });
 
-test(async function testReadMakedTextFrame(): Promise<void> {
+test(async function testReadMaskedTextFrame(): Promise<void> {
   //a masked single text frame with payload "Hello"
   const buf = new BufReader(
     new Buffer(
@@ -52,7 +54,7 @@ test(async function testReadMakedTextFrame(): Promise<void> {
   assertEquals(frame.isLastFrame, true);
 });
 
-test(async function testReadUnmaskedSplittedTextFrames(): Promise<void> {
+test(async function testReadUnmaskedSplitTextFrames(): Promise<void> {
   const buf1 = new BufReader(
     new Buffer(new Uint8Array([0x01, 0x03, 0x48, 0x65, 0x6c]))
   );
@@ -71,7 +73,7 @@ test(async function testReadUnmaskedSplittedTextFrames(): Promise<void> {
   assertEquals(new Buffer(f2.payload).toString(), "lo");
 });
 
-test(async function testReadUnmaksedPingPongFrame(): Promise<void> {
+test(async function testReadUnmaskedPingPongFrame(): Promise<void> {
   // unmasked ping with payload "Hello"
   const buf = new BufReader(
     new Buffer(new Uint8Array([0x89, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f]))
@@ -161,3 +163,27 @@ test(function testAcceptableInvalid(): void {
     assertEquals(ret, false);
   }
 });
+
+test(async function testWriteReadMaskedFrame() {
+  const mask = new Uint8Array([0, 1, 2, 3]);
+  const msg = "hello";
+  const buf = new Buffer();
+  const r = new BufReader(buf);
+  await writeFrame(
+    {
+      isLastFrame: true,
+      mask,
+      opcode: OpCode.TextFrame,
+      payload: encode(msg)
+    },
+    buf
+  );
+  const frame = await readFrame(r);
+  assertEquals(frame.opcode, OpCode.TextFrame);
+  assertEquals(frame.isLastFrame, true);
+  assertEquals(frame.mask, mask);
+  unmask(frame.payload, frame.mask);
+  assertEquals(frame.payload, encode(msg));
+});
+
+runIfMain(import.meta);

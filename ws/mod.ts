@@ -1,4 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
+import { encode } from "../strings/strings.ts";
+
 const { Buffer } = Deno;
 type Conn = Deno.Conn;
 type Writer = Deno.Writer;
@@ -6,6 +9,8 @@ import { BufReader, BufWriter } from "../io/bufio.ts";
 import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
 import { Sha1 } from "./sha1.ts";
 import { writeResponse } from "../http/server.ts";
+import { TextProtoReader } from "../textproto/mod.ts";
+import Reader = Deno.Reader;
 
 export enum OpCode {
   Continue = 0x0,
@@ -70,10 +75,15 @@ export interface WebSocketFrame {
 }
 
 export interface WebSocket {
+  readonly conn: Conn;
   readonly isClosed: boolean;
+
   receive(): AsyncIterableIterator<WebSocketEvent>;
+
   send(data: WebSocketMessage): Promise<void>;
+
   ping(data?: WebSocketMessage): Promise<void>;
+
   close(code: number, reason?: string): Promise<void>;
 }
 
@@ -92,6 +102,11 @@ export async function writeFrame(
   const payloadLength = frame.payload.byteLength;
   let header: Uint8Array;
   const hasMask = frame.mask ? 0x80 : 0;
+  if (frame.mask && frame.mask.byteLength !== 4) {
+    throw new Error(
+      "invalid mask. mask must be 4 bytes: length=" + frame.mask.byteLength
+    );
+  }
   if (payloadLength < 126) {
     header = new Uint8Array([0x80 | frame.opcode, hasMask | payloadLength]);
   } else if (payloadLength < 0xffff) {
@@ -108,10 +123,13 @@ export async function writeFrame(
       ...sliceLongToBytes(payloadLength)
     ]);
   }
+  if (frame.mask) {
+    header = append(header, frame.mask);
+  }
   unmask(frame.payload, frame.mask);
-  const bytes = append(header, frame.payload);
-  const w = new BufWriter(writer);
-  await w.write(bytes);
+  header = append(header, frame.payload);
+  const w = BufWriter.create(writer);
+  await w.write(header);
   await w.flush();
 }
 
@@ -156,61 +174,60 @@ export async function readFrame(buf: BufReader): Promise<WebSocketFrame> {
 }
 
 export async function* receiveFrame(
-  conn: Conn
+  r: Reader
 ): AsyncIterableIterator<WebSocketFrame> {
   let receiving = true;
-  const isLastFrame = true;
-  const reader = new BufReader(conn);
+  const reader = BufReader.create(r);
   while (receiving) {
     const frame = await readFrame(reader);
-    const { opcode, payload } = frame;
+    const { opcode } = frame;
     switch (opcode) {
       case OpCode.TextFrame:
       case OpCode.BinaryFrame:
       case OpCode.Continue:
+      case OpCode.Ping:
+      case OpCode.Pong:
         yield frame;
         break;
       case OpCode.Close:
-        await writeFrame(
-          {
-            opcode,
-            payload,
-            isLastFrame
-          },
-          conn
-        );
-        conn.close();
         yield frame;
         receiving = false;
-        break;
-      case OpCode.Ping:
-        await writeFrame(
-          {
-            payload,
-            isLastFrame,
-            opcode: OpCode.Pong
-          },
-          conn
-        );
-        yield frame;
-        break;
-      case OpCode.Pong:
-        yield frame;
         break;
       default:
     }
   }
 }
 
-class WebSocketImpl implements WebSocket {
-  encoder = new TextEncoder();
+// Create client-to-server mask, random 32bit number
+function createMask(): Uint8Array {
+  const arr = Array.from({ length: 4 }).map(() =>
+    Math.round(Math.random() * 0xff)
+  );
+  return new Uint8Array(arr);
+}
 
-  constructor(private conn: Conn, private mask?: Uint8Array) {}
+class WebSocketImpl implements WebSocket {
+  private readonly mask?: Uint8Array;
+  private readonly bufReader: BufReader;
+  private readonly bufWriter: BufWriter;
+
+  constructor(
+    readonly conn: Conn,
+    opts: {
+      bufReader?: BufReader;
+      bufWriter?: BufWriter;
+      mask?: Uint8Array;
+    } = {}
+  ) {
+    this.mask = opts.mask || createMask();
+    this.bufReader = opts.bufReader || new BufReader(conn);
+    this.bufWriter = opts.bufWriter || new BufWriter(conn);
+  }
 
   async *receive(): AsyncIterableIterator<WebSocketEvent> {
     let frames: WebSocketFrame[] = [];
     let payloadsLength = 0;
-    for await (const frame of receiveFrame(this.conn)) {
+    for await (const frame of receiveFrame(this.bufReader)) {
       unmask(frame.payload, frame.mask);
       switch (frame.opcode) {
         case OpCode.TextFrame:
@@ -237,6 +254,14 @@ class WebSocketImpl implements WebSocket {
           }
           break;
         case OpCode.Close:
+          await writeFrame(
+            {
+              opcode: OpCode.Close,
+              payload: frame.payload,
+              isLastFrame: true
+            },
+            this.bufWriter
+          );
           const code = (frame.payload[0] << 16) | frame.payload[1];
           const reason = new Buffer(
             frame.payload.subarray(2, frame.payload.length)
@@ -245,6 +270,14 @@ class WebSocketImpl implements WebSocket {
           yield { code, reason };
           return;
         case OpCode.Ping:
+          await writeFrame(
+            {
+              opcode: OpCode.Pong,
+              payload: frame.payload,
+              isLastFrame: true
+            },
+            this.bufWriter
+          );
           yield ["ping", frame.payload] as WebSocketPingEvent;
           break;
         case OpCode.Pong:
@@ -261,7 +294,7 @@ class WebSocketImpl implements WebSocket {
     }
     const opcode =
       typeof data === "string" ? OpCode.TextFrame : OpCode.BinaryFrame;
-    const payload = typeof data === "string" ? this.encoder.encode(data) : data;
+    const payload = typeof data === "string" ? encode(data) : data;
     const isLastFrame = true;
     await writeFrame(
       {
@@ -274,12 +307,12 @@ class WebSocketImpl implements WebSocket {
     );
   }
 
-  async ping(data: WebSocketMessage): Promise<void> {
-    const payload = typeof data === "string" ? this.encoder.encode(data) : data;
+  async ping(data: WebSocketMessage = ""): Promise<void> {
+    const payload = typeof data === "string" ? encode(data) : data;
     await writeFrame(
       {
         isLastFrame: true,
-        opcode: OpCode.Close,
+        opcode: OpCode.Ping,
         mask: this.mask,
         payload
       },
@@ -297,7 +330,7 @@ class WebSocketImpl implements WebSocket {
       const header = [code >>> 8, code & 0x00ff];
       let payload: Uint8Array;
       if (reason) {
-        const reasonBytes = this.encoder.encode(reason);
+        const reasonBytes = encode(reason);
         payload = new Uint8Array(2 + reasonBytes.byteLength);
         payload.set(header);
         payload.set(reasonBytes, 2);
@@ -320,11 +353,10 @@ class WebSocketImpl implements WebSocket {
     }
   }
 
-  private ensureSocketClosed(): Error {
+  private ensureSocketClosed(): void {
     if (this.isClosed) {
       return;
     }
-
     try {
       this.conn.close();
     } catch (e) {
@@ -336,10 +368,12 @@ class WebSocketImpl implements WebSocket {
 }
 
 export function acceptable(req: { headers: Headers }): boolean {
+  const secKey = req.headers.get("sec-websocket-key");
   return (
     req.headers.get("upgrade") === "websocket" &&
     req.headers.has("sec-websocket-key") &&
-    req.headers.get("sec-websocket-key").length > 0
+    typeof secKey === "string" &&
+    secKey.length > 0
   );
 }
 
@@ -360,6 +394,9 @@ export async function acceptWebSocket(req: {
   if (acceptable(req)) {
     const sock = new WebSocketImpl(conn);
     const secKey = headers.get("sec-websocket-key");
+    if (typeof secKey !== "string") {
+      throw new Error("sec-websocket-key is not provided");
+    }
     const secAccept = createSecAccept(secKey);
     await writeResponse(conn, {
       status: 101,
@@ -372,4 +409,94 @@ export async function acceptWebSocket(req: {
     return sock;
   }
   throw new Error("request is not acceptable");
+}
+
+export async function connectWebSocket(
+  endpoint: string,
+  headers: Headers = new Headers()
+): Promise<WebSocket> {
+  const url = new URL(endpoint);
+  const { hostname, pathname, searchParams } = url;
+  let port = url.port;
+  if (!url.port) {
+    if (url.protocol === "http" || url.protocol === "ws") {
+      port = "80";
+    } else if (url.protocol === "https" || url.protocol === "wss") {
+      throw new Error("currently https/wss is not supported");
+    }
+  }
+  const conn = await Deno.dial("tcp", `${hostname}:${port}`);
+  const abortHandshake = (err: Error) => {
+    conn.close();
+    throw err;
+  };
+  const bufWriter = new BufWriter(conn);
+  const bufReader = new BufReader(conn);
+  await bufWriter.write(
+    encode(`GET ${pathname}?${searchParams || ""} HTTP/1.1\r\n`)
+  );
+  const key = createSecKey();
+  if (!headers.has("host")) {
+    headers.set("host", hostname);
+  }
+  headers.set("upgrade", "websocket");
+  headers.set("connection", "upgrade");
+  headers.set("sec-websocket-key", key);
+  let headerStr = "";
+  for (const [key, value] of headers) {
+    headerStr += `${key}: ${value}\r\n`;
+  }
+  headerStr += "\r\n";
+  await bufWriter.write(encode(headerStr));
+  let err, statusLine, responseHeaders;
+  err = await bufWriter.flush();
+  if (err) {
+    throw new Error("ws: failed to send handshake: " + err);
+  }
+  const tpReader = new TextProtoReader(bufReader);
+  [statusLine, err] = await tpReader.readLine();
+  if (err) {
+    throw new Error("ws: failed to read status line: " + err);
+  }
+  const m = statusLine.match(/^(.+?) (.+?) (.+?)$/);
+  if (!m) {
+    abortHandshake(new Error("ws: invalid status line: " + statusLine));
+  }
+  const [_, version, statusCode] = m;
+  if (version !== "HTTP/1.1" || statusCode !== "101") {
+    abortHandshake(
+      new Error(
+        `ws: server didn't accept handshake: version=${version}, statusCode=${statusCode}`
+      )
+    );
+  }
+  [responseHeaders, err] = await tpReader.readMIMEHeader();
+  if (err) {
+    abortHandshake(new Error("ws: failed to parse response headers: " + err));
+  }
+  const expectedSecAccept = createSecAccept(key);
+  const secAccept = responseHeaders.get("sec-websocket-accept");
+  if (secAccept !== expectedSecAccept) {
+    abortHandshake(
+      new Error(
+        `ws: unexpected sec-websocket-accept header: expected=${expectedSecAccept}, actual=${secAccept}`
+      )
+    );
+  }
+  return new WebSocketImpl(conn, {
+    bufWriter,
+    bufReader
+  });
+}
+
+const kSecChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.~_";
+
+// create WebSocket-Sec-Key. encoded 16bytes string
+export function createSecKey(): string {
+  let key = "";
+  for (let i = 0; i < 16; i++) {
+    const j = Math.round(Math.random() * kSecChars.length);
+    key += kSecChars[j];
+  }
+  return btoa(key);
 }
