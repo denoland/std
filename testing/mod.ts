@@ -9,10 +9,8 @@ export interface TestDefinition {
   name: string;
 }
 
-export const exitOnFail = true;
-
 let filterRegExp: RegExp | null;
-const tests: TestDefinition[] = [];
+const candidates: TestDefinition[] = [];
 
 let filtered = 0;
 
@@ -37,7 +35,7 @@ export function test(t: TestDefinition | TestFunction): void {
     throw new Error("Test function may not be anonymous");
   }
   if (filter(name)) {
-    tests.push({ fn, name });
+    candidates.push({ fn, name });
   } else {
     filtered++;
   }
@@ -93,7 +91,8 @@ function report(result: TestResult): void {
 function printResults(
   stats: TestStats,
   results: TestResults,
-  flush: boolean
+  flush: boolean,
+  exitOnFail: boolean
 ): void {
   if (flush) {
     for (const result of results.cases.values()) {
@@ -125,6 +124,7 @@ function previousPrinted(name: string, results: TestResults): boolean {
 async function createTestCase(
   stats: TestStats,
   results: TestResults,
+  exitOnFail: boolean,
   { fn, name }: TestDefinition
 ): Promise<void> {
   const result: TestResult = results.cases.get(results.keys.get(name));
@@ -147,18 +147,20 @@ async function createTestCase(
 function initTestCases(
   stats: TestStats,
   results: TestResults,
-  tests: TestDefinition[]
+  tests: TestDefinition[],
+  exitOnFail: boolean
 ): Array<Promise<void>> {
-  return tests.map(createTestCase.bind(null, stats, results));
+  return tests.map(createTestCase.bind(null, stats, results, exitOnFail));
 }
 
 async function runTestsParallel(
   stats: TestStats,
   results: TestResults,
-  tests: TestDefinition[]
+  tests: TestDefinition[],
+  exitOnFail: boolean
 ): Promise<void> {
   try {
-    await Promise.all(initTestCases(stats, results, tests));
+    await Promise.all(initTestCases(stats, results, tests, exitOnFail));
   } catch (_) {
     // The error was thrown to stop awaiting all promises if exitOnFail === true
     // stats.failed has been incremented and the error stored in results
@@ -167,7 +169,8 @@ async function runTestsParallel(
 
 async function runTestsSerial(
   stats: TestStats,
-  tests: TestDefinition[]
+  tests: TestDefinition[],
+  exitOnFail: boolean
 ): Promise<void> {
   for (const { fn, name } of tests) {
     // See https://github.com/denoland/deno/pull/1452
@@ -193,18 +196,27 @@ async function runTestsSerial(
 /** Defines options for controlling execution details of a test suite. */
 export interface RunOptions {
   parallel?: boolean;
+  exitOnFail?: boolean;
+  only?: RegExp;
+  skip?: RegExp;
 }
 
 /**
  * Runs specified test cases.
  * Parallel execution can be enabled via the boolean option; default: serial.
  */
-export async function runTests({ parallel = false }: RunOptions = {}): Promise<
-  void
-> {
+export async function runTests({
+  parallel = false,
+  exitOnFail = false,
+  only = /[^\s]/,
+  skip = /^\s*$/
+}: RunOptions = {}): Promise<void> {
+  const tests: TestDefinition[] = candidates.filter(
+    ({ name }): boolean => only.test(name) && !skip.test(name)
+  );
   const stats: TestStats = {
     measured: 0,
-    ignored: 0,
+    ignored: candidates.length - tests.length,
     filtered: filtered,
     passed: 0,
     failed: 0
@@ -212,15 +224,15 @@ export async function runTests({ parallel = false }: RunOptions = {}): Promise<
   const results: TestResults = createTestResults(tests);
   console.log(`running ${tests.length} tests`);
   if (parallel) {
-    await runTestsParallel(stats, results, tests);
+    await runTestsParallel(stats, results, tests, exitOnFail);
   } else {
-    await runTestsSerial(stats, tests);
+    await runTestsSerial(stats, tests, exitOnFail);
   }
-  printResults(stats, results, parallel);
+  printResults(stats, results, parallel, exitOnFail);
   if (stats.failed) {
     // Use setTimeout to avoid the error being ignored due to unhandled
     // promise rejections being swallowed.
-    setTimeout(() => {
+    setTimeout((): void => {
       console.error(`There were ${stats.failed} test failures.`);
       Deno.exit(1);
     }, 0);

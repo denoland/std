@@ -17,7 +17,24 @@ export function isSubdir(
   const srcArray = src.split(sep);
   const destArray = dest.split(sep);
 
-  return srcArray.reduce((acc, current, i) => {
+  return srcArray.reduce((acc, current, i): boolean => {
     return acc && destArray[i] === current;
   }, true);
+}
+
+export type PathType = "file" | "dir" | "symlink";
+
+/**
+ * Get a human readable file type string.
+ *
+ * @param fileInfo A FileInfo describes a file and is returned by `stat`, `lstat`
+ */
+export function getFileInfoType(fileInfo: Deno.FileInfo): PathType {
+  return fileInfo.isFile()
+    ? "file"
+    : fileInfo.isDirectory()
+    ? "dir"
+    : fileInfo.isSymlink()
+    ? "symlink"
+    : undefined;
 }

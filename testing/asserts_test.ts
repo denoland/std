@@ -16,7 +16,7 @@ import {
 } from "./asserts.ts";
 import { test } from "./mod.ts";
 
-test(function testingEqual() {
+test(function testingEqual(): void {
   assert(equal("world", "world"));
   assert(!equal("hello", "world"));
   assert(equal(5, 5));
@@ -36,9 +36,19 @@ test(function testingEqual() {
       { hello: "world", hi: { there: "everyone else" } }
     )
   );
+  assert(equal(/deno/, /deno/));
+  assert(!equal(/deno/, /node/));
+  assert(equal(new Date(2019, 0, 3), new Date(2019, 0, 3)));
+  assert(!equal(new Date(2019, 0, 3), new Date(2019, 1, 3)));
+  assert(equal(new Set([1]), new Set([1])));
+  assert(!equal(new Set([1]), new Set([2])));
+  assert(equal(new Set([1, 2, 3]), new Set([3, 2, 1])));
+  assert(!equal(new Set([1, 2]), new Set([3, 2, 1])));
+  assert(!equal(new Set([1, 2, 3]), new Set([4, 5, 6])));
+  assert(equal(new Set("denosaurus"), new Set("denosaurussss")));
 });
 
-test(function testingNotEquals() {
+test(function testingNotEquals(): void {
   const a = { foo: "bar" };
   const b = { bar: "foo" };
   assertNotEquals(a, b);
@@ -54,7 +64,7 @@ test(function testingNotEquals() {
   assertEquals(didThrow, true);
 });
 
-test(function testingAssertStringContains() {
+test(function testingAssertStringContains(): void {
   assertStrContains("Denosaurus", "saur");
   assertStrContains("Denosaurus", "Deno");
   assertStrContains("Denosaurus", "rus");
@@ -69,7 +79,7 @@ test(function testingAssertStringContains() {
   assertEquals(didThrow, true);
 });
 
-test(function testingArrayContains() {
+test(function testingArrayContains(): void {
   const fixture = ["deno", "iz", "luv"];
   const fixtureObject = [{ deno: "luv" }, { deno: "Js" }];
   assertArrayContains(fixture, ["deno"]);
@@ -85,7 +95,7 @@ test(function testingArrayContains() {
   assertEquals(didThrow, true);
 });
 
-test(function testingAssertStringContainsThrow() {
+test(function testingAssertStringContainsThrow(): void {
   let didThrow = false;
   try {
     assertStrContains("Denosaurus from Jurassic", "Raptor");
@@ -100,11 +110,11 @@ test(function testingAssertStringContainsThrow() {
   assert(didThrow);
 });
 
-test(function testingAssertStringMatching() {
+test(function testingAssertStringMatching(): void {
   assertMatch("foobar@deno.com", RegExp(/[a-zA-Z]+@[a-zA-Z]+.com/));
 });
 
-test(function testingAssertStringMatchingThrows() {
+test(function testingAssertStringMatchingThrows(): void {
   let didThrow = false;
   try {
     assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
@@ -119,7 +129,7 @@ test(function testingAssertStringMatchingThrows() {
   assert(didThrow);
 });
 
-test(function testingAssertsUnimplemented() {
+test(function testingAssertsUnimplemented(): void {
   let didThrow = false;
   try {
     unimplemented();
@@ -131,7 +141,7 @@ test(function testingAssertsUnimplemented() {
   assert(didThrow);
 });
 
-test(function testingAssertsUnreachable() {
+test(function testingAssertsUnreachable(): void {
   let didThrow = false;
   try {
     unreachable();
@@ -143,10 +153,10 @@ test(function testingAssertsUnreachable() {
   assert(didThrow);
 });
 
-test(function testingAssertFail() {
+test(function testingAssertFail(): void {
   assertThrows(fail, AssertionError, "Failed assertion.");
   assertThrows(
-    () => {
+    (): void => {
       fail("foo");
     },
     AssertionError,

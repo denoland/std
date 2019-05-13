@@ -2,10 +2,14 @@
 
 import { test } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
-import { isSubdir } from "./utils.ts";
+import { isSubdir, getFileInfoType, PathType } from "./utils.ts";
 import * as path from "./path/mod.ts";
+import { ensureFileSync } from "./ensure_file.ts";
+import { ensureDirSync } from "./ensure_dir.ts";
 
-test(function _isSubdir() {
+const testdataDir = path.resolve("fs", "testdata");
+
+test(function _isSubdir(): void {
   const pairs = [
     ["", "", false, path.posix.sep],
     ["/first/second", "/first", false, path.posix.sep],
@@ -17,7 +21,7 @@ test(function _isSubdir() {
     ["c:\\first", "c:\\first\\second", true, path.win32.sep]
   ];
 
-  pairs.forEach(function(p) {
+  pairs.forEach(function(p): void {
     const src = p[0] as string;
     const dest = p[1] as string;
     const expected = p[2] as boolean;
@@ -27,5 +31,34 @@ test(function _isSubdir() {
       expected,
       `'${src}' should ${expected ? "" : "not"} be parent dir of '${dest}'`
     );
+  });
+});
+
+test(function _getFileInfoType(): void {
+  const pairs = [
+    [path.join(testdataDir, "file_type_1"), "file"],
+    [path.join(testdataDir, "file_type_dir_1"), "dir"]
+  ];
+
+  pairs.forEach(function(p): void {
+    const filePath = p[0] as string;
+    const type = p[1] as PathType;
+    switch (type) {
+      case "file":
+        ensureFileSync(filePath);
+        break;
+      case "dir":
+        ensureDirSync(filePath);
+        break;
+      case "symlink":
+        // TODO(axetroy): test symlink
+        break;
+    }
+
+    const stat = Deno.statSync(filePath);
+
+    Deno.removeSync(filePath, { recursive: true });
+
+    assertEquals(getFileInfoType(stat), type);
   });
 });
