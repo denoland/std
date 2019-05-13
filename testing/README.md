@@ -9,17 +9,22 @@ The module exports a `test` function which is the test harness in Deno. It
 accepts either a function (including async functions) or an object which
 contains a `name` property and a `fn` property. When running tests and
 outputting the results, the name of the past function is used, or if the
-object is passed, the `name` property is used to identify the test.
+object is passed, the `name` property is used to identify the test. If the assertion is false an `AssertionError` will be thrown.
 
 Asserts are exposed in `testing/asserts.ts` module.
 
-- `equal` - Deep comparision function, where `actual` and `expected` are
+- `equal()` - Deep comparision function, where `actual` and `expected` are
   compared deeply, and if they vary, `equal` returns `false`.
 - `assert()` - Expects a boolean value, throws if the value is `false`.
 - `assertEquals()` - Uses the `equal` comparison and throws if the `actual` and
   `expected` are not equal.
+- `assertNotEquals()` - Uses the `equal` comparison and throws if the `actual` and
+  `expected` are equal.
 - `assertStrictEq()` - Compares `actual` and `expected` strictly, therefore
   for non-primitives the values must reference the same instance.
+- `assertStrContains()` - Make an assertion that `actual` contains `expected`.
+- `assertMatch()` - Make an assertion that `actual` match RegExp `expected`.
+- `assertArrayContains()` - Make an assertion that `actual` array contains the `expected` values.
 - `assertThrows()` - Expects the passed `fn` to throw. If `fn` does not throw,
   this function does. Also compares any errors thrown to an optional expected
   `Error` class and checks that the error `.message` includes an optional
@@ -29,8 +34,13 @@ Asserts are exposed in `testing/asserts.ts` module.
   function will throw asynchronously. Also compares any errors thrown to an
   optional expected `Error` class and checks that the error `.message` includes
   an optional string.
+- `unimplemented()` - Use this to stub out methods that will throw when invoked
+- `unreachable()` - Used to assert unreachable code
 
-`runTests()` executes the declared tests.
+`runTests()` executes the declared tests. It accepts a `RunOptions` parameter:
+
+- parallel : Execute tests in a parallel way.
+- exitOnFail : if one test fails, test will throw an error and stop the tests. If not all tests will be processed.
 
 Basic usage:
 
@@ -40,9 +50,9 @@ import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 
 test({
   name: "testing example",
-  fn() {
-    assertEquals("world", "world"));
-    assertEquals({ hello: "world" }, { hello: "world" }));
+  fn(): void {
+    assertEquals("world", "world");
+    assertEquals({ hello: "world" }, { hello: "world" });
   }
 });
 
@@ -52,23 +62,23 @@ runTests();
 Short syntax (named function instead of object):
 
 ```ts
-test(function example() {
-    assertEquals("world", "world"));
-    assertEquals({ hello: "world" }, { hello: "world" }));
+test(function example(): void {
+  assertEquals("world", "world");
+  assertEquals({ hello: "world" }, { hello: "world" });
 });
 ```
 
 Using `assertStrictEq()`:
 
 ```ts
-test(function isStrictlyEqual() {
+test(function isStrictlyEqual(): void {
   const a = {};
   const b = a;
   assertStrictEq(a, b);
 });
 
 // This test fails
-test(function isNotStrictlyEqual() {
+test(function isNotStrictlyEqual(): void {
   const a = {};
   const b = {};
   assertStrictEq(a, b);
@@ -78,15 +88,17 @@ test(function isNotStrictlyEqual() {
 Using `assertThrows()`:
 
 ```ts
-test(function doesThrow() {
-  assertThrows(() => {
-    throw new TypeError("hello world!");
-  });
-  assertThrows(() => {
+test(function doesThrow(): void {
+  assertThrows(
+    (): void => {
+      throw new TypeError("hello world!");
+    }
+  );
+  assertThrows((): void => {
     throw new TypeError("hello world!");
   }, TypeError);
   assertThrows(
-    () => {
+    (): void => {
       throw new TypeError("hello world!");
     },
     TypeError,
@@ -95,40 +107,48 @@ test(function doesThrow() {
 });
 
 // This test will not pass
-test(function fails() {
-  assertThrows(() => {
-    console.log("Hello world");
-  });
+test(function fails(): void {
+  assertThrows(
+    (): void => {
+      console.log("Hello world");
+    }
+  );
 });
 ```
 
 Using `assertThrowsAsync()`:
 
 ```ts
-test(async function doesThrow() {
-  assertThrowsAsync(async () => {
-    throw new TypeError("hello world!");
-  });
-  assertThrowsAsync(async () => {
+test(async function doesThrow(): Promise<void> {
+  await assertThrowsAsync(
+    async (): Promise<void> => {
+      throw new TypeError("hello world!");
+    }
+  );
+  await assertThrowsAsync(async (): Promise<void> => {
     throw new TypeError("hello world!");
   }, TypeError);
-  assertThrowsAsync(
-    async () => {
+  await assertThrowsAsync(
+    async (): Promise<void> => {
       throw new TypeError("hello world!");
     },
     TypeError,
     "hello"
   );
-  assertThrowsAsync(async () => {
-    return Promise.reject(new Error());
-  });
+  await assertThrowsAsync(
+    async (): Promise<void> => {
+      return Promise.reject(new Error());
+    }
+  );
 });
 
 // This test will not pass
-test(async function fails() {
-  assertThrowsAsync(async () => {
-    console.log("Hello world");
-  });
+test(async function fails(): Promise<void> {
+  await assertThrowsAsync(
+    async (): Promise<void> => {
+      console.log("Hello world");
+    }
+  );
 });
 ```
 
@@ -139,7 +159,7 @@ Basic usage:
 ```ts
 import { runBenchmarks, bench } from "https://deno.land/std/testing/bench.ts";
 
-bench(function forIncrementX1e9(b) {
+bench(function forIncrementX1e9(b): void {
   b.start();
   for (let i = 0; i < 1e9; i++);
   b.stop();
@@ -154,7 +174,7 @@ Averaging execution time over multiple runs:
 bench({
   name: "runs100ForIncrementX1e6",
   runs: 100,
-  func(b) {
+  func(b): void {
     b.start();
     for (let i = 0; i < 1e6; i++);
     b.stop();

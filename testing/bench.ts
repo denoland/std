@@ -61,10 +61,10 @@ function assertTiming(clock: BenchmarkClock): void {
 function createBenchmarkTimer(clock: BenchmarkClock): BenchmarkTimer {
   return {
     start(): void {
-      clock.start = Date.now();
+      clock.start = performance.now();
     },
     stop(): void {
-      clock.stop = Date.now();
+      clock.stop = performance.now();
     }
   };
 }
@@ -96,7 +96,7 @@ export async function runBenchmarks({
 }: BenchmarkRunOptions = {}): Promise<void> {
   // Filtering candidates by the "only" and "skip" constraint
   const benchmarks: BenchmarkDefinition[] = candidates.filter(
-    ({ name }) => only.test(name) && !skip.test(name)
+    ({ name }): boolean => only.test(name) && !skip.test(name)
   );
   // Init main counters and error flag
   const filtered = candidates.length - benchmarks.length;
@@ -164,7 +164,7 @@ export async function runBenchmarks({
   );
   // Making sure the program exit code is not zero in case of failure
   if (failed) {
-    setTimeout(() => exit(1), 0);
+    setTimeout((): void => exit(1), 0);
   }
 }
 
