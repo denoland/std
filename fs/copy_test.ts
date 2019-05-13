@@ -13,18 +13,20 @@ import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
 
-test(async function copyIfNotExists() {
+test(async function copyIfNotExists(): Promise<void> {
   const srcFile = path.join(testdataDir, "copy_file_not_exists.txt");
   const destFile = path.join(testdataDir, "copy_file_not_exists_1.txt");
-  await assertThrowsAsync(async () => {
-    await copy(srcFile, destFile);
-  });
+  await assertThrowsAsync(
+    async (): Promise<void> => {
+      await copy(srcFile, destFile);
+    }
+  );
 });
 
-test(async function copyIfNotExists() {
+test(async function copyIfNotExists(): Promise<void> {
   const srcFile = path.join(testdataDir, "copy_file_same.txt");
   await assertThrowsAsync(
-    async () => {
+    async (): Promise<void> => {
       await copy(srcFile, srcFile);
     },
     Error,
@@ -32,7 +34,7 @@ test(async function copyIfNotExists() {
   );
 });
 
-test(async function copyFile() {
+test(async function copyFile(): Promise<void> {
   const srcFile = path.join(testdataDir, "copy_file.txt");
   const destFile = path.join(testdataDir, "copy_file_copy.txt");
 
@@ -52,7 +54,7 @@ test(async function copyFile() {
 
   // copy again. it should throw a error
   await assertThrowsAsync(
-    async () => {
+    async (): Promise<void> => {
       await copy(srcFile, destFile);
     },
     Error,
@@ -76,14 +78,14 @@ test(async function copyFile() {
   await Deno.remove(destFile);
 });
 
-test(async function copyDirectoryFromParentDir() {
+test(async function copyDirectoryFromParentDir(): Promise<void> {
   const srcDir = path.join(testdataDir, "parent");
   const destDir = path.join(srcDir, "child");
 
   await ensureDir(srcDir);
 
   await assertThrowsAsync(
-    async () => {
+    async (): Promise<void> => {
       await copy(srcDir, destDir);
     },
     Error,
@@ -93,7 +95,7 @@ test(async function copyDirectoryFromParentDir() {
   await Deno.remove(srcDir, { recursive: true });
 });
 
-test(async function copyDirectoryDestNotIsDir() {
+test(async function copyDirectoryDestNotIsDir(): Promise<void> {
   const srcDir = path.join(testdataDir, "parent");
   const destDir = path.join(testdataDir, "child.txt");
 
@@ -101,7 +103,7 @@ test(async function copyDirectoryDestNotIsDir() {
   await ensureFile(destDir);
 
   await assertThrowsAsync(
-    async () => {
+    async (): Promise<void> => {
       await copy(srcDir, destDir);
     },
     Error,
@@ -112,7 +114,7 @@ test(async function copyDirectoryDestNotIsDir() {
   await Deno.remove(destDir, { recursive: true });
 });
 
-test(async function copyDirectory() {
+test(async function copyDirectory(): Promise<void> {
   const srcDir = path.join(testdataDir, "copy_dir");
   const destDir = path.join(testdataDir, "copy_dir_copy");
   const srcFile = path.join(srcDir, "0.txt");
@@ -137,7 +139,7 @@ test(async function copyDirectory() {
 
   // copy again. it should throw a error
   await assertThrowsAsync(
-    async () => {
+    async (): Promise<void> => {
       await copy(srcDir, destDir);
     },
     Error,
@@ -163,7 +165,7 @@ test(async function copyDirectory() {
   await Deno.remove(destDir, { recursive: true });
 });
 
-test(async function copyLinkFile() {
+test(async function copyLinkFile(): Promise<void> {
   const dir = path.join(testdataDir, "copy_dir_link_file");
   const srcLink = path.join(dir, "0.txt"); // this is a file link
   const destLink = path.join(dir, "0-copy.txt"); // this is a file link
@@ -172,7 +174,7 @@ test(async function copyLinkFile() {
   await Deno.remove(destLink, { recursive: true });
 });
 
-test(async function copyLinkDir() {
+test(async function copyLinkDir(): Promise<void> {
   const dir = path.join(testdataDir, "copy_dir_link_file");
   const srcLink = path.join(dir, "0.txt"); // this is a file link
   const destLink = path.join(dir, "0-copy.txt"); // this is a file link
@@ -181,18 +183,20 @@ test(async function copyLinkDir() {
   await Deno.remove(destLink, { recursive: true });
 });
 
-test(function copySyncIfNotExists() {
+test(function copySyncIfNotExists(): void {
   const srcFile = path.join(testdataDir, "copy_file_not_exists_sync.txt");
   const destFile = path.join(testdataDir, "copy_file_not_exists_1_sync.txt");
-  assertThrows(() => {
-    copySync(srcFile, destFile);
-  });
+  assertThrows(
+    (): void => {
+      copySync(srcFile, destFile);
+    }
+  );
 });
 
-test(function copySyncIfNotExists() {
+test(function copySyncIfNotExists(): void {
   const srcFile = path.join(testdataDir, "copy_file_same_sync.txt");
   assertThrows(
-    () => {
+    (): void => {
       copySync(srcFile, srcFile);
     },
     Error,
@@ -200,7 +204,7 @@ test(function copySyncIfNotExists() {
   );
 });
 
-test(function copySyncFile() {
+test(function copySyncFile(): void {
   const srcFile = path.join(testdataDir, "copy_file.txt");
   const destFile = path.join(testdataDir, "copy_file_copy_sync.txt");
 
@@ -220,7 +224,7 @@ test(function copySyncFile() {
 
   // copy again. it should throw a error
   assertThrows(
-    () => {
+    (): void => {
       copySync(srcFile, destFile);
     },
     Error,
@@ -244,14 +248,14 @@ test(function copySyncFile() {
   Deno.removeSync(destFile);
 });
 
-test(function copySyncDirectoryFromParentDir() {
+test(function copySyncDirectoryFromParentDir(): void {
   const srcDir = path.join(testdataDir, "parent_sync");
   const destDir = path.join(srcDir, "child");
 
   ensureDirSync(srcDir);
 
   assertThrows(
-    () => {
+    (): void => {
       copySync(srcDir, destDir);
     },
     Error,
@@ -261,7 +265,7 @@ test(function copySyncDirectoryFromParentDir() {
   Deno.removeSync(srcDir, { recursive: true });
 });
 
-test(function copySyncDirectoryDestNotIsDir() {
+test(function copySyncDirectoryDestNotIsDir(): void {
   const srcDir = path.join(testdataDir, "parent_sync");
   const destDir = path.join(testdataDir, "child.txt");
 
@@ -269,7 +273,7 @@ test(function copySyncDirectoryDestNotIsDir() {
   ensureFileSync(destDir);
 
   assertThrows(
-    () => {
+    (): void => {
       copySync(srcDir, destDir);
     },
     Error,
@@ -280,7 +284,7 @@ test(function copySyncDirectoryDestNotIsDir() {
   Deno.removeSync(destDir, { recursive: true });
 });
 
-test(function copySyncDirectory() {
+test(function copySyncDirectory(): void {
   const srcDir = path.join(testdataDir, "copy_dir");
   const destDir = path.join(testdataDir, "copy_dir_copy_sync");
   const srcFile = path.join(srcDir, "0.txt");
@@ -305,7 +309,7 @@ test(function copySyncDirectory() {
 
   // copy again. it should throw a error
   assertThrows(
-    () => {
+    (): void => {
       copySync(srcDir, destDir);
     },
     Error,

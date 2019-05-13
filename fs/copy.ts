@@ -1,10 +1,12 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import * as path from "./path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
-import { isSubdir } from "./utils.ts";
+import { isSubdir, getFileInfoType } from "./utils.ts";
 
 export interface CopyOptions {
-  /* overwrite existing file or directory, default is false */
+  /**
+   * overwrite existing file or directory, default `false`
+   */
   overwrite?: boolean;
 }
 
@@ -12,31 +14,22 @@ export interface CopyOptions {
 async function copyFile(src: string, dest: string): Promise<void> {
   await Deno.copyFile(src, dest);
 }
-
+/* copy file to dest synchronously */
 function copyFileSync(src: string, dest: string): void {
   Deno.copyFileSync(src, dest);
 }
 
 /* copy link to dest */
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 async function copyLink(src: string, dest: string): Promise<void> {
-  let type = "";
   const originSrcFilePath = await Deno.readlink(src);
-  if (Deno.platform.os === "win") {
-    const srcStat = await Deno.stat(src);
-    type = srcStat.isDirectory() ? "dir" : "file";
-  }
+  const type = getFileInfoType(await Deno.lstat(src));
   await Deno.symlink(originSrcFilePath, dest, type);
 }
 
-/* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+/* copy link to dest synchronously */
 function copyLinkSync(src: string, dest: string): void {
-  let type = "";
   const originSrcFilePath = Deno.readlinkSync(src);
-  if (Deno.platform.os === "win") {
-    const srcStat = Deno.statSync(src);
-    type = srcStat.isDirectory() ? "dir" : "file";
-  }
+  const type = getFileInfoType(Deno.lstatSync(src));
   Deno.symlinkSync(originSrcFilePath, dest, type);
 }
 
@@ -57,6 +50,7 @@ async function copyDir(src: string, dest: string): Promise<void> {
   }
 }
 
+/* copy folder from src to dest synchronously */
 function copyDirSync(src: string, dest: string): void {
   const files = Deno.readDirSync(src);
   ensureDirSync(dest);
@@ -99,7 +93,9 @@ export async function copy(
     );
   }
 
-  const destStat = await Deno.lstat(dest).catch(() => null);
+  const destStat = await Deno.lstat(dest).catch(
+    (): Promise<void> => Promise.resolve(undefined)
+  );
 
   async function destOverwriteCheck(): Promise<void> {
     // if dest exists
