@@ -7,10 +7,10 @@ import { decode } from "../strings/strings.ts";
 import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 
-async function main() {
+async function main(): Promise<void> {
   const sock = await connectWebSocket("ws://127.0.0.1:8080");
   console.log("ws connected!");
-  (async function() {
+  (async function(): Promise<void> {
     for await (const msg of sock.receive()) {
       if (typeof msg === "string") {
         console.log("string: " + msg);

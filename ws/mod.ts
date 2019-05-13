@@ -200,8 +200,8 @@ export async function* receiveFrame(
 
 // Create client-to-server mask, random 32bit number
 function createMask(): Uint8Array {
-  const arr = Array.from({ length: 4 }).map(() =>
-    Math.round(Math.random() * 0xff)
+  const arr = Array.from({ length: 4 }).map(
+    (): number => Math.round(Math.random() * 0xff)
   );
   return new Uint8Array(arr);
 }
@@ -411,6 +411,18 @@ export async function acceptWebSocket(req: {
   throw new Error("request is not acceptable");
 }
 
+const kSecChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.~_";
+
+// create WebSocket-Sec-Key. encoded 16bytes string
+export function createSecKey(): string {
+  let key = "";
+  for (let i = 0; i < 16; i++) {
+    const j = Math.round(Math.random() * kSecChars.length);
+    key += kSecChars[j];
+  }
+  return btoa(key);
+}
+
 export async function connectWebSocket(
   endpoint: string,
   headers: Headers = new Headers()
@@ -426,7 +438,7 @@ export async function connectWebSocket(
     }
   }
   const conn = await Deno.dial("tcp", `${hostname}:${port}`);
-  const abortHandshake = (err: Error) => {
+  const abortHandshake = (err: Error): void => {
     conn.close();
     throw err;
   };
@@ -487,16 +499,4 @@ export async function connectWebSocket(
     bufWriter,
     bufReader
   });
-}
-
-const kSecChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.~_";
-
-// create WebSocket-Sec-Key. encoded 16bytes string
-export function createSecKey(): string {
-  let key = "";
-  for (let i = 0; i < 16; i++) {
-    const j = Math.round(Math.random() * kSecChars.length);
-    key += kSecChars[j];
-  }
-  return btoa(key);
 }
