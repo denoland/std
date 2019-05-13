@@ -164,7 +164,7 @@ test(function testAcceptableInvalid(): void {
   }
 });
 
-test(async function testWriteReadMaskedFrame(): void {
+test(async function testWriteReadMaskedFrame(): Promise<void> {
   const mask = new Uint8Array([0, 1, 2, 3]);
   const msg = "hello";
   const buf = new Buffer();
