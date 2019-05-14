@@ -4,8 +4,6 @@ import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { exists, existsSync } from "./exists.ts";
 import { getFileInfoType } from "./utils.ts";
 
-const isWindows = Deno.platform.os === "win";
-
 /**
  * Ensures that the link exists.
  * If the directory structure does not exist, it is created.
