@@ -19,15 +19,15 @@ function copyFileSync(src: string, dest: string): void {
   Deno.copyFileSync(src, dest);
 }
 
-/* copy link to dest */
-async function copyLink(src: string, dest: string): Promise<void> {
+/* copy symlink to dest */
+async function copySymLink(src: string, dest: string): Promise<void> {
   const originSrcFilePath = await Deno.readlink(src);
   const type = getFileInfoType(await Deno.lstat(src));
   await Deno.symlink(originSrcFilePath, dest, type);
 }
 
-/* copy link to dest synchronously */
-function copyLinkSync(src: string, dest: string): void {
+/* copy symlink to dest synchronously */
+function copySymlinkSync(src: string, dest: string): void {
   const originSrcFilePath = Deno.readlinkSync(src);
   const type = getFileInfoType(Deno.lstatSync(src));
   Deno.symlinkSync(originSrcFilePath, dest, type);
@@ -45,7 +45,7 @@ async function copyDir(src: string, dest: string): Promise<void> {
     } else if (file.isFile()) {
       await copyFile(srcPath, destPath);
     } else if (file.isSymlink()) {
-      await copyLink(srcPath, destPath);
+      await copySymLink(srcPath, destPath);
     }
   }
 }
@@ -62,7 +62,7 @@ function copyDirSync(src: string, dest: string): void {
     } else if (file.isFile()) {
       copyFileSync(srcPath, destPath);
     } else if (file.isSymlink()) {
-      copyLinkSync(srcPath, destPath);
+      copySymlinkSync(srcPath, destPath);
     }
   }
 }
@@ -130,7 +130,7 @@ export async function copy(
     if (destStat) {
       await destOverwriteCheck();
     }
-    await copyLink(src, dest);
+    await copySymLink(src, dest);
   }
 }
 
@@ -201,6 +201,6 @@ export function copySync(
     if (destStat) {
       destOverwriteCheck();
     }
-    copyLinkSync(src, dest);
+    copySymlinkSync(src, dest);
   }
 }
