@@ -12,7 +12,6 @@
 // This script formats the given source files. If the files are omitted, it
 // formats the all files in the repository.
 const { args, exit, readFile, writeFile } = Deno;
-type FileInfo = Deno.FileInfo;
 import { glob } from "../fs/glob.ts";
 import { walk, WalkInfo } from "../fs/walk.ts";
 import { parse } from "../flags/mod.ts";
