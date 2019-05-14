@@ -2,7 +2,6 @@
 
 import { decode, encode } from "../strings/strings.ts";
 
-const { Buffer } = Deno;
 type Conn = Deno.Conn;
 type Writer = Deno.Writer;
 import { BufReader, BufWriter } from "../io/bufio.ts";

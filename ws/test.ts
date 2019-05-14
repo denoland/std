@@ -15,7 +15,7 @@ import { encode } from "../strings/strings.ts";
 
 const { Buffer } = Deno;
 
-test(async function testReadUnmaskedTextFrame(): Promise<void> {
+test(async function wsReadUnmaskedTextFrame(): Promise<void> {
   // unmasked single text frame with payload "Hello"
   const buf = new BufReader(
     new Buffer(new Uint8Array([0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f]))
@@ -27,7 +27,7 @@ test(async function testReadUnmaskedTextFrame(): Promise<void> {
   assertEquals(frame.isLastFrame, true);
 });
 
-test(async function testReadMaskedTextFrame(): Promise<void> {
+test(async function wsReadMaskedTextFrame(): Promise<void> {
   //a masked single text frame with payload "Hello"
   const buf = new BufReader(
     new Buffer(
@@ -54,7 +54,7 @@ test(async function testReadMaskedTextFrame(): Promise<void> {
   assertEquals(frame.isLastFrame, true);
 });
 
-test(async function testReadUnmaskedSplitTextFrames(): Promise<void> {
+test(async function wsReadUnmaskedSplitTextFrames(): Promise<void> {
   const buf1 = new BufReader(
     new Buffer(new Uint8Array([0x01, 0x03, 0x48, 0x65, 0x6c]))
   );
@@ -73,7 +73,7 @@ test(async function testReadUnmaskedSplitTextFrames(): Promise<void> {
   assertEquals(new Buffer(f2.payload).toString(), "lo");
 });
 
-test(async function testReadUnmaskedPingPongFrame(): Promise<void> {
+test(async function wsReadUnmaskedPingPongFrame(): Promise<void> {
   // unmasked ping with payload "Hello"
   const buf = new BufReader(
     new Buffer(new Uint8Array([0x89, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f]))
@@ -106,7 +106,7 @@ test(async function testReadUnmaskedPingPongFrame(): Promise<void> {
   assertEquals(new Buffer(pong.payload).toString(), "Hello");
 });
 
-test(async function testReadUnmaksedBigBinaryFrame(): Promise<void> {
+test(async function wsReadUnmaskedBigBinaryFrame(): Promise<void> {
   const a = [0x82, 0x7e, 0x01, 0x00];
   for (let i = 0; i < 256; i++) {
     a.push(i);
@@ -119,7 +119,7 @@ test(async function testReadUnmaksedBigBinaryFrame(): Promise<void> {
   assertEquals(bin.payload.length, 256);
 });
 
-test(async function testReadUnmaskedBigBigBinaryFrame(): Promise<void> {
+test(async function wsReadUnmaskedBigBigBinaryFrame(): Promise<void> {
   const a = [0x82, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00];
   for (let i = 0; i < 0xffff; i++) {
     a.push(i);
@@ -132,13 +132,13 @@ test(async function testReadUnmaskedBigBigBinaryFrame(): Promise<void> {
   assertEquals(bin.payload.length, 0xffff + 1);
 });
 
-test(async function testCreateSecAccept(): Promise<void> {
+test(async function wsCreateSecAccept(): Promise<void> {
   const nonce = "dGhlIHNhbXBsZSBub25jZQ==";
   const d = createSecAccept(nonce);
   assertEquals(d, "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
 });
 
-test(function testAcceptable(): void {
+test(function wsAcceptable(): void {
   const ret = acceptable({
     headers: new Headers({
       upgrade: "websocket",
@@ -155,7 +155,7 @@ const invalidHeaders = [
   { upgrade: "websocket", "sec-websocket-ky": "" }
 ];
 
-test(function testAcceptableInvalid(): void {
+test(function wsAcceptableInvalid(): void {
   for (const pat of invalidHeaders) {
     const ret = acceptable({
       headers: new Headers(pat)
@@ -164,7 +164,7 @@ test(function testAcceptableInvalid(): void {
   }
 });
 
-test(async function testWriteReadMaskedFrame(): Promise<void> {
+test(async function wsWriteReadMaskedFrame(): Promise<void> {
   const mask = new Uint8Array([0, 1, 2, 3]);
   const msg = "hello";
   const buf = new Buffer();
