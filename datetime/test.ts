@@ -74,3 +74,21 @@ test(function DayOfYear(): void {
 test(function currentDayOfYear(): void {
   assertEquals(datetime.currentDayOfYear(), datetime.dayOfYear(new Date()));
 });
+
+test({
+  name: "[DateTime] to IMF",
+  fn(): void {
+    const actual = datetime.toIMF(new Date(Date.UTC(1994, 3, 5, 15, 32)));
+    const expected = "Tue, 05 May 1994 15:32:00 GMT";
+    assertEquals(actual, expected);
+  }
+});
+
+test({
+  name: "[DateTime] to IMF 0",
+  fn(): void {
+    const actual = datetime.toIMF(new Date(0));
+    const expected = "Thus, 01 Jan 1970 00:00:00 GMT";
+    assertEquals(actual, expected);
+  }
+});

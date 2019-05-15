@@ -20,6 +20,7 @@ async function run(
 
 const cmd = [
   execPath,
+  "run",
   "--allow-run",
   "--allow-write",
   "--allow-read",
@@ -62,8 +63,8 @@ test(async function testPrettierCheckAndFormatFiles(): Promise<void> {
   assertEquals(code, 0);
   assertEquals(
     normalizeOutput(stdout),
-    `Formatting ./prettier/testdata/0.ts
-Formatting ./prettier/testdata/1.js`
+    `Formatting prettier/testdata/0.ts
+Formatting prettier/testdata/1.js`
   );
 
   var { code, stdout } = await run([...cmd, "--check", ...files]);
@@ -86,10 +87,10 @@ test(async function testPrettierCheckAndFormatDirs(): Promise<void> {
   assertEquals(code, 0);
   assertEquals(
     normalizeOutput(stdout),
-    `Formatting ./prettier/testdata/bar/0.ts
-Formatting ./prettier/testdata/bar/1.js
-Formatting ./prettier/testdata/foo/0.ts
-Formatting ./prettier/testdata/foo/1.js`
+    `Formatting prettier/testdata/bar/0.ts
+Formatting prettier/testdata/bar/1.js
+Formatting prettier/testdata/foo/0.ts
+Formatting prettier/testdata/foo/1.js`
   );
 
   var { code, stdout } = await run([...cmd, "--check", ...dirs]);
