@@ -245,9 +245,7 @@ test({
     if (isWindows) {
       await assertThrowsAsync(
         // (): Promise<void> => copy(srcLink, destLink),
-        (): Promise<void> => ensureSymlink(srcLink, destLink),
-        Error,
-        "Not implemented"
+        (): Promise<void> => ensureSymlink(srcLink, destLink)
       );
       return;
     }
@@ -277,9 +275,7 @@ test({
     if (isWindows) {
       await assertThrowsAsync(
         // (): Promise<void> => copy(srcLink, destLink),
-        (): Promise<void> => ensureSymlink(srcLink, destLink),
-        Error,
-        "Not implemented"
+        (): Promise<void> => ensureSymlink(srcLink, destLink)
       );
       return;
     }
@@ -510,9 +506,7 @@ test({
     if (isWindows) {
       assertThrows(
         // (): void => copySync(srcLink, destLink),
-        (): void => ensureSymlinkSync(srcLink, destLink),
-        Error,
-        "Not implemented"
+        (): void => ensureSymlinkSync(srcLink, destLink)
       );
       return;
     }
@@ -542,9 +536,7 @@ test({
     if (isWindows) {
       assertThrows(
         // (): void => copySync(srcLink, destLink),
-        (): void => ensureSymlinkSync(srcLink, destLink),
-        Error,
-        "Not implemented"
+        (): void => ensureSymlinkSync(srcLink, destLink)
       );
       return;
     }
