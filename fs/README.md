@@ -129,7 +129,6 @@ moveSync("./foo", "./existingFolder", { overwrite: true });
 // Will overwrite existingFolder
 ```
 
-
 ### copy
 
 copy a file or directory. Overwrites it if option provided
@@ -142,6 +141,7 @@ copySync("./foo", "./bar"); // void
 copySync("./foo", "./existingFolder", { overwrite: true });
 // Will overwrite existingFolder
 ```
+
 ### readJson
 
 Reads a JSON file and then parses it into an object
