@@ -24,7 +24,9 @@ async function ensureValidCopy(
 ): Promise<Deno.FileInfo> {
   let destStat: Deno.FileInfo;
 
-  destStat = await Deno.lstat(dest).catch(() => Promise.resolve(undefined));
+  destStat = await Deno.lstat(dest).catch(
+    (): Promise<void> => Promise.resolve(undefined)
+  );
 
   if (destStat) {
     if (isCopyFolder && !destStat.isDirectory()) {
