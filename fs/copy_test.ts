@@ -11,6 +11,7 @@ import { exists, existsSync } from "./exists.ts";
 import * as path from "./path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
+import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
 
@@ -238,11 +239,16 @@ test({
     const srcLink = path.join(dir, "0.txt"); // this is a file link
     const destLink = path.join(dir, "0-copy.txt"); // this is a file link
 
+    assert(
+      (await Deno.lstat(srcLink)).isSymlink(),
+      `'${srcLink}' should be symlink type`
+    );
+
     await copy(srcLink, destLink);
 
     const statInfo = await Deno.lstat(destLink);
 
-    assert(statInfo.isSymlink());
+    assert(statInfo.isSymlink(), `'${destLink}' should be symlink type`);
 
     await Deno.remove(destLink, { recursive: true });
   }
@@ -251,9 +257,11 @@ test({
 test({
   name: "[fs] copy symlink folder",
   async fn(): Promise<void> {
-    const dir = path.join(testdataDir, "copy_dir_link_file");
-    const srcLink = path.join(dir, "0.txt"); // this is a file link
-    const destLink = path.join(dir, "0-copy.txt"); // this is a file link
+    const srcOrigin = path.join(testdataDir, "copy_dir");
+    const srcLink = path.join(testdataDir, "copy_dir_link"); // this is a dir link
+    const destLink = path.join(testdataDir, "copy_dir_link-copy");
+
+    await ensureSymlink(srcOrigin, srcLink);
 
     await copy(srcLink, destLink);
 
@@ -261,7 +269,8 @@ test({
 
     assert(statInfo.isSymlink());
 
-    await Deno.remove(destLink, { recursive: true });
+    Deno.removeSync(srcLink, { recursive: true });
+    Deno.removeSync(destLink, { recursive: true });
   }
 });
 
@@ -470,11 +479,16 @@ test({
     const srcLink = path.join(dir, "0.txt"); // this is a file link
     const destLink = path.join(dir, "0-copy.txt"); // this is a file link
 
+    assert(
+      Deno.lstatSync(srcLink).isSymlink(),
+      `'${srcLink}' should be symlink type`
+    );
+
     copySync(srcLink, destLink);
 
     const statInfo = Deno.lstatSync(destLink);
 
-    assert(statInfo.isSymlink());
+    assert(statInfo.isSymlink(), `'${destLink}' should be symlink type`);
 
     Deno.removeSync(destLink, { recursive: true });
   }
@@ -483,9 +497,11 @@ test({
 test({
   name: "[fs] copy symlink folder synchronously",
   fn(): void {
-    const dir = path.join(testdataDir, "copy_dir_link_file");
-    const srcLink = path.join(dir, "0.txt"); // this is a file link
-    const destLink = path.join(dir, "0-copy.txt"); // this is a file link
+    const srcOrigin = path.join(testdataDir, "copy_dir");
+    const srcLink = path.join(testdataDir, "copy_dir_link"); // this is a dir link
+    const destLink = path.join(testdataDir, "copy_dir_link-copy");
+
+    ensureSymlinkSync(srcOrigin, srcLink);
 
     copySync(srcLink, destLink);
 
@@ -493,6 +509,7 @@ test({
 
     assert(statInfo.isSymlink());
 
+    Deno.removeSync(srcLink, { recursive: true });
     Deno.removeSync(destLink, { recursive: true });
   }
 });
