@@ -11,9 +11,9 @@ import { exists, existsSync } from "./exists.ts";
 import * as path from "./path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
-import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
+const isWindows = Deno.platform.os === "win";
 
 test({
   name: "[fs] copy file if it does no exist",
@@ -239,6 +239,15 @@ test({
     const srcLink = path.join(dir, "0.txt"); // this is a file link
     const destLink = path.join(dir, "0-copy.txt"); // this is a file link
 
+    if (isWindows) {
+      await assertThrowsAsync(
+        (): Promise<void> => copy(srcLink, destLink),
+        Error,
+        "Not implemented"
+      );
+      return;
+    }
+
     assert(
       (await Deno.lstat(srcLink)).isSymlink(),
       `'${srcLink}' should be symlink type`
@@ -257,11 +266,22 @@ test({
 test({
   name: "[fs] copy symlink folder",
   async fn(): Promise<void> {
-    const srcOrigin = path.join(testdataDir, "copy_dir");
     const srcLink = path.join(testdataDir, "copy_dir_link"); // this is a dir link
     const destLink = path.join(testdataDir, "copy_dir_link-copy");
 
-    await ensureSymlink(srcOrigin, srcLink);
+    if (isWindows) {
+      await assertThrowsAsync(
+        (): Promise<void> => copy(srcLink, destLink),
+        Error,
+        "Not implemented"
+      );
+      return;
+    }
+
+    assert(
+      (await Deno.lstat(srcLink)).isSymlink(),
+      `'${srcLink}' should be symlink type`
+    );
 
     await copy(srcLink, destLink);
 
@@ -269,7 +289,6 @@ test({
 
     assert(statInfo.isSymlink());
 
-    Deno.removeSync(srcLink, { recursive: true });
     Deno.removeSync(destLink, { recursive: true });
   }
 });
@@ -497,11 +516,22 @@ test({
 test({
   name: "[fs] copy symlink folder synchronously",
   fn(): void {
-    const srcOrigin = path.join(testdataDir, "copy_dir");
     const srcLink = path.join(testdataDir, "copy_dir_link"); // this is a dir link
     const destLink = path.join(testdataDir, "copy_dir_link-copy");
 
-    ensureSymlinkSync(srcOrigin, srcLink);
+    if (isWindows) {
+      assertThrows(
+        (): void => copySync(srcLink, destLink),
+        Error,
+        "Not implemented"
+      );
+      return;
+    }
+
+    assert(
+      Deno.lstatSync(srcLink).isSymlink(),
+      `'${srcLink}' should be symlink type`
+    );
 
     copySync(srcLink, destLink);
 
@@ -509,7 +539,6 @@ test({
 
     assert(statInfo.isSymlink());
 
-    Deno.removeSync(srcLink, { recursive: true });
     Deno.removeSync(destLink, { recursive: true });
   }
 });
