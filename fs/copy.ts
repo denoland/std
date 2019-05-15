@@ -25,7 +25,7 @@ async function ensureValidCopy(
   let destStat: Deno.FileInfo;
 
   destStat = await Deno.lstat(dest).catch(
-    (): Promise<void> => Promise.resolve(undefined)
+    (): Promise<null> => Promise.resolve(null)
   );
 
   if (destStat) {
