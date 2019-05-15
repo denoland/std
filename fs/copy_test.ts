@@ -244,7 +244,8 @@ test({
 
     if (isWindows) {
       await assertThrowsAsync(
-        (): Promise<void> => copy(srcLink, destLink),
+        // (): Promise<void> => copy(srcLink, destLink),
+        (): Promise<void> => ensureSymlink(srcLink, destLink),
         Error,
         "Not implemented"
       );
@@ -275,7 +276,8 @@ test({
 
     if (isWindows) {
       await assertThrowsAsync(
-        (): Promise<void> => copy(srcLink, destLink),
+        // (): Promise<void> => copy(srcLink, destLink),
+        (): Promise<void> => ensureSymlink(srcLink, destLink),
         Error,
         "Not implemented"
       );
@@ -505,6 +507,16 @@ test({
     const srcLink = path.join(dir, "0.txt"); // this is a file link
     const destLink = path.join(dir, "0-copy.txt"); // this is a file link
 
+    if (isWindows) {
+      assertThrows(
+        // (): void => copySync(srcLink, destLink),
+        (): void => ensureSymlinkSync(srcLink, destLink),
+        Error,
+        "Not implemented"
+      );
+      return;
+    }
+
     assert(
       Deno.lstatSync(srcLink).isSymlink(),
       `'${srcLink}' should be symlink type`
@@ -529,7 +541,8 @@ test({
 
     if (isWindows) {
       assertThrows(
-        (): void => copySync(srcLink, destLink),
+        // (): void => copySync(srcLink, destLink),
+        (): void => ensureSymlinkSync(srcLink, destLink),
         Error,
         "Not implemented"
       );
