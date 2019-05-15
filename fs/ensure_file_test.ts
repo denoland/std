@@ -1,10 +1,12 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+// TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
 import { test } from "../testing/mod.ts";
-import { assertThrows, assertThrowsAsync } from "../testing/asserts.ts";
+import { assert, assertThrows, assertThrowsAsync } from "../testing/asserts.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 import * as path from "./path/mod.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
+const isWindows = Deno.platform.os === "win";
 
 test(async function ensureFileIfItNotExist(): Promise<void> {
   const testDir = path.join(testdataDir, "ensure_file_1");
@@ -117,6 +119,15 @@ test(function ensureFileSyncIfItExistAsDir(): void {
 test(async function ensureFileIfItExistAsSymlink(): Promise<void> {
   const testLink = path.join(testdataDir, "0-link.ts");
 
+  const testStat = await Deno.lstat(testLink);
+
+  if (isWindows) {
+    assert(testStat.isFile());
+    return;
+  } else {
+    assert(testStat.isSymlink());
+  }
+
   await assertThrowsAsync(
     async (): Promise<void> => {
       await ensureFile(testLink);
@@ -128,6 +139,15 @@ test(async function ensureFileIfItExistAsSymlink(): Promise<void> {
 
 test(function ensureFileSyncIfItExistAsSymlink(): void {
   const testLink = path.join(testdataDir, "0-link.ts");
+
+  const testStat = Deno.lstatSync(testLink);
+
+  if (isWindows) {
+    assert(testStat.isFile());
+    return;
+  } else {
+    assert(testStat.isSymlink());
+  }
 
   assertThrows(
     (): void => {
