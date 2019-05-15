@@ -11,8 +11,11 @@ import { exists, existsSync } from "./exists.ts";
 import * as path from "./path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
+import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
+
+// TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
 const isWindows = Deno.platform.os === "win";
 
 test({
@@ -266,8 +269,9 @@ test({
 test({
   name: "[fs] copy symlink folder",
   async fn(): Promise<void> {
+    const originDir = path.join(testdataDir, "copy_dir"); // origin dir
     const srcLink = path.join(testdataDir, "copy_dir_link"); // this is a dir link
-    const destLink = path.join(testdataDir, "copy_dir_link-copy");
+    const destLink = path.join(testdataDir, "copy_dir_link_copy");
 
     if (isWindows) {
       await assertThrowsAsync(
@@ -277,6 +281,8 @@ test({
       );
       return;
     }
+
+    await ensureSymlink(originDir, srcLink);
 
     assert(
       (await Deno.lstat(srcLink)).isSymlink(),
@@ -289,7 +295,8 @@ test({
 
     assert(statInfo.isSymlink());
 
-    Deno.removeSync(destLink, { recursive: true });
+    await Deno.remove(srcLink, { recursive: true });
+    await Deno.remove(destLink, { recursive: true });
   }
 });
 
@@ -516,8 +523,9 @@ test({
 test({
   name: "[fs] copy symlink folder synchronously",
   fn(): void {
+    const originDir = path.join(testdataDir, "copy_dir"); // origin dir
     const srcLink = path.join(testdataDir, "copy_dir_link"); // this is a dir link
-    const destLink = path.join(testdataDir, "copy_dir_link-copy");
+    const destLink = path.join(testdataDir, "copy_dir_link_copy");
 
     if (isWindows) {
       assertThrows(
@@ -527,6 +535,8 @@ test({
       );
       return;
     }
+
+    ensureSymlinkSync(originDir, srcLink);
 
     assert(
       Deno.lstatSync(srcLink).isSymlink(),
@@ -539,6 +549,7 @@ test({
 
     assert(statInfo.isSymlink());
 
+    Deno.removeSync(srcLink, { recursive: true });
     Deno.removeSync(destLink, { recursive: true });
   }
 });
