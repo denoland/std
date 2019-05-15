@@ -114,11 +114,11 @@ test(function ensureFileSyncIfItExistAsDir(): void {
   Deno.removeSync(testDir, { recursive: true });
 });
 
-test(async function ensureFileIfItExistAsSymlink() {
+test(async function ensureFileIfItExistAsSymlink(): Promise<void> {
   const testLink = path.join(testdataDir, "0-link.ts");
 
   await assertThrowsAsync(
-    async () => {
+    async (): Promise<void> => {
       await ensureFile(testLink);
     },
     Error,
@@ -126,11 +126,11 @@ test(async function ensureFileIfItExistAsSymlink() {
   );
 });
 
-test(function ensureFileSyncIfItExistAsSymlink() {
+test(function ensureFileSyncIfItExistAsSymlink(): void {
   const testLink = path.join(testdataDir, "0-link.ts");
 
   assertThrows(
-    () => {
+    (): void => {
       ensureFileSync(testLink);
     },
     Error,
