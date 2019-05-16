@@ -187,7 +187,9 @@ function copyDirSync(src: string, dest: string, options: CopyOptions): void {
 
 /**
  * Copy a file or directory. The directory can have contents. Like `cp -r`.
- * @param src the file/directory path. Note that if `src` is a directory it will copy everything inside of this directory, not the entire directory itself
+ * @param src the file/directory path.
+ *            Note that if `src` is a directory it will copy everything inside of this directory,
+ *            not the entire directory itself
  * @param dest the destination path. Note that if `src` is a file, `dest` cannot be a directory
  * @param options
  */
@@ -222,7 +224,9 @@ export async function copy(
 
 /**
  * Copy a file or directory. The directory can have contents. Like `cp -r`.
- * @param src the file/directory path. Note that if `src` is a directory it will copy everything inside of this directory, not the entire directory itself
+ * @param src the file/directory path.
+ *            Note that if `src` is a directory it will copy everything inside of this directory,
+ *            not the entire directory itself
  * @param dest the destination path. Note that if `src` is a file, `dest` cannot be a directory
  * @param options
  */
