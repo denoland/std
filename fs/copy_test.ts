@@ -17,39 +17,49 @@ const testdataDir = path.resolve("fs", "testdata");
 
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
 const isWindows = Deno.platform.os === "win";
+const tempDirPrefix = "deno_std_copy_test_";
 
 test({
   name: "[fs] copy file if it does no exist",
   async fn(): Promise<void> {
+    const destDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
     const srcFile = path.join(testdataDir, "copy_file_not_exists.txt");
-    const destFile = path.join(testdataDir, "copy_file_not_exists_1.txt");
+    const destFile = path.join(destDir, "copy_file_not_exists_1.txt");
     await assertThrowsAsync(
       async (): Promise<void> => {
         await copy(srcFile, destFile);
       }
     );
+    await Deno.remove(destDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy if src and dest is same path",
   async fn(): Promise<void> {
-    const srcFile = path.join(testdataDir, "copy_file_same.txt");
+    const destDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
+    const srcFile = path.join(destDir, "copy_file_same.txt");
+    const destFile = path.join(destDir, "copy_file_same.txt");
+
+    await ensureDir(destDir);
+
     await assertThrowsAsync(
       async (): Promise<void> => {
-        await copy(srcFile, srcFile);
+        await copy(srcFile, destFile);
       },
       Error,
       "Source and destination must not be the same."
     );
+    await Deno.remove(destDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy file",
   async fn(): Promise<void> {
+    const destDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
     const srcFile = path.join(testdataDir, "copy_file.txt");
-    const destFile = path.join(testdataDir, "copy_file_copy.txt");
+    const destFile = path.join(destDir, "copy_file_copy.txt");
 
     const srcContent = new TextDecoder().decode(await Deno.readFile(srcFile));
 
@@ -107,15 +117,16 @@ test({
       "txt"
     );
 
-    await Deno.remove(destFile);
+    await Deno.remove(destDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy with preserve timestamps",
   async fn(): Promise<void> {
+    const destDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
     const srcFile = path.join(testdataDir, "copy_file.txt");
-    const destFile = path.join(testdataDir, "copy_file_copy.txt");
+    const destFile = path.join(destDir, "copy_file_copy.txt");
 
     const srcStatInfo = await Deno.stat(srcFile);
 
@@ -135,14 +146,15 @@ test({
     assertEquals(destStatInfo.accessed, srcStatInfo.accessed);
     assertEquals(destStatInfo.modified, srcStatInfo.modified);
 
-    await Deno.remove(destFile);
+    await Deno.remove(destDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy directory from parent dir",
   async fn(): Promise<void> {
-    const srcDir = path.join(testdataDir, "parent");
+    const tempDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
+    const srcDir = path.join(tempDir, "parent");
     const destDir = path.join(srcDir, "child");
 
     await ensureDir(srcDir);
@@ -155,15 +167,16 @@ test({
       `Cannot copy '${srcDir}' to a subdirectory of itself, '${destDir}'.`
     );
 
-    await Deno.remove(srcDir, { recursive: true });
+    await Deno.remove(tempDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy directory, and dest exist and not a directory",
   async fn(): Promise<void> {
-    const srcDir = path.join(testdataDir, "parent");
-    const destDir = path.join(testdataDir, "child.txt");
+    const tempDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
+    const srcDir = path.join(tempDir, "parent");
+    const destDir = path.join(tempDir, "child.txt");
 
     await ensureDir(srcDir);
     await ensureFile(destDir);
@@ -176,16 +189,16 @@ test({
       `Cannot overwrite non-directory '${destDir}' with directory '${srcDir}'.`
     );
 
-    await Deno.remove(srcDir, { recursive: true });
-    await Deno.remove(destDir, { recursive: true });
+    await Deno.remove(tempDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy directory",
   async fn(): Promise<void> {
+    const tempDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
     const srcDir = path.join(testdataDir, "copy_dir");
-    const destDir = path.join(testdataDir, "copy_dir_copy");
+    const destDir = path.join(tempDir, "copy_dir");
     const srcFile = path.join(srcDir, "0.txt");
     const destFile = path.join(destDir, "0.txt");
     const srcNestFile = path.join(srcDir, "nest", "0.txt");
@@ -238,9 +251,10 @@ test({
 test({
   name: "[fs] copy symlink file",
   async fn(): Promise<void> {
+    const destDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
     const dir = path.join(testdataDir, "copy_dir_link_file");
     const srcLink = path.join(dir, "0.txt"); // this is a file link
-    const destLink = path.join(dir, "0-copy.txt"); // this is a file link
+    const destLink = path.join(destDir, "0-copy.txt"); // this is a file link
 
     if (isWindows) {
       await assertThrowsAsync(
@@ -268,9 +282,10 @@ test({
 test({
   name: "[fs] copy symlink folder",
   async fn(): Promise<void> {
-    const originDir = path.join(testdataDir, "copy_dir"); // origin dir
+    const destDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
+    const srcDir = path.join(testdataDir, "copy_dir"); // origin dir
     const srcLink = path.join(testdataDir, "copy_dir_link"); // this is a dir link
-    const destLink = path.join(testdataDir, "copy_dir_link_copy");
+    const destLink = path.join(destDir, "copy_dir_link_copy");
 
     if (isWindows) {
       await assertThrowsAsync(
@@ -280,7 +295,7 @@ test({
       return;
     }
 
-    await ensureSymlink(originDir, srcLink);
+    await ensureSymlink(srcDir, srcLink);
 
     assert(
       (await Deno.lstat(srcLink)).isSymlink(),
@@ -301,8 +316,9 @@ test({
 test({
   name: "[fs] copy file synchronously if it does no exist",
   fn(): void {
+    const destDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const srcFile = path.join(testdataDir, "copy_file_not_exists_sync.txt");
-    const destFile = path.join(testdataDir, "copy_file_not_exists_1_sync.txt");
+    const destFile = path.join(destDir, "copy_file_not_exists_1_sync.txt");
     assertThrows(
       (): void => {
         copySync(srcFile, destFile);
@@ -314,8 +330,9 @@ test({
 test({
   name: "[fs] copy with preserve timestamps",
   fn(): void {
+    const destDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const srcFile = path.join(testdataDir, "copy_file.txt");
-    const destFile = path.join(testdataDir, "copy_file_copy.txt");
+    const destFile = path.join(destDir, "copy_file_copy.txt");
 
     const srcStatInfo = Deno.statSync(srcFile);
 
@@ -335,7 +352,7 @@ test({
     assertEquals(destStatInfo.accessed, srcStatInfo.accessed);
     assertEquals(destStatInfo.modified, srcStatInfo.modified);
 
-    Deno.removeSync(destFile);
+    Deno.removeSync(destDir, { recursive: true });
   }
 });
 
@@ -356,8 +373,9 @@ test({
 test({
   name: "[fs] copy file synchronously",
   fn(): void {
+    const destDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const srcFile = path.join(testdataDir, "copy_file.txt");
-    const destFile = path.join(testdataDir, "copy_file_copy_sync.txt");
+    const destFile = path.join(destDir, "copy_file_copy_sync.txt");
 
     const srcContent = new TextDecoder().decode(Deno.readFileSync(srcFile));
 
@@ -396,14 +414,15 @@ test({
     // file have been overwrite
     assertEquals(new TextDecoder().decode(Deno.readFileSync(destFile)), "txt");
 
-    Deno.removeSync(destFile);
+    Deno.removeSync(destDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy directory synchronously from parent dir",
   fn(): void {
-    const srcDir = path.join(testdataDir, "parent_sync");
+    const tempDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
+    const srcDir = path.join(tempDir, "parent_sync");
     const destDir = path.join(srcDir, "child");
 
     ensureDirSync(srcDir);
@@ -416,15 +435,16 @@ test({
       `Cannot copy '${srcDir}' to a subdirectory of itself, '${destDir}'.`
     );
 
-    Deno.removeSync(srcDir, { recursive: true });
+    Deno.removeSync(tempDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy directory synchronously, and dest exist and not a directory",
   fn(): void {
-    const srcDir = path.join(testdataDir, "parent_sync");
-    const destDir = path.join(testdataDir, "child.txt");
+    const tempDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
+    const srcDir = path.join(tempDir, "parent_sync");
+    const destDir = path.join(tempDir, "child.txt");
 
     ensureDirSync(srcDir);
     ensureFileSync(destDir);
@@ -437,16 +457,16 @@ test({
       `Cannot overwrite non-directory '${destDir}' with directory '${srcDir}'.`
     );
 
-    Deno.removeSync(srcDir, { recursive: true });
-    Deno.removeSync(destDir, { recursive: true });
+    Deno.removeSync(tempDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy directory synchronously",
   fn(): void {
+    const tempDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const srcDir = path.join(testdataDir, "copy_dir");
-    const destDir = path.join(testdataDir, "copy_dir_copy_sync");
+    const destDir = path.join(tempDir, "copy_dir_copy_sync");
     const srcFile = path.join(srcDir, "0.txt");
     const destFile = path.join(destDir, "0.txt");
     const srcNestFile = path.join(srcDir, "nest", "0.txt");
@@ -492,16 +512,17 @@ test({
       "nest"
     );
 
-    Deno.removeSync(destDir, { recursive: true });
+    Deno.removeSync(tempDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy symlink file synchronously",
   fn(): void {
+    const tempDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const dir = path.join(testdataDir, "copy_dir_link_file");
     const srcLink = path.join(dir, "0.txt"); // this is a file link
-    const destLink = path.join(dir, "0-copy.txt"); // this is a file link
+    const destLink = path.join(tempDir, "0-copy.txt"); // this is a file link
 
     if (isWindows) {
       assertThrows(
@@ -522,16 +543,17 @@ test({
 
     assert(statInfo.isSymlink(), `'${destLink}' should be symlink type`);
 
-    Deno.removeSync(destLink, { recursive: true });
+    Deno.removeSync(tempDir, { recursive: true });
   }
 });
 
 test({
   name: "[fs] copy symlink folder synchronously",
   fn(): void {
+    const destDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const originDir = path.join(testdataDir, "copy_dir"); // origin dir
-    const srcLink = path.join(testdataDir, "copy_dir_link"); // this is a dir link
-    const destLink = path.join(testdataDir, "copy_dir_link_copy");
+    const srcLink = path.join(destDir, "copy_dir_link"); // this is a dir link
+    const destLink = path.join(destDir, "copy_dir_link_copy");
 
     if (isWindows) {
       assertThrows(
@@ -554,7 +576,6 @@ test({
 
     assert(statInfo.isSymlink());
 
-    Deno.removeSync(srcLink, { recursive: true });
-    Deno.removeSync(destLink, { recursive: true });
+    Deno.removeSync(destDir, { recursive: true });
   }
 });
