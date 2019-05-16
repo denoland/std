@@ -35,7 +35,7 @@ async function ensureValidCopy(
       );
     }
     if (!options.overwrite) {
-      throw new Error(`'${dest}' already exists`);
+      throw new Error(`'${dest}' already exists.`);
     }
   }
 
@@ -63,7 +63,7 @@ function ensureValidCopySync(
       );
     }
     if (!options.overwrite) {
-      throw new Error(`'${dest}' already exists`);
+      throw new Error(`'${dest}' already exists.`);
     }
   }
 
@@ -202,7 +202,7 @@ export async function copy(
   dest = path.resolve(dest);
 
   if (src === dest) {
-    throw new Error("Source and destination must not be the same.");
+    throw new Error("Source and destination cannot be the same.");
   }
 
   const srcStat = await Deno.lstat(src);
@@ -239,7 +239,7 @@ export function copySync(
   dest = path.resolve(dest);
 
   if (src === dest) {
-    throw new Error("Source and destination must not be the same.");
+    throw new Error("Source and destination cannot be the same.");
   }
 
   const srcStat = Deno.lstatSync(src);

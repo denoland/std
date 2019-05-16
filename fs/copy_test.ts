@@ -67,7 +67,7 @@ testCopy(
         await copy(srcFile, destFile);
       },
       Error,
-      "Source and destination must not be the same."
+      "Source and destination cannot be the same."
     );
   }
 );
@@ -114,7 +114,7 @@ testCopy(
         await copy(srcFile, destFile);
       },
       Error,
-      `'${destFile}' already exists`
+      `'${destFile}' already exists.`
     );
 
     // Modify destination file.
@@ -230,7 +230,7 @@ testCopy(
         await copy(srcDir, destDir);
       },
       Error,
-      `'${destDir}' already exists`
+      `'${destDir}' already exists.`
     );
 
     // Modify the file in the destination directory.
@@ -255,8 +255,8 @@ testCopy(
   "[fs] copy symlink file",
   async (tempDir: string): Promise<void> => {
     const dir = path.join(testdataDir, "copy_dir_link_file");
-    const srcLink = path.join(dir, "0_symlink.txt");
-    const destLink = path.join(tempDir, "0_symlink_copy.txt");
+    const srcLink = path.join(dir, "0.txt");
+    const destLink = path.join(tempDir, "0_copy.txt");
 
     if (isWindows) {
       await assertThrowsAsync(
@@ -357,7 +357,7 @@ testCopySync(
         copySync(srcFile, srcFile);
       },
       Error,
-      "Source and destination must not be the same."
+      "Source and destination cannot be the same."
     );
   }
 );
@@ -388,7 +388,7 @@ testCopySync(
         copySync(srcFile, destFile);
       },
       Error,
-      `'${destFile}' already exists`
+      `'${destFile}' already exists.`
     );
 
     // Modify destination file.
@@ -475,7 +475,7 @@ testCopySync(
         copySync(srcDir, destDir);
       },
       Error,
-      `'${destDir}' already exists`
+      `'${destDir}' already exists.`
     );
 
     // Modify the file in the destination directory.
@@ -500,8 +500,8 @@ testCopySync(
   "[fs] copy symlink file synchronously",
   (tempDir: string): void => {
     const dir = path.join(testdataDir, "copy_dir_link_file");
-    const srcLink = path.join(dir, "0_symlink.txt");
-    const destLink = path.join(tempDir, "0_symlink_copy.txt");
+    const srcLink = path.join(dir, "0.txt");
+    const destLink = path.join(tempDir, "0_copy.txt");
 
     if (isWindows) {
       assertThrows(
