@@ -18,7 +18,10 @@ const testdataDir = path.resolve("fs", "testdata");
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
 const isWindows = Deno.platform.os === "win";
 
-async function testCopy(name: string, cb: (tempDir: string) => Promise<void>) {
+async function testCopy(
+  name: string,
+  cb: (tempDir: string) => Promise<void>
+): Promise<void> {
   test({
     name,
     async fn(): Promise<void> {
@@ -31,7 +34,7 @@ async function testCopy(name: string, cb: (tempDir: string) => Promise<void>) {
   });
 }
 
-function testCopySync(name: string, cb: (tempDir: string) => void) {
+function testCopySync(name: string, cb: (tempDir: string) => void): void {
   test({
     name,
     fn: (): void => {
@@ -350,7 +353,7 @@ testCopySync(
 
 testCopySync(
   "[fs] copy synchronously if src and dest are the same paths",
-  (tempDir: string): void => {
+  (): void => {
     const srcFile = path.join(testdataDir, "copy_file_same_sync.txt");
     assertThrows(
       (): void => {
