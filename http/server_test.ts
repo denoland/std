@@ -11,6 +11,7 @@ import { assertEquals } from "../testing/asserts.ts";
 import { Response, ServerRequest, writeResponse } from "./server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { StringReader } from "../io/readers.ts";
+import { deferred } from "../util/async.ts";
 
 interface ResponseTest {
   response: Response;
@@ -21,31 +22,6 @@ const enc = new TextEncoder();
 const dec = new TextDecoder();
 
 type Handler = () => void;
-
-interface Deferred {
-  promise: Promise<{}>;
-  resolve: Handler;
-  reject: Handler;
-}
-
-function deferred(isResolved = false): Deferred {
-  let resolve: Handler = (): void => void 0;
-  let reject: Handler = (): void => void 0;
-  const promise = new Promise(
-    (res, rej): void => {
-      resolve = res;
-      reject = rej;
-    }
-  );
-  if (isResolved) {
-    resolve();
-  }
-  return {
-    promise,
-    resolve,
-    reject
-  };
-}
 
 const responseTests: ResponseTest[] = [
   // Default response
@@ -74,6 +50,11 @@ test(async function responseWrite(): Promise<void> {
     const request = new ServerRequest();
     request.pipelineId = 1;
     request.w = bufw;
+
+    const d0 = deferred<void>();
+    d0.resolve();
+    const d1 = deferred<void>();
+
     request.conn = {
       localAddr: "",
       remoteAddr: "",
@@ -88,7 +69,7 @@ test(async function responseWrite(): Promise<void> {
       },
       close: (): void => {},
       lastPipelineId: 0,
-      pendingDeferredMap: new Map([[0, deferred(true)], [1, deferred()]])
+      pendingDeferredMap: new Map([[0, d0], [1, d1]])
     };
 
     await request.respond(testCase.response);
