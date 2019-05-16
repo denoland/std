@@ -208,13 +208,13 @@ incididunt ut labore et dolore magna aliqua.
   await clearTestdataChanges();
 });
 
-test(async function testPrettierPrintToStdout() {
+test(async function testPrettierPrintToStdout(): Promise<void> {
   await clearTestdataChanges();
 
   const file0 = join(testdata, "0.ts");
   const file1 = join(testdata, "formatted.ts");
 
-  const getSourceCode = async (f: string) =>
+  const getSourceCode = async (f: string): Promise<string> =>
     decoder.decode(await Deno.readFile(f));
 
   const { stdout } = await run([...cmd, file0]);
