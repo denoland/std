@@ -1,35 +1,15 @@
-const { mkdir, open } = Deno;
+const { mkdir } = Deno;
 type FileInfo = Deno.FileInfo;
-import { test } from "../testing/mod.ts";
+import { test, runIfMain } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import { glob } from "./glob.ts";
 import { join } from "./path.ts";
 import { testWalk } from "./walk_test.ts";
-import { walk, walkSync, WalkOptions } from "./walk.ts";
-
-async function touch(path: string): Promise<void> {
-  await open(path, "w");
-}
-
-async function walkArray(
-  dirname: string = ".",
-  options: WalkOptions = {}
-): Promise<string[]> {
-  const arr: string[] = [];
-  for await (const f of walk(dirname, { ...options })) {
-    arr.push(f.path.replace(/\\/g, "/"));
-  }
-  arr.sort();
-  const arrSync = Array.from(walkSync(dirname, options), (f: FileInfo) =>
-    f.path.replace(/\\/g, "/")
-  ).sort();
-  assertEquals(arr, arrSync);
-  return arr;
-}
+import { touch, walkArray } from "./walk_test.ts";
 
 test({
   name: "glob: glob to regex",
-  fn() {
+  fn(): void {
     assertEquals(glob("unicorn.*") instanceof RegExp, true);
     assertEquals(glob("unicorn.*").test("poney.ts"), false);
     assertEquals(glob("unicorn.*").test("unicorn.py"), true);
@@ -69,40 +49,40 @@ test({
 });
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await mkdir(d + "/a");
     await touch(d + "/a/x.ts");
   },
-  async function globInWalk() {
+  async function globInWalk(): Promise<void> {
     const arr = await walkArray(".", { match: [glob("*.ts")] });
     assertEquals(arr.length, 1);
-    assertEquals(arr[0], "./a/x.ts");
+    assertEquals(arr[0], "a/x.ts");
   }
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await mkdir(d + "/a");
     await mkdir(d + "/b");
     await touch(d + "/a/x.ts");
     await touch(d + "/b/z.ts");
     await touch(d + "/b/z.js");
   },
-  async function globInWalkWildcardFiles() {
+  async function globInWalkWildcardFiles(): Promise<void> {
     const arr = await walkArray(".", { match: [glob("*.ts")] });
     assertEquals(arr.length, 2);
-    assertEquals(arr[0], "./a/x.ts");
-    assertEquals(arr[1], "./b/z.ts");
+    assertEquals(arr[0], "a/x.ts");
+    assertEquals(arr[1], "b/z.ts");
   }
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await mkdir(d + "/a");
     await mkdir(d + "/a/yo");
     await touch(d + "/a/yo/x.ts");
   },
-  async function globInWalkFolderWildcard() {
+  async function globInWalkFolderWildcard(): Promise<void> {
     const arr = await walkArray(".", {
       match: [
         glob(join("a", "**", "*.ts"), {
@@ -112,12 +92,12 @@ testWalk(
       ]
     });
     assertEquals(arr.length, 1);
-    assertEquals(arr[0], "./a/yo/x.ts");
+    assertEquals(arr[0], "a/yo/x.ts");
   }
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await mkdir(d + "/a");
     await mkdir(d + "/a/unicorn");
     await mkdir(d + "/a/deno");
@@ -126,7 +106,7 @@ testWalk(
     await touch(d + "/a/deno/x.ts");
     await touch(d + "/a/unicorn/x.ts");
   },
-  async function globInWalkFolderExtended() {
+  async function globInWalkFolderExtended(): Promise<void> {
     const arr = await walkArray(".", {
       match: [
         glob(join("a", "+(raptor|deno)", "*.ts"), {
@@ -136,24 +116,26 @@ testWalk(
       ]
     });
     assertEquals(arr.length, 2);
-    assertEquals(arr[0], "./a/deno/x.ts");
-    assertEquals(arr[1], "./a/raptor/x.ts");
+    assertEquals(arr[0], "a/deno/x.ts");
+    assertEquals(arr[1], "a/raptor/x.ts");
   }
 );
 
 testWalk(
-  async (d: string) => {
+  async (d: string): Promise<void> => {
     await touch(d + "/x.ts");
     await touch(d + "/x.js");
     await touch(d + "/b.js");
   },
-  async function globInWalkWildcardExtension() {
+  async function globInWalkWildcardExtension(): Promise<void> {
     const arr = await walkArray(".", {
       match: [glob("x.*", { flags: "g", globstar: true })]
     });
     console.log(arr);
     assertEquals(arr.length, 2);
-    assertEquals(arr[0], "./x.js");
-    assertEquals(arr[1], "./x.ts");
+    assertEquals(arr[0], "x.js");
+    assertEquals(arr[1], "x.ts");
   }
 );
+
+runIfMain(import.meta);

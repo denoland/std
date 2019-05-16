@@ -1,5 +1,4 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { existsSync } from "../fs/exists.ts";
 import { deepAssign } from "../util/deep_assign.ts";
 import { pad } from "../strings/pad.ts";
 
@@ -274,12 +273,12 @@ class Parser {
   _parseDeclarationName(declaration: string): string[] {
     const out = [];
     let acc = [];
-    let inLitteral = false;
+    let inLiteral = false;
     for (let i = 0; i < declaration.length; i++) {
       const c = declaration[i];
       switch (c) {
         case ".":
-          if (!inLitteral) {
+          if (!inLiteral) {
             out.push(acc.join(""));
             acc = [];
           } else {
@@ -287,10 +286,10 @@ class Parser {
           }
           break;
         case `"`:
-          if (inLitteral) {
-            inLitteral = false;
+          if (inLiteral) {
+            inLiteral = false;
           } else {
-            inLitteral = true;
+            inLiteral = true;
           }
           break;
         default:
@@ -398,12 +397,12 @@ class Dumper {
     const out = [];
     const props = Object.keys(obj);
     const propObj = props.filter(
-      e =>
+      (e): boolean =>
         (obj[e] instanceof Array && !this._isSimplySerializable(obj[e][0])) ||
         !this._isSimplySerializable(obj[e])
     );
     const propPrim = props.filter(
-      e =>
+      (e): boolean =>
         !(obj[e] instanceof Array && !this._isSimplySerializable(obj[e][0])) &&
         this._isSimplySerializable(obj[e])
     );
@@ -536,13 +535,4 @@ export function parse(tomlString: string): object {
   // File is potentially using EOL CRLF
   tomlString = tomlString.replace(/\r\n/g, "\n").replace(/\\\n/g, "\n");
   return new Parser(tomlString).parse();
-}
-
-export function parseFile(filePath: string): object {
-  if (!existsSync(filePath)) {
-    throw new Error("File not found");
-  }
-  const decoder = new TextDecoder();
-  const strFile = decoder.decode(Deno.readFileSync(filePath));
-  return parse(strFile);
 }

@@ -1,19 +1,21 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import "./sha1_test.ts";
-
-const { Buffer } = Deno;
 import { BufReader } from "../io/bufio.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
-import { test } from "../testing/mod.ts";
+import { runIfMain, test } from "../testing/mod.ts";
 import {
   acceptable,
   createSecAccept,
   OpCode,
   readFrame,
-  unmask
+  unmask,
+  writeFrame
 } from "./mod.ts";
+import { encode } from "../strings/strings.ts";
 
-test(async function testReadUnmaskedTextFrame() {
+const { Buffer } = Deno;
+
+test(async function wsReadUnmaskedTextFrame(): Promise<void> {
   // unmasked single text frame with payload "Hello"
   const buf = new BufReader(
     new Buffer(new Uint8Array([0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f]))
@@ -25,7 +27,7 @@ test(async function testReadUnmaskedTextFrame() {
   assertEquals(frame.isLastFrame, true);
 });
 
-test(async function testReadMakedTextFrame() {
+test(async function wsReadMaskedTextFrame(): Promise<void> {
   //a masked single text frame with payload "Hello"
   const buf = new BufReader(
     new Buffer(
@@ -52,7 +54,7 @@ test(async function testReadMakedTextFrame() {
   assertEquals(frame.isLastFrame, true);
 });
 
-test(async function testReadUnmaskedSplittedTextFrames() {
+test(async function wsReadUnmaskedSplitTextFrames(): Promise<void> {
   const buf1 = new BufReader(
     new Buffer(new Uint8Array([0x01, 0x03, 0x48, 0x65, 0x6c]))
   );
@@ -71,7 +73,7 @@ test(async function testReadUnmaskedSplittedTextFrames() {
   assertEquals(new Buffer(f2.payload).toString(), "lo");
 });
 
-test(async function testReadUnmaksedPingPongFrame() {
+test(async function wsReadUnmaskedPingPongFrame(): Promise<void> {
   // unmasked ping with payload "Hello"
   const buf = new BufReader(
     new Buffer(new Uint8Array([0x89, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f]))
@@ -104,7 +106,7 @@ test(async function testReadUnmaksedPingPongFrame() {
   assertEquals(new Buffer(pong.payload).toString(), "Hello");
 });
 
-test(async function testReadUnmaksedBigBinaryFrame() {
+test(async function wsReadUnmaskedBigBinaryFrame(): Promise<void> {
   const a = [0x82, 0x7e, 0x01, 0x00];
   for (let i = 0; i < 256; i++) {
     a.push(i);
@@ -117,7 +119,7 @@ test(async function testReadUnmaksedBigBinaryFrame() {
   assertEquals(bin.payload.length, 256);
 });
 
-test(async function testReadUnmaskedBigBigBinaryFrame() {
+test(async function wsReadUnmaskedBigBigBinaryFrame(): Promise<void> {
   const a = [0x82, 0x7f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00];
   for (let i = 0; i < 0xffff; i++) {
     a.push(i);
@@ -130,13 +132,13 @@ test(async function testReadUnmaskedBigBigBinaryFrame() {
   assertEquals(bin.payload.length, 0xffff + 1);
 });
 
-test(async function testCreateSecAccept() {
+test(async function wsCreateSecAccept(): Promise<void> {
   const nonce = "dGhlIHNhbXBsZSBub25jZQ==";
   const d = createSecAccept(nonce);
   assertEquals(d, "s3pPLMBiTxaQ9kYGzzhZRbK+xOo=");
 });
 
-test(function testAcceptable() {
+test(function wsAcceptable(): void {
   const ret = acceptable({
     headers: new Headers({
       upgrade: "websocket",
@@ -144,6 +146,22 @@ test(function testAcceptable() {
     })
   });
   assertEquals(ret, true);
+
+  assert(
+    acceptable({
+      headers: new Headers([
+        ["connection", "Upgrade"],
+        ["host", "127.0.0.1:9229"],
+        [
+          "sec-websocket-extensions",
+          "permessage-deflate; client_max_window_bits"
+        ],
+        ["sec-websocket-key", "dGhlIHNhbXBsZSBub25jZQ=="],
+        ["sec-websocket-version", "13"],
+        ["upgrade", "WebSocket"]
+      ])
+    })
+  );
 });
 
 const invalidHeaders = [
@@ -153,7 +171,7 @@ const invalidHeaders = [
   { upgrade: "websocket", "sec-websocket-ky": "" }
 ];
 
-test(function testAcceptableInvalid() {
+test(function wsAcceptableInvalid(): void {
   for (const pat of invalidHeaders) {
     const ret = acceptable({
       headers: new Headers(pat)
@@ -161,3 +179,27 @@ test(function testAcceptableInvalid() {
     assertEquals(ret, false);
   }
 });
+
+test(async function wsWriteReadMaskedFrame(): Promise<void> {
+  const mask = new Uint8Array([0, 1, 2, 3]);
+  const msg = "hello";
+  const buf = new Buffer();
+  const r = new BufReader(buf);
+  await writeFrame(
+    {
+      isLastFrame: true,
+      mask,
+      opcode: OpCode.TextFrame,
+      payload: encode(msg)
+    },
+    buf
+  );
+  const frame = await readFrame(r);
+  assertEquals(frame.opcode, OpCode.TextFrame);
+  assertEquals(frame.isLastFrame, true);
+  assertEquals(frame.mask, mask);
+  unmask(frame.payload, frame.mask);
+  assertEquals(frame.payload, encode(msg));
+});
+
+runIfMain(import.meta);

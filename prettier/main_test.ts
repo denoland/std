@@ -21,6 +21,7 @@ async function run(
 
 const cmd = [
   execPath,
+  "run",
   "--allow-run",
   "--allow-write",
   "--allow-read",
@@ -46,7 +47,7 @@ async function clearTestdataChanges(): Promise<void> {
   await xrun({ args: ["git", "checkout", testdata] }).status();
 }
 
-test(async function testPrettierCheckAndFormatFiles() {
+test(async function testPrettierCheckAndFormatFiles(): Promise<void> {
   await clearTestdataChanges();
 
   const files = [
@@ -63,8 +64,8 @@ test(async function testPrettierCheckAndFormatFiles() {
   assertEquals(code, 0);
   assertEquals(
     normalizeOutput(stdout),
-    `Formatting ./prettier/testdata/0.ts
-Formatting ./prettier/testdata/1.js`
+    `Formatting prettier/testdata/0.ts
+Formatting prettier/testdata/1.js`
   );
 
   var { code, stdout } = await run([...cmd, "--check", ...files]);
@@ -74,7 +75,7 @@ Formatting ./prettier/testdata/1.js`
   await clearTestdataChanges();
 });
 
-test(async function testPrettierCheckAndFormatDirs() {
+test(async function testPrettierCheckAndFormatDirs(): Promise<void> {
   await clearTestdataChanges();
 
   const dirs = [join(testdata, "foo"), join(testdata, "bar")];
@@ -87,10 +88,10 @@ test(async function testPrettierCheckAndFormatDirs() {
   assertEquals(code, 0);
   assertEquals(
     normalizeOutput(stdout),
-    `Formatting ./prettier/testdata/bar/0.ts
-Formatting ./prettier/testdata/bar/1.js
-Formatting ./prettier/testdata/foo/0.ts
-Formatting ./prettier/testdata/foo/1.js`
+    `Formatting prettier/testdata/bar/0.ts
+Formatting prettier/testdata/bar/1.js
+Formatting prettier/testdata/foo/0.ts
+Formatting prettier/testdata/foo/1.js`
   );
 
   var { code, stdout } = await run([...cmd, "--check", ...dirs]);
@@ -100,7 +101,7 @@ Formatting ./prettier/testdata/foo/1.js`
   await clearTestdataChanges();
 });
 
-test(async function testPrettierOptions() {
+test(async function testPrettierOptions(): Promise<void> {
   await clearTestdataChanges();
 
   const file0 = join(testdata, "opts", "0.ts");
@@ -108,7 +109,7 @@ test(async function testPrettierOptions() {
   const file2 = join(testdata, "opts", "2.ts");
   const file3 = join(testdata, "opts", "3.md");
 
-  const getSourceCode = async (f: string) =>
+  const getSourceCode = async (f: string): Promise<string> =>
     decoder.decode(await Deno.readFile(f));
 
   await run([...cmd, "--no-semi", "--write", file0]);

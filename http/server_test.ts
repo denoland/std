@@ -6,10 +6,11 @@
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
 const { Buffer } = Deno;
-import { test } from "../testing/mod.ts";
+import { test, runIfMain } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
-import { Response, ServerRequest } from "./server.ts";
+import { Response, ServerRequest, writeResponse } from "./server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
+import { StringReader } from "../io/readers.ts";
 
 interface ResponseTest {
   response: Response;
@@ -18,6 +19,33 @@ interface ResponseTest {
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();
+
+type Handler = () => void;
+
+interface Deferred {
+  promise: Promise<{}>;
+  resolve: Handler;
+  reject: Handler;
+}
+
+function deferred(isResolved = false): Deferred {
+  let resolve: Handler = (): void => void 0;
+  let reject: Handler = (): void => void 0;
+  const promise = new Promise(
+    (res, rej): void => {
+      resolve = res;
+      reject = rej;
+    }
+  );
+  if (isResolved) {
+    resolve();
+  }
+  return {
+    promise,
+    resolve,
+    reject
+  };
+}
 
 const responseTests: ResponseTest[] = [
   // Default response
@@ -39,19 +67,36 @@ const responseTests: ResponseTest[] = [
   }
 ];
 
-test(async function responseWrite() {
+test(async function responseWrite(): Promise<void> {
   for (const testCase of responseTests) {
     const buf = new Buffer();
     const bufw = new BufWriter(buf);
     const request = new ServerRequest();
+    request.pipelineId = 1;
     request.w = bufw;
+    request.conn = {
+      localAddr: "",
+      remoteAddr: "",
+      rid: -1,
+      closeRead: (): void => {},
+      closeWrite: (): void => {},
+      read: async (): Promise<Deno.ReadResult> => {
+        return { eof: true, nread: 0 };
+      },
+      write: async (): Promise<number> => {
+        return -1;
+      },
+      close: (): void => {},
+      lastPipelineId: 0,
+      pendingDeferredMap: new Map([[0, deferred(true)], [1, deferred()]])
+    };
 
     await request.respond(testCase.response);
     assertEquals(buf.toString(), testCase.raw);
   }
 });
 
-test(async function requestBodyWithContentLength() {
+test(async function requestBodyWithContentLength(): Promise<void> {
   {
     const req = new ServerRequest();
     req.headers = new Headers();
@@ -75,7 +120,7 @@ test(async function requestBodyWithContentLength() {
   }
 });
 
-test(async function requestBodyWithTransferEncoding() {
+test(async function requestBodyWithTransferEncoding(): Promise<void> {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
@@ -124,7 +169,7 @@ test(async function requestBodyWithTransferEncoding() {
   }
 });
 
-test(async function requestBodyStreamWithContentLength() {
+test(async function requestBodyStreamWithContentLength(): Promise<void> {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
@@ -159,7 +204,7 @@ test(async function requestBodyStreamWithContentLength() {
   }
 });
 
-test(async function requestBodyStreamWithTransferEncoding() {
+test(async function requestBodyStreamWithTransferEncoding(): Promise<void> {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
@@ -217,3 +262,66 @@ test(async function requestBodyStreamWithTransferEncoding() {
     }
   }
 });
+
+test(async function writeUint8ArrayResponse(): Promise<void> {
+  const shortText = "Hello";
+
+  const body = new TextEncoder().encode(shortText);
+  const res: Response = { body };
+
+  const buf = new Deno.Buffer();
+  await writeResponse(buf, res);
+
+  const decoder = new TextDecoder("utf-8");
+  const reader = new BufReader(buf);
+
+  let line: Uint8Array;
+  line = (await reader.readLine())[0];
+  assertEquals(decoder.decode(line), "HTTP/1.1 200 OK");
+
+  line = (await reader.readLine())[0];
+  assertEquals(decoder.decode(line), `content-length: ${shortText.length}`);
+
+  line = (await reader.readLine())[0];
+  assertEquals(line.byteLength, 0);
+
+  line = (await reader.readLine())[0];
+  assertEquals(decoder.decode(line), shortText);
+
+  line = (await reader.readLine())[0];
+  assertEquals(line.byteLength, 0);
+});
+
+test(async function writeStringReaderResponse(): Promise<void> {
+  const shortText = "Hello";
+
+  const body = new StringReader(shortText);
+  const res: Response = { body };
+
+  const buf = new Deno.Buffer();
+  await writeResponse(buf, res);
+
+  const decoder = new TextDecoder("utf-8");
+  const reader = new BufReader(buf);
+
+  let line: Uint8Array;
+  line = (await reader.readLine())[0];
+  assertEquals(decoder.decode(line), "HTTP/1.1 200 OK");
+
+  line = (await reader.readLine())[0];
+  assertEquals(decoder.decode(line), "transfer-encoding: chunked");
+
+  line = (await reader.readLine())[0];
+  assertEquals(line.byteLength, 0);
+
+  line = (await reader.readLine())[0];
+  assertEquals(decoder.decode(line), shortText.length.toString());
+
+  line = (await reader.readLine())[0];
+  assertEquals(decoder.decode(line), shortText);
+
+  line = (await reader.readLine())[0];
+  assertEquals(decoder.decode(line), "0");
+});
+
+runIfMain(import.meta);
