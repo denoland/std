@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, TestDefinition, TestFunction } from "../testing/mod.ts";
+import { test } from "../testing/mod.ts";
 import {
   assertEquals,
   assertThrows,
@@ -117,7 +117,7 @@ testCopy(
       `'${destFile}' already exists`
     );
 
-    // update dest file
+    // Modify destination file.
     await Deno.writeFile(destFile, new TextEncoder().encode("txt copy"));
 
     assertEquals(
@@ -255,8 +255,8 @@ testCopy(
   "[fs] copy symlink file",
   async (tempDir: string): Promise<void> => {
     const dir = path.join(testdataDir, "copy_dir_link_file");
-    const srcLink = path.join(dir, "0.txt"); // this is a file link
-    const destLink = path.join(tempDir, "0-copy.txt"); // this is a file link
+    const srcLink = path.join(dir, "0_symlink.txt");
+    const destLink = path.join(tempDir, "0_symlink_copy.txt");
 
     if (isWindows) {
       await assertThrowsAsync(
@@ -282,8 +282,8 @@ testCopy(
 testCopy(
   "[fs] copy symlink directory",
   async (tempDir: string): Promise<void> => {
-    const srcDir = path.join(testdataDir, "copy_dir"); // origin dir
-    const srcLink = path.join(tempDir, "copy_dir_link"); // this is a dir link
+    const srcDir = path.join(testdataDir, "copy_dir");
+    const srcLink = path.join(tempDir, "copy_dir_link");
     const destLink = path.join(tempDir, "copy_dir_link_copy");
 
     if (isWindows) {
@@ -391,7 +391,7 @@ testCopySync(
       `'${destFile}' already exists`
     );
 
-    // update dest file
+    // Modify destination file.
     Deno.writeFileSync(destFile, new TextEncoder().encode("txt copy"));
 
     assertEquals(
@@ -459,7 +459,7 @@ testCopySync(
     assertEquals(existsSync(destFile), true);
     assertEquals(existsSync(destNestFile), true);
 
-    // should have the same content
+    // After copy. The source and destination should have the same content.
     assertEquals(
       new TextDecoder().decode(Deno.readFileSync(srcFile)),
       new TextDecoder().decode(Deno.readFileSync(destFile))
@@ -500,8 +500,8 @@ testCopySync(
   "[fs] copy symlink file synchronously",
   (tempDir: string): void => {
     const dir = path.join(testdataDir, "copy_dir_link_file");
-    const srcLink = path.join(dir, "0.txt"); // this is a file link
-    const destLink = path.join(tempDir, "0-copy.txt"); // this is a file link
+    const srcLink = path.join(dir, "0_symlink.txt");
+    const destLink = path.join(tempDir, "0_symlink_copy.txt");
 
     if (isWindows) {
       assertThrows(
@@ -527,8 +527,8 @@ testCopySync(
 testCopySync(
   "[fs] copy symlink directory synchronously",
   (tempDir: string): void => {
-    const originDir = path.join(testdataDir, "copy_dir"); // origin dir
-    const srcLink = path.join(tempDir, "copy_dir_link"); // this is a dir link
+    const originDir = path.join(testdataDir, "copy_dir");
+    const srcLink = path.join(tempDir, "copy_dir_link");
     const destLink = path.join(tempDir, "copy_dir_link_copy");
 
     if (isWindows) {
