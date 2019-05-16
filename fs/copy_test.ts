@@ -35,7 +35,7 @@ test({
 });
 
 test({
-  name: "[fs] copy if src and dest is same path",
+  name: "[fs] copy if src and dest are the same paths",
   async fn(): Promise<void> {
     const destDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
     const srcFile = path.join(destDir, "copy_file_same.txt");
@@ -48,7 +48,7 @@ test({
         await copy(srcFile, destFile);
       },
       Error,
-      "Source and destination must not be the same."
+      "Source and destination can not be the same."
     );
     await Deno.remove(destDir, { recursive: true });
   }
@@ -66,21 +66,21 @@ test({
     assertEquals(
       await exists(srcFile),
       true,
-      "src should be exist before copy"
+      `source should exist before copy`
     );
     assertEquals(
       await exists(destFile),
       false,
-      "dest should not exist before copy"
+      "destination should not exist before copy"
     );
 
     await copy(srcFile, destFile);
 
-    assertEquals(await exists(srcFile), true, "src should be exist after copy");
+    assertEquals(await exists(srcFile), true, "source should exist after copy");
     assertEquals(
       await exists(destFile),
       true,
-      "dest should be exist before copy"
+      "destination should exist before copy"
     );
 
     const destContent = new TextDecoder().decode(await Deno.readFile(destFile));
@@ -88,10 +88,10 @@ test({
     assertEquals(
       srcContent,
       destContent,
-      "src and dest should have same content"
+      "source and destination should have the same content"
     );
 
-    // copy again. it should throw a error
+    // Copy again and it should throw an error.
     await assertThrowsAsync(
       async (): Promise<void> => {
         await copy(srcFile, destFile);
@@ -108,10 +108,10 @@ test({
       "txt copy"
     );
 
-    // copy again with overwrite
+    // Copy again with overwrite option.
     await copy(srcFile, destFile, { overwrite: true });
 
-    // file have been overwrite
+    // Make sure the file has been overwritten.
     assertEquals(
       new TextDecoder().decode(await Deno.readFile(destFile)),
       "txt"
@@ -133,7 +133,7 @@ test({
     assert(typeof srcStatInfo.accessed === "number");
     assert(typeof srcStatInfo.modified === "number");
 
-    // overwrite and preserve timestamps
+    // Copy with overwrite and preserve timestamps options.
     await copy(srcFile, destFile, {
       overwrite: true,
       preserveTimestamps: true
@@ -151,7 +151,7 @@ test({
 });
 
 test({
-  name: "[fs] copy directory from parent dir",
+  name: "[fs] copy directory to its subdirectory",
   async fn(): Promise<void> {
     const tempDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
     const srcDir = path.join(tempDir, "parent");
@@ -172,7 +172,7 @@ test({
 });
 
 test({
-  name: "[fs] copy directory, and dest exist and not a directory",
+  name: "[fs] copy directory and destination exist and not a directory",
   async fn(): Promise<void> {
     const tempDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
     const srcDir = path.join(tempDir, "parent");
@@ -209,7 +209,7 @@ test({
     assertEquals(await exists(destFile), true);
     assertEquals(await exists(destNestFile), true);
 
-    // should have the same content
+    // After copy. The source and destination should have the same content.
     assertEquals(
       new TextDecoder().decode(await Deno.readFile(srcFile)),
       new TextDecoder().decode(await Deno.readFile(destFile))
@@ -219,7 +219,7 @@ test({
       new TextDecoder().decode(await Deno.readFile(destNestFile))
     );
 
-    // copy again. it should throw a error
+    // Copy again without overwrite option and it should throw an error.
     await assertThrowsAsync(
       async (): Promise<void> => {
         await copy(srcDir, destDir);
@@ -228,17 +228,17 @@ test({
       `'${destDir}' already exists`
     );
 
-    // update nest file
+    // Modify the file in the destination directory.
     await Deno.writeFile(destNestFile, new TextEncoder().encode("nest copy"));
     assertEquals(
       new TextDecoder().decode(await Deno.readFile(destNestFile)),
       "nest copy"
     );
 
-    // copy again with overwrite
+    // Copy again with overwrite option.
     await copy(srcDir, destDir, { overwrite: true });
 
-    // nest file have been overwrite
+    // Make sure the file has been overwritten.
     assertEquals(
       new TextDecoder().decode(await Deno.readFile(destNestFile)),
       "nest"
@@ -280,7 +280,7 @@ test({
 });
 
 test({
-  name: "[fs] copy symlink folder",
+  name: "[fs] copy symlink directory",
   async fn(): Promise<void> {
     const destDir = await Deno.makeTempDir({ prefix: tempDirPrefix });
     const srcDir = path.join(testdataDir, "copy_dir"); // origin dir
@@ -314,7 +314,7 @@ test({
 });
 
 test({
-  name: "[fs] copy file synchronously if it does no exist",
+  name: "[fs] copy file synchronously if it does not exist",
   fn(): void {
     const destDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const srcFile = path.join(testdataDir, "copy_file_not_exists_sync.txt");
@@ -328,7 +328,7 @@ test({
 });
 
 test({
-  name: "[fs] copy with preserve timestamps",
+  name: "[fs] copy synchronously with preserve timestamps",
   fn(): void {
     const destDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const srcFile = path.join(testdataDir, "copy_file.txt");
@@ -339,7 +339,7 @@ test({
     assert(typeof srcStatInfo.accessed === "number");
     assert(typeof srcStatInfo.modified === "number");
 
-    // overwrite and preserve timestamps
+    // Copy with overwrite and preserve timestamps options.
     copySync(srcFile, destFile, {
       overwrite: true,
       preserveTimestamps: true
@@ -357,7 +357,7 @@ test({
 });
 
 test({
-  name: "[fs] copy synchronously if src and dest is same path",
+  name: "[fs] copy synchronously if src and dest are the same paths",
   fn(): void {
     const srcFile = path.join(testdataDir, "copy_file_same_sync.txt");
     assertThrows(
@@ -391,7 +391,7 @@ test({
 
     assertEquals(srcContent, destContent);
 
-    // copy again. it should throw a error
+    // Copy again without overwrite option and it should throw an error.
     assertThrows(
       (): void => {
         copySync(srcFile, destFile);
@@ -408,10 +408,10 @@ test({
       "txt copy"
     );
 
-    // copy again with overwrite
+    // Copy again with overwrite option.
     copySync(srcFile, destFile, { overwrite: true });
 
-    // file have been overwrite
+    // Make sure the file has been overwritten.
     assertEquals(new TextDecoder().decode(Deno.readFileSync(destFile)), "txt");
 
     Deno.removeSync(destDir, { recursive: true });
@@ -419,7 +419,8 @@ test({
 });
 
 test({
-  name: "[fs] copy directory synchronously from parent dir",
+  // name: "[fs] copy directory synchronously from parent dir",
+  name: "[fs] copy directory synchronously to its subdirectory",
   fn(): void {
     const tempDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const srcDir = path.join(tempDir, "parent_sync");
@@ -440,7 +441,8 @@ test({
 });
 
 test({
-  name: "[fs] copy directory synchronously, and dest exist and not a directory",
+  name:
+    "[fs] copy directory synchronously, and destination exist and not a directory",
   fn(): void {
     const tempDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const srcDir = path.join(tempDir, "parent_sync");
@@ -487,7 +489,7 @@ test({
       new TextDecoder().decode(Deno.readFileSync(destNestFile))
     );
 
-    // copy again. it should throw a error
+    // Copy again without overwrite option and it should throw an error.
     assertThrows(
       (): void => {
         copySync(srcDir, destDir);
@@ -496,17 +498,17 @@ test({
       `'${destDir}' already exists`
     );
 
-    // update nest file
+    // Modify the file in the destination directory.
     Deno.writeFileSync(destNestFile, new TextEncoder().encode("nest copy"));
     assertEquals(
       new TextDecoder().decode(Deno.readFileSync(destNestFile)),
       "nest copy"
     );
 
-    // copy again with overwrite
+    // Copy again with overwrite option.
     copySync(srcDir, destDir, { overwrite: true });
 
-    // nest file have been overwrite
+    // Make sure the file has been overwritten.
     assertEquals(
       new TextDecoder().decode(Deno.readFileSync(destNestFile)),
       "nest"
@@ -548,7 +550,7 @@ test({
 });
 
 test({
-  name: "[fs] copy symlink folder synchronously",
+  name: "[fs] copy symlink directory synchronously",
   fn(): void {
     const destDir = Deno.makeTempDirSync({ prefix: tempDirPrefix });
     const originDir = path.join(testdataDir, "copy_dir"); // origin dir
