@@ -1,157 +1,201 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
 import { test } from "../testing/mod.ts";
-import { assert, assertThrows, assertThrowsAsync } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertThrows,
+  assertThrowsAsync
+} from "../testing/asserts.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import * as path from "./path/mod.ts";
-import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
 const isWindows = Deno.platform.os === "win";
 
-test(async function ensureDirIfItNotExist(): Promise<void> {
-  const baseDir = path.join(testdataDir, "ensure_dir_not_exist");
-  const testDir = path.join(baseDir, "test");
-
-  await ensureDir(testDir);
-
-  await assertThrowsAsync(
-    async (): Promise<void> => {
-      await Deno.stat(testDir).then(
-        (): void => {
-          throw new Error("test dir should exists.");
-        }
-      );
+async function testEnsureDir(
+  name: string,
+  cb: (tempDir: string) => Promise<void>
+): Promise<void> {
+  test({
+    name,
+    async fn(): Promise<void> {
+      const tempDir = await Deno.makeTempDir({
+        prefix: "deno_std_ensure_dir_async_test_"
+      });
+      await cb(tempDir);
+      await Deno.remove(tempDir, { recursive: true });
     }
-  );
+  });
+}
 
-  await Deno.remove(baseDir, { recursive: true });
-});
-
-test(function ensureDirSyncIfItNotExist(): void {
-  const baseDir = path.join(testdataDir, "ensure_dir_sync_not_exist");
-  const testDir = path.join(baseDir, "test");
-
-  ensureDirSync(testDir);
-
-  Deno.statSync(testDir);
-
-  Deno.removeSync(baseDir, { recursive: true });
-});
-
-test(async function ensureDirIfItExist(): Promise<void> {
-  const baseDir = path.join(testdataDir, "ensure_dir_exist");
-  const testDir = path.join(baseDir, "test");
-
-  // create test directory
-  await Deno.mkdir(testDir, true);
-
-  await ensureDir(testDir);
-
-  await assertThrowsAsync(
-    async (): Promise<void> => {
-      await Deno.stat(testDir).then(
-        (): void => {
-          throw new Error("test dir should still exists.");
-        }
-      );
+function testEnsureDirSync(name: string, cb: (tempDir: string) => void): void {
+  test({
+    name,
+    fn: (): void => {
+      const tempDir = Deno.makeTempDirSync({
+        prefix: "deno_std_ensure_dir_sync_test_"
+      });
+      cb(tempDir);
+      Deno.removeSync(tempDir, { recursive: true });
     }
-  );
+  });
+}
 
-  await Deno.remove(baseDir, { recursive: true });
-});
+testEnsureDir(
+  "[fs] ensureDir if it does not exist",
+  async (tempDir: string): Promise<void> => {
+    const testDir = path.join(tempDir, "test");
 
-test(function ensureDirSyncIfItExist(): void {
-  const baseDir = path.join(testdataDir, "ensure_dir_sync_exist");
-  const testDir = path.join(baseDir, "test");
+    await assertThrowsAsync(
+      async (): Promise<void> => {
+        await Deno.stat(testDir);
+      }
+    );
 
-  // create test directory
-  Deno.mkdirSync(testDir, true);
+    await ensureDir(testDir);
 
-  ensureDirSync(testDir);
-
-  assertThrows(
-    (): void => {
-      Deno.statSync(testDir);
-      throw new Error("test dir should still exists.");
-    }
-  );
-
-  Deno.removeSync(baseDir, { recursive: true });
-});
-
-test(async function ensureDirIfItAsFile(): Promise<void> {
-  const baseDir = path.join(testdataDir, "ensure_dir_exist_file");
-  const testFile = path.join(baseDir, "test");
-
-  await ensureFile(testFile);
-
-  await assertThrowsAsync(
-    async (): Promise<void> => {
-      await ensureDir(testFile);
-    },
-    Error,
-    `Ensure path exists, expected 'dir', got 'file'`
-  );
-
-  await Deno.remove(baseDir, { recursive: true });
-});
-
-test(function ensureDirSyncIfItAsFile(): void {
-  const baseDir = path.join(testdataDir, "ensure_dir_exist_file_async");
-  const testFile = path.join(baseDir, "test");
-
-  ensureFileSync(testFile);
-
-  assertThrows(
-    (): void => {
-      ensureDirSync(testFile);
-    },
-    Error,
-    `Ensure path exists, expected 'dir', got 'file'`
-  );
-
-  Deno.removeSync(baseDir, { recursive: true });
-});
-
-test(async function ensureDirIfItAsSymlink(): Promise<void> {
-  const testFile = path.join(testdataDir, "0-link.ts");
-
-  const testStat = await Deno.lstat(testFile);
-
-  if (isWindows) {
-    assert(testStat.isFile());
-    return;
-  } else {
-    assert(testStat.isSymlink());
+    // Make sure directory has been create.
+    await Deno.stat(testDir);
   }
+);
 
-  await assertThrowsAsync(
-    async (): Promise<void> => {
-      await ensureDir(testFile);
-    },
-    Error,
-    `Ensure path exists, expected 'dir', got 'symlink'`
-  );
-});
+testEnsureDirSync(
+  "[fs] ensureDirSync if it does not exist",
+  (tempDir: string): void => {
+    const testDir = path.join(tempDir, "test");
 
-test(function ensureDirSyncIfItAsSymlink(): void {
-  const testFile = path.join(testdataDir, "0-link.ts");
+    assertThrows(
+      (): void => {
+        Deno.statSync(testDir);
+      }
+    );
 
-  const testStat = Deno.lstatSync(testFile);
+    ensureDirSync(testDir);
 
-  if (isWindows) {
-    assert(testStat.isFile());
-    return;
-  } else {
-    assert(testStat.isSymlink());
+    // Make sure directory has been create.
+    Deno.statSync(testDir);
   }
+);
 
-  assertThrows(
-    (): void => {
-      ensureDirSync(testFile);
-    },
-    Error,
-    `Ensure path exists, expected 'dir', got 'symlink'`
-  );
-});
+testEnsureDir(
+  "[fs] ensureDir if it exist as a directory",
+  async (tempDir: string): Promise<void> => {
+    const testDir = path.join(tempDir, "test");
+    const testFile = path.join(testDir, "test");
+
+    await Deno.mkdir(testDir, true);
+    await Deno.writeFile(testFile, new TextEncoder().encode("abc"));
+
+    await ensureDir(testDir);
+
+    // Make sure directory has been create.
+    await Deno.stat(testDir);
+
+    // Make sure the original file still exists
+    assertEquals(
+      new TextDecoder().decode(await Deno.readFile(testFile)),
+      "abc"
+    );
+  }
+);
+
+testEnsureDirSync(
+  "[fs] ensureDirSync if it exist as a directory",
+  (tempDir: string): void => {
+    const testDir = path.join(tempDir, "test");
+    const testFile = path.join(testDir, "test");
+
+    Deno.mkdirSync(testDir, true);
+    Deno.writeFileSync(testFile, new TextEncoder().encode("abc"));
+
+    ensureDirSync(testDir);
+
+    // Make sure directory has been create.
+    Deno.statSync(testDir);
+
+    assertEquals(new TextDecoder().decode(Deno.readFileSync(testFile)), "abc");
+  }
+);
+
+testEnsureDir(
+  "[fs] ensureDir if it exist as a file",
+  async (tempDir: string): Promise<void> => {
+    const testFile = path.join(tempDir, "test");
+
+    await Deno.writeFile(testFile, new Uint8Array());
+
+    await assertThrowsAsync(
+      async (): Promise<void> => {
+        await ensureDir(testFile);
+      },
+      Error,
+      `Ensure path exists, expected 'dir', got 'file'`
+    );
+  }
+);
+
+testEnsureDirSync(
+  "[fs] ensureDirSync if it exist as a file",
+  (tempDir: string): void => {
+    const testFile = path.join(tempDir, "test");
+
+    Deno.writeFileSync(testFile, new Uint8Array());
+
+    assertThrows(
+      (): void => {
+        ensureDirSync(testFile);
+      },
+      Error,
+      `Ensure path exists, expected 'dir', got 'file'`
+    );
+  }
+);
+
+testEnsureDir(
+  "[fs] ensureDir if it exist as a symlink",
+  async (): Promise<void> => {
+    const testFile = path.join(testdataDir, "0-link.ts");
+
+    const testStat = await Deno.lstat(testFile);
+
+    if (isWindows) {
+      assert(testStat.isFile());
+      return;
+    } else {
+      assert(testStat.isSymlink());
+    }
+
+    await assertThrowsAsync(
+      async (): Promise<void> => {
+        await ensureDir(testFile);
+      },
+      Error,
+      `Ensure path exists, expected 'dir', got 'symlink'`
+    );
+  }
+);
+
+testEnsureDirSync(
+  "[fs] ensureDirSync if it exist as a symlink",
+  (): void => {
+    const testFile = path.join(testdataDir, "0-link.ts");
+
+    const testStat = Deno.lstatSync(testFile);
+
+    if (isWindows) {
+      assert(testStat.isFile());
+      return;
+    } else {
+      assert(testStat.isSymlink());
+    }
+
+    assertThrows(
+      (): void => {
+        ensureDirSync(testFile);
+      },
+      Error,
+      `Ensure path exists, expected 'dir', got 'symlink'`
+    );
+  }
+);
