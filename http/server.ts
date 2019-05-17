@@ -8,7 +8,7 @@ import { BufReader, BufState, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "../testing/asserts.ts";
-import { Latch, deferred, Deferred } from "../util/async.ts";
+import { Channel, deferred, Deferred } from "../util/async.ts";
 
 interface HttpConn extends Conn {
   // When read by a newly created request B, lastId is the id pointing to a previous
@@ -292,7 +292,7 @@ async function readRequest(
 export class Server implements AsyncIterableIterator<ServerRequest> {
   private closing = false;
   private looping = false;
-  private latch = new Latch<ServerRequest>();
+  private channel = new Channel<ServerRequest>();
 
   constructor(public listener: Listener) {}
 
@@ -326,12 +326,12 @@ export class Server implements AsyncIterableIterator<ServerRequest> {
         break;
       }
 
-      await this.latch.send(req);
+      await this.channel.send(req);
     }
   }
 
   async next(): Promise<IteratorResult<ServerRequest>> {
-    const req = await this.latch.recv();
+    const req = await this.channel.recv();
     return { done: false, value: req };
   }
 

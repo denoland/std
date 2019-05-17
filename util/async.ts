@@ -28,12 +28,10 @@ export function deferred<T>(): Deferred<T> {
   return Object.assign(promise, methods) as Deferred<T>;
 }
 
-export class Latch<T> {
-  // TODO(ry) Can this be done without using Arrays?
-
-  // Array of `[resolve_function, value]` tuples.
+/** Sends objects between asynchronous tasks, with backpressure. */
+export class Channel<T> {
+  // TODO(ry) Can Channel be implemented without using Arrays?
   private sendQueue: Array<[() => void, T]> = [];
-  // Array of `resolve_function` values.
   private recvQueue: Array<(value: T) => void> = [];
 
   send(value: T): Promise<void> {
