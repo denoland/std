@@ -246,8 +246,10 @@ export class Server implements AsyncIterable<ServerRequest> {
     this.listener.close();
   }
 
-  /** Yield all HTTP requests on a single TCP connection. */
-  async *iterateHttpRequests(conn: Conn): AsyncIterableIterator<ServerRequest> {
+  // Yields all HTTP requests on a single TCP connection.
+  private async *iterateHttpRequests(
+    conn: Conn
+  ): AsyncIterableIterator<ServerRequest> {
     const bufr = new BufReader(conn);
     let bufStateErr: BufState;
     let req: ServerRequest;
@@ -275,6 +277,10 @@ export class Server implements AsyncIterable<ServerRequest> {
     conn.close();
   }
 
+  // Accepts a new TCP connection and yields all HTTP requests that arrive on
+  // it. When a connection is accepted, it also adds a creates a new iterator
+  // of the same kind and adds it to the request multiplexer so that more
+  // TCP connections can be accepted.
   async *acceptConnAndIterateHttpRequests(
     mux: MuxAsyncIterator<ServerRequest>
   ): AsyncIterableIterator<ServerRequest> {

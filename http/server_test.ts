@@ -11,7 +11,6 @@ import { assertEquals } from "../testing/asserts.ts";
 import { Response, ServerRequest, writeResponse } from "./server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { StringReader } from "../io/readers.ts";
-import { deferred } from "../util/async.ts";
 
 interface ResponseTest {
   response: Response;
