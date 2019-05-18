@@ -7,8 +7,8 @@ type Writer = Deno.Writer;
 import { BufReader, BufState, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
-import { assert } from "../testing/asserts.ts";
-import { Channel, deferred, Deferred } from "../util/async.ts";
+import { assert, fail } from "../testing/asserts.ts";
+import { deferred, Deferred } from "../util/async.ts";
 
 interface HttpConn extends Conn {
   // When read by a newly created request B, lastId is the id pointing to a previous
@@ -256,42 +256,53 @@ export class ServerRequest {
  * See https://v8.dev/blog/fast-async
  */
 async function* iterateHttpRequests(
-  c: HttpConn
-): AsyncIterableIterator<[ServerRequest | null, BufState]> {
-  const bufr = new BufReader(c);
-  const bufw = new BufWriter(c);
+  conn: Conn
+): AsyncIterableIterator<ServerRequest> {
+  const http_conn = createHttpConn(conn);
 
+  const bufr = new BufReader(http_conn);
+  const bufw = new BufWriter(http_conn);
+  const tp = new TextProtoReader(bufr);
+
+  let buf_state_err: BufState;
   for (;;) {
     const req = new ServerRequest();
 
     // Set and incr pipeline id;
-    req.pipelineId = ++c.lastPipelineId;
+    req.pipelineId = ++http_conn.lastPipelineId;
     // Set a new pipeline deferred associated with this request
     // for future requests to wait for.
-    c.pendingDeferredMap.set(req.pipelineId, deferred());
+    http_conn.pendingDeferredMap.set(req.pipelineId, deferred());
 
-    req.conn = c;
-    req.r = bufr!;
+    req.conn = http_conn;
+    req.r = bufr;
     req.w = bufw;
 
     // First line: GET /index.html HTTP/1.0
-    const tp = new TextProtoReader(bufr!);
-    let [s, err]: [string, BufState] = await tp.readLine();
-    if (err) {
-      yield [null, err];
-      return;
-    }
+    let first_line: string;
+    [first_line, buf_state_err] = await tp.readLine();
+    if (buf_state_err !== null) break;
+    [req.method, req.url, req.proto] = first_line.split(" ", 3);
 
-    [req.method, req.url, req.proto] = s.split(" ", 3);
-    [req.headers, err] = await tp.readMIMEHeader();
-    yield [req, err];
+    [req.headers, buf_state_err] = await tp.readMIMEHeader();
+    if (buf_state_err !== null) break;
+
+    yield req;
   }
+
+  if (buf_state_err === "EOF") {
+    // The connection was gracefully closed.
+  } else if (buf_state_err instanceof Error) {
+    // TODO(ry): send something back like a HTTP 500 status.
+  } else {
+    fail(`unexpected BufState: ${buf_state_err}`);
+  }
+
+  http_conn.close();
 }
 
 export class Server implements AsyncIterable<ServerRequest> {
   private closing = false;
-  private looping = false;
-  private channel = new Channel<ServerRequest>();
 
   constructor(public listener: Listener) {}
 
@@ -300,25 +311,11 @@ export class Server implements AsyncIterable<ServerRequest> {
     this.listener.close();
   }
 
-  private async *iterateRequests(): AsyncIterableIterator<ServerRequest> {
+  async *[Symbol.asyncIterator](): AsyncIterableIterator<ServerRequest> {
     while (!this.closing) {
       const conn = await this.listener.accept();
-      const httpConn = createHttpConn(conn);
-
-      for await (const [req, err] of iterateHttpRequests(httpConn)) {
-        if (err) {
-          // TODO(ry) This should be more granular. Perhaps return back a 400 or
-          // 500 error?
-          httpConn.close();
-          break;
-        }
-        yield req;
-      }
+      yield* iterateHttpRequests(conn);
     }
-  }
-
-  [Symbol.asyncIterator](): AsyncIterableIterator<ServerRequest> {
-    return this.iterateRequests();
   }
 }
 
