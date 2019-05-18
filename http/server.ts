@@ -312,7 +312,7 @@ interface WrappedIteratorResult<T> {
   iterator: AsyncIterableIterator<T>;
   result: IteratorResult<T>;
 }
-class MuxAsyncIterator<T> {
+class MuxAsyncIterator<T> implements AsyncIterableIterator<T> {
   private iteratorNextPromiseMap: Map<
     AsyncIterableIterator<T>,
     Promise<WrappedIteratorResult<T>>
@@ -324,7 +324,7 @@ class MuxAsyncIterator<T> {
     return { iterator, result: await iterator.next() };
   }
 
-  add(iterator: AsyncIterableIterator<T>) {
+  add(iterator: AsyncIterableIterator<T>): void {
     this.iteratorNextPromiseMap.set(iterator, this.wrapIteratorNext(iterator));
   }
 
@@ -355,7 +355,7 @@ class MuxAsyncIterator<T> {
     return { value: null, done: true };
   }
 
-  [Symbol.asyncIterator]() {
+  [Symbol.asyncIterator](): MuxAsyncIterator<T> {
     return this;
   }
 }
