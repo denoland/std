@@ -1,4 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+import { assert } from "../testing/asserts.ts";
 
 // TODO(ry) It'd be better to make Deferred a class that inherits from
 // Promise, rather than an interface. This is possible in ES2016, however
@@ -28,38 +29,63 @@ export function deferred<T>(): Deferred<T> {
   return Object.assign(promise, methods) as Deferred<T>;
 }
 
-/** Sends objects between asynchronous tasks, with backpressure. */
-export class Channel<T> {
-  // TODO(ry) Can Channel be implemented without using Arrays?
-  private sendQueue: Array<[() => void, T]> = [];
-  private recvQueue: Array<(value: T) => void> = [];
+interface WrappedIteratorResult<T> {
+  iterator: AsyncIterableIterator<T>;
+  result: IteratorResult<T>;
+}
 
-  send(value: T): Promise<void> {
-    const recvResolve = this.recvQueue.shift();
-    if (recvResolve) {
-      recvResolve(value);
-      return Promise.resolve();
-    } else {
-      return new Promise(
-        (resolve, _): void => {
-          this.sendQueue.push([resolve, value]);
-        }
-      );
-    }
+/** The MuxAsyncIterator class multiplexes multiple async iterators into a
+ * single stream. It currently makes a few assumptions:
+ * - The iterators do not throw.
+ * - The final result (the value returned and not yielded from the iterator)
+ *   does not matter; if there is any, it is discarded.
+ * - Adding an iterator while the multiplexer is blocked does not take effect
+ *   immediately.
+ */
+export class MuxAsyncIterator<T> implements AsyncIterableIterator<T> {
+  private iteratorNextPromiseMap: Map<
+    AsyncIterableIterator<T>,
+    Promise<WrappedIteratorResult<T>>
+  > = new Map();
+
+  private async wrapIteratorNext(
+    iterator: AsyncIterableIterator<T>
+  ): Promise<WrappedIteratorResult<T>> {
+    return { iterator, result: await iterator.next() };
   }
 
-  recv(): Promise<T> {
-    const s = this.sendQueue.shift();
-    if (s) {
-      const [sendResolve, value] = s;
-      sendResolve();
-      return Promise.resolve(value);
-    } else {
-      return new Promise(
-        (res, _): void => {
-          this.recvQueue.push(res);
-        }
+  add(iterator: AsyncIterableIterator<T>): void {
+    this.iteratorNextPromiseMap.set(iterator, this.wrapIteratorNext(iterator));
+  }
+
+  async next(): Promise<IteratorResult<T>> {
+    while (this.iteratorNextPromiseMap.size > 0) {
+      // Wait for the next iteration result of any of the iterators, whichever
+      // yields first.
+      const { iterator, result }: WrappedIteratorResult<T> = await Promise.race(
+        this.iteratorNextPromiseMap.values()
       );
+      assert(this.iteratorNextPromiseMap.has(iterator));
+
+      if (result.done) {
+        // The iterator that yielded is done, remove it from the map.
+        this.iteratorNextPromiseMap.delete(iterator);
+      } else {
+        // The iterator has yielded a value. Call `next()` on it, wrap the
+        // returned promise, and store it in the map.
+        this.iteratorNextPromiseMap.set(
+          iterator,
+          this.wrapIteratorNext(iterator)
+        );
+        return result;
+      }
     }
+
+    // There are no iterators left in the multiplexer, so report we're done.
+    return { value: null, done: true };
+  }
+
+  [Symbol.asyncIterator](): MuxAsyncIterator<T> {
+    return this;
   }
 }

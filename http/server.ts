@@ -8,7 +8,7 @@ import { BufReader, BufState, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert, fail } from "../testing/asserts.ts";
-import { deferred, Deferred } from "../util/async.ts";
+import { deferred, Deferred, MuxAsyncIterator } from "../util/async.ts";
 
 interface HttpConn extends Conn {
   // When read by a newly created request B, lastId is the id pointing to a previous
@@ -299,65 +299,6 @@ async function* iterateHttpRequests(
   }
 
   httpConn.close();
-}
-
-// The MuxAsyncIterator class multiplexes multiple async iterators into a
-// single stream. It currently makes a few assumptions:
-//   * The iterators do not throw.
-//   * The final result (the value returned and not yielded from the iterator)
-//     does not matter; if there is any, it is discarded.
-//   * Adding an iterator while the multiplexer is blocked does not take
-//     effect immediately.
-interface WrappedIteratorResult<T> {
-  iterator: AsyncIterableIterator<T>;
-  result: IteratorResult<T>;
-}
-class MuxAsyncIterator<T> implements AsyncIterableIterator<T> {
-  private iteratorNextPromiseMap: Map<
-    AsyncIterableIterator<T>,
-    Promise<WrappedIteratorResult<T>>
-  > = new Map();
-
-  private async wrapIteratorNext(
-    iterator: AsyncIterableIterator<T>
-  ): Promise<WrappedIteratorResult<T>> {
-    return { iterator, result: await iterator.next() };
-  }
-
-  add(iterator: AsyncIterableIterator<T>): void {
-    this.iteratorNextPromiseMap.set(iterator, this.wrapIteratorNext(iterator));
-  }
-
-  async next(): Promise<IteratorResult<T>> {
-    while (this.iteratorNextPromiseMap.size > 0) {
-      // Wait for the next iteration result of any of the iterators, whichever
-      // yields first.
-      const { iterator, result }: WrappedIteratorResult<T> = await Promise.race(
-        this.iteratorNextPromiseMap.values()
-      );
-      assert(this.iteratorNextPromiseMap.has(iterator));
-
-      if (result.done) {
-        // The iterator that yielded is done, remove it from the map.
-        this.iteratorNextPromiseMap.delete(iterator);
-      } else {
-        // The iterator has yielded a value. Call `next()` on it, wrap the
-        // returned promise, and store it in the map.
-        this.iteratorNextPromiseMap.set(
-          iterator,
-          this.wrapIteratorNext(iterator)
-        );
-        return result;
-      }
-    }
-
-    // There are no iterators left in the multiplexer, so report we're done.
-    return { value: null, done: true };
-  }
-
-  [Symbol.asyncIterator](): MuxAsyncIterator<T> {
-    return this;
-  }
 }
 
 export class Server implements AsyncIterable<ServerRequest> {

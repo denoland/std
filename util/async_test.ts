@@ -1,27 +1,38 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runIfMain } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
-import { Channel, deferred } from "./async.ts";
+import { assert, assertEquals } from "../testing/asserts.ts";
+import { MuxAsyncIterator, deferred } from "./async.ts";
 
 test(async function asyncDeferred(): Promise<void> {
   const d = deferred<number>();
   d.resolve(12);
 });
 
-async function send3(channel: Channel<number>): Promise<void> {
-  await channel.send(1);
-  await channel.send(2);
-  await channel.send(3);
+async function* gen123(): AsyncIterableIterator<number> {
+  yield 1;
+  yield 2;
+  yield 3;
 }
 
-test(async function asyncChannel(): Promise<void> {
-  const channel = new Channel<number>();
-  send3(channel);
+async function* gen456(): AsyncIterableIterator<number> {
+  yield 4;
+  yield 5;
+  yield 6;
+}
 
-  assertEquals(1, await channel.recv());
-  assertEquals(2, await channel.recv());
-  assertEquals(3, await channel.recv());
-  let _lastPromise = channel.recv();
+test(async function asyncMuxAsyncIterator(): Promise<void> {
+  const mux = new MuxAsyncIterator<number>();
+  mux.add(gen123());
+  mux.add(gen456());
+  const results = new Set();
+  for (let i = 0; i < 6; i++) {
+    let r = await mux.next();
+    assert(!r.done);
+    results.add(r.value);
+  }
+  let r = await mux.next();
+  assert(r.done);
+  assertEquals(results.size, 6);
 });
 
 runIfMain(import.meta);
