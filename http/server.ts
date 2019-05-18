@@ -248,6 +248,34 @@ export class ServerRequest {
   }
 }
 
+async function readRequest(
+  httpConn: HttpConn,
+  bufr: BufReader
+): Promise<[ServerRequest, BufState]> {
+  const req = new ServerRequest();
+
+  // Set and incr pipeline id;
+  req.pipelineId = ++httpConn.lastPipelineId;
+  // Set a new pipeline deferred associated with this request
+  // for future requests to wait for.
+  httpConn.pendingDeferredMap.set(req.pipelineId, deferred());
+
+  req.conn = httpConn;
+  req.r = bufr;
+  req.w = new BufWriter(httpConn);
+  const tp = new TextProtoReader(bufr);
+  let err: BufState;
+  // First line: GET /index.html HTTP/1.0
+  let firstLine: string;
+  [firstLine, err] = await tp.readLine();
+  if (err) {
+    return [null, err];
+  }
+  [req.method, req.url, req.proto] = firstLine.split(" ", 3);
+  [req.headers, err] = await tp.readMIMEHeader();
+  return [req, err];
+}
+
 /** Continuously read more requests from conn until EOF
  * bufr is empty on a fresh TCP connection.
  * Would be passed around and reused for later request on same conn
@@ -259,34 +287,12 @@ async function* iterateHttpRequests(
   conn: Conn
 ): AsyncIterableIterator<ServerRequest> {
   const httpConn = createHttpConn(conn);
-
   const bufr = new BufReader(httpConn);
-  const bufw = new BufWriter(httpConn);
-  const tp = new TextProtoReader(bufr);
-
   let bufStateErr: BufState;
+  let req: ServerRequest;
   for (;;) {
-    const req = new ServerRequest();
-
-    // Set and incr pipeline id;
-    req.pipelineId = ++httpConn.lastPipelineId;
-    // Set a new pipeline deferred associated with this request
-    // for future requests to wait for.
-    httpConn.pendingDeferredMap.set(req.pipelineId, deferred());
-
-    req.conn = httpConn;
-    req.r = bufr;
-    req.w = bufw;
-
-    // First line: GET /index.html HTTP/1.0
-    let firstLine: string;
-    [firstLine, bufStateErr] = await tp.readLine();
-    if (bufStateErr !== null) break;
-    [req.method, req.url, req.proto] = firstLine.split(" ", 3);
-
-    [req.headers, bufStateErr] = await tp.readMIMEHeader();
-    if (bufStateErr !== null) break;
-
+    [req, bufStateErr] = await readRequest(httpConn, bufr);
+    if (bufStateErr) break;
     yield req;
   }
 
