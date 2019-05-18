@@ -278,9 +278,9 @@ export class Server implements AsyncIterable<ServerRequest> {
   }
 
   // Accepts a new TCP connection and yields all HTTP requests that arrive on
-  // it. When a connection is accepted, it also adds a creates a new iterator
-  // of the same kind and adds it to the request multiplexer so that more
-  // TCP connections can be accepted.
+  // it. When a connection is accepted, it also creates a new iterator of the
+  // same kind and adds it to the request multiplexer so that another TCP
+  // connection can be accepted.
   async *acceptConnAndIterateHttpRequests(
     mux: MuxAsyncIterator<ServerRequest>
   ): AsyncIterableIterator<ServerRequest> {
