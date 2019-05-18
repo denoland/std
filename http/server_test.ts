@@ -48,12 +48,7 @@ test(async function responseWrite(): Promise<void> {
     const buf = new Buffer();
     const bufw = new BufWriter(buf);
     const request = new ServerRequest();
-    request.pipelineId = 1;
     request.w = bufw;
-
-    const d0 = deferred<void>();
-    d0.resolve();
-    const d1 = deferred<void>();
 
     request.conn = {
       localAddr: "",
@@ -67,13 +62,12 @@ test(async function responseWrite(): Promise<void> {
       write: async (): Promise<number> => {
         return -1;
       },
-      close: (): void => {},
-      lastPipelineId: 0,
-      pendingDeferredMap: new Map([[0, d0], [1, d1]])
+      close: (): void => {}
     };
 
     await request.respond(testCase.response);
     assertEquals(buf.toString(), testCase.raw);
+    await request.done;
   }
 });
 
