@@ -10,6 +10,7 @@ import { STATUS_TEXT } from "./http_status.ts";
 import { assert, fail } from "../testing/asserts.ts";
 import { deferred, Deferred, MuxAsyncIterator } from "../util/async.ts";
 
+// TODO(ry) This should be a class, not an interface.
 interface HttpConn extends Conn {
   // When read by a newly created request B, lastId is the id pointing to a previous
   // request A, such that we must wait for responses to A to complete before
@@ -259,6 +260,12 @@ async function readRequest(
   // Set a new pipeline deferred associated with this request
   // for future requests to wait for.
   httpConn.pendingDeferredMap.set(req.pipelineId, deferred());
+
+  // TODO(ry) Let's say the request has a body which is processed by the consumer
+  // of this iterator.  We'd want to wait for this processing to be complete
+  // before reading a new set of headers.  Therefore we might need an await
+  // statement after this yield, e.g. await req.done where done is a Promise
+  // that's resolved when the request has been processed.
 
   req.conn = httpConn;
   req.r = bufr;
