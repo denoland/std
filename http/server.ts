@@ -258,47 +258,106 @@ export class ServerRequest {
 async function* iterateHttpRequests(
   conn: Conn
 ): AsyncIterableIterator<ServerRequest> {
-  const http_conn = createHttpConn(conn);
+  const httpConn = createHttpConn(conn);
 
-  const bufr = new BufReader(http_conn);
-  const bufw = new BufWriter(http_conn);
+  const bufr = new BufReader(httpConn);
+  const bufw = new BufWriter(httpConn);
   const tp = new TextProtoReader(bufr);
 
-  let buf_state_err: BufState;
+  let bufStateErr: BufState;
   for (;;) {
     const req = new ServerRequest();
 
     // Set and incr pipeline id;
-    req.pipelineId = ++http_conn.lastPipelineId;
+    req.pipelineId = ++httpConn.lastPipelineId;
     // Set a new pipeline deferred associated with this request
     // for future requests to wait for.
-    http_conn.pendingDeferredMap.set(req.pipelineId, deferred());
+    httpConn.pendingDeferredMap.set(req.pipelineId, deferred());
 
-    req.conn = http_conn;
+    req.conn = httpConn;
     req.r = bufr;
     req.w = bufw;
 
     // First line: GET /index.html HTTP/1.0
-    let first_line: string;
-    [first_line, buf_state_err] = await tp.readLine();
-    if (buf_state_err !== null) break;
-    [req.method, req.url, req.proto] = first_line.split(" ", 3);
+    let firstLine: string;
+    [firstLine, bufStateErr] = await tp.readLine();
+    if (bufStateErr !== null) break;
+    [req.method, req.url, req.proto] = firstLine.split(" ", 3);
 
-    [req.headers, buf_state_err] = await tp.readMIMEHeader();
-    if (buf_state_err !== null) break;
+    [req.headers, bufStateErr] = await tp.readMIMEHeader();
+    if (bufStateErr !== null) break;
 
     yield req;
   }
 
-  if (buf_state_err === "EOF") {
+  if (bufStateErr === "EOF") {
     // The connection was gracefully closed.
-  } else if (buf_state_err instanceof Error) {
+  } else if (bufStateErr instanceof Error) {
     // TODO(ry): send something back like a HTTP 500 status.
   } else {
-    fail(`unexpected BufState: ${buf_state_err}`);
+    fail(`unexpected BufState: ${bufStateErr}`);
   }
 
-  http_conn.close();
+  httpConn.close();
+}
+
+// The MuxAsyncIterator class multiplexes multiple async iterators into a
+// single stream. It currently makes a few assumptions:
+//   * The iterators do not throw.
+//   * The final result (the value returned and not yielded from the iterator)
+//     does not matter; if there is any, it is discarded.
+//   * Adding an iterator while the multiplexer is blocked does not take
+//     effect immediately.
+interface WrappedIteratorResult<T> {
+  iterator: AsyncIterableIterator<T>;
+  result: IteratorResult<T>;
+}
+class MuxAsyncIterator<T> {
+  private iteratorNextPromiseMap: Map<
+    AsyncIterableIterator<T>,
+    Promise<WrappedIteratorResult<T>>
+  > = new Map();
+
+  private async wrapIteratorNext(
+    iterator: AsyncIterableIterator<T>
+  ): Promise<WrappedIteratorResult<T>> {
+    return { iterator, result: await iterator.next() };
+  }
+
+  add(iterator: AsyncIterableIterator<T>) {
+    this.iteratorNextPromiseMap.set(iterator, this.wrapIteratorNext(iterator));
+  }
+
+  async next(): Promise<IteratorResult<T>> {
+    while (this.iteratorNextPromiseMap.size > 0) {
+      // Wait for the next iteration result of any of the iterators, whichever
+      // yields first.
+      const { iterator, result }: WrappedIteratorResult<T> = await Promise.race(
+        this.iteratorNextPromiseMap.values()
+      );
+      assert(this.iteratorNextPromiseMap.has(iterator));
+
+      if (result.done) {
+        // The iterator that yielded is done, remove it from the map.
+        this.iteratorNextPromiseMap.delete(iterator);
+      } else {
+        // The iterator has yielded a value. Call `next()` on it, wrap the
+        // returned promise, and store it in the map.
+        this.iteratorNextPromiseMap.set(
+          iterator,
+          this.wrapIteratorNext(iterator)
+        );
+        return result;
+      }
+    }
+
+    // There are no iterators left in the multiplexer, so report we're done.
+    return { value: null, done: true };
+  }
+
+  [Symbol.asyncIterator]() {
+    return this;
+  }
 }
 
 export class Server implements AsyncIterable<ServerRequest> {
@@ -311,11 +370,22 @@ export class Server implements AsyncIterable<ServerRequest> {
     this.listener.close();
   }
 
-  async *[Symbol.asyncIterator](): AsyncIterableIterator<ServerRequest> {
-    while (!this.closing) {
-      const conn = await this.listener.accept();
-      yield* iterateHttpRequests(conn);
-    }
+  async *iterateRequestsOnNewConnection(
+    mux: MuxAsyncIterator<ServerRequest>
+  ): AsyncIterableIterator<ServerRequest> {
+    if (this.closing) return;
+    // Wait for a new connection.
+    const conn = await this.listener.accept();
+    // Try to accept another connection and add it to the multiplexer.
+    mux.add(this.iterateRequestsOnNewConnection(mux));
+    // Yield the requests that arrive on the just-accepted connection.
+    yield* iterateHttpRequests(conn);
+  }
+
+  [Symbol.asyncIterator](): AsyncIterableIterator<ServerRequest> {
+    const mux: MuxAsyncIterator<ServerRequest> = new MuxAsyncIterator();
+    mux.add(this.iterateRequestsOnNewConnection(mux));
+    return mux;
   }
 }
 
