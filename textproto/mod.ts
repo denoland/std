@@ -143,7 +143,6 @@ export class TextProtoReader {
     while (true) {
       let [l, more, err] = await this.r.readLine();
       if (err != null) {
-        console.log("err!null");
         // Go's len(typed nil) works fine, but not in JS
         return [new Uint8Array(0), err];
       }
