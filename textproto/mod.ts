@@ -86,7 +86,10 @@ export class TextProtoReader {
 
       // If we encounter an empty line with a space
       // it's the end of mime headers
-      if ((kv.length === 1 && kv[0] === charCode(" ")) || kv.byteLength === 0) {
+      if (
+        kv.length === kv.filter((x): boolean => x === charCode(" ")).length ||
+        kv.byteLength === 0
+      ) {
         return [m, err];
       }
 
