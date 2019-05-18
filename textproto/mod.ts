@@ -83,7 +83,10 @@ export class TextProtoReader {
 
     while (true) {
       let [kv, err] = await this.readLineSlice(); // readContinuedLineSlice
-      if (kv.byteLength == 0) {
+
+      // If we encounter an empty line with a space
+      // it's the end of mime headers
+      if ((kv.length === 1 && kv[0] === charCode(" ")) || kv.byteLength === 0) {
         return [m, err];
       }
 
@@ -137,6 +140,7 @@ export class TextProtoReader {
     while (true) {
       let [l, more, err] = await this.r.readLine();
       if (err != null) {
+        console.log("err!null");
         // Go's len(typed nil) works fine, but not in JS
         return [new Uint8Array(0), err];
       }
