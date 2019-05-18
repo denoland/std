@@ -84,12 +84,7 @@ export class TextProtoReader {
     while (true) {
       let [kv, err] = await this.readLineSlice(); // readContinuedLineSlice
 
-      // If we encounter an empty line with a space
-      // it's the end of mime headers
-      if (
-        kv.length === kv.filter((x): boolean => x === charCode(" ")).length ||
-        kv.byteLength === 0
-      ) {
+      if (kv.byteLength === 0) {
         return [m, err];
       }
 
@@ -146,15 +141,31 @@ export class TextProtoReader {
         // Go's len(typed nil) works fine, but not in JS
         return [new Uint8Array(0), err];
       }
+
       // Avoid the copy if the first call produced a full line.
       if (line == null && !more) {
+        if (this.skipSpace(l) === 0) {
+          return [new Uint8Array(0), null];
+        }
         return [l, null];
       }
+
       line = append(line, l);
       if (!more) {
         break;
       }
     }
     return [line, null];
+  }
+
+  skipSpace(l: Uint8Array): number {
+    let n = 0;
+    for (let i = 0; i < l.length; i++) {
+      if (l[i] === charCode(" ") || l[i] === charCode("\t")) {
+        continue;
+      }
+      n++;
+    }
+    return n;
   }
 }
