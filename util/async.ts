@@ -1,5 +1,4 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../testing/asserts.ts";
 
 // TODO(ry) It'd be better to make Deferred a class that inherits from
 // Promise, rather than an interface. This is possible in ES2016, however
@@ -51,7 +50,9 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
     this.signal.resolve();
   }
 
-  private async callIteratorNext(iterator: AsyncIterableIterator<T>) {
+  private async callIteratorNext(
+    iterator: AsyncIterableIterator<T>
+  ): Promise<void> {
     const { value, done } = await iterator.next();
     if (done) {
       this.iteratorCount--;
