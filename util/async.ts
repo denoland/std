@@ -29,9 +29,9 @@ export function deferred<T>(): Deferred<T> {
   return Object.assign(promise, methods) as Deferred<T>;
 }
 
-interface WrappedIteratorResult<T> {
+interface TaggedYieldedValue<T> {
   iterator: AsyncIterableIterator<T>;
-  result: IteratorResult<T>;
+  value: T;
 }
 
 /** The MuxAsyncIterator class multiplexes multiple async iterators into a
@@ -39,53 +39,47 @@ interface WrappedIteratorResult<T> {
  * - The iterators do not throw.
  * - The final result (the value returned and not yielded from the iterator)
  *   does not matter; if there is any, it is discarded.
- * - Adding an iterator while the multiplexer is blocked does not take effect
- *   immediately.
  */
-export class MuxAsyncIterator<T> implements AsyncIterableIterator<T> {
-  private iteratorNextPromiseMap: Map<
-    AsyncIterableIterator<T>,
-    Promise<WrappedIteratorResult<T>>
-  > = new Map();
-
-  private async wrapIteratorNext(
-    iterator: AsyncIterableIterator<T>
-  ): Promise<WrappedIteratorResult<T>> {
-    return { iterator, result: await iterator.next() };
-  }
+export class MuxAsyncIterator<T> implements AsyncIterable<T> {
+  private iteratorCount = 0;
+  private yields: Array<TaggedYieldedValue<T>> = [];
+  private signal: Deferred<void> = deferred();
 
   add(iterator: AsyncIterableIterator<T>): void {
-    this.iteratorNextPromiseMap.set(iterator, this.wrapIteratorNext(iterator));
+    ++this.iteratorCount;
+    this.callIteratorNext(iterator);
+    this.signal.resolve();
   }
 
-  async next(): Promise<IteratorResult<T>> {
-    while (this.iteratorNextPromiseMap.size > 0) {
-      // Wait for the next iteration result of any of the iterators, whichever
-      // yields first.
-      const { iterator, result }: WrappedIteratorResult<T> = await Promise.race(
-        this.iteratorNextPromiseMap.values()
-      );
-      assert(this.iteratorNextPromiseMap.has(iterator));
-
-      if (result.done) {
-        // The iterator that yielded is done, remove it from the map.
-        this.iteratorNextPromiseMap.delete(iterator);
-      } else {
-        // The iterator has yielded a value. Call `next()` on it, wrap the
-        // returned promise, and store it in the map.
-        this.iteratorNextPromiseMap.set(
-          iterator,
-          this.wrapIteratorNext(iterator)
-        );
-        return result;
-      }
+  private async callIteratorNext(iterator: AsyncIterableIterator<T>) {
+    const { value, done } = await iterator.next();
+    if (done) {
+      this.iteratorCount--;
+    } else {
+      this.yields.push({ iterator, value });
     }
-
-    // There are no iterators left in the multiplexer, so report we're done.
-    return { value: null, done: true };
+    this.signal.resolve();
   }
 
-  [Symbol.asyncIterator](): MuxAsyncIterator<T> {
-    return this;
+  async *iterate(): AsyncIterableIterator<T> {
+    while (this.iteratorCount > 0) {
+      // Sleep until any of the wrapped iterators yields.
+      await this.signal;
+
+      // Note that while we're looping over `yields`, new items may be added.
+      for (let i = 0; i < this.yields.length; i++) {
+        const { iterator, value } = this.yields[i];
+        yield value;
+        this.callIteratorNext(iterator);
+      }
+
+      // Clear the `yields` list and reset the `signal` promise.
+      this.yields.length = 0;
+      this.signal = deferred();
+    }
+  }
+
+  [Symbol.asyncIterator](): AsyncIterableIterator<T> {
+    return this.iterate();
   }
 }

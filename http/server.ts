@@ -296,7 +296,7 @@ export class Server implements AsyncIterable<ServerRequest> {
   [Symbol.asyncIterator](): AsyncIterableIterator<ServerRequest> {
     const mux: MuxAsyncIterator<ServerRequest> = new MuxAsyncIterator();
     mux.add(this.acceptConnAndIterateHttpRequests(mux));
-    return mux;
+    return mux.iterate();
   }
 }
 
