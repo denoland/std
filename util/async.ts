@@ -47,7 +47,6 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
   add(iterator: AsyncIterableIterator<T>): void {
     ++this.iteratorCount;
     this.callIteratorNext(iterator);
-    this.signal.resolve();
   }
 
   private async callIteratorNext(
@@ -55,7 +54,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
   ): Promise<void> {
     const { value, done } = await iterator.next();
     if (done) {
-      this.iteratorCount--;
+      --this.iteratorCount;
     } else {
       this.yields.push({ iterator, value });
     }
