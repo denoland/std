@@ -55,39 +55,6 @@ test(async function responseWrite(): Promise<void> {
   }
 });
 
-test(async function responseWriteInCaseOfError(): Promise<void> {
-  const buf = new Buffer();
-  const bufw = new BufWriter(buf);
-  const request = new ServerRequest();
-  request.w = bufw;
-  request.err = new Error("Unable to parse request");
-  request.conn = {
-    localAddr: "",
-    remoteAddr: "",
-    rid: -1,
-    closeRead: (): void => {},
-    closeWrite: (): void => {},
-    read: async (): Promise<Deno.ReadResult> => {
-      return { eof: true, nread: 0 };
-    },
-    write: async (): Promise<number> => {
-      return -1;
-    },
-    close: (): void => {}
-  };
-  const response = {
-    status: 200
-  };
-  await request.respond(response);
-  console.log(buf.toString());
-  const expected =
-    "HTTP/1.1 400 Bad Request\r\n" +
-    "content-length: 29\r\n\r\n" +
-    "Unable to proceed request\r\n\r\n";
-  assertEquals(buf.toString(), expected);
-  await request.done;
-});
-
 test(async function requestBodyWithContentLength(): Promise<void> {
   {
     const req = new ServerRequest();
