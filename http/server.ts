@@ -190,10 +190,13 @@ export class ServerRequest {
   }
 
   async respond(r: Response): Promise<void> {
+    // if an error in the request occurs
+    // we rewrite it
     if (this.err) {
       r.status = 400;
       r.body = new TextEncoder().encode("Unable to proceed request");
     }
+
     // Write our response!
     await writeResponse(this.w, r);
     // Signal that this request has been processed and the next pipelined
