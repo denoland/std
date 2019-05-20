@@ -107,7 +107,7 @@ export class ServerRequest {
   r: BufReader;
   w: BufWriter;
   done: Deferred<void> = deferred();
-  err?: any; // error in the request
+  err?: Error; // error in the request
 
   public async *bodyStream(): AsyncIterableIterator<Uint8Array> {
     if (this.headers.has("content-length")) {
