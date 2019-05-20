@@ -25,13 +25,9 @@ test(async function asyncMuxAsyncIterator(): Promise<void> {
   mux.add(gen123());
   mux.add(gen456());
   const results = new Set();
-  for (let i = 0; i < 6; i++) {
-    let r = await mux.next();
-    assert(!r.done);
-    results.add(r.value);
+  for await (const value of mux) {
+    results.add(value);
   }
-  let r = await mux.next();
-  assert(r.done);
   assertEquals(results.size, 6);
 });
 
