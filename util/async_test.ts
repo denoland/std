@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runIfMain } from "../testing/mod.ts";
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../testing/asserts.ts";
 import { MuxAsyncIterator, deferred } from "./async.ts";
 
 test(async function asyncDeferred(): Promise<void> {
