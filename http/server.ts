@@ -107,6 +107,7 @@ export class ServerRequest {
   r: BufReader;
   w: BufWriter;
   done: Deferred<void> = deferred();
+  err?: any; // error in the request
 
   public async *bodyStream(): AsyncIterableIterator<Uint8Array> {
     if (this.headers.has("content-length")) {
@@ -189,6 +190,10 @@ export class ServerRequest {
   }
 
   async respond(r: Response): Promise<void> {
+    if (this.err) {
+      r.status = 400;
+      r.body = new TextEncoder().encode("Unable to proceed request");
+    }
     // Write our response!
     await writeResponse(this.w, r);
     // Signal that this request has been processed and the next pipelined
@@ -211,7 +216,16 @@ async function readRequest(
     return [null, err];
   }
   [req.method, req.url, req.proto] = firstLine.split(" ", 3);
-  [req.headers, err] = await tp.readMIMEHeader();
+
+  // if there is an error in the request header
+  // we proceed the request but we force a 400
+  try {
+    [req.headers, err] = await tp.readMIMEHeader();
+  } catch (e) {
+    req.err = e;
+    return [req, null];
+  }
+
   return [req, err];
 }
 
