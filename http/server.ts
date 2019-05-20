@@ -194,7 +194,7 @@ export class ServerRequest {
     // we rewrite it
     if (this.err) {
       r.status = 400;
-      r.body = new TextEncoder().encode("Unable to proceed request");
+      r.body = new TextEncoder().encode("Unable to proceed request\r\n\r\n");
     }
 
     // Write our response!
