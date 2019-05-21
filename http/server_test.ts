@@ -309,8 +309,7 @@ test(async function readRequestError(): Promise<void> {
   let input = `GET / HTTP/1.1
 malformedHeader
 `;
-  const buf = new Buffer(enc.encode(input));
-  const reader = new BufReader(buf);
+  const reader = new BufReader(new StringReader(input));
   const conn = createConnMock();
   const [_, err] = await readRequest(conn, reader);
   const e: any = err; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -319,7 +318,7 @@ malformedHeader
 });
 
 // Port from Go
-// https://github.com/golang/go/blob/master/src/net/http/request_test.go
+// https://github.com/golang/go/blob/master/src/net/http/request_test.go#L380-L446
 test(async function testReadRequestError(): Promise<void> {
   const testCases = {
     0: {
@@ -373,8 +372,7 @@ test(async function testReadRequestError(): Promise<void> {
   };
   for (const p in testCases) {
     const test = testCases[p];
-    const buf = new Buffer(enc.encode(test.in).buffer);
-    const reader = new BufReader(buf);
+    const reader = new BufReader(new StringReader(test.in));
     const conn = createConnMock();
     const [req, err] = await readRequest(conn, reader);
     assertEquals(test.err, err);
