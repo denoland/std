@@ -339,7 +339,7 @@ test(async function testReadRequestError(): Promise<void> {
       in: "HEAD / HTTP/1.1\r\n\r\n",
       headers: [],
       err: null
-    },
+    }
     // Multiple Content-Length values should either be
     // deduplicated if same or reject otherwise
     // See Issue 16490.
