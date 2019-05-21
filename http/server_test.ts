@@ -367,11 +367,11 @@ test(async function testReadRequestError(): Promise<void> {
     //   in: "POST / HTTP/1.1\r\nContent-Length:\r\nContent-Length: 3\r\n\r\n",
     //   err: "cannot contain multiple Content-Length headers"
     // },
-    10: {
-      in: "HEAD / HTTP/1.1\r\nContent-Length:0\r\nContent-Length: 0\r\n\r\n",
-      headers: [{ key: "Content-Length", value: "0" }],
-      err: null
-    }
+    // 10: {
+    //   in: "HEAD / HTTP/1.1\r\nContent-Length:0\r\nContent-Length: 0\r\n\r\n",
+    //   headers: [{ key: "Content-Length", value: "0" }],
+    //   err: null
+    // }
   };
   for (const p in testCases) {
     const test = testCases[p];
