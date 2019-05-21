@@ -55,16 +55,16 @@ Markdown Styling Options:
                              Defaults to preserve.
 
 Example:
-  deno prettier/main.ts --write script1.ts script2.js
+  deno run prettier/main.ts --write script1.ts script2.js
                              Formats the files
 
-  deno prettier/main.ts --check script1.ts script2.js
+  deno run prettier/main.ts --check script1.ts script2.js
                              Checks if the files are formatted
 
-  deno prettier/main.ts --write
+  deno run prettier/main.ts --write
                              Formats the all files in the repository
 
-  deno prettier/main.ts script1.ts
+  deno run prettier/main.ts script1.ts
                              Print the formatted code to stdout
 `;
 
