@@ -25,6 +25,7 @@ Usage: deno prettier/main.ts [options] [files...]
 Options:
   -H, --help                 Show this help message and exit.
   --check                    Check if the source files are formatted.
+  --write                    Whether to write to the file, otherwise it will output to stdout, Defaults to false.
   --ignore <path>            Ignore the given path(s).
 
 JS/TS Styling Options:
@@ -54,14 +55,17 @@ Markdown Styling Options:
                              Defaults to preserve.
 
 Example:
-  deno prettier/main.ts script1.ts script2.js
+  deno prettier/main.ts --write script1.ts script2.js
                              Formats the files
 
   deno prettier/main.ts --check script1.ts script2.js
                              Checks if the files are formatted
 
-  deno prettier/main.ts
+  deno prettier/main.ts --write
                              Formats the all files in the repository
+
+  deno prettier/main.ts script1.ts
+                             Print the formatted code to stdout
 `;
 
 // Available parsers
