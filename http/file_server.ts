@@ -148,6 +148,7 @@ async function serveDir(
   // dirname has no prefix
   const listEntry: string[] = [];
   const fileInfos = await readDir(dirPath);
+  dirPath = dirPath.replace(currentDir, "");
   for (const info of fileInfos) {
     let fn = dirPath + "/" + info.name;
     if (info.name === "index.html" && info.isFile()) {
@@ -162,7 +163,7 @@ async function serveDir(
     listEntry.push(
       createDirEntryDisplay(
         info.name,
-        fn.replace(currentDir, ''),
+        fn,
         info.isFile() ? info.len : null,
         mode,
         info.isDirectory()
