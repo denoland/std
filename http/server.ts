@@ -15,6 +15,14 @@ import {
   MuxAsyncIterator
 } from "../util/async.ts";
 
+export class HttpError extends Error {
+  public status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
+
 function bufWriter(w: Writer): BufWriter {
   if (w instanceof BufWriter) {
     return w;
@@ -199,7 +207,7 @@ export class ServerRequest {
 
 export async function readRequest(
   bufr: BufReader
-): Promise<[ServerRequest, BufState]> {
+): Promise<[ServerRequest, BufState | HttpError]> {
   const req = new ServerRequest();
   req.r = bufr;
   const tp = new TextProtoReader(bufr);
@@ -217,12 +225,7 @@ export async function readRequest(
   try {
     [req.headers, err] = await tp.readMIMEHeader();
   } catch (e) {
-    await writeResponse(req.w, {
-      status: 400,
-      body: new TextEncoder().encode("Unable to proceed request\r\n\r\n")
-    });
-    await req.done.resolve();
-    return [null, "EOF"];
+    return [req, new HttpError(400, "Unable to proceed request")];
   }
 
   return [req, err];
@@ -259,7 +262,12 @@ export class Server implements AsyncIterable<ServerRequest> {
 
     if (bufStateErr === "EOF") {
       // The connection was gracefully closed.
-    } else if (bufStateErr instanceof Error) {
+    } else if (bufStateErr instanceof HttpError) {
+      await writeResponse(req.w, {
+        status: bufStateErr.status,
+        body: new TextEncoder().encode(`${bufStateErr.message}\r\n\r\n`)
+      });
+      await req.done.resolve();
       // TODO(ry): send something back like a HTTP 500 status.
     } else if (this.closing) {
       // There are more requests incoming but the server is closing.

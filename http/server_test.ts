@@ -7,12 +7,13 @@
 
 const { Buffer } = Deno;
 import { test, runIfMain } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals } from "../testing/asserts.ts";
 import {
   Response,
   ServerRequest,
   writeResponse,
-  readRequest
+  readRequest,
+  HttpError
 } from "./server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { StringReader } from "../io/readers.ts";
@@ -288,13 +289,8 @@ test(async function writeStringReaderResponse(): Promise<void> {
   assertEquals(decoder.decode(line), "0");
 });
 
-test(async function readRequestError(): Promise<void> {
-  let input = `GET / HTTP/1.1
-malformedHeader
-`;
-  const buf = new Buffer(enc.encode(input));
-  const reader = new BufReader(buf);
-  const conn = {
+function createConnMock(): Deno.Conn {
+  return {
     localAddr: "",
     remoteAddr: "",
     rid: -1,
@@ -308,8 +304,82 @@ malformedHeader
     },
     close: (): void => {}
   };
+}
+
+test(async function readRequestError(): Promise<void> {
+  let input = `GET / HTTP/1.1
+malformedHeader
+`;
+  const buf = new Buffer(enc.encode(input));
+  const reader = new BufReader(buf);
+  const conn = createConnMock();
   const [_, err] = await readRequest(conn, reader);
-  assertEquals(err, "EOF");
+  const e: any = err;
+  assert(e instanceof HttpError);
+  assertEquals(e.status, 400);
+  assertEquals(e.message, "Unable to proceed request");
 });
 
+// Port from Go
+// https://github.com/golang/go/blob/master/src/net/http/request_test.go
+test(async function testReadRequestError(): Promise<void> {
+  const testCases = {
+    0: {
+      in: "GET / HTTP/1.1\r\nheader: foo\r\n\r\n",
+      header: new Headers({ header: "foo" }),
+      err: null
+    },
+    1: { in: "GET / HTTP/1.1\r\nheader:foo\r\n", err: "EOF" },
+    2: { in: "", err: "EOF" },
+    // 3: {
+    //   in: "HEAD / HTTP/1.1\r\nContent-Length:4\r\n\r\n",
+    //   err: "http: method cannot contain a Content-Length"
+    // },
+    4: {
+      in: "HEAD / HTTP/1.1\r\n\r\n",
+      header: new Headers(),
+      err: null
+    },
+    // Multiple Content-Length values should either be
+    // deduplicated if same or reject otherwise
+    // See Issue 16490.
+    // 5: {
+    //   in:
+    //     "POST / HTTP/1.1\r\nContent-Length: 10\r\nContent-Length: 0\r\n\r\nGopher hey\r\n",
+    //   err: "cannot contain multiple Content-Length headers"
+    // },
+    // 6: {
+    //   in:
+    //     "POST / HTTP/1.1\r\nContent-Length: 10\r\nContent-Length: 6\r\n\r\nGopher\r\n",
+    //   err: "cannot contain multiple Content-Length headers"
+    // },
+    7: {
+      in:
+        "PUT / HTTP/1.1\r\nContent-Length: 6 \r\nContent-Length: 6\r\nContent-Length:6\r\n\r\nGopher\r\n",
+      err: null,
+      header: new Headers({ "Content-Length": "6" })
+    },
+    // 8: {
+    //   in: "PUT / HTTP/1.1\r\nContent-Length: 1\r\nContent-Length: 6 \r\n\r\n",
+    //   err: "cannot contain multiple Content-Length headers"
+    // },
+    // 9: {
+    //   in: "POST / HTTP/1.1\r\nContent-Length:\r\nContent-Length: 3\r\n\r\n",
+    //   err: "cannot contain multiple Content-Length headers"
+    // },
+    10: {
+      in: "HEAD / HTTP/1.1\r\nContent-Length:0\r\nContent-Length: 0\r\n\r\n",
+      header: new Headers({ "Content-Length": "0" }),
+      err: null
+    }
+  };
+  for (const p in testCases) {
+    const test = testCases[p];
+    const buf = new Buffer(enc.encode(test.in).buffer);
+    const reader = new BufReader(buf);
+    const conn = createConnMock();
+    const [_, err] = await readRequest(conn, reader);
+    assertEquals(test.err, err);
+  }
+});
 runIfMain(import.meta);
