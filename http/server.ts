@@ -197,7 +197,7 @@ export class ServerRequest {
   }
 }
 
-async function readRequest(
+export async function readRequest(
   bufr: BufReader
 ): Promise<[ServerRequest, BufState]> {
   const req = new ServerRequest();
