@@ -218,16 +218,16 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
     decoder.decode(await Deno.readFile(f));
 
   const { stdout } = await run([...cmd, file0]);
-  // the source file will not change without `--write` flags
+  // The source file will not change without `--write` flags.
   assertEquals(await getSourceCode(file0), "console.log (0)" + EOL);
-  // the output will be formatted code
+  // The output should be formatted code.
   assertEquals(stdout, "console.log(0);" + EOL);
 
   const { stdout: formattedCode } = await run([...cmd, file1]);
-  // the source file will not change without `--write` flags
+  // The source file will not change without `--write` flags.
   assertEquals(await getSourceCode(file1), "console.log(0);" + EOL);
-  // the output will be empty string. because the formatted content is same with before
-  assertEquals(formattedCode, "");
+  // The output will be formatted code even it is the same as the source file's content.
+  assertEquals(formattedCode, "console.log(0);" + EOL);
 
   await clearTestdataChanges();
 });

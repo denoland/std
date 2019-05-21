@@ -146,14 +146,14 @@ async function formatFile(
     plugins: prettierPlugins
   });
 
-  if (text !== formatted) {
-    const fileUnit8 = encoder.encode(formatted);
-    if (prettierOpts.write) {
+  const fileUnit8 = encoder.encode(formatted);
+  if (prettierOpts.write) {
+    if (text !== formatted) {
       console.log(`Formatting ${filename}`);
       await writeFile(filename, fileUnit8);
-    } else {
-      await stdout.write(fileUnit8);
     }
+  } else {
+    await stdout.write(fileUnit8);
   }
 }
 
