@@ -66,6 +66,9 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
   if (!statusText) {
     throw Error("bad status code");
   }
+  if (!r.body) {
+    r.body = new Uint8Array();
+  }
 
   let out = `HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`;
 
@@ -82,18 +85,16 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
   let n = await writer.write(header);
   assert(header.byteLength == n);
 
-  if (r.body) {
-    if (r.body instanceof Uint8Array) {
-      n = await writer.write(r.body);
-      assert(r.body.byteLength == n);
+  if (r.body instanceof Uint8Array) {
+    n = await writer.write(r.body);
+    assert(r.body.byteLength == n);
+  } else {
+    if (r.headers.has("content-length")) {
+      const bodyLength = parseInt(r.headers.get("content-length"));
+      const n = await copy(writer, r.body);
+      assert(n == bodyLength);
     } else {
-      if (r.headers.has("content-length")) {
-        const bodyLength = parseInt(r.headers.get("content-length"));
-        const n = await copy(writer, r.body);
-        assert(n == bodyLength);
-      } else {
-        await writeChunkedBody(writer, r.body);
-      }
+      await writeChunkedBody(writer, r.body);
     }
   }
   await writer.flush();

@@ -429,6 +429,7 @@ export class BufWriter implements Writer {
       return err;
     }
     this.n = 0;
+    return null;
   }
 
   /** Returns how many bytes are unused in the buffer. */
