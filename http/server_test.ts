@@ -314,7 +314,7 @@ malformedHeader
   const reader = new BufReader(buf);
   const conn = createConnMock();
   const [_, err] = await readRequest(conn, reader);
-  const e: any = err;
+  const e: any = err; // eslint-disable-line @typescript-eslint/no-explicit-any
   assert(e instanceof HttpError);
   assertEquals(e.status, 400);
   assertEquals(e.message, "Unable to proceed request");
@@ -326,18 +326,18 @@ test(async function testReadRequestError(): Promise<void> {
   const testCases = {
     0: {
       in: "GET / HTTP/1.1\r\nheader: foo\r\n\r\n",
-      header: new Headers({ header: "foo" }),
+      headers: [{ key: "header", value: "foo" }],
       err: null
     },
-    1: { in: "GET / HTTP/1.1\r\nheader:foo\r\n", err: "EOF" },
-    2: { in: "", err: "EOF" },
+    1: { in: "GET / HTTP/1.1\r\nheader:foo\r\n", err: "EOF", headers: [] },
+    2: { in: "", err: "EOF", headers: [] },
     // 3: {
     //   in: "HEAD / HTTP/1.1\r\nContent-Length:4\r\n\r\n",
     //   err: "http: method cannot contain a Content-Length"
     // },
     4: {
       in: "HEAD / HTTP/1.1\r\n\r\n",
-      header: new Headers(),
+      headers: [],
       err: null
     },
     // Multiple Content-Length values should either be
@@ -353,12 +353,12 @@ test(async function testReadRequestError(): Promise<void> {
     //     "POST / HTTP/1.1\r\nContent-Length: 10\r\nContent-Length: 6\r\n\r\nGopher\r\n",
     //   err: "cannot contain multiple Content-Length headers"
     // },
-    7: {
-      in:
-        "PUT / HTTP/1.1\r\nContent-Length: 6 \r\nContent-Length: 6\r\nContent-Length:6\r\n\r\nGopher\r\n",
-      err: null,
-      header: new Headers({ "Content-Length": "6" })
-    },
+    // 7: {
+    //   in:
+    //     "PUT / HTTP/1.1\r\nContent-Length: 6 \r\nContent-Length: 6\r\nContent-Length:6\r\n\r\nGopher\r\n",
+    //   err: null,
+    //   headers: [{ key: "Content-Length", value: "6" }]
+    // },
     // 8: {
     //   in: "PUT / HTTP/1.1\r\nContent-Length: 1\r\nContent-Length: 6 \r\n\r\n",
     //   err: "cannot contain multiple Content-Length headers"
@@ -369,7 +369,7 @@ test(async function testReadRequestError(): Promise<void> {
     // },
     10: {
       in: "HEAD / HTTP/1.1\r\nContent-Length:0\r\nContent-Length: 0\r\n\r\n",
-      header: new Headers({ "Content-Length": "0" }),
+      headers: [{ key: "Content-Length", value: "0" }],
       err: null
     }
   };
@@ -378,8 +378,11 @@ test(async function testReadRequestError(): Promise<void> {
     const buf = new Buffer(enc.encode(test.in).buffer);
     const reader = new BufReader(buf);
     const conn = createConnMock();
-    const [_, err] = await readRequest(conn, reader);
+    const [req, err] = await readRequest(conn, reader);
     assertEquals(test.err, err);
+    for (const h of test.headers) {
+      assertEquals(req.headers.get(h.key), h.value);
+    }
   }
 });
 runIfMain(import.meta);
