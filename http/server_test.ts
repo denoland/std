@@ -317,8 +317,8 @@ malformedHeader
   assertEquals(e.message, "Unable to proceed request");
 });
 
-// Port from Go
-// https://github.com/golang/go/blob/master/src/net/http/request_test.go#L380-L446
+// Ported from Go
+// https://github.com/golang/go/blob/go1.12.5/src/net/http/request_test.go#L377-L443
 test(async function testReadRequestError(): Promise<void> {
   const testCases = {
     0: {
