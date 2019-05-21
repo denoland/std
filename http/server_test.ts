@@ -12,8 +12,7 @@ import {
   Response,
   ServerRequest,
   writeResponse,
-  readRequest,
-  HttpError
+  readRequest
 } from "./server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { StringReader } from "../io/readers.ts";
@@ -315,8 +314,7 @@ malformedHeader
   const conn = createConnMock();
   const [_, err] = await readRequest(conn, reader);
   const e: any = err; // eslint-disable-line @typescript-eslint/no-explicit-any
-  assert(e instanceof HttpError);
-  assertEquals(e.status, 400);
+  assert(e instanceof Error);
   assertEquals(e.message, "Unable to proceed request");
 });
 
