@@ -8,7 +8,12 @@
 const { Buffer } = Deno;
 import { test, runIfMain } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
-import { Response, ServerRequest, writeResponse } from "./server.ts";
+import {
+  Response,
+  ServerRequest,
+  writeResponse,
+  readRequest
+} from "./server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { StringReader } from "../io/readers.ts";
 
@@ -281,6 +286,30 @@ test(async function writeStringReaderResponse(): Promise<void> {
 
   line = (await reader.readLine())[0];
   assertEquals(decoder.decode(line), "0");
+});
+
+test(async function readRequestError(): Promise<void> {
+  let input = `GET / HTTP/1.1
+malformedHeader
+`;
+  const buf = new Buffer(enc.encode(input));
+  const reader = new BufReader(buf);
+  const conn = {
+    localAddr: "",
+    remoteAddr: "",
+    rid: -1,
+    closeRead: (): void => {},
+    closeWrite: (): void => {},
+    read: async (): Promise<Deno.ReadResult> => {
+      return { eof: true, nread: 0 };
+    },
+    write: async (): Promise<number> => {
+      return -1;
+    },
+    close: (): void => {}
+  };
+  const [_, err] = await readRequest(conn, reader);
+  assertEquals(err, "EOF");
 });
 
 runIfMain(import.meta);
