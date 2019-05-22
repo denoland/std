@@ -216,7 +216,6 @@ export async function readRequest(
   // we proceed the request but we force a 400
   try {
     [req.method, req.url, req.proto] = firstLine.split(" ", 3);
-
     [req.headers, err] = await tp.readMIMEHeader();
   } catch (e) {
     return [req, new Error("Unable to proceed request")];
