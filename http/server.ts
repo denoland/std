@@ -197,7 +197,6 @@ export class ServerRequest {
   }
 }
 
-// TODO(#427) readRequest should not depend on conn.
 export async function readRequest(
   bufr: BufReader
 ): Promise<[ServerRequest, BufState]> {
@@ -211,11 +210,8 @@ export async function readRequest(
   if (err) {
     return [null, err];
   }
-
   [req.method, req.url, req.proto] = firstLine.split(" ", 3);
-
   [req.headers, err] = await tp.readMIMEHeader();
-
   return [req, err];
 }
 
@@ -255,12 +251,11 @@ export class Server implements AsyncIterable<ServerRequest> {
     if (bufStateErr === "EOF") {
       // The connection was gracefully closed.
     } else if (bufStateErr instanceof Error) {
+      // An error was thrown while parsing request headers.
       await writeResponse(req.w, {
         status: 400,
         body: new TextEncoder().encode(`${bufStateErr.message}\r\n\r\n`)
       });
-      await req.done.resolve();
-      // TODO(ry): send something back like a HTTP 500 status.
     } else if (this.closing) {
       // There are more requests incoming but the server is closing.
       // TODO(ry): send a back a HTTP 503 Service Unavailable status.
