@@ -319,6 +319,7 @@ malformedHeader
 
 // Ported from Go
 // https://github.com/golang/go/blob/go1.12.5/src/net/http/request_test.go#L377-L443
+// TODO(zekth) fix tests
 test(async function testReadRequestError(): Promise<void> {
   const testCases = {
     0: {

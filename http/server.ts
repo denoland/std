@@ -197,9 +197,10 @@ export class ServerRequest {
   }
 }
 
+// TODO(#427) readRequest should not depend on conn.
 export async function readRequest(
   bufr: BufReader
-): Promise<[ServerRequest, BufState | Error]> {
+): Promise<[ServerRequest, BufState]> {
   const req = new ServerRequest();
   req.r = bufr;
   const tp = new TextProtoReader(bufr);
@@ -210,11 +211,12 @@ export async function readRequest(
   if (err) {
     return [null, err];
   }
-  [req.method, req.url, req.proto] = firstLine.split(" ", 3);
 
   // if there is an error in the request header
   // we proceed the request but we force a 400
   try {
+    [req.method, req.url, req.proto] = firstLine.split(" ", 3);
+
     [req.headers, err] = await tp.readMIMEHeader();
   } catch (e) {
     return [req, new Error("Unable to proceed request")];
