@@ -104,7 +104,6 @@ export class ServerRequest {
   method: string;
   proto: string;
   headers: Headers;
-  conn: Conn;
   r: BufReader;
   w: BufWriter;
   done: Deferred<void> = deferred();
@@ -237,8 +236,8 @@ export class Server implements AsyncIterable<ServerRequest> {
 
     while (!this.closing) {
       [req, bufStateErr] = await readRequest(bufr);
-      req.w = w;
       if (bufStateErr) break;
+      req.w = w;
       yield req;
       // Wait for the request to be processed before we accept a new request on
       // this connection.
