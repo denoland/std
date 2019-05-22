@@ -56,6 +56,12 @@ test(async function serveDirectory(): Promise<void> {
     assert(res.headers.has("access-control-allow-headers"));
     const page = await res.text();
     assert(page.includes("azure-pipelines.yml"));
+    assert(/<td class="mode">\([a-zA-Z-]{10}\)<\/td>/.test(page));
+    assert(
+      page.includes(
+        `<td><a href="/azure-pipelines.yml">azure-pipelines.yml</a></td>`
+      )
+    );
   } finally {
     killFileServer();
   }
