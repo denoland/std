@@ -288,33 +288,19 @@ test(async function writeStringReaderResponse(): Promise<void> {
   assertEquals(decoder.decode(line), "0");
 });
 
-function createConnMock(): Deno.Conn {
-  return {
-    localAddr: "",
-    remoteAddr: "",
-    rid: -1,
-    closeRead: (): void => {},
-    closeWrite: (): void => {},
-    read: async (): Promise<Deno.ReadResult> => {
-      return { eof: true, nread: 0 };
-    },
-    write: async (): Promise<number> => {
-      return -1;
-    },
-    close: (): void => {}
-  };
-}
-
 test(async function readRequestError(): Promise<void> {
   let input = `GET / HTTP/1.1
 malformedHeader
 `;
   const reader = new BufReader(new StringReader(input));
-  const conn = createConnMock();
-  const [_, err] = await readRequest(conn, reader);
-  const e: any = err; // eslint-disable-line @typescript-eslint/no-explicit-any
-  assert(e instanceof Error);
-  assertEquals(e.message, "Unable to proceed request");
+  let err;
+  try {
+    await readRequest(reader);
+  } catch (e) {
+    err = e;
+  }
+  assert(err instanceof Error);
+  assertEquals(err.message, "malformed MIME header line: malformedHeader");
 });
 
 // Ported from Go
@@ -374,8 +360,7 @@ test(async function testReadRequestError(): Promise<void> {
   for (const p in testCases) {
     const test = testCases[p];
     const reader = new BufReader(new StringReader(test.in));
-    const conn = createConnMock();
-    const [req, err] = await readRequest(conn, reader);
+    const [req, err] = await readRequest(reader);
     assertEquals(test.err, err);
     for (const h of test.headers) {
       assertEquals(req.headers.get(h.key), h.value);

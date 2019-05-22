@@ -212,14 +212,9 @@ export async function readRequest(
     return [null, err];
   }
 
-  // if there is an error in the request header
-  // we proceed the request but we force a 400
-  try {
-    [req.method, req.url, req.proto] = firstLine.split(" ", 3);
-    [req.headers, err] = await tp.readMIMEHeader();
-  } catch (e) {
-    return [req, new Error("Unable to proceed request")];
-  }
+  [req.method, req.url, req.proto] = firstLine.split(" ", 3);
+
+  [req.headers, err] = await tp.readMIMEHeader();
 
   return [req, err];
 }
@@ -244,7 +239,11 @@ export class Server implements AsyncIterable<ServerRequest> {
     let req: ServerRequest;
 
     while (!this.closing) {
-      [req, bufStateErr] = await readRequest(bufr);
+      try {
+        [req, bufStateErr] = await readRequest(bufr);
+      } catch (err) {
+        bufStateErr = err;
+      }
       if (bufStateErr) break;
       req.w = w;
       yield req;
