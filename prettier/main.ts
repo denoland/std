@@ -233,7 +233,7 @@ function filesSelector(
   ignore: string[] = [],
   options: GlobOptions = {}
 ): AsyncIterableIterator<WalkInfo> {
-  const matchers: (string | RegExp)[] = [];
+  const matchers: Array<string | RegExp> = [];
 
   const selectorMap: { [k: string]: boolean } = {};
 
@@ -250,7 +250,7 @@ function filesSelector(
 
   const skip = ignore.map((i: string): RegExp => glob(i, options));
 
-  return (async function*() {
+  return (async function*(): AsyncIterableIterator<WalkInfo> {
     for (const match of matchers) {
       if (typeof match === "string") {
         const fileInfo = await Deno.stat(match);
