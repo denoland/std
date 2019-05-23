@@ -1,3 +1,8 @@
+// Ported from Go
+// https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { copyBytes } from "../io/util.ts";
 
@@ -28,36 +33,51 @@ function fromHexChar(byte: number): [number, boolean] {
   return [0, false];
 }
 
+/**
+ * EncodedLen returns the length of an encoding of n source bytes. Specifically, it returns n * 2.
+ * @param n
+ */
 export function encodedLen(n: number): number {
   return n * 2;
 }
 
-export function encode(dest: Uint8Array, src: Uint8Array): number {
-  if (dest.length !== encodedLen(src.length)) {
+/**
+ * Encode encodes `src` into `encodedLen(src.length)` bytes of `dst`.
+ * As a convenience, it returns the number of bytes written to `dst`, but this value is always `encodedLen(src.length)`.
+ * Encode implements hexadecimal encoding.
+ * @param dst
+ * @param src
+ */
+export function encode(dst: Uint8Array, src: Uint8Array): number {
+  if (dst.length !== encodedLen(src.length)) {
     throw new Error("Out of index.");
   }
   for (let i = 0; i < src.length; i++) {
     const v = src[i];
-    dest[i * 2] = hextable[v >> 4];
-    dest[i * 2 + 1] = hextable[v & 0x0f];
+    dst[i * 2] = hextable[v >> 4];
+    dst[i * 2 + 1] = hextable[v & 0x0f];
   }
   return encodedLen(src.length);
 }
 
+/**
+ * EncodeToString returns the hexadecimal encoding of `src`.
+ * @param src
+ */
 export function encodeToString(src: Uint8Array): string {
   const dest = new Uint8Array(encodedLen(src.length));
   encode(dest, src);
   return new TextDecoder().decode(dest);
 }
 
-// Decode decodes src into DecodedLen(len(src)) bytes,
-// returning the actual number of bytes written to dst.
-//
-// Decode expects that src contains only hexadecimal
-// characters and that src has even length.
-// If the input is malformed, Decode returns the number
-// of bytes decoded before the error.
-export function decode(dest: Uint8Array, src: Uint8Array): [number, Error] {
+/**
+ * Decode decodes `src` into `decodedLen(src.length)` bytes, returning the actual number of bytes written to `dst`.
+ * Decode expects that `src` contains only hexadecimal characters and that `src` has even length.
+ * If the input is malformed, Decode returns the number of bytes decoded before the error.
+ * @param dst
+ * @param src
+ */
+export function decode(dst: Uint8Array, src: Uint8Array): [number, Error] {
   var i = 0;
   for (; i < Math.floor(src.length / 2); i++) {
     const [a, aOK] = fromHexChar(src[i * 2]);
@@ -69,7 +89,7 @@ export function decode(dest: Uint8Array, src: Uint8Array): [number, Error] {
       return [i, errInvalidByte(src[i * 2 + 1])];
     }
 
-    dest[i] = (a << 4) | b;
+    dst[i] = (a << 4) | b;
   }
 
   if (src.length % 2 == 1) {
@@ -85,18 +105,20 @@ export function decode(dest: Uint8Array, src: Uint8Array): [number, Error] {
   return [i, undefined];
 }
 
-// DecodedLen returns the length of a decoding of x source bytes.
-// Specifically, it returns x / 2.
+/**
+ * DecodedLen returns the length of a decoding of `x` source bytes. Specifically, it returns `x / 2`.
+ * @param x
+ */
 export function decodedLen(x: number): number {
-  return x / 2;
+  return Math.floor(x / 2);
 }
 
-// DecodeString returns the bytes represented by the hexadecimal string s.
-//
-// DecodeString expects that src contains only hexadecimal
-// characters and that src has even length.
-// If the input is malformed, DecodeString returns
-// the bytes decoded before the error.
+/**
+ * DecodeString returns the bytes represented by the hexadecimal string `s`.
+ * DecodeString expects that src contains only hexadecimal characters and that src has even length.
+ * If the input is malformed, DecodeString will throws an error.
+ * @param s
+ */
 export function decodeString(s: string): Uint8Array {
   const src = new TextEncoder().encode(s);
   // We can use the source slice itself as the destination
@@ -110,6 +132,9 @@ export function decodeString(s: string): Uint8Array {
   return src.slice(0, n);
 }
 
+/**
+ * A `deno.Writer` implements that writes lowercase hexadecimal characters to `w`.
+ */
 export class Encoder implements Deno.Writer {
   private out = new Uint8Array(bufferSize);
   constructor(private w: Deno.Writer) {}
@@ -133,6 +158,10 @@ export class Encoder implements Deno.Writer {
   }
 }
 
+/**
+ * A `deno.Reader` implements that decodes hexadecimal characters from `r`.
+ * Decoder expects that `r` contain only an even number of hexadecimal characters.
+ */
 export class Decoder implements Deno.Reader {
   private in = new Uint8Array(); // input buffer (encoded form)
   private arr = new Uint8Array(bufferSize); // backing array for in

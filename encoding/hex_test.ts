@@ -1,3 +1,8 @@
+// Ported from Go
+// https://github.com/golang/go/blob/go1.12.5/src/encoding/hex/hex.go
+// Copyright 2009 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runIfMain } from "../testing/mod.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
