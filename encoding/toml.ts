@@ -1,7 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { deepAssign } from "../util/deep_assign.ts";
 import { pad } from "../strings/pad.ts";
-import { format, EOL } from "../fs/eol.ts";
 
 class KeyValuePair {
   key: string;
@@ -109,7 +108,7 @@ class Parser {
         if (captureType === "string") {
           merged.push(
             acc
-              .join(EOL.LF)
+              .join("\n")
               .replace(/"""/g, '"')
               .replace(/'''/g, `'`)
               .replace(/\n/g, "\\n")
@@ -153,7 +152,7 @@ class Parser {
   }
   _split(str: string): string[] {
     let out = [];
-    out.push(...str.split(EOL.LF));
+    out.push(...str.split("\n"));
     return out;
   }
   _isGroup(line: string): boolean {
@@ -529,11 +528,11 @@ class Dumper {
 export function stringify(srcObj: object): string {
   let out: string[] = [];
   out = new Dumper(srcObj).dump();
-  return out.join(EOL.LF);
+  return out.join("\n");
 }
 
 export function parse(tomlString: string): object {
   // File is potentially using EOL CRLF
-  tomlString = format(tomlString, EOL.LF).replace(/\\\n/g, EOL.LF);
+  tomlString = tomlString.replace(/\r\n/g, "\n").replace(/\\\n/g, "\n");
   return new Parser(tomlString).parse();
 }
