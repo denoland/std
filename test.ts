@@ -18,5 +18,6 @@ import "./textproto/test.ts";
 import "./toml/test.ts";
 import "./util/test.ts";
 import "./ws/test.ts";
+import "./encoding/test.ts";
 
 import "./testing/main.ts";

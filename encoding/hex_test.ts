@@ -8,8 +8,14 @@ import {
   encodeToString,
   decodedLen,
   decode,
-  decodeString
+  decodeString,
+  errLength,
+  errInvalidByte
 } from "./hex.ts";
+
+function toByte(s: string): number {
+  return new TextEncoder().encode(s)[0];
+}
 
 const testCases = [
   // encoded(hex) / decoded(Uint8Array)
@@ -20,6 +26,19 @@ const testCases = [
   ["f8f9fafbfcfdfeff", [0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff]],
   ["67", Array.from(new TextEncoder().encode("g"))],
   ["e3a1", [0xe3, 0xa1]]
+];
+
+const errCases = [
+  // encoded(hex) / error
+  ["", "", undefined],
+  ["0", "", errLength()],
+  ["zd4aa", "", errInvalidByte(toByte("z"))],
+  ["d4aaz", "\xd4\xaa", errInvalidByte(toByte("z"))],
+  ["30313", "01", errLength()],
+  ["0g", "", errInvalidByte(new TextEncoder().encode("g")[0])],
+  ["00gg", "\x00", errInvalidByte(new TextEncoder().encode("g")[0])],
+  ["0\x01", "", errInvalidByte(new TextEncoder().encode("\x01")[0])],
+  ["ffeed", "\xff\xee", errLength()]
 ];
 
 test({
@@ -50,7 +69,7 @@ test({
       const src = new TextEncoder().encode(srcStr);
       const dest = new Uint8Array(2); // out of index
       assertThrows(
-        () => {
+        (): void => {
           encode(dest, src);
         },
         Error,
@@ -91,6 +110,8 @@ test({
 test({
   name: "[encoding.hex] decode",
   fn(): void {
+    // Case for decoding uppercase hex characters, since
+    // Encode always uses lowercase.
     const extraTestcase = [
       ["F8F9FAFBFCFDFEFF", [0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff]]
     ];
@@ -114,6 +135,41 @@ test({
       const dst = decodeString(enc as string);
 
       assertEquals(dec, Array.from(dst));
+    }
+  }
+});
+
+test({
+  name: "[encoding.hex] decode error",
+  fn(): void {
+    for (const [input, output, expectedErr] of errCases) {
+      const out = new Uint8Array((input as string).length + 10);
+      const [n, err] = decode(out, new TextEncoder().encode(input as string));
+      assertEquals(
+        new TextDecoder("ascii").decode(out.slice(0, n)),
+        output as string
+      );
+      assertEquals(err, expectedErr);
+    }
+  }
+});
+
+test({
+  name: "[encoding.hex] decodeString error",
+  fn(): void {
+    for (const [input, output, expectedErr] of errCases) {
+      if (expectedErr) {
+        assertThrows(
+          (): void => {
+            decodeString(input as string);
+          },
+          Error,
+          (expectedErr as Error).message
+        );
+      } else {
+        const out = decodeString(input as string);
+        assertEquals(new TextDecoder("ascii").decode(out), output as string);
+      }
     }
   }
 });
