@@ -12,8 +12,9 @@
 // This script formats the given source files. If the files are omitted, it
 // formats the all files in the repository.
 const { args, exit, readFile, writeFile, stdout } = Deno;
-import { glob } from "../fs/glob.ts";
+import { glob, isGlob, GlobOptions } from "../fs/glob.ts";
 import { walk, WalkInfo } from "../fs/walk.ts";
+import { sep } from "../fs/path.ts";
 import { parse } from "../flags/mod.ts";
 import { prettier, prettierPlugins } from "./prettier.ts";
 
@@ -227,6 +228,64 @@ async function formatSourceFiles(
   exit(0);
 }
 
+function filesSelector(
+  selectors: string[],
+  ignore: string[] = [],
+  options: GlobOptions = {}
+): AsyncIterableIterator<WalkInfo> {
+  const matchers: (string | RegExp)[] = [];
+
+  const selectorMap: { [k: string]: boolean } = {};
+
+  for (const selector of selectors) {
+    // if selector have exist. ignore it.
+    if (selectorMap[selector]) continue;
+    selectorMap[selector] = true;
+    if (isGlob(selector) || selector === ".") {
+      matchers.push(glob(selector, options));
+    } else {
+      matchers.push(selector);
+    }
+  }
+
+  const skip = ignore.map((i: string): RegExp => glob(i, options));
+
+  return (async function*() {
+    for (const match of matchers) {
+      if (typeof match === "string") {
+        const fileInfo = await Deno.stat(match);
+
+        if (fileInfo.isDirectory()) {
+          const files = await Deno.readDir(match);
+          for (const f of files) {
+            const item: WalkInfo = {
+              filename: match + sep + f.name,
+              info: f
+            };
+            yield item;
+          }
+        } else {
+          const item: WalkInfo = {
+            filename: match,
+            info: fileInfo
+          };
+
+          yield item;
+        }
+      } else {
+        const files = walk(".", {
+          match: [match],
+          skip
+        });
+
+        for await (const info of files) {
+          yield info;
+        }
+      }
+    }
+  })();
+}
+
 async function main(opts): Promise<void> {
   const { help, ignore, check, _: args } = opts;
 
@@ -248,15 +307,14 @@ async function main(opts): Promise<void> {
     console.log(HELP_MESSAGE);
     exit(0);
   }
-  const options = { flags: "g" };
-  const skip = Array.isArray(ignore)
-    ? ignore.map((i: string): RegExp => glob(i, options))
-    : [glob(ignore, options)];
-  const match =
-    args.length > 0
-      ? args.map((a: string): RegExp => glob(a, options))
-      : undefined;
-  const files = walk(".", { match, skip });
+  const options: GlobOptions = { flags: "g" };
+
+  const files = filesSelector(
+    args.length ? args : ["."],
+    Array.isArray(ignore) ? ignore : [ignore],
+    options
+  );
+
   try {
     if (check) {
       await checkSourceFiles(files, prettierOpts);
