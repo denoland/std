@@ -310,6 +310,21 @@ test(async function writeStringReaderResponse(): Promise<void> {
   assertEquals(decoder.decode(line), "0");
 });
 
+const mockConn = {
+  localAddr: "",
+  remoteAddr: "",
+  rid: -1,
+  closeRead: (): void => {},
+  closeWrite: (): void => {},
+  read: async (): Promise<Deno.ReadResult> => {
+    return { eof: true, nread: 0 };
+  },
+  write: async (): Promise<number> => {
+    return -1;
+  },
+  close: (): void => {}
+};
+
 test(async function readRequestError(): Promise<void> {
   let input = `GET / HTTP/1.1
 malformedHeader
@@ -317,7 +332,7 @@ malformedHeader
   const reader = new BufReader(new StringReader(input));
   let err;
   try {
-    await readRequest(reader);
+    await readRequest(mockConn, reader);
   } catch (e) {
     err = e;
   }
@@ -387,13 +402,13 @@ test(async function testReadRequestError(): Promise<void> {
     let _err;
     if (test.err && test.err != "EOF") {
       try {
-        await readRequest(reader);
+        await readRequest(mockConn, reader);
       } catch (e) {
         _err = e;
       }
       assertEquals(_err.message, test.err);
     } else {
-      const [req, err] = await readRequest(reader);
+      const [req, err] = await readRequest(mockConn, reader);
       assertEquals(test.err, err);
       for (const h of test.headers) {
         assertEquals(req.headers.get(h.key), h.value);

@@ -262,7 +262,7 @@ export class Server implements AsyncIterable<ServerRequest> {
 
     while (!this.closing) {
       try {
-        [req, bufStateErr] = await readRequest(bufr);
+        [req, bufStateErr] = await readRequest(conn, bufr);
       } catch (err) {
         bufStateErr = err;
       }
