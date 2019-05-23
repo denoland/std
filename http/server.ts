@@ -103,6 +103,7 @@ export class ServerRequest {
   method: string;
   proto: string;
   headers: Headers;
+  conn: Conn;
   r: BufReader;
   w: BufWriter;
   done: Deferred<void> = deferred();
@@ -216,10 +217,13 @@ function fixLength(req: ServerRequest): void {
 }
 
 export async function readRequest(
+  conn: Conn,
   bufr: BufReader
 ): Promise<[ServerRequest, BufState]> {
   const req = new ServerRequest();
+  req.conn = conn;
   req.r = bufr;
+  req.w = new BufWriter(conn);
   const tp = new TextProtoReader(bufr);
   let err: BufState;
   // First line: GET /index.html HTTP/1.0
@@ -253,7 +257,6 @@ export class Server implements AsyncIterable<ServerRequest> {
     conn: Conn
   ): AsyncIterableIterator<ServerRequest> {
     const bufr = new BufReader(conn);
-    const w = new BufWriter(conn);
     let bufStateErr: BufState;
     let req: ServerRequest;
 
@@ -264,7 +267,6 @@ export class Server implements AsyncIterable<ServerRequest> {
         bufStateErr = err;
       }
       if (bufStateErr) break;
-      req.w = w;
       yield req;
       // Wait for the request to be processed before we accept a new request on
       // this connection.
