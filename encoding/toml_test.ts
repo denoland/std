@@ -1,10 +1,10 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test } from "../../testing/mod.ts";
-import { assertEquals } from "../../testing/asserts.ts";
-import { existsSync } from "../../fs/exists.ts";
-import { readFileStrSync } from "../../fs/read_file_str.ts";
-import { parse, stringify } from "./parser.ts";
-import * as path from "../../fs/path/mod.ts";
+import { test } from "../testing/mod.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import { existsSync } from "../fs/exists.ts";
+import { readFileStrSync } from "../fs/read_file_str.ts";
+import { parse, stringify } from "./toml.ts";
+import * as path from "../fs/path/mod.ts";
 
 const testFilesDir = path.resolve("encoding", "toml", "testdata");
 

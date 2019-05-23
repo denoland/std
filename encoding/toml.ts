@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { deepAssign } from "../../util/deep_assign.ts";
-import { pad } from "../../strings/pad.ts";
-import { format, EOL } from "../../fs/eol.ts";
+import { deepAssign } from "../util/deep_assign.ts";
+import { pad } from "../strings/pad.ts";
+import { format, EOL } from "../fs/eol.ts";
 
 class KeyValuePair {
   key: string;
