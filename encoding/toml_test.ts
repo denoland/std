@@ -6,7 +6,7 @@ import { readFileStrSync } from "../fs/read_file_str.ts";
 import { parse, stringify } from "./toml.ts";
 import * as path from "../fs/path/mod.ts";
 
-const testFilesDir = path.resolve("encoding", "toml", "testdata");
+const testFilesDir = path.resolve("encoding", "testdata");
 
 function parseFile(filePath: string): object {
   if (!existsSync(filePath)) {
