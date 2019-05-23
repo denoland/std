@@ -231,6 +231,10 @@ export async function readRequest(
   [req.method, req.url, req.proto] = firstLine.split(" ", 3);
   [req.headers, err] = await tp.readMIMEHeader();
   fixLength(req);
+  // TODO(zekth) : add parsing of headers eg:
+  // rfc: https://tools.ietf.org/html/rfc7230#section-3.3.2
+  // A sender MUST NOT send a Content-Length header field in any message
+  // that contains a Transfer-Encoding header field.
   return [req, err];
 }
 
