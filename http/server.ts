@@ -66,6 +66,9 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
   if (!statusText) {
     throw Error("bad status code");
   }
+  if (!r.body) {
+    r.body = new Uint8Array();
+  }
 
   let out = `HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`;
 
@@ -79,22 +82,18 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
   out += "\r\n";
 
   const header = new TextEncoder().encode(out);
-  let n = await writer.write(header);
-  assert(header.byteLength == n);
+  const n = await writer.write(header);
+  assert(n === header.byteLength);
 
-  if (r.body) {
-    if (r.body instanceof Uint8Array) {
-      n = await writer.write(r.body);
-      assert(r.body.byteLength == n);
-    } else {
-      if (r.headers.has("content-length")) {
-        const bodyLength = parseInt(r.headers.get("content-length"));
-        const n = await copy(writer, r.body);
-        assert(n == bodyLength);
-      } else {
-        await writeChunkedBody(writer, r.body);
-      }
-    }
+  if (r.body instanceof Uint8Array) {
+    const n = await writer.write(r.body);
+    assert(n === r.body.byteLength);
+  } else if (r.headers.has("content-length")) {
+    const bodyLength = parseInt(r.headers.get("content-length"));
+    const n = await copy(writer, r.body);
+    assert(n === bodyLength);
+  } else {
+    await writeChunkedBody(writer, r.body);
   }
   await writer.flush();
 }
@@ -197,7 +196,7 @@ export class ServerRequest {
   }
 }
 
-async function readRequest(
+export async function readRequest(
   bufr: BufReader
 ): Promise<[ServerRequest, BufState]> {
   const req = new ServerRequest();
@@ -235,7 +234,11 @@ export class Server implements AsyncIterable<ServerRequest> {
     let req: ServerRequest;
 
     while (!this.closing) {
-      [req, bufStateErr] = await readRequest(bufr);
+      try {
+        [req, bufStateErr] = await readRequest(bufr);
+      } catch (err) {
+        bufStateErr = err;
+      }
       if (bufStateErr) break;
       req.w = w;
       yield req;
@@ -247,7 +250,11 @@ export class Server implements AsyncIterable<ServerRequest> {
     if (bufStateErr === "EOF") {
       // The connection was gracefully closed.
     } else if (bufStateErr instanceof Error) {
-      // TODO(ry): send something back like a HTTP 500 status.
+      // An error was thrown while parsing request headers.
+      await writeResponse(req.w, {
+        status: 400,
+        body: new TextEncoder().encode(`${bufStateErr.message}\r\n\r\n`)
+      });
     } else if (this.closing) {
       // There are more requests incoming but the server is closing.
       // TODO(ry): send a back a HTTP 503 Service Unavailable status.
