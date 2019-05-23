@@ -46,14 +46,13 @@ export function glob(glob: string, options: GlobOptions = {}): RegExp {
 
 /** Test whether the given string is a glob */
 export function isGlob(str: string): boolean {
-  const chars: any = { "{": "}", "(": ")", "[": "]" };
-  const strictRegex: RegExp = /\\(.)|(^!|\*|[\].+)]\?|\[[^\\\]]+\]|\{[^\\}]+\}|\(\?[:!=][^\\)]+\)|\([^|]+\|[^\\)]+\))/;
+  const chars: Record<string, string> = { "{": "}", "(": ")", "[": "]" };
+  const regex: RegExp = /\\(.)|(^!|\*|[\].+)]\?|\[[^\\\]]+\]|\{[^\\}]+\}|\(\?[:!=][^\\)]+\)|\([^|]+\|[^\\)]+\))/;
 
   if (str === "") {
     return false;
   }
 
-  const regex = strictRegex;
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(str))) {

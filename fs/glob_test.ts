@@ -1,7 +1,7 @@
 const { mkdir } = Deno;
 type FileInfo = Deno.FileInfo;
 import { test, runIfMain } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals } from "../testing/asserts.ts";
 import { glob, isGlob } from "./glob.ts";
 import { join } from "./path.ts";
 import { testWalk } from "./walk_test.ts";
@@ -142,115 +142,114 @@ test({
   name: "isGlob: pattern to test",
   fn(): void {
     // should be true if valid glob pattern
-    assertEquals(isGlob("!foo.js"), true);
-    assertEquals(isGlob("*.js"), true);
-    assertEquals(isGlob("!*.js"), true);
-    assertEquals(isGlob("!foo"), true);
-    assertEquals(isGlob("!foo.js"), true);
-    assertEquals(isGlob("**/abc.js"), true);
-    assertEquals(isGlob("abc/*.js"), true);
-    assertEquals(isGlob("@.(?:abc)"), true);
-    assertEquals(isGlob("@.(?!abc)"), true);
+    assert(isGlob("!foo.js"));
+    assert(isGlob("*.js"));
+    assert(isGlob("!*.js"));
+    assert(isGlob("!foo"));
+    assert(isGlob("!foo.js"));
+    assert(isGlob("**/abc.js"));
+    assert(isGlob("abc/*.js"));
+    assert(isGlob("@.(?:abc)"));
+    assert(isGlob("@.(?!abc)"));
 
     // should be false if invalid glob pattern
-    assertEquals(!isGlob(""), true);
-    assertEquals(!isGlob(""), true);
-    assertEquals(!isGlob("~/abc"), true);
-    assertEquals(!isGlob("~/abc"), true);
-    assertEquals(!isGlob("~/(abc)"), true);
-    assertEquals(!isGlob("+~(abc)"), true);
-    assertEquals(!isGlob("."), true);
-    assertEquals(!isGlob("@.(abc)"), true);
-    assertEquals(!isGlob("aa"), true);
-    assertEquals(!isGlob("who?"), true);
-    assertEquals(!isGlob("why!?"), true);
-    assertEquals(!isGlob("where???"), true);
-    assertEquals(!isGlob("abc!/def/!ghi.js"), true);
-    assertEquals(!isGlob("abc.js"), true);
-    assertEquals(!isGlob("abc/def/!ghi.js"), true);
-    assertEquals(!isGlob("abc/def/ghi.js"), true);
+    assert(!isGlob(""));
+    assert(!isGlob("~/abc"));
+    assert(!isGlob("~/abc"));
+    assert(!isGlob("~/(abc)"));
+    assert(!isGlob("+~(abc)"));
+    assert(!isGlob("."));
+    assert(!isGlob("@.(abc)"));
+    assert(!isGlob("aa"));
+    assert(!isGlob("who?"));
+    assert(!isGlob("why!?"));
+    assert(!isGlob("where???"));
+    assert(!isGlob("abc!/def/!ghi.js"));
+    assert(!isGlob("abc.js"));
+    assert(!isGlob("abc/def/!ghi.js"));
+    assert(!isGlob("abc/def/ghi.js"));
 
     // Should be true if path has regex capture group
-    assertEquals(isGlob("abc/(?!foo).js"), true);
-    assertEquals(isGlob("abc/(?:foo).js"), true);
-    assertEquals(isGlob("abc/(?=foo).js"), true);
-    assertEquals(isGlob("abc/(a|b).js"), true);
-    assertEquals(isGlob("abc/(a|b|c).js"), true);
-    assertEquals(isGlob("abc/(foo bar)/*.js"), true);
+    assert(isGlob("abc/(?!foo).js"));
+    assert(isGlob("abc/(?:foo).js"));
+    assert(isGlob("abc/(?=foo).js"));
+    assert(isGlob("abc/(a|b).js"));
+    assert(isGlob("abc/(a|b|c).js"));
+    assert(isGlob("abc/(foo bar)/*.js"));
 
     // Should be false if the path has parens but is not a valid capture group
-    assertEquals(!isGlob("abc/(?foo).js"), true);
-    assertEquals(!isGlob("abc/(a b c).js"), true);
-    assertEquals(!isGlob("abc/(ab).js"), true);
-    assertEquals(!isGlob("abc/(abc).js"), true);
-    assertEquals(!isGlob("abc/(foo bar).js"), true);
+    assert(!isGlob("abc/(?foo).js"));
+    assert(!isGlob("abc/(a b c).js"));
+    assert(!isGlob("abc/(ab).js"));
+    assert(!isGlob("abc/(abc).js"));
+    assert(!isGlob("abc/(foo bar).js"));
 
     // should be false if the capture group is imbalanced
-    assertEquals(!isGlob("abc/(?ab.js"), true);
-    assertEquals(!isGlob("abc/(ab.js"), true);
-    assertEquals(!isGlob("abc/(a|b.js"), true);
-    assertEquals(!isGlob("abc/(a|b|c.js"), true);
+    assert(!isGlob("abc/(?ab.js"));
+    assert(!isGlob("abc/(ab.js"));
+    assert(!isGlob("abc/(a|b.js"));
+    assert(!isGlob("abc/(a|b|c.js"));
 
     // should be true if the path has a regex character class
-    assertEquals(isGlob("abc/[abc].js"), true);
-    assertEquals(isGlob("abc/[^abc].js"), true);
-    assertEquals(isGlob("abc/[1-3].js"), true);
+    assert(isGlob("abc/[abc].js"));
+    assert(isGlob("abc/[^abc].js"));
+    assert(isGlob("abc/[1-3].js"));
 
     // should be false if the character class is not balanced
-    assertEquals(!isGlob("abc/[abc.js"), true);
-    assertEquals(!isGlob("abc/[^abc.js"), true);
-    assertEquals(!isGlob("abc/[1-3.js"), true);
+    assert(!isGlob("abc/[abc.js"));
+    assert(!isGlob("abc/[^abc.js"));
+    assert(!isGlob("abc/[1-3.js"));
 
     // should be false if the character class is escaped
-    assertEquals(!isGlob("abc/\\[abc].js"), true);
-    assertEquals(!isGlob("abc/\\[^abc].js"), true);
-    assertEquals(!isGlob("abc/\\[1-3].js"), true);
+    assert(!isGlob("abc/\\[abc].js"));
+    assert(!isGlob("abc/\\[^abc].js"));
+    assert(!isGlob("abc/\\[1-3].js"));
 
     // should be true if the path has brace characters
-    assertEquals(isGlob("abc/{a,b}.js"), true);
-    assertEquals(isGlob("abc/{a..z}.js"), true);
-    assertEquals(isGlob("abc/{a..z..2}.js"), true);
+    assert(isGlob("abc/{a,b}.js"));
+    assert(isGlob("abc/{a..z}.js"));
+    assert(isGlob("abc/{a..z..2}.js"));
 
     // should be false if (basic) braces are not balanced
-    assertEquals(!isGlob("abc/\\{a,b}.js"), true);
-    assertEquals(!isGlob("abc/\\{a..z}.js"), true);
-    assertEquals(!isGlob("abc/\\{a..z..2}.js"), true);
+    assert(!isGlob("abc/\\{a,b}.js"));
+    assert(!isGlob("abc/\\{a..z}.js"));
+    assert(!isGlob("abc/\\{a..z..2}.js"));
 
     // should be true if the path has regex characters
-    assertEquals(isGlob("!&(abc)"), true);
-    assertEquals(isGlob("!*.js"), true);
-    assertEquals(isGlob("!foo"), true);
-    assertEquals(isGlob("!foo.js"), true);
-    assertEquals(isGlob("**/abc.js"), true);
-    assertEquals(isGlob("*.js"), true);
-    assertEquals(isGlob("*z(abc)"), true);
-    assertEquals(isGlob("[1-10].js"), true);
-    assertEquals(isGlob("[^abc].js"), true);
-    assertEquals(isGlob("[a-j]*[^c]b/c"), true);
-    assertEquals(isGlob("[abc].js"), true);
-    assertEquals(isGlob("a/b/c/[a-z].js"), true);
-    assertEquals(isGlob("abc/(aaa|bbb).js"), true);
-    assertEquals(isGlob("abc/*.js"), true);
-    assertEquals(isGlob("abc/{a,b}.js"), true);
-    assertEquals(isGlob("abc/{a..z..2}.js"), true);
-    assertEquals(isGlob("abc/{a..z}.js"), true);
+    assert(isGlob("!&(abc)"));
+    assert(isGlob("!*.js"));
+    assert(isGlob("!foo"));
+    assert(isGlob("!foo.js"));
+    assert(isGlob("**/abc.js"));
+    assert(isGlob("*.js"));
+    assert(isGlob("*z(abc)"));
+    assert(isGlob("[1-10].js"));
+    assert(isGlob("[^abc].js"));
+    assert(isGlob("[a-j]*[^c]b/c"));
+    assert(isGlob("[abc].js"));
+    assert(isGlob("a/b/c/[a-z].js"));
+    assert(isGlob("abc/(aaa|bbb).js"));
+    assert(isGlob("abc/*.js"));
+    assert(isGlob("abc/{a,b}.js"));
+    assert(isGlob("abc/{a..z..2}.js"));
+    assert(isGlob("abc/{a..z}.js"));
 
-    assertEquals(!isGlob("$(abc)"), true);
-    assertEquals(!isGlob("&(abc)"), true);
-    assertEquals(!isGlob("Who?.js"), true);
-    assertEquals(!isGlob("? (abc)"), true);
-    assertEquals(!isGlob("?.js"), true);
-    assertEquals(!isGlob("abc/?.js"), true);
+    assert(!isGlob("$(abc)"));
+    assert(!isGlob("&(abc)"));
+    assert(!isGlob("Who?.js"));
+    assert(!isGlob("? (abc)"));
+    assert(!isGlob("?.js"));
+    assert(!isGlob("abc/?.js"));
 
     // should be false if regex characters are escaped
-    assertEquals(!isGlob("\\?.js"), true);
-    assertEquals(!isGlob("\\[1-10\\].js"), true);
-    assertEquals(!isGlob("\\[^abc\\].js"), true);
-    assertEquals(!isGlob("\\[a-j\\]\\*\\[^c\\]b/c"), true);
-    assertEquals(!isGlob("\\[abc\\].js"), true);
-    assertEquals(!isGlob("\\a/b/c/\\[a-z\\].js"), true);
-    assertEquals(!isGlob("abc/\\(aaa|bbb).js"), true);
-    assertEquals(!isGlob("abc/\\?.js"), true);
+    assert(!isGlob("\\?.js"));
+    assert(!isGlob("\\[1-10\\].js"));
+    assert(!isGlob("\\[^abc\\].js"));
+    assert(!isGlob("\\[a-j\\]\\*\\[^c\\]b/c"));
+    assert(!isGlob("\\[abc\\].js"));
+    assert(!isGlob("\\a/b/c/\\[a-z\\].js"));
+    assert(!isGlob("abc/\\(aaa|bbb).js"));
+    assert(!isGlob("abc/\\?.js"));
   }
 });
 
