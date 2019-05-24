@@ -78,7 +78,7 @@ export function bytesRepeat(b: Uint8Array, count: number): Uint8Array {
     throw new Error("bytes: repeat count causes overflow");
   }
 
-  const int = Math.abs(Math.floor(count));
+  const int = Math.floor(count);
 
   if (int !== count) {
     throw new Error("bytes: repeat count must be an integer");
