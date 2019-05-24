@@ -364,6 +364,11 @@ test(async function testReadRequestError(): Promise<void> {
       in: "HEAD / HTTP/1.1\r\nContent-Length:0\r\nContent-Length: 0\r\n\r\n",
       headers: [{ key: "Content-Length", value: "0" }],
       err: null
+    },
+    11: {
+      in: "ToTAlly \\ Non REAdable HTTTTTTp pRotOcOlz",
+      err: "EOF",
+      headers: []
     }
   };
   for (const p in testCases) {
