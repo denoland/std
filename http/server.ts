@@ -274,11 +274,15 @@ export class Server implements AsyncIterable<ServerRequest> {
     if (bufStateErr === "EOF") {
       // The connection was gracefully closed.
     } else if (bufStateErr instanceof Error) {
-      // An error was thrown while parsing request headers.
-      await writeResponse(req.w, {
-        status: 400,
-        body: new TextEncoder().encode(`${bufStateErr.message}\r\n\r\n`)
-      });
+      // in case of wrong first line HTTP header or
+      // aborted request we don't have to respond
+      if (req) {
+        // An error was thrown while parsing request headers.
+        await writeResponse(req.w, {
+          status: 400,
+          body: new TextEncoder().encode(`${bufStateErr.message}\r\n\r\n`)
+        });
+      }
     } else if (this.closing) {
       // There are more requests incoming but the server is closing.
       // TODO(ry): send a back a HTTP 503 Service Unavailable status.
