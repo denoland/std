@@ -438,11 +438,11 @@ for (const t of testCases) {
         lazyquote = t.LazyQuotes;
       }
       const actual = await readAll(new BufReader(new StringReader(t.Input)), {
-        Comma: comma,
-        Comment: comment,
-        TrimLeadingSpace: trim,
-        FieldsPerRecord: fieldsPerRec,
-        LazyQuotes: lazyquote
+        comma: comma,
+        comment: comment,
+        trimLeadingSpace: trim,
+        fieldsPerRecord: fieldsPerRec,
+        lazyQuotes: lazyquote
       });
       if (t.Error) {
         assert(!!actual[1]);

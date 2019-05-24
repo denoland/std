@@ -17,19 +17,19 @@ export class ParseError extends Error {
   }
 }
 
-export interface CsvParseOptions {
-  Comma: string;
-  Comment?: string;
-  TrimLeadingSpace: boolean;
-  LazyQuotes?: boolean;
-  FieldsPerRecord?: number;
+export interface ParseOptions {
+  comma: string;
+  comment?: string;
+  trimLeadingSpace: boolean;
+  lazyQuotes?: boolean;
+  fieldsPerRecord?: number;
 }
 
-function chkOptions(opt: CsvParseOptions): Error | null {
+function chkOptions(opt: ParseOptions): Error | null {
   if (
-    INVALID_RUNE.includes(opt.Comma) ||
-    INVALID_RUNE.includes(opt.Comment) ||
-    opt.Comma === opt.Comment
+    INVALID_RUNE.includes(opt.comma) ||
+    INVALID_RUNE.includes(opt.comment) ||
+    opt.comma === opt.comment
   ) {
     return Error("Invalid Delimiter");
   }
@@ -39,7 +39,7 @@ function chkOptions(opt: CsvParseOptions): Error | null {
 export async function read(
   Startline: number,
   reader: BufReader,
-  opt: CsvParseOptions = { Comma: ",", Comment: "#", TrimLeadingSpace: false }
+  opt: ParseOptions = { comma: ",", comment: "#", trimLeadingSpace: false }
 ): Promise<[string[], BufState]> {
   const tp = new TextProtoReader(reader);
   let err: BufState;
@@ -65,16 +65,16 @@ export async function read(
   }
 
   // line starting with comment character is ignored
-  if (opt.Comment && trimmedLine[0] === opt.Comment) {
+  if (opt.comment && trimmedLine[0] === opt.comment) {
     return [result, err];
   }
 
-  result = line.split(opt.Comma);
+  result = line.split(opt.comma);
 
   let quoteError = false;
   result = result.map(
     (r): string => {
-      if (opt.TrimLeadingSpace) {
+      if (opt.trimLeadingSpace) {
         r = r.trimLeft();
       }
       if (r[0] === '"' && r[r.length - 1] === '"') {
@@ -83,7 +83,7 @@ export async function read(
         r = r.substring(1, r.length);
       }
 
-      if (!opt.LazyQuotes) {
+      if (!opt.lazyQuotes) {
         if (r[0] !== '"' && r.indexOf('"') !== -1) {
           quoteError = true;
         }
@@ -102,10 +102,10 @@ export async function read(
 
 export async function readAll(
   reader: BufReader,
-  opt: CsvParseOptions = {
-    Comma: ",",
-    TrimLeadingSpace: false,
-    LazyQuotes: false
+  opt: ParseOptions = {
+    comma: ",",
+    trimLeadingSpace: false,
+    lazyQuotes: false
   }
 ): Promise<[string[][], BufState]> {
   const result: string[][] = [];
@@ -121,15 +121,15 @@ export async function readAll(
     [lineResult, err] = await read(lineIndex, reader, opt);
     if (err) break;
     lineIndex++;
-    // If FieldsPerRecord is 0, Read sets it to
+    // If fieldsPerRecord is 0, Read sets it to
     // the number of fields in the first record
     if (first) {
       first = false;
-      if (opt.FieldsPerRecord !== undefined) {
-        if (opt.FieldsPerRecord === 0) {
+      if (opt.fieldsPerRecord !== undefined) {
+        if (opt.fieldsPerRecord === 0) {
           _nbFields = lineResult.length;
         } else {
-          _nbFields = opt.FieldsPerRecord;
+          _nbFields = opt.fieldsPerRecord;
         }
       }
     }
