@@ -229,7 +229,7 @@ async function formatSourceFiles(
 }
 
 /**
- * Select a specific file based on the selector selected, then return an async iterable object.
+ * Select a specific file based on glob, then return an async iterable object.
  * @param selectors The glob patterns to select the files.
  *                  eg `cmd/*.ts` to select all the typescript files in cmd directory.
  *                  eg `cmd/run.ts` to select `cmd/run.ts` file as only.
