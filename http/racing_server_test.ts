@@ -5,21 +5,21 @@ import { assert, assertEquals } from "../testing/asserts.ts";
 import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 
-let server;
+let server: Deno.Process;
 async function startServer(): Promise<void> {
   server = run({
     args: ["deno", "run", "-A", "http/racing_server.ts"],
     stdout: "piped"
   });
   // Once fileServer is ready it will write to its stdout.
-  const r = new TextProtoReader(new BufReader(server.stdout));
+  const r = new TextProtoReader(new BufReader(server.stdout!));
   const [s, err] = await r.readLine();
   assert(err == null);
   assert(s.includes("Racing server listening..."));
 }
 function killServer(): void {
   server.close();
-  server.stdout.close();
+  server.stdout!.close();
 }
 
 let input = `GET / HTTP/1.1
