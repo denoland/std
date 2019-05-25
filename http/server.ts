@@ -66,6 +66,9 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
   if (!statusText) {
     throw Error("bad status code");
   }
+  if (!r.body) {
+    r.body = new Uint8Array();
+  }
 
   let out = `HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`;
 
@@ -79,22 +82,18 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
   out += "\r\n";
 
   const header = new TextEncoder().encode(out);
-  let n = await writer.write(header);
-  assert(header.byteLength == n);
+  const n = await writer.write(header);
+  assert(n === header.byteLength);
 
-  if (r.body) {
-    if (r.body instanceof Uint8Array) {
-      n = await writer.write(r.body);
-      assert(r.body.byteLength == n);
-    } else {
-      if (r.headers.has("content-length")) {
-        const bodyLength = parseInt(r.headers.get("content-length"));
-        const n = await copy(writer, r.body);
-        assert(n == bodyLength);
-      } else {
-        await writeChunkedBody(writer, r.body);
-      }
-    }
+  if (r.body instanceof Uint8Array) {
+    const n = await writer.write(r.body);
+    assert(n === r.body.byteLength);
+  } else if (r.headers.has("content-length")) {
+    const bodyLength = parseInt(r.headers.get("content-length"));
+    const n = await copy(writer, r.body);
+    assert(n === bodyLength);
+  } else {
+    await writeChunkedBody(writer, r.body);
   }
   await writer.flush();
 }
@@ -104,7 +103,6 @@ export class ServerRequest {
   method: string;
   proto: string;
   headers: Headers;
-  conn: Conn;
   r: BufReader;
   w: BufWriter;
   done: Deferred<void> = deferred();
@@ -198,14 +196,30 @@ export class ServerRequest {
   }
 }
 
-async function readRequest(
-  conn: Conn,
+function fixLength(req: ServerRequest): void {
+  const contentLength = req.headers.get("Content-Length");
+  if (contentLength) {
+    const arrClen = contentLength.split(",");
+    if (arrClen.length > 1) {
+      const distinct = [...new Set(arrClen.map((e): string => e.trim()))];
+      if (distinct.length > 1) {
+        throw Error("cannot contain multiple Content-Length headers");
+      } else {
+        req.headers.set("Content-Length", distinct[0]);
+      }
+    }
+    const c = req.headers.get("Content-Length");
+    if (req.method === "HEAD" && c && c !== "0") {
+      throw Error("http: method cannot contain a Content-Length");
+    }
+  }
+}
+
+export async function readRequest(
   bufr: BufReader
 ): Promise<[ServerRequest, BufState]> {
   const req = new ServerRequest();
-  req.conn = conn;
   req.r = bufr;
-  req.w = new BufWriter(conn);
   const tp = new TextProtoReader(bufr);
   let err: BufState;
   // First line: GET /index.html HTTP/1.0
@@ -216,6 +230,11 @@ async function readRequest(
   }
   [req.method, req.url, req.proto] = firstLine.split(" ", 3);
   [req.headers, err] = await tp.readMIMEHeader();
+  fixLength(req);
+  // TODO(zekth) : add parsing of headers eg:
+  // rfc: https://tools.ietf.org/html/rfc7230#section-3.3.2
+  // A sender MUST NOT send a Content-Length header field in any message
+  // that contains a Transfer-Encoding header field.
   return [req, err];
 }
 
@@ -234,12 +253,18 @@ export class Server implements AsyncIterable<ServerRequest> {
     conn: Conn
   ): AsyncIterableIterator<ServerRequest> {
     const bufr = new BufReader(conn);
+    const w = new BufWriter(conn);
     let bufStateErr: BufState;
     let req: ServerRequest;
 
     while (!this.closing) {
-      [req, bufStateErr] = await readRequest(conn, bufr);
+      try {
+        [req, bufStateErr] = await readRequest(bufr);
+      } catch (err) {
+        bufStateErr = err;
+      }
       if (bufStateErr) break;
+      req.w = w;
       yield req;
       // Wait for the request to be processed before we accept a new request on
       // this connection.
@@ -249,7 +274,11 @@ export class Server implements AsyncIterable<ServerRequest> {
     if (bufStateErr === "EOF") {
       // The connection was gracefully closed.
     } else if (bufStateErr instanceof Error) {
-      // TODO(ry): send something back like a HTTP 500 status.
+      // An error was thrown while parsing request headers.
+      await writeResponse(req.w, {
+        status: 400,
+        body: new TextEncoder().encode(`${bufStateErr.message}\r\n\r\n`)
+      });
     } else if (this.closing) {
       // There are more requests incoming but the server is closing.
       // TODO(ry): send a back a HTTP 503 Service Unavailable status.

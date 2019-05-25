@@ -11,8 +11,8 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 // This script formats the given source files. If the files are omitted, it
 // formats the all files in the repository.
-const { args, exit, readFile, writeFile } = Deno;
-import { glob } from "../fs/glob.ts";
+const { args, exit, readFile, writeFile, stdout } = Deno;
+import { glob, isGlob, GlobOptions } from "../fs/glob.ts";
 import { walk, WalkInfo } from "../fs/walk.ts";
 import { parse } from "../flags/mod.ts";
 import { prettier, prettierPlugins } from "./prettier.ts";
@@ -25,6 +25,7 @@ Usage: deno prettier/main.ts [options] [files...]
 Options:
   -H, --help                 Show this help message and exit.
   --check                    Check if the source files are formatted.
+  --write                    Whether to write to the file, otherwise it will output to stdout, Defaults to false.
   --ignore <path>            Ignore the given path(s).
 
 JS/TS Styling Options:
@@ -54,14 +55,17 @@ Markdown Styling Options:
                              Defaults to preserve.
 
 Example:
-  deno prettier/main.ts script1.ts script2.js
+  deno run prettier/main.ts --write script1.ts script2.js
                              Formats the files
 
-  deno prettier/main.ts --check script1.ts script2.js
+  deno run prettier/main.ts --check script1.ts script2.js
                              Checks if the files are formatted
 
-  deno prettier/main.ts
+  deno run prettier/main.ts --write
                              Formats the all files in the repository
+
+  deno run prettier/main.ts script1.ts
+                             Print the formatted code to stdout
 `;
 
 // Available parsers
@@ -78,6 +82,7 @@ interface PrettierOptions {
   arrowParens: string;
   proseWrap: string;
   endOfLine: string;
+  write: boolean;
 }
 
 const encoder = new TextEncoder();
@@ -139,15 +144,20 @@ async function formatFile(
     return;
   }
 
-  const formatted = prettier.format(text, {
+  const formatted: string = prettier.format(text, {
     ...prettierOpts,
     parser,
     plugins: prettierPlugins
   });
 
-  if (text !== formatted) {
-    console.log(`Formatting ${filename}`);
-    await writeFile(filename, encoder.encode(formatted));
+  const fileUnit8 = encoder.encode(formatted);
+  if (prettierOpts.write) {
+    if (text !== formatted) {
+      console.log(`Formatting ${filename}`);
+      await writeFile(filename, fileUnit8);
+    }
+  } else {
+    await stdout.write(fileUnit8);
   }
 }
 
@@ -217,6 +227,68 @@ async function formatSourceFiles(
   exit(0);
 }
 
+/**
+ * Get the files to format.
+ * @param selectors The glob patterns to select the files.
+ *                  eg `cmd/*.ts` to select all the typescript files in cmd directory.
+ *                  eg `cmd/run.ts` to select `cmd/run.ts` file as only.
+ * @param ignore The glob patterns to ignore files.
+ *                  eg `*_test.ts` to ignore all the test file.
+ * @param options options to pass to `glob(selector, options)`
+ * @returns returns an async iterable object
+ */
+function getTargetFiles(
+  selectors: string[],
+  ignore: string[] = [],
+  options: GlobOptions = {}
+): AsyncIterableIterator<WalkInfo> {
+  const matchers: Array<string | RegExp> = [];
+
+  const selectorMap: { [k: string]: boolean } = {};
+
+  for (const selector of selectors) {
+    // If the selector already exists then ignore it.
+    if (selectorMap[selector]) continue;
+    selectorMap[selector] = true;
+    if (isGlob(selector) || selector === ".") {
+      matchers.push(glob(selector, options));
+    } else {
+      matchers.push(selector);
+    }
+  }
+
+  const skip = ignore.map((i: string): RegExp => glob(i, options));
+
+  return (async function*(): AsyncIterableIterator<WalkInfo> {
+    for (const match of matchers) {
+      if (typeof match === "string") {
+        const fileInfo = await Deno.stat(match);
+
+        if (fileInfo.isDirectory()) {
+          const files = walk(match, { skip });
+
+          for await (const info of files) {
+            yield info;
+          }
+        } else {
+          const info: WalkInfo = {
+            filename: match,
+            info: fileInfo
+          };
+
+          yield info;
+        }
+      } else {
+        const files = walk(".", { match: [match], skip });
+
+        for await (const info of files) {
+          yield info;
+        }
+      }
+    }
+  })();
+}
+
 async function main(opts): Promise<void> {
   const { help, ignore, check, _: args } = opts;
 
@@ -230,22 +302,22 @@ async function main(opts): Promise<void> {
     bracketSpacing: Boolean(opts["bracket-spacing"]),
     arrowParens: opts["arrow-parens"],
     proseWrap: opts["prose-wrap"],
-    endOfLine: opts["end-of-line"]
+    endOfLine: opts["end-of-line"],
+    write: opts["write"]
   };
 
   if (help) {
     console.log(HELP_MESSAGE);
     exit(0);
   }
-  const options = { flags: "g" };
-  const skip = Array.isArray(ignore)
-    ? ignore.map((i: string): RegExp => glob(i, options))
-    : [glob(ignore, options)];
-  const match =
-    args.length > 0
-      ? args.map((a: string): RegExp => glob(a, options))
-      : undefined;
-  const files = walk(".", { match, skip });
+  const options: GlobOptions = { flags: "g" };
+
+  const files = getTargetFiles(
+    args.length ? args : ["."],
+    Array.isArray(ignore) ? ignore : [ignore],
+    options
+  );
+
   try {
     if (check) {
       await checkSourceFiles(files, prettierOpts);
@@ -275,7 +347,8 @@ main(
       "semi",
       "use-tabs",
       "single-quote",
-      "bracket-spacing"
+      "bracket-spacing",
+      "write"
     ],
     default: {
       ignore: [],
@@ -288,7 +361,8 @@ main(
       "bracket-spacing": true,
       "arrow-parens": "avoid",
       "prose-wrap": "preserve",
-      "end-of-line": "auto"
+      "end-of-line": "auto",
+      write: false
     },
     alias: {
       H: "help"
