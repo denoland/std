@@ -3,15 +3,14 @@ import { deepAssign } from "../util/deep_assign.ts";
 import { pad } from "../strings/pad.ts";
 
 class KeyValuePair {
-  key: string;
-  value: unknown;
+  constructor (public key: string, public value: unknown) {}
 }
 
 class ParserGroup {
-  type: string;
-  name: string;
   arrValues: unknown[] = [];
   objValues: object = {};
+
+  constructor (public type: string, public name: string) {}
 }
 
 class ParserContext {
@@ -167,22 +166,22 @@ class Parser {
     if (this.context.currentGroup) {
       this._groupToOutput();
     }
-    let g = new ParserGroup();
-    g.name = line.match(captureReg)[1];
-    if (g.name.match(/\[.*\]/)) {
-      g.type = "array";
-      g.name = g.name.match(captureReg)[1];
+
+    let type;
+    let name = line.match(captureReg)![1];
+    if (name.match(/\[.*\]/)) {
+      type = "array";
+      name = name.match(captureReg)![1];
     } else {
-      g.type = "object";
+      type = "object";
     }
-    this.context.currentGroup = g;
+    this.context.currentGroup = new ParserGroup(type, name);
   }
   _processDeclaration(line: string): KeyValuePair {
-    let kv = new KeyValuePair();
     const idx = line.indexOf("=");
-    kv.key = line.substring(0, idx).trim();
-    kv.value = this._parseData(line.slice(idx + 1));
-    return kv;
+    const key = line.substring(0, idx).trim();
+    const value = this._parseData(line.slice(idx + 1));
+    return new KeyValuePair(key, value);
   }
   // TODO (zekth) Need refactor using ACC
   _parseData(dataString: string): unknown {

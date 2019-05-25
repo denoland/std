@@ -31,19 +31,19 @@ export interface WebSocketCloseEvent {
   reason?: string;
 }
 
-export function isWebSocketCloseEvent(a): a is WebSocketCloseEvent {
-  return a && typeof a["code"] === "number";
+export function isWebSocketCloseEvent(a: WebSocketEvent): a is WebSocketCloseEvent {
+  return typeof a === "object" && a.hasOwnProperty("code");
 }
 
 export type WebSocketPingEvent = ["ping", Uint8Array];
 
-export function isWebSocketPingEvent(a): a is WebSocketPingEvent {
+export function isWebSocketPingEvent(a: WebSocketEvent): a is WebSocketPingEvent {
   return Array.isArray(a) && a[0] === "ping" && a[1] instanceof Uint8Array;
 }
 
 export type WebSocketPongEvent = ["pong", Uint8Array];
 
-export function isWebSocketPongEvent(a): a is WebSocketPongEvent {
+export function isWebSocketPongEvent(a: WebSocketEvent): a is WebSocketPongEvent {
   return Array.isArray(a) && a[0] === "pong" && a[1] instanceof Uint8Array;
 }
 
@@ -455,7 +455,9 @@ export async function connectWebSocket(
   if (!m) {
     abortHandshake(new Error("ws: invalid status line: " + statusLine));
   }
-  const [_, version, statusCode] = m;
+  const version: string = m![1];
+  const statusCode: string = m![2];
+
   if (version !== "HTTP/1.1" || statusCode !== "101") {
     abortHandshake(
       new Error(

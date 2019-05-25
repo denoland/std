@@ -25,13 +25,12 @@ export type BufState =
 
 /** BufReader implements buffering for a Reader object. */
 export class BufReader implements Reader {
-  private buf: Uint8Array;
-  private rd: Reader; // Reader provided by caller.
+  private buf!: Uint8Array;
+  private rd!: Reader; // Reader provided by caller.
   private r = 0; // buf read position.
   private w = 0; // buf write position.
-  private lastByte: number;
-  private lastCharSize: number;
-  private err: BufState;
+  private lastByte!: number;
+  private err: BufState = null;
 
   /** return new BufReader unless r is BufReader */
   static create(r: Reader, size = DEFAULT_BUF_SIZE): BufReader {
@@ -282,7 +281,7 @@ export class BufReader implements Reader {
   async readSlice(delim: number): Promise<[Uint8Array, BufState]> {
     let s = 0; // search start index
     let line: Uint8Array;
-    let err: BufState;
+    let err: BufState = null;
     while (true) {
       // Search buffer.
       let i = this.buf.subarray(this.r + s, this.w).indexOf(delim);
@@ -347,7 +346,7 @@ export class BufReader implements Reader {
     }
 
     // 0 <= n <= len(this.buf)
-    let err: BufState;
+    let err: BufState = null;
     let avail = this.w - this.r;
     if (avail < n) {
       // not enough data in buffer
@@ -408,7 +407,7 @@ export class BufWriter implements Writer {
       return null;
     }
 
-    let n: number;
+    let n: number = 0;
     let err: BufState = null;
     try {
       n = await this.wr.write(this.buf.subarray(0, this.n));
@@ -429,6 +428,7 @@ export class BufWriter implements Writer {
       return err;
     }
     this.n = 0;
+    return err;
   }
 
   /** Returns how many bytes are unused in the buffer. */
@@ -448,7 +448,7 @@ export class BufWriter implements Writer {
    */
   async write(p: Uint8Array): Promise<number> {
     let nn = 0;
-    let n: number;
+    let n: number = 0;
     while (p.byteLength > this.available() && !this.err) {
       if (this.buffered() == 0) {
         // Large write, empty buffer.
