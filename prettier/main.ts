@@ -228,15 +228,16 @@ async function formatSourceFiles(
 }
 
 /**
- * Select a specific file based on glob, then return an async iterable object.
+ * Get the files to format.
  * @param selectors The glob patterns to select the files.
  *                  eg `cmd/*.ts` to select all the typescript files in cmd directory.
  *                  eg `cmd/run.ts` to select `cmd/run.ts` file as only.
  * @param ignore The glob patterns to ignore files.
  *                  eg `*_test.ts` to ignore all the test file.
  * @param options options to pass to `glob(selector, options)`
+ * @returns returns an async iterable object
  */
-function filesSelector(
+function getTargetFiles(
   selectors: string[],
   ignore: string[] = [],
   options: GlobOptions = {}
@@ -311,7 +312,7 @@ async function main(opts): Promise<void> {
   }
   const options: GlobOptions = { flags: "g" };
 
-  const files = filesSelector(
+  const files = getTargetFiles(
     args.length ? args : ["."],
     Array.isArray(ignore) ? ignore : [ignore],
     options
