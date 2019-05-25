@@ -365,21 +365,6 @@ test(async function testReadRequestError(): Promise<void> {
       in: "HEAD / HTTP/1.1\r\nContent-Length:0\r\nContent-Length: 0\r\n\r\n",
       headers: [{ key: "Content-Length", value: "0" }],
       err: null
-    },
-    11: {
-      in: "GET / HTTP/1.A\r\nContent-Length:0\r\n\r\n",
-      headers: [{ key: "Content-Length", value: "0" }],
-      err: `malformed HTTP version HTTP/1.A`
-    },
-    12: {
-      in: "GET / HTTP/A.1\r\nContent-Length:0\r\n\r\n",
-      headers: [],
-      err: `malformed HTTP version HTTP/A.1`
-    },
-    13: {
-      in: "GET / HTTP/1.0\r\nContent-Length:4\r\n\r\n",
-      headers: [{ key: "Content-Length", value: "4" }],
-      err: null
     }
   };
   for (const p in testCases) {
