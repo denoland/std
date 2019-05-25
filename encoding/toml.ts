@@ -3,19 +3,19 @@ import { deepAssign } from "../util/deep_assign.ts";
 import { pad } from "../strings/pad.ts";
 
 class KeyValuePair {
-  constructor (public key: string, public value: unknown) {}
+  constructor(public key: string, public value: unknown) {}
 }
 
 class ParserGroup {
   arrValues: unknown[] = [];
-  objValues: object = {};
+  objValues: Record<string, unknown> = {};
 
-  constructor (public type: string, public name: string) {}
+  constructor(public type: string, public name: string) {}
 }
 
 class ParserContext {
   currentGroup?: ParserGroup;
-  output: object = {};
+  output: Record<string, unknown> = {};
 }
 
 class Parser {
@@ -123,28 +123,30 @@ class Parser {
     this.tomlLines = merged;
   }
   _unflat(keys: string[], values: object = {}, cObj: object = {}): object {
-    let out = {};
+    let out: Record<string, unknown> = {};
     if (keys.length === 0) {
       return cObj;
     } else {
       if (Object.keys(cObj).length === 0) {
         cObj = values;
       }
-      let key = keys.pop();
-      out[key] = cObj;
+      let key: string | undefined = keys.pop();
+      if (key) {
+        out[key] = cObj;
+      }
       return this._unflat(keys, values, out);
     }
   }
   _groupToOutput(): void {
-    const arrProperty = this.context.currentGroup.name
-      .replace(/"/g, "")
+    const arrProperty = this.context
+      .currentGroup!.name.replace(/"/g, "")
       .replace(/'/g, "")
       .split(".");
     let u = {};
-    if (this.context.currentGroup.type === "array") {
-      u = this._unflat(arrProperty, this.context.currentGroup.arrValues);
+    if (this.context.currentGroup!.type === "array") {
+      u = this._unflat(arrProperty, this.context.currentGroup!.arrValues);
     } else {
-      u = this._unflat(arrProperty, this.context.currentGroup.objValues);
+      u = this._unflat(arrProperty, this.context.currentGroup!.objValues);
     }
     deepAssign(this.context.output, u);
     delete this.context.currentGroup;
@@ -352,23 +354,27 @@ class Parser {
   _cleanOutput(): void {
     this._propertyClean(this.context.output);
   }
-  _propertyClean(obj: object): void {
+  _propertyClean(obj: Record<string, unknown>): void {
     const keys = Object.keys(obj);
     for (let i = 0; i < keys.length; i++) {
       let k = keys[i];
-      let v = obj[k];
-      let pathDeclaration = this._parseDeclarationName(k);
-      delete obj[k];
-      if (pathDeclaration.length > 1) {
-        k = pathDeclaration.shift();
-        k = k.replace(/"/g, "");
-        v = this._unflat(pathDeclaration, v as object);
-      } else {
-        k = k.replace(/"/g, "");
-      }
-      obj[k] = v;
-      if (v instanceof Object) {
-        this._propertyClean(v);
+      if (k) {
+        let v = obj[k];
+        let pathDeclaration = this._parseDeclarationName(k);
+        delete obj[k];
+        if (pathDeclaration.length > 1) {
+          const shift = pathDeclaration.shift();
+          if (shift) {
+            k = shift.replace(/"/g, "");
+            v = this._unflat(pathDeclaration, v as object);
+          }
+        } else {
+          k = k.replace(/"/g, "");
+        }
+        obj[k] = v;
+        if (v instanceof Object) {
+          this._propertyClean(v);
+        }
       }
     }
   }
@@ -392,18 +398,26 @@ class Dumper {
     this.output = this._format();
     return this.output;
   }
-  _parse(obj: object, path: string = ""): string[] {
+  _parse(obj: Record<string, unknown>, path: string = ""): string[] {
     const out = [];
     const props = Object.keys(obj);
     const propObj = props.filter(
-      (e): boolean =>
-        (obj[e] instanceof Array && !this._isSimplySerializable(obj[e][0])) ||
-        !this._isSimplySerializable(obj[e])
+      (e: string): boolean => {
+        if (obj[e] instanceof Array) {
+          const d: unknown[] = obj[e] as unknown[];
+          return !this._isSimplySerializable(d[0]);
+        }
+        return !this._isSimplySerializable(obj[e]);
+      }
     );
     const propPrim = props.filter(
-      (e): boolean =>
-        !(obj[e] instanceof Array && !this._isSimplySerializable(obj[e][0])) &&
-        this._isSimplySerializable(obj[e])
+      (e: string): boolean => {
+        if (obj[e] instanceof Array) {
+          const d: unknown[] = obj[e] as unknown[];
+          return this._isSimplySerializable(d[0]);
+        }
+        return this._isSimplySerializable(obj[e]);
+      }
     );
     const k = propPrim.concat(propObj);
     for (let i = 0; i < k.length; i++) {
@@ -434,7 +448,11 @@ class Dumper {
       } else if (typeof value === "object") {
         out.push("");
         out.push(this._header(path + prop));
-        out.push(...this._parse(value, `${path}${prop}.`));
+        if (value) {
+          const toParse: Record<string, unknown> = value;
+          out.push(...this._parse(toParse, `${path}${prop}.`));
+        }
+        // out.push(...this._parse(value, `${path}${prop}.`));
       }
     }
     out.push("");

@@ -28,7 +28,7 @@ export interface ParseOptions {
 function chkOptions(opt: ParseOptions): Error | null {
   if (
     INVALID_RUNE.includes(opt.comma) ||
-    INVALID_RUNE.includes(opt.comment) ||
+    (opt.comment && INVALID_RUNE.includes(opt.comment)) ||
     opt.comma === opt.comment
   ) {
     return Error("Invalid Delimiter");
@@ -107,9 +107,9 @@ export async function readAll(
     trimLeadingSpace: false,
     lazyQuotes: false
   }
-): Promise<[string[][], BufState]> {
+): Promise<[string[][] | null, BufState]> {
   const result: string[][] = [];
-  let _nbFields: number;
+  let _nbFields: number = -1;
   let err: BufState;
   let lineResult: string[];
   let first = true;
@@ -135,7 +135,7 @@ export async function readAll(
     }
 
     if (lineResult.length > 0) {
-      if (_nbFields && _nbFields !== lineResult.length) {
+      if (_nbFields !== -1 && _nbFields !== lineResult.length) {
         return [
           null,
           new ParseError(lineIndex, lineIndex, "wrong number of fields")
