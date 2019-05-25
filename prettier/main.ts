@@ -228,6 +228,15 @@ async function formatSourceFiles(
   exit(0);
 }
 
+/**
+ * Select a specific file based on the selector selected, then return an async iterable object.
+ * @param selectors The glob patterns to select the files.
+ *                  eg `cmd/*.ts` to select all the typescript files in cmd directory.
+ *                  eg `cmd/run.ts` to select `cmd/run.ts` file as only.
+ * @param ignore The glob patterns to ignore files.
+ *                  eg `*_test.ts` to ignore all the test file.
+ * @param options options to pass to `glob(selector, options)`
+ */
 function filesSelector(
   selectors: string[],
   ignore: string[] = [],
@@ -238,7 +247,7 @@ function filesSelector(
   const selectorMap: { [k: string]: boolean } = {};
 
   for (const selector of selectors) {
-    // if selector have exist. ignore it.
+    // If the selector already exists then ignore it.
     if (selectorMap[selector]) continue;
     selectorMap[selector] = true;
     if (isGlob(selector) || selector === ".") {
@@ -256,27 +265,21 @@ function filesSelector(
         const fileInfo = await Deno.stat(match);
 
         if (fileInfo.isDirectory()) {
-          const files = await Deno.readDir(match);
-          for (const f of files) {
-            const item: WalkInfo = {
-              filename: match + sep + f.name,
-              info: f
-            };
-            yield item;
+          const files = walk(match, { skip });
+
+          for await (const info of files) {
+            yield info;
           }
         } else {
-          const item: WalkInfo = {
+          const info: WalkInfo = {
             filename: match,
             info: fileInfo
           };
 
-          yield item;
+          yield info;
         }
       } else {
-        const files = walk(".", {
-          match: [match],
-          skip
-        });
+        const files = walk(".", { match: [match], skip });
 
         for await (const info of files) {
           yield info;
