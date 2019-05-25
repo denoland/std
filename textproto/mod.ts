@@ -77,7 +77,7 @@ export class TextProtoReader {
     [buf, err] = await this.r.peek(1);
     if (err == null && (buf[0] == charCode(" ") || buf[0] == charCode("\t"))) {
       throw new ProtocolError(
-        `malformed MIME header initial line: ${str(line)}`
+        `malformed MIME header initial line: ${str(line!)}`
       );
     }
 
@@ -143,13 +143,15 @@ export class TextProtoReader {
       }
 
       // Avoid the copy if the first call produced a full line.
-      if (line == null && !more) {
+      // @ts-ignore
+      if (!line == null && !more) {
         if (this.skipSpace(l) === 0) {
           return [new Uint8Array(0), null];
         }
         return [l, null];
       }
 
+      // @ts-ignore
       line = append(line, l);
       if (!more) {
         break;
