@@ -14,7 +14,6 @@
 const { args, exit, readFile, writeFile, stdout } = Deno;
 import { glob, isGlob, GlobOptions } from "../fs/glob.ts";
 import { walk, WalkInfo } from "../fs/walk.ts";
-import { sep } from "../fs/path.ts";
 import { parse } from "../flags/mod.ts";
 import { prettier, prettierPlugins } from "./prettier.ts";
 
