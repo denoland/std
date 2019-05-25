@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-export const LogLevel : {[key: string]: number } = {
+export const LogLevel : Record<string, number> = {
   NOTSET: 0,
   DEBUG: 10,
   INFO: 20,

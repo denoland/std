@@ -437,7 +437,7 @@ for (const t of testCases) {
       if (t.LazyQuotes) {
         lazyquote = t.LazyQuotes;
       }
-      const actual = await readAll(new BufReader(new StringReader(t.Input)), {
+      const actual = await readAll(new BufReader(new StringReader(t.Input || "")), {
         comma: comma,
         comment: comment,
         trimLeadingSpace: trim,
