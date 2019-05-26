@@ -47,9 +47,11 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
 }
 
 export function parse(
-  args: string[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  args: any[],
   initialOptions?: ArgParsingOptions
-): { [key: string]: unknown } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): { [key: string]: any } {
   const options: ArgParsingOptions = {
     ...DEFAULT_OPTIONS,
     ...(initialOptions || {})

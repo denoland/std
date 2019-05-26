@@ -101,8 +101,8 @@ export class ServerRequest {
   url!: string;
   method!: string;
   proto!: string;
-  protoMinor: number;
-  protoMajor: number;
+  protoMinor!: number;
+  protoMajor!: number;
   headers!: Headers;
   r!: BufReader;
   w!: BufWriter;
