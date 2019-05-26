@@ -31,19 +31,25 @@ export interface WebSocketCloseEvent {
   reason?: string;
 }
 
-export function isWebSocketCloseEvent(a: WebSocketEvent): a is WebSocketCloseEvent {
+export function isWebSocketCloseEvent(
+  a: WebSocketEvent
+): a is WebSocketCloseEvent {
   return typeof a === "object" && a.hasOwnProperty("code");
 }
 
 export type WebSocketPingEvent = ["ping", Uint8Array];
 
-export function isWebSocketPingEvent(a: WebSocketEvent): a is WebSocketPingEvent {
+export function isWebSocketPingEvent(
+  a: WebSocketEvent
+): a is WebSocketPingEvent {
   return Array.isArray(a) && a[0] === "ping" && a[1] instanceof Uint8Array;
 }
 
 export type WebSocketPongEvent = ["pong", Uint8Array];
 
-export function isWebSocketPongEvent(a: WebSocketEvent): a is WebSocketPongEvent {
+export function isWebSocketPongEvent(
+  a: WebSocketEvent
+): a is WebSocketPongEvent {
   return Array.isArray(a) && a[0] === "pong" && a[1] instanceof Uint8Array;
 }
 

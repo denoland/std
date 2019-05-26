@@ -437,13 +437,16 @@ for (const t of testCases) {
       if (t.LazyQuotes) {
         lazyquote = t.LazyQuotes;
       }
-      const actual = await readAll(new BufReader(new StringReader(t.Input || "")), {
-        comma: comma,
-        comment: comment,
-        trimLeadingSpace: trim,
-        fieldsPerRecord: fieldsPerRec,
-        lazyQuotes: lazyquote
-      });
+      const actual = await readAll(
+        new BufReader(new StringReader(t.Input || "")),
+        {
+          comma: comma,
+          comment: comment,
+          trimLeadingSpace: trim,
+          fieldsPerRecord: fieldsPerRec,
+          lazyQuotes: lazyquote
+        }
+      );
       if (t.Error) {
         assert(!!actual[1]);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

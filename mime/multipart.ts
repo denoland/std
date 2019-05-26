@@ -156,7 +156,7 @@ class PartReader implements Reader, Closer {
   private getContentDispositionParams(): { [key: string]: string } {
     if (this.contentDispositionParams) return this.contentDispositionParams;
     const cd = this.headers.get("content-disposition");
-    const params: {[key: string]: string} = {};
+    const params: { [key: string]: string } = {};
     const comps = cd!.split(";");
     this.contentDisposition = comps[0];
     comps

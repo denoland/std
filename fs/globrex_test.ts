@@ -10,7 +10,12 @@ import { GlobOptions } from "./glob.ts";
 const isWin = Deno.build.os === "win";
 const t = { equal: assertEquals, is: assertEquals };
 
-function match(glob: string, strUnix: string, strWin?: string | object, opts = {}): boolean {
+function match(
+  glob: string,
+  strUnix: string,
+  strWin?: string | object,
+  opts = {}
+): boolean {
   if (typeof strWin === "object") {
     opts = strWin;
     strWin = "";
@@ -19,14 +24,24 @@ function match(glob: string, strUnix: string, strWin?: string | object, opts = {
   return res.regex.test(isWin && strWin ? strWin : strUnix);
 }
 
-function matchRegex(pattern: string, ifUnix: string, ifWin: string, opts: GlobOptions): GlobrexResult {
+function matchRegex(
+  pattern: string,
+  ifUnix: string,
+  ifWin: string,
+  opts: GlobOptions
+): GlobrexResult {
   const res = globrex(pattern, opts);
   const { regex } = opts.filepath ? res.path! : res;
   t.is(regex.toString(), isWin ? ifWin : ifUnix, "~> regex matches expectant");
   return res;
 }
 
-function matchSegments(pattern: string, ifUnix: RegExp[], ifWin: RegExp[], opts: GlobOptions): GlobrexResult {
+function matchSegments(
+  pattern: string,
+  ifUnix: RegExp[],
+  ifWin: RegExp[],
+  opts: GlobOptions
+): GlobrexResult {
   const res = globrex(pattern, { filepath: true, ...opts });
   const str = res.path!.segments.join(" ");
   const exp = (isWin ? ifWin : ifUnix).join(" ");
