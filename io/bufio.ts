@@ -407,7 +407,7 @@ export class BufWriter implements Writer {
       return null;
     }
 
-    let n: number = 0;
+    let n = 0;
     let err: BufState = null;
     try {
       n = await this.wr.write(this.buf.subarray(0, this.n));
@@ -448,7 +448,7 @@ export class BufWriter implements Writer {
    */
   async write(p: Uint8Array): Promise<number> {
     let nn = 0;
-    let n: number = 0;
+    let n = 0;
     while (p.byteLength > this.available() && !this.err) {
       if (this.buffered() == 0) {
         // Large write, empty buffer.
