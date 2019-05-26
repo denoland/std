@@ -525,20 +525,19 @@ const getConfig = (options: Options): Config => ({
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function format(val: any, options: Optional<Options> = {}): string {
-  const opts = Object.keys(DEFAULT_OPTIONS).reduce(
-    (acc: Options, k: keyof Options): unknown => {
-      const opt = options[k];
-      if (typeof opt === "undefined") {
-        return { ...acc, [k]: DEFAULT_OPTIONS[k] };
-      }
-      return { ...acc, [k]: opt };
-    },
-    {}
-  ) as Options;
-  const basicResult = printBasicValue(val, opts);
+  const opts: Record<string, unknown> = {};
+
+  for (const key in DEFAULT_OPTIONS) {
+    const opt = options[key as keyof Options];
+    if (typeof opt === "undefined") {
+      opts[key] = DEFAULT_OPTIONS[key as keyof Options];
+    }
+    opts[key] = opt;
+  }
+  const basicResult = printBasicValue(val, opts as Options);
   if (basicResult !== null) {
     return basicResult;
   }
 
-  return printComplexValue(val, getConfig(opts), "", 0, []);
+  return printComplexValue(val, getConfig(opts as Options), "", 0, []);
 }

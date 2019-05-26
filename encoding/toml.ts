@@ -26,7 +26,7 @@ class Parser {
     this.context = new ParserContext();
   }
   _sanitize(): void {
-    const out = [];
+    const out: string[] = [];
     for (let i = 0; i < this.tomlLines.length; i++) {
       const s = this.tomlLines[i];
       const trimmed = s.trim();
