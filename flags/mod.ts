@@ -19,16 +19,16 @@ const DEFAULT_OPTIONS = {
   stopEarly: false
 };
 
-type Flags = {
+interface Flags {
   bools: { [key: string]: boolean };
   strings: { [key: string]: boolean };
   unknownFn: (i: unknown) => unknown;
   allBools: boolean;
-};
+}
 
-type NestedMapping = {
+interface NestedMapping {
   [key: string]: NestedMapping | unknown;
-};
+}
 
 function isNumber(x: unknown): boolean {
   if (typeof x === "number") return true;

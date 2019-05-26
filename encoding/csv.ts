@@ -109,7 +109,7 @@ export async function readAll(
   }
 ): Promise<[string[][] | null, BufState]> {
   const result: string[][] = [];
-  let _nbFields: number = -1;
+  let _nbFields = -1;
   let err: BufState;
   let lineResult: string[];
   let first = true;
