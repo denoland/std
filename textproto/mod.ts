@@ -144,7 +144,7 @@ export class TextProtoReader {
 
       // Avoid the copy if the first call produced a full line.
       // @ts-ignore
-      if (!line == null && !more) {
+      if (line == null && !more) {
         if (this.skipSpace(l) === 0) {
           return [new Uint8Array(0), null];
         }
