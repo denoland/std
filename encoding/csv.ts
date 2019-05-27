@@ -25,6 +25,7 @@ export interface ParseOptions {
   fieldsPerRecord?: number;
 }
 
+/** @private */
 function chkOptions(opt: ParseOptions): Error | null {
   if (
     INVALID_RUNE.includes(opt.comma) ||
@@ -36,6 +37,7 @@ function chkOptions(opt: ParseOptions): Error | null {
   return null;
 }
 
+/** Read and parse the next csv line of the BufReader */
 export async function read(
   Startline: number,
   reader: BufReader,
@@ -100,6 +102,7 @@ export async function read(
   return [result, err];
 }
 
+/** Read and parse the BufReader as CSV content */
 export async function readAll(
   reader: BufReader,
   opt: ParseOptions = {

@@ -40,15 +40,18 @@ class Parser {
   }
 
   _mergeMultilines(): void {
+    /** @private */
     function arrayStart(line: string): boolean {
       const reg = /.*=\s*\[/g;
       return reg.test(line) && !(line[line.length - 1] === "]");
     }
 
+    /** @private */
     function arrayEnd(line: string): boolean {
       return line[line.length - 1] === "]";
     }
 
+    /** @private */
     function stringStart(line: string): boolean {
       const m = line.match(/.*=\s*(?:\"\"\"|''')/);
       if (!m) {
@@ -57,10 +60,12 @@ class Parser {
       return !line.endsWith(`"""`) || !line.endsWith(`'''`);
     }
 
+    /** @private */
     function stringEnd(line: string): boolean {
       return line.endsWith(`'''`) || line.endsWith(`"""`);
     }
 
+    /** @private */
     function isLiteralString(line: string): boolean {
       return line.match(/'''/) ? true : false;
     }
@@ -479,6 +484,7 @@ class Dumper {
     }
   }
   _dateDeclaration(title: string, value: Date): string {
+    /** @private */
     function dtPad(v: string, lPad: number = 2): string {
       return pad(v, lPad, { char: "0" });
     }
@@ -525,12 +531,14 @@ class Dumper {
   }
 }
 
+/** Stringify the input object in a TOML string */
 export function stringify(srcObj: object): string {
   let out: string[] = [];
   out = new Dumper(srcObj).dump();
   return out.join("\n");
 }
 
+/** Parse the TOML string in an object */
 export function parse(tomlString: string): object {
   // File is potentially using EOL CRLF
   tomlString = tomlString.replace(/\r\n/g, "\n").replace(/\\\n/g, "\n");
