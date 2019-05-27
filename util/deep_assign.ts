@@ -1,4 +1,11 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * Do a deep assign of objects
+ * Object.assign() only do shallow assign
+ * @param target Object receiving the assign
+ * @param sources array of objects to be merged in
+ */
 export function deepAssign(target: object, ...sources: object[]): object {
   for (let i = 0; i < sources.length; i++) {
     const source = sources[i];

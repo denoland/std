@@ -24,6 +24,7 @@ export interface Cookie {
 
 export type SameSite = "Strict" | "Lax";
 
+/** Stringify the Cooki in the proper format */
 function toString(cookie: Cookie): string {
   const out: string[] = [];
   out.push(`${cookie.name}=${cookie.value}`);
@@ -45,8 +46,8 @@ function toString(cookie: Cookie): string {
   if (cookie.httpOnly) {
     out.push("HttpOnly");
   }
-  if (Number.isInteger(cookie.maxAge)) {
-    assert(cookie.maxAge > 0, "Max-Age must be an integer superior to 0");
+  if (Number.isInteger(cookie.maxAge!)) {
+    assert(cookie.maxAge! > 0, "Max-Age must be an integer superior to 0");
     out.push(`Max-Age=${cookie.maxAge}`);
   }
   if (cookie.domain) {
