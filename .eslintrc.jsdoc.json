@@ -1,8 +1,6 @@
 {
-    "plugins": [
-        "jsdoc"
-    ],
-    "rules": {
-        "jsdoc/require-jsdoc": 1
-    }
+  "plugins": ["jsdoc"],
+  "rules": {
+    "jsdoc/require-jsdoc": 1
+  }
 }
