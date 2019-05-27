@@ -64,7 +64,10 @@ export function globrex(
     only?: string;
   }
 
-  // Helper function to build string and segments
+  /**
+   * Helper function to build string and segments
+   * @private
+   */
   function add(
     str,
     options: AddOptions = { split: false, last: false, only: "" }
