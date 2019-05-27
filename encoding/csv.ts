@@ -4,6 +4,7 @@
 
 import { BufReader, EOF } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
+import { StringReader } from "../io/readers.ts";
 
 const INVALID_RUNE = ["\r", "\n", '"'];
 
@@ -137,4 +138,106 @@ export async function readAll(
     }
   }
   return result;
+}
+
+/**
+ * HeaderOption provides the column definition
+ * and the parse function for each entry of the
+ * column.
+ */
+export interface HeaderOption {
+  name: string;
+  parse?: (input: string) => unknown;
+}
+
+export interface ParseOption {
+  header: boolean | string[] | HeaderOption[];
+  parse?: (input: unknown) => unknown;
+}
+
+/**
+ * Csv parse helper to manipulate data.
+ * Provides an auto/custom mapper for columns and parse function
+ * for columns and rows.
+ * @param input Input to parse. Can be a string or BufReader.
+ * @param opt options of the parser.
+ * @param [opt.header=false] HeaderOptions
+ * @param [opt.parse=null] Parse function for rows.
+ * Example:
+ *     const r = await parseFile('a,b,c\ne,f,g\n', {
+ *      header: ["this", "is", "sparta"],
+ *       parse: (e: Record<string, unknown>) => {
+ *         return { super: e.this, street: e.is, fighter: e.sparta };
+ *       }
+ *     });
+ * // output
+ * [
+ *   { super: "a", street: "b", fighter: "c" },
+ *   { super: "e", street: "f", fighter: "g" }
+ * ]
+ */
+export async function parse(
+  input: string | BufReader,
+  opt: ParseOption = { header: false }
+): Promise<unknown[]> {
+  let r: string[][];
+  let err: BufState;
+  if (input instanceof BufReader) {
+    [r, err] = await readAll(input);
+  } else {
+    [r, err] = await readAll(new BufReader(new StringReader(input)));
+  }
+  if (err) throw err;
+  if (opt.header) {
+    let headers: HeaderOption[] = [];
+    let i = 0;
+    if (Array.isArray(opt.header)) {
+      if (typeof opt.header[0] !== "string") {
+        headers = opt.header as HeaderOption[];
+      } else {
+        const h = opt.header as string[];
+        headers = h.map(
+          (e): HeaderOption => {
+            return {
+              name: e
+            };
+          }
+        );
+      }
+    } else {
+      headers = r.shift()!.map(
+        (e): HeaderOption => {
+          return {
+            name: e
+          };
+        }
+      );
+      i++;
+    }
+    return r.map(
+      (e): unknown => {
+        if (e.length !== headers.length) {
+          throw `Error number of fields line:${i}`;
+        }
+        i++;
+        let out: Record<string, unknown> = {};
+        for (let j = 0; j < e.length; j++) {
+          const h = headers[j];
+          if (h.parse) {
+            out[h.name] = h.parse(e[j]);
+          } else {
+            out[h.name] = e[j];
+          }
+        }
+        if (opt.parse) {
+          return opt.parse(out);
+        }
+        return out;
+      }
+    );
+  }
+  if (opt.parse) {
+    return r.map((e: string[]): unknown => opt.parse!(e));
+  }
+  return r;
 }
