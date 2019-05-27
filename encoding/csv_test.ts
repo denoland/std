@@ -571,7 +571,9 @@ for (const testCase of parseTestCases) {
     async fn(): Promise<void> {
       const r = await parse(testCase.in, {
         header: testCase.header,
-        parse: testCase.parse
+        parse: testCase.parse,
+        comma: ",",
+        trimLeadingSpace: false
       });
       assertEquals(r, testCase.result);
     }

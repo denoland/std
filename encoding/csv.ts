@@ -29,7 +29,7 @@ export interface ParseOptions {
 function chkOptions(opt: ParseOptions): void {
   if (
     INVALID_RUNE.includes(opt.comma) ||
-    (opt.comment && INVALID_RUNE.includes(opt.comment)) ||
+    INVALID_RUNE.includes(opt.comment!) ||
     opt.comma === opt.comment
   ) {
     throw new Error("Invalid Delimiter");
@@ -150,7 +150,7 @@ export interface HeaderOption {
   parse?: (input: string) => unknown;
 }
 
-export interface ParseOption {
+export interface ExtendedParseOptions extends ParseOptions {
   header: boolean | string[] | HeaderOption[];
   parse?: (input: unknown) => unknown;
 }
@@ -178,14 +178,18 @@ export interface ParseOption {
  */
 export async function parse(
   input: string | BufReader,
-  opt: ParseOption = { header: false }
+  opt: ExtendedParseOptions = {
+    header: false,
+    comma: ",",
+    trimLeadingSpace: false
+  }
 ): Promise<unknown[]> {
   let r: string[][];
   let err: BufState;
   if (input instanceof BufReader) {
-    [r, err] = await readAll(input);
+    [r, err] = await readAll(input, opt);
   } else {
-    [r, err] = await readAll(new BufReader(new StringReader(input)));
+    [r, err] = await readAll(new BufReader(new StringReader(input)), opt);
   }
   if (err) throw err;
   if (opt.header) {
