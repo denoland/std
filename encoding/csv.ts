@@ -19,16 +19,16 @@ export class ParseError extends Error {
 }
 
 export interface ParseOptions {
-  comma: string;
+  comma?: string;
   comment?: string;
-  trimLeadingSpace: boolean;
+  trimLeadingSpace?: boolean;
   lazyQuotes?: boolean;
   fieldsPerRecord?: number;
 }
 
 function chkOptions(opt: ParseOptions): void {
   if (
-    INVALID_RUNE.includes(opt.comma) ||
+    INVALID_RUNE.includes(opt.comma!) ||
     INVALID_RUNE.includes(opt.comment!) ||
     opt.comma === opt.comment
   ) {
@@ -69,7 +69,7 @@ export async function read(
     return [];
   }
 
-  result = line.split(opt.comma);
+  result = line.split(opt.comma!);
 
   let quoteError = false;
   result = result.map(
@@ -179,9 +179,7 @@ export interface ExtendedParseOptions extends ParseOptions {
 export async function parse(
   input: string | BufReader,
   opt: ExtendedParseOptions = {
-    header: false,
-    comma: ",",
-    trimLeadingSpace: false
+    header: false
   }
 ): Promise<unknown[]> {
   let r: string[][];
