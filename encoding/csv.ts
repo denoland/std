@@ -45,7 +45,7 @@ function chkOptions(opt: ParseOptions): void {
   }
 }
 
-export async function read(
+async function read(
   Startline: number,
   reader: BufReader,
   opt: ParseOptions = { comma: ",", comment: "#", trimLeadingSpace: false }
