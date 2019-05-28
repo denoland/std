@@ -365,6 +365,24 @@ test(async function testReadRequestError(): Promise<void> {
       in: "HEAD / HTTP/1.1\r\nContent-Length:0\r\nContent-Length: 0\r\n\r\n",
       headers: [{ key: "Content-Length", value: "0" }],
       err: null
+    },
+    11: {
+      in:
+        "POST / HTTP/1.1\r\nContent-Length: 6 \r\nTransfer-Encoding: chunked\r\n\r\nGopher\r\n",
+      err:
+        "A sender MUST NOT send a Content-Length header field in any message that contains a Transfer-Encoding header field."
+    },
+    12: {
+      in:
+        "PUT / HTTP/1.1\r\nContent-Length: 6 \r\nTransfer-Encoding: chunked\r\n\r\nGopher\r\n",
+      err:
+        "A sender MUST NOT send a Content-Length header field in any message that contains a Transfer-Encoding header field."
+    },
+    13: {
+      in:
+        "HEAD / HTTP/1.1\r\nContent-Length:0\r\nContent-Length: 0\r\nTransfer-Encoding: chunked\r\n\r\n",
+      err:
+        "A sender MUST NOT send a Content-Length header field in any message that contains a Transfer-Encoding header field."
     }
   };
   for (const p in testCases) {

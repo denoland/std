@@ -200,6 +200,12 @@ export class ServerRequest {
 
 function fixLength(req: ServerRequest): void {
   const contentLength = req.headers.get("Content-Length");
+  const transferEncoding = req.headers.get("Transfer-Encoding");
+  if (contentLength && transferEncoding) {
+    throw Error(
+      "A sender MUST NOT send a Content-Length header field in any message that contains a Transfer-Encoding header field."
+    );
+  }
   if (contentLength) {
     const arrClen = contentLength.split(",");
     if (arrClen.length > 1) {
