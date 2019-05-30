@@ -15,10 +15,8 @@ const headerMap = Symbol("header map");
 export class HttpHeaders {
   private [headerMap]: Map<string, string[]>;
 
-  private _normalizeParams(name: string, value?: string): string[] {
-    name = String(name).toLowerCase();
-    value = String(value).trim();
-    return [name, value];
+  private _normalizeParams(name: string, value: string): string[] {
+    return [this._normalizeName(name), this._normalizeValue(value)];
   }
 
   private _normalizeName(name: string): string {
@@ -28,7 +26,6 @@ export class HttpHeaders {
   private _normalizeValue(value: string): string {
     return String(value).trim();
   }
-
 
   // The following name/value validations are copied from
   // https://github.com/bitinn/node-fetch/blob/master/src/headers.js
@@ -120,13 +117,13 @@ export class HttpHeaders {
   }
 
   delete(name: string): void {
-    const [newname] = this._normalizeParams(name);
+    const [newname] = this._normalizeName(name);
     this._validateName(newname);
     this[headerMap].delete(newname);
   }
 
   get(name: string): string | null {
-    const [newname] = this._normalizeParams(name);
+    const [newname] = this._normalizeName(name);
     this._validateName(newname);
     const values = this[headerMap].get(newname);
     if (!values) return null;
@@ -137,7 +134,7 @@ export class HttpHeaders {
   }
 
   has(name: string): boolean {
-    const [newname] = this._normalizeParams(name);
+    const [newname] = this._normalizeName(name);
     this._validateName(newname);
     return this[headerMap].has(newname);
   }
