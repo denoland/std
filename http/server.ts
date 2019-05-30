@@ -74,9 +74,10 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
   let out = `HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`;
 
   setContentLength(r);
+  const headers = r.headers!;
 
   if (r.headers) {
-    for (const [key, values] of r.headers) {
+    for (const [key, values] of r.headers!) {
       for (const value of values) {
         out += `${key}: ${value}\r\n`;
       }
@@ -91,8 +92,8 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
   if (r.body instanceof Uint8Array) {
     const n = await writer.write(r.body);
     assert(n === r.body.byteLength);
-  } else if (r.headers.has("content-length")) {
-    const bodyLength = parseInt(r.headers.get("content-length"));
+  } else if (headers.has("content-length")) {
+    const bodyLength = parseInt(headers.get("content-length")!);
     const n = await copy(writer, r.body);
     assert(n === bodyLength);
   } else {
@@ -102,19 +103,19 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
 }
 
 export class ServerRequest {
-  url: string;
-  method: string;
-  proto: string;
-  protoMinor: number;
-  protoMajor: number;
-  headers: HttpHeaders;
-  r: BufReader;
-  w: BufWriter;
+  url!: string;
+  method!: string;
+  proto!: string;
+  protoMinor!: number;
+  protoMajor!: number;
+  headers!: HttpHeaders;
+  r!: BufReader;
+  w!: BufWriter;
   done: Deferred<void> = deferred();
 
   public async *bodyStream(): AsyncIterableIterator<Uint8Array> {
     if (this.headers.has("content-length")) {
-      const len = +this.headers.get("content-length");
+      const len = +this.headers.get("content-length")!;
       if (Number.isNaN(len)) {
         return new Uint8Array(0);
       }
@@ -131,7 +132,7 @@ export class ServerRequest {
     } else {
       if (this.headers.has("transfer-encoding")) {
         const transferEncodings = this.headers
-          .get("transfer-encoding")
+          .get("transfer-encoding")!
           .split(",")
           .map((e): string => e.trim().toLowerCase());
         if (transferEncodings.includes("chunked")) {
@@ -339,14 +340,14 @@ export class Server implements AsyncIterable<ServerRequest> {
 
       // Wait for the request to be processed before we accept a new request on
       // this connection.
-      await req.done;
+      await req!.done;
     }
 
-    if (req === EOF) {
+    if (req! === EOF) {
       // The connection was gracefully closed.
     } else if (err) {
       // An error was thrown while parsing request headers.
-      await writeResponse(req.w, {
+      await writeResponse(req!.w, {
         status: 400,
         body: new TextEncoder().encode(`${err.message}\r\n\r\n`)
       });
