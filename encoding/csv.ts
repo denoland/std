@@ -36,6 +36,8 @@ export interface ParseOptions {
 }
 
 function chkOptions(opt: ParseOptions): void {
+  if (!opt.comma) opt.comma = ",";
+  if (!opt.trimLeadingSpace) opt.trimLeadingSpace = false;
   if (
     INVALID_RUNE.includes(opt.comma!) ||
     INVALID_RUNE.includes(opt.comment!) ||
@@ -48,7 +50,7 @@ function chkOptions(opt: ParseOptions): void {
 async function read(
   Startline: number,
   reader: BufReader,
-  opt: ParseOptions = { comma: ",", comment: "#", trimLeadingSpace: false }
+  opt: ParseOptions = { comma: ",", trimLeadingSpace: false }
 ): Promise<string[] | EOF> {
   const tp = new TextProtoReader(reader);
   let line: string;
@@ -192,13 +194,11 @@ export async function parse(
   }
 ): Promise<unknown[]> {
   let r: string[][];
-  let err: BufState;
   if (input instanceof BufReader) {
-    [r, err] = await readAll(input, opt);
+    r = await readAll(input, opt);
   } else {
-    [r, err] = await readAll(new BufReader(new StringReader(input)), opt);
+    r = await readAll(new BufReader(new StringReader(input)), opt);
   }
-  if (err) throw err;
   if (opt.header) {
     let headers: HeaderOption[] = [];
     let i = 0;
