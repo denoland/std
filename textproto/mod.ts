@@ -140,7 +140,7 @@ export class TextProtoReader {
       const { line: l, more } = r;
 
       // Avoid the copy if the first call produced a full line.
-      if (!line && !more) {
+      if (!line! && !more) {
         // TODO(ry):
         // This skipSpace() is definitely misplaced, but I don't know where it
         // comes from nor how to fix it.

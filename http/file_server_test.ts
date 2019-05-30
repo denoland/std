@@ -22,7 +22,7 @@ async function startFileServer(): Promise<void> {
     stdout: "piped"
   });
   // Once fileServer is ready it will write to its stdout.
-  const r = new TextProtoReader(new BufReader(fileServer.stdout));
+  const r = new TextProtoReader(new BufReader(fileServer.stdout!));
   const s = await r.readLine();
   assert(s !== EOF && s.includes("server listening"));
 }

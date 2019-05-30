@@ -407,12 +407,12 @@ test(async function testReadRequestError(): Promise<void> {
     } else if (typeof test.err === "string") {
       assertEquals(err.message, test.err);
     } else if (test.err) {
-      assert(err instanceof test.err);
+      assert(err instanceof (test.err as typeof UnexpectedEOFError));
     } else {
       assertEquals(err, undefined);
       assertNotEquals(req, EOF);
       for (const h of test.headers!) {
-        assertEquals(req.headers.get(h.key), h.value);
+        assertEquals((req! as ServerRequest).headers.get(h.key), h.value);
       }
     }
   }

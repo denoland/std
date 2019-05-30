@@ -342,7 +342,7 @@ export class BufReader implements Reader {
       try {
         await this._fill();
       } catch (err) {
-        err.partial = slice;
+        err.partial = slice!;
         throw err;
       }
     }
@@ -457,7 +457,6 @@ export class BufWriter implements Writer {
     }
 
     this.n = 0;
-    return err;
   }
 
   /** Returns how many bytes are unused in the buffer. */

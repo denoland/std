@@ -336,7 +336,7 @@ export class Server implements AsyncIterable<ServerRequest> {
       await req!.done;
     }
 
-    if (req === EOF) {
+    if (req! === EOF) {
       // The connection was gracefully closed.
     } else if (err) {
       // An error was thrown while parsing request headers.
