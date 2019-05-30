@@ -4,6 +4,7 @@
 import { ServerRequest, Response } from "./server.ts";
 import { assert } from "../testing/asserts.ts";
 import { toIMF } from "../datetime/mod.ts";
+import { HttpHeaders } from "./headers.ts";
 
 export interface Cookies {
   [key: string]: string;
@@ -107,7 +108,7 @@ export function getCookies(req: ServerRequest): Cookies {
  */
 export function setCookie(res: Response, cookie: Cookie): void {
   if (!res.headers) {
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
   }
   // TODO (zekth) : Add proper parsing of Set-Cookie headers
   // Parsing cookie headers to make consistent set-cookie header

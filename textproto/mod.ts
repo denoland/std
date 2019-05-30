@@ -5,6 +5,7 @@
 
 import { BufReader, EOF, UnexpectedEOFError } from "../io/bufio.ts";
 import { charCode } from "../io/util.ts";
+import { HttpHeaders } from "../http/headers.ts";
 
 const asciiDecoder = new TextDecoder();
 function str(buf: Uint8Array): string {
@@ -66,7 +67,7 @@ export class TextProtoReader {
    *	}
    */
   async readMIMEHeader(): Promise<Headers | EOF> {
-    let m = new Headers();
+    let m = new HttpHeaders();
     let line: Uint8Array;
 
     // The first line cannot start with a leading space.
