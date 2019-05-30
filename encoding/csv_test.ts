@@ -437,23 +437,31 @@ for (const t of testCases) {
       if (t.LazyQuotes) {
         lazyquote = t.LazyQuotes;
       }
-      const actual = await readAll(
-        new BufReader(new StringReader(t.Input || "")),
-        {
+      let actual;
+      if (t.Error) {
+        let err;
+        try {
+          actual = await readAll(new BufReader(new StringReader(t.Input)), {
+            comma: comma,
+            comment: comment,
+            trimLeadingSpace: trim,
+            fieldsPerRecord: fieldsPerRec,
+            lazyQuotes: lazyquote
+          });
+        } catch (e) {
+          err = e;
+        }
+        assert(err);
+        assertEquals(err.message, t.Error);
+      } else {
+        actual = await readAll(new BufReader(new StringReader(t.Input)), {
           comma: comma,
           comment: comment,
           trimLeadingSpace: trim,
           fieldsPerRecord: fieldsPerRec,
           lazyQuotes: lazyquote
-        }
-      );
-      if (t.Error) {
-        assert(!!actual[1]);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const e: any = actual[1];
-        assertEquals(e.message, t.Error);
-      } else {
-        const expected = [t.Output, null];
+        });
+        const expected = t.Output;
         assertEquals(actual, expected);
       }
     }
