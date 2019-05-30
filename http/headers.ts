@@ -50,9 +50,9 @@ export class HttpHeaders {
       )
     }
     if (init) {
-      Object.keys(init).forEach(name => {
+      for (const name of Object.keys(init)) {
         const newname = this._normalizeName(name);
-        init[name].forEach(value => {
+        for (const value of init[name]) {
           const newvalue = this._normalizeValue(value);
           this._validateName(newname);
           this._validateValue(newvalue);
@@ -61,8 +61,8 @@ export class HttpHeaders {
           const v = this[headerMap].get(newname) || [];
           v.push(newvalue);
           this[headerMap].set(newname, v);
-        })
-      })
+        }
+      }
     }
   }
 
