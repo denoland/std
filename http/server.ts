@@ -8,6 +8,7 @@ import { BufReader, BufWriter, EOF, UnexpectedEOFError } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 import { assert } from "../testing/asserts.ts";
+import { HttpHeaders } from "./headers.ts";
 import {
   collectUint8Arrays,
   deferred,
@@ -25,7 +26,7 @@ function bufWriter(w: Writer): BufWriter {
 
 export function setContentLength(r: Response): void {
   if (!r.headers) {
-    r.headers = new Headers();
+    r.headers = new HttpHeaders();
   }
 
   if (r.body) {
@@ -75,8 +76,10 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
   setContentLength(r);
 
   if (r.headers) {
-    for (const [key, value] of r.headers) {
-      out += `${key}: ${value}\r\n`;
+    for (const [key, values] of r.headers) {
+      for (const value of values) {
+        out += `${key}: ${value}\r\n`;
+      }
     }
   }
   out += "\r\n";
@@ -104,7 +107,7 @@ export class ServerRequest {
   proto: string;
   protoMinor: number;
   protoMajor: number;
-  headers: Headers;
+  headers: HttpHeaders;
   r: BufReader;
   w: BufWriter;
   done: Deferred<void> = deferred();
@@ -155,8 +158,10 @@ export class ServerRequest {
           }
           const entityHeaders = await tp.readMIMEHeader();
           if (entityHeaders !== EOF) {
-            for (let [k, v] of entityHeaders) {
-              this.headers.set(k, v);
+            for (let [k, values] of entityHeaders) {
+              for (let v of values) {
+                this.headers.append(k, v);
+              }
             }
           }
           /* Pseudo code from https://tools.ietf.org/html/rfc2616#section-19.4.6
@@ -394,6 +399,6 @@ export async function listenAndServe(
 
 export interface Response {
   status?: number;
-  headers?: Headers;
+  headers?: HttpHeaders;
   body?: Uint8Array | Reader;
 }
