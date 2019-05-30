@@ -1,6 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { ServerRequest, Response } from "./server.ts";
 import { getCookies, delCookie, setCookie } from "./cookie.ts";
+import { HttpHeaders } from "./headers.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { test } from "../testing/mod.ts";
 
@@ -8,21 +9,21 @@ test({
   name: "[HTTP] Cookie parser",
   fn(): void {
     let req = new ServerRequest();
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     assertEquals(getCookies(req), {});
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("Cookie", "foo=bar");
     assertEquals(getCookies(req), { foo: "bar" });
 
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("Cookie", "full=of  ; tasty=chocolate");
     assertEquals(getCookies(req), { full: "of  ", tasty: "chocolate" });
 
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("Cookie", "igot=99; problems=but...");
     assertEquals(getCookies(req), { igot: "99", problems: "but..." });
 
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("Cookie", "PREF=al=en-GB&f1=123; wide=1; SID=123");
     assertEquals(getCookies(req), {
       PREF: "al=en-GB&f1=123",
@@ -49,19 +50,19 @@ test({
   fn(): void {
     let res: Response = {};
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, { name: "Space", value: "Cat" });
     assertEquals(res.headers.get("Set-Cookie"), "Space=Cat");
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, { name: "Space", value: "Cat", secure: true });
     assertEquals(res.headers.get("Set-Cookie"), "Space=Cat; Secure");
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, { name: "Space", value: "Cat", httpOnly: true });
     assertEquals(res.headers.get("Set-Cookie"), "Space=Cat; HttpOnly");
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, {
       name: "Space",
       value: "Cat",
@@ -70,7 +71,7 @@ test({
     });
     assertEquals(res.headers.get("Set-Cookie"), "Space=Cat; Secure; HttpOnly");
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, {
       name: "Space",
       value: "Cat",
@@ -84,7 +85,7 @@ test({
     );
 
     let error = false;
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     try {
       setCookie(res, {
         name: "Space",
@@ -98,7 +99,7 @@ test({
     }
     assert(error);
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, {
       name: "Space",
       value: "Cat",
@@ -112,7 +113,7 @@ test({
       "Space=Cat; Secure; HttpOnly; Max-Age=2; Domain=deno.land"
     );
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, {
       name: "Space",
       value: "Cat",
@@ -127,7 +128,7 @@ test({
       "Space=Cat; Secure; HttpOnly; Max-Age=2; Domain=deno.land; SameSite=Strict"
     );
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, {
       name: "Space",
       value: "Cat",
@@ -142,7 +143,7 @@ test({
       "Space=Cat; Secure; HttpOnly; Max-Age=2; Domain=deno.land; SameSite=Lax"
     );
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, {
       name: "Space",
       value: "Cat",
@@ -157,7 +158,7 @@ test({
       "Space=Cat; Secure; HttpOnly; Max-Age=2; Domain=deno.land; Path=/"
     );
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, {
       name: "Space",
       value: "Cat",
@@ -173,7 +174,7 @@ test({
       "Space=Cat; Secure; HttpOnly; Max-Age=2; Domain=deno.land; Path=/; unparsed=keyvalue; batman=Bruce"
     );
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, {
       name: "Space",
       value: "Cat",
@@ -189,11 +190,11 @@ test({
       "Space=Cat; Secure; HttpOnly; Max-Age=2; Domain=deno.land; Path=/; Expires=Fri, 07 Jan 1983 15:32:00 GMT"
     );
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, { name: "__Secure-Kitty", value: "Meow" });
     assertEquals(res.headers.get("Set-Cookie"), "__Secure-Kitty=Meow; Secure");
 
-    res.headers = new Headers();
+    res.headers = new HttpHeaders();
     setCookie(res, {
       name: "__Host-Kitty",
       value: "Meow",

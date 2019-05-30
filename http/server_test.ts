@@ -8,6 +8,7 @@
 const { Buffer } = Deno;
 import { test, runIfMain } from "../testing/mod.ts";
 import { assert, assertEquals, assertNotEquals } from "../testing/asserts.ts";
+import { HttpHeaders } from "./headers.ts";
 import {
   Response,
   ServerRequest,
@@ -82,7 +83,7 @@ test(async function responseWrite(): Promise<void> {
 test(async function requestBodyWithContentLength(): Promise<void> {
   {
     const req = new ServerRequest();
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("content-length", "5");
     const buf = new Buffer(enc.encode("Hello"));
     req.r = new BufReader(buf);
@@ -94,7 +95,7 @@ test(async function requestBodyWithContentLength(): Promise<void> {
   {
     const longText = "1234\n".repeat(1000);
     const req = new ServerRequest();
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("Content-Length", "5000");
     const buf = new Buffer(enc.encode(longText));
     req.r = new BufReader(buf);
@@ -107,7 +108,7 @@ test(async function requestBodyWithTransferEncoding(): Promise<void> {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("transfer-encoding", "chunked");
     let chunksData = "";
     let chunkOffset = 0;
@@ -131,7 +132,7 @@ test(async function requestBodyWithTransferEncoding(): Promise<void> {
   {
     const longText = "1234\n".repeat(1000);
     const req = new ServerRequest();
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("transfer-encoding", "chunked");
     let chunksData = "";
     let chunkOffset = 0;
@@ -156,7 +157,7 @@ test(async function requestBodyStreamWithContentLength(): Promise<void> {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("content-length", "" + shortText.length);
     const buf = new Buffer(enc.encode(shortText));
     req.r = new BufReader(buf);
@@ -173,7 +174,7 @@ test(async function requestBodyStreamWithContentLength(): Promise<void> {
   {
     const longText = "1234\n".repeat(1000);
     const req = new ServerRequest();
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("Content-Length", "5000");
     const buf = new Buffer(enc.encode(longText));
     req.r = new BufReader(buf);
@@ -191,7 +192,7 @@ test(async function requestBodyStreamWithTransferEncoding(): Promise<void> {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("transfer-encoding", "chunked");
     let chunksData = "";
     let chunkOffset = 0;
@@ -220,7 +221,7 @@ test(async function requestBodyStreamWithTransferEncoding(): Promise<void> {
   {
     const longText = "1234\n".repeat(1000);
     const req = new ServerRequest();
-    req.headers = new Headers();
+    req.headers = new HttpHeaders();
     req.headers.set("transfer-encoding", "chunked");
     let chunksData = "";
     let chunkOffset = 0;
