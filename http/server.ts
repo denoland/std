@@ -403,3 +403,5 @@ export interface Response {
   headers?: HttpHeaders;
   body?: Uint8Array | Reader;
 }
+
+const things: Array<[string, string]>;
