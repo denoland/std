@@ -442,7 +442,7 @@ async function handshake(
   if (!m) {
     throw new Error("ws: invalid status line: " + statusLine);
   }
-  
+
   const { version, statusCode } = m.groups;
   if (version !== "HTTP/1.1" || statusCode !== "101") {
     throw new Error(
