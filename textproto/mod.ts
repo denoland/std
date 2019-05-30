@@ -66,7 +66,7 @@ export class TextProtoReader {
    *		"Long-Key": {"Even Longer Value"},
    *	}
    */
-  async readMIMEHeader(): Promise<Headers | EOF> {
+  async readMIMEHeader(): Promise<HttpHeaders | EOF> {
     let m = new HttpHeaders();
     let line: Uint8Array;
 
