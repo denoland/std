@@ -32,7 +32,7 @@ test(function parseDateTime(): void {
 
 test(function invalidParseDateTimeFormatThrows(): void {
   assertThrows(
-    () => {
+    (): void => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (datetime as any).parseDateTime("2019-01-01 00:00", "x-y-z");
     },
@@ -58,7 +58,7 @@ test(function parseDate(): void {
 
 test(function invalidParseDateFormatThrows(): void {
   assertThrows(
-    () => {
+    (): void => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (datetime as any).parseDate("2019-01-01", "x-y-z");
     },
