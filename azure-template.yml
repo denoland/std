@@ -1,3 +1,7 @@
+parameters:
+  exe_suffix: ""
+  windows: "false"
+
 steps:
   - bash: npm install eslint typescript@$(TS_VERSION) @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-config-prettier
   - ${{ if eq(parameters.windows, 'true') }}:
