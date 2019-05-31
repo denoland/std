@@ -5,15 +5,11 @@
 const invalidTokenRegex = /[^\^_`a-zA-Z\-0-9!#$%&'*+.|~]/;
 const invalidHeaderCharRegex = /[^\t\x20-\x7e\x80-\xff]/;
 
-interface HeadersInit {
-  [key:string]: string[];
-}
-
-const headerMap = Symbol("header map");
+const entries = Symbol("entries");
 
 // ref: https://fetch.spec.whatwg.org/#dom-headers
 export class HttpHeaders {
-  private [headerMap]: Map<string, string[]>;
+  private [entries]: Array<[string, string]>;
 
   private _normalizeParams(name: string, value: string): string[] {
     return [this._normalizeName(name), this._normalizeValue(value)];
@@ -42,32 +38,25 @@ export class HttpHeaders {
     }
   }
 
-  constructor(init?: HeadersInit) {
-    this[headerMap] = new Map();
+  constructor(init?: Array<[string, string]>) {
+    this[entries] = [];
     if (init === null) {
       throw new TypeError(
         "Failed to construct 'Headers'; The provided value was not valid"
       )
     }
     if (init) {
-      for (const name of Object.keys(init)) {
-        const newname = this._normalizeName(name);
-        for (const value of init[name]) {
-          const newvalue = this._normalizeValue(value);
-          this._validateName(newname);
-          this._validateValue(newvalue);
-
-          // Initialize map values as empty arrays
-          const v = this[headerMap].get(newname) || [];
-          v.push(newvalue);
-          this[headerMap].set(newname, v);
-        }
+      for (const [name, value] of init) {
+        const [newname, newvalue] = this._normalizeParams(name, value);
+        this._validateName(newname);
+        this._validateValue(newvalue);
+        this[entries].push([newname, newvalue])
       }
     }
   }
 
-  [Symbol.iterator](): IterableIterator<[string, string[]]> {
-    return this[headerMap].entries();
+  [Symbol.iterator](): IterableIterator<[string, string]> {
+    return this[entries][Symbol.iterator]();
   }
 
   // ref: https://fetch.spec.whatwg.org/#concept-headers-append
@@ -75,17 +64,8 @@ export class HttpHeaders {
     const [newname, newvalue] = this._normalizeParams(name, value);
     this._validateName(newname);
     this._validateValue(newvalue);
-    const v = this[headerMap].get(newname) || [];
 
     switch (newname) {
-      case 'set-cookie':
-        if (this[headerMap].has(newname)) {
-          this.append(newname, newvalue);
-        } else {
-          this[headerMap].set(newname, [newvalue]);
-        }
-        break
-  
       // Header values that can't be appended to - list is taken from:
       // https://mxr.mozilla.org/mozilla/source/netwerk/protocol/http/src/nsHttpHeaderArray.cpp
       case 'content-type':
@@ -106,26 +86,29 @@ export class HttpHeaders {
       case 'server':
       case 'age':
       case 'expires':
-        this[headerMap].set(newname, [newvalue]);
+        this.set(newname, newvalue);
         break
   
       default:
         // Append values for all legal keys
-        v.push(newvalue);
-        this[headerMap].set(newname, v);
+        this[entries].push([newname, newvalue]);
     }
   }
 
   delete(name: string): void {
     const [newname] = this._normalizeName(name);
     this._validateName(newname);
-    this[headerMap].delete(newname);
+    this[entries] = this[entries].filter(h => h[0] !== newname);
+  }
+  
+  getAll() {
+    return this[entries];
   }
 
   get(name: string): string | null {
-    const [newname] = this._normalizeName(name);
+    const newname = this._normalizeName(name);
     this._validateName(newname);
-    const values = this[headerMap].get(newname);
+    const values = this[entries].filter(h => h[0] == newname);
     if (!values) return null;
 
     // "set-cookie" is the only header type that needs special concatenation
@@ -136,15 +119,15 @@ export class HttpHeaders {
   has(name: string): boolean {
     const [newname] = this._normalizeName(name);
     this._validateName(newname);
-    return this[headerMap].has(newname);
+    return !!this[entries].find(header => header[0] == newname);
   }
 
   set(name: string, value: string): void {
     const [newname, newvalue] = this._normalizeParams(name, value);
     this._validateName(newname);
     this._validateValue(newvalue);
-    // Overwrite previous values
-    this[headerMap].set(newname, [newvalue]);
+    this.delete(newname);
+    this[entries].push([newname, newvalue]);
   }
 
   get [Symbol.toStringTag](): string {
