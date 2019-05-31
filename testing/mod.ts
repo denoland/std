@@ -301,6 +301,9 @@ export async function runTests({
   const results: TestResults = createTestResults(tests);
   print(`running ${tests.length} tests`);
   const start = performance.now();
+  if (Deno.args.includes("--quiet")) {
+    disableLog = true;
+  }
   if (disableLog) {
     disableConsole();
   }
