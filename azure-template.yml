@@ -11,5 +11,5 @@ steps:
     - bash: curl -L https://deno.land/x/install/install.sh | sh -s $(DENO_VERSION)
     - bash: echo '##vso[task.prependpath]$(HOME)/.deno/bin/'
   - bash: npx eslint **/*.ts --max-warnings=0
-  - bash: ${{ parameters.exe_name }} run --allow-run --allow-write --allow-read format.ts --check
-  - bash: ${{ parameters.exe_name }} run --allow-run --allow-net --allow-write --allow-read --config=tsconfig.test.json test.ts
+  - bash: deno${{ parameters.exe_suffix }} run --allow-run --allow-write --allow-read format.ts --check
+  - bash: deno${{ parameters.exe_suffix }} run --allow-run --allow-net --allow-write --allow-read --config=tsconfig.test.json test.ts
