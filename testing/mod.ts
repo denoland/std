@@ -114,9 +114,9 @@ function createTestResults(tests: TestDefinition[]): TestResults {
 
 function formatTestTime(time: number = 0): string {
   if (time >= 1000) {
-    return `${time / 1000}s`;
+    return `${(time / 1000).toFixed(2)}s`;
   } else {
-    return `${time}ms`;
+    return `${time.toFixed(2)}ms`;
   }
 }
 
