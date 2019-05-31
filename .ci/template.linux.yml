@@ -1,0 +1,4 @@
+steps:
+  - bash: npm install eslint typescript@$(TS_VERSION) @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-config-prettier
+  - template: .ci/template.unix.yml
+  - template: .ci/template.common.yml

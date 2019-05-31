@@ -8,19 +8,16 @@ jobs:
     pool:
       vmImage: "Ubuntu-16.04"
     steps:
-      - template: ./azure-template.yml
+      - template: .ci/template.linux.yml
 
   - job: "Mac"
     pool:
       vmImage: "macOS-10.13"
     steps:
-      - template: ./azure-template.yml
+      - template: .ci/template.mac.yml
 
   - job: "Windows"
     pool:
       vmImage: "vs2017-win2016"
     steps:
-      - template: ./azure-template.yml
-        parameters:
-          exe_suffix: ".exe"
-          windows: "true"
+      - template: .ci/template.windows.yml
