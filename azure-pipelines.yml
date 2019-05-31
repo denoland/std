@@ -7,24 +7,26 @@ jobs:
   - job: "Linux"
     pool:
       vmImage: "Ubuntu-16.04"
-    parameters:
-      - exe_name: "deno"
     steps:
       - template: azure-template.yml
+        parameters:
+          exe_name: "deno"
+          windows: "false"
 
   - job: "Mac"
     pool:
       vmImage: "macOS-10.13"
-    parameters:
-      - exe_name: "deno"
     steps:
       - template: azure-template.yml
+        parameters:
+          exe_name: "deno"
+          windows: "false"
 
   - job: "Windows"
     pool:
       vmImage: "vs2017-win2016"
-    parameters:
-      - exe_name: "deno.exe"
-      - windows: 'true'
     steps:
       - template: azure-template.yml
+        parameters:
+          exe_name: "deno.exe"
+          windows: "true"
