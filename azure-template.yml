@@ -1,0 +1,11 @@
+steps:
+  - bash: npm install eslint typescript@$(TS_VERSION) @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-config-prettier
+  - ${{ if eq(parameters.windows, 'true') }}:
+    - powershell: iwr https://deno.land/x/install/install.ps1 -out install.ps1; .\install.ps1 $(DENO_VERSION)
+    - bash: echo "##vso[task.prependpath]C:\Users\VssAdministrator\.deno\\bin"
+  - ${{ if eq(parameters.windows, 'false') }}:
+    - bash: curl -L https://deno.land/x/install/install.sh | sh -s $(DENO_VERSION)
+    - bash: echo '##vso[task.prependpath]$(HOME)/.deno/bin/'
+  - bash: npx eslint **/*.ts --max-warnings=0
+  - bash: ${{ parameters.exe_name }} run --allow-run --allow-write --allow-read format.ts --check
+  - bash: ${{ parameters.exe_name }} run --allow-run --allow-net --allow-write --allow-read --config=tsconfig.test.json test.ts
