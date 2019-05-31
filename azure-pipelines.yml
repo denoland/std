@@ -21,3 +21,5 @@ jobs:
       vmImage: "vs2017-win2016"
     steps:
       - template: .ci/template.windows.yml
+        parameters:
+          exe_suffix: ".exe"
