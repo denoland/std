@@ -108,9 +108,10 @@ export class HttpHeaders {
   get(name: string): string | null {
     const newname = this._normalizeName(name);
     this._validateName(newname);
-    const values = this[entries].filter(h => h[0] == newname);
-    if (!values) return null;
-
+    const matches = this[entries].filter(h => h[0] == newname);
+    if (!matches) return null;
+    const values = matches.map(m => m[1]);
+    
     // "set-cookie" is the only header type that needs special concatenation
     // https://tools.ietf.org/html/rfc6265
     return ('set-cookie' === newname) ? values.join('; ') : values.join(', ');
