@@ -77,10 +77,8 @@ export async function writeResponse(w: Writer, r: Response): Promise<void> {
   const headers = r.headers!;
 
   if (r.headers) {
-    for (const [key, values] of r.headers!) {
-      for (const value of values) {
-        out += `${key}: ${value}\r\n`;
-      }
+    for (const [name, value] of r.headers!) {
+      out += `${name}: ${value}\r\n`;
     }
   }
   out += "\r\n";
@@ -159,10 +157,8 @@ export class ServerRequest {
           }
           const entityHeaders = await tp.readMIMEHeader();
           if (entityHeaders !== EOF) {
-            for (let [k, values] of entityHeaders) {
-              for (let v of values) {
-                this.headers.append(k, v);
-              }
+            for (let [name, value] of entityHeaders) {
+              this.headers.append(name, value);
             }
           }
           /* Pseudo code from https://tools.ietf.org/html/rfc2616#section-19.4.6
@@ -403,5 +399,3 @@ export interface Response {
   headers?: HttpHeaders;
   body?: Uint8Array | Reader;
 }
-
-const things: Array<[string, string]>;
