@@ -62,8 +62,8 @@ test(async function testPrettierCheckAndFormatFiles(): Promise<void> {
   assertEquals(code, 0);
   assertEquals(
     normalizeOutput(stdout),
-    `Formatting ${tempDir}/0.ts
-Formatting ${tempDir}/1.js`
+    normalizeOutput(`Formatting ${tempDir}/0.ts
+Formatting ${tempDir}/1.js`)
   );
 
   var { code, stdout } = await run([...cmd, "--check", ...files]);
@@ -87,10 +87,10 @@ test(async function testPrettierCheckAndFormatDirs(): Promise<void> {
   assertEquals(code, 0);
   assertEquals(
     normalizeOutput(stdout),
-    `Formatting ${tempDir}/bar/0.ts
+    normalizeOutput(`Formatting ${tempDir}/bar/0.ts
 Formatting ${tempDir}/bar/1.js
 Formatting ${tempDir}/foo/0.ts
-Formatting ${tempDir}/foo/1.js`
+Formatting ${tempDir}/foo/1.js`)
   );
 
   var { code, stdout } = await run([...cmd, "--check", ...dirs]);
