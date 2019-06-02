@@ -36,9 +36,7 @@ async function run(): Promise<void> {
  * If some files are changed, this function exits with 1.
  */
 async function checkSourceFileChanges(startTime: number): Promise<void> {
-  await Deno.stdout.write(
-    new TextEncoder().encode("test checkSourceFileChanges ... ")
-  );
+  console.log("test checkSourceFileChanges ...");
   const changed = new TextDecoder()
     .decode(await xrun({ args: ["git", "ls-files"], stdout: "piped" }).output())
     .trim()
