@@ -95,16 +95,12 @@ export class HttpHeaders {
     }
   }
 
-  getAll() {
-    return this[entries];
-  }
-
   get(name: string): string | null {
     const newname = this._normalizeName(name);
     this._validateName(newname);
-    const matches = this[entries].filter(h => h[0] == newname);
+    const matches = this[entries].filter((h): boolean => h[0] == newname);
     if (!matches.length) return null;
-    const values = matches.map(m => m[1]);
+    const values = matches.map((m): string => m[1]);
     
     // "set-cookie" is the only header type that needs special concatenation
     // https://tools.ietf.org/html/rfc6265
@@ -115,7 +111,7 @@ export class HttpHeaders {
   has(name: string): boolean {
     const newname = this._normalizeName(name);
     this._validateName(newname);
-    const result = this[entries].find(header => header[0] == newname);
+    const result = this[entries].find((header): boolean => header[0] == newname);
     return Boolean(result);
   }
 
@@ -130,7 +126,7 @@ export class HttpHeaders {
   delete(name: string): void {
     const newname = this._normalizeName(name);
     this._validateName(newname);
-    this[entries] = this[entries].filter(h => h[0] !== newname);
+    this[entries] = this[entries].filter((h): boolean => h[0] !== newname);
   }
 
   get [Symbol.toStringTag](): string {

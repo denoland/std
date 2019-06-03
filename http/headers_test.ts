@@ -1,10 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { ServerRequest, Response } from './server.ts';
-import { getCookies, delCookie, setCookie } from './cookie.ts';
 import { HttpHeaders } from './headers.ts';
-import { assert, assertEquals } from '../testing/asserts.ts';
+import { assertEquals } from '../testing/asserts.ts';
 import { test } from '../testing/mod.ts';
-import { runTests } from '../testing/mod.ts';
 
 test({
   name: '[HTTP] HttpHeaders Properties',
