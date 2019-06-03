@@ -20,7 +20,7 @@ import { prettier, prettierPlugins } from "./prettier.ts";
 const HELP_MESSAGE = `
 Formats the given files. If no arg is passed, then formats the all files.
 
-Usage: deno prettier/main.ts [options] [files...]
+Usage: deno run prettier/main.ts [options] [files...]
 
 Options:
   -H, --help                 Show this help message and exit.

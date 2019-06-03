@@ -77,7 +77,7 @@ test(function newlinesInParams(): void {
   // reproduce in bash:
   // VALUE="new
   // line"
-  // deno program.js --s="$VALUE"
+  // deno run program.js --s="$VALUE"
   const args2 = parse(["--s=X\nX"]);
   assertEquals(args2, { _: [], s: "X\nX" });
 });
