@@ -95,12 +95,6 @@ export class HttpHeaders {
     }
   }
 
-  delete(name: string): void {
-    const [newname] = this._normalizeName(name);
-    this._validateName(newname);
-    this[entries] = this[entries].filter(h => h[0] !== newname);
-  }
-  
   getAll() {
     return this[entries];
   }
@@ -114,13 +108,15 @@ export class HttpHeaders {
     
     // "set-cookie" is the only header type that needs special concatenation
     // https://tools.ietf.org/html/rfc6265
-    return ('set-cookie' === newname) ? values.join('; ') : values.join(', ');
+    const isCookie = ('set-cookie' === newname || 'cookie' === newname);
+    return isCookie ? values.join('; ') : values.join(', ');
   }
 
   has(name: string): boolean {
-    const [newname] = this._normalizeName(name);
+    const newname = this._normalizeName(name);
     this._validateName(newname);
-    return !!this[entries].find(header => header[0] == newname);
+    const result = this[entries].find(header => header[0] == newname);
+    return Boolean(result);
   }
 
   set(name: string, value: string): void {
@@ -129,6 +125,12 @@ export class HttpHeaders {
     this._validateValue(newvalue);
     this.delete(newname);
     this[entries].push([newname, newvalue]);
+  }
+
+  delete(name: string): void {
+    const newname = this._normalizeName(name);
+    this._validateName(newname);
+    this[entries] = this[entries].filter(h => h[0] !== newname);
   }
 
   get [Symbol.toStringTag](): string {
