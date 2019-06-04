@@ -134,7 +134,10 @@ class PartReader implements Reader, Closer {
   n: number | EOF = 0;
   total: number = 0;
 
-  constructor(private mr: MultipartReader, public readonly headers: HttpHeaders) {}
+  constructor(
+    private mr: MultipartReader,
+    public readonly headers: HttpHeaders
+  ) {}
 
   async read(p: Uint8Array): Promise<ReadResult> {
     const br = this.mr.bufReader;
