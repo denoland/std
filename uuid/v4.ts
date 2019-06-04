@@ -26,7 +26,7 @@ export default function generate(): string {
       .replace(
         // replacing
         /[01]/g, // ones and zeroes with a
-        () =>
+        (): string =>
           (
             0 | // floored
             (Math.random() * 16)
