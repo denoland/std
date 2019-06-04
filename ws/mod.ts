@@ -386,11 +386,11 @@ export async function acceptWebSocket(req: {
     const secAccept = createSecAccept(secKey);
     await writeResponse(bufWriter, {
       status: 101,
-      headers: new HttpHeaders([
-        ["Upgrade", "websocket"],
-        ["Connection", "Upgrade"],
-        ["Sec-WebSocket-Accept", secAccept]
-      ])
+      headers: new HttpHeaders({
+        Upgrade: "websocket",
+        Connection: "Upgrade",
+        "Sec-WebSocket-Accept": secAccept
+      })
     });
     return sock;
   }

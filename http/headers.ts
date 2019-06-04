@@ -38,14 +38,24 @@ export class HttpHeaders {
     }
   }
 
-  constructor(init?: Array<[string, string]>) {
+  constructor(init?: Array<[string, string]> | object) {
     this[entries] = [];
     if (init === null) {
       throw new TypeError(
         "Failed to construct 'Headers'; The provided value was not valid"
       );
     }
-    if (init) {
+    // Object type constructors
+    if (!Array.isArray(init) && typeof init == "object") {
+      for (const [name, value] of Object.entries(init)) {
+        const [newname, newvalue] = this._normalizeParams(name, value);
+        this._validateName(newname);
+        this._validateValue(newvalue);
+        this[entries].push([newname, newvalue]);
+      }
+    }
+    // Array type constructors
+    else if (Array.isArray(init)) {
       for (const [name, value] of init) {
         const [newname, newvalue] = this._normalizeParams(name, value);
         this._validateName(newname);
