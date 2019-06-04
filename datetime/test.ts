@@ -37,7 +37,7 @@ test(function invalidParseDateTimeFormatThrows(): void {
       (datetime as any).parseDateTime("2019-01-01 00:00", "x-y-z");
     },
     Error,
-    'Invalid datetime format!'
+    "Invalid datetime format!"
   );
 });
 
@@ -63,7 +63,7 @@ test(function invalidParseDateFormatThrows(): void {
       (datetime as any).parseDate("2019-01-01", "x-y-z");
     },
     Error,
-    'Invalid date format!'
+    "Invalid date format!"
   );
 });
 
