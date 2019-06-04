@@ -9,6 +9,7 @@ import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
 import { Sha1 } from "./sha1.ts";
 import { writeResponse } from "../http/server.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
+import { HttpHeaders } from "../http/headers.ts";
 
 export enum OpCode {
   Continue = 0x0,
@@ -345,7 +346,7 @@ class WebSocketImpl implements WebSocket {
 }
 
 /** Return whether given headers is acceptable for websocket  */
-export function acceptable(req: { headers: Headers }): boolean {
+export function acceptable(req: { headers: HttpHeaders }): boolean {
   const upgrade = req.headers.get("upgrade");
   if (!upgrade || upgrade.toLowerCase() !== "websocket") {
     return false;
@@ -373,7 +374,7 @@ export async function acceptWebSocket(req: {
   conn: Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
-  headers: Headers;
+  headers: HttpHeaders;
 }): Promise<WebSocket> {
   const { conn, headers, bufReader, bufWriter } = req;
   if (acceptable(req)) {
@@ -385,11 +386,11 @@ export async function acceptWebSocket(req: {
     const secAccept = createSecAccept(secKey);
     await writeResponse(bufWriter, {
       status: 101,
-      headers: new Headers({
-        Upgrade: "websocket",
-        Connection: "Upgrade",
-        "Sec-WebSocket-Accept": secAccept
-      })
+      headers: new HttpHeaders([
+        ["Upgrade", "websocket"],
+        ["Connection", "Upgrade"],
+        ["Sec-WebSocket-Accept", secAccept]
+      ])
     });
     return sock;
   }
@@ -410,7 +411,7 @@ export function createSecKey(): string {
 
 async function handshake(
   url: URL,
-  headers: Headers,
+  headers: HttpHeaders,
   bufReader: BufReader,
   bufWriter: BufWriter
 ): Promise<void> {
@@ -471,7 +472,7 @@ async function handshake(
 /** Connect to given websocket endpoint url. Endpoint must be acceptable for URL */
 export async function connectWebSocket(
   endpoint: string,
-  headers: Headers = new Headers()
+  headers: HttpHeaders = new HttpHeaders()
 ): Promise<WebSocket> {
   const url = new URL(endpoint);
   let { hostname, port } = url;

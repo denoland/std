@@ -16,6 +16,7 @@ import { BufReader, BufWriter, EOF, UnexpectedEOFError } from "../io/bufio.ts";
 import { encoder } from "../strings/mod.ts";
 import { assertStrictEq } from "../testing/asserts.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
+import { HttpHeaders } from "../http/headers.ts";
 
 function randomBoundary(): string {
   let boundary = "--------------------------";
@@ -133,7 +134,7 @@ class PartReader implements Reader, Closer {
   n: number | EOF = 0;
   total: number = 0;
 
-  constructor(private mr: MultipartReader, public readonly headers: Headers) {}
+  constructor(private mr: MultipartReader, public readonly headers: HttpHeaders) {}
 
   async read(p: Uint8Array): Promise<ReadResult> {
     const br = this.mr.bufReader;
@@ -383,7 +384,7 @@ class PartWriter implements Writer {
   constructor(
     private writer: Writer,
     readonly boundary: string,
-    public headers: Headers,
+    public headers: HttpHeaders,
     isFirstBoundary: boolean
   ) {
     let buf = "";
@@ -392,7 +393,7 @@ class PartWriter implements Writer {
     } else {
       buf += `\r\n--${boundary}\r\n`;
     }
-    for (const [key, value] of headers.entries()) {
+    for (const [key, value] of headers) {
       buf += `${key}: ${value}\r\n`;
     }
     buf += `\r\n`;
@@ -454,7 +455,7 @@ export class MultipartWriter {
     return `multipart/form-data; boundary=${this.boundary}`;
   }
 
-  private createPart(headers: Headers): Writer {
+  private createPart(headers: HttpHeaders): Writer {
     if (this.isClosed) {
       throw new Error("multipart: writer is closed");
     }
@@ -472,7 +473,7 @@ export class MultipartWriter {
   }
 
   createFormFile(field: string, filename: string): Writer {
-    const h = new Headers();
+    const h = new HttpHeaders();
     h.set(
       "Content-Disposition",
       `form-data; name="${field}"; filename="${filename}"`
@@ -482,7 +483,7 @@ export class MultipartWriter {
   }
 
   createFormField(field: string): Writer {
-    const h = new Headers();
+    const h = new HttpHeaders();
     h.set("Content-Disposition", `form-data; name="${field}"`);
     h.set("Content-Type", "application/octet-stream");
     return this.createPart(h);
