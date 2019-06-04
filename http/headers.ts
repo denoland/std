@@ -74,35 +74,7 @@ export class HttpHeaders {
     const [newname, newvalue] = this._normalizeParams(name, value);
     this._validateName(newname);
     this._validateValue(newvalue);
-
-    switch (newname) {
-      // Header values that can't be appended to - list is taken from:
-      // https://mxr.mozilla.org/mozilla/source/netwerk/protocol/http/src/nsHttpHeaderArray.cpp
-      case "content-type":
-      case "content-length":
-      case "user-agent":
-      case "referer":
-      case "host":
-      case "authorization":
-      case "proxy-authorization":
-      case "if-modified-since":
-      case "if-unmodified-since":
-      case "from":
-      case "location":
-      case "max-forwards":
-      case "retry-after":
-      case "etag":
-      case "last-modified":
-      case "server":
-      case "age":
-      case "expires":
-        this.set(newname, newvalue);
-        break;
-
-      default:
-        // Append values for all legal keys
-        this[entries].push([newname, newvalue]);
-    }
+    this[entries].push([newname, newvalue]);
   }
 
   get(name: string): string | null {
