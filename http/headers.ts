@@ -43,14 +43,14 @@ export class HttpHeaders {
     if (init === null) {
       throw new TypeError(
         "Failed to construct 'Headers'; The provided value was not valid"
-      )
+      );
     }
     if (init) {
       for (const [name, value] of init) {
         const [newname, newvalue] = this._normalizeParams(name, value);
         this._validateName(newname);
         this._validateValue(newvalue);
-        this[entries].push([newname, newvalue])
+        this[entries].push([newname, newvalue]);
       }
     }
   }
@@ -68,27 +68,27 @@ export class HttpHeaders {
     switch (newname) {
       // Header values that can't be appended to - list is taken from:
       // https://mxr.mozilla.org/mozilla/source/netwerk/protocol/http/src/nsHttpHeaderArray.cpp
-      case 'content-type':
-      case 'content-length':
-      case 'user-agent':
-      case 'referer':
-      case 'host':
-      case 'authorization':
-      case 'proxy-authorization':
-      case 'if-modified-since':
-      case 'if-unmodified-since':
-      case 'from':
-      case 'location':
-      case 'max-forwards':
-      case 'retry-after':
-      case 'etag':
-      case 'last-modified':
-      case 'server':
-      case 'age':
-      case 'expires':
+      case "content-type":
+      case "content-length":
+      case "user-agent":
+      case "referer":
+      case "host":
+      case "authorization":
+      case "proxy-authorization":
+      case "if-modified-since":
+      case "if-unmodified-since":
+      case "from":
+      case "location":
+      case "max-forwards":
+      case "retry-after":
+      case "etag":
+      case "last-modified":
+      case "server":
+      case "age":
+      case "expires":
         this.set(newname, newvalue);
-        break
-  
+        break;
+
       default:
         // Append values for all legal keys
         this[entries].push([newname, newvalue]);
@@ -101,17 +101,19 @@ export class HttpHeaders {
     const matches = this[entries].filter((h): boolean => h[0] == newname);
     if (!matches.length) return null;
     const values = matches.map((m): string => m[1]);
-    
+
     // "set-cookie" is the only header type that needs special concatenation
     // https://tools.ietf.org/html/rfc6265
-    const isCookie = ('set-cookie' === newname || 'cookie' === newname);
-    return isCookie ? values.join('; ') : values.join(', ');
+    const isCookie = "set-cookie" === newname || "cookie" === newname;
+    return isCookie ? values.join("; ") : values.join(", ");
   }
 
   has(name: string): boolean {
     const newname = this._normalizeName(name);
     this._validateName(newname);
-    const result = this[entries].find((header): boolean => header[0] == newname);
+    const result = this[entries].find(
+      (header): boolean => header[0] == newname
+    );
     return Boolean(result);
   }
 
