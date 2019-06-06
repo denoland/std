@@ -4,10 +4,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { copyBytes } from "../io/util.ts";
+// import { copyBytes } from "../io/util.ts";
 
 const hextable = new TextEncoder().encode("0123456789abcdef");
-const bufferSize = 1024;
+// const bufferSize = 1024;
 
 export function errInvalidByte(byte: number): Error {
   return new Error(
@@ -117,7 +117,7 @@ export function decodedLen(x: number): number {
  * DecodeString returns the bytes represented by the hexadecimal string `s`.
  * DecodeString expects that src contains only hexadecimal characters and that src has even length.
  * If the input is malformed, DecodeString will throws an error.
- * @param s
+ * @param s the `string` need to decode to `Uint8Array`
  */
 export function decodeString(s: string): Uint8Array {
   const src = new TextEncoder().encode(s);
@@ -132,91 +132,92 @@ export function decodeString(s: string): Uint8Array {
   return src.slice(0, n);
 }
 
-/**
- * A `deno.Writer` implements that writes lowercase hexadecimal characters to `w`.
- */
-export class Encoder implements Deno.Writer {
-  private out = new Uint8Array(bufferSize);
-  constructor(private w: Deno.Writer) {}
-  async write(p: Uint8Array): Promise<number> {
-    let n = 0;
+// TODO: add Encoder/Decoder in the future
+// /**
+//  * A `deno.Writer` implements that writes lowercase hexadecimal characters to `w`.
+//  */
+// export class Encoder implements Deno.Writer {
+//   private out = new Uint8Array(bufferSize);
+//   constructor(private w: Deno.Writer) {}
+//   async write(p: Uint8Array): Promise<number> {
+//     let n = 0;
 
-    for (; p.length > 0; ) {
-      let chunkSize = bufferSize / 2;
-      if (p.length < chunkSize) {
-        chunkSize = p.length;
-      }
+//     for (; p.length > 0; ) {
+//       let chunkSize = bufferSize / 2;
+//       if (p.length < chunkSize) {
+//         chunkSize = p.length;
+//       }
 
-      const encoded = encode(this.out.slice(), p.slice(chunkSize));
-      const written = await this.w.write(this.out.slice(0, encoded));
+//       const encoded = encode(this.out.slice(), p.slice(chunkSize));
+//       const written = await this.w.write(this.out.slice(0, encoded));
 
-      n += written / 2;
-      p = p.slice(chunkSize);
-    }
+//       n += written / 2;
+//       p = p.slice(chunkSize);
+//     }
 
-    return n;
-  }
-}
+//     return n;
+//   }
+// }
 
-/**
- * A `deno.Reader` implements that decodes hexadecimal characters from `r`.
- * Decoder expects that `r` contain only an even number of hexadecimal characters.
- */
-export class Decoder implements Deno.Reader {
-  private in = new Uint8Array(); // input buffer (encoded form)
-  private arr = new Uint8Array(bufferSize); // backing array for in
-  private err: Error;
-  constructor(private r: Deno.Reader) {}
-  async read(p: Uint8Array): Promise<Deno.ReadResult> {
-    // Fill internal buffer with sufficient bytes to decode
-    if (this.in.length < 2 && !this.err) {
-      let numCopy = 0;
-      let numRead = 0;
+// /**
+//  * A `deno.Reader` implements that decodes hexadecimal characters from `r`.
+//  * Decoder expects that `r` contain only an even number of hexadecimal characters.
+//  */
+// export class Decoder implements Deno.Reader {
+//   private in = new Uint8Array(); // input buffer (encoded form)
+//   private arr = new Uint8Array(bufferSize); // backing array for in
+//   private err: Error;
+//   constructor(private r: Deno.Reader) {}
+//   async read(p: Uint8Array): Promise<Deno.ReadResult> {
+//     // Fill internal buffer with sufficient bytes to decode
+//     if (this.in.length < 2 && !this.err) {
+//       let numCopy = 0;
+//       let numRead = 0;
 
-      numCopy = copyBytes(this.arr.slice(), this.in);
-      const { nread, eof } = await this.r.read(this.arr.slice(numCopy));
-      numRead = nread;
-      this.in = this.arr.slice(0, numCopy + numRead);
+//       numCopy = copyBytes(this.arr.slice(), this.in);
+//       const { nread, eof } = await this.r.read(this.arr.slice(numCopy));
+//       numRead = nread;
+//       this.in = this.arr.slice(0, numCopy + numRead);
 
-      if (eof && this.in.length % 2 != 0) {
-        const [, ok] = fromHexChar(this.in[this.in.length - 1]);
-        if (!ok) {
-          this.err = errInvalidByte(this.in[this.in.length - 1]);
-        } else {
-          this.err = new Error("unexpected EOF");
-        }
-      }
-    }
+//       if (eof && this.in.length % 2 != 0) {
+//         const [, ok] = fromHexChar(this.in[this.in.length - 1]);
+//         if (!ok) {
+//           this.err = errInvalidByte(this.in[this.in.length - 1]);
+//         } else {
+//           this.err = new Error("unexpected EOF");
+//         }
+//       }
+//     }
 
-    // Decode internal buffer into output buffer
-    const numAvail = this.in.length / 2;
-    if (numAvail && p.length > numAvail) {
-      p = p.slice(0, numAvail);
-    }
+//     // Decode internal buffer into output buffer
+//     const numAvail = this.in.length / 2;
+//     if (numAvail && p.length > numAvail) {
+//       p = p.slice(0, numAvail);
+//     }
 
-    const [numDec, err] = decode(p, this.in.slice(0, p.length * 2));
+//     const [numDec, err] = decode(p, this.in.slice(0, p.length * 2));
 
-    this.in = this.in.slice(2 * numDec);
+//     this.in = this.in.slice(2 * numDec);
 
-    if (err) {
-      // Decode error; discard input remainder
-      throw err;
-    }
+//     if (err) {
+//       // Decode error; discard input remainder
+//       throw err;
+//     }
 
-    if (this.in.length < 2) {
-      // Only throw errors when buffer fully consumed
-      if (this.err) {
-        throw err;
-      }
-      return {
-        nread: numDec,
-        eof: true
-      };
-    }
+//     if (this.in.length < 2) {
+//       // Only throw errors when buffer fully consumed
+//       if (this.err) {
+//         throw err;
+//       }
+//       return {
+//         nread: numDec,
+//         eof: true
+//       };
+//     }
 
-    return {
-      nread: numDec,
-      eof: false
-    };
-  }
-}
+//     return {
+//       nread: numDec,
+//       eof: false
+//     };
+//   }
+// }
