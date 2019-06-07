@@ -13,32 +13,42 @@ import { evaluate, instantiate, load, ModuleMetaData } from "./utils.ts";
 /* eslint-disable @typescript-eslint/no-namespace */
 declare global {
   namespace globalThis {
-    var __results: string | undefined;
+    var __results: [string, string] | undefined;
   }
 }
 /* eslint-enable @typescript-eslint/no-namespace */
 
 const fixture = `
-define("modB", ["require", "exports"], function(require, exports) {
+define("data", [], { "baz": "qat" });
+define("modB", ["require", "exports", "data"], function(require, exports, data) {
   "use strict";
   Object.defineProperty(exports, "__esModule", { value: true });
   exports.foo = "bar";
+  exports.baz = data.baz;
 });
 define("modA", ["require", "exports", "modB"], function(require, exports, modB) {
   "use strict";
   Object.defineProperty(exports, "__esModule", { value: true });
-  globalThis.__results = modB.foo;
+  globalThis.__results = [modB.foo, modB.baz];
 });
 `;
 
-const fixtureQueue = ["modB", "modA"];
+const fixtureQueue = ["data", "modB", "modA"];
 const fixtureModules = new Map<string, ModuleMetaData>();
+fixtureModules.set("data", {
+  dependencies: [],
+  factory: {
+    baz: "qat"
+  },
+  exports: {}
+});
 fixtureModules.set("modB", {
-  dependencies: ["require", "exports"],
-  factory(_require, exports): void {
+  dependencies: ["require", "exports", "data"],
+  factory(_require, exports, data): void {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.foo = "bar";
+    exports.baz = data.baz;
   },
   exports: {}
 });
@@ -47,7 +57,7 @@ fixtureModules.set("modA", {
   factory(_require, exports, modB): void {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    globalThis.__results = modB.foo;
+    globalThis.__results = [modB.foo, modB.baz];
   },
   exports: {}
 });
@@ -86,15 +96,18 @@ test(async function evaluateBundle() {
   assert(globalThis.define == null, "Expected 'define' to be undefined");
   const [queue, modules] = evaluate(fixture);
   assert(globalThis.define == null, "Expected 'define' to be undefined");
-  assertEquals(queue, ["modB", "modA"]);
+  assertEquals(queue, ["data", "modB", "modA"]);
   assert(modules.has("modA"));
   assert(modules.has("modB"));
-  assertStrictEq(modules.size, 2);
+  assert(modules.has("data"));
+  assertStrictEq(modules.size, 3);
 });
 
 test(async function instantiateBundle() {
   assert(globalThis.__results == null);
   instantiate(fixtureQueue, fixtureModules);
-  assertEquals(globalThis.__results, "bar");
+  assertEquals(globalThis.__results, ["bar", "qat"]);
   delete globalThis.__results;
 });
+
+runTests();
