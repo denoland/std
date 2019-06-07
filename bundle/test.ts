@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { test, runTests } from "../testing/mod.ts";
+import { test } from "../testing/mod.ts";
 import {
   assert,
   AssertionError,
@@ -62,7 +62,7 @@ fixtureModules.set("modA", {
   exports: {}
 });
 
-test(async function loadBundle() {
+test(async function loadBundle(): Promise<void> {
   const result = await load(["", "./bundle/testdata/bundle.js"]);
   assert(result != null);
   assert(
@@ -72,9 +72,9 @@ test(async function loadBundle() {
   );
 });
 
-test(async function loadBadArgs() {
+test(async function loadBadArgs(): Promise<void> {
   await assertThrowsAsync(
-    async () => {
+    async (): Promise<void> => {
       await load(["bundle/test.ts"]);
     },
     AssertionError,
@@ -82,9 +82,9 @@ test(async function loadBadArgs() {
   );
 });
 
-test(async function loadMissingBundle() {
+test(async function loadMissingBundle(): Promise<void> {
   await assertThrowsAsync(
-    async () => {
+    async (): Promise<void> => {
       await load([".", "bad_bundle.js"]);
     },
     AssertionError,
@@ -92,7 +92,7 @@ test(async function loadMissingBundle() {
   );
 });
 
-test(async function evaluateBundle() {
+test(async function evaluateBundle(): Promise<void> {
   assert(globalThis.define == null, "Expected 'define' to be undefined");
   const [queue, modules] = evaluate(fixture);
   assert(globalThis.define == null, "Expected 'define' to be undefined");
@@ -103,11 +103,9 @@ test(async function evaluateBundle() {
   assertStrictEq(modules.size, 3);
 });
 
-test(async function instantiateBundle() {
+test(async function instantiateBundle(): Promise<void> {
   assert(globalThis.__results == null);
   instantiate(fixtureQueue, fixtureModules);
   assertEquals(globalThis.__results, ["bar", "qat"]);
   delete globalThis.__results;
 });
-
-runTests();
