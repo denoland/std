@@ -10,7 +10,7 @@ export interface DefineFactory {
 
 export interface ModuleMetaData {
   dependencies: string[];
-  factory?: DefineFactory;
+  factory?: DefineFactory | object;
   exports: object;
 }
 
@@ -84,7 +84,13 @@ export function instantiate(
       }
     );
 
-    module.factory!(...dependencies);
+    if (typeof module.factory === "function") {
+      module.factory!(...dependencies);
+    } else if (module.factory) {
+      // when bundling JSON, TypeScript just emits it as an object/array as the
+      // third argument of the `define()`.
+      module.exports = module.factory;
+    }
     delete module.factory;
   }
 }
