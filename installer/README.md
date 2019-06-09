@@ -9,9 +9,11 @@
 ## Usage
 
 ```sh
-deno_install https://deno.land/std/http/file_server.ts
-# now you can use installed command!
-file_server
+$ deno_install https://deno.land/std/http/file_server.ts
+> file_server requests network access. Grant permanently? [yN] # Grant the permissions to use command.
+> y
+> Successfully installed file_server.
+$ file_server # now you can use installed command!
 ```
 
 ## Requirements
