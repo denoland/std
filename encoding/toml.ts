@@ -373,6 +373,7 @@ class Parser {
         }
         obj[k] = v;
         if (v instanceof Object) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           this._propertyClean(v as any);
         }
       }
@@ -394,6 +395,7 @@ class Dumper {
     this.srcObject = srcObjc;
   }
   dump(): string[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.output = this._parse(this.srcObject as any);
     this.output = this._format();
     return this.output;
