@@ -88,6 +88,14 @@ function createDirIfNotExists(path: string): void {
   }
 }
 
+function checkIfExistsInPath(path: string) {
+  const { PATH } = env();
+
+  const paths = (PATH as string).split(":");
+
+  return paths.includes(path);
+}
+
 function getInstallerDir(): string {
   const { HOME } = env();
 
@@ -203,13 +211,14 @@ async function install(moduleUrl: string, flags: string[]): Promise<void> {
   await makeExecutable.status();
   makeExecutable.close();
 
-  console.log(`✅ Successfully installed ${moduleName}.\n`);
-  // TODO: display this prompt only if `installerDir` not in PATH
+  console.log(`✅ Successfully installed ${moduleName}.`);
   // TODO: add Windows version
-  console.log("ℹ️  Add ~/.deno/bin to PATH");
-  console.log(
-    "   echo 'export PATH=\"$HOME/.deno/bin:$PATH\"' >> ~/.bashrc # change this to your shell"
-  );
+  if (!checkIfExistsInPath(installerDir)) {
+    console.log("\nℹ️  Add ~/.deno/bin to PATH");
+    console.log(
+      "    echo 'export PATH=\"$HOME/.deno/bin:$PATH\"' >> ~/.bashrc # change this to your shell"
+    );
+  }
 }
 
 async function uninstall(moduleName: string): Promise<void> {
