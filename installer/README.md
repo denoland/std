@@ -16,10 +16,6 @@ $ deno_install https://deno.land/std/http/file_server.ts
 $ file_server # now you can use installed command!
 ```
 
-## Requirements
-
-- wget #TODO: Remove
-
 ## Installing
 
 ### 1. Install deno_install
