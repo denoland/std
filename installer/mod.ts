@@ -9,7 +9,9 @@ const {
   exit,
   stdin,
   stat,
-  run
+  readAll,
+  run,
+  remove
 } = Deno;
 import * as path from "../fs/path.ts";
 
@@ -102,7 +104,7 @@ async function fetchWithRedirects(
   url: string,
   redirectLimit: number = 10
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<Response> {
+): Promise<any> {
   // TODO: `Response` is not exposed in global so 'any'
   const response = await fetch(url);
 
@@ -146,7 +148,7 @@ ARGS:
 }
 
 async function install(moduleUrl: string, flags: string[]): Promise<void> {
-  let installerDir = getInstallerDir();
+  const installerDir = getInstallerDir();
   createDirIfNotExists(installerDir);
 
   // TODO: handle local modules as well
@@ -210,6 +212,23 @@ async function install(moduleUrl: string, flags: string[]): Promise<void> {
   );
 }
 
+async function uninstall(moduleName: string): Promise<void> {
+  const installerDir = getInstallerDir();
+  const FILE_PATH = path.join(installerDir, moduleName);
+
+  try {
+    await stat(FILE_PATH);
+  } catch (e) {
+    if (e instanceof Deno.DenoError && e.kind === Deno.ErrorKind.NotFound) {
+      console.error(`ℹ️  ${moduleName} not found`);
+      exit(1);
+    }
+  }
+
+  await remove(FILE_PATH);
+  console.log(`ℹ️  Uninstalled ${moduleName}`);
+}
+
 async function main(): Promise<void> {
   if (args.length < 2) {
     return showHelp();
@@ -217,6 +236,10 @@ async function main(): Promise<void> {
 
   const moduleUrl = args[1];
   const flags = args.slice(2);
+
+  if (moduleUrl === "uninstall") {
+    return await uninstall(args[2]);
+  }
 
   if (["-h", "--help"].includes(moduleUrl)) {
     return showHelp();
