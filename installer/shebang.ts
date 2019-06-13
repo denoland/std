@@ -1,15 +1,15 @@
 export interface Shebang {
   path: string;
-  args: Array<string>;
+  args: string[];
 }
 
 class ShebangImpl implements Shebang {
   public readonly path: string;
-  public readonly args: Array<string>;
+  public readonly args: string[];
 
   constructor(shebang: string) {
     const line = shebang.split("\n")[0];
-    const parts = line.split(" ").map(s => s.trim());
+    const parts = line.split(" ").map((s: string): string => s.trim());
     const pathBase = parts.shift();
 
     if (!pathBase.startsWith("#!")) {

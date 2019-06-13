@@ -80,39 +80,7 @@ async function yesNoPrompt(message: string): Promise<boolean> {
   return input === "y" || input === "Y";
 }
 
-async function grantPermission(
-  perm: Permission,
-  moduleName: string
-): Promise<boolean> {
-  // TODO: rewrite prompts
-  let msg = `⚠️  ${moduleName} requests `;
-  switch (perm) {
-    case Permission.Read:
-      msg += "read access to file system. ";
-      break;
-    case Permission.Write:
-      msg += "write access to file system. ";
-      break;
-    case Permission.Net:
-      msg += "network access. ";
-      break;
-    case Permission.Env:
-      msg += "access to environment variable. ";
-      break;
-    case Permission.Run:
-      msg += "access to run a subprocess. ";
-      break;
-    case Permission.All:
-      msg += "all available access. ";
-      break;
-    default:
-      return false;
-  }
-  msg += "Grant permanently?";
-  return await yesNoPrompt(msg);
-}
-
-function createDirIfNotExists(path: string) {
+function createDirIfNotExists(path: string): void {
   try {
     readDirSync(path);
   } catch (e) {
@@ -168,7 +136,7 @@ async function fetchModule(url: string): Promise<string> {
   return decoder.decode(body);
 }
 
-async function main() {
+async function main(): void {
   let installerDir = getInstallerDir();
   createDirIfNotExists(installerDir);
 
@@ -198,9 +166,9 @@ async function main() {
   console.log(`Downloading: ${moduleUrl}\n`);
   const moduleText = await fetchModule(moduleUrl);
 
-  const grantedPermissions: Array<Permission> = [];
+  const grantedPermissions: Permission[] = [];
 
-  let shebang: { args: Array<string> } | undefined;
+  let shebang: { args: string[] } | undefined;
 
   const line = moduleText.split("\n")[0];
 
@@ -209,7 +177,7 @@ async function main() {
   } catch (e) {}
 
   if (shebang) {
-    const requestedPermissions: Array<Permission> = [];
+    const requestedPermissions: Permission[] = [];
     console.log("ℹ️  Detected shebang:\n");
     console.log(`   ${line}\n`);
     console.log("   Requested permissions:\n");
@@ -227,9 +195,11 @@ async function main() {
     console.log();
 
     if (yesNoPrompt("⚠️  Grant?")) {
-      requestedPermissions.forEach((perm: Permission) => {
-        grantedPermissions.push(perm);
-      });
+      requestedPermissions.forEach(
+        (perm: Permission): void => {
+          grantedPermissions.push(perm);
+        }
+      );
     }
   } else {
     for (const flag of args.slice(2)) {
@@ -256,7 +226,6 @@ async function main() {
   await makeExecutable.status();
   makeExecutable.close();
 
-  // TODO: display granted permissions
   console.log(`✅  Successfully installed ${moduleName}.\n`);
   // TODO: display this prompt only if `installerDir` not in PATH
   // TODO: add Windows version
