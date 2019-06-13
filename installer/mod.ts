@@ -135,11 +135,20 @@ async function fetchModule(url: string): Promise<string> {
   return decoder.decode(body);
 }
 
-async function main(): Promise<void> {
+function showHelp(): void {
+  console.log(`USAGE:
+deno https://deno.land/std/installer/mod.ts SCRIPT [FLAGS...] 
+
+ARGS:
+  SCRIPT      URL of script to install
+  [FLAGS...]  List of flags for script
+  `);
+}
+
+async function install(moduleUrl: string, flags: string[]): Promise<void> {
   let installerDir = getInstallerDir();
   createDirIfNotExists(installerDir);
 
-  const moduleUrl: string = args[1];
   // TODO: handle local modules as well
   if (!moduleUrl.startsWith("http")) {
     throw new Error("Only remote modules are supported.");
@@ -169,7 +178,7 @@ async function main(): Promise<void> {
 
   const grantedPermissions: Permission[] = [];
 
-  for (const flag of args.slice(2)) {
+  for (const flag of flags) {
     const permission = getPermissionFromFlag(flag);
     if (permission === Permission.Unknown) {
       continue;
@@ -192,7 +201,7 @@ async function main(): Promise<void> {
   await makeExecutable.status();
   makeExecutable.close();
 
-  console.log(`✅  Successfully installed ${moduleName}.\n`);
+  console.log(`✅ Successfully installed ${moduleName}.\n`);
   // TODO: display this prompt only if `installerDir` not in PATH
   // TODO: add Windows version
   console.log("ℹ️  Add ~/.deno/bin to PATH");
@@ -201,15 +210,30 @@ async function main(): Promise<void> {
   );
 }
 
-// TODO: refactor
-try {
-  main();
-} catch (e) {
-  const err = e as Error;
-  if (err.message) {
-    console.log(err.message);
-  } else {
-    console.log(e);
+async function main(): Promise<void> {
+  if (args.length < 2) {
+    return showHelp();
   }
-  exit(1);
+
+  const moduleUrl = args[1];
+  const flags = args.slice(2);
+
+  if (moduleUrl == "-h" || "--help") {
+    return showHelp();
+  }
+
+  // TODO: refactor
+  try {
+    await install(moduleUrl, flags);
+  } catch (e) {
+    const err = e as Error;
+    if (err.message) {
+      console.log(err.message);
+    } else {
+      console.log(e);
+    }
+    exit(1);
+  }
 }
+
+main();
