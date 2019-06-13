@@ -13,7 +13,6 @@ const {
   run
 } = Deno;
 import * as path from "../fs/path.ts";
-import { parse as parseShebang } from "./shebang.ts";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8");
@@ -136,7 +135,7 @@ async function fetchModule(url: string): Promise<string> {
   return decoder.decode(body);
 }
 
-async function main(): void {
+async function main(): Promise<void> {
   let installerDir = getInstallerDir();
   createDirIfNotExists(installerDir);
 
@@ -164,51 +163,18 @@ async function main(): void {
   }
 
   console.log(`Downloading: ${moduleUrl}\n`);
-  const moduleText = await fetchModule(moduleUrl);
+  // fetch module - this is done only to ensure that it actually exists
+  // we don't want to create programs that are not resolvable
+  await fetchModule(moduleUrl);
 
   const grantedPermissions: Permission[] = [];
 
-  let shebang: { args: string[] } | undefined;
-
-  const line = moduleText.split("\n")[0];
-
-  try {
-    shebang = parseShebang(line);
-  } catch (e) {}
-
-  if (shebang) {
-    const requestedPermissions: Permission[] = [];
-    console.log("ℹ️  Detected shebang:\n");
-    console.log(`   ${line}\n`);
-    console.log("   Requested permissions:\n");
-
-    for (const flag of shebang.args) {
-      const permission = getPermissionFromFlag(flag);
-      if (permission === Permission.Unknown) {
-        continue;
-      }
-
-      console.log("\t" + flag);
-      requestedPermissions.push(permission);
+  for (const flag of args.slice(2)) {
+    const permission = getPermissionFromFlag(flag);
+    if (permission === Permission.Unknown) {
+      continue;
     }
-
-    console.log();
-
-    if (yesNoPrompt("⚠️  Grant?")) {
-      requestedPermissions.forEach(
-        (perm: Permission): void => {
-          grantedPermissions.push(perm);
-        }
-      );
-    }
-  } else {
-    for (const flag of args.slice(2)) {
-      const permission = getPermissionFromFlag(flag);
-      if (permission === Permission.Unknown) {
-        continue;
-      }
-      grantedPermissions.push(permission);
-    }
+    grantedPermissions.push(permission);
   }
 
   const commands = [
