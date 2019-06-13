@@ -7,7 +7,6 @@ const {
   mkdirSync,
   writeFile,
   exit,
-  readAll,
   stdin,
   stat,
   run
@@ -103,7 +102,7 @@ async function fetchWithRedirects(
   url: string,
   redirectLimit: number = 10
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any> {
+): Promise<Response> {
   // TODO: `Response` is not exposed in global so 'any'
   const response = await fetch(url);
 
@@ -123,7 +122,8 @@ function moduleNameFromPath(modulePath: string): string {
   return moduleName;
 }
 
-async function fetchModule(url: string): Promise<string> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function fetchModule(url: string): Promise<any> {
   const response = await fetchWithRedirects(url);
 
   if (response.status !== 200) {
@@ -218,7 +218,7 @@ async function main(): Promise<void> {
   const moduleUrl = args[1];
   const flags = args.slice(2);
 
-  if (moduleUrl == "-h" || "--help") {
+  if (["-h", "--help"].includes(moduleUrl)) {
     return showHelp();
   }
 
