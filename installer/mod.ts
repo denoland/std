@@ -7,6 +7,7 @@ const {
   mkdirSync,
   writeFile,
   exit,
+  readAll,
   stdin,
   stat,
   run
@@ -75,12 +76,13 @@ async function readCharacter(): Promise<string> {
 async function yesNoPrompt(message: string): Promise<boolean> {
   console.log(`${message} [yN]`);
   const input = await readCharacter();
+  console.log();
   return input === "y" || input === "Y";
 }
 
 async function grantPermission(
   perm: Permission,
-  moduleName: string,
+  moduleName: string
 ): Promise<boolean> {
   // TODO: rewrite prompts
   let msg = `⚠️  ${moduleName} requests `;
@@ -128,12 +130,14 @@ function getInstallerDir(): string {
   return path.join(HOME, ".deno", "bin");
 }
 
-// TODO: `Response` is not exposed in global
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TODO: fetch doesn't handle redirects yet - once it does this function
+//  can be removed
 async function fetchWithRedirects(
   url: string,
   redirectLimit: number = 10
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> {
+  // TODO: `Response` is not exposed in global so 'any'
   const response = await fetch(url);
 
   if (response.status === 301 || response.status === 302) {
@@ -146,23 +150,35 @@ async function fetchWithRedirects(
   return response;
 }
 
-async function main() {
-  let installerDir;
+function moduleNameFromPath(modulePath: string): string {
+  let moduleName = path.basename(modulePath, ".ts");
+  moduleName = path.basename(moduleName, ".js");
+  return moduleName;
+}
 
-  try {
-    installerDir = getInstallerDir();
-  } catch (e) {
-    fail(e.message);
+async function fetchModule(url: string): Promise<string> {
+  const response = await fetchWithRedirects(url);
+
+  if (response.status !== 200) {
+    // TODO: show more debug information like status and maybe body
+    throw new Error(`Failed to get remote script ${url}.`);
   }
 
+  const body = await readAll(response.body);
+  return decoder.decode(body);
+}
+
+async function main() {
+  let installerDir = getInstallerDir();
   createDirIfNotExists(installerDir);
 
-  const modulePath: string = args[1];
-  if (!modulePath.startsWith("http")) {
+  const moduleUrl: string = args[1];
+  // TODO: handle local modules as well
+  if (!moduleUrl.startsWith("http")) {
     throw new Error("Only remote modules are supported.");
   }
-  // TODO: handle JS and extensionless files as well
-  const moduleName = path.basename(modulePath, ".ts");
+
+  const moduleName = moduleNameFromPath(moduleUrl);
   const FILE_PATH = path.join(installerDir, moduleName);
 
   let fileInfo;
@@ -174,40 +190,48 @@ async function main() {
 
   if (fileInfo) {
     const msg = `⚠️  ${moduleName} is already installed, do you want to overwrite it?`;
-    if (!await yesNoPrompt(msg)) {
+    if (!(await yesNoPrompt(msg))) {
       return;
     }
   }
 
-  console.log(`Downloading: ${modulePath}`);
-  const response = await fetchWithRedirects(modulePath);
-
-  if (response.status !== 200) {
-    // TODO(bartlomieju) show more debug information like status and maybe body
-    throw new Error(`Failed to get remote script ${modulePath}.`);
-  }
-
-  const body = await Deno.readAll(response.body);
-  const moduleText = decoder.decode(body);
-  console.log("Download complete.");
+  console.log(`Downloading: ${moduleUrl}\n`);
+  const moduleText = await fetchModule(moduleUrl);
 
   const grantedPermissions: Array<Permission> = [];
 
-  // TODO(bartlomieju) this whole shebang bit should be optional or at least require confirmation
+  let shebang: { args: Array<string> } | undefined;
+
+  const line = moduleText.split("\n")[0];
+
   try {
-    const line = moduleText.split("\n")[0];
-    const shebang = parseShebang(line);
+    shebang = parseShebang(line);
+  } catch (e) {}
+
+  if (shebang) {
+    const requestedPermissions: Array<Permission> = [];
+    console.log("ℹ️  Detected shebang:\n");
+    console.log(`   ${line}\n`);
+    console.log("   Requested permissions:\n");
 
     for (const flag of shebang.args) {
       const permission = getPermissionFromFlag(flag);
       if (permission === Permission.Unknown) {
         continue;
       }
-      if (await grantPermission(permission, moduleName)) {
-        grantedPermissions.push(permission);
-      }
+
+      console.log("\t" + flag);
+      requestedPermissions.push(permission);
     }
-  } catch (e) {
+
+    console.log();
+
+    if (yesNoPrompt("⚠️  Grant?")) {
+      requestedPermissions.forEach((perm: Permission) => {
+        grantedPermissions.push(perm);
+      });
+    }
+  } else {
     for (const flag of args.slice(2)) {
       const permission = getPermissionFromFlag(flag);
       if (permission === Permission.Unknown) {
@@ -220,10 +244,11 @@ async function main() {
   const commands = [
     "deno",
     ...grantedPermissions.map(getFlagFromPermission),
-    modulePath,
+    moduleUrl,
     "$@"
   ];
 
+  // TODO: add windows Version
   const template = `#/bin/sh\n${commands.join(" ")}`;
   writeFile(FILE_PATH, encoder.encode(template));
 
@@ -231,7 +256,14 @@ async function main() {
   await makeExecutable.status();
   makeExecutable.close();
 
-  console.log(`Successfully installed ${moduleName}.`);
+  // TODO: display granted permissions
+  console.log(`✅  Successfully installed ${moduleName}.\n`);
+  // TODO: display this prompt only if `installerDir` not in PATH
+  // TODO: add Windows version
+  console.log("ℹ️  Add ~/.deno/bin to PATH");
+  console.log(
+    "   echo 'export PATH=\"$HOME/.deno/bin:$PATH\"' >> ~/.bashrc # change this to your shell"
+  );
 }
 
 // TODO: refactor
