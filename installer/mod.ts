@@ -66,24 +66,24 @@ function getFlagFromPermission(perm: Permission): string {
 }
 
 async function readCharacter(): Promise<string> {
-  const decoder = new TextDecoder("utf-8");
   const byteArray = new Uint8Array(1024);
   await stdin.read(byteArray);
   const line = decoder.decode(byteArray);
   return line[0];
 }
 
-async function yesNoPrompt(): Promise<boolean> {
-  console.log("[yN]");
+async function yesNoPrompt(message: string): Promise<boolean> {
+  console.log(`${message} [yN]`);
   const input = await readCharacter();
   return input === "y" || input === "Y";
 }
 
 async function grantPermission(
   perm: Permission,
-  moduleName: string = "Deno"
+  moduleName: string,
 ): Promise<boolean> {
-  let msg = `${moduleName} requests `;
+  // TODO: rewrite prompts
+  let msg = `⚠️  ${moduleName} requests `;
   switch (perm) {
     case Permission.Read:
       msg += "read access to file system. ";
@@ -107,8 +107,7 @@ async function grantPermission(
       return false;
   }
   msg += "Grant permanently?";
-  console.log(msg);
-  return await yesNoPrompt();
+  return await yesNoPrompt(msg);
 }
 
 function createDirIfNotExists(path: string) {
@@ -148,13 +147,21 @@ async function fetchWithRedirects(
 }
 
 async function main() {
-  const installerDir = getInstallerDir();
+  let installerDir;
+
+  try {
+    installerDir = getInstallerDir();
+  } catch (e) {
+    fail(e.message);
+  }
+
   createDirIfNotExists(installerDir);
 
   const modulePath: string = args[1];
   if (!modulePath.startsWith("http")) {
     throw new Error("Only remote modules are supported.");
   }
+  // TODO: handle JS and extensionless files as well
   const moduleName = path.basename(modulePath, ".ts");
   const FILE_PATH = path.join(installerDir, moduleName);
 
@@ -166,10 +173,8 @@ async function main() {
   }
 
   if (fileInfo) {
-    console.log(
-      `${moduleName} is already installed, do you want to overwrite it?`
-    );
-    if (!(await yesNoPrompt())) {
+    const msg = `⚠️  ${moduleName} is already installed, do you want to overwrite it?`;
+    if (!await yesNoPrompt(msg)) {
       return;
     }
   }
@@ -178,14 +183,17 @@ async function main() {
   const response = await fetchWithRedirects(modulePath);
 
   if (response.status !== 200) {
-    throw new Error(`Failed to get remote script: ${modulePath}`);
+    // TODO(bartlomieju) show more debug information like status and maybe body
+    throw new Error(`Failed to get remote script ${modulePath}.`);
   }
+
   const body = await Deno.readAll(response.body);
   const moduleText = decoder.decode(body);
   console.log("Download complete.");
 
   const grantedPermissions: Array<Permission> = [];
 
+  // TODO(bartlomieju) this whole shebang bit should be optional or at least require confirmation
   try {
     const line = moduleText.split("\n")[0];
     const shebang = parseShebang(line);
@@ -226,14 +234,15 @@ async function main() {
   console.log(`Successfully installed ${moduleName}.`);
 }
 
+// TODO: refactor
 try {
   main();
 } catch (e) {
   const err = e as Error;
   if (err.message) {
     console.log(err.message);
-    exit(1);
+  } else {
+    console.log(e);
   }
-  console.log(e);
   exit(1);
 }
