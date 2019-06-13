@@ -5,13 +5,14 @@ const {
   env,
   readDirSync,
   mkdirSync,
-  writeFileSync,
+  writeFile,
   exit,
   stdin,
+  stat,
   run
 } = Deno;
 import * as path from "../fs/path.ts";
-import { parse } from "./shebang.ts";
+import { parse as parseShebang } from "./shebang.ts";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8");
@@ -72,6 +73,12 @@ async function readCharacter(): Promise<string> {
   return line[0];
 }
 
+async function yesNoPrompt(): Promise<boolean> {
+  console.log("[yN]");
+  const input = await readCharacter();
+  return input === "y" || input === "Y";
+}
+
 async function grantPermission(
   perm: Permission,
   moduleName: string = "Deno"
@@ -99,14 +106,9 @@ async function grantPermission(
     default:
       return false;
   }
-  msg += "Grant permanently? [yN]";
+  msg += "Grant permanently?";
   console.log(msg);
-
-  const input = await readCharacter();
-  if (input !== "y" && input !== "Y") {
-    return false;
-  }
-  return true;
+  return await yesNoPrompt();
 }
 
 function createDirIfNotExists(path: string) {
@@ -117,14 +119,13 @@ function createDirIfNotExists(path: string) {
   }
 }
 
-function getInstallerHome(): string {
-  const { DENO_DIR, HOME } = env();
-  if (!HOME && !DENO_DIR) {
-    throw new Error("$DENO_DIR and $HOME are not defined.");
+function getInstallerDir(): string {
+  const { HOME } = env();
+
+  if (!HOME) {
+    throw new Error("$HOME is not defined.");
   }
-  if (DENO_DIR) {
-    return path.join(DENO_DIR, "bin");
-  }
+
   return path.join(HOME, ".deno", "bin");
 }
 
@@ -147,13 +148,31 @@ async function fetchWithRedirects(
 }
 
 async function main() {
-  const INSTALLER_HOME = getInstallerHome();
+  const installerDir = getInstallerDir();
+  createDirIfNotExists(installerDir);
 
-  const modulePath: string = args[args.length - 1];
+  const modulePath: string = args[1];
   if (!modulePath.startsWith("http")) {
-    throw new Error("module path is not correct.");
+    throw new Error("Only remote modules are supported.");
   }
   const moduleName = path.basename(modulePath, ".ts");
+  const FILE_PATH = path.join(installerDir, moduleName);
+
+  let fileInfo;
+  try {
+    fileInfo = await stat(FILE_PATH);
+  } catch (e) {
+    // pass
+  }
+
+  if (fileInfo) {
+    console.log(
+      `${moduleName} is already installed, do you want to overwrite it?`
+    );
+    if (!(await yesNoPrompt())) {
+      return;
+    }
+  }
 
   console.log(`Downloading: ${modulePath}`);
   const response = await fetchWithRedirects(modulePath);
@@ -165,22 +184,31 @@ async function main() {
   const moduleText = decoder.decode(body);
   console.log("Download complete.");
 
-  createDirIfNotExists(INSTALLER_HOME);
-  const FILE_PATH = path.join(INSTALLER_HOME, moduleName);
-
-  const shebang = parse(moduleText.split("\n")[0]);
-
   const grantedPermissions: Array<Permission> = [];
-  for (const flag of shebang.args) {
-    const permission = getPermissionFromFlag(flag);
-    if (permission === Permission.Unknown) {
-      continue;
+
+  try {
+    const line = moduleText.split("\n")[0];
+    const shebang = parseShebang(line);
+
+    for (const flag of shebang.args) {
+      const permission = getPermissionFromFlag(flag);
+      if (permission === Permission.Unknown) {
+        continue;
+      }
+      if (await grantPermission(permission, moduleName)) {
+        grantedPermissions.push(permission);
+      }
     }
-    if (!(await grantPermission(permission, moduleName))) {
-      continue;
+  } catch (e) {
+    for (const flag of args.slice(2)) {
+      const permission = getPermissionFromFlag(flag);
+      if (permission === Permission.Unknown) {
+        continue;
+      }
+      grantedPermissions.push(permission);
     }
-    grantedPermissions.push(permission);
   }
+
   const commands = [
     "deno",
     ...grantedPermissions.map(getFlagFromPermission),
@@ -188,8 +216,8 @@ async function main() {
     "$@"
   ];
 
-  writeFileSync(FILE_PATH, encoder.encode("#/bin/sh\n"));
-  writeFileSync(FILE_PATH, encoder.encode(commands.join(" ")));
+  const template = `#/bin/sh\n${commands.join(" ")}`;
+  writeFile(FILE_PATH, encoder.encode(template));
 
   const makeExecutable = run({ args: ["chmod", "+x", FILE_PATH] });
   await makeExecutable.status();

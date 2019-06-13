@@ -6,17 +6,18 @@ export interface Shebang {
 class ShebangImpl implements Shebang {
   public readonly path: string;
   public readonly args: Array<string>;
+
   constructor(shebang: string) {
     const line = shebang.split("\n")[0];
     const parts = line.split(" ").map(s => s.trim());
     const pathBase = parts.shift();
-    if (pathBase.startsWith("#!")) {
-      this.path = pathBase.slice(2);
-      this.args = [...parts];
-    } else {
-      this.path = "";
-      this.args = [];
+
+    if (!pathBase.startsWith("#!")) {
+      throw new Error("Not a shebang.");
     }
+
+    this.path = pathBase.slice(2);
+    this.args = [...parts];
   }
 
   toString(): string {
