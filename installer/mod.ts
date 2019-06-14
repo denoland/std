@@ -210,7 +210,7 @@ export async function install(
 
   // TODO: add windows Version
   const template = `#/bin/sh\n${commands.join(" ")}`;
-  writeFile(FILE_PATH, encoder.encode(template));
+  await writeFile(FILE_PATH, encoder.encode(template));
 
   const makeExecutable = run({ args: ["chmod", "+x", FILE_PATH] });
   const { code } = await makeExecutable.status();
