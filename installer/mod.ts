@@ -217,9 +217,21 @@ export async function install(
   const template = `#/bin/sh\n${commands.join(" ")}`;
   writeFile(FILE_PATH, encoder.encode(template));
 
+  // TODO: remove just for test
+  try {
+    const fileInfo = await stat(FILE_PATH);
+    console.log(fileInfo, fileInfo.isFile());
+  } catch (e) {
+    console.log("stat failed");
+  }
+
   const makeExecutable = run({ args: ["chmod", "+x", FILE_PATH] });
-  await makeExecutable.status();
+  const { code } = await makeExecutable.status();
   makeExecutable.close();
+
+  if (code !== 0) {
+    throw new Error("Failed to make file executable");
+  }
 
   console.log(`✅ Successfully installed ${moduleName}.`);
   // TODO: add Windows version
