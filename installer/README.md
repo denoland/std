@@ -1,4 +1,4 @@
-# deno_install
+# deno_installer
 
 Install remote or local script as executables.
 
@@ -8,7 +8,7 @@ Install remote or local script as executables.
 `installer` can be install using iteself:
 
 ```sh
-deno -A https://deno.land/std/install/deno_install.ts deno_install https://deno.land/std/install/deno_install.ts -A
+deno -A https://deno.land/std/installer/deno_installer.ts deno_installer https://deno.land/std/installer/deno_installer.ts -A
 ````
 
 Installer uses `~/.deno/bin` to store installed scripts so make sure it's in `$PATH`
@@ -22,13 +22,13 @@ echo 'export PATH="$HOME/.deno/bin:$PATH"' >> ~/.bashrc # change this to your sh
 Install script
 
 ```sh
-$ deno_install file_server https://deno.land/std/http/file_server.ts --allow-net --allow-read
+$ deno_installer file_server https://deno.land/std/http/file_server.ts --allow-net --allow-read
 > Downloading: https://deno.land/std/http/file_server.ts
 >
 > ✅ Successfully installed file_server.
 
 # local script
-$ deno_install file_server ./deno_std/http/file_server.ts --allow-net --allow-read
+$ deno_installer file_server ./deno_std/http/file_server.ts --allow-net --allow-read
 > Looking for: /dev/deno_std/http/file_server.ts
 >
 > ✅ Successfully installed file_server.
@@ -44,7 +44,7 @@ HTTP server listening on http://0.0.0.0:4500/
 Update installed script
 
 ```sh
-$ deno_install file_server https://deno.land/std/http/file_server.ts --allow-net --allow-read
+$ deno_installer file_server https://deno.land/std/http/file_server.ts --allow-net --allow-read
 > ⚠️  file_server is already installed, do you want to overwrite it? [yN]
 > y
 >
@@ -56,7 +56,7 @@ $ deno_install file_server https://deno.land/std/http/file_server.ts --allow-net
 Show help
 
 ```sh
-$ deno_install --help
+$ deno_installer --help
 > deno installer
   Install remote or local script as executables.
 
