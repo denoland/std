@@ -118,7 +118,7 @@ async function fetchWithRedirects(
 
   if (response.status === 301 || response.status === 302) {
     if (redirectLimit > 0) {
-      const redirectUrl = response.headers.get("location");
+      const redirectUrl = response.headers.get("location")!;
       return await fetchWithRedirects(redirectUrl, redirectLimit - 1);
     }
   }

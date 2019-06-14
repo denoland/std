@@ -5,7 +5,7 @@ import { test, runIfMain } from "../testing/mod.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { BufReader, EOF } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { install, uninstall } from "./mod.ts";
+import { install } from "./mod.ts";
 import * as path from "../fs/path.ts";
 
 let fileServer: Deno.Process;
@@ -36,7 +36,7 @@ function killFileServer(): void {
 }
 
 // TODO: create helper function with all setup
-test(async function installerInstall() {
+test(async function installerInstall(): Promise<void> {
   await startFileServer();
   const tempDir = await makeTempDir();
   const envVars = env();
