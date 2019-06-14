@@ -160,9 +160,9 @@ async function install(moduleUrl: string, flags: string[]): Promise<void> {
   createDirIfNotExists(installerDir);
 
   // TODO: handle local modules as well
-  if (!moduleUrl.startsWith("http")) {
-    throw new Error("Only remote modules are supported.");
-  }
+  // if (!moduleUrl.startsWith("http")) {
+  //   throw new Error("Only remote modules are supported.");
+  // }
 
   const moduleName = moduleNameFromPath(moduleUrl);
   const FILE_PATH = path.join(installerDir, moduleName);
@@ -181,10 +181,17 @@ async function install(moduleUrl: string, flags: string[]): Promise<void> {
     }
   }
 
-  console.log(`Downloading: ${moduleUrl}\n`);
-  // fetch module - this is done only to ensure that it actually exists
-  // we don't want to create programs that are not resolvable
-  await fetchModule(moduleUrl);
+  // ensure script that is being installed exists
+  if (moduleUrl.startsWith("http")) {
+    // remote module
+    console.log(`Downloading: ${moduleUrl}\n`);
+    await fetchModule(moduleUrl);
+  } else {
+    // assume that it's local file
+    moduleUrl = path.resolve(moduleUrl);
+    console.log(`Looking for: ${moduleUrl}\n`);
+    await stat(moduleUrl);
+  }
 
   const grantedPermissions: Permission[] = [];
 
