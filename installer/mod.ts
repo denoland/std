@@ -84,7 +84,7 @@ function createDirIfNotExists(path: string): void {
   try {
     readDirSync(path);
   } catch (e) {
-    mkdirSync(path);
+    mkdirSync(path, true);
   }
 }
 
@@ -155,7 +155,10 @@ ARGS:
   `);
 }
 
-async function install(moduleUrl: string, flags: string[]): Promise<void> {
+export async function install(
+  moduleUrl: string,
+  flags: string[]
+): Promise<void> {
   const installerDir = getInstallerDir();
   createDirIfNotExists(installerDir);
 
@@ -228,7 +231,7 @@ async function install(moduleUrl: string, flags: string[]): Promise<void> {
   }
 }
 
-async function uninstall(moduleName: string): Promise<void> {
+export async function uninstall(moduleName: string): Promise<void> {
   const installerDir = getInstallerDir();
   const FILE_PATH = path.join(installerDir, moduleName);
 
@@ -275,4 +278,6 @@ async function main(): Promise<void> {
   }
 }
 
-main();
+if (import.meta.main) {
+  main();
+}
