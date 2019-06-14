@@ -124,12 +124,6 @@ async function fetchWithRedirects(
   return response;
 }
 
-function moduleNameFromPath(modulePath: string): string {
-  let moduleName = path.basename(modulePath, ".ts");
-  moduleName = path.basename(moduleName, ".js");
-  return moduleName;
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function fetchModule(url: string): Promise<any> {
   const response = await fetchWithRedirects(url);
@@ -144,23 +138,27 @@ async function fetchModule(url: string): Promise<any> {
 }
 
 function showHelp(): void {
-  console.log(`USAGE:
-deno https://deno.land/std/installer/mod.ts SCRIPT [FLAGS...] 
+  console.log(`deno installer
+  Install remote or local script as executables.
+  
+USAGE:
+  deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]  
 
 ARGS:
-  SCRIPT      URL of script to install
+  EXE_NAME  Name for executable     
+  SCRIPT_URL  Local or remote URL of script to install
   [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
   `);
 }
 
 export async function install(
+  moduleName: string,
   moduleUrl: string,
   flags: string[]
 ): Promise<void> {
   const installerDir = getInstallerDir();
   createDirIfNotExists(installerDir);
 
-  const moduleName = moduleNameFromPath(moduleUrl);
   const FILE_PATH = path.join(installerDir, moduleName);
 
   let fileInfo;
@@ -248,36 +246,21 @@ export async function uninstall(moduleName: string): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  if (args.length < 2) {
+  if (args.length < 3) {
     return showHelp();
   }
 
-  const moduleUrl = args[1];
-  const flags = args.slice(2);
-
-  if (moduleUrl === "uninstall") {
-    try {
-      return await uninstall(args[2]);
-    } catch (e) {
-      console.error(e);
-      exit(1);
-    }
-  }
-
-  if (["-h", "--help"].includes(moduleUrl)) {
+  if (["-h", "--help"].includes(args[1])) {
     return showHelp();
   }
 
-  // TODO: refactor
+  const moduleName = args[1];
+  const moduleUrl = args[2];
+  const flags = args.slice(3);
   try {
-    await install(moduleUrl, flags);
+    await install(moduleName, moduleUrl, flags);
   } catch (e) {
-    const err = e as Error;
-    if (err.message) {
-      console.log(err.message);
-    } else {
-      console.log(e);
-    }
+    console.log(e);
     exit(1);
   }
 }

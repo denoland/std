@@ -1,6 +1,6 @@
 # deno_install
 
-Installs remote or local script as executable.
+Install remote or local script as executables.
 
 ````
 ## Installation
@@ -8,7 +8,7 @@ Installs remote or local script as executable.
 `installer` can be install using iteself:
 
 ```sh
-deno -A https://deno.land/std/install/deno_install.ts https://deno.land/std/install/deno_install.ts -A
+deno -A https://deno.land/std/install/deno_install.ts deno_install https://deno.land/std/install/deno_install.ts -A
 ````
 
 Installer uses `~/.deno/bin` to store installed scripts so make sure it's in `$PATH`
@@ -22,13 +22,13 @@ echo 'export PATH="$HOME/.deno/bin:$PATH"' >> ~/.bashrc # change this to your sh
 Install script
 
 ```sh
-$ deno_install https://deno.land/std/http/file_server.ts --allow-net --allow-read
+$ deno_install file_server https://deno.land/std/http/file_server.ts --allow-net --allow-read
 > Downloading: https://deno.land/std/http/file_server.ts
 >
 > ✅ Successfully installed file_server.
 
 # local script
-$ deno_install ./deno_std/http/file_server.ts --allow-net --allow-read
+$ deno_install file_server ./deno_std/http/file_server.ts --allow-net --allow-read
 > Looking for: /dev/deno_std/http/file_server.ts
 >
 > ✅ Successfully installed file_server.
@@ -44,7 +44,7 @@ HTTP server listening on http://0.0.0.0:4500/
 Update installed script
 
 ```sh
-$ deno_install https://deno.land/std/http/file_server.ts --allow-net --allow-read
+$ deno_install file_server https://deno.land/std/http/file_server.ts --allow-net --allow-read
 > ⚠️  file_server is already installed, do you want to overwrite it? [yN]
 > y
 >
@@ -53,22 +53,18 @@ $ deno_install https://deno.land/std/http/file_server.ts --allow-net --allow-rea
 > ✅ Successfully installed file_server.
 ```
 
-Uninstall script
-
-```sh
-$ deno_install uninstall file_server
-> ℹ️  Uninstalled file_server
-```
-
-Display help
+Show help
 
 ```sh
 $ deno_install --help
-> USAGE:
-deno https://deno.land/std/installer/mod.ts SCRIPT [FLAGS...]
+> deno installer
+  Install remote or local script as executables.
+
+USAGE:
+  deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]
 
 ARGS:
-  SCRIPT      URL of script to install
+  EXE_NAME  Name for executable
+  SCRIPT_URL  Local or remote URL of script to install
   [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
-
 ```

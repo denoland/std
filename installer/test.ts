@@ -56,10 +56,10 @@ function installerTest(t: TestFunction): void {
 }
 
 installerTest(async function installBasic(): Promise<void> {
-  await install("http://localhost:4500/http/file_server.ts", []);
+  await install("file_srv", "http://localhost:4500/http/file_server.ts", []);
 
   const { HOME } = env();
-  const filePath = path.resolve(HOME, ".deno/bin/file_server");
+  const filePath = path.resolve(HOME, ".deno/bin/file_srv");
   const fileInfo = await stat(filePath);
   assert(fileInfo.isFile());
 
@@ -72,7 +72,7 @@ installerTest(async function installBasic(): Promise<void> {
 });
 
 installerTest(async function installWithFlags(): Promise<void> {
-  await install("http://localhost:4500/http/file_server.ts", [
+  await install("file_server", "http://localhost:4500/http/file_server.ts", [
     "--allow-net",
     "--allow-read",
     "--foobar"
@@ -90,7 +90,7 @@ installerTest(async function installWithFlags(): Promise<void> {
 });
 
 installerTest(async function uninstallBasic(): Promise<void> {
-  await install("http://localhost:4500/http/file_server.ts", []);
+  await install("file_server", "http://localhost:4500/http/file_server.ts", []);
 
   const { HOME } = env();
   const filePath = path.resolve(HOME, ".deno/bin/file_server");
