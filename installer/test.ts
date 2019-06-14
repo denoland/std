@@ -97,13 +97,16 @@ installerTest(async function uninstallBasic(): Promise<void> {
 
   await uninstall("file_server");
 
-  await assertThrowsAsync(
-    async (): Promise<void> => {
-      await stat(filePath);
-    },
-    Deno.DenoError,
-    "No such file"
-  );
+  let thrown = false;
+  try {
+    await stat(filePath);
+  } catch (e) {
+    thrown = true;
+    assert(e instanceof Deno.DenoError);
+    assertEquals(e.kind, Deno.ErrorKind.NotFound);
+  }
+
+  assert(thrown);
 });
 
 installerTest(async function uninstallNonExistentModule(): Promise<void> {
