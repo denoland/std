@@ -19,7 +19,6 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8");
 
 enum Permission {
-  Unknown,
   Read,
   Write,
   Net,
@@ -28,7 +27,7 @@ enum Permission {
   All
 }
 
-function getPermissionFromFlag(flag: string): Permission {
+function getPermissionFromFlag(flag: string): Permission | undefined {
   switch (flag) {
     case "--allow-read":
       return Permission.Read;
@@ -45,7 +44,6 @@ function getPermissionFromFlag(flag: string): Permission {
     case "-A":
       return Permission.All;
   }
-  return Permission.Unknown;
 }
 
 function getFlagFromPermission(perm: Permission): string {
@@ -192,19 +190,22 @@ export async function install(
   }
 
   const grantedPermissions: Permission[] = [];
+  const scriptArgs: string[] = [];
 
   for (const flag of flags) {
     const permission = getPermissionFromFlag(flag);
-    if (permission === Permission.Unknown) {
+    if (!permission) {
+      scriptArgs.push(flag);
       continue;
     }
-    grantedPermissions.push(permission);
+    grantedPermissions.push(permission!);
   }
 
   const commands = [
     "deno",
     ...grantedPermissions.map(getFlagFromPermission),
     moduleUrl,
+    ...scriptArgs,
     "$@"
   ];
 
