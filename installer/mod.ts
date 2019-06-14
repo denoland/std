@@ -162,11 +162,6 @@ export async function install(
   const installerDir = getInstallerDir();
   createDirIfNotExists(installerDir);
 
-  // TODO: handle local modules as well
-  // if (!moduleUrl.startsWith("http")) {
-  //   throw new Error("Only remote modules are supported.");
-  // }
-
   const moduleName = moduleNameFromPath(moduleUrl);
   const FILE_PATH = path.join(installerDir, moduleName);
 
@@ -216,14 +211,6 @@ export async function install(
   // TODO: add windows Version
   const template = `#/bin/sh\n${commands.join(" ")}`;
   writeFile(FILE_PATH, encoder.encode(template));
-
-  // TODO: remove just for test
-  try {
-    const fileInfo = await stat(FILE_PATH);
-    console.log(fileInfo, fileInfo.isFile());
-  } catch (e) {
-    console.log("stat failed");
-  }
 
   const makeExecutable = run({ args: ["chmod", "+x", FILE_PATH] });
   const { code } = await makeExecutable.status();
