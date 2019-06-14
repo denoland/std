@@ -25,14 +25,18 @@ let defaultConsole = {};
 
 function enableConsole(): void {
   for (const key in defaultConsole) {
+    // @ts-ignore
     console[key] = defaultConsole[key];
   }
 }
 
 function disableConsole(): void {
   for (const key in console) {
+    // @ts-ignore
     if (console[key] instanceof Function) {
+      // @ts-ignore
       defaultConsole[key] = console[key];
+      // @ts-ignore
       console[key] = noopConsole;
     }
   }
