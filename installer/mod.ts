@@ -88,7 +88,7 @@ function createDirIfNotExists(path: string): void {
   }
 }
 
-function checkIfExistsInPath(path: string) {
+function checkIfExistsInPath(path: string): boolean {
   const { PATH } = env();
 
   const paths = (PATH as string).split(":");
