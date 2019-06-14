@@ -149,7 +149,7 @@ deno https://deno.land/std/installer/mod.ts SCRIPT [FLAGS...]
 
 ARGS:
   SCRIPT      URL of script to install
-  [FLAGS...]  List of flags for script
+  [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
   `);
 }
 
@@ -194,11 +194,11 @@ export async function install(
 
   for (const flag of flags) {
     const permission = getPermissionFromFlag(flag);
-    if (!permission) {
+    if (permission === undefined) {
       scriptArgs.push(flag);
-      continue;
+    } else {
+      grantedPermissions.push(permission);
     }
-    grantedPermissions.push(permission!);
   }
 
   const commands = [
@@ -239,8 +239,7 @@ export async function uninstall(moduleName: string): Promise<void> {
     await stat(FILE_PATH);
   } catch (e) {
     if (e instanceof Deno.DenoError && e.kind === Deno.ErrorKind.NotFound) {
-      console.error(`ℹ️  ${moduleName} not found`);
-      exit(1);
+      throw new Error(`ℹ️  ${moduleName} not found`);
     }
   }
 
@@ -257,7 +256,12 @@ async function main(): Promise<void> {
   const flags = args.slice(2);
 
   if (moduleUrl === "uninstall") {
-    return await uninstall(args[2]);
+    try {
+      return await uninstall(args[2]);
+    } catch (e) {
+      console.error(e);
+      exit(1);
+    }
   }
 
   if (["-h", "--help"].includes(moduleUrl)) {
