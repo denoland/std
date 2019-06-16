@@ -2,7 +2,6 @@
 
 Install remote or local script as executables.
 
-
 ## Installation
 
 `installer` can be install using iteself:
