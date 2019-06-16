@@ -3,7 +3,7 @@ import { join } from "../fs/path.ts";
 import { EOL } from "../fs/path/constants.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import { test } from "../testing/mod.ts";
-import { xrun } from "./util.ts";
+import { xrun } from "../util/xrun.ts";
 import { copy, emptyDir } from "../fs/mod.ts";
 const { readAll, execPath } = Deno;
 

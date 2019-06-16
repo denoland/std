@@ -23,7 +23,7 @@ import "./textproto/test.ts";
 import "./util/test.ts";
 import "./ws/test.ts";
 
-import { xrun } from "./prettier/util.ts";
+import { xrun } from "./util/xrun.ts";
 import { red, green } from "./colors/mod.ts";
 import { runTests } from "./testing/mod.ts";
 
