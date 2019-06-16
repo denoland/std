@@ -18,28 +18,43 @@ export interface TestDefinition {
 }
 
 // Replacement of the global `console` function to be in silent mode
-const noopConsole = function(): void {};
+const noop = function(): void {};
 
 // Save Object of the global `console` in case of silent mode
-let defaultConsole = {};
+type Console = typeof window.console;
+// ref https://console.spec.whatwg.org/#console-namespace
+// For historical web-compatibility reasons, the namespace object for
+// console must have as its [[Prototype]] an empty object, created as if
+// by ObjectCreate(%ObjectPrototype%), instead of %ObjectPrototype%.
+const disabledConsole = Object.create({}) as Console;
+Object.assign(disabledConsole, {
+  log: noop,
+  debug: noop,
+  info: noop,
+  dir: noop,
+  warn: noop,
+  error: noop,
+  assert: noop,
+  count: noop,
+  countReset: noop,
+  table: noop,
+  time: noop,
+  timeLog: noop,
+  timeEnd: noop,
+  group: noop,
+  groupCollapsed: noop,
+  groupEnd: noop,
+  clear: noop
+});
+
+const originalConsole = window.console;
 
 function enableConsole(): void {
-  for (const key in defaultConsole) {
-    // @ts-ignore
-    console[key] = defaultConsole[key];
-  }
+  window.console = originalConsole;
 }
 
 function disableConsole(): void {
-  for (const key in console) {
-    // @ts-ignore
-    if (console[key] instanceof Function) {
-      // @ts-ignore
-      defaultConsole[key] = console[key];
-      // @ts-ignore
-      console[key] = noopConsole;
-    }
-  }
+  window.console = disabledConsole;
 }
 
 const encoder = new TextEncoder();
