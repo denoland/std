@@ -67,6 +67,9 @@ Example:
 
   deno run prettier/main.ts script1.ts
                              Print the formatted code to stdout
+
+  cat script1.ts | deno run prettier/main.ts --from-stdin
+                             Read code from stdin and print the formatted code to stdout
 `;
 
 // Available parsers
