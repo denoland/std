@@ -157,7 +157,7 @@ async function genereateExecutable(
 ): Promise<void> {
   // genereate Batch script
   if (Deno.platform.os === "win") {
-    const cmdTemplate = `
+    const template = `
 @IF EXIST "%~dp0\deno.exe" (
   "%~dp0\deno.exe" ${commands.slice(1).join(" ")} %*
 ) ELSE (
@@ -167,12 +167,14 @@ async function genereateExecutable(
 )
 `;
     const cmdFile = filePath + ".cmd";
-    await writeFile(cmdFile, encoder.encode(cmdTemplate));
+    await writeFile(cmdFile, encoder.encode(template));
     await chmod(cmdFile, 0x755);
+  }
 
-    // generate Shell script
-    const shellTemplate = `#/bin/sh
-basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+  // generate Shell script
+  const template = `#/bin/sh
+
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\\,/,g')")
 
 case \`uname\` in
     *CYGWIN*) basedir=\`cygpath -w "$basedir"\`;;
@@ -187,25 +189,8 @@ else
 fi
 exit $ret
 `;
-    await writeFile(filePath, encoder.encode(shellTemplate));
-    await chmod(filePath, 0x755);
-  } else {
-    // generate Shell script
-    const shellTemplate = `#/bin/sh
-basedir=$(dirname "$(echo "$0")")
-
-if [ -x "$basedir/deno" ]; then
-  "$basedir/deno" ${commands.slice(1).join(" ")} "$@"
-  ret=$?
-else
-  ${commands.join(" ")} "$@"
-  ret=$?
-fi
-exit $ret
-`;
-    await writeFile(filePath, encoder.encode(shellTemplate));
-    await chmod(filePath, 0x755);
-  }
+  await writeFile(filePath, encoder.encode(template));
+  await chmod(filePath, 0x755);
 }
 
 export async function install(
@@ -261,8 +246,7 @@ export async function install(
     "run",
     ...grantedPermissions.map(getFlagFromPermission),
     moduleUrl,
-    ...scriptArgs,
-    "$@"
+    ...scriptArgs
   ];
 
   await genereateExecutable(filePath, commands);
