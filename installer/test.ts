@@ -121,7 +121,7 @@ installerTest(async function installWithFlags(): Promise<void> {
 ) ELSE (
   @SETLOCAL
   @SET PATHEXT=%PATHEXT:;.TS;=;%
-  deno run http://localhost:4500/http/file_server.ts %*
+  deno run --allow-net --allow-read http://localhost:4500/http/file_server.ts --foobar %*
 )
 `
     );
