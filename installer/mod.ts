@@ -177,7 +177,7 @@ ARGS:
 `);
 }
 
-async function genereateExecutable(
+async function generateExecutable(
   filePath: string,
   commands: string[]
 ): Promise<void> {
@@ -275,7 +275,7 @@ export async function install(
     ...scriptArgs
   ];
 
-  await genereateExecutable(filePath, commands);
+  await generateExecutable(filePath, commands);
 
   console.log(`✅ Successfully installed ${moduleName}`);
   console.log(filePath);
