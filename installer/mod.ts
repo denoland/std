@@ -88,18 +88,21 @@ function createDirIfNotExists(path: string): void {
 }
 
 function checkIfExistsInPath(path: string): boolean {
-  const { PATH } = env();
+  // In windows's powershell. $PATH not exist. use $Path instead.
+  const { PATH, Path } = env();
 
-  const paths = (PATH as string).split(isWindows ? ";" : ":");
+  const paths = ((PATH as string) || (Path as string)).split(
+    isWindows ? ";" : ":"
+  );
 
   return paths.includes(path);
 }
 
 function getInstallerDir(): string {
-  // In windows's powershell. $HOME environmental variable maybe null. use $HOMEPATH instread.
+  // In windows's powershell. $HOME environmental variable maybe null. use $HOMEPATH instead.
   let { HOME, HOMEPATH } = env();
 
-  const HOME_PATH = HOME || HOMEPATH
+  const HOME_PATH = HOME || HOMEPATH;
 
   if (!HOME_PATH) {
     throw new Error("$HOME is not defined.");
