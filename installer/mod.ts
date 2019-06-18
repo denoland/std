@@ -9,9 +9,9 @@ const {
   exit,
   stdin,
   stat,
-  readAll,
   chmod,
-  remove
+  remove,
+  run
 } = Deno;
 import * as path from "../fs/path.ts";
 
@@ -130,39 +130,6 @@ function getInstallerDir(): string {
   return path.join(HOME_PATH, ".deno", "bin");
 }
 
-// TODO: fetch doesn't handle redirects yet - once it does this function
-//  can be removed
-async function fetchWithRedirects(
-  url: string,
-  redirectLimit: number = 10
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any> {
-  // TODO: `Response` is not exposed in global so 'any'
-  const response = await fetch(url);
-
-  if (response.status === 301 || response.status === 302) {
-    if (redirectLimit > 0) {
-      const redirectUrl = response.headers.get("location")!;
-      return await fetchWithRedirects(redirectUrl, redirectLimit - 1);
-    }
-  }
-
-  return response;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function fetchModule(url: string): Promise<any> {
-  const response = await fetchWithRedirects(url);
-
-  if (response.status !== 200) {
-    // TODO: show more debug information like status and maybe body
-    throw new Error(`Failed to get remote script ${url}.`);
-  }
-
-  const body = await readAll(response.body);
-  return decoder.decode(body);
-}
-
 function showHelp(): void {
   console.log(`deno installer
   Install remote or local script as executables.
@@ -245,10 +212,20 @@ export async function install(
   }
 
   // ensure script that is being installed exists
-  if (moduleUrl.startsWith("http")) {
+  if (/^https?:\/\/.{3,}/.test(moduleUrl)) {
     // remote module
     console.log(`Downloading: ${moduleUrl}\n`);
-    await fetchModule(moduleUrl);
+    const ps = run({
+      args: ["deno", "fetch", moduleUrl],
+      stdout: "inherit",
+      stderr: "inherit"
+    });
+
+    const { code } = await ps.status();
+
+    if (code !== 0) {
+      throw new Error("Fail to fetch remote module.");
+    }
   } else {
     // assume that it's local file
     moduleUrl = path.resolve(moduleUrl);
