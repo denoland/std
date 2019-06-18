@@ -157,26 +157,8 @@ installerTest(async function uninstallBasic(): Promise<void> {
 
   await uninstall("file_server");
 
-  let thrown = false;
-  try {
-    await stat(filePath);
-  } catch (e) {
-    thrown = true;
-    assert(e instanceof Deno.DenoError);
-    assertEquals(e.kind, Deno.ErrorKind.NotFound);
-  }
-
-  if (isWindows) {
-    try {
-      await stat(filePath + ".cmd");
-    } catch (e) {
-      thrown = true;
-      assert(e instanceof Deno.DenoError);
-      assertEquals(e.kind, Deno.ErrorKind.NotFound);
-    }
-  }
-
-  assert(thrown);
+  assert(!(await fs.exists(filePath)));
+  assert(!(await fs.exists(filePath + ".cmd")));
 });
 
 installerTest(async function uninstallNonExistentModule(): Promise<void> {
