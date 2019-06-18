@@ -227,7 +227,10 @@ listenAndServe(
   addr,
   async (req): Promise<void> => {
     const fileName = req.url.replace(/\/$/, "");
+    fileName = fileName.replace(/\?.*/,'');
     const filePath = currentDir + fileName;
+    // Todo: possibly an "path traversal attack"?
+    // check if currentDir contains filePath (is there a function like "realpath")
 
     let response: Response;
 
