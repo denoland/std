@@ -10,7 +10,7 @@ const {
   stdin,
   stat,
   readAll,
-  run,
+  chmod,
   remove
 } = Deno;
 import * as path from "../fs/path.ts";
@@ -140,15 +140,72 @@ async function fetchModule(url: string): Promise<any> {
 function showHelp(): void {
   console.log(`deno installer
   Install remote or local script as executables.
-  
+
 USAGE:
-  deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]  
+  deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]
 
 ARGS:
-  EXE_NAME  Name for executable     
+  EXE_NAME  Name for executable
   SCRIPT_URL  Local or remote URL of script to install
   [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
   `);
+}
+
+async function genereateExecutable(
+  filePath: string,
+  commands: string[]
+): Promise<void> {
+  // genereate Batch script
+  if (Deno.platform.os === "win") {
+    const cmdTemplate = `
+@IF EXIST "%~dp0\deno.exe" (
+  "%~dp0\deno.exe" ${commands.slice(1).join(" ")} %*
+) ELSE (
+  @SETLOCAL
+  @SET PATHEXT=%PATHEXT:;.TS;=;%
+  ${commands.join(" ")} %*
+)
+`;
+    const cmdFile = filePath + ".cmd";
+    await writeFile(cmdFile, encoder.encode(cmdTemplate));
+    await chmod(cmdFile, 0x755);
+
+    // generate Shell script
+    const shellTemplate = `#/bin/sh
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+
+case \`uname\` in
+    *CYGWIN*) basedir=\`cygpath -w "$basedir"\`;;
+esac
+
+if [ -x "$basedir/deno" ]; then
+  "$basedir/deno" ${commands.slice(1).join(" ")} "$@"
+  ret=$?
+else
+  ${commands.join(" ")} "$@"
+  ret=$?
+fi
+exit $ret
+`;
+    await writeFile(filePath, encoder.encode(shellTemplate));
+    await chmod(filePath, 0x755);
+  } else {
+    // generate Shell script
+    const shellTemplate = `#/bin/sh
+basedir=$(dirname "$(echo "$0")")
+
+if [ -x "$basedir/deno" ]; then
+  "$basedir/deno" ${commands.slice(1).join(" ")} "$@"
+  ret=$?
+else
+  ${commands.join(" ")} "$@"
+  ret=$?
+fi
+exit $ret
+`;
+    await writeFile(filePath, encoder.encode(shellTemplate));
+    await chmod(filePath, 0x755);
+  }
 }
 
 export async function install(
@@ -201,23 +258,14 @@ export async function install(
 
   const commands = [
     "deno",
+    "run",
     ...grantedPermissions.map(getFlagFromPermission),
     moduleUrl,
     ...scriptArgs,
     "$@"
   ];
 
-  // TODO: add windows Version
-  const template = `#/bin/sh\n${commands.join(" ")}`;
-  await writeFile(filePath, encoder.encode(template));
-
-  const makeExecutable = run({ args: ["chmod", "+x", filePath] });
-  const { code } = await makeExecutable.status();
-  makeExecutable.close();
-
-  if (code !== 0) {
-    throw new Error("Failed to make file executable");
-  }
+  await genereateExecutable(filePath, commands);
 
   console.log(`✅ Successfully installed ${moduleName}`);
   console.log(filePath);
