@@ -96,13 +96,16 @@ function checkIfExistsInPath(path: string): boolean {
 }
 
 function getInstallerDir(): string {
-  const { HOME } = env();
+  // In windows's powershell. $HOME environmental variable maybe null. use $HOMEPATH instread.
+  let { HOME, HOMEPATH } = env();
 
-  if (!HOME) {
+  const HOME_PATH = HOME || HOMEPATH
+
+  if (!HOME_PATH) {
     throw new Error("$HOME is not defined.");
   }
 
-  return path.join(HOME, ".deno", "bin");
+  return path.join(HOME_PATH, ".deno", "bin");
 }
 
 // TODO: fetch doesn't handle redirects yet - once it does this function
