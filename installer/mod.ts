@@ -88,25 +88,37 @@ function createDirIfNotExists(path: string): void {
 }
 
 function checkIfExistsInPath(filePath: string): boolean {
-  // In windows's powershell. $PATH not exist. use $Path instead.
-  const { PATH, Path } = env();
+  // In Windows's powershell. $PATH not exist. use $Path instead.
+  // $HOMEDRIVE is only use in Windows.
+  const { PATH, Path, HOMEDRIVE } = env();
 
   let envPath = (PATH as string) || (Path as string) || "";
 
   const paths = envPath.split(isWindows ? ";" : ":");
 
+  let fileAbsolutePath = filePath;
+
   for (const p of paths) {
-    const pathInEnv = path.normalize(p);
-    if (pathInEnv === filePath) {
+    let pathInEnv = path.normalize(p);
+    // In Windows. We can get the path from env. eg. C:\Users\username\.deno\bin
+    // But in the path of Deno, there is no drive letter. eg \Users\username\.deno\bin in deno
+    if (isWindows) {
+      const driverLetterReg = /^[c-z]:/i;
+      if (driverLetterReg.test(pathInEnv)) {
+        fileAbsolutePath = HOMEDRIVE + "\\" + fileAbsolutePath;
+      }
+    }
+    if (pathInEnv === fileAbsolutePath) {
       return true;
     }
+    fileAbsolutePath = filePath;
   }
 
   return false;
 }
 
 function getInstallerDir(): string {
-  // In windows's powershell. $HOME environmental variable maybe null. use $HOMEPATH instead.
+  // In Windows's powershell. $HOME environmental variable maybe null. use $HOMEPATH instead.
   let { HOME, HOMEPATH } = env();
 
   const HOME_PATH = HOME || HOMEPATH;
@@ -155,10 +167,10 @@ function showHelp(): void {
   console.log(`deno installer
   Install remote or local script as executables.
 
-USAGE:
+  USAGE:
   deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]
 
-ARGS:
+  ARGS:
   EXE_NAME  Name for executable
   SCRIPT_URL  Local or remote URL of script to install
   [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
