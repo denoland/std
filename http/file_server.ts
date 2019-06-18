@@ -226,7 +226,8 @@ function setCORS(res: Response): void {
 listenAndServe(
   addr,
   async (req): Promise<void> => {
-    const fileName = req.url.replace(/\/$/, "");
+    const url = new URL(req.url.replace(/\/$/, ""), addr);
+    const fileName = url.pathname;
     const filePath = currentDir + fileName;
 
     let response: Response;
