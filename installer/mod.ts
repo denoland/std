@@ -212,25 +212,17 @@ export async function install(
   }
 
   // ensure script that is being installed exists
-  if (/^https?:\/\/.{3,}/.test(moduleUrl)) {
-    // remote module
-    console.log(`Downloading: ${moduleUrl}\n`);
-    const ps = run({
-      args: ["deno", "fetch", moduleUrl],
-      stdout: "inherit",
-      stderr: "inherit"
-    });
+  console.log(`Downloading: ${moduleUrl}\n`);
+  const ps = run({
+    args: ["deno", "fetch", moduleUrl],
+    stdout: "inherit",
+    stderr: "inherit"
+  });
 
-    const { code } = await ps.status();
+  const { code } = await ps.status();
 
-    if (code !== 0) {
-      throw new Error("Fail to fetch remote module.");
-    }
-  } else {
-    // assume that it's local file
-    moduleUrl = path.resolve(moduleUrl);
-    console.log(`Looking for: ${moduleUrl}\n`);
-    await stat(moduleUrl);
+  if (code !== 0) {
+    throw new Error("Failed to fetch module.");
   }
 
   const grantedPermissions: Permission[] = [];
