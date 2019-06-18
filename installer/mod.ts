@@ -8,12 +8,12 @@ const {
   writeFile,
   exit,
   stdin,
-  stat,
   chmod,
   remove,
   run
 } = Deno;
 import * as path from "../fs/path.ts";
+import { exists } from "../fs/exists.ts";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8");
@@ -197,14 +197,7 @@ export async function install(
 
   const filePath = path.join(installerDir, moduleName);
 
-  let fileInfo;
-  try {
-    fileInfo = await stat(filePath);
-  } catch (e) {
-    // pass
-  }
-
-  if (fileInfo) {
+  if (await exists(filePath)) {
     const msg = `⚠️  ${moduleName} is already installed, do you want to overwrite it?`;
     if (!(await yesNoPrompt(msg))) {
       return;
@@ -262,12 +255,8 @@ export async function uninstall(moduleName: string): Promise<void> {
   const installerDir = getInstallerDir();
   const filePath = path.join(installerDir, moduleName);
 
-  try {
-    await stat(filePath);
-  } catch (e) {
-    if (e instanceof Deno.DenoError && e.kind === Deno.ErrorKind.NotFound) {
-      throw new Error(`ℹ️  ${moduleName} not found`);
-    }
+  if ((await exists(filePath)) === false) {
+    throw new Error(`ℹ️  ${moduleName} not found`);
   }
 
   await remove(filePath);
