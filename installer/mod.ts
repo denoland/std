@@ -17,6 +17,7 @@ import * as path from "../fs/path.ts";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8");
+const isWindows = Deno.platform.os === "win";
 
 enum Permission {
   Read,
@@ -89,7 +90,7 @@ function createDirIfNotExists(path: string): void {
 function checkIfExistsInPath(path: string): boolean {
   const { PATH } = env();
 
-  const paths = (PATH as string).split(":");
+  const paths = (PATH as string).split(isWindows ? ";" : ":");
 
   return paths.includes(path);
 }
@@ -156,7 +157,7 @@ async function genereateExecutable(
   commands: string[]
 ): Promise<void> {
   // genereate Batch script
-  if (Deno.platform.os === "win") {
+  if (isWindows) {
     const template = `
 @IF EXIST "%~dp0\deno.exe" (
   "%~dp0\deno.exe" ${commands.slice(1).join(" ")} %*
@@ -174,7 +175,7 @@ async function genereateExecutable(
   // generate Shell script
   const template = `#/bin/sh
 
-basedir=$(dirname "$(echo "$0" | sed -e 's,\\\,/,g')")
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\\\,/,g')")
 
 case \`uname\` in
     *CYGWIN*) basedir=\`cygpath -w "$basedir"\`;;
