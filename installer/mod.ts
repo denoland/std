@@ -169,7 +169,7 @@ async function genereateExecutable(
 `;
     const cmdFile = filePath + ".cmd";
     await writeFile(cmdFile, encoder.encode(template));
-    await chmod(cmdFile, 0x755);
+    await chmod(cmdFile, 0o755);
   }
 
   // generate Shell script
@@ -191,7 +191,7 @@ fi
 exit $ret
 `;
   await writeFile(filePath, encoder.encode(template));
-  await chmod(filePath, 0x755);
+  await chmod(filePath, 0o755);
 }
 
 export async function install(
