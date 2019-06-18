@@ -174,7 +174,6 @@ async function genereateExecutable(
 
   // generate Shell script
   const template = `#/bin/sh
-
 basedir=$(dirname "$(echo "$0" | sed -e 's,\\\\,/,g')")
 
 case \`uname\` in
