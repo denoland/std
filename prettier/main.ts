@@ -11,7 +11,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 // This script formats the given source files. If the files are omitted, it
 // formats the all files in the repository.
-const { args, exit, readFile, writeFile, stdout, stdin, readAll } = Deno;
+const { args, exit, readFile, writeFile, stdout } = Deno;
 import { glob, isGlob, GlobOptions } from "../fs/glob.ts";
 import { walk, WalkInfo } from "../fs/walk.ts";
 import { parse } from "../flags/mod.ts";
@@ -26,7 +26,6 @@ Options:
   -H, --help                 Show this help message and exit.
   --check                    Check if the source files are formatted.
   --write                    Whether to write to the file, otherwise it will output to stdout, Defaults to false.
-  --from-stdin               Read the typescript/javascript code from stdin and output formatted code to stdout.
   --ignore <path>            Ignore the given path(s).
 
 JS/TS Styling Options:
@@ -229,19 +228,6 @@ async function formatSourceFiles(
 }
 
 /**
- * Format source code
- */
-function format(text: string, prettierOpts: PrettierOptions): string {
-  const formatted: string = prettier.format(text, {
-    ...prettierOpts,
-    parser: selectParser("stdin.ts"),
-    plugins: prettierPlugins
-  });
-
-  return formatted;
-}
-
-/**
  * Get the files to format.
  * @param selectors The glob patterns to select the files.
  *                  eg `cmd/*.ts` to select all the typescript files in cmd directory.
@@ -320,15 +306,6 @@ async function main(opts): Promise<void> {
     write: opts["write"]
   };
 
-  const isReadFromStdin: boolean = opts["from-stdin"];
-
-  if (isReadFromStdin) {
-    const byte = await readAll(stdin);
-    const formattedCode = format(new TextDecoder().decode(byte), prettierOpts);
-    stdout.write(new TextEncoder().encode(formattedCode));
-    return;
-  }
-
   if (help) {
     console.log(HELP_MESSAGE);
     exit(0);
@@ -371,8 +348,7 @@ main(
       "use-tabs",
       "single-quote",
       "bracket-spacing",
-      "write",
-      "from-stdin"
+      "write"
     ],
     default: {
       ignore: [],
@@ -386,8 +362,7 @@ main(
       "arrow-parens": "avoid",
       "prose-wrap": "preserve",
       "end-of-line": "auto",
-      write: false,
-      "from-stdin": false
+      write: false
     },
     alias: {
       H: "help"
