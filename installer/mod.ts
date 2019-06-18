@@ -101,7 +101,7 @@ function checkIfExistsInPath(filePath: string): boolean {
 
   for (const p of paths) {
     const pathInEnv = path.normalize(p);
-    // On Windows paths from env contain drive letter. (eg. C:\Users\username.deno\bin)
+    // On Windows paths from env contain drive letter. (eg. C:\Users\username\.deno\bin)
     // But in the path of Deno, there is no drive letter. (eg \Users\username\.deno\bin)
     if (isWindows) {
       if (driverLetterReg.test(pathInEnv)) {
