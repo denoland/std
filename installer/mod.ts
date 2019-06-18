@@ -168,12 +168,12 @@ function showHelp(): void {
   Install remote or local script as executables.
 
   USAGE:
-  deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]
+    deno run https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]
 
   ARGS:
-  EXE_NAME  Name for executable
-  SCRIPT_URL  Local or remote URL of script to install
-  [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
+    EXE_NAME  Name for executable
+    SCRIPT_URL  Local or remote URL of script to install
+    [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
   `);
 }
 
