@@ -255,7 +255,7 @@ export async function uninstall(moduleName: string): Promise<void> {
   const installerDir = getInstallerDir();
   const filePath = path.join(installerDir, moduleName);
 
-  if ((await exists(filePath)) === false) {
+  if (!(await exists(filePath))) {
     throw new Error(`ℹ️  ${moduleName} not found`);
   }
 
