@@ -9,6 +9,7 @@ import { install, uninstall } from "./mod.ts";
 import * as path from "../fs/path.ts";
 
 let fileServer: Deno.Process;
+const isWindows = Deno.platform.os === "win";
 
 // copied from `http/file_server_test.ts`
 async function startFileServer(): Promise<void> {
@@ -65,10 +66,40 @@ installerTest(async function installBasic(): Promise<void> {
 
   const fileBytes = await readFile(filePath);
   const fileContents = new TextDecoder().decode(fileBytes);
-  assertEquals(
-    fileContents,
-    "#/bin/sh\ndeno http://localhost:4500/http/file_server.ts $@"
-  );
+  if (isWindows) {
+    assertEquals(
+      fileContents,
+      `
+@IF EXIST "%~dp0\deno.exe" (
+  "%~dp0\deno.exe" run http://localhost:4500/http/file_server.ts %*
+) ELSE (
+  @SETLOCAL
+  @SET PATHEXT=%PATHEXT:;.TS;=;%
+  deno run http://localhost:4500/http/file_server.ts %*
+)
+`
+    );
+  } else {
+    assertEquals(
+      fileContents,
+      `#/bin/sh
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\\\,/,g')")
+
+case \`uname\` in
+    *CYGWIN*) basedir=\`cygpath -w "$basedir"\`;;
+esac
+
+if [ -x "$basedir/deno" ]; then
+  "$basedir/deno" run http://localhost:4500/http/file_server.ts "$@"
+  ret=$?
+else
+  deno run http://localhost:4500/http/file_server.ts "$@"
+  ret=$?
+fi
+exit $ret
+`
+    );
+  }
 });
 
 installerTest(async function installWithFlags(): Promise<void> {
@@ -83,10 +114,40 @@ installerTest(async function installWithFlags(): Promise<void> {
 
   const fileBytes = await readFile(filePath);
   const fileContents = new TextDecoder().decode(fileBytes);
-  assertEquals(
-    fileContents,
-    "#/bin/sh\ndeno --allow-net --allow-read http://localhost:4500/http/file_server.ts --foobar $@"
-  );
+  if (isWindows) {
+    assertEquals(
+      fileContents,
+      `
+@IF EXIST "%~dp0\deno.exe" (
+  "%~dp0\deno.exe" run --allow-net --allow-read http://localhost:4500/http/file_server.ts --foobar %*
+) ELSE (
+  @SETLOCAL
+  @SET PATHEXT=%PATHEXT:;.TS;=;%
+  deno run http://localhost:4500/http/file_server.ts %*
+)
+`
+    );
+  } else {
+    assertEquals(
+      fileContents,
+      `#/bin/sh
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\\\,/,g')")
+
+case \`uname\` in
+    *CYGWIN*) basedir=\`cygpath -w "$basedir"\`;;
+esac
+
+if [ -x "$basedir/deno" ]; then
+  "$basedir/deno" run --allow-net --allow-read http://localhost:4500/http/file_server.ts --foobar "$@"
+  ret=$?
+else
+  deno run --allow-net --allow-read http://localhost:4500/http/file_server.ts --foobar "$@"
+  ret=$?
+fi
+exit $ret
+`
+    );
+  }
 });
 
 installerTest(async function uninstallBasic(): Promise<void> {
