@@ -87,19 +87,22 @@ function createDirIfNotExists(path: string): void {
   }
 }
 
-function checkIfExistsInPath(path: string): boolean {
+function checkIfExistsInPath(filePath: string): boolean {
   // In windows's powershell. $PATH not exist. use $Path instead.
   const { PATH, Path } = env();
 
   let envPath = (PATH as string) || (Path as string) || "";
 
-  if (isWindows) {
-    envPath = envPath.replace("\\", "\\\\");
-  }
-
   const paths = envPath.split(isWindows ? ";" : ":");
 
-  return paths.includes(path);
+  for (const p of paths) {
+    const pathInEnv = path.normalize(p);
+    if (pathInEnv === filePath) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function getInstallerDir(): string {
