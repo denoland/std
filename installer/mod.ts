@@ -167,14 +167,14 @@ function showHelp(): void {
   console.log(`deno installer
   Install remote or local script as executables.
 
-  USAGE:
-    deno run https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]
+USAGE:
+  deno run https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]
 
-  ARGS:
-    EXE_NAME  Name for executable
-    SCRIPT_URL  Local or remote URL of script to install
-    [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
-  `);
+ARGS:
+  EXE_NAME  Name for executable
+  SCRIPT_URL  Local or remote URL of script to install
+  [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
+`);
 }
 
 async function genereateExecutable(
