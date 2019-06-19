@@ -170,8 +170,7 @@ export async function install(
 
   if (await exists(filePath)) {
     const msg =
-      "⚠️  ${moduleName} is already installed, " +
-      "do you want to overwrite it?";
+      `⚠️  ${moduleName} is already installed, do you want to overwrite it?`;
     if (!(await yesNoPrompt(msg))) {
       return;
     }
