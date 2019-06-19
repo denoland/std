@@ -1,6 +1,6 @@
 function main(args: string[]) {
   const msg = args.join(",");
-  console.log(msg);
+  Deno.stdout.write(new TextEncoder().encode(msg));
 }
 
 main(Deno.args.slice(1));

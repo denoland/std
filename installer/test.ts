@@ -207,8 +207,9 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
 
     const s = new TextDecoder("utf-8").decode(b);
 
-    assertEquals(s, "foo");
+    assertEquals(s.trim(), "hello foo");
   } catch (err) {
+    console.error(err);
     thrown = true;
   } finally {
     await uninstall("echo_test");
