@@ -220,7 +220,7 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
   }
 
   assert(!thrown, "It should not throw an error");
-}, true); // set true to install module in your true $HOME dir.
+}, true); // set true to install module in your real $HOME dir.
 
 installerTest(async function installAndMakesureArgsRight(): Promise<void> {
   await install(
@@ -266,6 +266,6 @@ installerTest(async function installAndMakesureArgsRight(): Promise<void> {
   }
 
   assert(!thrown, "It should not throw an error");
-}, true); // set true to install module in your true $HOME dir.
+}, true); // set true to install module in your real $HOME dir.
 
 runIfMain(import.meta);
