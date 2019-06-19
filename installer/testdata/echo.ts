@@ -1,5 +1,5 @@
 function main(args: string[]) {
-  const msg = args.join(",");
+  const msg = args.join(", ");
   Deno.stdout.write(new TextEncoder().encode(msg));
 }
 

@@ -210,7 +210,7 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
 
     const s = new TextDecoder("utf-8").decode(b);
 
-    assertEquals(s.trim(), "hello");
+    assertEquals(s.trim(), "hello, foo");
   } catch (err) {
     console.error(err);
     thrown = true;
