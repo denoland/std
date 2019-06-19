@@ -39,6 +39,10 @@ async function main(): Promise<void> {
   const flags = args.slice(4);
 
   if (command === "install") {
+    if (!moduleUrl) {
+      return showHelp();
+    }
+
     try {
       await install(moduleName, moduleUrl, flags);
     } catch (e) {
