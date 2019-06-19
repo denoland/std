@@ -281,13 +281,17 @@ test(async function bufioPeek(): Promise<void> {
   const r = await buf.peek(1);
   assert(r === EOF);
   /* TODO
-	// Test for issue 3022, not exposing a reader's error on a successful Peek.
+	Test for issue 3022, not exposing a reader's error on a successful Peek.
 	buf = NewReaderSize(dataAndEOFReader("abcd"), 32)
 	if s, err := buf.Peek(2); string(s) != "ab" || err != nil {
 		t.Errorf(`Peek(2) on "abcd", EOF = %q, %v; want "ab", nil`, string(s), err)
 	}
 	if s, err := buf.Peek(4); string(s) != "abcd" || err != nil {
-		t.Errorf(`Peek(4) on "abcd", EOF = %q, %v; want "abcd", nil`, string(s), err)
+		t.Errorf(
+      `Peek(4) on "abcd", EOF = %q, %v; want "abcd", nil`,
+      string(s),
+      err
+    )
 	}
 	if n, err := buf.Read(p[0:5]); string(p[0:n]) != "abcd" || err != nil {
 		t.Fatalf("Read after peek = %q, %v; want abcd, EOF", p[0:n], err)

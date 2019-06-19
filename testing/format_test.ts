@@ -10,6 +10,7 @@ import { test } from "./mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import { format } from "./format.ts";
 
+// eslint-disable-next-line max-len
 // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
 function returnArguments(...args: any[]): IArguments {
   return arguments;

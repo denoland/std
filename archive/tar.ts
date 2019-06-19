@@ -1,5 +1,6 @@
 /**
- * Ported and modified from: https://github.com/jshttp/mime-types and licensed as:
+ * Ported and modified from: https://github.com/jshttp/mime-types and
+ * licensed as:
  *
  * (The MIT License)
  *
@@ -292,7 +293,8 @@ export class Tar {
 
   /**
    * Append a file to this tar archive
-   * @param fileName file name (e.g., test.txt; use slash for directory separators)
+   * @param fileName file name
+   *                 e.g., test.txt; use slash for directory separators
    * @param opts options
    */
   async append(fileName: string, opts: TarOptions): Promise<void> {

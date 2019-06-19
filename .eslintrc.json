@@ -24,7 +24,7 @@
       {
         "code": 80,
         "tabWidth": 2,
-        "comments": 200,
+        "comments": 80,
         "ignoreUrls": true,
         "ignoreStrings": true,
         "ignoreTemplateLiterals": true,
