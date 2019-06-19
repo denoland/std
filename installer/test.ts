@@ -5,9 +5,10 @@ import { test, runIfMain, TestFunction } from "../testing/mod.ts";
 import { assert, assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
 import { BufReader, EOF } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { install, uninstall } from "./mod.ts";
 import * as path from "../fs/path.ts";
 import * as fs from "../fs/mod.ts";
+import { install } from "./install.ts";
+import { uninstall } from "./uninstall.ts";
 
 let fileServer: Deno.Process;
 const isWindows = Deno.platform.os === "win";
