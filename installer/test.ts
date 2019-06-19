@@ -210,12 +210,58 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
 
     const s = new TextDecoder("utf-8").decode(b);
 
-    assertEquals(s.trim(), "hello, foo");
+    assertEquals(s, "hello, foo");
   } catch (err) {
     console.error(err);
     thrown = true;
   } finally {
     await uninstall("echo_test");
+    ps.close();
+  }
+
+  assert(!thrown, "It should not throw an error");
+}, true); // set true to install module in your true $HOME dir.
+
+installerTest(async function installAndMakesureArgsRight(): Promise<void> {
+  await install(
+    "args_test",
+    "http://localhost:4500/installer/testdata/args.ts",
+    ["arg1", "--flag1"]
+  );
+
+  const { HOME } = env();
+  const filePath = path.resolve(HOME, ".deno/bin/args_test");
+  const fileInfo = await stat(filePath);
+  assert(fileInfo.isFile());
+
+  const ps = run({
+    args: ["args_test", "arg2", "--flag2"],
+    stdout: "piped"
+  });
+
+  if (!ps.stdout) {
+    assert(!!ps.stdout, "There should have stdout.");
+    return;
+  }
+
+  let thrown = false;
+
+  try {
+    const b = await readAll(ps.stdout);
+
+    const s = new TextDecoder("utf-8").decode(b);
+
+    const obj = JSON.parse(s);
+
+    assertEquals(obj[0], "arg1");
+    assertEquals(obj[1], "--flag1");
+    assertEquals(obj[2], "arg2");
+    assertEquals(obj[3], "--flag2");
+  } catch (err) {
+    console.error(err);
+    thrown = true;
+  } finally {
+    await uninstall("args_test");
     ps.close();
   }
 
