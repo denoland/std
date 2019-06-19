@@ -239,6 +239,44 @@ installerTest(async function uninstallNonExistentModule(): Promise<void> {
   );
 });
 
+installerTest(async function installLocalModuleAndRun(): Promise<void> {
+  const localModule = path.join(Deno.cwd(), "installer", "testdata", "echo.ts");
+  await install("echo_test", localModule, ["hello"]);
+
+  const { HOME } = env();
+  const filePath = path.resolve(HOME, ".deno/bin/echo_test");
+  const fileInfo = await stat(filePath);
+  assert(fileInfo.isFile());
+
+  const ps = run({
+    args: ["echo_test" + (isWindows ? ".cmd" : ""), "foo"],
+    stdout: "piped"
+  });
+
+  if (!ps.stdout) {
+    assert(!!ps.stdout, "There should have stdout.");
+    return;
+  }
+
+  let thrown = false;
+
+  try {
+    const b = await readAll(ps.stdout);
+
+    const s = new TextDecoder("utf-8").decode(b);
+
+    assertEquals(s, "hello, foo");
+  } catch (err) {
+    console.error(err);
+    thrown = true;
+  } finally {
+    await uninstall("echo_test");
+    ps.close();
+  }
+
+  assert(!thrown, "It should not throw an error");
+}, true); // set true to install module in your real $HOME dir.
+
 installerTest(async function installAndMakesureItCanRun(): Promise<void> {
   await install(
     "echo_test",
