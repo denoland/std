@@ -8,6 +8,7 @@ import { TextProtoReader } from "../textproto/mod.ts";
 import { install, uninstall } from "./mod.ts";
 import * as path from "../fs/path.ts";
 import * as fs from "../fs/mod.ts";
+import { getHomeDir } from "./util.ts";
 
 let fileServer: Deno.Process;
 const isWindows = Deno.platform.os === "win";
@@ -42,6 +43,8 @@ function installerTest(t: TestFunction, useOriginHomeDir = false): void {
     await startFileServer();
     const tempDir = await makeTempDir();
     const envVars = env();
+    envVars["HOME"] = getHomeDir();
+    console.log(JSON.stringify(envVars, null, 2));
     const originalHomeDir = envVars["HOME"];
     if (!useOriginHomeDir) {
       envVars["HOME"] = tempDir;
