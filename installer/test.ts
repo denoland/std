@@ -194,8 +194,13 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
   assert(fileInfo.isFile());
 
   const ps = run({
-    args: ["echo_test", "foo"]
+    args: ["echo_test", "foo"],
+    stdout: "piped"
   });
+
+  assert(!!ps.stdout, "There should have stdout.");
+
+  let thrown = false;
 
   try {
     const b = await readAll(ps.stdout);
@@ -204,10 +209,13 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
 
     assertEquals(s, "foo");
   } catch (err) {
+    thrown = true;
   } finally {
     await uninstall("echo_test");
     ps.close();
   }
+
+  assert(!thrown, "It should not throw an error");
 }, true);
 
 runIfMain(import.meta);
