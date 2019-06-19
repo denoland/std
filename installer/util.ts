@@ -1,5 +1,3 @@
-const isWindows = Deno.platform.os === "win";
-
 export function getHomeDir(): string {
   // In Windows's Powershell $HOME environmental variable maybe null
   // if so use $HOMEPATH instead.
