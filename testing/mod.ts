@@ -20,6 +20,10 @@ export interface TestDefinition {
 // Replacement of the global `console` function to be in silent mode
 const noop = function(): void {};
 
+// Clear the current line of the console.
+// see: http://ascii-table.com/ansi-escape-sequences-vt-100.php
+const CLEAR_LINE = "\x1b[2K\r";
+
 // Save Object of the global `console` in case of silent mode
 type Console = typeof window.console;
 // ref https://console.spec.whatwg.org/#console-namespace
@@ -58,8 +62,8 @@ function disableConsole(): void {
 }
 
 const encoder = new TextEncoder();
-function print(txt: string, carriageReturn: boolean = true): void {
-  if (carriageReturn) {
+function print(txt: string, newline: boolean = true): void {
+  if (newline) {
     txt += "\n";
   }
   Deno.stdout.writeSync(encoder.encode(`${txt}`));
@@ -132,11 +136,7 @@ function createTestResults(tests: TestDefinition[]): TestResults {
 }
 
 function formatTestTime(time: number = 0): string {
-  if (time >= 1000) {
-    return `${(time / 1000).toFixed(2)}s`;
-  } else {
-    return `${time.toFixed(2)}ms`;
-  }
+  return `${time.toFixed(2)}ms`;
 }
 
 function promptTestTime(time: number = 0, displayWarning = false): string {
@@ -267,7 +267,7 @@ async function runTestsSerial(
       end = performance.now();
       if (disableLog) {
         // Rewriting the current prompt line to erase `running ....`
-        print("\x1b[2K\r", false);
+        print(CLEAR_LINE, false);
       }
       stats.passed++;
       print(
@@ -275,7 +275,7 @@ async function runTestsSerial(
       );
     } catch (err) {
       if (disableLog) {
-        print("\x1b[2K\r", false);
+        print(CLEAR_LINE, false);
       }
       print(`${RED_FAILED} ${name}`);
       print(err.stack);
