@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-const { run, stat, makeTempDir, remove, env } = Deno;
+const { run, stat, makeTempDir, remove, env, readAll } = Deno;
 
 import { test, runIfMain, TestFunction } from "../testing/mod.ts";
 import { assert, assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
@@ -37,13 +37,15 @@ function killFileServer(): void {
   fileServer.stdout!.close();
 }
 
-function installerTest(t: TestFunction): void {
+function installerTest(t: TestFunction, useOriginHomeDir = false): void {
   const fn = async (): Promise<void> => {
     await startFileServer();
     const tempDir = await makeTempDir();
     const envVars = env();
     const originalHomeDir = envVars["HOME"];
-    envVars["HOME"] = tempDir;
+    if (!useOriginHomeDir) {
+      envVars["HOME"] = tempDir;
+    }
 
     try {
       await t();
@@ -178,5 +180,34 @@ installerTest(async function uninstallNonExistentModule(): Promise<void> {
     "file_server not found"
   );
 });
+
+installerTest(async function installAndMakesureItCanRun(): Promise<void> {
+  await install(
+    "echo_test",
+    "http://localhost:4500/installer/testdata/echo.ts",
+    ["hello"]
+  );
+
+  const { HOME } = env();
+  const filePath = path.resolve(HOME, ".deno/bin/echo_test");
+  const fileInfo = await stat(filePath);
+  assert(fileInfo.isFile());
+
+  const ps = run({
+    args: ["echo_test", "foo"]
+  });
+
+  try {
+    const b = await readAll(ps.stdout);
+
+    const s = new TextDecoder("utf-8").decode(b);
+
+    assertEquals(s, "foo");
+  } catch (err) {
+  } finally {
+    await uninstall("echo_test");
+    ps.close();
+  }
+}, true);
 
 runIfMain(import.meta);
