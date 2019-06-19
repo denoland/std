@@ -137,7 +137,7 @@ async function generateExecutable(
   }
 
   // generate Shell script
-  const template = `#/bin/sh
+  const template = `#!/bin/sh
 # ${templateHeader}
 basedir=$(dirname "$(echo "$0" | sed -e 's,\\\\,/,g')")
 
