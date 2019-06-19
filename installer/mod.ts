@@ -240,6 +240,11 @@ export async function install(
     }
   }
 
+  // if install local module
+  if (!/^https?:\/\//.test(moduleUrl)) {
+    moduleUrl = path.resolve(moduleUrl);
+  }
+
   const commands = [
     "deno",
     "run",
