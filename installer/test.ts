@@ -217,6 +217,6 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
   }
 
   assert(!thrown, "It should not throw an error");
-}, true);
+}, true); // set true to install module in your true $HOME dir.
 
 runIfMain(import.meta);
