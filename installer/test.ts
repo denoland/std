@@ -198,7 +198,10 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
     stdout: "piped"
   });
 
-  assert(!!ps.stdout, "There should have stdout.");
+  if (!ps.stdout) {
+    assert(!!ps.stdout, "There should have stdout.");
+    return;
+  }
 
   let thrown = false;
 
@@ -207,7 +210,7 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
 
     const s = new TextDecoder("utf-8").decode(b);
 
-    assertEquals(s.trim(), "hello foo");
+    assertEquals(s.trim(), "hello");
   } catch (err) {
     console.error(err);
     thrown = true;
