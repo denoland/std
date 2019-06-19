@@ -153,7 +153,7 @@ async function generateExecutable(
   filePath: string,
   commands: string[]
 ): Promise<void> {
-  commands = commands.map(v => '"' + v + '"');
+  commands = commands.map((v): string => '"' + v + '"');
   // On Windows if user is using Powershell .cmd extension is need to run the
   // installed module.
   // Generate batch script to satisfy that.
