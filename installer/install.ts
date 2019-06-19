@@ -1,15 +1,17 @@
 #!/usr/bin/env deno --allow-all
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-const { env, readDirSync, mkdirSync, writeFile, stdin, chmod, run } = Deno;
+const { writeFile, chmod, run } = Deno;
 import * as path from "../fs/path.ts";
 import { exists } from "../fs/exists.ts";
-import { getInstallerDir } from "./util.ts";
+import {
+  getInstallerDir,
+  yesNoPrompt,
+  createDirIfNotExists,
+  checkIfExistsInPath,
+  isWindows
+} from "./util.ts";
 
 const encoder = new TextEncoder();
-const decoder = new TextDecoder("utf-8");
-const isWindows = Deno.platform.os === "win";
-// Regular expression to test disk driver letter. eg "C:\\User\username\path\to"
-const driverLetterReg = /^[c-z]:/i;
 
 enum Permission {
   Read,
@@ -55,59 +57,6 @@ function getFlagFromPermission(perm: Permission): string {
       return "--allow-all";
   }
   return "";
-}
-
-async function readCharacter(): Promise<string> {
-  const byteArray = new Uint8Array(1024);
-  await stdin.read(byteArray);
-  const line = decoder.decode(byteArray);
-  return line[0];
-}
-
-async function yesNoPrompt(message: string): Promise<boolean> {
-  console.log(`${message} [yN]`);
-  const input = await readCharacter();
-  console.log();
-  return input === "y" || input === "Y";
-}
-
-function createDirIfNotExists(path: string): void {
-  try {
-    readDirSync(path);
-  } catch (e) {
-    mkdirSync(path, true);
-  }
-}
-
-function checkIfExistsInPath(filePath: string): boolean {
-  // In Windows's Powershell $PATH not exist, so use $Path instead.
-  // $HOMEDRIVE is only used on Windows.
-  const { PATH, Path, HOMEDRIVE } = env();
-
-  let envPath = (PATH as string) || (Path as string) || "";
-
-  const paths = envPath.split(isWindows ? ";" : ":");
-
-  let fileAbsolutePath = filePath;
-
-  for (const p of paths) {
-    const pathInEnv = path.normalize(p);
-    // On Windows paths from env contain drive letter.
-    // (eg. C:\Users\username\.deno\bin)
-    // But in the path of Deno, there is no drive letter.
-    // (eg \Users\username\.deno\bin)
-    if (isWindows) {
-      if (driverLetterReg.test(pathInEnv)) {
-        fileAbsolutePath = HOMEDRIVE + "\\" + fileAbsolutePath;
-      }
-    }
-    if (pathInEnv === fileAbsolutePath) {
-      return true;
-    }
-    fileAbsolutePath = filePath;
-  }
-
-  return false;
 }
 
 async function generateExecutable(
