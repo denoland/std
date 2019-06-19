@@ -28,8 +28,8 @@
         "ignoreTrailingComments": false,
         "ignoreUrls": true,
         "ignoreStrings": false,
-        "ignoreTemplateLiterals": true,
-        "ignoreRegExpLiterals": true
+        "ignoreTemplateLiterals": false,
+        "ignoreRegExpLiterals": false
       }
     ]
   }

@@ -76,7 +76,8 @@ export function globrex(
       if (split) {
         if (last) segment += str;
         if (segment !== "") {
-          if (!flags.includes("g")) segment = `^${segment}$`; // change it 'includes'
+          // change it 'includes'
+          if (!flags.includes("g")) segment = `^${segment}$`;
           path.segments.push(new RegExp(segment, flags));
         }
         segment = "";

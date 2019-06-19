@@ -35,49 +35,47 @@ Formats the given files. If no arg is passed, then formats the all files.
 Usage: deno prettier/main.ts [options] [files...]
 
 Options:
-  -H, --help                 Show this help message and exit.
-  --check                    Check if the source files are formatted.
-  --write                    Whether to write to the file, otherwise it will output to stdout, Defaults to false.
-  --ignore <path>            Ignore the given path(s).
+  -H, --help                            Show this help message and exit.
+  --check                               Check if the source files are formatted.
+  --write                               Whether to write to the file, otherwise
+                                        it will output to stdout, Defaults to
+                                        false.
+  --ignore <path>                       Ignore the given path(s).
 
 JS/TS Styling Options:
-  --print-width <int>        The line length where Prettier will try wrap.
-                             Defaults to 80.
-  --tab-width <int>          Number of spaces per indentation level.
-                             Defaults to 2.
-  --use-tabs                 Indent with tabs instead of spaces.
-                             Defaults to false.
-  --no-semi                  Do not print semicolons, except at the beginning of lines which may need them.
-  --single-quote             Use single quotes instead of double quotes.
-                             Defaults to false.
-  --trailing-comma <none|es5|all>
-                             Print trailing commas wherever possible when multi-line.
-                             Defaults to none.
-  --no-bracket-spacing       Do not print spaces between brackets.
-  --arrow-parens <avoid|always>
-                             Include parentheses around a sole arrow function parameter.
-                             Defaults to avoid.
-  --end-of-line <auto|lf|crlf|cr>
-                             Which end of line characters to apply.
-                             Defaults to auto.
+  --print-width <int>                   The line length where Prettier will try
+                                        wrap. Defaults to 80.
+  --tab-width <int>                     Number of spaces per indentation level.
+                                        Defaults to 2.
+  --use-tabs                            Indent with tabs instead of spaces.
+                                        Defaults to false.
+  --no-semi                             Do not print semicolons, except at the
+                                        beginning of lines which may need them.
+  --single-quote                        Use single quotes instead of double
+                                        quotes. Defaults to false.
+  --trailing-comma <none|es5|all>       Print trailing commas wherever possible
+                                        when multi-line. Defaults to none.
+  --no-bracket-spacing                  Do not print spaces between brackets.
+  --arrow-parens <avoid|always>         Include parentheses around a sole arrow
+                                        function parameter. Defaults to avoid.
+  --end-of-line <auto|lf|crlf|cr>       Which end of line characters to apply.
+                                        Defaults to auto.
 
 Markdown Styling Options:
-  --prose-wrap <always|never|preserve>
-                             How to wrap prose.
-                             Defaults to preserve.
+  --prose-wrap <always|never|preserve>  How to wrap prose. Defaults to preserve.
 
 Example:
   deno run prettier/main.ts --write script1.ts script2.js
-                             Formats the files
+                                        Formats the files
 
   deno run prettier/main.ts --check script1.ts script2.js
-                             Checks if the files are formatted
+                                        Checks if the files are formatted
 
   deno run prettier/main.ts --write
-                             Formats the all files in the repository
+                                        Formats the all files in the repository
 
   deno run prettier/main.ts script1.ts
-                             Print the formatted code to stdout
+                                        Print the formatted code to stdout
 `;
 
 // Available parsers

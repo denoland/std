@@ -197,9 +197,9 @@ console.log([function foo() {}, function baz() {}, (a) => {}]);
   await run([...cmd, "--prose-wrap", "always", "--write", file3]);
   assertEquals(
     normalizeSourceCode(await getSourceCode(file3)),
-    `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua.
-`
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
+      "sed do eiusmod tempor" +
+      "\nincididunt ut labore et dolore magna aliqua.\n"
   );
 
   await run([...cmd, "--end-of-line", "crlf", "--write", file2]);

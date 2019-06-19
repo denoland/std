@@ -140,14 +140,15 @@ async function fetchModule(url: string): Promise<any> {
 function showHelp(): void {
   console.log(`deno installer
   Install remote or local script as executables.
-  
+
 USAGE:
-  deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]  
+  deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]
 
 ARGS:
-  EXE_NAME  Name for executable     
+  EXE_NAME    Name for executable
   SCRIPT_URL  Local or remote URL of script to install
-  [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
+  [FLAGS...]  List of flags for script, both Deno permission and script specific
+              flag can be used.
   `);
 }
 
@@ -169,7 +170,9 @@ export async function install(
   }
 
   if (fileInfo) {
-    const msg = `⚠️  ${moduleName} is already installed, do you want to overwrite it?`;
+    const msg =
+      "⚠️  ${moduleName} is already installed, " +
+      "do you want to overwrite it?";
     if (!(await yesNoPrompt(msg))) {
       return;
     }
