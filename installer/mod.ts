@@ -226,7 +226,8 @@ export async function install(
   if (!checkIfExistsInPath(installerDir)) {
     console.log("\nℹ️  Add ~/.deno/bin to PATH");
     console.log(
-      "    echo 'export PATH=\"$HOME/.deno/bin:$PATH\"' >> ~/.bashrc # change this to your shell"
+      "    echo 'export PATH=\"$HOME/.deno/bin:$PATH\"' >> ~/.bashrc # change" +
+        " this to your shell"
     );
   }
 }

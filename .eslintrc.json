@@ -25,8 +25,9 @@
         "code": 80,
         "tabWidth": 2,
         "comments": 80,
+        "ignoreTrailingComments": false,
         "ignoreUrls": true,
-        "ignoreStrings": true,
+        "ignoreStrings": false,
         "ignoreTemplateLiterals": true,
         "ignoreRegExpLiterals": true
       }

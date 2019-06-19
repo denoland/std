@@ -265,8 +265,10 @@ export function globrex(
         // globstar is enabled, so determine if this is a globstar segment
         let isGlobstar =
           starCount > 1 && // multiple "*"'s
-          (prevChar === "/" || prevChar === undefined) && // from the start of the segment
-          (nextChar === "/" || nextChar === undefined); // to the end of the segment
+          // from the start of the segment
+          (prevChar === "/" || prevChar === undefined) &&
+          // to the end of the segment
+          (nextChar === "/" || nextChar === undefined);
         if (isGlobstar) {
           // it's a globstar, so match zero or more path segments
           add(GLOBSTAR, { only: "regex" });

@@ -386,7 +386,8 @@ test({
     val.prop = "value1";
     assertEquals(
       format(val),
-      'Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  Symbol(symbol2): "value3",\n}'
+      'Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  ' +
+        'Symbol(symbol2): "value3",\n}'
     );
   }
 });
@@ -608,7 +609,8 @@ test({
     const val = { prop: { prop: { prop: "value" } } };
     assertEquals(
       format(val),
-      'Object {\n  "prop": Object {\n    "prop": Object {\n      "prop": "value",\n    },\n  },\n}'
+      'Object {\n  "prop": Object {\n    "prop": Object {\n      "prop": ' +
+        '"value",\n    },\n  },\n}'
     );
   }
 });

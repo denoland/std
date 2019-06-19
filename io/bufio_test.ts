@@ -143,7 +143,8 @@ test(async function bufioBufReader(): Promise<void> {
 
 test(async function bufioBufferFull(): Promise<void> {
   const longString =
-    "And now, hello, world! It is the time for all good men to come to the aid of their party";
+    "And now, hello, world! It is the time for all good men to come to the" +
+    " aid of their party";
   const buf = new BufReader(stringsReader(longString), MIN_READ_BUFFER_SIZE);
   const decoder = new TextDecoder();
 
@@ -165,7 +166,8 @@ const testInput = encoder.encode(
   "012\n345\n678\n9ab\ncde\nfgh\nijk\nlmn\nopq\nrst\nuvw\nxy"
 );
 const testInputrn = encoder.encode(
-  "012\r\n345\r\n678\r\n9ab\r\ncde\r\nfgh\r\nijk\r\nlmn\r\nopq\r\nrst\r\nuvw\r\nxy\r\n\n\r\n"
+  "012\r\n345\r\n678\r\n9ab\r\ncde\r\nfgh\r\nijk\r\nlmn\r\nopq\r\nrst\r\n" +
+    "uvw\r\nxy\r\n\n\r\n"
 );
 const testOutput = encoder.encode("0123456789abcdefghijklmnopqrstuvwxy");
 
