@@ -330,9 +330,7 @@ async function main(opts): Promise<void> {
     write: opts["write"]
   };
 
-  const isReadFromStdin: boolean = opts["from-stdin"];
-
-  if (isReadFromStdin) {
+  if (!Deno.isTTY().stdin) {
     const byte = await readAll(stdin);
     const formattedCode = format(new TextDecoder().decode(byte), prettierOpts);
     stdout.write(new TextEncoder().encode(formattedCode));
@@ -381,8 +379,7 @@ main(
       "use-tabs",
       "single-quote",
       "bracket-spacing",
-      "write",
-      "from-stdin"
+      "write"
     ],
     default: {
       ignore: [],
@@ -396,8 +393,7 @@ main(
       "arrow-parens": "avoid",
       "prose-wrap": "preserve",
       "end-of-line": "auto",
-      write: false,
-      "from-stdin": false
+      write: false
     },
     alias: {
       H: "help"
