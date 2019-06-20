@@ -1,6 +1,7 @@
 #!/usr/bin/env deno --allow-all
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 const { env, stdin, args, exit, writeFile, chmod, run } = Deno;
+import { parse } from "../flags/mod.ts";
 import * as path from "../fs/path.ts";
 import { exists } from "../fs/exists.ts";
 import { ensureDir } from "../fs/ensure_dir.ts";
@@ -16,13 +17,16 @@ function showHelp(): void {
   Install remote or local script as executables.
 
 USAGE:
-  deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]
+  deno -A https://deno.land/std/installer/mod.ts [OPTIONS] EXE_NAME SCRIPT_URL [FLAGS...]
 
 ARGS:
   EXE_NAME  Name for executable
   SCRIPT_URL  Local or remote URL of script to install
   [FLAGS...]  List of flags for script, both Deno permission and script specific
               flag can be used.
+              
+OPTIONS:
+  -d, --dir <PATH> Installation directory path (defaults to ~/.deno/bin)
 `);
 }
 
@@ -190,13 +194,16 @@ exit $ret
 export async function install(
   moduleName: string,
   moduleUrl: string,
-  flags: string[]
+  flags: string[],
+  installationDir?: string
 ): Promise<void> {
-  validateModuleName(moduleName);
-  const installerDir = getInstallerDir();
-  await ensureDir(installerDir);
+  if (!installationDir) {
+    installationDir = getInstallerDir();
+  }
+  await ensureDir(installationDir);
 
-  const filePath = path.join(installerDir, moduleName);
+  validateModuleName(moduleName);
+  const filePath = path.join(installationDir, moduleName);
 
   if (await exists(filePath)) {
     const msg =
@@ -252,30 +259,34 @@ export async function install(
   console.log(`✅ Successfully installed ${moduleName}`);
   console.log(filePath);
 
-  if (!checkIfExistsInPath(installerDir)) {
-    console.log("\nℹ️  Add ~/.deno/bin to PATH");
+  if (!checkIfExistsInPath(installationDir)) {
+    console.log(`\nℹ️  Add ${installationDir} to PATH`);
     console.log(
-      "    echo 'export PATH=\"$HOME/.deno/bin:$PATH\"' >> ~/.bashrc # change" +
+      `    echo 'export PATH=\"${installationDir}:$PATH\"' >> ~/.bashrc # change` +
         " this to your shell"
     );
   }
 }
 
 async function main(): Promise<void> {
-  if (args.length < 3) {
+  console.log(args.slice(1));
+  const parsedArgs = parse(args.slice(1), { stopEarly: true });
+
+  if (parsedArgs.h || parsedArgs.help) {
     return showHelp();
   }
 
-  if (["-h", "--help"].includes(args[1])) {
+  if (parsedArgs._.length < 2) {
     return showHelp();
   }
 
-  const moduleName = args[1];
-  const moduleUrl = args[2];
-  const flags = args.slice(3);
+  const moduleName = parsedArgs._[0];
+  const moduleUrl = parsedArgs._[1];
+  const flags = parsedArgs._.slice(2);
+  const installationDir = parsedArgs.d || parsedArgs.dir;
 
   try {
-    await install(moduleName, moduleUrl, flags);
+    await install(moduleName, moduleUrl, flags, installationDir);
   } catch (e) {
     console.log(e);
     exit(1);
