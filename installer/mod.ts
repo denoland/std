@@ -135,6 +135,10 @@ function checkIfExistsInPath(filePath: string): boolean {
   return false;
 }
 
+export function isRemoteUrl(url: string): boolean {
+  return /^https?:\/\//.test(url);
+}
+
 function validateModuleName(moduleName: string): boolean {
   if (/^[a-z][\w-]*$/i.test(moduleName)) {
     return true;
@@ -202,6 +206,11 @@ export async function install(
   }
   await ensureDir(installationDir);
 
+  // if install local module
+  if (!isRemoteUrl(moduleUrl)) {
+    moduleUrl = path.resolve(moduleUrl);
+  }
+
   validateModuleName(moduleName);
   const filePath = path.join(installationDir, moduleName);
 
@@ -239,11 +248,6 @@ export async function install(
     } else {
       grantedPermissions.push(permission);
     }
-  }
-
-  // if install local module
-  if (!/^https?:\/\//.test(moduleUrl)) {
-    moduleUrl = path.resolve(moduleUrl);
   }
 
   const commands = [

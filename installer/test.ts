@@ -7,7 +7,7 @@ import { BufReader, EOF } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import * as path from "../fs/path.ts";
 import * as fs from "../fs/mod.ts";
-import { install } from "./mod.ts";
+import { install, isRemoteUrl } from "./mod.ts";
 
 let fileServer: Deno.Process;
 const isWindows = Deno.platform.os === "win";
@@ -396,5 +396,12 @@ installerTest(async function installAndMakesureArgsRight(): Promise<void> {
 
   assert(!thrown, "It should not throw an error");
 }, true); // set true to install module in your real $HOME dir.
+
+test(function testIsRemoteUrl() {
+  assert(isRemoteUrl("https://deno.land/std/http/file_server.ts"));
+  assert(isRemoteUrl("http://deno.land/std/http/file_server.ts"));
+  assert(!isRemoteUrl("file:///dev/deno_std/http/file_server.ts"));
+  assert(!isRemoteUrl("./dev/deno_std/http/file_server.ts"));
+});
 
 runIfMain(import.meta);
