@@ -330,6 +330,8 @@ async function main(opts): Promise<void> {
     write: opts["write"]
   };
 
+  console.log(Deno.isTTY());
+
   if (!Deno.isTTY().stdin) {
     const byte = await readAll(stdin);
     const formattedCode = format(new TextDecoder().decode(byte), prettierOpts);
