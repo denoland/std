@@ -2,7 +2,7 @@
 import { join } from "../fs/path.ts";
 import { EOL } from "../fs/path/constants.ts";
 import { assertEquals } from "../testing/asserts.ts";
-import { test } from "../testing/mod.ts";
+import { test, runIfMain } from "../testing/mod.ts";
 import { xrun } from "./util.ts";
 import { copy, emptyDir } from "../fs/mod.ts";
 const { readAll, execPath } = Deno;
@@ -233,3 +233,36 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 
   emptyDir(tempDir);
 });
+
+test(async function testPrettierReadFromStdin(): Promise<void> {
+  // same with command:
+  // echo 'console.log("hello world"  )' | deno run -A ./prettier/main.ts
+
+  const ps1 = xrun({
+    args: [`echo`, `console.log("hello world"  )`],
+    stdout: "piped"
+  });
+
+  const ps2 = xrun({
+    args: ["deno", "run", "-A", "./prettier/main.ts"],
+    stdout: "piped",
+    stdin: "piped"
+  });
+
+  await Deno.copy(ps2.stdin, ps1.stdout!);
+
+  const status1 = await ps1.status(); // wait process 1 exit.
+  assertEquals(status1.code, 0);
+  ps2.stdin.close(); // then close process 2 stdin
+  const status2 = await ps2.status();
+  assertEquals(status2.code, 0);
+
+  const formattedCode = new TextDecoder().decode(await readAll(ps2.stdout!));
+
+  assertEquals(formattedCode, `console.log("hello world");` + EOL);
+
+  ps1.close();
+  ps2.close();
+});
+
+runIfMain(import.meta);
