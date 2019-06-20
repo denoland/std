@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-const { env, readDirSync, mkdirSync, stdin } = Deno;
+const { env, stdin } = Deno;
 import * as path from "../fs/path.ts";
 
 const decoder = new TextDecoder("utf-8");
