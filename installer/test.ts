@@ -248,6 +248,7 @@ installerTest(async function installLocalModuleAndRun(): Promise<void> {
     console.error(err);
     thrown = true;
   } finally {
+    await remove(filePath);
     ps.close();
   }
 
@@ -288,6 +289,7 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
     console.error(err);
     thrown = true;
   } finally {
+    await remove(filePath);
     ps.close();
   }
 
@@ -333,6 +335,7 @@ installerTest(async function installAndMakesureArgsRight(): Promise<void> {
     console.error(err);
     thrown = true;
   } finally {
+    await remove(filePath);
     ps.close();
   }
 
