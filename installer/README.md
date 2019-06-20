@@ -53,13 +53,6 @@ $ deno_installer install file_server https://deno.land/std/http/file_server.ts -
 > ✅ Successfully installed file_server.
 ```
 
-Uninstall script
-
-```sh
-$ deno_installer uninstall file_server
-> ℹ️  Uninstalled file_server
-```
-
 Show help
 
 ```sh
@@ -68,8 +61,7 @@ $ deno_installer --help
   Install remote or local script as executables.
 
 USAGE:
-  deno https://deno.land/std/installer/mod.ts install EXE_NAME SCRIPT_URL [FLAGS...]
-  deno https://deno.land/std/installer/mod.ts uninstall EXE_NAME
+  deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]
 
 ARGS:
   EXE_NAME  Name for executable

@@ -2,13 +2,12 @@
 const { run, stat, makeTempDir, remove, env, readAll } = Deno;
 
 import { test, runIfMain, TestFunction } from "../testing/mod.ts";
-import { assert, assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
+import { assert, assertEquals } from "../testing/asserts.ts";
 import { BufReader, EOF } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import * as path from "../fs/path.ts";
 import * as fs from "../fs/mod.ts";
-import { install } from "./install.ts";
-import { uninstall } from "./uninstall.ts";
+import { install } from "./mod.ts";
 
 let fileServer: Deno.Process;
 const isWindows = Deno.platform.os === "win";
@@ -218,32 +217,6 @@ exit $ret
   );
 });
 
-installerTest(async function uninstallBasic(): Promise<void> {
-  await install(
-    "echo_test",
-    "http://localhost:4500/installer/testdata/echo.ts",
-    []
-  );
-
-  const { HOME } = env();
-  const filePath = path.resolve(HOME, ".deno/bin/echo_test");
-
-  await uninstall("echo_test");
-
-  assert(!(await fs.exists(filePath)));
-  assert(!(await fs.exists(filePath + ".cmd")));
-});
-
-installerTest(async function uninstallNonExistentModule(): Promise<void> {
-  await assertThrowsAsync(
-    async (): Promise<void> => {
-      await uninstall("file_server");
-    },
-    Error,
-    "file_server not found"
-  );
-});
-
 installerTest(async function installLocalModuleAndRun(): Promise<void> {
   const localModule = path.join(Deno.cwd(), "installer", "testdata", "echo.ts");
   await install("echo_test", localModule, ["hello"]);
@@ -275,7 +248,6 @@ installerTest(async function installLocalModuleAndRun(): Promise<void> {
     console.error(err);
     thrown = true;
   } finally {
-    await uninstall("echo_test");
     ps.close();
   }
 
@@ -316,7 +288,6 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
     console.error(err);
     thrown = true;
   } finally {
-    await uninstall("echo_test");
     ps.close();
   }
 
@@ -362,7 +333,6 @@ installerTest(async function installAndMakesureArgsRight(): Promise<void> {
     console.error(err);
     thrown = true;
   } finally {
-    await uninstall("args_test");
     ps.close();
   }
 
