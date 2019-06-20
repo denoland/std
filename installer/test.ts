@@ -397,7 +397,7 @@ installerTest(async function installAndMakesureArgsRight(): Promise<void> {
   assert(!thrown, "It should not throw an error");
 }, true); // set true to install module in your real $HOME dir.
 
-test(function testIsRemoteUrl() {
+test(function testIsRemoteUrl(): void {
   assert(isRemoteUrl("https://deno.land/std/http/file_server.ts"));
   assert(isRemoteUrl("http://deno.land/std/http/file_server.ts"));
   assert(!isRemoteUrl("file:///dev/deno_std/http/file_server.ts"));
