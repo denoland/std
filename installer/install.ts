@@ -3,10 +3,11 @@
 const { writeFile, chmod, run } = Deno;
 import * as path from "../fs/path.ts";
 import { exists } from "../fs/exists.ts";
+import { ensureDir } from "../fs/ensure_dir.ts";
 import {
   getInstallerDir,
   yesNoPrompt,
-  createDirIfNotExists,
+  validateModuleName,
   checkIfExistsInPath,
   isWindows
 } from "./util.ts";
@@ -112,8 +113,9 @@ export async function install(
   moduleUrl: string,
   flags: string[]
 ): Promise<void> {
+  validateModuleName(moduleName);
   const installerDir = getInstallerDir();
-  createDirIfNotExists(installerDir);
+  await ensureDir(installerDir);
 
   const filePath = path.join(installerDir, moduleName);
 

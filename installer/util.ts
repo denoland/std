@@ -35,14 +35,6 @@ export async function yesNoPrompt(message: string): Promise<boolean> {
   return input === "y" || input === "Y";
 }
 
-export function createDirIfNotExists(path: string): void {
-  try {
-    readDirSync(path);
-  } catch (e) {
-    mkdirSync(path, true);
-  }
-}
-
 export function checkIfExistsInPath(filePath: string): boolean {
   // In Windows's Powershell $PATH not exist, so use $Path instead.
   // $HOMEDRIVE is only used on Windows.
@@ -72,4 +64,12 @@ export function checkIfExistsInPath(filePath: string): boolean {
   }
 
   return false;
+}
+
+export function validateModuleName(moduleName: string): boolean {
+  if (/^[a-z][\w-]*$/i.test(moduleName)) {
+    return true;
+  } else {
+    throw new Error("Invalid module name: " + moduleName);
+  }
 }
