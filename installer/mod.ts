@@ -262,7 +262,9 @@ export async function install(
   if (!checkIfExistsInPath(installationDir)) {
     console.log(`\nℹ️  Add ${installationDir} to PATH`);
     console.log(
-      `    echo 'export PATH=\"${installationDir}:$PATH\"' >> ~/.bashrc # change` +
+      "    echo 'export PATH=\"" +
+        installationDir +
+        ":$PATH\"' >> ~/.bashrc # change" +
         " this to your shell"
     );
   }
