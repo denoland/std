@@ -269,7 +269,6 @@ export async function install(
 }
 
 async function main(): Promise<void> {
-  console.log(args.slice(1));
   const parsedArgs = parse(args.slice(1), { stopEarly: true });
 
   if (parsedArgs.h || parsedArgs.help) {
