@@ -330,9 +330,6 @@ async function main(opts): Promise<void> {
     write: opts["write"]
   };
 
-  console.log("tty:");
-  console.log(Deno.isTTY());
-
   const tty = Deno.isTTY();
 
   if (!tty.stdin && tty.stdout) {

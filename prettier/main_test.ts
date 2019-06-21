@@ -235,6 +235,10 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 });
 
 test(async function testPrettierReadFromStdin(): Promise<void> {
+  const tty = Deno.isTTY();
+  if (!tty.stdin) {
+    return;
+  }
   // same with command:
   // echo 'console.log("hello world"  )' | deno run -A ./prettier/main.ts
 
