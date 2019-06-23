@@ -242,10 +242,14 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
   // same with command:
   // echo 'console.log("hello world"  )' | deno run -A ./prettier/main.ts
 
+  console.log(`run command1: echo 'console.log("hello world"  )'`);
+
   const ps1 = xrun({
     args: [`echo`, `console.log("hello world"  )`],
     stdout: "piped"
   });
+
+  console.log(`run command2: deno run -A ./prettier/main.ts`);
 
   const ps2 = xrun({
     args: ["deno", "run", "-A", "./prettier/main.ts"],
@@ -262,6 +266,8 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
     assert(!!ps1.stdout, "process 2 should have stdout.");
     return;
   }
+
+  console.log(`pipe command1's stdout to command2's stdin`);
 
   await Deno.copy(ps2.stdin!, ps1.stdout!);
 
