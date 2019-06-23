@@ -332,7 +332,7 @@ async function main(opts): Promise<void> {
 
   const tty = Deno.isTTY();
 
-  console.log(tty)
+  console.log(tty);
 
   if (!tty.stdin && tty.stdout) {
     const byte = await readAll(stdin);
