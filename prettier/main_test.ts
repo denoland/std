@@ -254,12 +254,12 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
   });
 
   if (!ps2.stdin) {
-    assert(!!ps2.stdin, "process should have stdin.");
+    assert(!!ps2.stdin, "process 1 should have stdin.");
     return;
   }
 
   if (!ps1.stdout) {
-    assert(!!ps2.stdin, "process should have stdin.");
+    assert(!!ps1.stdout, "process 2 should have stdout.");
     return;
   }
 
