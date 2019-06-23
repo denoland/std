@@ -279,7 +279,7 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
 
   const formattedCode = new TextDecoder().decode(await readAll(ps2.stdout!));
 
-  assertEquals(formattedCode, `console.log("hello world");` + EOL);
+  assertEquals(formattedCode, `console.log("hello world");` + EOL + "\n");
 
   ps1.close();
   ps2.close();
