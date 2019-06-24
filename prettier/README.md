@@ -22,12 +22,13 @@ You can format files on specific directory by passing the directory's path.
 deno --allow-read --allow-write https://deno.land/std/prettier/main.ts path/to/script.ts
 ```
 
-You can format the input plain text stream.
-
-Because there is no way to identify which file type is from the stream, only formatted typescript is currently supported.
+You can format the input plain text stream. default parse it as typescript code.
 
 ```bash
 cat path/to/script.ts | deno https://deno.land/std/prettier/main.ts
+cat path/to/script.js | deno https://deno.land/std/prettier/main.ts --stdin-parser=babel
+cat path/to/config.json | deno https://deno.land/std/prettier/main.ts --stdin-parser=json
+cat path/to/README.md | deno https://deno.land/std/prettier/main.ts --stdin-parser=markdown
 ```
 
 ## Use API

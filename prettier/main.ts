@@ -243,10 +243,14 @@ async function formatSourceFiles(
 /**
  * Format source code
  */
-function format(text: string, prettierOpts: PrettierOptions): string {
+function format(
+  text: string,
+  parser: ParserLabel,
+  prettierOpts: PrettierOptions
+): string {
   const formatted: string = prettier.format(text, {
     ...prettierOpts,
-    parser: selectParser("stdin.ts"),
+    parser: parser,
     plugins: prettierPlugins
   });
 
@@ -256,9 +260,16 @@ function format(text: string, prettierOpts: PrettierOptions): string {
 /**
  * Format code from stdin and output to stdout
  */
-async function formatFromStdin(prettierOpts: PrettierOptions): Promise<void> {
+async function formatFromStdin(
+  parser: ParserLabel,
+  prettierOpts: PrettierOptions
+): Promise<void> {
   const byte = await readAll(stdin);
-  const formattedCode = format(new TextDecoder().decode(byte), prettierOpts);
+  const formattedCode = format(
+    new TextDecoder().decode(byte),
+    parser,
+    prettierOpts
+  );
   await stdout.write(new TextEncoder().encode(formattedCode));
 }
 
@@ -357,11 +368,11 @@ async function main(opts): Promise<void> {
   const tty = Deno.isTTY();
 
   const shouldReadFromStdin =
-    (!tty.stdin && (tty.stdout || tty.stderr)) || !!opts["from-stdin"];
+    (!tty.stdin && (tty.stdout || tty.stderr)) || !!opts["stdin"];
 
   try {
     if (shouldReadFromStdin) {
-      await formatFromStdin(prettierOpts);
+      await formatFromStdin(opts["stdin-parser"], prettierOpts);
     } else if (check) {
       await checkSourceFiles(files, prettierOpts);
     } else {
@@ -382,7 +393,8 @@ main(
       "trailing-comma",
       "arrow-parens",
       "prose-wrap",
-      "end-of-line"
+      "end-of-line",
+      "stdin-parser"
     ],
     boolean: [
       "check",
@@ -392,7 +404,7 @@ main(
       "single-quote",
       "bracket-spacing",
       "write",
-      "from-stdin"
+      "stdin"
     ],
     default: {
       ignore: [],
@@ -407,7 +419,8 @@ main(
       "prose-wrap": "preserve",
       "end-of-line": "auto",
       write: false,
-      "from-stdin": false
+      stdin: false,
+      "stdin-parser": "typescript"
     },
     alias: {
       H: "help"
