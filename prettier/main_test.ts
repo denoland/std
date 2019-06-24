@@ -333,7 +333,7 @@ test(async function testPrettierReadInvalidCodeFromStdin(): Promise<void> {
   );
   assertEquals(stdoutOutput, "");
   assertEquals(
-    stderrOutput.split("\n")[0],
+    stderrOutput.split(EOL)[0],
     "SyntaxError: Invalid character. (1:22)"
   );
   p2.close();
