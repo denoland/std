@@ -61,12 +61,12 @@ export class PromiseDecoder<R, I = unknown> {
   }
 }
 
-// prettier-ignore this particular prettier formatting is hard to read
+// prettier-ignore : prettier makes this hard to read
 export type DecoderReturnType<T> = T extends Decoder<infer R> ? R :
   T extends PromiseDecoder<infer R> ? R :
   unknown;
 
-// prettier-ignore this particular prettier formatting is hard to read
+// prettier-ignore : prettier makes this hard to read
 export type DecoderInputType<T> = T extends Decoder<unknown, infer I> ? I :
   T extends PromiseDecoder<unknown, infer I> ? I :
   unknown;
