@@ -315,7 +315,6 @@ function getTargetFiles(
 
 async function main(opts): Promise<void> {
   const { help, ignore, check, _: args } = opts;
-  const e = env();
 
   const prettierOpts: PrettierOptions = {
     printWidth: Number(opts["print-width"]),
@@ -334,10 +333,15 @@ async function main(opts): Promise<void> {
   const tty = Deno.isTTY();
   const isTTY = tty.stdin || tty.stdout || tty.stderr;
 
-  if (
-    (isTTY && !tty.stdin && (tty.stdout || tty.stderr)) ||
-    e["TEST_READ_FROM_STDIN"]
-  ) {
+  let shouldReadFromStdin = false;
+
+  if (!isTTY) {
+    shouldReadFromStdin = !!env()["TEST_READ_FROM_STDIN"];
+  } else {
+    shouldReadFromStdin = !tty.stdin && (tty.stdout || tty.stderr);
+  }
+
+  if (shouldReadFromStdin) {
     const byte = await readAll(stdin);
     const formattedCode = format(new TextDecoder().decode(byte), prettierOpts);
     stdout.write(new TextEncoder().encode(formattedCode));
