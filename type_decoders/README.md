@@ -321,20 +321,22 @@ error.child.child.child.message // "must be a string"
 error.child.child.child.child // undefined
 ```
 
-For more control, you can provide a `(args: {value: V, key?: unknown, error?: DecoderError}) => string` function as the `msg` argument. Note, the actual `msg` argument type varies depending on the decoder function.
+### Customizing error messages
+
+For more control over your error messages, you can provide a `(args: {value: V, key?: unknown, error?: DecoderError}) => string` function as the `msg` argument. Note, the actual `msg` argument type varies depending on the decoder function.
 
 - e.g. the `isChainOf()` decoder function accepts a msg argument of type `string | ((args: {value: unknown, error: DecoderError}) => string)`.
 
-On an error, a provided `msg` function will be called with the invalid value, the `key` associated with the error (if any), and the nested `DecoderError` which triggered this error (if any). This allows you more control over the customized error messages you return.
+On an error, the provided `msg` function will be called with the invalid value, the `key` associated with the error (if any), and the nested `DecoderError` which triggered this error (if any). This allows you more control over the customized error messages you return.
 
 Example:
 
 ```ts
 const errorMsgFn = (args: {value: unknown, error: DecoderError}) => {
-  const { decoderName } = error;
+  const { decoderName } = args.error;
 
   if (decoderName === 'isArray') {
-    if (error.child) return 'must be an array of numbers';
+    if (args.error.child) return 'must be an array of numbers';
 
     return 'must be an array';
   }
