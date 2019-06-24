@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { join } from "../fs/path.ts";
 import { EOL } from "../fs/path/constants.ts";
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "../testing/asserts.ts";
 import { test, runIfMain } from "../testing/mod.ts";
 import { xrun } from "./util.ts";
 import { copy, emptyDir } from "../fs/mod.ts";
@@ -236,12 +236,12 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 
 test(async function testPrettierReadFromStdin(): Promise<void> {
   const inputCode = "console.log('abc'  )";
-  let p1 = Deno.run({
+  const p1 = Deno.run({
     args: ["echo", inputCode],
     stdout: "piped"
   });
 
-  let p2 = Deno.run({
+  const p2 = Deno.run({
     args: ["deno", "run", "./prettier/main.ts"],
     stdin: "piped",
     stdout: "piped"
