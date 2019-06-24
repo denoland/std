@@ -2,23 +2,31 @@
 
 This module facilitates validating `unknown` (or other) values and casting them to the proper typescript types. It provides an assortment of useful decoder primatives which are usable as-is, easily customized, and composable with other decoders (including any custom decoders you may make).
 
-Users and library authors can easily create custom decoders which can be composed with the decoders provided in this module, as well as compose with any other third-party decoders which are compatible with this module.
+Users and library authors can easily create custom decoders which can be composed with the decoders provided in this module, as well as composed with any other third-party decoders which are compatible with this module.
+
+```ts
+import { assert, isNumber } from "https://deno.land/std/type_decoders/mod.ts";
+
+// assert() is a convenience function which wraps a decoder
+const numberValidator = assert(isNumber());
+
+const value = numberValidator(1) // returns 1
+const value = numberValidator('1') // throws `DecoderError`
+```
+
+alternatively 
 
 ```ts
 const decoder = isNumber();
 
 const result = decoder.decode(1); // returns `DecoderSuccess<number>`
+
+const value = result.value; // 1
+
 const result = decoder.decode('1'); // returns (not throws) `DecoderError`
-
-const value: number = result.value; // 1
-
-const validationFn = assert(isNumber());
-
-const value: number = validationFn(1) // returns 1
-const value: number = validationFn('1') // throws (not returns) `DecoderError`
 ```
 
-# usage
+# Usage
 
 - [Basic usage](#Basic-usage)
 - [Interfaces](#Interfaces)
@@ -60,8 +68,8 @@ This module exports an assortment of primative decoder functions which each retu
 ```ts
 const myNumberDecoder = isNumber();
 
-const result: DecoderResult<number> = myNumberDecoder.decode(1) // returns a DecoderSuccess<number>
-const result: DecoderResult<number> = myNumberDecoder.decode('1') // returns (not throws) a DecoderError
+const result = myNumberDecoder.decode(1) // returns a DecoderSuccess<number>
+const result = myNumberDecoder.decode('1') // returns (not throws) a DecoderError
 
 if (result instanceof DecoderError) {
   // do stuff...
@@ -77,16 +85,16 @@ For your convenience, you can wrap any decoder with the exported `assert` functi
 
 ```ts
 const myNumberDecoder = assert(isNumber());
-const value: number = myNumberDecoder(1); // returns 1
-const value: number = myNumberDecoder('1'); // will throw (not return) a DecoderError
+const value = myNumberDecoder(1); // returns 1
+const value = myNumberDecoder('1'); // will throw (not return) a DecoderError
 ```
 
-Some decoders are intended for composing with other decoders. For example, the `isOptional()` decoder accepts another decoder as an argument and returns a decoder that accepts either `undefined` or the value decoded by its argument.
+Some decoder functions aid with composing decoders. For example, the `isOptional()` decoder accepts another decoder as an argument and returns a decoder that accepts either `undefined` or the value decoded by its argument.
 
 ```ts
 const myNumberDecoder = isOptional(isNumber());
-const result: DecoderResult<number | undefined> = myNumberDecoder.decode(1) // returns a DecoderSuccess<number | undefined>
-const result: DecoderResult<number | undefined> = myNumberDecoder.decode(undefined) // returns a DecoderSuccess<number | undefined>
+const result = myNumberDecoder.decode(1) // returns a DecoderSuccess<number | undefined>
+const result = myNumberDecoder.decode(undefined) // returns a DecoderSuccess<number | undefined>
 ```
 
 A more complex example of decoder composition is the `isObject()` decoder function, which receives a `{[key: string]: Decoder<unknown, unknown>}` object argument. This argument is used to process a provided value: it verifies that the provided value is a non-null object, that the object has the specified keys, and that the values of the object's keys pass the provided decoder checks.
@@ -100,9 +108,10 @@ const myObjectDecoder = isObject({
 
 const goodInput = { payload: { values: [0, null, 2] } } as unknown;
 
-const success = myObjectDecoder.decode(goodInput); // will return `DecoderSuccess<T>`
+const success = myObjectDecoder.decode(goodInput); // will return `DecoderSuccess`
 
-const value: { payload: string; { values: Array<number | null> } } = result.value;
+// Notice that success.value is properly typed
+const value: { payload: string; { values: Array<number | null> } } = success.value;
 
 const badInput = { payload: { values: [0, null, '1'] } } as unknown;
 
@@ -265,9 +274,9 @@ myObjectDecoder instanceof PromiseDecoder === true
 
 ## Working with errors
 
-One of the most useful aspects of this module is its robust support for providing human and machine readable error messages, as well as customizing those messages for your domain.
+One of the most useful aspects of this module is its support for providing human and machine readable error messages, as well as customizing those messages for your domain.
 
-At its most basic, the returned `DecoderError` object contains
+To begin, the returned `DecoderError` object contains:
 
 1. `value`: the invalid `value` which triggered this decoder error
 2. `message`: a human readable error message
@@ -312,7 +321,11 @@ error.child.child.child.message // "must be a string"
 error.child.child.child.child // undefined
 ```
 
-For more control, you can provide a `(args: {value: V, key?: unknown, error?: DecoderError}) => string` function as the `msg` argument. Note, the actual `msg` argument type varies depending on the decoder function (e.g. the `isChainOf()` decoder function accepts a msg argument of type `string | ((args: {value: V, error: DecoderError}) => string)`). On an error, a provided `msg` function will be called with the invalid value, the `key` associated with the error (if any), and the nested `DecoderError` which triggered this error (if any). This allows you more control over the customized error messages you return.
+For more control, you can provide a `(args: {value: V, key?: unknown, error?: DecoderError}) => string` function as the `msg` argument. Note, the actual `msg` argument type varies depending on the decoder function.
+
+- e.g. the `isChainOf()` decoder function accepts a msg argument of type `string | ((args: {value: unknown, error: DecoderError}) => string)`.
+
+On an error, a provided `msg` function will be called with the invalid value, the `key` associated with the error (if any), and the nested `DecoderError` which triggered this error (if any). This allows you more control over the customized error messages you return.
 
 Example:
 
@@ -382,7 +395,7 @@ myCustomDecoder.decode(true)
 
 #### Specifying an input value type
 
-While the vast majority of decoders expect an input value of `unknown`, it is possible to create a decoder which requires an already typed input value. In fact, the second type param in `Decoder<R, I>` saves the input variable type (the default is `unknown`). To create a decoder which requires an input value to already be of a known type, simply type the input of the decoder's decode function.
+While the vast majority of decoders expect an input value of `unknown`, it is possible to create a decoder which requires an already typed input value. In fact, the `I` type arg in `Decoder<R, I>` is the input variable type (the default is `unknown`). To create a decoder which requires an input value to already be of a known type, simply type the input of the decoder's decode function.
 
 Example:
 
@@ -417,24 +430,25 @@ One important thing to consider: if your function takes one or more decoders as 
 
 ### The assert() function
 
-It may be the case that you simply want to return the validated value from a decoder, rather than a `DecoderResult`. In this case, simply wrap a decoder with `assert()` to get a callable function which will return a valid value on success, or throw a `DecoderError` on failure.
+It may be the case that you simply want to return the validated value from a decoder directly, rather than a `DecoderResult`. In this case, wrap a decoder with `assert()` to get a callable function which will return a valid value on success, or throw a `DecoderError` on failure.
 
 Example:
 
 ```ts
 const validator = assert(isNumber());
 
-const value: number = validator(1);
+const value = validator(1); // returns 1
 
-const value: number = validator('1'); // will throw a `DecoderError`
+const value = validator('1'); // will throw a `DecoderError`
 ```
 
-### The decorator map() method
+### The decoder map() method
 
 Decoders have a `map` method which can be used to transform valid values. For example, say you are receiving a date param in the form of a string, and you want to convert it to a javascript `Date` object.
 
 ```ts
 const stringDateDecoder =
+  // this regex verifies that a string is of the form `YYYY-MM-DD`
   isRegex(/^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/)
     .map(value => new Date(value));
 
@@ -452,8 +466,8 @@ This decoder will verify that a string is in a `YYYY-MM-DD` format and, if so, c
 ### assert()
 
 ```ts
-function assert<R, I>(decoder: Decoder<R, I>): (I) => R;
-function assert<R, I>(decoder: PromiseDecoder<R, I>): (I) => Promise<R>;
+export function assert<R, V>(decoder: Decoder<R, V>): { (value: V): R; (value: Promise<V>): Promise<R> };
+export function assert<R, V>(decoder: PromiseDecoder<R, V>): (value: V | Promise<V>) => Promise<R>;
 ```
 
 `assert()` accepts a single decoder as an argument and returns a new function which can be used to decode the same values as provided decoder. On decode success, the validated value is returned directly and on failure the `DecoderError` is thrown (rather than returned).

@@ -37,7 +37,7 @@ type ChainOfDecoderReturnType<T extends unknown[]> = T[SubtractOne<
 const decoderName = 'isChainOf';
 
 export interface IChainOfDecoderOptions {
-  msg?: NestedDecoderErrorMsg;
+  msg?: string | ((args: {value: unknown, error: DecoderError}) => string);
 }
 
 export function isChainOf<
