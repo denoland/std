@@ -243,12 +243,9 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
   });
 
   const p2 = Deno.run({
-    args: ["deno", "run", "--allow-env", "./prettier/main.ts"],
+    args: ["deno", "run", "./prettier/main.ts", "--from-stdin"],
     stdin: "piped",
-    stdout: "piped",
-    env: {
-      TEST_READ_FROM_STDIN: "1"
-    }
+    stdout: "piped"
   });
 
   if (!p2.stdin) {

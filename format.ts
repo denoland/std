@@ -1,4 +1,4 @@
-#!/usr/bin/env deno run --allow-run --allow-write --allow-read --allow-env
+#!/usr/bin/env deno run --allow-run --allow-write --allow-read
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 const { exit, args, execPath } = Deno;
 import { parse } from "./flags/mod.ts";
@@ -10,7 +10,6 @@ async function main(opts): Promise<void> {
     "run",
     "--allow-write",
     "--allow-read",
-    "--allow-env",
     "prettier/main.ts",
     "--ignore",
     "node_modules",

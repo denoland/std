@@ -23,7 +23,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 // This script formats the given source files. If the files are omitted, it
 // formats the all files in the repository.
-const { args, exit, readFile, writeFile, stdout, stdin, readAll, env } = Deno;
+const { args, exit, readFile, writeFile, stdout, stdin, readAll } = Deno;
 import { glob, isGlob, GlobOptions } from "../fs/glob.ts";
 import { walk, WalkInfo } from "../fs/walk.ts";
 import { parse } from "../flags/mod.ts";
@@ -331,15 +331,9 @@ async function main(opts): Promise<void> {
   };
 
   const tty = Deno.isTTY();
-  const isTTY = tty.stdin || tty.stdout || tty.stderr;
 
-  let shouldReadFromStdin = false;
-
-  if (!isTTY) {
-    shouldReadFromStdin = !!env()["TEST_READ_FROM_STDIN"];
-  } else {
-    shouldReadFromStdin = !tty.stdin && (tty.stdout || tty.stderr);
-  }
+  const shouldReadFromStdin =
+    (!tty.stdin && (tty.stdout || tty.stderr)) || !!opts["from-stdin"];
 
   if (shouldReadFromStdin) {
     const byte = await readAll(stdin);
@@ -390,7 +384,8 @@ main(
       "use-tabs",
       "single-quote",
       "bracket-spacing",
-      "write"
+      "write",
+      "from-stdin"
     ],
     default: {
       ignore: [],
@@ -404,7 +399,8 @@ main(
       "arrow-parens": "avoid",
       "prose-wrap": "preserve",
       "end-of-line": "auto",
-      write: false
+      write: false,
+      "from-stdin": false
     },
     alias: {
       H: "help"
