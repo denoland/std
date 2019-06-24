@@ -6,20 +6,28 @@ Prettier APIs and tools for deno
 
 To formats the source files, run:
 
-```console
+```bash
 deno --allow-read --allow-write https://deno.land/std/prettier/main.ts
 ```
 
 You can format only specific files by passing the arguments.
 
-```console
+```bash
 deno --allow-read --allow-write https://deno.land/std/prettier/main.ts path/to/script.ts
 ```
 
 You can format files on specific directory by passing the directory's path.
 
-```console
+```bash
 deno --allow-read --allow-write https://deno.land/std/prettier/main.ts path/to/script.ts
+```
+
+You can format the input plain text stream.
+
+Because there is no way to identify which file type is from the stream, only formatted typescript is currently supported.
+
+```bash
+cat path/to/script.ts | deno https://deno.land/std/prettier/main.ts
 ```
 
 ## Use API

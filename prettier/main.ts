@@ -76,6 +76,9 @@ Example:
 
   deno run prettier/main.ts script1.ts
                                         Print the formatted code to stdout
+  cat script1.ts | deno run prettier/main.ts
+                                        Read the Typescript code from stdin and
+                                        output formatted code to stdout.
 `;
 
 // Available parsers
