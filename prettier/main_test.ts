@@ -235,6 +235,7 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 });
 
 test(async function testPrettierReadFromStdin(): Promise<void> {
+  console.log(Deno.isTTY());
   const inputCode = `console.log("abc"  )`;
   const p1 = Deno.run({
     args: ["echo", `${inputCode}`],
