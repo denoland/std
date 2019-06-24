@@ -256,7 +256,7 @@ function format(text: string, prettierOpts: PrettierOptions): string {
 /**
  * Format code from stdin and output to stdout
  */
-async function formatFromStdin(prettierOpts: PrettierOptions) {
+async function formatFromStdin(prettierOpts: PrettierOptions): Promise<void> {
   const byte = await readAll(stdin);
   const formattedCode = format(new TextDecoder().decode(byte), prettierOpts);
   await stdout.write(new TextEncoder().encode(formattedCode));
@@ -413,7 +413,9 @@ main(
       H: "help"
     }
   })
-).catch(err => {
-  console.error(err);
-  exit(1);
-});
+).catch(
+  (err): void => {
+    console.error(err);
+    exit(1);
+  }
+);
