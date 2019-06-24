@@ -254,6 +254,15 @@ function format(text: string, prettierOpts: PrettierOptions): string {
 }
 
 /**
+ * Format code from stdin and output to stdout
+ */
+async function formatFromStdin(prettierOpts: PrettierOptions) {
+  const byte = await readAll(stdin);
+  const formattedCode = format(new TextDecoder().decode(byte), prettierOpts);
+  await stdout.write(new TextEncoder().encode(formattedCode));
+}
+
+/**
  * Get the files to format.
  * @param selectors The glob patterns to select the files.
  *                  eg `cmd/*.ts` to select all the typescript files in cmd
@@ -333,18 +342,6 @@ async function main(opts): Promise<void> {
     write: opts["write"]
   };
 
-  const tty = Deno.isTTY();
-
-  const shouldReadFromStdin =
-    (!tty.stdin && (tty.stdout || tty.stderr)) || !!opts["from-stdin"];
-
-  if (shouldReadFromStdin) {
-    const byte = await readAll(stdin);
-    const formattedCode = format(new TextDecoder().decode(byte), prettierOpts);
-    stdout.write(new TextEncoder().encode(formattedCode));
-    return;
-  }
-
   if (help) {
     console.log(HELP_MESSAGE);
     exit(0);
@@ -357,14 +354,21 @@ async function main(opts): Promise<void> {
     options
   );
 
+  const tty = Deno.isTTY();
+
+  const shouldReadFromStdin =
+    (!tty.stdin && (tty.stdout || tty.stderr)) || !!opts["from-stdin"];
+
   try {
-    if (check) {
+    if (shouldReadFromStdin) {
+      await formatFromStdin(prettierOpts);
+    } else if (check) {
       await checkSourceFiles(files, prettierOpts);
     } else {
       await formatSourceFiles(files, prettierOpts);
     }
   } catch (e) {
-    console.log(e);
+    console.error(e);
     exit(1);
   }
 }
@@ -409,4 +413,7 @@ main(
       H: "help"
     }
   })
-);
+).catch(err => {
+  console.error(err);
+  exit(1);
+});
