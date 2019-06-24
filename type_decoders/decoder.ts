@@ -11,7 +11,7 @@ export class Decoder<R, I = unknown> {
 
   decode(input: I): DecoderResult<R>;
   decode(input: Promise<I>): Promise<DecoderResult<R>>;
-  decode(input: Promise<I> | I) {
+  decode(input: I | Promise<I>) {
     if (input instanceof Promise) return input.then(res => this.decodeFn(res));
 
     return this.decodeFn(input);
