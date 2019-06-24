@@ -379,7 +379,7 @@ test(async function testPrettierReadFromStdinFormatJSON(): Promise<void> {
   assertEquals(status2.success, true);
   const stdout = await Deno.readAll(p2.stdout);
   const formattedCode = new TextDecoder("utf-8").decode(stdout);
-  assertEquals(formattedCode, `{ "a": "b" }` + "\n");
+  assertEquals(formattedCode, `{ "a": "b" }` + EOL);
   p2.close();
   p1.close();
 });
