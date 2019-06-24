@@ -252,8 +252,13 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
     return;
   }
 
+  if (!p2.stdout) {
+    assert(false, "There should be stdout here.");
+    return;
+  }
+
   if (!p1.stdout) {
-    assert(false, "There should be stdin here.");
+    assert(false, "There should be stdout here.");
     return;
   }
 
