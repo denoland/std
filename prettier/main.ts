@@ -23,7 +23,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 // This script formats the given source files. If the files are omitted, it
 // formats the all files in the repository.
-const { args, exit, readFile, writeFile, stdout, stdin, readAll } = Deno;
+const { args, exit, readFile, writeFile, stdout, stdin, readAll, env } = Deno;
 import { glob, isGlob, GlobOptions } from "../fs/glob.ts";
 import { walk, WalkInfo } from "../fs/walk.ts";
 import { parse } from "../flags/mod.ts";
@@ -315,6 +315,7 @@ function getTargetFiles(
 
 async function main(opts): Promise<void> {
   const { help, ignore, check, _: args } = opts;
+  const e = env();
 
   const prettierOpts: PrettierOptions = {
     printWidth: Number(opts["print-width"]),
@@ -331,8 +332,12 @@ async function main(opts): Promise<void> {
   };
 
   const tty = Deno.isTTY();
+  const isTTY = tty.stdin || tty.stdout || tty.stderr;
 
-  if (!tty.stdin && (tty.stdout || tty.stderr)) {
+  if (
+    (isTTY && !tty.stdin && (tty.stdout || tty.stderr)) ||
+    e["TEST_READ_FROM_STDIN"]
+  ) {
     const byte = await readAll(stdin);
     const formattedCode = format(new TextDecoder().decode(byte), prettierOpts);
     stdout.write(new TextEncoder().encode(formattedCode));
