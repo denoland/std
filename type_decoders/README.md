@@ -2,7 +2,7 @@
 
 This module facilitates validating `unknown` (or other) values and casting them to the proper typescript types. It provides an assortment of useful decoder primatives which are usable as-is, easily customized, and composable with other decoders (including any custom decoders you may make).
 
-Users and library authors can easily create custom decoders which can be composed with the decoders provided in this module, as well as composed with any other third-party decoders which are compatible with this module.
+Users and library authors should be able to easily create custom decoders which can be composed with the decoders provided in this module, as well as composed with any other third-party decoders which are compatible with this module.
 
 ```ts
 import { assert, isNumber } from "https://deno.land/std/type_decoders/mod.ts";
