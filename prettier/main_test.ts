@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { join } from "../fs/path.ts";
 import { EOL } from "../fs/path/constants.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assert } from "../testing/asserts.ts";
 import { test, runIfMain } from "../testing/mod.ts";
 import { xrun } from "./util.ts";
 import { copy, emptyDir } from "../fs/mod.ts";
@@ -246,6 +246,16 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
     stdin: "piped",
     stdout: "piped"
   });
+
+  if (!p2.stdin) {
+    assert(false, "There should be stdin here.");
+    return;
+  }
+
+  if (!p1.stdout) {
+    assert(false, "There should be stdin here.");
+    return;
+  }
 
   const streamed = Deno.copy(p2.stdin, p1.stdout);
   const n = await streamed;
