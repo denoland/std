@@ -237,7 +237,7 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 test(async function testPrettierReadFromStdin(): Promise<void> {
   const inputCode = `console.log("abc"  )`;
   const p1 = Deno.run({
-    args: ["echo", inputCode],
+    args: ["echo", `${inputCode}`],
     stdout: "piped"
   });
 
@@ -274,7 +274,9 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
   assertEquals(status2.code, 0);
   assertEquals(status2.success, true);
   const stdout = await Deno.readAll(p2.stdout);
-  const formattedCode = new TextDecoder().decode(stdout);
+  const formattedCode = new TextDecoder("utf-8").decode(stdout);
+  console.log("formatted code: ");
+  console.log(formattedCode);
   assertEquals(formattedCode, `console.log("abc");` + EOL);
 });
 
