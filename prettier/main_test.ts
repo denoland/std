@@ -276,6 +276,68 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
   const stdout = await Deno.readAll(p2.stdout);
   const formattedCode = new TextDecoder("utf-8").decode(stdout);
   assertEquals(formattedCode, `console.log("abc");` + "\n");
+  p2.close();
+  p1.close();
+});
+
+test(async function testPrettierReadInvalidCodeFromStdin(): Promise<void> {
+  const inputCode = `InvalidTypescriptCode##@@!!`;
+  const p1 = Deno.run({
+    args: ["echo", `${inputCode}`],
+    stdout: "piped"
+  });
+
+  const p2 = Deno.run({
+    args: ["deno", "run", "./prettier/main.ts", "--from-stdin"],
+    stdin: "piped",
+    stdout: "piped",
+    stderr: "piped"
+  });
+
+  if (!p2.stdin) {
+    assert(false, "There should be stdin here.");
+    return;
+  }
+
+  if (!p2.stdout) {
+    assert(false, "There should be stdout here.");
+    return;
+  }
+
+  if (!p2.stderr) {
+    assert(false, "There should be stderr here.");
+    return;
+  }
+
+  if (!p1.stdout) {
+    assert(false, "There should be stdout here.");
+    return;
+  }
+
+  const streamed = Deno.copy(p2.stdin, p1.stdout);
+  const n = await streamed;
+  console.log("bytes copied:", n);
+
+  const status1 = await p1.status();
+  assertEquals(status1.code, 0);
+  assertEquals(status1.success, true);
+  p2.stdin.close();
+  const status2 = await p2.status();
+  assertEquals(status2.code, 1);
+  assertEquals(status2.success, false);
+  const stdoutOutput = new TextDecoder("utf-8").decode(
+    await Deno.readAll(p2.stdout)
+  );
+  const stderrOutput = new TextDecoder("utf-8").decode(
+    await Deno.readAll(p2.stderr)
+  );
+  assertEquals(stdoutOutput, "");
+  assertEquals(
+    stderrOutput.split("\n")[0],
+    "SyntaxError: Invalid character. (1:22)"
+  );
+  p2.close();
+  p1.close();
 });
 
 runIfMain(import.meta);
