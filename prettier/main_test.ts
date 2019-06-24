@@ -235,50 +235,33 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 });
 
 test(async function testPrettierReadFromStdin(): Promise<void> {
-  // same with command:
-  // echo 'console.log("hello world"  )' | deno run -A ./prettier/main.ts
-
-  console.log(`run command1: echo 'console.log("hello world"  )'`);
-
-  const ps1 = xrun({
-    args: [`echo`, `console.log("hello world"  )`],
+  const inputCode = "console.log('abc'  )";
+  let p1 = Deno.run({
+    args: ["echo", inputCode],
     stdout: "piped"
   });
 
-  console.log(`run command2: deno run -A ./prettier/main.ts`);
-
-  const ps2 = xrun({
-    args: ["deno", "run", "-A", "./prettier/main.ts"],
-    stdout: "piped",
-    stdin: "piped"
+  let p2 = Deno.run({
+    args: ["deno", "run", "./prettier/main.ts"],
+    stdin: "piped",
+    stdout: "piped"
   });
 
-  if (!ps2.stdin) {
-    assert(!!ps2.stdin, "process 1 should have stdin.");
-    return;
-  }
+  const streamed = Deno.copy(p2.stdin, p1.stdout);
+  const n = await streamed;
+  console.log("bytes copied:", n);
+  assertEquals(n, new TextEncoder().encode(inputCode + EOL).length);
 
-  if (!ps1.stdout) {
-    assert(!!ps1.stdout, "process 2 should have stdout.");
-    return;
-  }
-
-  console.log(`pipe command1's stdout to command2's stdin`);
-
-  await Deno.copy(ps2.stdin!, ps1.stdout!);
-
-  const status1 = await ps1.status(); // wait process 1 exit.
+  const status1 = await p1.status();
   assertEquals(status1.code, 0);
-  ps2.stdin.close(); // then close process 2 stdin
-  const status2 = await ps2.status();
+  assertEquals(status1.success, true);
+  p2.stdin.close();
+  const status2 = await p2.status();
   assertEquals(status2.code, 0);
-
-  const formattedCode = new TextDecoder().decode(await readAll(ps2.stdout!));
-
-  assertEquals(formattedCode, `console.log("hello world");` + EOL);
-
-  ps1.close();
-  ps2.close();
+  assertEquals(status2.success, true);
+  const stdout = await Deno.readAll(p2.stdout);
+  const formattedCode = new TextDecoder().decode(stdout);
+  assertEquals(formattedCode, `console.log("abc");` + EOL);
 });
 
 runIfMain(import.meta);

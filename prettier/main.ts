@@ -332,7 +332,7 @@ async function main(opts): Promise<void> {
 
   const tty = Deno.isTTY();
 
-  if (!tty.stdin && tty.stdout) {
+  if (!tty.stdin && (tty.stdout || tty.stderr)) {
     const byte = await readAll(stdin);
     const formattedCode = format(new TextDecoder().decode(byte), prettierOpts);
     stdout.write(new TextEncoder().encode(formattedCode));
