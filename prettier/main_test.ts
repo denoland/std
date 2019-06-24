@@ -278,7 +278,7 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
   const formattedCode = new TextDecoder("utf-8").decode(stdout);
   console.log("formatted code: ");
   console.log(formattedCode);
-  assertEquals(formattedCode, `console.log("abc");` + EOL);
+  assertEquals(formattedCode, `console.log("abc");` + "\n");
 });
 
 runIfMain(import.meta);
