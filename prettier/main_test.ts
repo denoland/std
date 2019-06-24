@@ -235,7 +235,7 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 });
 
 test(async function testPrettierReadFromStdin(): Promise<void> {
-  const inputCode = "console.log('abc'  )";
+  const inputCode = `console.log("abc"  )`;
   const p1 = Deno.run({
     args: ["echo", inputCode],
     stdout: "piped"
@@ -265,7 +265,6 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
   const streamed = Deno.copy(p2.stdin, p1.stdout);
   const n = await streamed;
   console.log("bytes copied:", n);
-  assertEquals(n, new TextEncoder().encode(inputCode + EOL).length);
 
   const status1 = await p1.status();
   assertEquals(status1.code, 0);
