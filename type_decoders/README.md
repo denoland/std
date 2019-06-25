@@ -283,29 +283,9 @@ myObjectDecoder instanceof PromiseDecoder === true
 
 ## Working with errors
 
-One of the most useful aspects of this module is its support for providing human and machine readable error messages, as well as customizing those messages for your domain.
+One of the most useful aspects of this module is its support for providing human and machine readable error messages, as well as customizing those messages for your domain. 
 
-To begin, the returned `DecoderError` object contains:
-
-1. `value`: the invalid `value` which triggered this decoder error
-2. `message`: a human readable error message
-3. `decoderName`?: an optional name to describe the decoder which triggered the error
-4. `location`: a string containing a "human readable" location of the error in a nested object.
-   - ```ts
-     const decoder = isObject({
-       userId: isString(),
-       payload: isObject({ values: isArray(isNumber()) }),
-     })
-
-     const error = decoder.decode({userId: '123', payload: { values: [0, '1'] } })
-
-     error.location === 'payload.values[1]'
-     ```
-5. `key`?: the key associated with the error message, if any
-6. `path()`: an array of all the keys leading to the source of the error (e.g. `error.path() === ['payload', 'values', 1]`)
-7. `child`?: the child `DecoderError` which triggered this `DecoderError`, if any.
-
-Each decoder function exported by this module also accepts an options object with an optional `msg` property. If you pass a string to this message property, that string will be used as the error message for that decoder. This will potentially suppress more deeply nested error messages.
+Where appropriate, the decoder functions exported by this module accept an optional options object with `{ msg?: DecoderErrorMsgArg }` where `type DecoderErrorMsgArg = string | ((error: DecoderError) => DecoderError)`. If you pass a string to this message property, that string will be used as the error message for that decoder. This is option is easy but will potentially suppress more deeply nested error messages.
 
 Example:
 
@@ -329,8 +309,6 @@ error.child.child.message // "invalid array"
 error.child.child.child.message // "must be a string"
 error.child.child.child.child // undefined
 ```
-
-### Customizing error messages
 
 For more control over your error messages, you can provide a `(error: DecoderError) => DecoderError` function as the `msg` argument.
 
