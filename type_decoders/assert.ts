@@ -1,5 +1,5 @@
-import { Decoder, PromiseDecoder } from './decoder';
-import { DecoderError, DecoderResult } from './decoder_result';
+import { Decoder, PromiseDecoder } from "./decoder";
+import { DecoderError, DecoderResult } from "./decoder_result";
 
 /**
  * When passed a decoder argument, `assert()` returns a new function which
@@ -15,11 +15,11 @@ import { DecoderError, DecoderResult } from './decoder_result';
  * ```
  */
 export function assert<R, V>(
-  decoder: Decoder<R, V>,
+  decoder: Decoder<R, V>
 ): { (value: V): R; (value: Promise<V>): Promise<R> };
 
 export function assert<R, V>(
-  decoder: PromiseDecoder<R, V>,
+  decoder: PromiseDecoder<R, V>
 ): (value: V | Promise<V>) => Promise<R>;
 
 export function assert<R, V>(decoder: Decoder<R, V> | PromiseDecoder<R, V>) {

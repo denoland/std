@@ -1,29 +1,29 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { DecoderError } from './decoder_result.ts';
-import { err, DecoderErrorMsg, ok, buildErrorLocationString } from './util.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { DecoderError, DecoderErrorMsgArg } from "./decoder_result.ts";
+import { err, ok, buildErrorLocationString } from "./util.ts";
 
-const decoderName = 'isDictionary';
+const decoderName = "isDictionary";
 
-export interface IDictionaryDecoderOptions<V> {
-  msg?: DecoderErrorMsg<V>;
+export interface IDictionaryDecoderOptions {
+  msg?: DecoderErrorMsgArg;
 }
 
 export function isDictionary<R, V = unknown>(
   decoder: Decoder<R, V>,
-  options?: IDictionaryDecoderOptions<V>,
+  options?: IDictionaryDecoderOptions
 ): Decoder<R[], V>;
 export function isDictionary<R, V = unknown>(
   decoder: PromiseDecoder<R, V>,
-  options?: IDictionaryDecoderOptions<V>,
+  options?: IDictionaryDecoderOptions
 ): PromiseDecoder<R[], V>;
 export function isDictionary<R, V = unknown>(
   decoder: Decoder<R, V> | PromiseDecoder<R, V>,
-  options: IDictionaryDecoderOptions<V> = {},
+  options: IDictionaryDecoderOptions = {}
 ) {
   if (decoder instanceof Decoder) {
     return new Decoder((input: V) => {
-      if (typeof input !== 'object' || input === null) {
-        err(input, (options && options.msg) || 'must be a non-null object');
+      if (typeof input !== "object" || input === null) {
+        err(input, "must be a non-null object", options && options.msg);
       }
 
       const obj: { [key: string]: R } = {};
@@ -45,8 +45,8 @@ export function isDictionary<R, V = unknown>(
   }
 
   return new PromiseDecoder(async (input: V) => {
-    if (typeof input !== 'object' || input === null) {
-      err(input, (options && options.msg) || 'must be a non-null object');
+    if (typeof input !== "object" || input === null) {
+      err(input, "must be a non-null object", options && options.msg);
     }
 
     const obj: { [key: string]: R } = {};
@@ -71,17 +71,20 @@ function buildError(
   result: DecoderError,
   key: string | number,
   input: unknown,
-  providedMsg?: DecoderErrorMsg,
+  providedMsg?: DecoderErrorMsgArg
 ) {
   const location = buildErrorLocationString(key, result.location);
-  const propertyKey = typeof key === 'string' ? `"${key}"` : key;
-  const msg =
-    providedMsg || `invalid key [${propertyKey}] value > ${result.message}`;
+  const propertyKey = typeof key === "string" ? `"${key}"` : key;
 
-  return err(input, msg, {
-    decoderName,
-    child: result,
-    location,
-    key,
-  });
+  return err(
+    input,
+    `invalid key [${propertyKey}] value > ${result.message}`,
+    providedMsg,
+    {
+      decoderName,
+      child: result,
+      location,
+      key
+    }
+  );
 }

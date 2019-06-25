@@ -1,16 +1,17 @@
-import { Decoder } from './decoder.ts';
-import { DecoderErrorMsg, ok, err } from './util.ts';
+import { Decoder } from "./decoder.ts";
+import { ok, err } from "./util.ts";
+import { DecoderErrorMsgArg } from "./decoder_result.ts";
 
 export interface IIntegerDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 export function isInteger(options: IIntegerDecoderOptions = {}) {
-  const msg = options.msg || 'must be a whole number';
-
   return new Decoder(value =>
     Number.isInteger(value as any)
       ? ok(value as number)
-      : err(value, msg, { decoderName: 'isInteger' }),
+      : err(value, "must be a whole number", options.msg, {
+          decoderName: "isInteger"
+        })
   );
 }

@@ -1,16 +1,17 @@
-import { Decoder } from './decoder.ts';
-import { ok, err, DecoderErrorMsg } from './util.ts';
+import { Decoder } from "./decoder.ts";
+import { ok, err } from "./util.ts";
+import { DecoderErrorMsgArg } from "./decoder_result.ts";
 
 export interface IExactlyDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 export function isExactly<T>(exact: T, options: IExactlyDecoderOptions = {}) {
-  const msg = options.msg || `must be exactly ${exact}`;
-
   return new Decoder(value =>
     value === exact
       ? ok(value as T)
-      : err(value, msg, { decoderName: 'isExactly' }),
+      : err(value, `must be exactly ${JSON.stringify(exact)}`, options.msg, {
+          decoderName: "isExactly"
+        })
   );
 }

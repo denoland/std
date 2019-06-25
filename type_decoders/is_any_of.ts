@@ -1,28 +1,29 @@
-import { Decoder, PromiseDecoder, DecoderReturnType } from './decoder.ts';
+import { Decoder, PromiseDecoder, DecoderReturnType } from "./decoder.ts";
 import {
   DecoderSuccess,
   DecoderError,
   DecoderResult,
-} from './decoder_result.ts';
-import { err, DecoderErrorMsg } from './util.ts';
+  DecoderErrorMsgArg
+} from "./decoder_result.ts";
+import { err } from "./util.ts";
 
-const decoderName = 'isAnyOf';
+const decoderName = "isAnyOf";
 
 export interface IAnyOfDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 export function isAnyOf<T extends Decoder<unknown>>(
   decoders: T[],
-  options?: IAnyOfDecoderOptions,
+  options?: IAnyOfDecoderOptions
 ): Decoder<DecoderReturnType<T>>;
 export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
   decoders: T[],
-  options?: IAnyOfDecoderOptions,
+  options?: IAnyOfDecoderOptions
 ): PromiseDecoder<DecoderReturnType<T>>;
 export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
   decoders: T[],
-  options: IAnyOfDecoderOptions = {},
+  options: IAnyOfDecoderOptions = {}
 ) {
   if (decoders.some(decoder => decoder instanceof PromiseDecoder)) {
     return new PromiseDecoder<DecoderReturnType<T>>(async value => {
@@ -40,11 +41,11 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
 
       const defaultMsg = results
         .map(result => (result as DecoderError).message)
-        .join(' OR ');
-        
+        .join(" OR ");
+
       const error = results.pop();
 
-      return err(error.value, options.msg || defaultMsg, { decoderName });
+      return err(error.value, defaultMsg, options.msg, { decoderName });
     });
   }
 
@@ -63,10 +64,10 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
 
     const defaultMsg = results
       .map(result => (result as DecoderError).message)
-      .join(' OR ');
+      .join(" OR ");
 
     const error = results.pop();
 
-    return err(error.value, options.msg || defaultMsg, { decoderName });
+    return err(error.value, defaultMsg, options.msg, { decoderName });
   });
 }

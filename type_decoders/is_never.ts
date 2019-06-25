@@ -1,12 +1,13 @@
-import { Decoder } from './decoder.ts';
-import { DecoderErrorMsg, err } from './util.ts';
+import { Decoder } from "./decoder.ts";
+import { err } from "./util.ts";
+import { DecoderErrorMsgArg } from "./decoder_result.ts";
 
 export interface INeverDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 export function isNever(options: INeverDecoderOptions = {}) {
-  const msg = options.msg || 'must not be present';
-
-  return new Decoder<never>(value => err(value, msg, { decoderName: 'isNever' }));
+  return new Decoder<never>(value =>
+    err(value, "must not be present", options.msg, { decoderName: "isNever" })
+  );
 }
