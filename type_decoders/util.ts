@@ -1,25 +1,26 @@
-import { DecoderError, DecoderSuccess } from './decoder_result.ts';
-
-export type DecoderErrorMsg<I = unknown> = string | ((args: {value: I}) => string);
-
-export type NestedDecoderErrorMsg<I = unknown> =
-  | string
-  | ((args: {value: I, key?: string, error?: DecoderError}) => string);
+import {
+  DecoderError,
+  DecoderSuccess,
+  DecoderErrorMsgArg
+} from "./decoder_result.ts";
 
 /** Convenience function for building a DecoderError */
 export function err<T>(
   value: T,
-  msg: string | ((args: {value: T, key?: unknown, error?: DecoderError}) => string),
+  defaultMsg: string,
+  providedMsg?: DecoderErrorMsgArg,
   options: {
     decoderName?: string;
     child?: DecoderError;
     location?: string;
-    key?: unknown;  
+    key?: unknown;
   } = {}
 ) {
-  const error = typeof msg === 'function' ? msg({value, key: options.key, error: options.child}) : msg;
+  const msg = typeof providedMsg === "string" ? providedMsg : defaultMsg;
 
-  return new DecoderError(value, error, options);
+  const error = new DecoderError(value, msg, options);
+
+  return typeof providedMsg === "function" ? providedMsg(error) : error;
 }
 
 /** Convenience function for building a DecoderSuccess */
@@ -31,22 +32,45 @@ export function ok<T>(value: T) {
  * builds the `DecoderError#location` property given the child error's
  * location and the current key.
  */
-export function buildErrorLocationString(key: string | number, childLocation: string) {
+export function buildErrorLocationString(
+  key: string | number,
+  childLocation: string
+) {
   // simple check to see if we can render the key using dot (`.`) notation
   const keyIsValidDotAccessor =
-    typeof key === 'string' && /^[a-zA-Z]+$/.test(key);
+    typeof key === "string" && /^[a-zA-Z]+$/.test(key);
 
   // prettier-ignore : prettier makes this harder to read
-  let location = keyIsValidDotAccessor ? key.toString() :
-    // if we can't render the key using dot notation, is it a string?
-    typeof key === 'string' ? `["${key}"]` :
-    `[${key}]`;
+  let location = keyIsValidDotAccessor
+    ? key.toString()
+    : // if we can't render the key using dot notation, is it a string?
+    typeof key === "string"
+    ? `["${key}"]`
+    : `[${key}]`;
 
   // check to see if the previous nested child location was rendered using dot
   // notation. A '[' as the first character indicates that it was not.
   // `undefined` as the first character means the child location === ''.
   // If it was, add the dot (`.`) in.
-  return ['[', undefined].includes(childLocation[0])
+  return ["[", undefined].includes(childLocation[0])
     ? location.concat(childLocation)
     : `${location}.${childLocation}`;
+}
+
+/** Changes the `DecoderError#decoderName` associated with output error */
+export function changeErrorDecoderName(
+  name: string,
+  providedMsg?: DecoderErrorMsgArg
+) {
+  return (error: DecoderError) => {
+    error.decoderName = name;
+
+    if (typeof providedMsg === "string") {
+      error.message = providedMsg;
+    } else if (typeof providedMsg === "function") {
+      return providedMsg(error);
+    }
+
+    return error;
+  };
 }

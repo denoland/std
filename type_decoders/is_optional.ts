@@ -1,25 +1,26 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { DecoderErrorMsg } from './util.ts';
-import { isAnyOf } from './is_any_of.ts';
-import { isUndefined } from './is_undefined.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { isAnyOf } from "./is_any_of.ts";
+import { isUndefined } from "./is_undefined.ts";
+import { DecoderErrorMsgArg } from "./decoder_result.ts";
+import { changeErrorDecoderName } from "./util.ts";
 
 export interface IOptionalDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 export function isOptional<T>(
   decoder: Decoder<T>,
-  options?: IOptionalDecoderOptions,
+  options?: IOptionalDecoderOptions
 ): Decoder<T | undefined>;
 export function isOptional<T>(
   decoder: PromiseDecoder<T>,
-  options?: IOptionalDecoderOptions,
+  options?: IOptionalDecoderOptions
 ): PromiseDecoder<T | undefined>;
 export function isOptional<T>(
   decoder: Decoder<T> | PromiseDecoder<T>,
-  options: IOptionalDecoderOptions = {},
+  options: IOptionalDecoderOptions = {}
 ) {
-  return isAnyOf([isUndefined(), decoder], { msg: options.msg }) as
-    | Decoder<T | undefined>
-    | PromiseDecoder<T | undefined>;
+  return isAnyOf([isUndefined(), decoder], {
+    msg: changeErrorDecoderName("isOptional", options.msg)
+  }) as Decoder<T | undefined> | PromiseDecoder<T | undefined>;
 }

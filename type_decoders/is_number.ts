@@ -1,16 +1,17 @@
-import { Decoder } from './decoder.ts';
-import { DecoderErrorMsg, ok, err } from './util.ts';
+import { Decoder } from "./decoder.ts";
+import { ok, err } from "./util.ts";
+import { DecoderErrorMsgArg } from "./decoder_result.ts";
 
 export interface INumberDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 export function isNumber(options: INumberDecoderOptions = {}) {
-  const msg = options.msg || 'must be a number';
-
   return new Decoder(value =>
     Number.isFinite(value as any)
       ? ok(value as number)
-      : err(value, msg, { decoderName: 'isNumber' }),
+      : err(value, "must be a number", options.msg, {
+          decoderName: "isNumber"
+        })
   );
 }

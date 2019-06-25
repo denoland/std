@@ -1,8 +1,8 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, runTests } from '../testing/mod.ts';
-import { assertEquals } from '../testing/asserts.ts';
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { DecoderSuccess, DecoderError } from './decoder_result.ts';
+import { test, runTests } from "../testing/mod.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test(function initializeDecoder(): void {
   const decoder = new Decoder(value => new DecoderSuccess(value));
@@ -11,67 +11,67 @@ test(function initializeDecoder(): void {
 
 test(function decodesBooleanValue(): void {
   const decoder = new Decoder((value: unknown) =>
-    typeof value === 'boolean'
+    typeof value === "boolean"
       ? new DecoderSuccess(value)
-      : new DecoderError(value, 'Value is not a boolean'),
+      : new DecoderError(value, "Value is not a boolean")
   );
 
   assertEquals(decoder.decode(true) instanceof DecoderSuccess, true);
   assertEquals(decoder.decode(false) instanceof DecoderSuccess, true);
   assertEquals(decoder.decode(0) instanceof DecoderError, true);
   assertEquals(decoder.decode(1) instanceof DecoderError, true);
-  assertEquals(decoder.decode('1') instanceof DecoderError, true);
+  assertEquals(decoder.decode("1") instanceof DecoderError, true);
 });
 
 test(function decodesStringValue() {
   const decoder = new Decoder((value: unknown) =>
-    typeof value === 'string'
+    typeof value === "string"
       ? new DecoderSuccess(value)
-      : new DecoderError(value, 'Value is not a string'),
+      : new DecoderError(value, "Value is not a string")
   );
 
   assertEquals(decoder.decode(true) instanceof DecoderError, true);
   assertEquals(decoder.decode(false) instanceof DecoderError, true);
   assertEquals(decoder.decode(0) instanceof DecoderError, true);
   assertEquals(decoder.decode(1) instanceof DecoderError, true);
-  assertEquals(decoder.decode('1') instanceof DecoderSuccess, true);
+  assertEquals(decoder.decode("1") instanceof DecoderSuccess, true);
 });
 
 test(async function returnPromiseWhenGivenPromiseValue() {
   const decoder = new Decoder(value => {
-    return typeof value === 'string'
+    return typeof value === "string"
       ? new DecoderSuccess(value)
-      : new DecoderError(value, 'Value is not a string promise');
+      : new DecoderError(value, "Value is not a string promise");
   });
 
   assertEquals(
     decoder.decode(true) instanceof DecoderError,
     true,
-    'error on boolean',
+    "error on boolean"
   );
 
   assertEquals(
     decoder.decode(Promise.resolve(true)) instanceof Promise,
     true,
-    'returns a promise',
+    "returns a promise"
   );
 
   assertEquals(
     (await decoder.decode(Promise.resolve(true))) instanceof DecoderError,
     true,
-    'promise error on promise boolean',
+    "promise error on promise boolean"
   );
 
   assertEquals(
     (await decoder.decode(Promise.resolve(1))) instanceof DecoderError,
     true,
-    'promise error on promise number',
+    "promise error on promise number"
   );
-  
+
   assertEquals(
-    (await decoder.decode(Promise.resolve('true'))) instanceof DecoderSuccess,
+    (await decoder.decode(Promise.resolve("true"))) instanceof DecoderSuccess,
     true,
-    'promise success on promise string',
+    "promise success on promise string"
   );
 });
 
@@ -82,9 +82,9 @@ test(function initializePromiseDecoder(): void {
 
 test(async function decodesBooleanValue() {
   const decoder = new PromiseDecoder((value: unknown) =>
-    typeof value === 'boolean'
+    typeof value === "boolean"
       ? Promise.resolve(new DecoderSuccess(value))
-      : Promise.resolve(new DecoderError(value, 'Value is not a boolean')),
+      : Promise.resolve(new DecoderError(value, "Value is not a boolean"))
   );
 
   assertEquals(decoder.decode(true) instanceof Promise, true);
@@ -92,14 +92,14 @@ test(async function decodesBooleanValue() {
   assertEquals((await decoder.decode(false)) instanceof DecoderSuccess, true);
   assertEquals((await decoder.decode(0)) instanceof DecoderError, true);
   assertEquals((await decoder.decode(1)) instanceof DecoderError, true);
-  assertEquals((await decoder.decode('1')) instanceof DecoderError, true);
+  assertEquals((await decoder.decode("1")) instanceof DecoderError, true);
 });
 
 test(async function decodesStringValue() {
   const decoder = new PromiseDecoder((value: unknown) =>
-    typeof value === 'string'
+    typeof value === "string"
       ? Promise.resolve(new DecoderSuccess(value))
-      : Promise.resolve(new DecoderError(value, 'Value is not a string')),
+      : Promise.resolve(new DecoderError(value, "Value is not a string"))
   );
 
   assertEquals(decoder.decode(true) instanceof Promise, true);
@@ -107,7 +107,7 @@ test(async function decodesStringValue() {
   assertEquals((await decoder.decode(false)) instanceof DecoderError, true);
   assertEquals((await decoder.decode(0)) instanceof DecoderError, true);
   assertEquals((await decoder.decode(1)) instanceof DecoderError, true);
-  assertEquals((await decoder.decode('1')) instanceof DecoderSuccess, true);
+  assertEquals((await decoder.decode("1")) instanceof DecoderSuccess, true);
 });
 
 runTests();

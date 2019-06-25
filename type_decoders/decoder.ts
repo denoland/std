@@ -1,9 +1,13 @@
-import { DecoderResult, DecoderError, DecoderSuccess } from "./decoder_result.ts";
+import {
+  DecoderResult,
+  DecoderError,
+  DecoderSuccess
+} from "./decoder_result.ts";
 
 /**
- * An object which can be used to validate and process `unknown` values 
+ * An object which can be used to validate and process `unknown` values
  * and cast them to the appropriate typescript type.
- * 
+ *
  * @param decodeFn the function which is used to decode input values
  */
 export class Decoder<R, I = unknown> {
@@ -33,10 +37,10 @@ export class Decoder<R, I = unknown> {
 }
 
 /**
- * An object which can be used to validate and process `unknown` values 
+ * An object which can be used to validate and process `unknown` values
  * and cast them to the appropriate typescript type. Unlike `Decoder`,
  * `PromiseDecoder` can receive a `decodeFn` which returns a promise.
- * 
+ *
  * @param decodeFn the function which is used to decode input values
  */
 export class PromiseDecoder<R, I = unknown> {
@@ -62,14 +66,18 @@ export class PromiseDecoder<R, I = unknown> {
 }
 
 // prettier-ignore : prettier makes this hard to read
-export type DecoderReturnType<T> = T extends Decoder<infer R> ? R :
-  T extends PromiseDecoder<infer R> ? R :
-  unknown;
+export type DecoderReturnType<T> = T extends Decoder<infer R>
+  ? R
+  : T extends PromiseDecoder<infer R>
+  ? R
+  : unknown;
 
 // prettier-ignore : prettier makes this hard to read
-export type DecoderInputType<T> = T extends Decoder<unknown, infer I> ? I :
-  T extends PromiseDecoder<unknown, infer I> ? I :
-  unknown;
+export type DecoderInputType<T> = T extends Decoder<unknown, infer I>
+  ? I
+  : T extends PromiseDecoder<unknown, infer I>
+  ? I
+  : unknown;
 
 /** The basic shape of the decoder functions exported by this module */
 export type DecoderFn<R, V = unknown> = () =>

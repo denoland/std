@@ -1,48 +1,48 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { ok, err, buildErrorLocationString } from "./util.ts";
 import {
-  ok,
-  err,
-  NestedDecoderErrorMsg,
-  buildErrorLocationString,
-} from './util.ts';
-import { DecoderError, DecoderResult } from './decoder_result.ts';
+  DecoderError,
+  DecoderResult,
+  DecoderErrorMsgArg
+} from "./decoder_result.ts";
+
+const decoderName = "isTuple";
 
 export interface ITupleDecoderOptions {
-  msg?: NestedDecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 export function isTuple<Tuple extends [unknown, ...unknown[]]>(
   decoders: { [I in keyof Tuple]: Decoder<Tuple[I]> },
-  options?: ITupleDecoderOptions,
+  options?: ITupleDecoderOptions
 ): Decoder<Tuple>;
 export function isTuple<Tuple extends [unknown, ...unknown[]]>(
   decoders: {
     [I in keyof Tuple]: Decoder<Tuple[I]> | PromiseDecoder<Tuple[I]>
   },
-  options?: ITupleDecoderOptions,
+  options?: ITupleDecoderOptions
 ): PromiseDecoder<Tuple>;
 export function isTuple<Tuple extends [unknown, ...unknown[]]>(
   decoders: {
     [I in keyof Tuple]: Decoder<Tuple[I]> | PromiseDecoder<Tuple[I]>
   },
-  options: ITupleDecoderOptions = {},
+  options: ITupleDecoderOptions = {}
 ) {
-  const decoderName = 'isTuple';
-
   if (decoders.some(decoder => decoder instanceof PromiseDecoder)) {
     return new PromiseDecoder(async input => {
       if (!Array.isArray(input)) {
-        return err(input, options.msg || 'must be an array', { decoderName });
+        return err(input, "must be an array", options.msg, { decoderName });
       } else if (input.length !== decoders.length) {
         return err(
           input,
-          options.msg || `array must be length ${decoders.length}`,
-          { decoderName },
+          `array must be length ${decoders.length}`,
+          options.msg,
+          { decoderName }
         );
       }
 
       const tuplePromises: any[] = decoders.map((decoder, index) =>
-        decoder.decode(input[index]),
+        decoder.decode(input[index])
       );
 
       const tupleResult = await Promise.all(tuplePromises);
@@ -53,17 +53,18 @@ export function isTuple<Tuple extends [unknown, ...unknown[]]>(
 
   return new Decoder(input => {
     if (!Array.isArray(input)) {
-      return err(input, options.msg || 'must be an array', { decoderName });
+      return err(input, "must be an array", options.msg, { decoderName });
     } else if (input.length !== decoders.length) {
       return err(
         input,
-        options.msg || `array must be length ${decoders.length}`,
-        { decoderName },
+        `array must be length ${decoders.length}`,
+        options.msg,
+        { decoderName }
       );
     }
 
     const tupleResult: any[] = decoders.map((decoder, index) =>
-      decoder.decode(input[index]),
+      decoder.decode(input[index])
     );
 
     return getTupleResult(tupleResult, options.msg);
@@ -72,22 +73,25 @@ export function isTuple<Tuple extends [unknown, ...unknown[]]>(
 
 function getTupleResult<T>(
   results: DecoderResult<T>[],
-  providedMsg?: NestedDecoderErrorMsg,
+  providedMsg?: DecoderErrorMsgArg
 ) {
   const index = results.findIndex(result => result instanceof DecoderError);
 
   if (index >= 0) {
     const error = results[index] as DecoderError;
-    const msg =
-      providedMsg || `invalid array element [${index}] > ${error.message}`;
     const location = buildErrorLocationString(index, error.location);
 
-    return err(error.value, msg, {
-      decoderName: 'isTuple',
-      child: error,
-      location,
-      key: index,
-    });
+    return err(
+      error.value,
+      `invalid array element [${index}] > ${error.message}`,
+      providedMsg,
+      {
+        decoderName,
+        child: error,
+        location,
+        key: index
+      }
+    );
   }
 
   return ok(results.map(result => result.value));

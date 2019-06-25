@@ -1,7 +1,9 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 export * from "./decoder.ts";
 export * from "./decoder_result.ts";
+
 export * from "./assert.ts";
+
 export * from "./is_any_of.ts";
 export * from "./is_any.ts";
 export * from "./is_array.ts";

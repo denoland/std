@@ -1,16 +1,15 @@
-import { Decoder } from './decoder.ts';
-import { DecoderErrorMsg, ok, err } from './util.ts';
+import { Decoder } from "./decoder.ts";
+import { ok, err } from "./util.ts";
+import { DecoderErrorMsgArg } from "./decoder_result.ts";
 
 export interface INullDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 export function isNull(options: INullDecoderOptions = {}) {
-  const msg = options.msg || 'must be null';
-
   return new Decoder(value =>
     value === null
       ? ok(value as null)
-      : err(value, msg, { decoderName: 'isNull' }),
+      : err(value, "must be null", options.msg, { decoderName: "isNull" })
   );
 }

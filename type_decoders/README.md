@@ -2,7 +2,7 @@
 
 This module facilitates validating `unknown` (or other) values and casting them to the proper typescript types. It provides an assortment of useful decoder primatives which are usable as-is, easily customized, and composable with other decoders (including any custom decoders you may make).
 
-Users and library authors should be able to easily create custom decoders which can be composed with the decoders provided in this module, as well as composed with any other third-party decoders which are compatible with this module.
+Users and library authors should be able to create custom decoders which can be composed with the decoders provided in this module, as well as composed with any other third-party decoders which are compatible with this module.
 
 ```ts
 import { assert, isNumber } from "https://deno.land/std/type_decoders/mod.ts";
@@ -206,23 +206,26 @@ class DecoderError {
     }
   ): DecoderError;
 
+  /** default = 'DecoderError' */
+  name: string;
+
   /** The value that failed validation. */
-  readonly value: unknown;
+  value: unknown;
   
   /** A human readable error message. */
-  readonly message: string;
+  message: string;
 
   /** An optional name to describe the decoder which triggered the error. */
-  readonly decoderName?: string;
+  decoderName?: string;
   
   /** 
    * A human readable string showing the nested location of the error.
    * If the validation error is not nested, location will equal a blank string.
    */
-  readonly location: string;
+  location: string;
   
   /** The child `DecoderError` which triggered this `DecoderError`, if any */
-  readonly child?: DecoderError;
+  child?: DecoderError;
   
   /** 
    * The key associated with this `DecoderError` if any.
@@ -230,7 +233,7 @@ class DecoderError {
    * - E.g. this might be the object key which failed validation for an `isObject()`
    *   decoder.
    */
-  readonly key?: unknown;
+  key?: unknown;
 
   /**
    * Starting with this error, an array of the keys associated with
@@ -246,11 +249,17 @@ class DecoderError {
 type DecoderResult<T> = DecoderSuccess<T> | DecoderError;
 ```
 
+### DecoderErrorMsgArg
+
+```ts
+type DecoderErrorMsgArg = string | ((error: DecoderError) => DecoderError);
+```
+
 ## Working with promises
 
-Every decoder supports calling its `decode` method with a promise which returns the value to be decoded. In this scenerio, the decoder will return a `Promise<DecoderResult<T>>`. Internally, the decoder will wait for the promise to resolve before passing the value to its `decodeFn`. As such, the internal `decodeFn` will never be passed a promise value.
+Every decoder supports calling its `decode()` method with a promise which returns the value to be decoded. In this scenerio, `decode()` will return a `Promise<DecoderResult<T>>`. Internally, the decoder will wait for the promise to resolve before passing the value to its `decodeFn`. As such, the internal `decodeFn` will never be passed a promise value.
 
-If you wish to create a custom decoder with a `decodeFn` which returns a promise, then you must use the `PromiseDecoder` class (`Decoder` does not support being constructed with a function which returns a promise).
+If you wish to create a custom decoder with a `decodeFn` which returns a promise, then you must use the `PromiseDecoder` class (the `Decoder` class does not support being constructed with a `decodeFn` which returns a promise).
 
 `PromiseDecoder` is largely identical to `Decoder`, except its `decode()` method always returns `Promise<DecoderResult<T>>` (not just when called with a promise value) and it's `decodeFn` returns a promise. Additionally, if you pass a `PromiseDecoder` as an argument to any of the decoder constructor functions in this module (i.e. `isObject()`, `isArray()`), that function will return a `PromiseDecoder` instead of a `Decoder`.
 
@@ -323,25 +332,23 @@ error.child.child.child.child // undefined
 
 ### Customizing error messages
 
-For more control over your error messages, you can provide a `(args: {value: V, key?: unknown, error?: DecoderError}) => string` function as the `msg` argument. Note, the actual `msg` argument type varies depending on the decoder function.
+For more control over your error messages, you can provide a `(error: DecoderError) => DecoderError` function as the `msg` argument.
 
-- e.g. the `isChainOf()` decoder function accepts a msg argument of type `string | ((args: {value: unknown, error: DecoderError}) => string)`.
-
-On an error, the provided `msg` function will be called with the invalid value, the `key` associated with the error (if any), and the nested `DecoderError` which triggered this error (if any). This allows you more control over the customized error messages you return.
+If a DecoderError occurs, the error will be passed to the provided `msg` function where you can either manipulate the error or return a new error.
 
 Example:
 
 ```ts
-const errorMsgFn = (args: {value: unknown, error: DecoderError}) => {
-  const { decoderName } = args.error;
+const errorMsgFn = (error: DecoderError) => {
+  const { decoderName } = error.child;
 
-  if (decoderName === 'isArray') {
-    if (args.error.child) return 'must be an array of numbers';
+  error.message = decoderName !== 'isArray' ? 'array must have a length of 2' :
+    error.child.child ? 'must be an array of numbers' :
+    'must be an array';
 
-    return 'must be an array';
-  }
+  error.decoderName = 'myLatLongDecoder';
 
-  return 'array must have a length of 2'
+  return error;
 };
 
 const myLatLongDecoder = isChainOf([
@@ -362,7 +369,7 @@ error1.message // "must be an array of numbers"
 error2.message // "array must have a length of 2"
 ```
 
-In the above example, our `errorMsgFn` made use of the `DecoderError#decoderName` property. DecoderErrors can be constructed with an optional `decoderName` value to easily identify the decoder which created them. All decoder functions exported by this module provide `DecoderError#decoderName` values. The `decoderName` value may be handy when constructing custom error messages.
+In the above example, our `errorMsgFn` made use of the `DecoderError#decoderName` property. DecoderErrors can be constructed with an optional `decoderName` value to easily identify the decoder which created them. All decoder functions exported by this module provide `DecoderError#decoderName` values.
 
 ## Creating custom decoders
 
@@ -375,7 +382,7 @@ const myLatLongDecoder = isChainOf([
 ])
 ```
 
-For more flexibility, you can create a new decoder from scratch using either the `Decoder` or `PromiseDecoder` constructors (see the [working with promises](#Working-with-promises) section for a description of the differences between `Decoder` and `PromiseDecoder`). To make a new decoder from scratch, simply provide a custom decode function which returns a `DecodeSuccess` object on success and a `DecodeError` object on failure.
+For more flexibility, you can create a new decoder from scratch using either the `Decoder` or `PromiseDecoder` constructors (see the [working with promises](#Working-with-promises) section for a description of the differences between `Decoder` and `PromiseDecoder`). To make a new decoder from scratch, simply pass a custom decode function to the `Decoder` constructor. A decode function is a function which receives a value and returns a `DecodeSuccess` object on success and a `DecodeError` object on failure.
 
 Example:
 
@@ -488,7 +495,7 @@ const value: number = validator('1'); // will throw a `DecoderError`
 
 ```ts
 interface IBooleanDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isBoolean(options?: IBooleanDecoderOptions): Decoder<boolean, unknown>;
@@ -500,7 +507,7 @@ function isBoolean(options?: IBooleanDecoderOptions): Decoder<boolean, unknown>;
 
 ```ts
 interface IStringDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isString(options?: IStringDecoderOptions): Decoder<string, unknown>;
@@ -512,7 +519,7 @@ function isString(options?: IStringDecoderOptions): Decoder<string, unknown>;
 
 ```ts
 interface INumberDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isNumber(options?: INumberDecoderOptions): Decoder<number, unknown>;
@@ -524,7 +531,7 @@ function isNumber(options?: INumberDecoderOptions): Decoder<number, unknown>;
 
 ```ts
 interface IIntegerDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isInteger(options?: IIntegerDecoderOptions): Decoder<number, unknown>;
@@ -536,7 +543,7 @@ function isInteger(options?: IIntegerDecoderOptions): Decoder<number, unknown>;
 
 ```ts
 interface IUndefinedDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isUndefined(options?: IUndefinedDecoderOptions): Decoder<undefined, unknown>;
@@ -548,7 +555,7 @@ function isUndefined(options?: IUndefinedDecoderOptions): Decoder<undefined, unk
 
 ```ts
 interface INullDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isNull(options?: INullDecoderOptions): Decoder<null, unknown>;
@@ -560,7 +567,7 @@ function isNull(options?: INullDecoderOptions): Decoder<null, unknown>;
 
 ```ts
 interface IRegexDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isRegex(regex: RegExp, options?: IRegexDecoderOptions): Decoder<string, unknown>;
@@ -580,7 +587,7 @@ function isAny<T = unknown>(): Decoder<T, unknown>;
 
 ```ts
 interface INeverDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isNever(options?: INeverDecoderOptions): Decoder<never, unknown>;
@@ -601,7 +608,7 @@ validator({ a: 'one', b: 'two' }) // throws DecoderError
 
 ```ts
 interface IExactlyDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isExactly<T>(value: T, options?: IExactlyDecoderOptions): Decoder<T, unknown>;
@@ -621,7 +628,7 @@ function isConstant<T>(value: T): Decoder<T, unknown>;
 
 ```ts
 interface IInstanceOfDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isInstanceOf<T extends new (...args: any) => any>(clazz: T, options?: IInstanceOfDecoderOptions): Decoder<InstanceType<T>, unknown>;
@@ -633,7 +640,7 @@ function isInstanceOf<T extends new (...args: any) => any>(clazz: T, options?: I
 
 ```ts
 interface ICheckedWithDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
   promise?: boolean;
 }
 
@@ -649,7 +656,7 @@ function isCheckedWith<T>(fn: (value: T) => Promise<boolean>, options: ICheckedW
 
 ```ts
 interface IOptionalDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isOptional<T>(decoder: Decoder<T>, options?: IOptionalDecoderOptions): Decoder<T | undefined>;
@@ -662,7 +669,7 @@ function isOptional<T>(decoder: PromiseDecoder<T>, options?: IOptionalDecoderOpt
 
 ```ts
 interface INullableDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isNullable<T>(decoder: Decoder<T>, options?: INullableDecoderOptions): Decoder<T | null>;
@@ -675,7 +682,7 @@ function isNullable<T>(decoder: PromiseDecoder<T>, options?: INullableDecoderOpt
 
 ```ts
 interface IMaybeDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isMaybe<T>(decoder: Decoder<T>, options?: IMaybeDecoderOptions): Decoder<T | null | undefined>;
@@ -688,7 +695,7 @@ function isMaybe<T>(decoder: PromiseDecoder<T>, options?: IMaybeDecoderOptions):
 
 ```ts
 interface IAnyOfDecoderOptions {
-  msg?: DecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isAnyOf<T extends Decoder<unknown>>(decoders: T[], options?: IAnyOfDecoderOptions): Decoder<DecoderReturnType<T>>;
@@ -701,7 +708,7 @@ function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(decoders:
 
 ```ts
 interface IChainOfDecoderOptions {
-  msg?: NestedDecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isChainOf<T extends [unknown, ...unknown[]], R = ChainOfDecoderReturn<T>, I = DecoderInputType<T[0]>>(
@@ -721,7 +728,7 @@ function isChainOf<T extends [unknown, ...unknown[]], R = ChainOfDecoderReturn<T
 
 ```ts
 interface IObjectDecoderOptions<T> {
-  msg?: NestedDecoderErrorMsg<T>;
+  msg?: DecoderErrorMsgArg;
   keyMap?: { [P in keyof T]?: string | number };
 }
 
@@ -735,7 +742,7 @@ function isObject<T>(decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDec
 
 ```ts
 interface IExactObjectDecoderOptions<T> {
-  msg?: NestedDecoderErrorMsg<T>;
+  msg?: DecoderErrorMsgArg;
   keyMap?: { [P in keyof T]?: string | number };
 }
 
@@ -749,7 +756,7 @@ function isExactObject<T>(decoderObject: { [P in keyof T]: Decoder<T[P]> | Promi
 
 ```ts
 interface IDictionaryDecoderOptions<V> {
-  msg?: DecoderErrorMsg<V>;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isDictionary<R, V = unknown>(decoder: Decoder<R, V>, options?: IDictionaryDecoderOptions<V>): Decoder<R[], V>;
@@ -762,7 +769,7 @@ function isDictionary<R, V = unknown>(decoder: PromiseDecoder<R, V>, options?: I
 
 ```ts
 interface IArrayDecoderOptions<V> {
-  msg?: DecoderErrorMsg<V>;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isArray<R = unknown, V = unknown>(options?: IArrayDecoderOptions<V>): Decoder<R[], V>;
@@ -776,7 +783,7 @@ function isArray<R, V = unknown>(decoder: PromiseDecoder<R, V>, options?: IArray
 
 ```ts
 interface ITupleDecoderOptions {
-  msg?: NestedDecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
 }
 
 function isTuple<Tuple extends [unknown, ...unknown[]]>(decoders: { [I in keyof Tuple]: Decoder<Tuple[I]> }, options?: ITupleDecoderOptions): Decoder<Tuple>;

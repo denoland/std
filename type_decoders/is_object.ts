@@ -1,40 +1,39 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { DecoderError, DecoderResult } from './decoder_result.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
 import {
-  err,
-  NestedDecoderErrorMsg,
-  ok,
-  buildErrorLocationString,
-} from './util.ts';
+  DecoderError,
+  DecoderResult,
+  DecoderErrorMsgArg
+} from "./decoder_result.ts";
+import { err, ok, buildErrorLocationString } from "./util.ts";
 
-const decoderName = 'isObject';
+const decoderName = "isObject";
 
 export interface IObjectDecoderOptions<T> {
-  msg?: NestedDecoderErrorMsg;
+  msg?: DecoderErrorMsgArg;
   keyMap?: { [P in keyof T]?: string | number };
 }
 
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> },
-  options?: IObjectDecoderOptions<T>,
+  options?: IObjectDecoderOptions<T>
 ): Decoder<T>;
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
-  options?: IObjectDecoderOptions<T>,
+  options?: IObjectDecoderOptions<T>
 ): PromiseDecoder<T>;
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
-  options: IObjectDecoderOptions<T> = {},
+  options: IObjectDecoderOptions<T> = {}
 ) {
   if (
     Object.values(decoderObject).some(
-      decoder => decoder instanceof PromiseDecoder,
+      decoder => decoder instanceof PromiseDecoder
     )
   ) {
     return new PromiseDecoder<T>(async input => {
-      if (typeof input !== 'object' || input === null) {
-        return err(input, options.msg || 'must be a non-null object', {
-          decoderName,
+      if (typeof input !== "object" || input === null) {
+        return err(input, "must be a non-null object", options.msg, {
+          decoderName
         });
       }
 
@@ -68,9 +67,9 @@ export function isObject<T>(
   }
 
   return new Decoder(input => {
-    if (typeof input !== 'object' || input === null) {
-      return err(input, options.msg || 'must be a non-null object', {
-        decoderName,
+    if (typeof input !== "object" || input === null) {
+      return err(input, "must be a non-null object", options.msg, {
+        decoderName
       });
     }
 
@@ -90,7 +89,7 @@ export function isObject<T>(
       if (error instanceof DecoderError) return error;
 
       const result = decoderObject[key].decode(
-        input[mappedValueKey],
+        input[mappedValueKey]
       ) as DecoderResult<T>;
 
       if (result instanceof DecoderError) {
@@ -109,7 +108,7 @@ function checkMappedValueKey<T>(
   value: unknown,
   key: string,
   valueKey: string,
-  options?: IObjectDecoderOptions<T>,
+  options: IObjectDecoderOptions<T>
 ) {
   if (options.keyMap && options.keyMap.hasOwnProperty(key)) {
     valueKey = options.keyMap[key];
@@ -117,11 +116,11 @@ function checkMappedValueKey<T>(
 
   if (!value.hasOwnProperty(valueKey)) {
     const propertyKey =
-      typeof valueKey === 'string' ? `"${valueKey}"` : valueKey;
-    const msg =
-      (options && options.msg) || `missing required key [${propertyKey}]`;
+      typeof valueKey === "string" ? `"${valueKey}"` : valueKey;
 
-    return err(value, msg, { decoderName });
+    return err(value, `missing required key [${propertyKey}]`, options.msg, {
+      decoderName
+    });
   }
 }
 
@@ -130,18 +129,20 @@ function buildError<T>(
   value: unknown,
   key: string,
   valueKey: string,
-  options?: IObjectDecoderOptions<T>,
+  options: IObjectDecoderOptions<T>
 ) {
   const location = buildErrorLocationString(valueKey, result.location);
-  const propertyKey = typeof valueKey === 'string' ? `"${valueKey}"` : valueKey;
-  const msg =
-    (options && options.msg) ||
-    `invalid key [${propertyKey}] value > ${result.message}`;
+  const propertyKey = typeof valueKey === "string" ? `"${valueKey}"` : valueKey;
 
-  return err(value, msg, {
-    decoderName,
-    child: result,
-    location,
-    key,
-  });
+  return err(
+    value,
+    `invalid key [${propertyKey}] value > ${result.message}`,
+    options.msg,
+    {
+      decoderName,
+      child: result,
+      location,
+      key
+    }
+  );
 }
