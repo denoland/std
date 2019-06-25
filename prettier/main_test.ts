@@ -237,7 +237,7 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 test(async function testPrettierReadFromStdinFormatTS(): Promise<void> {
   const inputCode = `console.log("abc"  )`;
   const p1 = Deno.run({
-    args: ["echo", `${inputCode}`],
+    args: ["deno", "./prettier/testdata/echox.ts", `${inputCode}`],
     stdout: "piped"
   });
 
@@ -283,7 +283,7 @@ test(async function testPrettierReadFromStdinFormatTS(): Promise<void> {
 test(async function testPrettierReadFromStdinFormatJS(): Promise<void> {
   const inputCode = `console.log("abc"  )`;
   const p1 = Deno.run({
-    args: ["echo", `${inputCode}`],
+    args: ["deno", "./prettier/testdata/echox.ts", `${inputCode}`],
     stdout: "piped"
   });
 
@@ -335,7 +335,7 @@ test(async function testPrettierReadFromStdinFormatJS(): Promise<void> {
 test(async function testPrettierReadFromStdinFormatJSON(): Promise<void> {
   const inputCode = `{\"a\":\"b\"}`;
   const p1 = Deno.run({
-    args: ["echo", `${inputCode}`],
+    args: ["deno", "./prettier/testdata/echox.ts", `${inputCode}`],
     stdout: "piped"
   });
 
@@ -387,7 +387,7 @@ test(async function testPrettierReadFromStdinFormatJSON(): Promise<void> {
 test(async function testPrettierReadFromStdinFormatMarkdown(): Promise<void> {
   const inputCode = `##  test`;
   const p1 = Deno.run({
-    args: ["echo", `${inputCode}`],
+    args: ["deno", "./prettier/testdata/echox.ts", `${inputCode}`],
     stdout: "piped"
   });
 
@@ -439,7 +439,7 @@ test(async function testPrettierReadFromStdinFormatMarkdown(): Promise<void> {
 test(async function testPrettierReadInvalidCodeFromStdin(): Promise<void> {
   const inputCode = `InvalidTypescriptCode##@@!!`;
   const p1 = Deno.run({
-    args: ["echo", `${inputCode}`],
+    args: ["deno", "./prettier/testdata/echox.ts", `${inputCode}`],
     stdout: "piped"
   });
 
