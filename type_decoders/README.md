@@ -283,6 +283,8 @@ myObjectDecoder instanceof PromiseDecoder === true
 
 ## Working with errors
 
+[_see the `DecoderError` interface_](#DecoderError)
+
 One of the most useful aspects of this module is its support for providing human and machine readable error messages, as well as customizing those messages for your domain. 
 
 Where appropriate, the decoder functions exported by this module accept an optional options object with `{ msg?: DecoderErrorMsgArg }` where `type DecoderErrorMsgArg = string | ((error: DecoderError) => DecoderError)`. If you pass a string to this message property, that string will be used as the error message for that decoder. This is option is easy but will potentially suppress more deeply nested error messages.
