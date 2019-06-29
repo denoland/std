@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "cargo",
+    "cargo/test_plugin",
+]

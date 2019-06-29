@@ -17,6 +17,8 @@ async function main(opts): Promise<void> {
     "testdata",
     "--ignore",
     "vendor",
+    "--ignore",
+    "target",
     "--write"
   ];
 
