@@ -299,21 +299,6 @@ test(async function testPrettierReadFromStdinFormatJS(): Promise<void> {
     stdout: "piped"
   });
 
-  if (!p2.stdin) {
-    assert(false, "There should be stdin here.");
-    return;
-  }
-
-  if (!p2.stdout) {
-    assert(false, "There should be stdout here.");
-    return;
-  }
-
-  if (!p1.stdout) {
-    assert(false, "There should be stdout here.");
-    return;
-  }
-
   const streamed = Deno.copy(p2.stdin, p1.stdout);
   const n = await streamed;
   console.log("bytes copied:", n);
@@ -350,21 +335,6 @@ test(async function testPrettierReadFromStdinFormatJSON(): Promise<void> {
     stdin: "piped",
     stdout: "piped"
   });
-
-  if (!p2.stdin) {
-    assert(false, "There should be stdin here.");
-    return;
-  }
-
-  if (!p2.stdout) {
-    assert(false, "There should be stdout here.");
-    return;
-  }
-
-  if (!p1.stdout) {
-    assert(false, "There should be stdout here.");
-    return;
-  }
 
   const streamed = Deno.copy(p2.stdin, p1.stdout);
   const n = await streamed;
@@ -403,21 +373,6 @@ test(async function testPrettierReadFromStdinFormatMarkdown(): Promise<void> {
     stdout: "piped"
   });
 
-  if (!p2.stdin) {
-    assert(false, "There should be stdin here.");
-    return;
-  }
-
-  if (!p2.stdout) {
-    assert(false, "There should be stdout here.");
-    return;
-  }
-
-  if (!p1.stdout) {
-    assert(false, "There should be stdout here.");
-    return;
-  }
-
   const streamed = Deno.copy(p2.stdin, p1.stdout);
   const n = await streamed;
   console.log("bytes copied:", n);
@@ -449,26 +404,6 @@ test(async function testPrettierReadInvalidCodeFromStdin(): Promise<void> {
     stdout: "piped",
     stderr: "piped"
   });
-
-  if (!p2.stdin) {
-    assert(false, "There should be stdin here.");
-    return;
-  }
-
-  if (!p2.stdout) {
-    assert(false, "There should be stdout here.");
-    return;
-  }
-
-  if (!p2.stderr) {
-    assert(false, "There should be stderr here.");
-    return;
-  }
-
-  if (!p1.stdout) {
-    assert(false, "There should be stdout here.");
-    return;
-  }
 
   const streamed = Deno.copy(p2.stdin, p1.stdout);
   const n = await streamed;
