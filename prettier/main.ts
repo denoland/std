@@ -42,10 +42,11 @@ Options:
                                         false.
   --ignore <path>                       Ignore the given path(s).
   --stdin                               Specifies to read the code from stdin.
-                                        If run the command in a pipe in the
-                                        terminal, you do not need to specify
-                                        this flag.
-  --stdin-parser                        If set --stdin flag, then need specify a
+                                        If run the command in a pipe, you do not
+                                        need to specify this flag.
+                                        Defaults to false.
+  --stdin-parser <typescript|babel|markdown|json>
+                                        If set --stdin flag, then need specify a
                                         parser for stdin. available parser:
                                         typescript/babel/markdown/json. Defaults
                                         to typescript.
