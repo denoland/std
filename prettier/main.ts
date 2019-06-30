@@ -426,9 +426,4 @@ main(
       H: "help"
     }
   })
-).catch(
-  (err): void => {
-    console.error(err);
-    exit(1);
-  }
-);
+)
