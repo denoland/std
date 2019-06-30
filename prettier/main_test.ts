@@ -235,7 +235,7 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 });
 
 test(async function testPrettierReadFromStdin(): Promise<void> {
-  interface testcase {
+  interface TestCase {
     stdin: string;
     stdout: string;
     stderr: string;
@@ -294,7 +294,7 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
     p1.close();
   }
 
-  const testcases: testcase[] = [
+  const testCases: TestCase[] = [
     {
       stdin: `console.log("abc"  )`,
       stdout: `console.log("abc");\n`,
@@ -345,7 +345,7 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
     }
   ];
 
-  for (const t of testcases) {
+  for (const t of testCases) {
     await readFromStdinAssertion(
       t.stdin,
       t.stdout,
