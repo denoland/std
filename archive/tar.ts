@@ -1,5 +1,6 @@
 /**
- * Ported and modified from: https://github.com/jshttp/mime-types and licensed as:
+ * Ported and modified from: https://github.com/jshttp/mime-types and
+ * licensed as:
  *
  * (The MIT License)
  *
@@ -292,7 +293,8 @@ export class Tar {
 
   /**
    * Append a file to this tar archive
-   * @param fileName file name (e.g., test.txt; use slash for directory separators)
+   * @param fileName file name
+   *                 e.g., test.txt; use slash for directory separators
    * @param opts options
    */
   async append(fileName: string, opts: TarOptions): Promise<void> {
@@ -314,7 +316,8 @@ export class Tar {
       }
       if (i < 0 || fileName.length > 100 || fileNamePrefix!.length > 155) {
         throw new Error(
-          "ustar format does not allow a long file name (length of [file name prefix] + / + [file name] must be shorter than 256 bytes)"
+          "ustar format does not allow a long file name (length of [file name" +
+            "prefix] + / + [file name] must be shorter than 256 bytes)"
         );
       }
     }
@@ -453,19 +456,24 @@ export class Untar {
     if (fileNamePrefix.byteLength > 0) {
       meta.fileName = decoder.decode(fileNamePrefix) + "/" + meta.fileName;
     }
-    ["fileMode", "mtime", "uid", "gid"].forEach(
+    (["fileMode", "mtime", "uid", "gid"] as [
+      "fileMode",
+      "mtime",
+      "uid",
+      "gid"
+    ]).forEach(
       (key): void => {
         const arr = trim(header[key]);
         if (arr.byteLength > 0) {
-          meta[key as keyof UntarOptions] = parseInt(decoder.decode(arr), 8);
+          meta[key] = parseInt(decoder.decode(arr), 8);
         }
       }
     );
-    ["owner", "group"].forEach(
+    (["owner", "group"] as ["owner", "group"]).forEach(
       (key): void => {
         const arr = trim(header[key]);
         if (arr.byteLength > 0) {
-          meta[key as keyof UntarOptions] = decoder.decode(arr);
+          meta[key] = decoder.decode(arr);
         }
       }
     );
