@@ -41,6 +41,14 @@ Options:
                                         it will output to stdout, Defaults to
                                         false.
   --ignore <path>                       Ignore the given path(s).
+  --stdin                               Specifies to read the code from stdin.
+                                        If run the command in a pipe in the
+                                        terminal, you do not need to specify
+                                        this flag.
+  --stdin-parser                        If set --stdin flag, then need specify a
+                                        parser for stdin. available parser:
+                                        typescript/babel/markdown/json. Defaults
+                                        to typescript.
 
 JS/TS Styling Options:
   --print-width <int>                   The line length where Prettier will try
@@ -76,8 +84,13 @@ Example:
 
   deno run prettier/main.ts script1.ts
                                         Print the formatted code to stdout
+
   cat script1.ts | deno run prettier/main.ts
-                                        Read the Typescript code from stdin and
+                                        Read the typescript code from stdin and
+                                        output formatted code to stdout.
+
+  cat config.json | deno run prettier/main.ts --stdin-parser=json
+                                        Read the JSON string from stdin and
                                         output formatted code to stdout.
 `;
 
