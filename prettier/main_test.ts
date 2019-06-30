@@ -262,8 +262,7 @@ test(async function testPrettierReadFromStdinFormatTS(): Promise<void> {
     return;
   }
 
-  const streamed = Deno.copy(p2.stdin, p1.stdout);
-  const n = await streamed;
+  const n = await Deno.copy(p2.stdin, p1.stdout);
   console.log("bytes copied:", n);
 
   const status1 = await p1.status();
@@ -299,8 +298,7 @@ test(async function testPrettierReadFromStdinFormatJS(): Promise<void> {
     stdout: "piped"
   });
 
-  const streamed = Deno.copy(p2.stdin, p1.stdout);
-  const n = await streamed;
+  const n = await Deno.copy(p2.stdin, p1.stdout);
   console.log("bytes copied:", n);
 
   const status1 = await p1.status();
@@ -320,13 +318,13 @@ test(async function testPrettierReadFromStdinFormatJS(): Promise<void> {
 test(async function testPrettierReadFromStdinFormatJSON(): Promise<void> {
   const inputCode = `{\"a\":\"b\"}`;
   const p1 = Deno.run({
-    args: ["deno", "./prettier/testdata/echox.ts", `${inputCode}`],
+    args: [execPath, "./prettier/testdata/echox.ts", `${inputCode}`],
     stdout: "piped"
   });
 
   const p2 = Deno.run({
     args: [
-      "deno",
+      execPath,
       "run",
       "./prettier/main.ts",
       "--stdin",
@@ -336,8 +334,7 @@ test(async function testPrettierReadFromStdinFormatJSON(): Promise<void> {
     stdout: "piped"
   });
 
-  const streamed = Deno.copy(p2.stdin, p1.stdout);
-  const n = await streamed;
+  const n = await Deno.copy(p2.stdin, p1.stdout);
   console.log("bytes copied:", n);
 
   const status1 = await p1.status();
@@ -357,13 +354,13 @@ test(async function testPrettierReadFromStdinFormatJSON(): Promise<void> {
 test(async function testPrettierReadFromStdinFormatMarkdown(): Promise<void> {
   const inputCode = `##  test`;
   const p1 = Deno.run({
-    args: ["deno", "./prettier/testdata/echox.ts", `${inputCode}`],
+    args: [execPath, "./prettier/testdata/echox.ts", `${inputCode}`],
     stdout: "piped"
   });
 
   const p2 = Deno.run({
     args: [
-      "deno",
+      execPath,
       "run",
       "./prettier/main.ts",
       "--stdin",
@@ -373,8 +370,7 @@ test(async function testPrettierReadFromStdinFormatMarkdown(): Promise<void> {
     stdout: "piped"
   });
 
-  const streamed = Deno.copy(p2.stdin, p1.stdout);
-  const n = await streamed;
+  const n = await Deno.copy(p2.stdin, p1.stdout);
   console.log("bytes copied:", n);
 
   const status1 = await p1.status();
@@ -394,19 +390,18 @@ test(async function testPrettierReadFromStdinFormatMarkdown(): Promise<void> {
 test(async function testPrettierReadInvalidCodeFromStdin(): Promise<void> {
   const inputCode = `InvalidTypescriptCode##@@!!`;
   const p1 = Deno.run({
-    args: ["deno", "./prettier/testdata/echox.ts", `${inputCode}`],
+    args: [execPath, "./prettier/testdata/echox.ts", `${inputCode}`],
     stdout: "piped"
   });
 
   const p2 = Deno.run({
-    args: ["deno", "run", "./prettier/main.ts", "--stdin"],
+    args: [execPath, "run", "./prettier/main.ts", "--stdin"],
     stdin: "piped",
     stdout: "piped",
     stderr: "piped"
   });
 
-  const streamed = Deno.copy(p2.stdin, p1.stdout);
-  const n = await streamed;
+  const n = await Deno.copy(p2.stdin, p1.stdout);
   console.log("bytes copied:", n);
 
   const status1 = await p1.status();
