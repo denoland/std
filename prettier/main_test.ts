@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { join } from "../fs/path.ts";
 import { EOL } from "../fs/path/constants.ts";
-import { assertEquals, assert } from "../testing/asserts.ts";
+import { assertEquals } from "../testing/asserts.ts";
 import { test, runIfMain } from "../testing/mod.ts";
 import { xrun } from "./util.ts";
 import { copy, emptyDir } from "../fs/mod.ts";
@@ -237,42 +237,27 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 test(async function testPrettierReadFromStdinFormatTS(): Promise<void> {
   const inputCode = `console.log("abc"  )`;
   const p1 = Deno.run({
-    args: ["deno", "./prettier/testdata/echox.ts", `${inputCode}`],
+    args: [execPath, "./prettier/testdata/echox.ts", `${inputCode}`],
     stdout: "piped"
   });
 
   const p2 = Deno.run({
-    args: ["deno", "run", "./prettier/main.ts", "--stdin"],
+    args: [execPath, "run", "./prettier/main.ts", "--stdin"],
     stdin: "piped",
     stdout: "piped"
   });
 
-  if (!p2.stdin) {
-    assert(false, "There should be stdin here.");
-    return;
-  }
-
-  if (!p2.stdout) {
-    assert(false, "There should be stdout here.");
-    return;
-  }
-
-  if (!p1.stdout) {
-    assert(false, "There should be stdout here.");
-    return;
-  }
-
-  const n = await Deno.copy(p2.stdin, p1.stdout);
+  const n = await Deno.copy(p2.stdin!, p1.stdout!);
   console.log("bytes copied:", n);
 
   const status1 = await p1.status();
   assertEquals(status1.code, 0);
   assertEquals(status1.success, true);
-  p2.stdin.close();
+  p2.stdin!.close();
   const status2 = await p2.status();
   assertEquals(status2.code, 0);
   assertEquals(status2.success, true);
-  const stdout = await Deno.readAll(p2.stdout);
+  const stdout = await Deno.readAll(p2.stdout!);
   const formattedCode = new TextDecoder("utf-8").decode(stdout);
   assertEquals(formattedCode, `console.log("abc");` + "\n");
   p2.close();
@@ -282,13 +267,13 @@ test(async function testPrettierReadFromStdinFormatTS(): Promise<void> {
 test(async function testPrettierReadFromStdinFormatJS(): Promise<void> {
   const inputCode = `console.log("abc"  )`;
   const p1 = Deno.run({
-    args: ["deno", "./prettier/testdata/echox.ts", `${inputCode}`],
+    args: [execPath, "./prettier/testdata/echox.ts", `${inputCode}`],
     stdout: "piped"
   });
 
   const p2 = Deno.run({
     args: [
-      "deno",
+      execPath,
       "run",
       "./prettier/main.ts",
       "--stdin",
@@ -298,17 +283,17 @@ test(async function testPrettierReadFromStdinFormatJS(): Promise<void> {
     stdout: "piped"
   });
 
-  const n = await Deno.copy(p2.stdin, p1.stdout);
+  const n = await Deno.copy(p2.stdin!, p1.stdout!);
   console.log("bytes copied:", n);
 
   const status1 = await p1.status();
   assertEquals(status1.code, 0);
   assertEquals(status1.success, true);
-  p2.stdin.close();
+  p2.stdin!.close();
   const status2 = await p2.status();
   assertEquals(status2.code, 0);
   assertEquals(status2.success, true);
-  const stdout = await Deno.readAll(p2.stdout);
+  const stdout = await Deno.readAll(p2.stdout!);
   const formattedCode = new TextDecoder("utf-8").decode(stdout);
   assertEquals(formattedCode, `console.log("abc");` + "\n");
   p2.close();
@@ -334,17 +319,17 @@ test(async function testPrettierReadFromStdinFormatJSON(): Promise<void> {
     stdout: "piped"
   });
 
-  const n = await Deno.copy(p2.stdin, p1.stdout);
+  const n = await Deno.copy(p2.stdin!, p1.stdout!);
   console.log("bytes copied:", n);
 
   const status1 = await p1.status();
   assertEquals(status1.code, 0);
   assertEquals(status1.success, true);
-  p2.stdin.close();
+  p2.stdin!.close();
   const status2 = await p2.status();
   assertEquals(status2.code, 0);
   assertEquals(status2.success, true);
-  const stdout = await Deno.readAll(p2.stdout);
+  const stdout = await Deno.readAll(p2.stdout!);
   const formattedCode = new TextDecoder("utf-8").decode(stdout);
   assertEquals(formattedCode, `{ "a": "b" }` + "\n");
   p2.close();
@@ -370,17 +355,17 @@ test(async function testPrettierReadFromStdinFormatMarkdown(): Promise<void> {
     stdout: "piped"
   });
 
-  const n = await Deno.copy(p2.stdin, p1.stdout);
+  const n = await Deno.copy(p2.stdin!, p1.stdout!);
   console.log("bytes copied:", n);
 
   const status1 = await p1.status();
   assertEquals(status1.code, 0);
   assertEquals(status1.success, true);
-  p2.stdin.close();
+  p2.stdin!.close();
   const status2 = await p2.status();
   assertEquals(status2.code, 0);
   assertEquals(status2.success, true);
-  const stdout = await Deno.readAll(p2.stdout);
+  const stdout = await Deno.readAll(p2.stdout!);
   const formattedCode = new TextDecoder("utf-8").decode(stdout);
   assertEquals(formattedCode, `## test` + "\n");
   p2.close();
@@ -401,21 +386,21 @@ test(async function testPrettierReadInvalidCodeFromStdin(): Promise<void> {
     stderr: "piped"
   });
 
-  const n = await Deno.copy(p2.stdin, p1.stdout);
+  const n = await Deno.copy(p2.stdin!, p1.stdout!);
   console.log("bytes copied:", n);
 
   const status1 = await p1.status();
   assertEquals(status1.code, 0);
   assertEquals(status1.success, true);
-  p2.stdin.close();
+  p2.stdin!.close();
   const status2 = await p2.status();
   assertEquals(status2.code, 1);
   assertEquals(status2.success, false);
   const stdoutOutput = new TextDecoder("utf-8").decode(
-    await Deno.readAll(p2.stdout)
+    await Deno.readAll(p2.stdout!)
   );
   const stderrOutput = new TextDecoder("utf-8").decode(
-    await Deno.readAll(p2.stderr)
+    await Deno.readAll(p2.stderr!)
   );
   assertEquals(stdoutOutput, "");
   assertEquals(
