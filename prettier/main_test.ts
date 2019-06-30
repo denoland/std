@@ -264,7 +264,7 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
         "run",
         "./prettier/main.ts",
         "--stdin",
-        parser ? `--stdin-parser=${parser}` : ""
+        ...(parser ? ["--stdin-parser", parser] : [])
       ],
       stdin: "piped",
       stdout: "piped",
