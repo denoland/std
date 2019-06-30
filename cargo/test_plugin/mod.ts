@@ -9,6 +9,9 @@ const buildResult = build({
 });
 // We could also search through the artifacts list here to find something more specific if we wanted.
 const plugin = openPlugin(
-  join(buildResult.output_root, pluginFilename(buildResult.artifacts[0].output_name))
+  join(
+    buildResult.output_root,
+    pluginFilename(buildResult.artifacts[0].output_name)
+  )
 );
 export const testOp = plugin.loadOp("test_op");

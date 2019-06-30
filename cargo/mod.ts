@@ -41,12 +41,12 @@ export interface CargoBuildResData {
 }
 
 export interface CargoBuildResError {
-    message: string;
+  message: string;
 }
 
 export interface CargoBuildRes {
-    data?: CargoBuildResData;
-    error?: CargoBuildResError;
+  data?: CargoBuildResData;
+  error?: CargoBuildResError;
 }
 
 // TODO(afinch7) make DENO_CARGO_PLUGIN_PATH optional once we can load plugins via url
@@ -58,30 +58,26 @@ const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
 export function build(opts: CargoBuildOptions): CargoBuildResData {
-    const response = cargoBuildOp.dispatch(
-        textEncoder.encode(
-          JSON.stringify({
-            ...defaultCargoBuildOptions,
-            ...opts
-          })
-        )
-    );
-    if (response instanceof Uint8Array) {
-        const result: CargoBuildRes = JSON.parse(
-            textDecoder.decode(
-                response,
-            )
-        );
-        if (result.error) {
-            throw new Error(result.error.message);
-        } else {
-            if (result.data) {
-                return result.data;
-            } else {
-                throw new Error("Unexpected empty data field in response");
-            }
-        }
+  const response = cargoBuildOp.dispatch(
+    textEncoder.encode(
+      JSON.stringify({
+        ...defaultCargoBuildOptions,
+        ...opts
+      })
+    )
+  );
+  if (response instanceof Uint8Array) {
+    const result: CargoBuildRes = JSON.parse(textDecoder.decode(response));
+    if (result.error) {
+      throw new Error(result.error.message);
     } else {
-        throw new Error(`Unexpected response type ${typeof response}`);
+      if (result.data) {
+        return result.data;
+      } else {
+        throw new Error("Unexpected empty data field in response");
+      }
     }
+  } else {
+    throw new Error(`Unexpected response type ${typeof response}`);
+  }
 }
