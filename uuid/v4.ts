@@ -1,3 +1,5 @@
+import { NIL_UUID } from "./mod.ts";
+
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 /**
  * Super-small uuid generation.
@@ -9,6 +11,7 @@
 const UUID_RE = new RegExp(
   '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$',
   'i'
+  
 );
 
 export function validate(id: string): boolean {
@@ -17,24 +20,13 @@ export function validate(id: string): boolean {
 
 export default function generate(): string {
   return (
-    // return
-    (
-      "" + // a concatentated string:
-      1e7 + //  10000000 +
-      -1e3 + // -1000 +
-      -4e3 + // -4000 +
-      -8e3 + // -80000000 +
-      -1e11
-    ) // -100000000000,
+    "00000000-0000-4000-8000-000000000000"
       .replace(
-        // replacing
-        /[01]/g, // ones and zeroes with a
+        /[0]/g, 
         (): string =>
-          (
-            0 | // floored
-            (Math.random() * 16)
-          ) // random integer from 0 to 15
-            .toString(16) // as a hex digit.
+          // random integer from 0 to 15
+          Math.floor(Math.random() * 16)
+          .toString(16) // as a hex digit.
       )
   );
 }
