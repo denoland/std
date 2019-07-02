@@ -18,10 +18,13 @@ export function validate(id: string): boolean {
 }
 
 export default function generate(): string {
+  // Generate 16 random bytes
+  // adjust 4 msb of 7th byte to 0100
+  // set 2 msb of 9th byte to 10
   return "00000000-0000-4000-8000-000000000000".replace(
     /[0]/g,
     (): string =>
-      // random integer from 0 to 15
-      Math.floor(Math.random() * 16).toString(16) // as a hex digit.
+      // random integer from 0 to 15 as a hex digit.
+      (crypto.getRandomValues(new Uint8Array(1))[0] % 16).toString(16)
   );
 }
