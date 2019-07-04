@@ -194,26 +194,33 @@ function nonObjectError(input: unknown, options?: IObjectDecoderOptions) {
   );
 }
 
-function buildChildError(child: DecoderError, value: unknown, key: string) {
-  const location = buildErrorLocationString(key, child.location);
-  const keyName = typeof key === 'string' ? `"${key}"` : key;
+function buildChildError(child: DecoderError, value: object, key: string) {
+  let location: string;
+  let message: string;
+  let errorKey: string | undefined = key;
 
-  return new DecoderError(
-    value,
-    `invalid key [${keyName}] value > ${child.message}`,
-    {
-      decoderName,
-      child,
-      location,
-      key,
-    },
-  );
+  if (value.hasOwnProperty(key)) {
+    location = buildErrorLocationString(key, child.location);
+    message = `invalid value for key ["${key}"] > ${child.message}`;
+  }
+  else {
+    location = child.location;
+    message = `missing key ["${key}"]`;
+    errorKey = undefined;
+  }
+
+  return new DecoderError(value, message, {
+    decoderName,
+    child,
+    location,
+    key: errorKey,
+  });
 }
 
 function buildKeyError(value: unknown, key: string) {
   const keyName = typeof key === 'string' ? `"${key}"` : key;
 
-  return new DecoderError(value, `invalid key [${keyName}]`, {
+  return new DecoderError(value, `unknown key [${keyName}]`, {
     decoderName,
     key,
   });

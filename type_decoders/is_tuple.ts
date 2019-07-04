@@ -1,6 +1,10 @@
 import { Decoder, PromiseDecoder } from './decoder.ts';
 import { ok, buildErrorLocationString, err } from './_util.ts';
-import { DecoderError, DecoderSuccess, areDecoderErrors } from './decoder_result.ts';
+import {
+  DecoderError,
+  DecoderSuccess,
+  areDecoderErrors,
+} from './decoder_result.ts';
 import { IComposeDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
 
 const decoderName = 'isTuple';
@@ -47,10 +51,14 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
           }),
         );
 
-        if (hasError) {
+        if (hasError || input.length !== decoders.length) {
           const errors = (results.filter(result =>
             areDecoderErrors(result),
           ) as DecoderError[][]).flat();
+
+          if (input.length !== decoders.length) {
+            errors.push(...invalidLengthError(decoders.length, input))
+          }
 
           return applyDecoderErrorOptions(errors, options);
         }
@@ -64,12 +72,19 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
     return new PromiseDecoder(async input => {
       if (!Array.isArray(input)) {
         return nonArrayError(input, options);
+      } else if (input.length !== decoders.length) {
+        return applyDecoderErrorOptions(
+          invalidLengthError(decoders.length, input),
+          options,
+        );
       }
 
       const tuple: unknown[] = [];
-      let index = 0;
+      let index = -1;
 
       for (const decoder of decoders) {
+        index++;
+
         const result = await decoder.decode(input[index]);
 
         if (areDecoderErrors(result)) {
@@ -81,7 +96,6 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
         }
 
         tuple.push(result.value);
-        index++;
       }
 
       return ok(tuple);
@@ -95,9 +109,22 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
 
     const tuple: unknown[] = [];
     const allErrors: DecoderError[] = [];
-    let index = 0;
+    let index = -1;
+
+    if (input.length !== decoders.length) {
+      if (!options.allErrors) {
+        return applyDecoderErrorOptions(
+          invalidLengthError(decoders.length, input),
+          options,
+        );
+      }
+
+      allErrors.push(...invalidLengthError(decoders.length, input));
+    }
 
     for (const decoder of decoders) {
+      index++;
+
       const result = (decoder as Decoder<unknown, unknown>).decode(
         input[index],
       );
@@ -116,7 +143,6 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
       }
 
       tuple.push(result.value);
-      index++;
     }
 
     if (allErrors.length > 0)
@@ -133,12 +159,20 @@ function nonArrayError(
   return err(input, 'must be an array', decoderName, options);
 }
 
+function invalidLengthError(length: number, input: unknown) {
+  return [
+    new DecoderError(input, `array must have length ${length}`, {
+      decoderName,
+    }),
+  ];
+}
+
 function buildChildError(child: DecoderError, value: unknown, key: number) {
   const location = buildErrorLocationString(key, child.location);
 
   return new DecoderError(
     value,
-    `invalid array element [${key}] > ${child.message}`,
+    `invalid element [${key}] > ${child.message}`,
     {
       decoderName,
       child,

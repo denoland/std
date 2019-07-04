@@ -7,7 +7,7 @@ import {
 import { Decoder, PromiseDecoder } from './decoder.ts';
 
 function printValue(value: unknown) {
-  return typeof value === 'string' ? JSON.stringify(value) : value;
+  return value instanceof Promise ? value : JSON.stringify(value);
 }
 
 /**
@@ -129,40 +129,48 @@ export function assertDecodeSuccess(
 export function assertDecodeErrors(args: {
   decoder: Decoder<unknown> | PromiseDecoder<unknown>;
   input: Promise<unknown>;
-  expected?: {
+  expected?: Array<{
     input?: unknown;
     msg?: string;
-    length?: number;
-  };
+    location?: string;
+    path?: unknown[];
+  }>;
+  count?: number;
 }): Promise<void>;
 export function assertDecodeErrors(args: {
   decoder: PromiseDecoder<unknown>;
   input: unknown;
-  expected?: {
+  expected?: Array<{
     input?: unknown;
     msg?: string;
-    length?: number;
-  };
+    location?: string;
+    path?: unknown[];
+  }>;
+  count?: number;
 }): Promise<void>;
 export function assertDecodeErrors(args: {
   decoder: Decoder<unknown>;
   input: unknown;
-  expected?: {
+  expected?: Array<{
     input?: unknown;
     msg?: string;
-    length?: number;
-  };
+    location?: string;
+    path?: unknown[];
+  }>;
+  count?: number;
 }): void;
 export function assertDecodeErrors(args: {
   decoder: Decoder<unknown> | PromiseDecoder<unknown>;
   input: unknown;
-  expected?: {
+  expected?: Array<{
     input?: unknown;
     msg?: string;
-    length?: number;
-  };
+    location?: string;
+    path?: unknown[];
+  }>;
+  count?: number;
 }): void | Promise<void> {
-  const expected = args.expected || {};
+  const expectedErrors = args.expected || [];
   const testResult = (result: DecoderResult<unknown>) => {
     if (!areDecoderErrors(result)) {
       throw new AssertionError(
@@ -171,34 +179,106 @@ export function assertDecodeErrors(args: {
       );
     }
 
-    if (
-      expected.hasOwnProperty('length') &&
-      result.length !== expected.length
-    ) {
+    if (args.count !== undefined && result.length !== args.count) {
       throw new AssertionError(
         `decoder.decode(${printValue(args.input)}) ` +
-          `expected to resolve to an array of length ` +
-          `${printValue(expected.length)} but it resolved ` +
-          `to an array of length ${printValue(result.length)}`,
+          `expected to have ` +
+          `${printValue(args.count)} DecoderErrors but it ` +
+          `resolved to have ${printValue(result.length)}`,
       );
     }
 
-    const error = result[0];
+    expectedErrors.forEach(expected => {
+      const hasError = result.some(error => {
+        const criteria: boolean[] = [];
 
-    if (expected.hasOwnProperty('input') && error.input !== expected.input) {
-      throw new AssertionError(
-        `decoder.decode(${printValue(args.input)}) DecoderError#input ` +
-          `expected to resolve to ${printValue(expected.input)}`,
-      );
-    }
+        if (expected.hasOwnProperty('input')) {
+          criteria.push(error.input === expected.input);
+        }
 
-    if (expected.hasOwnProperty('msg') && error.message !== expected.msg) {
-      throw new AssertionError(
-        `decoder.decode(${printValue(args.input)}) DecoderError#message ` +
-          `expected to resolve to ${printValue(expected.msg)} ` +
-          `but it resolved to ${printValue(error.message)}`,
-      );
-    }
+        if (expected.hasOwnProperty('msg')) {
+          criteria.push(error.message === expected.msg);
+        }
+
+        if (expected.hasOwnProperty('location')) {
+          criteria.push(error.location === expected.location);
+        }
+
+        if (expected.hasOwnProperty('path')) {
+          const path = error.path();
+
+          criteria.push(
+            expected.path.every((key, index) => key === path[index]),
+          );
+        }
+
+        return criteria.length > 0 && criteria.every(val => val);
+      });
+
+      if (!hasError) {
+        if (expected.hasOwnProperty('input')) {
+          if (!result.some(error => error.input === expected.input)) {
+            throw new AssertionError(
+              `decoder.decode(${printValue(args.input)}) DecoderError#input ` +
+                `expected to resolve to ${printValue(expected.input)}`,
+            );
+          }
+        }
+
+        if (expected.hasOwnProperty('msg')) {
+          if (!result.some(error => error.message === expected.msg)) {
+            if (args.count === 1) {
+              throw new AssertionError(
+                `decoder.decode(${printValue(
+                  args.input,
+                )}) DecoderError#message ` +
+                  `expected to resolve to ${printValue(expected.msg)} ` +
+                  `but it resolved to ${printValue(result[0].message)}`,
+              );
+            }
+
+            throw new AssertionError(
+              `decoder.decode(${printValue(
+                args.input,
+              )}) DecoderError#message ` +
+                `expected to include ${printValue(expected.msg)} ` +
+                `but none did`,
+            );
+          }
+        }
+
+        if (expected.hasOwnProperty('location')) {
+          if (!result.some(error => error.input === expected.input)) {
+            throw new AssertionError(
+              `decoder.decode(${printValue(
+                args.input,
+              )}) DecoderError#location ` +
+                `expected to resolve to ${printValue(expected.location)}`,
+            );
+          }
+        }
+
+        if (expected.hasOwnProperty('path')) {
+          if (
+            !result.some(error =>
+              expected.path.every((key, index) => key === error.path()[index]),
+            )
+          ) {
+            throw new AssertionError(
+              `decoder.decode(${printValue(args.input)}) DecoderError#path() ` +
+                `expected to resolve to ${printValue(expected.path)}`,
+            );
+          }
+        }
+
+        throw new AssertionError(
+          `\n  decoder.decode(${printValue(args.input)})\n\n ` +
+            `Did not resolve with a DecoderError containing ` +
+            `the following properties:\n\n ` +
+            `${printValue(expected)}\n\n`,
+        );
+      }
+    });
   };
 
   if (args.input instanceof Promise || args.decoder instanceof PromiseDecoder) {

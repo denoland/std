@@ -6,7 +6,7 @@ import { DecoderResult, DecoderSuccess, areDecoderErrors } from "./decoder_resul
  *
  * @param decodeFn the function which is used to decode input values
  */
-export class Decoder<R, I = unknown> {
+export class Decoder<R, I = any> {
   constructor(private decodeFn: (input: I) => DecoderResult<R>) {}
 
   decode(input: Promise<I>): Promise<DecoderResult<R>>;
@@ -39,7 +39,7 @@ export class Decoder<R, I = unknown> {
  *
  * @param decodeFn the function which is used to decode input values
  */
-export class PromiseDecoder<R, I = unknown> {
+export class PromiseDecoder<R, I = any> {
   constructor(private decodeFn: (input: I) => Promise<DecoderResult<R>>) {}
 
   async decode(input: I | Promise<I>) {
