@@ -1,4 +1,8 @@
-import { DecoderResult, DecoderSuccess, areDecoderErrors } from "./decoder_result.ts";
+import {
+  DecoderResult,
+  DecoderSuccess,
+  areDecoderErrors
+} from "./decoder_result.ts";
 
 /**
  * An object which can be used to validate and process `unknown` values

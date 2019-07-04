@@ -1,16 +1,16 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, runTests } from '../testing/mod.ts';
-import { assertEquals } from '../testing/asserts.ts';
+import { test, runTests } from "../testing/mod.ts";
+import { assertEquals } from "../testing/asserts.ts";
 import {
   assertDecodeSuccess,
   assertDecodeErrors,
-  assertDecoder,
-} from './_testing_util.ts';
-import { Decoder } from './decoder.ts';
-import { isLazy } from './is_lazy.ts';
-import { DecoderSuccess } from './decoder_result.ts';
-import { isObject } from './is_object.ts';
-import { isArray } from './is_array.ts';
+  assertDecoder
+} from "./_testing_util.ts";
+import { Decoder } from "./decoder.ts";
+import { isLazy } from "./is_lazy.ts";
+import { DecoderSuccess } from "./decoder_result.ts";
+import { isObject } from "./is_object.ts";
+import { isArray } from "./is_array.ts";
 
 /**
  * isLazy()
@@ -27,30 +27,30 @@ test(function noOptions() {
 
   const decoder = isObject({
     type: blankDecoder,
-    value: isArray(isLazy(() => decoder)),
+    value: isArray(isLazy(() => decoder))
   });
 
   for (const item of [
-    { type: 'any', value: [] },
+    { type: "any", value: [] },
     { type: false, value: [{ type: 3, value: [] }] },
     {
-      type: 'any',
+      type: "any",
       value: [
         {
-          type: Symbol('fed'),
+          type: Symbol("fed"),
           value: [
             { type: {}, value: [{ type: 3, value: [] }] },
-            { type: ['any'], value: [] },
-          ],
-        },
-      ],
-    },
+            { type: ["any"], value: [] }
+          ]
+        }
+      ]
+    }
   ]) {
     assertDecodeSuccess(decoder, item);
     assertEquals(decoder.decode(item), new DecoderSuccess(item));
   }
 
-  const obj1 = { type: 'any', value: [''] };
+  const obj1 = { type: "any", value: [""] };
   assertDecodeErrors({
     decoder: decoder,
     input: obj1,
@@ -60,10 +60,10 @@ test(function noOptions() {
         msg:
           `invalid value for key ["value"] > ` +
           `invalid element [0] > ` +
-          `must be a non-null object`,
-      },
+          `must be a non-null object`
+      }
     ],
-    count: 1,
+    count: 1
   });
 });
 
@@ -73,34 +73,34 @@ test(function optionAllErrors() {
   const decoder = isObject(
     {
       type: blankDecoder,
-      value: isArray(isLazy(() => decoder), { allErrors: true }),
+      value: isArray(isLazy(() => decoder), { allErrors: true })
     },
     {
-      allErrors: true,
-    },
+      allErrors: true
+    }
   );
 
   for (const item of [
-    { type: 'any', value: [] },
+    { type: "any", value: [] },
     { type: false, value: [{ type: 3, value: [] }] },
     {
-      type: 'any',
+      type: "any",
       value: [
         {
-          type: Symbol('fed'),
+          type: Symbol("fed"),
           value: [
             { type: {}, value: [{ type: 3, value: [] }] },
-            { type: ['any'], value: [] },
-          ],
-        },
-      ],
-    },
+            { type: ["any"], value: [] }
+          ]
+        }
+      ]
+    }
   ]) {
     assertDecodeSuccess(decoder, item);
     assertEquals(decoder.decode(item), new DecoderSuccess(item));
   }
 
-  const obj1 = { type: 'any', value: [''] };
+  const obj1 = { type: "any", value: [""] };
   assertDecodeErrors({
     decoder: decoder,
     input: obj1,
@@ -111,16 +111,16 @@ test(function optionAllErrors() {
           `invalid value for key ["value"] > ` +
           `invalid element [0] > ` +
           `must be a non-null object`,
-        location: 'value[0]',
-        path: ['value', 0],
-      },
+        location: "value[0]",
+        path: ["value", 0]
+      }
     ],
-    count: 1,
+    count: 1
   });
 
   const obj2 = {
     type: false,
-    value: [{ type: 3, value: [[12, 5], { type: 3, value: [''] }] }],
+    value: [{ type: 3, value: [[12, 5], { type: 3, value: [""] }] }]
   };
   assertDecodeErrors({
     decoder: decoder,
@@ -134,8 +134,8 @@ test(function optionAllErrors() {
           `invalid value for key ["value"] > ` +
           `invalid element [0] > ` +
           `missing required key ["value"]`,
-        location: 'value[0].value[0]',
-        path: ['value', 0, 'value', 0],
+        location: "value[0].value[0]",
+        path: ["value", 0, "value", 0]
       },
       {
         input: obj2,
@@ -147,24 +147,24 @@ test(function optionAllErrors() {
           `invalid value for key ["value"] > ` +
           `invalid element [0] > ` +
           `must be a non-null object`,
-        location: 'value[0].value[1].value[0]',
-        path: ['value', 0, 'value', 1, 'value', 0],
-      },
+        location: "value[0].value[1].value[0]",
+        path: ["value", 0, "value", 1, "value", 0]
+      }
     ],
-    count: 2,
+    count: 2
   });
 
   const obj3 = {
-    type: 'any',
+    type: "any",
     value: [
       {
-        type: Symbol('fed'),
+        type: Symbol("fed"),
         value: [
           { type: {}, value: [{ type: 3 }, { type: 3, value: [] }] },
-          { type: ['any'], value: {} },
-        ],
-      },
-    ],
+          { type: ["any"], value: {} }
+        ]
+      }
+    ]
   };
   assertDecodeErrors({
     decoder: decoder,
@@ -180,8 +180,8 @@ test(function optionAllErrors() {
           `invalid value for key ["value"] > ` +
           `invalid element [0] > ` +
           `missing required key ["value"]`,
-        location: 'value[0].value[0].value[0]',
-        path: ['value', 0, 'value', 0, 'value', 0],
+        location: "value[0].value[0].value[0]",
+        path: ["value", 0, "value", 0, "value", 0]
       },
       {
         input: obj3,
@@ -192,11 +192,11 @@ test(function optionAllErrors() {
           `invalid element [1] > ` +
           `invalid value for key ["value"] > ` +
           `must be an array`,
-        location: 'value[0].value[1].value',
-        path: ['value', 0, 'value', 1, 'value'],
-      },
+        location: "value[0].value[1].value",
+        path: ["value", 0, "value", 1, "value"]
+      }
     ],
-    count: 2,
+    count: 2
   });
 });
 

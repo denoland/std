@@ -1,9 +1,12 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { DecoderError, areDecoderErrors } from './decoder_result.ts';
-import { ok, buildErrorLocationString } from './_util.ts';
-import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { DecoderError, areDecoderErrors } from "./decoder_result.ts";
+import { ok, buildErrorLocationString } from "./_util.ts";
+import {
+  IComposeDecoderOptions,
+  applyOptionsToDecoderErrors
+} from "./helpers.ts";
 
-const decoderName = 'isObject';
+const decoderName = "isObject";
 
 export interface IObjectDecoderOptions extends IComposeDecoderOptions {
   noExcessProperties?: boolean;
@@ -11,24 +14,24 @@ export interface IObjectDecoderOptions extends IComposeDecoderOptions {
 
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> },
-  options?: IObjectDecoderOptions,
+  options?: IObjectDecoderOptions
 ): Decoder<T>;
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
-  options?: IObjectDecoderOptions,
+  options?: IObjectDecoderOptions
 ): PromiseDecoder<T>;
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
-  options: IObjectDecoderOptions = {},
+  options: IObjectDecoderOptions = {}
 ) {
   const hasPromiseDecoder = Object.values(decoderObject).some(
-    decoder => decoder instanceof PromiseDecoder,
+    decoder => decoder instanceof PromiseDecoder
   );
 
   if (hasPromiseDecoder) {
     if (options.allErrors) {
       return new PromiseDecoder(async input => {
-        if (typeof input !== 'object' || input === null) {
+        if (typeof input !== "object" || input === null) {
           return nonObjectError(input, options);
         }
 
@@ -52,7 +55,7 @@ export function isObject<T>(
 
             if (areDecoderErrors(result)) {
               const errors = result.map(error =>
-                buildChildError(error, input, key),
+                buildChildError(error, input, key)
               );
 
               allErrors.push(...errors);
@@ -60,7 +63,7 @@ export function isObject<T>(
             }
 
             return [key, result.value] as [string, T];
-          }),
+          })
         );
 
         if (allErrors.length > 0) {
@@ -72,7 +75,7 @@ export function isObject<T>(
     }
 
     return new PromiseDecoder(async input => {
-      if (typeof input !== 'object' || input === null) {
+      if (typeof input !== "object" || input === null) {
         return nonObjectError(input, options);
       }
 
@@ -94,7 +97,7 @@ export function isObject<T>(
 
         if (areDecoderErrors(result)) {
           const errors = result.map(error =>
-            buildChildError(error, input, key),
+            buildChildError(error, input, key)
           );
 
           return applyOptionsToDecoderErrors(errors, options);
@@ -108,7 +111,7 @@ export function isObject<T>(
   }
 
   return new Decoder(input => {
-    if (typeof input !== 'object' || input === null) {
+    if (typeof input !== "object" || input === null) {
       return nonObjectError(input, options);
     }
 
@@ -159,7 +162,7 @@ export function isObject<T>(
 function checkInputKeys<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
   input: object,
-  options: { allErrors?: boolean },
+  options: { allErrors?: boolean }
 ) {
   const expectedkeys = Object.keys(decoderObject);
   const actualkeys = Object.keys(input);
@@ -186,11 +189,11 @@ function checkInputKeys<T>(
 function nonObjectError(input: unknown, options?: IObjectDecoderOptions) {
   return applyOptionsToDecoderErrors(
     [
-      new DecoderError(input, 'must be a non-null object', {
-        decoderName,
-      }),
+      new DecoderError(input, "must be a non-null object", {
+        decoderName
+      })
     ],
-    options,
+    options
   );
 }
 
@@ -202,8 +205,7 @@ function buildChildError(child: DecoderError, value: object, key: string) {
   if (value.hasOwnProperty(key)) {
     location = buildErrorLocationString(key, child.location);
     message = `invalid value for key ["${key}"] > ${child.message}`;
-  }
-  else {
+  } else {
     location = child.location;
     message = `missing required key ["${key}"]`;
     errorKey = undefined;
@@ -213,15 +215,15 @@ function buildChildError(child: DecoderError, value: object, key: string) {
     decoderName,
     child,
     location,
-    key: errorKey,
+    key: errorKey
   });
 }
 
 function buildKeyError(value: unknown, key: string) {
-  const keyName = typeof key === 'string' ? `"${key}"` : key;
+  const keyName = typeof key === "string" ? `"${key}"` : key;
 
   return new DecoderError(value, `unknown key [${keyName}]`, {
     decoderName,
-    key,
+    key
   });
 }

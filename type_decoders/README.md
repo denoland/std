@@ -2,7 +2,7 @@
 
 This module facilitates validating `unknown` (or other) values and casting them to the proper typescript types. It provides an assortment of useful decoder primatives which are usable as-is, easily customized, and composable with other decoders (including any custom decoders you may make).
 
-Users and library authors should be able to create custom decoders which can be composed with the decoders provided in this module, as well as composed with any other third-party decoders which are compatible with this module.
+Users and library authors can create custom decoders which can be composed with the decoders provided in this module, as well as composed with any other third-party decoders which are compatible with this module.
 
 ```ts
 import { assert, isNumber } from "https://deno.land/std/type_decoders/mod";
@@ -10,11 +10,11 @@ import { assert, isNumber } from "https://deno.land/std/type_decoders/mod";
 // assert() is a convenience function which wraps a decoder
 const numberValidator = assert(isNumber());
 
-const value = numberValidator(1) // returns 1
-const value = numberValidator('1') // throws `DecoderError`
+const value = numberValidator(1); // returns 1
+const value = numberValidator("1"); // throws `DecoderError`
 ```
 
-alternatively 
+alternatively
 
 ```ts
 const decoder = isNumber();
@@ -23,7 +23,7 @@ const result = decoder.decode(1); // returns `DecoderSuccess<number>`
 
 const value = result.value; // 1
 
-const result = decoder.decode('1'); // returns (not throws) `DecoderError`
+const result = decoder.decode("1"); // returns (not throws) `DecoderError`
 ```
 
 # Usage
@@ -31,7 +31,7 @@ const result = decoder.decode('1'); // returns (not throws) `DecoderError`
 - [Basic usage](#Basic-usage)
 - [Interfaces](#Interfaces)
 - [Working with promises](#Working-with-promises)
-- [Working with errors](#Working-with-errors) 
+- [Working with errors](#Working-with-errors)
 - [Creating custom decoders](#Creating-custom-decoders)
 - [Tips and tricks](#Tips-and-tricks)
 - [Decoder API](#Decoder-API)
@@ -68,8 +68,8 @@ This module exports an assortment of primative decoder functions which each retu
 ```ts
 const myNumberDecoder = isNumber();
 
-const result = myNumberDecoder.decode(1) // returns a DecoderSuccess<number>
-const result = myNumberDecoder.decode('1') // returns (not throws) a DecoderError
+const result = myNumberDecoder.decode(1); // returns a DecoderSuccess<number>
+const result = myNumberDecoder.decode("1"); // returns (not throws) a DecoderError
 
 if (result instanceof DecoderError) {
   // do stuff...
@@ -86,15 +86,15 @@ For your convenience, you can wrap any decoder with the exported `assert` functi
 ```ts
 const myNumberDecoder = assert(isNumber());
 const value = myNumberDecoder(1); // returns 1
-const value = myNumberDecoder('1'); // will throw (not return) a DecoderError
+const value = myNumberDecoder("1"); // will throw (not return) a DecoderError
 ```
 
 Some decoder functions aid with composing decoders. For example, the `isOptional()` decoder accepts another decoder as an argument and returns a decoder that accepts either `undefined` or the value decoded by its argument.
 
 ```ts
 const myNumberDecoder = isOptional(isNumber());
-const result = myNumberDecoder.decode(1) // returns a DecoderSuccess<number | undefined>
-const result = myNumberDecoder.decode(undefined) // returns a DecoderSuccess<number | undefined>
+const result = myNumberDecoder.decode(1); // returns a DecoderSuccess<number | undefined>
+const result = myNumberDecoder.decode(undefined); // returns a DecoderSuccess<number | undefined>
 ```
 
 A more complex example of decoder composition is the `isObject()` decoder function, which receives a `{[key: string]: Decoder<unknown, unknown>}` object argument. This argument is used to process a provided value: it verifies that the provided value is a non-null object, that the object has the specified keys, and that the values of the object's keys pass the provided decoder checks.
@@ -199,10 +199,10 @@ class DecoderError {
     value: unknown,
     message: string,
     options?: {
-      decoderName?: string,
+      decoderName?: string;
       location?: string;
       child?: DecoderError;
-      key?: unknown
+      key?: unknown;
     }
   ): DecoderError;
 
@@ -211,25 +211,25 @@ class DecoderError {
 
   /** The value that failed validation. */
   value: unknown;
-  
+
   /** A human readable error message. */
   message: string;
 
   /** An optional name to describe the decoder which triggered the error. */
   decoderName?: string;
-  
-  /** 
+
+  /**
    * A human readable string showing the nested location of the error.
    * If the validation error is not nested, location will equal a blank string.
    */
   location: string;
-  
+
   /** The child `DecoderError` which triggered this `DecoderError`, if any */
   child?: DecoderError;
-  
-  /** 
+
+  /**
    * The key associated with this `DecoderError` if any.
-   * 
+   *
    * - E.g. this might be the object key which failed validation for an `isObject()`
    *   decoder.
    */
@@ -266,26 +266,26 @@ If you wish to create a custom decoder with a `decodeFn` which returns a promise
 Example: you can pass a custom `PromiseDecoder` to `isObject()` as an argument, but this will change the return of `isObject()` from a `Decoder` to a `PromiseDecoder`.
 
 ```ts
-const myCustomDecoder = new PromiseDecoder(async value => 
-  typeof value === 'boolean'
+const myCustomDecoder = new PromiseDecoder(async value =>
+  typeof value === "boolean"
     ? Promise.resolve(new DecoderSuccess(value))
-    : Promise.resolve(new DecoderError(value, 'Must be a boolean'))
+    : Promise.resolve(new DecoderError(value, "Must be a boolean"))
 );
 
 const myObjectDecoder = isObject({
   payload: isObject({
-    values: isArray( isNullable( myCustomDecoder ) )
+    values: isArray(isNullable(myCustomDecoder))
   })
-})
+});
 
-myObjectDecoder instanceof PromiseDecoder === true
+myObjectDecoder instanceof PromiseDecoder === true;
 ```
 
 ## Working with errors
 
 [_see the `DecoderError` interface_](#DecoderError)
 
-One of the most useful aspects of this module is its support for providing human and machine readable error messages, as well as customizing those messages for your domain. 
+One of the most useful aspects of this module is its support for providing human and machine readable error messages, as well as customizing those messages for your domain.
 
 Where appropriate, the decoder functions exported by this module accept an optional options object with `{ msg?: DecoderErrorMsgArg }` where `type DecoderErrorMsgArg = string | ((error: DecoderError) => DecoderError)`. If you pass a string to this message property, that string will be used as the error message for that decoder. This is option is easy but will potentially suppress more deeply nested error messages.
 
@@ -294,22 +294,19 @@ Example:
 ```ts
 const myObjectDecoder = isObject({
   payload: isObject({
-    values: isArray(
-      isNullable( isNumber() ),
-      { msg: "invalid array" }
-    )
+    values: isArray(isNullable(isNumber()), { msg: "invalid array" })
   })
-})
+});
 
-const badInput = { payload: { values: [0, null, '1'] } } as unknown;
+const badInput = { payload: { values: [0, null, "1"] } } as unknown;
 
 const error = myObjectDecoder.decode(badInput); // will return `DecoderError`
 
-error.message // "invalid key \"payload\" > invalid key \"values\" > invalid array
-error.child.message // "invalid key \"values\" > invalid array"
-error.child.child.message // "invalid array"
-error.child.child.child.message // "must be a string"
-error.child.child.child.child // undefined
+error.message; // "invalid key \"payload\" > invalid key \"values\" > invalid array
+error.child.message; // "invalid key \"values\" > invalid array"
+error.child.child.message; // "invalid array"
+error.child.child.child.message; // "must be a string"
+error.child.child.child.child; // undefined
 ```
 
 For more control over your error messages, you can provide a `(error: DecoderError) => DecoderError` function as the `msg` argument.
@@ -322,31 +319,34 @@ Example:
 const errorMsgFn = (error: DecoderError) => {
   const { decoderName } = error.child;
 
-  error.message = decoderName !== 'isArray' ? 'array must have a length of 2' :
-    error.child.child ? 'must be an array of numbers' :
-    'must be an array';
+  error.message =
+    decoderName !== "isArray"
+      ? "array must have a length of 2"
+      : error.child.child
+      ? "must be an array of numbers"
+      : "must be an array";
 
-  error.decoderName = 'myLatLongDecoder';
+  error.decoderName = "myLatLongDecoder";
 
   return error;
 };
 
-const myLatLongDecoder = isChainOf([
-  isArray(isNumber()),
-  isMatchForPredicate(input => input.length === 2),
-], { msg: errorMsgFn })
+const myLatLongDecoder = isChainOf(
+  [isArray(isNumber()), isMatchForPredicate(input => input.length === 2)],
+  { msg: errorMsgFn }
+);
 
 const badInput0 = {} as unknown;
-const badInput1 = [1, '2'] as unknown;
+const badInput1 = [1, "2"] as unknown;
 const badInput2 = [1] as unknown;
 
 const error0 = myLatLongDecoder.decode(badInput0);
 const error1 = myLatLongDecoder.decode(badInput1);
 const error2 = myLatLongDecoder.decode(badInput2);
 
-error0.message // "must be an array"
-error1.message // "must be an array of numbers"
-error2.message // "array must have a length of 2"
+error0.message; // "must be an array"
+error1.message; // "must be an array of numbers"
+error2.message; // "array must have a length of 2"
 ```
 
 In the above example, our `errorMsgFn` made use of the `DecoderError#decoderName` property. DecoderErrors can be constructed with an optional `decoderName` value to easily identify the decoder which created them. All decoder functions exported by this module provide `DecoderError#decoderName` values.
@@ -358,8 +358,8 @@ There are a few ways of creating custom decoders. This simplest way is to simply
 ```ts
 const myLatLongDecoder = isChainOf([
   isArray(isNumber()),
-  isMatchForPredicate(input => input.length === 2),
-])
+  isMatchForPredicate(input => input.length === 2)
+]);
 ```
 
 For more flexibility, you can create a new decoder from scratch using either the `Decoder` or `PromiseDecoder` constructors (see the [working with promises](#Working-with-promises) section for a description of the differences between `Decoder` and `PromiseDecoder`). To make a new decoder from scratch, simply pass a custom decode function to the `Decoder` constructor. A decode function is a function which receives a value and returns a `DecodeSuccess` object on success and a `DecodeError` object on failure.
@@ -367,19 +367,19 @@ For more flexibility, you can create a new decoder from scratch using either the
 Example:
 
 ```ts
-const myCustomDecoder = new Decoder(value => 
-  typeof value === 'boolean'
+const myCustomDecoder = new Decoder(value =>
+  typeof value === "boolean"
     ? new DecoderSuccess(value)
-    : new DecoderError(value, 'must be a boolean')
-)
+    : new DecoderError(value, "must be a boolean")
+);
 
 // You can then compose this decoder with others normally
 
-isObject({ likesDeno: myCustomDecoder })
+isObject({ likesDeno: myCustomDecoder });
 
 // Or use it directly
 
-myCustomDecoder.decode(true)
+myCustomDecoder.decode(true);
 ```
 
 #### Specifying an input value type
@@ -389,13 +389,13 @@ While the vast majority of decoders expect an input value of `unknown`, it is po
 Example:
 
 ```ts
-const arrayLengthDecoder = new Decoder((value: unknown[]) => 
+const arrayLengthDecoder = new Decoder((value: unknown[]) =>
   value.length < 100
     ? new DecoderSuccess(value)
-    : new DecoderError(value, 'must have length less than 100')
-)
+    : new DecoderError(value, "must have length less than 100")
+);
 
-arrayLengthDecoder.decode(1) // type error! decode() expects an array
+arrayLengthDecoder.decode(1); // type error! decode() expects an array
 ```
 
 This decoder only works on array values. One use case for a decoder like this is inside the `isChainOf()` decoder, after we have already verified that a value is an array.
@@ -405,8 +405,8 @@ Example:
 ```ts
 isChainOf([
   isArray(),
-  arrayLengthDecoder, // <-- this will only be called when the value is an array
-])
+  arrayLengthDecoder // <-- this will only be called when the value is an array
+]);
 ```
 
 #### Creating custom decoder composition functions
@@ -428,7 +428,7 @@ const validator = assert(isNumber());
 
 const value = validator(1); // returns 1
 
-const value = validator('1'); // will throw a `DecoderError`
+const value = validator("1"); // will throw a `DecoderError`
 ```
 
 ### The decoder map() method
@@ -438,10 +438,11 @@ Decoders have a `map` method which can be used to transform valid values. For ex
 ```ts
 const stringDateDecoder =
   // this regex verifies that a string is of the form `YYYY-MM-DD`
-  isMatch(/^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/)
-    .map(value => new Date(value));
+  isMatch(/^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/).map(
+    value => new Date(value)
+  );
 
-const result = stringDateDecoder.decode('2000-01-01'); // returns `DecoderSuccess<Date>`
+const result = stringDateDecoder.decode("2000-01-01"); // returns `DecoderSuccess<Date>`
 
 if (result instanceof DecoderSuccess) {
   const value: Date = result.value;
@@ -455,8 +456,12 @@ This decoder will verify that a string is in a `YYYY-MM-DD` format and, if so, c
 ### assert()
 
 ```ts
-export function assert<R, V>(decoder: Decoder<R, V>): { (value: V): R; (value: Promise<V>): Promise<R> };
-export function assert<R, V>(decoder: PromiseDecoder<R, V>): (value: V | Promise<V>) => Promise<R>;
+export function assert<R, V>(
+  decoder: Decoder<R, V>
+): { (value: V): R; (value: Promise<V>): Promise<R> };
+export function assert<R, V>(
+  decoder: PromiseDecoder<R, V>
+): (value: V | Promise<V>) => Promise<R>;
 ```
 
 `assert()` accepts a single decoder as an argument and returns a new function which can be used to decode the same values as provided decoder. On decode success, the validated value is returned directly and on failure the `DecoderError` is thrown (rather than returned).
@@ -468,7 +473,7 @@ const validator = assert(isNumber());
 
 const value: number = validator(1);
 
-const value: number = validator('1'); // will throw a `DecoderError`
+const value: number = validator("1"); // will throw a `DecoderError`
 ```
 
 ### isBoolean()
@@ -526,7 +531,9 @@ interface IUndefinedDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isUndefined(options?: IUndefinedDecoderOptions): Decoder<undefined, unknown>;
+function isUndefined(
+  options?: IUndefinedDecoderOptions
+): Decoder<undefined, unknown>;
 ```
 
 `isUndefined()` can be used to verify that an unknown value is `undefined`. This is a convenience function for `isExactly(undefined)`.
@@ -550,7 +557,10 @@ interface IRegexDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isMatch(regex: RegExp, options?: IRegexDecoderOptions): Decoder<string, unknown>;
+function isMatch(
+  regex: RegExp,
+  options?: IRegexDecoderOptions
+): Decoder<string, unknown>;
 ```
 
 `isMatch()` can be used to verify that an unknown value is `string` which conforms to the given `RegExp`.
@@ -591,7 +601,10 @@ interface IExactlyDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isExactly<T>(value: T, options?: IExactlyDecoderOptions): Decoder<T, unknown>;
+function isExactly<T>(
+  value: T,
+  options?: IExactlyDecoderOptions
+): Decoder<T, unknown>;
 ```
 
 `isExactly()` accepts a `value: T` argument and can be used to verify that an unknown input is `=== value`.
@@ -611,7 +624,10 @@ interface IInstanceOfDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isInstanceOf<T extends new (...args: any) => any>(clazz: T, options?: IInstanceOfDecoderOptions): Decoder<InstanceType<T>, unknown>;
+function isInstanceOf<T extends new (...args: any) => any>(
+  clazz: T,
+  options?: IInstanceOfDecoderOptions
+): Decoder<InstanceType<T>, unknown>;
 ```
 
 `isInstanceOf()` accepts a javascript constructor argument and creates a decoder which verifies that its input is `instanceof clazz`.
@@ -624,8 +640,14 @@ interface ICheckedWithDecoderOptions {
   promise?: boolean;
 }
 
-function isMatchForPredicate<T>(fn: (value: T) => boolean, options?: ICheckedWithDecoderOptions): Decoder<T, T>;
-function isMatchForPredicate<T>(fn: (value: T) => Promise<boolean>, options: ICheckedWithDecoderOptions & { promise: true }): PromiseDecoder<T, T>;
+function isMatchForPredicate<T>(
+  fn: (value: T) => boolean,
+  options?: ICheckedWithDecoderOptions
+): Decoder<T, T>;
+function isMatchForPredicate<T>(
+  fn: (value: T) => Promise<boolean>,
+  options: ICheckedWithDecoderOptions & { promise: true }
+): PromiseDecoder<T, T>;
 ```
 
 `isMatchForPredicate()` accepts a predicate function argument and creates a decoder which verifies that inputs pass the function check.
@@ -639,8 +661,14 @@ interface IOptionalDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isOptional<T>(decoder: Decoder<T>, options?: IOptionalDecoderOptions): Decoder<T | undefined>;
-function isOptional<T>(decoder: PromiseDecoder<T>, options?: IOptionalDecoderOptions): PromiseDecoder<T | undefined>;
+function isOptional<T>(
+  decoder: Decoder<T>,
+  options?: IOptionalDecoderOptions
+): Decoder<T | undefined>;
+function isOptional<T>(
+  decoder: PromiseDecoder<T>,
+  options?: IOptionalDecoderOptions
+): PromiseDecoder<T | undefined>;
 ```
 
 `isOptional()` accepts a decoder and returns a new decoder which accepts either the original decoder's value or `undefined`. Convenience function for `isAnyOf([decoder, isUndefined()])`.
@@ -652,8 +680,14 @@ interface INullableDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isNullable<T>(decoder: Decoder<T>, options?: INullableDecoderOptions): Decoder<T | null>;
-function isNullable<T>(decoder: PromiseDecoder<T>, options?: INullableDecoderOptions): PromiseDecoder<T | null>;
+function isNullable<T>(
+  decoder: Decoder<T>,
+  options?: INullableDecoderOptions
+): Decoder<T | null>;
+function isNullable<T>(
+  decoder: PromiseDecoder<T>,
+  options?: INullableDecoderOptions
+): PromiseDecoder<T | null>;
 ```
 
 `isNullable()` accepts a decoder and returns a new decoder which accepts either the original decoder's value or `null`. Convenience function for `isAnyOf([decoder, isNull()])`.
@@ -665,8 +699,14 @@ interface IMaybeDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isMaybe<T>(decoder: Decoder<T>, options?: IMaybeDecoderOptions): Decoder<T | null | undefined>;
-function isMaybe<T>(decoder: PromiseDecoder<T>, options?: IMaybeDecoderOptions): PromiseDecoder<T | null | undefined>;
+function isMaybe<T>(
+  decoder: Decoder<T>,
+  options?: IMaybeDecoderOptions
+): Decoder<T | null | undefined>;
+function isMaybe<T>(
+  decoder: PromiseDecoder<T>,
+  options?: IMaybeDecoderOptions
+): PromiseDecoder<T | null | undefined>;
 ```
 
 `isMaybe()` accepts a decoder and returns a new decoder which accepts either the original decoder's value or `null` or `undefined`. Convenience function for `isAnyOf([decoder, isNull(), isUndefined()])`.
@@ -678,8 +718,14 @@ interface IAnyOfDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isAnyOf<T extends Decoder<unknown>>(decoders: T[], options?: IAnyOfDecoderOptions): Decoder<DecoderReturnType<T>>;
-function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(decoders: T[], options?: IAnyOfDecoderOptions): PromiseDecoder<DecoderReturnType<T>>;
+function isAnyOf<T extends Decoder<unknown>>(
+  decoders: T[],
+  options?: IAnyOfDecoderOptions
+): Decoder<DecoderReturnType<T>>;
+function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
+  decoders: T[],
+  options?: IAnyOfDecoderOptions
+): PromiseDecoder<DecoderReturnType<T>>;
 ```
 
 `isAnyOf()` accepts an array of decoders and attempts to decode a provided value using each of them, in order, returning the first successful result or `DecoderError` if all fail.
@@ -691,13 +737,27 @@ interface IChainOfDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isChainOf<T extends [unknown, ...unknown[]], R = ChainOfDecoderReturn<T>, I = DecoderInputType<T[0]>>(
-  decoders: { [I in keyof T]: Decoder<T[I], DecoderInputType<T[SubtractOne<I>]>> },
+function isChainOf<
+  T extends [unknown, ...unknown[]],
+  R = ChainOfDecoderReturn<T>,
+  I = DecoderInputType<T[0]>
+>(
+  decoders: {
+    [I in keyof T]: Decoder<T[I], DecoderInputType<T[SubtractOne<I>]>>
+  },
   options?: IChainOfDecoderOptions
 ): Decoder<R, I>;
 
-function isChainOf<T extends [unknown, ...unknown[]], R = ChainOfDecoderReturn<T>, I = DecoderInputType<T[0]>>(
-  decoders: { [I in keyof T]: Decoder<T[I], DecoderInputType<T[SubtractOne<I>]>> | PromiseDecoder<T[I], DecoderInputType<T[SubtractOne<I>]>> },
+function isChainOf<
+  T extends [unknown, ...unknown[]],
+  R = ChainOfDecoderReturn<T>,
+  I = DecoderInputType<T[0]>
+>(
+  decoders: {
+    [I in keyof T]:
+      | Decoder<T[I], DecoderInputType<T[SubtractOne<I>]>>
+      | PromiseDecoder<T[I], DecoderInputType<T[SubtractOne<I>]>>
+  },
   options?: IChainOfDecoderOptions
 ): PromiseDecoder<R, I>;
 ```
@@ -712,8 +772,14 @@ interface IObjectDecoderOptions<T> {
   keyMap?: { [P in keyof T]?: string | number };
 }
 
-function isObject<T>(decoderObject: { [P in keyof T]: Decoder<T[P]> }, options?: IObjectDecoderOptions<T>): Decoder<T> ;
-function isObject<T>(decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> }, options?: IObjectDecoderOptions<T>): PromiseDecoder<T> ;
+function isObject<T>(
+  decoderObject: { [P in keyof T]: Decoder<T[P]> },
+  options?: IObjectDecoderOptions<T>
+): Decoder<T>;
+function isObject<T>(
+  decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
+  options?: IObjectDecoderOptions<T>
+): PromiseDecoder<T>;
 ```
 
 `isObject()` accepts a `key: Decoder` argument object and returns a new decoder that will verify that an input is a non-null object, that the input has the keys specified in the argument object, and that the key values pass the relevant decoder provided by the argument object. On `DecoderSuccess`, the a new object is returned and the key-values of that object are provided by output from the argument decoders.
@@ -726,8 +792,14 @@ interface IExactObjectDecoderOptions<T> {
   keyMap?: { [P in keyof T]?: string | number };
 }
 
-function isExactObject<T>(decoderObject: { [P in keyof T]: Decoder<T[P]> }, options?: IExactObjectDecoderOptions<T>): Decoder<T> ;
-function isExactObject<T>(decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> }, options?: IExactObjectDecoderOptions<T>): PromiseDecoder<T> ;
+function isExactObject<T>(
+  decoderObject: { [P in keyof T]: Decoder<T[P]> },
+  options?: IExactObjectDecoderOptions<T>
+): Decoder<T>;
+function isExactObject<T>(
+  decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
+  options?: IExactObjectDecoderOptions<T>
+): PromiseDecoder<T>;
 ```
 
 `isExactObject()` is the same as `isObject()`, except the input object cannot have any excess properties.
@@ -739,8 +811,14 @@ interface IDictionaryDecoderOptions<V> {
   msg?: DecoderErrorMsgArg;
 }
 
-function isDictionary<R, V = unknown>(decoder: Decoder<R, V>, options?: IDictionaryDecoderOptions<V>): Decoder<{ [key: string]: R }, V>;
-function isDictionary<R, V = unknown>(decoder: PromiseDecoder<R, V>, options?: IDictionaryDecoderOptions<V>): PromiseDecoder<{ [key: string]: R }, V>;
+function isDictionary<R, V = unknown>(
+  decoder: Decoder<R, V>,
+  options?: IDictionaryDecoderOptions<V>
+): Decoder<{ [key: string]: R }, V>;
+function isDictionary<R, V = unknown>(
+  decoder: PromiseDecoder<R, V>,
+  options?: IDictionaryDecoderOptions<V>
+): PromiseDecoder<{ [key: string]: R }, V>;
 ```
 
 `isDictionary()` receives a decoder argument and uses that decoder to process all values (regardless of key) of an input object.
@@ -752,9 +830,17 @@ interface IArrayDecoderOptions<V> {
   msg?: DecoderErrorMsgArg;
 }
 
-function isArray<R = unknown, V = unknown>(options?: IArrayDecoderOptions<V>): Decoder<R[], V>;
-function isArray<R, V = unknown>(decoder: Decoder<R, V>, options?: IArrayDecoderOptions<V>): Decoder<R[], V>;
-function isArray<R, V = unknown>(decoder: PromiseDecoder<R, V>, options?: IArrayDecoderOptions<V>): PromiseDecoder<R[], V>;
+function isArray<R = unknown, V = unknown>(
+  options?: IArrayDecoderOptions<V>
+): Decoder<R[], V>;
+function isArray<R, V = unknown>(
+  decoder: Decoder<R, V>,
+  options?: IArrayDecoderOptions<V>
+): Decoder<R[], V>;
+function isArray<R, V = unknown>(
+  decoder: PromiseDecoder<R, V>,
+  options?: IArrayDecoderOptions<V>
+): PromiseDecoder<R[], V>;
 ```
 
 `isArray()` can be used to make sure an input is an array. If an optional decoder argument is provided, that decoder will be used to process all of the input's elements.
@@ -766,8 +852,16 @@ interface ITupleDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isTuple<Tuple extends [unknown, ...unknown[]]>(decoders: { [I in keyof Tuple]: Decoder<Tuple[I]> }, options?: ITupleDecoderOptions): Decoder<Tuple>;
-function isTuple<Tuple extends [unknown, ...unknown[]]>(decoders: { [I in keyof Tuple]: Decoder<Tuple[I]> | PromiseDecoder<Tuple[I]> }, options?: ITupleDecoderOptions): PromiseDecoder<Tuple>;
+function isTuple<Tuple extends [unknown, ...unknown[]]>(
+  decoders: { [I in keyof Tuple]: Decoder<Tuple[I]> },
+  options?: ITupleDecoderOptions
+): Decoder<Tuple>;
+function isTuple<Tuple extends [unknown, ...unknown[]]>(
+  decoders: {
+    [I in keyof Tuple]: Decoder<Tuple[I]> | PromiseDecoder<Tuple[I]>
+  },
+  options?: ITupleDecoderOptions
+): PromiseDecoder<Tuple>;
 ```
 
 `isTuple()` receives an array of decoders and creates a decoder which can be used to verify that an input is:
@@ -781,7 +875,9 @@ function isTuple<Tuple extends [unknown, ...unknown[]]>(decoders: { [I in keyof 
 
 ```ts
 function isLazy<T>(decoderFn: () => Decoder<T>): Decoder<T | null>;
-function isLazy<T>(decoderFn: () => PromiseDecoder<T>): PromiseDecoder<T | null>;
+function isLazy<T>(
+  decoderFn: () => PromiseDecoder<T>
+): PromiseDecoder<T | null>;
 ```
 
 `isLazy()` allows for decoding recursive data structures. It accepts a function which returns a decoder.

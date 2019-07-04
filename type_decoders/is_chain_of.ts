@@ -1,12 +1,15 @@
-import { Decoder, DecoderInputType, PromiseDecoder } from './decoder.ts';
+import { Decoder, DecoderInputType, PromiseDecoder } from "./decoder.ts";
 import {
   DecoderSuccess,
   DecoderError,
   DecoderResult,
-  areDecoderErrors,
-} from './decoder_result.ts';
-import { ok } from './_util.ts';
-import { ISimpleDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
+  areDecoderErrors
+} from "./decoder_result.ts";
+import { ok } from "./_util.ts";
+import {
+  ISimpleDecoderOptions,
+  applyOptionsToDecoderErrors
+} from "./helpers.ts";
 
 type SubtractOne<T extends number> = [
   -1,
@@ -33,10 +36,10 @@ type SubtractOne<T extends number> = [
 ][T];
 
 type ChainOfDecoderReturnType<T extends unknown[]> = T[SubtractOne<
-  T['length']
+  T["length"]
 >];
 
-const decoderName = 'isChainOf';
+const decoderName = "isChainOf";
 
 export interface IChainOfDecoderOptions extends ISimpleDecoderOptions {}
 
@@ -46,7 +49,7 @@ export function isChainOf<
   I = DecoderInputType<T[0]>
 >(
   decoders: { [P in keyof T]: Decoder<T[P], any> },
-  options?: IChainOfDecoderOptions,
+  options?: IChainOfDecoderOptions
 ): Decoder<R, I>;
 export function isChainOf<
   T extends [unknown, ...unknown[]],
@@ -54,7 +57,7 @@ export function isChainOf<
   I = DecoderInputType<T[0]>
 >(
   decoders: { [P in keyof T]: Decoder<T[P], any> | PromiseDecoder<T[P], any> },
-  options?: IChainOfDecoderOptions,
+  options?: IChainOfDecoderOptions
 ): PromiseDecoder<R, I>;
 export function isChainOf<
   T extends [unknown, ...unknown[]],
@@ -62,7 +65,7 @@ export function isChainOf<
   I = DecoderInputType<T[0]>
 >(
   decoders: { [P in keyof T]: Decoder<T[P], any> | PromiseDecoder<T[P], any> },
-  options: IChainOfDecoderOptions = {},
+  options: IChainOfDecoderOptions = {}
 ): Decoder<R, I> | PromiseDecoder<R, I> {
   if (decoders.some(decoder => decoder instanceof PromiseDecoder)) {
     return new PromiseDecoder<R, I>(async value => {
@@ -73,7 +76,10 @@ export function isChainOf<
       }, Promise.resolve(ok(value as unknown) as DecoderResult<R>));
 
       if (areDecoderErrors(result)) {
-        return applyOptionsToDecoderErrors(buildChildErrors(value, result), options);
+        return applyOptionsToDecoderErrors(
+          buildChildErrors(value, result),
+          options
+        );
       }
 
       return result;
@@ -87,11 +93,14 @@ export function isChainOf<
           ? curr.decode(prev.value)
           : prev) as DecoderResult<R>;
       },
-      ok(value as unknown) as DecoderResult<R>,
+      ok(value as unknown) as DecoderResult<R>
     );
 
     if (areDecoderErrors(result)) {
-      return applyOptionsToDecoderErrors(buildChildErrors(value, result), options);
+      return applyOptionsToDecoderErrors(
+        buildChildErrors(value, result),
+        options
+      );
     }
 
     return result;
@@ -103,7 +112,7 @@ function buildChildErrors(input: unknown, children: DecoderError[]) {
     child =>
       new DecoderError(input, child.message, {
         decoderName,
-        child,
-      }),
+        child
+      })
   );
 }

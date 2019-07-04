@@ -1,18 +1,22 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, runTests } from '../testing/mod.ts';
-import { assertEquals } from '../testing/asserts.ts';
-import { assertDecodeSuccess, assertDecodeErrors, assertDecoder } from './_testing_util.ts';
-import { Decoder } from './decoder.ts';
-import { isInstanceOf } from './is_instance_of.ts';
+import { test, runTests } from "../testing/mod.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import {
+  assertDecodeSuccess,
+  assertDecodeErrors,
+  assertDecoder
+} from "./_testing_util.ts";
+import { Decoder } from "./decoder.ts";
+import { isInstanceOf } from "./is_instance_of.ts";
 
 /**
  * isInstanceOf()
  */
 
 test(function initializes() {
-  assertDecoder(isInstanceOf(Map))
-  assertDecoder(isInstanceOf(Array))
-  assertDecoder(isInstanceOf(Set))
+  assertDecoder(isInstanceOf(Map));
+  assertDecoder(isInstanceOf(Array));
+  assertDecoder(isInstanceOf(Set));
 });
 
 test(function decodesInput() {
@@ -26,54 +30,54 @@ test(function decodesInput() {
 
   assertDecodeSuccess(mapDecoder, map, { expected: map });
 
-  for (const item of [{}, null, 0, undefined, 'str', set, array]) {
+  for (const item of [{}, null, 0, undefined, "str", set, array]) {
     assertDecodeErrors({
       decoder: mapDecoder,
       input: item,
       expected: [
         {
           input: item,
-          msg: expectedMsg(Map),
-        },
+          msg: expectedMsg(Map)
+        }
       ],
-      count,
-    });  
+      count
+    });
   }
 
   const setDecoder = isInstanceOf(Set);
 
   assertDecodeSuccess(setDecoder, set, { expected: set });
 
-  for (const item of [{}, null, 0, undefined, 'str', map, array]) {
+  for (const item of [{}, null, 0, undefined, "str", map, array]) {
     assertDecodeErrors({
       decoder: setDecoder,
       input: item,
       expected: [
         {
           input: item,
-          msg: expectedMsg(Set),
-        },
+          msg: expectedMsg(Set)
+        }
       ],
-      count,
-    });  
+      count
+    });
   }
 
   const arrayDecoder = isInstanceOf(Array);
 
   assertDecodeSuccess(arrayDecoder, array, { expected: array });
 
-  for (const item of [{}, null, 0, undefined, 'str', map, set]) {
+  for (const item of [{}, null, 0, undefined, "str", map, set]) {
     assertDecodeErrors({
       decoder: arrayDecoder,
       input: item,
       expected: [
         {
           input: item,
-          msg: expectedMsg(Array),
-        },
+          msg: expectedMsg(Array)
+        }
       ],
-      count,
-    });  
+      count
+    });
   }
 });
 
