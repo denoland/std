@@ -1,90 +1,289 @@
-import { Decoder, PromiseDecoder } from "./decoder.ts";
-import { DecoderError, DecoderErrorMsgArg } from "./decoder_result.ts";
-import { err, ok, buildErrorLocationString } from "./util.ts";
+import { Decoder, PromiseDecoder } from './decoder.ts';
+import { DecoderError, areDecoderErrors } from './decoder_result.ts';
+import { ok, buildErrorLocationString } from './_util.ts';
+import { IComposeDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
 
-const decoderName = "isDictionary";
+const decoderName = 'isDictionary';
 
-export interface IDictionaryDecoderOptions {
-  msg?: DecoderErrorMsgArg;
-}
+export interface IDictionaryDecoderOptions extends IComposeDecoderOptions {}
+
+// TODO(@thefliik): verify that two optional params is ok by style guide
 
 export function isDictionary<R, V = unknown>(
-  decoder: Decoder<R, V>,
-  options?: IDictionaryDecoderOptions
-): Decoder<R[], V>;
+  valueDecoder: Decoder<R, V>,
+  options?: IDictionaryDecoderOptions,
+): Decoder<{ [key: string]: R }, V>;
+export function isDictionary<R, V = unknown>(
+  valueDecoder: Decoder<R, V>,
+  keyDecoder: Decoder<string, string>,
+  options?: IDictionaryDecoderOptions,
+): Decoder<{ [key: string]: R }, V>;
 export function isDictionary<R, V = unknown>(
   decoder: PromiseDecoder<R, V>,
-  options?: IDictionaryDecoderOptions
-): PromiseDecoder<R[], V>;
+  options?: IDictionaryDecoderOptions,
+): PromiseDecoder<{ [key: string]: R }, V>;
+export function isDictionary<R, V = unknown>(
+  valueDecoder: Decoder<R, V> | PromiseDecoder<R, V>,
+  keyDecoder: Decoder<string, string> | PromiseDecoder<string, string>,
+  options?: IDictionaryDecoderOptions,
+): PromiseDecoder<{ [key: string]: R }, V>;
 export function isDictionary<R, V = unknown>(
   decoder: Decoder<R, V> | PromiseDecoder<R, V>,
-  options: IDictionaryDecoderOptions = {}
+  optionalA?:
+    | IDictionaryDecoderOptions
+    | Decoder<string, string>
+    | PromiseDecoder<string, string>,
+  optionalB?: IDictionaryDecoderOptions,
 ) {
-  if (decoder instanceof Decoder) {
-    return new Decoder((input: V) => {
-      if (typeof input !== "object" || input === null) {
-        err(input, "must be a non-null object", options && options.msg);
-      }
+  let keyDecoder:
+    | Decoder<string, string>
+    | PromiseDecoder<string, string>
+    | undefined;
+  let options: IDictionaryDecoderOptions = {};
 
-      const obj: { [key: string]: R } = {};
+  if (optionalA) {
+    if (optionalA instanceof Decoder || optionalA instanceof PromiseDecoder) {
+      keyDecoder = optionalA;
+    } else {
+      options = optionalA;
+    }
+  }
 
-      for (const key in input) {
-        if (!input.hasOwnProperty(key)) continue;
+  if (optionalB) {
+    options = optionalB;
+  }
 
-        const result = decoder.decode((input as any)[key]);
-
-        if (result instanceof DecoderError) {
-          return buildError(result, key, input, options.msg);
+  if (decoder instanceof PromiseDecoder) {
+    if (options.allErrors) {
+      return new PromiseDecoder(async (input: V) => {
+        if (typeof input !== 'object' || input === null) {
+          return nonObjectError(input, options);
         }
 
-        obj[key] = result.value;
+        let hasError = false;
+
+        const results = await Promise.all(
+          Object.entries(input).map(async ([entryKey, entryValue]) => {
+            let key = entryKey;
+
+            if (keyDecoder) {
+              const keyResult = await asyncDecodeKey(
+                keyDecoder!,
+                entryKey,
+                input,
+              );
+
+              if (areDecoderErrors(keyResult)) {
+                hasError = true;
+                return keyResult;
+              }
+
+              key = keyResult.value;
+            }
+
+            const valueResult = await asyncDecodeValue(
+              decoder,
+              entryValue,
+              input,
+              entryKey,
+            );
+
+            if (areDecoderErrors(valueResult)) {
+              hasError = true;
+              return valueResult;
+            }
+
+            return [key, valueResult.value] as [string, R];
+          }),
+        );
+
+        if (hasError) {
+          const errors: DecoderError[] = [];
+
+          results.forEach(result => {
+            if (result[0] instanceof DecoderError) {
+              errors.push(...(result as DecoderError[]));
+            }
+          });
+
+          return applyDecoderErrorOptions(errors, options);
+        }
+
+        return ok(Object.fromEntries(results as [string, R][]));
+      });
+    }
+
+    return new PromiseDecoder(async (input: V) => {
+      if (typeof input !== 'object' || input === null) {
+        return nonObjectError(input, options);
       }
 
-      return ok(obj);
+      const resultObject: { [key: string]: R } = {};
+
+      for (const [entryKey, entryValue] of Object.entries(input)) {
+        let key = entryKey;
+
+        if (keyDecoder) {
+          const keyResult = await asyncDecodeKey(keyDecoder!, entryKey, input);
+
+          if (areDecoderErrors(keyResult)) {
+            return applyDecoderErrorOptions(keyResult, options);
+          }
+
+          key = keyResult.value;
+        }
+
+        const valueResult = await asyncDecodeValue(
+          decoder,
+          entryValue,
+          input,
+          entryKey,
+        );
+
+        if (areDecoderErrors(valueResult)) {
+          return applyDecoderErrorOptions(valueResult, options);
+        }
+
+        resultObject[key] = valueResult.value;
+      }
+
+      return ok(resultObject);
     });
   }
 
-  return new PromiseDecoder(async (input: V) => {
-    if (typeof input !== "object" || input === null) {
-      err(input, "must be a non-null object", options && options.msg);
+  return new Decoder((input: V) => {
+    if (typeof input !== 'object' || input === null) {
+      return nonObjectError(input, options);
     }
 
-    const obj: { [key: string]: R } = {};
+    const resultObject: { [key: string]: R } = {};
 
-    for (const key in input) {
-      if (!input.hasOwnProperty(key)) continue;
+    const entries = Object.entries(input);
+    const allErrors: DecoderError[] = [];
 
-      const result = await decoder.decode((input as any)[key]);
+    for (const [entryKey, entryValue] of entries) {
+      let key = entryKey;
 
-      if (result instanceof DecoderError) {
-        return buildError(result, key, input, options.msg);
+      if (keyDecoder) {
+        const keyResult = (keyDecoder as Decoder<string, string>).decode(
+          entryKey,
+        );
+
+        if (areDecoderErrors(keyResult)) {
+          const errors = keyResult.map(error =>
+            buildChildKeyError(input, error, entryKey),
+          );
+
+          if (options.allErrors) {
+            allErrors.push(...errors);
+            continue;
+          }
+
+          return applyDecoderErrorOptions(errors, options);
+        }
+
+        key = keyResult.value;
       }
 
-      obj[key] = result.value;
+      const valueResult = decoder.decode(entryValue);
+
+      if (areDecoderErrors(valueResult)) {
+        const errors = valueResult.map(error =>
+          buildChildValueError(error, input, entryKey),
+        );
+
+        if (options.allErrors) {
+          allErrors.push(...errors);
+          continue;
+        }
+
+        return applyDecoderErrorOptions(errors, options);
+      }
+
+      resultObject[key] = valueResult.value;
     }
 
-    return ok(obj);
+    if (allErrors.length > 0)
+      return applyDecoderErrorOptions(allErrors, options);
+
+    return ok(resultObject);
   });
 }
 
-function buildError(
-  result: DecoderError,
-  key: string | number,
+async function asyncDecodeKey(
+  decoder: Decoder<string, string> | PromiseDecoder<string, string>,
+  key: string,
   input: unknown,
-  providedMsg?: DecoderErrorMsgArg
 ) {
-  const location = buildErrorLocationString(key, result.location);
-  const propertyKey = typeof key === "string" ? `"${key}"` : key;
+  const keyResult = await decoder.decode(key);
 
-  return err(
-    input,
-    `invalid key [${propertyKey}] value > ${result.message}`,
-    providedMsg,
+  if (areDecoderErrors(keyResult)) {
+    return keyResult.map(error => buildChildKeyError(input, error, key));
+  }
+
+  return keyResult;
+}
+
+async function asyncDecodeValue<R, V>(
+  decoder: Decoder<R, V> | PromiseDecoder<R, V>,
+  value: V,
+  input: unknown,
+  key: string,
+) {
+  const valueResult = await decoder.decode(value);
+
+  if (areDecoderErrors(valueResult)) {
+    return valueResult.map(error => buildChildValueError(error, input, key));
+  }
+
+  return valueResult;
+}
+
+function buildChildKeyError(
+  value: unknown,
+  child: DecoderError,
+  invalidKey: string,
+) {
+  const location = buildErrorLocationString(invalidKey, '');
+
+  return new DecoderError(
+    value,
+    `invalid key [${invalidKey}] > ${child.message}`,
     {
       decoderName,
-      child: result,
+      child,
       location,
-      key
-    }
+    },
+  );
+}
+
+function buildChildValueError(
+  child: DecoderError,
+  value: unknown,
+  key: string,
+) {
+  const location = buildErrorLocationString(key, child.location);
+  const keyName = typeof key === 'string' ? `"${key}"` : key;
+
+  return new DecoderError(
+    value,
+    `invalid key [${keyName}] value > ${child.message}`,
+    {
+      decoderName,
+      child,
+      location,
+      key,
+    },
+  );
+}
+
+function nonObjectError(input: unknown, options?: IDictionaryDecoderOptions) {
+  return applyDecoderErrorOptions(
+    [
+      new DecoderError(input, 'must be a non-null object', {
+        decoderName,
+      }),
+    ],
+    options,
   );
 }

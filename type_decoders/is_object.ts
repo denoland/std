@@ -1,64 +1,105 @@
-import { Decoder, PromiseDecoder } from "./decoder.ts";
-import {
-  DecoderError,
-  DecoderResult,
-  DecoderErrorMsgArg
-} from "./decoder_result.ts";
-import { err, ok, buildErrorLocationString } from "./util.ts";
+import { Decoder, PromiseDecoder } from './decoder.ts';
+import { DecoderError, areDecoderErrors } from './decoder_result.ts';
+import { ok, buildErrorLocationString } from './_util.ts';
+import { IComposeDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
 
-const decoderName = "isObject";
+const decoderName = 'isObject';
 
-export interface IObjectDecoderOptions<T> {
-  msg?: DecoderErrorMsgArg;
-  keyMap?: { [P in keyof T]?: string | number };
+export interface IObjectDecoderOptions extends IComposeDecoderOptions {
+  noExcessProperties?: boolean;
 }
 
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> },
-  options?: IObjectDecoderOptions<T>
+  options?: IObjectDecoderOptions,
 ): Decoder<T>;
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
-  options?: IObjectDecoderOptions<T>
+  options?: IObjectDecoderOptions,
 ): PromiseDecoder<T>;
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
-  options: IObjectDecoderOptions<T> = {}
+  options: IObjectDecoderOptions = {},
 ) {
-  if (
-    Object.values(decoderObject).some(
-      decoder => decoder instanceof PromiseDecoder
-    )
-  ) {
-    return new PromiseDecoder<T>(async input => {
-      if (typeof input !== "object" || input === null) {
-        return err(input, "must be a non-null object", options.msg, {
-          decoderName
-        });
-      }
+  const hasPromiseDecoder = Object.values(decoderObject).some(
+    decoder => decoder instanceof PromiseDecoder,
+  );
 
-      const resultObj: any = {};
-
-      for (const key in decoderObject) {
-        if (!decoderObject.hasOwnProperty(key)) continue;
-
-        // if a `keyMap` options argument has been provided,
-        // then we need to get the mappedValueKey for this key.
-        let mappedValueKey: string | number = key;
-
-        // check to make sure the mappedValueKey exists on the input
-        // and return an error if it doesn't
-        const error = checkMappedValueKey(input, key, mappedValueKey, options);
-
-        if (error instanceof DecoderError) return error;
-
-        const result = await decoderObject[key].decode(input[mappedValueKey]);
-
-        if (result instanceof DecoderError) {
-          return buildError(result, input, key, mappedValueKey, options);
+  if (hasPromiseDecoder) {
+    if (options.allErrors) {
+      return new PromiseDecoder(async input => {
+        if (typeof input !== 'object' || input === null) {
+          return nonObjectError(input, options);
         }
 
-        // store the valid value on the result object
+        const allErrors: DecoderError[] = [];
+
+        if (options.noExcessProperties) {
+          const invalidKeys = checkInputKeys(decoderObject, input, options);
+
+          if (invalidKeys) {
+            allErrors.push(...invalidKeys);
+          }
+        }
+
+        const entries = Object.entries<Decoder<T>>(decoderObject as any);
+
+        const resolvedEntries = await Promise.all(
+          entries.map(async ([key, decoder]) => {
+            const value = (input as { [key: string]: unknown })[key];
+
+            const result = await decoder.decode(value);
+
+            if (areDecoderErrors(result)) {
+              const errors = result.map(error =>
+                buildChildError(error, input, key),
+              );
+
+              allErrors.push(...errors);
+              return;
+            }
+
+            return [key, result.value] as [string, T];
+          }),
+        );
+
+        if (allErrors.length > 0) {
+          return applyDecoderErrorOptions(allErrors, options);
+        }
+
+        return ok(Object.fromEntries(resolvedEntries as [string, T][]));
+      });
+    }
+
+    return new PromiseDecoder(async input => {
+      if (typeof input !== 'object' || input === null) {
+        return nonObjectError(input, options);
+      }
+
+      if (options.noExcessProperties) {
+        const invalidKeys = checkInputKeys(decoderObject, input, options);
+
+        if (invalidKeys) {
+          return applyDecoderErrorOptions(invalidKeys, options);
+        }
+      }
+
+      const entries = Object.entries<Decoder<T>>(decoderObject as any);
+      const resultObj: { [key: string]: unknown } = {};
+
+      for (const [key, decoder] of entries) {
+        const value = (input as { [key: string]: unknown })[key];
+
+        const result = await decoder.decode(value);
+
+        if (areDecoderErrors(result)) {
+          const errors = result.map(error =>
+            buildChildError(error, input, key),
+          );
+
+          return applyDecoderErrorOptions(errors, options);
+        }
+
         resultObj[key] = result.value;
       }
 
@@ -67,82 +108,113 @@ export function isObject<T>(
   }
 
   return new Decoder(input => {
-    if (typeof input !== "object" || input === null) {
-      return err(input, "must be a non-null object", options.msg, {
-        decoderName
-      });
+    if (typeof input !== 'object' || input === null) {
+      return nonObjectError(input, options);
     }
 
-    const resultObj: any = {};
+    const allErrors: DecoderError[] = [];
 
-    for (const key in decoderObject) {
-      if (!decoderObject.hasOwnProperty(key)) continue;
+    if (options.noExcessProperties) {
+      const invalidKeys = checkInputKeys(decoderObject, input, options);
 
-      // if a `keyMap` options argument has been provided,
-      // then we need to get the mappedValueKey for this key.
-      let mappedValueKey: string | number = key;
+      if (invalidKeys) {
+        if (!options.allErrors) {
+          return applyDecoderErrorOptions(invalidKeys, options);
+        }
 
-      // check to make sure the mappedValueKey exists on the input
-      // and return an error if it doesn't
-      const error = checkMappedValueKey(input, key, mappedValueKey, options);
+        allErrors.push(...invalidKeys);
+      }
+    }
 
-      if (error instanceof DecoderError) return error;
+    const entries = Object.entries<Decoder<T>>(decoderObject as any);
+    const resultObj: { [key: string]: unknown } = {};
 
-      const result = decoderObject[key].decode(
-        input[mappedValueKey]
-      ) as DecoderResult<T>;
+    for (const [key, decoder] of entries) {
+      const value = (input as { [key: string]: unknown })[key];
 
-      if (result instanceof DecoderError) {
-        return buildError(result, input, key, mappedValueKey, options);
+      const result = decoder.decode(value);
+
+      if (areDecoderErrors(result)) {
+        const errors = result.map(error => buildChildError(error, input, key));
+
+        if (options.allErrors) {
+          allErrors.push(...errors);
+          continue;
+        }
+
+        return applyDecoderErrorOptions(errors, options);
       }
 
-      // store the valid value on the result object
       resultObj[key] = result.value;
+    }
+
+    if (allErrors.length > 0) {
+      return applyDecoderErrorOptions(allErrors, options);
     }
 
     return ok(resultObj);
   });
 }
 
-function checkMappedValueKey<T>(
-  value: unknown,
-  key: string,
-  valueKey: string,
-  options: IObjectDecoderOptions<T>
+function checkInputKeys<T>(
+  decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
+  input: object,
+  options: { allErrors?: boolean },
 ) {
-  if (options.keyMap && options.keyMap.hasOwnProperty(key)) {
-    valueKey = options.keyMap[key];
-  }
+  const expectedkeys = Object.keys(decoderObject);
+  const actualkeys = Object.keys(input);
 
-  if (!value.hasOwnProperty(valueKey)) {
-    const propertyKey =
-      typeof valueKey === "string" ? `"${valueKey}"` : valueKey;
+  if (options.allErrors) {
+    const invalidKeys = actualkeys.filter(key => !expectedkeys.includes(key));
 
-    return err(value, `missing required key [${propertyKey}]`, options.msg, {
-      decoderName
-    });
+    const errors = invalidKeys.map(key => buildKeyError(input, key));
+
+    if (errors.length > 0) return errors;
+  } else {
+    const invalidKey = actualkeys.find(key => !expectedkeys.includes(key));
+
+    if (invalidKey !== undefined) {
+      return [buildKeyError(input, invalidKey)];
+    }
   }
 }
 
-function buildError<T>(
-  result: DecoderError,
-  value: unknown,
-  key: string,
-  valueKey: string,
-  options: IObjectDecoderOptions<T>
-) {
-  const location = buildErrorLocationString(valueKey, result.location);
-  const propertyKey = typeof valueKey === "string" ? `"${valueKey}"` : valueKey;
+/*
+ * Error building functions
+ */
 
-  return err(
+function nonObjectError(input: unknown, options?: IObjectDecoderOptions) {
+  return applyDecoderErrorOptions(
+    [
+      new DecoderError(input, 'must be a non-null object', {
+        decoderName,
+      }),
+    ],
+    options,
+  );
+}
+
+function buildChildError(child: DecoderError, value: unknown, key: string) {
+  const location = buildErrorLocationString(key, child.location);
+  const keyName = typeof key === 'string' ? `"${key}"` : key;
+
+  return new DecoderError(
     value,
-    `invalid key [${propertyKey}] value > ${result.message}`,
-    options.msg,
+    `invalid key [${keyName}] value > ${child.message}`,
     {
       decoderName,
-      child: result,
+      child,
       location,
-      key
-    }
+      key,
+    },
   );
+}
+
+function buildKeyError(value: unknown, key: string) {
+  const keyName = typeof key === 'string' ? `"${key}"` : key;
+
+  return new DecoderError(value, `invalid key [${keyName}]`, {
+    decoderName,
+    key,
+  });
 }

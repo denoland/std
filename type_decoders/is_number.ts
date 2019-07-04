@@ -1,17 +1,13 @@
-import { Decoder } from "./decoder.ts";
-import { ok, err } from "./util.ts";
-import { DecoderErrorMsgArg } from "./decoder_result.ts";
+import { Decoder } from './decoder.ts';
+import { ok, err } from './_util.ts';
+import { ISimpleDecoderOptions } from './helpers.ts';
 
-export interface INumberDecoderOptions {
-  msg?: DecoderErrorMsgArg;
-}
+export interface INumberDecoderOptions extends ISimpleDecoderOptions {}
 
 export function isNumber(options: INumberDecoderOptions = {}) {
   return new Decoder(value =>
     Number.isFinite(value as any)
       ? ok(value as number)
-      : err(value, "must be a number", options.msg, {
-          decoderName: "isNumber"
-        })
+      : err(value, 'must be a number', 'isNumber', options),
   );
 }
