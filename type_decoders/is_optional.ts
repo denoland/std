@@ -1,6 +1,6 @@
 import { Decoder, PromiseDecoder } from './decoder.ts';
 import { isExactly } from './is_exactly.ts';
-import { ISimpleDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
+import { ISimpleDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
 import { isDecoderSuccess, DecoderError } from './decoder_result.ts';
 
 const decoderName = 'isOptional';
@@ -30,7 +30,7 @@ export function isOptional<T>(
   
       if (isDecoderSuccess(result)) return result;
   
-      return applyDecoderErrorOptions(
+      return applyOptionsToDecoderErrors(
         result.map(error => 
           new DecoderError(
             value,
@@ -55,7 +55,7 @@ export function isOptional<T>(
 
     if (isDecoderSuccess(result)) return result;
 
-    return applyDecoderErrorOptions(
+    return applyOptionsToDecoderErrors(
       result.map(error => 
         new DecoderError(
           value,

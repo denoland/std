@@ -5,7 +5,7 @@ import {
   DecoderSuccess,
   areDecoderErrors,
 } from './decoder_result.ts';
-import { IComposeDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
+import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
 
 const decoderName = 'isTuple';
 
@@ -60,7 +60,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
             errors.push(...invalidLengthError(decoders.length, input))
           }
 
-          return applyDecoderErrorOptions(errors, options);
+          return applyOptionsToDecoderErrors(errors, options);
         }
 
         return ok(
@@ -73,7 +73,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
       if (!Array.isArray(input)) {
         return nonArrayError(input, options);
       } else if (input.length !== decoders.length) {
-        return applyDecoderErrorOptions(
+        return applyOptionsToDecoderErrors(
           invalidLengthError(decoders.length, input),
           options,
         );
@@ -92,7 +92,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
             buildChildError(error, input, index),
           );
 
-          return applyDecoderErrorOptions(errors, options);
+          return applyOptionsToDecoderErrors(errors, options);
         }
 
         tuple.push(result.value);
@@ -113,7 +113,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
 
     if (input.length !== decoders.length) {
       if (!options.allErrors) {
-        return applyDecoderErrorOptions(
+        return applyOptionsToDecoderErrors(
           invalidLengthError(decoders.length, input),
           options,
         );
@@ -139,14 +139,14 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
           continue;
         }
 
-        return applyDecoderErrorOptions(errors, options);
+        return applyOptionsToDecoderErrors(errors, options);
       }
 
       tuple.push(result.value);
     }
 
     if (allErrors.length > 0)
-      return applyDecoderErrorOptions(allErrors, options);
+      return applyOptionsToDecoderErrors(allErrors, options);
 
     return ok(tuple);
   });

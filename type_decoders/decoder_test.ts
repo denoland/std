@@ -5,7 +5,8 @@ import {
   assertDecoderErrors,
   assertDecoderSuccess,
   assertPromiseDecoderErrors,
-  assertPromiseDecoderSuccess
+  assertPromiseDecoderSuccess,
+  assertDecodeErrors
 } from "./_testing_util.ts";
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import {
@@ -32,9 +33,29 @@ test(function decoderDecodesBooleanValue(): void {
   assertDecoderSuccess(decoder.decode(true));
   assertDecoderSuccess(decoder.decode(false));
 
-  assertDecoderErrors(decoder.decode(0));
-  assertDecoderErrors(decoder.decode(1));
-  assertDecoderErrors(decoder.decode("1"));
+  assertDecodeErrors({
+    decoder,
+    input: 0,
+    expected: [
+      { input: 0 }
+    ]
+  })
+
+  assertDecodeErrors({
+    decoder,
+    input: 1,
+    expected: [
+      { input: 1 }
+    ]
+  })
+
+  assertDecodeErrors({
+    decoder,
+    input: '1',
+    expected: [
+      { input: '1' }
+    ]
+  })
 });
 
 test(function decoderDecodesStringValue() {
@@ -46,10 +67,37 @@ test(function decoderDecodesStringValue() {
 
   assertDecoderSuccess(decoder.decode("1"));
 
-  assertDecoderErrors(decoder.decode(true));
-  assertDecoderErrors(decoder.decode(false));
-  assertDecoderErrors(decoder.decode(0));
-  assertDecoderErrors(decoder.decode(1));
+  assertDecodeErrors({
+    decoder,
+    input: true,
+    expected: [
+      { input: true }
+    ]
+  })
+
+  assertDecodeErrors({
+    decoder,
+    input: false,
+    expected: [
+      { input: false }
+    ]
+  })
+
+  assertDecodeErrors({
+    decoder,
+    input: 0,
+    expected: [
+      { input: 0 }
+    ]
+  })
+
+  assertDecodeErrors({
+    decoder,
+    input: 1,
+    expected: [
+      { input: 1 }
+    ]
+  })
 });
 
 test(async function decoderDecodeReturnsPromiseWhenGivenPromise() {
@@ -61,7 +109,14 @@ test(async function decoderDecodeReturnsPromiseWhenGivenPromise() {
 
   await assertPromiseDecoderSuccess(decoder.decode(Promise.resolve("true")));
 
-  await assertDecoderErrors(decoder.decode(true));
+  assertDecodeErrors({
+    decoder,
+    input: true,
+    expected: [
+      { input: true }
+    ]
+  })
+
   await assertPromiseDecoderErrors(decoder.decode(Promise.resolve(true)));
   await assertPromiseDecoderErrors(decoder.decode(Promise.resolve(1)));
 });

@@ -1,6 +1,6 @@
 import { Decoder, PromiseDecoder, DecoderReturnType } from './decoder.ts';
 import { DecoderSuccess, DecoderError, DecoderResult, areDecoderErrors } from './decoder_result.ts';
-import { ISimpleDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
+import { ISimpleDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
 
 const decoderName = 'isAnyOf';
 
@@ -39,7 +39,7 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
 
         if (result instanceof DecoderSuccess) return result;
 
-        return applyDecoderErrorOptions(buildErrors(value, result), options);
+        return applyOptionsToDecoderErrors(buildErrors(value, result), options);
       });
     }
 
@@ -56,7 +56,7 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
         errors.push(...result);
       }
 
-      return applyDecoderErrorOptions(buildErrors(value, errors), options);
+      return applyOptionsToDecoderErrors(buildErrors(value, errors), options);
     });
   }
 
@@ -73,7 +73,7 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
       errors.push(...result);
     }
 
-    return applyDecoderErrorOptions(buildErrors(value, errors), options);
+    return applyOptionsToDecoderErrors(buildErrors(value, errors), options);
   });
 }
 

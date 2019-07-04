@@ -1,7 +1,7 @@
 import { Decoder, PromiseDecoder } from './decoder.ts';
 import { DecoderError, DecoderResult, DecoderSuccess, areDecoderErrors } from './decoder_result.ts';
 import { ok, buildErrorLocationString } from './_util.ts';
-import { IComposeDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
+import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
 
 const decoderName = 'isArray';
 
@@ -62,7 +62,7 @@ export function isArray<R, V = unknown>(
             }
           });
 
-          return applyDecoderErrorOptions(errors, options);
+          return applyOptionsToDecoderErrors(errors, options);
         }
 
         const elements = results.map(
@@ -87,7 +87,7 @@ export function isArray<R, V = unknown>(
         if (areDecoderErrors(result)) {
           const errors = result.map(error => buildChildError(error, input, index));
 
-          return applyDecoderErrorOptions(errors, options);
+          return applyOptionsToDecoderErrors(errors, options);
         }
       
         elements.push(result.value);
@@ -114,7 +114,7 @@ export function isArray<R, V = unknown>(
         const errors = result.map(error => buildChildError(error, input, index));
 
         if (!options.allErrors) {
-          return applyDecoderErrorOptions(errors, options);
+          return applyOptionsToDecoderErrors(errors, options);
         }
 
         allErrors.push(...errors);
@@ -125,7 +125,7 @@ export function isArray<R, V = unknown>(
     }
 
     if (allErrors.length > 0) {
-      return applyDecoderErrorOptions(allErrors, options);
+      return applyOptionsToDecoderErrors(allErrors, options);
     }
 
     return ok(elements);
@@ -133,7 +133,7 @@ export function isArray<R, V = unknown>(
 }
 
 function nonArrayError(value: unknown, options: IArrayDecoderOptions = {}) {
-  return applyDecoderErrorOptions(
+  return applyOptionsToDecoderErrors(
     [
       new DecoderError(value, 'must be an array', {
         decoderName,
