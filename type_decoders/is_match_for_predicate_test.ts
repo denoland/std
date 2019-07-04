@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from '../testing/mod.ts';
 import { assertEquals } from '../testing/asserts.ts';
-import { assertDecodeSuccess, assertDecodeErrors, assertDecoder, assertPromiseDecoder } from './testing_asserts.ts';
+import { assertDecodeSuccess, assertDecodeErrors, assertDecoder, assertPromiseDecoder } from './_testing_util.ts';
 import { Decoder, PromiseDecoder } from './decoder.ts';
 import { isMatchForPredicate } from './is_match_for_predicate.ts';
 

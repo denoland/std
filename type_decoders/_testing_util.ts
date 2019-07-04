@@ -3,6 +3,8 @@ import {
   DecoderResult,
   areDecoderErrors,
   isDecoderSuccess,
+  DecoderSuccess,
+  DecoderError,
 } from './decoder_result.ts';
 import { Decoder, PromiseDecoder } from './decoder.ts';
 
@@ -393,3 +395,22 @@ export function assertPromiseDecoder(
     throw new AssertionError(msg);
   }
 }
+
+
+export const stringDecoder = new Decoder(value =>
+  typeof value === 'string'
+    ? new DecoderSuccess(value)
+    : [new DecoderError(value, 'must be a string')],
+);
+
+export const numberDecoder = new Decoder(value =>
+  typeof value === 'number'
+    ? new DecoderSuccess(value)
+    : [new DecoderError(value, 'must be a number')],
+);
+
+export const booleanDecoder = new Decoder(value =>
+  typeof value === 'boolean'
+    ? new DecoderSuccess(value)
+    : [new DecoderError(value, 'must be a boolean')],
+);

@@ -5,21 +5,21 @@ import {
   assertDecodeSuccess,
   assertDecodeErrors,
   assertDecoder,
-} from './testing_asserts.ts';
+} from './_testing_util.ts';
 import { Decoder } from './decoder.ts';
-import { isRecursive } from './is_recursive.ts';
+import { isLazy } from './is_lazy.ts';
 import { DecoderSuccess } from './decoder_result.ts';
 import { isObject } from './is_object.ts';
 import { isArray } from './is_array.ts';
 
 /**
- * isRecursive()
+ * isLazy()
  */
 
 test(function initializes() {
   const blankDecoder = new Decoder(value => new DecoderSuccess(value));
 
-  assertDecoder(isRecursive(() => blankDecoder));
+  assertDecoder(isLazy(() => blankDecoder));
 });
 
 test(function noOptions() {
@@ -27,7 +27,7 @@ test(function noOptions() {
 
   const decoder = isObject({
     type: blankDecoder,
-    value: isArray(isRecursive(() => decoder)),
+    value: isArray(isLazy(() => decoder)),
   });
 
   for (const item of [
@@ -73,7 +73,7 @@ test(function optionAllErrors() {
   const decoder = isObject(
     {
       type: blankDecoder,
-      value: isArray(isRecursive(() => decoder), { allErrors: true }),
+      value: isArray(isLazy(() => decoder), { allErrors: true }),
     },
     {
       allErrors: true,

@@ -1,7 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from '../testing/mod.ts';
 import { assertEquals } from '../testing/asserts.ts';
-import { assertDecodeSuccess, assertDecodeErrors, assertDecoder } from './testing_asserts.ts';
+import { assertDecodeSuccess, assertDecodeErrors, assertDecoder } from './_testing_util.ts';
 import { Decoder } from './decoder.ts';
 import { isAny } from './is_any.ts';
 

@@ -6,7 +6,7 @@ import {
   assertDecoderSuccess,
   assertPromiseDecoderErrors,
   assertPromiseDecoderSuccess
-} from "./testing_asserts.ts";
+} from "./_testing_util.ts";
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import {
   DecoderSuccess,
