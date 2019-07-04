@@ -1,35 +1,43 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { DecoderError, DecoderResult, DecoderSuccess, areDecoderErrors } from './decoder_result.ts';
-import { ok, buildErrorLocationString } from './_util.ts';
-import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import {
+  DecoderError,
+  DecoderResult,
+  DecoderSuccess,
+  areDecoderErrors
+} from "./decoder_result.ts";
+import { ok, buildErrorLocationString } from "./_util.ts";
+import {
+  IComposeDecoderOptions,
+  applyOptionsToDecoderErrors
+} from "./helpers.ts";
 
-const decoderName = 'isArray';
+const decoderName = "isArray";
 
 export interface IArrayDecoderOptions extends IComposeDecoderOptions {}
 
 export function isArray<R = unknown, V = unknown>(
-  options?: IArrayDecoderOptions,
+  options?: IArrayDecoderOptions
 ): Decoder<R[], V>;
 
 export function isArray<R, V = unknown>(
   decoder: Decoder<R, V>,
-  options?: IArrayDecoderOptions,
+  options?: IArrayDecoderOptions
 ): Decoder<R[], V>;
 
 export function isArray<R, V = unknown>(
   decoder: PromiseDecoder<R, V>,
-  options?: IArrayDecoderOptions,
+  options?: IArrayDecoderOptions
 ): PromiseDecoder<R[], V>;
 
 export function isArray<R, V = unknown>(
   decoder?: Decoder<R, V> | PromiseDecoder<R, V> | IArrayDecoderOptions,
-  options: IArrayDecoderOptions = {},
+  options: IArrayDecoderOptions = {}
 ) {
   if (!(decoder instanceof Decoder || decoder instanceof PromiseDecoder)) {
     return new Decoder<R[], V>(input =>
       Array.isArray(input)
         ? ok<R[]>(input.slice())
-        : nonArrayError(input, options),
+        : nonArrayError(input, options)
     );
   }
   if (decoder instanceof PromiseDecoder) {
@@ -48,7 +56,7 @@ export function isArray<R, V = unknown>(
             }
 
             return result;
-          }),
+          })
         );
 
         if (hasError) {
@@ -57,7 +65,7 @@ export function isArray<R, V = unknown>(
           results.forEach((result, index) => {
             if (Array.isArray(result)) {
               errors.push(
-                ...result.map(error => buildChildError(error, input, index)),
+                ...result.map(error => buildChildError(error, input, index))
               );
             }
           });
@@ -66,7 +74,7 @@ export function isArray<R, V = unknown>(
         }
 
         const elements = results.map(
-          result => (result as DecoderSuccess<R>).value,
+          result => (result as DecoderSuccess<R>).value
         );
 
         return ok(elements);
@@ -85,11 +93,13 @@ export function isArray<R, V = unknown>(
         const result = await decoder.decode(el);
 
         if (areDecoderErrors(result)) {
-          const errors = result.map(error => buildChildError(error, input, index));
+          const errors = result.map(error =>
+            buildChildError(error, input, index)
+          );
 
           return applyOptionsToDecoderErrors(errors, options);
         }
-      
+
         elements.push(result.value);
       }
 
@@ -111,7 +121,9 @@ export function isArray<R, V = unknown>(
       const result = decoder.decode(el as V);
 
       if (areDecoderErrors(result)) {
-        const errors = result.map(error => buildChildError(error, input, index));
+        const errors = result.map(error =>
+          buildChildError(error, input, index)
+        );
 
         if (!options.allErrors) {
           return applyOptionsToDecoderErrors(errors, options);
@@ -120,7 +132,7 @@ export function isArray<R, V = unknown>(
         allErrors.push(...errors);
         continue;
       }
-    
+
       elements.push(result.value);
     }
 
@@ -135,11 +147,11 @@ export function isArray<R, V = unknown>(
 function nonArrayError(value: unknown, options: IArrayDecoderOptions = {}) {
   return applyOptionsToDecoderErrors(
     [
-      new DecoderError(value, 'must be an array', {
-        decoderName,
-      }),
+      new DecoderError(value, "must be an array", {
+        decoderName
+      })
     ],
-    options,
+    options
   );
 }
 
@@ -153,7 +165,7 @@ function buildChildError(child: DecoderError, value: unknown, key: number) {
       decoderName,
       child,
       location,
-      key,
-    },
+      key
+    }
   );
 }

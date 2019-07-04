@@ -5,7 +5,7 @@ export class DecoderSuccess<T> {
 
 /** Class returned on a failed call to `Decoder#decode` or `PromiseDecoder#decode` */
 export class DecoderError {
-  name = 'DecoderError';
+  name = "DecoderError";
 
   /** The value that failed validation. */
   input: unknown;
@@ -45,12 +45,12 @@ export class DecoderError {
       child?: DecoderError;
       key?: unknown;
       allErrors?: boolean;
-    } = {},
+    } = {}
   ) {
     this.input = input;
     this.message = message;
     this.decoderName = options.decoderName;
-    this.location = options.location || '';
+    this.location = options.location || "";
     this.child = options.child;
     this.key = options.key;
     this.allErrors = options.allErrors || false;
@@ -79,10 +79,14 @@ export type DecoderErrorMsgArg =
   | string
   | ((errors: DecoderError[]) => DecoderError[]);
 
-export function areDecoderErrors<T>(result: DecoderResult<T>): result is DecoderError[] {
+export function areDecoderErrors<T>(
+  result: DecoderResult<T>
+): result is DecoderError[] {
   return Array.isArray(result);
 }
 
-export function isDecoderSuccess<T>(result: DecoderResult<T>): result is DecoderSuccess<T> {
+export function isDecoderSuccess<T>(
+  result: DecoderResult<T>
+): result is DecoderSuccess<T> {
   return result instanceof DecoderSuccess;
 }

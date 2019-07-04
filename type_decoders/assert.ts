@@ -1,9 +1,13 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { DecoderError, DecoderResult, areDecoderErrors } from './decoder_result.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import {
+  DecoderError,
+  DecoderResult,
+  areDecoderErrors
+} from "./decoder_result.ts";
 
 export class DecoderAssertError extends Error {
   constructor(public errors: DecoderError[]) {
-    super(errors.map(error => error.message).join('. \n'));
+    super(errors.map(error => error.message).join(". \n"));
   }
 }
 
@@ -21,11 +25,11 @@ export class DecoderAssertError extends Error {
  * ```
  */
 export function assert<R, V>(
-  decoder: Decoder<R, V>,
+  decoder: Decoder<R, V>
 ): { (value: V): R; (value: Promise<V>): Promise<R> };
 
 export function assert<R, V>(
-  decoder: PromiseDecoder<R, V>,
+  decoder: PromiseDecoder<R, V>
 ): (value: V | Promise<V>) => Promise<R>;
 
 export function assert<R, V>(decoder: Decoder<R, V> | PromiseDecoder<R, V>) {

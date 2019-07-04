@@ -1,32 +1,35 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { ok, buildErrorLocationString, err } from './_util.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { ok, buildErrorLocationString, err } from "./_util.ts";
 import {
   DecoderError,
   DecoderSuccess,
-  areDecoderErrors,
-} from './decoder_result.ts';
-import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
+  areDecoderErrors
+} from "./decoder_result.ts";
+import {
+  IComposeDecoderOptions,
+  applyOptionsToDecoderErrors
+} from "./helpers.ts";
 
-const decoderName = 'isTuple';
+const decoderName = "isTuple";
 
 export interface ITupleDecoderOptions extends IComposeDecoderOptions {}
 
 export function isTuple<R extends [unknown, ...unknown[]]>(
   decoders: { [P in keyof R]: Decoder<R[P]> },
-  options?: ITupleDecoderOptions,
+  options?: ITupleDecoderOptions
 ): Decoder<R>;
 
 export function isTuple<R extends [unknown, ...unknown[]]>(
   decoders: { [P in keyof R]: Decoder<R[P]> | PromiseDecoder<R[P]> },
-  options?: ITupleDecoderOptions,
+  options?: ITupleDecoderOptions
 ): PromiseDecoder<R>;
 
 export function isTuple<R extends [unknown, ...unknown[]]>(
   decoders: { [P in keyof R]: Decoder<R[P]> | PromiseDecoder<R[P]> },
-  options: ITupleDecoderOptions = {},
+  options: ITupleDecoderOptions = {}
 ) {
   const hasPromiseDecoder = decoders.some(
-    decoder => decoder instanceof PromiseDecoder,
+    decoder => decoder instanceof PromiseDecoder
   );
 
   if (hasPromiseDecoder) {
@@ -48,23 +51,23 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
             }
 
             return result;
-          }),
+          })
         );
 
         if (hasError || input.length !== decoders.length) {
           const errors = (results.filter(result =>
-            areDecoderErrors(result),
+            areDecoderErrors(result)
           ) as DecoderError[][]).flat();
 
           if (input.length !== decoders.length) {
-            errors.push(...invalidLengthError(decoders.length, input))
+            errors.push(...invalidLengthError(decoders.length, input));
           }
 
           return applyOptionsToDecoderErrors(errors, options);
         }
 
         return ok(
-          (results as DecoderSuccess<unknown>[]).map(result => result.value),
+          (results as DecoderSuccess<unknown>[]).map(result => result.value)
         );
       });
     }
@@ -75,7 +78,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
       } else if (input.length !== decoders.length) {
         return applyOptionsToDecoderErrors(
           invalidLengthError(decoders.length, input),
-          options,
+          options
         );
       }
 
@@ -89,7 +92,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
 
         if (areDecoderErrors(result)) {
           const errors = result.map(error =>
-            buildChildError(error, input, index),
+            buildChildError(error, input, index)
           );
 
           return applyOptionsToDecoderErrors(errors, options);
@@ -115,7 +118,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
       if (!options.allErrors) {
         return applyOptionsToDecoderErrors(
           invalidLengthError(decoders.length, input),
-          options,
+          options
         );
       }
 
@@ -126,12 +129,12 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
       index++;
 
       const result = (decoder as Decoder<unknown, unknown>).decode(
-        input[index],
+        input[index]
       );
 
       if (areDecoderErrors(result)) {
         const errors = result.map(error =>
-          buildChildError(error, input, index),
+          buildChildError(error, input, index)
         );
 
         if (options.allErrors) {
@@ -154,16 +157,16 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
 
 function nonArrayError(
   input: unknown,
-  options: ITupleDecoderOptions | undefined,
+  options: ITupleDecoderOptions | undefined
 ) {
-  return err(input, 'must be an array', decoderName, options);
+  return err(input, "must be an array", decoderName, options);
 }
 
 function invalidLengthError(length: number, input: unknown) {
   return [
     new DecoderError(input, `array must have length ${length}`, {
-      decoderName,
-    }),
+      decoderName
+    })
   ];
 }
 
@@ -177,7 +180,7 @@ function buildChildError(child: DecoderError, value: unknown, key: number) {
       decoderName,
       child,
       location,
-      key,
-    },
+      key
+    }
   );
 }

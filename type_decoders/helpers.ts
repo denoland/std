@@ -1,4 +1,4 @@
-import { DecoderError, DecoderErrorMsgArg } from './decoder_result.ts';
+import { DecoderError, DecoderErrorMsgArg } from "./decoder_result.ts";
 
 export interface ISimpleDecoderOptions {
   decoderName?: string;
@@ -11,7 +11,7 @@ export interface IComposeDecoderOptions extends ISimpleDecoderOptions {
 
 export function applyOptionsToDecoderErrors(
   errors: DecoderError[],
-  options: IComposeDecoderOptions | undefined,
+  options: IComposeDecoderOptions | undefined
 ) {
   if (!options) return errors;
 
@@ -33,7 +33,7 @@ export function applyOptionsToDecoderErrors(
   if (!options.msg) return errors;
 
   const newErrors =
-    typeof options.msg === 'function'
+    typeof options.msg === "function"
       ? options.msg(errors)
       : errors.map(error => {
           error.message = options.msg as string;
@@ -42,8 +42,8 @@ export function applyOptionsToDecoderErrors(
 
   if (newErrors.length === 0) {
     throw new Error(
-      'Provided DecoderError function must return ' +
-        'an array of DecoderError with length greater than 0.',
+      "Provided DecoderError function must return " +
+        "an array of DecoderError with length greater than 0."
     );
   }
 

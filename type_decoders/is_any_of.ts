@@ -1,8 +1,16 @@
-import { Decoder, PromiseDecoder, DecoderReturnType } from './decoder.ts';
-import { DecoderSuccess, DecoderError, DecoderResult, areDecoderErrors } from './decoder_result.ts';
-import { ISimpleDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
+import { Decoder, PromiseDecoder, DecoderReturnType } from "./decoder.ts";
+import {
+  DecoderSuccess,
+  DecoderError,
+  DecoderResult,
+  areDecoderErrors
+} from "./decoder_result.ts";
+import {
+  ISimpleDecoderOptions,
+  applyOptionsToDecoderErrors
+} from "./helpers.ts";
 
-const decoderName = 'isAnyOf';
+const decoderName = "isAnyOf";
 
 export interface IAnyOfDecoderOptions extends ISimpleDecoderOptions {
   decodeInParallel?: boolean;
@@ -10,18 +18,18 @@ export interface IAnyOfDecoderOptions extends ISimpleDecoderOptions {
 
 export function isAnyOf<T extends Decoder<unknown>>(
   decoders: T[],
-  options?: IAnyOfDecoderOptions,
+  options?: IAnyOfDecoderOptions
 ): Decoder<DecoderReturnType<T>>;
 export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
   decoders: T[],
-  options?: IAnyOfDecoderOptions,
+  options?: IAnyOfDecoderOptions
 ): PromiseDecoder<DecoderReturnType<T>>;
 export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
   decoders: T[],
-  options: IAnyOfDecoderOptions = {},
+  options: IAnyOfDecoderOptions = {}
 ) {
   const hasPromiseDecoder = decoders.some(
-    decoder => decoder instanceof PromiseDecoder,
+    decoder => decoder instanceof PromiseDecoder
   );
 
   if (hasPromiseDecoder) {
@@ -32,7 +40,7 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
             [index, await decoder.decode(value)] as [
               number,
               DecoderResult<DecoderReturnType<T>>
-            ],
+            ]
         );
 
         const result = await raceToDecoderSuccess(promises);
@@ -79,7 +87,7 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
 
 async function raceToDecoderSuccess<T>(
   promises: Promise<[number, DecoderResult<T>]>[],
-  errors: DecoderError[] = [],
+  errors: DecoderError[] = []
 ): Promise<DecoderSuccess<T> | DecoderError[]> {
   if (promises.length === 0) return errors;
 
@@ -98,6 +106,6 @@ async function raceToDecoderSuccess<T>(
 
 function buildErrors(value: unknown, children: DecoderError[]) {
   return children.map(
-    child => new DecoderError(value, 'invalid value', { decoderName, child }),
+    child => new DecoderError(value, "invalid value", { decoderName, child })
   );
 }

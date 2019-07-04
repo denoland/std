@@ -1,10 +1,10 @@
-import { Decoder } from './decoder.ts';
-import { isChainOf } from './is_chain_of.ts';
-import { isString } from './is_string.ts';
-import { ok, err } from './_util.ts';
-import { ISimpleDecoderOptions } from './helpers.ts';
+import { Decoder } from "./decoder.ts";
+import { isChainOf } from "./is_chain_of.ts";
+import { isString } from "./is_string.ts";
+import { ok, err } from "./_util.ts";
+import { ISimpleDecoderOptions } from "./helpers.ts";
 
-const decoderName = 'isMatch';
+const decoderName = "isMatch";
 
 export interface IMatchDecoderOptions extends ISimpleDecoderOptions {}
 
@@ -19,10 +19,10 @@ export function isMatch(regex: RegExp, options: IMatchDecoderOptions = {}) {
               value,
               `must be a string matching the pattern "${regex}"`,
               decoderName,
-              options,
-            ),
-      ),
+              options
+            )
+      )
     ],
-    { decoderName: options.decoderName || decoderName },
+    { decoderName: options.decoderName || decoderName }
   );
 }

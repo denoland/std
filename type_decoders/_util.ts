@@ -1,5 +1,8 @@
-import { DecoderError, DecoderSuccess } from './decoder_result.ts';
-import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
+import { DecoderError, DecoderSuccess } from "./decoder_result.ts";
+import {
+  IComposeDecoderOptions,
+  applyOptionsToDecoderErrors
+} from "./helpers.ts";
 
 /** Convenience function for building a DecoderSuccess result */
 export function ok<T>(value: T) {
@@ -11,11 +14,11 @@ export function err(
   value: unknown,
   msg: string,
   decoderName: string,
-  options?: IComposeDecoderOptions,
+  options?: IComposeDecoderOptions
 ) {
   return applyOptionsToDecoderErrors(
     [new DecoderError(value, msg, { decoderName })],
-    options,
+    options
   );
 }
 
@@ -25,17 +28,17 @@ export function err(
  */
 export function buildErrorLocationString(
   key: string | number,
-  childLocation: string,
+  childLocation: string
 ) {
   // simple check to see if we can render the key using dot (`.`) notation
   const keyIsValidDotAccessor =
-    typeof key === 'string' && /^[a-zA-Z]+$/.test(key);
+    typeof key === "string" && /^[a-zA-Z]+$/.test(key);
 
   // prettier-ignore : prettier makes this harder to read
   let location = keyIsValidDotAccessor
     ? key.toString()
     : // if we can't render the key using dot notation, is it a string?
-    typeof key === 'string'
+    typeof key === "string"
     ? `["${key}"]`
     : `[${key}]`;
 
@@ -43,7 +46,7 @@ export function buildErrorLocationString(
   // notation. A '[' as the first character indicates that it was not.
   // `undefined` as the first character means the child location === ''.
   // If it was, add the dot (`.`) in.
-  return ['[', undefined].includes(childLocation[0])
+  return ["[", undefined].includes(childLocation[0])
     ? location.concat(childLocation)
     : `${location}.${childLocation}`;
 }

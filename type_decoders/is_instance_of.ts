@@ -1,12 +1,12 @@
-import { Decoder } from './decoder.ts';
-import { ok, err } from './_util.ts';
-import { ISimpleDecoderOptions } from './helpers.ts';
+import { Decoder } from "./decoder.ts";
+import { ok, err } from "./_util.ts";
+import { ISimpleDecoderOptions } from "./helpers.ts";
 
 export interface IInstanceOfDecoderOptions extends ISimpleDecoderOptions {}
 
 export function isInstanceOf<T extends new (...args: any) => any>(
   clazz: T,
-  options: IInstanceOfDecoderOptions = {},
+  options: IInstanceOfDecoderOptions = {}
 ) {
   return new Decoder(value =>
     value instanceof clazz
@@ -14,8 +14,8 @@ export function isInstanceOf<T extends new (...args: any) => any>(
       : err(
           value,
           `must be an instance of ${clazz.name}`,
-          'isInstanceOf',
-          options,
-        ),
+          "isInstanceOf",
+          options
+        )
   );
 }

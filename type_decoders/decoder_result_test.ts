@@ -1,7 +1,12 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from "../testing/mod.ts";
 import * as tests from "../testing/asserts.ts";
-import { DecoderSuccess, DecoderError, areDecoderErrors, isDecoderSuccess } from "./decoder_result.ts";
+import {
+  DecoderSuccess,
+  DecoderError,
+  areDecoderErrors,
+  isDecoderSuccess
+} from "./decoder_result.ts";
 
 /**
  * DecoderSuccess
@@ -9,18 +14,18 @@ import { DecoderSuccess, DecoderError, areDecoderErrors, isDecoderSuccess } from
 
 test(function initializesDecoderSuccess(): void {
   tests.assertEquals(new DecoderSuccess(true).value, true);
-  tests.assertEquals(new DecoderSuccess('one').value, 'one');
+  tests.assertEquals(new DecoderSuccess("one").value, "one");
 });
 
 test(function isDecoderSuccessFn(): void {
   const success = new DecoderSuccess(null);
-  const error = new DecoderError(null, 'message');
+  const error = new DecoderError(null, "message");
 
   tests.assertEquals(isDecoderSuccess(success as any), true);
   tests.assertEquals(isDecoderSuccess([error]), false);
   tests.assertEquals(isDecoderSuccess(error as any), false);
-  tests.assertEquals(isDecoderSuccess('success' as any), false);
-})
+  tests.assertEquals(isDecoderSuccess("success" as any), false);
+});
 
 /**
  * DecoderError
@@ -42,18 +47,18 @@ test(function initializesDecoderError(): void {
 
 test(function areDecoderErrorsFn(): void {
   const success = new DecoderSuccess(null);
-  const error = new DecoderError(null, 'message');
+  const error = new DecoderError(null, "message");
 
   tests.assertEquals(areDecoderErrors([error]), true);
   tests.assertEquals(areDecoderErrors(error as any), false);
   tests.assertEquals(areDecoderErrors(success as any), false);
-  tests.assertEquals(areDecoderErrors('success' as any), false);
-})
+  tests.assertEquals(areDecoderErrors("success" as any), false);
+});
 
 test(function initializesNestedDecoderError(): void {
   const value = true;
   const message = "Failed to decode non-existant value";
-  
+
   const error = new DecoderError(value, message, {
     decoderName: "test",
     child: new DecoderError(false, "", {
@@ -80,8 +85,16 @@ test(function initializesNestedDecoderError(): void {
   tests.assertEquals(error.child.allErrors, true, "error.child.allErrors");
 
   tests.assertEquals(error.child.child.key, undefined, "error.child.child.key");
-  tests.assertEquals(error.child.child.allErrors, false, "error.child.child.allErrors");
-  tests.assertEquals(error.child.child.location, "", "error.child.child.location");
+  tests.assertEquals(
+    error.child.child.allErrors,
+    false,
+    "error.child.child.allErrors"
+  );
+  tests.assertEquals(
+    error.child.child.location,
+    "",
+    "error.child.child.location"
+  );
   tests.assertEquals(error.child.child.path(), [], "error.child.child.path");
 });
 

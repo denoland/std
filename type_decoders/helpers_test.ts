@@ -1,12 +1,12 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, runTests } from '../testing/mod.ts';
-import { assertEquals } from '../testing/asserts.ts';
-import * as helpers from './helpers.ts';
-import { DecoderError } from './decoder_result.ts';
+import { test, runTests } from "../testing/mod.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import * as helpers from "./helpers.ts";
+import { DecoderError } from "./decoder_result.ts";
 
 function decoderErrors() {
   const nullValue = null;
-  const yesValue = 'yes';
+  const yesValue = "yes";
   const payloadValue = {};
   const objValue = { payload: payloadValue };
 
@@ -16,26 +16,26 @@ function decoderErrors() {
     payloadValue,
     objValue,
     errors: [
-      new DecoderError(nullValue, 'null error', {
-        decoderName: 'nullDecoder',
-        allErrors: true,
+      new DecoderError(nullValue, "null error", {
+        decoderName: "nullDecoder",
+        allErrors: true
       }),
-      new DecoderError(yesValue, 'must be a boolean', {
-        decoderName: 'booleanDecoder',
+      new DecoderError(yesValue, "must be a boolean", {
+        decoderName: "booleanDecoder"
       }),
       new DecoderError(
         objValue,
         'invalid value for key ["payload"] > must be a string',
         {
-          decoderName: 'objectDecoder',
-          child: new DecoderError(payloadValue, 'must be a string', {
-            decoderName: 'stringDecoder',
+          decoderName: "objectDecoder",
+          child: new DecoderError(payloadValue, "must be a string", {
+            decoderName: "stringDecoder"
           }),
-          key: 'payload',
-          location: 'payload',
-        },
-      ),
-    ],
+          key: "payload",
+          location: "payload"
+        }
+      )
+    ]
   };
 }
 
@@ -46,53 +46,53 @@ function decoderErrors() {
 test(function applyOptionsToDecoderErrors() {
   let args = decoderErrors();
 
-  /** 
+  /**
    * 1. make sure test is properly set up
    */
 
   assertEquals(args.errors, [
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.nullValue,
-      message: 'null error',
-      decoderName: 'nullDecoder',
+      message: "null error",
+      decoderName: "nullDecoder",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.yesValue,
-      message: 'must be a boolean',
-      decoderName: 'booleanDecoder',
+      message: "must be a boolean",
+      decoderName: "booleanDecoder",
       allErrors: false,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.objValue,
       message: 'invalid value for key ["payload"] > must be a string',
-      decoderName: 'objectDecoder',
+      decoderName: "objectDecoder",
       allErrors: false,
-      location: 'payload',
-      key: 'payload',
+      location: "payload",
+      key: "payload",
       child: {
-        name: 'DecoderError',
+        name: "DecoderError",
         input: args.payloadValue,
-        message: 'must be a string',
-        decoderName: 'stringDecoder',
+        message: "must be a string",
+        decoderName: "stringDecoder",
         allErrors: false,
-        location: '',
+        location: "",
         key: undefined,
-        child: undefined,
-      },
-    },
+        child: undefined
+      }
+    }
   ]);
 
-  /** 
+  /**
    * 2. test with { allErrors: true } option
    */
 
@@ -102,151 +102,151 @@ test(function applyOptionsToDecoderErrors() {
 
   assertEquals(args.errors, [
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.nullValue,
-      message: 'null error',
-      decoderName: 'nullDecoder',
+      message: "null error",
+      decoderName: "nullDecoder",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.yesValue,
-      message: 'must be a boolean',
-      decoderName: 'booleanDecoder',
+      message: "must be a boolean",
+      decoderName: "booleanDecoder",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.objValue,
       message: 'invalid value for key ["payload"] > must be a string',
-      decoderName: 'objectDecoder',
+      decoderName: "objectDecoder",
       allErrors: true,
-      location: 'payload',
-      key: 'payload',
+      location: "payload",
+      key: "payload",
       child: {
-        name: 'DecoderError',
+        name: "DecoderError",
         input: args.payloadValue,
-        message: 'must be a string',
-        decoderName: 'stringDecoder',
+        message: "must be a string",
+        decoderName: "stringDecoder",
         allErrors: false,
-        location: '',
+        location: "",
         key: undefined,
-        child: undefined,
-      },
-    },
+        child: undefined
+      }
+    }
   ]);
 
-  /** 
+  /**
    * 3. test with { decoderName: string } option
    */
 
   args = decoderErrors();
 
   helpers.applyOptionsToDecoderErrors(args.errors, {
-    decoderName: 'customDecoderName',
+    decoderName: "customDecoderName"
   });
 
   assertEquals(args.errors, [
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.nullValue,
-      message: 'null error',
-      decoderName: 'customDecoderName',
+      message: "null error",
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.yesValue,
-      message: 'must be a boolean',
-      decoderName: 'customDecoderName',
+      message: "must be a boolean",
+      decoderName: "customDecoderName",
       allErrors: false,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.objValue,
       message: 'invalid value for key ["payload"] > must be a string',
-      decoderName: 'customDecoderName',
+      decoderName: "customDecoderName",
       allErrors: false,
-      location: 'payload',
-      key: 'payload',
+      location: "payload",
+      key: "payload",
       child: {
-        name: 'DecoderError',
+        name: "DecoderError",
         input: args.payloadValue,
-        message: 'must be a string',
-        decoderName: 'stringDecoder',
+        message: "must be a string",
+        decoderName: "stringDecoder",
         allErrors: false,
-        location: '',
+        location: "",
         key: undefined,
-        child: undefined,
-      },
-    },
+        child: undefined
+      }
+    }
   ]);
 
-  /** 
+  /**
    * 4. test with { msg: string } option
    */
 
   args = decoderErrors();
 
   helpers.applyOptionsToDecoderErrors(args.errors, {
-    msg: 'my custom error message',
+    msg: "my custom error message"
   });
 
   assertEquals(args.errors, [
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.nullValue,
-      message: 'my custom error message',
-      decoderName: 'nullDecoder',
+      message: "my custom error message",
+      decoderName: "nullDecoder",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.yesValue,
-      message: 'my custom error message',
-      decoderName: 'booleanDecoder',
+      message: "my custom error message",
+      decoderName: "booleanDecoder",
       allErrors: false,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.objValue,
-      message: 'my custom error message',
-      decoderName: 'objectDecoder',
+      message: "my custom error message",
+      decoderName: "objectDecoder",
       allErrors: false,
-      location: 'payload',
-      key: 'payload',
+      location: "payload",
+      key: "payload",
       child: {
-        name: 'DecoderError',
+        name: "DecoderError",
         input: args.payloadValue,
-        message: 'must be a string',
-        decoderName: 'stringDecoder',
+        message: "must be a string",
+        decoderName: "stringDecoder",
         allErrors: false,
-        location: '',
+        location: "",
         key: undefined,
-        child: undefined,
-      },
-    },
+        child: undefined
+      }
+    }
   ]);
 
-  /** 
+  /**
    * 5. test with { allErrors: true, decoderName: string, msg: string } options
    */
 
@@ -254,53 +254,53 @@ test(function applyOptionsToDecoderErrors() {
 
   helpers.applyOptionsToDecoderErrors(args.errors, {
     allErrors: true,
-    decoderName: 'customDecoderName',
-    msg: 'my custom error message',
+    decoderName: "customDecoderName",
+    msg: "my custom error message"
   });
 
   assertEquals(args.errors, [
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.nullValue,
-      message: 'my custom error message',
-      decoderName: 'customDecoderName',
+      message: "my custom error message",
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.yesValue,
-      message: 'my custom error message',
-      decoderName: 'customDecoderName',
+      message: "my custom error message",
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.objValue,
-      message: 'my custom error message',
-      decoderName: 'customDecoderName',
+      message: "my custom error message",
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: 'payload',
-      key: 'payload',
+      location: "payload",
+      key: "payload",
       child: {
-        name: 'DecoderError',
+        name: "DecoderError",
         input: args.payloadValue,
-        message: 'must be a string',
-        decoderName: 'stringDecoder',
+        message: "must be a string",
+        decoderName: "stringDecoder",
         allErrors: false,
-        location: '',
+        location: "",
         key: undefined,
-        child: undefined,
-      },
-    },
+        child: undefined
+      }
+    }
   ]);
 
-  /** 
+  /**
    * 6. test with { allErrors: true, decoderName: string, msg: fn } options
    */
 
@@ -308,7 +308,7 @@ test(function applyOptionsToDecoderErrors() {
 
   const mutateErrors = (errors: DecoderError[]) => {
     errors.forEach(error => {
-      error.location = 'funky location';
+      error.location = "funky location";
     });
 
     return errors;
@@ -316,53 +316,53 @@ test(function applyOptionsToDecoderErrors() {
 
   helpers.applyOptionsToDecoderErrors(args.errors, {
     allErrors: true,
-    decoderName: 'customDecoderName',
-    msg: mutateErrors,
+    decoderName: "customDecoderName",
+    msg: mutateErrors
   });
 
   assertEquals(args.errors, [
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.nullValue,
-      message: 'null error',
-      decoderName: 'customDecoderName',
+      message: "null error",
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: 'funky location',
+      location: "funky location",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.yesValue,
-      message: 'must be a boolean',
-      decoderName: 'customDecoderName',
+      message: "must be a boolean",
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: 'funky location',
+      location: "funky location",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.objValue,
       message: 'invalid value for key ["payload"] > must be a string',
-      decoderName: 'customDecoderName',
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: 'funky location',
-      key: 'payload',
+      location: "funky location",
+      key: "payload",
       child: {
-        name: 'DecoderError',
+        name: "DecoderError",
         input: args.payloadValue,
-        message: 'must be a string',
-        decoderName: 'stringDecoder',
+        message: "must be a string",
+        decoderName: "stringDecoder",
         allErrors: false,
-        location: '',
+        location: "",
         key: undefined,
-        child: undefined,
-      },
-    },
+        child: undefined
+      }
+    }
   ]);
 
-  /** 
+  /**
    * 7. test with { allErrors: true, decoderName: string, msg: fn } options
    */
 
@@ -372,58 +372,58 @@ test(function applyOptionsToDecoderErrors() {
     return errors.map(
       error =>
         new DecoderError(error.input, error.message, {
-          decoderName: 'myDecoder',
-          child: error.child,
-        }),
+          decoderName: "myDecoder",
+          child: error.child
+        })
     );
   };
 
   const newErrors = helpers.applyOptionsToDecoderErrors(args.errors, {
     allErrors: true,
-    decoderName: 'customDecoderName',
-    msg: replaceErrors,
+    decoderName: "customDecoderName",
+    msg: replaceErrors
   });
 
   assertEquals(newErrors, [
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.nullValue,
-      message: 'null error',
-      decoderName: 'myDecoder',
+      message: "null error",
+      decoderName: "myDecoder",
       allErrors: false,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.yesValue,
-      message: 'must be a boolean',
-      decoderName: 'myDecoder',
+      message: "must be a boolean",
+      decoderName: "myDecoder",
       allErrors: false,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     },
     {
-      name: 'DecoderError',
+      name: "DecoderError",
       input: args.objValue,
       message: 'invalid value for key ["payload"] > must be a string',
-      decoderName: 'myDecoder',
+      decoderName: "myDecoder",
       allErrors: false,
-      location: '',
+      location: "",
       key: undefined,
       child: {
-        name: 'DecoderError',
+        name: "DecoderError",
         input: args.payloadValue,
-        message: 'must be a string',
-        decoderName: 'stringDecoder',
+        message: "must be a string",
+        decoderName: "stringDecoder",
         allErrors: false,
-        location: '',
+        location: "",
         key: undefined,
-        child: undefined,
-      },
-    },
+        child: undefined
+      }
+    }
   ]);
 });
 

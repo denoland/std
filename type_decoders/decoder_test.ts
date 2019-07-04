@@ -9,10 +9,7 @@ import {
   assertDecodeErrors
 } from "./_testing_util.ts";
 import { Decoder, PromiseDecoder } from "./decoder.ts";
-import {
-  DecoderSuccess,
-  DecoderError,
-} from "./decoder_result.ts";
+import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 /**
  * Decoder
@@ -36,26 +33,20 @@ test(function decoderDecodesBooleanValue(): void {
   assertDecodeErrors({
     decoder,
     input: 0,
-    expected: [
-      { input: 0 }
-    ]
-  })
+    expected: [{ input: 0 }]
+  });
 
   assertDecodeErrors({
     decoder,
     input: 1,
-    expected: [
-      { input: 1 }
-    ]
-  })
+    expected: [{ input: 1 }]
+  });
 
   assertDecodeErrors({
     decoder,
-    input: '1',
-    expected: [
-      { input: '1' }
-    ]
-  })
+    input: "1",
+    expected: [{ input: "1" }]
+  });
 });
 
 test(function decoderDecodesStringValue() {
@@ -70,34 +61,26 @@ test(function decoderDecodesStringValue() {
   assertDecodeErrors({
     decoder,
     input: true,
-    expected: [
-      { input: true }
-    ]
-  })
+    expected: [{ input: true }]
+  });
 
   assertDecodeErrors({
     decoder,
     input: false,
-    expected: [
-      { input: false }
-    ]
-  })
+    expected: [{ input: false }]
+  });
 
   assertDecodeErrors({
     decoder,
     input: 0,
-    expected: [
-      { input: 0 }
-    ]
-  })
+    expected: [{ input: 0 }]
+  });
 
   assertDecodeErrors({
     decoder,
     input: 1,
-    expected: [
-      { input: 1 }
-    ]
-  })
+    expected: [{ input: 1 }]
+  });
 });
 
 test(async function decoderDecodeReturnsPromiseWhenGivenPromise() {
@@ -112,10 +95,8 @@ test(async function decoderDecodeReturnsPromiseWhenGivenPromise() {
   assertDecodeErrors({
     decoder,
     input: true,
-    expected: [
-      { input: true }
-    ]
-  })
+    expected: [{ input: true }]
+  });
 
   await assertPromiseDecoderErrors(decoder.decode(Promise.resolve(true)));
   await assertPromiseDecoderErrors(decoder.decode(Promise.resolve(1)));
