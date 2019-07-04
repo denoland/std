@@ -1,7 +1,7 @@
 import { Decoder, PromiseDecoder } from './decoder.ts';
 import { DecoderError, areDecoderErrors } from './decoder_result.ts';
 import { ok, buildErrorLocationString } from './_util.ts';
-import { IComposeDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
+import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
 
 const decoderName = 'isObject';
 
@@ -64,7 +64,7 @@ export function isObject<T>(
         );
 
         if (allErrors.length > 0) {
-          return applyDecoderErrorOptions(allErrors, options);
+          return applyOptionsToDecoderErrors(allErrors, options);
         }
 
         return ok(Object.fromEntries(resolvedEntries as [string, T][]));
@@ -80,7 +80,7 @@ export function isObject<T>(
         const invalidKeys = checkInputKeys(decoderObject, input, options);
 
         if (invalidKeys) {
-          return applyDecoderErrorOptions(invalidKeys, options);
+          return applyOptionsToDecoderErrors(invalidKeys, options);
         }
       }
 
@@ -97,7 +97,7 @@ export function isObject<T>(
             buildChildError(error, input, key),
           );
 
-          return applyDecoderErrorOptions(errors, options);
+          return applyOptionsToDecoderErrors(errors, options);
         }
 
         resultObj[key] = result.value;
@@ -119,7 +119,7 @@ export function isObject<T>(
 
       if (invalidKeys) {
         if (!options.allErrors) {
-          return applyDecoderErrorOptions(invalidKeys, options);
+          return applyOptionsToDecoderErrors(invalidKeys, options);
         }
 
         allErrors.push(...invalidKeys);
@@ -142,14 +142,14 @@ export function isObject<T>(
           continue;
         }
 
-        return applyDecoderErrorOptions(errors, options);
+        return applyOptionsToDecoderErrors(errors, options);
       }
 
       resultObj[key] = result.value;
     }
 
     if (allErrors.length > 0) {
-      return applyDecoderErrorOptions(allErrors, options);
+      return applyOptionsToDecoderErrors(allErrors, options);
     }
 
     return ok(resultObj);
@@ -184,7 +184,7 @@ function checkInputKeys<T>(
  */
 
 function nonObjectError(input: unknown, options?: IObjectDecoderOptions) {
-  return applyDecoderErrorOptions(
+  return applyOptionsToDecoderErrors(
     [
       new DecoderError(input, 'must be a non-null object', {
         decoderName,
@@ -205,7 +205,7 @@ function buildChildError(child: DecoderError, value: object, key: string) {
   }
   else {
     location = child.location;
-    message = `missing key ["${key}"]`;
+    message = `missing required key ["${key}"]`;
     errorKey = undefined;
   }
 

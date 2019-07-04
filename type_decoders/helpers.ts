@@ -9,7 +9,7 @@ export interface IComposeDecoderOptions extends ISimpleDecoderOptions {
   allErrors?: boolean;
 }
 
-export function applyDecoderErrorOptions(
+export function applyOptionsToDecoderErrors(
   errors: DecoderError[],
   options: IComposeDecoderOptions | undefined,
 ) {
@@ -35,21 +35,17 @@ export function applyDecoderErrorOptions(
   const newErrors =
     typeof options.msg === 'function'
       ? options.msg(errors)
-      : applyDecoderErrorString(errors, options.msg);
+      : errors.map(error => {
+          error.message = options.msg as string;
+          return error;
+        });
 
   if (newErrors.length === 0) {
     throw new Error(
       'Provided DecoderError function must return ' +
-        'a DecoderError[] with length greater than 0.',
+        'an array of DecoderError with length greater than 0.',
     );
   }
 
   return newErrors;
-}
-
-function applyDecoderErrorString(errors: DecoderError[], msg: string) {
-  return errors.map(error => {
-    error.message = msg;
-    return error;
-  });
 }

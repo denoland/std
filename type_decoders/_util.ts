@@ -1,25 +1,26 @@
 import { DecoderError, DecoderSuccess } from './decoder_result.ts';
-import { IComposeDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
+import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
 
+/** Convenience function for building a DecoderSuccess result */
+export function ok<T>(value: T) {
+  return new DecoderSuccess(value);
+}
+
+/** Convenience function for building a simple DecoderError[] result */
 export function err(
   value: unknown,
   msg: string,
   decoderName: string,
   options?: IComposeDecoderOptions,
 ) {
-  return applyDecoderErrorOptions(
+  return applyOptionsToDecoderErrors(
     [new DecoderError(value, msg, { decoderName })],
     options,
   );
 }
 
-/** Convenience function for building a DecoderSuccess */
-export function ok<T>(value: T) {
-  return new DecoderSuccess(value);
-}
-
 /**
- * builds the `DecoderError#location` property given the child error's
+ * Builds the `DecoderError#location` property given the child error's
  * location and the current key.
  */
 export function buildErrorLocationString(

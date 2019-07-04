@@ -1,7 +1,7 @@
 import { Decoder, PromiseDecoder } from './decoder.ts';
 import { DecoderError, areDecoderErrors } from './decoder_result.ts';
 import { ok, buildErrorLocationString } from './_util.ts';
-import { IComposeDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
+import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
 
 const decoderName = 'isDictionary';
 
@@ -106,7 +106,7 @@ export function isDictionary<R, V = any>(
             }
           });
 
-          return applyDecoderErrorOptions(errors, options);
+          return applyOptionsToDecoderErrors(errors, options);
         }
 
         return ok(Object.fromEntries(results as [string, R][]));
@@ -127,7 +127,7 @@ export function isDictionary<R, V = any>(
           const keyResult = await asyncDecodeKey(keyDecoder!, entryKey, input);
 
           if (areDecoderErrors(keyResult)) {
-            return applyDecoderErrorOptions(keyResult, options);
+            return applyOptionsToDecoderErrors(keyResult, options);
           }
 
           key = keyResult.value;
@@ -141,7 +141,7 @@ export function isDictionary<R, V = any>(
         );
 
         if (areDecoderErrors(valueResult)) {
-          return applyDecoderErrorOptions(valueResult, options);
+          return applyOptionsToDecoderErrors(valueResult, options);
         }
 
         resultObject[key] = valueResult.value;
@@ -179,7 +179,7 @@ export function isDictionary<R, V = any>(
             continue;
           }
 
-          return applyDecoderErrorOptions(errors, options);
+          return applyOptionsToDecoderErrors(errors, options);
         }
 
         key = keyResult.value;
@@ -197,14 +197,14 @@ export function isDictionary<R, V = any>(
           continue;
         }
 
-        return applyDecoderErrorOptions(errors, options);
+        return applyOptionsToDecoderErrors(errors, options);
       }
 
       resultObject[key] = valueResult.value;
     }
 
     if (allErrors.length > 0)
-      return applyDecoderErrorOptions(allErrors, options);
+      return applyOptionsToDecoderErrors(allErrors, options);
 
     return ok(resultObject);
   });
@@ -279,7 +279,7 @@ function buildChildValueError(
 }
 
 function nonObjectError(input: unknown, options?: IDictionaryDecoderOptions) {
-  return applyDecoderErrorOptions(
+  return applyOptionsToDecoderErrors(
     [
       new DecoderError(input, 'must be a non-null object', {
         decoderName,

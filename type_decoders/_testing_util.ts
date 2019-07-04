@@ -16,16 +16,136 @@ function printValue(value: unknown) {
  * Make an assertion that `actual` is an array of DecoderError. If not
  * then throw.
  */
-export function assertDecoderErrors(
-  actual: DecoderResult<unknown>,
-  msg?: string,
-): void {
-  if (!areDecoderErrors(actual)) {
-    if (!msg) {
-      msg = `actual: "${actual}" expected to be an array of DecoderError`;
-    }
-    throw new AssertionError(msg);
+export function assertDecoderErrors(args: {
+  errors: DecoderResult<unknown>,
+  expected?: Array<{
+    input?: unknown;
+    msg?: string;
+    location?: string;
+    path?: unknown[];
+    decoderName?: string;
+    allErrors?: boolean;
+  }>,
+  count?: number,
+}): void {
+  if (!areDecoderErrors(args.errors)) {
+    throw new AssertionError(
+      `expected to recieve an array of DecodeError but received ${printValue(args.errors)}`,
+    );
   }
+
+  const errors = args.errors;
+
+  if (args.count !== undefined && errors.length !== args.count) {
+    throw new AssertionError(
+        `expected errors to have length ${args.count} but it instead has length ${errors.length}`
+    );
+  }
+
+  const expectedErrors = args.expected || [];
+
+  expectedErrors.forEach(expected => {
+    const hasError = errors.some(error => {
+      const criteria: boolean[] = [];
+
+      if (expected.hasOwnProperty('input')) {
+        criteria.push(error.input === expected.input);
+      }
+
+      if (expected.hasOwnProperty('msg')) {
+        criteria.push(error.message === expected.msg);
+      }
+
+      if (expected.hasOwnProperty('location')) {
+        criteria.push(error.location === expected.location);
+      }
+
+      if (expected.hasOwnProperty('path')) {
+        const path = error.path();
+
+        criteria.push(
+          expected.path.every((key, index) => key === path[index]),
+        );
+      }
+
+      if (expected.hasOwnProperty('decoderName')) {
+        criteria.push(error.decoderName === expected.decoderName);
+      }
+
+      if (expected.hasOwnProperty('allErrors')) {
+        criteria.push(error.allErrors === expected.allErrors);
+      }
+
+      return criteria.length > 0 && criteria.every(val => val);
+    });
+
+    if (!hasError) {
+      if (expected.hasOwnProperty('input')) {
+        if (!errors.some(error => error.input === expected.input)) {
+          throw new AssertionError(
+              `expected a DecoderError to have #input ${printValue(expected.input)}`,
+          );
+        }
+      }
+
+      if (expected.hasOwnProperty('msg')) {
+        if (!errors.some(error => error.message === expected.msg)) {
+          if (args.count === 1) {
+            throw new AssertionError(
+              `expected DecoderError to have #message ${printValue(expected.msg)} ` +
+              `but instead has message ${printValue(errors[0].message)}` ,
+            );
+          }
+
+          throw new AssertionError(
+              `expected a DecoderError to have #message ${printValue(expected.msg)}`,
+          );
+        }
+      }
+
+      if (expected.hasOwnProperty('location')) {
+        if (!errors.some(error => error.location === expected.location)) {
+          throw new AssertionError(
+              `expected a DecoderError to have #location ${printValue(expected.location)} `,
+          );
+        }
+      }
+
+      if (expected.hasOwnProperty('path')) {
+        if (
+          !errors.some(error =>
+            expected.path.every((key, index) => key === error.path()[index]),
+          )
+        ) {
+          throw new AssertionError(
+              `expected a DecoderError to have #path ${printValue(expected.path)}`,
+          );
+        }
+      }
+
+      if (expected.hasOwnProperty('decoderName')) {
+        if (!errors.some(error => error.decoderName === expected.decoderName)) {
+          throw new AssertionError(
+              `expected a DecoderError to have #decoderName ${printValue(expected.decoderName)} `,
+          );
+        }
+      }
+
+      if (expected.hasOwnProperty('allErrors')) {
+        if (!errors.some(error => error.allErrors === expected.allErrors)) {
+          throw new AssertionError(
+              `expected a DecoderError to have #allErrors ${printValue(expected.allErrors)} `,
+          );
+        }
+      }
+
+      throw new AssertionError(
+        `\n  Expected DecoderError array to have a DecoderError ` +
+          `containing the following properties:\n\n ` +
+          `${printValue(expected)}\n\n`,
+      );
+    }
+  });
 }
 
 /**
@@ -250,7 +370,7 @@ export function assertDecodeErrors(args: {
         }
 
         if (expected.hasOwnProperty('location')) {
-          if (!result.some(error => error.input === expected.input)) {
+          if (!result.some(error => error.location === expected.location)) {
             throw new AssertionError(
               `decoder.decode(${printValue(
                 args.input,

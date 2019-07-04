@@ -71,7 +71,7 @@ test(function noOptions() {
     expected: [
       {
         input: obj1,
-        msg: `missing key ["boolean"]`,
+        msg: `missing required key ["boolean"]`,
       },
     ],
     count: 1,
@@ -158,7 +158,7 @@ test(function optionAllErrors() {
     expected: [
       {
         input: obj1,
-        msg: `missing key ["boolean"]`,
+        msg: `missing required key ["boolean"]`,
       },
     ],
     count: 1,
@@ -264,7 +264,7 @@ test(function optionNoExcessProperties() {
     expected: [
       {
         input: obj1,
-        msg: `missing key ["boolean"]`,
+        msg: `missing required key ["boolean"]`,
       },
     ],
     count: 1,
@@ -358,7 +358,7 @@ test(function optionNoExcessPropertiesAllErrors() {
       },
       {
         input: objc,
-        msg: `missing key ["boolean"]`,
+        msg: `missing required key ["boolean"]`,
       },
     ],
     count: 3,
@@ -371,7 +371,7 @@ test(function optionNoExcessPropertiesAllErrors() {
     expected: [
       {
         input: obj1,
-        msg: `missing key ["boolean"]`,
+        msg: `missing required key ["boolean"]`,
       },
     ],
     count: 1,
@@ -458,11 +458,11 @@ test(function nestedObject() {
       },
       {
         input: obja,
-        msg: `missing key ["number"]`,
+        msg: `missing required key ["number"]`,
       },
       {
         input: obja,
-        msg: `invalid value for key ["child"] > missing key ["string"]`,
+        msg: `invalid value for key ["child"] > missing required key ["string"]`,
       },
     ],
     count: 3,

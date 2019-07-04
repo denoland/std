@@ -6,7 +6,7 @@ import {
   areDecoderErrors,
 } from './decoder_result.ts';
 import { ok } from './_util.ts';
-import { ISimpleDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
+import { ISimpleDecoderOptions, applyOptionsToDecoderErrors } from './helpers.ts';
 
 type SubtractOne<T extends number> = [
   -1,
@@ -73,7 +73,7 @@ export function isChainOf<
       }, Promise.resolve(ok(value as unknown) as DecoderResult<R>));
 
       if (areDecoderErrors(result)) {
-        return applyDecoderErrorOptions(buildChildErrors(value, result), options);
+        return applyOptionsToDecoderErrors(buildChildErrors(value, result), options);
       }
 
       return result;
@@ -91,7 +91,7 @@ export function isChainOf<
     );
 
     if (areDecoderErrors(result)) {
-      return applyDecoderErrorOptions(buildChildErrors(value, result), options);
+      return applyOptionsToDecoderErrors(buildChildErrors(value, result), options);
     }
 
     return result;

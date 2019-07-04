@@ -1,6 +1,9 @@
+import './_util_test.ts'
+
 import './assert_test.ts'
 import './decoder_result_test.ts'
 import './decoder_test.ts'
+import './helpers_test.ts'
 
 import './is_any_of_test.ts'
 import './is_any_test.ts'
@@ -23,3 +26,4 @@ import './is_object_test.ts'
 import './is_optional_test.ts'
 import './is_string_test.ts'
 import './is_tuple_test.ts'
+25

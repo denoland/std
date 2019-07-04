@@ -133,7 +133,7 @@ test(function optionAllErrors() {
           `invalid element [0] > ` +
           `invalid value for key ["value"] > ` +
           `invalid element [0] > ` +
-          `missing key ["value"]`,
+          `missing required key ["value"]`,
         location: 'value[0].value[0]',
         path: ['value', 0, 'value', 0],
       },
@@ -179,7 +179,7 @@ test(function optionAllErrors() {
           `invalid element [0] > ` +
           `invalid value for key ["value"] > ` +
           `invalid element [0] > ` +
-          `missing key ["value"]`,
+          `missing required key ["value"]`,
         location: 'value[0].value[0].value[0]',
         path: ['value', 0, 'value', 0, 'value', 0],
       },
