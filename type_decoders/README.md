@@ -5,7 +5,7 @@ This module facilitates validating `unknown` (or other) values and casting them 
 Users and library authors should be able to create custom decoders which can be composed with the decoders provided in this module, as well as composed with any other third-party decoders which are compatible with this module.
 
 ```ts
-import { assert, isNumber } from "https://deno.land/std/type_decoders/mod.ts";
+import { assert, isNumber } from "https://deno.land/std/type_decoders/mod";
 
 // assert() is a convenience function which wraps a decoder
 const numberValidator = assert(isNumber());
@@ -42,13 +42,13 @@ const result = decoder.decode('1'); // returns (not throws) `DecoderError`
   - [isInteger()](#isInteger)
   - [isUndefined()](#isUndefined)
   - [isNull()](#isNull)
-  - [isRegex()](#isRegex)
+  - [isMatch()](#isMatch)
   - [isAny()](#isAny)
   - [isNever()](#isNever)
   - [isExactly()](#isExactly)
   - [isConstant()](#isConstant)
   - [isInstanceOf()](#isInstanceOf)
-  - [isCheckedWith()](#isCheckedWith)
+  - [isMatchForPredicate()](#isMatchForPredicate)
   - [isOptional()](#isOptional)
   - [isNullable()](#isNullable)
   - [isMaybe()](#isMaybe)
@@ -59,7 +59,7 @@ const result = decoder.decode('1'); // returns (not throws) `DecoderError`
   - [isDictionary()](#isDictionary)
   - [isArray()](#isArray)
   - [isTuple()](#isTuple)
-  - [isLazy()](#isLazy)
+  - [isRecursive()](#isRecursive)
 
 ## Basic usage
 
@@ -333,7 +333,7 @@ const errorMsgFn = (error: DecoderError) => {
 
 const myLatLongDecoder = isChainOf([
   isArray(isNumber()),
-  isCheckedWith(input => input.length === 2),
+  isMatchForPredicate(input => input.length === 2),
 ], { msg: errorMsgFn })
 
 const badInput0 = {} as unknown;
@@ -353,12 +353,12 @@ In the above example, our `errorMsgFn` made use of the `DecoderError#decoderName
 
 ## Creating custom decoders
 
-There are a few ways of creating custom decoders. This simplest way is to simply compose multiple decoders together. For example, the following latitude and longitude decoder is created by composing `isArray(isNumber())` and `isCheckedWith()` using `isChainOf()`;
+There are a few ways of creating custom decoders. This simplest way is to simply compose multiple decoders together. For example, the following latitude and longitude decoder is created by composing `isArray(isNumber())` and `isMatchForPredicate()` using `isChainOf()`;
 
 ```ts
 const myLatLongDecoder = isChainOf([
   isArray(isNumber()),
-  isCheckedWith(input => input.length === 2),
+  isMatchForPredicate(input => input.length === 2),
 ])
 ```
 
@@ -438,7 +438,7 @@ Decoders have a `map` method which can be used to transform valid values. For ex
 ```ts
 const stringDateDecoder =
   // this regex verifies that a string is of the form `YYYY-MM-DD`
-  isRegex(/^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/)
+  isMatch(/^\d{4}[\/\-](0?[1-9]|1[012])[\/\-](0?[1-9]|[12][0-9]|3[01])$/)
     .map(value => new Date(value));
 
 const result = stringDateDecoder.decode('2000-01-01'); // returns `DecoderSuccess<Date>`
@@ -543,17 +543,17 @@ function isNull(options?: INullDecoderOptions): Decoder<null, unknown>;
 
 `isNull()` can be used to verify that an unknown value is `null`. This is a convenience function for `isExactly(null)`.
 
-### isRegex()
+### isMatch()
 
 ```ts
 interface IRegexDecoderOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isRegex(regex: RegExp, options?: IRegexDecoderOptions): Decoder<string, unknown>;
+function isMatch(regex: RegExp, options?: IRegexDecoderOptions): Decoder<string, unknown>;
 ```
 
-`isRegex()` can be used to verify that an unknown value is `string` which conforms to the given `RegExp`.
+`isMatch()` can be used to verify that an unknown value is `string` which conforms to the given `RegExp`.
 
 ### isAny()
 
@@ -616,7 +616,7 @@ function isInstanceOf<T extends new (...args: any) => any>(clazz: T, options?: I
 
 `isInstanceOf()` accepts a javascript constructor argument and creates a decoder which verifies that its input is `instanceof clazz`.
 
-### isCheckedWith()
+### isMatchForPredicate()
 
 ```ts
 interface ICheckedWithDecoderOptions {
@@ -624,13 +624,13 @@ interface ICheckedWithDecoderOptions {
   promise?: boolean;
 }
 
-function isCheckedWith<T>(fn: (value: T) => boolean, options?: ICheckedWithDecoderOptions): Decoder<T, T>;
-function isCheckedWith<T>(fn: (value: T) => Promise<boolean>, options: ICheckedWithDecoderOptions & { promise: true }): PromiseDecoder<T, T>;
+function isMatchForPredicate<T>(fn: (value: T) => boolean, options?: ICheckedWithDecoderOptions): Decoder<T, T>;
+function isMatchForPredicate<T>(fn: (value: T) => Promise<boolean>, options: ICheckedWithDecoderOptions & { promise: true }): PromiseDecoder<T, T>;
 ```
 
-`isCheckedWith()` accepts a predicate function argument and creates a decoder which verifies that inputs pass the function check.
+`isMatchForPredicate()` accepts a predicate function argument and creates a decoder which verifies that inputs pass the function check.
 
-**Async**: to pass a predicate function which returns a promise resolving to a boolean, pass the `promise: true` option to `isCheckedWith()`.
+**Async**: to pass a predicate function which returns a promise resolving to a boolean, pass the `promise: true` option to `isMatchForPredicate()`.
 
 ### isOptional()
 
@@ -739,8 +739,8 @@ interface IDictionaryDecoderOptions<V> {
   msg?: DecoderErrorMsgArg;
 }
 
-function isDictionary<R, V = unknown>(decoder: Decoder<R, V>, options?: IDictionaryDecoderOptions<V>): Decoder<R[], V>;
-function isDictionary<R, V = unknown>(decoder: PromiseDecoder<R, V>, options?: IDictionaryDecoderOptions<V>): PromiseDecoder<R[], V>;
+function isDictionary<R, V = unknown>(decoder: Decoder<R, V>, options?: IDictionaryDecoderOptions<V>): Decoder<{ [key: string]: R }, V>;
+function isDictionary<R, V = unknown>(decoder: PromiseDecoder<R, V>, options?: IDictionaryDecoderOptions<V>): PromiseDecoder<{ [key: string]: R }, V>;
 ```
 
 `isDictionary()` receives a decoder argument and uses that decoder to process all values (regardless of key) of an input object.
@@ -777,11 +777,11 @@ function isTuple<Tuple extends [unknown, ...unknown[]]>(decoders: { [I in keyof 
 3. The second decoder argument will be used the process the second element of an input array.
 4. etc...
 
-### isLazy()
+### isRecursive()
 
 ```ts
-function isLazy<T>(decoderFn: () => Decoder<T>): Decoder<T | null>;
-function isLazy<T>(decoderFn: () => PromiseDecoder<T>): PromiseDecoder<T | null>;
+function isRecursive<T>(decoderFn: () => Decoder<T>): Decoder<T | null>;
+function isRecursive<T>(decoderFn: () => PromiseDecoder<T>): PromiseDecoder<T | null>;
 ```
 
-`isLazy()` allows for decoding recursive data structures. It accepts a function which returns a decoder.
+`isRecursive()` allows for decoding recursive data structures. It accepts a function which returns a decoder.

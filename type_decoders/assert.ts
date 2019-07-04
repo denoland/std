@@ -1,5 +1,11 @@
-import { Decoder, PromiseDecoder } from "./decoder";
-import { DecoderError, DecoderResult } from "./decoder_result";
+import { Decoder, PromiseDecoder } from './decoder.ts';
+import { DecoderError, DecoderResult, areDecoderErrors } from './decoder_result.ts';
+
+export class DecoderAssertError extends Error {
+  constructor(public errors: DecoderError[]) {
+    super(errors.map(error => error.message).join('. \n'));
+  }
+}
 
 /**
  * When passed a decoder argument, `assert()` returns a new function which
@@ -15,11 +21,11 @@ import { DecoderError, DecoderResult } from "./decoder_result";
  * ```
  */
 export function assert<R, V>(
-  decoder: Decoder<R, V>
+  decoder: Decoder<R, V>,
 ): { (value: V): R; (value: Promise<V>): Promise<R> };
 
 export function assert<R, V>(
-  decoder: PromiseDecoder<R, V>
+  decoder: PromiseDecoder<R, V>,
 ): (value: V | Promise<V>) => Promise<R>;
 
 export function assert<R, V>(decoder: Decoder<R, V> | PromiseDecoder<R, V>) {
@@ -38,7 +44,7 @@ export function assert<R, V>(decoder: Decoder<R, V> | PromiseDecoder<R, V>) {
 }
 
 function handleResult<T>(result: DecoderResult<T>) {
-  if (result instanceof DecoderError) throw result;
+  if (areDecoderErrors(result)) throw new DecoderAssertError(result);
 
   return result.value;
 }

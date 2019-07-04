@@ -4,14 +4,14 @@ export class DecoderSuccess<T> {
 }
 
 /** Class returned on a failed call to `Decoder#decode` or `PromiseDecoder#decode` */
-export class DecoderError extends Error {
-  name = "DecoderError";
+export class DecoderError {
+  name = 'DecoderError';
 
   /** The value that failed validation. */
-  value: unknown;
+  input: unknown;
 
   /** A human readable error message. */
-  message: string;
+  message!: string;
 
   /** An optional name to describe the decoder which triggered the error. */
   decoderName?: string;
@@ -22,7 +22,7 @@ export class DecoderError extends Error {
    */
   location: string;
 
-  /** The child `DecoderError` which triggered this `DecoderError`, if any */
+  /** The `DecoderError`s which triggered this `DecoderError`, if any */
   child?: DecoderError;
 
   /**
@@ -33,22 +33,27 @@ export class DecoderError extends Error {
    */
   key?: unknown;
 
+  /** `true` if this error was created with the `allErrors` decoder option. */
+  allErrors: boolean;
+
   constructor(
-    value: unknown,
+    input: unknown,
     message: string,
     options: {
       decoderName?: string;
       location?: string;
       child?: DecoderError;
       key?: unknown;
-    } = {}
+      allErrors?: boolean;
+    } = {},
   ) {
-    super(message);
-    this.value = value;
+    this.input = input;
+    this.message = message;
     this.decoderName = options.decoderName;
-    this.location = options.location || "";
+    this.location = options.location || '';
     this.child = options.child;
     this.key = options.key;
+    this.allErrors = options.allErrors || false;
   }
 
   /**
@@ -56,15 +61,28 @@ export class DecoderError extends Error {
    * this error as well as all child errors.
    */
   path(): unknown[] {
-    if (this.child === undefined && this.key === undefined) return [];
-    if (this.key === undefined) return this.child.path();
+    if (this.key === undefined) {
+      if (!this.child) return [];
+
+      return this.child.path();
+    }
+
+    if (!this.child) return [this.key];
 
     return [this.key, ...this.child.path()];
   }
 }
 
-export type DecoderResult<T> = DecoderSuccess<T> | DecoderError;
+export type DecoderResult<T> = DecoderSuccess<T> | DecoderError[];
 
 export type DecoderErrorMsgArg =
   | string
-  | ((error: DecoderError) => DecoderError);
+  | ((errors: DecoderError[]) => DecoderError[]);
+
+export function areDecoderErrors<T>(result: DecoderResult<T>): result is DecoderError[] {
+  return Array.isArray(result);
+}
+
+export function isDecoderSuccess<T>(result: DecoderResult<T>): result is DecoderSuccess<T> {
+  return result instanceof DecoderSuccess;
+}

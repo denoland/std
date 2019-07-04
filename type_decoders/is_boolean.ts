@@ -1,17 +1,13 @@
-import { Decoder } from "./decoder.ts";
-import { ok, err } from "./util.ts";
-import { DecoderErrorMsgArg } from "./decoder_result.ts";
+import { Decoder } from './decoder.ts';
+import { ok, err } from './_util.ts';
+import { ISimpleDecoderOptions } from './helpers.ts';
 
-export interface IBooleanDecoderOptions {
-  msg?: DecoderErrorMsgArg;
-}
+export interface IBooleanDecoderOptions extends ISimpleDecoderOptions {}
 
 export function isBoolean(options: IBooleanDecoderOptions = {}) {
   return new Decoder(value =>
-    typeof value === "boolean"
+    typeof value === 'boolean'
       ? ok(value)
-      : err(value, "must be a boolean", options.msg, {
-          decoderName: "isBoolean"
-        })
+      : err(value, 'must be a boolean', 'isBoolean', options),
   );
 }
