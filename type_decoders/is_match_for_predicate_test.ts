@@ -20,7 +20,7 @@ test(function initializes() {
 test(function decodesInput() {
   const decoder1 = isMatchForPredicate(value => typeof value === 'string');
   const msg = 'failed custom check';
-  const length = 1;
+  const count = 1;
 
   for (const item of ['0', 'two']) {
     assertDecodeSuccess(decoder1, item, { expected: item }); 
@@ -30,11 +30,13 @@ test(function decodesInput() {
     assertDecodeErrors({
       decoder: decoder1,
       input: item,
-      expected: {
-        input: item,
-        msg,
-        length,
-      },
+      expected: [
+        {
+          input: item,
+          msg,
+        },
+      ],
+      count,
     });
   }
 
@@ -48,19 +50,21 @@ test(function decodesInput() {
     assertDecodeErrors({
       decoder: decoder3,
       input: item,
-      expected: {
-        input: item,
-        msg,
-        length,
-      },
+      expected: [
+        {
+          input: item,
+          msg,
+        },
+      ],
+      count,
     });  
   }
 });
 
-test(async function decodesPromiseInput() {
+test(async function promiseDecodesInput() {
   const decoder1 = isMatchForPredicate(value => typeof value === 'string', { promise: true });
   const msg = 'failed custom check';
-  const length = 1;
+  const count = 1;
 
   for (const item of ['0', 'two']) {
     await assertDecodeSuccess(decoder1, item, { expected: item }); 
@@ -70,11 +74,13 @@ test(async function decodesPromiseInput() {
     await assertDecodeErrors({
       decoder: decoder1,
       input: item,
-      expected: {
-        input: item,
-        msg,
-        length,
-      },
+      expected: [
+        {
+          input: item,
+          msg,
+        },
+      ],
+      count,
     });  
   }
 
@@ -88,11 +94,13 @@ test(async function decodesPromiseInput() {
     await assertDecodeErrors({
       decoder: decoder3,
       input: item,
-      expected: {
-        input: item,
-        msg,
-        length,
-      },
+      expected: [
+        {
+          input: item,
+          msg,
+        },
+      ],
+      count,
     });  
   }
 });

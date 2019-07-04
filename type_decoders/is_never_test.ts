@@ -3,35 +3,31 @@ import { test, runTests } from '../testing/mod.ts';
 import { assertEquals } from '../testing/asserts.ts';
 import { assertDecodeSuccess, assertDecodeErrors, assertDecoder } from './testing_asserts.ts';
 import { Decoder } from './decoder.ts';
-import { isString } from './is_string.ts';
+import { isNever } from './is_never.ts';
 
 /**
- * isString()
+ * isNever()
  */
 
 test(function initializes() {
-  assertDecoder(isString())
+  assertDecoder(isNever())
 });
 
 test(function decodesInput() {
-  const decoder = isString();
+  const decoder = isNever();
 
-  for (const item of ['0', '-14']) {
-    assertDecodeSuccess(decoder, item, { expected: item }); 
-  }
-
-  for (const item of [0.123, -342.342342, {}, null, undefined]) {
+  for (const item of [1, -342.342342, {}, null, undefined, 'str', true]) {
     assertDecodeErrors({
       decoder: decoder,
       input: item,
       expected: [
         {
           input: item,
-          msg: 'must be a string',
+          msg: 'must not be present',
         },
       ],
       count: 1,
-    });  
+    });
   }
 });
 

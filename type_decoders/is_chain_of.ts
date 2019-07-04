@@ -40,8 +40,6 @@ const decoderName = 'isChainOf';
 
 export interface IChainOfDecoderOptions extends ISimpleDecoderOptions {}
 
-// TODO(@thefliik): See if someone else can improve the typing of the decoders arg
-
 export function isChainOf<
   T extends [unknown, ...unknown[]],
   R = ChainOfDecoderReturnType<T>,

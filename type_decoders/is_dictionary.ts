@@ -9,25 +9,25 @@ export interface IDictionaryDecoderOptions extends IComposeDecoderOptions {}
 
 // TODO(@thefliik): verify that two optional params is ok by style guide
 
-export function isDictionary<R, V = unknown>(
+export function isDictionary<R, V = any>(
   valueDecoder: Decoder<R, V>,
   options?: IDictionaryDecoderOptions,
 ): Decoder<{ [key: string]: R }, V>;
-export function isDictionary<R, V = unknown>(
+export function isDictionary<R, V = any>(
   valueDecoder: Decoder<R, V>,
   keyDecoder: Decoder<string, string>,
   options?: IDictionaryDecoderOptions,
 ): Decoder<{ [key: string]: R }, V>;
-export function isDictionary<R, V = unknown>(
+export function isDictionary<R, V = any>(
   decoder: PromiseDecoder<R, V>,
   options?: IDictionaryDecoderOptions,
 ): PromiseDecoder<{ [key: string]: R }, V>;
-export function isDictionary<R, V = unknown>(
+export function isDictionary<R, V = any>(
   valueDecoder: Decoder<R, V> | PromiseDecoder<R, V>,
   keyDecoder: Decoder<string, string> | PromiseDecoder<string, string>,
   options?: IDictionaryDecoderOptions,
 ): PromiseDecoder<{ [key: string]: R }, V>;
-export function isDictionary<R, V = unknown>(
+export function isDictionary<R, V = any>(
   decoder: Decoder<R, V> | PromiseDecoder<R, V>,
   optionalA?:
     | IDictionaryDecoderOptions
@@ -158,7 +158,7 @@ export function isDictionary<R, V = unknown>(
 
     const resultObject: { [key: string]: R } = {};
 
-    const entries = Object.entries(input);
+    const entries: [string, V][] = Object.entries(input);
     const allErrors: DecoderError[] = [];
 
     for (const [entryKey, entryValue] of entries) {
@@ -211,7 +211,7 @@ export function isDictionary<R, V = unknown>(
 }
 
 async function asyncDecodeKey(
-  decoder: Decoder<string, string> | PromiseDecoder<string, string>,
+  decoder: Decoder<string, unknown> | PromiseDecoder<string, unknown>,
   key: string,
   input: unknown,
 ) {
@@ -245,10 +245,11 @@ function buildChildKeyError(
   invalidKey: string,
 ) {
   const location = buildErrorLocationString(invalidKey, '');
+  const keyName = typeof invalidKey === 'string' ? `"${invalidKey}"` : invalidKey;
 
   return new DecoderError(
     value,
-    `invalid key [${invalidKey}] > ${child.message}`,
+    `invalid key [${keyName}] > ${child.message}`,
     {
       decoderName,
       child,
@@ -267,7 +268,7 @@ function buildChildValueError(
 
   return new DecoderError(
     value,
-    `invalid key [${keyName}] value > ${child.message}`,
+    `invalid value for key [${keyName}] > ${child.message}`,
     {
       decoderName,
       child,

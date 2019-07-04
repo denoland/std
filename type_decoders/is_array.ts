@@ -26,7 +26,7 @@ export function isArray<R, V = unknown>(
   options: IArrayDecoderOptions = {},
 ) {
   if (!(decoder instanceof Decoder || decoder instanceof PromiseDecoder)) {
-    return new Decoder<R[], V>((input: V) =>
+    return new Decoder<R[], V>(input =>
       Array.isArray(input)
         ? ok<R[]>(input.slice())
         : nonArrayError(input, options),
@@ -34,7 +34,7 @@ export function isArray<R, V = unknown>(
   }
   if (decoder instanceof PromiseDecoder) {
     if (options.allErrors) {
-      return new PromiseDecoder(async (input: V) => {
+      return new PromiseDecoder(async input => {
         if (!Array.isArray(input)) return nonArrayError(input, options);
 
         let hasError = false;
@@ -73,52 +73,60 @@ export function isArray<R, V = unknown>(
       });
     }
 
-    return new PromiseDecoder(async (input: V) => {
+    return new PromiseDecoder(async input => {
       if (!Array.isArray(input)) return nonArrayError(input, options);
 
       const elements: R[] = [];
-      let index = 0;
+      let index = -1;
 
       for (const el of input) {
-        const result = await decoder.decode(el);
-
-        const errors = handleDecoderResult(result, input, index, elements);
         index++;
 
-        if (errors) {
+        const result = await decoder.decode(el);
+
+        if (areDecoderErrors(result)) {
+          const errors = result.map(error => buildChildError(error, input, index));
+
           return applyDecoderErrorOptions(errors, options);
         }
+      
+        elements.push(result.value);
       }
 
       return ok(elements);
     });
   }
 
-  return new Decoder((input: V) => {
+  return new Decoder(input => {
     if (!Array.isArray(input)) return nonArrayError(input, options);
 
     const elements: R[] = [];
-    let index = 0;
+    let index = -1;
 
     const allErrors: DecoderError[] = [];
 
     for (const el of input) {
-      const result = decoder.decode(el);
-
-      const errors = handleDecoderResult(result, input, index, elements);
       index++;
 
-      if (errors) {
+      const result = decoder.decode(el as V);
+
+      if (areDecoderErrors(result)) {
+        const errors = result.map(error => buildChildError(error, input, index));
+
         if (!options.allErrors) {
           return applyDecoderErrorOptions(errors, options);
         }
 
         allErrors.push(...errors);
+        continue;
       }
+    
+      elements.push(result.value);
     }
 
-    if (allErrors.length > 0)
+    if (allErrors.length > 0) {
       return applyDecoderErrorOptions(allErrors, options);
+    }
 
     return ok(elements);
   });
@@ -135,26 +143,12 @@ function nonArrayError(value: unknown, options: IArrayDecoderOptions = {}) {
   );
 }
 
-function handleDecoderResult<T>(
-  result: DecoderResult<T>,
-  input: object,
-  key: number,
-  resultObj: T[],
-) {
-  if (areDecoderErrors(result)) {
-    return result.map(error => buildChildError(error, input, key));
-  }
-
-  // store the valid value on the result object
-  resultObj.push(result.value);
-}
-
 function buildChildError(child: DecoderError, value: unknown, key: number) {
   const location = buildErrorLocationString(key, child.location);
 
   return new DecoderError(
     value,
-    `invalid array element [${key}] > ${child.message}`,
+    `invalid element [${key}] > ${child.message}`,
     {
       decoderName,
       child,
