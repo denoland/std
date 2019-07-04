@@ -59,7 +59,7 @@ const result = decoder.decode('1'); // returns (not throws) `DecoderError`
   - [isDictionary()](#isDictionary)
   - [isArray()](#isArray)
   - [isTuple()](#isTuple)
-  - [isRecursive()](#isRecursive)
+  - [isLazy()](#isLazy)
 
 ## Basic usage
 
@@ -777,11 +777,11 @@ function isTuple<Tuple extends [unknown, ...unknown[]]>(decoders: { [I in keyof 
 3. The second decoder argument will be used the process the second element of an input array.
 4. etc...
 
-### isRecursive()
+### isLazy()
 
 ```ts
-function isRecursive<T>(decoderFn: () => Decoder<T>): Decoder<T | null>;
-function isRecursive<T>(decoderFn: () => PromiseDecoder<T>): PromiseDecoder<T | null>;
+function isLazy<T>(decoderFn: () => Decoder<T>): Decoder<T | null>;
+function isLazy<T>(decoderFn: () => PromiseDecoder<T>): PromiseDecoder<T | null>;
 ```
 
-`isRecursive()` allows for decoding recursive data structures. It accepts a function which returns a decoder.
+`isLazy()` allows for decoding recursive data structures. It accepts a function which returns a decoder.

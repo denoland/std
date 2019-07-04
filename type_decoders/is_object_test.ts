@@ -4,11 +4,12 @@ import {
   assertDecodeSuccess,
   assertDecoder,
   assertDecodeErrors,
-} from './testing_asserts.ts';
+} from './_testing_util.ts';
 import { Decoder } from './decoder.ts';
 import { DecoderSuccess, DecoderError } from './decoder_result.ts';
 import { assertEquals, assertNotEquals } from '../testing/asserts.ts';
 import { isObject } from './is_object.ts';
+import { stringDecoder, numberDecoder, booleanDecoder } from './_testing_util.ts';
 
 /**
  * isObject()
@@ -19,24 +20,6 @@ test(function initializes() {
 });
 
 test(function noOptions() {
-  const stringDecoder = new Decoder(value =>
-    typeof value === 'string'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a string')],
-  );
-
-  const numberDecoder = new Decoder(value =>
-    typeof value === 'number'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a number')],
-  );
-
-  const booleanDecoder = new Decoder(value =>
-    typeof value === 'boolean'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a boolean')],
-  );
-
   const decoder = isObject({
     string: stringDecoder,
     number: numberDecoder,
@@ -122,24 +105,6 @@ test(function noOptions() {
 });
 
 test(function optionAllErrors() {
-  const stringDecoder = new Decoder(value =>
-    typeof value === 'string'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a string')],
-  );
-
-  const numberDecoder = new Decoder(value =>
-    typeof value === 'number'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a number')],
-  );
-
-  const booleanDecoder = new Decoder(value =>
-    typeof value === 'boolean'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a boolean')],
-  );
-
   const decoder = isObject({
     string: stringDecoder,
     number: numberDecoder,
@@ -235,24 +200,6 @@ test(function optionAllErrors() {
 });
 
 test(function optionNoExcessProperties() {
-  const stringDecoder = new Decoder(value =>
-    typeof value === 'string'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a string')],
-  );
-
-  const numberDecoder = new Decoder(value =>
-    typeof value === 'number'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a number')],
-  );
-
-  const booleanDecoder = new Decoder(value =>
-    typeof value === 'boolean'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a boolean')],
-  );
-
   const decoder = isObject({
     string: stringDecoder,
     number: numberDecoder,
@@ -351,24 +298,6 @@ test(function optionNoExcessProperties() {
 });
 
 test(function optionNoExcessPropertiesAllErrors() {
-  const stringDecoder = new Decoder(value =>
-    typeof value === 'string'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a string')],
-  );
-
-  const numberDecoder = new Decoder(value =>
-    typeof value === 'number'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a number')],
-  );
-
-  const booleanDecoder = new Decoder(value =>
-    typeof value === 'boolean'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a boolean')],
-  );
-
   const decoder = isObject({
     string: stringDecoder,
     number: numberDecoder,
@@ -488,24 +417,6 @@ test(function optionNoExcessPropertiesAllErrors() {
 });
 
 test(function nestedObject() {
-  const stringDecoder = new Decoder(value =>
-    typeof value === 'string'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a string')],
-  );
-
-  const numberDecoder = new Decoder(value =>
-    typeof value === 'number'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a number')],
-  );
-
-  const booleanDecoder = new Decoder(value =>
-    typeof value === 'boolean'
-      ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a boolean')],
-  );
-
   const decoder = isObject({
     string: stringDecoder,
     number: numberDecoder,

@@ -4,7 +4,7 @@ import {
   assertDecodeSuccess,
   assertDecoder,
   assertDecodeErrors,
-} from './testing_asserts.ts';
+} from './_testing_util.ts';
 import { Decoder } from './decoder.ts';
 import { isDictionary } from './is_dictionary.ts';
 import { DecoderSuccess, DecoderError } from './decoder_result.ts';

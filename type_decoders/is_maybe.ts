@@ -1,7 +1,11 @@
 import { Decoder, PromiseDecoder } from './decoder.ts';
-import { isAnyOf } from './is_any_of.ts';
 import { isExactly } from './is_exactly.ts';
-import { ISimpleDecoderOptions } from './helpers.ts';
+import { ISimpleDecoderOptions, applyDecoderErrorOptions } from './helpers.ts';
+import { DecoderError, isDecoderSuccess } from './decoder_result.ts';
+
+const decoderName = 'isMaybe';
+const undefinedDecoder = isExactly(undefined);
+const nullDecoder = isExactly(null);
 
 export interface IMaybeDecoderOptions extends ISimpleDecoderOptions {}
 
@@ -17,7 +21,61 @@ export function isMaybe<T>(
   decoder: Decoder<T> | PromiseDecoder<T>,
   options: IMaybeDecoderOptions = {},
 ) {
-  return isAnyOf([isExactly(undefined), isExactly(null), decoder], {
-    decoderName: options.decoderName || 'isMaybe',
-  }) as Decoder<T | null | undefined> | PromiseDecoder<T | null | undefined>;
+  if (decoder instanceof PromiseDecoder) {
+    return new PromiseDecoder(async value => {
+      let result = undefinedDecoder.decode(value);
+
+      if (isDecoderSuccess(result)) return result;
+  
+      result = nullDecoder.decode(value);
+  
+      if (isDecoderSuccess(result)) return result;
+  
+      result = await decoder.decode(value);
+  
+      if (isDecoderSuccess(result)) return result;
+  
+      return applyDecoderErrorOptions(
+        result.map(error => 
+          new DecoderError(
+            value,
+            `${error.message} OR must be null OR must be undefined`,
+            {
+              child: error,
+              decoderName,
+            }
+          )
+        ),
+        options
+      )
+    })
+  }
+
+  return new Decoder(value => {
+    let result = undefinedDecoder.decode(value);
+
+    if (isDecoderSuccess(result)) return result;
+
+    result = nullDecoder.decode(value);
+
+    if (isDecoderSuccess(result)) return result;
+
+    result = decoder.decode(value);
+
+    if (isDecoderSuccess(result)) return result;
+
+    return applyDecoderErrorOptions(
+      result.map(error => 
+        new DecoderError(
+          value,
+          `${error.message} OR must be null OR must be undefined`,
+          {
+            child: error,
+            decoderName,
+          }
+        )
+      ),
+      options
+    )
+  })
 }
