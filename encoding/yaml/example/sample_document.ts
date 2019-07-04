@@ -1,4 +1,6 @@
-import { parse } from "../mod.ts";
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
+import { parse } from "../../yaml.ts";
 
 const { readFileSync, cwd } = Deno;
 
@@ -6,7 +8,7 @@ const { readFileSync, cwd } = Deno;
   const yml = readFileSync(`${cwd()}/example/sample_document.yml`);
 
   const document = new TextDecoder().decode(yml);
-  const obj = parse(document);
+  const obj: object = parse(document);
   console.log(obj);
 
   let i = 0;

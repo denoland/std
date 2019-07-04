@@ -1,4 +1,6 @@
-import { parse, stringify } from "../mod.ts";
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
+import { parse, stringify } from "../../yaml.ts";
 
 const test = {
   foo: {

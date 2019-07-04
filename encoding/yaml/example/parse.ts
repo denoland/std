@@ -1,4 +1,6 @@
-import { parse } from "../mod.ts";
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
+import { parse } from "../../yaml.ts";
 
 const result = parse(`
 test: toto

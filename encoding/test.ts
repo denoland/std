@@ -2,3 +2,4 @@
 import "./hex_test.ts";
 import "./toml_test.ts";
 import "./csv_test.ts";
+import "./yaml_test.ts";

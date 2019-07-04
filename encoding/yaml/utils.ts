@@ -1,8 +1,11 @@
-export function isNothing(subject: any): subject is never {
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+export type Any = any;
+
+export function isNothing(subject: Any): subject is never {
   return typeof subject === "undefined" || subject === null;
 }
 
-export function isArray(value: unknown): value is any[] {
+export function isArray(value: unknown): value is Any[] {
   return Array.isArray(value);
 }
 

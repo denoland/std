@@ -1,4 +1,6 @@
-// tslint:disable:no-conditional-assignment
+/* eslint-disable no-conditional-assignment */
+/* eslint-disable max-len */
+
 import { YAMLError } from "../error/YAMLError.ts";
 import { Mark } from "../Mark.ts";
 import { DEFAULT_SAFE_SCHEMA } from "../schema/mod.ts";
@@ -6,7 +8,8 @@ import { Type } from "../Type.ts";
 import * as common from "../utils.ts";
 import { LoaderState, LoaderStateOptions, ResultType } from "./LoaderState.ts";
 
-type ArrayObject<T> = common.ArrayObject<T>;
+type Any = common.Any;
+type ArrayObject<T = Any> = common.ArrayObject<T>;
 
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 
@@ -23,21 +26,22 @@ const PATTERN_NON_PRINTABLE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x84\x86-\x9F\uFF
 const PATTERN_NON_ASCII_LINE_BREAKS = /[\x85\u2028\u2029]/;
 const PATTERN_FLOW_INDICATORS = /[,\[\]\{\}]/;
 const PATTERN_TAG_HANDLE = /^(?:!|!!|![a-z\-]+!)$/i;
+/* eslint-disable-next-line max-len */
 const PATTERN_TAG_URI = /^(?:!|[^,\[\]\{\}])(?:%[0-9a-f]{2}|[0-9a-z\-#;\/\?:@&=\+\$,_\.!~\*'\(\)\[\]])*$/i;
 
-function _class(obj: any) {
+function _class(obj: Any): string {
   return Object.prototype.toString.call(obj);
 }
 
-function is_EOL(c: number) {
+function isEOL(c: number): boolean {
   return c === 0x0a /* LF */ || c === 0x0d /* CR */;
 }
 
-function is_WHITE_SPACE(c: number) {
+function isWhiteSpace(c: number): boolean {
   return c === 0x09 /* Tab */ || c === 0x20 /* Space */;
 }
 
-function is_WS_OR_EOL(c: number) {
+function isWsOrEol(c: number): boolean {
   return (
     c === 0x09 /* Tab */ ||
     c === 0x20 /* Space */ ||
@@ -46,7 +50,7 @@ function is_WS_OR_EOL(c: number) {
   );
 }
 
-function is_FLOW_INDICATOR(c: number) {
+function isFlowIndicator(c: number): boolean {
   return (
     c === 0x2c /* , */ ||
     c === 0x5b /* [ */ ||
@@ -56,7 +60,7 @@ function is_FLOW_INDICATOR(c: number) {
   );
 }
 
-function fromHexCode(c: number) {
+function fromHexCode(c: number): number {
   if (0x30 /* 0 */ <= c && c <= 0x39 /* 9 */) {
     return c - 0x30;
   }
@@ -70,7 +74,7 @@ function fromHexCode(c: number) {
   return -1;
 }
 
-function escapedHexLen(c: number) {
+function escapedHexLen(c: number): number {
   if (c === 0x78 /* x */) {
     return 2;
   }
@@ -83,7 +87,7 @@ function escapedHexLen(c: number) {
   return 0;
 }
 
-function fromDecimalCode(c: number) {
+function fromDecimalCode(c: number): number {
   if (0x30 /* 0 */ <= c && c <= 0x39 /* 9 */) {
     return c - 0x30;
   }
@@ -91,8 +95,8 @@ function fromDecimalCode(c: number) {
   return -1;
 }
 
-function simpleEscapeSequence(c: number) {
-  /* tslint:disable:prettier */
+function simpleEscapeSequence(c: number): string {
+  /* eslint:disable:prettier */
   return c === 0x30 /* 0 */
     ? "\x00"
     : c === 0x61 /* a */
@@ -130,10 +134,10 @@ function simpleEscapeSequence(c: number) {
     : c === 0x50 /* P */
     ? "\u2029"
     : "";
-  /* tslint:enable:prettier */
+  /* eslint:enable:prettier */
 }
 
-function charFromCodepoint(c: number) {
+function charFromCodepoint(c: number): string {
   if (c <= 0xffff) {
     return String.fromCharCode(c);
   }
@@ -152,11 +156,11 @@ for (let i = 0; i < 256; i++) {
   simpleEscapeMap[i] = simpleEscapeSequence(i);
 }
 
-function generateError(state, message) {
+function generateError(state: LoaderState, message: string): YAMLError {
   return new YAMLError(
     message,
     new Mark(
-      state.filename,
+      state.filename as string,
       state.input,
       state.position,
       state.line,
@@ -165,75 +169,81 @@ function generateError(state, message) {
   );
 }
 
-function throwError(state, message) {
+function throwError(state: LoaderState, message: string): never {
   throw generateError(state, message);
 }
 
-function throwWarning(state, message) {
+function throwWarning(state: LoaderState, message: string): void {
   if (state.onWarning) {
     state.onWarning.call(null, generateError(state, message));
   }
 }
 
-const directiveHandlers = {
-  YAML: function handleYamlDirective(state, name, args) {
-    let match, major, minor;
+interface DirectiveHandlers {
+  [directive: string]: (
+    state: LoaderState,
+    name: string,
+    ...args: Any[]
+  ) => void;
+}
 
+const directiveHandlers: DirectiveHandlers = {
+  YAML(state, name, ...args): void {
     if (state.version !== null) {
-      throwError(state, "duplication of %YAML directive");
+      return throwError(state, "duplication of %YAML directive");
     }
 
     if (args.length !== 1) {
-      throwError(state, "YAML directive accepts exactly one argument");
+      return throwError(state, "YAML directive accepts exactly one argument");
     }
 
-    match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]);
+    let match = /^([0-9]+)\.([0-9]+)$/.exec(args[0]);
 
     if (match === null) {
-      throwError(state, "ill-formed argument of the YAML directive");
+      return throwError(state, "ill-formed argument of the YAML directive");
     }
 
-    major = parseInt(match[1], 10);
-    minor = parseInt(match[2], 10);
+    let major = parseInt(match[1], 10);
+    let minor = parseInt(match[2], 10);
 
     if (major !== 1) {
-      throwError(state, "unacceptable YAML version of the document");
+      return throwError(state, "unacceptable YAML version of the document");
     }
 
     state.version = args[0];
     state.checkLineBreaks = minor < 2;
 
     if (minor !== 1 && minor !== 2) {
-      throwWarning(state, "unsupported YAML version of the document");
+      return throwWarning(state, "unsupported YAML version of the document");
     }
   },
 
-  TAG: function handleTagDirective(state, name, args) {
+  TAG(state, name, ...args): void {
     let handle, prefix;
 
     if (args.length !== 2) {
-      throwError(state, "TAG directive accepts exactly two arguments");
+      return throwError(state, "TAG directive accepts exactly two arguments");
     }
 
     handle = args[0];
     prefix = args[1];
 
     if (!PATTERN_TAG_HANDLE.test(handle)) {
-      throwError(
+      return throwError(
         state,
         "ill-formed tag handle (first argument) of the TAG directive"
       );
     }
 
     if (_hasOwnProperty.call(state.tagMap, handle)) {
-      throwError(
+      return throwError(
         state,
         `there is a previously declared suffix for "${handle}" tag handle`
       );
     }
 
     if (!PATTERN_TAG_URI.test(prefix)) {
-      throwError(
+      return throwError(
         state,
         "ill-formed tag prefix (second argument) of the TAG directive"
       );
@@ -248,7 +258,7 @@ function captureSegment(
   start: number,
   end: number,
   checkJson: boolean
-) {
+): void {
   let result: string;
   if (start < end) {
     result = state.input.slice(start, end);
@@ -263,11 +273,11 @@ function captureSegment(
         if (
           !(character === 0x09 || (0x20 <= character && character <= 0x10ffff))
         ) {
-          throwError(state, "expected valid JSON character");
+          return throwError(state, "expected valid JSON character");
         }
       }
     } else if (PATTERN_NON_PRINTABLE.test(result)) {
-      throwError(state, "the stream contains non-printable characters");
+      return throwError(state, "the stream contains non-printable characters");
     }
 
     state.result += result;
@@ -276,12 +286,12 @@ function captureSegment(
 
 function mergeMappings(
   state: LoaderState,
-  destination: {},
-  source: {},
+  destination: ArrayObject,
+  source: ArrayObject,
   overridableKeys: ArrayObject<boolean>
-) {
+): void {
   if (!common.isObject(source)) {
-    throwError(
+    return throwError(
       state,
       "cannot merge mappings; the provided source object is unacceptable"
     );
@@ -291,7 +301,7 @@ function mergeMappings(
   for (let i = 0, len = keys.length; i < len; i++) {
     const key = keys[i];
     if (!_hasOwnProperty.call(destination, key)) {
-      destination[key] = source[key];
+      destination[key] = (source as ArrayObject)[key];
       overridableKeys[key] = true;
     }
   }
@@ -299,14 +309,14 @@ function mergeMappings(
 
 function storeMappingPair(
   state: LoaderState,
-  result: {},
+  result: ArrayObject | null,
   overridableKeys: ArrayObject<boolean>,
-  keyTag: string,
-  keyNode: any,
-  valueNode: {},
+  keyTag: string | null,
+  keyNode: Any,
+  valueNode: Any,
   startLine?: number,
   startPos?: number
-) {
+): ArrayObject {
   // The output is a plain object here, so keys can only be strings.
   // We need to convert keyNode to a string, but doing so can hang the process
   // (deeply nested arrays that explode exponentially using aliases).
@@ -315,7 +325,7 @@ function storeMappingPair(
 
     for (let index = 0, quantity = keyNode.length; index < quantity; index++) {
       if (Array.isArray(keyNode[index])) {
-        throwError(state, "nested arrays are not supported inside keys");
+        return throwError(state, "nested arrays are not supported inside keys");
       }
 
       if (
@@ -360,7 +370,7 @@ function storeMappingPair(
     ) {
       state.line = startLine || state.line;
       state.position = startPos || state.position;
-      throwError(state, "duplicated mapping key");
+      return throwError(state, "duplicated mapping key");
     }
     result[keyNode] = valueNode;
     delete overridableKeys[keyNode];
@@ -369,7 +379,7 @@ function storeMappingPair(
   return result;
 }
 
-function readLineBreak(state) {
+function readLineBreak(state: LoaderState): void {
   let ch;
 
   ch = state.input.charCodeAt(state.position);
@@ -382,19 +392,23 @@ function readLineBreak(state) {
       state.position++;
     }
   } else {
-    throwError(state, "a line break is expected");
+    return throwError(state, "a line break is expected");
   }
 
   state.line += 1;
   state.lineStart = state.position;
 }
 
-function skipSeparationSpace(state, allowComments, checkIndent) {
+function skipSeparationSpace(
+  state: LoaderState,
+  allowComments: boolean,
+  checkIndent: number
+): number {
   let lineBreaks = 0,
     ch = state.input.charCodeAt(state.position);
 
   while (ch !== 0) {
-    while (is_WHITE_SPACE(ch)) {
+    while (isWhiteSpace(ch)) {
       ch = state.input.charCodeAt(++state.position);
     }
 
@@ -404,7 +418,7 @@ function skipSeparationSpace(state, allowComments, checkIndent) {
       } while (ch !== 0x0a /* LF */ && ch !== 0x0d /* CR */ && ch !== 0);
     }
 
-    if (is_EOL(ch)) {
+    if (isEOL(ch)) {
       readLineBreak(state);
 
       ch = state.input.charCodeAt(state.position);
@@ -431,11 +445,9 @@ function skipSeparationSpace(state, allowComments, checkIndent) {
   return lineBreaks;
 }
 
-function testDocumentSeparator(state) {
-  let _position = state.position,
-    ch;
-
-  ch = state.input.charCodeAt(_position);
+function testDocumentSeparator(state: LoaderState): boolean {
+  let _position = state.position;
+  let ch = state.input.charCodeAt(_position);
 
   // Condition state.position === state.lineStart is tested
   // in parent on each call, for efficiency. No needs to test here again.
@@ -448,7 +460,7 @@ function testDocumentSeparator(state) {
 
     ch = state.input.charCodeAt(_position);
 
-    if (ch === 0 || is_WS_OR_EOL(ch)) {
+    if (ch === 0 || isWsOrEol(ch)) {
       return true;
     }
   }
@@ -456,7 +468,7 @@ function testDocumentSeparator(state) {
   return false;
 }
 
-function writeFoldedLines(state, count) {
+function writeFoldedLines(state: LoaderState, count: number): void {
   if (count === 1) {
     state.result += " ";
   } else if (count > 1) {
@@ -468,14 +480,14 @@ function readPlainScalar(
   state: LoaderState,
   nodeIndent: number,
   withinFlowCollection: boolean
-) {
+): boolean {
   const kind = state.kind;
   const result = state.result;
   let ch = state.input.charCodeAt(state.position);
 
   if (
-    is_WS_OR_EOL(ch) ||
-    is_FLOW_INDICATOR(ch) ||
+    isWsOrEol(ch) ||
+    isFlowIndicator(ch) ||
     ch === 0x23 /* # */ ||
     ch === 0x26 /* & */ ||
     ch === 0x2a /* * */ ||
@@ -496,8 +508,8 @@ function readPlainScalar(
     following = state.input.charCodeAt(state.position + 1);
 
     if (
-      is_WS_OR_EOL(following) ||
-      (withinFlowCollection && is_FLOW_INDICATOR(following))
+      isWsOrEol(following) ||
+      (withinFlowCollection && isFlowIndicator(following))
     ) {
       return false;
     }
@@ -514,23 +526,23 @@ function readPlainScalar(
       following = state.input.charCodeAt(state.position + 1);
 
       if (
-        is_WS_OR_EOL(following) ||
-        (withinFlowCollection && is_FLOW_INDICATOR(following))
+        isWsOrEol(following) ||
+        (withinFlowCollection && isFlowIndicator(following))
       ) {
         break;
       }
     } else if (ch === 0x23 /* # */) {
       const preceding = state.input.charCodeAt(state.position - 1);
 
-      if (is_WS_OR_EOL(preceding)) {
+      if (isWsOrEol(preceding)) {
         break;
       }
     } else if (
       (state.position === state.lineStart && testDocumentSeparator(state)) ||
-      (withinFlowCollection && is_FLOW_INDICATOR(ch))
+      (withinFlowCollection && isFlowIndicator(ch))
     ) {
       break;
-    } else if (is_EOL(ch)) {
+    } else if (isEOL(ch)) {
       line = state.line;
       const lineStart = state.lineStart;
       const lineIndent = state.lineIndent;
@@ -556,7 +568,7 @@ function readPlainScalar(
       hasPendingContent = false;
     }
 
-    if (!is_WHITE_SPACE(ch)) {
+    if (!isWhiteSpace(ch)) {
       captureEnd = state.position + 1;
     }
 
@@ -574,7 +586,10 @@ function readPlainScalar(
   return false;
 }
 
-function readSingleQuotedScalar(state, nodeIndent) {
+function readSingleQuotedScalar(
+  state: LoaderState,
+  nodeIndent: number
+): boolean {
   let ch, captureStart, captureEnd;
 
   ch = state.input.charCodeAt(state.position);
@@ -600,7 +615,7 @@ function readSingleQuotedScalar(state, nodeIndent) {
       } else {
         return true;
       }
-    } else if (is_EOL(ch)) {
+    } else if (isEOL(ch)) {
       captureSegment(state, captureStart, captureEnd, true);
       writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
       captureStart = captureEnd = state.position;
@@ -608,7 +623,7 @@ function readSingleQuotedScalar(state, nodeIndent) {
       state.position === state.lineStart &&
       testDocumentSeparator(state)
     ) {
-      throwError(
+      return throwError(
         state,
         "unexpected end of the document within a single quoted scalar"
       );
@@ -618,13 +633,16 @@ function readSingleQuotedScalar(state, nodeIndent) {
     }
   }
 
-  throwError(
+  return throwError(
     state,
     "unexpected end of the stream within a single quoted scalar"
   );
 }
 
-function readDoubleQuotedScalar(state: LoaderState, nodeIndent: number) {
+function readDoubleQuotedScalar(
+  state: LoaderState,
+  nodeIndent: number
+): boolean {
   let ch = state.input.charCodeAt(state.position);
 
   if (ch !== 0x22 /* " */) {
@@ -647,7 +665,7 @@ function readDoubleQuotedScalar(state: LoaderState, nodeIndent: number) {
       captureSegment(state, captureStart, state.position, true);
       ch = state.input.charCodeAt(++state.position);
 
-      if (is_EOL(ch)) {
+      if (isEOL(ch)) {
         skipSeparationSpace(state, false, nodeIndent);
 
         // TODO: rework to inline fn with no type cast?
@@ -664,7 +682,7 @@ function readDoubleQuotedScalar(state: LoaderState, nodeIndent: number) {
           if ((tmp = fromHexCode(ch)) >= 0) {
             hexResult = (hexResult << 4) + tmp;
           } else {
-            throwError(state, "expected hexadecimal character");
+            return throwError(state, "expected hexadecimal character");
           }
         }
 
@@ -672,11 +690,11 @@ function readDoubleQuotedScalar(state: LoaderState, nodeIndent: number) {
 
         state.position++;
       } else {
-        throwError(state, "unknown escape sequence");
+        return throwError(state, "unknown escape sequence");
       }
 
       captureStart = captureEnd = state.position;
-    } else if (is_EOL(ch)) {
+    } else if (isEOL(ch)) {
       captureSegment(state, captureStart, captureEnd, true);
       writeFoldedLines(state, skipSeparationSpace(state, false, nodeIndent));
       captureStart = captureEnd = state.position;
@@ -684,7 +702,7 @@ function readDoubleQuotedScalar(state: LoaderState, nodeIndent: number) {
       state.position === state.lineStart &&
       testDocumentSeparator(state)
     ) {
-      throwError(
+      return throwError(
         state,
         "unexpected end of the document within a double quoted scalar"
       );
@@ -694,13 +712,13 @@ function readDoubleQuotedScalar(state: LoaderState, nodeIndent: number) {
     }
   }
 
-  throwError(
+  return throwError(
     state,
     "unexpected end of the stream within a double quoted scalar"
   );
 }
 
-function readFlowCollection(state: LoaderState, nodeIndent: number) {
+function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
   let ch = state.input.charCodeAt(state.position);
   let terminator: number;
   let isMapping = true;
@@ -715,7 +733,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number) {
     return false;
   }
 
-  if (state.anchor !== null) {
+  if (state.anchor !== null && typeof state.anchor != "undefined") {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -726,7 +744,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number) {
   let readNext = true;
   let valueNode,
     keyNode,
-    keyTag = (keyNode = valueNode = null),
+    keyTag: string | null = (keyNode = valueNode = null),
     isExplicitPair: boolean,
     isPair = (isExplicitPair = false);
   let following = 0,
@@ -746,7 +764,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number) {
       return true;
     }
     if (!readNext) {
-      throwError(state, "missed comma between flow collection entries");
+      return throwError(state, "missed comma between flow collection entries");
     }
 
     keyTag = keyNode = valueNode = null;
@@ -755,7 +773,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number) {
     if (ch === 0x3f /* ? */) {
       following = state.input.charCodeAt(state.position + 1);
 
-      if (is_WS_OR_EOL(following)) {
+      if (isWsOrEol(following)) {
         isPair = isExplicitPair = true;
         state.position++;
         skipSeparationSpace(state, true, nodeIndent);
@@ -763,8 +781,9 @@ function readFlowCollection(state: LoaderState, nodeIndent: number) {
     }
 
     line = state.line;
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
-    keyTag = state.tag;
+    keyTag = state.tag || null;
     keyNode = state.result;
     skipSeparationSpace(state, true, nodeIndent);
 
@@ -774,6 +793,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number) {
       isPair = true;
       ch = state.input.charCodeAt(++state.position);
       skipSeparationSpace(state, true, nodeIndent);
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
       valueNode = state.result;
     }
@@ -799,7 +819,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number) {
         )
       );
     } else {
-      (result as ResultType[]).push(keyNode);
+      (result as ResultType[]).push(keyNode as ResultType);
     }
 
     skipSeparationSpace(state, true, nodeIndent);
@@ -814,10 +834,13 @@ function readFlowCollection(state: LoaderState, nodeIndent: number) {
     }
   }
 
-  throwError(state, "unexpected end of the stream within a flow collection");
+  return throwError(
+    state,
+    "unexpected end of the stream within a flow collection",
+  );
 }
 
-function readBlockScalar(state, nodeIndent) {
+function readBlockScalar(state: LoaderState, nodeIndent: number): boolean {
   let chomping = CHOMPING_CLIP,
     didReadContent = false,
     detectedIndent = false,
@@ -847,11 +870,11 @@ function readBlockScalar(state, nodeIndent) {
       if (CHOMPING_CLIP === chomping) {
         chomping = ch === 0x2b /* + */ ? CHOMPING_KEEP : CHOMPING_STRIP;
       } else {
-        throwError(state, "repeat of a chomping mode identifier");
+        return throwError(state, "repeat of a chomping mode identifier");
       }
     } else if ((tmp = fromDecimalCode(ch)) >= 0) {
       if (tmp === 0) {
-        throwError(
+        return throwError(
           state,
           "bad explicit indentation width of a block scalar; it cannot be less than one"
         );
@@ -859,22 +882,22 @@ function readBlockScalar(state, nodeIndent) {
         textIndent = nodeIndent + tmp - 1;
         detectedIndent = true;
       } else {
-        throwError(state, "repeat of an indentation width identifier");
+        return throwError(state, "repeat of an indentation width identifier");
       }
     } else {
       break;
     }
   }
 
-  if (is_WHITE_SPACE(ch)) {
+  if (isWhiteSpace(ch)) {
     do {
       ch = state.input.charCodeAt(++state.position);
-    } while (is_WHITE_SPACE(ch));
+    } while (isWhiteSpace(ch));
 
     if (ch === 0x23 /* # */) {
       do {
         ch = state.input.charCodeAt(++state.position);
-      } while (!is_EOL(ch) && ch !== 0);
+      } while (!isEOL(ch) && ch !== 0);
     }
   }
 
@@ -896,7 +919,7 @@ function readBlockScalar(state, nodeIndent) {
       textIndent = state.lineIndent;
     }
 
-    if (is_EOL(ch)) {
+    if (isEOL(ch)) {
       emptyLines++;
       continue;
     }
@@ -923,7 +946,7 @@ function readBlockScalar(state, nodeIndent) {
     // Folded style: use fancy rules to handle line breaks.
     if (folding) {
       // Lines starting with white space characters (more-indented lines) are not folded.
-      if (is_WHITE_SPACE(ch)) {
+      if (isWhiteSpace(ch)) {
         atMoreIndented = true;
         // except for the first content line (cf. Example 8.1)
         state.result += common.repeat(
@@ -962,7 +985,7 @@ function readBlockScalar(state, nodeIndent) {
     emptyLines = 0;
     const captureStart = state.position;
 
-    while (!is_EOL(ch) && ch !== 0) {
+    while (!isEOL(ch) && ch !== 0) {
       ch = state.input.charCodeAt(++state.position);
     }
 
@@ -972,16 +995,16 @@ function readBlockScalar(state, nodeIndent) {
   return true;
 }
 
-function readBlockSequence(state, nodeIndent) {
+function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
   let line: number,
     following: number,
     detected = false,
     ch: number;
   const tag = state.tag,
     anchor = state.anchor,
-    result = [];
+    result: Any[] = [];
 
-  if (state.anchor !== null) {
+  if (state.anchor !== null && typeof state.anchor !== "undefined") {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -994,7 +1017,7 @@ function readBlockSequence(state, nodeIndent) {
 
     following = state.input.charCodeAt(state.position + 1);
 
-    if (!is_WS_OR_EOL(following)) {
+    if (!isWsOrEol(following)) {
       break;
     }
 
@@ -1010,6 +1033,7 @@ function readBlockSequence(state, nodeIndent) {
     }
 
     line = state.line;
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     composeNode(state, nodeIndent, CONTEXT_BLOCK_IN, false, true);
     result.push(state.result);
     skipSeparationSpace(state, true, -1);
@@ -1017,7 +1041,7 @@ function readBlockSequence(state, nodeIndent) {
     ch = state.input.charCodeAt(state.position);
 
     if ((state.line === line || state.lineIndent > nodeIndent) && ch !== 0) {
-      throwError(state, "bad indentation of a sequence entry");
+      return throwError(state, "bad indentation of a sequence entry");
     } else if (state.lineIndent < nodeIndent) {
       break;
     }
@@ -1033,13 +1057,13 @@ function readBlockSequence(state, nodeIndent) {
   return false;
 }
 
-function readBlockMapping(state, nodeIndent, flowIndent) {
+function readBlockMapping(state: LoaderState, nodeIndent: number, flowIndent: number): boolean {
   const tag = state.tag,
     anchor = state.anchor,
     result = {},
     overridableKeys = {};
   let following: number,
-    allowCompact: boolean,
+    allowCompact = false,
     line: number,
     pos: number,
     keyTag = null,
@@ -1049,7 +1073,7 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
     detected = false,
     ch: number;
 
-  if (state.anchor !== null) {
+  if (state.anchor !== null && typeof state.anchor !== "undefined") {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -1064,17 +1088,14 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
     // Explicit notation case. There are two separate blocks:
     // first for the key (denoted by "?") and second for the value (denoted by ":")
     //
-    if (
-      (ch === 0x3f /* ? */ || ch === 0x3a) /* : */ &&
-      is_WS_OR_EOL(following)
-    ) {
+    if ((ch === 0x3f /* ? */ || ch === 0x3a) /* : */ && isWsOrEol(following)) {
       if (ch === 0x3f /* ? */) {
         if (atExplicitKey) {
           storeMappingPair(
             state,
             result,
             overridableKeys,
-            keyTag,
+            keyTag as string,
             keyNode,
             null
           );
@@ -1089,7 +1110,7 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
         atExplicitKey = false;
         allowCompact = true;
       } else {
-        throwError(
+        return throwError(
           state,
           "incomplete explicit mapping pair; a key node is missed; or followed by a non-tabulated empty line"
         );
@@ -1101,19 +1122,20 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
       //
       // Implicit notation case. Flow-style node as the key first, then ":", and the value.
       //
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     } else if (composeNode(state, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
       if (state.line === line) {
         ch = state.input.charCodeAt(state.position);
 
-        while (is_WHITE_SPACE(ch)) {
+        while (isWhiteSpace(ch)) {
           ch = state.input.charCodeAt(++state.position);
         }
 
         if (ch === 0x3a /* : */) {
           ch = state.input.charCodeAt(++state.position);
 
-          if (!is_WS_OR_EOL(ch)) {
-            throwError(
+          if (!isWsOrEol(ch)) {
+            return throwError(
               state,
               "a whitespace character is expected after the key-value separator within a block mapping"
             );
@@ -1124,7 +1146,7 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
               state,
               result,
               overridableKeys,
-              keyTag,
+              keyTag as string,
               keyNode,
               null
             );
@@ -1137,7 +1159,7 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
           keyTag = state.tag;
           keyNode = state.result;
         } else if (detected) {
-          throwError(
+          return throwError(
             state,
             "can not read an implicit mapping pair; a colon is missed"
           );
@@ -1147,7 +1169,7 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
           return true; // Keep the result of `composeNode`.
         }
       } else if (detected) {
-        throwError(
+        return throwError(
           state,
           "can not read a block mapping entry; a multiline key may not be an implicit key"
         );
@@ -1165,6 +1187,7 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
     //
     if (state.line === line || state.lineIndent > nodeIndent) {
       if (
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         composeNode(state, nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
       ) {
         if (atExplicitKey) {
@@ -1179,7 +1202,7 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
           state,
           result,
           overridableKeys,
-          keyTag,
+          keyTag as string,
           keyNode,
           valueNode,
           line,
@@ -1193,7 +1216,7 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
     }
 
     if (state.lineIndent > nodeIndent && ch !== 0) {
-      throwError(state, "bad indentation of a mapping entry");
+      return throwError(state, "bad indentation of a mapping entry");
     } else if (state.lineIndent < nodeIndent) {
       break;
     }
@@ -1205,7 +1228,7 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
 
   // Special case: last mapping's node contains only the key in explicit notation.
   if (atExplicitKey) {
-    storeMappingPair(state, result, overridableKeys, keyTag, keyNode, null);
+    storeMappingPair(state, result, overridableKeys, keyTag as string, keyNode, null);
   }
 
   // Expose the resulting mapping.
@@ -1219,11 +1242,11 @@ function readBlockMapping(state, nodeIndent, flowIndent) {
   return detected;
 }
 
-function readTagProperty(state: LoaderState) {
+function readTagProperty(state: LoaderState): boolean {
   let position: number,
     isVerbatim = false,
     isNamed = false,
-    tagHandle: string,
+    tagHandle = '',
     tagName: string,
     ch: number;
 
@@ -1232,7 +1255,7 @@ function readTagProperty(state: LoaderState) {
   if (ch !== 0x21 /* ! */) return false;
 
   if (state.tag !== null) {
-    throwError(state, "duplication of a tag property");
+    return throwError(state, "duplication of a tag property");
   }
 
   ch = state.input.charCodeAt(++state.position);
@@ -1259,16 +1282,16 @@ function readTagProperty(state: LoaderState) {
       tagName = state.input.slice(position, state.position);
       ch = state.input.charCodeAt(++state.position);
     } else {
-      throwError(state, "unexpected end of the stream within a verbatim tag");
+      return throwError(state, "unexpected end of the stream within a verbatim tag");
     }
   } else {
-    while (ch !== 0 && !is_WS_OR_EOL(ch)) {
+    while (ch !== 0 && !isWsOrEol(ch)) {
       if (ch === 0x21 /* ! */) {
         if (!isNamed) {
           tagHandle = state.input.slice(position - 1, state.position + 1);
 
           if (!PATTERN_TAG_HANDLE.test(tagHandle)) {
-            throwError(
+            return throwError(
               state,
               "named tag handle cannot contain such characters"
             );
@@ -1277,7 +1300,7 @@ function readTagProperty(state: LoaderState) {
           isNamed = true;
           position = state.position + 1;
         } else {
-          throwError(state, "tag suffix cannot contain exclamation marks");
+          return throwError(state, "tag suffix cannot contain exclamation marks");
         }
       }
 
@@ -1287,12 +1310,12 @@ function readTagProperty(state: LoaderState) {
     tagName = state.input.slice(position, state.position);
 
     if (PATTERN_FLOW_INDICATORS.test(tagName)) {
-      throwError(state, "tag suffix cannot contain flow indicator characters");
+      return throwError(state, "tag suffix cannot contain flow indicator characters");
     }
   }
 
   if (tagName && !PATTERN_TAG_URI.test(tagName)) {
-    throwError(state, `tag name cannot contain such characters: ${tagName}`);
+    return throwError(state, `tag name cannot contain such characters: ${tagName}`);
   }
 
   if (isVerbatim) {
@@ -1304,13 +1327,13 @@ function readTagProperty(state: LoaderState) {
   } else if (tagHandle === "!!") {
     state.tag = `tag:yaml.org,2002:${tagName}`;
   } else {
-    throwError(state, `undeclared tag handle "${tagHandle}"`);
+    return throwError(state, `undeclared tag handle "${tagHandle}"`);
   }
 
   return true;
 }
 
-function readAnchorProperty(state: LoaderState) {
+function readAnchorProperty(state: LoaderState): boolean {
   let position: number, ch: number;
 
   ch = state.input.charCodeAt(state.position);
@@ -1318,18 +1341,18 @@ function readAnchorProperty(state: LoaderState) {
   if (ch !== 0x26 /* & */) return false;
 
   if (state.anchor !== null) {
-    throwError(state, "duplication of an anchor property");
+    return throwError(state, "duplication of an anchor property");
   }
 
   ch = state.input.charCodeAt(++state.position);
   position = state.position;
 
-  while (ch !== 0 && !is_WS_OR_EOL(ch) && !is_FLOW_INDICATOR(ch)) {
+  while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
     ch = state.input.charCodeAt(++state.position);
   }
 
   if (state.position === position) {
-    throwError(
+    return throwError(
       state,
       "name of an anchor node must contain at least one character"
     );
@@ -1339,7 +1362,7 @@ function readAnchorProperty(state: LoaderState) {
   return true;
 }
 
-function readAlias(state) {
+function readAlias(state: LoaderState): boolean {
   let _position, alias, ch;
 
   ch = state.input.charCodeAt(state.position);
@@ -1349,12 +1372,12 @@ function readAlias(state) {
   ch = state.input.charCodeAt(++state.position);
   _position = state.position;
 
-  while (ch !== 0 && !is_WS_OR_EOL(ch) && !is_FLOW_INDICATOR(ch)) {
+  while (ch !== 0 && !isWsOrEol(ch) && !isFlowIndicator(ch)) {
     ch = state.input.charCodeAt(++state.position);
   }
 
   if (state.position === _position) {
-    throwError(
+    return throwError(
       state,
       "name of an alias node must contain at least one character"
     );
@@ -1363,7 +1386,7 @@ function readAlias(state) {
   alias = state.input.slice(_position, state.position);
 
   if (!state.anchorMap.hasOwnProperty(alias)) {
-    throwError(state, `unidentified alias "${alias}"`);
+    return throwError(state, `unidentified alias "${alias}"`);
   }
 
   state.result = state.anchorMap[alias];
@@ -1377,7 +1400,7 @@ function composeNode(
   nodeContext: number,
   allowToSeek: boolean,
   allowCompact: boolean
-) {
+): boolean {
   let allowBlockStyles: boolean,
     allowBlockScalars: boolean,
     allowBlockCollections: boolean,
@@ -1463,7 +1486,7 @@ function composeNode(
           hasContent = true;
 
           if (state.tag !== null || state.anchor !== null) {
-            throwError(state, "alias node should not have any properties");
+            return throwError(state, "alias node should not have Any properties");
           }
         } else if (
           readPlainScalar(state, flowIndent, CONTEXT_FLOW_IN === nodeContext)
@@ -1516,7 +1539,7 @@ function composeNode(
       type = state.typeMap[state.kind || "fallback"][state.tag];
 
       if (state.result !== null && type.kind !== state.kind) {
-        throwError(
+        return throwError(
           state,
           `unacceptable node kind for !<${state.tag}> tag; it should be "${
             type.kind
@@ -1526,7 +1549,7 @@ function composeNode(
 
       if (!type.resolve(state.result)) {
         // `state.result` updated in resolver if matched
-        throwError(
+        return throwError(
           state,
           `cannot resolve a node with !<${state.tag}> explicit tag`
         );
@@ -1537,7 +1560,7 @@ function composeNode(
         }
       }
     } else {
-      throwError(state, `unknown tag !<${state.tag}>`);
+      return throwError(state, `unknown tag !<${state.tag}>`);
     }
   }
 
@@ -1547,11 +1570,11 @@ function composeNode(
   return state.tag !== null || state.anchor !== null || hasContent;
 }
 
-function readDocument(state: LoaderState) {
+function readDocument(state: LoaderState): void {
   const documentStart = state.position;
   let position: number,
     directiveName: string,
-    directiveArgs: any[],
+    directiveArgs: Any[],
     hasDirectives = false,
     ch: number;
 
@@ -1573,7 +1596,7 @@ function readDocument(state: LoaderState) {
     ch = state.input.charCodeAt(++state.position);
     position = state.position;
 
-    while (ch !== 0 && !is_WS_OR_EOL(ch)) {
+    while (ch !== 0 && !isWsOrEol(ch)) {
       ch = state.input.charCodeAt(++state.position);
     }
 
@@ -1581,29 +1604,29 @@ function readDocument(state: LoaderState) {
     directiveArgs = [];
 
     if (directiveName.length < 1) {
-      throwError(
+      return throwError(
         state,
         "directive name must not be less than one character in length"
       );
     }
 
     while (ch !== 0) {
-      while (is_WHITE_SPACE(ch)) {
+      while (isWhiteSpace(ch)) {
         ch = state.input.charCodeAt(++state.position);
       }
 
       if (ch === 0x23 /* # */) {
         do {
           ch = state.input.charCodeAt(++state.position);
-        } while (ch !== 0 && !is_EOL(ch));
+        } while (ch !== 0 && !isEOL(ch));
         break;
       }
 
-      if (is_EOL(ch)) break;
+      if (isEOL(ch)) break;
 
       position = state.position;
 
-      while (ch !== 0 && !is_WS_OR_EOL(ch)) {
+      while (ch !== 0 && !isWsOrEol(ch)) {
         ch = state.input.charCodeAt(++state.position);
       }
 
@@ -1613,7 +1636,7 @@ function readDocument(state: LoaderState) {
     if (ch !== 0) readLineBreak(state);
 
     if (_hasOwnProperty.call(directiveHandlers, directiveName)) {
-      directiveHandlers[directiveName](state, directiveName, directiveArgs);
+      directiveHandlers[directiveName](state, directiveName, ...directiveArgs);
     } else {
       throwWarning(state, `unknown document directive "${directiveName}"`);
     }
@@ -1630,7 +1653,7 @@ function readDocument(state: LoaderState) {
     state.position += 3;
     skipSeparationSpace(state, true, -1);
   } else if (hasDirectives) {
-    throwError(state, "directives end mark is expected");
+    return throwError(state, "directives end mark is expected");
   }
 
   composeNode(state, state.lineIndent - 1, CONTEXT_BLOCK_OUT, false, true);
@@ -1656,13 +1679,13 @@ function readDocument(state: LoaderState) {
   }
 
   if (state.position < state.length - 1) {
-    throwError(state, "end of the stream or a document separator is expected");
+    return throwError(state, "end of the stream or a document separator is expected");
   } else {
     return;
   }
 }
 
-function loadDocuments(input: string, options?: LoaderStateOptions) {
+function loadDocuments(input: string, options?: LoaderStateOptions): Any[] {
   input = String(input);
   options = options || {};
 
@@ -1698,8 +1721,8 @@ function loadDocuments(input: string, options?: LoaderStateOptions) {
   return state.documents;
 }
 
-export type CbFunction = (doc: any) => void;
-function isCbFunction(fn: any): fn is CbFunction {
+export type CbFunction = (doc: Any) => void;
+function isCbFunction(fn: Any): fn is CbFunction {
   return typeof fn === "function";
 }
 
@@ -1707,9 +1730,9 @@ export function loadAll<T extends CbFunction | LoaderStateOptions>(
   input: string,
   iteratorOrOption?: T,
   options?: LoaderStateOptions
-): T extends CbFunction ? void : any[] {
+): T extends CbFunction ? void : Any[] {
   if (!isCbFunction(iteratorOrOption)) {
-    return loadDocuments(input, iteratorOrOption as LoaderStateOptions) as any;
+    return loadDocuments(input, iteratorOrOption as LoaderStateOptions) as Any;
   }
 
   const documents = loadDocuments(input, options);
@@ -1717,9 +1740,11 @@ export function loadAll<T extends CbFunction | LoaderStateOptions>(
   for (let index = 0, length = documents.length; index < length; index++) {
     iterator(documents[index]);
   }
+
+  return void 0 as Any;
 }
 
-export function load(input: string, options?: LoaderStateOptions): any {
+export function load(input: string, options?: LoaderStateOptions): Any {
   const documents = loadDocuments(input, options);
 
   if (documents.length === 0) {
@@ -1737,21 +1762,22 @@ export function safeLoadAll<T extends CbFunction | LoaderStateOptions>(
   input: string,
   outputOrOptions?: T,
   options: LoaderStateOptions = {}
-): T extends CbFunction ? void : any[] {
+): T extends CbFunction ? void : Any[] {
   if (isCbFunction(outputOrOptions)) {
-    loadAll<T>(input, outputOrOptions, {
+    return loadAll<T>(input, outputOrOptions, {
       schema: DEFAULT_SAFE_SCHEMA,
       ...options
     });
   } else {
     options = (outputOrOptions as LoaderStateOptions) || {};
-    return loadAll<T>(input, {
+    const opts = {
       schema: DEFAULT_SAFE_SCHEMA,
       ...options
-    } as any);
+    };
+    return loadAll<T>(input, opts as Any);
   }
 }
 
-export function safeLoad(input: string, options?: LoaderStateOptions): any {
+export function safeLoad(input: string, options?: LoaderStateOptions): Any {
   return load(input, { schema: DEFAULT_SAFE_SCHEMA, ...options });
 }

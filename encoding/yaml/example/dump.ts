@@ -1,5 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { stringify } from "../mod.ts";
+
+import { stringify } from "../../yaml.ts";
 
 console.log(
   stringify({
