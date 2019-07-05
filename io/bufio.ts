@@ -81,14 +81,13 @@ export class BufReader implements Reader {
     // Read new data: try a limited number of times.
     for (let i = MAX_CONSECUTIVE_EMPTY_READS; i > 0; i--) {
       const rr = await this.rd.read(this.buf.subarray(this.w));
-      const nread = rr === Deno.EOF ? 0 : rr;
-      assert(nread >= 0, "negative read");
       if (rr === Deno.EOF) {
         this.eof = true;
         return;
       }
-      this.w += nread;
-      if (nread > 0) {
+      assert(rr >= 0, "negative read");
+      this.w += rr;
+      if (rr > 0) {
         return;
       }
     }
@@ -142,10 +141,9 @@ export class BufReader implements Reader {
       this.r = 0;
       this.w = 0;
       rr = await this.rd.read(this.buf);
-      const nread = rr === Deno.EOF ? 0 : rr;
-      assert(nread >= 0, "negative read");
-      if (nread === 0) return rr;
-      this.w += nread;
+      if (rr === 0 || rr === Deno.EOF) return rr;
+      assert(rr >= 0, "negative read");
+      this.w += rr;
     }
 
     // copy as much as we can
