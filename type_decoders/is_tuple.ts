@@ -1,14 +1,11 @@
 import { Decoder, PromiseDecoder } from "./decoder.ts";
-import { ok, buildErrorLocationString, err } from "./_util.ts";
+import { ok, errorLocation, err } from "./_util.ts";
 import {
   DecoderError,
   DecoderSuccess,
   areDecoderErrors
 } from "./decoder_result.ts";
-import {
-  IComposeDecoderOptions,
-  applyOptionsToDecoderErrors
-} from "./helpers.ts";
+import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 
 const decoderName = "isTuple";
 
@@ -47,7 +44,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
 
             if (areDecoderErrors(result)) {
               hasError = true;
-              return result.map(error => buildChildError(error, input, index));
+              return result.map(error => childError(error, input, index));
             }
 
             return result;
@@ -91,9 +88,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
         const result = await decoder.decode(input[index]);
 
         if (areDecoderErrors(result)) {
-          const errors = result.map(error =>
-            buildChildError(error, input, index)
-          );
+          const errors = result.map(error => childError(error, input, index));
 
           return applyOptionsToDecoderErrors(errors, options);
         }
@@ -133,9 +128,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
       );
 
       if (areDecoderErrors(result)) {
-        const errors = result.map(error =>
-          buildChildError(error, input, index)
-        );
+        const errors = result.map(error => childError(error, input, index));
 
         if (options.allErrors) {
           allErrors.push(...errors);
@@ -170,8 +163,8 @@ function invalidLengthError(length: number, input: unknown) {
   ];
 }
 
-function buildChildError(child: DecoderError, value: unknown, key: number) {
-  const location = buildErrorLocationString(key, child.location);
+function childError(child: DecoderError, value: unknown, key: number) {
+  const location = errorLocation(key, child.location);
 
   return new DecoderError(
     value,

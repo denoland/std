@@ -5,13 +5,13 @@ This module facilitates validating `unknown` (or other) values and casting them 
 Users and library authors can create custom decoders which can be composed with the decoders provided in this module, as well as composed with any other third-party decoders which are compatible with this module.
 
 ```ts
-import { assert, isNumber } from "https://deno.land/std/type_decoders/mod";
+import { assert, isNumber } from "https://deno.land/std/type_decoders/mod.ts";
 
 // assert() is a convenience function which wraps a decoder
 const numberValidator = assert(isNumber());
 
 const value = numberValidator(1); // returns 1
-const value = numberValidator("1"); // throws `DecoderError`
+const value = numberValidator("1"); // throws `DecoderAssertError`
 ```
 
 alternatively
@@ -23,7 +23,7 @@ const result = decoder.decode(1); // returns `DecoderSuccess<number>`
 
 const value = result.value; // 1
 
-const result = decoder.decode("1"); // returns (not throws) `DecoderError`
+const result = decoder.decode("1"); // returns (not throws) `[DecoderError]`
 ```
 
 # Usage
@@ -40,8 +40,6 @@ const result = decoder.decode("1"); // returns (not throws) `DecoderError`
   - [isString()](#isString)
   - [isNumber()](#isNumber)
   - [isInteger()](#isInteger)
-  - [isUndefined()](#isUndefined)
-  - [isNull()](#isNull)
   - [isMatch()](#isMatch)
   - [isAny()](#isAny)
   - [isNever()](#isNever)
@@ -55,7 +53,6 @@ const result = decoder.decode("1"); // returns (not throws) `DecoderError`
   - [isAnyOf()](#isAnyOf)
   - [isChainOf()](#isChainOf)
   - [isObject()](#isObject)
-  - [isExactObject()](#isExactObject)
   - [isDictionary()](#isDictionary)
   - [isArray()](#isArray)
   - [isTuple()](#isTuple)
@@ -81,7 +78,7 @@ if (result instanceof DecoderError) {
 const value = result.value;
 ```
 
-For your convenience, you can wrap any decoder with the exported `assert` function which will return a valid value directly or throw a `DecoderError`.
+For your convenience, you can wrap any decoder with the exported `assert` function which will return a valid value directly or throw a `DecoderAssertError`.
 
 ```ts
 const myNumberDecoder = assert(isNumber());
@@ -115,17 +112,17 @@ const value: { payload: string; { values: Array<number | null> } } = success.val
 
 const badInput = { payload: { values: [0, null, '1'] } } as unknown;
 
-const error = myObjectDecoder.decode(badInput); // will return `DecoderError`
+const errors = myObjectDecoder.decode(badInput); // will return `[DecoderError]`
 
-error.message // "invalid key \"payload\" value > invalid key \"values\" value > invalid array element [2] > must be a string"
-error.location // "payload.values[2]"
-error.value // { payload: { values: [0, null, '1'] } }
-error.path() // ["payload", "values", 2]
-error.child // nested DecoderError
-error.child.message // "invalid key \"values\" value > invalid array element [2] > must be a string"
-error.child.location // "values[2]"
-error.child.value // { values: [0, null, '1'] }
-error.child.child.value // [0, null, '1']
+errors[0].message // "invalid key \"payload\" value > invalid key \"values\" value > invalid array element [2] > must be a string"
+errors[0].location // "payload.values[2]"
+errors[0].value // { payload: { values: [0, null, '1'] } }
+errors[0].path() // ["payload", "values", 2]
+errors[0].child // nested DecoderError
+errors[0].child.message // "invalid key \"values\" value > invalid array element [2] > must be a string"
+errors[0].child.location // "values[2]"
+errors[0].child.value // { values: [0, null, '1'] }
+errors[0].child.child.value // [0, null, '1']
 // etc
 ```
 

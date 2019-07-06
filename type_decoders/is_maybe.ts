@@ -1,9 +1,6 @@
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import { isExactly } from "./is_exactly.ts";
-import {
-  ISimpleDecoderOptions,
-  applyOptionsToDecoderErrors
-} from "./helpers.ts";
+import { ISimpleDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 import { DecoderError, isDecoderSuccess } from "./decoder_result.ts";
 
 const decoderName = "isMaybe";

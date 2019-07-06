@@ -14,7 +14,7 @@ export * from "./is_dictionary.ts";
 export * from "./is_exactly.ts";
 export * from "./is_instance_of.ts";
 export * from "./is_integer.ts";
-export * from "./is_recursive.ts";
+export * from "./is_lazy.ts";
 export * from "./is_match_for_predicate.ts";
 export * from "./is_match.ts";
 export * from "./is_maybe.ts";
@@ -25,3 +25,5 @@ export * from "./is_object.ts";
 export * from "./is_optional.ts";
 export * from "./is_string.ts";
 export * from "./is_tuple.ts";
+
+export * from "./util.ts";

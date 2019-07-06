@@ -1,10 +1,7 @@
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import { DecoderError, areDecoderErrors } from "./decoder_result.ts";
-import { ok, buildErrorLocationString } from "./_util.ts";
-import {
-  IComposeDecoderOptions,
-  applyOptionsToDecoderErrors
-} from "./helpers.ts";
+import { ok, errorLocation } from "./_util.ts";
+import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 
 const decoderName = "isObject";
 
@@ -54,9 +51,7 @@ export function isObject<T>(
             const result = await decoder.decode(value);
 
             if (areDecoderErrors(result)) {
-              const errors = result.map(error =>
-                buildChildError(error, input, key)
-              );
+              const errors = result.map(error => childError(error, input, key));
 
               allErrors.push(...errors);
               return;
@@ -96,9 +91,7 @@ export function isObject<T>(
         const result = await decoder.decode(value);
 
         if (areDecoderErrors(result)) {
-          const errors = result.map(error =>
-            buildChildError(error, input, key)
-          );
+          const errors = result.map(error => childError(error, input, key));
 
           return applyOptionsToDecoderErrors(errors, options);
         }
@@ -138,7 +131,7 @@ export function isObject<T>(
       const result = decoder.decode(value);
 
       if (areDecoderErrors(result)) {
-        const errors = result.map(error => buildChildError(error, input, key));
+        const errors = result.map(error => childError(error, input, key));
 
         if (options.allErrors) {
           allErrors.push(...errors);
@@ -170,14 +163,14 @@ function checkInputKeys<T>(
   if (options.allErrors) {
     const invalidKeys = actualkeys.filter(key => !expectedkeys.includes(key));
 
-    const errors = invalidKeys.map(key => buildKeyError(input, key));
+    const errors = invalidKeys.map(key => unknownKeyError(input, key));
 
     if (errors.length > 0) return errors;
   } else {
     const invalidKey = actualkeys.find(key => !expectedkeys.includes(key));
 
     if (invalidKey !== undefined) {
-      return [buildKeyError(input, invalidKey)];
+      return [unknownKeyError(input, invalidKey)];
     }
   }
 }
@@ -197,17 +190,25 @@ function nonObjectError(input: unknown, options?: IObjectDecoderOptions) {
   );
 }
 
-function buildChildError(child: DecoderError, value: object, key: string) {
-  let location: string;
+function unknownKeyError(value: unknown, key: string) {
+  return new DecoderError(value, `unknown key ["${key}"]`, {
+    decoderName,
+    location: errorLocation(key, ""),
+    key
+  });
+}
+
+function childError(child: DecoderError, value: object, key: string) {
   let message: string;
+  let location: string | undefined;
   let errorKey: string | undefined = key;
 
   if (value.hasOwnProperty(key)) {
-    location = buildErrorLocationString(key, child.location);
+    location = errorLocation(key, child.location);
     message = `invalid value for key ["${key}"] > ${child.message}`;
   } else {
-    location = child.location;
     message = `missing required key ["${key}"]`;
+    location = undefined;
     errorKey = undefined;
   }
 
@@ -216,14 +217,5 @@ function buildChildError(child: DecoderError, value: object, key: string) {
     child,
     location,
     key: errorKey
-  });
-}
-
-function buildKeyError(value: unknown, key: string) {
-  const keyName = typeof key === "string" ? `"${key}"` : key;
-
-  return new DecoderError(value, `unknown key [${keyName}]`, {
-    decoderName,
-    key
   });
 }

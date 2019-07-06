@@ -1,6 +1,6 @@
 import { Decoder } from "./decoder.ts";
 import { err } from "./_util.ts";
-import { ISimpleDecoderOptions } from "./helpers.ts";
+import { ISimpleDecoderOptions } from "./util.ts";
 
 export interface INeverDecoderOptions extends ISimpleDecoderOptions {}
 

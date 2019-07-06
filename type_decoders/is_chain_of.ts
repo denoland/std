@@ -6,10 +6,7 @@ import {
   areDecoderErrors
 } from "./decoder_result.ts";
 import { ok } from "./_util.ts";
-import {
-  ISimpleDecoderOptions,
-  applyOptionsToDecoderErrors
-} from "./helpers.ts";
+import { ISimpleDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 
 type SubtractOne<T extends number> = [
   -1,
@@ -69,17 +66,16 @@ export function isChainOf<
 ): Decoder<R, I> | PromiseDecoder<R, I> {
   if (decoders.some(decoder => decoder instanceof PromiseDecoder)) {
     return new PromiseDecoder<R, I>(async value => {
-      const result = await decoders.reduce(async (prev, curr) => {
-        return (prev instanceof DecoderSuccess
-          ? await curr.decode(prev.value)
-          : prev) as DecoderResult<R>;
-      }, Promise.resolve(ok(value as unknown) as DecoderResult<R>));
+      let result = ok(value as unknown) as DecoderResult<R>;
+
+      for (const decoder of decoders) {
+        if (!(result instanceof DecoderSuccess)) break;
+
+        result = (await decoder.decode(result.value)) as DecoderResult<R>;
+      }
 
       if (areDecoderErrors(result)) {
-        return applyOptionsToDecoderErrors(
-          buildChildErrors(value, result),
-          options
-        );
+        return applyOptionsToDecoderErrors(childErrors(value, result), options);
       }
 
       return result;
@@ -97,17 +93,14 @@ export function isChainOf<
     );
 
     if (areDecoderErrors(result)) {
-      return applyOptionsToDecoderErrors(
-        buildChildErrors(value, result),
-        options
-      );
+      return applyOptionsToDecoderErrors(childErrors(value, result), options);
     }
 
     return result;
   });
 }
 
-function buildChildErrors(input: unknown, children: DecoderError[]) {
+function childErrors(input: unknown, children: DecoderError[]) {
   return children.map(
     child =>
       new DecoderError(input, child.message, {

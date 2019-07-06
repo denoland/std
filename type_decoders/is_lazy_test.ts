@@ -1,203 +1,145 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
 import {
-  assertDecodeSuccess,
-  assertDecodeErrors,
-  assertDecoder
-} from "./_testing_util.ts";
-import { Decoder } from "./decoder.ts";
+  assertDecodesToSuccess,
+  assertDecodesToErrors,
+  assertDecoder,
+  stringDecoder
+} from "./test_util.ts";
+import { Decoder, PromiseDecoder } from "./decoder.ts";
 import { isLazy } from "./is_lazy.ts";
-import { DecoderSuccess } from "./decoder_result.ts";
-import { isObject } from "./is_object.ts";
-import { isArray } from "./is_array.ts";
+import {
+  DecoderSuccess,
+  DecoderError,
+  areDecoderErrors
+} from "./decoder_result.ts";
+
+const decoder = new Decoder(input => {
+  if (!Array.isArray(input)) {
+    return [new DecoderError(input, "must be an array")];
+  }
+
+  let index = -1;
+  const array: any[] = [];
+
+  for (const element of input) {
+    index++;
+    const result = isLazy(() => decoder).decode(element);
+
+    if (areDecoderErrors(result)) {
+      return result.map(
+        error =>
+          new DecoderError(
+            input,
+            `invalid element [${index}] > ${error.message}`,
+            {
+              location: `[${index}]${error.location}`,
+              key: index,
+              child: error
+            }
+          )
+      );
+    }
+
+    array.push(result.value);
+  }
+
+  return new DecoderSuccess(array);
+});
 
 /**
  * isLazy()
  */
 
-test(function initializes() {
-  const blankDecoder = new Decoder(value => new DecoderSuccess(value));
-
-  assertDecoder(isLazy(() => blankDecoder));
+test({
+  name: "init isLazy()",
+  fn: () => {
+    assertDecoder(isLazy(() => stringDecoder));
+  }
 });
 
-test(function noOptions() {
-  const blankDecoder = new Decoder(value => new DecoderSuccess(value));
-
-  const decoder = isObject({
-    type: blankDecoder,
-    value: isArray(isLazy(() => decoder))
-  });
-
-  for (const item of [
-    { type: "any", value: [] },
-    { type: false, value: [{ type: 3, value: [] }] },
-    {
-      type: "any",
-      value: [
-        {
-          type: Symbol("fed"),
-          value: [
-            { type: {}, value: [{ type: 3, value: [] }] },
-            { type: ["any"], value: [] }
-          ]
-        }
-      ]
+test({
+  name: "isLazy()",
+  fn: () => {
+    for (const item of [[], [[]], [[], [], [[], [], []]]]) {
+      assertDecodesToSuccess(decoder, item, new DecoderSuccess(item));
     }
-  ]) {
-    assertDecodeSuccess(decoder, item);
-    assertEquals(decoder.decode(item), new DecoderSuccess(item));
-  }
 
-  const obj1 = { type: "any", value: [""] };
-  assertDecodeErrors({
-    decoder: decoder,
-    input: obj1,
-    expected: [
-      {
-        input: obj1,
-        msg:
-          `invalid value for key ["value"] > ` +
-          `invalid element [0] > ` +
-          `must be a non-null object`
-      }
-    ],
-    count: 1
-  });
+    const obj1 = [[], [], [[], [true], []]];
+    const msg = `invalid element [2] > invalid element [1] > invalid element [0] > must be an array`;
+
+    assertDecodesToErrors(decoder, obj1, [
+      new DecoderError(obj1, msg, {
+        location: "[2][1][0]",
+        key: 2,
+        child: new DecoderError(
+          obj1[2],
+          "invalid element [1] > invalid element [0] > must be an array",
+          {
+            location: "[1][0]",
+            key: 1,
+            child: new DecoderError(
+              obj1[2][1],
+              "invalid element [0] > must be an array",
+              {
+                location: "[0]",
+                key: 0,
+                child: new DecoderError(obj1[2][1][0], "must be an array", {
+                  location: ""
+                })
+              }
+            )
+          }
+        )
+      })
+    ]);
+  }
 });
 
-test(function optionAllErrors() {
-  const blankDecoder = new Decoder(value => new DecoderSuccess(value));
+test({
+  name: "async isLazy()",
+  fn: async () => {
+    const promiseDecoder = new PromiseDecoder(async value =>
+      decoder.decode(value)
+    );
 
-  const decoder = isObject(
-    {
-      type: blankDecoder,
-      value: isArray(isLazy(() => decoder), { allErrors: true })
-    },
-    {
-      allErrors: true
+    for (const item of [[], [[]], [[], [], [[], [], []]]]) {
+      await assertDecodesToSuccess(
+        promiseDecoder,
+        item,
+        new DecoderSuccess(item)
+      );
     }
-  );
 
-  for (const item of [
-    { type: "any", value: [] },
-    { type: false, value: [{ type: 3, value: [] }] },
-    {
-      type: "any",
-      value: [
-        {
-          type: Symbol("fed"),
-          value: [
-            { type: {}, value: [{ type: 3, value: [] }] },
-            { type: ["any"], value: [] }
-          ]
-        }
-      ]
-    }
-  ]) {
-    assertDecodeSuccess(decoder, item);
-    assertEquals(decoder.decode(item), new DecoderSuccess(item));
+    const obj1 = [[], [], [[], [true], []]];
+    const msg = `invalid element [2] > invalid element [1] > invalid element [0] > must be an array`;
+
+    await assertDecodesToErrors(promiseDecoder, obj1, [
+      new DecoderError(obj1, msg, {
+        location: "[2][1][0]",
+        key: 2,
+        child: new DecoderError(
+          obj1[2],
+          "invalid element [1] > invalid element [0] > must be an array",
+          {
+            location: "[1][0]",
+            key: 1,
+            child: new DecoderError(
+              obj1[2][1],
+              "invalid element [0] > must be an array",
+              {
+                location: "[0]",
+                key: 0,
+                child: new DecoderError(obj1[2][1][0], "must be an array", {
+                  location: ""
+                })
+              }
+            )
+          }
+        )
+      })
+    ]);
   }
-
-  const obj1 = { type: "any", value: [""] };
-  assertDecodeErrors({
-    decoder: decoder,
-    input: obj1,
-    expected: [
-      {
-        input: obj1,
-        msg:
-          `invalid value for key ["value"] > ` +
-          `invalid element [0] > ` +
-          `must be a non-null object`,
-        location: "value[0]",
-        path: ["value", 0]
-      }
-    ],
-    count: 1
-  });
-
-  const obj2 = {
-    type: false,
-    value: [{ type: 3, value: [[12, 5], { type: 3, value: [""] }] }]
-  };
-  assertDecodeErrors({
-    decoder: decoder,
-    input: obj2,
-    expected: [
-      {
-        input: obj2,
-        msg:
-          `invalid value for key ["value"] > ` +
-          `invalid element [0] > ` +
-          `invalid value for key ["value"] > ` +
-          `invalid element [0] > ` +
-          `missing required key ["value"]`,
-        location: "value[0].value[0]",
-        path: ["value", 0, "value", 0]
-      },
-      {
-        input: obj2,
-        msg:
-          `invalid value for key ["value"] > ` +
-          `invalid element [0] > ` +
-          `invalid value for key ["value"] > ` +
-          `invalid element [1] > ` +
-          `invalid value for key ["value"] > ` +
-          `invalid element [0] > ` +
-          `must be a non-null object`,
-        location: "value[0].value[1].value[0]",
-        path: ["value", 0, "value", 1, "value", 0]
-      }
-    ],
-    count: 2
-  });
-
-  const obj3 = {
-    type: "any",
-    value: [
-      {
-        type: Symbol("fed"),
-        value: [
-          { type: {}, value: [{ type: 3 }, { type: 3, value: [] }] },
-          { type: ["any"], value: {} }
-        ]
-      }
-    ]
-  };
-  assertDecodeErrors({
-    decoder: decoder,
-    input: obj3,
-    expected: [
-      {
-        input: obj3,
-        msg:
-          `invalid value for key ["value"] > ` +
-          `invalid element [0] > ` +
-          `invalid value for key ["value"] > ` +
-          `invalid element [0] > ` +
-          `invalid value for key ["value"] > ` +
-          `invalid element [0] > ` +
-          `missing required key ["value"]`,
-        location: "value[0].value[0].value[0]",
-        path: ["value", 0, "value", 0, "value", 0]
-      },
-      {
-        input: obj3,
-        msg:
-          `invalid value for key ["value"] > ` +
-          `invalid element [0] > ` +
-          `invalid value for key ["value"] > ` +
-          `invalid element [1] > ` +
-          `invalid value for key ["value"] > ` +
-          `must be an array`,
-        location: "value[0].value[1].value",
-        path: ["value", 0, "value", 1, "value"]
-      }
-    ],
-    count: 2
-  });
 });
 
 runTests();

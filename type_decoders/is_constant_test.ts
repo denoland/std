@@ -1,68 +1,54 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
-import {
-  assertDecodeSuccess,
-  assertDecodeErrors,
-  assertDecoder
-} from "./_testing_util.ts";
-import { Decoder } from "./decoder.ts";
+import { assertDecodesToSuccess, assertDecoder } from "./test_util.ts";
 import { isConstant } from "./is_constant.ts";
+import { DecoderSuccess } from "./decoder_result.ts";
 
 /**
  * isConstant()
  */
 
-test(function initializes(): void {
-  assertDecoder(isConstant(0));
-  assertDecoder(isConstant(1));
-  assertDecoder(isConstant("0"));
-  assertDecoder(isConstant({}));
-});
-
-test(function decodesInput(): void {
-  const decoder0 = isConstant(0);
-
-  for (const item of [true, false, {}, "false"]) {
-    assertDecodeSuccess(decoder0, item, { expected: 0 });
-  }
-
-  const decoder1 = isConstant("one");
-
-  for (const item of [true, false, {}, "false"]) {
-    assertDecodeSuccess(decoder1, item, { expected: "one" });
-  }
-
-  const obj = {};
-  const decoderObj = isConstant(obj);
-
-  for (const item of [true, false, {}, "false"]) {
-    assertDecodeSuccess(decoderObj, item, { expected: obj });
+test({
+  name: "init isConstant()",
+  fn: () => {
+    assertDecoder(isConstant(0));
+    assertDecoder(isConstant(1));
+    assertDecoder(isConstant("0"));
+    assertDecoder(isConstant({}));
   }
 });
 
-test(async function decodesPromiseInput() {
-  const decoder0 = isConstant(0);
+test({
+  name: "isConstant(0).decode",
+  fn: () => {
+    const decoder = isConstant(0);
 
-  for (const item of [true, false, {}, "false"]) {
-    await assertDecodeSuccess(decoder0, Promise.resolve(item), { expected: 0 });
+    for (const item of [true, false, {}, "false"]) {
+      assertDecodesToSuccess(decoder, item, new DecoderSuccess(0));
+    }
   }
+});
 
-  const decoder1 = isConstant("one");
+test({
+  name: 'isConstant("one").decode',
+  fn: () => {
+    const decoder = isConstant("one");
 
-  for (const item of [true, false, {}, "false"]) {
-    await assertDecodeSuccess(decoder1, Promise.resolve(item), {
-      expected: "one"
-    });
+    for (const item of [true, false, {}, "false"]) {
+      assertDecodesToSuccess(decoder, item, new DecoderSuccess("one"));
+    }
   }
+});
 
-  const obj = {};
-  const decoderObj = isConstant(obj);
+test({
+  name: "isConstant({}).decode",
+  fn: () => {
+    const obj = {};
+    const decoder = isConstant(obj);
 
-  for (const item of [true, false, {}, "false"]) {
-    await assertDecodeSuccess(decoderObj, Promise.resolve(item), {
-      expected: obj
-    });
+    for (const item of [true, false, {}, "false"]) {
+      assertDecodesToSuccess(decoder, item, new DecoderSuccess(obj));
+    }
   }
 });
 
