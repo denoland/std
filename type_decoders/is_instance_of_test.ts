@@ -1,83 +1,83 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
 import {
-  assertDecodeSuccess,
-  assertDecodeErrors,
+  assertDecodesToSuccess,
+  assertDecodesToErrors,
   assertDecoder
-} from "./_testing_util.ts";
-import { Decoder } from "./decoder.ts";
+} from "./test_util.ts";
 import { isInstanceOf } from "./is_instance_of.ts";
+import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 /**
  * isInstanceOf()
  */
 
-test(function initializes() {
-  assertDecoder(isInstanceOf(Map));
-  assertDecoder(isInstanceOf(Array));
-  assertDecoder(isInstanceOf(Set));
+test({
+  name: "init isInstanceOf()",
+  fn: () => {
+    assertDecoder(isInstanceOf(Map));
+    assertDecoder(isInstanceOf(Array));
+    assertDecoder(isInstanceOf(Set));
+  }
 });
 
-test(function decodesInput() {
-  const expectedMsg = (clazz: any) => `must be an instance of ${clazz.name}`;
-  const count = 1;
-  const map = new Map();
-  const set = new Set();
-  const array = [];
+test({
+  name: "isInstanceOf(Map)",
+  fn: () => {
+    const map = new Map();
+    const set = new Set();
+    const array = new Array();
+    const mapDecoder = isInstanceOf(Map);
 
-  const mapDecoder = isInstanceOf(Map);
+    assertDecodesToSuccess(mapDecoder, map, new DecoderSuccess(map));
 
-  assertDecodeSuccess(mapDecoder, map, { expected: map });
-
-  for (const item of [{}, null, 0, undefined, "str", set, array]) {
-    assertDecodeErrors({
-      decoder: mapDecoder,
-      input: item,
-      expected: [
-        {
-          input: item,
-          msg: expectedMsg(Map)
-        }
-      ],
-      count
-    });
+    for (const item of [{}, null, 0, undefined, "str", set, array]) {
+      assertDecodesToErrors(mapDecoder, item, [
+        new DecoderError(item, "must be an instance of Map", {
+          decoderName: "isInstanceOf"
+        })
+      ]);
+    }
   }
+});
 
-  const setDecoder = isInstanceOf(Set);
+test({
+  name: "isInstanceOf(Set)",
+  fn: () => {
+    const map = new Map();
+    const set = new Set();
+    const array = new Array();
+    const mapDecoder = isInstanceOf(Set);
 
-  assertDecodeSuccess(setDecoder, set, { expected: set });
+    assertDecodesToSuccess(mapDecoder, set, new DecoderSuccess(set));
 
-  for (const item of [{}, null, 0, undefined, "str", map, array]) {
-    assertDecodeErrors({
-      decoder: setDecoder,
-      input: item,
-      expected: [
-        {
-          input: item,
-          msg: expectedMsg(Set)
-        }
-      ],
-      count
-    });
+    for (const item of [{}, null, 0, undefined, "str", map, array]) {
+      assertDecodesToErrors(mapDecoder, item, [
+        new DecoderError(item, "must be an instance of Set", {
+          decoderName: "isInstanceOf"
+        })
+      ]);
+    }
   }
+});
 
-  const arrayDecoder = isInstanceOf(Array);
+test({
+  name: "isInstanceOf(Array)",
+  fn: () => {
+    const map = new Map();
+    const set = new Set();
+    const array = new Array();
+    const mapDecoder = isInstanceOf(Array);
 
-  assertDecodeSuccess(arrayDecoder, array, { expected: array });
+    assertDecodesToSuccess(mapDecoder, array, new DecoderSuccess(array));
 
-  for (const item of [{}, null, 0, undefined, "str", map, set]) {
-    assertDecodeErrors({
-      decoder: arrayDecoder,
-      input: item,
-      expected: [
-        {
-          input: item,
-          msg: expectedMsg(Array)
-        }
-      ],
-      count
-    });
+    for (const item of [{}, null, 0, undefined, "str", map, set]) {
+      assertDecodesToErrors(mapDecoder, item, [
+        new DecoderError(item, "must be an instance of Array", {
+          decoderName: "isInstanceOf"
+        })
+      ]);
+    }
   }
 });
 

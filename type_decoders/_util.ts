@@ -1,8 +1,5 @@
 import { DecoderError, DecoderSuccess } from "./decoder_result.ts";
-import {
-  IComposeDecoderOptions,
-  applyOptionsToDecoderErrors
-} from "./helpers.ts";
+import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 
 /** Convenience function for building a DecoderSuccess result */
 export function ok<T>(value: T) {
@@ -26,10 +23,7 @@ export function err(
  * Builds the `DecoderError#location` property given the child error's
  * location and the current key.
  */
-export function buildErrorLocationString(
-  key: string | number,
-  childLocation: string
-) {
+export function errorLocation(key: string | number, childLocation: string) {
   // simple check to see if we can render the key using dot (`.`) notation
   const keyIsValidDotAccessor =
     typeof key === "string" && /^[a-zA-Z]+$/.test(key);

@@ -1,84 +1,93 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
 import {
-  assertDecodeSuccess,
-  assertDecodeErrors,
+  assertDecodesToSuccess,
+  assertDecodesToErrors,
   assertDecoder
-} from "./_testing_util.ts";
-import { Decoder } from "./decoder.ts";
+} from "./test_util.ts";
 import { isExactly } from "./is_exactly.ts";
+import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 /**
  * isExactly()
  */
 
-test(function initializes(): void {
-  assertDecoder(isExactly(0));
-  assertDecoder(isExactly(1));
-  assertDecoder(isExactly("0"));
-  assertDecoder(isExactly({}));
+test({
+  name: "init isExactly()",
+  fn: () => {
+    assertDecoder(isExactly(0));
+    assertDecoder(isExactly(1));
+    assertDecoder(isExactly("0"));
+    assertDecoder(isExactly({}));
+  }
 });
 
-test(function decodesInput(): void {
-  const expectedMsgFn = (exact: any) => `must be exactly ${exact}`;
-  const obj = {};
-  const count = 1;
+test({
+  name: "isExactly(1)",
+  fn: () => {
+    const decoder = isExactly(1);
 
-  const decoder0 = isExactly(1);
+    assertDecodesToSuccess(decoder, 1, new DecoderSuccess(1));
 
-  assertDecodeSuccess(decoder0, 1, { expected: 1 });
-
-  for (const item of [true, undefined, 0, "true"]) {
-    assertDecodeErrors({
-      decoder: decoder0,
-      input: item,
-      expected: [
-        {
-          input: item,
-          msg: expectedMsgFn(1)
-        }
-      ],
-      count
-    });
+    for (const item of [true, undefined, 0, "true", {}]) {
+      assertDecodesToErrors(decoder, item, [
+        new DecoderError(item, "must be exactly 1", {
+          decoderName: "isExactly"
+        })
+      ]);
+    }
   }
+});
 
-  const decoder1 = isExactly(undefined);
+test({
+  name: "isExactly(undefined)",
+  fn: () => {
+    const decoder = isExactly(undefined);
 
-  assertDecodeSuccess(decoder1, undefined, { expected: undefined });
+    assertDecodesToSuccess(decoder, undefined, new DecoderSuccess(undefined));
 
-  for (const item of [true, null, 1, "true"]) {
-    assertDecodeErrors({
-      decoder: decoder1,
-      input: item,
-      expected: [
-        {
-          input: item,
-          msg: expectedMsgFn(undefined)
-        }
-      ],
-      count
-    });
+    for (const item of [true, null, 0, "true", {}]) {
+      assertDecodesToErrors(decoder, item, [
+        new DecoderError(item, "must be exactly undefined", {
+          decoderName: "isExactly"
+        })
+      ]);
+    }
   }
+});
 
-  const decoderObj = isExactly(obj);
+test({
+  name: "isExactly(null)",
+  fn: () => {
+    const decoder = isExactly(null);
 
-  assertDecodeSuccess(decoderObj, obj, { expected: obj });
+    assertDecodesToSuccess(decoder, null, new DecoderSuccess(null));
 
-  const otherObj = {};
+    for (const item of [true, undefined, 0, "true", {}]) {
+      assertDecodesToErrors(decoder, item, [
+        new DecoderError(item, "must be exactly null", {
+          decoderName: "isExactly"
+        })
+      ]);
+    }
+  }
+});
 
-  for (const item of [true, undefined, null, 1, "true", otherObj]) {
-    assertDecodeErrors({
-      decoder: decoderObj,
-      input: item,
-      expected: [
-        {
-          input: item,
-          msg: expectedMsgFn(obj)
-        }
-      ],
-      count
-    });
+test({
+  name: "isExactly({})",
+  fn: () => {
+    const obj = {};
+    const decoder = isExactly(obj);
+
+    assertDecodesToSuccess(decoder, obj, new DecoderSuccess(obj));
+
+    for (const item of [true, undefined, 0, "true", {}]) {
+      assertDecodesToErrors(decoder, item, [
+        new DecoderError(item, "must be exactly [object Object]", {
+          decoderName: "isExactly"
+        })
+      ]);
+    }
   }
 });
 

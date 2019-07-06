@@ -1,6 +1,6 @@
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import { ok, err } from "./_util.ts";
-import { ISimpleDecoderOptions } from "./helpers.ts";
+import { ISimpleDecoderOptions } from "./util.ts";
 
 const decoderName = "isMatchForPredicate";
 const defaultMsg = "failed custom check";

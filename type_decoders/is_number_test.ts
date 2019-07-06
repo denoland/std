@@ -1,49 +1,48 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
 import {
-  assertDecodeSuccess,
-  assertDecodeErrors,
+  assertDecodesToSuccess,
+  assertDecodesToErrors,
   assertDecoder
-} from "./_testing_util.ts";
-import { Decoder } from "./decoder.ts";
+} from "./test_util.ts";
 import { isNumber } from "./is_number.ts";
+import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 /**
  * isNumber()
  */
 
-test(function initializes() {
-  assertDecoder(isNumber());
+test({
+  name: "init isNumber()",
+  fn: () => {
+    assertDecoder(isNumber());
+  }
 });
 
-test(function decodesInput() {
-  const decoder = isNumber();
+test({
+  name: "isNumber()",
+  fn: () => {
+    const decoder = isNumber();
 
-  for (const item of [
-    0,
-    -14,
-    100,
-    4448928342948,
-    0.123,
-    -342.342342,
-    3432432.4
-  ]) {
-    assertDecodeSuccess(decoder, item, { expected: item });
-  }
+    for (const item of [
+      0,
+      -14,
+      100,
+      4448928342948,
+      0.123,
+      -342.342342,
+      3432432.4
+    ]) {
+      assertDecodesToSuccess(decoder, item, new DecoderSuccess(item));
+    }
 
-  for (const item of [{}, null, undefined, "str"]) {
-    assertDecodeErrors({
-      decoder: decoder,
-      input: item,
-      expected: [
-        {
-          input: item,
-          msg: "must be a number"
-        }
-      ],
-      count: 1
-    });
+    for (const item of [{}, null, undefined, "str"]) {
+      assertDecodesToErrors(decoder, item, [
+        new DecoderError(item, "must be a number", {
+          decoderName: "isNumber"
+        })
+      ]);
+    }
   }
 });
 

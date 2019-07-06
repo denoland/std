@@ -5,8 +5,6 @@ export class DecoderSuccess<T> {
 
 /** Class returned on a failed call to `Decoder#decode` or `PromiseDecoder#decode` */
 export class DecoderError {
-  name = "DecoderError";
-
   /** The value that failed validation. */
   input: unknown;
 

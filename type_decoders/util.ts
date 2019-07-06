@@ -1,4 +1,10 @@
-import { DecoderError, DecoderErrorMsgArg } from "./decoder_result.ts";
+import {
+  DecoderError,
+  DecoderErrorMsgArg,
+  DecoderResult,
+  DecoderSuccess,
+  areDecoderErrors
+} from "./decoder_result.ts";
 
 export interface ISimpleDecoderOptions {
   decoderName?: string;
@@ -48,4 +54,33 @@ export function applyOptionsToDecoderErrors(
   }
 
   return newErrors;
+}
+
+export function raceToDecoderSuccess<T>(
+  promises: Promise<DecoderResult<T>>[]
+): Promise<DecoderSuccess<T> | DecoderError[]> {
+  return _raceToDecoderSuccess(promises);
+}
+
+async function _raceToDecoderSuccess<T>(
+  promises: Promise<DecoderResult<T>>[],
+  errors: DecoderError[] = []
+): Promise<DecoderSuccess<T> | DecoderError[]> {
+  if (promises.length === 0) return errors;
+
+  const indexedPromises = promises.map((promise, index) =>
+    promise.then(value => [index, value] as [number, DecoderResult<T>])
+  );
+
+  const res = await Promise.race(indexedPromises);
+
+  if (areDecoderErrors(res[1])) {
+    promises.splice(res[0], 1);
+
+    errors.push(...(res[1] as DecoderError[]));
+
+    return _raceToDecoderSuccess(promises, errors);
+  }
+
+  return res[1];
 }

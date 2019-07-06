@@ -1,101 +1,78 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from "../testing/mod.ts";
-import * as tests from "../testing/asserts.ts";
 import {
   DecoderSuccess,
   DecoderError,
   areDecoderErrors,
   isDecoderSuccess
 } from "./decoder_result.ts";
+import { assertEquals } from "../testing/asserts.ts";
 
-/**
- * DecoderSuccess
- */
-
-test(function initializesDecoderSuccess(): void {
-  tests.assertEquals(new DecoderSuccess(true).value, true);
-  tests.assertEquals(new DecoderSuccess("one").value, "one");
+test({
+  name: "new DecoderSuccess",
+  fn: () => {
+    const success = new DecoderSuccess(true);
+    assertEquals(success instanceof DecoderSuccess, true);
+    assertEquals(success, { value: true });
+  }
 });
 
-test(function isDecoderSuccessFn(): void {
-  const success = new DecoderSuccess(null);
-  const error = new DecoderError(null, "message");
-
-  tests.assertEquals(isDecoderSuccess(success as any), true);
-  tests.assertEquals(isDecoderSuccess([error]), false);
-  tests.assertEquals(isDecoderSuccess(error as any), false);
-  tests.assertEquals(isDecoderSuccess("success" as any), false);
-});
-
-/**
- * DecoderError
- */
-
-test(function initializesDecoderError(): void {
-  const value = true;
-  const message = "Failed to decode non-existant value";
-  const location = "";
-  const allErrors = false;
-
-  const error = new DecoderError(value, message);
-
-  tests.assertEquals(error.input, value);
-  tests.assertEquals(error.message, message);
-  tests.assertEquals(error.location, location);
-  tests.assertEquals(error.allErrors, allErrors);
-});
-
-test(function areDecoderErrorsFn(): void {
-  const success = new DecoderSuccess(null);
-  const error = new DecoderError(null, "message");
-
-  tests.assertEquals(areDecoderErrors([error]), true);
-  tests.assertEquals(areDecoderErrors(error as any), false);
-  tests.assertEquals(areDecoderErrors(success as any), false);
-  tests.assertEquals(areDecoderErrors("success" as any), false);
-});
-
-test(function initializesNestedDecoderError(): void {
-  const value = true;
-  const message = "Failed to decode non-existant value";
-
-  const error = new DecoderError(value, message, {
-    decoderName: "test",
-    child: new DecoderError(false, "", {
+test({
+  name: "new DecoderError",
+  fn: () => {
+    const error = new DecoderError(true, "error", {
       allErrors: true,
-      child: new DecoderError(false, ""),
-      location: "[0]",
-      key: 0
-    }),
-    location: ".fruits[0]",
-    key: "fruits"
-  });
+      decoderName: "name",
+      key: 0,
+      location: "string",
+      child: new DecoderError(true, "child")
+    });
 
-  tests.assertEquals(error.input, value, "error.input");
-  tests.assertEquals(error.message, message, "error.message");
-  tests.assertEquals(error.decoderName, "test", "error.decoderName");
-  tests.assertEquals(error.key, "fruits", "error.key");
-  tests.assertEquals(error.location, ".fruits[0]", "error.location");
-  tests.assertEquals(error.path(), ["fruits", 0], "error.path()");
-  tests.assertEquals(error.allErrors, false, "error.allErrors");
+    assertEquals(error instanceof DecoderError, true);
+    assertEquals(error, {
+      input: true,
+      message: "error",
+      allErrors: true,
+      decoderName: "name",
+      key: 0,
+      location: "string",
+      child: {
+        input: true,
+        message: "child",
+        allErrors: false,
+        decoderName: undefined,
+        key: undefined,
+        location: "",
+        child: undefined
+      }
+    });
+  }
+});
 
-  tests.assertEquals(error.child.key, 0, "error.child.key");
-  tests.assertEquals(error.child.location, "[0]", "error.child.location");
-  tests.assertEquals(error.child.path(), [0], "error.child.path");
-  tests.assertEquals(error.child.allErrors, true, "error.child.allErrors");
+test({
+  name: "isDecoderSuccess()",
+  fn: () => {
+    const success = new DecoderSuccess(null);
+    const error = new DecoderError(null, "message");
 
-  tests.assertEquals(error.child.child.key, undefined, "error.child.child.key");
-  tests.assertEquals(
-    error.child.child.allErrors,
-    false,
-    "error.child.child.allErrors"
-  );
-  tests.assertEquals(
-    error.child.child.location,
-    "",
-    "error.child.child.location"
-  );
-  tests.assertEquals(error.child.child.path(), [], "error.child.child.path");
+    assertEquals(isDecoderSuccess(success as any), true);
+    assertEquals(isDecoderSuccess([error]), false);
+    assertEquals(isDecoderSuccess(error as any), false);
+    assertEquals(isDecoderSuccess("success" as any), false);
+  }
+});
+
+test({
+  name: "areDecoderErrors()",
+  fn: () => {
+    const success = new DecoderSuccess(null);
+    const error = new DecoderError(null, "message");
+
+    assertEquals(areDecoderErrors([error]), true);
+    assertEquals(areDecoderErrors(error as any), false);
+    assertEquals(areDecoderErrors(success as any), false);
+    assertEquals(areDecoderErrors("success" as any), false);
+  }
 });
 
 runTests();

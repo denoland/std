@@ -1,37 +1,32 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
-import {
-  assertDecodeSuccess,
-  assertDecodeErrors,
-  assertDecoder
-} from "./_testing_util.ts";
-import { Decoder } from "./decoder.ts";
+import { assertDecodesToErrors, assertDecoder } from "./test_util.ts";
 import { isNever } from "./is_never.ts";
+import { DecoderError } from "./decoder_result.ts";
 
 /**
  * isNever()
  */
 
-test(function initializes() {
-  assertDecoder(isNever());
+test({
+  name: "init isNever()",
+  fn: () => {
+    assertDecoder(isNever());
+  }
 });
 
-test(function decodesInput() {
-  const decoder = isNever();
+test({
+  name: "isNever()",
+  fn: () => {
+    const decoder = isNever();
 
-  for (const item of [1, -342.342342, {}, null, undefined, "str", true]) {
-    assertDecodeErrors({
-      decoder: decoder,
-      input: item,
-      expected: [
-        {
-          input: item,
-          msg: "must not be present"
-        }
-      ],
-      count: 1
-    });
+    for (const item of [1, -342.342342, {}, null, undefined, "str", true]) {
+      assertDecodesToErrors(decoder, item, [
+        new DecoderError(item, "must not be present", {
+          decoderName: "isNever"
+        })
+      ]);
+    }
   }
 });
 

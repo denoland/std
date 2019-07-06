@@ -1,40 +1,39 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test, runTests } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
 import {
-  assertDecodeSuccess,
-  assertDecodeErrors,
+  assertDecodesToSuccess,
+  assertDecodesToErrors,
   assertDecoder
-} from "./_testing_util.ts";
-import { Decoder } from "./decoder.ts";
+} from "./test_util.ts";
 import { isBoolean } from "./is_boolean.ts";
+import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 /**
  * isBoolean()
  */
 
-test(function initializes(): void {
-  assertDecoder(isBoolean());
+test({
+  name: "init isBoolean()",
+  fn: () => {
+    assertDecoder(isBoolean());
+  }
 });
 
-test(function decodesBoolean(): void {
-  const decoder = isBoolean();
+test({
+  name: "isBoolean()",
+  fn: () => {
+    const decoder = isBoolean();
 
-  assertDecodeSuccess(decoder, true, { expected: true });
-  assertDecodeSuccess(decoder, false, { expected: false });
+    assertDecodesToSuccess(decoder, true, new DecoderSuccess(true));
+    assertDecodesToSuccess(decoder, false, new DecoderSuccess(false));
 
-  for (const item of [{}, null, 0, "false", undefined]) {
-    assertDecodeErrors({
-      decoder,
-      input: item,
-      expected: [
-        {
-          input: item,
-          msg: "must be a boolean"
-        }
-      ],
-      count: 1
-    });
+    for (const item of [{}, null, 0, "false", undefined]) {
+      assertDecodesToErrors(decoder, item, [
+        new DecoderError(item, "must be a boolean", {
+          decoderName: "isBoolean"
+        })
+      ]);
+    }
   }
 });
 

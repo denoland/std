@@ -1,10 +1,7 @@
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import { DecoderError, areDecoderErrors } from "./decoder_result.ts";
-import { ok, buildErrorLocationString } from "./_util.ts";
-import {
-  IComposeDecoderOptions,
-  applyOptionsToDecoderErrors
-} from "./helpers.ts";
+import { ok, errorLocation } from "./_util.ts";
+import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 
 const decoderName = "isDictionary";
 
@@ -56,7 +53,10 @@ export function isDictionary<R, V = any>(
     options = optionalB;
   }
 
-  if (decoder instanceof PromiseDecoder) {
+  if (
+    decoder instanceof PromiseDecoder ||
+    keyDecoder instanceof PromiseDecoder
+  ) {
     if (options.allErrors) {
       return new PromiseDecoder(async (input: V) => {
         if (typeof input !== "object" || input === null) {
@@ -174,7 +174,7 @@ export function isDictionary<R, V = any>(
 
         if (areDecoderErrors(keyResult)) {
           const errors = keyResult.map(error =>
-            buildChildKeyError(input, error, entryKey)
+            childKeyError(input, error, entryKey)
           );
 
           if (options.allErrors) {
@@ -192,7 +192,7 @@ export function isDictionary<R, V = any>(
 
       if (areDecoderErrors(valueResult)) {
         const errors = valueResult.map(error =>
-          buildChildValueError(error, input, entryKey)
+          childValueError(error, input, entryKey)
         );
 
         if (options.allErrors) {
@@ -221,7 +221,7 @@ async function asyncDecodeKey(
   const keyResult = await decoder.decode(key);
 
   if (areDecoderErrors(keyResult)) {
-    return keyResult.map(error => buildChildKeyError(input, error, key));
+    return keyResult.map(error => childKeyError(input, error, key));
   }
 
   return keyResult;
@@ -236,38 +236,25 @@ async function asyncDecodeValue<R, V>(
   const valueResult = await decoder.decode(value);
 
   if (areDecoderErrors(valueResult)) {
-    return valueResult.map(error => buildChildValueError(error, input, key));
+    return valueResult.map(error => childValueError(error, input, key));
   }
 
   return valueResult;
 }
 
-function buildChildKeyError(
-  value: unknown,
-  child: DecoderError,
-  invalidKey: string
-) {
-  const location = buildErrorLocationString(invalidKey, "");
-  const keyName =
-    typeof invalidKey === "string" ? `"${invalidKey}"` : invalidKey;
+function childKeyError(input: unknown, child: DecoderError, key: string) {
+  const location = errorLocation(key, "");
 
-  return new DecoderError(
-    value,
-    `invalid key [${keyName}] > ${child.message}`,
-    {
-      decoderName,
-      child,
-      location
-    }
-  );
+  return new DecoderError(input, `invalid key ["${key}"] > ${child.message}`, {
+    decoderName,
+    child,
+    location,
+    key
+  });
 }
 
-function buildChildValueError(
-  child: DecoderError,
-  value: unknown,
-  key: string
-) {
-  const location = buildErrorLocationString(key, child.location);
+function childValueError(child: DecoderError, value: unknown, key: string) {
+  const location = errorLocation(key, child.location);
   const keyName = typeof key === "string" ? `"${key}"` : key;
 
   return new DecoderError(

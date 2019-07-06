@@ -1,15 +1,11 @@
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import {
   DecoderError,
-  DecoderResult,
   DecoderSuccess,
   areDecoderErrors
 } from "./decoder_result.ts";
-import { ok, buildErrorLocationString } from "./_util.ts";
-import {
-  IComposeDecoderOptions,
-  applyOptionsToDecoderErrors
-} from "./helpers.ts";
+import { ok, errorLocation } from "./_util.ts";
+import { IComposeDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 
 const decoderName = "isArray";
 
@@ -156,7 +152,7 @@ function nonArrayError(value: unknown, options: IArrayDecoderOptions = {}) {
 }
 
 function buildChildError(child: DecoderError, value: unknown, key: number) {
-  const location = buildErrorLocationString(key, child.location);
+  const location = errorLocation(key, child.location);
 
   return new DecoderError(
     value,

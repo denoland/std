@@ -11,7 +11,7 @@ import {
  * @param decodeFn the function which is used to decode input values
  */
 export class Decoder<R, I = any> {
-  constructor(private decodeFn: (input: I) => DecoderResult<R>) {}
+  constructor(readonly decodeFn: (input: I) => DecoderResult<R>) {}
 
   decode(input: Promise<I>): Promise<DecoderResult<R>>;
   decode(input: I): DecoderResult<R>;
@@ -44,7 +44,7 @@ export class Decoder<R, I = any> {
  * @param decodeFn the function which is used to decode input values
  */
 export class PromiseDecoder<R, I = any> {
-  constructor(private decodeFn: (input: I) => Promise<DecoderResult<R>>) {}
+  constructor(readonly decodeFn: (input: I) => Promise<DecoderResult<R>>) {}
 
   async decode(input: I | Promise<I>) {
     return await this.decodeFn(await input);
