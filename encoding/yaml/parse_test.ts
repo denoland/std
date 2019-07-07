@@ -1,8 +1,8 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { parse } from "./mod.ts";
-import { test } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { parse } from "./parse.ts";
+import { test } from "../../testing/mod.ts";
+import { assertEquals } from "../../testing/asserts.ts";
 
 test({
   name: "parsed correctly",

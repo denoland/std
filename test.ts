@@ -24,7 +24,6 @@ import "./util/test.ts";
 import "./ws/test.ts";
 import "./encoding/test.ts";
 import "./os/test.ts";
-import "./yaml/test.ts";
 
 import { xrun } from "./prettier/util.ts";
 import { red, green } from "./colors/mod.ts";

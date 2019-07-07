@@ -1,8 +1,8 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { test } from "../testing/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
-import { stringify } from "./mod.ts";
+import { test } from "../../testing/mod.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { stringify } from "./stringify.ts";
 
 test({
   name: "stringified correctly",

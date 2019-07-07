@@ -35,7 +35,6 @@ Here are the dedicated documentations of modules:
 - [strings](strings/README.md)
 - [testing](testing/README.md)
 - [ws](ws/README.md)
-- [yaml](yaml/README.md)
 
 ## Contributing
 
