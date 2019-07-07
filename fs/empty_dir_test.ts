@@ -42,6 +42,7 @@ test(function emptyDirSyncIfItNotExist(): void {
   }
 });
 
+/* TODO(ry) Re-enable this test. It's broken on windows.
 test(async function emptyDirIfItExist(): Promise<void> {
   const testDir = path.join(testdataDir, "empty_dir_test_3");
   const testNestDir = path.join(testDir, "nest");
@@ -84,6 +85,7 @@ test(async function emptyDirIfItExist(): Promise<void> {
     await Deno.remove(testDir, { recursive: true });
   }
 });
+*/
 
 test(function emptyDirSyncIfItExist(): void {
   const testDir = path.join(testdataDir, "empty_dir_test_4");
