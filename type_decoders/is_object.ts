@@ -1,40 +1,40 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
 import {
   DecoderError,
   areDecoderErrors,
-  DecoderResult,
-} from './decoder_result.ts';
-import { ok, errorLocation } from './_util.ts';
-import { ComposeDecoderOptions, applyOptionsToDecoderErrors } from './util.ts';
+  DecoderResult
+} from "./decoder_result.ts";
+import { ok, errorLocation } from "./_util.ts";
+import { ComposeDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 
-const decoderName = 'isObject';
+const decoderName = "isObject";
 
 function nonObjectError(
   input: unknown,
-  options?: IsObjectOptions,
+  options?: IsObjectOptions
 ): DecoderError[] {
   return applyOptionsToDecoderErrors(
     [
-      new DecoderError(input, 'must be a non-null object', {
-        decoderName,
-      }),
+      new DecoderError(input, "must be a non-null object", {
+        decoderName
+      })
     ],
-    options,
+    options
   );
 }
 
 function unknownKeyError(value: unknown, key: string): DecoderError {
   return new DecoderError(value, `unknown key ["${key}"]`, {
     decoderName,
-    location: errorLocation(key, ''),
-    key,
+    location: errorLocation(key, ""),
+    key
   });
 }
 
 function childError(
   child: DecoderError,
   value: object,
-  key: string,
+  key: string
 ): DecoderError {
   let message: string;
   let location: string | undefined;
@@ -53,31 +53,31 @@ function childError(
     decoderName,
     child,
     location,
-    key: errorKey,
+    key: errorKey
   });
 }
 
 function checkInputKeys<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
   input: object,
-  options: { allErrors?: boolean },
+  options: { allErrors?: boolean }
 ): DecoderError[] | undefined {
   const expectedkeys = Object.keys(decoderObject);
   const actualkeys = Object.keys(input);
 
   if (options.allErrors) {
     const invalidKeys = actualkeys.filter(
-      (key): boolean => !expectedkeys.includes(key),
+      (key): boolean => !expectedkeys.includes(key)
     );
 
     const errors = invalidKeys.map(
-      (key): DecoderError => unknownKeyError(input, key),
+      (key): DecoderError => unknownKeyError(input, key)
     );
 
     if (errors.length > 0) return errors;
   } else {
     const invalidKey = actualkeys.find(
-      (key): boolean => !expectedkeys.includes(key),
+      (key): boolean => !expectedkeys.includes(key)
     );
 
     if (invalidKey !== undefined) {
@@ -92,25 +92,25 @@ export interface IsObjectOptions extends ComposeDecoderOptions {
 
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> },
-  options?: IsObjectOptions,
+  options?: IsObjectOptions
 ): Decoder<T>;
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
-  options?: IsObjectOptions,
+  options?: IsObjectOptions
 ): PromiseDecoder<T>;
 export function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
-  options: IsObjectOptions = {},
+  options: IsObjectOptions = {}
 ): Decoder<T> | PromiseDecoder<T> {
   const hasPromiseDecoder = Object.values(decoderObject).some(
-    (decoder): boolean => decoder instanceof PromiseDecoder,
+    (decoder): boolean => decoder instanceof PromiseDecoder
   );
 
   if (hasPromiseDecoder) {
     if (options.allErrors) {
       return new PromiseDecoder(
         async (input): Promise<DecoderResult<T>> => {
-          if (typeof input !== 'object' || input === null) {
+          if (typeof input !== "object" || input === null) {
             return nonObjectError(input, options);
           }
 
@@ -126,7 +126,7 @@ export function isObject<T>(
 
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const entries: Array<[string, Decoder<any>]> = Object.entries(
-            decoderObject,
+            decoderObject
           );
 
           const resolvedEntries = await Promise.all(
@@ -140,7 +140,7 @@ export function isObject<T>(
 
                 if (areDecoderErrors(result)) {
                   const errors = result.map(
-                    (error): DecoderError => childError(error, input, key),
+                    (error): DecoderError => childError(error, input, key)
                   );
 
                   allErrors.push(...errors);
@@ -149,8 +149,8 @@ export function isObject<T>(
 
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return [key, result.value] as [string, any];
-              },
-            ),
+              }
+            )
           );
 
           if (allErrors.length > 0) {
@@ -159,15 +159,15 @@ export function isObject<T>(
 
           return ok(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Object.fromEntries(resolvedEntries as Array<[string, any]>),
+            Object.fromEntries(resolvedEntries as Array<[string, any]>)
           );
-        },
+        }
       );
     }
 
     return new PromiseDecoder(
       async (input): Promise<DecoderResult<T>> => {
-        if (typeof input !== 'object' || input === null) {
+        if (typeof input !== "object" || input === null) {
           return nonObjectError(input, options);
         }
 
@@ -181,7 +181,7 @@ export function isObject<T>(
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const entries: Array<[string, Decoder<any>]> = Object.entries(
-          decoderObject,
+          decoderObject
         );
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const resultObj: { [key: string]: any } = {};
@@ -194,7 +194,7 @@ export function isObject<T>(
 
           if (areDecoderErrors(result)) {
             const errors = result.map(
-              (error): DecoderError => childError(error, input, key),
+              (error): DecoderError => childError(error, input, key)
             );
 
             return applyOptionsToDecoderErrors(errors, options);
@@ -204,13 +204,13 @@ export function isObject<T>(
         }
 
         return ok(resultObj) as DecoderResult<T>;
-      },
+      }
     );
   }
 
   return new Decoder(
     (input): DecoderResult<T> => {
-      if (typeof input !== 'object' || input === null) {
+      if (typeof input !== "object" || input === null) {
         return nonObjectError(input, options);
       }
 
@@ -230,7 +230,7 @@ export function isObject<T>(
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const entries: Array<[string, Decoder<any>]> = Object.entries(
-        decoderObject,
+        decoderObject
       );
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const resultObj: { [key: string]: any } = {};
@@ -243,7 +243,7 @@ export function isObject<T>(
 
         if (areDecoderErrors(result)) {
           const errors = result.map(
-            (error): DecoderError => childError(error, input, key),
+            (error): DecoderError => childError(error, input, key)
           );
 
           if (options.allErrors) {
@@ -262,6 +262,6 @@ export function isObject<T>(
       }
 
       return ok(resultObj) as DecoderResult<T>;
-    },
+    }
   );
 }

@@ -59,11 +59,11 @@ test({
     assertEquals(isDecoderSuccess(success), true);
     assertEquals(isDecoderSuccess([error]), false);
     assertEquals(
-      isDecoderSuccess(error as unknown as DecoderResult<unknown>),
+      isDecoderSuccess((error as unknown) as DecoderResult<unknown>),
       false
     );
     assertEquals(
-      isDecoderSuccess("success" as unknown as DecoderResult<unknown>),
+      isDecoderSuccess(("success" as unknown) as DecoderResult<unknown>),
       false
     );
   }
@@ -78,11 +78,11 @@ test({
     assertEquals(areDecoderErrors([error]), true);
     assertEquals(areDecoderErrors(success), false);
     assertEquals(
-      areDecoderErrors(error as unknown as DecoderResult<unknown>),
+      areDecoderErrors((error as unknown) as DecoderResult<unknown>),
       false
     );
     assertEquals(
-      areDecoderErrors("success" as unknown as DecoderResult<unknown>), 
+      areDecoderErrors(("success" as unknown) as DecoderResult<unknown>),
       false
     );
   }

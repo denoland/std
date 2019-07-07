@@ -1,5 +1,5 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { DecoderResult } from './decoder_result.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { DecoderResult } from "./decoder_result.ts";
 
 export interface IsLazyOptions {
   promise?: boolean;
@@ -7,24 +7,24 @@ export interface IsLazyOptions {
 
 export function isLazy<T>(
   decoderFn: () => Decoder<T>,
-  options?: IsLazyOptions & { promise?: false },
+  options?: IsLazyOptions & { promise?: false }
 ): Decoder<T>;
 export function isLazy<T>(
   decoderFn: () => PromiseDecoder<T>,
-  options: IsLazyOptions & { promise: true },
+  options: IsLazyOptions & { promise: true }
 ): PromiseDecoder<T>;
 export function isLazy<T>(
   decoderFn: () => Decoder<T> | PromiseDecoder<T>,
-  options: IsLazyOptions = {},
+  options: IsLazyOptions = {}
 ): Decoder<T> | PromiseDecoder<T> {
   if (options.promise) {
     return new PromiseDecoder(
       (value): Promise<DecoderResult<T>> =>
-        (decoderFn() as PromiseDecoder<T>).decode(value),
+        (decoderFn() as PromiseDecoder<T>).decode(value)
     );
   }
 
   return new Decoder(
-    (value): DecoderResult<T> => (decoderFn() as Decoder<T>).decode(value),
+    (value): DecoderResult<T> => (decoderFn() as Decoder<T>).decode(value)
   );
 }

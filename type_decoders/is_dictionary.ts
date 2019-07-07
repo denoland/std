@@ -1,33 +1,33 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
 import {
   DecoderError,
   areDecoderErrors,
-  DecoderResult,
-} from './decoder_result.ts';
-import { ok, errorLocation } from './_util.ts';
-import { ComposeDecoderOptions, applyOptionsToDecoderErrors } from './util.ts';
+  DecoderResult
+} from "./decoder_result.ts";
+import { ok, errorLocation } from "./_util.ts";
+import { ComposeDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 
-const decoderName = 'isDictionary';
+const decoderName = "isDictionary";
 
 function childKeyError(
   input: unknown,
   child: DecoderError,
-  key: string,
+  key: string
 ): DecoderError {
-  const location = errorLocation(key, '');
+  const location = errorLocation(key, "");
 
   return new DecoderError(input, `invalid key ["${key}"] > ${child.message}`, {
     decoderName,
     child,
     location,
-    key,
+    key
   });
 }
 
 function childValueError(
   child: DecoderError,
   value: unknown,
-  key: string,
+  key: string
 ): DecoderError {
   const location = errorLocation(key, child.location);
 
@@ -38,8 +38,8 @@ function childValueError(
       decoderName,
       child,
       location,
-      key,
-    },
+      key
+    }
   );
 }
 
@@ -47,13 +47,13 @@ async function asyncDecodeKey(
   decoder: Decoder<string, string> | PromiseDecoder<string, string>,
   key: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  input: any,
+  input: any
 ): Promise<DecoderResult<string>> {
   const keyResult = await decoder.decode(key);
 
   if (areDecoderErrors(keyResult)) {
     return keyResult.map(
-      (error): DecoderError => childKeyError(input, error, key),
+      (error): DecoderError => childKeyError(input, error, key)
     );
   }
 
@@ -65,13 +65,13 @@ async function asyncDecodeValue<R, V>(
   value: V,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   input: any,
-  key: string,
+  key: string
 ): Promise<DecoderResult<R>> {
   const valueResult = await decoder.decode(value);
 
   if (areDecoderErrors(valueResult)) {
     return valueResult.map(
-      (error): DecoderError => childValueError(error, input, key),
+      (error): DecoderError => childValueError(error, input, key)
     );
   }
 
@@ -80,15 +80,15 @@ async function asyncDecodeValue<R, V>(
 
 function nonObjectError(
   input: unknown,
-  options?: IsDictionaryOptions,
+  options?: IsDictionaryOptions
 ): DecoderError[] {
   return applyOptionsToDecoderErrors(
     [
-      new DecoderError(input, 'must be a non-null object', {
-        decoderName,
-      }),
+      new DecoderError(input, "must be a non-null object", {
+        decoderName
+      })
     ],
-    options,
+    options
   );
 }
 
@@ -96,21 +96,21 @@ export type IsDictionaryOptions = ComposeDecoderOptions;
 
 export function isDictionary<R, V>(
   valueDecoder: Decoder<R, V>,
-  options?: IsDictionaryOptions,
+  options?: IsDictionaryOptions
 ): Decoder<{ [key: string]: R }, V>;
 export function isDictionary<R, V>(
   valueDecoder: Decoder<R, V>,
   keyDecoder: Decoder<string, string>,
-  options?: IsDictionaryOptions,
+  options?: IsDictionaryOptions
 ): Decoder<{ [key: string]: R }, V>;
 export function isDictionary<R, V>(
   decoder: PromiseDecoder<R, V>,
-  options?: IsDictionaryOptions,
+  options?: IsDictionaryOptions
 ): PromiseDecoder<{ [key: string]: R }, V>;
 export function isDictionary<R, V>(
   valueDecoder: Decoder<R, V> | PromiseDecoder<R, V>,
   keyDecoder: Decoder<string, string> | PromiseDecoder<string, string>,
-  options?: IsDictionaryOptions,
+  options?: IsDictionaryOptions
 ): PromiseDecoder<{ [key: string]: R }, V>;
 export function isDictionary<R, V>(
   decoder: Decoder<R, V> | PromiseDecoder<R, V>,
@@ -118,7 +118,7 @@ export function isDictionary<R, V>(
     | IsDictionaryOptions
     | Decoder<string, string>
     | PromiseDecoder<string, string>,
-  optionalB?: IsDictionaryOptions,
+  optionalB?: IsDictionaryOptions
 ): Decoder<{ [key: string]: R }, V> | PromiseDecoder<{ [key: string]: R }, V> {
   let keyDecoder:
     | Decoder<string, string>
@@ -146,13 +146,13 @@ export function isDictionary<R, V>(
       return new PromiseDecoder(
         async (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          input: any,
+          input: any
         ): Promise<
           DecoderResult<{
             [x: string]: R;
           }>
         > => {
-          if (typeof input !== 'object' || input === null) {
+          if (typeof input !== "object" || input === null) {
             return nonObjectError(input, options);
           }
 
@@ -169,7 +169,7 @@ export function isDictionary<R, V>(
                   const keyResult = await asyncDecodeKey(
                     keyDecoder!,
                     entryKey,
-                    input,
+                    input
                   );
 
                   if (areDecoderErrors(keyResult)) {
@@ -184,7 +184,7 @@ export function isDictionary<R, V>(
                   decoder,
                   entryValue,
                   input,
-                  entryKey,
+                  entryKey
                 );
 
                 if (areDecoderErrors(valueResult)) {
@@ -193,8 +193,8 @@ export function isDictionary<R, V>(
                 }
 
                 return [key, valueResult.value] as [string, R];
-              },
-            ),
+              }
+            )
           );
 
           if (hasError) {
@@ -205,26 +205,26 @@ export function isDictionary<R, V>(
                 if (result[0] instanceof DecoderError) {
                   errors.push(...(result as DecoderError[]));
                 }
-              },
+              }
             );
 
             return applyOptionsToDecoderErrors(errors, options);
           }
 
           return ok(Object.fromEntries(results as Array<[string, R]>));
-        },
+        }
       );
     }
 
     return new PromiseDecoder(
       async (
-        input: V,
+        input: V
       ): Promise<
         DecoderResult<{
           [key: string]: R;
         }>
       > => {
-        if (typeof input !== 'object' || input === null) {
+        if (typeof input !== "object" || input === null) {
           return nonObjectError(input, options);
         }
 
@@ -237,7 +237,7 @@ export function isDictionary<R, V>(
             const keyResult = await asyncDecodeKey(
               keyDecoder!,
               entryKey,
-              input,
+              input
             );
 
             if (areDecoderErrors(keyResult)) {
@@ -251,7 +251,7 @@ export function isDictionary<R, V>(
             decoder,
             entryValue,
             input,
-            entryKey,
+            entryKey
           );
 
           if (areDecoderErrors(valueResult)) {
@@ -262,17 +262,17 @@ export function isDictionary<R, V>(
         }
 
         return ok(resultObject);
-      },
+      }
     );
   }
 
   return new Decoder(
     (
-      input: V,
+      input: V
     ): DecoderResult<{
       [key: string]: R;
     }> => {
-      if (typeof input !== 'object' || input === null) {
+      if (typeof input !== "object" || input === null) {
         return nonObjectError(input, options);
       }
 
@@ -286,12 +286,12 @@ export function isDictionary<R, V>(
 
         if (keyDecoder) {
           const keyResult = (keyDecoder as Decoder<string, string>).decode(
-            entryKey,
+            entryKey
           );
 
           if (areDecoderErrors(keyResult)) {
             const errors = keyResult.map(
-              (error): DecoderError => childKeyError(input, error, entryKey),
+              (error): DecoderError => childKeyError(input, error, entryKey)
             );
 
             if (options.allErrors) {
@@ -309,7 +309,7 @@ export function isDictionary<R, V>(
 
         if (areDecoderErrors(valueResult)) {
           const errors = valueResult.map(
-            (error): DecoderError => childValueError(error, input, entryKey),
+            (error): DecoderError => childValueError(error, input, entryKey)
           );
 
           if (options.allErrors) {
@@ -327,6 +327,6 @@ export function isDictionary<R, V>(
         return applyOptionsToDecoderErrors(allErrors, options);
 
       return ok(resultObject);
-    },
+    }
   );
 }

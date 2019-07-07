@@ -1,11 +1,11 @@
-import { AssertionError, assertEquals, equal } from '../testing/asserts.ts';
+import { AssertionError, assertEquals, equal } from "../testing/asserts.ts";
 import {
   DecoderResult,
   areDecoderErrors,
   DecoderSuccess,
-  DecoderError,
-} from './decoder_result.ts';
-import { Decoder, PromiseDecoder } from './decoder.ts';
+  DecoderError
+} from "./decoder_result.ts";
+import { Decoder, PromiseDecoder } from "./decoder.ts";
 
 function printValue(value: unknown): string | Promise<unknown> {
   return value instanceof Promise ? value : JSON.stringify(value);
@@ -14,7 +14,7 @@ function printValue(value: unknown): string | Promise<unknown> {
 function assertArrayContains(
   actual: unknown[],
   expected: unknown[],
-  msg?: string,
+  msg?: string
 ): void {
   let missing: unknown[] = [];
   for (let i = 0; i < expected.length; i++) {
@@ -43,49 +43,49 @@ function assertArrayContains(
 
 export const stringDecoder = new Decoder(
   (value): DecoderResult<string> =>
-    typeof value === 'string'
+    typeof value === "string"
       ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a string')],
+      : [new DecoderError(value, "must be a string")]
 );
 
 export const numberDecoder = new Decoder(
   (value): DecoderResult<number> =>
-    typeof value === 'number'
+    typeof value === "number"
       ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a number')],
+      : [new DecoderError(value, "must be a number")]
 );
 
 export const booleanDecoder = new Decoder(
   (value): DecoderResult<boolean> =>
-    typeof value === 'boolean'
+    typeof value === "boolean"
       ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a boolean')],
+      : [new DecoderError(value, "must be a boolean")]
 );
 
 export const anyDecoder = new Decoder(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (value): DecoderResult<any> => new DecoderSuccess(value),
+  (value): DecoderResult<any> => new DecoderSuccess(value)
 );
 
 export const stringPromiseDecoder = new PromiseDecoder(
   async (value): Promise<DecoderResult<string>> =>
-    typeof value === 'string'
+    typeof value === "string"
       ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a string')],
+      : [new DecoderError(value, "must be a string")]
 );
 
 export const booleanPromiseDecoder = new PromiseDecoder(
   async (value): Promise<DecoderResult<boolean>> =>
-    typeof value === 'boolean'
+    typeof value === "boolean"
       ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a boolean')],
+      : [new DecoderError(value, "must be a boolean")]
 );
 
 export const numberPromiseDecoder = new PromiseDecoder(
   async (value): Promise<DecoderResult<number>> =>
-    typeof value === 'number'
+    typeof value === "number"
       ? new DecoderSuccess(value)
-      : [new DecoderError(value, 'must be a number')],
+      : [new DecoderError(value, "must be a number")]
 );
 
 /**
@@ -109,7 +109,7 @@ export function assertDecoder(actual: Decoder<unknown>, msg?: string): void {
  */
 export function assertPromiseDecoder(
   actual: PromiseDecoder<unknown>,
-  msg?: string,
+  msg?: string
 ): void {
   if (!(actual instanceof PromiseDecoder)) {
     if (!msg) {
@@ -126,18 +126,18 @@ export function assertPromiseDecoder(
  */
 export function assertDecoderSuccess(
   actual: DecoderResult<unknown>,
-  expected: DecoderSuccess<unknown>,
+  expected: DecoderSuccess<unknown>
 ): void {
   if (actual instanceof Promise) {
     throw new AssertionError(
-      `"${printValue(actual)}" expected to not be a promise`,
+      `"${printValue(actual)}" expected to not be a promise`
     );
   }
 
   assertEquals(
     actual,
     expected,
-    `${printValue(actual)} expected to equal ${printValue(expected)}`,
+    `${printValue(actual)} expected to equal ${printValue(expected)}`
   );
 }
 
@@ -149,11 +149,11 @@ export function assertDecoderSuccess(
  */
 export async function assertAsyncDecoderSuccess(
   actual: Promise<DecoderResult<unknown>>,
-  expected: DecoderSuccess<unknown>,
+  expected: DecoderSuccess<unknown>
 ): Promise<void> {
   if (!(actual instanceof Promise)) {
     throw new AssertionError(
-      `"${printValue(actual)}" expected to be Promise<DecoderSuccess>`,
+      `"${printValue(actual)}" expected to be Promise<DecoderSuccess>`
     );
   }
 
@@ -169,17 +169,17 @@ export async function assertAsyncDecoderSuccess(
  */
 export function assertDecoderErrors(
   actual: DecoderResult<unknown>,
-  expected: DecoderError[],
+  expected: DecoderError[]
 ): void {
   if (actual instanceof Promise) {
     throw new AssertionError(
-      `${printValue(actual)} expected to not be a promise`,
+      `${printValue(actual)} expected to not be a promise`
     );
   }
 
   if (!areDecoderErrors(actual)) {
     throw new AssertionError(
-      `${printValue(actual)} expected to be an array of DecoderError`,
+      `${printValue(actual)} expected to be an array of DecoderError`
     );
   }
 
@@ -187,7 +187,7 @@ export function assertDecoderErrors(
     throw new AssertionError(
       `${printValue(actual)} expected to have length ${
         expected.length
-      } but had length ${actual.length}`,
+      } but had length ${actual.length}`
     );
   }
 
@@ -200,11 +200,11 @@ export function assertDecoderErrors(
  */
 export async function assertAsyncDecoderErrors(
   actual: Promise<DecoderResult<unknown>>,
-  expected: DecoderError[],
+  expected: DecoderError[]
 ): Promise<void> {
   if (!(actual instanceof Promise)) {
     throw new AssertionError(
-      `"${printValue(actual)}" expected to be Promise<DecoderError[]>`,
+      `"${printValue(actual)}" expected to be Promise<DecoderError[]>`
     );
   }
 
@@ -218,29 +218,29 @@ export async function assertAsyncDecoderErrors(
 export function assertDecodesToSuccess(
   decoder: Decoder<unknown> | PromiseDecoder<unknown>,
   value: Promise<unknown>,
-  expected: DecoderSuccess<unknown>,
+  expected: DecoderSuccess<unknown>
 ): Promise<void>;
 export function assertDecodesToSuccess(
   decoder: PromiseDecoder<unknown>,
   value: unknown,
-  expected: DecoderSuccess<unknown>,
+  expected: DecoderSuccess<unknown>
 ): Promise<void>;
 export function assertDecodesToSuccess<T>(
   decoder: Decoder<unknown>,
   value: unknown,
-  expected: DecoderSuccess<unknown>,
+  expected: DecoderSuccess<unknown>
 ): void;
 export function assertDecodesToSuccess(
   decoder: Decoder<unknown> | PromiseDecoder<unknown>,
   value: unknown,
-  expected: DecoderSuccess<unknown>,
+  expected: DecoderSuccess<unknown>
 ): void | Promise<void> {
   if (decoder instanceof PromiseDecoder || value instanceof Promise) {
     const result = decoder.decode(value);
 
     return assertAsyncDecoderSuccess(
       result as Promise<DecoderResult<unknown>>,
-      expected,
+      expected
     );
   }
 
@@ -257,29 +257,29 @@ export function assertDecodesToSuccess(
 export function assertDecodesToErrors(
   decoder: Decoder<unknown> | PromiseDecoder<unknown>,
   value: Promise<unknown>,
-  expected: DecoderError[],
+  expected: DecoderError[]
 ): Promise<void>;
 export function assertDecodesToErrors(
   decoder: PromiseDecoder<unknown>,
   value: unknown,
-  expected: DecoderError[],
+  expected: DecoderError[]
 ): Promise<void>;
 export function assertDecodesToErrors(
   decoder: Decoder<unknown>,
   value: unknown,
-  expected: DecoderError[],
+  expected: DecoderError[]
 ): void;
 export function assertDecodesToErrors(
   decoder: Decoder<unknown> | PromiseDecoder<unknown>,
   value: unknown,
-  expected: DecoderError[],
+  expected: DecoderError[]
 ): void | Promise<void> {
   if (decoder instanceof PromiseDecoder || value instanceof Promise) {
     const result = decoder.decode(value);
 
     return assertAsyncDecoderErrors(
       result as Promise<DecoderResult<unknown>>,
-      expected,
+      expected
     );
   }
 

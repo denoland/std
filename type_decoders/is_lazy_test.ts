@@ -1,19 +1,19 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, runTests } from '../testing/mod.ts';
+import { test, runTests } from "../testing/mod.ts";
 import {
   assertDecodesToSuccess,
   assertDecodesToErrors,
   assertDecoder,
-  stringDecoder,
-} from './test_util.ts';
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { isLazy } from './is_lazy.ts';
+  stringDecoder
+} from "./test_util.ts";
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { isLazy } from "./is_lazy.ts";
 import {
   DecoderSuccess,
   DecoderError,
   areDecoderErrors,
-  DecoderResult,
-} from './decoder_result.ts';
+  DecoderResult
+} from "./decoder_result.ts";
 
 interface ArrayLike {
   [key: number]: ArrayLike;
@@ -23,7 +23,7 @@ interface ArrayLike {
 const decoder: Decoder<ArrayLike, any> = new Decoder(
   (input): DecoderResult<ArrayLike> => {
     if (!Array.isArray(input)) {
-      return [new DecoderError(input, 'must be an array')];
+      return [new DecoderError(input, "must be an array")];
     }
 
     let index = -1;
@@ -33,7 +33,7 @@ const decoder: Decoder<ArrayLike, any> = new Decoder(
       index++;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = isLazy((): Decoder<ArrayLike, any> => decoder).decode(
-        element,
+        element
       );
 
       if (areDecoderErrors(result)) {
@@ -45,9 +45,9 @@ const decoder: Decoder<ArrayLike, any> = new Decoder(
               {
                 location: `[${index}]${error.location}`,
                 key: index,
-                child: error,
-              },
-            ),
+                child: error
+              }
+            )
         );
       }
 
@@ -55,7 +55,7 @@ const decoder: Decoder<ArrayLike, any> = new Decoder(
     }
 
     return new DecoderSuccess(array);
-  },
+  }
 );
 
 /**
@@ -63,15 +63,15 @@ const decoder: Decoder<ArrayLike, any> = new Decoder(
  */
 
 test({
-  name: 'init isLazy()',
+  name: "init isLazy()",
   fn: (): void => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     assertDecoder(isLazy((): Decoder<string, any> => stringDecoder));
-  },
+  }
 });
 
 test({
-  name: 'isLazy()',
+  name: "isLazy()",
   fn: (): void => {
     for (const item of [[], [[]], [[], [], [[], [], []]]]) {
       assertDecodesToSuccess(decoder, item, new DecoderSuccess(item));
@@ -84,44 +84,44 @@ test({
 
     assertDecodesToErrors(decoder, obj1, [
       new DecoderError(obj1, msg, {
-        location: '[2][1][0]',
+        location: "[2][1][0]",
         key: 2,
         child: new DecoderError(
           obj1[2],
-          'invalid element [1] > invalid element [0] > must be an array',
+          "invalid element [1] > invalid element [0] > must be an array",
           {
-            location: '[1][0]',
+            location: "[1][0]",
             key: 1,
             child: new DecoderError(
               obj1[2][1],
-              'invalid element [0] > must be an array',
+              "invalid element [0] > must be an array",
               {
-                location: '[0]',
+                location: "[0]",
                 key: 0,
-                child: new DecoderError(obj1[2][1][0], 'must be an array', {
-                  location: '',
-                }),
-              },
-            ),
-          },
-        ),
-      }),
+                child: new DecoderError(obj1[2][1][0], "must be an array", {
+                  location: ""
+                })
+              }
+            )
+          }
+        )
+      })
     ]);
-  },
+  }
 });
 
 test({
-  name: 'async isLazy()',
+  name: "async isLazy()",
   fn: async (): Promise<void> => {
     const promiseDecoder = new PromiseDecoder(
-      async (value): Promise<DecoderResult<ArrayLike>> => decoder.decode(value),
+      async (value): Promise<DecoderResult<ArrayLike>> => decoder.decode(value)
     );
 
     for (const item of [[], [[]], [[], [], [[], [], []]]]) {
       await assertDecodesToSuccess(
         promiseDecoder,
         item,
-        new DecoderSuccess(item),
+        new DecoderSuccess(item)
       );
     }
 
@@ -132,30 +132,30 @@ test({
 
     await assertDecodesToErrors(promiseDecoder, obj1, [
       new DecoderError(obj1, msg, {
-        location: '[2][1][0]',
+        location: "[2][1][0]",
         key: 2,
         child: new DecoderError(
           obj1[2],
-          'invalid element [1] > invalid element [0] > must be an array',
+          "invalid element [1] > invalid element [0] > must be an array",
           {
-            location: '[1][0]',
+            location: "[1][0]",
             key: 1,
             child: new DecoderError(
               obj1[2][1],
-              'invalid element [0] > must be an array',
+              "invalid element [0] > must be an array",
               {
-                location: '[0]',
+                location: "[0]",
                 key: 0,
-                child: new DecoderError(obj1[2][1][0], 'must be an array', {
-                  location: '',
-                }),
-              },
-            ),
-          },
-        ),
-      }),
+                child: new DecoderError(obj1[2][1][0], "must be an array", {
+                  location: ""
+                })
+              }
+            )
+          }
+        )
+      })
     ]);
-  },
+  }
 });
 
 runTests();

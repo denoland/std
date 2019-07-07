@@ -1,21 +1,21 @@
-import { Decoder, PromiseDecoder, DecoderReturnType } from './decoder.ts';
+import { Decoder, PromiseDecoder, DecoderReturnType } from "./decoder.ts";
 import {
   DecoderSuccess,
   DecoderError,
-  DecoderResult,
-} from './decoder_result.ts';
+  DecoderResult
+} from "./decoder_result.ts";
 import {
   SimpleDecoderOptions,
   applyOptionsToDecoderErrors,
-  raceToDecoderSuccess,
-} from './util.ts';
+  raceToDecoderSuccess
+} from "./util.ts";
 
-const decoderName = 'isAnyOf';
+const decoderName = "isAnyOf";
 
 function childErrors(value: unknown, children: DecoderError[]): DecoderError[] {
   return children.map(
     (child): DecoderError =>
-      new DecoderError(value, 'invalid value', { decoderName, child }),
+      new DecoderError(value, "invalid value", { decoderName, child })
   );
 }
 
@@ -25,18 +25,18 @@ export interface IsAnyOfOptions extends SimpleDecoderOptions {
 
 export function isAnyOf<T extends Decoder<unknown>>(
   decoders: T[],
-  options?: IsAnyOfOptions,
+  options?: IsAnyOfOptions
 ): Decoder<DecoderReturnType<T>>;
 export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
   decoders: T[],
-  options?: IsAnyOfOptions,
+  options?: IsAnyOfOptions
 ): PromiseDecoder<DecoderReturnType<T>>;
 export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
   decoders: T[],
-  options: IsAnyOfOptions = {},
+  options: IsAnyOfOptions = {}
 ): Decoder<DecoderReturnType<T>> | PromiseDecoder<DecoderReturnType<T>> {
   const hasPromiseDecoder = decoders.some(
-    (decoder): boolean => decoder instanceof PromiseDecoder,
+    (decoder): boolean => decoder instanceof PromiseDecoder
   );
 
   if (hasPromiseDecoder) {
@@ -47,7 +47,7 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
             async (decoder): Promise<DecoderResult<DecoderReturnType<T>>> =>
               (await decoder.decode(value)) as DecoderResult<
                 DecoderReturnType<T>
-              >,
+              >
           );
 
           const result = await raceToDecoderSuccess(promises);
@@ -56,9 +56,9 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
 
           return applyOptionsToDecoderErrors(
             childErrors(value, result),
-            options,
+            options
           );
-        },
+        }
       );
     }
 
@@ -77,7 +77,7 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
         }
 
         return applyOptionsToDecoderErrors(childErrors(value, errors), options);
-      },
+      }
     );
   }
 
@@ -96,6 +96,6 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
       }
 
       return applyOptionsToDecoderErrors(childErrors(value, errors), options);
-    },
+    }
   );
 }

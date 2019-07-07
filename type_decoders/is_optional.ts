@@ -1,34 +1,34 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { isExactly } from './is_exactly.ts';
-import { SimpleDecoderOptions, applyOptionsToDecoderErrors } from './util.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { isExactly } from "./is_exactly.ts";
+import { SimpleDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 import {
   isDecoderSuccess,
   DecoderError,
-  DecoderResult,
-} from './decoder_result.ts';
+  DecoderResult
+} from "./decoder_result.ts";
 
-const decoderName = 'isOptional';
+const decoderName = "isOptional";
 const undefinedDecoder = isExactly(undefined);
 
 export type IsOptionalOptions = SimpleDecoderOptions;
 
 export function isOptional<T>(
   decoder: Decoder<T>,
-  options?: IsOptionalOptions,
+  options?: IsOptionalOptions
 ): Decoder<T | undefined>;
 export function isOptional<T>(
   decoder: PromiseDecoder<T>,
-  options?: IsOptionalOptions,
+  options?: IsOptionalOptions
 ): PromiseDecoder<T | undefined>;
 export function isOptional<T>(
   decoder: Decoder<T> | PromiseDecoder<T>,
-  options: IsOptionalOptions = {},
+  options: IsOptionalOptions = {}
 ): Decoder<T | undefined> | PromiseDecoder<T | undefined> {
   if (decoder instanceof PromiseDecoder) {
     return new PromiseDecoder(
       async (value): Promise<DecoderResult<T | undefined>> => {
         let result: DecoderResult<T | undefined> = undefinedDecoder.decode(
-          value,
+          value
         );
 
         if (isDecoderSuccess(result)) return result;
@@ -42,12 +42,12 @@ export function isOptional<T>(
             (error): DecoderError =>
               new DecoderError(value, `${error.message} OR must be undefined`, {
                 child: error,
-                decoderName,
-              }),
+                decoderName
+              })
           ),
-          options,
+          options
         );
-      },
+      }
     );
   }
 
@@ -66,11 +66,11 @@ export function isOptional<T>(
           (error): DecoderError =>
             new DecoderError(value, `${error.message} OR must be undefined`, {
               child: error,
-              decoderName,
-            }),
+              decoderName
+            })
         ),
-        options,
+        options
       );
-    },
+    }
   );
 }

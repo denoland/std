@@ -1,27 +1,27 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { test, runTests } from '../testing/mod.ts';
-import { assertEquals } from '../testing/asserts.ts';
+import { test, runTests } from "../testing/mod.ts";
+import { assertEquals } from "../testing/asserts.ts";
 import {
   DecoderSuccess,
   DecoderError,
-  DecoderResult,
-} from './decoder_result.ts';
-import * as helpers from './util.ts';
+  DecoderResult
+} from "./decoder_result.ts";
+import * as helpers from "./util.ts";
 import {
   assertDecoderErrors,
   assertAsyncDecoderSuccess,
-  assertAsyncDecoderErrors,
-} from './test_util.ts';
+  assertAsyncDecoderErrors
+} from "./test_util.ts";
 
 function decoderErrors(): {
   nullValue: null;
-  yesValue: 'yes';
+  yesValue: "yes";
   payloadValue: {};
   objValue: { payload: {} };
   errors: DecoderError[];
 } {
   const nullValue = null;
-  const yesValue = 'yes';
+  const yesValue = "yes";
   const payloadValue = {};
   const objValue = { payload: payloadValue };
 
@@ -31,26 +31,26 @@ function decoderErrors(): {
     payloadValue,
     objValue,
     errors: [
-      new DecoderError(nullValue, 'null error', {
-        decoderName: 'nullDecoder',
-        allErrors: true,
+      new DecoderError(nullValue, "null error", {
+        decoderName: "nullDecoder",
+        allErrors: true
       }),
-      new DecoderError(yesValue, 'must be a boolean', {
-        decoderName: 'booleanDecoder',
+      new DecoderError(yesValue, "must be a boolean", {
+        decoderName: "booleanDecoder"
       }),
       new DecoderError(
         objValue,
         'invalid value for key ["payload"] > must be a string',
         {
-          decoderName: 'objectDecoder',
-          child: new DecoderError(payloadValue, 'must be a string', {
-            decoderName: 'stringDecoder',
+          decoderName: "objectDecoder",
+          child: new DecoderError(payloadValue, "must be a string", {
+            decoderName: "stringDecoder"
           }),
-          key: 'payload',
-          location: 'payload',
-        },
-      ),
-    ],
+          key: "payload",
+          location: "payload"
+        }
+      )
+    ]
   };
 }
 
@@ -66,41 +66,41 @@ test(function applyOptionsToDecoderErrors(): void {
   let args = decoderErrors();
 
   let errors = helpers.applyOptionsToDecoderErrors(args.errors, {
-    allErrors: true,
+    allErrors: true
   });
 
   assertDecoderErrors(errors, [
-    new DecoderError(args.nullValue, 'null error', {
-      decoderName: 'nullDecoder',
+    new DecoderError(args.nullValue, "null error", {
+      decoderName: "nullDecoder",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     }),
-    new DecoderError(args.yesValue, 'must be a boolean', {
-      decoderName: 'booleanDecoder',
+    new DecoderError(args.yesValue, "must be a boolean", {
+      decoderName: "booleanDecoder",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     }),
     new DecoderError(
       args.objValue,
       'invalid value for key ["payload"] > must be a string',
       {
-        decoderName: 'objectDecoder',
+        decoderName: "objectDecoder",
         allErrors: true,
-        location: 'payload',
-        key: 'payload',
-        child: new DecoderError(args.payloadValue, 'must be a string', {
-          decoderName: 'stringDecoder',
+        location: "payload",
+        key: "payload",
+        child: new DecoderError(args.payloadValue, "must be a string", {
+          decoderName: "stringDecoder",
           allErrors: false,
-          location: '',
+          location: "",
           key: undefined,
-          child: undefined,
-        }),
-      },
-    ),
+          child: undefined
+        })
+      }
+    )
   ]);
 
   // /**
@@ -110,41 +110,41 @@ test(function applyOptionsToDecoderErrors(): void {
   args = decoderErrors();
 
   errors = helpers.applyOptionsToDecoderErrors(args.errors, {
-    decoderName: 'customDecoderName',
+    decoderName: "customDecoderName"
   });
 
   assertDecoderErrors(errors, [
-    new DecoderError(args.nullValue, 'null error', {
-      decoderName: 'customDecoderName',
+    new DecoderError(args.nullValue, "null error", {
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     }),
-    new DecoderError(args.yesValue, 'must be a boolean', {
-      decoderName: 'customDecoderName',
+    new DecoderError(args.yesValue, "must be a boolean", {
+      decoderName: "customDecoderName",
       allErrors: false,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     }),
     new DecoderError(
       args.objValue,
       'invalid value for key ["payload"] > must be a string',
       {
-        decoderName: 'customDecoderName',
+        decoderName: "customDecoderName",
         allErrors: false,
-        location: 'payload',
-        key: 'payload',
-        child: new DecoderError(args.payloadValue, 'must be a string', {
-          decoderName: 'stringDecoder',
+        location: "payload",
+        key: "payload",
+        child: new DecoderError(args.payloadValue, "must be a string", {
+          decoderName: "stringDecoder",
           allErrors: false,
-          location: '',
+          location: "",
           key: undefined,
-          child: undefined,
-        }),
-      },
-    ),
+          child: undefined
+        })
+      }
+    )
   ]);
 
   /**
@@ -154,37 +154,37 @@ test(function applyOptionsToDecoderErrors(): void {
   args = decoderErrors();
 
   errors = helpers.applyOptionsToDecoderErrors(args.errors, {
-    msg: 'my custom error message',
+    msg: "my custom error message"
   });
 
   assertDecoderErrors(errors, [
-    new DecoderError(args.nullValue, 'my custom error message', {
-      decoderName: 'nullDecoder',
+    new DecoderError(args.nullValue, "my custom error message", {
+      decoderName: "nullDecoder",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     }),
-    new DecoderError(args.yesValue, 'my custom error message', {
-      decoderName: 'booleanDecoder',
+    new DecoderError(args.yesValue, "my custom error message", {
+      decoderName: "booleanDecoder",
       allErrors: false,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     }),
-    new DecoderError(args.objValue, 'my custom error message', {
-      decoderName: 'objectDecoder',
+    new DecoderError(args.objValue, "my custom error message", {
+      decoderName: "objectDecoder",
       allErrors: false,
-      location: 'payload',
-      key: 'payload',
-      child: new DecoderError(args.payloadValue, 'must be a string', {
-        decoderName: 'stringDecoder',
+      location: "payload",
+      key: "payload",
+      child: new DecoderError(args.payloadValue, "must be a string", {
+        decoderName: "stringDecoder",
         allErrors: false,
-        location: '',
+        location: "",
         key: undefined,
-        child: undefined,
-      }),
-    }),
+        child: undefined
+      })
+    })
   ]);
 
   /**
@@ -195,38 +195,38 @@ test(function applyOptionsToDecoderErrors(): void {
 
   errors = helpers.applyOptionsToDecoderErrors(args.errors, {
     allErrors: true,
-    decoderName: 'customDecoderName',
-    msg: 'my custom error message',
+    decoderName: "customDecoderName",
+    msg: "my custom error message"
   });
 
   assertDecoderErrors(errors, [
-    new DecoderError(args.nullValue, 'my custom error message', {
-      decoderName: 'customDecoderName',
+    new DecoderError(args.nullValue, "my custom error message", {
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     }),
-    new DecoderError(args.yesValue, 'my custom error message', {
-      decoderName: 'customDecoderName',
+    new DecoderError(args.yesValue, "my custom error message", {
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: '',
+      location: "",
       key: undefined,
-      child: undefined,
+      child: undefined
     }),
-    new DecoderError(args.objValue, 'my custom error message', {
-      decoderName: 'customDecoderName',
+    new DecoderError(args.objValue, "my custom error message", {
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: 'payload',
-      key: 'payload',
-      child: new DecoderError(args.payloadValue, 'must be a string', {
-        decoderName: 'stringDecoder',
+      location: "payload",
+      key: "payload",
+      child: new DecoderError(args.payloadValue, "must be a string", {
+        decoderName: "stringDecoder",
         allErrors: false,
-        location: '',
+        location: "",
         key: undefined,
-        child: undefined,
-      }),
-    }),
+        child: undefined
+      })
+    })
   ]);
 
   /**
@@ -236,51 +236,53 @@ test(function applyOptionsToDecoderErrors(): void {
   args = decoderErrors();
 
   const mutateErrors = (errors: DecoderError[]): DecoderError[] => {
-    errors.forEach((error): void => {
-      error.location = 'funky location';
-    });
+    errors.forEach(
+      (error): void => {
+        error.location = "funky location";
+      }
+    );
 
     return errors;
   };
 
   errors = helpers.applyOptionsToDecoderErrors(args.errors, {
     allErrors: true,
-    decoderName: 'customDecoderName',
-    msg: mutateErrors,
+    decoderName: "customDecoderName",
+    msg: mutateErrors
   });
 
   assertDecoderErrors(errors, [
-    new DecoderError(args.nullValue, 'null error', {
-      decoderName: 'customDecoderName',
+    new DecoderError(args.nullValue, "null error", {
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: 'funky location',
+      location: "funky location",
       key: undefined,
-      child: undefined,
+      child: undefined
     }),
-    new DecoderError(args.yesValue, 'must be a boolean', {
-      decoderName: 'customDecoderName',
+    new DecoderError(args.yesValue, "must be a boolean", {
+      decoderName: "customDecoderName",
       allErrors: true,
-      location: 'funky location',
+      location: "funky location",
       key: undefined,
-      child: undefined,
+      child: undefined
     }),
     new DecoderError(
       args.objValue,
       'invalid value for key ["payload"] > must be a string',
       {
-        decoderName: 'customDecoderName',
+        decoderName: "customDecoderName",
         allErrors: true,
-        location: 'funky location',
-        key: 'payload',
-        child: new DecoderError(args.payloadValue, 'must be a string', {
-          decoderName: 'stringDecoder',
+        location: "funky location",
+        key: "payload",
+        child: new DecoderError(args.payloadValue, "must be a string", {
+          decoderName: "stringDecoder",
           allErrors: false,
-          location: '',
+          location: "",
           key: undefined,
-          child: undefined,
-        }),
-      },
-    ),
+          child: undefined
+        })
+      }
+    )
   ]);
 
   /**
@@ -293,59 +295,63 @@ test(function applyOptionsToDecoderErrors(): void {
     return errors.map(
       (error): DecoderError =>
         new DecoderError(error.input, error.message, {
-          decoderName: 'myDecoder',
-          child: error.child,
-        }),
+          decoderName: "myDecoder",
+          child: error.child
+        })
     );
   };
 
   errors = helpers.applyOptionsToDecoderErrors(args.errors, {
     allErrors: true,
-    decoderName: 'customDecoderName',
-    msg: replaceErrors,
+    decoderName: "customDecoderName",
+    msg: replaceErrors
   });
 
   assertDecoderErrors(errors, [
-    new DecoderError(args.nullValue, 'null error', {
-      decoderName: 'myDecoder',
-      child: undefined,
+    new DecoderError(args.nullValue, "null error", {
+      decoderName: "myDecoder",
+      child: undefined
     }),
-    new DecoderError(args.yesValue, 'must be a boolean', {
-      decoderName: 'myDecoder',
-      child: undefined,
+    new DecoderError(args.yesValue, "must be a boolean", {
+      decoderName: "myDecoder",
+      child: undefined
     }),
     new DecoderError(
       args.objValue,
       'invalid value for key ["payload"] > must be a string',
       {
-        decoderName: 'myDecoder',
-        child: new DecoderError(args.payloadValue, 'must be a string', {
-          decoderName: 'stringDecoder',
+        decoderName: "myDecoder",
+        child: new DecoderError(args.payloadValue, "must be a string", {
+          decoderName: "stringDecoder",
           allErrors: false,
-          location: '',
+          location: "",
           key: undefined,
-          child: undefined,
-        }),
-      },
-    ),
+          child: undefined
+        })
+      }
+    )
   ]);
 });
 
 test(async function raceToDecoderSuccess(): Promise<void> {
   const decoderSuccess = (ms: number): Promise<DecoderSuccess<number>> =>
-    new Promise<DecoderSuccess<number>>((res): void => {
-      setTimeout((): void => res(new DecoderSuccess(ms)), ms);
-    });
+    new Promise<DecoderSuccess<number>>(
+      (res): void => {
+        setTimeout((): void => res(new DecoderSuccess(ms)), ms);
+      }
+    );
 
   const decoderError = (ms: number): Promise<DecoderError[]> =>
-    new Promise<DecoderError[]>((res): void => {
-      setTimeout((): void => res([new DecoderError(ms, `${ms}`)]), ms);
-    });
+    new Promise<DecoderError[]>(
+      (res): void => {
+        setTimeout((): void => res([new DecoderError(ms, `${ms}`)]), ms);
+      }
+    );
 
   const testSuccessRace = async (
     promises: Array<Promise<DecoderResult<unknown>>>,
     time: number,
-    success: DecoderSuccess<unknown>,
+    success: DecoderSuccess<unknown>
   ): Promise<void> => {
     const start = performance.now();
 
@@ -356,14 +362,14 @@ test(async function raceToDecoderSuccess(): Promise<void> {
     assertEquals(
       end - start <= time,
       true,
-      `expected to take less than ${time}ms but took ${end - start}ms`,
+      `expected to take less than ${time}ms but took ${end - start}ms`
     );
   };
 
   const testErrorRace = async (
     promises: Array<Promise<DecoderResult<unknown>>>,
     time: number,
-    errors: DecoderError[],
+    errors: DecoderError[]
   ): Promise<void> => {
     const start = performance.now();
 
@@ -374,7 +380,7 @@ test(async function raceToDecoderSuccess(): Promise<void> {
     assertEquals(
       end - start <= time,
       true,
-      `expected to take less than ${time}ms but took ${end - start}ms`,
+      `expected to take less than ${time}ms but took ${end - start}ms`
     );
   };
 
@@ -382,37 +388,37 @@ test(async function raceToDecoderSuccess(): Promise<void> {
     testSuccessRace(
       [decoderSuccess(20), decoderError(10), decoderError(30)],
       29,
-      new DecoderSuccess(20),
+      new DecoderSuccess(20)
     ),
     testSuccessRace(
       [decoderError(10), decoderSuccess(20), decoderError(30)],
       29,
-      new DecoderSuccess(20),
+      new DecoderSuccess(20)
     ),
     testSuccessRace(
       [decoderError(10), decoderError(30), decoderSuccess(20)],
       29,
-      new DecoderSuccess(20),
+      new DecoderSuccess(20)
     ),
     testSuccessRace(
       [decoderError(10), decoderSuccess(20), decoderSuccess(30)],
       29,
-      new DecoderSuccess(20),
+      new DecoderSuccess(20)
     ),
     testSuccessRace(
       [decoderSuccess(10), decoderSuccess(20), decoderSuccess(30)],
       19,
-      new DecoderSuccess(10),
+      new DecoderSuccess(10)
     ),
     testSuccessRace(
       [decoderSuccess(20), decoderSuccess(20), decoderSuccess(20)],
       29,
-      new DecoderSuccess(20),
+      new DecoderSuccess(20)
     ),
     testErrorRace([decoderError(10), decoderError(20), decoderError(30)], 39, [
-      new DecoderError(10, '10'),
-      new DecoderError(20, '20'),
-      new DecoderError(30, '30'),
+      new DecoderError(10, "10"),
+      new DecoderError(20, "20"),
+      new DecoderError(30, "30")
     ]),
     testErrorRace(
       [
@@ -420,17 +426,17 @@ test(async function raceToDecoderSuccess(): Promise<void> {
         decoderError(20),
         decoderError(30),
         decoderError(40),
-        decoderError(40),
+        decoderError(40)
       ],
       49,
       [
-        new DecoderError(10, '10'),
-        new DecoderError(20, '20'),
-        new DecoderError(30, '30'),
-        new DecoderError(40, '40'),
-        new DecoderError(40, '40'),
-      ],
-    ),
+        new DecoderError(10, "10"),
+        new DecoderError(20, "20"),
+        new DecoderError(30, "30"),
+        new DecoderError(40, "40"),
+        new DecoderError(40, "40")
+      ]
+    )
   ]);
 });
 

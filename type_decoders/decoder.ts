@@ -29,13 +29,15 @@ export class Decoder<R, I = any> {
    * transformation function.
    */
   map<K>(fn: (input: R) => K): Decoder<K, I> {
-    return new Decoder((input: I): DecoderResult<K> => {
-      const result = this.decodeFn(input);
+    return new Decoder(
+      (input: I): DecoderResult<K> => {
+        const result = this.decodeFn(input);
 
-      if (areDecoderErrors(result)) return result;
+        if (areDecoderErrors(result)) return result;
 
-      return new DecoderSuccess(fn(result.value));
-    });
+        return new DecoderSuccess(fn(result.value));
+      }
+    );
   }
 }
 
@@ -59,13 +61,15 @@ export class PromiseDecoder<R, I = any> {
    * transformation function.
    */
   map<K>(fn: (input: R) => K | Promise<K>): PromiseDecoder<K, I> {
-    return new PromiseDecoder(async (input: I): Promise<DecoderResult<K>> => {
-      const result = await this.decodeFn(input);
+    return new PromiseDecoder(
+      async (input: I): Promise<DecoderResult<K>> => {
+        const result = await this.decodeFn(input);
 
-      if (areDecoderErrors(result)) return result;
+        if (areDecoderErrors(result)) return result;
 
-      return new DecoderSuccess(await fn(result.value));
-    });
+        return new DecoderSuccess(await fn(result.value));
+      }
+    );
   }
 }
 

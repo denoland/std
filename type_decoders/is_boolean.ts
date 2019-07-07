@@ -1,15 +1,15 @@
-import { Decoder } from './decoder.ts';
-import { ok, err } from './_util.ts';
-import { SimpleDecoderOptions } from './util.ts';
-import { DecoderResult } from './decoder_result.ts';
+import { Decoder } from "./decoder.ts";
+import { ok, err } from "./_util.ts";
+import { SimpleDecoderOptions } from "./util.ts";
+import { DecoderResult } from "./decoder_result.ts";
 
 export type IsBooleanOptions = SimpleDecoderOptions;
 
 export function isBoolean(options: IsBooleanOptions = {}): Decoder<boolean> {
   return new Decoder(
     (value): DecoderResult<boolean> =>
-      typeof value === 'boolean'
+      typeof value === "boolean"
         ? ok(value)
-        : err(value, 'must be a boolean', 'isBoolean', options),
+        : err(value, "must be a boolean", "isBoolean", options)
   );
 }

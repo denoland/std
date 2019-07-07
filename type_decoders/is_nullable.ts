@@ -1,28 +1,28 @@
-import { Decoder, PromiseDecoder } from './decoder.ts';
-import { isExactly } from './is_exactly.ts';
-import { SimpleDecoderOptions, applyOptionsToDecoderErrors } from './util.ts';
+import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { isExactly } from "./is_exactly.ts";
+import { SimpleDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 import {
   isDecoderSuccess,
   DecoderError,
-  DecoderResult,
-} from './decoder_result.ts';
+  DecoderResult
+} from "./decoder_result.ts";
 
-const decoderName = 'isNullable';
+const decoderName = "isNullable";
 const nullDecoder = isExactly(null);
 
 export type IsNullableOptions = SimpleDecoderOptions;
 
 export function isNullable<T>(
   decoder: Decoder<T>,
-  options?: IsNullableOptions,
+  options?: IsNullableOptions
 ): Decoder<T | null>;
 export function isNullable<T>(
   decoder: PromiseDecoder<T>,
-  options?: IsNullableOptions,
+  options?: IsNullableOptions
 ): PromiseDecoder<T | null>;
 export function isNullable<T>(
   decoder: Decoder<T> | PromiseDecoder<T>,
-  options: IsNullableOptions = {},
+  options: IsNullableOptions = {}
 ): Decoder<T | null> | PromiseDecoder<T | null> {
   if (decoder instanceof PromiseDecoder) {
     return new PromiseDecoder(
@@ -40,12 +40,12 @@ export function isNullable<T>(
             (error): DecoderError =>
               new DecoderError(value, `${error.message} OR must be null`, {
                 child: error,
-                decoderName,
-              }),
+                decoderName
+              })
           ),
-          options,
+          options
         );
-      },
+      }
     );
   }
 
@@ -64,11 +64,11 @@ export function isNullable<T>(
           (error): DecoderError =>
             new DecoderError(value, `${error.message} OR must be null`, {
               child: error,
-              decoderName,
-            }),
+              decoderName
+            })
         ),
-        options,
+        options
       );
-    },
+    }
   );
 }
