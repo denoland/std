@@ -1,3 +1,5 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+
 /**
  * DecoderSuccess returned on a successful call to
  * `Decoder#decode` or `PromiseDecoder#decode`

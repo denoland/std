@@ -1,3 +1,4 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import { isExactly } from "./is_exactly.ts";
 import { SimpleDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";

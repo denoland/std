@@ -1,3 +1,4 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { DecoderError, DecoderSuccess } from "./decoder_result.ts";
 import { ComposeDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 

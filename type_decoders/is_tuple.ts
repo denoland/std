@@ -1,3 +1,4 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import { ok, errorLocation, err } from "./_util.ts";
 import {

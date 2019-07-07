@@ -1,3 +1,4 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { Decoder } from "./decoder.ts";
 import { err } from "./_util.ts";
 import { SimpleDecoderOptions } from "./util.ts";

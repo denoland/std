@@ -1,3 +1,4 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { Decoder, PromiseDecoder, DecoderReturnType } from "./decoder.ts";
 import {
   DecoderSuccess,

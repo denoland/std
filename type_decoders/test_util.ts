@@ -1,3 +1,4 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { AssertionError, assertEquals, equal } from "../testing/asserts.ts";
 import {
   DecoderResult,

@@ -1,3 +1,4 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import {
   DecoderError,
@@ -149,7 +150,7 @@ export function isArray<R, V = unknown>(
   }
 
   return new Decoder(
-    (input): DecoderResult<R[]> => {
+    (input: V): DecoderResult<R[]> => {
       if (!Array.isArray(input)) return nonArrayError(input, options);
 
       const elements: R[] = [];

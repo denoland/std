@@ -1,3 +1,4 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { Decoder, PromiseDecoder } from "./decoder.ts";
 import {
   DecoderError,
@@ -44,15 +45,18 @@ export function assert<R, V>(
   | { (value: V): R; (value: Promise<V>): Promise<R> }
   | ((value: V | Promise<V>) => Promise<R>) {
   if (decoder instanceof PromiseDecoder) {
-    return async (value: V | Promise<V>): T =>
+    return async (value: V | Promise<V>): Promise<R> =>
       handleResult(await decoder.decode(await value));
   }
 
-  const decode = (value: V): T =>
+  const decode = (value: V): R =>
     handleResult((decoder as Decoder<R, V>).decode(value));
 
-  return (input: V): T | Promise<T> =>
+  // I have no idea how to explicitly type this return value
+  // such that typescript does not complain
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (input: V | Promise<V>): any =>
     input instanceof Promise
-      ? input.then((value): T => decode(value))
+      ? input.then((value): R => decode(value))
       : decode(input);
 }

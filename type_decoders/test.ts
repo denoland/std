@@ -1,3 +1,4 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import "./_util_test.ts";
 
 import "./assert_test.ts";
