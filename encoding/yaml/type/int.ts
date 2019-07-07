@@ -1,7 +1,7 @@
 import { Type } from "../Type.ts";
-import { isNegativeZero } from "../utils.ts";
+import { isNegativeZero, Any } from "../utils.ts";
 
-function isHexCode(c: number) {
+function isHexCode(c: number): boolean {
   return (
     (0x30 /* 0 */ <= c && c <= 0x39) /* 9 */ ||
     (0x41 /* A */ <= c && c <= 0x46) /* F */ ||
@@ -9,15 +9,15 @@ function isHexCode(c: number) {
   );
 }
 
-function isOctCode(c: number) {
+function isOctCode(c: number): boolean {
   return 0x30 /* 0 */ <= c && c <= 0x37 /* 7 */;
 }
 
-function isDecCode(c: number) {
+function isDecCode(c: number): boolean {
   return 0x30 /* 0 */ <= c && c <= 0x39 /* 9 */;
 }
 
-function resolveYamlInteger(data: string) {
+function resolveYamlInteger(data: string): boolean {
   const max = data.length;
   let index = 0;
   let hasDigits = false;
@@ -99,7 +99,7 @@ function resolveYamlInteger(data: string) {
   return /^(:[0-5]?[0-9])+$/.test(data.slice(index));
 }
 
-function constructYamlInteger(data: string) {
+function constructYamlInteger(data: string): number {
   let value = data;
   const digits: number[] = [];
 
@@ -124,17 +124,21 @@ function constructYamlInteger(data: string) {
   }
 
   if (value.indexOf(":") !== -1) {
-    value.split(":").forEach(v => {
-      digits.unshift(parseInt(v, 10));
-    });
+    value.split(":").forEach(
+      (v): void => {
+        digits.unshift(parseInt(v, 10));
+      }
+    );
 
     let valueInt = 0;
     let base = 1;
 
-    digits.forEach(d => {
-      valueInt += d * base;
-      base *= 60;
-    });
+    digits.forEach(
+      (d): void => {
+        valueInt += d * base;
+        base *= 60;
+      }
+    );
 
     return sign * valueInt;
   }
@@ -142,7 +146,7 @@ function constructYamlInteger(data: string) {
   return sign * parseInt(value, 10);
 }
 
-function isInteger(object: any): boolean {
+function isInteger(object: Any): boolean {
   return (
     Object.prototype.toString.call(object) === "[object Number]" &&
     (object % 1 === 0 && !isNegativeZero(object))
@@ -155,18 +159,18 @@ export const int = new Type("tag:yaml.org,2002:int", {
   kind: "scalar",
   predicate: isInteger,
   represent: {
-    binary(obj: number) {
+    binary(obj: number): string {
       return obj >= 0
         ? `0b${obj.toString(2)}`
         : `-0b${obj.toString(2).slice(1)}`;
     },
-    octal(obj: number) {
+    octal(obj: number): string {
       return obj >= 0 ? `0${obj.toString(8)}` : `-0${obj.toString(8).slice(1)}`;
     },
-    decimal(obj: number) {
+    decimal(obj: number): string {
       return obj.toString(10);
     },
-    hexadecimal(obj: number) {
+    hexadecimal(obj: number): string {
       return obj >= 0
         ? `0x${obj.toString(16).toUpperCase()}`
         : `-0x${obj

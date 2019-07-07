@@ -1,8 +1,9 @@
 import { Type } from "../Type.ts";
+import { Any } from "../utils.ts";
 
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 
-function resolveYamlSet(data: any) {
+function resolveYamlSet(data: Any): boolean {
   if (data === null) return true;
 
   for (const key in data) {
@@ -14,7 +15,7 @@ function resolveYamlSet(data: any) {
   return true;
 }
 
-function constructYamlSet(data: string) {
+function constructYamlSet(data: string): Any {
   return data !== null ? data : {};
 }
 

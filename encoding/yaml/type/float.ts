@@ -1,5 +1,5 @@
 import { StyleVariant, Type } from "../Type.ts";
-import { isNegativeZero } from "../utils.ts";
+import { isNegativeZero, Any } from "../utils.ts";
 
 const YAML_FLOAT_PATTERN = new RegExp(
   // 2.5e4, 2.5 and integers
@@ -15,7 +15,7 @@ const YAML_FLOAT_PATTERN = new RegExp(
     "|\\.(?:nan|NaN|NAN))$"
 );
 
-function resolveYamlFloat(data: string) {
+function resolveYamlFloat(data: string): boolean {
   if (
     !YAML_FLOAT_PATTERN.test(data) ||
     // Quick hack to not allow integers end with `_`
@@ -28,7 +28,7 @@ function resolveYamlFloat(data: string) {
   return true;
 }
 
-function constructYamlFloat(data: string) {
+function constructYamlFloat(data: string): number {
   let value = data.replace(/_/g, "").toLowerCase();
   const sign = value[0] === "-" ? -1 : 1;
   const digits: number[] = [];
@@ -44,17 +44,21 @@ function constructYamlFloat(data: string) {
     return NaN;
   }
   if (value.indexOf(":") >= 0) {
-    value.split(":").forEach(v => {
-      digits.unshift(parseFloat(v));
-    });
+    value.split(":").forEach(
+      (v): void => {
+        digits.unshift(parseFloat(v));
+      }
+    );
 
     let valueNb = 0.0;
     let base = 1;
 
-    digits.forEach(d => {
-      valueNb += d * base;
-      base *= 60;
-    });
+    digits.forEach(
+      (d): void => {
+        valueNb += d * base;
+        base *= 60;
+      }
+    );
 
     return sign * valueNb;
   }
@@ -63,7 +67,7 @@ function constructYamlFloat(data: string) {
 
 const SCIENTIFIC_WITHOUT_DOT = /^[-+]?[0-9]+e/;
 
-function representYamlFloat(object: any, style?: StyleVariant) {
+function representYamlFloat(object: Any, style?: StyleVariant): Any {
   let res;
 
   if (isNaN(object)) {
@@ -105,7 +109,7 @@ function representYamlFloat(object: any, style?: StyleVariant) {
   return SCIENTIFIC_WITHOUT_DOT.test(res) ? res.replace("e", ".e") : res;
 }
 
-function isFloat(object: any): boolean {
+function isFloat(object: Any): boolean {
   return (
     Object.prototype.toString.call(object) === "[object Number]" &&
     (object % 1 !== 0 || isNegativeZero(object))

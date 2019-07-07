@@ -1,4 +1,5 @@
 import { Type } from "../Type.ts";
+import { Any } from "../utils.ts";
 
 const { Buffer } = Deno;
 
@@ -6,7 +7,7 @@ const { Buffer } = Deno;
 const BASE64_MAP =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n\r";
 
-function resolveYamlBinary(data: any) {
+function resolveYamlBinary(data: Any): boolean {
   if (data === null) return false;
 
   let code: number;
@@ -31,8 +32,9 @@ function resolveYamlBinary(data: any) {
   return bitlen % 8 === 0;
 }
 
-function constructYamlBinary(data: string) {
-  const input = data.replace(/[\r\n=]/g, ""); // remove CR/LF & padding to simplify scan
+function constructYamlBinary(data: string): Deno.Buffer {
+  // remove CR/LF & padding to simplify scan
+  const input = data.replace(/[\r\n=]/g, "");
   const max = input.length;
   const map = BASE64_MAP;
 
@@ -68,7 +70,7 @@ function constructYamlBinary(data: string) {
   return new Buffer(new Uint8Array(result));
 }
 
-function representYamlBinary(object: Uint8Array) {
+function representYamlBinary(object: Uint8Array): string {
   const max = object.length;
   const map = BASE64_MAP;
 
@@ -111,7 +113,7 @@ function representYamlBinary(object: Uint8Array) {
   return result;
 }
 
-function isBinary(obj: any): obj is Deno.Buffer {
+function isBinary(obj: Any): obj is Deno.Buffer {
   const buf = new Buffer();
   try {
     if (0 > buf.readFromSync(obj as Deno.Buffer)) return true;

@@ -19,14 +19,14 @@ const YAML_TIMESTAMP_REGEXP = new RegExp(
     "(?::([0-9][0-9]))?))?$" // [11] tz_minute
 );
 
-function resolveYamlTimestamp(data: string) {
+function resolveYamlTimestamp(data: string): boolean {
   if (data === null) return false;
   if (YAML_DATE_REGEXP.exec(data) !== null) return true;
   if (YAML_TIMESTAMP_REGEXP.exec(data) !== null) return true;
   return false;
 }
 
-function constructYamlTimestamp(data: string) {
+function constructYamlTimestamp(data: string): Date {
   let match = YAML_DATE_REGEXP.exec(data);
   if (match === null) match = YAML_TIMESTAMP_REGEXP.exec(data);
 
@@ -63,9 +63,9 @@ function constructYamlTimestamp(data: string) {
 
   let delta = null;
   if (match[9]) {
-    const tz_hour = +match[10];
-    const tz_minute = +(match[11] || 0);
-    delta = (tz_hour * 60 + tz_minute) * 60000; // delta in mili-seconds
+    const tzHour = +match[10];
+    const tzMinute = +(match[11] || 0);
+    delta = (tzHour * 60 + tzMinute) * 60000; // delta in mili-seconds
     if (match[9] === "-") delta = -delta;
   }
 
@@ -78,7 +78,7 @@ function constructYamlTimestamp(data: string) {
   return date;
 }
 
-function representYamlTimestamp(date: Date) {
+function representYamlTimestamp(date: Date): string {
   return date.toISOString();
 }
 

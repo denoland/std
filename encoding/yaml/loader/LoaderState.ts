@@ -2,10 +2,11 @@ import { YAMLError } from "../error/YAMLError.ts";
 import { Schema, SchemaDefinition, TypeMap } from "../Schema.ts";
 import { State } from "../State.ts";
 import { Type } from "../Type.ts";
+import { Any, ArrayObject } from "../utils.ts";
 
 export interface LoaderStateOptions {
   legacy?: boolean;
-  listener?: ((...args: any[]) => void) | null;
+  listener?: ((...args: Any[]) => void) | null;
   /** string to be used as a file path in error/warning messages. */
   filename?: string;
   /** specifies a schema to use. */
@@ -19,24 +20,24 @@ export interface LoaderStateOptions {
 export type ResultType = [] | {} | string;
 
 export class LoaderState extends State {
-  public documents: any[] = [];
+  public documents: Any[] = [];
   public length: number;
   public lineIndent = 0;
   public lineStart = 0;
   public position = 0;
   public line = 0;
   public filename?: string;
-  public onWarning?: (...args: any[]) => void;
+  public onWarning?: (...args: Any[]) => void;
   public legacy: boolean;
   public json: boolean;
-  public listener?: ((...args: any[]) => void) | null;
+  public listener?: ((...args: Any[]) => void) | null;
   public implicitTypes: Type[];
   public typeMap: TypeMap;
 
   public version?: string | null;
   public checkLineBreaks?: boolean;
-  public tagMap?: any;
-  public anchorMap?: any;
+  public tagMap?: ArrayObject;
+  public anchorMap?: ArrayObject;
   public tag?: string | null;
   public anchor?: string | null;
   public kind?: string | null;

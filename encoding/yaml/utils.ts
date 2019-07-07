@@ -60,7 +60,7 @@ export function toArray<T>(sequence: T): T | [] | [T] {
   return [sequence];
 }
 
-export function repeat(str: string, count: number) {
+export function repeat(str: string, count: number): string {
   let result = "";
 
   for (let cycle = 0; cycle < count; cycle++) {
@@ -70,10 +70,10 @@ export function repeat(str: string, count: number) {
   return result;
 }
 
-export function isNegativeZero(i: number) {
+export function isNegativeZero(i: number): boolean {
   return i === 0 && Number.NEGATIVE_INFINITY === 1 / i;
 }
 
-export interface ArrayObject<T> {
+export interface ArrayObject<T = Any> {
   [P: string]: T;
 }

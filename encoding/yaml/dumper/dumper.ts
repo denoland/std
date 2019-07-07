@@ -1,8 +1,13 @@
+/* eslint-disable max-len */
+
 import { YAMLError } from "../error/YAMLError.ts";
 import { DEFAULT_SAFE_SCHEMA } from "../schema/mod.ts";
 import { RepresentFn, StyleVariant, Type } from "../Type.ts";
 import * as common from "../utils.ts";
 import { DumperState, DumperStateOptions } from "./DumperState.ts";
+
+type Any = common.Any;
+type ArrayObject<T = Any> = common.ArrayObject<T>;
 
 const _toString = Object.prototype.toString;
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -91,7 +96,7 @@ function encodeHex(character: number): string {
 }
 
 // Indents every line in a string. Empty lines (\n only) are not indented.
-function indentString(string: string, spaces: number) {
+function indentString(string: string, spaces: number): string {
   const ind = common.repeat(" ", spaces),
     length = string.length;
   let position = 0,
@@ -117,11 +122,11 @@ function indentString(string: string, spaces: number) {
   return result;
 }
 
-function generateNextLine(state: DumperState, level: number) {
+function generateNextLine(state: DumperState, level: number): string {
   return `\n${common.repeat(" ", state.indent * level)}`;
 }
 
-function testImplicitResolving(state: DumperState, str: string) {
+function testImplicitResolving(state: DumperState, str: string): boolean {
   let type: Type;
   for (
     let index = 0, length = state.implicitTypes.length;
@@ -139,7 +144,7 @@ function testImplicitResolving(state: DumperState, str: string) {
 }
 
 // [33] s-white ::= s-space | s-tab
-function isWhitespace(c: number) {
+function isWhitespace(c: number): boolean {
   return c === CHAR_SPACE || c === CHAR_TAB;
 }
 
@@ -147,7 +152,7 @@ function isWhitespace(c: number) {
 // From YAML 1.2: "any allowed characters known to be non-printable
 // should also be escaped. [However,] This isn’t mandatory"
 // Derived from nb-char - \t - #x85 - #xA0 - #x2028 - #x2029.
-function isPrintable(c: number) {
+function isPrintable(c: number): boolean {
   return (
     (0x00020 <= c && c <= 0x00007e) ||
     (0x000a1 <= c && c <= 0x00d7ff && c !== 0x2028 && c !== 0x2029) ||
@@ -157,7 +162,7 @@ function isPrintable(c: number) {
 }
 
 // Simplified test for values allowed after the first character in plain style.
-function isPlainSafe(c: number) {
+function isPlainSafe(c: number): boolean {
   // Uses a subset of nb-char - c-flow-indicator - ":" - "#"
   // where nb-char ::= c-printable - b-char - c-byte-order-mark.
   return (
@@ -176,7 +181,7 @@ function isPlainSafe(c: number) {
 }
 
 // Simplified test for values allowed as the first character in plain style.
-function isPlainSafeFirst(c: number) {
+function isPlainSafeFirst(c: number): boolean {
   // Uses a subset of ns-char - c-indicator
   // where ns-char = nb-char - s-white.
   return (
@@ -210,7 +215,7 @@ function isPlainSafeFirst(c: number) {
 }
 
 // Determines whether block indentation indicator is required.
-function needIndentIndicator(string: string) {
+function needIndentIndicator(string: string): boolean {
   const leadingSpaceRe = /^\n* /;
   return leadingSpaceRe.test(string);
 }
@@ -225,16 +230,16 @@ const STYLE_PLAIN = 1,
 // lineWidth = -1 => no limit.
 // Pre-conditions: str.length > 0.
 // Post-conditions:
-//    STYLE_PLAIN or STYLE_SINGLE => no \n are in the string.
-//    STYLE_LITERAL => no lines are suitable for folding (or lineWidth is -1).
-//    STYLE_FOLDED => a line > lineWidth and can be folded (and lineWidth != -1).
+//  STYLE_PLAIN or STYLE_SINGLE => no \n are in the string.
+//  STYLE_LITERAL => no lines are suitable for folding (or lineWidth is -1).
+//  STYLE_FOLDED => a line > lineWidth and can be folded (and lineWidth != -1).
 function chooseScalarStyle(
   string: string,
   singleLineOnly: boolean,
   indentPerLevel: number,
   lineWidth: number,
-  testAmbiguousType: (...args: any[]) => any
-) {
+  testAmbiguousType: (...args: Any[]) => Any
+): number {
   const shouldTrackWidth = lineWidth !== -1;
   let hasLineBreak = false,
     hasFoldableLine = false, // only checked if shouldTrackWidth
@@ -298,141 +303,11 @@ function chooseScalarStyle(
   return hasFoldableLine ? STYLE_FOLDED : STYLE_LITERAL;
 }
 
-// Note: line breaking/folding is implemented for only the folded style.
-// NB. We drop the last trailing newline (if any) of a returned block scalar
-//  since the dumper adds its own newline. This always works:
-//    • No ending newline => unaffected; already using strip "-" chomping.
-//    • Ending newline    => removed then restored.
-//  Importantly, this keeps the "+" chomp indicator from gaining an extra line.
-function writeScalar(
-  state: DumperState,
-  string: string,
-  level: number,
-  iskey: boolean
-) {
-  state.dump = (() => {
-    if (string.length === 0) {
-      return "''";
-    }
-    if (
-      !state.noCompatMode &&
-      DEPRECATED_BOOLEANS_SYNTAX.indexOf(string) !== -1
-    ) {
-      return `'${string}'`;
-    }
-
-    const indent = state.indent * Math.max(1, level); // no 0-indent scalars
-    // As indentation gets deeper, let the width decrease monotonically
-    // to the lower bound min(state.lineWidth, 40).
-    // Note that this implies
-    //  state.lineWidth ≤ 40 + state.indent: width is fixed at the lower bound.
-    //  state.lineWidth > 40 + state.indent: width decreases until the lower bound.
-    // This behaves better than a constant minimum width which disallows narrower options,
-    // or an indent threshold which causes the width to suddenly increase.
-    const lineWidth =
-      state.lineWidth === -1
-        ? -1
-        : Math.max(Math.min(state.lineWidth, 40), state.lineWidth - indent);
-
-    // Without knowing if keys are implicit/explicit, assume implicit for safety.
-    const singleLineOnly =
-      iskey ||
-      // No block styles in flow mode.
-      (state.flowLevel > -1 && level >= state.flowLevel);
-    function testAmbiguity(str: string) {
-      return testImplicitResolving(state, str);
-    }
-
-    switch (
-      chooseScalarStyle(
-        string,
-        singleLineOnly,
-        state.indent,
-        lineWidth,
-        testAmbiguity
-      )
-    ) {
-      case STYLE_PLAIN:
-        return string;
-      case STYLE_SINGLE:
-        return `'${string.replace(/'/g, "''")}'`;
-      case STYLE_LITERAL:
-        return `|${blockHeader(string, state.indent)}${dropEndingNewline(
-          indentString(string, indent)
-        )}`;
-      case STYLE_FOLDED:
-        return `>${blockHeader(string, state.indent)}${dropEndingNewline(
-          indentString(foldString(string, lineWidth), indent)
-        )}`;
-      case STYLE_DOUBLE:
-        return `"${escapeString(string)}"`;
-      default:
-        throw new YAMLError("impossible error: invalid scalar style");
-    }
-  })();
-}
-
-// Pre-conditions: string is valid for a block scalar, 1 <= indentPerLevel <= 9.
-function blockHeader(string: string, indentPerLevel: number) {
-  const indentIndicator = needIndentIndicator(string)
-    ? String(indentPerLevel)
-    : "";
-
-  // note the special case: the string '\n' counts as a "trailing" empty line.
-  const clip = string[string.length - 1] === "\n";
-  const keep = clip && (string[string.length - 2] === "\n" || string === "\n");
-  const chomp = keep ? "+" : clip ? "" : "-";
-
-  return `${indentIndicator}${chomp}\n`;
-}
-
-// (See the note for writeScalar.)
-function dropEndingNewline(string: string) {
-  return string[string.length - 1] === "\n" ? string.slice(0, -1) : string;
-}
-
-// Note: a long line without a suitable break point will exceed the width limit.
-// Pre-conditions: every char in str isPrintable, str.length > 0, width > 0.
-function foldString(string: string, width: number) {
-  // In folded style, $k$ consecutive newlines output as $k+1$ newlines—
-  // unless they're before or after a more-indented line, or at the very
-  // beginning or end, in which case $k$ maps to $k$.
-  // Therefore, parse each chunk as newline(s) followed by a content line.
-  const lineRe = /(\n+)([^\n]*)/g;
-
-  // first line (possibly an empty line)
-  let result = (() => {
-    let nextLF = string.indexOf("\n");
-    nextLF = nextLF !== -1 ? nextLF : string.length;
-    lineRe.lastIndex = nextLF;
-    return foldLine(string.slice(0, nextLF), width);
-  })();
-  // If we haven't reached the first content line yet, don't add an extra \n.
-  let prevMoreIndented = string[0] === "\n" || string[0] === " ";
-  let moreIndented;
-
-  // rest of the lines
-  let match;
-  // tslint:disable-next-line:no-conditional-assignment
-  while ((match = lineRe.exec(string))) {
-    const prefix = match[1],
-      line = match[2];
-    moreIndented = line[0] === " ";
-    result +=
-      prefix +
-      (!prevMoreIndented && !moreIndented && line !== "" ? "\n" : "") +
-      foldLine(line, width);
-    prevMoreIndented = moreIndented;
-  }
-
-  return result;
-}
-
 // Greedy line breaking.
 // Picks the longest line under the limit each time,
 // otherwise settles for the shortest line over the limit.
 // NB. More-indented lines *cannot* be folded, as that would add an extra \n.
-function foldLine(line: string, width: number) {
+function foldLine(line: string, width: number): string {
   if (line === "" || line[0] === " ") return line;
 
   // Since a more-indented line adds a \n, breaks can't be followed by a space.
@@ -475,8 +350,52 @@ function foldLine(line: string, width: number) {
   return result.slice(1); // drop extra \n joiner
 }
 
+// (See the note for writeScalar.)
+function dropEndingNewline(string: string): string {
+  return string[string.length - 1] === "\n" ? string.slice(0, -1) : string;
+}
+
+// Note: a long line without a suitable break point will exceed the width limit.
+// Pre-conditions: every char in str isPrintable, str.length > 0, width > 0.
+function foldString(string: string, width: number): string {
+  // In folded style, $k$ consecutive newlines output as $k+1$ newlines—
+  // unless they're before or after a more-indented line, or at the very
+  // beginning or end, in which case $k$ maps to $k$.
+  // Therefore, parse each chunk as newline(s) followed by a content line.
+  const lineRe = /(\n+)([^\n]*)/g;
+
+  // first line (possibly an empty line)
+  let result = ((): string => {
+    let nextLF = string.indexOf("\n");
+    nextLF = nextLF !== -1 ? nextLF : string.length;
+    lineRe.lastIndex = nextLF;
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    return foldLine(string.slice(0, nextLF), width);
+  })();
+  // If we haven't reached the first content line yet, don't add an extra \n.
+  let prevMoreIndented = string[0] === "\n" || string[0] === " ";
+  let moreIndented;
+
+  // rest of the lines
+  let match;
+  // tslint:disable-next-line:no-conditional-assignment
+  while ((match = lineRe.exec(string))) {
+    const prefix = match[1],
+      line = match[2];
+    moreIndented = line[0] === " ";
+    result +=
+      prefix +
+      (!prevMoreIndented && !moreIndented && line !== "" ? "\n" : "") +
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      foldLine(line, width);
+    prevMoreIndented = moreIndented;
+  }
+
+  return result;
+}
+
 // Escapes a double-quoted string.
-function escapeString(string: string) {
+function escapeString(string: string): string {
   let result = "";
   let char, nextChar;
   let escapeSeq;
@@ -506,12 +425,108 @@ function escapeString(string: string) {
   return result;
 }
 
-function writeFlowSequence(state: DumperState, level: number, object: any) {
+// Pre-conditions: string is valid for a block scalar, 1 <= indentPerLevel <= 9.
+function blockHeader(string: string, indentPerLevel: number): string {
+  const indentIndicator = needIndentIndicator(string)
+    ? String(indentPerLevel)
+    : "";
+
+  // note the special case: the string '\n' counts as a "trailing" empty line.
+  const clip = string[string.length - 1] === "\n";
+  const keep = clip && (string[string.length - 2] === "\n" || string === "\n");
+  const chomp = keep ? "+" : clip ? "" : "-";
+
+  return `${indentIndicator}${chomp}\n`;
+}
+
+// Note: line breaking/folding is implemented for only the folded style.
+// NB. We drop the last trailing newline (if any) of a returned block scalar
+//  since the dumper adds its own newline. This always works:
+//    • No ending newline => unaffected; already using strip "-" chomping.
+//    • Ending newline    => removed then restored.
+//  Importantly, this keeps the "+" chomp indicator from gaining an extra line.
+function writeScalar(
+  state: DumperState,
+  string: string,
+  level: number,
+  iskey: boolean
+): void {
+  state.dump = ((): string => {
+    if (string.length === 0) {
+      return "''";
+    }
+    if (
+      !state.noCompatMode &&
+      DEPRECATED_BOOLEANS_SYNTAX.indexOf(string) !== -1
+    ) {
+      return `'${string}'`;
+    }
+
+    const indent = state.indent * Math.max(1, level); // no 0-indent scalars
+    // As indentation gets deeper, let the width decrease monotonically
+    // to the lower bound min(state.lineWidth, 40).
+    // Note that this implies
+    //  state.lineWidth ≤ 40 + state.indent: width is fixed at the lower bound.
+    //  state.lineWidth > 40 + state.indent: width decreases until the lower
+    //  bound.
+    // This behaves better than a constant minimum width which disallows
+    // narrower options, or an indent threshold which causes the width
+    // to suddenly increase.
+    const lineWidth =
+      state.lineWidth === -1
+        ? -1
+        : Math.max(Math.min(state.lineWidth, 40), state.lineWidth - indent);
+
+    // Without knowing if keys are implicit/explicit,
+    // assume implicit for safety.
+    const singleLineOnly =
+      iskey ||
+      // No block styles in flow mode.
+      (state.flowLevel > -1 && level >= state.flowLevel);
+    function testAmbiguity(str: string): boolean {
+      return testImplicitResolving(state, str);
+    }
+
+    switch (
+      chooseScalarStyle(
+        string,
+        singleLineOnly,
+        state.indent,
+        lineWidth,
+        testAmbiguity
+      )
+    ) {
+      case STYLE_PLAIN:
+        return string;
+      case STYLE_SINGLE:
+        return `'${string.replace(/'/g, "''")}'`;
+      case STYLE_LITERAL:
+        return `|${blockHeader(string, state.indent)}${dropEndingNewline(
+          indentString(string, indent)
+        )}`;
+      case STYLE_FOLDED:
+        return `>${blockHeader(string, state.indent)}${dropEndingNewline(
+          indentString(foldString(string, lineWidth), indent)
+        )}`;
+      case STYLE_DOUBLE:
+        return `"${escapeString(string)}"`;
+      default:
+        throw new YAMLError("impossible error: invalid scalar style");
+    }
+  })();
+}
+
+function writeFlowSequence(
+  state: DumperState,
+  level: number,
+  object: Any
+): void {
   let _result = "";
   const _tag = state.tag;
 
   for (let index = 0, length = object.length; index < length; index += 1) {
     // Write only valid elements.
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (writeNode(state, level, object[index], false, false)) {
       if (index !== 0) _result += `,${!state.condenseFlow ? " " : ""}`;
       _result += state.dump;
@@ -525,14 +540,15 @@ function writeFlowSequence(state: DumperState, level: number, object: any) {
 function writeBlockSequence(
   state: DumperState,
   level: number,
-  object: any,
+  object: Any,
   compact = false
-) {
+): void {
   let _result = "";
   const _tag = state.tag;
 
   for (let index = 0, length = object.length; index < length; index += 1) {
     // Write only valid elements.
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (writeNode(state, level + 1, object[index], true, true)) {
       if (!compact || index !== 0) {
         _result += generateNextLine(state, level);
@@ -552,12 +568,16 @@ function writeBlockSequence(
   state.dump = _result || "[]"; // Empty sequence if no valid values.
 }
 
-function writeFlowMapping(state: DumperState, level: number, object: any) {
+function writeFlowMapping(
+  state: DumperState,
+  level: number,
+  object: Any
+): void {
   let _result = "";
   const _tag = state.tag,
     objectKeyList = Object.keys(object);
 
-  let pairBuffer: string, objectKey: string, objectValue: any;
+  let pairBuffer: string, objectKey: string, objectValue: Any;
   for (
     let index = 0, length = objectKeyList.length;
     index < length;
@@ -570,6 +590,7 @@ function writeFlowMapping(state: DumperState, level: number, object: any) {
     objectKey = objectKeyList[index];
     objectValue = object[objectKey];
 
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!writeNode(state, level, objectKey, false, false)) {
       continue; // Skip this pair because of invalid key;
     }
@@ -580,6 +601,7 @@ function writeFlowMapping(state: DumperState, level: number, object: any) {
       state.condenseFlow ? "" : " "
     }`;
 
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!writeNode(state, level, objectValue, false, false)) {
       continue; // Skip this pair because of invalid value.
     }
@@ -597,9 +619,9 @@ function writeFlowMapping(state: DumperState, level: number, object: any) {
 function writeBlockMapping(
   state: DumperState,
   level: number,
-  object: object,
+  object: Any,
   compact = false
-) {
+): void {
   const _tag = state.tag,
     objectKeyList = Object.keys(object);
   let _result = "";
@@ -618,7 +640,7 @@ function writeBlockMapping(
 
   let pairBuffer = "",
     objectKey: string,
-    objectValue: any,
+    objectValue: Any,
     explicitPair: boolean;
   for (
     let index = 0, length = objectKeyList.length;
@@ -634,6 +656,7 @@ function writeBlockMapping(
     objectKey = objectKeyList[index];
     objectValue = object[objectKey];
 
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!writeNode(state, level + 1, objectKey, true, true, true)) {
       continue; // Skip this pair because of invalid key.
     }
@@ -656,6 +679,7 @@ function writeBlockMapping(
       pairBuffer += generateNextLine(state, level);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!writeNode(state, level + 1, objectValue, true, explicitPair)) {
       continue; // Skip this pair because of invalid value.
     }
@@ -676,7 +700,11 @@ function writeBlockMapping(
   state.dump = _result || "{}"; // Empty mapping if no valid pairs.
 }
 
-function detectType(state: DumperState, object: any, explicit = false) {
+function detectType(
+  state: DumperState,
+  object: Any,
+  explicit = false
+): boolean {
   const typeList = explicit ? state.explicitTypes : state.implicitTypes;
 
   let type: Type;
@@ -699,7 +727,10 @@ function detectType(state: DumperState, object: any, explicit = false) {
         if (_toString.call(type.represent) === "[object Function]") {
           _result = (type.represent as RepresentFn)(object, style);
         } else if (_hasOwnProperty.call(type.represent, style)) {
-          _result = type.represent[style](object, style);
+          _result = (type.represent as ArrayObject<RepresentFn>)[style](
+            object,
+            style
+          );
         } else {
           throw new YAMLError(
             `!<${type.tag}> tag resolver accepts not "${style}" style`
@@ -722,11 +753,11 @@ function detectType(state: DumperState, object: any, explicit = false) {
 function writeNode(
   state: DumperState,
   level: number,
-  object: any,
+  object: Any,
   block: boolean,
   compact: boolean,
   iskey = false
-) {
+): boolean {
   state.tag = null;
   state.dump = object;
 
@@ -742,8 +773,8 @@ function writeNode(
 
   const objectOrArray = type === "[object Object]" || type === "[object Array]";
 
-  let duplicateIndex: number;
-  let duplicate: boolean;
+  let duplicateIndex = -1;
+  let duplicate = false;
   if (objectOrArray) {
     duplicateIndex = state.duplicates.indexOf(object);
     duplicate = duplicateIndex !== -1;
@@ -805,24 +836,11 @@ function writeNode(
   return true;
 }
 
-function getDuplicateReferences(object: object, state: DumperState) {
-  const objects = [],
-    duplicatesIndexes = [];
-
-  inspectNode(object, objects, duplicatesIndexes);
-
-  const length = duplicatesIndexes.length;
-  for (let index = 0; index < length; index += 1) {
-    state.duplicates.push(objects[duplicatesIndexes[index]]);
-  }
-  state.usedDuplicates = new Array(length);
-}
-
 function inspectNode(
-  object: object,
-  objects: object[],
+  object: Any,
+  objects: Any[],
   duplicatesIndexes: number[]
-) {
+): void {
   if (object !== null && typeof object === "object") {
     const index = objects.indexOf(object);
     if (index !== -1) {
@@ -851,7 +869,20 @@ function inspectNode(
   }
 }
 
-export function dump(input: any, options?: DumperStateOptions) {
+function getDuplicateReferences(object: object, state: DumperState): void {
+  const objects: Any[] = [],
+    duplicatesIndexes: number[] = [];
+
+  inspectNode(object, objects, duplicatesIndexes);
+
+  const length = duplicatesIndexes.length;
+  for (let index = 0; index < length; index += 1) {
+    state.duplicates.push(objects[duplicatesIndexes[index]]);
+  }
+  state.usedDuplicates = new Array(length);
+}
+
+export function dump(input: Any, options?: DumperStateOptions): string {
   options = options || {};
 
   const state = new DumperState(options);
@@ -863,6 +894,6 @@ export function dump(input: any, options?: DumperStateOptions) {
   return "";
 }
 
-export function safeDump(input: object, options?: DumperStateOptions) {
+export function safeDump(input: object, options?: DumperStateOptions): string {
   return dump(input, { schema: DEFAULT_SAFE_SCHEMA, ...options });
 }

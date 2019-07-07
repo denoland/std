@@ -9,7 +9,7 @@ export class Mark {
     public column: number
   ) {}
 
-  public getSnippet(indent = 4, maxLength = 75) {
+  public getSnippet(indent = 4, maxLength = 75): string | null {
     if (!this.buffer) return null;
 
     let head = "";
@@ -49,7 +49,7 @@ export class Mark {
     )}^`;
   }
 
-  public toString(compact?: boolean) {
+  public toString(compact?: boolean): string {
     let snippet,
       where = "";
 

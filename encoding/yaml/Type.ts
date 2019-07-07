@@ -1,21 +1,21 @@
-import { ArrayObject } from "./utils.ts";
+import { ArrayObject, Any } from "./utils.ts";
 
 export type KindType = "sequence" | "scalar" | "mapping";
 export type StyleVariant = "lowercase" | "uppercase" | "camelcase" | "decimal";
-export type RepresentFn = (data: any, style?: StyleVariant) => any;
+export type RepresentFn = (data: Any, style?: StyleVariant) => Any;
 
-const DEFAULT_RESOLVE = () => true;
-const DEFAULT_CONSTRUCT = (data: any) => data;
+const DEFAULT_RESOLVE = (): boolean => true;
+const DEFAULT_CONSTRUCT = (data: Any): Any => data;
 
 interface TypeOptions {
   kind: KindType;
-  resolve?: (data: any) => boolean;
-  construct?: (data: string) => any;
-  instanceOf?: any;
+  resolve?: (data: Any) => boolean;
+  construct?: (data: string) => Any;
+  instanceOf?: Any;
   predicate?: (data: object) => boolean;
   represent?: RepresentFn | ArrayObject<RepresentFn>;
   defaultStyle?: StyleVariant;
-  styleAliases?: { [x: string]: any };
+  styleAliases?: ArrayObject;
 }
 
 function checkTagFormat(tag: string): string {
@@ -25,11 +25,11 @@ function checkTagFormat(tag: string): string {
 export class Type {
   public tag: string;
   public kind: KindType | null = null;
-  public instanceOf: any;
+  public instanceOf: Any;
   public predicate?: (data: object) => boolean;
   public represent?: RepresentFn | ArrayObject<RepresentFn>;
   public defaultStyle?: StyleVariant;
-  public styleAliases?: { [x: string]: any };
+  public styleAliases?: ArrayObject;
   public loadKind?: KindType;
 
   constructor(tag: string, options?: TypeOptions) {
@@ -45,6 +45,6 @@ export class Type {
       this.styleAliases = options.styleAliases;
     }
   }
-  public resolve: (data?: any) => boolean = () => true;
-  public construct: (data?: any) => any = data => data;
+  public resolve: (data?: Any) => boolean = (): boolean => true;
+  public construct: (data?: Any) => Any = (data): Any => data;
 }

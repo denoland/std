@@ -1,6 +1,6 @@
 import { Type } from "../Type.ts";
 
-function resolveYamlNull(data: string) {
+function resolveYamlNull(data: string): boolean {
   const max = data.length;
 
   return (
@@ -9,11 +9,11 @@ function resolveYamlNull(data: string) {
   );
 }
 
-function constructYamlNull() {
+function constructYamlNull(): null {
   return null;
 }
 
-function isNull(object: any) {
+function isNull(object: unknown): object is null {
   return object === null;
 }
 
@@ -23,16 +23,16 @@ export const nil = new Type("tag:yaml.org,2002:null", {
   kind: "scalar",
   predicate: isNull,
   represent: {
-    canonical() {
+    canonical(): string {
       return "~";
     },
-    lowercase() {
+    lowercase(): string {
       return "null";
     },
-    uppercase() {
+    uppercase(): string {
       return "NULL";
     },
-    camelcase() {
+    camelcase(): string {
       return "Null";
     }
   },

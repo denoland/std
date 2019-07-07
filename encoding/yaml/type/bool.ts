@@ -1,7 +1,7 @@
 import { Type } from "../Type.ts";
 import { isBoolean } from "../utils.ts";
 
-function resolveYamlBoolean(data: string) {
+function resolveYamlBoolean(data: string): boolean {
   const max = data.length;
 
   return (
@@ -10,7 +10,7 @@ function resolveYamlBoolean(data: string) {
   );
 }
 
-function constructYamlBoolean(data: string) {
+function constructYamlBoolean(data: string): boolean {
   return data === "true" || data === "True" || data === "TRUE";
 }
 
@@ -20,13 +20,13 @@ export const bool = new Type("tag:yaml.org,2002:bool", {
   kind: "scalar",
   predicate: isBoolean,
   represent: {
-    lowercase(object: boolean) {
+    lowercase(object: boolean): string {
       return object ? "true" : "false";
     },
-    uppercase(object: boolean) {
+    uppercase(object: boolean): string {
       return object ? "TRUE" : "FALSE";
     },
-    camelcase(object: boolean) {
+    camelcase(object: boolean): string {
       return object ? "True" : "False";
     }
   },

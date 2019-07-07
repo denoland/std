@@ -249,6 +249,9 @@ const directiveHandlers: DirectiveHandlers = {
       );
     }
 
+    if (typeof state.tagMap === "undefined") {
+      state.tagMap = {};
+    }
     state.tagMap[handle] = prefix;
   }
 };
@@ -733,7 +736,11 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     return false;
   }
 
-  if (state.anchor !== null && typeof state.anchor != "undefined") {
+  if (
+    state.anchor !== null &&
+    typeof state.anchor != "undefined" &&
+    typeof state.anchorMap != "undefined"
+  ) {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -836,7 +843,7 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
 
   return throwError(
     state,
-    "unexpected end of the stream within a flow collection",
+    "unexpected end of the stream within a flow collection"
   );
 }
 
@@ -1004,7 +1011,11 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
     anchor = state.anchor,
     result: Any[] = [];
 
-  if (state.anchor !== null && typeof state.anchor !== "undefined") {
+  if (
+    state.anchor !== null &&
+    typeof state.anchor !== "undefined" &&
+    typeof state.anchorMap !== "undefined"
+  ) {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -1057,7 +1068,11 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
   return false;
 }
 
-function readBlockMapping(state: LoaderState, nodeIndent: number, flowIndent: number): boolean {
+function readBlockMapping(
+  state: LoaderState,
+  nodeIndent: number,
+  flowIndent: number
+): boolean {
   const tag = state.tag,
     anchor = state.anchor,
     result = {},
@@ -1073,7 +1088,11 @@ function readBlockMapping(state: LoaderState, nodeIndent: number, flowIndent: nu
     detected = false,
     ch: number;
 
-  if (state.anchor !== null && typeof state.anchor !== "undefined") {
+  if (
+    state.anchor !== null &&
+    typeof state.anchor !== "undefined" &&
+    typeof state.anchorMap !== "undefined"
+  ) {
     state.anchorMap[state.anchor] = result;
   }
 
@@ -1122,7 +1141,7 @@ function readBlockMapping(state: LoaderState, nodeIndent: number, flowIndent: nu
       //
       // Implicit notation case. Flow-style node as the key first, then ":", and the value.
       //
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
     } else if (composeNode(state, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
       if (state.line === line) {
         ch = state.input.charCodeAt(state.position);
@@ -1228,7 +1247,14 @@ function readBlockMapping(state: LoaderState, nodeIndent: number, flowIndent: nu
 
   // Special case: last mapping's node contains only the key in explicit notation.
   if (atExplicitKey) {
-    storeMappingPair(state, result, overridableKeys, keyTag as string, keyNode, null);
+    storeMappingPair(
+      state,
+      result,
+      overridableKeys,
+      keyTag as string,
+      keyNode,
+      null
+    );
   }
 
   // Expose the resulting mapping.
@@ -1246,7 +1272,7 @@ function readTagProperty(state: LoaderState): boolean {
   let position: number,
     isVerbatim = false,
     isNamed = false,
-    tagHandle = '',
+    tagHandle = "",
     tagName: string,
     ch: number;
 
@@ -1282,7 +1308,10 @@ function readTagProperty(state: LoaderState): boolean {
       tagName = state.input.slice(position, state.position);
       ch = state.input.charCodeAt(++state.position);
     } else {
-      return throwError(state, "unexpected end of the stream within a verbatim tag");
+      return throwError(
+        state,
+        "unexpected end of the stream within a verbatim tag"
+      );
     }
   } else {
     while (ch !== 0 && !isWsOrEol(ch)) {
@@ -1300,7 +1329,10 @@ function readTagProperty(state: LoaderState): boolean {
           isNamed = true;
           position = state.position + 1;
         } else {
-          return throwError(state, "tag suffix cannot contain exclamation marks");
+          return throwError(
+            state,
+            "tag suffix cannot contain exclamation marks"
+          );
         }
       }
 
@@ -1310,17 +1342,26 @@ function readTagProperty(state: LoaderState): boolean {
     tagName = state.input.slice(position, state.position);
 
     if (PATTERN_FLOW_INDICATORS.test(tagName)) {
-      return throwError(state, "tag suffix cannot contain flow indicator characters");
+      return throwError(
+        state,
+        "tag suffix cannot contain flow indicator characters"
+      );
     }
   }
 
   if (tagName && !PATTERN_TAG_URI.test(tagName)) {
-    return throwError(state, `tag name cannot contain such characters: ${tagName}`);
+    return throwError(
+      state,
+      `tag name cannot contain such characters: ${tagName}`
+    );
   }
 
   if (isVerbatim) {
     state.tag = tagName;
-  } else if (_hasOwnProperty.call(state.tagMap, tagHandle)) {
+  } else if (
+    typeof state.tagMap !== "undefined" &&
+    _hasOwnProperty.call(state.tagMap, tagHandle)
+  ) {
     state.tag = state.tagMap[tagHandle] + tagName;
   } else if (tagHandle === "!") {
     state.tag = `!${tagName}`;
@@ -1385,11 +1426,16 @@ function readAlias(state: LoaderState): boolean {
 
   alias = state.input.slice(_position, state.position);
 
-  if (!state.anchorMap.hasOwnProperty(alias)) {
+  if (
+    typeof state.anchorMap !== "undefined" &&
+    !state.anchorMap.hasOwnProperty(alias)
+  ) {
     return throwError(state, `unidentified alias "${alias}"`);
   }
 
-  state.result = state.anchorMap[alias];
+  if (typeof state.anchorMap !== "undefined") {
+    state.result = state.anchorMap[alias];
+  }
   skipSeparationSpace(state, true, -1);
   return true;
 }
@@ -1486,7 +1532,10 @@ function composeNode(
           hasContent = true;
 
           if (state.tag !== null || state.anchor !== null) {
-            return throwError(state, "alias node should not have Any properties");
+            return throwError(
+              state,
+              "alias node should not have Any properties"
+            );
           }
         } else if (
           readPlainScalar(state, flowIndent, CONTEXT_FLOW_IN === nodeContext)
@@ -1498,7 +1547,7 @@ function composeNode(
           }
         }
 
-        if (state.anchor !== null) {
+        if (state.anchor !== null && typeof state.anchorMap !== "undefined") {
           state.anchorMap[state.anchor] = state.result;
         }
       }
@@ -1527,7 +1576,7 @@ function composeNode(
           // `state.result` updated in resolver if matched
           state.result = type.construct(state.result);
           state.tag = type.tag;
-          if (state.anchor !== null) {
+          if (state.anchor !== null && typeof state.anchorMap !== "undefined") {
             state.anchorMap[state.anchor] = state.result;
           }
           break;
@@ -1555,7 +1604,7 @@ function composeNode(
         );
       } else {
         state.result = type.construct(state.result);
-        if (state.anchor !== null) {
+        if (state.anchor !== null && typeof state.anchorMap !== "undefined") {
           state.anchorMap[state.anchor] = state.result;
         }
       }
@@ -1679,7 +1728,10 @@ function readDocument(state: LoaderState): void {
   }
 
   if (state.position < state.length - 1) {
-    return throwError(state, "end of the stream or a document separator is expected");
+    return throwError(
+      state,
+      "end of the stream or a document separator is expected"
+    );
   } else {
     return;
   }

@@ -1,9 +1,10 @@
 import { Type } from "../Type.ts";
+import { Any } from "../utils.ts";
 
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 const _toString = Object.prototype.toString;
 
-function resolveYamlOmap(data: any) {
+function resolveYamlOmap(data: Any): boolean {
   const objectKeys: string[] = [];
   let pairKey = "";
   let pairHasKey = false;
@@ -29,7 +30,7 @@ function resolveYamlOmap(data: any) {
   return true;
 }
 
-function constructYamlOmap(data: any) {
+function constructYamlOmap(data: Any): Any {
   return data !== null ? data : [];
 }
 

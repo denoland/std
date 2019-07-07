@@ -1,5 +1,5 @@
 import { Schema } from "../Schema.ts";
-import { default_safe } from "./default_safe.ts";
+import { defaultSafe } from "./default_safe.ts";
 
 // JS-YAML's default schema for `load` function.
 // It is not described in the YAML specification.
@@ -9,8 +9,8 @@ import { default_safe } from "./default_safe.ts";
 //
 // Also this schema is used as default base schema at `Schema.create` function.
 
-export const default_full = (Schema.SCHEMA_DEFAULT = new Schema({
-  include: [default_safe]
+export const defaultFull = (Schema.SCHEMA_DEFAULT = new Schema({
+  include: [defaultSafe]
   /* TODO: JS */
   //   explicit: [
   //     require('../type/js/undefined'),

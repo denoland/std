@@ -1,8 +1,9 @@
 import { Type } from "../Type.ts";
+import { Any } from "../utils.ts";
 
 const _toString = Object.prototype.toString;
 
-function resolveYamlPairs(data: any[][]) {
+function resolveYamlPairs(data: Any[][]): boolean {
   const result = new Array(data.length);
 
   for (let index = 0; index < data.length; index++) {
@@ -14,13 +15,13 @@ function resolveYamlPairs(data: any[][]) {
 
     if (keys.length !== 1) return false;
 
-    result[index] = [keys[0], pair[keys[0] as any]];
+    result[index] = [keys[0], pair[keys[0] as Any]];
   }
 
   return true;
 }
 
-function constructYamlPairs(data: string) {
+function constructYamlPairs(data: string): Any[] {
   if (data === null) return [];
 
   const result = new Array(data.length);
@@ -30,7 +31,7 @@ function constructYamlPairs(data: string) {
 
     const keys = Object.keys(pair);
 
-    result[index] = [keys[0], pair[keys[0] as any]];
+    result[index] = [keys[0], pair[keys[0] as Any]];
   }
 
   return result;

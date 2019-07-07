@@ -1,6 +1,6 @@
 import { YAMLError } from "./error/YAMLError.ts";
 import { KindType, Type } from "./Type.ts";
-import { ArrayObject } from "./utils.ts";
+import { ArrayObject, Any } from "./utils.ts";
 
 function compileList(
   schema: Schema,
@@ -31,11 +31,11 @@ function compileList(
     result.push(currentType);
   }
 
-  return result.filter((type, index) => !exclude.includes(index));
+  return result.filter((type, index): unknown => !exclude.includes(index));
 }
 
 export type TypeMap = { [k in KindType | "fallback"]: ArrayObject<Type> };
-function compileMap(...typesList: Type[][]) {
+function compileMap(...typesList: Type[][]): TypeMap {
   const result: TypeMap = {
     fallback: {},
     mapping: {},
@@ -72,6 +72,7 @@ export class Schema implements SchemaDefinition {
     for (const type of this.implicit) {
       if (type.loadKind && type.loadKind !== "scalar") {
         throw new YAMLError(
+          // eslint-disable-next-line max-len
           "There is a non-scalar type in the implicit list of a schema. Implicit resolving of such types is not supported."
         );
       }
@@ -85,11 +86,11 @@ export class Schema implements SchemaDefinition {
     );
   }
 
-  public static create() {}
+  public static create(): void {}
 }
 
 export interface SchemaDefinition {
-  implicit?: any[];
+  implicit?: Any[];
   explicit?: Type[];
   include?: Schema[];
 }

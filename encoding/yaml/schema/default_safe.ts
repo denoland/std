@@ -8,7 +8,7 @@ import { core } from "./core.ts";
 // This schema is based on standard YAML's Core schema and includes most of
 // extra types described at YAML tag repository. (http://yaml.org/type/)
 
-export const default_safe = new Schema({
+export const defaultSafe = new Schema({
   explicit: [binary, omap, pairs, set],
   implicit: [timestamp, merge],
   include: [core]

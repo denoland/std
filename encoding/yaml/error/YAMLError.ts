@@ -11,7 +11,7 @@ export class YAMLError extends DenoError<typeof ErrorKind.Other> {
     this.name = this.constructor.name;
   }
 
-  public toString(compact: boolean) {
+  public toString(_compact: boolean): string {
     return `${this.name}: ${this.message} ${this.mark}`;
   }
 }
