@@ -1,26 +1,30 @@
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, PromiseDecoder } from './decoder.ts';
+import { DecoderResult } from './decoder_result.ts';
 
-export interface IRecursiveDecoderOptions {
+export interface IsLazyOptions {
   promise?: boolean;
 }
 
 export function isLazy<T>(
   decoderFn: () => Decoder<T>,
-  options?: IRecursiveDecoderOptions & { promise?: false }
-): Decoder<T | null>;
+  options?: IsLazyOptions & { promise?: false },
+): Decoder<T>;
 export function isLazy<T>(
   decoderFn: () => PromiseDecoder<T>,
-  options: IRecursiveDecoderOptions & { promise: true }
-): PromiseDecoder<T | null>;
+  options: IsLazyOptions & { promise: true },
+): PromiseDecoder<T>;
 export function isLazy<T>(
   decoderFn: () => Decoder<T> | PromiseDecoder<T>,
-  options: IRecursiveDecoderOptions = {}
-) {
+  options: IsLazyOptions = {},
+): Decoder<T> | PromiseDecoder<T> {
   if (options.promise) {
-    return new PromiseDecoder(value =>
-      (decoderFn() as PromiseDecoder<T>).decode(value)
+    return new PromiseDecoder(
+      (value): Promise<DecoderResult<T>> =>
+        (decoderFn() as PromiseDecoder<T>).decode(value),
     );
   }
 
-  return new Decoder(value => (decoderFn() as Decoder<T>).decode(value));
+  return new Decoder(
+    (value): DecoderResult<T> => (decoderFn() as Decoder<T>).decode(value),
+  );
 }

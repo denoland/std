@@ -1,35 +1,38 @@
-import { Decoder, PromiseDecoder } from "./decoder.ts";
-import { ok, err } from "./_util.ts";
-import { ISimpleDecoderOptions } from "./util.ts";
+import { Decoder, PromiseDecoder } from './decoder.ts';
+import { ok, err } from './_util.ts';
+import { SimpleDecoderOptions } from './util.ts';
+import { DecoderResult } from './decoder_result.ts';
 
-const decoderName = "isMatchForPredicate";
-const defaultMsg = "failed custom check";
+const decoderName = 'isMatchForPredicate';
+const defaultMsg = 'failed custom check';
 
-export interface ICheckedWithDecoderOptions extends ISimpleDecoderOptions {
+export interface IsCheckedWithOptions extends SimpleDecoderOptions {
   promise?: boolean;
 }
 
 export function isMatchForPredicate<T>(
   fn: (value: T) => boolean | Promise<boolean>,
-  options: ICheckedWithDecoderOptions & { promise: true }
+  options: IsCheckedWithOptions & { promise: true },
 ): PromiseDecoder<T, T>;
 export function isMatchForPredicate<T>(
   fn: (value: T) => boolean,
-  options?: ICheckedWithDecoderOptions
+  options?: IsCheckedWithOptions,
 ): Decoder<T, T>;
 export function isMatchForPredicate<T>(
   fn: (value: T) => boolean | Promise<boolean>,
-  options: ICheckedWithDecoderOptions = {}
-) {
+  options: IsCheckedWithOptions = {},
+): Decoder<T, T> | PromiseDecoder<T, T> {
   if (options.promise) {
-    return new PromiseDecoder(async (input: T) =>
-      (await fn(input))
-        ? ok(input)
-        : err(input, defaultMsg, decoderName, options)
+    return new PromiseDecoder(
+      async (input: T): Promise<DecoderResult<T>> =>
+        (await fn(input))
+          ? ok(input)
+          : err(input, defaultMsg, decoderName, options),
     );
   }
 
-  return new Decoder((input: T) =>
-    fn(input) ? ok(input) : err(input, defaultMsg, decoderName, options)
+  return new Decoder(
+    (input: T): DecoderResult<T> =>
+      fn(input) ? ok(input) : err(input, defaultMsg, decoderName, options),
   );
 }

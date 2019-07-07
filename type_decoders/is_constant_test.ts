@@ -10,7 +10,7 @@ import { DecoderSuccess } from "./decoder_result.ts";
 
 test({
   name: "init isConstant()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isConstant(0));
     assertDecoder(isConstant(1));
     assertDecoder(isConstant("0"));
@@ -19,8 +19,8 @@ test({
 });
 
 test({
-  name: "isConstant(0).decode",
-  fn: () => {
+  name: "isConstant(0)",
+  fn: (): void => {
     const decoder = isConstant(0);
 
     for (const item of [true, false, {}, "false"]) {
@@ -30,8 +30,8 @@ test({
 });
 
 test({
-  name: 'isConstant("one").decode',
-  fn: () => {
+  name: 'isConstant("one")',
+  fn: (): void => {
     const decoder = isConstant("one");
 
     for (const item of [true, false, {}, "false"]) {
@@ -41,8 +41,8 @@ test({
 });
 
 test({
-  name: "isConstant({}).decode",
-  fn: () => {
+  name: "isConstant({})",
+  fn: (): void => {
     const obj = {};
     const decoder = isConstant(obj);
 

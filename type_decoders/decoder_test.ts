@@ -17,14 +17,14 @@ import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test({
   name: "new Decoder",
-  fn: () => {
+  fn: (): void => {
     assertEquals(stringDecoder instanceof Decoder, true);
   }
 });
 
 test({
   name: "Decoder.decode",
-  fn: async () => {
+  fn: async (): Promise<void> => {
     const decoder = booleanDecoder;
 
     assertDecodesToSuccess(decoder, true, new DecoderSuccess(true));
@@ -51,8 +51,8 @@ test({
 
 test({
   name: "Decoder.map",
-  fn: async () => {
-    const decoder = booleanDecoder.map(value => !value);
+  fn: async (): Promise<void> => {
+    const decoder = booleanDecoder.map((value): boolean => !value);
 
     assertDecodesToSuccess(decoder, true, new DecoderSuccess(false));
     assertDecodesToSuccess(decoder, false, new DecoderSuccess(true));
@@ -82,14 +82,14 @@ test({
 
 test({
   name: "new PromiseDecoder",
-  fn: () => {
+  fn: (): void => {
     assertEquals(booleanPromiseDecoder instanceof PromiseDecoder, true);
   }
 });
 
 test({
   name: "PromiseDecoder.decode",
-  fn: async () => {
+  fn: async (): Promise<void> => {
     const decoder = booleanPromiseDecoder;
 
     await assertDecodesToSuccess(decoder, true, new DecoderSuccess(true));
@@ -116,8 +116,8 @@ test({
 
 test({
   name: "PromiseDecoder.map",
-  fn: async () => {
-    const decoder = booleanPromiseDecoder.map(value => !value);
+  fn: async (): Promise<void> => {
+    const decoder = booleanPromiseDecoder.map((value): boolean => !value);
 
     await assertDecodesToSuccess(decoder, true, new DecoderSuccess(false));
     await assertDecodesToSuccess(decoder, false, new DecoderSuccess(true));

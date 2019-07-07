@@ -18,14 +18,14 @@ import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test({
   name: "init isMaybe()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isMaybe(stringDecoder));
   }
 });
 
 test({
   name: "isMaybe()",
-  fn: () => {
+  fn: (): void => {
     const decoder = isMaybe(stringDecoder);
 
     for (const item of ["2019-07-03", "heLLooooo", null, undefined]) {
@@ -49,7 +49,7 @@ test({
 
 test({
   name: "async isMaybe()",
-  fn: async () => {
+  fn: async (): Promise<void> => {
     const decoder = isMaybe(stringPromiseDecoder);
 
     assertEquals(decoder instanceof PromiseDecoder, true);

@@ -14,14 +14,14 @@ import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test({
   name: "init isBoolean()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isBoolean());
   }
 });
 
 test({
   name: "isBoolean()",
-  fn: () => {
+  fn: (): void => {
     const decoder = isBoolean();
 
     assertDecodesToSuccess(decoder, true, new DecoderSuccess(true));

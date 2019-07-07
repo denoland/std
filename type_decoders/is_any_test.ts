@@ -10,14 +10,14 @@ import { DecoderSuccess } from "./decoder_result.ts";
 
 test({
   name: "init isAny()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isAny());
   }
 });
 
 test({
   name: "isAny()",
-  fn: () => {
+  fn: (): void => {
     const decoder = isAny();
 
     for (const item of [true, false, {}, "false", [], Symbol(), Set]) {

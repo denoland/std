@@ -18,14 +18,14 @@ import { DecoderError, DecoderSuccess } from "./decoder_result.ts";
 
 test({
   name: "init isNullable()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isNullable(stringDecoder));
   }
 });
 
 test({
   name: "isNullable()",
-  fn: () => {
+  fn: (): void => {
     const decoder = isNullable(stringDecoder);
 
     for (const item of ["2019-07-03", "heLLooooo", null]) {
@@ -45,7 +45,7 @@ test({
 
 test({
   name: "async isNullable()",
-  fn: async () => {
+  fn: async (): Promise<void> => {
     const decoder = isNullable(stringPromiseDecoder);
 
     assertEquals(decoder instanceof PromiseDecoder, true);

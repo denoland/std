@@ -1,58 +1,92 @@
-import { Decoder, PromiseDecoder, DecoderReturnType } from "./decoder.ts";
+import { Decoder, PromiseDecoder, DecoderReturnType } from './decoder.ts';
 import {
   DecoderSuccess,
   DecoderError,
-  DecoderResult
-} from "./decoder_result.ts";
+  DecoderResult,
+} from './decoder_result.ts';
 import {
-  ISimpleDecoderOptions,
+  SimpleDecoderOptions,
   applyOptionsToDecoderErrors,
-  raceToDecoderSuccess
-} from "./util.ts";
+  raceToDecoderSuccess,
+} from './util.ts';
 
-const decoderName = "isAnyOf";
+const decoderName = 'isAnyOf';
 
-export interface IAnyOfDecoderOptions extends ISimpleDecoderOptions {
+function childErrors(value: unknown, children: DecoderError[]): DecoderError[] {
+  return children.map(
+    (child): DecoderError =>
+      new DecoderError(value, 'invalid value', { decoderName, child }),
+  );
+}
+
+export interface IsAnyOfOptions extends SimpleDecoderOptions {
   decodeInParallel?: boolean;
 }
 
 export function isAnyOf<T extends Decoder<unknown>>(
   decoders: T[],
-  options?: IAnyOfDecoderOptions
+  options?: IsAnyOfOptions,
 ): Decoder<DecoderReturnType<T>>;
 export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
   decoders: T[],
-  options?: IAnyOfDecoderOptions
+  options?: IsAnyOfOptions,
 ): PromiseDecoder<DecoderReturnType<T>>;
 export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
   decoders: T[],
-  options: IAnyOfDecoderOptions = {}
-) {
+  options: IsAnyOfOptions = {},
+): Decoder<DecoderReturnType<T>> | PromiseDecoder<DecoderReturnType<T>> {
   const hasPromiseDecoder = decoders.some(
-    decoder => decoder instanceof PromiseDecoder
+    (decoder): boolean => decoder instanceof PromiseDecoder,
   );
 
   if (hasPromiseDecoder) {
     if (options.decodeInParallel) {
-      return new PromiseDecoder<DecoderReturnType<T>>(async value => {
-        const promises = decoders.map(
-          async decoder =>
-            (await decoder.decode(value)) as DecoderResult<DecoderReturnType<T>>
-        );
+      return new PromiseDecoder<DecoderReturnType<T>>(
+        async (value): Promise<DecoderResult<DecoderReturnType<T>>> => {
+          const promises = decoders.map(
+            async (decoder): Promise<DecoderResult<DecoderReturnType<T>>> =>
+              (await decoder.decode(value)) as DecoderResult<
+                DecoderReturnType<T>
+              >,
+          );
 
-        const result = await raceToDecoderSuccess(promises);
+          const result = await raceToDecoderSuccess(promises);
 
-        if (result instanceof DecoderSuccess) return result;
+          if (result instanceof DecoderSuccess) return result;
 
-        return applyOptionsToDecoderErrors(childErrors(value, result), options);
-      });
+          return applyOptionsToDecoderErrors(
+            childErrors(value, result),
+            options,
+          );
+        },
+      );
     }
 
-    return new PromiseDecoder<DecoderReturnType<T>>(async value => {
+    return new PromiseDecoder<DecoderReturnType<T>>(
+      async (value): Promise<DecoderResult<DecoderReturnType<T>>> => {
+        const errors: DecoderError[] = [];
+
+        for (const decoder of decoders) {
+          const result = (await decoder.decode(value)) as DecoderResult<
+            DecoderReturnType<T>
+          >;
+
+          if (result instanceof DecoderSuccess) return result;
+
+          errors.push(...result);
+        }
+
+        return applyOptionsToDecoderErrors(childErrors(value, errors), options);
+      },
+    );
+  }
+
+  return new Decoder<DecoderReturnType<T>>(
+    (value): DecoderResult<DecoderReturnType<T>> => {
       const errors: DecoderError[] = [];
 
       for (const decoder of decoders) {
-        const result = (await decoder.decode(value)) as DecoderResult<
+        const result = decoder.decode(value) as DecoderResult<
           DecoderReturnType<T>
         >;
 
@@ -62,28 +96,6 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
       }
 
       return applyOptionsToDecoderErrors(childErrors(value, errors), options);
-    });
-  }
-
-  return new Decoder<DecoderReturnType<T>>(value => {
-    const errors: DecoderError[] = [];
-
-    for (const decoder of decoders) {
-      const result = decoder.decode(value) as DecoderResult<
-        DecoderReturnType<T>
-      >;
-
-      if (result instanceof DecoderSuccess) return result;
-
-      errors.push(...result);
-    }
-
-    return applyOptionsToDecoderErrors(childErrors(value, errors), options);
-  });
-}
-
-function childErrors(value: unknown, children: DecoderError[]) {
-  return children.map(
-    child => new DecoderError(value, "invalid value", { decoderName, child })
+    },
   );
 }

@@ -14,7 +14,7 @@ import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test({
   name: "init isExactly()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isExactly(0));
     assertDecoder(isExactly(1));
     assertDecoder(isExactly("0"));
@@ -24,7 +24,7 @@ test({
 
 test({
   name: "isExactly(1)",
-  fn: () => {
+  fn: (): void => {
     const decoder = isExactly(1);
 
     assertDecodesToSuccess(decoder, 1, new DecoderSuccess(1));
@@ -41,7 +41,7 @@ test({
 
 test({
   name: "isExactly(undefined)",
-  fn: () => {
+  fn: (): void => {
     const decoder = isExactly(undefined);
 
     assertDecodesToSuccess(decoder, undefined, new DecoderSuccess(undefined));
@@ -58,7 +58,7 @@ test({
 
 test({
   name: "isExactly(null)",
-  fn: () => {
+  fn: (): void => {
     const decoder = isExactly(null);
 
     assertDecodesToSuccess(decoder, null, new DecoderSuccess(null));
@@ -75,7 +75,7 @@ test({
 
 test({
   name: "isExactly({})",
-  fn: () => {
+  fn: (): void => {
     const obj = {};
     const decoder = isExactly(obj);
 

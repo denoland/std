@@ -10,14 +10,14 @@ import { DecoderError } from "./decoder_result.ts";
 
 test({
   name: "init isNever()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isNever());
   }
 });
 
 test({
   name: "isNever()",
-  fn: () => {
+  fn: (): void => {
     const decoder = isNever();
 
     for (const item of [1, -342.342342, {}, null, undefined, "str", true]) {

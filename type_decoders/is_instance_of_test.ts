@@ -14,7 +14,7 @@ import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test({
   name: "init isInstanceOf()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isInstanceOf(Map));
     assertDecoder(isInstanceOf(Array));
     assertDecoder(isInstanceOf(Set));
@@ -23,10 +23,10 @@ test({
 
 test({
   name: "isInstanceOf(Map)",
-  fn: () => {
+  fn: (): void => {
     const map = new Map();
     const set = new Set();
-    const array = new Array();
+    const array: unknown[] = [];
     const mapDecoder = isInstanceOf(Map);
 
     assertDecodesToSuccess(mapDecoder, map, new DecoderSuccess(map));
@@ -43,10 +43,10 @@ test({
 
 test({
   name: "isInstanceOf(Set)",
-  fn: () => {
+  fn: (): void => {
     const map = new Map();
     const set = new Set();
-    const array = new Array();
+    const array: unknown[] = [];
     const mapDecoder = isInstanceOf(Set);
 
     assertDecodesToSuccess(mapDecoder, set, new DecoderSuccess(set));
@@ -63,10 +63,10 @@ test({
 
 test({
   name: "isInstanceOf(Array)",
-  fn: () => {
+  fn: (): void => {
     const map = new Map();
     const set = new Set();
-    const array = new Array();
+    const array: unknown[] = [];
     const mapDecoder = isInstanceOf(Array);
 
     assertDecodesToSuccess(mapDecoder, array, new DecoderSuccess(array));

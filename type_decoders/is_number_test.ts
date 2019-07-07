@@ -14,14 +14,14 @@ import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test({
   name: "init isNumber()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isNumber());
   }
 });
 
 test({
   name: "isNumber()",
-  fn: () => {
+  fn: (): void => {
     const decoder = isNumber();
 
     for (const item of [

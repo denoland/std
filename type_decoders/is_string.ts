@@ -1,13 +1,15 @@
-import { Decoder } from "./decoder.ts";
-import { ok, err } from "./_util.ts";
-import { ISimpleDecoderOptions } from "./util.ts";
+import { Decoder } from './decoder.ts';
+import { ok, err } from './_util.ts';
+import { SimpleDecoderOptions } from './util.ts';
+import { DecoderResult } from './decoder_result.ts';
 
-export interface IStringDecoderOptions extends ISimpleDecoderOptions {}
+export type IsStringOptions = SimpleDecoderOptions;
 
-export function isString(options: IStringDecoderOptions = {}) {
-  return new Decoder(value =>
-    typeof value === "string"
-      ? ok(value)
-      : err(value, "must be a string", "isString", options)
+export function isString(options: IsStringOptions = {}): Decoder<string> {
+  return new Decoder(
+    (value): DecoderResult<string> =>
+      typeof value === 'string'
+        ? ok(value)
+        : err(value, 'must be a string', 'isString', options),
   );
 }

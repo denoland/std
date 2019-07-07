@@ -1,14 +1,16 @@
 import { Decoder } from "./decoder.ts";
 import { ok, err } from "./_util.ts";
-import { ISimpleDecoderOptions } from "./util.ts";
+import { SimpleDecoderOptions } from "./util.ts";
+import { DecoderResult } from "./decoder_result.ts";
 
-export interface IInstanceOfDecoderOptions extends ISimpleDecoderOptions {}
+export type IsInstanceOfOptions = SimpleDecoderOptions;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isInstanceOf<T extends new (...args: any) => any>(
   clazz: T,
-  options: IInstanceOfDecoderOptions = {}
-) {
-  return new Decoder(value =>
+  options: IsInstanceOfOptions = {}
+): Decoder<InstanceType<T>> {
+  return new Decoder((value): DecoderResult<InstanceType<T>> =>
     value instanceof clazz
       ? ok(value as InstanceType<T>)
       : err(

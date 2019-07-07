@@ -476,11 +476,11 @@ const value: number = validator("1"); // will throw a `DecoderError`
 ### isBoolean()
 
 ```ts
-interface IBooleanDecoderOptions {
+interface IsBooleanOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isBoolean(options?: IBooleanDecoderOptions): Decoder<boolean, unknown>;
+function isBoolean(options?: IsBooleanOptions): Decoder<boolean, unknown>;
 ```
 
 `isBoolean()` can be used to verify that an unknown value is a `boolean`.
@@ -488,11 +488,11 @@ function isBoolean(options?: IBooleanDecoderOptions): Decoder<boolean, unknown>;
 ### isString()
 
 ```ts
-interface IStringDecoderOptions {
+interface IsStringOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isString(options?: IStringDecoderOptions): Decoder<string, unknown>;
+function isString(options?: IsStringOptions): Decoder<string, unknown>;
 ```
 
 `isString()` can be used to verify that an unknown value is a `string`.
@@ -500,11 +500,11 @@ function isString(options?: IStringDecoderOptions): Decoder<string, unknown>;
 ### isNumber()
 
 ```ts
-interface INumberDecoderOptions {
+interface IsNumberOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isNumber(options?: INumberDecoderOptions): Decoder<number, unknown>;
+function isNumber(options?: IsNumberOptions): Decoder<number, unknown>;
 ```
 
 `isNumber()` can be used to verify that an unknown value is a `number`.
@@ -512,11 +512,11 @@ function isNumber(options?: INumberDecoderOptions): Decoder<number, unknown>;
 ### isInteger()
 
 ```ts
-interface IIntegerDecoderOptions {
+interface IsIntegerOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isInteger(options?: IIntegerDecoderOptions): Decoder<number, unknown>;
+function isInteger(options?: IsIntegerOptions): Decoder<number, unknown>;
 ```
 
 `isInteger()` can be used to verify that an unknown value is a whole `number`.
@@ -573,11 +573,11 @@ function isAny<T = unknown>(): Decoder<T, unknown>;
 ### isNever()
 
 ```ts
-interface INeverDecoderOptions {
+interface IsNeverOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isNever(options?: INeverDecoderOptions): Decoder<never, unknown>;
+function isNever(options?: IsNeverOptions): Decoder<never, unknown>;
 ```
 
 `isNever()` creates a decoder which always returns `DecoderError` with whatever input value is provided to it. One use case is using it in combination with `isObject` and `isOptional` to assert that an input object doesn't contain a given key.
@@ -594,13 +594,13 @@ validator({ a: 'one', b: 'two' }) // throws DecoderError
 ### isExactly()
 
 ```ts
-interface IExactlyDecoderOptions {
+interface IsExactlyOptions {
   msg?: DecoderErrorMsgArg;
 }
 
 function isExactly<T>(
   value: T,
-  options?: IExactlyDecoderOptions
+  options?: IsExactlyOptions
 ): Decoder<T, unknown>;
 ```
 
@@ -617,13 +617,13 @@ function isConstant<T>(value: T): Decoder<T, unknown>;
 ### isInstanceOf()
 
 ```ts
-interface IInstanceOfDecoderOptions {
+interface IsInstanceOfOptions {
   msg?: DecoderErrorMsgArg;
 }
 
 function isInstanceOf<T extends new (...args: any) => any>(
   clazz: T,
-  options?: IInstanceOfDecoderOptions
+  options?: IsInstanceOfOptions
 ): Decoder<InstanceType<T>, unknown>;
 ```
 
@@ -632,18 +632,18 @@ function isInstanceOf<T extends new (...args: any) => any>(
 ### isMatchForPredicate()
 
 ```ts
-interface ICheckedWithDecoderOptions {
+interface IsCheckedWithOptions {
   msg?: DecoderErrorMsgArg;
   promise?: boolean;
 }
 
 function isMatchForPredicate<T>(
   fn: (value: T) => boolean,
-  options?: ICheckedWithDecoderOptions
+  options?: IsCheckedWithOptions
 ): Decoder<T, T>;
 function isMatchForPredicate<T>(
   fn: (value: T) => Promise<boolean>,
-  options: ICheckedWithDecoderOptions & { promise: true }
+  options: IsCheckedWithOptions & { promise: true }
 ): PromiseDecoder<T, T>;
 ```
 
@@ -654,17 +654,17 @@ function isMatchForPredicate<T>(
 ### isOptional()
 
 ```ts
-interface IOptionalDecoderOptions {
+interface IsOptionalOptions {
   msg?: DecoderErrorMsgArg;
 }
 
 function isOptional<T>(
   decoder: Decoder<T>,
-  options?: IOptionalDecoderOptions
+  options?: IsOptionalOptions
 ): Decoder<T | undefined>;
 function isOptional<T>(
   decoder: PromiseDecoder<T>,
-  options?: IOptionalDecoderOptions
+  options?: IsOptionalOptions
 ): PromiseDecoder<T | undefined>;
 ```
 
@@ -673,17 +673,17 @@ function isOptional<T>(
 ### isNullable()
 
 ```ts
-interface INullableDecoderOptions {
+interface IsNullableOptions {
   msg?: DecoderErrorMsgArg;
 }
 
 function isNullable<T>(
   decoder: Decoder<T>,
-  options?: INullableDecoderOptions
+  options?: IsNullableOptions
 ): Decoder<T | null>;
 function isNullable<T>(
   decoder: PromiseDecoder<T>,
-  options?: INullableDecoderOptions
+  options?: IsNullableOptions
 ): PromiseDecoder<T | null>;
 ```
 
@@ -692,17 +692,17 @@ function isNullable<T>(
 ### isMaybe()
 
 ```ts
-interface IMaybeDecoderOptions {
+interface IsMaybeOptions {
   msg?: DecoderErrorMsgArg;
 }
 
 function isMaybe<T>(
   decoder: Decoder<T>,
-  options?: IMaybeDecoderOptions
+  options?: IsMaybeOptions
 ): Decoder<T | null | undefined>;
 function isMaybe<T>(
   decoder: PromiseDecoder<T>,
-  options?: IMaybeDecoderOptions
+  options?: IsMaybeOptions
 ): PromiseDecoder<T | null | undefined>;
 ```
 
@@ -730,7 +730,7 @@ function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
 ### isChainOf()
 
 ```ts
-interface IChainOfDecoderOptions {
+interface IsChainOfOptions {
   msg?: DecoderErrorMsgArg;
 }
 
@@ -742,7 +742,7 @@ function isChainOf<
   decoders: {
     [I in keyof T]: Decoder<T[I], DecoderInputType<T[SubtractOne<I>]>>
   },
-  options?: IChainOfDecoderOptions
+  options?: IsChainOfOptions
 ): Decoder<R, I>;
 
 function isChainOf<
@@ -755,7 +755,7 @@ function isChainOf<
       | Decoder<T[I], DecoderInputType<T[SubtractOne<I>]>>
       | PromiseDecoder<T[I], DecoderInputType<T[SubtractOne<I>]>>
   },
-  options?: IChainOfDecoderOptions
+  options?: IsChainOfOptions
 ): PromiseDecoder<R, I>;
 ```
 
@@ -764,18 +764,18 @@ function isChainOf<
 ### isObject()
 
 ```ts
-interface IObjectDecoderOptions<T> {
+interface IsObjectOptions<T> {
   msg?: DecoderErrorMsgArg;
   keyMap?: { [P in keyof T]?: string | number };
 }
 
 function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> },
-  options?: IObjectDecoderOptions<T>
+  options?: IsObjectOptions<T>
 ): Decoder<T>;
 function isObject<T>(
   decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
-  options?: IObjectDecoderOptions<T>
+  options?: IsObjectOptions<T>
 ): PromiseDecoder<T>;
 ```
 
@@ -804,17 +804,17 @@ function isExactObject<T>(
 ### isDictionary()
 
 ```ts
-interface IDictionaryDecoderOptions<V> {
+interface IsDictionaryOptions<V> {
   msg?: DecoderErrorMsgArg;
 }
 
 function isDictionary<R, V = unknown>(
   decoder: Decoder<R, V>,
-  options?: IDictionaryDecoderOptions<V>
+  options?: IsDictionaryOptions<V>
 ): Decoder<{ [key: string]: R }, V>;
 function isDictionary<R, V = unknown>(
   decoder: PromiseDecoder<R, V>,
-  options?: IDictionaryDecoderOptions<V>
+  options?: IsDictionaryOptions<V>
 ): PromiseDecoder<{ [key: string]: R }, V>;
 ```
 
@@ -823,20 +823,20 @@ function isDictionary<R, V = unknown>(
 ### isArray()
 
 ```ts
-interface IArrayDecoderOptions<V> {
+interface IsArrayOptions<V> {
   msg?: DecoderErrorMsgArg;
 }
 
 function isArray<R = unknown, V = unknown>(
-  options?: IArrayDecoderOptions<V>
+  options?: IsArrayOptions<V>
 ): Decoder<R[], V>;
 function isArray<R, V = unknown>(
   decoder: Decoder<R, V>,
-  options?: IArrayDecoderOptions<V>
+  options?: IsArrayOptions<V>
 ): Decoder<R[], V>;
 function isArray<R, V = unknown>(
   decoder: PromiseDecoder<R, V>,
-  options?: IArrayDecoderOptions<V>
+  options?: IsArrayOptions<V>
 ): PromiseDecoder<R[], V>;
 ```
 
@@ -845,19 +845,19 @@ function isArray<R, V = unknown>(
 ### isTuple()
 
 ```ts
-interface ITupleDecoderOptions {
+interface IsTupleOptions {
   msg?: DecoderErrorMsgArg;
 }
 
 function isTuple<Tuple extends [unknown, ...unknown[]]>(
   decoders: { [I in keyof Tuple]: Decoder<Tuple[I]> },
-  options?: ITupleDecoderOptions
+  options?: IsTupleOptions
 ): Decoder<Tuple>;
 function isTuple<Tuple extends [unknown, ...unknown[]]>(
   decoders: {
     [I in keyof Tuple]: Decoder<Tuple[I]> | PromiseDecoder<Tuple[I]>
   },
-  options?: ITupleDecoderOptions
+  options?: IsTupleOptions
 ): PromiseDecoder<Tuple>;
 ```
 

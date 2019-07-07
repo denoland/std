@@ -14,14 +14,14 @@ import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test({
   name: "init isString()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isString());
   }
 });
 
 test({
   name: "isString()",
-  fn: () => {
+  fn: (): void => {
     const decoder = isString();
 
     for (const item of ["0", "-14"]) {

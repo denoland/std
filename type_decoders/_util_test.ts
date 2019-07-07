@@ -11,7 +11,7 @@ import { ok, err, errorLocation } from "./_util.ts";
 
 test({
   name: "ok()",
-  fn: () => {
+  fn: (): void => {
     assertDecoderSuccess(ok(null), { value: null });
     assertDecoderSuccess(ok(undefined), { value: undefined });
     assertDecoderSuccess(ok(10), { value: 10 });
@@ -22,7 +22,7 @@ test({
 
 test({
   name: "err()",
-  fn: () => {
+  fn: (): void => {
     let error = err(null, "null err", "nullDecoder");
     assertDecoderErrors(error, [
       new DecoderError(null, "null err", {
@@ -45,7 +45,7 @@ test({
     error = err("string", "string err", "stringDecoder", {
       allErrors: true,
       decoderName: "customName",
-      msg: errors => [
+      msg: (errors): DecoderError[] => [
         ...errors,
         new DecoderError(null, "null"),
         new DecoderError(undefined, "undefined")
@@ -64,7 +64,7 @@ test({
 
 test({
   name: "errorLocation()",
-  fn: () => {
+  fn: (): void => {
     assertEquals(errorLocation(1, "payload[1]"), "[1].payload[1]");
 
     assertEquals(errorLocation("value", "payload[1]"), "value.payload[1]");

@@ -19,7 +19,7 @@ import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test({
   name: "init isTuple()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isTuple([stringDecoder]));
     assertDecoder(isTuple([stringDecoder, stringDecoder]));
   }
@@ -27,7 +27,7 @@ test({
 
 test({
   name: "isTuple([stringDecoder, booleanDecoder])",
-  fn: () => {
+  fn: (): void => {
     const decoder = isTuple([stringDecoder, booleanDecoder]);
 
     for (const item of [["string", true], ["", false]]) {
@@ -74,7 +74,7 @@ test({
 
 test({
   name: "isTuple([stringDecoder, booleanDecoder], {allErrors: true})",
-  fn: () => {
+  fn: (): void => {
     const decoder = isTuple([stringDecoder, booleanDecoder], {
       allErrors: true
     });
@@ -103,7 +103,7 @@ test({
 
 test({
   name: "async isTuple([stringDecoder, booleanDecoder])",
-  fn: async () => {
+  fn: async (): Promise<void> => {
     const decoder = isTuple([stringDecoder, booleanPromiseDecoder]);
 
     assertEquals(decoder instanceof PromiseDecoder, true);
@@ -152,7 +152,7 @@ test({
 
 test({
   name: "async isTuple([stringDecoder, booleanDecoder], {allErrors: true})",
-  fn: async () => {
+  fn: async (): Promise<void> => {
     const decoder = isTuple([stringDecoder, booleanPromiseDecoder], {
       allErrors: true
     });

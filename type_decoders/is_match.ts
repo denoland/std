@@ -1,24 +1,30 @@
-import { Decoder } from "./decoder.ts";
-import { ok, err } from "./_util.ts";
-import { ISimpleDecoderOptions } from "./util.ts";
+import { Decoder } from './decoder.ts';
+import { ok, err } from './_util.ts';
+import { SimpleDecoderOptions } from './util.ts';
+import { DecoderResult } from './decoder_result.ts';
 
-const decoderName = "isMatch";
+const decoderName = 'isMatch';
 
-export interface IMatchDecoderOptions extends ISimpleDecoderOptions {}
+export type IsMatchOptions = SimpleDecoderOptions;
 
-export function isMatch(regex: RegExp, options: IMatchDecoderOptions = {}) {
-  return new Decoder(value => {
-    if (typeof value !== "string") {
-      return err(value, `must be a string`, decoderName, options);
-    }
+export function isMatch(
+  regex: RegExp,
+  options: IsMatchOptions = {},
+): Decoder<string> {
+  return new Decoder(
+    (value): DecoderResult<string> => {
+      if (typeof value !== 'string') {
+        return err(value, `must be a string`, decoderName, options);
+      }
 
-    return regex.test(value)
-      ? ok(value)
-      : err(
-          value,
-          `must be a string matching the pattern "${regex}"`,
-          decoderName,
-          options
-        );
-  });
+      return regex.test(value)
+        ? ok(value)
+        : err(
+            value,
+            `must be a string matching the pattern "${regex}"`,
+            decoderName,
+            options,
+          );
+    },
+  );
 }

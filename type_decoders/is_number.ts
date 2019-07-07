@@ -1,13 +1,15 @@
-import { Decoder } from "./decoder.ts";
-import { ok, err } from "./_util.ts";
-import { ISimpleDecoderOptions } from "./util.ts";
+import { Decoder } from './decoder.ts';
+import { ok, err } from './_util.ts';
+import { SimpleDecoderOptions } from './util.ts';
+import { DecoderResult } from './decoder_result.ts';
 
-export interface INumberDecoderOptions extends ISimpleDecoderOptions {}
+export type IsNumberOptions = SimpleDecoderOptions;
 
-export function isNumber(options: INumberDecoderOptions = {}) {
-  return new Decoder(value =>
-    Number.isFinite(value as any)
-      ? ok(value as number)
-      : err(value, "must be a number", "isNumber", options)
+export function isNumber(options: IsNumberOptions = {}): Decoder<number> {
+  return new Decoder(
+    (value): DecoderResult<number> =>
+      Number.isFinite(value)
+        ? ok(value as number)
+        : err(value, 'must be a number', 'isNumber', options),
   );
 }

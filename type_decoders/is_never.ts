@@ -1,11 +1,13 @@
-import { Decoder } from "./decoder.ts";
-import { err } from "./_util.ts";
-import { ISimpleDecoderOptions } from "./util.ts";
+import { Decoder } from './decoder.ts';
+import { err } from './_util.ts';
+import { SimpleDecoderOptions } from './util.ts';
+import { DecoderError } from './decoder_result.ts';
 
-export interface INeverDecoderOptions extends ISimpleDecoderOptions {}
+export type IsNeverOptions = SimpleDecoderOptions;
 
-export function isNever(options: INeverDecoderOptions = {}) {
-  return new Decoder<never>(value =>
-    err(value, "must not be present", "isNever", options)
+export function isNever(options: IsNeverOptions = {}): Decoder<never> {
+  return new Decoder<never>(
+    (value): DecoderError[] =>
+      err(value, 'must not be present', 'isNever', options),
   );
 }

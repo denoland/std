@@ -4,13 +4,14 @@ import {
   DecoderSuccess,
   DecoderError,
   areDecoderErrors,
-  isDecoderSuccess
+  isDecoderSuccess,
+  DecoderResult
 } from "./decoder_result.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
 test({
   name: "new DecoderSuccess",
-  fn: () => {
+  fn: (): void => {
     const success = new DecoderSuccess(true);
     assertEquals(success instanceof DecoderSuccess, true);
     assertEquals(success, { value: true });
@@ -19,7 +20,7 @@ test({
 
 test({
   name: "new DecoderError",
-  fn: () => {
+  fn: (): void => {
     const error = new DecoderError(true, "error", {
       allErrors: true,
       decoderName: "name",
@@ -51,27 +52,39 @@ test({
 
 test({
   name: "isDecoderSuccess()",
-  fn: () => {
+  fn: (): void => {
     const success = new DecoderSuccess(null);
     const error = new DecoderError(null, "message");
 
-    assertEquals(isDecoderSuccess(success as any), true);
+    assertEquals(isDecoderSuccess(success), true);
     assertEquals(isDecoderSuccess([error]), false);
-    assertEquals(isDecoderSuccess(error as any), false);
-    assertEquals(isDecoderSuccess("success" as any), false);
+    assertEquals(
+      isDecoderSuccess(error as unknown as DecoderResult<unknown>),
+      false
+    );
+    assertEquals(
+      isDecoderSuccess("success" as unknown as DecoderResult<unknown>),
+      false
+    );
   }
 });
 
 test({
   name: "areDecoderErrors()",
-  fn: () => {
+  fn: (): void => {
     const success = new DecoderSuccess(null);
     const error = new DecoderError(null, "message");
 
     assertEquals(areDecoderErrors([error]), true);
-    assertEquals(areDecoderErrors(error as any), false);
-    assertEquals(areDecoderErrors(success as any), false);
-    assertEquals(areDecoderErrors("success" as any), false);
+    assertEquals(areDecoderErrors(success), false);
+    assertEquals(
+      areDecoderErrors(error as unknown as DecoderResult<unknown>),
+      false
+    );
+    assertEquals(
+      areDecoderErrors("success" as unknown as DecoderResult<unknown>), 
+      false
+    );
   }
 });
 

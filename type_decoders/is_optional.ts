@@ -1,66 +1,76 @@
-import { Decoder, PromiseDecoder } from "./decoder.ts";
-import { isExactly } from "./is_exactly.ts";
-import { ISimpleDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
-import { isDecoderSuccess, DecoderError } from "./decoder_result.ts";
+import { Decoder, PromiseDecoder } from './decoder.ts';
+import { isExactly } from './is_exactly.ts';
+import { SimpleDecoderOptions, applyOptionsToDecoderErrors } from './util.ts';
+import {
+  isDecoderSuccess,
+  DecoderError,
+  DecoderResult,
+} from './decoder_result.ts';
 
-const decoderName = "isOptional";
+const decoderName = 'isOptional';
 const undefinedDecoder = isExactly(undefined);
 
-export interface IOptionalDecoderOptions extends ISimpleDecoderOptions {}
+export type IsOptionalOptions = SimpleDecoderOptions;
 
 export function isOptional<T>(
   decoder: Decoder<T>,
-  options?: IOptionalDecoderOptions
+  options?: IsOptionalOptions,
 ): Decoder<T | undefined>;
 export function isOptional<T>(
   decoder: PromiseDecoder<T>,
-  options?: IOptionalDecoderOptions
+  options?: IsOptionalOptions,
 ): PromiseDecoder<T | undefined>;
 export function isOptional<T>(
   decoder: Decoder<T> | PromiseDecoder<T>,
-  options: IOptionalDecoderOptions = {}
-) {
+  options: IsOptionalOptions = {},
+): Decoder<T | undefined> | PromiseDecoder<T | undefined> {
   if (decoder instanceof PromiseDecoder) {
-    return new PromiseDecoder(async value => {
-      let result = undefinedDecoder.decode(value);
+    return new PromiseDecoder(
+      async (value): Promise<DecoderResult<T | undefined>> => {
+        let result: DecoderResult<T | undefined> = undefinedDecoder.decode(
+          value,
+        );
+
+        if (isDecoderSuccess(result)) return result;
+
+        result = await decoder.decode(value);
+
+        if (isDecoderSuccess(result)) return result;
+
+        return applyOptionsToDecoderErrors(
+          result.map(
+            (error): DecoderError =>
+              new DecoderError(value, `${error.message} OR must be undefined`, {
+                child: error,
+                decoderName,
+              }),
+          ),
+          options,
+        );
+      },
+    );
+  }
+
+  return new Decoder(
+    (value): DecoderResult<T | undefined> => {
+      let result: DecoderResult<T | undefined> = undefinedDecoder.decode(value);
 
       if (isDecoderSuccess(result)) return result;
 
-      result = await decoder.decode(value);
+      result = decoder.decode(value);
 
       if (isDecoderSuccess(result)) return result;
 
       return applyOptionsToDecoderErrors(
         result.map(
-          error =>
+          (error): DecoderError =>
             new DecoderError(value, `${error.message} OR must be undefined`, {
               child: error,
-              decoderName
-            })
+              decoderName,
+            }),
         ),
-        options
+        options,
       );
-    });
-  }
-
-  return new Decoder(value => {
-    let result = undefinedDecoder.decode(value);
-
-    if (isDecoderSuccess(result)) return result;
-
-    result = decoder.decode(value);
-
-    if (isDecoderSuccess(result)) return result;
-
-    return applyOptionsToDecoderErrors(
-      result.map(
-        error =>
-          new DecoderError(value, `${error.message} OR must be undefined`, {
-            child: error,
-            decoderName
-          })
-      ),
-      options
-    );
-  });
+    },
+  );
 }

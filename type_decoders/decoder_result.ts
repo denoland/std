@@ -1,9 +1,15 @@
-/** Class returned on a successful call to `Decoder#decode` or `PromiseDecoder#decode` */
+/** 
+ * DecoderSuccess returned on a successful call to
+ * `Decoder#decode` or `PromiseDecoder#decode`
+ */
 export class DecoderSuccess<T> {
   constructor(readonly value: T) {}
 }
 
-/** Class returned on a failed call to `Decoder#decode` or `PromiseDecoder#decode` */
+/** 
+ * DecoderError returned on a failed call to 
+ * `Decoder#decode` or `PromiseDecoder#decode`
+ */
 export class DecoderError {
   /** The value that failed validation. */
   input: unknown;
@@ -26,8 +32,8 @@ export class DecoderError {
   /**
    * The key associated with this `DecoderError` if any.
    *
-   * - E.g. this might be the object key which failed validation for an `isObject()`
-   *   decoder.
+   * - E.g. this might be the object key which failed validation for 
+   *   an `isObject()` decoder.
    */
   key?: unknown;
 

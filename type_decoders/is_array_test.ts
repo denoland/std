@@ -18,14 +18,14 @@ import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test({
   name: "init isArray()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isArray());
   }
 });
 
 test({
   name: "isArray()",
-  fn: () => {
+  fn: (): void => {
     const decoder = isArray();
 
     for (const item of [[], [1, "string"], new Array(1000)]) {
@@ -44,7 +44,7 @@ test({
 
 test({
   name: "isArray(stringDecoder)",
-  fn: () => {
+  fn: (): void => {
     const decoder = isArray(stringDecoder);
 
     const array1 = [1, null];
@@ -71,7 +71,7 @@ test({
 
 test({
   name: "isArray(stringDecoder, {allErrors: true})",
-  fn: () => {
+  fn: (): void => {
     const decoder = isArray(stringDecoder, {
       allErrors: true
     });
@@ -123,7 +123,7 @@ test({
 
 test({
   name: "async isArray(stringDecoder)",
-  fn: async () => {
+  fn: async (): Promise<void> => {
     const decoder = isArray(stringPromiseDecoder);
 
     assertEquals(decoder instanceof PromiseDecoder, true);
@@ -152,7 +152,7 @@ test({
 
 test({
   name: "async isArray(stringDecoder, {allErrors: true})",
-  fn: async () => {
+  fn: async (): Promise<void> => {
     const decoder = isArray(stringPromiseDecoder, {
       allErrors: true
     });

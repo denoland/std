@@ -20,7 +20,7 @@ import { assertEquals } from "../testing/asserts.ts";
 
 test({
   name: "init isAnyOf()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isAnyOf([]));
     assertDecoder(isAnyOf([stringDecoder]));
     assertDecoder(isAnyOf([numberDecoder, stringDecoder]));
@@ -29,7 +29,7 @@ test({
 
 test({
   name: "isAnyOf([stringDecoder, booleanDecoder, numberDecoder])",
-  fn: () => {
+  fn: (): void => {
     const decoder = isAnyOf([stringDecoder, booleanDecoder, numberDecoder]);
 
     for (const item of [true, false, "test", "one", 1, 23.432, -3432]) {
@@ -57,7 +57,7 @@ test({
 
 test({
   name: "async isAnyOf([stringDecoder, booleanDecoder, numberDecoder])",
-  fn: async () => {
+  fn: async (): Promise<void> => {
     const decoder = isAnyOf([
       stringDecoder,
       booleanPromiseDecoder,

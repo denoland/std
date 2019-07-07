@@ -14,14 +14,14 @@ import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 test({
   name: "init isInteger()",
-  fn: () => {
+  fn: (): void => {
     assertDecoder(isInteger());
   }
 });
 
 test({
   name: "isInteger()",
-  fn: () => {
+  fn: (): void => {
     const decoder = isInteger();
 
     for (const item of [0, -14, 100, 4448928342948]) {

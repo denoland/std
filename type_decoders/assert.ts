@@ -1,14 +1,20 @@
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, PromiseDecoder } from './decoder.ts';
 import {
   DecoderError,
   DecoderResult,
-  areDecoderErrors
-} from "./decoder_result.ts";
+  areDecoderErrors,
+} from './decoder_result.ts';
 
 export class DecoderAssertError extends Error {
   constructor(public errors: DecoderError[]) {
-    super(errors.map(error => error.message).join(". \n"));
+    super(errors.map((error): string => error.message).join('. \n'));
   }
+}
+
+function handleResult<T>(result: DecoderResult<T>): T {
+  if (areDecoderErrors(result)) throw new DecoderAssertError(result);
+
+  return result.value;
 }
 
 /**
@@ -25,30 +31,28 @@ export class DecoderAssertError extends Error {
  * ```
  */
 export function assert<R, V>(
-  decoder: Decoder<R, V>
+  decoder: Decoder<R, V>,
 ): { (value: V): R; (value: Promise<V>): Promise<R> };
 
 export function assert<R, V>(
-  decoder: PromiseDecoder<R, V>
+  decoder: PromiseDecoder<R, V>,
 ): (value: V | Promise<V>) => Promise<R>;
 
-export function assert<R, V>(decoder: Decoder<R, V> | PromiseDecoder<R, V>) {
+export function assert<R, V>(
+  decoder: Decoder<R, V> | PromiseDecoder<R, V>,
+):
+  | { (value: V): R; (value: Promise<V>): Promise<R> }
+  | ((value: V | Promise<V>) => Promise<R>) {
   if (decoder instanceof PromiseDecoder) {
-    return async (value: V | Promise<V>) =>
+    return async (value: V | Promise<V>): T =>
       handleResult(await decoder.decode(await value));
   }
 
-  const decode = (value: V) =>
+  const decode = (value: V): T =>
     handleResult((decoder as Decoder<R, V>).decode(value));
 
-  return (input: V) =>
+  return (input: V): T | Promise<T> =>
     input instanceof Promise
-      ? input.then(value => decode(value))
+      ? input.then((value): T => decode(value))
       : decode(input);
-}
-
-function handleResult<T>(result: DecoderResult<T>) {
-  if (areDecoderErrors(result)) throw new DecoderAssertError(result);
-
-  return result.value;
 }
