@@ -1,4 +1,4 @@
-import { Type } from "../Type.ts";
+import { Type } from "../type.ts";
 import { isNegativeZero, Any } from "../utils.ts";
 
 function isHexCode(c: number): boolean {

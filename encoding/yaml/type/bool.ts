@@ -1,4 +1,4 @@
-import { Type } from "../Type.ts";
+import { Type } from "../type.ts";
 import { isBoolean } from "../utils.ts";
 
 function resolveYamlBoolean(data: string): boolean {

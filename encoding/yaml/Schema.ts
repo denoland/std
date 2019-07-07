@@ -1,5 +1,5 @@
-import { YAMLError } from "./error/YAMLError.ts";
-import { KindType, Type } from "./Type.ts";
+import { YAMLError } from "./error.ts";
+import { KindType, Type } from "./type.ts";
 import { ArrayObject, Any } from "./utils.ts";
 
 function compileList(

@@ -1,4 +1,4 @@
-import { Mark } from "../Mark.ts";
+import { Mark } from "./mark.ts";
 
 const { DenoError, ErrorKind } = Deno;
 

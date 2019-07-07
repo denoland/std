@@ -1,10 +1,9 @@
 /* eslint-disable max-len */
 
-import { YAMLError } from "../error/YAMLError.ts";
-import { DEFAULT_SAFE_SCHEMA } from "../schema/mod.ts";
-import { RepresentFn, StyleVariant, Type } from "../Type.ts";
+import { YAMLError } from "../error.ts";
+import { RepresentFn, StyleVariant, Type } from "../type.ts";
 import * as common from "../utils.ts";
-import { DumperState, DumperStateOptions } from "./DumperState.ts";
+import { DumperState, DumperStateOptions } from "./dumper_state.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
@@ -892,8 +891,4 @@ export function dump(input: Any, options?: DumperStateOptions): string {
   if (writeNode(state, 0, input, true, true)) return `${state.dump}\n`;
 
   return "";
-}
-
-export function safeDump(input: object, options?: DumperStateOptions): string {
-  return dump(input, { schema: DEFAULT_SAFE_SCHEMA, ...options });
 }

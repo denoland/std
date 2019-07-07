@@ -1,4 +1,4 @@
-import { Type } from "../Type.ts";
+import { Type } from "../type.ts";
 import { Any } from "../utils.ts";
 
 export const seq = new Type("tag:yaml.org,2002:seq", {

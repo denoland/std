@@ -1,4 +1,4 @@
-import { Type } from "../Type.ts";
+import { Type } from "../type.ts";
 
 function resolveYamlNull(data: string): boolean {
   const max = data.length;

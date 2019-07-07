@@ -1,4 +1,4 @@
-import { StyleVariant, Type } from "../Type.ts";
+import { StyleVariant, Type } from "../type.ts";
 import { isNegativeZero, Any } from "../utils.ts";
 
 const YAML_FLOAT_PATTERN = new RegExp(

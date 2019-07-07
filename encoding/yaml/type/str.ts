@@ -1,4 +1,4 @@
-import { Type } from "../Type.ts";
+import { Type } from "../type.ts";
 
 export const str = new Type("tag:yaml.org,2002:str", {
   construct(data): string {

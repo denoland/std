@@ -1,7 +1,7 @@
-import { YAMLError } from "../error/YAMLError.ts";
-import { Schema, SchemaDefinition, TypeMap } from "../Schema.ts";
-import { State } from "../State.ts";
-import { Type } from "../Type.ts";
+import { YAMLError } from "../error.ts";
+import { Schema, SchemaDefinition, TypeMap } from "../schema.ts";
+import { State } from "../state.ts";
+import { Type } from "../type.ts";
 import { Any, ArrayObject } from "../utils.ts";
 
 export interface LoaderStateOptions {

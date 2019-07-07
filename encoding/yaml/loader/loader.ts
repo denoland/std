@@ -1,12 +1,11 @@
 /* eslint-disable no-conditional-assignment */
 /* eslint-disable max-len */
 
-import { YAMLError } from "../error/YAMLError.ts";
-import { Mark } from "../Mark.ts";
-import { DEFAULT_SAFE_SCHEMA } from "../schema/mod.ts";
-import { Type } from "../Type.ts";
+import { YAMLError } from "../error.ts";
+import { Mark } from "../mark.ts";
+import { Type } from "../type.ts";
 import * as common from "../utils.ts";
-import { LoaderState, LoaderStateOptions, ResultType } from "./LoaderState.ts";
+import { LoaderState, LoaderStateOptions, ResultType } from "./loader_state.ts";
 
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
@@ -1808,28 +1807,4 @@ export function load(input: string, options?: LoaderStateOptions): Any {
   throw new YAMLError(
     "expected a single document in the stream, but found more"
   );
-}
-
-export function safeLoadAll<T extends CbFunction | LoaderStateOptions>(
-  input: string,
-  outputOrOptions?: T,
-  options: LoaderStateOptions = {}
-): T extends CbFunction ? void : Any[] {
-  if (isCbFunction(outputOrOptions)) {
-    return loadAll<T>(input, outputOrOptions, {
-      schema: DEFAULT_SAFE_SCHEMA,
-      ...options
-    });
-  } else {
-    options = (outputOrOptions as LoaderStateOptions) || {};
-    const opts = {
-      schema: DEFAULT_SAFE_SCHEMA,
-      ...options
-    };
-    return loadAll<T>(input, opts as Any);
-  }
-}
-
-export function safeLoad(input: string, options?: LoaderStateOptions): Any {
-  return load(input, { schema: DEFAULT_SAFE_SCHEMA, ...options });
 }

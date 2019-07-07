@@ -1,4 +1,4 @@
-import { Type } from "../Type.ts";
+import { Type } from "../type.ts";
 import { Any } from "../utils.ts";
 
 const _toString = Object.prototype.toString;
