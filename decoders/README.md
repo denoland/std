@@ -618,14 +618,14 @@ function isInstanceOf<T extends new (...args: any) => any>(
 ### isMatch()
 
 ```ts
-interface IRegexDecoderOptions {
+interface IsMatchOptions {
   decoderName?: string;
   msg?: DecoderErrorMsgArg;
 }
 
 function isMatch(
   regex: RegExp,
-  options?: IRegexDecoderOptions
+  options?: IsMatchOptions
 ): Decoder<string, any>;
 ```
 
