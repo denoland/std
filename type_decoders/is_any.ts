@@ -3,6 +3,7 @@ import { Decoder } from "./decoder.ts";
 import { ok } from "./_util.ts";
 import { DecoderSuccess } from "./decoder_result.ts";
 
-export function isAny<T = unknown>(): Decoder<T> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isAny<T = any>(): Decoder<T> {
   return new Decoder((value): DecoderSuccess<T> => ok(value as T));
 }

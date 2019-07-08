@@ -13,22 +13,22 @@ const undefinedDecoder = isExactly(undefined);
 
 export type IsOptionalOptions = SimpleDecoderOptions;
 
-export function isOptional<T>(
-  decoder: Decoder<T>,
+export function isOptional<R, V>(
+  decoder: Decoder<R, V>,
   options?: IsOptionalOptions
-): Decoder<T | undefined>;
-export function isOptional<T>(
-  decoder: PromiseDecoder<T>,
+): Decoder<R | undefined, V>;
+export function isOptional<R, V>(
+  decoder: PromiseDecoder<R, V>,
   options?: IsOptionalOptions
-): PromiseDecoder<T | undefined>;
-export function isOptional<T>(
-  decoder: Decoder<T> | PromiseDecoder<T>,
+): PromiseDecoder<R | undefined, V>;
+export function isOptional<R, V>(
+  decoder: Decoder<R, V> | PromiseDecoder<R, V>,
   options: IsOptionalOptions = {}
-): Decoder<T | undefined> | PromiseDecoder<T | undefined> {
+): Decoder<R | undefined, V> | PromiseDecoder<R | undefined, V> {
   if (decoder instanceof PromiseDecoder) {
     return new PromiseDecoder(
-      async (value): Promise<DecoderResult<T | undefined>> => {
-        let result: DecoderResult<T | undefined> = undefinedDecoder.decode(
+      async (value: V): Promise<DecoderResult<R | undefined>> => {
+        let result: DecoderResult<R | undefined> = undefinedDecoder.decode(
           value
         );
 
@@ -53,8 +53,8 @@ export function isOptional<T>(
   }
 
   return new Decoder(
-    (value): DecoderResult<T | undefined> => {
-      let result: DecoderResult<T | undefined> = undefinedDecoder.decode(value);
+    (value: V): DecoderResult<R | undefined> => {
+      let result: DecoderResult<R | undefined> = undefinedDecoder.decode(value);
 
       if (isDecoderSuccess(result)) return result;
 

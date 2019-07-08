@@ -13,7 +13,10 @@ import {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class Decoder<R, I = any> {
-  constructor(readonly decodeFn: (input: I) => DecoderResult<R>) {}
+  constructor(
+    /** The internal function this decoder uses to decode values */
+    readonly decodeFn: (input: I) => DecoderResult<R>
+  ) {}
 
   decode(input: Promise<I>): Promise<DecoderResult<R>>;
   decode(input: I): DecoderResult<R>;

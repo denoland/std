@@ -13,22 +13,22 @@ const nullDecoder = isExactly(null);
 
 export type IsNullableOptions = SimpleDecoderOptions;
 
-export function isNullable<T>(
-  decoder: Decoder<T>,
+export function isNullable<R, I>(
+  decoder: Decoder<R, I>,
   options?: IsNullableOptions
-): Decoder<T | null>;
-export function isNullable<T>(
-  decoder: PromiseDecoder<T>,
+): Decoder<R | null, I>;
+export function isNullable<R, I>(
+  decoder: PromiseDecoder<R, I>,
   options?: IsNullableOptions
-): PromiseDecoder<T | null>;
-export function isNullable<T>(
-  decoder: Decoder<T> | PromiseDecoder<T>,
+): PromiseDecoder<R | null, I>;
+export function isNullable<R, I>(
+  decoder: Decoder<R, I> | PromiseDecoder<R, I>,
   options: IsNullableOptions = {}
-): Decoder<T | null> | PromiseDecoder<T | null> {
+): Decoder<R | null, I> | PromiseDecoder<R | null, I> {
   if (decoder instanceof PromiseDecoder) {
     return new PromiseDecoder(
-      async (value): Promise<DecoderResult<T | null>> => {
-        let result: DecoderResult<T | null> = nullDecoder.decode(value);
+      async (value: I): Promise<DecoderResult<R | null>> => {
+        let result: DecoderResult<R | null> = nullDecoder.decode(value);
 
         if (isDecoderSuccess(result)) return result;
 
@@ -51,8 +51,8 @@ export function isNullable<T>(
   }
 
   return new Decoder(
-    (value): DecoderResult<T | null> => {
-      let result: DecoderResult<T | null> = nullDecoder.decode(value);
+    (value: I): DecoderResult<R | null> => {
+      let result: DecoderResult<R | null> = nullDecoder.decode(value);
 
       if (isDecoderSuccess(result)) return result;
 

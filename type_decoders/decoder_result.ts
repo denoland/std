@@ -8,6 +8,15 @@ export class DecoderSuccess<T> {
   constructor(readonly value: T) {}
 }
 
+/** a `DecoderKey` could be the key of an Object, Array, Map, or Set. */
+export type DecoderKey =
+  | number
+  | string
+  | object
+  | symbol
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | (new (...args: any) => any);
+
 /**
  * DecoderError returned on a failed call to
  * `Decoder#decode` or `PromiseDecoder#decode`
@@ -34,10 +43,10 @@ export class DecoderError {
   /**
    * The key associated with this `DecoderError` if any.
    *
-   * - E.g. this might be the object key which failed validation for
-   *   an `isObject()` decoder.
+   * - example: this could be the index of the array element which
+   *   failed validation.
    */
-  key?: unknown;
+  key?: DecoderKey;
 
   /** `true` if this error was created with the `allErrors` decoder option. */
   allErrors: boolean;
@@ -49,7 +58,7 @@ export class DecoderError {
       decoderName?: string;
       location?: string;
       child?: DecoderError;
-      key?: unknown;
+      key?: DecoderKey;
       allErrors?: boolean;
     } = {}
   ) {
@@ -66,7 +75,7 @@ export class DecoderError {
    * Starting with this error, an array of the keys associated with
    * this error as well as all child errors.
    */
-  path(): unknown[] {
+  path(): DecoderKey[] {
     if (this.key === undefined) {
       if (!this.child) return [];
 

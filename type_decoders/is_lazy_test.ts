@@ -19,8 +19,7 @@ interface ArrayLike {
   [key: number]: ArrayLike;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const decoder: Decoder<ArrayLike, any> = new Decoder(
+const decoder: Decoder<ArrayLike> = new Decoder(
   (input): DecoderResult<ArrayLike> => {
     if (!Array.isArray(input)) {
       return [new DecoderError(input, "must be an array")];
@@ -31,10 +30,7 @@ const decoder: Decoder<ArrayLike, any> = new Decoder(
 
     for (const element of input) {
       index++;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const result = isLazy((): Decoder<ArrayLike, any> => decoder).decode(
-        element
-      );
+      const result = isLazy((): Decoder<ArrayLike> => decoder).decode(element);
 
       if (areDecoderErrors(result)) {
         return result.map(
@@ -65,8 +61,7 @@ const decoder: Decoder<ArrayLike, any> = new Decoder(
 test({
   name: "init isLazy()",
   fn: (): void => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    assertDecoder(isLazy((): Decoder<string, any> => stringDecoder));
+    assertDecoder(isLazy((): Decoder<string> => stringDecoder));
   }
 });
 

@@ -14,23 +14,23 @@ const nullDecoder = isExactly(null);
 
 export type IsMaybeOptions = SimpleDecoderOptions;
 
-export function isMaybe<T>(
-  decoder: Decoder<T>,
+export function isMaybe<R, I>(
+  decoder: Decoder<R, I>,
   options?: IsMaybeOptions
-): Decoder<T | null | undefined>;
-export function isMaybe<T>(
-  decoder: PromiseDecoder<T>,
+): Decoder<R | null | undefined, I>;
+export function isMaybe<R, I>(
+  decoder: PromiseDecoder<R, I>,
   options?: IsMaybeOptions
-): PromiseDecoder<T | null | undefined>;
-export function isMaybe<T>(
-  decoder: Decoder<T> | PromiseDecoder<T>,
+): PromiseDecoder<R | null | undefined, I>;
+export function isMaybe<R, I>(
+  decoder: Decoder<R, I> | PromiseDecoder<R, I>,
   options: IsMaybeOptions = {}
-): Decoder<T | null | undefined> | PromiseDecoder<T | null | undefined> {
+): Decoder<R | null | undefined, I> | PromiseDecoder<R | null | undefined, I> {
   if (decoder instanceof PromiseDecoder) {
     return new PromiseDecoder(
-      async (value): Promise<DecoderResult<T | null | undefined>> => {
+      async (value: I): Promise<DecoderResult<R | null | undefined>> => {
         let result: DecoderResult<
-          T | null | undefined
+          R | null | undefined
         > = undefinedDecoder.decode(value);
 
         if (isDecoderSuccess(result)) return result;
@@ -62,8 +62,8 @@ export function isMaybe<T>(
   }
 
   return new Decoder(
-    (value): DecoderResult<T | null | undefined> => {
-      let result: DecoderResult<T | null | undefined> = undefinedDecoder.decode(
+    (value: I): DecoderResult<R | null | undefined> => {
+      let result: DecoderResult<R | null | undefined> = undefinedDecoder.decode(
         value
       );
 

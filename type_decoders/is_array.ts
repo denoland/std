@@ -46,26 +46,25 @@ function childError(
 
 export type IsArrayOptions = ComposeDecoderOptions;
 
-export function isArray<R = unknown, V = unknown>(
-  options?: IsArrayOptions
-): Decoder<R[], V>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function isArray<R = any>(options?: IsArrayOptions): Decoder<R[]>;
 
-export function isArray<R, V = unknown>(
-  decoder: Decoder<R, V>,
+export function isArray<R>(
+  decoder: Decoder<R>,
   options?: IsArrayOptions
-): Decoder<R[], V>;
+): Decoder<R[]>;
 
-export function isArray<R, V = unknown>(
-  decoder: PromiseDecoder<R, V>,
+export function isArray<R>(
+  decoder: PromiseDecoder<R>,
   options?: IsArrayOptions
-): PromiseDecoder<R[], V>;
+): PromiseDecoder<R[]>;
 
-export function isArray<R, V = unknown>(
-  decoder?: Decoder<R, V> | PromiseDecoder<R, V> | IsArrayOptions,
+export function isArray<R>(
+  decoder?: Decoder<R> | PromiseDecoder<R> | IsArrayOptions,
   options: IsArrayOptions = {}
-): Decoder<R[], V> | PromiseDecoder<R[], V> {
+): Decoder<R[]> | PromiseDecoder<R[]> {
   if (!(decoder instanceof Decoder || decoder instanceof PromiseDecoder)) {
-    return new Decoder<R[], V>(
+    return new Decoder<R[]>(
       (input): DecoderResult<R[]> =>
         Array.isArray(input)
           ? ok<R[]>(input.slice())
@@ -150,7 +149,7 @@ export function isArray<R, V = unknown>(
   }
 
   return new Decoder(
-    (input: V): DecoderResult<R[]> => {
+    (input): DecoderResult<R[]> => {
       if (!Array.isArray(input)) return nonArrayError(input, options);
 
       const elements: R[] = [];
@@ -161,7 +160,7 @@ export function isArray<R, V = unknown>(
       for (const el of input) {
         index++;
 
-        const result = decoder.decode(el as V);
+        const result = decoder.decode(el);
 
         if (areDecoderErrors(result)) {
           const errors = result.map(

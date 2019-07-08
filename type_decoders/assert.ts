@@ -23,7 +23,8 @@ function handleResult<T>(result: DecoderResult<T>): T {
  * can be used to decode the same values as the provided decoder. This new
  * function passes its input to the provided decoder's `decode()` method
  * and, on decode success, unwraps the processed value and returns it
- * directly. On failure, a `DecoderError` is thrown (rather than returned).
+ * directly. On failure, a `DecoderAssertError` is thrown
+ * (rather than returned).
  *
  * ```ts
  * const validator = assert(isNumber());
