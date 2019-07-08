@@ -7,21 +7,21 @@ import { DecoderResult } from "./decoder_result.ts";
 const decoderName = "isMatchForPredicate";
 const defaultMsg = "failed custom check";
 
-export interface IsCheckedWithOptions extends SimpleDecoderOptions {
+export interface IsMatchForPredicateOptions extends SimpleDecoderOptions {
   promise?: boolean;
 }
 
 export function isMatchForPredicate<T>(
   fn: (value: T) => boolean | Promise<boolean>,
-  options: IsCheckedWithOptions & { promise: true }
+  options: IsMatchForPredicateOptions & { promise: true }
 ): PromiseDecoder<T, T>;
 export function isMatchForPredicate<T>(
   fn: (value: T) => boolean,
-  options?: IsCheckedWithOptions
+  options?: IsMatchForPredicateOptions
 ): Decoder<T, T>;
 export function isMatchForPredicate<T>(
   fn: (value: T) => boolean | Promise<boolean>,
-  options: IsCheckedWithOptions = {}
+  options: IsMatchForPredicateOptions = {}
 ): Decoder<T, T> | PromiseDecoder<T, T> {
   if (options.promise) {
     return new PromiseDecoder(

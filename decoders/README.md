@@ -634,7 +634,7 @@ function isMatch(
 ### isMatchForPredicate()
 
 ```ts
-interface IsCheckedWithOptions {
+interface IsMatchForPredicateOptions {
   decoderName?: string;
   msg?: DecoderErrorMsgArg;
   promise?: boolean;
@@ -642,11 +642,11 @@ interface IsCheckedWithOptions {
 
 function isMatchForPredicate<T>(
   fn: (value: T) => boolean | Promise<boolean>,
-  options: IsCheckedWithOptions & { promise: true }
+  options: IsMatchForPredicateOptions & { promise: true }
 ): PromiseDecoder<T, T>;
 function isMatchForPredicate<T>(
   fn: (value: T) => boolean,
-  options?: IsCheckedWithOptions
+  options?: IsMatchForPredicateOptions
 ): Decoder<T, T>;
 ```
 
@@ -888,10 +888,18 @@ Options:
 ### isLazy()
 
 ```ts
-function isLazy<T>(decoderFn: () => Decoder<T>): Decoder<T | null>;
+interface IsLazyOptions {
+  promise?: boolean;
+}
+
 function isLazy<T>(
-  decoderFn: () => PromiseDecoder<T>
-): PromiseDecoder<T | null>;
+  decoderFn: () => Decoder<T>,
+  options?: IsLazyOptions & { promise?: false }
+): Decoder<T>;
+function isLazy<T>(
+  decoderFn: () => PromiseDecoder<T>,
+  options: IsLazyOptions & { promise: true }
+): PromiseDecoder<T>;
 ```
 
 `isLazy()` recieves a function which returns a decoder and creates a new decoder which calls this function on each `.decode()` call and uses the returned decoder to decode it's input. A common use case for this decoder is to decode recursive data structures.
