@@ -31,8 +31,8 @@ const result = decoder.decode("1"); // returns (not throws) `DecoderError[]`
 - [Basic usage](#Basic-usage)
 - [Interfaces](#Interfaces)
 - [Working with errors](#Working-with-errors)
-- [Working with promises](#Working-with-promises)
 - [Creating custom decoders](#Creating-custom-decoders)
+- [Working with promises](#Working-with-promises)
 - [Tips and tricks](#Tips-and-tricks)
 - [Decoder API](#Decoder-API)
   - [assert()](#assert)
@@ -131,6 +131,9 @@ The first type argument, `R`, contains the successful return type of the decoder
 
 ```ts
 class Decoder<R, I = any> {
+  /** The internal function this decoder uses to decode values */
+  readonly decodeFn: (value: I) => DecoderResult<R>;
+
   new(decodeFn: (value: I) => DecoderResult<R>): Decoder<R, I>;
 
   /**
@@ -227,7 +230,7 @@ class DecoderError {
   /** `true` if this error was created with the `allErrors` decoder option. */
   allErrors: boolean;
 
-  constructor(
+  new(
     input: unknown,
     message: string,
     options?: {
@@ -237,7 +240,7 @@ class DecoderError {
       key?: DecoderKey;
       allErrors?: boolean;
     }
-  );
+  ): DecoderError;
 
   /**
    * Starting with this error, an array of the keys associated with
@@ -263,19 +266,21 @@ type DecoderErrorMsgArg = string | ((error: DecoderError[]) => DecoderError[]);
 
 [_see the `DecoderError` interface_](#DecoderError)
 
-One of the most useful aspects of this module is its support for providing human and machine readable error messages, as well as customizing those messages.
+The errors API is designed to facilitate custom human and machine readable errors.
 
 ### allErrors option
 
-By default, a decoder will immediately return the first error it encounters (`[DecoderError]`). If you pass the `allErrors: true` option when creating a decoder, then the decoder will instead process and return all errors from an input value (`DecoderError[]`).
+By default, a decoder will immediately return the first error it encounters (`[DecoderError]`). If you pass the `allErrors: true` option when calling a decoder function, then the returned decoder will instead process and return all errors from an input value (`DecoderError[]`).
 
 ### decoderName option
 
-`DecoderError` objects have an optional `decoderName?: string` property which can be useful for easily identifying what decoder an error came from. All of the decoder functions in this module add a `decoderName` to their error messages. By passing the `decoderName: string` option when creating a decoder, you can change the `decoderName` associated with a decoder's errors.
+`DecoderError` objects have an optional `decoderName?: string` property which can be useful for easily identifying what decoder an error came from. All of the decoder functions in this module add a `decoderName` to their error messages. By passing the `decoderName: string` option when calling a decoder function, you can change the `decoderName` associated with a decoder's errors.
 
 ### msg option
 
-If you wish to customize the error message(s) a decoder returns, you can pass the `msg: DecoderErrorMsgArg` option when creating a decoder (`type DecoderErrorMsgArg = string | ((error: DecoderError[]) => DecoderError[])`).
+[_see the `DecoderErrorMsgArg` type_](#DecoderErrorMsgArg)
+
+If you wish to customize the error message(s) a decoder returns, you can pass the `msg: DecoderErrorMsgArg` option when calling a decoder function.
 
 If you pass a string as the `msg` option, that string will be used as the error message for that decoder.
 
@@ -284,7 +289,7 @@ Example:
 ```ts
 const myObjectDecoder = isObject({
   payload: isObject({
-    values: isArray(isNullable(isNumber()), { msg: "invalid array" })
+    values: isArray(isNullable(isNumber()), { msg: "very bad array!" })
   })
 });
 
@@ -292,18 +297,18 @@ const badInput = { payload: { values: [0, null, "1"] } } as unknown;
 
 const errors = myObjectDecoder.decode(badInput); // will return `DecoderError[]`
 
-errors[0].message; // "invalid value for key \"payload\" > invalid value for key \"values\" > invalid array
+errors[0].message; // "invalid value for key \"payload\" > invalid value for key \"values\" > very bad array!"
 errors[0].location; // "payload.values"
 errors[0].path(); // ["payload", "values"]
-errors[0].child.message; // "invalid value for key \"values\" > invalid array"
-errors[0].child.child.message; // "invalid array"
+errors[0].child.message; // "invalid value for key \"values\" > very bad array!"
+errors[0].child.child.message; // "very bad array!"
 errors[0].child.child.child.message; // "must be a string"
 errors[0].child.child.child.child; // undefined
 ```
 
 For more control over your error messages, you can provide a `(error: DecoderError[]) => DecoderError[]` function as the `msg` option.
 
-If one or more `DecoderError` occur, the error will be passed to the provided `msg` function where you can either manipulate the errors or return new errors. Your function must return at least one DecoderError.
+If one or more `DecoderError` occur, the errors will be passed to the provided `msg` function where you can either manipulate the errors or return new errors. Your function must return at least one DecoderError.
 
 Example:
 
@@ -334,36 +339,6 @@ const badInput = [1] as unknown;
 const errors = myLatLongDecoder.decode(badInput);
 
 errors[0].message; // "array must have a length of 2"
-```
-
-## Working with promises
-
-Every decoder supports calling its `decode()` method with a promise which returns the value to be decoded. In this scenerio, `decode()` will return a `Promise<DecoderResult<T>>`. Internally, the decoder will wait for the promise to resolve before passing the value to its `decodeFn`. As such, the internal `decodeFn` will never be passed a promise value.
-
-If you wish to create a custom decoder with a `decodeFn` which returns a promise, then you must use the `PromiseDecoder` class. `PromiseDecoder` is largely identical to `Decoder`, except its `decode()` method always returns `Promise<DecoderResult<T>>` (not just when called with a promise value) and it's `decodeFn` returns a promise. Additionally, when calling a decoder function with a `PromiseDecoder` and `allErrors: true` arguments, many decoder functions will process input values in parallel rather than serially.
-
-As an example, calling `isObject()` with a `PromiseDecoder` and `allErrors: true` will create a decoder which decodes each key in parallel.
-
-```ts
-const myCustomDecoder = new PromiseDecoder(async value =>
-  typeof value === "boolean"
-    ? Promise.resolve(new DecoderSuccess(value))
-    : Promise.resolve([new DecoderError(value, "Must be a boolean")])
-);
-
-const myObjectDecoder = isObject(
-  {
-    type: isString(),
-    payload: isObject({
-      values: isArray(isNullable(myCustomDecoder))
-    })
-  },
-  { allErrors: true }
-);
-
-// when you compose Decoders with a PromiseDecoder,
-// the result is a PromiseDecoder
-myObjectDecoder instanceof PromiseDecoder === true;
 ```
 
 ## Creating custom decoders
@@ -429,10 +404,41 @@ isChainOf([
 Like this module, you may wish to create custom decoder functions (e.g. `isObject()`) to dynamically compose decoders together or to help create new decoders. It's recommended that, before doing so, you familiarize yourself with the conventions used by this module.
 
 1. If your function allows users to pass options to it, in general those options should all go into an optional options object which is the last argument to the function.
-   - An exception to this recommendation would be the `isDictionary()` function, which can accept an optional key decoder as the second argument, with an options object being the third argument. In this case, typescript overloads are used to keep the API friendly. See the `isDictionary()` source for a closer look.
+   - An exception to this recommendation would be the [`isDictionary()` function](#isDictionary), which can accept an optional key decoder as the second argument and an options object as the third argument. In this case, typescript overloads are used to keep the API friendly.
 2. If appropriate, allow users to customize the returned errors by passing a `msg?: DecoderErrorMsgArg` option.
 3. If your decoder may return multiple `DecoderError`, immediately return the first error by default. Allow users to pass an `allErrors: true` option to return all errors.
 4. If your function takes one or more decoders as an argument, you need to handle the possibility of being passed a `PromiseDecoder`. If you receive one or more `PromiseDecoders`, your composition function should return a `PromiseDecoder`. Typescript overloads can be used to properly type the different returns.
+5. This module exports various [utilities](./util.ts) that can simplify the process of creating custom decoder functions.
+
+## Working with promises
+
+Every decoder supports calling its `decode()` method with a promise which returns the value to be decoded. In this scenerio, `decode()` will return a `Promise<DecoderResult<T>>`. Internally, the decoder will wait for the promise to resolve before passing the value to its `decodeFn`. As such, the internal `decodeFn` will never be passed a promise value.
+
+If you wish to create a custom decoder with a `decodeFn` which returns a promise, then you must use the `PromiseDecoder` class. `PromiseDecoder` is largely identical to `Decoder`, except its `decode()` method always returns `Promise<DecoderResult<T>>` (not just when called with a promise value) and it's `decodeFn` returns a promise. Additionally, when calling a decoder function with a `PromiseDecoder` and `allErrors: true` arguments, many decoder functions will process input values in parallel rather than serially.
+
+As an example, calling `isObject()` with a `PromiseDecoder` and `allErrors: true` will create a decoder which decodes each key in parallel.
+
+```ts
+const myCustomDecoder = new PromiseDecoder(async value =>
+  typeof value === "boolean"
+    ? Promise.resolve(new DecoderSuccess(value))
+    : Promise.resolve([new DecoderError(value, "Must be a boolean")])
+);
+
+const myObjectDecoder = isObject(
+  {
+    type: isString(),
+    payload: isObject({
+      values: isArray(isNullable(myCustomDecoder))
+    })
+  },
+  { allErrors: true }
+);
+
+// when you compose Decoders with a PromiseDecoder,
+// the result is a PromiseDecoder
+myObjectDecoder instanceof PromiseDecoder === true;
+```
 
 ## Tips and tricks
 
@@ -473,10 +479,16 @@ if (result instanceof DecoderSuccess) {
 ### assert()
 
 ```ts
-export function assert<R, V>(
+class DecoderAssertError extends Error {
+  errors: DecoderError[];
+
+  new(errors: DecoderError[]): DecoderAssertError;
+}
+
+function assert<R, V>(
   decoder: Decoder<R, V>
 ): { (value: V): R; (value: Promise<V>): Promise<R> };
-export function assert<R, V>(
+function assert<R, V>(
   decoder: PromiseDecoder<R, V>
 ): (value: V | Promise<V>) => Promise<R>;
 ```
@@ -490,7 +502,7 @@ const validator = assert(isNumber());
 
 const value: number = validator(1);
 
-const value: number = validator("1"); // will throw a `DecoderError`
+const value: number = validator("1"); // will throw a `DecoderAssertError`
 ```
 
 ### isBoolean()
@@ -629,13 +641,13 @@ interface IsCheckedWithOptions {
 }
 
 function isMatchForPredicate<T>(
+  fn: (value: T) => boolean | Promise<boolean>,
+  options: IsCheckedWithOptions & { promise: true }
+): PromiseDecoder<T, T>;
+function isMatchForPredicate<T>(
   fn: (value: T) => boolean,
   options?: IsCheckedWithOptions
 ): Decoder<T, T>;
-function isMatchForPredicate<T>(
-  fn: (value: T) => Promise<boolean>,
-  options: IsCheckedWithOptions & { promise: true }
-): PromiseDecoder<T, T>;
 ```
 
 `isMatchForPredicate()` accepts a predicate function argument and creates a decoder which verifies that inputs pass the function check.
@@ -721,7 +733,7 @@ function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
 ): PromiseDecoder<DecoderReturnType<T>>;
 ```
 
-`isAnyOf()` accepts an array of decoders and attempts to decode a provided value using each of them, in order, returning the first successful result or `DecoderError[]` if all fail. Unlike other decoder functions, `isAnyOf()` always returns all errors surfaced by it's decoder arguments.
+`isAnyOf()` accepts an array of decoders and attempts to decode a provided value using each of them, in order, returning the first successful result or `DecoderError[]` if all fail. Unlike other decoder functions, `isAnyOf()` always returns all errors surfaced by it's decoder arguments. By default, decoder arguments are tried in the order they are given.
 
 **Async:** when calling `isAnyOf()` with one or more `PromiseDecoder` arguments, you can pass a `decodeInParallel: true` option to specify that a provided value should be tried against all decoder arguments in parallel.
 
@@ -733,7 +745,7 @@ interface IsChainOfOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-export function isChainOf<
+function isChainOf<
   T extends [unknown, ...unknown[]],
   R = ChainOfDecoderReturnType<T>, // default: the return type of the last decoder
   I = DecoderInputType<T[0]>
@@ -741,7 +753,7 @@ export function isChainOf<
   decoders: { [P in keyof T]: Decoder<T[P]> },
   options?: IsChainOfOptions
 ): Decoder<R, I>;
-export function isChainOf<
+function isChainOf<
   T extends [unknown, ...unknown[]],
   R = ChainOfDecoderReturnType<T>, // default: the return type of the last decoder
   I = DecoderInputType<T[0]>
@@ -773,8 +785,9 @@ function isObject<T>(
 ): PromiseDecoder<T>;
 ```
 
-_here, "object element" refers to a `key: value` pair of the object. "Element-value" refers to the `value` of this pair and "element-key" refers to the `key` of this pair_
-`isObject()` accepts a decoderObject argument and returns a new decoder that will verify that an input is a non-null object, and that each element-key of the input is decoded by the corresponding element-key of the `decoderObject`. On `DecoderSuccess`, the a new object is returned which has element-values defined by the decoderObject's element-values. By default, any excess properties on the input object are ignored.
+_"Object element" refers to a `key: value` pair of the object. "Element-value" refers to the `value` of this pair and "element-key" refers to the `key` of this pair_
+
+`isObject()` accepts a decoderObject argument and returns a new decoder that will verify that an input is a non-null object, and that each element-key of the input is decoded by the corresponding element-key of the `decoderObject`. On `DecoderSuccess`, a new object is returned which has element-values defined by the decoderObject's element-values. By default, any excess properties on the input object are ignored (i.e. not included on the returned value).
 
 Options:
 
