@@ -1,6 +1,6 @@
 # Deno example programs
 
-This module contains small scripts that demonstrate use of Deno and its standard library. 
+This module contains small scripts that demonstrate use of Deno and its standard library.
 
 You can run these examples by importing them via `deno` command:
 
@@ -13,7 +13,7 @@ Some of them are useful CLI programs that can be installed as executables:
 `cat.ts` - print file to standard output
 
 ```
-deno install deno_cat https://deno.land/examples.cat.ts --allow-read 
+deno install deno_cat https://deno.land/examples.cat.ts --allow-read
 deno_cat file.txt
 ```
 
@@ -34,4 +34,3 @@ export GIST_TOKEN=ABC # Generate at https://github.com/settings/tokens
 gist --title "Example gist 1" script.ts
 gist --t "Example gist 2" script2.ts
 ```
-
