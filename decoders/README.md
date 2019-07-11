@@ -192,7 +192,14 @@ class DecoderSuccess<T> {
 ### DecoderError
 
 ```ts
-/** a `DecoderKey` could be the key of an Object, Array, Map, or Set. */
+/**
+ * The `DecoderKey` value is present on `DecoderError` and is
+ * dependent on the decoder associated with an error.
+ *
+ * For example, it could be the key of an Object, Array, Map,
+ * or Set. When decoding a file, it could be a tuple of the
+ * filename, line number, and character number. Etc.
+ */
 type DecoderKey =
   | number
   | string
