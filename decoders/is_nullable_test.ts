@@ -6,9 +6,9 @@ import {
   assertDecodesToErrors,
   assertDecoder,
   stringDecoder,
-  stringPromiseDecoder
+  stringAsyncDecoder
 } from "./test_util.ts";
-import { PromiseDecoder } from "./decoder.ts";
+import { AsyncDecoder } from "./decoder.ts";
 import { isNullable } from "./is_nullable.ts";
 import { DecoderError, DecoderSuccess } from "./decoder_result.ts";
 
@@ -46,9 +46,9 @@ test({
 test({
   name: "async isNullable()",
   fn: async (): Promise<void> => {
-    const decoder = isNullable(stringPromiseDecoder);
+    const decoder = isNullable(stringAsyncDecoder);
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     for (const item of ["2019-07-03", "heLLooooo", null]) {
       await assertDecodesToSuccess(decoder, item, new DecoderSuccess(item));

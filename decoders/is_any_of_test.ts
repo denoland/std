@@ -7,11 +7,11 @@ import {
   stringDecoder,
   booleanDecoder,
   numberDecoder,
-  booleanPromiseDecoder
+  booleanAsyncDecoder
 } from "./test_util.ts";
 import { isAnyOf } from "./is_any_of.ts";
 import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
-import { PromiseDecoder } from "./decoder.ts";
+import { AsyncDecoder } from "./decoder.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
 /**
@@ -60,11 +60,11 @@ test({
   fn: async (): Promise<void> => {
     const decoder = isAnyOf([
       stringDecoder,
-      booleanPromiseDecoder,
+      booleanAsyncDecoder,
       numberDecoder
     ]);
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     for (const item of [true, false, "test", "one", 1, 23.432, -3432]) {
       await assertDecodesToSuccess(decoder, item, new DecoderSuccess(item));

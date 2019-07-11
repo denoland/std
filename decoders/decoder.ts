@@ -6,8 +6,9 @@ import {
 } from "./decoder_result.ts";
 
 /**
- * An object which can be used to validate and process `unknown` values
- * and cast them to the appropriate typescript type.
+ * An object which facilitates the decoding of an `unknown` input
+ * and returning a properly typed response (on success), or
+ * returning any errors.
  *
  * @param decodeFn the function which is used to decode input values
  */
@@ -46,14 +47,14 @@ export class Decoder<R, I = any> {
 }
 
 /**
- * An object which can be used to validate and process `unknown` values
- * and cast them to the appropriate typescript type. Unlike `Decoder`,
- * `PromiseDecoder` can receive a `decodeFn` which returns a promise.
+ * An object which facilitates the `async` decoding of an `unknown`
+ * input and returning a properly typed response (on success), or
+ * returning any errors.
  *
  * @param decodeFn the function which is used to decode input values
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class PromiseDecoder<R, I = any> {
+export class AsyncDecoder<R, I = any> {
   constructor(readonly decodeFn: (input: I) => Promise<DecoderResult<R>>) {}
 
   async decode(input: I | Promise<I>): Promise<DecoderResult<R>> {
@@ -64,8 +65,8 @@ export class PromiseDecoder<R, I = any> {
    * On decode success, transform a value using the provided
    * transformation function.
    */
-  map<K>(fn: (input: R) => K | Promise<K>): PromiseDecoder<K, I> {
-    return new PromiseDecoder(
+  map<K>(fn: (input: R) => K | Promise<K>): AsyncDecoder<K, I> {
+    return new AsyncDecoder(
       async (input: I): Promise<DecoderResult<K>> => {
         const result = await this.decodeFn(input);
 
@@ -80,11 +81,11 @@ export class PromiseDecoder<R, I = any> {
 // prettier makes this hard to read
 // prettier-ignore
 export type DecoderReturnType<T> = T extends Decoder<infer R> ? R
-  : T extends PromiseDecoder<infer R> ? R
+  : T extends AsyncDecoder<infer R> ? R
   : unknown;
 
 // prettier makes this hard to read
 // prettier-ignore
 export type DecoderInputType<T> = T extends Decoder<unknown, infer I> ? I
-  : T extends PromiseDecoder<unknown, infer I> ? I
+  : T extends AsyncDecoder<unknown, infer I> ? I
   : unknown;

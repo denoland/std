@@ -5,7 +5,7 @@ import {
   assertThrows,
   assertThrowsAsync
 } from "../testing/asserts.ts";
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import { assert, DecoderAssertError } from "./assert.ts";
 import {
   DecoderSuccess,
@@ -51,7 +51,7 @@ test({
 test({
   name: "async assertFn()",
   fn: async (): Promise<void> => {
-    const decoder = new PromiseDecoder(
+    const decoder = new AsyncDecoder(
       async (value): Promise<DecoderResult<1>> =>
         value === 1
           ? new DecoderSuccess(1)

@@ -123,7 +123,7 @@ const errors = myObjectDecoder.decode(badInput); // will return `DecoderError[]`
 
 ## Interfaces
 
-This module exports two base decoder classes `Decoder<R, I>` and `PromiseDecoder<R, I>`. It also exports a base `DecoderSuccess<T>` class and `DecoderError` class.
+This module exports two base decoder classes `Decoder<R, I>` and `AsyncDecoder<R, I>`. It also exports a base `DecoderSuccess<T>` class and `DecoderError` class.
 
 ### Decoder<R, I>
 
@@ -153,16 +153,16 @@ class Decoder<R, I = any> {
 }
 ```
 
-### PromiseDecoder<R, I>
+### AsyncDecoder<R, I>
 
 The first type argument, `R`, contains the successful return type of the decoder. The second type argument, `I`, contains the type of the input argument passed to the decoder.
 
 ```ts
-class PromiseDecoder<R, I = any> {
+class AsyncDecoder<R, I = any> {
   /** The internal function this decoder uses to decode values */
   readonly decodeFn: (input: I) => Promise<DecoderResult<R>>;
 
-  new(decodeFn: (value: I) => Promise<DecoderResult<R>>): PromiseDecoder<R, I>;
+  new(decodeFn: (value: I) => Promise<DecoderResult<R>>): AsyncDecoder<R, I>;
 
   /**
    * Decodes a value (or promise returning a value) of type `I`
@@ -172,10 +172,10 @@ class PromiseDecoder<R, I = any> {
 
   /**
    * On decode success, transform a value using a provided transformation function.
-   * Unlike `Decoder#map`, the tranformation function provided to `PromiseDecoder#map`
+   * Unlike `Decoder#map`, the tranformation function provided to `AsyncDecoder#map`
    * can return a promise.
    */
-  map<K>(fn: (value: R) => K | Promise<K>): PromiseDecoder<K, I>;
+  map<K>(fn: (value: R) => K | Promise<K>): AsyncDecoder<K, I>;
 }
 ```
 
@@ -352,7 +352,7 @@ const myLatLongDecoder = isChainOf(
 );
 ```
 
-For more flexibility, you can create a new decoder from scratch using either the `Decoder` or `PromiseDecoder` constructors (see the [working with promises](#Working-with-promises) section for a description of the differences between `Decoder` and `PromiseDecoder`). To make a new decoder from scratch, simply pass a custom decode function to the `Decoder` constructor. A decode function is a function which receives a value and returns a `DecodeSuccess` object on success and an array of `DecodeError` objects on failure.
+For more flexibility, you can create a new decoder from scratch using either the `Decoder` or `AsyncDecoder` constructors (see the [working with promises](#Working-with-promises) section for a description of the differences between `Decoder` and `AsyncDecoder`). To make a new decoder from scratch, simply pass a custom decode function to the `Decoder` constructor. A decode function is a function which receives a value and returns a `DecodeSuccess` object on success and an array of `DecodeError` objects on failure.
 
 Example:
 
@@ -407,19 +407,19 @@ Like this module, you may wish to create custom decoder functions (e.g. `isObjec
    - An exception to this recommendation would be the [`isDictionary()` function](#isDictionary), which can accept an optional key decoder as the second argument and an options object as the third argument. In this case, typescript overloads are used to keep the API friendly.
 2. If appropriate, allow users to customize the returned errors by passing a `msg?: DecoderErrorMsgArg` option.
 3. If your decoder may return multiple `DecoderError`, immediately return the first error by default. Allow users to pass an `allErrors: true` option to return all errors.
-4. If your function takes one or more decoders as an argument, you need to handle the possibility of being passed a `PromiseDecoder`. If you receive one or more `PromiseDecoders`, your composition function should return a `PromiseDecoder`. Typescript overloads can be used to properly type the different returns.
+4. If your function takes one or more decoders as an argument, you need to handle the possibility of being passed a `AsyncDecoder`. If you receive one or more `AsyncDecoders`, your composition function should return a `AsyncDecoder`. Typescript overloads can be used to properly type the different returns.
 5. This module exports various [utilities](./util.ts) that can simplify the process of creating custom decoder functions.
 
 ## Working with promises
 
 Every decoder supports calling its `decode()` method with a promise which returns the value to be decoded. In this scenerio, `decode()` will return a `Promise<DecoderResult<T>>`. Internally, the decoder will wait for the promise to resolve before passing the value to its `decodeFn`. As such, the internal `decodeFn` will never be passed a promise value.
 
-If you wish to create a custom decoder with a `decodeFn` which returns a promise, then you must use the `PromiseDecoder` class. `PromiseDecoder` is largely identical to `Decoder`, except its `decode()` method always returns `Promise<DecoderResult<T>>` (not just when called with a promise value) and it's `decodeFn` returns a promise. Additionally, when calling a decoder function with a `PromiseDecoder` and `allErrors: true` arguments, many decoder functions will process input values in parallel rather than serially.
+If you wish to create a custom decoder with a `decodeFn` which returns a promise, then you must use the `AsyncDecoder` class. `AsyncDecoder` is largely identical to `Decoder`, except its `decode()` method always returns `Promise<DecoderResult<T>>` (not just when called with a promise value) and it's `decodeFn` returns a promise. Additionally, when calling a decoder function with a `AsyncDecoder` and `allErrors: true` arguments, many decoder functions will process input values in parallel rather than serially.
 
-As an example, calling `isObject()` with a `PromiseDecoder` and `allErrors: true` will create a decoder which decodes each key in parallel.
+As an example, calling `isObject()` with a `AsyncDecoder` and `allErrors: true` will create a decoder which decodes each key in parallel.
 
 ```ts
-const myCustomDecoder = new PromiseDecoder(async value =>
+const myCustomDecoder = new AsyncDecoder(async value =>
   typeof value === "boolean"
     ? Promise.resolve(new DecoderSuccess(value))
     : Promise.resolve([new DecoderError(value, "Must be a boolean")])
@@ -435,9 +435,9 @@ const myObjectDecoder = isObject(
   { allErrors: true }
 );
 
-// when you compose Decoders with a PromiseDecoder,
-// the result is a PromiseDecoder
-myObjectDecoder instanceof PromiseDecoder === true;
+// when you compose Decoders with a AsyncDecoder,
+// the result is a AsyncDecoder
+myObjectDecoder instanceof AsyncDecoder === true;
 ```
 
 ## Tips and tricks
@@ -489,7 +489,7 @@ function assert<R, V>(
   decoder: Decoder<R, V>
 ): { (value: V): R; (value: Promise<V>): Promise<R> };
 function assert<R, V>(
-  decoder: PromiseDecoder<R, V>
+  decoder: AsyncDecoder<R, V>
 ): (value: V | Promise<V>) => Promise<R>;
 ```
 
@@ -623,10 +623,7 @@ interface IsMatchOptions {
   msg?: DecoderErrorMsgArg;
 }
 
-function isMatch(
-  regex: RegExp,
-  options?: IsMatchOptions
-): Decoder<string, any>;
+function isMatch(regex: RegExp, options?: IsMatchOptions): Decoder<string, any>;
 ```
 
 `isMatch()` can be used to verify that an unknown value is a `string` which conforms to the given `RegExp`.
@@ -643,7 +640,7 @@ interface IsMatchForPredicateOptions {
 function isMatchForPredicate<T>(
   fn: (value: T) => boolean | Promise<boolean>,
   options: IsMatchForPredicateOptions & { promise: true }
-): PromiseDecoder<T, T>;
+): AsyncDecoder<T, T>;
 function isMatchForPredicate<T>(
   fn: (value: T) => boolean,
   options?: IsMatchForPredicateOptions
@@ -667,9 +664,9 @@ function isOptional<R, I>(
   options?: IsOptionalOptions
 ): Decoder<R | undefined, I>;
 function isOptional<R, I>(
-  decoder: PromiseDecoder<R, I>,
+  decoder: AsyncDecoder<R, I>,
   options?: IsOptionalOptions
-): PromiseDecoder<R | undefined, I>;
+): AsyncDecoder<R | undefined, I>;
 ```
 
 `isOptional()` accepts a decoder and returns a new decoder which accepts either the original decoder's value or `undefined`.
@@ -687,9 +684,9 @@ function isNullable<R, I>(
   options?: IsNullableOptions
 ): Decoder<R | null, I>;
 function isNullable<R, I>(
-  decoder: PromiseDecoder<R, I>,
+  decoder: AsyncDecoder<R, I>,
   options?: IsNullableOptions
-): PromiseDecoder<R | null, I>;
+): AsyncDecoder<R | null, I>;
 ```
 
 `isNullable()` accepts a decoder and returns a new decoder which accepts either the original decoder's value or `null`.
@@ -707,9 +704,9 @@ function isMaybe<R, I>(
   options?: IsMaybeOptions
 ): Decoder<R | null | undefined, I>;
 function isMaybe<R, I>(
-  decoder: PromiseDecoder<R, I>,
+  decoder: AsyncDecoder<R, I>,
   options?: IsMaybeOptions
-): PromiseDecoder<R | null | undefined, I>;
+): AsyncDecoder<R | null | undefined, I>;
 ```
 
 `isMaybe()` accepts a decoder and returns a new decoder which accepts either the original decoder's value or `null` or `undefined`.
@@ -727,15 +724,15 @@ function isAnyOf<T extends Decoder<unknown>>(
   decoders: T[],
   options?: IAnyOfDecoderOptions
 ): Decoder<DecoderReturnType<T>>;
-function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
+function isAnyOf<T extends Decoder<unknown> | AsyncDecoder<unknown>>(
   decoders: T[],
   options?: IAnyOfDecoderOptions
-): PromiseDecoder<DecoderReturnType<T>>;
+): AsyncDecoder<DecoderReturnType<T>>;
 ```
 
 `isAnyOf()` accepts an array of decoders and attempts to decode a provided value using each of them, in order, returning the first successful result or `DecoderError[]` if all fail. Unlike other decoder functions, `isAnyOf()` always returns all errors surfaced by it's decoder arguments. By default, decoder arguments are tried in the order they are given.
 
-**Async:** when calling `isAnyOf()` with one or more `PromiseDecoder` arguments, you can pass a `decodeInParallel: true` option to specify that a provided value should be tried against all decoder arguments in parallel.
+**Async:** when calling `isAnyOf()` with one or more `AsyncDecoder` arguments, you can pass a `decodeInParallel: true` option to specify that a provided value should be tried against all decoder arguments in parallel.
 
 ### isChainOf()
 
@@ -758,9 +755,9 @@ function isChainOf<
   R = ChainOfDecoderReturnType<T>, // default: the return type of the last decoder
   I = DecoderInputType<T[0]>
 >(
-  decoders: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
+  decoders: { [P in keyof T]: Decoder<T[P]> | AsyncDecoder<T[P]> },
   options?: IsChainOfOptions
-): PromiseDecoder<R, I>;
+): AsyncDecoder<R, I>;
 ```
 
 `isChainOf()` accepts an array of decoders and attempts to decode a provided value using all of them, in order. The successful output of one decoder is provided as input to the next decoder. `isChainOf()` returns the `DecoderSuccess` value of the last decoder in the chain or `DecoderError` on the first failure.
@@ -780,9 +777,9 @@ function isObject<T>(
   options?: IsObjectOptions
 ): Decoder<T>;
 function isObject<T>(
-  decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
+  decoderObject: { [P in keyof T]: Decoder<T[P]> | AsyncDecoder<T[P]> },
   options?: IsObjectOptions
-): PromiseDecoder<T>;
+): AsyncDecoder<T>;
 ```
 
 _"Object element" refers to a `key: value` pair of the object. "Element-value" refers to the `value` of this pair and "element-key" refers to the `key` of this pair_
@@ -792,7 +789,7 @@ _"Object element" refers to a `key: value` pair of the object. "Element-value" r
 Options:
 
 - If you pass the `noExcessProperties: true` option, any excess properties on the input object will return a DecoderError.
-- If you pass the `allErrors: true` option as well as any PromiseDecoders as arguments, then `isObject()` will create a new PromiseDecoder which decodes each key of the input object in parallel.
+- If you pass the `allErrors: true` option as well as any AsyncDecoders as arguments, then `isObject()` will create a new AsyncDecoder which decodes each key of the input object in parallel.
 
 ### isDictionary()
 
@@ -813,21 +810,21 @@ function isDictionary<R, V>(
   options?: IsDictionaryOptions
 ): Decoder<{ [key: string]: R }, V>;
 function isDictionary<R, V>(
-  decoder: PromiseDecoder<R, V>,
+  decoder: AsyncDecoder<R, V>,
   options?: IsDictionaryOptions
-): PromiseDecoder<{ [key: string]: R }, V>;
+): AsyncDecoder<{ [key: string]: R }, V>;
 function isDictionary<R, V>(
-  valueDecoder: Decoder<R, V> | PromiseDecoder<R, V>,
-  keyDecoder: Decoder<string, string> | PromiseDecoder<string, string>,
+  valueDecoder: Decoder<R, V> | AsyncDecoder<R, V>,
+  keyDecoder: Decoder<string, string> | AsyncDecoder<string, string>,
   options?: IsDictionaryOptions
-): PromiseDecoder<{ [key: string]: R }, V>;
+): AsyncDecoder<{ [key: string]: R }, V>;
 ```
 
 `isDictionary()` receives a decoder argument and uses that decoder to process all values (regardless of key) of an input object. You can pass an optional key decoder as the second argument which will be used to decode each key of an input object.
 
 Options:
 
-- If you pass the `allErrors: true` option as well as any PromiseDecoders as arguments, then `isDictionary()` will create a new PromiseDecoder which decodes each key of the input object in parallel.
+- If you pass the `allErrors: true` option as well as any AsyncDecoders as arguments, then `isDictionary()` will create a new AsyncDecoder which decodes each key of the input object in parallel.
 
 ### isArray()
 
@@ -844,16 +841,16 @@ function isArray<R>(
   options?: IsArrayOptions
 ): Decoder<R[]>;
 function isArray<R>(
-  decoder: PromiseDecoder<R>,
+  decoder: AsyncDecoder<R>,
   options?: IsArrayOptions
-): PromiseDecoder<R[]>;
+): AsyncDecoder<R[]>;
 ```
 
 `isArray()` can be used to make sure an input is an array. If an optional decoder argument is provided, that decoder will be used to process all of the input's elements.
 
 Options:
 
-- If you pass the `allErrors: true` option as well as any PromiseDecoders as arguments, then `isArray()` will create a new PromiseDecoder which decodes each index of the input array in parallel.
+- If you pass the `allErrors: true` option as well as any AsyncDecoders as arguments, then `isArray()` will create a new AsyncDecoder which decodes each index of the input array in parallel.
 
 ### isTuple()
 
@@ -869,9 +866,9 @@ function isTuple<R extends [unknown, ...unknown[]]>(
   options?: IsTupleOptions
 ): Decoder<R>;
 function isTuple<R extends [unknown, ...unknown[]]>(
-  decoders: { [P in keyof R]: Decoder<R[P]> | PromiseDecoder<R[P]> },
+  decoders: { [P in keyof R]: Decoder<R[P]> | AsyncDecoder<R[P]> },
   options?: IsTupleOptions
-): PromiseDecoder<R>;
+): AsyncDecoder<R>;
 ```
 
 `isTuple()` receives an array of decoders and creates a decoder which can be used to verify that an input is:
@@ -883,7 +880,7 @@ function isTuple<R extends [unknown, ...unknown[]]>(
 
 Options:
 
-- If you pass the `allErrors: true` option as well as any PromiseDecoders as arguments, then `isTuple()` will create a new PromiseDecoder which decodes each index of the input array in parallel.
+- If you pass the `allErrors: true` option as well as any AsyncDecoders as arguments, then `isTuple()` will create a new AsyncDecoder which decodes each index of the input array in parallel.
 
 ### isLazy()
 
@@ -897,9 +894,9 @@ function isLazy<T>(
   options?: IsLazyOptions & { promise?: false }
 ): Decoder<T>;
 function isLazy<T>(
-  decoderFn: () => PromiseDecoder<T>,
+  decoderFn: () => AsyncDecoder<T>,
   options: IsLazyOptions & { promise: true }
-): PromiseDecoder<T>;
+): AsyncDecoder<T>;
 ```
 
 `isLazy()` recieves a function which returns a decoder and creates a new decoder which calls this function on each `.decode()` call and uses the returned decoder to decode it's input. A common use case for this decoder is to decode recursive data structures.

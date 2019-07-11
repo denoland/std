@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Decoder, DecoderInputType, PromiseDecoder } from "./decoder.ts";
+import { Decoder, DecoderInputType, AsyncDecoder } from "./decoder.ts";
 import {
   DecoderSuccess,
   DecoderError,
@@ -64,19 +64,19 @@ export function isChainOf<
   R = ChainOfDecoderReturnType<T>,
   I = DecoderInputType<T[0]>
 >(
-  decoders: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
+  decoders: { [P in keyof T]: Decoder<T[P]> | AsyncDecoder<T[P]> },
   options?: IsChainOfOptions
-): PromiseDecoder<R, I>;
+): AsyncDecoder<R, I>;
 export function isChainOf<
   T extends [unknown, ...unknown[]],
   R = ChainOfDecoderReturnType<T>,
   I = DecoderInputType<T[0]>
 >(
-  decoders: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
+  decoders: { [P in keyof T]: Decoder<T[P]> | AsyncDecoder<T[P]> },
   options: IsChainOfOptions = {}
-): Decoder<R, I> | PromiseDecoder<R, I> {
-  if (decoders.some((decoder): boolean => decoder instanceof PromiseDecoder)) {
-    return new PromiseDecoder<R, I>(
+): Decoder<R, I> | AsyncDecoder<R, I> {
+  if (decoders.some((decoder): boolean => decoder instanceof AsyncDecoder)) {
+    return new AsyncDecoder<R, I>(
       async (value): Promise<DecoderResult<R>> => {
         let result = ok(value as unknown) as DecoderResult<R>;
 

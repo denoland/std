@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import { DecoderResult } from "./decoder_result.ts";
 
 export interface IsLazyOptions {
@@ -11,17 +11,17 @@ export function isLazy<T>(
   options?: IsLazyOptions & { promise?: false }
 ): Decoder<T>;
 export function isLazy<T>(
-  decoderFn: () => PromiseDecoder<T>,
+  decoderFn: () => AsyncDecoder<T>,
   options: IsLazyOptions & { promise: true }
-): PromiseDecoder<T>;
+): AsyncDecoder<T>;
 export function isLazy<T>(
-  decoderFn: () => Decoder<T> | PromiseDecoder<T>,
+  decoderFn: () => Decoder<T> | AsyncDecoder<T>,
   options: IsLazyOptions = {}
-): Decoder<T> | PromiseDecoder<T> {
+): Decoder<T> | AsyncDecoder<T> {
   if (options.promise) {
-    return new PromiseDecoder(
+    return new AsyncDecoder(
       (value): Promise<DecoderResult<T>> =>
-        (decoderFn() as PromiseDecoder<T>).decode(value)
+        (decoderFn() as AsyncDecoder<T>).decode(value)
     );
   }
 

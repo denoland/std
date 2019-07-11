@@ -5,9 +5,9 @@ import {
   assertDecodesToSuccess,
   assertDecodesToErrors,
   assertDecoder,
-  assertPromiseDecoder
+  assertAsyncDecoder
 } from "./test_util.ts";
-import { PromiseDecoder } from "./decoder.ts";
+import { AsyncDecoder } from "./decoder.ts";
 import { isMatchForPredicate } from "./is_match_for_predicate.ts";
 import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
@@ -21,10 +21,10 @@ test({
     assertDecoder(isMatchForPredicate((): boolean => true));
     assertDecoder(isMatchForPredicate((): boolean => true));
 
-    assertPromiseDecoder(
+    assertAsyncDecoder(
       isMatchForPredicate((): boolean => false, { promise: true })
     );
-    assertPromiseDecoder(
+    assertAsyncDecoder(
       isMatchForPredicate((): Promise<boolean> => Promise.resolve(false), {
         promise: true
       })
@@ -61,7 +61,7 @@ test({
 
     const msg = "failed custom check";
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     for (const item of ["0", "two"]) {
       await assertDecodesToSuccess(decoder, item, new DecoderSuccess(item));

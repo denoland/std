@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import { isExactly } from "./is_exactly.ts";
 import { SimpleDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 import {
@@ -18,15 +18,15 @@ export function isNullable<R, I>(
   options?: IsNullableOptions
 ): Decoder<R | null, I>;
 export function isNullable<R, I>(
-  decoder: PromiseDecoder<R, I>,
+  decoder: AsyncDecoder<R, I>,
   options?: IsNullableOptions
-): PromiseDecoder<R | null, I>;
+): AsyncDecoder<R | null, I>;
 export function isNullable<R, I>(
-  decoder: Decoder<R, I> | PromiseDecoder<R, I>,
+  decoder: Decoder<R, I> | AsyncDecoder<R, I>,
   options: IsNullableOptions = {}
-): Decoder<R | null, I> | PromiseDecoder<R | null, I> {
-  if (decoder instanceof PromiseDecoder) {
-    return new PromiseDecoder(
+): Decoder<R | null, I> | AsyncDecoder<R | null, I> {
+  if (decoder instanceof AsyncDecoder) {
+    return new AsyncDecoder(
       async (value: I): Promise<DecoderResult<R | null>> => {
         let result: DecoderResult<R | null> = nullDecoder.decode(value);
 

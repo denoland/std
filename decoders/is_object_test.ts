@@ -4,10 +4,10 @@ import {
   assertDecodesToSuccess,
   assertDecoder,
   assertDecodesToErrors,
-  booleanPromiseDecoder,
-  numberPromiseDecoder
+  booleanAsyncDecoder,
+  numberAsyncDecoder
 } from "./test_util.ts";
-import { PromiseDecoder } from "./decoder.ts";
+import { AsyncDecoder } from "./decoder.ts";
 import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 import { assertEquals, assertNotEquals } from "../testing/asserts.ts";
 import { isObject } from "./is_object.ts";
@@ -385,10 +385,10 @@ test({
   fn: async (): Promise<void> => {
     const decoder = isObject({
       string: stringDecoder,
-      object: isObject({ boolean: booleanPromiseDecoder })
+      object: isObject({ boolean: booleanAsyncDecoder })
     });
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     const obj1 = {
       string: "ste",
@@ -441,7 +441,7 @@ test({
     const decoder = isObject(
       {
         string: stringDecoder,
-        object: isObject({ number: numberPromiseDecoder })
+        object: isObject({ number: numberAsyncDecoder })
       },
       {
         noExcessProperties: true,
@@ -449,7 +449,7 @@ test({
       }
     );
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     const obj1 = {
       string: "ste",

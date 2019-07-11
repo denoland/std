@@ -6,7 +6,7 @@ import {
   DecoderSuccess,
   DecoderError
 } from "./decoder_result.ts";
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 
 function printValue(value: unknown): string | Promise<unknown> {
   return value instanceof Promise ? value : JSON.stringify(value);
@@ -68,21 +68,21 @@ export const anyDecoder = new Decoder(
   (value): DecoderResult<any> => new DecoderSuccess(value)
 );
 
-export const stringPromiseDecoder = new PromiseDecoder(
+export const stringAsyncDecoder = new AsyncDecoder(
   async (value): Promise<DecoderResult<string>> =>
     typeof value === "string"
       ? new DecoderSuccess(value)
       : [new DecoderError(value, "must be a string")]
 );
 
-export const booleanPromiseDecoder = new PromiseDecoder(
+export const booleanAsyncDecoder = new AsyncDecoder(
   async (value): Promise<DecoderResult<boolean>> =>
     typeof value === "boolean"
       ? new DecoderSuccess(value)
       : [new DecoderError(value, "must be a boolean")]
 );
 
-export const numberPromiseDecoder = new PromiseDecoder(
+export const numberAsyncDecoder = new AsyncDecoder(
   async (value): Promise<DecoderResult<number>> =>
     typeof value === "number"
       ? new DecoderSuccess(value)
@@ -104,17 +104,17 @@ export function assertDecoder(actual: Decoder<unknown>, msg?: string): void {
 }
 
 /**
- * Make an assertion that `actual` is a PromiseDecoder.
+ * Make an assertion that `actual` is a AsyncDecoder.
  *
  * If not then throw.
  */
-export function assertPromiseDecoder(
-  actual: PromiseDecoder<unknown>,
+export function assertAsyncDecoder(
+  actual: AsyncDecoder<unknown>,
   msg?: string
 ): void {
-  if (!(actual instanceof PromiseDecoder)) {
+  if (!(actual instanceof AsyncDecoder)) {
     if (!msg) {
-      msg = `"${printValue(actual)}" expected to be a PromiseDecoder`;
+      msg = `"${printValue(actual)}" expected to be a AsyncDecoder`;
     }
     throw new AssertionError(msg);
   }
@@ -217,12 +217,12 @@ export async function assertAsyncDecoderErrors(
  * DecoderSuccess with matching `value` to `expected`.
  */
 export function assertDecodesToSuccess(
-  decoder: Decoder<unknown> | PromiseDecoder<unknown>,
+  decoder: Decoder<unknown> | AsyncDecoder<unknown>,
   value: Promise<unknown>,
   expected: DecoderSuccess<unknown>
 ): Promise<void>;
 export function assertDecodesToSuccess(
-  decoder: PromiseDecoder<unknown>,
+  decoder: AsyncDecoder<unknown>,
   value: unknown,
   expected: DecoderSuccess<unknown>
 ): Promise<void>;
@@ -232,11 +232,11 @@ export function assertDecodesToSuccess<T>(
   expected: DecoderSuccess<unknown>
 ): void;
 export function assertDecodesToSuccess(
-  decoder: Decoder<unknown> | PromiseDecoder<unknown>,
+  decoder: Decoder<unknown> | AsyncDecoder<unknown>,
   value: unknown,
   expected: DecoderSuccess<unknown>
 ): void | Promise<void> {
-  if (decoder instanceof PromiseDecoder || value instanceof Promise) {
+  if (decoder instanceof AsyncDecoder || value instanceof Promise) {
     const result = decoder.decode(value);
 
     return assertAsyncDecoderSuccess(
@@ -256,12 +256,12 @@ export function assertDecodesToSuccess(
  * If not then throw.
  */
 export function assertDecodesToErrors(
-  decoder: Decoder<unknown> | PromiseDecoder<unknown>,
+  decoder: Decoder<unknown> | AsyncDecoder<unknown>,
   value: Promise<unknown>,
   expected: DecoderError[]
 ): Promise<void>;
 export function assertDecodesToErrors(
-  decoder: PromiseDecoder<unknown>,
+  decoder: AsyncDecoder<unknown>,
   value: unknown,
   expected: DecoderError[]
 ): Promise<void>;
@@ -271,11 +271,11 @@ export function assertDecodesToErrors(
   expected: DecoderError[]
 ): void;
 export function assertDecodesToErrors(
-  decoder: Decoder<unknown> | PromiseDecoder<unknown>,
+  decoder: Decoder<unknown> | AsyncDecoder<unknown>,
   value: unknown,
   expected: DecoderError[]
 ): void | Promise<void> {
-  if (decoder instanceof PromiseDecoder || value instanceof Promise) {
+  if (decoder instanceof AsyncDecoder || value instanceof Promise) {
     const result = decoder.decode(value);
 
     return assertAsyncDecoderErrors(

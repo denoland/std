@@ -7,9 +7,9 @@ import {
   assertDecoder,
   stringDecoder,
   booleanDecoder,
-  booleanPromiseDecoder
+  booleanAsyncDecoder
 } from "./test_util.ts";
-import { PromiseDecoder } from "./decoder.ts";
+import { AsyncDecoder } from "./decoder.ts";
 import { isTuple } from "./is_tuple.ts";
 import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
@@ -104,9 +104,9 @@ test({
 test({
   name: "async isTuple([stringDecoder, booleanDecoder])",
   fn: async (): Promise<void> => {
-    const decoder = isTuple([stringDecoder, booleanPromiseDecoder]);
+    const decoder = isTuple([stringDecoder, booleanAsyncDecoder]);
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     for (const item of [["string", true], ["", false]]) {
       // isTuple returns a new array so we can't use the `expected` option
@@ -153,11 +153,11 @@ test({
 test({
   name: "async isTuple([stringDecoder, booleanDecoder], {allErrors: true})",
   fn: async (): Promise<void> => {
-    const decoder = isTuple([stringDecoder, booleanPromiseDecoder], {
+    const decoder = isTuple([stringDecoder, booleanAsyncDecoder], {
       allErrors: true
     });
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     for (const item of [["string", true], ["", false]]) {
       // isTuple returns a new array so we can't use the `expected` option

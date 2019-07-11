@@ -8,7 +8,7 @@ import {
   stringDecoder,
   numberDecoder
 } from "./test_util.ts";
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import { isChainOf } from "./is_chain_of.ts";
 import {
   DecoderSuccess,
@@ -74,7 +74,7 @@ test({
 test({
   name: "async isChainOf([stringDecoder, lengthDecoder])",
   fn: async (): Promise<void> => {
-    const lengthDecoder = new PromiseDecoder<string, string>(
+    const lengthDecoder = new AsyncDecoder<string, string>(
       async (value): Promise<DecoderResult<string>> =>
         value.length > 10
           ? new DecoderSuccess(value)
@@ -83,7 +83,7 @@ test({
 
     const decoder = isChainOf([stringDecoder, lengthDecoder]);
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     for (const item of [
       "thisistenletters",

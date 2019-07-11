@@ -6,9 +6,9 @@ import {
   assertDecodesToErrors,
   assertDecoder,
   stringDecoder,
-  stringPromiseDecoder
+  stringAsyncDecoder
 } from "./test_util.ts";
-import { PromiseDecoder, Decoder } from "./decoder.ts";
+import { AsyncDecoder, Decoder } from "./decoder.ts";
 import { isOptional } from "./is_optional.ts";
 import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
@@ -48,9 +48,9 @@ test({
 test({
   name: "async isOptional()",
   fn: async (): Promise<void> => {
-    const decoder = isOptional(stringPromiseDecoder);
+    const decoder = isOptional(stringAsyncDecoder);
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     for (const item of ["2019-07-03", "heLLooooo", undefined]) {
       await assertDecodesToSuccess(decoder, item, new DecoderSuccess(item));

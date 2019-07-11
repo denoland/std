@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import { isExactly } from "./is_exactly.ts";
 import { SimpleDecoderOptions, applyOptionsToDecoderErrors } from "./util.ts";
 import {
@@ -18,15 +18,15 @@ export function isOptional<R, V>(
   options?: IsOptionalOptions
 ): Decoder<R | undefined, V>;
 export function isOptional<R, V>(
-  decoder: PromiseDecoder<R, V>,
+  decoder: AsyncDecoder<R, V>,
   options?: IsOptionalOptions
-): PromiseDecoder<R | undefined, V>;
+): AsyncDecoder<R | undefined, V>;
 export function isOptional<R, V>(
-  decoder: Decoder<R, V> | PromiseDecoder<R, V>,
+  decoder: Decoder<R, V> | AsyncDecoder<R, V>,
   options: IsOptionalOptions = {}
-): Decoder<R | undefined, V> | PromiseDecoder<R | undefined, V> {
-  if (decoder instanceof PromiseDecoder) {
-    return new PromiseDecoder(
+): Decoder<R | undefined, V> | AsyncDecoder<R | undefined, V> {
+  if (decoder instanceof AsyncDecoder) {
+    return new AsyncDecoder(
       async (value: V): Promise<DecoderResult<R | undefined>> => {
         let result: DecoderResult<R | undefined> = undefinedDecoder.decode(
           value

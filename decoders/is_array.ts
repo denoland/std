@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import {
   DecoderError,
   DecoderSuccess,
@@ -55,15 +55,15 @@ export function isArray<R>(
 ): Decoder<R[]>;
 
 export function isArray<R>(
-  decoder: PromiseDecoder<R>,
+  decoder: AsyncDecoder<R>,
   options?: IsArrayOptions
-): PromiseDecoder<R[]>;
+): AsyncDecoder<R[]>;
 
 export function isArray<R>(
-  decoder?: Decoder<R> | PromiseDecoder<R> | IsArrayOptions,
+  decoder?: Decoder<R> | AsyncDecoder<R> | IsArrayOptions,
   options: IsArrayOptions = {}
-): Decoder<R[]> | PromiseDecoder<R[]> {
-  if (!(decoder instanceof Decoder || decoder instanceof PromiseDecoder)) {
+): Decoder<R[]> | AsyncDecoder<R[]> {
+  if (!(decoder instanceof Decoder || decoder instanceof AsyncDecoder)) {
     return new Decoder<R[]>(
       (input): DecoderResult<R[]> =>
         Array.isArray(input)
@@ -71,9 +71,9 @@ export function isArray<R>(
           : nonArrayError(input, options)
     );
   }
-  if (decoder instanceof PromiseDecoder) {
+  if (decoder instanceof AsyncDecoder) {
     if (options.allErrors) {
-      return new PromiseDecoder(
+      return new AsyncDecoder(
         async (input): Promise<DecoderResult<R[]>> => {
           if (!Array.isArray(input)) return nonArrayError(input, options);
 
@@ -120,7 +120,7 @@ export function isArray<R>(
       );
     }
 
-    return new PromiseDecoder(
+    return new AsyncDecoder(
       async (input): Promise<DecoderResult<R[]>> => {
         if (!Array.isArray(input)) return nonArrayError(input, options);
 

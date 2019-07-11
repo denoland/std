@@ -6,9 +6,9 @@ import {
   assertDecodesToErrors,
   assertDecoder,
   stringDecoder,
-  stringPromiseDecoder
+  stringAsyncDecoder
 } from "./test_util.ts";
-import { PromiseDecoder } from "./decoder.ts";
+import { AsyncDecoder } from "./decoder.ts";
 import { isArray } from "./is_array.ts";
 import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
@@ -124,9 +124,9 @@ test({
 test({
   name: "async isArray(stringDecoder)",
   fn: async (): Promise<void> => {
-    const decoder = isArray(stringPromiseDecoder);
+    const decoder = isArray(stringAsyncDecoder);
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     const array1 = [1, null];
     await assertDecodesToErrors(decoder, array1, [
@@ -153,11 +153,11 @@ test({
 test({
   name: "async isArray(stringDecoder, {allErrors: true})",
   fn: async (): Promise<void> => {
-    const decoder = isArray(stringPromiseDecoder, {
+    const decoder = isArray(stringAsyncDecoder, {
       allErrors: true
     });
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     const array1 = [1, null];
     await assertDecodesToErrors(decoder, array1, [

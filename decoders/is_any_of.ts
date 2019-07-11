@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Decoder, PromiseDecoder, DecoderReturnType } from "./decoder.ts";
+import { Decoder, AsyncDecoder, DecoderReturnType } from "./decoder.ts";
 import {
   DecoderSuccess,
   DecoderError,
@@ -28,21 +28,21 @@ export function isAnyOf<T extends Decoder<unknown>>(
   decoders: T[],
   options?: IsAnyOfOptions
 ): Decoder<DecoderReturnType<T>>;
-export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
+export function isAnyOf<T extends Decoder<unknown> | AsyncDecoder<unknown>>(
   decoders: T[],
   options?: IsAnyOfOptions
-): PromiseDecoder<DecoderReturnType<T>>;
-export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
+): AsyncDecoder<DecoderReturnType<T>>;
+export function isAnyOf<T extends Decoder<unknown> | AsyncDecoder<unknown>>(
   decoders: T[],
   options: IsAnyOfOptions = {}
-): Decoder<DecoderReturnType<T>> | PromiseDecoder<DecoderReturnType<T>> {
-  const hasPromiseDecoder = decoders.some(
-    (decoder): boolean => decoder instanceof PromiseDecoder
+): Decoder<DecoderReturnType<T>> | AsyncDecoder<DecoderReturnType<T>> {
+  const hasAsyncDecoder = decoders.some(
+    (decoder): boolean => decoder instanceof AsyncDecoder
   );
 
-  if (hasPromiseDecoder) {
+  if (hasAsyncDecoder) {
     if (options.decodeInParallel) {
-      return new PromiseDecoder<DecoderReturnType<T>>(
+      return new AsyncDecoder<DecoderReturnType<T>>(
         async (value): Promise<DecoderResult<DecoderReturnType<T>>> => {
           const promises = decoders.map(
             async (decoder): Promise<DecoderResult<DecoderReturnType<T>>> =>
@@ -63,7 +63,7 @@ export function isAnyOf<T extends Decoder<unknown> | PromiseDecoder<unknown>>(
       );
     }
 
-    return new PromiseDecoder<DecoderReturnType<T>>(
+    return new AsyncDecoder<DecoderReturnType<T>>(
       async (value): Promise<DecoderResult<DecoderReturnType<T>>> => {
         const errors: DecoderError[] = [];
 

@@ -5,9 +5,9 @@ import {
   assertDecoder,
   assertDecodesToErrors,
   stringDecoder,
-  stringPromiseDecoder
+  stringAsyncDecoder
 } from "./test_util.ts";
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import { isDictionary } from "./is_dictionary.ts";
 import {
   DecoderSuccess,
@@ -284,14 +284,14 @@ test({
 test({
   name: "async isDictionary(stringDecoder, keyDecoder)",
   fn: async (): Promise<void> => {
-    const keyPromiseDecoder = new PromiseDecoder(
+    const keyAsyncDecoder = new AsyncDecoder(
       async (value: string): Promise<DecoderResult<string>> =>
         value.length < 5
           ? new DecoderSuccess(value)
           : [new DecoderError(value, "must have length less than 5")]
     );
 
-    const decoder = isDictionary(stringPromiseDecoder, keyPromiseDecoder);
+    const decoder = isDictionary(stringAsyncDecoder, keyAsyncDecoder);
 
     for (const item of [{ 1: "one" }, { 1: "one", two: "two" }]) {
       await assertDecodesToSuccess(decoder, item, new DecoderSuccess(item));
@@ -330,18 +330,18 @@ test({
 test({
   name: "async isDictionary(stringDecoder, keyDecoder, {allErrors: true})",
   fn: async (): Promise<void> => {
-    const keyPromiseDecoder = new PromiseDecoder(
+    const keyAsyncDecoder = new AsyncDecoder(
       async (value: string): Promise<DecoderResult<string>> =>
         value.length < 5
           ? new DecoderSuccess(value)
           : [new DecoderError(value, "must have length less than 5")]
     );
 
-    const decoder = isDictionary(stringDecoder, keyPromiseDecoder, {
+    const decoder = isDictionary(stringDecoder, keyAsyncDecoder, {
       allErrors: true
     });
 
-    assertEquals(decoder instanceof PromiseDecoder, true);
+    assertEquals(decoder instanceof AsyncDecoder, true);
 
     for (const item of [{ 1: "one" }, { 1: "one", two: "two" }]) {
       await assertDecodesToSuccess(decoder, item, new DecoderSuccess(item));

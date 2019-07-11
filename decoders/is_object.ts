@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import {
   DecoderError,
   areDecoderErrors,
@@ -59,7 +59,7 @@ function childError(
 }
 
 function checkInputKeys<T>(
-  decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
+  decoderObject: { [P in keyof T]: Decoder<T[P]> | AsyncDecoder<T[P]> },
   input: object,
   options: { allErrors?: boolean }
 ): DecoderError[] | undefined {
@@ -96,20 +96,20 @@ export function isObject<T>(
   options?: IsObjectOptions
 ): Decoder<T>;
 export function isObject<T>(
-  decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
+  decoderObject: { [P in keyof T]: Decoder<T[P]> | AsyncDecoder<T[P]> },
   options?: IsObjectOptions
-): PromiseDecoder<T>;
+): AsyncDecoder<T>;
 export function isObject<T>(
-  decoderObject: { [P in keyof T]: Decoder<T[P]> | PromiseDecoder<T[P]> },
+  decoderObject: { [P in keyof T]: Decoder<T[P]> | AsyncDecoder<T[P]> },
   options: IsObjectOptions = {}
-): Decoder<T> | PromiseDecoder<T> {
-  const hasPromiseDecoder = Object.values(decoderObject).some(
-    (decoder): boolean => decoder instanceof PromiseDecoder
+): Decoder<T> | AsyncDecoder<T> {
+  const hasAsyncDecoder = Object.values(decoderObject).some(
+    (decoder): boolean => decoder instanceof AsyncDecoder
   );
 
-  if (hasPromiseDecoder) {
+  if (hasAsyncDecoder) {
     if (options.allErrors) {
-      return new PromiseDecoder(
+      return new AsyncDecoder(
         async (input): Promise<DecoderResult<T>> => {
           if (typeof input !== "object" || input === null) {
             return nonObjectError(input, options);
@@ -166,7 +166,7 @@ export function isObject<T>(
       );
     }
 
-    return new PromiseDecoder(
+    return new AsyncDecoder(
       async (input): Promise<DecoderResult<T>> => {
         if (typeof input !== "object" || input === null) {
           return nonObjectError(input, options);

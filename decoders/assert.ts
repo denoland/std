@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import {
   DecoderError,
   DecoderResult,
@@ -37,15 +37,15 @@ export function assert<R, V>(
 ): { (value: V): R; (value: Promise<V>): Promise<R> };
 
 export function assert<R, V>(
-  decoder: PromiseDecoder<R, V>
+  decoder: AsyncDecoder<R, V>
 ): (value: V | Promise<V>) => Promise<R>;
 
 export function assert<R, V>(
-  decoder: Decoder<R, V> | PromiseDecoder<R, V>
+  decoder: Decoder<R, V> | AsyncDecoder<R, V>
 ):
   | { (value: V): R; (value: Promise<V>): Promise<R> }
   | ((value: V | Promise<V>) => Promise<R>) {
-  if (decoder instanceof PromiseDecoder) {
+  if (decoder instanceof AsyncDecoder) {
     return async (value: V | Promise<V>): Promise<R> =>
       handleResult(await decoder.decode(await value));
   }

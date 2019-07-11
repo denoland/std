@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import { ok, errorLocation, err } from "./_util.ts";
 import {
   DecoderError,
@@ -53,21 +53,21 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
 ): Decoder<R>;
 
 export function isTuple<R extends [unknown, ...unknown[]]>(
-  decoders: { [P in keyof R]: Decoder<R[P]> | PromiseDecoder<R[P]> },
+  decoders: { [P in keyof R]: Decoder<R[P]> | AsyncDecoder<R[P]> },
   options?: IsTupleOptions
-): PromiseDecoder<R>;
+): AsyncDecoder<R>;
 
 export function isTuple<R extends [unknown, ...unknown[]]>(
-  decoders: { [P in keyof R]: Decoder<R[P]> | PromiseDecoder<R[P]> },
+  decoders: { [P in keyof R]: Decoder<R[P]> | AsyncDecoder<R[P]> },
   options: IsTupleOptions = {}
-): Decoder<R> | PromiseDecoder<R> {
-  const hasPromiseDecoder = decoders.some(
-    (decoder): boolean => decoder instanceof PromiseDecoder
+): Decoder<R> | AsyncDecoder<R> {
+  const hasAsyncDecoder = decoders.some(
+    (decoder): boolean => decoder instanceof AsyncDecoder
   );
 
-  if (hasPromiseDecoder) {
+  if (hasAsyncDecoder) {
     if (options.allErrors) {
-      return new PromiseDecoder(
+      return new AsyncDecoder(
         async (input): Promise<DecoderResult<R>> => {
           if (!Array.isArray(input)) {
             return nonArrayError(input, options);
@@ -113,7 +113,7 @@ export function isTuple<R extends [unknown, ...unknown[]]>(
       );
     }
 
-    return new PromiseDecoder(
+    return new AsyncDecoder(
       async (input): Promise<DecoderResult<R>> => {
         if (!Array.isArray(input)) {
           return nonArrayError(input, options);

@@ -1,5 +1,5 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import {
   DecoderError,
   areDecoderErrors,
@@ -45,7 +45,7 @@ function childValueError(
 }
 
 async function asyncDecodeKey(
-  decoder: Decoder<string, string> | PromiseDecoder<string, string>,
+  decoder: Decoder<string, string> | AsyncDecoder<string, string>,
   key: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   input: any
@@ -62,7 +62,7 @@ async function asyncDecodeKey(
 }
 
 async function asyncDecodeValue<R, V>(
-  decoder: Decoder<R, V> | PromiseDecoder<R, V>,
+  decoder: Decoder<R, V> | AsyncDecoder<R, V>,
   value: V,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   input: any,
@@ -105,30 +105,30 @@ export function isDictionary<R, V>(
   options?: IsDictionaryOptions
 ): Decoder<{ [key: string]: R }, V>;
 export function isDictionary<R, V>(
-  decoder: PromiseDecoder<R, V>,
+  decoder: AsyncDecoder<R, V>,
   options?: IsDictionaryOptions
-): PromiseDecoder<{ [key: string]: R }, V>;
+): AsyncDecoder<{ [key: string]: R }, V>;
 export function isDictionary<R, V>(
-  valueDecoder: Decoder<R, V> | PromiseDecoder<R, V>,
-  keyDecoder: Decoder<string, string> | PromiseDecoder<string, string>,
+  valueDecoder: Decoder<R, V> | AsyncDecoder<R, V>,
+  keyDecoder: Decoder<string, string> | AsyncDecoder<string, string>,
   options?: IsDictionaryOptions
-): PromiseDecoder<{ [key: string]: R }, V>;
+): AsyncDecoder<{ [key: string]: R }, V>;
 export function isDictionary<R, V>(
-  decoder: Decoder<R, V> | PromiseDecoder<R, V>,
+  decoder: Decoder<R, V> | AsyncDecoder<R, V>,
   optionalA?:
     | IsDictionaryOptions
     | Decoder<string, string>
-    | PromiseDecoder<string, string>,
+    | AsyncDecoder<string, string>,
   optionalB?: IsDictionaryOptions
-): Decoder<{ [key: string]: R }, V> | PromiseDecoder<{ [key: string]: R }, V> {
+): Decoder<{ [key: string]: R }, V> | AsyncDecoder<{ [key: string]: R }, V> {
   let keyDecoder:
     | Decoder<string, string>
-    | PromiseDecoder<string, string>
+    | AsyncDecoder<string, string>
     | undefined;
   let options: IsDictionaryOptions = {};
 
   if (optionalA) {
-    if (optionalA instanceof Decoder || optionalA instanceof PromiseDecoder) {
+    if (optionalA instanceof Decoder || optionalA instanceof AsyncDecoder) {
       keyDecoder = optionalA;
     } else {
       options = optionalA;
@@ -139,12 +139,9 @@ export function isDictionary<R, V>(
     options = optionalB;
   }
 
-  if (
-    decoder instanceof PromiseDecoder ||
-    keyDecoder instanceof PromiseDecoder
-  ) {
+  if (decoder instanceof AsyncDecoder || keyDecoder instanceof AsyncDecoder) {
     if (options.allErrors) {
-      return new PromiseDecoder(
+      return new AsyncDecoder(
         async (
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           input: any
@@ -217,7 +214,7 @@ export function isDictionary<R, V>(
       );
     }
 
-    return new PromiseDecoder(
+    return new AsyncDecoder(
       async (
         input: V
       ): Promise<

@@ -6,7 +6,7 @@ import {
   assertDecoder,
   stringDecoder
 } from "./test_util.ts";
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import { isLazy } from "./is_lazy.ts";
 import {
   DecoderSuccess,
@@ -31,6 +31,43 @@ const decoder: Decoder<ArrayLike> = new Decoder(
     for (const element of input) {
       index++;
       const result = isLazy((): Decoder<ArrayLike> => decoder).decode(element);
+
+      if (areDecoderErrors(result)) {
+        return result.map(
+          (error): DecoderError =>
+            new DecoderError(
+              input,
+              `invalid element [${index}] > ${error.message}`,
+              {
+                location: `[${index}]${error.location}`,
+                key: index,
+                child: error
+              }
+            )
+        );
+      }
+
+      array.push(result.value);
+    }
+
+    return new DecoderSuccess(array);
+  }
+);
+
+const asyncDecoder: AsyncDecoder<ArrayLike> = new AsyncDecoder(
+  async (input): Promise<DecoderResult<ArrayLike>> => {
+    if (!Array.isArray(input)) {
+      return [new DecoderError(input, "must be an array")];
+    }
+
+    let index = -1;
+    const array: ArrayLike[] = [];
+
+    for (const element of input) {
+      index++;
+      const result = await isLazy((): AsyncDecoder<ArrayLike> => asyncDecoder, {
+        promise: true
+      }).decode(element);
 
       if (areDecoderErrors(result)) {
         return result.map(
@@ -108,13 +145,9 @@ test({
 test({
   name: "async isLazy()",
   fn: async (): Promise<void> => {
-    const promiseDecoder = new PromiseDecoder(
-      async (value): Promise<DecoderResult<ArrayLike>> => decoder.decode(value)
-    );
-
     for (const item of [[], [[]], [[], [], [[], [], []]]]) {
       await assertDecodesToSuccess(
-        promiseDecoder,
+        asyncDecoder,
         item,
         new DecoderSuccess(item)
       );
@@ -125,7 +158,7 @@ test({
       `invalid element [2] > invalid element [1] > ` +
       `invalid element [0] > must be an array`;
 
-    await assertDecodesToErrors(promiseDecoder, obj1, [
+    await assertDecodesToErrors(asyncDecoder, obj1, [
       new DecoderError(obj1, msg, {
         location: "[2][1][0]",
         key: 2,

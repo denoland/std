@@ -2,13 +2,20 @@
 
 /**
  * DecoderSuccess returned on a successful call to
- * `Decoder#decode` or `PromiseDecoder#decode`
+ * `Decoder#decode` or `AsyncDecoder#decode`
  */
 export class DecoderSuccess<T> {
   constructor(readonly value: T) {}
 }
 
-/** a `DecoderKey` could be the key of an Object, Array, Map, or Set. */
+/**
+ * The `DecoderKey` value is present on `DecoderError` and is
+ * dependent on the decoder associated with an error.
+ *
+ * For example, it could be the key of an Object, Array, Map,
+ * or Set. When decoding a file, it could be a tuple of the
+ * filename, line number, and character number. Etc.
+ */
 export type DecoderKey =
   | number
   | string
@@ -19,14 +26,14 @@ export type DecoderKey =
 
 /**
  * DecoderError returned on a failed call to
- * `Decoder#decode` or `PromiseDecoder#decode`
+ * `Decoder#decode` or `AsyncDecoder#decode`
  */
 export class DecoderError {
   /** The value that failed validation. */
   input: unknown;
 
   /** A human readable error message. */
-  message!: string;
+  message: string;
 
   /** An optional name to describe the decoder which triggered the error. */
   decoderName?: string;

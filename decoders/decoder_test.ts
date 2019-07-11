@@ -6,9 +6,9 @@ import {
   stringDecoder,
   booleanDecoder,
   assertDecodesToSuccess,
-  booleanPromiseDecoder
+  booleanAsyncDecoder
 } from "./test_util.ts";
-import { Decoder, PromiseDecoder } from "./decoder.ts";
+import { Decoder, AsyncDecoder } from "./decoder.ts";
 import { DecoderSuccess, DecoderError } from "./decoder_result.ts";
 
 /**
@@ -77,20 +77,20 @@ test({
 });
 
 /**
- * PromiseDecoder
+ * AsyncDecoder
  */
 
 test({
-  name: "new PromiseDecoder",
+  name: "new AsyncDecoder",
   fn: (): void => {
-    assertEquals(booleanPromiseDecoder instanceof PromiseDecoder, true);
+    assertEquals(booleanAsyncDecoder instanceof AsyncDecoder, true);
   }
 });
 
 test({
-  name: "PromiseDecoder.decode",
+  name: "AsyncDecoder.decode",
   fn: async (): Promise<void> => {
-    const decoder = booleanPromiseDecoder;
+    const decoder = booleanAsyncDecoder;
 
     await assertDecodesToSuccess(decoder, true, new DecoderSuccess(true));
     await assertDecodesToSuccess(decoder, false, new DecoderSuccess(false));
@@ -115,9 +115,9 @@ test({
 });
 
 test({
-  name: "PromiseDecoder.map",
+  name: "AsyncDecoder.map",
   fn: async (): Promise<void> => {
-    const decoder = booleanPromiseDecoder.map((value): boolean => !value);
+    const decoder = booleanAsyncDecoder.map((value): boolean => !value);
 
     await assertDecodesToSuccess(decoder, true, new DecoderSuccess(false));
     await assertDecodesToSuccess(decoder, false, new DecoderSuccess(true));
