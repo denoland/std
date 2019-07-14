@@ -111,7 +111,7 @@ export class ServerRequest {
   public async *bodyStream(): AsyncIterableIterator<Uint8Array> {
     if (this.headers.has("content-length")) {
       const len = +this.headers.get("content-length")!;
-      if (Number.isNaN(len)) {
+      if (Number.isNaN(len) || len == 0) {
         return new Uint8Array(0);
       }
       let buf = new Uint8Array(1024);
