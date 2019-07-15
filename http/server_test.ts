@@ -119,6 +119,18 @@ test(async function requestBodyWithContentLength(): Promise<void> {
   }
 });
 
+test(async function requestBodyWithoutBody(): Promise<void> {
+  {
+    const req = new ServerRequest();
+    req.headers = new Headers();
+    req.headers.set("content-length", "0");
+    const buf = new Buffer;
+    req.r = new BufReader(buf);
+    const body = dec.decode(await req.body());
+    assertEquals(body, '');
+  }
+});
+
 test(async function requestBodyWithTransferEncoding(): Promise<void> {
   {
     const shortText = "Hello";
