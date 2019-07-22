@@ -1,5 +1,5 @@
 import { JSDOM } from "./jsdom.ts";
-import { assertEquals, assert } from "../testing/asserts.ts";
+import { assertEquals } from "../testing/asserts.ts";
 import { test, runIfMain } from "../testing/mod.ts";
 
 // TODO: Add proper tests. All tests are copied from

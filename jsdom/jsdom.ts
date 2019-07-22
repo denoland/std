@@ -5,6 +5,7 @@ import "./vendor/jsdom.js";
 // - https://github.com/microsoft/TypeScript/blob/master/lib/lib.dom.d.ts
 
 interface JSDOM {
+  // eslint-disable-next-line @typescript-eslint/no-misused-new
   new (html: string, options?: { runScripts?: "dangerously" }): JSDOM;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly window: any;
