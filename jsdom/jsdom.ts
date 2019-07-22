@@ -9,8 +9,10 @@ interface JSDOM {
   new (html: string, options?: { runScripts?: "dangerously" }): JSDOM;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly window: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fragment: (html: string) => any;
   serialize(): string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export let JSDOM = (window as any).jsdom.JSDOM as JSDOM;
