@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "vendor": "webpack-cli"
+  },
+  "devDependencies": {
+    "jsdom": "15.1.1",
+    "webpack": "4.36.1",
+    "webpack-cli": "3.3.6"
+  }
+}

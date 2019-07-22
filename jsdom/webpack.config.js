@@ -16,6 +16,7 @@ module.exports = {
     tls: "empty"
   },
   performance: {
+    // TODO: Investigate whether the bundle size can be reduced.
     hints: false
   }
 };
