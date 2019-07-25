@@ -10,6 +10,7 @@ test(function helloWorld(): void {
 
 test(function runScripts(): void {
   let dom = new JSDOM(
+    // eslint-disable-next-line max-len
     '<body><script>document.body.appendChild(document.createElement("hr"));</script></body>',
     { runScripts: "dangerously" }
   );
