@@ -1,4 +1,4 @@
-import { JSDOM } from "./jsdom.ts";
+import { JSDOM } from "./mod.ts";
 
 let dom = new JSDOM(`
   <!DOCTYPE html>

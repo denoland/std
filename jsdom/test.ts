@@ -1,4 +1,4 @@
-import { JSDOM } from "./jsdom.ts";
+import { JSDOM } from "./mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import { test, runIfMain } from "../testing/mod.ts";
 
