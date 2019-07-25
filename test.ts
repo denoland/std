@@ -12,6 +12,7 @@ import "./fs/test.ts";
 import "./http/test.ts";
 import "./io/test.ts";
 import "./installer/test.ts";
+import "./jsdom/test.ts";
 import "./log/test.ts";
 import "./media_types/test.ts";
 import "./mime/test.ts";

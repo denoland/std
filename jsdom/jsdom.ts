@@ -1,18 +1,4 @@
-import "./vendor/jsdom.js";
+import { jsdom as instance } from "./vendor/jsdom.js";
+import { jsdom } from "./types/jsdom.ts";
 
-// TODO: Investigate how to reuse typings from:
-// - https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/jsdom/index.d.ts
-// - https://github.com/microsoft/TypeScript/blob/master/lib/lib.dom.d.ts
-
-interface JSDOM {
-  // eslint-disable-next-line @typescript-eslint/no-misused-new
-  new (html: string, options?: { runScripts?: "dangerously" }): JSDOM;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly window: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fragment: (html: string) => any;
-  serialize(): string;
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export let JSDOM = (window as any).jsdom.JSDOM as JSDOM;
+export const JSDOM = instance.JSDOM as jsdom.JSDOM;

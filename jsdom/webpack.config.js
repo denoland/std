@@ -6,7 +6,7 @@ module.exports = {
     path: path.join(__dirname, "vendor"),
     filename: "./jsdom.js",
     library: "jsdom",
-    libraryTarget: "window"
+    libraryTarget: "var"
   },
   mode: "production",
   node: {
@@ -16,7 +16,7 @@ module.exports = {
     tls: "empty"
   },
   performance: {
-    // TODO: Investigate whether the bundle size can be reduced.
+    // TODO: Investigate whether the bundle size can be optimized.
     hints: false
   }
 };

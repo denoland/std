@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "vendor": "webpack-cli"
+    "vendor": "webpack-cli && sed -i.bak '1s;^;export ;' ./vendor/jsdom.js"
   },
   "devDependencies": {
     "jsdom": "15.1.1",
