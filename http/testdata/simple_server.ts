@@ -1,3 +1,5 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+// This is an example of a server that responds with an empty body
 import { serve } from "../server.ts";
 
 window.onload = async function main() {

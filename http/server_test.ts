@@ -496,7 +496,7 @@ test({
       assert(serverIsRunning);
     } finally {
       // Stops the sever.
-      p.kill(2); // SIGINT
+      p.kill(Deno.Signal.SIGINT);
     }
   }
 });
