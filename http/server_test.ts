@@ -16,7 +16,7 @@ import {
   readRequest,
   parseHTTPVersion
 } from "./server.ts";
-import { sleep } from "./util.ts";
+import { delay } from "../util/async.ts";
 import {
   BufReader,
   BufWriter,
@@ -483,7 +483,7 @@ test({
         }
       );
 
-      await sleep(100);
+      await delay(100);
 
       // Reqeusts to the server and immediately closes the connection
       const conn = await Deno.dial("tcp", "127.0.0.1:4502");
@@ -491,7 +491,7 @@ test({
       conn.close();
 
       // Waits for the server to handle the above (broken) request
-      await sleep(100);
+      await delay(100);
 
       assert(serverIsRunning);
     } finally {

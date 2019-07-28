@@ -1,6 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { serve, ServerRequest } from "./server.ts";
-import { sleep } from "./util.ts";
+import { delay } from "../util/async.ts";
 
 const addr = Deno.args[1] || "127.0.0.1:4501";
 const server = serve(addr);
@@ -9,7 +9,7 @@ const body = new TextEncoder().encode("Hello 1\n");
 const body4 = new TextEncoder().encode("World 4\n");
 
 async function delayedRespond(request: ServerRequest): Promise<void> {
-  await sleep(3000);
+  await delay(3000);
   await request.respond({ status: 200, body });
 }
 
