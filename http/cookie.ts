@@ -45,8 +45,8 @@ function toString(cookie: Cookie): string {
   if (cookie.httpOnly) {
     out.push("HttpOnly");
   }
-  if (Number.isInteger(cookie.maxAge)) {
-    assert(cookie.maxAge > 0, "Max-Age must be an integer superior to 0");
+  if (Number.isInteger(cookie.maxAge!)) {
+    assert(cookie.maxAge! > 0, "Max-Age must be an integer superior to 0");
     out.push(`Max-Age=${cookie.maxAge}`);
   }
   if (cookie.domain) {
@@ -75,10 +75,10 @@ function toString(cookie: Cookie): string {
 export function getCookies(req: ServerRequest): Cookies {
   if (req.headers.has("Cookie")) {
     const out: Cookies = {};
-    const c = req.headers.get("Cookie").split(";");
+    const c = req.headers.get("Cookie")!.split(";");
     for (const kv of c) {
       const cookieVal = kv.split("=");
-      const key = cookieVal.shift().trim();
+      const key = cookieVal.shift()!.trim();
       out[key] = cookieVal.join("=");
     }
     return out;
@@ -97,9 +97,10 @@ export function getCookies(req: ServerRequest): Cookies {
  * @param [cookie.domain] Specifies those hosts to which the cookie will be sent
  * @param [cookie.path] Indicates a URL path that must exist in the request.
  * @param [cookie.secure] Indicates if the cookie is made using SSL & HTTPS.
- * @param [cookie.httpOnly] Indicates that cookie is not accessible via Javascript
- * @param [cookie.sameSite] Allows servers to assert that a cookie ought not to be
- *  sent along with cross-site requests
+ * @param [cookie.httpOnly] Indicates that cookie is not accessible via
+ *                          Javascript
+ * @param [cookie.sameSite] Allows servers to assert that a cookie ought not to
+ *                          be sent along with cross-site requests
  * Example:
  *
  *     setCookie(response, { name: 'deno', value: 'runtime',

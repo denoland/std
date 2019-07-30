@@ -50,7 +50,7 @@ export const handlers = {
 
 export function getLogger(name?: string): Logger {
   if (!name) {
-    return state.loggers.get("default");
+    return state.loggers.get("default")!;
   }
 
   if (!state.loggers.has(name)) {
@@ -59,28 +59,19 @@ export function getLogger(name?: string): Logger {
     return logger;
   }
 
-  return state.loggers.get(name);
+  return state.loggers.get(name)!;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const debug = (msg: string, ...args: any[]): void =>
+export const debug = (msg: string, ...args: unknown[]): void =>
   getLogger("default").debug(msg, ...args);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const info = (msg: string, ...args: any[]): void =>
+export const info = (msg: string, ...args: unknown[]): void =>
   getLogger("default").info(msg, ...args);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const warning = (msg: string, ...args: any[]): void =>
+export const warning = (msg: string, ...args: unknown[]): void =>
   getLogger("default").warning(msg, ...args);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const error = (msg: string, ...args: any[]): void =>
+export const error = (msg: string, ...args: unknown[]): void =>
   getLogger("default").error(msg, ...args);
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const critical = (msg: string, ...args: any[]): void =>
+export const critical = (msg: string, ...args: unknown[]): void =>
   getLogger("default").critical(msg, ...args);
-
-export function getHandler(name: string): BaseHandler {
-  return state.handlers.get(name);
-}
 
 export async function setup(config: LogConfig): Promise<void> {
   state.config = {
@@ -118,7 +109,7 @@ export async function setup(config: LogConfig): Promise<void> {
     handlerNames.forEach(
       (handlerName): void => {
         if (state.handlers.has(handlerName)) {
-          handlers.push(state.handlers.get(handlerName));
+          handlers.push(state.handlers.get(handlerName)!);
         }
       }
     );

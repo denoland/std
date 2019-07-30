@@ -1,4 +1,4 @@
-#!/usr/bin/env deno --allow-net
+#!/usr/bin/env -S deno --allow-net
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 // This program serves files in the current directory over HTTP.
@@ -86,16 +86,16 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
 }
 
 function fileLenToString(len: number): string {
-  const multipler = 1024;
+  const multiplier = 1024;
   let base = 1;
   const suffix = ["B", "K", "M", "G", "T"];
   let suffixIndex = 0;
 
-  while (base * multipler < len) {
+  while (base * multiplier < len) {
     if (suffixIndex >= suffix.length - 1) {
       break;
     }
-    base *= multipler;
+    base *= multiplier;
     suffixIndex++;
   }
 
@@ -145,8 +145,12 @@ async function serveDir(
   dirPath: string,
   dirName: string
 ): Promise<Response> {
+  interface ListItem {
+    name: string;
+    template: string;
+  }
   // dirname has no prefix
-  const listEntry: string[] = [];
+  const listEntry: ListItem[] = [];
   const fileInfos = await readDir(dirPath);
   for (const info of fileInfos) {
     let fn = dirPath + "/" + info.name;
@@ -159,21 +163,29 @@ async function serveDir(
     try {
       mode = (await stat(fn)).mode;
     } catch (e) {}
-    listEntry.push(
-      createDirEntryDisplay(
+    listEntry.push({
+      name: info.name,
+      template: createDirEntryDisplay(
         info.name,
         fn.replace(currentDir, ""),
         info.isFile() ? info.len : null,
         mode,
         info.isDirectory()
       )
-    );
+    });
   }
 
   const page = new TextEncoder().encode(
-    dirViewerTemplate
-      .replace("<%DIRNAME%>", dirName + "/")
-      .replace("<%CONTENTS%>", listEntry.join(""))
+    dirViewerTemplate.replace("<%DIRNAME%>", dirName + "/").replace(
+      "<%CONTENTS%>",
+      listEntry
+        .sort(
+          (a, b): number =>
+            a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
+        )
+        .map((v): string => v.template)
+        .join("")
+    )
   );
 
   const headers = new Headers();

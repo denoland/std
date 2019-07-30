@@ -1,10 +1,10 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
-import { decode, encode } from "../strings/strings.ts";
+import { decode, encode } from "../strings/mod.ts";
 
 type Conn = Deno.Conn;
 type Writer = Deno.Writer;
-import { BufReader, BufWriter } from "../io/bufio.ts";
+import { BufReader, BufWriter, UnexpectedEOFError } from "../io/bufio.ts";
 import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
 import { Sha1 } from "./sha1.ts";
 import { writeResponse } from "../http/server.ts";
@@ -31,19 +31,25 @@ export interface WebSocketCloseEvent {
   reason?: string;
 }
 
-export function isWebSocketCloseEvent(a): a is WebSocketCloseEvent {
-  return a && typeof a["code"] === "number";
+export function isWebSocketCloseEvent(
+  a: WebSocketEvent
+): a is WebSocketCloseEvent {
+  return typeof a === "object" && a.hasOwnProperty("code");
 }
 
 export type WebSocketPingEvent = ["ping", Uint8Array];
 
-export function isWebSocketPingEvent(a): a is WebSocketPingEvent {
+export function isWebSocketPingEvent(
+  a: WebSocketEvent
+): a is WebSocketPingEvent {
   return Array.isArray(a) && a[0] === "ping" && a[1] instanceof Uint8Array;
 }
 
 export type WebSocketPongEvent = ["pong", Uint8Array];
 
-export function isWebSocketPongEvent(a): a is WebSocketPongEvent {
+export function isWebSocketPongEvent(
+  a: WebSocketEvent
+): a is WebSocketPongEvent {
   return Array.isArray(a) && a[0] === "pong" && a[1] instanceof Uint8Array;
 }
 
@@ -130,13 +136,13 @@ export async function writeFrame(
   header = append(header, frame.payload);
   const w = BufWriter.create(writer);
   await w.write(header);
-  const err = await w.flush();
-  if (err) throw err;
+  await w.flush();
 }
 
 /** Read websocket frame from given BufReader */
 export async function readFrame(buf: BufReader): Promise<WebSocketFrame> {
   let b = await buf.readByte();
+  if (b === Deno.EOF) throw new UnexpectedEOFError();
   let isLastFrame = false;
   switch (b >>> 4) {
     case 0b1000:
@@ -151,12 +157,17 @@ export async function readFrame(buf: BufReader): Promise<WebSocketFrame> {
   const opcode = b & 0x0f;
   // has_mask & payload
   b = await buf.readByte();
+  if (b === Deno.EOF) throw new UnexpectedEOFError();
   const hasMask = b >>> 7;
   let payloadLength = b & 0b01111111;
   if (payloadLength === 126) {
-    payloadLength = await readShort(buf);
+    const l = await readShort(buf);
+    if (l === Deno.EOF) throw new UnexpectedEOFError();
+    payloadLength = l;
   } else if (payloadLength === 127) {
-    payloadLength = await readLong(buf);
+    const l = await readLong(buf);
+    if (l === Deno.EOF) throw new UnexpectedEOFError();
+    payloadLength = Number(l);
   }
   // mask
   let mask;
@@ -403,15 +414,77 @@ export function createSecKey(): string {
   return btoa(key);
 }
 
-/** Connect to given websocket endpoint url. Endpoint must be acceptable for URL */
+async function handshake(
+  url: URL,
+  headers: Headers,
+  bufReader: BufReader,
+  bufWriter: BufWriter
+): Promise<void> {
+  const { hostname, pathname, searchParams } = url;
+  const key = createSecKey();
+
+  if (!headers.has("host")) {
+    headers.set("host", hostname);
+  }
+  headers.set("upgrade", "websocket");
+  headers.set("connection", "upgrade");
+  headers.set("sec-websocket-key", key);
+  headers.set("sec-websocket-version", "13");
+
+  let headerStr = `GET ${pathname}?${searchParams || ""} HTTP/1.1\r\n`;
+  for (const [key, value] of headers) {
+    headerStr += `${key}: ${value}\r\n`;
+  }
+  headerStr += "\r\n";
+
+  await bufWriter.write(encode(headerStr));
+  await bufWriter.flush();
+
+  const tpReader = new TextProtoReader(bufReader);
+  const statusLine = await tpReader.readLine();
+  if (statusLine === Deno.EOF) {
+    throw new UnexpectedEOFError();
+  }
+  const m = statusLine.match(/^(?<version>\S+) (?<statusCode>\S+) /);
+  if (!m) {
+    throw new Error("ws: invalid status line: " + statusLine);
+  }
+
+  // @ts-ignore
+  const { version, statusCode } = m.groups;
+  if (version !== "HTTP/1.1" || statusCode !== "101") {
+    throw new Error(
+      `ws: server didn't accept handshake: ` +
+        `version=${version}, statusCode=${statusCode}`
+    );
+  }
+
+  const responseHeaders = await tpReader.readMIMEHeader();
+  if (responseHeaders === Deno.EOF) {
+    throw new UnexpectedEOFError();
+  }
+
+  const expectedSecAccept = createSecAccept(key);
+  const secAccept = responseHeaders.get("sec-websocket-accept");
+  if (secAccept !== expectedSecAccept) {
+    throw new Error(
+      `ws: unexpected sec-websocket-accept header: ` +
+        `expected=${expectedSecAccept}, actual=${secAccept}`
+    );
+  }
+}
+
+/**
+ * Connect to given websocket endpoint url.
+ * Endpoint must be acceptable for URL.
+ */
 export async function connectWebSocket(
   endpoint: string,
   headers: Headers = new Headers()
 ): Promise<WebSocket> {
   const url = new URL(endpoint);
-  const { hostname, pathname, searchParams } = url;
-  let port = url.port;
-  if (!url.port) {
+  let { hostname, port } = url;
+  if (!port) {
     if (url.protocol === "http" || url.protocol === "ws") {
       port = "80";
     } else if (url.protocol === "https" || url.protocol === "wss") {
@@ -419,62 +492,13 @@ export async function connectWebSocket(
     }
   }
   const conn = await Deno.dial("tcp", `${hostname}:${port}`);
-  const abortHandshake = (err: Error): void => {
-    conn.close();
-    throw err;
-  };
   const bufWriter = new BufWriter(conn);
   const bufReader = new BufReader(conn);
-  await bufWriter.write(
-    encode(`GET ${pathname}?${searchParams || ""} HTTP/1.1\r\n`)
-  );
-  const key = createSecKey();
-  if (!headers.has("host")) {
-    headers.set("host", hostname);
-  }
-  headers.set("upgrade", "websocket");
-  headers.set("connection", "upgrade");
-  headers.set("sec-websocket-key", key);
-  let headerStr = "";
-  for (const [key, value] of headers) {
-    headerStr += `${key}: ${value}\r\n`;
-  }
-  headerStr += "\r\n";
-  await bufWriter.write(encode(headerStr));
-  let err, statusLine, responseHeaders;
-  err = await bufWriter.flush();
-  if (err) {
-    throw new Error("ws: failed to send handshake: " + err);
-  }
-  const tpReader = new TextProtoReader(bufReader);
-  [statusLine, err] = await tpReader.readLine();
-  if (err) {
-    abortHandshake(new Error("ws: failed to read status line: " + err));
-  }
-  const m = statusLine.match(/^(.+?) (.+?) (.+?)$/);
-  if (!m) {
-    abortHandshake(new Error("ws: invalid status line: " + statusLine));
-  }
-  const [_, version, statusCode] = m;
-  if (version !== "HTTP/1.1" || statusCode !== "101") {
-    abortHandshake(
-      new Error(
-        `ws: server didn't accept handshake: version=${version}, statusCode=${statusCode}`
-      )
-    );
-  }
-  [responseHeaders, err] = await tpReader.readMIMEHeader();
-  if (err) {
-    abortHandshake(new Error("ws: failed to parse response headers: " + err));
-  }
-  const expectedSecAccept = createSecAccept(key);
-  const secAccept = responseHeaders.get("sec-websocket-accept");
-  if (secAccept !== expectedSecAccept) {
-    abortHandshake(
-      new Error(
-        `ws: unexpected sec-websocket-accept header: expected=${expectedSecAccept}, actual=${secAccept}`
-      )
-    );
+  try {
+    await handshake(url, headers, bufReader, bufWriter);
+  } catch (err) {
+    conn.close();
+    throw err;
   }
   return new WebSocketImpl(conn, {
     bufWriter,

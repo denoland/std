@@ -66,7 +66,7 @@ export function globrex(
 
   // Helper function to build string and segments
   function add(
-    str,
+    str: string,
     options: AddOptions = { split: false, last: false, only: "" }
   ): void {
     const { split, last, only } = options;
@@ -76,7 +76,8 @@ export function globrex(
       if (split) {
         if (last) segment += str;
         if (segment !== "") {
-          if (!flags.includes("g")) segment = `^${segment}$`; // change it 'includes'
+          // change it 'includes'
+          if (!flags.includes("g")) segment = `^${segment}$`;
           path.segments.push(new RegExp(segment, flags));
         }
         segment = "";
@@ -114,13 +115,13 @@ export function globrex(
     if (c === ")") {
       if (ext.length) {
         add(c);
-        let type = ext.pop();
+        let type: string | undefined = ext.pop();
         if (type === "@") {
           add("{1}");
         } else if (type === "!") {
           add("([^/]*)");
         } else {
-          add(type);
+          add(type as string);
         }
         continue;
       }
@@ -265,8 +266,10 @@ export function globrex(
         // globstar is enabled, so determine if this is a globstar segment
         let isGlobstar =
           starCount > 1 && // multiple "*"'s
-          (prevChar === "/" || prevChar === undefined) && // from the start of the segment
-          (nextChar === "/" || nextChar === undefined); // to the end of the segment
+          // from the start of the segment
+          (prevChar === "/" || prevChar === undefined) &&
+          // to the end of the segment
+          (nextChar === "/" || nextChar === undefined);
         if (isGlobstar) {
           // it's a globstar, so match zero or more path segments
           add(GLOBSTAR, { only: "regex" });

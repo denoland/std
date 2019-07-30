@@ -72,7 +72,9 @@ const getConstructorName = (val: new (...args: any[]) => any): string =>
   (typeof val.constructor === "function" && val.constructor.name) || "Object";
 
 /* global window */
-/** Is val is equal to global window object? Works even if it does not exist :) */
+/** Is val is equal to global window object?
+ *  Works even if it does not exist :)
+ * */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isWindow = (val: any): val is Window =>
   typeof window !== "undefined" && val === window;
@@ -525,16 +527,10 @@ const getConfig = (options: Options): Config => ({
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function format(val: any, options: Optional<Options> = {}): string {
-  const opts = Object.keys(DEFAULT_OPTIONS).reduce(
-    (acc: Options, k: keyof Options): unknown => {
-      const opt = options[k];
-      if (typeof opt === "undefined") {
-        return { ...acc, [k]: DEFAULT_OPTIONS[k] };
-      }
-      return { ...acc, [k]: opt };
-    },
-    {}
-  ) as Options;
+  const opts: Options = {
+    ...DEFAULT_OPTIONS,
+    ...options
+  };
   const basicResult = printBasicValue(val, opts);
   if (basicResult !== null) {
     return basicResult;

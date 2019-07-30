@@ -1,4 +1,4 @@
-#!/usr/bin/env deno --allow-net --allow-env
+#!/usr/bin/env -S deno --allow-net --allow-env
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 const { args, env, exit, readFile } = Deno;
@@ -21,7 +21,8 @@ async function main(): Promise<void> {
 
   if (parsedArgs._.length === 0) {
     console.error(
-      "Usage: gist.ts --allow-env --allow-net [-t|--title Example] some_file [next_file]"
+      "Usage: gist.ts --allow-env --allow-net [-t|--title Example] some_file " +
+        "[next_file]"
     );
     exit(1);
   }

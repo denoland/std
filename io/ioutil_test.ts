@@ -1,7 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 const { Buffer } = Deno;
 type Reader = Deno.Reader;
-type ReadResult = Deno.ReadResult;
 import { test } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import {
@@ -19,10 +18,10 @@ class BinaryReader implements Reader {
 
   constructor(private bytes: Uint8Array = new Uint8Array(0)) {}
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<number | Deno.EOF> {
     p.set(this.bytes.subarray(this.index, p.byteLength));
     this.index += p.byteLength;
-    return { nread: p.byteLength, eof: false };
+    return p.byteLength;
   }
 }
 
@@ -40,10 +39,10 @@ test(async function testReadInt(): Promise<void> {
 
 test(async function testReadLong(): Promise<void> {
   const r = new BinaryReader(
-    new Uint8Array([0x12, 0x34, 0x56, 0x78, 0x12, 0x34, 0x56, 0x78])
+    new Uint8Array([0x00, 0x00, 0x00, 0x78, 0x12, 0x34, 0x56, 0x78])
   );
   const long = await readLong(new BufReader(r));
-  assertEquals(long, 0x1234567812345678);
+  assertEquals(long, 0x7812345678);
 });
 
 test(async function testReadLong2(): Promise<void> {

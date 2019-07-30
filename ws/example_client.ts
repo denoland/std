@@ -4,7 +4,7 @@ import {
   isWebSocketPingEvent,
   isWebSocketPongEvent
 } from "../ws/mod.ts";
-import { encode } from "../strings/strings.ts";
+import { encode } from "../strings/mod.ts";
 import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { blue, green, red, yellow } from "../colors/mod.ts";
@@ -42,7 +42,8 @@ async function main(): Promise<void> {
     } else {
       await sock.send(line);
     }
-    // FIXME: Without this, sock.receive() won't resolved though it is readable...
+    // FIXME: Without this,
+    // sock.receive() won't resolved though it is readable...
     await new Promise((resolve): void => setTimeout(resolve, 0));
   }
   await sock.close(1000);

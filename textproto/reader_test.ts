@@ -6,8 +6,18 @@
 import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader, ProtocolError } from "./mod.ts";
 import { stringsReader } from "../io/util.ts";
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
-import { test } from "../testing/mod.ts";
+import {
+  assert,
+  assertEquals,
+  assertNotEquals,
+  assertThrows
+} from "../testing/asserts.ts";
+import { test, runIfMain } from "../testing/mod.ts";
+
+function assertNotEOF<T extends {}>(val: T | Deno.EOF): T {
+  assertNotEquals(val, Deno.EOF);
+  return val as T;
+}
 
 function reader(s: string): TextProtoReader {
   return new TextProtoReader(new BufReader(stringsReader(s)));
@@ -21,37 +31,33 @@ function reader(s: string): TextProtoReader {
 // });
 
 test(async function textprotoReadEmpty(): Promise<void> {
-  let r = reader("");
-  let [, err] = await r.readMIMEHeader();
-  // Should not crash!
-  assertEquals(err, "EOF");
+  const r = reader("");
+  const m = await r.readMIMEHeader();
+  assertEquals(m, Deno.EOF);
 });
 
 test(async function textprotoReader(): Promise<void> {
-  let r = reader("line1\nline2\n");
-  let [s, err] = await r.readLine();
+  const r = reader("line1\nline2\n");
+  let s = await r.readLine();
   assertEquals(s, "line1");
-  assert(err == null);
 
-  [s, err] = await r.readLine();
+  s = await r.readLine();
   assertEquals(s, "line2");
-  assert(err == null);
 
-  [s, err] = await r.readLine();
-  assertEquals(s, "");
-  assert(err == "EOF");
+  s = await r.readLine();
+  assert(s === Deno.EOF);
 });
 
 test({
   name: "[textproto] Reader : MIME Header",
   async fn(): Promise<void> {
     const input =
-      "my-key: Value 1  \r\nLong-key: Even Longer Value\r\nmy-Key: Value 2\r\n\n";
+      "my-key: Value 1  \r\nLong-key: Even Longer Value\r\nmy-Key: " +
+      "Value 2\r\n\n";
     const r = reader(input);
-    const [m, err] = await r.readMIMEHeader();
+    const m = assertNotEOF(await r.readMIMEHeader());
     assertEquals(m.get("My-Key"), "Value 1, Value 2");
     assertEquals(m.get("Long-key"), "Even Longer Value");
-    assert(!err);
   }
 });
 
@@ -60,9 +66,8 @@ test({
   async fn(): Promise<void> {
     const input = "Foo: bar\n\n";
     const r = reader(input);
-    let [m, err] = await r.readMIMEHeader();
+    const m = assertNotEOF(await r.readMIMEHeader());
     assertEquals(m.get("Foo"), "bar");
-    assert(!err);
   }
 });
 
@@ -71,26 +76,23 @@ test({
   async fn(): Promise<void> {
     const input = ": bar\ntest-1: 1\n\n";
     const r = reader(input);
-    let [m, err] = await r.readMIMEHeader();
+    const m = assertNotEOF(await r.readMIMEHeader());
     assertEquals(m.get("Test-1"), "1");
-    assert(!err);
   }
 });
 
 test({
   name: "[textproto] Reader : Large MIME Header",
   async fn(): Promise<void> {
-    const data = [];
+    const data: string[] = [];
     // Go test is 16*1024. But seems it can't handle more
     for (let i = 0; i < 1024; i++) {
       data.push("x");
     }
     const sdata = data.join("");
-    const r = reader(`Cookie: ${sdata}\r\n`);
-    let [m] = await r.readMIMEHeader();
+    const r = reader(`Cookie: ${sdata}\r\n\r\n`);
+    const m = assertNotEOF(await r.readMIMEHeader());
     assertEquals(m.get("Cookie"), sdata);
-    // TODO re-enable, here err === "EOF" is has to be null
-    // assert(!err);
   }
 });
 
@@ -106,12 +108,11 @@ test({
       "Audio Mode : None\r\n" +
       "Privilege : 127\r\n\r\n";
     const r = reader(input);
-    let [m, err] = await r.readMIMEHeader();
+    const m = assertNotEOF(await r.readMIMEHeader());
     assertEquals(m.get("Foo"), "bar");
     assertEquals(m.get("Content-Language"), "en");
     assertEquals(m.get("SID"), "0");
     assertEquals(m.get("Privilege"), "127");
-    assert(!err);
     // Not a legal http header
     assertThrows(
       (): void => {
@@ -176,9 +177,10 @@ test({
       "------WebKitFormBoundaryimeZ2Le9LjohiUiG--\r\n\n"
     ];
     const r = reader(input.join(""));
-    let [m, err] = await r.readMIMEHeader();
+    const m = assertNotEOF(await r.readMIMEHeader());
     assertEquals(m.get("Accept"), "*/*");
     assertEquals(m.get("Content-Disposition"), 'form-data; name="test"');
-    assert(!err);
   }
 });
+
+runIfMain(import.meta);

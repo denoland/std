@@ -7,7 +7,7 @@ import {
   assertThrows,
   assertThrowsAsync
 } from "../testing/asserts.ts";
-import { test } from "../testing/mod.ts";
+import { test, runIfMain } from "../testing/mod.ts";
 import {
   matchAfterPrefix,
   MultipartReader,
@@ -25,71 +25,67 @@ const nlDashBoundary = e.encode("\r\n--" + boundary);
 
 test(function multipartScanUntilBoundary1(): void {
   const data = `--${boundary}`;
-  const [n, err] = scanUntilBoundary(
+  const n = scanUntilBoundary(
     e.encode(data),
     dashBoundary,
     nlDashBoundary,
     0,
-    "EOF"
+    true
   );
-  assertEquals(n, 0);
-  assertEquals(err, "EOF");
+  assertEquals(n, Deno.EOF);
 });
 
 test(function multipartScanUntilBoundary2(): void {
   const data = `foo\r\n--${boundary}`;
-  const [n, err] = scanUntilBoundary(
+  const n = scanUntilBoundary(
     e.encode(data),
     dashBoundary,
     nlDashBoundary,
     0,
-    "EOF"
+    true
   );
   assertEquals(n, 3);
-  assertEquals(err, "EOF");
-});
-
-test(function multipartScanUntilBoundary4(): void {
-  const data = `foo\r\n--`;
-  const [n, err] = scanUntilBoundary(
-    e.encode(data),
-    dashBoundary,
-    nlDashBoundary,
-    0,
-    null
-  );
-  assertEquals(n, 3);
-  assertEquals(err, null);
 });
 
 test(function multipartScanUntilBoundary3(): void {
   const data = `foobar`;
-  const [n, err] = scanUntilBoundary(
+  const n = scanUntilBoundary(
     e.encode(data),
     dashBoundary,
     nlDashBoundary,
     0,
-    null
+    false
   );
   assertEquals(n, data.length);
-  assertEquals(err, null);
+});
+
+test(function multipartScanUntilBoundary4(): void {
+  const data = `foo\r\n--`;
+  const n = scanUntilBoundary(
+    e.encode(data),
+    dashBoundary,
+    nlDashBoundary,
+    0,
+    false
+  );
+  assertEquals(n, 3);
 });
 
 test(function multipartMatchAfterPrefix1(): void {
   const data = `${boundary}\r`;
-  const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
+  const v = matchAfterPrefix(e.encode(data), e.encode(boundary), false);
   assertEquals(v, 1);
 });
 
 test(function multipartMatchAfterPrefix2(): void {
   const data = `${boundary}hoge`;
-  const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
+  const v = matchAfterPrefix(e.encode(data), e.encode(boundary), false);
   assertEquals(v, -1);
 });
 
 test(function multipartMatchAfterPrefix3(): void {
   const data = `${boundary}`;
-  const v = matchAfterPrefix(e.encode(data), e.encode(boundary), null);
+  const v = matchAfterPrefix(e.encode(data), e.encode(boundary), false);
   assertEquals(v, 0);
 });
 
@@ -114,7 +110,8 @@ test(function multipartMultipartWriter2(): void {
     (): MultipartWriter =>
       new MultipartWriter(
         w,
-        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" +
+          "aaaaaaaa"
       ),
     Error,
     "invalid boundary length"
@@ -145,6 +142,7 @@ test(async function multipartMultipartWriter3(): Promise<void> {
   );
   await assertThrowsAsync(
     async (): Promise<void> => {
+      // @ts-ignore
       await mw.writeFile("bar", "file", null);
     },
     Error,
@@ -200,7 +198,7 @@ test(async function multipartMultipartReader2(): Promise<void> {
     assertEquals(form["bar"], "bar");
     const file = form["file"] as FormFile;
     assertEquals(file.type, "application/octet-stream");
-    const f = await open(file.tempfile);
+    const f = await open(file.tempfile!);
     const w = new StringWriter();
     await copy(w, f);
     const json = JSON.parse(w.toString());
@@ -208,6 +206,8 @@ test(async function multipartMultipartReader2(): Promise<void> {
     f.close();
   } finally {
     const file = form["file"] as FormFile;
-    await remove(file.tempfile);
+    await remove(file.tempfile!);
   }
 });
+
+runIfMain(import.meta);
