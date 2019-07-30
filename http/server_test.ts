@@ -80,8 +80,8 @@ test(async function responseWrite(): Promise<void> {
       rid: -1,
       closeRead: (): void => {},
       closeWrite: (): void => {},
-      read: async (): Promise<Deno.ReadResult> => {
-        return { eof: true, nread: 0 };
+      read: async (): Promise<number | Deno.EOF> => {
+        return 0;
       },
       write: async (): Promise<number> => {
         return -1;
@@ -339,8 +339,8 @@ const mockConn = {
   rid: -1,
   closeRead: (): void => {},
   closeWrite: (): void => {},
-  read: async (): Promise<Deno.ReadResult> => {
-    return { eof: true, nread: 0 };
+  read: async (): Promise<number | Deno.EOF> => {
+    return 0;
   },
   write: async (): Promise<number> => {
     return -1;
@@ -434,7 +434,7 @@ test(async function testReadRequestError(): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let req: any;
     try {
-      req = await readRequest(reader);
+      req = await readRequest(mockConn, reader);
     } catch (e) {
       err = e;
     }
