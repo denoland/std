@@ -3,9 +3,9 @@
 This module contains small scripts that demonstrate use of Deno and its standard
 module.
 
-You can run these examples using just thier URL or Deno can install the program
-using an executable script which references the URL. (Think of installing as
-creating a bookmark to a program.)
+You can run these examples using just their URL or install the example as an
+executable script which references the URL. (Think of installing as creating a
+bookmark to a program.)
 
 ### A TCP echo server
 
@@ -16,7 +16,7 @@ deno https://deno.land/std/examples/echo_server.ts --allow-net
 Or
 
 ```shell
-deno install echo_server https://deno.land/std/examples/echo_server.ts --allow-read
+deno install echo_server https://deno.land/std/examples/echo_server.ts --allow-net
 ```
 
 ### cat - print file to standard output
