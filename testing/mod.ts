@@ -102,6 +102,7 @@ export function test(t: TestDefinition | TestFunction): void {
 
 const RED_FAILED = red("FAILED");
 const GREEN_OK = green("OK");
+const RED_BG_FAIL = bgRed(" FAIL ");
 
 interface TestStats {
   filtered: number;
@@ -184,7 +185,7 @@ function printResults(
   }
   // Attempting to match the output of Rust's test runner.
   print(
-    `\ntest result: ${stats.failed ? RED_FAILED : GREEN_OK}. ` +
+    `\ntest result: ${stats.failed ? RED_BG_FAIL : GREEN_OK} ` +
       `${stats.passed} passed; ${stats.failed} failed; ` +
       `${stats.ignored} ignored; ${stats.measured} measured; ` +
       `${stats.filtered} filtered out ` +
@@ -254,7 +255,8 @@ async function runTestsSerial(
   tests: TestDefinition[],
   exitOnFail: boolean,
   disableLog: boolean
-): Promise<void> {
+): Promise<string[]> {
+  const failed = [];
   for (const { fn, name } of tests) {
     // Displaying the currently running test if silent mode
     if (disableLog) {
@@ -280,11 +282,12 @@ async function runTestsSerial(
       print(`${RED_FAILED} ${name}`);
       print(err.stack);
       stats.failed++;
+      failed.push(name);
       if (exitOnFail) {
         break;
       }
     }
-  }
+  } return failed;
 }
 
 /** Defines options for controlling execution details of a test suite. */
@@ -320,6 +323,7 @@ export async function runTests({
   const results: TestResults = createTestResults(tests);
   print(`running ${tests.length} tests`);
   const start = performance.now();
+  let failedTests: string[];
   if (Deno.args.includes("--quiet")) {
     disableLog = true;
   }
@@ -329,7 +333,7 @@ export async function runTests({
   if (parallel) {
     await runTestsParallel(stats, results, tests, exitOnFail);
   } else {
-    await runTestsSerial(stats, tests, exitOnFail, disableLog);
+    failedTests = await runTestsSerial(stats, tests, exitOnFail, disableLog);
   }
   const end = performance.now();
   if (disableLog) {
@@ -341,6 +345,7 @@ export async function runTests({
     // promise rejections being swallowed.
     setTimeout((): void => {
       console.error(`There were ${stats.failed} test failures.`);
+      failedTests.forEach(failedTest => console.error(`${RED_BG_FAIL} ${red(failedTest)}`));
       Deno.exit(1);
     }, 0);
   }
