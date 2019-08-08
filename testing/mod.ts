@@ -287,7 +287,8 @@ async function runTestsSerial(
         break;
       }
     }
-  } return failed;
+  }
+  return failed;
 }
 
 /** Defines options for controlling execution details of a test suite. */
@@ -345,7 +346,9 @@ export async function runTests({
     // promise rejections being swallowed.
     setTimeout((): void => {
       console.error(`There were ${stats.failed} test failures.`);
-      failedTests.forEach(failedTest => console.error(`${RED_BG_FAIL} ${red(failedTest)}`));
+      failedTests.forEach(failedTest =>
+        console.error(`${RED_BG_FAIL} ${red(failedTest)}`)
+      );
       Deno.exit(1);
     }, 0);
   }
