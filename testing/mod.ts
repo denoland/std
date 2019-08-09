@@ -104,6 +104,8 @@ const RED_FAILED = red("FAILED");
 const GREEN_OK = green("OK");
 const RED_BG_FAIL = bgRed(" FAIL ");
 
+const VERBOSE = true;
+
 interface TestStats {
   filtered: number;
   ignored: number;
@@ -164,6 +166,19 @@ function report(result: TestResult): void {
     print(`test ${result.name} ... unresolved`);
   }
   result.printed = true;
+}
+
+function printFailedSummary(results: TestResults, verbose: boolean): void {
+  results.cases.forEach(
+    (v): void => {
+      if (!v.ok) {
+        console.error(`${RED_BG_FAIL} ${red(v.name)}`);
+        if (verbose) {
+          console.error(v.error);
+        }
+      }
+    }
+  );
 }
 
 function printResults(
@@ -252,11 +267,11 @@ async function runTestsParallel(
 
 async function runTestsSerial(
   stats: TestStats,
+  results: TestResults,
   tests: TestDefinition[],
   exitOnFail: boolean,
   disableLog: boolean
-): Promise<string[]> {
-  const failed = [];
+): Promise<void> {
   for (const { fn, name } of tests) {
     // Displaying the currently running test if silent mode
     if (disableLog) {
@@ -275,6 +290,14 @@ async function runTestsSerial(
       print(
         GREEN_OK + "     " + name + " " + promptTestTime(end - start, true)
       );
+      results.cases.forEach(
+        (v): void => {
+          if (v.name === name) {
+            v.ok = true;
+            v.printed = true;
+          }
+        }
+      );
     } catch (err) {
       if (disableLog) {
         print(CLEAR_LINE, false);
@@ -282,13 +305,20 @@ async function runTestsSerial(
       print(`${RED_FAILED} ${name}`);
       print(err.stack);
       stats.failed++;
-      failed.push(name);
+      results.cases.forEach(
+        (v): void => {
+          if (v.name === name) {
+            v.error = err;
+            v.ok = false;
+            v.printed = true;
+          }
+        }
+      );
       if (exitOnFail) {
         break;
       }
     }
   }
-  return failed;
 }
 
 /** Defines options for controlling execution details of a test suite. */
@@ -324,7 +354,6 @@ export async function runTests({
   const results: TestResults = createTestResults(tests);
   print(`running ${tests.length} tests`);
   const start = performance.now();
-  let failedTests: string[];
   if (Deno.args.includes("--quiet")) {
     disableLog = true;
   }
@@ -334,7 +363,7 @@ export async function runTests({
   if (parallel) {
     await runTestsParallel(stats, results, tests, exitOnFail);
   } else {
-    failedTests = await runTestsSerial(stats, tests, exitOnFail, disableLog);
+    await runTestsSerial(stats, results, tests, exitOnFail, disableLog);
   }
   const end = performance.now();
   if (disableLog) {
@@ -346,11 +375,7 @@ export async function runTests({
     // promise rejections being swallowed.
     setTimeout((): void => {
       console.error(`There were ${stats.failed} test failures.`);
-      failedTests.forEach(
-        (failedTest): void => {
-          console.error(`${RED_BG_FAIL} ${red(failedTest)}`);
-        }
-      );
+      printFailedSummary(results, VERBOSE);
       Deno.exit(1);
     }, 0);
   }
