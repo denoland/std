@@ -4,3 +4,5 @@ steps:
   - template: ./template.unix.yml
   - bash: eslint **/*.ts --max-warnings=0
   - template: ./template.common.yml
+    env:
+      DENO_DIR: ~/deno_dir/

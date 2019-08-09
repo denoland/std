@@ -4,5 +4,7 @@ steps:
   - bash: echo "##vso[task.prependpath]C:\Users\VssAdministrator\.deno\\bin"
   - bash: npx eslint **/*.ts --max-warnings=0
   - template: ./template.common.yml
+    env:
+      DENO_DIR: C:\Users\VssAdministrator\deno-dir
     parameters:
       exe_suffix: ".exe"
