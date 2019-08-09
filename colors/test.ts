@@ -1,148 +1,121 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
-import {
-  red,
-  bgBlue,
-  setEnabled,
-  getEnabled,
-  bold,
-  dim,
-  italic,
-  underline,
-  inverse,
-  hidden,
-  strikethrough,
-  black,
-  green,
-  yellow,
-  blue,
-  magenta,
-  cyan,
-  white,
-  gray,
-  bgBlack,
-  bgRed,
-  bgGreen,
-  bgYellow,
-  bgMagenta,
-  bgCyan,
-  bgWhite
-} from "./mod.ts";
+import * as _ from "./mod.ts";
 import "../examples/colors.ts";
 
 test(function singleColor(): void {
-  assertEquals(red("Hello world"), "[31mHello world[39m");
+  assertEquals(_.red("foo bar"), "[31mfoo bar[39m");
 });
 
 test(function doubleColor(): void {
-  assertEquals(bgBlue(red("Hello world")), "[44m[31mHello world[39m[49m");
+  assertEquals(_.bgBlue(_.red("foo bar")), "[44m[31mfoo bar[39m[49m");
 });
 
 test(function replacesCloseCharacters(): void {
-  assertEquals(red("Hel[39mlo"), "[31mHel[31mlo[39m");
+  assertEquals(_.red("Hel[39mlo"), "[31mHel[31mlo[39m");
 });
 
 test(function enablingColors(): void {
-  assertEquals(getEnabled(), true);
-  setEnabled(false);
-  assertEquals(bgBlue(red("Hello world")), "Hello world");
-  setEnabled(true);
-  assertEquals(red("Hello world"), "[31mHello world[39m");
+  assertEquals(_.getEnabled(), true);
+  _.setEnabled(false);
+  assertEquals(_.bgBlue(_.red("foo bar")), "foo bar");
+  _.setEnabled(true);
+  assertEquals(_.red("foo bar"), "[31mfoo bar[39m");
 });
 
 test(function testBold(): void {
-  assertEquals(bold("Hello world"), "[1mHello world[22m");
+  assertEquals(_.bold("foo bar"), "[1mfoo bar[22m");
 });
 
 test(function testDim(): void {
-  assertEquals(dim("Hello world"), "[2mHello world[22m");
+  assertEquals(_.dim("foo bar"), "[2mfoo bar[22m");
 });
 
 test(function testItalic(): void {
-  assertEquals(italic("Hello world"), "[3mHello world[23m");
+  assertEquals(_.italic("foo bar"), "[3mfoo bar[23m");
 });
 
 test(function testUnderline(): void {
-  assertEquals(underline("Hello world"), "[4mHello world[24m");
+  assertEquals(_.underline("foo bar"), "[4mfoo bar[24m");
 });
 
 test(function testInverse(): void {
-  assertEquals(inverse("Hello world"), "[7mHello world[27m");
+  assertEquals(_.inverse("foo bar"), "[7mfoo bar[27m");
 });
 
 test(function testHidden(): void {
-  assertEquals(hidden("Hello world"), "[8mHello world[28m");
+  assertEquals(_.hidden("foo bar"), "[8mfoo bar[28m");
 });
 
 test(function testStrikethrough(): void {
-  assertEquals(strikethrough("Hello world"), "[9mHello world[29m");
+  assertEquals(_.strikethrough("foo bar"), "[9mfoo bar[29m");
 });
 
 test(function testBlack(): void {
-  assertEquals(black("Hello world"), "[30mHello world[39m");
+  assertEquals(_.black("foo bar"), "[30mfoo bar[39m");
 });
 
 test(function testRed(): void {
-  assertEquals(red("Hello world"), "[31mHello world[39m");
+  assertEquals(_.red("foo bar"), "[31mfoo bar[39m");
 });
 
 test(function testGreen(): void {
-  assertEquals(green("Hello world"), "[32mHello world[39m");
+  assertEquals(_.green("foo bar"), "[32mfoo bar[39m");
 });
 
 test(function testYellow(): void {
-  assertEquals(yellow("Hello world"), "[33mHello world[39m");
+  assertEquals(_.yellow("foo bar"), "[33mfoo bar[39m");
 });
 
 test(function testBlue(): void {
-  assertEquals(blue("Hello world"), "[34mHello world[39m");
+  assertEquals(_.blue("foo bar"), "[34mfoo bar[39m");
 });
 
 test(function testMagenta(): void {
-  assertEquals(magenta("Hello world"), "[35mHello world[39m");
+  assertEquals(_.magenta("foo bar"), "[35mfoo bar[39m");
 });
 
 test(function testCyan(): void {
-  assertEquals(cyan("Hello world"), "[36mHello world[39m");
+  assertEquals(_.cyan("foo bar"), "[36mfoo bar[39m");
 });
 
 test(function testWhite(): void {
-  assertEquals(white("Hello world"), "[37mHello world[39m");
+  assertEquals(_.white("foo bar"), "[37mfoo bar[39m");
 });
 
 test(function testGray(): void {
-  assertEquals(gray("Hello world"), "[90mHello world[39m");
+  assertEquals(_.gray("foo bar"), "[90mfoo bar[39m");
 });
 
 test(function testBgBlack(): void {
-  assertEquals(bgBlack("Hello world"), "[40mHello world[49m");
+  assertEquals(_.bgBlack("foo bar"), "[40mfoo bar[49m");
 });
 
 test(function testBgRed(): void {
-  assertEquals(bgRed("Hello world"), "[41mHello world[49m");
+  assertEquals(_.bgRed("foo bar"), "[41mfoo bar[49m");
 });
 
 test(function testBgGreen(): void {
-  assertEquals(bgGreen("Hello world"), "[42mHello world[49m");
+  assertEquals(_.bgGreen("foo bar"), "[42mfoo bar[49m");
 });
 
 test(function testBgYellow(): void {
-  assertEquals(bgYellow("Hello world"), "[43mHello world[49m");
+  assertEquals(_.bgYellow("foo bar"), "[43mfoo bar[49m");
 });
 
 test(function testBgBlue(): void {
-  assertEquals(bgBlue("Hello world"), "[44mHello world[49m");
+  assertEquals(_.bgBlue("foo bar"), "[44mfoo bar[49m");
 });
 
 test(function testBgMagenta(): void {
-  assertEquals(bgMagenta("Hello world"), "[45mHello world[49m");
+  assertEquals(_.bgMagenta("foo bar"), "[45mfoo bar[49m");
 });
 
 test(function testBgCyan(): void {
-  assertEquals(bgCyan("Hello world"), "[46mHello world[49m");
+  assertEquals(_.bgCyan("foo bar"), "[46mfoo bar[49m");
 });
 
 test(function testBgWhite(): void {
-  assertEquals(bgWhite("Hello world"), "[47mHello world[49m");
+  assertEquals(_.bgWhite("foo bar"), "[47mfoo bar[49m");
 });
