@@ -2,5 +2,7 @@ parameters:
   exe_suffix: ""
 
 steps:
-  - bash: deno${{ parameters.exe_suffix }} run --allow-run --allow-write --allow-read --allow-env format.ts --check
+  - bash: ls flags
+  - bash: ls testing
+  - bash: deno${{ parameters.exe_suffix }} run --allow-run --allow-write --allow-read --allow-env format.ts --check; ls testing
   - bash: deno${{ parameters.exe_suffix }} run --allow-run --allow-net --allow-write --allow-read --allow-env --config=tsconfig.test.json test.ts

@@ -24,6 +24,8 @@ async function main(opts): Promise<void> {
     args.push("--check");
   }
 
+  args.push(".");
+
   exit((await xrun({ args }).status()).code);
 }
 
