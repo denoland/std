@@ -104,8 +104,6 @@ const RED_FAILED = red("FAILED");
 const GREEN_OK = green("OK");
 const RED_BG_FAIL = bgRed(" FAIL ");
 
-const VERBOSE = true;
-
 interface TestStats {
   filtered: number;
   ignored: number;
@@ -168,12 +166,12 @@ function report(result: TestResult): void {
   result.printed = true;
 }
 
-function printFailedSummary(results: TestResults, verbose: boolean): void {
+function printFailedSummary(results: TestResults): void {
   results.cases.forEach(
     (v): void => {
       if (!v.ok) {
         console.error(`${RED_BG_FAIL} ${red(v.name)}`);
-        if (verbose) {
+        if (Deno.args.includes("--verbose")) {
           console.error(v.error);
         }
       }
@@ -375,7 +373,7 @@ export async function runTests({
     // promise rejections being swallowed.
     setTimeout((): void => {
       console.error(`There were ${stats.failed} test failures.`);
-      printFailedSummary(results, VERBOSE);
+      printFailedSummary(results);
       Deno.exit(1);
     }, 0);
   }
