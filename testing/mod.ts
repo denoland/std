@@ -171,9 +171,7 @@ function printFailedSummary(results: TestResults): void {
     (v): void => {
       if (!v.ok) {
         console.error(`${RED_BG_FAIL} ${red(v.name)}`);
-        if (Deno.args.includes("--verbose")) {
-          console.error(v.error);
-        }
+        console.error(v.error);
       }
     }
   );
