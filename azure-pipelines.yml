@@ -1,6 +1,7 @@
 variables:
   DENO_VERSION: "v0.14.0"
   TS_VERSION: "3.4.5"
+  DENO_DIR: $(HOME)/deno_dir/
 
 # TODO Try to get eslint to run under Deno, like prettier
 jobs:
