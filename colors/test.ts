@@ -29,7 +29,7 @@ test(function testBold(): void {
 });
 
 test(function testDim(): void {
-  assertEquals(c.dim("foo bar"), "[2222mfoo bar[22m");
+  assertEquals(c.dim("foo bar"), "[2mfoo bar[22m");
 });
 
 test(function testItalic(): void {
