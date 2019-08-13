@@ -2,7 +2,5 @@ parameters:
   exe_suffix: ""
 
 steps:
-  - bash: ls -ahl .; echo $PWD; echo $DENO_DIR; ls -ahl $(DENO_DIR);
-  - bash: deno${{ parameters.exe_suffix }} run --allow-run --allow-write --allow-read --allow-env ./format.ts --check || ls -ahl $(DENO_DIR) || ls -ahl $(DENO_DIR)gen;
-  - bash: deno${{ parameters.exe_suffix }} info ./format.ts
+  - bash: deno${{ parameters.exe_suffix }} run --allow-run --allow-write --allow-read --allow-env ./format.ts --check
   - bash: deno${{ parameters.exe_suffix }} run --allow-run --allow-net --allow-write --allow-read --allow-env --config=tsconfig.test.json ./test.ts
