@@ -26,7 +26,9 @@ OPTIONS:
                             used files to match must be specified after "--". 
   
 ARGS:
-  [FILES...]  List of file names to run. Defaults to: ${DEFAULT_GLOBS.join(",")} 
+  [FILES...]  List of file names to run. Defaults to: ${DEFAULT_GLOBS.join(
+    ","
+  )} 
 `);
 }
 /* eslint-enable max-len */
