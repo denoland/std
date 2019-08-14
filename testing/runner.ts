@@ -41,6 +41,8 @@ function filePathToRegExp(str: string): RegExp {
   return RegExp(str);
 }
 
+// TODO: change return type to `Promise<void>` once, `runTests` is updated
+// to return boolean instead of exiting
 export async function main(root: string = cwd()): Promise<void> {
   const parsedArgs = parse(args.slice(1), {
     boolean: ["quiet", "failfast", "help"],
