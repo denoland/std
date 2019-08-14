@@ -1,7 +1,7 @@
 #!/usr/bin/env deno -A
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { parse } from "../flags/mod.ts";
-import { glob, walk } from "../fs/mod.ts";
+import { glob, isGlob, walk } from "../fs/mod.ts";
 import { runTests } from "./mod.ts";
 const { args, cwd } = Deno;
 
@@ -33,7 +33,15 @@ ARGS:
 }
 /* eslint-enable max-len */
 
-async function main(): Promise<void> {
+function filePathToRegExp(str: string): RegExp {
+  if (isGlob(str)) {
+    return glob(str);
+  }
+
+  return RegExp(str);
+}
+
+async function main(root: string = cwd()): Promise<void> {
   const parsedArgs = parse(args.slice(1), {
     boolean: ["quiet", "failfast", "help"],
     string: ["exclude"],
@@ -49,8 +57,8 @@ async function main(): Promise<void> {
     return showHelp();
   }
 
-  let includeFiles;
-  let excludeFiles;
+  let includeFiles: string[];
+  let excludeFiles: string[];
 
   if (parsedArgs._.length) {
     includeFiles = (parsedArgs._ as string[])
@@ -70,9 +78,9 @@ async function main(): Promise<void> {
     excludeFiles = [];
   }
 
-  const filesIterator = walk(cwd(), {
-    match: includeFiles.map(glob),
-    skip: excludeFiles.map(glob)
+  const filesIterator = walk(root, {
+    match: includeFiles.map(f => filePathToRegExp(f)),
+    skip: excludeFiles.map(f => filePathToRegExp(f))
   });
 
   const foundTestFiles: string[] = [];
@@ -82,7 +90,7 @@ async function main(): Promise<void> {
 
   if (foundTestFiles.length === 0) {
     console.error("No matching test files found.");
-    Deno.exit(0);
+    return;
   }
 
   console.log(`Found ${foundTestFiles.length} matching test files.`);
@@ -97,4 +105,6 @@ async function main(): Promise<void> {
   });
 }
 
-main();
+if (import.meta.main) {
+  main();
+}
