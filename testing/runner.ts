@@ -44,16 +44,16 @@ function filePathToRegExp(str: string): RegExp {
 /**
  * This function runs matching test files in `root` directory.
  *
- * File matching and excluding supports glob syntax, ie. if encountered arg is a glob
- * it will be expanded using `glob` method from `fs` module.
+ * File matching and excluding supports glob syntax, ie. if encountered arg is
+ * a glob it will be expanded using `glob` method from `fs` module.
  *
  * Note that your shell may expand globs for you:
- *  $ deno -A ./runner.ts **\/*_test.ts **\/test.ts
+ *    $ deno -A ./runner.ts **\/*_test.ts **\/test.ts
  *
  * Expanding using `fs.glob`:
- *    $ deno -A ./runner.ts **\/*_test.ts,**\/test.ts
+ *    $ deno -A ./runner.ts \*\*\/\*_test.ts \*\*\/test.ts
  *
- *  "**\/*_test.ts,**\/test.ts" is a string argument that will be parsed and
+ *  `**\/*_test.ts` and `**\/test.ts"` are arguments that will be parsed and
  *  expanded as: [glob("**\/*_test.ts"), glob("**\/test.ts")]
  */
 // TODO: change return type to `Promise<void>` once, `runTests` is updated
