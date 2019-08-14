@@ -81,8 +81,8 @@ export async function main(root: string = cwd()): Promise<void> {
   }
 
   const filesIterator = walk(root, {
-    match: includeFiles.map(f => filePathToRegExp(f)),
-    skip: excludeFiles.map(f => filePathToRegExp(f))
+    match: includeFiles.map((f: string): RegExp => filePathToRegExp(f)),
+    skip: excludeFiles.map((f: string): RegExp => filePathToRegExp(f))
   });
 
   const foundTestFiles: string[] = [];
