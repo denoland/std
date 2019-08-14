@@ -1,3 +1,4 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { xrun } from "../prettier/util.ts";
 import { red, green } from "../colors/mod.ts";
 
