@@ -263,7 +263,7 @@ test(async function testingThrowsAsyncMsgNotIncludes(): Promise<void> {
   assert(didThrow);
 });
 
-test("test fn overloading", () => {
+test("test fn overloading", (): void => {
   // just verifying that you can use this test definition syntax
   assert(true);
 });

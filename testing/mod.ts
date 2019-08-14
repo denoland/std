@@ -87,8 +87,8 @@ function filter(name: string): boolean {
 }
 
 export function test(t: TestDefinition): void;
-export function test(t: TestFunction): void;
-export function test(name: string, t: TestFunction): void;
+export function test(fn: TestFunction): void;
+export function test(name: string, fn: TestFunction): void;
 export function test(
   t: string | TestDefinition | TestFunction,
   fn?: TestFunction
