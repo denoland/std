@@ -68,9 +68,6 @@ async function main(): Promise<void> {
     excludeFiles = [];
   }
 
-  console.log("includeFiles", includeFiles);
-  console.log("excludeFiles", excludeFiles);
-
   const filesIterator = walk(cwd(), {
     match: includeFiles.map(glob),
     skip: excludeFiles.map(glob)
@@ -87,7 +84,6 @@ async function main(): Promise<void> {
   }
 
   console.log(`Found ${foundTestFiles.length} matching test files.`);
-  foundTestFiles.map(e => console.log(e));
 
   for (const filename of foundTestFiles) {
     await import(filename);
