@@ -9,7 +9,8 @@ const { args, cwd } = Deno;
 const DEFAULT_GLOBS = ["**/*_test.ts", "**/*_test.js"];
 
 // TODO: upgrade it
-function showHelp() {
+/* eslint-disable max-len */
+function showHelp(): void {
   console.log(`deno test-runner
   Test runner
 
@@ -22,6 +23,7 @@ OPTIONS:
   -g, --glob <PATH...>  List of globs for test files, defaults to: **/*_test.ts,**/*_test.js
 `);
 }
+/* eslint-enable max-len */
 
 async function main(): Promise<void> {
   const parsedArgs = parse(args.slice(1), {
@@ -50,7 +52,7 @@ async function main(): Promise<void> {
     match: fileGlobs.map(glob)
   });
 
-  const foundTestFiles: Array<string> = [];
+  const foundTestFiles: string[] = [];
   for await (const { filename } of filesIterator) {
     foundTestFiles.push(filename);
   }
