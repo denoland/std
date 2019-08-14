@@ -41,7 +41,7 @@ function filePathToRegExp(str: string): RegExp {
   return RegExp(str);
 }
 
-async function main(root: string = cwd()): Promise<void> {
+export async function main(root: string = cwd()): Promise<void> {
   const parsedArgs = parse(args.slice(1), {
     boolean: ["quiet", "failfast", "help"],
     string: ["exclude"],
