@@ -11,19 +11,17 @@ enum WorP {
 }
 
 class Flags {
-  plus: boolean;
-  dash: boolean;
-  sharp: boolean;
-  space: boolean;
-  zero: boolean;
-  lessthan: boolean;
+  plus?: boolean;
+  dash?: boolean;
+  sharp?: boolean;
+  space?: boolean;
+  zero?: boolean;
+  lessthan?: boolean;
   width: number = -1;
   precision: number = -1;
 }
 
-function isNumber(a): boolean {
-  return typeof a === "number";
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 const min = Math.min;
 
@@ -46,10 +44,10 @@ class Printf {
   i: number;
 
   state: State = State.PASSTHROUGH;
-  verb: string;
+  verb: string = "";
   buf: string = "";
   argNum: number = 0;
-  flags: Flags;
+  flags: Flags = new Flags();
 
   haveSeen: boolean[];
 
@@ -61,10 +59,11 @@ class Printf {
     this.format = format;
     this.args = args;
     this.haveSeen = new Array(args.length);
+    this.i = 0;
   }
 
   doPrintf(): string {
-    for (this.i = 0; this.i < this.format.length; ++this.i) {
+    for (; this.i < this.format.length; ++this.i) {
       let c = this.format[this.i];
       switch (this.state) {
         case State.PASSTHROUGH:
@@ -174,7 +173,7 @@ class Printf {
     }
     let arg = this.args[this.argNum];
     this.haveSeen[this.argNum] = true;
-    if (isNumber(arg)) {
+    if (typeof arg === "number") {
       switch (wOrP) {
         case WorP.WIDTH:
           this.flags.width = arg;
@@ -470,7 +469,7 @@ class Printf {
       this.flags.zero = false;
       return this.padNum("Inf", true);
     }
-    return null;
+    return "";
   }
 
   roundFractionToPrecision(fractional: string, precision: number): string {
@@ -490,7 +489,7 @@ class Printf {
 
   fmtFloatE(n: number, upcase: boolean = false): string {
     const special = this.fmtFloatSpecial(n);
-    if (special !== null) {
+    if (special !== "") {
       return special;
     }
 
@@ -516,7 +515,7 @@ class Printf {
 
   fmtFloatF(n: number): string {
     const special = this.fmtFloatSpecial(n);
-    if (special !== null) {
+    if (special !== "") {
       return special;
     }
 
@@ -559,7 +558,7 @@ class Printf {
 
   fmtFloatG(n: number, upcase: boolean = false): string {
     const special = this.fmtFloatSpecial(n);
-    if (special !== null) {
+    if (special !== "") {
       return special;
     }
 
