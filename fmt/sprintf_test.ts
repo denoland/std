@@ -4,19 +4,18 @@ import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 import { test, runTests } from "https://deno.land/std/testing/mod.ts";
 
 let S = sprintf;
-let p = console.log;
 
-test(function noVerb() {
+test(function noVerb(): void {
   assertEquals(sprintf("bla"), "bla");
 });
 
-test(function percent() {
+test(function percent(): void {
   assertEquals(sprintf("%%"), "%");
   assertEquals(sprintf("!%%!"), "!%!");
   assertEquals(sprintf("!%%"), "!%");
   assertEquals(sprintf("%%!"), "%!");
 });
-test(function testBoolean() {
+test(function testBoolean(): void {
   assertEquals(sprintf("%t", true), "true");
   assertEquals(sprintf("%10t", true), "      true");
   assertEquals(sprintf("%-10t", false), "false     ");
@@ -25,7 +24,7 @@ test(function testBoolean() {
   assertEquals(sprintf("%tbla", false), "falsebla");
 });
 
-test(function testIntegerB() {
+test(function testIntegerB(): void {
   assertEquals(S("%b", 4), "100");
   assertEquals(S("%b", -4), "-100");
   assertEquals(
@@ -49,7 +48,7 @@ test(function testIntegerB() {
   assertEquals(S("%4b", 4), " 100");
 });
 
-test(function testIntegerC() {
+test(function testIntegerC(): void {
   assertEquals(S("%c", 0x31), "1");
   assertEquals(S("%c%b", 0x31, 1), "11");
   assertEquals(S("%c", 0x1f4a9), "💩");
@@ -57,14 +56,14 @@ test(function testIntegerC() {
   assertEquals(S("%4c", 0x31), "   1");
 });
 
-test(function testIntegerD() {
+test(function testIntegerD(): void {
   assertEquals(S("%d", 4), "4");
   assertEquals(S("%d", -4), "-4");
   assertEquals(S("%d", Number.MAX_SAFE_INTEGER), "9007199254740991");
   assertEquals(S("%d", Number.MIN_SAFE_INTEGER), "-9007199254740991");
 });
 
-test(function testIntegerO() {
+test(function testIntegerO(): void {
   assertEquals(S("%o", 4), "4");
   assertEquals(S("%o", -4), "-4");
   assertEquals(S("%o", 9), "11");
@@ -74,7 +73,7 @@ test(function testIntegerO() {
   // width
   assertEquals(S("%4o", 4), "   4");
 });
-test(function testIntegerx() {
+test(function testIntegerx(): void {
   assertEquals(S("%x", 4), "4");
   assertEquals(S("%x", -4), "-4");
   assertEquals(S("%x", 9), "9");
@@ -88,7 +87,7 @@ test(function testIntegerx() {
   assertEquals(S("%+4x", 4), "  +4");
   assertEquals(S("%-+4x", 4), "+4  ");
 });
-test(function testIntegerX() {
+test(function testIntegerX(): void {
   assertEquals(S("%X", 4), "4");
   assertEquals(S("%X", -4), "-4");
   assertEquals(S("%X", 9), "9");
@@ -97,7 +96,7 @@ test(function testIntegerX() {
   assertEquals(S("%X", Number.MIN_SAFE_INTEGER), "-1FFFFFFFFFFFFF");
 });
 
-test(function testFloate() {
+test(function testFloate(): void {
   assertEquals(S("%e", 4), "4.000000e+00");
   assertEquals(S("%e", -4), "-4.000000e+00");
   assertEquals(S("%e", 4.1), "4.100000e+00");
@@ -105,7 +104,7 @@ test(function testFloate() {
   assertEquals(S("%e", Number.MAX_SAFE_INTEGER), "9.007199e+15");
   assertEquals(S("%e", Number.MIN_SAFE_INTEGER), "-9.007199e+15");
 });
-test(function testFloatE() {
+test(function testFloatE(): void {
   assertEquals(S("%E", 4), "4.000000E+00");
   assertEquals(S("%E", -4), "-4.000000E+00");
   assertEquals(S("%E", 4.1), "4.100000E+00");
@@ -115,7 +114,7 @@ test(function testFloatE() {
   assertEquals(S("%E", Number.MIN_VALUE), "5.000000E-324");
   assertEquals(S("%E", Number.MAX_VALUE), "1.797693E+308");
 });
-test(function testFloatfF() {
+test(function testFloatfF(): void {
   assertEquals(S("%f", 4), "4.000000");
   assertEquals(S("%F", 4), "4.000000");
   assertEquals(S("%f", -4), "-4.000000");
@@ -131,45 +130,48 @@ test(function testFloatfF() {
   assertEquals(S("%f", Number.MIN_VALUE), "0.000000");
   assertEquals(
     S("%.324f", Number.MIN_VALUE),
+    // eslint-disable-next-line max-len
     "0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005"
   );
   assertEquals(S("%F", Number.MIN_VALUE), "0.000000");
   assertEquals(
     S("%f", Number.MAX_VALUE),
+    // eslint-disable-next-line max-len
     "179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.000000"
   );
   assertEquals(
     S("%F", Number.MAX_VALUE),
+    // eslint-disable-next-line max-len
     "179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.000000"
   );
 });
 
-test(function testString() {
+test(function testString(): void {
   assertEquals(S("%s World%s", "Hello", "!"), "Hello World!");
 });
 
-test(function testHex() {
+test(function testHex(): void {
   assertEquals(S("%x", "123"), "313233");
   assertEquals(S("%x", "n"), "6e");
 });
-test(function testHeX() {
+test(function testHeX(): void {
   assertEquals(S("%X", "123"), "313233");
   assertEquals(S("%X", "n"), "6E");
 });
 
-test(function testType() {
+test(function testType(): void {
   assertEquals(S("%T", new Date()), "object");
   assertEquals(S("%T", 123), "number");
   assertEquals(S("%T", "123"), "string");
   assertEquals(S("%.3T", "123"), "str");
 });
 
-test(function testPositional() {
+test(function testPositional(): void {
   assertEquals(S("%[1]d%[2]d", 1, 2), "12");
   assertEquals(S("%[2]d%[1]d", 1, 2), "21");
 });
 
-test(function testSharp() {
+test(function testSharp(): void {
   assertEquals(S("%#x", "123"), "0x313233");
   assertEquals(S("%#X", "123"), "0X313233");
   assertEquals(S("%#x", 123), "0x7b");
@@ -178,9 +180,10 @@ test(function testSharp() {
   assertEquals(S("%#b", 4), "0b100");
 });
 
-test(function testWidthAndPrecision() {
+test(function testWidthAndPrecision(): void {
   assertEquals(
     S("%9.99d", 9),
+    // eslint-disable-next-line max-len
     "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009"
   );
   assertEquals(S("%1.12d", 9), "000000000009");
@@ -190,10 +193,12 @@ test(function testWidthAndPrecision() {
 
   assertEquals(
     S("%*.99d", 9, 9),
+    // eslint-disable-next-line max-len
     "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009"
   );
   assertEquals(
     S("%9.*d", 99, 9),
+    // eslint-disable-next-line max-len
     "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009"
   );
   assertEquals(S("%*s", 2, "a"), " a");
@@ -201,26 +206,27 @@ test(function testWidthAndPrecision() {
   assertEquals(S("%#*x", 4, 1), " 0x1");
 });
 
-test(function testDash() {
+test(function testDash(): void {
   assertEquals(S("%-2s", "a"), "a ");
   assertEquals(S("%-2d", 1), "1 ");
 });
-test(function testPlus() {
+test(function testPlus(): void {
   assertEquals(S("%-+3d", 1), "+1 ");
   assertEquals(S("%+3d", 1), " +1");
   assertEquals(S("%+3d", -1), " -1");
 });
 
-test(function testSpace() {
+test(function testSpace(): void {
   assertEquals(S("% -3d", 3), " 3 ");
 });
 
-test(function testZero() {
+test(function testZero(): void {
   assertEquals(S("%04s", "a"), "000a");
 });
 
 // relevant test cases from fmt_test.go
-const tests: [string, any, string][] = [
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const tests: Array<[string, any, string]> = [
   ["%d", 12345, "12345"],
   ["%v", 12345, "12345"],
   ["%t", true, "true"],
@@ -252,7 +258,8 @@ const tests: [string, any, string][] = [
   ["%c", 0xe4, "ä"],
   ["%c", 0x672c, "本"],
   ["%c", "日".charCodeAt(0), "日"],
-  ["%.0c", "⌘".charCodeAt(0), "⌘"], // Specifying precision should have no effect.
+  // Specifying precision should have no effect.
+  ["%.0c", "⌘".charCodeAt(0), "⌘"],
   ["%3c", "⌘".charCodeAt(0), "  ⌘"],
   ["%-3c", "⌘".charCodeAt(0), "⌘  "],
 
@@ -262,7 +269,9 @@ const tests: [string, any, string][] = [
 
   // Runes that are not valid.
   ["%c", -1, "�"],
-  // ["%c", 0xDC80, "�"], // TODO surrogate half, doesn't make sense in itself, how to determine in JS?
+  // TODO surrogate half, doesn't make sense in itself, how
+  // to determine in JS?
+  // ["%c", 0xDC80, "�"],
   ["%c", 0x110000, "�"],
   ["%c", 0xfffffffff, "�"],
 
@@ -286,8 +295,10 @@ const tests: [string, any, string][] = [
   //["%.5q", "abcdefghijklmnopqrstuvwxyz", `"abcde"`],
   ["%.5x", "abcdefghijklmnopqrstuvwxyz", "6162636465"],
   //["%.3q", "日本語日本語", `"日本語"`],
-  //["%.1q", "日本語", `"日"`],
-  ["%.1x", "日本語", "e5"], // change of go testcase utf-8([日]) = 0xe697a5, utf-16= 65e5 and our %x takes lower byte of string "%.1x", "日本語", "e6"],
+  //["%.1q", "日本語", `"日"`]
+  // change of go testcase utf-8([日]) = 0xe697a5, utf-16= 65e5 and
+  // our %x takes lower byte of string "%.1x", "日本語", "e6"],,
+  ["%.1x", "日本語", "e5"],
   //["%10.1q", "日本語日本語", `       "日"`],
   // ["%10v", null, "     <nil>"], // TODO null, undefined ...
   // ["%-10v", null, "<nil>     "],
@@ -313,10 +324,12 @@ const tests: [string, any, string][] = [
   ["%b", 7, "111"],
   ["%b", -6, "-110"],
   // ["%b", ^uint32(0), "11111111111111111111111111111111"],
-  // ["%b", ^uint64(0), "1111111111111111111111111111111111111111111111111111111111111111"],
+  // ["%b", ^uint64(0),
+  //  "1111111111111111111111111111111111111111111111111111111111111111"],
   // ["%b", int64(-1 << 63), zeroFill("-1", 63, "")],
-  ["%o", parseInt("01234", 8), "1234"], // 0 octal notation not allowed in struct node...
-  ["%#o", parseInt("01234", 8), "01234"], // 0 octal notation not allowed in struct node...
+  // 0 octal notation not allowed in struct node...
+  ["%o", parseInt("01234", 8), "1234"],
+  ["%#o", parseInt("01234", 8), "01234"],
   // ["%o", ^uint32(0), "37777777777"],
   // ["%o", ^uint64(0), "1777777777777777777777"],
   ["%#X", 0, "0X0"],
@@ -373,8 +386,10 @@ const tests: [string, any, string][] = [
   ["%#g", -1.0, "-1.00000"],
   ["%#g", 1.1, "1.10000"],
   ["%#g", 123456.0, "123456."],
-  //["%#g", 1234567.0, "1.234567e+06"], // this one's wrong (according to my posix reading) %f-> prec = prec-1
-  ["%#g", 1234567.0, "1.23457e+06"], // this one's wrong in go (according to my posix reading) %f-> prec = prec-1
+  //["%#g", 1234567.0, "1.234567e+06"],
+  // the line above is incorrect in go (according to
+  // my posix reading) %f-> prec = prec-1
+  ["%#g", 1234567.0, "1.23457e+06"],
   ["%#g", 1230000.0, "1.23000e+06"],
   ["%#g", 1000000.0, "1.00000e+06"],
   ["%#.0f", 1.0, "1."],
@@ -431,7 +446,8 @@ const tests: [string, any, string][] = [
   ["%f", 1234.5678e-8, "0.000012"],
   ["%f", -7.0, "-7.000000"],
   ["%f", -1e-9, "-0.000000"],
-  // ["%g", 1234.5678e3, "1.2345678e+06"], // I believe go is wrong according to posix, see above.
+  // ["%g", 1234.5678e3, "1.2345678e+06"],
+  // I believe the above test from go is incorrect according to posix, s. above.
   ["%g", 1234.5678e3, "1.23457e+06"],
   //["%g", float32(1234.5678e3), "1.2345678e+06"],
   //["%g", 1234.5678e-8, "1.2345678e-05"], // posix, see above
@@ -468,8 +484,9 @@ const tests: [string, any, string][] = [
   ["%-20f", 1.23456789e3, "1234.567890         "],
   ["%20.8f", 1.23456789e3, "       1234.56789000"],
   ["%20.8f", 1.23456789e-3, "          0.00123457"],
-  // ["%g", 1.23456789e3, "1234.56789"], posix ... precision(2) = precision(def=6) - (exp(3)+1)
-  ["%g", 1.23456789e3, "1234.57"], //posix ... precision(2) = precision(def=6) - (exp(3)+1)
+  // ["%g", 1.23456789e3, "1234.56789"],
+  // posix ... precision(2) = precision(def=6) - (exp(3)+1)
+  ["%g", 1.23456789e3, "1234.57"],
   // ["%g", 1.23456789e-3, "0.00123456789"], posix...
   ["%g", 1.23456789e-3, "0.00123457"], // see above prec6 = precdef6 - (-3+1)
   //["%g", 1.23456789e20, "1.23456789e+20"],
@@ -534,7 +551,8 @@ const tests: [string, any, string][] = [
   //	{"no args", "hello", "no args%!(EXTRA string=hello)"},
   //	{"%s %", "hello", "hello %!(NOVERB)"},
   //	{"%s %.2", "hello", "hello %!(NOVERB)"},
-  //	{"%017091901790959340919092959340919017929593813360", 0, "%!(NOVERB)%!(EXTRA int=0)"},
+  //	{"%017091901790959340919092959340919017929593813360", 0,
+  //       "%!(NOVERB)%!(EXTRA int=0)"},
   //	{"%184467440737095516170v", 0, "%!(NOVERB)%!(EXTRA int=0)"},
   //	// Extra argument errors should format without flags set.
   //	{"%010.2", "12345", "%!(NOVERB)%!(EXTRA string=12345)"},
@@ -568,20 +586,22 @@ const tests: [string, any, string][] = [
   ["% +07.2f", -1.0, "-001.00"]
 ];
 
-test(function testThorough() {
-  tests.forEach((t, i) => {
-    //            p(t)
-    let is = S(t[0], t[1]);
-    let should = t[2];
-    assertEquals(
-      is,
-      should,
-      `failed case[${i}] : is >${is}< should >${should}<`
-    );
-  });
+test(function testThorough(): void {
+  tests.forEach(
+    (t, i): void => {
+      //            p(t)
+      let is = S(t[0], t[1]);
+      let should = t[2];
+      assertEquals(
+        is,
+        should,
+        `failed case[${i}] : is >${is}< should >${should}<`
+      );
+    }
+  );
 });
 
-test(function testWeirdos() {
+test(function testWeirdos(): void {
   assertEquals(S("%.d", 9), "9");
   assertEquals(
     S("dec[%d]=%d hex[%[1]d]=%#x oct[%[1]d]=%#o %s", 1, 255, "Third"),
@@ -589,7 +609,7 @@ test(function testWeirdos() {
   );
 });
 
-test(function formatV() {
+test(function formatV(): void {
   let a = { a: { a: { a: { a: { a: { a: { a: {} } } } } } } };
   assertEquals(S("%v", a), "[object Object]");
   assertEquals(S("%#v", a), "{ a: { a: { a: { a: [Object] } } } }");
@@ -600,12 +620,12 @@ test(function formatV() {
   assertEquals(S("%#.1v", a), "{ a: [Object] }");
 });
 
-test(function formatJ() {
+test(function formatJ(): void {
   let a = { a: { a: { a: { a: { a: { a: { a: {} } } } } } } };
   assertEquals(S("%j", a), `{"a":{"a":{"a":{"a":{"a":{"a":{"a":{}}}}}}}}`);
 });
 
-test(function flagLessThan() {
+test(function flagLessThan(): void {
   let a = { a: { a: { a: { a: { a: { a: { a: {} } } } } } } };
   let aArray = [a, a, a];
   assertEquals(
@@ -616,7 +636,7 @@ test(function flagLessThan() {
   assertEquals(S("%<.2f", fArray), "[ 1.23, 0.99, 123456789.57 ]");
 });
 
-test(function testErrors() {
+test(function testErrors(): void {
   // wrong type : TODO strict mode ...
   //assertEquals(S("%f", "not a number"), "%!(BADTYPE flag=f type=string)")
   assertEquals(S("A %h", ""), "A %!(BAD VERB 'h')");
