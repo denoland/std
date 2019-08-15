@@ -1,21 +1,17 @@
-Printf for Deno
-===============
+# Printf for Deno
 
 This is very much a work-in-progress. I'm actively soliciting feedback.
 What immediately follows are points for discussion.
 
 If you are looking for the documentation proper, skip to:
-  
+
     "printf: prints formatted output"
 
 below.
 
-
-Discussion
-----------
+## Discussion
 
 This is very much a work-in-progress. I'm actively soliciting feedback.
-
 
 - What useful features are available in other languages apart from
   Golang and C?
@@ -44,55 +40,41 @@ This is very much a work-in-progress. I'm actively soliciting feedback.
   Map and Set types, typed Arrays, ...)
 
 - the implementation is fairly rough around the edges:
-	
-	- currently contains little in the way of checking for
-	  correctness. Conceivably, there will be a 'strict' form, e.g.
-	  that ensures only Number-ish arguments are passed to %f flags
-	
-	- assembles output using string concatenation instead of
-	  utilizing buffers or other optimizations. It would be nice to
-	  have printf / sprintf / fprintf (etc) all in one.
-	
-	- float formatting is handled by toString() and to `toExponential`
-	  along with a mess of Regexp. Would be nice to use fancy match
+
+- currently contains little in the way of checking for
+  correctness. Conceivably, there will be a 'strict' form, e.g.
+  that ensures only Number-ish arguments are passed to %f flags
+
+- assembles output using string concatenation instead of
+  utilizing buffers or other optimizations. It would be nice to
+  have printf / sprintf / fprintf (etc) all in one.
+
+- float formatting is handled by toString() and to `toExponential`
+  along with a mess of Regexp. Would be nice to use fancy match
 
 - some flags that are potentially applicable ( POSIX long and unsigned
   modifiers are not likely useful) are missing, namely %q (print quoted), %U
   (unicode format)
 
+## Author
 
-Author
-------
 Tim Becker (tim@presseverykey.com)
 
-License
--------
+## License
 
 MIT
-
-At the current time this module contains code from:
-
-
-	https://github.com/shrpne/from-exponential
-
 
 The implementation is inspired by POSIX and Golang (see above) but does
 not port implementation code. A number of Golang test-cases based on:
 
-	https://golang.org/src/fmt/fmt_test.go
-	( BSD: Copyright (c) 2009 The Go Authors. All rights reserved. )
-
+    https://golang.org/src/fmt/fmt_test.go
+    ( BSD: Copyright (c) 2009 The Go Authors. All rights reserved. )
 
 were used.
 
+# printf: prints formatted output
 
-
-
-printf: prints formatted output
-=======================
-
-
-sprintf converts and formats a variable number of arguments as is 
+sprintf converts and formats a variable number of arguments as is
 specified by a `format string`. In it's basic form, a format string
 may just be a literal. In case arguments are meant to be formatted,
 a `directive` is contained in the format string, preceded by a '%' character:
@@ -113,37 +95,32 @@ elements specific to the respective programming language that don't
 apply to JavaScript, so they can not be fully supported. Furthermore we
 implement some functionality that is specific to JS.
 
-
-Verbs
------
+## Verbs
 
 The following verbs are supported:
 
-| Verb   | Meaning                                                     | 
-|--------|----------------------------------------------------------------|
-| `%   ` | print a literal percent                                        |
-| `t   ` | evaluate arg as boolean, print `true` or `false`               |
-| `b   ` | eval as number, print binary                                   | 
-| `c   ` | eval as number, print character corresponding to the codePoint |
-| `o   ` | eval as number, print octal                                    |
-| `x X ` | print as hex (ff FF), treat string as list of bytes            |
-| `e E ` | print number in scientific/exponent format 1.123123e+01        |
-| `f F ` | print number as float with decimal point and no exponent       |
-| `g G ` | use %e %E or %f %F depending on size of argument               |
-| `s   ` | interpolate string                                             |
-| `T   ` | type of arg, as returned by `typeof`                           |
-| `v   ` | value of argument in 'default' format (see below)              |
-| `j   ` | argument as formatted by `JSON.stringify`                      |
+| Verb  | Meaning                                                        |
+| ----- | -------------------------------------------------------------- |
+| `%`   | print a literal percent                                        |
+| `t`   | evaluate arg as boolean, print `true` or `false`               |
+| `b`   | eval as number, print binary                                   |
+| `c`   | eval as number, print character corresponding to the codePoint |
+| `o`   | eval as number, print octal                                    |
+| `x X` | print as hex (ff FF), treat string as list of bytes            |
+| `e E` | print number in scientific/exponent format 1.123123e+01        |
+| `f F` | print number as float with decimal point and no exponent       |
+| `g G` | use %e %E or %f %F depending on size of argument               |
+| `s`   | interpolate string                                             |
+| `T`   | type of arg, as returned by `typeof`                           |
+| `v`   | value of argument in 'default' format (see below)              |
+| `j`   | argument as formatted by `JSON.stringify`                      |
 
+## Width and Precision
 
-
-Width and Precision
--------------------
- 
 Verbs may be modified by providing them with width and precision, either or
 both may be omitted:
 
-    %9f    width 9, default precision 
+    %9f    width 9, default precision
     %.9f   default width, precision 9
     %8.9f  width 8, precision 9
     %8.f   width 9, precision 0
@@ -152,58 +129,53 @@ In general, 'width' describes the minimum length of the output, while 'precision
 limits the output.
 
 | verb      | precision                                                      |
-| ----------|----------------------------------------------------------------|
-| `t      ` | n/a                                                            |
-| `b c o  ` | n/a                                                            | 
-| `x X    ` | n/a for number, strings are truncated to p bytes(!)            |
+| --------- | -------------------------------------------------------------- |
+| `t`       | n/a                                                            |
+| `b c o`   | n/a                                                            |
+| `x X`     | n/a for number, strings are truncated to p bytes(!)            |
 | `e E f F` | number of places after decimal, default 6                      |
-| `g G    ` | set maximum number of digits                                   |
-| `s      ` | truncate input                                                 |
-| `T      ` | truncate                                                       |
-| `v      ` | tuncate, or depth if used with # see "'default' format", below |
-| `j      ` | n/a                                                            |
- 
+| `g G`     | set maximum number of digits                                   |
+| `s`       | truncate input                                                 |
+| `T`       | truncate                                                       |
+| `v`       | tuncate, or depth if used with # see "'default' format", below |
+| `j`       | n/a                                                            |
+
 Numerical values for width and precision can be substituted for the `*` char, in
 which case the values are obtained from the next args, e.g.:
 
     sprintf ("%*.*f", 9,8,456.0)
 
-is equivalent to 
+is equivalent to
 
     sprintf ("%9.9f", 456.0)
 
-
-Flags
------
+## Flags
 
 The effects of the verb may be further influenced by using flags to modify the
 directive:
 
-| Flag   | Verb      | Meaning                                                                    |
-|--------|-----------|----------------------------------------------------------------------------|
-| `+   ` | numeric   | always print sign                                                          |
-| `-   ` | all       | pad to the right (left justify)                                            |
-| `#   ` |           | alternate format                                                           | 
-| `#   ` | `b o x X` | prefix with `0b 0 0x`                                                      | 
-| `#   ` | `g G`     | don't remove trailing zeros                                                |
-| `#   ` | `v`       | ues output of `inspect` instead of `toString`                              |
-| `' ' ` |           | space character                                                            |
-| `' ' ` | `x X`     | leave spaces between bytes when printing string                            |
-| `' ' ` | `d`       | insert space for missing `+` sign character                                |
-| `0   ` | all       | pad with zero, `-` takes precedence, sign is appended in front of padding  |
-| `<`    | all       | format elements of the passed array according to the directive (extension) |
- 
- 
-'default' format
-----------------
+| Flag  | Verb      | Meaning                                                                    |
+| ----- | --------- | -------------------------------------------------------------------------- |
+| `+`   | numeric   | always print sign                                                          |
+| `-`   | all       | pad to the right (left justify)                                            |
+| `#`   |           | alternate format                                                           |
+| `#`   | `b o x X` | prefix with `0b 0 0x`                                                      |
+| `#`   | `g G`     | don't remove trailing zeros                                                |
+| `#`   | `v`       | ues output of `inspect` instead of `toString`                              |
+| `' '` |           | space character                                                            |
+| `' '` | `x X`     | leave spaces between bytes when printing string                            |
+| `' '` | `d`       | insert space for missing `+` sign character                                |
+| `0`   | all       | pad with zero, `-` takes precedence, sign is appended in front of padding  |
+| `<`   | all       | format elements of the passed array according to the directive (extension) |
+
+## 'default' format
+
 The default format used by `%v` is the result of calling `toString()` on the
 relevant argument. If the `#` flags is used, the result of calling `inspect()`
-is interpolated. In this case, the precision, if set is passed to `inspect()` as 
-the 'depth' config parameter  
+is interpolated. In this case, the precision, if set is passed to `inspect()` as
+the 'depth' config parameter
 
-
-Positional arguments
---------------------
+## Positional arguments
 
 Arguments do not need to be consumed in the order they are provded and may
 be consumed more than once. E.g.:
@@ -216,27 +188,24 @@ allowing args to be reused:
     sprintf("dec[%d]=%d hex[%[1]d]=%x oct[%[1]d]=%#o %s", 1, 255, "Third")
 
 returns `dec[1]=255 hex[1]=0xff oct[1]=0377 Third`
- 
+
 Width and precision my also use positionals:
 
     "%[2]*.[1]*d", 1, 2
 
 This follows the golang conventions and not POSIX.
 
-
-Errors
-------
+## Errors
 
 The following errors are handled:
 
-Incorrect verb:     
+Incorrect verb:
+
     S("%h", "") %!(BAD VERB 'h')
 
 Too few arguments:
-    S("%d")     %!(MISSING 'd')"
 
-
-
+    S("%d") %!(MISSING 'd')"
 
 [1]: https://pubs.opengroup.org/onlinepubs/009695399/functions/fprintf.html
 [2]: https://golang.org/pkg/fmt/
