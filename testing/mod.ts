@@ -71,6 +71,16 @@ function print(txt: string, newline: boolean = true): void {
 
 declare global {
   interface Window {
+    /**
+     * A global property to collect all registered test cases.
+     *
+     * It is required because user's code can import multiple versions
+     * of `testing` module.
+     *
+     * If test cases aren't registered in a globally shared
+     * object, then imports from different versions would register test cases
+     * to registry from it's respective version of `testing` module.
+     */
     __DENO_TEST_REGISTRY: TestDefinition[];
   }
 }
