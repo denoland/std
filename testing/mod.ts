@@ -69,8 +69,19 @@ function print(txt: string, newline: boolean = true): void {
   Deno.stdout.writeSync(encoder.encode(`${txt}`));
 }
 
+declare global {
+  interface Window {
+    __DENO_TEST_REGISTRY: TestDefinition[];
+  }
+}
+
+let candidates: TestDefinition[] = [];
+if (window["__DENO_TEST_REGISTRY"]) {
+  candidates = window.__DENO_TEST_REGISTRY as TestDefinition[];
+} else {
+  window["__DENO_TEST_REGISTRY"] = candidates;
+}
 let filterRegExp: RegExp | null;
-const candidates: TestDefinition[] = [];
 let filtered = 0;
 
 // Must be called before any test() that needs to be filtered.
