@@ -6,12 +6,7 @@ import {
   assertStrictEq,
   assertThrows,
   assertThrowsAsync
-} from "../testing/asserts.ts";
-import "./format_test.ts";
-import "./diff_test.ts";
-import "./pretty_test.ts";
-import "./asserts_test.ts";
-import "./bench_test.ts";
+} from "./asserts.ts";
 
 test(function testingAssertEqualActualUncoercable(): void {
   let didThrow = false;
@@ -262,6 +257,11 @@ test(async function testingThrowsAsyncMsgNotIncludes(): Promise<void> {
   }
   assert(count === 1);
   assert(didThrow);
+});
+
+test("test fn overloading", (): void => {
+  // just verifying that you can use this test definition syntax
+  assert(true);
 });
 
 runIfMain(import.meta);

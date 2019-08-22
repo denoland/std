@@ -6,6 +6,7 @@
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
 const { Buffer } = Deno;
+import { TextProtoReader } from "../textproto/mod.ts";
 import { test, runIfMain } from "../testing/mod.ts";
 import { assert, assertEquals, assertNotEquals } from "../testing/asserts.ts";
 import {
@@ -15,6 +16,7 @@ import {
   readRequest,
   parseHTTPVersion
 } from "./server.ts";
+import { delay } from "../util/async.ts";
 import {
   BufReader,
   BufWriter,
@@ -71,6 +73,21 @@ test(async function responseWrite(): Promise<void> {
     const bufw = new BufWriter(buf);
     const request = new ServerRequest();
     request.w = bufw;
+
+    request.conn = {
+      localAddr: "",
+      remoteAddr: "",
+      rid: -1,
+      closeRead: (): void => {},
+      closeWrite: (): void => {},
+      read: async (): Promise<number | Deno.EOF> => {
+        return 0;
+      },
+      write: async (): Promise<number> => {
+        return -1;
+      },
+      close: (): void => {}
+    };
 
     await request.respond(testCase.response);
     assertEquals(buf.toString(), testCase.raw);
@@ -316,6 +333,21 @@ test(async function writeStringReaderResponse(): Promise<void> {
   assertEquals(r.more, false);
 });
 
+const mockConn = {
+  localAddr: "",
+  remoteAddr: "",
+  rid: -1,
+  closeRead: (): void => {},
+  closeWrite: (): void => {},
+  read: async (): Promise<number | Deno.EOF> => {
+    return 0;
+  },
+  write: async (): Promise<number> => {
+    return -1;
+  },
+  close: (): void => {}
+};
+
 test(async function readRequestError(): Promise<void> {
   let input = `GET / HTTP/1.1
 malformedHeader
@@ -323,7 +355,7 @@ malformedHeader
   const reader = new BufReader(new StringReader(input));
   let err;
   try {
-    await readRequest(reader);
+    await readRequest(mockConn, reader);
   } catch (e) {
     err = e;
   }
@@ -402,7 +434,7 @@ test(async function testReadRequestError(): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let req: any;
     try {
-      req = await readRequest(reader);
+      req = await readRequest(mockConn, reader);
     } catch (e) {
       err = e;
     }
@@ -452,6 +484,47 @@ test({
         assertEquals(err, undefined);
         assertEquals(r, t.want, t.in);
       }
+    }
+  }
+});
+
+test({
+  name: "[http] destroyed connection",
+  async fn(): Promise<void> {
+    // Runs a simple server as another process
+    const p = Deno.run({
+      args: [Deno.execPath(), "http/testdata/simple_server.ts", "--allow-net"],
+      stdout: "piped"
+    });
+
+    try {
+      const r = new TextProtoReader(new BufReader(p.stdout!));
+      const s = await r.readLine();
+      assert(s !== Deno.EOF && s.includes("server listening"));
+
+      let serverIsRunning = true;
+      p.status()
+        .then(
+          (): void => {
+            serverIsRunning = false;
+          }
+        )
+        .catch((_): void => {}); // Ignores the error when closing the process.
+
+      await delay(100);
+
+      // Reqeusts to the server and immediately closes the connection
+      const conn = await Deno.dial("tcp", "127.0.0.1:4502");
+      await conn.write(new TextEncoder().encode("GET / HTTP/1.0\n\n"));
+      conn.close();
+
+      // Waits for the server to handle the above (broken) request
+      await delay(100);
+
+      assert(serverIsRunning);
+    } finally {
+      // Stops the sever.
+      p.close();
     }
   }
 });

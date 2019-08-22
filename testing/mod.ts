@@ -69,8 +69,29 @@ function print(txt: string, newline: boolean = true): void {
   Deno.stdout.writeSync(encoder.encode(`${txt}`));
 }
 
+declare global {
+  interface Window {
+    /**
+     * A global property to collect all registered test cases.
+     *
+     * It is required because user's code can import multiple versions
+     * of `testing` module.
+     *
+     * If test cases aren't registered in a globally shared
+     * object, then imports from different versions would register test cases
+     * to registry from it's respective version of `testing` module.
+     */
+    __DENO_TEST_REGISTRY: TestDefinition[];
+  }
+}
+
+let candidates: TestDefinition[] = [];
+if (window["__DENO_TEST_REGISTRY"]) {
+  candidates = window.__DENO_TEST_REGISTRY as TestDefinition[];
+} else {
+  window["__DENO_TEST_REGISTRY"] = candidates;
+}
 let filterRegExp: RegExp | null;
-const candidates: TestDefinition[] = [];
 let filtered = 0;
 
 // Must be called before any test() that needs to be filtered.
@@ -86,9 +107,24 @@ function filter(name: string): boolean {
   }
 }
 
-export function test(t: TestDefinition | TestFunction): void {
-  const fn: TestFunction = typeof t === "function" ? t : t.fn;
-  const name: string = t.name;
+export function test(t: TestDefinition): void;
+export function test(fn: TestFunction): void;
+export function test(name: string, fn: TestFunction): void;
+export function test(
+  t: string | TestDefinition | TestFunction,
+  fn?: TestFunction
+): void {
+  let name: string;
+
+  if (typeof t === "string") {
+    if (!fn) {
+      throw new Error("Missing test function");
+    }
+    name = t;
+  } else {
+    fn = typeof t === "function" ? t : t.fn;
+    name = t.name;
+  }
 
   if (!name) {
     throw new Error("Test function may not be anonymous");
@@ -102,6 +138,7 @@ export function test(t: TestDefinition | TestFunction): void {
 
 const RED_FAILED = red("FAILED");
 const GREEN_OK = green("OK");
+const RED_BG_FAIL = bgRed(" FAIL ");
 
 interface TestStats {
   filtered: number;
@@ -165,6 +202,17 @@ function report(result: TestResult): void {
   result.printed = true;
 }
 
+function printFailedSummary(results: TestResults): void {
+  results.cases.forEach(
+    (v): void => {
+      if (!v.ok) {
+        console.error(`${RED_BG_FAIL} ${red(v.name)}`);
+        console.error(v.error);
+      }
+    }
+  );
+}
+
 function printResults(
   stats: TestStats,
   results: TestResults,
@@ -184,7 +232,7 @@ function printResults(
   }
   // Attempting to match the output of Rust's test runner.
   print(
-    `\ntest result: ${stats.failed ? RED_FAILED : GREEN_OK}. ` +
+    `\ntest result: ${stats.failed ? RED_BG_FAIL : GREEN_OK} ` +
       `${stats.passed} passed; ${stats.failed} failed; ` +
       `${stats.ignored} ignored; ${stats.measured} measured; ` +
       `${stats.filtered} filtered out ` +
@@ -251,6 +299,7 @@ async function runTestsParallel(
 
 async function runTestsSerial(
   stats: TestStats,
+  results: TestResults,
   tests: TestDefinition[],
   exitOnFail: boolean,
   disableLog: boolean
@@ -273,6 +322,14 @@ async function runTestsSerial(
       print(
         GREEN_OK + "     " + name + " " + promptTestTime(end - start, true)
       );
+      results.cases.forEach(
+        (v): void => {
+          if (v.name === name) {
+            v.ok = true;
+            v.printed = true;
+          }
+        }
+      );
     } catch (err) {
       if (disableLog) {
         print(CLEAR_LINE, false);
@@ -280,6 +337,15 @@ async function runTestsSerial(
       print(`${RED_FAILED} ${name}`);
       print(err.stack);
       stats.failed++;
+      results.cases.forEach(
+        (v): void => {
+          if (v.name === name) {
+            v.error = err;
+            v.ok = false;
+            v.printed = true;
+          }
+        }
+      );
       if (exitOnFail) {
         break;
       }
@@ -300,6 +366,8 @@ export interface RunOptions {
  * Runs specified test cases.
  * Parallel execution can be enabled via the boolean option; default: serial.
  */
+// TODO: change return type to `Promise<boolean>` - ie. don't
+// exit but return value
 export async function runTests({
   parallel = false,
   exitOnFail = false,
@@ -329,7 +397,7 @@ export async function runTests({
   if (parallel) {
     await runTestsParallel(stats, results, tests, exitOnFail);
   } else {
-    await runTestsSerial(stats, tests, exitOnFail, disableLog);
+    await runTestsSerial(stats, results, tests, exitOnFail, disableLog);
   }
   const end = performance.now();
   if (disableLog) {
@@ -341,6 +409,7 @@ export async function runTests({
     // promise rejections being swallowed.
     setTimeout((): void => {
       console.error(`There were ${stats.failed} test failures.`);
+      printFailedSummary(results);
       Deno.exit(1);
     }, 0);
   }
