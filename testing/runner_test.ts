@@ -20,5 +20,6 @@ test(async function getMatchingUrlsRemote(): Promise<void> {
 
 test(async function getMatchingUrlsLocal(): Promise<void> {
   const urls = await getMatchingUrls(["fmt/*_test.ts"], [], TEST_ROOT_PATH);
+  console.error("getmtachinglocal cwd", TEST_ROOT_PATH);
   assertEquals(urls.length, 2);
 });
