@@ -1,0 +1,26 @@
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+import { test } from "./mod.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import { getMatchingUrls } from "./runner.ts";
+
+/**
+ * Tests in this file assume they are run from root of the repository.
+ */
+const TEST_ROOT_PATH = Deno.cwd();
+
+test(async function getMatchingUrlsRemote() {
+  const matches = [
+    "https://deno.land/std/fmt/colors_test.ts",
+    "http://deno.land/std/fmt/printf_test.ts"
+  ];
+
+  const urls = await getMatchingUrls(matches, [], TEST_ROOT_PATH);
+
+  assertEquals(url, matches);
+});
+
+test(async function getMatchingUrlsLocal() {
+  const urls = await getMatchingUrls(["fmt/*_test.ts"], [], TEST_ROOT_PATH);
+
+  assertEquals(urls.length, 2);
+});

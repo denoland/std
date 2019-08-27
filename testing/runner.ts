@@ -62,7 +62,7 @@ function partition(
  * Given list of globs or URLs to include and exclude and root directory return
  * list of file URLs that should be imported for test runner.
  */
-async function getMatchingUrls(
+export async function getMatchingUrls(
   matchPaths: string[],
   excludePaths: string[],
   root: string
