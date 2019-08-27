@@ -38,7 +38,7 @@ function filePathToRegExp(str: string): RegExp {
     return glob(str, { flags: "g" });
   }
 
-  return RegExp(str);
+  return RegExp(str, "g");
 }
 
 function isRemoteUrl(url: string): boolean {
