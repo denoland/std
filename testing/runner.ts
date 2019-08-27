@@ -1,7 +1,7 @@
 #!/usr/bin/env deno -A
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { parse } from "../flags/mod.ts";
-import { glob, isGlob, walk, WalkInfo } from "../fs/mod.ts";
+import { glob, isGlob, walk } from "../fs/mod.ts";
 import { runTests } from "./mod.ts";
 const { args, cwd } = Deno;
 
@@ -59,8 +59,8 @@ function partition(
 }
 
 /**
- * Given list of globs or URLs to include and exclude and root directory return list of file URLs that
- * should be imported for test runner.
+ * Given list of globs or URLs to include and exclude and root directory return
+ * list of file URLs that should be imported for test runner.
  */
 export async function getMatchingUrls(
   matchPaths: string[],
