@@ -1,4 +1,4 @@
-#!/usr/bin/env deno -A
+#!/usr/bin/env -S deno -A
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { parse } from "../flags/mod.ts";
 import { glob, isGlob, walk } from "../fs/mod.ts";
