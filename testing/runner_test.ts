@@ -3,10 +3,8 @@ import { test } from "./mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
 import { getMatchingUrls } from "./runner.ts";
 
-/**
- * Tests in this file assume they are run from root of the repository.
- */
-const TEST_ROOT_PATH = Deno.cwd();
+const fileName = window.location.href;
+const TEST_ROOT_PATH = fileName.slice(7, fileName.indexOf("testing")) + "fmt";
 
 test(async function getMatchingUrlsRemote(): Promise<void> {
   const matches = [
@@ -19,7 +17,10 @@ test(async function getMatchingUrlsRemote(): Promise<void> {
 });
 
 test(async function getMatchingUrlsLocal(): Promise<void> {
-  const urls = await getMatchingUrls(["fmt/*_test.ts"], [], TEST_ROOT_PATH);
-  console.error("getmtachinglocal cwd", TEST_ROOT_PATH);
-  assertEquals(urls.length, 2);
+  const urls = await getMatchingUrls(
+    ["fmt/*_test.ts"],
+    ["colors*"],
+    TEST_ROOT_PATH
+  );
+  assertEquals(urls.length, 1);
 });

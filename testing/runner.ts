@@ -35,7 +35,7 @@ ARGS:
 
 function filePathToRegExp(str: string): RegExp {
   if (isGlob(str)) {
-    return glob(str);
+    return glob(str, { flags: "g" });
   }
 
   return RegExp(str);
