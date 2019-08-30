@@ -22,7 +22,6 @@ the future.
 
 Here are the dedicated documentations of modules:
 
-- [colors](colors/README.md)
 - [datetime](datetime/README.md)
 - [encoding](encoding/README.md)
 - [examples](examples/README.md)
