@@ -30,7 +30,7 @@ interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
-function get<T>(obj: { [s: string]: T } | ArrayLike<T>, key: PropertyKey): T {
+function get<T>(obj: { [s: string]: T }, key: string): T | undefined {
   if (Object.prototype.hasOwnProperty.call(obj, key)) {
     return obj[key];
   }
@@ -90,7 +90,7 @@ export function parse(
   const aliases: { [key: string]: string[] } = {};
   if (options.alias !== undefined) {
     for (const key in options.alias) {
-      const val = get(options.alias, key);
+      const val = get(options.alias, key)!;
 
       if (typeof val === "string") {
         aliases[key] = [val];
@@ -98,7 +98,7 @@ export function parse(
         aliases[key] = val;
       }
 
-      for (const alias of get(aliases, key)) {
+      for (const alias of get(aliases, key)!) {
         aliases[alias] = [key].concat(
           aliases[key].filter((y: string): boolean => alias !== y)
         );
@@ -112,8 +112,9 @@ export function parse(
 
     stringArgs.filter(Boolean).forEach(function(key): void {
       flags.strings[key] = true;
-      if (get(aliases, key)) {
-        get(aliases, key).forEach(
+      const alias = get(aliases, key);
+      if (alias) {
+        alias.forEach(
           (alias: string): void => {
             flags.strings[alias] = true;
           }
@@ -176,8 +177,8 @@ export function parse(
   }
 
   function aliasIsBoolean(key: string): boolean {
-    return get(aliases, key).some(function(x): boolean {
-      return get(flags.bools, x);
+    return get(aliases, key)!.some(function(x): boolean {
+      return get(flags.bools, x)!;
     });
   }
 
