@@ -30,10 +30,7 @@ interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
-function get<T>(
-  obj: { [s: string]: T } | ArrayLike<T>,
-  key: PropertyKey
-): T {
+function get<T>(obj: { [s: string]: T } | ArrayLike<T>, key: PropertyKey): T {
   if (Object.prototype.hasOwnProperty.call(obj, key)) {
     return obj[key];
   }
@@ -82,16 +79,18 @@ export function parse(
           ? [options.boolean]
           : options.boolean;
 
-      booleanArgs.filter(Boolean).forEach((key: string): void => {
-        flags.bools[key] = true;
-      });
+      booleanArgs.filter(Boolean).forEach(
+        (key: string): void => {
+          flags.bools[key] = true;
+        }
+      );
     }
   }
 
   const aliases: { [key: string]: string[] } = {};
   if (options.alias !== undefined) {
     for (const key in options.alias) {
-      const val = get(options.alias,key);
+      const val = get(options.alias, key);
 
       if (typeof val === "string") {
         aliases[key] = [val];
@@ -99,7 +98,7 @@ export function parse(
         aliases[key] = val;
       }
 
-      for (const alias of get(aliases,key)) {
+      for (const alias of get(aliases, key)) {
         aliases[alias] = [key].concat(
           aliases[key].filter((y: string): boolean => alias !== y)
         );
@@ -113,10 +112,12 @@ export function parse(
 
     stringArgs.filter(Boolean).forEach(function(key): void {
       flags.strings[key] = true;
-      if (get(aliases,key)) {
-        get(aliases,key).forEach((alias: string): void => {
-          flags.strings[alias] = true;
-        });
+      if (get(aliases, key)) {
+        get(aliases, key).forEach(
+          (alias: string): void => {
+            flags.strings[alias] = true;
+          }
+        );
       }
     });
   }
@@ -128,29 +129,29 @@ export function parse(
   function argDefined(key: string, arg: string): boolean {
     return (
       (flags.allBools && /^--[^=]+$/.test(arg)) ||
-      get(flags.bools,key) ||
-      !!get(flags.strings,key) ||
-      !!get(aliases,key)
+      get(flags.bools, key) ||
+      !!get(flags.strings, key) ||
+      !!get(aliases, key)
     );
   }
 
   function setKey(obj: NestedMapping, keys: string[], value: unknown): void {
     let o = obj;
     keys.slice(0, -1).forEach(function(key): void {
-      if (get(o,key) === undefined) {
+      if (get(o, key) === undefined) {
         o[key] = {};
       }
-      o = get(o,key) as NestedMapping;
+      o = get(o, key) as NestedMapping;
     });
 
     const key = keys[keys.length - 1];
     if (
-      get(o,key) === undefined ||
-      get(flags.bools,key) ||
-      typeof get(o,key) === "boolean"
+      get(o, key) === undefined ||
+      get(flags.bools, key) ||
+      typeof get(o, key) === "boolean"
     ) {
       o[key] = value;
-    } else if (Array.isArray(get(o,key))) {
+    } else if (Array.isArray(get(o, key))) {
       (o[key] as unknown[]).push(value);
     } else {
       o[key] = [get(o, key), value];
@@ -166,16 +167,16 @@ export function parse(
       if (flags.unknownFn(arg) === false) return;
     }
 
-    const value = !get(flags.strings,key) && isNumber(val) ? Number(val) : val;
+    const value = !get(flags.strings, key) && isNumber(val) ? Number(val) : val;
     setKey(argv, key.split("."), value);
 
-    (get(aliases,key) || []).forEach(function(x): void {
+    (get(aliases, key) || []).forEach(function(x): void {
       setKey(argv, x.split("."), value);
     });
   }
 
   function aliasIsBoolean(key: string): boolean {
-    return get(aliases,key).some(function(x): boolean {
+    return get(aliases, key).some(function(x): boolean {
       return get(flags.bools, x);
     });
   }
@@ -218,9 +219,9 @@ export function parse(
       if (
         next !== undefined &&
         !/^-/.test(next) &&
-        !get(flags.bools,key) &&
+        !get(flags.bools, key) &&
         !flags.allBools &&
-        (get(aliases,key) ? !aliasIsBoolean(key) : true)
+        (get(aliases, key) ? !aliasIsBoolean(key) : true)
       ) {
         setArg(key, next, arg);
         i++;
@@ -228,7 +229,7 @@ export function parse(
         setArg(key, next === "true", arg);
         i++;
       } else {
-        setArg(key, get(flags.strings,key) ? "" : true, arg);
+        setArg(key, get(flags.strings, key) ? "" : true, arg);
       }
     } else if (/^-[^-]+/.test(arg)) {
       const letters = arg.slice(1, -1).split("");
@@ -262,7 +263,7 @@ export function parse(
           broken = true;
           break;
         } else {
-          setArg(letters[j], get(flags.strings,letters[j]) ? "" : true, arg);
+          setArg(letters[j], get(flags.strings, letters[j]) ? "" : true, arg);
         }
       }
 
@@ -271,8 +272,8 @@ export function parse(
         if (
           args[i + 1] &&
           !/^(-|--)[^-]/.test(args[i + 1]) &&
-          !get(flags.bools,key) &&
-          (get(aliases,key) ? !aliasIsBoolean(key) : true)
+          !get(flags.bools, key) &&
+          (get(aliases, key) ? !aliasIsBoolean(key) : true)
         ) {
           setArg(key, args[i + 1], arg);
           i++;
@@ -280,7 +281,7 @@ export function parse(
           setArg(key, args[i + 1] === "true", arg);
           i++;
         } else {
-          setArg(key, get(flags.strings,key) ? "" : true, arg);
+          setArg(key, get(flags.strings, key) ? "" : true, arg);
         }
       }
     } else {
