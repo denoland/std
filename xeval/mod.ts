@@ -7,8 +7,7 @@ type Reader = Deno.Reader;
 const AsyncFunction = Object.getPrototypeOf(async function(): Promise<void> {})
   .constructor;
 
-function showHelp(): void {
-  console.log(`Deno xeval
+const HELP_MSG = `Deno xeval
 
 USAGE:
   deno -A https://deno.land/std/xeval/mod.ts [OPTIONS] <code>
@@ -18,9 +17,7 @@ OPTIONS:
   -I, --replvar <replvar>   Set variable name to be used in eval, defaults to $
 
 ARGS:
-  <code>
-`);
-}
+  <code>`;
 
 export type XevalFunc = (v: string) => void;
 
@@ -139,15 +136,22 @@ async function main(): Promise<void> {
       delim: ["d"],
       replvar: ["I"],
       help: ["h"]
+    },
+    default: {
+      delim: DEFAULT_DELIMITER,
+      replvar: "$"
     }
   });
-
-  if (parsedArgs.help || parsedArgs._.length != 1) {
-    return showHelp();
+  if (parsedArgs._.length != 1) {
+    console.error(HELP_MSG);
+    exit(1);
+  }
+  if (parsedArgs.help) {
+    return console.log(HELP_MSG);
   }
 
-  const delimiter = parsedArgs.delim || DEFAULT_DELIMITER;
-  const replVar = parsedArgs.replvar || "$";
+  const delimiter = parsedArgs.delim;
+  const replVar = parsedArgs.replvar;
   const code = parsedArgs._[0];
 
   // new AsyncFunction()'s error message for this particular case isn't great.
