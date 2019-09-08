@@ -16,7 +16,6 @@ test(async function getMatchingUrlsRemote(): Promise<void> {
   assertEquals(urls, matches);
 });
 
-/* TODO re-enable test
 test(async function getMatchingUrlsLocal(): Promise<void> {
   const urls = await getMatchingUrls(
     ["fmt/*_test.ts"],
@@ -25,4 +24,3 @@ test(async function getMatchingUrlsLocal(): Promise<void> {
   );
   assertEquals(urls.length, 1);
 });
-*/
