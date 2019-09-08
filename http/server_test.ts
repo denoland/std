@@ -121,13 +121,25 @@ test(async function requestBodyWithContentLength(): Promise<void> {
 
 test(async function requestBodyWithoutBody(): Promise<void> {
   {
-    const req = new ServerRequest();
-    req.headers = new Headers();
-    req.headers.set("content-length", "0");
-    const buf = new Buffer;
-    req.r = new BufReader(buf);
-    const body = dec.decode(await req.body());
-    assertEquals(body, '');
+    const server = Deno.run({
+      args: [Deno.execPath(), "testdata/simple_server.ts", "--allow-net"],
+      stdout: "piped"
+    });
+    const r = new TextProtoReader(new BufReader(server.stdout!));
+    const s = await r.readLine();
+    assert(s !== Deno.EOF && s.includes("Simple server listening"));
+
+    try {
+      const conn = await Deno.dial("tcp", "127.0.0.1:4502");
+      const req = new ServerRequest();
+      req.headers = new Headers();
+      req.headers.set("content-length", "0");
+      req.r = new BufReader(conn);
+      const body = dec.decode(await req.body());
+      assertEquals(body, "");
+    } finally {
+      server.close();
+    }
   }
 });
 
