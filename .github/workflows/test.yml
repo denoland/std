@@ -58,6 +58,7 @@ jobs:
 
       # Test
       - name: Run tests (unix)
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
         run: |
           export PATH="~/.deno/bin:$PATH"
           deno run --allow-run --allow-write --allow-read --allow-env ./format.ts --check
