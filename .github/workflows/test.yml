@@ -53,6 +53,7 @@ jobs:
 
       # Run eslint
       - name: Run eslint
+        shell: bash
         run: npx eslint **/*.ts --max-warnings=0
 
       # Test
