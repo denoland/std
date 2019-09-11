@@ -67,7 +67,7 @@ test(async function serveDirectory(): Promise<void> {
       assert(/<td class="mode">\(unknown mode\)<\/td>/.test(page));
     assert(
       page.includes(
-        `<td><a href="/.github/workflows/test.yml">.github/workflows/test.yml</a></td>`
+        `<td><a href="/.github/workflows/test.yml">.github/workflows/test.yml</a></td>` // eslint-disable-line max-len
       )
     );
   } finally {
