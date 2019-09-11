@@ -1,0 +1,67 @@
+name: Test
+
+on: [push]
+
+jobs:
+  build:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+    steps:
+      # Checkout the repository
+      - name: Enable symlinks (windows)
+        if: startsWith(matrix.os, 'windows')
+        run: git config --global core.symlinks true
+      - name: Checkout the repository
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      # Setup node
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: "12.x"
+      - name: Install npm packages
+        run: npm install eslint@5.16.0 typescript@$(TS_VERSION) @typescript-eslint/eslint-plugin@1.13.0 @typescript-eslint/parser@1.13.0 eslint-config-prettier
+        env:
+          TS_VERSION: "3.4.5"
+
+      # Setup deno
+      - name: Download deno (unix)
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
+        run: |
+          curl -L https://deno.land/x/install/install.sh | sh -s $(DENO_VERSION)
+          export PATH=$(HOME)/.deno/bin/:$(PATH)
+        env:
+          DENO_VERSION: "v0.17.0"
+      - name: Download deno (windows)
+        if: startsWith(matrix.os, 'windows')
+        shell: powershell
+        run: |
+          iwr https://deno.land/x/install/install.ps1 -out install.ps1; .\install.ps1 $(DENO_VERSION)
+          $env:Path += ";$(HOME)\.deno\bin"
+        env:
+          DENO_VERSION: "v0.17.0"
+
+      # Run eslint
+      - name: Run eslint
+        run: npx eslint **/*.ts --max-warnings=0
+
+      # Test
+      - name: Run tests (unix)
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
+        run: |
+          deno run --allow-run --allow-write --allow-read --allow-env ./format.ts --check
+          export START_TIME=$(date +%s)
+          deno run --allow-run --allow-net --allow-write --allow-read --allow-env --config=tsconfig.test.json ./testing/runner.ts --exclude node_modules
+          deno run --allow-run --allow-read .ci/check_source_file_changes.ts $START_TIME
+      - name: Run tests (windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          deno.exe run --allow-run --allow-write --allow-read --allow-env ./format.ts --check
+          export START_TIME=$(date +%s)
+          deno.exe run --allow-run --allow-net --allow-write --allow-read --allow-env --config=tsconfig.test.json ./testing/runner.ts --exclude node_modules
+          deno.exe run --allow-run --allow-read .ci/check_source_file_changes.ts $START_TIME
