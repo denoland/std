@@ -32,7 +32,7 @@ jobs:
       - name: Install npm packages (windows)
         if: startsWith(matrix.os, 'windows')
         shell: powershell
-        run: npm install eslint@5.16.0 typescript@$(TS_VERSION) @typescript-eslint/eslint-plugin@1.13.0 @typescript-eslint/parser@1.13.0 eslint-config-prettier
+        run: npm install eslint@5.16.0 typescript@$TS_VERSION @typescript-eslint/eslint-plugin@1.13.0 @typescript-eslint/parser@1.13.0 eslint-config-prettier
         env:
           TS_VERSION: "3.4.5"
 
@@ -48,7 +48,7 @@ jobs:
         if: startsWith(matrix.os, 'windows')
         shell: powershell
         run: |
-          iwr https://deno.land/x/install/install.ps1 -out install.ps1; .\install.ps1 $(DENO_VERSION)
+          iwr https://deno.land/x/install/install.ps1 -out install.ps1; .\install.ps1 $DENO_VERSION
           $env:Path += ";$(HOME)\.deno\bin"
         env:
           DENO_VERSION: "v0.17.0"
@@ -67,6 +67,7 @@ jobs:
           deno run --allow-run --allow-read .ci/check_source_file_changes.ts $START_TIME
       - name: Run tests (windows)
         if: startsWith(matrix.os, 'windows')
+        shell: powershell
         run: |
           deno.exe run --allow-run --allow-write --allow-read --allow-env ./format.ts --check
           export START_TIME=$(date +%s)
