@@ -70,7 +70,7 @@ jobs:
         shell: bash
         run: |
           export PATH="C:\Users\runneradmin\.deno\bin:$PATH"
-          deno.exe run --allow-run --allow-write --allow-read --allow-env ./format.ts --check
+          C:\Users\runneradmin\.deno\bin\deno.exe run --allow-run --allow-write --allow-read --allow-env ./format.ts --check
           export START_TIME=$(date +%s)
-          deno.exe run --allow-run --allow-net --allow-write --allow-read --allow-env --config=tsconfig.test.json ./testing/runner.ts --exclude node_modules
-          deno.exe run --allow-run --allow-read .ci/check_source_file_changes.ts $START_TIME
+          C:\Users\runneradmin\.deno\bin\deno.exe run --allow-run --allow-net --allow-write --allow-read --allow-env --config=tsconfig.test.json ./testing/runner.ts --exclude node_modules
+          C:\Users\runneradmin\.deno\bin\deno.exe run --allow-run --allow-read .ci/check_source_file_changes.ts $START_TIME
