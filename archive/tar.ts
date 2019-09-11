@@ -1,5 +1,6 @@
 /**
- * Ported and modified from: https://github.com/jshttp/mime-types and licensed as:
+ * Ported and modified from: https://github.com/jshttp/mime-types and
+ * licensed as:
  *
  * (The MIT License)
  *
@@ -39,12 +40,12 @@ export class FileReader implements Deno.Reader {
 
   constructor(private filePath: string, private mode: Deno.OpenMode = "r") {}
 
-  public async read(p: Uint8Array): Promise<Deno.ReadResult> {
+  public async read(p: Uint8Array): Promise<number | Deno.EOF> {
     if (!this.file) {
       this.file = await Deno.open(this.filePath, this.mode);
     }
     const res = await Deno.read(this.file.rid, p);
-    if (res.eof) {
+    if (res === Deno.EOF) {
       await Deno.close(this.file.rid);
       this.file = undefined;
     }
@@ -292,7 +293,8 @@ export class Tar {
 
   /**
    * Append a file to this tar archive
-   * @param fileName file name (e.g., test.txt; use slash for directory separators)
+   * @param fileName file name
+   *                 e.g., test.txt; use slash for directory separators
    * @param opts options
    */
   async append(fileName: string, opts: TarOptions): Promise<void> {
@@ -314,7 +316,8 @@ export class Tar {
       }
       if (i < 0 || fileName.length > 100 || fileNamePrefix!.length > 155) {
         throw new Error(
-          "ustar format does not allow a long file name (length of [file name prefix] + / + [file name] must be shorter than 256 bytes)"
+          "ustar format does not allow a long file name (length of [file name" +
+            "prefix] + / + [file name] must be shorter than 256 bytes)"
         );
       }
     }

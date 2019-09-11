@@ -1,10 +1,12 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
-import { BufReader, EOF, UnexpectedEOFError } from "./bufio.ts";
+import { BufReader, UnexpectedEOFError } from "./bufio.ts";
 type Reader = Deno.Reader;
 type Writer = Deno.Writer;
 import { assert } from "../testing/asserts.ts";
 
-/** copy N size at the most. If read size is lesser than N, then returns nread */
+/** copy N size at the most.
+ *  If read size is lesser than N, then returns nread
+ * */
 export async function copyN(
   dest: Writer,
   r: Reader,
@@ -16,13 +18,14 @@ export async function copyN(
     if (size - bytesRead < 1024) {
       buf = new Uint8Array(size - bytesRead);
     }
-    const { nread, eof } = await r.read(buf);
+    const result = await r.read(buf);
+    const nread = result === Deno.EOF ? 0 : result;
     bytesRead += nread;
     if (nread > 0) {
       const n = await dest.write(buf.slice(0, nread));
       assert(n === nread, "could not write");
     }
-    if (eof) {
+    if (result === Deno.EOF) {
       break;
     }
   }
@@ -30,31 +33,31 @@ export async function copyN(
 }
 
 /** Read big endian 16bit short from BufReader */
-export async function readShort(buf: BufReader): Promise<number | EOF> {
+export async function readShort(buf: BufReader): Promise<number | Deno.EOF> {
   const high = await buf.readByte();
-  if (high === EOF) return EOF;
+  if (high === Deno.EOF) return Deno.EOF;
   const low = await buf.readByte();
-  if (low === EOF) throw new UnexpectedEOFError();
+  if (low === Deno.EOF) throw new UnexpectedEOFError();
   return (high << 8) | low;
 }
 
 /** Read big endian 32bit integer from BufReader */
-export async function readInt(buf: BufReader): Promise<number | EOF> {
+export async function readInt(buf: BufReader): Promise<number | Deno.EOF> {
   const high = await readShort(buf);
-  if (high === EOF) return EOF;
+  if (high === Deno.EOF) return Deno.EOF;
   const low = await readShort(buf);
-  if (low === EOF) throw new UnexpectedEOFError();
+  if (low === Deno.EOF) throw new UnexpectedEOFError();
   return (high << 16) | low;
 }
 
 const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
 
 /** Read big endian 64bit long from BufReader */
-export async function readLong(buf: BufReader): Promise<number | EOF> {
+export async function readLong(buf: BufReader): Promise<number | Deno.EOF> {
   const high = await readInt(buf);
-  if (high === EOF) return EOF;
+  if (high === Deno.EOF) return Deno.EOF;
   const low = await readInt(buf);
-  if (low === EOF) throw new UnexpectedEOFError();
+  if (low === Deno.EOF) throw new UnexpectedEOFError();
   const big = (BigInt(high) << 32n) | BigInt(low);
   // We probably should provide a similar API that returns BigInt values.
   if (big > MAX_SAFE_INTEGER) {

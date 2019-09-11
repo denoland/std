@@ -22,7 +22,7 @@ the future.
 
 Here are the dedicated documentations of modules:
 
-- [colors](colors/README.md)
+- [colors](fmt/colors.ts)
 - [datetime](datetime/README.md)
 - [encoding](encoding/README.md)
 - [examples](examples/README.md)
@@ -34,6 +34,7 @@ Here are the dedicated documentations of modules:
 - [prettier](prettier/README.md)
 - [strings](strings/README.md)
 - [testing](testing/README.md)
+- [uuid](uuid/README.md)
 - [ws](ws/README.md)
 
 ## Contributing

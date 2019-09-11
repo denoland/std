@@ -3,7 +3,7 @@ const { readFile, run } = Deno;
 
 import { test } from "../testing/mod.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
-import { BufReader, EOF } from "../io/bufio.ts";
+import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 
 let fileServer: Deno.Process;
@@ -11,7 +11,7 @@ let fileServer: Deno.Process;
 async function startFileServer(): Promise<void> {
   fileServer = run({
     args: [
-      "deno",
+      Deno.execPath(),
       "run",
       "--allow-read",
       "--allow-net",
@@ -24,7 +24,7 @@ async function startFileServer(): Promise<void> {
   // Once fileServer is ready it will write to its stdout.
   const r = new TextProtoReader(new BufReader(fileServer.stdout!));
   const s = await r.readLine();
-  assert(s !== EOF && s.includes("server listening"));
+  assert(s !== Deno.EOF && s.includes("server listening"));
 }
 
 function killFileServer(): void {
@@ -59,10 +59,11 @@ test(async function serveDirectory(): Promise<void> {
     assert(page.includes("azure-pipelines.yml"));
 
     // `Deno.FileInfo` is not completely compatible with Windows yet
-    // TODO: `mode` should work correctly in the future. Correct this test case accordingly.
-    Deno.platform.os !== "win" &&
+    // TODO: `mode` should work correctly in the future.
+    // Correct this test case accordingly.
+    Deno.build.os !== "win" &&
       assert(/<td class="mode">\([a-zA-Z-]{10}\)<\/td>/.test(page));
-    Deno.platform.os === "win" &&
+    Deno.build.os === "win" &&
       assert(/<td class="mode">\(unknown mode\)<\/td>/.test(page));
     assert(
       page.includes(

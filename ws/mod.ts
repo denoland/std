@@ -1,10 +1,11 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 
 import { decode, encode } from "../strings/mod.ts";
+import { hasOwnProperty } from "../util/has_own_property.ts";
 
 type Conn = Deno.Conn;
 type Writer = Deno.Writer;
-import { BufReader, BufWriter, EOF, UnexpectedEOFError } from "../io/bufio.ts";
+import { BufReader, BufWriter, UnexpectedEOFError } from "../io/bufio.ts";
 import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
 import { Sha1 } from "./sha1.ts";
 import { writeResponse } from "../http/server.ts";
@@ -34,7 +35,7 @@ export interface WebSocketCloseEvent {
 export function isWebSocketCloseEvent(
   a: WebSocketEvent
 ): a is WebSocketCloseEvent {
-  return typeof a === "object" && a.hasOwnProperty("code");
+  return hasOwnProperty(a, "code");
 }
 
 export type WebSocketPingEvent = ["ping", Uint8Array];
@@ -142,7 +143,7 @@ export async function writeFrame(
 /** Read websocket frame from given BufReader */
 export async function readFrame(buf: BufReader): Promise<WebSocketFrame> {
   let b = await buf.readByte();
-  if (b === EOF) throw new UnexpectedEOFError();
+  if (b === Deno.EOF) throw new UnexpectedEOFError();
   let isLastFrame = false;
   switch (b >>> 4) {
     case 0b1000:
@@ -157,16 +158,16 @@ export async function readFrame(buf: BufReader): Promise<WebSocketFrame> {
   const opcode = b & 0x0f;
   // has_mask & payload
   b = await buf.readByte();
-  if (b === EOF) throw new UnexpectedEOFError();
+  if (b === Deno.EOF) throw new UnexpectedEOFError();
   const hasMask = b >>> 7;
   let payloadLength = b & 0b01111111;
   if (payloadLength === 126) {
     const l = await readShort(buf);
-    if (l === EOF) throw new UnexpectedEOFError();
+    if (l === Deno.EOF) throw new UnexpectedEOFError();
     payloadLength = l;
   } else if (payloadLength === 127) {
     const l = await readLong(buf);
-    if (l === EOF) throw new UnexpectedEOFError();
+    if (l === Deno.EOF) throw new UnexpectedEOFError();
     payloadLength = Number(l);
   }
   // mask
@@ -188,11 +189,7 @@ export async function readFrame(buf: BufReader): Promise<WebSocketFrame> {
 
 // Create client-to-server mask, random 32bit number
 function createMask(): Uint8Array {
-  // TODO: use secure and immutable random function. Crypto.getRandomValues()
-  const arr = Array.from({ length: 4 }).map(
-    (): number => Math.round(Math.random() * 0xff)
-  );
-  return new Uint8Array(arr);
+  return crypto.getRandomValues(new Uint8Array(4));
 }
 
 class WebSocketImpl implements WebSocket {
@@ -442,7 +439,7 @@ async function handshake(
 
   const tpReader = new TextProtoReader(bufReader);
   const statusLine = await tpReader.readLine();
-  if (statusLine === EOF) {
+  if (statusLine === Deno.EOF) {
     throw new UnexpectedEOFError();
   }
   const m = statusLine.match(/^(?<version>\S+) (?<statusCode>\S+) /);
@@ -460,7 +457,7 @@ async function handshake(
   }
 
   const responseHeaders = await tpReader.readMIMEHeader();
-  if (responseHeaders === EOF) {
+  if (responseHeaders === Deno.EOF) {
     throw new UnexpectedEOFError();
   }
 
@@ -474,7 +471,10 @@ async function handshake(
   }
 }
 
-/** Connect to given websocket endpoint url. Endpoint must be acceptable for URL */
+/**
+ * Connect to given websocket endpoint url.
+ * Endpoint must be acceptable for URL.
+ */
 export async function connectWebSocket(
   endpoint: string,
   headers: Headers = new Headers()

@@ -1,22 +1,34 @@
-#!/usr/bin/env deno --allow-all
-
-const {
-  args,
-  env,
-  readDirSync,
-  mkdirSync,
-  writeFile,
-  exit,
-  stdin,
-  stat,
-  readAll,
-  run,
-  remove
-} = Deno;
+#!/usr/bin/env -S deno --allow-all
+// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+const { env, stdin, args, exit, writeFile, chmod, run } = Deno;
+import { parse } from "../flags/mod.ts";
 import * as path from "../fs/path.ts";
+import { exists } from "../fs/exists.ts";
+import { ensureDir } from "../fs/ensure_dir.ts";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8");
+// Regular expression to test disk driver letter. eg "C:\\User\username\path\to"
+const driverLetterReg = /^[c-z]:/i;
+const isWindows = Deno.build.os === "win";
+
+function showHelp(): void {
+  console.log(`deno installer
+  Install remote or local script as executables.
+
+USAGE:
+  deno -A https://deno.land/std/installer/mod.ts [OPTIONS] EXE_NAME SCRIPT_URL [FLAGS...]
+
+ARGS:
+  EXE_NAME  Name for executable
+  SCRIPT_URL  Local or remote URL of script to install
+  [FLAGS...]  List of flags for script, both Deno permission and script specific
+              flag can be used.
+
+OPTIONS:
+  -d, --dir <PATH> Installation directory path (defaults to ~/.deno/bin)
+`);
+}
 
 enum Permission {
   Read,
@@ -64,6 +76,20 @@ function getFlagFromPermission(perm: Permission): string {
   return "";
 }
 
+function getInstallerDir(): string {
+  // In Windows's Powershell $HOME environmental variable maybe null
+  // if so use $HOMEPATH instead.
+  let { HOME, HOMEPATH } = env();
+
+  const HOME_PATH = HOME || HOMEPATH;
+
+  if (!HOME_PATH) {
+    throw new Error("$HOME is not defined.");
+  }
+
+  return path.join(HOME_PATH, ".deno", "bin");
+}
+
 async function readCharacter(): Promise<string> {
   const byteArray = new Uint8Array(1024);
   await stdin.read(byteArray);
@@ -78,113 +104,138 @@ async function yesNoPrompt(message: string): Promise<boolean> {
   return input === "y" || input === "Y";
 }
 
-function createDirIfNotExists(path: string): void {
-  try {
-    readDirSync(path);
-  } catch (e) {
-    mkdirSync(path, true);
-  }
-}
+function checkIfExistsInPath(filePath: string): boolean {
+  // In Windows's Powershell $PATH not exist, so use $Path instead.
+  // $HOMEDRIVE is only used on Windows.
+  const { PATH, Path, HOMEDRIVE } = env();
 
-function checkIfExistsInPath(path: string): boolean {
-  const { PATH } = env();
+  let envPath = (PATH as string) || (Path as string) || "";
 
-  const paths = (PATH as string).split(":");
+  const paths = envPath.split(isWindows ? ";" : ":");
 
-  return paths.includes(path);
-}
+  let fileAbsolutePath = filePath;
 
-function getInstallerDir(): string {
-  const { HOME } = env();
-
-  if (!HOME) {
-    throw new Error("$HOME is not defined.");
-  }
-
-  return path.join(HOME, ".deno", "bin");
-}
-
-// TODO: fetch doesn't handle redirects yet - once it does this function
-//  can be removed
-async function fetchWithRedirects(
-  url: string,
-  redirectLimit: number = 10
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<any> {
-  // TODO: `Response` is not exposed in global so 'any'
-  const response = await fetch(url);
-
-  if (response.status === 301 || response.status === 302) {
-    if (redirectLimit > 0) {
-      const redirectUrl = response.headers.get("location")!;
-      return await fetchWithRedirects(redirectUrl, redirectLimit - 1);
+  for (const p of paths) {
+    const pathInEnv = path.normalize(p);
+    // On Windows paths from env contain drive letter.
+    // (eg. C:\Users\username\.deno\bin)
+    // But in the path of Deno, there is no drive letter.
+    // (eg \Users\username\.deno\bin)
+    if (isWindows) {
+      if (driverLetterReg.test(pathInEnv)) {
+        fileAbsolutePath = HOMEDRIVE + "\\" + fileAbsolutePath;
+      }
     }
+    if (pathInEnv === fileAbsolutePath) {
+      return true;
+    }
+    fileAbsolutePath = filePath;
   }
 
-  return response;
+  return false;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function fetchModule(url: string): Promise<any> {
-  const response = await fetchWithRedirects(url);
+export function isRemoteUrl(url: string): boolean {
+  return /^https?:\/\//.test(url);
+}
 
-  if (response.status !== 200) {
-    // TODO: show more debug information like status and maybe body
-    throw new Error(`Failed to get remote script ${url}.`);
+function validateModuleName(moduleName: string): boolean {
+  if (/^[a-z][\w-]*$/i.test(moduleName)) {
+    return true;
+  } else {
+    throw new Error("Invalid module name: " + moduleName);
+  }
+}
+
+async function generateExecutable(
+  filePath: string,
+  commands: string[]
+): Promise<void> {
+  commands = commands.map((v): string => JSON.stringify(v));
+  // On Windows if user is using Powershell .cmd extension is need to run the
+  // installed module.
+  // Generate batch script to satisfy that.
+  const templateHeader =
+    "This executable is generated by Deno. Please don't modify it unless you " +
+    "know what it means.";
+  if (isWindows) {
+    const template = `% ${templateHeader} %
+@IF EXIST "%~dp0\deno.exe" (
+  "%~dp0\deno.exe" ${commands.slice(1).join(" ")} %*
+) ELSE (
+  @SETLOCAL
+  @SET PATHEXT=%PATHEXT:;.TS;=;%
+  ${commands.join(" ")} %*
+)
+`;
+    const cmdFile = filePath + ".cmd";
+    await writeFile(cmdFile, encoder.encode(template));
+    await chmod(cmdFile, 0o755);
   }
 
-  const body = await readAll(response.body);
-  return decoder.decode(body);
-}
+  // generate Shell script
+  const template = `#!/bin/sh
+# ${templateHeader}
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\\\,/,g')")
 
-function showHelp(): void {
-  console.log(`deno installer
-  Install remote or local script as executables.
-  
-USAGE:
-  deno https://deno.land/std/installer/mod.ts EXE_NAME SCRIPT_URL [FLAGS...]  
+case \`uname\` in
+  *CYGWIN*) basedir=\`cygpath -w "$basedir"\`;;
+esac
 
-ARGS:
-  EXE_NAME  Name for executable     
-  SCRIPT_URL  Local or remote URL of script to install
-  [FLAGS...]  List of flags for script, both Deno permission and script specific flag can be used.
-  `);
+if [ -x "$basedir/deno" ]; then
+  "$basedir/deno" ${commands.slice(1).join(" ")} "$@"
+  ret=$?
+else
+  ${commands.join(" ")} "$@"
+  ret=$?
+fi
+exit $ret
+`;
+  await writeFile(filePath, encoder.encode(template));
+  await chmod(filePath, 0o755);
 }
 
 export async function install(
   moduleName: string,
   moduleUrl: string,
-  flags: string[]
+  flags: string[],
+  installationDir?: string
 ): Promise<void> {
-  const installerDir = getInstallerDir();
-  createDirIfNotExists(installerDir);
+  if (!installationDir) {
+    installationDir = getInstallerDir();
+  }
+  await ensureDir(installationDir);
 
-  const filePath = path.join(installerDir, moduleName);
-
-  let fileInfo;
-  try {
-    fileInfo = await stat(filePath);
-  } catch (e) {
-    // pass
+  // if install local module
+  if (!isRemoteUrl(moduleUrl)) {
+    moduleUrl = path.resolve(moduleUrl);
   }
 
-  if (fileInfo) {
-    const msg = `⚠️  ${moduleName} is already installed, do you want to overwrite it?`;
+  validateModuleName(moduleName);
+  const filePath = path.join(installationDir, moduleName);
+
+  if (await exists(filePath)) {
+    const msg =
+      "⚠️  " +
+      moduleName +
+      " is already installed" +
+      ", do you want to overwrite it?";
     if (!(await yesNoPrompt(msg))) {
       return;
     }
   }
 
   // ensure script that is being installed exists
-  if (moduleUrl.startsWith("http")) {
-    // remote module
-    console.log(`Downloading: ${moduleUrl}\n`);
-    await fetchModule(moduleUrl);
-  } else {
-    // assume that it's local file
-    moduleUrl = path.resolve(moduleUrl);
-    console.log(`Looking for: ${moduleUrl}\n`);
-    await stat(moduleUrl);
+  const ps = run({
+    args: [Deno.execPath(), "fetch", "--reload", moduleUrl],
+    stdout: "inherit",
+    stderr: "inherit"
+  });
+
+  const { code } = await ps.status();
+
+  if (code !== 0) {
+    throw new Error("Failed to fetch module.");
   }
 
   const grantedPermissions: Permission[] = [];
@@ -201,66 +252,46 @@ export async function install(
 
   const commands = [
     "deno",
+    "run",
     ...grantedPermissions.map(getFlagFromPermission),
     moduleUrl,
-    ...scriptArgs,
-    "$@"
+    ...scriptArgs
   ];
 
-  // TODO: add windows Version
-  const template = `#/bin/sh\n${commands.join(" ")}`;
-  await writeFile(filePath, encoder.encode(template));
-
-  const makeExecutable = run({ args: ["chmod", "+x", filePath] });
-  const { code } = await makeExecutable.status();
-  makeExecutable.close();
-
-  if (code !== 0) {
-    throw new Error("Failed to make file executable");
-  }
+  await generateExecutable(filePath, commands);
 
   console.log(`✅ Successfully installed ${moduleName}`);
   console.log(filePath);
 
-  // TODO: add Windows version
-  if (!checkIfExistsInPath(installerDir)) {
-    console.log("\nℹ️  Add ~/.deno/bin to PATH");
+  if (!checkIfExistsInPath(installationDir)) {
+    console.log(`\nℹ️  Add ${installationDir} to PATH`);
     console.log(
-      "    echo 'export PATH=\"$HOME/.deno/bin:$PATH\"' >> ~/.bashrc # change this to your shell"
+      "    echo 'export PATH=\"" +
+        installationDir +
+        ":$PATH\"' >> ~/.bashrc # change" +
+        " this to your shell"
     );
   }
 }
 
-export async function uninstall(moduleName: string): Promise<void> {
-  const installerDir = getInstallerDir();
-  const filePath = path.join(installerDir, moduleName);
-
-  try {
-    await stat(filePath);
-  } catch (e) {
-    if (e instanceof Deno.DenoError && e.kind === Deno.ErrorKind.NotFound) {
-      throw new Error(`ℹ️  ${moduleName} not found`);
-    }
-  }
-
-  await remove(filePath);
-  console.log(`ℹ️  Uninstalled ${moduleName}`);
-}
-
 async function main(): Promise<void> {
-  if (args.length < 3) {
+  const parsedArgs = parse(args.slice(1), { stopEarly: true });
+
+  if (parsedArgs.h || parsedArgs.help) {
     return showHelp();
   }
 
-  if (["-h", "--help"].includes(args[1])) {
+  if (parsedArgs._.length < 2) {
     return showHelp();
   }
 
-  const moduleName = args[1];
-  const moduleUrl = args[2];
-  const flags = args.slice(3);
+  const moduleName = parsedArgs._[0];
+  const moduleUrl = parsedArgs._[1];
+  const flags = parsedArgs._.slice(2);
+  const installationDir = parsedArgs.d || parsedArgs.dir;
+
   try {
-    await install(moduleName, moduleUrl, flags);
+    await install(moduleName, moduleUrl, flags, installationDir);
   } catch (e) {
     console.log(e);
     exit(1);

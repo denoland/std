@@ -6,6 +6,7 @@
 // https://github.com/golang/go/blob/master/src/net/http/responsewrite_test.go
 
 const { Buffer } = Deno;
+import { TextProtoReader } from "../textproto/mod.ts";
 import { test, runIfMain } from "../testing/mod.ts";
 import { assert, assertEquals, assertNotEquals } from "../testing/asserts.ts";
 import {
@@ -15,17 +16,17 @@ import {
   readRequest,
   parseHTTPVersion
 } from "./server.ts";
+import { delay } from "../util/async.ts";
 import {
   BufReader,
   BufWriter,
-  EOF,
   ReadLineResult,
   UnexpectedEOFError
 } from "../io/bufio.ts";
 import { StringReader } from "../io/readers.ts";
 
-function assertNotEOF<T extends {}>(val: T | EOF): T {
-  assertNotEquals(val, EOF);
+function assertNotEOF<T extends {}>(val: T | Deno.EOF): T {
+  assertNotEquals(val, Deno.EOF);
   return val as T;
 }
 
@@ -72,6 +73,21 @@ test(async function responseWrite(): Promise<void> {
     const bufw = new BufWriter(buf);
     const request = new ServerRequest();
     request.w = bufw;
+
+    request.conn = {
+      localAddr: "",
+      remoteAddr: "",
+      rid: -1,
+      closeRead: (): void => {},
+      closeWrite: (): void => {},
+      read: async (): Promise<number | Deno.EOF> => {
+        return 0;
+      },
+      write: async (): Promise<number> => {
+        return -1;
+      },
+      close: (): void => {}
+    };
 
     await request.respond(testCase.response);
     assertEquals(buf.toString(), testCase.raw);
@@ -276,7 +292,7 @@ test(async function writeUint8ArrayResponse(): Promise<void> {
   assertEquals(r.more, false);
 
   const eof = await reader.readLine();
-  assertEquals(eof, EOF);
+  assertEquals(eof, Deno.EOF);
 });
 
 test(async function writeStringReaderResponse(): Promise<void> {
@@ -317,6 +333,21 @@ test(async function writeStringReaderResponse(): Promise<void> {
   assertEquals(r.more, false);
 });
 
+const mockConn = {
+  localAddr: "",
+  remoteAddr: "",
+  rid: -1,
+  closeRead: (): void => {},
+  closeWrite: (): void => {},
+  read: async (): Promise<number | Deno.EOF> => {
+    return 0;
+  },
+  write: async (): Promise<number> => {
+    return -1;
+  },
+  close: (): void => {}
+};
+
 test(async function readRequestError(): Promise<void> {
   let input = `GET / HTTP/1.1
 malformedHeader
@@ -324,7 +355,7 @@ malformedHeader
   const reader = new BufReader(new StringReader(input));
   let err;
   try {
-    await readRequest(reader);
+    await readRequest(mockConn, reader);
   } catch (e) {
     err = e;
   }
@@ -345,7 +376,7 @@ test(async function testReadRequestError(): Promise<void> {
       in: "GET / HTTP/1.1\r\nheader:foo\r\n",
       err: UnexpectedEOFError
     },
-    { in: "", err: EOF },
+    { in: "", err: Deno.EOF },
     {
       in: "HEAD / HTTP/1.1\r\nContent-Length:4\r\n\r\n",
       err: "http: method cannot contain a Content-Length"
@@ -359,17 +390,20 @@ test(async function testReadRequestError(): Promise<void> {
     // See Issue 16490.
     {
       in:
-        "POST / HTTP/1.1\r\nContent-Length: 10\r\nContent-Length: 0\r\n\r\nGopher hey\r\n",
+        "POST / HTTP/1.1\r\nContent-Length: 10\r\nContent-Length: 0\r\n\r\n" +
+        "Gopher hey\r\n",
       err: "cannot contain multiple Content-Length headers"
     },
     {
       in:
-        "POST / HTTP/1.1\r\nContent-Length: 10\r\nContent-Length: 6\r\n\r\nGopher\r\n",
+        "POST / HTTP/1.1\r\nContent-Length: 10\r\nContent-Length: 6\r\n\r\n" +
+        "Gopher\r\n",
       err: "cannot contain multiple Content-Length headers"
     },
     {
       in:
-        "PUT / HTTP/1.1\r\nContent-Length: 6 \r\nContent-Length: 6\r\nContent-Length:6\r\n\r\nGopher\r\n",
+        "PUT / HTTP/1.1\r\nContent-Length: 6 \r\nContent-Length: 6\r\n" +
+        "Content-Length:6\r\n\r\nGopher\r\n",
       headers: [{ key: "Content-Length", value: "6" }]
     },
     {
@@ -388,7 +422,8 @@ test(async function testReadRequestError(): Promise<void> {
     },
     {
       in:
-        "POST / HTTP/1.1\r\nContent-Length:0\r\ntransfer-encoding: chunked\r\n\r\n",
+        "POST / HTTP/1.1\r\nContent-Length:0\r\ntransfer-encoding: " +
+        "chunked\r\n\r\n",
       headers: [],
       err: "http: Transfer-Encoding and Content-Length cannot be send together"
     }
@@ -399,19 +434,19 @@ test(async function testReadRequestError(): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let req: any;
     try {
-      req = await readRequest(reader);
+      req = await readRequest(mockConn, reader);
     } catch (e) {
       err = e;
     }
-    if (test.err === EOF) {
-      assertEquals(req, EOF);
+    if (test.err === Deno.EOF) {
+      assertEquals(req, Deno.EOF);
     } else if (typeof test.err === "string") {
       assertEquals(err.message, test.err);
     } else if (test.err) {
       assert(err instanceof (test.err as typeof UnexpectedEOFError));
     } else {
       assertEquals(err, undefined);
-      assertNotEquals(req, EOF);
+      assertNotEquals(req, Deno.EOF);
       for (const h of test.headers!) {
         assertEquals((req! as ServerRequest).headers.get(h.key), h.value);
       }
@@ -449,6 +484,47 @@ test({
         assertEquals(err, undefined);
         assertEquals(r, t.want, t.in);
       }
+    }
+  }
+});
+
+test({
+  name: "[http] destroyed connection",
+  async fn(): Promise<void> {
+    // Runs a simple server as another process
+    const p = Deno.run({
+      args: [Deno.execPath(), "http/testdata/simple_server.ts", "--allow-net"],
+      stdout: "piped"
+    });
+
+    try {
+      const r = new TextProtoReader(new BufReader(p.stdout!));
+      const s = await r.readLine();
+      assert(s !== Deno.EOF && s.includes("server listening"));
+
+      let serverIsRunning = true;
+      p.status()
+        .then(
+          (): void => {
+            serverIsRunning = false;
+          }
+        )
+        .catch((_): void => {}); // Ignores the error when closing the process.
+
+      await delay(100);
+
+      // Reqeusts to the server and immediately closes the connection
+      const conn = await Deno.dial("tcp", "127.0.0.1:4502");
+      await conn.write(new TextEncoder().encode("GET / HTTP/1.0\n\n"));
+      conn.close();
+
+      // Waits for the server to handle the above (broken) request
+      await delay(100);
+
+      assert(serverIsRunning);
+    } finally {
+      // Stops the sever.
+      p.close();
     }
   }
 });

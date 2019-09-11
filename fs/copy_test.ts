@@ -16,7 +16,7 @@ import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 const testdataDir = path.resolve("fs", "testdata");
 
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
-const isWindows = Deno.platform.os === "win";
+const isWindows = Deno.build.os === "win";
 
 async function testCopy(
   name: string,
@@ -431,7 +431,8 @@ testCopySync(
 );
 
 testCopySync(
-  "[fs] copy directory synchronously, and destination exist and not a directory",
+  "[fs] copy directory synchronously, and destination exist and not a " +
+    "directory",
   (tempDir: string): void => {
     const srcDir = path.join(tempDir, "parent_sync");
     const destDir = path.join(tempDir, "child.txt");

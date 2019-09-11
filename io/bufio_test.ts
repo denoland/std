@@ -5,7 +5,6 @@
 
 const { Buffer } = Deno;
 type Reader = Deno.Reader;
-type ReadResult = Deno.ReadResult;
 import { test, runIfMain } from "../testing/mod.ts";
 import {
   assert,
@@ -16,7 +15,6 @@ import {
 import {
   BufReader,
   BufWriter,
-  EOF,
   BufferFullError,
   UnexpectedEOFError
 } from "./bufio.ts";
@@ -25,8 +23,8 @@ import { charCode, copyBytes, stringsReader } from "./util.ts";
 
 const encoder = new TextEncoder();
 
-function assertNotEOF<T extends {}>(val: T | EOF): T {
-  assertNotEquals(val, EOF);
+function assertNotEOF<T extends {}>(val: T | Deno.EOF): T {
+  assertNotEquals(val, Deno.EOF);
   return val as T;
 }
 
@@ -35,7 +33,7 @@ async function readBytes(buf: BufReader): Promise<string> {
   let nb = 0;
   while (true) {
     let c = await buf.readByte();
-    if (c === EOF) {
+    if (c === Deno.EOF) {
       break; // EOF
     }
     b[nb] = c;
@@ -73,11 +71,11 @@ async function reads(buf: BufReader, m: number): Promise<string> {
   const b = new Uint8Array(1000);
   let nb = 0;
   while (true) {
-    const { nread, eof } = await buf.read(b.subarray(nb, nb + m));
-    nb += nread;
-    if (eof) {
+    const result = await buf.read(b.subarray(nb, nb + m));
+    if (result === Deno.EOF) {
       break;
     }
+    nb += result;
   }
   const decoder = new TextDecoder();
   return decoder.decode(b.subarray(0, nb));
@@ -143,7 +141,8 @@ test(async function bufioBufReader(): Promise<void> {
 
 test(async function bufioBufferFull(): Promise<void> {
   const longString =
-    "And now, hello, world! It is the time for all good men to come to the aid of their party";
+    "And now, hello, world! It is the time for all good men to come to the" +
+    " aid of their party";
   const buf = new BufReader(stringsReader(longString), MIN_READ_BUFFER_SIZE);
   const decoder = new TextDecoder();
 
@@ -165,7 +164,8 @@ const testInput = encoder.encode(
   "012\n345\n678\n9ab\ncde\nfgh\nijk\nlmn\nopq\nrst\nuvw\nxy"
 );
 const testInputrn = encoder.encode(
-  "012\r\n345\r\n678\r\n9ab\r\ncde\r\nfgh\r\nijk\r\nlmn\r\nopq\r\nrst\r\nuvw\r\nxy\r\n\n\r\n"
+  "012\r\n345\r\n678\r\n9ab\r\ncde\r\nfgh\r\nijk\r\nlmn\r\nopq\r\nrst\r\n" +
+    "uvw\r\nxy\r\n\n\r\n"
 );
 const testOutput = encoder.encode("0123456789abcdefghijklmnopqrstuvwxy");
 
@@ -173,7 +173,7 @@ const testOutput = encoder.encode("0123456789abcdefghijklmnopqrstuvwxy");
 class TestReader implements Reader {
   constructor(private data: Uint8Array, private stride: number) {}
 
-  async read(buf: Uint8Array): Promise<ReadResult> {
+  async read(buf: Uint8Array): Promise<number | Deno.EOF> {
     let nread = this.stride;
     if (nread > this.data.byteLength) {
       nread = this.data.byteLength;
@@ -181,13 +181,12 @@ class TestReader implements Reader {
     if (nread > buf.byteLength) {
       nread = buf.byteLength;
     }
+    if (nread === 0) {
+      return Deno.EOF;
+    }
     copyBytes(buf as Uint8Array, this.data);
     this.data = this.data.subarray(nread);
-    let eof = false;
-    if (this.data.byteLength == 0) {
-      eof = true;
-    }
-    return { nread, eof };
+    return nread;
   }
 }
 
@@ -198,7 +197,7 @@ async function testReadLine(input: Uint8Array): Promise<void> {
     let l = new BufReader(reader, input.byteLength + 1);
     while (true) {
       const r = await l.readLine();
-      if (r === EOF) {
+      if (r === Deno.EOF) {
         break;
       }
       const { line, more } = r;
@@ -265,9 +264,9 @@ test(async function bufioPeek(): Promise<void> {
   actual = assertNotEOF(await buf.peek(2));
   assertEquals(decoder.decode(actual), "de");
 
-  let { eof } = await buf.read(p.subarray(0, 3));
+  let res = await buf.read(p.subarray(0, 3));
   assertEquals(decoder.decode(p.subarray(0, 3)), "def");
-  assert(!eof);
+  assert(res !== Deno.EOF);
 
   actual = assertNotEOF(await buf.peek(4));
   assertEquals(decoder.decode(actual), "ghij");
@@ -279,15 +278,19 @@ test(async function bufioPeek(): Promise<void> {
   assertEquals(decoder.decode(actual), "");
 
   const r = await buf.peek(1);
-  assert(r === EOF);
+  assert(r === Deno.EOF);
   /* TODO
-	// Test for issue 3022, not exposing a reader's error on a successful Peek.
+	Test for issue 3022, not exposing a reader's error on a successful Peek.
 	buf = NewReaderSize(dataAndEOFReader("abcd"), 32)
 	if s, err := buf.Peek(2); string(s) != "ab" || err != nil {
 		t.Errorf(`Peek(2) on "abcd", EOF = %q, %v; want "ab", nil`, string(s), err)
 	}
 	if s, err := buf.Peek(4); string(s) != "abcd" || err != nil {
-		t.Errorf(`Peek(4) on "abcd", EOF = %q, %v; want "abcd", nil`, string(s), err)
+		t.Errorf(
+      `Peek(4) on "abcd", EOF = %q, %v; want "abcd", nil`,
+      string(s),
+      err
+    )
 	}
 	if n, err := buf.Read(p[0:5]); string(p[0:n]) != "abcd" || err != nil {
 		t.Fatalf("Read after peek = %q, %v; want abcd, EOF", p[0:n], err)
