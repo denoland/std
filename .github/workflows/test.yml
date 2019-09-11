@@ -49,7 +49,7 @@ jobs:
         shell: powershell
         run: |
           iwr https://deno.land/x/install/install.ps1 -out install.ps1; .\install.ps1 $DENO_VERSION
-          $env:Path += ";$(HOME)\.deno\bin"
+          $env:PATH += ";$HOME\.deno\bin"
         env:
           DENO_VERSION: "v0.17.0"
 
