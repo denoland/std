@@ -512,7 +512,7 @@ test({
       await delay(100);
 
       // Reqeusts to the server and immediately closes the connection
-      const conn = await Deno.dial("tcp", "127.0.0.1:4502");
+      const conn = await Deno.dial("127.0.0.1:4502", { transport: "tcp" });
       await conn.write(new TextEncoder().encode("GET / HTTP/1.0\n\n"));
       conn.close();
 

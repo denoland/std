@@ -386,7 +386,7 @@ export class Server implements AsyncIterable<ServerRequest> {
 }
 
 export function serve(addr: string): Server {
-  const listener = listen("tcp", addr);
+  const listener = listen(addr);
   return new Server(listener);
 }
 
