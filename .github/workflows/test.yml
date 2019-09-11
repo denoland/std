@@ -69,7 +69,7 @@ jobs:
         if: startsWith(matrix.os, 'windows')
         shell: bash
         run: |
-          export PATH="C:\Users\runneradmin\.deno\bin:$PATH
+          export PATH="C:\Users\runneradmin\.deno\bin:$PATH"
           deno run --allow-run --allow-write --allow-read --allow-env ./format.ts --check
           export START_TIME=$(date +%s)
           deno run --allow-run --allow-net --allow-write --allow-read --allow-env --config=tsconfig.test.json ./testing/runner.ts --exclude node_modules
