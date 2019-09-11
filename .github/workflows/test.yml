@@ -61,7 +61,7 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
         run: |
           export PATH="~/.deno/bin:$PATH"
-          bash -e .ci/test.sh
+          /bin/bash -e .ci/test.sh
         env:
           PATH: "~/.deno/bin:$PATH"
       - name: Run tests (windows)
@@ -69,4 +69,4 @@ jobs:
         shell: bash
         run: |
           export PATH="C:/Users/runneradmin/.deno/bin/:$PATH"
-          bash -e .ci/test.sh
+          C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail .ci/test.sh
