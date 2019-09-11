@@ -69,9 +69,7 @@ test(async function serveDirectory(): Promise<void> {
     Deno.build.os === "win" &&
       assert(/<td class="mode">\(unknown mode\)<\/td>/.test(page));
     assert(
-      page.includes(
-        `<td><a href="/tsconfig.json">tsconfig.json</a></td>`
-      )
+      page.includes(`<td><a href="/tsconfig.json">tsconfig.json</a></td>`)
     );
   } finally {
     killFileServer();
