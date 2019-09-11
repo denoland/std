@@ -69,4 +69,4 @@ jobs:
         shell: bash
         run: |
           export PATH="C:/Users/runneradmin/.deno/bin/:$PATH"
-          C:\Program Files\Git\bin\bash.EXE --noprofile --norc -e -o pipefail .ci/test.sh
+          "C:/Program Files/Git/bin/bash.EXE" --noprofile --norc -e -o pipefail .ci/test.sh
