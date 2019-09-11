@@ -35,13 +35,16 @@ function killFileServer(): void {
 test(async function serveFile(): Promise<void> {
   await startFileServer();
   try {
-    const res = await fetch("http://localhost:4500/.github/workflows/test.yml");
+    const res = await fetch("http://localhost:4500/tsconfig.json");
     assert(res.headers.has("access-control-allow-origin"));
     assert(res.headers.has("access-control-allow-headers"));
-    assertEquals(res.headers.get("content-type"), "text/yaml; charset=utf-8");
+    assertEquals(
+      res.headers.get("content-type"),
+      "application/json; charset=utf-8"
+    );
     const downloadedFile = await res.text();
     const localFile = new TextDecoder().decode(
-      await readFile("./.github/workflows/test.yml")
+      await readFile("./tsconfig.json")
     );
     assertEquals(downloadedFile, localFile);
   } finally {
@@ -56,7 +59,7 @@ test(async function serveDirectory(): Promise<void> {
     assert(res.headers.has("access-control-allow-origin"));
     assert(res.headers.has("access-control-allow-headers"));
     const page = await res.text();
-    assert(page.includes(".github/workflows/test.yml"));
+    assert(page.includes("tsconfig.json"));
 
     // `Deno.FileInfo` is not completely compatible with Windows yet
     // TODO: `mode` should work correctly in the future.
@@ -67,7 +70,7 @@ test(async function serveDirectory(): Promise<void> {
       assert(/<td class="mode">\(unknown mode\)<\/td>/.test(page));
     assert(
       page.includes(
-        `<td><a href="/.github/workflows/test.yml">.github/workflows/test.yml</a></td>` // eslint-disable-line max-len
+        `<td><a href="/tsconfig.json">tsconfig.json</a></td>`
       )
     );
   } finally {
