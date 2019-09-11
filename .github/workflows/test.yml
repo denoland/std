@@ -24,7 +24,14 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: "12.x"
-      - name: Install npm packages
+      - name: Install npm packages (unix)
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
+        run: npm install eslint@5.16.0 typescript@$(TS_VERSION) @typescript-eslint/eslint-plugin@1.13.0 @typescript-eslint/parser@1.13.0 eslint-config-prettier
+        env:
+          TS_VERSION: "3.4.5"
+      - name: Install npm packages (windows)
+        if: startsWith(matrix.os, 'windows')
+        shell: powershell
         run: npm install eslint@5.16.0 typescript@$(TS_VERSION) @typescript-eslint/eslint-plugin@1.13.0 @typescript-eslint/parser@1.13.0 eslint-config-prettier
         env:
           TS_VERSION: "3.4.5"
