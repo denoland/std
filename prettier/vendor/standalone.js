@@ -26417,7 +26417,6 @@ function printJestEachTemplateLiteral(node, expressions, options) {
     return concat$11(parts);
   }
 }
-/** @param node {import("estree").TemplateLiteral} */
 
 
 function isSimpleTemplateLiteral(node) {
