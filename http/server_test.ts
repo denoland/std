@@ -122,7 +122,7 @@ test(async function requestBodyWithContentLength(): Promise<void> {
 test(async function requestBodyWithoutBody(): Promise<void> {
   {
     const server = Deno.run({
-      args: [Deno.execPath(), "testdata/simple_server.ts", "--allow-net"],
+      args: [Deno.execPath(), "http/testdata/simple_server.ts", "--allow-net"],
       stdout: "piped"
     });
     const r = new TextProtoReader(new BufReader(server.stdout!));
