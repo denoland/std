@@ -231,7 +231,7 @@ function fixLength(req: ServerRequest): void {
 // ParseHTTPVersion parses a HTTP version string.
 // "HTTP/1.0" returns (1, 0).
 export function parseHTTPVersion(vers: string): [number, number] {
-  const httpReg = /^HTTP\/([0-9]{0,2})\.([0-9]{0,2})$/gm;
+  const httpReg = /^HTTP\/([0-9]+)\.([0-9]+)$/gm;
   const match = httpReg.exec(vers);
 
   if (match == null) {
