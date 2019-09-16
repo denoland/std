@@ -37,19 +37,10 @@ jobs:
           TS_VERSION: "3.4.5"
 
       # Setup deno
-      - name: Download deno (unix)
-        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
-        run: |
-          curl -L https://deno.land/x/install/install.sh | sh -s $(DENO_VERSION)
-        env:
-          DENO_VERSION: "v0.17.0"
-      - name: Download deno (windows)
-        if: startsWith(matrix.os, 'windows')
-        shell: powershell
-        run: |
-          iwr https://deno.land/x/install/install.ps1 -out install.ps1; .\install.ps1 $DENO_VERSION
-        env:
-          DENO_VERSION: "v0.17.0"
+      - name: Setup deno
+        use: lucacasonato/setup-deno-action@add-action
+        with:
+          DENO_VERSION: "v0.18.0"
 
       # Run eslint
       - name: Run eslint
@@ -60,13 +51,11 @@ jobs:
       - name: Run tests (unix)
         if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
         run: |
-          export PATH="$HOME/.deno/bin:$PATH"
           export DENO_EXE_SUFFIX=
           /bin/bash -e .ci/test.sh
       - name: Run tests (windows)
         if: startsWith(matrix.os, 'windows')
         shell: bash
         run: |
-          export PATH="$PATH:/c/Users/runneradmin/.deno/bin"
           export DENO_EXE_SUFFIX=.exe
           "C:/Program Files/Git/bin/bash.EXE" --noprofile --norc -e -o pipefail .ci/test.sh
