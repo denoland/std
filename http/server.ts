@@ -229,8 +229,7 @@ function fixLength(req: ServerRequest): void {
 }
 
 // ParseHTTPVersion parses a HTTP version string.
-// "HTTP/1.0" returns (1, 0, true).
-// Ported from https://github.com/golang/go/blob/f5c43b9/src/net/http/request.go#L766-L792
+// "HTTP/1.0" returns (1, 0).
 export function parseHTTPVersion(vers: string): [number, number] {
   const httpReg = /^HTTP\/([0-9])\.([0-9])$/gm;
   const match = httpReg.exec(vers);
