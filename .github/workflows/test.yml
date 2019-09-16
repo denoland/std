@@ -38,9 +38,9 @@ jobs:
 
       # Setup deno
       - name: Setup deno
-        use: lucacasonato/setup-deno-action@add-action
+        uses: lucacasonato/setup-deno-action@add-action
         with:
-          DENO_VERSION: "v0.18.0"
+          deno-version: "v0.18.0"
 
       # Run eslint
       - name: Run eslint
