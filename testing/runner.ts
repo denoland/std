@@ -5,18 +5,10 @@ import { glob, isGlob, walk } from "../fs/mod.ts";
 import { runTests } from "./mod.ts";
 const { args, cwd } = Deno;
 
-const DEFAULT_GLOBS = Deno.build.os == "win" ? [
-  "**\\*_test.ts",
-  "**\\*_test.js",
-  "**\\test.ts",
-  "**\\test.js"
-] : [
-  "**/*_test.ts",
-  "**/*_test.js",
-  "**/test.ts",
-  "**/test.js"
-];
-
+const DEFAULT_GLOBS =
+  Deno.build.os == "win"
+    ? ["**\\*_test.ts", "**\\*_test.js", "**\\test.ts", "**\\test.js"]
+    : ["**/*_test.ts", "**/*_test.js", "**/test.ts", "**/test.js"];
 
 /* eslint-disable max-len */
 function showHelp(): void {
