@@ -7,12 +7,11 @@ import { join } from "../fs/path/mod.ts";
 const { args, cwd } = Deno;
 
 const DEFAULT_GLOBS = [
-  join("**","*_test.ts" ),
-  join("**","*_test.js" ),
-  join("**","test.ts" ),
-  join("**","test.ts" ),
+  join("**", "*_test.ts"),
+  join("**", "*_test.js"),
+  join("**", "test.ts"),
+  join("**", "test.ts")
 ];
-
 
 /* eslint-disable max-len */
 function showHelp(): void {
