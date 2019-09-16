@@ -3,18 +3,14 @@
 import { parse } from "../flags/mod.ts";
 import { glob, isGlob, walk } from "../fs/mod.ts";
 import { runTests } from "./mod.ts";
+import { join } from "../fs/path/mod.ts";
 const { args, cwd } = Deno;
 
-const DEFAULT_GLOBS = Deno.build.os == "win" ? [
-  "**\\*_test.ts",
-  "**\\*_test.js",
-  "**\\test.ts",
-  "**\\test.js"
-] : [
-  "**/*_test.ts",
-  "**/*_test.js",
-  "**/test.ts",
-  "**/test.js"
+const DEFAULT_GLOBS = [
+  join("**","*_test.ts" ),
+  join("**","*_test.js" ),
+  join("**","test.ts" ),
+  join("**","test.ts" ),
 ];
 
 
