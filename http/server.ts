@@ -232,55 +232,23 @@ function fixLength(req: ServerRequest): void {
 // "HTTP/1.0" returns (1, 0, true).
 // Ported from https://github.com/golang/go/blob/f5c43b9/src/net/http/request.go#L766-L792
 export function parseHTTPVersion(vers: string): [number, number] {
-  switch (vers) {
-    case "HTTP/1.1":
-      return [1, 1];
+  const httpReg = /^HTTP\/[0-9]\.[0-9]$/gm; // test if string is formatted as an HTTP version
+  let major: number;
+  let minor: number;
 
-    case "HTTP/1.0":
-      return [1, 0];
-
-    default: {
-      const Big = 1000000; // arbitrary upper bound
-      const digitReg = /^\d+$/; // test if string is only digit
-      let major: number;
-      let minor: number;
-
-      if (!vers.startsWith("HTTP/")) {
-        break;
-      }
-
-      const dot = vers.indexOf(".");
-      if (dot < 0) {
-        break;
-      }
-
-      let majorStr = vers.substring(vers.indexOf("/") + 1, dot);
-      major = parseInt(majorStr);
-      if (
-        !digitReg.test(majorStr) ||
-        isNaN(major) ||
-        major < 0 ||
-        major > Big
-      ) {
-        break;
-      }
-
-      let minorStr = vers.substring(dot + 1);
-      minor = parseInt(minorStr);
-      if (
-        !digitReg.test(minorStr) ||
-        isNaN(minor) ||
-        minor < 0 ||
-        minor > Big
-      ) {
-        break;
-      }
-
-      return [major, minor];
-    }
+  if (!httpReg.test(vers)) {
+    throw new Error(`malformed HTTP version ${vers}`);
   }
 
-  throw new Error(`malformed HTTP version ${vers}`);
+  const dot = vers.indexOf(".");
+
+  let majorStr = vers.substring(vers.indexOf("/") + 1, dot);
+  let minorStr = vers.substring(dot + 1);
+
+  major = parseInt(majorStr);
+  minor = parseInt(minorStr);
+
+  return [major, minor];
 }
 
 export async function readRequest(
