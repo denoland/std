@@ -232,21 +232,17 @@ function fixLength(req: ServerRequest): void {
 // "HTTP/1.0" returns (1, 0, true).
 // Ported from https://github.com/golang/go/blob/f5c43b9/src/net/http/request.go#L766-L792
 export function parseHTTPVersion(vers: string): [number, number] {
-  const httpReg = /^HTTP\/[0-9]\.[0-9]$/gm; // test if string is formatted as an HTTP version
-  let major: number;
-  let minor: number;
+  const httpReg = /^HTTP\/([0-9])\.([0-9])$/gm;
+  const match = httpReg.exec(vers);
 
-  if (!httpReg.test(vers)) {
+  if (match == null) {
     throw new Error(`malformed HTTP version ${vers}`);
   }
 
-  const dot = vers.indexOf(".");
+  const [, majorStr, minorStr] = match;
 
-  let majorStr = vers.substring(vers.indexOf("/") + 1, dot);
-  let minorStr = vers.substring(dot + 1);
-
-  major = parseInt(majorStr);
-  minor = parseInt(minorStr);
+  const major = parseInt(majorStr);
+  const minor = parseInt(minorStr);
 
   return [major, minor];
 }
