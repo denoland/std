@@ -38,7 +38,7 @@ jobs:
 
       # Setup deno
       - name: Setup deno
-        uses: lucacasonato/setup-deno-action@add-action
+        uses: denolib/setup-deno@v1
         with:
           deno-version: "v0.18.0"
 
