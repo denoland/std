@@ -12,26 +12,28 @@ const DEFAULT_GLOBS = [
   "**/test.js"
 ];
 
-/* eslint-disable max-len */
 function showHelp(): void {
   console.log(`Deno test runner
 
 USAGE:
-  deno -A https://deno.land/std/testing/runner.ts [OPTIONS] [FILES...]
+  deno -A https://deno.land/std/testing/runner.ts [OPTIONS] [MODULES...]
 
 OPTIONS:
-  -q, --quiet               Don't show output from test cases 
-  -f, --failfast            Stop test suite on first error
-  -e, --exclude <FILES...>  List of file names to exclude from run. If this options is 
-                            used files to match must be specified after "--". 
-  
+  -q, --quiet                 Don't show output from test cases
+  -f, --failfast              Stop running tests on first error
+  -e, --exclude <MODULES...>  List of comma-separated modules to exclude
+
 ARGS:
-  [FILES...]  List of file names to run. Defaults to: ${DEFAULT_GLOBS.join(
-    ","
-  )} 
-`);
+  [MODULES...]  List of test modules to run.
+                A directory <dir> will expand to:
+                  ${DEFAULT_GLOBS.map((s: string): string => `<dir>/${s}`)
+                    .join(`
+                  `)}
+                Defaults to "." when none are provided.
+
+Note that modules can refer to file paths or URLs and globs are supported for
+the former.`);
 }
-/* eslint-enable max-len */
 
 function filePathToRegExp(str: string): RegExp {
   if (isGlob(str)) {
