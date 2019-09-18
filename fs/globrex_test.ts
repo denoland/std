@@ -24,30 +24,30 @@ function match(
   return res.regex.test(isWin && strWin ? strWin : strUnix);
 }
 
-function matchRegex(
-  pattern: string,
-  ifUnix: string,
-  ifWin: string,
-  opts: GlobOptions
-): GlobrexResult {
-  const res = globrex(pattern, opts);
-  const { regex } = opts.filepath ? res.path! : res;
-  t.is(regex.toString(), isWin ? ifWin : ifUnix, "~> regex matches expectant");
-  return res;
-}
+// function matchRegex(
+//   pattern: string,
+//   ifUnix: string,
+//   ifWin: string,
+//   opts: GlobOptions
+// ): GlobrexResult {
+//   const res = globrex(pattern, opts);
+//   const { regex } = opts.filepath ? res.path! : res;
+//   t.is(regex.toString(), isWin ? ifWin : ifUnix, "~> regex matches expectant");
+//   return res;
+// }
 
-function matchSegments(
-  pattern: string,
-  ifUnix: RegExp[],
-  ifWin: RegExp[],
-  opts: GlobOptions
-): GlobrexResult {
-  const res = globrex(pattern, { filepath: true, ...opts });
-  const str = res.path!.segments.join(" ");
-  const exp = (isWin ? ifWin : ifUnix).join(" ");
-  t.is(str, exp);
-  return res;
-}
+// function matchSegments(
+//   pattern: string,
+//   ifUnix: RegExp[],
+//   ifWin: RegExp[],
+//   opts: GlobOptions
+// ): GlobrexResult {
+//   const res = globrex(pattern, { filepath: true, ...opts });
+//   const str = res.path!.segments.join(" ");
+//   const exp = (isWin ? ifWin : ifUnix).join(" ");
+//   t.is(str, exp);
+//   return res;
+// }
 
 test({
   name: "globrex: standard",
