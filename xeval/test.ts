@@ -34,7 +34,7 @@ test(async function xevalCliReplvar(): Promise<void> {
   await p.stdin!.write(encode("hello"));
   await p.stdin!.close();
   assertEquals(await p.status(), { code: 0, success: true });
-  assertEquals(decode(await p.output()), "hello"+EOL);
+  assertEquals(decode(await p.output()), "hello" + EOL);
 });
 
 test(async function xevalCliSyntaxError(): Promise<void> {
