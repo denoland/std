@@ -10,7 +10,7 @@ const DEFAULT_GLOBS = [
   join("**", "*_test.ts"),
   join("**", "*_test.js"),
   join("**", "test.ts"),
-  join("**", "test.ts")
+  join("**", "test.js")
 ];
 
 /* eslint-disable max-len */
