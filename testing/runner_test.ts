@@ -22,7 +22,7 @@ test(async function getMatchingUrlsRemote(): Promise<void> {
 
 test(async function getMatchingUrlsLocal(): Promise<void> {
   const urls = await getMatchingUrls(
-    ["fmt/*_test.ts"],
+    [join("fmt", "*_test.ts")],
     ["colors*"],
     TEST_ROOT_PATH
   );

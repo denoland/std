@@ -1,6 +1,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { xrun } from "../prettier/util.ts";
 import { red, green } from "../fmt/colors.ts";
+import { EOL } from "../fs/path/constants.ts";
 
 /**
  * Checks whether any source file is changed since the given start time.
@@ -11,7 +12,7 @@ async function main(startTime: number): Promise<void> {
   const changed = new TextDecoder()
     .decode(await xrun({ args: ["git", "ls-files"], stdout: "piped" }).output())
     .trim()
-    .split("\n")
+    .split(EOL)
     .filter(file => {
       const stat = Deno.lstatSync(file);
       if (stat != null) {
