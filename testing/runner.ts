@@ -3,7 +3,7 @@
 import { parse } from "../flags/mod.ts";
 import { glob, isGlob, walk } from "../fs/mod.ts";
 import { RunOptions, runTests } from "./mod.ts";
-const { args, cwd } = Deno;
+const { DenoError, ErrorKind, args, cwd, exit } = Deno;
 
 const DEFAULT_GLOBS = [
   "**/*_test.ts",
@@ -22,6 +22,8 @@ OPTIONS:
   -q, --quiet                 Don't show output from test cases
   -f, --failfast              Stop running tests on first error
   -e, --exclude <MODULES...>  List of comma-separated modules to exclude
+  --allow-none                Exit with status 0 even when no test modules are
+                              found
 
 ARGS:
   [MODULES...]  List of test modules to run.
@@ -101,6 +103,7 @@ export async function getMatchingUrls(
 
 export interface RunTestModulesOptions extends RunOptions {
   exclude?: string[];
+  allowNone?: boolean;
 }
 
 /**
@@ -132,6 +135,7 @@ export async function runTestModules(
   include: string[],
   {
     exclude = [],
+    allowNone = false,
     parallel = false,
     exitOnFail = false,
     only = /[^\s]/,
@@ -142,8 +146,11 @@ export async function runTestModules(
   const testModuleUrls = await getMatchingUrls(include, exclude);
 
   if (testModuleUrls.length == 0) {
-    if (!disableLog) {
-      console.error("No matching test modules found.");
+    const noneFoundMessage = "No matching test modules found.";
+    if (!allowNone) {
+      throw new DenoError(ErrorKind.NotFound, noneFoundMessage);
+    } else if (!disableLog) {
+      console.log(noneFoundMessage);
     }
     return;
   }
@@ -167,7 +174,7 @@ export async function runTestModules(
 
 async function main(): Promise<void> {
   const parsedArgs = parse(args.slice(1), {
-    boolean: ["failfast", "help", "quiet"],
+    boolean: ["allow-none", "failfast", "help", "quiet"],
     string: ["exclude"],
     alias: {
       exclude: ["e"],
@@ -176,12 +183,12 @@ async function main(): Promise<void> {
       quiet: ["q"]
     },
     default: {
+      "allow-none": false,
       failfast: false,
       help: false,
       quiet: false
     }
   });
-
   if (parsedArgs.help) {
     return showHelp();
   }
@@ -192,14 +199,22 @@ async function main(): Promise<void> {
           return fileGlob.split(",");
         })
       : DEFAULT_GLOBS;
-
   const exclude =
     parsedArgs.exclude != null ? (parsedArgs.exclude as string).split(",") : [];
+  const allowNone = parsedArgs["allow-none"];
+  const exitOnFail = parsedArgs.failfast;
+  const disableLog = parsedArgs.quiet;
 
   await runTestModules(include, {
     exclude,
-    exitOnFail: parsedArgs.failfast,
-    disableLog: parsedArgs.quiet
+    allowNone,
+    exitOnFail,
+    disableLog
+  }).catch((error: Error): void => {
+    if (!disableLog) {
+      console.error(error.message);
+    }
+    exit(1);
   });
 }
 
