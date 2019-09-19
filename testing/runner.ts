@@ -64,10 +64,11 @@ function partition(
  * Given list of globs or URLs to include and exclude and root directory return
  * list of file URLs that should be imported for test runner.
  */
+// TODO: Remove the concept of a root, support arbitrary paths.
 export async function getMatchingUrls(
   matchPaths: string[],
   excludePaths: string[],
-  root: string
+  root: string = cwd()
 ): Promise<string[]> {
   const [includeLocal, includeRemote] = partition(matchPaths, isRemoteUrl);
   const [excludeLocal, excludeRemote] = partition(excludePaths, isRemoteUrl);
@@ -138,9 +139,7 @@ export async function runTestModules(
     disableLog = false
   }: RunTestModulesOptions = {}
 ): Promise<void> {
-  // TODO: Remove the concept of a root, support parent paths.
-  const root = cwd();
-  const testModuleUrls = await getMatchingUrls(include, exclude, root);
+  const testModuleUrls = await getMatchingUrls(include, exclude);
 
   if (testModuleUrls.length == 0) {
     if (!disableLog) {
