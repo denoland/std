@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno -A
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { parse } from "../flags/mod.ts";
-import { glob, isGlob, walk } from "../fs/mod.ts";
+import { glob, walk } from "../fs/mod.ts";
 import { RunOptions, runTests } from "./mod.ts";
 const { DenoError, ErrorKind, args, cwd, exit } = Deno;
 
@@ -37,14 +37,6 @@ Note that modules can refer to file paths or URLs and globs are supported for
 the former.`);
 }
 
-function filePathToRegExp(str: string): RegExp {
-  if (isGlob(str)) {
-    return glob(str, { flags: "g" });
-  }
-
-  return RegExp(str, "g");
-}
-
 function isRemoteUrl(url: string): boolean {
   return /^https?:\/\//.test(url);
 }
@@ -76,8 +68,8 @@ export async function getMatchingUrls(
   const [excludeLocal, excludeRemote] = partition(excludePaths, isRemoteUrl);
 
   const localFileIterator = walk(root, {
-    match: includeLocal.map((f: string): RegExp => filePathToRegExp(f)),
-    skip: excludeLocal.map((f: string): RegExp => filePathToRegExp(f))
+    match: includeLocal.map((f: string): RegExp => glob(f)),
+    skip: excludeLocal.map((f: string): RegExp => glob(f))
   });
 
   let matchingLocalUrls: string[] = [];
