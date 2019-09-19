@@ -12,7 +12,7 @@ async function main(startTime: number): Promise<void> {
   const changed = new TextDecoder()
     .decode(await xrun({ args: ["git", "ls-files"], stdout: "piped" }).output())
     .trim()
-    .split(EOL)
+    .split("\n")
     .filter(file => {
       const stat = Deno.lstatSync(file);
       if (stat != null) {
