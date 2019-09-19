@@ -2,7 +2,7 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { parse } from "../flags/mod.ts";
 import { glob, isGlob, walk } from "../fs/mod.ts";
-import { runTests } from "./mod.ts";
+import { RunOptions, runTests } from "./mod.ts";
 const { args, cwd } = Deno;
 
 const DEFAULT_GLOBS = [
@@ -97,32 +97,85 @@ export async function getMatchingUrls(
 
   return matchingLocalUrls.concat(matchingRemoteUrls);
 }
+
+export interface RunTestModulesOptions extends RunOptions {
+  exclude?: string[];
+}
+
 /**
- * This function runs matching test files in `root` directory.
+ * Import the specified test modules and run their tests as a suite.
  *
- * File matching and excluding supports glob syntax, ie. if encountered arg is
- * a glob it will be expanded using `glob` method from `fs` module.
+ * Test modules are specified as an array of strings and can include local files
+ * or URLs.
  *
- * Note that your shell may expand globs for you:
- *    $ deno -A ./runner.ts **\/*_test.ts **\/test.ts
+ * File matching and excluding support glob syntax - arguments recognized as
+ * globs will be expanded using `glob()` from the `fs` module.
  *
- * Expanding using `fs.glob`:
- *    $ deno -A ./runner.ts \*\*\/\*_test.ts \*\*\/test.ts
+ * Example:
  *
- *  `**\/*_test.ts` and `**\/test.ts"` are arguments that will be parsed and
- *  expanded as: [glob("**\/*_test.ts"), glob("**\/test.ts")]
+ *       runTestModules(["**\/*_test.ts", "**\/test.ts"]);
+ *
+ * Any matched directory `<dir>` will expand to:
+ *   - `<dir>/**\/*_test.ts`
+ *   - `<dir>/**\/*_test.js`
+ *   - `<dir>/**\/test.ts`
+ *   - `<dir>/**\/test.js`
+ *
+ * So the above example is captured naturally by:
+ *
+ *       runTestModules(["."]);
  */
-// TODO: change return type to `Promise<void>` once, `runTests` is updated
-// to return boolean instead of exiting
-export async function main(root: string = cwd()): Promise<void> {
+// TODO: Change return type to `Promise<void>` once, `runTests` is updated
+// to return boolean instead of exiting.
+export async function runTestModules(
+  include: string[],
+  {
+    exclude = [],
+    parallel = false,
+    exitOnFail = false,
+    only = /[^\s]/,
+    skip = /^\s*$/,
+    disableLog = false
+  }: RunTestModulesOptions = {}
+): Promise<void> {
+  // TODO: Remove the concept of a root, support parent paths.
+  const root = cwd();
+  const testModuleUrls = await getMatchingUrls(include, exclude, root);
+
+  if (testModuleUrls.length == 0) {
+    console.error("No matching test files found.");
+    return;
+  }
+
+  console.log(`Found ${testModuleUrls.length} matching test files.`);
+
+  for (const url of testModuleUrls) {
+    await import(url);
+  }
+
+  await runTests({
+    parallel,
+    exitOnFail,
+    only,
+    skip,
+    disableLog
+  });
+}
+
+async function main(): Promise<void> {
   const parsedArgs = parse(args.slice(1), {
-    boolean: ["quiet", "failfast", "help"],
+    boolean: ["failfast", "help", "quiet"],
     string: ["exclude"],
     alias: {
-      help: ["h"],
-      quiet: ["q"],
+      exclude: ["e"],
       failfast: ["f"],
-      exclude: ["e"]
+      help: ["h"],
+      quiet: ["q"]
+    },
+    default: {
+      failfast: false,
+      help: false,
+      quiet: false
     }
   });
 
@@ -130,41 +183,20 @@ export async function main(root: string = cwd()): Promise<void> {
     return showHelp();
   }
 
-  let includeFiles: string[];
-  let excludeFiles: string[];
+  const include =
+    parsedArgs._.length > 0
+      ? (parsedArgs._ as string[]).flatMap((fileGlob: string): string[] => {
+          return fileGlob.split(",");
+        })
+      : DEFAULT_GLOBS;
 
-  if (parsedArgs._.length) {
-    includeFiles = (parsedArgs._ as string[])
-      .map((fileGlob: string): string[] => {
-        return fileGlob.split(",");
-      })
-      .flat();
-  } else {
-    includeFiles = DEFAULT_GLOBS;
-  }
+  const exclude =
+    parsedArgs.exclude != null ? (parsedArgs.exclude as string).split(",") : [];
 
-  if (parsedArgs.exclude) {
-    excludeFiles = (parsedArgs.exclude as string).split(",");
-  } else {
-    excludeFiles = [];
-  }
-
-  const foundTestUrls = await getMatchingUrls(includeFiles, excludeFiles, root);
-
-  if (foundTestUrls.length === 0) {
-    console.error("No matching test files found.");
-    return;
-  }
-
-  console.log(`Found ${foundTestUrls.length} matching test files.`);
-
-  for (const url of foundTestUrls) {
-    await import(url);
-  }
-
-  await runTests({
-    exitOnFail: !!parsedArgs.failfast,
-    disableLog: !!parsedArgs.quiet
+  await runTestModules(include, {
+    exclude,
+    exitOnFail: parsedArgs.failfast,
+    disableLog: parsedArgs.quiet
   });
 }
 
