@@ -1,7 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { xrun } from "../prettier/util.ts";
 import { red, green } from "../fmt/colors.ts";
-import { EOL } from "../fs/path/constants.ts";
 
 /**
  * Checks whether any source file is changed since the given start time.
