@@ -143,11 +143,15 @@ export async function runTestModules(
   const testModuleUrls = await getMatchingUrls(include, exclude, root);
 
   if (testModuleUrls.length == 0) {
-    console.error("No matching test files found.");
+    if (!disableLog) {
+      console.error("No matching test modules found.");
+    }
     return;
   }
 
-  console.log(`Found ${testModuleUrls.length} matching test files.`);
+  if (!disableLog) {
+    console.log(`Found ${testModuleUrls.length} matching test modules.`);
+  }
 
   for (const url of testModuleUrls) {
     await import(url);
