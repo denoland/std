@@ -7,10 +7,11 @@ import { GlobOptions } from "./glob.ts";
 const isWin = Deno.build.os === "win";
 const SEP = isWin ? `\\\\+` : `\\/`;
 const SEP_ESC = isWin ? `\\\\` : `/`;
-const GLOBSTAR = `((?:[^/]*(?:/|$))*)`;
-const WILDCARD = `([^/]*)`;
-const GLOBSTAR_SEGMENT = `((?:[^${SEP_ESC}]*(?:${SEP_ESC}|$))*)`;
-const WILDCARD_SEGMENT = `([^${SEP_ESC}]*)`;
+const SEP_RAW = isWin ? `\\` : `/`;
+const GLOBSTAR = `((?:[^${SEP_ESC}/]*(?:${SEP_ESC}|\/|$))*)`;
+const WILDCARD = `([^${SEP_ESC}/]*)`;
+const GLOBSTAR_SEGMENT = `((?:[^${SEP_ESC}/]*(?:${SEP_ESC}|\/|$))*)`;
+const WILDCARD_SEGMENT = `([^${SEP_ESC}/]*)`;
 
 export interface GlobrexResult {
   regex: RegExp;
@@ -267,9 +268,9 @@ export function globrex(
         let isGlobstar =
           starCount > 1 && // multiple "*"'s
           // from the start of the segment
-          (prevChar === "/" || prevChar === undefined) &&
+          [SEP_RAW, "/", undefined].includes(prevChar) &&
           // to the end of the segment
-          (nextChar === "/" || nextChar === undefined);
+          [SEP_RAW, "/", undefined].includes(nextChar);
         if (isGlobstar) {
           // it's a globstar, so match zero or more path segments
           add(GLOBSTAR, { only: "regex" });
