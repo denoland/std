@@ -11,12 +11,7 @@ import { isAbsolute, join } from "../fs/path/mod.ts";
 import { RunOptions, runTests } from "./mod.ts";
 const { DenoError, ErrorKind, args, cwd, exit } = Deno;
 
-const DEFAULT_GLOBS = [
-  "**/*_test.ts",
-  "**/*_test.js",
-  "**/test.ts",
-  "**/test.js"
-];
+const DEFAULT_GLOBS = ["**/?(*_)test.{js,ts}"];
 
 function rootDefaultGlobs(root: string): string[] {
   return DEFAULT_GLOBS.map((s: string): string => `${join(root, s)}`);
@@ -142,10 +137,7 @@ export interface RunTestModulesOptions extends RunOptions {
  *       runTestModules(["**\/*_test.ts", "**\/test.ts"]);
  *
  * Any matched directory `<dir>` will expand to:
- *   - `<dir>/**\/*_test.ts`
- *   - `<dir>/**\/*_test.js`
- *   - `<dir>/**\/test.ts`
- *   - `<dir>/**\/test.js`
+ *   <dir>/**\/?(*_)test.{js,ts}
  *
  * So the above example is captured naturally by:
  *
