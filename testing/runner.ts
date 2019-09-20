@@ -8,7 +8,7 @@ import {
   ExpandGlobOptions
 } from "../fs/mod.ts";
 import { isAbsolute, join } from "../fs/path/mod.ts";
-import { RunOptions, runTests } from "./mod.ts";
+import { RunTestsOptions, runTests } from "./mod.ts";
 const { DenoError, ErrorKind, args, cwd, exit } = Deno;
 
 const DIR_GLOBS = [join("**", "?(*_)test.{js,ts}")];
@@ -114,7 +114,7 @@ export async function findTestModules(
   ];
 }
 
-export interface RunTestModulesOptions extends RunOptions {
+export interface RunTestModulesOptions extends RunTestsOptions {
   exclude?: string[];
   allowNone?: boolean;
 }
