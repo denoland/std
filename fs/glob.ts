@@ -1,4 +1,7 @@
 import { globrex } from "./globrex.ts";
+import { isAbsolute, join } from "./path/mod.ts";
+import { WalkInfo, walk, walkSync } from "./walk.ts";
+const { cwd } = Deno;
 
 export interface GlobOptions {
   // Allow ExtGlob features
@@ -75,4 +78,62 @@ export function isGlob(str: string): boolean {
   }
 
   return false;
+}
+
+export interface ExpandGlobOptions extends GlobOptions {
+  root?: string;
+  includeDirs?: boolean;
+}
+
+/**
+ * Expand the glob string from the specified `root` directory and yield each
+ * result as a `WalkInfo` object.
+ */
+// TODO: Use a proper glob expansion algorithm.
+// This is a very incomplete solution. The whole directory tree from `root` is
+// walked and parent paths are not supported.
+export async function* expandGlob(
+  globString: string,
+  {
+    root = cwd(),
+    includeDirs = true,
+    extended = false,
+    globstar = false,
+    strict = false,
+    filepath = false,
+    flags = ""
+  }: ExpandGlobOptions = {}
+): AsyncIterableIterator<WalkInfo> {
+  const absoluteGlob = isAbsolute(globString)
+    ? globString
+    : join(root, globString);
+  const globOptions = { extended, globstar, strict, filepath, flags };
+  yield* walk(root, {
+    match: [glob(absoluteGlob, globOptions)],
+    includeDirs
+  });
+}
+
+/** Synchronous version of `expandGlob()`. */
+// TODO: As `expandGlob()`.
+export function* expandGlobSync(
+  globString: string,
+  {
+    root = cwd(),
+    includeDirs = true,
+    extended = false,
+    globstar = false,
+    strict = false,
+    filepath = false,
+    flags = ""
+  }: ExpandGlobOptions = {}
+): IterableIterator<WalkInfo> {
+  const absoluteGlob = isAbsolute(globString)
+    ? globString
+    : join(root, globString);
+  const globOptions = { extended, globstar, strict, filepath, flags };
+  yield* walkSync(root, {
+    match: [glob(absoluteGlob, globOptions)],
+    includeDirs
+  });
 }
