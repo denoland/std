@@ -242,6 +242,12 @@ export function parseHTTPVersion(vers: string): [number, number] {
 
   const major = parseInt(majorStr);
   const minor = parseInt(minorStr);
+  
+  /* Keep this condition unti we know
+    why golang is using this upper bound value. */
+  if (major > 1000000 || minor > 1000000) {
+    throw new Error(`malformed HTTP version ${vers}`);
+  }
 
   return [major, minor];
 }
