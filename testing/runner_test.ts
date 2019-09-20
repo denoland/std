@@ -28,3 +28,8 @@ test(async function findTestModulesLocal(): Promise<void> {
   );
   assertEquals(urls.length, 1);
 });
+
+test(async function findTestModulesDirectory(): Promise<void> {
+  const urls = await findTestModules(["."], [], TEST_ROOT_PATH);
+  assertEquals(urls.length, 2);
+});
