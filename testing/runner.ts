@@ -11,10 +11,10 @@ import { isAbsolute, join } from "../fs/path/mod.ts";
 import { RunOptions, runTests } from "./mod.ts";
 const { DenoError, ErrorKind, args, cwd, exit } = Deno;
 
-const DEFAULT_GLOBS = ["**/?(*_)test.{js,ts}"];
+const DIR_GLOBS = ["**/?(*_)test.{js,ts}"];
 
-function rootDefaultGlobs(root: string): string[] {
-  return DEFAULT_GLOBS.map((s: string): string => `${join(root, s)}`);
+function applyDirGlobs(root: string): string[] {
+  return DIR_GLOBS.map((s: string): string => `${join(root, s)}`);
 }
 
 function showHelp(): void {
@@ -33,7 +33,7 @@ OPTIONS:
 ARGS:
   [MODULES...]  List of test modules to run.
                 A directory <dir> will expand to:
-                  ${DEFAULT_GLOBS.map((s: string): string => `<dir>/${s}`)
+                  ${applyDirGlobs("<dir>")
                     .join(`
                   `)}
                 Defaults to "." when none are provided.
@@ -60,7 +60,7 @@ function partition(
 }
 
 function expandDirectory(dir: string, options: ExpandGlobOptions): WalkInfo[] {
-  return rootDefaultGlobs(dir).flatMap((s: string): WalkInfo[] => [
+  return applyDirGlobs(dir).flatMap((s: string): WalkInfo[] => [
     ...expandGlobSync(s, options)
   ]);
 }
@@ -212,7 +212,7 @@ async function main(): Promise<void> {
       ? (parsedArgs._ as string[]).flatMap((fileGlob: string): string[] => {
           return fileGlob.split(",");
         })
-      : DEFAULT_GLOBS;
+      : ["."];
   const exclude =
     parsedArgs.exclude != null ? (parsedArgs.exclude as string).split(",") : [];
   const allowNone = parsedArgs["allow-none"];
