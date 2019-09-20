@@ -11,11 +11,7 @@ import { isAbsolute, join } from "../fs/path/mod.ts";
 import { RunOptions, runTests } from "./mod.ts";
 const { DenoError, ErrorKind, args, cwd, exit } = Deno;
 
-const DIR_GLOBS = ["**/?(*_)test.{js,ts}"];
-
-function applyDirGlobs(root: string): string[] {
-  return DIR_GLOBS.map((s: string): string => `${join(root, s)}`);
-}
+const DIR_GLOBS = [join("**", "?(*_)test.{js,ts}")];
 
 function showHelp(): void {
   console.log(`Deno test runner
@@ -33,7 +29,7 @@ OPTIONS:
 ARGS:
   [MODULES...]  List of test modules to run.
                 A directory <dir> will expand to:
-                  ${applyDirGlobs("<dir>")
+                  ${DIR_GLOBS.map((s: string): string => `${join("<dir>", s)}`)
                     .join(`
                   `)}
                 Defaults to "." when none are provided.
@@ -60,8 +56,8 @@ function partition(
 }
 
 function expandDirectory(dir: string, options: ExpandGlobOptions): WalkInfo[] {
-  return applyDirGlobs(dir).flatMap((s: string): WalkInfo[] => [
-    ...expandGlobSync(s, options)
+  return DIR_GLOBS.flatMap((s: string): WalkInfo[] => [
+    ...expandGlobSync(s, { ...options, root: dir })
   ]);
 }
 
