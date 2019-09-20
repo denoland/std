@@ -1,4 +1,5 @@
 import { xeval } from "./mod.ts";
+import { EOL } from "../fs/path/constants.ts";
 import { stringsReader } from "../io/util.ts";
 import { decode, encode } from "../strings/mod.ts";
 import { assertEquals, assertStrContains } from "../testing/asserts.ts";
@@ -33,7 +34,7 @@ test(async function xevalCliReplvar(): Promise<void> {
   await p.stdin!.write(encode("hello"));
   await p.stdin!.close();
   assertEquals(await p.status(), { code: 0, success: true });
-  assertEquals(decode(await p.output()), "hello\n");
+  assertEquals(decode(await p.output()), `hello${EOL}`);
 });
 
 test(async function xevalCliSyntaxError(): Promise<void> {

@@ -22,7 +22,7 @@ test(async function findTestModulesRemote(): Promise<void> {
 
 test(async function findTestModulesLocal(): Promise<void> {
   const urls = await findTestModules(
-    ["fmt/*_test.ts"],
+    ["*_test.ts"],
     ["colors*"],
     TEST_ROOT_PATH
   );
