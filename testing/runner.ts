@@ -1,7 +1,13 @@
 #!/usr/bin/env -S deno -A
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { parse } from "../flags/mod.ts";
-import { glob, walk } from "../fs/mod.ts";
+import {
+  WalkInfo,
+  expandGlobSync,
+  glob,
+  ExpandGlobOptions
+} from "../fs/mod.ts";
+import { isAbsolute, join } from "../fs/path/mod.ts";
 import { RunOptions, runTests } from "./mod.ts";
 const { DenoError, ErrorKind, args, cwd, exit } = Deno;
 
@@ -11,6 +17,10 @@ const DEFAULT_GLOBS = [
   "**/test.ts",
   "**/test.js"
 ];
+
+function rootDefaultGlobs(root: string): string[] {
+  return DEFAULT_GLOBS.map((s: string): string => `${join(root, s)}`);
+}
 
 function showHelp(): void {
   console.log(`Deno test runner
@@ -54,43 +64,63 @@ function partition(
   );
 }
 
+function expandDirectory(dir: string, options: ExpandGlobOptions): WalkInfo[] {
+  return rootDefaultGlobs(dir).flatMap((s: string): WalkInfo[] => [
+    ...expandGlobSync(s, options)
+  ]);
+}
+
 /**
- * Given list of globs or URLs to include and exclude and root directory return
- * list of file URLs that should be imported for test runner.
+ * Given a list of globs or URLs to include and exclude and a root directory
+ * from which to expand relative globs, return a list of URLs
+ * (file: or remote) that should be imported for the test runner.
  */
-// TODO: Remove the concept of a root, support arbitrary paths.
 export async function getMatchingUrls(
-  matchPaths: string[],
-  excludePaths: string[],
+  includeModules: string[],
+  excludeModules: string[],
   root: string = cwd()
 ): Promise<string[]> {
-  const [includeLocal, includeRemote] = partition(matchPaths, isRemoteUrl);
-  const [excludeLocal, excludeRemote] = partition(excludePaths, isRemoteUrl);
+  const [includePaths, includeUrls] = partition(includeModules, isRemoteUrl);
+  const [excludePaths, excludeUrls] = partition(excludeModules, isRemoteUrl);
 
-  const localFileIterator = walk(root, {
-    match: includeLocal.map((f: string): RegExp => glob(f)),
-    skip: excludeLocal.map((f: string): RegExp => glob(f))
-  });
+  const expandGlobOpts = {
+    root,
+    extended: true,
+    globstar: true,
+    filepath: true
+  };
 
-  let matchingLocalUrls: string[] = [];
-  for await (const { filename } of localFileIterator) {
-    matchingLocalUrls.push(`file://${filename}`);
-  }
-
-  const excludeRemotePatterns = excludeRemote.map(
+  // TODO: We use the `g` flag here to support path prefixes when specifying
+  // excludes. Replace with a solution that does this more correctly.
+  const excludePathPatterns = excludePaths.map(
+    (s: string): RegExp =>
+      glob(isAbsolute(s) ? s : join(root, s), { ...expandGlobOpts, flags: "g" })
+  );
+  const excludeUrlPatterns = excludeUrls.map(
     (url: string): RegExp => RegExp(url)
   );
-  const matchingRemoteUrls = includeRemote.filter(
-    (candidateUrl: string): boolean => {
-      return !excludeRemotePatterns.some((pattern: RegExp): boolean => {
-        const r = pattern.test(candidateUrl);
-        pattern.lastIndex = 0;
-        return r;
-      });
-    }
-  );
+  const notExcludedPath = ({ filename }: WalkInfo): boolean =>
+    !excludePathPatterns.some((p: RegExp): boolean => !!filename.match(p));
+  const notExcludedUrl = (url: string): boolean =>
+    !excludeUrlPatterns.some((p: RegExp): boolean => !!url.match(p));
 
-  return matchingLocalUrls.concat(matchingRemoteUrls);
+  const matchedPaths = includePaths
+    .flatMap((s: string): WalkInfo[] => [...expandGlobSync(s, expandGlobOpts)])
+    .filter(notExcludedPath)
+    .flatMap(({ filename, info }): string[] =>
+      info.isDirectory()
+        ? expandDirectory(filename, { ...expandGlobOpts, includeDirs: false })
+            .filter(notExcludedPath)
+            .map(({ filename }): string => filename)
+        : [filename]
+    );
+
+  const matchedUrls = includeUrls.filter(notExcludedUrl);
+
+  return [
+    ...matchedPaths.map((path: string): string => `file://${path}`),
+    ...matchedUrls
+  ];
 }
 
 export interface RunTestModulesOptions extends RunOptions {
