@@ -70,7 +70,7 @@ function expandDirectory(dir: string, options: ExpandGlobOptions): WalkInfo[] {
  * from which to expand relative globs, return a list of URLs
  * (file: or remote) that should be imported for the test runner.
  */
-export async function getMatchingUrls(
+export async function findTestModules(
   includeModules: string[],
   excludeModules: string[],
   root: string = cwd()
@@ -157,7 +157,7 @@ export async function runTestModules(
     disableLog = false
   }: RunTestModulesOptions = {}
 ): Promise<void> {
-  const testModuleUrls = await getMatchingUrls(include, exclude);
+  const testModuleUrls = await findTestModules(include, exclude);
 
   if (testModuleUrls.length == 0) {
     const noneFoundMessage = "No matching test modules found.";
