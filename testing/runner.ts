@@ -115,6 +115,7 @@ export async function findTestModules(
 }
 
 export interface RunTestModulesOptions extends RunTestsOptions {
+  include?: string[];
   exclude?: string[];
   allowNone?: boolean;
 }
@@ -130,29 +131,31 @@ export interface RunTestModulesOptions extends RunTestsOptions {
  *
  * Example:
  *
- *       runTestModules(["**\/*_test.ts", "**\/test.ts"]);
+ *       runTestModules({ include: ["**\/*_test.ts", "**\/test.ts"] });
  *
  * Any matched directory `<dir>` will expand to:
  *   <dir>/**\/?(*_)test.{js,ts}
  *
  * So the above example is captured naturally by:
  *
- *       runTestModules(["."]);
+ *       runTestModules({ include: ["."] });
+ *
+ * Which is the default used for:
+ *
+ *       runTestModules();
  */
 // TODO: Change return type to `Promise<void>` once, `runTests` is updated
 // to return boolean instead of exiting.
-export async function runTestModules(
-  include: string[],
-  {
-    exclude = [],
-    allowNone = false,
-    parallel = false,
-    exitOnFail = false,
-    only = /[^\s]/,
-    skip = /^\s*$/,
-    disableLog = false
-  }: RunTestModulesOptions = {}
-): Promise<void> {
+export async function runTestModules({
+  include = ["."],
+  exclude = [],
+  allowNone = false,
+  parallel = false,
+  exitOnFail = false,
+  only = /[^\s]/,
+  skip = /^\s*$/,
+  disableLog = false
+}: RunTestModulesOptions = {}): Promise<void> {
   const testModuleUrls = await findTestModules(include, exclude);
 
   if (testModuleUrls.length == 0) {
@@ -215,7 +218,8 @@ async function main(): Promise<void> {
   const exitOnFail = parsedArgs.failfast;
   const disableLog = parsedArgs.quiet;
 
-  await runTestModules(include, {
+  await runTestModules({
+    include,
     exclude,
     allowNone,
     exitOnFail,
