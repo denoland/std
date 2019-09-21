@@ -213,7 +213,7 @@ export class BufReader implements Reader {
    */
   async readString(delim: string): Promise<string | Deno.EOF> {
     const buffer = await this.readSlice(delim.charCodeAt(0));
-    return new TextDecoder().decode(buffer);
+    return new TextDecoder().decode(buffer || undefined);
   }
 
   /** `readLine()` is a low-level line-reading primitive. Most callers should
