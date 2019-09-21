@@ -212,7 +212,8 @@ export class BufReader implements Reader {
    * For simple uses, a Scanner may be more convenient.
    */
   async readString(_delim: string): Promise<string | Deno.EOF> {
-    throw new Error("Not implemented");
+    const buffer = await this.readSlice(_delim.charCodeAt(0));
+    return new TextDecoder().decode(buffer);
   }
 
   /** `readLine()` is a low-level line-reading primitive. Most callers should
