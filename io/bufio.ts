@@ -212,6 +212,8 @@ export class BufReader implements Reader {
    * For simple uses, a Scanner may be more convenient.
    */
   async readString(delim: string): Promise<string | Deno.EOF> {
+    if (delim.length !== 1)
+      throw new Error("Delimiter should be a single character");
     const buffer = await this.readSlice(delim.charCodeAt(0));
     return new TextDecoder().decode(buffer || undefined);
   }
