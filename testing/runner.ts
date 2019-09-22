@@ -7,6 +7,7 @@ import {
   glob,
   ExpandGlobOptions
 } from "../fs/mod.ts";
+import { isWindows } from "../fs/path/constants.ts";
 import { isAbsolute, join } from "../fs/path/mod.ts";
 import { RunTestsOptions, runTests } from "./mod.ts";
 const { DenoError, ErrorKind, args, cwd, exit } = Deno;
@@ -53,6 +54,10 @@ function partition(
     },
     [[], []]
   );
+}
+
+function filePathToUrl(path: string): string {
+  return `file://${isWindows ? "/" : ""}${path.replace(/\\/g, "/")}`;
 }
 
 function expandDirectory(dir: string, options: ExpandGlobOptions): WalkInfo[] {
@@ -108,10 +113,7 @@ export async function findTestModules(
 
   const matchedUrls = includeUrls.filter(notExcludedUrl);
 
-  return [
-    ...matchedPaths.map((path: string): string => `file://${path}`),
-    ...matchedUrls
-  ];
+  return [...matchedPaths.map(filePathToUrl), ...matchedUrls];
 }
 
 export interface RunTestModulesOptions extends RunTestsOptions {
