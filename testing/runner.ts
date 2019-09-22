@@ -208,9 +208,9 @@ async function main(): Promise<void> {
 
   const include =
     parsedArgs._.length > 0
-      ? (parsedArgs._ as string[]).flatMap((fileGlob: string): string[] => {
-          return fileGlob.split(",");
-        })
+      ? (parsedArgs._ as string[]).flatMap((fileGlob: string): string[] =>
+          fileGlob.split(",")
+        )
       : ["."];
   const exclude =
     parsedArgs.exclude != null ? (parsedArgs.exclude as string).split(",") : [];
@@ -218,18 +218,20 @@ async function main(): Promise<void> {
   const exitOnFail = parsedArgs.failfast;
   const disableLog = parsedArgs.quiet;
 
-  await runTestModules({
-    include,
-    exclude,
-    allowNone,
-    exitOnFail,
-    disableLog
-  }).catch((error: Error): void => {
+  try {
+    await runTestModules({
+      include,
+      exclude,
+      allowNone,
+      exitOnFail,
+      disableLog
+    });
+  } catch (error) {
     if (!disableLog) {
       console.error(error.message);
     }
     exit(1);
-  });
+  }
 }
 
 if (import.meta.main) {
