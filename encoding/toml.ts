@@ -387,17 +387,16 @@ class Parser {
   }
 }
 
-// Bare keys may only contain ASCII letters, ASCII digits, underscores, and dashes (A-Za-z0-9_-).
-function joinKeys(keys: string[]) {
-  const doEscape = (str): string => {
-    return shouldEscape(str) ? `"${str}"` : str;
-  };
-  const shouldEscape = (key): boolean => {
-    return !!key.match(/[^A-Za-z0-9_-]/);
-  };
+// Bare keys may only contain ASCII letters,
+// ASCII digits, underscores, and dashes (A-Za-z0-9_-).
+function joinKeys(keys: string[]): string {
   // Dotted keys are a sequence of bare or quoted keys joined with a dot.
   // This allows for grouping similar properties together:
-  return keys.map(doEscape).join(".");
+  return keys
+    .map(str => {
+      return str.match(/[^A-Za-z0-9_-]/) ? `"${str}"` : str;
+    })
+    .join(".");
 }
 
 class Dumper {
