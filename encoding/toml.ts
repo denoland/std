@@ -393,7 +393,7 @@ function joinKeys(keys: string[]): string {
   // Dotted keys are a sequence of bare or quoted keys joined with a dot.
   // This allows for grouping similar properties together:
   return keys
-    .map(str => {
+    .map((str: string): string => {
       return str.match(/[^A-Za-z0-9_-]/) ? `"${str}"` : str;
     })
     .join(".");
