@@ -1,7 +1,7 @@
 const { cwd, mkdir } = Deno;
 import { test, runIfMain } from "../testing/mod.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
-import { SEP, isWindows } from "./path/constants.ts";
+import { isWindows } from "./path/constants.ts";
 import {
   ExpandGlobOptions,
   expandGlob,
@@ -9,7 +9,7 @@ import {
   isGlob,
   expandGlobSync
 } from "./glob.ts";
-import { join, relative } from "./path.ts";
+import { join, normalize, relative } from "./path.ts";
 import { WalkInfo } from "./walk.ts";
 import { testWalk } from "./walk_test.ts";
 import { touch, walkArray } from "./walk_test.ts";
@@ -271,7 +271,7 @@ async function expandGlobArray(
   const infosSync = [...expandGlobSync(globString, options)];
   infosSync.sort();
   assertEquals(infos, infosSync);
-  const root = options.root || cwd();
+  const root = normalize(options.root || cwd());
   const paths = infos.map(({ filename }): string => filename);
   for (const path of paths) {
     assert(path.startsWith(root));
@@ -283,10 +283,13 @@ async function expandGlobArray(
   return relativePaths;
 }
 
+function urlToFilePath(url: URL): string {
+  // Since `new URL('file:///C:/a').pathname` is `/C:/a`, remove leading slash.
+  return url.pathname.slice(url.protocol == "file:" && isWindows ? 1 : 0);
+}
+
 const EG_OPTIONS = {
-  root: new URL(join("testdata", "glob"), import.meta.url).pathname
-    .slice(isWindows ? 1 : 0)
-    .replace(/\//g, SEP),
+  root: urlToFilePath(new URL(join("testdata", "glob"), import.meta.url)),
   includeDirs: true,
   extended: false,
   globstar: false,
