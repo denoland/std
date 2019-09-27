@@ -5,7 +5,7 @@
 import { GlobOptions } from "./glob.ts";
 
 const isWin = Deno.build.os === "win";
-const SEP = isWin ? `\\\\+` : `\\/`;
+const SEP = isWin ? `(\\\\+|\\/)` : `\\/`;
 const SEP_ESC = isWin ? `\\\\` : `/`;
 const SEP_RAW = isWin ? `\\` : `/`;
 const GLOBSTAR = `((?:[^${SEP_ESC}/]*(?:${SEP_ESC}|\/|$))*)`;
@@ -16,7 +16,7 @@ const WILDCARD_SEGMENT = `([^${SEP_ESC}/]*)`;
 export interface GlobrexResult {
   regex: RegExp;
   path?: {
-    regex: string | RegExp;
+    regex: RegExp;
     segments: RegExp[];
     globstar?: RegExp;
   };
@@ -45,11 +45,8 @@ export function globrex(
 ): GlobrexResult {
   let regex = "";
   let segment = "";
-  let path: {
-    regex: string | RegExp;
-    segments: RegExp[];
-    globstar?: RegExp;
-  } = { regex: "", segments: [] };
+  let pathRegexStr = "";
+  const pathSegments = [];
 
   // If we are doing extended matching, this boolean is true when we are inside
   // a group (eg {*.html,*.js}), and false otherwise.
@@ -73,13 +70,13 @@ export function globrex(
     const { split, last, only } = options;
     if (only !== "path") regex += str;
     if (filepath && only !== "regex") {
-      path.regex += str === "\\/" ? SEP : str;
+      pathRegexStr += str.match(new RegExp(`^${SEP}$`)) ? SEP : str;
       if (split) {
         if (last) segment += str;
         if (segment !== "") {
           // change it 'includes'
           if (!flags.includes("g")) segment = `^${segment}$`;
-          path.segments.push(new RegExp(segment, flags));
+          pathSegments.push(new RegExp(segment, flags));
         }
         segment = "";
       } else {
@@ -293,20 +290,22 @@ export function globrex(
   if (!flags.includes("g")) {
     regex = `^${regex}$`;
     segment = `^${segment}$`;
-    if (filepath) path.regex = `^${path.regex}$`;
+    if (filepath) pathRegexStr = `^${pathRegexStr}$`;
   }
 
   const result: GlobrexResult = { regex: new RegExp(regex, flags) };
 
   // Push the last segment
   if (filepath) {
-    path.segments.push(new RegExp(segment, flags));
-    path.regex = new RegExp(path.regex.toString(), flags);
-    path.globstar = new RegExp(
-      !flags.includes("g") ? `^${GLOBSTAR_SEGMENT}$` : GLOBSTAR_SEGMENT,
-      flags
-    );
-    result.path = path;
+    pathSegments.push(new RegExp(segment, flags));
+    result.path = {
+      regex: new RegExp(pathRegexStr, flags),
+      segments: pathSegments,
+      globstar: new RegExp(
+        !flags.includes("g") ? `^${GLOBSTAR_SEGMENT}$` : GLOBSTAR_SEGMENT,
+        flags
+      )
+    };
   }
 
   return result;

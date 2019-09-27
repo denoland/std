@@ -44,7 +44,11 @@ export interface GlobOptions {
  * @returns A RegExp for the glob pattern
  */
 export function glob(glob: string, options: GlobOptions = {}): RegExp {
-  return globrex(glob, options).regex;
+  const result = globrex(glob, options);
+  if (options.filepath) {
+    return result.path!.regex;
+  }
+  return result.regex;
 }
 
 /** Test whether the given string is a glob */
