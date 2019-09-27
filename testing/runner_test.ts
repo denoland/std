@@ -10,8 +10,6 @@ const TEST_DATA_PATH = TEST_DATA_URL.pathname
   .replace(/\//g, SEP);
 
 test(async function findTestModulesDir1(): Promise<void> {
-  console.log(TEST_DATA_URL.href);
-  console.log(TEST_DATA_PATH);
   const urls = await findTestModules(["."], [], TEST_DATA_PATH);
   assertEquals(urls.sort(), [
     `${TEST_DATA_URL}/bar_test.js`,
