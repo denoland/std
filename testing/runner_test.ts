@@ -1,13 +1,16 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { test } from "./mod.ts";
 import { findTestModules } from "./runner.ts";
-import { SEP, isWindows } from "../fs/path/constants.ts";
+import { isWindows } from "../fs/path/constants.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
+function urlToFilePath(url: URL): string {
+  // Since `new URL('file:///C:/a').pathname` is `/C:/a`, remove leading slash.
+  return url.pathname.slice(url.protocol == "file:" && isWindows ? 1 : 0);
+}
+
 const TEST_DATA_URL = new URL("testdata", import.meta.url);
-const TEST_DATA_PATH = TEST_DATA_URL.pathname
-  .slice(isWindows ? 1 : 0)
-  .replace(/\//g, SEP);
+const TEST_DATA_PATH = urlToFilePath(TEST_DATA_URL);
 
 test(async function findTestModulesDir1(): Promise<void> {
   const urls = await findTestModules(["."], [], TEST_DATA_PATH);
