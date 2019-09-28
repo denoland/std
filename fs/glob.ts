@@ -104,7 +104,7 @@ export async function* expandGlob(
     extended = false,
     globstar = false,
     strict = false,
-    filepath = false,
+    filepath = true,
     flags = ""
   }: ExpandGlobOptions = {}
 ): AsyncIterableIterator<WalkInfo> {
@@ -128,7 +128,7 @@ export function* expandGlobSync(
     extended = false,
     globstar = false,
     strict = false,
-    filepath = false,
+    filepath = true,
     flags = ""
   }: ExpandGlobOptions = {}
 ): IterableIterator<WalkInfo> {
