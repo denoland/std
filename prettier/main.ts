@@ -23,10 +23,14 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 // This script formats the given source files. If the files are omitted, it
 // formats the all files in the repository.
-import { ExpandGlobOptions, expandGlob, glob } from "../fs/glob.ts";
-import { isAbsolute, join } from "../fs/path/mod.ts";
-import { WalkInfo } from "../fs/walk.ts";
 import { parse } from "../flags/mod.ts";
+import {
+  ExpandGlobOptions,
+  WalkInfo,
+  expandGlob,
+  globToRegExp
+} from "../fs/mod.ts";
+import { isAbsolute, join } from "../fs/path/mod.ts";
 import { prettier, prettierPlugins } from "./prettier.ts";
 const { args, cwd, exit, readAll, readFile, stdin, stdout, writeFile } = Deno;
 
@@ -308,14 +312,17 @@ async function* getTargetFiles(
     root,
     extended: true,
     globstar: true,
-    filepath: true
+    strict: false
   };
 
   // TODO: We use the `g` flag here to support path prefixes when specifying
   // excludes. Replace with a solution that does this more correctly.
   const excludePathPatterns = exclude.map(
     (s: string): RegExp =>
-      glob(isAbsolute(s) ? s : join(root, s), { ...expandGlobOpts, flags: "g" })
+      globToRegExp(isAbsolute(s) ? s : join(root, s), {
+        ...expandGlobOpts,
+        flags: "g"
+      })
   );
   const shouldInclude = ({ filename }: WalkInfo): boolean =>
     !excludePathPatterns.some((p: RegExp): boolean => !!filename.match(p));

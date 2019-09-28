@@ -4,18 +4,12 @@ import { WalkInfo, walk, walkSync } from "./walk.ts";
 const { cwd } = Deno;
 
 export interface GlobOptions {
-  // Allow ExtGlob features
   extended?: boolean;
-  // When globstar is true, '/foo/**' is equivelant
-  // to '/foo/*' when globstar is false.
-  // Having globstar set to true is the same usage as
-  // using wildcards in bash
   globstar?: boolean;
-  // be laissez faire about mutiple slashes
   strict?: boolean;
-  // Parse as filepath for extra path related features
-  filepath?: boolean;
-  // Flag to use in the generated RegExp
+}
+
+export interface GlobToRegExpOptions extends GlobOptions {
   flags?: string;
 }
 
@@ -27,12 +21,12 @@ export interface GlobOptions {
  *
  *     Looking for all the `ts` files:
  *     walkSync(".", {
- *       match: [glob("*.ts")]
+ *       match: [globToRegExp("*.ts")]
  *     })
  *
  *     Looking for all the `.json` files in any subfolder:
  *     walkSync(".", {
- *       match: [glob(join("a", "**", "*.json"),{
+ *       match: [globToRegExp(join("a", "**", "*.json"),{
  *         flags: "g",
  *         extended: true,
  *         globstar: true
@@ -43,12 +37,12 @@ export interface GlobOptions {
  * @param options - Specific options for the glob pattern
  * @returns A RegExp for the glob pattern
  */
-export function glob(glob: string, options: GlobOptions = {}): RegExp {
-  const result = globrex(glob, options);
-  if (options.filepath) {
-    return result.path!.regex;
-  }
-  return result.regex;
+export function globToRegExp(
+  glob: string,
+  options: GlobToRegExpOptions = {}
+): RegExp {
+  const result = globrex(glob, { ...options, filepath: true });
+  return result.path!.regex;
 }
 
 /** Test whether the given string is a glob */
@@ -103,17 +97,14 @@ export async function* expandGlob(
     includeDirs = true,
     extended = false,
     globstar = false,
-    strict = false,
-    filepath = true,
-    flags = ""
+    strict = false
   }: ExpandGlobOptions = {}
 ): AsyncIterableIterator<WalkInfo> {
   const absoluteGlob = isAbsolute(globString)
     ? globString
     : join(root, globString);
-  const globOptions = { extended, globstar, strict, filepath, flags };
   yield* walk(root, {
-    match: [glob(absoluteGlob, globOptions)],
+    match: [globToRegExp(absoluteGlob, { extended, globstar, strict })],
     includeDirs
   });
 }
@@ -127,17 +118,14 @@ export function* expandGlobSync(
     includeDirs = true,
     extended = false,
     globstar = false,
-    strict = false,
-    filepath = true,
-    flags = ""
+    strict = false
   }: ExpandGlobOptions = {}
 ): IterableIterator<WalkInfo> {
   const absoluteGlob = isAbsolute(globString)
     ? globString
     : join(root, globString);
-  const globOptions = { extended, globstar, strict, filepath, flags };
   yield* walkSync(root, {
-    match: [glob(absoluteGlob, globOptions)],
+    match: [globToRegExp(absoluteGlob, { extended, globstar, strict })],
     includeDirs
   });
 }

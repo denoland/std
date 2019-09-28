@@ -1,7 +1,12 @@
 #!/usr/bin/env -S deno -A
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { parse } from "../flags/mod.ts";
-import { WalkInfo, expandGlob, glob, ExpandGlobOptions } from "../fs/mod.ts";
+import {
+  ExpandGlobOptions,
+  WalkInfo,
+  expandGlob,
+  globToRegExp
+} from "../fs/mod.ts";
 import { isWindows } from "../fs/path/constants.ts";
 import { isAbsolute, join } from "../fs/path/mod.ts";
 import { RunTestsOptions, runTests } from "./mod.ts";
@@ -76,14 +81,17 @@ export async function* findTestModules(
     root,
     extended: true,
     globstar: true,
-    filepath: true
+    strict: false
   };
 
   // TODO: We use the `g` flag here to support path prefixes when specifying
   // excludes. Replace with a solution that does this more correctly.
   const excludePathPatterns = excludePaths.map(
     (s: string): RegExp =>
-      glob(isAbsolute(s) ? s : join(root, s), { ...expandGlobOpts, flags: "g" })
+      globToRegExp(isAbsolute(s) ? s : join(root, s), {
+        ...expandGlobOpts,
+        flags: "g"
+      })
   );
   const excludeUrlPatterns = excludeUrls.map(
     (url: string): RegExp => RegExp(url)
