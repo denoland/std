@@ -1,11 +1,6 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { BufReader } from "../io/bufio.ts";
-import {
-  assert,
-  assertEquals,
-  assertThrows,
-  assertThrowsAsync
-} from "../testing/asserts.ts";
+import { assert, assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
 import { runIfMain, test } from "../testing/mod.ts";
 import {
   acceptable,
@@ -197,10 +192,14 @@ test(function wsAcceptableInvalid(): void {
   );
 });
 
-test("connectWebSocket should throw invalid scheme of url", async () => {
-  await assertThrowsAsync(async () => {
-    await connectWebSocket("file://hoge/hoge");
-  });
+test("connectWebSocket should throw invalid scheme of url", async (): Promise<
+  void
+> => {
+  await assertThrowsAsync(
+    async (): Promise<void> => {
+      await connectWebSocket("file://hoge/hoge");
+    }
+  );
 });
 
 test(async function wsWriteReadMaskedFrame(): Promise<void> {
