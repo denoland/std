@@ -35,8 +35,12 @@ ARGS:
                   `)}
                 Defaults to "." when none are provided.
 
-Note that modules can refer to file paths or URLs and globs are supported for
-the former.`);
+Note that modules can refer to file paths or URLs. File paths support glob
+expansion.
+
+Examples:
+      deno test src/**/*_test.ts
+      deno test tests`);
 }
 
 function isRemoteUrl(url: string): boolean {
