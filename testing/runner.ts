@@ -1,12 +1,7 @@
 #!/usr/bin/env -S deno -A
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { parse } from "../flags/mod.ts";
-import {
-  WalkInfo,
-  expandGlobSync,
-  glob,
-  ExpandGlobOptions
-} from "../fs/mod.ts";
+import { WalkInfo, expandGlob, glob, ExpandGlobOptions } from "../fs/mod.ts";
 import { isWindows } from "../fs/path/constants.ts";
 import { isAbsolute, join } from "../fs/path/mod.ts";
 import { RunTestsOptions, runTests } from "./mod.ts";
@@ -64,26 +59,20 @@ function filePathToUrl(path: string): string {
   return `file://${isWindows ? "/" : ""}${path.replace(/\\/g, "/")}`;
 }
 
-function expandDirectory(dir: string, options: ExpandGlobOptions): WalkInfo[] {
-  return DIR_GLOBS.flatMap((s: string): WalkInfo[] => [
-    ...expandGlobSync(s, { ...options, root: dir })
-  ]);
-}
-
 /**
  * Given a list of globs or URLs to include and exclude and a root directory
- * from which to expand relative globs, return a list of URLs
+ * from which to expand relative globs, yield a list of URLs
  * (file: or remote) that should be imported for the test runner.
  */
-export async function findTestModules(
+export async function* findTestModules(
   includeModules: string[],
   excludeModules: string[],
   root: string = cwd()
-): Promise<string[]> {
+): AsyncIterableIterator<string> {
   const [includePaths, includeUrls] = partition(includeModules, isRemoteUrl);
   const [excludePaths, excludeUrls] = partition(excludeModules, isRemoteUrl);
 
-  const expandGlobOpts = {
+  const expandGlobOpts: ExpandGlobOptions = {
     root,
     extended: true,
     globstar: true,
@@ -99,25 +88,36 @@ export async function findTestModules(
   const excludeUrlPatterns = excludeUrls.map(
     (url: string): RegExp => RegExp(url)
   );
-  const notExcludedPath = ({ filename }: WalkInfo): boolean =>
+  const shouldIncludePath = ({ filename }: WalkInfo): boolean =>
     !excludePathPatterns.some((p: RegExp): boolean => !!filename.match(p));
-  const notExcludedUrl = (url: string): boolean =>
+  const shouldIncludeUrl = (url: string): boolean =>
     !excludeUrlPatterns.some((p: RegExp): boolean => !!url.match(p));
 
-  const matchedPaths = includePaths
-    .flatMap((s: string): WalkInfo[] => [...expandGlobSync(s, expandGlobOpts)])
-    .filter(notExcludedPath)
-    .flatMap(({ filename, info }): string[] =>
-      info.isDirectory()
-        ? expandDirectory(filename, { ...expandGlobOpts, includeDirs: false })
-            .filter(notExcludedPath)
-            .map(({ filename }): string => filename)
-        : [filename]
-    );
+  async function* expandDirectory(d: string): AsyncIterableIterator<string> {
+    for (const dirGlob of DIR_GLOBS) {
+      for await (const walkInfo of expandGlob(dirGlob, {
+        ...expandGlobOpts,
+        root: d,
+        includeDirs: false
+      })) {
+        if (shouldIncludePath(walkInfo)) {
+          yield filePathToUrl(walkInfo.filename);
+        }
+      }
+    }
+  }
 
-  const matchedUrls = includeUrls.filter(notExcludedUrl);
+  for (const globString of includePaths) {
+    for await (const walkInfo of expandGlob(globString, expandGlobOpts)) {
+      if (walkInfo.info.isDirectory()) {
+        yield* expandDirectory(walkInfo.filename);
+      } else if (shouldIncludePath(walkInfo)) {
+        yield filePathToUrl(walkInfo.filename);
+      }
+    }
+  }
 
-  return [...matchedPaths.map(filePathToUrl), ...matchedUrls];
+  yield* includeUrls.filter(shouldIncludeUrl);
 }
 
 export interface RunTestModulesOptions extends RunTestsOptions {
@@ -162,9 +162,13 @@ export async function runTestModules({
   skip = /^\s*$/,
   disableLog = false
 }: RunTestModulesOptions = {}): Promise<void> {
-  const testModuleUrls = await findTestModules(include, exclude);
+  let moduleCount = 0;
+  for await (const testModule of findTestModules(include, exclude)) {
+    await import(testModule);
+    moduleCount++;
+  }
 
-  if (testModuleUrls.length == 0) {
+  if (moduleCount == 0) {
     const noneFoundMessage = "No matching test modules found.";
     if (!allowNone) {
       throw new DenoError(ErrorKind.NotFound, noneFoundMessage);
@@ -175,11 +179,7 @@ export async function runTestModules({
   }
 
   if (!disableLog) {
-    console.log(`Found ${testModuleUrls.length} matching test modules.`);
-  }
-
-  for (const url of testModuleUrls) {
-    await import(url);
+    console.log(`Found ${moduleCount} matching test modules.`);
   }
 
   await runTests({
