@@ -1,7 +1,9 @@
 import { globrex } from "./globrex.ts";
-import { isAbsolute, join } from "./path/mod.ts";
+import { isWindows } from "./path/constants.ts";
+import { isAbsolute, join, normalize } from "./path/mod.ts";
 import { WalkInfo, walk, walkSync } from "./walk.ts";
-const { cwd } = Deno;
+const { cwd, stat, statSync } = Deno;
+type FileInfo = Deno.FileInfo;
 
 export interface GlobOptions {
   extended?: boolean;
@@ -84,6 +86,25 @@ export interface ExpandGlobOptions extends GlobOptions {
   includeDirs?: boolean;
 }
 
+const SEP_PATTERN = isWindows ? /[\\/]+/ : /\/+/;
+
+interface SplitPath {
+  segments: string[];
+  isAbsolute: boolean;
+  hasTrailingSep: boolean;
+}
+
+// TODO: Maybe make this public somewhere if it can be fixed for Windows.
+function split(path: string): SplitPath {
+  return {
+    segments: path
+      .replace(new RegExp(`^${SEP_PATTERN.source}|${SEP_PATTERN.source}$`), "")
+      .split(SEP_PATTERN),
+    isAbsolute: isAbsolute(path),
+    hasTrailingSep: !!path.match(new RegExp(`${SEP_PATTERN.source}$`))
+  };
+}
+
 /**
  * Expand the glob string from the specified `root` directory and yield each
  * result as a `WalkInfo` object.
@@ -102,16 +123,86 @@ export async function* expandGlob(
     strict = false
   }: ExpandGlobOptions = {}
 ): AsyncIterableIterator<WalkInfo> {
-  const absGlob = isAbsolute(globString) ? globString : join(root, globString);
-  const absExclude = exclude.map((s: string): string =>
-    isAbsolute(s) ? s : join(root, s)
-  );
+  const resolveFromRoot = (path: string): string =>
+    isAbsolute(path) ? normalize(path) : join(root, path);
   const globOptions: GlobOptions = { extended, globstar, strict };
-  yield* walk(root, {
-    match: [globToRegExp(absGlob, globOptions)],
-    skip: absExclude.map((s: string): RegExp => globToRegExp(s, globOptions)),
-    includeDirs
-  });
+  const excludePatterns = exclude
+    .map(resolveFromRoot)
+    .map((s: string): RegExp => globToRegExp(s, globOptions));
+  const shouldInclude = ({ filename }: WalkInfo): boolean =>
+    !excludePatterns.some((p: RegExp): boolean => !!filename.match(p));
+  const { segments, hasTrailingSep } = split(resolveFromRoot(globString));
+
+  let fixedRoot = isWindows ? segments.shift()! : "/";
+  while (segments.length > 0 && !isGlob(segments[0])) {
+    fixedRoot = join(fixedRoot, segments.shift()!);
+  }
+
+  let fixedRootInfo: WalkInfo;
+  try {
+    fixedRootInfo = { filename: fixedRoot, info: await stat(fixedRoot) };
+  } catch {
+    return;
+  }
+
+  async function* advanceMatch(
+    walkInfo: WalkInfo,
+    globSegment: string
+  ): AsyncIterableIterator<WalkInfo> {
+    if (!walkInfo.info.isDirectory()) {
+      return;
+    } else if (globSegment == "..") {
+      const parentPath = join(walkInfo.filename, "..");
+      try {
+        return yield* [
+          { filename: parentPath, info: await stat(parentPath) }
+        ].filter(shouldInclude);
+      } catch {
+        return;
+      }
+    } else if (globSegment == "**") {
+      return yield* walk(walkInfo.filename, {
+        includeFiles: false,
+        includeDirs: true,
+        skip: excludePatterns
+      });
+    }
+    yield* walk(walkInfo.filename, {
+      maxDepth: 1,
+      includeDirs: true,
+      match: [globToRegExp(join(walkInfo.filename, globSegment), globOptions)],
+      skip: excludePatterns
+    });
+  }
+
+  let currentMatches: WalkInfo[] = [fixedRootInfo];
+  for (const segment of segments) {
+    // Advancing the list of current matches may introduce duplicates, so we
+    // pass everything through this Map.
+    const nextMatchMap: Map<string, FileInfo> = new Map();
+    for (const currentMatch of currentMatches) {
+      for await (const nextMatch of advanceMatch(currentMatch, segment)) {
+        nextMatchMap.set(nextMatch.filename, nextMatch.info);
+      }
+    }
+    currentMatches = [...nextMatchMap].sort().map(
+      ([filename, info]): WalkInfo => ({
+        filename,
+        info
+      })
+    );
+  }
+  if (hasTrailingSep) {
+    currentMatches = currentMatches.filter(({ info }): boolean =>
+      info.isDirectory()
+    );
+  }
+  if (!includeDirs) {
+    currentMatches = currentMatches.filter(
+      ({ info }): boolean => !info.isDirectory()
+    );
+  }
+  yield* currentMatches;
 }
 
 /** Synchronous version of `expandGlob()`. */
@@ -127,14 +218,84 @@ export function* expandGlobSync(
     strict = false
   }: ExpandGlobOptions = {}
 ): IterableIterator<WalkInfo> {
-  const absGlob = isAbsolute(globString) ? globString : join(root, globString);
-  const absExclude = exclude.map((s: string): string =>
-    isAbsolute(s) ? s : join(root, s)
-  );
+  const resolveFromRoot = (path: string): string =>
+    isAbsolute(path) ? normalize(path) : join(root, path);
   const globOptions: GlobOptions = { extended, globstar, strict };
-  yield* walkSync(root, {
-    match: [globToRegExp(absGlob, globOptions)],
-    skip: absExclude.map((s: string): RegExp => globToRegExp(s, globOptions)),
-    includeDirs
-  });
+  const excludePatterns = exclude
+    .map(resolveFromRoot)
+    .map((s: string): RegExp => globToRegExp(s, globOptions));
+  const shouldInclude = ({ filename }: WalkInfo): boolean =>
+    !excludePatterns.some((p: RegExp): boolean => !!filename.match(p));
+  const { segments, hasTrailingSep } = split(resolveFromRoot(globString));
+
+  let fixedRoot = isWindows ? segments.shift()! : "/";
+  while (segments.length > 0 && !isGlob(segments[0])) {
+    fixedRoot = join(fixedRoot, segments.shift()!);
+  }
+
+  let fixedRootInfo: WalkInfo;
+  try {
+    fixedRootInfo = { filename: fixedRoot, info: statSync(fixedRoot) };
+  } catch {
+    return;
+  }
+
+  function* advanceMatch(
+    walkInfo: WalkInfo,
+    globSegment: string
+  ): IterableIterator<WalkInfo> {
+    if (!walkInfo.info.isDirectory()) {
+      return;
+    } else if (globSegment == "..") {
+      const parentPath = join(walkInfo.filename, "..");
+      try {
+        return yield* [
+          { filename: parentPath, info: statSync(parentPath) }
+        ].filter(shouldInclude);
+      } catch {
+        return;
+      }
+    } else if (globSegment == "**") {
+      return yield* walkSync(walkInfo.filename, {
+        includeFiles: false,
+        includeDirs: true,
+        skip: excludePatterns
+      });
+    }
+    yield* walkSync(walkInfo.filename, {
+      maxDepth: 1,
+      includeDirs: true,
+      match: [globToRegExp(join(walkInfo.filename, globSegment), globOptions)],
+      skip: excludePatterns
+    });
+  }
+
+  let currentMatches: WalkInfo[] = [fixedRootInfo];
+  for (const segment of segments) {
+    // Advancing the list of current matches may introduce duplicates, so we
+    // pass everything through this Map.
+    const nextMatchMap: Map<string, FileInfo> = new Map();
+    for (const currentMatch of currentMatches) {
+      for (const nextMatch of advanceMatch(currentMatch, segment)) {
+        nextMatchMap.set(nextMatch.filename, nextMatch.info);
+      }
+    }
+    currentMatches = [...nextMatchMap].sort().map(
+      ([filename, info]): WalkInfo => ({
+        filename,
+        info
+      })
+    );
+  }
+  if (hasTrailingSep) {
+    currentMatches = currentMatches.filter(({ info }): boolean =>
+      info.isDirectory()
+    );
+  }
+  if (!includeDirs) {
+    currentMatches = currentMatches.filter(
+      ({ info }): boolean => !info.isDirectory()
+    );
+  }
+  yield* currentMatches;
 }
