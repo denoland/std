@@ -1,6 +1,7 @@
 steps:
   - bash: npm install -g functional-red-black-tree
-  - bash: npm -g install eslint@5.16.0 typescript@$(TS_VERSION) @typescript-eslint/eslint-plugin@1.13.0 @typescript-eslint/parser@1.13.0 eslint-config-prettier
+  - bash: npm -g install eslint@5.16.0 typescript@$(TS_VERSION) @typescript-eslint/eslint-plugin@1.13.0 @typescript-eslint/parser@1.13.0 eslint-config-prettier eslint-plugin-jsdoc
   - template: ./template.unix.yml
   - bash: eslint **/*.ts --max-warnings=0
+  - bash: npx eslint -c ./.eslintrc.jsdoc.json **/*.ts --ignore-pattern '**/*_test.ts'
   - template: ./template.common.yml
