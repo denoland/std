@@ -116,7 +116,7 @@ export async function* walk(
 
 /** Same as walk() but uses synchronous ops */
 export function* walkSync(
-  root: string = ".",
+  root: string,
   options: WalkOptions = {}
 ): IterableIterator<WalkInfo> {
   const maxDepth = options.maxDepth != undefined ? options.maxDepth! : Infinity;

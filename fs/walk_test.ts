@@ -1,5 +1,4 @@
 const { cwd, chdir, makeTempDir, mkdir, open, remove } = Deno;
-type FileInfo = Deno.FileInfo;
 import { walk, walkSync, WalkOptions, WalkInfo } from "./walk.ts";
 import { test, TestFunction, runIfMain } from "../testing/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
@@ -29,7 +28,7 @@ function normalize({ filename }: WalkInfo): string {
 }
 
 export async function walkArray(
-  root: string = ".",
+  root: string,
   options: WalkOptions = {}
 ): Promise<string[]> {
   const arr: string[] = [];
@@ -48,7 +47,7 @@ export async function touch(path: string): Promise<void> {
 }
 
 function assertReady(expectedLength: number): void {
-  const arr = Array.from(walkSync(), normalize);
+  const arr = Array.from(walkSync("."), normalize);
 
   assertEquals(arr.length, expectedLength);
 }
@@ -58,7 +57,7 @@ testWalk(
     await mkdir(d + "/empty");
   },
   async function emptyDir(): Promise<void> {
-    const arr = await walkArray();
+    const arr = await walkArray(".");
     assertEquals(arr.length, 0);
   }
 );
@@ -68,7 +67,7 @@ testWalk(
     await touch(d + "/x");
   },
   async function singleFile(): Promise<void> {
-    const arr = await walkArray();
+    const arr = await walkArray(".");
     assertEquals(arr.length, 1);
     assertEquals(arr[0], "x");
   }
@@ -97,7 +96,7 @@ testWalk(
     await touch(d + "/a/x");
   },
   async function nestedSingleFile(): Promise<void> {
-    const arr = await walkArray();
+    const arr = await walkArray(".");
     assertEquals(arr.length, 1);
     assertEquals(arr[0], "a/x");
   }
