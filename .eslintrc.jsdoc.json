@@ -3,6 +3,11 @@
         "jsdoc"
     ],
     "rules": {
-        "jsdoc/require-jsdoc": 1
+        "jsdoc/require-jsdoc": [
+            "error",
+            {
+                "publicOnly": true
+            }
+        ]
     }
 }
