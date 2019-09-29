@@ -109,9 +109,7 @@ export async function* expandGlob(
   const globOptions: GlobOptions = { extended, globstar, strict };
   yield* walk(root, {
     match: [globToRegExp(absGlob, globOptions)],
-    skip: absExclude.map(
-      (s: string): RegExp => globToRegExp(s, { ...globOptions, flags: "g" })
-    ),
+    skip: absExclude.map((s: string): RegExp => globToRegExp(s, globOptions)),
     includeDirs
   });
 }
@@ -136,9 +134,7 @@ export function* expandGlobSync(
   const globOptions: GlobOptions = { extended, globstar, strict };
   yield* walkSync(root, {
     match: [globToRegExp(absGlob, globOptions)],
-    skip: absExclude.map(
-      (s: string): RegExp => globToRegExp(s, { ...globOptions, flags: "g" })
-    ),
+    skip: absExclude.map((s: string): RegExp => globToRegExp(s, globOptions)),
     includeDirs
   });
 }

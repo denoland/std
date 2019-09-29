@@ -75,6 +75,8 @@ export async function* walk(
   if (options.includeDirs && include(root, options)) {
     const rootInfo = await stat(root);
     yield { filename: root, info: rootInfo };
+  } else if (patternTest(options.skip || [], root)) {
+    return;
   }
   let ls: FileInfo[] = [];
   try {
@@ -117,6 +119,8 @@ export function* walkSync(
   if (options.includeDirs && include(root, options)) {
     const rootInfo = statSync(root);
     yield { filename: root, info: rootInfo };
+  } else if (patternTest(options.skip || [], root)) {
+    return;
   }
   let ls: FileInfo[] = [];
   try {
