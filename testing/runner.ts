@@ -1,14 +1,9 @@
 #!/usr/bin/env -S deno -A
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { parse } from "../flags/mod.ts";
-import {
-  ExpandGlobOptions,
-  WalkInfo,
-  expandGlob,
-  globToRegExp
-} from "../fs/mod.ts";
+import { ExpandGlobOptions, expandGlob } from "../fs/mod.ts";
 import { isWindows } from "../fs/path/constants.ts";
-import { isAbsolute, join } from "../fs/path/mod.ts";
+import { join } from "../fs/path/mod.ts";
 import { RunTestsOptions, runTests } from "./mod.ts";
 const { DenoError, ErrorKind, args, cwd, exit } = Deno;
 
@@ -79,27 +74,12 @@ export async function* findTestModules(
 
   const expandGlobOpts: ExpandGlobOptions = {
     root,
+    exclude: excludePaths,
+    includeDirs: true,
     extended: true,
     globstar: true,
     strict: false
   };
-
-  // TODO: We use the `g` flag here to support path prefixes when specifying
-  // excludes. Replace with a solution that does this more correctly.
-  const excludePathPatterns = excludePaths.map(
-    (s: string): RegExp =>
-      globToRegExp(isAbsolute(s) ? s : join(root, s), {
-        ...expandGlobOpts,
-        flags: "g"
-      })
-  );
-  const excludeUrlPatterns = excludeUrls.map(
-    (url: string): RegExp => RegExp(url)
-  );
-  const shouldIncludePath = ({ filename }: WalkInfo): boolean =>
-    !excludePathPatterns.some((p: RegExp): boolean => !!filename.match(p));
-  const shouldIncludeUrl = (url: string): boolean =>
-    !excludeUrlPatterns.some((p: RegExp): boolean => !!url.match(p));
 
   async function* expandDirectory(d: string): AsyncIterableIterator<string> {
     for (const dirGlob of DIR_GLOBS) {
@@ -108,9 +88,7 @@ export async function* findTestModules(
         root: d,
         includeDirs: false
       })) {
-        if (shouldIncludePath(walkInfo)) {
-          yield filePathToUrl(walkInfo.filename);
-        }
+        yield filePathToUrl(walkInfo.filename);
       }
     }
   }
@@ -119,11 +97,17 @@ export async function* findTestModules(
     for await (const walkInfo of expandGlob(globString, expandGlobOpts)) {
       if (walkInfo.info.isDirectory()) {
         yield* expandDirectory(walkInfo.filename);
-      } else if (shouldIncludePath(walkInfo)) {
+      } else {
         yield filePathToUrl(walkInfo.filename);
       }
     }
   }
+
+  const excludeUrlPatterns = excludeUrls.map(
+    (url: string): RegExp => RegExp(url)
+  );
+  const shouldIncludeUrl = (url: string): boolean =>
+    !excludeUrlPatterns.some((p: RegExp): boolean => !!url.match(p));
 
   yield* includeUrls.filter(shouldIncludeUrl);
 }

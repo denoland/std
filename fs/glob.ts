@@ -80,6 +80,7 @@ export function isGlob(str: string): boolean {
 
 export interface ExpandGlobOptions extends GlobOptions {
   root?: string;
+  exclude?: string[];
   includeDirs?: boolean;
 }
 
@@ -94,17 +95,23 @@ export async function* expandGlob(
   globString: string,
   {
     root = cwd(),
+    exclude = [],
     includeDirs = true,
     extended = false,
     globstar = false,
     strict = false
   }: ExpandGlobOptions = {}
 ): AsyncIterableIterator<WalkInfo> {
-  const absoluteGlob = isAbsolute(globString)
-    ? globString
-    : join(root, globString);
+  const absGlob = isAbsolute(globString) ? globString : join(root, globString);
+  const absExclude = exclude.map((s: string): string =>
+    isAbsolute(s) ? s : join(root, s)
+  );
+  const globOptions: GlobOptions = { extended, globstar, strict };
   yield* walk(root, {
-    match: [globToRegExp(absoluteGlob, { extended, globstar, strict })],
+    match: [globToRegExp(absGlob, globOptions)],
+    skip: absExclude.map(
+      (s: string): RegExp => globToRegExp(s, { ...globOptions, flags: "g" })
+    ),
     includeDirs
   });
 }
@@ -115,17 +122,23 @@ export function* expandGlobSync(
   globString: string,
   {
     root = cwd(),
+    exclude = [],
     includeDirs = true,
     extended = false,
     globstar = false,
     strict = false
   }: ExpandGlobOptions = {}
 ): IterableIterator<WalkInfo> {
-  const absoluteGlob = isAbsolute(globString)
-    ? globString
-    : join(root, globString);
+  const absGlob = isAbsolute(globString) ? globString : join(root, globString);
+  const absExclude = exclude.map((s: string): string =>
+    isAbsolute(s) ? s : join(root, s)
+  );
+  const globOptions: GlobOptions = { extended, globstar, strict };
   yield* walkSync(root, {
-    match: [globToRegExp(absoluteGlob, { extended, globstar, strict })],
+    match: [globToRegExp(absGlob, globOptions)],
+    skip: absExclude.map(
+      (s: string): RegExp => globToRegExp(s, { ...globOptions, flags: "g" })
+    ),
     includeDirs
   });
 }

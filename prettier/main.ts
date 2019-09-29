@@ -24,13 +24,7 @@
 // This script formats the given source files. If the files are omitted, it
 // formats the all files in the repository.
 import { parse } from "../flags/mod.ts";
-import {
-  ExpandGlobOptions,
-  WalkInfo,
-  expandGlob,
-  globToRegExp
-} from "../fs/mod.ts";
-import { isAbsolute, join } from "../fs/path/mod.ts";
+import { ExpandGlobOptions, WalkInfo, expandGlob } from "../fs/mod.ts";
 import { prettier, prettierPlugins } from "./prettier.ts";
 const { args, cwd, exit, readAll, readFile, stdin, stdout, writeFile } = Deno;
 
@@ -310,22 +304,12 @@ async function* getTargetFiles(
 ): AsyncIterableIterator<WalkInfo> {
   const expandGlobOpts: ExpandGlobOptions = {
     root,
+    exclude,
+    includeDirs: true,
     extended: true,
     globstar: true,
     strict: false
   };
-
-  // TODO: We use the `g` flag here to support path prefixes when specifying
-  // excludes. Replace with a solution that does this more correctly.
-  const excludePathPatterns = exclude.map(
-    (s: string): RegExp =>
-      globToRegExp(isAbsolute(s) ? s : join(root, s), {
-        ...expandGlobOpts,
-        flags: "g"
-      })
-  );
-  const shouldInclude = ({ filename }: WalkInfo): boolean =>
-    !excludePathPatterns.some((p: RegExp): boolean => !!filename.match(p));
 
   async function* expandDirectory(d: string): AsyncIterableIterator<WalkInfo> {
     for await (const walkInfo of expandGlob("**/*", {
@@ -333,9 +317,7 @@ async function* getTargetFiles(
       root: d,
       includeDirs: false
     })) {
-      if (shouldInclude(walkInfo)) {
-        yield walkInfo;
-      }
+      yield walkInfo;
     }
   }
 
@@ -343,7 +325,7 @@ async function* getTargetFiles(
     for await (const walkInfo of expandGlob(globString, expandGlobOpts)) {
       if (walkInfo.info.isDirectory()) {
         yield* expandDirectory(walkInfo.filename);
-      } else if (shouldInclude(walkInfo)) {
+      } else {
         yield walkInfo;
       }
     }
