@@ -10,7 +10,6 @@ import {
   expandGlobSync
 } from "./glob.ts";
 import { join, normalize, relative } from "./path.ts";
-import { WalkInfo } from "./walk.ts";
 import { testWalk } from "./walk_test.ts";
 import { touch, walkArray } from "./walk_test.ts";
 
@@ -263,16 +262,17 @@ async function expandGlobArray(
   globString: string,
   options: ExpandGlobOptions
 ): Promise<string[]> {
-  const infos: WalkInfo[] = [];
-  for await (const info of expandGlob(globString, options)) {
-    infos.push(info);
+  const paths: string[] = [];
+  for await (const { filename } of expandGlob(globString, options)) {
+    paths.push(filename);
   }
-  infos.sort();
-  const infosSync = [...expandGlobSync(globString, options)];
-  infosSync.sort();
-  assertEquals(infos, infosSync);
+  paths.sort();
+  const pathsSync = [...expandGlobSync(globString, options)].map(
+    ({ filename }): string => filename
+  );
+  pathsSync.sort();
+  assertEquals(paths, pathsSync);
   const root = normalize(options.root || cwd());
-  const paths = infos.map(({ filename }): string => filename);
   for (const path of paths) {
     assert(path.startsWith(root));
   }
@@ -295,6 +295,31 @@ const EG_OPTIONS: ExpandGlobOptions = {
   globstar: false,
   strict: false
 };
+
+test(async function expandGlobWildcard(): Promise<void> {
+  const options = EG_OPTIONS;
+  assertEquals(await expandGlobArray("*", options), [
+    "abc",
+    "abcdef",
+    "abcdefghi",
+    "subdir"
+  ]);
+});
+
+test(async function expandGlobTrailingSeparator(): Promise<void> {
+  const options = EG_OPTIONS;
+  assertEquals(await expandGlobArray("*/", options), ["subdir"]);
+});
+
+test(async function expandGlobParent(): Promise<void> {
+  const options = EG_OPTIONS;
+  assertEquals(await expandGlobArray("subdir/../*", options), [
+    "abc",
+    "abcdef",
+    "abcdefghi",
+    "subdir"
+  ]);
+});
 
 test(async function expandGlobExt(): Promise<void> {
   const options = { ...EG_OPTIONS, extended: true };
