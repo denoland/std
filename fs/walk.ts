@@ -71,11 +71,15 @@ export async function* walk(
   root: string,
   options: WalkOptions = {}
 ): AsyncIterableIterator<WalkInfo> {
-  options.maxDepth! -= 1;
+  const maxDepth = options.maxDepth != undefined ? options.maxDepth! : Infinity;
+  if (maxDepth < 0) {
+    return;
+  }
   if (options.includeDirs && include(root, options)) {
     const rootInfo = await stat(root);
     yield { filename: root, info: rootInfo };
-  } else if (patternTest(options.skip || [], root)) {
+  }
+  if (maxDepth < 1 || patternTest(options.skip || [], root)) {
     return;
   }
   let ls: FileInfo[] = [];
@@ -103,9 +107,7 @@ export async function* walk(
         yield { filename, info };
       }
     } else {
-      if (!(options.maxDepth! < 0)) {
-        yield* walk(filename, options);
-      }
+      yield* walk(filename, { ...options, maxDepth: maxDepth - 1 });
     }
   }
 }
@@ -115,11 +117,15 @@ export function* walkSync(
   root: string = ".",
   options: WalkOptions = {}
 ): IterableIterator<WalkInfo> {
-  options.maxDepth! -= 1;
+  const maxDepth = options.maxDepth != undefined ? options.maxDepth! : Infinity;
+  if (maxDepth < 0) {
+    return;
+  }
   if (options.includeDirs && include(root, options)) {
     const rootInfo = statSync(root);
     yield { filename: root, info: rootInfo };
-  } else if (patternTest(options.skip || [], root)) {
+  }
+  if (maxDepth < 1 || patternTest(options.skip || [], root)) {
     return;
   }
   let ls: FileInfo[] = [];
@@ -146,9 +152,7 @@ export function* walkSync(
         yield { filename, info };
       }
     } else {
-      if (!(options.maxDepth! < 0)) {
-        yield* walkSync(filename, options);
-      }
+      yield* walkSync(filename, { ...options, maxDepth: maxDepth - 1 });
     }
   }
 }
