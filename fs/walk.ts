@@ -8,6 +8,7 @@ import { join } from "./path/mod.ts";
 
 export interface WalkOptions {
   maxDepth?: number;
+  includeFiles?: boolean;
   includeDirs?: boolean;
   exts?: string[];
   match?: RegExp[];
@@ -55,6 +56,7 @@ export interface WalkInfo {
  *
  * Options:
  * - maxDepth?: number;
+ * - includeFiles?: boolean;
  * - includeDirs?: boolean;
  * - exts?: string[];
  * - match?: RegExp[];
@@ -103,7 +105,7 @@ export async function* walk(
     const filename = join(root, info.name!);
 
     if (info.isFile()) {
-      if (include(filename, options)) {
+      if (options.includeFiles != false && include(filename, options)) {
         yield { filename, info };
       }
     } else {
@@ -148,7 +150,7 @@ export function* walkSync(
     const filename = join(root, info.name!);
 
     if (info.isFile()) {
-      if (include(filename, options)) {
+      if (options.includeFiles != false && include(filename, options)) {
         yield { filename, info };
       }
     } else {
