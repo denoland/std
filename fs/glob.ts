@@ -1,5 +1,5 @@
 import { globrex } from "./globrex.ts";
-import { isWindows } from "./path/constants.ts";
+import { SEP_PATTERN, isWindows } from "./path/constants.ts";
 import { isAbsolute, join, normalize } from "./path/mod.ts";
 import { WalkInfo, walk, walkSync } from "./walk.ts";
 const { cwd, stat, statSync } = Deno;
@@ -85,8 +85,6 @@ export interface ExpandGlobOptions extends GlobOptions {
   exclude?: string[];
   includeDirs?: boolean;
 }
-
-const SEP_PATTERN = isWindows ? /[\\/]+/ : /\/+/;
 
 interface SplitPath {
   segments: string[];
