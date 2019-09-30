@@ -94,12 +94,13 @@ interface SplitPath {
 
 // TODO: Maybe make this public somewhere if it can be fixed for Windows.
 function split(path: string): SplitPath {
+  const s = SEP_PATTERN.source;
   return {
     segments: path
-      .replace(new RegExp(`^${SEP_PATTERN.source}|${SEP_PATTERN.source}$`), "")
+      .replace(new RegExp(`^${s}|${s}$`, "g"), "")
       .split(SEP_PATTERN),
     isAbsolute: isAbsolute(path),
-    hasTrailingSep: !!path.match(new RegExp(`${SEP_PATTERN.source}$`))
+    hasTrailingSep: !!path.match(new RegExp(`${s}$`))
   };
 }
 
