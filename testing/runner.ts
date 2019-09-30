@@ -77,8 +77,7 @@ export async function* findTestModules(
     exclude: excludePaths,
     includeDirs: true,
     extended: true,
-    globstar: true,
-    strict: false
+    globstar: true
   };
 
   async function* expandDirectory(d: string): AsyncIterableIterator<string> {

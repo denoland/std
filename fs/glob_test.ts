@@ -292,8 +292,7 @@ const EG_OPTIONS: ExpandGlobOptions = {
   root: urlToFilePath(new URL(join("testdata", "glob"), import.meta.url)),
   includeDirs: true,
   extended: false,
-  globstar: false,
-  strict: false
+  globstar: false
 };
 
 test(async function expandGlobWildcard(): Promise<void> {

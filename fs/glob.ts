@@ -8,7 +8,6 @@ type FileInfo = Deno.FileInfo;
 export interface GlobOptions {
   extended?: boolean;
   globstar?: boolean;
-  strict?: boolean;
 }
 
 export interface GlobToRegExpOptions extends GlobOptions {
@@ -43,7 +42,7 @@ export function globToRegExp(
   glob: string,
   options: GlobToRegExpOptions = {}
 ): RegExp {
-  const result = globrex(glob, { ...options, filepath: true });
+  const result = globrex(glob, { ...options, strict: false, filepath: true });
   return result.path!.regex;
 }
 
@@ -118,13 +117,12 @@ export async function* expandGlob(
     exclude = [],
     includeDirs = true,
     extended = false,
-    globstar = false,
-    strict = false
+    globstar = false
   }: ExpandGlobOptions = {}
 ): AsyncIterableIterator<WalkInfo> {
   const resolveFromRoot = (path: string): string =>
     isAbsolute(path) ? normalize(path) : join(root, path);
-  const globOptions: GlobOptions = { extended, globstar, strict };
+  const globOptions: GlobOptions = { extended, globstar };
   const excludePatterns = exclude
     .map(resolveFromRoot)
     .map((s: string): RegExp => globToRegExp(s, globOptions));
@@ -213,13 +211,12 @@ export function* expandGlobSync(
     exclude = [],
     includeDirs = true,
     extended = false,
-    globstar = false,
-    strict = false
+    globstar = false
   }: ExpandGlobOptions = {}
 ): IterableIterator<WalkInfo> {
   const resolveFromRoot = (path: string): string =>
     isAbsolute(path) ? normalize(path) : join(root, path);
-  const globOptions: GlobOptions = { extended, globstar, strict };
+  const globOptions: GlobOptions = { extended, globstar };
   const excludePatterns = exclude
     .map(resolveFromRoot)
     .map((s: string): RegExp => globToRegExp(s, globOptions));

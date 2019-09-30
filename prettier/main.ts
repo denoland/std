@@ -307,8 +307,7 @@ async function* getTargetFiles(
     exclude,
     includeDirs: true,
     extended: true,
-    globstar: true,
-    strict: false
+    globstar: true
   };
 
   async function* expandDirectory(d: string): AsyncIterableIterator<WalkInfo> {
