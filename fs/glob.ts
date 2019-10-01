@@ -1,8 +1,8 @@
 import { globrex } from "./globrex.ts";
-import { SEP_PATTERN, isWindows } from "./path/constants.ts";
+import { SEP, SEP_PATTERN, isWindows } from "./path/constants.ts";
 import { isAbsolute, join, normalize } from "./path/mod.ts";
 import { WalkInfo, walk, walkSync } from "./walk.ts";
-const { cwd, stat, statSync } = Deno;
+const { DenoError, ErrorKind, cwd, stat, statSync } = Deno;
 type FileInfo = Deno.FileInfo;
 
 export interface GlobOptions {
@@ -79,6 +79,49 @@ export function isGlob(str: string): boolean {
   return false;
 }
 
+/** Like normalize(), but doesn't collapse "**\/.." when `globstar` is true. */
+export function normalizeGlob(
+  glob: string,
+  { globstar = false }: GlobOptions = {}
+): string {
+  if (!!glob.match(/\0/g)) {
+    throw new DenoError(
+      ErrorKind.InvalidPath,
+      `Glob contains invalid characters: "${glob}"`
+    );
+  }
+  if (!globstar) {
+    return normalize(glob);
+  }
+  const s = SEP_PATTERN.source;
+  const badParentPattern = new RegExp(
+    `(?<=(${s}|^)\\*\\*${s})\\.\\.(?=${s}|$)`,
+    "g"
+  );
+  return normalize(glob.replace(badParentPattern, "\0")).replace(/\0/g, "..");
+}
+
+/** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
+export function joinGlobs(
+  globs: string[],
+  { extended = false, globstar = false }: GlobOptions = {}
+): string {
+  if (!globstar || globs.length == 0) {
+    return join(...globs);
+  }
+  if (globs.length === 0) return ".";
+  let joined: string | undefined;
+  for (let i = 0, len = globs.length; i < len; ++i) {
+    let path = globs[i];
+    if (path.length > 0) {
+      if (!joined) joined = path;
+      else joined += `${SEP}${path}`;
+    }
+  }
+  if (!joined) return ".";
+  return normalizeGlob(joined, { extended, globstar });
+}
+
 export interface ExpandGlobOptions extends GlobOptions {
   root?: string;
   exclude?: string[];
@@ -89,17 +132,22 @@ interface SplitPath {
   segments: string[];
   isAbsolute: boolean;
   hasTrailingSep: boolean;
+  // Defined for any absolute Windows path.
+  winRoot?: string;
 }
 
-// TODO: Maybe make this public somewhere if it can be fixed for Windows.
+// TODO: Maybe make this public somewhere.
 function split(path: string): SplitPath {
   const s = SEP_PATTERN.source;
+  const segments = path
+    .replace(new RegExp(`^${s}|${s}$`, "g"), "")
+    .split(SEP_PATTERN);
+  const isAbsolute_ = isAbsolute(path);
   return {
-    segments: path
-      .replace(new RegExp(`^${s}|${s}$`, "g"), "")
-      .split(SEP_PATTERN),
-    isAbsolute: isAbsolute(path),
-    hasTrailingSep: !!path.match(new RegExp(`${s}$`))
+    segments,
+    isAbsolute: isAbsolute_,
+    hasTrailingSep: !!path.match(new RegExp(`${s}$`)),
+    winRoot: isWindows && isAbsolute_ ? segments.shift() : undefined
   };
 }
 
@@ -111,7 +159,7 @@ function split(path: string): SplitPath {
 // This is a very incomplete solution. The whole directory tree from `root` is
 // walked and parent paths are not supported.
 export async function* expandGlob(
-  globString: string,
+  glob: string,
   {
     root = cwd(),
     exclude = [],
@@ -128,9 +176,9 @@ export async function* expandGlob(
     .map((s: string): RegExp => globToRegExp(s, globOptions));
   const shouldInclude = ({ filename }: WalkInfo): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!filename.match(p));
-  const { segments, hasTrailingSep } = split(resolveFromRoot(globString));
+  const { segments, hasTrailingSep, winRoot } = split(resolveFromRoot(glob));
 
-  let fixedRoot = isWindows ? segments.shift()! : "/";
+  let fixedRoot = winRoot != undefined ? winRoot : "/";
   while (segments.length > 0 && !isGlob(segments[0])) {
     fixedRoot = join(fixedRoot, segments.shift()!);
   }
@@ -205,7 +253,7 @@ export async function* expandGlob(
 /** Synchronous version of `expandGlob()`. */
 // TODO: As `expandGlob()`.
 export function* expandGlobSync(
-  globString: string,
+  glob: string,
   {
     root = cwd(),
     exclude = [],
@@ -222,9 +270,9 @@ export function* expandGlobSync(
     .map((s: string): RegExp => globToRegExp(s, globOptions));
   const shouldInclude = ({ filename }: WalkInfo): boolean =>
     !excludePatterns.some((p: RegExp): boolean => !!filename.match(p));
-  const { segments, hasTrailingSep } = split(resolveFromRoot(globString));
+  const { segments, hasTrailingSep, winRoot } = split(resolveFromRoot(glob));
 
-  let fixedRoot = isWindows ? segments.shift()! : "/";
+  let fixedRoot = winRoot != undefined ? winRoot : "/";
   while (segments.length > 0 && !isGlob(segments[0])) {
     fixedRoot = join(fixedRoot, segments.shift()!);
   }

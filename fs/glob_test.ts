@@ -1,13 +1,15 @@
 const { cwd, mkdir } = Deno;
 import { test, runIfMain } from "../testing/mod.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
-import { isWindows } from "./path/constants.ts";
+import { SEP, isWindows } from "./path/constants.ts";
 import {
   ExpandGlobOptions,
   expandGlob,
+  expandGlobSync,
   globToRegExp,
   isGlob,
-  expandGlobSync
+  joinGlobs,
+  normalizeGlob
 } from "./glob.ts";
 import { join, normalize, relative } from "./path.ts";
 import { testWalk } from "./walk_test.ts";
@@ -256,6 +258,14 @@ test({
     assert(!isGlob("abc/\\(aaa|bbb).js"));
     assert(!isGlob("abc/\\?.js"));
   }
+});
+
+test(function normalizeGlobGlobstar(): void {
+  assertEquals(normalizeGlob(`**${SEP}..`, { globstar: true }), `**${SEP}..`);
+});
+
+test(function joinGlobsGlobstar(): void {
+  assertEquals(joinGlobs(["**", ".."], { globstar: true }), `**${SEP}..`);
 });
 
 async function expandGlobArray(
