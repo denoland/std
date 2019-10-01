@@ -168,9 +168,9 @@ export async function* expandGlob(
     globstar = false
   }: ExpandGlobOptions = {}
 ): AsyncIterableIterator<WalkInfo> {
-  const resolveFromRoot = (path: string): string =>
-    isAbsolute(path) ? normalize(path) : join(root, path);
   const globOptions: GlobOptions = { extended, globstar };
+  const resolveFromRoot = (path: string): string =>
+    isAbsolute(path) ? normalize(path) : joinGlobs([root, path], globOptions);
   const excludePatterns = exclude
     .map(resolveFromRoot)
     .map((s: string): RegExp => globToRegExp(s, globOptions));
@@ -180,7 +180,7 @@ export async function* expandGlob(
 
   let fixedRoot = winRoot != undefined ? winRoot : "/";
   while (segments.length > 0 && !isGlob(segments[0])) {
-    fixedRoot = join(fixedRoot, segments.shift()!);
+    fixedRoot = joinGlobs([fixedRoot, segments.shift()!], globOptions);
   }
 
   let fixedRootInfo: WalkInfo;
@@ -197,7 +197,7 @@ export async function* expandGlob(
     if (!walkInfo.info.isDirectory()) {
       return;
     } else if (globSegment == "..") {
-      const parentPath = join(walkInfo.filename, "..");
+      const parentPath = joinGlobs([walkInfo.filename, ".."], globOptions);
       try {
         return yield* [
           { filename: parentPath, info: await stat(parentPath) }
@@ -215,7 +215,12 @@ export async function* expandGlob(
     yield* walk(walkInfo.filename, {
       maxDepth: 1,
       includeDirs: true,
-      match: [globToRegExp(join(walkInfo.filename, globSegment), globOptions)],
+      match: [
+        globToRegExp(
+          joinGlobs([walkInfo.filename, globSegment], globOptions),
+          globOptions
+        )
+      ],
       skip: excludePatterns
     });
   }
@@ -262,9 +267,9 @@ export function* expandGlobSync(
     globstar = false
   }: ExpandGlobOptions = {}
 ): IterableIterator<WalkInfo> {
-  const resolveFromRoot = (path: string): string =>
-    isAbsolute(path) ? normalize(path) : join(root, path);
   const globOptions: GlobOptions = { extended, globstar };
+  const resolveFromRoot = (path: string): string =>
+    isAbsolute(path) ? normalize(path) : joinGlobs([root, path], globOptions);
   const excludePatterns = exclude
     .map(resolveFromRoot)
     .map((s: string): RegExp => globToRegExp(s, globOptions));
@@ -274,7 +279,7 @@ export function* expandGlobSync(
 
   let fixedRoot = winRoot != undefined ? winRoot : "/";
   while (segments.length > 0 && !isGlob(segments[0])) {
-    fixedRoot = join(fixedRoot, segments.shift()!);
+    fixedRoot = joinGlobs([fixedRoot, segments.shift()!], globOptions);
   }
 
   let fixedRootInfo: WalkInfo;
@@ -291,7 +296,7 @@ export function* expandGlobSync(
     if (!walkInfo.info.isDirectory()) {
       return;
     } else if (globSegment == "..") {
-      const parentPath = join(walkInfo.filename, "..");
+      const parentPath = joinGlobs([walkInfo.filename, ".."], globOptions);
       try {
         return yield* [
           { filename: parentPath, info: statSync(parentPath) }
@@ -309,7 +314,12 @@ export function* expandGlobSync(
     yield* walkSync(walkInfo.filename, {
       maxDepth: 1,
       includeDirs: true,
-      match: [globToRegExp(join(walkInfo.filename, globSegment), globOptions)],
+      match: [
+        globToRegExp(
+          joinGlobs([walkInfo.filename, globSegment], globOptions),
+          globOptions
+        )
+      ],
       skip: excludePatterns
     });
   }

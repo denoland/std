@@ -286,8 +286,8 @@ async function expandGlobArray(
   for (const path of paths) {
     assert(path.startsWith(root));
   }
-  const relativePaths = paths.map((path: string): string =>
-    relative(root, path)
+  const relativePaths = paths.map(
+    (path: string): string => relative(root, path) || "."
   );
   relativePaths.sort();
   return relativePaths;
@@ -352,10 +352,18 @@ test(async function expandGlobExt(): Promise<void> {
 
 test(async function expandGlobGlobstar(): Promise<void> {
   const options = { ...EG_OPTIONS, globstar: true };
-  assertEquals(await expandGlobArray(join("**", "abc"), options), [
-    "abc",
-    join("subdir", "abc")
-  ]);
+  assertEquals(
+    await expandGlobArray(joinGlobs(["**", "abc"], options), options),
+    ["abc", join("subdir", "abc")]
+  );
+});
+
+test(async function expandGlobGlobstarParent(): Promise<void> {
+  const options = { ...EG_OPTIONS, globstar: true };
+  assertEquals(
+    await expandGlobArray(joinGlobs(["subdir", "**", ".."], options), options),
+    ["."]
+  );
 });
 
 test(async function expandGlobIncludeDirs(): Promise<void> {
