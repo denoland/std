@@ -169,8 +169,13 @@ export async function* expandGlob(
   }: ExpandGlobOptions = {}
 ): AsyncIterableIterator<WalkInfo> {
   const globOptions: GlobOptions = { extended, globstar };
+  const absRoot = isAbsolute(root)
+    ? normalize(root)
+    : joinGlobs([cwd(), root], globOptions);
   const resolveFromRoot = (path: string): string =>
-    isAbsolute(path) ? normalize(path) : joinGlobs([root, path], globOptions);
+    isAbsolute(path)
+      ? normalize(path)
+      : joinGlobs([absRoot, path], globOptions);
   const excludePatterns = exclude
     .map(resolveFromRoot)
     .map((s: string): RegExp => globToRegExp(s, globOptions));
@@ -268,8 +273,13 @@ export function* expandGlobSync(
   }: ExpandGlobOptions = {}
 ): IterableIterator<WalkInfo> {
   const globOptions: GlobOptions = { extended, globstar };
+  const absRoot = isAbsolute(root)
+    ? normalize(root)
+    : joinGlobs([cwd(), root], globOptions);
   const resolveFromRoot = (path: string): string =>
-    isAbsolute(path) ? normalize(path) : joinGlobs([root, path], globOptions);
+    isAbsolute(path)
+      ? normalize(path)
+      : joinGlobs([absRoot, path], globOptions);
   const excludePatterns = exclude
     .map(resolveFromRoot)
     .map((s: string): RegExp => globToRegExp(s, globOptions));
