@@ -213,13 +213,11 @@ export async function* expandGlob(
     } else if (globSegment == "**") {
       return yield* walk(walkInfo.filename, {
         includeFiles: false,
-        includeDirs: true,
         skip: excludePatterns
       });
     }
     yield* walk(walkInfo.filename, {
       maxDepth: 1,
-      includeDirs: true,
       match: [
         globToRegExp(
           joinGlobs([walkInfo.filename, globSegment], globOptions),
@@ -317,13 +315,11 @@ export function* expandGlobSync(
     } else if (globSegment == "**") {
       return yield* walkSync(walkInfo.filename, {
         includeFiles: false,
-        includeDirs: true,
         skip: excludePatterns
       });
     }
     yield* walkSync(walkInfo.filename, {
       maxDepth: 1,
-      includeDirs: true,
       match: [
         globToRegExp(
           joinGlobs([walkInfo.filename, globSegment], globOptions),
