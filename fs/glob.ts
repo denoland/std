@@ -111,8 +111,8 @@ export function joinGlobs(
   }
   if (globs.length === 0) return ".";
   let joined: string | undefined;
-  for (let i = 0, len = globs.length; i < len; ++i) {
-    let path = globs[i];
+  for (const glob of globs) {
+    let path = glob;
     if (path.length > 0) {
       if (!joined) joined = path;
       else joined += `${SEP}${path}`;

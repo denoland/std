@@ -100,16 +100,16 @@ exists("./foo"); // returns a Promise<boolean>
 existsSync("./foo"); // returns boolean
 ```
 
-### glob
+### globToRegExp
 
 Generate a regex based on glob pattern and options
 This was meant to be using the the `fs.walk` function
 but can be used anywhere else.
 
 ```ts
-import { glob } from "https://deno.land/std/fs/mod.ts";
+import { globToRegExp } from "https://deno.land/std/fs/mod.ts";
 
-glob("foo/**/*.json", {
+globToRegExp("foo/**/*.json", {
   flags: "g",
   extended: true,
   globstar: true
