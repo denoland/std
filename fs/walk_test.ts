@@ -133,6 +133,23 @@ testWalk(
 
 testWalk(
   async (d: string): Promise<void> => {
+    await touch(d + "/a");
+    await mkdir(d + "/b");
+    await touch(d + "/b/c");
+  },
+  async function includeFiles(): Promise<void> {
+    assertReady(2);
+    const arr = await walkArray(".", {
+      includeDirs: true,
+      includeFiles: false
+    });
+    assertEquals(arr.length, 2);
+    assertEquals(arr, [".", "b"]);
+  }
+);
+
+testWalk(
+  async (d: string): Promise<void> => {
     await touch(d + "/x.ts");
     await touch(d + "/y.rs");
   },
