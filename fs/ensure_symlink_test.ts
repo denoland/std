@@ -7,10 +7,10 @@ import {
   assertThrowsAsync
 } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
+import { isWindows } from "./constants.ts";
 import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 
 const testdataDir = path.resolve("fs", "testdata");
-const isWindows = Deno.build.os === "win";
 
 test(async function ensureSymlinkIfItNotExist(): Promise<void> {
   const testDir = path.join(testdataDir, "link_file_1");

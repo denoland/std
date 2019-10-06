@@ -7,6 +7,7 @@ import {
   assert
 } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
+import { isWindows } from "./constants.ts";
 import { copy, copySync } from "./copy.ts";
 import { exists, existsSync } from "./exists.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
@@ -16,7 +17,6 @@ import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 const testdataDir = path.resolve("fs", "testdata");
 
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
-const isWindows = Deno.build.os === "win";
 
 async function testCopy(
   name: string,

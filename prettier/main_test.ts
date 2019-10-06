@@ -1,8 +1,8 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
 import { test, runIfMain } from "../testing/mod.ts";
-import { copy, emptyDir } from "../fs/mod.ts";
-import { EOL, join } from "../path/mod.ts";
+import { EOL_, copy, emptyDir } from "../fs/mod.ts";
+import { join } from "../path/mod.ts";
 import { xrun } from "./util.ts";
 const { readAll, execPath } = Deno;
 
@@ -219,16 +219,16 @@ test(async function testPrettierPrintToStdout(): Promise<void> {
 
   const { stdout } = await run([...cmd, file0]);
   // The source file will not change without `--write` flags.
-  assertEquals(await getSourceCode(file0), "console.log (0)" + EOL);
+  assertEquals(await getSourceCode(file0), "console.log (0)" + EOL_);
   // The output should be formatted code.
-  assertEquals(stdout, "console.log(0);" + EOL);
+  assertEquals(stdout, "console.log(0);" + EOL_);
 
   const { stdout: formattedCode } = await run([...cmd, file1]);
   // The source file will not change without `--write` flags.
-  assertEquals(await getSourceCode(file1), "console.log(0);" + EOL);
+  assertEquals(await getSourceCode(file1), "console.log(0);" + EOL_);
   // The output will be formatted code even it is the same as the source file's
   // content.
-  assertEquals(formattedCode, "console.log(0);" + EOL);
+  assertEquals(formattedCode, "console.log(0);" + EOL_);
 
   emptyDir(tempDir);
 });
@@ -286,7 +286,7 @@ test(async function testPrettierReadFromStdin(): Promise<void> {
       expectedStdout
     );
     assertEquals(
-      decoder.decode(await Deno.readAll(p2.stderr!)).split(EOL)[0],
+      decoder.decode(await Deno.readAll(p2.stderr!)).split(EOL_)[0],
       expectedStderr
     );
     p2.close();

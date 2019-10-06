@@ -1,7 +1,7 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
 
-const { build } = Deno;
+import { isWindows } from "../fs/mod.ts";
 
 // Alphabet chars.
 export const CHAR_UPPERCASE_A = 65; /* A */
@@ -48,7 +48,5 @@ export const CHAR_EQUAL = 61; /* = */
 export const CHAR_0 = 48; /* 0 */
 export const CHAR_9 = 57; /* 9 */
 
-export const isWindows = build.os === "win";
-export const EOL = isWindows ? "\r\n" : "\n";
 export const SEP = isWindows ? "\\" : "/";
 export const SEP_PATTERN = isWindows ? /[\\/]+/ : /\/+/;

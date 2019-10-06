@@ -4,10 +4,10 @@ import {
   globToRegExp,
   isAbsolute,
   isGlob,
-  isWindows,
   joinGlobs,
   normalize
 } from "../path/mod.ts";
+import { isWindows } from "./constants.ts";
 import { WalkInfo, walk, walkSync } from "./walk.ts";
 const { cwd, stat, statSync } = Deno;
 type FileInfo = Deno.FileInfo;

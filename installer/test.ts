@@ -10,7 +10,6 @@ import * as path from "../path/mod.ts";
 import { install, isRemoteUrl } from "./mod.ts";
 
 let fileServer: Deno.Process;
-const isWindows = Deno.build.os === "win";
 
 // copied from `http/file_server_test.ts`
 async function startFileServer(): Promise<void> {
@@ -71,7 +70,7 @@ installerTest(async function installBasic(): Promise<void> {
   const fileInfo = await stat(filePath);
   assert(fileInfo.isFile());
 
-  if (isWindows) {
+  if (fs.isWindows) {
     assertEquals(
       await fs.readFileStr(filePath + ".cmd"),
       /* eslint-disable max-len */
@@ -126,7 +125,7 @@ installerTest(async function installCustomDir(): Promise<void> {
   const fileInfo = await stat(filePath);
   assert(fileInfo.isFile());
 
-  if (isWindows) {
+  if (fs.isWindows) {
     assertEquals(
       await fs.readFileStr(filePath + ".cmd"),
       /* eslint-disable max-len */
@@ -176,11 +175,11 @@ installerTest(async function installLocalModule(): Promise<void> {
   const fileInfo = await stat(filePath);
   assert(fileInfo.isFile());
 
-  if (isWindows) {
+  if (fs.isWindows) {
     localModule = localModule.replace(/\\/g, "\\\\");
   }
 
-  if (isWindows) {
+  if (fs.isWindows) {
     assertEquals(
       await fs.readFileStr(filePath + ".cmd"),
       /* eslint-disable max-len */
@@ -231,7 +230,7 @@ installerTest(async function installWithFlags(): Promise<void> {
   const { HOME } = env();
   const filePath = path.resolve(HOME, ".deno/bin/echo_test");
 
-  if (isWindows) {
+  if (fs.isWindows) {
     assertEquals(
       await fs.readFileStr(filePath + ".cmd"),
       /* eslint-disable max-len */
@@ -282,7 +281,7 @@ installerTest(async function installLocalModuleAndRun(): Promise<void> {
   assert(fileInfo.isFile());
 
   const ps = run({
-    args: ["echo_test" + (isWindows ? ".cmd" : ""), "foo"],
+    args: ["echo_test" + (fs.isWindows ? ".cmd" : ""), "foo"],
     stdout: "piped"
   });
 
@@ -323,7 +322,7 @@ installerTest(async function installAndMakesureItCanRun(): Promise<void> {
   assert(fileInfo.isFile());
 
   const ps = run({
-    args: ["echo_test" + (isWindows ? ".cmd" : ""), "foo"],
+    args: ["echo_test" + (fs.isWindows ? ".cmd" : ""), "foo"],
     stdout: "piped"
   });
 
@@ -364,7 +363,7 @@ installerTest(async function installAndMakesureArgsRight(): Promise<void> {
   assert(fileInfo.isFile());
 
   const ps = run({
-    args: ["args_test" + (isWindows ? ".cmd" : ""), "arg2", "--flag2"],
+    args: ["args_test" + (fs.isWindows ? ".cmd" : ""), "arg2", "--flag2"],
     stdout: "piped"
   });
 

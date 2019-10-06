@@ -1,13 +1,8 @@
 const { cwd } = Deno;
 import { test, runIfMain } from "../testing/mod.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
-import {
-  isWindows,
-  join,
-  joinGlobs,
-  normalize,
-  relative
-} from "../path/mod.ts";
+import { isWindows } from "./constants.ts";
+import { join, joinGlobs, normalize, relative } from "../path/mod.ts";
 import { ExpandGlobOptions, expandGlob, expandGlobSync } from "./glob.ts";
 
 async function expandGlobArray(

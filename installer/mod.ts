@@ -2,15 +2,13 @@
 // Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
 const { env, stdin, args, exit, writeFile, chmod, run } = Deno;
 import { parse } from "../flags/mod.ts";
-import { exists } from "../fs/exists.ts";
-import { ensureDir } from "../fs/ensure_dir.ts";
+import { ensureDir, exists, isWindows } from "../fs/mod.ts";
 import * as path from "../path/mod.ts";
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder("utf-8");
 // Regular expression to test disk driver letter. eg "C:\\User\username\path\to"
 const driverLetterReg = /^[c-z]:/i;
-const isWindows = Deno.build.os === "win";
 
 function showHelp(): void {
   console.log(`deno installer
