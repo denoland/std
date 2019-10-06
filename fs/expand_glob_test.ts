@@ -3,7 +3,11 @@ import { test, runIfMain } from "../testing/mod.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { isWindows } from "./constants.ts";
 import { join, joinGlobs, normalize, relative } from "../path/mod.ts";
-import { ExpandGlobOptions, expandGlob, expandGlobSync } from "./glob.ts";
+import {
+  ExpandGlobOptions,
+  expandGlob,
+  expandGlobSync
+} from "./expand_glob.ts";
 
 async function expandGlobArray(
   globString: string,
