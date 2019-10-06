@@ -5,7 +5,7 @@ import { test, runIfMain, TestFunction } from "../testing/mod.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import * as path from "../fs/path.ts";
+import * as path from "../fs/path/mod.ts";
 import * as fs from "../fs/mod.ts";
 import { install, isRemoteUrl } from "./mod.ts";
 
