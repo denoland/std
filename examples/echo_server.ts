@@ -2,8 +2,9 @@
 const { listen, copy } = Deno;
 
 (async (): Promise<void> => {
-  const addr = "0.0.0.0:8080";
-  const listener = listen("tcp", addr);
+  const hostname = "0.0.0.0";
+  const port = 8080;
+  const listener = listen({ hostname, port });
   console.log("listening on", addr);
   while (true) {
     const conn = await listener.accept();
