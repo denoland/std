@@ -56,4 +56,4 @@ went into building Go. We generally welcome direct ports of Go's code.
 
 Please ensure the copyright headers cite the code's origin.
 
-Follow the [style guide](https://deno.land/style_guide.html).
+Follow the [style guide](https://deno.land/manual/contributing/style_guide).
