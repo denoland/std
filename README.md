@@ -1,12 +1,3 @@
-# NOTICE: The deno_std repository has been moved to the main Deno repo
-
-https://github.com/denoland/deno/tree/master/std
-
-All PRs and issues should be directed to denoland/deno, not here.
-
-We are in a transitional phase now as we update various references to this
-repository. Eventually this repo will be archived.
-
 # Deno Standard Modules
 
 These modules do not have external dependencies and they are reviewed by the

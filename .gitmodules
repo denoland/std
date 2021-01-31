@@ -1,0 +1,4 @@
+[submodule "std/wasi/testdata"]
+  path = wasi/testdata
+  url = https://github.com/khronosproject/wasi-test-suite.git
+  shallow = true
