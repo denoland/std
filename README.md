@@ -1,5 +1,3 @@
-// TODO: test CI etc.
-
 # Deno Standard Modules
 
 These modules do not have external dependencies and they are reviewed by the
