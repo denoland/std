@@ -2,9 +2,9 @@ name: ci
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno-version: [1.x, nightly]
+        deno-version: [stable, nightly]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:
@@ -23,10 +23,21 @@ jobs:
           submodules: true
           persist-credentials: false
 
-      - name: Install Deno
-        uses: denolib/setup-deno@master
-        with:
-          deno-version: ${{ matrix.deno-version }}
+      - name: Install Deno (Unix)
+        if: |
+          !startsWith(matrix.os, 'windows')
+        run: |-
+          curl -fsSL https://deno.land/x/install/install.sh | sh
+          echo "$HOME/.deno/bin" >> $GITHUB_PATH
+      - name: Install Deno (Windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |-
+          curl -fsSL https://deno.land/x/install/install.sh | sh
+          echo "$HOME/.deno/bin" >> $env:GITHUB_PATH
+
+      - name: Upgrade to Deno canary
+        if: matrix.deno == 'nightly'
+        run: deno upgrade --canary
 
       - name: Test
         run: deno test --unstable --allow-all
@@ -40,10 +51,22 @@ jobs:
           submodules: false
           persist-credentials: false
 
-      - name: Install Deno
-        uses: denolib/setup-deno@master
-        with:
-          deno-version: nightly
+      - name: Install Deno (Unix)
+        if: |
+          !startsWith(matrix.os, 'windows')
+        run: |-
+          curl -fsSL https://deno.land/x/install/install.sh | sh
+          echo "$HOME/.deno/bin" >> $GITHUB_PATH
+
+      - name: Install Deno (Windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |-
+          curl -fsSL https://deno.land/x/install/install.sh | sh
+          echo "$HOME/.deno/bin" >> $env:GITHUB_PATH
+
+      - name: Upgrade to Deno canary
+        if: matrix.deno == 'nightly'
+        run: deno upgrade --canary
 
       - name: Format
         run: deno fmt --check --ignore=node/tests/node_modules,hash/_wasm
