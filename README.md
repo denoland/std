@@ -36,6 +36,9 @@ To browse documentation for modules:
 
 ## Contributing
 
+**NOTE: This repository was unarchived and synced on Feb, 1st, 2021. If you
+already had it cloned, we suggest to do a fresh clone to avoid git conflicts.**
+
 deno_std is a loose port of [Go's standard library](https://golang.org/pkg/).
 When in doubt, simply port Go's source code, documentation, and tests. There are
 many times when the nature of JavaScript, TypeScript, or Deno itself justifies
