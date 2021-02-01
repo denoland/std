@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno-version: [nightly]
+        deno-version: [1.x, nightly]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:
