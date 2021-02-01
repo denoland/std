@@ -65,7 +65,6 @@ jobs:
           echo "$HOME/.deno/bin" >> $env:GITHUB_PATH
 
       - name: Upgrade to Deno canary
-        if: matrix.deno == 'nightly'
         run: deno upgrade --canary
 
       - name: Format
