@@ -3,7 +3,7 @@ import { assertEquals } from "../testing/asserts.ts";
 import * as c from "./colors.ts";
 import "../examples/colors.ts";
 
-Deno.test("reset", function(): void {
+Deno.test("reset", function (): void {
   assertEquals(c.reset("foo bar"), "[0mfoo bar[0m");
 });
 
