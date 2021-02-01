@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno-version: [stable, nightly]
+        deno: [stable, canary]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:
@@ -36,7 +36,7 @@ jobs:
           echo "$HOME/.deno/bin" >> $env:GITHUB_PATH
 
       - name: Upgrade to Deno canary
-        if: matrix.deno == 'nightly'
+        if: matrix.deno == 'canary'
         run: deno upgrade --canary
 
       - name: Test
