@@ -21,6 +21,7 @@ async function startFileServer({
   target = ".",
   port = 4507,
   "dir-listing": dirListing = true,
+  dotfiles = true,
 }: FileServerCfg = {}): Promise<void> {
   fileServer = Deno.run({
     cmd: [
@@ -35,6 +36,7 @@ async function startFileServer({
       "-p",
       `${port}`,
       `${dirListing ? "" : "--no-dir-listing"}`,
+      `${dotfiles ? "" : "--no-dotfiles"}`,
     ],
     cwd: moduleDir,
     stdout: "piped",
@@ -459,6 +461,19 @@ Deno.test("file_server disable dir listings", async function (): Promise<void> {
     assert(res.headers.has("access-control-allow-headers"));
     assertEquals(res.status, 404);
     const _ = await res.text();
+  } finally {
+    await killFileServer();
+  }
+});
+
+Deno.test("file_server do not show dotfiles", async function (): Promise<void> {
+  await startFileServer({ target: "./testdata", dotfiles: false });
+  try {
+    let res = await fetch("http://localhost:4507/");
+    assertEquals((await res.text()).includes(".dotfile"), false);
+
+    res = await fetch("http://localhost:4507/.dotfile");
+    assertEquals((await res.text()), "dotfile");
   } finally {
     await killFileServer();
   }
