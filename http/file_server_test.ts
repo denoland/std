@@ -469,3 +469,21 @@ Deno.test("file_server disable dir listings", async function (): Promise<void> {
     await killFileServer();
   }
 });
+
+Deno.test("file_server should show .. if it makes sense", async function (): Promise<
+  void
+> {
+  await startFileServer();
+  try {
+    let res = await fetch("http://localhost:4507/");
+    let page = await res.text();
+    assert(!page.includes("../"));
+    assert(page.includes("testdata/"));
+
+    res = await fetch("http://localhost:4507/testdata/");
+    page = await res.text();
+    assert(page.includes("../"));
+  } finally {
+    await killFileServer();
+  }
+});
