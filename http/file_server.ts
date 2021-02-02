@@ -33,6 +33,7 @@ export interface FileServerArgs {
   cors?: boolean;
   // --no-dir-listing
   "dir-listing"?: boolean;
+  dotfiles?: boolean;
   // --host
   host?: string;
   // -c --cert
@@ -146,6 +147,7 @@ async function serveDir(
   req: ServerRequest,
   dirPath: string,
 ): Promise<Response> {
+  const showDotfiles = serverArgs.dotfiles ?? true;
   const dirUrl = `/${posix.relative(target, dirPath)}`;
   const listEntry: EntryInfo[] = [];
 
@@ -162,6 +164,9 @@ async function serveDir(
   }
 
   for await (const entry of Deno.readDir(dirPath)) {
+    if (!showDotfiles && entry.name[0] === ".") {
+      continue;
+    }
     const filePath = posix.join(dirPath, entry.name);
     const fileUrl = posix.join(dirUrl, entry.name);
     if (entry.name === "index.html" && entry.isFile) {
@@ -404,6 +409,7 @@ function main(): void {
     -c, --cert <FILE>   TLS certificate file (enables TLS)
     -k, --key  <FILE>   TLS key file (enables TLS)
     --no-dir-listing    Disable directory listing
+    --no-dotfiles       Do not show dotfiles
 
     All TLS options are required when one is provided.`);
     Deno.exit();
