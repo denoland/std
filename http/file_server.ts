@@ -150,6 +150,19 @@ async function serveDir(
   const showDotfiles = serverArgs.dotfiles ?? true;
   const dirUrl = `/${posix.relative(target, dirPath)}`;
   const listEntry: EntryInfo[] = [];
+
+  // if ".." makes sense
+  if (dirUrl !== "/") {
+    const prevPath = posix.join(dirPath, "..");
+    const fileInfo = await Deno.stat(prevPath);
+    listEntry.push({
+      mode: modeToString(true, fileInfo.mode),
+      size: "",
+      name: "../",
+      url: posix.join(dirUrl, ".."),
+    });
+  }
+
   for await (const entry of Deno.readDir(dirPath)) {
     if (!showDotfiles && entry.name[0] === ".") {
       continue;
@@ -160,17 +173,11 @@ async function serveDir(
       // in case index.html as dir...
       return serveFile(req, filePath);
     }
-    // Yuck!
-    let fileInfo = null;
-    try {
-      fileInfo = await Deno.stat(filePath);
-    } catch (e) {
-      // Pass
-    }
+    const fileInfo = await Deno.stat(filePath);
     listEntry.push({
-      mode: modeToString(entry.isDirectory, fileInfo?.mode ?? null),
-      size: entry.isFile ? fileLenToString(fileInfo?.size ?? 0) : "",
-      name: entry.name,
+      mode: modeToString(entry.isDirectory, fileInfo.mode),
+      size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
+      name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
       url: fileUrl,
     });
   }
