@@ -470,7 +470,7 @@ Deno.test("file_server do not show dotfiles", async function (): Promise<void> {
   await startFileServer({ target: "./testdata", dotfiles: false });
   try {
     let res = await fetch("http://localhost:4507/");
-    assertEquals((await res.text()).includes(".dotfile"), false);
+    assert(!(await res.text()).includes(".dotfile"));
 
     res = await fetch("http://localhost:4507/.dotfile");
     assertEquals((await res.text()), "dotfile");
