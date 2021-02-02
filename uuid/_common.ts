@@ -4,8 +4,8 @@
  * @param bytes Used to convert Byte to Hex
  */
 export function bytesToUuid(bytes: number[] | Uint8Array): string {
-  const bits: string[] = [...bytes].map((bit): string => {
-    const s: string = bit.toString(16);
+  const bits = [...bytes].map((bit) => {
+    const s = bit.toString(16);
     return bit < 0x10 ? "0" + s : s;
   });
   return [
@@ -22,8 +22,8 @@ export function bytesToUuid(bytes: number[] | Uint8Array): string {
 }
 
 /**
- * Converts a string to a byte array by converting the hex value to a number
- * @param uuid Value that gets converted
+ * Converts a string to a byte array by converting the hex value to a number.
+ * @param uuid Value that gets converted.
  */
 export function uuidToBytes(uuid: string): number[] {
   const bytes: number[] = [];
@@ -37,8 +37,8 @@ export function uuidToBytes(uuid: string): number[] {
 }
 
 /**
- * Converts a string to a byte array using the char code
- * @param str Value that gets converted
+ * Converts a string to a byte array using the char code.
+ * @param str Value that gets converted.
  */
 export function stringToBytes(str: string): number[] {
   str = unescape(encodeURIComponent(str));
@@ -50,8 +50,8 @@ export function stringToBytes(str: string): number[] {
 }
 
 /**
- * Creates a buffer for creating a SHA-1 hash
- * @param content Buffer for SHA-1 hash
+ * Creates a buffer for creating a SHA-1 hash.
+ * @param content Buffer for SHA-1 hash.
  */
 export function createBuffer(content: number[]): ArrayBuffer {
   const arrayBuffer = new ArrayBuffer(content.length);
