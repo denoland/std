@@ -36,7 +36,9 @@ Deno.test("requireCycle", function () {
 Deno.test("requireBuiltin", function () {
   const fs = require("fs");
   assert("readFileSync" in fs);
-  const { readFileSync, isNull, extname } = require("./_module/cjs/cjs_builtin");
+  const { readFileSync, isNull, extname } = require(
+    "./_module/cjs/cjs_builtin",
+  );
 
   const testData = path.relative(
     Deno.cwd(),
