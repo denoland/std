@@ -58,7 +58,7 @@ Please ensure the copyright headers cite the code's origin.
 
 Follow the [style guide](https://deno.land/manual/contributing/style_guide).
 
-### Opening a PR
+### Opening a pull request
 
 Before opening a PR make sure to:
 
