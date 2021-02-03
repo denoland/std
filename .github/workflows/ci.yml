@@ -42,6 +42,9 @@ jobs:
       - name: Test
         run: deno test --unstable --allow-all
 
+      - name: Test Node
+        run: deno run --allow-all --unstable node/_tests/runner.ts
+
   lint:
     runs-on: ubuntu-latest
     steps:
