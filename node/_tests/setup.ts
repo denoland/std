@@ -61,11 +61,14 @@ async function downloadFile(url: string, path: string) {
 
 async function clearTests() {
   console.log("Cleaning up previous tests");
-  
-  const ignore = Object.entries(config.ignore).reduce((total: RegExp[], [suite, paths]) => {
-    paths.forEach((path) => total.push(new RegExp(join(suite, path))));
-    return total;
-  }, []);
+
+  const ignore = Object.entries(config.ignore).reduce(
+    (total: RegExp[], [suite, paths]) => {
+      paths.forEach((path) => total.push(new RegExp(join(suite, path))));
+      return total;
+    },
+    [],
+  );
 
   const files = walk((fromFileUrl(new URL(TESTS_FOLDER, import.meta.url))), {
     includeDirs: false,
