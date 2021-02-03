@@ -1,0 +1,8 @@
+{
+  "nodeVersion": "15.5.1",
+  "files": {
+    "buffer": [
+      "parallel/test-buffer[\\w-]+\\.js"
+    ]
+  }
+}
