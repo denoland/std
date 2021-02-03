@@ -1,7 +1,12 @@
 {
   "nodeVersion": "15.5.1",
-  "files": {
-    "buffer": [
+  "ignore": {
+    "common": [
+      "index.js"
+    ]
+  },
+  "tests": {
+    "parallel": [
       "parallel/test-buffer[\\w-]+\\.js"
     ]
   }

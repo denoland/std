@@ -1,13 +1,10 @@
 import { walk } from "../../fs/walk.ts";
 import { dirname, fromFileUrl, relative } from "../../path/mod.ts";
 
+// By default this will assume all tests are inside parallel
 const dir = walk(fromFileUrl(new URL("./parallel", import.meta.url)), {
   includeDirs: false,
 });
-
-const config = JSON.parse(
-  await Deno.readTextFile(new URL("./config.json", import.meta.url)),
-);
 
 for await (const file of dir) {
   const path = relative(fromFileUrl(import.meta.url), file.path);

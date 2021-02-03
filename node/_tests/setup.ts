@@ -1,29 +1,28 @@
 import { gunzip } from "https://deno.land/x/compress@v0.3.6/gzip/gzip.ts";
 import { Untar } from "../../archive/tar.ts";
-import { basename, delimiter, fromFileUrl, resolve } from "../../path/mod.ts";
+import { walk } from "../../fs/walk.ts";
+import { basename, fromFileUrl, join, resolve } from "../../path/mod.ts";
 import { ensureFile } from "../../fs/ensure_file.ts";
+import { Config } from "./types.ts";
 
 const NODE_URL = "https://nodejs.org/dist/vNODE_VERSION";
 const NODE_FILE = "node-vNODE_VERSION.tar.gz";
 const FILE_FOLDER = "versions";
-const TESTS_FOLDER = "parallel";
+const TESTS_FOLDER = "suites";
 
-const config = JSON.parse(
+const config: Config = JSON.parse(
   await Deno.readTextFile(new URL("./config.json", import.meta.url)),
 );
 
-/** URL for thw download */
+/** URL for the download */
 const url = `${NODE_URL}/${NODE_FILE}`.replaceAll(
   "NODE_VERSION",
   config.nodeVersion,
 );
 /** Local url location */
-const path = `./${FILE_FOLDER}/` +
-  NODE_FILE.replaceAll("NODE_VERSION", config.nodeVersion);
-/** Name of the folder inside the node archive */
-const folder = NODE_FILE.replaceAll("NODE_VERSION", config.nodeVersion).replace(
-  /.tar.gz$/,
-  "",
+const path = join(
+  FILE_FOLDER,
+  NODE_FILE.replaceAll("NODE_VERSION", config.nodeVersion),
 );
 
 /**
@@ -64,26 +63,27 @@ async function downloadFile(url: string, path: string) {
 
 async function clearTests() {
   console.log("Cleaning up previous tests");
-  try {
-    await Deno.remove(new URL(TESTS_FOLDER, import.meta.url), {
-      recursive: true,
-    });
-  } catch (e) {
-    if (!(e instanceof Deno.errors.NotFound)) {
-      throw e;
-    }
+  
+  const ignore = Object.entries(config.ignore).reduce((total: RegExp[], [suite, paths]) => {
+    paths.forEach((path) => total.push(new RegExp(join(suite, path))));
+    return total;
+  }, []);
+
+  const files = walk((fromFileUrl(new URL(TESTS_FOLDER, import.meta.url))), {
+    includeDirs: false,
+    skip: ignore,
+  });
+
+  for await (const file of files) {
+    await Deno.remove(file.path);
   }
 }
 
-/**
- * This reads the config files requested in the config file
- * and returns the folder they should be placed in
- * */
-function getRequestedFileFolder(file: string) {
-  for (const folder in config.files) {
-    for (const regex of config.files[folder]) {
+function getRequestedFileSuite(file: string): string | undefined {
+  for (const suite in config.tests) {
+    for (const regex of config.tests[suite]) {
       if (new RegExp(regex).test(file)) {
-        return folder;
+        return suite;
       }
     }
   }
@@ -103,34 +103,29 @@ async function decompressTests(filePath: string) {
 
   for await (const entry of tar) {
     if (entry.type !== "file") continue;
-    //This replaces the nested folder name in each entry
-    //TODO
-    //This might not be windows compatible
-    const fileName = entry.fileName.replace(`${folder}${delimiter}`, "");
-    const testFolder = getRequestedFileFolder(fileName);
-    if (testFolder) {
-      const path = resolve(
-        fromFileUrl(new URL(TESTS_FOLDER, import.meta.url)),
-        testFolder,
-        basename(fileName),
-      );
-      await ensureFile(path);
-      const file = await Deno.open(path, {
-        create: true,
-        truncate: true,
-        write: true,
-      });
-      // This will allow CI to pass without checking linting and formatting
-      // on the test suite files, removing the need to mantain that as well
-      await Deno.writeAll(
-        file,
-        new TextEncoder().encode(
-          "// deno-fmt-ignore-file\n// deno-lint-ignore-file\n",
-        ),
-      );
-      await Deno.copy(entry, file);
-      Deno.close(file.rid);
-    }
+    const suite = getRequestedFileSuite(entry.fileName);
+    if (!suite) continue;
+    const path = resolve(
+      fromFileUrl(new URL(TESTS_FOLDER, import.meta.url)),
+      suite,
+      basename(entry.fileName),
+    );
+    await ensureFile(path);
+    const file = await Deno.open(path, {
+      create: true,
+      truncate: true,
+      write: true,
+    });
+    // This will allow CI to pass without checking linting and formatting
+    // on the test suite files, removing the need to mantain that as well
+    await Deno.writeAll(
+      file,
+      new TextEncoder().encode(
+        "// deno-fmt-ignore-file\n// deno-lint-ignore-file\n",
+      ),
+    );
+    await Deno.copy(entry, file);
+    Deno.close(file.rid);
   }
 }
 

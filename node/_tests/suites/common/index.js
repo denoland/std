@@ -1,5 +1,3 @@
-// deno-fmt-ignore-file
-// deno-lint-ignore-file
 const assert = require("assert");
 const util = require("util");
 
