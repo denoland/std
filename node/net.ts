@@ -702,25 +702,6 @@ export class Socket {
 
 Object.setPrototypeOf(Socket.prototype, stream.Duplex.prototype);
 Object.setPrototypeOf(Socket, stream.Duplex);
-// or
-function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
-  baseConstructors.forEach(baseConstructor => {
-    Object.getOwnPropertyNames(baseConstructor.prototype)
-      .forEach(name => {
-        Object.defineProperty(derivedConstructor.prototype,
-          name,
-          Object.
-          getOwnPropertyDescriptor(
-            baseConstructor.prototype,
-            name
-          )
-        );
-      });
-  });
-}
-applyMixins(Socket, [stream.Duplex, EventEmitter]) // to also make socket extend Duplex and EventEmitter
-// ObjectSetPrototypeOf(Socket.prototype, stream.Duplex.prototype);
-// ObjectSetPrototypeOf(Socket, stream.Duplex);
 
 function afterShutdown(): void {
   this.callback();
