@@ -3,16 +3,14 @@ import { Untar } from "../../archive/tar.ts";
 import { walk } from "../../fs/walk.ts";
 import { basename, fromFileUrl, join, resolve } from "../../path/mod.ts";
 import { ensureFile } from "../../fs/ensure_file.ts";
-import { Config } from "./types.ts";
+import { getConfig } from "./common.ts";
 
 const NODE_URL = "https://nodejs.org/dist/vNODE_VERSION";
 const NODE_FILE = "node-vNODE_VERSION.tar.gz";
 const FILE_FOLDER = "versions";
 const TESTS_FOLDER = "suites";
 
-const config: Config = JSON.parse(
-  await Deno.readTextFile(new URL("./config.json", import.meta.url)),
-);
+const config = await getConfig();
 
 /** URL for the download */
 const url = `${NODE_URL}/${NODE_FILE}`.replaceAll(
