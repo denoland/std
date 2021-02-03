@@ -41,16 +41,18 @@ const {
   constants: PipeConstants
 } = internalBinding('pipe_wrap');
 
-import { newAsyncId, defaultTriggerAsyncIdScope, async_id_symbol, trigger_async_id_symbol } from "./_net/internals/async_hooks.ts";
+import {
+  newAsyncId,
+  defaultTriggerAsyncIdScope,
+  async_id_symbol,
+  trigger_async_id_symbol,
+  owner_symbol
+} from "./_net/internals/async_hooks.ts";
 
-import { writevGeneric, writeGeneric, kAfterAsyncWrite, onStreamRead, kHandle, kUpdateTimer } from "./_net/internals/stream_base_commons.ts";
-
-const {
-  setStreamTimeout,
-  kBuffer,
-  kBufferCb,
-  kBufferGen
-} = require('internal/stream_base_commons');
+import { writevGeneric, writeGeneric, kAfterAsyncWrite, onStreamRead, kHandle, kUpdateTimer, setStreamTimeout, kBufferGen, kBufferCb, kBuffer } from "./_net/internals/stream_base_commons.ts";
+import {isIP, normalizedArgsSymbol} from "./_net/internals/net";
+import {isUint8Array} from "./_util/_util_types";
+// TODO(edward): honestly have no clue how to port these.. see https://github.com/nodejs/node/blob/master/lib/internal/errors.js#L1011
 const {
   codes: {
     ERR_INVALID_ADDRESS_FAMILY,
@@ -59,26 +61,19 @@ const {
     ERR_INVALID_IP_ADDRESS,
     ERR_SOCKET_CLOSED,
     ERR_MISSING_ARGS,
-  },
-  errnoException,
-  exceptionWithHostPort,
+  }
 } = require('internal/errors');
-const { isUint8Array } = require('internal/util/types');
 const {
   validateInt32,
   validatePort,
   validateString
 } = require('internal/validators');
 const kLastWriteQueueSize = Symbol('lastWriteQueueSize');
-const {
-  DTRACE_NET_STREAM_END
-} = require('internal/dtrace');
 
 // Lazy loaded to improve startup performance.
 let dns;
 
 const { clearTimeout } = require('timers');
-const { kTimeout } = require('internal/timers');
 
 const DEFAULT_IPV4_ADDR = '0.0.0.0';
 const DEFAULT_IPV6_ADDR = '::';

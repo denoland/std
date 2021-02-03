@@ -1,4 +1,4 @@
-const normalizedArgsSymbol = Symbol("normalizedArgs")
+export const normalizedArgsSymbol = Symbol("normalizedArgs")
 const v4Seg = '(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])';
 const v4Str = `(${v4Seg}[.]){3}${v4Seg}`;
 const IPv4Reg = new RegExp(`^${v4Str}$`);
@@ -19,7 +19,7 @@ function isIPv4(s: string): boolean {
 function isIPv6(s: string): boolean {
   return IPv6Reg.test(s);
 }
-function isIP(s: string): number {
+export function isIP(s: string): number {
   if (isIPv4(s)) return 4;
   if (isIPv6(s)) return 6;
   return 0;
