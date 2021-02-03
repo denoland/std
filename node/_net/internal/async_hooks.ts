@@ -1,3 +1,5 @@
+import {getOptionValue} from "./options";
+
 const async_wrap = internalBinding("async_wrap")
 const { async_hook_fields } = async_wrap
 const { kDefaultTriggerAsyncId, kAsyncIdCounter, kExecutionAsyncId, kInit, kBefore, kAfter, kDestroy, kPromiseResolve } = async_wrap.constants
@@ -90,7 +92,6 @@ function fatalError(e) {
     process._rawDebug(o.stack);
   }
 
-  const { getOptionValue } = require('internal/options');
   if (getOptionValue('--abort-on-uncaught-exception')) {
     process.abort();
   }

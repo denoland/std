@@ -14,7 +14,6 @@ let userStackTraceLimit;
 
 const { ErrorCaptureStackTrace } = primordials
 
-
 const captureLargerStackTrace = hideStackFrames(
   function captureLargerStackTrace(err) {
     userStackTraceLimit = Error.stackTraceLimit;
@@ -75,7 +74,6 @@ export const exceptionWithHostPort = hideStackFrames(
     // getSystemErrorName(err) to guard against invalid arguments from users.
     // This can be replaced with [ code ] = errmap.get(err) when this method
     // is no longer exposed to user land.
-    if (util === undefined) util = require('util');
     const code = util.getSystemErrorName(err);
     let details = '';
     if (port && port > 0) {

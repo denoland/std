@@ -40,7 +40,7 @@ function setPosition(node, pos) {
   node.priorityQueuePosition = pos;
 }
 
-const PriorityQueue = require('internal/priority_queue');
+import PriorityQueue from './priority_queue.ts'
 const timerListQueue = new PriorityQueue(compareTimersLists, setPosition);
 
 function compareTimersLists(a, b) {
@@ -56,7 +56,7 @@ function compareTimersLists(a, b) {
 
 let nextExpiry = Infinity;
 
-const L = require('internal/linkedlist');
+import L from './linkedlist.ts'
 
 function insert(item, msecs, start = getLibuvNow()) {
   // Truncate so that accuracy of sub-millisecond timers is not assumed.
