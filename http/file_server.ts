@@ -9,9 +9,9 @@
 import { extname, posix } from "../path/mod.ts";
 import {
   HTTPSOptions,
+  Response,
   serve,
   Server,
-  Response,
   ServerRequest,
   serveTLS,
 } from "./server.ts";

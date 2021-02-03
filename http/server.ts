@@ -147,7 +147,8 @@ export class ServerErrorEvent extends ErrorEvent {
   }
 }
 
-export class Server extends EventTarget implements AsyncIterable<ServerRequest> {
+export class Server extends EventTarget
+  implements AsyncIterable<ServerRequest> {
   #closing = false;
   #connections: Deno.Conn[] = [];
 
