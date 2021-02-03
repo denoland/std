@@ -45,6 +45,6 @@ for await (const file of dir) {
   if (code === 0) {
     console.log(`${file.path} ....... OK`);
   } else {
-    break;
+    Deno.exit(code);
   }
 }
