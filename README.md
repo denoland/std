@@ -69,10 +69,17 @@ Before opening a PR make sure to:
 
 Give the PR a descriptive title.
 
-Examples of good title: - fix(http): Fix race condition in server - docs(fmt):
-Update docstrings - feat(log): Handle nested messages
+Examples of good title:
 
-Examples of bad title: - fix #7123 - update docs - fix bugs
+- fix(http): Fix race condition in server
+- docs(fmt): Update docstrings
+- feat(log): Handle nested messages
+
+Examples of bad title:
+
+- fix #7123
+- update docs
+- fix bugs
 
 Ensure there is a related issue and it is referenced in the PR text.
 
