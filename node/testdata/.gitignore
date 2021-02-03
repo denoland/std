@@ -1,1 +1,6 @@
 versions
+suites
+
+# Files ignored by the test suite must be put here so changes are carried over to
+# the main repo
+!suites/common/index.js
