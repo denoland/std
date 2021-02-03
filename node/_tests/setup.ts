@@ -5,7 +5,7 @@ import {
   delimiter,
   fromFileUrl,
   resolve,
-} from "../..//path/mod.ts";
+} from "../../path/mod.ts";
 import { ensureFile } from "../../fs/ensure_file.ts";
 
 const NODE_URL = "https://nodejs.org/dist/vNODE_VERSION";
@@ -68,7 +68,7 @@ async function downloadFile(url: string, path: string) {
 async function clearTests() {
   console.log("Cleaning up previous tests");
   try {
-    await Deno.remove(resolve(Deno.cwd(), TESTS_FOLDER), { recursive: true });
+    await Deno.remove(new URL(TESTS_FOLDER, import.meta.url), { recursive: true });
   } catch (e) {
     if (!(e instanceof Deno.errors.NotFound)) {
       throw e;
@@ -121,12 +121,10 @@ async function decompressTests(filePath: string) {
     const testFolder = getRequestedFileFolder(fileName);
     if (testFolder) {
       const path = resolve(
-        Deno.cwd(),
-        TESTS_FOLDER,
+        fromFileUrl(new URL(TESTS_FOLDER, import.meta.url)),
         testFolder,
         basename(fileName),
       );
-      console.log(path)
       await ensureFile(path);
       const file = await Deno.open(path, {
         create: true,
