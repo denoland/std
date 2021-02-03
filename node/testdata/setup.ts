@@ -133,7 +133,8 @@ async function decompressTests(filePath: string) {
     await Deno.writeAll(
       file,
       new TextEncoder().encode(
-        "// deno-fmt-ignore-file\n// deno-lint-ignore-file\n",
+        "// deno-fmt-ignore-file\n// deno-lint-ignore-file\n" +
+          "\n// Copyright Joyent and Node contributors. All rights reserved. MIT license.\n\n",
       ),
     );
     await Deno.copy(entry, file);
