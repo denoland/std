@@ -90,9 +90,6 @@ function getRequestedFileFolder(file: string) {
   }
 }
 
-// TODO(Soremwar)
-// This writes the file to disk in order to decompress it
-// Converting it to Deno.Buffer should be more efficient
 async function decompressTests(filePath: string) {
   console.log(`Processing ${basename(filePath)}...`);
   const compressedFile = await Deno.open(
@@ -100,17 +97,10 @@ async function decompressTests(filePath: string) {
     { read: true },
   );
 
-  const tmp = await Deno.makeTempFile();
-  let decompressedFile = await Deno.open(tmp, { write: true });
-  await Deno.writeAll(
-    decompressedFile,
-    gunzip(await Deno.readAll(compressedFile)),
-  );
+  const buffer = new Deno.Buffer(gunzip(await Deno.readAll(compressedFile)));
   Deno.close(compressedFile.rid);
-  Deno.close(decompressedFile.rid);
-  decompressedFile = await Deno.open(tmp, { read: true });
 
-  const tar = new Untar(decompressedFile);
+  const tar = new Untar(buffer);
 
   for await (const entry of tar) {
     if (entry.type !== "file") continue;
@@ -135,9 +125,6 @@ async function decompressTests(filePath: string) {
       Deno.close(file.rid);
     }
   }
-
-  Deno.close(decompressedFile.rid);
-  await Deno.remove(tmp);
 }
 
 let shouldDownload = false;
