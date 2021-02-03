@@ -21,7 +21,6 @@ const match = Object.entries(config.tests).reduce(
   [],
 );
 
-// By default this will assume all tests are inside parallel
 const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
   includeDirs: false,
   match,

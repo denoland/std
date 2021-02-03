@@ -2,8 +2,8 @@
  * The test suite matches the folders inside the `test` folder inside the
  * node repo
  * 
- * Each test suitecontains a list of files (which can be both string
- * and regex) that will be pulled from the node repo
+ * Each test suite contains a list of files (which can be paths
+ * or a regex to match) that will be pulled from the node repo
  */
 type TestSuites = Record<string, string[]>;
 
