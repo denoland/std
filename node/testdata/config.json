@@ -7,7 +7,7 @@
   },
   "tests": {
     "parallel": [
-      
+      "test-event-emitter-listener-count.js"
     ]
   },
   "suitesFolder": "suites",

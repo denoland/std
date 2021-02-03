@@ -176,6 +176,13 @@ export default class EventEmitter {
     }
   }
 
+  static listenerCount(
+    emitter: EventEmitter,
+    eventName: string | symbol,
+  ): number {
+    return emitter.listenerCount(eventName);
+  }
+
   private _listeners(
     target: EventEmitter,
     eventName: string | symbol,

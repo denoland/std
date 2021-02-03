@@ -23,7 +23,7 @@ import "./global.ts";
 
 import * as nodeAssert from "./assert.ts";
 import * as nodeBuffer from "./buffer.ts";
-import * as nodeEvents from "./events.ts";
+import nodeEvents from "./events.ts";
 import * as nodeFS from "./fs.ts";
 import * as nodeOs from "./os.ts";
 import * as nodePath from "./path.ts";
