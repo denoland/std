@@ -6,6 +6,15 @@ that all Deno projects can use fearlessly.
 
 Contributions are welcome!
 
+## Releases
+
+Standard library is currently tagged independently of Deno version. This will
+change once the library is stabilized.
+
+To check compatibility of different version of standard library with Deno CLI
+see
+[this list](https://raw.githubusercontent.com/denoland/deno_website2/master/versions.json).
+
 ## How to use
 
 These modules will eventually be tagged in accordance with Deno releases but as
@@ -49,14 +58,23 @@ Please ensure the copyright headers cite the code's origin.
 
 Follow the [style guide](https://deno.land/manual/contributing/style_guide).
 
-### Releases
+### Opening a PR
 
-Standard library is currently tagged independently of Deno version. This will
-change once the library is stabilized.
+Before opening a PR make sure to:
 
-To check compatibility of different version of standard library with Deno CLI
-see
-[this list](https://raw.githubusercontent.com/denoland/deno_website2/master/versions.json).
+- there are tests that cover the changes.
+- `deno test --unstable --allow-all` passes.
+- `deno format --check` passes without changing files.
+- `deno lint --unstable` passes.
+
+Give the PR a descriptive title.
+
+Examples of good title: - fix(http): Fix race condition in server - docs(fmt):
+Update docstrings - feat(log): Handle nested messages
+
+Examples of bad title: - fix #7123 - update docs - fix bugs
+
+Ensure there is a related issue and it is referenced in the PR text.
 
 _For maintainers_:
 
