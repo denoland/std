@@ -57,28 +57,21 @@ import Duplex from "./_stream/duplex";
 import {kTimeout} from "./_net/internal/timers";
 import {DTRACE_NET_STREAM_END} from "./_net/internal/dtrace";
 import {Buffer} from "./buffer";
-// TODO(edward): honestly have no clue how to port these.. see https://github.com/nodejs/node/blob/master/lib/internal/errors.js#L1011
+import {
+  codes
+} from './_net/internal/errors.ts'
+import {validateInt32, validatePort, validateString} from "./_net/internal/validators";
 const {
-  codes: {
-    ERR_INVALID_ADDRESS_FAMILY,
-    ERR_INVALID_ARG_TYPE,
-    ERR_INVALID_FD_TYPE,
-    ERR_INVALID_IP_ADDRESS,
-    ERR_SOCKET_CLOSED,
-    ERR_MISSING_ARGS,
-  }
-} = require('internal/errors');
-const {
-  validateInt32,
-  validatePort,
-  validateString
-} = require('internal/validators');
+  ERR_INVALID_ADDRESS_FAMILY,
+  ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_FD_TYPE,
+  ERR_INVALID_IP_ADDRESS,
+  ERR_SOCKET_CLOSED,
+  ERR_MISSING_ARGS,
+} = codes
 const kLastWriteQueueSize = Symbol('lastWriteQueueSize');
 
-// Lazy loaded to improve startup performance.
-let dns;
-
-const { clearTimeout } = require('timers');
+const dns = require("ds")
 
 const DEFAULT_IPV4_ADDR = '0.0.0.0';
 const DEFAULT_IPV6_ADDR = '::';
@@ -940,8 +933,6 @@ function lookupAndConnect(self, options) {
     throw new ERR_INVALID_ARG_TYPE('options.lookup',
       'Function', options.lookup);
 
-
-  if (dns === undefined) dns = require('dns');
   const dnsopts = {
     family: options.family,
     hints: options.hints || 0
