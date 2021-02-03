@@ -1,5 +1,12 @@
 // deno-fmt-ignore-file
 // deno-lint-ignore-file
+
+/**
+ * This file is meant as a replacement for the original common/index.js
+ * 
+ * That file has a lot of node functionality not currently supported, so this is a lite
+ * version of that file, which most tests should be able to use
+ */
 const assert = require("assert");
 const util = require("util");
 

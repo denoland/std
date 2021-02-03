@@ -7,8 +7,9 @@
   },
   "tests": {
     "parallel": [
-      "test-buffer[\\w-]+\\.js",
-      "test.js"
+      
     ]
-  }
+  },
+  "suitesFolder": "suites",
+  "versionsFolder": "versions"
 }

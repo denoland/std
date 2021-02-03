@@ -12,6 +12,8 @@ interface Config {
   /** Ignored files won't be run, deleted or updated by the update script */
   ignore: TestSuites;
   tests: TestSuites;
+  suitesFolder: string;
+  versionsFolder: string;
 }
 
 export async function getConfig(): Promise<Config> {

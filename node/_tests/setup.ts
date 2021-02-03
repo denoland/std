@@ -7,8 +7,6 @@ import { getConfig } from "./common.ts";
 
 const NODE_URL = "https://nodejs.org/dist/vNODE_VERSION";
 const NODE_FILE = "node-vNODE_VERSION.tar.gz";
-const FILE_FOLDER = "versions";
-const TESTS_FOLDER = "suites";
 
 const config = await getConfig();
 
@@ -19,7 +17,7 @@ const url = `${NODE_URL}/${NODE_FILE}`.replaceAll(
 );
 /** Local url location */
 const path = join(
-  FILE_FOLDER,
+  config.versionsFolder,
   NODE_FILE.replaceAll("NODE_VERSION", config.nodeVersion),
 );
 
@@ -70,10 +68,13 @@ async function clearTests() {
     [],
   );
 
-  const files = walk((fromFileUrl(new URL(TESTS_FOLDER, import.meta.url))), {
-    includeDirs: false,
-    skip: ignore,
-  });
+  const files = walk(
+    (fromFileUrl(new URL(config.suitesFolder, import.meta.url))),
+    {
+      includeDirs: false,
+      skip: ignore,
+    },
+  );
 
   for await (const file of files) {
     await Deno.remove(file.path);
@@ -107,7 +108,7 @@ async function decompressTests(filePath: string) {
     const suite = getRequestedFileSuite(entry.fileName);
     if (!suite) continue;
     const path = resolve(
-      fromFileUrl(new URL(TESTS_FOLDER, import.meta.url)),
+      fromFileUrl(new URL(config.suitesFolder, import.meta.url)),
       suite,
       basename(entry.fileName),
     );
