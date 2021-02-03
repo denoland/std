@@ -21,6 +21,7 @@
 
 import "./global.ts";
 
+import * as nodeAssert from "./assert.ts";
 import * as nodeBuffer from "./buffer.ts";
 import * as nodeEvents from "./events.ts";
 import * as nodeFS from "./fs.ts";
@@ -595,6 +596,7 @@ function createNativeModule(id: string, exports: any): Module {
   return mod;
 }
 
+nativeModulePolyfill.set("assert", createNativeModule("assert", nodeAssert));
 nativeModulePolyfill.set("buffer", createNativeModule("buffer", nodeBuffer));
 nativeModulePolyfill.set("events", createNativeModule("events", nodeEvents));
 nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
