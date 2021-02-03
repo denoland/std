@@ -158,10 +158,10 @@ export class Md5 {
       if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
         msg = new Uint8Array(data);
       } else {
-        throw new Error(TYPE_ERROR_MSG);
+        throw new TypeError(TYPE_ERROR_MSG);
       }
     } else {
-      throw new Error(TYPE_ERROR_MSG);
+      throw new TypeError(TYPE_ERROR_MSG);
     }
 
     let pos = this.#pos;
