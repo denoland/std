@@ -7,6 +7,8 @@ import { getConfig } from "./common.ts";
  * 
  * Each test file will be run independently and wait until completion, if an abnormal
  * code for the test is reported, the test suite will fail inmediately
+ * 
+ * Usage: `deno run --allow-run --allow-read runner.ts`
  */
 
 const config = await getConfig();

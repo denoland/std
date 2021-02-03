@@ -43,10 +43,10 @@ jobs:
         run: deno test --unstable --allow-all
 
       - name: Generate Node tests
-        run: deno run --allow-all --unstable node/testdata/setup.ts
+        run: deno run --allow-all node/testdata/setup.ts
 
       - name: Test Node
-        run: deno run --allow-all --unstable node/testdata/runner.ts
+        run: deno run deno run --allow-run --allow-read node/testdata/runner.ts
 
   lint:
     runs-on: ubuntu-latest
