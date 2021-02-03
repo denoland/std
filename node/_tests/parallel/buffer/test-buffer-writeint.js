@@ -1,3 +1,5 @@
+// deno-fmt-ignore-file
+// deno-lint-ignore-file
 'use strict';
 
 // Tests to verify signed integers are correctly written

@@ -1,3 +1,5 @@
+// deno-fmt-ignore-file
+// deno-lint-ignore-file
 'use strict';
 
 // Fix for https://github.com/nodejs/node/issues/8266

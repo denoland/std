@@ -1,3 +1,5 @@
+// deno-fmt-ignore-file
+// deno-lint-ignore-file
 'use strict';
 
 require('../common');

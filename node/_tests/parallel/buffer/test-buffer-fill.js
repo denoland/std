@@ -1,3 +1,5 @@
+// deno-fmt-ignore-file
+// deno-lint-ignore-file
 // Flags: --expose-internals
 'use strict';
 const common = require('../common');

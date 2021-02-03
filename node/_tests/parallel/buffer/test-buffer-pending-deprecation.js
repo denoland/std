@@ -1,3 +1,5 @@
+// deno-fmt-ignore-file
+// deno-lint-ignore-file
 // Flags: --pending-deprecation --no-warnings
 'use strict';
 

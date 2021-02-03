@@ -1,11 +1,6 @@
 import { gunzip } from "https://deno.land/x/compress@v0.3.6/gzip/gzip.ts";
 import { Untar } from "../../archive/tar.ts";
-import {
-  basename,
-  delimiter,
-  fromFileUrl,
-  resolve,
-} from "../../path/mod.ts";
+import { basename, delimiter, fromFileUrl, resolve } from "../../path/mod.ts";
 import { ensureFile } from "../../fs/ensure_file.ts";
 
 const NODE_URL = "https://nodejs.org/dist/vNODE_VERSION";
@@ -39,8 +34,10 @@ async function downloadFile(url: string, path: string) {
   const fileContent = await fetch(url)
     .then((response) => {
       if (response.ok) {
-        if(!response.body){
-          throw new Error(`The requested download url ${url} doesn't contain an archive to download`);
+        if (!response.body) {
+          throw new Error(
+            `The requested download url ${url} doesn't contain an archive to download`,
+          );
         }
         return response.body.getIterator();
       } else if (response.status === 404) {
@@ -68,7 +65,9 @@ async function downloadFile(url: string, path: string) {
 async function clearTests() {
   console.log("Cleaning up previous tests");
   try {
-    await Deno.remove(new URL(TESTS_FOLDER, import.meta.url), { recursive: true });
+    await Deno.remove(new URL(TESTS_FOLDER, import.meta.url), {
+      recursive: true,
+    });
   } catch (e) {
     if (!(e instanceof Deno.errors.NotFound)) {
       throw e;
@@ -121,6 +120,14 @@ async function decompressTests(filePath: string) {
         truncate: true,
         write: true,
       });
+      // This will allow CI to pass without checking linting and formatting
+      // on the test suite files, removing the need to mantain that as well
+      await Deno.writeAll(
+        file,
+        new TextEncoder().encode(
+          "// deno-fmt-ignore-file\n// deno-lint-ignore-file\n",
+        ),
+      );
       await Deno.copy(entry, file);
       Deno.close(file.rid);
     }
