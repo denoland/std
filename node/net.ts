@@ -52,6 +52,11 @@ import {
 import { writevGeneric, writeGeneric, kAfterAsyncWrite, onStreamRead, kHandle, kUpdateTimer, setStreamTimeout, kBufferGen, kBufferCb, kBuffer } from "./_net/internals/stream_base_commons.ts";
 import {isIP, normalizedArgsSymbol} from "./_net/internals/net";
 import {isUint8Array} from "./_util/_util_types";
+import {errnoException, exceptionWithHostPort} from "./_net/internal/errors";
+import Duplex from "./_stream/duplex";
+import {kTimeout} from "./_net/internal/timers";
+import {DTRACE_NET_STREAM_END} from "./_net/internal/dtrace";
+import {Buffer} from "./buffer";
 // TODO(edward): honestly have no clue how to port these.. see https://github.com/nodejs/node/blob/master/lib/internal/errors.js#L1011
 const {
   codes: {
@@ -105,7 +110,7 @@ function getNewAsyncId(handle) {
     newAsyncId() : handle.getAsyncId();
 }
 
-function isPipeName(s) {
+function isPipeName(s: string | number): boolean {
   return typeof s === 'string' && toNumber(s) === false;
 }
 
@@ -119,7 +124,7 @@ function isPipeName(s) {
 // For Socket.prototype.connect(), the [...] part is ignored
 // For Server.prototype.listen(), the [...] part is [, backlog]
 // but will not be handled here (handled in listen())
-function normalizeArgs(args) {
+function normalizeArgs(args: (string)[]): [Record<string, never> | Record<string, number | string>, null | Function] {
   let arr;
 
   if (args.length === 0) {
@@ -129,7 +134,11 @@ function normalizeArgs(args) {
   }
 
   const arg0 = args[0];
-  let options = {};
+  let options: {
+    path?: string,
+    port?: string,
+    host?: string
+  } = {};
   if (typeof arg0 === 'object' && arg0 !== null) {
     // (options[...][, cb])
     options = arg0;
@@ -203,12 +212,12 @@ export class Socket {
   public connecting: boolean
   public [async_id_symbol]: number
   private _hadError: boolean
-  private _handle: any
   public [kHandle]: any
   private _parent: any
   private _host: any
   public [kSetNoDelay]: boolean
   public [kLastWriteQueueSize]: number
+  public _peername: string | Record<string, unknown>
   public [kTimeout]: any
   public [kBuffer]: any
   public [kBufferCb]: any
@@ -218,14 +227,12 @@ export class Socket {
   public readableFlowing: boolean
   public server: any
   public _server: any
-  public pending: boolean
   public readable: any
   public writable: any
   public writableFinished: boolean
   public destroyed: boolean
   public _sockname: null | any
   constructor(options: SocketOptions) {
-    super(options)
     this.connecting = false;
     // Problem with this is that users can supply their own handle, that may not
     // have _handle.getAsyncId(). In this case an[async_id_symbol] should
@@ -398,7 +405,7 @@ export class Socket {
 
   public get bufferSize () {
     if (this._handle) {
-      return this.writableLength;
+      return this.writableLength; // On duplex
     }
   }
 
@@ -406,7 +413,7 @@ export class Socket {
     return this._unrefTimer;
   }
 
-  public end (data, encoding, callback) {
+  public end (data?: any, encoding?: any, callback?: () => void): Socket {
     Reflect(stream.Duplex.prototype.end, this, [data, encoding, callback]);
     DTRACE_NET_STREAM_END(this);
     return this;
@@ -693,6 +700,9 @@ export class Socket {
   }
 }
 
+Object.setPrototypeOf(Socket.prototype, stream.Duplex.prototype);
+Object.setPrototypeOf(Socket, stream.Duplex);
+// or
 function applyMixins(derivedConstructor: any, baseConstructors: any[]) {
   baseConstructors.forEach(baseConstructor => {
     Object.getOwnPropertyNames(baseConstructor.prototype)
@@ -712,7 +722,7 @@ applyMixins(Socket, [stream.Duplex, EventEmitter]) // to also make socket extend
 // ObjectSetPrototypeOf(Socket.prototype, stream.Duplex.prototype);
 // ObjectSetPrototypeOf(Socket, stream.Duplex);
 
-function afterShutdown() {
+function afterShutdown(): void {
   this.callback();
 }
 

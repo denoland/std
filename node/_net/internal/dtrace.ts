@@ -1,1 +1,1 @@
-export const DTRACE_NET_STREAM_END = () => {}
+export const { DTRACE_NET_STREAM_END } = internalBinding("dtrace")
