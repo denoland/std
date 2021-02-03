@@ -2,6 +2,13 @@ import { walk } from "../../fs/walk.ts";
 import { dirname, fromFileUrl, join } from "../../path/mod.ts";
 import { getConfig } from "./common.ts";
 
+/**
+ * This script will run the test files specified in the configuration file
+ * 
+ * Each test file will be run independently and wait until completion, if an abnormal
+ * code for the test is reported, the test suite will fail inmediately
+ */
+
 const config = await getConfig();
 
 const match = Object.entries(config.tests).reduce(

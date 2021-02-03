@@ -5,6 +5,16 @@ import { basename, fromFileUrl, join, resolve } from "../../path/mod.ts";
 import { ensureFile } from "../../fs/ensure_file.ts";
 import { getConfig } from "./common.ts";
 
+/**
+ * This script will download and extract the test files specified in the
+ * configuration file
+ * 
+ * It will delete any previous tests unless they are specified on the `ignore`
+ * section of the configuration file
+ * 
+ * Usage: `deno run --allow-read --allow-net --allow-write setup.ts`
+ */
+
 const NODE_URL = "https://nodejs.org/dist/vNODE_VERSION";
 const NODE_FILE = "node-vNODE_VERSION.tar.gz";
 
