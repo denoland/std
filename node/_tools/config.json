@@ -3,10 +3,14 @@
   "ignore": {
     "common": [
       "index.js"
+    ],
+    "parallel": [
+      "test-assert.js"
     ]
   },
   "tests": {
     "parallel": [
+      "test-assert.js",
       "test-event-emitter-listener-count.js"
     ]
   },
