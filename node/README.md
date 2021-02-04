@@ -85,6 +85,21 @@ const leftPad = require("left-pad");
 
 ## Contributing
 
+### Setting up the test runner
+
+This library contains automated tests pulled directly from the Node repo in
+order ensure compatibility.
+
+Setting up the test runner is as simple as running the `node/testdata/setup.ts`
+file, this will pull the configured tests in and then add them to the test
+workflow.
+
+To enable new tests, simply add a new entry inside `node/testdata/config.json`
+under the `tests` property. The structure this entries must have has to resemble
+a path inside `https://github.com/nodejs/node/tree/master/test`.
+
+### Best practices
+
 When converting from promise-based to callback-based APIs, the most obvious way
 is like this:
 
