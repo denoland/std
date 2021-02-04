@@ -1,6 +1,6 @@
 import { walk } from "../../fs/walk.ts";
-import { dirname, fromFileUrl, join } from "../../path/mod.ts";
-import { getConfig } from "./common.ts";
+import { dirname, fromFileUrl } from "../../path/mod.ts";
+import { config, testList } from "./common.ts";
 
 /**
  * This script will run the test files specified in the configuration file
@@ -11,19 +11,9 @@ import { getConfig } from "./common.ts";
  * Usage: `deno run --allow-run --allow-read runner.ts`
  */
 
-const config = await getConfig();
-
-const match = Object.entries(config.tests).reduce(
-  (total: RegExp[], [suite, paths]) => {
-    paths.forEach((path) => total.push(new RegExp(join(suite, path))));
-    return total;
-  },
-  [],
-);
-
 const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
   includeDirs: false,
-  match,
+  match: testList,
 });
 
 for await (const file of dir) {

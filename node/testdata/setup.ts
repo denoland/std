@@ -3,7 +3,7 @@ import { Untar } from "../../archive/tar.ts";
 import { walk } from "../../fs/walk.ts";
 import { basename, fromFileUrl, join, resolve } from "../../path/mod.ts";
 import { ensureFile } from "../../fs/ensure_file.ts";
-import { getConfig } from "./common.ts";
+import { config, ignoreList } from "./common.ts";
 
 /**
  * This script will download and extract the test files specified in the
@@ -17,8 +17,6 @@ import { getConfig } from "./common.ts";
 
 const NODE_URL = "https://nodejs.org/dist/vNODE_VERSION";
 const NODE_FILE = "node-vNODE_VERSION.tar.gz";
-
-const config = await getConfig();
 
 /** URL for the download */
 const url = `${NODE_URL}/${NODE_FILE}`.replaceAll(
@@ -70,19 +68,11 @@ async function downloadFile(url: string, path: string) {
 async function clearTests() {
   console.log("Cleaning up previous tests");
 
-  const ignore = Object.entries(config.ignore).reduce(
-    (total: RegExp[], [suite, paths]) => {
-      paths.forEach((path) => total.push(new RegExp(join(suite, path))));
-      return total;
-    },
-    [],
-  );
-
   const files = walk(
     (fromFileUrl(new URL(config.suitesFolder, import.meta.url))),
     {
       includeDirs: false,
-      skip: ignore,
+      skip: ignoreList,
     },
   );
 
@@ -91,7 +81,20 @@ async function clearTests() {
   }
 }
 
+/**
+ * This will iterate over the ignore and test lists defined in the
+ * configuration file
+ * 
+ * If it were to be found in the ignore list or not found in the test list, the
+ * function will return undefined, meaning the file won't be regenerated
+ */
 function getRequestedFileSuite(file: string): string | undefined {
+  for (const regex of ignoreList) {
+    if (regex.test(file)) {
+      return;
+    }
+  }
+
   for (const suite in config.tests) {
     for (const regex of config.tests[suite]) {
       if (new RegExp(regex).test(file)) {
