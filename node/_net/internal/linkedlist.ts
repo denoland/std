@@ -26,7 +26,7 @@ function remove(item) {
 }
 
 // Remove an item from its list and place at the end.
-function append(list, item) {
+function append(list, item): void {
   if (item._idleNext || item._idlePrev) {
     remove(item);
   }
@@ -41,7 +41,7 @@ function append(list, item) {
   list._idleNext = item;
 }
 
-function isEmpty(list) {
+function isEmpty(list): boolean {
   return list._idleNext === list;
 }
 

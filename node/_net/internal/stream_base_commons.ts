@@ -14,7 +14,7 @@ import {
   errnoException
 } from './errors.ts'
 
-function onWriteComplete(status) {
+function onWriteComplete(status: number): void {
   debug('onWriteComplete', status, this.error);
 
   const stream = this.handle[owner_symbol];
@@ -43,7 +43,7 @@ function onWriteComplete(status) {
     this.callback(null);
 }
 
-function createWriteWrap(handle, callback) {
+function createWriteWrap(handle, callback: Function) {
   const req = new WriteWrap();
 
   req.handle = handle;
@@ -56,7 +56,7 @@ function createWriteWrap(handle, callback) {
   return req;
 }
 
-function handleWriteReq(req, data, encoding) {
+function handleWriteReq(req: WriteWrap, data, encoding: string) {
   const { handle } = req;
 
   switch (encoding) {
@@ -91,7 +91,7 @@ function handleWriteReq(req, data, encoding) {
   }
 }
 
-function afterWriteDispatched(req, err, cb) {
+function afterWriteDispatched(req, err, cb): void {
   req.bytes = streamBaseState[kBytesWritten];
   req.async = !!streamBaseState[kLastWriteWasAsync];
 

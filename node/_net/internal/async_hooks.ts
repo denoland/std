@@ -11,7 +11,7 @@ const { ErrorCaptureStackTrace } = primordials
 // Increment the internal id counter and return the value. Important that the
 // counter increment first. Since it's done the same way in
 // Environment::new_async_uid()
-export function newAsyncId() {
+export function newAsyncId(): number {
   return ++async_id_fields[kAsyncIdCounter];
 }
 export function defaultTriggerAsyncIdScope(triggerAsyncId, block, ...args) {

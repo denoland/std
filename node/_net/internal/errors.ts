@@ -12,7 +12,7 @@ export function hideStackFrames(fn) {
 
 let userStackTraceLimit;
 
-const { ErrorCaptureStackTrace } = primordials
+const { ErrorCaptureStackTrace, SymbolFor } = primordials
 
 const captureLargerStackTrace = hideStackFrames(
   function captureLargerStackTrace(err) {
@@ -104,6 +104,63 @@ export const exceptionWithHostPort = hideStackFrames(
     return captureLargerStackTrace(ex);
   });
 
+const { SafeMap } = primordials
+
+const messages = new SafeMap();
+
+import * as inspect from "../../util.ts"
+
+import { assert } from "../../assert.ts"
+
+function getMessage(key, args, self) {
+  const msg = messages.get(key);
+
+  if (typeof msg === 'function') {
+    assert(
+      msg.length <= args.length, // Default options do not count.
+      `Code: ${key}; The provided arguments length (${args.length}) does not ` +
+      `match the required ones (${msg.length}).`
+    );
+    return Reflect.apply(msg, self, args);
+  }
+
+  const expectedLength =
+    (msg.match(/%[dfijoOs]/g) || []).length;
+  assert(
+    expectedLength === args.length,
+    `Code: ${key}; The provided arguments length (${args.length}) does not ` +
+    `match the required ones (${expectedLength}).`
+  );
+  if (args.length === 0)
+    return msg;
+
+  args.unshift(msg);
+  return Reflect.apply(inspect.format, null, args);
+}
+
+const addCodeToName = hideStackFrames(function addCodeToName(err, name, code) {
+  // Set the stack
+  err = captureLargerStackTrace(err);
+  // Add the error code to the name to include it in the stack trace.
+  err.name = `${name} [${code}]`;
+  // Access the stack to generate the error message including the error code
+  // from the name.
+  err.stack; // eslint-disable-line no-unused-expressions
+  // Reset the name to the actual name.
+  if (name === 'SystemError') {
+    Object.defineProperty(err, 'name', {
+      value: name,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    });
+  } else {
+    delete err.name;
+  }
+});
+import {Buffer} from "../../buffer.ts"
+
+
 // A specialized Error that includes an additional info property with
 // additional information about the error condition.
 // It has the properties present in a UVException but with a custom error
@@ -113,6 +170,7 @@ export const exceptionWithHostPort = hideStackFrames(
 // The context passed into this error must have .code, .syscall and .message,
 // and may have .path and .dest.
 class SystemError extends Error {
+  public code: number
   constructor(key, context) {
     const limit = Error.stackTraceLimit;
     Error.stackTraceLimit = 0;
@@ -128,7 +186,7 @@ class SystemError extends Error {
     if (context.dest !== undefined)
       message += ` => ${context.dest}`;
 
-    ObjectDefineProperty(this, 'message', {
+    Object.defineProperty(this, 'message', {
       value: message,
       enumerable: false,
       writable: true,
@@ -138,14 +196,14 @@ class SystemError extends Error {
 
     this.code = key;
 
-    ObjectDefineProperty(this, 'info', {
+    Object.defineProperty(this, 'info', {
       value: context,
       enumerable: true,
       configurable: true,
       writable: false
     });
 
-    ObjectDefineProperty(this, 'errno', {
+    Object.defineProperty(this, 'errno', {
       get() {
         return context.errno;
       },
@@ -156,7 +214,7 @@ class SystemError extends Error {
       configurable: true
     });
 
-    ObjectDefineProperty(this, 'syscall', {
+    Object.defineProperty(this, 'syscall', {
       get() {
         return context.syscall;
       },
@@ -173,14 +231,14 @@ class SystemError extends Error {
       // always be of type string. We should probably just remove the
       // `.toString()` and `Buffer.from()` operations and set the value on the
       // context as the user did.
-      ObjectDefineProperty(this, 'path', {
+      Object.defineProperty(this, 'path', {
         get() {
           return context.path != null ?
             context.path.toString() : context.path;
         },
         set: (value) => {
           context.path = value ?
-            lazyBuffer().from(value.toString()) : undefined;
+            Buffer.from(value.toString()) : undefined;
         },
         enumerable: true,
         configurable: true
@@ -188,14 +246,14 @@ class SystemError extends Error {
     }
 
     if (context.dest !== undefined) {
-      ObjectDefineProperty(this, 'dest', {
+      Object.defineProperty(this, 'dest', {
         get() {
           return context.dest != null ?
             context.dest.toString() : context.dest;
         },
         set: (value) => {
           context.dest = value ?
-            lazyBuffer().from(value.toString()) : undefined;
+            Buffer.from(value.toString()) : undefined;
         },
         enumerable: true,
         configurable: true
@@ -208,7 +266,7 @@ class SystemError extends Error {
   }
 
   [SymbolFor('nodejs.util.inspect.custom')](recurseTimes, ctx) {
-    return lazyInternalUtilInspect().inspect(this, {
+    return inspect.inspect(this, {
       ...ctx,
       getters: true,
       customInspect: false
@@ -217,6 +275,42 @@ class SystemError extends Error {
 }
 
 export const codes  = {}
+
+function makeSystemErrorWithCode(key) {
+  return class NodeError extends SystemError {
+    constructor(ctx) {
+      super(key, ctx);
+    }
+  };
+}
+
+function makeNodeErrorWithCode(Base, key) {
+  return function NodeError(...args) {
+    const limit = Error.stackTraceLimit;
+    Error.stackTraceLimit = 0;
+    const error = new Base();
+    // Reset the limit and setting the name property.
+    Error.stackTraceLimit = limit;
+    const message = getMessage(key, args, error);
+    Object.defineProperty(error, 'message', {
+      value: message,
+      enumerable: false,
+      writable: true,
+      configurable: true,
+    });
+    Object.defineProperty(error, 'toString', {
+      value() {
+        return `${this.name} [${key}]: ${this.message}`;
+      },
+      enumerable: false,
+      writable: true,
+      configurable: true,
+    });
+    addCodeToName(error, Base.name, key);
+    error.code = key;
+    return error;
+  };
+}
 
 // Utility function for registering the error codes. Only used here. Exported
 // *only* to allow for testing.
@@ -247,16 +341,16 @@ E('ERR_INVALID_ADDRESS_FAMILY', function(addressType, host, port) {
 E('ERR_INVALID_ARG_TYPE',
   (name, expected, actual) => {
     assert(typeof name === 'string', "'name' must be a string");
-    if (!ArrayIsArray(expected)) {
+    if (!Array.isArray(expected)) {
       expected = [expected];
     }
 
     let msg = 'The ';
-    if (StringPrototypeEndsWith(name, ' argument')) {
+    if (name.endsWith(' argument')) {
       // For cases like 'first argument'
       msg += `${name} `;
     } else {
-      const type = StringPrototypeIncludes(name, '.') ? 'property' : 'argument';
+      const type = name.includes('.') ? 'property' : 'argument';
       msg += `"${name}" ${type} `;
     }
     msg += 'must be ';
@@ -282,17 +376,17 @@ E('ERR_INVALID_ARG_TYPE',
     // Special handle `object` in case other instances are allowed to outline
     // the differences between each other.
     if (instances.length > 0) {
-      const pos = ArrayPrototypeIndexOf(types, 'object');
+      const pos = types.indexOf('object');
       if (pos !== -1) {
-        ArrayPrototypeSplice(types, pos, 1);
-        ArrayPrototypePush(instances, 'Object');
+        types.splice(pos, 1);
+        instances.push('Object');
       }
     }
 
     if (types.length > 0) {
       if (types.length > 2) {
-        const last = ArrayPrototypePop(types);
-        msg += `one of type ${ArrayPrototypeJoin(types, ', ')}, or ${last}`;
+        const last = types.pop();
+        msg += `one of type ${types.join(', ')}, or ${last}`;
       } else if (types.length === 2) {
         msg += `one of type ${types[0]} or ${types[1]}`;
       } else {
@@ -304,9 +398,9 @@ E('ERR_INVALID_ARG_TYPE',
 
     if (instances.length > 0) {
       if (instances.length > 2) {
-        const last = ArrayPrototypePop(instances);
+        const last = instances.pop();
         msg +=
-          `an instance of ${ArrayPrototypeJoin(instances, ', ')}, or ${last}`;
+          `an instance of ${instances.join(', ')}, or ${last}`;
       } else {
         msg += `an instance of ${instances[0]}`;
         if (instances.length === 2) {
@@ -319,12 +413,12 @@ E('ERR_INVALID_ARG_TYPE',
 
     if (other.length > 0) {
       if (other.length > 2) {
-        const last = ArrayPrototypePop(other);
-        msg += `one of ${ArrayPrototypeJoin(other, ', ')}, or ${last}`;
+        const last = other.pop();
+        msg += `one of ${other.join(', ')}, or ${last}`;
       } else if (other.length === 2) {
         msg += `one of ${other[0]} or ${other[1]}`;
       } else {
-        if (StringPrototypeToLowerCase(other[0]) !== other[0])
+        if (other[0].toLowerCase() !== other[0])
           msg += 'an ';
         msg += `${other[0]}`;
       }
@@ -338,15 +432,15 @@ E('ERR_INVALID_ARG_TYPE',
       if (actual.constructor && actual.constructor.name) {
         msg += `. Received an instance of ${actual.constructor.name}`;
       } else {
-        const inspected = lazyInternalUtilInspect()
+        const inspected = inspect
           .inspect(actual, { depth: -1 });
         msg += `. Received ${inspected}`;
       }
     } else {
-      let inspected = lazyInternalUtilInspect()
+      let inspected = inspect
         .inspect(actual, { colors: false });
       if (inspected.length > 25)
-        inspected = `${StringPrototypeSlice(inspected, 0, 25)}...`;
+        inspected = `${inspected.slice(0, 25)}...`;
       msg += `. Received type ${typeof actual} (${inspected})`;
     }
     return msg;
@@ -365,10 +459,9 @@ E('ERR_MISSING_ARGS',
     let msg = 'The ';
     const len = args.length;
     const wrap = (a) => `"${a}"`;
-    args = ArrayPrototypeMap(
-      args,
-      (a) => (ArrayIsArray(a) ?
-        ArrayPrototypeJoin(ArrayPrototypeMap(a, wrap), ' or ') :
+    args = args.map(
+      (a) => (Array.isArray(a) ?
+        ((a.map(wrap).join(' or '))) :
         wrap(a))
     );
     switch (len) {
@@ -379,7 +472,7 @@ E('ERR_MISSING_ARGS',
         msg += `${args[0]} and ${args[1]} arguments`;
         break;
       default:
-        msg += ArrayPrototypeJoin(ArrayPrototypeSlice(args, 0, len - 1), ', ');
+        msg += ((args.slice(0, len - 1).join(', ')));
         msg += `, and ${args[len - 1]} arguments`;
         break;
     }
