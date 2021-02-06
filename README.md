@@ -64,7 +64,7 @@ Before opening a PR make sure to:
 
 - there are tests that cover the changes.
 - `deno test --unstable --allow-all` passes.
-- `deno format --check` passes without changing files.
+- `deno fmt --check` passes without changing files.
 - `deno lint --unstable` passes.
 
 Give the PR a descriptive title.
