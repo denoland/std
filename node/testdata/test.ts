@@ -1,6 +1,6 @@
 import { walk } from "../../fs/walk.ts";
 import { basename, dirname, fromFileUrl } from "../../path/mod.ts";
-import { assertEquals } from "../../testing/asserts.ts";
+import { assertEquals, fail } from "../../testing/asserts.ts";
 import { config, testList } from "./common.ts";
 
 /**
@@ -9,6 +9,23 @@ import { config, testList } from "./common.ts";
  * Each test file will be run independently and wait until completion, if an abnormal
  * code for the test is reported, the test suite will fail inmediately
  */
+
+const process = Deno.run({
+  cwd: dirname(fromFileUrl(import.meta.url)),
+  cmd: [
+    Deno.execPath(),
+    "run",
+    "--allow-read",
+    "--allow-net",
+    "--allow-write",
+    "./setup.ts",
+  ],
+});
+
+const { code } = await process.status();
+if (code !== 0) {
+  fail(`Node tests generation process failed with code: "${code}"`);
+}
 
 const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
   includeDirs: false,

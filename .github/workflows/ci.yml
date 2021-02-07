@@ -39,9 +39,6 @@ jobs:
         if: matrix.deno == 'canary'
         run: deno upgrade --canary
 
-      - name: Generate Node tests
-        run: deno run --allow-all node/testdata/setup.ts
-
       - name: Test
         run: deno test --unstable --allow-all
 
