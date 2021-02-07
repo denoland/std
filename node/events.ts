@@ -559,7 +559,8 @@ export default class EventEmitter {
 }
 
 export { EventEmitter };
-export const once = EventEmitter.once;
-export const on = EventEmitter.on;
 export const captureRejectionSymbol = EventEmitter.captureRejectionSymbol;
 export const errorMonitor = EventEmitter.errorMonitor;
+export const listenerCount = EventEmitter.listenerCount;
+export const on = EventEmitter.on;
+export const once = EventEmitter.once;
