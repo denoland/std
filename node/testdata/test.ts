@@ -1,6 +1,6 @@
 import { walk } from "../../fs/walk.ts";
-import { basename, dirname, fromFileUrl } from "../../path/mod.ts";
-import { assertEquals, fail } from "../../testing/asserts.ts";
+import { dirname, fromFileUrl, relative } from "../../path/mod.ts";
+import { assertEquals } from "../../testing/asserts.ts";
 import { config, testList } from "./common.ts";
 
 /**
@@ -15,12 +15,14 @@ const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
   match: testList,
 });
 
+const testsFolder = dirname(fromFileUrl(import.meta.url));
+
 for await (const file of dir) {
   Deno.test({
-    name: `Node test runner: ${basename(file.path)}`,
+    name: relative(testsFolder, file.path),
     fn: async () => {
       const process = Deno.run({
-        cwd: dirname(fromFileUrl(import.meta.url)),
+        cwd: testsFolder,
         cmd: [
           "deno",
           "run",
