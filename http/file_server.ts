@@ -67,6 +67,7 @@ const MEDIA_TYPES: Record<string, string> = {
   ".css": "text/css",
   ".wasm": "application/wasm",
   ".mjs": "application/javascript",
+  ".svg": "image/svg+xml",
 };
 
 /** Returns the content-type based on the extension of a path. */
