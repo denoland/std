@@ -350,5 +350,5 @@ await setup({
 const configuredLogger = getLogger("configured");
 configuredLogger.info("foo"); // will log "foo"
 const notConfiguredLogger = getLogger("NotConfigured");
-logger.info("bar"); // will log "bar" instead of nothing
+notConfiguredLogger.info("bar"); // will log "bar" instead of nothing
 ```
