@@ -101,7 +101,7 @@ Deno.test({
       cmd: [
         Deno.execPath(),
         "run",
-        "./process_exit_test.ts",
+        "./testdata/process_exit.ts",
       ],
       cwd,
       stdout: "piped",

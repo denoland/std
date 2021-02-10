@@ -1,4 +1,4 @@
-import "./global.ts";
+import "../global.ts";
 
 //deno-lint-ignore no-undef
 process.on("exit", () => {

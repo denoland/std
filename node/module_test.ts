@@ -15,7 +15,7 @@ const require = createRequire(import.meta.url);
 
 Deno.test("requireSuccess", function () {
   // Relative to import.meta.url
-  const result = require("./tests/cjs/cjs_a.js");
+  const result = require("./_module/cjs/cjs_a.js");
   assert("helloA" in result);
   assert("helloB" in result);
   assert("C" in result);
@@ -27,8 +27,8 @@ Deno.test("requireSuccess", function () {
 });
 
 Deno.test("requireCycle", function () {
-  const resultA = require("./tests/cjs/cjs_cycle_a");
-  const resultB = require("./tests/cjs/cjs_cycle_b");
+  const resultA = require("./_module/cjs/cjs_cycle_a");
+  const resultB = require("./_module/cjs/cjs_cycle_b");
   assert(resultA);
   assert(resultB);
 });
@@ -36,7 +36,9 @@ Deno.test("requireCycle", function () {
 Deno.test("requireBuiltin", function () {
   const fs = require("fs");
   assert("readFileSync" in fs);
-  const { readFileSync, isNull, extname } = require("./tests/cjs/cjs_builtin");
+  const { readFileSync, isNull, extname } = require(
+    "./_module/cjs/cjs_builtin",
+  );
 
   const testData = path.relative(
     Deno.cwd(),
@@ -51,7 +53,7 @@ Deno.test("requireBuiltin", function () {
 });
 
 Deno.test("requireIndexJS", function () {
-  const { isIndex } = require("./tests/cjs");
+  const { isIndex } = require("./_module/cjs");
   assert(isIndex);
 });
 
@@ -62,15 +64,15 @@ Deno.test("requireNodeOs", function () {
 });
 
 Deno.test("requireStack", function () {
-  const { hello } = require("./tests/cjs/cjs_throw");
+  const { hello } = require("./_module/cjs/cjs_throw");
   try {
     hello();
   } catch (e) {
-    assertStringIncludes(e.stack, "/tests/cjs/cjs_throw.js");
+    assertStringIncludes(e.stack, "/_module/cjs/cjs_throw.js");
   }
 });
 
 Deno.test("requireFileInSymlinkDir", () => {
-  const { C } = require("./tests/cjs/dir");
+  const { C } = require("./_module/cjs/dir");
   assertEquals(C, "C");
 });

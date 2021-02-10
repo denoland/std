@@ -6,9 +6,12 @@ import { assert } from "../_util/assert.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
-/** copy N size at the most.
- *  If read size is lesser than N, then returns nread
- * */
+/**
+ * Copy N size at the most. If read size is lesser than N, then returns nread
+ * @param r Reader
+ * @param dest Writer
+ * @param size Read size
+ */
 export async function copyN(
   r: Reader,
   dest: Writer,
@@ -37,7 +40,10 @@ export async function copyN(
   return bytesRead;
 }
 
-/** Read big endian 16bit short from BufReader */
+/**
+ * Read big endian 16bit short from BufReader
+ * @param buf 
+ */
 export async function readShort(buf: BufReader): Promise<number | null> {
   const high = await buf.readByte();
   if (high === null) return null;
@@ -46,7 +52,10 @@ export async function readShort(buf: BufReader): Promise<number | null> {
   return (high << 8) | low;
 }
 
-/** Read big endian 32bit integer from BufReader */
+/**
+ * Read big endian 32bit integer from BufReader
+ * @param buf 
+ */
 export async function readInt(buf: BufReader): Promise<number | null> {
   const high = await readShort(buf);
   if (high === null) return null;
@@ -57,7 +66,10 @@ export async function readInt(buf: BufReader): Promise<number | null> {
 
 const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
 
-/** Read big endian 64bit long from BufReader */
+/** 
+ * Read big endian 64bit long from BufReader
+ * @param buf 
+ */
 export async function readLong(buf: BufReader): Promise<number | null> {
   const high = await readInt(buf);
   if (high === null) return null;
@@ -73,7 +85,11 @@ export async function readLong(buf: BufReader): Promise<number | null> {
   return Number(big);
 }
 
-/** Slice number into 64bit big endian byte array */
+/**
+ * Slice number into 64bit big endian byte array
+ * @param d The number to be sliced
+ * @param dest The sliced array
+ */
 export function sliceLongToBytes(d: number, dest = new Array(8)): number[] {
   let big = BigInt(d);
   for (let i = 0; i < 8; i++) {
