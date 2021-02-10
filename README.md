@@ -83,6 +83,9 @@ Examples of bad title:
 
 Ensure there is a related issue and it is referenced in the PR text.
 
+For contributions to the Node compatibility library please check the
+[`std/node` contributing guide](./node/README.md)
+
 _For maintainers_:
 
 To release a new version a tag in the form of `x.y.z` should be added.

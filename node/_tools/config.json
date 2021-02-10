@@ -1,0 +1,15 @@
+{
+  "nodeVersion": "15.5.1",
+  "ignore": {
+    "common": [
+      "index.js"
+    ]
+  },
+  "tests": {
+    "parallel": [
+      "test-event-emitter-listener-count.js"
+    ]
+  },
+  "suitesFolder": "suites",
+  "versionsFolder": "versions"
+}
