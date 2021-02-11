@@ -5,7 +5,6 @@ import {
   readInt,
   readLong,
   readShort,
-  sliceLongToBytes,
 } from "./ioutil.ts";
 import { StringReader } from "./readers.ts";
 import { BufReader } from "./bufio.ts";
@@ -48,24 +47,6 @@ Deno.test("testReadLong2", async function (): Promise<void> {
   );
   const long = await readLong(new BufReader(r));
   assertEquals(long, 0x12345678);
-});
-
-Deno.test("testSliceLongToBytes", function (): void {
-  const arr = sliceLongToBytes(0x1234567890abcdef);
-  const actual = readLong(new BufReader(new BinaryReader(new Uint8Array(arr))));
-  const expected = readLong(
-    new BufReader(
-      new BinaryReader(
-        new Uint8Array([0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef]),
-      ),
-    ),
-  );
-  assertEquals(actual, expected);
-});
-
-Deno.test("testSliceLongToBytes2", function (): void {
-  const arr = sliceLongToBytes(0x12345678);
-  assertEquals(arr, [0, 0, 0, 0, 0x12, 0x34, 0x56, 0x78]);
 });
 
 Deno.test("testCopyN1", async function (): Promise<void> {
