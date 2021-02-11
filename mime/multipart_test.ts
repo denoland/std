@@ -185,7 +185,7 @@ Deno.test({
     const form = await mr.readForm();
     assertEquals(form.value("foo"), "foo");
     assertEquals(form.value("bar"), "bar");
-    assertEquals(form.value("baz"), ['str1', 'str2']);
+    assertEquals(form.value("baz"), ["str1", "str2"]);
     const file = form.file("file");
     assert(isFormFile(file));
     assert(file.content !== void 0);
@@ -286,7 +286,7 @@ Deno.test({
     const map = new Map(form.entries());
     assertEquals(map.get("foo"), "foo");
     assertEquals(map.get("bar"), "bar");
-    assertEquals(map.get("baz"), ['str1', 'str2']);
+    assertEquals(map.get("baz"), ["str1", "str2"]);
     const file = map.get("file");
     assert(isFormFile(file));
     assertEquals(file.filename, "tsconfig.json");
