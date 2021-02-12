@@ -4,8 +4,6 @@
 import { assert } from "../_util/assert.ts";
 import { toIMF } from "../datetime/mod.ts";
 
-export type Cookies = Record<string, string>;
-
 export interface Cookie {
   /** Name of the cookie. */
   name: string;
@@ -25,12 +23,10 @@ export interface Cookie {
   httpOnly?: boolean;
   /** Allows servers to assert that a cookie ought not to
    * be sent along with cross-site requests. */
-  sameSite?: SameSite;
+  sameSite?: "Strict" | "Lax" | "None";
   /** Additional key value pairs with the form "key=value" */
   unparsed?: string[];
 }
-
-export type SameSite = "Strict" | "Lax" | "None";
 
 const FIELD_CONTENT_REGEXP = /^(?=[\x20-\x7E]*$)[^()@<>,;:\\"\[\]?={}\s]+$/;
 
@@ -146,10 +142,10 @@ function validateCookieValue(name: string, value: string | null): void {
  * Parse the cookies of the Server Request
  * @param req An object which has a `headers` property
  */
-export function getCookies(req: { headers: Headers }): Cookies {
+export function getCookies(req: { headers: Headers }): Record<string, string> {
   const cookie = req.headers.get("Cookie");
   if (cookie != null) {
-    const out: Cookies = {};
+    const out: Record<string, string> = {};
     const c = cookie.split(";");
     for (const kv of c) {
       const [cookieKey, ...cookieVal] = kv.split("=");
