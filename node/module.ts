@@ -914,7 +914,7 @@ function resolveExports(
 // Node.js uses these keys for resolving conditional exports.
 // ref: https://nodejs.org/api/packages.html#packages_conditional_exports
 // ref: https://github.com/nodejs/node/blob/2c77fe1/lib/internal/modules/cjs/helpers.js#L33
-const cjsConditions = new Set(['require', 'node']);
+const cjsConditions = new Set(["require", "node"]);
 
 function resolveExportsTarget(
   pkgPath: URL,
@@ -964,7 +964,7 @@ function resolveExportsTarget(
     }
   } else if (typeof target === "object" && target !== null) {
     for (const key of Object.keys(target)) {
-      if (key !== 'default' && !cjsConditions.has(key)) {
+      if (key !== "default" && !cjsConditions.has(key)) {
         continue;
       }
       if (Object.prototype.hasOwnProperty.call(target, key)) {

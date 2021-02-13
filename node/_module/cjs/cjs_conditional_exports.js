@@ -1,1 +1,1 @@
-module.exports = require('colorette');
+module.exports = require("colorette");
