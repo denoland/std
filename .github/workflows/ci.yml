@@ -60,7 +60,7 @@ jobs:
         run: deno upgrade --canary
 
       - name: Format
-        run: deno fmt --check
+        run: deno fmt --check --ignore=node/_module/node_module
 
       - name: Lint
-        run: deno lint --unstable
+        run: deno lint --unstable --ignore=node/_module/node_modules
