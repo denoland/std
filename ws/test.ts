@@ -20,7 +20,6 @@ import {
   unmask,
   writeFrame,
 } from "./mod.ts";
-import { decode, encode } from "../encoding/utf8.ts";
 import { delay } from "../async/delay.ts";
 import { serve } from "../http/server.ts";
 import { deferred } from "../async/deferred.ts";
@@ -211,7 +210,7 @@ Deno.test("[ws] write and read masked frame", async () => {
       isLastFrame: true,
       mask,
       opcode: OpCode.TextFrame,
-      payload: encode(msg),
+      payload: new TextEncoder().encode(msg),
     },
     buf,
   );
@@ -220,12 +219,12 @@ Deno.test("[ws] write and read masked frame", async () => {
   assertEquals(frame.isLastFrame, true);
   assertEquals(frame.mask, mask);
   unmask(frame.payload, frame.mask);
-  assertEquals(frame.payload, encode(msg));
+  assertEquals(frame.payload, new TextEncoder().encode(msg));
 });
 
 Deno.test("[ws] handshake should not send search when it's empty", async () => {
   const writer = new Deno.Buffer();
-  const reader = new Deno.Buffer(encode("HTTP/1.1 400\r\n"));
+  const reader = new Deno.Buffer(new TextEncoder().encode("HTTP/1.1 400\r\n"));
 
   await assertThrowsAsync(
     async (): Promise<void> => {
@@ -248,7 +247,9 @@ Deno.test(
   "[ws] handshake should send search correctly",
   async function wsHandshakeWithSearch(): Promise<void> {
     const writer = new Deno.Buffer();
-    const reader = new Deno.Buffer(encode("HTTP/1.1 400\r\n"));
+    const reader = new Deno.Buffer(
+      new TextEncoder().encode("HTTP/1.1 400\r\n"),
+    );
 
     await assertThrowsAsync(
       async (): Promise<void> => {
@@ -322,9 +323,9 @@ Deno.test({
     const ping = await readFrame(bufr);
     const third = await readFrame(bufr);
     assertEquals(first.opcode, OpCode.TextFrame);
-    assertEquals(decode(first.payload), "first");
+    assertEquals(new TextDecoder().decode(first.payload), "first");
     assertEquals(first.opcode, OpCode.TextFrame);
-    assertEquals(decode(second.payload), "second");
+    assertEquals(new TextDecoder().decode(second.payload), "second");
     assertEquals(ping.opcode, OpCode.Ping);
     assertEquals(third.opcode, OpCode.BinaryFrame);
     assertEquals(bytes.equals(third.payload, new Uint8Array([3])), true);
@@ -458,7 +459,7 @@ Deno.test("[ws] WebSocket should act as asyncIterator", async () => {
   }
 
   assertEquals(events.length, 3);
-  assertEquals(events[0], ["ping", encode("Hello")]);
+  assertEquals(events[0], ["ping", new TextEncoder().encode("Hello")]);
   assertEquals(events[1], "Hello");
   assertEquals(events[2], { code: 1011, reason: "42" });
 });
