@@ -8,12 +8,12 @@ deno standard library as it's a compatibility module.
 
 ## Supported Builtins
 
-- [ ] assert
+- [x] assert _partly_
 - [x] buffer
 - [ ] child_process
 - [ ] cluster
 - [ ] console
-- [ ] crypto
+- [x] crypto _partly_
 - [ ] dgram
 - [ ] dns
 - [x] events
@@ -30,15 +30,15 @@ deno standard library as it's a compatibility module.
 - [x] querystring
 - [ ] readline
 - [ ] repl
-- [ ] stream
-- [ ] string_decoder
+- [x] stream
+- [x] string_decoder
 - [ ] sys
 - [x] timers
 - [ ] tls
 - [ ] tty
-- [ ] url
+- [x] url
 - [x] util _partly_
-- [ ] ~~v8~~ _can't implement_
+- ~~v8~~ _can't implement_
 - [ ] vm
 - [ ] worker_threads
 - [ ] zlib

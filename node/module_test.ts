@@ -76,3 +76,40 @@ Deno.test("requireFileInSymlinkDir", () => {
   const { C } = require("./_module/cjs/dir");
   assertEquals(C, "C");
 });
+
+Deno.test("requireNodeJsNativeModules", () => {
+  // Checks these exist and don't throw.
+  require("assert");
+  require("buffer");
+  require("crypto");
+  require("events");
+  require("fs");
+  require("os");
+  require("path");
+  require("querystring");
+  require("stream");
+  require("string_decoder");
+  require("timers");
+  require("url");
+  require("util");
+
+  // TODO(kt3k): add these modules when implemented
+  // require("child_process");
+  // require("cluster");
+  // require("console");
+  // require("dgram");
+  // require("dns");
+  // require("http");
+  // require("http2");
+  // require("https");
+  // require("net");
+  // require("perf_hooks");
+  // require("readline");
+  // require("repl");
+  // require("sys");
+  // require("tls");
+  // require("tty");
+  // require("vm");
+  // require("worker_threads");
+  // require("zlib");
+});
