@@ -279,7 +279,7 @@ Deno.test("[hash/sha3] testSha3-224Raw", () => {
   };
 
   for (const [input, output] of testSetSha3_224) {
-    const rawOutput = hex.decodeString(output);
+    const rawOutput = hex.decode(new TextEncoder().encode(output));
     assertEquals(sha3sum(s2b(input)), rawOutput);
   }
 });
@@ -302,7 +302,7 @@ Deno.test("[hash/sha3] testSha3-256Raw", () => {
   };
 
   for (const [input, output] of testSetSha3_256) {
-    const rawOutput = hex.decodeString(output);
+    const rawOutput = hex.decode(new TextEncoder().encode(output));
     assertEquals(sha3sum(s2b(input)), rawOutput);
   }
 });
@@ -325,7 +325,7 @@ Deno.test("[hash/sha3] testSha3-384Raw", () => {
   };
 
   for (const [input, output] of testSetSha3_384) {
-    const rawOutput = hex.decodeString(output);
+    const rawOutput = hex.decode(new TextEncoder().encode(output));
     assertEquals(sha3sum(s2b(input)), rawOutput);
   }
 });
@@ -348,7 +348,7 @@ Deno.test("[hash/sha3] testSha3-512Raw", () => {
   };
 
   for (const [input, output] of testSetSha3_512) {
-    const rawOutput = hex.decodeString(output);
+    const rawOutput = hex.decode(new TextEncoder().encode(output));
     assertEquals(sha3sum(s2b(input)), rawOutput);
   }
 });
@@ -371,7 +371,7 @@ Deno.test("[hash/sha3] testKeccak-224Raw", () => {
   };
 
   for (const [input, output] of testSetKeccak224) {
-    const rawOutput = hex.decodeString(output);
+    const rawOutput = hex.decode(new TextEncoder().encode(output));
     assertEquals(keccakSum(s2b(input)), rawOutput);
   }
 });
@@ -394,7 +394,7 @@ Deno.test("[hash/sha3] testKeccak-256Raw", () => {
   };
 
   for (const [input, output] of testSetKeccak256) {
-    const rawOutput = hex.decodeString(output);
+    const rawOutput = hex.decode(new TextEncoder().encode(output));
     assertEquals(keccakSum(s2b(input)), rawOutput);
   }
 });
@@ -417,7 +417,7 @@ Deno.test("[hash/sha3] testKeccak-384Raw", () => {
   };
 
   for (const [input, output] of testSetKeccak384) {
-    const rawOutput = hex.decodeString(output);
+    const rawOutput = hex.decode(new TextEncoder().encode(output));
     assertEquals(keccakSum(s2b(input)), rawOutput);
   }
 });
@@ -440,7 +440,7 @@ Deno.test("[hash/sha3] testKeccak-512Raw", () => {
   };
 
   for (const [input, output] of testSetKeccak512) {
-    const rawOutput = hex.decodeString(output);
+    const rawOutput = hex.decode(new TextEncoder().encode(output));
     assertEquals(keccakSum(s2b(input)), rawOutput);
   }
 });
@@ -463,7 +463,7 @@ Deno.test("[hash/sha3] testSHAKE-128Raw", () => {
   };
 
   for (const [input, output] of testSetShake128) {
-    const rawOutput = hex.decodeString(output);
+    const rawOutput = hex.decode(new TextEncoder().encode(output));
     assertEquals(shakeSum(s2b(input)), rawOutput);
   }
 });
@@ -486,7 +486,7 @@ Deno.test("[hash/sha3] testSHAKE-128-224Raw", () => {
   };
 
   for (const [input, output] of testSetShake128_224) {
-    const rawOutput = hex.decodeString(output);
+    const rawOutput = hex.decode(new TextEncoder().encode(output));
     assertEquals(shakeSum(s2b(input)), rawOutput);
   }
 });
