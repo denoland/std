@@ -6,20 +6,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 
-import {
-  decode,
-  decodedLen,
-  decodeString,
-  encode,
-  encodedLen,
-  encodeToString,
-  errInvalidByte,
-  errLength,
-} from "./hex.ts";
-
-function toByte(s: string): number {
-  return new TextEncoder().encode(s)[0];
-}
+import { decode, encode } from "./hex.ts";
 
 const testCases = [
   // encoded(hex) / decoded(Uint8Array)
@@ -32,123 +19,57 @@ const testCases = [
   ["e3a1", [0xe3, 0xa1]],
 ];
 
-const errCases = [
-  // encoded(hex) / error
-  ["0", errLength()],
-  ["zd4aa", errInvalidByte(toByte("z"))],
-  ["d4aaz", errInvalidByte(toByte("z"))],
-  ["30313", errLength()],
-  ["0g", errInvalidByte(new TextEncoder().encode("g")[0])],
-  ["00gg", errInvalidByte(new TextEncoder().encode("g")[0])],
-  ["0\x01", errInvalidByte(new TextEncoder().encode("\x01")[0])],
-  ["ffeed", errLength()],
+const errCases: [string, ErrorConstructor, string][] = [
+  // encoded(hex) / error / msg
+  ["0", RangeError, ""],
+  ["zd4aa", TypeError, "'z'"],
+  ["d4aaz", TypeError, "'z'"],
+  ["30313", RangeError, ""],
+  ["0g", TypeError, "'g'"],
+  ["00gg", TypeError, "'g'"],
+  ["0\x01", TypeError, "'\x01'"],
+  ["ffeed", RangeError, ""],
 ];
 
-Deno.test({
-  name: "[encoding.hex] encodedLen",
-  fn(): void {
-    assertEquals(encodedLen(0), 0);
-    assertEquals(encodedLen(1), 2);
-    assertEquals(encodedLen(2), 4);
-    assertEquals(encodedLen(3), 6);
-    assertEquals(encodedLen(4), 8);
-  },
+Deno.test("[encoding.hex] encode", () => {
+  {
+    const srcStr = "abc";
+    const src = new TextEncoder().encode(srcStr);
+    const dest = encode(src);
+    assertEquals(src, new Uint8Array([97, 98, 99]));
+    assertEquals(dest.length, 6);
+  }
+
+  for (const [enc, dec] of testCases) {
+    const src = new Uint8Array(dec as number[]);
+    const dest = encode(src);
+    assertEquals(dest.length, src.length * 2);
+    assertEquals(new TextDecoder().decode(dest), enc);
+  }
 });
 
-Deno.test({
-  name: "[encoding.hex] encode",
-  fn(): void {
-    {
-      const srcStr = "abc";
-      const src = new TextEncoder().encode(srcStr);
-      const dest = encode(src);
-      assertEquals(src, new Uint8Array([97, 98, 99]));
-      assertEquals(dest.length, 6);
-    }
+Deno.test("[encoding.hex] decode", () => {
+  // Case for decoding uppercase hex characters, since
+  // Encode always uses lowercase.
+  const extraTestcase = [
+    ["F8F9FAFBFCFDFEFF", [0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff]],
+  ];
 
-    for (const [enc, dec] of testCases) {
-      const src = new Uint8Array(dec as number[]);
-      const dest = encode(src);
-      assertEquals(dest.length, src.length * 2);
-      assertEquals(new TextDecoder().decode(dest), enc);
-    }
-  },
+  const cases = testCases.concat(extraTestcase);
+
+  for (const [enc, dec] of cases) {
+    const src = new TextEncoder().encode(enc as string);
+    const dest = decode(src);
+    assertEquals(Array.from(dest), Array.from(dec as number[]));
+  }
 });
 
-Deno.test({
-  name: "[encoding.hex] encodeToString",
-  fn(): void {
-    for (const [enc, dec] of testCases) {
-      assertEquals(encodeToString(new Uint8Array(dec as number[])), enc);
-    }
-  },
-});
-
-Deno.test({
-  name: "[encoding.hex] decodedLen",
-  fn(): void {
-    assertEquals(decodedLen(0), 0);
-    assertEquals(decodedLen(2), 1);
-    assertEquals(decodedLen(4), 2);
-    assertEquals(decodedLen(6), 3);
-    assertEquals(decodedLen(8), 4);
-  },
-});
-
-Deno.test({
-  name: "[encoding.hex] decode",
-  fn(): void {
-    // Case for decoding uppercase hex characters, since
-    // Encode always uses lowercase.
-    const extraTestcase = [
-      ["F8F9FAFBFCFDFEFF", [0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff]],
-    ];
-
-    const cases = testCases.concat(extraTestcase);
-
-    for (const [enc, dec] of cases) {
-      const src = new TextEncoder().encode(enc as string);
-      const dest = decode(src);
-      assertEquals(Array.from(dest), Array.from(dec as number[]));
-    }
-  },
-});
-
-Deno.test({
-  name: "[encoding.hex] decodeString",
-  fn(): void {
-    for (const [enc, dec] of testCases) {
-      const dst = decodeString(enc as string);
-
-      assertEquals(dec, Array.from(dst));
-    }
-  },
-});
-
-Deno.test({
-  name: "[encoding.hex] decode error",
-  fn(): void {
-    for (const [input, expectedErr] of errCases) {
-      assertThrows(
-        () => decode(new TextEncoder().encode(input as string)),
-        Error,
-        (expectedErr as Error).message,
-      );
-    }
-  },
-});
-
-Deno.test({
-  name: "[encoding.hex] decodeString error",
-  fn(): void {
-    for (const [input, expectedErr] of errCases) {
-      assertThrows(
-        (): void => {
-          decodeString(input as string);
-        },
-        Error,
-        (expectedErr as Error).message,
-      );
-    }
-  },
+Deno.test("[encoding.hex] decode error", () => {
+  for (const [input, expectedErr, msg] of errCases) {
+    assertThrows(
+      () => decode(new TextEncoder().encode(input)),
+      expectedErr,
+      msg,
+    );
+  }
 });
