@@ -14,7 +14,6 @@ import {
   writeResponse,
   writeTrailers,
 } from "./_io.ts";
-import { decode, encode } from "../encoding/utf8.ts";
 import { BufReader, ReadLineResult } from "../io/bufio.ts";
 import { Response, ServerRequest } from "./server.ts";
 import { StringReader } from "../io/readers.ts";
@@ -24,16 +23,18 @@ Deno.test("bodyReader", async () => {
   const text = "Hello, Deno";
   const r = bodyReader(
     text.length,
-    new BufReader(new Deno.Buffer(encode(text))),
+    new BufReader(new Deno.Buffer(new TextEncoder().encode(text))),
   );
-  assertEquals(decode(await Deno.readAll(r)), text);
+  assertEquals(new TextDecoder().decode(await Deno.readAll(r)), text);
 });
+
 function chunkify(n: number, char: string): string {
   const v = Array.from({ length: n })
     .map(() => `${char}`)
     .join("");
   return `${n.toString(16)}\r\n${v}\r\n`;
 }
+
 Deno.test("chunkedBodyReader", async () => {
   const body = [
     chunkify(3, "a"),
@@ -43,7 +44,10 @@ Deno.test("chunkedBodyReader", async () => {
     chunkify(0, ""),
   ].join("");
   const h = new Headers();
-  const r = chunkedBodyReader(h, new BufReader(new Deno.Buffer(encode(body))));
+  const r = chunkedBodyReader(
+    h,
+    new BufReader(new Deno.Buffer(new TextEncoder().encode(body))),
+  );
   let result: number | null;
   // Use small buffer as some chunks exceed buffer size
   const buf = new Uint8Array(5);
@@ -70,11 +74,14 @@ Deno.test("chunkedBodyReader with trailers", async () => {
   const h = new Headers({
     trailer: "deno,node",
   });
-  const r = chunkedBodyReader(h, new BufReader(new Deno.Buffer(encode(body))));
+  const r = chunkedBodyReader(
+    h,
+    new BufReader(new Deno.Buffer(new TextEncoder().encode(body))),
+  );
   assertEquals(h.has("trailer"), true);
   assertEquals(h.has("deno"), false);
   assertEquals(h.has("node"), false);
-  const act = decode(await Deno.readAll(r));
+  const act = new TextDecoder().decode(await Deno.readAll(r));
   const exp = "aaabbbbbcccccccccccdddddddddddddddddddddd";
   assertEquals(act, exp);
   assertEquals(h.has("trailer"), false);
@@ -87,7 +94,10 @@ Deno.test("readTrailers", async () => {
     trailer: "Deno, Node",
   });
   const trailer = ["deno: land", "node: js", "", ""].join("\r\n");
-  await readTrailers(h, new BufReader(new Deno.Buffer(encode(trailer))));
+  await readTrailers(
+    h,
+    new BufReader(new Deno.Buffer(new TextEncoder().encode(trailer))),
+  );
   assertEquals(h.has("trailer"), false);
   assertEquals(h.get("deno"), "land");
   assertEquals(h.get("node"), "js");
@@ -109,7 +119,7 @@ Deno.test(
         async () => {
           await readTrailers(
             h,
-            new BufReader(new Deno.Buffer(encode(trailer))),
+            new BufReader(new Deno.Buffer(new TextEncoder().encode(trailer))),
           );
         },
         Deno.errors.InvalidData,
@@ -371,12 +381,13 @@ Deno.test("writeResponse with trailer", async () => {
 Deno.test("writeResponseShouldNotModifyOriginHeaders", async () => {
   const headers = new Headers();
   const buf = new Deno.Buffer();
+  const decoder = new TextDecoder();
 
   await writeResponse(buf, { body: "foo", headers });
-  assert(decode(await Deno.readAll(buf)).includes("content-length: 3"));
+  assert(decoder.decode(await Deno.readAll(buf)).includes("content-length: 3"));
 
   await writeResponse(buf, { body: "hello", headers });
-  assert(decode(await Deno.readAll(buf)).includes("content-length: 5"));
+  assert(decoder.decode(await Deno.readAll(buf)).includes("content-length: 5"));
 });
 
 Deno.test("readRequestError", async function (): Promise<void> {

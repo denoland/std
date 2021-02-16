@@ -1,5 +1,4 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { decode } from "../encoding/utf8.ts";
 import {
   assert,
   assertEquals,
@@ -130,10 +129,11 @@ Deno.test("expandGlobPermError", async function (): Promise<void> {
     stdout: "piped",
     stderr: "piped",
   });
+  const decoder = new TextDecoder();
   assertEquals(await p.status(), { code: 1, success: false });
-  assertEquals(decode(await p.output()), "");
+  assertEquals(decoder.decode(await p.output()), "");
   assertStringIncludes(
-    decode(await p.stderrOutput()),
+    decoder.decode(await p.stderrOutput()),
     "Uncaught PermissionDenied",
   );
   p.close();

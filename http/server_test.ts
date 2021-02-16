@@ -23,7 +23,6 @@ import {
 } from "./server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { delay } from "../async/delay.ts";
-import { decode, encode } from "../encoding/utf8.ts";
 import { mockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 
@@ -82,7 +81,7 @@ Deno.test("requestContentLength", function (): void {
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("content-length", "5");
-    const buf = new Deno.Buffer(encode("Hello"));
+    const buf = new Deno.Buffer(new TextEncoder().encode("Hello"));
     req.r = new BufReader(buf);
     assertEquals(req.contentLength, 5);
   }
@@ -103,7 +102,7 @@ Deno.test("requestContentLength", function (): void {
       chunkOffset += chunkSize;
     }
     chunksData += "0\r\n\r\n";
-    const buf = new Deno.Buffer(encode(chunksData));
+    const buf = new Deno.Buffer(new TextEncoder().encode(chunksData));
     req.r = new BufReader(buf);
     assertEquals(req.contentLength, null);
   }
@@ -133,9 +132,9 @@ Deno.test("requestBodyWithContentLength", async function (): Promise<void> {
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("content-length", "5");
-    const buf = new Deno.Buffer(encode("Hello"));
+    const buf = new Deno.Buffer(new TextEncoder().encode("Hello"));
     req.r = new BufReader(buf);
-    const body = decode(await Deno.readAll(req.body));
+    const body = new TextDecoder().decode(await Deno.readAll(req.body));
     assertEquals(body, "Hello");
   }
 
@@ -145,9 +144,9 @@ Deno.test("requestBodyWithContentLength", async function (): Promise<void> {
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("Content-Length", "5000");
-    const buf = new Deno.Buffer(encode(longText));
+    const buf = new Deno.Buffer(new TextEncoder().encode(longText));
     req.r = new BufReader(buf);
-    const body = decode(await Deno.readAll(req.body));
+    const body = new TextDecoder().decode(await Deno.readAll(req.body));
     assertEquals(body, longText);
   }
   // Handler ignored to consume body
@@ -159,7 +158,7 @@ Deno.test(
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("content-length", "" + text.length);
-    const tr = totalReader(new Deno.Buffer(encode(text)));
+    const tr = totalReader(new Deno.Buffer(new TextEncoder().encode(text)));
     req.r = new BufReader(tr);
     req.w = new BufWriter(new Deno.Buffer());
     await req.respond({ status: 200, body: "ok" });
@@ -187,7 +186,7 @@ Deno.test(
     req.headers = new Headers();
     req.headers.set("transfer-encoding", "chunked");
     req.headers.set("trailer", "deno,node");
-    const body = encode(text);
+    const body = new TextEncoder().encode(text);
     const tr = totalReader(new Deno.Buffer(body));
     req.r = new BufReader(tr);
     req.w = new BufWriter(new Deno.Buffer());
@@ -220,9 +219,9 @@ Deno.test("requestBodyWithTransferEncoding", async function (): Promise<void> {
       chunkOffset += chunkSize;
     }
     chunksData += "0\r\n\r\n";
-    const buf = new Deno.Buffer(encode(chunksData));
+    const buf = new Deno.Buffer(new TextEncoder().encode(chunksData));
     req.r = new BufReader(buf);
-    const body = decode(await Deno.readAll(req.body));
+    const body = new TextDecoder().decode(await Deno.readAll(req.body));
     assertEquals(body, shortText);
   }
 
@@ -243,9 +242,9 @@ Deno.test("requestBodyWithTransferEncoding", async function (): Promise<void> {
       chunkOffset += chunkSize;
     }
     chunksData += "0\r\n\r\n";
-    const buf = new Deno.Buffer(encode(chunksData));
+    const buf = new Deno.Buffer(new TextEncoder().encode(chunksData));
     req.r = new BufReader(buf);
-    const body = decode(await Deno.readAll(req.body));
+    const body = new TextDecoder().decode(await Deno.readAll(req.body));
     assertEquals(body, longText);
   }
 });
@@ -258,14 +257,14 @@ Deno.test("requestBodyReaderWithContentLength", async function (): Promise<
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("content-length", "" + shortText.length);
-    const buf = new Deno.Buffer(encode(shortText));
+    const buf = new Deno.Buffer(new TextEncoder().encode(shortText));
     req.r = new BufReader(buf);
     const readBuf = new Uint8Array(6);
     let offset = 0;
     while (offset < shortText.length) {
       const nread = await req.body.read(readBuf);
       assert(nread !== null);
-      const s = decode(readBuf.subarray(0, nread as number));
+      const s = new TextDecoder().decode(readBuf.subarray(0, nread as number));
       assertEquals(shortText.substr(offset, nread as number), s);
       offset += nread as number;
     }
@@ -279,14 +278,14 @@ Deno.test("requestBodyReaderWithContentLength", async function (): Promise<
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("Content-Length", "5000");
-    const buf = new Deno.Buffer(encode(longText));
+    const buf = new Deno.Buffer(new TextEncoder().encode(longText));
     req.r = new BufReader(buf);
     const readBuf = new Uint8Array(1000);
     let offset = 0;
     while (offset < longText.length) {
       const nread = await req.body.read(readBuf);
       assert(nread !== null);
-      const s = decode(readBuf.subarray(0, nread as number));
+      const s = new TextDecoder().decode(readBuf.subarray(0, nread as number));
       assertEquals(longText.substr(offset, nread as number), s);
       offset += nread as number;
     }
@@ -314,14 +313,14 @@ Deno.test("requestBodyReaderWithTransferEncoding", async function (): Promise<
       chunkOffset += chunkSize;
     }
     chunksData += "0\r\n\r\n";
-    const buf = new Deno.Buffer(encode(chunksData));
+    const buf = new Deno.Buffer(new TextEncoder().encode(chunksData));
     req.r = new BufReader(buf);
     const readBuf = new Uint8Array(6);
     let offset = 0;
     while (offset < shortText.length) {
       const nread = await req.body.read(readBuf);
       assert(nread !== null);
-      const s = decode(readBuf.subarray(0, nread as number));
+      const s = new TextDecoder().decode(readBuf.subarray(0, nread as number));
       assertEquals(shortText.substr(offset, nread as number), s);
       offset += nread as number;
     }
@@ -346,14 +345,14 @@ Deno.test("requestBodyReaderWithTransferEncoding", async function (): Promise<
       chunkOffset += chunkSize;
     }
     chunksData += "0\r\n\r\n";
-    const buf = new Deno.Buffer(encode(chunksData));
+    const buf = new Deno.Buffer(new TextEncoder().encode(chunksData));
     req.r = new BufReader(buf);
     const readBuf = new Uint8Array(1000);
     let offset = 0;
     while (offset < longText.length) {
       const nread = await req.body.read(readBuf);
       assert(nread !== null);
-      const s = decode(readBuf.subarray(0, nread as number));
+      const s = new TextDecoder().decode(readBuf.subarray(0, nread as number));
       assertEquals(longText.substr(offset, nread as number), s);
       offset += nread as number;
     }
@@ -553,9 +552,11 @@ Deno.test({
     });
     await Deno.writeAll(
       conn,
-      encode("GET / HTTP/1.1\r\nmalformedHeader\r\n\r\n\r\n\r\n"),
+      new TextEncoder().encode(
+        "GET / HTTP/1.1\r\nmalformedHeader\r\n\r\n\r\n\r\n",
+      ),
     );
-    const responseString = decode(await Deno.readAll(conn));
+    const responseString = new TextDecoder().decode(await Deno.readAll(conn));
     assertMatch(
       responseString,
       /^HTTP\/1\.1 400 Bad Request\r\ncontent-length: \d+\r\n\r\n.*\r\n\r\n$/ms,
@@ -584,12 +585,12 @@ Deno.test({
     });
     await Deno.writeAll(
       conn,
-      encode(
+      new TextEncoder().encode(
         "PUT / HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\nzzzzzzz\r\nhello",
       ),
     );
     await conn.closeWrite();
-    const responseString = decode(await Deno.readAll(conn));
+    const responseString = new TextDecoder().decode(await Deno.readAll(conn));
     assertEquals(
       responseString,
       "HTTP/1.1 200 OK\r\ncontent-length: 13\r\n\r\nHello, world!",
@@ -617,10 +618,12 @@ Deno.test({
     });
     await Deno.writeAll(
       conn,
-      encode("PUT / HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nHello"),
+      new TextEncoder().encode(
+        "PUT / HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nHello",
+      ),
     );
     conn.closeWrite();
-    const responseString = decode(await Deno.readAll(conn));
+    const responseString = new TextDecoder().decode(await Deno.readAll(conn));
     assertEquals(
       responseString,
       "HTTP/1.1 200 OK\r\ncontent-length: 13\r\n\r\nHello, world!",
@@ -647,7 +650,7 @@ Deno.test({
     });
     await Deno.writeAll(
       conn,
-      encode([
+      new TextEncoder().encode([
         // A normal request is required:
         "GET / HTTP/1.1",
         "Host: localhost",
