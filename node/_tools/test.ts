@@ -5,7 +5,7 @@ import { config, testList } from "./common.ts";
 
 /**
  * This script will run the test files specified in the configuration file
- * 
+ *
  * Each test file will be run independently and wait until completion, if an abnormal
  * code for the test is reported, the test suite will fail inmediately
  */
@@ -27,6 +27,7 @@ for await (const file of dir) {
           "deno",
           "run",
           "-A",
+          "--quiet",
           "--unstable",
           "require.ts",
           file.path,
