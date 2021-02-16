@@ -7,15 +7,12 @@
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 
-function errInvalidByte(byte: number): Error {
-  return new Error(
-    "encoding/hex: invalid byte: " +
-      new TextDecoder().decode(new Uint8Array([byte])),
-  );
+function errInvalidByte(byte: number) {
+  return new TypeError(`Invalid byte '${String.fromCharCode(byte)}'`);
 }
 
-function errLength(): Error {
-  return new Error("encoding/hex: odd length hex string");
+function errLength() {
+  return new RangeError("Odd length hex string");
 }
 
 /** Converts a hex character into its value. */
