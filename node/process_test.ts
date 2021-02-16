@@ -101,6 +101,7 @@ Deno.test({
       cmd: [
         Deno.execPath(),
         "run",
+        "--quiet",
         "./testdata/process_exit.ts",
       ],
       cwd,
