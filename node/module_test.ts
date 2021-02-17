@@ -77,6 +77,12 @@ Deno.test("requireFileInSymlinkDir", () => {
   assertEquals(C, "C");
 });
 
+Deno.test("requireModuleWithConditionalExports", () => {
+  const { red, blue } = require("./_module/cjs/cjs_conditional_exports");
+  assert(typeof red === "function");
+  assert(typeof blue === "function");
+});
+
 Deno.test("requireNodeJsNativeModules", () => {
   // Checks these exist and don't throw.
   require("assert");

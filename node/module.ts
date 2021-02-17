@@ -915,6 +915,11 @@ function resolveExports(
   return path.resolve(nmPath, request);
 }
 
+// Node.js uses these keys for resolving conditional exports.
+// ref: https://nodejs.org/api/packages.html#packages_conditional_exports
+// ref: https://github.com/nodejs/node/blob/2c77fe1/lib/internal/modules/cjs/helpers.js#L33
+const cjsConditions = new Set(["require", "node"]);
+
 function resolveExportsTarget(
   pkgPath: URL,
   // deno-lint-ignore no-explicit-any
@@ -962,18 +967,22 @@ function resolveExportsTarget(
       }
     }
   } else if (typeof target === "object" && target !== null) {
-    // removed experimentalConditionalExports
-    if (Object.prototype.hasOwnProperty.call(target, "default")) {
-      try {
-        return resolveExportsTarget(
-          pkgPath,
-          target.default,
-          subpath,
-          basePath,
-          mappingKey,
-        );
-      } catch (e) {
-        if (e.code !== "MODULE_NOT_FOUND") throw e;
+    for (const key of Object.keys(target)) {
+      if (key !== "default" && !cjsConditions.has(key)) {
+        continue;
+      }
+      if (Object.prototype.hasOwnProperty.call(target, key)) {
+        try {
+          return resolveExportsTarget(
+            pkgPath,
+            target[key],
+            subpath,
+            basePath,
+            mappingKey,
+          );
+        } catch (e) {
+          if (e.code !== "MODULE_NOT_FOUND") throw e;
+        }
       }
     }
   }
