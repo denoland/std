@@ -46,10 +46,24 @@ export function writableStreamFromWriter(
   });
 }
 
-/** Create a `ReadableStream` from an `AsyncIterator`. */
-export function readableStreamFromAsyncIterator<T>(
-  iterator: AsyncIterableIterator<T>,
+/** Create a `ReadableStream` from any kind of iterable.
+ *
+ *      const r1 = readableStreamFromIterable(["foo, bar, baz"]);
+ *      const r2 = readableStreamFromIterable((async function* () {
+ *        await new Promise(((r) => setTimeout(r, 1000)));
+ *        yield "foo";
+ *        await new Promise(((r) => setTimeout(r, 1000)));
+ *        yield "bar";
+ *        await new Promise(((r) => setTimeout(r, 1000)));
+ *        yield "baz";
+ *      })());
+*/
+export function readableStreamFromIterable<T>(
+  iterable: Iterable<T> | AsyncIterable<T>,
 ): ReadableStream<T> {
+  const iterator: Iterator<T> | AsyncIterator<T> =
+    (iterable as Iterable<T>)[Symbol.iterator]?.() ??
+      (iterable as AsyncIterable<T>)[Symbol.asyncIterator]?.();
   return new ReadableStream({
     async pull(controller) {
       const { value, done } = await iterator.next();
