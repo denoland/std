@@ -23,6 +23,7 @@ import "./global.ts";
 
 import * as nodeAssert from "./assert.ts";
 import * as nodeBuffer from "./buffer.ts";
+import * as nodeCrypto from "./crypto.ts";
 import nodeEvents from "./events.ts";
 import * as nodeFS from "./fs.ts";
 import * as nodeOs from "./os.ts";
@@ -31,6 +32,7 @@ import * as nodeQueryString from "./querystring.ts";
 import * as nodeStream from "./stream.ts";
 import * as nodeStringDecoder from "./string_decoder.ts";
 import * as nodeTimers from "./timers.ts";
+import * as nodeUrl from "./url.ts";
 import * as nodeUtil from "./util.ts";
 
 import * as path from "../path/mod.ts";
@@ -598,6 +600,7 @@ function createNativeModule(id: string, exports: any): Module {
 
 nativeModulePolyfill.set("assert", createNativeModule("assert", nodeAssert));
 nativeModulePolyfill.set("buffer", createNativeModule("buffer", nodeBuffer));
+nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
 nativeModulePolyfill.set("events", createNativeModule("events", nodeEvents));
 nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
 nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
@@ -608,13 +611,14 @@ nativeModulePolyfill.set(
 );
 nativeModulePolyfill.set(
   "stream",
-  createNativeModule("string_decoder", nodeStream),
+  createNativeModule("stream", nodeStream),
 );
 nativeModulePolyfill.set(
   "string_decoder",
   createNativeModule("string_decoder", nodeStringDecoder),
 );
 nativeModulePolyfill.set("timers", createNativeModule("timers", nodeTimers));
+nativeModulePolyfill.set("url", createNativeModule("url", nodeUrl));
 nativeModulePolyfill.set("util", createNativeModule("util", nodeUtil));
 
 function loadNativeModule(

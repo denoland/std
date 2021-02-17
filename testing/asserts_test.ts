@@ -42,6 +42,18 @@ Deno.test("testingEqual", function (): void {
       { hello: "world", hi: { there: "everyone else" } },
     ),
   );
+  assert(
+    equal(
+      { [Symbol.for("foo")]: "bar" },
+      { [Symbol.for("foo")]: "bar" },
+    ),
+  );
+  assert(
+    !equal(
+      { [Symbol("foo")]: "bar" },
+      { [Symbol("foo")]: "bar" },
+    ),
+  );
   assert(equal(/deno/, /deno/));
   assert(!equal(/deno/, /node/));
   assert(equal(new Date(2019, 0, 3), new Date(2019, 0, 3)));

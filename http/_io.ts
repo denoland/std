@@ -2,7 +2,6 @@
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { assert } from "../_util/assert.ts";
-import { encoder } from "../encoding/utf8.ts";
 import { Response, ServerRequest } from "./server.ts";
 import { STATUS_TEXT } from "./http_status.ts";
 
@@ -174,6 +173,7 @@ export async function writeChunkedBody(
   w: BufWriter,
   r: Deno.Reader,
 ): Promise<void> {
+  const encoder = new TextEncoder();
   for await (const chunk of Deno.iter(r)) {
     if (chunk.byteLength <= 0) continue;
     const start = encoder.encode(`${chunk.byteLength.toString(16)}\r\n`);
@@ -221,6 +221,7 @@ export async function writeTrailers(
   if (undeclared.length > 0) {
     throw new TypeError(`Undeclared trailers: ${Deno.inspect(undeclared)}.`);
   }
+  const encoder = new TextEncoder();
   for (const [key, value] of trailers) {
     await writer.write(encoder.encode(`${key}: ${value}\r\n`));
   }
@@ -237,6 +238,7 @@ export async function writeResponse(
   const statusCode = r.status || 200;
   const statusText = STATUS_TEXT.get(statusCode);
   const writer = BufWriter.create(w);
+  const encoder = new TextEncoder();
   if (!statusText) {
     throw new Deno.errors.InvalidData("Bad status code");
   }

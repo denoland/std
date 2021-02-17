@@ -12,7 +12,6 @@ import {
   startsWith,
 } from "./mod.ts";
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
-import { decode, encode } from "../encoding/utf8.ts";
 
 Deno.test("[bytes] indexOf1", () => {
   const i = indexOf(
@@ -28,7 +27,8 @@ Deno.test("[bytes] indexOf2", () => {
 });
 
 Deno.test("[bytes] indexOf3", () => {
-  const i = indexOf(encode("Deno"), encode("D"));
+  const encoder = new TextEncoder();
+  const i = indexOf(encoder.encode("Deno"), encoder.encode("D"));
   assertEquals(i, 0);
 });
 
@@ -140,10 +140,11 @@ Deno.test("[bytes] repeat", () => {
 });
 
 Deno.test("[bytes] concat", () => {
-  const u1 = encode("Hello ");
-  const u2 = encode("World");
+  const encoder = new TextEncoder();
+  const u1 = encoder.encode("Hello ");
+  const u2 = encoder.encode("World");
   const joined = concat(u1, u2);
-  assertEquals(decode(joined), "Hello World");
+  assertEquals(new TextDecoder().decode(joined), "Hello World");
   assert(u1 !== joined);
   assert(u2 !== joined);
 });
@@ -158,21 +159,23 @@ Deno.test("[bytes] concat empty arrays", () => {
 });
 
 Deno.test("[bytes] concat multiple arrays", () => {
-  const u1 = encode("Hello ");
-  const u2 = encode("W");
-  const u3 = encode("o");
-  const u4 = encode("r");
-  const u5 = encode("l");
-  const u6 = encode("d");
+  const encoder = new TextEncoder();
+  const u1 = encoder.encode("Hello ");
+  const u2 = encoder.encode("W");
+  const u3 = encoder.encode("o");
+  const u4 = encoder.encode("r");
+  const u5 = encoder.encode("l");
+  const u6 = encoder.encode("d");
   const joined = concat(u1, u2, u3, u4, u5, u6);
-  assertEquals(decode(joined), "Hello World");
+  assertEquals(new TextDecoder().decode(joined), "Hello World");
   assert(u1 !== joined);
   assert(u2 !== joined);
 });
 
 Deno.test("[bytes] contains", () => {
-  const source = encode("deno.land");
-  const pattern = encode("deno");
+  const encoder = new TextEncoder();
+  const source = encoder.encode("deno.land");
+  const pattern = encoder.encode("deno");
   assert(contains(source, pattern));
 
   assert(contains(new Uint8Array([0, 1, 2, 3]), new Uint8Array([2, 3])));

@@ -1,5 +1,4 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { encode } from "../encoding/utf8.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { assert } from "../_util/assert.ts";
 import { Deferred, deferred, MuxAsyncIterator } from "../async/mod.ts";
@@ -159,7 +158,7 @@ export class Server implements AsyncIterable<ServerRequest> {
           try {
             await writeResponse(writer, {
               status: 400,
-              body: encode(`${error.message}\r\n\r\n`),
+              body: new TextEncoder().encode(`${error.message}\r\n\r\n`),
             });
           } catch (error) {
             // The connection is broken.
