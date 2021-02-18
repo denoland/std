@@ -8,8 +8,8 @@ The following functions are exposed in `mod.ts`.
 
 ## indexOf
 
-Finds the first index of a binary pattern within a given binary array, or returns -1 if the pattern is not
-present.
+Finds the first index of a binary pattern within a given binary array, or
+returns -1 if the pattern is not present.
 
 ```typescript
 import { indexOf } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -28,8 +28,8 @@ indexOf(
 
 ## lastIndexOf
 
-Finds the last index of a binary pattern within a given binary array, or returns -1 if the pattern is not
-present.
+Finds the last index of a binary pattern within a given binary array, or
+returns -1 if the pattern is not present.
 
 ```typescript
 import { lastIndexOf } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -81,7 +81,7 @@ endsWith(new Uint8Array([0, 1, 2]), new Uint8Array([1, 2])); // returns true
 
 ## repeat
 
-Creates a binary array consisting of multiple copies of a given binary array .
+Creates a binary array consisting of multiple copies of a given binary array.
 
 ```typescript
 import { repeat } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
