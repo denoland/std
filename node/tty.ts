@@ -4,7 +4,7 @@
 // ref: https://nodejs.org/api/tty.html
 
 // Returns true when the given numeric fd is associated with a TTY and false otherwise.
-function isatty(fd: unknown) {
+function isatty(fd: number) {
   if (typeof fd !== "number") {
     return false;
   }
