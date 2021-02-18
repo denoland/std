@@ -28,8 +28,8 @@ indexOf(
 
 ## lastIndexOf
 
-Finds the last index of a binary pattern within a given binary array, or
-returns -1 if the pattern is not present.
+Finds the last index of a binary pattern within a given binary array, or returns
+-1 if the pattern is not present.
 
 ```typescript
 import { lastIndexOf } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -108,7 +108,8 @@ concat(
 
 ## contains
 
-Checks that a given binary array contains a sequence corresponding to a pattern array.
+Checks that a given binary array contains a sequence corresponding to a pattern
+array.
 
 ```typescript
 import { contains } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
