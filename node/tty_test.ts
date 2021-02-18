@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// deno-lint-ignore-file no-explicit-any
 import { assert } from "../testing/asserts.ts";
 import { isatty } from "./tty.ts";
 
@@ -15,11 +16,12 @@ Deno.test("[node/tty isatty] returns true when fd is a tty, false otherwise", ()
 Deno.test("[node/tty isatty] returns false for irrelevant values", () => {
   // invalid numeric fd
   assert(!isatty(1234567));
+  assert(!isatty(-1));
 
   // invalid type fd
-  assert(!isatty("abc"));
-  assert(!isatty({}));
-  assert(!isatty([]));
-  assert(!isatty(null));
-  assert(!isatty(undefined));
+  assert(!isatty("abc" as any));
+  assert(!isatty({} as any));
+  assert(!isatty([] as any));
+  assert(!isatty(null as any));
+  assert(!isatty(undefined as any));
 });
