@@ -32,6 +32,7 @@ import * as nodeQueryString from "./querystring.ts";
 import * as nodeStream from "./stream.ts";
 import * as nodeStringDecoder from "./string_decoder.ts";
 import * as nodeTimers from "./timers.ts";
+import * as nodeTty from "./tty.ts";
 import * as nodeUrl from "./url.ts";
 import * as nodeUtil from "./util.ts";
 
@@ -620,6 +621,7 @@ nativeModulePolyfill.set(
 nativeModulePolyfill.set("timers", createNativeModule("timers", nodeTimers));
 nativeModulePolyfill.set("url", createNativeModule("url", nodeUrl));
 nativeModulePolyfill.set("util", createNativeModule("util", nodeUtil));
+nativeModulePolyfill.set("tty", createNativeModule("tty", nodeTty));
 
 function loadNativeModule(
   _filename: string,
