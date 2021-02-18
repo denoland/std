@@ -619,9 +619,9 @@ nativeModulePolyfill.set(
   createNativeModule("string_decoder", nodeStringDecoder),
 );
 nativeModulePolyfill.set("timers", createNativeModule("timers", nodeTimers));
+nativeModulePolyfill.set("tty", createNativeModule("tty", nodeTty));
 nativeModulePolyfill.set("url", createNativeModule("url", nodeUrl));
 nativeModulePolyfill.set("util", createNativeModule("util", nodeUtil));
-nativeModulePolyfill.set("tty", createNativeModule("tty", nodeTty));
 
 function loadNativeModule(
   _filename: string,
