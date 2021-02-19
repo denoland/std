@@ -60,7 +60,7 @@ jobs:
         run: deno upgrade --canary
 
       - name: Format
-        run: deno fmt --check
+        run: deno fmt --check --ignore=fs/testdata/json_invalid.json
 
       - name: Lint
         run: deno lint --unstable
