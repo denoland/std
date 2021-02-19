@@ -96,6 +96,7 @@ Deno.test("requireNodeJsNativeModules", () => {
   require("stream");
   require("string_decoder");
   require("timers");
+  require("tty");
   require("url");
   require("util");
 
@@ -114,7 +115,6 @@ Deno.test("requireNodeJsNativeModules", () => {
   // require("repl");
   // require("sys");
   // require("tls");
-  // require("tty");
   // require("vm");
   // require("worker_threads");
   // require("zlib");
