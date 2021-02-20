@@ -429,6 +429,7 @@ class Module {
   }
 
   static wrap(script: string): string {
+    script.replace(/^#!.*?\n/, "");
     return `${Module.wrapper[0]}${script}${Module.wrapper[1]}`;
   }
 
