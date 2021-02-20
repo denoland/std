@@ -119,3 +119,7 @@ Deno.test("requireNodeJsNativeModules", () => {
   // require("worker_threads");
   // require("zlib");
 });
+
+Deno.test("Require file with shebang", () => {
+  require("./testdata/shebang.js");
+});
