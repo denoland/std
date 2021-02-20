@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-// cli goes here
+console.log(42);
