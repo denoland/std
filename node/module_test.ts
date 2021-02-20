@@ -121,5 +121,5 @@ Deno.test("requireNodeJsNativeModules", () => {
 });
 
 Deno.test("Require file with shebang", () => {
-  require("./_module/shebang.js");
+  require("./testdata/shebang.js");
 });
