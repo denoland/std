@@ -149,3 +149,7 @@ Deno.test("native modules are extensible", () => {
     assertEquals(mod[randomKey], undefined);
   }
 });
+
+Deno.test("Require file with shebang", () => {
+  require("./testdata/shebang.js");
+});
