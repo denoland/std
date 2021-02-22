@@ -87,6 +87,7 @@ Deno.test("requireNodeJsNativeModules", () => {
   // Checks these exist and don't throw.
   require("assert");
   require("buffer");
+  require("constants");
   require("crypto");
   require("events");
   require("fs");

@@ -24,6 +24,7 @@ import "./global.ts";
 import * as nodeAssert from "./assert.ts";
 import * as nodeBuffer from "./buffer.ts";
 import * as nodeCrypto from "./crypto.ts";
+import nodeConstants from "./constants.ts";
 import nodeEvents from "./events.ts";
 import * as nodeFS from "./fs.ts";
 import * as nodeOs from "./os.ts";
@@ -601,6 +602,10 @@ function createNativeModule(id: string, exports: any): Module {
 
 nativeModulePolyfill.set("assert", createNativeModule("assert", nodeAssert));
 nativeModulePolyfill.set("buffer", createNativeModule("buffer", nodeBuffer));
+nativeModulePolyfill.set(
+  "constants",
+  createNativeModule("constants", nodeConstants),
+);
 nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
 nativeModulePolyfill.set("events", createNativeModule("events", nodeEvents));
 nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
