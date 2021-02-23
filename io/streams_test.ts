@@ -3,6 +3,7 @@
 import { assert, assertEquals } from "../testing/asserts.ts";
 import {
   readableStreamFromIterable,
+  readerFromIterable,
   readerFromStreamReader,
   writableStreamFromWriter,
   writerFromStreamWriter,
@@ -14,6 +15,27 @@ function repeat(c: string, bytes: number): Uint8Array {
   ui8.fill(c.charCodeAt(0));
   return ui8;
 }
+
+Deno.test("[io] readerFromIterable()", async function () {
+  const reader = readerFromIterable((function* () {
+    const encoder = new TextEncoder();
+    for (const string of ["hello", "deno", "foo"]) {
+      yield encoder.encode(string);
+    }
+  })());
+
+  const readStrings = [];
+  const decoder = new TextDecoder();
+  const p = new Uint8Array(4);
+  while (true) {
+    const n = await reader.read(p);
+    if (n == null) {
+      break;
+    }
+    readStrings.push(decoder.decode(p.slice(0, n)));
+  }
+  assertEquals(readStrings, ["hell", "o", "deno", "foo"]);
+});
 
 Deno.test("[io] writerFromStreamWriter()", async function () {
   const written: string[] = [];

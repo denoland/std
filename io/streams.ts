@@ -1,5 +1,52 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+/** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
+ *
+ *      // Server-sent events: Send runtime metrics to the client every second.
+ *      request.respond({
+ *        headers: new Headers({ "Content-Type": "text/event-stream" }),
+ *        body: readerFromIterable((async function* () {
+ *          while (true) {
+ *            await new Promise((r) => setTimeout(r, 1000));
+ *            const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
+ *            yield new TextEncoder().encode(message);
+ *          }
+ *        })()),
+ *      });
+ */
+export function readerFromIterable(
+  iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,
+): Deno.Reader {
+  const iterator: Iterator<Uint8Array> | AsyncIterator<Uint8Array> =
+    (iterable as AsyncIterable<Uint8Array>)[Symbol.asyncIterator]?.() ??
+      (iterable as Iterable<Uint8Array>)[Symbol.iterator]?.();
+  const buffer: Deno.Buffer = new Deno.Buffer();
+  return {
+    async read(p: Uint8Array): Promise<number | null> {
+      if (buffer.length == 0) {
+        const result = await iterator.next();
+        if (result.done) {
+          return null;
+        } else {
+          if (result.value.byteLength <= p.byteLength) {
+            p.set(result.value);
+            return result.value.byteLength;
+          }
+          p.set(result.value.subarray(0, p.byteLength));
+          await Deno.writeAll(buffer, result.value.subarray(p.byteLength));
+          return p.byteLength;
+        }
+      } else {
+        const n = await buffer.read(p);
+        if (n == null) {
+          return this.read(p);
+        }
+        return n;
+      }
+    },
+  };
+}
+
 /** Create a `Writer` from a `WritableStreamDefaultReader`. */
 export function writerFromStreamWriter(
   streamWriter: WritableStreamDefaultWriter<Uint8Array>,
