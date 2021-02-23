@@ -102,6 +102,7 @@ Deno.test({
         Deno.execPath(),
         "run",
         "--quiet",
+        "--allow-read",
         "./testdata/process_exit.ts",
       ],
       cwd,
@@ -130,6 +131,7 @@ Deno.test({
       process.argv[1],
       path.fromFileUrl(Deno.mainModule),
     );
+    assert(Array.isArray(process.argv.slice(2)));
   },
 });
 

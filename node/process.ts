@@ -27,40 +27,9 @@ const notImplementedEvents = [
 /** https://nodejs.org/api/process.html#process_process_arch */
 export const arch = Deno.build.arch;
 
-function getArguments() {
-  return [Deno.execPath(), fromFileUrl(Deno.mainModule), ...Deno.args];
-}
-
-//deno-lint-ignore ban-ts-comment
-//@ts-ignore
-const _argv: {
-  [Deno.customInspect]: () => string;
-  [key: number]: string;
-} = [];
-
-Object.defineProperty(_argv, Deno.customInspect, {
-  enumerable: false,
-  configurable: false,
-  get: function () {
-    return getArguments();
-  },
-});
-
-/**
- * https://nodejs.org/api/process.html#process_process_argv
- * Read permissions are required in order to get the executable route
- * */
-export const argv: Record<string, string> = new Proxy(_argv, {
-  get(target, prop) {
-    if (prop === Deno.customInspect) {
-      return target[Deno.customInspect];
-    }
-    return getArguments()[prop as number];
-  },
-  ownKeys() {
-    return Reflect.ownKeys(getArguments());
-  },
-});
+// TODO(kt3k): The first item should be the entrypoint of
+// node compatibility library.
+const argv = [Deno.execPath(), fromFileUrl(Deno.mainModule), ...Deno.args];
 
 /** https://nodejs.org/api/process.html#process_process_chdir_directory */
 export const chdir = Deno.chdir;
