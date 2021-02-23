@@ -1,3 +1,14 @@
+### 0.88.0 / 2021.02.19
+
+- BREAKING(encoding): remove module utf8.ts (#728)
+- chore: fix typo in contributing section (#709)
+- docs(bytes): improve README.md (#737)
+- feat(node): add native module polyfills: url, crypto (#729)
+- feat(node): add tty module (#738)
+- feat(node): support conditional exports (#726)
+- fix(std/testing) : Handle Symbols correctly in deep equalities (#731)
+- test(node): run external tests with --quiet (#732)
+
 ### 0.87.0 / 2021.02.12
 
 - BREAKING(http/cookie): remove Cookies and SameSite type aliases (#720)
