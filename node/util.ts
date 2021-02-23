@@ -1,9 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-export { promisify } from "./_util/_util_promisify.ts";
-export { callbackify } from "./_util/_util_callbackify.ts";
+import { promisify } from "./_util/_util_promisify.ts";
+import { callbackify } from "./_util/_util_callbackify.ts";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
 import * as types from "./_util/_util_types.ts";
-export { types };
+export { callbackify, promisify, types };
 
 const NumberIsSafeInteger = Number.isSafeInteger;
 
@@ -105,7 +105,7 @@ export function isPrimitive(value: unknown): boolean {
   );
 }
 
-/** 
+/**
  * Returns a system error name from an error code number.
  * @param code error code number
  */
@@ -162,6 +162,9 @@ export default {
   isPrimitive,
   getSystemErrorName,
   deprecate,
+  callbackify,
+  promisify,
+  types,
   TextDecoder,
   TextEncoder,
 };
