@@ -13,6 +13,7 @@ deno standard library as it's a compatibility module.
 - [ ] child_process
 - [ ] cluster
 - [ ] console
+- [x] constants _partly_
 - [x] crypto _partly_
 - [ ] dgram
 - [ ] dns
@@ -49,7 +50,6 @@ deno standard library as it's a compatibility module.
 
 These builtins are deprecated in NodeJS v13 and will probably not be polyfilled:
 
-- constants
 - domain
 - freelist
 - punycode
