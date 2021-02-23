@@ -62,8 +62,8 @@ export function readableStreamFromIterable<T>(
   iterable: Iterable<T> | AsyncIterable<T>,
 ): ReadableStream<T> {
   const iterator: Iterator<T> | AsyncIterator<T> =
-    (iterable as Iterable<T>)[Symbol.iterator]?.() ??
-      (iterable as AsyncIterable<T>)[Symbol.asyncIterator]?.();
+    (iterable as AsyncIterable<T>)[Symbol.asyncIterator]?.() ??
+      (iterable as Iterable<T>)[Symbol.iterator]?.();
   return new ReadableStream({
     async pull(controller) {
       const { value, done } = await iterator.next();
