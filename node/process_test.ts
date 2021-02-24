@@ -102,7 +102,6 @@ Deno.test({
         Deno.execPath(),
         "run",
         "--quiet",
-        "--allow-read",
         "./testdata/process_exit.ts",
       ],
       cwd,

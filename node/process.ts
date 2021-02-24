@@ -27,9 +27,21 @@ const notImplementedEvents = [
 /** https://nodejs.org/api/process.html#process_process_arch */
 export const arch = Deno.build.arch;
 
-// TODO(kt3k): The first item should be the entrypoint of
-// node compatibility library.
-const argv = [Deno.execPath(), fromFileUrl(Deno.mainModule), ...Deno.args];
+// The first 2 items are placeholders.
+// They will be overwritten by the below Object.defineProperty calls.
+const argv = ["", "", ...Deno.args];
+// Overwrites the 1st item with getter.
+Object.defineProperty(argv, "0", {
+  get() {
+    return Deno.execPath();
+  },
+});
+// Overwrites the 2nd item with getter.
+Object.defineProperty(argv, "1", {
+  get() {
+    return fromFileUrl(Deno.mainModule);
+  },
+});
 
 /** https://nodejs.org/api/process.html#process_process_chdir_directory */
 export const chdir = Deno.chdir;
