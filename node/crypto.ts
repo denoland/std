@@ -85,7 +85,10 @@ export class Hash extends Transform {
  * Creates and returns a Hash object that can be used to generate hash digests
  * using the given `algorithm`. Optional `options` argument controls stream behavior.
  */
-export function createHash(algorithm: SupportedAlgorithm, opts?: TransformOptions) {
+export function createHash(
+  algorithm: SupportedAlgorithm,
+  opts?: TransformOptions,
+) {
   return new Hash(algorithm, opts);
 }
 
