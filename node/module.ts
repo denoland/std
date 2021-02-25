@@ -25,7 +25,7 @@ import nodeAssert from "./assert.ts";
 import nodeBuffer from "./buffer.ts";
 import nodeCrypto from "./crypto.ts";
 import nodeConstants from "./constants.ts";
-import nodeEvents from "./events.ts";
+import EventEmitter from "./events.ts";
 import nodeFS from "./fs.ts";
 import nodeOs from "./os.ts";
 import nodePath from "./path.ts";
@@ -608,7 +608,10 @@ nativeModulePolyfill.set(
   createNativeModule("constants", nodeConstants),
 );
 nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
-nativeModulePolyfill.set("events", createNativeModule("events", nodeEvents));
+nativeModulePolyfill.set(
+  "events",
+  createNativeModule("events", Object.assign(EventEmitter, { EventEmitter })),
+);
 nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
 nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
 nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
