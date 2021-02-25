@@ -51,7 +51,7 @@ export let defaultMaxListeners = 10;
 /**
  * See also https://nodejs.org/api/events.html
  */
-export default class EventEmitter {
+export class EventEmitter {
   public static captureRejectionSymbol = Symbol.for("nodejs.rejection");
   public static errorMonitor = Symbol("events.errorMonitor");
   public static get defaultMaxListeners() {
@@ -558,7 +558,8 @@ export default class EventEmitter {
   }
 }
 
-export { EventEmitter };
+export default Object.assign(EventEmitter, { EventEmitter });
+
 export const captureRejectionSymbol = EventEmitter.captureRejectionSymbol;
 export const errorMonitor = EventEmitter.errorMonitor;
 export const listenerCount = EventEmitter.listenerCount;
