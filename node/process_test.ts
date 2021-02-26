@@ -130,6 +130,10 @@ Deno.test({
       process.argv[1],
       path.fromFileUrl(Deno.mainModule),
     );
+    // argv supports array methods.
+    assert(Array.isArray(process.argv.slice(2)));
+    assertEquals(process.argv.indexOf(Deno.execPath()), 0);
+    assertEquals(process.argv.indexOf(path.fromFileUrl(Deno.mainModule)), 1);
   },
 });
 

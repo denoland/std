@@ -28,38 +28,19 @@ const notImplementedEvents = [
 /** https://nodejs.org/api/process.html#process_process_arch */
 export const arch = Deno.build.arch;
 
-function getArguments() {
-  return [Deno.execPath(), fromFileUrl(Deno.mainModule), ...Deno.args];
-}
-
-//deno-lint-ignore ban-ts-comment
-//@ts-ignore
-const _argv: {
-  [Deno.customInspect]: () => string;
-  [key: number]: string;
-} = [];
-
-Object.defineProperty(_argv, Deno.customInspect, {
-  enumerable: false,
-  configurable: false,
-  get: function () {
-    return getArguments();
+// The first 2 items are placeholders.
+// They will be overwritten by the below Object.defineProperty calls.
+const argv = ["", "", ...Deno.args];
+// Overwrites the 1st item with getter.
+Object.defineProperty(argv, "0", {
+  get() {
+    return Deno.execPath();
   },
 });
-
-/**
- * https://nodejs.org/api/process.html#process_process_argv
- * Read permissions are required in order to get the executable route
- * */
-export const argv: Record<string, string> = new Proxy(_argv, {
-  get(target, prop) {
-    if (prop === Deno.customInspect) {
-      return target[Deno.customInspect];
-    }
-    return getArguments()[prop as number];
-  },
-  ownKeys() {
-    return Reflect.ownKeys(getArguments());
+// Overwrites the 2nd item with getter.
+Object.defineProperty(argv, "1", {
+  get() {
+    return fromFileUrl(Deno.mainModule);
   },
 });
 
