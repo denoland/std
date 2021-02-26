@@ -284,7 +284,7 @@ class Readable extends Stream {
       dest.end();
     }
 
-    let ondrain: () => void;
+    let ondrain: (() => void) | undefined;
 
     let cleanedUp = false;
     function cleanup() {
