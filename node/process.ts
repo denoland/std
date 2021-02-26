@@ -56,7 +56,7 @@ export const argv: Record<string, string> = new Proxy(_argv, {
     if (prop === Deno.customInspect) {
       return target[Deno.customInspect];
     }
-    return getArguments()[prop as number];
+    return getArguments()[prop as unknown as number];
   },
   ownKeys() {
     return Reflect.ownKeys(getArguments());
