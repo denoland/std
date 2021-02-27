@@ -21,6 +21,7 @@ import { watch } from "./_fs/_fs_watch.ts";
 import { open, openSync } from "./_fs/_fs_open.ts";
 import { stat, statSync } from "./_fs/_fs_stat.ts";
 import { lstat, lstatSync } from "./_fs/_fs_lstat.ts";
+import { truncate, truncateSync } from "./_fs/_fs_truncate.ts";
 
 import * as promises from "./_fs/promises/mod.ts";
 
@@ -68,6 +69,8 @@ export default {
   watch,
   writeFile,
   writeFileSync,
+  truncate,
+  truncateSync,
 };
 
 export {
@@ -109,6 +112,8 @@ export {
   rmdirSync,
   stat,
   statSync,
+  truncate,
+  truncateSync,
   unlink,
   unlinkSync,
   watch,
