@@ -1,6 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import {
-  assert as denoAssert,
   assertEquals,
   assertMatch,
   assertNotEquals,
