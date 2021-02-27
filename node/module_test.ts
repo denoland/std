@@ -154,3 +154,8 @@ Deno.test("native modules are extensible", () => {
 Deno.test("Require file with shebang", () => {
   require("./testdata/shebang.js");
 });
+
+Deno.test("EventEmitter is exported correctly", () => {
+  const EventEmitter = require("events");
+  assertEquals(EventEmitter, EventEmitter.EventEmitter);
+});
