@@ -39,8 +39,15 @@ jobs:
         if: matrix.deno == 'canary'
         run: deno upgrade --canary
 
-      - name: Test
-        run: deno test --unstable --allow-all
+      - name: Run tests
+        run: deno test --coverage=./cov --unstable --allow-all
+
+      - name: Generate lcov
+        run: deno coverage --lcov ./cov > cov.lcov
+
+      - name: Upload coverage
+        if: ${{ secrets.CODECOV_TOKEN }}
+        run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}
 
   lint:
     runs-on: ubuntu-latest
