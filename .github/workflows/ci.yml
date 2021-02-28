@@ -39,8 +39,19 @@ jobs:
         if: matrix.deno == 'canary'
         run: deno upgrade --canary
 
-      - name: Test
-        run: deno test --unstable --allow-all
+      - name: Run tests
+        run: deno test --coverage=./cov --unstable --allow-all
+
+      - name: Generate lcov
+        if: matrix.deno == 'canary'
+        run: deno coverage --unstable --lcov ./cov > cov.lcov
+
+      - name: Upload coverage
+        if: matrix.deno == 'canary'
+        uses: codecov/codecov-action@v1
+        with:
+          name: ${{ matrix.os }}-${{ matrix.deno }}
+          files: cov.lcov
 
   lint:
     runs-on: ubuntu-latest
