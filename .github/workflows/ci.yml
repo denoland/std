@@ -46,8 +46,9 @@ jobs:
         run: deno coverage --lcov ./cov > cov.lcov
 
       - name: Upload coverage
-        if: ${{ secrets.CODECOV_TOKEN }}
-        run: bash <(curl -s https://codecov.io/bash) -t ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v1
+        with:
+          files: cov.lcov
 
   lint:
     runs-on: ubuntu-latest
