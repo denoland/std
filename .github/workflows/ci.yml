@@ -50,6 +50,7 @@ jobs:
         if: matrix.deno == 'canary'
         uses: codecov/codecov-action@v1
         with:
+          name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
 
   lint:
