@@ -22,6 +22,7 @@
 *************/
 
 import { unreachable } from "../testing/asserts.ts";
+import { inspect } from "./util.ts";
 
 /**
  * All error instances in Node have additional methods and properties
@@ -83,13 +84,36 @@ export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
   constructor(a1: string, a2: string | string[], a3: unknown) {
     super(
       "ERR_INVALID_ARG_TYPE",
+      // TODO(kt3k): Expression for a2 is wrong.
       `The "${a1}" argument must be of type ${
         typeof a2 === "string"
           ? a2.toLocaleLowerCase()
           : a2.map((x) => x.toLocaleLowerCase()).join(", ")
-      }. Received ${typeof a3} (${a3})`,
+      }.${invalidArgTypeHelper(a3)}`,
     );
   }
+}
+
+// A helper function to simplify checking for ERR_INVALID_ARG_TYPE output.
+// deno-lint-ignore ban-types
+function invalidArgTypeHelper(input: any) {
+  if (input == null) {
+    return ` Received ${input}`;
+  }
+  if (typeof input === "function" && input.name) {
+    return ` Received function ${input.name}`;
+  }
+  if (typeof input === "object") {
+    if (input.constructor && input.constructor.name) {
+      return ` Received an instance of ${input.constructor.name}`;
+    }
+    return ` Received ${inspect(input, { depth: -1 })}`;
+  }
+  let inspected = inspect(input, { colors: false });
+  if (inspected.length > 25) {
+    inspected = `${inspected.slice(0, 25)}...`;
+  }
+  return ` Received type ${typeof input} (${inspected})`;
 }
 
 export class ERR_OUT_OF_RANGE extends RangeError {
