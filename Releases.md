@@ -1,3 +1,20 @@
+### 0.89.0 / 2021.03.02
+
+- BREAKING(io/streams): Strengthen iterator to readable stream conversion (#735)
+- build: collect and upload code coverage (#770)
+- feat(node): add constants module (#747)
+- feat(node): add crypto.createHash (#757)
+- feat(node): add process.hrtime function (#751)
+- feat(node): add truncate and truncateSync (#765)
+- fix(node): export promisify & callbackify (#748)
+- fix(node): fix export items of events (#758)
+- fix(node): ignore shebang (#746)
+- fix(node): native module needs to be extensible (#745)
+- fix(node/process): make process.argv an array (#749)
+- fix: fix type errors in canary test (#762)
+- refactor: fix codes to pass `no-unused-vars` lint (#764)
+- test(path): update test cases for canary (#775)
+
 ### 0.88.0 / 2021.02.19
 
 - BREAKING(encoding): remove module utf8.ts (#728)
