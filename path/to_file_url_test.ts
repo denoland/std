@@ -50,13 +50,14 @@ Deno.test("[path] toFileUrl (win32)", function () {
   // TODO(kt3k): Enable this assertion again in stable deno when 1.8.0 is landed.
   if (isCanary) {
     assertThrows(
-      () => assertEquals(
-        win32.toFileUrl("//localhost/home/foo").href,
-        "file://localhost/home/foo",
-      ),
+      () =>
+        assertEquals(
+          win32.toFileUrl("//localhost/home/foo").href,
+          "file://localhost/home/foo",
+        ),
       TypeError,
       "Invalid hostname.",
-    )
+    );
     assertEquals(win32.toFileUrl("//localhost/").href, "file:///localhost/");
   }
   assertThrows(
