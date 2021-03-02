@@ -1,7 +1,6 @@
 import {
   assert,
   assertEquals,
-  assertStringIncludes,
   assertThrows,
   assertThrowsAsync,
 } from "../../testing/asserts.ts";

@@ -210,7 +210,7 @@ export function assertEquals(
     );
     const diffMsg = buildMessage(diffResult).join("\n");
     message = `Values are not equal:\n${diffMsg}`;
-  } catch (e) {
+  } catch {
     message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
   }
   if (msg) {
@@ -247,12 +247,12 @@ export function assertNotEquals(
   let expectedString: string;
   try {
     actualString = String(actual);
-  } catch (e) {
+  } catch {
     actualString = "[Cannot display]";
   }
   try {
     expectedString = String(expected);
-  } catch (e) {
+  } catch {
     expectedString = "[Cannot display]";
   }
   if (!msg) {
@@ -312,7 +312,7 @@ export function assertStrictEquals(
         );
         const diffMsg = buildMessage(diffResult).join("\n");
         message = `Values are not strictly equal:\n${diffMsg}`;
-      } catch (e) {
+      } catch {
         message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
       }
     }

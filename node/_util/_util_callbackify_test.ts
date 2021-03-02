@@ -204,7 +204,7 @@ Deno.test(
 
       const thenableFn = (): PromiseLike<never> => {
         return {
-          then(onfulfilled, onrejected): PromiseLike<never> {
+          then(_onfulfilled, onrejected): PromiseLike<never> {
             assert(onrejected);
             onrejected(value);
             return this;

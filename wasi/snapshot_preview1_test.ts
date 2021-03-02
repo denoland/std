@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import Context from "./snapshot_preview1.ts";
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { copy } from "../fs/mod.ts";
 import * as path from "../path/mod.ts";
 
