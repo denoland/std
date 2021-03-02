@@ -2,7 +2,6 @@
 import {
   assert,
   assertEquals,
-  assertNotEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
 import { BufReader } from "../io/bufio.ts";

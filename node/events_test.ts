@@ -681,7 +681,7 @@ Deno.test("Elements that extend EventEmitter listener alias don't end up in a de
   const x = new X();
   try {
     x.on("x", () => {});
-  } catch (e) {
+  } catch {
     fail();
   }
 });

@@ -36,7 +36,7 @@ function compileList(
     result.push(currentType);
   }
 
-  return result.filter((type, index): unknown => !exclude.includes(index));
+  return result.filter((_type, index): unknown => !exclude.includes(index));
 }
 
 export type TypeMap = { [k in KindType | "fallback"]: ArrayObject<Type> };
