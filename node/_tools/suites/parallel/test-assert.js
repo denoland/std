@@ -740,6 +740,7 @@ a.throws(
   obj2[inspect.custom] = () => '{}';
   // No infinite loop and no custom inspect.
   assert.throws(() => assert.deepEqual(obj1, obj2), {
+    code: "ERR_ASSERTION",
     /* TODO(kt3k): Enable this assertion
     message: `${start}\n` +
     `${actExp}\n` +
@@ -756,10 +757,11 @@ a.throws(
   assert.throws(
     () => assert.notDeepEqual([1], [1]),
     {
-    /* TODO(kt3k): Enable this assertion
+      code: "ERR_ASSERTION",
+      /* TODO(kt3k): Enable this assertion
       message: 'Expected "actual" not to be strictly deep-equal to:\n\n' +
                '[\n  1\n]\n'
-    */
+      */
     }
   );
 
@@ -1057,6 +1059,7 @@ assert.throws(
   assert.throws(() => {
     assert.ok((() => Boolean('' === false))());
   }, {
+    code: "ERR_ASSERTION",
     /* TODO(kt3k): Enable this assertion
     message: 'The expression evaluated to a falsy value:\n\n' +
              "  assert.ok((() => Boolean('\\u0001' === false))())\n"

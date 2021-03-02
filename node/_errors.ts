@@ -94,6 +94,15 @@ export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
   }
 }
 
+export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
+  constructor(name: string, value: unknown, reason: string) {
+    super(
+      "ERR_INVALID_ARG_VALUE",
+      `The argument '${name}' ${reason}. Received ${inspect(value)}`,
+    );
+  }
+}
+
 // A helper function to simplify checking for ERR_INVALID_ARG_TYPE output.
 // deno-lint-ignore ban-types
 function invalidArgTypeHelper(input: any) {

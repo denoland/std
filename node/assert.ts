@@ -2,7 +2,7 @@
 // deno-lint-ignore-file ban-types
 import { AssertionError } from "./assertion_error.ts";
 import * as asserts from "../testing/asserts.ts";
-import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { ERR_INVALID_ARG_TYPE, ERR_INVALID_ARG_VALUE } from "./_errors.ts";
 
 /** Converts the std assertion error to node.js assertion error */
 function toNode(
@@ -62,6 +62,14 @@ function throws(
   // Check arg types
   if (typeof fn !== "function") {
     throw new ERR_INVALID_ARG_TYPE("fn", "function", fn);
+  }
+  if (
+    typeof error === "object" && error !== null &&
+    Object.getPrototypeOf(error) === Object.prototype &&
+    Object.keys(error).length === 0
+  ) {
+    // error is an empty object
+    throw new ERR_INVALID_ARG_VALUE("error", error, "may not be an empty object");
   }
   if (typeof message === "string") {
     if (
