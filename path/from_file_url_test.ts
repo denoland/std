@@ -25,13 +25,18 @@ Deno.test("[path] fromFileUrl", function () {
   );
 });
 
+const isCanary = /\d\.\d\.\d\+[0-9a-f]{7}/.test(Deno.version.deno);
+
 Deno.test("[path] fromFileUrl (win32)", function () {
   assertEquals(win32.fromFileUrl(new URL("file:///home/foo")), "\\home\\foo");
   assertEquals(win32.fromFileUrl("file:///"), "\\");
   assertEquals(win32.fromFileUrl("file:///home/foo"), "\\home\\foo");
   assertEquals(win32.fromFileUrl("file:///home/foo%20bar"), "\\home\\foo bar");
   assertEquals(win32.fromFileUrl("file:///%"), "\\%");
-  assertEquals(win32.fromFileUrl("file://localhost/foo"), "\\\\localhost\\foo");
+  // TODO(kt3k): Enable this assertion again in stable deno when 1.8.0 is landed.
+  if (isCanary) {
+    assertEquals(win32.fromFileUrl("file://localhost/foo"), "\\foo");
+  }
   assertEquals(win32.fromFileUrl("file:///C:"), "C:\\");
   assertEquals(win32.fromFileUrl("file:///C:/"), "C:\\");
   // Drop the hostname if a drive letter is parsed.
