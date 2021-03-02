@@ -1,6 +1,5 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
 /************ NOT IMPLEMENTED
-* ERR_INVALID_ARG_VALUE
 * ERR_INVALID_MODULE_SPECIFIER
 * ERR_INVALID_PACKAGE_TARGET
 * ERR_INVALID_URL_SCHEME

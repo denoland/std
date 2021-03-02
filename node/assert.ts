@@ -2,7 +2,11 @@
 // deno-lint-ignore-file ban-types
 import { AssertionError } from "./assertion_error.ts";
 import * as asserts from "../testing/asserts.ts";
-import { ERR_INVALID_ARG_TYPE, ERR_INVALID_ARG_VALUE } from "./_errors.ts";
+import {
+  ERR_AMBIGUOUS_ARGUMENT,
+  ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_ARG_VALUE,
+} from "./_errors.ts";
 
 /** Converts the std assertion error to node.js assertion error */
 function toNode(
@@ -69,7 +73,11 @@ function throws(
     Object.keys(error).length === 0
   ) {
     // error is an empty object
-    throw new ERR_INVALID_ARG_VALUE("error", error, "may not be an empty object");
+    throw new ERR_INVALID_ARG_VALUE(
+      "error",
+      error,
+      "may not be an empty object",
+    );
   }
   if (typeof message === "string") {
     if (
@@ -102,8 +110,28 @@ function throws(
   try {
     fn();
   } catch (e) {
-    if (!error) {
-      return;
+    if (typeof error === "string") {
+      if (arguments.length === 3) {
+        throw new ERR_INVALID_ARG_TYPE(
+          "error",
+          ["Object", "Error", "Function", "RegExp"],
+          error,
+        );
+      } else if (typeof e === "object" && e !== null) {
+        if (e.message === error) {
+          throw new ERR_AMBIGUOUS_ARGUMENT(
+            "error/message",
+            `The error message "${e.message}" is identical to the message.`,
+          );
+        }
+      } else if (e === error) {
+        throw new ERR_AMBIGUOUS_ARGUMENT(
+          "error/message",
+          `The error "${e}" is identical to the message.`,
+        );
+      }
+      message = error;
+      error = undefined;
     }
     if (error instanceof Function && error.prototype !== undefined) {
       // error is a constructor
@@ -152,6 +180,22 @@ function throws(
         keys.push("name", "message");
       }
       for (const k of keys) {
+        if (e == null) {
+          throw new AssertionError({
+            message: message || "object is expected to thrown, but got null",
+            actual: e,
+            expected: error,
+            operator: "throws",
+          });
+        }
+        if (typeof e === "string") {
+          throw new AssertionError({
+            message: message || `object is expected to thrown, but got string: ${e}`,
+            actual: e,
+            expected: error,
+            operator: "throws",
+          });
+        }
         if (!(k in e)) {
           throw new AssertionError({
             message: message || `A key in the expected object is missing: ${k}`,
@@ -168,6 +212,9 @@ function throws(
           deepStrictEqual(actual, expected);
         }
       }
+      return;
+    }
+    if (typeof error === "undefined") {
       return;
     }
     throw new Error(`Invalid expectation: ${error}`);
@@ -367,7 +414,7 @@ function strictEqual(
 ): void {
   toNode(
     () => asserts.assertStrictEquals(actual, expected),
-    { message, operator: "===", actual, expected },
+    { message, operator: "strictEqual", actual, expected },
   );
 }
 function notStrictEqual(
@@ -377,7 +424,7 @@ function notStrictEqual(
 ) {
   toNode(
     () => asserts.assertNotStrictEquals(actual, expected),
-    { message, operator: "!==", actual, expected },
+    { message, actual, expected, operator: "notStrictEqual" },
   );
 }
 function deepEqual() {}
@@ -389,7 +436,7 @@ function deepStrictEqual(
 ) {
   toNode(
     () => asserts.assertEquals(actual, expected),
-    { message, actual, expected },
+    { message, actual, expected, operator: "deepStrictEqual" },
   );
 }
 function notDeepStrictEqual(
@@ -399,7 +446,7 @@ function notDeepStrictEqual(
 ) {
   toNode(
     () => asserts.assertNotEquals(actual, expected),
-    { message, actual, expected },
+    { message, actual, expected, operator: "deepNotStrictEqual" },
   );
 }
 
@@ -409,7 +456,7 @@ function fail() {
 function match(actual: string, expected: RegExp, message?: string | Error) {
   toNode(
     () => asserts.assertMatch(actual, expected),
-    { message, actual, expected },
+    { message, actual, expected, operator: "match" },
   );
 }
 
