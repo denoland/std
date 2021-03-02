@@ -24,6 +24,7 @@ let arg: string | undefined = undefined;
 let script: string | undefined = undefined;
 // We don't use std/flags to parse the cli options because we need to separate
 // options for node/main.ts and the options for the node.js script.
+// deno-lint-ignore no-cond-assign
 while (arg = args.shift()) {
   if (arg === "-h" || arg === "--help") {
     opts.help = true;
@@ -50,7 +51,9 @@ if (!script) {
   Deno.exit(1);
 }
 
+// deno-lint-ignore no-undef
 process.argv = ["", script, ...args];
+// deno-lint-ignore no-undef
 Object.defineProperty(process.argv, "0", {
   get() {
     return Deno.execPath();
