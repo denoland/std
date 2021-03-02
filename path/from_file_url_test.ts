@@ -31,7 +31,8 @@ Deno.test("[path] fromFileUrl (win32)", function () {
   assertEquals(win32.fromFileUrl("file:///home/foo"), "\\home\\foo");
   assertEquals(win32.fromFileUrl("file:///home/foo%20bar"), "\\home\\foo bar");
   assertEquals(win32.fromFileUrl("file:///%"), "\\%");
-  assertEquals(win32.fromFileUrl("file://localhost/foo"), "\\\\localhost\\foo");
+  // TODO(kt3k): Update and re-enable this when 1.8 is released
+  // assertEquals(win32.fromFileUrl("file://localhost/foo"), "\\\\localhost\\foo");
   assertEquals(win32.fromFileUrl("file:///C:"), "C:\\");
   assertEquals(win32.fromFileUrl("file:///C:/"), "C:\\");
   // Drop the hostname if a drive letter is parsed.
