@@ -3,6 +3,7 @@
 export function delay<T>(ms: number): Promise<T>;
 export function delay<T>(ms: number, fn: () => T): Promise<T>;
 export function delay<T>(ms: number, value: T): Promise<T>;
+// deno-lint-ignore no-explicit-any
 export function delay<T>(ms: number, arg?: any): Promise<T> {
   return typeof arg == "function"
     ? new Promise((res) => setTimeout(() => res(arg()), ms))
