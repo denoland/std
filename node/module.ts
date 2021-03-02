@@ -608,7 +608,10 @@ nativeModulePolyfill.set(
   createNativeModule("constants", nodeConstants),
 );
 nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
-nativeModulePolyfill.set("events", createNativeModule("events", nodeEvents));
+nativeModulePolyfill.set(
+  "events",
+  createNativeModule("events", nodeEvents),
+);
 nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
 nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
 nativeModulePolyfill.set("path", createNativeModule("path", nodePath));

@@ -83,7 +83,7 @@ Deno.test({
       const firstRead: Dirent | null = await dir.read();
       const secondRead: Dirent | null = await dir.read(
         // deno-lint-ignore no-explicit-any
-        (err: any, secondResult: Dirent) => {
+        (_err: any, secondResult: Dirent) => {
           assert(
             secondResult.name === "bar.txt" ||
               secondResult.name === "foo.txt",

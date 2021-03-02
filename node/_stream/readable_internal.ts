@@ -1,7 +1,7 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
 import { Buffer } from "../buffer.ts";
 import type Duplex from "./duplex.ts";
-import type EventEmitter from "../events.ts";
+import { EventEmitter } from "../events.ts";
 import type Readable from "./readable.ts";
 import type Writable from "./writable.ts";
 import type { ReadableState } from "./readable.ts";

@@ -160,7 +160,7 @@ export class Server implements AsyncIterable<ServerRequest> {
               status: 400,
               body: new TextEncoder().encode(`${error.message}\r\n\r\n`),
             });
-          } catch (error) {
+          } catch {
             // The connection is broken.
           }
         }
@@ -187,7 +187,7 @@ export class Server implements AsyncIterable<ServerRequest> {
       try {
         // Consume unread body and trailers if receiver didn't consume those data
         await request.finalize();
-      } catch (error) {
+      } catch {
         // Invalid data was received or the connection was closed.
         break;
       }
@@ -196,7 +196,7 @@ export class Server implements AsyncIterable<ServerRequest> {
     this.untrackConnection(conn);
     try {
       conn.close();
-    } catch (e) {
+    } catch {
       // might have been already closed
     }
   }

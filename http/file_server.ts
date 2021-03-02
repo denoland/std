@@ -199,7 +199,7 @@ async function serveDir(
   return res;
 }
 
-function serveFallback(req: ServerRequest, e: Error): Promise<Response> {
+function serveFallback(_req: ServerRequest, e: Error): Promise<Response> {
   if (e instanceof URIError) {
     return Promise.resolve({
       status: 400,

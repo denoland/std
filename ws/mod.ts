@@ -228,7 +228,7 @@ class WebSocketImpl implements WebSocket {
       let frame: WebSocketFrame;
       try {
         frame = await readFrame(this.bufReader);
-      } catch (e) {
+      } catch {
         this.ensureSocketClosed();
         break;
       }
