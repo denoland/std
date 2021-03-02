@@ -187,7 +187,7 @@ Deno.test({
         secure: true,
         maxAge: 0,
       });
-    } catch (e) {
+    } catch {
       error = true;
     }
     assert(error);

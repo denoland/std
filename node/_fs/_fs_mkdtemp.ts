@@ -64,7 +64,7 @@ function parseEncoding(
   if (encoding) {
     try {
       new TextDecoder(encoding);
-    } catch (error) {
+    } catch {
       throw new ERR_INVALID_OPT_VALUE_ENCODING(encoding);
     }
   }

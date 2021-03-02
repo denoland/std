@@ -1,0 +1,8 @@
+comment: false
+codecov:
+  require_ci_to_pass: true
+coverage:
+  status:
+    project:
+      default:
+        informational: true

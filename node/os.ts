@@ -211,6 +211,7 @@ export function uptime(): number {
 
 /** Not yet implemented */
 export function userInfo(
+  // deno-lint-ignore no-unused-vars
   options: UserInfoOptions = { encoding: "utf-8" },
 ): UserInfo {
   notImplemented(SEE_GITHUB_ISSUE);

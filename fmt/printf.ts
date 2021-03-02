@@ -468,7 +468,7 @@ class Printf {
     let s = "";
     try {
       s = String.fromCodePoint(n);
-    } catch (RangeError) {
+    } catch {
       s = UNICODE_REPLACEMENT_CHARACTER;
     }
     return this.pad(s);

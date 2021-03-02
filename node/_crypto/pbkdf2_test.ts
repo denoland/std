@@ -3,11 +3,7 @@ import {
   pbkdf2,
   pbkdf2Sync,
 } from "./pbkdf2.ts";
-import {
-  assert,
-  assertEquals,
-  assertStringIncludes,
-} from "../../testing/asserts.ts";
+import { assert, assertEquals } from "../../testing/asserts.ts";
 import { assertCallbackErrorUncaught } from "../_utils.ts";
 
 type Pbkdf2Fixture = {
