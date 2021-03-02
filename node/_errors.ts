@@ -103,7 +103,7 @@ export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
 }
 
 // A helper function to simplify checking for ERR_INVALID_ARG_TYPE output.
-// deno-lint-ignore ban-types
+// deno-lint-ignore no-explicit-any
 function invalidArgTypeHelper(input: any) {
   if (input == null) {
     return ` Received ${input}`;

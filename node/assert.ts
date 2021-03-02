@@ -2,10 +2,12 @@
 // deno-lint-ignore-file ban-types
 import { AssertionError } from "./assertion_error.ts";
 import * as asserts from "../testing/asserts.ts";
+import { inspect } from "./util.ts";
 import {
   ERR_AMBIGUOUS_ARGUMENT,
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_ARG_VALUE,
+  ERR_MISSING_ARGS,
 } from "./_errors.ts";
 
 /** Converts the std assertion error to node.js assertion error */
@@ -149,7 +151,7 @@ function throws(
     }
     if (error instanceof Function) {
       const received = error(e);
-      if (received) {
+      if (received === true) {
         return;
       }
       throw new AssertionError({
@@ -190,7 +192,8 @@ function throws(
         }
         if (typeof e === "string") {
           throw new AssertionError({
-            message: message || `object is expected to thrown, but got string: ${e}`,
+            message: message ||
+              `object is expected to thrown, but got string: ${e}`,
             actual: e,
             expected: error,
             operator: "throws",
@@ -205,6 +208,7 @@ function throws(
           });
         }
         const actual = e[k];
+        // deno-lint-ignore no-explicit-any
         const expected = (error as any)[k];
         if (typeof actual === "string" && expected instanceof RegExp) {
           match(actual, expected);
@@ -346,6 +350,10 @@ function equal(
   expected: unknown,
   message?: string | Error,
 ): void {
+  if (arguments.length < 2) {
+    throw new ERR_MISSING_ARGS("actual", "expected");
+  }
+
   if (actual == expected) {
     return;
   }
@@ -377,6 +385,10 @@ function notEqual(
   expected: unknown,
   message?: string | Error,
 ): void {
+  if (arguments.length < 2) {
+    throw new ERR_MISSING_ARGS("actual", "expected");
+  }
+
   if (Number.isNaN(actual) && Number.isNaN(expected)) {
     throw new AssertionError({
       message: `${actual} != ${expected}`,
@@ -412,6 +424,10 @@ function strictEqual(
   expected: unknown,
   message?: string | Error,
 ): void {
+  if (arguments.length < 2) {
+    throw new ERR_MISSING_ARGS("actual", "expected");
+  }
+
   toNode(
     () => asserts.assertStrictEquals(actual, expected),
     { message, operator: "strictEqual", actual, expected },
@@ -422,18 +438,41 @@ function notStrictEqual(
   expected: unknown,
   message?: string | Error,
 ) {
+  if (arguments.length < 2) {
+    throw new ERR_MISSING_ARGS("actual", "expected");
+  }
+
   toNode(
     () => asserts.assertNotStrictEquals(actual, expected),
     { message, actual, expected, operator: "notStrictEqual" },
   );
 }
-function deepEqual() {}
-function notDeepEqual() {}
+
+function deepEqual() {
+  if (arguments.length < 2) {
+    throw new ERR_MISSING_ARGS("actual", "expected");
+  }
+
+  // TODO(kt3k): Implement deepEqual
+  throw new Error("Not implemented");
+}
+function notDeepEqual() {
+  if (arguments.length < 2) {
+    throw new ERR_MISSING_ARGS("actual", "expected");
+  }
+
+  // TODO(kt3k): Implement notDeepEqual
+  throw new Error("Not implemented");
+}
 function deepStrictEqual(
   actual: unknown,
   expected: unknown,
   message?: string | Error,
 ) {
+  if (arguments.length < 2) {
+    throw new ERR_MISSING_ARGS("actual", "expected");
+  }
+
   toNode(
     () => asserts.assertEquals(actual, expected),
     { message, actual, expected, operator: "deepStrictEqual" },
@@ -444,6 +483,10 @@ function notDeepStrictEqual(
   expected: unknown,
   message?: string | Error,
 ) {
+  if (arguments.length < 2) {
+    throw new ERR_MISSING_ARGS("actual", "expected");
+  }
+
   toNode(
     () => asserts.assertNotEquals(actual, expected),
     { message, actual, expected, operator: "deepNotStrictEqual" },
@@ -453,10 +496,49 @@ function notDeepStrictEqual(
 function fail() {
   toNode(() => fail());
 }
-function match(actual: string, expected: RegExp, message?: string | Error) {
+function match(actual: string, regexp: RegExp, message?: string | Error) {
+  if (arguments.length < 2) {
+    throw new ERR_MISSING_ARGS("actual", "regexp");
+  }
+  if (!(regexp instanceof RegExp)) {
+    throw new ERR_INVALID_ARG_TYPE("regexp", "RegExp", regexp);
+  }
+
   toNode(
-    () => asserts.assertMatch(actual, expected),
-    { message, actual, expected, operator: "match" },
+    () => asserts.assertMatch(actual, regexp),
+    { message, actual, expected: regexp, operator: "match" },
+  );
+}
+
+function doesNotMatch(
+  string: string,
+  regexp: RegExp,
+  message?: string | Error,
+) {
+  if (arguments.length < 2) {
+    throw new ERR_MISSING_ARGS("string", "regexp");
+  }
+  if (!(regexp instanceof RegExp)) {
+    throw new ERR_INVALID_ARG_TYPE("regexp", "RegExp", regexp);
+  }
+  if (typeof string !== "string") {
+    if (message instanceof Error) {
+      throw message;
+    }
+    throw new AssertionError({
+      message: message ||
+        `The "string" argument must be of type string. Received type ${typeof string} (${
+          inspect(string)
+        })`,
+      actual: string,
+      expected: regexp,
+      operator: "doesNotMatch",
+    });
+  }
+
+  toNode(
+    () => asserts.assertNotMatch(string, regexp),
+    { message, actual: string, expected: regexp, operator: "doesNotMatch" },
   );
 }
 
@@ -473,6 +555,7 @@ Object.assign(strict, {
   AssertionError,
   deepEqual: deepStrictEqual,
   deepStrictEqual,
+  doesNotMatch,
   doesNotThrow,
   equal: strictEqual,
   fail,
@@ -491,6 +574,7 @@ export default Object.assign(assert, {
   AssertionError,
   deepEqual,
   deepStrictEqual,
+  doesNotMatch,
   doesNotThrow,
   equal,
   fail,
@@ -509,6 +593,7 @@ export {
   AssertionError,
   deepEqual,
   deepStrictEqual,
+  doesNotMatch,
   doesNotThrow,
   equal,
   fail,
