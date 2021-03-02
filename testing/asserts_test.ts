@@ -15,6 +15,7 @@ import {
   assertStringIncludes,
   assertThrows,
   assertThrowsAsync,
+  assertTruthy,
   equal,
   fail,
   unimplemented,
@@ -42,18 +43,8 @@ Deno.test("testingEqual", function (): void {
       { hello: "world", hi: { there: "everyone else" } },
     ),
   );
-  assert(
-    equal(
-      { [Symbol.for("foo")]: "bar" },
-      { [Symbol.for("foo")]: "bar" },
-    ),
-  );
-  assert(
-    !equal(
-      { [Symbol("foo")]: "bar" },
-      { [Symbol("foo")]: "bar" },
-    ),
-  );
+  assert(equal({ [Symbol.for("foo")]: "bar" }, { [Symbol.for("foo")]: "bar" }));
+  assert(!equal({ [Symbol("foo")]: "bar" }, { [Symbol("foo")]: "bar" }));
   assert(equal(/deno/, /deno/));
   assert(!equal(/deno/, /node/));
   assert(equal(new Date(2019, 0, 3), new Date(2019, 0, 3)));
@@ -158,10 +149,7 @@ Deno.test("testingNotEquals", function (): void {
     new Date(2019, 0, 3, 4, 20, 1, 10),
     new Date(2019, 0, 3, 4, 20, 1, 20),
   );
-  assertNotEquals(
-    new Date("invalid"),
-    new Date(2019, 0, 3, 4, 20, 1, 20),
-  );
+  assertNotEquals(new Date("invalid"), new Date(2019, 0, 3, 4, 20, 1, 20));
   let didThrow;
   try {
     assertNotEquals("Raptor", "Raptor");
@@ -208,6 +196,24 @@ Deno.test("testingAssertStringContains", function (): void {
   let didThrow;
   try {
     assertStringIncludes("Denosaurus", "Raptor");
+    didThrow = false;
+  } catch (e) {
+    assert(e instanceof AssertionError);
+    didThrow = true;
+  }
+  assertEquals(didThrow, true);
+});
+
+Deno.test("testingAssertTruthy", function (): void {
+  assertTruthy(true);
+  let didThrow;
+  try {
+    assertTruthy(false);
+    assertTruthy(0);
+    assertTruthy("");
+    assertTruthy(null);
+    assertTruthy(undefined);
+    assertTruthy(NaN);
     didThrow = false;
   } catch (e) {
     assert(e instanceof AssertionError);
@@ -357,12 +363,15 @@ Deno.test("testingAssertObjectMatching", function (): void {
   {
     let didThrow;
     try {
-      assertObjectMatch({
-        foo: true,
-      }, {
-        foo: true,
-        bar: false,
-      });
+      assertObjectMatch(
+        {
+          foo: true,
+        },
+        {
+          foo: true,
+          bar: false,
+        },
+      );
       didThrow = false;
     } catch (e) {
       assert(e instanceof AssertionError);
@@ -659,10 +668,7 @@ Deno.test({
     );
     assertThrows(
       (): void =>
-        assertEquals(
-          new Date("invalid"),
-          new Date(2019, 0, 3, 4, 20, 1, 20),
-        ),
+        assertEquals(new Date("invalid"), new Date(2019, 0, 3, 4, 20, 1, 20)),
       AssertionError,
       [
         "Values are not equal:",
