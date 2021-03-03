@@ -83,8 +83,10 @@ export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
   constructor(a1: string, a2: string | string[], a3: unknown) {
     super(
       "ERR_INVALID_ARG_TYPE",
-      // TODO(kt3k): Expression for a2 is wrong.
       `The "${a1}" argument must be of type ${
+        // TODO(kt3k): Needs to handle "types" and "instances" differently.
+        // See the link below for details:
+        // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
         typeof a2 === "string"
           ? a2.toLocaleLowerCase()
           : a2.map((x) => x.toLocaleLowerCase()).join(", ")
