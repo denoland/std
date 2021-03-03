@@ -9,7 +9,7 @@ async function runNodeMain(...args: string[]) {
       "run",
       "--allow-read",
       "--unstable",
-      "main.ts",
+      "cli.ts",
       ...args,
     ],
     stdout: "piped",
