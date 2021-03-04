@@ -25,6 +25,7 @@ import nodeAssert from "./assert.ts";
 import nodeBuffer from "./buffer.ts";
 import nodeCrypto from "./crypto.ts";
 import nodeConstants from "./constants.ts";
+import nodeChildProcess from "./child_process.ts";
 import nodeEvents from "./events.ts";
 import nodeFS from "./fs.ts";
 import nodeOs from "./os.ts";
@@ -606,6 +607,10 @@ nativeModulePolyfill.set("buffer", createNativeModule("buffer", nodeBuffer));
 nativeModulePolyfill.set(
   "constants",
   createNativeModule("constants", nodeConstants),
+);
+nativeModulePolyfill.set(
+  "child_process",
+  createNativeModule("child_process", nodeChildProcess),
 );
 nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
 nativeModulePolyfill.set(
