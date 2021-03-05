@@ -108,7 +108,6 @@ Deno.test("[child_process spawn] Verify that a shell is executed", async () => {
 Deno.test("[node/child_process spawn] Verify that passing arguments works", async () => {
   const promise = withTimeout(3000);
   const echo = spawn("echo", ["foo"], {
-    encoding: "utf8",
     shell: true,
   });
   let echoOutput = "";
@@ -133,7 +132,6 @@ Deno.test("[node/child_process spawn] Verity that shell features can be used", a
   const promise = withTimeout(3000);
   const cmd = "echo bar | cat";
   const command = spawn(cmd, {
-    encoding: "utf8",
     shell: true,
   });
   let commandOutput = "";
@@ -162,7 +160,6 @@ Deno.test({
       `"${Deno.execPath()}" eval -p "Deno.env.toObject().BAZ"`,
       {
         env: { BAZ: "buzz", NO_COLOR: "true" },
-        encoding: "utf8",
         shell: true,
       },
     );

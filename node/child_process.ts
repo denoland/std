@@ -11,7 +11,6 @@ import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
 import { readLines } from "../io/bufio.ts";
-import type { Encodings } from "./_utils.ts";
 
 export class ChildProcess extends EventEmitter {
   exitCode: number | null = null;
@@ -40,7 +39,6 @@ export class ChildProcess extends EventEmitter {
     super();
 
     const {
-      encoding = "utf8",
       env = {},
       stdio = ["pipe", "pipe", "pipe"],
       detached,
@@ -112,12 +110,12 @@ export class ChildProcess extends EventEmitter {
 
       if (stdout === "pipe") {
         assert(this.#process.stdout);
-        this.stdout = createReadableFromReader(this.#process.stdout, encoding);
+        this.stdout = createReadableFromReader(this.#process.stdout);
       }
 
       if (stderr === "pipe") {
         assert(this.#process.stderr);
-        this.stderr = createReadableFromReader(this.#process.stderr, encoding);
+        this.stderr = createReadableFromReader(this.#process.stderr);
       }
 
       this.stdio[0] = this.stdin;
@@ -132,10 +130,11 @@ export class ChildProcess extends EventEmitter {
       (async () => {
         const status = await this.#process.status();
         this.exitCode = status.code;
-        this.#spawned.then(() => {
+        this.#spawned.then(async () => {
           // The 'exit' and 'close' events must be emitted after the 'spawn' event.
           this.emit("exit", this.exitCode, status.signal ?? null);
           this.kill();
+          await this._waitForChildStreamsToClose();
           this.emit("close", this.exitCode, status.signal ?? null);
         });
       })();
@@ -153,9 +152,17 @@ export class ChildProcess extends EventEmitter {
       return this.killed;
     }
 
-    if (this.#process.stdin) ensureClosed(this.#process.stdin);
-    if (this.#process.stdout) ensureClosed(this.#process.stdout);
-    if (this.#process.stderr) ensureClosed(this.#process.stderr);
+    if (this.#process.stdin) {
+      assert(this.stdin);
+      ensureClosed(this.#process.stdin);
+      this.stdin.destroy();
+    }
+    if (this.#process.stdout) {
+      ensureClosed(this.#process.stdout);
+    }
+    if (this.#process.stderr) {
+      ensureClosed(this.#process.stderr);
+    }
     ensureClosed(this.#process); // TODO Use `Deno.Process.kill` instead when it becomes stable.
     this.killed = true;
     return this.killed;
@@ -167,6 +174,26 @@ export class ChildProcess extends EventEmitter {
 
   unref(): void {
     notImplemented("ChildProcess.unref()");
+  }
+
+  private async _waitForChildStreamsToClose(): Promise<void> {
+    const promises = [] as Array<Promise<void>>;
+    if (this.stdin && !this.stdin.destroyed) {
+      const promise = deferred<void>();
+      this.stdin.once("close", () => promise.resolve());
+      promises.push(promise);
+    }
+    if (this.stdout && !this.stdout.destroyed) {
+      const promise = deferred<void>();
+      this.stdout.once("close", () => promise.resolve());
+      promises.push(promise);
+    }
+    if (this.stderr && !this.stderr.destroyed) {
+      const promise = deferred<void>();
+      this.stderr.once("close", () => promise.resolve());
+      promises.push(promise);
+    }
+    await Promise.all(promises);
   }
 
   private _handleError(err: Error): void {
@@ -205,7 +232,6 @@ type DenoStdio = "inherit" | "piped" | "null";
 
 interface ChildProcessOptions {
   cwd?: string;
-  encoding?: Encodings;
   env?: Record<string, string>;
   /**
    * @see https://nodejs.org/api/child_process.html#child_process_options_stdio
@@ -279,12 +305,10 @@ async function* readLinesSafely(
 
 function createReadableFromReader(
   reader: Deno.Reader,
-  encoding: Encodings,
 ): Readable {
   return Readable.from(readLinesSafely(reader), {
-    encoding,
     objectMode: false,
-  });
+  }).resume();
 }
 
 function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
