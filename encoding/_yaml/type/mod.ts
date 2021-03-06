@@ -6,13 +6,16 @@
 export { binary } from "./binary.ts";
 export { bool } from "./bool.ts";
 export { float } from "./float.ts";
+export { func } from "./function.ts";
 export { int } from "./int.ts";
 export { map } from "./map.ts";
 export { merge } from "./merge.ts";
 export { nil } from "./nil.ts";
 export { omap } from "./omap.ts";
 export { pairs } from "./pairs.ts";
+export { regexp } from "./regexp.ts";
 export { seq } from "./seq.ts";
 export { set } from "./set.ts";
 export { str } from "./str.ts";
 export { timestamp } from "./timestamp.ts";
+export { undefinedType } from "./undefined.ts";
