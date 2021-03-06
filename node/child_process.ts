@@ -185,11 +185,13 @@ export class ChildProcess extends EventEmitter {
     }
     if (this.stdout && !this.stdout.destroyed) {
       const promise = deferred<void>();
+      this.stdout.resume();
       this.stdout.once("close", () => promise.resolve());
       promises.push(promise);
     }
     if (this.stderr && !this.stderr.destroyed) {
       const promise = deferred<void>();
+      this.stderr.resume();
       this.stderr.once("close", () => promise.resolve());
       promises.push(promise);
     }
@@ -308,7 +310,7 @@ function createReadableFromReader(
 ): Readable {
   return Readable.from(readLinesSafely(reader), {
     objectMode: false,
-  }).resume();
+  });
 }
 
 function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
