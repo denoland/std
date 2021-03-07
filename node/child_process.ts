@@ -1,13 +1,14 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 // Some code adopted from https://github.com/nodejs/node/blob/master/lib/child_process.js.
-// Copyright Joyent, Inc. and other Node contributors.
+// Copyright Joyent, Inc. and other Node contributors. All rights reserved. MIT license.
 
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
 import { assert } from "../_util/assert.ts";
 import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
+import { quoteCmdArg } from "./_child_process/_quote_cmd_arg.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
 import { readLines } from "../io/bufio.ts";
@@ -49,7 +50,7 @@ export class ChildProcess extends EventEmitter {
       signal,
       serialization = "json",
       windowsHide,
-      windowsVerbatimArguments,
+      windowsVerbatimArguments = false,
     } = options || {};
 
     if (detached) {
@@ -80,16 +81,17 @@ export class ChildProcess extends EventEmitter {
       notImplemented("options.windowsHide");
     }
 
-    if (windowsVerbatimArguments) {
-      notImplemented("options.windowsVerbatimArguments");
-    }
-
     const [
       stdin = "pipe",
       stdout = "pipe",
       stderr = "pipe",
     ] = normalizeStdioOption(stdio);
-    const cmd = buildCommand(command, args || [], shell);
+    const cmd = buildCommand(
+      command,
+      args || [],
+      shell,
+      windowsVerbatimArguments,
+    );
     this.spawnfile = cmd[0];
     this.spawnargs = cmd;
 
@@ -185,13 +187,13 @@ export class ChildProcess extends EventEmitter {
     }
     if (this.stdout && !this.stdout.destroyed) {
       const promise = deferred<void>();
-      this.stdout.resume();
+      this.stdout.resume(); // Ensure bufferred data will be consumed.
       this.stdout.once("close", () => promise.resolve());
       promises.push(promise);
     }
     if (this.stderr && !this.stderr.destroyed) {
       const promise = deferred<void>();
-      this.stderr.resume();
+      this.stderr.resume(); // Ensure buffered data will be consumed.
       this.stderr.once("close", () => promise.resolve());
       promises.push(promise);
     }
@@ -371,7 +373,8 @@ function normalizeStdioOption(
 function buildCommand(
   file: string,
   args: string[],
-  shell?: string | boolean,
+  shell: string | boolean,
+  windowsVerbatimArguments: boolean,
 ): string[] {
   if (shell) {
     const command = [file, ...args].join(" ");
@@ -385,10 +388,13 @@ function buildCommand(
       // '/d /s /c' is used only for cmd.exe.
       if (/^(?:.*\\)?cmd(?:\.exe)?$/i.test(file)) {
         args = ["/d", "/s", "/c", `"${command}"`];
-        // TODO(uki00a): Add support for `windowsVerbatimArguments`.
-        // windowsVerbatimArguments = true;
+        windowsVerbatimArguments = true;
       } else {
         args = ["-c", command];
+      }
+
+      if (!windowsVerbatimArguments) {
+        args = args.map(quoteCmdArg);
       }
     } else {
       if (typeof shell === "string") {
