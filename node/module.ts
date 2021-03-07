@@ -618,6 +618,7 @@ nativeModulePolyfill.set(
   createNativeModule("events", nodeEvents),
 );
 nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
+nativeModulePolyfill.set("module", createNativeModule("module", Module));
 nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
 nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
 nativeModulePolyfill.set(
