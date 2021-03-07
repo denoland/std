@@ -1,4 +1,4 @@
-import { existsSync } from "../../fs/mod.ts";
+import { existsSync } from "../../fs/exists.ts";
 import { fromFileUrl } from "../path.ts";
 import { getOpenOptions } from "./_fs_common.ts";
 
