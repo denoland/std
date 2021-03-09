@@ -1,3 +1,10 @@
+### 0.90.0 / 2021.03.09
+
+- fix(http): Create a single encoder instance (#790)
+- feat(node): Add "module" polyfill (#783)
+- feat(node): Add CLI for running Node.js script with std/node (#779)
+- feat(node): Fix assert module, enable test cases (#769)
+
 ### 0.89.0 / 2021.03.02
 
 - BREAKING(io/streams): Strengthen iterator to readable stream conversion (#735)
