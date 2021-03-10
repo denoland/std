@@ -59,7 +59,7 @@ name: Eve
 });
 
 Deno.test({
-  name: "`!!js/*` yaml types are not handled in default schemas",
+  name: "`!!js/*` yaml types are not handled in default schemas while parsing",
   fn(): void {
     const yaml = `undefined: !!js/undefined ~`;
     assertThrows(() => parse(yaml), YAMLError, "unknown tag !");
@@ -67,7 +67,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "`!!js/*` yaml types are correctly handled with extended schema",
+  name:
+    "`!!js/*` yaml types are correctly handled with extended schema while parsing",
   fn(): void {
     const yaml = `
       regexp:
@@ -89,7 +90,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "`!!js/function` yaml type is correctly handled with extended schema",
+  name:
+    "`!!js/function` yaml type is correctly handled with extended schema while parsing",
   fn(): void {
     const func = function foobar() {
       return "hello world!";
@@ -110,7 +112,7 @@ ${func.toString().split("\n").map((line) => `  ${line}`).join("\n")}
 });
 
 Deno.test({
-  name: "`!*` yaml user defined types are supported",
+  name: "`!*` yaml user defined types are supported while parsing",
   fn(): void {
     const PointYamlType = new Type("!point", {
       kind: "sequence",
@@ -120,9 +122,6 @@ Deno.test({
       construct(data) {
         const [x, y, z] = data;
         return { x, y, z };
-      },
-      represent(point) {
-        return JSON.stringify(point);
       },
     });
     const SPACE_SCHEMA = DEFAULT_SCHEMA.extend({ explicit: [PointYamlType] });
