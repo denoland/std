@@ -7,11 +7,11 @@ import { Type } from "../type.ts";
 import type { Any } from "../utils.ts";
 
 // Note: original implementation used Esprima to handle functions
-// To avoid depencies, we'll just try to check if we can construct a function from given string
+// To avoid dependencies, we'll just try to check if we can construct a function from given string
 function reconstructFunction(code: string) {
   const func = new Function(`return ${code}`)();
   if (!(func instanceof Function)) {
-    throw new TypeError(`Expected function but got ${typeof func}`);
+    throw new TypeError(`Expected function but got ${typeof func}: ${code}`);
   }
   return func;
 }
