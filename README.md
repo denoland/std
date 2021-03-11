@@ -67,11 +67,27 @@ Before opening a PR make sure to:
 - `deno fmt --check` passes without changing files.
 - `deno lint --unstable` passes.
 
-Give the PR a descriptive title.
+### Commit Message Format
+
+We have very precise rules over how our git commit messages can be formatted. This leads to **more readable messages** that are easy to follow when looking through the **project history**.
+
+Each commit message consists of a **header**, a **body** and a **footer**. The header has a special format that includes a **type**, a **scope** and a **subject**:
+
+```
+<type>(<scope>): <subject>
+<BLANK LINE>
+<body>
+<BLANK LINE>
+<footer>
+```
+
+Footer should contain a [closing reference to an issue](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue) if any.
+
+#### Samples
 
 Examples of good title:
 
-- fix(http): Fix race condition in server
+- fix(http): Fix race condition in server #1
 - docs(fmt): Update docstrings
 - feat(log): Handle nested messages
 
