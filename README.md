@@ -69,9 +69,13 @@ Before opening a PR make sure to:
 
 ### Commit Message Format
 
-We have very precise rules over how our git commit messages can be formatted. This leads to **more readable messages** that are easy to follow when looking through the **project history**.
+We have very precise rules over how our git commit messages can be formatted.
+This leads to **more readable messages** that are easy to follow when looking
+through the **project history**.
 
-Each commit message consists of a **header**, a **body** and a **footer**. The header has a special format that includes a **type**, a **scope** and a **subject**:
+Each commit message consists of a **header**, a **body** and a **footer**. The
+header has a special format that includes a **type**, a **scope** and a
+**subject**:
 
 ```
 <type>(<scope>): <subject>
@@ -81,7 +85,9 @@ Each commit message consists of a **header**, a **body** and a **footer**. The h
 <footer>
 ```
 
-Footer should contain a [closing reference to an issue](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue) if any.
+Footer should contain a
+[closing reference to an issue](https://docs.github.com/en/github/managing-your-work-on-github/linking-a-pull-request-to-an-issue)
+if any.
 
 #### Samples
 
