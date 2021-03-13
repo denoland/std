@@ -150,11 +150,9 @@ Deno.test("[node/child_process spawn] Verity that shell features can be used", a
 });
 
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-shell.js` works.
-Deno.test({
-  ignore: isWindows,
-  name:
-    "[node/child_process spawn] Verity that environment is properly inherited",
-  async fn() {
+Deno.test(
+  "[node/child_process spawn] Verity that environment is properly inherited",
+  async () => {
     const promise = withTimeout(3000);
     const env = spawn(
       `"${Deno.execPath()}" eval -p "Deno.env.toObject().BAZ"`,
@@ -176,5 +174,5 @@ Deno.test({
     });
     await promise;
   },
-});
+);
 /* End of ported part */
