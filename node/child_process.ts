@@ -1,8 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-// Some code adopted from https://github.com/nodejs/node/blob/master/lib/child_process.js.
-// Copyright Joyent, Inc. and other Node contributors. All rights reserved. MIT license.
-
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
 import { assert } from "../_util/assert.ts";
@@ -370,6 +367,10 @@ function normalizeStdioOption(
   }
 }
 
+/**
+ * This function is based on https://github.com/nodejs/node/blob/fc6426ccc4b4cb73076356fb6dbf46a28953af01/lib/child_process.js#L504-L528.
+ * Copyright Joyent, Inc. and other Node contributors. All rights reserved. MIT license.
+ */
 function buildCommand(
   file: string,
   args: string[],
@@ -387,7 +388,9 @@ function buildCommand(
       }
       // '/d /s /c' is used only for cmd.exe.
       if (/^(?:.*\\)?cmd(?:\.exe)?$/i.test(file)) {
-        args = ["/d", "/s", "/c", `"${command}"`];
+        // Unlike the Node.js source, there is no need to quote the command here.
+        // This is because `tokio::process::Command` automatically quotes the arguments.
+        args = ["/d", "/s", "/c", command];
         windowsVerbatimArguments = true;
       } else {
         args = ["-c", command];
