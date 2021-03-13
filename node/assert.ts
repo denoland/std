@@ -223,7 +223,6 @@ function throws(
     }
     throw new Error(`Invalid expectation: ${error}`);
   }
-  let msg;
   if (message) {
     let msg = `Missing expected exception: ${message}`;
     if (typeof error === "function" && error?.name) {

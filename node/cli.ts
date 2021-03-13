@@ -59,7 +59,7 @@ Object.defineProperty(process.argv, "0", {
     return Deno.execPath();
   },
 });
-const require = createRequire(import.meta.url);
+const require = createRequire(Deno.cwd());
 const path = require("path");
 const resolved = path.resolve(script);
 require(resolved);

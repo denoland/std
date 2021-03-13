@@ -1,7 +1,7 @@
 import { assertEquals, fail } from "../../testing/asserts.ts";
 import { rmdir, rmdirSync } from "./_fs_rmdir.ts";
 import { closeSync } from "./_fs_close.ts";
-import { existsSync } from "../../fs/mod.ts";
+import { existsSync } from "../../fs/exists.ts";
 import { join } from "../../path/mod.ts";
 import { assertCallbackErrorUncaught } from "../_utils.ts";
 
