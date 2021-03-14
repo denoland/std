@@ -980,7 +980,7 @@ export function fromFileUrl(url: string | URL): string {
  *
  *      toFileUrl("\\home\\foo"); // new URL("file:///home/foo")
  *      toFileUrl("C:\\Users\\foo"); // new URL("file:///C:/Users/foo")
- *      toFileUrl("\\\\localhost\\home\\foo"); // new URL("file://localhost/home/foo")
+ *      toFileUrl("\\\\127.0.0.1\\home\\foo"); // new URL("file://127.0.0.1/home/foo")
  * @param path to convert to file URL
  */
 export function toFileUrl(path: string): URL {
