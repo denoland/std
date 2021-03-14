@@ -13,6 +13,7 @@ import {
 import {
   _format,
   assertPath,
+  encodeWhitespace,
   isPathSeparator,
   isWindowsDeviceRoot,
   normalizeString,
@@ -987,11 +988,11 @@ export function toFileUrl(path: string): URL {
     throw new TypeError("Must be an absolute path.");
   }
   const [, hostname, pathname] = path.match(
-    /^(?:[/\\]{2}([^/\\]+)(?=[/\\][^/\\]))?(.*)/,
+    /^(?:[/\\]{2}([^/\\]+)(?=[/\\](?:[^/\\]|$)))?(.*)/,
   )!;
   const url = new URL("file:///");
-  url.pathname = pathname.replace(/%/g, "%25");
-  if (hostname != null) {
+  url.pathname = encodeWhitespace(pathname.replace(/%/g, "%25"));
+  if (hostname != null && hostname != "localhost") {
     url.hostname = hostname;
     if (!url.hostname) {
       throw new TypeError("Invalid hostname.");

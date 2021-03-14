@@ -8,6 +8,7 @@ import { CHAR_DOT, CHAR_FORWARD_SLASH } from "./_constants.ts";
 import {
   _format,
   assertPath,
+  encodeWhitespace,
   isPosixPathSeparator,
   normalizeString,
 } from "./_util.ts";
@@ -499,6 +500,8 @@ export function toFileUrl(path: string): URL {
     throw new TypeError("Must be an absolute path.");
   }
   const url = new URL("file:///");
-  url.pathname = path.replace(/%/g, "%25").replace(/\\/g, "%5C");
+  url.pathname = encodeWhitespace(
+    path.replace(/%/g, "%25").replace(/\\/g, "%5C"),
+  );
   return url;
 }
