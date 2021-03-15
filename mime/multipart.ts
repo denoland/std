@@ -260,13 +260,17 @@ export interface MultipartFormData {
 
 /** Reader for parsing multipart/form-data */
 export class MultipartReader {
-  readonly newLine = encoder.encode("\r\n");
-  readonly newLineDashBoundary = encoder.encode(`\r\n--${this.boundary}`);
-  readonly dashBoundaryDash = encoder.encode(`--${this.boundary}--`);
-  readonly dashBoundary = encoder.encode(`--${this.boundary}`);
+  readonly newLine: Uint8Array;
+  readonly newLineDashBoundary: Uint8Array;
+  readonly dashBoundaryDash: Uint8Array;
+  readonly dashBoundary: Uint8Array;
   readonly bufReader: BufReader;
 
   constructor(reader: Deno.Reader, private boundary: string) {
+    this.newLine = encoder.encode("\r\n");
+    this.newLineDashBoundary = encoder.encode(`\r\n--${boundary}`);
+    this.dashBoundaryDash = encoder.encode(`--${this.boundary}--`);
+    this.dashBoundary = encoder.encode(`--${this.boundary}`);
     this.bufReader = new BufReader(reader);
   }
 
