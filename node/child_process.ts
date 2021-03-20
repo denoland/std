@@ -5,7 +5,7 @@
 import { assert } from "../_util/assert.ts";
 import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
-import { quoteCmdArg } from "./_child_process/_quote_cmd_arg.ts";
+import { parseCmdline } from "./_child_process/_parse_cmdline.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
 import { readLines } from "../io/bufio.ts";
@@ -47,7 +47,6 @@ export class ChildProcess extends EventEmitter {
       signal,
       serialization = "json",
       windowsHide,
-      windowsVerbatimArguments = false,
     } = options || {};
 
     if (detached) {
@@ -87,7 +86,6 @@ export class ChildProcess extends EventEmitter {
       command,
       args || [],
       shell,
-      windowsVerbatimArguments,
     );
     this.spawnfile = cmd[0];
     this.spawnargs = cmd;
@@ -245,6 +243,9 @@ interface ChildProcessOptions {
   shell?: string | boolean;
   signal?: AbortSignal;
   serialization?: "json" | "advanced";
+  /**
+   * This option is simply ignored.
+   */
   windowsVerbatimArguments?: boolean;
   windowsHide?: boolean;
 }
@@ -375,12 +376,15 @@ function buildCommand(
   file: string,
   args: string[],
   shell: string | boolean,
-  windowsVerbatimArguments: boolean,
 ): string[] {
   if (shell) {
-    const command = [file, ...args].join(" ");
     // Set the shell, switches, and commands.
     if (Deno.build.os === "windows") {
+      // To avoid escaping problems that occur on Windows, extract the executable and arguments from the `file` parameter and concatenate them into `args`.
+      // For more details, see the following issues:
+      // * https://github.com/rust-lang/rust/issues/29494
+      // * https://github.com/denoland/deno/issues/8852
+      const modifiedArgs = [...parseCmdline(file), ...args];
       if (typeof shell === "string") {
         file = shell;
       } else {
@@ -388,18 +392,12 @@ function buildCommand(
       }
       // '/d /s /c' is used only for cmd.exe.
       if (/^(?:.*\\)?cmd(?:\.exe)?$/i.test(file)) {
-        // Unlike the Node.js source, there is no need to quote the command here.
-        // This is because `tokio::process::Command` automatically quotes the arguments.
-        args = ["/d", "/s", "/c", command];
-        windowsVerbatimArguments = true;
+        args = ["/d", "/s", "/c", ...modifiedArgs];
       } else {
-        args = ["-c", command];
-      }
-
-      if (!windowsVerbatimArguments) {
-        args = args.map(quoteCmdArg);
+        args = ["-c", ...modifiedArgs];
       }
     } else {
+      const command = [file, ...args].join(" ");
       if (typeof shell === "string") {
         file = shell;
       } else {
