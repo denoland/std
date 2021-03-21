@@ -107,7 +107,7 @@ export function writeFileSync(
   } finally {
     // Make sure to close resource
     if (!isRid && file) file.close();
-
-    if (error) throw error;
   }
+
+  if (error) throw error;
 }
