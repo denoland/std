@@ -1,3 +1,16 @@
+### 0.91.0 / 2021.03.21
+
+- chore(codecov): ignore coverage of examples (#798)
+- feat(encoding/yaml): add support for JS types and user types (#789)
+- feat(io/streams): Add readerFromIterable() (#752)
+- feat(std/node): add utimes and utimesSync (#805)
+- fix(multipart): support useDefineForClassFields (#807)
+- fix(node): fix node/cli.ts (#797)
+- fix(node): move `throw error` in fs.writeFile to pass `no-unsafe-finally`
+  (#810)
+- fix(path): enable and fix file URL tests (#804)
+- refactor(node/fs): update fs import (#793)
+
 ### 0.90.0 / 2021.03.09
 
 - fix(http): Create a single encoder instance (#790)
