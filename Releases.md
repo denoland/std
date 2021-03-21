@@ -6,7 +6,8 @@
 - feat(std/node): add utimes and utimesSync (#805)
 - fix(multipart): support useDefineForClassFields (#807)
 - fix(node): fix node/cli.ts (#797)
-- fix(node): move `throw error` in fs.writeFile to pass `no-unsafe-finally` (#810)
+- fix(node): move `throw error` in fs.writeFile to pass `no-unsafe-finally`
+  (#810)
 - fix(path): enable and fix file URL tests (#804)
 - refactor(node/fs): update fs import (#793)
 
