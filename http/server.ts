@@ -9,6 +9,7 @@ import {
   readRequest,
   writeResponse,
 } from "./_io.ts";
+import { readAll } from "../io/util.ts";
 
 export class ServerRequest {
   url!: string;
@@ -55,7 +56,7 @@ export class ServerRequest {
   /**
    * Body of the request.  The easiest way to consume the body is:
    *
-   *     const buf: Uint8Array = await Deno.readAll(req.body);
+   *     const buf: Uint8Array = await readAll(req.body);
    */
   get body(): Deno.Reader {
     if (!this.#body) {

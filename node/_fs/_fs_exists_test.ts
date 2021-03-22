@@ -5,6 +5,7 @@ import {
   assertStringIncludes,
 } from "../../testing/asserts.ts";
 import { exists, existsSync } from "./_fs_exists.ts";
+import { readAll } from "../../io/util.ts";
 
 Deno.test("existsFile", async function () {
   const availableFile = await new Promise((resolve) => {
@@ -49,7 +50,7 @@ Deno.test("[std/node/fs] exists callback isn't called twice if error is thrown",
     stderr: "piped",
   });
   const status = await p.status();
-  const stderr = new TextDecoder().decode(await Deno.readAll(p.stderr));
+  const stderr = new TextDecoder().decode(await readAll(p.stderr));
   p.close();
   p.stderr.close();
   await Deno.remove(tempFile);

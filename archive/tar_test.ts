@@ -13,6 +13,8 @@ import { assert, assertEquals } from "../testing/asserts.ts";
 
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
 import { Tar, Untar } from "./tar.ts";
+import { Buffer } from "../io/buffer.ts";
+import { readAll } from "../io/util.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -32,7 +34,7 @@ async function createTar(entries: TestEntry[]): Promise<Tar> {
 
     if (file.content) {
       options = {
-        reader: new Deno.Buffer(file.content),
+        reader: new Buffer(file.content),
         contentSize: file.content.byteLength,
       };
     } else {
@@ -52,7 +54,7 @@ Deno.test("createTarArchive", async function (): Promise<void> {
   // put data on memory
   const content = new TextEncoder().encode("hello tar world!");
   await tar.append("output.txt", {
-    reader: new Deno.Buffer(content),
+    reader: new Buffer(content),
     contentSize: content.byteLength,
   });
 
@@ -60,7 +62,7 @@ Deno.test("createTarArchive", async function (): Promise<void> {
   await tar.append("dir/tar.ts", { filePath });
 
   // write tar data to a buffer
-  const writer = new Deno.Buffer();
+  const writer = new Buffer();
   const wrote = await Deno.copy(tar.getReader(), writer);
 
   /**
@@ -78,7 +80,7 @@ Deno.test("deflateTarArchive", async function (): Promise<void> {
   const tar = new Tar();
   const content = new TextEncoder().encode(text);
   await tar.append(fileName, {
-    reader: new Deno.Buffer(content),
+    reader: new Buffer(content),
     contentSize: content.byteLength,
   });
 
@@ -86,7 +88,7 @@ Deno.test("deflateTarArchive", async function (): Promise<void> {
   const untar = new Untar(tar.getReader());
   const result = await untar.extract();
   assert(result !== null);
-  const untarText = new TextDecoder("utf-8").decode(await Deno.readAll(result));
+  const untarText = new TextDecoder("utf-8").decode(await readAll(result));
 
   assertEquals(await untar.extract(), null); // EOF
   // tests
@@ -105,7 +107,7 @@ Deno.test("appendFileWithLongNameToTarArchive", async function (): Promise<
   const tar = new Tar();
   const content = new TextEncoder().encode(text);
   await tar.append(fileName, {
-    reader: new Deno.Buffer(content),
+    reader: new Buffer(content),
     contentSize: content.byteLength,
   });
 
@@ -114,7 +116,7 @@ Deno.test("appendFileWithLongNameToTarArchive", async function (): Promise<
   const result = await untar.extract();
   assert(result !== null);
   assert(!result.consumed);
-  const untarText = new TextDecoder("utf-8").decode(await Deno.readAll(result));
+  const untarText = new TextDecoder("utf-8").decode(await readAll(result));
   assert(result.consumed);
 
   // tests
@@ -148,7 +150,7 @@ Deno.test("untarAsyncIterator", async function (): Promise<void> {
     if (expected.filePath) {
       content = await Deno.readFile(expected.filePath);
     }
-    assertEquals(content, await Deno.readAll(entry));
+    assertEquals(content, await readAll(entry));
     assertEquals(expected.name, entry.fileName);
 
     if (lastEntry) assert(lastEntry.consumed);
@@ -256,7 +258,7 @@ Deno.test("untarAsyncIteratorFromFileReader", async function (): Promise<void> {
       content = await Deno.readFile(expected.filePath);
     }
 
-    assertEquals(content, await Deno.readAll(entry));
+    assertEquals(content, await readAll(entry));
     assertEquals(expected.name, entry.fileName);
   }
 
@@ -295,7 +297,7 @@ Deno.test(
         assert(expected);
         assertEquals(expected.name, entry.fileName);
 
-        const writer = new Deno.Buffer();
+        const writer = new Buffer();
         while (true) {
           const buf = new Uint8Array(bufSize);
           const n = await entry.read(buf);
@@ -398,7 +400,7 @@ Deno.test("untarLinuxGeneratedTar", async function (): Promise<void> {
     assertEquals(entry, expected);
 
     if (content) {
-      assertEquals(content, await Deno.readAll(entry));
+      assertEquals(content, await readAll(entry));
     }
   }
 
@@ -409,7 +411,7 @@ Deno.test("directoryEntryType", async function (): Promise<void> {
   const tar = new Tar();
 
   tar.append("directory/", {
-    reader: new Deno.Buffer(),
+    reader: new Buffer(),
     contentSize: 0,
     type: "directory",
   });

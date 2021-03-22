@@ -18,6 +18,7 @@ import * as iotest from "./_iotest.ts";
 import { StringReader } from "./readers.ts";
 import { StringWriter } from "./writers.ts";
 import { copy } from "../bytes/mod.ts";
+import { Buffer } from "../io/buffer.ts";
 
 const encoder = new TextEncoder();
 
@@ -334,7 +335,7 @@ Deno.test("bufioWriter", async function (): Promise<void> {
     data[i] = " ".charCodeAt(0) + (i % ("~".charCodeAt(0) - " ".charCodeAt(0)));
   }
 
-  const w = new Deno.Buffer();
+  const w = new Buffer();
   for (const nwrite of bufsizes) {
     for (const bs of bufsizes) {
       // Write nwrite bytes using buffer size bs.
@@ -368,7 +369,7 @@ Deno.test("bufioWriterSync", function (): void {
     data[i] = " ".charCodeAt(0) + (i % ("~".charCodeAt(0) - " ".charCodeAt(0)));
   }
 
-  const w = new Deno.Buffer();
+  const w = new Buffer();
   for (const nwrite of bufsizes) {
     for (const bs of bufsizes) {
       // Write nwrite bytes using buffer size bs.
@@ -398,7 +399,7 @@ Deno.test("bufReaderReadFull", async function (): Promise<void> {
   const enc = new TextEncoder();
   const dec = new TextDecoder();
   const text = "Hello World";
-  const data = new Deno.Buffer(enc.encode(text));
+  const data = new Buffer(enc.encode(text));
   const bufr = new BufReader(data, 3);
   {
     const buf = new Uint8Array(6);
@@ -423,7 +424,7 @@ Deno.test("bufReaderReadFull", async function (): Promise<void> {
 
 Deno.test("readStringDelimAndLines", async function (): Promise<void> {
   const enc = new TextEncoder();
-  const data = new Deno.Buffer(
+  const data = new Buffer(
     enc.encode("Hello World\tHello World 2\tHello World 3"),
   );
   const chunks_ = [];
@@ -435,9 +436,9 @@ Deno.test("readStringDelimAndLines", async function (): Promise<void> {
   assertEquals(chunks_.length, 3);
   assertEquals(chunks_, ["Hello World", "Hello World 2", "Hello World 3"]);
 
-  const linesData = new Deno.Buffer(enc.encode("0\n1\n2\n3\n4\n5\n6\n7\n8\n9"));
+  const linesData = new Buffer(enc.encode("0\n1\n2\n3\n4\n5\n6\n7\n8\n9"));
   // consider data with windows newlines too
-  const linesDataWindows = new Deno.Buffer(
+  const linesDataWindows = new Buffer(
     enc.encode("0\r\n1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n7\r\n8\r\n9"),
   );
   const lines_ = [];

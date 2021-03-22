@@ -23,17 +23,18 @@ import {
 import { delay } from "../async/delay.ts";
 import { serve } from "../http/server.ts";
 import { deferred } from "../async/deferred.ts";
+import { Buffer } from "../io/buffer.ts";
 
 Deno.test("[ws] read unmasked text frame", async () => {
   // unmasked single text frame with payload "Hello"
   const buf = new BufReader(
-    new Deno.Buffer(new Uint8Array([0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f])),
+    new Buffer(new Uint8Array([0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f])),
   );
   const frame = await readFrame(buf);
   assertEquals(frame.opcode, OpCode.TextFrame);
   assertEquals(frame.mask, undefined);
   const actual = new TextDecoder().decode(
-    new Deno.Buffer(frame.payload).bytes(),
+    new Buffer(frame.payload).bytes(),
   );
   assertEquals(actual, "Hello");
   assertEquals(frame.isLastFrame, true);
@@ -42,7 +43,7 @@ Deno.test("[ws] read unmasked text frame", async () => {
 Deno.test("[ws] read masked text frame", async () => {
   // a masked single text frame with payload "Hello"
   const buf = new BufReader(
-    new Deno.Buffer(
+    new Buffer(
       new Uint8Array([
         0x81,
         0x85,
@@ -62,7 +63,7 @@ Deno.test("[ws] read masked text frame", async () => {
   assertEquals(frame.opcode, OpCode.TextFrame);
   unmask(frame.payload, frame.mask);
   const actual = new TextDecoder().decode(
-    new Deno.Buffer(frame.payload).bytes(),
+    new Buffer(frame.payload).bytes(),
   );
   assertEquals(actual, "Hello");
   assertEquals(frame.isLastFrame, true);
@@ -70,45 +71,45 @@ Deno.test("[ws] read masked text frame", async () => {
 
 Deno.test("[ws] read unmasked split text frames", async () => {
   const buf1 = new BufReader(
-    new Deno.Buffer(new Uint8Array([0x01, 0x03, 0x48, 0x65, 0x6c])),
+    new Buffer(new Uint8Array([0x01, 0x03, 0x48, 0x65, 0x6c])),
   );
   const buf2 = new BufReader(
-    new Deno.Buffer(new Uint8Array([0x80, 0x02, 0x6c, 0x6f])),
+    new Buffer(new Uint8Array([0x80, 0x02, 0x6c, 0x6f])),
   );
   const [f1, f2] = await Promise.all([readFrame(buf1), readFrame(buf2)]);
   assertEquals(f1.isLastFrame, false);
   assertEquals(f1.mask, undefined);
   assertEquals(f1.opcode, OpCode.TextFrame);
-  const actual1 = new TextDecoder().decode(new Deno.Buffer(f1.payload).bytes());
+  const actual1 = new TextDecoder().decode(new Buffer(f1.payload).bytes());
   assertEquals(actual1, "Hel");
 
   assertEquals(f2.isLastFrame, true);
   assertEquals(f2.mask, undefined);
   assertEquals(f2.opcode, OpCode.Continue);
-  const actual2 = new TextDecoder().decode(new Deno.Buffer(f2.payload).bytes());
+  const actual2 = new TextDecoder().decode(new Buffer(f2.payload).bytes());
   assertEquals(actual2, "lo");
 });
 
 Deno.test("[ws] read unmasked ping / pong frame", async () => {
   // unmasked ping with payload "Hello"
   const buf = new BufReader(
-    new Deno.Buffer(new Uint8Array([0x89, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f])),
+    new Buffer(new Uint8Array([0x89, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f])),
   );
   const ping = await readFrame(buf);
   assertEquals(ping.opcode, OpCode.Ping);
   const actual1 = new TextDecoder().decode(
-    new Deno.Buffer(ping.payload).bytes(),
+    new Buffer(ping.payload).bytes(),
   );
   assertEquals(actual1, "Hello");
   // deno-fmt-ignore
   const pongFrame = [0x8a, 0x85, 0x37, 0xfa, 0x21, 0x3d, 0x7f, 0x9f, 0x4d, 0x51, 0x58]
-  const buf2 = new BufReader(new Deno.Buffer(new Uint8Array(pongFrame)));
+  const buf2 = new BufReader(new Buffer(new Uint8Array(pongFrame)));
   const pong = await readFrame(buf2);
   assertEquals(pong.opcode, OpCode.Pong);
   assert(pong.mask !== undefined);
   unmask(pong.payload, pong.mask);
   const actual2 = new TextDecoder().decode(
-    new Deno.Buffer(pong.payload).bytes(),
+    new Buffer(pong.payload).bytes(),
   );
   assertEquals(actual2, "Hello");
 });
@@ -119,7 +120,7 @@ Deno.test("[ws] read unmasked big binary frame", async () => {
   for (let i = 0; i < payloadLength; i++) {
     a.push(i);
   }
-  const buf = new BufReader(new Deno.Buffer(new Uint8Array(a)));
+  const buf = new BufReader(new Buffer(new Uint8Array(a)));
   const bin = await readFrame(buf);
   assertEquals(bin.opcode, OpCode.BinaryFrame);
   assertEquals(bin.isLastFrame, true);
@@ -133,7 +134,7 @@ Deno.test("[ws] read unmasked bigger binary frame", async () => {
   for (let i = 0; i < payloadLength; i++) {
     a.push(i);
   }
-  const buf = new BufReader(new Deno.Buffer(new Uint8Array(a)));
+  const buf = new BufReader(new Buffer(new Uint8Array(a)));
   const bin = await readFrame(buf);
   assertEquals(bin.opcode, OpCode.BinaryFrame);
   assertEquals(bin.isLastFrame, true);
@@ -203,7 +204,7 @@ Deno.test("[ws] acceptable should return false when headers invalid", () => {
 Deno.test("[ws] write and read masked frame", async () => {
   const mask = new Uint8Array([0, 1, 2, 3]);
   const msg = "hello";
-  const buf = new Deno.Buffer();
+  const buf = new Buffer();
   const r = new BufReader(buf);
   await writeFrame(
     {
@@ -223,8 +224,8 @@ Deno.test("[ws] write and read masked frame", async () => {
 });
 
 Deno.test("[ws] handshake should not send search when it's empty", async () => {
-  const writer = new Deno.Buffer();
-  const reader = new Deno.Buffer(new TextEncoder().encode("HTTP/1.1 400\r\n"));
+  const writer = new Buffer();
+  const reader = new Buffer(new TextEncoder().encode("HTTP/1.1 400\r\n"));
 
   await assertThrowsAsync(
     async (): Promise<void> => {
@@ -246,8 +247,8 @@ Deno.test("[ws] handshake should not send search when it's empty", async () => {
 Deno.test(
   "[ws] handshake should send search correctly",
   async function wsHandshakeWithSearch(): Promise<void> {
-    const writer = new Deno.Buffer();
-    const reader = new Deno.Buffer(
+    const writer = new Buffer();
+    const reader = new Buffer(
       new TextEncoder().encode("HTTP/1.1 400\r\n"),
     );
 
@@ -270,7 +271,7 @@ Deno.test(
 );
 
 Deno.test("[ws] ws.close() should use 1000 as close code", async () => {
-  const buf = new Deno.Buffer();
+  const buf = new Buffer();
   const bufr = new BufReader(buf);
   const conn = dummyConn(buf, buf);
   const ws = createWebSocket({ conn });
@@ -307,8 +308,8 @@ function delayedWriter(ms: number, dest: Deno.Writer): Deno.Writer {
 Deno.test({
   name: "[ws] WebSocket.send(), WebSocket.ping() should be exclusive",
   fn: async (): Promise<void> => {
-    const buf = new Deno.Buffer();
-    const conn = dummyConn(new Deno.Buffer(), delayedWriter(1, buf));
+    const buf = new Buffer();
+    const conn = dummyConn(new Buffer(), delayedWriter(1, buf));
     const sock = createWebSocket({ conn });
     // Ensure send call
     await Promise.all([
@@ -342,7 +343,7 @@ Deno.test("[ws] createSecKeyHasCorrectLength", () => {
 Deno.test(
   "[ws] WebSocket should throw `Deno.errors.ConnectionReset` when peer closed connection without close frame",
   async () => {
-    const buf = new Deno.Buffer();
+    const buf = new Buffer();
     const eofReader: Deno.Reader = {
       read(_: Uint8Array): Promise<number | null> {
         return Promise.resolve(null);
@@ -363,7 +364,7 @@ Deno.test(
 Deno.test(
   "[ws] WebSocket shouldn't throw `Deno.errors.UnexpectedEof`",
   async () => {
-    const buf = new Deno.Buffer();
+    const buf = new Buffer();
     const eofReader: Deno.Reader = {
       read(_: Uint8Array): Promise<number | null> {
         return Promise.resolve(null);
@@ -382,7 +383,7 @@ Deno.test({
   name:
     "[ws] WebSocket should reject sending promise when connection reset forcely",
   fn: async () => {
-    const buf = new Deno.Buffer();
+    const buf = new Buffer();
     let timer: number | undefined;
     const lazyWriter: Deno.Writer = {
       write(_: Uint8Array): Promise<number> {
@@ -450,7 +451,7 @@ Deno.test("[ws] WebSocket should act as asyncIterator", async () => {
     },
   };
 
-  const conn = dummyConn(reader, new Deno.Buffer());
+  const conn = dummyConn(reader, new Buffer());
   const sock = createWebSocket({ conn });
 
   const events = [];
