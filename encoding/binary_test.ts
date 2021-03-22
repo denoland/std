@@ -15,17 +15,18 @@ import {
   writeVarbig,
   writeVarnum,
 } from "./binary.ts";
+import { Buffer } from "../io/buffer.ts";
 
 Deno.test("testGetNBytes", async function (): Promise<void> {
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
-  const buff = new Deno.Buffer(data.buffer);
+  const buff = new Buffer(data.buffer);
   const rslt = await getNBytes(buff, 8);
   assertEquals(rslt, data);
 });
 
 Deno.test("testGetNBytesThrows", async function (): Promise<void> {
   const data = new Uint8Array([1, 2, 3, 4]);
-  const buff = new Deno.Buffer(data.buffer);
+  const buff = new Buffer(data.buffer);
   await assertThrowsAsync(async () => {
     await getNBytes(buff, 8);
   }, Deno.errors.UnexpectedEof);
@@ -63,28 +64,28 @@ Deno.test("testPutVarnumLittleEndian", function (): void {
 
 Deno.test("testReadVarbig", async function (): Promise<void> {
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
-  const buff = new Deno.Buffer(data.buffer);
+  const buff = new Buffer(data.buffer);
   const rslt = await readVarbig(buff);
   assertEquals(rslt, 0x0102030405060708n);
 });
 
 Deno.test("testReadVarbigLittleEndian", async function (): Promise<void> {
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
-  const buff = new Deno.Buffer(data.buffer);
+  const buff = new Buffer(data.buffer);
   const rslt = await readVarbig(buff, { endian: "little" });
   assertEquals(rslt, 0x0807060504030201n);
 });
 
 Deno.test("testReadVarnum", async function (): Promise<void> {
   const data = new Uint8Array([1, 2, 3, 4]);
-  const buff = new Deno.Buffer(data.buffer);
+  const buff = new Buffer(data.buffer);
   const rslt = await readVarnum(buff);
   assertEquals(rslt, 0x01020304);
 });
 
 Deno.test("testReadVarnumLittleEndian", async function (): Promise<void> {
   const data = new Uint8Array([1, 2, 3, 4]);
-  const buff = new Deno.Buffer(data.buffer);
+  const buff = new Buffer(data.buffer);
   const rslt = await readVarnum(buff, { endian: "little" });
   assertEquals(rslt, 0x04030201);
 });
@@ -127,7 +128,7 @@ Deno.test("testVarnumLittleEndian", function (): void {
 
 Deno.test("testWriteVarbig", async function (): Promise<void> {
   const data = new Uint8Array(8);
-  const buff = new Deno.Buffer();
+  const buff = new Buffer();
   await writeVarbig(buff, 0x0102030405060708n);
   await buff.read(data);
   assertEquals(
@@ -138,7 +139,7 @@ Deno.test("testWriteVarbig", async function (): Promise<void> {
 
 Deno.test("testWriteVarbigLittleEndian", async function (): Promise<void> {
   const data = new Uint8Array(8);
-  const buff = new Deno.Buffer();
+  const buff = new Buffer();
   await writeVarbig(buff, 0x0807060504030201n, { endian: "little" });
   await buff.read(data);
   assertEquals(
@@ -149,7 +150,7 @@ Deno.test("testWriteVarbigLittleEndian", async function (): Promise<void> {
 
 Deno.test("testWriteVarnum", async function (): Promise<void> {
   const data = new Uint8Array(4);
-  const buff = new Deno.Buffer();
+  const buff = new Buffer();
   await writeVarnum(buff, 0x01020304);
   await buff.read(data);
   assertEquals(data, new Uint8Array([0x01, 0x02, 0x03, 0x04]));
@@ -157,7 +158,7 @@ Deno.test("testWriteVarnum", async function (): Promise<void> {
 
 Deno.test("testWriteVarnumLittleEndian", async function (): Promise<void> {
   const data = new Uint8Array(4);
-  const buff = new Deno.Buffer();
+  const buff = new Buffer();
   await writeVarnum(buff, 0x04030201, { endian: "little" });
   await buff.read(data);
   assertEquals(data, new Uint8Array([0x01, 0x02, 0x03, 0x04]));

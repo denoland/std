@@ -7,6 +7,7 @@ import { BufReader, BufWriter } from "../io/bufio.ts";
 import { assert } from "../_util/assert.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { hasOwnProperty } from "../_util/has_own_property.ts";
+import { Buffer } from "../io/buffer.ts";
 
 /** FormFile object */
 export interface FormFile {
@@ -285,7 +286,7 @@ export class MultipartReader {
     const fileMap = new Map<string, FormFile | FormFile[]>();
     const valueMap = new Map<string, string>();
     let maxValueBytes = maxMemory + (10 << 20);
-    const buf = new Deno.Buffer(new Uint8Array(maxValueBytes));
+    const buf = new Buffer(new Uint8Array(maxValueBytes));
     for (;;) {
       const p = await this.nextPart();
       if (p === null) {

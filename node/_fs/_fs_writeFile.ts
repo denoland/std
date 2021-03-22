@@ -2,6 +2,7 @@
 import { Encodings, notImplemented } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
+import { writeAll, writeAllSync } from "../../io/util.ts";
 import {
   CallbackWithError,
   checkEncoding,
@@ -56,7 +57,7 @@ export function writeFile(
         await Deno.chmod(pathOrRid as string, mode);
       }
 
-      await Deno.writeAll(file, data as Uint8Array);
+      await writeAll(file, data as Uint8Array);
     } catch (e) {
       error = e;
     } finally {
@@ -101,7 +102,7 @@ export function writeFileSync(
       Deno.chmodSync(pathOrRid as string, mode);
     }
 
-    Deno.writeAllSync(file, data as Uint8Array);
+    writeAllSync(file, data as Uint8Array);
   } catch (e) {
     error = e;
   } finally {

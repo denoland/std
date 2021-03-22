@@ -1,5 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+import { Buffer } from "./buffer.ts";
+import { writeAll } from "./util.ts";
+
 /** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
  *      // Server-sent events: Send runtime metrics to the client every second.
@@ -20,7 +23,7 @@ export function readerFromIterable(
   const iterator: Iterator<Uint8Array> | AsyncIterator<Uint8Array> =
     (iterable as AsyncIterable<Uint8Array>)[Symbol.asyncIterator]?.() ??
       (iterable as Iterable<Uint8Array>)[Symbol.iterator]?.();
-  const buffer: Deno.Buffer = new Deno.Buffer();
+  const buffer = new Buffer();
   return {
     async read(p: Uint8Array): Promise<number | null> {
       if (buffer.length == 0) {
@@ -33,7 +36,7 @@ export function readerFromIterable(
             return result.value.byteLength;
           }
           p.set(result.value.subarray(0, p.byteLength));
-          await Deno.writeAll(buffer, result.value.subarray(p.byteLength));
+          await writeAll(buffer, result.value.subarray(p.byteLength));
           return p.byteLength;
         }
       } else {
@@ -64,7 +67,7 @@ export function writerFromStreamWriter(
 export function readerFromStreamReader(
   streamReader: ReadableStreamDefaultReader<Uint8Array>,
 ): Deno.Reader {
-  const buffer = new Deno.Buffer();
+  const buffer = new Buffer();
 
   return {
     async read(p: Uint8Array): Promise<number | null> {
@@ -74,7 +77,7 @@ export function readerFromStreamReader(
           return null; // EOF
         }
 
-        await Deno.writeAll(buffer, res.value);
+        await writeAll(buffer, res.value);
       }
 
       return buffer.read(p);
@@ -88,7 +91,7 @@ export function writableStreamFromWriter(
 ): WritableStream<Uint8Array> {
   return new WritableStream({
     async write(chunk) {
-      await Deno.writeAll(writer, chunk);
+      await writeAll(writer, chunk);
     },
   });
 }
