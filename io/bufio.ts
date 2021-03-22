@@ -7,7 +7,7 @@
 type Reader = Deno.Reader;
 type Writer = Deno.Writer;
 type WriterSync = Deno.WriterSync;
-import { copy } from "../bytes/mod.ts";
+import { concat, copy } from "../bytes/mod.ts";
 import { assert } from "../_util/assert.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
@@ -613,7 +613,6 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
 /** Generate longest proper prefix which is also suffix array. */
 function createLPS(pat: Uint8Array): Uint8Array {
   const lps = new Uint8Array(pat.length);
-  lps[0] = 0;
   let prefixEnd = 0;
   let i = 1;
   while (i < lps.length) {
@@ -622,10 +621,9 @@ function createLPS(pat: Uint8Array): Uint8Array {
       lps[i] = prefixEnd;
       i++;
     } else if (prefixEnd === 0) {
-      lps[i] = 0;
       i++;
     } else {
-      prefixEnd = pat[prefixEnd - 1];
+      prefixEnd = lps[prefixEnd - 1];
     }
   }
   return lps;
@@ -639,41 +637,69 @@ export async function* readDelim(
   // Avoid unicode problems
   const delimLen = delim.length;
   const delimLPS = createLPS(delim);
-
-  let inputBuffer = new Deno.Buffer();
-  const inspectArr = new Uint8Array(Math.max(1024, delimLen + 1));
-
+  let readyParts: Uint8Array[] = [];
   // Modified KMP
-  let inspectIndex = 0;
   let matchIndex = 0;
+  let inputBuffer: Uint8Array | null = null;
   while (true) {
-    const result = await reader.read(inspectArr);
-    if (result === null) {
-      // Yield last chunk.
-      yield inputBuffer.bytes();
+    if (inputBuffer === null) {
+      inputBuffer = new Uint8Array(8192);
+    }
+    const bytesRead = await reader.read(inputBuffer);
+    if (bytesRead === null) {
+      // Yield last chunk
+      yield concat(...readyParts);
       return;
     }
-    if ((result as number) < 0) {
+    if (bytesRead <= 0) {
+      if (bytesRead === 0) continue;
       // Discard all remaining and silently fail.
       return;
     }
-    const sliceRead = inspectArr.subarray(0, result as number);
-    await Deno.writeAll(inputBuffer, sliceRead);
-
-    let sliceToProcess = inputBuffer.bytes();
-    while (inspectIndex < sliceToProcess.length) {
-      if (sliceToProcess[inspectIndex] === delim[matchIndex]) {
-        inspectIndex++;
+    let inspectArr: Uint8Array;
+    if (bytesRead < inputBuffer.length) {
+      inspectArr = inputBuffer.subarray(0, bytesRead);
+      inputBuffer = inputBuffer.subarray(bytesRead);
+    } else {
+      inspectArr = inputBuffer;
+      inputBuffer = null;
+    }
+    let inspectIndex = 0;
+    // Merging current slice with the previous one if possible.
+    // It's here mostly for the case when the reader keeps yielding
+    // data in tiny chunks without encountering delim, making
+    // readyParts to grow abnormally large. Is this too paranoid?
+    if (inspectArr.byteOffset !== 0 && readyParts.length !== 0) {
+      const part = readyParts.pop() as Uint8Array;
+      inspectIndex = part.length;
+      inspectArr = new Uint8Array(
+        part.buffer,
+        part.byteOffset,
+        inspectIndex + inspectArr.length,
+      );
+    }
+    while (inspectIndex < inspectArr.length) {
+      if (inspectArr[inspectIndex] === delim[matchIndex]) {
         matchIndex++;
+        inspectIndex++;
         if (matchIndex === delimLen) {
           // Full match
-          const matchEnd = inspectIndex - delimLen;
-          const readyBytes = sliceToProcess.subarray(0, matchEnd);
-          // Copy
-          const pendingBytes = sliceToProcess.slice(inspectIndex);
-          yield readyBytes;
+          let matchEnd = inspectIndex - delimLen;
+          let lastPart = inspectArr;
+          while (matchEnd < 0) {
+            lastPart = readyParts.pop() as Uint8Array;
+            matchEnd += lastPart.length;
+          }
+          lastPart = lastPart.subarray(0, matchEnd);
+          if (readyParts.length === 0) {
+            yield lastPart;
+          } else {
+            readyParts.push(lastPart);
+            yield concat(...readyParts);
+            readyParts = [];
+          }
           // Reset match, different from KMP.
-          sliceToProcess = pendingBytes;
+          inspectArr = inspectArr.subarray(inspectIndex);
           inspectIndex = 0;
           matchIndex = 0;
         }
@@ -685,8 +711,7 @@ export async function* readDelim(
         }
       }
     }
-    // Keep inspectIndex and matchIndex.
-    inputBuffer = new Deno.Buffer(sliceToProcess);
+    readyParts.push(inspectArr);
   }
 }
 
