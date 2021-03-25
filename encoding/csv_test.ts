@@ -377,8 +377,8 @@ x,,,
    */
   {
     Name: "HugeLines",
-    Input:
-      "#ignore\n".repeat(10000) + "@".repeat(5000) + "," + "*".repeat(5000),
+    Input: "#ignore\n".repeat(10000) + "@".repeat(5000) + "," +
+      "*".repeat(5000),
     Output: [["@".repeat(5000), "*".repeat(5000)]],
     Comment: "#",
   },
@@ -492,7 +492,7 @@ for (const t of testCases) {
             trimLeadingSpace: trim,
             fieldsPerRecord: fieldsPerRec,
             lazyQuotes: lazyquote,
-          }
+          },
         );
         const expected = t.Output;
         assertEquals(actual, expected);
@@ -634,17 +634,17 @@ Deno.test({
   fn(): void {
     assertEquals(
       new ParseError(2, 2, null, ERR_FIELD_COUNT).message,
-      `record on line 2: ${ERR_FIELD_COUNT}`
+      `record on line 2: ${ERR_FIELD_COUNT}`,
     );
 
     assertEquals(
       new ParseError(1, 2, 1, ERR_QUOTE).message,
-      `record on line 1; parse error on line 2, column 1: ${ERR_QUOTE}`
+      `record on line 1; parse error on line 2, column 1: ${ERR_QUOTE}`,
     );
 
     assertEquals(
       new ParseError(1, 1, 7, ERR_QUOTE).message,
-      `parse error on line 1, column 7: ${ERR_QUOTE}`
+      `parse error on line 1, column 7: ${ERR_QUOTE}`,
     );
   },
 });
