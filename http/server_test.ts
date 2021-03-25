@@ -62,7 +62,7 @@ const responseTests: ResponseTest[] = [
   },
 ];
 
-Deno.test("responseWrite", async function (): Promise<void> {
+Deno.test("responseWrite", async function () {
   for (const testCase of responseTests) {
     const buf = new Buffer();
     const bufw = new BufWriter(buf);
@@ -129,7 +129,7 @@ function totalReader(r: Deno.Reader): TotalReader {
     },
   };
 }
-Deno.test("requestBodyWithContentLength", async function (): Promise<void> {
+Deno.test("requestBodyWithContentLength", async function () {
   {
     const req = new ServerRequest();
     req.headers = new Headers();
@@ -204,7 +204,7 @@ Deno.test(
     assertEquals(req.headers.get("node"), "js");
   },
 );
-Deno.test("requestBodyWithTransferEncoding", async function (): Promise<void> {
+Deno.test("requestBodyWithTransferEncoding", async function () {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
@@ -365,7 +365,7 @@ Deno.test("requestBodyReaderWithTransferEncoding", async function (): Promise<
 
 Deno.test({
   name: "destroyed connection",
-  fn: async (): Promise<void> => {
+  fn: async () => {
     // Runs a simple server as another process
     const p = Deno.run({
       cmd: [
@@ -411,7 +411,7 @@ Deno.test({
 
 Deno.test({
   name: "serveTLS",
-  fn: async (): Promise<void> => {
+  fn: async () => {
     // Runs a simple server as another process
     const p = Deno.run({
       cmd: [
@@ -470,7 +470,7 @@ Deno.test({
 
 Deno.test(
   "close server while iterating",
-  async (): Promise<void> => {
+  async () => {
     const server = serve(":8123");
     const nextWhileClosing = server[Symbol.asyncIterator]().next();
     server.close();
@@ -483,8 +483,8 @@ Deno.test(
 
 Deno.test({
   name: "[http] close server while connection is open",
-  async fn(): Promise<void> {
-    async function iteratorReq(server: Server): Promise<void> {
+  async fn() {
+    async function iteratorReq(server: Server) {
       for await (const req of server) {
         await req.respond({ body: new TextEncoder().encode(req.url) });
       }
@@ -514,8 +514,8 @@ Deno.test({
 
 Deno.test({
   name: "respond error closes connection",
-  async fn(): Promise<void> {
-    const serverRoutine = async (): Promise<void> => {
+  async fn() {
+    const serverRoutine = async () => {
       const server = serve(":8124");
       for await (const req of server) {
         await assertThrowsAsync(async () => {
@@ -545,7 +545,7 @@ Deno.test({
 
 Deno.test({
   name: "[http] request error gets 400 response",
-  async fn(): Promise<void> {
+  async fn() {
     const server = serve(":8124");
     const entry = server[Symbol.asyncIterator]().next();
     const conn = await Deno.connect({
@@ -571,8 +571,8 @@ Deno.test({
 
 Deno.test({
   name: "[http] finalizing invalid chunked data closes connection",
-  async fn(): Promise<void> {
-    const serverRoutine = async (): Promise<void> => {
+  async fn() {
+    const serverRoutine = async () => {
       const server = serve(":8124");
       for await (const req of server) {
         await req.respond({ status: 200, body: "Hello, world!" });
@@ -604,8 +604,8 @@ Deno.test({
 
 Deno.test({
   name: "[http] finalizing chunked unexpected EOF closes connection",
-  async fn(): Promise<void> {
-    const serverRoutine = async (): Promise<void> => {
+  async fn() {
+    const serverRoutine = async () => {
       const server = serve(":8124");
       for await (const req of server) {
         await req.respond({ status: 200, body: "Hello, world!" });
@@ -638,9 +638,9 @@ Deno.test({
 Deno.test({
   name:
     "[http] receiving bad request from a closed connection should not throw",
-  async fn(): Promise<void> {
+  async fn() {
     const server = serve(":8124");
-    const serverRoutine = async (): Promise<void> => {
+    const serverRoutine = async () => {
       for await (const req of server) {
         await req.respond({ status: 200, body: "Hello, world!" });
       }
@@ -685,8 +685,8 @@ Deno.test({
 
 Deno.test({
   name: "serveTLS Invalid Cert",
-  fn: async (): Promise<void> => {
-    async function iteratorReq(server: Server): Promise<void> {
+  fn: async () => {
+    async function iteratorReq(server: Server) {
       for await (const req of server) {
         await req.respond({ body: new TextEncoder().encode("Hello HTTPS") });
       }

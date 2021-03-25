@@ -318,7 +318,7 @@ export class Tar {
    *                 e.g., test.txt; use slash for directory separators
    * @param opts options
    */
-  async append(fn: string, opts: TarOptions): Promise<void> {
+  async append(fn: string, opts: TarOptions) {
     if (typeof fn !== "string") {
       throw new Error("file name not specified");
     }
@@ -509,7 +509,7 @@ class TarEntry implements Reader {
     return offset < 0 ? n - Math.abs(offset) : offset;
   }
 
-  async discard(): Promise<void> {
+  async discard() {
     // Discard current entry
     if (this.#consumed) return;
     this.#consumed = true;

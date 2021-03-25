@@ -22,7 +22,7 @@ function testCopy(
 ): void {
   Deno.test({
     name,
-    async fn(): Promise<void> {
+    async fn() {
       const tempDir = await Deno.makeTempDir({
         prefix: "deno_std_copy_async_test_",
       });
@@ -48,11 +48,11 @@ function testCopySync(name: string, cb: (tempDir: string) => void): void {
 
 testCopy(
   "[fs] copy file if it does no exist",
-  async (tempDir: string): Promise<void> => {
+  async (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file_not_exists.txt");
     const destFile = path.join(tempDir, "copy_file_not_exists_1.txt");
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         await copy(srcFile, destFile);
       },
     );
@@ -61,11 +61,11 @@ testCopy(
 
 testCopy(
   "[fs] copy if src and dest are the same paths",
-  async (tempDir: string): Promise<void> => {
+  async (tempDir: string) => {
     const srcFile = path.join(tempDir, "copy_file_same.txt");
     const destFile = path.join(tempDir, "copy_file_same.txt");
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         await copy(srcFile, destFile);
       },
       Error,
@@ -76,7 +76,7 @@ testCopy(
 
 testCopy(
   "[fs] copy file",
-  async (tempDir: string): Promise<void> => {
+  async (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file.txt");
     const destFile = path.join(tempDir, "copy_file_copy.txt");
 
@@ -112,7 +112,7 @@ testCopy(
 
     // Copy again and it should throw an error.
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         await copy(srcFile, destFile);
       },
       Error,
@@ -140,7 +140,7 @@ testCopy(
 
 testCopy(
   "[fs] copy with preserve timestamps",
-  async (tempDir: string): Promise<void> => {
+  async (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file.txt");
     const destFile = path.join(tempDir, "copy_file_copy.txt");
 
@@ -166,14 +166,14 @@ testCopy(
 
 testCopy(
   "[fs] copy directory to its subdirectory",
-  async (tempDir: string): Promise<void> => {
+  async (tempDir: string) => {
     const srcDir = path.join(tempDir, "parent");
     const destDir = path.join(srcDir, "child");
 
     await ensureDir(srcDir);
 
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         await copy(srcDir, destDir);
       },
       Error,
@@ -184,7 +184,7 @@ testCopy(
 
 testCopy(
   "[fs] copy directory and destination exist and not a directory",
-  async (tempDir: string): Promise<void> => {
+  async (tempDir: string) => {
     const srcDir = path.join(tempDir, "parent");
     const destDir = path.join(tempDir, "child.txt");
 
@@ -192,7 +192,7 @@ testCopy(
     await ensureFile(destDir);
 
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         await copy(srcDir, destDir);
       },
       Error,
@@ -203,7 +203,7 @@ testCopy(
 
 testCopy(
   "[fs] copy directory",
-  async (tempDir: string): Promise<void> => {
+  async (tempDir: string) => {
     const srcDir = path.join(testdataDir, "copy_dir");
     const destDir = path.join(tempDir, "copy_dir");
     const srcFile = path.join(srcDir, "0.txt");
@@ -228,7 +228,7 @@ testCopy(
 
     // Copy again without overwrite option and it should throw an error.
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         await copy(srcDir, destDir);
       },
       Error,
@@ -255,7 +255,7 @@ testCopy(
 
 testCopy(
   "[fs] copy symlink file",
-  async (tempDir: string): Promise<void> => {
+  async (tempDir: string) => {
     const dir = path.join(testdataDir, "copy_dir_link_file");
     const srcLink = path.join(dir, "0.txt");
     const destLink = path.join(tempDir, "0_copy.txt");
@@ -275,7 +275,7 @@ testCopy(
 
 testCopy(
   "[fs] copy symlink directory",
-  async (tempDir: string): Promise<void> => {
+  async (tempDir: string) => {
     const srcDir = path.join(testdataDir, "copy_dir");
     const srcLink = path.join(tempDir, "copy_dir_link");
     const destLink = path.join(tempDir, "copy_dir_link_copy");

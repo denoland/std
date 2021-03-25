@@ -440,7 +440,7 @@ function multipartFormData(
     yield* fileMap;
     yield* valueMap;
   }
-  async function removeAll(): Promise<void> {
+  async function removeAll() {
     const promises: Array<Promise<void>> = [];
     for (const val of fileMap.values()) {
       if (Array.isArray(val)) {
@@ -581,7 +581,7 @@ export class MultipartWriter {
     return this.createPart(h);
   }
 
-  async writeField(field: string, value: string): Promise<void> {
+  async writeField(field: string, value: string) {
     const f = await this.createFormField(field);
     await f.write(encoder.encode(value));
   }
@@ -590,17 +590,17 @@ export class MultipartWriter {
     field: string,
     filename: string,
     file: Deno.Reader,
-  ): Promise<void> {
+  ) {
     const f = await this.createFormFile(field, filename);
     await Deno.copy(file, f);
   }
 
-  private flush(): Promise<void> {
+  private flush() {
     return this.bufWriter.flush();
   }
 
   /** Close writer. No additional data can be written to stream */
-  async close(): Promise<void> {
+  async close() {
     if (this.isClosed) {
       throw new Error("multipart: writer is closed");
     }

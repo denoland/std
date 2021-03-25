@@ -8,7 +8,7 @@ import {
   assertThrowsAsync,
 } from "../testing/asserts.ts";
 
-Deno.test("[async] pooledMap", async function (): Promise<void> {
+Deno.test("[async] pooledMap", async function () {
   const start = new Date();
   const results = pooledMap(
     2,
@@ -23,7 +23,7 @@ Deno.test("[async] pooledMap", async function (): Promise<void> {
   assert(diff < 3000);
 });
 
-Deno.test("[async] pooledMap errors", async function (): Promise<void> {
+Deno.test("[async] pooledMap errors", async function () {
   async function mapNumber(n: number): Promise<number> {
     if (n <= 2) {
       throw new Error(`Bad number: ${n}`);

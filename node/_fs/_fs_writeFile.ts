@@ -46,7 +46,7 @@ export function writeFile(
   let file;
 
   let error: Error | null = null;
-  (async (): Promise<void> => {
+  (async () => {
     try {
       file = isRid
         ? new Deno.File(pathOrRid as number)

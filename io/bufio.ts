@@ -71,7 +71,7 @@ export class BufReader implements Reader {
   }
 
   // Reads a new chunk into the buffer.
-  private async _fill(): Promise<void> {
+  private async _fill() {
     // Slide existing data to beginning.
     if (this.r > 0) {
       this.buf.copyWithin(0, this.r, this.w);
@@ -462,7 +462,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
   }
 
   /** Flush writes any buffered data to the underlying io.Writer. */
-  async flush(): Promise<void> {
+  async flush() {
     if (this.err !== null) throw this.err;
     if (this.usedBufferBytes === 0) return;
 

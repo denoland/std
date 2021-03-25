@@ -71,7 +71,7 @@ export function readAllSync(r: Deno.ReaderSync): Uint8Array {
  * console.log(writer.bytes().length);  // 11
  * ```
  */
-export async function writeAll(w: Deno.Writer, arr: Uint8Array): Promise<void> {
+export async function writeAll(w: Deno.Writer, arr: Uint8Array) {
   let nwritten = 0;
   while (nwritten < arr.length) {
     nwritten += await w.write(arr.subarray(nwritten));

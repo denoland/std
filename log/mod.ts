@@ -162,7 +162,7 @@ export function critical<T>(
 }
 
 /** Setup logger config. */
-export async function setup(config: LogConfig): Promise<void> {
+export async function setup(config: LogConfig) {
   state.config = {
     handlers: { ...DEFAULT_CONFIG.handlers, ...config.handlers },
     loggers: { ...DEFAULT_CONFIG.loggers, ...config.loggers },

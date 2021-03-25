@@ -17,7 +17,7 @@ import {
 Deno.test({
   name: "benching",
 
-  fn: async function (): Promise<void> {
+  fn: async function () {
     bench(function forIncrementX1e3(b): void {
       b.start();
       for (let i = 0; i < 1e3; i++);
@@ -30,7 +30,7 @@ Deno.test({
       b.stop();
     });
 
-    bench(async function forAwaitFetchDenolandX10(b): Promise<void> {
+    bench(async function forAwaitFetchDenolandX10(b) {
       b.start();
       for (let i = 0; i < 10; i++) {
         const r = await fetch("https://deno.land/");
@@ -39,12 +39,12 @@ Deno.test({
       b.stop();
     });
 
-    bench(async function promiseAllFetchDenolandX10(b): Promise<void> {
+    bench(async function promiseAllFetchDenolandX10(b) {
       const urls = new Array(10).fill("https://deno.land/");
       b.start();
       await Promise.all(
         urls.map(
-          async (denoland: string): Promise<void> => {
+          async (denoland: string) => {
             const r = await fetch(denoland);
             await r.text();
           },
@@ -116,9 +116,9 @@ Deno.test({
 
 Deno.test({
   name: "Bench without stop should throw",
-  fn: async function (): Promise<void> {
+  fn: async function () {
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         bench(function benchWithoutStop(b): void {
           b.start();
           // Throws bc the timer's stop method is never called
@@ -133,9 +133,9 @@ Deno.test({
 
 Deno.test({
   name: "Bench without start should throw",
-  fn: async function (): Promise<void> {
+  fn: async function () {
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         bench(function benchWithoutStart(b): void {
           b.stop();
           // Throws bc the timer's start method is never called
@@ -150,9 +150,9 @@ Deno.test({
 
 Deno.test({
   name: "Bench with stop before start should throw",
-  fn: async function (): Promise<void> {
+  fn: async function () {
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         bench(function benchStopBeforeStart(b): void {
           b.stop();
           b.start();
@@ -168,7 +168,7 @@ Deno.test({
 
 Deno.test({
   name: "clearBenchmarks should clear all candidates",
-  fn: async function (): Promise<void> {
+  fn: async function () {
     dummyBench("test");
 
     clearBenchmarks();
@@ -181,7 +181,7 @@ Deno.test({
 
 Deno.test({
   name: "clearBenchmarks with only as option",
-  fn: async function (): Promise<void> {
+  fn: async function () {
     // to reset candidates
     clearBenchmarks();
 
@@ -199,7 +199,7 @@ Deno.test({
 
 Deno.test({
   name: "clearBenchmarks with skip as option",
-  fn: async function (): Promise<void> {
+  fn: async function () {
     // to reset candidates
     clearBenchmarks();
 
@@ -217,7 +217,7 @@ Deno.test({
 
 Deno.test({
   name: "clearBenchmarks with only and skip as option",
-  fn: async function (): Promise<void> {
+  fn: async function () {
     // to reset candidates
     clearBenchmarks();
 
@@ -238,7 +238,7 @@ Deno.test({
 
 Deno.test({
   name: "progressCallback of runBenchmarks",
-  fn: async function (): Promise<void> {
+  fn: async function () {
     clearBenchmarks();
     dummyBench("skip");
     dummyBench("single");
@@ -348,7 +348,7 @@ Deno.test({
 
 Deno.test({
   name: "async progressCallback",
-  fn: async function (): Promise<void> {
+  fn: async function () {
     clearBenchmarks();
     dummyBench("single");
 

@@ -2,13 +2,13 @@
 import { assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
 import { deferred } from "./deferred.ts";
 
-Deno.test("[async] deferred: resolve", async function (): Promise<void> {
+Deno.test("[async] deferred: resolve", async function () {
   const d = deferred<string>();
   d.resolve("🦕");
   assertEquals(await d, "🦕");
 });
 
-Deno.test("[async] deferred: reject", async function (): Promise<void> {
+Deno.test("[async] deferred: reject", async function () {
   const d = deferred<number>();
   d.reject(new Error("A deno error 🦕"));
   await assertThrowsAsync(async () => {

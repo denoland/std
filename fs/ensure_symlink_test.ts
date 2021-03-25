@@ -11,18 +11,18 @@ import { ensureSymlink, ensureSymlinkSync } from "./ensure_symlink.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("ensureSymlinkIfItNotExist", async function (): Promise<void> {
+Deno.test("ensureSymlinkIfItNotExist", async function () {
   const testDir = path.join(testdataDir, "link_file_1");
   const testFile = path.join(testDir, "test.txt");
 
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await ensureSymlink(testFile, path.join(testDir, "test1.txt"));
     },
   );
 
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await Deno.stat(testFile).then((): void => {
         throw new Error("test file should exists.");
       });
@@ -44,7 +44,7 @@ Deno.test("ensureSymlinkSyncIfItNotExist", function (): void {
   });
 });
 
-Deno.test("ensureSymlinkIfItExist", async function (): Promise<void> {
+Deno.test("ensureSymlinkIfItExist", async function () {
   const testDir = path.join(testdataDir, "link_file_3");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
@@ -83,7 +83,7 @@ Deno.test("ensureSymlinkSyncIfItExist", function (): void {
   Deno.removeSync(testDir, { recursive: true });
 });
 
-Deno.test("ensureSymlinkDirectoryIfItExist", async function (): Promise<void> {
+Deno.test("ensureSymlinkDirectoryIfItExist", async function () {
   const testDir = path.join(testdataDir, "link_file_origin_3");
   const linkDir = path.join(testdataDir, "link_file_link_3");
   const testFile = path.join(testDir, "test.txt");
