@@ -9,8 +9,6 @@ import {
   readRequest,
   writeResponse,
 } from "./_io.ts";
-import { readAll } from "../io/util.ts";
-
 export class ServerRequest {
   url!: string;
   method!: string;
