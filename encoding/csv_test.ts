@@ -449,7 +449,7 @@ x,,,
 for (const t of testCases) {
   Deno.test({
     name: `[CSV] ${t.Name}`,
-    async fn(): Promise<void> {
+    async fn() {
       let separator = ",";
       let comment: string | undefined;
       let fieldsPerRec: number | undefined;
@@ -473,16 +473,13 @@ for (const t of testCases) {
       let actual;
       if (t.Error) {
         const err = await assertThrowsAsync(async () => {
-          await readMatrix(
-            new BufReader(new StringReader(t.Input ?? "")),
-            {
-              separator,
-              comment: comment,
-              trimLeadingSpace: trim,
-              fieldsPerRecord: fieldsPerRec,
-              lazyQuotes: lazyquote,
-            },
-          );
+          await readMatrix(new BufReader(new StringReader(t.Input ?? "")), {
+            separator,
+            comment: comment,
+            trimLeadingSpace: trim,
+            fieldsPerRecord: fieldsPerRec,
+            lazyQuotes: lazyquote,
+          });
         });
 
         assertEquals(err, t.Error);
@@ -621,7 +618,7 @@ const parseTestCases = [
 for (const testCase of parseTestCases) {
   Deno.test({
     name: `[CSV] Parse ${testCase.name}`,
-    async fn(): Promise<void> {
+    async fn() {
       const r = await parse(testCase.in, {
         skipFirstRow: testCase.skipFirstRow,
         columns: testCase.columns,
