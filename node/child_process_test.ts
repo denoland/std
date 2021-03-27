@@ -138,25 +138,26 @@ Deno.test({
       shell: true,
     });
     let commandOutput = "";
-  
+
     assert(command.stdout);
     command.stdout.on("data", (data) => {
       commandOutput += data;
     });
-  
+
     command.on("close", () => {
       assertStrictEquals(commandOutput.trim(), "bar");
       promise.resolve();
     });
-  
+
     await promise;
-  }
+  },
 });
 
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-shell.js` works.
 Deno.test({
   ignore: isWindows,
-  name: "[node/child_process spawn] Verity that environment is properly inherited",
+  name:
+    "[node/child_process spawn] Verity that environment is properly inherited",
   async fn() {
     const promise = withTimeout(3000);
     const env = spawn(
