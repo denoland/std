@@ -5,7 +5,6 @@
 import { assert } from "../_util/assert.ts";
 import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
-import { parseCmdline } from "./_child_process/_parse_cmdline.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
 import { readLines } from "../io/bufio.ts";
@@ -381,7 +380,7 @@ function buildCommand(
   if (shell) {
     // Set the shell, switches, and commands.
     if (Deno.build.os === "windows") {
-      // To avoid escaping problems that occur on Windows, extract the executable and arguments from the `file` parameter and concatenate them into `args`.
+      // TODO(uki00a): Currently, due to escaping issues, it is difficult to reproduce the same behavior as Node.js's `child_process` module.
       // For more details, see the following issues:
       // * https://github.com/rust-lang/rust/issues/29494
       // * https://github.com/denoland/deno/issues/8852
@@ -392,7 +391,7 @@ function buildCommand(
       }
       // '/d /s /c' is used only for cmd.exe.
       if (/^(?:.*\\)?cmd(?:\.exe)?$/i.test(file)) {
-        args = ['/d', '/s', '/c', `"${command}"`];
+        args = ["/d", "/s", "/c", `"${command}"`];
       } else {
         args = ["-c", command];
       }
