@@ -128,31 +128,36 @@ Deno.test("[node/child_process spawn] Verify that passing arguments works", asyn
 });
 
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-shell.js` works.
-Deno.test("[node/child_process spawn] Verity that shell features can be used", async () => {
-  const promise = withTimeout(3000);
-  const cmd = "echo bar | cat";
-  const command = spawn(cmd, {
-    shell: true,
-  });
-  let commandOutput = "";
-
-  assert(command.stdout);
-  command.stdout.on("data", (data) => {
-    commandOutput += data;
-  });
-
-  command.on("close", () => {
-    assertStrictEquals(commandOutput.trim(), "bar");
-    promise.resolve();
-  });
-
-  await promise;
+Deno.test({
+  ignore: isWindows,
+  name: "[node/child_process spawn] Verity that shell features can be used",
+  async fn() {
+    const promise = withTimeout(3000);
+    const cmd = "echo bar | cat";
+    const command = spawn(cmd, {
+      shell: true,
+    });
+    let commandOutput = "";
+  
+    assert(command.stdout);
+    command.stdout.on("data", (data) => {
+      commandOutput += data;
+    });
+  
+    command.on("close", () => {
+      assertStrictEquals(commandOutput.trim(), "bar");
+      promise.resolve();
+    });
+  
+    await promise;
+  }
 });
 
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-shell.js` works.
-Deno.test(
-  "[node/child_process spawn] Verity that environment is properly inherited",
-  async () => {
+Deno.test({
+  ignore: isWindows,
+  name: "[node/child_process spawn] Verity that environment is properly inherited",
+  async fn() {
     const promise = withTimeout(3000);
     const env = spawn(
       `"${Deno.execPath()}" eval -p "Deno.env.toObject().BAZ"`,
@@ -174,5 +179,5 @@ Deno.test(
     });
     await promise;
   },
-);
+});
 /* End of ported part */

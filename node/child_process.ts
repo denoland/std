@@ -244,7 +244,7 @@ interface ChildProcessOptions {
   signal?: AbortSignal;
   serialization?: "json" | "advanced";
   /**
-   * This option is simply ignored.
+   * Currently, this option is simply ignored.
    */
   windowsVerbatimArguments?: boolean;
   windowsHide?: boolean;
@@ -377,6 +377,7 @@ function buildCommand(
   args: string[],
   shell: string | boolean,
 ): string[] {
+  const command = [file, ...args].join(" ");
   if (shell) {
     // Set the shell, switches, and commands.
     if (Deno.build.os === "windows") {
@@ -384,7 +385,6 @@ function buildCommand(
       // For more details, see the following issues:
       // * https://github.com/rust-lang/rust/issues/29494
       // * https://github.com/denoland/deno/issues/8852
-      const modifiedArgs = [...parseCmdline(file), ...args];
       if (typeof shell === "string") {
         file = shell;
       } else {
@@ -392,12 +392,11 @@ function buildCommand(
       }
       // '/d /s /c' is used only for cmd.exe.
       if (/^(?:.*\\)?cmd(?:\.exe)?$/i.test(file)) {
-        args = ["/d", "/s", "/c", ...modifiedArgs];
+        args = ['/d', '/s', '/c', `"${command}"`];
       } else {
-        args = ["-c", ...modifiedArgs];
+        args = ["-c", command];
       }
     } else {
-      const command = [file, ...args].join(" ");
       if (typeof shell === "string") {
         file = shell;
       } else {
