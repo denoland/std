@@ -250,7 +250,11 @@ export async function writeResponse(
 
   let out = `HTTP/${protoMajor}.${protoMinor} ${statusCode} ${statusText}\r\n`;
 
-  const headers = r.headers ?? new Headers();
+  const rHeaders = r.headers as HeadersInit | undefined;
+  const headersIter = rHeaders instanceof Headers || Array.isArray(rHeaders)
+    ? rHeaders
+    : Object.entries(rHeaders ?? {});
+  const headers = new Headers(headersIter);
 
   if (r.body && !headers.get("content-length")) {
     if (r.body instanceof Uint8Array) {
@@ -260,7 +264,7 @@ export async function writeResponse(
     }
   }
 
-  for (const [key, value] of headers) {
+  for (const [key, value] of headersIter) {
     out += `${key}: ${value}\r\n`;
   }
 
