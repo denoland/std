@@ -189,3 +189,10 @@ Deno.test("testVarnumBytesLittleEndian", function (): void {
   const rslt = varnumBytes(0x04030201, { endian: "little" });
   assertEquals(rslt, new Uint8Array([0x01, 0x02, 0x03, 0x04]));
 });
+
+Deno.test("testVarnumSubarray", function (): void {
+  const data = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
+  const sub = data.subarray(2, 4);
+  const rslt = varnum(sub, { dataType: "uint8" });
+  assertEquals(rslt, 3);
+});
