@@ -97,8 +97,7 @@ Deno.test({
 Deno.test({
   name: "[textproto] Reader : MIME Header Non compliant",
   async fn() {
-    const input =
-      "Foo: bar\r\n" +
+    const input = "Foo: bar\r\n" +
       "Content-Language: en\r\n" +
       "SID : 0\r\n" +
       "Audio Mode : None\r\n" +
@@ -144,8 +143,7 @@ Deno.test({
 Deno.test({
   name: "[textproto] Reader : MIME Header Trim Continued",
   async fn() {
-    const input =
-      "a:\n" +
+    const input = "a:\n" +
       " 0 \r\n" +
       "b:1 \t\r\n" +
       "c: 2\r\n" +

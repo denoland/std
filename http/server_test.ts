@@ -481,7 +481,7 @@ Deno.test(
 
 Deno.test({
   name: "[http] close server while connection is open",
-  async fn(): Promise<void> {
+  async fn() {
     async function iteratorReq(server: Server): Promise<void> {
       for await (const req of server) {
         await req.respond({ body: new TextEncoder().encode(req.url) });
@@ -512,7 +512,7 @@ Deno.test({
 
 Deno.test({
   name: "respond error closes connection",
-  async fn(): Promise<void> {
+  async fn() {
     const serverRoutine = async (): Promise<void> => {
       const server = serve(":8124");
       for await (const req of server) {
@@ -543,7 +543,7 @@ Deno.test({
 
 Deno.test({
   name: "[http] request error gets 400 response",
-  async fn(): Promise<void> {
+  async fn() {
     const server = serve(":8124");
     const entry = server[Symbol.asyncIterator]().next();
     const conn = await Deno.connect({
@@ -569,7 +569,7 @@ Deno.test({
 
 Deno.test({
   name: "[http] finalizing invalid chunked data closes connection",
-  async fn(): Promise<void> {
+  async fn() {
     const serverRoutine = async (): Promise<void> => {
       const server = serve(":8124");
       for await (const req of server) {
@@ -602,7 +602,7 @@ Deno.test({
 
 Deno.test({
   name: "[http] finalizing chunked unexpected EOF closes connection",
-  async fn(): Promise<void> {
+  async fn() {
     const serverRoutine = async (): Promise<void> => {
       const server = serve(":8124");
       for await (const req of server) {
@@ -636,7 +636,7 @@ Deno.test({
 Deno.test({
   name:
     "[http] receiving bad request from a closed connection should not throw",
-  async fn(): Promise<void> {
+  async fn() {
     const server = serve(":8124");
     const serverRoutine = async (): Promise<void> => {
       for await (const req of server) {
@@ -650,18 +650,20 @@ Deno.test({
     });
     await Deno.writeAll(
       conn,
-      new TextEncoder().encode([
-        // A normal request is required:
-        "GET / HTTP/1.1",
-        "Host: localhost",
-        "",
-        // The bad request:
-        "GET / HTTP/1.1",
-        "Host: localhost",
-        "INVALID!HEADER!",
-        "",
-        "",
-      ].join("\r\n")),
+      new TextEncoder().encode(
+        [
+          // A normal request is required:
+          "GET / HTTP/1.1",
+          "Host: localhost",
+          "",
+          // The bad request:
+          "GET / HTTP/1.1",
+          "Host: localhost",
+          "INVALID!HEADER!",
+          "",
+          "",
+        ].join("\r\n"),
+      ),
     );
     // After sending the two requests, don't receive the reponses.
 
