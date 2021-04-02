@@ -22,7 +22,7 @@ function testCopy(
 ): void {
   Deno.test({
     name,
-    async fn(): Promise<void> {
+    async fn() {
       const tempDir = await Deno.makeTempDir({
         prefix: "deno_std_copy_async_test_",
       });

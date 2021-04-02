@@ -482,7 +482,7 @@ Deno.test(
 
 Deno.test({
   name: "Reset buffer after flush",
-  async fn(): Promise<void> {
+  async fn() {
     const stringWriter = new StringWriter();
     const bufWriter = new BufWriter(stringWriter);
     const encoder = new TextEncoder();
@@ -512,7 +512,7 @@ Deno.test({
 
 Deno.test({
   name: "BufWriter.flush should write all bytes",
-  async fn(): Promise<void> {
+  async fn() {
     const bufSize = 16 * 1024;
     const data = new Uint8Array(bufSize);
     data.fill("a".charCodeAt(0));
