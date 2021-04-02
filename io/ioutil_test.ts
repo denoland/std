@@ -9,6 +9,7 @@ import {
 } from "./ioutil.ts";
 import { StringReader } from "./readers.ts";
 import { BufReader } from "./bufio.ts";
+import { Buffer } from "./buffer.ts";
 
 class BinaryReader implements Deno.Reader {
   index = 0;
@@ -69,7 +70,7 @@ Deno.test("testSliceLongToBytes2", function (): void {
 });
 
 Deno.test("testCopyN1", async function (): Promise<void> {
-  const w = new Deno.Buffer();
+  const w = new Buffer();
   const r = new StringReader("abcdefghij");
   const n = await copyN(r, w, 3);
   assertEquals(n, 3);
@@ -77,7 +78,7 @@ Deno.test("testCopyN1", async function (): Promise<void> {
 });
 
 Deno.test("testCopyN2", async function (): Promise<void> {
-  const w = new Deno.Buffer();
+  const w = new Buffer();
   const r = new StringReader("abcdefghij");
   const n = await copyN(r, w, 11);
   assertEquals(n, 10);

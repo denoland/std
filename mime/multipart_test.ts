@@ -14,6 +14,7 @@ import {
   scanUntilBoundary,
 } from "./multipart.ts";
 import { StringWriter } from "../io/writers.ts";
+import { Buffer } from "../io/buffer.ts";
 
 const e = new TextEncoder();
 const boundary = "--abcde";
@@ -90,7 +91,7 @@ Deno.test("multipartMatchAfterPrefix3", function (): void {
 });
 
 Deno.test("multipartMultipartWriter", async function (): Promise<void> {
-  const buf = new Deno.Buffer();
+  const buf = new Buffer();
   const mw = new MultipartWriter(buf);
   await mw.writeField("foo", "foo");
   await mw.writeField("bar", "bar");

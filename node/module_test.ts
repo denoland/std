@@ -77,19 +77,28 @@ Deno.test("requireFileInSymlinkDir", () => {
   assertEquals(C, "C");
 });
 
+Deno.test("requireModuleWithConditionalExports", () => {
+  const { red, blue } = require("./_module/cjs/cjs_conditional_exports");
+  assert(typeof red === "function");
+  assert(typeof blue === "function");
+});
+
 Deno.test("requireNodeJsNativeModules", () => {
   // Checks these exist and don't throw.
   require("assert");
   require("buffer");
+  require("constants");
   require("crypto");
   require("events");
   require("fs");
+  require("module");
   require("os");
   require("path");
   require("querystring");
   require("stream");
   require("string_decoder");
   require("timers");
+  require("tty");
   require("url");
   require("util");
 
@@ -108,8 +117,47 @@ Deno.test("requireNodeJsNativeModules", () => {
   // require("repl");
   // require("sys");
   // require("tls");
-  // require("tty");
   // require("vm");
   // require("worker_threads");
   // require("zlib");
+});
+
+Deno.test("native modules are extensible", () => {
+  const randomKey = "random-key";
+  const randomValue = "random-value";
+  const modNames = [
+    "assert",
+    "buffer",
+    "crypto",
+    "events",
+    "fs",
+    "module",
+    "os",
+    "path",
+    "querystring",
+    "stream",
+    "string_decoder",
+    "timers",
+    "url",
+    "util",
+  ];
+  for (const name of modNames) {
+    const mod = require(name);
+    Object.defineProperty(mod, randomKey, {
+      value: randomValue,
+      configurable: true,
+    });
+    assertEquals(mod[randomKey], randomValue);
+    delete mod[randomKey];
+    assertEquals(mod[randomKey], undefined);
+  }
+});
+
+Deno.test("Require file with shebang", () => {
+  require("./testdata/shebang.js");
+});
+
+Deno.test("EventEmitter is exported correctly", () => {
+  const EventEmitter = require("events");
+  assertEquals(EventEmitter, EventEmitter.EventEmitter);
 });

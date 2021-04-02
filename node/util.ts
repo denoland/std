@@ -1,9 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-export { promisify } from "./_util/_util_promisify.ts";
-export { callbackify } from "./_util/_util_callbackify.ts";
+import { promisify } from "./_util/_util_promisify.ts";
+import { callbackify } from "./_util/_util_callbackify.ts";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
 import * as types from "./_util/_util_types.ts";
-export { types };
+export { callbackify, promisify, types };
 
 const NumberIsSafeInteger = Number.isSafeInteger;
 
@@ -105,7 +105,7 @@ export function isPrimitive(value: unknown): boolean {
   );
 }
 
-/** 
+/**
  * Returns a system error name from an error code number.
  * @param code error code number
  */
@@ -123,16 +123,141 @@ export function getSystemErrorName(code: number): string | undefined {
  * https://nodejs.org/api/util.html#util_util_deprecate_fn_msg_code
  * @param _code This implementation of deprecate won't apply the deprecation code
  */
-export function deprecate<A extends Array<unknown>, B>(
-  this: unknown,
-  callback: (...args: A) => B,
+// deno-lint-ignore no-explicit-any
+export function deprecate<T extends (...args: any) => any>(
+  fn: T,
   msg: string,
   _code?: string,
-) {
-  return function (this: unknown, ...args: A) {
+): (...args: Parameters<T>) => ReturnType<T> {
+  return function (...args) {
     console.warn(msg);
-    return callback.apply(this, args);
+    return fn.apply(undefined, args);
   };
+}
+
+function circularRemover(): (key: string, value: unknown) => unknown {
+  const seen = new WeakSet();
+  return (_key, value) => {
+    if (typeof value === "object" && value !== null) {
+      if (seen.has(value)) {
+        return;
+      }
+      seen.add(value);
+    }
+    return value;
+  };
+}
+
+function formatString(str: string) {
+  return `"${str.replace(/\\/, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
+function thingToString(
+  thing: unknown,
+  maxDepth?: number,
+  depth = 1,
+): string {
+  let result = "";
+  if (typeof thing === "bigint") {
+    return thing + "n";
+  }
+  if (
+    typeof thing === "undefined" || typeof thing === "number" ||
+    typeof thing === "boolean" || typeof thing === "symbol" || thing === null
+  ) {
+    return String(thing);
+  }
+  if (typeof thing === "function") {
+    return `[Function ${thing.name || "(anonymous)"}]`;
+  }
+  if (typeof thing === "string") {
+    return formatString(thing);
+  }
+  if (Array.isArray(thing)) {
+    if (depth === maxDepth) {
+      return "[Array]";
+    }
+    result += "[";
+    const en = Object.entries(thing);
+    for (let i = 0; i < en.length; i++) {
+      const [key, value] = en[i];
+      if (isNaN(Number(key))) {
+        result += `${key}: `;
+      }
+      result += thingToString(value, maxDepth, depth + 1);
+      if (i !== en.length - 1) {
+        result += ", ";
+      }
+    }
+    result += "]";
+    return result;
+  }
+  if (depth === maxDepth) {
+    return "[Object]";
+  }
+  const en = Object.entries(thing as Record<string, unknown>);
+  result += "{ ";
+  for (let i = 0; i < en.length; i++) {
+    const [key, value] = en[i];
+    result += `${key}: ${thingToString(value, maxDepth, depth + 1)}`;
+    if (i !== en.length - 1) {
+      result += ", ";
+    }
+  }
+  result += " }";
+  return result;
+}
+
+function toReplace(specifier: string, value: unknown): string {
+  if (specifier === "%s") {
+    return thingToString(value, 2);
+  }
+  if (specifier === "%d") {
+    if (typeof value === "bigint") {
+      return value + "n";
+    }
+    return Number(value).toString();
+  }
+  if (specifier === "%i") {
+    if (typeof value === "bigint") {
+      return value + "n";
+    }
+    return parseInt(value as string).toString();
+  }
+  if (specifier === "%f") {
+    return parseFloat(value as string).toString();
+  }
+  if (specifier === "%j") {
+    return JSON.stringify(value, circularRemover());
+  }
+  if (specifier === "%o" || specifier === "%O") {
+    return thingToString(value);
+  }
+  if (specifier === "%c") {
+    return "";
+  }
+  return "";
+}
+
+export function format(input: string, ...args: unknown[]) {
+  const replacement: [number, string][] = [];
+  const regex = /%(s|d|i|f|j|o|O|c)/g;
+  let i = 0;
+  let arr: RegExpExecArray | null = null;
+  while ((arr = regex.exec(input)) !== null && i < args.length) {
+    replacement.push([arr["index"], toReplace(arr[0], args[i])]);
+    i++;
+  }
+  let result = "";
+  let last = 0;
+  for (let i = 0; i < replacement.length; i++) {
+    const item = replacement[i];
+    result += input.slice(last, item[0]);
+    result += item[1];
+    last = item[0] + 2;
+  }
+  result += input.slice(last);
+  return result;
 }
 
 import { _TextDecoder, _TextEncoder } from "./_utils.ts";
@@ -162,6 +287,9 @@ export default {
   isPrimitive,
   getSystemErrorName,
   deprecate,
+  callbackify,
+  promisify,
+  types,
   TextDecoder,
   TextEncoder,
 };

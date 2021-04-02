@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { notImplemented } from "./_utils.ts";
 import EventEmitter from "./events.ts";
 import { fromFileUrl } from "../path/mod.ts";
@@ -27,38 +28,19 @@ const notImplementedEvents = [
 /** https://nodejs.org/api/process.html#process_process_arch */
 export const arch = Deno.build.arch;
 
-function getArguments() {
-  return [Deno.execPath(), fromFileUrl(Deno.mainModule), ...Deno.args];
-}
-
-//deno-lint-ignore ban-ts-comment
-//@ts-ignore
-const _argv: {
-  [Deno.customInspect]: () => string;
-  [key: number]: string;
-} = [];
-
-Object.defineProperty(_argv, Deno.customInspect, {
-  enumerable: false,
-  configurable: false,
-  get: function () {
-    return getArguments();
+// The first 2 items are placeholders.
+// They will be overwritten by the below Object.defineProperty calls.
+const argv = ["", "", ...Deno.args];
+// Overwrites the 1st item with getter.
+Object.defineProperty(argv, "0", {
+  get() {
+    return Deno.execPath();
   },
 });
-
-/**
- * https://nodejs.org/api/process.html#process_process_argv
- * Read permissions are required in order to get the executable route
- * */
-export const argv: Record<string, string> = new Proxy(_argv, {
-  get(target, prop) {
-    if (prop === Deno.customInspect) {
-      return target[Deno.customInspect];
-    }
-    return getArguments()[prop as number];
-  },
-  ownKeys() {
-    return Reflect.ownKeys(getArguments());
+// Overwrites the 2nd item with getter.
+Object.defineProperty(argv, "1", {
+  get() {
+    return fromFileUrl(Deno.mainModule);
   },
 });
 
@@ -218,6 +200,30 @@ class Process extends EventEmitter {
     super.removeListener("exit", listener);
 
     return this;
+  }
+
+  /**
+   * Returns the current high-resolution real time in a [seconds, nanoseconds]
+   * tuple.
+   *
+   * Note: You need to give --allow-hrtime permission to Deno to actually get
+   * nanoseconds precision values. If you don't give 'hrtime' permission, the returned
+   * values only have milliseconds precision.
+   *
+   * `time` is an optional parameter that must be the result of a previous process.hrtime() call to diff with the current time.
+   *
+   * These times are relative to an arbitrary time in the past, and not related to the time of day and therefore not subject to clock drift. The primary use is for measuring performance between intervals.
+   * https://nodejs.org/api/process.html#process_process_hrtime_time
+   */
+  hrtime(time?: [number, number]): [number, number] {
+    const milli = performance.now();
+    const sec = Math.floor(milli / 1000);
+    const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
+    if (!time) {
+      return [sec, nano];
+    }
+    const [prevSec, prevNano] = time;
+    return [sec - prevSec, nano - prevNano];
   }
 
   /** https://nodejs.org/api/process.html#process_process_stderr */

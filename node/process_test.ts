@@ -130,6 +130,10 @@ Deno.test({
       process.argv[1],
       path.fromFileUrl(Deno.mainModule),
     );
+    // argv supports array methods.
+    assert(Array.isArray(process.argv.slice(2)));
+    assertEquals(process.argv.indexOf(Deno.execPath()), 0);
+    assertEquals(process.argv.indexOf(path.fromFileUrl(Deno.mainModule)), 1);
   },
 });
 
@@ -193,5 +197,27 @@ Deno.test({
     await delay(10);
     assert(withoutArguments);
     assertEquals(result, expected);
+  },
+});
+
+Deno.test({
+  name: "process.hrtime",
+  fn() {
+    const [sec0, nano0] = process.hrtime();
+    // seconds and nano seconds are positive integers.
+    assert(sec0 > 0);
+    assert(Number.isInteger(sec0));
+    assert(nano0 > 0);
+    assert(Number.isInteger(nano0));
+
+    const [sec1, nano1] = process.hrtime();
+    // the later call returns bigger value
+    assert(sec1 >= sec0);
+    assert(nano1 > nano0);
+
+    const [sec2, nano2] = process.hrtime([sec1, nano1]);
+    // the difference of the 2 calls is a small positive value.
+    assertEquals(sec2, 0);
+    assert(nano2 > 0);
   },
 });

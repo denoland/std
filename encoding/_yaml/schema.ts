@@ -36,7 +36,7 @@ function compileList(
     result.push(currentType);
   }
 
-  return result.filter((type, index): unknown => !exclude.includes(index));
+  return result.filter((_type, index): unknown => !exclude.includes(index));
 }
 
 export type TypeMap = { [k in KindType | "fallback"]: ArrayObject<Type> };
@@ -89,6 +89,19 @@ export class Schema implements SchemaDefinition {
       this.compiledImplicit,
       this.compiledExplicit,
     );
+  }
+
+  /* Returns a new extended schema from current schema */
+  public extend(definition: SchemaDefinition) {
+    return new Schema({
+      implicit: [
+        ...new Set([...this.implicit, ...(definition?.implicit ?? [])]),
+      ],
+      explicit: [
+        ...new Set([...this.explicit, ...(definition?.explicit ?? [])]),
+      ],
+      include: [...new Set([...this.include, ...(definition?.include ?? [])])],
+    });
   }
 
   public static create(): void {}

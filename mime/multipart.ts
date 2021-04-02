@@ -7,6 +7,7 @@ import { BufReader, BufWriter } from "../io/bufio.ts";
 import { assert } from "../_util/assert.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { hasOwnProperty } from "../_util/has_own_property.ts";
+import { Buffer } from "../io/buffer.ts";
 
 /** FormFile object */
 export interface FormFile {
@@ -260,13 +261,17 @@ export interface MultipartFormData {
 
 /** Reader for parsing multipart/form-data */
 export class MultipartReader {
-  readonly newLine = encoder.encode("\r\n");
-  readonly newLineDashBoundary = encoder.encode(`\r\n--${this.boundary}`);
-  readonly dashBoundaryDash = encoder.encode(`--${this.boundary}--`);
-  readonly dashBoundary = encoder.encode(`--${this.boundary}`);
+  readonly newLine: Uint8Array;
+  readonly newLineDashBoundary: Uint8Array;
+  readonly dashBoundaryDash: Uint8Array;
+  readonly dashBoundary: Uint8Array;
   readonly bufReader: BufReader;
 
   constructor(reader: Deno.Reader, private boundary: string) {
+    this.newLine = encoder.encode("\r\n");
+    this.newLineDashBoundary = encoder.encode(`\r\n--${boundary}`);
+    this.dashBoundaryDash = encoder.encode(`--${this.boundary}--`);
+    this.dashBoundary = encoder.encode(`--${this.boundary}`);
     this.bufReader = new BufReader(reader);
   }
 
@@ -281,7 +286,7 @@ export class MultipartReader {
     const fileMap = new Map<string, FormFile | FormFile[]>();
     const valueMap = new Map<string, string>();
     let maxValueBytes = maxMemory + (10 << 20);
-    const buf = new Deno.Buffer(new Uint8Array(maxValueBytes));
+    const buf = new Buffer(new Uint8Array(maxValueBytes));
     for (;;) {
       const p = await this.nextPart();
       if (p === null) {

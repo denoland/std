@@ -448,7 +448,7 @@ export class Buffer extends Uint8Array {
    * not contain enough space to fit the entire string, only part of string will
    * be written. However, partially encoded characters will not be written.
    */
-  write(string: string, offset = 0, length = this.length): number {
+  write(string: string, offset = 0, length = this.length): number | undefined {
     return new TextEncoder().encodeInto(
       string,
       this.subarray(offset, offset + length),

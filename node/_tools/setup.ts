@@ -4,6 +4,8 @@ import { walk } from "../../fs/walk.ts";
 import { basename, fromFileUrl, join, resolve } from "../../path/mod.ts";
 import { ensureFile } from "../../fs/ensure_file.ts";
 import { config, ignoreList } from "./common.ts";
+import { Buffer } from "../../io/buffer.ts";
+import { readAll, writeAll } from "../../io/util.ts";
 
 /**
  * This script will download and extract the test files specified in the
@@ -111,7 +113,7 @@ async function decompressTests(filePath: string) {
     { read: true },
   );
 
-  const buffer = new Deno.Buffer(gunzip(await Deno.readAll(compressedFile)));
+  const buffer = new Buffer(gunzip(await readAll(compressedFile)));
   Deno.close(compressedFile.rid);
 
   const tar = new Untar(buffer);
@@ -133,7 +135,7 @@ async function decompressTests(filePath: string) {
     });
     // This will allow CI to pass without checking linting and formatting
     // on the test suite files, removing the need to mantain that as well
-    await Deno.writeAll(
+    await writeAll(
       file,
       new TextEncoder().encode(
         "// deno-fmt-ignore-file\n// deno-lint-ignore-file\n" +

@@ -21,19 +21,21 @@
 
 import "./global.ts";
 
-import * as nodeAssert from "./assert.ts";
-import * as nodeBuffer from "./buffer.ts";
-import * as nodeCrypto from "./crypto.ts";
+import nodeAssert from "./assert.ts";
+import nodeBuffer from "./buffer.ts";
+import nodeCrypto from "./crypto.ts";
+import nodeConstants from "./constants.ts";
 import nodeEvents from "./events.ts";
-import * as nodeFS from "./fs.ts";
-import * as nodeOs from "./os.ts";
-import * as nodePath from "./path.ts";
-import * as nodeQueryString from "./querystring.ts";
-import * as nodeStream from "./stream.ts";
-import * as nodeStringDecoder from "./string_decoder.ts";
-import * as nodeTimers from "./timers.ts";
-import * as nodeUrl from "./url.ts";
-import * as nodeUtil from "./util.ts";
+import nodeFS from "./fs.ts";
+import nodeOs from "./os.ts";
+import nodePath from "./path.ts";
+import nodeQueryString from "./querystring.ts";
+import nodeStream from "./stream.ts";
+import nodeStringDecoder from "./string_decoder.ts";
+import nodeTimers from "./timers.ts";
+import nodeTty from "./tty.ts";
+import nodeUrl from "./url.ts";
+import nodeUtil from "./util.ts";
 
 import * as path from "../path/mod.ts";
 import { assert } from "../_util/assert.ts";
@@ -428,6 +430,7 @@ class Module {
   }
 
   static wrap(script: string): string {
+    script = script.replace(/^#!.*?\n/, "");
     return `${Module.wrapper[0]}${script}${Module.wrapper[1]}`;
   }
 
@@ -600,9 +603,17 @@ function createNativeModule(id: string, exports: any): Module {
 
 nativeModulePolyfill.set("assert", createNativeModule("assert", nodeAssert));
 nativeModulePolyfill.set("buffer", createNativeModule("buffer", nodeBuffer));
+nativeModulePolyfill.set(
+  "constants",
+  createNativeModule("constants", nodeConstants),
+);
 nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
-nativeModulePolyfill.set("events", createNativeModule("events", nodeEvents));
+nativeModulePolyfill.set(
+  "events",
+  createNativeModule("events", nodeEvents),
+);
 nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
+nativeModulePolyfill.set("module", createNativeModule("module", Module));
 nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
 nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
 nativeModulePolyfill.set(
@@ -618,6 +629,7 @@ nativeModulePolyfill.set(
   createNativeModule("string_decoder", nodeStringDecoder),
 );
 nativeModulePolyfill.set("timers", createNativeModule("timers", nodeTimers));
+nativeModulePolyfill.set("tty", createNativeModule("tty", nodeTty));
 nativeModulePolyfill.set("url", createNativeModule("url", nodeUrl));
 nativeModulePolyfill.set("util", createNativeModule("util", nodeUtil));
 
@@ -915,6 +927,11 @@ function resolveExports(
   return path.resolve(nmPath, request);
 }
 
+// Node.js uses these keys for resolving conditional exports.
+// ref: https://nodejs.org/api/packages.html#packages_conditional_exports
+// ref: https://github.com/nodejs/node/blob/2c77fe1/lib/internal/modules/cjs/helpers.js#L33
+const cjsConditions = new Set(["require", "node"]);
+
 function resolveExportsTarget(
   pkgPath: URL,
   // deno-lint-ignore no-explicit-any
@@ -962,18 +979,22 @@ function resolveExportsTarget(
       }
     }
   } else if (typeof target === "object" && target !== null) {
-    // removed experimentalConditionalExports
-    if (Object.prototype.hasOwnProperty.call(target, "default")) {
-      try {
-        return resolveExportsTarget(
-          pkgPath,
-          target.default,
-          subpath,
-          basePath,
-          mappingKey,
-        );
-      } catch (e) {
-        if (e.code !== "MODULE_NOT_FOUND") throw e;
+    for (const key of Object.keys(target)) {
+      if (key !== "default" && !cjsConditions.has(key)) {
+        continue;
+      }
+      if (Object.prototype.hasOwnProperty.call(target, key)) {
+        try {
+          return resolveExportsTarget(
+            pkgPath,
+            target[key],
+            subpath,
+            basePath,
+            mappingKey,
+          );
+        } catch (e) {
+          if (e.code !== "MODULE_NOT_FOUND") throw e;
+        }
       }
     }
   }
