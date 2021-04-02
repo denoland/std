@@ -25,7 +25,7 @@ export class BufferFullError extends Error {
   }
 }
 
-export class PartialReadError extends Deno.errors.UnexpectedEof {
+export class PartialReadError extends Error {
   name = "PartialReadError";
   partial?: Uint8Array;
   constructor() {
