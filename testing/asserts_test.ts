@@ -158,7 +158,10 @@ Deno.test("testingNotEquals", function (): void {
     new Date(2019, 0, 3, 4, 20, 1, 10),
     new Date(2019, 0, 3, 4, 20, 1, 20),
   );
-  assertNotEquals(new Date("invalid"), new Date(2019, 0, 3, 4, 20, 1, 20));
+  assertNotEquals(
+    new Date("invalid"),
+    new Date(2019, 0, 3, 4, 20, 1, 20),
+  );
   let didThrow;
   try {
     assertNotEquals("Raptor", "Raptor");
@@ -667,7 +670,10 @@ Deno.test({
     );
     assertThrows(
       (): void =>
-        assertEquals(new Date("invalid"), new Date(2019, 0, 3, 4, 20, 1, 20)),
+        assertEquals(
+          new Date("invalid"),
+          new Date(2019, 0, 3, 4, 20, 1, 20),
+        ),
       AssertionError,
       [
         "Values are not equal:",
