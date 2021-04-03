@@ -34,7 +34,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        utimes("some/path", Infinity, 0, (err: Error | null) => {});
+        utimes("some/path", Infinity, 0, (_err: Error | null) => {});
       },
       Error,
       "invalid atime, must not be infitiny or NaN",
@@ -47,7 +47,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        utimes("some/path", "some string", 0, (err: Error | null) => {});
+        utimes("some/path", "some string", 0, (_err: Error | null) => {});
       },
       Error,
       "invalid atime, must not be infitiny or NaN",
