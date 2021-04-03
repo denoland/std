@@ -129,7 +129,9 @@ class Process extends EventEmitter {
     window.addEventListener("unload", () => {
       //TODO(Soremwar)
       //Get the exit code from the unload event
-      super.emit("exit", 0);
+      nextTick(() => {
+        super.emit("exit", 0);
+      });
     });
   }
 
