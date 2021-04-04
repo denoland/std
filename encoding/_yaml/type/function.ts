@@ -25,7 +25,7 @@ export const func = new Type("tag:yaml.org,2002:js/function", {
     try {
       reconstructFunction(`${data}`);
       return true;
-    } catch (err) {
+    } catch (_err) {
       return false;
     }
   },
