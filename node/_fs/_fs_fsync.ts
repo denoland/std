@@ -5,7 +5,7 @@ export function fsync(
   fd: number,
   callback: CallbackWithError,
 ) {
-   Deno.fsync(fd).then(() => callback(null), callback);
+  Deno.fsync(fd).then(() => callback(null), callback);
 }
 
 export function fsyncSync(fd: number) {
