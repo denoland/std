@@ -4,11 +4,12 @@
 
 ```ts
 import { Tar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
+import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
 
 const tar = new Tar();
 const content = new TextEncoder().encode("Deno.land");
 await tar.append("deno.txt", {
-  reader: new Deno.Buffer(content),
+  reader: new Buffer(content),
   contentSize: content.byteLength,
 });
 

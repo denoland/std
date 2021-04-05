@@ -463,6 +463,44 @@ console.log(data);
 // => [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" } ]
 ```
 
+To handle `function`, `regexp`, and `undefined` types, use the
+`EXTENDED_SCHEMA`.
+
+```ts
+import {
+  EXTENDED_SCHEMA,
+  parse,
+} from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
+
+const data = parse(
+  `
+  regexp:
+    simple: !!js/regexp foobar
+    modifiers: !!js/regexp /foobar/mi
+  undefined: !!js/undefined ~
+  function: !!js/function >
+    function foobar() {
+      return 'hello world!';
+    }
+`,
+  { schema: EXTENDED_SCHEMA },
+);
+```
+
+You can also use custom types by extending schemas.
+
+```ts
+import {
+  parse,
+  Type,
+} from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
+
+const MyYamlType = new Type("!myYamlType", {/* your type definition here*/});
+const MY_SCHEMA = DEFAULT_SCHEMA.extend({ explicit: [MyYamlType] });
+
+parse(yaml, { schema: MY_SCHEMA });
+```
+
 ### API
 
 #### `parse(str: string, opts?: ParserOption): unknown`
@@ -481,11 +519,10 @@ Serializes `object` as a YAML document.
 ### :warning: Limitations
 
 - `binary` type is currently not stable.
-- `function`, `regexp`, and `undefined` type are currently not supported.
 
 ### More example
 
-See: https://github.com/nodeca/js-yaml
+See: https://github.com/nodeca/js-yaml/tree/master/examples
 
 ## base32
 

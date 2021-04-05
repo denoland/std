@@ -3,10 +3,12 @@
 import { assert, assertEquals } from "../testing/asserts.ts";
 import {
   readableStreamFromIterable,
+  readerFromIterable,
   readerFromStreamReader,
   writableStreamFromWriter,
   writerFromStreamWriter,
 } from "./streams.ts";
+import { Buffer } from "./buffer.ts";
 
 function repeat(c: string, bytes: number): Uint8Array {
   assertEquals(c.length, 1);
@@ -14,6 +16,27 @@ function repeat(c: string, bytes: number): Uint8Array {
   ui8.fill(c.charCodeAt(0));
   return ui8;
 }
+
+Deno.test("[io] readerFromIterable()", async function () {
+  const reader = readerFromIterable((function* () {
+    const encoder = new TextEncoder();
+    for (const string of ["hello", "deno", "foo"]) {
+      yield encoder.encode(string);
+    }
+  })());
+
+  const readStrings = [];
+  const decoder = new TextDecoder();
+  const p = new Uint8Array(4);
+  while (true) {
+    const n = await reader.read(p);
+    if (n == null) {
+      break;
+    }
+    readStrings.push(decoder.decode(p.slice(0, n)));
+  }
+  assertEquals(readStrings, ["hell", "o", "deno", "foo"]);
+});
 
 Deno.test("[io] writerFromStreamWriter()", async function () {
   const written: string[] = [];
@@ -76,7 +99,7 @@ Deno.test("[io] readerFromStreamReader()", async function () {
 Deno.test("[io] readerFromStreamReader() big chunks", async function () {
   const bufSize = 1024;
   const chunkSize = 3 * bufSize;
-  const writer = new Deno.Buffer();
+  const writer = new Buffer();
 
   // A readable stream can enqueue chunks bigger than Copy bufSize
   // Reader returned by toReader should enqueue exceeding bytes
@@ -107,7 +130,7 @@ Deno.test("[io] readerFromStreamReader() big chunks", async function () {
 Deno.test("[io] readerFromStreamReader() irregular chunks", async function () {
   const bufSize = 1024;
   const chunkSize = 3 * bufSize;
-  const writer = new Deno.Buffer();
+  const writer = new Buffer();
 
   // A readable stream can enqueue chunks bigger than Copy bufSize
   // Reader returned by toReader should enqueue exceeding bytes

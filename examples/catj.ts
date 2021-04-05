@@ -8,6 +8,7 @@
 
 import { parse } from "../flags/mod.ts";
 import * as colors from "../fmt/colors.ts";
+import { readAll } from "../io/util.ts";
 
 const decoder = new TextDecoder();
 
@@ -96,7 +97,7 @@ if (import.meta.main) {
   }
 
   if (parsedArgs._[0] === "-") {
-    const contents = await Deno.readAll(Deno.stdin);
+    const contents = await readAll(Deno.stdin);
     const json = JSON.parse(decoder.decode(contents));
     print(json);
   } else {

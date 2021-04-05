@@ -4,7 +4,10 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import { parse, parseAll } from "./parse.ts";
-import { assertEquals } from "../../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../../testing/asserts.ts";
+import { DEFAULT_SCHEMA, EXTENDED_SCHEMA } from "./schema/mod.ts";
+import { YAMLError } from "./error.ts";
+import { Type } from "./type.ts";
 
 Deno.test({
   name: "`parse` parses single document yaml string",
@@ -52,5 +55,83 @@ name: Eve
       },
     ];
     assertEquals(parseAll(yaml), expected);
+  },
+});
+
+Deno.test({
+  name: "`!!js/*` yaml types are not handled in default schemas while parsing",
+  fn(): void {
+    const yaml = `undefined: !!js/undefined ~`;
+    assertThrows(() => parse(yaml), YAMLError, "unknown tag !");
+  },
+});
+
+Deno.test({
+  name:
+    "`!!js/*` yaml types are correctly handled with extended schema while parsing",
+  fn(): void {
+    const yaml = `
+      regexp:
+        simple: !!js/regexp foobar
+        modifiers: !!js/regexp /foobar/mi
+      undefined: !!js/undefined ~
+    `;
+
+    const expected = {
+      regexp: {
+        simple: /foobar/,
+        modifiers: /foobar/mi,
+      },
+      undefined: undefined,
+    };
+
+    assertEquals(parse(yaml, { schema: EXTENDED_SCHEMA }), expected);
+  },
+});
+
+Deno.test({
+  name:
+    "`!!js/function` yaml type is correctly handled with extended schema while parsing",
+  fn(): void {
+    const func = function foobar() {
+      return "hello world!";
+    };
+
+    const yaml = `
+function: !!js/function >
+${func.toString().split("\n").map((line) => `  ${line}`).join("\n")}
+`;
+
+    const parsed = parse(yaml, { schema: EXTENDED_SCHEMA }) as {
+      [key: string]: unknown;
+    };
+
+    assertEquals(Object.keys(parsed).length, 1);
+    assertEquals((parsed?.function as typeof func).toString(), func.toString());
+  },
+});
+
+Deno.test({
+  name: "`!*` yaml user defined types are supported while parsing",
+  fn(): void {
+    const PointYamlType = new Type("!point", {
+      kind: "sequence",
+      resolve(data) {
+        return data !== null && data?.length === 3;
+      },
+      construct(data) {
+        const [x, y, z] = data;
+        return { x, y, z };
+      },
+    });
+    const SPACE_SCHEMA = DEFAULT_SCHEMA.extend({ explicit: [PointYamlType] });
+
+    const yaml = `
+      point: !point [1, 2, 3]
+    `;
+
+    assertEquals(parse(yaml, { schema: SPACE_SCHEMA }), {
+      point: { x: 1, y: 2, z: 3 },
+    });
   },
 });

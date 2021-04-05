@@ -91,6 +91,7 @@ Deno.test("requireNodeJsNativeModules", () => {
   require("crypto");
   require("events");
   require("fs");
+  require("module");
   require("os");
   require("path");
   require("querystring");
@@ -130,6 +131,7 @@ Deno.test("native modules are extensible", () => {
     "crypto",
     "events",
     "fs",
+    "module",
     "os",
     "path",
     "querystring",
