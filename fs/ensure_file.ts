@@ -11,7 +11,7 @@ import { getFileInfoType } from "./_util.ts";
  * it is NOTMODIFIED.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export async function ensureFile(filePath: string): Promise<void> {
+export async function ensureFile(filePath: string) {
   try {
     // if file exists
     const stat = await Deno.lstat(filePath);

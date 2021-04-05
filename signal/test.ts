@@ -21,7 +21,7 @@ Deno.test({
 Deno.test({
   name: "signal() iterates for multiple signals",
   ignore: Deno.build.os === "windows",
-  fn: async (): Promise<void> => {
+  fn: async () => {
     // This prevents the program from exiting.
     const t = setInterval(() => {}, 1000);
 

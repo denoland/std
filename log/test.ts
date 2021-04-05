@@ -16,7 +16,7 @@ class TestHandler extends log.handlers.BaseHandler {
   }
 }
 
-Deno.test("defaultHandlers", async function (): Promise<void> {
+Deno.test("defaultHandlers", async function () {
   const loggers: {
     [key: string]: (msg: string, ...args: unknown[]) => void;
   } = {
@@ -54,7 +54,7 @@ Deno.test("defaultHandlers", async function (): Promise<void> {
   }
 });
 
-Deno.test("getLogger", async function (): Promise<void> {
+Deno.test("getLogger", async function () {
   const handler = new TestHandler("DEBUG");
 
   await log.setup({
@@ -75,7 +75,7 @@ Deno.test("getLogger", async function (): Promise<void> {
   assertEquals(logger.handlers, [handler]);
 });
 
-Deno.test("getLoggerWithName", async function (): Promise<void> {
+Deno.test("getLoggerWithName", async function () {
   const fooHandler = new TestHandler("DEBUG");
 
   await log.setup({
@@ -96,7 +96,7 @@ Deno.test("getLoggerWithName", async function (): Promise<void> {
   assertEquals(logger.handlers, [fooHandler]);
 });
 
-Deno.test("getLoggerUnknown", async function (): Promise<void> {
+Deno.test("getLoggerUnknown", async function () {
   await log.setup({
     handlers: {},
     loggers: {},

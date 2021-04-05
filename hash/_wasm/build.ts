@@ -3,7 +3,7 @@
 import { encode as base64Encode } from "../../encoding/base64.ts";
 
 // 1. build wasm
-async function buildWasm(path: string): Promise<void> {
+async function buildWasm(path: string) {
   const cmd = [
     "wasm-pack",
     "build",
@@ -29,7 +29,7 @@ async function encodeWasm(wasmPath: string): Promise<string> {
 }
 
 // 3. generate script
-async function generate(wasm: string, output: string): Promise<void> {
+async function generate(wasm: string, output: string) {
   const initScript = await Deno.readTextFile(`${output}/deno_hash.js`);
   const denoHashScript = "// deno-lint-ignore-file\n" +
     "//deno-fmt-ignore-file\n" +

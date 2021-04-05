@@ -236,7 +236,7 @@ Deno.test("parseHttpVersion", (): void => {
   }
 });
 
-Deno.test("writeUint8ArrayResponse", async function (): Promise<void> {
+Deno.test("writeUint8ArrayResponse", async function () {
   const shortText = "Hello";
 
   const body = new TextEncoder().encode(shortText);
@@ -272,7 +272,7 @@ Deno.test("writeUint8ArrayResponse", async function (): Promise<void> {
   assertEquals(eof, null);
 });
 
-Deno.test("writeStringResponse", async function (): Promise<void> {
+Deno.test("writeStringResponse", async function () {
   const body = "Hello";
 
   const res: Response = { body };
@@ -307,7 +307,7 @@ Deno.test("writeStringResponse", async function (): Promise<void> {
   assertEquals(eof, null);
 });
 
-Deno.test("writeStringReaderResponse", async function (): Promise<void> {
+Deno.test("writeStringReaderResponse", async function () {
   const shortText = "Hello";
 
   const body = new StringReader(shortText);
@@ -392,7 +392,7 @@ Deno.test("writeResponseShouldNotModifyOriginHeaders", async () => {
   assert(decoder.decode(await readAll(buf)).includes("content-length: 5"));
 });
 
-Deno.test("readRequestError", async function (): Promise<void> {
+Deno.test("readRequestError", async function () {
   const input = `GET / HTTP/1.1
 malformedHeader
 `;
@@ -410,7 +410,7 @@ malformedHeader
 // Ported from Go
 // https://github.com/golang/go/blob/go1.12.5/src/net/http/request_test.go#L377-L443
 // TODO(zekth) fix tests
-Deno.test("testReadRequestError", async function (): Promise<void> {
+Deno.test("testReadRequestError", async function () {
   const testCases = [
     {
       in: "GET / HTTP/1.1\r\nheader: foo\r\n\r\n",

@@ -10,13 +10,13 @@ import { dirname, fromFileUrl } from "../path/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
-Deno.test("xevalSuccess", async function (): Promise<void> {
+Deno.test("xevalSuccess", async function () {
   const chunks: string[] = [];
   await xeval(new StringReader("a\nb\nc"), ($): number => chunks.push($));
   assertEquals(chunks, ["a", "b", "c"]);
 });
 
-Deno.test("xevalDelimiter", async function (): Promise<void> {
+Deno.test("xevalDelimiter", async function () {
   const chunks: string[] = [];
   await xeval(
     new StringReader("!MADMADAMADAM!"),
@@ -32,7 +32,7 @@ const xevalPath = "xeval.ts";
 
 Deno.test({
   name: "xevalCliReplvar",
-  fn: async function (): Promise<void> {
+  fn: async function () {
     const p = Deno.run({
       cmd: [
         Deno.execPath(),
@@ -56,7 +56,7 @@ Deno.test({
   },
 });
 
-Deno.test("xevalCliSyntaxError", async function (): Promise<void> {
+Deno.test("xevalCliSyntaxError", async function () {
   const p = Deno.run({
     cmd: [Deno.execPath(), "run", "--quiet", xevalPath, "("],
     cwd: moduleDir,

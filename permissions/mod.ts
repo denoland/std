@@ -101,7 +101,7 @@ export async function grantOrThrow(
 export async function grantOrThrow(
   descriptor: Deno.PermissionDescriptor[] | Deno.PermissionDescriptor,
   ...descriptors: Deno.PermissionDescriptor[]
-): Promise<void> {
+) {
   const denied: Deno.PermissionDescriptor[] = [];
   descriptors = Array.isArray(descriptor)
     ? descriptor

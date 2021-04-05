@@ -2,7 +2,7 @@
 import { delay } from "./delay.ts";
 import { assert } from "../testing/asserts.ts";
 
-Deno.test("[async] delay", async function (): Promise<void> {
+Deno.test("[async] delay", async function () {
   const start = new Date();
   const delayedPromise = delay(100);
   const result = await delayedPromise;

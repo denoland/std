@@ -7,7 +7,7 @@ import { dirname, fromFileUrl } from "../path/mod.ts";
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 let server: Deno.Process<Deno.RunOptions & { stdout: "piped" }>;
-async function startServer(): Promise<void> {
+async function startServer() {
   server = Deno.run({
     cmd: [Deno.execPath(), "run", "--quiet", "-A", "racing_server.ts"],
     cwd: moduleDir,
@@ -62,7 +62,7 @@ content-length: 6
 Step7
 `;
 
-Deno.test("serverPipelineRace", async function (): Promise<void> {
+Deno.test("serverPipelineRace", async function () {
   await startServer();
 
   const conn = await Deno.connect({ port: 4501 });

@@ -11,7 +11,7 @@ import { getFileInfoType } from "./_util.ts";
  * @param src the source file path. Directory hard links are not allowed.
  * @param dest the destination link path
  */
-export async function ensureLink(src: string, dest: string): Promise<void> {
+export async function ensureLink(src: string, dest: string) {
   if (await exists(dest)) {
     const destStatInfo = await Deno.lstat(dest);
     const destFilePathType = getFileInfoType(destStatInfo);

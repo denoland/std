@@ -125,7 +125,7 @@ function isProhibidedForTrailer(key: string): boolean {
 export async function readTrailers(
   headers: Headers,
   r: BufReader,
-): Promise<void> {
+) {
   const trailers = parseTrailer(headers.get("trailer"));
   if (trailers == null) return;
   const trailerNames = [...trailers.keys()];
@@ -174,7 +174,7 @@ function parseTrailer(field: string | null): Headers | undefined {
 export async function writeChunkedBody(
   w: BufWriter,
   r: Deno.Reader,
-): Promise<void> {
+) {
   for await (const chunk of Deno.iter(r)) {
     if (chunk.byteLength <= 0) continue;
     const start = encoder.encode(`${chunk.byteLength.toString(16)}\r\n`);
@@ -195,7 +195,7 @@ export async function writeTrailers(
   w: Deno.Writer,
   headers: Headers,
   trailers: Headers,
-): Promise<void> {
+) {
   const trailer = headers.get("trailer");
   if (trailer === null) {
     throw new TypeError("Missing trailer header.");
@@ -232,7 +232,7 @@ export async function writeTrailers(
 export async function writeResponse(
   w: Deno.Writer,
   r: Response,
-): Promise<void> {
+) {
   const protoMajor = 1;
   const protoMinor = 1;
   const statusCode = r.status || 200;
