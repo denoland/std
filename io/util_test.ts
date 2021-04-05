@@ -65,3 +65,127 @@ Deno.test("testWriteAllSync", () => {
     assertEquals(testBytes[i], actualBytes[i]);
   }
 });
+
+function helloWorldFile(): Buffer {
+  return new Buffer(new TextEncoder().encode("Hello World!"));
+}
+
+Deno.test("filesIter", async () => {
+  const file = helloWorldFile();
+
+  let totalSize = 0;
+  for await (const buf of Deno.iter(file)) {
+    totalSize += buf.byteLength;
+  }
+
+  assertEquals(totalSize, 12);
+});
+
+Deno.test("filesIterCustomBufSize", async () => {
+  const file = helloWorldFile();
+
+  let totalSize = 0;
+  let iterations = 0;
+  for await (const buf of Deno.iter(file, { bufSize: 6 })) {
+    totalSize += buf.byteLength;
+    iterations += 1;
+  }
+
+  assertEquals(totalSize, 12);
+  assertEquals(iterations, 2);
+});
+
+Deno.test("filesIterSync", () => {
+  const file = helloWorldFile();
+
+  let totalSize = 0;
+  for (const buf of Deno.iterSync(file)) {
+    totalSize += buf.byteLength;
+  }
+
+  assertEquals(totalSize, 12);
+});
+
+Deno.test("filesIterSyncCustomBufSize", () => {
+  const file = helloWorldFile();
+
+  let totalSize = 0;
+  let iterations = 0;
+  for (const buf of Deno.iterSync(file, { bufSize: 6 })) {
+    totalSize += buf.byteLength;
+    iterations += 1;
+  }
+
+  assertEquals(totalSize, 12);
+  assertEquals(iterations, 2);
+});
+
+Deno.test("readerIter", async () => {
+  // ref: https://github.com/denoland/deno/issues/2330
+  const encoder = new TextEncoder();
+
+  class TestReader implements Deno.Reader {
+    #offset = 0;
+    #buf: Uint8Array;
+
+    constructor(s: string) {
+      this.#buf = new Uint8Array(encoder.encode(s));
+    }
+
+    read(p: Uint8Array): Promise<number | null> {
+      const n = Math.min(p.byteLength, this.#buf.byteLength - this.#offset);
+      p.set(this.#buf.slice(this.#offset, this.#offset + n));
+      this.#offset += n;
+
+      if (n === 0) {
+        return Promise.resolve(null);
+      }
+
+      return Promise.resolve(n);
+    }
+  }
+
+  const reader = new TestReader("hello world!");
+
+  let totalSize = 0;
+  for await (const buf of Deno.iter(reader)) {
+    totalSize += buf.byteLength;
+  }
+
+  assertEquals(totalSize, 12);
+});
+
+Deno.test("readerIterSync", () => {
+  // ref: https://github.com/denoland/deno/issues/2330
+  const encoder = new TextEncoder();
+
+  class TestReader implements Deno.ReaderSync {
+    #offset = 0;
+    #buf: Uint8Array;
+
+    constructor(s: string) {
+      this.#buf = new Uint8Array(encoder.encode(s));
+    }
+
+    readSync(p: Uint8Array): number | null {
+      const n = Math.min(p.byteLength, this.#buf.byteLength - this.#offset);
+      p.set(this.#buf.slice(this.#offset, this.#offset + n));
+      this.#offset += n;
+
+      if (n === 0) {
+        return null;
+      }
+
+      return n;
+    }
+  }
+
+  const reader = new TestReader("hello world!");
+
+  let totalSize = 0;
+  for await (const buf of Deno.iterSync(reader)) {
+    totalSize += buf.byteLength;
+  }
+
+  assertEquals(totalSize, 12);
+});
