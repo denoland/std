@@ -9,6 +9,8 @@ type Writer = Deno.Writer;
 type WriterSync = Deno.WriterSync;
 import { copy } from "../bytes/mod.ts";
 import { assert } from "../_util/assert.ts";
+import { Buffer } from "./buffer.ts";
+import { writeAll, writeAllSync } from "./util.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 const MIN_BUF_SIZE = 16;
@@ -23,7 +25,7 @@ export class BufferFullError extends Error {
   }
 }
 
-export class PartialReadError extends Deno.errors.UnexpectedEof {
+export class PartialReadError extends Error {
   name = "PartialReadError";
   partial?: Uint8Array;
   constructor() {
@@ -465,7 +467,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
     if (this.usedBufferBytes === 0) return;
 
     try {
-      await Deno.writeAll(
+      await writeAll(
         this.writer,
         this.buf.subarray(0, this.usedBufferBytes),
       );
@@ -558,7 +560,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
     if (this.usedBufferBytes === 0) return;
 
     try {
-      Deno.writeAllSync(
+      writeAllSync(
         this.writer,
         this.buf.subarray(0, this.usedBufferBytes),
       );
@@ -640,7 +642,7 @@ export async function* readDelim(
   const delimLen = delim.length;
   const delimLPS = createLPS(delim);
 
-  let inputBuffer = new Deno.Buffer();
+  let inputBuffer = new Buffer();
   const inspectArr = new Uint8Array(Math.max(1024, delimLen + 1));
 
   // Modified KMP
@@ -658,7 +660,7 @@ export async function* readDelim(
       return;
     }
     const sliceRead = inspectArr.subarray(0, result as number);
-    await Deno.writeAll(inputBuffer, sliceRead);
+    await writeAll(inputBuffer, sliceRead);
 
     let sliceToProcess = inputBuffer.bytes();
     while (inspectIndex < sliceToProcess.length) {
@@ -686,7 +688,7 @@ export async function* readDelim(
       }
     }
     // Keep inspectIndex and matchIndex.
-    inputBuffer = new Deno.Buffer(sliceToProcess);
+    inputBuffer = new Buffer(sliceToProcess);
   }
 }
 

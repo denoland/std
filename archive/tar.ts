@@ -29,6 +29,8 @@
 import { MultiReader } from "../io/readers.ts";
 import { PartialReadError } from "../io/bufio.ts";
 import { assert } from "../_util/assert.ts";
+import { Buffer } from "../io/buffer.ts";
+import { readAll } from "../io/util.ts";
 
 type Reader = Deno.Reader;
 type Seeker = Deno.Seeker;
@@ -355,7 +357,7 @@ export class Tar {
       info = await Deno.stat(opts.filePath);
       if (info.isDirectory) {
         info.size = 0;
-        opts.reader = new Deno.Buffer();
+        opts.reader = new Buffer();
       }
     }
 
@@ -424,7 +426,7 @@ export class Tar {
       let { reader } = tarData;
       const { filePath } = tarData;
       const headerArr = formatHeader(tarData);
-      readers.push(new Deno.Buffer(headerArr));
+      readers.push(new Buffer(headerArr));
       if (!reader) {
         assert(filePath != null);
         reader = new FileReader(filePath);
@@ -434,7 +436,7 @@ export class Tar {
       // to the nearest multiple of recordSize
       assert(tarData.fileSize != null, "fileSize must be set");
       readers.push(
-        new Deno.Buffer(
+        new Buffer(
           clean(
             recordSize -
               (parseInt(tarData.fileSize, 8) % recordSize || recordSize),
@@ -444,7 +446,7 @@ export class Tar {
     });
 
     // append 2 empty records
-    readers.push(new Deno.Buffer(clean(recordSize * 2)));
+    readers.push(new Buffer(clean(recordSize * 2)));
     return new MultiReader(...readers);
   }
 }
@@ -519,7 +521,7 @@ class TarEntry implements Reader {
       );
       this.#read = this.#entrySize;
     } else {
-      await Deno.readAll(this);
+      await readAll(this);
     }
   }
 }

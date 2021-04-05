@@ -1,5 +1,7 @@
 # Deno Standard Modules
 
+[![codecov](https://codecov.io/gh/denoland/deno_std/branch/main/graph/badge.svg?token=w6s3ODtULz)](https://codecov.io/gh/denoland/deno_std)
+
 These modules do not have external dependencies and they are reviewed by the
 Deno core team. The intention is to have a standard set of high quality code
 that all Deno projects can use fearlessly.

@@ -86,7 +86,7 @@ Deno.test("Duplex stream can be paused", () => {
   assert(!readable.isPaused());
 });
 
-Deno.test("Duplex stream sets enconding correctly", () => {
+Deno.test("Duplex stream sets encoding correctly", () => {
   const readable = new Duplex({
     read() {},
   });
