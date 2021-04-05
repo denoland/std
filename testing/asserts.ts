@@ -72,9 +72,7 @@ function buildMessage(diffResult: ReadonlyArray<DiffResult<string>>): string[] {
   messages.push("");
   messages.push(
     `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
-      green(
-        bold("Expected"),
-      )
+      green(bold("Expected"))
     }`,
   );
   messages.push("");
@@ -485,7 +483,7 @@ export function assertObjectMatch(
   return assertEquals(
     (function filter(a: loose, b: loose): loose {
       // Prevent infinite loop with circular references with same filter
-      if (seen.has(a) && seen.get(a) === b) {
+      if ((seen.has(a)) && (seen.get(a) === b)) {
         return a;
       }
       seen.set(a, b);
@@ -501,7 +499,7 @@ export function assertObjectMatch(
       for (const [key, value] of entries) {
         if (typeof value === "object") {
           const subset = (b as loose)[key];
-          if (typeof subset === "object" && subset) {
+          if ((typeof subset === "object") && (subset)) {
             filtered[key] = filter(value as loose, subset as loose);
             continue;
           }

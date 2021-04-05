@@ -365,15 +365,12 @@ Deno.test("testingAssertObjectMatching", function (): void {
   {
     let didThrow;
     try {
-      assertObjectMatch(
-        {
-          foo: true,
-        },
-        {
-          foo: true,
-          bar: false,
-        },
-      );
+      assertObjectMatch({
+        foo: true,
+      }, {
+        foo: true,
+        bar: false,
+      });
       didThrow = false;
     } catch (e) {
       assert(e instanceof AssertionError);
