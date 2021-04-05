@@ -9,6 +9,8 @@ import { TextProtoReader } from "../textproto/mod.ts";
 import { Response, ServerRequest } from "./server.ts";
 import { FileServerArgs, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
+import { readAll, writeAll } from "../io/util.ts";
+
 let fileServer: Deno.Process<Deno.RunOptions & { stdout: "piped" }>;
 
 type FileServerCfg = Omit<FileServerArgs, "_"> & { target?: string };
@@ -76,7 +78,7 @@ async function killFileServer(): Promise<void> {
   // exited. As a workaround, wait for its stdout to close instead.
   // TODO(piscisaureus): when `Process.kill()` is stable and works on Windows,
   // switch to calling `kill()` followed by `await fileServer.status()`.
-  await Deno.readAll(fileServer.stdout!);
+  await readAll(fileServer.stdout!);
   fileServer.stdout!.close();
 }
 
@@ -98,7 +100,7 @@ async function fetchExactPath(
     conn = await Deno.connect(
       { hostname: hostname, port: port, transport: "tcp" },
     );
-    await Deno.writeAll(conn, request);
+    await writeAll(conn, request);
     let currentResult = "";
     let contentLength = -1;
     let startOfBody = -1;
@@ -403,7 +405,7 @@ Deno.test("serveDirectory TLS", async function (): Promise<void> {
       certFile: join(testdataDir, "tls/RootCA.pem"),
     });
 
-    await Deno.writeAll(
+    await writeAll(
       conn,
       new TextEncoder().encode("GET / HTTP/1.0\r\n\r\n"),
     );

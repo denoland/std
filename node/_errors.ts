@@ -1,6 +1,5 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
 /************ NOT IMPLEMENTED
-* ERR_INVALID_ARG_VALUE
 * ERR_INVALID_MODULE_SPECIFIER
 * ERR_INVALID_PACKAGE_TARGET
 * ERR_INVALID_URL_SCHEME
@@ -22,6 +21,7 @@
 *************/
 
 import { unreachable } from "../testing/asserts.ts";
+import { inspect } from "./util.ts";
 
 /**
  * All error instances in Node have additional methods and properties
@@ -84,12 +84,46 @@ export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
     super(
       "ERR_INVALID_ARG_TYPE",
       `The "${a1}" argument must be of type ${
+        // TODO(kt3k): Needs to handle "types" and "instances" differently.
+        // See the link below for details:
+        // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
         typeof a2 === "string"
           ? a2.toLocaleLowerCase()
           : a2.map((x) => x.toLocaleLowerCase()).join(", ")
-      }. Received ${typeof a3} (${a3})`,
+      }.${invalidArgTypeHelper(a3)}`,
     );
   }
+}
+
+export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
+  constructor(name: string, value: unknown, reason: string) {
+    super(
+      "ERR_INVALID_ARG_VALUE",
+      `The argument '${name}' ${reason}. Received ${inspect(value)}`,
+    );
+  }
+}
+
+// A helper function to simplify checking for ERR_INVALID_ARG_TYPE output.
+// deno-lint-ignore no-explicit-any
+function invalidArgTypeHelper(input: any) {
+  if (input == null) {
+    return ` Received ${input}`;
+  }
+  if (typeof input === "function" && input.name) {
+    return ` Received function ${input.name}`;
+  }
+  if (typeof input === "object") {
+    if (input.constructor && input.constructor.name) {
+      return ` Received an instance of ${input.constructor.name}`;
+    }
+    return ` Received ${inspect(input, { depth: -1 })}`;
+  }
+  let inspected = inspect(input, { colors: false });
+  if (inspected.length > 25) {
+    inspected = `${inspected.slice(0, 25)}...`;
+  }
+  return ` Received type ${typeof input} (${inspected})`;
 }
 
 export class ERR_OUT_OF_RANGE extends RangeError {

@@ -4,8 +4,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+import { Buffer } from "./buffer.ts";
+
 /** Reader utility for strings */
-export class StringReader extends Deno.Buffer {
+export class StringReader extends Buffer {
   constructor(s: string) {
     super(new TextEncoder().encode(s).buffer);
   }
