@@ -147,6 +147,9 @@ Deno.test("testingEqual", function (): void {
       new URL("https://example.test/with-path"),
     ),
   );
+  assert(
+    !equal({ a: undefined, b: undefined }, { a: undefined, c: undefined }),
+  );
 });
 
 Deno.test("testingNotEquals", function (): void {
