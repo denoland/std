@@ -150,6 +150,9 @@ Deno.test("testingEqual", function (): void {
   assert(
     !equal({ a: undefined, b: undefined }, { a: undefined, c: undefined }),
   );
+  assert(
+    !equal({ a: undefined, b: undefined }, { a: undefined }),
+  );
 });
 
 Deno.test("testingNotEquals", function (): void {
