@@ -30,7 +30,6 @@ export class Hash extends Transform {
         callback();
       },
       flush(callback: () => void): void {
-        // deno-lint-ignore no-this-before-super
         this.push(hash.digest());
         callback();
       },

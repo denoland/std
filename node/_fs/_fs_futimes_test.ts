@@ -38,7 +38,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        futimes(123, Infinity, 0, (err: Error | null) => {});
+        futimes(123, Infinity, 0, (_err: Error | null) => {});
       },
       Error,
       "invalid atime, must not be infitiny or NaN",
@@ -51,7 +51,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        futimes(123, "some string", 0, (err: Error | null) => {});
+        futimes(123, "some string", 0, (_err: Error | null) => {});
       },
       Error,
       "invalid atime, must not be infitiny or NaN",
