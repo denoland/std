@@ -153,26 +153,30 @@ Deno.test("[child_process spawn] Verify that a shell is executed", async () => {
 });
 
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-shell.js` works.
-Deno.test("[node/child_process spawn] Verify that passing arguments works", async () => {
-  const promise = withTimeout(3000);
-  const echo = spawn("echo", ["foo"], {
-    shell: true,
-  });
-  let echoOutput = "";
+Deno.test({
+  ignore: isWindows,
+  name: "[node/child_process spawn] Verify that passing arguments works",
+  async fn() {
+    const promise = withTimeout(3000);
+    const echo = spawn("echo", ["foo"], {
+      shell: true,
+    });
+    let echoOutput = "";
 
-  assertStrictEquals(
-    echo.spawnargs[echo.spawnargs.length - 1].replace(/"/g, ""),
-    "echo foo",
-  );
-  assert(echo.stdout);
-  echo.stdout.on("data", (data) => {
-    echoOutput += data;
-  });
-  echo.on("close", () => {
-    assertStrictEquals(echoOutput.trim(), "foo");
-    promise.resolve();
-  });
-  await promise;
+    assertStrictEquals(
+      echo.spawnargs[echo.spawnargs.length - 1].replace(/"/g, ""),
+      "echo foo",
+    );
+    assert(echo.stdout);
+    echo.stdout.on("data", (data) => {
+      echoOutput += data;
+    });
+    echo.on("close", () => {
+      assertStrictEquals(echoOutput.trim(), "foo");
+      promise.resolve();
+    });
+    await promise;
+  },
 });
 
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-shell.js` works.
