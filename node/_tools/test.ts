@@ -37,12 +37,11 @@ for await (const file of dir) {
       });
 
       const { code } = await process.status();
-      const err = await Deno.readAll(process.stderr);
+      const errorMessage = decoder.decode(await Deno.readAll(process.stderr));
       process.close();
       process.stderr.close();
 
-      const message = decoder.decode(err);
-      assertEquals(code, 0, message);
+      assertEquals(code, 0, errorMessage);
     },
   });
 }

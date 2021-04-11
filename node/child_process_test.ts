@@ -79,8 +79,56 @@ Deno.test({
   },
 });
 
+/* Start of ported part */
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // Ported from Node 15.5.1
+
+// TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-event.js` works.
+Deno.test("[child_process spawn] 'spawn' event", async () => {
+  const timeout = withTimeout(3000);
+  const subprocess = spawn("echo", ["ok"]);
+
+  let didSpawn = false;
+  subprocess.on("spawn", function () {
+    didSpawn = true;
+  });
+
+  function mustNotBeCalled() {
+    timeout.reject(new Error("function should not have been called"));
+  }
+
+  const promises = [] as Promise<void>[];
+  function mustBeCalledAfterSpawn() {
+    const promise = deferred<void>();
+    promises.push(promise);
+    return () => {
+      if (didSpawn) {
+        promise.resolve();
+      } else {
+        promise.reject(
+          new Error("function should be called after the 'spawn' event"),
+        );
+      }
+    };
+  }
+
+  subprocess.on("error", mustNotBeCalled);
+  subprocess.stdout!.on("data", mustBeCalledAfterSpawn());
+  subprocess.stdout!.on("end", mustBeCalledAfterSpawn());
+  subprocess.stdout!.on("close", mustBeCalledAfterSpawn());
+  subprocess.stderr!.on("data", mustNotBeCalled);
+  subprocess.stderr!.on("end", mustBeCalledAfterSpawn());
+  subprocess.stderr!.on("close", mustBeCalledAfterSpawn());
+  subprocess.on("exit", mustBeCalledAfterSpawn());
+  subprocess.on("close", mustBeCalledAfterSpawn());
+
+  try {
+    await Promise.race([Promise.all(promises), timeout]);
+    timeout.resolve();
+  } finally {
+    subprocess.kill();
+  }
+});
 
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-shell.js` works.
 Deno.test("[child_process spawn] Verify that a shell is executed", async () => {
