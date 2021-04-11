@@ -5,7 +5,14 @@
 // https://github.com/golang/go/blob/master/LICENSE
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { Buffer } from "./buffer.ts";
-import { readAll, readAllSync, writeAll, writeAllSync } from "./util.ts";
+import {
+  iter,
+  iterSync,
+  readAll,
+  readAllSync,
+  writeAll,
+  writeAllSync,
+} from "./util.ts";
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;
@@ -74,7 +81,7 @@ Deno.test("filesIter", async () => {
   const file = helloWorldFile();
 
   let totalSize = 0;
-  for await (const buf of Deno.iter(file)) {
+  for await (const buf of iter(file)) {
     totalSize += buf.byteLength;
   }
 
@@ -86,7 +93,7 @@ Deno.test("filesIterCustomBufSize", async () => {
 
   let totalSize = 0;
   let iterations = 0;
-  for await (const buf of Deno.iter(file, { bufSize: 6 })) {
+  for await (const buf of iter(file, { bufSize: 6 })) {
     totalSize += buf.byteLength;
     iterations += 1;
   }
@@ -99,7 +106,7 @@ Deno.test("filesIterSync", () => {
   const file = helloWorldFile();
 
   let totalSize = 0;
-  for (const buf of Deno.iterSync(file)) {
+  for (const buf of iterSync(file)) {
     totalSize += buf.byteLength;
   }
 
@@ -111,7 +118,7 @@ Deno.test("filesIterSyncCustomBufSize", () => {
 
   let totalSize = 0;
   let iterations = 0;
-  for (const buf of Deno.iterSync(file, { bufSize: 6 })) {
+  for (const buf of iterSync(file, { bufSize: 6 })) {
     totalSize += buf.byteLength;
     iterations += 1;
   }
@@ -148,7 +155,7 @@ Deno.test("readerIter", async () => {
   const reader = new TestReader("hello world!");
 
   let totalSize = 0;
-  for await (const buf of Deno.iter(reader)) {
+  for await (const buf of iter(reader)) {
     totalSize += buf.byteLength;
   }
 
@@ -183,7 +190,7 @@ Deno.test("readerIterSync", () => {
   const reader = new TestReader("hello world!");
 
   let totalSize = 0;
-  for await (const buf of Deno.iterSync(reader)) {
+  for await (const buf of iterSync(reader)) {
     totalSize += buf.byteLength;
   }
 
