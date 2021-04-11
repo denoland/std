@@ -190,7 +190,7 @@ Deno.test("readerIterSync", () => {
   const reader = new TestReader("hello world!");
 
   let totalSize = 0;
-  for await (const buf of iterSync(reader)) {
+  for (const buf of iterSync(reader)) {
     totalSize += buf.byteLength;
   }
 
