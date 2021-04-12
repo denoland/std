@@ -9,7 +9,6 @@ import { config, testList } from "./common.ts";
  * Each test file will be run independently and wait until completion, if an abnormal
  * code for the test is reported, the test suite will fail inmediately
  */
-const decoder = new TextDecoder();
 
 const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
   includeDirs: false,
@@ -33,15 +32,12 @@ for await (const file of dir) {
           "require.ts",
           file.path,
         ],
-        stderr: "piped",
       });
 
       const { code } = await process.status();
-      const errorMessage = decoder.decode(await Deno.readAll(process.stderr));
       process.close();
-      process.stderr.close();
 
-      assertEquals(code, 0, errorMessage);
+      assertEquals(code, 0);
     },
   });
 }
