@@ -3,7 +3,7 @@ import { parse } from "../flags/mod.ts";
 import { readStringDelim } from "../io/bufio.ts";
 
 // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction.
-const AsyncFunction = Object.getPrototypeOf(async function (): Promise<void> {})
+const AsyncFunction = Object.getPrototypeOf(async function () {})
   .constructor;
 
 const HELP_MSG = `xeval
@@ -39,7 +39,7 @@ export async function xeval(
   reader: Deno.Reader,
   xevalFunc: XevalFunc,
   { delimiter = DEFAULT_DELIMITER }: XevalOptions = {},
-): Promise<void> {
+) {
   for await (const chunk of readStringDelim(reader, delimiter)) {
     // Ignore empty chunks.
     if (chunk.length > 0) {
@@ -48,7 +48,7 @@ export async function xeval(
   }
 }
 
-async function main(): Promise<void> {
+async function main() {
   const parsedArgs = parse(Deno.args, {
     boolean: ["help"],
     string: ["delim", "replvar"],

@@ -310,6 +310,12 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const e = { foo: true } as { [key: string]: unknown };
   e.bar = e;
   const f = { [sym]: true, bar: false };
+  interface r {
+    foo: boolean;
+    bar: boolean;
+  }
+  const g: r = { foo: true, bar: false };
+
   // Simple subset
   assertObjectMatch(a, {
     foo: true,
@@ -349,6 +355,8 @@ Deno.test("testingAssertObjectMatching", function (): void {
       },
     },
   });
+  // Subset with interface
+  assertObjectMatch(g, { bar: false });
   // Subset with same symbol
   assertObjectMatch(f, {
     [sym]: true,
