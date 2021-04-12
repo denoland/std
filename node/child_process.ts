@@ -38,43 +38,8 @@ export class ChildProcess extends EventEmitter {
     const {
       env = {},
       stdio = ["pipe", "pipe", "pipe"],
-      detached,
-      uid,
-      gid,
-      argv0,
       shell = false,
-      signal,
-      serialization = "json",
-      windowsHide,
     } = options || {};
-
-    if (detached) {
-      notImplemented("options.detached");
-    }
-
-    if (uid != null) {
-      notImplemented("options.uid");
-    }
-
-    if (gid != null) {
-      notImplemented("options.gid");
-    }
-
-    if (argv0 != null) {
-      notImplemented("options.argv0");
-    }
-
-    if (signal != null) {
-      notImplemented("options.signal");
-    }
-
-    if (serialization !== "json" && serialization != null) {
-      notImplemented("options.serialization");
-    }
-
-    if (windowsHide) {
-      notImplemented("options.windowsHide");
-    }
 
     const [
       stdin = "pipe",
