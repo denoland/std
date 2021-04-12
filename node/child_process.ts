@@ -294,7 +294,7 @@ async function* readLinesSafely(
 ): AsyncIterableIterator<string> {
   try {
     for await (const line of readLines(reader)) {
-      yield line;
+      yield line.length === 0 ? line : line + "\n";
     }
   } catch (err) {
     if (isAlreadyClosed(err)) {

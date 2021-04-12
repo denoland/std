@@ -72,7 +72,7 @@ Deno.test({
         promise.resolve();
       });
       await promise;
-      assertStrictEquals(data, `console.log("hello");`);
+      assertStrictEquals(data, `console.log("hello");\n`);
     } finally {
       childProcess.kill();
     }
