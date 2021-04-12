@@ -10,15 +10,49 @@ import { deferred } from "../async/deferred.ts";
 import { readLines } from "../io/bufio.ts";
 
 export class ChildProcess extends EventEmitter {
+  /**
+   * The exit code of the child process. This option will `null` until the child process exits.
+   */
   exitCode: number | null = null;
+
+  /**
+   * This property is set to `true` after `kill()` is called.
+   */
   killed = false;
+
+  /**
+   * The PID of this child process.
+   */
   pid!: number;
+
+  /**
+   * Command line arguments given to this child process.
+   */
   spawnargs: string[];
+
+  /**
+   * The executable file name of this child process.
+   */
   spawnfile: string;
 
+  /**
+   * This property represents the child process's stdin.
+   */
   stdin: Writable | null = null;
+
+  /**
+   * This property represents the child process's stdout.
+   */
   stdout: Readable | null = null;
+
+  /**
+   * This property represents the child process's stderr.
+   */
   stderr: Readable | null = null;
+
+  /**
+   * Pipes to this child process.
+   */
   stdio: [Writable | null, Readable | null, Readable | null] = [
     null,
     null,
@@ -104,6 +138,9 @@ export class ChildProcess extends EventEmitter {
     }
   }
 
+  /**
+   * @param signal NOTE: this parameter is not yet implemented.
+   */
   kill(signal?: number): boolean {
     if (signal != null) {
       notImplemented("`ChildProcess.kill()` with the `signal` parameter");
@@ -194,23 +231,69 @@ type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit";
 type DenoStdio = "inherit" | "piped" | "null";
 
 interface ChildProcessOptions {
-  cwd?: string;
-  env?: Record<string, string>;
   /**
+   * Current working directory of the child process.
+   */
+  cwd?: string;
+
+  /**
+   * Environment variables passed to the child process.
+   */
+  env?: Record<string, string>;
+
+  /**
+   * This option defines child process's stdio configuration.
    * @see https://nodejs.org/api/child_process.html#child_process_options_stdio
    */
   stdio?: Array<NodeStdio | number | Stream | null | undefined> | NodeStdio;
-  detached?: boolean;
-  uid?: number;
-  gid?: number;
-  argv0?: string;
-  shell?: string | boolean;
-  signal?: AbortSignal;
-  serialization?: "json" | "advanced";
+
   /**
-   * Currently, this option is simply ignored.
+   * NOTE: This option is not yet implemented.
+   */
+  detached?: boolean;
+
+  /**
+   * NOTE: This option is not yet implemented.
+   */
+  uid?: number;
+
+  /**
+   * NOTE: This option is not yet implemented.
+   */
+  gid?: number;
+
+  /**
+   * NOTE: This option is not yet implemented.
+   */
+  argv0?: string;
+
+  /**
+   * * If this option is `true`, run the command in the shell.
+   * * If this option is a string, run the command in the specified shell.
+   */
+  shell?: string | boolean;
+
+  /**
+   * NOTE: This option is not yet implemented.
+   */
+  signal?: AbortSignal;
+
+  /**
+   * NOTE: This option is not yet implemented.
+   */
+  serialization?: "json" | "advanced";
+
+  /**
+   * NOTE: This option is not yet implemented.
+   * 
+   * @see https://github.com/rust-lang/rust/issues/29494
+   * @see https://github.com/denoland/deno/issues/8852
    */
   windowsVerbatimArguments?: boolean;
+
+  /**
+   * NOTE: This option is not yet implemented.
+   */
   windowsHide?: boolean;
 }
 
@@ -225,6 +308,9 @@ export function spawn(
   args: string[],
   options: SpawnOptions,
 ): ChildProcess;
+/**
+ * Spawns a child process using `command`.
+ */
 export function spawn(
   command: string,
   argsOrOptions?: string[] | SpawnOptions,

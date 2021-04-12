@@ -10,7 +10,7 @@ deno standard library as it's a compatibility module.
 
 - [x] assert _partly_
 - [x] buffer
-- [ ] child_process
+- [x] child_process _partly_
 - [ ] cluster
 - [ ] console
 - [x] constants _partly_
