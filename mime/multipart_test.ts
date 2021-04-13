@@ -90,7 +90,7 @@ Deno.test("multipartMatchAfterPrefix3", function (): void {
   assertEquals(v, 0);
 });
 
-Deno.test("multipartMultipartWriter", async function (): Promise<void> {
+Deno.test("multipartMultipartWriter", async function () {
   const buf = new Buffer();
   const mw = new MultipartWriter(buf);
   await mw.writeField("foo", "foo");
@@ -132,20 +132,20 @@ Deno.test("multipartMultipartWriter2", function (): void {
   );
 });
 
-Deno.test("multipartMultipartWriter3", async function (): Promise<void> {
+Deno.test("multipartMultipartWriter3", async function () {
   const w = new StringWriter();
   const mw = new MultipartWriter(w);
   await mw.writeField("foo", "foo");
   await mw.close();
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await mw.close();
     },
     Error,
     "closed",
   );
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       // deno-lint-ignore no-explicit-any
       await mw.writeFile("bar", "file", null as any);
     },
@@ -153,7 +153,7 @@ Deno.test("multipartMultipartWriter3", async function (): Promise<void> {
     "closed",
   );
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await mw.writeField("bar", "bar");
     },
     Error,

@@ -12,7 +12,7 @@ import { emptyDir, emptyDirSync } from "./empty_dir.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("emptyDirIfItNotExist", async function (): Promise<void> {
+Deno.test("emptyDirIfItNotExist", async function () {
   const testDir = path.join(testdataDir, "empty_dir_test_1");
   const testNestDir = path.join(testDir, "nest");
   // empty a dir which not exist. then it will create new one
@@ -44,7 +44,7 @@ Deno.test("emptyDirSyncIfItNotExist", function (): void {
   }
 });
 
-Deno.test("emptyDirIfItExist", async function (): Promise<void> {
+Deno.test("emptyDirIfItExist", async function () {
   const testDir = path.join(testdataDir, "empty_dir_test_3");
   const testNestDir = path.join(testDir, "nest");
   // create test dir
@@ -70,14 +70,14 @@ Deno.test("emptyDirIfItExist", async function (): Promise<void> {
 
     // nest directory have been removed
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         await Deno.stat(testNestDir);
       },
     );
 
     // test file have been removed
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         await Deno.stat(testDirFile);
       },
     );

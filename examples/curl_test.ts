@@ -9,7 +9,7 @@ Deno.test({
   name: "[examples/curl] send a request to a specified url",
   fn: async () => {
     const server = serve({ port: 8081 });
-    const serverPromise = (async (): Promise<void> => {
+    const serverPromise = (async () => {
       for await (const req of server) {
         req.respond({ body: "Hello world" });
       }

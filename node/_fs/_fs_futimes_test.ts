@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows, fail } from "../../testing/asserts.ts";
-import { utimes, utimesSync } from "./_fs_utimes.ts";
+import { futimes, futimesSync } from "./_fs_futimes.ts";
 
 const randomDate = new Date(Date.now() + 1000);
 
@@ -8,9 +8,10 @@ Deno.test({
     "ASYNC: change the file system timestamps of the object referenced by path",
   async fn() {
     const file: string = Deno.makeTempFileSync();
+    const { rid } = await Deno.open(file, { create: true, write: true });
 
     await new Promise<void>((resolve, reject) => {
-      utimes(file, randomDate, randomDate, (err: Error | null) => {
+      futimes(rid, randomDate, randomDate, (err: Error | null) => {
         if (err !== null) reject();
         else resolve();
       });
@@ -19,13 +20,16 @@ Deno.test({
         () => {
           const fileInfo: Deno.FileInfo = Deno.lstatSync(file);
           assertEquals(fileInfo.mtime, randomDate);
-          assertEquals(fileInfo.mtime, randomDate);
+          assertEquals(fileInfo.atime, randomDate);
         },
         () => {
           fail("No error expected");
         },
       )
-      .finally(() => Deno.removeSync(file));
+      .finally(() => {
+        Deno.removeSync(file);
+        Deno.close(rid);
+      });
   },
 });
 
@@ -34,7 +38,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        utimes("some/path", Infinity, 0, (_err: Error | null) => {});
+        futimes(123, Infinity, 0, (_err: Error | null) => {});
       },
       Error,
       "invalid atime, must not be infitiny or NaN",
@@ -47,7 +51,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        utimes("some/path", "some string", 0, (_err: Error | null) => {});
+        futimes(123, "some string", 0, (_err: Error | null) => {});
       },
       Error,
       "invalid atime, must not be infitiny or NaN",
@@ -60,14 +64,18 @@ Deno.test({
     "SYNC: change the file system timestamps of the object referenced by path",
   fn() {
     const file: string = Deno.makeTempFileSync();
+    const { rid } = Deno.openSync(file, { create: true, write: true });
+
     try {
-      utimesSync(file, randomDate, randomDate);
+      futimesSync(rid, randomDate, randomDate);
 
       const fileInfo: Deno.FileInfo = Deno.lstatSync(file);
 
       assertEquals(fileInfo.mtime, randomDate);
+      assertEquals(fileInfo.atime, randomDate);
     } finally {
       Deno.removeSync(file);
+      Deno.close(rid);
     }
   },
 });
@@ -77,7 +85,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        utimesSync("some/path", "some string", 0);
+        futimesSync(123, "some string", 0);
       },
       Error,
       "invalid atime, must not be infitiny or NaN",
@@ -90,7 +98,7 @@ Deno.test({
   fn() {
     assertThrows(
       () => {
-        utimesSync("some/path", Infinity, 0);
+        futimesSync(123, Infinity, 0);
       },
       Error,
       "invalid atime, must not be infitiny or NaN",

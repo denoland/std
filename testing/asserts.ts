@@ -474,7 +474,8 @@ export function assertNotMatch(
  * If not, then throw.
  */
 export function assertObjectMatch(
-  actual: Record<PropertyKey, unknown>,
+  // deno-lint-ignore no-explicit-any
+  actual: Record<PropertyKey, any>,
   expected: Record<PropertyKey, unknown>,
 ): void {
   type loose = Record<PropertyKey, unknown>;

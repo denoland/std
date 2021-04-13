@@ -11,14 +11,14 @@ import { ensureLink, ensureLinkSync } from "./ensure_link.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("ensureLinkIfItNotExist", async function (): Promise<void> {
+Deno.test("ensureLinkIfItNotExist", async function () {
   const srcDir = path.join(testdataDir, "ensure_link_1");
   const destDir = path.join(testdataDir, "ensure_link_1_2");
   const testFile = path.join(srcDir, "test.txt");
   const linkFile = path.join(destDir, "link.txt");
 
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await ensureLink(testFile, linkFile);
     },
   );
@@ -38,7 +38,7 @@ Deno.test("ensureLinkSyncIfItNotExist", function (): void {
   Deno.removeSync(testDir, { recursive: true });
 });
 
-Deno.test("ensureLinkIfItExist", async function (): Promise<void> {
+Deno.test("ensureLinkIfItExist", async function () {
   const testDir = path.join(testdataDir, "ensure_link_3");
   const testFile = path.join(testDir, "test.txt");
   const linkFile = path.join(testDir, "link.txt");
@@ -133,7 +133,7 @@ Deno.test("ensureLinkSyncIfItExist", function (): void {
   Deno.removeSync(testDir, { recursive: true });
 });
 
-Deno.test("ensureLinkDirectoryIfItExist", async function (): Promise<void> {
+Deno.test("ensureLinkDirectoryIfItExist", async function () {
   const testDir = path.join(testdataDir, "ensure_link_origin_3");
   const linkDir = path.join(testdataDir, "ensure_link_link_3");
   const testFile = path.join(testDir, "test.txt");
@@ -142,7 +142,7 @@ Deno.test("ensureLinkDirectoryIfItExist", async function (): Promise<void> {
   await Deno.writeFile(testFile, new Uint8Array());
 
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await ensureLink(testDir, linkDir);
     },
     // "Operation not permitted (os error 1)" // throw an local matching test

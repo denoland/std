@@ -47,7 +47,7 @@ async function createTar(entries: TestEntry[]): Promise<Tar> {
   return tar;
 }
 
-Deno.test("createTarArchive", async function (): Promise<void> {
+Deno.test("createTarArchive", async function () {
   // initialize
   const tar = new Tar();
 
@@ -72,7 +72,7 @@ Deno.test("createTarArchive", async function (): Promise<void> {
   assertEquals(wrote, 3072);
 });
 
-Deno.test("deflateTarArchive", async function (): Promise<void> {
+Deno.test("deflateTarArchive", async function () {
   const fileName = "output.txt";
   const text = "hello tar world!";
 
@@ -124,7 +124,7 @@ Deno.test("appendFileWithLongNameToTarArchive", async function (): Promise<
   assertEquals(untarText, text);
 });
 
-Deno.test("untarAsyncIterator", async function (): Promise<void> {
+Deno.test("untarAsyncIterator", async function () {
   const entries: TestEntry[] = [
     {
       name: "output.txt",
@@ -191,7 +191,7 @@ Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
 
 Deno.test(
   "untarAsyncIteratorWithoutReadingBodyFromFileReader",
-  async function (): Promise<void> {
+  async function () {
     const entries: TestEntry[] = [
       {
         name: "output.txt",
@@ -226,7 +226,7 @@ Deno.test(
   },
 );
 
-Deno.test("untarAsyncIteratorFromFileReader", async function (): Promise<void> {
+Deno.test("untarAsyncIteratorFromFileReader", async function () {
   const entries: TestEntry[] = [
     {
       name: "output.txt",
@@ -269,7 +269,7 @@ Deno.test("untarAsyncIteratorFromFileReader", async function (): Promise<void> {
 
 Deno.test(
   "untarAsyncIteratorReadingLessThanRecordSize",
-  async function (): Promise<void> {
+  async function () {
     // record size is 512
     const bufSizes = [1, 53, 256, 511];
 
@@ -313,7 +313,7 @@ Deno.test(
   },
 );
 
-Deno.test("untarLinuxGeneratedTar", async function (): Promise<void> {
+Deno.test("untarLinuxGeneratedTar", async function () {
   const filePath = resolve(testdataDir, "deno.tar");
   const file = await Deno.open(filePath, { read: true });
 
@@ -407,7 +407,7 @@ Deno.test("untarLinuxGeneratedTar", async function (): Promise<void> {
   file.close();
 });
 
-Deno.test("directoryEntryType", async function (): Promise<void> {
+Deno.test("directoryEntryType", async function () {
   const tar = new Tar();
 
   tar.append("directory/", {

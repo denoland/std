@@ -80,7 +80,7 @@ export class ServerRequest {
     return this.#body;
   }
 
-  async respond(r: Response): Promise<void> {
+  async respond(r: Response) {
     let err: Error | undefined;
     try {
       // Write our response!
@@ -103,7 +103,7 @@ export class ServerRequest {
     }
   }
 
-  async finalize(): Promise<void> {
+  async finalize() {
     if (this.#finalized) return;
     // Consume unread body
     const body = this.body;
@@ -319,7 +319,7 @@ export function serve(addr: string | HTTPOptions): Server {
 export async function listenAndServe(
   addr: string | HTTPOptions,
   handler: (req: ServerRequest) => void,
-): Promise<void> {
+) {
   const server = serve(addr);
 
   for await (const request of server) {
@@ -376,7 +376,7 @@ export function serveTLS(options: HTTPSOptions): Server {
 export async function listenAndServeTLS(
   options: HTTPSOptions,
   handler: (req: ServerRequest) => void,
-): Promise<void> {
+) {
   const server = serveTLS(options);
 
   for await (const request of server) {

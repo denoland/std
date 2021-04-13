@@ -416,7 +416,7 @@ function main(): void {
     Deno.exit();
   }
 
-  const handler = async (req: ServerRequest): Promise<void> => {
+  const handler = async (req: ServerRequest) => {
     let response: Response | undefined;
     try {
       const normalizedUrl = normalizeURL(req.url);

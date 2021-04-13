@@ -228,7 +228,7 @@ Deno.test("[ws] handshake should not send search when it's empty", async () => {
   const reader = new Buffer(new TextEncoder().encode("HTTP/1.1 400\r\n"));
 
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await handshake(
         new URL("ws://example.com"),
         new Headers(),
@@ -246,14 +246,14 @@ Deno.test("[ws] handshake should not send search when it's empty", async () => {
 
 Deno.test(
   "[ws] handshake should send search correctly",
-  async function wsHandshakeWithSearch(): Promise<void> {
+  async function wsHandshakeWithSearch() {
     const writer = new Buffer();
     const reader = new Buffer(
       new TextEncoder().encode("HTTP/1.1 400\r\n"),
     );
 
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         await handshake(
           new URL("ws://example.com?a=1"),
           new Headers(),
@@ -285,7 +285,7 @@ Deno.test("[ws] ws.close() should use 1000 as close code", async () => {
 function dummyConn(r: Deno.Reader, w: Deno.Writer): Deno.Conn {
   return {
     rid: -1,
-    closeWrite: (): Promise<void> => Promise.resolve(),
+    closeWrite: () => Promise.resolve(),
     read: (x: Uint8Array): Promise<number | null> => r.read(x),
     write: (x: Uint8Array): Promise<number> => w.write(x),
     close: (): void => {},
@@ -298,7 +298,7 @@ function delayedWriter(ms: number, dest: Deno.Writer): Deno.Writer {
   return {
     write(p: Uint8Array): Promise<number> {
       return new Promise<number>((resolve) => {
-        setTimeout(async (): Promise<void> => {
+        setTimeout(async () => {
           resolve(await dest.write(p));
         }, ms);
       });
@@ -307,7 +307,7 @@ function delayedWriter(ms: number, dest: Deno.Writer): Deno.Writer {
 }
 Deno.test({
   name: "[ws] WebSocket.send(), WebSocket.ping() should be exclusive",
-  fn: async (): Promise<void> => {
+  fn: async () => {
     const buf = new Buffer();
     const conn = dummyConn(new Buffer(), delayedWriter(1, buf));
     const sock = createWebSocket({ conn });
