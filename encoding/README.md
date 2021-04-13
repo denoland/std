@@ -553,7 +553,7 @@ console.log(encode(binaryData));
 
 ## base64
 
-[RFC4648 base64](https://tools.ietf.org/html/rfc4648#section-6) encoder/decoder
+[RFC4648 base64](https://tools.ietf.org/html/rfc4648#section-4) encoder/decoder
 for Deno.
 
 ### Basic usage
