@@ -49,6 +49,13 @@ const responseTests: ResponseTest[] = [
     },
     raw: "HTTP/1.1 404 Not Found\r\n" + "content-length: 0" + "\r\n\r\n",
   },
+  {
+    response: {
+      status: 893,
+      statusText: "Custom error",
+    },
+    raw: "HTTP/1.1 893 Custom error\r\n" + "content-length: 0" + "\r\n\r\n",
+  },
   // HTTP/1.1, chunked coding; empty trailer; close
   {
     response: {
@@ -509,37 +516,6 @@ Deno.test({
     const resources = Deno.resources();
     assertEquals(resources[conn.rid], "tcpStream");
     conn.close();
-  },
-});
-
-Deno.test({
-  name: "respond error closes connection",
-  async fn() {
-    const serverRoutine = async () => {
-      const server = serve(":8124");
-      for await (const req of server) {
-        await assertThrowsAsync(async () => {
-          await req.respond({
-            status: 12345,
-            body: new TextEncoder().encode("Hello World"),
-          });
-        }, Deno.errors.InvalidData);
-        // The connection should be destroyed
-        assert(!(req.conn.rid in Deno.resources()));
-        server.close();
-      }
-    };
-    const p = serverRoutine();
-    const conn = await Deno.connect({
-      hostname: "127.0.0.1",
-      port: 8124,
-    });
-    await writeAll(
-      conn,
-      new TextEncoder().encode("GET / HTTP/1.1\r\n\r\n"),
-    );
-    conn.close();
-    await p;
   },
 });
 
