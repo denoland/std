@@ -1,4 +1,5 @@
 import { assert } from "../_util/assert.ts";
+import { copy } from "../bytes/mod.ts";
 
 // MIN_READ is the minimum ArrayBuffer size passed to a read call by
 // buffer.ReadFrom. As long as the Buffer has at least MIN_READ bytes beyond
@@ -6,18 +7,6 @@ import { assert } from "../_util/assert.ts";
 // underlying buffer.
 const MIN_READ = 32 * 1024;
 const MAX_SIZE = 2 ** 32 - 2;
-
-// `off` is the offset into `dst` where it will at which to begin writing values
-// from `src`.
-// Returns the number of bytes copied.
-function copyBytes(src: Uint8Array, dst: Uint8Array, off = 0) {
-  const r = dst.byteLength - off;
-  if (src.byteLength > r) {
-    src = src.subarray(0, r);
-  }
-  dst.set(src, off);
-  return src.byteLength;
-}
 
 /** A variable-sized buffer of bytes with `read()` and `write()` methods.
  *
@@ -122,7 +111,7 @@ export class Buffer {
       }
       return null;
     }
-    const nread = copyBytes(this.#buf.subarray(this.#off), p);
+    const nread = copy(this.#buf.subarray(this.#off), p);
     this.#off += nread;
     return nread;
   }
@@ -141,7 +130,7 @@ export class Buffer {
 
   writeSync(p: Uint8Array): number {
     const m = this.#grow(p.byteLength);
-    return copyBytes(p, this.#buf, m);
+    return copy(p, this.#buf, m);
   }
 
   /** NOTE: This methods writes bytes synchronously; it's provided for
@@ -168,13 +157,13 @@ export class Buffer {
       // ArrayBuffer. We only need m+n <= c to slide, but
       // we instead let capacity get twice as large so we
       // don't spend all our time copying.
-      copyBytes(this.#buf.subarray(this.#off), this.#buf);
+      copy(this.#buf.subarray(this.#off), this.#buf);
     } else if (c + n > MAX_SIZE) {
       throw new Error("The buffer cannot be grown beyond the maximum size.");
     } else {
       // Not enough space anywhere, we need to allocate.
       const buf = new Uint8Array(Math.min(2 * c + n, MAX_SIZE));
-      copyBytes(this.#buf.subarray(this.#off), buf);
+      copy(this.#buf.subarray(this.#off), buf);
       this.#buf = buf;
     }
     // Restore this.#off and len(this.#buf).
