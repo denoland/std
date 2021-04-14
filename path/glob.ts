@@ -85,7 +85,7 @@ export function globToRegExp(
   {
     extended = true,
     globstar: globstarOption = true,
-    caseInsensitive = false,
+    caseInsensitive = Deno.build.os === "windows",
     os = osType,
   }: GlobToRegExpOptions = {},
 ): RegExp {
