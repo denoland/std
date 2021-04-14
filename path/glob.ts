@@ -14,6 +14,8 @@ export interface GlobOptions {
    * See https://www.linuxjournal.com/content/globstar-new-bash-globbing-option.
    * If false, `**` is treated like `*`. Defaults to true. */
   globstar?: boolean;
+  /** Whether globstar should be case insensitive. */
+  caseInsensitive?: boolean;
   /** Operating system. Defaults to the native OS. */
   os?: typeof Deno.build.os;
 }
@@ -80,8 +82,12 @@ const rangeEscapeChars = ["-", "\\", "]"];
  *   the group occurs not nested at the end of the segment. */
 export function globToRegExp(
   glob: string,
-  { extended = true, globstar: globstarOption = true, os = osType }:
-    GlobToRegExpOptions = {},
+  {
+    extended = true,
+    globstar: globstarOption = true,
+    caseInsensitive = false,
+    os = osType,
+  }: GlobToRegExpOptions = {},
 ): RegExp {
   if (glob == "") {
     return /(?!)/;
@@ -310,7 +316,7 @@ export function globToRegExp(
   }
 
   regExpString = `^${regExpString}$`;
-  return new RegExp(regExpString);
+  return new RegExp(regExpString, caseInsensitive ? "i" : "");
 }
 
 /** Test whether the given string is a glob */

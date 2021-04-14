@@ -78,9 +78,10 @@ export async function* expandGlob(
     includeDirs = true,
     extended = false,
     globstar = false,
+    caseInsensitive = Deno.build.os === "windows",
   }: ExpandGlobOptions = {},
 ): AsyncIterableIterator<WalkEntry> {
-  const globOptions: GlobOptions = { extended, globstar };
+  const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
   const absRoot = isAbsolute(root)
     ? normalize(root)
     : joinGlobs([Deno.cwd(), root], globOptions);
@@ -184,9 +185,10 @@ export function* expandGlobSync(
     includeDirs = true,
     extended = false,
     globstar = false,
+    caseInsensitive = Deno.build.os === "windows",
   }: ExpandGlobOptions = {},
 ): IterableIterator<WalkEntry> {
-  const globOptions: GlobOptions = { extended, globstar };
+  const globOptions: GlobOptions = { extended, globstar, caseInsensitive };
   const absRoot = isAbsolute(root)
     ? normalize(root)
     : joinGlobs([Deno.cwd(), root], globOptions);
