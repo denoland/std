@@ -11,7 +11,7 @@ import { readLines } from "../io/bufio.ts";
 
 export class ChildProcess extends EventEmitter {
   /**
-   * The exit code of the child process. This option will `null` until the child process exits.
+   * The exit code of the child process. This option will be `null` until the child process exits.
    */
   exitCode: number | null = null;
 
@@ -358,6 +358,7 @@ async function* readLinesSafely(
 function createReadableFromReader(
   reader: Deno.Reader,
 ): Readable {
+  // TODO(uki00a): This could probably be more efficient.
   return Readable.from(readLinesSafely(reader), {
     objectMode: false,
   });
