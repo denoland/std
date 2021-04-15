@@ -15,7 +15,7 @@ function dispatch(msg: string): void {
     client.send(msg);
   }
 }
-async function wsHandler(ws: WebSocket): Promise<void> {
+async function wsHandler(ws: WebSocket) {
   const id = ++clientId;
   clients.set(id, ws);
   dispatch(`Connected: [${id}]`);

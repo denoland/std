@@ -109,33 +109,33 @@ Deno.test("fails", function (): void {
 Using `assertThrowsAsync()`:
 
 ```ts
-Deno.test("doesThrow", async function (): Promise<void> {
+Deno.test("doesThrow", async function () {
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       throw new TypeError("hello world!");
     },
   );
-  await assertThrowsAsync(async (): Promise<void> => {
+  await assertThrowsAsync(async () => {
     throw new TypeError("hello world!");
   }, TypeError);
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       throw new TypeError("hello world!");
     },
     TypeError,
     "hello",
   );
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       return Promise.reject(new Error());
     },
   );
 });
 
 // This test will not pass.
-Deno.test("fails", async function (): Promise<void> {
+Deno.test("fails", async function () {
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       console.log("Hello world");
     },
   );

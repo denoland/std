@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "../async/mod.ts";
 import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
+import { readAll } from "../io/util.ts";
 
 export type BinaryEncodings = "binary";
 
@@ -238,7 +239,7 @@ export async function assertCallbackErrorUncaught(
     stderr: "piped",
   });
   const status = await p.status();
-  const stderr = new TextDecoder().decode(await Deno.readAll(p.stderr));
+  const stderr = new TextDecoder().decode(await readAll(p.stderr));
   p.close();
   p.stderr.close();
   await cleanup?.();

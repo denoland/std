@@ -161,6 +161,9 @@ export function equal(c: unknown, d: unknown): boolean {
         if (!compare(a && a[key as Key], b && b[key as Key])) {
           return false;
         }
+        if (((key in a) && (!(key in b))) || ((key in b) && (!(key in a)))) {
+          return false;
+        }
       }
       seen.set(a, b);
       return true;
@@ -474,7 +477,8 @@ export function assertNotMatch(
  * If not, then throw.
  */
 export function assertObjectMatch(
-  actual: Record<PropertyKey, unknown>,
+  // deno-lint-ignore no-explicit-any
+  actual: Record<PropertyKey, any>,
   expected: Record<PropertyKey, unknown>,
 ): void {
   type loose = Record<PropertyKey, unknown>;

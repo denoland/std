@@ -18,6 +18,7 @@ import * as iotest from "./_iotest.ts";
 import { StringReader } from "./readers.ts";
 import { StringWriter } from "./writers.ts";
 import { copy } from "../bytes/mod.ts";
+import { Buffer } from "../io/buffer.ts";
 
 const encoder = new TextEncoder();
 
@@ -36,7 +37,7 @@ async function readBytes(buf: BufReader): Promise<string> {
   return decoder.decode(b.subarray(0, nb));
 }
 
-Deno.test("bufioReaderSimple", async function (): Promise<void> {
+Deno.test("bufioReaderSimple", async function () {
   const data = "hello world";
   const b = new BufReader(new StringReader(data));
   const s = await readBytes(b);
@@ -104,7 +105,7 @@ const bufsizes: number[] = [
   4096,
 ];
 
-Deno.test("bufioBufReader", async function (): Promise<void> {
+Deno.test("bufioBufReader", async function () {
   const texts = new Array<string>(31);
   let str = "";
   let all = "";
@@ -131,7 +132,7 @@ Deno.test("bufioBufReader", async function (): Promise<void> {
   }
 });
 
-Deno.test("bufioBufferFull", async function (): Promise<void> {
+Deno.test("bufioBufferFull", async function () {
   const longString =
     "And now, hello, world! It is the time for all good men to come to the" +
     " aid of their party";
@@ -153,7 +154,7 @@ Deno.test("bufioBufferFull", async function (): Promise<void> {
   assertEquals(actual, "world!");
 });
 
-Deno.test("bufioReadString", async function (): Promise<void> {
+Deno.test("bufioReadString", async function () {
   const string = "And now, hello world!";
   const buf = new BufReader(new StringReader(string), MIN_READ_BUFFER_SIZE);
 
@@ -207,7 +208,7 @@ class TestReader implements Deno.Reader {
   }
 }
 
-async function testReadLine(input: Uint8Array): Promise<void> {
+async function testReadLine(input: Uint8Array) {
   for (let stride = 1; stride < 2; stride++) {
     let done = 0;
     const reader = new TestReader(input, stride);
@@ -237,12 +238,12 @@ async function testReadLine(input: Uint8Array): Promise<void> {
   }
 }
 
-Deno.test("bufioReadLine", async function (): Promise<void> {
+Deno.test("bufioReadLine", async function () {
   await testReadLine(testInput);
   await testReadLine(testInputrn);
 });
 
-Deno.test("bufioPeek", async function (): Promise<void> {
+Deno.test("bufioPeek", async function () {
   const decoder = new TextDecoder();
   const p = new Uint8Array(10);
   // string is 16 (minReadBufferSize) long.
@@ -326,7 +327,7 @@ Deno.test("bufioPeek", async function (): Promise<void> {
   */
 });
 
-Deno.test("bufioWriter", async function (): Promise<void> {
+Deno.test("bufioWriter", async function () {
   const data = new Uint8Array(8192);
 
   for (let i = 0; i < data.byteLength; i++) {
@@ -334,7 +335,7 @@ Deno.test("bufioWriter", async function (): Promise<void> {
     data[i] = " ".charCodeAt(0) + (i % ("~".charCodeAt(0) - " ".charCodeAt(0)));
   }
 
-  const w = new Deno.Buffer();
+  const w = new Buffer();
   for (const nwrite of bufsizes) {
     for (const bs of bufsizes) {
       // Write nwrite bytes using buffer size bs.
@@ -368,7 +369,7 @@ Deno.test("bufioWriterSync", function (): void {
     data[i] = " ".charCodeAt(0) + (i % ("~".charCodeAt(0) - " ".charCodeAt(0)));
   }
 
-  const w = new Deno.Buffer();
+  const w = new Buffer();
   for (const nwrite of bufsizes) {
     for (const bs of bufsizes) {
       // Write nwrite bytes using buffer size bs.
@@ -394,11 +395,11 @@ Deno.test("bufioWriterSync", function (): void {
   }
 });
 
-Deno.test("bufReaderReadFull", async function (): Promise<void> {
+Deno.test("bufReaderReadFull", async function () {
   const enc = new TextEncoder();
   const dec = new TextDecoder();
   const text = "Hello World";
-  const data = new Deno.Buffer(enc.encode(text));
+  const data = new Buffer(enc.encode(text));
   const bufr = new BufReader(data, 3);
   {
     const buf = new Uint8Array(6);
@@ -421,9 +422,9 @@ Deno.test("bufReaderReadFull", async function (): Promise<void> {
   }
 });
 
-Deno.test("readStringDelimAndLines", async function (): Promise<void> {
+Deno.test("readStringDelimAndLines", async function () {
   const enc = new TextEncoder();
-  const data = new Deno.Buffer(
+  const data = new Buffer(
     enc.encode("Hello World\tHello World 2\tHello World 3"),
   );
   const chunks_ = [];
@@ -435,9 +436,9 @@ Deno.test("readStringDelimAndLines", async function (): Promise<void> {
   assertEquals(chunks_.length, 3);
   assertEquals(chunks_, ["Hello World", "Hello World 2", "Hello World 3"]);
 
-  const linesData = new Deno.Buffer(enc.encode("0\n1\n2\n3\n4\n5\n6\n7\n8\n9"));
+  const linesData = new Buffer(enc.encode("0\n1\n2\n3\n4\n5\n6\n7\n8\n9"));
   // consider data with windows newlines too
-  const linesDataWindows = new Deno.Buffer(
+  const linesDataWindows = new Buffer(
     enc.encode("0\r\n1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n7\r\n8\r\n9"),
   );
   const lines_ = [];
@@ -460,7 +461,7 @@ Deno.test("readStringDelimAndLines", async function (): Promise<void> {
 
 Deno.test(
   "bufReaderShouldNotShareArrayBufferAcrossReads",
-  async function (): Promise<void> {
+  async function () {
     const decoder = new TextDecoder();
     const data = "abcdefghijklmnopqrstuvwxyz";
     const bufSize = 25;
@@ -482,7 +483,7 @@ Deno.test(
 
 Deno.test({
   name: "Reset buffer after flush",
-  async fn(): Promise<void> {
+  async fn() {
     const stringWriter = new StringWriter();
     const bufWriter = new BufWriter(stringWriter);
     const encoder = new TextEncoder();
@@ -512,7 +513,7 @@ Deno.test({
 
 Deno.test({
   name: "BufWriter.flush should write all bytes",
-  async fn(): Promise<void> {
+  async fn() {
     const bufSize = 16 * 1024;
     const data = new Uint8Array(bufSize);
     data.fill("a".charCodeAt(0));

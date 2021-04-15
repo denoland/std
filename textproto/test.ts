@@ -15,7 +15,7 @@ function reader(s: string): TextProtoReader {
 Deno.test({
   ignore: true,
   name: "[textproto] Reader : DotBytes",
-  fn(): Promise<void> {
+  fn() {
     const _input =
       "dotlines\r\n.foo\r\n..bar\n...baz\nquux\r\n\r\n.\r\nanot.her\r\n";
     return Promise.resolve();
@@ -42,7 +42,7 @@ Deno.test("[textproto] Reader", async () => {
 
 Deno.test({
   name: "[textproto] Reader : MIME Header",
-  async fn(): Promise<void> {
+  async fn() {
     const input =
       "my-key: Value 1  \r\nLong-key: Even Longer Value\r\nmy-Key: " +
       "Value 2\r\n\n";
@@ -56,7 +56,7 @@ Deno.test({
 
 Deno.test({
   name: "[textproto] Reader : MIME Header Single",
-  async fn(): Promise<void> {
+  async fn() {
     const input = "Foo: bar\n\n";
     const r = reader(input);
     const m = await r.readMIMEHeader();
@@ -67,7 +67,7 @@ Deno.test({
 
 Deno.test({
   name: "[textproto] Reader : MIME Header No Key",
-  async fn(): Promise<void> {
+  async fn() {
     const input = ": bar\ntest-1: 1\n\n";
     const r = reader(input);
     const m = await r.readMIMEHeader();
@@ -78,7 +78,7 @@ Deno.test({
 
 Deno.test({
   name: "[textproto] Reader : Large MIME Header",
-  async fn(): Promise<void> {
+  async fn() {
     const data: string[] = [];
     // Go test is 16*1024. But seems it can't handle more
     for (let i = 0; i < 1024; i++) {
@@ -96,7 +96,7 @@ Deno.test({
 // with spaces before colons, and spaces in keys.
 Deno.test({
   name: "[textproto] Reader : MIME Header Non compliant",
-  async fn(): Promise<void> {
+  async fn() {
     const input = "Foo: bar\r\n" +
       "Content-Language: en\r\n" +
       "SID : 0\r\n" +
@@ -119,7 +119,7 @@ Deno.test({
 
 Deno.test({
   name: "[textproto] Reader : MIME Header Malformed",
-  async fn(): Promise<void> {
+  async fn() {
     const input = [
       "No colon first line\r\nFoo: foo\r\n\r\n",
       " No colon first line with leading space\r\nFoo: foo\r\n\r\n",
@@ -142,7 +142,7 @@ Deno.test({
 
 Deno.test({
   name: "[textproto] Reader : MIME Header Trim Continued",
-  async fn(): Promise<void> {
+  async fn() {
     const input = "a:\n" +
       " 0 \r\n" +
       "b:1 \t\r\n" +
@@ -162,7 +162,7 @@ Deno.test({
 
 Deno.test({
   name: "[textproto] #409 issue : multipart form boundary",
-  async fn(): Promise<void> {
+  async fn() {
     const input = [
       "Accept: */*\r\n",
       'Content-Disposition: form-data; name="test"\r\n',

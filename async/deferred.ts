@@ -5,9 +5,9 @@
 // See https://github.com/Microsoft/TypeScript/issues/15202
 // At the time of writing, the github issue is closed but the problem remains.
 export interface Deferred<T> extends Promise<T> {
-  resolve: (value?: T | PromiseLike<T>) => void;
+  resolve(value?: T | PromiseLike<T>): void;
   // deno-lint-ignore no-explicit-any
-  reject: (reason?: any) => void;
+  reject(reason?: any): void;
 }
 
 /** Creates a Promise with the `reject` and `resolve` functions
