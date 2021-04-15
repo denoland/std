@@ -11,7 +11,7 @@ import { readLines } from "../io/bufio.ts";
 
 export class ChildProcess extends EventEmitter {
   /**
-   * The exit code of the child process. This option will be `null` until the child process exits.
+   * The exit code of the child process. This property will be `null` until the child process exits.
    */
   exitCode: number | null = null;
 
