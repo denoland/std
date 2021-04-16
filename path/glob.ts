@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { osType, isWindows } from "../_util/os.ts";
+import { isWindows, osType } from "../_util/os.ts";
 import { SEP, SEP_PATTERN } from "./separator.ts";
 import * as _win32 from "./win32.ts";
 import * as _posix from "./posix.ts";
