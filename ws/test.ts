@@ -282,7 +282,7 @@ Deno.test("[ws] ws.close() should use 1000 as close code", async () => {
   assertEquals(code, 1000);
 });
 
-function dummyConn(r: Deno.Reader, w: Deno.Writer): Deno.Conn {
+function dummyConn(r: Deno.Reader, w: Deno.Writer): Deno.Conn<Deno.NetAddr> {
   return {
     rid: -1,
     closeWrite: () => Promise.resolve(),
