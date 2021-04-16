@@ -139,7 +139,7 @@ export class TextProtoReader {
     const charCodes: Array<number> = [CHAR_SPACE, CHAR_TAB];
     let n = 0;
 
-    for (let val of l) {
+    for (const val of l) {
       if (!charCodes.includes(val)) {
         ++n;
       }
