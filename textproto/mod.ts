@@ -28,7 +28,7 @@ export class TextProtoReader {
    * eliding the final \n or \r\n from the returned string.
    */
   async readLine(): Promise<string | null> {
-    const s: Uint8Array = await this.readLineSlice();
+    const s: Uint8Array | null = await this.readLineSlice();
     return s === null ? null : str(s);
   }
 
@@ -139,13 +139,11 @@ export class TextProtoReader {
     const charCodes: Array<number> = [CHAR_SPACE, CHAR_TAB];
     let n = 0;
 
-    l.forEach(
-      (val) => {
-        if (!charCodes.includes(val)) {
-          ++n;
-        }
+    for (let val of l) {
+      if (!charCodes.includes(val)) {
+        ++n;
       }
-    );
+    }
 
     return n;
   }
