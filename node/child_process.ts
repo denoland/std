@@ -128,8 +128,8 @@ export class ChildProcess extends EventEmitter {
         this.#spawned.then(async () => {
           // The 'exit' and 'close' events must be emitted after the 'spawn' event.
           this.emit("exit", this.exitCode, status.signal ?? null);
-          this.kill();
           await this._waitForChildStreamsToClose();
+          this.kill();
           this.emit("close", this.exitCode, status.signal ?? null);
         });
       })();
@@ -153,7 +153,6 @@ export class ChildProcess extends EventEmitter {
     if (this.#process.stdin) {
       assert(this.stdin);
       ensureClosed(this.#process.stdin);
-      this.stdin.destroy();
     }
     if (this.#process.stdout) {
       ensureClosed(this.#process.stdout);
@@ -177,21 +176,15 @@ export class ChildProcess extends EventEmitter {
   private async _waitForChildStreamsToClose(): Promise<void> {
     const promises = [] as Array<Promise<void>>;
     if (this.stdin && !this.stdin.destroyed) {
-      const promise = deferred<void>();
-      this.stdin.once("close", () => promise.resolve());
-      promises.push(promise);
+      assert(this.stdin);
+      this.stdin.destroy();
+      promises.push(waitForStreamToClose(this.stdin));
     }
     if (this.stdout && !this.stdout.destroyed) {
-      const promise = deferred<void>();
-      this.stdout.resume(); // Ensure bufferred data will be consumed.
-      this.stdout.once("close", () => promise.resolve());
-      promises.push(promise);
+      promises.push(waitForReadableToClose(this.stdout));
     }
     if (this.stderr && !this.stderr.destroyed) {
-      const promise = deferred<void>();
-      this.stderr.resume(); // Ensure buffered data will be consumed.
-      this.stderr.once("close", () => promise.resolve());
-      promises.push(promise);
+      promises.push(waitForReadableToClose(this.stderr));
     }
     await Promise.all(promises);
   }
@@ -417,6 +410,30 @@ function normalizeStdioOption(
         notImplemented();
     }
   }
+}
+
+function waitForReadableToClose(readable: Readable): Promise<void> {
+  readable.resume(); // Ensure bufferred data will be consumed.
+  return waitForStreamToClose(readable);
+}
+
+function waitForStreamToClose(stream: Stream): Promise<void> {
+  const promise = deferred<void>();
+  const cleanup = () => {
+    stream.removeListener("close", onClose);
+    stream.removeListener("error", onError);
+  };
+  const onClose = () => {
+    cleanup();
+    promise.resolve();
+  };
+  const onError = (err: Error) => {
+    cleanup();
+    promise.reject(err);
+  };
+  stream.once("close", onClose);
+  stream.once("error", onError);
+  return promise;
 }
 
 /**
