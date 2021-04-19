@@ -92,7 +92,7 @@ export function globToRegExp(
     extended = true,
     globstar: globstarOption = true,
     os = osType,
-    caseInsensitive = os === "windows",
+    caseInsensitive = false,
   }: GlobToRegExpOptions = {},
 ): RegExp {
   if (glob == "") {
