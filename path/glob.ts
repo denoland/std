@@ -79,13 +79,7 @@ const rangeEscapeChars = ["-", "\\", "]"];
  *   look-ahead followed by a wildcard. This means that `!(foo).js` will wrongly
  *   fail to match `foobar.js`, even though `foobar` is not `foo`. Effectively,
  *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
- *   the group occurs not nested at the end of the segment.
- *
- * Additional notes:
- * - As Windows file systems are case-insensitive, generated `RegExp` will be
- *   case-insensitive by default when `os` option is set to "windows".
- *   You can still override this behaviour by forcing `caseInsensitive` to false
- *   when working on Windows systems. */
+ *   the group occurs not nested at the end of the segment. */
 export function globToRegExp(
   glob: string,
   {
