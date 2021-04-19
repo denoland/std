@@ -144,7 +144,6 @@ export class TextProtoReader {
   }
 
   skipSpace(l: Uint8Array): number {
-    
     let n = 0;
 
     for (const val of l) {
