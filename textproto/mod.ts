@@ -12,6 +12,8 @@ const CHAR_SPACE: number = " ".charCodeAt(0);
 const CHAR_TAB: number = "\t".charCodeAt(0);
 const CHAR_COLON: number = ":".charCodeAt(0);
 
+const WHITESPACES: Array<number> = [CHAR_SPACE, CHAR_TAB];
+
 const decoder = new TextDecoder();
 
 // FROM https://github.com/denoland/deno/blob/b34628a26ab0187a827aa4ebe256e23178e25d39/cli/js/web/headers.ts#L9
@@ -28,7 +30,7 @@ export class TextProtoReader {
    * eliding the final \n or \r\n from the returned string.
    */
   async readLine(): Promise<string | null> {
-    const s: Uint8Array | null = await this.readLineSlice();
+    const s = await this.readLineSlice();
     return s === null ? null : str(s);
   }
 
@@ -60,14 +62,14 @@ export class TextProtoReader {
     let buf = await this.r.peek(1);
     if (buf === null) {
       return null;
-    } else if (buf[0] == CHAR_SPACE || buf[0] == CHAR_SPACE) {
+    } else if (WHITESPACES.includes(buf[0])) {
       line = (await this.readLineSlice()) as Uint8Array;
     }
 
     buf = await this.r.peek(1);
     if (buf === null) {
       throw new Deno.errors.UnexpectedEof();
-    } else if (buf[0] == CHAR_SPACE || buf[0] == CHAR_SPACE) {
+    } else if (WHITESPACES.includes(buf[0])) {
       throw new Deno.errors.InvalidData(
         `malformed MIME header initial line: ${str(line)}`,
       );
@@ -102,7 +104,7 @@ export class TextProtoReader {
       i++; // skip colon
       while (
         i < kv.byteLength &&
-        (kv[i] == CHAR_SPACE || kv[i] == CHAR_SPACE)
+        (WHITESPACES.includes(kv[i]))
       ) {
         i++;
       }
@@ -122,12 +124,18 @@ export class TextProtoReader {
   }
 
   async readLineSlice(): Promise<Uint8Array | null> {
-    let line: Uint8Array = new Uint8Array(0);
+    let line = new Uint8Array(0);
     let r: ReadLineResult | null = null;
 
     do {
       r = await this.r.readLine();
-      if (r !== null && this.skipSpace(r.line) !== 0) { //TODO: Kept skipSpace to preserve behavior but it should be looked into to check if it makes sense when this is used.
+      // TODO(ry):
+      // This skipSpace() is definitely misplaced, but I don't know where it
+      // comes from nor how to fix it.
+
+      //TODO(SmashingQuasar): Kept skipSpace to preserve behavior but it should be looked into to check if it makes sense when this is used.
+
+      if (r !== null && this.skipSpace(r.line) !== 0) {
         line = concat(line, r.line);
       }
     } while (r !== null && r.more);
@@ -136,12 +144,12 @@ export class TextProtoReader {
   }
 
   skipSpace(l: Uint8Array): number {
-    const charCodes: Array<number> = [CHAR_SPACE, CHAR_TAB];
+    
     let n = 0;
 
     for (const val of l) {
-      if (!charCodes.includes(val)) {
-        ++n;
+      if (!WHITESPACES.includes(val)) {
+        n++;
       }
     }
 
