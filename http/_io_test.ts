@@ -365,8 +365,8 @@ Deno.test("writeResponse with trailer", async () => {
   const ret = new TextDecoder().decode(w.bytes());
   const exp = [
     "HTTP/1.1 200 OK",
-    "transfer-encoding: chunked",
     "trailer: deno,node",
+    "transfer-encoding: chunked",
     "",
     "5",
     "Hello",
