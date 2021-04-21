@@ -97,15 +97,15 @@ export class BytesList {
    * Returns subset of bytes copied
    */
   slice(start: number, end: number = this.len): Uint8Array {
-    const result = new Uint8Array(end - start);
     if (end === start) {
       return new Uint8Array();
     }
-    if (start < 0 || this.len <= end) {
+    if (start < 0 || this.len < end) {
       throw new Error("out of range");
     } else if (end < start) {
-      throw new Error("start is greather than end");
+      throw new Error("invalid range");
     }
+    const result = new Uint8Array(end - start);
     const startIdx = this.getChunkIndex(start);
     const endIdx = this.getChunkIndex(end - 1);
     if (startIdx < 0 || endIdx < 0) {

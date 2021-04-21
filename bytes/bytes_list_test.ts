@@ -17,7 +17,7 @@ function setup() {
   arr.add(part5, 1, 2);
   return arr;
 }
-Deno.test("BytesList.add", () => {
+Deno.test("[bytes] BytesList.add", () => {
   const arr = setup();
   assertEquals(arr.size(), 10);
   assertEquals(arr.getChunkIndex(-1), -1);
@@ -36,7 +36,7 @@ Deno.test("BytesList.add", () => {
     assertEquals(arr.get(i), i);
   }
 });
-Deno.test("BytesList.slice", () => {
+Deno.test("[bytes] BytesList.slice", () => {
   const arr = setup();
   assertEquals(
     bytes.equals(arr.slice(0, 4), new Uint8Array([0, 1, 2, 3])),
@@ -61,8 +61,15 @@ Deno.test("BytesList.slice", () => {
     Error,
     "out of range",
   );
+  assertThrows(
+    () => {
+      arr.slice(1, 0);
+    },
+    Error,
+    "invalid range",
+  );
 });
-Deno.test("BytesList.concat", () => {
+Deno.test("[bytes] BytesList.concat", () => {
   const arr = setup();
   assertEquals(
     bytes.equals(
@@ -72,7 +79,7 @@ Deno.test("BytesList.concat", () => {
     true,
   );
 });
-Deno.test("BytesList.shift", () => {
+Deno.test("[bytes] BytesList.shift", () => {
   const arr = setup();
   arr.shift(3);
   assertEquals(arr.size(), 7);
@@ -93,7 +100,7 @@ Deno.test("BytesList.shift", () => {
     true,
   );
 });
-Deno.test("BytesList.shift 2", () => {
+Deno.test("[bytes] BytesList.shift 2", () => {
   const arr = new BytesList();
   arr.add(new Uint8Array([0, 0, 0, 1, 2, 0]), 0, 5);
   arr.shift(2);
@@ -121,7 +128,7 @@ Deno.test("BytesList.shift 2", () => {
     true,
   );
 });
-Deno.test("BytesList.shift 3", () => {
+Deno.test("[bytes] BytesList.shift 3", () => {
   const arr = new BytesList();
   arr.add(new Uint8Array([0, 0, 0, 1, 2, 0]), 0, 5);
   arr.shift(100);
