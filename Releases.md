@@ -1,3 +1,10 @@
+### 0.94.0 / 2021.04.20
+
+- feat(node/fs): add fstat and fstatSync (#847)
+- feat(streams): add readableStreamFromReader (#852)
+- fix(path): reduce circular dependency (#858)
+- fix(testing): equals does not differentiate undefined/absent keys (#849)
+
 ### 0.93.0 / 2021.04.13
 
 - feat: add iter and iterSync to io/util (#843)
