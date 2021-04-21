@@ -7,9 +7,10 @@
 type Reader = Deno.Reader;
 type Writer = Deno.Writer;
 type WriterSync = Deno.WriterSync;
-import { copy } from "../bytes/mod.ts";
+import { concat, copy } from "../bytes/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { Buffer } from "./buffer.ts";
+import { BytesList, PerfRecorder } from "./perf.ts";
 import { writeAll, writeAllSync } from "./util.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
@@ -98,7 +99,7 @@ export class BufReader implements Reader {
     }
 
     throw new Error(
-      `No progress after ${MAX_CONSECUTIVE_EMPTY_READS} read() calls`,
+      `No progress after ${MAX_CONSECUTIVE_EMPTY_READS} read() calls`
     );
   }
 
@@ -255,7 +256,7 @@ export class BufReader implements Reader {
       let { partial } = err;
       assert(
         partial instanceof Uint8Array,
-        "bufio: caught error from `readSlice()` without `partial` property",
+        "bufio: caught error from `readSlice()` without `partial` property"
       );
 
       // Don't throw if `readSlice()` failed with `BufferFullError`, instead we
@@ -467,10 +468,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
     if (this.usedBufferBytes === 0) return;
 
     try {
-      await writeAll(
-        this.writer,
-        this.buf.subarray(0, this.usedBufferBytes),
-      );
+      await writeAll(this.writer, this.buf.subarray(0, this.usedBufferBytes));
     } catch (e) {
       this.err = e;
       throw e;
@@ -530,7 +528,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
   /** return new BufWriterSync unless writer is BufWriterSync */
   static create(
     writer: WriterSync,
-    size: number = DEFAULT_BUF_SIZE,
+    size: number = DEFAULT_BUF_SIZE
   ): BufWriterSync {
     return writer instanceof BufWriterSync
       ? writer
@@ -560,10 +558,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
     if (this.usedBufferBytes === 0) return;
 
     try {
-      writeAllSync(
-        this.writer,
-        this.buf.subarray(0, this.usedBufferBytes),
-      );
+      writeAllSync(this.writer, this.buf.subarray(0, this.usedBufferBytes));
     } catch (e) {
       this.err = e;
       throw e;
@@ -636,46 +631,44 @@ function createLPS(pat: Uint8Array): Uint8Array {
 /** Read delimited bytes from a Reader. */
 export async function* readDelim(
   reader: Reader,
-  delim: Uint8Array,
+  delim: Uint8Array
 ): AsyncIterableIterator<Uint8Array> {
   // Avoid unicode problems
   const delimLen = delim.length;
   const delimLPS = createLPS(delim);
-
-  let inputBuffer = new Buffer();
-  const inspectArr = new Uint8Array(Math.max(1024, delimLen + 1));
+  const rec = new PerfRecorder();
+  const chunks = new BytesList();
+  const bufSize = Math.max(1024, delimLen + 1);
 
   // Modified KMP
   let inspectIndex = 0;
   let matchIndex = 0;
   while (true) {
+    const inspectArr = new Uint8Array(bufSize);
     const result = await reader.read(inspectArr);
     if (result === null) {
       // Yield last chunk.
-      yield inputBuffer.bytes();
+      yield chunks.concat();
+      for (const [key,val] of rec.records) {
+        console.log(key, val, rec.counts.get(key));
+      }
       return;
-    }
-    if ((result as number) < 0) {
+    } else if (result < 0) {
       // Discard all remaining and silently fail.
       return;
     }
-    const sliceRead = inspectArr.subarray(0, result as number);
-    await writeAll(inputBuffer, sliceRead);
-
-    let sliceToProcess = inputBuffer.bytes();
-    while (inspectIndex < sliceToProcess.length) {
-      if (sliceToProcess[inspectIndex] === delim[matchIndex]) {
+    chunks.add(inspectArr, 0, result);
+    while (inspectIndex < chunks.size()) {
+      if (chunks.get(inspectIndex) === delim[matchIndex]) {
         inspectIndex++;
         matchIndex++;
         if (matchIndex === delimLen) {
           // Full match
           const matchEnd = inspectIndex - delimLen;
-          const readyBytes = sliceToProcess.subarray(0, matchEnd);
-          // Copy
-          const pendingBytes = sliceToProcess.slice(inspectIndex);
+          const readyBytes = chunks.slice(0, matchEnd);
           yield readyBytes;
           // Reset match, different from KMP.
-          sliceToProcess = pendingBytes;
+          chunks.shift(inspectIndex);
           inspectIndex = 0;
           matchIndex = 0;
         }
@@ -687,15 +680,13 @@ export async function* readDelim(
         }
       }
     }
-    // Keep inspectIndex and matchIndex.
-    inputBuffer = new Buffer(sliceToProcess);
   }
 }
 
 /** Read delimited strings from a Reader. */
 export async function* readStringDelim(
   reader: Reader,
-  delim: string,
+  delim: string
 ): AsyncIterableIterator<string> {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
@@ -706,7 +697,7 @@ export async function* readStringDelim(
 
 /** Read strings line-by-line from a Reader. */
 export async function* readLines(
-  reader: Reader,
+  reader: Reader
 ): AsyncIterableIterator<string> {
   for await (let chunk of readStringDelim(reader, "\n")) {
     // Finding a CR at the end of the line is evidence of a
