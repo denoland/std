@@ -3,12 +3,14 @@
 import { assert, assertEquals } from "../testing/asserts.ts";
 import {
   readableStreamFromIterable,
+  readableStreamFromReader,
   readerFromIterable,
   readerFromStreamReader,
   writableStreamFromWriter,
   writerFromStreamWriter,
 } from "./streams.ts";
 import { Buffer } from "./buffer.ts";
+import { concat, copy } from "../bytes/mod.ts";
 
 function repeat(c: string, bytes: number): Uint8Array {
   assertEquals(c.length, 1);
@@ -215,4 +217,103 @@ Deno.test("[io] readableStreamFromIterable() generator", async function () {
   }
 
   assertEquals(readStrings, strings);
+});
+
+class MockReaderCloser implements Deno.Reader, Deno.Closer {
+  chunks: Uint8Array[] = [];
+  closeCall = 0;
+
+  read(p: Uint8Array): Promise<number | null> {
+    if (this.closeCall) {
+      throw new Error("already closed");
+    }
+    if (p.length === 0) {
+      return Promise.resolve(0);
+    }
+    const chunk = this.chunks.shift();
+    if (chunk) {
+      const copied = copy(chunk, p);
+      if (copied < chunk.length) {
+        this.chunks.unshift(chunk.subarray(copied));
+      }
+      return Promise.resolve(copied);
+    }
+    return Promise.resolve(null);
+  }
+
+  close() {
+    this.closeCall++;
+  }
+}
+
+Deno.test("[io] readableStreamFromReader()", async function () {
+  const encoder = new TextEncoder();
+  const reader = new Buffer(encoder.encode("hello deno land"));
+  const stream = readableStreamFromReader(reader);
+  const actual: Uint8Array[] = [];
+  for await (const read of stream) {
+    actual.push(read);
+  }
+  const decoder = new TextDecoder();
+  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+});
+
+Deno.test({
+  name: "[io] readableStreamFromReader() auto closes closer",
+  async fn() {},
+});
+
+Deno.test("[io] readableStreamFromReader() - calls close", async function () {
+  const encoder = new TextEncoder();
+  const reader = new MockReaderCloser();
+  reader.chunks = [
+    encoder.encode("hello "),
+    encoder.encode("deno "),
+    encoder.encode("land"),
+  ];
+  const stream = readableStreamFromReader(reader);
+  const actual: Uint8Array[] = [];
+  for await (const read of stream) {
+    actual.push(read);
+  }
+  const decoder = new TextDecoder();
+  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(reader.closeCall, 1);
+});
+
+Deno.test("[io] readableStreamFromReader() - doesn't call close with autoClose false", async function () {
+  const encoder = new TextEncoder();
+  const reader = new MockReaderCloser();
+  reader.chunks = [
+    encoder.encode("hello "),
+    encoder.encode("deno "),
+    encoder.encode("land"),
+  ];
+  const stream = readableStreamFromReader(reader, { autoClose: false });
+  const actual: Uint8Array[] = [];
+  for await (const read of stream) {
+    actual.push(read);
+  }
+  const decoder = new TextDecoder();
+  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(reader.closeCall, 0);
+});
+
+Deno.test("[io] readableStreamFromReader() - chunkSize", async function () {
+  const encoder = new TextEncoder();
+  const reader = new MockReaderCloser();
+  reader.chunks = [
+    encoder.encode("hello "),
+    encoder.encode("deno "),
+    encoder.encode("land"),
+  ];
+  const stream = readableStreamFromReader(reader, { chunkSize: 2 });
+  const actual: Uint8Array[] = [];
+  for await (const read of stream) {
+    actual.push(read);
+  }
+  const decoder = new TextDecoder();
+  assertEquals(actual.length, 8);
+  assertEquals(decoder.decode(concat(...actual)), "hello deno land");
+  assertEquals(reader.closeCall, 1);
 });

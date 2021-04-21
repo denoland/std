@@ -1,9 +1,13 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { osType } from "../_util/os.ts";
-import { join, normalize } from "./mod.ts";
+import { isWindows, osType } from "../_util/os.ts";
 import { SEP, SEP_PATTERN } from "./separator.ts";
+import * as _win32 from "./win32.ts";
+import * as _posix from "./posix.ts";
+
+const path = isWindows ? _win32 : _posix;
+const { join, normalize } = path;
 
 export interface GlobOptions {
   /** Extended glob syntax.
