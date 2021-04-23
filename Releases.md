@@ -1,3 +1,9 @@
+### 0.95.0 / 2021.04.23
+
+- feat(node): add basic support for child_process.spawn (#785)
+- feat(path/glob): add caseInsensitive option (#854)
+- fix(node/fs): actually export everything (#862)
+
 ### 0.94.0 / 2021.04.20
 
 - feat(node/fs): add fstat and fstatSync (#847)
