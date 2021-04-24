@@ -499,7 +499,7 @@ function fail(message?: string | Error): never {
       operator: "fail",
     });
     if (message == null) {
-      // When the default error message (`"Failed"`) is used, generatedMode should be set to true.
+      // When the default error message (`"Failed"`) is used, `generatedMessage` should be set to `true`.
       err.generatedMessage = true;
     }
     throw err;
