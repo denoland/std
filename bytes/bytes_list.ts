@@ -17,14 +17,14 @@ export class BytesList {
   size() {
     return this.len;
   }
-
   /**
    * Push bytes with given offset infos
    */
   add(value: Uint8Array, start = 0, end = value.byteLength) {
-    if (value.byteLength === 0 || end === 0) {
+    if (value.byteLength === 0 || end - start === 0) {
       return;
     }
+    checkRange(start, end, value.byteLength);
     this.chunks.push({
       value,
       end,
@@ -35,19 +35,22 @@ export class BytesList {
   }
 
   /**
-   * Drop head bytes before pos
+   * Drop head `n` bytes.
    */
-  shift(pos: number) {
-    const idx = this.getChunkIndex(pos);
-    if (idx < 0) {
+  shift(n: number) {
+    if (n === 0) {
+      return;
+    }
+    if (this.len <= n) {
       this.chunks = [];
       this.len = 0;
       return;
     }
+    const idx = this.getChunkIndex(n);
     this.chunks.splice(0, idx);
     const [chunk] = this.chunks;
     if (chunk) {
-      const diff = pos - chunk.offset;
+      const diff = n - chunk.offset;
       chunk.start += diff;
     }
     let offset = 0;
@@ -86,13 +89,31 @@ export class BytesList {
    * Get indexed byte from chunks
    */
   get(i: number): number {
-    const idx = this.getChunkIndex(i);
-    if (idx < 0) {
+    if (i < 0 || this.len <= i) {
       throw new Error("out of range");
     }
+    const idx = this.getChunkIndex(i);
     const { value, offset, start } = this.chunks[idx];
     return value[start + i - offset];
   }
+
+  /**
+   * Iterafor of bytes from given position
+   */
+  *iterator(start = 0): IterableIterator<number> {
+    const startIdx = this.getChunkIndex(start);
+    if (startIdx < 0) return;
+    const first = this.chunks[startIdx];
+    let firstOffset = start - first.offset;
+    for (let i = startIdx; i < this.chunks.length; i++) {
+      const chunk = this.chunks[i];
+      for (let j = chunk.start + firstOffset; j < chunk.end; j++) {
+        yield chunk.value[j];
+      }
+      firstOffset = 0;
+    }
+  }
+
   /**
    * Returns subset of bytes copied
    */
@@ -100,17 +121,10 @@ export class BytesList {
     if (end === start) {
       return new Uint8Array();
     }
-    if (start < 0 || this.len < end) {
-      throw new Error("out of range");
-    } else if (end < start) {
-      throw new Error("invalid range");
-    }
+    checkRange(start, end, this.len);
     const result = new Uint8Array(end - start);
     const startIdx = this.getChunkIndex(start);
     const endIdx = this.getChunkIndex(end - 1);
-    if (startIdx < 0 || endIdx < 0) {
-      throw new Error("out of range");
-    }
     let written = 0;
     for (let i = startIdx; i < endIdx; i++) {
       const chunk = this.chunks[i];
@@ -134,5 +148,11 @@ export class BytesList {
       sum += end - start;
     }
     return result;
+  }
+}
+
+function checkRange(start: number, end: number, len: number) {
+  if (start < 0 || len < start || end < 0 || len < end || end < start) {
+    throw new Error("invalid range");
   }
 }

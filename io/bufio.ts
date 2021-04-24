@@ -641,6 +641,7 @@ export async function* readDelim(
   // Modified KMP
   let inspectIndex = 0;
   let matchIndex = 0;
+  let itr = chunks.iterator();
   while (true) {
     const inspectArr = new Uint8Array(bufSize);
     const result = await reader.read(inspectArr);
@@ -654,7 +655,8 @@ export async function* readDelim(
     }
     chunks.add(inspectArr, 0, result);
     while (inspectIndex < chunks.size()) {
-      if (chunks.get(inspectIndex) === delim[matchIndex]) {
+      const byte = itr.next().value;
+      if (byte === delim[matchIndex]) {
         inspectIndex++;
         matchIndex++;
         if (matchIndex === delimLen) {
@@ -666,6 +668,7 @@ export async function* readDelim(
           chunks.shift(inspectIndex);
           inspectIndex = 0;
           matchIndex = 0;
+          itr = chunks.iterator();
         }
       } else {
         if (matchIndex === 0) {
