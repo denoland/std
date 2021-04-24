@@ -268,7 +268,7 @@ Deno.test("[io] readStringDelim basic", async () => {
 
 Deno.test("[io] readStringDelim bigger delim than buf size", async () => {
   // 0123456789...
-  const delim = Array.from({ length: 1025 }).map((v, i) => i % 10).join("");
+  const delim = Array.from({ length: 1025 }).map((_, i) => i % 10).join("");
   const exp = ["", "a", "bc", "def", "01", "012345678", "123456789", "", ""];
   const str = exp.join(delim);
   const arr: string[] = [];
