@@ -641,8 +641,6 @@ export async function* readDelim(
   // Modified KMP
   let inspectIndex = 0;
   let matchIndex = 0;
-  let itr: IterableIterator<number>;
-  let curr = -1;
   while (true) {
     const inspectArr = new Uint8Array(bufSize);
     const result = await reader.read(inspectArr);
@@ -655,8 +653,8 @@ export async function* readDelim(
       return;
     }
     chunks.add(inspectArr, 0, result);
-    itr = chunks.iterator(inspectIndex);
-    curr = itr.next().value;
+    const itr = chunks.iterator(inspectIndex);
+    let curr = itr.next().value;
     while (inspectIndex < chunks.size()) {
       if (curr === delim[matchIndex]) {
         curr = itr.next().value;
