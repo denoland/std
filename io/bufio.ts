@@ -653,12 +653,11 @@ export async function* readDelim(
       return;
     }
     chunks.add(inspectArr, 0, result);
-    const itr = chunks.iterator(inspectIndex);
-    let curr = itr.next().value;
+    let localIndex = 0;
     while (inspectIndex < chunks.size()) {
-      if (curr === delim[matchIndex]) {
-        curr = itr.next().value;
+      if (inspectArr[localIndex] === delim[matchIndex]) {
         inspectIndex++;
+        localIndex++;
         matchIndex++;
         if (matchIndex === delimLen) {
           // Full match
@@ -673,7 +672,7 @@ export async function* readDelim(
       } else {
         if (matchIndex === 0) {
           inspectIndex++;
-          curr = itr.next().value;
+          localIndex++;
         } else {
           matchIndex = delimLPS[matchIndex - 1];
         }
