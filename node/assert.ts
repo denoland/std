@@ -492,8 +492,20 @@ function notDeepStrictEqual(
   );
 }
 
-function fail() {
-  toNode(() => fail());
+function fail(message?: string | Error): never {
+  if (typeof message === "string" || message == null) {
+    const err = new AssertionError({
+      message: message ?? "Failed",
+      operator: "fail",
+    });
+    if (message == null) {
+      // When the default error message (`"Failed"`) is used, generatedMode should be set to true.
+      err.generatedMessage = true;
+    }
+    throw err;
+  } else {
+    throw message;
+  }
 }
 function match(actual: string, regexp: RegExp, message?: string | Error) {
   if (arguments.length < 2) {
