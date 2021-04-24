@@ -178,6 +178,15 @@ Deno.test("bufioReadString", async function () {
   }
 });
 
+const testInput = encoder.encode(
+  "012\n345\n678\n9ab\ncde\nfgh\nijk\nlmn\nopq\nrst\nuvw\nxy",
+);
+const testInputrn = encoder.encode(
+  "012\r\n345\r\n678\r\n9ab\r\ncde\r\nfgh\r\nijk\r\nlmn\r\nopq\r\nrst\r\n" +
+    "uvw\r\nxy\r\n\n\r\n",
+);
+const testOutput = encoder.encode("0123456789abcdefghijklmnopqrstuvwxy");
+
 // TestReader wraps a Uint8Array and returns reads of a specific length.
 class TestReader implements Deno.Reader {
   constructor(private data: Uint8Array, private stride: number) {}
@@ -198,14 +207,6 @@ class TestReader implements Deno.Reader {
     return Promise.resolve(nread);
   }
 }
-const testInput = encoder.encode(
-  "012\n345\n678\n9ab\ncde\nfgh\nijk\nlmn\nopq\nrst\nuvw\nxy",
-);
-const testInputrn = encoder.encode(
-  "012\r\n345\r\n678\r\n9ab\r\ncde\r\nfgh\r\nijk\r\nlmn\r\nopq\r\nrst\r\n" +
-    "uvw\r\nxy\r\n\n\r\n",
-);
-const testOutput = encoder.encode("0123456789abcdefghijklmnopqrstuvwxy");
 
 async function testReadLine(input: Uint8Array) {
   for (let stride = 1; stride < 2; stride++) {
@@ -493,24 +494,27 @@ Deno.test("readStringDelimAndLines", async function () {
   assertEquals(lines_, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
 });
 
-Deno.test("bufReaderShouldNotShareArrayBufferAcrossReads", async function () {
-  const decoder = new TextDecoder();
-  const data = "abcdefghijklmnopqrstuvwxyz";
-  const bufSize = 25;
-  const b = new BufReader(new StringReader(data), bufSize);
+Deno.test(
+  "bufReaderShouldNotShareArrayBufferAcrossReads",
+  async function () {
+    const decoder = new TextDecoder();
+    const data = "abcdefghijklmnopqrstuvwxyz";
+    const bufSize = 25;
+    const b = new BufReader(new StringReader(data), bufSize);
 
-  const r1 = (await b.readLine()) as ReadLineResult;
-  assert(r1 !== null);
-  assertEquals(decoder.decode(r1.line), "abcdefghijklmnopqrstuvwxy");
+    const r1 = (await b.readLine()) as ReadLineResult;
+    assert(r1 !== null);
+    assertEquals(decoder.decode(r1.line), "abcdefghijklmnopqrstuvwxy");
 
-  const r2 = (await b.readLine()) as ReadLineResult;
-  assert(r2 !== null);
-  assertEquals(decoder.decode(r2.line), "z");
-  assert(
-    r1.line.buffer !== r2.line.buffer,
-    "array buffer should not be shared across reads",
-  );
-});
+    const r2 = (await b.readLine()) as ReadLineResult;
+    assert(r2 !== null);
+    assertEquals(decoder.decode(r2.line), "z");
+    assert(
+      r1.line.buffer !== r2.line.buffer,
+      "array buffer should not be shared across reads",
+    );
+  },
+);
 
 Deno.test({
   name: "Reset buffer after flush",
