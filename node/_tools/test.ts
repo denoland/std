@@ -1,5 +1,5 @@
 import { walk } from "../../fs/walk.ts";
-import { dirname, fromFileUrl, relative } from "../../path/mod.ts";
+import { dirname, fromFileUrl, join, relative } from "../../path/mod.ts";
 import { assertEquals } from "../../testing/asserts.ts";
 import { config, testList } from "./common.ts";
 
@@ -22,14 +22,13 @@ for await (const file of dir) {
     name: relative(testsFolder, file.path),
     fn: async () => {
       const process = Deno.run({
-        cwd: testsFolder,
         cmd: [
           "deno",
           "run",
           "-A",
           "--quiet",
           "--unstable",
-          "require.ts",
+          join(testsFolder, "require.ts"),
           file.path,
         ],
       });
