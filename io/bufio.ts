@@ -621,7 +621,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
       lps[i] = 0;
       i++;
     } else {
-      prefixEnd = pat[prefixEnd - 1];
+      prefixEnd = lps[prefixEnd - 1];
     }
   }
   return lps;
