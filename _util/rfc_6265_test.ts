@@ -8,7 +8,7 @@ import {
 } from "./rfc_6265.ts";
 
 Deno.test({
-  name: "Cookie Name Validation",
+  name: "RFC6265 Cookie Name Validation",
   fn(): void {
     const tokens = [
       '"id"',
@@ -34,7 +34,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Value Validation",
+  name: "RFC6265 Cookie Value Validation",
   fn(): void {
     const tokens = [
       "1f\tWa",
@@ -61,7 +61,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Cookie Path Validation",
+  name: "RFC6265 Cookie Path Validation",
   fn(): void {
     const path = "/;domain=sub.domain.com";
     assertThrows(
