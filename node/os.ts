@@ -138,7 +138,7 @@ export function getPriority(pid = 0): number {
 export function homedir(): string | null {
   switch (Deno.build.os) {
     case "windows":
-      return Deno.env.get("HOMEPATH") || null;
+      return Deno.env.get("USERPROFILE") || null;
     case "linux":
     case "darwin":
       return Deno.env.get("HOME") || null;
