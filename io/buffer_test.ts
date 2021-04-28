@@ -90,7 +90,7 @@ Deno.test("bufferNewBuffer", () => {
   init();
   assert(testBytes);
   assert(testString);
-  const buf = new Buffer(testBytes.buffer as ArrayBuffer);
+  const buf = new Buffer(testBytes.buffer);
   check(buf, testString);
 });
 
@@ -158,7 +158,7 @@ Deno.test("bufferTooLargeByteWrites", async () => {
   const tmp = new Uint8Array(72);
   const growLen = Number.MAX_VALUE;
   const xBytes = repeat("x", 0);
-  const buf = new Buffer(xBytes.buffer as ArrayBuffer);
+  const buf = new Buffer(xBytes.buffer);
   await buf.read(tmp);
 
   assertThrows(
@@ -338,7 +338,7 @@ Deno.test("bufferTestGrow", async () => {
   for (const startLen of [0, 100, 1000, 10000]) {
     const xBytes = repeat("x", startLen);
     for (const growLen of [0, 100, 1000, 10000]) {
-      const buf = new Buffer(xBytes.buffer as ArrayBuffer);
+      const buf = new Buffer(xBytes.buffer);
       // If we read, this affects buf.off, which is good to test.
       const nread = (await buf.read(tmp)) ?? 0;
       buf.grow(growLen);

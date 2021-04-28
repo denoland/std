@@ -189,3 +189,81 @@ Deno.test({
     assertEquals(line, input);
   },
 });
+
+Deno.test({
+  name: "[textproto] PR #859",
+  async fn() {
+    const TESTS: Array<string> = [
+      "Hello, World!",
+      "Hello, World!\n",
+      "Hello,\0 World!",
+      "Hello,\n World!",
+      "\nHello, World!",
+      "   \t   ",
+      "   \t   \n",
+      "   \n   \t",
+      "\n   ",
+    ];
+
+    const EXPECTED_OUTPUTS = [
+      new Uint8Array([
+        72,
+        101,
+        108,
+        108,
+        111,
+        44,
+        32,
+        87,
+        111,
+        114,
+        108,
+        100,
+        33,
+      ]),
+      new Uint8Array([
+        72,
+        101,
+        108,
+        108,
+        111,
+        44,
+        32,
+        87,
+        111,
+        114,
+        108,
+        100,
+        33,
+      ]),
+      new Uint8Array([
+        72,
+        101,
+        108,
+        108,
+        111,
+        44,
+        0,
+        32,
+        87,
+        111,
+        114,
+        108,
+        100,
+        33,
+      ]),
+      new Uint8Array([72, 101, 108, 108, 111, 44]),
+      new Uint8Array(0),
+      new Uint8Array(0),
+      new Uint8Array(0),
+      new Uint8Array(0),
+      new Uint8Array(0),
+    ];
+
+    for (let i = 0; i < TESTS.length; ++i) {
+      const READER = reader(TESTS[i]);
+      const RESULT = await READER.readLineSlice();
+      assertEquals(RESULT, EXPECTED_OUTPUTS[i]);
+    }
+  },
+});

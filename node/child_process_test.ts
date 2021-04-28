@@ -134,22 +134,26 @@ Deno.test("[child_process spawn] 'spawn' event", async () => {
 Deno.test("[child_process spawn] Verify that a shell is executed", async () => {
   const promise = withTimeout(3000);
   const doesNotExist = spawn("does-not-exist", { shell: true });
-  assertNotStrictEquals(doesNotExist.spawnfile, "does-not-exist");
-  doesNotExist.on("error", () => {
-    promise.reject("The 'error' event must not be emitted.");
-  });
-  doesNotExist.on("exit", (code, signal) => {
-    assertStrictEquals(signal, null);
+  try {
+    assertNotStrictEquals(doesNotExist.spawnfile, "does-not-exist");
+    doesNotExist.on("error", () => {
+      promise.reject("The 'error' event must not be emitted.");
+    });
+    doesNotExist.on("exit", (code, signal) => {
+      assertStrictEquals(signal, null);
 
-    if (isWindows) {
-      assertStrictEquals(code, 1); // Exit code of cmd.exe
-    } else {
-      assertStrictEquals(code, 127); // Exit code of /bin/sh });
-    }
+      if (isWindows) {
+        assertStrictEquals(code, 1); // Exit code of cmd.exe
+      } else {
+        assertStrictEquals(code, 127); // Exit code of /bin/sh });
+      }
 
-    promise.resolve();
-  });
-  await promise;
+      promise.resolve();
+    });
+    await promise;
+  } finally {
+    doesNotExist.kill();
+  }
 });
 
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-shell.js` works.
@@ -163,19 +167,23 @@ Deno.test({
     });
     let echoOutput = "";
 
-    assertStrictEquals(
-      echo.spawnargs[echo.spawnargs.length - 1].replace(/"/g, ""),
-      "echo foo",
-    );
-    assert(echo.stdout);
-    echo.stdout.on("data", (data) => {
-      echoOutput += data;
-    });
-    echo.on("close", () => {
-      assertStrictEquals(echoOutput.trim(), "foo");
-      promise.resolve();
-    });
-    await promise;
+    try {
+      assertStrictEquals(
+        echo.spawnargs[echo.spawnargs.length - 1].replace(/"/g, ""),
+        "echo foo",
+      );
+      assert(echo.stdout);
+      echo.stdout.on("data", (data) => {
+        echoOutput += data;
+      });
+      echo.on("close", () => {
+        assertStrictEquals(echoOutput.trim(), "foo");
+        promise.resolve();
+      });
+      await promise;
+    } finally {
+      echo.kill();
+    }
   },
 });
 
@@ -189,19 +197,23 @@ Deno.test({
     const command = spawn(cmd, {
       shell: true,
     });
-    let commandOutput = "";
+    try {
+      let commandOutput = "";
 
-    assert(command.stdout);
-    command.stdout.on("data", (data) => {
-      commandOutput += data;
-    });
+      assert(command.stdout);
+      command.stdout.on("data", (data) => {
+        commandOutput += data;
+      });
 
-    command.on("close", () => {
-      assertStrictEquals(commandOutput.trim(), "bar");
-      promise.resolve();
-    });
+      command.on("close", () => {
+        assertStrictEquals(commandOutput.trim(), "bar");
+        promise.resolve();
+      });
 
-    await promise;
+      await promise;
+    } finally {
+      command.kill();
+    }
   },
 });
 
@@ -219,18 +231,22 @@ Deno.test({
         shell: true,
       },
     );
-    let envOutput = "";
+    try {
+      let envOutput = "";
 
-    assert(env.stdout);
-    env.on("error", (err) => promise.reject(err));
-    env.stdout.on("data", (data) => {
-      envOutput += data;
-    });
-    env.on("close", () => {
-      assertStrictEquals(envOutput.trim(), "buzz");
-      promise.resolve();
-    });
-    await promise;
+      assert(env.stdout);
+      env.on("error", (err) => promise.reject(err));
+      env.stdout.on("data", (data) => {
+        envOutput += data;
+      });
+      env.on("close", () => {
+        assertStrictEquals(envOutput.trim(), "buzz");
+        promise.resolve();
+      });
+      await promise;
+    } finally {
+      env.kill();
+    }
   },
 });
 /* End of ported part */

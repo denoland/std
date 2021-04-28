@@ -27,12 +27,8 @@ export class Buffer {
   #buf: Uint8Array; // contents are the bytes buf[off : len(buf)]
   #off = 0; // read at buf[off], write at buf[buf.byteLength]
 
-  constructor(ab?: ArrayBuffer) {
-    if (ab === undefined) {
-      this.#buf = new Uint8Array(0);
-      return;
-    }
-    this.#buf = new Uint8Array(ab);
+  constructor(ab?: ArrayBufferLike | ArrayLike<number>) {
+    this.#buf = ab === undefined ? new Uint8Array(0) : new Uint8Array(ab);
   }
 
   /** Returns a slice holding the unread portion of the buffer.
