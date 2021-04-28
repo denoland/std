@@ -8,6 +8,7 @@
   "tests": {
     "parallel": [
       "test-assert.js",
+      "test-assert-fail.js",
       "test-event-emitter-listener-count.js"
     ]
   },
