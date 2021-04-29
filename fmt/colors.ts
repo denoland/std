@@ -30,6 +30,34 @@ interface Rgb {
 let enabled = !noColor;
 
 /**
+ * Creates a function that will generate a function that allows it to be used
+ * as a tagged template or as a regular function
+ * @param f the string mapping function
+ * @returns the generated function
+ */
+function createOptionalTagger(f: (s: string) => string) {
+  return (
+    str: TemplateStringsArray | string,
+    // deno-lint-ignore no-explicit-any
+    ...params: any[]
+  ) => {
+    if (typeof str === "string") {
+      return f(str);
+    }
+
+    const strings = str;
+    const result = [];
+
+    for (let i = 0; i < Math.max(strings.length, params.length); i++) {
+      if (strings[i] !== undefined) result.push(strings[i]);
+      if (params[i] !== undefined) result.push(params[i]);
+    }
+
+    return f(result.join(""));
+  };
+}
+
+/**
  * Set changing text color to enabled or disabled
  * @param value
  */
@@ -74,329 +102,283 @@ function run(str: string, code: Code): string {
  * Reset the text modified
  * @param str text to reset
  */
-export function reset(str: string): string {
-  return run(str, code([0], 0));
-}
+export const reset = createOptionalTagger((str) => run(str, code([0], 0)));
 
 /**
  * Make the text bold.
  * @param str text to make bold
  */
-export function bold(str: string): string {
-  return run(str, code([1], 22));
-}
+export const bold = createOptionalTagger((str) => run(str, code([1], 22)));
 
 /**
  * The text emits only a small amount of light.
  * @param str text to dim
  */
-export function dim(str: string): string {
-  return run(str, code([2], 22));
-}
+export const dim = createOptionalTagger((str) => run(str, code([2], 22)));
 
 /**
  * Make the text italic.
  * @param str text to make italic
  */
-export function italic(str: string): string {
-  return run(str, code([3], 23));
-}
+export const italic = createOptionalTagger((str) => run(str, code([3], 23)));
 
 /**
  * Make the text underline.
  * @param str text to underline
  */
-export function underline(str: string): string {
-  return run(str, code([4], 24));
-}
+export const underline = createOptionalTagger((str) => run(str, code([4], 24)));
 
 /**
  * Invert background color and text color.
  * @param str text to invert its color
  */
-export function inverse(str: string): string {
-  return run(str, code([7], 27));
-}
+export const inverse = createOptionalTagger((str) => run(str, code([7], 27)));
 
 /**
  * Make the text hidden.
  * @param str text to hide
  */
-export function hidden(str: string): string {
-  return run(str, code([8], 28));
-}
+export const hidden = createOptionalTagger((str) => run(str, code([8], 28)));
 
 /**
  * Put horizontal line through the center of the text.
  * @param str text to strike through
  */
-export function strikethrough(str: string): string {
-  return run(str, code([9], 29));
-}
+export const strikethrough = createOptionalTagger((str) =>
+  run(str, code([9], 29))
+);
 
 /**
  * Set text color to black.
  * @param str text to make black
  */
-export function black(str: string): string {
-  return run(str, code([30], 39));
-}
+export const black = createOptionalTagger((str) => run(str, code([30], 39)));
 
 /**
  * Set text color to red.
  * @param str text to make red
  */
-export function red(str: string): string {
-  return run(str, code([31], 39));
-}
+export const red = createOptionalTagger((str) => run(str, code([31], 39)));
 
 /**
  * Set text color to green.
  * @param str text to make green
  */
-export function green(str: string): string {
-  return run(str, code([32], 39));
-}
+export const green = createOptionalTagger((str) => run(str, code([32], 39)));
 
 /**
  * Set text color to yellow.
  * @param str text to make yellow
  */
-export function yellow(str: string): string {
-  return run(str, code([33], 39));
-}
+export const yellow = createOptionalTagger((str) => run(str, code([33], 39)));
 
 /**
  * Set text color to blue.
  * @param str text to make blue
  */
-export function blue(str: string): string {
-  return run(str, code([34], 39));
-}
+export const blue = createOptionalTagger((str) => run(str, code([34], 39)));
 
 /**
  * Set text color to magenta.
  * @param str text to make magenta
  */
-export function magenta(str: string): string {
-  return run(str, code([35], 39));
-}
+export const magenta = createOptionalTagger((str) => run(str, code([35], 39)));
 
 /**
  * Set text color to cyan.
  * @param str text to make cyan
  */
-export function cyan(str: string): string {
-  return run(str, code([36], 39));
-}
+export const cyan = createOptionalTagger((str) => run(str, code([36], 39)));
 
 /**
  * Set text color to white.
  * @param str text to make white
  */
-export function white(str: string): string {
-  return run(str, code([37], 39));
-}
-
-/**
- * Set text color to gray.
- * @param str text to make gray
- */
-export function gray(str: string): string {
-  return brightBlack(str);
-}
+export const white = createOptionalTagger((str) => run(str, code([37], 39)));
 
 /**
  * Set text color to bright black.
  * @param str text to make bright-black
  */
-export function brightBlack(str: string): string {
-  return run(str, code([90], 39));
-}
+export const brightBlack = createOptionalTagger((str) =>
+  run(str, code([90], 39))
+);
+
+/**
+ * Set text color to gray.
+ * @param str text to make gray
+ */
+export const gray = brightBlack;
 
 /**
  * Set text color to bright red.
  * @param str text to make bright-red
  */
-export function brightRed(str: string): string {
-  return run(str, code([91], 39));
-}
+export const brightRed = createOptionalTagger((str) =>
+  run(str, code([91], 39))
+);
 
 /**
  * Set text color to bright green.
  * @param str text to make bright-green
  */
-export function brightGreen(str: string): string {
-  return run(str, code([92], 39));
-}
+export const brightGreen = createOptionalTagger((str) =>
+  run(str, code([92], 39))
+);
 
 /**
  * Set text color to bright yellow.
  * @param str text to make bright-yellow
  */
-export function brightYellow(str: string): string {
-  return run(str, code([93], 39));
-}
+export const brightYellow = createOptionalTagger((str) =>
+  run(str, code([93], 39))
+);
 
 /**
  * Set text color to bright blue.
  * @param str text to make bright-blue
  */
-export function brightBlue(str: string): string {
-  return run(str, code([94], 39));
-}
+export const brightBlue = createOptionalTagger((str) =>
+  run(str, code([94], 39))
+);
 
 /**
  * Set text color to bright magenta.
  * @param str text to make bright-magenta
  */
-export function brightMagenta(str: string): string {
-  return run(str, code([95], 39));
-}
+export const brightMagenta = createOptionalTagger((str) =>
+  run(str, code([95], 39))
+);
 
 /**
  * Set text color to bright cyan.
  * @param str text to make bright-cyan
  */
-export function brightCyan(str: string): string {
-  return run(str, code([96], 39));
-}
+export const brightCyan = createOptionalTagger((str) =>
+  run(str, code([96], 39))
+);
 
 /**
  * Set text color to bright white.
  * @param str text to make bright-white
  */
-export function brightWhite(str: string): string {
-  return run(str, code([97], 39));
-}
+export const brightWhite = createOptionalTagger((str) =>
+  run(str, code([97], 39))
+);
 
 /**
  * Set background color to black.
  * @param str text to make its background black
  */
-export function bgBlack(str: string): string {
-  return run(str, code([40], 49));
-}
+export const bgBlack = createOptionalTagger((str) => run(str, code([40], 49)));
 
 /**
  * Set background color to red.
  * @param str text to make its background red
  */
-export function bgRed(str: string): string {
-  return run(str, code([41], 49));
-}
+export const bgRed = createOptionalTagger((str) => run(str, code([41], 49)));
 
 /**
  * Set background color to green.
  * @param str text to make its background green
  */
-export function bgGreen(str: string): string {
-  return run(str, code([42], 49));
-}
+export const bgGreen = createOptionalTagger((str) => run(str, code([42], 49)));
 
 /**
  * Set background color to yellow.
  * @param str text to make its background yellow
  */
-export function bgYellow(str: string): string {
-  return run(str, code([43], 49));
-}
+export const bgYellow = createOptionalTagger((str) => run(str, code([43], 49)));
 
 /**
  * Set background color to blue.
  * @param str text to make its background blue
  */
-export function bgBlue(str: string): string {
-  return run(str, code([44], 49));
-}
+export const bgBlue = createOptionalTagger((str) => run(str, code([44], 49)));
 
 /**
  *  Set background color to magenta.
  * @param str text to make its background magenta
  */
-export function bgMagenta(str: string): string {
-  return run(str, code([45], 49));
-}
+export const bgMagenta = createOptionalTagger((str) =>
+  run(str, code([45], 49))
+);
 
 /**
  * Set background color to cyan.
  * @param str text to make its background cyan
  */
-export function bgCyan(str: string): string {
-  return run(str, code([46], 49));
-}
+export const bgCyan = createOptionalTagger((str) => run(str, code([46], 49)));
 
 /**
  * Set background color to white.
  * @param str text to make its background white
  */
-export function bgWhite(str: string): string {
-  return run(str, code([47], 49));
-}
+export const bgWhite = createOptionalTagger((str) => run(str, code([47], 49)));
 
 /**
  * Set background color to bright black.
  * @param str text to make its background bright-black
  */
-export function bgBrightBlack(str: string): string {
-  return run(str, code([100], 49));
-}
+export const bgBrightBlack = createOptionalTagger((str) =>
+  run(str, code([100], 49))
+);
 
 /**
  * Set background color to bright red.
  * @param str text to make its background bright-red
  */
-export function bgBrightRed(str: string): string {
-  return run(str, code([101], 49));
-}
+export const bgBrightRed = createOptionalTagger((str) =>
+  run(str, code([101], 49))
+);
 
 /**
  * Set background color to bright green.
  * @param str text to make its background bright-green
  */
-export function bgBrightGreen(str: string): string {
-  return run(str, code([102], 49));
-}
+export const bgBrightGreen = createOptionalTagger((str) =>
+  run(str, code([102], 49))
+);
 
 /**
  * Set background color to bright yellow.
  * @param str text to make its background bright-yellow
  */
-export function bgBrightYellow(str: string): string {
-  return run(str, code([103], 49));
-}
+export const bgBrightYellow = createOptionalTagger((str) =>
+  run(str, code([103], 49))
+);
 
 /**
  * Set background color to bright blue.
  * @param str text to make its background bright-blue
  */
-export function bgBrightBlue(str: string): string {
-  return run(str, code([104], 49));
-}
+export const bgBrightBlue = createOptionalTagger((str) =>
+  run(str, code([104], 49))
+);
 
 /**
  * Set background color to bright magenta.
  * @param str text to make its background bright-magenta
  */
-export function bgBrightMagenta(str: string): string {
-  return run(str, code([105], 49));
-}
+export const bgBrightMagenta = createOptionalTagger((str) =>
+  run(str, code([105], 49))
+);
 
 /**
  * Set background color to bright cyan.
  * @param str text to make its background bright-cyan
  */
-export function bgBrightCyan(str: string): string {
-  return run(str, code([106], 49));
-}
+export const bgBrightCyan = createOptionalTagger((str) =>
+  run(str, code([106], 49))
+);
 
 /**
  * Set background color to bright white.
  * @param str text to make its background bright-white
  */
-export function bgBrightWhite(str: string): string {
-  return run(str, code([107], 49));
-}
+export const bgBrightWhite = createOptionalTagger((str) =>
+  run(str, code([107], 49))
+);
 
 /* Special Color Sequences */
 
@@ -446,10 +428,7 @@ export function rgb24(str: string, color: number | Rgb): string {
   if (typeof color === "number") {
     return run(
       str,
-      code(
-        [38, 2, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff],
-        39,
-      ),
+      code([38, 2, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff], 39)
     );
   }
   return run(
@@ -462,8 +441,8 @@ export function rgb24(str: string, color: number | Rgb): string {
         clampAndTruncate(color.g),
         clampAndTruncate(color.b),
       ],
-      39,
-    ),
+      39
+    )
   );
 }
 
@@ -483,10 +462,7 @@ export function bgRgb24(str: string, color: number | Rgb): string {
   if (typeof color === "number") {
     return run(
       str,
-      code(
-        [48, 2, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff],
-        49,
-      ),
+      code([48, 2, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff], 49)
     );
   }
   return run(
@@ -499,8 +475,8 @@ export function bgRgb24(str: string, color: number | Rgb): string {
         clampAndTruncate(color.g),
         clampAndTruncate(color.b),
       ],
-      49,
-    ),
+      49
+    )
   );
 }
 
@@ -510,7 +486,7 @@ const ANSI_PATTERN = new RegExp(
     "[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
     "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))",
   ].join("|"),
-  "g",
+  "g"
 );
 
 /**
