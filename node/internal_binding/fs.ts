@@ -16,12 +16,12 @@ import { assert } from "../../testing/asserts.ts";
  * @param callback callback function
  */
 export function writeBuffer(
-  fd: number,
-  buffer: Uint8Array,
-  offset: number,
-  length: number,
-  position: number | null,
-  callback?: (err: Error, n: number) => void,
+  _fd: number,
+  _buffer: Uint8Array,
+  _offset: number,
+  _length: number,
+  _position: number | null,
+  _callback?: (err: Error, n: number) => void,
 ): void {
   throw new Error("unimplemented!");
 }
