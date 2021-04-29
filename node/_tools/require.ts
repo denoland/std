@@ -3,12 +3,12 @@ import { isAbsolute } from "../../path/mod.ts";
 
 /**
  * This module is used as an entry point for each test file
- * 
+ *
  * The idea is to emulate a CommonJS environment without having to modify
  * the test files in any way
- * 
+ *
  * Running with all permissions and unstable is recommended
- * 
+ *
  * Usage: `deno run -A --unstable require.ts my_commonjs_file.js`
  */
 

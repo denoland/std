@@ -8,7 +8,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * Uint8Array`.
  *
  * ```ts
- * 
+ *
  * // Example from stdin
  * const stdinContent = await readAll(Deno.stdin);
  *
@@ -67,7 +67,7 @@ export interface ByteRange {
  * Read a range of bytes from a file or other resource that is readable and
  * seekable.  The range start and end are inclusive of the bytes within that
  * range.
- * 
+ *
  * ```ts
  * // Read the first 10 bytes of a file
  * const file = await Deno.open("example.txt", { read: true });
@@ -102,7 +102,7 @@ export async function readRange(
  * Read a range of bytes synchronously from a file or other resource that is
  * readable and seekable.  The range start and end are inclusive of the bytes
  * within that range.
- * 
+ *
  * ```ts
  * // Read the first 10 bytes of a file
  * const file = Deno.openSync("example.txt", { read: true });
