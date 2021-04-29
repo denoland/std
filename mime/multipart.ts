@@ -259,6 +259,13 @@ export interface MultipartFormData {
   removeAll(): Promise<void>;
 }
 
+export interface ReadFormOptions {
+  maxMemory?: number;
+  dir?: string;
+  prefix?: string;
+  suffix?: string;
+}
+
 /** Reader for parsing multipart/form-data */
 export class MultipartReader {
   readonly newLine: Uint8Array;
@@ -276,13 +283,15 @@ export class MultipartReader {
   }
 
   /** Read all form data from stream.
-   * If total size of stored data in memory exceed maxMemory,
+   * If total size of stored data in memory exceed options.maxMemory,
    * overflowed file data will be written to temporal files.
    * String field values are never written to files.
    * null value means parsing or writing to file was failed in some reason.
-   * @param maxMemory maximum memory size to store file in memory. bytes. @default 10485760 (10MB)
+   * @param options options to configure the behavior of storing
+   * overflow file data in temporal files.
    *  */
-  async readForm(maxMemory = 10 << 20): Promise<MultipartFormData> {
+  async readForm(options?: ReadFormOptions): Promise<MultipartFormData> {
+    let maxMemory = options?.maxMemory ?? 10 << 20;
     const fileMap = new Map<string, FormFile | FormFile[]>();
     const valueMap = new Map<string, string>();
     let maxValueBytes = maxMemory + (10 << 20);
@@ -316,9 +325,9 @@ export class MultipartReader {
         // too big, write to disk and flush buffer
         const ext = extname(p.fileName);
         const filepath = await Deno.makeTempFile({
-          dir: ".",
-          prefix: "multipart-",
-          suffix: ext,
+          dir: options?.dir ?? ".",
+          prefix: options?.prefix ?? "multipart-",
+          suffix: options?.suffix ?? ext,
         });
 
         const file = await Deno.open(filepath, { write: true });
