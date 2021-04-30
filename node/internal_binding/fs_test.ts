@@ -44,7 +44,11 @@ Deno.test("[node/internal_binding/fs] writeBufferSync", async () => {
       ctx,
     );
     assertEquals(bytesWritten, 0);
-    assertEquals(ctx.errno, 9);
+    if (Deno.build.os === "windows") {
+      assertEquals(ctx.errno, 5); // Access is denied
+    } else {
+      assertEquals(ctx.errno, 9); // Bad file descriptor
+    }
   } finally {
     Deno.close(file.rid);
     Deno.remove(tempfile);
