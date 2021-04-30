@@ -479,41 +479,6 @@ function rejects(
     ) {
       return;
     }
-
-    if (message) {
-      let msg = `Missing expected exception: ${message}`;
-      if (typeof error === "function" && error?.name) {
-        msg = `Missing expected exception (${error.name}): ${message}`;
-      }
-      throw new AssertionError({
-        message: msg,
-        operator: "throws",
-        actual: undefined,
-        expected: error,
-      });
-    } else if (typeof error === "string") {
-      // Use case of throws(fn, message)
-      throw new AssertionError({
-        message: `Missing expected exception: ${error}`,
-        operator: "throws",
-        actual: undefined,
-        expected: undefined,
-      });
-    } else if (typeof error === "function" && error?.prototype !== undefined) {
-      throw new AssertionError({
-        message: `Missing expected exception (${error.name}).`,
-        operator: "throws",
-        actual: undefined,
-        expected: error,
-      });
-    } else {
-      throw new AssertionError({
-        message: "Missing expected exception.",
-        operator: "throws",
-        actual: undefined,
-        expected: error,
-      });
-    }
   }
 
   return promise.then(onFulfilled, rejects_onRejected);
