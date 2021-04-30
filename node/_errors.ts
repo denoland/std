@@ -212,18 +212,11 @@ function invalidArgTypeHelper(input: any) {
     }
     return ` Received ${inspect(input, { depth: -1 })}`;
   }
-  let inspected = typeof input === "string"
-    ? inspectString(input) // TODO(uki00a): Remove this conditional branch.
-    : inspect(input, { colors: false });
+  let inspected = inspect(input, { colors: false });
   if (inspected.length > 25) {
     inspected = `${inspected.slice(0, 25)}...`;
   }
   return ` Received type ${typeof input} (${inspected})`;
-}
-
-// TODO(uki00a): This is just a workaround...
-function inspectString(s: string): string {
-  return `'${s}'`;
 }
 
 export class ERR_OUT_OF_RANGE extends RangeError {

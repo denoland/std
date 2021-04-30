@@ -658,7 +658,7 @@ function validateThrownError(
           ? `"${options.validationFunctionName}" validation`
           : "validation"
       } function is expected to return "true". Received ${
-        typeof received === "string" ? `'${received}'` : inspect(received) // TODO(uki00a): Remove this conditional branch.
+inspect(received)
       }\n\nCaught error:\n\n${e}`,
       actual: e,
       expected: error,
