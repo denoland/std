@@ -35,8 +35,8 @@ function toString(cookie: Cookie): string {
     return "";
   }
   const out: string[] = [];
-  validateCookieName(cookie.name);
-  validateCookieValue(cookie.name, cookie.value);
+  validateName(cookie.name);
+  validateValue(cookie.name, cookie.value);
   out.push(`${cookie.name}=${cookie.value}`);
 
   // Fallback for invalid Set-Cookie
@@ -84,7 +84,7 @@ function toString(cookie: Cookie): string {
  * Validate Cookie Name.
  * @param name Cookie name.
  */
-function validateCookieName(name: string | undefined | null): void {
+function validateName(name: string | undefined | null): void {
   if (name && !FIELD_CONTENT_REGEXP.test(name)) {
     throw new TypeError(`Invalid cookie name: "${name}".`);
   }
@@ -116,14 +116,17 @@ function validatePath(path: string | null): void {
  * @see https://tools.ietf.org/html/rfc6265#section-4.1
  * @param value Cookie value.
  */
-function validateCookieValue(name: string, value: string | null): void {
+function validateValue(name: string, value: string | null): void {
   if (value == null || name == null) return;
   for (let i = 0; i < value.length; i++) {
     const c = value.charAt(i);
     if (
-      c < String.fromCharCode(0x21) || c == String.fromCharCode(0x22) ||
-      c == String.fromCharCode(0x2c) || c == String.fromCharCode(0x3b) ||
-      c == String.fromCharCode(0x5c) || c == String.fromCharCode(0x7f)
+      c < String.fromCharCode(0x21) ||
+      c == String.fromCharCode(0x22) ||
+      c == String.fromCharCode(0x2c) ||
+      c == String.fromCharCode(0x3b) ||
+      c == String.fromCharCode(0x5c) ||
+      c == String.fromCharCode(0x7f)
     ) {
       throw new Error(
         "RFC2616 cookie '" + name + "' cannot have '" + c + "' as value",
@@ -131,7 +134,9 @@ function validateCookieValue(name: string, value: string | null): void {
     }
     if (c > String.fromCharCode(0x80)) {
       throw new Error(
-        "RFC2616 cookie '" + name + "' can only have US-ASCII chars as value" +
+        "RFC2616 cookie '" +
+          name +
+          "' can only have US-ASCII chars as value" +
           c.charCodeAt(0).toString(16),
       );
     }
