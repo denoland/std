@@ -211,9 +211,9 @@ export async function assertCallbackErrorUncaught(
   { prelude, invocation, cleanup }: {
     /** Any code which needs to run before the actual invocation (notably, any import statements). */
     prelude?: string;
-    /** 
+    /**
      * The start of the invocation of the function, e.g. `open("foo.txt", `.
-     * The callback will be added after it. 
+     * The callback will be added after it.
      */
     invocation: string;
     /** Called after the subprocess is finished but before running the assertions, e.g. to clean up created files. */
