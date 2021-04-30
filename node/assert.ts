@@ -134,7 +134,7 @@ function throws(
   } catch (e) {
     if (
       validateThrownError(e, error, message, {
-        operator: "throws",
+        operator: throws,
       })
     ) {
       return;
@@ -209,7 +209,7 @@ function doesNotThrow(
   try {
     fn();
   } catch (e) {
-    gotUnwantedException(e, expected, message);
+    gotUnwantedException(e, expected, message, doesNotThrow);
   }
   return;
 }
@@ -428,6 +428,7 @@ function strict(actual: unknown, message?: string | Error): asserts actual {
   assert(actual, message);
 }
 
+// Intentionally avoid using async/await because test-assert-async.js requires it
 function rejects(
   // deno-lint-ignore no-explicit-any
   asyncFn: Promise<any> | (() => Promise<any>),
@@ -446,7 +447,7 @@ function rejects(
     if (!isValidThenable(promise)) {
       return Promise.reject(
         new ERR_INVALID_RETURN_VALUE(
-          "instance of Promise",
+          "instance of Promise", // TODO(uki00a): Change this string to `"Promise"`.
           "promiseFn",
           promise,
         ),
@@ -468,10 +469,11 @@ function rejects(
     }));
   }
 
-  function onRejected(e: Error): void {
+  // deno-lint-ignore camelcase
+  function rejects_onRejected(e: Error): void { // TODO(uki00a): In order to `test-assert-async.js` pass, intentionally adds `rejects_` as a prefix.
     if (
       validateThrownError(e, error, message, {
-        operator: "rejects",
+        operator: rejects,
         validationFunctionName: "validate",
       })
     ) {
@@ -514,11 +516,11 @@ function rejects(
     }
   }
 
-  // Intentionally avoid using async/await because test-assert-async.js requires it
-  return promise.then(onFulfilled, onRejected);
+  return promise.then(onFulfilled, rejects_onRejected);
 }
 
-async function doesNotReject(
+// Intentionally avoid using async/await because test-assert-async.js requires it
+function doesNotReject(
   // deno-lint-ignore no-explicit-any
   asyncFn: Promise<any> | (() => any),
   error?: RegExp | Function | string,
@@ -529,37 +531,47 @@ async function doesNotReject(
   if (typeof asyncFn === "function") {
     try {
       const value = asyncFn();
-      if (!(value instanceof Promise)) {
-        throw new ERR_INVALID_RETURN_VALUE("Promise", "asyncFn", value);
+      if (!isValidThenable(value)) {
+        return Promise.reject(
+          new ERR_INVALID_RETURN_VALUE(
+            "instance of Promise",
+            "promiseFn",
+            value,
+          ),
+        );
       }
       promise = value;
     } catch (e) {
       // If `asyncFn` throws an error synchronously, this function returns a rejected promise.
       return Promise.reject(e);
     }
+  } else if (!isValidThenable(asyncFn)) {
+    return Promise.reject(
+      new ERR_INVALID_ARG_TYPE("promiseFn", ["function", "Promise"], asyncFn),
+    );
   } else {
     promise = asyncFn;
   }
-  try {
-    await promise;
-  } catch (e) {
-    gotUnwantedException(e, error, message);
-  }
-  return;
+
+  return promise.then(
+    () => {},
+    (e) => gotUnwantedException(e, error, message, doesNotReject),
+  );
 }
 
 function gotUnwantedException(
   // deno-lint-ignore no-explicit-any
   e: any,
-  expected?: RegExp | Function | string,
-  message?: string | Error,
+  expected: RegExp | Function | string | null | undefined,
+  message: string | Error | null | undefined,
+  operator: Function,
 ): never {
   if (typeof expected === "string") {
     // The use case of doesNotThrow(fn, message);
     throw new AssertionError({
       message:
         `Got unwanted exception: ${expected}\nActual message: "${e.message}"`,
-      operator: "doesNotThrow",
+      operator: operator.name,
     });
   } else if (
     typeof expected === "function" && expected.prototype !== undefined
@@ -572,8 +584,29 @@ function gotUnwantedException(
       }
       throw new AssertionError({
         message: msg,
-        operator: "doesNotThrow",
+        operator: operator.name,
       });
+    } else if (expected.prototype instanceof Error) {
+      let msg = `Got unwanted exception: ${e.constructor?.name}`;
+      if (message) {
+        msg += ` ${String(message)}`;
+      }
+      throw new AssertionError({
+        message: msg,
+        operator: operator.name,
+      });
+    } else {
+      const result = expected(e);
+      if (result === true) {
+        let msg = `Got unwanted rejection.\nActual message: "${e.message}"`;
+        if (message) {
+          msg += ` ${String(message)}`;
+        }
+        throw new AssertionError({
+          message: msg,
+          operator: operator.name,
+        });
+      }
     }
     throw e;
   } else {
@@ -582,20 +615,20 @@ function gotUnwantedException(
         message: `Got unwanted exception: ${message}\nActual message: "${
           e ? e.message : String(e)
         }"`,
-        operator: "doesNotThrow",
+        operator: operator.name,
       });
     }
     throw new AssertionError({
       message: `Got unwanted exception.\nActual message: "${
         e ? e.message : String(e)
       }"`,
-      operator: "doesNotThrow",
+      operator: operator.name,
     });
   }
 }
 
 interface ValidateThrownErrorOptions {
-  operator: "throws" | "rejects";
+  operator: Function;
   validationFunctionName?: string;
 }
 
@@ -643,7 +676,7 @@ function validateThrownError(
           ?.constructor?.name}"\n\nError message:\n\n${e?.message}`,
       actual: e,
       expected: error,
-      operator: options.operator,
+      operator: options.operator.name,
       generatedMessage: true,
     });
   }
@@ -658,11 +691,11 @@ function validateThrownError(
           ? `"${options.validationFunctionName}" validation`
           : "validation"
       } function is expected to return "true". Received ${
-inspect(received)
+        inspect(received)
       }\n\nCaught error:\n\n${e}`,
       actual: e,
       expected: error,
-      operator: options.operator,
+      operator: options.operator.name,
       generatedMessage: true,
     });
   }
@@ -677,7 +710,7 @@ inspect(received)
         }'\n`,
       actual: e,
       expected: error,
-      operator: options.operator,
+      operator: options.operator.name,
       generatedMessage: true,
     });
   }
@@ -692,7 +725,7 @@ inspect(received)
           message: message || "object is expected to thrown, but got null",
           actual: e,
           expected: error,
-          operator: options.operator,
+          operator: options.operator.name,
           generatedMessage: message == null,
         });
       }
@@ -703,7 +736,7 @@ inspect(received)
             `object is expected to thrown, but got string: ${e}`,
           actual: e,
           expected: error,
-          operator: options.operator,
+          operator: options.operator.name,
           generatedMessage: message == null,
         });
       }
@@ -713,7 +746,7 @@ inspect(received)
             `object is expected to thrown, but got number: ${e}`,
           actual: e,
           expected: error,
-          operator: options.operator,
+          operator: options.operator.name,
           generatedMessage: message == null,
         });
       }
@@ -722,7 +755,7 @@ inspect(received)
           message: message || `A key in the expected object is missing: ${k}`,
           actual: e,
           expected: error,
-          operator: options.operator,
+          operator: options.operator.name,
           generatedMessage: message == null,
         });
       }
@@ -742,7 +775,7 @@ inspect(received)
   }
   throw createAssertionError({
     message: `Invalid expectation: ${error}`,
-    operator: options.operator,
+    operator: options.operator.name,
     generatedMessage: true,
   });
 }
