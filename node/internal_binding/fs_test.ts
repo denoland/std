@@ -25,7 +25,7 @@ Deno.test("[node/internal_binding/fs] writeBufferSync", async () => {
     assertEquals(typeof ctx.errno, "undefined");
   } finally {
     Deno.close(file.rid);
-    Deno.remove(tempfile);
+    await Deno.remove(tempfile);
   }
 });
 Deno.test("[node/internal_binding/fs] writeBufferSync", async () => {
@@ -51,6 +51,6 @@ Deno.test("[node/internal_binding/fs] writeBufferSync", async () => {
     }
   } finally {
     Deno.close(file.rid);
-    Deno.remove(tempfile);
+    await Deno.remove(tempfile);
   }
 });
