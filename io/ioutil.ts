@@ -42,7 +42,7 @@ export async function copyN(
 
 /**
  * Read big endian 16bit short from BufReader
- * @param buf 
+ * @param buf
  */
 export async function readShort(buf: BufReader): Promise<number | null> {
   const high = await buf.readByte();
@@ -54,7 +54,7 @@ export async function readShort(buf: BufReader): Promise<number | null> {
 
 /**
  * Read big endian 32bit integer from BufReader
- * @param buf 
+ * @param buf
  */
 export async function readInt(buf: BufReader): Promise<number | null> {
   const high = await readShort(buf);
@@ -66,9 +66,9 @@ export async function readInt(buf: BufReader): Promise<number | null> {
 
 const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
 
-/** 
+/**
  * Read big endian 64bit long from BufReader
- * @param buf 
+ * @param buf
  */
 export async function readLong(buf: BufReader): Promise<number | null> {
   const high = await readInt(buf);
