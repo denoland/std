@@ -29,7 +29,7 @@ inspect.custom = Deno.customInspect;
 // deno-lint-ignore no-explicit-any
 export function inspect(object: unknown, ...opts: any): string {
   // TODO(uki00a): In Node.js, strings should be enclosed in single quotes.
-  if (typeof object === "string") {
+  if (typeof object === "string" && !object.includes("'")) {
     return `'${object}'`;
   }
   opts = { ...DEFAULT_INSPECT_OPTIONS, ...opts };
