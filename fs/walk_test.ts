@@ -284,6 +284,8 @@ testWalk(
       await Deno.chmod("a/b", 0o755);
     }
   },
+  // TODO(kt3k): Enable this test on windows when Deno.chmod is implemented
+  Deno.build.os === "windows"
 );
 
 testWalk(
@@ -304,4 +306,6 @@ testWalk(
       await Deno.chmod("a/b", 0o755);
     }
   },
+  // TODO(kt3k): Enable this test on windows when Deno.chmod is implemented
+  Deno.build.os === "windows"
 );
