@@ -60,6 +60,13 @@ function include(
   return true;
 }
 
+function wrapErrorWithRootPath(err: Error & { root: string }, root: string) {
+  if (err.root) return err;
+  err.root = root;
+  err.message = `${err.message} for path "${root}"`;
+  return err;
+}
+
 export interface WalkEntry extends Deno.DirEntry {
   path: string;
 }
@@ -105,33 +112,37 @@ export async function* walk(
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
     return;
   }
-  for await (const entry of Deno.readDir(root)) {
-    assert(entry.name != null);
-    let path = join(root, entry.name);
+  try {
+    for await (const entry of Deno.readDir(root)) {
+      assert(entry.name != null);
+      let path = join(root, entry.name);
 
-    if (entry.isSymlink) {
-      if (followSymlinks) {
-        path = await Deno.realPath(path);
+      if (entry.isSymlink) {
+        if (followSymlinks) {
+          path = await Deno.realPath(path);
+        } else {
+          continue;
+        }
+      }
+
+      if (entry.isFile) {
+        if (includeFiles && include(path, exts, match, skip)) {
+          yield { path, ...entry };
+        }
       } else {
-        continue;
+        yield* walk(path, {
+          maxDepth: maxDepth - 1,
+          includeFiles,
+          includeDirs,
+          followSymlinks,
+          exts,
+          match,
+          skip,
+        });
       }
     }
-
-    if (entry.isFile) {
-      if (includeFiles && include(path, exts, match, skip)) {
-        yield { path, ...entry };
-      }
-    } else {
-      yield* walk(path, {
-        maxDepth: maxDepth - 1,
-        includeFiles,
-        includeDirs,
-        followSymlinks,
-        exts,
-        match,
-        skip,
-      });
-    }
+  } catch (err) {
+    throw wrapErrorWithRootPath(err, normalize(root));
   }
 }
 
@@ -157,7 +168,13 @@ export function* walkSync(
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
     return;
   }
-  for (const entry of Deno.readDirSync(root)) {
+  let entries;
+  try {
+    entries = Deno.readDirSync(root);
+  } catch (err) {
+    throw wrapErrorWithRootPath(err, normalize(root));
+  }
+  for (const entry of entries) {
     assert(entry.name != null);
     let path = join(root, entry.name);
 
