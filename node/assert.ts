@@ -552,14 +552,7 @@ function gotUnwantedException(
         operator: operator.name,
       });
     } else if (expected.prototype instanceof Error) {
-      let msg = `Got unwanted exception: ${e.constructor?.name}`;
-      if (message) {
-        msg += ` ${String(message)}`;
-      }
-      throw new AssertionError({
-        message: msg,
-        operator: operator.name,
-      });
+      throw e;
     } else {
       const result = expected(e);
       if (result === true) {
