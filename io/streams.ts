@@ -202,6 +202,5 @@ export function readableStreamFromReader(
         reader.close();
       }
     },
-    type: "bytes",
   }, strategy);
 }
