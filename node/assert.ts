@@ -428,11 +428,23 @@ function strict(actual: unknown, message?: string | Error): asserts actual {
   assert(actual, message);
 }
 
-// Intentionally avoid using async/await because test-assert-async.js requires it
 function rejects(
   // deno-lint-ignore no-explicit-any
   asyncFn: Promise<any> | (() => Promise<any>),
   error?: RegExp | Function | Error,
+): Promise<void>;
+
+function rejects(
+  // deno-lint-ignore no-explicit-any
+  asyncFn: Promise<any> | (() => Promise<any>),
+  message?: string,
+): Promise<void>;
+
+// Intentionally avoid using async/await because test-assert-async.js requires it
+function rejects(
+  // deno-lint-ignore no-explicit-any
+  asyncFn: Promise<any> | (() => Promise<any>),
+  error?: RegExp | Function | Error | string,
   message?: string,
 ): Promise<void> {
   let promise: Promise<void>;
@@ -484,10 +496,22 @@ function rejects(
   return promise.then(onFulfilled, rejects_onRejected);
 }
 
+function doesNotReject(
+  // deno-lint-ignore no-explicit-any
+  asyncFn: Promise<any> | (() => Promise<any>),
+  error?: RegExp | Function,
+): Promise<void>;
+
+function doesNotReject(
+  // deno-lint-ignore no-explicit-any
+  asyncFn: Promise<any> | (() => Promise<any>),
+  message?: string,
+): Promise<void>;
+
 // Intentionally avoid using async/await because test-assert-async.js requires it
 function doesNotReject(
   // deno-lint-ignore no-explicit-any
-  asyncFn: Promise<any> | (() => any),
+  asyncFn: Promise<any> | (() => Promise<any>),
   error?: RegExp | Function | string,
   message?: string,
 ): Promise<void> {
@@ -593,7 +617,7 @@ interface ValidateThrownErrorOptions {
 function validateThrownError(
   // deno-lint-ignore no-explicit-any
   e: any,
-  error: RegExp | Function | Error | null | undefined,
+  error: RegExp | Function | Error | string | null | undefined,
   message: string | undefined | null,
   options: ValidateThrownErrorOptions,
 ): boolean {
