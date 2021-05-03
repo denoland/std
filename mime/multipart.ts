@@ -294,6 +294,14 @@ export class MultipartReader {
   }
 
   /** Read all form data from stream.
+   * If total size of stored data in memory exceed maxMemory,
+   * overflowed file data will be written to temporal files.
+   * String field values are never written to files.
+   * null value means parsing or writing to file was failed in some reason.
+   * @param maxMemory maximum memory size to store file in memory. bytes. @default 10485760 (10MB)
+   *  */
+  async readForm(maxMemory?: number): Promise<MultipartFormData>;
+  /** Read all form data from stream.
    * If total size of stored data in memory exceed options.maxMemory,
    * overflowed file data will be written to temporal files.
    * String field values are never written to files.
@@ -301,7 +309,13 @@ export class MultipartReader {
    * @param options options to configure the behavior of storing
    * overflow file data in temporal files.
    *  */
-  async readForm(options?: ReadFormOptions): Promise<MultipartFormData> {
+  async readForm(options?: ReadFormOptions): Promise<MultipartFormData>;
+  async readForm(
+    maxMemoryOrOptions?: number | ReadFormOptions,
+  ): Promise<MultipartFormData> {
+    const options = typeof maxMemoryOrOptions === "number"
+      ? { maxMemory: maxMemoryOrOptions }
+      : maxMemoryOrOptions;
     let maxMemory = options?.maxMemory ?? 10 << 20;
     const fileMap = new Map<string, FormFile | FormFile[]>();
     const valueMap = new Map<string, string>();
