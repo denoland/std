@@ -259,6 +259,17 @@ export interface MultipartFormData {
   removeAll(): Promise<void>;
 }
 
+/**
+ * options for reading forms.
+ * @property maxMemory - maximum memory size to store file in memory. bytes.
+ * @default 10485760 (10MB)
+ * @property dir - directory where files that don't fit into maxMemory will be
+ * stored.
+ * @property prefix - a prefix that will be used for all files created if
+ * maxMemory is exceeded.
+ * @property suffix - a suffix that will be used for all files created if
+ * maxMemory is exceeded, defaults to the fole extension
+ */
 export interface ReadFormOptions {
   maxMemory?: number;
   dir?: string;
