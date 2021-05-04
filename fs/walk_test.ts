@@ -1,6 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { walk, WalkEntry, WalkOptions, walkSync } from "./walk.ts";
-import { assert, assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertThrows,
+  assertThrowsAsync,
+} from "../testing/asserts.ts";
 
 export function testWalk(
   setup: (arg0: string) => void | Promise<void>,
@@ -259,4 +264,48 @@ testWalk(
     assertEquals(arr.length, 5);
     assert(arr.some((f): boolean => f.endsWith("/b/z")));
   },
+);
+
+testWalk(
+  async (d: string) => {
+    await Deno.mkdir(d + "/a/b", { recursive: true });
+    await Deno.chmod(d + "/a/b", 0o000);
+  },
+  async function subDirNoPermissionAsync() {
+    try {
+      await assertThrowsAsync(
+        async () => {
+          await walkArray("a");
+        },
+        Deno.errors.PermissionDenied,
+        'for path "a/b"',
+      );
+    } finally {
+      await Deno.chmod("a/b", 0o755);
+    }
+  },
+  // TODO(kt3k): Enable this test on windows when Deno.chmod is implemented
+  Deno.build.os === "windows",
+);
+
+testWalk(
+  async (d: string) => {
+    await Deno.mkdir(d + "/a/b", { recursive: true });
+    await Deno.chmod(d + "/a/b", 0o000);
+  },
+  async function subDirNoPermissionSync() {
+    try {
+      assertThrows(
+        () => {
+          return [...walkSync("a")];
+        },
+        Deno.errors.PermissionDenied,
+        'for path "a/b"',
+      );
+    } finally {
+      await Deno.chmod("a/b", 0o755);
+    }
+  },
+  // TODO(kt3k): Enable this test on windows when Deno.chmod is implemented
+  Deno.build.os === "windows",
 );

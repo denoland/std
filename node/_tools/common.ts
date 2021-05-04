@@ -3,7 +3,7 @@ import { join } from "../../path/mod.ts";
 /**
  * The test suite matches the folders inside the `test` folder inside the
  * node repo
- * 
+ *
  * Each test suite contains a list of files (which can be paths
  * or a regex to match) that will be pulled from the node repo
  */
@@ -15,7 +15,7 @@ interface Config {
   ignore: TestSuites;
   /**
    * The files that will be run by the test suite
-   * 
+   *
    * The files to be generated with the update script must be listed here as well,
    * but they won't be regenerated if they are listed in the `ignore` configuration
    * */

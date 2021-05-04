@@ -10,10 +10,10 @@ import { readAll, writeAll } from "../../io/util.ts";
 /**
  * This script will download and extract the test files specified in the
  * configuration file
- * 
+ *
  * It will delete any previous tests unless they are specified on the `ignore`
  * section of the configuration file
- * 
+ *
  * Usage: `deno run --allow-read --allow-net --allow-write setup.ts`
  */
 
@@ -86,7 +86,7 @@ async function clearTests() {
 /**
  * This will iterate over the ignore and test lists defined in the
  * configuration file
- * 
+ *
  * If it were to be found in the ignore list or not found in the test list, the
  * function will return undefined, meaning the file won't be regenerated
  */

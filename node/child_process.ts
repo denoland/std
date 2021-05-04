@@ -278,7 +278,7 @@ interface ChildProcessOptions {
 
   /**
    * NOTE: This option is not yet implemented.
-   * 
+   *
    * @see https://github.com/rust-lang/rust/issues/29494
    * @see https://github.com/denoland/deno/issues/8852
    */

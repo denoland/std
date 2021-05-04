@@ -12,7 +12,7 @@ deno standard library as it's a compatibility module.
 - [x] buffer
 - [x] child_process _partly_
 - [ ] cluster
-- [ ] console
+- [x] console _partly_
 - [x] constants _partly_
 - [x] crypto _partly_
 - [ ] dgram
