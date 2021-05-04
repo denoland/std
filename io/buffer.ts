@@ -23,7 +23,7 @@ const MAX_SIZE = 2 ** 32 - 2;
  *
  * Based on [Go Buffer](https://golang.org/pkg/bytes/#Buffer). */
 
-export class Buffer {
+export class Buffer implements Deno.Reader, Deno.Writer {
   #buf: Uint8Array; // contents are the bytes buf[off : len(buf)]
   #off = 0; // read at buf[off], write at buf[buf.byteLength]
 
