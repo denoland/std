@@ -459,7 +459,7 @@ function rejects(
     if (!isValidThenable(promise)) {
       return Promise.reject(
         new ERR_INVALID_RETURN_VALUE(
-          "instance of Promise", // TODO(uki00a): Change this string to `"Promise"`.
+          "instance of Promise",
           "promiseFn",
           promise,
         ),
