@@ -102,16 +102,16 @@ export class NodeURIError extends NodeErrorAbstraction implements URIError {
 }
 
 export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
-  constructor(a1: string, a2: string | string[], a3: unknown) {
+  constructor(name: string, expected: string | string[], actual: unknown) {
     // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
-    const expected = Array.isArray(a2) ? a2 : [a2];
+    expected = Array.isArray(expected) ? expected : [expected];
     let msg = "The ";
-    if (a1.endsWith(" argument")) {
+    if (name.endsWith(" argument")) {
       // For cases like 'first argument'
-      msg += `${a1} `;
+      msg += `${name} `;
     } else {
-      const type = a1.includes(".") ? "property" : "argument";
-      msg += `"${a1}" ${type} `;
+      const type = name.includes(".") ? "property" : "argument";
+      msg += `"${name}" ${type} `;
     }
     msg += "must be ";
 
@@ -183,7 +183,7 @@ export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
 
     super(
       "ERR_INVALID_ARG_TYPE",
-      `${msg}.${invalidArgTypeHelper(a3)}`,
+      `${msg}.${invalidArgTypeHelper(actual)}`,
     );
   }
 }
