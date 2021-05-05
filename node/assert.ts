@@ -474,8 +474,16 @@ function rejects(
   }
 
   function onFulfilled(): Promise<void> {
+    let message = "Missing expected rejection";
+    if (typeof error === "string") {
+      message += `: ${error}`;
+    } else if (typeof error === "function" && error.prototype !== undefined) {
+      message += ` (${error.name}).`;
+    } else {
+      message += ".";
+    }
     return Promise.reject(createAssertionError({
-      message: "Missing expected rejection (mustNotCall).",
+      message,
       operator: "rejects",
       generatedMessage: true,
     }));
