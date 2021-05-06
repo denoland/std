@@ -35,8 +35,8 @@ function toString(cookie: Cookie): string {
     return "";
   }
   const out: string[] = [];
-  validateCookieName(cookie.name);
-  validateCookieValue(cookie.name, cookie.value);
+  validateName(cookie.name);
+  validateValue(cookie.name, cookie.value);
   out.push(`${cookie.name}=${cookie.value}`);
 
   // Fallback for invalid Set-Cookie
@@ -84,7 +84,7 @@ function toString(cookie: Cookie): string {
  * Validate Cookie Name.
  * @param name Cookie name.
  */
-function validateCookieName(name: string | undefined | null): void {
+function validateName(name: string | undefined | null): void {
   if (name && !FIELD_CONTENT_REGEXP.test(name)) {
     throw new TypeError(`Invalid cookie name: "${name}".`);
   }
@@ -116,7 +116,7 @@ function validatePath(path: string | null): void {
  * @see https://tools.ietf.org/html/rfc6265#section-4.1
  * @param value Cookie value.
  */
-function validateCookieValue(name: string, value: string | null): void {
+function validateValue(name: string, value: string | null): void {
   if (value == null || name == null) return;
   for (let i = 0; i < value.length; i++) {
     const c = value.charAt(i);
