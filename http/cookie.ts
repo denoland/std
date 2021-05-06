@@ -121,12 +121,9 @@ function validateValue(name: string, value: string | null): void {
   for (let i = 0; i < value.length; i++) {
     const c = value.charAt(i);
     if (
-      c < String.fromCharCode(0x21) ||
-      c == String.fromCharCode(0x22) ||
-      c == String.fromCharCode(0x2c) ||
-      c == String.fromCharCode(0x3b) ||
-      c == String.fromCharCode(0x5c) ||
-      c == String.fromCharCode(0x7f)
+      c < String.fromCharCode(0x21) || c == String.fromCharCode(0x22) ||
+      c == String.fromCharCode(0x2c) || c == String.fromCharCode(0x3b) ||
+      c == String.fromCharCode(0x5c) || c == String.fromCharCode(0x7f)
     ) {
       throw new Error(
         "RFC2616 cookie '" + name + "' cannot have '" + c + "' as value",
@@ -134,9 +131,7 @@ function validateValue(name: string, value: string | null): void {
     }
     if (c > String.fromCharCode(0x80)) {
       throw new Error(
-        "RFC2616 cookie '" +
-          name +
-          "' can only have US-ASCII chars as value" +
+        "RFC2616 cookie '" + name + "' can only have US-ASCII chars as value" +
           c.charCodeAt(0).toString(16),
       );
     }
