@@ -532,12 +532,16 @@ Deno.test({
     const serverRoutine = async () => {
       const server = serve(":8124");
       for await (const req of server) {
-        await assertThrowsAsync(async () => {
-          await req.respond({
-            status: 12345,
-            body: new TextEncoder().encode("Hello World"),
-          });
-        }, Deno.errors.InvalidData, "Empty statusText");
+        await assertThrowsAsync(
+          async () => {
+            await req.respond({
+              status: 12345,
+              body: new TextEncoder().encode("Hello World"),
+            });
+          },
+          Deno.errors.InvalidData,
+          "Empty statusText",
+        );
         // The connection should be destroyed
         assert(!(req.conn.rid in Deno.resources()));
         server.close();
