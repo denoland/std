@@ -17,10 +17,19 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
-import { Readable, Transform, Writable } from "./stream.ts";
+import streamDefault, {
+  Readable,
+  Stream,
+  Transform,
+  Writable,
+} from "./stream.ts";
 import { Buffer } from "./buffer.ts";
 import { deferred } from "../async/mod.ts";
-import { assert, assertEquals } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertStrictEquals,
+} from "../testing/asserts.ts";
 import { mustCall } from "./_utils.ts";
 
 Deno.test("Readable and Writable stream backpressure test", async () => {
@@ -130,4 +139,8 @@ Deno.test("Readable can be piped through Transform", async () => {
   await transformExecution;
   await flushExecution;
   await readableExecution;
+});
+
+Deno.test("The default export is Stream", () => {
+  assertStrictEquals(streamDefault, Stream);
 });
