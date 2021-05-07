@@ -1476,11 +1476,9 @@ assert.throws(
   assert.throws(
     () => assert.throws(() => { throw err; }, validate),
     {
-      /* TODO(kt3k): Enable this assertion
       message: 'The validation function is expected to ' +
               `return "true". Received ${inspect(validate())}\n\nCaught ` +
               `error:\n\n${err}`,
-      */
       code: 'ERR_ASSERTION',
       actual: err,
       expected: validate,

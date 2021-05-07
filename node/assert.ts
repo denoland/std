@@ -1,14 +1,34 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file ban-types
-import { AssertionError } from "./assertion_error.ts";
+import {
+  AssertionError,
+  AssertionErrorConstructorOptions,
+} from "./assertion_error.ts";
 import * as asserts from "../testing/asserts.ts";
 import { inspect } from "./util.ts";
 import {
   ERR_AMBIGUOUS_ARGUMENT,
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_ARG_VALUE,
+  ERR_INVALID_RETURN_VALUE,
   ERR_MISSING_ARGS,
 } from "./_errors.ts";
+
+interface ExtendedAssertionErrorConstructorOptions
+  extends AssertionErrorConstructorOptions {
+  generatedMessage?: boolean;
+}
+
+// TODO(uki00a): This function is a workaround for setting the `generatedMessage` property flexibly.
+function createAssertionError(
+  options: ExtendedAssertionErrorConstructorOptions,
+): AssertionError {
+  const error = new AssertionError(options);
+  if (options.generatedMessage) {
+    error.generatedMessage = true;
+  }
+  return error;
+}
 
 /** Converts the std assertion error to node.js assertion error */
 function toNode(
@@ -112,116 +132,13 @@ function throws(
   try {
     fn();
   } catch (e) {
-    if (typeof error === "string") {
-      if (arguments.length === 3) {
-        throw new ERR_INVALID_ARG_TYPE(
-          "error",
-          ["Object", "Error", "Function", "RegExp"],
-          error,
-        );
-      } else if (typeof e === "object" && e !== null) {
-        if (e.message === error) {
-          throw new ERR_AMBIGUOUS_ARGUMENT(
-            "error/message",
-            `The error message "${e.message}" is identical to the message.`,
-          );
-        }
-      } else if (e === error) {
-        throw new ERR_AMBIGUOUS_ARGUMENT(
-          "error/message",
-          `The error "${e}" is identical to the message.`,
-        );
-      }
-      message = error;
-      error = undefined;
-    }
-    if (error instanceof Function && error.prototype !== undefined) {
-      // error is a constructor
-      if (e instanceof error) {
-        return;
-      }
-      throw new AssertionError({
-        message:
-          `The error is expected to be an instance of "${error.name}". Received "${e
-            ?.constructor?.name}"\n\nError message:\n\n${e.message}`,
-        actual: e,
-        expected: error,
-        operator: "throws",
-      });
-    }
-    if (error instanceof Function) {
-      const received = error(e);
-      if (received === true) {
-        return;
-      }
-      throw new AssertionError({
-        message:
-          `The validation function is expected to return "true": received ${received}`,
-        actual: e,
-        expected: error,
-        operator: "throws",
-      });
-    }
-    if (error instanceof RegExp) {
-      if (error.test(String(e))) {
-        return;
-      }
-      throw new AssertionError({
-        message:
-          `The input did not match the regular expression ${error.toString()}. Input:\n\n'${
-            String(e)
-          }'\n`,
-        actual: e,
-        expected: error,
-        operator: "throws",
-      });
-    }
-    if (typeof error === "object" && error !== null) {
-      const keys = Object.keys(error);
-      if (error instanceof Error) {
-        keys.push("name", "message");
-      }
-      for (const k of keys) {
-        if (e == null) {
-          throw new AssertionError({
-            message: message || "object is expected to thrown, but got null",
-            actual: e,
-            expected: error,
-            operator: "throws",
-          });
-        }
-        if (typeof e === "string") {
-          throw new AssertionError({
-            message: message ||
-              `object is expected to thrown, but got string: ${e}`,
-            actual: e,
-            expected: error,
-            operator: "throws",
-          });
-        }
-        if (!(k in e)) {
-          throw new AssertionError({
-            message: message || `A key in the expected object is missing: ${k}`,
-            actual: e,
-            expected: error,
-            operator: "throws",
-          });
-        }
-        const actual = e[k];
-        // deno-lint-ignore no-explicit-any
-        const expected = (error as any)[k];
-        if (typeof actual === "string" && expected instanceof RegExp) {
-          match(actual, expected);
-        } else {
-          deepStrictEqual(actual, expected);
-        }
-      }
+    if (
+      validateThrownError(e, error, message, {
+        operator: throws,
+      })
+    ) {
       return;
     }
-    if (typeof error === "undefined") {
-      return;
-    }
-    throw new Error(`Invalid expectation: ${error}`);
   }
   if (message) {
     let msg = `Missing expected exception: ${message}`;
@@ -289,59 +206,12 @@ function doesNotThrow(
   }
 
   // Checks test function
-  if (typeof expected === "string") {
-    // The use case of doesNotThrow(fn, message);
-    try {
-      fn();
-    } catch (e) {
-      throw new AssertionError({
-        message:
-          `Got unwanted exception: ${expected}\nActual message: "${e.message}"`,
-        operator: "doesNotThrow",
-      });
-    }
-    return;
-  } else if (
-    typeof expected === "function" && expected.prototype !== undefined
-  ) {
-    // The use case of doesNotThrow(fn, Error, message);
-    try {
-      fn();
-    } catch (e) {
-      if (e instanceof expected) {
-        let msg = `Got unwanted exception: ${e.constructor?.name}`;
-        if (message) {
-          msg += ` ${String(message)}`;
-        }
-        throw new AssertionError({
-          message: msg,
-          operator: "doesNotThrow",
-        });
-      }
-      throw e;
-    }
-    return;
-  } else {
-    try {
-      fn();
-    } catch (e) {
-      if (message) {
-        throw new AssertionError({
-          message: `Got unwanted exception: ${message}\nActual message: "${
-            e ? e.message : String(e)
-          }"`,
-          operator: "doesNotThrow",
-        });
-      }
-      throw new AssertionError({
-        message: `Got unwanted exception.\nActual message: "${
-          e ? e.message : String(e)
-        }"`,
-        operator: "doesNotThrow",
-      });
-    }
-    return;
+  try {
+    fn();
+  } catch (e) {
+    gotUnwantedException(e, expected, message, doesNotThrow);
   }
+  return;
 }
 
 function equal(
@@ -494,15 +364,11 @@ function notDeepStrictEqual(
 
 function fail(message?: string | Error): never {
   if (typeof message === "string" || message == null) {
-    const err = new AssertionError({
+    throw createAssertionError({
       message: message ?? "Failed",
       operator: "fail",
+      generatedMessage: message == null,
     });
-    if (message == null) {
-      // When the default error message (`"Failed"`) is used, `generatedMessage` should be set to `true`.
-      err.generatedMessage = true;
-    }
-    throw err;
   } else {
     throw message;
   }
@@ -562,11 +428,370 @@ function strict(actual: unknown, message?: string | Error): asserts actual {
   assert(actual, message);
 }
 
+function rejects(
+  // deno-lint-ignore no-explicit-any
+  asyncFn: Promise<any> | (() => Promise<any>),
+  error?: RegExp | Function | Error,
+): Promise<void>;
+
+function rejects(
+  // deno-lint-ignore no-explicit-any
+  asyncFn: Promise<any> | (() => Promise<any>),
+  message?: string,
+): Promise<void>;
+
+// Intentionally avoid using async/await because test-assert-async.js requires it
+function rejects(
+  // deno-lint-ignore no-explicit-any
+  asyncFn: Promise<any> | (() => Promise<any>),
+  error?: RegExp | Function | Error | string,
+  message?: string,
+): Promise<void> {
+  let promise: Promise<void>;
+  if (typeof asyncFn === "function") {
+    try {
+      promise = asyncFn();
+    } catch (err) {
+      // If `asyncFn` throws an error synchronously, this function returns a rejected promise.
+      return Promise.reject(err);
+    }
+
+    if (!isValidThenable(promise)) {
+      return Promise.reject(
+        new ERR_INVALID_RETURN_VALUE(
+          "instance of Promise",
+          "promiseFn",
+          promise,
+        ),
+      );
+    }
+  } else if (!isValidThenable(asyncFn)) {
+    return Promise.reject(
+      new ERR_INVALID_ARG_TYPE("promiseFn", ["function", "Promise"], asyncFn),
+    );
+  } else {
+    promise = asyncFn;
+  }
+
+  function onFulfilled(): Promise<void> {
+    let message = "Missing expected rejection";
+    if (typeof error === "string") {
+      message += `: ${error}`;
+    } else if (typeof error === "function" && error.prototype !== undefined) {
+      message += ` (${error.name}).`;
+    } else {
+      message += ".";
+    }
+    return Promise.reject(createAssertionError({
+      message,
+      operator: "rejects",
+      generatedMessage: true,
+    }));
+  }
+
+  // deno-lint-ignore camelcase
+  function rejects_onRejected(e: Error): void { // TODO(uki00a): In order to `test-assert-async.js` pass, intentionally adds `rejects_` as a prefix.
+    if (
+      validateThrownError(e, error, message, {
+        operator: rejects,
+        validationFunctionName: "validate",
+      })
+    ) {
+      return;
+    }
+  }
+
+  return promise.then(onFulfilled, rejects_onRejected);
+}
+
+function doesNotReject(
+  // deno-lint-ignore no-explicit-any
+  asyncFn: Promise<any> | (() => Promise<any>),
+  error?: RegExp | Function,
+): Promise<void>;
+
+function doesNotReject(
+  // deno-lint-ignore no-explicit-any
+  asyncFn: Promise<any> | (() => Promise<any>),
+  message?: string,
+): Promise<void>;
+
+// Intentionally avoid using async/await because test-assert-async.js requires it
+function doesNotReject(
+  // deno-lint-ignore no-explicit-any
+  asyncFn: Promise<any> | (() => Promise<any>),
+  error?: RegExp | Function | string,
+  message?: string,
+): Promise<void> {
+  // deno-lint-ignore no-explicit-any
+  let promise: Promise<any>;
+  if (typeof asyncFn === "function") {
+    try {
+      const value = asyncFn();
+      if (!isValidThenable(value)) {
+        return Promise.reject(
+          new ERR_INVALID_RETURN_VALUE(
+            "instance of Promise",
+            "promiseFn",
+            value,
+          ),
+        );
+      }
+      promise = value;
+    } catch (e) {
+      // If `asyncFn` throws an error synchronously, this function returns a rejected promise.
+      return Promise.reject(e);
+    }
+  } else if (!isValidThenable(asyncFn)) {
+    return Promise.reject(
+      new ERR_INVALID_ARG_TYPE("promiseFn", ["function", "Promise"], asyncFn),
+    );
+  } else {
+    promise = asyncFn;
+  }
+
+  return promise.then(
+    () => {},
+    (e) => gotUnwantedException(e, error, message, doesNotReject),
+  );
+}
+
+function gotUnwantedException(
+  // deno-lint-ignore no-explicit-any
+  e: any,
+  expected: RegExp | Function | string | null | undefined,
+  message: string | Error | null | undefined,
+  operator: Function,
+): never {
+  if (typeof expected === "string") {
+    // The use case of doesNotThrow(fn, message);
+    throw new AssertionError({
+      message:
+        `Got unwanted exception: ${expected}\nActual message: "${e.message}"`,
+      operator: operator.name,
+    });
+  } else if (
+    typeof expected === "function" && expected.prototype !== undefined
+  ) {
+    // The use case of doesNotThrow(fn, Error, message);
+    if (e instanceof expected) {
+      let msg = `Got unwanted exception: ${e.constructor?.name}`;
+      if (message) {
+        msg += ` ${String(message)}`;
+      }
+      throw new AssertionError({
+        message: msg,
+        operator: operator.name,
+      });
+    } else if (expected.prototype instanceof Error) {
+      throw e;
+    } else {
+      const result = expected(e);
+      if (result === true) {
+        let msg = `Got unwanted rejection.\nActual message: "${e.message}"`;
+        if (message) {
+          msg += ` ${String(message)}`;
+        }
+        throw new AssertionError({
+          message: msg,
+          operator: operator.name,
+        });
+      }
+    }
+    throw e;
+  } else {
+    if (message) {
+      throw new AssertionError({
+        message: `Got unwanted exception: ${message}\nActual message: "${
+          e ? e.message : String(e)
+        }"`,
+        operator: operator.name,
+      });
+    }
+    throw new AssertionError({
+      message: `Got unwanted exception.\nActual message: "${
+        e ? e.message : String(e)
+      }"`,
+      operator: operator.name,
+    });
+  }
+}
+
+interface ValidateThrownErrorOptions {
+  operator: Function;
+  validationFunctionName?: string;
+}
+
+function validateThrownError(
+  // deno-lint-ignore no-explicit-any
+  e: any,
+  error: RegExp | Function | Error | string | null | undefined,
+  message: string | undefined | null,
+  options: ValidateThrownErrorOptions,
+): boolean {
+  if (typeof error === "string") {
+    if (message != null) {
+      throw new ERR_INVALID_ARG_TYPE(
+        "error",
+        ["Object", "Error", "Function", "RegExp"],
+        error,
+      );
+    } else if (typeof e === "object" && e !== null) {
+      if (e.message === error) {
+        throw new ERR_AMBIGUOUS_ARGUMENT(
+          "error/message",
+          `The error message "${e.message}" is identical to the message.`,
+        );
+      }
+    } else if (e === error) {
+      throw new ERR_AMBIGUOUS_ARGUMENT(
+        "error/message",
+        `The error "${e}" is identical to the message.`,
+      );
+    }
+    message = error;
+    error = undefined;
+  }
+  if (
+    error instanceof Function && error.prototype !== undefined &&
+    error.prototype instanceof Error
+  ) {
+    // error is a constructor
+    if (e instanceof error) {
+      return true;
+    }
+    throw createAssertionError({
+      message:
+        `The error is expected to be an instance of "${error.name}". Received "${e
+          ?.constructor?.name}"\n\nError message:\n\n${e?.message}`,
+      actual: e,
+      expected: error,
+      operator: options.operator.name,
+      generatedMessage: true,
+    });
+  }
+  if (error instanceof Function) {
+    const received = error(e);
+    if (received === true) {
+      return true;
+    }
+    throw createAssertionError({
+      message: `The ${
+        options.validationFunctionName
+          ? `"${options.validationFunctionName}" validation`
+          : "validation"
+      } function is expected to return "true". Received ${
+        inspect(received)
+      }\n\nCaught error:\n\n${e}`,
+      actual: e,
+      expected: error,
+      operator: options.operator.name,
+      generatedMessage: true,
+    });
+  }
+  if (error instanceof RegExp) {
+    if (error.test(String(e))) {
+      return true;
+    }
+    throw createAssertionError({
+      message:
+        `The input did not match the regular expression ${error.toString()}. Input:\n\n'${
+          String(e)
+        }'\n`,
+      actual: e,
+      expected: error,
+      operator: options.operator.name,
+      generatedMessage: true,
+    });
+  }
+  if (typeof error === "object" && error !== null) {
+    const keys = Object.keys(error);
+    if (error instanceof Error) {
+      keys.push("name", "message");
+    }
+    for (const k of keys) {
+      if (e == null) {
+        throw createAssertionError({
+          message: message || "object is expected to thrown, but got null",
+          actual: e,
+          expected: error,
+          operator: options.operator.name,
+          generatedMessage: message == null,
+        });
+      }
+
+      if (typeof e === "string") {
+        throw createAssertionError({
+          message: message ||
+            `object is expected to thrown, but got string: ${e}`,
+          actual: e,
+          expected: error,
+          operator: options.operator.name,
+          generatedMessage: message == null,
+        });
+      }
+      if (typeof e === "number") {
+        throw createAssertionError({
+          message: message ||
+            `object is expected to thrown, but got number: ${e}`,
+          actual: e,
+          expected: error,
+          operator: options.operator.name,
+          generatedMessage: message == null,
+        });
+      }
+      if (!(k in e)) {
+        throw createAssertionError({
+          message: message || `A key in the expected object is missing: ${k}`,
+          actual: e,
+          expected: error,
+          operator: options.operator.name,
+          generatedMessage: message == null,
+        });
+      }
+      const actual = e[k];
+      // deno-lint-ignore no-explicit-any
+      const expected = (error as any)[k];
+      if (typeof actual === "string" && expected instanceof RegExp) {
+        match(actual, expected);
+      } else {
+        deepStrictEqual(actual, expected);
+      }
+    }
+    return true;
+  }
+  if (typeof error === "undefined") {
+    return true;
+  }
+  throw createAssertionError({
+    message: `Invalid expectation: ${error}`,
+    operator: options.operator.name,
+    generatedMessage: true,
+  });
+}
+
+// deno-lint-ignore no-explicit-any
+function isValidThenable(maybeThennable: any): boolean {
+  if (!maybeThennable) {
+    return false;
+  }
+
+  if (maybeThennable instanceof Promise) {
+    return true;
+  }
+
+  const isThenable = typeof maybeThennable.then === "function" &&
+    typeof maybeThennable.catch === "function";
+
+  return isThenable && typeof maybeThennable !== "function";
+}
+
 Object.assign(strict, {
   AssertionError,
   deepEqual: deepStrictEqual,
   deepStrictEqual,
   doesNotMatch,
+  doesNotReject,
   doesNotThrow,
   equal: strictEqual,
   fail,
@@ -576,6 +801,7 @@ Object.assign(strict, {
   notEqual: notStrictEqual,
   notStrictEqual,
   ok,
+  rejects,
   strict,
   strictEqual,
   throws,
@@ -586,6 +812,7 @@ export default Object.assign(assert, {
   deepEqual,
   deepStrictEqual,
   doesNotMatch,
+  doesNotReject,
   doesNotThrow,
   equal,
   fail,
@@ -595,6 +822,7 @@ export default Object.assign(assert, {
   notEqual,
   notStrictEqual,
   ok,
+  rejects,
   strict,
   strictEqual,
   throws,
@@ -605,6 +833,7 @@ export {
   deepEqual,
   deepStrictEqual,
   doesNotMatch,
+  doesNotReject,
   doesNotThrow,
   equal,
   fail,
@@ -614,6 +843,7 @@ export {
   notEqual,
   notStrictEqual,
   ok,
+  rejects,
   strict,
   strictEqual,
   throws,

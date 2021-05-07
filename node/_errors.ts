@@ -24,6 +24,28 @@ import { unreachable } from "../testing/asserts.ts";
 import { inspect } from "./util.ts";
 
 /**
+ * @see https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js
+ */
+const classRegExp = /^([A-Z][a-z0-9]*)+$/;
+
+/**
+ * @see https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js
+ * @description Sorted by a rough estimate on most frequently used entries.
+ */
+const kTypes = [
+  "string",
+  "function",
+  "number",
+  "object",
+  // Accept 'Function' and 'Object' as alternative to the lower cased version.
+  "Function",
+  "Object",
+  "boolean",
+  "bigint",
+  "symbol",
+];
+
+/**
  * All error instances in Node have additional methods and properties
  * This export class is meant to be extended by these instances abstracting native JS error instances
  */
@@ -80,17 +102,88 @@ export class NodeURIError extends NodeErrorAbstraction implements URIError {
 }
 
 export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
-  constructor(a1: string, a2: string | string[], a3: unknown) {
+  constructor(name: string, expected: string | string[], actual: unknown) {
+    // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
+    expected = Array.isArray(expected) ? expected : [expected];
+    let msg = "The ";
+    if (name.endsWith(" argument")) {
+      // For cases like 'first argument'
+      msg += `${name} `;
+    } else {
+      const type = name.includes(".") ? "property" : "argument";
+      msg += `"${name}" ${type} `;
+    }
+    msg += "must be ";
+
+    const types = [];
+    const instances = [];
+    const other = [];
+    for (const value of expected) {
+      if (kTypes.includes(value)) {
+        types.push(value.toLocaleLowerCase());
+      } else if (classRegExp.test(value)) {
+        instances.push(value);
+      } else {
+        other.push(value);
+      }
+    }
+
+    // Special handle `object` in case other instances are allowed to outline
+    // the differences between each other.
+    if (instances.length > 0) {
+      const pos = types.indexOf("object");
+      if (pos !== -1) {
+        types.splice(pos, 1);
+        instances.push("Object");
+      }
+    }
+
+    if (types.length > 0) {
+      if (types.length > 2) {
+        const last = types.pop();
+        msg += `one of type ${types.join(", ")}, or ${last}`;
+      } else if (types.length === 2) {
+        msg += `one of type ${types[0]} or ${types[1]}`;
+      } else {
+        msg += `of type ${types[0]}`;
+      }
+      if (instances.length > 0 || other.length > 0) {
+        msg += " or ";
+      }
+    }
+
+    if (instances.length > 0) {
+      if (instances.length > 2) {
+        const last = instances.pop();
+        msg += `an instance of ${instances.join(", ")}, or ${last}`;
+      } else {
+        msg += `an instance of ${instances[0]}`;
+        if (instances.length === 2) {
+          msg += ` or ${instances[1]}`;
+        }
+      }
+      if (other.length > 0) {
+        msg += " or ";
+      }
+    }
+
+    if (other.length > 0) {
+      if (other.length > 2) {
+        const last = other.pop();
+        msg += `one of ${other.join(", ")}, or ${last}`;
+      } else if (other.length === 2) {
+        msg += `one of ${other[0]} or ${other[1]}`;
+      } else {
+        if (other[0].toLowerCase() !== other[0]) {
+          msg += "an ";
+        }
+        msg += `${other[0]}`;
+      }
+    }
+
     super(
       "ERR_INVALID_ARG_TYPE",
-      `The "${a1}" argument must be of type ${
-        // TODO(kt3k): Needs to handle "types" and "instances" differently.
-        // See the link below for details:
-        // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
-        typeof a2 === "string"
-          ? a2.toLocaleLowerCase()
-          : a2.map((x) => x.toLocaleLowerCase()).join(", ")
-      }.${invalidArgTypeHelper(a3)}`,
+      `${msg}.${invalidArgTypeHelper(actual)}`,
     );
   }
 }
