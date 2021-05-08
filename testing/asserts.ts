@@ -500,7 +500,7 @@ export function assertObjectMatch(
         .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
       // Build filtered object and filter recursively on nested objects references
       for (const [key, value] of entries) {
-        if (typeof value === "object") {
+        if ((typeof value === "object") && (!Array.isArray(value))) {
           const subset = (b as loose)[key];
           if ((typeof subset === "object") && (subset)) {
             filtered[key] = filter(value as loose, subset as loose);
