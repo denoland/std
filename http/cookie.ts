@@ -61,6 +61,7 @@ function toString(cookie: Cookie): string {
     out.push(`Max-Age=${cookie.maxAge}`);
   }
   if (cookie.domain) {
+    validateDomain(cookie.domain);
     out.push(`Domain=${cookie.domain}`);
   }
   if (cookie.sameSite) {
@@ -112,7 +113,7 @@ function validatePath(path: string | null): void {
 }
 
 /**
- *Validate Cookie Value.
+ * Validate Cookie Value.
  * @see https://tools.ietf.org/html/rfc6265#section-4.1
  * @param value Cookie value.
  */
@@ -135,6 +136,21 @@ function validateValue(name: string, value: string | null): void {
           c.charCodeAt(0).toString(16),
       );
     }
+  }
+}
+
+/**
+ * Validate Cookie Domain.
+ * @see https://datatracker.ietf.org/doc/html/rfc6265#section-4.1.2.3
+ * @param {string} domain
+ * @returns {void}
+ */
+function validateDomain(domain: string | null): void {
+  if (domain === null) {
+    return;
+  }
+  if (!/^(?!-|\.).*[^.]$/.test(domain)) {
+    throw new Error("Invalid first/last char in cookie domain: " + domain);
   }
 }
 
