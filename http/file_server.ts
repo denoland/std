@@ -179,7 +179,7 @@ async function serveDir(
       mode: modeToString(entry.isDirectory, fileInfo.mode),
       size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
       name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
-      url: fileUrl,
+      url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
     });
   }
   listEntry.sort((a, b) =>
