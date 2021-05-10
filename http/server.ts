@@ -69,7 +69,7 @@ export class ServerRequest {
             .map((e): string => e.trim().toLowerCase());
           assert(
             parts.includes("chunked"),
-            'transfer-encoding must include "chunked" if content-length is not set'
+            'transfer-encoding must include "chunked" if content-length is not set',
           );
           this.#body = chunkedBodyReader(this.headers, this.r);
         } else {
@@ -87,7 +87,7 @@ export class ServerRequest {
    * @returns {string | Uint8Array | MultipartFormData}
    */
   async readRaw(
-    type?: "raw" | "text" | "json" | "form"
+    type?: "raw" | "text" | "json" | "form",
   ): Promise<string | Uint8Array | MultipartFormData> {
     const body = this.body;
     switch (type) {
