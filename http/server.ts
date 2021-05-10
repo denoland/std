@@ -2,6 +2,7 @@
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { assert } from "../_util/assert.ts";
 import { Deferred, deferred, MuxAsyncIterator } from "../async/mod.ts";
+import { MultipartFormData, MultipartReader } from "../mime/multipart.ts";
 import {
   bodyReader,
   chunkedBodyReader,
@@ -68,7 +69,7 @@ export class ServerRequest {
             .map((e): string => e.trim().toLowerCase());
           assert(
             parts.includes("chunked"),
-            'transfer-encoding must include "chunked" if content-length is not set',
+            'transfer-encoding must include "chunked" if content-length is not set'
           );
           this.#body = chunkedBodyReader(this.headers, this.r);
         } else {
@@ -78,6 +79,38 @@ export class ServerRequest {
       }
     }
     return this.#body;
+  }
+
+  /**
+   * Gets the body raw of the message.
+   * @param {raw|text|json|form} type
+   * @returns {string | Uint8Array | MultipartFormData}
+   */
+  async readRaw(
+    type?: "raw" | "text" | "json" | "form"
+  ): Promise<string | Uint8Array | MultipartFormData> {
+    const body = this.body;
+    switch (type) {
+      case "text": {
+        const buff: Uint8Array = await Deno.readAll(body);
+        const encoded = new TextDecoder("utf-8").decode(buff);
+        return encoded;
+      }
+      case "json": {
+        const buff: Uint8Array = await Deno.readAll(body);
+        const encoded = new TextDecoder().decode(buff);
+        const data = JSON.parse(encoded);
+        return data;
+      }
+      case "form": {
+        const contentType = this.headers.get("content-type");
+        const reader = new MultipartReader(body, contentType as string);
+        return reader.readForm();
+      }
+      default: {
+        return await Deno.readAll(body);
+      }
+    }
   }
 
   async respond(r: Response) {
