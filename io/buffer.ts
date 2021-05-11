@@ -1,13 +1,7 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../_util/assert.ts";
 import { copy } from "../bytes/mod.ts";
-
-interface Reader {
-  read(p: Uint8Array): Promise<number | null>;
-}
-
-interface ReaderSync {
-  readSync(p: Uint8Array): number | null;
-}
+import type { Reader, ReaderSync } from "./types.d.ts";
 
 // MIN_READ is the minimum ArrayBuffer size passed to a read call by
 // buffer.ReadFrom. As long as the Buffer has at least MIN_READ bytes beyond
