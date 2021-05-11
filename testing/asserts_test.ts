@@ -370,6 +370,7 @@ Deno.test("testingAssertObjectMatching", function (): void {
     [sym]: true,
   });
   // Subset with array inside
+  assertObjectMatch(h, { foo: [] });
   assertObjectMatch(h, { foo: [1, 2] });
   assertObjectMatch(h, { foo: [1, 2, 3] });
   assertObjectMatch(i, { foo: [{ bar: false }] });
