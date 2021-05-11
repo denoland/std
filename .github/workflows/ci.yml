@@ -13,7 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno: [stable, canary]
+        # TODO(lucacasonato): reenable stable after 1.10 release
+        deno: [canary] # [stable, canary]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:

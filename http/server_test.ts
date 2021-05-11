@@ -720,17 +720,18 @@ Deno.test({
     const p = iteratorReq(server);
 
     try {
-      // Invalid certificate, connection should throw
+      // Invalid certificate, connection should throw on first read or write
       // but should not crash the server
-      assertThrowsAsync(
-        () =>
-          Deno.connectTls({
-            hostname: "localhost",
-            port,
-            // certFile
-          }),
+      const badConn = await Deno.connectTls({
+        hostname: "localhost",
+        port,
+        // certFile
+      });
+      await assertThrowsAsync(
+        () => badConn.read(new Uint8Array(1)),
         Deno.errors.InvalidData,
       );
+      badConn.close();
 
       // Valid request after invalid
       const conn = await Deno.connectTls({
