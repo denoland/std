@@ -322,6 +322,7 @@ Deno.test("testingAssertObjectMatching", function (): void {
   }
   const g: r = { foo: true, bar: false };
   const h = { foo: [1, 2, 3], bar: true };
+  const i = { foo: [a, e], bar: true };
 
   // Simple subset
   assertObjectMatch(a, {
@@ -369,7 +370,15 @@ Deno.test("testingAssertObjectMatching", function (): void {
     [sym]: true,
   });
   // Subset with array inside
+  assertObjectMatch(h, { foo: [1, 2] });
   assertObjectMatch(h, { foo: [1, 2, 3] });
+  assertObjectMatch(i, { foo: [{ bar: false }] });
+  assertObjectMatch(i, {
+    foo: [
+      { bar: false },
+      { bar: { bar: { bar: { foo: true } } } },
+    ],
+  });
   // Missing key
   {
     let didThrow;
@@ -494,8 +503,8 @@ Deno.test("testingAssertObjectMatching", function (): void {
   {
     let didThrow;
     try {
-      assertObjectMatch(h, {
-        foo: [],
+      assertObjectMatch(i, {
+        foo: [{ bar: true }, { foo: false }],
       });
       didThrow = false;
     } catch (e) {
