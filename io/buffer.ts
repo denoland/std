@@ -1,6 +1,14 @@
 import { assert } from "../_util/assert.ts";
 import { copy } from "../bytes/mod.ts";
 
+interface Reader {
+  read(p: Uint8Array): Promise<number | null>;
+}
+
+interface ReaderSync {
+  readSync(p: Uint8Array): number | null;
+}
+
 // MIN_READ is the minimum ArrayBuffer size passed to a read call by
 // buffer.ReadFrom. As long as the Buffer has at least MIN_READ bytes beyond
 // what is required to hold the contents of r, readFrom() will not grow the
@@ -189,7 +197,7 @@ export class Buffer {
    *
    * Based on Go Lang's
    * [Buffer.ReadFrom](https://golang.org/pkg/bytes/#Buffer.ReadFrom). */
-  async readFrom(r: Deno.Reader): Promise<number> {
+  async readFrom(r: Reader): Promise<number> {
     let n = 0;
     const tmp = new Uint8Array(MIN_READ);
     while (true) {
@@ -219,7 +227,7 @@ export class Buffer {
    *
    * Based on Go Lang's
    * [Buffer.ReadFrom](https://golang.org/pkg/bytes/#Buffer.ReadFrom). */
-  readFromSync(r: Deno.ReaderSync): number {
+  readFromSync(r: ReaderSync): number {
     let n = 0;
     const tmp = new Uint8Array(MIN_READ);
     while (true) {
