@@ -510,7 +510,7 @@ export function assertObjectMatch(
                 if ((typeof subsetElement === "object") && (subsetElement)) {
                   return filter(element, subsetElement);
                 }
-                return subsetElement;
+                return element;
               });
             continue;
           }

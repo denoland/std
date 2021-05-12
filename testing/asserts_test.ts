@@ -505,6 +505,19 @@ Deno.test("testingAssertObjectMatching", function (): void {
     let didThrow;
     try {
       assertObjectMatch(i, {
+        foo: [1, 2, 3, 4],
+      });
+      didThrow = false;
+    } catch (e) {
+      assert(e instanceof AssertionError);
+      didThrow = true;
+    }
+    assertEquals(didThrow, true);
+  }
+  {
+    let didThrow;
+    try {
+      assertObjectMatch(i, {
         foo: [{ bar: true }, { foo: false }],
       });
       didThrow = false;
