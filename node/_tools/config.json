@@ -10,6 +10,7 @@
       "test-assert.js",
       "test-assert-async.js",
       "test-assert-fail.js",
+      "test-event-emitter-invalid-listener.js",
       "test-event-emitter-listener-count.js"
     ]
   },
