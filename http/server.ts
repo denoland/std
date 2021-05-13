@@ -258,7 +258,7 @@ export class Server extends EventTarget
     if (!preventClosing) {
       try {
         conn.close();
-      } catch (e) {
+      } catch {
         // might have been already closed
       }
     }
