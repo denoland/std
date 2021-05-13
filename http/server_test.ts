@@ -602,7 +602,7 @@ Deno.test({
         evt.preventDefault();
         (async () => {
           assert(!!evt.connection);
-          await Deno.writeAll(evt.connection, encode("bad!"));
+          await Deno.writeAll(evt.connection, new TextEncoder().encode("bad!"));
           evt.connection.close();
         })();
       } else {
@@ -616,9 +616,9 @@ Deno.test({
     });
     await Deno.writeAll(
       conn,
-      encode("GET / HTTP/1.1\r\nmalformedHeader\r\n\r\n\r\n\r\n"),
+      new TextEncoder().encode("GET / HTTP/1.1\r\nmalformedHeader\r\n\r\n\r\n\r\n"),
     );
-    const responseString = decode(await Deno.readAll(conn));
+    const responseString = new TextDecoder().decode(await Deno.readAll(conn));
     assertEquals(responseString, "bad!");
     conn.close();
     server.close();
