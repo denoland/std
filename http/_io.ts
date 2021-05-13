@@ -237,10 +237,12 @@ export async function writeResponse(
   const protoMajor = 1;
   const protoMinor = 1;
   const statusCode = r.status || 200;
-  const statusText = STATUS_TEXT.get(statusCode);
+  const statusText = r.statusText ?? STATUS_TEXT.get(statusCode) ?? null;
   const writer = BufWriter.create(w);
-  if (!statusText) {
-    throw new Deno.errors.InvalidData("Bad status code");
+  if (statusText === null) {
+    throw new Deno.errors.InvalidData(
+      "Empty statusText (explicitely pass an empty string if this was intentional)",
+    );
   }
   if (!r.body) {
     r.body = new Uint8Array();

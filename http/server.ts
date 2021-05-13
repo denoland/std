@@ -391,6 +391,7 @@ export async function listenAndServeTLS(
  */
 export interface Response {
   status?: number;
+  statusText?: string;
   headers?: Headers;
   body?: Uint8Array | Deno.Reader | string;
   trailers?: () => Promise<Headers> | Headers;
