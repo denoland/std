@@ -23,6 +23,7 @@
 
 import { validateIntegerRange } from "./_utils.ts";
 import { assert } from "../_util/assert.ts";
+import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 
 // deno-lint-ignore no-explicit-any
 export type GenericFunction = (...args: any[]) => any;
@@ -76,6 +77,7 @@ export class EventEmitter {
     listener: GenericFunction | WrappedFunction,
     prepend: boolean,
   ): this {
+    this.checkListenerArgument(listener);
     this.emit("newListener", eventName, listener);
     if (this._events.has(eventName)) {
       const listeners = this._events.get(eventName) as Array<
@@ -256,6 +258,7 @@ export class EventEmitter {
     eventName: string | symbol,
     listener: GenericFunction,
   ): WrappedFunction {
+    this.checkListenerArgument(listener);
     const wrapper = function (
       this: {
         eventName: string | symbol;
@@ -348,6 +351,7 @@ export class EventEmitter {
     eventName: string | symbol,
     listener: GenericFunction,
   ): this {
+    this.checkListenerArgument(listener);
     if (this._events.has(eventName)) {
       const arr:
         | Array<GenericFunction | WrappedFunction>
@@ -554,6 +558,12 @@ export class EventEmitter {
       }
 
       iterator.return();
+    }
+  }
+
+  private checkListenerArgument(listener: unknown): void {
+    if (typeof listener !== "function") {
+      throw new ERR_INVALID_ARG_TYPE("listener", "function", listener);
     }
   }
 }
