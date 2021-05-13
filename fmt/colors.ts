@@ -437,8 +437,8 @@ export function bgRgb8(str: string, color: number): string {
  *
  * To produce the color magenta:
  *
- *      rgba24("foo", 0xff00ff);
- *      rgba24("foo", {r: 255, g: 0, b: 255});
+ *      rgb24("foo", 0xff00ff);
+ *      rgb24("foo", {r: 255, g: 0, b: 255});
  * @param str text color to apply 24bit rgb to
  * @param color code
  */
@@ -474,8 +474,8 @@ export function rgb24(str: string, color: number | Rgb): string {
  *
  * To produce the color magenta:
  *
- *      bgRgba24("foo", 0xff00ff);
- *      bgRgba24("foo", {r: 255, g: 0, b: 255});
+ *      bgRgb24("foo", 0xff00ff);
+ *      bgRgb24("foo", {r: 255, g: 0, b: 255});
  * @param str text color to apply 24bit rgb to
  * @param color code
  */

@@ -1,5 +1,4 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { decode, encode } from "../encoding/utf8.ts";
 import { hasOwnProperty } from "../_util/has_own_property.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
@@ -109,7 +108,7 @@ export function unmask(payload: Uint8Array, mask?: Uint8Array): void {
 export async function writeFrame(
   frame: WebSocketFrame,
   writer: Deno.Writer,
-): Promise<void> {
+) {
   const payloadLength = frame.payload.byteLength;
   let header: Uint8Array;
   const hasMask = frame.mask ? 0x80 : 0;
@@ -222,13 +221,14 @@ class WebSocketImpl implements WebSocket {
   }
 
   async *[Symbol.asyncIterator](): AsyncIterableIterator<WebSocketEvent> {
+    const decoder = new TextDecoder();
     let frames: WebSocketFrame[] = [];
     let payloadsLength = 0;
     while (!this._isClosed) {
       let frame: WebSocketFrame;
       try {
         frame = await readFrame(this.bufReader);
-      } catch (e) {
+      } catch {
         this.ensureSocketClosed();
         break;
       }
@@ -248,7 +248,7 @@ class WebSocketImpl implements WebSocket {
             }
             if (frames[0].opcode === OpCode.TextFrame) {
               // text
-              yield decode(concat);
+              yield decoder.decode(concat);
             } else {
               // binary
               yield concat;
@@ -260,7 +260,7 @@ class WebSocketImpl implements WebSocket {
         case OpCode.Close: {
           // [0x12, 0x34] -> 0x1234
           const code = (frame.payload[0] << 8) | frame.payload[1];
-          const reason = decode(
+          const reason = decoder.decode(
             frame.payload.subarray(2, frame.payload.length),
           );
           await this.close(code, reason);
@@ -313,7 +313,9 @@ class WebSocketImpl implements WebSocket {
     const opcode = typeof data === "string"
       ? OpCode.TextFrame
       : OpCode.BinaryFrame;
-    const payload = typeof data === "string" ? encode(data) : data;
+    const payload = typeof data === "string"
+      ? new TextEncoder().encode(data)
+      : data;
     const isLastFrame = true;
     const frame = {
       isLastFrame,
@@ -325,7 +327,9 @@ class WebSocketImpl implements WebSocket {
   }
 
   ping(data: WebSocketMessage = ""): Promise<void> {
-    const payload = typeof data === "string" ? encode(data) : data;
+    const payload = typeof data === "string"
+      ? new TextEncoder().encode(data)
+      : data;
     const frame = {
       isLastFrame: true,
       opcode: OpCode.Ping,
@@ -340,12 +344,12 @@ class WebSocketImpl implements WebSocket {
     return this._isClosed;
   }
 
-  async close(code = 1000, reason?: string): Promise<void> {
+  async close(code = 1000, reason?: string) {
     try {
       const header = [code >>> 8, code & 0x00ff];
       let payload: Uint8Array;
       if (reason) {
-        const reasonBytes = encode(reason);
+        const reasonBytes = new TextEncoder().encode(reason);
         payload = new Uint8Array(2 + reasonBytes.byteLength);
         payload.set(header);
         payload.set(reasonBytes, 2);
@@ -466,7 +470,7 @@ export async function handshake(
   headers: Headers,
   bufReader: BufReader,
   bufWriter: BufWriter,
-): Promise<void> {
+) {
   const { hostname, pathname, search } = url;
   const key = createSecKey();
 
@@ -484,7 +488,7 @@ export async function handshake(
   }
   headerStr += "\r\n";
 
-  await bufWriter.write(encode(headerStr));
+  await bufWriter.write(new TextEncoder().encode(headerStr));
   await bufWriter.flush();
 
   const tpReader = new TextProtoReader(bufReader);

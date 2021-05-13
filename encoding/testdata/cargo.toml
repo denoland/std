@@ -49,3 +49,6 @@ url = "1.7.2"
 
 [target.'cfg(windows)'.dependencies]
 winapi = "0.3.6"
+
+[target."cfg(linux)".dependencies]
+winapi = "0.3.9"

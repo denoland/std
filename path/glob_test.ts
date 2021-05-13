@@ -502,6 +502,19 @@ Deno.test({
 });
 
 Deno.test({
+  name: "[path] GlobToRegExpOptions::caseInsensitive",
+  fn() {
+    const pattern1 = globToRegExp("foo/bar", { caseInsensitive: false });
+    assertEquals("foo/bar".match(pattern1)?.[0], "foo/bar");
+    assertEquals("Foo/Bar".match(pattern1)?.[0], undefined);
+
+    const pattern2 = globToRegExp("foo/bar", { caseInsensitive: true });
+    assertEquals("foo/bar".match(pattern2)?.[0], "foo/bar");
+    assertEquals("Foo/Bar".match(pattern2)?.[0], "Foo/Bar");
+  },
+});
+
+Deno.test({
   name: "[path] GlobToRegExpOptions::os",
   fn() {
     const pattern1 = globToRegExp("foo/bar", { os: "linux" });

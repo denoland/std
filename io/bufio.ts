@@ -9,6 +9,8 @@ type Writer = Deno.Writer;
 type WriterSync = Deno.WriterSync;
 import { copy } from "../bytes/mod.ts";
 import { assert } from "../_util/assert.ts";
+import { BytesList } from "../bytes/bytes_list.ts";
+import { writeAll, writeAllSync } from "./util.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
 const MIN_BUF_SIZE = 16;
@@ -23,7 +25,7 @@ export class BufferFullError extends Error {
   }
 }
 
-export class PartialReadError extends Deno.errors.UnexpectedEof {
+export class PartialReadError extends Error {
   name = "PartialReadError";
   partial?: Uint8Array;
   constructor() {
@@ -69,7 +71,7 @@ export class BufReader implements Reader {
   }
 
   // Reads a new chunk into the buffer.
-  private async _fill(): Promise<void> {
+  private async _fill() {
     // Slide existing data to beginning.
     if (this.r > 0) {
       this.buf.copyWithin(0, this.r, this.w);
@@ -460,15 +462,12 @@ export class BufWriter extends AbstractBufBase implements Writer {
   }
 
   /** Flush writes any buffered data to the underlying io.Writer. */
-  async flush(): Promise<void> {
+  async flush() {
     if (this.err !== null) throw this.err;
     if (this.usedBufferBytes === 0) return;
 
     try {
-      await Deno.writeAll(
-        this.writer,
-        this.buf.subarray(0, this.usedBufferBytes),
-      );
+      await writeAll(this.writer, this.buf.subarray(0, this.usedBufferBytes));
     } catch (e) {
       this.err = e;
       throw e;
@@ -558,10 +557,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
     if (this.usedBufferBytes === 0) return;
 
     try {
-      Deno.writeAllSync(
-        this.writer,
-        this.buf.subarray(0, this.usedBufferBytes),
-      );
+      writeAllSync(this.writer, this.buf.subarray(0, this.usedBufferBytes));
     } catch (e) {
       this.err = e;
       throw e;
@@ -639,54 +635,55 @@ export async function* readDelim(
   // Avoid unicode problems
   const delimLen = delim.length;
   const delimLPS = createLPS(delim);
-
-  let inputBuffer = new Deno.Buffer();
-  const inspectArr = new Uint8Array(Math.max(1024, delimLen + 1));
+  const chunks = new BytesList();
+  const bufSize = Math.max(1024, delimLen + 1);
 
   // Modified KMP
   let inspectIndex = 0;
   let matchIndex = 0;
+  let itr = chunks.iterator();
+  let curr = -1;
   while (true) {
+    const inspectArr = new Uint8Array(bufSize);
     const result = await reader.read(inspectArr);
     if (result === null) {
       // Yield last chunk.
-      yield inputBuffer.bytes();
+      yield chunks.concat();
       return;
-    }
-    if ((result as number) < 0) {
+    } else if (result < 0) {
       // Discard all remaining and silently fail.
       return;
     }
-    const sliceRead = inspectArr.subarray(0, result as number);
-    await Deno.writeAll(inputBuffer, sliceRead);
-
-    let sliceToProcess = inputBuffer.bytes();
-    while (inspectIndex < sliceToProcess.length) {
-      if (sliceToProcess[inspectIndex] === delim[matchIndex]) {
+    chunks.add(inspectArr, 0, result);
+    if (inspectIndex === 0 && chunks.size() > 0) {
+      curr = itr.next().value;
+    }
+    while (inspectIndex < chunks.size()) {
+      if (curr === delim[matchIndex]) {
+        curr = itr.next().value;
         inspectIndex++;
         matchIndex++;
         if (matchIndex === delimLen) {
           // Full match
           const matchEnd = inspectIndex - delimLen;
-          const readyBytes = sliceToProcess.subarray(0, matchEnd);
-          // Copy
-          const pendingBytes = sliceToProcess.slice(inspectIndex);
+          const readyBytes = chunks.slice(0, matchEnd);
           yield readyBytes;
           // Reset match, different from KMP.
-          sliceToProcess = pendingBytes;
+          chunks.shift(inspectIndex);
           inspectIndex = 0;
           matchIndex = 0;
+          itr = chunks.iterator();
+          curr = itr.next().value;
         }
       } else {
         if (matchIndex === 0) {
           inspectIndex++;
+          curr = itr.next().value;
         } else {
           matchIndex = delimLPS[matchIndex - 1];
         }
       }
     }
-    // Keep inspectIndex and matchIndex.
-    inputBuffer = new Deno.Buffer(sliceToProcess);
   }
 }
 

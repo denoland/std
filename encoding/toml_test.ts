@@ -291,7 +291,10 @@ Deno.test({
         "tokio-threadpool": "0.1.11",
         url: "1.7.2",
       },
-      target: { "cfg(windows)": { dependencies: { winapi: "0.3.6" } } },
+      target: {
+        "cfg(windows)": { dependencies: { winapi: "0.3.6" } },
+        "cfg(linux)": { dependencies: { winapi: "0.3.9" } },
+      },
     };
     const actual = parseFile(path.join(testdataDir, "cargo.toml"));
     assertEquals(actual, expected);

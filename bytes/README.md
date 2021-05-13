@@ -1,15 +1,15 @@
-# bytes
+# Bytes
 
-bytes module is made to provide helpers to manipulation of bytes slice.
+The bytes module provides helper functions to manipulate byte slices.
 
-# usage
+# Usage
 
-All the following functions are exposed in `mod.ts`.
+The following functions are exposed in `mod.ts`.
 
 ## indexOf
 
-Find first index of binary pattern from given binary array, or -1 if it is not
-present.
+Finds the first index of a binary pattern within a given binary array, or
+returns -1 if the pattern is not present.
 
 ```typescript
 import { indexOf } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -28,8 +28,8 @@ indexOf(
 
 ## lastIndexOf
 
-Find last index of binary pattern from given binary array, or -1 if it is not
-present.
+Finds the last index of a binary pattern within a given binary array, or returns
+-1 if the pattern is not present.
 
 ```typescript
 import { lastIndexOf } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -48,7 +48,7 @@ lastIndexOf(
 
 ## equals
 
-Check whether given binary arrays are equal to each other.
+Checks whether two given binary arrays are equal to each other.
 
 ```typescript
 import { equals } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -59,7 +59,7 @@ equals(new Uint8Array([0, 1, 2, 3]), new Uint8Array([0, 1, 2, 4])); // returns f
 
 ## startsWith
 
-Check whether binary array starts with prefix.
+Checks whether a binary array starts with a binary array prefix.
 
 ```typescript
 import { startsWith } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -70,7 +70,7 @@ startsWith(new Uint8Array([0, 1, 2]), new Uint8Array([1, 2])); // returns false
 
 ## endsWith
 
-Check whether binary array ends with suffix.
+Checks whether binary array ends with a binary array suffix.
 
 ```typescript
 import { endsWith } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -81,7 +81,7 @@ endsWith(new Uint8Array([0, 1, 2]), new Uint8Array([1, 2])); // returns true
 
 ## repeat
 
-Repeat bytes of given binary array and return new one.
+Creates a binary array consisting of multiple copies of a given binary array.
 
 ```typescript
 import { repeat } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -91,7 +91,7 @@ repeat(new Uint8Array([1]), 3); // returns Uint8Array(3) [ 1, 1, 1 ]
 
 ## concat
 
-Concatenate multiple binary arrays and return new one.
+Concatenates multiple binary arrays into a new one.
 
 ```typescript
 import { concat } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -108,7 +108,8 @@ concat(
 
 ## contains
 
-Check source array contains pattern array.
+Checks that a given binary array contains a sequence corresponding to a pattern
+array.
 
 ```typescript
 import { contains } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
@@ -126,7 +127,7 @@ contains(
 
 ## copy
 
-Copy bytes from one binary array to another.
+Copies bytes from one binary array to another one.
 
 ```typescript
 import { copy } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";

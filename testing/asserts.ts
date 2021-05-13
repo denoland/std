@@ -151,9 +151,17 @@ export function equal(c: unknown, d: unknown): boolean {
         return unmatchedEntries === 0;
       }
       const merged = { ...a, ...b };
-      for (const key in merged) {
+      for (
+        const key of [
+          ...Object.getOwnPropertyNames(merged),
+          ...Object.getOwnPropertySymbols(merged),
+        ]
+      ) {
         type Key = keyof typeof merged;
         if (!compare(a && a[key as Key], b && b[key as Key])) {
+          return false;
+        }
+        if (((key in a) && (!(key in b))) || ((key in b) && (!(key in a)))) {
           return false;
         }
       }
@@ -205,7 +213,7 @@ export function assertEquals(
     );
     const diffMsg = buildMessage(diffResult).join("\n");
     message = `Values are not equal:\n${diffMsg}`;
-  } catch (e) {
+  } catch {
     message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
   }
   if (msg) {
@@ -242,12 +250,12 @@ export function assertNotEquals(
   let expectedString: string;
   try {
     actualString = String(actual);
-  } catch (e) {
+  } catch {
     actualString = "[Cannot display]";
   }
   try {
     expectedString = String(expected);
-  } catch (e) {
+  } catch {
     expectedString = "[Cannot display]";
   }
   if (!msg) {
@@ -307,7 +315,7 @@ export function assertStrictEquals(
         );
         const diffMsg = buildMessage(diffResult).join("\n");
         message = `Values are not strictly equal:\n${diffMsg}`;
-      } catch (e) {
+      } catch {
         message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
       }
     }
@@ -469,7 +477,8 @@ export function assertNotMatch(
  * If not, then throw.
  */
 export function assertObjectMatch(
-  actual: Record<PropertyKey, unknown>,
+  // deno-lint-ignore no-explicit-any
+  actual: Record<PropertyKey, any>,
   expected: Record<PropertyKey, unknown>,
 ): void {
   type loose = Record<PropertyKey, unknown>;
@@ -489,9 +498,24 @@ export function assertObjectMatch(
       ]
         .filter((key) => key in b)
         .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
-      // Build filtered object and filter recursively on nested objects references
       for (const [key, value] of entries) {
-        if (typeof value === "object") {
+        // On array references, build a filtered array and filter nested objects inside
+        if (Array.isArray(value)) {
+          const subset = (b as loose)[key];
+          if (Array.isArray(subset)) {
+            filtered[key] = value
+              .slice(0, subset.length)
+              .map((element, index) => {
+                const subsetElement = subset[index];
+                if ((typeof subsetElement === "object") && (subsetElement)) {
+                  return filter(element, subsetElement);
+                }
+                return element;
+              });
+            continue;
+          }
+        } // On nested objects references, build a filtered object recursively
+        else if (typeof value === "object") {
           const subset = (b as loose)[key];
           if ((typeof subset === "object") && (subset)) {
             filtered[key] = filter(value as loose, subset as loose);

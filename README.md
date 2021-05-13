@@ -1,10 +1,21 @@
 # Deno Standard Modules
 
+[![codecov](https://codecov.io/gh/denoland/deno_std/branch/main/graph/badge.svg?token=w6s3ODtULz)](https://codecov.io/gh/denoland/deno_std)
+
 These modules do not have external dependencies and they are reviewed by the
 Deno core team. The intention is to have a standard set of high quality code
 that all Deno projects can use fearlessly.
 
 Contributions are welcome!
+
+## Releases
+
+Standard library is currently tagged independently of Deno version. This will
+change once the library is stabilized.
+
+To check compatibility of different version of standard library with Deno CLI
+see
+[this list](https://raw.githubusercontent.com/denoland/deno_website2/master/versions.json).
 
 ## How to use
 
@@ -49,14 +60,33 @@ Please ensure the copyright headers cite the code's origin.
 
 Follow the [style guide](https://deno.land/manual/contributing/style_guide).
 
-### Releases
+### Opening a pull request
 
-Standard library is currently tagged independently of Deno version. This will
-change once the library is stabilized.
+Before opening a PR make sure to:
 
-To check compatibility of different version of standard library with Deno CLI
-see
-[this list](https://raw.githubusercontent.com/denoland/deno_website2/master/versions.json).
+- there are tests that cover the changes.
+- `deno test --unstable --allow-all` passes.
+- `deno fmt --check` passes without changing files.
+- `deno lint --unstable` passes.
+
+Give the PR a descriptive title.
+
+Examples of good title:
+
+- fix(http): Fix race condition in server
+- docs(fmt): Update docstrings
+- feat(log): Handle nested messages
+
+Examples of bad title:
+
+- fix #7123
+- update docs
+- fix bugs
+
+Ensure there is a related issue and it is referenced in the PR text.
+
+For contributions to the Node compatibility library please check the
+[`std/node` contributing guide](./node/README.md)
 
 _For maintainers_:
 

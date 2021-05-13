@@ -3,12 +3,13 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import { encode } from "../encoding/utf8.ts";
+
+import { Buffer } from "./buffer.ts";
 
 /** Reader utility for strings */
-export class StringReader extends Deno.Buffer {
+export class StringReader extends Buffer {
   constructor(s: string) {
-    super(encode(s).buffer);
+    super(new TextEncoder().encode(s).buffer);
   }
 }
 

@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "../async/mod.ts";
 import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
+import { readAll } from "../io/util.ts";
 
 export type BinaryEncodings = "binary";
 
@@ -210,9 +211,9 @@ export async function assertCallbackErrorUncaught(
   { prelude, invocation, cleanup }: {
     /** Any code which needs to run before the actual invocation (notably, any import statements). */
     prelude?: string;
-    /** 
+    /**
      * The start of the invocation of the function, e.g. `open("foo.txt", `.
-     * The callback will be added after it. 
+     * The callback will be added after it.
      */
     invocation: string;
     /** Called after the subprocess is finished but before running the assertions, e.g. to clean up created files. */
@@ -238,7 +239,7 @@ export async function assertCallbackErrorUncaught(
     stderr: "piped",
   });
   const status = await p.status();
-  const stderr = new TextDecoder().decode(await Deno.readAll(p.stderr));
+  const stderr = new TextDecoder().decode(await readAll(p.stderr));
   p.close();
   p.stderr.close();
   await cleanup?.();

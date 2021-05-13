@@ -351,7 +351,7 @@ async function publishProgress(
   progress: BenchmarkRunProgress,
   state: ProgressState,
   progressCb?: (progress: BenchmarkRunProgress) => void | Promise<void>,
-): Promise<void> {
+) {
   progressCb && (await progressCb(cloneProgressWithState(progress, state)));
 }
 

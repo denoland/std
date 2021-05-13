@@ -19,7 +19,7 @@ async function* genThrows(): AsyncIterableIterator<number> {
   throw new Error("something went wrong");
 }
 
-Deno.test("[async] MuxAsyncIterator", async function (): Promise<void> {
+Deno.test("[async] MuxAsyncIterator", async function () {
   const mux = new MuxAsyncIterator<number>();
   mux.add(gen123());
   mux.add(gen456());

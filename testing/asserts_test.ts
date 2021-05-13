@@ -42,6 +42,18 @@ Deno.test("testingEqual", function (): void {
       { hello: "world", hi: { there: "everyone else" } },
     ),
   );
+  assert(
+    equal(
+      { [Symbol.for("foo")]: "bar" },
+      { [Symbol.for("foo")]: "bar" },
+    ),
+  );
+  assert(
+    !equal(
+      { [Symbol("foo")]: "bar" },
+      { [Symbol("foo")]: "bar" },
+    ),
+  );
   assert(equal(/deno/, /deno/));
   assert(!equal(/deno/, /node/));
   assert(equal(new Date(2019, 0, 3), new Date(2019, 0, 3)));
@@ -134,6 +146,12 @@ Deno.test("testingEqual", function (): void {
       new URL("https://example.test"),
       new URL("https://example.test/with-path"),
     ),
+  );
+  assert(
+    !equal({ a: undefined, b: undefined }, { a: undefined, c: undefined }),
+  );
+  assert(
+    !equal({ a: undefined, b: undefined }, { a: undefined }),
   );
 });
 
@@ -298,6 +316,14 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const e = { foo: true } as { [key: string]: unknown };
   e.bar = e;
   const f = { [sym]: true, bar: false };
+  interface r {
+    foo: boolean;
+    bar: boolean;
+  }
+  const g: r = { foo: true, bar: false };
+  const h = { foo: [1, 2, 3], bar: true };
+  const i = { foo: [a, e], bar: true };
+
   // Simple subset
   assertObjectMatch(a, {
     foo: true,
@@ -337,9 +363,22 @@ Deno.test("testingAssertObjectMatching", function (): void {
       },
     },
   });
+  // Subset with interface
+  assertObjectMatch(g, { bar: false });
   // Subset with same symbol
   assertObjectMatch(f, {
     [sym]: true,
+  });
+  // Subset with array inside
+  assertObjectMatch(h, { foo: [] });
+  assertObjectMatch(h, { foo: [1, 2] });
+  assertObjectMatch(h, { foo: [1, 2, 3] });
+  assertObjectMatch(i, { foo: [{ bar: false }] });
+  assertObjectMatch(i, {
+    foo: [
+      { bar: false },
+      { bar: { bar: { bar: { foo: true } } } },
+    ],
   });
   // Missing key
   {
@@ -453,6 +492,33 @@ Deno.test("testingAssertObjectMatching", function (): void {
     try {
       assertObjectMatch(f, {
         foo: true,
+      });
+      didThrow = false;
+    } catch (e) {
+      assert(e instanceof AssertionError);
+      didThrow = true;
+    }
+    assertEquals(didThrow, true);
+  }
+  // Subset with array inside but doesn't match key subset
+  {
+    let didThrow;
+    try {
+      assertObjectMatch(i, {
+        foo: [1, 2, 3, 4],
+      });
+      didThrow = false;
+    } catch (e) {
+      assert(e instanceof AssertionError);
+      didThrow = true;
+    }
+    assertEquals(didThrow, true);
+  }
+  {
+    let didThrow;
+    try {
+      assertObjectMatch(i, {
+        foo: [{ bar: true }, { foo: false }],
       });
       didThrow = false;
     } catch (e) {

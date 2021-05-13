@@ -23,6 +23,7 @@
 
 import { validateIntegerRange } from "./_utils.ts";
 import { assert } from "../_util/assert.ts";
+import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 
 // deno-lint-ignore no-explicit-any
 export type GenericFunction = (...args: any[]) => any;
@@ -51,7 +52,7 @@ export let defaultMaxListeners = 10;
 /**
  * See also https://nodejs.org/api/events.html
  */
-export default class EventEmitter {
+export class EventEmitter {
   public static captureRejectionSymbol = Symbol.for("nodejs.rejection");
   public static errorMonitor = Symbol("events.errorMonitor");
   public static get defaultMaxListeners() {
@@ -76,6 +77,7 @@ export default class EventEmitter {
     listener: GenericFunction | WrappedFunction,
     prepend: boolean,
   ): this {
+    this.checkListenerArgument(listener);
     this.emit("newListener", eventName, listener);
     if (this._events.has(eventName)) {
       const listeners = this._events.get(eventName) as Array<
@@ -176,6 +178,13 @@ export default class EventEmitter {
     }
   }
 
+  static listenerCount(
+    emitter: EventEmitter,
+    eventName: string | symbol,
+  ): number {
+    return emitter.listenerCount(eventName);
+  }
+
   private _listeners(
     target: EventEmitter,
     eventName: string | symbol,
@@ -249,6 +258,7 @@ export default class EventEmitter {
     eventName: string | symbol,
     listener: GenericFunction,
   ): WrappedFunction {
+    this.checkListenerArgument(listener);
     const wrapper = function (
       this: {
         eventName: string | symbol;
@@ -341,6 +351,7 @@ export default class EventEmitter {
     eventName: string | symbol,
     listener: GenericFunction,
   ): this {
+    this.checkListenerArgument(listener);
     if (this._events.has(eventName)) {
       const arr:
         | Array<GenericFunction | WrappedFunction>
@@ -549,10 +560,18 @@ export default class EventEmitter {
       iterator.return();
     }
   }
+
+  private checkListenerArgument(listener: unknown): void {
+    if (typeof listener !== "function") {
+      throw new ERR_INVALID_ARG_TYPE("listener", "function", listener);
+    }
+  }
 }
 
-export { EventEmitter };
-export const once = EventEmitter.once;
-export const on = EventEmitter.on;
+export default Object.assign(EventEmitter, { EventEmitter });
+
 export const captureRejectionSymbol = EventEmitter.captureRejectionSymbol;
 export const errorMonitor = EventEmitter.errorMonitor;
+export const listenerCount = EventEmitter.listenerCount;
+export const on = EventEmitter.on;
+export const once = EventEmitter.once;

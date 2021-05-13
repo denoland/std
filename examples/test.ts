@@ -14,7 +14,7 @@ Deno.test("t2", function (): void {
 });
 
 /** A more complicated test that runs a subprocess. */
-Deno.test("catSmoke", async function (): Promise<void> {
+Deno.test("catSmoke", async function () {
   const p = Deno.run({
     cmd: [
       Deno.execPath(),

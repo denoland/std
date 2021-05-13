@@ -8,12 +8,13 @@ deno standard library as it's a compatibility module.
 
 ## Supported Builtins
 
-- [ ] assert
+- [x] assert _partly_
 - [x] buffer
-- [ ] child_process
+- [x] child_process _partly_
 - [ ] cluster
-- [ ] console
-- [ ] crypto
+- [x] console _partly_
+- [x] constants _partly_
+- [x] crypto _partly_
 - [ ] dgram
 - [ ] dns
 - [x] events
@@ -30,15 +31,15 @@ deno standard library as it's a compatibility module.
 - [x] querystring
 - [ ] readline
 - [ ] repl
-- [ ] stream
-- [ ] string_decoder
+- [x] stream
+- [x] string_decoder
 - [ ] sys
 - [x] timers
 - [ ] tls
-- [ ] tty
-- [ ] url
+- [x] tty _partly_
+- [x] url
 - [x] util _partly_
-- [ ] ~~v8~~ _can't implement_
+- ~~v8~~ _can't implement_
 - [ ] vm
 - [ ] worker_threads
 - [ ] zlib
@@ -49,7 +50,6 @@ deno standard library as it's a compatibility module.
 
 These builtins are deprecated in NodeJS v13 and will probably not be polyfilled:
 
-- constants
 - domain
 - freelist
 - punycode
@@ -84,6 +84,21 @@ const leftPad = require("left-pad");
 ```
 
 ## Contributing
+
+### Setting up the test runner
+
+This library contains automated tests pulled directly from the Node repo in
+order ensure compatibility.
+
+Setting up the test runner is as simple as running the `node/_tools/setup.ts`
+file, this will pull the configured tests in and then add them to the test
+workflow.
+
+To enable new tests, simply add a new entry inside `node/_tools/config.json`
+under the `tests` property. The structure this entries must have has to resemble
+a path inside `https://github.com/nodejs/node/tree/master/test`.
+
+### Best practices
 
 When converting from promise-based to callback-based APIs, the most obvious way
 is like this:

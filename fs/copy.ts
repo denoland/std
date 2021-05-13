@@ -86,7 +86,7 @@ async function copyFile(
   src: string,
   dest: string,
   options: InternalCopyOptions,
-): Promise<void> {
+) {
   await ensureValidCopy(src, dest, options);
   await Deno.copyFile(src, dest);
   if (options.preserveTimestamps) {
@@ -117,7 +117,7 @@ async function copySymLink(
   src: string,
   dest: string,
   options: InternalCopyOptions,
-): Promise<void> {
+) {
   await ensureValidCopy(src, dest, options);
   const originSrcFilePath = await Deno.readLink(src);
   const type = getFileInfoType(await Deno.lstat(src));
@@ -166,7 +166,7 @@ async function copyDir(
   src: string,
   dest: string,
   options: CopyOptions,
-): Promise<void> {
+) {
   const destStat = await ensureValidCopy(src, dest, {
     ...options,
     isFolder: true,
@@ -242,7 +242,7 @@ export async function copy(
   src: string,
   dest: string,
   options: CopyOptions = {},
-): Promise<void> {
+) {
   src = path.resolve(src);
   dest = path.resolve(dest);
 

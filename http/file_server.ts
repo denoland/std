@@ -68,6 +68,7 @@ const MEDIA_TYPES: Record<string, string> = {
   ".css": "text/css",
   ".wasm": "application/wasm",
   ".mjs": "application/javascript",
+  ".svg": "image/svg+xml",
 };
 
 /** Returns the content-type based on the extension of a path. */
@@ -179,7 +180,7 @@ async function serveDir(
       mode: modeToString(entry.isDirectory, fileInfo.mode),
       size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
       name: `${entry.name}${entry.isDirectory ? "/" : ""}`,
-      url: fileUrl,
+      url: `${fileUrl}${entry.isDirectory ? "/" : ""}`,
     });
   }
   listEntry.sort((a, b) =>
@@ -199,7 +200,7 @@ async function serveDir(
   return res;
 }
 
-function serveFallback(req: ServerRequest, e: Error): Promise<Response> {
+function serveFallback(_req: ServerRequest, e: Error): Promise<Response> {
   if (e instanceof URIError) {
     return Promise.resolve({
       status: 400,
@@ -426,7 +427,7 @@ function main(): void {
     Deno.exit();
   }
 
-  const handler = async (req: ServerRequest): Promise<void> => {
+  const handler = async (req: ServerRequest) => {
     let response: Response | undefined;
     try {
       const normalizedUrl = normalizeURL(req.url);

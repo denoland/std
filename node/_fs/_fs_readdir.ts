@@ -50,7 +50,7 @@ export function readdir(
   if (options?.encoding) {
     try {
       new TextDecoder(options.encoding);
-    } catch (error) {
+    } catch {
       throw new Error(
         `TypeError [ERR_INVALID_OPT_VALUE_ENCODING]: The value "${options.encoding}" is invalid for option "encoding"`,
       );
@@ -100,7 +100,7 @@ export function readdirSync(
   if (options?.encoding) {
     try {
       new TextDecoder(options.encoding);
-    } catch (error) {
+    } catch {
       throw new Error(
         `TypeError [ERR_INVALID_OPT_VALUE_ENCODING]: The value "${options.encoding}" is invalid for option "encoding"`,
       );

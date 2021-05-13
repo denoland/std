@@ -1,5 +1,4 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { decode } from "../encoding/utf8.ts";
 import {
   assert,
   assertEquals,
@@ -50,7 +49,7 @@ const EG_OPTIONS: ExpandGlobOptions = {
   globstar: false,
 };
 
-Deno.test("expandGlobWildcard", async function (): Promise<void> {
+Deno.test("expandGlobWildcard", async function () {
   const options = EG_OPTIONS;
   assertEquals(await expandGlobArray("*", options), [
     "abc",
@@ -60,12 +59,12 @@ Deno.test("expandGlobWildcard", async function (): Promise<void> {
   ]);
 });
 
-Deno.test("expandGlobTrailingSeparator", async function (): Promise<void> {
+Deno.test("expandGlobTrailingSeparator", async function () {
   const options = EG_OPTIONS;
   assertEquals(await expandGlobArray("*/", options), ["subdir"]);
 });
 
-Deno.test("expandGlobParent", async function (): Promise<void> {
+Deno.test("expandGlobParent", async function () {
   const options = EG_OPTIONS;
   assertEquals(await expandGlobArray("subdir/../*", options), [
     "abc",
@@ -75,7 +74,7 @@ Deno.test("expandGlobParent", async function (): Promise<void> {
   ]);
 });
 
-Deno.test("expandGlobExt", async function (): Promise<void> {
+Deno.test("expandGlobExt", async function () {
   const options = { ...EG_OPTIONS, extended: true };
   assertEquals(await expandGlobArray("abc?(def|ghi)", options), [
     "abc",
@@ -95,7 +94,7 @@ Deno.test("expandGlobExt", async function (): Promise<void> {
   assertEquals(await expandGlobArray("abc!(def|ghi)", options), ["abc"]);
 });
 
-Deno.test("expandGlobGlobstar", async function (): Promise<void> {
+Deno.test("expandGlobGlobstar", async function () {
   const options = { ...EG_OPTIONS, globstar: true };
   assertEquals(
     await expandGlobArray(joinGlobs(["**", "abc"], options), options),
@@ -103,7 +102,7 @@ Deno.test("expandGlobGlobstar", async function (): Promise<void> {
   );
 });
 
-Deno.test("expandGlobGlobstarParent", async function (): Promise<void> {
+Deno.test("expandGlobGlobstarParent", async function () {
   const options = { ...EG_OPTIONS, globstar: true };
   assertEquals(
     await expandGlobArray(joinGlobs(["subdir", "**", ".."], options), options),
@@ -111,12 +110,12 @@ Deno.test("expandGlobGlobstarParent", async function (): Promise<void> {
   );
 });
 
-Deno.test("expandGlobIncludeDirs", async function (): Promise<void> {
+Deno.test("expandGlobIncludeDirs", async function () {
   const options = { ...EG_OPTIONS, includeDirs: false };
   assertEquals(await expandGlobArray("subdir", options), []);
 });
 
-Deno.test("expandGlobPermError", async function (): Promise<void> {
+Deno.test("expandGlobPermError", async function () {
   const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
   const p = Deno.run({
     cmd: [
@@ -130,10 +129,11 @@ Deno.test("expandGlobPermError", async function (): Promise<void> {
     stdout: "piped",
     stderr: "piped",
   });
+  const decoder = new TextDecoder();
   assertEquals(await p.status(), { code: 1, success: false });
-  assertEquals(decode(await p.output()), "");
+  assertEquals(decoder.decode(await p.output()), "");
   assertStringIncludes(
-    decode(await p.stderrOutput()),
+    decoder.decode(await p.stderrOutput()),
     "Uncaught PermissionDenied",
   );
   p.close();
