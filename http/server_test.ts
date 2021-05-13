@@ -616,7 +616,9 @@ Deno.test({
     });
     await Deno.writeAll(
       conn,
-      new TextEncoder().encode("GET / HTTP/1.1\r\nmalformedHeader\r\n\r\n\r\n\r\n"),
+      new TextEncoder().encode(
+        "GET / HTTP/1.1\r\nmalformedHeader\r\n\r\n\r\n\r\n",
+      ),
     );
     const responseString = new TextDecoder().decode(await Deno.readAll(conn));
     assertEquals(responseString, "bad!");
