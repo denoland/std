@@ -621,7 +621,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
       lps[i] = 0;
       i++;
     } else {
-      prefixEnd = pat[prefixEnd - 1];
+      prefixEnd = lps[prefixEnd - 1];
     }
   }
   return lps;
@@ -641,8 +641,6 @@ export async function* readDelim(
   // Modified KMP
   let inspectIndex = 0;
   let matchIndex = 0;
-  let itr = chunks.iterator();
-  let curr = -1;
   while (true) {
     const inspectArr = new Uint8Array(bufSize);
     const result = await reader.read(inspectArr);
@@ -655,13 +653,11 @@ export async function* readDelim(
       return;
     }
     chunks.add(inspectArr, 0, result);
-    if (inspectIndex === 0 && chunks.size() > 0) {
-      curr = itr.next().value;
-    }
+    let localIndex = 0;
     while (inspectIndex < chunks.size()) {
-      if (curr === delim[matchIndex]) {
-        curr = itr.next().value;
+      if (inspectArr[localIndex] === delim[matchIndex]) {
         inspectIndex++;
+        localIndex++;
         matchIndex++;
         if (matchIndex === delimLen) {
           // Full match
@@ -672,13 +668,11 @@ export async function* readDelim(
           chunks.shift(inspectIndex);
           inspectIndex = 0;
           matchIndex = 0;
-          itr = chunks.iterator();
-          curr = itr.next().value;
         }
       } else {
         if (matchIndex === 0) {
           inspectIndex++;
-          curr = itr.next().value;
+          localIndex++;
         } else {
           matchIndex = delimLPS[matchIndex - 1];
         }
