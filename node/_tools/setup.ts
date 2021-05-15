@@ -221,7 +221,7 @@ try {
 }
 
 if (shouldDownload) {
-  console.log(`Downloading ${url} in archivePath "${archivePath}" ...`);
+  console.log(`Downloading ${url} in path "${archivePath}" ...`);
   await downloadFile(url, archivePath);
 }
 
