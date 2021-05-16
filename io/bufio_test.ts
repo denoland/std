@@ -505,6 +505,33 @@ Deno.test("readStringDelimAndLines", async function () {
   assertEquals(lines_, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
 });
 
+Deno.test("readLinesWithEncodingISO-8859-15", async function () {
+  const lines_ = [];
+  const file_ = await Deno.open('./testdata/iso-8859-15.txt')
+
+  for await (const l of readLines(file_, {encoding: 'iso-8859-15'})) {
+    lines_.push(l)
+  }
+
+  Deno.close(file_.rid);
+
+  assertEquals(lines_.length, 13);
+  assertEquals(lines_, [
+    "\u0020!\"#$%&'()*+,-./",
+    "0123456789:;<=>?",
+    "@ABCDEFGHIJKLMNO",
+    "PQRSTUVWXYZ[\\]^_",
+    "`abcdefghijklmno",
+    "pqrstuvwxyz{|}~",
+    "\u00a0¡¢£€¥Š§š©ª«¬\u00ad®¯",
+    "°±²³Žµ¶·ž¹º»ŒœŸ¿",
+    "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ",
+    "ÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß",
+    "àáâãäåæçèéêëìíîï",
+    "ðñòóôõö÷øùúûüýþÿ",
+    ""]);
+});
+
 Deno.test(
   "bufReaderShouldNotShareArrayBufferAcrossReads",
   async function () {
