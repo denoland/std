@@ -507,10 +507,10 @@ Deno.test("readStringDelimAndLines", async function () {
 
 Deno.test("readLinesWithEncodingISO-8859-15", async function () {
   const lines_ = [];
-  const file_ = await Deno.open('./testdata/iso-8859-15.txt')
+  const file_ = await Deno.open("./testdata/iso-8859-15.txt");
 
-  for await (const l of readLines(file_, {encoding: 'iso-8859-15'})) {
-    lines_.push(l)
+  for await (const l of readLines(file_, { encoding: "iso-8859-15" })) {
+    lines_.push(l);
   }
 
   Deno.close(file_.rid);
@@ -529,7 +529,8 @@ Deno.test("readLinesWithEncodingISO-8859-15", async function () {
     "ÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß",
     "àáâãäåæçèéêëìíîï",
     "ðñòóôõö÷øùúûüýþÿ",
-    ""]);
+    "",
+  ]);
 });
 
 Deno.test(
