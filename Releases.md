@@ -1,3 +1,11 @@
+### 0.97.0 / 2021.05.17
+
+- fix(io/buffer): make Buffer compatible with Deploy (#912)
+- fix(io/bufio): readDelim returns wrong result if delim strides over chunks
+  (#877)
+- fix(node/events): accept only functions as listener arguments (#916)
+- fix(testing): support array values in assertObjectMatch (#906)
+
 ### 0.96.0 / 2021.05.11
 
 - feat(fs/walk): show path in walk error (#875)
