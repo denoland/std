@@ -84,6 +84,7 @@ function toString(cookie: Cookie): string {
 /**
  * Validate Cookie Name.
  * @param name Cookie name.
+ * @returns {void}
  */
 function validateName(name: string | undefined | null): void {
   if (name && !FIELD_CONTENT_REGEXP.test(name)) {
@@ -95,6 +96,7 @@ function validateName(name: string | undefined | null): void {
  * Validate Path Value.
  * @see https://tools.ietf.org/html/rfc6265#section-4.1.2.4
  * @param path Path value.
+ * @returns {void}
  */
 function validatePath(path: string | null): void {
   if (path == null) {
@@ -116,6 +118,7 @@ function validatePath(path: string | null): void {
  * Validate Cookie Value.
  * @see https://tools.ietf.org/html/rfc6265#section-4.1
  * @param value Cookie value.
+ * @returns {void}
  */
 function validateValue(name: string, value: string | null): void {
   if (value == null || name == null) return;
