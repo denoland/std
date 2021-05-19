@@ -93,7 +93,7 @@ Deno.test({
 
 // TODO(uki00a): Remove this case when `test-event-emitter-get-max-listeners.js` is enabled.
 Deno.test({
-  name: "Pass 0 to setMaxListener",
+  name: "Pass 0 to setMaxListeners",
   fn() {
     const emitter = new EventEmitter();
     emitter.setMaxListeners(0);
