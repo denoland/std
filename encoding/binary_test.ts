@@ -5,6 +5,7 @@ import {
   getNBytes,
   putVarbig,
   putVarnum,
+  readExact,
   readVarbig,
   readVarnum,
   sizeof,
@@ -16,6 +17,26 @@ import {
   writeVarnum,
 } from "./binary.ts";
 import { Buffer } from "../io/buffer.ts";
+import { readerFromIterable } from "../io/streams.ts";
+
+Deno.test("testReadExact", async function () {
+  const reader = readerFromIterable([
+    new Uint8Array([1]),
+    new Uint8Array([2, 3]),
+    new Uint8Array([4, 5, 6]),
+  ]);
+  const scratch = new Uint8Array(4);
+  await readExact(reader, scratch);
+  assertEquals(scratch, new Uint8Array([1, 2, 3, 4]));
+});
+
+Deno.test("testReadExactThrows", async function() {
+  const reader = readerFromIterable([new Uint8Array([1]), new Uint8Array([2, 3])])
+  const scratch = new Uint8Array(4);
+  await assertThrowsAsync(async () => {
+    await readExact(reader, scratch);
+  }, Deno.errors.UnexpectedEof);
+})
 
 Deno.test("testGetNBytes", async function () {
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
