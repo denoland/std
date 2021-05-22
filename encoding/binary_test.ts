@@ -30,13 +30,16 @@ Deno.test("testReadExact", async function () {
   assertEquals(scratch, new Uint8Array([1, 2, 3, 4]));
 });
 
-Deno.test("testReadExactThrows", async function() {
-  const reader = readerFromIterable([new Uint8Array([1]), new Uint8Array([2, 3])])
+Deno.test("testReadExactThrows", async function () {
+  const reader = readerFromIterable([
+    new Uint8Array([1]),
+    new Uint8Array([2, 3]),
+  ]);
   const scratch = new Uint8Array(4);
   await assertThrowsAsync(async () => {
     await readExact(reader, scratch);
   }, Deno.errors.UnexpectedEof);
-})
+});
 
 Deno.test("testGetNBytes", async function () {
   const data = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
