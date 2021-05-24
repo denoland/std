@@ -19,12 +19,26 @@ import {
 import { Buffer } from "../io/buffer.ts";
 import { readerFromIterable } from "../io/streams.ts";
 
-Deno.test("testReadExact", async function () {
+Deno.test("testReadExactMultipleReads", async function () {
   const reader = readerFromIterable([
     new Uint8Array([1]),
     new Uint8Array([2, 3]),
     new Uint8Array([4, 5, 6]),
   ]);
+  const scratch = new Uint8Array(4);
+  await readExact(reader, scratch);
+  assertEquals(scratch, new Uint8Array([1, 2, 3, 4]));
+});
+
+Deno.test("testReadExactMultipleReadsDelayed", async function () {
+  const reader = readerFromIterable((async function* () {
+    yield new Uint8Array([1]);
+    await new Promise((r) => setTimeout(r, 1));
+    yield new Uint8Array([2, 3]);
+    await new Promise((r) => setTimeout(r, 10));
+    yield new Uint8Array([4, 5, 6]);
+  })());
+
   const scratch = new Uint8Array(4);
   await readExact(reader, scratch);
   assertEquals(scratch, new Uint8Array([1, 2, 3, 4]));
