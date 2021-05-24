@@ -195,7 +195,7 @@ export class EventEmitter {
     eventName: string | symbol,
     unwrap: boolean,
   ): GenericFunction[] {
-    if (!target._events.has(eventName)) {
+    if (!target._events?.has(eventName)) {
       return [];
     }
     const eventListeners = target._events.get(eventName) as GenericFunction[];
@@ -270,15 +270,20 @@ export class EventEmitter {
         listener: GenericFunction;
         rawListener: GenericFunction | WrappedFunction;
         context: EventEmitter;
+        isCalled?: boolean;
       },
       // deno-lint-ignore no-explicit-any
       ...args: any[]
     ): void {
+      if (this.isCalled) {
+        return;
+      }
       this.context.removeListener(
         this.eventName,
         this.rawListener as GenericFunction,
       );
-      this.listener.apply(this.context, args);
+      this.isCalled = true;
+      return this.listener.apply(this.context, args);
     };
     const wrapperContext = {
       eventName: eventName,
