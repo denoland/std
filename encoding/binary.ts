@@ -51,7 +51,7 @@ export async function readExact(
 ): Promise<void> {
   let totalRead = 0;
   do {
-    let tmp = new Uint8Array(b.length - totalRead);
+    const tmp = new Uint8Array(b.length - totalRead);
     const nRead = await r.read(tmp);
     if (nRead === null) throw new Deno.errors.UnexpectedEof();
     b.set(tmp, totalRead);
