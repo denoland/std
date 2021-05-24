@@ -22,7 +22,6 @@ const notImplementedEvents = [
   "uncaughtException",
   "uncaughtExceptionMonitor",
   "unhandledRejection",
-  "warning",
 ];
 
 /** https://nodejs.org/api/process.html#process_process_arch */

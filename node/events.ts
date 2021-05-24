@@ -21,9 +21,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { validateIntegerRange } from "./_utils.ts";
 import { assert } from "../_util/assert.ts";
-import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE } from "./_errors.ts";
+import { inspect } from "./util.ts";
 
 // deno-lint-ignore no-explicit-any
 export type GenericFunction = (...args: any[]) => any;
@@ -48,6 +48,11 @@ interface AsyncIterable {
 }
 
 export let defaultMaxListeners = 10;
+function validateMaxListeners(n: number, name: string): void {
+  if (!Number.isInteger(n) || n < 0) {
+    throw new ERR_OUT_OF_RANGE(name, "a non-negative number", inspect(n));
+  }
+}
 
 /**
  * See also https://nodejs.org/api/events.html
@@ -59,6 +64,7 @@ export class EventEmitter {
     return defaultMaxListeners;
   }
   public static set defaultMaxListeners(value: number) {
+    validateMaxListeners(value, "defaultMaxListeners");
     defaultMaxListeners = value;
   }
 
@@ -67,6 +73,8 @@ export class EventEmitter {
     string | symbol,
     Array<GenericFunction | WrappedFunction>
   >;
+
+  private static _alreadyWarnedEvents?: Set<string | symbol>;
 
   public constructor() {
     this._events = new Map();
@@ -93,13 +101,8 @@ export class EventEmitter {
     }
     const max = this.getMaxListeners();
     if (max > 0 && this.listenerCount(eventName) > max) {
-      const warning = new Error(
-        `Possible EventEmitter memory leak detected.
-         ${this.listenerCount(eventName)} ${eventName.toString()} listeners.
-         Use emitter.setMaxListeners() to increase limit`,
-      );
-      warning.name = "MaxListenersExceededWarning";
-      console.warn(warning);
+      const warning = new MaxListenersExceededWarning(this, eventName);
+      this.warnIfNeeded(eventName, warning);
     }
 
     return this;
@@ -163,7 +166,9 @@ export class EventEmitter {
    * EventEmitter.defaultMaxListeners.
    */
   public getMaxListeners(): number {
-    return this.maxListeners || EventEmitter.defaultMaxListeners;
+    return this.maxListeners == null
+      ? EventEmitter.defaultMaxListeners
+      : this.maxListeners;
   }
 
   /**
@@ -392,11 +397,7 @@ export class EventEmitter {
    */
   public setMaxListeners(n: number): this {
     if (n !== Infinity) {
-      if (n === 0) {
-        n = Infinity;
-      } else {
-        validateIntegerRange(n, "maxListeners", 0);
-      }
+      validateMaxListeners(n, "n");
     }
 
     this.maxListeners = n;
@@ -565,6 +566,43 @@ export class EventEmitter {
     if (typeof listener !== "function") {
       throw new ERR_INVALID_ARG_TYPE("listener", "function", listener);
     }
+  }
+
+  private warnIfNeeded(eventName: string | symbol, warning: Error): void {
+    EventEmitter._alreadyWarnedEvents ||= new Set();
+    if (EventEmitter._alreadyWarnedEvents.has(eventName)) {
+      return;
+    }
+    EventEmitter._alreadyWarnedEvents.add(eventName);
+    console.warn(warning);
+
+    // TODO(uki00a): Here are two problems:
+    // * If `global.ts` is not imported, then `globalThis.process` will be undefined.
+    // * Importing `process.ts` from this file will result in circurlar reference.
+    // As a workaround, explicitly check for the existence of `globalThis.process`.
+    // deno-lint-ignore no-explicit-any
+    const maybeProcess = (globalThis as any).process;
+    if (maybeProcess instanceof EventEmitter) {
+      maybeProcess.emit("warning", warning);
+    }
+  }
+}
+
+class MaxListenersExceededWarning extends Error {
+  readonly count: number;
+  constructor(
+    readonly emitter: EventEmitter,
+    readonly type: string | symbol,
+  ) {
+    const listenerCount = emitter.listenerCount(type);
+    const message = "Possible EventEmitter memory leak detected. " +
+      `${listenerCount} ${
+        type == null ? "null" : type.toString()
+      } listeners added to [${emitter.constructor.name}]. ` +
+      " Use emitter.setMaxListeners() to increase limit";
+    super(message);
+    this.count = listenerCount;
+    this.name = "MaxListenersExceededWarning";
   }
 }
 
