@@ -24,3 +24,23 @@ function _addHook(fn: Function, hookType: HookType): void {
   }
   hooks[hookType] = fn;
 }
+
+/**
+ * Helper function to execute registred hooks.
+ */
+export const withHooks = (fn: () => void | Promise<void>) => () => {
+  if (typeof fn !== "function") {
+    throw new TypeError(
+      "Invalid first argument. It must be a callback function."
+    );
+  }
+  if (hooks.beforeEach) {
+    hooks.beforeEach();
+  }
+  // execute the callback function
+  fn();
+  if (hooks.afterEach) {
+    hooks.afterEach();
+  }
+};
+
