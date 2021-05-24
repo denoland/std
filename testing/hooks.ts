@@ -44,3 +44,17 @@ export const withHooks = (fn: () => void | Promise<void>) => () => {
   }
 };
 
+/**
+ * INFO:
+ * Runs a function before each of the tests.
+ * If the function returns a promise or is a generator,
+ * Deno aits for that promise to resolve before running the test.
+ * `fn` can be async if required.
+ */
+export const beforeEach: THook = (fn) => _addHook(fn, "beforeEach");
+/**
+ * INFO:
+ * Runs a function after each of the tests.
+ * `fn` can be async if required.
+ */
+export const afterEach: THook = (fn) => _addHook(fn, "afterEach");
