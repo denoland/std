@@ -1,17 +1,18 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
-type THook = (fn: Function) => void | Promise<void>;
+type THookFn = () => void | Promise<void>;
+type THook = (fn: THookFn) => void | Promise<void>;
 type HookType = "beforeEach" | "afterEach";
 
-const hooks: Partial<Record<HookType, Function>> = {};
+const hooks: Partial<Record<HookType, THookFn>> = {};
 
 /**
  * Register new testing hooks.
  *
- * @param {THook} fn
+ * @param {Function} fn
  * @param {HookType} hookType
  */
-function _addHook(fn: Function, hookType: HookType): void {
+function _addHook(fn: THookFn, hookType: HookType): void {
   if (typeof fn !== "function") {
     throw new TypeError(
       "Invalid first argument. It must be a callback function.",
@@ -28,20 +29,20 @@ function _addHook(fn: Function, hookType: HookType): void {
 /**
  * Helper function to execute registred hooks.
  */
-export const withHooks = (fn: () => void | Promise<void>) =>
-  () => {
+export const withHooks = (fn: THookFn) =>
+  async () => {
     if (typeof fn !== "function") {
       throw new TypeError(
         "Invalid first argument. It must be a callback function.",
       );
     }
     if (hooks.beforeEach) {
-      hooks.beforeEach();
+      await hooks.beforeEach();
     }
     // execute the callback function
-    fn();
+    await fn();
     if (hooks.afterEach) {
-      hooks.afterEach();
+      await hooks.afterEach();
     }
   };
 
@@ -52,6 +53,7 @@ export const withHooks = (fn: () => void | Promise<void>) =>
  * Deno aits for that promise to resolve before running the test.
  * `fn` can be async if required.
  */
+
 export const beforeEach: THook = (fn) => _addHook(fn, "beforeEach");
 /**
  * INFO:
