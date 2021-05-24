@@ -14,12 +14,12 @@ const hooks: Partial<Record<HookType, Function>> = {};
 function _addHook(fn: Function, hookType: HookType): void {
   if (typeof fn !== "function") {
     throw new TypeError(
-      "Invalid first argument. It must be a callback function."
+      "Invalid first argument. It must be a callback function.",
     );
   }
   if (typeof hookType !== "string") {
     throw new TypeError(
-      `Invalid second argument, ${hookType}. It must be a string`
+      `Invalid second argument, ${hookType}. It must be a string`,
     );
   }
   hooks[hookType] = fn;
@@ -28,21 +28,22 @@ function _addHook(fn: Function, hookType: HookType): void {
 /**
  * Helper function to execute registred hooks.
  */
-export const withHooks = (fn: () => void | Promise<void>) => () => {
-  if (typeof fn !== "function") {
-    throw new TypeError(
-      "Invalid first argument. It must be a callback function."
-    );
-  }
-  if (hooks.beforeEach) {
-    hooks.beforeEach();
-  }
-  // execute the callback function
-  fn();
-  if (hooks.afterEach) {
-    hooks.afterEach();
-  }
-};
+export const withHooks = (fn: () => void | Promise<void>) =>
+  () => {
+    if (typeof fn !== "function") {
+      throw new TypeError(
+        "Invalid first argument. It must be a callback function.",
+      );
+    }
+    if (hooks.beforeEach) {
+      hooks.beforeEach();
+    }
+    // execute the callback function
+    fn();
+    if (hooks.afterEach) {
+      hooks.afterEach();
+    }
+  };
 
 /**
  * INFO:
