@@ -275,6 +275,8 @@ export class EventEmitter {
       // deno-lint-ignore no-explicit-any
       ...args: any[]
     ): void {
+      // If `emit` is called in listeners, the same listener can be called multiple times.
+      // To prevent that, check the flag here.
       if (this.isCalled) {
         return;
       }
