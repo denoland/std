@@ -20,7 +20,7 @@ Deno.test("afterEach is exectued correctly", function (): void {
     didInvoke = true;
     assertEquals(didInvoke, true);
   });
-  assertEquals(didInvoke, false);
   withHooks(function () {
+    assertEquals(didInvoke, false);
   })();
 });
