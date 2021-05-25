@@ -22,6 +22,5 @@ Deno.test("afterEach is exectued correctly", function (): void {
   });
   assertEquals(didInvoke, false);
   withHooks(function () {
-    assertEquals(/cat/, /cat/);
   })();
 });
