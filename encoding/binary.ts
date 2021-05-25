@@ -42,7 +42,24 @@ export function sizeof(dataType: DataType): number {
   return rawTypeSizes[dataType];
 }
 
-/** Reads `n` bytes from `r`.
+/** Reads the exact number of bytes from `r` required to fill `b`.
+ *
+ * Throws `Deno.errors.UnexpectedEof` if `n` bytes cannot be read. */
+export async function readExact(
+  r: Deno.Reader,
+  b: Uint8Array,
+): Promise<void> {
+  let totalRead = 0;
+  do {
+    const tmp = new Uint8Array(b.length - totalRead);
+    const nRead = await r.read(tmp);
+    if (nRead === null) throw new Deno.errors.UnexpectedEof();
+    b.set(tmp, totalRead);
+    totalRead += nRead;
+  } while (totalRead < b.length);
+}
+
+/** Reads exactly `n` bytes from `r`.
  *
  * Resolves it in a `Uint8Array`, or throws `Deno.errors.UnexpectedEof` if `n` bytes cannot be read. */
 export async function getNBytes(
@@ -50,8 +67,7 @@ export async function getNBytes(
   n: number,
 ): Promise<Uint8Array> {
   const scratch = new Uint8Array(n);
-  const nRead = await r.read(scratch);
-  if (nRead === null || nRead < n) throw new Deno.errors.UnexpectedEof();
+  await readExact(r, scratch);
   return scratch;
 }
 
