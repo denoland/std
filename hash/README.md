@@ -1,5 +1,7 @@
 # std/hash
 
+hash is module to provide interfaces for hash functions.
+
 ## Usage
 
 ### Creating new hash instance
