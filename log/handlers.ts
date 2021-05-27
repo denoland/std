@@ -102,7 +102,9 @@ export class FileHandler extends WriterHandler {
   protected _mode: LogMode;
   protected _openOptions: Deno.OpenOptions;
   protected _encoder = new TextEncoder();
-  #unloadCallback = () => this.destroy();
+  #unloadCallback() {
+    this.destroy();
+  }
 
   constructor(levelName: LevelName, options: FileHandlerOptions) {
     super(levelName, options);
