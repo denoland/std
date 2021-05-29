@@ -15,7 +15,6 @@ the `fs.walk` function but can be used anywhere else.
 import { globToRegExp } from "https://deno.land/std@$STD_VERSION/path/glob.ts";
 
 globToRegExp("foo/**/*.json", {
-  flags: "g",
   extended: true,
   globstar: true,
   caseInsensitive: false,
