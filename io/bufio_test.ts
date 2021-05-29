@@ -220,7 +220,6 @@ async function testReadLine(input: Uint8Array) {
       }
       const { line, more } = r;
       assertEquals(more, false);
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       const want = testOutput.subarray(done, done + line.byteLength);
       assertEquals(
         line,
@@ -377,7 +376,6 @@ Deno.test("bufioWriter", async function () {
   const data = new Uint8Array(8192);
 
   for (let i = 0; i < data.byteLength; i++) {
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     data[i] = " ".charCodeAt(0) + (i % ("~".charCodeAt(0) - " ".charCodeAt(0)));
   }
 
@@ -411,7 +409,6 @@ Deno.test("bufioWriterSync", function (): void {
   const data = new Uint8Array(8192);
 
   for (let i = 0; i < data.byteLength; i++) {
-    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     data[i] = " ".charCodeAt(0) + (i % ("~".charCodeAt(0) - " ".charCodeAt(0)));
   }
 

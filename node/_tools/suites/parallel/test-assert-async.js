@@ -165,7 +165,6 @@ promises.push(assert.rejects(
 {
   // `assert.doesNotReject` accepts a function or a promise
   // or a thenable as first argument.
-  /* eslint-disable no-restricted-syntax */
   let promise = assert.doesNotReject(() => new Map(), common.mustNotCall());
   promises.push(assert.rejects(promise, {
     message: 'Expected instance of Promise to be returned ' +
@@ -236,7 +235,6 @@ promises.push(assert.rejects(
                'function or an instance of Promise. Received type number (123)'
     }
   ));
-  /* eslint-enable no-restricted-syntax */
 }
 
 // Make sure all async code gets properly executed.

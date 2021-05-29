@@ -88,7 +88,6 @@ assert.throws(() => a.notEqual(true, true),
 assert.throws(() => a.strictEqual(2, '2'),
               a.AssertionError, 'strictEqual(2, \'2\')');
 
-/* eslint-disable no-restricted-syntax */
 assert.throws(() => a.strictEqual(null, undefined),
               a.AssertionError, 'strictEqual(null, undefined)');
 
@@ -209,7 +208,7 @@ assert.throws(
   try {
     assert.throws(
       () => {
-        throw ({}); // eslint-disable-line no-throw-literal
+        throw ({});
       },
       Array
     );
@@ -459,7 +458,6 @@ assert.throws(
 }
 
 // https://github.com/nodejs/node/issues/3275
-// eslint-disable-next-line no-throw-literal
 assert.throws(() => { throw 'error'; }, (err) => err === 'error');
 assert.throws(() => { throw new Error(); }, (err) => err instanceof Error);
 
@@ -539,7 +537,6 @@ a.throws(
 {
   const a = require('assert');
   const assert = require('assert').strict;
-  /* eslint-disable no-restricted-properties */
   assert.throws(() => assert.equal(1, true), assert.AssertionError);
   assert.notEqual(0, false);
   assert.throws(() => assert.deepEqual(1, true), assert.AssertionError);
@@ -774,7 +771,6 @@ a.throws(
     { message }
     */
   );
-  /* eslint-enable no-restricted-properties */
 }
 
 assert.throws(
@@ -852,7 +848,6 @@ assert.throws(
   () => {
     a(
       (() => 'string')()
-      // eslint-disable-next-line operator-linebreak
       ===
       123 instanceof
           Buffer
@@ -865,7 +860,6 @@ assert.throws(
     message: 'The expression evaluated to a falsy value:\n\n' +
              '  a(\n' +
              '    (() => \'string\')()\n' +
-             '    // eslint-disable-next-line operator-linebreak\n' +
              '    ===\n' +
              '    123 instanceof\n' +
              '        Buffer\n' +
@@ -878,7 +872,6 @@ assert.throws(
   () => {
     a(
       (() => 'string')()
-      // eslint-disable-next-line operator-linebreak
       ===
   123 instanceof
           Buffer
@@ -891,7 +884,6 @@ assert.throws(
     message: 'The expression evaluated to a falsy value:\n\n' +
              '  a(\n' +
              '    (() => \'string\')()\n' +
-             '    // eslint-disable-next-line operator-linebreak\n' +
              '    ===\n' +
              '  123 instanceof\n' +
              '        Buffer\n' +
@@ -900,7 +892,6 @@ assert.throws(
   }
 );
 
-/* eslint-disable indent */
 assert.throws(() => {
 a((
   () => 'string')() ===
@@ -920,7 +911,6 @@ Buffer
   */
   }
 );
-/* eslint-enable indent */
 
 assert.throws(
   () => {
@@ -952,7 +942,6 @@ assert.throws(
 );
 
 assert.throws(
-  // eslint-disable-next-line dot-notation, quotes
   () => assert['ok']["apply"](null, [0]),
   {
     code: 'ERR_ASSERTION',
@@ -1174,10 +1163,8 @@ assert.throws(
     }
   );
 
-  // eslint-disable-next-line no-throw-literal
   assert.throws(() => { throw undefined; }, /undefined/);
   assert.throws(
-    // eslint-disable-next-line no-throw-literal
     () => a.doesNotThrow(() => { throw undefined; }),
     {
       name: 'AssertionError',
@@ -1197,7 +1184,6 @@ assert.throws(
 
 assert.throws(
   () => a.throws(
-    // eslint-disable-next-line no-throw-literal
     () => { throw 'foo'; },
     'foo'
   ),
@@ -1219,10 +1205,8 @@ assert.throws(
              'The error message "foo" is identical to the message.'
   }
 );
-/* eslint-enable no-restricted-syntax */
 
 // Should not throw.
-// eslint-disable-next-line no-restricted-syntax, no-throw-literal
 assert.throws(() => { throw null; }, 'foo');
 
 assert.throws(
@@ -1410,7 +1394,7 @@ assert.throws(
 );
 
 assert.throws(
-  () => a.notStrictEqual(5n), // eslint-disable-line no-restricted-syntax
+  () => a.notStrictEqual(5n),
   { code: 'ERR_MISSING_ARGS' }
 );
 
@@ -1459,7 +1443,6 @@ assert.throws(
 );
 
 assert.throws(
-  // eslint-disable-next-line no-throw-literal
   () => assert.throws(() => { throw [1, 2]; }, RangeError),
   {
     code: 'ERR_ASSERTION',

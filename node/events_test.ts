@@ -540,7 +540,6 @@ Deno.test({
     let thrown = false;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for await (const event of iterable) {
         fail("no events should be processed due to the error thrown");
       }

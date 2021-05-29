@@ -234,7 +234,6 @@ Deno.test("Async iterator: 'close' called on forced iteration end", async () => 
   readable.push("asd");
   readable.push("asd");
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for await (const d of readable) {
     break;
   }
