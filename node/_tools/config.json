@@ -15,7 +15,9 @@
       "test-event-emitter-max-listeners-warning.js",
       "test-event-emitter-max-listeners.js",
       "test-event-emitter-invalid-listener.js",
-      "test-event-emitter-listener-count.js"
+      "test-event-emitter-listener-count.js",
+      "test-event-emitter-listeners.js",
+      "test-event-emitter-once.js"
     ]
   },
   "suitesFolder": "suites",
