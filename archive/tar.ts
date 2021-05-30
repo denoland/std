@@ -539,7 +539,7 @@ export class Untar {
     this.block = new Uint8Array(recordSize);
   }
 
-  #checksum = (header: Uint8Array): number => {
+  #checksum(header: Uint8Array): number {
     let sum = initialChecksum;
     for (let i = 0; i < 512; i++) {
       if (i >= 148 && i < 156) {
@@ -549,9 +549,9 @@ export class Untar {
       sum += header[i];
     }
     return sum;
-  };
+  }
 
-  #getHeader = async (): Promise<TarHeader | null> => {
+  async #getHeader(): Promise<TarHeader | null> {
     await readBlock(this.reader, this.block);
     const header = parseHeader(this.block);
 
@@ -574,9 +574,9 @@ export class Untar {
     }
 
     return header;
-  };
+  }
 
-  #getMetadata = (header: TarHeader): TarMeta => {
+  #getMetadata(header: TarHeader): TarMeta {
     const decoder = new TextDecoder();
     // get meta data
     const meta: TarMeta = {
@@ -610,7 +610,7 @@ export class Untar {
     meta.type = FileTypes[parseInt(meta.type!)] ?? meta.type;
 
     return meta;
-  };
+  }
 
   async extract(): Promise<TarEntry | null> {
     if (this.#entry && !this.#entry.consumed) {

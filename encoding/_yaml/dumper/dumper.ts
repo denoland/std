@@ -368,7 +368,6 @@ function foldString(string: string, width: number): string {
     let nextLF = string.indexOf("\n");
     nextLF = nextLF !== -1 ? nextLF : string.length;
     lineRe.lastIndex = nextLF;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     return foldLine(string.slice(0, nextLF), width);
   })();
   // If we haven't reached the first content line yet, don't add an extra \n.
@@ -384,7 +383,6 @@ function foldString(string: string, width: number): string {
     moreIndented = line[0] === " ";
     result += prefix +
       (!prevMoreIndented && !moreIndented && line !== "" ? "\n" : "") +
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       foldLine(line, width);
     prevMoreIndented = moreIndented;
   }
@@ -525,7 +523,6 @@ function writeFlowSequence(
 
   for (let index = 0, length = object.length; index < length; index += 1) {
     // Write only valid elements.
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (writeNode(state, level, object[index], false, false)) {
       if (index !== 0) _result += `,${!state.condenseFlow ? " " : ""}`;
       _result += state.dump;
@@ -547,7 +544,6 @@ function writeBlockSequence(
 
   for (let index = 0, length = object.length; index < length; index += 1) {
     // Write only valid elements.
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (writeNode(state, level + 1, object[index], true, true)) {
       if (!compact || index !== 0) {
         _result += generateNextLine(state, level);
@@ -589,7 +585,6 @@ function writeFlowMapping(
     objectKey = objectKeyList[index];
     objectValue = object[objectKey];
 
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!writeNode(state, level, objectKey, false, false)) {
       continue; // Skip this pair because of invalid key;
     }
@@ -600,7 +595,6 @@ function writeFlowMapping(
       state.condenseFlow ? "" : " "
     }`;
 
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!writeNode(state, level, objectValue, false, false)) {
       continue; // Skip this pair because of invalid value.
     }
@@ -655,7 +649,6 @@ function writeBlockMapping(
     objectKey = objectKeyList[index];
     objectValue = object[objectKey];
 
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!writeNode(state, level + 1, objectKey, true, true, true)) {
       continue; // Skip this pair because of invalid key.
     }
@@ -677,7 +670,6 @@ function writeBlockMapping(
       pairBuffer += generateNextLine(state, level);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!writeNode(state, level + 1, objectValue, true, explicitPair)) {
       continue; // Skip this pair because of invalid value.
     }
