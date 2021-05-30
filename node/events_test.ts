@@ -540,7 +540,7 @@ Deno.test({
     let thrown = false;
 
     try {
-      for await (const event of iterable) {
+      for await (const _event of iterable) {
         fail("no events should be processed due to the error thrown");
       }
     } catch (err) {
