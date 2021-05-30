@@ -82,19 +82,19 @@ export class Buffer {
     this.#off = 0;
   }
 
-  #tryGrowByReslice = (n: number) => {
+  #tryGrowByReslice(n: number) {
     const l = this.#buf.byteLength;
     if (n <= this.capacity - l) {
       this.#reslice(l + n);
       return l;
     }
     return -1;
-  };
+  }
 
-  #reslice = (len: number) => {
+  #reslice(len: number) {
     assert(len <= this.#buf.buffer.byteLength);
     this.#buf = new Uint8Array(this.#buf.buffer, 0, len);
-  };
+  }
 
   /** Reads the next `p.length` bytes from the buffer or until the buffer is
    * drained. Returns the number of bytes read. If the buffer has no data to
@@ -138,7 +138,7 @@ export class Buffer {
     return Promise.resolve(n);
   }
 
-  #grow = (n: number) => {
+  #grow(n: number) {
     const m = this.length;
     // If buffer is empty, reset to recover space.
     if (m === 0 && this.#off !== 0) {
@@ -168,7 +168,7 @@ export class Buffer {
     this.#off = 0;
     this.#reslice(Math.min(m + n, MAX_SIZE));
     return m;
-  };
+  }
 
   /** Grows the buffer's capacity, if necessary, to guarantee space for
    * another `n` bytes. After `.grow(n)`, at least `n` bytes can be written to
