@@ -43,19 +43,16 @@ jobs:
       - name: Run tests
         run: deno test --unstable --allow-all
 
-      # TODO(kt3k): Enable coverage settings again when
-      # https://github.com/denoland/deno/issues/10788 is resolved
-      #
-      # - name: Generate lcov
-      #   if: matrix.deno == 'canary' && !startsWith(matrix.os, 'ubuntu')
-      #   run: deno coverage --unstable --lcov ./cov > cov.lcov
+      - name: Generate lcov
+        if: matrix.deno == 'canary' && !startsWith(matrix.os, 'ubuntu')
+        run: deno coverage --unstable --lcov ./cov > cov.lcov
 
-      # - name: Upload coverage
-      #   if: matrix.deno == 'canary' && !startsWith(matrix.os, 'ubuntu')
-      #   uses: codecov/codecov-action@v1
-      #   with:
-      #     name: ${{ matrix.os }}-${{ matrix.deno }}
-      #     files: cov.lcov
+      - name: Upload coverage
+        if: matrix.deno == 'canary' && !startsWith(matrix.os, 'ubuntu')
+        uses: codecov/codecov-action@v1
+        with:
+          name: ${{ matrix.os }}-${{ matrix.deno }}
+          files: cov.lcov
 
   lint:
     runs-on: ubuntu-latest
