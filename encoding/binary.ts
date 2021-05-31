@@ -81,21 +81,21 @@ export function varnum(b: Uint8Array, o: VarnumOptions = {}): number | null {
   const view = new DataView(b.buffer);
   switch (o.dataType) {
     case "int8":
-      return view.getInt8(0);
+      return view.getInt8(b.byteOffset);
     case "uint8":
-      return view.getUint8(0);
+      return view.getUint8(b.byteOffset);
     case "int16":
-      return view.getInt16(0, littleEndian);
+      return view.getInt16(b.byteOffset, littleEndian);
     case "uint16":
-      return view.getUint16(0, littleEndian);
+      return view.getUint16(b.byteOffset, littleEndian);
     case "int32":
-      return view.getInt32(0, littleEndian);
+      return view.getInt32(b.byteOffset, littleEndian);
     case "uint32":
-      return view.getUint32(0, littleEndian);
+      return view.getUint32(b.byteOffset, littleEndian);
     case "float32":
-      return view.getFloat32(0, littleEndian);
+      return view.getFloat32(b.byteOffset, littleEndian);
     case "float64":
-      return view.getFloat64(0, littleEndian);
+      return view.getFloat64(b.byteOffset, littleEndian);
   }
 }
 
@@ -109,21 +109,21 @@ export function varbig(b: Uint8Array, o: VarbigOptions = {}): bigint | null {
   const view = new DataView(b.buffer);
   switch (o.dataType) {
     case "int8":
-      return BigInt(view.getInt8(0));
+      return BigInt(view.getInt8(b.byteOffset));
     case "uint8":
-      return BigInt(view.getUint8(0));
+      return BigInt(view.getUint8(b.byteOffset));
     case "int16":
-      return BigInt(view.getInt16(0, littleEndian));
+      return BigInt(view.getInt16(b.byteOffset, littleEndian));
     case "uint16":
-      return BigInt(view.getUint16(0, littleEndian));
+      return BigInt(view.getUint16(b.byteOffset, littleEndian));
     case "int32":
-      return BigInt(view.getInt32(0, littleEndian));
+      return BigInt(view.getInt32(b.byteOffset, littleEndian));
     case "uint32":
-      return BigInt(view.getUint32(0, littleEndian));
+      return BigInt(view.getUint32(b.byteOffset, littleEndian));
     case "int64":
-      return view.getBigInt64(0, littleEndian);
+      return view.getBigInt64(b.byteOffset, littleEndian);
     case "uint64":
-      return view.getBigUint64(0, littleEndian);
+      return view.getBigUint64(b.byteOffset, littleEndian);
   }
 }
 
@@ -141,28 +141,28 @@ export function putVarnum(
   const view = new DataView(b.buffer);
   switch (o.dataType) {
     case "int8":
-      view.setInt8(0, x);
+      view.setInt8(b.byteOffset, x);
       break;
     case "uint8":
-      view.setUint8(0, x);
+      view.setUint8(b.byteOffset, x);
       break;
     case "int16":
-      view.setInt16(0, x, littleEndian);
+      view.setInt16(b.byteOffset, x, littleEndian);
       break;
     case "uint16":
-      view.setUint16(0, x, littleEndian);
+      view.setUint16(b.byteOffset, x, littleEndian);
       break;
     case "int32":
-      view.setInt32(0, x, littleEndian);
+      view.setInt32(b.byteOffset, x, littleEndian);
       break;
     case "uint32":
-      view.setUint32(0, x, littleEndian);
+      view.setUint32(b.byteOffset, x, littleEndian);
       break;
     case "float32":
-      view.setFloat32(0, x, littleEndian);
+      view.setFloat32(b.byteOffset, x, littleEndian);
       break;
     case "float64":
-      view.setFloat64(0, x, littleEndian);
+      view.setFloat64(b.byteOffset, x, littleEndian);
       break;
   }
   return sizeof(o.dataType);
@@ -182,28 +182,28 @@ export function putVarbig(
   const view = new DataView(b.buffer);
   switch (o.dataType) {
     case "int8":
-      view.setInt8(0, Number(x));
+      view.setInt8(b.byteOffset, Number(x));
       break;
     case "uint8":
-      view.setUint8(0, Number(x));
+      view.setUint8(b.byteOffset, Number(x));
       break;
     case "int16":
-      view.setInt16(0, Number(x), littleEndian);
+      view.setInt16(b.byteOffset, Number(x), littleEndian);
       break;
     case "uint16":
-      view.setUint16(0, Number(x), littleEndian);
+      view.setUint16(b.byteOffset, Number(x), littleEndian);
       break;
     case "int32":
-      view.setInt32(0, Number(x), littleEndian);
+      view.setInt32(b.byteOffset, Number(x), littleEndian);
       break;
     case "uint32":
-      view.setUint32(0, Number(x), littleEndian);
+      view.setUint32(b.byteOffset, Number(x), littleEndian);
       break;
     case "int64":
-      view.setBigInt64(0, x, littleEndian);
+      view.setBigInt64(b.byteOffset, x, littleEndian);
       break;
     case "uint64":
-      view.setBigUint64(0, x, littleEndian);
+      view.setBigUint64(b.byteOffset, x, littleEndian);
       break;
   }
   return sizeof(o.dataType);
