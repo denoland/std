@@ -1,4 +1,5 @@
-export const { performance, PerformanceEntry } =
-  globalThis as typeof globalThis & {
+export const { performance, PerformanceEntry } = globalThis as
+  & typeof globalThis
+  & {
     PerformanceEntry: PerformanceEntry;
   };
