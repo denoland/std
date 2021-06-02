@@ -3,7 +3,7 @@
 // for AssertionError messages in browsers.
 
 import { bold, gray, green, red, stripColor, white } from "../fmt/colors.ts";
-import { diff, diffstr, DiffResult, DiffType } from "./_diff.ts";
+import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
@@ -66,7 +66,10 @@ function createSign(diffType: DiffType): string {
   }
 }
 
-function buildMessage(diffResult: ReadonlyArray<DiffResult<string>>, {sign = true, stringDiff = false} = {}): string[] {
+function buildMessage(
+  diffResult: ReadonlyArray<DiffResult<string>>,
+  { sign = true, stringDiff = false } = {},
+): string[] {
   const messages: string[] = [], diffMessages: string[] = [];
   messages.push("");
   messages.push("");
@@ -79,9 +82,11 @@ function buildMessage(diffResult: ReadonlyArray<DiffResult<string>>, {sign = tru
   messages.push("");
   diffResult.forEach((result: DiffResult<string>): void => {
     const c = createColor(result.type);
-    diffMessages.push(c(`${sign ? createSign(result.type) : ""}${result.value}`));
+    diffMessages.push(
+      c(`${sign ? createSign(result.type) : ""}${result.value}`),
+    );
   });
-  messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages))
+  messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages));
   messages.push("");
 
   return messages;
@@ -209,12 +214,14 @@ export function assertEquals(
   const expectedString = _format(expected);
   try {
     if ((typeof actual === "string") && (typeof expected === "string")) {
-      const wordDiff= false //TODO
-      const diffResult = diffstr(actual, expected, {wordDiff})
-      const diffMsg = buildMessage(diffResult, {sign:!wordDiff, stringDiff:true}).join("\n");
+      const wordDiff = false; //TODO
+      const diffResult = diffstr(actual, expected, { wordDiff });
+      const diffMsg = buildMessage(diffResult, {
+        sign: !wordDiff,
+        stringDiff: true,
+      }).join("\n");
       message = `Values are not equal:\n${diffMsg}`;
-    }
-    else {
+    } else {
       const diffResult = diff(
         actualString.split("\n"),
         expectedString.split("\n"),
@@ -319,12 +326,14 @@ export function assertStrictEquals(
     } else {
       try {
         if ((typeof actual === "string") && (typeof expected === "string")) {
-          const wordDiff= true //TODO
-          const diffResult = diffstr(actual, expected, {wordDiff})
-          const diffMsg = buildMessage(diffResult, {sign:!wordDiff, stringDiff:true}).join("\n");
+          const wordDiff = true; //TODO
+          const diffResult = diffstr(actual, expected, { wordDiff });
+          const diffMsg = buildMessage(diffResult, {
+            sign: !wordDiff,
+            stringDiff: true,
+          }).join("\n");
           message = `Values are not equal:\n${diffMsg}`;
-        }
-        else {
+        } else {
           const diffResult = diff(
             actualString.split("\n"),
             expectedString.split("\n"),

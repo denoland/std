@@ -234,25 +234,28 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
  * @param B Expected string
  * @param wordDiff If enabled, will tokenize words instead of lines
  */
-export function diffstr(A:string, B:string, {wordDiff = false} = {}) {
-  function tokenize(string:string):string[] {
+export function diffstr(A: string, B: string, { wordDiff = false } = {}) {
+  function tokenize(string: string): string[] {
     if (wordDiff) {
       // Split string on whitespace symbols
       const tokens = string.split(/([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/);
       // Extended Latin character set
-      const words = /^[a-zA-Z\u{C0}-\u{FF}\u{D8}-\u{F6}\u{F8}-\u{2C6}\u{2C8}-\u{2D7}\u{2DE}-\u{2FF}\u{1E00}-\u{1EFF}]+$/u;
+      const words =
+        /^[a-zA-Z\u{C0}-\u{FF}\u{D8}-\u{F6}\u{F8}-\u{2C6}\u{2C8}-\u{2D7}\u{2DE}-\u{2FF}\u{1E00}-\u{1EFF}]+$/u;
 
       // Join boundary splits that we do not consider to be boundaries and merge empty strings surrounded by word chars
       for (let i = 0; i < tokens.length - 1; i++) {
-        if (!tokens[i + 1] && tokens[i + 2] && words.test(tokens[i]) && words.test(tokens[i + 2])) {
+        if (
+          !tokens[i + 1] && tokens[i + 2] && words.test(tokens[i]) &&
+          words.test(tokens[i + 2])
+        ) {
           tokens[i] += tokens[i + 2];
           tokens.splice(i + 1, 2);
           i--;
         }
       }
-      return tokens.filter(token => token);
-    }
-    else {
+      return tokens.filter((token) => token);
+    } else {
       // Split string on new lines symbols
       const tokens = [], lines = string.split(/(\n|\r\n)/);
 
@@ -263,7 +266,7 @@ export function diffstr(A:string, B:string, {wordDiff = false} = {}) {
 
       // Merge the content and line separators into single tokens
       for (let i = 0; i < lines.length; i++) {
-        if (i % 2 ) {
+        if (i % 2) {
           tokens[tokens.length - 1] += lines[i];
         } else {
           tokens.push(lines[i]);
@@ -272,5 +275,5 @@ export function diffstr(A:string, B:string, {wordDiff = false} = {}) {
       return tokens;
     }
   }
-  return diff(tokenize(A), tokenize(B))
+  return diff(tokenize(A), tokenize(B));
 }
