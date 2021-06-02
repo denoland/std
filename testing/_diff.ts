@@ -226,3 +226,51 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
     ),
   ];
 }
+
+/**
+ * Renders the differences between the actual and expected strings
+ * Partially inspired from https://github.com/kpdecker/jsdiff
+ * @param A Actual string
+ * @param B Expected string
+ * @param wordDiff If enabled, will tokenize words instead of lines
+ */
+export function diffstr(A:string, B:string, {wordDiff = false} = {}) {
+  function tokenize(string:string):string[] {
+    if (wordDiff) {
+      // Split string on whitespace symbols
+      const tokens = string.split(/([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/);
+      // Extended Latin character set
+      const words = /^[a-zA-Z\u{C0}-\u{FF}\u{D8}-\u{F6}\u{F8}-\u{2C6}\u{2C8}-\u{2D7}\u{2DE}-\u{2FF}\u{1E00}-\u{1EFF}]+$/u;
+
+      // Join boundary splits that we do not consider to be boundaries and merge empty strings surrounded by word chars
+      for (let i = 0; i < tokens.length - 1; i++) {
+        if (!tokens[i + 1] && tokens[i + 2] && words.test(tokens[i]) && words.test(tokens[i + 2])) {
+          tokens[i] += tokens[i + 2];
+          tokens.splice(i + 1, 2);
+          i--;
+        }
+      }
+      return tokens.filter(token => token);
+    }
+    else {
+      // Split string on new lines symbols
+      const tokens = [], lines = string.split(/(\n|\r\n)/);
+
+      // Ignore final empty token when text ends with a newline
+      if (!lines[lines.length - 1]) {
+        lines.pop();
+      }
+
+      // Merge the content and line separators into single tokens
+      for (let i = 0; i < lines.length; i++) {
+        if (i % 2 ) {
+          tokens[tokens.length - 1] += lines[i];
+        } else {
+          tokens.push(lines[i]);
+        }
+      }
+      return tokens;
+    }
+  }
+  return diff(tokenize(A), tokenize(B))
+}
