@@ -232,10 +232,9 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
  * Partially inspired from https://github.com/kpdecker/jsdiff
  * @param A Actual string
  * @param B Expected string
- * @param wordDiff If enabled, will tokenize words instead of lines
  */
-export function diffstr(A: string, B: string, { wordDiff = false } = {}) {
-  function tokenize(string: string): string[] {
+export function diffstr(A: string, B: string) {
+  function tokenize(string: string, {wordDiff = false} = {}): string[] {
     if (wordDiff) {
       // Split string on whitespace symbols
       const tokens = string.split(/([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/);
@@ -275,5 +274,15 @@ export function diffstr(A: string, B: string, { wordDiff = false } = {}) {
       return tokens;
     }
   }
-  return diff(tokenize(A), tokenize(B));
+  //Try to autodetect the most suitable string rendering, starting by words-diff
+  let wordDiff = true
+  let diffResult = diff(tokenize(A, {wordDiff}), tokenize(B, {wordDiff}));
+  const common = diffResult.filter(({type, value}) => type === DiffType.common && value.trim()).length
+  const edited = diffResult.filter(({type}) => type === DiffType.added || type === DiffType.removed).length
+  //If edited ratio is too high switch to multi-line diff instead
+  if (edited/(common+edited) > 0.9**Math.max(1, A.search(/\n\r?/g), B.search(/\n\r?/g))) {
+    wordDiff = false
+    diffResult = diff(tokenize(A, {wordDiff}), tokenize(B, {wordDiff}));
+  }
+  return {diffResult, wordDiff}
 }
