@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { diff } from "./_diff.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { diff, diffstr } from "./_diff.ts";
+import { assert, assertEquals } from "../testing/asserts.ts";
 
 Deno.test({
   name: "empty",
@@ -106,6 +106,42 @@ Deno.test({
       { type: "common", value: "abc" },
       { type: "added", value: "bcd" },
       { type: "common", value: "c" },
+    ]);
+  },
+});
+
+Deno.test({
+  name: '"a b c d" vs "a b x d e" (diffstr - word-diff)',
+  fn(): void {
+    const {diffResult, wordDiff} = diffstr([..."abcd"].join(" "), [..."abxde"].join(" "))
+    assert(wordDiff)
+    assertEquals(diffResult, [
+      { type: "common", value: "a" },
+      { type: "common", value: " " },
+      { type: "common", value: "b" },
+      { type: "common", value: " " },
+      { type: "added", value: "x" },
+      { type: "removed", value: "c" },
+      { type: "common", value: " " },
+      { type: "common", value: "d" },
+      { type: "added", value: " " },
+      { type: "added", value: "e" },
+    ]);
+  },
+});
+
+Deno.test({
+  name: '"a b c d" vs "a b x d e" (diffstr - multiline-diff)',
+  fn(): void {
+    const {diffResult, wordDiff} = diffstr([..."abcd"].join("\n"), [..."abxde"].join("\n"))
+    assert(!wordDiff)
+    assertEquals(diffResult, [
+      { type: "common", value: "a\n" },
+      { type: "common", value: "b\n" },
+      { type: "added", value: "x\n" },
+      { type: "removed", value: "c\n" },
+      { type: "common", value: "d\n" },
+      { type: "added", value: "e\n" }
     ]);
   },
 });
