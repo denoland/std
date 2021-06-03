@@ -113,8 +113,11 @@ Deno.test({
 Deno.test({
   name: '"a b c d" vs "a b x d e" (diffstr - word-diff)',
   fn(): void {
-    const {diffResult, wordDiff} = diffstr([..."abcd"].join(" "), [..."abxde"].join(" "))
-    assert(wordDiff)
+    const { diffResult, wordDiff } = diffstr(
+      [..."abcd"].join(" "),
+      [..."abxde"].join(" "),
+    );
+    assert(wordDiff);
     assertEquals(diffResult, [
       { type: "common", value: "a" },
       { type: "common", value: " " },
@@ -133,15 +136,18 @@ Deno.test({
 Deno.test({
   name: '"a b c d" vs "a b x d e" (diffstr - multiline-diff)',
   fn(): void {
-    const {diffResult, wordDiff} = diffstr([..."abcd"].join("\n"), [..."abxde"].join("\n"))
-    assert(!wordDiff)
+    const { diffResult, wordDiff } = diffstr(
+      [..."abcd"].join("\n"),
+      [..."abxde"].join("\n"),
+    );
+    assert(!wordDiff);
     assertEquals(diffResult, [
       { type: "common", value: "a\n" },
       { type: "common", value: "b\n" },
       { type: "added", value: "x\n" },
       { type: "removed", value: "c\n" },
       { type: "common", value: "d\n" },
-      { type: "added", value: "e\n" }
+      { type: "added", value: "e\n" },
     ]);
   },
 });

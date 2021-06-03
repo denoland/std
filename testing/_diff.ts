@@ -234,7 +234,7 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
  * @param B Expected string
  */
 export function diffstr(A: string, B: string) {
-  function tokenize(string: string, {wordDiff = false} = {}): string[] {
+  function tokenize(string: string, { wordDiff = false } = {}): string[] {
     if (wordDiff) {
       // Split string on whitespace symbols
       const tokens = string.split(/([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/);
@@ -276,17 +276,30 @@ export function diffstr(A: string, B: string) {
   }
 
   // Try to autodetect the most suitable string rendering, starting by words-diff
-  let wordDiff = true
-  let diffResult = diff(tokenize(A, {wordDiff}), tokenize(B, {wordDiff}));
-  const common = diffResult.filter(({type, value}) => type === DiffType.common && value.trim()).length
-  const edited = diffResult.filter(({type}) => type === DiffType.added || type === DiffType.removed).length
+  let wordDiff = true;
+  let diffResult = diff(tokenize(A, { wordDiff }), tokenize(B, { wordDiff }));
+  const common =
+    diffResult.filter(({ type, value }) =>
+      type === DiffType.common && value.trim()
+    ).length;
+  const edited =
+    diffResult.filter(({ type }) =>
+      type === DiffType.added || type === DiffType.removed
+    ).length;
 
   // If edited ratio is too high switch to multi-line diff instead
   // We add a trailing newline to ensure that last tokens are displayed correctly
-  if (edited/(common+edited) > 0.85**Math.max(1, A.match(/\n/g)?.length ?? 0, B.match(/\n/g)?.length ?? 0)) {
-    wordDiff = false
-    diffResult = diff(tokenize(`${A}\n`, {wordDiff}), tokenize(`${B}\n`, {wordDiff}));
+  if (
+    edited / (common + edited) >
+      0.85 **
+        Math.max(1, A.match(/\n/g)?.length ?? 0, B.match(/\n/g)?.length ?? 0)
+  ) {
+    wordDiff = false;
+    diffResult = diff(
+      tokenize(`${A}\n`, { wordDiff }),
+      tokenize(`${B}\n`, { wordDiff }),
+    );
   }
 
-  return {diffResult, wordDiff}
+  return { diffResult, wordDiff };
 }

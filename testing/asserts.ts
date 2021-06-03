@@ -3,7 +3,7 @@
 // for AssertionError messages in browsers.
 
 import { bold, gray, green, red, stripColor, white } from "../fmt/colors.ts";
-import { diff, diffstr, DiffResult, DiffType } from "./_diff.ts";
+import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
@@ -214,7 +214,7 @@ export function assertEquals(
   const expectedString = _format(expected);
   try {
     if ((typeof actual === "string") && (typeof expected === "string")) {
-      const {diffResult, wordDiff} = diffstr(actual, expected);
+      const { diffResult, wordDiff } = diffstr(actual, expected);
       const diffMsg = buildMessage(diffResult, {
         sign: !wordDiff,
         stringDiff: true,
@@ -325,7 +325,7 @@ export function assertStrictEquals(
     } else {
       try {
         if ((typeof actual === "string") && (typeof expected === "string")) {
-          const {diffResult, wordDiff} = diffstr(actual, expected);
+          const { diffResult, wordDiff } = diffstr(actual, expected);
           const diffMsg = buildMessage(diffResult, {
             sign: !wordDiff,
             stringDiff: true,
