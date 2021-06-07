@@ -153,6 +153,32 @@ Deno.test("testingEqual", function (): void {
   assert(
     !equal({ a: undefined, b: undefined }, { a: undefined }),
   );
+  assertThrows(() => equal(new WeakMap(), new WeakMap()));
+  assertThrows(() => equal(new WeakSet(), new WeakSet()));
+  assert(!equal(new WeakMap(), new WeakSet()));
+  assert(
+    equal(new WeakRef({ hello: "world" }), new WeakRef({ hello: "world" })),
+  );
+  assert(
+    !equal(new WeakRef({ world: "hello" }), new WeakRef({ hello: "world" })),
+  );
+  assert(!equal({ hello: "world" }, new WeakRef({ hello: "world" })));
+  assert(
+    equal(
+      new WeakRef({ hello: "world" }),
+      // deno-lint-ignore ban-types
+      new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
+    ),
+  );
+  assert(
+    !equal(
+      new WeakRef({ hello: "world" }),
+      // deno-lint-ignore ban-types
+      new (class<T extends object> extends WeakRef<T> {
+        foo = "bar";
+      })({ hello: "world" }),
+    ),
+  );
 });
 
 Deno.test("testingNotEquals", function (): void {
