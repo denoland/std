@@ -147,6 +147,9 @@ Deno.test({
 
     assertEquals(typeof env.HELLO, "string");
     assertEquals(env.HELLO, "WORLD");
+
+    assert(Object.getOwnPropertyNames(process.env).includes("HELLO"));
+    assert(Object.keys(process.env).includes("HELLO"));
   },
 });
 

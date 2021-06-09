@@ -57,7 +57,7 @@ const _env: {
 
 Object.defineProperty(_env, Deno.customInspect, {
   enumerable: false,
-  configurable: false,
+  configurable: true,
   get: function () {
     return Deno.env.toObject();
   },
@@ -76,6 +76,9 @@ export const env: Record<string, string> = new Proxy(_env, {
   },
   ownKeys() {
     return Reflect.ownKeys(Deno.env.toObject());
+  },
+  getOwnPropertyDescriptor() {
+    return { enumerable: true, configurable: true };
   },
   set(_target, prop, value) {
     Deno.env.set(String(prop), String(value));
