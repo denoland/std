@@ -17,7 +17,8 @@
       "test-event-emitter-invalid-listener.js",
       "test-event-emitter-listener-count.js",
       "test-event-emitter-listeners.js",
-      "test-event-emitter-once.js"
+      "test-event-emitter-once.js",
+      "test-util-inherits.js"
     ]
   },
   "suitesFolder": "suites",
