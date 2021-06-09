@@ -265,6 +265,38 @@ export function format(input: string, ...args: unknown[]) {
   return result;
 }
 
+/**
+ * https://nodejs.org/api/util.html#util_util_inherits_constructor_superconstructor
+ * @param ctor Constructor function which needs to inherit the prototype.
+ * @param superCtor Constructor function to inherit prototype from.
+ */
+export function inherits<T, U>(
+  ctor: new (...args: unknown[]) => T,
+  superCtor: new (...args: unknown[]) => U,
+) {
+  if (ctor === undefined || ctor === null) {
+    throw new ERR_INVALID_ARG_TYPE("ctor", "Function", ctor);
+  }
+
+  if (superCtor === undefined || superCtor === null) {
+    throw new ERR_INVALID_ARG_TYPE("superCtor", "Function", superCtor);
+  }
+
+  if (superCtor.prototype === undefined) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "superCtor.prototype",
+      "Object",
+      superCtor.prototype,
+    );
+  }
+  Object.defineProperty(ctor, "super_", {
+    value: superCtor,
+    writable: true,
+    configurable: true,
+  });
+  Object.setPrototypeOf(ctor, superCtor.prototype);
+}
+
 import { _TextDecoder, _TextEncoder } from "./_utils.ts";
 
 /** The global TextDecoder */
@@ -294,6 +326,7 @@ export default {
   deprecate,
   callbackify,
   promisify,
+  inherits,
   types,
   TextDecoder,
   TextEncoder,
