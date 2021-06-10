@@ -581,7 +581,7 @@ export class MultipartWriter {
     return `multipart/form-data; boundary=${this.boundary}`;
   }
 
-  private createPart(headers: Headers): Deno.Writer {
+  createPart(headers: Headers): Deno.Writer {
     if (this.isClosed) {
       throw new Error("multipart: writer is closed");
     }
@@ -592,7 +592,7 @@ export class MultipartWriter {
       this.writer,
       this.boundary,
       headers,
-      !this.lastPart,
+      !this.lastPart
     );
     this.lastPart = part;
     return part;
@@ -601,19 +601,13 @@ export class MultipartWriter {
   createFormFile(
     field: string,
     filename: string,
-    headers?: Headers,
   ): Deno.Writer {
     const h = new Headers();
     h.set(
       "Content-Disposition",
-      `form-data; name="${field}"; filename="${filename}"`,
+      `form-data; name="${field}"; filename="${filename}"`
     );
     h.set("Content-Type", "application/octet-stream");
-    if (headers) {
-      for (const [key, value] of Object.entries(headers)) {
-        h.set(key, value);
-      }
-    }
     return this.createPart(h);
   }
 
@@ -633,9 +627,8 @@ export class MultipartWriter {
     field: string,
     filename: string,
     file: Deno.Reader,
-    headers?: Headers,
   ) {
-    const f = await this.createFormFile(field, filename, headers);
+    const f = await this.createFormFile(field, filename);
     await Deno.copy(file, f);
   }
 
