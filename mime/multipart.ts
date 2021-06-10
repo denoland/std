@@ -592,7 +592,7 @@ export class MultipartWriter {
       this.writer,
       this.boundary,
       headers,
-      !this.lastPart
+      !this.lastPart,
     );
     this.lastPart = part;
     return part;
@@ -605,7 +605,7 @@ export class MultipartWriter {
     const h = new Headers();
     h.set(
       "Content-Disposition",
-      `form-data; name="${field}"; filename="${filename}"`
+      `form-data; name="${field}"; filename="${filename}"`,
     );
     h.set("Content-Type", "application/octet-stream");
     return this.createPart(h);
