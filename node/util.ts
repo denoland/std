@@ -294,7 +294,7 @@ export function inherits<T, U>(
     writable: true,
     configurable: true,
   });
-  Object.setPrototypeOf(ctor, superCtor.prototype);
+  Object.setPrototypeOf(ctor.prototype, superCtor.prototype);
 }
 
 import { _TextDecoder, _TextEncoder } from "./_utils.ts";

@@ -302,16 +302,3 @@ Deno.test("[util] format", () => {
     `${expected} ${expected} 10`,
   );
 });
-
-Deno.test("[util] inherits", () => {
-  class Ctor {
-  }
-
-  class SuperCtor {
-    superMethod() {}
-  }
-
-  util.inherits(Ctor, SuperCtor);
-
-  assert(Object.getPrototypeOf(Ctor).hasOwnProperty("superMethod"));
-});
