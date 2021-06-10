@@ -598,13 +598,22 @@ export class MultipartWriter {
     return part;
   }
 
-  createFormFile(field: string, filename: string): Deno.Writer {
+  createFormFile(
+    field: string,
+    filename: string,
+    headers?: Headers,
+  ): Deno.Writer {
     const h = new Headers();
     h.set(
       "Content-Disposition",
       `form-data; name="${field}"; filename="${filename}"`,
     );
     h.set("Content-Type", "application/octet-stream");
+    if (headers) {
+      for (const [key, value] of Object.entries(headers)) {
+        h.set(key, value);
+      }
+    }
     return this.createPart(h);
   }
 
@@ -624,8 +633,9 @@ export class MultipartWriter {
     field: string,
     filename: string,
     file: Deno.Reader,
+    headers?: Headers,
   ) {
-    const f = await this.createFormFile(field, filename);
+    const f = await this.createFormFile(field, filename, headers);
     await Deno.copy(file, f);
   }
 
