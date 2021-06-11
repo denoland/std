@@ -3,6 +3,10 @@
   "ignore": {
     "common": [
       "index.js"
+    ],
+    "parallel": [
+      "test-assert.js",
+      "test-assert-async.js"
     ]
   },
   "tests": {
