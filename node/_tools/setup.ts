@@ -97,19 +97,11 @@ async function clearTests() {
 }
 
 /**
- * This will iterate over the ignore and test lists defined in the
- * configuration file
- *
- * If it were to be found in the ignore list or not found in the test list, the
- * function will return undefined, meaning the file won't be regenerated
+ * This will iterate over test list defined in the configuration file and test the
+ * passed file against it. If a match were to be found, it will return the test
+ * suite specified for that file
  */
 function getRequestedFileSuite(file: string): string | undefined {
-  for (const regex of ignoreList) {
-    if (regex.test(file)) {
-      return;
-    }
-  }
-
   for (const suite in config.tests) {
     for (const regex of config.tests[suite]) {
       if (new RegExp(regex).test(file)) {
@@ -161,7 +153,7 @@ async function copyTests(filePath: string): Promise<void> {
   const suitesFolder = fromFileUrl(
     new URL(config.suitesFolder, import.meta.url),
   );
-  for await (const entry of walk(path)) {
+  for await (const entry of walk(path, { skip: ignoreList })) {
     const suite = getRequestedFileSuite(entry.name);
     if (!suite) continue;
 
