@@ -377,8 +377,7 @@ export function assertExists<T>(
 ): asserts actual is NonNullable<T> {
   if (actual === undefined || actual === null) {
     if (!msg) {
-      msg =
-        `actual: "${actual}" expected to not be null or undefined`;
+      msg = `actual: "${actual}" expected to not be null or undefined`;
     }
     throw new AssertionError(msg);
   }
