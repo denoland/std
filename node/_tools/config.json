@@ -22,6 +22,7 @@
       "test-event-emitter-listener-count.js",
       "test-event-emitter-listeners.js",
       "test-event-emitter-once.js",
+      "test-event-emitter-remove-all-listeners.js",
       "test-util-inherits.js"
     ]
   },

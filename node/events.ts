@@ -337,17 +337,17 @@ export class EventEmitter {
 
     if (eventName) {
       if (this._events.has(eventName)) {
-        const listeners = (this._events.get(eventName) as Array<
-          GenericFunction | WrappedFunction
-        >).slice(); // Create a copy; We use it AFTER it's deleted.
-        this._events.delete(eventName);
+        const listeners = this._events.get(eventName)!.slice().reverse();
         for (const listener of listeners) {
-          this.emit("removeListener", eventName, listener);
+          this.removeListener(
+            eventName,
+            (listener as WrappedFunction)["listener"] ?? listener,
+          );
         }
       }
     } else {
-      const eventList: [string | symbol] = this.eventNames();
-      eventList.map((value: string | symbol) => {
+      const eventList = this.eventNames();
+      eventList.forEach((value: string | symbol) => {
         this.removeAllListeners(value);
       });
     }
