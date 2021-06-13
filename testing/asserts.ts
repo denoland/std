@@ -277,7 +277,7 @@ export function assertNotEquals(
 }
 
 /**
- * Make an assertion that `actual` and `expected` are strictly equal.  If
+ * Make an assertion that `actual` and `expected` are strictly equal. If
  * not then throw.
  * ```ts
  * assertStrictEquals(1, 2)
@@ -368,8 +368,8 @@ export function assertNotStrictEquals(
 }
 
 /**
- * Make an assertion that actual is not null or undefined. If not
- * then thrown.
+ * Make an assertion that actual is not null or undefined.
+ * If not then throw.
  */
 export function assertExists<T>(
   actual: T,
@@ -385,7 +385,7 @@ export function assertExists<T>(
 
 /**
  * Make an assertion that actual includes expected. If not
- * then thrown.
+ * then throw.
  */
 export function assertStringIncludes(
   actual: string,
@@ -451,7 +451,7 @@ export function assertArrayIncludes(
 
 /**
  * Make an assertion that `actual` match RegExp `expected`. If not
- * then thrown
+ * then throw.
  */
 export function assertMatch(
   actual: string,
@@ -468,7 +468,7 @@ export function assertMatch(
 
 /**
  * Make an assertion that `actual` not match RegExp `expected`. If match
- * then thrown
+ * then throw.
  */
 export function assertNotMatch(
   actual: string,
