@@ -213,6 +213,11 @@ Deno.test("testingAssertExists", function (): void {
   assertExists(-0);
   assertExists(0);
   assertExists(NaN);
+
+  const value = new URLSearchParams({ value: "test" }).get("value");
+  assertExists(value);
+  assertEquals(value.length, 4);
+
   let didThrow;
   try {
     assertExists(undefined);
