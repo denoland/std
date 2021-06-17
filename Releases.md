@@ -1,3 +1,11 @@
+### 0.99.0 / 2021.06.15
+
+- feat(mime): make createPart of MultipartWriter public (#960)
+- feat(node/util): add inherits (#958)
+- fix(node/events): fix EventEmitter#removeAllListeners (#968)
+- fix(node/process): make process.env enumerable (#957)
+- fix(node/util): fix util.inherits (#959)
+
 ### 0.98.0 / 2021.06.08
 
 - feat(async): add async/tee (#919)

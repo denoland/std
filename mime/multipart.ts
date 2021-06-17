@@ -581,7 +581,7 @@ export class MultipartWriter {
     return `multipart/form-data; boundary=${this.boundary}`;
   }
 
-  private createPart(headers: Headers): Deno.Writer {
+  createPart(headers: Headers): Deno.Writer {
     if (this.isClosed) {
       throw new Error("multipart: writer is closed");
     }
@@ -598,7 +598,10 @@ export class MultipartWriter {
     return part;
   }
 
-  createFormFile(field: string, filename: string): Deno.Writer {
+  createFormFile(
+    field: string,
+    filename: string,
+  ): Deno.Writer {
     const h = new Headers();
     h.set(
       "Content-Disposition",
