@@ -16,7 +16,7 @@ type Grouping<V> = Record<string, Array<V>>
  * Example:
  *
  * ```typescript
- * console.assert(isEmpty([]), true)
+ * console.assert(isEmpty([]) === true)
  * ```
  */
 declare function isEmpty(collection: Array<unknown>): boolean
@@ -27,7 +27,7 @@ declare function isEmpty(collection: Array<unknown>): boolean
  * Example:
  *
  * ```typescript
- * console.assert(isNotEmpty([]), false)
+ * console.assert(isNotEmpty([]) === false)
  * ```
  */
 declare function isNotEmpty(collection: Array<unknown>): boolean
@@ -41,7 +41,7 @@ declare function isNotEmpty(collection: Array<unknown>): boolean
  * const names = [ 'Kim', 'Anna', 'John' ]
  * const noneStartWithX = none(names, it => it.startsWith('X'))
  *
- * console.assert(noneStartWithX, true)
+ * console.assert(noneStartWithX === true)
  * ```
  */
 declare function none<T>(collection: Array<T>, predicate: Predicate<T>): boolean
@@ -56,7 +56,7 @@ declare function none<T>(collection: Array<T>, predicate: Predicate<T>): boolean
  * const checklist = [ 'Code Review', 'Automatic Tests', 'Manual Tests' ]
  * const canDeploy = includesAll(tasksDone, checklist)
  *
- * console.assert(canDeploy, false)
+ * console.assert(canDeploy === false)
  * ```
  */
 declare function includesAll<T, O extends T>(collection: Array<T>, needles: Array<O>): boolean
@@ -71,7 +71,7 @@ declare function includesAll<T, O extends T>(collection: Array<T>, needles: Arra
  * const allergies = [ 'Nuts', 'Wheat' ]
  * const cannotEat = includesAny(ingredients, allergies)
  *
- * console.assert(cannotEat, true)
+ * console.assert(cannotEat === true)
  * ```
  */
 declare function includesAny<T, O extends T>(collection: Array<T>, needles: Array<O>): boolean
@@ -86,7 +86,7 @@ declare function includesAny<T, O extends T>(collection: Array<T>, needles: Arra
  * const allergies = [ 'Nuts', 'Wheat' ]
  * const canEat = includesNone(ingredients, allergies)
  *
- * console.assert(canEat, false)
+ * console.assert(canEat === false)
  * ```
  */
 declare function includesNone<T, O extends T>(collection: Array<T>, needles: Array<O>): boolean
@@ -109,7 +109,7 @@ declare function includesNone<T, O extends T>(collection: Array<T>, needles: Arr
  * ]
  * const foundMiddleNames = mapNotNullish(people, it => it.middleName)
  *
- * console.assert(foundMiddleNames, [ 'William', 'Martha' ])
+ * console.assert(foundMiddleNames === [ 'William', 'Martha' ])
  * ```
  */
 declare function mapNotNullish<T, O>(collection: Array<T>, transformer: Selector<T, O>): Array<NonNullable<O>>
@@ -123,7 +123,7 @@ declare function mapNotNullish<T, O>(collection: Array<T>, transformer: Selector
  * const numbers = [ 1, 2, 3, 4, 5 ]
  * const firstNumbers = takeFirst(numbers, 2)
  *
- * console.assert(firstNumbers, [ 1, 2 ])
+ * console.assert(firstNumbers === [ 1, 2 ])
  * ```
  */
 declare function takeFirst<T>(collection: Array<T>, n: number): Array<T>
@@ -137,7 +137,7 @@ declare function takeFirst<T>(collection: Array<T>, n: number): Array<T>
  * const numbers = [ 1, 2, 3, 4, 5 ]
  * const lastNumbers = takeLast(numbers, 2)
  *
- * console.assert(lastNumbers, [ 4, 5 ])
+ * console.assert(lastNumbers === [ 4, 5 ])
  * ```
  */
 declare function takeLast<T>(collection: Array<T>, n: number): Array<T>
@@ -151,7 +151,7 @@ declare function takeLast<T>(collection: Array<T>, n: number): Array<T>
  * const numbers = [ 1, 2, 3, 4, 5 ]
  * const restNumbers = dropFirst(numbers, 2)
  *
- * console.assert(restNumbers, [ 3, 4, 5 ])
+ * console.assert(restNumbers === [ 3, 4, 5 ])
  * ```
  */
 declare function dropFirst<T>(collection: Array<T>, n: number): Array<T>
@@ -165,7 +165,7 @@ declare function dropFirst<T>(collection: Array<T>, n: number): Array<T>
  * const numbers = [ 1, 2, 3, 4, 5 ]
  * const restNumbers = dropLast(numbers, 2)
  *
- * console.assert(restNumbers, [ 1, 2, 3 ])
+ * console.assert(restNumbers === [ 1, 2, 3 ])
  * ```
  */
 declare function dropLast<T>(collection: Array<T>, n: number): Array<T>
@@ -179,7 +179,7 @@ declare function dropLast<T>(collection: Array<T>, n: number): Array<T>
  * const numbers = [ 1, 2, 3, 0 ]
  * const restNumbers = takeFirstWhile(numbers, it => it < 3)
  *
- * console.assert(restNumbers, [ 1, 2 ])
+ * console.assert(restNumbers === [ 1, 2 ])
  * ```
  */
 declare function takeFirstWhile<T>(collection: Array<T>, predicate: Predicate<T>): Array<T>
@@ -193,7 +193,7 @@ declare function takeFirstWhile<T>(collection: Array<T>, predicate: Predicate<T>
  * const numbers = [ 1, 2, 3, 0 ]
  * const restNumbers = takeLastWhile(numbers, it => it < 3)
  *
- * console.assert(restNumbers, [ 0 ])
+ * console.assert(restNumbers === [ 0 ])
  * ```
  */
 declare function takeLastWhile<T>(collection: Array<T>, predicate: Predicate<T>): Array<T>
@@ -207,7 +207,7 @@ declare function takeLastWhile<T>(collection: Array<T>, predicate: Predicate<T>)
  * const numbers = [ 1, 2, 3, 0 ]
  * const restNumbers = dropFirstWhile(numbers, it => it < 3)
  *
- * console.assert(restNumbers, [ 3, 0 ])
+ * console.assert(restNumbers === [ 3, 0 ])
  * ```
  */
 declare function dropFirstWhile<T>(collection: Array<T>, predicate: Predicate<T>): Array<T>
@@ -221,7 +221,7 @@ declare function dropFirstWhile<T>(collection: Array<T>, predicate: Predicate<T>
  * const numbers = [ 1, 2, 3, 0 ]
  * const restNumbers = dropLastWhile(numbers, it => it < 3)
  *
- * console.assert(restNumbers, [ 1, 2, 3 ])
+ * console.assert(restNumbers === [ 1, 2, 3 ])
  * ```
  */
 declare function dropLastWhile<T>(collection: Array<T>, predicate: Predicate<T>): Array<T>
@@ -235,7 +235,7 @@ declare function dropLastWhile<T>(collection: Array<T>, predicate: Predicate<T>)
  * const names = [ 'Anna', 'Kim', 'Karl' ]
  * const namesWithoutA = filterNot(names, it => it.startsWith('A'))
  *
- * console.assert(namesWithoutA, [ 'Kim', 'Karl' ])
+ * console.assert(namesWithoutA === [ 'Kim', 'Karl' ])
  * ```
  */
 declare function filterNot<T>(collection: Array<T>, predicate: Predicate<T>): Array<T>
@@ -248,7 +248,7 @@ declare function filterNot<T>(collection: Array<T>, predicate: Predicate<T>): Ar
  * ```typescript
  * const middleNames = [ null, 'William', undefined, 'Martha' ]
  *
- * console.assert(filterNotNullish(middleNames), [ 'William', 'Martha' ])
+ * console.assert(filterNotNullish(middleNames) === [ 'William', 'Martha' ])
  * ```
  */
 declare function filterNotNullish<T>(collection: Array<T>): Array<NonNullable<T>>
@@ -262,7 +262,7 @@ declare function filterNotNullish<T>(collection: Array<T>): Array<NonNullable<T>
  * const numbers = [ 3, 2, 5, 2, 5 ]
  * const distinctNumbers = distinct(numbers)
  *
- * console.assert(distinctNumbers, [ 3, 2, 5 ])
+ * console.assert(distinctNumbers === [ 3, 2, 5 ])
  * ```
  */
 declare function distinct<T>(collection: Array<T>): Array<T>
@@ -276,7 +276,7 @@ declare function distinct<T>(collection: Array<T>): Array<T>
  * const names = [ 'Anna', 'Kim', 'Arnold', 'Kate' ]
  * const exampleNamesByFirstLetter = distinctBy(names, it => it.charAt(0))
  *
- * console.assert(exampleNamesByFirstLetter, [ 'Anna', 'Kim' ])
+ * console.assert(exampleNamesByFirstLetter === [ 'Anna', 'Kim' ])
  * ```
  */
 declare function distinctBy<T>(collection: Array<T>, selector: Selector<T>): Array<T>
@@ -294,7 +294,7 @@ declare function distinctBy<T>(collection: Array<T>, selector: Selector<T>): Arr
  * ]
  * const sortedByAge = sortBy(people, it => it.age)
  *
- * console.assert(sortedByAge, [
+ * console.assert(sortedByAge === [
  *     { name: 'John', age: 23 },
  *     { name: 'Anna', age: 34 },
  *     { name: 'Kim', age: 42 },
@@ -313,7 +313,7 @@ declare function sortBy<T>(collection: Array<T>, selector: Selector<T, number | 
  * const kimInterests = [ 'Music', 'Tennis', 'Cooking' ]
  * const commonInterests = intersect(lisaInterests, kimInterests)
  *
- * console.assert(commonInterests, [ 'Cooking', 'Music' ])
+ * console.assert(commonInterests === [ 'Cooking', 'Music' ])
  * ```
  */
 declare function intersect<T>(collection: Array<T>, withCollection: Array<T>): Array<T>
@@ -328,7 +328,7 @@ declare function intersect<T>(collection: Array<T>, withCollection: Array<T>): A
  * const saladIngredients = [ 'Carrots', 'Radicchio', 'Pepper' ]
  * const shoppingList = union(soupIngredients, saladIngredients)
  *
- * console.assert(shoppingList, [ 'Pepper', 'Carrots', 'Leek', 'Radicchio' ])
+ * console.assert(shoppingList === [ 'Pepper', 'Carrots', 'Leek', 'Radicchio' ])
  * ```
  */
 declare function union<T>(collection: Array<T>, withCollection: Array<T>): Array<T>
@@ -343,7 +343,7 @@ declare function union<T>(collection: Array<T>, withCollection: Array<T>): Array
  * const numbers = [ 1, 2, 3, 4, 5 ]
  * const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0)
  *
- * console.assert(sumSteps, [ 1, 3, 6, 10, 15 ])
+ * console.assert(sumSteps === [ 1, 3, 6, 10, 15 ])
  * ```
  */
 declare function runningReduce<T, A>(collection: Array<T>, reducer: (accumulator: A, current: T) => A, initialValue: A): Array<A>
@@ -357,7 +357,7 @@ declare function runningReduce<T, A>(collection: Array<T>, reducer: (accumulator
  * const numbers = [ 4, 2, 13, 7 ]
  * const luckyNumbers = without(numbers, 13)
  *
- * console.assert(luckyNumbers, [ 4, 2, 7 ])
+ * console.assert(luckyNumbers === [ 4, 2, 7 ])
  * ```
  */
 declare function without<T>(collection: Array<T>, toRemove: T): Array<T>
@@ -371,7 +371,7 @@ declare function without<T>(collection: Array<T>, toRemove: T): Array<T>
  * const numbers = [ 0, 1, 2, 3, 4, 5 ]
  * const nonPrimes = without(numbers, [ 2, 3, 5 ])
  *
- * console.assert(nonPrimes, [ 0, 1, 4 ])
+ * console.assert(nonPrimes === [ 0, 1, 4 ])
  * ```
  */
 declare function withoutAll<T>(collection: Array<T>, toRemove: Array<T>): Array<T>
@@ -388,7 +388,7 @@ declare function withoutAll<T>(collection: Array<T>, toRemove: Array<T>): Array<
  * ```typescript
  * const numbers = [ 4, 2, 7 ]
  *
- * console.assert(lastIndex(numbers), 2)
+ * console.assert(lastIndex(numbers) === 2)
  * ```
  */
 declare function lastIndex(collection: Array<unknown>): number
@@ -401,7 +401,7 @@ declare function lastIndex(collection: Array<unknown>): number
  * ```typescript
  * const numbers = [ 4, 2, 7 ]
  *
- * console.assert(first(numbers), 4)
+ * console.assert(first(numbers) === 4)
  * ```
  */
 declare function first<T>(collection: Array<T>): T | undefined
@@ -414,7 +414,7 @@ declare function first<T>(collection: Array<T>): T | undefined
  * ```typescript
  * const numbers = [ 4, 2, 7 ]
  *
- * console.assert(last(numbers), 7)
+ * console.assert(last(numbers) === 7)
  * ```
  */
 declare function last<T>(collection: Array<T>): T | undefined
@@ -428,7 +428,7 @@ declare function last<T>(collection: Array<T>): T | undefined
  * const numbers = [ 4, 2, 7 ]
  * const lastEvenNumber = findLast(numbers, it => it % 2 === 0)
  *
- * console.assert(lastEvenNumber, 2)
+ * console.assert(lastEvenNumber === 2)
  * ```
  */
 declare function findLast<T>(collection: Array<T>, predicate: Predicate<T>): T | undefined
@@ -446,7 +446,7 @@ declare function findLast<T>(collection: Array<T>, predicate: Predicate<T>): T |
  * ]
  * const activeBooking = single(booking, it => it.active)
  *
- * console.assert(activeBooking, { month: 'June', active: true })
+ * console.assert(activeBooking === { month: 'June', active: true })
  * ```
  */
 declare function single<T>(collection: Array<T>, predicate: Predicate<T>): T | undefined
@@ -464,7 +464,7 @@ declare function single<T>(collection: Array<T>, predicate: Predicate<T>): T | u
  * ]
  * const nextOrder = firstNotNullishOf(tables, it => it.order)
  *
- * console.assert(nextOrder, 'Soup')
+ * console.assert(nextOrder === 'Soup')
  * ```
  */
 declare function firstNotNullishOf<T, O>(collection: Array<T>, selector: Selector<T, O>): NonNullable<O> | undefined
@@ -482,7 +482,7 @@ declare function firstNotNullishOf<T, O>(collection: Array<T>, selector: Selecto
  * ]
  * const totalAge = sumOf(people, it => it.age)
  *
- * console.assert(totalAge, 99)
+ * console.assert(totalAge === 99)
  * ```
  */
 declare function sumOf<T>(collection: Array<T>, selector: Selector<T, number>): number
@@ -502,7 +502,7 @@ declare function sumOf<T>(collection: Array<T>, selector: Selector<T, number>): 
  * ]
  * const oldestPerson = maxBy(people, it => it.age)
  *
- * console.assert(oldestPerson, { name: 'Kim', age: 42 })
+ * console.assert(oldestPerson === { name: 'Kim', age: 42 })
  * ```
  */
 declare function maxBy<T>(collection: Array<T>, selector: Selector<T, number | string>): T | undefined
@@ -522,7 +522,7 @@ declare function maxBy<T>(collection: Array<T>, selector: Selector<T, number | s
  * ]
  * const youngestPerson = minBy(people, it => it.age)
  *
- * console.assert(youngestPerson, { name: 'John', age: 23 })
+ * console.assert(youngestPerson === { name: 'John', age: 23 })
  * ```
  */
 declare function minBy<T>(collection: Array<T>, selector: Selector<T, number | string>): T | undefined
@@ -542,7 +542,7 @@ declare function minBy<T>(collection: Array<T>, selector: Selector<T, number | s
  * ]
  * const highestThrow = maxWith(numbers, (a, b) => a.sum() - b.sum())
  *
- * console.assert(highestThrow, [ 4, 5, 2 ])
+ * console.assert(highestThrow === [ 4, 5, 2 ])
  * ```
  */
 declare function maxWith<T>(collection: Array<T>, comparator: (a: T, b: T) => number): T | undefined
@@ -562,7 +562,7 @@ declare function maxWith<T>(collection: Array<T>, comparator: (a: T, b: T) => nu
  * ]
  * const lowestThrow = minWith(numbers, (a, b) => a.sum() - b.sum())
  *
- * console.assert(lowestThrow, [ 1, 3, 4 ])
+ * console.assert(lowestThrow === [ 1, 3, 4 ])
  * ```
  */
 declare function minWith<T>(collection: Array<T>, comparator: (a: T, b: T) => number): T | undefined
@@ -582,7 +582,7 @@ declare function minWith<T>(collection: Array<T>, comparator: (a: T, b: T) => nu
  * ]
  * const maximumAge = maxOf(people, it => it.age)
  *
- * console.assert(maximumAge, 42)
+ * console.assert(maximumAge === 42)
  * ```
  */
 declare function maxOf<T, O extends number | string>(collection: Array<T>, selector: Selector<T, O>): O | undefined
@@ -602,7 +602,7 @@ declare function maxOf<T, O extends number | string>(collection: Array<T>, selec
  * ]
  * const minimumAge = minOf(people, it => it.age)
  *
- * console.assert(minimumAge, 23)
+ * console.assert(minimumAge === 23)
  * ```
  */
 declare function minOf<T, O extends number | string>(collection: Array<T>, selector: Selector<T, O>): O | undefined
@@ -620,7 +620,7 @@ declare function minOf<T, O extends number | string>(collection: Array<T>, selec
  * const numbers = [ 4, 2, 7 ]
  * const meanAverage = average(numbers)
  *
- * console.assert(meanAverage, 6.5)
+ * console.assert(meanAverage === 6.5)
  * ```
  */
 declare function average(collection: Array<number>): number | undefined
@@ -639,7 +639,7 @@ declare function average(collection: Array<number>): number | undefined
  * const letters = [ 'a', 'b', 'c', 'd' ]
  * const pairs = zip(numbers, letters)
  *
- * console.assert(pairs, [
+ * console.assert(pairs === [
  *     [ 1, 'a' ],
  *     [ 2, 'b' ],
  *     [ 3, 'c' ],
@@ -663,8 +663,8 @@ declare function zip<T, U>(collection: Array<T>, withCollection: Array<U>): Arra
  * ]
  * const [ moms, dads ] = unzip(parents)
  *
- * console.assert(moms, [ 'Maria', 'Anna', 'John' ])
- * console.assert(moms, [ 'Jeff', 'Kim', 'Leroy' ])
+ * console.assert(moms === [ 'Maria', 'Anna', 'John' ])
+ * console.assert(moms === [ 'Jeff', 'Kim', 'Leroy' ])
  * ```
  */
 declare function unzip<T, U>(pairs: Array<[ T, U ]>): [ Array<T>, Array<U> ]
@@ -683,7 +683,7 @@ declare function unzip<T, U>(pairs: Array<[ T, U ]>): [ Array<T>, Array<U> ]
  * ]
  * const usersById = assocaiteBy(people, it => it.id)
  *
- * console.assert(usersById, {
+ * console.assert(usersById === {
  *     'a2e': { id: 'a2e', userName: 'Anna' },
  *     '5f8': { id: '5f8', userName: 'Arnold' },
  *     'd2c': { id: 'd2c', userName: 'Kim' },
@@ -706,7 +706,7 @@ declare function associateBy<T>(collection: Array<T>, selector: Selector<T, stri
  * ]
  * const peopleByFirstLetter = groupBy(people, it => it.name.charAt(0))
  *
- * console.assert(peopleByFirstLetter, {
+ * console.assert(peopleByFirstLetter === {
  *     'A': [ { name: 'Anna' }, { name: 'Arnold' } ],
  *     'K': [ { name: 'Kim' } ],
  * })
@@ -724,8 +724,8 @@ declare function groupBy<T>(collection: Array<T>, selector: Selector<T, string>)
  * const numbers = [ 5, 6, 7, 8, 9 ]
  * const [ even, odd ] = partition(numbers, it => it % 2 == 0)
  *
- * console.assert(even, [ 6, 8 ])
- * console.assert(odd, [ 5, 7, 9 ])
+ * console.assert(even === [ 6, 8 ])
+ * console.assert(odd === [ 5, 7, 9 ])
  * ```
  */
 declare function partition<T>(collection: Array<T>, predicate: Predicate<T>): [ Array<T>, Array<T> ]
@@ -739,7 +739,7 @@ declare function partition<T>(collection: Array<T>, predicate: Predicate<T>): [ 
  * const words = [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consetetur', 'sadipscing' ]
  * const chunks = chunked(words, 3)
  *
- * console.assert(chunks, [
+ * console.assert(chunks === [
  *     [ 'lorem', 'ipsum', 'dolor' ],
  *     [ 'sit', 'amet', 'consetetur' ],
  *     [ 'sadipscing' ],
@@ -759,7 +759,7 @@ declare function chunked<T>(collection: Array<T>, size: number): Array<Array<T>>
  * const numbers = [ 1, 2, 3 ]
  * const windows = permutations(words, 2)
  *
- * console.assert(windows, [
+ * console.assert(windows === [
  *     [ 1, 2 ],
  *     [ 1, 3 ],
  *     [ 2, 1 ],
@@ -784,7 +784,7 @@ declare function permutations<T>(collection: Array<T>, size?: number): Array<Arr
  * const numbers = [ 1, 2, 3, 4, 5 ]
  * const windows = windowed(words, 3)
  *
- * console.assert(windows, [
+ * console.assert(windows === [
  *     [ 1, 2, 3 ],
  *     [ 2, 3, 4 ],
  *     [ 3, 4, 5 ],
@@ -814,7 +814,7 @@ declare function windowed<T>(collection: Array<T>, size: number, config?: { step
  * }
  * const includesKim = includesValue(usersById, 'Kim')
  *
- * console.assert(includesKim, true)
+ * console.assert(includesKim === true)
  * ```
  */
 declare function includesValue<T>(collection: Record<string, T>, value: T): boolean
@@ -832,7 +832,7 @@ declare function includesValue<T>(collection: Record<string, T>, value: T): bool
  * }
  * const hummusOnMenu = includesKey(menu, 'Hummus')
  *
- * console.assert(hummusOnMenu, false)
+ * console.assert(hummusOnMenu === false)
  * ```
  */
 declare function includesKey<T>(collection: Record<string, T>, value: string): boolean
@@ -856,7 +856,7 @@ declare function includesKey<T>(collection: Record<string, T>, value: string): b
  *     ([ item, price ]) => item !== 'Pasta' && price < 10,
  * )
  *
- * console.assert(myOptions, {
+ * console.assert(myOptions === {
  *     'Soup': 8,
  * })
  * ```
@@ -876,7 +876,7 @@ declare function filterEntries<T>(collection: Record<string, T>, predicate: Pred
  * }
  * const menuWithoutSalad = filterKeys(menu, it => it !== 'Salad')
  *
- * console.assert(menuWithoutSalad, {
+ * console.assert(menuWithoutSalad === {
  *     'Soup': 8,
  *     'Pasta': 13,
  * })
@@ -897,7 +897,7 @@ declare function filterKeys<T>(collection: Record<string, T>, predicate: Predica
  * }
  * const adults = filterValues(people, it => it.age >= 18)
  *
- * console.assert(adults, {
+ * console.assert(adults === {
  *     'Arnold': 37,
  *     'Kim': 23,
  * })
@@ -918,7 +918,7 @@ declare function filterValues<T>(collection: Record<string, T>, predicate: Predi
  * }
  * const peopleWithMiddleNames = filterValuesNotNullish(middleNames)
  *
- * console.assert(peopleWithMiddleNames, {
+ * console.assert(peopleWithMiddleNames === {
  *     'Arnold': 'William',
  *     'Kim': 'Martha',
  * })
@@ -941,7 +941,7 @@ declare function filterValuesNotNullish<T>(collection: Record<string, T>): Recor
  *     ([ id, { name, age } ]) => [ name, age ],
  * )
  *
- * console.assert(agesByNames, {
+ * console.assert(agesByNames === {
  *     'Kim': 22,
  *     'Anna': 31,
  *     'Tim': 58,
@@ -969,7 +969,7 @@ declare function mapEntries<T, O>(collection: Record<string, T>, transformer: Se
  *     },
  * }
  *
- * console.assert(deepMerge(person, patch), {
+ * console.assert(deepMerge(person, patch) === {
  *     name: 'Kim',
  *     demographics: {
  *         age: 30,
@@ -992,7 +992,7 @@ declare function deepMerge<T extends Record<keyof any, unknown>, U extends Recor
  * ```typescript
  * const counts = { a: 5, b: 3, c: 8 }
  *
- * console.assert(mapKeys(counts, it => it.toUppercase()), {
+ * console.assert(mapKeys(counts, it => it.toUppercase()) === {
  *     A: 5,
  *     B: 3,
  *     C: 8,
@@ -1014,7 +1014,7 @@ declare function mapKeys<T>(collection: Record<string, T>, transformer: Selector
  * }
  * const namesById = mapValues(usersById, it => it.name)
  *
- * console.assert(namesById, {
+ * console.assert(namesById === {
  *     'a5ec': 'Mischa',
  *     'de4f': 'Kim',
  * }
@@ -1037,7 +1037,7 @@ declare function mapValues<T, O>(collection: Record<string, T>, transformer: Sel
  *     'd': [ 'disk', 'direct' ],
  * }
  *
- * console.assert(countGroups(wordsByFirstLetter), {
+ * console.assert(countGroups(wordsByFirstLetter) === {
  *     'a': 3,
  *     'd': 2,
  * })
@@ -1055,7 +1055,7 @@ declare function countGroups(collection: Grouping<unknown>): Record<string, numb
  * }
  * const totalVotes = reduceGroups(votes, (sum, it) => sum + it, 0)
  *
- * console.assert(totalVotes, {
+ * console.assert(totalVotes === {
  *     'Woody': 10,
  *     'Buzz': 14,
  * })
@@ -1081,7 +1081,7 @@ declare function reduceGroups<T, A>(collection: Grouping<T>, reducer: (accumulat
  *     '',
  * )
  *
- * console.assert(descriptions, {
+ * console.assert(descriptions === {
  *     'Curry': 'Curry is spicy and vegan',
  *     'Omelette': 'Omelette is creamy and vegetarian',
  * })
