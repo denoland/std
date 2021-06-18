@@ -11,28 +11,6 @@ type Grouping<V> = Record<string, Array<V>>
  */
 
 /**
- * Checks if the given collection has no elements
- *
- * Example:
- *
- * ```typescript
- * console.assert(isEmpty([]) === true)
- * ```
- */
-declare function isEmpty(collection: Array<unknown>): boolean
-
-/**
- * Checks if the given collection has any elements
- *
- * Example:
- *
- * ```typescript
- * console.assert(isNotEmpty([]) === false)
- * ```
- */
-declare function isNotEmpty(collection: Array<unknown>): boolean
-
-/**
  * Checks if none of the elements in the given collection match the given predicate
  *
  * Example:
@@ -90,6 +68,28 @@ declare function includesAny<T, O extends T>(collection: Array<T>, needles: Arra
  * ```
  */
 declare function includesNone<T, O extends T>(collection: Array<T>, needles: Array<O>): boolean
+
+/**
+ * Checks if the given collection has no elements
+ *
+ * Example:
+ *
+ * ```typescript
+ * console.assert(isEmpty([]) === true)
+ * ```
+ */
+declare function isEmpty(collection: Array<unknown>): boolean
+
+/**
+ * Checks if the given collection has any elements
+ *
+ * Example:
+ *
+ * ```typescript
+ * console.assert(isNotEmpty([]) === false)
+ * ```
+ */
+declare function isNotEmpty(collection: Array<unknown>): boolean
 
 /*
  * Transformations to Array
