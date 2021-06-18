@@ -276,6 +276,25 @@ export function diffstr(A: string, B: string) {
     }
   }
 
+  // Create details by filtering revelant word-diff for current line
+  // and merge "space-diff" if surrounded by word-diff for cleaner displays
+  function createDetails(
+    line: DiffResult<string>,
+    tokens: Array<DiffResult<string>>,
+  ) {
+    return tokens.filter(({ type }) =>
+      type === line.type || type === DiffType.common
+    ).map((result, i, t) => {
+      if (
+        (result.type === DiffType.common) && (t[i - 1]) &&
+        (t[i - 1]?.type === t[i + 1]?.type)
+      ) {
+        result.type = t[i - 1].type;
+      }
+      return result;
+    });
+  }
+
   // Compute multi-line diff
   const diffResult = diff(tokenize(`${A}\n`), tokenize(`${B}\n`));
   const added = [], removed = [];
@@ -292,17 +311,17 @@ export function diffstr(A: string, B: string) {
   const aLines = added.length < removed.length ? added : removed;
   const bLines = aLines === removed ? added : removed;
   for (const a of aLines) {
-    let details = [] as Array<DiffResult<string>>,
+    let tokens = [] as Array<DiffResult<string>>,
       b: undefined | DiffResult<string>;
     // Search another diff line with at least one common token
     while (bLines.length) {
       b = bLines.shift();
-      details = diff(
+      tokens = diff(
         tokenize(a.value, { wordDiff: true }),
         tokenize(b?.value ?? "", { wordDiff: true }),
       );
       if (
-        details.some(({ type, value }) =>
+        tokens.some(({ type, value }) =>
           type === DiffType.common && value.trim().length
         )
       ) {
@@ -310,13 +329,9 @@ export function diffstr(A: string, B: string) {
       }
     }
     // Register word-diff details
-    a.details = details.filter(({ type }) =>
-      type === a.type || type === DiffType.common
-    );
+    a.details = createDetails(a, tokens);
     if (b) {
-      b.details = details.filter(({ type }) =>
-        type === b?.type || type === DiffType.common
-      );
+      b.details = createDetails(b, tokens);
     }
   }
 
