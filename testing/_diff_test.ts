@@ -111,43 +111,39 @@ Deno.test({
 });
 
 Deno.test({
-  name: '"a b c d" vs "a b x d e" (diffstr - word-diff)',
+  name: '"a b c d" vs "a b x d e" (diffstr)',
   fn(): void {
-    const { diffResult, wordDiff } = diffstr(
-      [..."abcd"].join(" "),
-      [..."abxde"].join(" "),
-    );
-    assert(wordDiff);
-    assertEquals(diffResult, [
-      { type: "common", value: "a" },
-      { type: "common", value: " " },
-      { type: "common", value: "b" },
-      { type: "common", value: " " },
-      { type: "added", value: "x" },
-      { type: "removed", value: "c" },
-      { type: "common", value: " " },
-      { type: "common", value: "d" },
-      { type: "added", value: " " },
-      { type: "added", value: "e" },
-    ]);
-  },
-});
-
-Deno.test({
-  name: '"a b c d" vs "a b x d e" (diffstr - multiline-diff)',
-  fn(): void {
-    const { diffResult, wordDiff } = diffstr(
+    const diffResult = diffstr(
       [..."abcd"].join("\n"),
       [..."abxde"].join("\n"),
     );
-    assert(!wordDiff);
     assertEquals(diffResult, [
       { type: "common", value: "a\n" },
       { type: "common", value: "b\n" },
       { type: "added", value: "x\n" },
-      { type: "removed", value: "c\n" },
+      {
+        type: "removed",
+        value: "c\n",
+        details: [{ type: "removed", value: "c" }, {
+          type: "common",
+          value: "\n",
+        }],
+      },
       { type: "common", value: "d\n" },
-      { type: "added", value: "e\n" },
+      {
+        type: "added",
+        value: "e\n",
+        details: [
+          {
+            type: "added",
+            value: "e",
+          },
+          {
+            type: "common",
+            value: "\n",
+          },
+        ],
+      },
     ]);
   },
 });

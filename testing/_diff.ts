@@ -15,6 +15,7 @@ export enum DiffType {
 export interface DiffResult<T> {
   type: DiffType;
   value: T;
+  details?: Array<DiffResult<T>>;
 }
 
 const REMOVED = 1;
@@ -275,31 +276,49 @@ export function diffstr(A: string, B: string) {
     }
   }
 
-  // Try to autodetect the most suitable string rendering, starting by words-diff
-  let wordDiff = true;
-  let diffResult = diff(tokenize(A, { wordDiff }), tokenize(B, { wordDiff }));
-  const common =
-    diffResult.filter(({ type, value }) =>
-      type === DiffType.common && value.trim()
-    ).length;
-  const edited =
-    diffResult.filter(({ type }) =>
-      type === DiffType.added || type === DiffType.removed
-    ).length;
-
-  // If edited ratio is too high switch to multi-line diff instead
-  // We add a trailing newline to ensure that last tokens are displayed correctly
-  if (
-    edited / (common + edited) >
-      0.85 **
-        Math.max(1, A.match(/\n/g)?.length ?? 0, B.match(/\n/g)?.length ?? 0)
-  ) {
-    wordDiff = false;
-    diffResult = diff(
-      tokenize(`${A}\n`, { wordDiff }),
-      tokenize(`${B}\n`, { wordDiff }),
-    );
+  // Compute multi-line diff
+  const diffResult = diff(tokenize(`${A}\n`), tokenize(`${B}\n`));
+  const added = [], removed = [];
+  for (const result of diffResult) {
+    if (result.type === DiffType.added) {
+      added.push(result);
+    }
+    if (result.type === DiffType.removed) {
+      removed.push(result);
+    }
   }
 
-  return { diffResult, wordDiff };
+  // Compute word-diff
+  const aLines = added.length < removed.length ? added : removed;
+  const bLines = aLines === removed ? added : removed;
+  for (const a of aLines) {
+    let details = [] as Array<DiffResult<string>>,
+      b: undefined | DiffResult<string>;
+    // Search another diff line with at least one common token
+    while (bLines.length) {
+      b = bLines.shift();
+      details = diff(
+        tokenize(a.value, { wordDiff: true }),
+        tokenize(b?.value ?? "", { wordDiff: true }),
+      );
+      if (
+        details.some(({ type, value }) =>
+          type === DiffType.common && value.trim().length
+        )
+      ) {
+        break;
+      }
+    }
+    // Register word-diff details
+    a.details = details.filter(({ type }) =>
+      type === a.type || type === DiffType.common
+    );
+    if (b) {
+      b.details = details.filter(({ type }) =>
+        type === b?.type || type === DiffType.common
+      );
+    }
+  }
+
+  return diffResult;
 }

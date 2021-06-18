@@ -2,7 +2,16 @@
 // This module is browser compatible. Do not rely on good formatting of values
 // for AssertionError messages in browsers.
 
-import { bold, gray, green, red, stripColor, white } from "../fmt/colors.ts";
+import {
+  bgGreen,
+  bgRed,
+  bold,
+  gray,
+  green,
+  red,
+  stripColor,
+  white,
+} from "../fmt/colors.ts";
 import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
@@ -40,12 +49,16 @@ export function _format(v: unknown): string {
  * Colors the output of assertion diffs
  * @param diffType Difference type, either added or removed
  */
-function createColor(diffType: DiffType): (s: string) => string {
+function createColor(
+  diffType: DiffType,
+  { background = false } = {},
+): (s: string) => string {
   switch (diffType) {
     case DiffType.added:
-      return (s: string): string => green(bold(s));
+      return (s: string): string =>
+        background ? bgGreen(white(s)) : green(bold(s));
     case DiffType.removed:
-      return (s: string): string => red(bold(s));
+      return (s: string): string => background ? bgRed(white(s)) : red(bold(s));
     default:
       return white;
   }
@@ -68,7 +81,7 @@ function createSign(diffType: DiffType): string {
 
 function buildMessage(
   diffResult: ReadonlyArray<DiffResult<string>>,
-  { sign = true, stringDiff = false } = {},
+  { stringDiff = false } = {},
 ): string[] {
   const messages: string[] = [], diffMessages: string[] = [];
   messages.push("");
@@ -82,9 +95,12 @@ function buildMessage(
   messages.push("");
   diffResult.forEach((result: DiffResult<string>): void => {
     const c = createColor(result.type);
-    diffMessages.push(
-      c(`${sign ? createSign(result.type) : ""}${result.value}`),
-    );
+    let line = result.details?.map((detail) =>
+      detail.type !== DiffType.common
+        ? createColor(detail.type, { background: true })(detail.value)
+        : detail.value
+    ).join("") ?? result.value;
+    diffMessages.push(c(`${createSign(result.type)}${line}`));
   });
   messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages));
   messages.push("");
@@ -213,21 +229,13 @@ export function assertEquals(
   const actualString = _format(actual);
   const expectedString = _format(expected);
   try {
-    if ((typeof actual === "string") && (typeof expected === "string")) {
-      const { diffResult, wordDiff } = diffstr(actual, expected);
-      const diffMsg = buildMessage(diffResult, {
-        sign: !wordDiff,
-        stringDiff: true,
-      }).join("\n");
-      message = `Values are not equal:\n${diffMsg}`;
-    } else {
-      const diffResult = diff(
-        actualString.split("\n"),
-        expectedString.split("\n"),
-      );
-      const diffMsg = buildMessage(diffResult).join("\n");
-      message = `Values are not equal:\n${diffMsg}`;
-    }
+    const stringDiff = (typeof actual === "string") &&
+      (typeof expected === "string");
+    const diffResult = stringDiff
+      ? diffstr(actual as string, expected as string)
+      : diff(actualString.split("\n"), expectedString.split("\n"));
+    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+    message = `Values are not equal:\n${diffMsg}`;
   } catch {
     message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
   }
@@ -324,21 +332,13 @@ export function assertStrictEquals(
         }\n`;
     } else {
       try {
-        if ((typeof actual === "string") && (typeof expected === "string")) {
-          const { diffResult, wordDiff } = diffstr(actual, expected);
-          const diffMsg = buildMessage(diffResult, {
-            sign: !wordDiff,
-            stringDiff: true,
-          }).join("\n");
-          message = `Values are not equal:\n${diffMsg}`;
-        } else {
-          const diffResult = diff(
-            actualString.split("\n"),
-            expectedString.split("\n"),
-          );
-          const diffMsg = buildMessage(diffResult).join("\n");
-          message = `Values are not equal:\n${diffMsg}`;
-        }
+        const stringDiff = (typeof actual === "string") &&
+          (typeof expected === "string");
+        const diffResult = stringDiff
+          ? diffstr(actual as string, expected as string)
+          : diff(actualString.split("\n"), expectedString.split("\n"));
+        const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+        message = `Values are not equal:\n${diffMsg}`;
       } catch {
         message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
       }

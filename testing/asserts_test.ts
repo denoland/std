@@ -930,14 +930,6 @@ Deno.test("assertEquals diff for differently ordered objects", () => {
 Deno.test("assert diff formatting (strings)", () => {
   assertThrows(
     () => {
-      assertEquals([..."abcd"].join(" "), [..."abxde"].join(" "));
-    },
-    undefined,
-    `a b ${green("x")}${red("c")} d ${green("e")}`,
-  );
-
-  assertThrows(
-    () => {
       assertEquals([..."abcd"].join("\n"), [..."abxde"].join("\n"));
     },
     undefined,
