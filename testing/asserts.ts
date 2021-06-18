@@ -95,7 +95,7 @@ function buildMessage(
   messages.push("");
   diffResult.forEach((result: DiffResult<string>): void => {
     const c = createColor(result.type);
-    let line = result.details?.map((detail) =>
+    const line = result.details?.map((detail) =>
       detail.type !== DiffType.common
         ? createColor(detail.type, { background: true })(detail.value)
         : detail.value
