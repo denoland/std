@@ -86,7 +86,7 @@ export class EventEmitter {
     prepend: boolean,
   ): this {
     this.checkListenerArgument(listener);
-    this.emit("newListener", eventName, listener);
+    this.emit("newListener", eventName, this.unwrapListener(listener));
     if (this._events.has(eventName)) {
       const listeners = this._events.get(eventName) as Array<
         GenericFunction | WrappedFunction
@@ -109,11 +109,16 @@ export class EventEmitter {
   }
 
   /** Alias for emitter.on(eventName, listener). */
-  public addListener(
+  addListener(
+    // deno-lint-ignore no-unused-vars
     eventName: string | symbol,
+    // deno-lint-ignore no-unused-vars
     listener: GenericFunction | WrappedFunction,
+    // deno-lint-ignore ban-ts-comment
+    // @ts-expect-error
   ): this {
-    return this._addListener(eventName, listener, false);
+    // The body of this method is empty because it will be overwritten by later code. (`EventEmitter.prototype.addListener = EventEmitter.prototype.on;`)
+    // The purpose of this dirty hack is to get around the current limitation of TypeScript type checking.
   }
 
   /**
@@ -205,13 +210,20 @@ export class EventEmitter {
       : eventListeners.slice(0);
   }
 
-  private unwrapListeners(arr: GenericFunction[]): GenericFunction[] {
+  private unwrapListeners(
+    arr: (GenericFunction | WrappedFunction)[],
+  ): GenericFunction[] {
     const unwrappedListeners = new Array(arr.length) as GenericFunction[];
     for (let i = 0; i < arr.length; i++) {
-      // deno-lint-ignore no-explicit-any
-      unwrappedListeners[i] = (arr[i] as any)["listener"] || arr[i];
+      unwrappedListeners[i] = this.unwrapListener(arr[i]);
     }
     return unwrappedListeners;
+  }
+
+  private unwrapListener(
+    listener: GenericFunction | WrappedFunction,
+  ): GenericFunction {
+    return (listener as WrappedFunction)["listener"] ?? listener;
   }
 
   /** Returns a copy of the array of listeners for the event named eventName.*/
@@ -341,7 +353,7 @@ export class EventEmitter {
         for (const listener of listeners) {
           this.removeListener(
             eventName,
-            (listener as WrappedFunction)["listener"] ?? listener,
+            this.unwrapListener(listener),
           );
         }
       }
@@ -594,6 +606,9 @@ export class EventEmitter {
     }
   }
 }
+
+// EventEmitter#addListener should point to the same function as EventEmitter#on.
+EventEmitter.prototype.addListener = EventEmitter.prototype.on;
 
 class MaxListenersExceededWarning extends Error {
   readonly count: number;
