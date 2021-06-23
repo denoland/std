@@ -204,13 +204,13 @@ export function assert(expr: unknown, msg = ""): asserts expr {
 export function assertEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string,
+  msg?: string | ((first: typeof actual, second: typeof expected) => string),
 ): void;
-export function assertEquals<T>(actual: T, expected: T, msg?: string): void;
+export function assertEquals<T>(actual: T, expected: T, msg?: string | ((first: typeof actual, second: typeof expected) => string)): void;
 export function assertEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string,
+  msg?: string | ((first: typeof actual, second: typeof expected) => string), // uses first and second for the callback because ts complains when using actual/expected
 ): void {
   if (equal(actual, expected)) {
     return;
@@ -229,7 +229,11 @@ export function assertEquals(
     message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
   }
   if (msg) {
-    message = msg;
+    if (typeof msg === "string") {
+      message = msg;
+    } else if (typeof msg === "function") {
+      message = msg(actual, expected);
+    }
   }
   throw new AssertionError(message);
 }
@@ -247,19 +251,20 @@ export function assertEquals(
 export function assertNotEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string,
+  msg?: string | ((first: typeof actual, second: typeof expected) => string),
 ): void;
-export function assertNotEquals<T>(actual: T, expected: T, msg?: string): void;
+export function assertNotEquals<T>(actual: T, expected: T, msg?: string | ((first: typeof actual, second: typeof expected) => string)): void;
 export function assertNotEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string,
+  msg?: string | ((first: typeof actual, second: typeof expected) => string),
 ): void {
   if (!equal(actual, expected)) {
     return;
   }
   let actualString: string;
   let expectedString: string;
+  let message = "";
   try {
     actualString = String(actual);
   } catch {
@@ -271,9 +276,15 @@ export function assertNotEquals(
     expectedString = "[Cannot display]";
   }
   if (!msg) {
-    msg = `actual: ${actualString} expected: ${expectedString}`;
+    message = `actual: ${actualString} expected: ${expectedString}`;
+  } else if (msg) {
+    if (typeof msg === "string") {
+      message = msg;
+    } else if (typeof msg === "function") {
+      message = msg(expected, actual);
+    }
   }
-  throw new AssertionError(msg);
+  throw new AssertionError(message);
 }
 
 /**
