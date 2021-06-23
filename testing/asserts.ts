@@ -434,7 +434,7 @@ export function assertStringIncludes(
         message = msg(actual, expected);
       }
     } else {
-      msg = `actual: "${actual}" expected to contain: "${expected}"`;
+      message = `actual: "${actual}" expected to contain: "${expected}"`;
     }
     throw new AssertionError(message);
   }
