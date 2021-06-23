@@ -7,91 +7,6 @@ type Grouping<V> = Record<string, Array<V>>
  */
 
 /*
- * Predicates
- */
-
-/**
- * Checks if none of the elements in the given collection match the given predicate
- *
- * Example:
- *
- * ```typescript
- * const names = [ 'Kim', 'Anna', 'John' ]
- * const noneStartWithX = none(names, it => it.startsWith('X'))
- *
- * console.assert(noneStartWithX === true)
- * ```
- */
-declare function none<T>(collection: Array<T>, predicate: Predicate<T>): boolean
-
-/**
- * Checks if the given collection includes all elements in the other given collection
- *
- * Example:
- *
- * ```typescript
- * const tasksDone = [ 'Code Review', 'Automatic Tests' ]
- * const checklist = [ 'Code Review', 'Automatic Tests', 'Manual Tests' ]
- * const canDeploy = includesAll(tasksDone, checklist)
- *
- * console.assert(canDeploy === false)
- * ```
- */
-declare function includesAll<T, O extends T>(collection: Array<T>, needles: Array<O>): boolean
-
-/**
- * Checks if the given collection includes any of the elements in the other given collection
- *
- * Example:
- *
- * ```typescript
- * const ingredients = [ 'Nuts', 'Meat', 'Vegetables' ]
- * const allergies = [ 'Nuts', 'Wheat' ]
- * const cannotEat = includesAny(ingredients, allergies)
- *
- * console.assert(cannotEat === true)
- * ```
- */
-declare function includesAny<T, O extends T>(collection: Array<T>, needles: Array<O>): boolean
-
-/**
- * Checks if the given collection includes none of the elements in the other given collection
- *
- * Example:
- *
- * ```typescript
- * const ingredients = [ 'Nuts', 'Meat', 'Vegetables' ]
- * const allergies = [ 'Nuts', 'Wheat' ]
- * const canEat = includesNone(ingredients, allergies)
- *
- * console.assert(canEat === false)
- * ```
- */
-declare function includesNone<T, O extends T>(collection: Array<T>, needles: Array<O>): boolean
-
-/**
- * Checks if the given collection has no elements
- *
- * Example:
- *
- * ```typescript
- * console.assert(isEmpty([]) === true)
- * ```
- */
-declare function isEmpty(collection: Array<unknown>): boolean
-
-/**
- * Checks if the given collection has any elements
- *
- * Example:
- *
- * ```typescript
- * console.assert(isNotEmpty([]) === false)
- * ```
- */
-declare function isNotEmpty(collection: Array<unknown>): boolean
-
-/*
  * Transformations to Array
  */
 
@@ -113,62 +28,6 @@ declare function isNotEmpty(collection: Array<unknown>): boolean
  * ```
  */
 declare function mapNotNullish<T, O>(collection: Array<T>, transformer: Selector<T, O>): Array<NonNullable<O>>
-
-/**
- * Returns the first n elements of a given collection. Returns the collection if it contains less than n elements.
- *
- * Example:
- *
- * ```typescript
- * const numbers = [ 1, 2, 3, 4, 5 ]
- * const firstNumbers = takeFirst(numbers, 2)
- *
- * console.assert(firstNumbers === [ 1, 2 ])
- * ```
- */
-declare function takeFirst<T>(collection: Array<T>, n: number): Array<T>
-
-/**
- * Returns the last n elements of a given collection. Returns the collection if it contains less than n elements.
- *
- * Example:
- *
- * ```typescript
- * const numbers = [ 1, 2, 3, 4, 5 ]
- * const lastNumbers = takeLast(numbers, 2)
- *
- * console.assert(lastNumbers === [ 4, 5 ])
- * ```
- */
-declare function takeLast<T>(collection: Array<T>, n: number): Array<T>
-
-/**
- * Returns all elements in the given collection except the first n elements.
- *
- * Example:
- *
- * ```typescript
- * const numbers = [ 1, 2, 3, 4, 5 ]
- * const restNumbers = dropFirst(numbers, 2)
- *
- * console.assert(restNumbers === [ 3, 4, 5 ])
- * ```
- */
-declare function dropFirst<T>(collection: Array<T>, n: number): Array<T>
-
-/**
- * Returns all elements in the given collection except the last n elements.
- *
- * Example:
- *
- * ```typescript
- * const numbers = [ 1, 2, 3, 4, 5 ]
- * const restNumbers = dropLast(numbers, 2)
- *
- * console.assert(restNumbers === [ 1, 2, 3 ])
- * ```
- */
-declare function dropLast<T>(collection: Array<T>, n: number): Array<T>
 
 /**
  * Returns all elements in the given collection until the first element that does not match the given predicate (excluded)
@@ -225,20 +84,6 @@ declare function dropFirstWhile<T>(collection: Array<T>, predicate: Predicate<T>
  * ```
  */
 declare function dropLastWhile<T>(collection: Array<T>, predicate: Predicate<T>): Array<T>
-
-/**
- * Returns all elements in the given collection that do not match the given predicate
- *
- * Example:
- *
- * ```typescript
- * const names = [ 'Anna', 'Kim', 'Karl' ]
- * const namesWithoutA = filterNot(names, it => it.startsWith('A'))
- *
- * console.assert(namesWithoutA === [ 'Kim', 'Karl' ])
- * ```
- */
-declare function filterNot<T>(collection: Array<T>, predicate: Predicate<T>): Array<T>
 
 /**
  * Returns all elements in the given collection that are not nullish
@@ -379,45 +224,6 @@ declare function withoutAll<T>(collection: Array<T>, toRemove: Array<T>): Array<
 /*
  * Transformations to value
  */
-
-/**
- * Returns the last index in the given collection, equal to it's size minus 1. Returns undefined if the collection is empty.
- *
- * Example:
- *
- * ```typescript
- * const numbers = [ 4, 2, 7 ]
- *
- * console.assert(lastIndex(numbers) === 2)
- * ```
- */
-declare function lastIndex(collection: Array<unknown>): number
-
-/**
- * Returns the first element in the given collection and undefined if there is none
- *
- * Example:
- *
- * ```typescript
- * const numbers = [ 4, 2, 7 ]
- *
- * console.assert(first(numbers) === 4)
- * ```
- */
-declare function first<T>(collection: Array<T>): T | undefined
-
-/**
- * Returns the last element in the given collection and undefined if there is none
- *
- * Example:
- *
- * ```typescript
- * const numbers = [ 4, 2, 7 ]
- *
- * console.assert(last(numbers) === 7)
- * ```
- */
-declare function last<T>(collection: Array<T>): T | undefined
 
 /**
  * Returns the last element in the given collection matching the given predicate
@@ -819,24 +625,6 @@ declare function windowed<T>(collection: Array<T>, size: number, config?: { step
  */
 declare function includesValue<T>(collection: Record<string, T>, value: T): boolean
 
-/**
- * Checks if the given collection includes the given key
- *
- * Example:
- *
- * ```typescript
- * const menu = {
- *     'Salad': 11,
- *     'Soup': 8,
- *     'Pasta': 13,
- * }
- * const hummusOnMenu = includesKey(menu, 'Hummus')
- *
- * console.assert(hummusOnMenu === false)
- * ```
- */
-declare function includesKey<T>(collection: Record<string, T>, value: string): boolean
-
 /*
  * Transformations to Records
  */
@@ -1025,25 +813,6 @@ declare function mapValues<T, O>(collection: Record<string, T>, transformer: Sel
 /**
  * Groups
  */
-
-/**
- * Returns the number of elements together with their group key from the given Grouping
- *
- * Example:
- *
- * ```typescript
- * const wordsByFirstLetter = {
- *     'a': [ 'are', 'any', 'at' ],
- *     'd': [ 'disk', 'direct' ],
- * }
- *
- * console.assert(countGroups(wordsByFirstLetter) === {
- *     'a': 3,
- *     'd': 2,
- * })
- * ```
- */
-declare function countGroups(collection: Grouping<unknown>): Record<string, number>
 
 /**
  * Applies the given reducer to each group in the given Grouping, returning the results together with the respective group keys
