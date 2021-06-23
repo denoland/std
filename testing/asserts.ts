@@ -206,7 +206,11 @@ export function assertEquals(
   expected: unknown,
   msg?: string | ((first: typeof actual, second: typeof expected) => string),
 ): void;
-export function assertEquals<T>(actual: T, expected: T, msg?: string | ((first: typeof actual, second: typeof expected) => string)): void;
+export function assertEquals<T>(
+  actual: T,
+  expected: T,
+  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+): void;
 export function assertEquals(
   actual: unknown,
   expected: unknown,
@@ -253,7 +257,11 @@ export function assertNotEquals(
   expected: unknown,
   msg?: string | ((first: typeof actual, second: typeof expected) => string),
 ): void;
-export function assertNotEquals<T>(actual: T, expected: T, msg?: string | ((first: typeof actual, second: typeof expected) => string)): void;
+export function assertNotEquals<T>(
+  actual: T,
+  expected: T,
+  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+): void;
 export function assertNotEquals(
   actual: unknown,
   expected: unknown,
@@ -316,7 +324,7 @@ export function assertStrictEquals(
   let message: string;
 
   if (msg && typeof msg === "string") {
-      message = msg;
+    message = msg;
   } else if (msg && typeof msg === "function") {
     message = msg(actual, expected);
   } else {
@@ -384,7 +392,9 @@ export function assertNotStrictEquals(
       message = msg(actual, expected);
     }
   } else {
-    message = `Expected "actual" to be strictly unequal to: ${_format(actual)}\n`
+    message = `Expected "actual" to be strictly unequal to: ${
+      _format(actual)
+    }\n`;
   }
 
   throw new AssertionError(message);
