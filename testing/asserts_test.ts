@@ -958,6 +958,23 @@ Deno.test("assertEquals diff for differently ordered objects", () => {
   );
 });
 
+Deno.test("assert diff formatting (strings)", () => {
+  assertThrows(
+    () => {
+      assertEquals([..."abcd"].join("\n"), [..."abxde"].join("\n"));
+    },
+    undefined,
+    `
+    a
+    b
+${green("+   x")}
+${red("-   c")}
+    d
+${green("+   e")}
+`,
+  );
+});
+
 // Check that the diff formatter overrides some default behaviours of
 // `Deno.inspect()` which are problematic for diffing.
 Deno.test("assert diff formatting", () => {
