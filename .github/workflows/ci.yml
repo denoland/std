@@ -24,21 +24,10 @@ jobs:
           submodules: true
           persist-credentials: false
 
-      - name: Install Deno (Unix)
-        if: |
-          !startsWith(matrix.os, 'windows')
-        run: |-
-          curl -fsSL https://deno.land/x/install/install.sh | sh
-          echo "$HOME/.deno/bin" >> $GITHUB_PATH
-      - name: Install Deno (Windows)
-        if: startsWith(matrix.os, 'windows')
-        run: |-
-          curl -fsSL https://deno.land/x/install/install.sh | sh
-          echo "$HOME/.deno/bin" >> $env:GITHUB_PATH
-
-      - name: Upgrade to Deno canary
-        if: matrix.deno == 'canary'
-        run: deno upgrade --canary
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1.0.0
+        with:
+          deno-version: ${{ matrix.deno }}
 
       - name: Run tests
         run: deno test --unstable --allow-all
