@@ -116,7 +116,7 @@ export function globToRegExp(
   // Terminates correctly. Trust that `j` is incremented every iteration.
   for (let j = 0; j < glob.length;) {
     let segment = "";
-    const groupStack = [];
+    const groupStack: string[] = [];
     let inRange = false;
     let inEscape = false;
     let endsWithSep = false;
