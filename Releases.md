@@ -1,3 +1,10 @@
+### 0.100.0 / 2021.06.29
+
+- feat(testing/asserts): improved strings diff (#948)
+- feat(testing/asserts): use assertion signature for "assertExists" (#969)
+- fix(node/events): align EventEmitter#addListener with native node tests (#976)
+- fix(path): fix type error in glob.ts with noImplicitAny: false config (#977)
+
 ### 0.99.0 / 2021.06.15
 
 - feat(mime): make createPart of MultipartWriter public (#960)
