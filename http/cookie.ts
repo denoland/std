@@ -57,7 +57,10 @@ function toString(cookie: Cookie): string {
     out.push("HttpOnly");
   }
   if (typeof cookie.maxAge === "number" && Number.isInteger(cookie.maxAge)) {
-    assert(cookie.maxAge >= 0, "Max-Age must be an integer superior or equal to 0");
+    assert(
+      cookie.maxAge >= 0,
+      "Max-Age must be an integer superior or equal to 0",
+    );
     out.push(`Max-Age=${cookie.maxAge}`);
   }
   if (cookie.domain) {
