@@ -403,7 +403,7 @@ class Parser {
       return testNumber;
     }
 
-    return String(dataString);
+    throw new TOMLError(`Invalid data format: ${dataString}`);
   }
   _isLocalTime(str: string): boolean {
     const reg = /(\d{2}):(\d{2}):(\d{2})/;
