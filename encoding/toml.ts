@@ -273,12 +273,6 @@ class Parser {
       case "{":
         return this._parseInlineTableOrArray(dataString);
       default: {
-        // Strip a comment.
-        const match = /#.*$/.exec(dataString);
-        if (match) {
-          dataString = dataString.slice(0, match.index).trim();
-        }
-
         switch (dataString) {
           case "true":
             return true;
@@ -409,7 +403,7 @@ class Parser {
       return testNumber;
     }
 
-    return String(dataString);
+    throw new TOMLError(`Invalid data format: ${dataString}`);
   }
   _isLocalTime(str: string): boolean {
     const reg = /(\d{2}):(\d{2}):(\d{2})/;
