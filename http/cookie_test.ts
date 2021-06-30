@@ -186,6 +186,21 @@ Deno.test({
       maxAge: 0,
     });
 
+    let error = false;
+    res.headers = new Headers();
+    try {
+      setCookie(res, {
+        name: "Space",
+        value: "Cat",
+        httpOnly: true,
+        secure: true,
+        maxAge: -1,
+      });
+    } catch {
+      error = true;
+    }
+    assert(error);
+
     res.headers = new Headers();
     setCookie(res, {
       name: "Space",
