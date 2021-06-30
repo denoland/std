@@ -11,7 +11,7 @@ export interface Cookie {
   value: string;
   /** Expiration date of the cookie. */
   expires?: Date;
-  /** Max-Age of the Cookie. Must be integer superior to 0. */
+  /** Max-Age of the Cookie. Must be a non-negative integer. */
   maxAge?: number;
   /** Specifies those hosts to which the cookie will be sent. */
   domain?: string;
@@ -57,7 +57,7 @@ function toString(cookie: Cookie): string {
     out.push("HttpOnly");
   }
   if (typeof cookie.maxAge === "number" && Number.isInteger(cookie.maxAge)) {
-    assert(cookie.maxAge > 0, "Max-Age must be an integer superior to 0");
+    assert(cookie.maxAge >= 0, "Max-Age must be a non-negative integer");
     out.push(`Max-Age=${cookie.maxAge}`);
   }
   if (cookie.domain) {
