@@ -185,6 +185,10 @@ Deno.test({
       secure: true,
       maxAge: 0,
     });
+    assertEquals(
+      res.headers.get("Set-Cookie"),
+      "Space=Cat; Secure; HttpOnly; Max-Age=0",
+    );
 
     let error = false;
     res.headers = new Headers();
