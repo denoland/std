@@ -3,7 +3,12 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import { assert, assertEquals, fail } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertThrowsAsync,
+  fail,
+} from "../testing/asserts.ts";
 import {
   BufferFullError,
   BufReader,
@@ -240,6 +245,15 @@ async function testReadLine(input: Uint8Array) {
 Deno.test("bufioReadLine", async function () {
   await testReadLine(testInput);
   await testReadLine(testInputrn);
+});
+
+Deno.test("bufioReadLineBadResource", async () => {
+  const file = await Deno.open("README.md");
+  const bufReader = new BufReader(file);
+  file.close();
+  assertThrowsAsync(async () => {
+    await bufReader.readLine();
+  }, Deno.errors.BadResource);
 });
 
 Deno.test("[io] readStringDelim basic", async () => {

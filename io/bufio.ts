@@ -252,6 +252,9 @@ export class BufReader implements Reader {
     try {
       line = await this.readSlice(LF);
     } catch (err) {
+      if (err instanceof Deno.errors.BadResource) {
+        throw err;
+      }
       let { partial } = err;
       assert(
         partial instanceof Uint8Array,
