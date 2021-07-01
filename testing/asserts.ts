@@ -34,7 +34,9 @@ export class AssertionError extends Error {
  * @param v Value to be formatted
  */
 export function _format(v: unknown): string {
-  return globalThis.Deno
+  // deno-lint-ignore no-explicit-any
+  const { Deno } = globalThis as any;
+  return typeof Deno?.inspect === "function"
     ? Deno.inspect(v, {
       depth: Infinity,
       sorted: true,
