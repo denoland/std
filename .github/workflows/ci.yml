@@ -32,6 +32,9 @@ jobs:
       - name: Run tests
         run: deno test --unstable --allow-all
 
+      - name: Type check browser compatible modules
+        run: grep -Rl --exclude-dir=./.github "// This module is browser compatible." . | xargs deno cache --config browser-compat.tsconfig.json
+
       - name: Generate lcov
         run: deno coverage --unstable --lcov ./cov > cov.lcov
 
