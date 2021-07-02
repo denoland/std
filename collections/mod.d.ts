@@ -3,37 +3,6 @@ type Selector<T, O = unknown> = (item: T) => O;
 type Grouping<V> = Record<string, Array<V>>;
 
 /**
- * Returns all distinct elements in the given array, preserving order by first occurence
- *
- * Example:
- *
- * ```typescript
- * const numbers = [ 3, 2, 5, 2, 5 ]
- * const distinctNumbers = distinct(numbers)
- *
- * console.assert(distinctNumbers === [ 3, 2, 5 ])
- * ```
- */
-declare function distinct<T>(array: Array<T>): Array<T>;
-
-/**
- * Returns all elements in the given array that produce a distinct value using the given selector, preserving order by first occurence
- *
- * Example:
- *
- * ```typescript
- * const names = [ 'Anna', 'Kim', 'Arnold', 'Kate' ]
- * const exampleNamesByFirstLetter = distinctBy(names, it => it.charAt(0))
- *
- * console.assert(exampleNamesByFirstLetter === [ 'Anna', 'Kim' ])
- * ```
- */
-declare function distinctBy<T>(
-  array: Array<T>,
-  selector: Selector<T>,
-): Array<T>;
-
-/**
  * Returns all distinct elements that appear in both given arrays
  *
  * Example:
