@@ -16,20 +16,20 @@ await init(source);
 
 const TYPE_ERROR_MSG = "hash: `data` is invalid type";
 
-export class Hash implements Hasher {
-  static #finalizationRegistry = new FinalizationRegistry(
-    (wasmHash: DenoHash) => {
-      wasmHash.free();
-    },
-  );
+const finalizationRegistry = new FinalizationRegistry(
+  (wasmHash: DenoHash) => {
+    wasmHash.free();
+  },
+);
 
+export class Hash implements Hasher {
   #hash: DenoHash;
   #digested: boolean;
 
   constructor(algorithm: string) {
     this.#hash = createHash(algorithm);
     this.#digested = false;
-    Hash.#finalizationRegistry.register(this, this.#hash);
+    finalizationRegistry.register(this, this.#hash);
   }
 
   /**
