@@ -1,3 +1,4 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "https://deno.land/std@0.100.0/testing/asserts.ts";
 import { distinctBy } from "./distinct_by.ts";
 
@@ -11,97 +12,112 @@ function distinctByTest<I>(
   assertEquals(actual, expected, message);
 }
 
-Deno.test("identities on empty array", () => {
-  distinctByTest(
-    [],
-    () => {},
-    [],
-  );
+Deno.test({
+  name: "identities on empty array",
+  fn() {
+    distinctByTest(
+      [],
+      () => {},
+      [],
+    );
+  },
 });
 
-Deno.test("gets head on noop selector", () => {
-  distinctByTest(
-    [25, "asdf", true],
-    () => {},
-    [25],
-  );
+Deno.test({
+  name: "gets head on noop selector",
+  fn() {
+    distinctByTest(
+      [25, "asdf", true],
+      () => {},
+      [25],
+    );
+  },
 });
 
-Deno.test("removes duplicates and preserves order on identity", () => {
-  distinctByTest(
-    [true, "asdf", 4, "asdf", true],
-    (it) => it,
-    [true, "asdf", 4],
-  );
-  distinctByTest(
-    [null, undefined, null, "foo", undefined],
-    (it) => it,
-    [null, undefined, "foo"],
-  );
-  distinctByTest(
-    [true, "asdf", 4, "asdf", true],
-    (it) => it,
-    [true, "asdf", 4],
-  );
+Deno.test({
+  name: "removes duplicates and preserves order on identity",
+  fn() {
+    distinctByTest(
+      [true, "asdf", 4, "asdf", true],
+      (it) => it,
+      [true, "asdf", 4],
+    );
+    distinctByTest(
+      [null, undefined, null, "foo", undefined],
+      (it) => it,
+      [null, undefined, "foo"],
+    );
+    distinctByTest(
+      [true, "asdf", 4, "asdf", true],
+      (it) => it,
+      [true, "asdf", 4],
+    );
+  },
 });
 
-Deno.test("does not check for deep equality on identity", () => {
-  const objects = [{ foo: "bar" }, { foo: "bar" }];
-  distinctByTest(
-    objects,
-    (it) => it,
-    objects,
-  );
+Deno.test({
+  name: "does not check for deep equality on identity",
+  fn() {
+    const objects = [{ foo: "bar" }, { foo: "bar" }];
+    distinctByTest(
+      objects,
+      (it) => it,
+      objects,
+    );
 
-  const arrays = [[], []];
-  distinctByTest(
-    arrays,
-    (it) => it,
-    arrays,
-  );
+    const arrays = [[], []];
+    distinctByTest(
+      arrays,
+      (it) => it,
+      arrays,
+    );
 
-  const nans = [NaN, NaN];
-  distinctByTest(
-    nans,
-    (it) => it,
-    nans,
-  );
+    const nans = [NaN, NaN];
+    distinctByTest(
+      nans,
+      (it) => it,
+      nans,
+    );
 
-  const noops = [() => {}, () => {}];
-  distinctByTest(
-    noops,
-    (it) => it,
-    noops,
-  );
+    const noops = [() => {}, () => {}];
+    distinctByTest(
+      noops,
+      (it) => it,
+      noops,
+    );
 
-  const sets = [new Set(), new Set()];
-  distinctByTest(
-    sets,
-    (it) => it,
-    sets,
-  );
+    const sets = [new Set(), new Set()];
+    distinctByTest(
+      sets,
+      (it) => it,
+      sets,
+    );
+  },
 });
 
-Deno.test("distincts by selected value and preserves order", () => {
-  const kim = { name: "Kim", age: 22 };
-  const arthur = { name: "Arthur", age: 22 };
-  const anna = { name: "Anna", age: 48 };
-  const karl = { name: "Karl", age: 48 };
-  const people = [kim, arthur, anna, karl];
+Deno.test({
+  name: "distincts by selected value and preserves order",
+  fn() {
+    const kim = { name: "Kim", age: 22 };
+    const arthur = { name: "Arthur", age: 22 };
+    const anna = { name: "Anna", age: 48 };
+    const karl = { name: "Karl", age: 48 };
+    const people = [kim, arthur, anna, karl];
 
-  distinctByTest(
-    people,
-    (it) => it.name.charAt(0),
-    [kim, arthur],
-  );
-  distinctByTest(
-    people,
-    (it) => it.age,
-    [kim, anna],
-  );
-  distinctByTest(
-    people,
-    (it) => it.name.length,
-    [kim, arthur, anna],
-  );
+    distinctByTest(
+      people,
+      (it) => it.name.charAt(0),
+      [kim, arthur],
+    );
+    distinctByTest(
+      people,
+      (it) => it.age,
+      [kim, anna],
+    );
+    distinctByTest(
+      people,
+      (it) => it.name.length,
+      [kim, arthur, anna],
+    );
+  },
 });

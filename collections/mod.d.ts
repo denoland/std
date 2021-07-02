@@ -1,3 +1,4 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 type Predicate<T> = (item: T) => boolean;
 type Selector<T, O = unknown> = (item: T) => O;
 type Grouping<V> = Record<string, Array<V>>;

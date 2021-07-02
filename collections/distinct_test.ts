@@ -1,3 +1,4 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "https://deno.land/std@0.100.0/testing/asserts.ts";
 import { distinct } from "./distinct.ts";
 
@@ -10,38 +11,47 @@ function distinctTest<I>(
   assertEquals(actual, expected, message);
 }
 
-Deno.test("identities on empty array", () => {
-  distinctTest([], []);
+Deno.test({
+  name: "[collections/distinct] identities on empty array",
+  fn() {
+    distinctTest([], []);
+  },
 });
 
-Deno.test("removes duplicates and preserves order", () => {
-  distinctTest(
-    [true, "asdf", 4, "asdf", true],
-    [true, "asdf", 4],
-  );
-  distinctTest(
-    [null, undefined, null, "foo", undefined],
-    [null, undefined, "foo"],
-  );
-  distinctTest(
-    [true, "asdf", 4, "asdf", true],
-    [true, "asdf", 4],
-  );
+Deno.test({
+  name: "[collections/distinct] removes duplicates and preserves order",
+  fn() {
+    distinctTest(
+      [true, "asdf", 4, "asdf", true],
+      [true, "asdf", 4],
+    );
+    distinctTest(
+      [null, undefined, null, "foo", undefined],
+      [null, undefined, "foo"],
+    );
+    distinctTest(
+      [true, "asdf", 4, "asdf", true],
+      [true, "asdf", 4],
+    );
+  },
 });
 
-Deno.test("does not check for deep equality", () => {
-  const objects = [{ foo: "bar" }, { foo: "bar" }];
-  distinctTest(objects, objects);
+Deno.test({
+  name: "[collections/distinct] does not check for deep equality",
+  fn() {
+    const objects = [{ foo: "bar" }, { foo: "bar" }];
+    distinctTest(objects, objects);
 
-  const arrays = [[], []];
-  distinctTest(arrays, arrays);
+    const arrays = [[], []];
+    distinctTest(arrays, arrays);
 
-  const nans = [NaN, NaN];
-  distinctTest(nans, nans);
+    const nans = [NaN, NaN];
+    distinctTest(nans, nans);
 
-  const noops = [() => {}, () => {}];
-  distinctTest(noops, noops);
+    const noops = [() => {}, () => {}];
+    distinctTest(noops, noops);
 
-  const sets = [new Set(), new Set()];
-  distinctTest(sets, sets);
+    const sets = [new Set(), new Set()];
+    distinctTest(sets, sets);
+  },
 });
