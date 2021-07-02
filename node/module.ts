@@ -534,7 +534,21 @@ class Module {
       filename instanceof URL ||
       (typeof filename === "string" && !path.isAbsolute(filename))
     ) {
-      filepath = fileURLToPath(filename);
+      try {
+        filepath = fileURLToPath(filename);
+      } catch (err) {
+        if (
+          err instanceof Deno.errors.InvalidData &&
+          err.message.includes("invalid url scheme")
+        ) {
+          // Provide a descriptive error when url scheme is invalid.
+          throw new Error(
+            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter`,
+          );
+        } else {
+          throw err;
+        }
+      }
     } else if (typeof filename !== "string") {
       throw new Error("filename should be a string");
     } else {
