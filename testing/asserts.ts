@@ -146,6 +146,9 @@ export function equal(c: unknown, d: unknown): boolean {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
+      if (a && b && (a.constructor !== b.constructor)) {
+        return false;
+      }
       if (a instanceof WeakMap || b instanceof WeakMap) {
         if (!(a instanceof WeakMap && b instanceof WeakMap)) return false;
         throw new TypeError("cannot compare WeakMap instances");
