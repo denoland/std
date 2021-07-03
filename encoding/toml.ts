@@ -475,7 +475,7 @@ class Parser {
           !this.context.currentGroup ||
           (this.context.currentGroup &&
             this.context.currentGroup.name !==
-              line.replace(/(\[|\])/g, ""))
+            line.replace(/(\[|\])/g, ""))
         ) {
           this._createGroup(line);
           continue;
@@ -549,6 +549,12 @@ function joinKeys(keys: string[]): string {
     .join(".");
 }
 
+enum ArrayType {
+  ONLY_PRIMITIVE,
+  ONLY_OBJECT_EXCLUDING_ARRAY,
+  MIXED,
+}
+
 class Dumper {
   maxPad = 0;
   srcObject: Record<string, unknown>;
@@ -558,11 +564,11 @@ class Dumper {
   }
   dump(): string[] {
     // deno-lint-ignore no-explicit-any
-    this.output = this._parse(this.srcObject as any);
+    this.output = this._printObject(this.srcObject as any);
     this.output = this._format();
     return this.output;
   }
-  _parse(obj: Record<string, unknown>, keys: string[] = []): string[] {
+  _printObject(obj: Record<string, unknown>, keys: string[] = []): string[] {
     const out = [];
     const props = Object.keys(obj);
     const propObj = props.filter((e: string): boolean => {
@@ -592,33 +598,85 @@ class Dumper {
       } else if (typeof value === "boolean") {
         out.push(this._boolDeclaration([prop], value));
       } else if (
-        value instanceof Array &&
-        this._isSimplySerializable(value[0])
+        value instanceof Array
       ) {
-        // only if primitives types in the array
-        out.push(this._arrayDeclaration([prop], value));
-      } else if (
-        value instanceof Array &&
-        !this._isSimplySerializable(value[0])
-      ) {
-        // array of objects
-        for (let i = 0; i < value.length; i++) {
-          out.push("");
-          out.push(this._headerGroup([...keys, prop]));
-          out.push(...this._parse(value[i], [...keys, prop]));
+        const arrayType = this._getTypeOfArray(value);
+        if (arrayType === ArrayType.ONLY_PRIMITIVE) {
+          out.push(this._arrayDeclaration([prop], value));
+        } else if(arrayType === ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY) {
+          // array of objects
+          for (let i = 0; i < value.length; i++) {
+            out.push("");
+            out.push(this._headerGroup([...keys, prop]));
+            out.push(...this._printObject(value[i], [...keys, prop]));
+          }
+        } else {
+          // this is a complex array, use the inline format.
+          const str = value.map(x => this._printAsInlineValue(x)).join(',')
+          out.push(`${prop} = [${str}]`)
         }
+
       } else if (typeof value === "object") {
         out.push("");
         out.push(this._header([...keys, prop]));
         if (value) {
           const toParse = value as Record<string, unknown>;
-          out.push(...this._parse(toParse, [...keys, prop]));
+          out.push(...this._printObject(toParse, [...keys, prop]));
         }
         // out.push(...this._parse(value, `${path}${prop}.`));
       }
     }
     out.push("");
     return out;
+  }
+  _isPrimitive(value: unknown): boolean {
+    return value instanceof Date ||
+      value instanceof RegExp ||
+      ["string", "number", "boolean"].includes(typeof value)
+  }
+  _getTypeOfArray(arr: unknown[]): ArrayType {
+    if (!arr.length) {
+      // any type should be fine
+      return ArrayType.ONLY_PRIMITIVE
+    }
+
+    const onlyPrimitive = this._isPrimitive(arr[0]);
+    if (arr[0] instanceof Array) {
+      return ArrayType.MIXED;
+    }
+    for (let i = 1; i < arr.length; i++) {
+      if (onlyPrimitive !== this._isPrimitive(arr[i]) || arr[i] instanceof Array) {
+        return ArrayType.MIXED
+      }
+    }
+    return onlyPrimitive ? ArrayType.ONLY_PRIMITIVE : ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY;
+  }
+  _printAsInlineValue(value: unknown): string | number {
+    if (value instanceof Date) {
+      return `"${this._printDate(value)}"`;
+    } else if (typeof value === "string" || value instanceof RegExp) {
+      return JSON.stringify(value.toString());
+    } else if (typeof value === "number") {
+      return value;
+    } else if (typeof value === "boolean") {
+      return value.toString();
+    } else if (
+      value instanceof Array
+    ) {
+      const str = value.map(x => this._printAsInlineValue(x)).join(",")
+      return `[${str}]`
+    } else if (typeof value === "object") {
+      if (!value) {
+        throw new Error("should never reach")
+      }
+      const str = Object.keys(value).map(key => {
+        // deno-lint-ignore no-explicit-any
+        return `${key} = ${this._printAsInlineValue((value as any)[key])}`
+      }).join(",")
+      return `{${str}}`
+    }
+
+    throw new Error("should never reach")
   }
   _isSimplySerializable(value: unknown): boolean {
     return (
@@ -662,7 +720,7 @@ class Dumper {
   _boolDeclaration(keys: string[], value: boolean): string {
     return `${this._declaration(keys)}${value}`;
   }
-  _dateDeclaration(keys: string[], value: Date): string {
+  _printDate(value: Date): string {
     function dtPad(v: string, lPad = 2): string {
       return v.padStart(lPad, "0");
     }
@@ -674,7 +732,10 @@ class Dumper {
     const ms = dtPad(value.getUTCMilliseconds().toString(), 3);
     // formatted date
     const fData = `${value.getUTCFullYear()}-${m}-${d}T${h}:${min}:${s}.${ms}`;
-    return `${this._declaration(keys)}${fData}`;
+    return fData;
+  }
+  _dateDeclaration(keys: string[], value: Date): string {
+    return `${this._declaration(keys)}${this._printDate(value)}`;
   }
   _format(): string[] {
     const rDeclaration = /(.*)\s=/;
