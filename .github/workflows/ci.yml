@@ -13,8 +13,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TODO(lucacasonato): reenable stable after 1.10 release
-        deno: [canary] # [stable, canary]
+        # TODO(ry): reenable canary when on-going builds in deno repo do not
+        # result in red builds in std.
+        deno: [1.x] # [1.x, canary]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:
@@ -50,16 +51,11 @@ jobs:
           submodules: false
           persist-credentials: false
 
-      - name: Install Deno
-        run: |-
-          curl -fsSL https://deno.land/x/install/install.sh | sh
-          echo "$HOME/.deno/bin" >> $GITHUB_PATH
-
-      - name: Upgrade to Deno canary
-        run: deno upgrade --canary
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1.0.0
 
       - name: Format
         run: deno fmt --check
 
       - name: Lint
-        run: deno lint --unstable
+        run: deno lint
