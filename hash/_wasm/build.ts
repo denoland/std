@@ -20,6 +20,12 @@ const cargoStatus = await Deno.run({
     "--target",
     "wasm32-unknown-unknown",
   ],
+  env: {
+    // improve build reproducibility
+    SOURCE_DATE_EPOCH: "1600000000",
+    TZ: "UTC",
+    LC_ALL: "C",
+  },
 }).status();
 
 if (!cargoStatus.success) {
