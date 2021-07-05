@@ -15,7 +15,7 @@ jobs:
       matrix:
         # TODO(ry): reenable canary when on-going builds in deno repo do not
         # result in red builds in std.
-        deno: [1.x] # [latest, canary]
+        deno: [1.x, canary]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:
