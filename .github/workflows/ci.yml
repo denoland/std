@@ -2,7 +2,6 @@ name: ci
 
 on:
   push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -50,16 +49,89 @@ jobs:
           submodules: false
           persist-credentials: false
 
-      - name: Install Deno
-        run: |-
-          curl -fsSL https://deno.land/x/install/install.sh | sh
-          echo "$HOME/.deno/bin" >> $GITHUB_PATH
-
-      - name: Upgrade to Deno canary
-        run: deno upgrade --canary
+      - uses: denoland/setup-deno@v1.0.0
+        with:
+          deno-version: canary
 
       - name: Format
         run: deno fmt --check
 
       - name: Lint
         run: deno lint --unstable
+
+  hash-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+        with:
+          submodules: false
+          # required to push changes
+          persist-credentials: true
+          # required to identify changed files
+          fetch-depth: 2
+
+      - id: source
+        run: |-
+          modifications="$(git diff --name-only HEAD~ -- ./hash)"
+          if [[ ! -z $modifications ]]; then
+            echo "::set-output name=modified::true"
+          else
+            echo "::set-output name=modified::false"
+          fi
+
+      - uses: denoland/setup-deno@v1.0.0
+        if: success() && steps.source.outputs.modified == 'true'
+        with:
+          deno-version: canary
+
+      - uses: hecrj/setup-rust-action@v1
+        if: success() && steps.source.outputs.modified == 'true'
+        with:
+          # This must match the version in hash/_wasm/rust-toolchain:
+          rust-version: 1.53.0
+          targets: wasm32-unknown-unknown
+
+      # This must match the version in hash/_wasm/Cargo.lock:
+      - run: cargo install -f wasm-bindgen-cli --version 0.2.74
+        if: success() && steps.source.outputs.modified == 'true'
+
+      - id: build
+        if: success() && steps.source.outputs.modified == 'true'
+        run: |-
+          ./hash/_wasm/build.ts
+
+          declare had_changes="$(
+            [[ -n "$(git status --porcelain)" ]] && echo true || echo false
+          )"
+          echo "::set-output name=modified::${had_changes}"
+
+      - run: deno test --unstable --allow-all ./hash
+        if: success() && steps.build.outputs.modified == 'true'
+
+      - name: push changes
+        if: success() && steps.build.outputs.modified == 'true'
+        run: |
+          declare br="
+          "
+          declare branch="$(echo ${GITHUB_REF#refs/heads/})"
+          declare date="$(git log -1 --pretty=format:'%ad')"
+          declare author_name="$(git log -1 --pretty=format:'%an')"
+          declare author_email="$(git log -1 --pretty=format:'%ae')"
+          declare current_action_url="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${{ github.run_id }}"
+
+          export GIT_AUTHOR_DATE="${date}"
+          export GIT_AUTHOR_NAME="${author_name}"
+          export GIT_AUTHOR_EMAIL="${author_email}"
+
+          export GIT_COMMITTER_DATE="${date}"
+          export GIT_COMMITTER_NAME="github-actions"
+          export GIT_COMMITTER_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+
+          git remote rm origin
+          git remote add origin "https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
+          git checkout "${branch}"
+
+          git add .
+          git commit -m "chore(hash): rebuild wasm${br}${br}${current_action_url}"
+          git push --set-upstream origin "${branch}"

@@ -11,6 +11,13 @@ if (new URL(import.meta.url).protocol === "file:") {
   Deno.exit(1);
 }
 
+const env = {
+  // eliminate some potential sources of non-determinism
+  SOURCE_DATE_EPOCH: "1600000000",
+  TZ: "UTC",
+  LC_ALL: "C",
+};
+
 // 1. Build WASM from Rust.
 const cargoStatus = await Deno.run({
   cmd: [
@@ -20,12 +27,7 @@ const cargoStatus = await Deno.run({
     "--target",
     "wasm32-unknown-unknown",
   ],
-  env: {
-    // improve build reproducibility
-    SOURCE_DATE_EPOCH: "1600000000",
-    TZ: "UTC",
-    LC_ALL: "C",
-  },
+  env,
 }).status();
 
 if (!cargoStatus.success) {
@@ -44,6 +46,7 @@ const bindgenStatus = await Deno.run({
     "--out-dir",
     "./out/",
   ],
+  env,
 }).status();
 
 if (!bindgenStatus.success) {
