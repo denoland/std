@@ -72,6 +72,16 @@ const inlinedScript = `// deno-lint-ignore-file
 
 await Deno.writeFile("wasm.js", new TextEncoder().encode(inlinedScript));
 
+const wat = await Deno.run({
+  cmd: [
+    "wasm2wat",
+    "./out/deno_hash_bg.wasm",
+  ],
+  stdout: "piped",
+}).output();
+
+await Deno.writeFile("wasm.wat", wat);
+
 // 4. generate formatted code
 const fmtStatus = await Deno.run({
   cmd: [
