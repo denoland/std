@@ -1,11 +1,13 @@
-#!/usr/bin/env -S deno run --allow-run --allow-read --allow-write
+#!/usr/bin/env -S deno run --allow-all
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import * as base64 from "../../encoding/base64.ts";
 
+const pwd = new URL(".", import.meta.url).pathname;
+
 if (new URL(import.meta.url).protocol === "file:") {
   // Run in the same directory as this script is located.
-  Deno.chdir(new URL(".", import.meta.url).pathname);
+  Deno.chdir(pwd);
 } else {
   console.error("build.ts can only be run locally (from a file: URL).");
   Deno.exit(1);
@@ -16,6 +18,9 @@ const env = {
   SOURCE_DATE_EPOCH: "1600000000",
   TZ: "UTC",
   LC_ALL: "C",
+  RUSTFLAGS: `--remap-path-prefix=${pwd}=crate --remap-path-prefix=${
+    Deno.env.get("CARGO_HOME")
+  }=cargo`,
 };
 
 // 1. Build WASM from Rust.
@@ -46,7 +51,6 @@ const bindgenStatus = await Deno.run({
     "--out-dir",
     "./out/",
   ],
-  env,
 }).status();
 
 if (!bindgenStatus.success) {
@@ -71,6 +75,16 @@ const inlinedScript = `// deno-lint-ignore-file
 }`;
 
 await Deno.writeFile("wasm.js", new TextEncoder().encode(inlinedScript));
+
+const wat = await Deno.run({
+  cmd: [
+    "wasm2wat",
+    "./out/deno_hash_bg.wasm",
+  ],
+  stdout: "piped",
+}).output();
+
+await Deno.writeFile("wasm.wat", wat);
 
 // 4. generate formatted code
 const fmtStatus = await Deno.run({

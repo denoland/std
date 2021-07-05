@@ -92,8 +92,10 @@ jobs:
           rust-version: 1.53.0
           targets: wasm32-unknown-unknown
 
-      # This must match the version in hash/_wasm/Cargo.lock:
-      - run: cargo install -f wasm-bindgen-cli --version 0.2.74
+      - run: |-
+          sudo apt-get install -y wabt # https://github.com/WebAssembly/wabt
+          # This must match the version in hash/_wasm/Cargo.lock:
+          cargo install -f wasm-bindgen-cli --version 0.2.74
         if: success() && steps.source.outputs.modified == 'true'
 
       - id: build
