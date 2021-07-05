@@ -7,7 +7,7 @@
 type Reader = Deno.Reader;
 type Writer = Deno.Writer;
 type WriterSync = Deno.WriterSync;
-import { copy } from "../bytes/mod.ts";
+import { concat, copy } from "../bytes/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { BytesList } from "../bytes/bytes_list.ts";
 import { writeAll, writeAllSync } from "./util.ts";
@@ -252,6 +252,9 @@ export class BufReader implements Reader {
     try {
       line = await this.readSlice(LF);
     } catch (err) {
+      if (err instanceof Deno.errors.BadResource) {
+        throw err;
+      }
       let { partial } = err;
       assert(
         partial instanceof Uint8Array,
@@ -707,13 +710,21 @@ export async function* readLines(
     ignoreBOM?: boolean;
   },
 ): AsyncIterableIterator<string> {
-  for await (let chunk of readStringDelim(reader, "\n", decoderOpts)) {
-    // Finding a CR at the end of the line is evidence of a
-    // "\r\n" at the end of the line. The "\r" part should be
-    // removed too.
-    if (chunk.endsWith("\r")) {
-      chunk = chunk.slice(0, -1);
+  const bufReader = new BufReader(reader);
+  let chunks: Uint8Array[] = [];
+  const decoder = new TextDecoder(decoderOpts?.encoding, decoderOpts);
+  while (true) {
+    const res = await bufReader.readLine();
+    if (!res) {
+      if (chunks.length > 0) {
+        yield decoder.decode(concat(...chunks));
+      }
+      break;
     }
-    yield chunk;
+    chunks.push(res.line);
+    if (!res.more) {
+      yield decoder.decode(concat(...chunks));
+      chunks = [];
+    }
   }
 }

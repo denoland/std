@@ -83,3 +83,4 @@ Following algorithms are supported.
 - keccak256
 - keccak384
 - keccak512
+- blake3

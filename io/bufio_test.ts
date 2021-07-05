@@ -3,7 +3,12 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import { assert, assertEquals, fail } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertThrowsAsync,
+  fail,
+} from "../testing/asserts.ts";
 import {
   BufferFullError,
   BufReader,
@@ -240,6 +245,15 @@ async function testReadLine(input: Uint8Array) {
 Deno.test("bufioReadLine", async function () {
   await testReadLine(testInput);
   await testReadLine(testInputrn);
+});
+
+Deno.test("bufioReadLineBadResource", async () => {
+  const file = await Deno.open("README.md");
+  const bufReader = new BufReader(file);
+  file.close();
+  assertThrowsAsync(async () => {
+    await bufReader.readLine();
+  }, Deno.errors.BadResource);
 });
 
 Deno.test("[io] readStringDelim basic", async () => {
@@ -480,6 +494,7 @@ Deno.test("readStringDelimAndLines", async function () {
   assertEquals(chunks_, ["Hello World", "Hello World 2", "Hello World 3"]);
 
   const linesData = new Buffer(enc.encode("0\n1\n2\n3\n4\n5\n6\n7\n8\n9"));
+  const linesDataWithTrailingNewLine = new Buffer(enc.encode("1\n2\n3\n"));
   // consider data with windows newlines too
   const linesDataWindows = new Buffer(
     enc.encode("0\r\n1\r\n2\r\n3\r\n4\r\n5\r\n6\r\n7\r\n8\r\n9"),
@@ -492,6 +507,14 @@ Deno.test("readStringDelimAndLines", async function () {
 
   assertEquals(lines_.length, 10);
   assertEquals(lines_, ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
+
+  lines_.length = 0;
+  for await (const l of readLines(linesDataWithTrailingNewLine)) {
+    lines_.push(l);
+  }
+
+  assertEquals(lines_.length, 3);
+  assertEquals(lines_, ["1", "2", "3"]); // No empty line at the end
 
   // Now test for "windows" lines
   lines_.length = 0;
@@ -512,7 +535,7 @@ Deno.test("readLinesWithEncodingISO-8859-15", async function () {
 
   Deno.close(file_.rid);
 
-  assertEquals(lines_.length, 13);
+  assertEquals(lines_.length, 12);
   assertEquals(lines_, [
     "\u0020!\"#$%&'()*+,-./",
     "0123456789:;<=>?",
@@ -526,7 +549,6 @@ Deno.test("readLinesWithEncodingISO-8859-15", async function () {
     "ÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß",
     "àáâãäåæçèéêëìíîï",
     "ðñòóôõö÷øùúûüýþÿ",
-    "",
   ]);
 });
 

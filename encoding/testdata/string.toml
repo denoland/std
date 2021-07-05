@@ -22,6 +22,10 @@ str6 = """\
        fox jumps over \
        the lazy dog.\
        """
+str7 = "Roses are red\tViolets are blue"
+str8 = "Roses are red\fViolets are blue"
+str9 = "Roses are red\bViolets are blue"
+str10 = "Roses are red\\Violets are blue"
 lines  = '''
 The first newline is
 trimmed in raw strings.

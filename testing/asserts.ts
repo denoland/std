@@ -568,7 +568,7 @@ export function assertObjectMatch(
 /**
  * Forcefully throws a failed assertion
  */
-export function fail(msg?: string): void {
+export function fail(msg?: string): never {
   assert(false, `Failed assertion${msg ? `: ${msg}` : "."}`);
 }
 
