@@ -1,8 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import Context from "./snapshot_preview1.ts";
-import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { copy } from "../fs/mod.ts";
 import * as path from "../path/mod.ts";
+import { readAll, writeAll } from "../io/util.ts";
 
 const tests = [
   "testdata/std_env_args.wasm",
@@ -102,27 +103,27 @@ for (const pathname of tests) {
 
         if (options.stdin) {
           const stdin = new TextEncoder().encode(options.stdin);
-          await Deno.writeAll(process.stdin, stdin);
+          await writeAll(process.stdin, stdin);
         }
 
         process.stdin.close();
 
-        const stdout = await Deno.readAll(process.stdout);
+        const stdout = await readAll(process.stdout);
 
         if (options.stdout) {
           assertEquals(new TextDecoder().decode(stdout), options.stdout);
         } else {
-          await Deno.writeAll(Deno.stdout, stdout);
+          await writeAll(Deno.stdout, stdout);
         }
 
         process.stdout.close();
 
-        const stderr = await Deno.readAll(process.stderr);
+        const stderr = await readAll(process.stderr);
 
         if (options.stderr) {
           assertEquals(new TextDecoder().decode(stderr), options.stderr);
         } else {
-          await Deno.writeAll(Deno.stderr, stderr);
+          await writeAll(Deno.stderr, stderr);
         }
 
         process.stderr.close();

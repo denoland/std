@@ -4,23 +4,23 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import type { BufReader } from "../io/bufio.ts";
+import type { BufReader, ReadLineResult } from "../io/bufio.ts";
 import { concat } from "../bytes/mod.ts";
-import { decode } from "../encoding/utf8.ts";
+
+// Constants created for DRY
+const CHAR_SPACE: number = " ".charCodeAt(0);
+const CHAR_TAB: number = "\t".charCodeAt(0);
+const CHAR_COLON: number = ":".charCodeAt(0);
+
+const WHITESPACES: Array<number> = [CHAR_SPACE, CHAR_TAB];
+
+const decoder = new TextDecoder();
 
 // FROM https://github.com/denoland/deno/blob/b34628a26ab0187a827aa4ebe256e23178e25d39/cli/js/web/headers.ts#L9
 const invalidHeaderCharRegex = /[^\t\x20-\x7e\x80-\xff]/g;
 
 function str(buf: Uint8Array | null | undefined): string {
-  if (buf == null) {
-    return "";
-  } else {
-    return decode(buf);
-  }
-}
-
-function charCode(s: string): number {
-  return s.charCodeAt(0);
+  return !buf ? "" : decoder.decode(buf);
 }
 
 export class TextProtoReader {
@@ -31,8 +31,7 @@ export class TextProtoReader {
    */
   async readLine(): Promise<string | null> {
     const s = await this.readLineSlice();
-    if (s === null) return null;
-    return str(s);
+    return s === null ? null : str(s);
   }
 
   /** ReadMIMEHeader reads a MIME-style header from r.
@@ -63,14 +62,14 @@ export class TextProtoReader {
     let buf = await this.r.peek(1);
     if (buf === null) {
       return null;
-    } else if (buf[0] == charCode(" ") || buf[0] == charCode("\t")) {
+    } else if (WHITESPACES.includes(buf[0])) {
       line = (await this.readLineSlice()) as Uint8Array;
     }
 
     buf = await this.r.peek(1);
     if (buf === null) {
       throw new Deno.errors.UnexpectedEof();
-    } else if (buf[0] == charCode(" ") || buf[0] == charCode("\t")) {
+    } else if (WHITESPACES.includes(buf[0])) {
       throw new Deno.errors.InvalidData(
         `malformed MIME header initial line: ${str(line)}`,
       );
@@ -82,7 +81,7 @@ export class TextProtoReader {
       if (kv.byteLength === 0) return m;
 
       // Key ends at first colon
-      let i = kv.indexOf(charCode(":"));
+      let i = kv.indexOf(CHAR_COLON);
       if (i < 0) {
         throw new Deno.errors.InvalidData(
           `malformed MIME header line: ${str(kv)}`,
@@ -105,7 +104,7 @@ export class TextProtoReader {
       i++; // skip colon
       while (
         i < kv.byteLength &&
-        (kv[i] == charCode(" ") || kv[i] == charCode("\t"))
+        (WHITESPACES.includes(kv[i]))
       ) {
         i++;
       }
@@ -125,39 +124,34 @@ export class TextProtoReader {
   }
 
   async readLineSlice(): Promise<Uint8Array | null> {
-    // this.closeDot();
-    let line: Uint8Array | undefined;
-    while (true) {
-      const r = await this.r.readLine();
-      if (r === null) return null;
-      const { line: l, more } = r;
+    let line = new Uint8Array(0);
+    let r: ReadLineResult | null = null;
 
-      // Avoid the copy if the first call produced a full line.
-      if (!line && !more) {
-        // TODO(ry):
-        // This skipSpace() is definitely misplaced, but I don't know where it
-        // comes from nor how to fix it.
-        if (this.skipSpace(l) === 0) {
-          return new Uint8Array(0);
-        }
-        return l;
+    do {
+      r = await this.r.readLine();
+      // TODO(ry):
+      // This skipSpace() is definitely misplaced, but I don't know where it
+      // comes from nor how to fix it.
+
+      //TODO(SmashingQuasar): Kept skipSpace to preserve behavior but it should be looked into to check if it makes sense when this is used.
+
+      if (r !== null && this.skipSpace(r.line) !== 0) {
+        line = concat(line, r.line);
       }
-      line = line ? concat(line, l) : l;
-      if (!more) {
-        break;
-      }
-    }
-    return line;
+    } while (r !== null && r.more);
+
+    return r === null ? null : line;
   }
 
   skipSpace(l: Uint8Array): number {
     let n = 0;
-    for (let i = 0; i < l.length; i++) {
-      if (l[i] === charCode(" ") || l[i] === charCode("\t")) {
-        continue;
+
+    for (const val of l) {
+      if (!WHITESPACES.includes(val)) {
+        n++;
       }
-      n++;
     }
+
     return n;
   }
 }

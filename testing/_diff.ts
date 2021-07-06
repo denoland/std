@@ -15,6 +15,7 @@ export enum DiffType {
 export interface DiffResult<T> {
   type: DiffType;
   value: T;
+  details?: Array<DiffResult<T>>;
 }
 
 const REMOVED = 1;
@@ -225,4 +226,114 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
       (c): DiffResult<typeof c> => ({ type: DiffType.common, value: c }),
     ),
   ];
+}
+
+/**
+ * Renders the differences between the actual and expected strings
+ * Partially inspired from https://github.com/kpdecker/jsdiff
+ * @param A Actual string
+ * @param B Expected string
+ */
+export function diffstr(A: string, B: string) {
+  function tokenize(string: string, { wordDiff = false } = {}): string[] {
+    if (wordDiff) {
+      // Split string on whitespace symbols
+      const tokens = string.split(/([^\S\r\n]+|[()[\]{}'"\r\n]|\b)/);
+      // Extended Latin character set
+      const words =
+        /^[a-zA-Z\u{C0}-\u{FF}\u{D8}-\u{F6}\u{F8}-\u{2C6}\u{2C8}-\u{2D7}\u{2DE}-\u{2FF}\u{1E00}-\u{1EFF}]+$/u;
+
+      // Join boundary splits that we do not consider to be boundaries and merge empty strings surrounded by word chars
+      for (let i = 0; i < tokens.length - 1; i++) {
+        if (
+          !tokens[i + 1] && tokens[i + 2] && words.test(tokens[i]) &&
+          words.test(tokens[i + 2])
+        ) {
+          tokens[i] += tokens[i + 2];
+          tokens.splice(i + 1, 2);
+          i--;
+        }
+      }
+      return tokens.filter((token) => token);
+    } else {
+      // Split string on new lines symbols
+      const tokens = [], lines = string.split(/(\n|\r\n)/);
+
+      // Ignore final empty token when text ends with a newline
+      if (!lines[lines.length - 1]) {
+        lines.pop();
+      }
+
+      // Merge the content and line separators into single tokens
+      for (let i = 0; i < lines.length; i++) {
+        if (i % 2) {
+          tokens[tokens.length - 1] += lines[i];
+        } else {
+          tokens.push(lines[i]);
+        }
+      }
+      return tokens;
+    }
+  }
+
+  // Create details by filtering revelant word-diff for current line
+  // and merge "space-diff" if surrounded by word-diff for cleaner displays
+  function createDetails(
+    line: DiffResult<string>,
+    tokens: Array<DiffResult<string>>,
+  ) {
+    return tokens.filter(({ type }) =>
+      type === line.type || type === DiffType.common
+    ).map((result, i, t) => {
+      if (
+        (result.type === DiffType.common) && (t[i - 1]) &&
+        (t[i - 1]?.type === t[i + 1]?.type)
+      ) {
+        result.type = t[i - 1].type;
+      }
+      return result;
+    });
+  }
+
+  // Compute multi-line diff
+  const diffResult = diff(tokenize(`${A}\n`), tokenize(`${B}\n`));
+  const added = [], removed = [];
+  for (const result of diffResult) {
+    if (result.type === DiffType.added) {
+      added.push(result);
+    }
+    if (result.type === DiffType.removed) {
+      removed.push(result);
+    }
+  }
+
+  // Compute word-diff
+  const aLines = added.length < removed.length ? added : removed;
+  const bLines = aLines === removed ? added : removed;
+  for (const a of aLines) {
+    let tokens = [] as Array<DiffResult<string>>,
+      b: undefined | DiffResult<string>;
+    // Search another diff line with at least one common token
+    while (bLines.length) {
+      b = bLines.shift();
+      tokens = diff(
+        tokenize(a.value, { wordDiff: true }),
+        tokenize(b?.value ?? "", { wordDiff: true }),
+      );
+      if (
+        tokens.some(({ type, value }) =>
+          type === DiffType.common && value.trim().length
+        )
+      ) {
+        break;
+      }
+    }
+    // Register word-diff details
+    a.details = createDetails(a, tokens);
+    if (b) {
+      b.details = createDetails(b, tokens);
+    }
+  }
+
+  return diffResult;
 }

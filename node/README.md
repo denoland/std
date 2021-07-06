@@ -8,12 +8,13 @@ deno standard library as it's a compatibility module.
 
 ## Supported Builtins
 
-- [ ] assert
+- [x] assert _partly_
 - [x] buffer
-- [ ] child_process
+- [x] child_process _partly_
 - [ ] cluster
-- [ ] console
-- [ ] crypto
+- [x] console _partly_
+- [x] constants _partly_
+- [x] crypto _partly_
 - [ ] dgram
 - [ ] dns
 - [x] events
@@ -30,15 +31,15 @@ deno standard library as it's a compatibility module.
 - [x] querystring
 - [ ] readline
 - [ ] repl
-- [ ] stream
-- [ ] string_decoder
+- [x] stream
+- [x] string_decoder
 - [ ] sys
 - [x] timers
 - [ ] tls
-- [ ] tty
-- [ ] url
+- [x] tty _partly_
+- [x] url
 - [x] util _partly_
-- [ ] ~~v8~~ _can't implement_
+- ~~v8~~ _can't implement_
 - [ ] vm
 - [ ] worker_threads
 - [ ] zlib
@@ -49,7 +50,6 @@ deno standard library as it's a compatibility module.
 
 These builtins are deprecated in NodeJS v13 and will probably not be polyfilled:
 
-- constants
 - domain
 - freelist
 - punycode
@@ -97,6 +97,13 @@ workflow.
 To enable new tests, simply add a new entry inside `node/_tools/config.json`
 under the `tests` property. The structure this entries must have has to resemble
 a path inside `https://github.com/nodejs/node/tree/master/test`.
+
+Adding a new entry under the `ignore` option will indicate the test runner that
+it should not regenerate that file from scratch the next time the setup is run,
+this is specially useful to keep track of files that have been manually edited
+to pass certain tests. However, avoid doing such manual changes to the test
+files, since that may cover up inconsistencies between the node library and
+actual node behavior.
 
 ### Best practices
 

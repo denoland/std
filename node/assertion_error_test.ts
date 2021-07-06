@@ -109,7 +109,7 @@ Deno.test({
       stackStartFn,
     });
     assertStrictEquals(err.name, "AssertionError");
-    assertStrictEquals(stripColor(err.message), `"deno" match /node/`);
+    assertStrictEquals(stripColor(err.message), `'deno' match /node/`);
     assertStrictEquals(err.generatedMessage, true);
     assertStrictEquals(err.code, "ERR_ASSERTION");
     assertStrictEquals(err.actual, "deno");

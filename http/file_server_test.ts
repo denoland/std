@@ -2,7 +2,6 @@
 import {
   assert,
   assertEquals,
-  assertNotEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
 import { BufReader } from "../io/bufio.ts";
@@ -10,6 +9,8 @@ import { TextProtoReader } from "../textproto/mod.ts";
 import { Response, ServerRequest } from "./server.ts";
 import { FileServerArgs, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
+import { iter, readAll, writeAll } from "../io/util.ts";
+
 let fileServer: Deno.Process<Deno.RunOptions & { stdout: "piped" }>;
 
 type FileServerCfg = Omit<FileServerArgs, "_"> & { target?: string };
@@ -22,7 +23,7 @@ async function startFileServer({
   port = 4507,
   "dir-listing": dirListing = true,
   dotfiles = true,
-}: FileServerCfg = {}): Promise<void> {
+}: FileServerCfg = {}) {
   fileServer = Deno.run({
     cmd: [
       Deno.execPath(),
@@ -49,7 +50,7 @@ async function startFileServer({
   assert(s !== null && s.includes("server listening"));
 }
 
-async function startFileServerAsLibrary({}: FileServerCfg = {}): Promise<void> {
+async function startFileServerAsLibrary({}: FileServerCfg = {}) {
   fileServer = await Deno.run({
     cmd: [
       Deno.execPath(),
@@ -69,7 +70,7 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}): Promise<void> {
   assert(s !== null && s.includes("Server running..."));
 }
 
-async function killFileServer(): Promise<void> {
+async function killFileServer() {
   fileServer.close();
   // Process.close() kills the file server process. However this termination
   // happens asynchronously, and since we've just closed the process resource,
@@ -77,7 +78,7 @@ async function killFileServer(): Promise<void> {
   // exited. As a workaround, wait for its stdout to close instead.
   // TODO(piscisaureus): when `Process.kill()` is stable and works on Windows,
   // switch to calling `kill()` followed by `await fileServer.status()`.
-  await Deno.readAll(fileServer.stdout!);
+  await readAll(fileServer.stdout!);
   fileServer.stdout!.close();
 }
 
@@ -99,11 +100,11 @@ async function fetchExactPath(
     conn = await Deno.connect(
       { hostname: hostname, port: port, transport: "tcp" },
     );
-    await Deno.writeAll(conn, request);
+    await writeAll(conn, request);
     let currentResult = "";
     let contentLength = -1;
     let startOfBody = -1;
-    for await (const chunk of Deno.iter(conn)) {
+    for await (const chunk of iter(conn)) {
       currentResult += decoder.decode(chunk);
       if (contentLength === -1) {
         const match = /^content-length: (.*)$/m.exec(currentResult);
@@ -155,7 +156,7 @@ async function fetchExactPath(
 
 Deno.test(
   "file_server serveFile",
-  async (): Promise<void> => {
+  async () => {
     await startFileServer();
     try {
       const res = await fetch("http://localhost:4507/README.md");
@@ -175,7 +176,7 @@ Deno.test(
 
 Deno.test(
   "file_server serveFile in testdata",
-  async (): Promise<void> => {
+  async () => {
     await startFileServer({ target: "./testdata" });
     try {
       const res = await fetch("http://localhost:4507/hello.html");
@@ -193,7 +194,7 @@ Deno.test(
   },
 );
 
-Deno.test("serveDirectory", async function (): Promise<void> {
+Deno.test("serveDirectory", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/");
@@ -201,6 +202,7 @@ Deno.test("serveDirectory", async function (): Promise<void> {
     assert(res.headers.has("access-control-allow-headers"));
     const page = await res.text();
     assert(page.includes("README.md"));
+    assert(page.includes(`<a href="/testdata/">testdata/</a>`));
 
     // `Deno.FileInfo` is not completely compatible with Windows yet
     // TODO(bartlomieju): `mode` should work correctly in the future.
@@ -215,7 +217,7 @@ Deno.test("serveDirectory", async function (): Promise<void> {
   }
 });
 
-Deno.test("serveFallback", async function (): Promise<void> {
+Deno.test("serveFallback", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/badfile.txt");
@@ -228,7 +230,7 @@ Deno.test("serveFallback", async function (): Promise<void> {
   }
 });
 
-Deno.test("checkPathTraversal", async function (): Promise<void> {
+Deno.test("checkPathTraversal", async function () {
   await startFileServer();
   try {
     const res = await fetch(
@@ -244,7 +246,7 @@ Deno.test("checkPathTraversal", async function (): Promise<void> {
   }
 });
 
-Deno.test("checkPathTraversalNoLeadingSlash", async function (): Promise<void> {
+Deno.test("checkPathTraversalNoLeadingSlash", async function () {
   await startFileServer();
   try {
     const res = await fetchExactPath("127.0.0.1", 4507, "../../../..");
@@ -254,7 +256,7 @@ Deno.test("checkPathTraversalNoLeadingSlash", async function (): Promise<void> {
   }
 });
 
-Deno.test("checkPathTraversalAbsoluteURI", async function (): Promise<void> {
+Deno.test("checkPathTraversalAbsoluteURI", async function () {
   await startFileServer();
   try {
     //allowed per https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html
@@ -270,7 +272,7 @@ Deno.test("checkPathTraversalAbsoluteURI", async function (): Promise<void> {
   }
 });
 
-Deno.test("checkURIEncodedPathTraversal", async function (): Promise<void> {
+Deno.test("checkURIEncodedPathTraversal", async function () {
   await startFileServer();
   try {
     const res = await fetch(
@@ -285,7 +287,7 @@ Deno.test("checkURIEncodedPathTraversal", async function (): Promise<void> {
   }
 });
 
-Deno.test("serveWithUnorthodoxFilename", async function (): Promise<void> {
+Deno.test("serveWithUnorthodoxFilename", async function () {
   await startFileServer();
   try {
     let res = await fetch("http://localhost:4507/testdata/%");
@@ -303,7 +305,7 @@ Deno.test("serveWithUnorthodoxFilename", async function (): Promise<void> {
   }
 });
 
-Deno.test("printHelp", async function (): Promise<void> {
+Deno.test("printHelp", async function () {
   const helpProcess = Deno.run({
     cmd: [
       Deno.execPath(),
@@ -334,7 +336,7 @@ Deno.test("contentType", async () => {
   (response.body as Deno.File).close();
 });
 
-Deno.test("file_server running as library", async function (): Promise<void> {
+Deno.test("file_server running as library", async function () {
   await startFileServerAsLibrary();
   try {
     const res = await fetch("http://localhost:8000");
@@ -363,7 +365,7 @@ Deno.test("file_server should ignore query params", async () => {
 async function startTlsFileServer({
   target = ".",
   port = 4577,
-}: FileServerCfg = {}): Promise<void> {
+}: FileServerCfg = {}) {
   fileServer = Deno.run({
     cmd: [
       Deno.execPath(),
@@ -394,7 +396,7 @@ async function startTlsFileServer({
   assert(s !== null && s.includes("server listening"));
 }
 
-Deno.test("serveDirectory TLS", async function (): Promise<void> {
+Deno.test("serveDirectory TLS", async function () {
   await startTlsFileServer();
   try {
     // Valid request after invalid
@@ -404,7 +406,7 @@ Deno.test("serveDirectory TLS", async function (): Promise<void> {
       certFile: join(testdataDir, "tls/RootCA.pem"),
     });
 
-    await Deno.writeAll(
+    await writeAll(
       conn,
       new TextEncoder().encode("GET / HTTP/1.0\r\n\r\n"),
     );
@@ -419,7 +421,7 @@ Deno.test("serveDirectory TLS", async function (): Promise<void> {
   }
 });
 
-Deno.test("partial TLS arguments fail", async function (): Promise<void> {
+Deno.test("partial TLS arguments fail", async function () {
   fileServer = Deno.run({
     cmd: [
       Deno.execPath(),
@@ -453,7 +455,7 @@ Deno.test("partial TLS arguments fail", async function (): Promise<void> {
   }
 });
 
-Deno.test("file_server disable dir listings", async function (): Promise<void> {
+Deno.test("file_server disable dir listings", async function () {
   await startFileServer({ "dir-listing": false });
   try {
     const res = await fetch("http://localhost:4507/");
@@ -466,7 +468,7 @@ Deno.test("file_server disable dir listings", async function (): Promise<void> {
   }
 });
 
-Deno.test("file_server do not show dotfiles", async function (): Promise<void> {
+Deno.test("file_server do not show dotfiles", async function () {
   await startFileServer({ target: "./testdata", dotfiles: false });
   try {
     let res = await fetch("http://localhost:4507/");

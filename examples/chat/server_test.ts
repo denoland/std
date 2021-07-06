@@ -27,7 +27,7 @@ async function startServer(): Promise<
     const r = new TextProtoReader(new BufReader(server.stdout));
     const s = await r.readLine();
     assert(s !== null && s.includes("chat server starting"));
-  } catch (err) {
+  } catch {
     server.stdout.close();
     server.close();
   }

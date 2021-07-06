@@ -6,7 +6,7 @@ import { exists, existsSync } from "./exists.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("[fs] existsFile", async function (): Promise<void> {
+Deno.test("[fs] existsFile", async function () {
   assertEquals(
     await exists(path.join(testdataDir, "not_exist_file.ts")),
     false,
@@ -19,7 +19,7 @@ Deno.test("[fs] existsFileSync", function (): void {
   assertEquals(existsSync(path.join(testdataDir, "0.ts")), true);
 });
 
-Deno.test("[fs] existsDirectory", async function (): Promise<void> {
+Deno.test("[fs] existsDirectory", async function () {
   assertEquals(
     await exists(path.join(testdataDir, "not_exist_directory")),
     false,
@@ -41,7 +41,7 @@ Deno.test("[fs] existsLinkSync", function (): void {
   assertEquals(existsSync(path.join(testdataDir, "0-link")), true);
 });
 
-Deno.test("[fs] existsLink", async function (): Promise<void> {
+Deno.test("[fs] existsLink", async function () {
   // TODO(axetroy): generate link file use Deno api instead of set a link file
   // in repository
   assertEquals(await exists(path.join(testdataDir, "0-link")), true);
@@ -112,7 +112,7 @@ const scenes: Scenes[] = [
 for (const s of scenes) {
   let title = `test ${s.async ? "exists" : "existsSync"}("testdata/${s.file}")`;
   title += ` ${s.read ? "with" : "without"} --allow-read`;
-  Deno.test(`[fs] existsPermission ${title}`, async function (): Promise<void> {
+  Deno.test(`[fs] existsPermission ${title}`, async function () {
     const args = [Deno.execPath(), "run", "--quiet"];
 
     if (s.read) {

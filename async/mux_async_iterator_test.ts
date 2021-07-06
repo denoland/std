@@ -19,7 +19,13 @@ async function* genThrows(): AsyncIterableIterator<number> {
   throw new Error("something went wrong");
 }
 
-Deno.test("[async] MuxAsyncIterator", async function (): Promise<void> {
+class CustomAsyncIterable {
+  [Symbol.asyncIterator]() {
+    return gen123();
+  }
+}
+
+Deno.test("[async] MuxAsyncIterator", async function () {
   const mux = new MuxAsyncIterator<number>();
   mux.add(gen123());
   mux.add(gen456());
@@ -28,10 +34,22 @@ Deno.test("[async] MuxAsyncIterator", async function (): Promise<void> {
     results.add(value);
   }
   assertEquals(results.size, 6);
+  assertEquals(results, new Set([1, 2, 3, 4, 5, 6]));
+});
+
+Deno.test("[async] MuxAsyncIterator takes async iterable as source", async function () {
+  const mux = new MuxAsyncIterator<number>();
+  mux.add(new CustomAsyncIterable());
+  const results = new Set();
+  for await (const value of mux) {
+    results.add(value);
+  }
+  assertEquals(results.size, 3);
+  assertEquals(results, new Set([1, 2, 3]));
 });
 
 Deno.test({
-  name: "[async] MuxAsyncIterator throws",
+  name: "[async] MuxAsyncIterator throws when the source throws",
   async fn() {
     const mux = new MuxAsyncIterator<number>();
     mux.add(gen123());

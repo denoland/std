@@ -50,8 +50,8 @@ export class BaseHandler {
   }
 
   log(_msg: string): void {}
-  async setup(): Promise<void> {}
-  async destroy(): Promise<void> {}
+  async setup() {}
+  async destroy() {}
 }
 
 export class ConsoleHandler extends BaseHandler {
@@ -102,7 +102,9 @@ export class FileHandler extends WriterHandler {
   protected _mode: LogMode;
   protected _openOptions: Deno.OpenOptions;
   protected _encoder = new TextEncoder();
-  #unloadCallback = (): Promise<void> => this.destroy();
+  #unloadCallback() {
+    this.destroy();
+  }
 
   constructor(levelName: LevelName, options: FileHandlerOptions) {
     super(levelName, options);
@@ -118,12 +120,12 @@ export class FileHandler extends WriterHandler {
     };
   }
 
-  async setup(): Promise<void> {
+  async setup() {
     this._file = await Deno.open(this._filename, this._openOptions);
     this._writer = this._file;
     this._buf = new BufWriterSync(this._file);
 
-    addEventListener("unload", this.#unloadCallback);
+    addEventListener("unload", this.#unloadCallback.bind(this));
   }
 
   handle(logRecord: LogRecord): void {
@@ -145,7 +147,7 @@ export class FileHandler extends WriterHandler {
     }
   }
 
-  destroy(): Promise<void> {
+  destroy() {
     this.flush();
     this._file?.close();
     this._file = undefined;
@@ -170,7 +172,7 @@ export class RotatingFileHandler extends FileHandler {
     this.#maxBackupCount = options.maxBackupCount;
   }
 
-  async setup(): Promise<void> {
+  async setup() {
     if (this.#maxBytes < 1) {
       this.destroy();
       throw new Error("maxBytes cannot be less than 1");

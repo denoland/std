@@ -24,12 +24,12 @@ export function pooledMap<T, R>(
     async transform(
       p: Promise<R>,
       controller: TransformStreamDefaultController<R>,
-    ): Promise<void> {
+    ) {
       controller.enqueue(await p);
     },
   });
   // Start processing items from the iterator
-  (async (): Promise<void> => {
+  (async () => {
     const writer = res.writable.getWriter();
     const executing: Array<Promise<unknown>> = [];
     try {

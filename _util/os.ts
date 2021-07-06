@@ -2,12 +2,14 @@
 // This module is browser compatible.
 
 export const osType = (() => {
-  if (globalThis.Deno != null) {
+  // deno-lint-ignore no-explicit-any
+  const { Deno } = globalThis as any;
+  if (typeof Deno?.build?.os === "string") {
     return Deno.build.os;
   }
 
   // deno-lint-ignore no-explicit-any
-  const navigator = (globalThis as any).navigator;
+  const { navigator } = globalThis as any;
   if (navigator?.appVersion?.includes?.("Win") ?? false) {
     return "windows";
   }

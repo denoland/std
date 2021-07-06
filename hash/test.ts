@@ -149,6 +149,30 @@ const testSetHex: Record<string, string[][]> = {
       "3c3a876da14034ab60627c077bb98f7e120a2a5370212dffb3385a18d4f38859ed311d0a9d5141ce9cc5c66ee689b266a8aa18ace8282a0e0db596c90b0a7b87",
     ],
   ],
+  blake3: [
+    ["", "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"],
+    ["abc", "6437b3ac38465133ffb63b75273a8db548c558465d79db03fd359c6cd5bd9d85"],
+    [
+      "deno",
+      "e5dd810dd67713fab4438e17516c7ea13a35666900ece70a561184ff68de8d79",
+    ],
+    [
+      "The quick brown fox jumps over the lazy dog",
+      "2f1514181aadccd913abd94cfa592701a5686ab23f8df1dff1b74710febc6d4a",
+    ],
+    [
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "86dd7cd514f2b1f6aaa34688ead22746f453e9d9ddeeca1ef124477507aefc9f",
+    ],
+    [
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "472c51290d607f100d2036fdcedd7590bba245e9adeb21364a063b7bb4ca81c7",
+    ],
+    [
+      millionAs,
+      "616f575a1b58d4c9797d4217b9730ae5e6eb319d76edef6549b46f4efe31ff8b",
+    ],
+  ],
 };
 
 const testSetBase64: Record<string, string[][]> = {
@@ -281,6 +305,36 @@ const testSetBase64: Record<string, string[][]> = {
       "PDqHbaFANKtgYnwHe7mPfhIKKlNwIS3/szhaGNTziFntMR0KnVFBzpzFxm7mibJmqKoYrOgoKg4NtZbJCwp7hw==",
     ],
   ],
+  blake3: [
+    [
+      "",
+      "rxNJufX5oaagQE3qNtzJSZvLJcmtwRK3zJqTyuQfMmI=",
+    ],
+    [
+      "abc",
+      "ZDezrDhGUTP/tjt1JzqNtUjFWEZdedsD/TWcbNW9nYU=",
+    ],
+    [
+      "deno",
+      "5d2BDdZ3E/q0Q44XUWx+oTo1ZmkA7OcKVhGE/2jejXk=",
+    ],
+    [
+      "The quick brown fox jumps over the lazy dog",
+      "LxUUGBqtzNkTq9lM+lknAaVoarI/jfHf8bdHEP68bUo=",
+    ],
+    [
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "ht181RTysfaqo0aI6tInRvRT6dnd7soe8SRHdQeu/J8=",
+    ],
+    [
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "RyxRKQ1gfxANIDb9zt11kLuiRemt6yE2SgY7e7TKgcc=",
+    ],
+    [
+      millionAs,
+      "YW9XWhtY1Ml5fUIXuXMK5ebrMZ127e9lSbRvTv4x/4s=",
+    ],
+  ],
 };
 
 Deno.test("[hash/all/hex] testAllHex", () => {
@@ -292,7 +346,7 @@ Deno.test("[hash/all/hex] testAllHex", () => {
   }
 });
 
-Deno.test("[hash/all/base64] testAllHex", () => {
+Deno.test("[hash/all/base64] testAllBase64", () => {
   for (const algorithm in testSetBase64) {
     for (const [input, output] of testSetBase64[algorithm]) {
       const hash = createHash(algorithm as SupportedAlgorithm);

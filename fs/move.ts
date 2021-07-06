@@ -11,7 +11,7 @@ export async function move(
   src: string,
   dest: string,
   { overwrite = false }: MoveOptions = {},
-): Promise<void> {
+) {
   const srcStat = await Deno.stat(src);
 
   if (srcStat.isDirectory && isSubdir(src, dest)) {

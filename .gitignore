@@ -1,7 +1,8 @@
 .DS_Store
 .idea
 deno.d.ts
-node_modules
+/node_modules
 package.json
 package-lock.json
 .vscode/settings.json
+**/cov/

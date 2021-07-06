@@ -12,7 +12,7 @@ import { isWindows } from "../_util/os.ts";
  * @param src the source file path
  * @param dest the destination link path
  */
-export async function ensureSymlink(src: string, dest: string): Promise<void> {
+export async function ensureSymlink(src: string, dest: string) {
   const srcStatInfo = await Deno.lstat(src);
   const srcFilePathType = getFileInfoType(srcStatInfo);
 

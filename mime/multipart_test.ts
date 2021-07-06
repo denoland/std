@@ -14,6 +14,7 @@ import {
   scanUntilBoundary,
 } from "./multipart.ts";
 import { StringWriter } from "../io/writers.ts";
+import { Buffer } from "../io/buffer.ts";
 
 const e = new TextEncoder();
 const boundary = "--abcde";
@@ -89,8 +90,8 @@ Deno.test("multipartMatchAfterPrefix3", function (): void {
   assertEquals(v, 0);
 });
 
-Deno.test("multipartMultipartWriter", async function (): Promise<void> {
-  const buf = new Deno.Buffer();
+Deno.test("multipartMultipartWriter", async function () {
+  const buf = new Buffer();
   const mw = new MultipartWriter(buf);
   await mw.writeField("foo", "foo");
   await mw.writeField("bar", "bar");
@@ -131,20 +132,20 @@ Deno.test("multipartMultipartWriter2", function (): void {
   );
 });
 
-Deno.test("multipartMultipartWriter3", async function (): Promise<void> {
+Deno.test("multipartMultipartWriter3", async function () {
   const w = new StringWriter();
   const mw = new MultipartWriter(w);
   await mw.writeField("foo", "foo");
   await mw.close();
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await mw.close();
     },
     Error,
     "closed",
   );
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       // deno-lint-ignore no-explicit-any
       await mw.writeFile("bar", "file", null as any);
     },
@@ -152,7 +153,7 @@ Deno.test("multipartMultipartWriter3", async function (): Promise<void> {
     "closed",
   );
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await mw.writeField("bar", "bar");
     },
     Error,
@@ -225,7 +226,7 @@ Deno.test({
     const o = await Deno.open(multipartFile);
     const mr = new MultipartReader(o, mw.boundary);
     // use low-memory to write "file" into temp file.
-    const form = await mr.readForm(20);
+    const form = await mr.readForm({ maxMemory: 20 });
     try {
       assertEquals(form.values("deno"), ["land"]);
       assertEquals(form.values("bar"), ["bar"]);
@@ -252,8 +253,11 @@ Deno.test({
       o,
       "--------------------------434049563556637648550474",
     );
-    const form = await mr.readForm(20);
-    const [file] = form.files("file") || [];
+    const form = await mr.readForm({ maxMemory: 20 });
+    let file = form.file("file");
+    if (Array.isArray(file)) {
+      file = file[0];
+    }
     assert(file != null);
     const { tempfile, content } = file;
     assert(tempfile != null);

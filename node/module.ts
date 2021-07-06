@@ -21,17 +21,23 @@
 
 import "./global.ts";
 
-import * as nodeAssert from "./assert.ts";
-import * as nodeBuffer from "./buffer.ts";
+import nodeAssert from "./assert.ts";
+import nodeBuffer from "./buffer.ts";
+import nodeCrypto from "./crypto.ts";
+import nodeConsole from "./console.ts";
+import nodeConstants from "./constants.ts";
+import nodeChildProcess from "./child_process.ts";
 import nodeEvents from "./events.ts";
-import * as nodeFS from "./fs.ts";
-import * as nodeOs from "./os.ts";
-import * as nodePath from "./path.ts";
-import * as nodeQueryString from "./querystring.ts";
-import * as nodeStream from "./stream.ts";
-import * as nodeStringDecoder from "./string_decoder.ts";
-import * as nodeTimers from "./timers.ts";
-import * as nodeUtil from "./util.ts";
+import nodeFS from "./fs.ts";
+import nodeOs from "./os.ts";
+import nodePath from "./path.ts";
+import nodeQueryString from "./querystring.ts";
+import nodeStream from "./stream.ts";
+import nodeStringDecoder from "./string_decoder.ts";
+import nodeTimers from "./timers.ts";
+import nodeTty from "./tty.ts";
+import nodeUrl from "./url.ts";
+import nodeUtil from "./util.ts";
 
 import * as path from "../path/mod.ts";
 import { assert } from "../_util/assert.ts";
@@ -426,6 +432,7 @@ class Module {
   }
 
   static wrap(script: string): string {
+    script = script.replace(/^#!.*?\n/, "");
     return `${Module.wrapper[0]}${script}${Module.wrapper[1]}`;
   }
 
@@ -527,7 +534,21 @@ class Module {
       filename instanceof URL ||
       (typeof filename === "string" && !path.isAbsolute(filename))
     ) {
-      filepath = fileURLToPath(filename);
+      try {
+        filepath = fileURLToPath(filename);
+      } catch (err) {
+        if (
+          err instanceof Deno.errors.InvalidData &&
+          err.message.includes("invalid url scheme")
+        ) {
+          // Provide a descriptive error when url scheme is invalid.
+          throw new Error(
+            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter`,
+          );
+        } else {
+          throw err;
+        }
+      }
     } else if (typeof filename !== "string") {
       throw new Error("filename should be a string");
     } else {
@@ -598,8 +619,21 @@ function createNativeModule(id: string, exports: any): Module {
 
 nativeModulePolyfill.set("assert", createNativeModule("assert", nodeAssert));
 nativeModulePolyfill.set("buffer", createNativeModule("buffer", nodeBuffer));
-nativeModulePolyfill.set("events", createNativeModule("events", nodeEvents));
+nativeModulePolyfill.set(
+  "constants",
+  createNativeModule("constants", nodeConstants),
+);
+nativeModulePolyfill.set(
+  "child_process",
+  createNativeModule("child_process", nodeChildProcess),
+);
+nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
+nativeModulePolyfill.set(
+  "events",
+  createNativeModule("events", nodeEvents),
+);
 nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
+nativeModulePolyfill.set("module", createNativeModule("module", Module));
 nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
 nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
 nativeModulePolyfill.set(
@@ -608,14 +642,17 @@ nativeModulePolyfill.set(
 );
 nativeModulePolyfill.set(
   "stream",
-  createNativeModule("string_decoder", nodeStream),
+  createNativeModule("stream", nodeStream),
 );
 nativeModulePolyfill.set(
   "string_decoder",
   createNativeModule("string_decoder", nodeStringDecoder),
 );
 nativeModulePolyfill.set("timers", createNativeModule("timers", nodeTimers));
+nativeModulePolyfill.set("tty", createNativeModule("tty", nodeTty));
+nativeModulePolyfill.set("url", createNativeModule("url", nodeUrl));
 nativeModulePolyfill.set("util", createNativeModule("util", nodeUtil));
+nativeModulePolyfill.set("console", createNativeModule("console", nodeConsole));
 
 function loadNativeModule(
   _filename: string,
@@ -911,6 +948,11 @@ function resolveExports(
   return path.resolve(nmPath, request);
 }
 
+// Node.js uses these keys for resolving conditional exports.
+// ref: https://nodejs.org/api/packages.html#packages_conditional_exports
+// ref: https://github.com/nodejs/node/blob/2c77fe1/lib/internal/modules/cjs/helpers.js#L33
+const cjsConditions = new Set(["require", "node"]);
+
 function resolveExportsTarget(
   pkgPath: URL,
   // deno-lint-ignore no-explicit-any
@@ -958,18 +1000,22 @@ function resolveExportsTarget(
       }
     }
   } else if (typeof target === "object" && target !== null) {
-    // removed experimentalConditionalExports
-    if (Object.prototype.hasOwnProperty.call(target, "default")) {
-      try {
-        return resolveExportsTarget(
-          pkgPath,
-          target.default,
-          subpath,
-          basePath,
-          mappingKey,
-        );
-      } catch (e) {
-        if (e.code !== "MODULE_NOT_FOUND") throw e;
+    for (const key of Object.keys(target)) {
+      if (key !== "default" && !cjsConditions.has(key)) {
+        continue;
+      }
+      if (Object.prototype.hasOwnProperty.call(target, key)) {
+        try {
+          return resolveExportsTarget(
+            pkgPath,
+            target[key],
+            subpath,
+            basePath,
+            mappingKey,
+          );
+        } catch (e) {
+          if (e.code !== "MODULE_NOT_FOUND") throw e;
+        }
       }
     }
   }

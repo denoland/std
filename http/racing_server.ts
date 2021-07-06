@@ -11,12 +11,12 @@ function body(i: number): string {
 async function delayedRespond(
   request: ServerRequest,
   step: number,
-): Promise<void> {
+) {
   await delay(3000);
   await request.respond({ status: 200, body: body(step) });
 }
 
-async function largeRespond(request: ServerRequest, c: string): Promise<void> {
+async function largeRespond(request: ServerRequest, c: string) {
   const b = new Uint8Array(1024 * 1024);
   b.fill(c.charCodeAt(0));
   await request.respond({ status: 200, body: b });
@@ -25,7 +25,7 @@ async function largeRespond(request: ServerRequest, c: string): Promise<void> {
 async function ignoreToConsume(
   request: ServerRequest,
   step: number,
-): Promise<void> {
+) {
   await request.respond({ status: 200, body: body(step) });
 }
 

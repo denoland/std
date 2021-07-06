@@ -59,7 +59,7 @@ function endReadableNT(state: ReadableState, stream: Duplex) {
   }
 }
 
-function endWritableNT(state: ReadableState, stream: Duplex) {
+function endWritableNT(_state: ReadableState, stream: Duplex) {
   const writable = stream.writable &&
     !stream.writableEnded &&
     !stream.destroyed;

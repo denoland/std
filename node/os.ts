@@ -89,16 +89,26 @@ interface UserInfo {
   homedir: string;
 }
 
-arch[Symbol.toPrimitive] = (): string => arch();
-endianness[Symbol.toPrimitive] = (): string => endianness();
-freemem[Symbol.toPrimitive] = (): number => freemem();
-homedir[Symbol.toPrimitive] = (): string | null => homedir();
-hostname[Symbol.toPrimitive] = (): string | null => hostname();
-platform[Symbol.toPrimitive] = (): string => platform();
-release[Symbol.toPrimitive] = (): string => release();
-totalmem[Symbol.toPrimitive] = (): number => totalmem();
-type[Symbol.toPrimitive] = (): string => type();
-uptime[Symbol.toPrimitive] = (): number => uptime();
+// deno-lint-ignore no-explicit-any
+(arch as any)[Symbol.toPrimitive] = (): string => arch();
+// deno-lint-ignore no-explicit-any
+(endianness as any)[Symbol.toPrimitive] = (): string => endianness();
+// deno-lint-ignore no-explicit-any
+(freemem as any)[Symbol.toPrimitive] = (): number => freemem();
+// deno-lint-ignore no-explicit-any
+(homedir as any)[Symbol.toPrimitive] = (): string | null => homedir();
+// deno-lint-ignore no-explicit-any
+(hostname as any)[Symbol.toPrimitive] = (): string | null => hostname();
+// deno-lint-ignore no-explicit-any
+(platform as any)[Symbol.toPrimitive] = (): string => platform();
+// deno-lint-ignore no-explicit-any
+(release as any)[Symbol.toPrimitive] = (): string => release();
+// deno-lint-ignore no-explicit-any
+(totalmem as any)[Symbol.toPrimitive] = (): number => totalmem();
+// deno-lint-ignore no-explicit-any
+(type as any)[Symbol.toPrimitive] = (): string => type();
+// deno-lint-ignore no-explicit-any
+(uptime as any)[Symbol.toPrimitive] = (): number => uptime();
 
 /** Returns the operating system CPU architecture for which the Deno binary was compiled */
 export function arch(): string {
@@ -136,7 +146,15 @@ export function getPriority(pid = 0): number {
 
 /** Returns the string path of the current user's home directory. */
 export function homedir(): string | null {
-  notImplemented(SEE_GITHUB_ISSUE);
+  switch (Deno.build.os) {
+    case "windows":
+      return Deno.env.get("USERPROFILE") || null;
+    case "linux":
+    case "darwin":
+      return Deno.env.get("HOME") || null;
+    default:
+      throw Error("unreachable");
+  }
 }
 
 /** Returns the host name of the operating system as a string. */
@@ -211,6 +229,7 @@ export function uptime(): number {
 
 /** Not yet implemented */
 export function userInfo(
+  // deno-lint-ignore no-unused-vars
   options: UserInfoOptions = { encoding: "utf-8" },
 ): UserInfo {
   notImplemented(SEE_GITHUB_ISSUE);

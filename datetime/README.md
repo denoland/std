@@ -39,16 +39,15 @@ are supported:
 Takes an input `string` and a `formatString` to parse to a `date`.
 
 ```ts
-import { parse } from 'https://deno.land/std@$STD_VERSION/datetime/mod.ts'
+import { parse } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
 
-parse("20-01-2019", "dd-MM-yyyy") // output : new Date(2019, 0, 20)
-parse("2019-01-20", "yyyy-MM-dd") // output : new Date(2019, 0, 20)
-parse("20.01.2019", "dd.MM.yyyy") // output : new Date(2019, 0, 20)
-parse("01-20-2019 16:34", "MM-dd-yyyy HH:mm") // output : new Date(2019, 0, 20, 16, 34)
-parse("01-20-2019 04:34 PM", "MM-dd-yyyy hh:mm a") // output : new Date(2019, 0, 20, 16, 34)
-parse("16:34 01-20-2019", "HH:mm MM-dd-yyyy") // output : new Date(2019, 0, 20, 16, 34)
-parse("01-20-2019 16:34:23.123", "MM-dd-yyyy HH:mm:ss.SSS") // output : new Date(2019, 0, 20, 16, 34, 23, 123)
-...
+parse("20-01-2019", "dd-MM-yyyy"); // output : new Date(2019, 0, 20)
+parse("2019-01-20", "yyyy-MM-dd"); // output : new Date(2019, 0, 20)
+parse("20.01.2019", "dd.MM.yyyy"); // output : new Date(2019, 0, 20)
+parse("01-20-2019 16:34", "MM-dd-yyyy HH:mm"); // output : new Date(2019, 0, 20, 16, 34)
+parse("01-20-2019 04:34 PM", "MM-dd-yyyy hh:mm a"); // output : new Date(2019, 0, 20, 16, 34)
+parse("16:34 01-20-2019", "HH:mm MM-dd-yyyy"); // output : new Date(2019, 0, 20, 16, 34)
+parse("01-20-2019 16:34:23.123", "MM-dd-yyyy HH:mm:ss.SSS"); // output : new Date(2019, 0, 20, 16, 34, 23, 123)
 ```
 
 ### format
@@ -93,7 +92,7 @@ weekOfYear(new Date("2020-12-28T03:24:00")); // Returns 53
 Formats the given date to IMF date time format. (Reference:
 https://tools.ietf.org/html/rfc7231#section-7.1.1.1 )
 
-```js
+```ts
 import { toIMF } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
 
 toIMF(new Date(0)); // => returns "Thu, 01 Jan 1970 00:00:00 GMT"
@@ -104,7 +103,7 @@ toIMF(new Date(0)); // => returns "Thu, 01 Jan 1970 00:00:00 GMT"
 Returns true if the given date or year (in number) is a leap year. Returns false
 otherwise.
 
-```js
+```ts
 import { isLeap } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
 
 isLeap(new Date("1970-01-01")); // => returns false
@@ -122,7 +121,7 @@ omitted, it returns the difference in the all available units.
 Available units: "milliseconds", "seconds", "minutes", "hours", "days", "weeks",
 "months", "quarters", "years"
 
-```js
+```ts
 import { difference } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
 
 const date0 = new Date("2018-05-14");
@@ -149,7 +148,7 @@ difference(date0, date1);
 
 ### SECOND
 
-```
+```ts
 import { SECOND } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
 
 console.log(SECOND); // => 1000
@@ -157,7 +156,7 @@ console.log(SECOND); // => 1000
 
 ### MINUTE
 
-```
+```ts
 import { MINUTE } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
 
 console.log(MINUTE); // => 60000 (60 * 1000)
@@ -165,7 +164,7 @@ console.log(MINUTE); // => 60000 (60 * 1000)
 
 ### HOUR
 
-```
+```ts
 import { HOUR } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
 
 console.log(HOUR); // => 3600000 (60 * 60 * 1000)
@@ -173,7 +172,7 @@ console.log(HOUR); // => 3600000 (60 * 60 * 1000)
 
 ### DAY
 
-```
+```ts
 import { DAY } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
 
 console.log(DAY); // => 86400000 (24 * 60 * 60 * 1000)
@@ -181,7 +180,7 @@ console.log(DAY); // => 86400000 (24 * 60 * 60 * 1000)
 
 ### WEEK
 
-```
+```ts
 import { WEEK } from "https://deno.land/std@$STD_VERSION/datetime/mod.ts";
 
 console.log(WEEK); // => 604800000 (7 * 24 * 60 * 60 * 1000)

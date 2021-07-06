@@ -1,5 +1,7 @@
 # http
 
+http is a module to provide HTTP client and server implementations.
+
 ```typescript
 import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
 const server = serve({ port: 8000 });

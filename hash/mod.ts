@@ -4,26 +4,28 @@ import { Hash } from "./_wasm/hash.ts";
 import type { Hasher } from "./hasher.ts";
 
 export type { Hasher } from "./hasher.ts";
-export type SupportedAlgorithm =
-  | "md2"
-  | "md4"
-  | "md5"
-  | "ripemd160"
-  | "ripemd320"
-  | "sha1"
-  | "sha224"
-  | "sha256"
-  | "sha384"
-  | "sha512"
-  | "sha3-224"
-  | "sha3-256"
-  | "sha3-384"
-  | "sha3-512"
-  | "keccak224"
-  | "keccak256"
-  | "keccak384"
-  | "keccak512";
-
+export const supportedAlgorithms = [
+  "md2",
+  "md4",
+  "md5",
+  "ripemd160",
+  "ripemd320",
+  "sha1",
+  "sha224",
+  "sha256",
+  "sha384",
+  "sha512",
+  "sha3-224",
+  "sha3-256",
+  "sha3-384",
+  "sha3-512",
+  "keccak224",
+  "keccak256",
+  "keccak384",
+  "keccak512",
+  "blake3",
+] as const;
+export type SupportedAlgorithm = typeof supportedAlgorithms[number];
 /**
  * Creates a new `Hash` instance.
  *

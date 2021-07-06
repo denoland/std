@@ -99,7 +99,6 @@ function fromDecimalCode(c: number): number {
 }
 
 function simpleEscapeSequence(c: number): string {
-  /* eslint:disable:prettier */
   return c === 0x30 /* 0 */
     ? "\x00"
     : c === 0x61 /* a */
@@ -137,7 +136,6 @@ function simpleEscapeSequence(c: number): string {
     : c === 0x50 /* P */
     ? "\u2029"
     : "";
-  /* eslint:enable:prettier */
 }
 
 function charFromCodepoint(c: number): string {
@@ -784,7 +782,6 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
     }
 
     line = state.line;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
     keyTag = state.tag || null;
     keyNode = state.result;
@@ -796,7 +793,6 @@ function readFlowCollection(state: LoaderState, nodeIndent: number): boolean {
       isPair = true;
       ch = state.input.charCodeAt(++state.position);
       skipSeparationSpace(state, true, nodeIndent);
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       composeNode(state, nodeIndent, CONTEXT_FLOW_IN, false, true);
       valueNode = state.result;
     }
@@ -1040,7 +1036,6 @@ function readBlockSequence(state: LoaderState, nodeIndent: number): boolean {
     }
 
     line = state.line;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     composeNode(state, nodeIndent, CONTEXT_BLOCK_IN, false, true);
     result.push(state.result);
     skipSeparationSpace(state, true, -1);
@@ -1137,7 +1132,6 @@ function readBlockMapping(
       //
       // Implicit notation case. Flow-style node as the key first, then ":", and the value.
       //
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
     } else if (composeNode(state, flowIndent, CONTEXT_FLOW_OUT, false, true)) {
       if (state.line === line) {
         ch = state.input.charCodeAt(state.position);
@@ -1202,7 +1196,6 @@ function readBlockMapping(
     //
     if (state.line === line || state.lineIndent > nodeIndent) {
       if (
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         composeNode(state, nodeIndent, CONTEXT_BLOCK_OUT, true, allowCompact)
       ) {
         if (atExplicitKey) {

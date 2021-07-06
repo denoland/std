@@ -1,5 +1,5 @@
 import { assertEquals, fail } from "../../testing/asserts.ts";
-import { existsSync } from "../../fs/mod.ts";
+import { existsSync } from "../../fs/exists.ts";
 import { assertCallbackErrorUncaught } from "../_utils.ts";
 import { unlink, unlinkSync } from "./_fs_unlink.ts";
 
