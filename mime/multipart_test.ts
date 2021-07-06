@@ -254,7 +254,7 @@ Deno.test({
       "--------------------------434049563556637648550474",
     );
     const form = await mr.readForm({ maxMemory: 20 });
-    let file = form.files("file")[0];
+    let file = form.files("file")![0];
     assert(file != null);
     const { tempfile, content } = file;
     assert(tempfile != null);
