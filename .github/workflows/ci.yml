@@ -74,12 +74,9 @@ jobs:
 
       - id: source
         run: |-
-          modifications="$(git diff --name-only HEAD~ -- ./hash)"
-          if [[ ! -z $modifications ]]; then
-            echo "::set-output name=modified::true"
-          else
-            echo "::set-output name=modified::false"
-          fi
+          declare modified="$([[ "$(git diff --name-only HEAD~ -- ./hash)" ]] && echo true || echo false)"
+          echo "::set-output name=modified::${modified}"
+          echo "Hash source modified in this commit? ${modified}"
 
       - uses: denoland/setup-deno@v1.0.0
         if: success() && steps.source.outputs.modified == 'true'
@@ -104,10 +101,9 @@ jobs:
         run: |-
           ./hash/_wasm/build.ts
 
-          declare had_changes="$(
-            [[ -n "$(git status --porcelain)" ]] && echo true || echo false
-          )"
-          echo "::set-output name=modified::${had_changes}"
+          declare modified="$([[ "$(git status --porcelain)" ]] && echo true || echo false)"
+          echo "::set-output name=modified::${modified}"
+          echo "Generated code modified? ${modified}"
 
       - run: deno test --unstable --allow-all ./hash
         if: success() && steps.build.outputs.modified == 'true'
