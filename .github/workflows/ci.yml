@@ -76,9 +76,11 @@ jobs:
       - name: Check for changes to hash/_wasm/
         id: source
         run: |-
-          declare modified="$([[ "$(git diff --name-only HEAD~ -- ./hash/_wasm/)" ]] && echo true || echo false)"
-          echo "::set-output name=modified::${modified}"
-          echo "Hash source modified in this commit? ${modified}"
+          declare modifications="$(git diff --name-only HEAD~ -- ./hash/_wasm/)"
+          declare modified="$([[ "$modifications" ]] && echo true || echo false)"
+          echo "::set-output name=modified::$modified"
+          echo "Hash source modified in this commit? $modified"
+          echo "$modifications"
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1.0.0
@@ -104,9 +106,11 @@ jobs:
         run: |-
           ./hash/_wasm/build.ts
 
+          declare modifications="$(git status --porcelain)"
           declare modified="$([[ "$(git status --porcelain)" ]] && echo true || echo false)"
-          echo "::set-output name=modified::${modified}"
-          echo "Generated code modified? ${modified}"
+          echo "::set-output name=modified::$modified"
+          echo "Generated code modified? $modified"
+          echo "$modifications"
 
       - name: Re-test hash/
         run: deno test --unstable --allow-all ./hash
