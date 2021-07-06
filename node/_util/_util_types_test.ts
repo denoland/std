@@ -121,7 +121,7 @@ Deno.test("Should return false for invalid ArrayBuffer types", () => {
 
 // isAsyncFunction
 Deno.test("Should return true for valid async function types", () => {
-  const asyncFunction = async (): Promise<void> => {};
+  const asyncFunction = async () => {};
   assertStrictEquals(isAsyncFunction(asyncFunction), true);
 });
 

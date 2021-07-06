@@ -27,19 +27,18 @@ import Stream from "./_stream/stream.ts";
 import Transform from "./_stream/transform.ts";
 import Writable from "./_stream/writable.ts";
 
-const exports = {
-  Duplex,
-  finished: eos,
-  PassThrough,
-  pipeline,
-  promises,
-  Readable,
-  Stream,
-  Transform,
-  Writable,
-};
+// This is here because doing it in _stream/stream.ts created some circular dependency hell.
+Stream.Readable = Readable;
+Stream.Writable = Writable;
+Stream.Duplex = Duplex;
+Stream.Transform = Transform;
+Stream.PassThrough = PassThrough;
+Stream.pipeline = pipeline;
+Stream.finished = eos;
+Stream.promises = promises;
+Stream.Stream = Stream;
 
-export default exports;
+export default Stream;
 export {
   Duplex,
   eos as finished,
@@ -51,3 +50,4 @@ export {
   Transform,
   Writable,
 };
+export const { _isUint8Array, _uint8ArrayToBuffer } = Stream;

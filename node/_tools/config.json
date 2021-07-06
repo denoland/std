@@ -3,11 +3,28 @@
   "ignore": {
     "common": [
       "index.js"
+    ],
+    "parallel": [
+      "test-assert.js",
+      "test-assert-async.js"
     ]
   },
   "tests": {
     "parallel": [
-      "test-event-emitter-listener-count.js"
+      "test-assert.js",
+      "test-assert-async.js",
+      "test-assert-fail.js",
+      "test-event-emitter-add-listeners.js",
+      "test-event-emitter-max-listeners-warning-for-null.js",
+      "test-event-emitter-max-listeners-warning-for-symbol.js",
+      "test-event-emitter-max-listeners-warning.js",
+      "test-event-emitter-max-listeners.js",
+      "test-event-emitter-invalid-listener.js",
+      "test-event-emitter-listener-count.js",
+      "test-event-emitter-listeners.js",
+      "test-event-emitter-once.js",
+      "test-event-emitter-remove-all-listeners.js",
+      "test-util-inherits.js"
     ]
   },
   "suitesFolder": "suites",

@@ -7,7 +7,7 @@ import {
 import { assertCallbackErrorUncaught } from "../_utils.ts";
 import { open, openSync } from "./_fs_open.ts";
 import { join, parse } from "../../path/mod.ts";
-import { existsSync } from "../../fs/mod.ts";
+import { existsSync } from "../../fs/exists.ts";
 import { closeSync } from "./_fs_close.ts";
 
 const tempDir = parse(Deno.makeTempFileSync()).dir;

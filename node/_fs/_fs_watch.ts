@@ -88,7 +88,7 @@ export function watch(
 
   fsWatcher.on("change", listener);
 
-  asyncIterableIteratorToCallback<Deno.FsEvent>(iterator, (val, done) => {
+  asyncIterableToCallback<Deno.FsEvent>(iterator, (val, done) => {
     if (done) return;
     fsWatcher.emit("change", val.kind, val.paths[0]);
   });

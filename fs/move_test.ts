@@ -13,18 +13,18 @@ import { exists, existsSync } from "./exists.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("moveDirectoryIfSrcNotExists", async function (): Promise<void> {
+Deno.test("moveDirectoryIfSrcNotExists", async function () {
   const srcDir = path.join(testdataDir, "move_test_src_1");
   const destDir = path.join(testdataDir, "move_test_dest_1");
   // if src directory not exist
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await move(srcDir, destDir);
     },
   );
 });
 
-Deno.test("moveDirectoryIfDestNotExists", async function (): Promise<void> {
+Deno.test("moveDirectoryIfDestNotExists", async function () {
   const srcDir = path.join(testdataDir, "move_test_src_2");
   const destDir = path.join(testdataDir, "move_test_dest_2");
 
@@ -32,7 +32,7 @@ Deno.test("moveDirectoryIfDestNotExists", async function (): Promise<void> {
 
   // if dest directory not exist
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await move(srcDir, destDir);
       throw new Error("should not throw error");
     },
@@ -45,7 +45,7 @@ Deno.test("moveDirectoryIfDestNotExists", async function (): Promise<void> {
 
 Deno.test(
   "moveDirectoryIfDestNotExistsAndOverwrite",
-  async function (): Promise<void> {
+  async function () {
     const srcDir = path.join(testdataDir, "move_test_src_2");
     const destDir = path.join(testdataDir, "move_test_dest_2");
 
@@ -53,7 +53,7 @@ Deno.test(
 
     // if dest directory not exist
     await assertThrowsAsync(
-      async (): Promise<void> => {
+      async () => {
         await move(srcDir, destDir, { overwrite: true });
         throw new Error("should not throw error");
       },
@@ -65,19 +65,19 @@ Deno.test(
   },
 );
 
-Deno.test("moveFileIfSrcNotExists", async function (): Promise<void> {
+Deno.test("moveFileIfSrcNotExists", async function () {
   const srcFile = path.join(testdataDir, "move_test_src_3", "test.txt");
   const destFile = path.join(testdataDir, "move_test_dest_3", "test.txt");
 
   // if src directory not exist
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await move(srcFile, destFile);
     },
   );
 });
 
-Deno.test("moveFileIfDestExists", async function (): Promise<void> {
+Deno.test("moveFileIfDestExists", async function () {
   const srcDir = path.join(testdataDir, "move_test_src_4");
   const destDir = path.join(testdataDir, "move_test_dest_4");
   const srcFile = path.join(srcDir, "test.txt");
@@ -100,7 +100,7 @@ Deno.test("moveFileIfDestExists", async function (): Promise<void> {
 
   // move it without override
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await move(srcFile, destFile);
     },
     Error,
@@ -109,7 +109,7 @@ Deno.test("moveFileIfDestExists", async function (): Promise<void> {
 
   // move again with overwrite
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await move(srcFile, destFile, { overwrite: true });
       throw new Error("should not throw error");
     },
@@ -127,7 +127,7 @@ Deno.test("moveFileIfDestExists", async function (): Promise<void> {
   ]);
 });
 
-Deno.test("moveDirectory", async function (): Promise<void> {
+Deno.test("moveDirectory", async function () {
   const srcDir = path.join(testdataDir, "move_test_src_5");
   const destDir = path.join(testdataDir, "move_test_dest_5");
   const srcFile = path.join(srcDir, "test.txt");
@@ -154,7 +154,7 @@ Deno.test("moveDirectory", async function (): Promise<void> {
 
 Deno.test(
   "moveIfSrcAndDestDirectoryExistsAndOverwrite",
-  async function (): Promise<void> {
+  async function () {
     const srcDir = path.join(testdataDir, "move_test_src_6");
     const destDir = path.join(testdataDir, "move_test_dest_6");
     const srcFile = path.join(srcDir, "test.txt");
@@ -188,14 +188,14 @@ Deno.test(
   },
 );
 
-Deno.test("moveIntoSubDir", async function (): Promise<void> {
+Deno.test("moveIntoSubDir", async function () {
   const srcDir = path.join(testdataDir, "move_test_src_7");
   const destDir = path.join(srcDir, "nest");
 
   await ensureDir(destDir);
 
   await assertThrowsAsync(
-    async (): Promise<void> => {
+    async () => {
       await move(srcDir, destDir);
     },
     Error,

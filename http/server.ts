@@ -9,7 +9,6 @@ import {
   readRequest,
   writeResponse,
 } from "./_io.ts";
-
 export class ServerRequest {
   url!: string;
   method!: string;
@@ -55,7 +54,7 @@ export class ServerRequest {
   /**
    * Body of the request.  The easiest way to consume the body is:
    *
-   *     const buf: Uint8Array = await Deno.readAll(req.body);
+   *     const buf: Uint8Array = await readAll(req.body);
    */
   get body(): Deno.Reader {
     if (!this.#body) {
@@ -81,7 +80,7 @@ export class ServerRequest {
     return this.#body;
   }
 
-  async respond(r: Response): Promise<void> {
+  async respond(r: Response) {
     let err: Error | undefined;
     try {
       // Write our response!
@@ -104,7 +103,7 @@ export class ServerRequest {
     }
   }
 
-  async finalize(): Promise<void> {
+  async finalize() {
     if (this.#finalized) return;
     // Consume unread body
     const body = this.body;
@@ -160,7 +159,7 @@ export class Server implements AsyncIterable<ServerRequest> {
               status: 400,
               body: new TextEncoder().encode(`${error.message}\r\n\r\n`),
             });
-          } catch (error) {
+          } catch {
             // The connection is broken.
           }
         }
@@ -187,7 +186,7 @@ export class Server implements AsyncIterable<ServerRequest> {
       try {
         // Consume unread body and trailers if receiver didn't consume those data
         await request.finalize();
-      } catch (error) {
+      } catch {
         // Invalid data was received or the connection was closed.
         break;
       }
@@ -196,7 +195,7 @@ export class Server implements AsyncIterable<ServerRequest> {
     this.untrackConnection(conn);
     try {
       conn.close();
-    } catch (e) {
+    } catch {
       // might have been already closed
     }
   }
@@ -321,7 +320,7 @@ export function serve(addr: string | HTTPOptions): Server {
 export async function listenAndServe(
   addr: string | HTTPOptions,
   handler: (req: ServerRequest) => void,
-): Promise<void> {
+) {
   const server = serve(addr);
 
   for await (const request of server) {
@@ -378,7 +377,7 @@ export function serveTLS(options: HTTPSOptions): Server {
 export async function listenAndServeTLS(
   options: HTTPSOptions,
   handler: (req: ServerRequest) => void,
-): Promise<void> {
+) {
   const server = serveTLS(options);
 
   for await (const request of server) {
@@ -393,6 +392,7 @@ export async function listenAndServeTLS(
  */
 export interface Response {
   status?: number;
+  statusText?: string;
   headers?: Headers;
   body?: Uint8Array | Deno.Reader | string;
   trailers?: () => Promise<Headers> | Headers;

@@ -1,5 +1,7 @@
 # std/hash
 
+hash is module to provide interfaces for hash functions.
+
 ## Usage
 
 ### Creating new hash instance
@@ -81,3 +83,4 @@ Following algorithms are supported.
 - keccak256
 - keccak384
 - keccak512
+- blake3

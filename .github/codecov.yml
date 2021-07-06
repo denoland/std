@@ -1,0 +1,9 @@
+comment: false
+codecov:
+  require_ci_to_pass: true
+coverage:
+  status:
+    project: off
+    patch: off
+ignore:
+  - examples

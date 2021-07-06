@@ -2,6 +2,8 @@
 type Writer = Deno.Writer;
 type WriterSync = Deno.WriterSync;
 
+const decoder = new TextDecoder();
+
 /** Writer utility for buffering string chunks */
 export class StringWriter implements Writer, WriterSync {
   private chunks: Uint8Array[] = [];
@@ -35,7 +37,7 @@ export class StringWriter implements Writer, WriterSync {
       buf.set(chunk, offs);
       offs += chunk.byteLength;
     }
-    this.cache = new TextDecoder().decode(buf);
+    this.cache = decoder.decode(buf);
     return this.cache;
   }
 }

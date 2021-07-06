@@ -13,6 +13,7 @@ import {
 import {
   _format,
   assertPath,
+  encodeWhitespace,
   isPathSeparator,
   isWindowsDeviceRoot,
   normalizeString,
@@ -33,15 +34,19 @@ export function resolve(...pathSegments: string[]): string {
 
   for (let i = pathSegments.length - 1; i >= -1; i--) {
     let path: string;
+    // deno-lint-ignore no-explicit-any
+    const { Deno } = globalThis as any;
     if (i >= 0) {
       path = pathSegments[i];
     } else if (!resolvedDevice) {
-      if (globalThis.Deno == null) {
+      if (typeof Deno?.cwd !== "function") {
         throw new TypeError("Resolved a drive-letter-less path without a CWD.");
       }
       path = Deno.cwd();
     } else {
-      if (globalThis.Deno == null) {
+      if (
+        typeof Deno?.env?.get !== "function" || typeof Deno?.cwd !== "function"
+      ) {
         throw new TypeError("Resolved a relative path without a CWD.");
       }
       // Windows has the concept of drive-specific current working
@@ -979,7 +984,7 @@ export function fromFileUrl(url: string | URL): string {
  *
  *      toFileUrl("\\home\\foo"); // new URL("file:///home/foo")
  *      toFileUrl("C:\\Users\\foo"); // new URL("file:///C:/Users/foo")
- *      toFileUrl("\\\\localhost\\home\\foo"); // new URL("file://localhost/home/foo")
+ *      toFileUrl("\\\\127.0.0.1\\home\\foo"); // new URL("file://127.0.0.1/home/foo")
  * @param path to convert to file URL
  */
 export function toFileUrl(path: string): URL {
@@ -987,11 +992,11 @@ export function toFileUrl(path: string): URL {
     throw new TypeError("Must be an absolute path.");
   }
   const [, hostname, pathname] = path.match(
-    /^(?:[/\\]{2}([^/\\]+)(?=[/\\][^/\\]))?(.*)/,
+    /^(?:[/\\]{2}([^/\\]+)(?=[/\\](?:[^/\\]|$)))?(.*)/,
   )!;
   const url = new URL("file:///");
-  url.pathname = pathname.replace(/%/g, "%25");
-  if (hostname != null) {
+  url.pathname = encodeWhitespace(pathname.replace(/%/g, "%25"));
+  if (hostname != null && hostname != "localhost") {
     url.hostname = hostname;
     if (!url.hostname) {
       throw new TypeError("Invalid hostname.");

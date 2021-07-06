@@ -8,7 +8,7 @@ import { join } from "../path/mod.ts";
  * The directory itself is not deleted.
  * Requires the `--allow-read` and `--allow-write` flag.
  */
-export async function emptyDir(dir: string): Promise<void> {
+export async function emptyDir(dir: string) {
   try {
     const items = [];
     for await (const dirEntry of Deno.readDir(dir)) {

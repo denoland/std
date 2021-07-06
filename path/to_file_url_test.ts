@@ -19,10 +19,10 @@ Deno.test("[path] toFileUrl", function () {
   );
   assertEquals(
     posix.toFileUrl("//localhost/home/foo").href,
-    "file:////localhost/home/foo",
+    "file:///localhost/home/foo",
   );
-  assertEquals(posix.toFileUrl("//localhost/").href, "file:////localhost/");
-  assertEquals(posix.toFileUrl("//:/home/foo").href, "file:////:/home/foo");
+  assertEquals(posix.toFileUrl("//localhost/").href, "file:///localhost/");
+  assertEquals(posix.toFileUrl("//:/home/foo").href, "file:///:/home/foo");
 });
 
 Deno.test("[path] toFileUrl (win32)", function () {
@@ -38,9 +38,14 @@ Deno.test("[path] toFileUrl (win32)", function () {
   assertEquals(win32.toFileUrl("C:/").href, "file:///C:/");
   assertEquals(
     win32.toFileUrl("//localhost/home/foo").href,
-    "file://localhost/home/foo",
+    "file:///home/foo",
   );
-  assertEquals(win32.toFileUrl("//localhost/").href, "file:////localhost/");
+  assertEquals(
+    win32.toFileUrl("//127.0.0.1/home/foo").href,
+    "file://127.0.0.1/home/foo",
+  );
+  assertEquals(win32.toFileUrl("//localhost/").href, "file:///");
+  assertEquals(win32.toFileUrl("//127.0.0.1/").href, "file://127.0.0.1/");
   assertThrows(
     () => win32.toFileUrl("//:/home/foo").href,
     TypeError,

@@ -95,7 +95,8 @@ class Parser {
 
       // If a single line comment doesnt end on the same line, throw error
       if (
-        isOpenString && (openStringSyntax === "'" || openStringSyntax === '"')
+        isOpenString &&
+        (openStringSyntax === "'" || openStringSyntax === '"')
       ) {
         throw new TOMLError(`Single-line string is not closed:\n${line}`);
       }
@@ -177,10 +178,9 @@ class Parser {
         if (captureType === "string") {
           merged.push(
             acc
-              .join("\n")
+              .join("\\n")
               .replace(/"""/g, '"')
-              .replace(/'''/g, `'`)
-              .replace(/\n/g, "\\n"),
+              .replace(/'''/g, `'`),
           );
           isLiteral = false;
         } else {
@@ -214,8 +214,7 @@ class Parser {
   _groupToOutput(): void {
     assert(this.context.currentGroup != null, "currentGroup must be set");
     const arrProperty = this.context.currentGroup.name
-      .replace(/"/g, "")
-      .replace(/'/g, "")
+      .replace(/("|')/g, "")
       .split(".");
     let u = {};
     if (this.context.currentGroup.type === "array") {
@@ -244,7 +243,7 @@ class Parser {
       this._groupToOutput();
     }
 
-    let type;
+    let type: string;
     let m = line.match(captureReg);
     assert(m != null, "line mut be matched");
     let name = m[1];
@@ -274,12 +273,6 @@ class Parser {
       case "{":
         return this._parseInlineTableOrArray(dataString);
       default: {
-        // Strip a comment.
-        const match = /#.*$/.exec(dataString);
-        if (match) {
-          dataString = dataString.slice(0, match.index).trim();
-        }
-
         switch (dataString) {
           case "true":
             return true;
@@ -410,7 +403,7 @@ class Parser {
       return testNumber;
     }
 
-    return String(dataString);
+    throw new TOMLError(`Invalid data format: ${dataString}`);
   }
   _isLocalTime(str: string): boolean {
     const reg = /(\d{2}):(\d{2}):(\d{2})/;
@@ -482,7 +475,7 @@ class Parser {
           !this.context.currentGroup ||
           (this.context.currentGroup &&
             this.context.currentGroup.name !==
-              line.replace(/\[/g, "").replace(/\]/g, ""))
+              line.replace(/(\[|\])/g, ""))
         ) {
           this._createGroup(line);
           continue;
@@ -731,6 +724,6 @@ export function stringify(srcObj: Record<string, unknown>): string {
  */
 export function parse(tomlString: string): Record<string, unknown> {
   // File is potentially using EOL CRLF
-  tomlString = tomlString.replace(/\r\n/g, "\n").replace(/\\\n/g, "\n");
+  tomlString = tomlString.replace(/(\r\n|\\\n)/g, "\n");
   return new Parser(tomlString).parse();
 }

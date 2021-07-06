@@ -2,7 +2,7 @@
 import { Deferred, deferred } from "./deferred.ts";
 
 interface TaggedYieldedValue<T> {
-  iterator: AsyncIterableIterator<T>;
+  iterator: AsyncIterator<T>;
   value: T;
 }
 
@@ -18,14 +18,14 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
   private throws: any[] = [];
   private signal: Deferred<void> = deferred();
 
-  add(iterator: AsyncIterableIterator<T>): void {
+  add(iterable: AsyncIterable<T>): void {
     ++this.iteratorCount;
-    this.callIteratorNext(iterator);
+    this.callIteratorNext(iterable[Symbol.asyncIterator]());
   }
 
   private async callIteratorNext(
-    iterator: AsyncIterableIterator<T>,
-  ): Promise<void> {
+    iterator: AsyncIterator<T>,
+  ) {
     try {
       const { value, done } = await iterator.next();
       if (done) {
@@ -63,7 +63,7 @@ export class MuxAsyncIterator<T> implements AsyncIterable<T> {
     }
   }
 
-  [Symbol.asyncIterator](): AsyncIterableIterator<T> {
+  [Symbol.asyncIterator](): AsyncIterator<T> {
     return this.iterate();
   }
 }

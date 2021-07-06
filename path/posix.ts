@@ -8,6 +8,7 @@ import { CHAR_DOT, CHAR_FORWARD_SLASH } from "./_constants.ts";
 import {
   _format,
   assertPath,
+  encodeWhitespace,
   isPosixPathSeparator,
   normalizeString,
 } from "./_util.ts";
@@ -29,7 +30,9 @@ export function resolve(...pathSegments: string[]): string {
 
     if (i >= 0) path = pathSegments[i];
     else {
-      if (globalThis.Deno == null) {
+      // deno-lint-ignore no-explicit-any
+      const { Deno } = globalThis as any;
+      if (typeof Deno?.cwd !== "function") {
         throw new TypeError("Resolved a relative path without a CWD.");
       }
       path = Deno.cwd();
@@ -499,6 +502,8 @@ export function toFileUrl(path: string): URL {
     throw new TypeError("Must be an absolute path.");
   }
   const url = new URL("file:///");
-  url.pathname = path.replace(/%/g, "%25").replace(/\\/g, "%5C");
+  url.pathname = encodeWhitespace(
+    path.replace(/%/g, "%25").replace(/\\/g, "%5C"),
+  );
   return url;
 }

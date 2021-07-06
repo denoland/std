@@ -1,6 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { walk, WalkEntry, WalkOptions, walkSync } from "./walk.ts";
-import { assert, assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertThrows,
+  assertThrowsAsync,
+} from "../testing/asserts.ts";
 
 export function testWalk(
   setup: (arg0: string) => void | Promise<void>,
@@ -8,7 +13,7 @@ export function testWalk(
   ignore = false,
 ): void {
   const name = t.name;
-  async function fn(): Promise<void> {
+  async function fn() {
     const origCwd = Deno.cwd();
     const d = await Deno.makeTempDir();
     Deno.chdir(d);
@@ -42,7 +47,7 @@ export async function walkArray(
   return arr;
 }
 
-export async function touch(path: string): Promise<void> {
+export async function touch(path: string) {
   const f = await Deno.create(path);
   f.close();
 }
@@ -54,30 +59,30 @@ function assertReady(expectedLength: number): void {
 }
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await Deno.mkdir(d + "/empty");
   },
-  async function emptyDir(): Promise<void> {
+  async function emptyDir() {
     const arr = await walkArray(".");
     assertEquals(arr, [".", "empty"]);
   },
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await touch(d + "/x");
   },
-  async function singleFile(): Promise<void> {
+  async function singleFile() {
     const arr = await walkArray(".");
     assertEquals(arr, [".", "x"]);
   },
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await touch(d + "/x");
   },
-  async function iteratable(): Promise<void> {
+  async function iteratable() {
     let count = 0;
     for (const _ of walkSync(".")) {
       count += 1;
@@ -91,22 +96,22 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await Deno.mkdir(d + "/a");
     await touch(d + "/a/x");
   },
-  async function nestedSingleFile(): Promise<void> {
+  async function nestedSingleFile() {
     const arr = await walkArray(".");
     assertEquals(arr, [".", "a", "a/x"]);
   },
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await Deno.mkdir(d + "/a/b/c/d", { recursive: true });
     await touch(d + "/a/b/c/d/x");
   },
-  async function depth(): Promise<void> {
+  async function depth() {
     assertReady(6);
     const arr3 = await walkArray(".", { maxDepth: 3 });
     assertEquals(arr3, [".", "a", "a/b", "a/b/c"]);
@@ -116,12 +121,12 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await touch(d + "/a");
     await Deno.mkdir(d + "/b");
     await touch(d + "/b/c");
   },
-  async function includeDirs(): Promise<void> {
+  async function includeDirs() {
     assertReady(4);
     const arr = await walkArray(".", { includeDirs: false });
     assertEquals(arr, ["a", "b/c"]);
@@ -129,12 +134,12 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await touch(d + "/a");
     await Deno.mkdir(d + "/b");
     await touch(d + "/b/c");
   },
-  async function includeFiles(): Promise<void> {
+  async function includeFiles() {
     assertReady(4);
     const arr = await walkArray(".", { includeFiles: false });
     assertEquals(arr, [".", "b"]);
@@ -142,11 +147,11 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await touch(d + "/x.ts");
     await touch(d + "/y.rs");
   },
-  async function ext(): Promise<void> {
+  async function ext() {
     assertReady(3);
     const arr = await walkArray(".", { exts: [".ts"] });
     assertEquals(arr, ["x.ts"]);
@@ -154,12 +159,12 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await touch(d + "/x.ts");
     await touch(d + "/y.rs");
     await touch(d + "/z.py");
   },
-  async function extAny(): Promise<void> {
+  async function extAny() {
     assertReady(4);
     const arr = await walkArray(".", { exts: [".rs", ".ts"] });
     assertEquals(arr, ["x.ts", "y.rs"]);
@@ -167,11 +172,11 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await touch(d + "/x");
     await touch(d + "/y");
   },
-  async function match(): Promise<void> {
+  async function match() {
     assertReady(3);
     const arr = await walkArray(".", { match: [/x/] });
     assertEquals(arr, ["x"]);
@@ -179,12 +184,12 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await touch(d + "/x");
     await touch(d + "/y");
     await touch(d + "/z");
   },
-  async function matchAny(): Promise<void> {
+  async function matchAny() {
     assertReady(4);
     const arr = await walkArray(".", { match: [/x/, /y/] });
     assertEquals(arr, ["x", "y"]);
@@ -192,11 +197,11 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await touch(d + "/x");
     await touch(d + "/y");
   },
-  async function skip(): Promise<void> {
+  async function skip() {
     assertReady(3);
     const arr = await walkArray(".", { skip: [/x/] });
     assertEquals(arr, [".", "y"]);
@@ -204,12 +209,12 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await touch(d + "/x");
     await touch(d + "/y");
     await touch(d + "/z");
   },
-  async function skipAny(): Promise<void> {
+  async function skipAny() {
     assertReady(4);
     const arr = await walkArray(".", { skip: [/x/, /y/] });
     assertEquals(arr, [".", "z"]);
@@ -217,14 +222,14 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await Deno.mkdir(d + "/a");
     await Deno.mkdir(d + "/b");
     await touch(d + "/a/x");
     await touch(d + "/a/y");
     await touch(d + "/b/z");
   },
-  async function subDir(): Promise<void> {
+  async function subDir() {
     assertReady(6);
     const arr = await walkArray("b");
     assertEquals(arr, ["b", "b/z"]);
@@ -232,8 +237,8 @@ testWalk(
 );
 
 testWalk(
-  async (_d: string): Promise<void> => {},
-  async function nonexistentRoot(): Promise<void> {
+  async (_d: string) => {},
+  async function nonexistentRoot() {
     await assertThrowsAsync(async () => {
       await walkArray("nonexistent");
     }, Deno.errors.NotFound);
@@ -241,7 +246,7 @@ testWalk(
 );
 
 testWalk(
-  async (d: string): Promise<void> => {
+  async (d: string) => {
     await Deno.mkdir(d + "/a");
     await Deno.mkdir(d + "/b");
     await touch(d + "/a/x");
@@ -249,7 +254,7 @@ testWalk(
     await touch(d + "/b/z");
     await Deno.symlink(d + "/b", d + "/a/bb");
   },
-  async function symlink(): Promise<void> {
+  async function symlink() {
     assertReady(6);
     const files = await walkArray("a");
     assertEquals(files.length, 3);
@@ -259,4 +264,48 @@ testWalk(
     assertEquals(arr.length, 5);
     assert(arr.some((f): boolean => f.endsWith("/b/z")));
   },
+);
+
+testWalk(
+  async (d: string) => {
+    await Deno.mkdir(d + "/a/b", { recursive: true });
+    await Deno.chmod(d + "/a/b", 0o000);
+  },
+  async function subDirNoPermissionAsync() {
+    try {
+      await assertThrowsAsync(
+        async () => {
+          await walkArray("a");
+        },
+        Deno.errors.PermissionDenied,
+        'for path "a/b"',
+      );
+    } finally {
+      await Deno.chmod("a/b", 0o755);
+    }
+  },
+  // TODO(kt3k): Enable this test on windows when Deno.chmod is implemented
+  Deno.build.os === "windows",
+);
+
+testWalk(
+  async (d: string) => {
+    await Deno.mkdir(d + "/a/b", { recursive: true });
+    await Deno.chmod(d + "/a/b", 0o000);
+  },
+  async function subDirNoPermissionSync() {
+    try {
+      assertThrows(
+        () => {
+          return [...walkSync("a")];
+        },
+        Deno.errors.PermissionDenied,
+        'for path "a/b"',
+      );
+    } finally {
+      await Deno.chmod("a/b", 0o755);
+    }
+  },
+  // TODO(kt3k): Enable this test on windows when Deno.chmod is implemented
+  Deno.build.os === "windows",
 );

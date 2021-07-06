@@ -4,6 +4,7 @@ Helper module for dealing with external data structures.
 
 - [`ascii85`](#ascii85)
 - [`base32`](#base32)
+- [`base64`](#base64)
 - [`binary`](#binary)
 - [`csv`](#csv)
 - [`toml`](#toml)
@@ -463,6 +464,44 @@ console.log(data);
 // => [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" } ]
 ```
 
+To handle `function`, `regexp`, and `undefined` types, use the
+`EXTENDED_SCHEMA`.
+
+```ts
+import {
+  EXTENDED_SCHEMA,
+  parse,
+} from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
+
+const data = parse(
+  `
+  regexp:
+    simple: !!js/regexp foobar
+    modifiers: !!js/regexp /foobar/mi
+  undefined: !!js/undefined ~
+  function: !!js/function >
+    function foobar() {
+      return 'hello world!';
+    }
+`,
+  { schema: EXTENDED_SCHEMA },
+);
+```
+
+You can also use custom types by extending schemas.
+
+```ts
+import {
+  parse,
+  Type,
+} from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
+
+const MyYamlType = new Type("!myYamlType", {/* your type definition here*/});
+const MY_SCHEMA = DEFAULT_SCHEMA.extend({ explicit: [MyYamlType] });
+
+parse(yaml, { schema: MY_SCHEMA });
+```
+
 ### API
 
 #### `parse(str: string, opts?: ParserOption): unknown`
@@ -481,11 +520,10 @@ Serializes `object` as a YAML document.
 ### :warning: Limitations
 
 - `binary` type is currently not stable.
-- `function`, `regexp`, and `undefined` type are currently not supported.
 
 ### More example
 
-See: https://github.com/nodeca/js-yaml
+See: https://github.com/nodeca/js-yaml/tree/master/examples
 
 ## base32
 
@@ -511,6 +549,32 @@ console.log(binaryData);
 
 console.log(encode(binaryData));
 // => RC2E6GA=
+```
+
+## base64
+
+[RFC4648 base64](https://tools.ietf.org/html/rfc4648#section-4) encoder/decoder
+for Deno.
+
+### Basic usage
+
+`encode` encodes a `Uint8Array` to RFC4648 base64 representation, and `decode`
+decodes the given RFC4648 base64 representation to a `Uint8Array`.
+
+```ts
+import {
+  decode,
+  encode,
+} from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+
+const b64Repr = "Zm9vYg==";
+
+const binaryData = decode(b64Repr);
+console.log(binaryData);
+// => Uint8Array [ 102, 111, 111, 98 ]
+
+console.log(encode(binaryData));
+// => Zm9vYg==
 ```
 
 ## ascii85

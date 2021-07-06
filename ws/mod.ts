@@ -108,7 +108,7 @@ export function unmask(payload: Uint8Array, mask?: Uint8Array): void {
 export async function writeFrame(
   frame: WebSocketFrame,
   writer: Deno.Writer,
-): Promise<void> {
+) {
   const payloadLength = frame.payload.byteLength;
   let header: Uint8Array;
   const hasMask = frame.mask ? 0x80 : 0;
@@ -228,7 +228,7 @@ class WebSocketImpl implements WebSocket {
       let frame: WebSocketFrame;
       try {
         frame = await readFrame(this.bufReader);
-      } catch (e) {
+      } catch {
         this.ensureSocketClosed();
         break;
       }
@@ -344,7 +344,7 @@ class WebSocketImpl implements WebSocket {
     return this._isClosed;
   }
 
-  async close(code = 1000, reason?: string): Promise<void> {
+  async close(code = 1000, reason?: string) {
     try {
       const header = [code >>> 8, code & 0x00ff];
       let payload: Uint8Array;
@@ -470,7 +470,7 @@ export async function handshake(
   headers: Headers,
   bufReader: BufReader,
   bufWriter: BufWriter,
-): Promise<void> {
+) {
   const { hostname, pathname, search } = url;
   const key = createSecKey();
 

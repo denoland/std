@@ -87,10 +87,12 @@ Deno.test("requireNodeJsNativeModules", () => {
   // Checks these exist and don't throw.
   require("assert");
   require("buffer");
+  require("child_process");
   require("constants");
   require("crypto");
   require("events");
   require("fs");
+  require("module");
   require("os");
   require("path");
   require("querystring");
@@ -102,7 +104,6 @@ Deno.test("requireNodeJsNativeModules", () => {
   require("util");
 
   // TODO(kt3k): add these modules when implemented
-  // require("child_process");
   // require("cluster");
   // require("console");
   // require("dgram");
@@ -127,9 +128,11 @@ Deno.test("native modules are extensible", () => {
   const modNames = [
     "assert",
     "buffer",
+    "child_process",
     "crypto",
     "events",
     "fs",
+    "module",
     "os",
     "path",
     "querystring",
@@ -153,4 +156,9 @@ Deno.test("native modules are extensible", () => {
 
 Deno.test("Require file with shebang", () => {
   require("./testdata/shebang.js");
+});
+
+Deno.test("EventEmitter is exported correctly", () => {
+  const EventEmitter = require("events");
+  assertEquals(EventEmitter, EventEmitter.EventEmitter);
 });

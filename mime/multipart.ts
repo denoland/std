@@ -7,6 +7,7 @@ import { BufReader, BufWriter } from "../io/bufio.ts";
 import { assert } from "../_util/assert.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { hasOwnProperty } from "../_util/has_own_property.ts";
+import { Buffer } from "../io/buffer.ts";
 
 /** FormFile object */
 export interface FormFile {
@@ -258,15 +259,37 @@ export interface MultipartFormData {
   removeAll(): Promise<void>;
 }
 
+/**
+ * options for reading forms.
+ * @property maxMemory - maximum memory size to store file in memory. bytes.
+ * @default 10485760 (10MB)
+ * @property dir - directory where files that don't fit into maxMemory will be
+ * stored.
+ * @property prefix - a prefix that will be used for all files created if
+ * maxMemory is exceeded.
+ * @property suffix - a suffix that will be used for all files created if
+ * maxMemory is exceeded, defaults to the fole extension
+ */
+export interface ReadFormOptions {
+  maxMemory?: number;
+  dir?: string;
+  prefix?: string;
+  suffix?: string;
+}
+
 /** Reader for parsing multipart/form-data */
 export class MultipartReader {
-  readonly newLine = encoder.encode("\r\n");
-  readonly newLineDashBoundary = encoder.encode(`\r\n--${this.boundary}`);
-  readonly dashBoundaryDash = encoder.encode(`--${this.boundary}--`);
-  readonly dashBoundary = encoder.encode(`--${this.boundary}`);
+  readonly newLine: Uint8Array;
+  readonly newLineDashBoundary: Uint8Array;
+  readonly dashBoundaryDash: Uint8Array;
+  readonly dashBoundary: Uint8Array;
   readonly bufReader: BufReader;
 
   constructor(reader: Deno.Reader, private boundary: string) {
+    this.newLine = encoder.encode("\r\n");
+    this.newLineDashBoundary = encoder.encode(`\r\n--${boundary}`);
+    this.dashBoundaryDash = encoder.encode(`--${this.boundary}--`);
+    this.dashBoundary = encoder.encode(`--${this.boundary}`);
     this.bufReader = new BufReader(reader);
   }
 
@@ -277,11 +300,27 @@ export class MultipartReader {
    * null value means parsing or writing to file was failed in some reason.
    * @param maxMemory maximum memory size to store file in memory. bytes. @default 10485760 (10MB)
    *  */
-  async readForm(maxMemory = 10 << 20): Promise<MultipartFormData> {
+  async readForm(maxMemory?: number): Promise<MultipartFormData>;
+  /** Read all form data from stream.
+   * If total size of stored data in memory exceed options.maxMemory,
+   * overflowed file data will be written to temporal files.
+   * String field values are never written to files.
+   * null value means parsing or writing to file was failed in some reason.
+   * @param options options to configure the behavior of storing
+   * overflow file data in temporal files.
+   *  */
+  async readForm(options?: ReadFormOptions): Promise<MultipartFormData>;
+  async readForm(
+    maxMemoryOrOptions?: number | ReadFormOptions,
+  ): Promise<MultipartFormData> {
+    const options = typeof maxMemoryOrOptions === "number"
+      ? { maxMemory: maxMemoryOrOptions }
+      : maxMemoryOrOptions;
+    let maxMemory = options?.maxMemory ?? 10 << 20;
     const fileMap = new Map<string, FormFile | FormFile[]>();
     const valueMap = new Map<string, string>();
     let maxValueBytes = maxMemory + (10 << 20);
-    const buf = new Deno.Buffer(new Uint8Array(maxValueBytes));
+    const buf = new Buffer(new Uint8Array(maxValueBytes));
     for (;;) {
       const p = await this.nextPart();
       if (p === null) {
@@ -311,9 +350,9 @@ export class MultipartReader {
         // too big, write to disk and flush buffer
         const ext = extname(p.fileName);
         const filepath = await Deno.makeTempFile({
-          dir: ".",
-          prefix: "multipart-",
-          suffix: ext,
+          dir: options?.dir ?? ".",
+          prefix: options?.prefix ?? "multipart-",
+          suffix: options?.suffix ?? ext,
         });
 
         const file = await Deno.open(filepath, { write: true });
@@ -435,7 +474,7 @@ function multipartFormData(
     yield* fileMap;
     yield* valueMap;
   }
-  async function removeAll(): Promise<void> {
+  async function removeAll() {
     const promises: Array<Promise<void>> = [];
     for (const val of fileMap.values()) {
       if (Array.isArray(val)) {
@@ -542,7 +581,7 @@ export class MultipartWriter {
     return `multipart/form-data; boundary=${this.boundary}`;
   }
 
-  private createPart(headers: Headers): Deno.Writer {
+  createPart(headers: Headers): Deno.Writer {
     if (this.isClosed) {
       throw new Error("multipart: writer is closed");
     }
@@ -559,7 +598,10 @@ export class MultipartWriter {
     return part;
   }
 
-  createFormFile(field: string, filename: string): Deno.Writer {
+  createFormFile(
+    field: string,
+    filename: string,
+  ): Deno.Writer {
     const h = new Headers();
     h.set(
       "Content-Disposition",
@@ -576,7 +618,7 @@ export class MultipartWriter {
     return this.createPart(h);
   }
 
-  async writeField(field: string, value: string): Promise<void> {
+  async writeField(field: string, value: string) {
     const f = await this.createFormField(field);
     await f.write(encoder.encode(value));
   }
@@ -585,17 +627,17 @@ export class MultipartWriter {
     field: string,
     filename: string,
     file: Deno.Reader,
-  ): Promise<void> {
+  ) {
     const f = await this.createFormFile(field, filename);
     await Deno.copy(file, f);
   }
 
-  private flush(): Promise<void> {
+  private flush() {
     return this.bufWriter.flush();
   }
 
   /** Close writer. No additional data can be written to stream */
-  async close(): Promise<void> {
+  async close() {
     if (this.isClosed) {
       throw new Error("multipart: writer is closed");
     }

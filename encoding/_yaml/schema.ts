@@ -36,7 +36,7 @@ function compileList(
     result.push(currentType);
   }
 
-  return result.filter((type, index): unknown => !exclude.includes(index));
+  return result.filter((_type, index): unknown => !exclude.includes(index));
 }
 
 export type TypeMap = { [k in KindType | "fallback"]: ArrayObject<Type> };
@@ -77,7 +77,6 @@ export class Schema implements SchemaDefinition {
     for (const type of this.implicit) {
       if (type.loadKind && type.loadKind !== "scalar") {
         throw new YAMLError(
-          // eslint-disable-next-line max-len
           "There is a non-scalar type in the implicit list of a schema. Implicit resolving of such types is not supported.",
         );
       }
@@ -89,6 +88,19 @@ export class Schema implements SchemaDefinition {
       this.compiledImplicit,
       this.compiledExplicit,
     );
+  }
+
+  /* Returns a new extended schema from current schema */
+  public extend(definition: SchemaDefinition) {
+    return new Schema({
+      implicit: [
+        ...new Set([...this.implicit, ...(definition?.implicit ?? [])]),
+      ],
+      explicit: [
+        ...new Set([...this.explicit, ...(definition?.explicit ?? [])]),
+      ],
+      include: [...new Set([...this.include, ...(definition?.include ?? [])])],
+    });
   }
 
   public static create(): void {}

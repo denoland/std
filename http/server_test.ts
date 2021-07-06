@@ -25,6 +25,8 @@ import { BufReader, BufWriter } from "../io/bufio.ts";
 import { delay } from "../async/delay.ts";
 import { mockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
+import { Buffer } from "../io/buffer.ts";
+import { readAll, writeAll } from "../io/util.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -47,11 +49,25 @@ const responseTests: ResponseTest[] = [
     },
     raw: "HTTP/1.1 404 Not Found\r\n" + "content-length: 0" + "\r\n\r\n",
   },
+  {
+    response: {
+      status: 893,
+      statusText: "Custom error",
+    },
+    raw: "HTTP/1.1 893 Custom error\r\n" + "content-length: 0" + "\r\n\r\n",
+  },
+  {
+    response: {
+      status: 893,
+      statusText: "",
+    },
+    raw: "HTTP/1.1 893 \r\n" + "content-length: 0" + "\r\n\r\n",
+  },
   // HTTP/1.1, chunked coding; empty trailer; close
   {
     response: {
       status: 200,
-      body: new Deno.Buffer(new TextEncoder().encode("abcdef")),
+      body: new Buffer(new TextEncoder().encode("abcdef")),
     },
 
     raw: "HTTP/1.1 200 OK\r\n" +
@@ -60,9 +76,9 @@ const responseTests: ResponseTest[] = [
   },
 ];
 
-Deno.test("responseWrite", async function (): Promise<void> {
+Deno.test("responseWrite", async function () {
   for (const testCase of responseTests) {
-    const buf = new Deno.Buffer();
+    const buf = new Buffer();
     const bufw = new BufWriter(buf);
     const request = new ServerRequest();
     request.w = bufw;
@@ -81,7 +97,7 @@ Deno.test("requestContentLength", function (): void {
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("content-length", "5");
-    const buf = new Deno.Buffer(new TextEncoder().encode("Hello"));
+    const buf = new Buffer(new TextEncoder().encode("Hello"));
     req.r = new BufReader(buf);
     assertEquals(req.contentLength, 5);
   }
@@ -102,7 +118,7 @@ Deno.test("requestContentLength", function (): void {
       chunkOffset += chunkSize;
     }
     chunksData += "0\r\n\r\n";
-    const buf = new Deno.Buffer(new TextEncoder().encode(chunksData));
+    const buf = new Buffer(new TextEncoder().encode(chunksData));
     req.r = new BufReader(buf);
     assertEquals(req.contentLength, null);
   }
@@ -127,14 +143,14 @@ function totalReader(r: Deno.Reader): TotalReader {
     },
   };
 }
-Deno.test("requestBodyWithContentLength", async function (): Promise<void> {
+Deno.test("requestBodyWithContentLength", async function () {
   {
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("content-length", "5");
-    const buf = new Deno.Buffer(new TextEncoder().encode("Hello"));
+    const buf = new Buffer(new TextEncoder().encode("Hello"));
     req.r = new BufReader(buf);
-    const body = new TextDecoder().decode(await Deno.readAll(req.body));
+    const body = new TextDecoder().decode(await readAll(req.body));
     assertEquals(body, "Hello");
   }
 
@@ -144,9 +160,9 @@ Deno.test("requestBodyWithContentLength", async function (): Promise<void> {
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("Content-Length", "5000");
-    const buf = new Deno.Buffer(new TextEncoder().encode(longText));
+    const buf = new Buffer(new TextEncoder().encode(longText));
     req.r = new BufReader(buf);
-    const body = new TextDecoder().decode(await Deno.readAll(req.body));
+    const body = new TextDecoder().decode(await readAll(req.body));
     assertEquals(body, longText);
   }
   // Handler ignored to consume body
@@ -158,9 +174,9 @@ Deno.test(
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("content-length", "" + text.length);
-    const tr = totalReader(new Deno.Buffer(new TextEncoder().encode(text)));
+    const tr = totalReader(new Buffer(new TextEncoder().encode(text)));
     req.r = new BufReader(tr);
-    req.w = new BufWriter(new Deno.Buffer());
+    req.w = new BufWriter(new Buffer());
     await req.respond({ status: 200, body: "ok" });
     assertEquals(tr.total, 0);
     await req.finalize();
@@ -187,9 +203,9 @@ Deno.test(
     req.headers.set("transfer-encoding", "chunked");
     req.headers.set("trailer", "deno,node");
     const body = new TextEncoder().encode(text);
-    const tr = totalReader(new Deno.Buffer(body));
+    const tr = totalReader(new Buffer(body));
     req.r = new BufReader(tr);
-    req.w = new BufWriter(new Deno.Buffer());
+    req.w = new BufWriter(new Buffer());
     await req.respond({ status: 200, body: "ok" });
     assertEquals(tr.total, 0);
     assertEquals(req.headers.has("trailer"), true);
@@ -202,7 +218,7 @@ Deno.test(
     assertEquals(req.headers.get("node"), "js");
   },
 );
-Deno.test("requestBodyWithTransferEncoding", async function (): Promise<void> {
+Deno.test("requestBodyWithTransferEncoding", async function () {
   {
     const shortText = "Hello";
     const req = new ServerRequest();
@@ -219,9 +235,9 @@ Deno.test("requestBodyWithTransferEncoding", async function (): Promise<void> {
       chunkOffset += chunkSize;
     }
     chunksData += "0\r\n\r\n";
-    const buf = new Deno.Buffer(new TextEncoder().encode(chunksData));
+    const buf = new Buffer(new TextEncoder().encode(chunksData));
     req.r = new BufReader(buf);
-    const body = new TextDecoder().decode(await Deno.readAll(req.body));
+    const body = new TextDecoder().decode(await readAll(req.body));
     assertEquals(body, shortText);
   }
 
@@ -242,9 +258,9 @@ Deno.test("requestBodyWithTransferEncoding", async function (): Promise<void> {
       chunkOffset += chunkSize;
     }
     chunksData += "0\r\n\r\n";
-    const buf = new Deno.Buffer(new TextEncoder().encode(chunksData));
+    const buf = new Buffer(new TextEncoder().encode(chunksData));
     req.r = new BufReader(buf);
-    const body = new TextDecoder().decode(await Deno.readAll(req.body));
+    const body = new TextDecoder().decode(await readAll(req.body));
     assertEquals(body, longText);
   }
 });
@@ -257,7 +273,7 @@ Deno.test("requestBodyReaderWithContentLength", async function (): Promise<
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("content-length", "" + shortText.length);
-    const buf = new Deno.Buffer(new TextEncoder().encode(shortText));
+    const buf = new Buffer(new TextEncoder().encode(shortText));
     req.r = new BufReader(buf);
     const readBuf = new Uint8Array(6);
     let offset = 0;
@@ -278,7 +294,7 @@ Deno.test("requestBodyReaderWithContentLength", async function (): Promise<
     const req = new ServerRequest();
     req.headers = new Headers();
     req.headers.set("Content-Length", "5000");
-    const buf = new Deno.Buffer(new TextEncoder().encode(longText));
+    const buf = new Buffer(new TextEncoder().encode(longText));
     req.r = new BufReader(buf);
     const readBuf = new Uint8Array(1000);
     let offset = 0;
@@ -313,7 +329,7 @@ Deno.test("requestBodyReaderWithTransferEncoding", async function (): Promise<
       chunkOffset += chunkSize;
     }
     chunksData += "0\r\n\r\n";
-    const buf = new Deno.Buffer(new TextEncoder().encode(chunksData));
+    const buf = new Buffer(new TextEncoder().encode(chunksData));
     req.r = new BufReader(buf);
     const readBuf = new Uint8Array(6);
     let offset = 0;
@@ -345,7 +361,7 @@ Deno.test("requestBodyReaderWithTransferEncoding", async function (): Promise<
       chunkOffset += chunkSize;
     }
     chunksData += "0\r\n\r\n";
-    const buf = new Deno.Buffer(new TextEncoder().encode(chunksData));
+    const buf = new Buffer(new TextEncoder().encode(chunksData));
     req.r = new BufReader(buf);
     const readBuf = new Uint8Array(1000);
     let offset = 0;
@@ -363,7 +379,7 @@ Deno.test("requestBodyReaderWithTransferEncoding", async function (): Promise<
 
 Deno.test({
   name: "destroyed connection",
-  fn: async (): Promise<void> => {
+  fn: async () => {
     // Runs a simple server as another process
     const p = Deno.run({
       cmd: [
@@ -409,7 +425,7 @@ Deno.test({
 
 Deno.test({
   name: "serveTLS",
-  fn: async (): Promise<void> => {
+  fn: async () => {
     // Runs a simple server as another process
     const p = Deno.run({
       cmd: [
@@ -445,7 +461,7 @@ Deno.test({
         port: 4503,
         certFile: join(testdataDir, "tls/RootCA.pem"),
       });
-      await Deno.writeAll(
+      await writeAll(
         conn,
         new TextEncoder().encode("GET / HTTP/1.0\r\n\r\n"),
       );
@@ -468,7 +484,7 @@ Deno.test({
 
 Deno.test(
   "close server while iterating",
-  async (): Promise<void> => {
+  async () => {
     const server = serve(":8123");
     const nextWhileClosing = server[Symbol.asyncIterator]().next();
     server.close();
@@ -481,8 +497,8 @@ Deno.test(
 
 Deno.test({
   name: "[http] close server while connection is open",
-  async fn(): Promise<void> {
-    async function iteratorReq(server: Server): Promise<void> {
+  async fn() {
+    async function iteratorReq(server: Server) {
       for await (const req of server) {
         await req.respond({ body: new TextEncoder().encode(req.url) });
       }
@@ -491,7 +507,7 @@ Deno.test({
     const server = serve(":8123");
     const p = iteratorReq(server);
     const conn = await Deno.connect({ hostname: "127.0.0.1", port: 8123 });
-    await Deno.writeAll(
+    await writeAll(
       conn,
       new TextEncoder().encode("GET /hello HTTP/1.1\r\n\r\n"),
     );
@@ -512,16 +528,20 @@ Deno.test({
 
 Deno.test({
   name: "respond error closes connection",
-  async fn(): Promise<void> {
-    const serverRoutine = async (): Promise<void> => {
+  async fn() {
+    const serverRoutine = async () => {
       const server = serve(":8124");
       for await (const req of server) {
-        await assertThrowsAsync(async () => {
-          await req.respond({
-            status: 12345,
-            body: new TextEncoder().encode("Hello World"),
-          });
-        }, Deno.errors.InvalidData);
+        await assertThrowsAsync(
+          async () => {
+            await req.respond({
+              status: 12345,
+              body: new TextEncoder().encode("Hello World"),
+            });
+          },
+          Deno.errors.InvalidData,
+          "Empty statusText",
+        );
         // The connection should be destroyed
         assert(!(req.conn.rid in Deno.resources()));
         server.close();
@@ -532,7 +552,7 @@ Deno.test({
       hostname: "127.0.0.1",
       port: 8124,
     });
-    await Deno.writeAll(
+    await writeAll(
       conn,
       new TextEncoder().encode("GET / HTTP/1.1\r\n\r\n"),
     );
@@ -543,20 +563,20 @@ Deno.test({
 
 Deno.test({
   name: "[http] request error gets 400 response",
-  async fn(): Promise<void> {
+  async fn() {
     const server = serve(":8124");
     const entry = server[Symbol.asyncIterator]().next();
     const conn = await Deno.connect({
       hostname: "127.0.0.1",
       port: 8124,
     });
-    await Deno.writeAll(
+    await writeAll(
       conn,
       new TextEncoder().encode(
         "GET / HTTP/1.1\r\nmalformedHeader\r\n\r\n\r\n\r\n",
       ),
     );
-    const responseString = new TextDecoder().decode(await Deno.readAll(conn));
+    const responseString = new TextDecoder().decode(await readAll(conn));
     assertMatch(
       responseString,
       /^HTTP\/1\.1 400 Bad Request\r\ncontent-length: \d+\r\n\r\n.*\r\n\r\n$/ms,
@@ -569,8 +589,8 @@ Deno.test({
 
 Deno.test({
   name: "[http] finalizing invalid chunked data closes connection",
-  async fn(): Promise<void> {
-    const serverRoutine = async (): Promise<void> => {
+  async fn() {
+    const serverRoutine = async () => {
       const server = serve(":8124");
       for await (const req of server) {
         await req.respond({ status: 200, body: "Hello, world!" });
@@ -583,14 +603,14 @@ Deno.test({
       hostname: "127.0.0.1",
       port: 8124,
     });
-    await Deno.writeAll(
+    await writeAll(
       conn,
       new TextEncoder().encode(
         "PUT / HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\nzzzzzzz\r\nhello",
       ),
     );
     await conn.closeWrite();
-    const responseString = new TextDecoder().decode(await Deno.readAll(conn));
+    const responseString = new TextDecoder().decode(await readAll(conn));
     assertEquals(
       responseString,
       "HTTP/1.1 200 OK\r\ncontent-length: 13\r\n\r\nHello, world!",
@@ -602,8 +622,8 @@ Deno.test({
 
 Deno.test({
   name: "[http] finalizing chunked unexpected EOF closes connection",
-  async fn(): Promise<void> {
-    const serverRoutine = async (): Promise<void> => {
+  async fn() {
+    const serverRoutine = async () => {
       const server = serve(":8124");
       for await (const req of server) {
         await req.respond({ status: 200, body: "Hello, world!" });
@@ -616,14 +636,14 @@ Deno.test({
       hostname: "127.0.0.1",
       port: 8124,
     });
-    await Deno.writeAll(
+    await writeAll(
       conn,
       new TextEncoder().encode(
         "PUT / HTTP/1.1\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nHello",
       ),
     );
     conn.closeWrite();
-    const responseString = new TextDecoder().decode(await Deno.readAll(conn));
+    const responseString = new TextDecoder().decode(await readAll(conn));
     assertEquals(
       responseString,
       "HTTP/1.1 200 OK\r\ncontent-length: 13\r\n\r\nHello, world!",
@@ -636,9 +656,9 @@ Deno.test({
 Deno.test({
   name:
     "[http] receiving bad request from a closed connection should not throw",
-  async fn(): Promise<void> {
+  async fn() {
     const server = serve(":8124");
-    const serverRoutine = async (): Promise<void> => {
+    const serverRoutine = async () => {
       for await (const req of server) {
         await req.respond({ status: 200, body: "Hello, world!" });
       }
@@ -648,7 +668,7 @@ Deno.test({
       hostname: "127.0.0.1",
       port: 8124,
     });
-    await Deno.writeAll(
+    await writeAll(
       conn,
       new TextEncoder().encode([
         // A normal request is required:
@@ -683,8 +703,8 @@ Deno.test({
 
 Deno.test({
   name: "serveTLS Invalid Cert",
-  fn: async (): Promise<void> => {
-    async function iteratorReq(server: Server): Promise<void> {
+  fn: async () => {
+    async function iteratorReq(server: Server) {
       for await (const req of server) {
         await req.respond({ body: new TextEncoder().encode("Hello HTTPS") });
       }
@@ -700,17 +720,18 @@ Deno.test({
     const p = iteratorReq(server);
 
     try {
-      // Invalid certificate, connection should throw
+      // Invalid certificate, connection should throw on first read or write
       // but should not crash the server
-      assertThrowsAsync(
-        () =>
-          Deno.connectTls({
-            hostname: "localhost",
-            port,
-            // certFile
-          }),
+      const badConn = await Deno.connectTls({
+        hostname: "localhost",
+        port,
+        // certFile
+      });
+      await assertThrowsAsync(
+        () => badConn.read(new Uint8Array(1)),
         Deno.errors.InvalidData,
       );
+      badConn.close();
 
       // Valid request after invalid
       const conn = await Deno.connectTls({
@@ -719,7 +740,7 @@ Deno.test({
         certFile: join(testdataDir, "tls/RootCA.pem"),
       });
 
-      await Deno.writeAll(
+      await writeAll(
         conn,
         new TextEncoder().encode("GET / HTTP/1.0\r\n\r\n"),
       );

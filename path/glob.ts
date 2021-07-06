@@ -1,9 +1,13 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { osType } from "../_util/os.ts";
-import { join, normalize } from "./mod.ts";
+import { isWindows, osType } from "../_util/os.ts";
 import { SEP, SEP_PATTERN } from "./separator.ts";
+import * as _win32 from "./win32.ts";
+import * as _posix from "./posix.ts";
+
+const path = isWindows ? _win32 : _posix;
+const { join, normalize } = path;
 
 export interface GlobOptions {
   /** Extended glob syntax.
@@ -14,8 +18,10 @@ export interface GlobOptions {
    * See https://www.linuxjournal.com/content/globstar-new-bash-globbing-option.
    * If false, `**` is treated like `*`. Defaults to true. */
   globstar?: boolean;
+  /** Whether globstar should be case insensitive. */
+  caseInsensitive?: boolean;
   /** Operating system. Defaults to the native OS. */
-  os?: typeof Deno.build.os;
+  os?: "darwin" | "linux" | "windows";
 }
 
 export type GlobToRegExpOptions = GlobOptions;
@@ -80,8 +86,12 @@ const rangeEscapeChars = ["-", "\\", "]"];
  *   the group occurs not nested at the end of the segment. */
 export function globToRegExp(
   glob: string,
-  { extended = true, globstar: globstarOption = true, os = osType }:
-    GlobToRegExpOptions = {},
+  {
+    extended = true,
+    globstar: globstarOption = true,
+    os = osType,
+    caseInsensitive = false,
+  }: GlobToRegExpOptions = {},
 ): RegExp {
   if (glob == "") {
     return /(?!)/;
@@ -106,7 +116,7 @@ export function globToRegExp(
   // Terminates correctly. Trust that `j` is incremented every iteration.
   for (let j = 0; j < glob.length;) {
     let segment = "";
-    const groupStack = [];
+    const groupStack: string[] = [];
     let inRange = false;
     let inEscape = false;
     let endsWithSep = false;
@@ -310,7 +320,7 @@ export function globToRegExp(
   }
 
   regExpString = `^${regExpString}$`;
-  return new RegExp(regExpString);
+  return new RegExp(regExpString, caseInsensitive ? "i" : "");
 }
 
 /** Test whether the given string is a glob */

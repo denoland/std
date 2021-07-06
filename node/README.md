@@ -10,9 +10,9 @@ deno standard library as it's a compatibility module.
 
 - [x] assert _partly_
 - [x] buffer
-- [ ] child_process
+- [x] child_process _partly_
 - [ ] cluster
-- [ ] console
+- [x] console _partly_
 - [x] constants _partly_
 - [x] crypto _partly_
 - [ ] dgram
@@ -97,6 +97,13 @@ workflow.
 To enable new tests, simply add a new entry inside `node/_tools/config.json`
 under the `tests` property. The structure this entries must have has to resemble
 a path inside `https://github.com/nodejs/node/tree/master/test`.
+
+Adding a new entry under the `ignore` option will indicate the test runner that
+it should not regenerate that file from scratch the next time the setup is run,
+this is specially useful to keep track of files that have been manually edited
+to pass certain tests. However, avoid doing such manual changes to the test
+files, since that may cover up inconsistencies between the node library and
+actual node behavior.
 
 ### Best practices
 

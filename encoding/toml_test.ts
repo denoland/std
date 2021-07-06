@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { existsSync } from "../fs/exists.ts";
 import * as path from "../path/mod.ts";
 import { parse, stringify } from "./toml.ts";
@@ -26,6 +26,10 @@ Deno.test({
         str4: 'this is a "quote"',
         str5: "The quick brown\nfox jumps over\nthe lazy dog.",
         str6: "The quick brown\nfox jumps over\nthe lazy dog.",
+        str7: "Roses are red\tViolets are blue",
+        str8: "Roses are red\fViolets are blue",
+        str9: "Roses are red\bViolets are blue",
+        str10: "Roses are red\\Violets are blue",
         lines: "The first newline is\ntrimmed in raw strings.\n   All other " +
           "whitespace\n   is preserved.",
         withApostrophe: "What if it's not?",
@@ -291,7 +295,10 @@ Deno.test({
         "tokio-threadpool": "0.1.11",
         url: "1.7.2",
       },
-      target: { "cfg(windows)": { dependencies: { winapi: "0.3.6" } } },
+      target: {
+        "cfg(windows)": { dependencies: { winapi: "0.3.6" } },
+        "cfg(linux)": { dependencies: { winapi: "0.3.9" } },
+      },
     };
     const actual = parseFile(path.join(testdataDir, "cargo.toml"));
     assertEquals(actual, expected);
@@ -475,5 +482,31 @@ Deno.test({
     const expected = { sign: "2020-01-01x" };
     const actual = parse(`sign='2020-01-01x'`);
     assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "[TOML] Single-line string comment error",
+  fn(): void {
+    assertThrows(
+      (): void => {
+        parseFile(path.join(testdataDir, "error-open-string.toml"));
+      },
+      Error,
+      `Single-line string is not closed:\nbadComment = 'The first newline is`,
+    );
+  },
+});
+
+Deno.test({
+  name: "[TOML] Invalid string format",
+  fn(): void {
+    assertThrows(
+      (): void => {
+        parseFile(path.join(testdataDir, "error-invalid-string.toml"));
+      },
+      Error,
+      `Invalid data format: BAR`,
+    );
   },
 });

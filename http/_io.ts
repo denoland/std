@@ -4,6 +4,9 @@ import { TextProtoReader } from "../textproto/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { Response, ServerRequest } from "./server.ts";
 import { STATUS_TEXT } from "./http_status.ts";
+import { iter } from "../io/util.ts";
+
+const encoder = new TextEncoder();
 
 export function emptyReader(): Deno.Reader {
   return {
@@ -123,7 +126,7 @@ function isProhibidedForTrailer(key: string): boolean {
 export async function readTrailers(
   headers: Headers,
   r: BufReader,
-): Promise<void> {
+) {
   const trailers = parseTrailer(headers.get("trailer"));
   if (trailers == null) return;
   const trailerNames = [...trailers.keys()];
@@ -172,9 +175,8 @@ function parseTrailer(field: string | null): Headers | undefined {
 export async function writeChunkedBody(
   w: BufWriter,
   r: Deno.Reader,
-): Promise<void> {
-  const encoder = new TextEncoder();
-  for await (const chunk of Deno.iter(r)) {
+) {
+  for await (const chunk of iter(r)) {
     if (chunk.byteLength <= 0) continue;
     const start = encoder.encode(`${chunk.byteLength.toString(16)}\r\n`);
     const end = encoder.encode("\r\n");
@@ -194,7 +196,7 @@ export async function writeTrailers(
   w: Deno.Writer,
   headers: Headers,
   trailers: Headers,
-): Promise<void> {
+) {
   const trailer = headers.get("trailer");
   if (trailer === null) {
     throw new TypeError("Missing trailer header.");
@@ -221,7 +223,6 @@ export async function writeTrailers(
   if (undeclared.length > 0) {
     throw new TypeError(`Undeclared trailers: ${Deno.inspect(undeclared)}.`);
   }
-  const encoder = new TextEncoder();
   for (const [key, value] of trailers) {
     await writer.write(encoder.encode(`${key}: ${value}\r\n`));
   }
@@ -232,15 +233,16 @@ export async function writeTrailers(
 export async function writeResponse(
   w: Deno.Writer,
   r: Response,
-): Promise<void> {
+) {
   const protoMajor = 1;
   const protoMinor = 1;
   const statusCode = r.status || 200;
-  const statusText = STATUS_TEXT.get(statusCode);
+  const statusText = r.statusText ?? STATUS_TEXT.get(statusCode) ?? null;
   const writer = BufWriter.create(w);
-  const encoder = new TextEncoder();
-  if (!statusText) {
-    throw new Deno.errors.InvalidData("Bad status code");
+  if (statusText === null) {
+    throw new Deno.errors.InvalidData(
+      "Empty statusText (explicitely pass an empty string if this was intentional)",
+    );
   }
   if (!r.body) {
     r.body = new Uint8Array();

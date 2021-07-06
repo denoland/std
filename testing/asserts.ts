@@ -2,8 +2,17 @@
 // This module is browser compatible. Do not rely on good formatting of values
 // for AssertionError messages in browsers.
 
-import { bold, gray, green, red, stripColor, white } from "../fmt/colors.ts";
-import { diff, DiffResult, DiffType } from "./_diff.ts";
+import {
+  bgGreen,
+  bgRed,
+  bold,
+  gray,
+  green,
+  red,
+  stripColor,
+  white,
+} from "../fmt/colors.ts";
+import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
@@ -25,7 +34,9 @@ export class AssertionError extends Error {
  * @param v Value to be formatted
  */
 export function _format(v: unknown): string {
-  return globalThis.Deno
+  // deno-lint-ignore no-explicit-any
+  const { Deno } = globalThis as any;
+  return typeof Deno?.inspect === "function"
     ? Deno.inspect(v, {
       depth: Infinity,
       sorted: true,
@@ -40,12 +51,16 @@ export function _format(v: unknown): string {
  * Colors the output of assertion diffs
  * @param diffType Difference type, either added or removed
  */
-function createColor(diffType: DiffType): (s: string) => string {
+function createColor(
+  diffType: DiffType,
+  { background = false } = {},
+): (s: string) => string {
   switch (diffType) {
     case DiffType.added:
-      return (s: string): string => green(bold(s));
+      return (s: string): string =>
+        background ? bgGreen(white(s)) : green(bold(s));
     case DiffType.removed:
-      return (s: string): string => red(bold(s));
+      return (s: string): string => background ? bgRed(white(s)) : red(bold(s));
     default:
       return white;
   }
@@ -66,8 +81,11 @@ function createSign(diffType: DiffType): string {
   }
 }
 
-function buildMessage(diffResult: ReadonlyArray<DiffResult<string>>): string[] {
-  const messages: string[] = [];
+function buildMessage(
+  diffResult: ReadonlyArray<DiffResult<string>>,
+  { stringDiff = false } = {},
+): string[] {
+  const messages: string[] = [], diffMessages: string[] = [];
   messages.push("");
   messages.push("");
   messages.push(
@@ -79,8 +97,14 @@ function buildMessage(diffResult: ReadonlyArray<DiffResult<string>>): string[] {
   messages.push("");
   diffResult.forEach((result: DiffResult<string>): void => {
     const c = createColor(result.type);
-    messages.push(c(`${createSign(result.type)}${result.value}`));
+    const line = result.details?.map((detail) =>
+      detail.type !== DiffType.common
+        ? createColor(detail.type, { background: true })(detail.value)
+        : detail.value
+    ).join("") ?? result.value;
+    diffMessages.push(c(`${createSign(result.type)}${line}`));
   });
+  messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages));
   messages.push("");
 
   return messages;
@@ -122,6 +146,14 @@ export function equal(c: unknown, d: unknown): boolean {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
+      if (a instanceof WeakMap || b instanceof WeakMap) {
+        if (!(a instanceof WeakMap && b instanceof WeakMap)) return false;
+        throw new TypeError("cannot compare WeakMap instances");
+      }
+      if (a instanceof WeakSet || b instanceof WeakSet) {
+        if (!(a instanceof WeakSet && b instanceof WeakSet)) return false;
+        throw new TypeError("cannot compare WeakSet instances");
+      }
       if (seen.get(a) === b) {
         return true;
       }
@@ -161,8 +193,15 @@ export function equal(c: unknown, d: unknown): boolean {
         if (!compare(a && a[key as Key], b && b[key as Key])) {
           return false;
         }
+        if (((key in a) && (!(key in b))) || ((key in b) && (!(key in a)))) {
+          return false;
+        }
       }
       seen.set(a, b);
+      if (a instanceof WeakRef || b instanceof WeakRef) {
+        if (!(a instanceof WeakRef && b instanceof WeakRef)) return false;
+        return compare(a.deref(), b.deref());
+      }
       return true;
     }
     return false;
@@ -204,13 +243,14 @@ export function assertEquals(
   const actualString = _format(actual);
   const expectedString = _format(expected);
   try {
-    const diffResult = diff(
-      actualString.split("\n"),
-      expectedString.split("\n"),
-    );
-    const diffMsg = buildMessage(diffResult).join("\n");
+    const stringDiff = (typeof actual === "string") &&
+      (typeof expected === "string");
+    const diffResult = stringDiff
+      ? diffstr(actual as string, expected as string)
+      : diff(actualString.split("\n"), expectedString.split("\n"));
+    const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
     message = `Values are not equal:\n${diffMsg}`;
-  } catch (e) {
+  } catch {
     message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
   }
   if (msg) {
@@ -247,12 +287,12 @@ export function assertNotEquals(
   let expectedString: string;
   try {
     actualString = String(actual);
-  } catch (e) {
+  } catch {
     actualString = "[Cannot display]";
   }
   try {
     expectedString = String(expected);
-  } catch (e) {
+  } catch {
     expectedString = "[Cannot display]";
   }
   if (!msg) {
@@ -262,7 +302,7 @@ export function assertNotEquals(
 }
 
 /**
- * Make an assertion that `actual` and `expected` are strictly equal.  If
+ * Make an assertion that `actual` and `expected` are strictly equal. If
  * not then throw.
  * ```ts
  * assertStrictEquals(1, 2)
@@ -306,13 +346,14 @@ export function assertStrictEquals(
         }\n`;
     } else {
       try {
-        const diffResult = diff(
-          actualString.split("\n"),
-          expectedString.split("\n"),
-        );
-        const diffMsg = buildMessage(diffResult).join("\n");
+        const stringDiff = (typeof actual === "string") &&
+          (typeof expected === "string");
+        const diffResult = stringDiff
+          ? diffstr(actual as string, expected as string)
+          : diff(actualString.split("\n"), expectedString.split("\n"));
+        const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
         message = `Values are not strictly equal:\n${diffMsg}`;
-      } catch (e) {
+      } catch {
         message = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
       }
     }
@@ -353,17 +394,16 @@ export function assertNotStrictEquals(
 }
 
 /**
- * Make an assertion that actual is not null or undefined. If not
- * then thrown.
+ * Make an assertion that actual is not null or undefined.
+ * If not then throw.
  */
-export function assertExists(
-  actual: unknown,
+export function assertExists<T>(
+  actual: T,
   msg?: string,
-): void {
+): asserts actual is NonNullable<T> {
   if (actual === undefined || actual === null) {
     if (!msg) {
-      msg =
-        `actual: "${actual}" expected to match anything but null or undefined`;
+      msg = `actual: "${actual}" expected to not be null or undefined`;
     }
     throw new AssertionError(msg);
   }
@@ -371,7 +411,7 @@ export function assertExists(
 
 /**
  * Make an assertion that actual includes expected. If not
- * then thrown.
+ * then throw.
  */
 export function assertStringIncludes(
   actual: string,
@@ -437,7 +477,7 @@ export function assertArrayIncludes(
 
 /**
  * Make an assertion that `actual` match RegExp `expected`. If not
- * then thrown
+ * then throw.
  */
 export function assertMatch(
   actual: string,
@@ -454,7 +494,7 @@ export function assertMatch(
 
 /**
  * Make an assertion that `actual` not match RegExp `expected`. If match
- * then thrown
+ * then throw.
  */
 export function assertNotMatch(
   actual: string,
@@ -474,7 +514,8 @@ export function assertNotMatch(
  * If not, then throw.
  */
 export function assertObjectMatch(
-  actual: Record<PropertyKey, unknown>,
+  // deno-lint-ignore no-explicit-any
+  actual: Record<PropertyKey, any>,
   expected: Record<PropertyKey, unknown>,
 ): void {
   type loose = Record<PropertyKey, unknown>;
@@ -494,9 +535,24 @@ export function assertObjectMatch(
       ]
         .filter((key) => key in b)
         .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
-      // Build filtered object and filter recursively on nested objects references
       for (const [key, value] of entries) {
-        if (typeof value === "object") {
+        // On array references, build a filtered array and filter nested objects inside
+        if (Array.isArray(value)) {
+          const subset = (b as loose)[key];
+          if (Array.isArray(subset)) {
+            filtered[key] = value
+              .slice(0, subset.length)
+              .map((element, index) => {
+                const subsetElement = subset[index];
+                if ((typeof subsetElement === "object") && (subsetElement)) {
+                  return filter(element, subsetElement);
+                }
+                return element;
+              });
+            continue;
+          }
+        } // On nested objects references, build a filtered object recursively
+        else if (typeof value === "object") {
           const subset = (b as loose)[key];
           if ((typeof subset === "object") && (subset)) {
             filtered[key] = filter(value as loose, subset as loose);
@@ -514,8 +570,7 @@ export function assertObjectMatch(
 /**
  * Forcefully throws a failed assertion
  */
-export function fail(msg?: string): void {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+export function fail(msg?: string): never {
   assert(false, `Failed assertion${msg ? `: ${msg}` : "."}`);
 }
 

@@ -23,14 +23,13 @@ import { encodeToString as encodeToHexString } from "../encoding/hex.ts";
  */
 export class Hash extends Transform {
   public hash: Hasher;
-  constructor(algorithm: SupportedAlgorithm, opts?: TransformOptions) {
+  constructor(algorithm: SupportedAlgorithm, _opts?: TransformOptions) {
     super({
       transform(chunk: string, _encoding: string, callback: () => void): void {
         hash.update(chunk);
         callback();
       },
       flush(callback: () => void): void {
-        // deno-lint-ignore no-this-before-super
         this.push(hash.digest());
         callback();
       },
