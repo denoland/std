@@ -29,7 +29,7 @@ pub fn create_hash(algorithm: &str) -> Result<DenoHash, JsValue> {
     "keccak256" => Some(Box::new(sha3::Keccak256::new())),
     "keccak384" => Some(Box::new(sha3::Keccak384::new())),
     "keccak512" => Some(Box::new(sha3::Keccak512::new())),
-    "blae3" => Some(Box::new(blake3::Hasher::new())),
+    "blake3" => Some(Box::new(blake3::Hasher::new())),
     _ => None,
   };
 
