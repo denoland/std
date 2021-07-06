@@ -2,7 +2,7 @@ name: ci
 
 on:
   push:
-    branches: [main, wasm-bindgen-wip]
+    branches: [main]
   pull_request:
     branches: [main]
 
