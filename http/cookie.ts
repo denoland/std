@@ -161,8 +161,6 @@ export function getCookies(req: { headers: Headers }): Record<string, string> {
   return {};
 }
 
-
-
 /**
  * Set the cookie header properly in the Response
  * @param res An object which has a headers property
@@ -199,7 +197,7 @@ export function setCookie(res: { headers?: Headers }, cookie: Cookie): void {
 export function deleteCookie(
   res: { headers?: Headers },
   name: string,
-  attributes?: { path: string; domain: string }
+  attributes?: { path: string; domain: string },
 ): void {
   setCookie(res, {
     name: name,

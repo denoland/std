@@ -152,7 +152,7 @@ Deno.test({
     deleteCookie(res, "Space", { domain: "", path: "" });
     assertEquals(
       res.headers?.get("Set-Cookie"),
-      "Space=Cat; Domain=deno.land; Path=/, Space=; Expires=Thu, 01 Jan 1970 00:00:00 GMT"
+      "Space=Cat; Domain=deno.land; Path=/, Space=; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
     );
   },
 });
