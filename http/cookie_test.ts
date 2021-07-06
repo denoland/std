@@ -4,13 +4,6 @@ import { deleteCookie, getCookies, setCookie } from "./cookie.ts";
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 
 Deno.test({
-  name: "Cookie response",
-  fn(): void {
-    //
-  },
-});
-
-Deno.test({
   name: "Cookie parser",
   fn(): void {
     const req = new ServerRequest();
