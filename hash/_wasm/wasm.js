@@ -213,7 +213,7 @@ const imports = {
 
 const wasmModule = new WebAssembly.Module(
   base64.decode(
-"iamanevilhackerohnowhatisgo/AGABfwF/YAF/AX5gAn9/AGACf38Bf2ADf39/AGADf39/AX9gBH\
+"AGFzbQEAAAAB64CAgAAQYAAAYAF/AGABfwF/YAF/AX5gAn9/AGACf38Bf2ADf39/AGADf39/AX9gBH\
 9/f38Bf2AFf39/f38AYAV/f39/fwF/YAZ/f39/f38Bf2AFf39/fn8AYAd/f39+f39/AX9gAn9+AGAC\
 fn8BfwKMgYCAAAMYX193YmluZGdlbl9wbGFjZWhvbGRlcl9fFV9fd2JpbmRnZW5fc3RyaW5nX25ldw\
 AFGF9fd2JpbmRnZW5fcGxhY2Vob2xkZXJfXxBfX3diaW5kZ2VuX3Rocm93AAQYX193YmluZGdlbl9w\
