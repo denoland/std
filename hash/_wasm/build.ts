@@ -28,7 +28,7 @@ const cargoStatus = await Deno.run({
     SOURCE_DATE_EPOCH: "1600000000",
     TZ: "UTC",
     LC_ALL: "C",
-    RUSTFLAGS: `--remap-path-prefix=${root}=. --remap-path-prefix=${home}}=~`,
+    RUSTFLAGS: `--remap-path-prefix=${root}=. --remap-path-prefix=${home}=~`,
   },
 }).status();
 
