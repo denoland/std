@@ -36,7 +36,8 @@ pub fn create_hash(algorithm: &str) -> Result<DenoHash, JsValue> {
   if let Some(h) = hash {
     Ok(DenoHash { inner: h })
   } else {
-    Err(JsValue::from_str(&"unsupported hash algorithm"))
+    let err_msg = format!("unsupported hash algorithm");
+    Err(JsValue::from_str(&err_msg))
   }
 }
 

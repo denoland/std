@@ -3,6 +3,7 @@
 
 import * as base64 from "../../encoding/base64.ts";
 
+const home = Deno.env.get("HOME");
 const root = new URL(".", import.meta.url).pathname;
 
 if (new URL(import.meta.url).protocol === "file:") {
@@ -27,9 +28,7 @@ const cargoStatus = await Deno.run({
     SOURCE_DATE_EPOCH: "1600000000",
     TZ: "UTC",
     LC_ALL: "C",
-    RUSTFLAGS: `--remap-path-prefix=${root}=. --remap-path-prefix=${
-      Deno.env.get("HOME")
-    }=~`,
+    RUSTFLAGS: `--remap-path-prefix=${root}=. --remap-path-prefix=${home}}=~`,
   },
 }).status();
 
