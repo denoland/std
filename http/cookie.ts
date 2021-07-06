@@ -193,11 +193,13 @@ export function setCookie(res: { headers?: Headers }, cookie: Cookie): void {
  * Example:
  *
  *     deleteCookie(res,'foo');
+ *     deleteCookie(res,'foo', {path:'/demo'});
+ *     deleteCookie(res,'foo', {domain:'deno.land'});
  */
 export function deleteCookie(
   res: { headers?: Headers },
   name: string,
-  attributes?: { path: string; domain: string },
+  attributes?: { path?: string; domain?: string },
 ): void {
   setCookie(res, {
     name: name,
