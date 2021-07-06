@@ -4,6 +4,13 @@ import { deleteCookie, getCookies, setCookie } from "./cookie.ts";
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 
 Deno.test({
+  name: "Cookie response",
+  fn(): void {
+    //
+  },
+});
+
+Deno.test({
   name: "Cookie parser",
   fn(): void {
     const req = new ServerRequest();
@@ -134,6 +141,18 @@ Deno.test({
     assertEquals(
       res.headers?.get("Set-Cookie"),
       "deno=; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+    );
+    res.headers = new Headers();
+    setCookie(res, {
+      name: "Space",
+      value: "Cat",
+      domain: "deno.land",
+      path: "/",
+    });
+    deleteCookie(res, "Space", { domain: "", path: "" });
+    assertEquals(
+      res.headers?.get("Set-Cookie"),
+      "Space=Cat; Domain=deno.land; Path=/, Space=; Expires=Thu, 01 Jan 1970 00:00:00 GMT"
     );
   },
 });
