@@ -442,6 +442,7 @@ Deno.test({
 mixedArray2 = [{b = 2},1]
 nestedArray1 = [[{b = 1}]]
 nestedArray2 = [[[{b = 1}]]]
+
 [deepNested.a]
 b = [1,{c = 2,d = [{e = 3},true]}]
 `;

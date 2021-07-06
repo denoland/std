@@ -559,6 +559,7 @@ class Dumper {
   maxPad = 0;
   srcObject: Record<string, unknown>;
   output: string[] = [];
+  _arrayTypeCache = new Map<unknown[], ArrayType>();
   constructor(srcObjc: Record<string, unknown>) {
     this.srcObject = srcObjc;
   }
@@ -571,23 +572,18 @@ class Dumper {
   _printObject(obj: Record<string, unknown>, keys: string[] = []): string[] {
     const out = [];
     const props = Object.keys(obj);
-    const propObj = props.filter((e: string): boolean => {
-      if (obj[e] instanceof Array) {
-        const d: unknown[] = obj[e] as unknown[];
-        return !this._isSimplySerializable(d[0]);
+    const inlineProps = [];
+    const multilinePorps = [];
+    for (const prop of props) {
+      if (this._isSimplySerializable(obj[prop])) {
+        inlineProps.push(prop);
+      } else {
+        multilinePorps.push(prop);
       }
-      return !this._isSimplySerializable(obj[e]);
-    });
-    const propPrim = props.filter((e: string): boolean => {
-      if (obj[e] instanceof Array) {
-        const d: unknown[] = obj[e] as unknown[];
-        return this._isSimplySerializable(d[0]);
-      }
-      return this._isSimplySerializable(obj[e]);
-    });
-    const k = propPrim.concat(propObj);
-    for (let i = 0; i < k.length; i++) {
-      const prop = k[i];
+    }
+    const sortedProps = inlineProps.concat(multilinePorps);
+    for (let i = 0; i < sortedProps.length; i++) {
+      const prop = sortedProps[i];
       const value = obj[prop];
       if (value instanceof Date) {
         out.push(this._dateDeclaration([prop], value));
@@ -634,6 +630,14 @@ class Dumper {
       ["string", "number", "boolean"].includes(typeof value);
   }
   _getTypeOfArray(arr: unknown[]): ArrayType {
+    if (this._arrayTypeCache.has(arr)) {
+      return this._arrayTypeCache.get(arr)!;
+    }
+    const type = this._doGetTypeOfArray(arr);
+    this._arrayTypeCache.set(arr, type);
+    return type;
+  }
+  _doGetTypeOfArray(arr: unknown[]): ArrayType {
     if (!arr.length) {
       // any type should be fine
       return ArrayType.ONLY_PRIMITIVE;
@@ -688,7 +692,8 @@ class Dumper {
       typeof value === "boolean" ||
       value instanceof RegExp ||
       value instanceof Date ||
-      value instanceof Array
+      (value instanceof Array &&
+        this._getTypeOfArray(value) !== ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY)
     );
   }
   _header(keys: string[]): string {
