@@ -7,23 +7,15 @@
 
 const hexTable = new TextEncoder().encode("0123456789abcdef");
 
-/**
- * ErrInvalidByte takes an invalid byte and returns an Error.
- * @param byte
- */
-export function errInvalidByte(byte: number): Error {
-  return new Error(
-    "encoding/hex: invalid byte: " +
-      new TextDecoder().decode(new Uint8Array([byte])),
-  );
+function errInvalidByte(byte: number) {
+  return new TypeError(`Invalid byte '${String.fromCharCode(byte)}'`);
 }
 
-/** ErrLength returns an error about odd string length. */
-export function errLength(): Error {
-  return new Error("encoding/hex: odd length hex string");
+function errLength() {
+  return new RangeError("Odd length hex string");
 }
 
-// fromHexChar converts a hex character into its value.
+/** Converts a hex character into its value. */
 function fromHexChar(byte: number): number {
   // '0' <= byte && byte <= '9'
   if (48 <= byte && byte <= 57) return byte - 48;
@@ -35,21 +27,9 @@ function fromHexChar(byte: number): number {
   throw errInvalidByte(byte);
 }
 
-/**
- * EncodedLen returns the length of an encoding of n source bytes. Specifically,
- * it returns n * 2.
- * @param n
- */
-export function encodedLen(n: number): number {
-  return n * 2;
-}
-
-/**
- * Encode encodes `src` into `encodedLen(src.length)` bytes.
- * @param src
- */
+/** Encodes `src` into `src.length * 2` bytes. */
 export function encode(src: Uint8Array): Uint8Array {
-  const dst = new Uint8Array(encodedLen(src.length));
+  const dst = new Uint8Array(src.length * 2);
   for (let i = 0; i < dst.length; i++) {
     const v = src[i];
     dst[i * 2] = hexTable[v >> 4];
@@ -59,21 +39,11 @@ export function encode(src: Uint8Array): Uint8Array {
 }
 
 /**
- * EncodeToString returns the hexadecimal encoding of `src`.
- * @param src
- */
-export function encodeToString(src: Uint8Array): string {
-  return new TextDecoder().decode(encode(src));
-}
-
-/**
- * Decode decodes `src` into `decodedLen(src.length)` bytes
- * If the input is malformed an error will be thrown
- * the error.
- * @param src
+ * Decodes `src` into `src.length / 2` bytes.
+ * If the input is malformed, an error will be thrown.
  */
 export function decode(src: Uint8Array): Uint8Array {
-  const dst = new Uint8Array(decodedLen(src.length));
+  const dst = new Uint8Array(src.length / 2);
   for (let i = 0; i < dst.length; i++) {
     const a = fromHexChar(src[i * 2]);
     const b = fromHexChar(src[i * 2 + 1]);
@@ -88,24 +58,4 @@ export function decode(src: Uint8Array): Uint8Array {
   }
 
   return dst;
-}
-
-/**
- * DecodedLen returns the length of decoding `x` source bytes.
- * Specifically, it returns `x / 2`.
- * @param x
- */
-export function decodedLen(x: number): number {
-  return x >>> 1;
-}
-
-/**
- * DecodeString returns the bytes represented by the hexadecimal string `s`.
- * DecodeString expects that src contains only hexadecimal characters and that
- * src has even length.
- * If the input is malformed, DecodeString will throw an error.
- * @param s the `string` to decode to `Uint8Array`
- */
-export function decodeString(s: string): Uint8Array {
-  return decode(new TextEncoder().encode(s));
 }

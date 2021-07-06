@@ -11,7 +11,7 @@ import { pbkdf2, pbkdf2Sync } from "./_crypto/pbkdf2.ts";
 import { Buffer } from "./buffer.ts";
 import { Transform } from "./stream.ts";
 import { TransformOptions } from "./_stream/transform.ts";
-import { encodeToString as encodeToHexString } from "../encoding/hex.ts";
+import { encode as encodeToHex } from "../encoding/hex.ts";
 
 /**
  * The Hash class is a utility for creating hash digests of data. It can be used in one of two ways:
@@ -68,7 +68,7 @@ export class Hash extends Transform {
 
     switch (encoding) {
       case "hex": {
-        return encodeToHexString(new Uint8Array(digest));
+        return new TextDecoder().decode(encodeToHex(new Uint8Array(digest)));
       }
       // TODO(kt3k): Support more output encodings such as base64, binary, etc
       default: {
