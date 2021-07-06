@@ -76,6 +76,7 @@ jobs:
       - name: Check for changes to hash/_wasm/
         id: source
         run: |-
+          shopt -s inherit_errexit
           declare modifications="$(git diff --name-only HEAD~ -- ./hash/_wasm/)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "::set-output name=modified::$modified"
@@ -106,6 +107,7 @@ jobs:
         run: |-
           ./hash/_wasm/build.ts
 
+          shopt -s inherit_errexit
           declare modifications="$(git status --porcelain)"
           declare modified="$([[ "$(git status --porcelain)" ]] && echo true || echo false)"
           echo "::set-output name=modified::$modified"
@@ -121,7 +123,8 @@ jobs:
         run: |
           declare br="
           "
-          declare branch="$(echo ${GITHUB_REF#refs/heads/})"
+          shopt -s inherit_errexit
+          declare branch="$(echo ${GITHUB_HEAD_REF#refs/heads/})"
           declare date="$(git log -1 --pretty=format:'%ad')"
           declare author_name="$(git log -1 --pretty=format:'%an')"
           declare author_email="$(git log -1 --pretty=format:'%ae')"
@@ -137,8 +140,7 @@ jobs:
 
           git remote rm origin
           git remote add origin "https://${GITHUB_ACTOR}:${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git"
-          git checkout "${branch}"
 
           git add .
           git commit -m "chore(hash): rebuild wasm${br}${br}${current_action_url}"
-          git push --set-upstream origin "${branch}"
+          git push --set-upstream origin "HEAD:${branch}"
