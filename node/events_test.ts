@@ -6,6 +6,7 @@ import {
   fail,
 } from "../testing/asserts.ts";
 import EventEmitter, { on, once, WrappedFunction } from "./events.ts";
+import { ERR_OUT_OF_RANGE } from "./_errors.ts";
 
 const shouldNeverBeEmitted = () => {
   fail("Should never be called");
@@ -87,6 +88,16 @@ Deno.test({
     ee.on("test", noop);
 
     console.warn = origWarn;
+  },
+});
+
+// TODO(uki00a): Remove this case when `test-event-emitter-get-max-listeners.js` is enabled.
+Deno.test({
+  name: "Pass 0 to setMaxListeners",
+  fn() {
+    const emitter = new EventEmitter();
+    emitter.setMaxListeners(0);
+    assertEquals(emitter.getMaxListeners(), 0);
   },
 });
 
@@ -437,15 +448,15 @@ Deno.test({
       () => {
         ee.setMaxListeners(-1);
       },
-      Error,
-      "must be >= 0",
+      ERR_OUT_OF_RANGE,
+      "must be a non-negative number",
     );
     assertThrows(
       () => {
         ee.setMaxListeners(3.45);
       },
-      Error,
-      "must be 'an integer'",
+      ERR_OUT_OF_RANGE,
+      "must be a non-negative number",
     );
   },
 });
@@ -529,8 +540,7 @@ Deno.test({
     let thrown = false;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      for await (const event of iterable) {
+      for await (const _event of iterable) {
         fail("no events should be processed due to the error thrown");
       }
     } catch (err) {

@@ -1,4 +1,6 @@
 import { Buffer } from "./buffer.ts";
+import { copy } from "../bytes/mod.ts";
+import { assert } from "../testing/asserts.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
@@ -6,7 +8,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * Uint8Array`.
  *
  * ```ts
- * 
+ *
  * // Example from stdin
  * const stdinContent = await readAll(Deno.stdin);
  *
@@ -18,7 +20,7 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * // Example from buffer
  * const myData = new Uint8Array(100);
  * // ... fill myData array with data
- * const reader = new Buffer(myData.buffer as ArrayBuffer);
+ * const reader = new Buffer(myData.buffer);
  * const bufferContent = await readAll(reader);
  * ```
  */
@@ -43,7 +45,7 @@ export async function readAll(r: Deno.Reader): Promise<Uint8Array> {
  * // Example from buffer
  * const myData = new Uint8Array(100);
  * // ... fill myData array with data
- * const reader = new Buffer(myData.buffer as ArrayBuffer);
+ * const reader = new Buffer(myData.buffer);
  * const bufferContent = readAllSync(reader);
  * ```
  */
@@ -51,6 +53,84 @@ export function readAllSync(r: Deno.ReaderSync): Uint8Array {
   const buf = new Buffer();
   buf.readFromSync(r);
   return buf.bytes();
+}
+
+export interface ByteRange {
+  /** The 0 based index of the start byte for a range. */
+  start: number;
+
+  /** The 0 based index of the end byte for a range, which is inclusive. */
+  end: number;
+}
+
+/**
+ * Read a range of bytes from a file or other resource that is readable and
+ * seekable.  The range start and end are inclusive of the bytes within that
+ * range.
+ *
+ * ```ts
+ * // Read the first 10 bytes of a file
+ * const file = await Deno.open("example.txt", { read: true });
+ * const bytes = await readRange(file, { start: 0, end: 9 });
+ * assert(bytes.length, 10);
+ * ```
+ */
+export async function readRange(
+  r: Deno.Reader & Deno.Seeker,
+  range: ByteRange,
+): Promise<Uint8Array> {
+  // byte ranges are inclusive, so we have to add one to the end
+  let length = range.end - range.start + 1;
+  assert(length > 0, "Invalid byte range was passed.");
+  await r.seek(range.start, Deno.SeekMode.Start);
+  const result = new Uint8Array(length);
+  let off = 0;
+  while (length) {
+    const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
+    const nread = await r.read(p);
+    assert(nread !== null, "Unexpected EOF reach while reading a range.");
+    assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
+    copy(p, result, off);
+    off += nread;
+    length -= nread;
+    assert(length >= 0, "Unexpected length remaining after reading range.");
+  }
+  return result;
+}
+
+/**
+ * Read a range of bytes synchronously from a file or other resource that is
+ * readable and seekable.  The range start and end are inclusive of the bytes
+ * within that range.
+ *
+ * ```ts
+ * // Read the first 10 bytes of a file
+ * const file = Deno.openSync("example.txt", { read: true });
+ * const bytes = readRangeSync(file, { start: 0, end: 9 });
+ * assert(bytes.length, 10);
+ * ```
+ */
+export function readRangeSync(
+  r: Deno.ReaderSync & Deno.SeekerSync,
+  range: ByteRange,
+): Uint8Array {
+  // byte ranges are inclusive, so we have to add one to the end
+  let length = range.end - range.start + 1;
+  assert(length > 0, "Invalid byte range was passed.");
+  r.seekSync(range.start, Deno.SeekMode.Start);
+  const result = new Uint8Array(length);
+  let off = 0;
+  while (length) {
+    const p = new Uint8Array(Math.min(length, DEFAULT_BUFFER_SIZE));
+    const nread = r.readSync(p);
+    assert(nread !== null, "Unexpected EOF reach while reading a range.");
+    assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
+    copy(p, result, off);
+    off += nread;
+    length -= nread;
+    assert(length >= 0, "Unexpected length remaining after reading range.");
+  }
+  return result;
 }
 
 /** Write all the content of the array buffer (`arr`) to the writer (`w`).

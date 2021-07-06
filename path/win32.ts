@@ -34,15 +34,19 @@ export function resolve(...pathSegments: string[]): string {
 
   for (let i = pathSegments.length - 1; i >= -1; i--) {
     let path: string;
+    // deno-lint-ignore no-explicit-any
+    const { Deno } = globalThis as any;
     if (i >= 0) {
       path = pathSegments[i];
     } else if (!resolvedDevice) {
-      if (globalThis.Deno == null) {
+      if (typeof Deno?.cwd !== "function") {
         throw new TypeError("Resolved a drive-letter-less path without a CWD.");
       }
       path = Deno.cwd();
     } else {
-      if (globalThis.Deno == null) {
+      if (
+        typeof Deno?.env?.get !== "function" || typeof Deno?.cwd !== "function"
+      ) {
         throw new TypeError("Resolved a relative path without a CWD.");
       }
       // Windows has the concept of drive-specific current working

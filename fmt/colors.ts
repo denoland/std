@@ -12,7 +12,11 @@
 //
 // This module is browser compatible.
 
-const noColor = globalThis.Deno?.noColor ?? true;
+// deno-lint-ignore no-explicit-any
+const { Deno } = globalThis as any;
+const noColor = typeof Deno?.noColor === "boolean"
+  ? Deno.noColor as boolean
+  : true;
 
 interface Code {
   open: string;

@@ -16,7 +16,6 @@ export function access(
 
 // TODO(bartlomieju) 'path' can also be a Buffer.  Neither of these polyfills
 // is available yet.  See https://github.com/denoland/deno/issues/3403
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function accessSync(_path: string | URL, _mode?: number): void {
   notImplemented("Not yet available");
 }

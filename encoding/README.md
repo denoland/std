@@ -4,6 +4,7 @@ Helper module for dealing with external data structures.
 
 - [`ascii85`](#ascii85)
 - [`base32`](#base32)
+- [`base64`](#base64)
 - [`binary`](#binary)
 - [`csv`](#csv)
 - [`toml`](#toml)
@@ -548,6 +549,32 @@ console.log(binaryData);
 
 console.log(encode(binaryData));
 // => RC2E6GA=
+```
+
+## base64
+
+[RFC4648 base64](https://tools.ietf.org/html/rfc4648#section-4) encoder/decoder
+for Deno.
+
+### Basic usage
+
+`encode` encodes a `Uint8Array` to RFC4648 base64 representation, and `decode`
+decodes the given RFC4648 base64 representation to a `Uint8Array`.
+
+```ts
+import {
+  decode,
+  encode,
+} from "https://deno.land/std@$STD_VERSION/encoding/base64.ts";
+
+const b64Repr = "Zm9vYg==";
+
+const binaryData = decode(b64Repr);
+console.log(binaryData);
+// => Uint8Array [ 102, 111, 111, 98 ]
+
+console.log(encode(binaryData));
+// => Zm9vYg==
 ```
 
 ## ascii85

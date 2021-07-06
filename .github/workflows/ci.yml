@@ -13,7 +13,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno: [stable, canary]
+        # TODO(ry): reenable canary when on-going builds in deno repo do not
+        # result in red builds in std.
+        deno: [1.x] # [1.x, canary]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:
@@ -23,31 +25,23 @@ jobs:
           submodules: true
           persist-credentials: false
 
-      - name: Install Deno (Unix)
-        if: |
-          !startsWith(matrix.os, 'windows')
-        run: |-
-          curl -fsSL https://deno.land/x/install/install.sh | sh
-          echo "$HOME/.deno/bin" >> $GITHUB_PATH
-      - name: Install Deno (Windows)
-        if: startsWith(matrix.os, 'windows')
-        run: |-
-          curl -fsSL https://deno.land/x/install/install.sh | sh
-          echo "$HOME/.deno/bin" >> $env:GITHUB_PATH
-
-      - name: Upgrade to Deno canary
-        if: matrix.deno == 'canary'
-        run: deno upgrade --canary
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1.0.0
+        with:
+          deno-version: ${{ matrix.deno }}
 
       - name: Run tests
-        run: deno test --coverage=./cov --unstable --allow-all
+        run: deno test --unstable --allow-all
+
+      - name: Type check browser compatible modules
+        shell: bash
+        run: |
+          git grep --name-only "// This module is browser compatible." | grep -v ".github/workflows" | xargs deno cache --config browser-compat.tsconfig.json
 
       - name: Generate lcov
-        if: matrix.deno == 'canary'
         run: deno coverage --unstable --lcov ./cov > cov.lcov
 
       - name: Upload coverage
-        if: matrix.deno == 'canary'
         uses: codecov/codecov-action@v1
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
@@ -62,16 +56,11 @@ jobs:
           submodules: false
           persist-credentials: false
 
-      - name: Install Deno
-        run: |-
-          curl -fsSL https://deno.land/x/install/install.sh | sh
-          echo "$HOME/.deno/bin" >> $GITHUB_PATH
-
-      - name: Upgrade to Deno canary
-        run: deno upgrade --canary
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1.0.0
 
       - name: Format
         run: deno fmt --check
 
       - name: Lint
-        run: deno lint --unstable
+        run: deno lint

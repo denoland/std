@@ -21,8 +21,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { validateIntegerRange } from "./_utils.ts";
 import { assert } from "../_util/assert.ts";
+import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE } from "./_errors.ts";
+import { inspect } from "./util.ts";
 
 // deno-lint-ignore no-explicit-any
 export type GenericFunction = (...args: any[]) => any;
@@ -47,6 +48,11 @@ interface AsyncIterable {
 }
 
 export let defaultMaxListeners = 10;
+function validateMaxListeners(n: number, name: string): void {
+  if (!Number.isInteger(n) || n < 0) {
+    throw new ERR_OUT_OF_RANGE(name, "a non-negative number", inspect(n));
+  }
+}
 
 /**
  * See also https://nodejs.org/api/events.html
@@ -58,6 +64,7 @@ export class EventEmitter {
     return defaultMaxListeners;
   }
   public static set defaultMaxListeners(value: number) {
+    validateMaxListeners(value, "defaultMaxListeners");
     defaultMaxListeners = value;
   }
 
@@ -66,6 +73,8 @@ export class EventEmitter {
     string | symbol,
     Array<GenericFunction | WrappedFunction>
   >;
+
+  private static _alreadyWarnedEvents?: Set<string | symbol>;
 
   public constructor() {
     this._events = new Map();
@@ -76,7 +85,8 @@ export class EventEmitter {
     listener: GenericFunction | WrappedFunction,
     prepend: boolean,
   ): this {
-    this.emit("newListener", eventName, listener);
+    this.checkListenerArgument(listener);
+    this.emit("newListener", eventName, this.unwrapListener(listener));
     if (this._events.has(eventName)) {
       const listeners = this._events.get(eventName) as Array<
         GenericFunction | WrappedFunction
@@ -91,24 +101,24 @@ export class EventEmitter {
     }
     const max = this.getMaxListeners();
     if (max > 0 && this.listenerCount(eventName) > max) {
-      const warning = new Error(
-        `Possible EventEmitter memory leak detected.
-         ${this.listenerCount(eventName)} ${eventName.toString()} listeners.
-         Use emitter.setMaxListeners() to increase limit`,
-      );
-      warning.name = "MaxListenersExceededWarning";
-      console.warn(warning);
+      const warning = new MaxListenersExceededWarning(this, eventName);
+      this.warnIfNeeded(eventName, warning);
     }
 
     return this;
   }
 
   /** Alias for emitter.on(eventName, listener). */
-  public addListener(
+  addListener(
+    // deno-lint-ignore no-unused-vars
     eventName: string | symbol,
+    // deno-lint-ignore no-unused-vars
     listener: GenericFunction | WrappedFunction,
+    // deno-lint-ignore ban-ts-comment
+    // @ts-expect-error
   ): this {
-    return this._addListener(eventName, listener, false);
+    // The body of this method is empty because it will be overwritten by later code. (`EventEmitter.prototype.addListener = EventEmitter.prototype.on;`)
+    // The purpose of this dirty hack is to get around the current limitation of TypeScript type checking.
   }
 
   /**
@@ -161,7 +171,9 @@ export class EventEmitter {
    * EventEmitter.defaultMaxListeners.
    */
   public getMaxListeners(): number {
-    return this.maxListeners || EventEmitter.defaultMaxListeners;
+    return this.maxListeners == null
+      ? EventEmitter.defaultMaxListeners
+      : this.maxListeners;
   }
 
   /**
@@ -188,7 +200,7 @@ export class EventEmitter {
     eventName: string | symbol,
     unwrap: boolean,
   ): GenericFunction[] {
-    if (!target._events.has(eventName)) {
+    if (!target._events?.has(eventName)) {
       return [];
     }
     const eventListeners = target._events.get(eventName) as GenericFunction[];
@@ -198,13 +210,20 @@ export class EventEmitter {
       : eventListeners.slice(0);
   }
 
-  private unwrapListeners(arr: GenericFunction[]): GenericFunction[] {
+  private unwrapListeners(
+    arr: (GenericFunction | WrappedFunction)[],
+  ): GenericFunction[] {
     const unwrappedListeners = new Array(arr.length) as GenericFunction[];
     for (let i = 0; i < arr.length; i++) {
-      // deno-lint-ignore no-explicit-any
-      unwrappedListeners[i] = (arr[i] as any)["listener"] || arr[i];
+      unwrappedListeners[i] = this.unwrapListener(arr[i]);
     }
     return unwrappedListeners;
+  }
+
+  private unwrapListener(
+    listener: GenericFunction | WrappedFunction,
+  ): GenericFunction {
+    return (listener as WrappedFunction)["listener"] ?? listener;
   }
 
   /** Returns a copy of the array of listeners for the event named eventName.*/
@@ -256,21 +275,29 @@ export class EventEmitter {
     eventName: string | symbol,
     listener: GenericFunction,
   ): WrappedFunction {
+    this.checkListenerArgument(listener);
     const wrapper = function (
       this: {
         eventName: string | symbol;
         listener: GenericFunction;
         rawListener: GenericFunction | WrappedFunction;
         context: EventEmitter;
+        isCalled?: boolean;
       },
       // deno-lint-ignore no-explicit-any
       ...args: any[]
     ): void {
+      // If `emit` is called in listeners, the same listener can be called multiple times.
+      // To prevent that, check the flag here.
+      if (this.isCalled) {
+        return;
+      }
       this.context.removeListener(
         this.eventName,
         this.rawListener as GenericFunction,
       );
-      this.listener.apply(this.context, args);
+      this.isCalled = true;
+      return this.listener.apply(this.context, args);
     };
     const wrapperContext = {
       eventName: eventName,
@@ -322,17 +349,17 @@ export class EventEmitter {
 
     if (eventName) {
       if (this._events.has(eventName)) {
-        const listeners = (this._events.get(eventName) as Array<
-          GenericFunction | WrappedFunction
-        >).slice(); // Create a copy; We use it AFTER it's deleted.
-        this._events.delete(eventName);
+        const listeners = this._events.get(eventName)!.slice().reverse();
         for (const listener of listeners) {
-          this.emit("removeListener", eventName, listener);
+          this.removeListener(
+            eventName,
+            this.unwrapListener(listener),
+          );
         }
       }
     } else {
-      const eventList: [string | symbol] = this.eventNames();
-      eventList.map((value: string | symbol) => {
+      const eventList = this.eventNames();
+      eventList.forEach((value: string | symbol) => {
         this.removeAllListeners(value);
       });
     }
@@ -348,6 +375,7 @@ export class EventEmitter {
     eventName: string | symbol,
     listener: GenericFunction,
   ): this {
+    this.checkListenerArgument(listener);
     if (this._events.has(eventName)) {
       const arr:
         | Array<GenericFunction | WrappedFunction>
@@ -388,11 +416,7 @@ export class EventEmitter {
    */
   public setMaxListeners(n: number): this {
     if (n !== Infinity) {
-      if (n === 0) {
-        n = Infinity;
-      } else {
-        validateIntegerRange(n, "maxListeners", 0);
-      }
+      validateMaxListeners(n, "n");
     }
 
     this.maxListeners = n;
@@ -555,6 +579,52 @@ export class EventEmitter {
 
       iterator.return();
     }
+  }
+
+  private checkListenerArgument(listener: unknown): void {
+    if (typeof listener !== "function") {
+      throw new ERR_INVALID_ARG_TYPE("listener", "function", listener);
+    }
+  }
+
+  private warnIfNeeded(eventName: string | symbol, warning: Error): void {
+    EventEmitter._alreadyWarnedEvents ||= new Set();
+    if (EventEmitter._alreadyWarnedEvents.has(eventName)) {
+      return;
+    }
+    EventEmitter._alreadyWarnedEvents.add(eventName);
+    console.warn(warning);
+
+    // TODO(uki00a): Here are two problems:
+    // * If `global.ts` is not imported, then `globalThis.process` will be undefined.
+    // * Importing `process.ts` from this file will result in circurlar reference.
+    // As a workaround, explicitly check for the existence of `globalThis.process`.
+    // deno-lint-ignore no-explicit-any
+    const maybeProcess = (globalThis as any).process;
+    if (maybeProcess instanceof EventEmitter) {
+      maybeProcess.emit("warning", warning);
+    }
+  }
+}
+
+// EventEmitter#addListener should point to the same function as EventEmitter#on.
+EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+
+class MaxListenersExceededWarning extends Error {
+  readonly count: number;
+  constructor(
+    readonly emitter: EventEmitter,
+    readonly type: string | symbol,
+  ) {
+    const listenerCount = emitter.listenerCount(type);
+    const message = "Possible EventEmitter memory leak detected. " +
+      `${listenerCount} ${
+        type == null ? "null" : type.toString()
+      } listeners added to [${emitter.constructor.name}]. ` +
+      " Use emitter.setMaxListeners() to increase limit";
+    super(message);
+    this.count = listenerCount;
+    this.name = "MaxListenersExceededWarning";
   }
 }
 

@@ -202,6 +202,7 @@ Deno.test("serveDirectory", async function () {
     assert(res.headers.has("access-control-allow-headers"));
     const page = await res.text();
     assert(page.includes("README.md"));
+    assert(page.includes(`<a href="/testdata/">testdata/</a>`));
 
     // `Deno.FileInfo` is not completely compatible with Windows yet
     // TODO(bartlomieju): `mode` should work correctly in the future.

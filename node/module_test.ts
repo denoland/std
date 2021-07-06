@@ -87,6 +87,7 @@ Deno.test("requireNodeJsNativeModules", () => {
   // Checks these exist and don't throw.
   require("assert");
   require("buffer");
+  require("child_process");
   require("constants");
   require("crypto");
   require("events");
@@ -103,7 +104,6 @@ Deno.test("requireNodeJsNativeModules", () => {
   require("util");
 
   // TODO(kt3k): add these modules when implemented
-  // require("child_process");
   // require("cluster");
   // require("console");
   // require("dgram");
@@ -128,6 +128,7 @@ Deno.test("native modules are extensible", () => {
   const modNames = [
     "assert",
     "buffer",
+    "child_process",
     "crypto",
     "events",
     "fs",

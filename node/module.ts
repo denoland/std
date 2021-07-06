@@ -24,7 +24,9 @@ import "./global.ts";
 import nodeAssert from "./assert.ts";
 import nodeBuffer from "./buffer.ts";
 import nodeCrypto from "./crypto.ts";
+import nodeConsole from "./console.ts";
 import nodeConstants from "./constants.ts";
+import nodeChildProcess from "./child_process.ts";
 import nodeEvents from "./events.ts";
 import nodeFS from "./fs.ts";
 import nodeOs from "./os.ts";
@@ -532,7 +534,21 @@ class Module {
       filename instanceof URL ||
       (typeof filename === "string" && !path.isAbsolute(filename))
     ) {
-      filepath = fileURLToPath(filename);
+      try {
+        filepath = fileURLToPath(filename);
+      } catch (err) {
+        if (
+          err instanceof Deno.errors.InvalidData &&
+          err.message.includes("invalid url scheme")
+        ) {
+          // Provide a descriptive error when url scheme is invalid.
+          throw new Error(
+            `${createRequire.name} only supports 'file://' URLs for the 'filename' parameter`,
+          );
+        } else {
+          throw err;
+        }
+      }
     } else if (typeof filename !== "string") {
       throw new Error("filename should be a string");
     } else {
@@ -607,6 +623,10 @@ nativeModulePolyfill.set(
   "constants",
   createNativeModule("constants", nodeConstants),
 );
+nativeModulePolyfill.set(
+  "child_process",
+  createNativeModule("child_process", nodeChildProcess),
+);
 nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
 nativeModulePolyfill.set(
   "events",
@@ -632,6 +652,7 @@ nativeModulePolyfill.set("timers", createNativeModule("timers", nodeTimers));
 nativeModulePolyfill.set("tty", createNativeModule("tty", nodeTty));
 nativeModulePolyfill.set("url", createNativeModule("url", nodeUrl));
 nativeModulePolyfill.set("util", createNativeModule("util", nodeUtil));
+nativeModulePolyfill.set("console", createNativeModule("console", nodeConsole));
 
 function loadNativeModule(
   _filename: string,

@@ -28,6 +28,11 @@ inspect.custom = Deno.customInspect;
 // Ref: https://nodejs.org/dist/latest-v14.x/docs/api/util.html#util_util_inspect_object_options
 // deno-lint-ignore no-explicit-any
 export function inspect(object: unknown, ...opts: any): string {
+  // In Node.js, strings should be enclosed in single quotes.
+  // TODO(uki00a): Strings in objects and arrays should also be enclosed in single quotes.
+  if (typeof object === "string" && !object.includes("'")) {
+    return `'${object}'`;
+  }
   opts = { ...DEFAULT_INSPECT_OPTIONS, ...opts };
   return Deno.inspect(object, {
     depth: opts.depth,
@@ -260,6 +265,38 @@ export function format(input: string, ...args: unknown[]) {
   return result;
 }
 
+/**
+ * https://nodejs.org/api/util.html#util_util_inherits_constructor_superconstructor
+ * @param ctor Constructor function which needs to inherit the prototype.
+ * @param superCtor Constructor function to inherit prototype from.
+ */
+export function inherits<T, U>(
+  ctor: new (...args: unknown[]) => T,
+  superCtor: new (...args: unknown[]) => U,
+) {
+  if (ctor === undefined || ctor === null) {
+    throw new ERR_INVALID_ARG_TYPE("ctor", "Function", ctor);
+  }
+
+  if (superCtor === undefined || superCtor === null) {
+    throw new ERR_INVALID_ARG_TYPE("superCtor", "Function", superCtor);
+  }
+
+  if (superCtor.prototype === undefined) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "superCtor.prototype",
+      "Object",
+      superCtor.prototype,
+    );
+  }
+  Object.defineProperty(ctor, "super_", {
+    value: superCtor,
+    writable: true,
+    configurable: true,
+  });
+  Object.setPrototypeOf(ctor.prototype, superCtor.prototype);
+}
+
 import { _TextDecoder, _TextEncoder } from "./_utils.ts";
 
 /** The global TextDecoder */
@@ -289,6 +326,7 @@ export default {
   deprecate,
   callbackify,
   promisify,
+  inherits,
   types,
   TextDecoder,
   TextEncoder,

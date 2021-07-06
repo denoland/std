@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { diff } from "./_diff.ts";
+import { diff, diffstr } from "./_diff.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
 Deno.test({
@@ -106,6 +106,44 @@ Deno.test({
       { type: "common", value: "abc" },
       { type: "added", value: "bcd" },
       { type: "common", value: "c" },
+    ]);
+  },
+});
+
+Deno.test({
+  name: '"a b c d" vs "a b x d e" (diffstr)',
+  fn(): void {
+    const diffResult = diffstr(
+      [..."abcd"].join("\n"),
+      [..."abxde"].join("\n"),
+    );
+    assertEquals(diffResult, [
+      { type: "common", value: "a\n" },
+      { type: "common", value: "b\n" },
+      { type: "added", value: "x\n" },
+      {
+        type: "removed",
+        value: "c\n",
+        details: [{ type: "removed", value: "c" }, {
+          type: "common",
+          value: "\n",
+        }],
+      },
+      { type: "common", value: "d\n" },
+      {
+        type: "added",
+        value: "e\n",
+        details: [
+          {
+            type: "added",
+            value: "e",
+          },
+          {
+            type: "common",
+            value: "\n",
+          },
+        ],
+      },
     ]);
   },
 });

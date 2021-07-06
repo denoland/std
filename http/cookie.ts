@@ -11,7 +11,7 @@ export interface Cookie {
   value: string;
   /** Expiration date of the cookie. */
   expires?: Date;
-  /** Max-Age of the Cookie. Must be integer superior to 0. */
+  /** Max-Age of the Cookie. Max-Age must be an integer superior or equal to 0. */
   maxAge?: number;
   /** Specifies those hosts to which the cookie will be sent. */
   domain?: string;
@@ -35,8 +35,8 @@ function toString(cookie: Cookie): string {
     return "";
   }
   const out: string[] = [];
-  validateCookieName(cookie.name);
-  validateCookieValue(cookie.name, cookie.value);
+  validateName(cookie.name);
+  validateValue(cookie.name, cookie.value);
   out.push(`${cookie.name}=${cookie.value}`);
 
   // Fallback for invalid Set-Cookie
@@ -57,7 +57,10 @@ function toString(cookie: Cookie): string {
     out.push("HttpOnly");
   }
   if (typeof cookie.maxAge === "number" && Number.isInteger(cookie.maxAge)) {
-    assert(cookie.maxAge > 0, "Max-Age must be an integer superior to 0");
+    assert(
+      cookie.maxAge >= 0,
+      "Max-Age must be an integer superior or equal to 0",
+    );
     out.push(`Max-Age=${cookie.maxAge}`);
   }
   if (cookie.domain) {
@@ -84,7 +87,7 @@ function toString(cookie: Cookie): string {
  * Validate Cookie Name.
  * @param name Cookie name.
  */
-function validateCookieName(name: string | undefined | null): void {
+function validateName(name: string | undefined | null): void {
   if (name && !FIELD_CONTENT_REGEXP.test(name)) {
     throw new TypeError(`Invalid cookie name: "${name}".`);
   }
@@ -116,7 +119,7 @@ function validatePath(path: string | null): void {
  * @see https://tools.ietf.org/html/rfc6265#section-4.1
  * @param value Cookie value.
  */
-function validateCookieValue(name: string, value: string | null): void {
+function validateValue(name: string, value: string | null): void {
   if (value == null || name == null) return;
   for (let i = 0; i < value.length; i++) {
     const c = value.charAt(i);

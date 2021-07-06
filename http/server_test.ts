@@ -49,6 +49,20 @@ const responseTests: ResponseTest[] = [
     },
     raw: "HTTP/1.1 404 Not Found\r\n" + "content-length: 0" + "\r\n\r\n",
   },
+  {
+    response: {
+      status: 893,
+      statusText: "Custom error",
+    },
+    raw: "HTTP/1.1 893 Custom error\r\n" + "content-length: 0" + "\r\n\r\n",
+  },
+  {
+    response: {
+      status: 893,
+      statusText: "",
+    },
+    raw: "HTTP/1.1 893 \r\n" + "content-length: 0" + "\r\n\r\n",
+  },
   // HTTP/1.1, chunked coding; empty trailer; close
   {
     response: {
@@ -518,12 +532,16 @@ Deno.test({
     const serverRoutine = async () => {
       const server = serve(":8124");
       for await (const req of server) {
-        await assertThrowsAsync(async () => {
-          await req.respond({
-            status: 12345,
-            body: new TextEncoder().encode("Hello World"),
-          });
-        }, Deno.errors.InvalidData);
+        await assertThrowsAsync(
+          async () => {
+            await req.respond({
+              status: 12345,
+              body: new TextEncoder().encode("Hello World"),
+            });
+          },
+          Deno.errors.InvalidData,
+          "Empty statusText",
+        );
         // The connection should be destroyed
         assert(!(req.conn.rid in Deno.resources()));
         server.close();
@@ -702,17 +720,18 @@ Deno.test({
     const p = iteratorReq(server);
 
     try {
-      // Invalid certificate, connection should throw
+      // Invalid certificate, connection should throw on first read or write
       // but should not crash the server
-      assertThrowsAsync(
-        () =>
-          Deno.connectTls({
-            hostname: "localhost",
-            port,
-            // certFile
-          }),
+      const badConn = await Deno.connectTls({
+        hostname: "localhost",
+        port,
+        // certFile
+      });
+      await assertThrowsAsync(
+        () => badConn.read(new Uint8Array(1)),
         Deno.errors.InvalidData,
       );
+      badConn.close();
 
       // Valid request after invalid
       const conn = await Deno.connectTls({

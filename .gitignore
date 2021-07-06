@@ -5,3 +5,4 @@ deno.d.ts
 package.json
 package-lock.json
 .vscode/settings.json
+**/cov/

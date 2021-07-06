@@ -1,7 +1,13 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
 import { Buffer } from "../buffer.ts";
+import type Duplex from "./duplex.ts";
+import type eos from "./end_of_stream.ts";
 import EventEmitter from "../events.ts";
+import type PassThrough from "./passthrough.ts";
+import type pipeline from "./pipeline.ts";
+import type * as promises from "./promises.ts";
 import type Readable from "./readable.ts";
+import type Transform from "./transform.ts";
 import type Writable from "./writable.ts";
 import { types } from "../util.ts";
 
@@ -76,6 +82,16 @@ class Stream extends EventEmitter {
 
     return dest;
   }
+
+  static Readable: typeof Readable;
+  static Writable: typeof Writable;
+  static Duplex: typeof Duplex;
+  static Transform: typeof Transform;
+  static PassThrough: typeof PassThrough;
+  static pipeline: typeof pipeline;
+  static finished: typeof eos;
+  static promises: typeof promises;
+  static Stream: typeof Stream;
 }
 
 export default Stream;

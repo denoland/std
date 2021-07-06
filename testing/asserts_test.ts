@@ -147,6 +147,38 @@ Deno.test("testingEqual", function (): void {
       new URL("https://example.test/with-path"),
     ),
   );
+  assert(
+    !equal({ a: undefined, b: undefined }, { a: undefined, c: undefined }),
+  );
+  assert(
+    !equal({ a: undefined, b: undefined }, { a: undefined }),
+  );
+  assertThrows(() => equal(new WeakMap(), new WeakMap()));
+  assertThrows(() => equal(new WeakSet(), new WeakSet()));
+  assert(!equal(new WeakMap(), new WeakSet()));
+  assert(
+    equal(new WeakRef({ hello: "world" }), new WeakRef({ hello: "world" })),
+  );
+  assert(
+    !equal(new WeakRef({ world: "hello" }), new WeakRef({ hello: "world" })),
+  );
+  assert(!equal({ hello: "world" }, new WeakRef({ hello: "world" })));
+  assert(
+    equal(
+      new WeakRef({ hello: "world" }),
+      // deno-lint-ignore ban-types
+      new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
+    ),
+  );
+  assert(
+    !equal(
+      new WeakRef({ hello: "world" }),
+      // deno-lint-ignore ban-types
+      new (class<T extends object> extends WeakRef<T> {
+        foo = "bar";
+      })({ hello: "world" }),
+    ),
+  );
 });
 
 Deno.test("testingNotEquals", function (): void {
@@ -181,6 +213,11 @@ Deno.test("testingAssertExists", function (): void {
   assertExists(-0);
   assertExists(0);
   assertExists(NaN);
+
+  const value = new URLSearchParams({ value: "test" }).get("value");
+  assertExists(value);
+  assertEquals(value.length, 4);
+
   let didThrow;
   try {
     assertExists(undefined);
@@ -315,6 +352,8 @@ Deno.test("testingAssertObjectMatching", function (): void {
     bar: boolean;
   }
   const g: r = { foo: true, bar: false };
+  const h = { foo: [1, 2, 3], bar: true };
+  const i = { foo: [a, e], bar: true };
 
   // Simple subset
   assertObjectMatch(a, {
@@ -360,6 +399,17 @@ Deno.test("testingAssertObjectMatching", function (): void {
   // Subset with same symbol
   assertObjectMatch(f, {
     [sym]: true,
+  });
+  // Subset with array inside
+  assertObjectMatch(h, { foo: [] });
+  assertObjectMatch(h, { foo: [1, 2] });
+  assertObjectMatch(h, { foo: [1, 2, 3] });
+  assertObjectMatch(i, { foo: [{ bar: false }] });
+  assertObjectMatch(i, {
+    foo: [
+      { bar: false },
+      { bar: { bar: { bar: { foo: true } } } },
+    ],
   });
   // Missing key
   {
@@ -473,6 +523,33 @@ Deno.test("testingAssertObjectMatching", function (): void {
     try {
       assertObjectMatch(f, {
         foo: true,
+      });
+      didThrow = false;
+    } catch (e) {
+      assert(e instanceof AssertionError);
+      didThrow = true;
+    }
+    assertEquals(didThrow, true);
+  }
+  // Subset with array inside but doesn't match key subset
+  {
+    let didThrow;
+    try {
+      assertObjectMatch(i, {
+        foo: [1, 2, 3, 4],
+      });
+      didThrow = false;
+    } catch (e) {
+      assert(e instanceof AssertionError);
+      didThrow = true;
+    }
+    assertEquals(didThrow, true);
+  }
+  {
+    let didThrow;
+    try {
+      assertObjectMatch(i, {
+        foo: [{ bar: true }, { foo: false }],
       });
       didThrow = false;
     } catch (e) {
@@ -878,6 +955,23 @@ Deno.test("assertEquals diff for differently ordered objects", () => {
 -     ccccccccccccccccccccccc: 0,
 +     ccccccccccccccccccccccc: 1,
     }`,
+  );
+});
+
+Deno.test("assert diff formatting (strings)", () => {
+  assertThrows(
+    () => {
+      assertEquals([..."abcd"].join("\n"), [..."abxde"].join("\n"));
+    },
+    undefined,
+    `
+    a
+    b
+${green("+   x")}
+${red("-   c")}
+    d
+${green("+   e")}
+`,
   );
 });
 

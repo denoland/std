@@ -7,9 +7,9 @@
 type Reader = Deno.Reader;
 type Writer = Deno.Writer;
 type WriterSync = Deno.WriterSync;
-import { copy } from "../bytes/mod.ts";
+import { concat, copy } from "../bytes/mod.ts";
 import { assert } from "../_util/assert.ts";
-import { Buffer } from "./buffer.ts";
+import { BytesList } from "../bytes/bytes_list.ts";
 import { writeAll, writeAllSync } from "./util.ts";
 
 const DEFAULT_BUF_SIZE = 4096;
@@ -252,6 +252,9 @@ export class BufReader implements Reader {
     try {
       line = await this.readSlice(LF);
     } catch (err) {
+      if (err instanceof Deno.errors.BadResource) {
+        throw err;
+      }
       let { partial } = err;
       assert(
         partial instanceof Uint8Array,
@@ -467,10 +470,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
     if (this.usedBufferBytes === 0) return;
 
     try {
-      await writeAll(
-        this.writer,
-        this.buf.subarray(0, this.usedBufferBytes),
-      );
+      await writeAll(this.writer, this.buf.subarray(0, this.usedBufferBytes));
     } catch (e) {
       this.err = e;
       throw e;
@@ -560,10 +560,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
     if (this.usedBufferBytes === 0) return;
 
     try {
-      writeAllSync(
-        this.writer,
-        this.buf.subarray(0, this.usedBufferBytes),
-      );
+      writeAllSync(this.writer, this.buf.subarray(0, this.usedBufferBytes));
     } catch (e) {
       this.err = e;
       throw e;
@@ -627,7 +624,7 @@ function createLPS(pat: Uint8Array): Uint8Array {
       lps[i] = 0;
       i++;
     } else {
-      prefixEnd = pat[prefixEnd - 1];
+      prefixEnd = lps[prefixEnd - 1];
     }
   }
   return lps;
@@ -641,54 +638,49 @@ export async function* readDelim(
   // Avoid unicode problems
   const delimLen = delim.length;
   const delimLPS = createLPS(delim);
-
-  let inputBuffer = new Buffer();
-  const inspectArr = new Uint8Array(Math.max(1024, delimLen + 1));
+  const chunks = new BytesList();
+  const bufSize = Math.max(1024, delimLen + 1);
 
   // Modified KMP
   let inspectIndex = 0;
   let matchIndex = 0;
   while (true) {
+    const inspectArr = new Uint8Array(bufSize);
     const result = await reader.read(inspectArr);
     if (result === null) {
       // Yield last chunk.
-      yield inputBuffer.bytes();
+      yield chunks.concat();
       return;
-    }
-    if ((result as number) < 0) {
+    } else if (result < 0) {
       // Discard all remaining and silently fail.
       return;
     }
-    const sliceRead = inspectArr.subarray(0, result as number);
-    await writeAll(inputBuffer, sliceRead);
-
-    let sliceToProcess = inputBuffer.bytes();
-    while (inspectIndex < sliceToProcess.length) {
-      if (sliceToProcess[inspectIndex] === delim[matchIndex]) {
+    chunks.add(inspectArr, 0, result);
+    let localIndex = 0;
+    while (inspectIndex < chunks.size()) {
+      if (inspectArr[localIndex] === delim[matchIndex]) {
         inspectIndex++;
+        localIndex++;
         matchIndex++;
         if (matchIndex === delimLen) {
           // Full match
           const matchEnd = inspectIndex - delimLen;
-          const readyBytes = sliceToProcess.subarray(0, matchEnd);
-          // Copy
-          const pendingBytes = sliceToProcess.slice(inspectIndex);
+          const readyBytes = chunks.slice(0, matchEnd);
           yield readyBytes;
           // Reset match, different from KMP.
-          sliceToProcess = pendingBytes;
+          chunks.shift(inspectIndex);
           inspectIndex = 0;
           matchIndex = 0;
         }
       } else {
         if (matchIndex === 0) {
           inspectIndex++;
+          localIndex++;
         } else {
           matchIndex = delimLPS[matchIndex - 1];
         }
       }
     }
-    // Keep inspectIndex and matchIndex.
-    inputBuffer = new Buffer(sliceToProcess);
   }
 }
 
@@ -696,9 +688,14 @@ export async function* readDelim(
 export async function* readStringDelim(
   reader: Reader,
   delim: string,
+  decoderOpts?: {
+    encoding?: string;
+    fatal?: boolean;
+    ignoreBOM?: boolean;
+  },
 ): AsyncIterableIterator<string> {
   const encoder = new TextEncoder();
-  const decoder = new TextDecoder();
+  const decoder = new TextDecoder(decoderOpts?.encoding, decoderOpts);
   for await (const chunk of readDelim(reader, encoder.encode(delim))) {
     yield decoder.decode(chunk);
   }
@@ -707,14 +704,27 @@ export async function* readStringDelim(
 /** Read strings line-by-line from a Reader. */
 export async function* readLines(
   reader: Reader,
+  decoderOpts?: {
+    encoding?: string;
+    fatal?: boolean;
+    ignoreBOM?: boolean;
+  },
 ): AsyncIterableIterator<string> {
-  for await (let chunk of readStringDelim(reader, "\n")) {
-    // Finding a CR at the end of the line is evidence of a
-    // "\r\n" at the end of the line. The "\r" part should be
-    // removed too.
-    if (chunk.endsWith("\r")) {
-      chunk = chunk.slice(0, -1);
+  const bufReader = new BufReader(reader);
+  let chunks: Uint8Array[] = [];
+  const decoder = new TextDecoder(decoderOpts?.encoding, decoderOpts);
+  while (true) {
+    const res = await bufReader.readLine();
+    if (!res) {
+      if (chunks.length > 0) {
+        yield decoder.decode(concat(...chunks));
+      }
+      break;
     }
-    yield chunk;
+    chunks.push(res.line);
+    if (!res.more) {
+      yield decoder.decode(concat(...chunks));
+      chunks = [];
+    }
   }
 }

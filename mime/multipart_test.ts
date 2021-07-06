@@ -225,7 +225,7 @@ Deno.test({
     const o = await Deno.open(multipartFile);
     const mr = new MultipartReader(o, mw.boundary);
     // use low-memory to write "file" into temp file.
-    const form = await mr.readForm(20);
+    const form = await mr.readForm({ maxMemory: 20 });
     try {
       assertEquals(form.value("deno"), "land");
       assertEquals(form.value("bar"), "bar");
@@ -255,7 +255,7 @@ Deno.test({
       o,
       "--------------------------434049563556637648550474",
     );
-    const form = await mr.readForm(20);
+    const form = await mr.readForm({ maxMemory: 20 });
     let file = form.file("file");
     if (Array.isArray(file)) {
       file = file[0];

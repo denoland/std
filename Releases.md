@@ -1,3 +1,81 @@
+### 0.100.0 / 2021.06.29
+
+- feat(testing/asserts): improved strings diff (#948)
+- feat(testing/asserts): use assertion signature for "assertExists" (#969)
+- fix(node/events): align EventEmitter#addListener with native node tests (#976)
+- fix(path): fix type error in glob.ts with noImplicitAny: false config (#977)
+
+### 0.99.0 / 2021.06.15
+
+- feat(mime): make createPart of MultipartWriter public (#960)
+- feat(node/util): add inherits (#958)
+- fix(node/events): fix EventEmitter#removeAllListeners (#968)
+- fix(node/process): make process.env enumerable (#957)
+- fix(node/util): fix util.inherits (#959)
+
+### 0.98.0 / 2021.06.08
+
+- feat(async): add async/tee (#919)
+- feat(async/mux): take AsyncIterable as source iterator (#923)
+- feat(io/bufio): add encoding options to `readLines` and `readStringDelim`
+  (#921)
+- feat(node/perf_hooks): add perf_hooks module (#945)
+- fix(encoding/binary): allow getNBytes to read until EOF (#932)
+- fix(encoding/binary): respect non 0 byte offsets (#826)
+- fix(node/events): fix EventEmitter#once to pass native node tests (#935)
+- fix(node/events): fix getMaxListeners and setMaxListeners to pass native node
+  tests (#928)
+- fix(node/fs): fix type error in fs.watch impl (#947)
+- fix(testing/asserts): fix handling of Weak* objects (#951)
+
+### 0.97.0 / 2021.05.17
+
+- fix(io/buffer): make Buffer compatible with Deploy (#912)
+- fix(io/bufio): readDelim returns wrong result if delim strides over chunks
+  (#877)
+- fix(node/events): accept only functions as listener arguments (#916)
+- fix(testing): support array values in assertObjectMatch (#906)
+
+### 0.96.0 / 2021.05.11
+
+- feat(fs/walk): show path in walk error (#875)
+- feat(http): allow custom response code (#855)
+- feat(io): add readRange, readRangeSync (#884)
+- feat(mime/multipart): add options to readForm (#895)
+- feat(node): add console module (#892)
+- feat(node/assert): add rejects and doesNotReject (#894)
+- feat(std/node): add implementation of os.homedir() (#873)
+- fix(http/file_server): keep url and name consistent (#908)
+- fix(io): Improve readDelims() performance (#867)
+- fix(io/streams): don't use a byte ReadableStream (#891)
+- fix(node/assert): enable test-assert-fail.js and align assert.fail to it
+  (#874)
+- fix(node/child_process): Try to fix flaky tests (#876)
+- fix(node/stream): make `Stream` the default export (#901)
+
+### 0.95.0 / 2021.04.23
+
+- feat(node): add basic support for child_process.spawn (#785)
+- feat(path/glob): add caseInsensitive option (#854)
+- fix(node/fs): actually export everything (#862)
+
+### 0.94.0 / 2021.04.20
+
+- feat(node/fs): add fstat and fstatSync (#847)
+- feat(streams): add readableStreamFromReader (#852)
+- fix(path): reduce circular dependency (#858)
+- fix(testing): equals does not differentiate undefined/absent keys (#849)
+
+### 0.93.0 / 2021.04.13
+
+- feat: add iter and iterSync to io/util (#843)
+- feat(node/fs): add fdatasync and fdatasyncSync (#841)
+- feat(node/fs): add fsync and fsyncSync (#840)
+- feat(node/fs): add ftruncate and ftruncateSync (#829)
+- feat(node/fs): add futimes and futimesSync (#830)
+- fix(testing): Function signature of assertObjectEquals() does not accept
+  interfaces (#763)
+
 ### 0.92.0 / 2021.04.02
 
 - feat: make bufio compatible to Deno Deploy (#831)
