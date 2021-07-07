@@ -1,10 +1,23 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { createHash, SupportedAlgorithm } from "./mod.ts";
+import { Message } from "./hasher.ts";
+import * as bytes from "../bytes/mod.ts";
 
 const millionAs = "a".repeat(1000000);
 
-const testSetHex: Record<string, string[][]> = {
+// Simple periodic data, but the periods shouldn't line up with any block sizes.
+const aboutAMeg = bytes.repeat(
+  new Uint8Array(1237).fill(0).map((_, i) => i % 251),
+  839,
+);
+
+// These should all be equivalent.
+const slicedView = new Int16Array(aboutAMeg.buffer, 226, 494443);
+const slicedCopy = new Uint8Array(aboutAMeg.slice(226, 226 + 16 / 8 * 494443));
+const bufferCopy = slicedCopy.buffer;
+
+const testSetHex: Record<string, [Message, string][]> = {
   md5: [
     ["", "d41d8cd98f00b204e9800998ecf8427e"],
     ["abc", "900150983cd24fb0d6963f7d28e17f72"],
@@ -22,6 +35,10 @@ const testSetHex: Record<string, string[][]> = {
       "014842d480b571495a4a0363793f7367",
     ],
     [millionAs, "7707d6ae4e027c70eea2a935c2296f21"],
+    [aboutAMeg, "65ee3c415a2316553ebf2fdb2ccafd0b"],
+    [slicedView, "81f7e24f254ca2af692188d17b5103d8"],
+    [slicedCopy, "81f7e24f254ca2af692188d17b5103d8"],
+    [bufferCopy, "81f7e24f254ca2af692188d17b5103d8"],
   ],
   sha1: [
     ["", "da39a3ee5e6b4b0d3255bfef95601890afd80709"],
@@ -40,6 +57,10 @@ const testSetHex: Record<string, string[][]> = {
       "0098ba824b5c16427bd7a1122a5a442a25ec644d",
     ],
     [millionAs, "34aa973cd4c4daa4f61eeb2bdbad27316534016f"],
+    [aboutAMeg, "74de0faec24034e7415e7a6ee379e509b29985b2"],
+    [slicedView, "b0161602fcdd324d2d0222b5c8d2873ff1f6452e"],
+    [slicedCopy, "b0161602fcdd324d2d0222b5c8d2873ff1f6452e"],
+    [bufferCopy, "b0161602fcdd324d2d0222b5c8d2873ff1f6452e"],
   ],
   sha256: [
     ["", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"],
@@ -63,6 +84,22 @@ const testSetHex: Record<string, string[][]> = {
     [
       millionAs,
       "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0",
+    ],
+    [
+      aboutAMeg,
+      "ce0ae911a08c37d8e25605bc209c13e870ab3c4a40a7610ea3af989d9b0a00dd",
+    ],
+    [
+      slicedView,
+      "38fa97da941ae64bc1ec0d28fa14023e8041fd31857053d387d97e0ea1498203",
+    ],
+    [
+      slicedCopy,
+      "38fa97da941ae64bc1ec0d28fa14023e8041fd31857053d387d97e0ea1498203",
+    ],
+    [
+      bufferCopy,
+      "38fa97da941ae64bc1ec0d28fa14023e8041fd31857053d387d97e0ea1498203",
     ],
   ],
   sha512: [
@@ -94,6 +131,22 @@ const testSetHex: Record<string, string[][]> = {
       millionAs,
       "e718483d0ce769644e2e42c7bc15b4638e1f98b13b2044285632a803afa973ebde0ff244877ea60a4cb0432ce577c31beb009c5c2c49aa2e4eadb217ad8cc09b",
     ],
+    [
+      aboutAMeg,
+      "b3d3a7531e6bea36639bd9cf5a5c462f32d4f74a4b9878aad7405149d7962ad02e4cc1922133c43e9a2685f2927345a72c697144cbd69a895778126c1c59d455",
+    ],
+    [
+      slicedView,
+      "b7e29c5e61c67f5332740e01a1932be71aee0baf8e6d3156027585948cd58abbcf302de41978b0de26a0fb768708351963c6c01c1198e0dae7deaee448632445",
+    ],
+    [
+      slicedCopy,
+      "b7e29c5e61c67f5332740e01a1932be71aee0baf8e6d3156027585948cd58abbcf302de41978b0de26a0fb768708351963c6c01c1198e0dae7deaee448632445",
+    ],
+    [
+      bufferCopy,
+      "b7e29c5e61c67f5332740e01a1932be71aee0baf8e6d3156027585948cd58abbcf302de41978b0de26a0fb768708351963c6c01c1198e0dae7deaee448632445",
+    ],
   ],
   "sha3-256": [
     ["", "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a"],
@@ -117,6 +170,22 @@ const testSetHex: Record<string, string[][]> = {
     [
       millionAs,
       "5c8875ae474a3634ba4fd55ec85bffd661f32aca75c6d699d0cdcb6c115891c1",
+    ],
+    [
+      aboutAMeg,
+      "ff7934eb30afb91390adbd02ef2bf808eeac30bb4a7779f346a71962610874bd",
+    ],
+    [
+      slicedView,
+      "ec3e5fb22a6a7e2f404cb10fca361a3edc3a6f7eaaeb83a4142adf3f89e5b1d5",
+    ],
+    [
+      slicedCopy,
+      "ec3e5fb22a6a7e2f404cb10fca361a3edc3a6f7eaaeb83a4142adf3f89e5b1d5",
+    ],
+    [
+      bufferCopy,
+      "ec3e5fb22a6a7e2f404cb10fca361a3edc3a6f7eaaeb83a4142adf3f89e5b1d5",
     ],
   ],
   "sha3-512": [
@@ -148,6 +217,22 @@ const testSetHex: Record<string, string[][]> = {
       millionAs,
       "3c3a876da14034ab60627c077bb98f7e120a2a5370212dffb3385a18d4f38859ed311d0a9d5141ce9cc5c66ee689b266a8aa18ace8282a0e0db596c90b0a7b87",
     ],
+    [
+      aboutAMeg,
+      "61bbdae5203bbf8a9effd083da83ebf18951668e658a810987ea2feb1fb810be5800fb03489a99e9f25979aa6c345477036afabcda612066b3c1213a72c05534",
+    ],
+    [
+      slicedView,
+      "8b43aec6757a768580ed9bb74e373040a25692054d5097cf0ab8f9b565c266ab6964aa02b1d54388b10bc80461f83dbc8cf9e59c8321124315b8058b1a057b2a",
+    ],
+    [
+      slicedCopy,
+      "8b43aec6757a768580ed9bb74e373040a25692054d5097cf0ab8f9b565c266ab6964aa02b1d54388b10bc80461f83dbc8cf9e59c8321124315b8058b1a057b2a",
+    ],
+    [
+      bufferCopy,
+      "8b43aec6757a768580ed9bb74e373040a25692054d5097cf0ab8f9b565c266ab6964aa02b1d54388b10bc80461f83dbc8cf9e59c8321124315b8058b1a057b2a",
+    ],
   ],
   blake3: [
     ["", "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"],
@@ -171,6 +256,22 @@ const testSetHex: Record<string, string[][]> = {
     [
       millionAs,
       "616f575a1b58d4c9797d4217b9730ae5e6eb319d76edef6549b46f4efe31ff8b",
+    ],
+    [
+      aboutAMeg,
+      "7fc79f34e187d62c474af7d57531a77f193ab6f2fae71c6de155b341cb592fe5",
+    ],
+    [
+      slicedView,
+      "8549694280dea254adb1b856779d2d4f09256004e7536bbf544a1859e66b5f9c",
+    ],
+    [
+      slicedCopy,
+      "8549694280dea254adb1b856779d2d4f09256004e7536bbf544a1859e66b5f9c",
+    ],
+    [
+      bufferCopy,
+      "8549694280dea254adb1b856779d2d4f09256004e7536bbf544a1859e66b5f9c",
     ],
   ],
 };
