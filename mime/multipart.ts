@@ -247,13 +247,13 @@ function skipLWSPChar(u: Uint8Array): Uint8Array {
 }
 
 export interface MultipartFormData {
-  file(key: string): FormFile | FormFile[] | undefined;
-  value(key: string): string | undefined;
+  files(key: string): FormFile[] | undefined;
+  values(key: string): string[] | undefined;
   entries(): IterableIterator<
-    [string, string | FormFile | FormFile[] | undefined]
+    [string, string[] | FormFile[] | undefined]
   >;
   [Symbol.iterator](): IterableIterator<
-    [string, string | FormFile | FormFile[] | undefined]
+    [string, string[] | FormFile[] | undefined]
   >;
   /** Remove all tempfiles */
   removeAll(): Promise<void>;
@@ -317,8 +317,8 @@ export class MultipartReader {
       ? { maxMemory: maxMemoryOrOptions }
       : maxMemoryOrOptions;
     let maxMemory = options?.maxMemory ?? 10 << 20;
-    const fileMap = new Map<string, FormFile | FormFile[]>();
-    const valueMap = new Map<string, string>();
+    const fileMap = new Map<string, FormFile[]>();
+    const valueMap = new Map<string, string[]>();
     let maxValueBytes = maxMemory + (10 << 20);
     const buf = new Buffer(new Uint8Array(maxValueBytes));
     for (;;) {
@@ -338,7 +338,12 @@ export class MultipartReader {
           throw new RangeError("message too large");
         }
         const value = new TextDecoder().decode(buf.bytes());
-        valueMap.set(p.formName, value);
+        const mapVal = valueMap.get(p.formName);
+        if (mapVal !== undefined) {
+          mapVal.push(value);
+        } else {
+          valueMap.set(p.formName, [value]);
+        }
         continue;
       }
       // file
@@ -384,13 +389,9 @@ export class MultipartReader {
       if (formFile) {
         const mapVal = fileMap.get(p.formName);
         if (mapVal !== undefined) {
-          if (Array.isArray(mapVal)) {
-            mapVal.push(formFile);
-          } else {
-            fileMap.set(p.formName, [mapVal, formFile]);
-          }
+          mapVal.push(formFile);
         } else {
-          fileMap.set(p.formName, formFile);
+          fileMap.set(p.formName, [formFile]);
         }
       }
     }
@@ -459,17 +460,17 @@ export class MultipartReader {
 }
 
 function multipartFormData(
-  fileMap: Map<string, FormFile | FormFile[]>,
-  valueMap: Map<string, string>,
+  fileMap: Map<string, FormFile[]>,
+  valueMap: Map<string, string[]>,
 ): MultipartFormData {
-  function file(key: string): FormFile | FormFile[] | undefined {
+  function files(key: string): FormFile[] | undefined {
     return fileMap.get(key);
   }
-  function value(key: string): string | undefined {
+  function values(key: string): string[] | undefined {
     return valueMap.get(key);
   }
   function* entries(): IterableIterator<
-    [string, string | FormFile | FormFile[] | undefined]
+    [string, string[] | FormFile[] | undefined]
   > {
     yield* fileMap;
     yield* valueMap;
@@ -477,25 +478,20 @@ function multipartFormData(
   async function removeAll() {
     const promises: Array<Promise<void>> = [];
     for (const val of fileMap.values()) {
-      if (Array.isArray(val)) {
-        for (const subVal of val) {
-          if (!subVal.tempfile) continue;
-          promises.push(Deno.remove(subVal.tempfile));
-        }
-      } else {
-        if (!val.tempfile) continue;
-        promises.push(Deno.remove(val.tempfile));
+      for (const subVal of val) {
+        if (!subVal.tempfile) continue;
+        promises.push(Deno.remove(subVal.tempfile));
       }
     }
     await Promise.all(promises);
   }
   return {
-    file,
-    value,
+    files,
+    values,
     entries,
     removeAll,
     [Symbol.iterator](): IterableIterator<
-      [string, string | FormFile | FormFile[] | undefined]
+      [string, string[] | FormFile[] | undefined]
     > {
       return entries();
     },

@@ -21,7 +21,7 @@ export interface GlobOptions {
   /** Whether globstar should be case insensitive. */
   caseInsensitive?: boolean;
   /** Operating system. Defaults to the native OS. */
-  os?: typeof Deno.build.os;
+  os?: "darwin" | "linux" | "windows";
 }
 
 export type GlobToRegExpOptions = GlobOptions;

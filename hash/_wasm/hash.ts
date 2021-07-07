@@ -1,18 +1,15 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import init, {
+import {
   create_hash as createHash,
   DenoHash,
   digest_hash as digestHash,
-  source,
   update_hash as updateHash,
 } from "./wasm.js";
 
 import * as hex from "../../encoding/hex.ts";
 import * as base64 from "../../encoding/base64.ts";
 import type { Hasher, Message, OutputFormat } from "../hasher.ts";
-
-await init(source);
 
 const TYPE_ERROR_MSG = "hash: `data` is invalid type";
 
@@ -66,7 +63,7 @@ export class Hash implements Hasher {
 
     switch (format) {
       case "hex":
-        return hex.encodeToString(finalized);
+        return new TextDecoder().decode(hex.encode(finalized));
       case "base64":
         return base64.encode(finalized);
       default:

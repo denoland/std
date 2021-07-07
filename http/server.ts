@@ -230,7 +230,8 @@ export class Server implements AsyncIterable<ServerRequest> {
         // TLS handshake errors:
         error instanceof Deno.errors.InvalidData ||
         error instanceof Deno.errors.UnexpectedEof ||
-        error instanceof Deno.errors.ConnectionReset
+        error instanceof Deno.errors.ConnectionReset ||
+        error instanceof Deno.errors.NotConnected
       ) {
         return mux.add(this.acceptConnAndIterateHttpRequests(mux));
       }

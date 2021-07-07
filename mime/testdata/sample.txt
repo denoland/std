@@ -32,4 +32,14 @@ content-type: application/octet-stream
   "test": "filename"
 }
 
+----------------------------434049563556637648550474
+content-disposition: form-data; name="baz"
+content-type: application/octet-stream
+
+str1
+----------------------------434049563556637648550474
+content-disposition: form-data; name="baz"
+content-type: application/octet-stream
+
+str2
 ----------------------------434049563556637648550474--

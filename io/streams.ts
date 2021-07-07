@@ -93,13 +93,42 @@ export function readerFromStreamReader(
   };
 }
 
+export interface WritableStreamFromWriterOptions {
+  /**
+   * If the `writer` is also a `Deno.Closer`, automatically close the `writer`
+   * when the stream is closed, aborted, or a write error occurs.
+   *
+   * Defaults to `true`. */
+  autoClose?: boolean;
+}
+
 /** Create a `WritableStream` from a `Writer`. */
 export function writableStreamFromWriter(
   writer: Deno.Writer,
+  options: WritableStreamFromWriterOptions = {},
 ): WritableStream<Uint8Array> {
+  const { autoClose = true } = options;
+
   return new WritableStream({
-    async write(chunk) {
-      await writeAll(writer, chunk);
+    async write(chunk, controller) {
+      try {
+        await writeAll(writer, chunk);
+      } catch (e) {
+        controller.error(e);
+        if (isCloser(writer) && autoClose) {
+          writer.close();
+        }
+      }
+    },
+    close() {
+      if (isCloser(writer) && autoClose) {
+        writer.close();
+      }
+    },
+    abort() {
+      if (isCloser(writer) && autoClose) {
+        writer.close();
+      }
     },
   });
 }
