@@ -144,7 +144,7 @@ Deno.test({
         });
       },
       Error,
-      "Invalid first/last char in cookie domain: " + domain
+      "Invalid first/last char in cookie domain: " + domain,
     );
   },
 });
