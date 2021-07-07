@@ -44,7 +44,20 @@ export class Hash implements Hasher {
       throw new Error(TYPE_ERROR_MSG);
     }
 
-    updateHash(this.#hash, msg);
+    // Messages will be split into chunks of this size to avoid unneccessarily
+    // increasing the size of the WASM heap.
+    const CHUNK_SIZE = 65_536;
+
+    for (let offset = 0; offset < msg.length; offset += CHUNK_SIZE) {
+      updateHash(
+        this.#hash,
+        new Uint8Array(
+          msg.buffer,
+          offset,
+          Math.min(CHUNK_SIZE, msg.length - offset),
+        ),
+      );
+    }
 
     return this;
   }
