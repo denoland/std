@@ -70,10 +70,11 @@ console.log("Set-Cookie:", cookieHeader);
 // Set-Cookie: deno=; Expires=Thus, 01 Jan 1970 00:00:00 GMT
 ```
 
-> Note: It is possible to pass the exact same path and domain attributes that were used to set the cookie.
+> Note: It is possible to pass the exact same path and domain attributes that
+> were used to set the cookie.
 
 ```ts
-deleteCookie(response, "deno" , {path:'/', domain: 'deno.land'});
+deleteCookie(response, "deno", { path: "/", domain: "deno.land" });
 ```
 
 **Note**: At the moment multiple `Set-Cookie` in a `Response` is not handled.
