@@ -2,16 +2,20 @@
 
 ## Prerequisite
 
-`wasm-pack` is required.
+`wasm-bindgen` is required.
 
 ```sh
-cargo install wasm-pack
+cargo build --target wasm32-unknown-unknown
+rustup target add wasm32-unknown-unknown
+
+# This must match the version in hash/_wasm/Cargo.lock:
+cargo install -f wasm-bindgen-cli --version 0.2.74
 ```
 
 ## Build
 
 ```sh
-deno run --allow-read --allow-write --allow-run ./build.ts
+deno run --allow-all build.ts
 ```
 
 `wasm.js` will be generated.
