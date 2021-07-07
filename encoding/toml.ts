@@ -559,7 +559,7 @@ class Dumper {
   maxPad = 0;
   srcObject: Record<string, unknown>;
   output: string[] = [];
-  _arrayTypeCache = new Map<unknown[], ArrayType>();
+  #arrayTypeCache = new Map<unknown[], ArrayType>();
   constructor(srcObjc: Record<string, unknown>) {
     this.srcObject = srcObjc;
   }
@@ -630,11 +630,11 @@ class Dumper {
       ["string", "number", "boolean"].includes(typeof value);
   }
   _getTypeOfArray(arr: unknown[]): ArrayType {
-    if (this._arrayTypeCache.has(arr)) {
-      return this._arrayTypeCache.get(arr)!;
+    if (this.#arrayTypeCache.has(arr)) {
+      return this.#arrayTypeCache.get(arr)!;
     }
     const type = this._doGetTypeOfArray(arr);
-    this._arrayTypeCache.set(arr, type);
+    this.#arrayTypeCache.set(arr, type);
     return type;
   }
   _doGetTypeOfArray(arr: unknown[]): ArrayType {
