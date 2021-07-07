@@ -14,6 +14,12 @@
  * ```
  */
 export function union<T>(a: Array<T>, b: Array<T>): Array<T> {
-  // TODO(wperron) implement this
-  return [];
+  const s = new Set<T>();
+  while (a.length > 0) {
+    s.add(a.shift() as T);
+  }
+  while (b.length > 0) {
+    s.add(b.shift() as T);
+  }
+  return Array.from(s);
 }

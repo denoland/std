@@ -58,39 +58,45 @@ Deno.test({
 Deno.test({
   name: "[collections/union] objects",
   fn() {
+    const a = { foo: "bar" };
+    const b = { bar: "baz" };
+    const c = { fruit: "banana" };
+    const d = { bar: "banana" };
     unionTest<Record<string, string>>([
-      [{ foo: "bar" }, { bar: "baz" }],
-      [{ fruit: "banana" }],
-    ], [{ foo: "bar" }, { bar: "baz" }, { fruit: "banana" }]);
+      [a, b],
+      [c],
+    ], [a, b, c]);
     unionTest<Record<string, string>>([
-      [{ foo: "bar" }, { bar: "baz" }],
-      [{ bar: "baz" }],
-    ], [{ foo: "bar" }, { bar: "baz" }]);
+      [a, b],
+      [b],
+    ], [a, b]);
     unionTest<Record<string, string>>([
-      [{ foo: "bar" }, { bar: "baz" }],
-      [{ bar: "banana" }],
-    ], [{ foo: "bar" }, { bar: "baz" }, { bar: "banana" }]);
+      [a, b],
+      [d],
+    ], [a, b, d]);
   },
 });
 
 Deno.test({
   name: "[collections/union] functions",
   fn() {
+    const a = () => {};
+    const b = () => null;
+    const c = () => NaN;
+    const d = (a: number, b: number) => a + b;
+    const e = (a: number, b: number) => a - b;
+
     unionTest([
-      [() => {}, () => null],
-      [() => NaN],
-    ], [() => {}, () => null, () => NaN]);
+      [a, b],
+      [c],
+    ], [a, b, c]);
     unionTest([
-      [() => {}, () => null],
-      [() => {}],
-    ], [() => {}, () => null]);
+      [a, b],
+      [a],
+    ], [a, b]);
     unionTest([
-      [(a: number, b: number) => a + b, () => null],
-      [(a: number, b: number) => a - b],
-    ], [
-      (a: number, b: number) => a + b,
-      () => null,
-      (a: number, b: number) => a - b,
-    ]);
+      [d, a],
+      [e],
+    ], [d, a, e]);
   },
 });
