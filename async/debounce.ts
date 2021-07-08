@@ -49,7 +49,7 @@ export function debounce<T extends Array<any>>(
   const debounce: Debounce<T> = ((...args: T): void => {
     debounce.clear();
     debounced = (): void => {
-      reset();
+      debounce.clear();
       func.call(debounce, ...args);
     };
     timeout = setTimeout(debounced, wait);
@@ -58,26 +58,18 @@ export function debounce<T extends Array<any>>(
   debounce.clear = (): void => {
     if (typeof timeout === "number") {
       clearTimeout(timeout);
-      reset();
+      timeout = null;
+      debounced = null;
     }
   };
 
   debounce.flush = (): void => {
-    if (debounced) {
-      const debouncedFn = debounced;
-      debounce.clear();
-      debouncedFn();
-    }
+    debounced?.();
   };
 
   Object.defineProperty(debounce, "pending", {
     get: () => typeof timeout === "number",
   });
-
-  function reset() {
-    timeout = null;
-    debounced = null;
-  }
 
   return debounce;
 }
