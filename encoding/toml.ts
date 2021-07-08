@@ -20,6 +20,17 @@ class ParserContext {
   output: Record<string, unknown> = {};
 }
 
+// Whitespace means tab or space in TOML. Other whitespace charactors are invalid.
+function trim(str: string) {
+  const trimmed = str
+    .replace(/^[ \t]*/, "")
+    .replace(/[ \t]*$/, "");
+  if (/^\s/.test(trimmed) || /\s$/.test(trimmed)) {
+    throw new TOMLError(`Contains invalid whitespaces: \`${str}\``);
+  }
+  return trimmed;
+}
+
 class Parser {
   tomlLines: string[];
   context: ParserContext;
@@ -31,7 +42,7 @@ class Parser {
     const out: string[] = [];
     for (let i = 0; i < this.tomlLines.length; i++) {
       const s = this.tomlLines[i];
-      const trimmed = s.trim();
+      const trimmed = trim(s);
       if (trimmed !== "") {
         out.push(s);
       }
@@ -88,7 +99,7 @@ class Parser {
         const out = line.split(
           /(?<=([\,\[\]\{\}]|".*"|'.*'|\w(?!.*("|')+))\s*)#/gi,
         );
-        cleaned.push(out[0].trim());
+        cleaned.push(trim(out[0]));
       } else if (isOpenString || !isFullLineComment(line)) {
         cleaned.push(line);
       }
@@ -144,7 +155,7 @@ class Parser {
 
     for (let i = 0; i < this.tomlLines.length; i++) {
       const line = this.tomlLines[i];
-      const trimmed = line.trim();
+      const trimmed = trim(line);
       if (!capture && arrayStart(trimmed)) {
         capture = true;
         captureType = "array";
@@ -231,7 +242,7 @@ class Parser {
     return out;
   }
   _isGroup(line: string): boolean {
-    const t = line.trim();
+    const t = trim(line);
     return t[0] === "[" && /\[(.*)\]/.exec(t) ? true : false;
   }
   _isDeclaration(line: string): boolean {
@@ -259,12 +270,12 @@ class Parser {
   }
   _processDeclaration(line: string): KeyValuePair {
     const idx = line.indexOf("=");
-    const key = line.substring(0, idx).trim();
+    const key = trim(line.substring(0, idx));
     const value = this._parseData(line.slice(idx + 1));
     return new KeyValuePair(key, value);
   }
   _parseData(dataString: string): unknown {
-    dataString = dataString.trim();
+    dataString = trim(dataString);
     switch (dataString[0]) {
       case '"':
       case "'":

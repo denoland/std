@@ -510,3 +510,23 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "[TOML] Invalid whitespaces",
+  fn(): void {
+    assertThrows(
+      (): void => {
+        parseFile(path.join(testdataDir, "error-invalid-whitespace1.toml"));
+      },
+      Error,
+      'Contains invalid whitespaces: `　foo = "bar"`',
+    );
+    assertThrows(
+      (): void => {
+        parseFile(path.join(testdataDir, "error-invalid-whitespace2.toml"));
+      },
+      Error,
+      "Contains invalid whitespaces: `foo　`",
+    );
+  },
+});
