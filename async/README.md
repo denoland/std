@@ -13,7 +13,11 @@ Debounces a given function by a given time.
 ```typescript
 import { debounce } from "https://deno.land/std/async/mod.ts";
 
-const p = debounce((value: string) => console.log("Function debounced after 200ms with %s", value), 200);
+const p = debounce(
+  (value: string) =>
+    console.log("Function debounced after 200ms with %s", value),
+  200,
+);
 p("foo");
 p("bar");
 p("baz");
