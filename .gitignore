@@ -6,3 +6,5 @@ package.json
 package-lock.json
 .vscode/settings.json
 **/cov/
+/hash/_wasm/target
+/hash/_wasm/out
