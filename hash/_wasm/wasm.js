@@ -2504,3 +2504,6 @@ LjE5LjAMd2FzbS1iaW5kZ2VuBjAuMi43NA==",
 );
 const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
 const wasm = wasmInstance.exports;
+
+// only exposed for testing
+export const _wasm = wasm;
