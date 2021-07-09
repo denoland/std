@@ -1,6 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { assert, assertEquals } from "../testing/asserts.ts";
-import { Debounce, debounce } from "./debounce.ts";
+import { assertEquals, assertStrictEquals } from "../testing/asserts.ts";
 import { delay } from "./delay.ts";
 
 Deno.test("[async] debounce: called", async function () {
@@ -49,9 +48,7 @@ Deno.test("[async] debounce: with params & context", async function () {
     assertEquals(d.pending, false);
     params.push(param1);
     params.push(param2);
-    assertEquals(d, this);
-    assert(d.clear);
-    assert(d.flush);
+    assertStrictEquals(d, this);
   }, 100);
   // @ts-expect-error Argument of type 'number' is not assignable to parameter of type 'string'.
   d(1, 1);
