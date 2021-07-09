@@ -101,6 +101,7 @@ Create a `Writer` object for `string`.
 
 ```ts
 import {
+  copy,
   copyN,
   StringReader,
   StringWriter,
@@ -113,7 +114,7 @@ await copyN(r, w, 4); // copy 4 bytes
 // Number of bytes read
 console.log(w.toString()); //base0123
 
-await Deno.copy(r, w); // copy all
+await copy(r, w); // copy all
 console.log(w.toString()); // base0123456789
 ```
 
@@ -131,12 +132,12 @@ base0123456789
 Creates a `Reader` from a `ReadableStreamDefaultReader`.
 
 ```ts
-import { readerFromStreamReader } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+import { copy, readerFromStreamReader } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
 const res = await fetch("https://deno.land");
 const file = await Deno.open("./deno.land.html", { create: true, write: true });
 
 const reader = readerFromStreamReader(res.body!.getReader());
-await Deno.copy(reader, file);
+await copy(reader, file);
 file.close();
 ```
 
@@ -145,7 +146,7 @@ file.close();
 Creates a `Writer` from a `WritableStreamDefaultWriter`.
 
 ```ts
-import { writerFromStreamWriter } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+import { copy, writerFromStreamWriter } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
 const file = await Deno.open("./deno.land.html", { read: true });
 
 const writableStream = new WritableStream({
@@ -154,6 +155,6 @@ const writableStream = new WritableStream({
   },
 });
 const writer = writerFromStreamWriter(writableStream.getWriter());
-await Deno.copy(file, writer);
+await copy(file, writer);
 file.close();
 ```
