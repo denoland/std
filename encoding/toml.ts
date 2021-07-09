@@ -25,8 +25,18 @@ function trim(str: string) {
   const trimmed = str
     .replace(/^[ \t]*/, "")
     .replace(/[ \t]*$/, "");
-  if (/^\s/.test(trimmed) || /\s$/.test(trimmed)) {
-    throw new TOMLError(`Contains invalid whitespaces: \`${str}\``);
+  // Invalid if trimmed string contains other kinds of whitespaces at either end.
+  if (/^\s+/.test(trimmed) || /\s+$/.test(trimmed)) {
+    const escapeSpaces = (spaces: string) => {
+      return spaces
+        .split("")
+        .map((char) => "\\u" + char.charCodeAt(0).toString(16))
+        .join("");
+    };
+    const escaped = trimmed
+      .replace(/^\s+/, escapeSpaces)
+      .replace(/\s+$/, escapeSpaces);
+    throw new TOMLError(`Contains invalid whitespaces: \`${escaped}\``);
   }
   return trimmed;
 }
