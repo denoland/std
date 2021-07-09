@@ -15,11 +15,11 @@
  */
 export function union<T>(a: Array<T>, b: Array<T>): Array<T> {
   const s = new Set<T>();
-  while (a.length > 0) {
-    s.add(a.shift() as T);
+  for (const i of a) {
+    s.add(i as T);
   }
-  while (b.length > 0) {
-    s.add(b.shift() as T);
+  for (const i of b) {
+    s.add(i as T);
   }
   return Array.from(s);
 }
