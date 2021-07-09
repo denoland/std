@@ -565,17 +565,17 @@ class Dumper {
   }
   dump(): string[] {
     // deno-lint-ignore no-explicit-any
-    this.output = this._printObject(this.srcObject as any);
-    this.output = this._format();
+    this.output = this.#printObject(this.srcObject as any);
+    this.output = this.#format();
     return this.output;
   }
-  _printObject(obj: Record<string, unknown>, keys: string[] = []): string[] {
+  #printObject(obj: Record<string, unknown>, keys: string[] = []): string[] {
     const out = [];
     const props = Object.keys(obj);
     const inlineProps = [];
     const multilinePorps = [];
     for (const prop of props) {
-      if (this._isSimplySerializable(obj[prop])) {
+      if (this.#isSimplySerializable(obj[prop])) {
         inlineProps.push(prop);
       } else {
         multilinePorps.push(prop);
@@ -586,37 +586,37 @@ class Dumper {
       const prop = sortedProps[i];
       const value = obj[prop];
       if (value instanceof Date) {
-        out.push(this._dateDeclaration([prop], value));
+        out.push(this.#dateDeclaration([prop], value));
       } else if (typeof value === "string" || value instanceof RegExp) {
-        out.push(this._strDeclaration([prop], value.toString()));
+        out.push(this.#strDeclaration([prop], value.toString()));
       } else if (typeof value === "number") {
-        out.push(this._numberDeclaration([prop], value));
+        out.push(this.#numberDeclaration([prop], value));
       } else if (typeof value === "boolean") {
-        out.push(this._boolDeclaration([prop], value));
+        out.push(this.#boolDeclaration([prop], value));
       } else if (
         value instanceof Array
       ) {
-        const arrayType = this._getTypeOfArray(value);
+        const arrayType = this.#getTypeOfArray(value);
         if (arrayType === ArrayType.ONLY_PRIMITIVE) {
-          out.push(this._arrayDeclaration([prop], value));
+          out.push(this.#arrayDeclaration([prop], value));
         } else if (arrayType === ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY) {
           // array of objects
           for (let i = 0; i < value.length; i++) {
             out.push("");
-            out.push(this._headerGroup([...keys, prop]));
-            out.push(...this._printObject(value[i], [...keys, prop]));
+            out.push(this.#headerGroup([...keys, prop]));
+            out.push(...this.#printObject(value[i], [...keys, prop]));
           }
         } else {
           // this is a complex array, use the inline format.
-          const str = value.map((x) => this._printAsInlineValue(x)).join(",");
+          const str = value.map((x) => this.#printAsInlineValue(x)).join(",");
           out.push(`${prop} = [${str}]`);
         }
       } else if (typeof value === "object") {
         out.push("");
-        out.push(this._header([...keys, prop]));
+        out.push(this.#header([...keys, prop]));
         if (value) {
           const toParse = value as Record<string, unknown>;
-          out.push(...this._printObject(toParse, [...keys, prop]));
+          out.push(...this.#printObject(toParse, [...keys, prop]));
         }
         // out.push(...this._parse(value, `${path}${prop}.`));
       }
@@ -624,32 +624,32 @@ class Dumper {
     out.push("");
     return out;
   }
-  _isPrimitive(value: unknown): boolean {
+  #isPrimitive(value: unknown): boolean {
     return value instanceof Date ||
       value instanceof RegExp ||
       ["string", "number", "boolean"].includes(typeof value);
   }
-  _getTypeOfArray(arr: unknown[]): ArrayType {
+  #getTypeOfArray(arr: unknown[]): ArrayType {
     if (this.#arrayTypeCache.has(arr)) {
       return this.#arrayTypeCache.get(arr)!;
     }
-    const type = this._doGetTypeOfArray(arr);
+    const type = this.#doGetTypeOfArray(arr);
     this.#arrayTypeCache.set(arr, type);
     return type;
   }
-  _doGetTypeOfArray(arr: unknown[]): ArrayType {
+  #doGetTypeOfArray(arr: unknown[]): ArrayType {
     if (!arr.length) {
       // any type should be fine
       return ArrayType.ONLY_PRIMITIVE;
     }
 
-    const onlyPrimitive = this._isPrimitive(arr[0]);
+    const onlyPrimitive = this.#isPrimitive(arr[0]);
     if (arr[0] instanceof Array) {
       return ArrayType.MIXED;
     }
     for (let i = 1; i < arr.length; i++) {
       if (
-        onlyPrimitive !== this._isPrimitive(arr[i]) || arr[i] instanceof Array
+        onlyPrimitive !== this.#isPrimitive(arr[i]) || arr[i] instanceof Array
       ) {
         return ArrayType.MIXED;
       }
@@ -658,9 +658,9 @@ class Dumper {
       ? ArrayType.ONLY_PRIMITIVE
       : ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY;
   }
-  _printAsInlineValue(value: unknown): string | number {
+  #printAsInlineValue(value: unknown): string | number {
     if (value instanceof Date) {
-      return `"${this._printDate(value)}"`;
+      return `"${this.#printDate(value)}"`;
     } else if (typeof value === "string" || value instanceof RegExp) {
       return JSON.stringify(value.toString());
     } else if (typeof value === "number") {
@@ -670,7 +670,7 @@ class Dumper {
     } else if (
       value instanceof Array
     ) {
-      const str = value.map((x) => this._printAsInlineValue(x)).join(",");
+      const str = value.map((x) => this.#printAsInlineValue(x)).join(",");
       return `[${str}]`;
     } else if (typeof value === "object") {
       if (!value) {
@@ -678,14 +678,14 @@ class Dumper {
       }
       const str = Object.keys(value).map((key) => {
         // deno-lint-ignore no-explicit-any
-        return `${key} = ${this._printAsInlineValue((value as any)[key])}`;
+        return `${key} = ${this.#printAsInlineValue((value as any)[key])}`;
       }).join(",");
       return `{${str}}`;
     }
 
     throw new Error("should never reach");
   }
-  _isSimplySerializable(value: unknown): boolean {
+  #isSimplySerializable(value: unknown): boolean {
     return (
       typeof value === "string" ||
       typeof value === "number" ||
@@ -693,42 +693,42 @@ class Dumper {
       value instanceof RegExp ||
       value instanceof Date ||
       (value instanceof Array &&
-        this._getTypeOfArray(value) !== ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY)
+        this.#getTypeOfArray(value) !== ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY)
     );
   }
-  _header(keys: string[]): string {
+  #header(keys: string[]): string {
     return `[${joinKeys(keys)}]`;
   }
-  _headerGroup(keys: string[]): string {
+  #headerGroup(keys: string[]): string {
     return `[[${joinKeys(keys)}]]`;
   }
-  _declaration(keys: string[]): string {
+  #declaration(keys: string[]): string {
     const title = joinKeys(keys);
     if (title.length > this.maxPad) {
       this.maxPad = title.length;
     }
     return `${title} = `;
   }
-  _arrayDeclaration(keys: string[], value: unknown[]): string {
-    return `${this._declaration(keys)}${JSON.stringify(value)}`;
+  #arrayDeclaration(keys: string[], value: unknown[]): string {
+    return `${this.#declaration(keys)}${JSON.stringify(value)}`;
   }
-  _strDeclaration(keys: string[], value: string): string {
-    return `${this._declaration(keys)}"${value}"`;
+  #strDeclaration(keys: string[], value: string): string {
+    return `${this.#declaration(keys)}"${value}"`;
   }
-  _numberDeclaration(keys: string[], value: number): string {
+  #numberDeclaration(keys: string[], value: number): string {
     switch (value) {
       case Infinity:
-        return `${this._declaration(keys)}inf`;
+        return `${this.#declaration(keys)}inf`;
       case -Infinity:
-        return `${this._declaration(keys)}-inf`;
+        return `${this.#declaration(keys)}-inf`;
       default:
-        return `${this._declaration(keys)}${value}`;
+        return `${this.#declaration(keys)}${value}`;
     }
   }
-  _boolDeclaration(keys: string[], value: boolean): string {
-    return `${this._declaration(keys)}${value}`;
+  #boolDeclaration(keys: string[], value: boolean): string {
+    return `${this.#declaration(keys)}${value}`;
   }
-  _printDate(value: Date): string {
+  #printDate(value: Date): string {
     function dtPad(v: string, lPad = 2): string {
       return v.padStart(lPad, "0");
     }
@@ -742,10 +742,10 @@ class Dumper {
     const fData = `${value.getUTCFullYear()}-${m}-${d}T${h}:${min}:${s}.${ms}`;
     return fData;
   }
-  _dateDeclaration(keys: string[], value: Date): string {
-    return `${this._declaration(keys)}${this._printDate(value)}`;
+  #dateDeclaration(keys: string[], value: Date): string {
+    return `${this.#declaration(keys)}${this.#printDate(value)}`;
   }
-  _format(): string[] {
+  #format(): string[] {
     const rDeclaration = /(.*)\s=/;
     const out = [];
     for (let i = 0; i < this.output.length; i++) {
