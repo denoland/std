@@ -1,8 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 import { createHash, SupportedAlgorithm } from "./mod.ts";
 import { Message } from "./hasher.ts";
 import * as bytes from "../bytes/mod.ts";
+import { dirname, fromFileUrl } from "../path/mod.ts";
+
+const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 const millionAs = "a".repeat(1000000);
 
@@ -454,6 +457,93 @@ Deno.test("[hash/all/base64] testAllBase64", () => {
       assertEquals(hash.update(input).toString("base64"), output);
     }
   }
+});
+
+Deno.test("[hash/memory_use] testMemoryUse", async () => {
+  const process = Deno.run({
+    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+    cwd: moduleDir,
+    stdout: "piped",
+    stdin: "piped",
+  });
+
+  await process.stdin.write(
+    new TextEncoder().encode(`
+      import { createHash } from "./mod.ts";
+      import { _wasm } from "./_wasm/wasm.js";
+
+      const { memory } = _wasm as { memory: WebAssembly.Memory };
+
+      const heapBytesInitial = memory.buffer.byteLength;
+
+      const smallData = new Uint8Array(64);
+      const smallHasher = createHash("md5");
+      smallHasher.update(smallData);
+      const smallDigest = smallHasher.toString();
+      const heapBytesAfterSmall = memory.buffer.byteLength;
+
+      const largeData = new Uint8Array(64_000_000);
+      const largeHasher = createHash("md5");
+      largeHasher.update(largeData);
+      const largeDigest = largeHasher.toString();
+      const heapBytesAfterLarge = memory.buffer.byteLength;
+
+      console.log(JSON.stringify(
+        {
+          heapBytesInitial,
+          smallDigest,
+          heapBytesAfterSmall,
+          largeDigest,
+          heapBytesAfterLarge,
+        },
+        null,
+        2,
+      ));
+    `),
+  );
+  process.stdin.close();
+
+  const stdout = new TextDecoder().decode(await process.output());
+  const status = await process.status();
+  process.close();
+
+  assertEquals(status.success, true);
+  const {
+    heapBytesInitial,
+    smallDigest,
+    heapBytesAfterSmall,
+    largeDigest,
+    heapBytesAfterLarge,
+  }: {
+    heapBytesInitial: number;
+    smallDigest: string;
+    heapBytesAfterSmall: number;
+    largeDigest: string;
+    heapBytesAfterLarge: number;
+  } = JSON.parse(stdout);
+
+  assertEquals(smallDigest, "3b5d3c7d207e37dceeedd301e35e2e58");
+  assertEquals(largeDigest, "e78585b8bfda6036cfd818710a210f23");
+
+  // Heap should stay under 2MB even though we provided a 64MB input.
+  assert(
+    heapBytesInitial < 2_000_000,
+    `WASM heap was too large initially: ${
+      (heapBytesInitial / 1_000_000).toFixed(1)
+    } MB`,
+  );
+  assert(
+    heapBytesAfterSmall < 2_000_000,
+    `WASM heap was too large after small input: ${
+      (heapBytesAfterSmall / 1_000_000).toFixed(1)
+    } MB`,
+  );
+  assert(
+    heapBytesAfterLarge < 2_000_000,
+    `WASM heap was too large after large input: ${
+      (heapBytesAfterLarge / 1_000_000).toFixed(1)
+    } MB`,
+  );
 });
 
 Deno.test("[hash/double_digest] testDoubleDigest", () => {

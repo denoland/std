@@ -127,6 +127,31 @@ Deno.test({
 });
 
 Deno.test({
+  name: "Cookie Domain Validation",
+  fn(): void {
+    const res: Response = {};
+    const tokens = ["-domain.com", "domain.org.", "domain.org-"];
+    res.headers = new Headers();
+    tokens.forEach((domain) => {
+      assertThrows(
+        (): void => {
+          setCookie(res, {
+            name: "Space",
+            value: "Cat",
+            httpOnly: true,
+            secure: true,
+            domain,
+            maxAge: 3,
+          });
+        },
+        Error,
+        "Invalid first/last char in cookie domain: " + domain,
+      );
+    });
+  },
+});
+
+Deno.test({
   name: "Cookie Delete",
   fn(): void {
     const res: Response = {};

@@ -41,6 +41,7 @@ export class Hash implements Hasher {
 
     // Messages will be split into chunks of this size to avoid unneccessarily
     // increasing the size of the WASM heap.
+    
     const chunkSize = 65_536;
 
     for (
