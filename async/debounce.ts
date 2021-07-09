@@ -41,7 +41,7 @@ export interface DebouncedFunction<T extends Array<unknown>> {
 // deno-lint-ignore no-explicit-any
 export function debounce<T extends Array<any>>(
   fn: (this: DebouncedFunction<T>, ...args: T) => void,
-  wait = 100,
+  wait: number,
 ): DebouncedFunction<T> {
   let timeout: number | null = null;
   let flush: (() => void) | null = null;

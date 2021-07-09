@@ -5,7 +5,7 @@ import { delay } from "./delay.ts";
 
 Deno.test("[async] debounce: called", async function () {
   let called = 0;
-  const d = debounce(() => called++);
+  const d = debounce(() => called++, 100);
   d();
   d();
   d();
@@ -18,7 +18,7 @@ Deno.test("[async] debounce: called", async function () {
 
 Deno.test("[async] debounce: canceld", async function () {
   let called = 0;
-  const d = debounce(() => called++);
+  const d = debounce(() => called++, 100);
   d();
   d();
   d();
@@ -32,7 +32,7 @@ Deno.test("[async] debounce: canceld", async function () {
 
 Deno.test("[async] debounce: flushed", function () {
   let called = 0;
-  const d = debounce(() => called++);
+  const d = debounce(() => called++, 100);
   d();
   d();
   d();
@@ -66,7 +66,7 @@ Deno.test("[async] debounce: with params & context", async function () {
 Deno.test("[async] debounce: with types", async function () {
   const params: Array<string> = [];
   const fn = (param: string) => params.push(param);
-  const d: DebouncedFunction<[string]> = debounce(fn);
+  const d: DebouncedFunction<[string]> = debounce(fn, 100);
   // @ts-expect-error Argument of type 'number' is not assignable to parameter of type 'string'.
   d(1);
   d("foo");
