@@ -60,7 +60,8 @@ const generatedWasm = await Deno.readFile("./out/deno_hash_bg.wasm");
 
 // Replace the lines loading the WASM from an external file with our inlined
 // copy, to avoid the need for net or read permissions.
-const inlinedScript = `// deno-lint-ignore-file
+const inlinedScript = `\
+  // deno-lint-ignore-file
   import * as base64 from "../../encoding/base64.ts"; ${
   generatedScript.replace(
     /^const file =.*?;\nconst wasmFile =.*?;\nconst wasmModule =.*?;\n/sm,
@@ -69,7 +70,11 @@ const inlinedScript = `// deno-lint-ignore-file
       base64.encode(generatedWasm).replace(/.{78}/g, "$&\\\n")
     }"));`,
   )
-}`;
+}
+
+  // only exposed for testing
+  export const _wasm = wasm;
+`;
 
 await Deno.writeFile("wasm.js", new TextEncoder().encode(inlinedScript));
 
