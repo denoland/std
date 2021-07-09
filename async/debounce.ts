@@ -5,7 +5,7 @@
  * time in milliseconds. If the method is called again before
  * the timeout expires, the previous call will be aborted.
  */
-export interface Debounce<T extends Array<unknown>> {
+export interface DebouncedFunction<T extends Array<unknown>> {
   (...args: T): void;
   /** Clears the debounce timeout and omits calling the debounced function. */
   clear(): void;
@@ -35,41 +35,41 @@ export interface Debounce<T extends Array<unknown>> {
  * }
  * ```
  *
- * @param func The function to debounce.
- * @param wait The time in milliseconds to delay the function.
+ * @param fn    The function to debounce.
+ * @param wait  The time in milliseconds to delay the function.
  */
 // deno-lint-ignore no-explicit-any
 export function debounce<T extends Array<any>>(
-  func: (this: Debounce<T>, ...args: T) => void,
+  fn: (this: DebouncedFunction<T>, ...args: T) => void,
   wait = 100,
-): Debounce<T> {
+): DebouncedFunction<T> {
   let timeout: number | null = null;
-  let debounced: (() => void) | null = null;
+  let flush: (() => void) | null = null;
 
-  const debounce: Debounce<T> = ((...args: T): void => {
-    debounce.clear();
-    debounced = (): void => {
-      debounce.clear();
-      func.call(debounce, ...args);
+  const debounced: DebouncedFunction<T> = ((...args: T): void => {
+    debounced.clear();
+    flush = (): void => {
+      debounced.clear();
+      fn.call(debounced, ...args);
     };
-    timeout = setTimeout(debounced, wait);
-  }) as Debounce<T>;
+    timeout = setTimeout(flush, wait);
+  }) as DebouncedFunction<T>;
 
-  debounce.clear = (): void => {
+  debounced.clear = (): void => {
     if (typeof timeout === "number") {
       clearTimeout(timeout);
       timeout = null;
-      debounced = null;
+      flush = null;
     }
   };
 
-  debounce.flush = (): void => {
-    debounced?.();
+  debounced.flush = (): void => {
+    flush?.();
   };
 
-  Object.defineProperty(debounce, "pending", {
+  Object.defineProperty(debounced, "pending", {
     get: () => typeof timeout === "number",
   });
 
-  return debounce;
+  return debounced;
 }
