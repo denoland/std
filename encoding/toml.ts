@@ -21,7 +21,7 @@ class ParserContext {
 }
 
 // Whitespace means tab or space in TOML. Other whitespace charactors are invalid.
-function trim(str: string) {
+export function trim(str: string) {
   const trimmed = str
     .replace(/^[ \t]*/, "")
     .replace(/[ \t]*$/, "");
