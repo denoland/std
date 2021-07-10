@@ -481,7 +481,7 @@ class Parser {
       }
     }
     if (inBasicString || inLiteral) {
-      throw new TOMLError("key don closed");
+      throw new TOMLError(`Invalid key: ${declaration}`);
     }
     if (acc.length !== 0) {
       out.push(acc.join(""));
