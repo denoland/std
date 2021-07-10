@@ -543,9 +543,6 @@ class Parser {
   _unflatProperties(obj: Record<string, unknown>): void {
     const keys = Object.keys(obj);
     for (const k of keys) {
-      if (!k) {
-        continue;
-      }
       let v = obj[k];
       const pathDeclaration = this._parseDeclarationName(k);
       const first = pathDeclaration.shift()!;
