@@ -6,6 +6,25 @@ async is a module to provide help with asynchronous tasks.
 
 The following functions and class are exposed in `mod.ts`:
 
+## debounce
+
+Debounces a given function by a given time.
+
+```typescript
+import { debounce } from "https://deno.land/std/async/mod.ts";
+
+const p = debounce(
+  (value: string) =>
+    console.log("Function debounced after 200ms with %s", value),
+  200,
+);
+p("foo");
+p("bar");
+p("baz");
+// wait 200ms ...
+// output: Function debounced after 200ms with baz
+```
+
 ## deferred
 
 Create a Promise with the `reject` and `resolve` functions.
