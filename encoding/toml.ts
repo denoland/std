@@ -64,7 +64,7 @@ class Parser {
 
   _removeComments(): void {
     function isFullLineComment(line: string) {
-      return line.match(/^#/) ? true : false;
+      return line.match(/^[ \t]*#/) ? true : false;
     }
 
     function stringStart(line: string) {
