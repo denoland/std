@@ -130,3 +130,16 @@ const [branch1, branch2] = tee(gen());
   }
 })();
 ```
+
+## deadline
+
+Create a promise which will be rejected with `DeadlineError` when a given delay
+is exceeded.
+
+```typescript
+import { deadline } from "https://deno.land/std/async/mod.ts";
+
+const delayedPromise = delay(1000);
+// Below throws `DeadlineError` after 10 ms
+const result = await deadline(delayedPromise, 10);
+```
