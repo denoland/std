@@ -93,17 +93,29 @@ Deno.test("[bytes] lastIndexOf with start index 2", () => {
 
 Deno.test("[bytes] equals", () => {
   const v = equals(new Uint8Array([0, 1, 2, 3]), new Uint8Array([0, 1, 2, 3]));
-  assertEquals(v, true);
+  const v2 = equals(new Uint8Array([0, 1, 2, 2]), new Uint8Array([0, 1, 2, 3]));
+  const v3 = equals(new Uint8Array([0, 1, 2, 3]), new Uint8Array([0, 1, 2]));
+  assert(v);
+  assert(!v2);
+  assert(!v3);
 });
 
 Deno.test("[bytes] startsWith", () => {
   const v = startsWith(new Uint8Array([0, 1, 2]), new Uint8Array([0, 1]));
-  assertEquals(v, true);
+  const v2 = startsWith(new Uint8Array([0, 1, 2]), new Uint8Array([0, 2]));
+  const v3 = startsWith(new Uint8Array([0, 1, 2]), new Uint8Array([0, 2, 3 ,4]));
+  assert(v);
+  assert(!v2);
+  assert(!v3);
 });
 
 Deno.test("[bytes] endsWith", () => {
   const v = endsWith(new Uint8Array([0, 1, 2]), new Uint8Array([1, 2]));
-  assertEquals(v, true);
+  const v2 = endsWith(new Uint8Array([0, 1, 2]), new Uint8Array([0, 1]));
+  const v3 = endsWith(new Uint8Array([0, 1, 2]), new Uint8Array([0, 1, 2, 3]));
+  assert(v);
+  assert(!v2);
+  assert(!v3);
 });
 
 Deno.test("[bytes] repeat", () => {
