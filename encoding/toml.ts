@@ -570,70 +570,74 @@ function joinKeys(keys: string[]): string {
     .join(".");
 }
 
+enum ArrayType {
+  ONLY_PRIMITIVE,
+  ONLY_OBJECT_EXCLUDING_ARRAY,
+  MIXED,
+}
+
 class Dumper {
   maxPad = 0;
   srcObject: Record<string, unknown>;
   output: string[] = [];
+  #arrayTypeCache = new Map<unknown[], ArrayType>();
   constructor(srcObjc: Record<string, unknown>) {
     this.srcObject = srcObjc;
   }
   dump(): string[] {
     // deno-lint-ignore no-explicit-any
-    this.output = this._parse(this.srcObject as any);
-    this.output = this._format();
+    this.output = this.#printObject(this.srcObject as any);
+    this.output = this.#format();
     return this.output;
   }
-  _parse(obj: Record<string, unknown>, keys: string[] = []): string[] {
+  #printObject(obj: Record<string, unknown>, keys: string[] = []): string[] {
     const out = [];
     const props = Object.keys(obj);
-    const propObj = props.filter((e: string): boolean => {
-      if (obj[e] instanceof Array) {
-        const d: unknown[] = obj[e] as unknown[];
-        return !this._isSimplySerializable(d[0]);
+    const inlineProps = [];
+    const multilinePorps = [];
+    for (const prop of props) {
+      if (this.#isSimplySerializable(obj[prop])) {
+        inlineProps.push(prop);
+      } else {
+        multilinePorps.push(prop);
       }
-      return !this._isSimplySerializable(obj[e]);
-    });
-    const propPrim = props.filter((e: string): boolean => {
-      if (obj[e] instanceof Array) {
-        const d: unknown[] = obj[e] as unknown[];
-        return this._isSimplySerializable(d[0]);
-      }
-      return this._isSimplySerializable(obj[e]);
-    });
-    const k = propPrim.concat(propObj);
-    for (let i = 0; i < k.length; i++) {
-      const prop = k[i];
+    }
+    const sortedProps = inlineProps.concat(multilinePorps);
+    for (let i = 0; i < sortedProps.length; i++) {
+      const prop = sortedProps[i];
       const value = obj[prop];
       if (value instanceof Date) {
-        out.push(this._dateDeclaration([prop], value));
+        out.push(this.#dateDeclaration([prop], value));
       } else if (typeof value === "string" || value instanceof RegExp) {
-        out.push(this._strDeclaration([prop], value.toString()));
+        out.push(this.#strDeclaration([prop], value.toString()));
       } else if (typeof value === "number") {
-        out.push(this._numberDeclaration([prop], value));
+        out.push(this.#numberDeclaration([prop], value));
       } else if (typeof value === "boolean") {
-        out.push(this._boolDeclaration([prop], value));
+        out.push(this.#boolDeclaration([prop], value));
       } else if (
-        value instanceof Array &&
-        this._isSimplySerializable(value[0])
+        value instanceof Array
       ) {
-        // only if primitives types in the array
-        out.push(this._arrayDeclaration([prop], value));
-      } else if (
-        value instanceof Array &&
-        !this._isSimplySerializable(value[0])
-      ) {
-        // array of objects
-        for (let i = 0; i < value.length; i++) {
-          out.push("");
-          out.push(this._headerGroup([...keys, prop]));
-          out.push(...this._parse(value[i], [...keys, prop]));
+        const arrayType = this.#getTypeOfArray(value);
+        if (arrayType === ArrayType.ONLY_PRIMITIVE) {
+          out.push(this.#arrayDeclaration([prop], value));
+        } else if (arrayType === ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY) {
+          // array of objects
+          for (let i = 0; i < value.length; i++) {
+            out.push("");
+            out.push(this.#headerGroup([...keys, prop]));
+            out.push(...this.#printObject(value[i], [...keys, prop]));
+          }
+        } else {
+          // this is a complex array, use the inline format.
+          const str = value.map((x) => this.#printAsInlineValue(x)).join(",");
+          out.push(`${prop} = [${str}]`);
         }
       } else if (typeof value === "object") {
         out.push("");
-        out.push(this._header([...keys, prop]));
+        out.push(this.#header([...keys, prop]));
         if (value) {
           const toParse = value as Record<string, unknown>;
-          out.push(...this._parse(toParse, [...keys, prop]));
+          out.push(...this.#printObject(toParse, [...keys, prop]));
         }
         // out.push(...this._parse(value, `${path}${prop}.`));
       }
@@ -641,49 +645,111 @@ class Dumper {
     out.push("");
     return out;
   }
-  _isSimplySerializable(value: unknown): boolean {
+  #isPrimitive(value: unknown): boolean {
+    return value instanceof Date ||
+      value instanceof RegExp ||
+      ["string", "number", "boolean"].includes(typeof value);
+  }
+  #getTypeOfArray(arr: unknown[]): ArrayType {
+    if (this.#arrayTypeCache.has(arr)) {
+      return this.#arrayTypeCache.get(arr)!;
+    }
+    const type = this.#doGetTypeOfArray(arr);
+    this.#arrayTypeCache.set(arr, type);
+    return type;
+  }
+  #doGetTypeOfArray(arr: unknown[]): ArrayType {
+    if (!arr.length) {
+      // any type should be fine
+      return ArrayType.ONLY_PRIMITIVE;
+    }
+
+    const onlyPrimitive = this.#isPrimitive(arr[0]);
+    if (arr[0] instanceof Array) {
+      return ArrayType.MIXED;
+    }
+    for (let i = 1; i < arr.length; i++) {
+      if (
+        onlyPrimitive !== this.#isPrimitive(arr[i]) || arr[i] instanceof Array
+      ) {
+        return ArrayType.MIXED;
+      }
+    }
+    return onlyPrimitive
+      ? ArrayType.ONLY_PRIMITIVE
+      : ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY;
+  }
+  #printAsInlineValue(value: unknown): string | number {
+    if (value instanceof Date) {
+      return `"${this.#printDate(value)}"`;
+    } else if (typeof value === "string" || value instanceof RegExp) {
+      return JSON.stringify(value.toString());
+    } else if (typeof value === "number") {
+      return value;
+    } else if (typeof value === "boolean") {
+      return value.toString();
+    } else if (
+      value instanceof Array
+    ) {
+      const str = value.map((x) => this.#printAsInlineValue(x)).join(",");
+      return `[${str}]`;
+    } else if (typeof value === "object") {
+      if (!value) {
+        throw new Error("should never reach");
+      }
+      const str = Object.keys(value).map((key) => {
+        // deno-lint-ignore no-explicit-any
+        return `${key} = ${this.#printAsInlineValue((value as any)[key])}`;
+      }).join(",");
+      return `{${str}}`;
+    }
+
+    throw new Error("should never reach");
+  }
+  #isSimplySerializable(value: unknown): boolean {
     return (
       typeof value === "string" ||
       typeof value === "number" ||
       typeof value === "boolean" ||
       value instanceof RegExp ||
       value instanceof Date ||
-      value instanceof Array
+      (value instanceof Array &&
+        this.#getTypeOfArray(value) !== ArrayType.ONLY_OBJECT_EXCLUDING_ARRAY)
     );
   }
-  _header(keys: string[]): string {
+  #header(keys: string[]): string {
     return `[${joinKeys(keys)}]`;
   }
-  _headerGroup(keys: string[]): string {
+  #headerGroup(keys: string[]): string {
     return `[[${joinKeys(keys)}]]`;
   }
-  _declaration(keys: string[]): string {
+  #declaration(keys: string[]): string {
     const title = joinKeys(keys);
     if (title.length > this.maxPad) {
       this.maxPad = title.length;
     }
     return `${title} = `;
   }
-  _arrayDeclaration(keys: string[], value: unknown[]): string {
-    return `${this._declaration(keys)}${JSON.stringify(value)}`;
+  #arrayDeclaration(keys: string[], value: unknown[]): string {
+    return `${this.#declaration(keys)}${JSON.stringify(value)}`;
   }
-  _strDeclaration(keys: string[], value: string): string {
-    return `${this._declaration(keys)}"${value}"`;
+  #strDeclaration(keys: string[], value: string): string {
+    return `${this.#declaration(keys)}"${value}"`;
   }
-  _numberDeclaration(keys: string[], value: number): string {
+  #numberDeclaration(keys: string[], value: number): string {
     switch (value) {
       case Infinity:
-        return `${this._declaration(keys)}inf`;
+        return `${this.#declaration(keys)}inf`;
       case -Infinity:
-        return `${this._declaration(keys)}-inf`;
+        return `${this.#declaration(keys)}-inf`;
       default:
-        return `${this._declaration(keys)}${value}`;
+        return `${this.#declaration(keys)}${value}`;
     }
   }
-  _boolDeclaration(keys: string[], value: boolean): string {
-    return `${this._declaration(keys)}${value}`;
+  #boolDeclaration(keys: string[], value: boolean): string {
+    return `${this.#declaration(keys)}${value}`;
   }
-  _dateDeclaration(keys: string[], value: Date): string {
+  #printDate(value: Date): string {
     function dtPad(v: string, lPad = 2): string {
       return v.padStart(lPad, "0");
     }
@@ -695,9 +761,12 @@ class Dumper {
     const ms = dtPad(value.getUTCMilliseconds().toString(), 3);
     // formatted date
     const fData = `${value.getUTCFullYear()}-${m}-${d}T${h}:${min}:${s}.${ms}`;
-    return `${this._declaration(keys)}${fData}`;
+    return fData;
   }
-  _format(): string[] {
+  #dateDeclaration(keys: string[], value: Date): string {
+    return `${this.#declaration(keys)}${this.#printDate(value)}`;
+  }
+  #format(): string[] {
     const rDeclaration = /(.*)\s=/;
     const out = [];
     for (let i = 0; i < this.output.length; i++) {

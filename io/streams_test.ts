@@ -10,7 +10,8 @@ import {
   writerFromStreamWriter,
 } from "./streams.ts";
 import { Buffer } from "./buffer.ts";
-import { concat, copy } from "../bytes/mod.ts";
+import { concat, copy as copyBytes } from "../bytes/mod.ts";
+import { copy } from "./util.ts";
 
 function repeat(c: string, bytes: number): Uint8Array {
   assertEquals(c.length, 1);
@@ -122,7 +123,7 @@ Deno.test("[io] readerFromStreamReader() big chunks", async function () {
   });
 
   const reader = readerFromStreamReader(readableStream.getReader());
-  const n = await Deno.copy(reader, writer, { bufSize });
+  const n = await copy(reader, writer, { bufSize });
 
   const expectedWritten = chunkSize * expected.length;
   assertEquals(n, chunkSize * expected.length);
@@ -158,7 +159,7 @@ Deno.test("[io] readerFromStreamReader() irregular chunks", async function () {
 
   const reader = readerFromStreamReader(readableStream.getReader());
 
-  const n = await Deno.copy(reader, writer, { bufSize });
+  const n = await copy(reader, writer, { bufSize });
   assertEquals(n, expected.length);
   assertEquals(expected, writer.bytes());
 });
@@ -320,7 +321,7 @@ class MockReaderCloser implements Deno.Reader, Deno.Closer {
     }
     const chunk = this.chunks.shift();
     if (chunk) {
-      const copied = copy(chunk, p);
+      const copied = copyBytes(chunk, p);
       if (copied < chunk.length) {
         this.chunks.unshift(chunk.subarray(copied));
       }
