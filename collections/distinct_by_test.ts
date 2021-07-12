@@ -76,7 +76,7 @@ Deno.test({
     distinctByTest(
       nans,
       (it) => it,
-      nans,
+      [nans[0]],
     );
 
     const noops = [() => {}, () => {}];
