@@ -21,8 +21,22 @@ import { Grouping, Selector } from "./types.ts";
  * ```
  */
 export function groupBy<T>(
-  _array: Array<T>,
-  _selector: Selector<T, string>,
+  array: Array<T>,
+  selector: Selector<T, string>,
 ): Grouping<T> {
-  throw new Error("unimplemented");
+  const ret: { [key: string]: Array<T> } = {};
+
+  array.forEach((it) => {
+    const key = selector(it);
+
+    if (ret[key] === undefined) {
+      ret[key] = [it];
+
+      return;
+    }
+
+    ret[key].push(it);
+  });
+
+  return ret;
 }
