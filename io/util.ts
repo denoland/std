@@ -1,5 +1,5 @@
 import { Buffer } from "./buffer.ts";
-import { copy } from "../bytes/mod.ts";
+import { copy as copyBytes } from "../bytes/mod.ts";
 import { assert } from "../testing/asserts.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
@@ -90,7 +90,7 @@ export async function readRange(
     const nread = await r.read(p);
     assert(nread !== null, "Unexpected EOF reach while reading a range.");
     assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
-    copy(p, result, off);
+    copyBytes(p, result, off);
     off += nread;
     length -= nread;
     assert(length >= 0, "Unexpected length remaining after reading range.");
@@ -125,7 +125,7 @@ export function readRangeSync(
     const nread = r.readSync(p);
     assert(nread !== null, "Unexpected EOF reach while reading a range.");
     assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
-    copy(p, result, off);
+    copyBytes(p, result, off);
     off += nread;
     length -= nread;
     assert(length >= 0, "Unexpected length remaining after reading range.");
@@ -280,4 +280,45 @@ export function* iterSync(
 
     yield b.subarray(0, result);
   }
+}
+
+/** Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
+ * an error occurs. It resolves to the number of bytes copied or rejects with
+ * the first error encountered while copying.
+ *
+ * ```ts
+ * const source = await Deno.open("my_file.txt");
+ * const bytesCopied1 = await copy(source, Deno.stdout);
+ * const destination = await Deno.create("my_file_2.txt");
+ * const bytesCopied2 = await copy(source, destination);
+ * ```
+ *
+ * @param src The source to copy from
+ * @param dst The destination to copy to
+ * @param options Can be used to tune size of the buffer. Default size is 32kB
+ */
+export async function copy(
+  src: Deno.Reader,
+  dst: Deno.Writer,
+  options?: {
+    bufSize?: number;
+  },
+): Promise<number> {
+  let n = 0;
+  const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
+  const b = new Uint8Array(bufSize);
+  let gotEOF = false;
+  while (gotEOF === false) {
+    const result = await src.read(b);
+    if (result === null) {
+      gotEOF = true;
+    } else {
+      let nwritten = 0;
+      while (nwritten < result) {
+        nwritten += await dst.write(b.subarray(nwritten, result));
+      }
+      n += nwritten;
+    }
+  }
+  return n;
 }

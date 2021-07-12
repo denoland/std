@@ -14,7 +14,7 @@ import { assert, assertEquals } from "../testing/asserts.ts";
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
 import { Tar, Untar } from "./tar.ts";
 import { Buffer } from "../io/buffer.ts";
-import { readAll } from "../io/util.ts";
+import { copy, readAll } from "../io/util.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -63,7 +63,7 @@ Deno.test("createTarArchive", async function () {
 
   // write tar data to a buffer
   const writer = new Buffer();
-  const wrote = await Deno.copy(tar.getReader(), writer);
+  const wrote = await copy(tar.getReader(), writer);
 
   /**
    * 3072 = 512 (header) + 512 (content) + 512 (header) + 512 (content)
@@ -207,7 +207,7 @@ Deno.test(
 
     const tar = await createTar(entries);
     const file = await Deno.open(outputFile, { create: true, write: true });
-    await Deno.copy(tar.getReader(), file);
+    await copy(tar.getReader(), file);
     file.close();
 
     const reader = await Deno.open(outputFile, { read: true });
@@ -242,7 +242,7 @@ Deno.test("untarAsyncIteratorFromFileReader", async function () {
 
   const tar = await createTar(entries);
   const file = await Deno.open(outputFile, { create: true, write: true });
-  await Deno.copy(tar.getReader(), file);
+  await copy(tar.getReader(), file);
   file.close();
 
   const reader = await Deno.open(outputFile, { read: true });
@@ -423,8 +423,8 @@ Deno.test("directoryEntryType", async function () {
 
   const outputFile = resolve(testdataDir, "directory_type_test.tar");
   const file = await Deno.open(outputFile, { create: true, write: true });
-  await Deno.copy(tar.getReader(), file);
-  await file.close();
+  await copy(tar.getReader(), file);
+  file.close();
 
   const reader = await Deno.open(outputFile, { read: true });
   const untar = new Untar(reader);
@@ -432,6 +432,6 @@ Deno.test("directoryEntryType", async function () {
     assertEquals(entry.type, "directory");
   }
 
-  await reader.close();
+  reader.close();
   await Deno.remove(outputFile);
 });

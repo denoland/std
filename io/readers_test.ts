@@ -3,7 +3,7 @@ import { assertEquals } from "../testing/asserts.ts";
 import { LimitedReader, MultiReader, StringReader } from "./readers.ts";
 import { StringWriter } from "./writers.ts";
 import { copyN } from "./ioutil.ts";
-import { readAll } from "../io/util.ts";
+import { copy, readAll } from "../io/util.ts";
 
 Deno.test("ioStringReader", async function () {
   const r = new StringReader("abcdef");
@@ -34,7 +34,7 @@ Deno.test("ioMultiReader", async function () {
   const n = await copyN(r, w, 4);
   assertEquals(n, 4);
   assertEquals(w.toString(), "abcd");
-  await Deno.copy(r, w);
+  await copy(r, w);
   assertEquals(w.toString(), "abcdef");
 });
 
@@ -60,6 +60,6 @@ Deno.test("ioLimitedReader", async function () {
 Deno.test("ioLimitedReader", async function () {
   const rb = new StringReader("abc");
   const wb = new StringWriter();
-  await Deno.copy(new LimitedReader(rb, -1), wb);
+  await copy(new LimitedReader(rb, -1), wb);
   assertEquals(wb.toString(), "");
 });

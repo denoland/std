@@ -4,7 +4,7 @@ import { TextProtoReader } from "../textproto/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { Response, ServerRequest } from "./server.ts";
 import { STATUS_TEXT } from "./http_status.ts";
-import { iter } from "../io/util.ts";
+import { copy, iter } from "../io/util.ts";
 
 const encoder = new TextEncoder();
 
@@ -280,7 +280,7 @@ export async function writeResponse(
     const contentLength = headers.get("content-length");
     assert(contentLength != null);
     const bodyLength = parseInt(contentLength);
-    const n = await Deno.copy(r.body, writer);
+    const n = await copy(r.body, writer);
     assert(n === bodyLength);
   } else {
     await writeChunkedBody(writer, r.body);
