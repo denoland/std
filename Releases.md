@@ -1,3 +1,31 @@
+### 0.101.0 / 2021.07.13
+
+- BREAKING(encoding/hex): remove encodedLen, encodeToString, decodedLen,
+  decodeString, errInvalidByte, errLength (#733)
+- BREAKING(mime/multipart): return array for multiple values with same form name
+  (#722)
+- BREAKING(std/uuid): rework v4 and v5 module (#971)
+- feat(async): add `deadline` to async module (#1022)
+- feat(async): add debounce method to async module (#1006)
+- feat(encoding/toml): fix bad string format. Improve coverage (#991)
+- feat(hash): add BLAKE3 hash support (#994)
+- feat(http): Add Cookie domain validation (#1009)
+- feat(http): Allow passing path and domain attributes while removing cookies
+  (#1005)
+- feat(io): add `copy` function (#1016)
+- feat(io/streams): add autoClose option to writableStreamFromWriter (#964)
+- feat(std/node): add writeBuffer of internal binding fs module (#888)
+- fix: improve type safety for browser-compatible modules (#995)
+- fix(encoding/toml): serializes mixed array (#1001)
+- fix(encoding/toml): throws parse error when toml uses invalid whitespaces
+  (#1013)
+- fix(http): `setCookie` with `maxAge` of `0` (#992)
+- fix(http/server): Swallow NotConnected errors from listener.accept() (#761)
+- fix(io/bufio): fix handling of trailing new line (#990)
+- fix(node/module): More descriptive error in "createRequire" (#997)
+- fix(path): Add question mark as a glob indicator (#1024)
+- fix(testing): use return type of never for `fail` (#1002)
+
 ### 0.100.0 / 2021.06.29
 
 - feat(testing/asserts): improved strings diff (#948)
