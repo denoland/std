@@ -12,6 +12,18 @@ function intersectTest<I>(
 }
 
 Deno.test({
+  name: "[collections/intersect] no mutation",
+  fn() {
+    const arrayA = [1, 2, 3];
+    const arrayB = [3, 4, 5];
+    const intersection = intersect(arrayA, arrayB);
+
+    assertEquals(arrayA, [1, 2, 3]);
+    assertEquals(arrayB, [3, 4, 5]);
+  },
+});
+
+Deno.test({
   name: "[collections/intersect] empty arrays",
   fn() {
     intersectTest([[], []], []);
