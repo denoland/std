@@ -16,8 +16,19 @@ import { Predicate } from "./types.ts";
  * ```
  */
 export function partition<T>(
-  _array: Array<T>,
-  _predicate: Predicate<T>,
+  array: Array<T>,
+  predicate: Predicate<T>,
 ): [Array<T>, Array<T>] {
-  throw new Error("unimplemented");
+  const matches: Array<T> = [];
+  const rest: Array<T> = [];
+
+  array.forEach((it) => {
+    if (predicate(it)) {
+      matches.push(it);
+    } else {
+      rest.push(it);
+    }
+  });
+
+  return [matches, rest];
 }
