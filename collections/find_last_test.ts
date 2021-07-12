@@ -12,7 +12,7 @@ function findLastTest<I>(
 }
 
 Deno.test({
-  name: "[collections/union] no mutation",
+  name: "[collections/findLast] no mutation",
   fn() {
     const array = [1, 2, 3];
     findLast(array, (it) => it % 2 === 0);
@@ -22,7 +22,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] empty input",
+  name: "[collections/findLast] empty input",
   fn() {
     findLastTest(
       [[], (_) => true],
@@ -32,7 +32,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] no matches",
+  name: "[collections/findLast] no matches",
   fn() {
     findLastTest(
       [[9, 11, 13], (it) => it % 2 === 0],
@@ -50,7 +50,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] only match",
+  name: "[collections/findLast] only match",
   fn() {
     findLastTest(
       [[9, 12, 13], (it) => it % 2 === 0],
@@ -68,7 +68,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/union] multiple matches",
+  name: "[collections/findLast] multiple matches",
   fn() {
     findLastTest(
       [[9, 12, 13, 14], (it) => it % 2 === 0],

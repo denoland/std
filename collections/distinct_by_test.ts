@@ -13,7 +13,7 @@ function distinctByTest<I>(
 }
 
 Deno.test({
-  name: "identities on empty array",
+  name: "[collections/distinctBy] identities on empty array",
   fn() {
     distinctByTest(
       [],
@@ -24,7 +24,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "gets head on noop selector",
+  name: "[collections/distinctBy] gets head on noop selector",
   fn() {
     distinctByTest(
       [25, "asdf", true],
@@ -35,7 +35,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "removes duplicates and preserves order on identity",
+  name: "[collections/distinctBy] removes duplicates and preserves order on identity",
   fn() {
     distinctByTest(
       [true, "asdf", 4, "asdf", true],
@@ -56,7 +56,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "does not check for deep equality on identity",
+  name: "[collections/distinctBy] does not check for deep equality on identity",
   fn() {
     const objects = [{ foo: "bar" }, { foo: "bar" }];
     distinctByTest(
@@ -96,7 +96,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "distincts by selected value and preserves order",
+  name: "[collections/distinctBy] distincts by selected value and preserves order",
   fn() {
     const kim = { name: "Kim", age: 22 };
     const arthur = { name: "Arthur", age: 22 };
