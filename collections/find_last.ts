@@ -21,7 +21,7 @@ export function findLast<T>(
   }
 
   for (let i = array.length - 1; i >= 0; i -= 1) {
-    let element = array[i];
+    const element = array[i];
 
     if (predicate(element)) {
       return element;

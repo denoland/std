@@ -20,7 +20,7 @@ Deno.test({
   name: "[collections/chunked] no mutation",
   fn() {
     const array = [1, 2, 3, 4];
-    const chunks = chunked(array, 2);
+    chunked(array, 2);
 
     assertEquals(array, [1, 2, 3, 4]);
   },

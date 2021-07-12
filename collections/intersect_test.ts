@@ -16,7 +16,7 @@ Deno.test({
   fn() {
     const arrayA = [1, 2, 3];
     const arrayB = [3, 4, 5];
-    const intersection = intersect(arrayA, arrayB);
+    intersect(arrayA, arrayB);
 
     assertEquals(arrayA, [1, 2, 3]);
     assertEquals(arrayB, [3, 4, 5]);
