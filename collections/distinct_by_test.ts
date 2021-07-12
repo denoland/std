@@ -35,7 +35,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/distinctBy] removes duplicates and preserves order on identity",
+  name:
+    "[collections/distinctBy] removes duplicates and preserves order on identity",
   fn() {
     distinctByTest(
       [true, "asdf", 4, "asdf", true],
@@ -96,7 +97,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/distinctBy] distincts by selected value and preserves order",
+  name:
+    "[collections/distinctBy] distincts by selected value and preserves order",
   fn() {
     const kim = { name: "Kim", age: 22 };
     const arthur = { name: "Arthur", age: 22 };
