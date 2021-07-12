@@ -237,12 +237,12 @@ export async function serveFile(
   ]);
 
   const headers = new Headers();
-  headers.set('server', 'deno');
+  headers.set("server", "deno");
 
   // Base response
   const response = {
     status: 200,
-    statusText: 'OK',
+    statusText: "OK",
     body: new Uint8Array(),
     headers
   };
@@ -256,37 +256,32 @@ export async function serveFile(
   // Set date header if access timestamp is available
   if (fileInfo.atime instanceof Date) {
     const date = new Date(fileInfo.atime);
-    headers.set('date', date.toUTCString());
+    headers.set("date", date.toUTCString());
   }
 
   // Set last modified header if access timestamp is available
   if (fileInfo.mtime instanceof Date) {
     const lastModified = new Date(fileInfo.mtime);
-    headers.set('last-modified', lastModified.toUTCString());
+    headers.set("last-modified", lastModified.toUTCString());
 
     // Create a simple etag that is an md5 of the last modified date and filesize concatenated
-    const simpleEtag = createHash('md5').update(`${lastModified.toJSON()}${fileInfo.size}`).toString();
-    headers.set('etag', simpleEtag);
+    const simpleEtag = createHash("md5").update(`${lastModified.toJSON()}${fileInfo.size}`).toString();
+    headers.set("etag", simpleEtag);
 
     // If a `if-node-match` header is present and the value matches the tag return 304
-    const ifNoneMatch = req.headers.get('if-none-match');
+    const ifNoneMatch = req.headers.get("if-none-match");
     if (ifNoneMatch && ifNoneMatch === simpleEtag) {
       response.status = 304;
-      response.statusText = 'Not Modified';
+      response.statusText = "Not Modified";
       return response;
     }
   }
     
-  // Set 'accept-ranges' so that the server knows it can make range requests on future requests
-  headers.set('accept-ranges', 'bytes');
+  // Set "accept-ranges" so that the server knows it can make range requests on future requests
+  headers.set("accept-ranges", "bytes");
   
-  // Get and parse the 'range' header
-  const range = req.headers.get('range') as string;
-  if (range) {
-    response.status = 206;
-    response.statusText = 'Partial Content';
-    headers.set('Content-Range', `bytes ${start}-${end}/${fileInfo.size}`);
-  }
+  // Get and parse the "range" header
+  const range = req.headers.get("range") as string;
   const rangeRe = /bytes=(\d+)-(\d+)?/;
   const parsed = rangeRe.exec(range);
   
@@ -294,11 +289,18 @@ export async function serveFile(
   const start = parsed && parsed[1] ? +parsed[1] : 0;
   const end   = parsed && parsed[2] ? +parsed[2] : fileInfo.size - 1;
   
+  // If there is a range, set the status to 206, and set the "Content-range" header.
+  if (range) {
+    response.status = 206;
+    response.statusText = "Partial Content";
+    headers.set("content-range", `bytes ${start}-${end}/${fileInfo.size}`);
+  }
+
   // Return 416 if `start` isn't less than `end`, or `start` or `end` are greater than the file's size
   const maxRange = fileInfo.size - 1;
   if (!(start < end) || start > maxRange || end > maxRange) {
     response.status = 416;
-    response.statusText = 'Requested Range Not Satisfiable';
+    response.statusText = "Requested Range Not Satisfiable";
     return response;
   }
 
