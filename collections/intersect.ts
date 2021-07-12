@@ -1,5 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+import { filterInPlace } from "./_utils.ts";
+
 /**
  * Returns all distinct elements that appear in both given arrays
  *
@@ -13,7 +15,18 @@
  * console.assert(commonInterests === [ 'Cooking', 'Music' ])
  * ```
  */
-export function intersect<T>(_a: Array<T>, _b: Array<T>): Array<T> {
-  // TODO(wperron) implement this
-  return [];
+export function intersect<T>(...arrays: Array<Array<T>>): Array<T> {
+  const [originalHead, ...tail] = arrays;
+  const head = [...originalHead];
+  const sets = tail.map((it) => new Set(it));
+
+  return sets
+    .reduce<Array<T>>(
+      (acc, cur) =>
+        filterInPlace(
+          acc,
+          (it) => cur.has(it),
+        ),
+      head,
+    );
 }

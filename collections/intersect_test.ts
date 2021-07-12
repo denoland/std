@@ -48,10 +48,12 @@ Deno.test({
       [{ foo: "bar" }, { bar: "baz" }],
       [{ fruit: "banana" }],
     ], []);
+
+    const obj = { bar: "baz" };
     intersectTest<Record<string, string>>([
-      [{ foo: "bar" }, { bar: "baz" }],
-      [{ bar: "baz" }],
-    ], [{ bar: "baz" }]);
+      [{ foo: "bar" }, obj],
+      [obj],
+    ], [obj]);
     intersectTest<Record<string, string>>([
       [{ foo: "bar" }, { bar: "baz" }],
       [{ bar: "banana" }],
@@ -66,10 +68,12 @@ Deno.test({
       [() => {}, () => null],
       [() => NaN],
     ], []);
+
+    const emptyObjectFunction = () => {};
     intersectTest([
-      [() => {}, () => null],
-      [() => {}],
-    ], [() => {}]);
+      [emptyObjectFunction, () => null],
+      [emptyObjectFunction],
+    ], [emptyObjectFunction]);
     intersectTest([
       [(a: number, b: number) => a + b, () => null],
       [(a: number, b: number) => a - b],
