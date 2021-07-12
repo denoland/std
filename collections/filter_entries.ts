@@ -21,8 +21,17 @@ import { Predicate } from "./types.ts";
  * ```
  */
 export function filterEntries<T>(
-  _record: Record<string, T>,
-  _predicate: Predicate<[string, T]>,
+  record: Record<string, T>,
+  predicate: Predicate<[string, T]>,
 ): Record<string, T> {
-  throw new Error("unimplemented");
+  const ret: Record<string, T> = {};
+  const entries = Object.entries(record);
+
+  entries.forEach(([key, value]) => {
+    if (predicate([key, value])) {
+      ret[key] = value;
+    }
+  });
+
+  return ret;
 }
