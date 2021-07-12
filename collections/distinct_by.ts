@@ -14,8 +14,22 @@
  */
 export function distinctBy<T>(
   array: Array<T>,
-  _selector: (element: T) => unknown,
+  selector: (element: T) => unknown,
 ): Array<T> {
-  // TODO implement me
-  return array;
+  const selectedValues = new Set();
+
+  return array
+    .reduce<Array<T>>(
+      (acc, cur) => {
+        const currentSelectedValue = selector(cur);
+
+        if (!selectedValues.has(currentSelectedValue)) {
+          selectedValues.add(currentSelectedValue);
+          acc.push(cur);
+        }
+
+        return acc;
+      },
+      [],
+    );
 }
