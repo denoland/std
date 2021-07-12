@@ -425,6 +425,37 @@ the     = "array"
 });
 
 Deno.test({
+  name: "[TOML] Mixed Array",
+  fn(): void {
+    const src = {
+      emptyArray: [],
+      mixedArray1: [1, { b: 2 }],
+      mixedArray2: [{ b: 2 }, 1],
+      nestedArray1: [[{ b: 1 }]],
+      nestedArray2: [[[{ b: 1 }]]],
+      nestedArray3: [[], [{ b: 1 }]],
+      deepNested: {
+        a: {
+          b: [1, { c: 2, d: [{ e: 3 }, true] }],
+        },
+      },
+    };
+    const expected = `emptyArray = []
+mixedArray1 = [1,{b = 2}]
+mixedArray2 = [{b = 2},1]
+nestedArray1 = [[{b = 1}]]
+nestedArray2 = [[[{b = 1}]]]
+nestedArray3 = [[],[{b = 1}]]
+
+[deepNested.a]
+b = [1,{c = 2,d = [{e = 3},true]}]
+`;
+    const actual = stringify(src);
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
   name: "[TOML] Comments",
   fn: () => {
     const expected = {
