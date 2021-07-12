@@ -13,8 +13,20 @@ import { Predicate } from "./types.ts";
  * ```
  */
 export function findLast<T>(
-  _array: Array<T>,
-  _predicate: Predicate<T>,
+  array: Array<T>,
+  predicate: Predicate<T>,
 ): T | undefined {
-  throw new Error("unimplemented");
+  if (array.length === 0) {
+    return undefined;
+  }
+
+  for (let i = array.length - 1; i >= 0; i -= 1) {
+    let element = array[i];
+
+    if (predicate(element)) {
+      return element;
+    }
+  }
+
+  return undefined;
 }
