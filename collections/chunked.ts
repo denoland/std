@@ -17,8 +17,29 @@
  * ```
  */
 export function chunked<T>(
-  _array: Array<T>,
-  _size: number,
+  array: Array<T>,
+  size: number,
 ): Array<Array<T>> {
-  throw new Error("unimplemented");
+  if (size <= 0 || !Number.isInteger(size)) {
+    throw new Error(
+      `Expected size to be an integer greather than 0 but found ${size}`,
+    );
+  }
+
+  if (array.length === 0) {
+    return [];
+  }
+
+  const ret = new Array(Math.ceil(array.length / size));
+  let readIndex = 0;
+  let writeIndex = 0;
+
+  while (readIndex < array.length) {
+    ret[writeIndex] = array.slice(readIndex, readIndex + size);
+
+    writeIndex += 1;
+    readIndex += size;
+  }
+
+  return ret;
 }
