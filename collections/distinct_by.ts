@@ -14,7 +14,7 @@
  */
 export function distinctBy<T>(
   array: Array<T>,
-  selector: (element: T) => unknown,
+  _selector: (element: T) => unknown,
 ): Array<T> {
   // TODO implement me
   return array;

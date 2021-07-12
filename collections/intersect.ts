@@ -13,7 +13,7 @@
  * console.assert(commonInterests === [ 'Cooking', 'Music' ])
  * ```
  */
-export function intersect<T>(a: Array<T>, b: Array<T>): Array<T> {
+export function intersect<T>(_a: Array<T>, _b: Array<T>): Array<T> {
   // TODO(wperron) implement this
   return [];
 }
