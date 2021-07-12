@@ -46,7 +46,7 @@ Deno.test({
     distinctTest(arrays, arrays);
 
     const nans = [NaN, NaN];
-    distinctTest(nans, nans);
+    distinctTest(nans, [nans[0]]);
 
     const noops = [() => {}, () => {}];
     distinctTest(noops, noops);
