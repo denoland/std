@@ -19,8 +19,22 @@
  * ```
  */
 export function zip<T, U>(
-  _array: Array<T>,
-  _withArray: Array<U>,
+  array: Array<T>,
+  withArray: Array<U>,
 ): Array<[T, U]> {
-  throw new Error("unimplemented");
+  const returnLength = Math.min(
+    array.length,
+    withArray.length,
+  );
+
+  const ret: Array<[T, U]> = [];
+
+  for (let i = 0; i < returnLength; i += 1) {
+    ret.push([
+      array[i],
+      withArray[i],
+    ]);
+  }
+
+  return ret;
 }
