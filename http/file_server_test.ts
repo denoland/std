@@ -160,8 +160,6 @@ Deno.test(
     await startFileServer();
     try {
       const res = await fetch("http://localhost:4507/README.md");
-      assert(res.headers.has("access-control-allow-origin"));
-      assert(res.headers.has("access-control-allow-headers"));
       assertEquals(res.headers.get("content-type"), "text/markdown");
       const downloadedFile = await res.text();
       const localFile = new TextDecoder().decode(
@@ -180,8 +178,6 @@ Deno.test(
     await startFileServer({ target: "./testdata" });
     try {
       const res = await fetch("http://localhost:4507/hello.html");
-      assert(res.headers.has("access-control-allow-origin"));
-      assert(res.headers.has("access-control-allow-headers"));
       assertEquals(res.headers.get("content-type"), "text/html");
       const downloadedFile = await res.text();
       const localFile = new TextDecoder().decode(
@@ -198,8 +194,6 @@ Deno.test("serveDirectory", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/");
-    assert(res.headers.has("access-control-allow-origin"));
-    assert(res.headers.has("access-control-allow-headers"));
     const page = await res.text();
     assert(page.includes("README.md"));
     assert(page.includes(`<a href="/testdata/">testdata/</a>`));
@@ -221,8 +215,6 @@ Deno.test("serveFallback", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/badfile.txt");
-    assert(res.headers.has("access-control-allow-origin"));
-    assert(res.headers.has("access-control-allow-headers"));
     assertEquals(res.status, 404);
     const _ = await res.text();
   } finally {
@@ -236,8 +228,7 @@ Deno.test("checkPathTraversal", async function () {
     const res = await fetch(
       "http://localhost:4507/../../../../../../../..",
     );
-    assert(res.headers.has("access-control-allow-origin"));
-    assert(res.headers.has("access-control-allow-headers"));
+
     assertEquals(res.status, 200);
     const listing = await res.text();
     assertStringIncludes(listing, "README.md");
@@ -278,8 +269,7 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
     const res = await fetch(
       "http://localhost:4507/%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..",
     );
-    assert(res.headers.has("access-control-allow-origin"));
-    assert(res.headers.has("access-control-allow-headers"));
+
     assertEquals(res.status, 404);
     const _ = await res.text();
   } finally {
@@ -290,16 +280,28 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
 Deno.test("serveWithUnorthodoxFilename", async function () {
   await startFileServer();
   try {
-    let res = await fetch("http://localhost:4507/testdata/%");
-    assert(res.headers.has("access-control-allow-origin"));
-    assert(res.headers.has("access-control-allow-headers"));
-    assertEquals(res.status, 200);
-    let _ = await res.text();
-    res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-    assert(res.headers.has("access-control-allow-origin"));
-    assert(res.headers.has("access-control-allow-headers"));
-    assertEquals(res.status, 200);
-    _ = await res.text();
+    const malformedRes = await fetch("http://localhost:4507/testdata/%");
+    assertEquals(malformedRes.status, 400);
+    await malformedRes.text(); // Consuming the body so that the test doesn't leak resources
+  } finally {
+    await killFileServer();
+  }
+});
+
+Deno.test("CORS support", async function () {
+  await startFileServer();
+  try {
+    const directoryRes = await fetch("http://localhost:4507/");
+    assert(directoryRes.headers.has("access-control-allow-origin"));
+    assert(directoryRes.headers.has("access-control-allow-headers"));
+    assertEquals(directoryRes.status, 200);
+    await directoryRes.text(); // Consuming the body so that the test doesn't leak resources
+
+    const fileRes = await fetch("http://localhost:4507/testdata/hello.html");
+    assert(fileRes.headers.has("access-control-allow-origin"));
+    assert(fileRes.headers.has("access-control-allow-headers"));
+    assertEquals(fileRes.status, 200);
+    await fileRes.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
     await killFileServer();
   }
@@ -329,11 +331,15 @@ Deno.test("printHelp", async function () {
 });
 
 Deno.test("contentType", async () => {
-  const request = new ServerRequest();
-  const response = await serveFile(request, join(testdataDir, "hello.html"));
-  const contentType = response.headers!.get("content-type");
-  assertEquals(contentType, "text/html");
-  (response.body as Deno.File).close();
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/hello.html");
+    const contentType = res.headers.get("content-type");
+    assertEquals(contentType, "text/html");
+    await res.text(); // Consuming the body so that the test doesn't leak resources
+  } finally {
+    await killFileServer();
+  }
 });
 
 Deno.test("file_server running as library", async function () {
@@ -459,8 +465,7 @@ Deno.test("file_server disable dir listings", async function () {
   await startFileServer({ "dir-listing": false });
   try {
     const res = await fetch("http://localhost:4507/");
-    assert(res.headers.has("access-control-allow-origin"));
-    assert(res.headers.has("access-control-allow-headers"));
+
     assertEquals(res.status, 404);
     const _ = await res.text();
   } finally {
