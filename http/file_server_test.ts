@@ -469,12 +469,12 @@ Deno.test("file_server disable dir listings", async function () {
 });
 
 Deno.test("file_server do not show dotfiles", async function () {
-  await startFileServer({ target: "./testdata", dotfiles: false });
+  await startFileServer({ dotfiles: false });
   try {
-    let res = await fetch("http://localhost:4507/");
+    let res = await fetch("http://localhost:4507/testdata/");
     assert(!(await res.text()).includes(".dotfile"));
 
-    res = await fetch("http://localhost:4507/.dotfile");
+    res = await fetch("http://localhost:4507/testdata/.dotfile");
     assertEquals((await res.text()), "dotfile");
   } finally {
     await killFileServer();
@@ -502,13 +502,14 @@ Deno.test("file_server should show .. if it makes sense", async function (): Pro
 Deno.test(
   "file_server should download first byte of `hello.html` file",
   async () => {
-    await startFileServer({ target: "./testdata" });
+    await startFileServer();
     try {
       const headers = {
         "range": "bytes=0-0"
       }
       const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
       const text = await res.text();
+      console.log(text);
       assertEquals(text, "L");
     } finally {
       await killFileServer();
@@ -519,7 +520,7 @@ Deno.test(
 Deno.test(
   "file_server sets `content-range` header for range request responses",
   async () => {
-    await startFileServer({ target: "./testdata" });
+    await startFileServer();
     try {
       const headers = {
         "range": "bytes=0-100"
@@ -536,7 +537,7 @@ Deno.test(
 Deno.test(
   "file_server returns 206 for range request responses",
   async () => {
-    await startFileServer({ target: "./testdata" });
+    await startFileServer();
     try {
       const headers = {
         "range": "bytes=0-100"
@@ -553,7 +554,7 @@ Deno.test(
 Deno.test(
   "file_server should download from 300 bytes into `hello.html` file until the end",
   async () => {
-    await startFileServer({ target: "./testdata" });
+    await startFileServer();
     try {
       const headers = {
         "range": "bytes=300-"
