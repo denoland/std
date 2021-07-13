@@ -165,6 +165,23 @@ Deno.test({
 });
 
 Deno.test({
+  name: "[TOML] Various keys",
+  fn(): void {
+    const expected = {
+      site: { "google.com": { bar: 1, baz: 1 } },
+      a: { b: { c: 1, d: 1 }, e: 1 },
+      "": 1,
+      "127.0.0.1": 1,
+      "ʎǝʞ": 1,
+      'this is "literal"': 1,
+      'double "quote"': 1,
+    };
+    const actual = parseFile(path.join(testdataDir, "keys.toml"));
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
   name: "[TOML] Simple",
   fn(): void {
     const expected = {

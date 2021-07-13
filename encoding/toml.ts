@@ -445,12 +445,14 @@ class Parser {
   _parseDeclarationName(declaration: string): string[] {
     const out = [];
     let acc = [];
+    let inBasicString = false;
     let inLiteral = false;
     for (let i = 0; i < declaration.length; i++) {
       const c = declaration[i];
+      const inString = inBasicString || inLiteral;
       switch (c) {
         case ".":
-          if (!inLiteral) {
+          if (!inString) {
             out.push(acc.join(""));
             acc = [];
           } else {
@@ -458,21 +460,33 @@ class Parser {
           }
           break;
         case `"`:
-          if (inLiteral) {
-            inLiteral = false;
-          } else {
-            inLiteral = true;
+          if (!inString) {
+            inBasicString = true;
+          } else if (inBasicString && declaration[i - 1] !== "\\") {
+            inBasicString = false;
           }
+          acc.push(c);
+          break;
+        case "'":
+          if (!inString) {
+            inLiteral = true;
+          } else if (inLiteral) {
+            inLiteral = false;
+          }
+          acc.push(c);
           break;
         default:
           acc.push(c);
           break;
       }
     }
+    if (inBasicString || inLiteral) {
+      throw new TOMLError(`Invalid key: ${declaration}`);
+    }
     if (acc.length !== 0) {
       out.push(acc.join(""));
     }
-    return out;
+    return out.map((name) => trim(name));
   }
   _parseLines(): void {
     for (let i = 0; i < this.tomlLines.length; i++) {
@@ -523,30 +537,46 @@ class Parser {
     }
   }
   _cleanOutput(): void {
-    this._propertyClean(this.context.output);
+    this._unflatProperties(this.context.output);
+    this._cleanKeys(this.context.output);
   }
-  _propertyClean(obj: Record<string, unknown>): void {
+  _unflatProperties(obj: Record<string, unknown>): void {
     const keys = Object.keys(obj);
-    for (let i = 0; i < keys.length; i++) {
-      let k = keys[i];
-      if (k) {
-        let v = obj[k];
-        const pathDeclaration = this._parseDeclarationName(k);
+    for (const k of keys) {
+      let v = obj[k];
+      const pathDeclaration = this._parseDeclarationName(k);
+      const first = pathDeclaration.shift()!;
+      if (first !== k) {
+        if (pathDeclaration.length > 0) {
+          const flatten = this._unflat(
+            pathDeclaration,
+            v as Record<string, unknown>,
+          );
+          const current = obj[first] instanceof Object ? obj[first] : {};
+          v = deepAssign(
+            current,
+            flatten,
+          );
+        }
         delete obj[k];
-        if (pathDeclaration.length > 1) {
-          const shift = pathDeclaration.shift();
-          if (shift) {
-            k = shift.replace(/"/g, "");
-            v = this._unflat(pathDeclaration, v as Record<string, unknown>);
-          }
-        } else {
-          k = k.replace(/"/g, "");
-        }
-        obj[k] = v;
-        if (v instanceof Object) {
-          // deno-lint-ignore no-explicit-any
-          this._propertyClean(v as any);
-        }
+        obj[first] = v;
+      }
+      if (v instanceof Object) {
+        this._unflatProperties(v as Record<string, unknown>);
+      }
+    }
+  }
+  _cleanKeys(obj: Record<string, unknown>): void {
+    const keys = Object.keys(obj);
+    for (const k of keys) {
+      const v = obj[k];
+      if (k.startsWith('"') || k.startsWith("'")) {
+        const parsed = this._parseString(k);
+        delete obj[k];
+        obj[parsed] = v;
+      }
+      if (v instanceof Object) {
+        this._cleanKeys(v as Record<string, unknown>);
       }
     }
   }
