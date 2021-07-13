@@ -18,6 +18,17 @@
  * console.assert(moms === [ 'Jeff', 'Kim', 'Leroy' ])
  * ```
  */
-export function unzip<T, U>(_pairs: Array<[T, U]>): [Array<T>, Array<U>] {
-  throw new Error("unimplemented");
+export function unzip<T, U>(pairs: Array<[T, U]>): [Array<T>, Array<U>] {
+  const { length } = pairs;
+  const ret: [Array<T>, Array<U>] = [
+    new Array(length),
+    new Array(length),
+  ];
+
+  pairs.forEach(([first, second], index) => {
+    ret[0][index] = first;
+    ret[1][index] = second;
+  });
+
+  return ret;
 }
