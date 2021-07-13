@@ -15,7 +15,7 @@ change once the library is stabilized.
 
 To check compatibility of different version of standard library with Deno CLI
 see
-[this list](https://raw.githubusercontent.com/denoland/deno_website2/master/versions.json).
+[this list](https://raw.githubusercontent.com/denoland/deno_website2/main/versions.json).
 
 ## How to use
 
