@@ -236,8 +236,7 @@ export async function serveFile(
     Deno.stat(filePath),
   ]);
 
-  const headers = new Headers();
-  headers.set("server", "deno");
+  const headers = setBaseHeaders();  
 
   // Base response
   const response = {
@@ -276,9 +275,6 @@ export async function serveFile(
       return response;
     }
   }
-    
-  // Set "accept-ranges" so that the server knows it can make range requests on future requests
-  headers.set("accept-ranges", "bytes");
   
   // Get and parse the "range" header
   const range = req.headers.get("range") as string;
@@ -288,19 +284,22 @@ export async function serveFile(
   // Use the parsed value if available, fallback to the start and end of the entire file
   const start = parsed && parsed[1] ? +parsed[1] : 0;
   const end   = parsed && parsed[2] ? +parsed[2] : fileInfo.size - 1;
-  
+
   // If there is a range, set the status to 206, and set the "Content-range" header.
-  if (range) {
+  if (range && parsed) {
     response.status = 206;
     response.statusText = "Partial Content";
     headers.set("content-range", `bytes ${start}-${end}/${fileInfo.size}`);
   }
 
-  // Return 416 if `start` isn't less than `end`, or `start` or `end` are greater than the file's size
+  // Return 416 if `start` isn't less than or equal to `end`, or `start` or `end` are greater than the file's size
   const maxRange = fileInfo.size - 1;
-  if (!(start < end) || start > maxRange || end > maxRange) {
+
+  if (range && !parsed ||
+     (typeof start !== 'number' || !(start <= end) || start > maxRange || end > maxRange)) {
     response.status = 416;
-    response.statusText = "Requested Range Not Satisfiable";
+    response.statusText = "Range Not Satisfiable";
+    response.body = encoder.encode("Range Not Satisfiable")
     return response;
   }
 
@@ -363,7 +362,7 @@ async function serveDir(
   const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
   const page = encoder.encode(dirViewerTemplate(formattedDirUrl, listEntry));
 
-  const headers = new Headers();
+  const headers = setBaseHeaders();
   headers.set("content-type", "text/html");
 
   const res = {
@@ -398,6 +397,17 @@ function serverLog(req: ServerRequest, res: Response): void {
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const s = `${dateFmt} "${req.method} ${req.url} ${req.proto}" ${res.status}`;
   console.log(s);
+}
+
+function setBaseHeaders(): Headers {
+  const headers = new Headers();
+  headers.set("server", "deno");
+
+  // Set "accept-ranges" so that the client knows it can make range requests on future requests
+  headers.set("accept-ranges", "bytes");
+  headers.set("date", new Date().toUTCString());
+
+  return headers;
 }
 
 function setCORS(res: Response): void {
