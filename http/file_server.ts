@@ -283,7 +283,7 @@ export async function serveFile(
   
   // Use the parsed value if available, fallback to the start and end of the entire file
   const start = parsed && parsed[1] ? +parsed[1] : 0;
-  const end   = parsed && parsed[2] ? +parsed[2] : fileInfo.size - 1;
+  const end   = parsed && parsed[2] ? +parsed[2] : Math.max(0, fileInfo.size - 1);
 
   // If there is a range, set the status to 206, and set the "Content-range" header.
   if (range && parsed) {
@@ -293,22 +293,27 @@ export async function serveFile(
   }
 
   // Return 416 if `start` isn't less than or equal to `end`, or `start` or `end` are greater than the file's size
-  const maxRange = fileInfo.size - 1;
+  const maxRange = (typeof fileInfo.size === 'number' ? Math.max(0, fileInfo.size - 1) : 0);
 
   if (range && !parsed ||
-     (typeof start !== 'number' || !(start <= end) || start > maxRange || end > maxRange)) {
+     (typeof start !== 'number' || start > end || start > maxRange || end > maxRange)) {
     response.status = 416;
     response.statusText = "Range Not Satisfiable";
-    response.body = encoder.encode("Range Not Satisfiable")
+    response.body = encoder.encode("Range Not Satisfiable");
     return response;
   }
 
-  // Read the selected range of the file
-  const bytes = await readRange(file, { start, end });
-
-  // Set content length and response body
-  headers.set("content-length", bytes.length.toString());
-  response.body = bytes;
+  try {
+    // Read the selected range of the file
+    const bytes = await readRange(file, { start, end });
+    
+    // Set content length and response body
+    headers.set("content-length", bytes.length.toString());
+    response.body = bytes;
+  } catch (e) {
+    // Fallback on URIError (400 Bad Request) if unable to read range
+    throw URIError();
+  }
 
   req.done.then(() => {
     file.close();
