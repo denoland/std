@@ -515,7 +515,8 @@ Deno.test(
       };
       const res = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
-        { headers },);
+        { headers },
+      );
       const text = await res.text();
       console.log(text);
       assertEquals(text, "L");
@@ -535,9 +536,13 @@ Deno.test(
       };
       const res = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
-        { headers },);
+        { headers },
+      );
       const contentLength = await getTestFileSize();
-      assertEquals(res.headers.get("content-range"), `bytes 0-100/${contentLength}`);
+      assertEquals(
+        res.headers.get("content-range"),
+        `bytes 0-100/${contentLength}`,
+      );
 
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
@@ -563,10 +568,12 @@ const getTestFileEtag = async () => {
 
   if (fileInfo.mtime instanceof Date) {
     const lastModified = new Date(fileInfo.mtime);
-    const simpleEtag = createHash("md5").update(`${lastModified.toJSON()}${fileInfo.size}`).toString();
+    const simpleEtag = createHash("md5").update(
+      `${lastModified.toJSON()}${fileInfo.size}`,
+    ).toString();
     return simpleEtag;
   } else {
-    return '';
+    return "";
   }
 };
 
@@ -580,7 +587,8 @@ Deno.test(
       };
       const res = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
-        { headers },);
+        { headers },
+      );
       await res.text(); // Consuming the body so that the test doesn't leak resources
       assertEquals(res.status, 206);
     } finally {
@@ -599,15 +607,19 @@ Deno.test(
       };
       const res = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
-        { headers },);
+        { headers },
+      );
       const text = await res.text();
 
       const localFile = new TextDecoder().decode(
-        await Deno.readFile(join(testdataDir, "test file.txt"))
+        await Deno.readFile(join(testdataDir, "test file.txt")),
       );
-      
+
       const contentLength = await getTestFileSize();
-      assertEquals(res.headers.get("content-range"), `bytes 300-10067/${contentLength}`);
+      assertEquals(
+        res.headers.get("content-range"),
+        `bytes 300-10067/${contentLength}`,
+      );
       assertEquals(text, localFile.substring(300));
     } finally {
       await killFileServer();
@@ -625,11 +637,11 @@ Deno.test(
       };
       const res = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
-        { headers },);
+        { headers },
+      );
       await res.text();
       assertEquals(res.status, 416);
-      assertEquals(res.statusText, "Range Not Satisfiable")
-      
+      assertEquals(res.statusText, "Range Not Satisfiable");
     } finally {
       await killFileServer();
     }
@@ -646,11 +658,11 @@ Deno.test(
       };
       const res = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
-        { headers },);
+        { headers },
+      );
       await res.text();
       assertEquals(res.status, 416);
-      assertEquals(res.statusText, "Range Not Satisfiable")
-      
+      assertEquals(res.statusText, "Range Not Satisfiable");
     } finally {
       await killFileServer();
     }
@@ -667,11 +679,11 @@ Deno.test(
       };
       const res = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
-        { headers },);
+        { headers },
+      );
       await res.text();
       assertEquals(res.status, 416);
-      assertEquals(res.statusText, "Range Not Satisfiable")
-      
+      assertEquals(res.statusText, "Range Not Satisfiable");
     } finally {
       await killFileServer();
     }
@@ -688,11 +700,11 @@ Deno.test(
       };
       const res = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
-        { headers },);
+        { headers },
+      );
       await res.text();
       assertEquals(res.status, 416);
-      assertEquals(res.statusText, "Range Not Satisfiable")
-      
+      assertEquals(res.statusText, "Range Not Satisfiable");
     } finally {
       await killFileServer();
     }
@@ -704,10 +716,12 @@ Deno.test(
   async () => {
     await startFileServer();
     try {
-      const txtRes = await fetch("http://localhost:4507/testdata/test%20file.txt");
+      const txtRes = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+      );
       assertEquals(txtRes.headers.get("content-type"), "text/plain");
       await txtRes.text(); // Consuming the body so that the test doesn't leak resources
-      
+
       const htmlRes = await fetch("http://localhost:4507/testdata/hello.html");
       assertEquals(htmlRes.headers.get("content-type"), "text/html");
       await htmlRes.text(); // Consuming the body so that the test doesn't leak resources
@@ -766,7 +780,10 @@ Deno.test(
     await startFileServer();
     try {
       const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-      assertEquals(res.headers.get("last-modified"), "Mon, 12 Jul 2021 23:31:46 GMT");
+      assertEquals(
+        res.headers.get("last-modified"),
+        "Mon, 12 Jul 2021 23:31:46 GMT",
+      );
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
@@ -817,7 +834,8 @@ Deno.test(
       headers.set("if-none-match", expectedEtag);
       const res = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
-        { headers },);
+        { headers },
+      );
       assertEquals(res.status, 304);
       assertEquals(res.statusText, "Not Modified");
       await res.text(); // Consuming the body so that the test doesn't leak resources
@@ -837,7 +855,8 @@ Deno.test(
       headers.set("if-none-match", expectedEtag);
       const res = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
-        { headers },);
+        { headers },
+      );
       assertEquals(await res.text(), "");
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {

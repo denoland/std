@@ -116,10 +116,10 @@ const MEDIA_TYPES: Record<string, string> = {
   ".webmanifest": "application/manifest+json",
   ".doc": "application/msword",
   ".dot": "application/msword",
-  ".docx": 
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ".dotx": 
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+  ".docx":
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".dotx":
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
   ".cjs": "application/node",
   ".bin": "application/octet-stream",
   ".pkg": "application/octet-stream",
@@ -155,10 +155,10 @@ const MEDIA_TYPES: Record<string, string> = {
   ".xlm": "application/vnd.ms-excel",
   ".ppt": "application/vnd.ms-powerpoint",
   ".pot": "application/vnd.ms-powerpoint",
-  ".pptx": 
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  ".potx": 
-  "application/vnd.openxmlformats-officedocument.presentationml.template",
+  ".pptx":
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ".potx":
+    "application/vnd.openxmlformats-officedocument.presentationml.template",
   ".xps": "application/vnd.ms-xpsdocument",
   ".odc": "application/vnd.oasis.opendocument.chart",
   ".odb": "application/vnd.oasis.opendocument.database",
@@ -240,16 +240,16 @@ export async function serveFile(
     Deno.stat(filePath),
   ]);
 
-  const headers = setBaseHeaders();  
+  const headers = setBaseHeaders();
 
   // Base response
   const response = {
     status: 200,
     statusText: "OK",
     body: new Uint8Array(),
-    headers
+    headers,
   };
-  
+
   // Set mime-type using the file extension in filePath
   const contentTypeValue = contentType(filePath);
   if (contentTypeValue) {
@@ -268,7 +268,9 @@ export async function serveFile(
     headers.set("last-modified", lastModified.toUTCString());
 
     // Create a simple etag that is an md5 of the last modified date and filesize concatenated
-    const simpleEtag = createHash("md5").update(`${lastModified.toJSON()}${fileInfo.size}`).toString();
+    const simpleEtag = createHash("md5").update(
+      `${lastModified.toJSON()}${fileInfo.size}`,
+    ).toString();
     headers.set("etag", simpleEtag);
 
     // If a `if-node-match` header is present and the value matches the tag return 304
@@ -279,15 +281,15 @@ export async function serveFile(
       return response;
     }
   }
-  
+
   // Get and parse the "range" header
   const range = req.headers.get("range") as string;
   const rangeRe = /bytes=(\d+)-(\d+)?/;
   const parsed = rangeRe.exec(range);
-  
+
   // Use the parsed value if available, fallback to the start and end of the entire file
   const start = parsed && parsed[1] ? +parsed[1] : 0;
-  const end   = parsed && parsed[2] ? +parsed[2] : Math.max(0, fileInfo.size - 1);
+  const end = parsed && parsed[2] ? +parsed[2] : Math.max(0, fileInfo.size - 1);
 
   // If there is a range, set the status to 206, and set the "Content-range" header.
   if (range && parsed) {
@@ -297,10 +299,14 @@ export async function serveFile(
   }
 
   // Return 416 if `start` isn't less than or equal to `end`, or `start` or `end` are greater than the file's size
-  const maxRange = (typeof fileInfo.size === "number" ? Math.max(0, fileInfo.size - 1) : 0);
+  const maxRange =
+    (typeof fileInfo.size === "number" ? Math.max(0, fileInfo.size - 1) : 0);
 
-  if (range && !parsed ||
-     (typeof start !== "number" || start > end || start > maxRange || end > maxRange)) {
+  if (
+    range && !parsed ||
+    (typeof start !== "number" || start > end || start > maxRange ||
+      end > maxRange)
+  ) {
     response.status = 416;
     response.statusText = "Range Not Satisfiable";
     response.body = encoder.encode("Range Not Satisfiable");
@@ -310,7 +316,7 @@ export async function serveFile(
   try {
     // Read the selected range of the file
     const bytes = await readRange(file, { start, end });
-    
+
     // Set content length and response body
     headers.set("content-length", bytes.length.toString());
     response.body = bytes;
