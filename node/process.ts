@@ -4,6 +4,7 @@ import { notImplemented } from "./_utils.ts";
 import EventEmitter from "./events.ts";
 import { fromFileUrl } from "../path/mod.ts";
 
+const customInspect = Symbol.for("Deno.customInspect");
 const notImplementedEvents = [
   "beforeExit",
   "disconnect",
@@ -52,10 +53,10 @@ export const cwd = Deno.cwd;
 //deno-lint-ignore ban-ts-comment
 //@ts-ignore
 const _env: {
-  [Deno.customInspect]: () => string;
+  [customInspect]: () => string;
 } = {};
 
-Object.defineProperty(_env, Deno.customInspect, {
+Object.defineProperty(_env, customInspect, {
   enumerable: false,
   configurable: true,
   get: function () {
@@ -69,8 +70,8 @@ Object.defineProperty(_env, Deno.customInspect, {
  * */
 export const env: Record<string, string> = new Proxy(_env, {
   get(target, prop) {
-    if (prop === Deno.customInspect) {
-      return target[Deno.customInspect];
+    if (prop === customInspect) {
+      return target[customInspect];
     }
     return Deno.env.get(String(prop));
   },
