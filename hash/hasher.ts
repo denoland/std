@@ -1,12 +1,20 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Types accepted as message input for a hasher.
+ * Message input for a hash algorithm.
+ *
  * String messages will first be encoded as UTF-8.
 */
-export type Message = ArrayBuffer | ArrayBufferView | DataView | string;
+export type Message =
+  | Uint8Array
+  | ArrayBuffer
+  | ArrayBufferView
+  | DataView
+  | string;
 
-/** An instance of a specific hash algorithm. */
+/**
+ * A hasher representing a stateful instance of a specific hash algorithm.
+ */
 export interface Hasher {
   /** Updates the hasher's state with additional message data. */
   update(message: Message): this;
@@ -37,7 +45,7 @@ export interface Hasher {
   toString(options?: DigestOptions & DigestFormatOptions): string;
 }
 
-/** Options for how the algorithm performs its digest operation. */
+/** Options for how a hash algorithm performs its digest operation. */
 export interface DigestOptions {
   /**
    * Digest output length in (bytes). An error will be thrown if this is set to
@@ -48,15 +56,15 @@ export interface DigestOptions {
   length?: number;
 }
 
-/** Options for how a digest is encoded/formatted as a string. */
-export type DigestFormatOptions = {
+/** Options for how a hash digest is encoded/formatted as a string. */
+export interface DigestFormatOptions {
   /**
    * Supported string encodings for hash digests.
    *
-   * "hex" is lowercase hexadecimal.
-   * "base64" is standard Base64 (with `+/` digits and `=` padding).
-   * "unicode" is unicode code points, such as are used by atob()/btoa().
-   *     https://developer.mozilla.org/en-US/docs/Web/API/DOMString/Binary
+   * - `"hex"` is lowercase hexadecimal.
+   * - `"base64"` is standard Base64 (with `+/` digits and `=` padding).
+   * - `"unicode"` is unicode code points (as used by `atob()`/`btoa()`, see
+   *   https://developer.mozilla.org/en-US/docs/Web/API/DOMString/Binary).
    */
   encoding?: "hex" | "base64" | "unicode";
-};
+}

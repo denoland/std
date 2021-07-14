@@ -1,5 +1,5 @@
 // deno-lint-ignore-file
-import wasmBinary from "./wasm_binary.ts";
+import wasmBytes from "./wasm_file.ts";
 
 let cachedTextDecoder = new TextDecoder("utf-8", {
   ignoreBOM: true,
@@ -255,7 +255,7 @@ const imports = {
   },
 };
 
-const wasmModule = new WebAssembly.Module(wasmBinary);
+const wasmModule = new WebAssembly.Module(wasmBytes);
 const wasmInstance = new WebAssembly.Instance(wasmModule, imports);
 const wasm = wasmInstance.exports;
 

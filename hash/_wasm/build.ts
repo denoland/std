@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run --allow-run --allow-read --allow-write --allow-env
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import * as base64 from "../../encoding/base64.ts";
+import * as hash from "../mod.ts";
 
 const home = Deno.env.get("HOME");
 const root = new URL(".", import.meta.url).pathname;
@@ -12,12 +13,6 @@ if (new URL(import.meta.url).protocol === "file:") {
   console.error("build.ts can only be run locally (from a file: URL).");
   Deno.exit(1);
 }
-
-// Remove previous build files first, if they exist.
-Promise.allSettled([
-  Deno.remove("./wasm_binary.ts"),
-  Deno.remove("./wasm_bindings.js"),
-]).catch((_error) => {});
 
 // Format the Rust code.
 if (
@@ -75,12 +70,30 @@ if (
 
 // Encode WASM binary as a TypeScript module.
 const generatedWasm = await Deno.readFile("./out/deno_hash_bg.wasm");
+
+// Format WASM binary size with _ thousands separators for human readablity,
+// so that any changes in size will be clear in diffs.
+const formattedWasmSize = generatedWasm.length.toString().padStart(
+  Math.ceil(generatedWasm.length.toString().length / 3) * 3,
+).replace(/...\B/g, "$&_").trim();
+
+// Generate a hash of the WASM in the format required by subresource integrity.
+const wasmIntegrity = `sha384-${
+  base64.encode(hash.digest("sha384", generatedWasm))
+}`;
+
 const wasmJs = `
 import * as base64 from "../../encoding/base64.ts";
-export default base64.decode("\\\n${
+
+export const size = ${formattedWasmSize};
+export const type = "application/wasm";
+export const integrity = ${JSON.stringify(wasmIntegrity)};
+export const bytes = base64.decode("\\\n${
   base64.encode(generatedWasm).replace(/.{78}/g, "$&\\\n")
-}\\\n");`;
-await Deno.writeTextFile("./wasm_binary.ts", wasmJs);
+}\\\n");
+
+export default bytes;
+`;
 
 // Modify the generated WASM bindings, replacing the runtime fetching of the
 // WASM binary file with a static TypeScript import of the copy we encoded
@@ -88,17 +101,19 @@ await Deno.writeTextFile("./wasm_binary.ts", wasmJs);
 const generatedScript = await Deno.readTextFile("./out/deno_hash.js");
 const bindingsJs = `
 // deno-lint-ignore-file
-import wasmBinary from "./wasm_binary.ts";
+import wasmBytes from "./wasm_file.ts";
 
 ${
   generatedScript.replace(
     /^const file =.*?;\nconst wasmFile =.*?;\nconst wasmModule =.*?;\n/sm,
-    `const wasmModule = new WebAssembly.Module(wasmBinary);`,
+    `const wasmModule = new WebAssembly.Module(wasmBytes);`,
   )
 }
 
 export const _wasm = wasm;
 `;
+
+await Deno.writeTextFile("./wasm_file.ts", wasmJs);
 await Deno.writeTextFile("./wasm_bindings.js", bindingsJs);
 
 // Format the generated files.
@@ -107,7 +122,7 @@ if (
     cmd: [
       "deno",
       "fmt",
-      "./wasm_binary.ts",
+      "./wasm_file.ts",
       "./wasm_bindings.js",
     ],
   }).status()).success

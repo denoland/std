@@ -66,7 +66,7 @@ export class WasmHasher implements Hasher {
     return this;
   }
 
-  digest(options: DigestOptions): Uint8Array {
+  digest(options?: DigestOptions): Uint8Array {
     const length = options?.length;
     if (length !== undefined && (length < 0 || !Number.isSafeInteger(length))) {
       throw new TypeError(
@@ -77,7 +77,7 @@ export class WasmHasher implements Hasher {
     return digest;
   }
 
-  digestAndReset(options: DigestOptions): Uint8Array {
+  digestAndReset(options?: DigestOptions): Uint8Array {
     const length = options?.length;
     if (length !== undefined && (length < 0 || !Number.isSafeInteger(length))) {
       throw new TypeError(
@@ -92,7 +92,14 @@ export class WasmHasher implements Hasher {
     return new WasmHasher(this.#inner.clone());
   }
 
-  toString(options: DigestOptions & DigestFormatOptions): string {
+  toString(options?: DigestOptions & DigestFormatOptions): string {
+    // For backwards compatibility with previous function signature, because its
+    // strings still incidentally match our new type signature (because they
+    // have a `length`) and could produce confusing runtime errors.
+    if (typeof options === "string") {
+      options = { encoding: options };
+    }
+
     const digest = this.digest(options);
 
     const encoding = options?.encoding ?? "hex";

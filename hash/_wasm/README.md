@@ -2,7 +2,7 @@
 
 ## Prerequisite
 
-`wasm-bindgen` is required.
+Requires Rust's WASM target and the wasm-bindgen CLI.
 
 ```sh
 cargo build --target wasm32-unknown-unknown
@@ -15,7 +15,8 @@ cargo install -f wasm-bindgen-cli --version 0.2.74
 ## Build
 
 ```sh
-deno run --allow-all build.ts
+deno run --allow-all ./_wasm/build.ts
 ```
 
-`wasm.js` will be generated.
+This will regenerate `./_wasm/wasm_file.ts` and `./_wasm/wasm_bindings.ts` from
+the Rust source.

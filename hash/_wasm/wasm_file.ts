@@ -1,5 +1,10 @@
 import * as base64 from "../../encoding/base64.ts";
-export default base64.decode(
+
+export const size = 162_205;
+export const type = "application/wasm";
+export const integrity =
+  "sha384-1JG87DleDrgWdN8Tv//Nwxvbtyy5uqYQM3S/k/UxYOesSQg2mneC0iRFuZ1F5Y/J";
+export const bytes = base64.decode(
 "\
 AGFzbQEAAAABmYGAgAAWYAAAYAF/AGABfwF/YAF/AX5gAn9/AGACf38Bf2ADf39/AGADf39/AX9gBH\
 9/f38AYAR/f39/AX9gBX9/f39/AGAFf39/f38Bf2AGf39/f39/AGAGf39/f39/AX9gBX9/f35/AGAH\
@@ -2776,3 +2781,5 @@ MCCGxhbmd1YWdlAQRSdXN0AAxwcm9jZXNzZWQtYnkDBXJ1c3RjHTEuNTMuMCAoNTNjYjdiMDliIDIw\
 MjEtMDYtMTcpBndhbHJ1cwYwLjE5LjAMd2FzbS1iaW5kZ2VuBjAuMi43NA==\
 ",
 );
+
+export default bytes;

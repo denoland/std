@@ -11,8 +11,6 @@ import * as hex from "../../encoding/hex.ts";
 import * as base64 from "../../encoding/base64.ts";
 import type { Hasher, Message, OutputFormat } from "../hasher.ts";
 
-const TYPE_ERROR_MSG = "hash: `data` is invalid type";
-
 export class Hash implements Hasher {
   #hash: DenoHash;
   #digested: boolean;
@@ -22,36 +20,41 @@ export class Hash implements Hasher {
     this.#digested = false;
   }
 
-  /**
-   * Update internal state
-   * @param data data to update
-   */
-  update(data: Message): this {
-    let msg: Uint8Array;
+  update(message: Message): this {
+    let view: Uint8Array;
 
-    if (typeof data === "string") {
-      msg = new TextEncoder().encode(data as string);
-    } else if (typeof data === "object") {
-      if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
-        msg = new Uint8Array(data);
-      } else {
-        throw new Error(TYPE_ERROR_MSG);
-      }
+    if (message instanceof Uint8Array) {
+      view = message;
+    } else if (typeof message === "string") {
+      view = new TextEncoder().encode(message);
+    } else if (ArrayBuffer.isView(message)) {
+      view = new Uint8Array(
+        message.buffer,
+        message.byteOffset,
+        message.byteLength,
+      );
+    } else if (message instanceof ArrayBuffer) {
+      view = new Uint8Array(message);
     } else {
-      throw new Error(TYPE_ERROR_MSG);
+      throw new Error("hash: `data` is invalid type");
     }
 
     // Messages will be split into chunks of this size to avoid unneccessarily
     // increasing the size of the WASM heap.
-    const CHUNK_SIZE = 65_536;
 
-    for (let offset = 0; offset < msg.length; offset += CHUNK_SIZE) {
+    const chunkSize = 65_536;
+
+    for (
+      let offset = 0;
+      offset < view.byteLength;
+      offset += chunkSize
+    ) {
       updateHash(
         this.#hash,
         new Uint8Array(
-          msg.buffer,
-          offset,
-          Math.min(CHUNK_SIZE, msg.length - offset),
+          view.buffer,
+          view.byteOffset + offset,
+          Math.min(chunkSize, view.byteLength - offset),
         ),
       );
     }

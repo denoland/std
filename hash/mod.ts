@@ -1,9 +1,16 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+export type {
+  DigestFormatOptions,
+  DigestOptions,
+  Hasher,
+  Message,
+} from "./hasher.ts";
+
 import { WasmHasher } from "./_wasm/mod.ts";
 import type { DigestOptions, Hasher, Message } from "./hasher.ts";
-export type { DigestOptions, Hasher, Message } from "./hasher.ts";
 
+/** An array of every algorithm name supported by `createHasher`. */
 export const supportedAlgorithms = [
   "blake2b",
   "blake2s",
@@ -30,10 +37,13 @@ export const supportedAlgorithms = [
   "shake256",
 ] as const;
 
+/** An algorithm name supported by `createHasher`. */
 export type SupportedAlgorithm = typeof supportedAlgorithms[number];
 
 /**
- * Returns a new hasher instance implementing the specified hash algorithm.
+ * Returns a new hasher instance implementing the named hash algorithm.
+ *
+ * Throws an error if the specified algorithm is not supported.
  */
 export function createHasher(algorithm: SupportedAlgorithm): Hasher {
   return new WasmHasher(algorithm);

@@ -10,8 +10,293 @@ import {
 import { Message } from "./hasher.ts";
 import * as bytes from "../bytes/mod.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
+import wasmFile, * as wasmFileModule from "./_wasm/wasm_file.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
+
+Deno.test("Different ways to perform the same operation should produce the same result", () => {
+  const inputString = "taking the hobbits to isengard";
+  const inputBytes = new TextEncoder().encode(inputString);
+
+  const emptyDigest =
+    "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b";
+  const expectedDigest =
+    "ae30c171b2b5a047b7986c185564407672441934a356686e6df3a8284f35214448c40738e65b8c308e38b068eed91676";
+
+  assertEquals(toHexString(digest("sha384", inputString)), expectedDigest);
+
+  assertEquals(toHexString(digest("sha384", inputBytes)), expectedDigest);
+
+  const hasher = createHasher("sha384");
+  hasher.update(inputString);
+
+  assertEquals(toHexString(hasher.digest()), expectedDigest);
+  assertEquals(toHexString(hasher.digestAndReset()), expectedDigest);
+
+  assertEquals(toHexString(hasher.digest({ length: 48 })), emptyDigest);
+  assertEquals(hasher.toString(), emptyDigest);
+  assertEquals(hasher.toString({ length: 48 }), emptyDigest);
+  assertEquals(hasher.toString({ encoding: "hex" }), emptyDigest);
+  assertEquals(toHexString(hasher.digestAndReset()), emptyDigest);
+  assertEquals(toHexString(hasher.digest()), emptyDigest);
+
+  hasher.update(inputString.slice(0, 5));
+  hasher.update(inputBytes.slice(5));
+  assertEquals(toHexString(hasher.digest()), expectedDigest);
+  assertEquals(hasher.toString(), expectedDigest);
+  assertEquals(hasher.toString({ length: 48 }), expectedDigest);
+  assertEquals(hasher.toString({ encoding: "hex" }), expectedDigest);
+  hasher.reset();
+
+  assertEquals(toHexString(hasher.digest()), emptyDigest);
+  hasher.update(inputString.slice(0, 1));
+  hasher.update(inputBytes.slice(1));
+  assertEquals(toHexString(hasher.digest()), expectedDigest);
+  assertEquals(hasher.toString(), expectedDigest);
+  // backwards compatibility case, not part of documented interface:
+  assertEquals(hasher.toString("hex"), expectedDigest);
+  assertEquals(
+    hasher.toString({ encoding: "hex", length: 48 }),
+    expectedDigest,
+  );
+  assertEquals(
+    hasher.toString({ encoding: undefined, length: undefined }),
+    expectedDigest,
+  );
+});
+
+Deno.test("Memory use should remain reasonable even with large inputs", async () => {
+  const process = Deno.run({
+    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+    cwd: moduleDir,
+    stdout: "piped",
+    stdin: "piped",
+  });
+
+  await process.stdin.write(
+    new TextEncoder().encode(`
+      import { createHasher } from "./mod.ts";
+      import { _wasm } from "./_wasm/wasm_bindings.js";
+
+      const { memory } = _wasm as { memory: WebAssembly.Memory };
+
+      const heapBytesInitial = memory.buffer.byteLength;
+
+      const smallData = new Uint8Array(64);
+      const smallHasher = createHasher("md5");
+      smallHasher.update(smallData);
+      const smallDigest = smallHasher.toString();
+      const heapBytesAfterSmall = memory.buffer.byteLength;
+
+      const largeData = new Uint8Array(64_000_000);
+      const largeHasher = createHasher("md5");
+      largeHasher.update(largeData);
+      const largeDigest = largeHasher.toString();
+      const heapBytesAfterLarge = memory.buffer.byteLength;
+
+      console.log(JSON.stringify(
+        {
+          heapBytesInitial,
+          smallDigest,
+          heapBytesAfterSmall,
+          largeDigest,
+          heapBytesAfterLarge,
+        },
+        null,
+        2,
+      ));
+    `),
+  );
+  process.stdin.close();
+
+  const stdout = new TextDecoder().decode(await process.output());
+  const status = await process.status();
+  process.close();
+
+  assertEquals(status.success, true, "test subprocess failed");
+  const {
+    heapBytesInitial,
+    smallDigest,
+    heapBytesAfterSmall,
+    largeDigest,
+    heapBytesAfterLarge,
+  }: {
+    heapBytesInitial: number;
+    smallDigest: string;
+    heapBytesAfterSmall: number;
+    largeDigest: string;
+    heapBytesAfterLarge: number;
+  } = JSON.parse(stdout);
+
+  assertEquals(
+    smallDigest,
+    "3b5d3c7d207e37dceeedd301e35e2e58",
+    "test subprocess returned wrong hash",
+  );
+  assertEquals(
+    largeDigest,
+    "e78585b8bfda6036cfd818710a210f23",
+    "test subprocess returned wrong hash",
+  );
+
+  // Heap should stay under 2MB even though we provided a 64MB input.
+  assert(
+    heapBytesInitial < 2_000_000,
+    `WASM heap was too large initially: ${
+      (heapBytesInitial / 1_000_000).toFixed(1)
+    } MB`,
+  );
+  assert(
+    heapBytesAfterSmall < 2_000_000,
+    `WASM heap was too large after small input: ${
+      (heapBytesAfterSmall / 1_000_000).toFixed(1)
+    } MB`,
+  );
+  assert(
+    heapBytesAfterLarge < 2_000_000,
+    `WASM heap was too large after large input: ${
+      (heapBytesAfterLarge / 1_000_000).toFixed(1)
+    } MB`,
+  );
+});
+
+Deno.test("Memory use should remain reasonable even with many calls to digest()", async () => {
+  const process = Deno.run({
+    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+    cwd: moduleDir,
+    stdout: "piped",
+    stdin: "piped",
+  });
+
+  await process.stdin.write(
+    new TextEncoder().encode(`
+      import * as hash from "./mod.ts";
+      import { _wasm } from "./_wasm/wasm_bindings.js";
+
+      const { memory } = _wasm as { memory: WebAssembly.Memory };
+
+      const heapBytesInitial = memory.buffer.byteLength;
+
+      for (let i = 0; i < 1_000_000; i++) {
+        hash.digest("sha384", String(i).padStart(32, "0"));
+      }
+
+      const heapBytesFinal = memory.buffer.byteLength;
+
+      console.log(JSON.stringify(
+        {
+          heapBytesInitial,
+          heapBytesFinal,
+        },
+        null,
+        2,
+      ));
+    `),
+  );
+  process.stdin.close();
+
+  const stdout = new TextDecoder().decode(await process.output());
+  const status = await process.status();
+  process.close();
+
+  assertEquals(status.success, true, "test subprocess failed");
+  const {
+    heapBytesInitial,
+    heapBytesFinal,
+  }: {
+    heapBytesInitial: number;
+    heapBytesFinal: number;
+  } = JSON.parse(stdout);
+
+  assert(
+    heapBytesInitial < 2_000_000,
+    `WASM heap was too large initially: ${
+      (heapBytesInitial / 1_000_000).toFixed(1)
+    } MB`,
+  );
+  assert(
+    heapBytesFinal < 2_000_000,
+    `WASM heap was too large after many digests: ${
+      (heapBytesFinal / 1_000_000).toFixed(1)
+    } MB`,
+  );
+});
+
+Deno.test("Inlined WASM file's metadata should match its content", () => {
+  assertEquals(wasmFile.length, wasmFileModule.size);
+  assertEquals(wasmFile.byteLength, wasmFileModule.size);
+  assertEquals(wasmFileModule.bytes.length, wasmFileModule.size);
+  assertEquals(wasmFileModule.bytes.buffer.byteLength, wasmFileModule.size);
+
+  assertEquals(
+    "sha384-" +
+      createHasher("sha384").update(wasmFile).toString({
+        encoding: "base64",
+      }),
+    wasmFileModule.integrity,
+  );
+});
+
+Deno.test("Algorithms should produce expected digests for various inputs", () => {
+  for (const [caption, inputs, options, expecteds] of digestCases) {
+    for (const algorithm of supportedAlgorithms) {
+      const expected = expecteds[algorithm];
+      const instance = createHasher(algorithm);
+
+      for (const [i, input] of inputs.entries()) {
+        instance.reset();
+
+        if (typeof expected === "string") {
+          for (const piece of input) {
+            instance.update(piece);
+          }
+          const actual = instance.toString(options);
+          assertEquals(
+            actual,
+            expected,
+            `expected ${expected} for ${algorithm} of ${caption} (variation ${i +
+              1}) but got ${actual}`,
+          );
+
+          assertEquals(
+            toHexString(instance.digest(options)),
+            actual,
+            "internal consistency failure",
+          );
+          assertEquals(
+            toHexString(instance.digestAndReset(options)),
+            actual,
+            "internal consistency failure",
+          );
+          if (input.length === 1) {
+            const [piece] = input;
+            assertEquals(
+              toHexString(digest(algorithm, piece, options)),
+              actual,
+              "internal consistency failure",
+            );
+          }
+        } else {
+          assertThrows(
+            () => {
+              for (const piece of input) {
+                instance.update(piece);
+              }
+              instance.digest(options);
+            },
+            expected,
+            undefined,
+            `expected ${expected.name} for ${algorithm} of ${caption} (variation ${i +
+              1})`,
+          );
+        }
+      }
+    }
+  }
+});
+
+const toHexString = (bytes: Uint8Array): string =>
+  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
 
 // Simple periodic data, but the periods shouldn't line up with any block
 // or chunk sizes.
@@ -55,6 +340,7 @@ const allErrors = {
   shake256: Error,
 } as const;
 
+// Test inputs and expected results for each algorithm.
 const digestCases: [
   // Caption for test error messages.
   string,
@@ -181,6 +467,34 @@ const digestCases: [
     shake256: "369771bb2cb9d2b04c1d54cca487e372d9f187f7",
   }],
 
+  ["Output length: 3", [["hello world"], ["hell", "o w", "orld"]], {
+    length: 3,
+  }, {
+    blake2b: Error,
+    blake2s: Error,
+    blake3: "d74981",
+    keccak224: Error,
+    keccak256: Error,
+    keccak384: Error,
+    keccak512: Error,
+    md2: Error,
+    md4: Error,
+    md5: Error,
+    ripemd160: Error,
+    ripemd320: Error,
+    sha1: Error,
+    sha224: Error,
+    sha256: Error,
+    "sha3-224": Error,
+    "sha3-256": Error,
+    "sha3-384": Error,
+    "sha3-512": Error,
+    sha384: Error,
+    sha512: Error,
+    shake128: "3a9159",
+    shake256: "369771",
+  }],
+
   ["Output length: 123", [["hello world"], ["hell", "o w", "orld"]], {
     length: 123,
   }, {
@@ -210,6 +524,34 @@ const digestCases: [
       "3a9159f071e4dd1c8c4f968607c30942e120d8156b8b1e72e0d376e8871cb8b899072665674f26cc494a4bcf027c58267e8ee2da60e942759de86d2670bba1aa47bffd20b48b1d2aa7c3349f8215d1b99ca65bdb1770a220f67456f602436032afce7f24e534e7bfcdab9b35affa0ff891074302c19970d7359a8c",
     shake256:
       "369771bb2cb9d2b04c1d54cca487e372d9f187f73f7ba3f65b95c8ee7798c527f4f3c2d55c2d46a29f2e945d469c3df27853a8735271f5cc2d9e889544357116bb60a24af659151563156eebbf68810dd95c6fcccac0650132ba30bef9bf75b0d483becb935be8688b26ffb294d8284edd64a97325d6be0a423f23",
+  }],
+
+  ["Output length: 0", [[""]], {
+    length: 0,
+  }, {
+    blake2b: Error,
+    blake2s: Error,
+    blake3: "",
+    keccak224: Error,
+    keccak256: Error,
+    keccak384: Error,
+    keccak512: Error,
+    md2: Error,
+    md4: Error,
+    md5: Error,
+    ripemd160: Error,
+    ripemd320: Error,
+    sha1: Error,
+    sha224: Error,
+    sha256: Error,
+    "sha3-224": Error,
+    "sha3-256": Error,
+    "sha3-384": Error,
+    "sha3-512": Error,
+    sha384: Error,
+    sha512: Error,
+    shake128: "",
+    shake256: "",
   }],
 
   ["Negative length", [[""]], { length: -1 }, allErrors],
@@ -354,151 +696,3 @@ const digestCases: [
     },
   ],
 ];
-
-const toHexString = (bytes: Uint8Array): string =>
-  bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
-
-Deno.test("[hash/digest] testDigests", () => {
-  for (const [caption, inputs, options, expecteds] of digestCases) {
-    for (const algorithm of supportedAlgorithms) {
-      const expected = expecteds[algorithm];
-      const instance = createHasher(algorithm);
-
-      for (const [i, input] of inputs.entries()) {
-        instance.reset();
-
-        if (typeof expected === "string") {
-          for (const piece of input) {
-            instance.update(piece);
-          }
-          const actual = instance.toString(options);
-          assertEquals(
-            actual,
-            expected,
-            `expected ${expected} for ${algorithm} of ${caption} (variation ${i +
-              1}) but got ${actual}`,
-          );
-
-          assertEquals(
-            toHexString(instance.digest(options)),
-            actual,
-            "internal consistency failure",
-          );
-          assertEquals(
-            toHexString(instance.digestAndReset(options)),
-            actual,
-            "internal consistency failure",
-          );
-          if (input.length === 1) {
-            const [piece] = input;
-            assertEquals(
-              toHexString(digest(algorithm, piece, options)),
-              actual,
-              "internal consistency failure",
-            );
-          }
-        } else {
-          assertThrows(
-            () => {
-              for (const piece of input) {
-                instance.update(piece);
-              }
-              instance.digest(options);
-            },
-            expected,
-            undefined,
-            `expected ${expected.name} for ${algorithm} of ${caption} (variation ${i +
-              1})`,
-          );
-        }
-      }
-    }
-  }
-});
-
-Deno.test("[hash/memory_use] testMemoryUse", async () => {
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
-    cwd: moduleDir,
-    stdout: "piped",
-    stdin: "piped",
-  });
-
-  await process.stdin.write(
-    new TextEncoder().encode(`
-      import { createHasher } from "./mod.ts";
-      import { _wasm } from "./_wasm/wasm.js";
-
-      const { memory } = _wasm as { memory: WebAssembly.Memory };
-
-      const heapBytesInitial = memory.buffer.byteLength;
-
-      const smallData = new Uint8Array(64);
-      const smallHasher = createHasher("md5");
-      smallHasher.update(smallData);
-      const smallDigest = smallHasher.toString();
-      const heapBytesAfterSmall = memory.buffer.byteLength;
-
-      const largeData = new Uint8Array(64_000_000);
-      const largeHasher = createHasher("md5");
-      largeHasher.update(largeData);
-      const largeDigest = largeHasher.toString();
-      const heapBytesAfterLarge = memory.buffer.byteLength;
-
-      console.log(JSON.stringify(
-        {
-          heapBytesInitial,
-          smallDigest,
-          heapBytesAfterSmall,
-          largeDigest,
-          heapBytesAfterLarge,
-        },
-        null,
-        2,
-      ));
-    `),
-  );
-  process.stdin.close();
-
-  const stdout = new TextDecoder().decode(await process.output());
-  const status = await process.status();
-  process.close();
-
-  assertEquals(status.success, true);
-  const {
-    heapBytesInitial,
-    smallDigest,
-    heapBytesAfterSmall,
-    largeDigest,
-    heapBytesAfterLarge,
-  }: {
-    heapBytesInitial: number;
-    smallDigest: string;
-    heapBytesAfterSmall: number;
-    largeDigest: string;
-    heapBytesAfterLarge: number;
-  } = JSON.parse(stdout);
-
-  assertEquals(smallDigest, "3b5d3c7d207e37dceeedd301e35e2e58");
-  assertEquals(largeDigest, "e78585b8bfda6036cfd818710a210f23");
-
-  // Heap should stay under 2MB even though we provided a 64MB input.
-  assert(
-    heapBytesInitial < 2_000_000,
-    `WASM heap was too large initially: ${
-      (heapBytesInitial / 1_000_000).toFixed(1)
-    } MB`,
-  );
-  assert(
-    heapBytesAfterSmall < 2_000_000,
-    `WASM heap was too large after small input: ${
-      (heapBytesAfterSmall / 1_000_000).toFixed(1)
-    } MB`,
-  );
-  assert(
-    heapBytesAfterLarge < 2_000_000,
-    `WASM heap was too large after large input: ${
-      (heapBytesAfterLarge / 1_000_000).toFixed(1)
-    } MB`,
-  );
-});

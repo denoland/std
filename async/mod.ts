@@ -5,3 +5,4 @@ export * from "./delay.ts";
 export * from "./mux_async_iterator.ts";
 export * from "./pool.ts";
 export * from "./tee.ts";
+export * from "./deadline.ts";

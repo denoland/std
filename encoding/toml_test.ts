@@ -165,6 +165,23 @@ Deno.test({
 });
 
 Deno.test({
+  name: "[TOML] Various keys",
+  fn(): void {
+    const expected = {
+      site: { "google.com": { bar: 1, baz: 1 } },
+      a: { b: { c: 1, d: 1 }, e: 1 },
+      "": 1,
+      "127.0.0.1": 1,
+      "ʎǝʞ": 1,
+      'this is "literal"': 1,
+      'double "quote"': 1,
+    };
+    const actual = parseFile(path.join(testdataDir, "keys.toml"));
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
   name: "[TOML] Simple",
   fn(): void {
     const expected = {
@@ -418,6 +435,37 @@ stuff   = "in"
 
 [[arrayObjects]]
 the     = "array"
+`;
+    const actual = stringify(src);
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "[TOML] Mixed Array",
+  fn(): void {
+    const src = {
+      emptyArray: [],
+      mixedArray1: [1, { b: 2 }],
+      mixedArray2: [{ b: 2 }, 1],
+      nestedArray1: [[{ b: 1 }]],
+      nestedArray2: [[[{ b: 1 }]]],
+      nestedArray3: [[], [{ b: 1 }]],
+      deepNested: {
+        a: {
+          b: [1, { c: 2, d: [{ e: 3 }, true] }],
+        },
+      },
+    };
+    const expected = `emptyArray = []
+mixedArray1 = [1,{b = 2}]
+mixedArray2 = [{b = 2},1]
+nestedArray1 = [[{b = 1}]]
+nestedArray2 = [[[{b = 1}]]]
+nestedArray3 = [[],[{b = 1}]]
+
+[deepNested.a]
+b = [1,{c = 2,d = [{e = 3},true]}]
 `;
     const actual = stringify(src);
     assertEquals(actual, expected);
