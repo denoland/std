@@ -22,6 +22,8 @@ Deno.test("Different ways to perform the same operation should produce the same 
     "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b";
   const expectedDigest =
     "ae30c171b2b5a047b7986c185564407672441934a356686e6df3a8284f35214448c40738e65b8c308e38b068eed91676";
+  const expectedDigestUnicode =
+    "\xae\x30\xc1\x71\xb2\xb5\xa0\x47\xb7\x98\x6c\x18\x55\x64\x40\x76\x72\x44\x19\x34\xa3\x56\x68\x6e\x6d\xf3\xa8\x28\x4f\x35\x21\x44\x48\xc4\x07\x38\xe6\x5b\x8c\x30\x8e\x38\xb0\x68\xee\xd9\x16\x76";
 
   assertEquals(toHexString(digest("sha384", inputString)), expectedDigest);
 
@@ -46,6 +48,7 @@ Deno.test("Different ways to perform the same operation should produce the same 
   assertEquals(hasher.toString(), expectedDigest);
   assertEquals(hasher.toString({ length: 48 }), expectedDigest);
   assertEquals(hasher.toString({ encoding: "hex" }), expectedDigest);
+  assertEquals(hasher.toString({ encoding: "unicode" }), expectedDigestUnicode);
   hasher.reset();
 
   assertEquals(toHexString(hasher.digest()), emptyDigest);
