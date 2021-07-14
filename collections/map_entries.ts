@@ -31,11 +31,11 @@ export function mapEntries<T, O>(
   const ret: Record<string, O> = {};
   const entries = Object.entries(record);
 
-  entries.forEach((entry) => {
+  for (const entry of entries) {
     const [mappedKey, mappedValue] = transformer(entry);
 
     ret[mappedKey] = mappedValue;
-  });
+  }
 
   return ret;
 }

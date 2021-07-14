@@ -28,11 +28,11 @@ export function filterKeys<T>(
   const ret: Record<string, T> = {};
   const keys = Object.keys(record);
 
-  keys.forEach((key) => {
+  for (const key of keys) {
     if (predicate(key)) {
       ret[key] = record[key];
     }
-  });
+  }
 
   return ret;
 }

@@ -30,6 +30,7 @@ export function mapValues<T, O>(
 
   for (const [key, value] of entries) {
     const mappedValue = transformer(value);
+
     ret[key] = mappedValue;
   }
 

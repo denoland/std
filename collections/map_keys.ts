@@ -29,6 +29,7 @@ export function mapKeys<T>(
 
   for (const key of keys) {
     const mappedKey = transformer(key);
+
     ret[mappedKey] = record[key];
   }
 

@@ -29,11 +29,11 @@ export function filterEntries<T>(
   const ret: Record<string, T> = {};
   const entries = Object.entries(record);
 
-  entries.forEach(([key, value]) => {
+  for (const [key, value] of entries) {
     if (predicate([key, value])) {
       ret[key] = value;
     }
-  });
+  }
 
   return ret;
 }
