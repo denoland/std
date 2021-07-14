@@ -6,10 +6,11 @@ import {
 } from "../testing/asserts.ts";
 import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { Response, ServerRequest } from "./server.ts";
-import { FileServerArgs, serveFile } from "./file_server.ts";
+import { Response } from "./server.ts";
+import { FileServerArgs } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { iter, readAll, writeAll } from "../io/util.ts";
+import { createHash } from "../hash/mod.ts";
 
 let fileServer: Deno.Process<Deno.RunOptions & { stdout: "piped" }>;
 
@@ -510,9 +511,11 @@ Deno.test(
     await startFileServer();
     try {
       const headers = {
-        "range": "bytes=0-0"
-      }
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
+        "range": "bytes=0-0",
+      };
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },);
       const text = await res.text();
       console.log(text);
       assertEquals(text, "L");
@@ -528,16 +531,44 @@ Deno.test(
     await startFileServer();
     try {
       const headers = {
-        "range": "bytes=0-100"
-      }
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
-      const text = await res.text(); // Consuming the body so that the test doesn't leak resources
-      assertEquals(res.headers.get("content-range"), "bytes 0-100/10068");
+        "range": "bytes=0-100",
+      };
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },);
+      const contentLength = await getTestFileSize();
+      assertEquals(res.headers.get("content-range"), `bytes 0-100/${contentLength}`);
+
+      await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
     }
   },
 );
+
+const getTestFileSize = async () => {
+  const fileInfo = await getTestFileStat();
+  return fileInfo.size;
+};
+
+const getTestFileStat = async (): Promise<Deno.FileInfo> => {
+  const fsPath = join(testdataDir, "test file.txt");
+  const fileInfo = await Deno.stat(fsPath);
+
+  return fileInfo;
+};
+
+const getTestFileEtag = async () => {
+  const fileInfo = await getTestFileStat();
+
+  if (fileInfo.mtime instanceof Date) {
+    const lastModified = new Date(fileInfo.mtime);
+    const simpleEtag = createHash("md5").update(`${lastModified.toJSON()}${fileInfo.size}`).toString();
+    return simpleEtag;
+  } else {
+    return '';
+  }
+};
 
 Deno.test(
   "file_server returns 206 for range request responses",
@@ -545,10 +576,12 @@ Deno.test(
     await startFileServer();
     try {
       const headers = {
-        "range": "bytes=0-100"
-      }
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
-      const text = await res.text(); // Consuming the body so that the test doesn't leak resources
+        "range": "bytes=0-100",
+      };
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },);
+      await res.text(); // Consuming the body so that the test doesn't leak resources
       assertEquals(res.status, 206);
     } finally {
       await killFileServer();
@@ -562,17 +595,20 @@ Deno.test(
     await startFileServer();
     try {
       const headers = {
-        "range": "bytes=300-"
-      }
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
+        "range": "bytes=300-",
+      };
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },);
       const text = await res.text();
 
       const localFile = new TextDecoder().decode(
         await Deno.readFile(join(testdataDir, "test file.txt"))
       );
-
+      
+      const contentLength = await getTestFileSize();
+      assertEquals(res.headers.get("content-range"), `bytes 300-10067/${contentLength}`);
       assertEquals(text, localFile.substring(300));
-      assertEquals(res.headers.get("content-range"), "bytes 300-10067/10068");
     } finally {
       await killFileServer();
     }
@@ -585,9 +621,11 @@ Deno.test(
     await startFileServer();
     try {
       const headers = {
-        "range": "bytes=500-200"
-      }
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
+        "range": "bytes=500-200",
+      };
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },);
       await res.text();
       assertEquals(res.status, 416);
       assertEquals(res.statusText, "Range Not Satisfiable")
@@ -604,9 +642,11 @@ Deno.test(
     await startFileServer();
     try {
       const headers = {
-        "range": "bytes=-200"
-      }
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
+        "range": "bytes=-200",
+      };
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },);
       await res.text();
       assertEquals(res.status, 416);
       assertEquals(res.statusText, "Range Not Satisfiable")
@@ -623,9 +663,11 @@ Deno.test(
     await startFileServer();
     try {
       const headers = {
-        "range": "bytes=100"
-      }
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
+        "range": "bytes=100",
+      };
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },);
       await res.text();
       assertEquals(res.status, 416);
       assertEquals(res.statusText, "Range Not Satisfiable")
@@ -642,9 +684,11 @@ Deno.test(
     await startFileServer();
     try {
       const headers = {
-        "range": "bytes=a-b"
-      }
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
+        "range": "bytes=a-b",
+      };
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },);
       await res.text();
       assertEquals(res.status, 416);
       assertEquals(res.statusText, "Range Not Satisfiable")
@@ -707,7 +751,8 @@ Deno.test(
     await startFileServer();
     try {
       const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-      assertEquals(res.headers.get("content-length"), "10068");
+      const contentLength = await getTestFileSize();
+      assertEquals(res.headers.get("content-length"), contentLength.toString());
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
@@ -753,8 +798,8 @@ Deno.test(
     await startFileServer();
     try {
       const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-      const expectedEtag = '013792bd436c0958f5515c34a39e23b6';
-      assertEquals(res.headers.get('etag'), expectedEtag);
+      const expectedEtag = await getTestFileEtag();
+      assertEquals(res.headers.get("etag"), expectedEtag);
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
@@ -767,12 +812,14 @@ Deno.test(
   async () => {
     await startFileServer();
     try {
-      const expectedEtag = '013792bd436c0958f5515c34a39e23b6';
+      const expectedEtag = await getTestFileEtag();
       const headers = new Headers();
       headers.set("if-none-match", expectedEtag);
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },);
       assertEquals(res.status, 304);
-      assertEquals(res.statusText, 'Not Modified');
+      assertEquals(res.statusText, "Not Modified");
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
@@ -785,10 +832,12 @@ Deno.test(
   async () => {
     await startFileServer();
     try {
-      const expectedEtag = '013792bd436c0958f5515c34a39e23b6';
+      const expectedEtag = await getTestFileEtag();
       const headers = new Headers();
       headers.set("if-none-match", expectedEtag);
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt", { headers });
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },);
       assertEquals(await res.text(), "");
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
