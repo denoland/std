@@ -28,17 +28,17 @@ export function groupBy<T>(
 ): Grouping<T> {
   const ret: { [key: string]: Array<T> } = {};
 
-  array.forEach((it) => {
-    const key = selector(it);
+  for (const element of array) {
+    const key = selector(element);
 
     if (ret[key] === undefined) {
-      ret[key] = [it];
+      ret[key] = [element];
 
-      return;
+      continue;
     }
 
-    ret[key].push(it);
-  });
+    ret[key].push(element);
+  }
 
   return ret;
 }
