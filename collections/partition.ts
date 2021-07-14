@@ -23,13 +23,13 @@ export function partition<T>(
   const matches: Array<T> = [];
   const rest: Array<T> = [];
 
-  array.forEach((it) => {
-    if (predicate(it)) {
-      matches.push(it);
+  for (const element of array) {
+    if (predicate(element)) {
+      matches.push(element);
     } else {
-      rest.push(it);
+      rest.push(element);
     }
-  });
+  }
 
   return [matches, rest];
 }
