@@ -21,8 +21,16 @@ import { Selector } from "./types.ts";
  * ```
  */
 export function mapKeys<T>(
-  _record: Record<string, T>,
-  _transformer: Selector<string, string>,
+  record: Record<string, T>,
+  transformer: Selector<string, string>,
 ): Record<string, T> {
-  throw new Error("unimplemented");
+  const ret: Record<string, T> = {};
+  const keys = Object.keys(record);
+
+  for (const key of keys) {
+    const mappedKey = transformer(key);
+    ret[mappedKey] = record[key];
+  }
+
+  return ret;
 }
