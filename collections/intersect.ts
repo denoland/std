@@ -3,7 +3,7 @@
 import { filterInPlace } from "./_utils.ts";
 
 /**
- * Returns all distinct elements that appear in both given arrays
+ * Returns all distinct elements that appear at least once in each of the given arrays
  *
  * Example:
  *
@@ -16,17 +16,17 @@ import { filterInPlace } from "./_utils.ts";
  * ```
  */
 export function intersect<T>(...arrays: Array<Array<T>>): Array<T> {
+  if (arrays.length === 0) {
+    return [];
+  }
+
   const [originalHead, ...tail] = arrays;
   const head = [...originalHead];
-  const sets = tail.map((it) => new Set(it));
+  const tailSets = tail.map((it) => new Set(it));
 
-  return sets
-    .reduce<Array<T>>(
-      (acc, cur) =>
-        filterInPlace(
-          acc,
-          (it) => cur.has(it),
-        ),
-      head,
-    );
+  for (const set of tailSets) {
+    filterInPlace(head, (it) => set.has(it));
+  }
+
+  return head;
 }

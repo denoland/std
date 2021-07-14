@@ -4,7 +4,7 @@ import { assertEquals } from "https://deno.land/std@0.100.0/testing/asserts.ts";
 import { intersect } from "./intersect.ts";
 
 function intersectTest<I>(
-  input: [Array<I>, Array<I>],
+  input: Array<Array<I>>,
   expected: Array<I>,
   message?: string,
 ) {
@@ -21,6 +21,13 @@ Deno.test({
 
     assertEquals(arrayA, [1, 2, 3]);
     assertEquals(arrayB, [3, 4, 5]);
+  },
+});
+
+Deno.test({
+  name: "[collections/intersect] empty input",
+  fn() {
+    intersectTest([], []);
   },
 });
 
@@ -51,6 +58,37 @@ Deno.test({
   fn() {
     intersectTest([["a", "b"], ["b", "c"]], ["b"]);
     intersectTest([["a", "b", "c", "d"], ["c", "d", "e", "f"]], ["c", "d"]);
+  },
+});
+
+Deno.test({
+  name: "[collections/intersect] more than two inputs",
+  fn() {
+    intersectTest(
+      [
+        ["a", "b"],
+        ["b", "c"],
+        ["s", "b"],
+        ["b", "b"],
+      ],
+      ["b"],
+    );
+    intersectTest(
+      [
+        [1],
+        [1],
+        [2],
+      ],
+      [],
+    );
+    intersectTest(
+      [
+        [true, false],
+        [true, false],
+        [true],
+      ],
+      [true],
+    );
   },
 });
 
