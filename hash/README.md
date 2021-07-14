@@ -65,9 +65,10 @@ Other methods are described
 > ⚠️ **Warning:** Many of these supported algorithms have known security
 > weaknesses, but are included in this module as they may be required for
 > compatibility with existing systems. If you are free to pick an algorithm, be
-> sure you're using one that's still believed to secure for your use case. If
-> you're not sure, `sha384` is usually a good choice; it's one of the most
-> widely-supported algorithms that is still believed to be secure, and is fast.
+> sure you're using one that doesn't have any known weaknesses that could
+> compromise your design. If you're not sure, `sha384` is usually a safe choice:
+> it's one of the most widely-supported algorithms that is still believed to be
+> generally secure.
 
 The following hash algorithms are supported:
 
