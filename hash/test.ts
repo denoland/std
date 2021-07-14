@@ -257,8 +257,10 @@ Deno.test("Algorithms should produce expected digests for various inputs", () =>
           assertEquals(
             actual,
             expected,
-            `expected ${expected} for ${algorithm} of ${caption} (variation ${i +
-              1}) but got ${actual}`,
+            `expected ${JSON.stringify(expected)} from ${algorithm} of ${
+              JSON.stringify(caption)
+            } (variation ${i +
+              1}) but got ${JSON.stringify(actual)}`,
           );
 
           assertEquals(
@@ -319,6 +321,8 @@ const bufferCopy = slicedCopy.buffer;
 // Test result when an error is expected for all algorithms.
 const allErrors = {
   blake2b: Error,
+  "blake2b-384": Error,
+  "blake2b-256": Error,
   blake2s: Error,
   blake3: Error,
   keccak224: Error,
@@ -359,6 +363,10 @@ const digestCases: [
   ["Empty", [[], [""], [new ArrayBuffer(0), new BigInt64Array(0)]], {}, {
     blake2b:
       "786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce",
+    "blake2b-256":
+      "0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8",
+    "blake2b-384":
+      "b32811423377f52d7862286ee1a72ee540524380fda1724a6f25d7978c6fd3244a6caf0498812673c5e05ef583825100",
     blake2s: "69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9",
     blake3: "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
     keccak224: "f71837502ba8e10837bdd8d365adb85591895602fc552b48b7390abd",
@@ -403,6 +411,10 @@ const digestCases: [
     {
       blake2b:
         "2fa3f686df876995167e7c2e5d74c4c7b6e48f8068fe0e44208344d480f7904c36963e44115fe3eb2a3ac8694c28bcb4f5a0f3276f2e79487d8219057a506e4b",
+      "blake2b-256":
+        "03170a2e7597b7b7e3d84c05391d139a62b157e78786d8c082f29dcf4c111314",
+      "blake2b-384":
+        "cc01088536f784f0bb769e41c4957b6d0cde1fcc8cf1d91fc477d4dd6e3fbfcd43d1698d146f348b2c36a339682bec3f",
       blake2s:
         "e34d74dbaf4ff4c6abd871cc220451d2ea2648846c7757fbaac82fe51ad64bea",
       blake3:
@@ -446,6 +458,8 @@ const digestCases: [
     length: 20,
   }, {
     blake2b: Error,
+    "blake2b-384": Error,
+    "blake2b-256": Error,
     blake2s: Error,
     blake3: "d74981efa70a0c880b8d8c1985d075dbcbf679b9",
     keccak224: Error,
@@ -474,6 +488,8 @@ const digestCases: [
     length: 3,
   }, {
     blake2b: Error,
+    "blake2b-384": Error,
+    "blake2b-256": Error,
     blake2s: Error,
     blake3: "d74981",
     keccak224: Error,
@@ -502,6 +518,8 @@ const digestCases: [
     length: 123,
   }, {
     blake2b: Error,
+    "blake2b-384": Error,
+    "blake2b-256": Error,
     blake2s: Error,
     blake3:
       "d74981efa70a0c880b8d8c1985d075dbcbf679b99a5f9914e5aaf96b831a9e24a020ed55aed9a6ab2eaf3fd70d2c98c949e142d8f42a10250190b699e02cf9eb68612e1a556fee6cf726bcb0994f7d3e669eda394788f8c80a4f0ea056be3d4dffd8069d7ef9a714a47a4cdef62c5402a25d7994384b07bfcf8479",
@@ -533,6 +551,8 @@ const digestCases: [
     length: 0,
   }, {
     blake2b: Error,
+    "blake2b-384": Error,
+    "blake2b-256": Error,
     blake2s: Error,
     blake3: "",
     keccak224: Error,
@@ -568,6 +588,10 @@ const digestCases: [
   ["About a meg", [[aboutAMeg]], {}, {
     blake2b:
       "81f197a4ced23ba7bfc9e5e84f417475371b22edb36089978734d1327c39ff75eeda6598ab1c63f0829aa437b68a526f04e622f714d9d7093150e6b2f9603b5c",
+    "blake2b-256":
+      "84b033ca29abf242e3761b1657e14768cbfb4e7fc28b3d9f0f34905e5f2aa92b",
+    "blake2b-384":
+      "0300b1c3d7deeca947263590d4777b0df0e7869ded64d63afafcfb3da4df5e542bfe309667436f534cd3b9cb9ee5f938",
     blake2s: "c1b9bffb9bb1fa42f26ce72ad457bef071a7713532c37b772a3a7e8b353551fc",
     blake3: "7fc79f34e187d62c474af7d57531a77f193ab6f2fae71c6de155b341cb592fe5",
     keccak224: "8186d48ddde40e518b203db01cc105f0d4a1f46341322730f9c61b51",
@@ -610,6 +634,10 @@ const digestCases: [
     {
       blake2b:
         "dd3ce8111538e7de0842ce11835e38788b6c9436deb122dcfdf69a2fc51d0414e6e088e9ced8e275280eb945f135e5e9eb8000d0434427e67efeea8fc1f39cc5",
+      "blake2b-256":
+        "ee079520d28e52bcf61dbc1919e90d9a6c3cb66290f5f41c5521dae9c365c4fe",
+      "blake2b-384":
+        "fbedc985d108d0690e9121e8a11c23faf5fc22a164cf30b5448e8499a86e1acd750e00f096a1f44be484a74bc1a5d076",
       blake2s:
         "ecf3769441e140f8c8e0a2176cb4ef57fa09befc90a845ce5be8c99ada200bd2",
       blake3:
@@ -660,6 +688,10 @@ const digestCases: [
     {
       blake2b:
         "0ad2f5cb56954ada6e852adcd8b3a9147e92cb68859b13ddb511a6abee263c51e32db3a4a8a78152fa0638f726c9ac96fa1fda41898bc6d7a4017d7abdbf8480",
+      "blake2b-256":
+        "be41aad5e22791bfa0b6fc37cd35ecf32b5c6170f85aabcac839fb5e0315def9",
+      "blake2b-384":
+        "a6b745fab507fe0251102c67e7616416f94d3508160bde3cc033917469b804464a0394edaaa6d93dd28ba196df8dd970",
       blake2s:
         "627f9025def22ddbf8ccfba535900aa8dd79ce532778aeae138fa797dd479008",
       blake3:

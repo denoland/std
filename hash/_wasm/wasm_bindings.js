@@ -182,8 +182,9 @@ export class Hasher {
   }
   /**
     * Returns the binary digest of the hasher's current state. If the hash
-    * algorithm being used is extensible, a length parameter may be provided,
-    * otherwise it must be None.
+    * algorithm being used has a variable-length output, a length parameter
+    * may be provided. If it doesn't, the parameter must be None or match the
+    * fixed-length output size.
     * @param {number | undefined} length
     * @returns {Uint8Array}
     */

@@ -13,6 +13,8 @@ import type { DigestOptions, Hasher, Message } from "./hasher.ts";
 /** An array of every algorithm name supported by `createHasher`. */
 export const supportedAlgorithms = [
   "blake2b",
+  "blake2b-256",
+  "blake2b-384",
   "blake2s",
   "blake3",
   "keccak224",

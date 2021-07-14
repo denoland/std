@@ -88,6 +88,8 @@ The following hash algorithms are supported:
 - [`keccak384`][KECCAK]
 - [`keccak512`][KECCAK]
 - [`blake2b`][BLAKE2]
+- [`blake2b-256`][BLAKE2]
+- [`blake2b-384`][BLAKE2]
 - [`blake2s`][BLAKE2]
 - [`blake3`][BLAKE3] (supports variable-length digests)
 - [`md2`][RFC-1319]

@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-use digest::{Digest, DynDigest, ExtendableOutput, Reset, Update, XofReader};
+use digest::{Digest, DynDigest, ExtendableOutput, Reset, Update, VariableOutput, XofReader};
 use wasm_bindgen::prelude::*;
 
 /// A Hasher for any supported cryptographic hash algorithm, wrapping them in
@@ -16,20 +16,15 @@ pub struct Hasher {
 enum HashBox {
     DynDigest(Box<dyn DynDigest>),
     Blake3(Box<blake3::Hasher>),
+    Blake2bVariant(Box<blake2::VarBlake2b>, usize),
     Shake128(Box<sha3::Shake128>),
     Shake256(Box<sha3::Shake256>),
 }
 
 struct HashProperties {
     pub output_size: usize,
-    pub extendable: Option<ExtendableHashProperties>,
+    pub extendable: bool,
 }
-
-struct ExtendableHashProperties {
-    pub seekable: Option<SeekableHashProperties>,
-}
-
-struct SeekableHashProperties;
 
 #[wasm_bindgen]
 impl Hasher {
@@ -49,6 +44,20 @@ impl Hasher {
 
         match algorithm {
             "blake2b" => dyn_digest("blake2b", blake2::Blake2b::new()),
+            "blake2b-384" => boxed(
+                "blake2b-384",
+                HashBox::Blake2bVariant(
+                    Box::new(blake2::VarBlake2b::new(384 / 8).unwrap()),
+                    384 / 8,
+                ),
+            ),
+            "blake2b-256" => boxed(
+                "blake2b-256",
+                HashBox::Blake2bVariant(
+                    Box::new(blake2::VarBlake2b::new(256 / 8).unwrap()),
+                    256 / 8,
+                ),
+            ),
             "blake2s" => dyn_digest("blake2s", blake2::Blake2s::new()),
             "blake3" => boxed("blake3", HashBox::Blake3(Box::new(blake3::Hasher::new()))),
             "keccak224" => dyn_digest("keccak224", sha3::Keccak224::new()),
@@ -88,28 +97,26 @@ impl Hasher {
         match &self.inner {
             HashBox::DynDigest(hasher) => HashProperties {
                 output_size: hasher.output_size(),
-                extendable: None,
+                extendable: false,
             },
             HashBox::Blake3(hasher) => HashProperties {
                 output_size: hasher.output_size(),
-                extendable: Some(ExtendableHashProperties {
-                    seekable: Some(SeekableHashProperties),
-                }),
+                extendable: true,
             },
-            HashBox::Shake128(_hasher) => {
-                HashProperties {
-                    /// Minimum size for full security (NIST FIPS 202, Table 4).
-                    output_size: (2 * 128) / 8,
-                    extendable: Some(ExtendableHashProperties { seekable: None }),
-                }
-            }
-            HashBox::Shake256(_hasher) => {
-                HashProperties {
-                    /// Minimum size for full security (NIST FIPS 202, Table 4).
-                    output_size: (2 * 256) / 8,
-                    extendable: Some(ExtendableHashProperties { seekable: None }),
-                }
-            }
+            HashBox::Blake2bVariant(_hasher, output_size) => HashProperties {
+                output_size: *output_size,
+                extendable: false,
+            },
+            HashBox::Shake128(_hasher) => HashProperties {
+                /// Minimum size for full security (NIST FIPS 202, Table 4).
+                output_size: (2 * 128) / 8,
+                extendable: true,
+            },
+            HashBox::Shake256(_hasher) => HashProperties {
+                /// Minimum size for full security (NIST FIPS 202, Table 4).
+                output_size: (2 * 256) / 8,
+                extendable: true,
+            },
         }
     }
 
@@ -121,6 +128,9 @@ impl Hasher {
                 hasher.reset();
             }
             HashBox::Blake3(hasher) => {
+                hasher.reset();
+            }
+            HashBox::Blake2bVariant(hasher, _output_size) => {
                 hasher.reset();
             }
             HashBox::Shake128(hasher) => {
@@ -142,6 +152,9 @@ impl Hasher {
             HashBox::Blake3(hasher) => {
                 hasher.update(data);
             }
+            HashBox::Blake2bVariant(hasher, _output_size) => {
+                hasher.update(data);
+            }
             HashBox::Shake128(hasher) => {
                 hasher.update(data);
             }
@@ -152,8 +165,9 @@ impl Hasher {
     }
 
     /// Returns the binary digest of the hasher's current state. If the hash
-    /// algorithm being used is extensible, a length parameter may be provided,
-    /// otherwise it must be None.
+    /// algorithm being used has a variable-length output, a length parameter
+    /// may be provided. If it doesn't, the parameter must be None or match the
+    /// fixed-length output size.
     #[wasm_bindgen]
     pub fn digest(&self, length: Option<usize>) -> Result<Box<[u8]>, JsValue> {
         match length {
@@ -161,6 +175,9 @@ impl Hasher {
                 HashBox::DynDigest(ref hasher) => Ok(hasher.clone().finalize()),
                 HashBox::Blake3(ref hasher) => {
                     Ok(Box::new(*blake3::Hasher::finalize(&hasher).as_bytes()))
+                }
+                HashBox::Blake2bVariant(ref hasher, _output_size) => {
+                    Ok(hasher.clone().finalize_boxed())
                 }
                 HashBox::Shake128(ref hasher) => Ok(hasher
                     .clone()
@@ -181,7 +198,7 @@ impl Hasher {
                 HashBox::Shake256(ref hasher) => {
                     Ok(hasher.clone().finalize_xof().read_boxed(length))
                 }
-                HashBox::DynDigest(_) => {
+                _ => {
                     let digest = self.digest(None);
                     if let Ok(ref digest) = digest {
                         if digest.len() != length {
