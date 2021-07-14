@@ -4,7 +4,7 @@ import { assertEquals } from "https://deno.land/std@0.100.0/testing/asserts.ts";
 import { union } from "./union.ts";
 
 function unionTest<I>(
-  input: [Array<I>, Array<I>],
+  input: Array<Array<I>>,
   expected: Array<I>,
   message?: string,
 ) {
@@ -13,17 +13,62 @@ function unionTest<I>(
 }
 
 Deno.test({
-  name: "[collections/union] empty arrays",
+  name: "[collections/union] no mutations",
   fn() {
-    unionTest([[], []], []);
+    const arrayA = [1, 2, 3];
+    const arrayB = [2, 4, 5];
+    union(arrayA, arrayB);
+
+    assertEquals(arrayA, [1, 2, 3]);
+    assertEquals(arrayB, [2, 4, 5]);
   },
 });
 
 Deno.test({
-  name: "[collections/union] one side empty",
+  name: "[collections/union] empty input",
+  fn() {
+    unionTest([], []);
+  },
+});
+
+Deno.test({
+  name: "[collections/union] empty arrays",
+  fn() {
+    unionTest(
+      [
+        [],
+        [],
+        [],
+      ],
+      [],
+    );
+  },
+});
+
+Deno.test({
+  name: "[collections/union] one input",
+  fn() {
+    unionTest(
+      [
+        [true, false],
+      ],
+      [true, false],
+    );
+    unionTest(
+      [
+        ["foo", "bar", "bar"],
+      ],
+      ["foo", "bar"],
+    );
+  },
+});
+
+Deno.test({
+  name: "[collections/union] some empty",
   fn() {
     unionTest([[], ["a", "b", "c"]], ["a", "b", "c"]);
     unionTest([["a", "b", "c"], []], ["a", "b", "c"]);
+    unionTest([[], ["a", "b", "c"], [], ["b", "d"]], ["a", "b", "c", "d"]);
   },
 });
 
@@ -38,6 +83,24 @@ Deno.test({
       "e",
       "f",
     ]);
+    unionTest(
+      [
+        ["a", "b", "c"],
+        ["d", "e", "f"],
+        ["g", "h", "j"],
+      ],
+      [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "f",
+        "g",
+        "h",
+        "j",
+      ],
+    );
   },
 });
 
@@ -45,14 +108,14 @@ Deno.test({
   name: "[collections/union] overlapping sets",
   fn() {
     unionTest([["a", "b"], ["b", "c"]], ["a", "b", "c"]);
-    unionTest([["a", "b", "c", "d"], ["c", "d", "e", "f"]], [
-      "a",
-      "b",
-      "c",
-      "d",
-      "e",
-      "f",
-    ]);
+    unionTest(
+      [
+        [10, -2],
+        [-2],
+        [5, 10],
+      ],
+      [10, -2, 5],
+    );
   },
 });
 
@@ -75,6 +138,11 @@ Deno.test({
       [a, b],
       [d],
     ], [a, b, d]);
+    unionTest<Record<string, string>>([
+      [a],
+      [b, d],
+      [c, a, b],
+    ], [a, b, d, c]);
   },
 });
 

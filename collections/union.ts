@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Returns all distinct elements that appear in either of the given arrays
+ * Returns all distinct elements that appear in any of the given arrays
  *
  * Example:
  *
@@ -13,13 +13,14 @@
  * console.assert(shoppingList === [ 'Pepper', 'Carrots', 'Leek', 'Radicchio' ])
  * ```
  */
-export function union<T>(a: Array<T>, b: Array<T>): Array<T> {
-  const s = new Set<T>();
-  for (const i of a) {
-    s.add(i as T);
+export function union<T>(...arrays: Array<Array<T>>): Array<T> {
+  const set = new Set<T>();
+
+  for (const array of arrays) {
+    for (const element of array) {
+      set.add(element);
+    }
   }
-  for (const i of b) {
-    s.add(i as T);
-  }
-  return Array.from(s);
+
+  return Array.from(set);
 }
