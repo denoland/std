@@ -1,5 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
 import { Grouping, Selector } from "./types.ts";
+
 /**
  * Applies the given selector to each element in the given array, returning a Record containing the results as keys
  * and all values that produced that key as values.
