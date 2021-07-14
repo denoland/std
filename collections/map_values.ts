@@ -22,8 +22,16 @@ import { Selector } from "./types.ts";
  * ```
  */
 export function mapValues<T, O>(
-  _record: Record<string, T>,
-  _transformer: Selector<T, O>,
+  record: Record<string, T>,
+  transformer: Selector<T, O>,
 ): Record<string, O> {
-  throw new Error("unimplemented");
+  const ret: Record<string, O> = {};
+  const entries = Object.entries(record);
+
+  for (const [key, value] of entries) {
+    const mappedValue = transformer(value);
+    ret[key] = mappedValue;
+  }
+
+  return ret;
 }
