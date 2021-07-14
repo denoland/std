@@ -17,7 +17,7 @@ import {
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { readRange } from "../io/util.ts";
-import { createHash } from "../hash/mod.ts"
+import { createHash } from "../hash/mod.ts";
 
 interface EntryInfo {
   mode: string;
@@ -116,8 +116,10 @@ const MEDIA_TYPES: Record<string, string> = {
   ".webmanifest": "application/manifest+json",
   ".doc": "application/msword",
   ".dot": "application/msword",
-  ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ".dotx": "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+  ".docx": 
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".dotx": 
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
   ".cjs": "application/node",
   ".bin": "application/octet-stream",
   ".pkg": "application/octet-stream",
@@ -153,8 +155,10 @@ const MEDIA_TYPES: Record<string, string> = {
   ".xlm": "application/vnd.ms-excel",
   ".ppt": "application/vnd.ms-powerpoint",
   ".pot": "application/vnd.ms-powerpoint",
-  ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  ".potx": "application/vnd.openxmlformats-officedocument.presentationml.template",
+  ".pptx": 
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ".potx": 
+  "application/vnd.openxmlformats-officedocument.presentationml.template",
   ".xps": "application/vnd.ms-xpsdocument",
   ".odc": "application/vnd.oasis.opendocument.chart",
   ".odb": "application/vnd.oasis.opendocument.database",
@@ -175,7 +179,7 @@ const MEDIA_TYPES: Record<string, string> = {
   ".sql": "application/x-sql",
   ".srt": "application/x-subrip",
   ".xml": "application/xml",
-  ".zip": "application/zip"
+  ".zip": "application/zip",
 };
 
 /** Returns the content-type based on the extension of a path. */
@@ -293,10 +297,10 @@ export async function serveFile(
   }
 
   // Return 416 if `start` isn't less than or equal to `end`, or `start` or `end` are greater than the file's size
-  const maxRange = (typeof fileInfo.size === 'number' ? Math.max(0, fileInfo.size - 1) : 0);
+  const maxRange = (typeof fileInfo.size === "number" ? Math.max(0, fileInfo.size - 1) : 0);
 
   if (range && !parsed ||
-     (typeof start !== 'number' || start > end || start > maxRange || end > maxRange)) {
+     (typeof start !== "number" || start > end || start > maxRange || end > maxRange)) {
     response.status = 416;
     response.statusText = "Range Not Satisfiable";
     response.body = encoder.encode("Range Not Satisfiable");
@@ -312,7 +316,7 @@ export async function serveFile(
     response.body = bytes;
   } catch (e) {
     // Fallback on URIError (400 Bad Request) if unable to read range
-    throw URIError();
+    throw URIError(e);
   }
 
   req.done.then(() => {
