@@ -18,10 +18,6 @@ export function findLast<T>(
   array: Array<T>,
   predicate: Predicate<T>,
 ): T | undefined {
-  if (array.length === 0) {
-    return undefined;
-  }
-
   for (let i = array.length - 1; i >= 0; i -= 1) {
     const element = array[i];
 
