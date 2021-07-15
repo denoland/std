@@ -49,11 +49,6 @@ Deno.test({
       (it) => it,
       [null, undefined, "foo"],
     );
-    distinctByTest(
-      [true, "asdf", 4, "asdf", true],
-      (it) => it,
-      [true, "asdf", 4],
-    );
   },
 });
 
