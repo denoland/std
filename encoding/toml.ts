@@ -21,9 +21,9 @@ class ParserContext {
 }
 
 class ParserTokenScope {
-  #start: string;
-  #end: string;
-  #escapeChars: string[];
+  private start: string;
+  private end: string;
+  private escapeChars: string[];
 
   constructor(
     { start, end, escapeChars }: {
@@ -32,20 +32,20 @@ class ParserTokenScope {
       escapeChars?: string[];
     },
   ) {
-    this.#start = start;
-    this.#end = end;
-    this.#escapeChars = escapeChars || [];
+    this.start = start;
+    this.end = end;
+    this.escapeChars = escapeChars || [];
   }
 
   startsAt(index: number, dataString: string): boolean {
-    return Array.from({ length: dataString.length })
-      .every((_, i) => dataString[index + i] === this.#start[i]);
+    return Array.from({ length: this.start.length })
+      .every((_, i) => dataString[index + i] === this.start[i]);
   }
 
   endsAt(index: number, dataString: string): boolean {
-    return this.#escapeChars.every((char) => char !== dataString[index - 1]) &&
-      Array.from({ length: dataString.length })
-        .every((_, i) => dataString[index + i] === this.#end[i]);
+    return this.escapeChars.every((char) => char !== dataString[index - 1]) &&
+      Array.from({ length: this.end.length })
+        .every((_, i) => dataString[index + i] === this.end[i]);
   }
 }
 
@@ -399,7 +399,7 @@ class Parser {
       case "'":
         return this._parseString(dataString);
       case "[":
-        return this._parseInlineArray(dataString);
+        return this._parseArray(dataString);
       case "{":
         return this._parseInlineTable(dataString);
       default: {
@@ -423,27 +423,25 @@ class Parser {
       }
     }
   }
-  _parseInlineArray(dataString: string): unknown {
-    const invalidArr = /,\]/g.exec(dataString);
-    if (invalidArr) {
-      dataString = dataString.replace(/,]/g, "]");
+  _parseArray(dataString: string): unknown {
+    if (
+      !(dataString[0] === "[" && dataString[dataString.length - 1] === "]")
+    ) {
+      throw new TOMLError("Malformed array literal");
     }
 
+    const itemStrings = new ParserSplitter(
+      dataString.slice(1, -1), // remove "[" and "]"
+      Object.values(Scopes),
+    ).split(",");
     if (
-      (dataString[0] === "[" && dataString[dataString.length - 1] === "]")
+      itemStrings.length > 0 &&
+      trim(itemStrings[itemStrings.length - 1]).length === 0
     ) {
-      const reg = /([a-zA-Z0-9-_\.]*) (=)/gi;
-      let result;
-      while ((result = reg.exec(dataString))) {
-        const ogVal = result[0];
-        const newVal = ogVal
-          .replace(result[1], `"${result[1]}"`)
-          .replace(result[2], ":");
-        dataString = dataString.replace(ogVal, newVal);
-      }
-      return JSON.parse(dataString);
+      itemStrings.pop();
     }
-    throw new TOMLError("Malformed inline array literal");
+    const items = itemStrings.map((str) => this._parseData(str));
+    return items;
   }
   _parseInlineTable(dataString: string): unknown {
     if (!(dataString[0] === "{" && dataString[dataString.length - 1] === "}")) {

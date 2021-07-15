@@ -124,6 +124,16 @@ Deno.test({
           [1, 2],
         ],
         hosts: ["alpha", "omega"],
+        profiles: [
+          {
+            "john@example.com": true,
+            name: "John",
+          },
+          {
+            "doe@example.com": true,
+            name: "Doe",
+          },
+        ],
       },
     };
     const actual = parseFile(path.join(testdataDir, "arrays.toml"));
