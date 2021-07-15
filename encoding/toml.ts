@@ -23,28 +23,28 @@ class ParserContext {
 class ParserTokenScope {
   start: string;
   private end: string;
-  private escapeChars: string[];
+  private skip?: (index: number, dataString: string) => boolean;
 
   constructor(
-    { start, end, escapeChars }: {
+    { start, end, skip }: {
       start: string;
       end: string;
-      escapeChars?: string[];
+      skip?: (index: number, dataString: string) => boolean;
     },
   ) {
     this.start = start;
     this.end = end;
-    this.escapeChars = escapeChars || [];
+    this.skip = skip;
   }
 
   startsAt(index: number, dataString: string): boolean {
-    return this.escapeChars.every((char) => char !== dataString[index - 1]) &&
+    return !this.skip?.(index, dataString) &&
       Array.from({ length: this.start.length })
         .every((_, i) => dataString[index + i] === this.start[i]);
   }
 
   endsAt(index: number, dataString: string): boolean {
-    return this.escapeChars.every((char) => char !== dataString[index - 1]) &&
+    return !this.skip?.(index, dataString) &&
       Array.from({ length: this.end.length })
         .every((_, i) => dataString[index + i] === this.end[i]);
   }
@@ -54,22 +54,25 @@ const Scopes = {
   BASIC_STRING: new ParserTokenScope({
     start: '"',
     end: '"',
-    escapeChars: ["\\", '"'],
+    skip: (index: number, dataString: string): boolean => {
+      return dataString.slice(index - 1, index + 1) === '\\"' ||
+        dataString.slice(index, index + 3) === '"""';
+    },
   }),
   LITERAL_STRING: new ParserTokenScope({
     start: "'",
     end: "'",
-    escapeChars: ["'"],
+    skip: (index: number, dataString: string): boolean => {
+      return dataString.slice(index, index + 3) === "'''";
+    },
   }),
   MULTILINE_BASIC_STRING: new ParserTokenScope({
     start: '"""',
     end: '"""',
-    escapeChars: ['"'],
   }),
   MULTILINE_LITERAL_STRING: new ParserTokenScope({
     start: "'''",
     end: "'''",
-    escapeChars: ["'"],
   }),
   ARRAY: new ParserTokenScope({
     start: "[",
@@ -78,6 +81,10 @@ const Scopes = {
   INLINE_TABLE: new ParserTokenScope({
     start: "{",
     end: "}",
+  }),
+  COMMENT: new ParserTokenScope({
+    start: "#",
+    end: "\n",
   }),
 } as const;
 
@@ -166,46 +173,13 @@ class Parser {
   tomlLines: string[];
   context: ParserContext;
   constructor(tomlString: string) {
-    this.tomlLines = this._split(tomlString);
+    this.tomlLines = this._splitAndRemoveComments(tomlString);
     this.context = new ParserContext();
   }
   _sanitize(): void {
     this.tomlLines = this.tomlLines.map((line) => trim(line)).filter(Boolean);
-    this._removeComments();
   }
 
-  _removeComments(): void {
-    this.tomlLines = this.tomlLines.map((line) => {
-      let scope: ParserTokenScope | null = null;
-      const cleaned: string[] = [];
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        if (scope) {
-          cleaned.push(char);
-          if (scope.endsAt(i, line)) {
-            scope = null;
-          }
-        } else {
-          scope = [
-            Scopes.MULTILINE_BASIC_STRING,
-            Scopes.MULTILINE_LITERAL_STRING,
-            Scopes.BASIC_STRING,
-            Scopes.LITERAL_STRING,
-          ].find((scope) => scope.startsAt(i, line)) || null;
-          if (!scope && char === "#") {
-            while (i < line.length && line[i] !== "\n") {
-              i++;
-            }
-          } else if (!scope && char === "\n") {
-            continue;
-          } else {
-            cleaned.push(char);
-          }
-        }
-      }
-      return trim(cleaned.join(""));
-    }).filter(Boolean);
-  }
   _unflat(
     keys: string[],
     values: Record<string, unknown> | unknown[] = {},
@@ -239,16 +213,71 @@ class Parser {
     deepAssign(this.context.output, u);
     delete this.context.currentGroup;
   }
-  _split(str: string): string[] {
-    const lines = new ParserSplitter(
-      str,
-      [
-        Scopes.MULTILINE_BASIC_STRING,
-        Scopes.MULTILINE_LITERAL_STRING,
-        Scopes.ARRAY,
-      ],
-    ).split("\n");
-    return lines;
+  _splitAndRemoveComments(str: string): string[] {
+    const stack: ParserTokenScope[] = [];
+    const out: string[] = [];
+    let acc: string[] = [];
+    const scopes = [
+      Scopes.MULTILINE_BASIC_STRING,
+      Scopes.MULTILINE_LITERAL_STRING,
+      Scopes.BASIC_STRING,
+      Scopes.LITERAL_STRING,
+      Scopes.ARRAY,
+    ];
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      if (stack.length > 0) {
+        const last = stack[stack.length - 1];
+        if (last === Scopes.ARRAY && Scopes.COMMENT.startsAt(i, str)) {
+          // remove comment
+          while (i < str.length && !Scopes.COMMENT.endsAt(i, str)) {
+            i++;
+          }
+          continue;
+        }
+        if (last === Scopes.ARRAY && char === "\n") {
+          continue;
+        }
+
+        acc.push(char);
+        if (last.endsAt(i, str)) {
+          stack.pop();
+        } // array can be nested
+        else if (last === Scopes.ARRAY) {
+          for (const scope of scopes) {
+            if (scope.startsAt(i, str)) {
+              stack.push(scope);
+              break;
+            }
+          }
+        }
+      } else {
+        if (Scopes.COMMENT.startsAt(i, str)) {
+          out.push(acc.join(""));
+          acc = [];
+          // remove comment
+          while (i < str.length && !Scopes.COMMENT.endsAt(i, str)) {
+            i++;
+          }
+          continue;
+        } else if (char === "\n") {
+          out.push(acc.join(""));
+          acc = [];
+          continue;
+        }
+        acc.push(char);
+        for (const scope of scopes) {
+          if (scope.startsAt(i, str)) {
+            stack.push(scope);
+            break;
+          }
+        }
+      }
+    }
+    if (acc.length > 0) {
+      out.push(acc.join(""));
+    }
+    return out;
   }
   _isGroup(line: string): boolean {
     const t = trim(line);
@@ -323,7 +352,14 @@ class Parser {
 
     const itemStrings = new ParserSplitter(
       dataString.slice(1, -1), // remove "[" and "]"
-      Object.values(Scopes),
+      [
+        Scopes.MULTILINE_BASIC_STRING,
+        Scopes.MULTILINE_LITERAL_STRING,
+        Scopes.BASIC_STRING,
+        Scopes.LITERAL_STRING,
+        Scopes.INLINE_TABLE,
+        Scopes.ARRAY,
+      ],
     ).split(",")
       .map((str) => trim(str.replace(/^\n/, "")));
     if (
@@ -342,7 +378,14 @@ class Parser {
 
     const declarations = new ParserSplitter(
       dataString.slice(1, -1), // remove "{" and "}"
-      Object.values(Scopes),
+      [
+        Scopes.MULTILINE_BASIC_STRING,
+        Scopes.MULTILINE_LITERAL_STRING,
+        Scopes.BASIC_STRING,
+        Scopes.LITERAL_STRING,
+        Scopes.INLINE_TABLE,
+        Scopes.ARRAY,
+      ],
     ).split(",");
 
     const out = Object.fromEntries(
@@ -367,8 +410,14 @@ class Parser {
       if (!dataString.endsWith("'")) {
         throw new TOMLError(`Single-line string is not closed:\n${dataString}`);
       }
+      if (dataString.includes("\n")) {
+        throw new TOMLError(
+          `Single-line string cannot contain EOL:\n${dataString}`,
+        );
+      }
       return dataString.replace(/^'/, "").replace(/'$/, "");
     }
+    let isSingleLineBasic = false;
     if (dataString.startsWith('"""')) {
       // multi-line basic string
       if (!dataString.endsWith('"""')) {
@@ -382,9 +431,15 @@ class Parser {
         .replace(/\\\n\s*/g, "");
     } else {
       // single-line basic string
-      if (!dataString.endsWith('"')) {
+      if (!dataString.startsWith('"') || !dataString.endsWith('"')) {
         throw new TOMLError(`Single-line string is not closed:\n${dataString}`);
       }
+      if (dataString.includes("\n")) {
+        throw new TOMLError(
+          `Single-line string cannot contain EOL:\n${dataString}`,
+        );
+      }
+      isSingleLineBasic = true;
       dataString = dataString.replace(/^"/, "")
         .replace(/"$/, "");
     }
@@ -434,7 +489,9 @@ class Parser {
           }
           break;
         case '"':
-          throw new TOMLError(`Incomplete string literal: ${dataString}`);
+          if (isSingleLineBasic) {
+            throw new TOMLError(`Incomplete string literal: ${dataString}`);
+          }
         default:
           value += dataString[i];
           break;

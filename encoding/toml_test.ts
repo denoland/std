@@ -30,9 +30,17 @@ Deno.test({
         str8: "Roses are red\fViolets are blue",
         str9: "Roses are red\bViolets are blue",
         str10: "Roses are red\\Violets are blue",
-        lines: "The first newline is\ntrimmed in raw strings.\n   All other " +
-          "whitespace\n   is preserved.\n",
-        literal: '"\\n#=*{',
+        str11: `dobule "quote"\nsingle 'quote'\n`,
+        str12: 'Here are two quotation marks: "". Simple enough.',
+        str13: 'Here are three quotation marks: """.',
+        str14: 'Here are fifteen quotation marks: """"""""""""""".',
+        str15: '"This," she said, "is just a pointless statement."',
+        literal1:
+          "The first newline is\ntrimmed in raw strings.\n   All other whitespace\n   is preserved.\n",
+        literal2: '"\\n#=*{',
+        literal3: "\\n\\t is 'literal'\\\n",
+        literal4: 'Here are fifteen quotation marks: """""""""""""""',
+        literal5: "Here are fifteen apostrophes: '''''''''''''''",
         withApostrophe: "What if it's not?",
         withSemicolon: `const message = 'hello world';`,
         withHexNumberLiteral:
@@ -570,7 +578,7 @@ Deno.test({
         parseFile(path.join(testdataDir, "error-open-string.toml"));
       },
       Error,
-      `Single-line string is not closed:\n'The first newline is`,
+      `Single-line string cannot contain EOL:\n'The first newline is`,
     );
   },
 });
