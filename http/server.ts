@@ -300,9 +300,26 @@ export function serve(addr: string | HTTPOptions): Server {
   if (typeof addr === "string") {
     addr = _parseAddrFromStr(addr);
   }
-
-  const listener = Deno.listen(addr);
+  const listener = bindListen(addr);
   return new Server(listener);
+}
+
+function bindListen(addr: HTTPOptions) {
+  if (addr.port === 0) {
+    // Finds a random number between the given range
+    const randPort = Math.round(Math.random() * (60000 - 0)) + 0;
+    try {
+      const connection = Deno.listen({ ...addr, port: randPort });
+      addr.port = randPort;
+      connection.close();
+    } catch (error) {
+      if (error instanceof Deno.errors.AddrInUse) {
+        bindListen(addr);
+      }
+    }
+  }
+  const listener = Deno.listen(addr);
+  return listener;
 }
 
 /**
