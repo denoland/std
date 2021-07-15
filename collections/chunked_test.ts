@@ -3,7 +3,7 @@
 import {
   assertEquals,
   assertThrows,
-} from "https://deno.land/std@0.100.0/testing/asserts.ts";
+} from "../testing/asserts.ts";
 import { chunked } from "./chunked.ts";
 
 function chunkedTest<I>(

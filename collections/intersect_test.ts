@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "https://deno.land/std@0.100.0/testing/asserts.ts";
+import { assertEquals } from "../testing/asserts.ts";
 import { intersect } from "./intersect.ts";
 
 function intersectTest<I>(
