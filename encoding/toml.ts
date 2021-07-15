@@ -20,6 +20,114 @@ class ParserContext {
   output: Record<string, unknown> = {};
 }
 
+class ParserTokenScope {
+  #start: string;
+  #end: string;
+  #escapeChars: string[];
+
+  constructor(
+    { start, end, escapeChars }: {
+      start: string;
+      end: string;
+      escapeChars?: string[];
+    },
+  ) {
+    this.#start = start;
+    this.#end = end;
+    this.#escapeChars = escapeChars || [];
+  }
+
+  startsAt(index: number, dataString: string): boolean {
+    return Array.from({ length: dataString.length })
+      .every((_, i) => dataString[index + i] === this.#start[i]);
+  }
+
+  endsAt(index: number, dataString: string): boolean {
+    return this.#escapeChars.every((char) => char !== dataString[index - 1]) &&
+      Array.from({ length: dataString.length })
+        .every((_, i) => dataString[index + i] === this.#end[i]);
+  }
+}
+
+const Scopes = {
+  BASIC_STRING: new ParserTokenScope({
+    start: '"',
+    end: '"',
+    escapeChars: ["\\", '"'],
+  }),
+  LITERAL_STRING: new ParserTokenScope({
+    start: "'",
+    end: "'",
+    escapeChars: ["'"],
+  }),
+  MULTILINE_BASIC_STRING: new ParserTokenScope({
+    start: '"""',
+    end: '"""',
+    escapeChars: ['"'],
+  }),
+  MULTILINE_LITERAL_STRING: new ParserTokenScope({
+    start: "'''",
+    end: "'''",
+    escapeChars: ["'"],
+  }),
+  ARRAY: new ParserTokenScope({
+    start: "[",
+    end: "]",
+  }),
+  INLINE_TABLE: new ParserTokenScope({
+    start: "{",
+    end: "}",
+  }),
+} as const;
+
+// Separate string by some charactor considering scopes
+// For example, split inlilne table by "," or split declaration by "="
+class ParserSplitter {
+  #dataString: string;
+  #scopes: ParserTokenScope[];
+  constructor(
+    dataString: string,
+    scopes: ParserTokenScope[],
+  ) {
+    this.#dataString = dataString;
+    this.#scopes = scopes;
+  }
+
+  split(separator: string): string[] {
+    const stack: ParserTokenScope[] = [];
+    const out: string[] = [];
+    let acc: string[] = [];
+    const dataString = this.#dataString;
+    for (let i = 0; i < dataString.length; i++) {
+      const char = dataString[i];
+      if (stack.length > 0) {
+        const last = stack[stack.length - 1];
+        acc.push(char);
+        if (last.endsAt(i, dataString)) {
+          stack.pop();
+        }
+      } else {
+        if (char === separator) {
+          out.push(acc.join(""));
+          acc = [];
+          continue;
+        }
+        acc.push(char);
+        for (const scope of this.#scopes) {
+          if (scope.startsAt(i, dataString)) {
+            stack.push(scope);
+            break;
+          }
+        }
+      }
+    }
+    if (acc.length > 0) {
+      out.push(acc.join(""));
+    }
+    return out;
+  }
+}
+
 // Whitespace means tab or space in TOML. Other whitespace charactors are invalid.
 export function trim(str: string) {
   const trimmed = str
@@ -294,7 +402,6 @@ class Parser {
         return this._parseInlineArray(dataString);
       case "{":
         return this._parseInlineTable(dataString);
-        // return this._parseInlineTableOrArray(dataString);
       default: {
         switch (dataString) {
           case "true":
@@ -342,48 +449,11 @@ class Parser {
     if (!(dataString[0] === "{" && dataString[dataString.length - 1] === "}")) {
       throw new TOMLError("Malformed inline table");
     }
-    // remove "{" and "}"
-    dataString = dataString.slice(1, -1);
-    // split by ","
-    let endChars: string[] = [];
-    let acc = [];
-    const declarations: string[] = [];
-    for (let i = 0; i < dataString.length; i++) {
-      const char = dataString[i];
-      const inScope = endChars.length > 0;
-      if (inScope) {
-        if (char === endChars[endChars.length - 1]) {
-          if (char === '"' && dataString[i - 1] === "\\") {
-            // skip
-          } else {
-            endChars.pop();
-          }
-        }
-        acc.push(char);
-      } else {
-        if (char === ",") {
-          declarations.push(acc.join(""));
-          acc = [];
-          continue;
-        }
-        acc.push(char);
-        switch (char) {
-          case "{":
-            endChars.push("}");
-            break;
-          case "[":
-            endChars.push("]");
-            break;
-          case '"':
-            endChars.push('"');
-            break;
-          case "'":
-            endChars.push("'");
-            break;
-        }
-      }
-    }
-    declarations.push(acc.join(""));
+
+    const declarations = new ParserSplitter(
+      dataString.slice(1, -1), // remove "{" and "}"
+      Object.values(Scopes),
+    ).split(",");
 
     const out = Object.fromEntries(
       declarations
