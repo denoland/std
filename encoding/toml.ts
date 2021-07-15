@@ -21,7 +21,7 @@ class ParserContext {
 }
 
 class ParserTokenScope {
-  private start: string;
+  start: string;
   private end: string;
   private escapeChars: string[];
 
@@ -38,8 +38,9 @@ class ParserTokenScope {
   }
 
   startsAt(index: number, dataString: string): boolean {
-    return Array.from({ length: this.start.length })
-      .every((_, i) => dataString[index + i] === this.start[i]);
+    return this.escapeChars.every((char) => char !== dataString[index - 1]) &&
+      Array.from({ length: this.start.length })
+        .every((_, i) => dataString[index + i] === this.start[i]);
   }
 
   endsAt(index: number, dataString: string): boolean {
@@ -93,7 +94,8 @@ class ParserSplitter {
     this.#scopes = scopes;
   }
 
-  split(separator: string): string[] {
+  split(separator: string, options = { keepSeparator: false }): string[] {
+    const { keepSeparator } = options;
     const stack: ParserTokenScope[] = [];
     const out: string[] = [];
     let acc: string[] = [];
@@ -105,11 +107,22 @@ class ParserSplitter {
         acc.push(char);
         if (last.endsAt(i, dataString)) {
           stack.pop();
+        } // inline table and array can be nested
+        else if (last === Scopes.INLINE_TABLE || last === Scopes.ARRAY) {
+          for (const scope of this.#scopes) {
+            if (scope.startsAt(i, dataString)) {
+              stack.push(scope);
+              break;
+            }
+          }
         }
       } else {
         if (char === separator) {
           out.push(acc.join(""));
           acc = [];
+          if (keepSeparator) {
+            acc.push(char);
+          }
           continue;
         }
         acc.push(char);
@@ -157,169 +170,41 @@ class Parser {
     this.context = new ParserContext();
   }
   _sanitize(): void {
-    const out: string[] = [];
-    for (let i = 0; i < this.tomlLines.length; i++) {
-      const s = this.tomlLines[i];
-      const trimmed = trim(s);
-      if (trimmed !== "") {
-        out.push(s);
-      }
-    }
-    this.tomlLines = out;
+    this.tomlLines = this.tomlLines.map((line) => trim(line)).filter(Boolean);
     this._removeComments();
-    this._mergeMultilines();
   }
 
   _removeComments(): void {
-    function isFullLineComment(line: string) {
-      return line.match(/^[ \t]*#/) ? true : false;
-    }
-
-    function stringStart(line: string) {
-      const m = line.match(/(?:=\s*\[?\s*)("""|'''|"|')/);
-      if (!m) {
-        return false;
-      }
-
-      // We want to know which syntax was used to open the string
-      openStringSyntax = m[1];
-      return true;
-    }
-
-    function stringEnd(line: string) {
-      // match the syntax used to open the string when searching for string close
-      // e.g. if we open with ''' we must close with a '''
-      const reg = RegExp(`(?<!(=\\s*))${openStringSyntax}(?!(.*"))`);
-      if (!line.match(reg)) {
-        return false;
-      }
-
-      openStringSyntax = "";
-      return true;
-    }
-
-    const cleaned = [];
-    let isOpenString = false;
-    let openStringSyntax = "";
-    for (let i = 0; i < this.tomlLines.length; i++) {
-      const line = this.tomlLines[i];
-
-      // stringStart and stringEnd are separate conditions to
-      // support both single-line and multi-line strings
-      if (!isOpenString && stringStart(line)) {
-        isOpenString = true;
-      }
-      if (isOpenString && stringEnd(line)) {
-        isOpenString = false;
-      }
-
-      if (!isOpenString && !isFullLineComment(line)) {
-        const out = line.split(
-          /(?<=([\,\[\]\{\}]|".*"|'.*'|\w(?!.*("|')+))\s*)#/gi,
-        );
-        cleaned.push(trim(out[0]));
-      } else if (isOpenString || !isFullLineComment(line)) {
-        cleaned.push(line);
-      }
-
-      // If a single line comment doesnt end on the same line, throw error
-      if (
-        isOpenString &&
-        (openStringSyntax === "'" || openStringSyntax === '"')
-      ) {
-        throw new TOMLError(`Single-line string is not closed:\n${line}`);
-      }
-    }
-
-    if (isOpenString) {
-      throw new TOMLError(`Incomplete string until EOF`);
-    }
-
-    this.tomlLines = cleaned;
-  }
-
-  _mergeMultilines(): void {
-    function arrayStart(line: string): boolean {
-      const reg = /.*=\s*\[/g;
-      return reg.test(line) && !(line[line.length - 1] === "]");
-    }
-
-    function arrayEnd(line: string): boolean {
-      return line[line.length - 1] === "]";
-    }
-
-    function stringStart(line: string): boolean {
-      const m = line.match(/.*=\s*(?:\"\"\"|''')/);
-      if (!m) {
-        return false;
-      }
-      return !line.endsWith(`"""`) || !line.endsWith(`'''`);
-    }
-
-    function stringEnd(line: string): boolean {
-      return line.endsWith(`'''`) || line.endsWith(`"""`);
-    }
-
-    function isLiteralString(line: string): boolean {
-      return line.match(/'''/) ? true : false;
-    }
-
-    const merged = [];
-    let acc = [],
-      isLiteral = false,
-      capture = false,
-      captureType = "",
-      merge = false;
-
-    for (let i = 0; i < this.tomlLines.length; i++) {
-      const line = this.tomlLines[i];
-      const trimmed = trim(line);
-      if (!capture && arrayStart(trimmed)) {
-        capture = true;
-        captureType = "array";
-      } else if (!capture && stringStart(trimmed)) {
-        isLiteral = isLiteralString(trimmed);
-        capture = true;
-        captureType = "string";
-      } else if (capture && arrayEnd(trimmed)) {
-        merge = true;
-      } else if (capture && stringEnd(trimmed)) {
-        merge = true;
-      }
-
-      if (capture) {
-        if (isLiteral) {
-          acc.push(line);
+    this.tomlLines = this.tomlLines.map((line) => {
+      let scope: ParserTokenScope | null = null;
+      const cleaned: string[] = [];
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (scope) {
+          cleaned.push(char);
+          if (scope.endsAt(i, line)) {
+            scope = null;
+          }
         } else {
-          acc.push(trimmed);
-        }
-      } else {
-        if (isLiteral) {
-          merged.push(line);
-        } else {
-          merged.push(trimmed);
+          scope = [
+            Scopes.MULTILINE_BASIC_STRING,
+            Scopes.MULTILINE_LITERAL_STRING,
+            Scopes.BASIC_STRING,
+            Scopes.LITERAL_STRING,
+          ].find((scope) => scope.startsAt(i, line)) || null;
+          if (!scope && char === "#") {
+            while (i < line.length && line[i] !== "\n") {
+              i++;
+            }
+          } else if (!scope && char === "\n") {
+            continue;
+          } else {
+            cleaned.push(char);
+          }
         }
       }
-
-      if (merge) {
-        capture = false;
-        merge = false;
-        if (captureType === "string") {
-          merged.push(
-            acc
-              .join("\\n")
-              .replace(/"""/g, '"')
-              .replace(/'''/g, `'`),
-          );
-          isLiteral = false;
-        } else {
-          merged.push(acc.join(""));
-        }
-        captureType = "";
-        acc = [];
-      }
-    }
-    this.tomlLines = merged;
+      return trim(cleaned.join(""));
+    }).filter(Boolean);
   }
   _unflat(
     keys: string[],
@@ -355,9 +240,15 @@ class Parser {
     delete this.context.currentGroup;
   }
   _split(str: string): string[] {
-    const out = [];
-    out.push(...str.split("\n"));
-    return out;
+    const lines = new ParserSplitter(
+      str,
+      [
+        Scopes.MULTILINE_BASIC_STRING,
+        Scopes.MULTILINE_LITERAL_STRING,
+        Scopes.ARRAY,
+      ],
+    ).split("\n");
+    return lines;
   }
   _isGroup(line: string): boolean {
     const t = trim(line);
@@ -433,7 +324,8 @@ class Parser {
     const itemStrings = new ParserSplitter(
       dataString.slice(1, -1), // remove "[" and "]"
       Object.values(Scopes),
-    ).split(",");
+    ).split(",")
+      .map((str) => trim(str.replace(/^\n/, "")));
     if (
       itemStrings.length > 0 &&
       trim(itemStrings[itemStrings.length - 1]).length === 0
@@ -461,20 +353,43 @@ class Parser {
     return out;
   }
   _parseString(dataString: string): string {
-    const quote = dataString[0];
-    // Handle First and last EOL for multiline strings
-    if (dataString.startsWith(`"\\n`)) {
-      dataString = dataString.replace(`"\\n`, `"`);
-    } else if (dataString.startsWith(`'\\n`)) {
-      dataString = dataString.replace(`'\\n`, `'`);
+    if (dataString.startsWith("'''")) {
+      // multi-line literal
+      if (!dataString.endsWith("'''")) {
+        throw new TOMLError(`Multi-line string is not closed:\n${dataString}`);
+      }
+      return dataString.replace(/^'''/, "")
+        .replace(/'''$/, "")
+        // Remove First EOL
+        .replace(/^\n/, "");
+    } else if (dataString.startsWith("'")) {
+      // single-line literal
+      if (!dataString.endsWith("'")) {
+        throw new TOMLError(`Single-line string is not closed:\n${dataString}`);
+      }
+      return dataString.replace(/^'/, "").replace(/'$/, "");
     }
-    if (dataString.endsWith(`\\n"`)) {
-      dataString = dataString.replace(`\\n"`, `"`);
-    } else if (dataString.endsWith(`\\n'`)) {
-      dataString = dataString.replace(`\\n'`, `'`);
+    if (dataString.startsWith('"""')) {
+      // multi-line basic string
+      if (!dataString.endsWith('"""')) {
+        throw new TOMLError(`Multi-line string is not closed:\n${dataString}`);
+      }
+      dataString = dataString.replace(/^"""/, "")
+        .replace(/"""$/, "")
+        // Remove First EOL
+        .replace(/^\n/, "")
+        // Trim "/\n"
+        .replace(/\\\n\s*/g, "");
+    } else {
+      // single-line basic string
+      if (!dataString.endsWith('"')) {
+        throw new TOMLError(`Single-line string is not closed:\n${dataString}`);
+      }
+      dataString = dataString.replace(/^"/, "")
+        .replace(/"$/, "");
     }
     let value = "";
-    for (let i = 1; i < dataString.length; i++) {
+    for (let i = 0; i < dataString.length; i++) {
       switch (dataString[i]) {
         case "\\":
           i++;
@@ -507,6 +422,9 @@ class Parser {
               i += codePointLen;
               break;
             }
+            case '"':
+              value += '"';
+              break;
             case "\\":
               value += "\\";
               break;
@@ -515,17 +433,14 @@ class Parser {
               break;
           }
           break;
-        case quote:
-          if (dataString[i - 1] !== "\\") {
-            return value;
-          }
-          break;
+        case '"':
+          throw new TOMLError(`Incomplete string literal: ${dataString}`);
         default:
           value += dataString[i];
           break;
       }
     }
-    throw new TOMLError("Incomplete string literal");
+    return value;
   }
   _parseNumberOrDate(dataString: string): unknown {
     if (this._isDate(dataString)) {
@@ -566,50 +481,11 @@ class Parser {
     return reg.test(dateStr);
   }
   _parseDeclarationName(declaration: string): string[] {
-    const out = [];
-    let acc = [];
-    let inBasicString = false;
-    let inLiteral = false;
-    for (let i = 0; i < declaration.length; i++) {
-      const c = declaration[i];
-      const inString = inBasicString || inLiteral;
-      switch (c) {
-        case ".":
-          if (!inString) {
-            out.push(acc.join(""));
-            acc = [];
-          } else {
-            acc.push(c);
-          }
-          break;
-        case `"`:
-          if (!inString) {
-            inBasicString = true;
-          } else if (inBasicString && declaration[i - 1] !== "\\") {
-            inBasicString = false;
-          }
-          acc.push(c);
-          break;
-        case "'":
-          if (!inString) {
-            inLiteral = true;
-          } else if (inLiteral) {
-            inLiteral = false;
-          }
-          acc.push(c);
-          break;
-        default:
-          acc.push(c);
-          break;
-      }
-    }
-    if (inBasicString || inLiteral) {
-      throw new TOMLError(`Invalid key: ${declaration}`);
-    }
-    if (acc.length !== 0) {
-      out.push(acc.join(""));
-    }
-    return out.map((name) => trim(name));
+    const names = new ParserSplitter(
+      declaration,
+      [Scopes.BASIC_STRING, Scopes.LITERAL_STRING],
+    ).split(".");
+    return names.map((name) => trim(name));
   }
   _parseLines(): void {
     for (let i = 0; i < this.tomlLines.length; i++) {
@@ -967,6 +843,6 @@ export function stringify(srcObj: Record<string, unknown>): string {
  */
 export function parse(tomlString: string): Record<string, unknown> {
   // File is potentially using EOL CRLF
-  tomlString = tomlString.replace(/(\r\n|\\\n)/g, "\n");
+  tomlString = tomlString.replace(/\r\n/g, "\n");
   return new Parser(tomlString).parse();
 }

@@ -20,18 +20,19 @@ Deno.test({
     const expected = {
       strings: {
         str0: "deno",
-        str1: "Roses are not Deno\nViolets are not Deno either",
+        str1: "Roses are not Deno\n          Violets are not Deno either",
         str2: "Roses are not Deno\nViolets are not Deno either",
         str3: "Roses are not Deno\r\nViolets are not Deno either",
         str4: 'this is a "quote"',
-        str5: "The quick brown\nfox jumps over\nthe lazy dog.",
-        str6: "The quick brown\nfox jumps over\nthe lazy dog.",
+        str5: "The quick brown fox jumps over the lazy dog.",
+        str6: "The quick brown fox jumps over the lazy dog.",
         str7: "Roses are red\tViolets are blue",
         str8: "Roses are red\fViolets are blue",
         str9: "Roses are red\bViolets are blue",
         str10: "Roses are red\\Violets are blue",
         lines: "The first newline is\ntrimmed in raw strings.\n   All other " +
-          "whitespace\n   is preserved.",
+          "whitespace\n   is preserved.\n",
+        literal: '"\\n#=*\\',
         withApostrophe: "What if it's not?",
         withSemicolon: `const message = 'hello world';`,
         withHexNumberLiteral:
@@ -197,7 +198,7 @@ Deno.test({
     const expected = {
       deno: "is",
       not: "[node]",
-      regex: "<ic*s*>",
+      regex: "<\\i\\c*\\s*>",
       NANI: "何?!",
       comment: "Comment inside # the comment",
     };
@@ -490,9 +491,9 @@ Deno.test({
       str0: "value",
       str1: "# This is not a comment",
       str2:
-        " # this is not a comment!\nA multiline string with a #\n# this is also not a comment",
+        " # this is not a comment!\nA multiline string with a #\n# this is also not a comment\n",
       str3:
-        '"# not a comment"\n\t# this is a real tab on purpose \n# not a comment',
+        '"# not a comment"\n\t# this is a real tab on purpose \n# not a comment\n',
       point0: { x: 1, y: 2, str0: "#not a comment", z: 3 },
       point1: { x: 7, y: 8, z: 9, str0: "#not a comment" },
       deno: {
@@ -552,7 +553,7 @@ Deno.test({
         parseFile(path.join(testdataDir, "error-open-string.toml"));
       },
       Error,
-      `Single-line string is not closed:\nbadComment = 'The first newline is`,
+      `Single-line string is not closed:\n'The first newline is`,
     );
   },
 });
