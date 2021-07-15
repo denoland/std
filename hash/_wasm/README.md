@@ -15,8 +15,8 @@ cargo install -f wasm-bindgen-cli --version 0.2.74
 ## Build
 
 ```sh
-deno run --allow-all ./_wasm/build.ts
+deno run --allow-all ./build.ts
 ```
 
-This will regenerate `./_wasm/wasm_file.ts` and `./_wasm/wasm_bindings.ts` from
-the Rust source.
+This will regenerate `./wasm_file.ts` and `./wasm_bindings.ts` from the Rust
+source.
