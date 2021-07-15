@@ -291,8 +291,10 @@ class Parser {
       case "'":
         return this._parseString(dataString);
       case "[":
+        return this._parseInlineArray(dataString);
       case "{":
-        return this._parseInlineTableOrArray(dataString);
+        return this._parseInlineTable(dataString);
+        // return this._parseInlineTableOrArray(dataString);
       default: {
         switch (dataString) {
           case "true":
@@ -314,14 +316,13 @@ class Parser {
       }
     }
   }
-  _parseInlineTableOrArray(dataString: string): unknown {
+  _parseInlineArray(dataString: string): unknown {
     const invalidArr = /,\]/g.exec(dataString);
     if (invalidArr) {
       dataString = dataString.replace(/,]/g, "]");
     }
 
     if (
-      (dataString[0] === "{" && dataString[dataString.length - 1] === "}") ||
       (dataString[0] === "[" && dataString[dataString.length - 1] === "]")
     ) {
       const reg = /([a-zA-Z0-9-_\.]*) (=)/gi;
@@ -335,7 +336,61 @@ class Parser {
       }
       return JSON.parse(dataString);
     }
-    throw new TOMLError("Malformed inline table or array literal");
+    throw new TOMLError("Malformed inline array literal");
+  }
+  _parseInlineTable(dataString: string): unknown {
+    if (!(dataString[0] === "{" && dataString[dataString.length - 1] === "}")) {
+      throw new TOMLError("Malformed inline table");
+    }
+    // remove "{" and "}"
+    dataString = dataString.slice(1, -1);
+    // split by ","
+    let endChars: string[] = [];
+    let acc = [];
+    const declarations: string[] = [];
+    for (let i = 0; i < dataString.length; i++) {
+      const char = dataString[i];
+      const inScope = endChars.length > 0;
+      if (inScope) {
+        if (char === endChars[endChars.length - 1]) {
+          if (char === '"' && dataString[i - 1] === "\\") {
+            // skip
+          } else {
+            endChars.pop();
+          }
+        }
+        acc.push(char);
+      } else {
+        if (char === ",") {
+          declarations.push(acc.join(""));
+          acc = [];
+          continue;
+        }
+        acc.push(char);
+        switch (char) {
+          case "{":
+            endChars.push("}");
+            break;
+          case "[":
+            endChars.push("]");
+            break;
+          case '"':
+            endChars.push('"');
+            break;
+          case "'":
+            endChars.push("'");
+            break;
+        }
+      }
+    }
+    declarations.push(acc.join(""));
+
+    const out = Object.fromEntries(
+      declarations
+        .map((declaration) => this._processDeclaration(declaration))
+        .map((kv) => [kv.key, kv.value]),
+    );
+    return out;
   }
   _parseString(dataString: string): string {
     const quote = dataString[0];
