@@ -32,7 +32,7 @@ Deno.test({
         str10: "Roses are red\\Violets are blue",
         lines: "The first newline is\ntrimmed in raw strings.\n   All other " +
           "whitespace\n   is preserved.\n",
-        literal: '"\\n#=*\\',
+        literal: '"\\n#=*{',
         withApostrophe: "What if it's not?",
         withSemicolon: `const message = 'hello world';`,
         withHexNumberLiteral:
@@ -186,6 +186,8 @@ Deno.test({
       "ʎǝʞ": 1,
       'this is "literal"': 1,
       'double "quote"': 1,
+      "basic__\n__": 1,
+      "literal__\\n__": 1,
     };
     const actual = parseFile(path.join(testdataDir, "keys.toml"));
     assertEquals(actual, expected);
@@ -265,6 +267,21 @@ Deno.test({
           },
         },
         annotation_filter: { "kubernetes.io/ingress.class": "nginx" },
+        literal_key: {
+          "foo\\nbar": "foo\\nbar",
+        },
+        nested: {
+          parent: {
+            "child.ren": [
+              "[",
+              "]",
+            ],
+            children: [
+              "{",
+              "}",
+            ],
+          },
+        },
       },
     };
     const actual = parseFile(path.join(testdataDir, "inlineTable.toml"));

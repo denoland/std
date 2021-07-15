@@ -33,7 +33,7 @@ trimmed in raw strings.
    is preserved.
 '''
 
-literal = '"\n#=*\'
+literal = '"\n#=*{'
 
 withApostrophe = "What if it's not?"
 withSemicolon = "const message = 'hello world';"
