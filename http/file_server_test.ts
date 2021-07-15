@@ -780,15 +780,18 @@ Deno.test(
     await startFileServer();
     try {
       const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-      
+
       const lastModifiedHeader = res.headers.get("last-modified") as string;
       const lastModifiedTime = Date.parse(lastModifiedHeader);
-      
+
       const fileInfo = await getTestFileStat();
-      const expectedTime = (fileInfo.mtime && fileInfo.mtime instanceof Date ? fileInfo.mtime.getTime() : Number.NaN);
-      
-      const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
-      assertEquals(round(lastModifiedTime), round(expectedTime),);
+      const expectedTime = (fileInfo.mtime && fileInfo.mtime instanceof Date
+        ? fileInfo.mtime.getTime()
+        : Number.NaN);
+
+      const round = (d: number) =>
+        Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
+      assertEquals(round(lastModifiedTime), round(expectedTime));
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
