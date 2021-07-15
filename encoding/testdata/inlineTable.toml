@@ -5,3 +5,4 @@ dog = { type = { name = "pug" } }
 animal.as.leaders = "tosin"
 "tosin.abasi" = "guitarist"
 nile = { derek.roddy = "drummer", also = { malevolant.creation = { drum.kit = "Tama" } } }
+annotation_filter = { "kubernetes.io/ingress.class" = "nginx" }

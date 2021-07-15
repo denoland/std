@@ -253,6 +253,7 @@ Deno.test({
             leaders: "tosin",
           },
         },
+        annotation_filter: { "kubernetes.io/ingress.class": "nginx" },
       },
     };
     const actual = parseFile(path.join(testdataDir, "inlineTable.toml"));
