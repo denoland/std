@@ -391,17 +391,17 @@ export function assertStrictEquals(
 export function assertNotStrictEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: unknown, expected: unknown}) => string),
 ): void;
 export function assertNotStrictEquals<T>(
   actual: T,
   expected: T,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: T, expected: T}) => string),
 ): void;
 export function assertNotStrictEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: unknown, expected: unknown}) => string),
 ): void {
   if (actual !== expected) {
     return;
@@ -413,7 +413,10 @@ export function assertNotStrictEquals(
     if (typeof msg === "string") {
       message = msg;
     } else if (typeof msg === "function") {
-      message = msg(actual, expected);
+      let objMsg = `Expected "actual" to be strictly unequal to: ${
+        _format(actual)
+      }\n`;
+      message = msg({message: objMsg, actual, expected});
     }
   } else {
     message = `Expected "actual" to be strictly unequal to: ${
@@ -430,7 +433,7 @@ export function assertNotStrictEquals(
  */
 export function assertExists(
   actual: unknown,
-  msg?: string | ((first: typeof actual) => string),
+  msg?: string | ((actual: unknown) => string),
 ): void {
   if (actual === undefined || actual === null) {
     let message = "";
@@ -456,7 +459,7 @@ export function assertExists(
 export function assertStringIncludes(
   actual: string,
   expected: string,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: string, expected: string}) => string),
 ): void {
   if (!actual.includes(expected)) {
     let message = "";
@@ -465,7 +468,8 @@ export function assertStringIncludes(
       if (typeof msg === "string") {
         message = msg;
       } else if (typeof msg === "function") {
-        message = msg(actual, expected);
+        let objMsg = `actual: "${actual}" expected to contain: "${expected}"`;
+        message = msg({message: objMsg, actual, expected});
       }
     } else {
       message = `actual: "${actual}" expected to contain: "${expected}"`;
@@ -487,17 +491,17 @@ export function assertStringIncludes(
 export function assertArrayIncludes(
   actual: ArrayLike<unknown>,
   expected: ArrayLike<unknown>,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: ArrayLike<unknown>, expected: ArrayLike<unknown>}) => string),
 ): void;
 export function assertArrayIncludes<T>(
   actual: ArrayLike<T>,
   expected: ArrayLike<T>,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: ArrayLike<T>, expected: ArrayLike<T>}) => string),
 ): void;
 export function assertArrayIncludes(
   actual: ArrayLike<unknown>,
   expected: ArrayLike<unknown>,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: ArrayLike<unknown>, expected: ArrayLike<unknown>}) => string),
 ): void {
   const missing: unknown[] = [];
   for (let i = 0; i < expected.length; i++) {
@@ -521,7 +525,10 @@ export function assertArrayIncludes(
     if (typeof msg === "string") {
       message = msg;
     } else if (typeof msg === "function") {
-      message = msg(actual, expected);
+      let objMsg = `actual: "${_format(actual)}" expected to include: "${
+        _format(expected)
+      }"\nmissing: ${_format(missing)}`
+      message = msg({message: objMsg, actual, expected});
     }
   } else {
     message = `actual: "${_format(actual)}" expected to include: "${
@@ -538,7 +545,7 @@ export function assertArrayIncludes(
 export function assertMatch(
   actual: string,
   expected: RegExp,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: string, expected: RegExp}) => string),
 ): void {
   if (!expected.test(actual)) {
     let message = "";
@@ -546,7 +553,8 @@ export function assertMatch(
       if (typeof msg === "string") {
         message = msg;
       } else if (typeof msg === "function") {
-        message = msg(actual, expected);
+        let objMsg = `actual: "${actual}" expected to match: "${expected}"`;
+        message = msg({message: objMsg, actual, expected});
       }
     } else {
       message = `actual: "${actual}" expected to match: "${expected}"`;
@@ -562,7 +570,7 @@ export function assertMatch(
 export function assertNotMatch(
   actual: string,
   expected: RegExp,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: string, expected: RegExp}) => string),
 ): void {
   if (expected.test(actual)) {
     let message = "";
@@ -570,7 +578,8 @@ export function assertNotMatch(
       if (typeof msg === "string") {
         message = msg;
       } else if (typeof msg === "function") {
-        message = msg(actual, expected);
+        let objMsg = `actual: "${actual}" expected to not match: "${expected}"`;
+        message = msg({message: objMsg, actual, expected});
       }
     } else {
       message = `actual: "${actual}" expected to not match: "${expected}"`;
