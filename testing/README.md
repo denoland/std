@@ -53,6 +53,20 @@ Deno.test({
 });
 ```
 
+`assertEquals` and other functions that allow custom messages also accept this syntax:
+```ts
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+Deno.test({
+  name: "testing example",
+  fn(): void {
+    assertEquals(dynamicValue1(), dynamicValue2(), ({message, actual, expected}) => {
+      return `${actual} didnt match ${expected}, here's the diff: ${message}`
+    });
+  },
+});
+```
+
 Short syntax (named function instead of object):
 
 ```ts
