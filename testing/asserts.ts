@@ -204,17 +204,17 @@ export function assert(expr: unknown, msg = ""): asserts expr {
 export function assertEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: unknown, expected: unknown}) => string)
 ): void;
 export function assertEquals<T>(
   actual: T,
-  expected: T,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  expected: T, 
+  msg?: string | ((obj: {message: string, actual: T, expected: T}) => string)
 ): void;
 export function assertEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string), // uses first and second for the callback because ts complains when using actual/expected
+  msg?: string | ((obj: {message: string, actual: unknown, expected: unknown}) => string)
 ): void {
   if (equal(actual, expected)) {
     return;
@@ -236,7 +236,7 @@ export function assertEquals(
     if (typeof msg === "string") {
       message = msg;
     } else if (typeof msg === "function") {
-      message = msg(actual, expected);
+      message = msg({message, actual, expected});
     }
   }
   throw new AssertionError(message);
@@ -255,17 +255,17 @@ export function assertEquals(
 export function assertNotEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: unknown, expected: unknown}) => string),
 ): void;
 export function assertNotEquals<T>(
   actual: T,
   expected: T,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: T, expected: T}) => string),
 ): void;
 export function assertNotEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: unknown, expected: unknown}) => string),
 ): void {
   if (!equal(actual, expected)) {
     return;
@@ -283,13 +283,12 @@ export function assertNotEquals(
   } catch {
     expectedString = "[Cannot display]";
   }
-  if (!msg) {
-    message = `actual: ${actualString} expected: ${expectedString}`;
-  } else if (msg) {
+  message = `actual: ${actualString} expected: ${expectedString}`;
+  if (msg) {
     if (typeof msg === "string") {
       message = msg;
     } else if (typeof msg === "function") {
-      message = msg(expected, actual);
+      message = msg({message, expected, actual});
     }
   }
   throw new AssertionError(message);
@@ -305,17 +304,17 @@ export function assertNotEquals(
 export function assertStrictEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: unknown, expected: unknown}) => string),
 ): void;
 export function assertStrictEquals<T>(
   actual: T,
   expected: T,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: T, expected: T}) => string),
 ): void;
 export function assertStrictEquals(
   actual: unknown,
   expected: unknown,
-  msg?: string | ((first: typeof actual, second: typeof expected) => string),
+  msg?: string | ((obj: {message: string, actual: unknown, expected: unknown}) => string),
 ): void {
   if (actual === expected) {
     return;
@@ -326,7 +325,32 @@ export function assertStrictEquals(
   if (msg && typeof msg === "string") {
     message = msg;
   } else if (msg && typeof msg === "function") {
-    message = msg(actual, expected);
+    let passedMsg: string;
+    const actualString = _format(actual);
+    const expectedString = _format(expected);
+
+    if (actualString === expectedString) {
+      const withOffset = actualString
+        .split("\n")
+        .map((l) => `    ${l}`)
+        .join("\n");
+      passedMsg =
+        `Values have the same structure but are not reference-equal:\n\n${
+          red(withOffset)
+        }\n`;
+    } else {
+      try {
+        const diffResult = diff(
+          actualString.split("\n"),
+          expectedString.split("\n"),
+        );
+        const diffMsg = buildMessage(diffResult).join("\n");
+        passedMsg = `Values are not strictly equal:\n${diffMsg}`;
+      } catch {
+        passedMsg = `\n${red(CAN_NOT_DISPLAY)} + \n\n`;
+      }
+    }
+    message = msg({message: passedMsg, actual, expected});
   } else {
     const actualString = _format(actual);
     const expectedString = _format(expected);
