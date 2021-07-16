@@ -8,6 +8,7 @@ import { assert } from "../_util/assert.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { hasOwnProperty } from "../_util/has_own_property.ts";
 import { Buffer } from "../io/buffer.ts";
+import { copy } from "../io/util.ts";
 
 /** FormFile object */
 export interface FormFile {
@@ -363,7 +364,7 @@ export class MultipartReader {
         const file = await Deno.open(filepath, { write: true });
 
         try {
-          const size = await Deno.copy(new MultiReader(buf, p), file);
+          const size = await copy(new MultiReader(buf, p), file);
 
           file.close();
           formFile = {
@@ -625,7 +626,7 @@ export class MultipartWriter {
     file: Deno.Reader,
   ) {
     const f = await this.createFormFile(field, filename);
-    await Deno.copy(file, f);
+    await copy(file, f);
   }
 
   private flush() {
