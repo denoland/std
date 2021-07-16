@@ -201,9 +201,9 @@ class Parser {
   }
   _groupToOutput(): void {
     assert(this.context.currentGroup != null, "currentGroup must be set");
-    const arrProperty = this.context.currentGroup.name
-      .replace(/("|')/g, "")
-      .split(".");
+    const arrProperty = this._parseDeclarationName(
+      this.context.currentGroup.name,
+    );
     let u = {};
     if (this.context.currentGroup.type === "array") {
       u = this._unflat(arrProperty, this.context.currentGroup.arrValues);
@@ -492,6 +492,8 @@ class Parser {
           if (isSingleLineBasic) {
             throw new TOMLError(`Incomplete string literal: ${dataString}`);
           }
+          value += dataString[i];
+          break
         default:
           value += dataString[i];
           break;
