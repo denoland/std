@@ -143,23 +143,6 @@ Deno.test({
             name: "Doe",
           },
         ],
-        points: [
-          {
-            x: 1,
-            y: 2,
-            z: 3,
-          },
-          {
-            x: 7,
-            y: 8,
-            z: 9,
-          },
-          {
-            x: 2,
-            y: 4,
-            z: 8,
-          },
-        ],
       },
     };
     const actual = parseFile(path.join(testdataDir, "arrays.toml"));
@@ -330,6 +313,31 @@ Deno.test({
         { name: "deno_core", path: "src/foo.rs" },
       ],
       nib: [{ name: "node", path: "not_found" }],
+      a: {
+        c: {
+          z: "z",
+        },
+      },
+      b: [
+        {
+          c: {
+            z: "z",
+          },
+        },
+        {
+          c: {
+            z: "z",
+          },
+        },
+      ],
+      aaa: [
+        {
+          bbb: {
+            asdf: "asdf",
+          },
+          hi: "hi",
+        },
+      ],
     };
     const actual = parseFile(path.join(testdataDir, "arrayTable.toml"));
     assertEquals(actual, expected);
