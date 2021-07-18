@@ -715,7 +715,7 @@ export function ArrayValue(scanner: Scanner): ParseResult<unknown[]> {
       break;
     }
     scanner.nextUntilChar({ inline: true });
-    // may have a next item
+    // may have a next item, but trailing comma is allowed at array
     if (scanner.char() === ",") {
       scanner.next();
     } else {

@@ -2,7 +2,7 @@
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { existsSync } from "../fs/exists.ts";
 import * as path from "../path/mod.ts";
-import { parse, stringify, trim } from "./toml.ts";
+import { parse, stringify } from "./toml.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
@@ -644,29 +644,6 @@ Deno.test({
       },
       Error,
       "Contains invalid whitespaces: `\\u3000`",
-    );
-  },
-});
-
-Deno.test({
-  name: "[TOML] Internal trim function",
-  fn(): void {
-    assertEquals(trim(""), "");
-    assertEquals(trim(" \tfoo  \t"), "foo");
-    assertEquals(trim(" foo\u3000foo "), "foo\u3000foo");
-    assertThrows(
-      (): void => {
-        trim("\u3000foo");
-      },
-      Error,
-      "Contains invalid whitespaces: `\\u3000foo`",
-    );
-    assertThrows(
-      (): void => {
-        trim("foo\u3000");
-      },
-      Error,
-      "Contains invalid whitespaces: `foo\\u3000`",
     );
   },
 });
