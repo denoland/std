@@ -610,7 +610,7 @@ Deno.test({
         parseFile(path.join(testdataDir, "error-open-string.toml"));
       },
       Error,
-      `Single-line string cannot contain EOL`,
+      `Parse error on line 1, column 34: Single-line string cannot contain EOL`,
     );
   },
 });
