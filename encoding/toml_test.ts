@@ -602,7 +602,7 @@ Deno.test({
         parseFile(path.join(testdataDir, "error-open-string.toml"));
       },
       Error,
-      `Single-line string cannot contain EOL:\n'The first newline is`,
+      `Single-line string cannot contain EOL`,
     );
   },
 });
@@ -615,7 +615,7 @@ Deno.test({
         parseFile(path.join(testdataDir, "error-invalid-string.toml"));
       },
       Error,
-      `Invalid data format: BAR`,
+      `invalid data format`,
     );
   },
 });
@@ -628,14 +628,14 @@ Deno.test({
         parseFile(path.join(testdataDir, "error-invalid-whitespace1.toml"));
       },
       Error,
-      'Contains invalid whitespaces: `\\u3000foo = "bar"`',
+      "Contains invalid whitespaces: `\\u3000`",
     );
     assertThrows(
       (): void => {
         parseFile(path.join(testdataDir, "error-invalid-whitespace2.toml"));
       },
       Error,
-      "Contains invalid whitespaces: `foo\\u3000`",
+      "Contains invalid whitespaces: `\\u3000`",
     );
   },
 });

@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { deepAssign } from "../_util/deep_assign.ts";
 import { assert } from "../_util/assert.ts";
+export { parse } from "./_toml/parser.ts"
 
 class TOMLError extends Error {}
 
@@ -894,14 +895,4 @@ class Dumper {
  */
 export function stringify(srcObj: Record<string, unknown>): string {
   return new Dumper(srcObj).dump().join("\n");
-}
-
-/**
- * Parse parses TOML string into an object.
- * @param tomlString
- */
-export function parse(tomlString: string): Record<string, unknown> {
-  // File is potentially using EOL CRLF
-  tomlString = tomlString.replace(/\r\n/g, "\n");
-  return new Parser(tomlString).parse();
 }
