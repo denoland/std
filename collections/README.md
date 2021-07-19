@@ -214,15 +214,17 @@ them.
 
 ```ts
 const usersById = {
-   'a5ec': { name: 'Mischa' },
-   'de4f': { name: 'Kim' },
-}
-const namesById = mapValues(usersById, it => it.name)
+  "a5ec": { name: "Mischa" },
+  "de4f": { name: "Kim" },
+};
+const namesById = mapValues(usersById, (it) => it.name);
 
-console.assert(namesById === {
-  'a5ec': 'Mischa',
-  'de4f': 'Kim',
-}
+console.assert(
+  namesById === {
+    "a5ec": "Mischa",
+    "de4f": "Kim",
+  },
+);
 ```
 
 ## partition
