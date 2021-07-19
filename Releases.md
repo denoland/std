@@ -1,3 +1,12 @@
+### 0.102.0 / 2021.07.19
+
+- feat: Add std/collections (#993)
+- fix(encoding/toml): fix comment line starting with whitespaces (#1017)
+- fix(encoding/toml): parse keys correctly (#1019)
+- fix(hash): fix handling of non-byte-sized TypedArray views (#1012)
+- fix(testing): Don't merge diff when it's not spaces even if it's surrounded by
+  word-diff (#1032)
+
 ### 0.101.0 / 2021.07.13
 
 - BREAKING(encoding/hex): remove encodedLen, encodeToString, decodedLen,
