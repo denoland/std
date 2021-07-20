@@ -8,10 +8,13 @@ import { Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
- * const names = [ 'Anna', 'Kim', 'Arnold', 'Kate' ]
- * const exampleNamesByFirstLetter = distinctBy(names, it => it.charAt(0))
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { distinctBy } from "https://deno.land/std/collections/distinct_by.ts";
  *
- * console.assert(exampleNamesByFirstLetter === [ 'Anna', 'Kim' ])
+ * const names = ["Anna", "Kim", "Arnold", "Kate"];
+ * const exampleNamesByFirstLetter = distinctBy(names, (it) => it.charAt(0));
+ *
+ * assertEquals(exampleNamesByFirstLetter, ["Anna", "Kim"]);
  * ```
  */
 export function distinctBy<T, D>(

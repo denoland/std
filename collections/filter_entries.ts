@@ -8,18 +8,24 @@ import { Predicate } from "./types.ts";
  * Example:
  *
  * ```typescript
- * const menu = {
- *     'Salad': 11,
- *     'Soup': 8,
- *     'Pasta': 13,
- * }
- * const myOptions = filterEntries(menu,
- *     ([ item, price ]) => item !== 'Pasta' && price < 10,
- * )
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { filterEntries } from "https://deno.land/std/collections/filter_entries.ts";
  *
- * console.assert(myOptions === {
- *     'Soup': 8,
- * })
+ * const menu = {
+ *   "Salad": 11,
+ *   "Soup": 8,
+ *   "Pasta": 13,
+ * };
+ * const myOptions = filterEntries(
+ *   menu,
+ *   ([item, price]) => item !== "Pasta" && price < 10,
+ * );
+ * assertEquals(
+ *   myOptions,
+ *   {
+ *     "Soup": 8,
+ *   },
+ * );
  * ```
  */
 export function filterEntries<T>(

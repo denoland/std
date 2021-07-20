@@ -9,17 +9,23 @@ import { Grouping, Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
- * const people = [
- *     { name: 'Anna' },
- *     { name: 'Arnold' },
- *     { name: 'Kim' },
- * ]
- * const peopleByFirstLetter = groupBy(people, it => it.name.charAt(0))
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { groupBy } from "https://deno.land/std/collections/group_by.ts";
  *
- * console.assert(peopleByFirstLetter === {
- *     'A': [ { name: 'Anna' }, { name: 'Arnold' } ],
- *     'K': [ { name: 'Kim' } ],
- * })
+ * const people = [
+ *   { name: "Anna" },
+ *   { name: "Arnold" },
+ *   { name: "Kim" },
+ * ];
+ * const peopleByFirstLetter = groupBy(people, (it) => it.name.charAt(0));
+ *
+ * assertEquals(
+ *   peopleByFirstLetter,
+ *   {
+ *     "A": [{ name: "Anna" }, { name: "Arnold" }],
+ *     "K": [{ name: "Kim" }],
+ *   },
+ * );
  * ```
  */
 export function groupBy<T>(

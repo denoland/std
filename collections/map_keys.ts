@@ -11,13 +11,19 @@ import { Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
- * const counts = { a: 5, b: 3, c: 8 }
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { mapKeys } from "https://deno.land/std/collections/map_keys.ts";
  *
- * console.assert(mapKeys(counts, it => it.toUppercase()) === {
+ * const counts = { a: 5, b: 3, c: 8 };
+ *
+ * assertEquals(
+ *   mapKeys(counts, (it) => it.toUpperCase()),
+ *   {
  *     A: 5,
  *     B: 3,
  *     C: 8,
- * })
+ *   },
+ * );
  * ```
  */
 export function mapKeys<T>(

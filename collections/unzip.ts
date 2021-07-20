@@ -7,15 +7,18 @@
  * Example:
  *
  * ```typescript
- * const parents = [
- *     [ 'Maria', 'Jeff' ],
- *     [ 'Anna', 'Kim' ],
- *     [ 'John', 'Leroy' ],
- * ]
- * const [ moms, dads ] = unzip(parents)
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { zip } from "https://deno.land/std/collections/unzip.ts";
  *
- * console.assert(moms === [ 'Maria', 'Anna', 'John' ])
- * console.assert(moms === [ 'Jeff', 'Kim', 'Leroy' ])
+ * const parents = [
+ *   ["Maria", "Jeff"],
+ *   ["Anna", "Kim"],
+ *   ["John", "Leroy"],
+ * ];
+ * const [moms, dads] = unzip(parents);
+ *
+ * assertEquals(moms, ["Maria", "Anna", "John"]);
+ * assertEquals(moms, ["Jeff", "Kim", "Leroy"]);
  * ```
  */
 export function unzip<T, U>(pairs: Array<[T, U]>): [Array<T>, Array<U>] {

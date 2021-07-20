@@ -8,20 +8,23 @@ import { Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
- * const usersById = {
- *     'a2e': { name: 'Kim', age: 22 },
- *     'dfe': { name: 'Anna', age: 31 },
- *     '34b': { name: 'Tim', age: 58 },
- * }
- * const agesByNames = mapEntries(usersById,
- *     ([ id, { name, age } ]) => [ name, age ],
- * )
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { mapEntries } from "https://deno.land/std/collections/map_entries.ts";
  *
- * console.assert(agesByNames === {
- *     'Kim': 22,
- *     'Anna': 31,
- *     'Tim': 58,
- * })
+ * const usersById = {
+ *   "a2e": { name: "Kim", age: 22 },
+ *   "dfe": { name: "Anna", age: 31 },
+ *   "34b": { name: "Tim", age: 58 },
+ * };
+ * const agesByNames = mapEntries(usersById, ([id, { name, age }]) => [name, age]);
+ *
+ * assertEquals(
+ *   agesByNames, {
+ *     "Kim": 22,
+ *     "Anna": 31,
+ *     "Tim": 58,
+ *   },
+ * );
  * ```
  */
 export function mapEntries<T, O>(

@@ -8,10 +8,13 @@ import { Predicate } from "./types.ts";
  * Example:
  *
  * ```typescript
- * const numbers = [ 4, 2, 7 ]
- * const lastEvenNumber = findLast(numbers, it => it % 2 === 0)
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { findLast } from "https://deno.land/std/collections/find_last.ts";
  *
- * console.assert(lastEvenNumber === 2)
+ * const numbers = [4, 2, 7];
+ * const lastEvenNumber = findLast(numbers, (it) => it % 2 === 0);
+ *
+ * assertEquals(lastEvenNumber, 2);
  * ```
  */
 export function findLast<T>(

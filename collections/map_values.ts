@@ -9,16 +9,21 @@ import { Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
- * const usersById = {
- *     'a5ec': { name: 'Mischa' },
- *     'de4f': { name: 'Kim' },
- * }
- * const namesById = mapValues(usersById, it => it.name)
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { mapValues } from "https://deno.land/std/collections/map_values.ts";
  *
- * console.assert(namesById === {
- *     'a5ec': 'Mischa',
- *     'de4f': 'Kim',
- * }
+ * const usersById = {
+ *   "a5ec": { name: "Mischa" },
+ *   "de4f": { name: "Kim" },
+ * };
+ * const namesById = mapValues(usersById, (it) => it.name);
+ *
+ * assertEquals(
+ *   namesById, {
+ *     "a5ec": "Mischa",
+ *     "de4f": "Kim",
+ *   },
+ * );
  * ```
  */
 export function mapValues<T, O>(

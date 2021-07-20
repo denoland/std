@@ -8,13 +8,19 @@
  * Example:
  *
  * ```typescript
- * const numbers = [ 1, 2 ]
- * const windows = permutations(numbers)
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { permutations } from "https://deno.land/std/collections/permutations.ts";
  *
- * console.assert(windows === [
- *     [ 1, 2 ],
- *     [ 2, 1 ],
- * ])
+ * const numbers = [1, 2];
+ * const windows = permutations(numbers);
+ *
+ * assertEquals(
+ *   windows,
+ *   [
+ *     [1, 2],
+ *     [2, 1],
+ *   ],
+ * );
  * ```
  */
 export function permutations<T>(array: Array<T>): Array<Array<T>> {

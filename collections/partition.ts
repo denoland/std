@@ -9,11 +9,14 @@ import { Predicate } from "./types.ts";
  * Example:
  *
  * ```typescript
- * const numbers = [ 5, 6, 7, 8, 9 ]
- * const [ even, odd ] = partition(numbers, it => it % 2 == 0)
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { partition } from "https://deno.land/std/collections/partition.ts";
  *
- * console.assert(even === [ 6, 8 ])
- * console.assert(odd === [ 5, 7, 9 ])
+ * const numbers = [5, 6, 7, 8, 9];
+ * const [even, odd] = partition(numbers, (it) => it % 2 == 0);
+ *
+ * assertEquals(even, [6, 8]);
+ * assertEquals(odd, [5, 7, 9]);
  * ```
  */
 export function partition<T>(

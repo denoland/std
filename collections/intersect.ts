@@ -8,11 +8,14 @@ import { filterInPlace } from "./_utils.ts";
  * Example:
  *
  * ```typescript
- * const lisaInterests = [ 'Cooking', 'Music', 'Hiking' ]
- * const kimInterests = [ 'Music', 'Tennis', 'Cooking' ]
- * const commonInterests = intersectTest(lisaInterests, kimInterests)
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { intersect } from "https://deno.land/std/collections/intersect.ts";
  *
- * console.assert(commonInterests === [ 'Cooking', 'Music' ])
+ * const lisaInterests = ["Cooking", "Music", "Hiking"];
+ * const kimInterests = ["Music", "Tennis", "Cooking"];
+ * const commonInterests = intersect(lisaInterests, kimInterests);
+ *
+ * assertEquals(commonInterests, ["Cooking", "Music"]);
  * ```
  */
 export function intersect<T>(...arrays: Array<Array<T>>): Array<T> {

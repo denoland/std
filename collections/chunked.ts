@@ -6,14 +6,25 @@
  * Example:
  *
  * ```typescript
- * const words = [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consetetur', 'sadipscing' ]
- * const chunks = chunked(words, 3)
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { chunked } from "https://deno.land/std/collections/chunked.ts";
  *
- * console.assert(chunks === [
- *     [ 'lorem', 'ipsum', 'dolor' ],
- *     [ 'sit', 'amet', 'consetetur' ],
- *     [ 'sadipscing' ],
- * ])
+ * const words = [
+ *   "lorem",
+ *   "ipsum",
+ *   "dolor",
+ *   "sit",
+ *   "amet",
+ *   "consetetur",
+ *   "sadipscing",
+ * ];
+ * const chunks = chunked(words, 3);
+ *
+ * assertEquals(chunks, [
+ *   ["lorem", "ipsum", "dolor"],
+ *   ["sit", "amet", "consetetur"],
+ *   ["sadipscing"],
+ * ]);
  * ```
  */
 export function chunked<T>(

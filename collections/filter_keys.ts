@@ -8,17 +8,22 @@ import { Predicate } from "./types.ts";
  * Example:
  *
  * ```typescript
- * const menu = {
- *     'Salad': 11,
- *     'Soup': 8,
- *     'Pasta': 13,
- * }
- * const menuWithoutSalad = filterKeys(menu, it => it !== 'Salad')
+ * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { filterKeys } from "https://deno.land/std/collections/filter_keys.ts";
  *
- * console.assert(menuWithoutSalad === {
- *     'Soup': 8,
- *     'Pasta': 13,
- * })
+ * const menu = {
+ *   "Salad": 11,
+ *   "Soup": 8,
+ *   "Pasta": 13,
+ * };
+ * const menuWithoutSalad = filterKeys(menu, (it) => it !== "Salad");
+ *
+ * assertEquals(
+ *   menuWithoutSalad, {
+ *     "Soup": 8,
+ *     "Pasta": 13,
+ *   },
+ * );
  * ```
  */
 export function filterKeys<T>(
