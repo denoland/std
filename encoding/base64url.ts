@@ -19,7 +19,7 @@ export function addPaddingToBase64url(base64url: string): string {
 function convertBase64urlToBase64(b64url: string): string {
   if (!/^[-_A-Z0-9]*?={0,2}$/i.test(b64url)) {
     // Contains characters not part of base64url spec.
-    throw new TypeError("Invalid base64url character in string!");
+    throw new TypeError("Failed to decode base64url: invalid character");
   }
   return addPaddingToBase64url(b64url).replace(/\-/g, "+").replace(/_/g, "/");
 }

@@ -44,7 +44,7 @@ Deno.test("[decoding/base64url] base64url.decode throws on invalid input", () =>
     assertThrows(
       () => decode(invalidb64url),
       TypeError,
-      "Invalid base64url character",
+      "invalid character",
     );
   }
 });
