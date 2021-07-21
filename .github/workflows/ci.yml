@@ -31,7 +31,7 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests
-        run: deno test --doc --unstable --allow-all
+        run: deno test --doc --unstable --allow-all --coverage=./cov
 
       - name: Type check browser compatible modules
         shell: bash
@@ -39,13 +39,22 @@ jobs:
           git grep --name-only "// This module is browser compatible." | grep -v ".github/workflows" | xargs deno cache --config browser-compat.tsconfig.json
 
       - name: Generate lcov
-        run: deno coverage --unstable --lcov ./cov > cov.lcov
+        shell: bash
+        # excludes tests, testdata, and generated sources from coverage report
+        run: |
+          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
+
+      - name: Remove coverage report
+        shell: bash
+        run: |
+          rm -rf ./cov/
+          rm cov.lcov
 
   lint:
     runs-on: ubuntu-latest
