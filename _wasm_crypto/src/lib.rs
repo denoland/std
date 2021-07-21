@@ -1,15 +1,13 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-
-use std::convert::TryInto;
-
 use derive_more::{From, Into};
+use js_sys::Uint8Array;
 use wasm_bindgen::prelude::*;
 
 mod digest;
 
 #[wasm_bindgen]
 #[derive(Clone, Into, From)]
-pub struct DigestContext(digest::DigestContext);
+pub struct DigestContext(digest::Context);
 
 #[wasm_bindgen]
 pub fn digest(
@@ -28,7 +26,7 @@ impl DigestContext {
   #[wasm_bindgen(constructor)]
   pub fn new(algorithm: &str) -> Result<DigestContext, JsValue> {
     Ok(
-      digest::DigestContext::new(algorithm)
+      digest::Context::new(algorithm)
         .map_err(|message| JsValue::from(js_sys::TypeError::new(message)))?
         .into(),
     )
@@ -37,20 +35,30 @@ impl DigestContext {
   #[wasm_bindgen]
   pub fn update(&mut self, data: js_sys::Uint8Array) -> Result<(), JsValue> {
     // Every method call on `data` has to go through the JavaScript bindings, so
-    // try to minimize them.
+    // try to minimize them. Splitting on the JavaScript side could be more
+    // efficient, but this is called from multiple places in JavaScript so it
+    // seems simpler to keep it here for now.
 
     let length = data.byte_length();
+    let base_offset = data.byte_offset();
+    let buffer = data.buffer();
 
     let chunk_size: u32 = 65_536;
-    let chunk_usize: usize = chunk_size.try_into().unwrap();
 
     if length <= chunk_size {
       let chunk = data.to_vec();
       self.0.update(&chunk);
     } else {
-      for offset in (0u32..length).step_by(chunk_usize) {
-        let chunk = data.subarray(offset, offset + chunk_size).to_vec();
+      let mut offset = 0;
+      while offset < length {
+        let chunk = Uint8Array::new_with_byte_offset_and_length(
+          &buffer,
+          base_offset + offset,
+          chunk_size.min(length - offset),
+        )
+        .to_vec();
         self.0.update(&chunk);
+        offset += chunk_size;
       }
     }
 
@@ -65,7 +73,7 @@ impl DigestContext {
       .map_err(|message| JsValue::from(js_sys::TypeError::new(message)))
   }
 
-  #[wasm_bindgen]
+  #[wasm_bindgen(js_name=digestAndReset)]
   pub fn digest_and_reset(
     &mut self,
     length: Option<usize>,
@@ -76,9 +84,7 @@ impl DigestContext {
       .map_err(|message| JsValue::from(js_sys::TypeError::new(message)))
   }
 
-  // This is not exported because we can't "consume" the `self` object on the
-  // JavaScript side, so it leaves a dead object, and maybe a dangling pointer.
-  // However, this is used internally by digest_sync().
+  #[wasm_bindgen(js_name=digestAndDrop)]
   pub fn digest_and_drop(
     mut self,
     length: Option<usize>,

@@ -221,10 +221,10 @@ export class DigestContext {
     * @param {number | undefined} length
     * @returns {Uint8Array}
     */
-  digest_and_reset(length) {
+  digestAndReset(length) {
     try {
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.digestcontext_digest_and_reset(
+      wasm.digestcontext_digestAndReset(
         retptr,
         this.ptr,
         !isLikeNone(length),
@@ -243,11 +243,11 @@ export class DigestContext {
     * @param {number | undefined} length
     * @returns {Uint8Array}
     */
-  digest_and_drop(length) {
+  digestAndDrop(length) {
     try {
       const ptr = this.__destroy_into_raw();
       const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-      wasm.digestcontext_digest_and_drop(
+      wasm.digestcontext_digestAndDrop(
         retptr,
         ptr,
         !isLikeNone(length),
@@ -289,8 +289,20 @@ const imports = {
       var ret = getObject(arg0).byteLength;
       return ret;
     },
-    __wbg_subarray_901ede8318da52a6: function (arg0, arg1, arg2) {
-      var ret = getObject(arg0).subarray(arg1 >>> 0, arg2 >>> 0);
+    __wbg_byteOffset_77eec84716a2e737: function (arg0) {
+      var ret = getObject(arg0).byteOffset;
+      return ret;
+    },
+    __wbg_buffer_1c5918a4ab656ff7: function (arg0) {
+      var ret = getObject(arg0).buffer;
+      return addHeapObject(ret);
+    },
+    __wbg_newwithbyteoffsetandlength_e57ad1f2ce812c03: function (
+      arg0,
+      arg1,
+      arg2,
+    ) {
+      var ret = new Uint8Array(getObject(arg0), arg1 >>> 0, arg2 >>> 0);
       return addHeapObject(ret);
     },
     __wbg_length_2d56cb37075fcfb1: function (arg0) {

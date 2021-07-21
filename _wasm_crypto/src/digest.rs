@@ -1,5 +1,4 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-
 use std::ops::DerefMut;
 
 use digest::{
@@ -8,11 +7,11 @@ use digest::{
 
 /// Enum wrapper over all supported digest implementations.
 #[derive(Clone)]
-pub enum DigestContext {
+pub enum Context {
   Blake2b256(Box<blake2::VarBlake2b>),
   Blake2b384(Box<blake2::VarBlake2b>),
   Blake2b(Box<blake2::Blake2b>),
-  Blake2s(Box<blake2::Blake2b>),
+  Blake2s(Box<blake2::Blake2s>),
   Blake3(Box<blake3::Hasher>),
   Keccak224(Box<sha3::Keccak224>),
   Keccak256(Box<sha3::Keccak256>),
@@ -20,11 +19,11 @@ pub enum DigestContext {
   Keccak512(Box<sha3::Keccak512>),
   Md5(Box<md5::Md5>),
   Ripemd160(Box<ripemd160::Ripemd160>),
-  Sha1(Box<ring::digest::Context>),
+  Sha1(Box<sha1::Sha1>),
   Sha224(Box<sha2::Sha224>),
-  Sha256(Box<ring::digest::Context>),
-  Sha384(Box<ring::digest::Context>),
-  Sha512(Box<ring::digest::Context>),
+  Sha256(Box<sha2::Sha256>),
+  Sha384(Box<sha2::Sha384>),
+  Sha512(Box<sha2::Sha512>),
   Sha3_224(Box<sha3::Sha3_224>),
   Sha3_256(Box<sha3::Sha3_256>),
   Sha3_384(Box<sha3::Sha3_384>),
@@ -33,10 +32,10 @@ pub enum DigestContext {
   Shake256(Box<sha3::Shake256>),
 }
 
-use DigestContext::*;
+use Context::*;
 
-impl DigestContext {
-  pub fn new(algorithm_name: &str) -> Result<DigestContext, &'static str> {
+impl Context {
+  pub fn new(algorithm_name: &str) -> Result<Context, &'static str> {
     Ok(match algorithm_name {
       "BLAKE2B-256" => {
         Blake2b256(Box::new(blake2::VarBlake2b::new(256 / 8).unwrap()))
@@ -53,19 +52,11 @@ impl DigestContext {
       "KECCAK-512" => Keccak512(Default::default()),
       "MD5" => Md5(Default::default()),
       "RIPEMD-160" => Ripemd160(Default::default()),
-      "SHA-1" => Sha1(Box::new(ring::digest::Context::new(
-        &ring::digest::SHA1_FOR_LEGACY_USE_ONLY,
-      ))),
+      "SHA-1" => Sha1(Default::default()),
       "SHA-224" => Sha224(Default::default()),
-      "SHA-256" => {
-        Sha256(Box::new(ring::digest::Context::new(&ring::digest::SHA256)))
-      }
-      "SHA-384" => {
-        Sha384(Box::new(ring::digest::Context::new(&ring::digest::SHA384)))
-      }
-      "SHA-512" => {
-        Sha512(Box::new(ring::digest::Context::new(&ring::digest::SHA512)))
-      }
+      "SHA-256" => Sha256(Default::default()),
+      "SHA-384" => Sha384(Default::default()),
+      "SHA-512" => Sha512(Default::default()),
       "SHA3-224" => Sha3_224(Default::default()),
       "SHA3-256" => Sha3_256(Default::default()),
       "SHA3-384" => Sha3_384(Default::default()),
@@ -95,11 +86,11 @@ impl DigestContext {
       Keccak512(context) => context.output_size(),
       Md5(context) => context.output_size(),
       Ripemd160(context) => context.output_size(),
-      Sha1(_) => ring::digest::SHA1_OUTPUT_LEN,
+      Sha1(context) => context.output_size(),
       Sha224(context) => context.output_size(),
-      Sha256(_) => ring::digest::SHA256_OUTPUT_LEN,
-      Sha384(_) => ring::digest::SHA384_OUTPUT_LEN,
-      Sha512(_) => ring::digest::SHA512_OUTPUT_LEN,
+      Sha256(context) => context.output_size(),
+      Sha384(context) => context.output_size(),
+      Sha512(context) => context.output_size(),
       Sha3_224(context) => context.output_size(),
       Sha3_256(context) => context.output_size(),
       Sha3_384(context) => context.output_size(),
@@ -162,7 +153,7 @@ impl DigestContext {
       Shake128(context) => Reset::reset(context.deref_mut()),
       Shake256(context) => Reset::reset(context.deref_mut()),
       _ => {
-        *self = DigestContext::new(self.algorithm_name()).unwrap();
+        *self = Context::new(self.algorithm_name()).unwrap();
       }
     }
   }
@@ -180,11 +171,11 @@ impl DigestContext {
       Keccak512(context) => Digest::update(context.deref_mut(), data),
       Md5(context) => Digest::update(context.deref_mut(), data),
       Ripemd160(context) => Digest::update(context.deref_mut(), data),
-      Sha1(context) => context.update(data),
+      Sha1(context) => Digest::update(context.deref_mut(), data),
       Sha224(context) => Digest::update(context.deref_mut(), data),
-      Sha256(context) => context.update(data),
-      Sha384(context) => context.update(data),
-      Sha512(context) => context.update(data),
+      Sha256(context) => Digest::update(context.deref_mut(), data),
+      Sha384(context) => Digest::update(context.deref_mut(), data),
+      Sha512(context) => Digest::update(context.deref_mut(), data),
       Sha3_224(context) => Digest::update(context.deref_mut(), data),
       Sha3_256(context) => Digest::update(context.deref_mut(), data),
       Sha3_384(context) => Digest::update(context.deref_mut(), data),
@@ -219,11 +210,11 @@ impl DigestContext {
       Keccak512(context) => context.finalize(),
       Md5(context) => context.finalize(),
       Ripemd160(context) => context.finalize(),
-      Sha1(context) => context.finish().as_ref().into(),
+      Sha1(context) => context.finalize(),
       Sha224(context) => context.finalize(),
-      Sha256(context) => context.finish().as_ref().into(),
-      Sha384(context) => context.finish().as_ref().into(),
-      Sha512(context) => context.finish().as_ref().into(),
+      Sha256(context) => context.finalize(),
+      Sha384(context) => context.finalize(),
+      Sha512(context) => context.finalize(),
       Sha3_224(context) => context.finalize(),
       Sha3_256(context) => context.finalize(),
       Sha3_384(context) => context.finalize(),
@@ -258,17 +249,17 @@ impl DigestContext {
       Keccak512(context) => DynDigest::finalize_reset(context.as_mut()),
       Md5(context) => DynDigest::finalize_reset(context.as_mut()),
       Ripemd160(context) => DynDigest::finalize_reset(context.as_mut()),
+      Sha1(context) => DynDigest::finalize_reset(context.as_mut()),
+      Sha224(context) => DynDigest::finalize_reset(context.as_mut()),
+      Sha256(context) => DynDigest::finalize_reset(context.as_mut()),
+      Sha384(context) => DynDigest::finalize_reset(context.as_mut()),
+      Sha512(context) => DynDigest::finalize_reset(context.as_mut()),
       Sha3_224(context) => DynDigest::finalize_reset(context.as_mut()),
       Sha3_256(context) => DynDigest::finalize_reset(context.as_mut()),
       Sha3_384(context) => DynDigest::finalize_reset(context.as_mut()),
       Sha3_512(context) => DynDigest::finalize_reset(context.as_mut()),
       Shake128(context) => context.finalize_boxed_reset(length),
       Shake256(context) => context.finalize_boxed_reset(length),
-      _ => {
-        let result = self.digest(Some(length))?;
-        self.reset();
-        result
-      }
     })
   }
 

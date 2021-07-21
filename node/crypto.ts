@@ -70,12 +70,16 @@ export class Hash extends Transform {
    * Updates the hash content with the given data.
    */
   update(data: string | ArrayBuffer, _encoding?: string): this {
+    let bytes;
     if (typeof data === "string") {
       data = new TextEncoder().encode(data);
-      this.#context.update(coerceToBytes(data));
+      bytes = coerceToBytes(data);
     } else {
-      this.#context.update(coerceToBytes(data));
+      bytes = coerceToBytes(data);
     }
+
+    this.#context.update(bytes);
+
     return this;
   }
 
