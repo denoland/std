@@ -108,6 +108,10 @@ Deno.test("fails", function (): void {
 
 Using `assertThrowsAsync()`:
 
+> ⚠️ Note that it is _required_ to `await` for `assertThrowsAsync` to ensure
+> that all promises get resolved within the test `Deno.test` callback. Failing
+> to do so may result in early exit or triggering the Op sanitizer
+
 ```ts
 Deno.test("doesThrow", async function () {
   await assertThrowsAsync(
