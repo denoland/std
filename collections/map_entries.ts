@@ -8,7 +8,7 @@ import { Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
- * import { mapEntries } from "https://deno.land/std/collections/map_entries.ts";
+ * import { mapEntries } from "./map_entries.ts";
  *
  * const usersById = {
  *     'a2e': { name: 'Kim', age: 22 },

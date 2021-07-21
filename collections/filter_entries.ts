@@ -8,7 +8,7 @@ import { Predicate } from "./types.ts";
  * Example:
  *
  * ```typescript
- * import { filterEntries } from "https://deno.land/std/collections/filter_entries.ts";
+ * import { filterEntries } from "./filter_entries.ts";
  *
  * const menu = {
  *     'Salad': 11,

@@ -222,7 +222,7 @@ export function assert(expr: unknown, msg = ""): asserts expr {
  * Type parameter can be specified to ensure values under comparison have the same type.
  * For example:
  * ```ts
- * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { assertEquals } from "./asserts.ts";
  *
  * assertEquals<number>(1, 2)
  * ```
@@ -268,7 +268,7 @@ export function assertEquals(
  * Type parameter can be specified to ensure values under comparison have the same type.
  * For example:
  * ```ts
- * import { assertNotEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { assertNotEquals } from "./asserts.ts";
  *
  * assertNotEquals<number>(1, 2)
  * ```
@@ -310,7 +310,7 @@ export function assertNotEquals(
  * not then throw.
  *
  * ```ts
- * import { assertStrictEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { assertStrictEquals } from "./asserts.ts";
  *
  * assertStrictEquals(1, 2)
  * ```
@@ -374,7 +374,7 @@ export function assertStrictEquals(
  * If the values are strictly equal then throw.
  *
  * ```ts
- * import { assertNotStrictEquals } from "https://deno.land/std/testing/asserts.ts";
+ * import { assertNotStrictEquals } from "./asserts.ts";
  *
  * assertNotStrictEquals(1, 1)
  * ```
@@ -444,7 +444,7 @@ export function assertStringIncludes(
  * For example:
  *
  * ```ts
- * import { assertArrayIncludes } from "https://deno.land/std/testing/asserts.ts";
+ * import { assertArrayIncludes } from "./asserts.ts";
  *
  * assertArrayIncludes<number>([1, 2], [2])
  * ```

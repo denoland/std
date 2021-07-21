@@ -9,7 +9,7 @@ import { Predicate } from "./types.ts";
  * Example:
  *
  * ```typescript
- * import { partition } from "https://deno.land/std/collections/partition.ts";
+ * import { partition } from "./partition.ts";
  *
  * const numbers = [ 5, 6, 7, 8, 9 ]
  * const [ even, odd ] = partition(numbers, it => it % 2 == 0)

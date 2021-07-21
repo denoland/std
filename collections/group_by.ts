@@ -9,7 +9,7 @@ import { Grouping, Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
- * import { groupBy } from "https://deno.land/std/collections/group_by.ts";
+ * import { groupBy } from "./group_by.ts";
  *
  * type Person = {
  *   name: string;

@@ -8,8 +8,8 @@ const DEFAULT_BUFFER_SIZE = 32 * 1024;
  * Uint8Array`.
  *
  * ```ts
- * import { readAll } from "https://deno.land/std/io/util.ts";
- * import { Buffer } from "https://deno.land/std/io/buffer.ts";
+ * import { readAll } from "./util.ts";
+ * import { Buffer } from "./buffer.ts";
  *
  * // Example from stdin
  * const stdinContent = await readAll(Deno.stdin);
@@ -36,8 +36,8 @@ export async function readAll(r: Deno.Reader): Promise<Uint8Array> {
  * as `Uint8Array`.
  *
  * ```ts
- * import { readAllSync } from "https://deno.land/std/io/util.ts";
- * import { Buffer } from "https://deno.land/std/io/buffer.ts";
+ * import { readAllSync } from "./util.ts";
+ * import { Buffer } from "./buffer.ts";
  *
  * // Example from stdin
  * const stdinContent = readAllSync(Deno.stdin);
@@ -74,8 +74,8 @@ export interface ByteRange {
  * range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
- * import { readRange } from "https://deno.land/std/io/util.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
+ * import { readRange } from "./util.ts";
  *
  * // Read the first 10 bytes of a file
  * const file = await Deno.open("example.txt", { read: true });
@@ -112,8 +112,8 @@ export async function readRange(
  * within that range.
  *
  * ```ts
- * import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
- * import { readRangeSync } from "https://deno.land/std/io/util.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
+ * import { readRangeSync } from "./util.ts";
  *
  * // Read the first 10 bytes of a file
  * const file = Deno.openSync("example.txt", { read: true });
@@ -147,8 +147,8 @@ export function readRangeSync(
 /** Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
  * ```ts
- * import { Buffer } from "https://deno.land/std/io/buffer.ts";
- * import { writeAll } from "https://deno.land/std/io/util.ts";
+ * import { Buffer } from "./buffer.ts";
+ * import { writeAll } from "./util.ts";
 
  * // Example writing to stdout
  * let contentBytes = new TextEncoder().encode("Hello World");
@@ -178,8 +178,8 @@ export async function writeAll(w: Deno.Writer, arr: Uint8Array) {
  * writer (`w`).
  *
  * ```ts
- * import { Buffer } from "https://deno.land/std/io/buffer.ts";
- * import { writeAllSync } from "https://deno.land/std/io/util.ts";
+ * import { Buffer } from "./buffer.ts";
+ * import { writeAllSync } from "./util.ts";
  *
  * // Example writing to stdout
  * let contentBytes = new TextEncoder().encode("Hello World");
@@ -208,7 +208,7 @@ export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array): void {
 /** Turns a Reader, `r`, into an async iterator.
  *
  * ```ts
- * import { iter } from "https://deno.land/std/io/util.ts";
+ * import { iter } from "./util.ts";
  *
  * let f = await Deno.open("/etc/passwd");
  * for await (const chunk of iter(f)) {
@@ -221,7 +221,7 @@ export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array): void {
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { iter } from "https://deno.land/std/io/util.ts";
+ * import { iter } from "./util.ts";
  *
  * let f = await Deno.open("/etc/passwd");
  * const it = iter(f, {
@@ -259,7 +259,7 @@ export async function* iter(
 /** Turns a ReaderSync, `r`, into an iterator.
  *
  * ```ts
- * import { iterSync } from "https://deno.land/std/io/util.ts";
+ * import { iterSync } from "./util.ts";
  *
  * let f = Deno.openSync("/etc/passwd");
  * for (const chunk of iterSync(f)) {
@@ -272,7 +272,7 @@ export async function* iter(
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { iterSync } from "https://deno.land/std/io/util.ts";
+ * import { iterSync } from "./util.ts";
 
  * let f = await Deno.open("/etc/passwd");
  * const iter = iterSync(f, {
@@ -312,7 +312,7 @@ export function* iterSync(
  * the first error encountered while copying.
  *
  * ```ts
- * import { copy } from "https://deno.land/std/io/util.ts";
+ * import { copy } from "./util.ts";
  *
  * const source = await Deno.open("my_file.txt");
  * const bytesCopied1 = await copy(source, Deno.stdout);

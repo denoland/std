@@ -9,7 +9,7 @@ import { Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
- * import { mapValues } from "https://deno.land/std/collections/map_values.ts";
+ * import { mapValues } from "./map_values.ts";
  *
  * const usersById = {
  *     'a5ec': { name: 'Mischa' },

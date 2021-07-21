@@ -8,7 +8,7 @@ import { Predicate } from "./types.ts";
  * Example:
  *
  * ```typescript
- * import { filterValues } from "https://deno.land/std/collections/filter_values.ts";
+ * import { filterValues } from "./filter_values.ts";
  *
  * type Person = { age: number };
  *

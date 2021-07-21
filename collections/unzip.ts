@@ -7,7 +7,7 @@
  * Example:
  *
  * ```typescript
- * import { unzip } from "https://deno.land/std/collections/unzip.ts";
+ * import { unzip } from "./unzip.ts";
  *
  * const parents = [
  *     [ 'Maria', 'Jeff' ],

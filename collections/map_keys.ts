@@ -11,7 +11,7 @@ import { Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
- * import { mapKeys } from "https://deno.land/std/collections/map_keys.ts";
+ * import { mapKeys } from "./map_keys.ts";
  *
  * const counts = { a: 5, b: 3, c: 8 }
  *

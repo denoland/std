@@ -8,7 +8,7 @@ import { filterInPlace } from "./_utils.ts";
  * Example:
  *
  * ```typescript
- * import { intersect } from "https://deno.land/std/collections/intersect.ts";
+ * import { intersect } from "./intersect.ts";
  *
  * const lisaInterests = [ 'Cooking', 'Music', 'Hiking' ]
  * const kimInterests = [ 'Music', 'Tennis', 'Cooking' ]
