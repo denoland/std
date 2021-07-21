@@ -1,8 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import {
-  assertEquals,
-  assertThrows,
-} from "https://deno.land/std@0.101.0/testing/asserts.ts";
+import { assertEquals, assertThrows } from "../../testing/asserts.ts";
 import {
   ArrayValue,
   BareKey,

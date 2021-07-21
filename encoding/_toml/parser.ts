@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { deepAssign } from "https://deno.land/std@0.101.0/_util/deep_assign.ts";
+import { deepAssign } from "../../_util/deep_assign.ts";
 
 // ---------------------------
 // Interfaces and base classes
