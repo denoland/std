@@ -6,7 +6,7 @@
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { unzip } from "./unzip.ts";
  *
  * const parents = [

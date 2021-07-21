@@ -10,7 +10,7 @@ import { Selector } from "./types.ts";
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { mapKeys } from "./map_keys.ts";
  *
  * const counts = { a: 5, b: 3, c: 8 }

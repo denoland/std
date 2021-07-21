@@ -8,7 +8,7 @@ import { Selector } from "./types.ts";
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { mapValues } from "./map_values.ts";
  *
  * const usersById = {

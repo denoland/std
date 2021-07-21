@@ -7,7 +7,7 @@ import { Predicate } from "./types.ts";
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { filterValues } from "./filter_values.ts";
  *
  * type Person = { age: number };

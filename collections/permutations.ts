@@ -7,7 +7,7 @@
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { permutations } from "./permutations.ts";
  *
  * const numbers = [ 1, 2 ]

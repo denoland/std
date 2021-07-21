@@ -8,7 +8,7 @@ import { Predicate } from "./types.ts";
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { partition } from "./partition.ts";
  *
  * const numbers = [ 5, 6, 7, 8, 9 ]

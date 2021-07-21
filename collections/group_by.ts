@@ -8,7 +8,7 @@ import { Grouping, Selector } from "./types.ts";
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { groupBy } from "./group_by.ts";
  *
  * type Person = {

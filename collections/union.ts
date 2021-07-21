@@ -5,7 +5,7 @@
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { union } from "./union.ts";
  *
  * const soupIngredients = [ 'Pepper', 'Carrots', 'Leek' ]

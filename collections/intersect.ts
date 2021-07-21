@@ -7,7 +7,7 @@ import { filterInPlace } from "./_utils.ts";
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { intersect } from "./intersect.ts";
  *
  * const lisaInterests = [ 'Cooking', 'Music', 'Hiking' ]
