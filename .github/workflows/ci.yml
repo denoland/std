@@ -50,6 +50,12 @@ jobs:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
 
+      - name: Remove coverage report
+        shell: bash
+        run: |
+          rm -rf ./cov/
+          rm cov.lcov
+
   lint:
     runs-on: ubuntu-latest
     steps:
