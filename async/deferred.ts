@@ -22,7 +22,8 @@ export function deferred<T>(): Deferred<T> {
   let methods;
   const promise = new Promise<T>((resolve, reject): void => {
     methods = {
-      resolve(value: T | PromiseLike<T>) {
+      async resolve(value: T | PromiseLike<T>) {
+        await value;
         Object.assign(promise, { status: "fulfilled" });
         resolve(value);
       },

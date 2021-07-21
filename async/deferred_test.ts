@@ -19,3 +19,14 @@ Deno.test("[async] deferred: reject", async function () {
   });
   assertEquals(d.status, "rejected");
 });
+
+Deno.test("[async] deferred: status with promised value", async function () {
+  const d = deferred<string>();
+  const e = deferred<string>();
+  assertEquals(d.status, "pending");
+  d.resolve(e);
+  assertEquals(d.status, "pending");
+  e.resolve("🦕");
+  assertEquals(await d, "🦕");
+  assertEquals(d.status, "fulfilled");
+});
