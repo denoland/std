@@ -39,6 +39,7 @@ jobs:
           git grep --name-only "// This module is browser compatible." | grep -v ".github/workflows" | xargs deno cache --config browser-compat.tsconfig.json
 
       - name: Generate lcov
+        shell: bash
         # excludes tests, testdata, and generated sources from coverage report
         run: |
           deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
