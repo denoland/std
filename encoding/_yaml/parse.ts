@@ -23,9 +23,17 @@ export function parse(content: string, options?: ParseOptions): unknown {
  * Same as `parse()`, but understands multi-document sources.
  * Applies iterator to each document if specified, or returns array of documents.
  */
+export function parseAll(content: string): unknown;
+export function parseAll(content: string, iterator: CbFunction): void;
 export function parseAll(
   content: string,
-  iterator?: CbFunction,
+  iterator: CbFunction,
+  options: ParseOptions,
+): void;
+export function parseAll(content: string, options: ParseOptions): unknown;
+export function parseAll(
+  content: string,
+  iterator?: CbFunction | ParseOptions,
   options?: ParseOptions,
 ): unknown {
   return loadAll(content, iterator, options);
