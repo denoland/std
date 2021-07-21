@@ -9,6 +9,8 @@ import { Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
+ * import { mapValues } from "https://deno.land/std/collections/map_values.ts";
+ *
  * const usersById = {
  *     'a5ec': { name: 'Mischa' },
  *     'de4f': { name: 'Kim' },
@@ -18,7 +20,7 @@ import { Selector } from "./types.ts";
  * console.assert(namesById === {
  *     'a5ec': 'Mischa',
  *     'de4f': 'Kim',
- * }
+ * });
  * ```
  */
 export function mapValues<T, O>(

@@ -6,6 +6,8 @@
  * Example:
  *
  * ```typescript
+ * import { chunked } from "https://deno.land/std/collections/chunked.ts";
+ *
  * const words = [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consetetur', 'sadipscing' ]
  * const chunks = chunked(words, 3)
  *

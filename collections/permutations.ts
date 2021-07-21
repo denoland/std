@@ -8,6 +8,8 @@
  * Example:
  *
  * ```typescript
+ * import { permutations } from "https://deno.land/std/collections/permutations.ts";
+ *
  * const numbers = [ 1, 2 ]
  * const windows = permutations(numbers)
  *

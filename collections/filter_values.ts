@@ -8,16 +8,20 @@ import { Predicate } from "./types.ts";
  * Example:
  *
  * ```typescript
- * const people = {
- *     'Arnold': 37,
- *     'Sarah': 7,
- *     'Kim': 23,
- * }
+ * import { filterValues } from "https://deno.land/std/collections/filter_values.ts";
+ *
+ * type Person = { age: number };
+ *
+ * const people: Record<string, Person> = {
+ *     'Arnold': { age: 37 },
+ *     'Sarah': { age: 7 },
+ *     'Kim': { age: 23 },
+ * };
  * const adults = filterValues(people, it => it.age >= 18)
  *
  * console.assert(adults === {
- *     'Arnold': 37,
- *     'Kim': 23,
+ *     'Arnold': { age: 37 },
+ *     'Kim': { age: 23 },
  * })
  * ```
  */

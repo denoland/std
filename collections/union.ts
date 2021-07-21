@@ -6,6 +6,8 @@
  * Example:
  *
  * ```typescript
+ * import { union } from "https://deno.land/std/collections/union.ts";
+ *
  * const soupIngredients = [ 'Pepper', 'Carrots', 'Leek' ]
  * const saladIngredients = [ 'Carrots', 'Radicchio', 'Pepper' ]
  * const shoppingList = union(soupIngredients, saladIngredients)

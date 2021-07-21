@@ -8,11 +8,14 @@ import { Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
+ * import { mapEntries } from "https://deno.land/std/collections/map_entries.ts";
+ *
  * const usersById = {
  *     'a2e': { name: 'Kim', age: 22 },
  *     'dfe': { name: 'Anna', age: 31 },
  *     '34b': { name: 'Tim', age: 58 },
- * }
+ * } as const;
+ *
  * const agesByNames = mapEntries(usersById,
  *     ([ id, { name, age } ]) => [ name, age ],
  * )

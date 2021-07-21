@@ -7,11 +7,14 @@
  * Example:
  *
  * ```typescript
+ * import { unzip } from "https://deno.land/std/collections/unzip.ts";
+ *
  * const parents = [
  *     [ 'Maria', 'Jeff' ],
  *     [ 'Anna', 'Kim' ],
  *     [ 'John', 'Leroy' ],
- * ]
+ * ] as [string, string][];
+ *
  * const [ moms, dads ] = unzip(parents)
  *
  * console.assert(moms === [ 'Maria', 'Anna', 'John' ])

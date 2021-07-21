@@ -6,6 +6,8 @@
  * Example:
  *
  * ```typescript
+ * import { zip } from "https://deno.land/std/collections/zip.ts";
+ *
  * const numbers = [ 1, 2, 3, 4 ]
  * const letters = [ 'a', 'b', 'c', 'd' ]
  * const pairs = zip(numbers, letters)

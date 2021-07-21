@@ -31,7 +31,7 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests
-        run: deno test --unstable --allow-all
+        run: deno test --doc --unstable --allow-all
 
       - name: Type check browser compatible modules
         shell: bash

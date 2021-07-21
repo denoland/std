@@ -6,6 +6,8 @@
  * Example:
  *
  * ```typescript
+ * import { distinct } from "https://deno.land/std/collections/distinct.ts";
+ *
  * const numbers = [ 3, 2, 5, 2, 5 ]
  * const distinctNumbers = distinct(numbers)
  *

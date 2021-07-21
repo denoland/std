@@ -8,6 +8,8 @@ import { Predicate } from "./types.ts";
  * Example:
  *
  * ```typescript
+ * import { filterKeys } from "https://deno.land/std/collections/filter_keys.ts";
+ *
  * const menu = {
  *     'Salad': 11,
  *     'Soup': 8,
