@@ -584,9 +584,8 @@ export function assertThrows<T = void>(
   ErrorClass?: Constructor,
   msgIncludes = "",
   msg?: string,
-): Error {
+): void {
   let doesThrow = false;
-  let error = null;
   try {
     fn();
   } catch (e) {
@@ -611,13 +610,11 @@ export function assertThrows<T = void>(
       throw new AssertionError(msg);
     }
     doesThrow = true;
-    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
   }
-  return error;
 }
 
 /**
