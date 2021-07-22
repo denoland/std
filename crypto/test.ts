@@ -11,6 +11,7 @@ const webCrypto = globalThis.crypto;
 Deno.test("Different ways to perform the same operation should produce the same result", async () => {
   const inputString = "taking the hobbits to isengard";
   const inputBytes = new TextEncoder().encode(inputString);
+  const inputPieces = [inputBytes.slice(0, 8), inputBytes.slice(8)];
 
   const emptyDigest =
     "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b";
@@ -19,6 +20,13 @@ Deno.test("Different ways to perform the same operation should produce the same 
 
   assertEquals(
     toHexString(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
+    expectedDigest,
+  );
+
+  assertEquals(
+    toHexString(
+      await stdCrypto.subtle.digest("SHA-384", new Blob([inputBytes]).stream()),
+    ),
     expectedDigest,
   );
 
@@ -32,8 +40,24 @@ Deno.test("Different ways to perform the same operation should produce the same 
       await stdCrypto.subtle.digest(
         "SHA-384",
         (async function* () {
-          yield new Uint8Array();
-          yield inputBytes;
+          yield new Uint16Array();
+          yield inputPieces[0];
+          yield new ArrayBuffer(0);
+          yield inputPieces[1];
+        })(),
+      ),
+    ),
+    expectedDigest,
+  );
+
+  assertEquals(
+    toHexString(
+      stdCrypto.subtle.digestSync(
+        "SHA-384",
+        (function* () {
+          yield new ArrayBuffer(0);
+          yield* inputPieces;
+          yield new Int8Array();
         })(),
       ),
     ),
