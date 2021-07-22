@@ -5,6 +5,7 @@
 // See https://github.com/Microsoft/TypeScript/issues/15202
 // At the time of writing, the github issue is closed but the problem remains.
 export interface Deferred<T> extends Promise<T> {
+  status: "pending" | "fulfilled" | "rejected";
   resolve(value?: T | PromiseLike<T>): void;
   // deno-lint-ignore no-explicit-any
   reject(reason?: any): void;
@@ -20,7 +21,18 @@ export interface Deferred<T> extends Promise<T> {
 export function deferred<T>(): Deferred<T> {
   let methods;
   const promise = new Promise<T>((resolve, reject): void => {
-    methods = { resolve, reject };
+    methods = {
+      async resolve(value: T | PromiseLike<T>) {
+        await value;
+        Object.assign(promise, { status: "fulfilled" });
+        resolve(value);
+      },
+      // deno-lint-ignore no-explicit-any
+      reject(reason?: any) {
+        Object.assign(promise, { status: "rejected" });
+        reject(reason);
+      },
+    };
   });
-  return Object.assign(promise, methods) as Deferred<T>;
+  return Object.assign(promise, methods, { status: "pending" }) as Deferred<T>;
 }
