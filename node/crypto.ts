@@ -1,8 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { default as randomBytes } from "./_crypto/randomBytes.ts";
-import wasmCrypto from "../_wasm_crypto/mod.ts";
-import { digestAlgorithms, digestAliases } from "../_wasm_crypto/algorithms.ts";
+import {
+  crypto as wasmCrypto,
+  DigestAlgorithm,
+  digestAlgorithms,
+} from "../_wasm_crypto/mod.ts";
 import { pbkdf2, pbkdf2Sync } from "./_crypto/pbkdf2.ts";
 import { Buffer } from "./buffer.ts";
 import { Transform } from "./stream.ts";
@@ -54,6 +57,20 @@ export class Hash extends Transform {
         callback();
       },
     });
+
+    if (typeof algorithm === "string") {
+      // Node/OpenSSL and WebCrypto format some digest names differently;
+      // we attempt to handle those here.
+      algorithm = algorithm.toUpperCase();
+      if (opensslToWebCryptoDigestNames[algorithm]) {
+        algorithm = opensslToWebCryptoDigestNames[algorithm];
+      }
+      this.#context = new wasmCrypto.DigestContext(
+        algorithm as DigestAlgorithm,
+      );
+    } else {
+      this.#context = algorithm;
+    }
 
     const context = typeof algorithm === "string"
       ? new wasmCrypto.DigestContext(algorithm)
@@ -112,6 +129,20 @@ export class Hash extends Transform {
 }
 
 /**
+ * Supported digest names that OpenSSL/Node and WebCrypto identify differently.
+ */
+const opensslToWebCryptoDigestNames: Record<string, DigestAlgorithm> = {
+  "BLAKE2B512": "BLAKE2B",
+  "BLAKE2S256": "BLAKE2S",
+  "RMD160": "RIPEMD-160",
+  "SHA1": "SHA-1",
+  "SHA224": "SHA-224",
+  "SHA256": "SHA-256",
+  "SHA384": "SHA-384",
+  "SHA512": "SHA-512",
+};
+
+/**
  * Creates and returns a Hash object that can be used to generate hash digests
  * using the given `algorithm`. Optional `options` argument controls stream behavior.
  */
@@ -119,7 +150,6 @@ export function createHash(
   algorithm: string,
   opts?: TransformOptions,
 ) {
-  algorithm = digestAliases[algorithm.toUpperCase()] ?? algorithm.toUpperCase();
   return new Hash(algorithm, opts);
 }
 

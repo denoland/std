@@ -1,8 +1,8 @@
-import wasmCrypto from "../_wasm_crypto/mod.ts";
 import {
+  crypto as wasmCrypto,
   DigestAlgorithm as WasmDigestAlgorithm,
   digestAlgorithms as wasmDigestAlgorithms,
-} from "../_wasm_crypto/algorithms.ts";
+} from "../_wasm_crypto/mod.ts";
 
 type WebCryptoAlgorithmIdentifier = string | { name: string };
 
