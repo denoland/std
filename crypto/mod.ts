@@ -8,28 +8,44 @@ type WebCryptoAlgorithmIdentifier = string | { name: string };
 
 // TODO(jeremyBanks): Remove this once the built-in `Crypto` interface is
 // complete and stable. For now we use this incomplete-but-stable definition.
-export interface WebCrypto {
+interface WebCrypto {
   getRandomValues<T extends BufferSource>(buffer: T): T;
   randomUUID?(): string;
   subtle?: {
     // see https://www.w3.org/TR/WebCryptoAPI/#subtlecrypto-interface
 
+    /**
+     * Returns a new `Promise` object that will encrypt `data` using the
+     * specified `AlgorithmIdentifier` with the supplied `CryptoKey`.
+     */
     encrypt?(
       algorithm: WebCryptoAlgorithmIdentifier,
       key: unknown,
       data: BufferSource,
     ): Promise<unknown>;
+    /**
+     * Returns a new `Promise` object that will decrypt `data` using the
+     * specified `AlgorithmIdentifier` with the supplied `CryptoKey`.
+     */
     decrypt?(
       algorithm: WebCryptoAlgorithmIdentifier,
       key: unknown,
       data: BufferSource,
     ): Promise<unknown>;
 
+    /**
+     * Returns a new `Promise` object that will sign `data` using the specified
+     * `AlgorithmIdentifier` with the supplied `CryptoKey`.
+     */
     sign?(
       algorithm: WebCryptoAlgorithmIdentifier,
       key: unknown,
       data: BufferSource,
     ): Promise<unknown>;
+    /**
+     * Returns a new `Promise` object that will verify `data` using the
+     * specified `AlgorithmIdentifier` with the supplied `CryptoKey`.
+     */
     verify?(
       algorithm: WebCryptoAlgorithmIdentifier,
       key: unknown,
@@ -37,6 +53,10 @@ export interface WebCrypto {
       data: BufferSource,
     ): Promise<unknown>;
 
+    /**
+     * Returns a new `Promise` object that will digest `data` using the
+     * specified `AlgorithmIdentifier`.
+     */
     digest?(
       algorithm: WebCryptoAlgorithmIdentifier,
       data: BufferSource,
@@ -136,6 +156,10 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
   subtle: {
     ...webCrypto.subtle,
 
+    /**
+     * Returns a new `Promise` object that will digest `data` using the specified
+     * `AlgorithmIdentifier`.
+     */
     async digest(
       algorithm: DigestAlgorithm,
       data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
@@ -194,6 +218,10 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
       }
     },
 
+    /**
+     * Returns a ArrayBuffer with the result of digesting `data` using the
+     * specified `AlgorithmIdentifier`.
+     */
     digestSync(
       algorithm: DigestAlgorithm,
       data: BufferSource | Iterable<BufferSource>,
@@ -244,4 +272,4 @@ const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
     name: algorithm.name.toUpperCase(),
   }) as DigestAlgorithmObject;
 
-export default stdCrypto;
+export { stdCrypto as crypto };

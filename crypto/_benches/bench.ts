@@ -6,7 +6,7 @@ import {
 import { createHash } from "https://deno.land/std@0.102.0/hash/mod.ts";
 import { assert, assertEquals } from "../../testing/asserts.ts";
 
-import stdCrypto from "../mod.ts";
+import { crypto as stdCrypto } from "../mod.ts";
 
 const webCrypto = globalThis.crypto;
 

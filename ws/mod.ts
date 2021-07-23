@@ -2,7 +2,7 @@
 import { hasOwnProperty } from "../_util/has_own_property.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
-import crypto from "../crypto/mod.ts";
+import { crypto } from "../crypto/mod.ts";
 import * as base64 from "../encoding/base64.ts";
 
 import { writeResponse } from "../http/_io.ts";

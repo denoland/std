@@ -1,14 +1,14 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
-import stdCrypto from "./mod.ts";
+import { crypto as stdCrypto } from "./mod.ts";
 import * as bytes from "../bytes/mod.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
-import { DigestAlgorithm } from "../_wasm_crypto/mod.ts";
+import { DigestAlgorithm, digestAlgorithms } from "../_wasm_crypto/mod.ts";
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 const webCrypto = globalThis.crypto;
 
-Deno.test("Different ways to perform the same operation should produce the same result", async () => {
+Deno.test("[crypto/digest] Different ways to perform the same operation should produce the same result", async () => {
   const inputString = "taking the hobbits to isengard";
   const inputBytes = new TextEncoder().encode(inputString);
   const inputPieces = [inputBytes.slice(0, 8), inputBytes.slice(8)];
@@ -77,6 +77,11 @@ Deno.test("Different ways to perform the same operation should produce the same 
   );
 
   assertEquals(
+    toHexString(await webCrypto.subtle!.digest("SHA-384", inputBytes)),
+    expectedDigest,
+  );
+
+  assertEquals(
     toHexString(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
     emptyDigest,
   );
@@ -92,7 +97,7 @@ Deno.test("Different ways to perform the same operation should produce the same 
   );
 });
 
-Deno.test("Memory use should remain reasonable even with large inputs", async () => {
+Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
   const process = Deno.run({
     cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
@@ -102,7 +107,7 @@ Deno.test("Memory use should remain reasonable even with large inputs", async ()
 
   await process.stdin.write(
     new TextEncoder().encode(`
-      import stdCrypto from "./mod.ts";
+      import { crypto as stdCrypto } from "./mod.ts";
       import { _wasm } from "../_wasm_crypto/crypto.js";
 
       const { memory } = _wasm as { memory: WebAssembly.Memory };
@@ -186,7 +191,7 @@ Deno.test("Memory use should remain reasonable even with large inputs", async ()
   );
 });
 
-Deno.test("Memory use should remain reasonable even with many calls to digest()", async () => {
+Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
   const process = Deno.run({
     cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
@@ -196,7 +201,7 @@ Deno.test("Memory use should remain reasonable even with many calls to digest()"
 
   await process.stdin.write(
     new TextEncoder().encode(`
-      import stdCrypto from "./mod.ts";
+      import { crypto as stdCrypto } from "./mod.ts";
       import { _wasm } from "../_wasm_crypto/crypto.js";
 
       const { memory } = _wasm as { memory: WebAssembly.Memory };
@@ -264,48 +269,6 @@ Deno.test("Memory use should remain reasonable even with many calls to digest()"
     `test subprocess returned wrong hash (${stateFinal})`,
   );
 });
-
-Deno.test("known inputs produce expected digests", async () => {
-  for (const [caption, piecesVariations, options, algorithms] of digestCases) {
-    for (const pieces of piecesVariations) {
-      for (const [algorithm, expected] of Object.entries(algorithms)) {
-        const bytePieces = pieces.map((piece) =>
-          typeof piece === "string" ? new TextEncoder().encode(piece) : piece
-        ) as Array<BufferSource>;
-        try {
-          const actual = toHexString(
-            await stdCrypto.subtle.digest({
-              ...options,
-              name: algorithm as DigestAlgorithm,
-            }, bytePieces),
-          );
-          assertEquals(
-            expected,
-            actual,
-            `${caption}: digest(${algorithm}, ${
-              JSON.stringify(options)
-            }) returned unexpected value\n  actual: ${actual}\nexpected: ${expected}`,
-          );
-        } catch (error) {
-          if (expected instanceof Function) {
-            assert(
-              error instanceof expected,
-              `got a different error than expected: ${error}`,
-            );
-          } else {
-            throw error;
-          }
-        }
-      }
-    }
-  }
-});
-
-const toHexString = (bytes: ArrayBuffer): string =>
-  new Uint8Array(bytes).reduce(
-    (str, byte) => str + byte.toString(16).padStart(2, "0"),
-    "",
-  );
 
 // Simple periodic data, but the periods shouldn't line up with any block
 // or chunk sizes.
@@ -563,6 +526,13 @@ const digestCases: [
 
   ["Non-integer length", [[""]], { length: 1.5 }, allErrors],
 
+  [
+    "Invalid data type",
+    [[{} as BufferSource], [[] as unknown as BufferSource]],
+    {},
+    allErrors,
+  ],
+
   ["Too-large length", [[""]], {
     length: Number.MAX_SAFE_INTEGER * Number.MAX_SAFE_INTEGER,
   }, allErrors],
@@ -655,6 +625,10 @@ const digestCases: [
   [
     "Different combinations of different views of the same bytes",
     [[slicedView, bufferCopy], [slicedCopy, "", slicedView], [
+      slicedCopy,
+      "",
+      slicedView,
+    ], [
       "",
       bufferCopy,
       dataView,
@@ -702,3 +676,48 @@ const digestCases: [
     },
   ],
 ];
+
+for (const algorithm of digestAlgorithms) {
+  Deno.test(`[crypto/digest/${algorithm}] test vectors`, async () => {
+    for (
+      const [caption, piecesVariations, options, algorithms] of digestCases
+    ) {
+      const expected = algorithms[algorithm];
+      for (const [i, pieces] of piecesVariations.entries()) {
+        const bytePieces = pieces.map((piece) =>
+          typeof piece === "string" ? new TextEncoder().encode(piece) : piece
+        ) as Array<BufferSource>;
+        try {
+          const actual = toHexString(
+            await stdCrypto.subtle.digest({
+              ...options,
+              name: algorithm,
+            }, bytePieces),
+          );
+          assertEquals(
+            expected,
+            actual,
+            `${algorithm} of ${caption} (variation ${i}) with options ${
+              JSON.stringify(options)
+            }) returned unexpected value\n  actual: ${actual}\nexpected: ${expected}`,
+          );
+        } catch (error) {
+          if (expected instanceof Function) {
+            assert(
+              error instanceof expected,
+              `got a different error than expected: ${error}`,
+            );
+          } else {
+            throw error;
+          }
+        }
+      }
+    }
+  });
+}
+
+const toHexString = (bytes: ArrayBuffer): string =>
+  new Uint8Array(bytes).reduce(
+    (str, byte) => str + byte.toString(16).padStart(2, "0"),
+    "",
+  );
