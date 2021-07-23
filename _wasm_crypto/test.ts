@@ -3,7 +3,7 @@ import { assertEquals } from "../testing/asserts.ts";
 
 import { crypto as wasmCrypto } from "./mod.ts";
 import { _wasmBytes as wasmBytes } from "./crypto.js";
-import * as wasmFileModule from "./crypto.wasm.ts";
+import * as wasmFileModule from "./crypto.wasm.js";
 
 const webCrypto = globalThis.crypto;
 
