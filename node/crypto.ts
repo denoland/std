@@ -72,11 +72,7 @@ export class Hash extends Transform {
       this.#context = algorithm;
     }
 
-    const context = typeof algorithm === "string"
-      ? new wasmCrypto.DigestContext(algorithm)
-      : algorithm;
-
-    this.#context = context;
+    const context = this.#context;
   }
 
   copy(): Hash {
