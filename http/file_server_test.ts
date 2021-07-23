@@ -756,6 +756,8 @@ Deno.test(
   },
 );
 
+
+
 Deno.test(
   "file_server sets `accept-ranges` header to `bytes` for file responses",
   async () => {
@@ -767,66 +769,61 @@ Deno.test(
     } finally {
       await killFileServer();
     }
-  },
+  }
 );
 
-Deno.test(
-  "file_server sets `content-length` header correctly",
-  async () => {
-    await startFileServer();
-    try {
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-      const contentLength = await getTestFileSize();
-      assertEquals(res.headers.get("content-length"), contentLength.toString());
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
+Deno.test("file_server sets `content-length` header correctly", async () => {
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+    const contentLength = await getTestFileSize();
+    assertEquals(res.headers.get("content-length"), contentLength.toString());
+    await res.text(); // Consuming the body so that the test doesn't leak resources
+  } finally {
+    await killFileServer();
+  }
+});
 
-Deno.test(
-  "file_server sets `Last-Modified` header correctly",
-  async () => {
-    await startFileServer();
-    try {
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+Deno.test("file_server sets `Last-Modified` header correctly", async () => {
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
 
-      const lastModifiedHeader = res.headers.get("last-modified") as string;
-      const lastModifiedTime = Date.parse(lastModifiedHeader);
+    const lastModifiedHeader = res.headers.get("last-modified") as string;
+    const lastModifiedTime = Date.parse(lastModifiedHeader);
 
-      const fileInfo = await getTestFileStat();
-      const expectedTime = (fileInfo.mtime && fileInfo.mtime instanceof Date
+    const fileInfo = await getTestFileStat();
+    const expectedTime =
+      fileInfo.mtime && fileInfo.mtime instanceof Date
         ? fileInfo.mtime.getTime()
-        : Number.NaN);
+        : Number.NaN;
 
-      const round = (d: number) =>
-        Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
-      assertEquals(round(lastModifiedTime), round(expectedTime));
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
+    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
+    assertEquals(round(lastModifiedTime), round(expectedTime));
+    await res.text(); // Consuming the body so that the test doesn't leak resources
+  } finally {
+    await killFileServer();
+  }
+});
 
-Deno.test(
-  "file_server sets `Date` header correctly",
-  async () => {
-    await startFileServer();
-    try {
-      const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
-      const now = Date.now();
-      const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-      const dateHeader = res.headers.get("date") as string;
-      const date = Date.parse(dateHeader);
-      assertEquals(round(date), round(now));
-      await res.text(); // Consuming the body so that the test doesn't leak resources
-    } finally {
-      await killFileServer();
-    }
-  },
-);
+Deno.test("file_server sets `Date` header correctly", async () => {
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+    const dateHeader = res.headers.get("date") as string;
+    const date = Date.parse(dateHeader);
+    const fileInfo = await getTestFileStat();
+    const expectedTime =
+      fileInfo.mtime && fileInfo.mtime instanceof Date
+        ? fileInfo.mtime.getTime()
+        : Number.NaN;
+    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
+    assertEquals(round(date), round(expectedTime));
+    await res.text(); // Consuming the body so that the test doesn't leak resources
+  } finally {
+    await killFileServer();
+  }
+});
 
 Deno.test(
   "file_server file responses includes correct etag",
