@@ -30,6 +30,10 @@ object | undefined {
         target[key] = new Date(value);
         return;
       }
+      if (value instanceof RegExp) {
+        target[key] = new RegExp(value);
+        return;
+      }
       if (!value || typeof value !== `object`) {
         target[key] = value;
         return;
