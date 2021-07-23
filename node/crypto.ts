@@ -17,7 +17,7 @@ const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
     return data;
   } else if (typeof data === "string") {
-    // This assumes UTF-8, which is probably not safe.
+    // This assumes UTF-8, which may not be correct.
     return new TextEncoder().encode(data);
   } else if (ArrayBuffer.isView(data)) {
     return new Uint8Array(
@@ -134,6 +134,7 @@ export class Hash extends Transform {
 const opensslToWebCryptoDigestNames: Record<string, DigestAlgorithm> = {
   "BLAKE2B512": "BLAKE2B",
   "BLAKE2S256": "BLAKE2S",
+  "RIPEMD160": "RIPEMD-160",
   "RMD160": "RIPEMD-160",
   "SHA1": "SHA-1",
   "SHA224": "SHA-224",

@@ -23,7 +23,8 @@ type Algorithms =
   | "sha512";
 
 const createHasher = (algorithm: string) =>
-  (value: Uint8Array) => createHash(algorithm).update(value).digest() as Buffer;
+  (value: Uint8Array) =>
+    Buffer.from(createHash(algorithm).update(value).digest() as Buffer);
 
 function getZeroes(zeros: number) {
   return Buffer.alloc(zeros);
