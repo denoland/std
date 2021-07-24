@@ -1,4 +1,5 @@
 #!/usr/bin/env -S deno run
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import {
   bench,
   runBenchmarks,

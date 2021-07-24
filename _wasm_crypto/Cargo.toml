@@ -1,3 +1,5 @@
+# Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
 [package]
 edition = "2018"
 name = "deno_std_wasm_crypto"
