@@ -15,7 +15,7 @@ export interface ArgParsingOptions {
    * the result `['--']` with everything after the `--`. Here's an example:
    *
    *      // $ deno run example.ts -- a arg1
-   *      import { parse } from "https://deno.land/std/flags/mod.ts";
+   *      import { parse } from "./mod.ts";
    *      console.dir(parse(Deno.args, { "--": false }));
    *      // output: { _: [ "a", "arg1" ] }
    *      console.dir(parse(Deno.args, { "--": true }));
