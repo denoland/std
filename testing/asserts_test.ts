@@ -164,7 +164,7 @@ Deno.test("testingEqual", function (): void {
   );
   assert(!equal({ hello: "world" }, new WeakRef({ hello: "world" })));
   assert(
-    equal(
+    !equal(
       new WeakRef({ hello: "world" }),
       // deno-lint-ignore ban-types
       new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
@@ -177,6 +177,16 @@ Deno.test("testingEqual", function (): void {
       new (class<T extends object> extends WeakRef<T> {
         foo = "bar";
       })({ hello: "world" }),
+    ),
+  );
+  assert(
+    !equal(
+      new class A {
+        private hello = "world";
+      }(),
+      new class B {
+        private hello = "world";
+      }(),
     ),
   );
 });

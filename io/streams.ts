@@ -189,7 +189,7 @@ export interface ReadableStreamFromReaderOptions {
  * An example converting a `Deno.File` into a readable stream:
  *
  * ```ts
- * import { readableStreamFromReader } from "https://deno.land/std/io/mod.ts";
+ * import { readableStreamFromReader } from "./mod.ts";
  *
  * const file = await Deno.open("./file.txt", { read: true });
  * const fileStream = readableStreamFromReader(file);
