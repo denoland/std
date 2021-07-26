@@ -1,3 +1,16 @@
+### 0.103.0 / 2021.07.26
+
+- feat(async): add status to deferred promises (#1047)
+- feat(http): add range request and etag support to `file_server.ts` (#1028)
+- fix(async/deferred): rename .status -> .state (#1055)
+- fix(encoding/base64url): throw TypeError in case of invalid base64url string
+  (#1040)
+- fix(encoding/toml): fix inline table and nested array (#1042)
+- fix(encoding/yaml): fix `parseAll` type definition by using overloads (#1048)
+- fix(testing): `assertThrowsAsync` always reporting `Error` instead of actual
+  error class (#1051)
+- fix(testing/asserts): cater for different class constructor functions (#1000)
+
 ### 0.102.0 / 2021.07.19
 
 - feat: Add std/collections (#993)
