@@ -1049,3 +1049,18 @@ Deno.test("Assert Throws Async Parent Error", () => {
     "Fail!",
   );
 });
+
+Deno.test("Assert Throws Async promise rejected with custom Error", async () => {
+  class CustomError extends Error {}
+  class AnotherCustomError extends Error {}
+  await assertThrowsAsync(
+    () =>
+      assertThrowsAsync(
+        () => Promise.reject(new AnotherCustomError("failed")),
+        CustomError,
+        "fail",
+      ),
+    AssertionError,
+    'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
+  );
+});
