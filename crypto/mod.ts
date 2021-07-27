@@ -196,7 +196,10 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
         ) {
           const context = new wasmCrypto.DigestContext(name);
           for await (const chunk of data as AsyncIterable<BufferSource>) {
-            const chunkBytes = bufferSourceBytes(chunk)!;
+            const chunkBytes = bufferSourceBytes(chunk);
+            if (!chunkBytes) {
+              throw new TypeError("data contained chunk of the wrong type");
+            }
             context.update(chunkBytes);
           }
           return context.digestAndDrop(length);
@@ -236,7 +239,10 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
       } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
         const context = new wasmCrypto.DigestContext(algorithm.name);
         for (const chunk of data as Iterable<BufferSource>) {
-          const chunkBytes = bufferSourceBytes(chunk)!;
+          const chunkBytes = bufferSourceBytes(chunk);
+          if (!chunkBytes) {
+            throw new TypeError("data contained chunk of the wrong type");
+          }
           context.update(chunkBytes);
         }
         return context.digestAndDrop(algorithm.length);

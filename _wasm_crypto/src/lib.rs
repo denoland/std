@@ -19,7 +19,7 @@ pub fn digest(
   data: js_sys::Uint8Array,
   length: Option<usize>,
 ) -> Result<Box<[u8]>, JsValue> {
-  let mut context = DigestContext::new(&algorithm)?;
+  let mut context = DigestContext::new(algorithm)?;
   context.update(data)?;
   context.digest_and_drop(length)
 }
@@ -36,9 +36,9 @@ impl DigestContext {
   ///
   /// An error will be thrown if `algorithm` is not a supported hash algorithm.
   #[wasm_bindgen(constructor)]
-  pub fn new(algorithm: &str) -> Result<DigestContext, JsValue> {
+  pub fn new(algorithm: String) -> Result<DigestContext, JsValue> {
     Ok(
-      digest::Context::new(algorithm)
+      digest::Context::new(&algorithm)
         .map_err(|message| JsValue::from(js_sys::TypeError::new(message)))?
         .into(),
     )
@@ -151,7 +151,7 @@ impl DigestContext {
     Ok(())
   }
 
-  /// Returns a new DigestContext that is a copy of this one, i.e., using the
+  /// Returns a new `DigestContext` that is a copy of this one, i.e., using the
   /// same algorithm and with a copy of the same internal state.
   ///
   /// This may be a more efficient option for computing multiple digests that
