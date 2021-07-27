@@ -13,7 +13,7 @@ function findLastIndexTest<I>(
 }
 
 Deno.test({
-  name: "[collections/findLast] empty input",
+  name: "[collections/findLastIndex] empty input",
   fn() {
     findLastIndexTest([[], (_) => true], -1);
   },
@@ -28,9 +28,20 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/findLast] only match",
+  name: "[collections/findLastIndex] only match",
   fn() {
     findLastIndexTest([[9, 12, 13], (it) => it % 2 === 0], 1);
     findLastIndexTest([["zap", "foo", "bar"], (it) => it.startsWith("z")], 0);
+  },
+});
+
+Deno.test({
+  name: "[collections/findLastIndex] multiple matches",
+  fn() {
+    findLastIndexTest([[0, 1, 2, 3, 4, 5, 6], (it) => it % 2 === 0], 6);
+    findLastIndexTest(
+      [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], (it) => it % 2 === 0],
+      8,
+    );
   },
 });
