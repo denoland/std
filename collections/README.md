@@ -129,6 +129,18 @@ const lastEvenNumber = findLast(numbers, (it) => it % 2 === 0);
 console.assert(lastEvenNumber === 2);
 ```
 
+## findLastIndex
+
+Returns the index of the last element in the given array matching the given
+predicate.
+
+```ts
+const numbers = [0, 1, 2, 3, 4, 5, 6];
+const lastIndexEvenNumber = findLastIndex(numbers, (it) => it % 2 === 0);
+
+console.assert(lastIndexEvenNumber === 6);
+```
+
 ## groupBy
 
 Applies the given selector to each element in the given array, returning a
