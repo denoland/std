@@ -5,7 +5,7 @@ import { findLastIndex } from "./find_last_index.ts";
 
 function findLastIndexTest<I>(
   input: [Array<I>, (element: I) => boolean],
-  expected: number,
+  expected: number | undefined,
   message?: string,
 ) {
   const actual = findLastIndex(...input);
@@ -15,15 +15,15 @@ function findLastIndexTest<I>(
 Deno.test({
   name: "[collections/findLastIndex] empty input",
   fn() {
-    findLastIndexTest([[], (_) => true], -1);
+    findLastIndexTest([[], (_) => true], undefined);
   },
 });
 
 Deno.test({
   name: "[collections/findLastIndex] no matches",
   fn() {
-    findLastIndexTest([[9, 11, 13], (it) => it % 2 === 0], -1);
-    findLastIndexTest([["foo", "bar"], (it) => it.startsWith("z")], -1);
+    findLastIndexTest([[9, 11, 13], (it) => it % 2 === 0], undefined);
+    findLastIndexTest([["foo", "bar"], (it) => it.startsWith("z")], undefined);
   },
 });
 
