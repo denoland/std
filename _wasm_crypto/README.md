@@ -22,5 +22,4 @@ cargo install -f wasm-bindgen-cli --version 0.2.74
 deno run --allow-all ./_build.ts
 ```
 
-This will regenerate `./wasm_file.ts` and `./wasm_bindings.ts` from the Rust
-source.
+This will regenerate `./crypto.js` and `./crypto.wasm.ts` from the Rust source.
