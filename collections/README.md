@@ -270,3 +270,16 @@ console.assert(
   ],
 );
 ```
+
+## without 
+
+Returns an array excluding all given values.
+
+```ts
+import { without } from "./without.ts";
+
+const numbers = [];
+const withoutList = without([2, 1, 2, 3], 1, 2);
+
+console.assert(withoutList === [ 3 ])
+```
