@@ -4,7 +4,7 @@
 const LARGE_ARRAY_SIZE = 200;
 
 /**
- * Returns an array excluding all given values using SameValueZero for equality comparisons.
+ * Returns an array excluding all given values.
  *
  * Example:
  *
@@ -13,7 +13,7 @@ const LARGE_ARRAY_SIZE = 200;
  *
  * const withoutList = without([2, 1, 2, 3], 1, 2);
  *
- * console.assert(withoutList === [ 1, 2 ])
+ * console.assert(withoutList === [ 3 ])
  * ```
  */
 export function without<T>(
