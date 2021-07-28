@@ -1,18 +1,4 @@
-/** Deep merge options */
-interface deepMergeOptions {
-  /** Merging strategy for arrays */
-  arrays?: "replace" | "concat";
-  /** Merging strategy for Maps */
-  maps?: "replace" | "concat";
-  /** Merging strategy for Sets */
-  sets?: "replace" | "concat";
-  /** Whether to include non enumerable properties */
-  includeNonEnumerable?: boolean;
-}
-
-//TypeScript does not support 'symbol' as index type currently though it's perfectly valid
-//deno-lint-ignore no-explicit-any
-type propertyKey = any;
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
  * Merges the two given Records, recursively merging any nested Records with the second collection overriding the first in case of conflict
@@ -112,3 +98,19 @@ function isMergeable<T>(value: unknown): value is T {
   }
   return typeof value === "object";
 }
+
+/** Deep merge options */
+interface deepMergeOptions {
+  /** Merging strategy for arrays */
+  arrays?: "replace" | "concat";
+  /** Merging strategy for Maps */
+  maps?: "replace" | "concat";
+  /** Merging strategy for Sets */
+  sets?: "replace" | "concat";
+  /** Whether to include non enumerable properties */
+  includeNonEnumerable?: boolean;
+}
+
+//TypeScript does not support 'symbol' as index type currently though it's perfectly valid
+//deno-lint-ignore no-explicit-any
+type propertyKey = any;
