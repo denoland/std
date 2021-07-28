@@ -7,7 +7,9 @@
   *
   * Example:
   *
-  * ```typescript
+  * ```ts
+  * import { associateBy } from "./associate_by.ts"
+  *
   * const users = [
   *     { id: 'a2e', userName: 'Anna' },
   *     { id: '5f8', userName: 'Arnold' },
