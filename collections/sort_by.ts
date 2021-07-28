@@ -5,7 +5,9 @@
  *
  * Example:
  *
- * ```typescript
+ * ```ts
+ * import { sortBy } from "./sort_by.ts"
+ *
  * const people = [
  *     { name: 'Anna', age: 34 },
  *     { name: 'Kim', age: 42 },
