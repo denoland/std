@@ -1,9 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Merges the two given Records, recursively merging any nested Records with the second collection overriding the first in case of conflict
+ * Merges the two given Records, recursively merging any nested Records with
+ * the second collection overriding the first in case of conflict
  *
- * For arrays, maps and sets, a merging strategy can be specified to either "replace" values, or "concat" them instead.
+ * For arrays, maps and sets, a merging strategy can be specified to either
+ * "replace" values, or "concat" them instead.
  * Use "includeNonEnumerable" option to include non enumerable properties too.
  */
 export function deepMerge<
@@ -19,17 +21,17 @@ export function deepMerge<
     includeNonEnumerable = false,
   }: deepMergeOptions = {},
 ): T & U {
-  //Extract property and symbols
+  // Extract property and symbols
   const keys = [
     ...Object.getOwnPropertyNames(other),
     ...Object.getOwnPropertySymbols(other),
   ].filter((key) => includeNonEnumerable || other.propertyIsEnumerable(key));
 
-  //Iterate through each key of other object and use correct merging strategy
+  // Iterate through each key of other object and use correct merging strategy
   for (const key of keys as propertyKey[]) {
     const a = collection[key], b = other[key];
 
-    //Handle arrays
+    // Handle arrays
     if ((Array.isArray(a)) && (Array.isArray(b))) {
       if (arrays === "concat") {
         collection[key] = a.concat(...b);
@@ -39,7 +41,7 @@ export function deepMerge<
       continue;
     }
 
-    //Handle maps
+    // Handle maps
     if ((a instanceof Map) && (b instanceof Map)) {
       if (maps === "concat") {
         for (const [k, v] of b.entries()) {
@@ -51,7 +53,7 @@ export function deepMerge<
       continue;
     }
 
-    //Handle sets
+    // Handle sets
     if ((a instanceof Set) && (b instanceof Set)) {
       if (sets === "concat") {
         for (const v of b.values()) {
@@ -63,13 +65,13 @@ export function deepMerge<
       continue;
     }
 
-    //Recursively merge mergeable objects
+    // Recursively merge mergeable objects
     if (isMergeable<T | U>(a) && isMergeable<T | U>(b)) {
       collection[key] = deepMerge(a ?? {}, b);
       continue;
     }
 
-    //Override value
+    // Override value
     collection[key] = b;
   }
 
@@ -81,18 +83,18 @@ export function deepMerge<
  * Builtins object like, null and user classes are not considered mergeable
  */
 function isMergeable<T>(value: unknown): value is T {
-  //Ignore null
+  // Ignore null
   if (value === null) {
     return false;
   }
-  //Ignore builtins
+  // Ignore builtins
   if (
     (value instanceof RegExp) || (value instanceof Date) ||
     (value instanceof Array)
   ) {
     return false;
   }
-  //Ignore classes
+  // Ignore classes
   if ((typeof value === "object") && ("constructor" in value!)) {
     return !/^class /.test(value.constructor.toString());
   }
@@ -111,6 +113,7 @@ interface deepMergeOptions {
   includeNonEnumerable?: boolean;
 }
 
-//TypeScript does not support 'symbol' as index type currently though it's perfectly valid
-//deno-lint-ignore no-explicit-any
+// TypeScript does not support 'symbol' as index type currently though
+// it's perfectly valid
+// deno-lint-ignore no-explicit-any
 type propertyKey = any;
