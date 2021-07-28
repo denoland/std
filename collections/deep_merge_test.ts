@@ -164,6 +164,9 @@ Deno.test("deepMerge: primitive types handling", () => {
     async async() {},
     arrow: () => {},
     class: new CustomClass(),
+    get get() {
+      return true;
+    },
   };
   assertEquals(
     deepMerge({
@@ -181,6 +184,7 @@ Deno.test("deepMerge: primitive types handling", () => {
       async: async function () {},
       arrow: () => {},
       class: null,
+      get: false,
     }, expected),
     expected,
   );
@@ -262,4 +266,49 @@ Deno.test("deepMerge: sets merge (concat)", () => {
       set: new Set(["foo", "bar"]),
     },
   );
+});
+
+Deno.test("deepMerge: complex test", () => {
+  assertEquals(
+    deepMerge({
+      foo: {
+        bar: {
+          quux: new Set(["foo"]),
+          grault: {},
+        },
+      },
+    }, {
+      foo: {
+        bar: {
+          baz: true,
+          qux: [1, 2],
+          grault: {
+            garply: false,
+          },
+        },
+        corge: "deno",
+        [Symbol.for("deepmerge.test")]: true,
+      },
+    }),
+    {
+      foo: {
+        bar: {
+          quux: new Set(["foo"]),
+          baz: true,
+          qux: [1, 2],
+          grault: {
+            garply: false,
+          },
+        },
+        corge: "deno",
+        [Symbol.for("deepmerge.test")]: true,
+      },
+    },
+  );
+});
+
+Deno.test("deepMerge: handle circular references", () => {
+  const expected = { foo: true } as { foo: boolean; bar: unknown };
+  expected.bar = expected;
+  assertEquals(deepMerge({}, expected), expected);
 });
