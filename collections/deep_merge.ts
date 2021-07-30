@@ -5,22 +5,53 @@
  * the second collection overriding the first in case of conflict
  *
  * For arrays, maps and sets, a merging strategy can be specified to either
- * "replace" values, or "concat" them instead.
+ * "replace" values, or "merge" them instead.
  * Use "includeNonEnumerable" option to include non enumerable properties too.
+ *
+ * Example:
+ *
+ * ```ts
+ * import { deepMerge } from "./deep_merge.ts";
+ * import { assertEquals } from "../testing/assert.ts";
+ *
+ * const a = {foo: true}
+ * const b = {foo: {bar: true}}
+ *
+ * assertEquals(deepMerge(a, b), {foo: {bar: true}});
+ * ```
  */
+export function deepMerge<
+  T extends Record<PropertyKey, unknown>,
+>(
+  object: Partial<T>,
+  other: Partial<T>,
+  options?: DeepMergeOptions,
+): T;
+
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
   U extends Record<PropertyKey, unknown>,
 >(
-  collection: T,
+  object: T,
+  other: U,
+  options?: DeepMergeOptions,
+): T;
+
+export function deepMerge<
+  T extends Record<PropertyKey, unknown>,
+  U extends Record<PropertyKey, unknown>,
+>(
+  object: T,
   other: U,
   {
-    arrays = "replace",
-    maps = "replace",
-    sets = "replace",
+    arrays = "merge",
+    maps = "merge",
+    sets = "merge",
     includeNonEnumerable = false,
-  }: deepMergeOptions = {},
+  }: DeepMergeOptions = {},
 ): T & U {
+  const result = object;
+
   // Extract property and symbols
   const keys = [
     ...Object.getOwnPropertyNames(other),
@@ -28,54 +59,54 @@ export function deepMerge<
   ].filter((key) => includeNonEnumerable || other.propertyIsEnumerable(key));
 
   // Iterate through each key of other object and use correct merging strategy
-  for (const key of keys as propertyKey[]) {
-    const a = collection[key], b = other[key];
+  for (const key of keys as PropertyKeys) {
+    const a = result[key], b = other[key];
 
     // Handle arrays
     if ((Array.isArray(a)) && (Array.isArray(b))) {
-      if (arrays === "concat") {
-        collection[key] = a.concat(...b);
+      if (arrays === "merge") {
+        result[key] = a.concat(...b);
       } else {
-        collection[key] = b;
+        result[key] = b;
       }
       continue;
     }
 
     // Handle maps
     if ((a instanceof Map) && (b instanceof Map)) {
-      if (maps === "concat") {
+      if (maps === "merge") {
         for (const [k, v] of b.entries()) {
           a.set(k, v);
         }
       } else {
-        collection[key] = b;
+        result[key] = b;
       }
       continue;
     }
 
     // Handle sets
     if ((a instanceof Set) && (b instanceof Set)) {
-      if (sets === "concat") {
+      if (sets === "merge") {
         for (const v of b.values()) {
           a.add(v);
         }
       } else {
-        collection[key] = b;
+        result[key] = b;
       }
       continue;
     }
 
     // Recursively merge mergeable objects
     if (isMergeable<T | U>(a) && isMergeable<T | U>(b)) {
-      collection[key] = deepMerge(a ?? {}, b);
+      result[key] = deepMerge(a ?? {}, b);
       continue;
     }
 
     // Override value
-    collection[key] = b;
+    result[key] = b;
   }
 
-  return collection as T & U;
+  return result as T & U;
 }
 
 /**
@@ -87,33 +118,26 @@ function isMergeable<T>(value: unknown): value is T {
   if (value === null) {
     return false;
   }
-  // Ignore builtins
-  if (
-    (value instanceof RegExp) || (value instanceof Date) ||
-    (value instanceof Array)
-  ) {
-    return false;
-  }
-  // Ignore classes
+  // Ignore builtins and classes
   if ((typeof value === "object") && ("constructor" in value!)) {
-    return !/^class /.test(value.constructor.toString());
+    return Object.getPrototypeOf(value) === Object.prototype;
   }
   return typeof value === "object";
 }
 
 /** Deep merge options */
-interface deepMergeOptions {
+export type DeepMergeOptions = {
   /** Merging strategy for arrays */
-  arrays?: "replace" | "concat";
+  arrays?: "replace" | "merge";
   /** Merging strategy for Maps */
-  maps?: "replace" | "concat";
+  maps?: "replace" | "merge";
   /** Merging strategy for Sets */
-  sets?: "replace" | "concat";
+  sets?: "replace" | "merge";
   /** Whether to include non enumerable properties */
   includeNonEnumerable?: boolean;
-}
+};
 
 // TypeScript does not support 'symbol' as index type currently though
 // it's perfectly valid
 // deno-lint-ignore no-explicit-any
-type propertyKey = any;
+type PropertyKeys = any[];

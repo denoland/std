@@ -196,20 +196,20 @@ Deno.test("deepMerge: array merge (replace)", () => {
       foo: [1, 2, 3],
     }, {
       foo: [4, 5, 6],
-    }),
+    }, { arrays: "replace" }),
     {
       foo: [4, 5, 6],
     },
   );
 });
 
-Deno.test("deepMerge: array merge (concat)", () => {
+Deno.test("deepMerge: array merge (merge)", () => {
   assertEquals(
     deepMerge({
       foo: [1, 2, 3],
     }, {
       foo: [4, 5, 6],
-    }, { arrays: "concat" }),
+    }, { arrays: "merge" }),
     {
       foo: [1, 2, 3, 4, 5, 6],
     },
@@ -222,20 +222,20 @@ Deno.test("deepMerge: maps merge (replace)", () => {
       map: new Map([["foo", true]]),
     }, {
       map: new Map([["bar", true]]),
-    }),
+    }, { maps: "replace" }),
     {
       map: new Map([["bar", true]]),
     },
   );
 });
 
-Deno.test("deepMerge: maps merge (concat)", () => {
+Deno.test("deepMerge: maps merge (merge)", () => {
   assertEquals(
     deepMerge({
       map: new Map([["foo", true]]),
     }, {
       map: new Map([["bar", true]]),
-    }, { maps: "concat" }),
+    }, { maps: "merge" }),
     {
       map: new Map([["foo", true], ["bar", true]]),
     },
@@ -248,20 +248,20 @@ Deno.test("deepMerge: sets merge (replace)", () => {
       set: new Set(["foo"]),
     }, {
       set: new Set(["bar"]),
-    }),
+    }, { sets: "replace" }),
     {
       set: new Set(["bar"]),
     },
   );
 });
 
-Deno.test("deepMerge: sets merge (concat)", () => {
+Deno.test("deepMerge: sets merge (merge)", () => {
   assertEquals(
     deepMerge({
       set: new Set(["foo"]),
     }, {
       set: new Set(["bar"]),
-    }, { sets: "concat" }),
+    }, { sets: "merge" }),
     {
       set: new Set(["foo", "bar"]),
     },

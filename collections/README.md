@@ -30,6 +30,25 @@ console.assert(
 );
 ```
 
+## deepMerge
+
+Merges the two given Records, recursively merging any nested Records with the
+second collection overriding the first in case of conflict
+
+For arrays, maps and sets, a merging strategy can be specified to either
+`replace` values, or `merge` them instead. Use `includeNonEnumerable` option to
+include non enumerable properties too.
+
+```ts
+import { deepMerge } from "./deep_merge.ts";
+import { assertEquals } from "../testing/assert.ts";
+
+const a = { foo: true };
+const b = { foo: { bar: true } };
+
+assertEquals(deepMerge(a, b), { foo: { bar: true } });
+```
+
 ## distinctBy
 
 Returns all elements in the given array that produce a distinct value using the
