@@ -286,8 +286,14 @@ export async function serveFile(
     headers.set("etag", simpleEtag);
 
     // If a `if-node-match` header is present and the value matches the tag return 304
+    // If a `if-modified-since` header is present and the value is bigger than
+    // the access timestamp value return 304
     const ifNoneMatch = req.headers.get("if-none-match");
-    if (ifNoneMatch && ifNoneMatch === simpleEtag) {
+    const ifModifiedSince = req.headers.get("if-modified-since");
+    if (
+      (ifNoneMatch && ifNoneMatch === simpleEtag) || (ifModifiedSince &&
+        fileInfo.mtime.getTime() < (new Date(ifModifiedSince).getTime() + 1000))
+    ) {
       response.status = 304;
       response.statusText = "Not Modified";
       return response;
