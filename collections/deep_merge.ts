@@ -12,7 +12,7 @@
  *
  * ```ts
  * import { deepMerge } from "./deep_merge.ts";
- * import { assertEquals } from "../testing/assert.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const a = {foo: true}
  * const b = {foo: {bar: true}}
