@@ -15,7 +15,7 @@
   *     { id: '5f8', userName: 'Arnold' },
   *     { id: 'd2c', userName: 'Kim' },
   * ]
-  * const usersById = associateBy(people, it => it.id)
+  * const usersById = associateBy(users, it => it.id)
   *
   * console.assert(usersById === {
   *     'a2e': { id: 'a2e', userName: 'Anna' },
