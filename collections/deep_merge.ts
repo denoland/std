@@ -23,7 +23,7 @@
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
 >(
-  object: Partial<T>,
+  record: Partial<T>,
   other: Partial<T>,
   options?: DeepMergeOptions,
 ): T;
@@ -32,7 +32,7 @@ export function deepMerge<
   T extends Record<PropertyKey, unknown>,
   U extends Record<PropertyKey, unknown>,
 >(
-  object: T,
+  record: T,
   other: U,
   options?: DeepMergeOptions,
 ): T;
@@ -41,7 +41,7 @@ export function deepMerge<
   T extends Record<PropertyKey, unknown>,
   U extends Record<PropertyKey, unknown>,
 >(
-  object: T,
+  record: T,
   other: U,
   {
     arrays = "merge",
@@ -50,7 +50,7 @@ export function deepMerge<
     includeNonEnumerable = false,
   }: DeepMergeOptions = {},
 ): T & U {
-  const result = object;
+  const result = clone(record, { includeNonEnumerable });
 
   // Extract property and symbols
   const keys = [
@@ -65,7 +65,7 @@ export function deepMerge<
     // Handle arrays
     if ((Array.isArray(a)) && (Array.isArray(b))) {
       if (arrays === "merge") {
-        result[key] = a.concat(...b);
+        (result[key] as typeof a).push(...b);
       } else {
         result[key] = b;
       }
@@ -107,6 +107,47 @@ export function deepMerge<
   }
 
   return result as T & U;
+}
+
+/**
+ * Clone a record
+ * Arrays, maps, sets and objects are cloned so references doesn't point
+ * anymore to those of cloned record
+ */
+function clone<T extends Record<PropertyKey, unknown>>(
+  record: T,
+  { includeNonEnumerable = false } = {},
+) {
+  // Extract property and symbols
+  const keys = [
+    ...Object.getOwnPropertyNames(record),
+    ...Object.getOwnPropertySymbols(record),
+  ].filter((key) => includeNonEnumerable || record.propertyIsEnumerable(key));
+
+  // Build cloned record
+  const cloned = {} as T;
+  for (const key of keys as PropertyKeys) {
+    const v = record[key];
+    if (Array.isArray(v)) {
+      cloned[key] = [...v];
+      continue;
+    }
+    if (v instanceof Map) {
+      cloned[key] = new Map(v);
+      continue;
+    }
+    if (v instanceof Set) {
+      cloned[key] = new Set(v);
+      continue;
+    }
+    if (isMergeable<Record<PropertyKey, unknown>>(v)) {
+      cloned[key] = clone(v);
+      continue;
+    }
+    cloned[key] = v;
+  }
+
+  return cloned;
 }
 
 /**

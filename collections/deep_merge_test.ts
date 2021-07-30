@@ -312,3 +312,37 @@ Deno.test("deepMerge: handle circular references", () => {
   expected.bar = expected;
   assertEquals(deepMerge({}, expected), expected);
 });
+
+Deno.test("deepMerge: target object is not modified", () => {
+  const record = {
+    foo: {
+      bar: true,
+    },
+    baz: [1, 2, 3],
+    quux: new Set([1, 2, 3]),
+  };
+  assertEquals(
+    deepMerge(record, {
+      foo: {
+        qux: false,
+      },
+      baz: [4, 5, 6],
+      quux: new Set([4, 5, 6]),
+    }, { arrays: "merge", sets: "merge" }),
+    {
+      foo: {
+        bar: true,
+        qux: false,
+      },
+      baz: [1, 2, 3, 4, 5, 6],
+      quux: new Set([1, 2, 3, 4, 5, 6]),
+    },
+  );
+  assertEquals(record, {
+    foo: {
+      bar: true,
+    },
+    baz: [1, 2, 3],
+    quux: new Set([1, 2, 3]),
+  });
+});
