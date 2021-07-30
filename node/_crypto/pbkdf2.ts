@@ -1,5 +1,5 @@
-import { createHash } from "../../hash/mod.ts";
 import { Buffer } from "../buffer.ts";
+import { createHash } from "../crypto.ts";
 import { MAX_ALLOC } from "./constants.ts";
 import { HASH_DATA } from "./types.ts";
 
@@ -22,20 +22,14 @@ type Algorithms =
   | "sha384"
   | "sha512";
 
-function createHasher(alg: Algorithms) {
-  let normalizedAlg: NormalizedAlgorithms;
-  if (alg === "rmd160") {
-    normalizedAlg = "ripemd160";
-  } else {
-    normalizedAlg = alg;
-  }
-  return (value: Uint8Array) =>
-    Buffer.from(createHash(normalizedAlg).update(value).digest());
-}
+const createHasher = (algorithm: string) =>
+  (value: Uint8Array) =>
+    Buffer.from(createHash(algorithm).update(value).digest() as Buffer);
 
 function getZeroes(zeros: number) {
   return Buffer.alloc(zeros);
 }
+
 const sizes = {
   md5: 16,
   sha1: 20,
