@@ -25,13 +25,12 @@
 export function sortBy<T>(
   array: Array<T>,
   selector:
-      | ((el: T) => number)
-      | ((el: T) => string)
-      | ((el: T) => bigint)
-      | ((el: T) => boolean)
-      | ((el: T) => Date),
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
 ): Array<T> {
-  const ret = Array.from(array)
+  const ret = Array.from(array);
 
   return ret.sort((a, b) => {
     const selectedA = selector(a);

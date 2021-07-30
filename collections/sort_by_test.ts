@@ -9,7 +9,6 @@ function sortByTest<T>(
     | ((el: T) => number)
     | ((el: T) => string)
     | ((el: T) => bigint)
-    | ((el: T) => boolean)
     | ((el: T) => Date),
   ],
   expected: Array<T>,
@@ -85,13 +84,6 @@ Deno.test({
         { name: "deploy", stage: 4 },
         { name: "test", stage: 2 },
       ],
-    );
-    sortByTest(
-      [
-        ["ba", "asdf"],
-        (it) => it.length < 3,
-      ],
-      ["asdf", "ba"],
     );
     sortByTest(
       [
