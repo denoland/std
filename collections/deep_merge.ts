@@ -35,7 +35,7 @@ export function deepMerge<
   record: T,
   other: U,
   options?: DeepMergeOptions,
-): T;
+): T & U;
 
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
@@ -65,7 +65,7 @@ export function deepMerge<
     // Handle arrays
     if ((Array.isArray(a)) && (Array.isArray(b))) {
       if (arrays === "merge") {
-        (result[key] as typeof a).push(...b);
+        (result[key] as (typeof a & typeof b)).push(...b);
       } else {
         result[key] = b;
       }
@@ -97,8 +97,8 @@ export function deepMerge<
     }
 
     // Recursively merge mergeable objects
-    if (isMergeable<T | U>(a) && isMergeable<T | U>(b)) {
-      result[key] = deepMerge(a ?? {}, b);
+    if (isMergeable(a) && isMergeable(b)) {
+      result[key] = deepMerge(a, b);
       continue;
     }
 
@@ -140,7 +140,7 @@ function clone<T extends Record<PropertyKey, unknown>>(
       cloned[key] = new Set(v);
       continue;
     }
-    if (isMergeable<Record<PropertyKey, unknown>>(v)) {
+    if (isMergeable(v)) {
       cloned[key] = clone(v);
       continue;
     }
@@ -154,7 +154,9 @@ function clone<T extends Record<PropertyKey, unknown>>(
  * Test whether a value is mergeable or not
  * Builtins object like, null and user classes are not considered mergeable
  */
-function isMergeable<T>(value: unknown): value is T {
+function isMergeable<T extends Record<PropertyKey, unknown>>(
+  value: unknown,
+): value is T {
   // Ignore null
   if (value === null) {
     return false;
