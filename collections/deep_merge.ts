@@ -195,19 +195,19 @@ export type DeepMergeOptions = {
  * else we treat them as primitives
  *
  * In merging process, handled through `Merge<T, U>` type,
- * We remove all maps, sets and arrays as we'll handle them differently.
+ * We remove all maps, sets, arrays and records as we'll handle them differently.
  *
  *    Merge<
  *      {foo: string},
  *      {bar: string, baz: Set<unknown>},
- *    > // "foo" and "bar" will be handled with `MergeRightOmitCollections`
+ *    > // "foo" and "bar" will be handled with `MergeRightOmitComplexs`
  *      // "baz" will be handled with `MergeAll*`
  *
- * The `MergeRightOmitCollections<T, U>` will do so, while keeping T's
+ * The `MergeRightOmitComplexs<T, U>` will do so, while keeping T's
  * exclusive keys, overriding common ones by U's typing instead and
  * adding U's exclusive keys:
  *
- *    MergeRightOmitCollections<
+ *    MergeRightOmitComplexs<
  *      {foo: string, baz: number},
  *      {foo: boolean, bar: string}
  *    > // {baz: number, foo: boolean, bar: string}
@@ -215,7 +215,7 @@ export type DeepMergeOptions = {
  *      // "foo" was overriden by U's typing
  *      // "bar" was added from U
  *
- * Then, for Maps, Arrays and Sets, we use `MergeAll*<T, U>` types.
+ * Then, for Maps, Arrays, Sets and Records, we use `MergeAll*<T, U>` types.
  * They will extract given collections from both T and U (providing that
  * both have a collection for a specific key), retrieve each collection
  * values types (and key types for maps) using `*ValueType<T>`.
@@ -293,10 +293,27 @@ type MergeAllMaps<
   },
 > = Z;
 
-/** Exclude map, sets and array from type */
-type OmitCollections<T> = Omit<
+/** Merge all records types definitions from keys present in both objects */
+type MergeAllRecords<
   T,
-  keyof PartialByType<T, Map<unknown, unknown> | Set<unknown> | Array<unknown>>
+  U,
+  X = PartialByType<T, Record<PropertyKey, unknown>>,
+  Y = PartialByType<U, Record<PropertyKey, unknown>>,
+  Z = {
+    [K in keyof X & keyof Y]: DeepMerge<X[K], Y[K]>;
+  },
+> = Z;
+
+/** Exclude map, sets and array from type */
+type OmitComplexs<T> = Omit<
+  T,
+  keyof PartialByType<
+    T,
+    | Map<unknown, unknown>
+    | Set<unknown>
+    | Array<unknown>
+    | Record<PropertyKey, unknown>
+  >
 >;
 
 /** Object with keys in either T or U but not in both */
@@ -308,10 +325,10 @@ type ObjectXorKeys<
 > = Y;
 
 /** Merge two objects, with left precedence */
-type MergeRightOmitCollections<
+type MergeRightOmitComplexs<
   T,
   U,
-  X = ObjectXorKeys<T, U> & OmitCollections<{ [K in keyof U]: U[K] }>,
+  X = ObjectXorKeys<T, U> & OmitComplexs<{ [K in keyof U]: U[K] }>,
 > = X;
 
 /** Merge two objects */
@@ -319,7 +336,8 @@ type Merge<
   T,
   U,
   X =
-    & MergeRightOmitCollections<T, U>
+    & MergeRightOmitComplexs<T, U>
+    & MergeAllRecords<T, U>
     & MergeAllSets<T, U>
     & MergeAllArrays<T, U>
     & MergeAllMaps<T, U>,
