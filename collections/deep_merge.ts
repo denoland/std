@@ -51,8 +51,8 @@ export function deepMerge<
   }: DeepMergeOptions = {},
 ): DeepMerge<T, U> {
   // Clone left operand to avoid performing mutations in-place
-  type V = DeepMerge<T, U>;
-  const result = clone(record as V, { includeNonEnumerable });
+  type Result = DeepMerge<T, U>;
+  const result = clone(record as Result, { includeNonEnumerable });
 
   // Extract property and symbols
   const keys = [
@@ -60,11 +60,12 @@ export function deepMerge<
     ...Object.getOwnPropertySymbols(other),
   ].filter((key) =>
     includeNonEnumerable || other.propertyIsEnumerable(key)
-  ) as Array<keyof V>;
+  ) as Array<keyof Result>;
 
   // Iterate through each key of other object and use correct merging strategy
   for (const key of keys) {
-    const a = result[key] as V[typeof key], b = other[key] as V[typeof key];
+    const a = result[key] as Result[typeof key],
+      b = other[key] as Result[typeof key];
 
     // Handle arrays
     if ((Array.isArray(a)) && (Array.isArray(b))) {
@@ -102,7 +103,7 @@ export function deepMerge<
 
     // Recursively merge mergeable objects
     if (isMergeable(a) && isMergeable(b)) {
-      result[key] = deepMerge(a, b) as V[typeof key];
+      result[key] = deepMerge(a, b) as Result[typeof key];
       continue;
     }
 
@@ -187,34 +188,147 @@ export type DeepMergeOptions = {
 };
 
 /**
- * DeepMerge typing inspired by Jakub Švehla's solution (@Svehla)
+ * Recursive typings
+ *
+ * Deep merging process is handled through `DeepMerge<T, U>` type.
+ * If both T and U are Records, we recursively merge them,
+ * else we treat them as primitives
+ *
+ * In merging process, handled through `Merge<T, U>` type,
+ * We remove all maps, sets and arrays as we'll handle them differently.
+ *
+ *    Merge<
+ *      {foo: string},
+ *      {bar: string, baz: Set<unknown>},
+ *    > // "foo" and "bar" will be handled with `MergeRightOmitCollections`
+ *      // "baz" will be handled with `MergeAll*`
+ *
+ * The `MergeRightOmitCollections<T, U>` will do so, while keeping T's
+ * exclusive keys, overriding common ones by U's typing instead and
+ * adding U's exclusive keys:
+ *
+ *    MergeRightOmitCollections<
+ *      {foo: string, baz: number},
+ *      {foo: boolean, bar: string}
+ *    > // {baz: number, foo: boolean, bar: string}
+ *      // "baz" was kept from T
+ *      // "foo" was overriden by U's typing
+ *      // "bar" was added from U
+ *
+ * Then, for Maps, Arrays and Sets, we use `MergeAll*<T, U>` types.
+ * They will extract given collections from both T and U (providing that
+ * both have a collection for a specific key), retrieve each collection
+ * values types (and key types for maps) using `*ValueType<T>`.
+ * From extracted values (and keys) types, a new collection with union
+ * typing is made.
+ *
+ *    MergeAllSets<
+ *      {foo: Set<number>},
+ *      {foo: Set<string>}
+ *    > // `SetValueType` will extract "number" for T
+ *      // `SetValueType` will extract "string" for U
+ *      // `MergeAllSets` will infer type as Set<number|string>
+ *      // Process is similar for Maps, Arrays, and Sets
+ *
+ * This should cover most cases.
  */
+
+/** Force intellisense to expand the typing to hide merging typings */
+type ExpandRecursively<T> = T extends Record<PropertyKey, unknown>
+  ? T extends infer O ? { [K in keyof O]: ExpandRecursively<O[K]> } : never
+  : T;
+
+/** Filter of keys matching a given type */
+type PartialByType<T, U> = {
+  [K in keyof T as T[K] extends U ? K : never]: T[K];
+};
+
+/** Get set values type */
+type SetValueType<T> = T extends Set<infer V> ? V : never;
+
+/** Merge all sets types definitions from keys present in both objects */
+type MergeAllSets<
+  T,
+  U,
+  X = PartialByType<T, Set<unknown>>,
+  Y = PartialByType<U, Set<unknown>>,
+  Z = {
+    [K in keyof X & keyof Y]: Set<SetValueType<X[K]> | SetValueType<Y[K]>>;
+  },
+> = Z;
+
+/** Get array values type */
+type ArrayValueType<T> = T extends Array<infer V> ? V : never;
+
+/** Merge all sets types definitions from keys present in both objects */
+type MergeAllArrays<
+  T,
+  U,
+  X = PartialByType<T, Array<unknown>>,
+  Y = PartialByType<U, Array<unknown>>,
+  Z = {
+    [K in keyof X & keyof Y]: Array<
+      ArrayValueType<X[K]> | ArrayValueType<Y[K]>
+    >;
+  },
+> = Z;
+
+/** Get map values types */
+type MapKeyType<T> = T extends Map<infer K, unknown> ? K : never;
+
+/** Get map values types */
+type MapValueType<T> = T extends Map<unknown, infer V> ? V : never;
+
+/** Merge all sets types definitions from keys present in both objects */
+type MergeAllMaps<
+  T,
+  U,
+  X = PartialByType<T, Map<unknown, unknown>>,
+  Y = PartialByType<U, Map<unknown, unknown>>,
+  Z = {
+    [K in keyof X & keyof Y]: Map<
+      MapKeyType<X[K]> | MapKeyType<Y[K]>,
+      MapValueType<X[K]> | MapValueType<Y[K]>
+    >;
+  },
+> = Z;
+
+/** Exclude map, sets and array from type */
+type OmitCollections<T> = Omit<
+  T,
+  keyof PartialByType<T, Map<unknown, unknown> | Set<unknown> | Array<unknown>>
+>;
 
 /** Object with keys in either T or U but not in both */
 type ObjectXorKeys<
   T,
   U,
-  V = Omit<T, keyof U> & Omit<U, keyof T>,
-  W = { [K in keyof V]: V[K] },
-> = W;
+  X = Omit<T, keyof U> & Omit<U, keyof T>,
+  Y = { [K in keyof X]: X[K] },
+> = Y;
 
-/** Object with keys in both T and U */
-type ObjectAndKeys<T, U> = Omit<T | U, keyof ObjectXorKeys<T, U>>;
+/** Merge two objects, with left precedence */
+type MergeRightOmitCollections<
+  T,
+  U,
+  X = ObjectXorKeys<T, U> & OmitCollections<{ [K in keyof U]: U[K] }>,
+> = X;
 
 /** Merge two objects */
 type Merge<
   T,
   U,
-  V =
-    & ObjectXorKeys<T, U>
-    & { [K in keyof ObjectAndKeys<T, U>]: DeepMerge<T[K], U[K]> },
-  W = { [K in keyof V]: V[K] },
-> = W;
+  X =
+    & MergeRightOmitCollections<T, U>
+    & MergeAllSets<T, U>
+    & MergeAllArrays<T, U>
+    & MergeAllMaps<T, U>,
+> = ExpandRecursively<X>;
 
-/** Merge deeply two objects */
+/** Merge deeply two objects (inspired by Jakub Švehla's solution (@Svehla)) */
 export type DeepMerge<T, U> =
   // Handle objects
-  [T, U] extends [{ [key: string]: unknown }, { [key: string]: unknown }]
+  [T, U] extends [Record<PropertyKey, unknown>, Record<PropertyKey, unknown>]
     ? Merge<T, U>
     : // Handle primitives
     T | U;
