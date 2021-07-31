@@ -385,7 +385,7 @@ Deno.test("pbkdf2 hashes data correctly", () => {
         dkLen,
         algorithm as Algorithms,
         (err, res) => {
-          assert(!err);
+          assert(!err, String(err));
           assertEquals(
             res?.toString("hex"),
             results[algorithm as Algorithms],
