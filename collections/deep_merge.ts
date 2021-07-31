@@ -35,7 +35,7 @@ export function deepMerge<
   record: T,
   other: U,
   options?: DeepMergeOptions,
-): T & U;
+): DeepMerge<T, U>;
 
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
@@ -49,23 +49,27 @@ export function deepMerge<
     sets = "merge",
     includeNonEnumerable = false,
   }: DeepMergeOptions = {},
-): T & U {
-  const result = clone(record, { includeNonEnumerable });
+): DeepMerge<T, U> {
+  // Clone left operand to avoid performing mutations in-place
+  type V = DeepMerge<T, U>;
+  const result = clone(record as V, { includeNonEnumerable });
 
   // Extract property and symbols
   const keys = [
     ...Object.getOwnPropertyNames(other),
     ...Object.getOwnPropertySymbols(other),
-  ].filter((key) => includeNonEnumerable || other.propertyIsEnumerable(key));
+  ].filter((key) =>
+    includeNonEnumerable || other.propertyIsEnumerable(key)
+  ) as Array<keyof V>;
 
   // Iterate through each key of other object and use correct merging strategy
-  for (const key of keys as PropertyKeys) {
-    const a = result[key], b = other[key];
+  for (const key of keys) {
+    const a = result[key] as V[typeof key], b = other[key] as V[typeof key];
 
     // Handle arrays
     if ((Array.isArray(a)) && (Array.isArray(b))) {
       if (arrays === "merge") {
-        (result[key] as (typeof a & typeof b)).push(...b);
+        a.push(...b);
       } else {
         result[key] = b;
       }
@@ -98,15 +102,14 @@ export function deepMerge<
 
     // Recursively merge mergeable objects
     if (isMergeable(a) && isMergeable(b)) {
-      result[key] = deepMerge(a, b);
+      result[key] = deepMerge(a, b) as V[typeof key];
       continue;
     }
 
     // Override value
     result[key] = b;
   }
-
-  return result as T & U;
+  return result;
 }
 
 /**
@@ -119,25 +122,28 @@ function clone<T extends Record<PropertyKey, unknown>>(
   { includeNonEnumerable = false } = {},
 ) {
   // Extract property and symbols
+  const cloned = {} as T;
   const keys = [
     ...Object.getOwnPropertyNames(record),
     ...Object.getOwnPropertySymbols(record),
-  ].filter((key) => includeNonEnumerable || record.propertyIsEnumerable(key));
+  ].filter((key) =>
+    includeNonEnumerable || record.propertyIsEnumerable(key)
+  ) as Array<keyof T>;
 
   // Build cloned record
-  const cloned = {} as T;
-  for (const key of keys as PropertyKeys) {
+  for (const key of keys) {
+    type SameType = T[typeof key];
     const v = record[key];
     if (Array.isArray(v)) {
-      cloned[key] = [...v];
+      cloned[key] = [...v] as SameType;
       continue;
     }
     if (v instanceof Map) {
-      cloned[key] = new Map(v);
+      cloned[key] = new Map(v) as SameType;
       continue;
     }
     if (v instanceof Set) {
-      cloned[key] = new Set(v);
+      cloned[key] = new Set(v) as SameType;
       continue;
     }
     if (isMergeable(v)) {
@@ -180,7 +186,35 @@ export type DeepMergeOptions = {
   includeNonEnumerable?: boolean;
 };
 
-// TypeScript does not support 'symbol' as index type currently though
-// it's perfectly valid
-// deno-lint-ignore no-explicit-any
-type PropertyKeys = any[];
+/**
+ * DeepMerge typing inspired by Jakub Švehla's solution (@Svehla)
+ */
+
+/** Object with keys in either T or U but not in both */
+type ObjectXorKeys<
+  T,
+  U,
+  V = Omit<T, keyof U> & Omit<U, keyof T>,
+  W = { [K in keyof V]: V[K] },
+> = W;
+
+/** Object with keys in both T and U */
+type ObjectAndKeys<T, U> = Omit<T | U, keyof ObjectXorKeys<T, U>>;
+
+/** Merge two objects */
+type Merge<
+  T,
+  U,
+  V =
+    & ObjectXorKeys<T, U>
+    & { [K in keyof ObjectAndKeys<T, U>]: DeepMerge<T[K], U[K]> },
+  W = { [K in keyof V]: V[K] },
+> = W;
+
+/** Merge deeply two objects */
+export type DeepMerge<T, U> =
+  // Handle objects
+  [T, U] extends [{ [key: string]: unknown }, { [key: string]: unknown }]
+    ? Merge<T, U>
+    : // Handle primitives
+    T | U;
