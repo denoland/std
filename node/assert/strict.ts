@@ -1,4 +1,4 @@
-import { strict } from "./assert.ts";
+import { strict } from "../assert.ts";
 
 export {
   AssertionError,
@@ -20,7 +20,7 @@ export {
   strictEqual,
   throws,
   // CallTracker
-} from "./assert.ts";
+} from "../assert.ts";
 
 export { strict };
 export default strict;
