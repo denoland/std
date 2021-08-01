@@ -1,26 +1,26 @@
 import { strict } from "./assert.ts";
 
-export const {
-  fail,
+export {
   AssertionError,
-  ok,
-  equal,
-  notEqual,
   deepEqual,
-  notDeepEqual,
   deepStrictEqual,
-  notDeepStrictEqual,
-  strictEqual,
-  notStrictEqual,
-  throws,
-  rejects,
-  doesNotThrow,
-  doesNotReject,
-  ifError,
-  match,
   doesNotMatch,
-  CallTracker,
-} = strict;
+  doesNotReject,
+  doesNotThrow,
+  equal,
+  fail,
+  // ifError,
+  match,
+  notDeepEqual,
+  notDeepStrictEqual,
+  notEqual,
+  notStrictEqual,
+  ok,
+  rejects,
+  strictEqual,
+  throws,
+  // CallTracker
+} from "./assert.ts";
 
 export { strict };
 export default strict;
