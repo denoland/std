@@ -13,7 +13,6 @@ const decoder = new TextDecoder("utf-8");
 Deno.test("Invalid encoding results in error()", function testEncodingErrors() {
   assertThrowsAsync(
     async () => {
-      // @ts-expect-error Type '"made-up-encoding"' is not assignable to type
       await writeFile("some/path", "some data", "made-up-encoding");
     },
     Error,
@@ -22,7 +21,6 @@ Deno.test("Invalid encoding results in error()", function testEncodingErrors() {
   assertThrowsAsync(
     async () => {
       await writeFile("some/path", "some data", {
-        // @ts-expect-error Type '"made-up-encoding"' is not assignable to type
         encoding: "made-up-encoding",
       });
     },
