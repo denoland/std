@@ -1,5 +1,5 @@
-import { promisify } from "./util.ts";
-import * as fs from "./fs.ts";
+import { promisify } from "../util.ts";
+import * as fs from "../fs.ts";
 
 export const access = promisify(fs.access);
 export const copyFile = promisify(fs.copyFile);
