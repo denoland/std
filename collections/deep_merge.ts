@@ -47,7 +47,7 @@ export function deepMerge<
   other: U,
   options?: Options,
 ): DeepMerge<T, U, Options> {
-  //
+  // Extract options
   const {
     arrays = "merge",
     maps = "merge",
@@ -57,7 +57,7 @@ export function deepMerge<
 
   // Clone left operand to avoid performing mutations in-place
   type Result = DeepMerge<T, U, Options>;
-  const result = clone(record as Result, { includeNonEnumerable });
+  const result = clone(record, { includeNonEnumerable }) as Result;
 
   // Extract property and symbols
   const keys = [
@@ -121,7 +121,7 @@ export function deepMerge<
 /**
  * Clone a record
  * Arrays, maps, sets and objects are cloned so references doesn't point
- * anymore to those of cloned record
+ * anymore to those of target record
  */
 function clone<T extends Record<PropertyKey, unknown>>(
   record: T,
@@ -136,7 +136,7 @@ function clone<T extends Record<PropertyKey, unknown>>(
     includeNonEnumerable || record.propertyIsEnumerable(key)
   ) as Array<keyof T>;
 
-  // Build cloned record
+  // Build cloned record, creating new data structure when needed
   for (const key of keys) {
     type SameType = T[typeof key];
     const v = record[key];
@@ -164,7 +164,8 @@ function clone<T extends Record<PropertyKey, unknown>>(
 
 /**
  * Test whether a value is mergeable or not
- * Builtins object like, null and user classes are not considered mergeable
+ * Builtins that look like objects, null and user defined classes
+ * are not considered mergeable (it means that reference will be copied)
  */
 function isMergeable<T extends Record<PropertyKey, unknown>>(
   value: unknown,
@@ -196,24 +197,25 @@ export type DeepMergeOptions = {
 };
 
 /**
- * Recursive typings
+ * How does recursive typing works ?
  *
- * Deep merging process is handled through `DeepMerge<T, U>` type.
+ * Deep merging process is handled through `DeepMerge<T, U, Options>` type.
  * If both T and U are Records, we recursively merge them,
- * else we treat them as primitives
+ * else we treat them as primitives.
  *
- * In merging process, handled through `Merge<T, U>` type,
- * We remove all maps, sets, arrays and records as we'll handle them differently.
+ * Merging process is handled through `Merge<T, U>` type, in which
+ * we remove all maps, sets, arrays and records so we can handle them
+ * separately depending on merging strategy:
  *
  *    Merge<
  *      {foo: string},
  *      {bar: string, baz: Set<unknown>},
  *    > // "foo" and "bar" will be handled with `MergeRightOmitComplexs`
- *      // "baz" will be handled with `MergeAll*`
+ *      // "baz" will be handled with `MergeAll*` type
  *
- * The `MergeRightOmitComplexs<T, U>` will do so, while keeping T's
- * exclusive keys, overriding common ones by U's typing instead and
- * adding U's exclusive keys:
+ * `MergeRightOmitComplexs<T, U>` will do the above: all T's
+ * exclusive keys will be kept, though common ones with U will have their
+ * typing overriden instead:
  *
  *    MergeRightOmitComplexs<
  *      {foo: string, baz: number},
@@ -223,12 +225,13 @@ export type DeepMergeOptions = {
  *      // "foo" was overriden by U's typing
  *      // "bar" was added from U
  *
- * Then, for Maps, Arrays, Sets and Records, we use `MergeAll*<T, U>` types.
- * They will extract given collections from both T and U (providing that
- * both have a collection for a specific key), retrieve each collection
- * values types (and key types for maps) using `*ValueType<T>`.
- * From extracted values (and keys) types, a new collection with union
- * typing is made.
+ * For Maps, Arrays, Sets and Records, we use `MergeAll*<T, U>` utilitary
+ * types. They will extract revelant data structure from both T and U
+ * (providing that both have same data data structure, except for typing).
+ *
+ * From these, `*ValueType<T>` will extract values (and keys) types to be
+ * able to create a new data structure with an unioned typing from both
+ * data structure of T and U:
  *
  *    MergeAllSets<
  *      {foo: Set<number>},
@@ -238,7 +241,19 @@ export type DeepMergeOptions = {
  *      // `MergeAllSets` will infer type as Set<number|string>
  *      // Process is similar for Maps, Arrays, and Sets
  *
- * This should cover most cases.
+ * `DeepMerge<T, U, Options>` is taking a third argument to be handle to
+ * infer final typing dependending on merging strategy:
+ *
+ *    & (Options extends { sets: "replace" } ? PartialByType<U, Set<unknown>>
+ *      : MergeAllSets<T, U>)
+ *
+ * In the above line, if "Options" have its merging strategy for Sets set to
+ * "replace", instead of performing merging of Sets type, it will take the
+ * typing from right operand (U) instead, effectively replacing the typing.
+ *
+ * An additional note, we use `ExpandRecursively<T>` utilitary type to expand
+ * the resulting typing and hide all the typing logic of deep merging so it is
+ * more user friendly.
  */
 
 /** Force intellisense to expand the typing to hide merging typings */
@@ -357,7 +372,7 @@ type Merge<
       : MergeAllMaps<T, U>),
 > = ExpandRecursively<X>;
 
-/** Merge deeply two objects (inspired by Jakub Švehla's solution (@Svehla)) */
+/** Merge deeply two objects */
 export type DeepMerge<
   T,
   U,
