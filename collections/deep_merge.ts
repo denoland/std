@@ -31,27 +31,32 @@ export function deepMerge<
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
   U extends Record<PropertyKey, unknown>,
+  Options extends DeepMergeOptions,
 >(
   record: T,
   other: U,
-  options?: DeepMergeOptions,
-): DeepMerge<T, U>;
+  options?: Options,
+): DeepMerge<T, U, Options>;
 
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
   U extends Record<PropertyKey, unknown>,
+  Options extends DeepMergeOptions,
 >(
   record: T,
   other: U,
-  {
+  options?: Options,
+): DeepMerge<T, U, Options> {
+  //
+  const {
     arrays = "merge",
     maps = "merge",
     sets = "merge",
     includeNonEnumerable = false,
-  }: DeepMergeOptions = {},
-): DeepMerge<T, U> {
+  } = options ?? {};
+
   // Clone left operand to avoid performing mutations in-place
-  type Result = DeepMerge<T, U>;
+  type Result = DeepMerge<T, U, Options>;
   const result = clone(record as Result, { includeNonEnumerable });
 
   // Extract property and symbols
@@ -356,10 +361,7 @@ type Merge<
 export type DeepMerge<
   T,
   U,
-  Options extends Record<string, MergingStrategy> = Record<
-    string,
-    MergingStrategy
-  >,
+  Options = Record<string, MergingStrategy>,
 > =
   // Handle objects
   [T, U] extends [Record<PropertyKey, unknown>, Record<PropertyKey, unknown>]
