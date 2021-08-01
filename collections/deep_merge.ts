@@ -175,14 +175,17 @@ function isMergeable<T extends Record<PropertyKey, unknown>>(
   return typeof value === "object";
 }
 
+/** Merging strategy */
+export type MergingStrategy = "replace" | "merge";
+
 /** Deep merge options */
 export type DeepMergeOptions = {
   /** Merging strategy for arrays */
-  arrays?: "replace" | "merge";
+  arrays?: MergingStrategy;
   /** Merging strategy for Maps */
-  maps?: "replace" | "merge";
+  maps?: MergingStrategy;
   /** Merging strategy for Sets */
-  sets?: "replace" | "merge";
+  sets?: MergingStrategy;
   /** Whether to include non enumerable properties */
   includeNonEnumerable?: boolean;
 };
@@ -297,10 +300,11 @@ type MergeAllMaps<
 type MergeAllRecords<
   T,
   U,
+  Options,
   X = PartialByType<T, Record<PropertyKey, unknown>>,
   Y = PartialByType<U, Record<PropertyKey, unknown>>,
   Z = {
-    [K in keyof X & keyof Y]: DeepMerge<X[K], Y[K]>;
+    [K in keyof X & keyof Y]: DeepMerge<X[K], Y[K], Options>;
   },
 > = Z;
 
@@ -335,18 +339,30 @@ type MergeRightOmitComplexs<
 type Merge<
   T,
   U,
+  Options,
   X =
     & MergeRightOmitComplexs<T, U>
-    & MergeAllRecords<T, U>
-    & MergeAllSets<T, U>
-    & MergeAllArrays<T, U>
-    & MergeAllMaps<T, U>,
+    & MergeAllRecords<T, U, Options>
+    & (Options extends { sets: "replace" } ? PartialByType<U, Set<unknown>>
+      : MergeAllSets<T, U>)
+    & (Options extends { arrays: "replace" } ? PartialByType<U, Array<unknown>>
+      : MergeAllArrays<T, U>)
+    & (Options extends { maps: "replace" }
+      ? PartialByType<U, Map<unknown, unknown>>
+      : MergeAllMaps<T, U>),
 > = ExpandRecursively<X>;
 
 /** Merge deeply two objects (inspired by Jakub Švehla's solution (@Svehla)) */
-export type DeepMerge<T, U> =
+export type DeepMerge<
+  T,
+  U,
+  Options extends Record<string, MergingStrategy> = Record<
+    string,
+    MergingStrategy
+  >,
+> =
   // Handle objects
   [T, U] extends [Record<PropertyKey, unknown>, Record<PropertyKey, unknown>]
-    ? Merge<T, U>
+    ? Merge<T, U, Options>
     : // Handle primitives
     T | U;
