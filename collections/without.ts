@@ -19,12 +19,14 @@ const LARGE_ARRAY_SIZE = 200;
 export function without<T>(
   arrays: Array<T>,
   ...values: Array<T>
-): T[] {
+): Array<T> {
   if (values.length >= LARGE_ARRAY_SIZE) {
     const set = new Set<T>();
+
     for (const element of arrays) {
       set.add(element);
     }
+
     arrays = Array.from(set);
   }
   return arrays.filter((value) => values.indexOf(value) === -1);
