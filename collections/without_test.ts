@@ -47,7 +47,7 @@ Deno.test({
 Deno.test({
   name: "[collections/without] large array size",
   fn() {
-    const array = Array(200).fill(0)
+    const array = Array(200).fill(0);
     array[0] = 1;
     withoutTest(array, [0], [1]);
   },

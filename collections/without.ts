@@ -20,7 +20,6 @@ export function without<T>(
   array: Array<T>,
   ...values: Array<T>
 ): Array<T> {
-
   if (array.length >= LARGE_ARRAY_SIZE) {
     const set = new Set<T>();
 
