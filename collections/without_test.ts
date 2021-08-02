@@ -43,3 +43,12 @@ Deno.test({
     withoutTest([2, 9, 8, 7, 6, 5], [7, 5], [2, 9, 8, 6]);
   },
 });
+
+Deno.test({
+  name: "[collections/without] large array size",
+  fn() {
+    const array = Array(200).fill(0)
+    array[0] = 1;
+    withoutTest(array, [0], [1]);
+  },
+});
