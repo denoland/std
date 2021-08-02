@@ -17,17 +17,18 @@ const LARGE_ARRAY_SIZE = 200;
  * ```
  */
 export function without<T>(
-  arrays: Array<T>,
+  array: Array<T>,
   ...values: Array<T>
 ): Array<T> {
-  if (values.length >= LARGE_ARRAY_SIZE) {
+
+  if (array.length >= LARGE_ARRAY_SIZE) {
     const set = new Set<T>();
 
-    for (const element of arrays) {
+    for (const element of array) {
       set.add(element);
     }
 
-    arrays = Array.from(set);
+    array = Array.from(set);
   }
-  return arrays.filter((value) => values.indexOf(value) === -1);
+  return array.filter((value) => values.indexOf(value) === -1);
 }
