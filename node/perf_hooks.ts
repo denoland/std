@@ -1,8 +1,4 @@
-function unimplemented(functionName: string) {
-  throw new Error(
-    `Node.js performance method ${functionName} is not currently supported by JSPM core in the browser`,
-  );
-}
+import { notImplemented } from './_utils'
 
 const { PerformanceObserver, PerformanceEntry, performance: shimPerformance } =
   globalThis as typeof globalThis & {
@@ -17,16 +13,16 @@ const performance: Partial<Performance> & {
   timerify: void;
 } = {
   clearMarks: shimPerformance.clearMarks,
-  eventLoopUtilization: unimplemented("eventLoopUtilization"),
+  eventLoopUtilization: notImplemented("eventLoopUtilization from performance"),
   mark: shimPerformance.mark,
   measure: shimPerformance.measure,
   nodeTiming: {},
   now: shimPerformance.now,
-  timerify: unimplemented("timerify"),
+  timerify: notImplemented("timerify from performance"),
   timeOrigin: shimPerformance.timeOrigin,
 };
 
-const monitorEventLoopDelay = unimplemented("monitorEventLoopDelay");
+const monitorEventLoopDelay = notImplemented("monitorEventLoopDelay from performance");
 
 export default {
   performance,

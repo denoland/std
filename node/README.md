@@ -33,7 +33,7 @@ deno standard library as it's a compatibility module.
 - [x] path
 - [x] path/posix
 - [x] path/win32
-- [ ] perf_hooks
+- [x] perf_hooks
 - [x] process _partly_
 - [x] querystring
 - [ ] readline
