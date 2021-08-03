@@ -4,16 +4,15 @@ import {
   assertEquals,
   assertNotEquals,
   assertThrowsAsync,
-} from "../../../testing/asserts.ts";
-import { writeFile } from "./_fs_writeFile.ts";
-import type { TextEncodings } from "../../_utils.ts";
+} from "../../testing/asserts.ts";
+import { writeFile } from "./promises.ts";
+import type { TextEncodings } from "../_utils.ts";
 
 const decoder = new TextDecoder("utf-8");
 
 Deno.test("Invalid encoding results in error()", function testEncodingErrors() {
   assertThrowsAsync(
     async () => {
-      // @ts-expect-error Type '"made-up-encoding"' is not assignable to type
       await writeFile("some/path", "some data", "made-up-encoding");
     },
     Error,
@@ -22,7 +21,6 @@ Deno.test("Invalid encoding results in error()", function testEncodingErrors() {
   assertThrowsAsync(
     async () => {
       await writeFile("some/path", "some data", {
-        // @ts-expect-error Type '"made-up-encoding"' is not assignable to type
         encoding: "made-up-encoding",
       });
     },

@@ -576,6 +576,16 @@ const getTestFileEtag = async () => {
   }
 };
 
+const getTestFileLastModified = async () => {
+  const fileInfo = await getTestFileStat();
+
+  if (fileInfo.mtime instanceof Date) {
+    return new Date(fileInfo.mtime).toUTCString();
+  } else {
+    return "";
+  }
+};
+
 const createEtagHash = async (message: string) => {
   // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
   const hashType = "SHA-1"; // Faster, and this isn't a security senitive cryptographic use case
@@ -870,6 +880,27 @@ Deno.test(
         { headers },
       );
       assertEquals(await res.text(), "");
+      await res.text(); // Consuming the body so that the test doesn't leak resources
+    } finally {
+      await killFileServer();
+    }
+  },
+);
+
+Deno.test(
+  "file_server returns 304 for requests with if-modified-since if the requested resource has not been modified after the given date",
+  async () => {
+    await startFileServer();
+    try {
+      const expectedIfModifiedSince = await getTestFileLastModified();
+      const headers = new Headers();
+      headers.set("if-modified-since", expectedIfModifiedSince);
+      const res = await fetch(
+        "http://localhost:4507/testdata/test%20file.txt",
+        { headers },
+      );
+      assertEquals(res.status, 304);
+      assertEquals(res.statusText, "Not Modified");
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
