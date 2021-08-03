@@ -273,13 +273,13 @@ console.assert(
 
 ## without
 
-Returns an array excluding all given values.
+Returns an array excluding single given value.
 
 ```ts
 import { without } from "./without.ts";
 
-const numbers = [];
-const withoutList = without([2, 1, 2, 3], 1, 2);
+const numbers = [1, 2, 3];
+const withoutList = without(numbers, 1);
 
-console.assert(withoutList === [3]);
+console.assert(withoutList.length === 2);
 ```
