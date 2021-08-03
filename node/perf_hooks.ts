@@ -1,4 +1,4 @@
-import { notImplemented } from './_utils'
+import { notImplemented } from "./_utils.ts";
 
 const { PerformanceObserver, PerformanceEntry, performance: shimPerformance } =
   globalThis as typeof globalThis & {
@@ -22,7 +22,9 @@ const performance: Partial<Performance> & {
   timeOrigin: shimPerformance.timeOrigin,
 };
 
-const monitorEventLoopDelay = notImplemented("monitorEventLoopDelay from performance");
+const monitorEventLoopDelay = notImplemented(
+  "monitorEventLoopDelay from performance",
+);
 
 export default {
   performance,
