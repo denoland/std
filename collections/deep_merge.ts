@@ -1,5 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+// deno-lint-ignore-file ban-types
+
+import { filterInPlace } from "./_utils.ts";
+
 /**
  * Merges the two given Records, recursively merging any nested Records with
  * the second collection overriding the first in case of conflict
@@ -41,125 +45,103 @@ export function deepMerge<
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
   U extends Record<PropertyKey, unknown>,
-  Options extends DeepMergeOptions,
+  Options extends DeepMergeOptions = {
+    arrays: "merge";
+    sets: "merge";
+    maps: "merge";
+  },
 >(
   record: T,
   other: U,
   options?: Options,
 ): DeepMerge<T, U, Options> {
   // Extract options
-  const {
-    arrays = "merge",
-    maps = "merge",
-    sets = "merge",
-    includeNonEnumerable = false,
-  } = options ?? {};
-
   // Clone left operand to avoid performing mutations in-place
   type Result = DeepMerge<T, U, Options>;
-  const result = clone(record, { includeNonEnumerable }) as Result;
+  const result: Partial<Result> = {};
 
-  // Extract property and symbols
-  const keys = [
-    ...Object.getOwnPropertyNames(other),
-    ...Object.getOwnPropertySymbols(other),
-  ].filter((key) =>
-    includeNonEnumerable || other.propertyIsEnumerable(key)
-  ) as Array<keyof Result>;
+  const keys = new Set([
+    ...getKeys(record),
+    ...getKeys(other),
+  ]) as Set<keyof Result>;
 
   // Iterate through each key of other object and use correct merging strategy
   for (const key of keys) {
-    const a = result[key] as Result[typeof key],
-      b = other[key] as Result[typeof key];
+    type ResultMember = Result[typeof key];
 
-    // Handle arrays
-    if ((Array.isArray(a)) && (Array.isArray(b))) {
-      if (arrays === "merge") {
-        a.push(...b);
-      } else {
-        result[key] = b;
-      }
+    const a = record[key] as ResultMember;
+
+    if (!(key in other)) {
+      result[key] = a;
+
       continue;
     }
 
-    // Handle maps
-    if ((a instanceof Map) && (b instanceof Map)) {
-      if (maps === "merge") {
-        for (const [k, v] of b.entries()) {
-          a.set(k, v);
-        }
-      } else {
-        result[key] = b;
-      }
-      continue;
-    }
+    const b = other[key] as ResultMember;
 
-    // Handle sets
-    if ((a instanceof Set) && (b instanceof Set)) {
-      if (sets === "merge") {
-        for (const v of b.values()) {
-          a.add(v);
-        }
-      } else {
-        result[key] = b;
-      }
-      continue;
-    }
+    if (isNonNullObject(a) && isNonNullObject(b)) {
+      result[key] = mergeObjects(a, b, options) as ResultMember;
 
-    // Recursively merge mergeable objects
-    if (isMergeable(a) && isMergeable(b)) {
-      result[key] = deepMerge(a, b) as Result[typeof key];
       continue;
     }
 
     // Override value
     result[key] = b;
   }
-  return result;
+
+  return result as Result;
 }
 
-/**
- * Clone a record
- * Arrays, maps, sets and objects are cloned so references doesn't point
- * anymore to those of target record
- */
-function clone<T extends Record<PropertyKey, unknown>>(
-  record: T,
-  { includeNonEnumerable = false } = {},
-) {
-  // Extract property and symbols
-  const cloned = {} as T;
-  const keys = [
-    ...Object.getOwnPropertyNames(record),
-    ...Object.getOwnPropertySymbols(record),
-  ].filter((key) =>
-    includeNonEnumerable || record.propertyIsEnumerable(key)
-  ) as Array<keyof T>;
-
-  // Build cloned record, creating new data structure when needed
-  for (const key of keys) {
-    type SameType = T[typeof key];
-    const v = record[key];
-    if (Array.isArray(v)) {
-      cloned[key] = [...v] as SameType;
-      continue;
-    }
-    if (v instanceof Map) {
-      cloned[key] = new Map(v) as SameType;
-      continue;
-    }
-    if (v instanceof Set) {
-      cloned[key] = new Set(v) as SameType;
-      continue;
-    }
-    if (isMergeable(v)) {
-      cloned[key] = clone(v);
-      continue;
-    }
-    cloned[key] = v;
+function mergeObjects(
+  left: NonNullable<object>,
+  right: NonNullable<object>,
+  options: DeepMergeOptions = {
+    arrays: "merge",
+    sets: "merge",
+    maps: "merge",
+  },
+): NonNullable<object> {
+  // Recursively merge mergeable objects
+  if (isMergeable(left) && isMergeable(right)) {
+    return deepMerge(left, right);
   }
 
-  return cloned;
+  if (isIterable(left) && isIterable(right)) {
+    // Handle arrays
+    if ((Array.isArray(left)) && (Array.isArray(right))) {
+      if (options.arrays === "merge") {
+        return left.concat(right);
+      }
+
+      return right;
+    }
+
+    // Handle maps
+    if ((left instanceof Map) && (right instanceof Map)) {
+      if (options.maps === "merge") {
+        return new Map([
+          ...left,
+          ...right,
+        ]);
+      }
+
+      return right;
+    }
+
+    // Handle sets
+    if ((left instanceof Set) && (right instanceof Set)) {
+      if (options.sets === "merge") {
+        return new Set([
+          ...left,
+          ...right,
+        ]);
+      }
+
+      return right;
+    }
+  }
+
+  return right;
 }
 
 /**
@@ -167,18 +149,28 @@ function clone<T extends Record<PropertyKey, unknown>>(
  * Builtins that look like objects, null and user defined classes
  * are not considered mergeable (it means that reference will be copied)
  */
-function isMergeable<T extends Record<PropertyKey, unknown>>(
-  value: unknown,
-): value is T {
-  // Ignore null
-  if (value === null) {
-    return false;
-  }
-  // Ignore builtins and classes
-  if ((typeof value === "object") && ("constructor" in value!)) {
-    return Object.getPrototypeOf(value) === Object.prototype;
-  }
-  return typeof value === "object";
+function isMergeable(
+  value: NonNullable<object>,
+): boolean {
+  return Object.getPrototypeOf(value) === Object.prototype;
+}
+
+function isIterable(
+  value: NonNullable<object>,
+): value is Iterable<unknown> {
+  return typeof (value as Iterable<unknown>)[Symbol.iterator] === "function";
+}
+
+function isNonNullObject(value: unknown): value is NonNullable<object> {
+  return value !== null && typeof value === "object";
+}
+
+function getKeys<T extends object>(record: T): Array<keyof T> {
+  const ret = Object.getOwnPropertySymbols(record) as Array<keyof T>;
+  filterInPlace(ret, (key) => record.propertyIsEnumerable(key));
+  ret.push(...(Object.keys(record) as Array<keyof T>));
+
+  return ret;
 }
 
 /** Merging strategy */
@@ -192,8 +184,6 @@ export type DeepMergeOptions = {
   maps?: MergingStrategy;
   /** Merging strategy for Sets */
   sets?: MergingStrategy;
-  /** Whether to include non enumerable properties */
-  includeNonEnumerable?: boolean;
 };
 
 /**

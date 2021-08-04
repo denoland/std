@@ -41,23 +41,6 @@ Deno.test("deepMerge: ignore non enumerable", () => {
   );
 });
 
-Deno.test("deepMerge: include non enumerable", () => {
-  assertEquals(
-    deepMerge(
-      {},
-      Object.defineProperties({}, {
-        foo: { enumerable: false, value: true },
-        bar: { enumerable: true, value: true },
-      }),
-      { includeNonEnumerable: true },
-    ),
-    {
-      foo: true,
-      bar: true,
-    },
-  );
-});
-
 Deno.test("deepMerge: nested merge", () => {
   assertEquals(
     deepMerge({
