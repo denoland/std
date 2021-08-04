@@ -24,26 +24,16 @@
  */
 export function sortBy<T>(
   array: Array<T>,
-  selector:
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+  selector: ((el: T) => number | string | bigint | Date),
 ): Array<T> {
-  const ret = Array.from(array);
-
-  return ret.sort((a, b) => {
+  return Array.from(array).sort((a, b) => {
     const selectedA = selector(a);
     const selectedB = selector(b);
 
-    if (selectedA > selectedB) {
-      return 1;
+    if (selectedA === selectedB) {
+      return 0;
     }
 
-    if (selectedA < selectedB) {
-      return -1;
-    }
-
-    return 0;
+    return selectedA > selectedB ? 1 : -1;
   });
 }

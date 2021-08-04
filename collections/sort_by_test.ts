@@ -6,10 +6,7 @@ import { sortBy } from "./sort_by.ts";
 function sortByTest<T>(
   input: [
     Array<T>,
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+    ((el: T) => number | string | bigint | Date),
   ],
   expected: Array<T>,
   message?: string,
@@ -83,6 +80,21 @@ Deno.test({
         { name: "build", stage: 1 },
         { name: "deploy", stage: 4 },
         { name: "test", stage: 2 },
+      ],
+    );
+    sortByTest(
+      [
+        [
+          "9007199254740999",
+          "9007199254740991",
+          "9007199254740995",
+        ],
+        (it) => BigInt(it),
+      ],
+      [
+        "9007199254740991",
+        "9007199254740995",
+        "9007199254740999",
       ],
     );
     sortByTest(
