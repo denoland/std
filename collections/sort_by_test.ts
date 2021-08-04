@@ -2,14 +2,15 @@
 
 import { assertEquals } from "../testing/asserts.ts";
 import { sortBy } from "./sort_by.ts";
+import { Selector } from "./types.ts";
 
 function sortByTest<T>(
   input: [
     Array<T>,
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+    | Selector<T, number>
+    | Selector<T, string>
+    | Selector<T, bigint>
+    | Selector<T, Date>,
   ],
   expected: Array<T>,
   message?: string,
