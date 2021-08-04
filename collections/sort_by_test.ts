@@ -6,7 +6,10 @@ import { sortBy } from "./sort_by.ts";
 function sortByTest<T>(
   input: [
     Array<T>,
-    ((el: T) => number | string | bigint | Date),
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
   ],
   expected: Array<T>,
   message?: string,

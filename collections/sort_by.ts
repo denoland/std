@@ -24,7 +24,11 @@
  */
 export function sortBy<T>(
   array: Array<T>,
-  selector: ((el: T) => number | string | bigint | Date),
+  selector:
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
 ): Array<T> {
   return Array.from(array).sort((a, b) => {
     const selectedA = selector(a);
