@@ -19,6 +19,7 @@
       "test-event-emitter-max-listeners-warning-for-symbol.js",
       "test-event-emitter-max-listeners-warning.js",
       "test-event-emitter-max-listeners.js",
+      "test-event-emitter-method-names.js",
       "test-event-emitter-invalid-listener.js",
       "test-event-emitter-listener-count.js",
       "test-event-emitter-listeners.js",
