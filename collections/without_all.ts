@@ -9,11 +9,10 @@ const LARGE_ARRAY_SIZE = 200;
  * Example:
  *
  * ```ts
- * import { withoutAll } from "./without.ts";
+ * import { withoutAll } from "./withoutAll.ts";
  *
  * const withoutList = withoutAll([2, 1, 2, 3], [1, 2]);
  *
- * console.assert(withoutList === [ 3 ])
  * ```
  */
 export function withoutAll<T>(
