@@ -110,15 +110,10 @@ export class EventEmitter {
 
   /** Alias for emitter.on(eventName, listener). */
   addListener(
-    // deno-lint-ignore no-unused-vars
     eventName: string | symbol,
-    // deno-lint-ignore no-unused-vars
     listener: GenericFunction | WrappedFunction,
-    // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
   ): this {
-    // The body of this method is empty because it will be overwritten by later code. (`EventEmitter.prototype.addListener = EventEmitter.prototype.on;`)
-    // The purpose of this dirty hack is to get around the current limitation of TypeScript type checking.
+    return this._addListener(eventName, listener, false);
   }
 
   /**
@@ -242,8 +237,16 @@ export class EventEmitter {
   }
 
   /** Alias for emitter.removeListener(). */
-  public off(eventName: string | symbol, listener: GenericFunction): this {
-    return this.removeListener(eventName, listener);
+  public off(
+    // deno-lint-ignore no-unused-vars
+    eventName: string | symbol,
+    // deno-lint-ignore no-unused-vars
+    listener: GenericFunction,
+    // deno-lint-ignore ban-ts-comment
+    // @ts-expect-error
+  ): this {
+    // The body of this method is empty because it will be overwritten by later code. (`EventEmitter.prototype.off = EventEmitter.prototype.removeListener;`)
+    // The purpose of this dirty hack is to get around the current limitation of TypeScript type checking.
   }
 
   /**
@@ -254,10 +257,15 @@ export class EventEmitter {
    * times.
    */
   public on(
+    // deno-lint-ignore no-unused-vars
     eventName: string | symbol,
+    // deno-lint-ignore no-unused-vars
     listener: GenericFunction | WrappedFunction,
+    // deno-lint-ignore ban-ts-comment
+    // @ts-expect-error
   ): this {
-    return this._addListener(eventName, listener, false);
+    // The body of this method is empty because it will be overwritten by later code. (`EventEmitter.prototype.addListener = EventEmitter.prototype.on;`)
+    // The purpose of this dirty hack is to get around the current limitation of TypeScript type checking.
   }
 
   /**
@@ -607,8 +615,10 @@ export class EventEmitter {
   }
 }
 
-// EventEmitter#addListener should point to the same function as EventEmitter#on.
-EventEmitter.prototype.addListener = EventEmitter.prototype.on;
+// EventEmitter#on should point to the same function as EventEmitter#addListener.
+EventEmitter.prototype.on = EventEmitter.prototype.addListener;
+// EventEmitter#off should point to the same function as EventEmitter#removeListener.
+EventEmitter.prototype.off = EventEmitter.prototype.removeListener;
 
 class MaxListenersExceededWarning extends Error {
   readonly count: number;

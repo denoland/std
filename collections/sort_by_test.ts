@@ -2,14 +2,15 @@
 
 import { assertEquals } from "../testing/asserts.ts";
 import { sortBy } from "./sort_by.ts";
+import { Selector } from "./types.ts";
 
 function sortByTest<T>(
   input: [
     Array<T>,
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+    | Selector<T, number>
+    | Selector<T, string>
+    | Selector<T, bigint>
+    | Selector<T, Date>,
   ],
   expected: Array<T>,
   message?: string,
@@ -52,6 +53,50 @@ Deno.test({
 });
 
 Deno.test({
+  name: "[collections/sortBy] stable sort",
+  fn() {
+    sortByTest(
+      [
+        [
+          { id: 1, date: "February 1, 2022" },
+          { id: 2, date: "December 17, 1995" },
+          { id: 3, date: "June 12, 2012" },
+          { id: 4, date: "December 17, 1995" },
+          { id: 5, date: "June 12, 2012" },
+        ],
+        (it) => new Date(it.date),
+      ],
+      [
+        { id: 2, date: "December 17, 1995" },
+        { id: 4, date: "December 17, 1995" },
+        { id: 3, date: "June 12, 2012" },
+        { id: 5, date: "June 12, 2012" },
+        { id: 1, date: "February 1, 2022" },
+      ],
+    );
+    sortByTest(
+      [
+        [
+          { id: 1, str: "c" },
+          { id: 2, str: "a" },
+          { id: 3, str: "b" },
+          { id: 4, str: "a" },
+          { id: 5, str: "b" },
+        ],
+        (it) => it.str,
+      ],
+      [
+        { id: 2, str: "a" },
+        { id: 4, str: "a" },
+        { id: 3, str: "b" },
+        { id: 5, str: "b" },
+        { id: 1, str: "c" },
+      ],
+    );
+  },
+});
+
+Deno.test({
   name: "[collections/sortBy] sortings",
   fn() {
     const testArray = [
@@ -83,6 +128,21 @@ Deno.test({
         { name: "build", stage: 1 },
         { name: "deploy", stage: 4 },
         { name: "test", stage: 2 },
+      ],
+    );
+    sortByTest(
+      [
+        [
+          "9007199254740999",
+          "9007199254740991",
+          "9007199254740995",
+        ],
+        (it) => BigInt(it),
+      ],
+      [
+        "9007199254740991",
+        "9007199254740995",
+        "9007199254740999",
       ],
     );
     sortByTest(
