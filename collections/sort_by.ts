@@ -3,7 +3,7 @@
 import { Selector } from "./types.ts";
 
 /**
- * Returns all elements in the given collection, sorted by their result using the given selector
+ * Returns all elements in the given collection, sorted stably by their result using the given selector
  *
  * Example:
  *
@@ -36,10 +36,14 @@ export function sortBy<T>(
     const selectedA = selector(a);
     const selectedB = selector(b);
 
-    if (selectedA === selectedB) {
-      return 0;
+    if (selectedA > selectedB) {
+      return 1;
     }
 
-    return selectedA > selectedB ? 1 : -1;
+    if (selectedA < selectedB) {
+      return -1;
+    }
+
+    return 0;
   });
 }
