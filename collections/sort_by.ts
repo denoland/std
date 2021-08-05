@@ -1,5 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+import { Selector } from "./types.ts";
+
 /**
  * Returns all elements in the given collection, sorted by their result using the given selector
  *
@@ -25,25 +27,19 @@
 export function sortBy<T>(
   array: Array<T>,
   selector:
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
+    | Selector<T, number>
+    | Selector<T, string>
+    | Selector<T, bigint>
+    | Selector<T, Date>,
 ): Array<T> {
-  const ret = Array.from(array);
-
-  return ret.sort((a, b) => {
+  return Array.from(array).sort((a, b) => {
     const selectedA = selector(a);
     const selectedB = selector(b);
 
-    if (selectedA > selectedB) {
-      return 1;
+    if (selectedA === selectedB) {
+      return 0;
     }
 
-    if (selectedA < selectedB) {
-      return -1;
-    }
-
-    return 0;
+    return selectedA > selectedB ? 1 : -1;
   });
 }

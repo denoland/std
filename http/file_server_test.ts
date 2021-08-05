@@ -820,8 +820,8 @@ Deno.test("file_server sets `Date` header correctly", async () => {
     const dateHeader = res.headers.get("date") as string;
     const date = Date.parse(dateHeader);
     const fileInfo = await getTestFileStat();
-    const expectedTime = fileInfo.mtime && fileInfo.mtime instanceof Date
-      ? fileInfo.mtime.getTime()
+    const expectedTime = fileInfo.atime && fileInfo.atime instanceof Date
+      ? fileInfo.atime.getTime()
       : Number.NaN;
     const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
     assertEquals(round(date), round(expectedTime));
