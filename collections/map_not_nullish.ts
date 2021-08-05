@@ -20,15 +20,15 @@
  */
 export function mapNotNullish<T, O>(
   array: Array<T>,
-  transformer: (el: T) => O | undefined | null,
-): Array<O> {
-  const ret = new Array<O>();
+  transformer: (el: T) => O,
+): Array<NonNullable<O>> {
+  const ret = new Array<NonNullable<O>>();
 
   for (const element of array) {
     const transformedElement = transformer(element);
 
     if (transformedElement !== undefined && transformedElement !== null) {
-      ret.push(transformedElement);
+      ret.push(transformedElement as NonNullable<O>);
     }
   }
 
