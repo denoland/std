@@ -638,7 +638,7 @@ export function assertThrows<T = void>(
  * If it does not, then it throws.  An error class and a string that should be
  * included in the error message can also be asserted.
  */
-export async function assertThrowsAsync<T = void>(
+export async function assertRejects<T = void>(
   fn: () => Promise<T>,
   ErrorClass?: Constructor,
   msgIncludes = "",
