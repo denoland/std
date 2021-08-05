@@ -7,6 +7,9 @@
  * Example:
  *
  * ```typescript
+ * import { mapNotNullish } from "./map_not_nullish.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
+ *
  * const people = [
  *     { middleName: null },
  *     { middleName: 'William' },
@@ -15,7 +18,7 @@
  * ]
  * const foundMiddleNames = mapNotNullish(people, it => it.middleName)
  *
- * console.assert(foundMiddleNames === [ 'William', 'Martha' ])
+ * assertEquals(foundMiddleNames, [ 'William', 'Martha' ])
  * ```
  */
 export function mapNotNullish<T, O>(
