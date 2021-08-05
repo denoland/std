@@ -23,7 +23,7 @@ Deno.test({
 Deno.test({
   name: "[collections/withoutAll] no matches",
   fn() {
-    withoutAllTest([1, 2, 3, 4], [0], [1, 2, 3, 4]);
+    withoutAllTest([1, 2, 3, 4], [0, 7, 9], [1, 2, 3, 4]);
   },
 });
 
@@ -38,8 +38,8 @@ Deno.test({
 Deno.test({
   name: "[collections/withoutAll] multiple matches",
   fn() {
-    withoutAllTest([1, 2, 3, 4, 6, 3], [1], [2, 3, 4, 6, 3]);
-    withoutAllTest([7, 2, 9, 8, 7, 6, 5, 7], [7], [2, 9, 8, 6, 5]);
+    withoutAllTest([1, 2, 3, 4, 6, 3], [1, 2], [3, 4, 6, 3]);
+    withoutAllTest([7, 2, 9, 8, 7, 6, 5, 7], [7, 9], [2, 8, 6, 5]);
   },
 });
 
