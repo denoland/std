@@ -36,6 +36,16 @@ export function sortBy<T>(
     const selectedA = selector(a);
     const selectedB = selector(b);
 
+    if (typeof selectedA === "number") {
+      if (Number.isNaN(selectedA)) {
+        return 1;
+      }
+
+      if (Number.isNaN(selectedB)) {
+        return -1;
+      }
+    }
+
     if (selectedA > selectedB) {
       return 1;
     }
