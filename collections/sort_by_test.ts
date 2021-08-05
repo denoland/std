@@ -53,6 +53,50 @@ Deno.test({
 });
 
 Deno.test({
+  name: "[collections/sortBy] stable sort",
+  fn() {
+    sortByTest(
+      [
+        [
+          { id: 1, date: "February 1, 2022" },
+          { id: 2, date: "December 17, 1995" },
+          { id: 3, date: "June 12, 2012" },
+          { id: 4, date: "December 17, 1995" },
+          { id: 5, date: "June 12, 2012" },
+        ],
+        (it) => new Date(it.date),
+      ],
+      [
+        { id: 2, date: "December 17, 1995" },
+        { id: 4, date: "December 17, 1995" },
+        { id: 3, date: "June 12, 2012" },
+        { id: 5, date: "June 12, 2012" },
+        { id: 1, date: "February 1, 2022" },
+      ],
+    );
+    sortByTest(
+      [
+        [
+          { id: 1, str: "c" },
+          { id: 2, str: "a" },
+          { id: 3, str: "b" },
+          { id: 4, str: "a" },
+          { id: 5, str: "b" },
+        ],
+        (it) => it.str,
+      ],
+      [
+        { id: 2, str: "a" },
+        { id: 4, str: "a" },
+        { id: 3, str: "b" },
+        { id: 5, str: "b" },
+        { id: 1, str: "c" },
+      ],
+    );
+  },
+});
+
+Deno.test({
   name: "[collections/sortBy] sortings",
   fn() {
     const testArray = [
