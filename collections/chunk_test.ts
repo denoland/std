@@ -1,44 +1,44 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { chunked } from "./chunked.ts";
+import { chunk } from "./chunk.ts";
 
-function chunkedTest<I>(
+function chunkTest<I>(
   input: [Array<I>, number],
   expected: Array<Array<I>>,
   message?: string,
 ) {
-  const actual = chunked(...input);
+  const actual = chunk(...input);
   assertEquals(actual, expected, message);
 }
 
 const testArray = [1, 2, 3, 4, 5, 6];
 
 Deno.test({
-  name: "[collections/chunked] no mutation",
+  name: "[collections/chunk] no mutation",
   fn() {
     const array = [1, 2, 3, 4];
-    chunked(array, 2);
+    chunk(array, 2);
 
     assertEquals(array, [1, 2, 3, 4]);
   },
 });
 
 Deno.test({
-  name: "[collections/chunked] throws on non naturals",
+  name: "[collections/chunk] throws on non naturals",
   fn() {
-    assertThrows(() => chunked([], +.5));
-    assertThrows(() => chunked([], -4.7));
-    assertThrows(() => chunked([], -2));
-    assertThrows(() => chunked([], +0));
-    assertThrows(() => chunked([], -0));
+    assertThrows(() => chunk([], +.5));
+    assertThrows(() => chunk([], -4.7));
+    assertThrows(() => chunk([], -2));
+    assertThrows(() => chunk([], +0));
+    assertThrows(() => chunk([], -0));
   },
 });
 
 Deno.test({
-  name: "[collections/chunked] empty input",
+  name: "[collections/chunk] empty input",
   fn() {
-    chunkedTest(
+    chunkTest(
       [[], 1],
       [],
     );
@@ -46,13 +46,13 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/chunked] single element chunks",
+  name: "[collections/chunk] single element chunks",
   fn() {
-    chunkedTest(
+    chunkTest(
       [testArray, 1],
       testArray.map((it) => [it]),
     );
-    chunkedTest(
+    chunkTest(
       [["foo"], 1],
       [["foo"]],
     );
@@ -60,13 +60,13 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/chunked] n chunks fitting",
+  name: "[collections/chunk] n chunks fitting",
   fn() {
-    chunkedTest(
+    chunkTest(
       [testArray, 2],
       [[1, 2], [3, 4], [5, 6]],
     );
-    chunkedTest(
+    chunkTest(
       [testArray, 3],
       [[1, 2, 3], [4, 5, 6]],
     );
@@ -74,13 +74,13 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/chunked] n chunks not fitting",
+  name: "[collections/chunk] n chunks not fitting",
   fn() {
-    chunkedTest(
+    chunkTest(
       [testArray, 4],
       [[1, 2, 3, 4], [5, 6]],
     );
-    chunkedTest(
+    chunkTest(
       [testArray, 5],
       [[1, 2, 3, 4, 5], [6]],
     );
@@ -88,13 +88,13 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/chunked] chunks equal to length",
+  name: "[collections/chunk] chunks equal to length",
   fn() {
-    chunkedTest(
+    chunkTest(
       [testArray, testArray.length],
       [testArray],
     );
-    chunkedTest(
+    chunkTest(
       [["foo"], 1],
       [["foo"]],
     );

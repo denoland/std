@@ -7,7 +7,7 @@
  *
  * ```typescript
  * const words = [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consetetur', 'sadipscing' ]
- * const chunks = chunked(words, 3)
+ * const chunks = chunk(words, 3)
  *
  * console.assert(chunks === [
  *     [ 'lorem', 'ipsum', 'dolor' ],
@@ -16,7 +16,7 @@
  * ])
  * ```
  */
-export function chunked<T>(
+export function chunk<T>(
   array: Array<T>,
   size: number,
 ): Array<Array<T>> {
