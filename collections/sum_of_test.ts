@@ -62,3 +62,27 @@ Deno.test("[collections/sumBy] Selector turns nums into zeros", () => {
 
   assertEquals(actual, 0);
 });
+
+Deno.test("[collections/sumOf] On negative object properties", () => {
+  const object = [
+    { name: "Kyle", age: -34 },
+    { name: "John", age: -42 },
+    { name: "Anna", age: -23 },
+  ];
+
+  const actual = sumOf(object, (i) => i.age);
+
+  assertEquals(actual, -99);
+});
+
+Deno.test("[collections/sumOf] On mixed object properties", () => {
+  const object = [
+    { name: "Kyle", age: -34 },
+    { name: "John", age: 42 },
+    { name: "Anna", age: -23 },
+  ];
+
+  const actual = sumOf(object, (i) => i.age);
+
+  assertEquals(actual, -15);
+});
