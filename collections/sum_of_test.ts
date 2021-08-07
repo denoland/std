@@ -20,10 +20,10 @@ Deno.test("[collections/sumOf] Add 2 to each num", () => {
 
     const actual = sumOf(array, i => i + 2);
 
-    assertEquals(actual, 13);
+    assertEquals(actual, 12);
 })
 
-Deno.test("[collections/sumOf] Do nothing", () => {
+Deno.test("[collections/sumOf] Regular sum", () => {
     const array = [1, 2, 3];
     
     const actual = sumOf(array, i => i);

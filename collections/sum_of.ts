@@ -22,5 +22,12 @@ export function sumOf<T>(
     array: Array<T>,
     selector: Selector<T, number>
 ): number {
-    return 0;
+    const selected = array.map(selector);
+    let sum = 0;
+    
+    for (let i of selected) {
+        sum += i;
+    }
+
+    return sum;
 }
