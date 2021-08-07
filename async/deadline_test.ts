@@ -24,7 +24,7 @@ Deno.test("[async] deadline: thrown when promise is rejected", async () => {
   const t = setTimeout(() => p.reject(new Error("booom")), 100);
   await assertThrowsAsync(
     async () => {
-      await deadline(p, 100);
+      await deadline(p, 1000);
     },
     Error,
     "booom",
