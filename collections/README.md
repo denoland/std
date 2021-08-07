@@ -1,11 +1,39 @@
 # std/collections
 
-This module includes utilities around collection types like `Array`, `Record`
-and `Set`.
+This module includes pure functions for specific common tasks around collection types
+like `Array` and `Record`. This module is heavily inspired by `kotlin`s stdlib.
 
-# Usage
+- All provided functions are **pure**, which also means that hey do **not mutate** your inputs,
+**returning a new value** instead.
+- All functions are importable on their own by referencing their snake_case named file (e.g. `collections/sort_by.ts`)
 
-## chunked
+If you want to contribute or undestand why this is done the way it is, see the [contribution guide](CONTRIBUTING.md).
+
+## Usage
+
+### associateBy
+
+Transforms the given array into a Record, extracting the key of each element using the given selector.
+If the selector produces the same key for multiple elements, the latest one will be used (overriding the
+ones before it).
+
+```ts
+const users = [
+  { id: 'a2e', userName: 'Anna' },
+  { id: '5f8', userName: 'Arnold' },
+  { id: 'd2c', userName: 'Kim' },
+];
+const usersById = associateBy(users, (it) => it.id);
+
+assertEquals(usersById, {
+  'a2e': { id: 'a2e', userName: 'Anna' },
+  '5f8': { id: '5f8', userName: 'Arnold' },
+  'd2c': { id: 'd2c', userName: 'Kim' },
+});
+```
+
+
+### chunked
 
 Splits the given array into chunks of the given size and returns them.
 
@@ -30,7 +58,7 @@ console.assert(
 );
 ```
 
-## deepMerge
+### deepMerge
 
 Merges the two given Records, recursively merging any nested Records with the
 second collection overriding the first in case of conflict
@@ -49,7 +77,7 @@ const b = { foo: { bar: true } };
 assertEquals(deepMerge(a, b), { foo: { bar: true } });
 ```
 
-## distinctBy
+### distinctBy
 
 Returns all elements in the given array that produce a distinct value using the
 given selector, preserving order by first occurence.
@@ -61,7 +89,7 @@ const exampleNamesByFirstLetter = distinctBy(names, (it) => it.charAt(0));
 console.assert(exampleNamesByFirstLetter === ["Anna", "Kim"]);
 ```
 
-## distinct
+### distinct
 
 Returns all distinct elements in the given array, preserving order by first
 occurence.
@@ -73,7 +101,7 @@ const distinctNumbers = distinct(numbers);
 console.assert(distinctNumbers === [3, 2, 5]);
 ```
 
-## filterEntries
+### filterEntries
 
 Returns a new record with all entries of the given record except the ones that
 do not match the given predicate.
@@ -95,7 +123,7 @@ console.assert(
 );
 ```
 
-## filterKeys
+### filterKeys
 
 Returns a new record with all entries of the given record except the ones that
 have a key that does not match the given predicate.
@@ -116,7 +144,7 @@ console.assert(
 );
 ```
 
-## filterValues
+### filterValues
 
 Returns a new record with all entries of the given record except the ones that
 have a value that does not match the given predicate.
@@ -137,7 +165,7 @@ console.assert(
 );
 ```
 
-## findLast
+### findLast
 
 Returns the last element in the given array matching the given predicate.
 
@@ -148,7 +176,7 @@ const lastEvenNumber = findLast(numbers, (it) => it % 2 === 0);
 console.assert(lastEvenNumber === 2);
 ```
 
-## findLastIndex
+### findLastIndex
 
 Returns the index of the last element in the given array matching the given
 predicate.
@@ -160,7 +188,7 @@ const lastIndexEvenNumber = findLastIndex(numbers, (it) => it % 2 === 0);
 console.assert(lastIndexEvenNumber === 6);
 ```
 
-## groupBy
+### groupBy
 
 Applies the given selector to each element in the given array, returning a
 Record containing the results as keys and all values that produced that key as
@@ -182,7 +210,7 @@ console.assert(
 );
 ```
 
-## intersect
+### intersect
 
 Returns all distinct elements that appear at least once in each of the given
 arrays.
@@ -195,7 +223,7 @@ const commonInterests = intersectTest(lisaInterests, kimInterests);
 console.assert(commonInterests === ["Cooking", "Music"]);
 ```
 
-## mapEntries
+### mapEntries
 
 Applies the given transformer to all entries in the given record and returns a
 new record containing the results.
@@ -217,7 +245,7 @@ console.assert(
 );
 ```
 
-## mapKeys
+### mapKeys
 
 Applies the given transformer to all keys in the given record's entries and
 returns a new record containing the transformed entries.
@@ -237,7 +265,24 @@ console.assert(
 );
 ```
 
-## mapValues
+### mapNotNullish
+
+Returns a new array, containing all elements in the given array transformed using the given transformer, except the ones
+that were transformed to `null` or `undefined`.
+
+```typescript
+const people = [
+    { middleName: null },
+    { middleName: 'William' },
+    { middleName: undefined },
+    { middleName: 'Martha' },
+];
+const foundMiddleNames = mapNotNullish(people, (it) => it.middleName);
+
+assertEquals(foundMiddleNames, [ 'William', 'Martha' ]);
+```
+
+### mapValues
 
 Applies the given transformer to all valuesin the given record and returns a new
 record containing the resulting keys associated to the last value that produced
@@ -258,7 +303,7 @@ console.assert(
 );
 ```
 
-## partition
+### partition
 
 Returns a tuple of two arrays with the first one containing all elements in the
 given array that match the given predicate and the second one containing all
@@ -272,7 +317,7 @@ console.assert(even === [6, 8]);
 console.assert(odd === [5, 7, 9]);
 ```
 
-## permutations
+### permutations
 
 Builds all possible orders of all elements in the given array Ignores equality
 of elements, meaning this will always reutrn the same number of permutations for
@@ -288,4 +333,70 @@ console.assert(
     [2, 1],
   ],
 );
+```
+
+### sortBy
+
+Returns all elements in the given collection, sorted by their result using the given selector
+  
+```ts
+const people = [
+    { name: 'Anna', age: 34 },
+    { name: 'Kim', age: 42 },
+    { name: 'John', age: 23 },
+];
+const sortedByAge = sortBy(people, (it) => it.age);
+
+assertEquals(sortedByAge, [
+    { name: 'John', age: 23 },
+    { name: 'Anna', age: 34 },
+    { name: 'Kim', age: 42 },
+]);
+```
+
+### union
+
+Returns all distinct elements that appear in any of the given arrays
+
+```ts
+const soupIngredients = [ 'Pepper', 'Carrots', 'Leek' ];
+const saladIngredients = [ 'Carrots', 'Radicchio', 'Pepper' ];
+const shoppingList = union(soupIngredients, saladIngredients);
+
+assertEquals(shoppingList, [ 'Pepper', 'Carrots', 'Leek', 'Radicchio' ]);
+```
+
+### unzip
+
+Builds two separate arrays from the given array of 2-tuples, with the first returned array holding all first
+tuple elements and the second one holding all the second elements
+
+```ts
+const parents = [
+    [ 'Maria', 'Jeff' ],
+    [ 'Anna', 'Kim' ],
+    [ 'John', 'Leroy' ],
+] as [string, string][];
+
+const [ moms, dads ] = unzip(parents);
+
+assertEquals(moms, [ 'Maria', 'Anna', 'John' ]);
+assertEquals(moms, [ 'Jeff', 'Kim', 'Leroy' ]);
+```
+
+### zip
+
+Builds 2-tuples of elements from the given array with matching indices, stopping when the smaller array's end is reached
+
+```ts
+const numbers = [ 1, 2, 3, 4 ];
+const letters = [ 'a', 'b', 'c', 'd' ];
+const pairs = zip(numbers, letters);
+
+console.assert(pairs === [
+    [ 1, 'a' ],
+    [ 2, 'b' ],
+    [ 3, 'c' ],
+    [ 4, 'd' ],
+]);
 ```

@@ -18,6 +18,7 @@ for now
 express a common task, is as optimized as possible and helps newcomers. Be aware that it might not be everyones style
 to use small functions and we do not want to change that, just offer a way to do so if desired
 - All functions can be imported in isolation to reduce bundle size if important
+- All functions are implemented in Typescript
 
 ## Contribution Checklist
 
@@ -26,6 +27,7 @@ If you want to post a PR, this checklis might help you to speed up the process b
 - Did you support importing from `mod.ts` as well as your functions file?
 - Have you made sure to allocate as little memory and do as little steps in your algorithm as possible?
 - Did you add/adapt JSDoc comments, add/adapt an example, made sure that the example uses the `ts` markdown tag and `assertEquals` to show the result?
+- Did you add/adapt your functions documentation in `README.md`?
 - Did you make sure **not** to mutate the arguments passe to your function?
 - Did you add tests ensuring no mutation, empty input and corner cases?
 - Are your types flat, meaning there is no unnecessary alias in them that makes your users "go to type definition" twice
