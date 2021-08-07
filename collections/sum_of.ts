@@ -19,15 +19,15 @@ import { Selector } from "./types.ts";
  * ```
  */
 export function sumOf<T>(
-    array: Array<T>,
-    selector: Selector<T, number>
+  array: Array<T>,
+  selector: Selector<T, number>,
 ): number {
-    const selected = array.map(selector);
-    let sum = 0;
-    
-    for (let i of selected) {
-        sum += i;
-    }
+  const selected = array.map(selector);
+  let sum = 0;
 
-    return sum;
+  for (const i of selected) {
+    sum += i;
+  }
+
+  return sum;
 }
