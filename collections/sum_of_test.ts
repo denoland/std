@@ -5,9 +5,9 @@ import { sumOf } from "./sum_of.ts";
 
 Deno.test("[collections/sumOf] On object properties", () => {
     const object = [
-        { name: "Rock Lee", age: 34 },
+        { name: "Kyle", age: 34 },
         { name: "John", age: 42 },
-        { name: "Chun Li", age: 23 },
+        { name: "Anna", age: 23 },
     ]
 
     const actual = sumOf(object, i => i.age);
