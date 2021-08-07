@@ -86,15 +86,19 @@ Deno.test("requireModuleWithConditionalExports", () => {
 Deno.test("requireNodeJsNativeModules", () => {
   // Checks these exist and don't throw.
   require("assert");
+  require("assert/strict");
   require("buffer");
   require("child_process");
+  require("console");
   require("constants");
   require("crypto");
   require("events");
   require("fs");
+  require("fs/promises");
   require("module");
   require("os");
   require("path");
+  require("perf_hooks");
   require("querystring");
   require("stream");
   require("string_decoder");
@@ -105,14 +109,12 @@ Deno.test("requireNodeJsNativeModules", () => {
 
   // TODO(kt3k): add these modules when implemented
   // require("cluster");
-  // require("console");
   // require("dgram");
   // require("dns");
   // require("http");
   // require("http2");
   // require("https");
   // require("net");
-  // require("perf_hooks");
   // require("readline");
   // require("repl");
   // require("sys");
