@@ -33,6 +33,6 @@ Deno.test({
     assertEquals(mode([2, 4]), new Set([2, 4]));
     assertEquals(mode([1, 8, 1, 8]), new Set([1, 8]));
     assertEquals(mode([8, 20, 20, 9, 20, 8, 8, 9]), new Set([8, 20]));
-    assertEquals(mode([1, 3, 4, 5, 3, 1, 4]), new Set([1, 3, 4]))
+    assertEquals(mode([1, 3, 4, 5, 3, 1, 4]), new Set([1, 3, 4]));
   },
 });
