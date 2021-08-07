@@ -1,8 +1,8 @@
 # Contribution Guide
 
 First, thank you for being interested in contributing! We hope this page helps as a guide. When in doubt, look at the files
-in this folder, read through issues and PRs regarding the `collections` module or visit the [#deno-std channel on our Discord]
-(https://discord.gg/Ub9bRxHv) and ask.
+in this folder, read through issues and PRs regarding the `collections` module or visit the
+[#deno-std channel on our Discord](https://discord.gg/Ub9bRxHv) and ask.
 
 ## Philosophy
 
