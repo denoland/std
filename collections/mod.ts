@@ -14,3 +14,4 @@ export * from "./map_keys.ts";
 export * from "./map_values.ts";
 export * from "./partition.ts";
 export * from "./permutations.ts";
+export * from "./sum_of.ts";
