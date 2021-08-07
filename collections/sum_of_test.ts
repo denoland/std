@@ -30,3 +30,35 @@ Deno.test("[collections/sumOf] Regular sum", () => {
 
   assertEquals(actual, 6);
 });
+
+Deno.test("[collections/sumOf] Negatives with regular sum", () => {
+  const array = [-1, -2, -3];
+
+  const actual = sumOf(array, (i) => i);
+
+  assertEquals(actual, -6);
+});
+
+Deno.test("[collections/sumOf] Mixed negatives and positives with regular sum", () => {
+  const array = [-1, 2, 3, -5];
+
+  const actual = sumOf(array, (i) => i);
+
+  assertEquals(actual, -1);
+});
+
+Deno.test("[collections/sumBy] Selector turns nums into negatives", () => {
+  const array = [1, 3, 5, 3];
+
+  const actual = sumOf(array, (i) => i - 6);
+
+  assertEquals(actual, -12);
+});
+
+Deno.test("[collections/sumBy] Selector turns nums into zeros", () => {
+  const array = [3, 3, 3, 3];
+
+  const actual = sumOf(array, (i) => i - 3);
+
+  assertEquals(actual, 0);
+});
