@@ -9,7 +9,7 @@ import { Selector } from "./types.ts";
  *
  * ```typescript
  * import { sumOf } from "./sum_of.ts"
- * 
+ *
  * const people = [
  *     { name: 'Anna', age: 34 },
  *     { name: 'Kim', age: 42 },
