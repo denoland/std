@@ -6,6 +6,9 @@
  * Example:
  *
  * ```ts
+ * import { assertEquals } from "../testing/asserts.ts"
+ * import { median } from "./median.ts"
+ *
  * const numbers = [ 4, 2, 7 ]
  * assertEquals(median(numbers), 4)
  * ```

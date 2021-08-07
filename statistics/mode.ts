@@ -6,6 +6,9 @@
  * Example:
  *
  * ```ts
+ * import { assertEquals } from "../testing/asserts.ts"
+ * import { mode } from "./mode.ts"
+ *
  * const numbers = [ 4, 2, 7, 4 ]
  * assertEquals(mode(numbers), 4)
  * ```

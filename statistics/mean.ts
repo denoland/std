@@ -6,6 +6,9 @@
  * Example:
  *
  * ```ts
+ * import { assertEquals } from "../testing/asserts.ts"
+ * import { mean } from "./mean.ts";
+ *
  * const numbers = [ 4, 2, 9 ]
  * assertEquals(mean(numbers), 5)
  * ```
