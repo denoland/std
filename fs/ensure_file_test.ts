@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { assertThrows, assertThrowsAsync } from "../testing/asserts.ts";
+import { assertRejects, assertThrows } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { ensureFile, ensureFileSync } from "./ensure_file.ts";
 
@@ -12,7 +12,7 @@ Deno.test("ensureFileIfItNotExist", async function () {
 
   await ensureFile(testFile);
 
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await Deno.stat(testFile).then((): void => {
         throw new Error("test file should exists.");
@@ -46,7 +46,7 @@ Deno.test("ensureFileIfItExist", async function () {
 
   await ensureFile(testFile);
 
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await Deno.stat(testFile).then((): void => {
         throw new Error("test file should exists.");
@@ -79,7 +79,7 @@ Deno.test("ensureFileIfItExistAsDir", async function () {
 
   await Deno.mkdir(testDir, { recursive: true });
 
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await ensureFile(testDir);
     },

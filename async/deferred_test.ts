@@ -1,8 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import {
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 import { deferred } from "./deferred.ts";
 
@@ -18,7 +18,7 @@ Deno.test("[async] deferred: reject", async function () {
   const d = deferred<number>();
   assertEquals(d.state, "pending");
   d.reject(new Error("A deno error 🦕"));
-  await assertThrowsAsync(async () => {
+  await assertRejects(async () => {
     await d;
   });
   assertEquals(d.state, "rejected");

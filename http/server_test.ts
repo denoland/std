@@ -10,8 +10,8 @@ import {
   assert,
   assertEquals,
   assertMatch,
+  assertRejects,
   assertStringIncludes,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 import {
   _parseAddrFromStr,
@@ -532,7 +532,7 @@ Deno.test({
     const serverRoutine = async () => {
       const server = serve(":8124");
       for await (const req of server) {
-        await assertThrowsAsync(
+        await assertRejects(
           async () => {
             await req.respond({
               status: 12345,
@@ -727,7 +727,7 @@ Deno.test({
         port,
         // certFile
       });
-      await assertThrowsAsync(
+      await assertRejects(
         () => badConn.read(new Uint8Array(1)),
         Deno.errors.InvalidData,
       );

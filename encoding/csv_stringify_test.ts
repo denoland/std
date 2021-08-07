@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../testing/asserts.ts";
 
 import {
   Column,
@@ -350,7 +350,7 @@ for (const tc of stringifyTestCases) {
     const t = tc as StringifyTestCaseError;
     Deno.test({
       async fn() {
-        await assertThrowsAsync(
+        await assertRejects(
           async () => {
             await stringify(t.data, t.columns, t.options);
           },
