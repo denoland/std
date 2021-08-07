@@ -80,7 +80,7 @@ jobs:
         run: deno lint
 
   hash-wasm:
-    name: "hash/_wasm/"
+    name: "_wasm_crypto/"
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
@@ -91,7 +91,7 @@ jobs:
           submodules: false
           persist-credentials: false
 
-      - name: Check for changes to hash/_wasm/
+      - name: Check for changes to _wasm_crypto/
         id: source
         run: |-
           set -o errexit
@@ -117,16 +117,19 @@ jobs:
 
       - name: Set up wasm-bindgen-cli
         run: |-
-          # This must match the version in hash/_wasm/Cargo.lock:
+          # This must match the version in _wasm_crypto/Cargo.lock:
           cargo install -f wasm-bindgen-cli --version 0.2.74
         if: success() && steps.source.outputs.modified == 'true'
 
-      - name: Rebuild WASM and verify it's unchanged
-        id: build
+      - name: Rebuild WASM
         if: success() && steps.source.outputs.modified == 'true'
         run: |-
           ./_wasm_crypto/_build.ts
 
+      - name: Verify WASM hasn't changed
+        id: build
+        if: success() && steps.source.outputs.modified == 'true'
+        run: |-
           set -o errexit
           shopt -s inherit_errexit
           declare modifications="$(git status --porcelain)"
@@ -139,3 +142,12 @@ jobs:
             echo "::error ::Rebuilt WASM doesn't match committed WASM. Please rebuild and commit."
             exit 1
           fi
+
+      - name: Upload rebuilt ./_wasm_crypto/ as artifact if it didn't match committed
+        if: failure() && steps.build.outputs.modified == 'true'
+        uses: actions/upload-artifact@v2
+        with:
+          name: Rebuilt _wasm_crypto
+          path: |-
+            ./_wasm_crypto/crypto.js
+            ./_wasm_crypto/crypto.wasm.js
