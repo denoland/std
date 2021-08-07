@@ -8,14 +8,16 @@ import { Selector } from "./types.ts";
  * Example:
  *
  * ```typescript
+ * import { sumOf } from "./sum_of.ts"
+ * 
  * const people = [
  *     { name: 'Anna', age: 34 },
  *     { name: 'Kim', age: 42 },
  *     { name: 'John', age: 23 },
  * ]
- * const totalAge = sumOf(people, it => it.age)
+ * const totalAge = sumOf(people, i => i.age)
  *
- * console.assert(totalAge, 99)
+ * console.assert(totalAge === 99)
  * ```
  */
 export function sumOf<T>(
