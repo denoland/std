@@ -1,8 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { filterKeys } from "./filter_keys.ts";
-import { Predicate } from "./types.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { filterKeys } from "../filter_keys.ts";
+import { Predicate } from "../types.ts";
 
 function filterKeysTest<T>(
   input: [Record<string, T>, Predicate<string>],

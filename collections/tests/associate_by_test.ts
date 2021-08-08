@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { associateBy } from "./associate_by.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { associateBy } from "../associate_by.ts";
 
 function associateByTest<T>(
   input: [Array<T>, (el: T) => string],

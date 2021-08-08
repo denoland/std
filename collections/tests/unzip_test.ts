@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { unzip } from "./unzip.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { unzip } from "../unzip.ts";
 
 function unzipTest<T, U>(
   input: [Array<[T, U]>],

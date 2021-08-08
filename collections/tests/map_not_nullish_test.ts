@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { mapNotNullish } from "./map_not_nullish.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { mapNotNullish } from "../map_not_nullish.ts";
 
 function mapNotNullishTest<T, O>(
   input: [Array<T>, (el: T) => O | undefined | null],

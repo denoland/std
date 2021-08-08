@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { findLastIndex } from "./find_last_index.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { findLastIndex } from "../find_last_index.ts";
 
 function findLastIndexTest<I>(
   input: [Array<I>, (element: I) => boolean],

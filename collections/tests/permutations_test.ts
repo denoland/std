@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { permutations } from "./permutations.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { permutations } from "../permutations.ts";
 
 function permutationsTest<T>(
   input: [Array<T>],

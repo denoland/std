@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { chunked } from "./chunked.ts";
+import { assertEquals, assertThrows } from "../../testing/asserts.ts";
+import { chunked } from "../chunked.ts";
 
 function chunkedTest<I>(
   input: [Array<I>, number],

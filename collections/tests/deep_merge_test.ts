@@ -1,5 +1,5 @@
-import { assertEquals } from "../testing/asserts.ts";
-import { deepMerge } from "./deep_merge.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { deepMerge } from "../deep_merge.ts";
 
 Deno.test("deepMerge: simple merge", () => {
   assertEquals(

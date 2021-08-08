@@ -1,8 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { mapEntries } from "./map_entries.ts";
-import { Selector } from "./types.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { mapEntries } from "../map_entries.ts";
+import { Selector } from "../types.ts";
 
 function mapEntriesTest<T, O>(
   input: [Record<string, T>, Selector<[string, T], [string, O]>],

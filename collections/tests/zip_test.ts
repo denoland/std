@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { zip } from "./zip.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { zip } from "../zip.ts";
 
 function zipTest<T, U>(
   input: [Array<T>, Array<U>],

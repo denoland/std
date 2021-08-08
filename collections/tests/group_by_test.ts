@@ -1,8 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { groupBy } from "./group_by.ts";
-import { Selector } from "./types.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { groupBy } from "../group_by.ts";
+import { Selector } from "../types.ts";
 
 function groupByTest<T>(
   input: [Array<T>, Selector<T, string>],

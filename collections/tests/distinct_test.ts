@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { distinct } from "./distinct.ts";
+import { assertEquals } from "../../testing/asserts.ts";
+import { distinct } from "../distinct.ts";
 
 function distinctTest<I>(
   input: Array<I>,
