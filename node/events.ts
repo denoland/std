@@ -32,6 +32,10 @@ export interface WrappedFunction extends Function {
   listener: GenericFunction;
 }
 
+function ensureArray<T>(maybeArray: T[] | T): T[] {
+  return Array.isArray(maybeArray) ? maybeArray : [maybeArray];
+}
+
 // deno-lint-ignore no-explicit-any
 function createIterResult(value: any, done: boolean): IteratorResult<any> {
   return { value, done };
@@ -46,6 +50,15 @@ interface AsyncIterable {
   // deno-lint-ignore no-explicit-any
   [Symbol.asyncIterator](): any;
 }
+
+type EventMap = Record<
+  string | symbol,
+  (
+    | (Array<GenericFunction | WrappedFunction>)
+    | GenericFunction
+    | WrappedFunction
+  ) & { warned?: boolean }
+>;
 
 export let defaultMaxListeners = 10;
 function validateMaxListeners(n: number, name: string): void {
@@ -69,15 +82,10 @@ export class EventEmitter {
   }
 
   private maxListeners: number | undefined;
-  private _events: Map<
-    string | symbol,
-    Array<GenericFunction | WrappedFunction>
-  >;
-
-  private static _alreadyWarnedEvents?: Set<string | symbol>;
+  private _events: EventMap;
 
   public constructor() {
-    this._events = new Map();
+    this._events = Object.create(null);
   }
 
   private _addListener(
@@ -87,17 +95,26 @@ export class EventEmitter {
   ): this {
     this.checkListenerArgument(listener);
     this.emit("newListener", eventName, this.unwrapListener(listener));
-    if (this._events.has(eventName)) {
-      const listeners = this._events.get(eventName) as Array<
-        GenericFunction | WrappedFunction
-      >;
+    if (this.hasListeners(eventName)) {
+      // deno-lint-ignore ban-ts-comment
+      // @ts-expect-error
+      let listeners = this._events[eventName];
+      if (!Array.isArray(listeners)) {
+        listeners = [listeners];
+        // deno-lint-ignore ban-ts-comment
+        // @ts-expect-error
+        this._events[eventName] = listeners;
+      }
+
       if (prepend) {
         listeners.unshift(listener);
       } else {
         listeners.push(listener);
       }
     } else {
-      this._events.set(eventName, [listener]);
+      // deno-lint-ignore ban-ts-comment
+      // @ts-expect-error
+      this._events[eventName] = listener;
     }
     const max = this.getMaxListeners();
     if (max > 0 && this.listenerCount(eventName) > max) {
@@ -124,16 +141,18 @@ export class EventEmitter {
    */
   // deno-lint-ignore no-explicit-any
   public emit(eventName: string | symbol, ...args: any[]): boolean {
-    if (this._events.has(eventName)) {
+    if (this.hasListeners(eventName)) {
       if (
         eventName === "error" &&
-        this._events.get(EventEmitter.errorMonitor)
+        this.hasListeners(EventEmitter.errorMonitor)
       ) {
         this.emit(EventEmitter.errorMonitor, ...args);
       }
-      const listeners = (this._events.get(
-        eventName,
-      ) as GenericFunction[]).slice(); // We copy with slice() so array is not mutated during emit
+
+      // deno-lint-ignore ban-ts-comment
+      // @ts-expect-error
+      const listeners = ensureArray<GenericFunction>(this._events[eventName])
+        .slice(); // We copy with slice() so array is not mutated during emit
       for (const listener of listeners) {
         try {
           listener.apply(this, args);
@@ -143,7 +162,7 @@ export class EventEmitter {
       }
       return true;
     } else if (eventName === "error") {
-      if (this._events.get(EventEmitter.errorMonitor)) {
+      if (this.hasListeners(EventEmitter.errorMonitor)) {
         this.emit(EventEmitter.errorMonitor, ...args);
       }
       const errMsg = args.length > 0 ? args[0] : Error("Unhandled error.");
@@ -157,7 +176,7 @@ export class EventEmitter {
    * registered listeners.
    */
   public eventNames(): [string | symbol] {
-    return Array.from(this._events.keys()) as [string | symbol];
+    return Reflect.ownKeys(this._events) as [string | symbol];
   }
 
   /**
@@ -176,8 +195,11 @@ export class EventEmitter {
    * eventName.
    */
   public listenerCount(eventName: string | symbol): number {
-    if (this._events.has(eventName)) {
-      return (this._events.get(eventName) as GenericFunction[]).length;
+    if (this.hasListeners(eventName)) {
+      // deno-lint-ignore ban-ts-comment
+      // @ts-expect-error
+      const maybeListeners = this._events[eventName];
+      return Array.isArray(maybeListeners) ? maybeListeners.length : 1;
     } else {
       return 0;
     }
@@ -195,14 +217,22 @@ export class EventEmitter {
     eventName: string | symbol,
     unwrap: boolean,
   ): GenericFunction[] {
-    if (!target._events?.has(eventName)) {
+    if (!target.hasListeners(eventName)) {
       return [];
     }
-    const eventListeners = target._events.get(eventName) as GenericFunction[];
 
-    return unwrap
-      ? this.unwrapListeners(eventListeners)
-      : eventListeners.slice(0);
+    // deno-lint-ignore ban-ts-comment
+    // @ts-expect-error
+    const eventListeners = target._events[eventName];
+    if (Array.isArray(eventListeners)) {
+      return unwrap
+        ? this.unwrapListeners(eventListeners)
+        : eventListeners.slice(0) as GenericFunction[];
+    } else {
+      return [
+        unwrap ? this.unwrapListener(eventListeners) : eventListeners,
+      ] as GenericFunction[];
+    }
   }
 
   private unwrapListeners(
@@ -302,7 +332,7 @@ export class EventEmitter {
       }
       this.context.removeListener(
         this.eventName,
-        this.rawListener as GenericFunction,
+        this.listener as GenericFunction,
       );
       this.isCalled = true;
       return this.listener.apply(this.context, args);
@@ -356,8 +386,11 @@ export class EventEmitter {
     }
 
     if (eventName) {
-      if (this._events.has(eventName)) {
-        const listeners = this._events.get(eventName)!.slice().reverse();
+      if (this.hasListeners(eventName)) {
+        // deno-lint-ignore ban-ts-comment
+        // @ts-expect-error
+        const listeners = ensureArray(this._events[eventName]).slice()
+          .reverse();
         for (const listener of listeners) {
           this.removeListener(
             eventName,
@@ -367,9 +400,11 @@ export class EventEmitter {
       }
     } else {
       const eventList = this.eventNames();
-      eventList.forEach((value: string | symbol) => {
-        this.removeAllListeners(value);
+      eventList.forEach((eventName: string | symbol) => {
+        if (eventName === "removeListener") return;
+        this.removeAllListeners(eventName);
       });
+      this.removeAllListeners("removeListener");
     }
 
     return this;
@@ -384,12 +419,13 @@ export class EventEmitter {
     listener: GenericFunction,
   ): this {
     this.checkListenerArgument(listener);
-    if (this._events.has(eventName)) {
-      const arr:
-        | Array<GenericFunction | WrappedFunction>
-        | undefined = this._events.get(eventName);
+    if (this.hasListeners(eventName)) {
+      // deno-lint-ignore ban-ts-comment
+      // @ts-expect-error
+      const maybeArr = this._events[eventName];
 
-      assert(arr);
+      assert(maybeArr);
+      const arr = ensureArray(maybeArr);
 
       let listenerIndex = -1;
       for (let i = arr.length - 1; i >= 0; i--) {
@@ -405,9 +441,19 @@ export class EventEmitter {
 
       if (listenerIndex >= 0) {
         arr.splice(listenerIndex, 1);
-        this.emit("removeListener", eventName, listener);
         if (arr.length === 0) {
-          this._events.delete(eventName);
+          // deno-lint-ignore ban-ts-comment
+          // @ts-expect-error
+          delete this._events[eventName];
+        } else if (arr.length === 1) {
+          // If there is only one listener, an array is not necessary.
+          // deno-lint-ignore ban-ts-comment
+          // @ts-expect-error
+          this._events[eventName] = arr[0];
+        }
+
+        if (this._events.removeListener) {
+          this.emit("removeListener", eventName, listener);
         }
       }
     }
@@ -596,11 +642,13 @@ export class EventEmitter {
   }
 
   private warnIfNeeded(eventName: string | symbol, warning: Error): void {
-    EventEmitter._alreadyWarnedEvents ||= new Set();
-    if (EventEmitter._alreadyWarnedEvents.has(eventName)) {
+    // deno-lint-ignore ban-ts-comment
+    // @ts-expect-error
+    const listeners = this._events[eventName];
+    if (listeners.warned) {
       return;
     }
-    EventEmitter._alreadyWarnedEvents.add(eventName);
+    listeners.warned = true;
     console.warn(warning);
 
     // TODO(uki00a): Here are two problems:
@@ -612,6 +660,12 @@ export class EventEmitter {
     if (maybeProcess instanceof EventEmitter) {
       maybeProcess.emit("warning", warning);
     }
+  }
+
+  private hasListeners(eventName: string | symbol): boolean {
+    // deno-lint-ignore ban-ts-comment
+    // @ts-expect-error
+    return this._events && Boolean(this._events[eventName]);
   }
 }
 
