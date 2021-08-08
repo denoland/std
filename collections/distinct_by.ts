@@ -9,11 +9,12 @@ import { Selector } from "./types.ts";
  *
  * ```ts
  * import { distinctBy } from "./distinct_by.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const names = [ 'Anna', 'Kim', 'Arnold', 'Kate' ]
  * const exampleNamesByFirstLetter = distinctBy(names, it => it.charAt(0))
  *
- * console.assert(exampleNamesByFirstLetter === [ 'Anna', 'Kim' ])
+ * assertEquals(exampleNamesByFirstLetter, [ 'Anna', 'Kim' ])
  * ```
  */
 export function distinctBy<T, D>(

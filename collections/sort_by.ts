@@ -9,6 +9,7 @@ import { Selector } from "./types.ts";
  *
  * ```ts
  * import { sortBy } from "./sort_by.ts"
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const people = [
  *     { name: 'Anna', age: 34 },
@@ -17,7 +18,7 @@ import { Selector } from "./types.ts";
  * ]
  * const sortedByAge = sortBy(people, it => it.age)
  *
- * console.assert(sortedByAge === [
+ * assertEquals(sortedByAge, [
  *     { name: 'John', age: 23 },
  *     { name: 'Anna', age: 34 },
  *     { name: 'Kim', age: 42 },

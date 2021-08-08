@@ -9,11 +9,12 @@ import { Predicate } from "./types.ts";
  *
  * ```ts
  * import { findLastIndex } from "./find_last_index.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const numbers = [ 4, 2, 7 ]
  * const lastIndexNumber = findLastIndex(numbers, it => it % 2 === 0)
  *
- * console.assert(lastIndexNumber === 1)
+ * assertEquals(lastIndexNumber, 1)
  * ```
  */
 export function findLastIndex<T>(

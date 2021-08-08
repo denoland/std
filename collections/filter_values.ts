@@ -9,6 +9,7 @@ import { Predicate } from "./types.ts";
  *
  * ```ts
  * import { filterValues } from "./filter_values.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * type Person = { age: number };
  *
@@ -19,7 +20,7 @@ import { Predicate } from "./types.ts";
  * };
  * const adults = filterValues(people, it => it.age >= 18)
  *
- * console.assert(adults === {
+ * assertEquals(adults, {
  *     'Arnold': { age: 37 },
  *     'Kim': { age: 23 },
  * })

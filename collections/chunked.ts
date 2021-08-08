@@ -7,11 +7,12 @@
  *
  * ```ts
  * import { chunked } from "./chunked.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const words = [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consetetur', 'sadipscing' ]
  * const chunks = chunked(words, 3)
  *
- * console.assert(chunks === [
+ * assertEquals(chunks, [
  *     [ 'lorem', 'ipsum', 'dolor' ],
  *     [ 'sit', 'amet', 'consetetur' ],
  *     [ 'sadipscing' ],

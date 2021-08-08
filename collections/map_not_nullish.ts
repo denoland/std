@@ -6,7 +6,7 @@
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { mapNotNullish } from "./map_not_nullish.ts";
  * import { assertEquals } from "../testing/asserts.ts";
  *

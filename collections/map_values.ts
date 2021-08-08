@@ -10,6 +10,7 @@ import { Selector } from "./types.ts";
  *
  * ```ts
  * import { mapValues } from "./map_values.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const usersById = {
  *     'a5ec': { name: 'Mischa' },
@@ -17,7 +18,7 @@ import { Selector } from "./types.ts";
  * }
  * const namesById = mapValues(usersById, it => it.name)
  *
- * console.assert(namesById === {
+ * assertEquals(namesById, {
  *     'a5ec': 'Mischa',
  *     'de4f': 'Kim',
  * });

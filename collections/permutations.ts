@@ -9,11 +9,12 @@
  *
  * ```ts
  * import { permutations } from "./permutations.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const numbers = [ 1, 2 ]
  * const windows = permutations(numbers)
  *
- * console.assert(windows === [
+ * assertEquals(windows, [
  *     [ 1, 2 ],
  *     [ 2, 1 ],
  * ])

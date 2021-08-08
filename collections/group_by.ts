@@ -10,6 +10,7 @@ import { Grouping, Selector } from "./types.ts";
  *
  * ```ts
  * import { groupBy } from "./group_by.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * type Person = {
  *   name: string;
@@ -22,7 +23,7 @@ import { Grouping, Selector } from "./types.ts";
  * ];
  * const peopleByFirstLetter = groupBy(people, it => it.name.charAt(0))
  *
- * console.assert(peopleByFirstLetter === {
+ * assertEquals(peopleByFirstLetter, {
  *     'A': [ { name: 'Anna' }, { name: 'Arnold' } ],
  *     'K': [ { name: 'Kim' } ],
  * })

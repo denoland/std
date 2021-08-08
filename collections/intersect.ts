@@ -9,12 +9,13 @@ import { filterInPlace } from "./_utils.ts";
  *
  * ```ts
  * import { intersect } from "./intersect.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const lisaInterests = [ 'Cooking', 'Music', 'Hiking' ]
  * const kimInterests = [ 'Music', 'Tennis', 'Cooking' ]
  * const commonInterests = intersect(lisaInterests, kimInterests)
  *
- * console.assert(commonInterests === [ 'Cooking', 'Music' ])
+ * assertEquals(commonInterests, [ 'Cooking', 'Music' ])
  * ```
  */
 export function intersect<T>(...arrays: Array<Array<T>>): Array<T> {

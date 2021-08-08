@@ -9,6 +9,7 @@ import { Selector } from "./types.ts";
  *
  * ```ts
  * import { mapEntries } from "./map_entries.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const usersById = {
  *     'a2e': { name: 'Kim', age: 22 },
@@ -20,7 +21,7 @@ import { Selector } from "./types.ts";
  *     ([ id, { name, age } ]) => [ name, age ],
  * )
  *
- * console.assert(agesByNames === {
+ * assertEquals(agesByNames, {
  *     'Kim': 22,
  *     'Anna': 31,
  *     'Tim': 58,

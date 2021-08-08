@@ -9,6 +9,7 @@ import { Predicate } from "./types.ts";
  *
  * ```ts
  * import { filterKeys } from "./filter_keys.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const menu = {
  *     'Salad': 11,
@@ -17,7 +18,7 @@ import { Predicate } from "./types.ts";
  * }
  * const menuWithoutSalad = filterKeys(menu, it => it !== 'Salad')
  *
- * console.assert(menuWithoutSalad === {
+ * assertEquals(menuWithoutSalad, {
  *     'Soup': 8,
  *     'Pasta': 13,
  * })

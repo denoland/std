@@ -9,11 +9,12 @@ import { Predicate } from "./types.ts";
  *
  * ```ts
  * import { findLast } from "./find_last.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const numbers = [ 4, 2, 7 ]
  * const lastEvenNumber = findLast(numbers, it => it % 2 === 0)
  *
- * console.assert(lastEvenNumber === 2)
+ * assertEquals(lastEvenNumber, 2)
  * ```
  */
 export function findLast<T>(
