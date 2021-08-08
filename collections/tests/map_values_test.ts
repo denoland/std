@@ -2,10 +2,9 @@
 
 import { assertEquals } from "../../testing/asserts.ts";
 import { mapValues } from "../map_values.ts";
-import { Selector } from "../types.ts";
 
 function mapValuesTest<T, O>(
-  input: [Record<string, T>, Selector<T, O>],
+  input: [Record<string, T>, (value: T) => O],
   expected: Record<string, O>,
   message?: string,
 ) {

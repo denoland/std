@@ -1,7 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { Predicate } from "./types.ts";
-
 /**
  * Returns a tuple of two arrays with the first one containing all elements in the given array that match the given predicate
  * and the second one containing all that do not
@@ -21,7 +19,7 @@ import { Predicate } from "./types.ts";
  */
 export function partition<T>(
   array: Array<T>,
-  predicate: Predicate<T>,
+  predicate: (el: T) => boolean,
 ): [Array<T>, Array<T>] {
   const matches: Array<T> = [];
   const rest: Array<T> = [];

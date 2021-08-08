@@ -2,10 +2,9 @@
 
 import { assertEquals } from "../../testing/asserts.ts";
 import { groupBy } from "../group_by.ts";
-import { Selector } from "../types.ts";
 
 function groupByTest<T>(
-  input: [Array<T>, Selector<T, string>],
+  input: [Array<T>, (el: T) => string],
   expected: { [x: string]: Array<T> },
   message?: string,
 ) {

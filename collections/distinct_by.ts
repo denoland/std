@@ -1,7 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { Selector } from "./types.ts";
-
 /**
  * Returns all elements in the given array that produce a distinct value using the given selector, preserving order by first occurence
  *
@@ -19,7 +17,7 @@ import { Selector } from "./types.ts";
  */
 export function distinctBy<T, D>(
   array: Array<T>,
-  selector: Selector<T, D>,
+  selector: (el: T) => D,
 ): Array<T> {
   const selectedValues = new Set<D>();
   const ret = new Array<T>();

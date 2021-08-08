@@ -1,7 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { Predicate } from "./types.ts";
-
 /**
  * Returns the index of the last element in the given array matching the given predicate
  *
@@ -19,7 +17,7 @@ import { Predicate } from "./types.ts";
  */
 export function findLastIndex<T>(
   array: Array<T>,
-  predicate: Predicate<T>,
+  predicate: (el: T) => boolean,
 ): number {
   for (let i = array.length - 1; i >= 0; i -= 1) {
     const element = array[i];

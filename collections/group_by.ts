@@ -1,7 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { Grouping, Selector } from "./types.ts";
-
 /**
  * Applies the given selector to each element in the given array, returning a Record containing the results as keys
  * and all values that produced that key as values.
@@ -31,8 +29,8 @@ import { Grouping, Selector } from "./types.ts";
  */
 export function groupBy<T>(
   array: Array<T>,
-  selector: Selector<T, string>,
-): Grouping<T> {
+  selector: (el: T) => string,
+): { [key: string]: Array<T> } {
   const ret: { [key: string]: Array<T> } = {};
 
   for (const element of array) {

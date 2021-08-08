@@ -1,7 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { Selector } from "./types.ts";
-
 /**
  * Applies the given transformer to all keys in the given record's entries and returns a new record containing the
  * transformed entries.
@@ -25,7 +23,7 @@ import { Selector } from "./types.ts";
  */
 export function mapKeys<T>(
   record: Record<string, T>,
-  transformer: Selector<string, string>,
+  transformer: (key: string) => string,
 ): Record<string, T> {
   const ret: Record<string, T> = {};
   const keys = Object.keys(record);

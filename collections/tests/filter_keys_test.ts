@@ -2,10 +2,9 @@
 
 import { assertEquals } from "../../testing/asserts.ts";
 import { filterKeys } from "../filter_keys.ts";
-import { Predicate } from "../types.ts";
 
 function filterKeysTest<T>(
-  input: [Record<string, T>, Predicate<string>],
+  input: [Record<string, T>, (key: string) => boolean],
   expected: Record<string, T>,
   message?: string,
 ) {
