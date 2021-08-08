@@ -1,14 +1,13 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { Selector } from "./types.ts";
-
 /**
  * Applies the given selector to all elements in the given collection and calculates the sum of the results
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { sumOf } from "./sum_of.ts"
+ * import { assertEquals } from "../testing/asserts.ts"
  *
  * const people = [
  *     { name: 'Anna', age: 34 },
@@ -17,18 +16,17 @@ import { Selector } from "./types.ts";
  * ]
  * const totalAge = sumOf(people, i => i.age)
  *
- * console.assert(totalAge === 99)
+ * assertEquals(totalAge, 99)
  * ```
  */
 export function sumOf<T>(
   array: Array<T>,
-  selector: Selector<T, number>,
+  selector: (el: T) => number,
 ): number {
-  const selected = array.map(selector);
   let sum = 0;
 
-  for (const i of selected) {
-    sum += i;
+  for (const i of array) {
+    sum += selector(i);
   }
 
   return sum;
