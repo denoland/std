@@ -91,30 +91,42 @@ Deno.test("[collections/sumOf] No mutation", () => {
   const array = [1, 2, 3, 4];
 
   sumOf(array, (i) => i + 2);
-  
-  assertEquals(array, [1, 2, 3, 4])
-})
+
+  assertEquals(array, [1, 2, 3, 4]);
+});
 
 Deno.test("[collections/sumOf] Empty array results in 0", () => {
   const array: number[] = [];
-  
+
   const actual = sumOf(array, (i) => i + 2);
 
   assertEquals(actual, 0);
-})
+});
 
 Deno.test("[collections/sumOf] NaN and Infinity", () => {
-  const array = [1, 2, Number.POSITIVE_INFINITY, 3, 4, Number.NEGATIVE_INFINITY, 5, 6, Number.NaN, 7, 8];
+  const array = [
+    1,
+    2,
+    Number.POSITIVE_INFINITY,
+    3,
+    4,
+    Number.NEGATIVE_INFINITY,
+    5,
+    6,
+    Number.NaN,
+    7,
+    8,
+  ];
 
   const actual = sumOf(array, (i) => i);
 
   assertEquals(actual, NaN);
-})
+});
 
 Deno.test("[collections/sumOf] Infinity", () => {
   const array = [1, 2, Infinity, 3, 4, 5, 6, 7, 8];
 
   const actual = sumOf(array, (i) => i);
 
-  assertEquals(actual, Infinity);  
-})
+  assertEquals(actual, Infinity);
+});
