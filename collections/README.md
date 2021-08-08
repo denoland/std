@@ -1,37 +1,39 @@
 # std/collections
 
-This module includes pure functions for specific common tasks around collection types
-like `Array` and `Record`. This module is heavily inspired by `kotlin`s stdlib.
+This module includes pure functions for specific common tasks around collection
+types like `Array` and `Record`. This module is heavily inspired by `kotlin`s
+stdlib.
 
-- All provided functions are **pure**, which also means that hey do **not mutate** your inputs,
-**returning a new value** instead.
-- All functions are importable on their own by referencing their snake_case named file (e.g. `collections/sort_by.ts`)
+- All provided functions are **pure**, which also means that hey do **not
+  mutate** your inputs, **returning a new value** instead.
+- All functions are importable on their own by referencing their snake_case
+  named file (e.g. `collections/sort_by.ts`)
 
-If you want to contribute or undestand why this is done the way it is, see the [contribution guide](CONTRIBUTING.md).
+If you want to contribute or undestand why this is done the way it is, see the
+[contribution guide](CONTRIBUTING.md).
 
 ## Usage
 
 ### associateBy
 
-Transforms the given array into a Record, extracting the key of each element using the given selector.
-If the selector produces the same key for multiple elements, the latest one will be used (overriding the
-ones before it).
+Transforms the given array into a Record, extracting the key of each element
+using the given selector. If the selector produces the same key for multiple
+elements, the latest one will be used (overriding the ones before it).
 
 ```ts
 const users = [
-  { id: 'a2e', userName: 'Anna' },
-  { id: '5f8', userName: 'Arnold' },
-  { id: 'd2c', userName: 'Kim' },
+  { id: "a2e", userName: "Anna" },
+  { id: "5f8", userName: "Arnold" },
+  { id: "d2c", userName: "Kim" },
 ];
 const usersById = associateBy(users, (it) => it.id);
 
 assertEquals(usersById, {
-  'a2e': { id: 'a2e', userName: 'Anna' },
-  '5f8': { id: '5f8', userName: 'Arnold' },
-  'd2c': { id: 'd2c', userName: 'Kim' },
+  "a2e": { id: "a2e", userName: "Anna" },
+  "5f8": { id: "5f8", userName: "Arnold" },
+  "d2c": { id: "d2c", userName: "Kim" },
 });
 ```
-
 
 ### chunked
 
@@ -267,19 +269,20 @@ console.assert(
 
 ### mapNotNullish
 
-Returns a new array, containing all elements in the given array transformed using the given transformer, except the ones
-that were transformed to `null` or `undefined`.
+Returns a new array, containing all elements in the given array transformed
+using the given transformer, except the ones that were transformed to `null` or
+`undefined`.
 
 ```typescript
 const people = [
-    { middleName: null },
-    { middleName: 'William' },
-    { middleName: undefined },
-    { middleName: 'Martha' },
+  { middleName: null },
+  { middleName: "William" },
+  { middleName: undefined },
+  { middleName: "Martha" },
 ];
 const foundMiddleNames = mapNotNullish(people, (it) => it.middleName);
 
-assertEquals(foundMiddleNames, [ 'William', 'Martha' ]);
+assertEquals(foundMiddleNames, ["William", "Martha"]);
 ```
 
 ### mapValues
@@ -337,20 +340,21 @@ console.assert(
 
 ### sortBy
 
-Returns all elements in the given collection, sorted by their result using the given selector
-  
+Returns all elements in the given collection, sorted by their result using the
+given selector
+
 ```ts
 const people = [
-    { name: 'Anna', age: 34 },
-    { name: 'Kim', age: 42 },
-    { name: 'John', age: 23 },
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
 ];
 const sortedByAge = sortBy(people, (it) => it.age);
 
 assertEquals(sortedByAge, [
-    { name: 'John', age: 23 },
-    { name: 'Anna', age: 34 },
-    { name: 'Kim', age: 42 },
+  { name: "John", age: 23 },
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
 ]);
 ```
 
@@ -359,44 +363,48 @@ assertEquals(sortedByAge, [
 Returns all distinct elements that appear in any of the given arrays
 
 ```ts
-const soupIngredients = [ 'Pepper', 'Carrots', 'Leek' ];
-const saladIngredients = [ 'Carrots', 'Radicchio', 'Pepper' ];
+const soupIngredients = ["Pepper", "Carrots", "Leek"];
+const saladIngredients = ["Carrots", "Radicchio", "Pepper"];
 const shoppingList = union(soupIngredients, saladIngredients);
 
-assertEquals(shoppingList, [ 'Pepper', 'Carrots', 'Leek', 'Radicchio' ]);
+assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
 ```
 
 ### unzip
 
-Builds two separate arrays from the given array of 2-tuples, with the first returned array holding all first
-tuple elements and the second one holding all the second elements
+Builds two separate arrays from the given array of 2-tuples, with the first
+returned array holding all first tuple elements and the second one holding all
+the second elements
 
 ```ts
 const parents = [
-    [ 'Maria', 'Jeff' ],
-    [ 'Anna', 'Kim' ],
-    [ 'John', 'Leroy' ],
+  ["Maria", "Jeff"],
+  ["Anna", "Kim"],
+  ["John", "Leroy"],
 ] as [string, string][];
 
-const [ moms, dads ] = unzip(parents);
+const [moms, dads] = unzip(parents);
 
-assertEquals(moms, [ 'Maria', 'Anna', 'John' ]);
-assertEquals(moms, [ 'Jeff', 'Kim', 'Leroy' ]);
+assertEquals(moms, ["Maria", "Anna", "John"]);
+assertEquals(moms, ["Jeff", "Kim", "Leroy"]);
 ```
 
 ### zip
 
-Builds 2-tuples of elements from the given array with matching indices, stopping when the smaller array's end is reached
+Builds 2-tuples of elements from the given array with matching indices, stopping
+when the smaller array's end is reached
 
 ```ts
-const numbers = [ 1, 2, 3, 4 ];
-const letters = [ 'a', 'b', 'c', 'd' ];
+const numbers = [1, 2, 3, 4];
+const letters = ["a", "b", "c", "d"];
 const pairs = zip(numbers, letters);
 
-console.assert(pairs === [
-    [ 1, 'a' ],
-    [ 2, 'b' ],
-    [ 3, 'c' ],
-    [ 4, 'd' ],
-]);
+console.assert(
+  pairs === [
+    [1, "a"],
+    [2, "b"],
+    [3, "c"],
+    [4, "d"],
+  ],
+);
 ```
