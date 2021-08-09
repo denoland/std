@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../../testing/asserts.ts";
-import { filterValues } from "../filter_values.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import { filterValues } from "./filter_values.ts";
 
 function filterValuesTest<T>(
   input: [Record<string, T>, (value: T) => boolean],

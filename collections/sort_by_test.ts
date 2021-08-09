@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../../testing/asserts.ts";
-import { sortBy } from "../sort_by.ts";
+import { assertEquals } from "../testing/asserts.ts";
+import { sortBy } from "./sort_by.ts";
 
 function sortByTest<T>(
   input: [
