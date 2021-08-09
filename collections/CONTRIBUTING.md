@@ -12,8 +12,9 @@ Currently, those are the general ideas behind how the module is implemented:
 - Provide a clear, specific toolbox and vocabulary for common tasks with
   `Array`s and `Record`s
 - Optimize each specific tasks for maximum runtime and memory efficiency
-- Offer only pure functions, never mutate given arguments, always return a new
-  value
+- Functions are expected to be pure by default, side effects (like mutation of
+  arguments) need to be clearly marked, documented and the function put into the
+  `mut/` subfolder
 - Accept and return `Array`s and `Record`s - we are optimizing for the most
   common use cases and leave more general approaches to the
   [ES iterator helpers proposal](https://github.com/tc39/proposal-iterator-helpers)
