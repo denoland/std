@@ -3,7 +3,7 @@ import {
   assert,
   assertEquals,
   assertNotEquals,
-  assertThrowsAsync,
+  assertRejects,
 } from "../testing/asserts.ts";
 import {
   bodyReader,
@@ -117,7 +117,7 @@ Deno.test(
       const h = new Headers({
         trailer: header,
       });
-      await assertThrowsAsync(
+      await assertRejects(
         async () => {
           await readTrailers(
             h,
@@ -138,7 +138,7 @@ Deno.test(
       const h = new Headers({
         trailer: f,
       });
-      await assertThrowsAsync(
+      await assertRejects(
         async () => {
           await readTrailers(h, new BufReader(new Buffer()));
         },
@@ -164,14 +164,14 @@ Deno.test("writeTrailer", async () => {
 
 Deno.test("writeTrailer should throw", async () => {
   const w = new Buffer();
-  await assertThrowsAsync(
+  await assertRejects(
     () => {
       return writeTrailers(w, new Headers(), new Headers());
     },
     TypeError,
     "Missing trailer header.",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     () => {
       return writeTrailers(w, new Headers({ trailer: "deno" }), new Headers());
     },
@@ -179,7 +179,7 @@ Deno.test("writeTrailer should throw", async () => {
     `Trailers are only allowed for "transfer-encoding: chunked", got "transfer-encoding: null".`,
   );
   for (const f of ["content-length", "trailer", "transfer-encoding"]) {
-    await assertThrowsAsync(
+    await assertRejects(
       () => {
         return writeTrailers(
           w,
@@ -191,7 +191,7 @@ Deno.test("writeTrailer should throw", async () => {
       `Prohibited trailer names: [ "`,
     );
   }
-  await assertThrowsAsync(
+  await assertRejects(
     () => {
       return writeTrailers(
         w,

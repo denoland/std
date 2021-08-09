@@ -4,8 +4,8 @@ import { pooledMap } from "./pool.ts";
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertStringIncludes,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 
 Deno.test("[async] pooledMap", async function () {
@@ -33,7 +33,7 @@ Deno.test("[async] pooledMap errors", async function () {
   }
   const mappedNumbers: number[] = [];
   let error = new AggregateError([]);
-  await assertThrowsAsync(async () => {
+  await assertRejects(async () => {
     try {
       for await (const m of pooledMap(3, [1, 2, 3, 4], mapNumber)) {
         mappedNumbers.push(m);

@@ -638,7 +638,7 @@ export function assertThrows<T = void>(
  * If it does not, then it throws.  An error class and a string that should be
  * included in the error message can also be asserted.
  */
-export async function assertThrowsAsync<T = void>(
+export async function assertRejects<T = void>(
   fn: () => Promise<T>,
   ErrorClass?: Constructor,
   msgIncludes = "",
@@ -675,6 +675,15 @@ export async function assertThrowsAsync<T = void>(
     throw new AssertionError(msg);
   }
 }
+
+/**
+ * Executes a function which returns a promise, expecting it to throw or reject.
+ * If it does not, then it throws.  An error class and a string that should be
+ * included in the error message can also be asserted.
+ *
+ * @deprecated
+ */
+export { assertRejects as assertThrowsAsync };
 
 /** Use this to stub out methods that will throw when invoked. */
 export function unimplemented(msg?: string): never {

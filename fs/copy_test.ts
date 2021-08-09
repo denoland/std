@@ -2,8 +2,8 @@
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { copy, copySync } from "./copy.ts";
@@ -51,7 +51,7 @@ testCopy(
   async (tempDir: string) => {
     const srcFile = path.join(testdataDir, "copy_file_not_exists.txt");
     const destFile = path.join(tempDir, "copy_file_not_exists_1.txt");
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await copy(srcFile, destFile);
       },
@@ -64,7 +64,7 @@ testCopy(
   async (tempDir: string) => {
     const srcFile = path.join(tempDir, "copy_file_same.txt");
     const destFile = path.join(tempDir, "copy_file_same.txt");
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await copy(srcFile, destFile);
       },
@@ -111,7 +111,7 @@ testCopy(
     );
 
     // Copy again and it should throw an error.
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await copy(srcFile, destFile);
       },
@@ -172,7 +172,7 @@ testCopy(
 
     await ensureDir(srcDir);
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await copy(srcDir, destDir);
       },
@@ -191,7 +191,7 @@ testCopy(
     await ensureDir(srcDir);
     await ensureFile(destDir);
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await copy(srcDir, destDir);
       },
@@ -227,7 +227,7 @@ testCopy(
     );
 
     // Copy again without overwrite option and it should throw an error.
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await copy(srcDir, destDir);
       },

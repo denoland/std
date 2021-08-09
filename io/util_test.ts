@@ -8,8 +8,8 @@ import { copy } from "../bytes/mod.ts";
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 import { Buffer } from "./buffer.ts";
 import {
@@ -143,7 +143,7 @@ Deno.test({
     init();
     assert(testBytes);
     const file = new MockFile(testBytes);
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await readRange(file, { start: 100, end: 0 });
       },
@@ -159,7 +159,7 @@ Deno.test({
     init();
     assert(testBytes);
     const file = new MockFile(testBytes);
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await readRange(file, { start: 99, end: 100 });
       },

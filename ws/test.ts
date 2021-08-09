@@ -3,7 +3,7 @@ import { BufReader, BufWriter } from "../io/bufio.ts";
 import {
   assert,
   assertEquals,
-  assertThrowsAsync,
+  assertRejects,
   fail,
 } from "../testing/asserts.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
@@ -227,7 +227,7 @@ Deno.test("[ws] handshake should not send search when it's empty", async () => {
   const writer = new Buffer();
   const reader = new Buffer(new TextEncoder().encode("HTTP/1.1 400\r\n"));
 
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await handshake(
         new URL("ws://example.com"),
@@ -252,7 +252,7 @@ Deno.test(
       new TextEncoder().encode("HTTP/1.1 400\r\n"),
     );
 
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await handshake(
           new URL("ws://example.com?a=1"),
@@ -352,12 +352,12 @@ Deno.test(
     const conn = dummyConn(eofReader, buf);
     const sock = createWebSocket({ conn });
     sock.closeForce();
-    await assertThrowsAsync(
+    await assertRejects(
       () => sock.send("hello"),
       Deno.errors.ConnectionReset,
     );
-    await assertThrowsAsync(() => sock.ping(), Deno.errors.ConnectionReset);
-    await assertThrowsAsync(() => sock.close(0), Deno.errors.ConnectionReset);
+    await assertRejects(() => sock.ping(), Deno.errors.ConnectionReset);
+    await assertRejects(() => sock.close(0), Deno.errors.ConnectionReset);
   },
 );
 

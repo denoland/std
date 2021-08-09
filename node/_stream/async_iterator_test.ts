@@ -3,7 +3,7 @@ import Readable from "./readable.ts";
 import Stream from "./stream.ts";
 import toReadableAsyncIterator from "./async_iterator.ts";
 import { deferred } from "../../async/mod.ts";
-import { assertEquals, assertThrowsAsync } from "../../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../../testing/asserts.ts";
 
 Deno.test("Stream to async iterator", async () => {
   let destroyExecuted = 0;
@@ -130,7 +130,7 @@ Deno.test("Async iterator throws on Readable destroyed sync", async () => {
     },
   });
 
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       // deno-lint-ignore no-empty
       for await (const _k of readable) {}
@@ -149,7 +149,7 @@ Deno.test("Async iterator throws on Readable destroyed async", async () => {
 
   readable.destroy(new Error(message));
 
-  await assertThrowsAsync(
+  await assertRejects(
     iterator.next.bind(iterator),
     Error,
     message,

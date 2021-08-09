@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../testing/asserts.ts";
 import {
   getNBytes,
   putVarbig,
@@ -50,7 +50,7 @@ Deno.test("testReadExactThrows", async function () {
     new Uint8Array([2, 3]),
   ]);
   const scratch = new Uint8Array(4);
-  await assertThrowsAsync(async () => {
+  await assertRejects(async () => {
     await readExact(reader, scratch);
   }, Deno.errors.UnexpectedEof);
 });
@@ -65,7 +65,7 @@ Deno.test("testGetNBytes", async function () {
 Deno.test("testGetNBytesThrows", async function () {
   const data = new Uint8Array([1, 2, 3, 4]);
   const buff = new Buffer(data.buffer);
-  await assertThrowsAsync(async () => {
+  await assertRejects(async () => {
     await getNBytes(buff, 8);
   }, Deno.errors.UnexpectedEof);
 });

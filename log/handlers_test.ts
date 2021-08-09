@@ -3,7 +3,7 @@ import {
   assert,
   assertEquals,
   assertNotEquals,
-  assertThrowsAsync,
+  assertRejects,
 } from "../testing/asserts.ts";
 import {
   getLevelByName,
@@ -175,7 +175,7 @@ Deno.test({
     });
     Deno.writeFileSync(LOG_FILE, new TextEncoder().encode("hello world"));
 
-    await assertThrowsAsync(async () => {
+    await assertRejects(async () => {
       await fileHandler.setup();
     }, Deno.errors.AlreadyExists);
 
@@ -235,7 +235,7 @@ Deno.test({
       maxBackupCount: 3,
       mode: "x",
     });
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await fileHandler.setup();
       },
@@ -405,7 +405,7 @@ Deno.test({
 Deno.test({
   name: "RotatingFileHandler maxBytes cannot be less than 1",
   async fn() {
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         const fileHandler = new RotatingFileHandler("WARNING", {
           filename: LOG_FILE,
@@ -424,7 +424,7 @@ Deno.test({
 Deno.test({
   name: "RotatingFileHandler maxBackupCount cannot be less than 1",
   async fn() {
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         const fileHandler = new RotatingFileHandler("WARNING", {
           filename: LOG_FILE,
