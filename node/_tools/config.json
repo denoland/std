@@ -15,6 +15,8 @@
       "test-assert-async.js",
       "test-assert-fail.js",
       "test-event-emitter-add-listeners.js",
+      "test-event-emitter-check-listener-leaks.js",
+      "test-event-emitter-listeners-side-effects.js",
       "test-event-emitter-max-listeners-warning-for-null.js",
       "test-event-emitter-max-listeners-warning-for-symbol.js",
       "test-event-emitter-max-listeners-warning.js",
@@ -25,6 +27,9 @@
       "test-event-emitter-listeners.js",
       "test-event-emitter-once.js",
       "test-event-emitter-remove-all-listeners.js",
+      "test-event-emitter-remove-listeners.js",
+      "test-event-emitter-set-max-listeners-side-effects.js",
+      "test-event-emitter-special-event-names.js",
       "test-util-inherits.js"
     ]
   },
