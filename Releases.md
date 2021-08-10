@@ -1,7 +1,7 @@
 ### 0.104.0 / 2021.08.10
 
 - feat: Add `collections` module (#993, #1075, #1103, #1062, #1062, #1109,
-  #1108, #1071, #1069)
+  #1108, #1071, #1069, #1104, #1097)
 - feat(crypto): add std/crypto wrapping and extending runtime WebCrypto (#1025)
 - feat(http/file_server): return code 304 based on If-Modified-Since Header
   (#1078)
@@ -11,8 +11,6 @@
 - feat(node): fs/promises implementation (#1083)
 - feat(testing): add `assertRejects`, deprecate `assertThrowsAsync` (#1101)
 - fix(async): make it so exception of `deadline` can be caught (#1105)
-- fix(collections): fix NaN handling in sortBy (#1104)
-- fix(collections): make the `sortBy()` of Date a stable sort (#1097)
 - fix(http/file_server): fix flaky 'file_server sets Date header correctly' test
   case (#1095)
 - fix(node): assert/strict, fs/promises, perf_hooks modules could not be
