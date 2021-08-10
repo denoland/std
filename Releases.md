@@ -1,14 +1,7 @@
 ### 0.104.0 / 2021.08.10
 
-- feat: Add std/collections (#993)
-- feat(collections): add `deepMerge` (#1075)
-- feat(collections): add `mapNotNullish` (#1103)
-- feat(collections): add findLastIndex (#1062)
-- feat(collections): add findLastIndex (#1062)
-- feat(collections): add missing functions to collections/mod.ts (#1109)
-- feat(collections): add sumOf (#1108)
-- feat(collections): implement associateBy (#1071)
-- feat(collections): implement sortBy (#1069)
+- feat: Add `collections` module (#993, #1075, #1103, #1062, #1062, #1109,
+  #1108, #1071, #1069)
 - feat(crypto): add std/crypto wrapping and extending runtime WebCrypto (#1025)
 - feat(http/file_server): return code 304 based on If-Modified-Since Header
   (#1078)
@@ -16,7 +9,7 @@
 - feat(node): add shim for perf_hooks (#1088)
 - feat(node): assert/strict alias (#1084)
 - feat(node): fs/promises implementation (#1083)
-- feat(testing): add assertRejects, deprecate assertThrowsAsync (#1101)
+- feat(testing): add `assertRejects`, deprecate `assertThrowsAsync` (#1101)
 - fix(async): make it so exception of `deadline` can be caught (#1105)
 - fix(collections): fix NaN handling in sortBy (#1104)
 - fix(collections): make the `sortBy()` of Date a stable sort (#1097)
