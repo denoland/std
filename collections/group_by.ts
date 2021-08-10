@@ -30,7 +30,7 @@
 export function groupBy<T>(
   array: Array<T>,
   selector: (el: T) => string,
-): { [key: string]: Array<T> } {
+): Record<string, Array<T>> {
   const ret: { [key: string]: Array<T> } = {};
 
   for (const element of array) {
