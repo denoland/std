@@ -142,7 +142,7 @@ const data = await jws.encodeJsonFlattenedSerialization(
 import { jws } from "https://deno.land/std@$STD_VERSION/jose/mod.ts";
 const key = await crypto.subtle.importKey(
   "raw",
-  encoder.encode("secret"),
+  new TextEncoder().encode("secret"),
   { name: "HMAC", hash: "SHA-256" },
   false,
   ["sign", "verify"],
@@ -156,7 +156,6 @@ const data = await jws.encodeJsonGeneralSerialization(
       {
         protected: { alg: "HS256", typ: "JWT" },
         header: { kid: "e9bc097a-ce51-4036-9562-d2ade882db0d" },
-        signature: new ArrayBuffer(0),
       },
     ],
   },
