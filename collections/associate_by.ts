@@ -9,6 +9,7 @@
   *
   * ```ts
   * import { associateBy } from "./associate_by.ts"
+  * import { assertEquals } from "../testing/asserts.ts";
   *
   * const users = [
   *     { id: 'a2e', userName: 'Anna' },
@@ -17,7 +18,7 @@
   * ]
   * const usersById = associateBy(users, it => it.id)
   *
-  * console.assert(usersById === {
+  * assertEquals(usersById, {
   *     'a2e': { id: 'a2e', userName: 'Anna' },
   *     '5f8': { id: '5f8', userName: 'Arnold' },
   *     'd2c': { id: 'd2c', userName: 'Kim' },

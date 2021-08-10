@@ -1,7 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { Grouping, Selector } from "./types.ts";
-
 /**
  * Applies the given selector to each element in the given array, returning a Record containing the results as keys
  * and all values that produced that key as values.
@@ -10,6 +8,7 @@ import { Grouping, Selector } from "./types.ts";
  *
  * ```ts
  * import { groupBy } from "./group_by.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * type Person = {
  *   name: string;
@@ -22,7 +21,7 @@ import { Grouping, Selector } from "./types.ts";
  * ];
  * const peopleByFirstLetter = groupBy(people, it => it.name.charAt(0))
  *
- * console.assert(peopleByFirstLetter === {
+ * assertEquals(peopleByFirstLetter, {
  *     'A': [ { name: 'Anna' }, { name: 'Arnold' } ],
  *     'K': [ { name: 'Kim' } ],
  * })
@@ -30,8 +29,8 @@ import { Grouping, Selector } from "./types.ts";
  */
 export function groupBy<T>(
   array: Array<T>,
-  selector: Selector<T, string>,
-): Grouping<T> {
+  selector: (el: T) => string,
+): Record<string, Array<T>> {
   const ret: { [key: string]: Array<T> } = {};
 
   for (const element of array) {
