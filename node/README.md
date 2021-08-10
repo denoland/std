@@ -9,6 +9,8 @@ deno standard library as it's a compatibility module.
 ## Supported Builtins
 
 - [x] assert _partly_
+- [x] assert/strict _partly_
+- [ ] async_hooks
 - [x] buffer
 - [x] child_process _partly_
 - [ ] cluster
@@ -16,31 +18,42 @@ deno standard library as it's a compatibility module.
 - [x] constants _partly_
 - [x] crypto _partly_
 - [ ] dgram
+- [ ] diagnostics_channel
 - [ ] dns
 - [x] events
 - [x] fs _partly_
+- [x] fs/promises _partly_
 - [ ] http
 - [ ] http2
 - [ ] https
+- [ ] inspector
 - [x] module
 - [ ] net
 - [x] os _partly_
 - [x] path
-- [ ] perf_hooks
+- [x] path/posix
+- [x] path/win32
+- [x] perf_hooks
 - [x] process _partly_
 - [x] querystring
 - [ ] readline
 - [ ] repl
 - [x] stream
+- [x] stream/promises
+- [ ] stream/web
 - [x] string_decoder
-- [ ] sys
+- [x] sys
 - [x] timers
+- [x] timers/promises
 - [ ] tls
+- [ ] trace_events
 - [x] tty _partly_
 - [x] url
 - [x] util _partly_
-- ~~v8~~ _can't implement_
+- [x] util/types _partly_
+- [ ] v8
 - [ ] vm
+- [ ] wasi
 - [ ] worker_threads
 - [ ] zlib
 

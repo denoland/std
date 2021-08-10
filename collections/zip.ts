@@ -7,12 +7,13 @@
  *
  * ```ts
  * import { zip } from "./zip.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const numbers = [ 1, 2, 3, 4 ]
  * const letters = [ 'a', 'b', 'c', 'd' ]
  * const pairs = zip(numbers, letters)
  *
- * console.assert(pairs === [
+ * assertEquals(pairs, [
  *     [ 1, 'a' ],
  *     [ 2, 'b' ],
  *     [ 3, 'c' ],

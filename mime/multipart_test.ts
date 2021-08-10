@@ -2,8 +2,8 @@
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import {
@@ -137,14 +137,14 @@ Deno.test("multipartMultipartWriter3", async function () {
   const mw = new MultipartWriter(w);
   await mw.writeField("foo", "foo");
   await mw.close();
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await mw.close();
     },
     Error,
     "closed",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       // deno-lint-ignore no-explicit-any
       await mw.writeFile("bar", "file", null as any);
@@ -152,7 +152,7 @@ Deno.test("multipartMultipartWriter3", async function () {
     Error,
     "closed",
   );
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await mw.writeField("bar", "bar");
     },
@@ -262,7 +262,7 @@ Deno.test({
     const stat = await Deno.stat(tempfile);
     assertEquals(stat.size, file.size);
     await form.removeAll();
-    await assertThrowsAsync(async () => {
+    await assertRejects(async () => {
       await Deno.stat(tempfile);
     }, Deno.errors.NotFound);
     o.close();

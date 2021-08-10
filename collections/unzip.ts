@@ -8,6 +8,7 @@
  *
  * ```ts
  * import { unzip } from "./unzip.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const parents = [
  *     [ 'Maria', 'Jeff' ],
@@ -17,8 +18,8 @@
  *
  * const [ moms, dads ] = unzip(parents)
  *
- * console.assert(moms === [ 'Maria', 'Anna', 'John' ])
- * console.assert(moms === [ 'Jeff', 'Kim', 'Leroy' ])
+ * assertEquals(moms, [ 'Maria', 'Anna', 'John' ])
+ * assertEquals(moms, [ 'Jeff', 'Kim', 'Leroy' ])
  * ```
  */
 export function unzip<T, U>(pairs: Array<[T, U]>): [Array<T>, Array<U>] {

@@ -3,8 +3,8 @@ import { walk, WalkEntry, WalkOptions, walkSync } from "./walk.ts";
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 
 export function testWalk(
@@ -239,7 +239,7 @@ testWalk(
 testWalk(
   async (_d: string) => {},
   async function nonexistentRoot() {
-    await assertThrowsAsync(async () => {
+    await assertRejects(async () => {
       await walkArray("nonexistent");
     }, Deno.errors.NotFound);
   },
@@ -273,7 +273,7 @@ testWalk(
   },
   async function subDirNoPermissionAsync() {
     try {
-      await assertThrowsAsync(
+      await assertRejects(
         async () => {
           await walkArray("a");
         },

@@ -600,9 +600,8 @@ export function assertThrows<T = void>(
   ErrorClass?: Constructor,
   msgIncludes = "",
   msg?: string,
-): Error {
+): void {
   let doesThrow = false;
-  let error = null;
   try {
     fn();
   } catch (e) {
@@ -627,13 +626,11 @@ export function assertThrows<T = void>(
       throw new AssertionError(msg);
     }
     doesThrow = true;
-    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
   }
-  return error;
 }
 
 /**
@@ -641,14 +638,13 @@ export function assertThrows<T = void>(
  * If it does not, then it throws.  An error class and a string that should be
  * included in the error message can also be asserted.
  */
-export async function assertThrowsAsync<T = void>(
+export async function assertRejects<T = void>(
   fn: () => Promise<T>,
   ErrorClass?: Constructor,
   msgIncludes = "",
   msg?: string,
-): Promise<Error> {
+): Promise<void> {
   let doesThrow = false;
-  let error = null;
   try {
     await fn();
   } catch (e) {
@@ -657,7 +653,7 @@ export async function assertThrowsAsync<T = void>(
     }
     if (ErrorClass && !(e instanceof ErrorClass)) {
       msg =
-        `Expected error to be instance of "${ErrorClass.name}", but got "${e.name}"${
+        `Expected error to be instance of "${ErrorClass.name}", but was "${e.constructor.name}"${
           msg ? `: ${msg}` : "."
         }`;
       throw new AssertionError(msg);
@@ -673,14 +669,21 @@ export async function assertThrowsAsync<T = void>(
       throw new AssertionError(msg);
     }
     doesThrow = true;
-    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
   }
-  return error;
 }
+
+/**
+ * Executes a function which returns a promise, expecting it to throw or reject.
+ * If it does not, then it throws.  An error class and a string that should be
+ * included in the error message can also be asserted.
+ *
+ * @deprecated
+ */
+export { assertRejects as assertThrowsAsync };
 
 /** Use this to stub out methods that will throw when invoked. */
 export function unimplemented(msg?: string): never {

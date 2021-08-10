@@ -1,8 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import {
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { move, moveSync } from "./move.ts";
@@ -17,7 +17,7 @@ Deno.test("moveDirectoryIfSrcNotExists", async function () {
   const srcDir = path.join(testdataDir, "move_test_src_1");
   const destDir = path.join(testdataDir, "move_test_dest_1");
   // if src directory not exist
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await move(srcDir, destDir);
     },
@@ -31,7 +31,7 @@ Deno.test("moveDirectoryIfDestNotExists", async function () {
   await Deno.mkdir(srcDir, { recursive: true });
 
   // if dest directory not exist
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await move(srcDir, destDir);
       throw new Error("should not throw error");
@@ -52,7 +52,7 @@ Deno.test(
     await Deno.mkdir(srcDir, { recursive: true });
 
     // if dest directory not exist
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await move(srcDir, destDir, { overwrite: true });
         throw new Error("should not throw error");
@@ -70,7 +70,7 @@ Deno.test("moveFileIfSrcNotExists", async function () {
   const destFile = path.join(testdataDir, "move_test_dest_3", "test.txt");
 
   // if src directory not exist
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await move(srcFile, destFile);
     },
@@ -99,7 +99,7 @@ Deno.test("moveFileIfDestExists", async function () {
   assertEquals(new TextDecoder().decode(await Deno.readFile(destFile)), "dest");
 
   // move it without override
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await move(srcFile, destFile);
     },
@@ -108,7 +108,7 @@ Deno.test("moveFileIfDestExists", async function () {
   );
 
   // move again with overwrite
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await move(srcFile, destFile, { overwrite: true });
       throw new Error("should not throw error");
@@ -194,7 +194,7 @@ Deno.test("moveIntoSubDir", async function () {
 
   await ensureDir(destDir);
 
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await move(srcDir, destDir);
     },
