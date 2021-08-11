@@ -1,7 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export const osType = (() => {
+export type OSType = "windows" | "linux" | "darwin";
+
+export const osType: OSType = (() => {
   // deno-lint-ignore no-explicit-any
   const { Deno } = globalThis as any;
   if (typeof Deno?.build?.os === "string") {
@@ -17,4 +19,4 @@ export const osType = (() => {
   return "linux";
 })();
 
-export const isWindows = osType === "windows";
+export const isWindows: boolean = osType === "windows";

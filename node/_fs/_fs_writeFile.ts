@@ -11,6 +11,7 @@ import {
   isFileOptions,
   WriteFileOptions,
 } from "./_fs_common.ts";
+import { isWindows } from "../../_util/os.ts";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -53,7 +54,7 @@ export function writeFile(
         : await Deno.open(pathOrRid as string, openOptions);
 
       if (!isRid && mode) {
-        if (Deno.build.os === "windows") notImplemented(`"mode" on Windows`);
+        if (isWindows) notImplemented(`"mode" on Windows`);
         await Deno.chmod(pathOrRid as string, mode);
       }
 
@@ -98,7 +99,7 @@ export function writeFileSync(
       : Deno.openSync(pathOrRid as string, openOptions);
 
     if (!isRid && mode) {
-      if (Deno.build.os === "windows") notImplemented(`"mode" on Windows`);
+      if (isWindows) notImplemented(`"mode" on Windows`);
       Deno.chmodSync(pathOrRid as string, mode);
     }
 

@@ -6,6 +6,7 @@ import {
   assertRejects,
   assertThrows,
 } from "../testing/asserts.ts";
+import { isWindows } from "../_util/os.ts";
 
 export function testWalk(
   setup: (arg0: string) => void | Promise<void>,
@@ -285,7 +286,7 @@ testWalk(
     }
   },
   // TODO(kt3k): Enable this test on windows when Deno.chmod is implemented
-  Deno.build.os === "windows",
+  isWindows,
 );
 
 testWalk(
@@ -307,5 +308,5 @@ testWalk(
     }
   },
   // TODO(kt3k): Enable this test on windows when Deno.chmod is implemented
-  Deno.build.os === "windows",
+  isWindows,
 );

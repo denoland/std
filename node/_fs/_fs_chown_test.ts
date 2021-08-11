@@ -1,11 +1,12 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, fail } from "../../testing/asserts.ts";
+import { isWindows } from "../../_util/os.ts";
 import { assertCallbackErrorUncaught } from "../_utils.ts";
 import { chown, chownSync } from "./_fs_chown.ts";
 
 // chown is difficult to test.  Best we can do is set the existing user id/group
 // id again
-const ignore = Deno.build.os == "windows";
+const ignore = isWindows;
 
 Deno.test({
   ignore,
@@ -53,7 +54,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/node/fs] chown callback isn't called twice if error is thrown",
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
   async fn() {
     const tempFile = await Deno.makeTempFile();
     const { uid, gid } = await Deno.lstat(tempFile);
