@@ -36,22 +36,10 @@ writeVarbig(w: Deno.Writer, x: bigint, o: VarbigOptions = {}): Promise<number>
 
 #### `readMatrix`
 
-```ts
-(reader: BufReader, opt: ReadOptions = {
-  comma: ",",
-  trimLeadingSpace: false,
-  lazyQuotes: false,
-}): Promise<string[][]>
-```
-
 Parse the CSV from the `reader` with the options provided and return
 `string[][]`.
 
 #### `parse`
-
-```ts
-(input: string | BufReader, opt: ParseOptions = { skipFirstRow: false }): Promise<unknown[]>
-```
 
 Parse the CSV string/buffer with the options provided. The result of this
 function is as follows:
@@ -94,10 +82,6 @@ function is as follows:
   first row is used as referral for the number of fields.
 
 #### `stringify`
-
-```ts
-(data: DataItem[], columns: Column[], options?: StringifyOptions): Promise<string>
-```
 
 - **`data`** is the source data to stringify. It's an array of items which are
   plain objects or arrays.

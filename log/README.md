@@ -236,14 +236,14 @@ await log.setup({
 
 // calling:
 log.debug("Hello, world!", 1, "two", [3, 4, 5]);
-// results in:
-[DEBUG] Hello, world! // output from "stringFmt" handler.
-10 Hello, world!, arg0: 1, arg1: two, arg3: [3, 4, 5] // output from "functionFmt" formatter.
+// results in: [DEBUG] Hello, world!
+// output from "stringFmt" handler.
+// 10 Hello, world!, arg0: 1, arg1: two, arg3: [3, 4, 5] // output from "functionFmt" formatter.
 
 // calling:
 log.getLogger("dataLogger").error("oh no!");
 // results in:
-[dataLogger] - ERROR oh no! // output from anotherFmt handler.
+// [dataLogger] - ERROR oh no! // output from anotherFmt handler.
 ```
 
 #### Custom handlers

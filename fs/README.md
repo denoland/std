@@ -87,7 +87,6 @@ detect(Mixedinput); // output EOL.CRLF
 detect(NoNLinput); // output null
 
 format(CRLFinput, EOL.LF); // output "deno\nis not\nnode"
-...
 ```
 
 ### exists
