@@ -43,7 +43,7 @@ const tests = [
   "testdata/wasi_sched_yield.wasm",
 ];
 
-const ignore = [];
+const ignore: Array<string> = [];
 
 // TODO(caspervonb) investigate why these tests are failing on windows and fix
 // them.
@@ -56,8 +56,8 @@ if (Deno.build.os == "windows") {
   ignore.push("testdata/wasi_path_open.wasm");
 }
 
-const rootdir = path.dirname(path.fromFileUrl(import.meta.url));
-const testdir = path.join(rootdir, "testdata");
+const rootdir: string = path.dirname(path.fromFileUrl(import.meta.url));
+const testdir: string = path.join(rootdir, "testdata");
 
 for (const pathname of tests) {
   Deno.test({
