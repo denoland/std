@@ -21,8 +21,8 @@ using the given selector. If the selector produces the same key for multiple
 elements, the latest one will be used (overriding the ones before it).
 
 ```ts
-import { associateBy } from "./mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { associateBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const users = [
   { id: "a2e", userName: "Anna" },
@@ -43,7 +43,7 @@ assertEquals(usersById, {
 Splits the given array into chunks of the given size and returns them.
 
 ```ts
-import { chunked } from "./mod.ts";
+import { chunked } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const words = [
   "lorem",
@@ -76,7 +76,7 @@ include non enumerable properties too.
 
 ```ts
 import { deepMerge } from "./deep_merge.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const a = { foo: true };
 const b = { foo: { bar: true } };
@@ -90,7 +90,7 @@ Returns all elements in the given array that produce a distinct value using the
 given selector, preserving order by first occurence.
 
 ```ts
-import { distinctBy } from "./mod.ts";
+import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const names = ["Anna", "Kim", "Arnold", "Kate"];
 const exampleNamesByFirstLetter = distinctBy(names, (it) => it.charAt(0));
@@ -104,7 +104,7 @@ Returns all distinct elements in the given array, preserving order by first
 occurence.
 
 ```ts
-import { distinct } from "./mod.ts";
+import { distinct } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const numbers = [3, 2, 5, 2, 5];
 const distinctNumbers = distinct(numbers);
@@ -118,7 +118,7 @@ Returns a new record with all entries of the given record except the ones that
 do not match the given predicate.
 
 ```ts
-import { filterEntries } from "./mod.ts";
+import { filterEntries } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const menu = {
   "Salad": 11,
@@ -142,7 +142,7 @@ Returns a new record with all entries of the given record except the ones that
 have a key that does not match the given predicate.
 
 ```ts
-import { filterKeys } from "./mod.ts";
+import { filterKeys } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const menu = {
   "Salad": 11,
@@ -165,14 +165,14 @@ Returns a new record with all entries of the given record except the ones that
 have a value that does not match the given predicate.
 
 ```ts
-import { filterValues } from "./mod.ts";
+import { filterValues } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const people = {
   "Arnold": 37,
   "Sarah": 7,
   "Kim": 23,
 };
-const adults = filterValues(people, (it) => it.age >= 18);
+const adults = filterValues(people, (it) => it >= 18);
 
 console.assert(
   adults === {
@@ -187,7 +187,7 @@ console.assert(
 Returns the last element in the given array matching the given predicate.
 
 ```ts
-import { findLast } from "./mod.ts";
+import { findLast } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const numbers = [4, 2, 7];
 const lastEvenNumber = findLast(numbers, (it) => it % 2 === 0);
@@ -201,7 +201,7 @@ Returns the index of the last element in the given array matching the given
 predicate.
 
 ```ts
-import { findLastIndex } from "./mod.ts";
+import { findLastIndex } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const numbers = [0, 1, 2, 3, 4, 5, 6];
 const lastIndexEvenNumber = findLastIndex(numbers, (it) => it % 2 === 0);
@@ -216,7 +216,7 @@ Record containing the results as keys and all values that produced that key as
 values.
 
 ```ts
-import { groupBy } from "./mod.ts";
+import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const people = [
   { name: "Anna" },
@@ -239,7 +239,7 @@ Returns all distinct elements that appear at least once in each of the given
 arrays.
 
 ```ts
-import { itersect } from "./mod.ts";
+import { intersect } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const lisaInterests = ["Cooking", "Music", "Hiking"];
 const kimInterests = ["Music", "Tennis", "Cooking"];
@@ -254,7 +254,7 @@ Applies the given transformer to all entries in the given record and returns a
 new record containing the results.
 
 ```ts
-import { mapEntries } from "./mod.ts";
+import { mapEntries } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const usersById = {
   "a2e": { name: "Kim", age: 22 },
@@ -281,12 +281,12 @@ If the transformed entries contain the same key multiple times, only the last
 one will appear in the returned record.
 
 ```ts
-import { mapKeys } from "./mod.ts";
+import { mapKeys } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const counts = { a: 5, b: 3, c: 8 };
 
 console.assert(
-  mapKeys(counts, (it) => it.toUppercase()) === {
+  mapKeys(counts, (it) => it.toUpperCase()) === {
     A: 5,
     B: 3,
     C: 8,
@@ -301,7 +301,8 @@ using the given transformer, except the ones that were transformed to `null` or
 `undefined`.
 
 ```ts
-import { mapNotNullish } from "./mod.ts";
+import { mapNotNullish } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = [
   { middleName: null },
@@ -321,7 +322,7 @@ record containing the resulting keys associated to the last value that produced
 them.
 
 ```ts
-import { mapValues } from "./mod.ts";
+import { mapValues } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const usersById = {
   "a5ec": { name: "Mischa" },
@@ -344,7 +345,7 @@ given array that match the given predicate and the second one containing all
 that do not.
 
 ```ts
-import { partition } from "./mod.ts";
+import { partition } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const numbers = [5, 6, 7, 8, 9];
 const [even, odd] = partition(numbers, (it) => it % 2 == 0);
@@ -360,7 +361,7 @@ of elements, meaning this will always reutrn the same number of permutations for
 a given length of input.
 
 ```ts
-import { permutations } from "./mod.ts";
+import { permutations } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const numbers = [1, 2];
 const windows = permutations(numbers);
@@ -379,7 +380,8 @@ Returns all elements in the given collection, sorted by their result using the
 given selector
 
 ```ts
-import { sortBy } from "./mod.ts";
+import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = [
   { name: "Anna", age: 34 },
@@ -400,8 +402,8 @@ assertEquals(sortedByAge, [
 Returns all distinct elements that appear in any of the given arrays
 
 ```ts
-import { union } from "./mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { union } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const soupIngredients = ["Pepper", "Carrots", "Leek"];
 const saladIngredients = ["Carrots", "Radicchio", "Pepper"];
@@ -417,8 +419,8 @@ returned array holding all first tuple elements and the second one holding all
 the second elements
 
 ```ts
-import { unzip } from "./mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { unzip } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const parents = [
   ["Maria", "Jeff"],
@@ -438,7 +440,7 @@ Builds 2-tuples of elements from the given array with matching indices, stopping
 when the smaller array's end is reached
 
 ```ts
-import { zip } from "./mod.ts";
+import { zip } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const numbers = [1, 2, 3, 4];
 const letters = ["a", "b", "c", "d"];

@@ -477,11 +477,16 @@ You can also use custom types by extending schemas.
 
 ```ts
 import {
+  DEFAULT_SCHEMA,
   parse,
   Type,
 } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
 
-const MyYamlType = new Type("!myYamlType", {/* your type definition here*/});
+const yaml = "...";
+const MyYamlType = new Type("!myYamlType", {
+  kind: "sequence",
+  /* other type options here*/
+});
 const MY_SCHEMA = DEFAULT_SCHEMA.extend({ explicit: [MyYamlType] });
 
 parse(yaml, { schema: MY_SCHEMA });
