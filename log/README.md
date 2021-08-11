@@ -202,11 +202,11 @@ Eg.
 await log.setup({
   handlers: {
     stringFmt: new log.handlers.ConsoleHandler("DEBUG", {
-      formatter: "[{levelName}] {msg}"
+      formatter: "[{levelName}] {msg}",
     }),
 
     functionFmt: new log.handlers.ConsoleHandler("DEBUG", {
-      formatter: logRecord => {
+      formatter: (logRecord) => {
         let msg = `${logRecord.level} ${logRecord.msg}`;
 
         logRecord.args.forEach((arg, index) => {
@@ -214,25 +214,25 @@ await log.setup({
         });
 
         return msg;
-      }
+      },
     }),
 
     anotherFmt: new log.handlers.ConsoleHandler("DEBUG", {
-      formatter: "[{loggerName}] - {levelName} {msg}"
+      formatter: "[{loggerName}] - {levelName} {msg}",
     }),
   },
 
   loggers: {
-     default: {
-       level: "DEBUG",
-       handlers: ["stringFmt", "functionFmt"],
-     },
-     dataLogger: {
-       level: "INFO",
-       handlers: ["anotherFmt"],
-     }
-  }
-})
+    default: {
+      level: "DEBUG",
+      handlers: ["stringFmt", "functionFmt"],
+    },
+    dataLogger: {
+      level: "INFO",
+      handlers: ["anotherFmt"],
+    },
+  },
+});
 
 // calling:
 log.debug("Hello, world!", 1, "two", [3, 4, 5]);
