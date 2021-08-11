@@ -22,15 +22,15 @@
  * ```
  */
 export function zip<T, U>(
-  array: Array<T>,
-  withArray: Array<U>,
-): Array<[T, U]> {
+  array: readonly T[],
+  withArray: readonly U[],
+): [T, U][] {
   const returnLength = Math.min(
     array.length,
     withArray.length,
   );
 
-  const ret: Array<[T, U]> = [];
+  const ret: [T, U][] = [];
 
   for (let i = 0; i < returnLength; i += 1) {
     ret.push([

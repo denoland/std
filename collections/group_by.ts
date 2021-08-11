@@ -28,10 +28,10 @@
  * ```
  */
 export function groupBy<T>(
-  array: Array<T>,
+  array: readonly T[],
   selector: (el: T) => string,
-): Record<string, Array<T>> {
-  const ret: { [key: string]: Array<T> } = {};
+): Record<string, T[]> {
+  const ret: Record<string, T[]> = {};
 
   for (const element of array) {
     const key = selector(element);

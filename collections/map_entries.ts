@@ -27,7 +27,7 @@
  * ```
  */
 export function mapEntries<T, O>(
-  record: Record<string, T>,
+  record: Readonly<Record<string, T>>,
   transformer: (entry: [string, T]) => [string, O],
 ): Record<string, O> {
   const ret: Record<string, O> = {};
