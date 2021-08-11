@@ -203,8 +203,10 @@ const _SDFLAGS_WR = 0x0002;
 
 const PREOPENTYPE_DIR = 0;
 
-function syscall<T extends CallableFunction>(target: T) {
-  return function (...args: unknown[]) {
+function syscall<T extends CallableFunction>(
+  target: T,
+): (...args: unknown[]) => number {
+  return function (...args) {
     try {
       return target(...args);
     } catch (err) {
