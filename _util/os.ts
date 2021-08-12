@@ -19,4 +19,4 @@ export const osType: OSType = (() => {
   return "linux";
 })();
 
-export const isWindows: boolean = osType === "windows";
+export const isWindows = osType === "windows";
