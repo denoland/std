@@ -24,13 +24,13 @@
  * ```
  */
 export function sortBy<T>(
-  array: Array<T>,
+  array: readonly T[],
   selector:
     | ((el: T) => number)
     | ((el: T) => string)
     | ((el: T) => bigint)
     | ((el: T) => Date),
-): Array<T> {
+): T[] {
   return Array.from(array).sort((a, b) => {
     const selectedA = selector(a);
     const selectedB = selector(b);

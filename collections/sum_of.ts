@@ -20,7 +20,7 @@
  * ```
  */
 export function sumOf<T>(
-  array: Array<T>,
+  array: readonly T[],
   selector: (el: T) => number,
 ): number {
   let sum = 0;

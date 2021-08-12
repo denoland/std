@@ -19,10 +19,7 @@
  * ])
  * ```
  */
-export function chunked<T>(
-  array: Array<T>,
-  size: number,
-): Array<Array<T>> {
+export function chunked<T>(array: readonly T[], size: number): T[][] {
   if (size <= 0 || !Number.isInteger(size)) {
     throw new Error(
       `Expected size to be an integer greather than 0 but found ${size}`,

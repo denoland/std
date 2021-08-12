@@ -18,7 +18,7 @@ import { filterInPlace } from "./_utils.ts";
  * assertEquals(commonInterests, [ 'Cooking', 'Music' ])
  * ```
  */
-export function intersect<T>(...arrays: Array<Array<T>>): Array<T> {
+export function intersect<T>(...arrays: (readonly T[])[]): T[] {
   if (arrays.length === 0) {
     return [];
   }

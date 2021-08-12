@@ -16,11 +16,11 @@
  * ```
  */
 export function distinctBy<T, D>(
-  array: Array<T>,
+  array: readonly T[],
   selector: (el: T) => D,
-): Array<T> {
+): T[] {
   const selectedValues = new Set<D>();
-  const ret = new Array<T>();
+  const ret: T[] = [];
 
   for (const element of array) {
     const currentSelectedValue = selector(element);

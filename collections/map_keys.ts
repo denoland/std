@@ -22,7 +22,7 @@
  * ```
  */
 export function mapKeys<T>(
-  record: Record<string, T>,
+  record: Readonly<Record<string, T>>,
   transformer: (key: string) => string,
 ): Record<string, T> {
   const ret: Record<string, T> = {};

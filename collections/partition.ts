@@ -18,9 +18,9 @@
  * ```
  */
 export function partition<T>(
-  array: Array<T>,
+  array: readonly T[],
   predicate: (el: T) => boolean,
-): [Array<T>, Array<T>] {
+): [T[], T[]] {
   const matches: Array<T> = [];
   const rest: Array<T> = [];
 

@@ -27,9 +27,9 @@ import { filterInPlace } from "./_utils.ts";
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
 >(
-  record: Partial<T>,
-  other: Partial<T>,
-  options?: DeepMergeOptions,
+  record: Partial<Readonly<T>>,
+  other: Partial<Readonly<T>>,
+  options?: Readonly<DeepMergeOptions>,
 ): T;
 
 export function deepMerge<
@@ -37,9 +37,9 @@ export function deepMerge<
   U extends Record<PropertyKey, unknown>,
   Options extends DeepMergeOptions,
 >(
-  record: T,
-  other: U,
-  options?: Options,
+  record: Readonly<T>,
+  other: Readonly<U>,
+  options?: Readonly<Options>,
 ): DeepMerge<T, U, Options>;
 
 export function deepMerge<
@@ -51,9 +51,9 @@ export function deepMerge<
     maps: "merge";
   },
 >(
-  record: T,
-  other: U,
-  options?: Options,
+  record: Readonly<T>,
+  other: Readonly<U>,
+  options?: Readonly<Options>,
 ): DeepMerge<T, U, Options> {
   // Extract options
   // Clone left operand to avoid performing mutations in-place
@@ -93,14 +93,14 @@ export function deepMerge<
 }
 
 function mergeObjects(
-  left: NonNullable<object>,
-  right: NonNullable<object>,
-  options: DeepMergeOptions = {
+  left: Readonly<NonNullable<object>>,
+  right: Readonly<NonNullable<object>>,
+  options: Readonly<DeepMergeOptions> = {
     arrays: "merge",
     sets: "merge",
     maps: "merge",
   },
-): NonNullable<object> {
+): Readonly<NonNullable<object>> {
   // Recursively merge mergeable objects
   if (isMergeable(left) && isMergeable(right)) {
     return deepMerge(left, right);
@@ -151,7 +151,7 @@ function mergeObjects(
  */
 function isMergeable(
   value: NonNullable<object>,
-): boolean {
+): value is Record<PropertyKey, unknown> {
   return Object.getPrototypeOf(value) === Object.prototype;
 }
 

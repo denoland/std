@@ -16,7 +16,7 @@
  * ```
  */
 export function findLastIndex<T>(
-  array: Array<T>,
+  array: readonly T[],
   predicate: (el: T) => boolean,
 ): number {
   for (let i = array.length - 1; i >= 0; i -= 1) {

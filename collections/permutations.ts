@@ -20,15 +20,15 @@
  * ])
  * ```
  */
-export function permutations<T>(array: Array<T>): Array<Array<T>> {
-  const ret: Array<Array<T>> = [];
+export function permutations<T>(array: readonly T[]): T[][] {
+  const ret: T[][] = [];
 
   if (array.length === 0) {
     return ret;
   }
 
   // Heap Algorithm
-  function heapPermutations(k: number, array: Array<T>) {
+  function heapPermutations(k: number, array: T[]) {
     const c = new Array<number>(k).fill(0);
 
     ret.push([...array]);

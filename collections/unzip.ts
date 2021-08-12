@@ -22,9 +22,9 @@
  * assertEquals(moms, [ 'Jeff', 'Kim', 'Leroy' ])
  * ```
  */
-export function unzip<T, U>(pairs: Array<[T, U]>): [Array<T>, Array<U>] {
+export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
   const { length } = pairs;
-  const ret: [Array<T>, Array<U>] = [
+  const ret: [T[], U[]] = [
     new Array(length),
     new Array(length),
   ];
