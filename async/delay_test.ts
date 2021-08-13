@@ -10,3 +10,39 @@ Deno.test("[async] delay", async function () {
   assert(result === undefined);
   assert(diff >= 100);
 });
+
+Deno.test("[async] delay with abort", async function () {
+  const start = new Date();
+  const abort = new AbortController();
+  const { signal } = abort;
+  const delayedPromise = delay(100, signal);
+  setTimeout(() => abort.abort(), 0);
+  const result = await delayedPromise;
+  const diff = new Date().getTime() - start.getTime();
+  assert(result === undefined);
+  assert(diff < 100);
+});
+
+Deno.test("[async] delay with non-aborted signal", async function () {
+  const start = new Date();
+  const abort = new AbortController();
+  const { signal } = abort;
+  const delayedPromise = delay(100, signal);
+  // abort.abort()
+  const result = await delayedPromise;
+  const diff = new Date().getTime() - start.getTime();
+  assert(result === undefined);
+  assert(diff >= 100);
+});
+
+Deno.test("[async] delay with signal aborted after delay", async function () {
+  const start = new Date();
+  const abort = new AbortController();
+  const { signal } = abort;
+  const delayedPromise = delay(100, signal);
+  const result = await delayedPromise;
+  abort.abort();
+  const diff = new Date().getTime() - start.getTime();
+  assert(result === undefined);
+  assert(diff >= 100);
+});
