@@ -83,7 +83,7 @@ class ServerRequest implements Deno.RequestEvent {
   }
 }
 
-class Server implements AsyncIterable<ServerRequest> {
+export class Server implements AsyncIterable<ServerRequest> {
   #closing = false;
   #httpConnections: Set<Deno.HttpConn> = new Set();
 
@@ -313,7 +313,7 @@ export async function listenAndServe(
     listenOptions = addr;
   }
 
-  const listener = Deno.listen(listenOptions);
+  const listener = Deno.listen({ ...listenOptions, transport: "tcp" });
 
   await serve(listener, handler);
 }
@@ -348,17 +348,18 @@ export async function listenAndServeTls(
   let listenOptions;
 
   if (typeof addr === "undefined" || addr === null) {
-    listenOptions = { port: 80 };
+    listenOptions = { port: 443 };
   } else if (typeof addr === "number") {
     listenOptions = { port: addr };
   } else if (typeof addr === "string") {
-    listenOptions = _parseAddrFromStr(addr);
+    listenOptions = _parseAddrFromStr(addr, 443);
   } else {
     listenOptions = addr;
   }
 
   const listener = Deno.listenTls({
     ...listenOptions,
+    transport: "tcp",
     certFile,
     keyFile,
     // Not yet stable.
