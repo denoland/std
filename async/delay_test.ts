@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { delay } from "./delay.ts";
-import { assert, assertThrowsAsync } from "../testing/asserts.ts";
+import { assert, assertRejects } from "../testing/asserts.ts";
 
 Deno.test("[async] delay", async function () {
   const start = new Date();
@@ -17,7 +17,7 @@ Deno.test("[async] delay with abort", async function () {
   const { signal } = abort;
   const delayedPromise = delay(100, signal);
   setTimeout(() => abort.abort(), 0);
-  const result = await assertThrowsAsync(() => delayedPromise, DOMException, "Delay was aborted");
+  const result = await assertRejects(() => delayedPromise, DOMException, "Delay was aborted");
 
   const diff = new Date().getTime() - start.getTime();
   assert(result === undefined);
