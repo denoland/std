@@ -86,15 +86,15 @@ function decodeSigningInput(
 ) {
   const [encodedProtectedHeader, encodededPayload] = signingInput.split(".");
   return {
-    header: decodeProtectedfHeader(encodedProtectedHeader),
+    header: decodeProtectedHeader(encodedProtectedHeader),
     payload: base64url.decode(encodededPayload),
   };
 }
 
-export function encodeProtectedfHeader(protectedHeader: ProtectedHeader) {
+export function encodeProtectedHeader(protectedHeader: ProtectedHeader) {
   return base64url.encode(encoder.encode(JSON.stringify(protectedHeader)));
 }
-export function decodeProtectedfHeader(
+export function decodeProtectedHeader(
   protectedHeader: string,
 ): ProtectedHeader {
   return JSON.parse(decoder.decode(base64url.decode(protectedHeader)));
@@ -113,7 +113,7 @@ export async function encodeCompactSerialization(
 ) {
   let signature = "";
   const signingInput = encodeSigningInput(
-    encodeProtectedfHeader(header),
+    encodeProtectedHeader(header),
     encodePayload(payload),
   );
   if (checkKeyValidity(header.alg, key)) {
@@ -172,7 +172,7 @@ export async function encodeJsonFlattenedSerialization(
     ...header,
   };
   const signingInput = encodeSigningInput(
-    encodeProtectedfHeader(joseHeader),
+    encodeProtectedHeader(joseHeader),
     encodePayload(payload),
   );
   let signature = "";
@@ -187,7 +187,7 @@ export async function encodeJsonFlattenedSerialization(
   }
   return {
     payload: encodePayload(payload),
-    protected: encodeProtectedfHeader(protectedHeader),
+    protected: encodeProtectedHeader(protectedHeader),
     header,
     signature: signature,
   };
@@ -203,7 +203,7 @@ export async function decodeJsonFlattenedSerialization(
   key: CryptoKey | null,
 ): Promise<DecodedJsonFlattenedSerialization> {
   const payload = decodePayload(data.payload);
-  const protectedHeader = decodeProtectedfHeader(data.protected);
+  const protectedHeader = decodeProtectedHeader(data.protected);
   const header = data.header;
   const signature = decodeSignature(data.signature);
 
@@ -212,7 +212,7 @@ export async function decodeJsonFlattenedSerialization(
     ...header,
   };
   const signingInput = encodeSigningInput(
-    encodeProtectedfHeader(joseHeader),
+    encodeProtectedHeader(joseHeader),
     encodePayload(payload),
   );
   if (checkKeyValidity(protectedHeader.alg, key)) {
@@ -247,7 +247,7 @@ export async function encodeJsonGeneralSerialization(
   const encodedPayload = encodePayload(payload);
   for (const { protected: protectedHeader, header } of signatures) {
     let signature = "";
-    const encodedProtectedHeader = encodeProtectedfHeader(protectedHeader);
+    const encodedProtectedHeader = encodeProtectedHeader(protectedHeader);
     if (checkKeyValidity(protectedHeader.alg, key)) {
       const signingInput = encodeSigningInput(
         encodedProtectedHeader,
@@ -294,7 +294,7 @@ export async function decodeJsonGeneralSerialization(
       signature,
     } of encodedSignatures
   ) {
-    const protectedHeader = decodeProtectedfHeader(encodedProtectedHeader);
+    const protectedHeader = decodeProtectedHeader(encodedProtectedHeader);
     const signingInput = encodeSigningInput(
       encodedProtectedHeader,
       payload,
