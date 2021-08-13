@@ -3,7 +3,7 @@ import type { HTTPOptions } from "./server.ts";
 import { _parseAddrFromStr } from "./server.ts";
 import { MuxAsyncIterator } from "../async/mod.ts";
 
-/** Options for creating a server. */
+/** Address options for creating a server. */
 export type AddrOptions = undefined | null | number | string | HTTPOptions;
 
 /** Information about the connection a request arrived on. */
@@ -19,6 +19,12 @@ export type HttpHandler = (
   req: Request,
   connInfo: ConnInfo,
 ) => Response | Promise<Response>;
+
+/** Additional options for creating a server. */
+export interface ServerOptions {
+  /** A signal to close the server and all connections. */
+  signal?: AbortSignal;
+}
 
 class ServerRequest implements Deno.RequestEvent {
   #request: Request;
@@ -266,12 +272,20 @@ export class Server implements AsyncIterable<ServerRequest> {
  *
  * @param {Deno.Listener} listener The listener to accept connections from.
  * @param {HttpHandler} handler The handler for individual HTTP requests.
+ * @param {ServeOptions} [options] Additional server options.
  */
 export async function serve(
   listener: Deno.Listener,
   handler: HttpHandler,
+  options?: ServerOptions,
 ): Promise<void> {
   const server = new Server(listener);
+
+  if (options?.signal) {
+    options.signal.onabort = () => {
+      server.close();
+    };
+  }
 
   for await (const requestEvent of server) {
     requestEvent.respondWith(
@@ -296,10 +310,12 @@ export async function serve(
  *
  * @param {AddrOptions} addr The TCP address to listen on.
  * @param {HttpHandler} handler The handler for individual HTTP requests.
+ * @param {ServeOptions} [options] Additional server options.
  */
 export async function listenAndServe(
   addr: AddrOptions,
   handler: HttpHandler,
+  options?: ServerOptions,
 ): Promise<void> {
   let listenOptions;
 
@@ -315,7 +331,7 @@ export async function listenAndServe(
 
   const listener = Deno.listen({ ...listenOptions, transport: "tcp" });
 
-  await serve(listener, handler);
+  await serve(listener, handler, options);
 }
 
 /**
@@ -338,12 +354,14 @@ export async function listenAndServe(
  * @param {string} certFile The path to the file containing the TLS certificate.
  * @param {string} keyFile The path to the file containing the TLS private key.
  * @param {HttpHandler} handler The handler for individual HTTP requests.
+ * @param {ServeOptions} [options] Additional server options.
  */
 export async function listenAndServeTls(
   addr: AddrOptions,
   certFile: string,
   keyFile: string,
   handler: HttpHandler,
+  options?: ServerOptions,
 ): Promise<void> {
   let listenOptions;
 
@@ -366,5 +384,5 @@ export async function listenAndServeTls(
     // alpnProtocols: ["h2", "http/1.1"],
   });
 
-  await serve(listener, handler);
+  await serve(listener, handler, options);
 }
