@@ -1,10 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import type { HTTPOptions } from "./server.ts";
+import type { HTTPOptions, HTTPSOptions } from "./server.ts";
 import { _parseAddrFromStr } from "./server.ts";
 import { MuxAsyncIterator } from "../async/mod.ts";
-
-/** Address options for creating a server. */
-export type AddrOptions = undefined | null | number | string | HTTPOptions;
 
 /** Information about the connection a request arrived on. */
 export interface ConnInfo {
@@ -15,8 +12,8 @@ export interface ConnInfo {
 }
 
 /** A handler for HTTP requests. Consumes a request and returns a response. */
-export type HttpHandler = (
-  req: Request,
+export type HTTPHandler = (
+  request: Request,
   connInfo: ConnInfo,
 ) => Response | Promise<Response>;
 
@@ -262,6 +259,7 @@ export class Server implements AsyncIterable<ServerRequest> {
  * these connections with the given handler.
  *
  *     const listener = Deno.listen({ port: 8000 });
+ *
  *     serve(listener, (request) => {
  *       const body = `Your user-agent is:\n\n${request.headers.get(
  *         "user-agent",
@@ -271,13 +269,13 @@ export class Server implements AsyncIterable<ServerRequest> {
  *     });
  *
  * @param {Deno.Listener} listener The listener to accept connections from.
- * @param {HttpHandler} handler The handler for individual HTTP requests.
- * @param {ServeOptions} [options] Additional server options.
+ * @param {HTTPHandler} handler The handler for individual HTTP requests.
+ * @param {ServerOptions} [options] Additional server options.
  */
 export async function serve(
   listener: Deno.Listener,
-  handler: HttpHandler,
-  options?: ServerOptions,
+  handler: HTTPHandler,
+  options: ServerOptions = {},
 ): Promise<void> {
   const server = new Server(listener);
 
@@ -298,9 +296,9 @@ export async function serve(
  * Create a listener on the given address, accept incoming connections, and
  * handle requests on these connections with the given handler.
  *
- *     const options = { port: 8000 };
+ *     const httpOptions = { port: 8000 };
  *
- *     listenAndServe(options, (request) => {
+ *     listenAndServe(httpOptions, (request) => {
  *       const body = `Your user-agent is:\n\n${request.headers.get(
  *         "user-agent",
  *       ) ?? "Unknown"}`;
@@ -308,28 +306,16 @@ export async function serve(
  *       return new Response(body, { status: 200 });
  *     });
  *
- * @param {AddrOptions} addr The TCP address to listen on.
- * @param {HttpHandler} handler The handler for individual HTTP requests.
- * @param {ServeOptions} [options] Additional server options.
+ * @param {HTTPOptions} httpOptions Server address configuration.
+ * @param {HTTPHandler} handler The handler for individual HTTP requests.
+ * @param {ServerOptions} [options] Additional server options.
  */
 export async function listenAndServe(
-  addr: AddrOptions,
-  handler: HttpHandler,
-  options?: ServerOptions,
+  httpOptions: HTTPOptions,
+  handler: HTTPHandler,
+  options: ServerOptions = {},
 ): Promise<void> {
-  let listenOptions;
-
-  if (typeof addr === "undefined" || addr === null) {
-    listenOptions = { port: 80 };
-  } else if (typeof addr === "number") {
-    listenOptions = { port: addr };
-  } else if (typeof addr === "string") {
-    listenOptions = _parseAddrFromStr(addr);
-  } else {
-    listenOptions = addr;
-  }
-
-  const listener = Deno.listen({ ...listenOptions, transport: "tcp" });
+  const listener = Deno.listen({ ...httpOptions, transport: "tcp" });
 
   await serve(listener, handler, options);
 }
@@ -338,11 +324,13 @@ export async function listenAndServe(
  * Create a listener on the given address, accept incoming connections, upgrade
  * them to TLS, and handle requests on these connections with the given handler.
  *
- *     const options = { port: 8000 };
- *     const certFile = "/path/to/localhost.crt"
- *     const keyFile = "/path/to/localhost.key"
+ *     const httpsOptions = {
+ *       port: 8000,
+ *       certFile: "/path/to/localhost.crt",
+ *       keyFile: "/path/to/localhost.key",
+ *     };
  *
- *     listenAndServeTls(options, certFile, keyFile, (request) => {
+ *     listenAndServeTls(httpsOptions, (request) => {
  *       const body = `Your user-agent is:\n\n${request.headers.get(
  *         "user-agent",
  *       ) ?? "Unknown"}`;
@@ -350,36 +338,18 @@ export async function listenAndServe(
  *       return new Response(body, { status: 200 });
  *     });
  *
- * @param {AddrOptions} addr The TCP address to listen on.
- * @param {string} certFile The path to the file containing the TLS certificate.
- * @param {string} keyFile The path to the file containing the TLS private key.
- * @param {HttpHandler} handler The handler for individual HTTP requests.
- * @param {ServeOptions} [options] Additional server options.
+ * @param {HTTPSOptions} httpsOptions Server address and certificate configuration.
+ * @param {HTTPHandler} handler The handler for individual HTTP requests.
+ * @param {ServerOptions} [options] Additional server options.
  */
 export async function listenAndServeTls(
-  addr: AddrOptions,
-  certFile: string,
-  keyFile: string,
-  handler: HttpHandler,
-  options?: ServerOptions,
+  httpsOptions: HTTPSOptions,
+  handler: HTTPHandler,
+  options: ServerOptions = {},
 ): Promise<void> {
-  let listenOptions;
-
-  if (typeof addr === "undefined" || addr === null) {
-    listenOptions = { port: 443 };
-  } else if (typeof addr === "number") {
-    listenOptions = { port: addr };
-  } else if (typeof addr === "string") {
-    listenOptions = _parseAddrFromStr(addr, 443);
-  } else {
-    listenOptions = addr;
-  }
-
   const listener = Deno.listenTls({
-    ...listenOptions,
+    ...httpsOptions,
     transport: "tcp",
-    certFile,
-    keyFile,
     // Not yet stable.
     // alpnProtocols: ["h2", "http/1.1"],
   });

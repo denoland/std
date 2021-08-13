@@ -2,16 +2,37 @@
 
 http is a module to provide HTTP client and server implementations.
 
-```typescript
+## Server
+
+Server APIs using a JavaScript HTTP server implementation.
+
+```ts
 import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+
 const server = serve({ port: 8000 });
 console.log("http://localhost:8000/");
+
 for await (const req of server) {
   req.respond({ body: "Hello World\n" });
 }
 ```
 
-### File Server
+## Native Server
+
+Server APIs utilizing Deno's
+[native HTTP server APIs](https://deno.land/manual/runtime/http_server_apis#http-server-apis).
+
+```ts
+import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/native_server.ts";
+
+listenAndServe({ port: 8000 }, () => {
+  return new Response("Hello World\n");
+});
+
+console.log("http://localhost:8000/");
+```
+
+## File Server
 
 A small program for serving local files over HTTP.
 
