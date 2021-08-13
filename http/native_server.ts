@@ -118,8 +118,9 @@ export class Server implements AsyncIterable<ServerRequest> {
   /**
    * Yields all HTTP requests on a single TCP connection.
    *
-   * @param {HttpConn} httpConn The HTTP connection to yield requests from.
-   * @yields {ServerRequest} HTTP request events
+   * @param {Deno.HttpConn} httpConn The HTTP connection to yield requests from.
+   * @param {Deno.Conn} conn The underlying connection.
+   * @yields {ServerRequest} HTTP request events.
    * @private
    */
   private async *iterateHttpRequests(
@@ -223,7 +224,7 @@ export class Server implements AsyncIterable<ServerRequest> {
   /**
    * Adds the HTTP connection to the internal tracking list.
    *
-   * @param {HttpConn} httpConn
+   * @param {Deno.HttpConn} httpConn
    * @private
    */
   private trackConnection(httpConn: Deno.HttpConn): void {
@@ -233,7 +234,7 @@ export class Server implements AsyncIterable<ServerRequest> {
   /**
    * Removes the HTTP connection from the internal tracking list.
    *
-   * @param {HttpConn} httpConn
+   * @param {Deno.HttpConn} httpConn
    * @private
    */
   private untrackConnection(httpConn: Deno.HttpConn): void {
