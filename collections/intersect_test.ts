@@ -65,7 +65,7 @@ Deno.test({
   name: "[collections/intersect] duplicates",
   fn() {
     intersectTest([["a", "b", "c", "b"], ["b", "c"]], ["b", "c"]);
-    intersectTest([["a", "b"], ["b", "b", "c", "c"]], ["a", "b"]);
+    intersectTest([["a", "b"], ["b", "b", "c", "c"]], ["b"]);
   },
 });
 
