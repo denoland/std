@@ -19,16 +19,13 @@ import { filterInPlace } from "./_utils.ts";
  * ```
  */
 export function intersect<T>(...arrays: (readonly T[])[]): T[] {
-  if (arrays.length === 0) {
-    return [];
-  }
-
   const [originalHead, ...tail] = arrays;
-  const head = [...originalHead];
+  const head = [...new Set(originalHead)];
   const tailSets = tail.map((it) => new Set(it));
 
   for (const set of tailSets) {
     filterInPlace(head, (it) => set.has(it));
+    if (head.length === 0) return head;
   }
 
   return head;
