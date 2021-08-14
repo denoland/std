@@ -20,45 +20,43 @@
  * ])
  * ```
  */
-export function permutations<T>(array: readonly T[]): T[][] {
+export function permutations<T>(inputArray: readonly T[]): T[][] {
   const ret: T[][] = [];
+  const k = inputArray.length;
 
-  if (array.length === 0) {
+  if (k === 0) {
     return ret;
   }
 
-  // Heap Algorithm
-  function heapPermutations(k: number, array: T[]) {
-    const c = new Array<number>(k).fill(0);
+  // Heap's Algorithm
+  const array = [...inputArray];
+  const c = new Array<number>(k).fill(0);
 
-    ret.push([...array]);
+  ret.push([...array]);
 
-    let i = 1;
+  let i = 1;
 
-    while (i < k) {
-      if (c[i] < i) {
-        if (i % 2 === 0) {
-          const swapBuffer = array[0];
-          array[0] = array[i];
-          array[i] = swapBuffer;
-        } else {
-          const swapBuffer = array[c[i]];
-          array[c[i]] = array[i];
-          array[i] = swapBuffer;
-        }
-
-        ret.push([...array]);
-
-        c[i] += 1;
-        i = 1;
+  while (i < k) {
+    if (c[i] < i) {
+      if (i % 2 === 0) {
+        const swapBuffer = array[0];
+        array[0] = array[i];
+        array[i] = swapBuffer;
       } else {
-        c[i] = 0;
-        i += 1;
+        const swapBuffer = array[c[i]];
+        array[c[i]] = array[i];
+        array[i] = swapBuffer;
       }
+
+      ret.push([...array]);
+
+      c[i] += 1;
+      i = 1;
+    } else {
+      c[i] = 0;
+      i += 1;
     }
   }
-
-  heapPermutations(array.length, [...array]);
 
   return ret;
 }
