@@ -3,5 +3,7 @@
 import { listenAndServe } from "../native_server.ts";
 
 const options = { hostname: "0.0.0.0", port: 4504 };
-console.log(`Simple server listening on http://${options.hostname}:${options.port}/`);
+console.log(
+  `Simple server listening on http://${options.hostname}:${options.port}/`,
+);
 await listenAndServe(options, () => new Response());
