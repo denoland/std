@@ -3,6 +3,7 @@ import { Server, ServerRequest } from "./native_server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { readAll, writeAll } from "../io/util.ts";
+import { deferred } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
@@ -12,6 +13,8 @@ import {
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
+
+const nextTick = () => new Promise((resolve) => setTimeout(resolve));
 
 class MockRequestEvent implements Deno.RequestEvent {
   calls: Response[] = [];
@@ -282,3 +285,49 @@ Deno.test("Server should close the underlying listener on close", () => {
     });
   },
 );
+
+Deno.test("Server should not reject when waiting for the request to be processed (i.e. `await serverRequest.done`)", async () => {
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+  };
+  const listener = Deno.listen(listenOptions);
+  const server = new Server(listener);
+
+  const errors: Error[] = [];
+  const onRequest = deferred();
+  const postRespondWith = deferred();
+
+  (async () => {
+    for await (const requestEvent of server) {
+      onRequest.resolve();
+
+      await nextTick();
+
+      // Can expect the requestEvent.respondWith() to reject
+      // but not the server itself during iteration.
+      await requestEvent
+        .respondWith(new Response("test-response"))
+        .catch((error: Error) => errors.push(error));
+
+      postRespondWith.resolve();
+    }
+  })();
+
+  const conn = await Deno.connect(listenOptions);
+
+  await writeAll(
+    conn,
+    new TextEncoder().encode(
+      `GET / HTTP/1.0\r\n\r\n`,
+    ),
+  );
+
+  await onRequest;
+  conn.close();
+
+  await postRespondWith;
+  server.close();
+
+  assertEquals(errors.length, 1);
+});
