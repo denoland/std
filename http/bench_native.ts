@@ -2,16 +2,12 @@
 import { listenAndServe } from "./native_server.ts";
 import { _parseAddrFromStr } from "./server.ts";
 
-const addr = Deno.args[0] || "127.0.0.1:4500";
-const httpOptions = _parseAddrFromStr(addr);
-const body = new TextEncoder().encode("Hello World");
+const address = Deno.args[0] || "127.0.0.1:4500";
+const httpOptions = _parseAddrFromStr(address);
 
-listenAndServe(httpOptions, () => {
-  const resInit = { headers: new Headers() };
-  resInit.headers.set("Date", new Date().toUTCString());
-  resInit.headers.set("Connection", "keep-alive");
+const encoder = new TextEncoder();
+const body = encoder.encode("Hello World");
 
-  return new Response(body, resInit);
-});
+listenAndServe(httpOptions, () => new Response(body));
 
-console.log(`http://${addr}/`);
+console.log("Server listening on", address);
