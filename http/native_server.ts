@@ -1,6 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import type { HTTPOptions, HTTPSOptions } from "./server.ts";
-import { _parseAddrFromStr } from "./server.ts";
 import { MuxAsyncIterator } from "../async/mod.ts";
 
 /** Information about the connection a request arrived on. */
@@ -11,15 +10,18 @@ export interface ConnInfo {
   readonly remoteAddr: Deno.Addr;
 }
 
-/** A handler for HTTP requests. Consumes a request and returns a response. */
+/**
+ * A handler for HTTP requests.
+ * Consumes a request and connection information and returns a response.
+ */
 export type HTTPHandler = (
   request: Request,
   connInfo: ConnInfo,
 ) => Response | Promise<Response>;
 
 /** Additional options for creating a server. */
-export interface ServerOptions {
-  /** A signal to close the server and all connections. */
+export interface ServerInit {
+  /** An AbortSignal close the server and all connections. */
   signal?: AbortSignal;
 }
 
@@ -272,17 +274,17 @@ export class Server implements AsyncIterable<ServerRequest> {
  *
  * @param {Deno.Listener} listener The listener to accept connections from.
  * @param {HTTPHandler} handler The handler for individual HTTP requests.
- * @param {ServerOptions} [options] Additional server options.
+ * @param {ServerInit} [init] Additional server options.
  */
 export async function serve(
   listener: Deno.Listener,
   handler: HTTPHandler,
-  options: ServerOptions = {},
+  init: ServerInit = {},
 ): Promise<void> {
   const server = new Server(listener);
 
-  if (options?.signal) {
-    options.signal.onabort = () => {
+  if (init?.signal) {
+    init.signal.onabort = () => {
       server.close();
     };
   }
@@ -310,16 +312,16 @@ export async function serve(
  *
  * @param {HTTPOptions} httpOptions Server address configuration.
  * @param {HTTPHandler} handler The handler for individual HTTP requests.
- * @param {ServerOptions} [options] Additional server options.
+ * @param {ServerInit} [init] Additional server options.
  */
 export async function listenAndServe(
   httpOptions: HTTPOptions,
   handler: HTTPHandler,
-  options: ServerOptions = {},
+  init: ServerInit = {},
 ): Promise<void> {
   const listener = Deno.listen({ ...httpOptions, transport: "tcp" });
 
-  await serve(listener, handler, options);
+  await serve(listener, handler, init);
 }
 
 /**
@@ -342,12 +344,12 @@ export async function listenAndServe(
  *
  * @param {HTTPSOptions} httpsOptions Server address and certificate configuration.
  * @param {HTTPHandler} handler The handler for individual HTTP requests.
- * @param {ServerOptions} [options] Additional server options.
+ * @param {ServerInit} [init] Additional server options.
  */
 export async function listenAndServeTls(
   httpsOptions: HTTPSOptions,
   handler: HTTPHandler,
-  options: ServerOptions = {},
+  init: ServerInit = {},
 ): Promise<void> {
   const listener = Deno.listenTls({
     ...httpsOptions,
@@ -356,5 +358,5 @@ export async function listenAndServeTls(
     // alpnProtocols: ["h2", "http/1.1"],
   });
 
-  await serve(listener, handler, options);
+  await serve(listener, handler, init);
 }
