@@ -25,7 +25,7 @@ export interface ServerInit {
   signal?: AbortSignal;
 }
 
-class ServerRequest implements Deno.RequestEvent {
+export class ServerRequest implements Deno.RequestEvent {
   #request: Request;
   #connInfo: ConnInfo;
   #resolver!: (value: Response | Promise<Response>) => void;
