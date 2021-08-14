@@ -57,9 +57,7 @@ export class ServerRequest implements Deno.RequestEvent {
     return this.#request;
   }
 
-  /**
-   * Get the connection info.
-   */
+  /** Get the connection info. */
   get connInfo(): ConnInfo {
     return this.#connInfo;
   }
@@ -354,8 +352,6 @@ export async function listenAndServeTls(
   const listener = Deno.listenTls({
     ...httpsOptions,
     transport: "tcp",
-    // Not yet stable.
-    // alpnProtocols: ["h2", "http/1.1"],
   });
 
   await serve(listener, handler, init);
