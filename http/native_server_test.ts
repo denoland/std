@@ -41,38 +41,6 @@ class MockRequestEvent implements Deno.RequestEvent {
   }
 }
 
-class MockListener implements Deno.Listener {
-  closed = false;
-
-  constructor(public conn: Deno.Conn) {}
-
-  get addr(): Deno.Addr {
-    return this.conn.localAddr;
-  }
-
-  get rid(): number {
-    return 8080;
-  }
-
-  accept(): Promise<Deno.Conn> {
-    return Promise.resolve(this.conn);
-  }
-
-  close(): void {
-    this.closed = true;
-  }
-
-  async *[Symbol.asyncIterator](): AsyncIterableIterator<Deno.Conn> {
-    while (true) {
-      if (this.closed) {
-        break;
-      }
-
-      yield this.conn;
-    }
-  }
-}
-
 Deno.test("ServerRequest should expose the underlying Request through a getter", async () => {
   const mockRequestEvent = new MockRequestEvent("http://0.0.0.0:4505");
   const request = new ServerRequest(mockRequestEvent, createMockConn());
@@ -129,7 +97,6 @@ Deno.test("ServerRequest should reject with a BadResource error if the response 
 
   try {
     await request.respondWith(mockResponse);
-
     unreachable();
   } catch (error) {
     assertEquals(error, new Deno.errors.BadResource("Response already sent."));
@@ -143,110 +110,162 @@ Deno.test("ServerRequest should reject if the underlying request event rejects (
     undefined,
     mockError,
   );
-  const mockResponse = new Response("test-response", { status: 200 });
 
+  const mockResponse = new Response("test-response", { status: 200 });
   const request = new ServerRequest(mockRequestEvent, createMockConn());
 
   try {
     await request.respondWith(mockResponse);
-
     unreachable();
   } catch (error) {
     assertEquals(error, mockError);
   }
 });
 
-Deno.test("Server should expose the underlying listener", () => {
-  const mockListener = new MockListener(createMockConn());
-  const server = new Server(mockListener);
+Deno.test("Server should expose it's address and handler", () => {
+  const addr = ":4505";
+  const handler = () => new Response();
+  const server = new Server({ addr, handler });
 
-  assertEquals(server.listener, mockListener);
+  assertEquals(server.addr, addr);
+  assertEquals(server.handler, handler);
 });
 
-Deno.test("Server should close the underlying listener on close", () => {
-  const mockListener = new MockListener(createMockConn());
-  const server = new Server(mockListener);
+Deno.test("Server should expose whether it is closed", () => {
+  const handler = () => new Response();
+  const server = new Server({ handler });
+
+  assertEquals(server.closed, false);
 
   server.close();
+  assertEquals(server.closed, true);
+});
 
-  assertEquals(mockListener.closed, true);
+Deno.test("Server.serve should throw an error if the server is already closed", async () => {
+  const handler = () => new Response();
+  const server = new Server({ handler });
+  server.close();
+
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+  };
+  const listener = Deno.listen(listenOptions);
+
+  await assertThrowsAsync(
+    () => server.serve(listener),
+    Deno.errors.Http,
+    "Server closed",
+  );
+
+  try {
+    listener.close();
+  } catch (error) {
+    if (!(error instanceof Deno.errors.BadResource)) {
+      throw error;
+    }
+  }
+});
+
+Deno.test("Server.listenAndServe should throw an error if the server is already closed", async () => {
+  const handler = () => new Response();
+  const server = new Server({ handler });
+  server.close();
+
+  await assertThrowsAsync(
+    () => server.listenAndServe(),
+    Deno.errors.Http,
+    "Server closed",
+  );
+});
+
+Deno.test("Server.listenAndServeTls should throw an error if the server is already closed", async () => {
+  const handler = () => new Response();
+  const server = new Server({ handler });
+  server.close();
+
+  const certFile = join(testdataDir, "tls/localhost.crt");
+  const keyFile = join(testdataDir, "tls/localhost.key");
+
+  await assertThrowsAsync(
+    () => server.listenAndServeTls(certFile, keyFile),
+    Deno.errors.Http,
+    "Server closed",
+  );
 });
 
 ["get", "post", "put", "delete", "patch"].forEach(
   (method) => {
-    Deno.test(`Server should construct a new HTTP Server capable of handling ${method} requests and gracefully closing afterwards`, async () => {
+    Deno.test(`Server.serve should handle ${method} requests`, async () => {
       const listenOptions = {
         hostname: "localhost",
         port: 4505,
       };
       const listener = Deno.listen(listenOptions);
+
       const url = `http://${listenOptions.hostname}:${listenOptions.port}`;
+      const status = 418;
+      const body = `${method}: ${url} - Hello Deno on HTTP!`;
 
-      const expectedStatus = 418;
-      const expectedBody = `${method}: ${url} - Hello Deno on HTTP!`;
+      const handler = () => new Response(body, { status });
 
-      const server = new Server(listener);
-
-      (async () => {
-        for await (const requestEvent of server) {
-          const response = new Response(expectedBody, {
-            status: expectedStatus,
-          });
-
-          await requestEvent.respondWith(response);
-        }
-      })();
+      const server = new Server({ handler });
+      server.serve(listener);
 
       try {
         const response = await fetch(url, { method });
-        const body = await response.text();
-
-        assertEquals(body, expectedBody);
-        assertEquals(response.status, expectedStatus);
-      } catch (_) {
+        assertEquals(await response.text(), body);
+        assertEquals(response.status, status);
+      } catch {
         unreachable();
       } finally {
         server.close();
       }
     });
-  },
-);
 
-["get", "post", "put", "delete", "patch"].forEach(
-  (method) => {
-    Deno.test(`Server should construct a new HTTPS Server capable of handling ${method} requests and gracefully closing afterwards`, async () => {
-      const listenTlsOptions = {
-        hostname: "localhost",
-        port: 4505,
-        certFile: join(testdataDir, "tls/localhost.crt"),
-        keyFile: join(testdataDir, "tls/localhost.key"),
-      };
+    Deno.test(`Server.listenAndServe should handle ${method} requests`, async () => {
+      const addr = "localhost:4505";
+      const url = `http://${addr}`;
+      const status = 418;
+      const body = `${method}: ${url} - Hello Deno on HTTP!`;
 
-      const listener = Deno.listenTls(listenTlsOptions);
-      const url =
-        `https://${listenTlsOptions.hostname}:${listenTlsOptions.port}`;
+      const handler = () => new Response(body, { status });
 
-      const expectedStatus = 418;
-      const expectedBody = `${method}: ${url} - Hello Deno on HTTPS!`;
+      const server = new Server({ addr, handler });
+      server.listenAndServe();
 
-      const server = new Server(listener);
+      try {
+        const response = await fetch(url, { method });
+        assertEquals(await response.text(), body);
+        assertEquals(response.status, status);
+      } catch {
+        unreachable();
+      } finally {
+        server.close();
+      }
+    });
 
-      (async () => {
-        for await (const requestEvent of server) {
-          const response = new Response(expectedBody, {
-            status: expectedStatus,
-          });
+    Deno.test(`Server.listenAndServeTls should handle ${method} requests`, async () => {
+      const hostname = "localhost";
+      const port = 4505;
+      const addr = `${hostname}:${port}`;
+      const certFile = join(testdataDir, "tls/localhost.crt");
+      const keyFile = join(testdataDir, "tls/localhost.key");
+      const url = `http://${addr}`;
+      const status = 418;
+      const body = `${method}: ${url} - Hello Deno on HTTPS!`;
 
-          await requestEvent.respondWith(response);
-        }
-      })();
+      const handler = () => new Response(body, { status });
+
+      const server = new Server({ addr, handler });
+      server.listenAndServeTls(certFile, keyFile);
 
       try {
         // Invalid certificate, connection should throw on first read or write
         // but should not crash the server.
         const badConn = await Deno.connectTls({
-          hostname: listenTlsOptions.hostname,
-          port: listenTlsOptions.port,
+          hostname,
+          port,
           // missing certFile
         });
 
@@ -261,8 +280,8 @@ Deno.test("Server should close the underlying listener on close", () => {
 
         // Valid request after invalid
         const conn = await Deno.connectTls({
-          hostname: listenTlsOptions.hostname,
-          port: listenTlsOptions.port,
+          hostname,
+          port,
           certFile: join(testdataDir, "tls/RootCA.pem"),
         });
 
@@ -278,47 +297,159 @@ Deno.test("Server should close the underlying listener on close", () => {
         conn.close();
 
         assert(
-          response.includes("HTTP/1.0 418 I'm a teapot"),
+          response.includes(`HTTP/1.0 ${status}`),
           "Status code not correct",
         );
         assert(
-          response.includes(expectedBody),
+          response.includes(body),
           "Response body not correct",
         );
       } finally {
         server.close();
       }
     });
+
+    Deno.test(`serve should handle ${method} requests`, async () => {
+      const listenOptions = {
+        hostname: "localhost",
+        port: 4505,
+      };
+      const listener = Deno.listen(listenOptions);
+
+      const url = `http://${listenOptions.hostname}:${listenOptions.port}`;
+      const status = 418;
+      const body = `${method}: ${url} - Hello Deno on HTTP!`;
+
+      const handler = () => new Response(body, { status });
+      const abortController = new AbortController();
+
+      serve(listener, handler, { signal: abortController.signal });
+
+      try {
+        const response = await fetch(url, { method });
+        assertEquals(await response.text(), body);
+        assertEquals(response.status, status);
+      } catch {
+        unreachable();
+      } finally {
+        abortController.abort();
+      }
+    });
+
+    Deno.test(`listenAndServe should handle ${method} requests`, async () => {
+      const addr = "localhost:4505";
+      const url = `http://${addr}`;
+      const status = 418;
+      const body = `${method}: ${url} - Hello Deno on HTTP!`;
+
+      const handler = () => new Response(body, { status });
+      const abortController = new AbortController();
+
+      listenAndServe(addr, handler, { signal: abortController.signal });
+
+      try {
+        const response = await fetch(url, { method });
+        assertEquals(await response.text(), body);
+        assertEquals(response.status, status);
+      } catch {
+        unreachable();
+      } finally {
+        abortController.abort();
+      }
+    });
+
+    Deno.test(`Server.listenAndServeTls should handle ${method} requests`, async () => {
+      const hostname = "localhost";
+      const port = 4505;
+      const addr = `${hostname}:${port}`;
+      const certFile = join(testdataDir, "tls/localhost.crt");
+      const keyFile = join(testdataDir, "tls/localhost.key");
+      const url = `http://${addr}`;
+      const status = 418;
+      const body = `${method}: ${url} - Hello Deno on HTTPS!`;
+
+      const handler = () => new Response(body, { status });
+      const abortController = new AbortController();
+
+      listenAndServeTls(addr, certFile, keyFile, handler, {
+        signal: abortController.signal,
+      });
+
+      try {
+        // Invalid certificate, connection should throw on first read or write
+        // but should not crash the server.
+        const badConn = await Deno.connectTls({
+          hostname,
+          port,
+          // missing certFile
+        });
+
+        await assertThrowsAsync(
+          () => badConn.read(new Uint8Array(1)),
+          Deno.errors.InvalidData,
+          "invalid certificate: UnknownIssuer",
+          "Read with missing certFile didn't throw an InvalidData error when it should have.",
+        );
+
+        badConn.close();
+
+        // Valid request after invalid
+        const conn = await Deno.connectTls({
+          hostname,
+          port,
+          certFile: join(testdataDir, "tls/RootCA.pem"),
+        });
+
+        await writeAll(
+          conn,
+          new TextEncoder().encode(
+            `${method.toUpperCase()} / HTTP/1.0\r\n\r\n`,
+          ),
+        );
+
+        const response = new TextDecoder().decode(await readAll(conn));
+
+        conn.close();
+
+        assert(
+          response.includes(`HTTP/1.0 ${status}`),
+          "Status code not correct",
+        );
+        assert(
+          response.includes(body),
+          "Response body not correct",
+        );
+      } finally {
+        abortController.abort();
+      }
+    });
   },
 );
 
-Deno.test("Server should not reject when waiting for the request to be processed (i.e. `await serverRequest.done`)", async () => {
+Deno.test("Server should not reject when connection is closed before the message is complete", async () => {
   const listenOptions = {
     hostname: "localhost",
     port: 4505,
   };
   const listener = Deno.listen(listenOptions);
-  const server = new Server(listener);
 
-  const errors: Error[] = [];
   const onRequest = deferred();
   const postRespondWith = deferred();
 
-  (async () => {
-    for await (const requestEvent of server) {
-      onRequest.resolve();
+  const handler = async () => {
+    onRequest.resolve();
 
-      await nextTick();
+    await nextTick();
 
-      // Can expect the requestEvent.respondWith() to reject
-      // but not the server itself during iteration.
-      await requestEvent
-        .respondWith(new Response("test-response"))
-        .catch((error: Error) => errors.push(error));
-
+    try {
+      return new Response("test-response");
+    } finally {
       postRespondWith.resolve();
     }
-  })();
+  };
+
+  const server = new Server({ handler });
+  server.serve(listener);
 
   const conn = await Deno.connect(listenOptions);
 
@@ -334,142 +465,4 @@ Deno.test("Server should not reject when waiting for the request to be processed
 
   await postRespondWith;
   server.close();
-
-  assertEquals(errors.length, 1);
-});
-
-Deno.test(`serve should construct a new HTTP Server capable of handling requests and gracefully closing afterwards`, async () => {
-  const listenOptions = {
-    hostname: "localhost",
-    port: 4505,
-  };
-  const listener = Deno.listen(listenOptions);
-  const url = `http://${listenOptions.hostname}:${listenOptions.port}`;
-  const method = "GET";
-  const expectedStatus = 418;
-  const abortController = new AbortController();
-
-  const servePromise = serve(listener, (request, connInfo) => {
-    const remotePort = (connInfo.localAddr as Deno.NetAddr).port;
-    return new Response(
-      `${request.method}: ${remotePort} - Hello Deno from serve!`,
-      {
-        status: expectedStatus,
-      },
-    );
-  }, { signal: abortController.signal });
-
-  try {
-    const response = await fetch(url, { method });
-    const body = await response.text();
-
-    assertEquals(
-      body,
-      `${method}: ${listenOptions.port} - Hello Deno from serve!`,
-    );
-    assertEquals(response.status, expectedStatus);
-  } catch (_) {
-    unreachable();
-  } finally {
-    abortController.abort();
-    await servePromise;
-  }
-});
-
-Deno.test(`listenAndServe should construct a new HTTP Server capable of handling requests and gracefully closing afterwards`, async () => {
-  const listenOptions = {
-    hostname: "localhost",
-    port: 4505,
-  };
-  const url = `http://${listenOptions.hostname}:${listenOptions.port}`;
-  const method = "GET";
-  const expectedStatus = 418;
-  const abortController = new AbortController();
-
-  const servePromise = listenAndServe(listenOptions, (request, connInfo) => {
-    const remotePort = (connInfo.localAddr as Deno.NetAddr).port;
-    return new Response(
-      `${request.method}: ${remotePort} - Hello Deno from listenAndServe!`,
-      {
-        status: expectedStatus,
-      },
-    );
-  }, { signal: abortController.signal });
-
-  try {
-    const response = await fetch(url, { method });
-    const body = await response.text();
-
-    assertEquals(
-      body,
-      `${method}: ${listenOptions.port} - Hello Deno from listenAndServe!`,
-    );
-    assertEquals(response.status, expectedStatus);
-  } catch (_) {
-    unreachable();
-  } finally {
-    abortController.abort();
-    await servePromise;
-  }
-});
-
-Deno.test(`listenAndServeTls should construct a new HTTPS Server capable of handling requests and gracefully closing afterwards`, async () => {
-  const listenTlsOptions = {
-    hostname: "localhost",
-    port: 4505,
-    certFile: join(testdataDir, "tls/localhost.crt"),
-    keyFile: join(testdataDir, "tls/localhost.key"),
-  };
-  const method = "GET";
-  const expectedStatus = 418;
-  const abortController = new AbortController();
-
-  const servePromise = listenAndServeTls(
-    listenTlsOptions,
-    (request, connInfo) => {
-      const remotePort = (connInfo.localAddr as Deno.NetAddr).port;
-      return new Response(
-        `${request.method}: ${remotePort} - Hello Deno from listenTlsOptions!`,
-        {
-          status: expectedStatus,
-        },
-      );
-    },
-    { signal: abortController.signal },
-  );
-
-  try {
-    const conn = await Deno.connectTls({
-      hostname: listenTlsOptions.hostname,
-      port: listenTlsOptions.port,
-      certFile: join(testdataDir, "tls/RootCA.pem"),
-    });
-
-    await writeAll(
-      conn,
-      new TextEncoder().encode(
-        `${method.toUpperCase()} / HTTP/1.0\r\n\r\n`,
-      ),
-    );
-
-    const response = new TextDecoder().decode(await readAll(conn));
-
-    conn.close();
-
-    assert(
-      response.includes(`HTTP/1.0 ${expectedStatus} I'm a teapot`),
-      "Status code not correct",
-    );
-    assert(
-      response.includes(
-        `${method}: ${listenTlsOptions.port} - Hello Deno from listenTlsOptions!`,
-      ),
-      "Response body not correct",
-    );
-  } catch (_) {
-    unreachable();
-  } finally {
-    abortController.abort();
-    await servePromise;
-  }
 });

@@ -261,8 +261,9 @@ export type HTTPOptions = Omit<Deno.ListenOptions, "transport">;
  *     parseAddrFromString(addr);
  *
  * @param addr Address string
+ * @param defaultPort Default port when not included in address string
  */
-export function _parseAddrFromStr(addr: string): HTTPOptions {
+export function _parseAddrFromStr(addr: string, defaultPort = 80): HTTPOptions {
   let url: URL;
   try {
     const host = addr.startsWith(":") ? `0.0.0.0${addr}` : addr;
@@ -282,7 +283,7 @@ export function _parseAddrFromStr(addr: string): HTTPOptions {
 
   return {
     hostname: url.hostname,
-    port: url.port === "" ? 80 : Number(url.port),
+    port: url.port === "" ? defaultPort : Number(url.port),
   };
 }
 

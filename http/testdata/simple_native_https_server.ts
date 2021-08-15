@@ -4,14 +4,13 @@ import { listenAndServeTls } from "../native_server.ts";
 import { dirname, fromFileUrl, join } from "../../path/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
-const tlsOptions = {
-  hostname: "localhost",
-  port: 4505,
-  certFile: join(moduleDir, "tls/localhost.crt"),
-  keyFile: join(moduleDir, "tls/localhost.key"),
-};
-console.log(
-  `Simple HTTPS server listening on https://${tlsOptions.hostname}:${tlsOptions.port}/`,
-);
-const body = new TextEncoder().encode("Hello HTTPS");
-await listenAndServeTls(tlsOptions, () => new Response(body));
+
+const addr = "0.0.0.0:4505";
+const certFile = join(moduleDir, "tls/localhost.crt");
+const keyFile = join(moduleDir, "tls/localhost.key");
+const encoder = new TextEncoder();
+const body = encoder.encode("Hello HTTPS!");
+
+console.log(`Simple HTTPS server listening on https://${addr}`);
+
+await listenAndServeTls(addr, certFile, keyFile, () => new Response(body));
