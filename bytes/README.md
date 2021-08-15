@@ -106,20 +106,20 @@ concat(
 ); // => returns Uint8Array(8) [ 1, 2, 3, 4, 5, 6, 7, 8 ]
 ```
 
-## contains
+## includes
 
-Checks that a given binary array contains a sequence corresponding to a pattern
+Checks that a given binary array includes a sequence corresponding to a pattern
 array.
 
 ```typescript
-import { contains } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
+import { includes } from "https://deno.land/std@$STD_VERSION/bytes/mod.ts";
 
-contains(
+includes(
   new Uint8Array([1, 2, 0, 1, 2, 0, 2, 1, 3]),
   new Uint8Array([0, 1, 2]),
 ); // => returns true
 
-contains(
+includes(
   new Uint8Array([1, 2, 0, 1, 2, 0, 2, 1, 3]),
   new Uint8Array([2, 2]),
 ); // => returns false

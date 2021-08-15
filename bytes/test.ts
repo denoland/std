@@ -2,10 +2,10 @@
 
 import {
   concat,
-  contains,
   copy,
   endsWith,
   equals,
+  includes,
   indexOf,
   lastIndexOf,
   repeat,
@@ -53,6 +53,25 @@ Deno.test("[bytes] indexOf with start index 2", () => {
     7,
   );
   assertEquals(i, -1);
+});
+
+Deno.test("[bytes] indexOf with start index < 0", () => {
+  assertEquals(
+    indexOf(
+      new Uint8Array([0, 1, 2, 0, 1, 2]),
+      new Uint8Array([0, 1]),
+      3,
+    ),
+    3,
+  );
+  assertEquals(
+    indexOf(
+      new Uint8Array([0, 1, 2, 1, 1, 2]),
+      new Uint8Array([0, 1]),
+      3,
+    ),
+    -1,
+  );
 });
 
 Deno.test("[bytes] lastIndexOf1", () => {
@@ -187,13 +206,16 @@ Deno.test("[bytes] concat multiple arrays", () => {
   assert(u2 !== joined);
 });
 
-Deno.test("[bytes] contains", () => {
+Deno.test("[bytes] includes", () => {
   const encoder = new TextEncoder();
   const source = encoder.encode("deno.land");
   const pattern = encoder.encode("deno");
-  assert(contains(source, pattern));
 
-  assert(contains(new Uint8Array([0, 1, 2, 3]), new Uint8Array([2, 3])));
+  assert(includes(source, pattern));
+  assert(includes(new Uint8Array([0, 1, 2, 3]), new Uint8Array([2, 3])));
+
+  assert(includes(source, pattern, -10));
+  assert(!includes(source, pattern, -1));
 });
 
 Deno.test("[bytes] copy", function (): void {
