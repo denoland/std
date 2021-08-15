@@ -25,9 +25,7 @@ Server APIs utilizing Deno's
 ```ts
 import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/native_server.ts";
 
-listenAndServe({ port: 8000 }, () => {
-  return new Response("Hello World\n");
-});
+listenAndServe(":8000", () => new Response("Hello World\n"));
 
 console.log("http://localhost:8000/");
 ```
