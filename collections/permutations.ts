@@ -9,25 +9,26 @@
  *
  * ```ts
  * import { permutations } from "./permutations.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const numbers = [ 1, 2 ]
  * const windows = permutations(numbers)
  *
- * console.assert(windows === [
+ * assertEquals(windows, [
  *     [ 1, 2 ],
  *     [ 2, 1 ],
  * ])
  * ```
  */
-export function permutations<T>(array: Array<T>): Array<Array<T>> {
-  const ret: Array<Array<T>> = [];
+export function permutations<T>(array: readonly T[]): T[][] {
+  const ret: T[][] = [];
 
   if (array.length === 0) {
     return ret;
   }
 
   // Heap Algorithm
-  function heapPermutations(k: number, array: Array<T>) {
+  function heapPermutations(k: number, array: T[]) {
     const c = new Array<number>(k).fill(0);
 
     ret.push([...array]);

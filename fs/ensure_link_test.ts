@@ -2,8 +2,8 @@
 // TODO(axetroy): Add test for Windows once symlink is implemented for Windows.
 import {
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { ensureLink, ensureLinkSync } from "./ensure_link.ts";
@@ -17,7 +17,7 @@ Deno.test("ensureLinkIfItNotExist", async function () {
   const testFile = path.join(srcDir, "test.txt");
   const linkFile = path.join(destDir, "link.txt");
 
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await ensureLink(testFile, linkFile);
     },
@@ -141,7 +141,7 @@ Deno.test("ensureLinkDirectoryIfItExist", async function () {
   await Deno.mkdir(testDir, { recursive: true });
   await Deno.writeFile(testFile, new Uint8Array());
 
-  await assertThrowsAsync(
+  await assertRejects(
     async () => {
       await ensureLink(testDir, linkDir);
     },

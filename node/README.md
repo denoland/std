@@ -123,7 +123,7 @@ actual node behavior.
 When converting from promise-based to callback-based APIs, the most obvious way
 is like this:
 
-```ts
+```ts, ignore
 promise.then((value) => callback(null, value)).catch(callback);
 ```
 
@@ -131,7 +131,7 @@ This has a subtle bug - if the callback throws an error, the catch statement
 will also catch _that_ error, and the callback will be called twice. The correct
 way to do it is like this:
 
-```ts
+```ts, ignore
 promise.then((value) => callback(null, value), callback);
 ```
 
@@ -141,7 +141,7 @@ from the existing promise, not the new one created by the callback.
 If the Deno equivalent is actually synchronous, there's a similar problem with
 try/catch statements:
 
-```ts
+```ts, ignore
 try {
   const value = process();
   callback(null, value);
@@ -155,7 +155,7 @@ caught and call the callback again.
 
 The correct way to do it is like this:
 
-```ts
+```ts, ignore
 let err, value;
 try {
   value = process();

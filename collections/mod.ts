@@ -18,6 +18,7 @@ export * from "./map_not_nullish.ts";
 export * from "./map_values.ts";
 export * from "./partition.ts";
 export * from "./permutations.ts";
+export * from "./sum_of.ts";
 export * from "./sort_by.ts";
 export * from "./union.ts";
 export * from "./unzip.ts";

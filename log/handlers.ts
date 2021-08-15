@@ -6,10 +6,10 @@ import { exists, existsSync } from "../fs/exists.ts";
 import { BufWriterSync } from "../io/bufio.ts";
 
 const DEFAULT_FORMATTER = "{levelName} {msg}";
-type FormatterFunction = (logRecord: LogRecord) => string;
-type LogMode = "a" | "w" | "x";
+export type FormatterFunction = (logRecord: LogRecord) => string;
+export type LogMode = "a" | "w" | "x";
 
-interface HandlerOptions {
+export interface HandlerOptions {
   formatter?: string | FormatterFunction;
 }
 

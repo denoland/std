@@ -6,7 +6,7 @@
  *
  * Example:
  *
- * ```typescript
+ * ```ts
  * import { mapNotNullish } from "./map_not_nullish.ts";
  * import { assertEquals } from "../testing/asserts.ts";
  *
@@ -22,10 +22,10 @@
  * ```
  */
 export function mapNotNullish<T, O>(
-  array: Array<T>,
+  array: readonly T[],
   transformer: (el: T) => O,
-): Array<NonNullable<O>> {
-  const ret = new Array<NonNullable<O>>();
+): NonNullable<O>[] {
+  const ret: NonNullable<O>[] = [];
 
   for (const element of array) {
     const transformedElement = transformer(element);

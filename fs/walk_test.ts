@@ -3,9 +3,10 @@ import { walk, WalkEntry, WalkOptions, walkSync } from "./walk.ts";
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
+import { isWindows } from "../_util/os.ts";
 
 export function testWalk(
   setup: (arg0: string) => void | Promise<void>,
@@ -239,7 +240,7 @@ testWalk(
 testWalk(
   async (_d: string) => {},
   async function nonexistentRoot() {
-    await assertThrowsAsync(async () => {
+    await assertRejects(async () => {
       await walkArray("nonexistent");
     }, Deno.errors.NotFound);
   },
@@ -273,7 +274,7 @@ testWalk(
   },
   async function subDirNoPermissionAsync() {
     try {
-      await assertThrowsAsync(
+      await assertRejects(
         async () => {
           await walkArray("a");
         },
@@ -285,7 +286,7 @@ testWalk(
     }
   },
   // TODO(kt3k): Enable this test on windows when Deno.chmod is implemented
-  Deno.build.os === "windows",
+  isWindows,
 );
 
 testWalk(
@@ -307,5 +308,5 @@ testWalk(
     }
   },
   // TODO(kt3k): Enable this test on windows when Deno.chmod is implemented
-  Deno.build.os === "windows",
+  isWindows,
 );

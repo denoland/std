@@ -7,14 +7,15 @@
  *
  * ```ts
  * import { distinct } from "./distinct.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const numbers = [ 3, 2, 5, 2, 5 ]
  * const distinctNumbers = distinct(numbers)
  *
- * console.assert(distinctNumbers === [ 3, 2, 5 ])
+ * assertEquals(distinctNumbers, [ 3, 2, 5 ])
  * ```
  */
-export function distinct<T>(array: Array<T>): Array<T> {
+export function distinct<T>(array: readonly T[]): T[] {
   const set = new Set(array);
 
   return Array.from(set);

@@ -50,7 +50,7 @@ let response: Response = {};
 const cookie: Cookie = { name: "Space", value: "Cat" };
 setCookie(response, cookie);
 
-const cookieHeader = response.headers.get("set-cookie");
+const cookieHeader = response.headers!.get("set-cookie");
 console.log("Set-Cookie:", cookieHeader);
 // Set-Cookie: Space=Cat
 ```
@@ -65,7 +65,7 @@ import { deleteCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts"
 let response: Response = {};
 deleteCookie(response, "deno");
 
-const cookieHeader = response.headers.get("set-cookie");
+const cookieHeader = response.headers!.get("set-cookie");
 console.log("Set-Cookie:", cookieHeader);
 // Set-Cookie: deno=; Expires=Thus, 01 Jan 1970 00:00:00 GMT
 ```
@@ -74,6 +74,10 @@ console.log("Set-Cookie:", cookieHeader);
 > were used to set the cookie.
 
 ```ts
+import { Response } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+import { deleteCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+
+let response: Response = {};
 deleteCookie(response, "deno", { path: "/", domain: "deno.land" });
 ```
 

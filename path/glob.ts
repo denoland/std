@@ -5,6 +5,7 @@ import { isWindows, osType } from "../_util/os.ts";
 import { SEP, SEP_PATTERN } from "./separator.ts";
 import * as _win32 from "./win32.ts";
 import * as _posix from "./posix.ts";
+import type { OSType } from "../_util/os.ts";
 
 const path = isWindows ? _win32 : _posix;
 const { join, normalize } = path;
@@ -21,7 +22,7 @@ export interface GlobOptions {
   /** Whether globstar should be case insensitive. */
   caseInsensitive?: boolean;
   /** Operating system. Defaults to the native OS. */
-  os?: "darwin" | "linux" | "windows";
+  os?: OSType;
 }
 
 export type GlobToRegExpOptions = GlobOptions;
