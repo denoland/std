@@ -186,3 +186,6 @@ export function copy(src: Uint8Array, dst: Uint8Array, off = 0): number {
   dst.set(src, off);
   return src.byteLength;
 }
+
+/** @deprecated */
+export { includes as contains };
