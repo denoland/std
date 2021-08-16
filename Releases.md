@@ -1,3 +1,12 @@
+### 0.105.0 / 2021.08.16
+
+- refactor(bytes): rename `contains` to `includes` with optional argument `fromIndex` (#1133)
+- fix(crypto): make crypto bench depend on sibling version of testing module (#1135)
+- fix(collections): intersect does not handle duplicate values in head properly (#1131)
+- docs(collections): fix typo in collections docs (#1127)
+- feat(collections): compile time guarantee on pure functions (#1119)
+- fix: type check examples in README files (#1121)
+
 ### 0.104.0 / 2021.08.10
 
 - feat: Add `collections` module (#993, #1075, #1103, #1062, #1062, #1109,
