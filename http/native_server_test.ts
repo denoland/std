@@ -13,6 +13,7 @@ import { deferred } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
+  assertThrows,
   assertThrowsAsync,
   unreachable,
 } from "../testing/asserts.ts";
@@ -122,15 +123,6 @@ Deno.test("ServerRequest should reject if the underlying request event rejects (
   }
 });
 
-Deno.test("Server should expose it's address and handler", () => {
-  const addr = ":4505";
-  const handler = () => new Response();
-  const server = new Server({ addr, handler });
-
-  assertEquals(server.addr, addr);
-  assertEquals(server.handler, handler);
-});
-
 Deno.test("Server should expose whether it is closed", () => {
   const handler = () => new Response();
   const server = new Server({ handler });
@@ -139,6 +131,18 @@ Deno.test("Server should expose whether it is closed", () => {
 
   server.close();
   assertEquals(server.closed, true);
+});
+
+Deno.test("Server.close should throw an error if the server is already closed", async () => {
+  const handler = () => new Response();
+  const server = new Server({ handler });
+  server.close();
+
+  await assertThrows(
+    () => server.close(),
+    Deno.errors.Http,
+    "Server closed",
+  );
 });
 
 Deno.test("Server.serve should throw an error if the server is already closed", async () => {
@@ -426,7 +430,7 @@ Deno.test("Server.listenAndServeTls should throw an error if the server is alrea
   },
 );
 
-Deno.test("Server should not reject when connection is closed before the message is complete", async () => {
+Deno.test("Server should not reject when the connection is closed before the message is complete", async () => {
   const listenOptions = {
     hostname: "localhost",
     port: 4505,
@@ -464,5 +468,39 @@ Deno.test("Server should not reject when connection is closed before the message
   conn.close();
 
   await postRespondWith;
+  server.close();
+});
+
+Deno.test("Server should not reject when the handler throws", async () => {
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+  };
+  const listener = Deno.listen(listenOptions);
+
+  const postRespondWith = deferred();
+
+  const handler = () => {
+    try {
+      throw new Error("test-error");
+    } finally {
+      postRespondWith.resolve();
+    }
+  };
+
+  const server = new Server({ handler });
+  server.serve(listener);
+
+  const conn = await Deno.connect(listenOptions);
+
+  await writeAll(
+    conn,
+    new TextEncoder().encode(
+      `GET / HTTP/1.0\r\n\r\n`,
+    ),
+  );
+
+  await postRespondWith;
+  conn.close();
   server.close();
 });

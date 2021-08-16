@@ -1,6 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { _parseAddrFromStr } from "./server.ts";
-import { MuxAsyncIterator } from "../async/mod.ts";
 
 /**
  * Thrown by Server serve-like methods after the server has been closed.
@@ -42,6 +41,10 @@ export interface ConnInfo {
 /**
  * A handler for HTTP requests. Consumes a request and connection information
  * and returns a response.
+ *
+ * If the handler throws, the server calling the handler will assume the impact
+ * of the error is isolated to the individual request. It will catch the error
+ * and close the underlying connection.
  */
 export type Handler = (
   request: Request,
@@ -120,7 +123,7 @@ export class ServerRequest implements Deno.RequestEvent {
 export interface ServerInit {
   /**
    * Optionally specifies the TCP address to listen on, in the form
-   * `host:port`. If not provided, ":80" is used by default for HTTP and ":443"
+   * "host:port". If not provided, ":80" is used by default for HTTP and ":443"
    * is used by default for HTTPS.
    */
   addr?: string;
@@ -132,8 +135,8 @@ export interface ServerInit {
 }
 
 export class Server {
-  addr?: string;
-  handler: Handler;
+  #addr?: string;
+  #handler: Handler;
   #closed = false;
   #listeners: Set<Deno.Listener> = new Set();
   #httpConnections: Set<Deno.HttpConn> = new Set();
@@ -141,11 +144,21 @@ export class Server {
   /**
    * Constructs a new Server instance.
    *
+   *     const addr = ":4505";
+   *     const handler = (request) => {
+   *       const body = `Your user-agent is:\n\n${request.headers.get(
+   *         "user-agent",
+   *       ) ?? "Unknown"}`;
+   *
+   *       return new Response(body, { status: 200 });
+   *     });
+   *     const server = new Server({ addr, handler });
+   *
    * @param {ServerInit} options Options for running a server.
    */
   constructor({ addr, handler }: ServerInit) {
-    this.addr = addr;
-    this.handler = handler;
+    this.#addr = addr;
+    this.#handler = handler;
   }
 
   /**
@@ -156,8 +169,11 @@ export class Server {
    *
    * Will always close the listener.
    *
+   *     const listener = Deno.listen({ port: 4505 });
+   *     server.serve(listener);
+   *
    * @param {Deno.Listener} listener The listener to accept connections from.
-   * @throws {Deno.errors.Http} When the server has been closed.
+   * @throws {Deno.errors.Http} When the server has already been closed.
    */
   async serve(listener: Deno.Listener): Promise<void> {
     if (this.#closed) {
@@ -166,24 +182,15 @@ export class Server {
 
     this.trackListener(listener);
 
-    const mux = this.serveMux(listener);
-
     try {
-      for await (const requestEvent of mux) {
-        requestEvent.respondWith(this.handler(
-          requestEvent.request,
-          requestEvent.connInfo,
-        ));
-      }
+      return await this.accept(listener);
     } finally {
       this.untrackListener(listener);
 
       try {
         listener.close();
-      } catch (error) {
-        if (!(error instanceof Deno.errors.BadResource)) {
-          throw error;
-        }
+      } catch {
+        // Listener has been closed.
       }
     }
   }
@@ -194,14 +201,16 @@ export class Server {
    *
    * Throws a server closed error if the server has been closed.
    *
-   * @throws {Deno.errors.Http} When the server has been closed.
+   *     server.listenAndServe();
+   *
+   * @throws {Deno.errors.Http} When the server has already been closed.
    */
   async listenAndServe(): Promise<void> {
     if (this.#closed) {
       throw ERROR_SERVER_CLOSED;
     }
 
-    const addr = this.addr ?? `:${HTTP_PORT}`;
+    const addr = this.#addr ?? `:${HTTP_PORT}`;
     const listenOptions = _parseAddrFromStr(addr, HTTP_PORT);
 
     const listener = Deno.listen({
@@ -209,17 +218,7 @@ export class Server {
       transport: "tcp",
     });
 
-    try {
-      return await this.serve(listener);
-    } finally {
-      try {
-        listener.close();
-      } catch (error) {
-        if (!(error instanceof Deno.errors.BadResource)) {
-          throw error;
-        }
-      }
-    }
+    return await this.serve(listener);
   }
 
   /**
@@ -228,16 +227,20 @@ export class Server {
    *
    * Throws a server closed error if the server has been closed.
    *
+   *     const certFile = "/path/to/certFile.crt";
+   *     const keyFile = "/path/to/keyFile.key";
+   *     server.listenAndServeTls(certFile, keyFile);
+   *
    * @param {string} certFile The path to the file containing the TLS certificate.
    * @param {string} keyFile The path to the file containing the TLS private key.
-   * @throws {Deno.errors.Http} When the server has been closed.
+   * @throws {Deno.errors.Http} When the server has already been closed.
    */
   async listenAndServeTls(certFile: string, keyFile: string): Promise<void> {
     if (this.#closed) {
       throw ERROR_SERVER_CLOSED;
     }
 
-    const addr = this.addr ?? `:${HTTPS_PORT}`;
+    const addr = this.#addr ?? `:${HTTPS_PORT}`;
     const listenOptions = _parseAddrFromStr(addr, HTTPS_PORT);
 
     const listener = Deno.listenTls({
@@ -249,23 +252,21 @@ export class Server {
       // alpnProtocols: ["h2", "http/1.1"],
     });
 
-    try {
-      return await this.serve(listener);
-    } finally {
-      try {
-        listener.close();
-      } catch (error) {
-        if (!(error instanceof Deno.errors.BadResource)) {
-          throw error;
-        }
-      }
-    }
+    return await this.serve(listener);
   }
 
   /**
    * Immediately close the server listeners and associated HTTP connections.
+   *
+   * Throws a server closed error if called after the server has been closed.
+   *
+   * @throws {Deno.errors.Http} When the server has already been closed.
    */
   close(): void {
+    if (this.#closed) {
+      throw ERROR_SERVER_CLOSED;
+    }
+
     this.#closed = true;
 
     for (const listener of this.#listeners) {
@@ -301,20 +302,19 @@ export class Server {
   }
 
   /**
-   * Yields all HTTP requests on a single TCP connection.
+   * Serves all HTTP requests on a single TCP connection.
    *
    * @param {Deno.HttpConn} httpConn The HTTP connection to yield requests from.
    * @param {Deno.Conn} conn The TCP connection.
-   * @yields {ServerRequest} HTTP request events.
    * @private
    */
-  private async *iterateHttpRequests(
+  private async serveHttp(
     httpConn: Deno.HttpConn,
     conn: Deno.Conn,
-  ): AsyncIterableIterator<ServerRequest> {
-    while (!this.#closed) {
-      let requestEvent!: Deno.RequestEvent | null;
+  ): Promise<void> {
+    let requestEvent: Deno.RequestEvent | null = null;
 
+    while (!this.#closed) {
       try {
         // Yield the new HTTP request on the connection.
         requestEvent = await httpConn.nextRequest();
@@ -331,8 +331,22 @@ export class Server {
       // Wrap request event so can gracefully handle and await async ops.
       const serverRequest = new ServerRequest(requestEvent, conn);
 
-      // Consumer can handle the request event.
-      yield serverRequest;
+      // Handle the request event, generating a response.
+      let response: Response;
+      try {
+        response = await this.#handler(
+          serverRequest.request,
+          serverRequest.connInfo,
+        );
+      } catch {
+        // If the handler throws then it is assumed that the impact of the
+        // error is isolated to the individual request, so we close the
+        // connection.
+        break;
+      }
+
+      // Send the response.
+      serverRequest.respondWith(response);
 
       try {
         // Wait for the request to be processed before we accept a new request
@@ -342,6 +356,8 @@ export class Server {
         // Connection has been closed.
         break;
       }
+
+      requestEvent = null;
     }
 
     this.untrackHttpConnection(httpConn);
@@ -353,60 +369,67 @@ export class Server {
         throw error;
       }
     }
+
+    if (requestEvent) {
+      try {
+        // If we break the request event loop to close the connection due to an
+        // error (e.g. handler throws) before we respond to the request event
+        // we will leave a "responseSender" resource open. In order to ensure
+        // we clean up this resource we send an empty response to the request
+        // event with the expectation that it should throw a BadResource error
+        // as the connection has been closed.
+        await requestEvent.respondWith(new Response());
+      } catch (error) {
+        if (!(error instanceof Deno.errors.BadResource)) {
+          throw error;
+        }
+      }
+    }
   }
 
   /**
-   * Accepts a new TCP connection and yields all HTTP requests that arrive on
-   * it. When a connection is accepted, it also creates a new iterator of the
-   * same kind and adds it to the request multiplexer so that another TCP
-   * connection can be accepted.
+   * Accepts all TCP connections on a single network listener.
    *
-   * @param {MuxAsyncIterator<ServerRequest>} mux Request multiplexer.
    * @param {Deno.Listener} listener The listener to accept connections from.
-   * @yields {ServerRequest}
    * @private
    */
-  private async *acceptConnAndIterateHttpRequests(
-    mux: MuxAsyncIterator<ServerRequest>,
+  private async accept(
     listener: Deno.Listener,
-  ): AsyncIterableIterator<ServerRequest> {
-    if (this.#closed) {
-      return;
-    }
+  ): Promise<void> {
+    while (!this.#closed) {
+      // Wait for a new connection.
+      let conn: Deno.Conn;
 
-    // Wait for a new connection.
-    let conn: Deno.Conn;
+      try {
+        conn = await listener.accept();
+      } catch (error) {
+        if (
+          // The listener is closed.
+          error instanceof Deno.errors.BadResource ||
+          // TLS handshake errors.
+          error instanceof Deno.errors.InvalidData ||
+          error instanceof Deno.errors.UnexpectedEof ||
+          error instanceof Deno.errors.ConnectionReset ||
+          error instanceof Deno.errors.NotConnected
+        ) {
+          continue;
+        }
 
-    try {
-      conn = await listener.accept();
-    } catch (error) {
-      if (
-        // The listener is closed.
-        error instanceof Deno.errors.BadResource ||
-        // TLS handshake errors.
-        error instanceof Deno.errors.InvalidData ||
-        error instanceof Deno.errors.UnexpectedEof ||
-        error instanceof Deno.errors.ConnectionReset ||
-        error instanceof Deno.errors.NotConnected
-      ) {
-        return mux.add(this.acceptConnAndIterateHttpRequests(mux, listener));
+        throw error;
       }
 
-      throw error;
+      // "Upgrade" the network connection into an HTTP connection.
+      const httpConn = Deno.serveHttp(conn);
+
+      // Closing the underlying listener will not close HTTP connections, so we
+      // track for closure upon server close.
+      this.trackHttpConnection(httpConn);
+
+      // Serve the requests that arrive on the just-accepted connection. Note
+      // we do not await this async method to allow the server to accept new
+      // connections.
+      this.serveHttp(httpConn, conn);
     }
-
-    // "Upgrade" the network connection into an HTTP connection.
-    const httpConn = Deno.serveHttp(conn);
-
-    // Closing the underlying listener will not close HTTP connections, so we
-    // track for closure upon server close.
-    this.trackHttpConnection(httpConn);
-
-    // Try to accept another connection and add it to the multiplexer.
-    mux.add(this.acceptConnAndIterateHttpRequests(mux, listener));
-
-    // Yield the requests that arrive on the just-accepted connection.
-    yield* this.iterateHttpRequests(httpConn, conn);
   }
 
   /**
@@ -447,22 +470,6 @@ export class Server {
    */
   private untrackHttpConnection(httpConn: Deno.HttpConn): void {
     this.#httpConnections.delete(httpConn);
-  }
-
-  /**
-   * Multiplexes multiple connection request events into a single stream.
-   *
-   * @returns {AsyncIterableIterator<ServerRequest>} The async iterator.
-   * @private
-   */
-  private serveMux(
-    listener: Deno.Listener,
-  ): AsyncIterableIterator<ServerRequest> {
-    const mux = new MuxAsyncIterator<ServerRequest>();
-
-    mux.add(this.acceptConnAndIterateHttpRequests(mux, listener));
-
-    return mux.iterate();
   }
 }
 
@@ -505,7 +512,7 @@ export async function serve(
     options.signal.onabort = () => server.close();
   }
 
-  return server.serve(listener);
+  return await server.serve(listener);
 }
 
 /**
@@ -537,7 +544,7 @@ export async function listenAndServe(
     options.signal.onabort = () => server.close();
   }
 
-  return server.listenAndServe();
+  return await server.listenAndServe();
 }
 
 /**
@@ -575,5 +582,5 @@ export async function listenAndServeTls(
     options.signal.onabort = () => server.close();
   }
 
-  return server.listenAndServeTls(certFile, keyFile);
+  return await server.listenAndServeTls(certFile, keyFile);
 }
