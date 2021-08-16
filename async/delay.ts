@@ -1,6 +1,12 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
+export interface DelayOptions {
+  signal?: AbortSignal;
+}
+
 /* Resolves after the given number of milliseconds. */
-export function delay(ms: number, signal?: AbortSignal): Promise<void> {
+export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
+  const { signal } = options;
   return new Promise((resolve, reject): void => {
     const abort = () => {
       clearTimeout(i);
