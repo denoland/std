@@ -12,15 +12,16 @@ function withoutAllTest<I>(
   const actual = withoutAll(input, excluded);
   assertEquals(actual, expected, message);
 }
+
 Deno.test({
   name: "[collections/withoutAll] no mutation",
   fn() {
     const array = [1, 2, 3, 4];
     withoutAll(array, [2, 3]);
-
     assertEquals(array, [1, 2, 3, 4]);
   },
 });
+
 Deno.test({
   name: "[collections/withoutAll] empty input",
   fn() {
