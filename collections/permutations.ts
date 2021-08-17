@@ -39,13 +39,9 @@ export function permutations<T>(inputArray: readonly T[]): T[][] {
   while (i < k) {
     if (c[i] < i) {
       if (i % 2 === 0) {
-        const swapBuffer = array[0];
-        array[0] = array[i];
-        array[i] = swapBuffer;
+        [array[0], array[i]] = [array[i], array[0]];
       } else {
-        const swapBuffer = array[c[i]];
-        array[c[i]] = array[i];
-        array[i] = swapBuffer;
+        [array[c[i]], array[i]] = [array[i], array[c[i]]];
       }
 
       ret.push([...array]);
