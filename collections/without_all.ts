@@ -6,7 +6,7 @@
  * Example:
  *
  * ```ts
- * import { withoutAll } from "./withoutAll.ts";
+ * import { withoutAll } from "./without_all.ts";
  *
  * const withoutList = withoutAll([2, 1, 2, 3], [1, 2]);
  *
