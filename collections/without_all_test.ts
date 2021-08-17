@@ -44,10 +44,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/withoutAll] large array size",
+  name: "[collection/withoutAll] leaves duplicate elements",
   fn() {
-    const array = Array(200).fill(0);
-    array[0] = 1;
-    withoutAllTest(array, [0], [1]);
+    withoutAllTest(new Array(110).fill(3), [1], new Array(110).fill(3));
   },
 });
