@@ -38,6 +38,9 @@ pretty-printed diff of failing assertion.
   result in unexpected process exit)_. Also compares any errors thrown to an
   optional expected `Error` class and checks that the error `.message` includes
   an optional string.
+
+  > `Deprecated`: Use `assertRejects()` instead.
+
 - `unimplemented()` - Use this to stub out methods that will throw when invoked.
 - `unreachable()` - Used to assert unreachable code.
 
