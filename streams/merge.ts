@@ -1,3 +1,5 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
 import { deferred } from "../async/deferred.ts";
 
 export function mergeReadableStreams<T>(

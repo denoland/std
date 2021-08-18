@@ -1,3 +1,5 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
 const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 

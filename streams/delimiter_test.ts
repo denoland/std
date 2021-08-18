@@ -1,3 +1,5 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
 import { LineStream, TextDelimiterStream } from "./delimiter.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 

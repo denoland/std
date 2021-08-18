@@ -1,3 +1,5 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
 import { mergeReadableStreams, zipReadableStreams } from "./merge.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
