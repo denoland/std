@@ -600,4 +600,20 @@ export class Buffer extends Uint8Array {
   }
 }
 
-export default { Buffer };
+export const kMaxLength = 4294967296;
+export const kStringMaxLength = 536870888;
+export const constants = {
+  MAX_LENGTH: kMaxLength,
+  MAX_STRING_LENGTH: kStringMaxLength,
+};
+
+export { atob, btoa };
+
+export default {
+  Buffer,
+  kMaxLength,
+  kStringLength,
+  atob,
+  btoa,
+  constants,
+};
