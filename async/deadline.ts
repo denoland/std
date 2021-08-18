@@ -13,6 +13,5 @@ export class DeadlineError extends Error {
 export function deadline<T>(p: Promise<T>, delay: number): Promise<T> {
   const d = deferred<never>();
   const t = setTimeout(() => d.reject(new DeadlineError()), delay);
-  p.finally(() => clearTimeout(t));
-  return Promise.race([p, d]);
+  return Promise.race([p, d]).finally(() => clearTimeout(t));
 }

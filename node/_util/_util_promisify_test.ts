@@ -23,8 +23,8 @@
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertStrictEquals,
-  assertThrowsAsync,
 } from "../../testing/asserts.ts";
 import { promisify } from "./_util_promisify.ts";
 import * as fs from "../fs.ts";
@@ -38,7 +38,7 @@ const customPromisifyArgs = Symbol.for("nodejs.util.promisify.customArgs");
 Deno.test(
   "Errors should reject the promise",
   async function testPromiseRejection() {
-    await assertThrowsAsync(() => readFile("/dontexist"), Deno.errors.NotFound);
+    await assertRejects(() => readFile("/dontexist"), Deno.errors.NotFound);
   },
 );
 
@@ -151,7 +151,7 @@ Deno.test(
     function fn(err: Error | null, val: null, callback: VoidFunction): void {
       callback(err, val);
     }
-    await assertThrowsAsync(
+    await assertRejects(
       () => promisify(fn)(new Error("oops"), null),
       Error,
       "oops",

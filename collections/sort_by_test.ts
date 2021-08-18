@@ -2,15 +2,14 @@
 
 import { assertEquals } from "../testing/asserts.ts";
 import { sortBy } from "./sort_by.ts";
-import { Selector } from "./types.ts";
 
 function sortByTest<T>(
   input: [
     Array<T>,
-    | Selector<T, number>
-    | Selector<T, string>
-    | Selector<T, bigint>
-    | Selector<T, Date>,
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
   ],
   expected: Array<T>,
   message?: string,
@@ -91,6 +90,68 @@ Deno.test({
         { id: 3, str: "b" },
         { id: 5, str: "b" },
         { id: 1, str: "c" },
+      ],
+    );
+  },
+});
+
+Deno.test({
+  name: "[collections/sortBy] special number values",
+  fn() {
+    sortByTest(
+      [
+        [
+          1,
+          Number.POSITIVE_INFINITY,
+          2,
+          Number.NEGATIVE_INFINITY,
+          3,
+          Number.NaN,
+          4,
+          Number.NaN,
+        ],
+        (it) => it,
+      ],
+      [
+        Number.NEGATIVE_INFINITY,
+        1,
+        2,
+        3,
+        4,
+        Number.POSITIVE_INFINITY,
+        Number.NaN,
+        Number.NaN,
+      ],
+    );
+    sortByTest(
+      [
+        [
+          Number.NaN,
+          1,
+          Number.POSITIVE_INFINITY,
+          Number.NaN,
+          7,
+          Number.NEGATIVE_INFINITY,
+          Number.NaN,
+          2,
+          6,
+          5,
+          9,
+        ],
+        (it) => it,
+      ],
+      [
+        Number.NEGATIVE_INFINITY,
+        1,
+        2,
+        5,
+        6,
+        7,
+        9,
+        Number.POSITIVE_INFINITY,
+        Number.NaN,
+        Number.NaN,
+        Number.NaN,
       ],
     );
   },

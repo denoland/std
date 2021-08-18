@@ -1,11 +1,12 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assert, fail } from "../../testing/asserts.ts";
+import { isWindows } from "../../_util/os.ts";
 import { assertCallbackErrorUncaught } from "../_utils.ts";
 import { chmod, chmodSync } from "./_fs_chmod.ts";
 
 Deno.test({
   name: "ASYNC: Permissions are changed (non-Windows)",
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
   async fn() {
     const tempFile: string = await Deno.makeTempFile();
     const originalFileMode: number | null = (await Deno.lstat(tempFile)).mode;
@@ -30,7 +31,7 @@ Deno.test({
 
 Deno.test({
   name: "SYNC: Permissions are changed (non-Windows)",
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
   fn() {
     const tempFile: string = Deno.makeTempFileSync();
     const originalFileMode: number | null = Deno.lstatSync(tempFile).mode;
@@ -45,7 +46,7 @@ Deno.test({
 
 Deno.test({
   name: "[std/node/fs] chmod callback isn't called twice if error is thrown",
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
   async fn() {
     const tempFile = await Deno.makeTempFile();
     const importUrl = new URL("./_fs_chmod.ts", import.meta.url);

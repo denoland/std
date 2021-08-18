@@ -3,6 +3,7 @@
 import { notImplemented } from "./_utils.ts";
 import EventEmitter from "./events.ts";
 import { fromFileUrl } from "../path/mod.ts";
+import { isWindows } from "../_util/os.ts";
 
 const customInspect = Symbol.for("Deno.customInspect");
 const notImplementedEvents = [
@@ -113,7 +114,7 @@ export function nextTick<T extends Array<unknown>>(
 export const pid = Deno.pid;
 
 /** https://nodejs.org/api/process.html#process_process_platform */
-export const platform = Deno.build.os === "windows" ? "win32" : Deno.build.os;
+export const platform = isWindows ? "win32" : Deno.build.os;
 
 /** https://nodejs.org/api/process.html#process_process_version */
 export const version = `v${Deno.version.deno}`;

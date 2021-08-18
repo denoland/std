@@ -4,7 +4,7 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../testing/asserts.ts";
 import {
   ERR_BARE_QUOTE,
   ERR_FIELD_COUNT,
@@ -473,7 +473,7 @@ for (const t of testCases) {
       let actual;
       if (t.Error) {
         let err;
-        await assertThrowsAsync(async () => {
+        await assertRejects(async () => {
           try {
             await readMatrix(new BufReader(new StringReader(t.Input ?? "")), {
               separator,

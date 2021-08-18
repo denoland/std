@@ -7,12 +7,13 @@
  *
  * ```ts
  * import { zip } from "./zip.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const numbers = [ 1, 2, 3, 4 ]
  * const letters = [ 'a', 'b', 'c', 'd' ]
  * const pairs = zip(numbers, letters)
  *
- * console.assert(pairs === [
+ * assertEquals(pairs, [
  *     [ 1, 'a' ],
  *     [ 2, 'b' ],
  *     [ 3, 'c' ],
@@ -21,21 +22,15 @@
  * ```
  */
 export function zip<T, U>(
-  array: Array<T>,
-  withArray: Array<U>,
-): Array<[T, U]> {
-  const returnLength = Math.min(
-    array.length,
-    withArray.length,
-  );
+  array: readonly T[],
+  withArray: readonly U[],
+): [T, U][] {
+  const returnLength = Math.min(array.length, withArray.length);
 
-  const ret: Array<[T, U]> = [];
+  const ret = new Array<[T, U]>(returnLength);
 
   for (let i = 0; i < returnLength; i += 1) {
-    ret.push([
-      array[i],
-      withArray[i],
-    ]);
+    ret[i] = [array[i], withArray[i]];
   }
 
   return ret;

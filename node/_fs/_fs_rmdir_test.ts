@@ -4,6 +4,7 @@ import { closeSync } from "./_fs_close.ts";
 import { existsSync } from "../../fs/exists.ts";
 import { join } from "../../path/mod.ts";
 import { assertCallbackErrorUncaught } from "../_utils.ts";
+import { isWindows } from "../../_util/os.ts";
 
 Deno.test({
   name: "ASYNC: removing empty folder",
@@ -65,7 +66,7 @@ Deno.test({
         closeRes(rBefore, rAfter);
       });
   },
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
 });
 
 Deno.test({
@@ -83,14 +84,14 @@ Deno.test({
     const rAfter = Deno.resources();
     closeRes(rBefore, rAfter);
   },
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
 });
 
 Deno.test("[std/node/fs] rmdir callback isn't called twice if error is thrown", async () => {
   // The correct behaviour is not to catch any errors thrown,
   // but that means there'll be an uncaught error and the test will fail.
   // So the only way to test this is to spawn a subprocess, and succeed if it has a non-zero exit code.
-  // (assertThrowsAsync won't work because there's no way to catch the error.)
+  // (assertRejects won't work because there's no way to catch the error.)
   const tempDir = await Deno.makeTempDir();
   const importUrl = new URL("./_fs_rmdir.ts", import.meta.url);
   await assertCallbackErrorUncaught({

@@ -6,7 +6,7 @@
 import {
   assert,
   assertEquals,
-  assertThrowsAsync,
+  assertRejects,
   fail,
 } from "../testing/asserts.ts";
 import {
@@ -251,7 +251,7 @@ Deno.test("bufioReadLineBadResource", async () => {
   const file = await Deno.open("README.md");
   const bufReader = new BufReader(file);
   file.close();
-  assertThrowsAsync(async () => {
+  assertRejects(async () => {
     await bufReader.readLine();
   }, Deno.errors.BadResource);
 });
