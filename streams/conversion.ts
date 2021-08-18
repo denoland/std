@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { Buffer } from "./buffer.ts";
-import { writeAll } from "./util.ts";
+import { Buffer } from "../io/buffer.ts";
+import { writeAll } from "../io/util.ts";
 
 const DEFAULT_CHUNK_SIZE = 16_640;
 
@@ -144,7 +144,7 @@ export function writableStreamFromWriter(
  *        await new Promise(((r) => setTimeout(r, 1000)));
  *        yield "baz";
  *      })());
-*/
+ */
 export function readableStreamFromIterable<T>(
   iterable: Iterable<T> | AsyncIterable<T>,
 ): ReadableStream<T> {
