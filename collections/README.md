@@ -377,7 +377,7 @@ console.assert(
 ### sortBy
 
 Returns all elements in the given collection, sorted by their result using the
-given selector
+given selector. The selector function is called only once for each element.
 
 ```ts
 import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
