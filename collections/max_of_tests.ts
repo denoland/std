@@ -23,6 +23,20 @@ Deno.test("[collections/maxOf] Negatives numbers", () => {
   assertEquals(actual, -18);
 });
 
+Deno.test("[collections/maxOf] Regular max", () => {
+  const array = [BigInt(5), BigInt(18), BigInt(35), BigInt(120)];
+
+  const actual = maxOf(array, (i) => i);
+  assertEquals(actual, BigInt(120));
+});
+
+Deno.test("[collections/maxOf] BigInt negatives numbers", () => {
+  const array = [BigInt(-32), BigInt(-18), BigInt(-140), BigInt(-36)];
+
+  const actual = maxOf(array, (i) => i);
+  assertEquals(actual, BigInt(-18));
+});
+
 Deno.test("[collection/maxOf] On object properties", () => {
   const object = [
     { name: "mustard", count: 2 },
@@ -57,7 +71,7 @@ Deno.test("[collections/maxOf] Empty array results in -Infinity", () => {
   const array: number[] = [];
 
   const actual = maxOf(array, (i) => i);
-  assertEquals(actual, -Infinity);
+  assertEquals(actual, undefined);
 });
 
 Deno.test("[collections/maxOf] NaN and Infinity", () => {
