@@ -31,28 +31,35 @@ export function sortBy<T>(
     | ((el: T) => bigint)
     | ((el: T) => Date),
 ): T[] {
-  return Array.from(array).sort((a, b) => {
-    const selectedA = selector(a);
-    const selectedB = selector(b);
+  const result = array.map((value) => ({ value, selected: selector(value) }))
+    .sort((a, b) => {
+      const selectedA = a.selected;
+      const selectedB = b.selected;
 
-    if (typeof selectedA === "number") {
-      if (Number.isNaN(selectedA)) {
+      if (typeof selectedA === "number") {
+        if (Number.isNaN(selectedA)) {
+          return 1;
+        }
+
+        if (Number.isNaN(selectedB)) {
+          return -1;
+        }
+      }
+
+      if (selectedA > selectedB) {
         return 1;
       }
 
-      if (Number.isNaN(selectedB)) {
+      if (selectedA < selectedB) {
         return -1;
       }
-    }
 
-    if (selectedA > selectedB) {
-      return 1;
-    }
+      return 0;
+    });
 
-    if (selectedA < selectedB) {
-      return -1;
-    }
-
-    return 0;
-  });
+  // This does the same thing as `result.map(v=>v.value)`, but speeds it up by overwriting the original array.
+  for (let i = 0; i < result.length; i++) {
+    (result as unknown as T[])[i] = result[i].value;
+  }
+  return result as unknown as T[];
 }
