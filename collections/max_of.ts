@@ -15,25 +15,24 @@
  *      { name: "tomato", count: 32 },
  *  ];
  * const maxItem = maxOf(inventory, (i) => i.count);
- * 
+ *
  * assertEquals(maxItem, 32);
  * ```
  */
 
 export function maxOf<T>(
-    array: readonly T[],
-    selector: (el: T) => number,
+  array: readonly T[],
+  selector: (el: T) => number,
 ): number {
-    let maxOf = -Infinity;
-    
-    for (const i of array) {
-        if (selector(i) > maxOf) {
-            maxOf = selector(i);
-        } 
-        else if (Number.isNaN(selector(i))) {
-            return maxOf = NaN
-        }
+  let maxOf = -Infinity;
+
+  for (const i of array) {
+    if (selector(i) > maxOf) {
+      maxOf = selector(i);
+    } else if (Number.isNaN(selector(i))) {
+      return maxOf = NaN;
     }
-    
-    return maxOf;
+  }
+
+  return maxOf;
 }

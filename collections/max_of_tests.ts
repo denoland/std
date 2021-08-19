@@ -1,89 +1,88 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { maxOf } from "./max_of.ts";
-import { assertEquals } from "../testing/asserts.ts"
+import { assertEquals } from "../testing/asserts.ts";
 
 Deno.test("[collections/maxOf] Regular max", () => {
-    const array = [5, 18, 35, 120];
+  const array = [5, 18, 35, 120];
 
-    const actual = maxOf(array, (i) => i);
-    assertEquals(actual, 120);
-})
+  const actual = maxOf(array, (i) => i);
+  assertEquals(actual, 120);
+});
 
 Deno.test("[collections/maxOf] Mixed negatives and positives numbers", () => {
-    const array = [-32, -18, 140, 36]
+  const array = [-32, -18, 140, 36];
 
-    const actual = maxOf(array, (i) => i);
-    assertEquals(actual, 140)
-})
+  const actual = maxOf(array, (i) => i);
+  assertEquals(actual, 140);
+});
 
 Deno.test("[collections/maxOf] Negatives numbers", () => {
-    const array = [-32, -18, -140, -36]
+  const array = [-32, -18, -140, -36];
 
-    const actual = maxOf(array, (i) => i);
-    assertEquals(actual, -18)
-})
+  const actual = maxOf(array, (i) => i);
+  assertEquals(actual, -18);
+});
 
 Deno.test("[collection/maxOf] On object properties", () => {
-    const object = [
-        { name: "mustard", count: 2 },
-        { name: "soy", count: 4 },
-        { name: "tomato", count: 32 }
-    ];
+  const object = [
+    { name: "mustard", count: 2 },
+    { name: "soy", count: 4 },
+    { name: "tomato", count: 32 },
+  ];
 
-    const actual = maxOf(object, (i) => i.count);
-    assertEquals(actual, 32);
-})
+  const actual = maxOf(object, (i) => i.count);
+  assertEquals(actual, 32);
+});
 
 Deno.test("[collection/maxOf] On mixed object properties", () => {
-    const object = [
-        { name: "mustard", count: -2 },
-        { name: "soy", count: 4 },
-        { name: "tomato", count: -32 }
-    ];
+  const object = [
+    { name: "mustard", count: -2 },
+    { name: "soy", count: 4 },
+    { name: "tomato", count: -32 },
+  ];
 
-    const actual = maxOf(object, (i) => i.count);
-    assertEquals(actual, 4);
-})
-
+  const actual = maxOf(object, (i) => i.count);
+  assertEquals(actual, 4);
+});
 
 Deno.test("[collections/maxOf] No mutation", () => {
-    const array = [1, 2, 3, 4];
-  
-    maxOf(array, (i) => i + 2);
-  
-    assertEquals(array, [1, 2, 3, 4]);
+  const array = [1, 2, 3, 4];
+
+  maxOf(array, (i) => i + 2);
+
+  assertEquals(array, [1, 2, 3, 4]);
 });
 
 Deno.test("[collections/maxOf] Empty array results in -Infinity", () => {
-    const array: number[] = []
+  const array: number[] = [];
 
-    const actual = maxOf(array, (i) => i)
-    assertEquals(actual, -Infinity)
-})
+  const actual = maxOf(array, (i) => i);
+  assertEquals(actual, -Infinity);
+});
 
 Deno.test("[collections/maxOf] NaN and Infinity", () => {
-    const array = [
-      1,
-      2,
-      Number.POSITIVE_INFINITY,
-      3,
-      4,
-      Number.NEGATIVE_INFINITY,
-      5,
-      6,
-      Number.NaN,
-      7,
-      8,
-    ];
-  
-    const actual = maxOf(array, (i) => i);
-    assertEquals(actual, NaN);
-  });
+  const array = [
+    1,
+    2,
+    Number.POSITIVE_INFINITY,
+    3,
+    4,
+    Number.NEGATIVE_INFINITY,
+    5,
+    6,
+    Number.NaN,
+    7,
+    8,
+  ];
 
-  Deno.test("[collections/maxOf] Infinity", () => {
-    const array = [1, 2, Infinity, 3, 4, 5, 6, 7, 8];
-  
-    const actual = maxOf(array, (i) => i);
-  
-    assertEquals(actual, Infinity);
-  })
+  const actual = maxOf(array, (i) => i);
+  assertEquals(actual, NaN);
+});
+
+Deno.test("[collections/maxOf] Infinity", () => {
+  const array = [1, 2, Infinity, 3, 4, 5, 6, 7, 8];
+
+  const actual = maxOf(array, (i) => i);
+
+  assertEquals(actual, Infinity);
+});
