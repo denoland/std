@@ -23,7 +23,7 @@ Deno.test("[collections/maxOf] Negatives numbers", () => {
   assertEquals(actual, -18);
 });
 
-Deno.test("[collections/maxOf] Regular max", () => {
+Deno.test("[collections/maxOf] BigInt regular max", () => {
   const array = [BigInt(5), BigInt(18), BigInt(35), BigInt(120)];
 
   const actual = maxOf(array, (i) => i);

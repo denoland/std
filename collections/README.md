@@ -344,14 +344,14 @@ Applies the given selector to all elements of the provided collection and
 returns the max value of all elements.
 
 ```ts
-import { sumOf } from "./sum_of.ts"
+import { sumOf } from "./sum_of.ts";
 
   const inventory = [
        { name: "mustard", count: 2 },
        { name: "soy", count: 4 },
        { name: "tomato", count: 32 },
    ];
- *const maxCount = maxOf(inventory, (i) => i.count);
+ const maxCount = maxOf(inventory, (i) => i.count);
 
  console.asssert(maxItem === 32);
 ```
