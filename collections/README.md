@@ -344,16 +344,18 @@ Applies the given selector to all elements of the provided collection and
 returns the max value of all elements.
 
 ```ts
-import { sumOf } from "./sum_of.ts";
+import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
-  const inventory = [
-       { name: "mustard", count: 2 },
-       { name: "soy", count: 4 },
-       { name: "tomato", count: 32 },
-   ];
- const maxCount = maxOf(inventory, (i) => i.count);
+const inventory = [
+  { name: "mustard", count: 2 },
+  { name: "soy", count: 4 },
+  { name: "tomato", count: 32 },
+];
 
- console.asssert(maxItem === 32);
+const maxCount = maxOf(inventory, (i) => i.count);
+
+assertEquals(maxItem === 32);
 ```
 
 ### partition

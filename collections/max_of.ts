@@ -13,7 +13,7 @@
  *      { name: "mustard", count: 2 },
  *      { name: "soy", count: 4 },
  *      { name: "tomato", count: 32 },
- *  ];
+ * ];
  * const maxCount = maxOf(inventory, (i) => i.count);
  *
  * assertEquals(maxItem, 32);
@@ -33,13 +33,14 @@ export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
   array: readonly T[],
   selector: S,
 ): ReturnType<S> | undefined {
-  let maxOf: ReturnType<S> | undefined = undefined;
+  let maximumValue: ReturnType<S> | undefined = undefined;
 
   for (const i of array) {
     const currentValue = selector(i) as ReturnType<S>;
 
-    if (maxOf === undefined || currentValue > maxOf) {
-      maxOf = currentValue;
+    if (maximumValue === undefined || currentValue > maximumValue) {
+      maximumValue = currentValue;
+      continue;
     }
 
     if (Number.isNaN(currentValue)) {
@@ -47,5 +48,5 @@ export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
     }
   }
 
-  return maxOf;
+  return maximumValue;
 }
