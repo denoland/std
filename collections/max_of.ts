@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Applies the given selector to all elements in the given collection and returns the max of it
+ * Applies the given selector to all elements of the given collection and returns the max value of all elements
  *
  * Example:
  *
