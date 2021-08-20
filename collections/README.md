@@ -344,7 +344,7 @@ Applies the given selector to all elements of the provided collection and
 returns the max value of all elements.
 
 ```ts
-import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const inventory = [
@@ -355,7 +355,7 @@ const inventory = [
 
 const maxCount = maxOf(inventory, (i) => i.count);
 
-assertEquals(maxItem === 32);
+assertEquals(maxCount, 32);
 ```
 
 ### partition

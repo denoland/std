@@ -6,7 +6,7 @@
  * Example:
  *
  * ```ts
- * import { sumOf } from "./sum_of.ts"
+ * import { maxOf } from "./max_of.ts"
  * import { assertEquals } from "../testing/asserts.ts"
  *
  * const inventory = [
