@@ -19,8 +19,6 @@ export function asString(data: unknown): string {
   return "undefined";
 }
 
-const DEFAULT_LOGGER_NAME = "logger";
-
 export type LogRecord<M = unknown> = Readonly<{
   message: M;
   args: ReadonlyArray<unknown>;
@@ -35,7 +33,7 @@ export class Logger<M = unknown> {
   handlers: Handler[];
 
   constructor(logLevel: LogLevel, {
-    name = DEFAULT_LOGGER_NAME,
+    name = "logger",
     handlers = [],
   }: {
     name?: string;
