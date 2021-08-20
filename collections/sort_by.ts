@@ -31,7 +31,7 @@ export function sortBy<T>(
     | ((el: T) => bigint)
     | ((el: T) => Date),
 ): T[] {
-  const result = array.map((value) => ({ value, selected: selector(value) }))
+  return array.map((value) => ({ value, selected: selector(value) }))
     .sort((a, b) => {
       const selectedA = a.selected;
       const selectedB = b.selected;
@@ -55,11 +55,5 @@ export function sortBy<T>(
       }
 
       return 0;
-    });
-
-  // This does the same thing as `result.map(v=>v.value)`, but speeds it up by overwriting the original array.
-  for (let i = 0; i < result.length; i++) {
-    (result as unknown as T[])[i] = result[i].value;
-  }
-  return result as unknown as T[];
+    }).map((element) => element.value);
 }
