@@ -16,7 +16,7 @@
  * ];
  * const maxCount = maxOf(inventory, (i) => i.count);
  *
- * assertEquals(maxItem, 32);
+ * assertEquals(maxCount, 32);
  * ```
  */
 export function maxOf<T>(
