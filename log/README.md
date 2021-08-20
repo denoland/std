@@ -7,7 +7,7 @@ import {
   ConsoleHandler,
   Logger,
   logLevels,
-} from "https://deno.land/std@0.78.0/log/mod.ts";
+} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
 const consoleHandler = new ConsoleHandler(logLevels.trace);
 
@@ -38,7 +38,7 @@ import {
   FileHandler,
   Logger,
   logLevels,
-} from "https://deno.land/std@0.78.0/log/mod.ts";
+} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
 const consoleHandler = new ConsoleHandler(logLevels.info);
 const fileHandler = new FileHandler(logLevels.warn, {
@@ -73,53 +73,6 @@ The default log levels are
 |     warn | "warn"  | 40   |
 |    error | "error" | 50   |
 
-### Custom LogLevels
-
-You can add custom logLevels by creating a `LogLevel` instance and adding it to
-the handlers by calling `handler.addLogLevel`. Additionally, create a custom
-`Logger` class and implement a method to handle the log level logic.
-
-#### Example
-
-```ts
-import {
-  ConsoleHandler,
-  Logger,
-  LogLevel,
-  logLevels,
-} from "https://deno.land/std@0.78.0/log/mod.ts";
-import { bold, red } from "https://deno.land/std@0.78.0/fmt/colors.ts";
-
-const customLogLevels = {
-  ...logLevels,
-  fatal: new LogLevel("Fatal", 60),
-};
-
-class CustomLogger extends Logger {
-  fatal(message: unknown, ...args: unknown[]) {
-    this.dispatch(customLogLevels.fatal, message, ...args);
-    Deno.exit(1);
-  }
-}
-
-const customConsoleHandler = new ConsoleHandler(customLogLevels.trace);
-customConsoleHandler.addLogLevel(
-  customLogLevels.fatal,
-  (message: string) => console.log(bold(red(message))),
-);
-
-const customlogger = new CustomLogger(customLogLevels.trace, {
-  handlers: [customConsoleHandler],
-});
-
-customlogger.trace("log trace message");
-customlogger.debug("log debug message");
-customlogger.info("log info message");
-customlogger.warn("log warn message");
-customlogger.error("log error message");
-customlogger.fatal("log fatal message");
-```
-
 ## Handler
 
 A handler is responsible for actual output of log messages. When a handler is
@@ -135,6 +88,11 @@ option for handler.
 ### Example
 
 ```ts
+import {
+  ConsoleHandler,
+  Logger,
+  logLevels,
+} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 const consoleHandler = new ConsoleHandler(logLevels.debug, {
   formatter: ({ logLevel, message }) =>
     `custom formatter: ${logLevel.name} ${message}`,

@@ -38,8 +38,8 @@ Deno.test({
     const logLevel = logLevels.debug;
     const handlerNoName = new TestHandler(logLevel);
     const handlerWithLoggerName = new TestHandler(logLevel, {
-      formatter: ({ loggerName, logLevel, message }) =>
-        `[${loggerName}] ${logLevel.name} ${message}`,
+      formatter: ({ logger, logLevel, message }) =>
+        `[${logger.name}] ${logLevel.name} ${message}`,
     });
 
     const logger = new Logger(logLevel, {
@@ -57,8 +57,8 @@ Deno.test({
     const logLevel = logLevels.debug;
     const handlerNoName = new TestHandler(logLevel);
     const handlerWithLoggerName = new TestHandler(logLevel, {
-      formatter: ({ loggerName, logLevel, message }) =>
-        `[${loggerName}] ${logLevel.name} ${message}`,
+      formatter: ({ logger, logLevel, message }) =>
+        `[${logger.name}] ${logLevel.name} ${message}`,
     });
 
     const logger = new Logger(logLevel, {

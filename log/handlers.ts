@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import { LogLevel, logLevels } from "./levels.ts";
-import type { LogRecord } from "./logger.ts";
+import { LogRecord } from "./logger.ts";
 import { blue, red, yellow } from "../fmt/colors.ts";
 import { existsSync } from "../fs/exists.ts";
 import { BufWriterSync } from "../io/bufio.ts";
@@ -19,7 +19,7 @@ type HandlerFunctions = {
   [code: number]: (message: string) => void;
 };
 
-export class Handler {
+export class Handler<M = unknown> {
   readonly logLevel: LogLevel;
   readonly formatter: FormatterFunction;
   readonly handlerFunctions: HandlerFunctions = {};
@@ -32,14 +32,7 @@ export class Handler {
     this.formatter = formatter;
   }
 
-  addLogLevel(logLevel: LogLevel, fn: (message: string) => void) {
-    this.handlerFunctions[logLevel.code] = fn;
-  }
-  removeLogLevel(logLevel: LogLevel) {
-    delete this.handlerFunctions[logLevel.code];
-  }
-
-  handle(logRecord: LogRecord): void {
+  handle(logRecord: LogRecord<M>): void {
     if (this.logLevel.code > logRecord.logLevel.code) return;
     const fn = this.handlerFunctions[logRecord.logLevel.code];
     if (!fn) {
@@ -52,7 +45,7 @@ export class Handler {
   }
 }
 
-export class ConsoleHandler extends Handler {
+export class ConsoleHandler<M = unknown> extends Handler<M> {
   handlerFunctions = {
     [logLevels.trace.code]: (message: string) => console.log(message),
     [logLevels.debug.code]: (message: string) => console.log(message),
@@ -62,14 +55,14 @@ export class ConsoleHandler extends Handler {
   };
 }
 
-export abstract class WriterHandler extends Handler {
+export abstract class WriterHandler<M = unknown> extends Handler<M> {
   protected _writer!: Deno.Writer;
   abstract open(): void;
   abstract write(message: string): void;
   abstract close(): void;
 }
 
-export class FileHandler extends WriterHandler {
+export class FileHandler<M = unknown> extends WriterHandler<M> {
   protected _file: Deno.File | undefined;
   protected _buf!: BufWriterSync;
   protected _filename: string;
@@ -135,7 +128,7 @@ interface RotatingFileHandlerOptions extends FileHandlerOptions {
   maxBackupCount: number;
 }
 
-export class RotatingFileHandler extends FileHandler {
+export class RotatingFileHandler<M = unknown> extends FileHandler<M> {
   #maxBytes: number;
   #maxBackupCount: number;
   #currentFileSize = 0;

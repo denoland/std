@@ -7,7 +7,7 @@ import {
 } from "../testing/asserts.ts";
 
 import { FileHandler, Handler, RotatingFileHandler } from "./handlers.ts";
-import { LogRecord } from "./logger.ts";
+import { Logger } from "./logger.ts";
 import { existsSync } from "../fs/exists.ts";
 import { LogLevel, logLevels } from "./levels.ts";
 
@@ -66,12 +66,13 @@ Deno.test("simpleHandler", function (): void {
 
     for (const logLevel of Object.values(logLevels)) {
       handler.handle(
-        new LogRecord({
-          loggerName: "default",
+        {
+          datetime: new Date(),
+          logger: new Logger(logLevels.trace),
           message: `${logLevel.name.toLowerCase()}-test`,
           args: [],
           logLevel,
-        }),
+        },
       );
     }
 
@@ -86,12 +87,13 @@ Deno.test("formatter asString", function (): void {
   });
 
   handler.handle(
-    new LogRecord({
-      loggerName: "default",
+    {
+      datetime: new Date(),
+      logger: new Logger(logLevels.trace),
       message: "Hello, world!",
       args: [],
       logLevel: logLevels.debug,
-    }),
+    },
   );
 
   assertEquals(handler.messages, ["test Debug Hello, world!"]);
@@ -103,12 +105,13 @@ Deno.test("formatter WithEmptymessage", function () {
   });
 
   handler.handle(
-    new LogRecord({
-      loggerName: "default",
+    {
+      datetime: new Date(),
+      logger: new Logger(logLevels.trace),
       message: "",
       args: [],
       logLevel: logLevels.debug,
-    }),
+    },
   );
 
   assertEquals(handler.messages, ["test Debug "]);
@@ -121,12 +124,13 @@ Deno.test("formatter AsFunction", function (): void {
   });
 
   handler.handle(
-    new LogRecord({
-      loggerName: "default",
+    {
+      datetime: new Date(),
+      logger: new Logger(logLevels.trace),
       message: "Hello, world!",
       args: [],
       logLevel: logLevels.error,
-    }),
+    },
   );
 
   assertEquals(handler.messages, ["fn formatter Error Hello, world!"]);
@@ -142,24 +146,26 @@ Deno.test({
 
     fileHandler.open();
     fileHandler.handle(
-      new LogRecord({
-        loggerName: "default",
+      {
+        datetime: new Date(),
+        logger: new Logger(logLevels.trace),
         message: "Hello World",
         args: [],
         logLevel: logLevels.warn,
-      }),
+      },
     );
     fileHandler.close();
     const firstFileSize = (await Deno.stat(LOG_FILE)).size;
 
     fileHandler.open();
     fileHandler.handle(
-      new LogRecord({
-        loggerName: "default",
+      {
+        datetime: new Date(),
+        logger: new Logger(logLevels.trace),
         message: "Hello World",
         args: [],
         logLevel: logLevels.warn,
-      }),
+      },
     );
     fileHandler.close();
     const secondFileSize = (await Deno.stat(LOG_FILE)).size;
@@ -264,32 +270,35 @@ Deno.test({
     fileHandler.open();
 
     fileHandler.handle(
-      new LogRecord({
-        loggerName: "default",
+      {
+        datetime: new Date(),
+        logger: new Logger(logLevels.trace),
         message: "AAA",
         args: [],
         logLevel: logLevels.error,
-      }),
+      },
     ); // 'Error AAA\n' = 10 bytes
     fileHandler.flush();
     assertEquals((await Deno.stat(LOG_FILE)).size, 10);
     fileHandler.handle(
-      new LogRecord({
-        loggerName: "default",
+      {
+        datetime: new Date(),
+        logger: new Logger(logLevels.trace),
         message: "AAA",
         args: [],
         logLevel: logLevels.error,
-      }),
+      },
     );
     fileHandler.flush();
     assertEquals((await Deno.stat(LOG_FILE)).size, 20);
     fileHandler.handle(
-      new LogRecord({
-        loggerName: "default",
+      {
+        datetime: new Date(),
+        logger: new Logger(logLevels.trace),
         message: "AAA",
         args: [],
         logLevel: logLevels.error,
-      }),
+      },
     );
     fileHandler.flush();
     // Rollover occurred. Log file now has 1 record, rollover file has the original 2
@@ -314,28 +323,31 @@ Deno.test({
     fileHandler.open();
 
     fileHandler.handle(
-      new LogRecord({
-        loggerName: "default",
+      {
+        datetime: new Date(),
+        logger: new Logger(logLevels.trace),
         message: "AAA",
         args: [],
         logLevel: logLevels.error,
-      }),
+      },
     ); // 'Error AAA\n' = 10 bytes
     fileHandler.handle(
-      new LogRecord({
-        loggerName: "default",
+      {
+        datetime: new Date(),
+        logger: new Logger(logLevels.trace),
         message: "AAA",
         args: [],
         logLevel: logLevels.error,
-      }),
+      },
     );
     fileHandler.handle(
-      new LogRecord({
-        loggerName: "default",
+      {
+        datetime: new Date(),
+        logger: new Logger(logLevels.trace),
         message: "AAA",
         args: [],
         logLevel: logLevels.error,
-      }),
+      },
     );
 
     fileHandler.close();
@@ -373,12 +385,13 @@ Deno.test({
     });
     fileHandler.open();
     fileHandler.handle(
-      new LogRecord({
-        loggerName: "default",
+      {
+        datetime: new Date(),
+        logger: new Logger(logLevels.trace),
         message: "AAA",
         args: [],
         logLevel: logLevels.error,
-      }),
+      },
     ); // 'Error AAA\n' = 10 bytes
     fileHandler.close();
 
@@ -452,12 +465,13 @@ Deno.test({
     });
     fileHandler.open();
     fileHandler.handle(
-      new LogRecord({
-        loggerName: "default",
+      {
+        datetime: new Date(),
+        logger: new Logger(logLevels.trace),
         message: "AAA",
         args: [],
         logLevel: logLevels.error,
-      }),
+      },
     ); // 'Error AAA\n' = 10 bytes
 
     assertEquals((await Deno.stat(LOG_FILE)).size, 0);

@@ -19,41 +19,21 @@ export function asString(data: unknown): string {
   return "undefined";
 }
 
-export interface LogRecordOptions {
-  message: unknown;
-  args: unknown[];
-  logLevel: LogLevel;
-  loggerName: string;
-}
-
-export class LogRecord {
-  readonly message: unknown;
-  #args: unknown[];
-  #datetime: Date;
-  readonly logLevel: LogLevel;
-  readonly loggerName: string;
-
-  constructor(options: LogRecordOptions) {
-    this.#args = [...options.args];
-    this.#datetime = new Date();
-    this.message = options.message;
-    this.logLevel = options.logLevel;
-    this.loggerName = options.loggerName;
-  }
-  get args(): unknown[] {
-    return [...this.#args];
-  }
-  get datetime(): Date {
-    return new Date(this.#datetime);
-  }
-}
-
 const DEFAULT_LOGGER_NAME = "logger";
 
-export class BaseLogger {
+export type LogRecord<M = unknown> = Readonly<{
+  message: M;
+  args: ReadonlyArray<unknown>;
+  datetime: Date;
+  logLevel: LogLevel;
+  logger: Logger;
+}>;
+
+export class Logger<M = unknown> {
   name: string;
   logLevel: LogLevel;
   handlers: Handler[];
+
   constructor(logLevel: LogLevel, {
     name = DEFAULT_LOGGER_NAME,
     handlers = [],
@@ -75,31 +55,30 @@ export class BaseLogger {
 
     message = asString(message);
 
-    const record = new LogRecord({
-      loggerName: this.name,
+    const record: LogRecord<unknown> = {
+      datetime: new Date(),
+      logger: this,
       message,
       args,
       logLevel,
-    });
+    };
 
     this.handlers.forEach((handler) => handler.handle(record));
   }
-}
 
-export class Logger extends BaseLogger {
-  trace(message: unknown, ...args: unknown[]) {
+  trace(message: M, ...args: unknown[]) {
     return this.dispatch(logLevels.trace, message, ...args);
   }
-  debug(message: unknown, ...args: unknown[]) {
+  debug(message: M, ...args: unknown[]) {
     return this.dispatch(logLevels.debug, message, ...args);
   }
-  info(message: unknown, ...args: unknown[]) {
+  info(message: M, ...args: unknown[]) {
     return this.dispatch(logLevels.info, message, ...args);
   }
-  warn(message: unknown, ...args: unknown[]) {
+  warn(message: M, ...args: unknown[]) {
     return this.dispatch(logLevels.warn, message, ...args);
   }
-  error(message: unknown, ...args: unknown[]) {
+  error(message: M, ...args: unknown[]) {
     return this.dispatch(logLevels.error, message, ...args);
   }
 }
