@@ -1,7 +1,7 @@
-# Deno Node compatibility
+# Deno Node.js compatibility
 
 This module is meant to have a compatibility layer for the
-[NodeJS standard library](https://nodejs.org/docs/latest-v12.x/api/).
+[Node.js standard library](https://nodejs.org/docs/latest/api/).
 
 **Warning**: Any function of this module should not be referred anywhere in the
 deno standard library as it's a compatibility module.
@@ -61,7 +61,7 @@ deno standard library as it's a compatibility module.
 
 ### Deprecated
 
-These builtins are deprecated in NodeJS v13 and will probably not be polyfilled:
+These builtins are deprecated in Node.js v13 and will probably not be polyfilled:
 
 - domain
 - freelist
@@ -69,7 +69,7 @@ These builtins are deprecated in NodeJS v13 and will probably not be polyfilled:
 
 ### Experimental
 
-These builtins are experimental in NodeJS v13 and will not be polyfilled until
+These builtins are experimental in Node.js v13 and will not be polyfilled until
 they are stable:
 
 - async_hooks
@@ -100,7 +100,7 @@ const leftPad = require("left-pad");
 
 ### Setting up the test runner
 
-This library contains automated tests pulled directly from the Node repo in
+This library contains automated tests pulled directly from the Node.js repo in
 order ensure compatibility.
 
 Setting up the test runner is as simple as running the `node/_tools/setup.ts`
