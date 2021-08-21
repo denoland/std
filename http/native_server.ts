@@ -180,12 +180,12 @@ export class Server {
       throw ERROR_SERVER_CLOSED;
     }
 
-    this.trackListener(listener);
+    this.#trackListener(listener);
 
     try {
-      return await this.accept(listener);
+      return await this.#accept(listener);
     } finally {
-      this.untrackListener(listener);
+      this.#untrackListener(listener);
 
       try {
         listener.close();
@@ -308,7 +308,7 @@ export class Server {
    * @param {Deno.Conn} conn The TCP connection.
    * @private
    */
-  private async serveHttp(
+  async #serveHttp(
     httpConn: Deno.HttpConn,
     conn: Deno.Conn,
   ): Promise<void> {
@@ -360,7 +360,7 @@ export class Server {
       requestEvent = null;
     }
 
-    this.untrackHttpConnection(httpConn);
+    this.#untrackHttpConnection(httpConn);
 
     try {
       httpConn.close();
@@ -393,7 +393,7 @@ export class Server {
    * @param {Deno.Listener} listener The listener to accept connections from.
    * @private
    */
-  private async accept(
+  async #accept(
     listener: Deno.Listener,
   ): Promise<void> {
     while (!this.#closed) {
@@ -423,12 +423,12 @@ export class Server {
 
       // Closing the underlying listener will not close HTTP connections, so we
       // track for closure upon server close.
-      this.trackHttpConnection(httpConn);
+      this.#trackHttpConnection(httpConn);
 
       // Serve the requests that arrive on the just-accepted connection. Note
       // we do not await this async method to allow the server to accept new
       // connections.
-      this.serveHttp(httpConn, conn);
+      this.#serveHttp(httpConn, conn);
     }
   }
 
@@ -438,7 +438,7 @@ export class Server {
    * @param {Deno.Listener} listener Listener to track.
    * @private
    */
-  private trackListener(listener: Deno.Listener): void {
+  #trackListener(listener: Deno.Listener): void {
     this.#listeners.add(listener);
   }
 
@@ -448,7 +448,7 @@ export class Server {
    * @param {Deno.Listener} listener Listener to untrack.
    * @private
    */
-  private untrackListener(listener: Deno.Listener): void {
+  #untrackListener(listener: Deno.Listener): void {
     this.#listeners.delete(listener);
   }
 
@@ -458,7 +458,7 @@ export class Server {
    * @param {Deno.HttpConn} httpConn HTTP connection to track.
    * @private
    */
-  private trackHttpConnection(httpConn: Deno.HttpConn): void {
+  #trackHttpConnection(httpConn: Deno.HttpConn): void {
     this.#httpConnections.add(httpConn);
   }
 
@@ -468,7 +468,7 @@ export class Server {
    * @param {Deno.HttpConn} httpConn HTTP connection to untrack.
    * @private
    */
-  private untrackHttpConnection(httpConn: Deno.HttpConn): void {
+  #untrackHttpConnection(httpConn: Deno.HttpConn): void {
     this.#httpConnections.delete(httpConn);
   }
 }
