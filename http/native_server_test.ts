@@ -350,6 +350,34 @@ Deno.test("listenAndServeTls should not throw if abort when the server is alread
       }
     });
 
+    Deno.test({
+      // PermissionDenied: Permission denied (os error 13)
+      ignore: true,
+      name:
+        `Server.listenAndServe should handle ${method} requests on the default HTTP port`,
+      fn: async () => {
+        const addr = "localhost";
+        const url = `http://${addr}`;
+        const status = 418;
+        const body = `${method}: ${url} - Hello Deno on HTTP!`;
+
+        const handler = () => new Response(body, { status });
+
+        const server = new Server({ addr, handler });
+        server.listenAndServe();
+
+        try {
+          const response = await fetch(url, { method });
+          assertEquals(await response.text(), body);
+          assertEquals(response.status, status);
+        } catch {
+          unreachable();
+        } finally {
+          server.close();
+        }
+      },
+    });
+
     Deno.test(`Server.listenAndServeTls should handle ${method} requests`, async () => {
       const hostname = "localhost";
       const port = 4505;
@@ -412,6 +440,75 @@ Deno.test("listenAndServeTls should not throw if abort when the server is alread
       } finally {
         server.close();
       }
+    });
+
+    Deno.test({
+      ignore: true,
+      name:
+        `Server.listenAndServeTls should handle ${method} requests on the default HTTPS port`,
+      fn: async () => {
+        const hostname = "localhost";
+        const port = 443;
+        const addr = hostname;
+        const certFile = join(testdataDir, "tls/localhost.crt");
+        const keyFile = join(testdataDir, "tls/localhost.key");
+        const url = `http://${addr}`;
+        const status = 418;
+        const body = `${method}: ${url} - Hello Deno on HTTPS!`;
+
+        const handler = () => new Response(body, { status });
+
+        const server = new Server({ addr, handler });
+        server.listenAndServeTls(certFile, keyFile);
+
+        try {
+          // Invalid certificate, connection should throw on first read or write
+          // but should not crash the server.
+          const badConn = await Deno.connectTls({
+            hostname,
+            port,
+            // missing certFile
+          });
+
+          await assertThrowsAsync(
+            () => badConn.read(new Uint8Array(1)),
+            Deno.errors.InvalidData,
+            "invalid certificate: UnknownIssuer",
+            "Read with missing certFile didn't throw an InvalidData error when it should have.",
+          );
+
+          badConn.close();
+
+          // Valid request after invalid
+          const conn = await Deno.connectTls({
+            hostname,
+            port,
+            certFile: join(testdataDir, "tls/RootCA.pem"),
+          });
+
+          await writeAll(
+            conn,
+            new TextEncoder().encode(
+              `${method.toUpperCase()} / HTTP/1.0\r\n\r\n`,
+            ),
+          );
+
+          const response = new TextDecoder().decode(await readAll(conn));
+
+          conn.close();
+
+          assert(
+            response.includes(`HTTP/1.0 ${status}`),
+            "Status code not correct",
+          );
+          assert(
+            response.includes(body),
+            "Response body not correct",
+          );
+        } finally {
+          server.close();
+        }
+      },
     });
 
     Deno.test(`serve should handle ${method} requests`, async () => {
@@ -658,4 +755,27 @@ Deno.test("Server should not reject when the handler throws", async () => {
   await postRespondWith;
   conn.close();
   server.close();
+});
+
+Deno.test("Server should be able to parse IPV6 addresses", async () => {
+  const addr = "[::1]:4505";
+  const url = `http://${addr}`;
+  const method = "GET";
+  const status = 418;
+  const body = `${method}: ${url} - Hello Deno on HTTP!`;
+
+  const handler = () => new Response(body, { status });
+  const abortController = new AbortController();
+
+  listenAndServe(addr, handler, { signal: abortController.signal });
+
+  try {
+    const response = await fetch(url, { method });
+    assertEquals(await response.text(), body);
+    assertEquals(response.status, status);
+  } catch {
+    unreachable();
+  } finally {
+    abortController.abort();
+  }
 });
