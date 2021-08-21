@@ -61,7 +61,8 @@ deno standard library as it's a compatibility module.
 
 ### Deprecated
 
-These builtins are deprecated in Node.js v13 and will probably not be polyfilled:
+These builtins are deprecated in Node.js v13 and will probably not be
+polyfilled:
 
 - domain
 - freelist
