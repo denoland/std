@@ -607,9 +607,14 @@ export const constants = {
   MAX_STRING_LENGTH: kStringMaxLength,
 };
 
+export const atob = globalThis.atob;
+export const btoa = globalThis.btoa;
+
 export default {
   Buffer,
   kMaxLength,
   kStringMaxLength,
   constants,
+  atob,
+  btoa,
 };
