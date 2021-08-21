@@ -16,7 +16,5 @@
  * ```
  */
 export function distinct<T>(array: readonly T[]): T[] {
-  const set = new Set(array);
-
-  return Array.from(set);
+  return Array.from(new Set(array));
 }
