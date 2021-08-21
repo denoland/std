@@ -9,7 +9,7 @@ import {
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { readAll, writeAll } from "../io/util.ts";
-import { deferred } from "../async/mod.ts";
+import { deferred, delay } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
@@ -20,8 +20,6 @@ import {
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
-
-const nextTick = () => new Promise((resolve) => setTimeout(resolve));
 
 class MockRequestEvent implements Deno.RequestEvent {
   calls: Response[] = [];
@@ -39,6 +37,53 @@ class MockRequestEvent implements Deno.RequestEvent {
     return typeof this.#rejectionError !== "undefined"
       ? Promise.reject(this.#rejectionError)
       : Promise.resolve();
+  }
+}
+
+class MockListener implements Deno.Listener {
+  conn: Deno.Conn;
+  #closed = false;
+  #rejectionError?: Error;
+
+  constructor(conn: Deno.Conn, rejectionError?: Error) {
+    this.conn = conn;
+    this.#rejectionError = rejectionError;
+  }
+
+  get addr(): Deno.Addr {
+    return this.conn.localAddr;
+  }
+
+  get rid(): number {
+    return 4505;
+  }
+
+  async accept(): Promise<Deno.Conn> {
+    await delay(0);
+
+    return typeof this.#rejectionError !== "undefined"
+      ? Promise.reject(this.#rejectionError)
+      : Promise.resolve(this.conn);
+  }
+
+  close(): void {
+    this.#closed = true;
+  }
+
+  async *[Symbol.asyncIterator](): AsyncIterableIterator<Deno.Conn> {
+    while (true) {
+      if (this.#closed) {
+        break;
+      }
+
+      await delay(0);
+
+      if (typeof this.#rejectionError !== "undefined") {
+        throw this.#rejectionError;
+      }
+
+      yield this.conn;
+    }
   }
 }
 
@@ -196,6 +241,62 @@ Deno.test("Server.listenAndServeTls should throw an error if the server is alrea
     Deno.errors.Http,
     "Server closed",
   );
+});
+
+Deno.test("serve should not throw if abort when the server is already closed", async () => {
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+  };
+  const listener = Deno.listen(listenOptions);
+  const handler = () => new Response();
+  const abortController = new AbortController();
+
+  serve(listener, handler, { signal: abortController.signal });
+
+  abortController.abort();
+
+  try {
+    abortController.abort();
+  } catch {
+    unreachable();
+  }
+});
+
+Deno.test("listenAndServe should not throw if abort when the server is already closed", async () => {
+  const addr = "localhost:4505";
+  const handler = () => new Response();
+  const abortController = new AbortController();
+
+  listenAndServe(addr, handler, { signal: abortController.signal });
+
+  abortController.abort();
+
+  try {
+    abortController.abort();
+  } catch {
+    unreachable();
+  }
+});
+
+Deno.test("listenAndServeTls should not throw if abort when the server is already closed", async () => {
+  const addr = "localhost:4505";
+  const certFile = join(testdataDir, "tls/localhost.crt");
+  const keyFile = join(testdataDir, "tls/localhost.key");
+  const handler = () => new Response();
+  const abortController = new AbortController();
+
+  listenAndServeTls(addr, certFile, keyFile, handler, {
+    signal: abortController.signal,
+  });
+
+  abortController.abort();
+
+  try {
+    abortController.abort();
+  } catch {
+    unreachable();
+  }
 });
 
 ["get", "post", "put", "delete", "patch"].forEach(
@@ -430,6 +531,49 @@ Deno.test("Server.listenAndServeTls should throw an error if the server is alrea
   },
 );
 
+Deno.test("Server should not reject when the listener is closed (though the server will continually try and fail to accept connections on the listener until it is closed)", async () => {
+  const listener = Deno.listen({ port: 4505 });
+  const handler = () => new Response();
+  const server = new Server({ handler });
+  listener.close();
+  server.serve(listener);
+  await delay(10);
+  server.close();
+});
+
+Deno.test("Server should not reject when there is a tls handshake with tcp corruption", async () => {
+  const conn = createMockConn();
+  const error = new Deno.errors.InvalidData("test-tcp-corruption-error")
+  const listener = new MockListener(conn, error)
+  const handler = () => new Response();
+  const server = new Server({ handler });
+  server.serve(listener);
+  await delay(10);
+  server.close();
+});
+
+Deno.test("Server should not reject when the tls session is aborted", async () => {
+  const conn = createMockConn();
+  const error = new Deno.errors.ConnectionReset("test-tls-session-aborted-error")
+  const listener = new MockListener(conn, error)
+  const handler = () => new Response();
+  const server = new Server({ handler });
+  server.serve(listener);
+  await delay(10);
+  server.close();
+});
+
+Deno.test("Server should not reject when the socket is closed", async () => {
+  const conn = createMockConn();
+  const error = new Deno.errors.NotConnected("test-socket-closed-error")
+  const listener = new MockListener(conn, error)
+  const handler = () => new Response();
+  const server = new Server({ handler });
+  server.serve(listener);
+  await delay(10);
+  server.close();
+});
+
 Deno.test("Server should not reject when the connection is closed before the message is complete", async () => {
   const listenOptions = {
     hostname: "localhost",
@@ -443,7 +587,7 @@ Deno.test("Server should not reject when the connection is closed before the mes
   const handler = async () => {
     onRequest.resolve();
 
-    await nextTick();
+    await delay(0);
 
     try {
       return new Response("test-response");
