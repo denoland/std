@@ -24,12 +24,12 @@
 export function maxOf<T>(
   array: readonly T[],
   selector: (el: T) => number,
-): number;
+): number | undefined;
 
 export function maxOf<T>(
   array: readonly T[],
   selector: (el: T) => bigint,
-): bigint;
+): bigint | undefined;
 
 export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
   array: readonly T[],

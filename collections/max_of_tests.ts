@@ -67,7 +67,7 @@ Deno.test("[collections/maxOf] No mutation", () => {
   assertEquals(array, [1, 2, 3, 4]);
 });
 
-Deno.test("[collections/maxOf] Empty array results in -Infinity", () => {
+Deno.test("[collections/maxOf] Empty array results in undefined", () => {
   const array: number[] = [];
 
   const actual = maxOf(array, (i) => i);
