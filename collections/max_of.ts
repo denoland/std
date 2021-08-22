@@ -1,7 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Applies the given selector to all elements of the given collection and returns the max value of all elements
+ * Applies the given selector to all elements of the given collection and
+ * returns the max value of all elements. If an empty array is provided the
+ * function will return undefined
  *
  * Example:
  *

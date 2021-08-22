@@ -341,7 +341,8 @@ console.assert(
 ### maxOf
 
 Applies the given selector to all elements of the provided collection and
-returns the max value of all elements.
+returns the max value of all elements. If an empty array is provided the
+function will return undefined
 
 ```ts
 import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
