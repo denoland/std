@@ -4,9 +4,9 @@ This module is meant to have a compatibility layer for the
 [Node.js standard library](https://nodejs.org/docs/latest/api/).
 
 **Warning**: Any function of this module should not be referred anywhere in the
-deno standard library as it's a compatibility module.
+Deno standard library as it's a compatibility module.
 
-## Supported Builtins
+## Supported modules
 
 - [x] assert _partly_
 - [x] assert/strict _partly_
@@ -54,6 +54,7 @@ deno standard library as it's a compatibility module.
 - [ ] v8
 - [ ] vm
 - [ ] wasi
+- [ ] webcrypto
 - [ ] worker_threads
 - [ ] zlib
 
@@ -61,7 +62,7 @@ deno standard library as it's a compatibility module.
 
 ### Deprecated
 
-These builtins are deprecated in Node.js v13 and will probably not be
+These modules are deprecated in Node.js and will probably not be
 polyfilled:
 
 - domain
@@ -70,17 +71,18 @@ polyfilled:
 
 ### Experimental
 
-These builtins are experimental in Node.js v13 and will not be polyfilled until
+These modules are experimental in Node.js and will not be polyfilled until
 they are stable:
 
+- diagnostics_channel
 - async_hooks
-- inspector
 - policies
-- report
 - trace_events
 - wasi
+- webcrypto
+- stream/web
 
-## CommonJS Module Loading
+## CommonJS modules loading
 
 `createRequire(...)` is provided to create a `require` function for loading CJS
 modules. It also sets supported globals.
