@@ -1,5 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { _parseAddrFromStr } from "./server.ts";
+import { delay } from "../async/mod.ts";
 
 /**
  * Thrown by Server serve-like methods after the server has been closed.
@@ -23,6 +24,16 @@ const HTTP_PORT = 80;
  * Default port for serving HTTPS.
  */
 const HTTPS_PORT = 443;
+
+/**
+ * Initial backoff delay of 5ms following a temporary accept failure.
+ */
+const INITIAL_ACCEPT_BACKOFF_DELAY = 5;
+
+/**
+ * Max backoff delay of 1s following a temporary accept failure.
+ */
+const MAX_ACCEPT_BACKOFF_DELAY = 1000;
 
 /**
  * Information about the connection a request arrived on.
@@ -396,6 +407,8 @@ export class Server {
   async #accept(
     listener: Deno.Listener,
   ): Promise<void> {
+    let acceptBackoffDelay: number | null = null;
+
     while (!this.#closed) {
       // Wait for a new connection.
       let conn: Deno.Conn;
@@ -412,14 +425,42 @@ export class Server {
           error instanceof Deno.errors.ConnectionReset ||
           error instanceof Deno.errors.NotConnected
         ) {
+          // Backoff after transient errors to allow time for the system to
+          // recover, and avoid blocking up the event loop with a continuously
+          // running loop.
+          if (!acceptBackoffDelay) {
+            acceptBackoffDelay = INITIAL_ACCEPT_BACKOFF_DELAY;
+          } else {
+            acceptBackoffDelay *= 2;
+          }
+
+          if (acceptBackoffDelay >= MAX_ACCEPT_BACKOFF_DELAY) {
+            acceptBackoffDelay = MAX_ACCEPT_BACKOFF_DELAY;
+          }
+
+          await delay(acceptBackoffDelay);
+
           continue;
         }
 
         throw error;
       }
 
+      acceptBackoffDelay = null;
+
       // "Upgrade" the network connection into an HTTP connection.
-      const httpConn = Deno.serveHttp(conn);
+      let httpConn: Deno.HttpConn;
+
+      try {
+        httpConn = Deno.serveHttp(conn);
+      } catch (error) {
+        if (!(error instanceof Deno.errors.BadResource)) {
+          throw error;
+        }
+
+        // Connection has been closed.
+        continue;
+      }
 
       // Closing the underlying listener will not close HTTP connections, so we
       // track for closure upon server close.
