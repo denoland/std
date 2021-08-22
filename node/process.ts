@@ -1,11 +1,12 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { notImplemented } from "./_utils.ts";
-import EventEmitter from "./events.ts";
+import { EventEmitter } from "./events.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
+import { Readable, Writable } from "./stream.ts";
+import { Buffer } from "./buffer.ts";
 
-const customInspect = Symbol.for("Deno.customInspect");
 const notImplementedEvents = [
   "beforeExit",
   "disconnect",
@@ -33,15 +34,12 @@ export const arch = Deno.build.arch;
 // They will be overwritten by the below Object.defineProperty calls.
 const argv = ["", "", ...Deno.args];
 // Overwrites the 1st item with getter.
-Object.defineProperty(argv, "0", {
-  get() {
-    return Deno.execPath();
+Object.defineProperties(argv, {
+  0: {
+    get: () => Deno.execPath(),
   },
-});
-// Overwrites the 2nd item with getter.
-Object.defineProperty(argv, "1", {
-  get() {
-    return fromFileUrl(Deno.mainModule);
+  1: {
+    get: () => fromFileUrl(Deno.mainModule),
   },
 });
 
@@ -51,37 +49,16 @@ export const chdir = Deno.chdir;
 /** https://nodejs.org/api/process.html#process_process_cwd */
 export const cwd = Deno.cwd;
 
-//deno-lint-ignore ban-ts-comment
-//@ts-ignore
-const _env: {
-  [customInspect]: () => string;
-} = {};
-
-Object.defineProperty(_env, customInspect, {
-  enumerable: false,
-  configurable: true,
-  get: function () {
-    return Deno.env.toObject();
-  },
-});
-
 /**
  * https://nodejs.org/api/process.html#process_process_env
  * Requires env permissions
  * */
-export const env: Record<string, string> = new Proxy(_env, {
-  get(target, prop) {
-    if (prop === customInspect) {
-      return target[customInspect];
-    }
+export const env: Record<string, string> = new Proxy({}, {
+  get(_target, prop) {
     return Deno.env.get(String(prop));
   },
-  ownKeys() {
-    return Reflect.ownKeys(Deno.env.toObject());
-  },
-  getOwnPropertyDescriptor() {
-    return { enumerable: true, configurable: true };
-  },
+  ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
+  getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }),
   set(_target, prop, value) {
     Deno.env.set(String(prop), String(value));
     return value;
@@ -124,6 +101,91 @@ export const versions = {
   node: Deno.version.deno,
   ...Deno.version,
 };
+
+interface _Readable extends Readable {
+  get isTTY(): boolean;
+  destroySoon: Readable["destroy"],
+  fd: number;
+  _isStdio: false | undefined
+}
+
+interface _Writable extends Writable {
+  get isTTY(): boolean;
+  get columns(): number;
+  get rows(): number
+  destroySoon: Writable["destroy"],
+  fd: number;
+  _isStdio: true,
+}
+
+// https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
+function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
+  const stream = new Writable({
+    write(buf: Uint8Array, enc: string, cb) {
+      writer.writeSync(buf instanceof Uint8Array ? buf : Buffer.from(buf, enc));
+      cb();
+    },
+    destroy(err, cb) {
+      cb(err);
+      this._undestroy();
+      if (!this._writableState.emitClose) {
+        queueMicrotask(() => this.emit("close"));
+      }
+    },
+  }) as _Writable;
+  stream.fd = writer.rid;
+  stream.destroySoon = stream.destroy;
+  stream._isStdio = true;
+  stream.once("close", () => writer.close());
+  Object.defineProperties(stream, {
+    columns: {
+      enumerable: true,
+      configurable: true,
+      get(): number {
+        return Deno.consoleSize(writer.rid).columns;
+      },
+    },
+    rows: {
+      enumerable: true,
+      configurable: true,
+      get(): number {
+        return Deno.consoleSize(writer.rid).rows;
+      },
+    },
+    isTTY: {
+      enumerable: true,
+      configurable: true,
+      get(): boolean {
+        return Deno.isatty(writer.rid);
+      },
+    },
+  });
+  return stream;
+}
+
+/** https://nodejs.org/api/process.html#process_process_stderr */
+export const stderr = createWritableStdioStream(Deno.stderr);
+
+/** https://nodejs.org/api/process.html#process_process_stdin */
+export const stdin = new Readable({
+  read(this: Readable, size: number) {
+    const p = Buffer.alloc(size || 16 * 1024);
+    const length = Deno.stdin.readSync(p);
+    this.push(length === null ? null : p.slice(0, length));
+  }
+}) as _Readable;
+stdin.on("close", () => Deno.stdin.close());
+stdin.fd = Deno.stdin.rid;
+Object.defineProperty(stdin, "isTTY", {
+  enumerable: true,
+  configurable: true,
+  get() {
+    return Deno.isatty(Deno.stdin.rid);
+  },
+});
+
+/** https://nodejs.org/api/process.html#process_process_stdout */
+export const stdout = createWritableStdioStream(Deno.stdout);
 
 class Process extends EventEmitter {
   constructor() {
@@ -211,7 +273,7 @@ class Process extends EventEmitter {
    * tuple.
    *
    * Note: You need to give --allow-hrtime permission to Deno to actually get
-   * nanoseconds precision values. If you don't give 'hrtime' permission, the returned
+   * nanoseconds precision values. If you don"t give "hrtime" permission, the returned
    * values only have milliseconds precision.
    *
    * `time` is an optional parameter that must be the result of a previous process.hrtime() call to diff with the current time.
@@ -231,71 +293,13 @@ class Process extends EventEmitter {
   }
 
   /** https://nodejs.org/api/process.html#process_process_stderr */
-  get stderr() {
-    return {
-      fd: Deno.stderr.rid,
-      get isTTY(): boolean {
-        return Deno.isatty(this.fd);
-      },
-      pipe(_destination: Deno.Writer, _options: { end: boolean }): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-      // deno-lint-ignore ban-types
-      write(_chunk: string | Uint8Array, _callback: Function): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-      // deno-lint-ignore ban-types
-      on(_event: string, _callback: Function): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-    };
-  }
+  stderr = stderr;
 
   /** https://nodejs.org/api/process.html#process_process_stdin */
-  get stdin() {
-    return {
-      fd: Deno.stdin.rid,
-      get isTTY(): boolean {
-        return Deno.isatty(this.fd);
-      },
-      read(_size: number): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-      // deno-lint-ignore ban-types
-      on(_event: string, _callback: Function): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-    };
-  }
+  stdin = stdin;
 
   /** https://nodejs.org/api/process.html#process_process_stdout */
-  get stdout() {
-    return {
-      fd: Deno.stdout.rid,
-      get isTTY(): boolean {
-        return Deno.isatty(this.fd);
-      },
-      pipe(_destination: Deno.Writer, _options: { end: boolean }): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-      // deno-lint-ignore ban-types
-      write(_chunk: string | Uint8Array, _callback: Function): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-      // deno-lint-ignore ban-types
-      on(_event: string, _callback: Function): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-    };
-  }
+  stdout = stdout;
 
   /** https://nodejs.org/api/process.html#process_process_version */
   version = version;
@@ -316,9 +320,6 @@ Object.defineProperty(process, Symbol.toStringTag, {
 
 export const removeListener = process.removeListener;
 export const removeAllListeners = process.removeAllListeners;
-export const stderr = process.stderr;
-export const stdin = process.stdin;
-export const stdout = process.stdout;
 
 export default process;
 

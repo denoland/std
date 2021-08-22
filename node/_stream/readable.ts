@@ -43,7 +43,7 @@ export interface ReadableOptions {
   encoding?: Encodings;
   highWaterMark?: number;
   objectMode?: boolean;
-  read?(this: Readable): void;
+  read?(this: Readable, size?: number): void;
 }
 
 export class ReadableState {
