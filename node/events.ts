@@ -32,6 +32,22 @@ export interface WrappedFunction extends Function {
   listener: GenericFunction;
 }
 
+export interface OnceableEventEmitter {
+  once(event: string | symbol, listener: GenericFunction): unknown;
+  removeListener(
+    event: string | symbol,
+    listener: GenericFunction,
+  ): unknown;
+}
+
+export interface OnableEventEmitter {
+  on(event: string | symbol, listener: GenericFunction): unknown;
+  removeListener(
+    event: string | symbol,
+    listener: GenericFunction,
+  ): unknown;
+}
+
 function ensureArray<T>(maybeArray: T[] | T): T[] {
   return Array.isArray(maybeArray) ? maybeArray : [maybeArray];
 }
@@ -175,8 +191,8 @@ export class EventEmitter {
    * Returns an array listing the events for which the emitter has
    * registered listeners.
    */
-  public eventNames(): [string | symbol] {
-    return Reflect.ownKeys(this._events) as [string | symbol];
+  public eventNames(): (string | symbol)[] {
+    return Reflect.ownKeys(this._events);
   }
 
   /**
@@ -483,51 +499,37 @@ export class EventEmitter {
    * will resolve with an array of all the arguments emitted to the given event.
    */
   public static once(
-    emitter: EventEmitter | EventTarget,
-    name: string,
+    emitter: OnceableEventEmitter,
+    name: string | symbol,
     // deno-lint-ignore no-explicit-any
   ): Promise<any[]> {
     return new Promise((resolve, reject) => {
-      if (emitter instanceof EventTarget) {
-        // EventTarget does not have `error` event semantics like Node
-        // EventEmitters, we do not listen to `error` events here.
-        emitter.addEventListener(
-          name,
-          (...args) => {
-            resolve(args);
-          },
-          { once: true, passive: false, capture: false },
-        );
-        return;
-      } else if (emitter instanceof EventEmitter) {
-        // deno-lint-ignore no-explicit-any
-        const eventListener = (...args: any[]): void => {
-          if (errorListener !== undefined) {
-            emitter.removeListener("error", errorListener);
-          }
-          resolve(args);
-        };
-        let errorListener: GenericFunction;
-
-        // Adding an error listener is not optional because
-        // if an error is thrown on an event emitter we cannot
-        // guarantee that the actual event we are waiting will
-        // be fired. The result could be a silent way to create
-        // memory or file descriptor leaks, which is something
-        // we should avoid.
-        if (name !== "error") {
-          // deno-lint-ignore no-explicit-any
-          errorListener = (err: any): void => {
-            emitter.removeListener(name, eventListener);
-            reject(err);
-          };
-
-          emitter.once("error", errorListener);
+      // deno-lint-ignore no-explicit-any
+      const eventListener = (...args: any[]): void => {
+        if (errorListener !== undefined) {
+          emitter.removeListener("error", errorListener);
         }
+        resolve(args);
+      };
+      let errorListener: GenericFunction;
 
-        emitter.once(name, eventListener);
-        return;
+      // Adding an error listener is not optional because
+      // if an error is thrown on an event emitter we cannot
+      // guarantee that the actual event we are waiting will
+      // be fired. The result could be a silent way to create
+      // memory or file descriptor leaks, which is something
+      // we should avoid.
+      if (name !== "error") {
+        // deno-lint-ignore no-explicit-any
+        errorListener = (err: any): void => {
+          emitter.removeListener(name, eventListener);
+          reject(err);
+        };
+
+        emitter.once("error", errorListener);
       }
+
+      emitter.once(name, eventListener);
     });
   }
 
@@ -538,7 +540,7 @@ export class EventEmitter {
    * emitted event arguments.
    */
   public static on(
-    emitter: EventEmitter,
+    emitter: OnableEventEmitter,
     event: string | symbol,
   ): AsyncIterable {
     // deno-lint-ignore no-explicit-any
