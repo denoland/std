@@ -30,11 +30,13 @@ const notImplementedEvents = [
 /** https://nodejs.org/api/process.html#process_process_arch */
 export const arch = Deno.build.arch;
 
-// The first item is a placeholder.
-// It will be overwritten by the below Object.defineProperty call.
-const argv = ["", fromFileUrl(Deno.mainModule), ...Deno.args];
+// The first 2 items are placeholders.
+// They will be overwritten by the below Object.defineProperty calls.
+const argv = ["", "", ...Deno.args];
 // Overwrites the 1st item with getter.
 Object.defineProperty(argv, "0", { get: Deno.execPath });
+// Overwrites the 2st item with getter.
+Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
 
 /** https://nodejs.org/api/process.html#process_process_chdir_directory */
 export const chdir = Deno.chdir;
