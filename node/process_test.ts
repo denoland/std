@@ -160,31 +160,28 @@ Deno.test({
 Deno.test({
   name: "process.stdin",
   fn() {
-    assertEquals(typeof process.stdin.fd, "number");
     assertEquals(process.stdin.fd, Deno.stdin.rid);
-    assert(process.stdin.isTTY);
+    assertEquals(process.stdin.isTTY, Deno.isatty(Deno.stdin.rid));
   },
 });
 
 Deno.test({
   name: "process.stdout",
   fn() {
-    assertEquals(typeof process.stdout.fd, "number");
     assertEquals(process.stdout.fd, Deno.stdout.rid);
-    assert(process.stdout.isTTY);
-    assertEquals(process.stdout.columns, Deno.consoleSize(process.stdout.fd).columns);
-    assertEquals(process.stdout.rows, Deno.consoleSize(process.stdout.fd).rows);
+    assertEquals(process.stdout.isTTY, Deno.isatty(Deno.stdout.rid));
+    assertEquals(process.stdout.columns, Deno.consoleSize(Deno.stdout.rid).columns);
+    assertEquals(process.stdout.rows, Deno.consoleSize(Deno.stdout.rid).rows);
   },
 });
 
 Deno.test({
   name: "process.stderr",
   fn() {
-    assertEquals(typeof process.stderr.fd, "number");
     assertEquals(process.stderr.fd, Deno.stderr.rid);
-    assert(process.stderr.isTTY);
-    assertEquals(process.stderr.columns, Deno.consoleSize(process.stderr.fd).columns);
-    assertEquals(process.stderr.rows, Deno.consoleSize(process.stderr.fd).rows);
+    assertEquals(process.stderr.isTTY, Deno.isatty(Deno.stdout.rid));
+    assertEquals(process.stderr.columns, Deno.consoleSize(Deno.stderr.rid).columns);
+    assertEquals(process.stderr.rows, Deno.consoleSize(Deno.stderr.rid).rows);
   },
 });
 
