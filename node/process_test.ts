@@ -189,7 +189,7 @@ Deno.test({
   name: "process.stderr",
   fn() {
     assertEquals(process.stderr.fd, Deno.stderr.rid);
-    const isTTY = Deno.isatty(Deno.stdout.rid);
+    const isTTY = Deno.isatty(Deno.stderr.rid);
     assertEquals(process.stderr.isTTY, isTTY);
     const consoleSize = isTTY ? Deno.consoleSize(Deno.stderr.rid) : undefined;
     assertEquals(process.stderr.columns, consoleSize?.columns);
