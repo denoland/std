@@ -30,18 +30,11 @@ const notImplementedEvents = [
 /** https://nodejs.org/api/process.html#process_process_arch */
 export const arch = Deno.build.arch;
 
-// The first 2 items are placeholders.
-// They will be overwritten by the below Object.defineProperty calls.
-const argv = ["", "", ...Deno.args];
+// The first item is a placeholder.
+// It will be overwritten by the below Object.defineProperty call.
+const argv = ["", fromFileUrl(Deno.mainModule), ...Deno.args];
 // Overwrites the 1st item with getter.
-Object.defineProperties(argv, {
-  0: {
-    get: () => Deno.execPath(),
-  },
-  1: {
-    get: () => fromFileUrl(Deno.mainModule),
-  },
-});
+Object.defineProperty(argv, "0", { get: Deno.execPath });
 
 /** https://nodejs.org/api/process.html#process_process_chdir_directory */
 export const chdir = Deno.chdir;
@@ -280,7 +273,7 @@ class Process extends EventEmitter {
    * tuple.
    *
    * Note: You need to give --allow-hrtime permission to Deno to actually get
-   * nanoseconds precision values. If you don"t give "hrtime" permission, the returned
+   * nanoseconds precision values. If you don't give 'hrtime' permission, the returned
    * values only have milliseconds precision.
    *
    * `time` is an optional parameter that must be the result of a previous process.hrtime() call to diff with the current time.
