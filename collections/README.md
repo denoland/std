@@ -455,3 +455,17 @@ console.assert(
   ],
 );
 ```
+
+### average
+
+Returns an average value of elements in the array
+
+```ts
+import { average } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const numbers = [5, 6, 7, 8, 9];
+const avg = average(numbers);
+
+assertEquals(avg, 7);
+```
