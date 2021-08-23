@@ -146,7 +146,7 @@ export function equal(c: unknown, d: unknown): boolean {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
-      if (a && b && (a.constructor !== b.constructor)) {
+      if (a && b && !constructorsEqual(a, b)) {
         return false;
       }
       if (a instanceof WeakMap || b instanceof WeakMap) {
@@ -209,6 +209,13 @@ export function equal(c: unknown, d: unknown): boolean {
     }
     return false;
   })(c, d);
+}
+
+// deno-lint-ignore ban-types
+function constructorsEqual(a: object, b: object) {
+  return a.constructor === b.constructor ||
+    a.constructor === Object && !b.constructor ||
+    !a.constructor && b.constructor === Object;
 }
 
 /** Make an assertion, error will be thrown if `expr` does not have truthy value. */
