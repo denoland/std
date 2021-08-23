@@ -14,10 +14,7 @@
  * assertEquals(withoutList, [3]);
  * ```
  */
-export function withoutAll<T>(
-  array: Array<T>,
-  values: Array<T>,
-): Array<T> {
+export function withoutAll<T>(array: readonly T[], values: readonly T[]): T[] {
   const toExclude = new Set(values);
   return array.filter((it) => !toExclude.has(it));
 }
