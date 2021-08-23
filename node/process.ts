@@ -141,15 +141,19 @@ function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
     columns: {
       enumerable: true,
       configurable: true,
-      get(): number {
-        return Deno.isatty(writer.rid) ? Deno.consoleSize(writer.rid).columns : undefined;
+      get(): number | undefined {
+        return Deno.isatty(writer.rid)
+          ? Deno.consoleSize(writer.rid).columns
+          : undefined;
       },
     },
     rows: {
       enumerable: true,
       configurable: true,
-      get(): number {
-        return Deno.isatty(writer.rid) ? Deno.consoleSize(writer.rid).rows : undefined;
+      get(): number | undefined {
+        return Deno.isatty(writer.rid)
+          ? Deno.consoleSize(writer.rid).rows
+          : undefined;
       },
     },
     isTTY: {

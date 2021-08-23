@@ -2,12 +2,16 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import "./global.ts";
-import { assert, assertEquals, assertThrows, assertObjectMatch } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertObjectMatch,
+  assertThrows,
+} from "../testing/asserts.ts";
 import { stripColor } from "../fmt/colors.ts";
 import * as path from "../path/mod.ts";
 import { delay } from "../async/delay.ts";
 import { env } from "./process.ts";
-import { inspect } from "./util.ts";
 
 Deno.test({
   name: "process.cwd and process.chdir success",
@@ -169,9 +173,16 @@ Deno.test({
   name: "process.stdout",
   fn() {
     assertEquals(process.stdout.fd, Deno.stdout.rid);
-    assertEquals(process.stdout.isTTY, Deno.isatty(Deno.stdout.rid));
-    assertEquals(process.stdout.columns, Deno.consoleSize(Deno.stdout.rid).columns);
-    assertEquals(process.stdout.rows, Deno.consoleSize(Deno.stdout.rid).rows);
+    const isTTY = Deno.isatty(Deno.stdout.rid);
+    assertEquals(process.stdout.isTTY, isTTY);
+    assertEquals(
+      process.stdout.columns,
+      isTTY ? Deno.consoleSize(Deno.stdout.rid).columns : undefined,
+    );
+    assertEquals(
+      process.stdout.rows,
+      isTTY ? Deno.consoleSize(Deno.stdout.rid).rows : undefined,
+    );
   },
 });
 
@@ -179,9 +190,16 @@ Deno.test({
   name: "process.stderr",
   fn() {
     assertEquals(process.stderr.fd, Deno.stderr.rid);
-    assertEquals(process.stderr.isTTY, Deno.isatty(Deno.stdout.rid));
-    assertEquals(process.stderr.columns, Deno.consoleSize(Deno.stderr.rid).columns);
-    assertEquals(process.stderr.rows, Deno.consoleSize(Deno.stderr.rid).rows);
+    const isTTY = Deno.isatty(Deno.stdout.rid);
+    assertEquals(process.stderr.isTTY, isTTY);
+    assertEquals(
+      process.stderr.columns,
+      isTTY ? Deno.consoleSize(Deno.stderr.rid).columns : undefined,
+    );
+    assertEquals(
+      process.stderr.rows,
+      isTTY ? Deno.consoleSize(Deno.stderr.rid).rows : undefined,
+    );
   },
 });
 
@@ -248,7 +266,10 @@ Deno.test({
     p.stdin.write(new TextEncoder().encode("yes!"));
     const stderr = new TextDecoder().decode(await p.stderrOutput());
     const stdout = new TextDecoder().decode(await p.output());
-    assertEquals(stderr + stdout, "helloworldhelloworldfrom pipereceived:it works?!yes!helloworldhelloworldfrom pipe");
+    assertEquals(
+      stderr + stdout,
+      "helloworldhelloworldfrom pipereceived:it works?!yes!helloworldhelloworldfrom pipe",
+    );
   },
   sanitizeResources: false,
   sanitizeOps: false,

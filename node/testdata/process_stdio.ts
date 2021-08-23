@@ -14,7 +14,7 @@ function makeContents(): Readable {
 makeContents().pipe(process.stdout);
 makeContents().pipe(process.stderr);
 
-process.stdout.write('received:');
+process.stdout.write("received:");
 process.stdout.write(process.stdin.read()?.toString());
 
 process.stdin.pipe(process.stdout);
@@ -34,7 +34,7 @@ try {
   // this should throw if stdout is closed
   await Deno.stdin.read(new Uint8Array(1));
   Deno.stdout.write(new Uint8Array([1]));
-// deno-lint-ignore no-empty
+  // deno-lint-ignore no-empty
 } catch {}
 
 process.stdout.destroy();
