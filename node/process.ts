@@ -103,19 +103,19 @@ export const versions = {
 };
 
 interface _Readable extends Readable {
-  get isTTY(): boolean;
-  destroySoon: Readable["destroy"],
+  get isTTY(): true | undefined;
+  destroySoon: Readable["destroy"];
   fd: number;
-  _isStdio: false | undefined
+  _isStdio: undefined;
 }
 
 interface _Writable extends Writable {
-  get isTTY(): boolean;
-  get columns(): number;
-  get rows(): number
-  destroySoon: Writable["destroy"],
+  get isTTY(): true | undefined;
+  get columns(): number | undefined;
+  get rows(): number | undefined;
+  destroySoon: Writable["destroy"];
   fd: number;
-  _isStdio: true,
+  _isStdio: true;
 }
 
 // https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
@@ -142,14 +142,14 @@ function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
       enumerable: true,
       configurable: true,
       get(): number {
-        return Deno.consoleSize(writer.rid).columns;
+        return Deno.isatty(writer.rid) ? Deno.consoleSize(writer.rid).columns : undefined;
       },
     },
     rows: {
       enumerable: true,
       configurable: true,
       get(): number {
-        return Deno.consoleSize(writer.rid).rows;
+        return Deno.isatty(writer.rid) ? Deno.consoleSize(writer.rid).rows : undefined;
       },
     },
     isTTY: {
@@ -172,7 +172,7 @@ export const stdin = new Readable({
     const p = Buffer.alloc(size || 16 * 1024);
     const length = Deno.stdin.readSync(p);
     this.push(length === null ? null : p.slice(0, length));
-  }
+  },
 }) as _Readable;
 stdin.on("close", () => Deno.stdin.close());
 stdin.fd = Deno.stdin.rid;
