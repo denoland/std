@@ -191,6 +191,10 @@ also take a function as an argument.
 ### Example
 
 ```ts
+import {
+  Logger,
+  logLevels,
+} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 const logger = new Logger(logLevels.error);
 
 function expensiveFn() {
