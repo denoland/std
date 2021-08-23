@@ -175,13 +175,12 @@ Deno.test({
     assertEquals(process.stdout.fd, Deno.stdout.rid);
     const isTTY = Deno.isatty(Deno.stdout.rid);
     assertEquals(process.stdout.isTTY, isTTY);
+    const consoleSize = isTTY ? Deno.consoleSize(Deno.stdout.rid) : undefined;
+    assertEquals(process.stdout.columns, consoleSize?.columns);
+    assertEquals(process.stdout.rows, consoleSize?.rows);
     assertEquals(
-      process.stdout.columns,
-      isTTY ? Deno.consoleSize(Deno.stdout.rid).columns : undefined,
-    );
-    assertEquals(
-      process.stdout.rows,
-      isTTY ? Deno.consoleSize(Deno.stdout.rid).rows : undefined,
+      `${process.stdout.getWindowSize()}`,
+      `${consoleSize && [consoleSize.columns, consoleSize.rows]}`,
     );
   },
 });
@@ -192,13 +191,12 @@ Deno.test({
     assertEquals(process.stderr.fd, Deno.stderr.rid);
     const isTTY = Deno.isatty(Deno.stdout.rid);
     assertEquals(process.stderr.isTTY, isTTY);
+    const consoleSize = isTTY ? Deno.consoleSize(Deno.stderr.rid) : undefined;
+    assertEquals(process.stderr.columns, consoleSize?.columns);
+    assertEquals(process.stderr.rows, consoleSize?.rows);
     assertEquals(
-      process.stderr.columns,
-      isTTY ? Deno.consoleSize(Deno.stderr.rid).columns : undefined,
-    );
-    assertEquals(
-      process.stderr.rows,
-      isTTY ? Deno.consoleSize(Deno.stderr.rid).rows : undefined,
+      `${process.stderr.getWindowSize()}`,
+      `${consoleSize && [consoleSize.columns, consoleSize.rows]}`,
     );
   },
 });

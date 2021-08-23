@@ -113,6 +113,7 @@ interface _Writable extends Writable {
   get isTTY(): true | undefined;
   get columns(): number | undefined;
   get rows(): number | undefined;
+  getWindowSize(): [columns: number, rows: number] | undefined;
   destroySoon: Writable["destroy"];
   fd: number;
   _isStdio: true;
@@ -141,27 +142,29 @@ function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
     columns: {
       enumerable: true,
       configurable: true,
-      get(): number | undefined {
-        return Deno.isatty(writer.rid)
+      get: () =>
+        Deno.isatty(writer.rid)
           ? Deno.consoleSize(writer.rid).columns
-          : undefined;
-      },
+          : undefined,
     },
     rows: {
       enumerable: true,
       configurable: true,
-      get(): number | undefined {
-        return Deno.isatty(writer.rid)
-          ? Deno.consoleSize(writer.rid).rows
-          : undefined;
-      },
+      get: () =>
+        Deno.isatty(writer.rid) ? Deno.consoleSize(writer.rid).rows : undefined,
     },
     isTTY: {
       enumerable: true,
       configurable: true,
-      get(): boolean {
-        return Deno.isatty(writer.rid);
-      },
+      get: () => Deno.isatty(writer.rid),
+    },
+    getWindowSize: {
+      enumerable: true,
+      configurable: true,
+      value: () =>
+        Deno.isatty(writer.rid)
+          ? Object.values(Deno.consoleSize(writer.rid))
+          : undefined,
     },
   });
   return stream;
