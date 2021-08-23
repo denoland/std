@@ -62,8 +62,7 @@ Deno standard library as it's a compatibility module.
 
 ### Deprecated
 
-These modules are deprecated in Node.js and will probably not be
-polyfilled:
+These modules are deprecated in Node.js and will probably not be polyfilled:
 
 - domain
 - freelist
@@ -71,8 +70,8 @@ polyfilled:
 
 ### Experimental
 
-These modules are experimental in Node.js and will not be polyfilled until
-they are stable:
+These modules are experimental in Node.js and will not be polyfilled until they
+are stable:
 
 - diagnostics_channel
 - async_hooks
