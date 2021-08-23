@@ -455,3 +455,22 @@ console.assert(
   ],
 );
 ```
+
+### maxBy
+
+Returns the first element that is the largest value of the given function or
+undefined if there are no elements.
+
+```ts
+import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+const personWithMaxAge = maxBy(people, (i) => i.age);
+
+assertEquals(personWithMaxAge, { name: "Kim", age: 42 });
+```
