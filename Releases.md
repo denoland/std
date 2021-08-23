@@ -6,6 +6,8 @@
 - feat(node/buffer): add missing exports (#1140)
 - feat(node/buffer): export atob and btoa (#1147)
 - fix(node/perf-hooks): add PerformanceEntry to default export (#1152)
+- fix(testing): `assertEquals` now considers constructors equal if one is
+  nullable and the other is Object (#1159)
 - perf(collections): permutations optimisation (#1132)
 
 ### 0.105.0 / 2021.08.16
