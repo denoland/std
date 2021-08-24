@@ -941,6 +941,17 @@ Deno.test("Assert Throws Async Non-Error Fail", () => {
   );
 });
 
+Deno.test("assertEquals compares objects structurally if one object's constructor is undefined and the other is Object", () => {
+  const a = Object.create(null);
+  a.prop = "test";
+  const b = {
+    prop: "test",
+  };
+
+  assertEquals(a, b);
+  assertEquals(b, a);
+});
+
 Deno.test("assertEquals diff for differently ordered objects", () => {
   assertThrows(
     () => {

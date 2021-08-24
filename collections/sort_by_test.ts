@@ -154,6 +154,21 @@ Deno.test({
         Number.NaN,
       ],
     );
+
+    // Test that NaN sort is stable.
+    const nanArray = [
+      { id: 1, nan: Number.NaN },
+      { id: 2, nan: Number.NaN },
+      { id: 3, nan: Number.NaN },
+      { id: 4, nan: Number.NaN },
+    ];
+    sortByTest(
+      [
+        nanArray,
+        ({ nan }) => nan,
+      ],
+      nanArray,
+    );
   },
 });
 
