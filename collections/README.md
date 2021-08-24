@@ -412,6 +412,19 @@ const shoppingList = union(soupIngredients, saladIngredients);
 assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
 ```
 
+### withoutAll
+
+Returns an array excluding all given values
+
+```ts
+import { withoutAll } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const withoutList = withoutAll([2, 1, 2, 3], [1, 2]);
+
+assertEquals(withoutList, [3]);
+```
+
 ### unzip
 
 Builds two separate arrays from the given array of 2-tuples, with the first
