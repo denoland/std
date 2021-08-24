@@ -353,7 +353,7 @@ const inventory = [
   { name: "tomato", count: 32 },
 ];
 const minCount = minOf(inventory, (i) => i.count);
-assertEquals(maxCount, 2);
+assertEquals(minCount, 2);
 ```
 
 ### partition
