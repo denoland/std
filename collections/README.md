@@ -317,9 +317,9 @@ assertEquals(foundMiddleNames, ["William", "Martha"]);
 
 ### mapValues
 
-Applies the given transformer to all valuesin the given record and returns a new
-record containing the resulting keys associated to the last value that produced
-them.
+Applies the given transformer to all values in the given record and returns a
+new record containing the resulting keys associated to the last value that
+produced them.
 
 ```ts
 import { mapValues } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
@@ -336,6 +336,27 @@ console.assert(
     "de4f": "Kim",
   },
 );
+```
+
+### maxOf
+
+Applies the given selector to all elements of the provided collection and
+returns the max value of all elements. If an empty array is provided the
+function will return undefined
+
+```ts
+import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const inventory = [
+  { name: "mustard", count: 2 },
+  { name: "soy", count: 4 },
+  { name: "tomato", count: 32 },
+];
+
+const maxCount = maxOf(inventory, (i) => i.count);
+
+assertEquals(maxCount, 32);
 ```
 
 ### partition
