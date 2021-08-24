@@ -380,22 +380,6 @@ export class Server {
         throw error;
       }
     }
-
-    if (requestEvent) {
-      try {
-        // If we break the request event loop to close the connection due to an
-        // error (e.g. handler throws) before we respond to the request event
-        // we will leave a "responseSender" resource open. In order to ensure
-        // we clean up this resource we send an empty response to the request
-        // event with the expectation that it should throw a BadResource error
-        // as the connection has been closed.
-        await requestEvent.respondWith(new Response());
-      } catch (error) {
-        if (!(error instanceof Deno.errors.BadResource)) {
-          throw error;
-        }
-      }
-    }
   }
 
   /**
