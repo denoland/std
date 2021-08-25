@@ -365,8 +365,6 @@ Applies the given selector to all elements of the given collection and returns
 the min value of all elements. If an empty array is provided the function will
 return undefined
 
-Example:
-
 ```ts
 import { minOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
