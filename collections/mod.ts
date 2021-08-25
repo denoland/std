@@ -22,5 +22,6 @@ export * from "./sum_of.ts";
 export * from "./max_of.ts";
 export * from "./sort_by.ts";
 export * from "./union.ts";
+export * from "./without_all.ts";
 export * from "./unzip.ts";
 export * from "./zip.ts";
