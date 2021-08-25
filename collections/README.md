@@ -376,7 +376,7 @@ const inventory = [
 ];
 const minCount = minOf(inventory, (i) => i.count);
 
-assertEquals(minCount, 32);
+assertEquals(minCount, 2);
 ```
 
 ### partition
