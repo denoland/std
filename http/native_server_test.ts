@@ -45,17 +45,28 @@ class MockListener implements Deno.Listener {
   #closed = false;
   #rejectionError?: Error;
   #rejectionCount: number;
+  #acceptCallSideEffect: () => void | Promise<void>;
   acceptCallTimes: number[] = [];
+  acceptCallIntervals: number[] = [];
   acceptCallCount = 0;
 
   constructor(
-    conn: Deno.Conn,
-    rejectionError?: Error,
-    rejectionCount: number = Infinity,
+    {
+      conn,
+      rejectionError,
+      rejectionCount = Infinity,
+      acceptCallSideEffect = () => {},
+    }: {
+      conn: Deno.Conn;
+      rejectionError?: Error;
+      rejectionCount?: number;
+      acceptCallSideEffect?: () => void | Promise<void>;
+    },
   ) {
     this.conn = conn;
     this.#rejectionError = rejectionError;
     this.#rejectionCount = rejectionCount;
+    this.#acceptCallSideEffect = acceptCallSideEffect;
   }
 
   get addr(): Deno.Addr {
@@ -76,8 +87,11 @@ class MockListener implements Deno.Listener {
       throw new Deno.errors.BadResource("MockListener has closed");
     }
 
-    this.acceptCallTimes.push(performance.now());
+    const now = performance.now();
+    this.acceptCallIntervals.push(now - (this.acceptCallTimes.at(-1) ?? now));
+    this.acceptCallTimes.push(now);
     this.acceptCallCount++;
+    this.#acceptCallSideEffect();
 
     await delay(0);
 
@@ -96,8 +110,11 @@ class MockListener implements Deno.Listener {
         break;
       }
 
-      this.acceptCallTimes.push(performance.now());
+      const now = performance.now();
+      this.acceptCallIntervals.push(now - (this.acceptCallTimes.at(-1) ?? now));
+      this.acceptCallTimes.push(now);
       this.acceptCallCount++;
+      this.#acceptCallSideEffect();
 
       await delay(0);
 
@@ -688,8 +705,10 @@ Deno.test("Server should not reject when the listener is closed (though the serv
 
 Deno.test("Server should not reject when there is a tls handshake with tcp corruption", async () => {
   const conn = createMockConn();
-  const error = new Deno.errors.InvalidData("test-tcp-corruption-error");
-  const listener = new MockListener(conn, error);
+  const rejectionError = new Deno.errors.InvalidData(
+    "test-tcp-corruption-error",
+  );
+  const listener = new MockListener({ conn, rejectionError });
   const handler = () => new Response();
   const server = new Server({ handler });
   const servePromise = server.serve(listener);
@@ -700,10 +719,10 @@ Deno.test("Server should not reject when there is a tls handshake with tcp corru
 
 Deno.test("Server should not reject when the tls session is aborted", async () => {
   const conn = createMockConn();
-  const error = new Deno.errors.ConnectionReset(
+  const rejectionError = new Deno.errors.ConnectionReset(
     "test-tls-session-aborted-error",
   );
-  const listener = new MockListener(conn, error);
+  const listener = new MockListener({ conn, rejectionError });
   const handler = () => new Response();
   const server = new Server({ handler });
   const servePromise = server.serve(listener);
@@ -714,8 +733,10 @@ Deno.test("Server should not reject when the tls session is aborted", async () =
 
 Deno.test("Server should not reject when the socket is closed", async () => {
   const conn = createMockConn();
-  const error = new Deno.errors.NotConnected("test-socket-closed-error");
-  const listener = new MockListener(conn, error);
+  const rejectionError = new Deno.errors.NotConnected(
+    "test-socket-closed-error",
+  );
+  const listener = new MockListener({ conn, rejectionError });
   const handler = () => new Response();
   const server = new Server({ handler });
   const servePromise = server.serve(listener);
@@ -724,74 +745,83 @@ Deno.test("Server should not reject when the socket is closed", async () => {
   await servePromise;
 });
 
-Deno.test("Server should implement a backoff delay when accepting a connection throws an expected error", async () => {
+Deno.test("Server should implement a backoff delay when accepting a connection throws an expected error and reset the backoff when successfully accepting a connection again", async () => {
+  // acceptDelay(n) = 5 * 2^n for n=0...7 capped at 1000 afterwards.
+  const expectedBackoffDelays = [5, 10, 20, 40, 80, 160, 320, 640, 1000, 1000];
+  const rejectionCount = expectedBackoffDelays.length;
+
+  let listener: MockListener;
+  let resolver: (value: unknown) => void;
+
+  // Construct a promise we know will only resolve after listener.accept() has
+  // been called enough times to assert on our expected backoff delays, i.e.
+  // the number of rejections + 1 success.
+  const expectedBackoffDelaysCompletedPromise = new Promise((resolve) => {
+    resolver = resolve;
+  });
+
+  const acceptCallSideEffect = () => {
+    if (listener.acceptCallCount > rejectionCount + 1) {
+      resolver(undefined);
+    }
+  };
+
   const conn = createMockConn();
-  const error = new Deno.errors.NotConnected("test-socket-closed-error");
-  const listener = new MockListener(conn, error);
+  const rejectionError = new Deno.errors.NotConnected(
+    "test-socket-closed-error",
+  );
+
+  listener = new MockListener({
+    conn,
+    rejectionError,
+    rejectionCount,
+    acceptCallSideEffect,
+  });
+
   const handler = () => new Response();
   const server = new Server({ handler });
   const servePromise = server.serve(listener);
 
-  // acceptDelay(n) = 5 * 2^n for n=0...7 capped at 1000 afterwards.
-  const expectedBackoffDelays = [5, 10, 20, 40, 80, 160, 320, 640, 1000, 1000];
-  const totalExpectedDelay = expectedBackoffDelays.reduce(
-    (a, b) => a + b,
-    0,
-  );
+  // Wait for all the expected failures / backoff periods to have completed.
+  await expectedBackoffDelaysCompletedPromise;
 
-  // Expected delay for failures + a buffer.
-  await delay(totalExpectedDelay + 250);
   server.close();
   await servePromise;
 
-  for (let i = 0; i < expectedBackoffDelays.length; i++) {
+  listener.acceptCallIntervals.shift();
+  console.log("\n Accept call intervals vs expected backoff intervals:");
+  console.table(
+    listener.acceptCallIntervals.map((
+      col,
+      i,
+    ) => [col, expectedBackoffDelays[i] ?? "<1000, reset"]),
+  );
+
+  // Assert that the time between the accept calls is greater than or equal to
+  // the expected backoff delay.
+  for (let i = 0; i < rejectionCount; i++) {
     assertEquals(
-      listener.acceptCallTimes[i + 1] -
-          listener.acceptCallTimes[i] > expectedBackoffDelays[i],
+      listener.acceptCallIntervals[i] >= expectedBackoffDelays[i],
       true,
     );
   }
-});
 
-Deno.test("Server should reset the backoff delay when successfully accept a connection again", async () => {
-  const conn = createMockConn();
-  const error = new Deno.errors.NotConnected("test-socket-closed-error");
-  const listener = new MockListener(conn, error, 2);
-  const handler = () => new Response();
-  const server = new Server({ handler });
-  const servePromise = server.serve(listener);
-
-  // Expected delay for first 2 failures + a buffer.
-  await delay(15 + 250);
-
-  server.close();
-  await servePromise;
-
-  // Expect backoff delay of 5ms.
-  assertEquals(
-    listener.acceptCallTimes[1] - listener.acceptCallTimes[0] > 5,
-    true,
-  );
-  // Expect backoff delay of 10ms.
-  assertEquals(
-    listener.acceptCallTimes[2] - listener.acceptCallTimes[1] > 10,
-    true,
-  );
-  // Backoff delay should be reset, i.e. interval less than 20ms which _would_
-  // have been next.
-  assertEquals(
-    listener.acceptCallTimes[3] - listener.acceptCallTimes[2] < 20,
-    true,
-  );
+  // Assert that the backoff delay has been reset following successfully
+  // accepting a connection, i.e. it doesn't remain at 1000ms.
+  assertEquals(listener.acceptCallIntervals[rejectionCount] < 1000, true);
 });
 
 Deno.test("Server should reject if the listener throws an unexpected error accepting a connection", async () => {
   const conn = createMockConn();
-  const error = new Error("test-unexpected-error");
-  const listener = new MockListener(conn, error);
+  const rejectionError = new Error("test-unexpected-error");
+  const listener = new MockListener({ conn, rejectionError });
   const handler = () => new Response();
   const server = new Server({ handler });
-  await assertThrowsAsync(() => server.serve(listener), Error, error.message);
+  await assertThrowsAsync(
+    () => server.serve(listener),
+    Error,
+    rejectionError.message,
+  );
 });
 
 Deno.test("Server should not reject when the connection is closed before the message is complete", async () => {
