@@ -40,12 +40,16 @@ class MockRequestEvent implements Deno.RequestEvent {
   }
 }
 
+type AcceptCallSideEffect = (
+  { acceptCallCount }: { acceptCallCount: number },
+) => void | Promise<void>;
+
 class MockListener implements Deno.Listener {
   conn: Deno.Conn;
   #closed = false;
   #rejectionError?: Error;
   #rejectionCount: number;
-  #acceptCallSideEffect: () => void | Promise<void>;
+  #acceptCallSideEffect: AcceptCallSideEffect;
   acceptCallTimes: number[] = [];
   acceptCallIntervals: number[] = [];
   acceptCallCount = 0;
@@ -60,7 +64,7 @@ class MockListener implements Deno.Listener {
       conn: Deno.Conn;
       rejectionError?: Error;
       rejectionCount?: number;
-      acceptCallSideEffect?: () => void | Promise<void>;
+      acceptCallSideEffect?: AcceptCallSideEffect;
     },
   ) {
     this.conn = conn;
@@ -91,7 +95,7 @@ class MockListener implements Deno.Listener {
     this.acceptCallIntervals.push(now - (this.acceptCallTimes.at(-1) ?? now));
     this.acceptCallTimes.push(now);
     this.acceptCallCount++;
-    this.#acceptCallSideEffect();
+    this.#acceptCallSideEffect({ acceptCallCount: this.acceptCallCount });
 
     await delay(0);
 
@@ -114,7 +118,7 @@ class MockListener implements Deno.Listener {
       this.acceptCallIntervals.push(now - (this.acceptCallTimes.at(-1) ?? now));
       this.acceptCallTimes.push(now);
       this.acceptCallCount++;
-      this.#acceptCallSideEffect();
+      this.#acceptCallSideEffect({ acceptCallCount: this.acceptCallCount });
 
       await delay(0);
 
@@ -750,7 +754,6 @@ Deno.test("Server should implement a backoff delay when accepting a connection t
   const expectedBackoffDelays = [5, 10, 20, 40, 80, 160, 320, 640, 1000, 1000];
   const rejectionCount = expectedBackoffDelays.length;
 
-  let listener: MockListener;
   let resolver: (value: unknown) => void;
 
   // Construct a promise we know will only resolve after listener.accept() has
@@ -760,8 +763,10 @@ Deno.test("Server should implement a backoff delay when accepting a connection t
     resolver = resolve;
   });
 
-  const acceptCallSideEffect = () => {
-    if (listener.acceptCallCount > rejectionCount + 1) {
+  const acceptCallSideEffect = (
+    { acceptCallCount }: { acceptCallCount: number },
+  ) => {
+    if (acceptCallCount > rejectionCount + 1) {
       resolver(undefined);
     }
   };
@@ -771,7 +776,7 @@ Deno.test("Server should implement a backoff delay when accepting a connection t
     "test-socket-closed-error",
   );
 
-  listener = new MockListener({
+  const listener = new MockListener({
     conn,
     rejectionError,
     rejectionCount,
