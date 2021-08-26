@@ -23,3 +23,4 @@ export * from "./sort_by.ts";
 export * from "./union.ts";
 export * from "./unzip.ts";
 export * from "./zip.ts";
+export * from "./first_not_nullish_of.ts";
