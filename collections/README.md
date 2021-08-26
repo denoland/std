@@ -455,3 +455,17 @@ console.assert(
   ],
 );
 ```
+
+### filterNotNullish
+
+Returns all elements in the given collection that are neither `null` or
+`undefined`
+
+```ts
+import { filterNotNullish } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const middleNames = [null, "William", undefined, "Martha"];
+
+assertEquals(filterNotNullish(middleNames), ["William", "Martha"]);
+```
