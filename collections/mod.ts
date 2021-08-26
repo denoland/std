@@ -23,3 +23,4 @@ export * from "./sort_by.ts";
 export * from "./union.ts";
 export * from "./unzip.ts";
 export * from "./zip.ts";
+export * from "./max_with.ts";
