@@ -395,6 +395,25 @@ console.assert(
 );
 ```
 
+### single
+
+Returns the only element in the given collection matching the given predicate.
+Returns undefined if there is none.
+
+```ts
+import { single } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const bookings = [
+    { month: 'January', active: false },
+    { month: 'March', active: false },
+    { month: 'June', active: true },
+];
+const activeBooking = single(bookings, (it) => it.active);
+
+assertEquals(activeBooking, { month: 'June', active: true });
+```
+
 ### sortBy
 
 Returns all elements in the given collection, sorted by their result using the
