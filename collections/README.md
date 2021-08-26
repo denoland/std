@@ -405,13 +405,13 @@ import { single } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const bookings = [
-    { month: 'January', active: false },
-    { month: 'March', active: false },
-    { month: 'June', active: true },
+  { month: "January", active: false },
+  { month: "March", active: false },
+  { month: "June", active: true },
 ];
 const activeBooking = single(bookings, (it) => it.active);
 
-assertEquals(activeBooking, { month: 'June', active: true });
+assertEquals(activeBooking, { month: "June", active: true });
 ```
 
 ### sortBy
