@@ -31,29 +31,27 @@ export function sortBy<T>(
     | ((el: T) => bigint)
     | ((el: T) => Date),
 ): T[] {
-  return array.map((value) => ({ value, selected: selector(value) }))
-    .sort((a, b) => {
-      const selectedA = a.selected;
-      const selectedB = b.selected;
+  const len = array.length;
+  const indexes = new Array<number>(len);
+  const selectors = new Array<ReturnType<typeof selector> | null>(len);
 
-      if (typeof selectedA === "number") {
-        if (Number.isNaN(selectedA)) {
-          return 1;
-        }
+  for (let i = 0; i < len; i++) {
+    indexes[i] = i;
+    const s = selector(array[i]);
+    selectors[i] = Number.isNaN(s) ? null : s;
+  }
 
-        if (Number.isNaN(selectedB)) {
-          return -1;
-        }
-      }
+  indexes.sort((ai, bi) => {
+    const a = selectors[ai];
+    const b = selectors[bi];
+    if (a === null) return 1;
+    if (b === null) return -1;
+    return a > b ? 1 : a < b ? -1 : 0;
+  });
 
-      if (selectedA > selectedB) {
-        return 1;
-      }
+  for (let i = 0; i < len; i++) {
+    (indexes as unknown as T[])[i] = array[indexes[i]];
+  }
 
-      if (selectedA < selectedB) {
-        return -1;
-      }
-
-      return 0;
-    }).map((element) => element.value);
+  return indexes as unknown as T[];
 }
