@@ -29,6 +29,20 @@ Deno.test({
 });
 
 Deno.test({
+  name: "[collections/sortBy] calls the selector function once",
+  fn() {
+    let callCount = 0;
+    const array = [0, 1, 2];
+    sortBy(array, (it) => {
+      callCount++;
+      return it;
+    });
+
+    assertEquals(callCount, array.length);
+  },
+});
+
+Deno.test({
   name: "[collections/sortBy] empty input",
   fn() {
     sortByTest(
