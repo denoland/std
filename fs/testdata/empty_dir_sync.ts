@@ -6,9 +6,7 @@ try {
 } catch (err) {
   Deno.stdout.write(
     new TextEncoder().encode(
-      err instanceof Error
-        ? err.message
-        : "[non-error thrown]",
+      err instanceof Error ? err.message : "[non-error thrown]",
     ),
   );
 }
