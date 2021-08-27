@@ -321,13 +321,13 @@ export function prependListener(
   // TODO(Soremwar)
   // Burn it with fire
   // deno-lint-ignore ban-ts-comment
-  // @ts-expect-error
+  // @ts-ignore
   if (emitter._events.get(event)?.length) {
     // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
+    // @ts-ignore
     const listeners = [fn, ...emitter._events.get(event)];
     // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
+    // @ts-ignore
     emitter._events.set(event, listeners);
   } else {
     emitter.on(event, fn);
