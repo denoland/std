@@ -160,7 +160,7 @@ export class ServerRequest implements Deno.RequestEvent {
    * Send a response to the request.
    *
    * @param {Response|Promise<Response>} response Response to the request.
-   * @throws {Deno.errors.BadResource} When the response has already been sent.
+   * @throws {TypeError} When the response has already been sent.
    */
   respondWith(response: Response | Promise<Response>): Promise<void> {
     if (this.#done) {
