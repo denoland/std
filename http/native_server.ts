@@ -201,7 +201,7 @@ export class Server {
       try {
         listener.close();
       } catch {
-        // Listener has been closed.
+        // Listener has already been closed.
       }
     }
   }
