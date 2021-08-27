@@ -32,47 +32,26 @@ Deno.test("[collections/takeFirstWhile] No mutation", () => {
   assertEquals(arr, [-1, -2, -3, -4, -5, -6]);
 });
 
-Deno.test("[collections/sumOf] NaN and Infinity", () => {
-  const arr = [
-    1,
-    2,
-    Number.POSITIVE_INFINITY,
-    3,
-    4,
-    Number.NEGATIVE_INFINITY,
-    5,
-    6,
-    Number.NaN,
-    7,
-    8,
-  ];
-
-  const actual = takeFirstWhile(arr, (i) => i != Number.POSITIVE_INFINITY);
-
-  assertEquals(actual, [1, 2]);
-
-  const actual2 = takeFirstWhile(arr, (i) => i != Number.NEGATIVE_INFINITY);
-
-  assertEquals(actual2, [1, 2, Number.POSITIVE_INFINITY, 3, 4]);
-
-  const actual3 = takeFirstWhile(arr, (i) => !(Number.isNaN(i)));
-
-  assertEquals(actual3, [
-    1,
-    2,
-    Number.POSITIVE_INFINITY,
-    3,
-    4,
-    Number.NEGATIVE_INFINITY,
-    5,
-    6,
-  ]);
-});
-
-Deno.test("[collections/takeFirstWhile] Empty array returns empty array", () => {
+Deno.test("[collections/takeFirstWhile] Empty input array returns empty array", () => {
   const arr: number[] = [];
 
   const actual = takeFirstWhile(arr, (i) => i > 4);
 
   assertEquals(actual, []);
 });
+
+Deno.test("[collections/takeFirstWhile] Returns empty array when the first element doesn't match the predicate", () => {
+  const arr = [1, 2, 3, 4];
+
+  const actual = takeFirstWhile(arr, (i) => i !== 1);
+
+  assertEquals(actual, []);
+})
+
+Deno.test("[collections/takeFirstWhile] Returns the same array when all elements match the predicate", () => {
+  const arr = [1, 2, 3, 4];
+
+  const actual = takeFirstWhile(arr, (i) => i != 400);
+
+  assertEquals(actual, [1, 2, 3, 4]);
+})

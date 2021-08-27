@@ -13,12 +13,12 @@
  * ```
  */
 export function takeFirstWhile<T>(
-  readonly array: T[],
+  array: readonly T[],
   predicate: (el: T) => boolean,
 ): T[] {
   const newArray: Array<T> = [];
 
-  for (const i of collection) {
+  for (const i of array) {
     if (predicate(i)) {
       newArray.push(i);
     } else {

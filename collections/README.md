@@ -512,7 +512,8 @@ console.assert(
 
 ### takeFirstWhile
 
-Returns all elements in the given collection until the first element that does not match the given predicate.
+Returns all elements in the given collection until the first element that does
+not match the given predicate.
 
 ```ts
 import { takeFirstWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
@@ -520,5 +521,8 @@ import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts
 
 const arr = [1, 2, 3, 4, 5, 6];
 
-assertEquals(takeFirstWhile(arr, (i) => i !== 4), [1, 2, 3]);
+assertEquals(
+  takeFirstWhile(arr, (i) => i !== 4),
+  [1, 2, 3],
+);
 ```
