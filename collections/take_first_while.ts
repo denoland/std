@@ -13,13 +13,9 @@
  * ```
  */
 export function takeFirstWhile<T>(
-  collection: Array<T>,
+  readonly array: T[],
   predicate: (el: T) => boolean,
-): Array<T> {
-  if (collection.length === 0) {
-    return [];
-  }
-
+): T[] {
   const newArray: Array<T> = [];
 
   for (const i of collection) {
