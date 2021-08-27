@@ -3,7 +3,7 @@ import { _parseAddrFromStr } from "./server.ts";
 import { delay } from "../async/mod.ts";
 
 /**
- * Thrown by Server serve-like methods after the server has been closed.
+ * Thrown by Server after it has been closed.
  */
 const ERROR_SERVER_CLOSED = new Deno.errors.Http("Server closed");
 
