@@ -29,11 +29,11 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests release
-        if: matrix.deno != "canary"
+        if: matrix.deno != 'canary'
         run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json
       
       - name: Run tests canary
-        if: matrix.deno == "canary"
+        if: matrix.deno == 'canary'
         run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json
 
       - name: Type check browser compatible modules
