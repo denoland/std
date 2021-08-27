@@ -1,14 +1,18 @@
-import { logLevels } from "./levels.ts"
-import { ConsoleLogger } from "./builtin_loggers.ts"
+import { buildConsoleLogger } from "./builtin_loggers.ts"
 
-export class DefaultLogger extends ConsoleLogger<string> {
-    constructor(logLevel: (typeof logLevels)[keyof typeof logLevels]) {
-        super(
-            logLevel,
-            level => level === logLevels.error,
-        )
-    }
-}
+export const defaultLogLevels = {
+  trace: 10,
+  debug: 20,
+  info: 30,
+  warn: 40,
+  error: 50,
+};
 
-export const log = new DefaultLogger(logLevels.info)
+const defaultLogger = buildConsoleLogger(
+    defaultLogLevels,
+    "info",
+    level => defaultLogLevels.error >= defaultLogLevels[level],
+)
+
+export const log = defaultLogger
 

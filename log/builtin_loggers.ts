@@ -1,68 +1,51 @@
-import { Logger } from "./logger.ts"
-import { LogLevel, logLevels } from "./levels.ts"
+import { buildLogger, LogLevels, Logger, buildDefaultLogMessage } from "./logger.ts"
 
-export class FileLogger<M = unknown, A = unknown, L extends { [level: string]: LogLevel } = typeof logLevels> extends Logger<M, A, L> {
-    constructor(
-        logLevel: L[keyof L],
-        public readonly fileName: string,
-    ) {
-        super(logLevel)
-    }
+export function buildFileLogger<L extends LogLevels, M, A>(
+    logLevels: L,
+    thresholdLevel: keyof L,
+    filename: string,
+): Logger<L, M, A> {
+    return buildLogger(
+        logLevels,
+        thresholdLevel,
+        (level, message, additionalData) => {
+            const messageString = buildDefaultLogMessage(level, message, additionalData)
 
-    protected override handle(logLevel: L[keyof L], message: M, additionalData: A) {
-        const messageString = this.buildMessage(logLevel, message, additionalData)
-
-        Deno.writeTextFileSync(this.fileName, messageString, { append: true })
-    }
+            Deno.writeTextFileSync(filename, messageString, { append: true })
+        },
+    )
 }
 
-export class ConsoleLogger<M = unknown, A = unknown, L extends { [level: string]: LogLevel } = typeof logLevels> extends Logger<M, A, L> {
-    #isErrorLevel: (LogLevel: L[keyof L]) => boolean
+export function buildConsoleLogger<L extends LogLevels, M, A>(
+    logLevels: L,
+    thresholdLevel: keyof L,
+    isErrorLevel: (level: keyof L) => boolean,
+): Logger<L, M, A> {
+    return buildLogger(
+        logLevels,
+        thresholdLevel,
+        (level, message, additionalData) => {
+            const messageString = buildDefaultLogMessage(level, message, additionalData)
 
-    constructor(
-        logLevel: L[keyof L],
-        readonly isErrorLevel: (logLevel: L[keyof L]) => boolean,
-    ) {
-        super(logLevel)
-
-        this.#isErrorLevel = isErrorLevel
-    }
-
-    protected override handle(logLevel: L[keyof L], message: M, additionalData: A) {
-        const messageString = this.buildMessage(logLevel, message, additionalData)
-
-        if (this.#isErrorLevel(logLevel)) {
-            console.error(messageString)
-        } else {
-            console.log(messageString)
-        }
-    }
+            if (isErrorLevel(level)) {
+                console.error(messageString)
+            } else {
+                console.log(messageString)
+            }
+        },
+    )
 }
 
-export class DefaultLogger extends ConsoleLogger<string> {
-    constructor(logLevel: (typeof logLevels)[keyof typeof logLevels]) {
-        super(
-            logLevel,
-            level => level === logLevels.error,
-        )
-    }
+export function buildMultiLogger<L extends LogLevels, M, A>(
+    logLevels: L,
+    thresholdLevel: keyof L,
+    loggers: readonly Logger<L, M, A>[],
+): Logger<L, M, A> {
+    return buildLogger(
+        logLevels,
+        thresholdLevel,
+        (level, message, additionalData) =>
+            loggers.forEach(it => it[level](message, additionalData)),
+    )
 }
-
-export const log = new DefaultLogger(logLevels.info)
-
-export class MultiLogger<M = unknown, A = unknown, L extends { [level: string]: LogLevel } = typeof logLevels> extends Logger<M, A, L> {
-    constructor(
-        logLevel: L[keyof L],
-        private readonly loggers: Logger<M, A, L>[],
-    ) {
-        super(logLevel)
-    }
-
-    protected override handle(logLevel: L[keyof L], message: M, additionalData: A) {
-        this.loggers.forEach(
-            ({ dispatch }) => dispatch(logLevel, message, additionalData)
-        )
-    }
-}
-
 
