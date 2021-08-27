@@ -347,13 +347,7 @@ export class Server {
     this.#listeners.clear();
 
     for (const httpConn of this.#httpConnections) {
-      try {
-        httpConn.close();
-      } catch (error) {
-        if (!(error instanceof Deno.errors.BadResource)) {
-          throw error;
-        }
-      }
+      this.#closeHttpConn(httpConn);
     }
 
     this.#httpConnections.clear();
@@ -367,6 +361,43 @@ export class Server {
   }
 
   /**
+   * Responds to a HTTP request.
+   *
+   * @param {ServerRequest} serverRequest The HTTP request to respond to.
+   * @param {Deno.HttpConn} httpCon The HTTP connection to yield requests from.
+   * @private
+   */
+  async #respond(
+    serverRequest: ServerRequest,
+    httpCon: Deno.HttpConn,
+  ): Promise<void> {
+    // Handle the request event, generating a response.
+    let response: Response;
+    try {
+      response = await this.#handler(
+        serverRequest.request,
+        serverRequest.connInfo,
+      );
+    } catch {
+      // If the handler throws then it is assumed that the impact of the
+      // error is isolated to the individual request, so we close the
+      // connection.
+      return this.#closeHttpConn(httpCon);
+    }
+
+    // Send the response.
+    serverRequest.respondWith(response);
+
+    try {
+      await serverRequest.done;
+    } catch {
+      // Either the connection has been closed, or there is an error with the
+      // request.
+      return this.#closeHttpConn(httpCon);
+    }
+  }
+
+  /**
    * Serves all HTTP requests on a single TCP connection.
    *
    * @param {Deno.HttpConn} httpConn The HTTP connection to yield requests from.
@@ -377,9 +408,9 @@ export class Server {
     httpConn: Deno.HttpConn,
     conn: Deno.Conn,
   ): Promise<void> {
-    let requestEvent: Deno.RequestEvent | null = null;
-
     while (!this.#closed) {
+      let requestEvent: Deno.RequestEvent | null = null;
+
       try {
         // Yield the new HTTP request on the connection.
         requestEvent = await httpConn.nextRequest();
@@ -396,44 +427,12 @@ export class Server {
       // Wrap request event so can gracefully handle and await async ops.
       const serverRequest = new ServerRequest(requestEvent, conn);
 
-      // Handle the request event, generating a response.
-      let response: Response;
-      try {
-        response = await this.#handler(
-          serverRequest.request,
-          serverRequest.connInfo,
-        );
-      } catch {
-        // If the handler throws then it is assumed that the impact of the
-        // error is isolated to the individual request, so we close the
-        // connection.
-        break;
-      }
-
-      // Send the response.
-      serverRequest.respondWith(response);
-
-      try {
-        // Wait for the request to be processed before we accept a new request
-        // on this connection.
-        await serverRequest.done;
-      } catch {
-        // Connection has been closed.
-        break;
-      }
-
-      requestEvent = null;
+      // Respond to the request. Note we do not await this async method to
+      // allow the connection to handle multiple requests in the case of h2.
+      this.#respond(serverRequest, httpConn);
     }
 
-    this.#untrackHttpConnection(httpConn);
-
-    try {
-      httpConn.close();
-    } catch (error) {
-      if (!(error instanceof Deno.errors.BadResource)) {
-        throw error;
-      }
-    }
+    this.#closeHttpConn(httpConn);
   }
 
   /**
@@ -508,6 +507,24 @@ export class Server {
       // we do not await this async method to allow the server to accept new
       // connections.
       this.#serveHttp(httpConn, conn);
+    }
+  }
+
+  /**
+   * Untracks and closes an HTTP connection.
+   *
+   * @param {Deno.HttpConn} httpConn The HTTP connection to close.
+   * @private
+   */
+  #closeHttpConn(httpConn: Deno.HttpConn): void {
+    this.#untrackHttpConnection(httpConn);
+
+    try {
+      httpConn.close();
+    } catch (error) {
+      if (!(error instanceof Deno.errors.BadResource)) {
+        throw error;
+      }
     }
   }
 
