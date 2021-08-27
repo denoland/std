@@ -68,6 +68,8 @@ export type Handler = (
  * Parse an address from a string.
  *
  * ```ts
+ * import { _parseAddrFromStr } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
  * const addr = "::1:8000";
  * _parseAddrFromStr(addr);
  * ```
@@ -202,14 +204,17 @@ export class Server {
    * Constructs a new Server instance.
    *
    * ```ts
+   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   *
    * const addr = ":4505";
-   * const handler = (request) => {
+   * const handler = (request: Request) => {
    *   const body = `Your user-agent is:\n\n${request.headers.get(
    *    "user-agent",
    *   ) ?? "Unknown"}`;
    *
    *   return new Response(body, { status: 200 });
-   * });
+   * };
+   *
    * const server = new Server({ addr, handler });
    * ```
    *
@@ -229,7 +234,19 @@ export class Server {
    * Will always close the listener.
    *
    * ```ts
+   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   *
+   * const handler = (request: Request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
+   *
+   *   return new Response(body, { status: 200 });
+   * };
+   *
+   * const server = new Server({ handler });
    * const listener = Deno.listen({ port: 4505 });
+   *
    * server.serve(listener);
    * ```
    *
@@ -263,6 +280,18 @@ export class Server {
    * Throws a server closed error if the server has been closed.
    *
    * ```ts
+   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   *
+   * const addr = ":4505";
+   * const handler = (request: Request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
+   *
+   *   return new Response(body, { status: 200 });
+   * };
+   *
+   * const server = new Server({ addr, handler });
    * server.listenAndServe();
    * ```
    *
@@ -291,8 +320,22 @@ export class Server {
    * Throws a server closed error if the server has been closed.
    *
    * ```ts
+   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   *
+   * const addr = ":4505";
+   * const handler = (request: Request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
+   *
+   *   return new Response(body, { status: 200 });
+   * };
+   *
+   * const server = new Server({ addr, handler });
+   *
    * const certFile = "/path/to/certFile.crt";
    * const keyFile = "/path/to/keyFile.key";
+   *
    * server.listenAndServeTls(certFile, keyFile);
    * ```
    *
@@ -584,9 +627,11 @@ export interface ServeInit {
  * these connections with the given handler.
  *
  * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
  * const listener = Deno.listen({ port: 4505 });
  *
- * serve(listener, (request) => {
+ * serve(listener, (request: Request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
  *   ) ?? "Unknown"}`;
@@ -618,9 +663,11 @@ export async function serve(
  * handle requests on these connections with the given handler.
  *
  * ```ts
+ * import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
  * const addr = ":4505";
  *
- * listenAndServe(addr, (request) => {
+ * listenAndServe(addr, (request: Request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
  *   ) ?? "Unknown"}`;
@@ -652,11 +699,13 @@ export async function listenAndServe(
  * them to TLS, and handle requests on these connections with the given handler.
  *
  * ```ts
+ * import { listenAndServeTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
  * const addr = ":4505";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  *
- * listenAndServeTls(addr, certFile, keyFile, (request) => {
+ * listenAndServeTls(addr, certFile, keyFile, (request: Request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
  *   ) ?? "Unknown"}`;

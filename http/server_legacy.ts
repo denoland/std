@@ -57,10 +57,14 @@ export class ServerRequest {
   }
 
   /**
-   * Body of the request.  The easiest way to consume the body is:
+   * Body of the request. The easiest way to consume the body is:
    *
    * ```ts
-   * const buf: Uint8Array = await readAll(req.body);
+   * import { ServerRequest } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
+   * import { readAll } from "https://deno.land/std@$STD_VERSION/io/util.ts";
+   *
+   * const req = new ServerRequest();
+   * const buf = await readAll(req.body);
    * ```
    */
   get body(): Deno.Reader {
@@ -272,7 +276,8 @@ export type HTTPOptions = Omit<Deno.ListenOptions, "transport">;
  * Create a HTTP server
  *
  * ```ts
- * import { serve } from "https://deno.land/std/http/server_legacy.ts";
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
+ *
  * const body = "Hello World\n";
  * const server = serve({ port: 8000 });
  * for await (const req of server) {
@@ -295,6 +300,8 @@ export function serve(addr: string | HTTPOptions): Server {
  * Start an HTTP server with given options and request handler
  *
  * ```ts
+ * import { listenAndServe, ServerRequest } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
+ *
  * const body = "Hello World\n";
  * const options = { port: 8000 };
  * listenAndServe(options, (req) => {
@@ -328,6 +335,8 @@ export type HTTPSOptions = Omit<Deno.ListenTlsOptions, "transport">;
  * Create an HTTPS server with given options
  *
  * ```ts
+ * import { serveTLS } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
+ *
  * const body = "Hello HTTPS";
  * const options = {
  *   hostname: "localhost",
@@ -357,6 +366,8 @@ export function serveTLS(options: HTTPSOptions): Server {
  * Start an HTTPS server with given options and request handler
  *
  * ```ts
+ * import { listenAndServeTLS } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
+ *
  * const body = "Hello HTTPS";
  * const options = {
  *   hostname: "localhost",

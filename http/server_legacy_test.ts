@@ -761,12 +761,10 @@ Deno.test({
   name: "server.serve() should be able to parse IPV4 address",
   fn: (): void => {
     const server = serve("127.0.0.1:8124");
-    const expected = {
-      hostname: "127.0.0.1",
-      port: 8124,
-      transport: "tcp",
-    };
-    assertEquals(server.listener.addr, expected);
+    const addr = server.listener.addr as Deno.NetAddr;
+    assertEquals(addr.hostname, "127.0.0.1");
+    assertEquals(addr.port, 8124);
+    assertEquals(addr.transport, "tcp");
     server.close();
   },
 });
@@ -775,12 +773,10 @@ Deno.test({
   name: "server.serve() should be able to parse IPV6 address",
   fn: (): void => {
     const server = serve("[::1]:8124");
-    const expected = {
-      hostname: "::1",
-      port: 8124,
-      transport: "tcp",
-    };
-    assertEquals(server.listener.addr, expected);
+    const addr = server.listener.addr as Deno.NetAddr;
+    assertEquals(addr.hostname, "::1");
+    assertEquals(addr.port, 8124);
+    assertEquals(addr.transport, "tcp");
     server.close();
   },
 });
