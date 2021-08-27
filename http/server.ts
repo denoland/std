@@ -416,6 +416,7 @@ export class Server {
   ): Promise<void> {
     // Handle the request event, generating a response.
     let response: Response;
+
     try {
       response = await this.#handler(
         serverRequest.request,
