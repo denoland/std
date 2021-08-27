@@ -1,21 +1,6 @@
 # http
 
-http is a module to provide HTTP client and server implementations.
-
-## Server
-
-Server APIs using a JavaScript HTTP server implementation.
-
-```ts
-import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
-
-const server = serve({ port: 8000 });
-console.log("http://localhost:8000/");
-
-for await (const req of server) {
-  req.respond({ body: "Hello World\n" });
-}
-```
+`http` is a module to provide HTTP client and server implementations.
 
 ## Native Server
 
@@ -28,6 +13,21 @@ import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/native_s
 listenAndServe(":8000", () => new Response("Hello World\n"));
 
 console.log("http://localhost:8000/");
+```
+
+## Legacy Server (Deprecated)
+
+Legacy server APIs using a JavaScript HTTP server implementation.
+
+```ts
+import { serve } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
+
+const server = serve({ port: 8000 });
+console.log("http://localhost:8000/");
+
+for await (const req of server) {
+  req.respond({ body: "Hello World\n" });
+}
 ```
 
 ## File Server
@@ -44,7 +44,7 @@ deno run --allow-net --allow-read https://deno.land/std/http/file_server.ts
 Helper to manipulate `Cookie` through `ServerRequest` and `Response`.
 
 ```ts
-import { ServerRequest } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+import { ServerRequest } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
 import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
 
 let request = new ServerRequest();
@@ -59,7 +59,7 @@ console.log("cookies:", cookies);
 To set a `Cookie` you can add `CookieOptions` to properly set your `Cookie`:
 
 ```ts
-import { Response } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+import { Response } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
 import {
   Cookie,
   setCookie,
@@ -78,7 +78,7 @@ Deleting a `Cookie` will set its expiration date before now. Forcing the browser
 to delete it.
 
 ```ts
-import { Response } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+import { Response } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
 import { deleteCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
 
 let response: Response = {};
@@ -93,7 +93,7 @@ console.log("Set-Cookie:", cookieHeader);
 > were used to set the cookie.
 
 ```ts
-import { Response } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+import { Response } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
 import { deleteCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
 
 let response: Response = {};

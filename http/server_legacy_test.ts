@@ -14,13 +14,13 @@ import {
   assertStringIncludes,
 } from "../testing/asserts.ts";
 import {
-  _parseAddrFromStr,
   Response,
   serve,
   Server,
   ServerRequest,
   serveTLS,
-} from "./server.ts";
+} from "./server_legacy.ts";
+import { _parseAddrFromStr } from "./native_server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { delay } from "../async/delay.ts";
 import { mockConn } from "./_mock_conn.ts";
@@ -387,7 +387,7 @@ Deno.test({
         "run",
         "--quiet",
         "--allow-net",
-        "testdata/simple_server.ts",
+        "testdata/simple_server_legacy.ts",
       ],
       cwd: moduleDir,
       stdout: "piped",
@@ -434,7 +434,7 @@ Deno.test({
         "--quiet",
         "--allow-net",
         "--allow-read",
-        "testdata/simple_https_server.ts",
+        "testdata/simple_https_server_legacy.ts",
       ],
       cwd: moduleDir,
       stdout: "piped",

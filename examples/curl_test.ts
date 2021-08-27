@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { serve } from "../http/server.ts";
+import { serve } from "../http/server_legacy.ts";
 import { assertStrictEquals } from "../testing/asserts.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 

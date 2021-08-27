@@ -178,7 +178,7 @@ Deno.test("ServerRequest should delegate the responding to the underlying reques
   assertEquals(mockRequestEvent.calls[0], mockResponse);
 });
 
-Deno.test("ServerRequest should reject with a BadResource error if the response has already been sent", async () => {
+Deno.test("ServerRequest should reject with a TypeError error if the response has already been sent", async () => {
   const mockRequestEvent = new MockRequestEvent("http://0.0.0.0:4505");
   const mockResponse = new Response("test-response", { status: 200 });
 
@@ -189,7 +189,7 @@ Deno.test("ServerRequest should reject with a BadResource error if the response 
     await request.respondWith(mockResponse);
     unreachable();
   } catch (error) {
-    assertEquals(error, new Deno.errors.BadResource("Response already sent."));
+    assertEquals(error, new TypeError("Response already sent"));
   }
 });
 

@@ -13,7 +13,7 @@ import {
   listenAndServeTLS,
   Response,
   ServerRequest,
-} from "./server.ts";
+} from "./server_legacy.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { readRange } from "../io/util.ts";

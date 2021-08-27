@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // This is an example of a https server
-import { serveTLS } from "../server.ts";
+import { serveTLS } from "../server_legacy.ts";
 
 const tlsOptions = {
   hostname: "localhost",

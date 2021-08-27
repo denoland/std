@@ -1,4 +1,4 @@
-import { serve } from "../server.ts";
+import { serve } from "../server_legacy.ts";
 import { serveFile } from "../file_server.ts";
 
 const server = serve({ port: 8000 });

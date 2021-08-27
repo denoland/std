@@ -87,7 +87,7 @@ export function _parseAddrFromStr(
   let url: URL;
 
   try {
-    url = new URL(`proto://${host}`);
+    url = new URL(`http://${host}`);
   } catch {
     throw new TypeError(ERROR_ADDRESS_INVALID);
   }

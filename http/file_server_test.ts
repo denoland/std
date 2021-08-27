@@ -6,7 +6,7 @@ import {
 } from "../testing/asserts.ts";
 import { BufReader } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { Response } from "./server.ts";
+import { Response } from "./server_legacy.ts";
 import { FileServerArgs } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { iter, readAll, writeAll } from "../io/util.ts";
