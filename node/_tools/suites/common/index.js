@@ -71,7 +71,7 @@ function runCallChecks(exitCode) {
  * @param {"exact" | "minimum"} field
  */
 function _mustCallInner(fn, criteria = 1, field) {
-  //@ts-ignore
+  // @ts-expect-error
   if (process._exiting) {
     throw new Error("Cannot use common.mustCall*() in process exit handler");
   }
