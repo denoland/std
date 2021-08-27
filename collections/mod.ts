@@ -20,6 +20,7 @@ export * from "./partition.ts";
 export * from "./permutations.ts";
 export * from "./sum_of.ts";
 export * from "./max_of.ts";
+export * from "./min_of.ts";
 export * from "./sort_by.ts";
 export * from "./union.ts";
 export * from "./without_all.ts";
