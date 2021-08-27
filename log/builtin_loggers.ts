@@ -9,12 +9,14 @@ export function buildFileLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
   filename: string,
+  messageFormatter?: (level: keyof L, message: M, additionalData: A) => string,
 ): Logger<L, M, A> {
   return buildLogger(
     logLevels,
     thresholdLevel,
     (level, message, additionalData) => {
-      const messageString = buildDefaultLogMessage(
+      const formatter = messageFormatter ?? buildDefaultLogMessage;
+      const messageString = formatter(
         level,
         message,
         additionalData,
@@ -29,12 +31,14 @@ export function buildConsoleLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
   isErrorLevel: (level: keyof L) => boolean,
+  messageFormatter?: (level: keyof L, message: M, additionalData: A) => string,
 ): Logger<L, M, A> {
   return buildLogger(
     logLevels,
     thresholdLevel,
     (level, message, additionalData) => {
-      const messageString = buildDefaultLogMessage(
+      const formatter = messageFormatter ?? buildDefaultLogMessage;
+      const messageString = formatter(
         level,
         message,
         additionalData,
