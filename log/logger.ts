@@ -1,4 +1,3 @@
-import { Handler } from "./handlers.ts";
 import { LogLevel, logLevels } from "./levels.ts";
 
 export function asString(data: unknown): string {
@@ -19,64 +18,24 @@ export function asString(data: unknown): string {
   return "undefined";
 }
 
-export type LogRecord<M = unknown> = Readonly<{
-  message: M;
-  args: ReadonlyArray<unknown>;
-  datetime: Date;
-  logLevel: LogLevel;
-  logger: Logger;
-}>;
+export abstract class Logger<
+    M = unknown,
+    A = unknown | undefined,
+    L extends { [level: string]: LogLevel } = typeof logLevels,
+> {
+    constructor(public logLevel: L[keyof L]) {}
 
-export class Logger<M = unknown> {
-  name: string;
-  logLevel: LogLevel;
-  handlers: Handler[];
+    dispatch(logLevel: L[keyof L], message: M, additionalData: A) {
+        if (this.logLevel.code > logLevel.code) {
+            return;
+        }
 
-  constructor(logLevel: LogLevel, {
-    name = "logger",
-    handlers = [],
-  }: {
-    name?: string;
-    handlers?: Handler[];
-  } = {}) {
-    this.name = name;
-    this.logLevel = logLevel;
-    this.handlers = handlers;
-  }
-
-  protected dispatch(logLevel: LogLevel, message: unknown, ...args: unknown[]) {
-    if (this.logLevel.code > logLevel.code) return;
-
-    if (message instanceof Function) {
-      message = message(logLevel);
+        this.handle(logLevel, message, additionalData)
     }
 
-    message = asString(message);
+    protected buildMessage(logLevel: L[keyof L], message: M, additionalData: A) {
+        return `[${logLevel.name}] ${new Date().toLocaleDateString()} ${asString(message)}${additionalData ? ` ${asString(additionalData)}` : ''}}`
+    }
 
-    const record: LogRecord<unknown> = {
-      datetime: new Date(),
-      logger: this,
-      message,
-      args,
-      logLevel,
-    };
-
-    this.handlers.forEach((handler) => handler.handle(record));
-  }
-
-  trace(message: M, ...args: unknown[]) {
-    return this.dispatch(logLevels.trace, message, ...args);
-  }
-  debug(message: M, ...args: unknown[]) {
-    return this.dispatch(logLevels.debug, message, ...args);
-  }
-  info(message: M, ...args: unknown[]) {
-    return this.dispatch(logLevels.info, message, ...args);
-  }
-  warn(message: M, ...args: unknown[]) {
-    return this.dispatch(logLevels.warn, message, ...args);
-  }
-  error(message: M, ...args: unknown[]) {
-    return this.dispatch(logLevels.error, message, ...args);
-  }
+    protected abstract handle(logLevel: L[keyof L], message: M, additionalData: A): void 
 }
