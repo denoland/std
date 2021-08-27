@@ -1,19 +1,21 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { _parseAddrFromStr } from "./server.ts";
 import { delay } from "../async/mod.ts";
 
 /**
  * Thrown by Server after it has been closed.
  */
-const ERROR_SERVER_CLOSED = new Deno.errors.Http("Server closed");
+const ERROR_SERVER_CLOSED = "Server closed";
 
 /**
  * Thrown when attempting to respond to a ServerRequest when a response has
  * already been sent.
  */
-const ERROR_RESPONSE_SENT = new Deno.errors.BadResource(
-  "Response already sent",
-);
+const ERROR_RESPONSE_SENT = "Response already sent";
+
+/**
+ * Thrown when parsing an invalid address string.
+ */
+const ERROR_ADDRESS_INVALID = "Invalid address";
 
 /**
  * Default port for serving HTTP.
@@ -61,6 +63,50 @@ export type Handler = (
   request: Request,
   connInfo: ConnInfo,
 ) => Response | Promise<Response>;
+
+/**
+ * Parse an address from a string.
+ *
+ * ```ts
+ * const addr = "::1:8000";
+ * _parseAddrFromStr(addr);
+ * ```
+ *
+ * @param {string} addr The TCP address string to parse.
+ * @param {number} defaultPort Default port when not included in the address string.
+ * @returns {Deno.ListenOptions} The parsed address.
+ * @throws {TypeError} When the address is invalid.
+ * @private
+ */
+export function _parseAddrFromStr(
+  addr: string,
+  defaultPort = HTTP_PORT,
+): Deno.ListenOptions {
+  const host = addr.startsWith(":") ? `0.0.0.0${addr}` : addr;
+
+  let url: URL;
+
+  try {
+    url = new URL(`proto://${host}`);
+  } catch {
+    throw new TypeError(ERROR_ADDRESS_INVALID);
+  }
+
+  if (
+    url.username ||
+    url.password ||
+    url.pathname != "/" ||
+    url.search ||
+    url.hash
+  ) {
+    throw new TypeError(ERROR_ADDRESS_INVALID);
+  }
+
+  return {
+    hostname: url.hostname,
+    port: url.port === "" ? defaultPort : Number(url.port),
+  };
+}
 
 export class ServerRequest implements Deno.RequestEvent {
   #request: Request;
@@ -118,7 +164,7 @@ export class ServerRequest implements Deno.RequestEvent {
    */
   respondWith(response: Response | Promise<Response>): Promise<void> {
     if (this.#done) {
-      throw ERROR_RESPONSE_SENT;
+      throw TypeError(ERROR_RESPONSE_SENT);
     }
 
     this.#resolver(response);
@@ -155,21 +201,23 @@ export class Server {
   /**
    * Constructs a new Server instance.
    *
-   *     const addr = ":4505";
-   *     const handler = (request) => {
-   *       const body = `Your user-agent is:\n\n${request.headers.get(
-   *         "user-agent",
-   *       ) ?? "Unknown"}`;
+   * ```ts
+   * const addr = ":4505";
+   * const handler = (request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
    *
-   *       return new Response(body, { status: 200 });
-   *     });
-   *     const server = new Server({ addr, handler });
+   *   return new Response(body, { status: 200 });
+   * });
+   * const server = new Server({ addr, handler });
+   * ```
    *
-   * @param {ServerInit} options Options for running a server.
+   * @param {ServerInit} serverInit Options for running a server.
    */
-  constructor({ addr, handler }: ServerInit) {
-    this.#addr = addr;
-    this.#handler = handler;
+  constructor(serverInit: ServerInit) {
+    this.#addr = serverInit.addr;
+    this.#handler = serverInit.handler;
   }
 
   /**
@@ -180,15 +228,17 @@ export class Server {
    *
    * Will always close the listener.
    *
-   *     const listener = Deno.listen({ port: 4505 });
-   *     server.serve(listener);
+   * ```ts
+   * const listener = Deno.listen({ port: 4505 });
+   * server.serve(listener);
+   * ```
    *
    * @param {Deno.Listener} listener The listener to accept connections from.
    * @throws {Deno.errors.Http} When the server has already been closed.
    */
   async serve(listener: Deno.Listener): Promise<void> {
     if (this.#closed) {
-      throw ERROR_SERVER_CLOSED;
+      throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
 
     this.#trackListener(listener);
@@ -212,13 +262,15 @@ export class Server {
    *
    * Throws a server closed error if the server has been closed.
    *
-   *     server.listenAndServe();
+   * ```ts
+   * server.listenAndServe();
+   * ```
    *
    * @throws {Deno.errors.Http} When the server has already been closed.
    */
   async listenAndServe(): Promise<void> {
     if (this.#closed) {
-      throw ERROR_SERVER_CLOSED;
+      throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
 
     const addr = this.#addr ?? `:${HTTP_PORT}`;
@@ -238,9 +290,11 @@ export class Server {
    *
    * Throws a server closed error if the server has been closed.
    *
-   *     const certFile = "/path/to/certFile.crt";
-   *     const keyFile = "/path/to/keyFile.key";
-   *     server.listenAndServeTls(certFile, keyFile);
+   * ```ts
+   * const certFile = "/path/to/certFile.crt";
+   * const keyFile = "/path/to/keyFile.key";
+   * server.listenAndServeTls(certFile, keyFile);
+   * ```
    *
    * @param {string} certFile The path to the file containing the TLS certificate.
    * @param {string} keyFile The path to the file containing the TLS private key.
@@ -248,7 +302,7 @@ export class Server {
    */
   async listenAndServeTls(certFile: string, keyFile: string): Promise<void> {
     if (this.#closed) {
-      throw ERROR_SERVER_CLOSED;
+      throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
 
     const addr = this.#addr ?? `:${HTTPS_PORT}`;
@@ -275,7 +329,7 @@ export class Server {
    */
   close(): void {
     if (this.#closed) {
-      throw ERROR_SERVER_CLOSED;
+      throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
     }
 
     this.#closed = true;
@@ -512,19 +566,21 @@ export interface ServeInit {
  * Accept incoming connections on the given listener, and handle requests on
  * these connections with the given handler.
  *
- *     const listener = Deno.listen({ port: 4505 });
+ * ```ts
+ * const listener = Deno.listen({ port: 4505 });
  *
- *     serve(listener, (request) => {
- *       const body = `Your user-agent is:\n\n${request.headers.get(
- *         "user-agent",
- *       ) ?? "Unknown"}`;
+ * serve(listener, (request) => {
+ *   const body = `Your user-agent is:\n\n${request.headers.get(
+ *     "user-agent",
+ *   ) ?? "Unknown"}`;
  *
- *       return new Response(body, { status: 200 });
- *     });
+ *   return new Response(body, { status: 200 });
+ * });
+ * ```
  *
  * @param {Deno.Listener} listener The listener to accept connections from.
  * @param {Handler} handler The handler for individual HTTP requests.
- * @param {ServeInit} options Additional serve options.
+ * @param {ServeInit} [options] Additional serve options.
  */
 export async function serve(
   listener: Deno.Listener,
@@ -544,19 +600,21 @@ export async function serve(
  * Create a listener on the given address, accept incoming connections, and
  * handle requests on these connections with the given handler.
  *
- *     const addr = ":4505";
+ * ```ts
+ * const addr = ":4505";
  *
- *     listenAndServe(addr, (request) => {
- *       const body = `Your user-agent is:\n\n${request.headers.get(
- *         "user-agent",
- *       ) ?? "Unknown"}`;
+ * listenAndServe(addr, (request) => {
+ *   const body = `Your user-agent is:\n\n${request.headers.get(
+ *     "user-agent",
+ *   ) ?? "Unknown"}`;
  *
- *       return new Response(body, { status: 200 });
- *     });
+ *   return new Response(body, { status: 200 });
+ * });
+ * ```
  *
  * @param {string} addr The TCP address to listen on.
  * @param {Handler} handler The handler for individual HTTP requests.
- * @param {ServeInit} options Additional serve options.
+ * @param {ServeInit} [options] Additional serve options.
  */
 export async function listenAndServe(
   addr: string,
@@ -576,23 +634,25 @@ export async function listenAndServe(
  * Create a listener on the given address, accept incoming connections, upgrade
  * them to TLS, and handle requests on these connections with the given handler.
  *
- *     const addr = ":4505";
- *     const certFile = "/path/to/certFile.crt";
- *     const keyFile = "/path/to/keyFile.key";
+ * ```ts
+ * const addr = ":4505";
+ * const certFile = "/path/to/certFile.crt";
+ * const keyFile = "/path/to/keyFile.key";
  *
- *     listenAndServeTls(addr, certFile, keyFile, (request) => {
- *       const body = `Your user-agent is:\n\n${request.headers.get(
- *         "user-agent",
- *       ) ?? "Unknown"}`;
+ * listenAndServeTls(addr, certFile, keyFile, (request) => {
+ *   const body = `Your user-agent is:\n\n${request.headers.get(
+ *     "user-agent",
+ *   ) ?? "Unknown"}`;
  *
- *       return new Response(body, { status: 200 });
- *     });
+ *   return new Response(body, { status: 200 });
+ * });
+ * ```
  *
  * @param {string} addr The TCP address to listen on.
  * @param {string} certFile The path to the file containing the TLS certificate.
  * @param {string} keyFile The path to the file containing the TLS private key.
  * @param {Handler} handler The handler for individual HTTP requests.
- * @param {ServeInit} options Additional serve options.
+ * @param {ServeInit} [options] Additional serve options.
  */
 export async function listenAndServeTls(
   addr: string,

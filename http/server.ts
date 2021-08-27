@@ -9,6 +9,11 @@ import {
   readRequest,
   writeResponse,
 } from "./_io.ts";
+import { _parseAddrFromStr } from "./native_server.ts";
+
+/**
+ * @deprecated
+ */
 export class ServerRequest {
   url!: string;
   method!: string;
@@ -54,7 +59,9 @@ export class ServerRequest {
   /**
    * Body of the request.  The easiest way to consume the body is:
    *
-   *     const buf: Uint8Array = await readAll(req.body);
+   * ```ts
+   * const buf: Uint8Array = await readAll(req.body);
+   * ```
    */
   get body(): Deno.Reader {
     if (!this.#body) {
@@ -115,6 +122,9 @@ export class ServerRequest {
   }
 }
 
+/**
+ * @deprecated
+ */
 export class Server implements AsyncIterable<ServerRequest> {
   #closing = false;
   #connections: Deno.Conn[] = [];
@@ -251,51 +261,26 @@ export class Server implements AsyncIterable<ServerRequest> {
   }
 }
 
-/** Options for creating an HTTP server. */
-export type HTTPOptions = Omit<Deno.ListenOptions, "transport">;
-
 /**
- * Parse addr from string
+ * Options for creating an HTTP server.
  *
- *     const addr = "::1:8000";
- *     parseAddrFromString(addr);
- *
- * @param addr Address string
- * @param defaultPort Default port when not included in address string
+ * @deprecated
  */
-export function _parseAddrFromStr(addr: string, defaultPort = 80): HTTPOptions {
-  let url: URL;
-  try {
-    const host = addr.startsWith(":") ? `0.0.0.0${addr}` : addr;
-    url = new URL(`http://${host}`);
-  } catch {
-    throw new TypeError("Invalid address.");
-  }
-  if (
-    url.username ||
-    url.password ||
-    url.pathname != "/" ||
-    url.search ||
-    url.hash
-  ) {
-    throw new TypeError("Invalid address.");
-  }
-
-  return {
-    hostname: url.hostname,
-    port: url.port === "" ? defaultPort : Number(url.port),
-  };
-}
+export type HTTPOptions = Omit<Deno.ListenOptions, "transport">;
 
 /**
  * Create a HTTP server
  *
- *     import { serve } from "https://deno.land/std/http/server.ts";
- *     const body = "Hello World\n";
- *     const server = serve({ port: 8000 });
- *     for await (const req of server) {
- *       req.respond({ body });
- *     }
+ * ```ts
+ * import { serve } from "https://deno.land/std/http/server.ts";
+ * const body = "Hello World\n";
+ * const server = serve({ port: 8000 });
+ * for await (const req of server) {
+ *   req.respond({ body });
+ * }
+ * ```
+ *
+ * @deprecated
  */
 export function serve(addr: string | HTTPOptions): Server {
   if (typeof addr === "string") {
@@ -309,14 +294,17 @@ export function serve(addr: string | HTTPOptions): Server {
 /**
  * Start an HTTP server with given options and request handler
  *
- *     const body = "Hello World\n";
- *     const options = { port: 8000 };
- *     listenAndServe(options, (req) => {
- *       req.respond({ body });
- *     });
+ * ```ts
+ * const body = "Hello World\n";
+ * const options = { port: 8000 };
+ * listenAndServe(options, (req) => {
+ *   req.respond({ body });
+ * });
+ * ```
  *
  * @param options Server configuration
  * @param handler Request handler
+ * @deprecated
  */
 export async function listenAndServe(
   addr: string | HTTPOptions,
@@ -329,25 +317,32 @@ export async function listenAndServe(
   }
 }
 
-/** Options for creating an HTTPS server. */
+/**
+ * Options for creating an HTTPS server.
+ *
+ * @deprecated
+ */
 export type HTTPSOptions = Omit<Deno.ListenTlsOptions, "transport">;
 
 /**
  * Create an HTTPS server with given options
  *
- *     const body = "Hello HTTPS";
- *     const options = {
- *       hostname: "localhost",
- *       port: 443,
- *       certFile: "./path/to/localhost.crt",
- *       keyFile: "./path/to/localhost.key",
- *     };
- *     for await (const req of serveTLS(options)) {
- *       req.respond({ body });
- *     }
+ * ```ts
+ * const body = "Hello HTTPS";
+ * const options = {
+ *   hostname: "localhost",
+ *   port: 443,
+ *   certFile: "./path/to/localhost.crt",
+ *   keyFile: "./path/to/localhost.key",
+ * };
+ * for await (const req of serveTLS(options)) {
+ *   req.respond({ body });
+ * }
+ * ```
  *
  * @param options Server configuration
  * @return Async iterable server instance for incoming requests
+ * @deprecated
  */
 export function serveTLS(options: HTTPSOptions): Server {
   const tlsOptions: Deno.ListenTlsOptions = {
@@ -361,19 +356,22 @@ export function serveTLS(options: HTTPSOptions): Server {
 /**
  * Start an HTTPS server with given options and request handler
  *
- *     const body = "Hello HTTPS";
- *     const options = {
- *       hostname: "localhost",
- *       port: 443,
- *       certFile: "./path/to/localhost.crt",
- *       keyFile: "./path/to/localhost.key",
- *     };
- *     listenAndServeTLS(options, (req) => {
- *       req.respond({ body });
- *     });
+ * ```ts
+ * const body = "Hello HTTPS";
+ * const options = {
+ *   hostname: "localhost",
+ *   port: 443,
+ *   certFile: "./path/to/localhost.crt",
+ *   keyFile: "./path/to/localhost.key",
+ * };
+ * listenAndServeTLS(options, (req) => {
+ *   req.respond({ body });
+ * });
+ * ```
  *
  * @param options Server configuration
  * @param handler Request handler
+ * @deprecated
  */
 export async function listenAndServeTLS(
   options: HTTPSOptions,
@@ -390,6 +388,8 @@ export async function listenAndServeTLS(
  * Interface of HTTP server response.
  * If body is a Reader, response would be chunked.
  * If body is a string, it would be UTF-8 encoded by default.
+ *
+ * @deprecated
  */
 export interface Response {
   status?: number;
