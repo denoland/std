@@ -144,7 +144,7 @@ export class EventEmitter {
       }
 
       // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
+      // @ts-ignore
       const listeners = ensureArray<GenericFunction>(this._events[eventName])
         .slice(); // We copy with slice() so array is not mutated during emit
       for (const listener of listeners) {
@@ -263,7 +263,7 @@ export class EventEmitter {
     // deno-lint-ignore no-unused-vars
     listener: GenericFunction,
     // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
+    // @ts-ignore
   ): this {
     // The body of this method is empty because it will be overwritten by later code. (`EventEmitter.prototype.off = EventEmitter.prototype.removeListener;`)
     // The purpose of this dirty hack is to get around the current limitation of TypeScript type checking.
@@ -282,7 +282,7 @@ export class EventEmitter {
     // deno-lint-ignore no-unused-vars
     listener: GenericFunction | WrappedFunction,
     // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
+    // @ts-ignore
   ): this {
     // The body of this method is empty because it will be overwritten by later code. (`EventEmitter.prototype.addListener = EventEmitter.prototype.on;`)
     // The purpose of this dirty hack is to get around the current limitation of TypeScript type checking.
