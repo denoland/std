@@ -20,7 +20,6 @@ import {
   ServerRequest,
   serveTLS,
 } from "./server_legacy.ts";
-import { _parseAddrFromStr } from "./native_server.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { delay } from "../async/delay.ts";
 import { mockConn } from "./_mock_conn.ts";
@@ -773,18 +772,6 @@ Deno.test({
 });
 
 Deno.test({
-  name: "server._parseAddrFromStr() should be able to parse IPV6 address",
-  fn: (): void => {
-    const addr = _parseAddrFromStr("[::1]:8124");
-    const expected = {
-      hostname: "[::1]",
-      port: 8124,
-    };
-    assertEquals(addr, expected);
-  },
-});
-
-Deno.test({
   name: "server.serve() should be able to parse IPV6 address",
   fn: (): void => {
     const server = serve("[::1]:8124");
@@ -795,14 +782,5 @@ Deno.test({
     };
     assertEquals(server.listener.addr, expected);
     server.close();
-  },
-});
-
-Deno.test({
-  name: "server._parseAddrFromStr() port 80",
-  fn: (): void => {
-    const addr = _parseAddrFromStr(":80");
-    assertEquals(addr.port, 80);
-    assertEquals(addr.hostname, "0.0.0.0");
   },
 });

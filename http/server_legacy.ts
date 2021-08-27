@@ -9,7 +9,7 @@ import {
   readRequest,
   writeResponse,
 } from "./_io.ts";
-import { _parseAddrFromStr } from "./native_server.ts";
+import { _parseAddrFromStr } from "./server.ts";
 
 /**
  * @deprecated

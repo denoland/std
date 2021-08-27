@@ -1,11 +1,12 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import {
+  _parseAddrFromStr,
   listenAndServe,
   listenAndServeTls,
   serve,
   Server,
   ServerRequest,
-} from "./native_server.ts";
+} from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { readAll, writeAll } from "../io/util.ts";
@@ -130,6 +131,76 @@ class MockListener implements Deno.Listener {
     }
   }
 }
+
+Deno.test("_parseAddrFromStr should throw an error if the address string is not a valid hostname", () => {
+  assertThrows(
+    () => _parseAddrFromStr("/:/"),
+    TypeError,
+    "Invalid address",
+  );
+});
+
+Deno.test("_parseAddrFromStr should throw an error if the address string contains a username and password", () => {
+  assertThrows(
+    () => _parseAddrFromStr("username@password:1.2.3.4:4505"),
+    TypeError,
+    "Invalid address",
+  );
+});
+
+Deno.test("_parseAddrFromStr should throw an error if the address string contains a path", () => {
+  assertThrows(
+    () => _parseAddrFromStr("1.2.3.4:4505/path/"),
+    TypeError,
+    "Invalid address",
+  );
+});
+
+Deno.test("_parseAddrFromStr should throw an error if the address string contains query string parameters", () => {
+  assertThrows(
+    () => _parseAddrFromStr("1.2.3.4:4505?key=value"),
+    TypeError,
+    "Invalid address",
+  );
+});
+
+Deno.test("_parseAddrFromStr should throw an error if the address string contains a hash parameter", () => {
+  assertThrows(
+    () => _parseAddrFromStr(":1.2.3.4:4505#bang"),
+    TypeError,
+    "Invalid address",
+  );
+});
+
+Deno.test("_parseAddrFromStr should parse port only address strings", () => {
+  const addr = _parseAddrFromStr(":4505");
+  assertEquals(addr.port, 4505);
+  assertEquals(addr.hostname, "0.0.0.0");
+});
+
+Deno.test("_parseAddrFromStr should parse host only address strings using the default HTTP port", () => {
+  const addr = _parseAddrFromStr("1.2.3.4");
+  assertEquals(addr.port, 80);
+  assertEquals(addr.hostname, "1.2.3.4");
+});
+
+Deno.test("_parseAddrFromStr should parse host only address strings with a provided default port", () => {
+  const addr = _parseAddrFromStr("1.2.3.4", 4505);
+  assertEquals(addr.port, 4505);
+  assertEquals(addr.hostname, "1.2.3.4");
+});
+
+Deno.test("_parseAddrFromStr should parse host + port address strings", () => {
+  const addr = _parseAddrFromStr("1.2.3.4:4505");
+  assertEquals(addr.port, 4505);
+  assertEquals(addr.hostname, "1.2.3.4");
+});
+
+Deno.test("_parseAddrFromStr should be able to parse IPV6 address strings", () => {
+  const addr = _parseAddrFromStr("[::1]:4505");
+  assertEquals(addr.port, 4505);
+  assertEquals(addr.hostname, "[::1]");
+});
 
 Deno.test("ServerRequest should expose the underlying Request through a getter", async () => {
   const mockRequestEvent = new MockRequestEvent("http://0.0.0.0:4505");
@@ -406,7 +477,7 @@ Deno.test(`Server.listenAndServe should handle requests`, async () => {
 
 Deno.test({
   // PermissionDenied: Permission denied (os error 13)
-  ignore: true,
+  // ignore: true,
   name: `Server.listenAndServe should handle requests on the default HTTP port`,
   fn: async () => {
     const addr = "localhost";
