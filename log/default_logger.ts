@@ -1,4 +1,4 @@
-import { buildConsoleLogger } from "./builtin_loggers.ts"
+import { buildConsoleLogger } from "./builtin_loggers.ts";
 
 export const defaultLogLevels = {
   trace: 10,
@@ -9,10 +9,9 @@ export const defaultLogLevels = {
 };
 
 const defaultLogger = buildConsoleLogger(
-    defaultLogLevels,
-    "info",
-    level => defaultLogLevels.error >= defaultLogLevels[level],
-)
+  defaultLogLevels,
+  "info",
+  (level) => defaultLogLevels.error >= defaultLogLevels[level],
+);
 
-export const log = defaultLogger
-
+export const log = defaultLogger;
