@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Returns the only element in the given collection matching the given predicate. Returns undefined if there is none.
+ * Returns the only element in the given collection matching the given predicate. Returns undefined if there is none or multiple matches for the predicate.
  *
  * Example:
  *

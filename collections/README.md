@@ -398,7 +398,7 @@ console.assert(
 ### single
 
 Returns the only element in the given collection matching the given predicate.
-Returns undefined if there is none.
+Returns undefined if there is none or multiple matches for the predicate.
 
 ```ts
 import { single } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
