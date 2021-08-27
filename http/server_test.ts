@@ -477,7 +477,7 @@ Deno.test(`Server.listenAndServe should handle requests`, async () => {
 
 Deno.test({
   // PermissionDenied: Permission denied (os error 13)
-  // ignore: true,
+  ignore: true,
   name: `Server.listenAndServe should handle requests on the default HTTP port`,
   fn: async () => {
     const addr = "localhost";
