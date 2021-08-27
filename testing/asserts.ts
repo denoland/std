@@ -616,20 +616,18 @@ export function assertThrows<T = void>(
       throw new AssertionError("A non-Error object was thrown.");
     }
     if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg =
-        `Expected error to be instance of "${ErrorClass.name}", but was "${e.constructor.name}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+        typeof e === "object" ? e?.constructor?.name : "[not an object]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     if (
-      msgIncludes &&
-      !stripColor(e.message).includes(stripColor(msgIncludes))
+      msgIncludes && (!(e instanceof Error) ||
+        !stripColor(e.message).includes(stripColor(msgIncludes)))
     ) {
-      msg =
-        `Expected error message to include "${msgIncludes}", but got "${e.message}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error message to include "${msgIncludes}", but got "${
+        e instanceof Error ? e.message : "[not an Error]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     doesThrow = true;
@@ -659,20 +657,18 @@ export async function assertRejects<T = void>(
       throw new AssertionError("A non-Error object was thrown or rejected.");
     }
     if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg =
-        `Expected error to be instance of "${ErrorClass.name}", but was "${e.constructor.name}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+        typeof e === "object" ? e?.constructor?.name : "[not an object]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     if (
-      msgIncludes &&
-      !stripColor(e.message).includes(stripColor(msgIncludes))
+      msgIncludes && (!(e instanceof Error) ||
+        !stripColor(e.message).includes(stripColor(msgIncludes)))
     ) {
-      msg =
-        `Expected error message to include "${msgIncludes}", but got "${e.message}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error message to include "${msgIncludes}", but got "${
+        e instanceof Error ? e.message : "[not an Error]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     doesThrow = true;
