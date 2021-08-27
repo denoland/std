@@ -5,16 +5,39 @@ import {
   LogLevels,
 } from "./logger.ts";
 
+function defaultCatcher(err: unknown) {
+  console.error(err);
+}
+
+export function buildAsyncLogger<L extends LogLevels, M, A>(
+  logLevels: L,
+  thresholdLevel: keyof L,
+  handler: (level: keyof L, message: M, additionalData: A) => Promise<void>,
+  catcher: (err: unknown) => void = defaultCatcher,
+): Logger<L, M, A> {
+  return buildLogger(
+    logLevels,
+    thresholdLevel,
+    async (level, message, additionalData) => {
+      try {
+          handler(level, message, additionalData);
+      } catch (e) {
+        catcher(e)
+      }
+    },
+  );
+}
+
 export function buildFileLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
   filename: string,
   messageFormatter?: (level: keyof L, message: M, additionalData: A) => string,
 ): Logger<L, M, A> {
-  return buildLogger(
+  return buildAsyncLogger(
     logLevels,
     thresholdLevel,
-    (level, message, additionalData) => {
+    async (level, message, additionalData) => {
       const formatter = messageFormatter ?? buildDefaultLogMessage;
       const messageString = formatter(
         level,
@@ -22,7 +45,7 @@ export function buildFileLogger<L extends LogLevels, M, A>(
         additionalData,
       );
 
-      Deno.writeTextFileSync(filename, messageString, { append: true });
+      return Deno.writeTextFile(filename, messageString, { append: true });
     },
   );
 }
