@@ -7,7 +7,7 @@ import { EventEmitter, GenericFunction, once } from "./events.ts";
 let environmentData = new Map();
 let threads = 0;
 
-interface WorkerOptions {
+export interface WorkerOptions {
   // only for typings
   argv?: unknown[];
   env?: Record<string, unknown>;
@@ -76,7 +76,7 @@ class _Worker extends EventEmitter {
       threadId: (this.threadId = ++threads),
       workerData: options?.workerData,
     }, options?.transferList || []);
-    this.postMessage = this[kHandle].postMessage.bind(this[kHandle]);
+    this.postMessage = handle.postMessage.bind(handle);
     this.emit("online");
   }
 
