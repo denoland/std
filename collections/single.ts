@@ -15,8 +15,10 @@
  *     { month: 'June', active: true },
  * ];
  * const activeBooking = single(bookings, (it) => it.active);
+ * const inactiveBooking = single(bookings, (it) => !it.active);
  *
- * assertEquals(activeBooking, { month: 'June', active: true });
+ * assertEquals(activeBooking, { month: "June", active: true });
+ * assertEquals(inactiveBooking, undefined); // there are two applicable items
  * ```
  */
 export function single<T>(
