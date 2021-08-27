@@ -96,13 +96,9 @@ export class EventEmitter {
     this.checkListenerArgument(listener);
     this.emit("newListener", eventName, this.unwrapListener(listener));
     if (this.hasListeners(eventName)) {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
       let listeners = this._events[eventName];
       if (!Array.isArray(listeners)) {
         listeners = [listeners];
-        // deno-lint-ignore ban-ts-comment
-        // @ts-expect-error
         this._events[eventName] = listeners;
       }
 
@@ -112,8 +108,6 @@ export class EventEmitter {
         listeners.push(listener);
       }
     } else {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
       this._events[eventName] = listener;
     }
     const max = this.getMaxListeners();
@@ -196,8 +190,6 @@ export class EventEmitter {
    */
   public listenerCount(eventName: string | symbol): number {
     if (this.hasListeners(eventName)) {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
       const maybeListeners = this._events[eventName];
       return Array.isArray(maybeListeners) ? maybeListeners.length : 1;
     } else {
@@ -221,8 +213,6 @@ export class EventEmitter {
       return [];
     }
 
-    // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
     const eventListeners = target._events[eventName];
     if (Array.isArray(eventListeners)) {
       return unwrap
@@ -387,8 +377,6 @@ export class EventEmitter {
 
     if (eventName) {
       if (this.hasListeners(eventName)) {
-        // deno-lint-ignore ban-ts-comment
-        // @ts-expect-error
         const listeners = ensureArray(this._events[eventName]).slice()
           .reverse();
         for (const listener of listeners) {
@@ -420,8 +408,6 @@ export class EventEmitter {
   ): this {
     this.checkListenerArgument(listener);
     if (this.hasListeners(eventName)) {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
       const maybeArr = this._events[eventName];
 
       assert(maybeArr);
@@ -442,13 +428,9 @@ export class EventEmitter {
       if (listenerIndex >= 0) {
         arr.splice(listenerIndex, 1);
         if (arr.length === 0) {
-          // deno-lint-ignore ban-ts-comment
-          // @ts-expect-error
           delete this._events[eventName];
         } else if (arr.length === 1) {
           // If there is only one listener, an array is not necessary.
-          // deno-lint-ignore ban-ts-comment
-          // @ts-expect-error
           this._events[eventName] = arr[0];
         }
 
@@ -642,8 +624,6 @@ export class EventEmitter {
   }
 
   private warnIfNeeded(eventName: string | symbol, warning: Error): void {
-    // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
     const listeners = this._events[eventName];
     if (listeners.warned) {
       return;
@@ -663,8 +643,6 @@ export class EventEmitter {
   }
 
   private hasListeners(eventName: string | symbol): boolean {
-    // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
     return this._events && Boolean(this._events[eventName]);
   }
 }
