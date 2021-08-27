@@ -29,7 +29,7 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json
+        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json
 
       - name: Type check browser compatible modules
         shell: bash

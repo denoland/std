@@ -190,7 +190,7 @@ export class ChildProcess extends EventEmitter {
     await Promise.all(promises);
   }
 
-  private _handleError(err: Error): void {
+  private _handleError(err: unknown): void {
     queueMicrotask(() => {
       this.emit("error", err); // TODO(uki00a) Convert `err` into nodejs's `SystemError` class.
     });
@@ -367,14 +367,14 @@ function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
         await stdin.write(bytes);
         callback();
       } catch (err) {
-        callback(err);
+        callback(err instanceof Error ? err : new Error("[non-error thrown]"));
       }
     },
     final(callback) {
       try {
         ensureClosed(stdin);
       } catch (err) {
-        callback(err);
+        callback(err instanceof Error ? err : new Error("[non-error thrown]"));
       }
     },
   });

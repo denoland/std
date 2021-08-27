@@ -179,6 +179,7 @@ Deno.test("bufioReadString", async function () {
 
     fail("should throw");
   } catch (err) {
+    assert(err instanceof Error);
     assert(err.message, "Delimiter should be a single character");
   }
 });
