@@ -8,7 +8,7 @@ export const defaultLogLevels = {
   error: 50,
 };
 
-const defaultLogger = buildConsoleLogger(
+const defaultLogger = buildConsoleLogger<typeof defaultLogLevels, string, unknown | undefined>(
   defaultLogLevels,
   "info",
   (level) => defaultLogLevels.error >= defaultLogLevels[level],

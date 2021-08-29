@@ -2,30 +2,26 @@ import { mapEntries } from "../collections/map_entries.ts";
 
 export type LogLevels = { [level: string]: number };
 export type Logger<L extends LogLevels, M, A> = {
-  [l in keyof L]: (message: M, additionalData: A) => void;
+  [l in keyof L]: (message: M, additionalData?: A) => void;
 };
 export type LogHandler<L extends LogLevels, M = unknown, A = unknown> = (
   logLevel: keyof L,
   message: M,
-  additionalData: A,
+  additionalData?: A,
 ) => void;
 export type LogDispatcher<L extends LogLevels, M, A> = (
   logLevels: L,
-  messageLevel: keyof L,
   thresholdLevel: keyof L,
-  message: M,
-  additionalData: A,
   handler: LogHandler<L, M, A>,
+  ...handlerArgs: Parameters<typeof handler>
 ) => void;
 
 export function buildDefaultLogMessage<L extends LogLevels, M, A>(
-  logLevel: keyof L,
-  message: M,
-  additionalData: A,
+  [logLevel, message, additionalData]: Parameters<LogHandler<L, M, A>>,
 ) {
-  return `[${logLevel}] ${new Date().toLocaleDateString()} ${
-    asString(message)
-  }${additionalData ? ` ${asString(additionalData)}` : ""}}`;
+  return `[${logLevel}]\t${new Date().toLocaleString()}\t${asString(message)}${
+    additionalData ? ` ${asString(additionalData)}` : ""
+  }}`;
 }
 
 export function asString(data: unknown): string {
@@ -53,17 +49,17 @@ export function asString(data: unknown): string {
 
 function defaultDispatch<L extends LogLevels, M, A>(
   logLevels: L,
-  messageLevel: keyof L,
   thresholdLevel: keyof L,
-  message: M,
-  additionalData: A,
   handler: LogHandler<L, M, A>,
+  ...handlerArgs: Parameters<typeof handler>
 ) {
+  const [messageLevel] = handlerArgs;
+
   if (logLevels[thresholdLevel] > logLevels[messageLevel]) {
     return;
   }
 
-  handler(messageLevel, message, additionalData);
+  handler(...handlerArgs);
 }
 
 export function buildLogger<L extends LogLevels, M, A>(
@@ -76,14 +72,14 @@ export function buildLogger<L extends LogLevels, M, A>(
 
   return mapEntries(logLevels, ([level]) => [
     level,
-    (message: M, additionalData: A) =>
+    (message: M, additionalData?: A) =>
       dispatch(
         logLevels,
-        level,
         thresholdLevel,
+        handler,
+        level,
         message,
         additionalData,
-        handler,
       ),
   ]) as Logger<L, M, A>;
 }
