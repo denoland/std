@@ -6,7 +6,7 @@
  * ```ts
  * import { takeFirstWhile } from "./take_first_while.ts";
  * import { assertEquals } from "../testing/asserts.ts";
- * 
+ *
  * const arr = [1, 2, 3, 4, 5, 6];
  *
  * assertEquals(takeFirstWhile(arr, (i) => i !== 4), [1, 2, 3]);
@@ -20,7 +20,7 @@ export function takeFirstWhile<T>(
   const length = array.length;
 
   while (length > offset && predicate(array[offset])) {
-    offset++;   
+    offset++;
   }
 
   return array.slice(0, offset);
