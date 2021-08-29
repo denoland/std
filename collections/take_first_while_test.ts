@@ -46,7 +46,7 @@ Deno.test("[collections/takeFirstWhile] Returns empty array when the first eleme
   const actual = takeFirstWhile(arr, (i) => i !== 1);
 
   assertEquals(actual, []);
-})
+});
 
 Deno.test("[collections/takeFirstWhile] Returns the same array when all elements match the predicate", () => {
   const arr = [1, 2, 3, 4];
@@ -54,4 +54,4 @@ Deno.test("[collections/takeFirstWhile] Returns the same array when all elements
   const actual = takeFirstWhile(arr, (i) => i != 400);
 
   assertEquals(actual, [1, 2, 3, 4]);
-})
+});
