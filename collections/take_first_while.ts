@@ -16,15 +16,12 @@ export function takeFirstWhile<T>(
   array: readonly T[],
   predicate: (el: T) => boolean,
 ): T[] {
-  const newArray: Array<T> = [];
+  let offset = 0;
+  const length = array.length;
 
-  for (const i of array) {
-    if (predicate(i)) {
-      newArray.push(i);
-    } else {
-      break;
-    }
+  while (length > offset && predicate(array[offset])) {
+    offset++;   
   }
 
-  return newArray;
+  return array.slice(0, offset);
 }
