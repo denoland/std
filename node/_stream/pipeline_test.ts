@@ -1,6 +1,5 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
 import { Buffer } from "../buffer.ts";
-import PassThrough from "./passthrough.ts";
 import pipeline from "./pipeline.ts";
 import Readable from "./readable.ts";
 import Transform from "./transform.ts";

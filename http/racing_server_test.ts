@@ -1,4 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
+/* TODO(kt3k): Enable this test
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
@@ -62,7 +64,6 @@ content-length: 6
 Step7
 `;
 
-/* TODO(kt3k): Enable this test
 Deno.test("serverPipelineRace", async function () {
   await startServer();
 

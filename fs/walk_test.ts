@@ -6,7 +6,6 @@ import {
   assertRejects,
   assertThrows,
 } from "../testing/asserts.ts";
-import { isWindows } from "../_util/os.ts";
 
 export function testWalk(
   setup: (arg0: string) => void | Promise<void>,

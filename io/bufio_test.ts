@@ -15,7 +15,6 @@ import {
   BufWriter,
   BufWriterSync,
   PartialReadError,
-  ReadLineResult,
   readLines,
   readStringDelim,
 } from "./bufio.ts";
