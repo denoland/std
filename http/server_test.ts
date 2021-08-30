@@ -703,6 +703,8 @@ Deno.test({
 
 Deno.test({
   name: "serveTLS Invalid Cert",
+  // TODO(kt3k): Enable this test
+  ignore: true,
   fn: async () => {
     async function iteratorReq(server: Server) {
       for await (const req of server) {
