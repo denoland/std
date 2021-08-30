@@ -196,6 +196,16 @@ export interface ServerInit {
 }
 
 /**
+ * An HTTP server listener.
+ */
+export interface ServerListener extends Deno.Listener {
+  /**
+   * The network address of the listener.
+   */
+  readonly addr: Deno.NetAddr;
+}
+
+/**
  * Used to construct an HTTP server.
  */
 export class Server {
@@ -413,6 +423,13 @@ export class Server {
    */
   get closed(): boolean {
     return this.#closed;
+  }
+
+  /**
+   * Get the server's listeners.
+   */
+  get listeners(): ServerListener[] {
+    return Array.from(this.#listeners) as ServerListener[];
   }
 
   /**

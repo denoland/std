@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import {
   _parseAddrFromStr,
+  ConnInfo,
   listenAndServe,
   listenAndServeTls,
   serve,
@@ -270,12 +271,62 @@ Deno.test("ServerRequest should reject if the underlying request event rejects (
   }
 });
 
-Deno.test("Server should expose whether it is closed", () => {
+Deno.test("Server.listeners should expose the server's listeners", async () => {
+  const listenerOneOptions = {
+    hostname: "127.0.0.1",
+    port: 4505,
+  };
+  const listenerTwoOptions = {
+    hostname: "127.0.0.1",
+    port: 8080,
+  };
+  const listenerOne = Deno.listen(listenerOneOptions);
+  const listenerTwo = Deno.listen(listenerTwoOptions);
+
+  const addrHostname = "0.0.0.0";
+  const addrPort = 3000;
+  const addr = `${addrHostname}:${addrPort}`;
+  const handler = () => new Response();
+
+  const server = new Server({ addr, handler });
+  const servePromiseOne = server.serve(listenerOne);
+  const servePromiseTwo = server.serve(listenerTwo);
+  const servePromiseThree = server.listenAndServe();
+
+  try {
+    assertEquals(server.listeners.length, 3);
+    assertEquals(server.listeners[0].addr.transport, "tcp");
+    assertEquals(
+      server.listeners[0].addr.hostname,
+      listenerOneOptions.hostname,
+    );
+    assertEquals(server.listeners[0].addr.port, listenerOneOptions.port);
+    assertEquals(server.listeners[1].addr.transport, "tcp");
+    assertEquals(
+      server.listeners[1].addr.hostname,
+      listenerTwoOptions.hostname,
+    );
+    assertEquals(server.listeners[1].addr.port, listenerTwoOptions.port);
+    assertEquals(server.listeners[2].addr.transport, "tcp");
+    assertEquals(server.listeners[2].addr.hostname, addrHostname);
+    assertEquals(server.listeners[2].addr.port, addrPort);
+  } finally {
+    server.close();
+    await servePromiseOne;
+    await servePromiseTwo;
+    await servePromiseThree;
+  }
+});
+
+Deno.test("Server.closed should expose whether it is closed", () => {
   const handler = () => new Response();
   const server = new Server({ handler });
-  assertEquals(server.closed, false);
-  server.close();
-  assertEquals(server.closed, true);
+  try {
+    assertEquals(server.closed, false);
+  } finally {
+    server.close();
+    assertEquals(server.closed, true);
+  }
 });
 
 Deno.test("Server.close should throw an error if the server is already closed", () => {
@@ -360,11 +411,9 @@ Deno.test("serve should not throw if abort when the server is already closed", a
 
   try {
     abortController.abort();
-  } catch {
-    unreachable();
+  } finally {
+    await servePromise;
   }
-
-  await servePromise;
 });
 
 Deno.test("listenAndServe should not throw if abort when the server is already closed", async () => {
@@ -380,11 +429,9 @@ Deno.test("listenAndServe should not throw if abort when the server is already c
 
   try {
     abortController.abort();
-  } catch {
-    unreachable();
+  } finally {
+    await servePromise;
   }
-
-  await servePromise;
 });
 
 Deno.test("listenAndServeTls should not throw if abort when the server is already closed", async () => {
@@ -402,11 +449,9 @@ Deno.test("listenAndServeTls should not throw if abort when the server is alread
 
   try {
     abortController.abort();
-  } catch {
-    unreachable();
+  } finally {
+    await servePromise;
   }
-
-  await servePromise;
 });
 
 Deno.test(`Server.serve should handle requests`, async () => {
@@ -430,8 +475,6 @@ Deno.test(`Server.serve should handle requests`, async () => {
     const response = await fetch(url, { method });
     assertEquals(await response.text(), body);
     assertEquals(response.status, status);
-  } catch {
-    unreachable();
   } finally {
     server.close();
     await servePromise;
@@ -454,8 +497,6 @@ Deno.test(`Server.listenAndServe should handle requests`, async () => {
     const response = await fetch(url, { method });
     assertEquals(await response.text(), body);
     assertEquals(response.status, status);
-  } catch {
-    unreachable();
   } finally {
     server.close();
     await servePromise;
@@ -464,6 +505,7 @@ Deno.test(`Server.listenAndServe should handle requests`, async () => {
 
 Deno.test({
   // PermissionDenied: Permission denied (os error 13)
+  // Will pass if run as root user.
   ignore: true,
   name: `Server.listenAndServe should handle requests on the default HTTP port`,
   fn: async () => {
@@ -482,8 +524,6 @@ Deno.test({
       const response = await fetch(url, { method });
       assertEquals(await response.text(), body);
       assertEquals(response.status, status);
-    } catch {
-      unreachable();
     } finally {
       server.close();
       await servePromise;
@@ -558,6 +598,8 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
 });
 
 Deno.test({
+  // PermissionDenied: Permission denied (os error 13)
+  // Will pass if run as root user.
   ignore: true,
   name:
     `Server.listenAndServeTls should handle requests on the default HTTPS port`,
@@ -623,7 +665,6 @@ Deno.test({
       );
     } finally {
       server.close();
-
       await servePromise;
     }
   },
@@ -652,8 +693,6 @@ Deno.test(`serve should handle requests`, async () => {
     const response = await fetch(url, { method });
     assertEquals(await response.text(), body);
     assertEquals(response.status, status);
-  } catch {
-    unreachable();
   } finally {
     abortController.abort();
     await servePromise;
@@ -678,8 +717,6 @@ Deno.test(`listenAndServe should handle requests`, async () => {
     const response = await fetch(url, { method });
     assertEquals(await response.text(), body);
     assertEquals(response.status, status);
-  } catch {
-    unreachable();
   } finally {
     abortController.abort();
     await servePromise;
@@ -759,10 +796,16 @@ Deno.test("Server should not reject when the listener is closed (though the serv
   const handler = () => new Response();
   const server = new Server({ handler });
   listener.close();
-  const servePromise = server.serve(listener);
-  await delay(10);
-  server.close();
-  await servePromise;
+
+  let servePromise;
+
+  try {
+    servePromise = server.serve(listener);
+    await delay(10);
+  } finally {
+    server.close();
+    await servePromise;
+  }
 });
 
 Deno.test("Server should not reject when there is a tls handshake with tcp corruption", async () => {
@@ -773,10 +816,16 @@ Deno.test("Server should not reject when there is a tls handshake with tcp corru
   const listener = new MockListener({ conn, rejectionError });
   const handler = () => new Response();
   const server = new Server({ handler });
-  const servePromise = server.serve(listener);
-  await delay(10);
-  server.close();
-  await servePromise;
+
+  let servePromise;
+
+  try {
+    servePromise = server.serve(listener);
+    await delay(10);
+  } finally {
+    server.close();
+    await servePromise;
+  }
 });
 
 Deno.test("Server should not reject when the tls session is aborted", async () => {
@@ -787,10 +836,16 @@ Deno.test("Server should not reject when the tls session is aborted", async () =
   const listener = new MockListener({ conn, rejectionError });
   const handler = () => new Response();
   const server = new Server({ handler });
-  const servePromise = server.serve(listener);
-  await delay(10);
-  server.close();
-  await servePromise;
+
+  let servePromise;
+
+  try {
+    servePromise = server.serve(listener);
+    await delay(10);
+  } finally {
+    server.close();
+    await servePromise;
+  }
 });
 
 Deno.test("Server should not reject when the socket is closed", async () => {
@@ -801,10 +856,16 @@ Deno.test("Server should not reject when the socket is closed", async () => {
   const listener = new MockListener({ conn, rejectionError });
   const handler = () => new Response();
   const server = new Server({ handler });
-  const servePromise = server.serve(listener);
-  await delay(10);
-  server.close();
-  await servePromise;
+
+  let servePromise;
+
+  try {
+    servePromise = server.serve(listener);
+    await delay(10);
+  } finally {
+    server.close();
+    await servePromise;
+  }
 });
 
 Deno.test("Server should implement a backoff delay when accepting a connection throws an expected error and reset the backoff when successfully accepting a connection again", async () => {
@@ -962,7 +1023,6 @@ Deno.test("Server should not reject when the handler throws", async () => {
   await postRespondWith;
   conn.close();
   server.close();
-
   await servePromise;
 });
 
@@ -984,10 +1044,129 @@ Deno.test("Server should be able to parse IPV6 addresses", async () => {
     const response = await fetch(url, { method });
     assertEquals(await response.text(), body);
     assertEquals(response.status, status);
-  } catch {
-    unreachable();
   } finally {
     abortController.abort();
+    await servePromise;
+  }
+});
+
+Deno.test("Server.serve can be called multiple times", async () => {
+  const listenerOneOptions = {
+    hostname: "localhost",
+    port: 4505,
+  };
+  const listenerTwoOptions = {
+    hostname: "localhost",
+    port: 8080,
+  };
+  const listenerOne = Deno.listen(listenerOneOptions);
+  const listenerTwo = Deno.listen(listenerTwoOptions);
+
+  const handler = (_request: Request, connInfo: ConnInfo) => {
+    if ((connInfo.localAddr as Deno.NetAddr).port === listenerOneOptions.port) {
+      return new Response("Hello listener one!");
+    } else if (
+      (connInfo.localAddr as Deno.NetAddr).port === listenerTwoOptions.port
+    ) {
+      return new Response("Hello listener two!");
+    }
+
+    unreachable();
+  };
+
+  const server = new Server({ handler });
+  const servePromiseOne = server.serve(listenerOne);
+  const servePromiseTwo = server.serve(listenerTwo);
+
+  try {
+    const responseOne = await fetch(
+      `http://${listenerOneOptions.hostname}:${listenerOneOptions.port}`,
+    );
+    assertEquals(await responseOne.text(), "Hello listener one!");
+
+    const responseTwo = await fetch(
+      `http://${listenerTwoOptions.hostname}:${listenerTwoOptions.port}`,
+    );
+    assertEquals(await responseTwo.text(), "Hello listener two!");
+  } finally {
+    server.close();
+    await servePromiseOne;
+    await servePromiseTwo;
+  }
+});
+
+Deno.test("Server.listenAndServe should throw if called multiple times", async () => {
+  const handler = () => unreachable();
+
+  const server = new Server({ handler });
+  const servePromise = server.listenAndServe();
+
+  try {
+    assertThrowsAsync(() => server.listenAndServe(), Deno.errors.AddrInUse);
+  } finally {
+    server.close();
+    await servePromise;
+  }
+});
+
+Deno.test("Server.listenAndServeTls should throw if called multiple times", async () => {
+  const handler = () => unreachable();
+
+  const certFile = join(testdataDir, "tls/localhost.crt");
+  const keyFile = join(testdataDir, "tls/localhost.key");
+
+  const server = new Server({ handler });
+  const servePromise = server.listenAndServeTls(certFile, keyFile);
+
+  try {
+    assertThrowsAsync(
+      () => server.listenAndServeTls(certFile, keyFile),
+      Deno.errors.AddrInUse,
+    );
+  } finally {
+    server.close();
+    await servePromise;
+  }
+});
+
+Deno.test("Handler is called with the request instance and connection information", async () => {
+  const hostname = "127.0.0.1";
+  const port = 4505;
+  const addr = `${hostname}:${port}`;
+
+  let receivedRequest: Request;
+  let receivedConnInfo: ConnInfo;
+
+  const handler = (request: Request, connInfo: ConnInfo) => {
+    receivedRequest = request;
+    receivedConnInfo = connInfo;
+
+    return new Response("Hello Deno!");
+  };
+
+  const server = new Server({ addr, handler });
+  const servePromise = server.listenAndServe();
+
+  const url = `http://${addr}/`;
+
+  try {
+    const response = await fetch(url);
+    await response.text();
+
+    assertEquals(receivedRequest!.url, url);
+    assertEquals(receivedConnInfo!.localAddr.transport, "tcp");
+    assertEquals(
+      (receivedConnInfo!.localAddr as Deno.NetAddr).hostname,
+      hostname,
+    );
+    assertEquals((receivedConnInfo!.localAddr as Deno.NetAddr).port, port);
+    assertEquals(receivedConnInfo!.remoteAddr.transport, "tcp");
+    assertEquals(
+      (receivedConnInfo!.remoteAddr as Deno.NetAddr).hostname,
+      hostname,
+    );
+  } finally {
+    server.close();
     await servePromise;
   }
 });
