@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
-import { filterValuesNotNullish } from "./filter_value_not_nullish.ts";
+import { filterValuesNotNullish } from "./filter_values_not_nullish.ts";
 
 function filterValuesNotNullishTest<T, O>(
   input: [record: Readonly<Record<string, T>>],

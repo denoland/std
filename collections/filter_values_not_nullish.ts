@@ -6,7 +6,7 @@
  * Example:
  *
  * ```ts
- * import { filterValuesNotNullish } from "./filter_value_not_nullish.ts";
+ * import { filterValuesNotNullish } from "./filter_values_not_nullish.ts";
  * import { assertEquals } from "../testing/asserts.ts";
  *
  * const people = {
