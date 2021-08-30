@@ -5,12 +5,12 @@ import { assert } from "../testing/asserts.ts";
 /**
  * Generates sliding views of the given collection of the given size and returns a new collection containing all of them.
  *
- * Generates sliding views of the given collection of the given size and returns a
- * new collection containing all of them.
  * If step is set, each window will start that many elements after the last
- * window's start. If partial is set, windows will be generated for the last
- * elements of the collection, resulting in some undefined values if size is
- * greather than 1.
+ * window's start. (Default: 1)
+ *
+ * If partial is set, windows will be generated for the last elements of the
+ * collection, resulting in some undefined values if size is greather than 1.
+ * (Default: false)
  *
  * Example:
  *
@@ -47,15 +47,14 @@ export function windowed<T>(
   size: number,
   { step = 1, partial = false }: {
     /**
-     * Generates sliding views of the given collection of the given size and returns a
-     * new collection containing all of them.
+     * If step is set, each window will start that many elements after the last
+     * window's start. (Default: 1)
      */
     step?: number;
     /**
-     * If step is set, each window will start that many elements after the last
-     * window's start. If partial is set, windows will be generated for the last
-     * elements of the collection, resulting in some undefined values if size is
-     * greather than 1.
+     * If partial is set, windows will be generated for the last elements of the
+     * collection, resulting in some undefined values if size is greather than 1.
+     * (Default: false)
      */
     partial?: boolean;
   } = {},
