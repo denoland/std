@@ -10,7 +10,7 @@
  * import { assertEquals } from "../testing/asserts.ts";
  *
  * const numbers = [ 3, 2, 5, 2, 5 ]
- * const dropFirstWhileNumbers = dropFirstWhile(numbers, 2)
+ * const dropFirstWhileNumbers = dropFirstWhile(numbers, i => i !== 2)
  *
  * assertEquals(dropFirstWhileNumbers, [ 5, 2, 5 ])
  * ```
