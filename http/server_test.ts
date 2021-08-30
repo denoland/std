@@ -208,14 +208,26 @@ Deno.test("Server.addrs should expose the addresses the server is listening on",
   try {
     assertEquals(server.addrs.length, 3);
     assertEquals(server.addrs[0].transport, "tcp");
-    assertEquals(server.addrs[0].hostname, listenerOneOptions.hostname);
-    assertEquals(server.addrs[0].port, listenerOneOptions.port);
+    assertEquals(
+      (server.addrs[0] as Deno.NetAddr).hostname,
+      listenerOneOptions.hostname,
+    );
+    assertEquals(
+      (server.addrs[0] as Deno.NetAddr).port,
+      listenerOneOptions.port,
+    );
     assertEquals(server.addrs[1].transport, "tcp");
-    assertEquals(server.addrs[1].hostname, listenerTwoOptions.hostname);
-    assertEquals(server.addrs[1].port, listenerTwoOptions.port);
+    assertEquals(
+      (server.addrs[1] as Deno.NetAddr).hostname,
+      listenerTwoOptions.hostname,
+    );
+    assertEquals(
+      (server.addrs[1] as Deno.NetAddr).port,
+      listenerTwoOptions.port,
+    );
     assertEquals(server.addrs[2].transport, "tcp");
-    assertEquals(server.addrs[2].hostname, addrHostname);
-    assertEquals(server.addrs[2].port, addrPort);
+    assertEquals((server.addrs[2] as Deno.NetAddr).hostname, addrHostname);
+    assertEquals((server.addrs[2] as Deno.NetAddr).port, addrPort);
   } finally {
     server.close();
     await servePromiseOne;
@@ -969,9 +981,11 @@ Deno.test("Server.serve can be called multiple times", async () => {
   const listenerTwo = Deno.listen(listenerTwoOptions);
 
   const handler = (_request: Request, connInfo: ConnInfo) => {
-    if (connInfo.localAddr.port === listenerOneOptions.port) {
+    if ((connInfo.localAddr as Deno.NetAddr).port === listenerOneOptions.port) {
       return new Response("Hello listener one!");
-    } else if (connInfo.localAddr.port === listenerTwoOptions.port) {
+    } else if (
+      (connInfo.localAddr as Deno.NetAddr).port === listenerTwoOptions.port
+    ) {
       return new Response("Hello listener two!");
     }
 
@@ -1059,10 +1073,16 @@ Deno.test("Handler is called with the request instance and connection informatio
 
     assertEquals(receivedRequest!.url, url);
     assertEquals(receivedConnInfo!.localAddr.transport, "tcp");
-    assertEquals(receivedConnInfo!.localAddr.hostname, hostname);
-    assertEquals(receivedConnInfo!.localAddr.port, port);
+    assertEquals(
+      (receivedConnInfo!.localAddr as Deno.NetAddr).hostname,
+      hostname,
+    );
+    assertEquals((receivedConnInfo!.localAddr as Deno.NetAddr).port, port);
     assertEquals(receivedConnInfo!.remoteAddr.transport, "tcp");
-    assertEquals(receivedConnInfo!.remoteAddr.hostname, hostname);
+    assertEquals(
+      (receivedConnInfo!.remoteAddr as Deno.NetAddr).hostname,
+      hostname,
+    );
   } finally {
     server.close();
     await servePromise;

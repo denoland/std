@@ -38,11 +38,11 @@ export interface ConnInfo {
   /**
    * The local address of the connection.
    */
-  readonly localAddr: Deno.NetAddr;
+  readonly localAddr: Deno.Addr;
   /**
    * The remote address of the connection.
    */
-  readonly remoteAddr: Deno.NetAddr;
+  readonly remoteAddr: Deno.Addr;
 }
 
 /**
@@ -68,7 +68,7 @@ export type Handler = (
  * const listenOptions = _parseAddrFromStr(addr);
  * ```
  *
- * @param {string} addr The TCP address string to parse.
+ * @param {string} addr The address string to parse.
  * @param {number} defaultPort Default port when not included in the address string.
  * @return {Deno.ListenOptions} The parsed address.
  * @throws {TypeError} When the address is invalid.
@@ -109,7 +109,7 @@ export function _parseAddrFromStr(
  */
 export interface ServerInit {
   /**
-   * Optionally specifies the TCP address to listen on, in the form
+   * Optionally specifies the address to listen on, in the form
    * "host:port".
    *
    * If the port is omitted, ":80" is used by default for HTTP when invoking
@@ -346,12 +346,10 @@ export class Server {
   }
 
   /**
-   * Get the list of TCP network addresses the server is listening on.
+   * Get the list of network addresses the server is listening on.
    */
-  get addrs(): Deno.NetAddr[] {
-    return Array.from(this.#listeners).map((listener) =>
-      listener.addr as Deno.NetAddr
-    );
+  get addrs(): Deno.Addr[] {
+    return Array.from(this.#listeners).map((listener) => listener.addr);
   }
 
   /**
@@ -388,10 +386,10 @@ export class Server {
   }
 
   /**
-   * Serves all HTTP requests on a single TCP connection.
+   * Serves all HTTP requests on a single connection.
    *
    * @param {Deno.HttpConn} httpConn The HTTP connection to yield requests from.
-   * @param {Deno.Conn} conn The TCP connection.
+   * @param {Deno.Conn} conn The connection.
    * @private
    */
   async #serveHttp(
@@ -399,8 +397,8 @@ export class Server {
     conn: Deno.Conn,
   ): Promise<void> {
     const connInfo: ConnInfo = {
-      localAddr: conn.localAddr as Deno.NetAddr,
-      remoteAddr: conn.remoteAddr as Deno.NetAddr,
+      localAddr: conn.localAddr,
+      remoteAddr: conn.remoteAddr,
     };
 
     while (!this.#closed) {
@@ -428,7 +426,7 @@ export class Server {
   }
 
   /**
-   * Accepts all TCP connections on a single network listener.
+   * Accepts all connections on a single network listener.
    *
    * @param {Deno.Listener} listener The listener to accept connections from.
    * @private
@@ -622,7 +620,7 @@ export async function serve(
  * });
  * ```
  *
- * @param {string} addr The TCP address to listen on.
+ * @param {string} addr The address to listen on.
  * @param {Handler} handler The handler for individual HTTP requests.
  * @param {ServeInit} [options] Additional serve options.
  */
@@ -663,7 +661,7 @@ export async function listenAndServe(
  * });
  * ```
  *
- * @param {string} addr The TCP address to listen on.
+ * @param {string} addr The address to listen on.
  * @param {string} certFile The path to the file containing the TLS certificate.
  * @param {string} keyFile The path to the file containing the TLS private key.
  * @param {Handler} handler The handler for individual HTTP requests.
