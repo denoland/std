@@ -553,7 +553,6 @@ Deno.test("readLinesWithEncodingISO-8859-15", async function () {
   ]);
 });
 
-
 /* TODO(kt3k): Enable this test
 Deno.test(
   "bufReaderShouldNotShareArrayBufferAcrossReads",
