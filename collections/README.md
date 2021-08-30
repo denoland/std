@@ -512,16 +512,16 @@ console.assert(
 
 ### includesValue
 
-Returns whether the given value is part of the collection.
+If the given value is part of the given object it returns true, otherwise it returns false.
 
 ```ts
 import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const input = {
   first: 33,
   second: 34,
 };
 
-assert(includesValue(input, 34));
+assertEquals(includesValue(input, 34), true);
 ```

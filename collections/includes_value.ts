@@ -4,19 +4,25 @@
  * Example:
  * ```ts
  * import { includesValue } from "./includes_value.ts";
- * import { assert } from "../testing/asserts.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const input = {
  *   first: 33,
  *   second: 34,
  * };
  *
- * assert(includesValue(input, 34));
+ * assertEquals(includesValue(input, 34), true);
  */
 
 export function includesValue<T>(
-  collection: Record<string, T>,
+  record: Record<string, T>,
   value: T,
 ): boolean {
-  return Object.values(collection).includes(value);
+  for (const i in record) {
+    if (record[i] === value) {
+      return true;
+    }
+  }
+
+  return false;
 }
