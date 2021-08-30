@@ -524,7 +524,7 @@ import { assertEquals } from "../testing/asserts.ts";
 const arr = [1, 2, 3, 4, 5, 6];
 
 assertEquals(
-  takeFirstWhile(arr, (i) => i > 4),
+  takeLastWhile(arr, (i) => i > 4),
   [5, 6],
 );
 ```
