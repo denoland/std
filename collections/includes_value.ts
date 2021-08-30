@@ -17,7 +17,7 @@
  */
 
 export function includesValue<T>(
-  record: Record<string, T>,
+  record: Readonly<Record<string, T>>,
   value: T,
 ): boolean {
   for (const i in record) {
