@@ -296,12 +296,12 @@ Deno.test("[util] format", () => {
     [10, 11],
   ], { hi: "hello" });
   const expected =
-    '[10, hi, null, undefined, NaN, Infinity, { hello: world }, [10, 11], hi: hello]';
+    "[10, hi, null, undefined, NaN, Infinity, { hello: world }, [10, 11], hi: hello]";
   assertEquals(util.format("%o", testData), expected);
   assertEquals(util.format("%O", testData), expected);
 
   const expected2 =
-    '[10, hi, null, undefined, NaN, Infinity, [Object], [Array], hi: hello]';
+    "[10, hi, null, undefined, NaN, Infinity, [Object], [Array], hi: hello]";
   assertEquals(util.format("%s", testData), expected2);
 
   assertEquals(
