@@ -1,7 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assert } from "../testing/asserts.ts";
-
 /**
  * Generates sliding views of the given collection of the given size and returns a new collection containing all of them.
  *
@@ -70,8 +68,6 @@ export function windowed<T>(
   const length = Math.floor(
     (collection.length - (partial ? 1 : size)) / step + 1,
   );
-  // Passing NaN as an argument of `Array#slice()` will cause unexpected behavior because it is converted to 0.
-  assert(!Number.isNaN(length));
 
   return Array.from(
     { length },
