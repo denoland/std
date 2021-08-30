@@ -389,18 +389,13 @@ export class Server {
    * Serves all HTTP requests on a single connection.
    *
    * @param {Deno.HttpConn} httpConn The HTTP connection to yield requests from.
-   * @param {Deno.Conn} conn The connection.
+   * @param {ConnInfo} connInfo Information about the underlying connection.
    * @private
    */
   async #serveHttp(
     httpConn: Deno.HttpConn,
-    conn: Deno.Conn,
+    connInfo: ConnInfo,
   ): Promise<void> {
-    const connInfo: ConnInfo = {
-      localAddr: conn.localAddr,
-      remoteAddr: conn.remoteAddr,
-    };
-
     while (!this.#closed) {
       let requestEvent: Deno.RequestEvent | null;
 
@@ -489,10 +484,15 @@ export class Server {
       // track for closure upon server close.
       this.#trackHttpConnection(httpConn);
 
+      const connInfo: ConnInfo = {
+        localAddr: conn.localAddr,
+        remoteAddr: conn.remoteAddr,
+      };
+
       // Serve the requests that arrive on the just-accepted connection. Note
       // we do not await this async method to allow the server to accept new
       // connections.
-      this.#serveHttp(httpConn, conn);
+      this.#serveHttp(httpConn, connInfo);
     }
   }
 
