@@ -79,4 +79,3 @@ export function windowed<T>(
     (_, i) => collection.slice(i * step, i * step + size),
   );
 }
-windowed([], 1, { step: 1 });
