@@ -51,7 +51,7 @@ Deno.test("[collections/takeLastWhile] Returns empty array when the last element
 Deno.test("[collections/takeLastWhile] Returns the same array when all elements match the predicate", () => {
   const arr = [1, 2, 3, 4];
 
-  const actual = takeLastWhile(arr, (i) => i < 5);
+  const actual = takeLastWhile(arr, (i) => i !== 400);
 
   assertEquals(actual, [1, 2, 3, 4]);
 });

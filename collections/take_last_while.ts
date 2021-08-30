@@ -19,17 +19,16 @@ export function takeLastWhile<T>(
   array: readonly T[],
   predicate: (el: T) => boolean,
 ): T[] {
+  const newArray: T[] = [];
   const length = array.length;
-  let offset = length;
 
-  // while (length > offset && predicate(array[offset])) {
-  //   offset++;
-  // }
-
-  for (let i = length; i <= length; i--) {
-    if (predicate(array[i-1])) { offset-- }
-    else { break; }
+  for (let i = length - 1; i >= 0; i--) {
+    if (predicate(array[i])) {
+      newArray.push(array[i]);
+    } else {
+      break;
+    }
   }
 
-  return array.slice(offset, length)
+  return newArray.reverse();
 }
