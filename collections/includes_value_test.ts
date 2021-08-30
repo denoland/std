@@ -91,3 +91,13 @@ Deno.test("[collections/includesValue] Same behaviour as naive impl", () => {
 
   assertEquals(includesValueResult, naiveImplResult);
 });
+
+Deno.test("[collections/includesValue] Works with NaN", () => {
+  const input = {
+    first: NaN,
+  };
+
+  const actual = includesValue(input, NaN);
+
+  assert(actual);
+});

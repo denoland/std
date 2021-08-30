@@ -513,7 +513,8 @@ console.assert(
 ### includesValue
 
 If the given value is part of the given object it returns true, otherwise it
-returns false.
+returns false. Doesn't work with non-primitive values: includesValue({x: {}},
+{}) returns false.
 
 ```ts
 import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";

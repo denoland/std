@@ -1,5 +1,7 @@
 /**
- * Returns whether the given value is part of the collection.
+ * If the given value is part of the given object it returns true, otherwise it
+ * returns false.
+ * Doesn't work with non-primitive values: includesValue({x: {}}, {}) returns false.
  *
  * Example:
  * ```ts
@@ -19,7 +21,7 @@ export function includesValue<T>(
   value: T,
 ): boolean {
   for (const i in record) {
-    if (record[i] === value) {
+    if (record[i] === value || Number.isNaN(value) && Number.isNaN(record[i])) {
       return true;
     }
   }
