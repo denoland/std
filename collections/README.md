@@ -475,14 +475,14 @@ assertEquals(windows, [
   [3, 4, 5],
 ]);
 
-const windows = windowed(numbers, 3, { step: 2 });
-assertEquals(windows, [
+const windowsWithStep = windowed(numbers, 3, { step: 2 });
+assertEquals(windowsWithStep, [
   [1, 2, 3],
   [3, 4, 5],
 ]);
 
-const windows = windowed(numbers, 3, { partial: true });
-assertEquals(windows, [
+const windowsWithPartial = windowed(numbers, 3, { partial: true });
+assertEquals(windowsWithPartial, [
   [1, 2, 3],
   [2, 3, 4],
   [3, 4, 5],
