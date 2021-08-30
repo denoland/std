@@ -1,7 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Generates sliding views of the given collection of the given size and returns a new collection containing all of them.
+ * Generates sliding views of the given array of the given size and returns a new
+ * array containing all of them.
  *
  * If step is set, each window will start that many elements after the last
  * window's start. (Default: 1)
@@ -41,7 +42,7 @@
  * ```
  */
 export function windowed<T>(
-  collection: readonly T[],
+  array: readonly T[],
   size: number,
   { step = 1, partial = false }: {
     /**
@@ -65,12 +66,10 @@ export function windowed<T>(
   }
 
   /** length of the return array */
-  const length = Math.floor(
-    (collection.length - (partial ? 1 : size)) / step + 1,
-  );
+  const length = Math.floor((array.length - (partial ? 1 : size)) / step + 1);
 
   return Array.from(
     { length },
-    (_, i) => collection.slice(i * step, i * step + size),
+    (_, i) => array.slice(i * step, i * step + size),
   );
 }

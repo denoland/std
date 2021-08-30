@@ -455,8 +455,8 @@ assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
 
 # windowed
 
-Generates sliding views of the given collection of the given size and returns a
-new collection containing all of them.
+Generates sliding views of the given array of the given size and returns a new
+array containing all of them.
 
 If step is set, each window will start that many elements after the last
 window's start. (Default: 1)
