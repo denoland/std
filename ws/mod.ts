@@ -1,5 +1,4 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { hasOwnProperty } from "../_util/has_own_property.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
 import { crypto } from "../crypto/mod.ts";
@@ -11,6 +10,7 @@ import { Deferred, deferred } from "../async/deferred.ts";
 import { assert } from "../_util/assert.ts";
 import { concat } from "../bytes/mod.ts";
 
+const { hasOwn } = Object;
 export enum OpCode {
   Continue = 0x0,
   TextFrame = 0x1,
@@ -36,7 +36,7 @@ export interface WebSocketCloseEvent {
 export function isWebSocketCloseEvent(
   a: WebSocketEvent,
 ): a is WebSocketCloseEvent {
-  return hasOwnProperty(a, "code");
+  return hasOwn(a, "code");
 }
 
 export type WebSocketPingEvent = ["ping", Uint8Array];

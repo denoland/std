@@ -47,6 +47,7 @@ import { assert } from "../_util/assert.ts";
 import { fileURLToPath, pathToFileURL } from "./url.ts";
 import { isWindows } from "../_util/os.ts";
 
+const { hasOwn } = Object;
 const CHAR_FORWARD_SLASH = "/".charCodeAt(0);
 const CHAR_BACKWARD_SLASH = "\\".charCodeAt(0);
 const CHAR_COLON = ":".charCodeAt(0);
@@ -898,7 +899,7 @@ function applyExports(basePath: string, expansion: string): string {
   }
 
   if (typeof pkgExports === "object") {
-    if (Object.prototype.hasOwnProperty.call(pkgExports, mappingKey)) {
+    if (hasOwn(pkgExports, mappingKey)) {
       const mapping = pkgExports[mappingKey];
       return resolveExportsTarget(
         pathToFileURL(basePath + "/"),
@@ -1030,7 +1031,7 @@ function resolveExportsTarget(
       if (key !== "default" && !cjsConditions.has(key)) {
         continue;
       }
-      if (Object.prototype.hasOwnProperty.call(target, key)) {
+      if (hasOwn(target, key)) {
         try {
           return resolveExportsTarget(
             pkgPath,
@@ -1089,7 +1090,7 @@ const CircularRequirePrototypeWarningProxy = new Proxy(
     },
 
     getOwnPropertyDescriptor(target, prop): PropertyDescriptor | undefined {
-      if (Object.prototype.hasOwnProperty.call(target, prop)) {
+      if (hasOwn(target, prop)) {
         return Object.getOwnPropertyDescriptor(target, prop);
       }
       emitCircularRequireWarning(prop);

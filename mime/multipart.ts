@@ -9,7 +9,6 @@ import { TextProtoReader } from "../textproto/mod.ts";
 import { Buffer } from "../io/buffer.ts";
 import { copy } from "../io/util.ts";
 
-
 const { hasOwn } = Object;
 /** FormFile object */
 export interface FormFile {
