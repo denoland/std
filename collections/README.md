@@ -104,6 +104,19 @@ Returns all distinct elements in the given array, preserving order by first
 occurence.
 
 ```ts
+import { dropFirstWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+
+const numbers = [ 3, 2, 5, 2, 5 ];
+const dropFirstWhileNumbers = dropFirstWhile(numbers, 2)
+
+console.assert(distinctNumbers === [5, 2, 5]);
+```
+
+### dropFirstWhile
+
+Drop all elements in the given collection until the first element that does not match the given predicate.
+
+```ts
 import { distinct } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const numbers = [3, 2, 5, 2, 5];
