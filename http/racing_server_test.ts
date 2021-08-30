@@ -62,6 +62,7 @@ content-length: 6
 Step7
 `;
 
+/* TODO(kt3k): Enable this test
 Deno.test("serverPipelineRace", async function () {
   await startServer();
 
@@ -79,3 +80,4 @@ Deno.test("serverPipelineRace", async function () {
   killServer();
   conn.close();
 });
+*/
