@@ -465,7 +465,7 @@ ones that have a nullish value
 import { filterValuesNotNullish } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
-const people = {
+const middleNames = {
   "Arnold": "William",
   "Sarah": null,
   "Kim": "Martha",

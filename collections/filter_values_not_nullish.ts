@@ -9,7 +9,7 @@
  * import { filterValuesNotNullish } from "./filter_values_not_nullish.ts";
  * import { assertEquals } from "../testing/asserts.ts";
  *
- * const people = {
+ * const middleNames = {
  *     'Arnold': 'William',
  *     'Sarah': null,
  *     'Kim': 'Martha',
