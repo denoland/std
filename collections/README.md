@@ -509,3 +509,22 @@ console.assert(
   ],
 );
 ```
+
+### takeLastWhile
+
+Returns all elements in the given collection until the first element that does
+not match the given predicate.
+
+Example:
+
+```ts
+import { takeLastWhile } from "./take_last_while.ts";
+import { assertEquals } from "../testing/asserts.ts";
+
+const arr = [1, 2, 3, 4, 5, 6];
+
+assertEquals(
+  takeFirstWhile(arr, (i) => i > 4),
+  [5, 6],
+);
+```
