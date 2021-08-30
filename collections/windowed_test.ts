@@ -176,6 +176,7 @@ Deno.test({
 Deno.test({
   name: "[collections/windowed] large size",
   fn() {
+    windowedTest([[1, 2, 3, 4, 5], 100], []);
     windowedTest([[1, 2, 3, 4, 5], 100, { step: 2 }], []);
     windowedTest([[1, 2, 3, 4, 5], 100, { step: 2, partial: true }], [
       [1, 2, 3, 4, 5],
