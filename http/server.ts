@@ -7,12 +7,6 @@ import { delay } from "../async/mod.ts";
 const ERROR_SERVER_CLOSED = "Server closed";
 
 /**
- * Thrown when attempting to respond to a ServerRequest when a response has
- * already been sent.
- */
-const ERROR_RESPONSE_SENT = "Response already sent";
-
-/**
  * Thrown when parsing an invalid address string.
  */
 const ERROR_ADDRESS_INVALID = "Invalid address";
@@ -108,68 +102,6 @@ export function _parseAddrFromStr(
     hostname: url.hostname,
     port: url.port === "" ? defaultPort : Number(url.port),
   };
-}
-
-/**
- * Used to construct an HTTP server request.
- */
-export class ServerRequest implements Deno.RequestEvent {
-  #request: Request;
-  #connInfo: ConnInfo;
-  #responsePromise: Promise<void>;
-  #resolver!: (value: Response | Promise<Response>) => void;
-  #done = false;
-
-  /**
-   * Constructs a new ServerRequest instance.
-   *
-   * @param {Deno.RequestEvent} requestEvent
-   * @param {Deno.Conn} conn
-   */
-  constructor(requestEvent: Deno.RequestEvent, conn: Deno.Conn) {
-    this.#request = requestEvent.request;
-    this.#connInfo = {
-      localAddr: conn.localAddr as Deno.NetAddr,
-      remoteAddr: conn.remoteAddr as Deno.NetAddr,
-    };
-
-    const wrappedResponse = new Promise<Response>((resolve) => {
-      this.#resolver = resolve;
-    });
-
-    this.#responsePromise = requestEvent.respondWith(wrappedResponse);
-  }
-
-  /**
-   * Get the HTTP Request instance.
-   */
-  get request(): Request {
-    return this.#request;
-  }
-
-  /**
-   * Get the connection information.
-   */
-  get connInfo(): ConnInfo {
-    return this.#connInfo;
-  }
-
-  /**
-   * Send a response to the request.
-   *
-   * @param {Response|Promise<Response>} response Response to the request.
-   * @throws {TypeError} When the response has already been sent.
-   */
-  respondWith(response: Response | Promise<Response>): Promise<void> {
-    if (this.#done) {
-      throw TypeError(ERROR_RESPONSE_SENT);
-    }
-
-    this.#resolver(response);
-    this.#done = true;
-
-    return this.#responsePromise;
-  }
 }
 
 /**
@@ -392,10 +324,8 @@ export class Server {
     for (const listener of this.#listeners) {
       try {
         listener.close();
-      } catch (error) {
-        if (!(error instanceof Deno.errors.BadResource)) {
-          throw error;
-        }
+      } catch {
+        // Listener has already been closed.
       }
     }
 
@@ -427,23 +357,25 @@ export class Server {
   /**
    * Responds to an HTTP request.
    *
-   * @param {ServerRequest} serverRequest The HTTP request to respond to.
+   * @param {Deno.RequestEvent} requestEvent The HTTP request to respond to.
    * @param {Deno.HttpConn} httpCon The HTTP connection to yield requests from.
+   * @param {ConnInfo} connInfo Information about the underlying connection.
    * @private
    */
   async #respond(
-    serverRequest: ServerRequest,
+    requestEvent: Deno.RequestEvent,
     httpCon: Deno.HttpConn,
+    connInfo: ConnInfo,
   ): Promise<void> {
     try {
       // Handle the request event, generating a response.
       const response = await this.#handler(
-        serverRequest.request,
-        serverRequest.connInfo,
+        requestEvent.request,
+        connInfo,
       );
 
       // Send the response.
-      await serverRequest.respondWith(response);
+      await requestEvent.respondWith(response);
     } catch {
       // If the handler throws then it is assumed that the impact of the error
       // is isolated to the individual request, so we close the connection.
@@ -466,6 +398,11 @@ export class Server {
     httpConn: Deno.HttpConn,
     conn: Deno.Conn,
   ): Promise<void> {
+    const connInfo: ConnInfo = {
+      localAddr: conn.localAddr as Deno.NetAddr,
+      remoteAddr: conn.remoteAddr as Deno.NetAddr,
+    };
+
     while (!this.#closed) {
       let requestEvent: Deno.RequestEvent | null;
 
@@ -482,12 +419,9 @@ export class Server {
         break;
       }
 
-      // Wrap request event so can gracefully handle and await async ops.
-      const serverRequest = new ServerRequest(requestEvent, conn);
-
       // Respond to the request. Note we do not await this async method to
       // allow the connection to handle multiple requests in the case of h2.
-      this.#respond(serverRequest, httpConn);
+      this.#respond(requestEvent, httpConn, connInfo);
     }
 
     this.#closeHttpConn(httpConn);
@@ -548,11 +482,7 @@ export class Server {
 
       try {
         httpConn = Deno.serveHttp(conn);
-      } catch (error) {
-        if (!(error instanceof Deno.errors.BadResource)) {
-          throw error;
-        }
-
+      } catch {
         // Connection has been closed.
         continue;
       }
@@ -579,10 +509,8 @@ export class Server {
 
     try {
       httpConn.close();
-    } catch (error) {
-      if (!(error instanceof Deno.errors.BadResource)) {
-        throw error;
-      }
+    } catch {
+      // Connection has already been closed.
     }
   }
 

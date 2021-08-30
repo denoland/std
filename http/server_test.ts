@@ -6,7 +6,6 @@ import {
   listenAndServeTls,
   serve,
   Server,
-  ServerRequest,
 } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
@@ -22,25 +21,6 @@ import {
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
-
-class MockRequestEvent implements Deno.RequestEvent {
-  calls: Response[] = [];
-  request: Request;
-  #rejectionError?: Error;
-
-  constructor(input: RequestInfo, init?: RequestInit, rejectionError?: Error) {
-    this.request = new Request(input, init);
-    this.#rejectionError = rejectionError;
-  }
-
-  async respondWith(response: Response | Promise<Response>): Promise<void> {
-    this.calls.push(await response);
-
-    return typeof this.#rejectionError !== "undefined"
-      ? Promise.reject(this.#rejectionError)
-      : Promise.resolve();
-  }
-}
 
 type AcceptCallSideEffect = (
   { acceptCallCount }: { acceptCallCount: number },
@@ -201,74 +181,6 @@ Deno.test("_parseAddrFromStr should be able to parse IPV6 address strings", () =
   const addr = _parseAddrFromStr("[::1]:4505");
   assertEquals(addr.port, 4505);
   assertEquals(addr.hostname, "[::1]");
-});
-
-Deno.test("ServerRequest should expose the underlying Request through a getter", async () => {
-  const mockRequestEvent = new MockRequestEvent("http://0.0.0.0:4505");
-  const request = new ServerRequest(mockRequestEvent, createMockConn());
-
-  assertEquals(request.request, mockRequestEvent.request);
-
-  await request.respondWith(new Response());
-});
-
-Deno.test("ServerRequest should expose the underlying ConnInfo through a getter", async () => {
-  const mockRequestEvent = new MockRequestEvent("http://0.0.0.0:4505");
-  const mockConn = createMockConn();
-  const expectedConnInfo = {
-    localAddr: mockConn.localAddr,
-    remoteAddr: mockConn.remoteAddr,
-  };
-
-  const request = new ServerRequest(mockRequestEvent, mockConn);
-
-  assertEquals(request.connInfo, expectedConnInfo);
-
-  await request.respondWith(new Response());
-});
-
-Deno.test("ServerRequest should delegate the responding to the underlying requestEvent", async () => {
-  const mockRequestEvent = new MockRequestEvent("http://0.0.0.0:4505");
-  const mockResponse = new Response("test-response", { status: 200 });
-
-  const request = new ServerRequest(mockRequestEvent, createMockConn());
-  await request.respondWith(mockResponse);
-
-  assertEquals(mockRequestEvent.calls[0], mockResponse);
-});
-
-Deno.test("ServerRequest should reject with a TypeError error if the response has already been sent", async () => {
-  const mockRequestEvent = new MockRequestEvent("http://0.0.0.0:4505");
-  const mockResponse = new Response("test-response", { status: 200 });
-
-  const request = new ServerRequest(mockRequestEvent, createMockConn());
-  await request.respondWith(mockResponse);
-
-  try {
-    await request.respondWith(mockResponse);
-    unreachable();
-  } catch (error) {
-    assertEquals(error, new TypeError("Response already sent"));
-  }
-});
-
-Deno.test("ServerRequest should reject if the underlying request event rejects (e.g. underlying connection is closed)", async () => {
-  const mockError = new Error("test-error");
-  const mockRequestEvent = new MockRequestEvent(
-    "http://0.0.0.0:4505",
-    undefined,
-    mockError,
-  );
-
-  const mockResponse = new Response("test-response", { status: 200 });
-  const request = new ServerRequest(mockRequestEvent, createMockConn());
-
-  try {
-    await request.respondWith(mockResponse);
-    unreachable();
-  } catch (error) {
-    assertEquals(error, mockError);
-  }
 });
 
 Deno.test("Server.addrs should expose the addresses the server is listening on", async () => {
