@@ -509,3 +509,19 @@ console.assert(
   ],
 );
 ```
+
+### includesValue
+
+Returns whether the given value is part of the collection.
+
+```ts
+import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const input = {
+  first: 33,
+  second: 34,
+};
+
+assert(includesValue(input, 34));
+```
