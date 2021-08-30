@@ -429,7 +429,7 @@ export class Server {
   async #accept(
     listener: Deno.Listener,
   ): Promise<void> {
-    let acceptBackoffDelay: number | null = null;
+    let acceptBackoffDelay: number | undefined;
 
     while (!this.#closed) {
       let conn: Deno.Conn;
@@ -468,7 +468,7 @@ export class Server {
         throw error;
       }
 
-      acceptBackoffDelay = null;
+      acceptBackoffDelay = undefined;
 
       // "Upgrade" the network connection into an HTTP connection.
       let httpConn: Deno.HttpConn;
