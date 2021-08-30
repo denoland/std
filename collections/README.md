@@ -455,3 +455,25 @@ console.assert(
   ],
 );
 ```
+
+### unzip
+
+Returns a new collection with all entries of the given collection except the
+ones that have a nullish value
+
+```ts
+import { filterValuesNotNullish } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = {
+  "Arnold": "William",
+  "Sarah": null,
+  "Kim": "Martha",
+};
+const peopleWithMiddleNames = filterValuesNotNullish(middleNames);
+
+assertEquals(peopleWithMiddleNames, {
+  "Arnold": "William",
+  "Kim": "Martha",
+});
+```
