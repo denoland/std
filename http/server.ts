@@ -44,11 +44,11 @@ export interface ConnInfo {
   /**
    * The local address of the connection.
    */
-  readonly localAddr: Deno.Addr;
+  readonly localAddr: Deno.NetAddr;
   /**
    * The remote address of the connection.
    */
-  readonly remoteAddr: Deno.Addr;
+  readonly remoteAddr: Deno.NetAddr;
 }
 
 /**
@@ -129,8 +129,8 @@ export class ServerRequest implements Deno.RequestEvent {
   constructor(requestEvent: Deno.RequestEvent, conn: Deno.Conn) {
     this.#request = requestEvent.request;
     this.#connInfo = {
-      localAddr: conn.localAddr,
-      remoteAddr: conn.remoteAddr,
+      localAddr: conn.localAddr as Deno.NetAddr,
+      remoteAddr: conn.remoteAddr as Deno.NetAddr,
     };
 
     const wrappedResponse = new Promise<Response>((resolve) => {
@@ -193,16 +193,6 @@ export interface ServerInit {
    * The handler to invoke for individual HTTP requests.
    */
   handler: Handler;
-}
-
-/**
- * An HTTP server listener.
- */
-export interface ServerListener extends Deno.Listener {
-  /**
-   * The network address of the listener.
-   */
-  readonly addr: Deno.NetAddr;
 }
 
 /**
@@ -426,10 +416,12 @@ export class Server {
   }
 
   /**
-   * Get the server's listeners.
+   * Get the list of TCP network addresses the server is listening on.
    */
-  get listeners(): ServerListener[] {
-    return Array.from(this.#listeners) as ServerListener[];
+  get addrs(): Deno.NetAddr[] {
+    return Array.from(this.#listeners).map((listener) =>
+      listener.addr as Deno.NetAddr
+    );
   }
 
   /**
