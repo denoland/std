@@ -196,3 +196,24 @@ Deno.test({
     ]);
   },
 });
+
+Deno.test({
+  name: "[collections/windowed] empty Array",
+  fn() {
+    windowedTest([Array(5), 5], [
+      Array(5),
+    ]);
+    windowedTest([Array(5), 3], [
+      Array(3),
+      Array(3),
+      Array(3),
+    ]);
+    windowedTest([Array(5), 1], [
+      Array(1),
+      Array(1),
+      Array(1),
+      Array(1),
+      Array(1),
+    ]);
+  },
+});
