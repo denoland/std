@@ -453,6 +453,44 @@ const shoppingList = union(soupIngredients, saladIngredients);
 assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
 ```
 
+# windowed
+
+Generates sliding views of the given collection of the given size and returns a
+new collection containing all of them.
+
+If step is set, each window will start that many elements after the last
+window's start. If partial is set, windows will be generated for the last
+elements of the collection, resulting in some undefined values if size is
+greather than 1.
+
+```ts
+import { windowed } from "./windowed.ts";
+import { assertEquals } from "../testing/asserts.ts";
+const numbers = [1, 2, 3, 4, 5];
+
+const windows = windowed(numbers, 3);
+assertEquals(windows, [
+  [1, 2, 3],
+  [2, 3, 4],
+  [3, 4, 5],
+]);
+
+const windows = windowed(numbers, 3, { step: 2 });
+assertEquals(windows, [
+  [1, 2, 3],
+  [3, 4, 5],
+]);
+
+const windows = windowed(numbers, 3, { partial: true });
+assertEquals(windows, [
+  [1, 2, 3],
+  [2, 3, 4],
+  [3, 4, 5],
+  [4, 5],
+  [5],
+]);
+```
+
 ### withoutAll
 
 Returns an array excluding all given values
