@@ -1002,7 +1002,7 @@ Deno.test("Server.serve can be called multiple times", async () => {
 Deno.test("Server.listenAndServe should throw if called multiple times", async () => {
   const handler = () => unreachable();
 
-  const server = new Server({ handler });
+  const server = new Server({ addr: ":4505", handler });
   const servePromise = server.listenAndServe();
 
   try {
@@ -1019,7 +1019,7 @@ Deno.test("Server.listenAndServeTls should throw if called multiple times", asyn
   const certFile = join(testdataDir, "tls/localhost.crt");
   const keyFile = join(testdataDir, "tls/localhost.key");
 
-  const server = new Server({ handler });
+  const server = new Server({ addr: ":4505", handler });
   const servePromise = server.listenAndServeTls(certFile, keyFile);
 
   try {
