@@ -55,7 +55,7 @@ export interface ConnInfo {
  * A handler for HTTP requests. Consumes a request and connection information
  * and returns a response.
  *
- * If the handler throws, the server calling the handler will assume the impact
+ * If a handler throws, the server calling the handler will assume the impact
  * of the error is isolated to the individual request. It will catch the error
  * and close the underlying connection.
  */
@@ -71,12 +71,12 @@ export type Handler = (
  * import { _parseAddrFromStr } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
  * const addr = "::1:8000";
- * _parseAddrFromStr(addr);
+ * const listenOptions = _parseAddrFromStr(addr);
  * ```
  *
  * @param {string} addr The TCP address string to parse.
  * @param {number} defaultPort Default port when not included in the address string.
- * @returns {Deno.ListenOptions} The parsed address.
+ * @return {Deno.ListenOptions} The parsed address.
  * @throws {TypeError} When the address is invalid.
  * @private
  */
@@ -110,6 +110,9 @@ export function _parseAddrFromStr(
   };
 }
 
+/**
+ * Used to construct an HTTP server request.
+ */
 export class ServerRequest implements Deno.RequestEvent {
   #request: Request;
   #connInfo: ConnInfo;
@@ -138,24 +141,17 @@ export class ServerRequest implements Deno.RequestEvent {
   }
 
   /**
-   * Get the Request instance.
+   * Get the HTTP Request instance.
    */
   get request(): Request {
     return this.#request;
   }
 
   /**
-   * Get the connection info.
+   * Get the connection information.
    */
   get connInfo(): ConnInfo {
     return this.#connInfo;
-  }
-
-  /**
-   * Determine whether the response has completed.
-   */
-  get done(): Promise<void> {
-    return this.#responsePromise;
   }
 
   /**
@@ -177,22 +173,31 @@ export class ServerRequest implements Deno.RequestEvent {
 }
 
 /**
- * Options for running a server.
+ * Options for running an HTTP server.
  */
 export interface ServerInit {
   /**
    * Optionally specifies the TCP address to listen on, in the form
-   * "host:port". If not provided, ":80" is used by default for HTTP and ":443"
-   * is used by default for HTTPS.
+   * "host:port".
+   *
+   * If the port is omitted, ":80" is used by default for HTTP when invoking
+   * non-TLS methods such as `Server.listenAndServe`, and ":443" is
+   * used by default for HTTPS when invoking TLS methods such as
+   * `server.listenAndServeTls`.
+   *
+   * If the host is omitted, the non-routable meta-address "0.0.0.0" is used.
    */
   addr?: string;
 
   /**
-   * The handler for individual HTTP requests.
+   * The handler to invoke for individual HTTP requests.
    */
   handler: Handler;
 }
 
+/**
+ * Used to construct an HTTP server.
+ */
 export class Server {
   #addr?: string;
   #handler: Handler;
@@ -201,7 +206,7 @@ export class Server {
   #httpConnections: Set<Deno.HttpConn> = new Set();
 
   /**
-   * Constructs a new Server instance.
+   * Constructs a new HTTP Server instance.
    *
    * ```ts
    * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
@@ -218,7 +223,7 @@ export class Server {
    * const server = new Server({ addr, handler });
    * ```
    *
-   * @param {ServerInit} serverInit Options for running a server.
+   * @param {ServerInit} serverInit Options for running an HTTP server.
    */
   constructor(serverInit: ServerInit) {
     this.#addr = serverInit.addr;
@@ -229,9 +234,12 @@ export class Server {
    * Accept incoming connections on the given listener, and handle requests on
    * these connections with the given handler.
    *
+   * HTTP/2 support is only enabled if the provided Deno.Listener returns TLS
+   * connections and was configured with "h2" in the ALPN protocols.
+   *
    * Throws a server closed error if called after the server has been closed.
    *
-   * Will always close the listener.
+   * Will always close the created listener.
    *
    * ```ts
    * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
@@ -247,7 +255,7 @@ export class Server {
    * const server = new Server({ handler });
    * const listener = Deno.listen({ port: 4505 });
    *
-   * server.serve(listener);
+   * await server.serve(listener);
    * ```
    *
    * @param {Deno.Listener} listener The listener to accept connections from.
@@ -277,6 +285,8 @@ export class Server {
    * Create a listener on the server, accept incoming connections, and handle
    * requests on these connections with the given handler.
    *
+   * If the server was constructed without an address, ":80" is used.
+   *
    * Throws a server closed error if the server has been closed.
    *
    * ```ts
@@ -292,7 +302,7 @@ export class Server {
    * };
    *
    * const server = new Server({ addr, handler });
-   * server.listenAndServe();
+   * await server.listenAndServe();
    * ```
    *
    * @throws {Deno.errors.Http} When the server has already been closed.
@@ -317,6 +327,8 @@ export class Server {
    * Create a listener on the server, accept incoming connections, upgrade them
    * to TLS, and handle requests on these connections with the given handler.
    *
+   * If the server was constructed without an address, ":443" is used.
+   *
    * Throws a server closed error if the server has been closed.
    *
    * ```ts
@@ -336,7 +348,7 @@ export class Server {
    * const certFile = "/path/to/certFile.crt";
    * const keyFile = "/path/to/keyFile.key";
    *
-   * server.listenAndServeTls(certFile, keyFile);
+   * await server.listenAndServeTls(certFile, keyFile);
    * ```
    *
    * @param {string} certFile The path to the file containing the TLS certificate.
@@ -404,7 +416,7 @@ export class Server {
   }
 
   /**
-   * Responds to a HTTP request.
+   * Responds to an HTTP request.
    *
    * @param {ServerRequest} serverRequest The HTTP request to respond to.
    * @param {Deno.HttpConn} httpCon The HTTP connection to yield requests from.
@@ -414,29 +426,22 @@ export class Server {
     serverRequest: ServerRequest,
     httpCon: Deno.HttpConn,
   ): Promise<void> {
-    // Handle the request event, generating a response.
-    let response: Response;
-
     try {
-      response = await this.#handler(
+      // Handle the request event, generating a response.
+      const response = await this.#handler(
         serverRequest.request,
         serverRequest.connInfo,
       );
-    } catch {
-      // If the handler throws then it is assumed that the impact of the
-      // error is isolated to the individual request, so we close the
-      // connection.
-      return this.#closeHttpConn(httpCon);
-    }
 
-    // Send the response.
-    serverRequest.respondWith(response);
-
-    try {
-      await serverRequest.done;
+      // Send the response.
+      await serverRequest.respondWith(response);
     } catch {
-      // Either the connection has been closed, or there is an error with the
-      // request.
+      // If the handler throws then it is assumed that the impact of the error
+      // is isolated to the individual request, so we close the connection.
+      //
+      // Alternatively the connection has already been closed, or there is some
+      // other error with responding on this connection that prompts us to
+      // close it and open a new connection.
       return this.#closeHttpConn(httpCon);
     }
   }
@@ -453,7 +458,7 @@ export class Server {
     conn: Deno.Conn,
   ): Promise<void> {
     while (!this.#closed) {
-      let requestEvent: Deno.RequestEvent | null = null;
+      let requestEvent: Deno.RequestEvent | null;
 
       try {
         // Yield the new HTTP request on the connection.
@@ -491,10 +496,10 @@ export class Server {
     let acceptBackoffDelay: number | null = null;
 
     while (!this.#closed) {
-      // Wait for a new connection.
       let conn: Deno.Conn;
 
       try {
+        // Wait for a new connection.
         conn = await listener.accept();
       } catch (error) {
         if (
@@ -618,21 +623,21 @@ export class Server {
  */
 export interface ServeInit {
   /**
-   * An AbortSignal close the server and all connections.
+   * An AbortSignal to close the server and all connections.
    */
   signal?: AbortSignal;
 }
 
 /**
- * Accept incoming connections on the given listener, and handle requests on
- * these connections with the given handler.
+ * Constructs a server, accepts incoming connections on the given listener, and
+ * handles requests on these connections with the given handler.
  *
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
  * const listener = Deno.listen({ port: 4505 });
  *
- * serve(listener, (request: Request) => {
+ * await serve(listener, (request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
  *   ) ?? "Unknown"}`;
@@ -660,15 +665,18 @@ export async function serve(
 }
 
 /**
- * Create a listener on the given address, accept incoming connections, and
- * handle requests on these connections with the given handler.
+ * Constructs a server, creates a listener on the given address, accepts
+ * incoming connections, and handles requests on these connections with the
+ * given handler.
+ *
+ * If the server was constructed without an address, ":80" is used.
  *
  * ```ts
  * import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
  * const addr = ":4505";
  *
- * listenAndServe(addr, (request: Request) => {
+ * await listenAndServe(addr, (request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
  *   ) ?? "Unknown"}`;
@@ -696,8 +704,11 @@ export async function listenAndServe(
 }
 
 /**
- * Create a listener on the given address, accept incoming connections, upgrade
- * them to TLS, and handle requests on these connections with the given handler.
+ * Constructs a server, creates a listener on the given address, accepts
+ * incoming connections, upgrades them to TLS, and handles requests on these
+ * connections with the given handler.
+ *
+ * If the server was constructed without an address, ":443" is used.
  *
  * ```ts
  * import { listenAndServeTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
@@ -706,7 +717,7 @@ export async function listenAndServe(
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
  *
- * listenAndServeTls(addr, certFile, keyFile, (request: Request) => {
+ * await listenAndServeTls(addr, certFile, keyFile, (request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
  *   ) ?? "Unknown"}`;

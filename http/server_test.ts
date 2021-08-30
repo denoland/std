@@ -226,19 +226,6 @@ Deno.test("ServerRequest should expose the underlying ConnInfo through a getter"
   await request.respondWith(new Response());
 });
 
-Deno.test("ServerRequest should expose a done promise getter which resolves when the response has been sent", async () => {
-  const mockRequestEvent = new MockRequestEvent("http://0.0.0.0:4505");
-  const request = new ServerRequest(mockRequestEvent, createMockConn());
-
-  let done = false;
-  request.done.then(() => done = true);
-
-  assertEquals(done, false);
-
-  await request.respondWith(new Response());
-  assertEquals(done, true);
-});
-
 Deno.test("ServerRequest should delegate the responding to the underlying requestEvent", async () => {
   const mockRequestEvent = new MockRequestEvent("http://0.0.0.0:4505");
   const mockResponse = new Response("test-response", { status: 200 });
