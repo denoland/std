@@ -9,7 +9,7 @@
  *
  * const numbers = [22, 30, 44];
  *
- * const notFourtyFour = dropLastWhile(values, i => i != 44);
+ * const notFourtyFour = dropLastWhile(numbers, i => i != 44);
  *
  * assertEquals(
  *   notFourtyFour,
