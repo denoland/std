@@ -7,13 +7,15 @@ on:
     branches: [main]
 
 jobs:
+  env:
+    DENO_VERSION: 1.13.2
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+
     strategy:
       fail-fast: false
       matrix:
-        deno: [1.x, canary]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:
@@ -26,15 +28,10 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v1.0.0
         with:
-          deno-version: ${{ matrix.deno }}
+          deno-version: ${{ env.DENO_VERSION }}
 
-      - name: Run tests release
-        if: matrix.deno != 'canary'
+      - name: Run tests
         run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json
-
-      - name: Run tests canary
-        if: matrix.deno == 'canary'
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=_wasm_crypto/_build.ts,crypto/_benches,encoding/_yaml/example,examples/chat/server.ts,examples/echo_server.ts,examples/cat.ts,examples/gist.ts,examples/curl.ts,hash/_wasm/build.ts,http/bench.ts,http/racing_server.ts,http/testdata,node/cli.ts,node/_tools,node/testdata,node/_module,wasi/snapshot_preview1_test_runner.ts
 
       - name: Type check browser compatible modules
         shell: bash
@@ -54,7 +51,7 @@ jobs:
         uses: codecov/codecov-action@v1
         if: matrix.os != 'ubuntu-latest'
         with:
-          name: ${{ matrix.os }}-${{ matrix.deno }}
+          name: ${{ matrix.os }}-${{ env.DENO_VERSION }}
           files: cov.lcov
 
       - name: Remove coverage report
@@ -75,6 +72,8 @@ jobs:
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1.0.0
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
 
       - name: Format
         run: deno fmt --check
@@ -107,6 +106,8 @@ jobs:
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1.0.0
+        with:
+          deno-version: ${{ env.DENO_VERSION }}
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Set up Rust
