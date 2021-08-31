@@ -161,8 +161,9 @@ function validateDomain(domain: string): void {
 }
 
 /**
- * Parse the cookies of the Server Request
- * @param req An object which has a `headers` property
+ * Parse cookies of a header
+ * @param {Headers} headers The headers instance to get cookies from
+ * @return {Object} object with cookie names as keys
  */
 export function getCookies(headers: Headers): Record<string, string> {
   const cookie = headers.get("Cookie");
