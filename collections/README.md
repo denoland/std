@@ -359,6 +359,26 @@ const maxCount = maxOf(inventory, (i) => i.count);
 assertEquals(maxCount, 32);
 ```
 
+## minfOf
+
+Applies the given selector to all elements of the given collection and returns
+the min value of all elements. If an empty array is provided the function will
+return undefined
+
+```ts
+import { minOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "../testing/asserts.ts";
+
+const inventory = [
+  { name: "mustard", count: 2 },
+  { name: "soy", count: 4 },
+  { name: "tomato", count: 32 },
+];
+const minCount = minOf(inventory, (i) => i.count);
+
+assertEquals(minCount, 2);
+```
+
 ### partition
 
 Returns a tuple of two arrays with the first one containing all elements in the
@@ -419,7 +439,7 @@ assertEquals(inactiveBooking, undefined); // there are two applicable items
 ### sortBy
 
 Returns all elements in the given collection, sorted by their result using the
-given selector
+given selector. The selector function is called only once for each element.
 
 ```ts
 import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
@@ -509,4 +529,44 @@ console.assert(
     [4, "d"],
   ],
 );
+```
+
+### maxBy
+
+Returns the first element that is the largest value of the given function or
+undefined if there are no elements.
+
+```ts
+import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+
+const personWithMaxAge = maxBy(people, (i) => i.age);
+
+assertEquals(personWithMaxAge, { name: "Kim", age: 42 });
+```
+
+### minBy
+
+Returns the first element that is the smallest value of the given function or
+undefined if there are no elements
+
+```ts
+import { minBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+
+const personWithMinAge = minBy(people, (i) => i.age);
+
+assertEquals(personWithMinAge, { name: "John", age: 23 });
 ```

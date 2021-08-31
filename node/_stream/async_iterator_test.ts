@@ -226,7 +226,7 @@ Deno.test("Async iterator: 'close' called on forced iteration end", async () => 
     }
 
     // deno-lint-ignore ban-ts-comment
-    //@ts-ignore
+    // @ts-expect-error
     destroy = null;
   }
 
