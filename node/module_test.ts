@@ -68,6 +68,8 @@ Deno.test("requireStack", function () {
   try {
     hello();
   } catch (e) {
+    assert(e instanceof Error);
+    assert(e.stack);
     assertStringIncludes(e.stack, "/_module/cjs/cjs_throw.js");
   }
 });

@@ -95,7 +95,9 @@ export default function from(
         }
       }
     } catch (err) {
-      readable.destroy(err);
+      if (err instanceof Error) {
+        readable.destroy(err);
+      }
     }
   }
   return readable;
