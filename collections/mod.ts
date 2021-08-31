@@ -29,3 +29,4 @@ export * from "./without_all.ts";
 export * from "./unzip.ts";
 export * from "./zip.ts";
 export * from "./take_while.ts";
+export * from "./first_not_nullish_of.ts";
