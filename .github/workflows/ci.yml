@@ -6,9 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  DENO_VERSION: 1.13.2
+
 jobs:
-  env:
-    DENO_VERSION: 1.13.2
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
