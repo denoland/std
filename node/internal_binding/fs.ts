@@ -65,8 +65,10 @@ export function writeBufferSync(
   }
 }
 
-function extractOsErrorNumberFromErrorMessage(e: Error): number {
-  const match = e.message.match(/\(os error (\d+)\)/);
+function extractOsErrorNumberFromErrorMessage(e: unknown): number {
+  const match = e instanceof Error
+    ? e.message.match(/\(os error (\d+)\)/)
+    : false;
   if (match) {
     return +match[1];
   }
