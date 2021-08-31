@@ -103,7 +103,11 @@ export class ServerRequest {
       } catch {
         // Pass
       }
-      err = e;
+      if (e instanceof Error) {
+        err = e;
+      } else {
+        err = new Error("non-error thrown");
+      }
     }
     // Signal that this request has been processed and the next pipelined
     // request on the same connection can be accepted.
