@@ -512,8 +512,8 @@ console.assert(
 
 ### takeWhile
 
-Returns all elements in the given collection until the first element that does
-not match the given predicate.
+Returns all elements in the given array after the last element that does not
+match the given predicate.
 
 ```ts
 import { takeWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";

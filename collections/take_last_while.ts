@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 /**
- * Starting from the last element, returns all elements in the given collection
- * until the first element that does not match the given predicate.
+ * Returns all elements in the given array after the last element that does not
+ * match the given predicate.
  *
  * Example:
  * ```ts
