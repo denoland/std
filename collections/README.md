@@ -509,3 +509,24 @@ console.assert(
   ],
 );
 ```
+
+### filterValuesNotNullish
+
+Returns a new collection with all entries of the given collection except the
+ones that have a nullish value
+
+```ts
+import { filterValuesNotNullish } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const values = {
+  x: null,
+  y: undefined,
+  z: "hi",
+};
+
+assertEquals(
+  filterValuesNotNullish(values),
+  { z: "hi" },
+);
+```
