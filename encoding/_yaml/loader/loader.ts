@@ -231,7 +231,7 @@ const directiveHandlers: DirectiveHandlers = {
       );
     }
 
-    if (hasOwn(state.tagMap, handle)) {
+    if (state.tagMap && hasOwn(state.tagMap, handle)) {
       return throwError(
         state,
         `there is a previously declared suffix for "${handle}" tag handle`,
