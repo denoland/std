@@ -7,7 +7,7 @@ export function close(fd: number, callback: CallbackWithError): void {
     try {
       Deno.close(fd);
     } catch (err) {
-      error = err;
+      error = err instanceof Error ? err : new Error("[non-error thrown]");
     }
     callback(error);
   }, 0);
