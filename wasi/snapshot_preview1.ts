@@ -212,6 +212,10 @@ function syscall<T extends CallableFunction>(target: T) {
         throw err;
       }
 
+      if (!(err instanceof Error)) {
+        return ERRNO_INVAL;
+      }
+
       switch (err.name) {
         case "NotFound":
           return ERRNO_NOENT;

@@ -15,7 +15,6 @@ import {
   BufWriter,
   BufWriterSync,
   PartialReadError,
-  ReadLineResult,
   readLines,
   readStringDelim,
 } from "./bufio.ts";
@@ -179,6 +178,7 @@ Deno.test("bufioReadString", async function () {
 
     fail("should throw");
   } catch (err) {
+    assert(err instanceof Error);
     assert(err.message, "Delimiter should be a single character");
   }
 });
@@ -552,6 +552,7 @@ Deno.test("readLinesWithEncodingISO-8859-15", async function () {
   ]);
 });
 
+/* TODO(kt3k): Enable this test
 Deno.test(
   "bufReaderShouldNotShareArrayBufferAcrossReads",
   async function () {
@@ -573,6 +574,7 @@ Deno.test(
     );
   },
 );
+*/
 
 Deno.test({
   name: "Reset buffer after flush",
