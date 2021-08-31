@@ -47,11 +47,10 @@ Helper to manipulate `Cookie` through `ServerRequest` and `Response`.
 import { ServerRequest } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
 import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
 
-let request = new ServerRequest();
-request.headers = new Headers();
-request.headers.set("Cookie", "full=of; tasty=chocolate");
+const headers = new Headers();
+headers.set("Cookie", "full=of; tasty=chocolate");
 
-const cookies = getCookies(request);
+const cookies = getCookies(headers);
 console.log("cookies:", cookies);
 // cookies: { full: "of", tasty: "chocolate" }
 ```
