@@ -62,6 +62,14 @@ Deno.test({
 });
 
 Deno.test({
+  name: "[collections/intersect] duplicates",
+  fn() {
+    intersectTest([["a", "b", "c", "b"], ["b", "c"]], ["b", "c"]);
+    intersectTest([["a", "b"], ["b", "b", "c", "c"]], ["b"]);
+  },
+});
+
+Deno.test({
   name: "[collections/intersect] more than two inputs",
   fn() {
     intersectTest(

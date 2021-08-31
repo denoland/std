@@ -4,7 +4,7 @@ This module includes pure functions for specific common tasks around collection
 types like `Array` and `Record`. This module is heavily inspired by `kotlin`s
 stdlib.
 
-- All provided functions are **pure**, which also means that hey do **not
+- All provided functions are **pure**, which also means that they do **not
   mutate** your inputs, **returning a new value** instead.
 - All functions are importable on their own by referencing their snake_case
   named file (e.g. `collections/sort_by.ts`)
@@ -317,9 +317,9 @@ assertEquals(foundMiddleNames, ["William", "Martha"]);
 
 ### mapValues
 
-Applies the given transformer to all valuesin the given record and returns a new
-record containing the resulting keys associated to the last value that produced
-them.
+Applies the given transformer to all values in the given record and returns a
+new record containing the resulting keys associated to the last value that
+produced them.
 
 ```ts
 import { mapValues } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
@@ -336,6 +336,47 @@ console.assert(
     "de4f": "Kim",
   },
 );
+```
+
+### maxOf
+
+Applies the given selector to all elements of the provided collection and
+returns the max value of all elements. If an empty array is provided the
+function will return undefined
+
+```ts
+import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const inventory = [
+  { name: "mustard", count: 2 },
+  { name: "soy", count: 4 },
+  { name: "tomato", count: 32 },
+];
+
+const maxCount = maxOf(inventory, (i) => i.count);
+
+assertEquals(maxCount, 32);
+```
+
+## minOf
+
+Applies the given selector to all elements of the given collection and returns
+the min value of all elements. If an empty array is provided the function will
+return undefined
+
+```ts
+import { minOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "../testing/asserts.ts";
+
+const inventory = [
+  { name: "mustard", count: 2 },
+  { name: "soy", count: 4 },
+  { name: "tomato", count: 32 },
+];
+const minCount = minOf(inventory, (i) => i.count);
+
+assertEquals(minCount, 2);
 ```
 
 ### partition
@@ -377,7 +418,7 @@ console.assert(
 ### sortBy
 
 Returns all elements in the given collection, sorted by their result using the
-given selector
+given selector. The selector function is called only once for each element.
 
 ```ts
 import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
@@ -410,6 +451,19 @@ const saladIngredients = ["Carrots", "Radicchio", "Pepper"];
 const shoppingList = union(soupIngredients, saladIngredients);
 
 assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
+```
+
+### withoutAll
+
+Returns an array excluding all given values
+
+```ts
+import { withoutAll } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const withoutList = withoutAll([2, 1, 2, 3], [1, 2]);
+
+assertEquals(withoutList, [3]);
 ```
 
 ### unzip
@@ -454,4 +508,64 @@ console.assert(
     [4, "d"],
   ],
 );
+```
+
+### firstNotNullishOf
+
+Applies the given selector to elements in the given array until a value is
+produced that is neither `null` nor `undefined` and returns that value. Returns
+`undefined` if no such value is produced
+
+```ts
+import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const tables = [
+  { number: 11, order: null },
+  { number: 12, order: "Soup" },
+  { number: 13, order: "Salad" },
+];
+const nextOrder = firstNotNullishOf(tables, (it) => it.order);
+
+assertEquals(nextOrder, "Soup");
+```
+
+### maxBy
+
+Returns the first element that is the largest value of the given function or
+undefined if there are no elements.
+
+```ts
+import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+
+const personWithMaxAge = maxBy(people, (i) => i.age);
+
+assertEquals(personWithMaxAge, { name: "Kim", age: 42 });
+```
+
+### minBy
+
+Returns the first element that is the smallest value of the given function or
+undefined if there are no elements
+
+```ts
+import { minBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+
+const personWithMinAge = minBy(people, (i) => i.age);
+
+assertEquals(personWithMinAge, { name: "John", age: 23 });
 ```

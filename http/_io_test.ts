@@ -481,6 +481,7 @@ Deno.test("testReadRequestError", async function () {
     if (test.eof) {
       assertEquals(req, null);
     } else if (typeof test.err === "string") {
+      assert(err instanceof Error);
       assertEquals(err.message, test.err);
     } else if (test.err) {
       assert(err instanceof (test.err as typeof Deno.errors.UnexpectedEof));
