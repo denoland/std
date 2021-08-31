@@ -1,12 +1,13 @@
 /**
- * Returns all elements in the given collection until the last element that does not match the given predicate
+ * Returns a new array that drops all elements in the given collection until the
+ * last element that does not match the given predicate
  *
  * Example:
  * ```ts
  * import { dropLastWhile } from "./drop_last_while.ts";
  * import { assertEquals } from "../testing/asserts.ts";
  *
- * const values = [22, 30, 44];
+ * const numbers = [22, 30, 44];
  *
  * const notFourtyFour = dropLastWhile(values, i => i != 44);
  *
