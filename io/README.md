@@ -20,19 +20,6 @@ for await (let line of readLines(fileReader)) {
 }
 ```
 
-**Output:**
-
-````text
-# std/io
-
-## readLines
-
-```ts
-import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
-
-## Rest of the file
-````
-
 ### readStringDelim
 
 Read reader`[like file]` chunk by chunk, splitting based on delimiter.
@@ -48,19 +35,6 @@ for await (let line of readStringDelim(fileReader, "\n")) {
   console.log(line);
 }
 ```
-
-**Output:**
-
-````text
-# std/io
-
-## readLines
-
-```ts
-import * as path from "https://deno.land/std@$STD_VERSION/path/mod.ts";
-
-## Rest of the file
-````
 
 ## Reader
 

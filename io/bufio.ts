@@ -187,7 +187,16 @@ export class BufReader implements Reader {
         }
         bytesRead += rr;
       } catch (err) {
-        err.partial = p.subarray(0, bytesRead);
+        if (err instanceof PartialReadError) {
+          err.partial = p.subarray(0, bytesRead);
+        } else if (err instanceof Error) {
+          const e = new PartialReadError();
+          e.partial = p.subarray(0, bytesRead);
+          e.stack = err.stack;
+          e.message = err.message;
+          e.cause = err.cause;
+          throw err;
+        }
         throw err;
       }
     }
@@ -247,7 +256,7 @@ export class BufReader implements Reader {
    * not part of the line returned by `readLine()`.
    */
   async readLine(): Promise<ReadLineResult | null> {
-    let line: Uint8Array | null;
+    let line: Uint8Array | null = null;
 
     try {
       line = await this.readSlice(LF);
@@ -255,11 +264,14 @@ export class BufReader implements Reader {
       if (err instanceof Deno.errors.BadResource) {
         throw err;
       }
-      let { partial } = err;
-      assert(
-        partial instanceof Uint8Array,
-        "bufio: caught error from `readSlice()` without `partial` property",
-      );
+      let partial;
+      if (err instanceof PartialReadError) {
+        partial = err.partial;
+        assert(
+          partial instanceof Uint8Array,
+          "bufio: caught error from `readSlice()` without `partial` property",
+        );
+      }
 
       // Don't throw if `readSlice()` failed with `BufferFullError`, instead we
       // just return whatever is available and set the `more` flag.
@@ -269,7 +281,7 @@ export class BufReader implements Reader {
 
       // Handle the case where "\r\n" straddles the buffer.
       if (
-        !this.eof &&
+        !this.eof && partial &&
         partial.byteLength > 0 &&
         partial[partial.byteLength - 1] === CR
       ) {
@@ -280,7 +292,9 @@ export class BufReader implements Reader {
         partial = partial.subarray(0, partial.byteLength - 1);
       }
 
-      return { line: partial, more: !this.eof };
+      if (partial) {
+        return { line: partial, more: !this.eof };
+      }
     }
 
     if (line === null) {
@@ -357,7 +371,16 @@ export class BufReader implements Reader {
       try {
         await this._fill();
       } catch (err) {
-        err.partial = slice;
+        if (err instanceof PartialReadError) {
+          err.partial = slice;
+        } else if (err instanceof Error) {
+          const e = new PartialReadError();
+          e.partial = slice;
+          e.stack = err.stack;
+          e.message = err.message;
+          e.cause = err.cause;
+          throw err;
+        }
         throw err;
       }
     }
@@ -393,7 +416,16 @@ export class BufReader implements Reader {
       try {
         await this._fill();
       } catch (err) {
-        err.partial = this.buf.subarray(this.r, this.w);
+        if (err instanceof PartialReadError) {
+          err.partial = this.buf.subarray(this.r, this.w);
+        } else if (err instanceof Error) {
+          const e = new PartialReadError();
+          e.partial = this.buf.subarray(this.r, this.w);
+          e.stack = err.stack;
+          e.message = err.message;
+          e.cause = err.cause;
+          throw err;
+        }
         throw err;
       }
       avail = this.w - this.r;
@@ -472,7 +504,9 @@ export class BufWriter extends AbstractBufBase implements Writer {
     try {
       await writeAll(this.writer, this.buf.subarray(0, this.usedBufferBytes));
     } catch (e) {
-      this.err = e;
+      if (e instanceof Error) {
+        this.err = e;
+      }
       throw e;
     }
 
@@ -500,7 +534,9 @@ export class BufWriter extends AbstractBufBase implements Writer {
         try {
           numBytesWritten = await this.writer.write(data);
         } catch (e) {
-          this.err = e;
+          if (e instanceof Error) {
+            this.err = e;
+          }
           throw e;
         }
       } else {
@@ -562,7 +598,9 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
     try {
       writeAllSync(this.writer, this.buf.subarray(0, this.usedBufferBytes));
     } catch (e) {
-      this.err = e;
+      if (e instanceof Error) {
+        this.err = e;
+      }
       throw e;
     }
 
@@ -590,7 +628,9 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
         try {
           numBytesWritten = this.writer.writeSync(data);
         } catch (e) {
-          this.err = e;
+          if (e instanceof Error) {
+            this.err = e;
+          }
           throw e;
         }
       } else {

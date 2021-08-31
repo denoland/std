@@ -146,6 +146,9 @@ export function equal(c: unknown, d: unknown): boolean {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
+      if (a && b && !constructorsEqual(a, b)) {
+        return false;
+      }
       if (a instanceof WeakMap || b instanceof WeakMap) {
         if (!(a instanceof WeakMap && b instanceof WeakMap)) return false;
         throw new TypeError("cannot compare WeakMap instances");
@@ -208,6 +211,13 @@ export function equal(c: unknown, d: unknown): boolean {
   })(c, d);
 }
 
+// deno-lint-ignore ban-types
+function constructorsEqual(a: object, b: object) {
+  return a.constructor === b.constructor ||
+    a.constructor === Object && !b.constructor ||
+    !a.constructor && b.constructor === Object;
+}
+
 /** Make an assertion, error will be thrown if `expr` does not have truthy value. */
 export function assert(expr: unknown, msg = ""): asserts expr {
   if (!expr) {
@@ -221,9 +231,11 @@ export function assert(expr: unknown, msg = ""): asserts expr {
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  * For example:
- *```ts
- *assertEquals<number>(1, 2)
- *```
+ * ```ts
+ * import { assertEquals } from "./asserts.ts";
+ *
+ * assertEquals<number>(1, 2)
+ * ```
  */
 export function assertEquals(
   actual: unknown,
@@ -265,9 +277,11 @@ export function assertEquals(
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  * For example:
- *```ts
- *assertNotEquals<number>(1, 2)
- *```
+ * ```ts
+ * import { assertNotEquals } from "./asserts.ts";
+ *
+ * assertNotEquals<number>(1, 2)
+ * ```
  */
 export function assertNotEquals(
   actual: unknown,
@@ -304,7 +318,10 @@ export function assertNotEquals(
 /**
  * Make an assertion that `actual` and `expected` are strictly equal. If
  * not then throw.
+ *
  * ```ts
+ * import { assertStrictEquals } from "./asserts.ts";
+ *
  * assertStrictEquals(1, 2)
  * ```
  */
@@ -365,7 +382,10 @@ export function assertStrictEquals(
 /**
  * Make an assertion that `actual` and `expected` are not strictly equal.
  * If the values are strictly equal then throw.
+ *
  * ```ts
+ * import { assertNotStrictEquals } from "./asserts.ts";
+ *
  * assertNotStrictEquals(1, 1)
  * ```
  */
@@ -432,9 +452,12 @@ export function assertStringIncludes(
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  * For example:
- *```ts
- *assertArrayIncludes<number>([1, 2], [2])
- *```
+ *
+ * ```ts
+ * import { assertArrayIncludes } from "./asserts.ts";
+ *
+ * assertArrayIncludes<number>([1, 2], [2])
+ * ```
  */
 export function assertArrayIncludes(
   actual: ArrayLike<unknown>,
@@ -584,9 +607,8 @@ export function assertThrows<T = void>(
   ErrorClass?: Constructor,
   msgIncludes = "",
   msg?: string,
-): Error {
+): void {
   let doesThrow = false;
-  let error = null;
   try {
     fn();
   } catch (e) {
@@ -594,30 +616,26 @@ export function assertThrows<T = void>(
       throw new AssertionError("A non-Error object was thrown.");
     }
     if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg =
-        `Expected error to be instance of "${ErrorClass.name}", but was "${e.constructor.name}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+        typeof e === "object" ? e?.constructor?.name : "[not an object]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     if (
-      msgIncludes &&
-      !stripColor(e.message).includes(stripColor(msgIncludes))
+      msgIncludes && (!(e instanceof Error) ||
+        !stripColor(e.message).includes(stripColor(msgIncludes)))
     ) {
-      msg =
-        `Expected error message to include "${msgIncludes}", but got "${e.message}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error message to include "${msgIncludes}", but got "${
+        e instanceof Error ? e.message : "[not an Error]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     doesThrow = true;
-    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
   }
-  return error;
 }
 
 /**
@@ -625,14 +643,13 @@ export function assertThrows<T = void>(
  * If it does not, then it throws.  An error class and a string that should be
  * included in the error message can also be asserted.
  */
-export async function assertThrowsAsync<T = void>(
+export async function assertRejects<T = void>(
   fn: () => Promise<T>,
   ErrorClass?: Constructor,
   msgIncludes = "",
   msg?: string,
-): Promise<Error> {
+): Promise<void> {
   let doesThrow = false;
-  let error = null;
   try {
     await fn();
   } catch (e) {
@@ -640,31 +657,36 @@ export async function assertThrowsAsync<T = void>(
       throw new AssertionError("A non-Error object was thrown or rejected.");
     }
     if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg =
-        `Expected error to be instance of "${ErrorClass.name}", but got "${e.name}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+        typeof e === "object" ? e?.constructor?.name : "[not an object]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     if (
-      msgIncludes &&
-      !stripColor(e.message).includes(stripColor(msgIncludes))
+      msgIncludes && (!(e instanceof Error) ||
+        !stripColor(e.message).includes(stripColor(msgIncludes)))
     ) {
-      msg =
-        `Expected error message to include "${msgIncludes}", but got "${e.message}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error message to include "${msgIncludes}", but got "${
+        e instanceof Error ? e.message : "[not an Error]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     doesThrow = true;
-    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
   }
-  return error;
 }
+
+/**
+ * Executes a function which returns a promise, expecting it to throw or reject.
+ * If it does not, then it throws.  An error class and a string that should be
+ * included in the error message can also be asserted.
+ *
+ * @deprecated
+ */
+export { assertRejects as assertThrowsAsync };
 
 /** Use this to stub out methods that will throw when invoked. */
 export function unimplemented(msg?: string): never {

@@ -300,11 +300,13 @@ export async function runBenchmarks(
         }
       }
     } catch (err) {
-      failError = err;
+      if (err instanceof Error) {
+        failError = err;
 
-      if (!silent) {
-        console.groupEnd();
-        console.error(red(err.stack));
+        if (!silent) {
+          console.groupEnd();
+          console.error(red(err.stack ?? ""));
+        }
       }
 
       break;

@@ -7,15 +7,11 @@
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 import { extname, posix } from "../path/mod.ts";
-import {
-  HTTPSOptions,
-  listenAndServe,
-  listenAndServeTLS,
-  Response,
-  ServerRequest,
-} from "./server.ts";
+import { listenAndServe, listenAndServeTls } from "./server.ts";
+import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
+import { readRange } from "../io/util.ts";
 
 interface EntryInfo {
   mode: string;
@@ -67,12 +63,135 @@ const MEDIA_TYPES: Record<string, string> = {
   ".css": "text/css",
   ".wasm": "application/wasm",
   ".mjs": "application/javascript",
+  ".otf": "font/otf",
+  ".ttf": "font/ttf",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".conf": "text/plain",
+  ".list": "text/plain",
+  ".log": "text/plain",
+  ".ini": "text/plain",
+  ".vtt": "text/vtt",
+  ".yaml": "text/yaml",
+  ".yml": "text/yaml",
+  ".mid": "audio/midi",
+  ".midi": "audio/midi",
+  ".mp3": "audio/mp3",
+  ".mp4a": "audio/mp4",
+  ".m4a": "audio/mp4",
+  ".ogg": "audio/ogg",
+  ".spx": "audio/ogg",
+  ".opus": "audio/ogg",
+  ".wav": "audio/wav",
+  ".webm": "audio/webm",
+  ".aac": "audio/x-aac",
+  ".flac": "audio/x-flac",
+  ".mp4": "video/mp4",
+  ".mp4v": "video/mp4",
+  ".mkv": "video/x-matroska",
+  ".mov": "video/quicktime",
   ".svg": "image/svg+xml",
+  ".avif": "image/avif",
+  ".bmp": "image/bmp",
+  ".gif": "image/gif",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
+  ".jpeg": "image/jpeg",
+  ".jpg": "image/jpeg",
+  ".png": "image/png",
+  ".tiff": "image/tiff",
+  ".psd": "image/vnd.adobe.photoshop",
+  ".ico": "image/vnd.microsoft.icon",
+  ".webp": "image/webp",
+  ".es": "application/ecmascript",
+  ".epub": "application/epub+zip",
+  ".jar": "application/java-archive",
+  ".war": "application/java-archive",
+  ".webmanifest": "application/manifest+json",
+  ".doc": "application/msword",
+  ".dot": "application/msword",
+  ".docx":
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ".dotx":
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+  ".cjs": "application/node",
+  ".bin": "application/octet-stream",
+  ".pkg": "application/octet-stream",
+  ".dump": "application/octet-stream",
+  ".exe": "application/octet-stream",
+  ".deploy": "application/octet-stream",
+  ".img": "application/octet-stream",
+  ".msi": "application/octet-stream",
+  ".pdf": "application/pdf",
+  ".pgp": "application/pgp-encrypted",
+  ".asc": "application/pgp-signature",
+  ".sig": "application/pgp-signature",
+  ".ai": "application/postscript",
+  ".eps": "application/postscript",
+  ".ps": "application/postscript",
+  ".rdf": "application/rdf+xml",
+  ".rss": "application/rss+xml",
+  ".rtf": "application/rtf",
+  ".apk": "application/vnd.android.package-archive",
+  ".key": "application/vnd.apple.keynote",
+  ".numbers": "application/vnd.apple.keynote",
+  ".pages": "application/vnd.apple.pages",
+  ".geo": "application/vnd.dynageo",
+  ".gdoc": "application/vnd.google-apps.document",
+  ".gslides": "application/vnd.google-apps.presentation",
+  ".gsheet": "application/vnd.google-apps.spreadsheet",
+  ".kml": "application/vnd.google-earth.kml+xml",
+  ".mkz": "application/vnd.google-earth.kmz",
+  ".icc": "application/vnd.iccprofile",
+  ".icm": "application/vnd.iccprofile",
+  ".xls": "application/vnd.ms-excel",
+  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ".xlm": "application/vnd.ms-excel",
+  ".ppt": "application/vnd.ms-powerpoint",
+  ".pot": "application/vnd.ms-powerpoint",
+  ".pptx":
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ".potx":
+    "application/vnd.openxmlformats-officedocument.presentationml.template",
+  ".xps": "application/vnd.ms-xpsdocument",
+  ".odc": "application/vnd.oasis.opendocument.chart",
+  ".odb": "application/vnd.oasis.opendocument.database",
+  ".odf": "application/vnd.oasis.opendocument.formula",
+  ".odg": "application/vnd.oasis.opendocument.graphics",
+  ".odp": "application/vnd.oasis.opendocument.presentation",
+  ".ods": "application/vnd.oasis.opendocument.spreadsheet",
+  ".odt": "application/vnd.oasis.opendocument.text",
+  ".rar": "application/vnd.rar",
+  ".unityweb": "application/vnd.unity",
+  ".dmg": "application/x-apple-diskimage",
+  ".bz": "application/x-bzip",
+  ".crx": "application/x-chrome-extension",
+  ".deb": "application/x-debian-package",
+  ".php": "application/x-httpd-php",
+  ".iso": "application/x-iso9660-image",
+  ".sh": "application/x-sh",
+  ".sql": "application/x-sql",
+  ".srt": "application/x-subrip",
+  ".xml": "application/xml",
+  ".zip": "application/zip",
 };
 
 /** Returns the content-type based on the extension of a path. */
 function contentType(path: string): string | undefined {
   return MEDIA_TYPES[extname(path)];
+}
+
+// Generates a SHA-1 hash for the provided string
+async function createEtagHash(message: string) {
+  const byteToHex = (b: number) => b.toString(16).padStart(2, "00");
+  const hashType = "SHA-1"; // Faster, and this isn't a security sensitive cryptographic use case
+
+  // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+  const msgUint8 = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest(hashType, msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(byteToHex).join("");
+  return hashHex;
 }
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
@@ -120,32 +239,124 @@ function fileLenToString(len: number): string {
  * @param filePath Path of the file to serve
  */
 export async function serveFile(
-  req: ServerRequest,
+  req: Request,
   filePath: string,
 ): Promise<Response> {
   const [file, fileInfo] = await Promise.all([
     Deno.open(filePath),
     Deno.stat(filePath),
   ]);
-  const headers = new Headers();
-  headers.set("content-length", fileInfo.size.toString());
+
+  const headers = setBaseHeaders();
+
+  // Set mime-type using the file extension in filePath
   const contentTypeValue = contentType(filePath);
   if (contentTypeValue) {
     headers.set("content-type", contentTypeValue);
   }
-  req.done.then(() => {
-    file.close();
-  });
-  return {
-    status: 200,
-    body: file,
+
+  // Set date header if access timestamp is available
+  if (fileInfo.atime instanceof Date) {
+    const date = new Date(fileInfo.atime);
+    headers.set("date", date.toUTCString());
+  }
+
+  // Set last modified header if access timestamp is available
+  if (fileInfo.mtime instanceof Date) {
+    const lastModified = new Date(fileInfo.mtime);
+    headers.set("last-modified", lastModified.toUTCString());
+
+    // Create a simple etag that is an md5 of the last modified date and filesize concatenated
+    const simpleEtag = await createEtagHash(
+      `${lastModified.toJSON()}${fileInfo.size}`,
+    );
+    headers.set("etag", simpleEtag);
+
+    // If a `if-none-match` header is present and the value matches the tag or
+    // if a `if-modified-since` header is present and the value is bigger than
+    // the access timestamp value, then return 304
+    const ifNoneMatch = req.headers.get("if-none-match");
+    const ifModifiedSince = req.headers.get("if-modified-since");
+    if (
+      (ifNoneMatch && ifNoneMatch === simpleEtag) ||
+      (ifNoneMatch === null && ifModifiedSince &&
+        fileInfo.mtime.getTime() < (new Date(ifModifiedSince).getTime() + 1000))
+    ) {
+      const status = Status.NotModified;
+      const statusText = STATUS_TEXT.get(status);
+
+      return new Response(null, {
+        status,
+        statusText,
+        headers,
+      });
+    }
+  }
+
+  // Get and parse the "range" header
+  const range = req.headers.get("range") as string;
+  const rangeRe = /bytes=(\d+)-(\d+)?/;
+  const parsed = rangeRe.exec(range);
+
+  // Use the parsed value if available, fallback to the start and end of the entire file
+  const start = parsed && parsed[1] ? +parsed[1] : 0;
+  const end = parsed && parsed[2] ? +parsed[2] : Math.max(0, fileInfo.size - 1);
+
+  let status = Status.OK;
+
+  // If there is a range, set the status to 206, and set the "Content-range" header.
+  if (range && parsed) {
+    status = Status.PartialContent;
+    headers.set("content-range", `bytes ${start}-${end}/${fileInfo.size}`);
+  }
+
+  // Return 416 if `start` isn't less than or equal to `end`, or `start` or `end` are greater than the file's size
+  const maxRange =
+    (typeof fileInfo.size === "number" ? Math.max(0, fileInfo.size - 1) : 0);
+
+  if (
+    range && !parsed ||
+    (typeof start !== "number" || start > end || start > maxRange ||
+      end > maxRange)
+  ) {
+    const status = Status.RequestedRangeNotSatisfiable;
+    const statusText = STATUS_TEXT.get(status);
+
+    return new Response(statusText, {
+      status,
+      statusText,
+      headers,
+    });
+  }
+
+  let body = null;
+
+  try {
+    // Read the selected range of the file
+    const bytes = await readRange(file, { start, end });
+
+    // Set content length and response body
+    headers.set("content-length", bytes.length.toString());
+    body = bytes;
+  } catch (e) {
+    // Fallback on URIError (400 Bad Request) if unable to read range
+    throw URIError(String(e));
+  }
+
+  file.close();
+
+  const statusText = STATUS_TEXT.get(status);
+
+  return new Response(body, {
+    status,
+    statusText,
     headers,
-  };
+  });
 }
 
 // TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
 async function serveDir(
-  req: ServerRequest,
+  req: Request,
   dirPath: string,
 ): Promise<Response> {
   const showDotfiles = serverArgs.dotfiles ?? true;
@@ -188,47 +399,53 @@ async function serveDir(
   const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
   const page = encoder.encode(dirViewerTemplate(formattedDirUrl, listEntry));
 
-  const headers = new Headers();
+  const headers = setBaseHeaders();
   headers.set("content-type", "text/html");
 
-  const res = {
-    status: 200,
-    body: page,
-    headers,
-  };
-  return res;
+  return new Response(page, { status: Status.OK, headers });
 }
 
-function serveFallback(_req: ServerRequest, e: Error): Promise<Response> {
+function serveFallback(_req: Request, e: Error): Promise<Response> {
   if (e instanceof URIError) {
-    return Promise.resolve({
-      status: 400,
-      body: encoder.encode("Bad Request"),
-    });
+    return Promise.resolve(
+      new Response(STATUS_TEXT.get(Status.BadRequest), {
+        status: Status.BadRequest,
+      }),
+    );
   } else if (e instanceof Deno.errors.NotFound) {
-    return Promise.resolve({
-      status: 404,
-      body: encoder.encode("Not Found"),
-    });
-  } else {
-    return Promise.resolve({
-      status: 500,
-      body: encoder.encode("Internal server error"),
-    });
+    return Promise.resolve(
+      new Response(STATUS_TEXT.get(Status.NotFound), {
+        status: Status.NotFound,
+      }),
+    );
   }
+
+  return Promise.resolve(
+    new Response(STATUS_TEXT.get(Status.InternalServerError), {
+      status: Status.InternalServerError,
+    }),
+  );
 }
 
-function serverLog(req: ServerRequest, res: Response): void {
+function serverLog(req: Request, res: Response): void {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
-  const s = `${dateFmt} "${req.method} ${req.url} ${req.proto}" ${res.status}`;
+  const s = `${dateFmt} "${req.method} ${req.url}" ${res.status}`;
   console.log(s);
 }
 
+function setBaseHeaders(): Headers {
+  const headers = new Headers();
+  headers.set("server", "deno");
+
+  // Set "accept-ranges" so that the client knows it can make range requests on future requests
+  headers.set("accept-ranges", "bytes");
+  headers.set("date", new Date().toUTCString());
+
+  return headers;
+}
+
 function setCORS(res: Response): void {
-  if (!res.headers) {
-    res.headers = new Headers();
-  }
   res.headers.append("access-control-allow-origin", "*");
   res.headers.append(
     "access-control-allow-headers",
@@ -346,13 +563,6 @@ function html(strings: TemplateStringsArray, ...values: unknown[]): string {
 
 function normalizeURL(url: string): string {
   let normalizedUrl = url;
-  try {
-    normalizedUrl = decodeURI(normalizedUrl);
-  } catch (e) {
-    if (!(e instanceof URIError)) {
-      throw e;
-    }
-  }
 
   try {
     //allowed per https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html
@@ -364,12 +574,21 @@ function normalizeURL(url: string): string {
     }
   }
 
+  try {
+    normalizedUrl = decodeURI(normalizedUrl);
+  } catch (e) {
+    if (!(e instanceof URIError)) {
+      throw e;
+    }
+  }
+
   if (normalizedUrl[0] !== "/") {
     throw new URIError("The request URI is malformed.");
   }
 
   normalizedUrl = posix.normalize(normalizedUrl);
   const startOfParams = normalizedUrl.indexOf("?");
+
   return startOfParams > -1
     ? normalizedUrl.slice(0, startOfParams)
     : normalizedUrl;
@@ -380,13 +599,12 @@ function main(): void {
   const port = serverArgs.port ?? serverArgs.p ?? 4507;
   const host = serverArgs.host ?? "0.0.0.0";
   const addr = `${host}:${port}`;
-  const tlsOpts = {} as HTTPSOptions;
-  tlsOpts.certFile = serverArgs.cert ?? serverArgs.c ?? "";
-  tlsOpts.keyFile = serverArgs.key ?? serverArgs.k ?? "";
+  const certFile = serverArgs.cert ?? serverArgs.c ?? "";
+  const keyFile = serverArgs.key ?? serverArgs.k ?? "";
   const dirListingEnabled = serverArgs["dir-listing"] ?? true;
 
-  if (tlsOpts.keyFile || tlsOpts.certFile) {
-    if (tlsOpts.keyFile === "" || tlsOpts.certFile === "") {
+  if (keyFile || certFile) {
+    if (keyFile === "" || certFile === "") {
       console.log("--key and --cert are required for TLS");
       serverArgs.h = true;
     }
@@ -416,15 +634,19 @@ function main(): void {
     Deno.exit();
   }
 
-  const handler = async (req: ServerRequest) => {
-    let response: Response | undefined;
+  const handler = async (req: Request): Promise<Response> => {
+    let response: Response;
+
     try {
       const normalizedUrl = normalizeURL(req.url);
       let fsPath = posix.join(target, normalizedUrl);
+
       if (fsPath.indexOf(target) !== 0) {
         fsPath = target;
       }
+
       const fileInfo = await Deno.stat(fsPath);
+
       if (fileInfo.isDirectory) {
         if (dirListingEnabled) {
           response = await serveDir(req, fsPath);
@@ -435,31 +657,30 @@ function main(): void {
         response = await serveFile(req, fsPath);
       }
     } catch (e) {
-      console.error(e.message);
-      response = await serveFallback(req, e);
-    } finally {
-      if (CORSEnabled) {
-        assert(response);
-        setCORS(response);
-      }
-      serverLog(req, response!);
-      try {
-        await req.respond(response!);
-      } catch (e) {
-        console.error(e.message);
-      }
+      const err = e instanceof Error ? e : new Error("[non-error thrown]");
+      console.error(err.message);
+      response = await serveFallback(req, err);
     }
+
+    if (CORSEnabled) {
+      assert(response!);
+      setCORS(response);
+    }
+
+    serverLog(req, response!);
+
+    return response!;
   };
 
   let proto = "http";
-  if (tlsOpts.keyFile || tlsOpts.certFile) {
+
+  if (keyFile || certFile) {
     proto += "s";
-    tlsOpts.hostname = host;
-    tlsOpts.port = port;
-    listenAndServeTLS(tlsOpts, handler);
+    listenAndServeTls(addr, certFile, keyFile, handler);
   } else {
     listenAndServe(addr, handler);
   }
+
   console.log(`${proto.toUpperCase()} server listening on ${proto}://${addr}/`);
 }
 

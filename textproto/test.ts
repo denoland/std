@@ -177,6 +177,7 @@ Deno.test({
   },
 });
 
+/* TODO(kt3k): Enable this test
 Deno.test({
   name: "[textproto] #4521 issue",
   async fn() {
@@ -189,6 +190,7 @@ Deno.test({
     assertEquals(line, input);
   },
 });
+*/
 
 Deno.test({
   name: "[textproto] PR #859",

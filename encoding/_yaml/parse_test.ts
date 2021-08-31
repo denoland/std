@@ -135,3 +135,46 @@ Deno.test({
     });
   },
 });
+
+Deno.test({
+  name: "`parseAll` accepts parse options",
+  fn(): void {
+    const yaml = `
+---
+regexp: !!js/regexp foo
+---
+regexp: !!js/regexp bar
+    `;
+
+    const expected = [
+      {
+        regexp: /foo/,
+      },
+      {
+        regexp: /bar/,
+      },
+    ];
+    const mockCallback = () => {
+      let count = 0;
+      const fn = () => {
+        count++;
+      };
+      const callback = {
+        calls() {
+          return count;
+        },
+        fn,
+      };
+      return callback;
+    };
+
+    assertEquals(parseAll(yaml, { schema: EXTENDED_SCHEMA }), expected);
+
+    const callback = mockCallback();
+    assertEquals(
+      parseAll(yaml, callback.fn, { schema: EXTENDED_SCHEMA }),
+      undefined,
+    );
+    assertEquals(callback.calls(), 2);
+  },
+});

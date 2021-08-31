@@ -22,6 +22,7 @@
 import "./global.ts";
 
 import nodeAssert from "./assert.ts";
+import nodeAssertStrict from "./assert/strict.ts";
 import nodeBuffer from "./buffer.ts";
 import nodeCrypto from "./crypto.ts";
 import nodeConsole from "./console.ts";
@@ -29,8 +30,10 @@ import nodeConstants from "./constants.ts";
 import nodeChildProcess from "./child_process.ts";
 import nodeEvents from "./events.ts";
 import nodeFS from "./fs.ts";
+import nodeFSPromises from "./fs/promises.ts";
 import nodeOs from "./os.ts";
 import nodePath from "./path.ts";
+import nodePerfHooks from "./perf_hooks.ts";
 import nodeQueryString from "./querystring.ts";
 import nodeStream from "./stream.ts";
 import nodeStringDecoder from "./string_decoder.ts";
@@ -597,7 +600,10 @@ class Module {
     try {
       parent.paths = Module._nodeModulePaths(Deno.cwd());
     } catch (e) {
-      if (e.code !== "ENOENT") {
+      if (
+        !(e instanceof Error) ||
+        (e as Error & { code?: string }).code !== "ENOENT"
+      ) {
         throw e;
       }
     }
@@ -618,6 +624,10 @@ function createNativeModule(id: string, exports: any): Module {
 }
 
 nativeModulePolyfill.set("assert", createNativeModule("assert", nodeAssert));
+nativeModulePolyfill.set(
+  "assert/strict",
+  createNativeModule("assert/strict", nodeAssertStrict),
+);
 nativeModulePolyfill.set("buffer", createNativeModule("buffer", nodeBuffer));
 nativeModulePolyfill.set(
   "constants",
@@ -633,9 +643,17 @@ nativeModulePolyfill.set(
   createNativeModule("events", nodeEvents),
 );
 nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
+nativeModulePolyfill.set(
+  "fs/promises",
+  createNativeModule("fs/promises", nodeFSPromises),
+);
 nativeModulePolyfill.set("module", createNativeModule("module", Module));
 nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
 nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
+nativeModulePolyfill.set(
+  "perf_hooks",
+  createNativeModule("perf_hooks", nodePerfHooks),
+);
 nativeModulePolyfill.set(
   "querystring",
   createNativeModule("querystring", nodeQueryString),
@@ -725,8 +743,11 @@ function readPackage(requestPath: string): PackageInfo | null {
     packageJsonCache.set(jsonPath, filtered);
     return filtered;
   } catch (e) {
-    e.path = jsonPath;
-    e.message = "Error parsing " + jsonPath + ": " + e.message;
+    const err = (e instanceof Error ? e : new Error("[non-error thrown]")) as
+      & Error
+      & { path?: string };
+    err.path = jsonPath;
+    err.message = "Error parsing " + jsonPath + ": " + err.message;
     throw e;
   }
 }
@@ -996,7 +1017,12 @@ function resolveExportsTarget(
           mappingKey,
         );
       } catch (e) {
-        if (e.code !== "MODULE_NOT_FOUND") throw e;
+        if (
+          !(e instanceof Error) ||
+          (e as Error & { code?: string }).code !== "MODULE_NOT_FOUND"
+        ) {
+          throw e;
+        }
       }
     }
   } else if (typeof target === "object" && target !== null) {
@@ -1014,7 +1040,12 @@ function resolveExportsTarget(
             mappingKey,
           );
         } catch (e) {
-          if (e.code !== "MODULE_NOT_FOUND") throw e;
+          if (
+            !(e instanceof Error) ||
+            (e as Error & { code?: string }).code !== "MODULE_NOT_FOUND"
+          ) {
+            throw e;
+          }
         }
       }
     }
@@ -1130,8 +1161,9 @@ Module._extensions[".json"] = (module: Module, filename: string): void => {
   try {
     module.exports = JSON.parse(stripBOM(content));
   } catch (err) {
-    err.message = filename + ": " + err.message;
-    throw err;
+    const e = err instanceof Error ? err : new Error("[non-error thrown]");
+    e.message = `${filename}: ${e.message}`;
+    throw e;
   }
 };
 

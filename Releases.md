@@ -1,3 +1,70 @@
+### 0.106.0 / 2021.08.23
+
+- feat(async): add abort signal to delay (#1130)
+- feat(collection): find_last_index to return undefined on no index found
+  (#1072)
+- feat(node/buffer): add missing exports (#1140)
+- feat(node/buffer): export atob and btoa (#1147)
+- fix(node/perf-hooks): add PerformanceEntry to default export (#1152)
+- fix(testing): `assertEquals` now considers constructors equal if one is
+  nullable and the other is Object (#1159)
+- perf(collections): permutations optimisation (#1132)
+
+### 0.105.0 / 2021.08.16
+
+- docs(collections): fix typo in collections docs (#1127)
+- feat(collections): compile time guarantee on pure functions (#1119)
+- fix: type check examples in README files (#1121)
+- fix(collections): intersect does not handle duplicate values in head properly
+  (#1131)
+- fix(crypto): make crypto bench depend on sibling version of testing module
+  (#1135)
+- refactor(bytes): rename `contains` to `includes` with optional argument
+  `fromIndex` (#1133)
+
+### 0.104.0 / 2021.08.10
+
+- feat: Add `collections` module (#993, #1075, #1103, #1062, #1062, #1109,
+  #1108, #1071, #1069, #1104, #1097, #1110, #1116)
+- feat(crypto): add std/crypto wrapping and extending runtime WebCrypto (#1025)
+- feat(http/file_server): return code 304 based on If-Modified-Since Header
+  (#1078)
+- feat(node): add remaining Node.js builtin aliases (#1085)
+- feat(node): add shim for perf_hooks (#1088)
+- feat(node): assert/strict alias (#1084)
+- feat(node): fs/promises implementation (#1083)
+- feat(testing): add `assertRejects`, deprecate `assertThrowsAsync` (#1101)
+- fix(async): make it so exception of `deadline` can be caught (#1105)
+- fix(http/file_server): fix flaky 'file_server sets Date header correctly' test
+  case (#1095)
+- fix(node): assert/strict, fs/promises, perf_hooks modules could not be
+  required (#1107)
+- fix(node/events): optimize listener management (#1113)
+- fix(testing): change `assertThrows` and `assertThrowsAsync` return type to
+  `void` and `Promise<void>` (#1052)
+
+### 0.103.0 / 2021.07.26
+
+- feat(async): add status to deferred promises (#1047)
+- feat(http): add range request and etag support to `file_server.ts` (#1028)
+- fix(async/deferred): rename .status -> .state (#1055)
+- fix(encoding/base64url): throw TypeError in case of invalid base64url string
+  (#1040)
+- fix(encoding/toml): fix inline table and nested array (#1042)
+- fix(encoding/yaml): fix `parseAll` type definition by using overloads (#1048)
+- fix(testing): `assertThrowsAsync` always reporting `Error` instead of actual
+  error class (#1051)
+- fix(testing/asserts): cater for different class constructor functions (#1000)
+
+### 0.102.0 / 2021.07.19
+
+- feat: Add std/collections (#993)
+- fix(encoding/toml): fix comment line starting with whitespaces (#1017)
+- fix(encoding/toml): parse keys correctly (#1019)
+- fix(hash): fix handling of non-byte-sized TypedArray views (#1012)
+- fix(testing): Don't merge diff when it's not spaces even if it's surrounded by
+  word-diff (#1032)
+
 ### 0.101.0 / 2021.07.13
 
 - BREAKING(encoding/hex): remove encodedLen, encodeToString, decodedLen,

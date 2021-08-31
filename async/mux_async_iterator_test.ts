@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../testing/asserts.ts";
 import { MuxAsyncIterator } from "./mux_async_iterator.ts";
 
 async function* gen123(): AsyncIterableIterator<number> {
@@ -55,7 +55,7 @@ Deno.test({
     mux.add(gen123());
     mux.add(genThrows());
     const results = new Set();
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         for await (const value of mux) {
           results.add(value);
