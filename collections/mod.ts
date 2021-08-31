@@ -5,7 +5,7 @@ export * from "./chunked.ts";
 export * from "./deep_merge.ts";
 export * from "./distinct.ts";
 export * from "./distinct_by.ts";
-export * from "./drop_first_while.ts";
+export * from "./drop_while.ts";
 export * from "./filter_entries.ts";
 export * from "./filter_keys.ts";
 export * from "./filter_values.ts";

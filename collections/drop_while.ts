@@ -6,16 +6,16 @@
  * Example:
  *
  * ```ts
- * import { dropFirstWhile } from "./drop_first_while.ts";
+ * import { dropWhile } from "./drop_first_while.ts";
  * import { assertEquals } from "../testing/asserts.ts";
  *
  * const numbers = [ 3, 2, 5, 2, 5 ]
- * const dropFirstWhileNumbers = dropFirstWhile(numbers, i => i !== 2)
+ * const dropWhileNumbers = dropWhile(numbers, i => i !== 2)
  *
- * assertEquals(dropFirstWhileNumbers, [ 5, 2, 5 ])
+ * assertEquals(dropWhileNumbers, [ 5, 2, 5 ])
  * ```
  */
-export function dropFirstWhile<T>(
+export function dropWhile<T>(
   array: readonly T[],
   predicate: (el: T) => boolean,
 ): T[] {
