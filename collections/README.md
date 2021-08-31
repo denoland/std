@@ -586,3 +586,24 @@ const personWithMinAge = minBy(people, (i) => i.age);
 
 assertEquals(personWithMinAge, { name: "John", age: 23 });
 ```
+
+### dropLastWhile
+
+Returns all elements in the given collection until the last element that does
+not match the given predicate
+
+Example:
+
+```ts
+import { dropLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const values = [22, 30, 44];
+
+const notFourtyFour = dropLastWhile(values, (i) => i != 44);
+
+assertEquals(
+  notFourtyFour,
+  [22, 30],
+);
+```

@@ -11,7 +11,7 @@
  * const notFourtyFour = dropLastWhile(values, i => i != 44);
  *
  * assertEquals(
- *   notFourtyFour
+ *   notFourtyFour,
  *   [22, 30]
  * );
  * ```
