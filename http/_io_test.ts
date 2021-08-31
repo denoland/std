@@ -15,7 +15,7 @@ import {
   writeTrailers,
 } from "./_io.ts";
 import { BufReader, ReadLineResult } from "../io/bufio.ts";
-import { Response, ServerRequest } from "./server.ts";
+import { Response, ServerRequest } from "./server_legacy.ts";
 import { StringReader } from "../io/readers.ts";
 import { mockConn } from "./_mock_conn.ts";
 import { Buffer } from "../io/buffer.ts";
