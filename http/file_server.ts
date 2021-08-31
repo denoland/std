@@ -184,7 +184,7 @@ function contentType(path: string): string | undefined {
 // Generates a SHA-1 hash for the provided string
 async function createEtagHash(message: string) {
   const byteToHex = (b: number) => b.toString(16).padStart(2, "00");
-  const hashType = "SHA-1"; // Faster, and this isn't a security senitive cryptographic use case
+  const hashType = "SHA-1"; // Faster, and this isn't a security sensitive cryptographic use case
 
   // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
   const msgUint8 = new TextEncoder().encode(message);
@@ -634,7 +634,7 @@ function main(): void {
     Deno.exit();
   }
 
-  async function handler(req: Request): Promise<Response> {
+  const handler = async (req: Request): Promise<Response> => {
     let response: Response;
 
     try {
@@ -670,7 +670,7 @@ function main(): void {
     serverLog(req, response!);
 
     return response!;
-  }
+  };
 
   let proto = "http";
 
