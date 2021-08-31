@@ -46,7 +46,7 @@ function split(path: string): SplitPath {
   };
 }
 
-function throwUnlessNotFound(error: Error): void {
+function throwUnlessNotFound(error: unknown): void {
   if (!(error instanceof Deno.errors.NotFound)) {
     throw error;
   }
