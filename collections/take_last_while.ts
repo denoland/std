@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 /**
- * Returns all elements in the given collection until the first element that does not match the given predicate.
+ * Starting from the last element, returns all elements in the given collection
+ * until the first element that does not match the given predicate.
  *
  * Example:
  * ```ts
@@ -19,16 +20,8 @@ export function takeLastWhile<T>(
   array: readonly T[],
   predicate: (el: T) => boolean,
 ): T[] {
-  const newArray: T[] = [];
-  const length = array.length;
+  let offset = array.length;
+  while (0 < offset && predicate(array[offset - 1])) offset--;
 
-  for (let i = length - 1; i >= 0; i--) {
-    if (predicate(array[i])) {
-      newArray.push(array[i]);
-    } else {
-      break;
-    }
-  }
-
-  return newArray.reverse();
+  return array.slice(offset, array.length);
 }

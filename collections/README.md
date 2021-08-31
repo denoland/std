@@ -512,8 +512,8 @@ console.assert(
 
 ### takeLastWhile
 
-Returns all elements in the given collection until the first element that does
-not match the given predicate.
+Starting from the last element, returns all elements in the given collection
+until the first element that does not match the given predicate.
 
 Example:
 
