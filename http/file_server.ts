@@ -341,7 +341,7 @@ export async function serveFile(
     response.body = bytes;
   } catch (e) {
     // Fallback on URIError (400 Bad Request) if unable to read range
-    throw URIError(e);
+    throw URIError(String(e));
   }
 
   req.done.then(() => {
@@ -654,8 +654,9 @@ function main(): void {
         response = await serveFile(req, fsPath);
       }
     } catch (e) {
-      console.error(e.message);
-      response = await serveFallback(req, e);
+      const err = e instanceof Error ? e : new Error("[non-error thrown]");
+      console.error(err.message);
+      response = await serveFallback(req, err);
     } finally {
       if (CORSEnabled) {
         assert(response);
@@ -665,7 +666,7 @@ function main(): void {
       try {
         await req.respond(response!);
       } catch (e) {
-        console.error(e.message);
+        console.error(e instanceof Error ? e.message : "[non-error thrown]");
       }
     }
   };
