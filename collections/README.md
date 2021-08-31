@@ -359,7 +359,7 @@ const maxCount = maxOf(inventory, (i) => i.count);
 assertEquals(maxCount, 32);
 ```
 
-## minfOf
+## minOf
 
 Applies the given selector to all elements of the given collection and returns
 the min value of all elements. If an empty array is provided the function will
@@ -510,6 +510,23 @@ console.assert(
 );
 ```
 
+### takeWhile
+
+Returns all elements in the given collection until the first element that does
+not match the given predicate.
+
+```ts
+import { takeWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const arr = [1, 2, 3, 4, 5, 6];
+
+assertEquals(
+  takeWhile(arr, (i) => i !== 4),
+  [1, 2, 3],
+);
+```
+
 ### takeLastWhile
 
 Starting from the last element, returns all elements in the given collection
@@ -527,4 +544,64 @@ assertEquals(
   takeLastWhile(arr, (i) => i > 4),
   [5, 6],
 );
+```
+
+### firstNotNullishOf
+
+Applies the given selector to elements in the given array until a value is
+produced that is neither `null` nor `undefined` and returns that value. Returns
+`undefined` if no such value is produced
+
+```ts
+import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const tables = [
+  { number: 11, order: null },
+  { number: 12, order: "Soup" },
+  { number: 13, order: "Salad" },
+];
+const nextOrder = firstNotNullishOf(tables, (it) => it.order);
+
+assertEquals(nextOrder, "Soup");
+```
+
+### maxBy
+
+Returns the first element that is the largest value of the given function or
+undefined if there are no elements.
+
+```ts
+import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+
+const personWithMaxAge = maxBy(people, (i) => i.age);
+
+assertEquals(personWithMaxAge, { name: "Kim", age: 42 });
+```
+
+### minBy
+
+Returns the first element that is the smallest value of the given function or
+undefined if there are no elements
+
+```ts
+import { minBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+
+const personWithMinAge = minBy(people, (i) => i.age);
+
+assertEquals(personWithMinAge, { name: "John", age: 23 });
 ```
