@@ -862,7 +862,7 @@ export function ParserFactory<T>(parser: ParserComponent<T>) {
     try {
       parsed = parser(scanner);
     } catch (e) {
-      err = e;
+      err = e instanceof Error ? e : new Error("[non-error thrown]");
     }
 
     if (err || !parsed || !parsed.ok || !scanner.eof()) {

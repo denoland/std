@@ -98,7 +98,7 @@ export class BytesList {
   }
 
   /**
-   * Iterafor of bytes from given position
+   * Iterator of bytes from given position
    */
   *iterator(start = 0): IterableIterator<number> {
     const startIdx = this.getChunkIndex(start);

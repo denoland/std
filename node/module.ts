@@ -600,7 +600,10 @@ class Module {
     try {
       parent.paths = Module._nodeModulePaths(Deno.cwd());
     } catch (e) {
-      if (e.code !== "ENOENT") {
+      if (
+        !(e instanceof Error) ||
+        (e as Error & { code?: string }).code !== "ENOENT"
+      ) {
         throw e;
       }
     }
@@ -740,8 +743,11 @@ function readPackage(requestPath: string): PackageInfo | null {
     packageJsonCache.set(jsonPath, filtered);
     return filtered;
   } catch (e) {
-    e.path = jsonPath;
-    e.message = "Error parsing " + jsonPath + ": " + e.message;
+    const err = (e instanceof Error ? e : new Error("[non-error thrown]")) as
+      & Error
+      & { path?: string };
+    err.path = jsonPath;
+    err.message = "Error parsing " + jsonPath + ": " + err.message;
     throw e;
   }
 }
@@ -1011,7 +1017,12 @@ function resolveExportsTarget(
           mappingKey,
         );
       } catch (e) {
-        if (e.code !== "MODULE_NOT_FOUND") throw e;
+        if (
+          !(e instanceof Error) ||
+          (e as Error & { code?: string }).code !== "MODULE_NOT_FOUND"
+        ) {
+          throw e;
+        }
       }
     }
   } else if (typeof target === "object" && target !== null) {
@@ -1029,7 +1040,12 @@ function resolveExportsTarget(
             mappingKey,
           );
         } catch (e) {
-          if (e.code !== "MODULE_NOT_FOUND") throw e;
+          if (
+            !(e instanceof Error) ||
+            (e as Error & { code?: string }).code !== "MODULE_NOT_FOUND"
+          ) {
+            throw e;
+          }
         }
       }
     }
@@ -1145,8 +1161,9 @@ Module._extensions[".json"] = (module: Module, filename: string): void => {
   try {
     module.exports = JSON.parse(stripBOM(content));
   } catch (err) {
-    err.message = filename + ": " + err.message;
-    throw err;
+    const e = err instanceof Error ? err : new Error("[non-error thrown]");
+    e.message = `${filename}: ${e.message}`;
+    throw e;
   }
 };
 
