@@ -359,7 +359,7 @@ const maxCount = maxOf(inventory, (i) => i.count);
 assertEquals(maxCount, 32);
 ```
 
-## minfOf
+## minOf
 
 Applies the given selector to all elements of the given collection and returns
 the min value of all elements. If an empty array is provided the function will
