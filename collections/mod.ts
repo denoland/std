@@ -26,3 +26,4 @@ export * from "./union.ts";
 export * from "./without_all.ts";
 export * from "./unzip.ts";
 export * from "./zip.ts";
+export * from "./min_by.ts";
