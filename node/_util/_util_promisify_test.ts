@@ -81,8 +81,11 @@ Deno.test("Invalid argument should throw", function testThrowInvalidArgument() {
   try {
     promisify(fn);
   } catch (e) {
-    assertStrictEquals(e.code, "ERR_INVALID_ARG_TYPE");
     assert(e instanceof TypeError);
+    assertStrictEquals(
+      (e as TypeError & { code: string }).code,
+      "ERR_INVALID_ARG_TYPE",
+    );
   }
 });
 
@@ -225,8 +228,11 @@ Deno.test("Test invalid arguments", function testInvalidArguments() {
       // @ts-expect-error TypeScript
       promisify(input);
     } catch (e) {
-      assertStrictEquals(e.code, "ERR_INVALID_ARG_TYPE");
       assert(e instanceof TypeError);
+      assertStrictEquals(
+        (e as TypeError & { code: string }).code,
+        "ERR_INVALID_ARG_TYPE",
+      );
       assertEquals(
         e.message,
         `The "original" argument must be of type Function. Received ${typeof input}`,

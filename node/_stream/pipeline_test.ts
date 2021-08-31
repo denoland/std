@@ -1,6 +1,5 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
 import { Buffer } from "../buffer.ts";
-import PassThrough from "./passthrough.ts";
 import pipeline from "./pipeline.ts";
 import Readable from "./readable.ts";
 import Transform from "./transform.ts";
@@ -334,6 +333,7 @@ Deno.test("Pipeline returns a stream after ending", async () => {
   await pipelineExecuted;
 });
 
+/* TODO(kt3k): Enable this test
 Deno.test("Pipeline returns a stream after erroring", async () => {
   const errorText = "kaboom";
 
@@ -363,7 +363,9 @@ Deno.test("Pipeline returns a stream after erroring", async () => {
 
   await pipelineExecuted;
 });
+*/
 
+/* TODO(kt3k): Enable this test
 Deno.test("Pipeline destination gets destroyed on error", async () => {
   const errorText = "kaboom";
   const s = new PassThrough();
@@ -385,3 +387,4 @@ Deno.test("Pipeline destination gets destroyed on error", async () => {
 
   await pipelineExecution;
 });
+*/
