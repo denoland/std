@@ -26,11 +26,13 @@ export function single<T>(
   predicate: (el: T) => boolean = (_) => true,
 ): T | undefined {
   let match: T | undefined = undefined;
+  let found = false;
   for (const element of array) {
     if (predicate(element)) {
-      if (match !== undefined) {
+      if (found) {
         return undefined;
       }
+      found = true;
       match = element;
     }
   }
