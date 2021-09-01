@@ -164,12 +164,6 @@ function validateDomain(domain: string): void {
  * Parse cookies of a header
  * @param {Headers} headers The headers instance to get cookies from
  * @return {Object} Object with cookie names as keys
- *
- * Example:
- *
- * ```ts
- * const cookies = getCookies(headers);
- * ```
  */
 export function getCookies(headers: Headers): Record<string, string> {
   const cookie = headers.get("Cookie");
@@ -191,13 +185,6 @@ export function getCookies(headers: Headers): Record<string, string> {
  *
  * @param {Headers} headers The headers instance to set the cookie to
  * @param  {Object} cookie Cookie to set
- *
- * Example:
- *
- * ```ts
- * const headers = new Headers();
- * setCookie(headers, { name: "deno", value: "runtime", httpOnly: true, secure: true, maxAge: 2, domain: "deno.land" });
- * ```
  */
 export function setCookie(headers: Headers, cookie: Cookie): void {
   // TODO(zekth) : Add proper parsing of Set-Cookie headers
@@ -214,12 +201,6 @@ export function setCookie(headers: Headers, cookie: Cookie): void {
  * @param {Headers} headers The headers instance to delete the cookie from
  * @param {string} name Name of cookie
  * @param {Object} attributes Additional cookie attributes
- *
- * Example:
- *
- * ```ts
- * deleteCookie(headers, "foo", { domain: "deno.land" });
- * ```
  */
 export function deleteCookie(
   headers: Headers,
