@@ -13,7 +13,7 @@
  * const numbers = [ 3, 2, 5, 2, 5 ]
  * const dropWhileNumbers = dropWhile(numbers, i => i !== 2)
  *
- * assertEquals(dropWhileNumbers, [5, 2, 5 ])
+ * assertEquals(dropWhileNumbers, [2, 5, 2, 5 ])
  * ```
  */
 export function dropWhile<T>(
@@ -27,5 +27,5 @@ export function dropWhile<T>(
     offset++;
   }
 
-  return array.slice(offset + 1, length);
+  return array.slice(offset, length);
 }

@@ -7,14 +7,14 @@ Deno.test("[collections/dropWhile] Array", () => {
   const arr = [1, 2, 3, 4, 5, 6];
   const actual = dropWhile(arr, (i) => i !== 2);
 
-  assertEquals(actual, [3, 4, 5, 6]);
+  assertEquals(actual, [2, 3, 4, 5, 6]);
 });
 
 Deno.test("[collections/dropWhile] Add two to each num in predicate", () => {
   const arr = [1, 2, 3, 4, 5, 6];
   const actual = dropWhile(arr, (i) => i + 2 !== 6);
 
-  assertEquals(actual, [5, 6]);
+  assertEquals(actual, [4, 5, 6]);
 });
 
 Deno.test("[collections/dropWhile] Negatives", () => {
@@ -28,7 +28,7 @@ Deno.test("[collections/dropWhile] No mutation", () => {
   const arr = [1, 2, 3, 4, 5, 6];
 
   const actual = dropWhile(arr, (i) => i !== 4);
-  assertEquals(actual, [5, 6]);
+  assertEquals(actual, [4, 5, 6]);
   assertEquals(arr, [1, 2, 3, 4, 5, 6]);
 });
 
@@ -45,7 +45,7 @@ Deno.test("[collections/dropWhile] Returns empty array when the last element doe
 
   const actual = dropWhile(arr, (i) => i !== 4);
 
-  assertEquals(actual, []);
+  assertEquals(actual, [4]);
 });
 
 Deno.test("[collections/dropWhile] Returns the same array when all elements match the predicate", () => {
