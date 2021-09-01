@@ -2,6 +2,8 @@
 
 // deno-lint-ignore-file ban-types
 
+import { hasOwnProperty } from "../_util/has_own_property.ts";
+
 import { filterInPlace } from "./_utils.ts";
 
 /**
@@ -71,7 +73,7 @@ export function deepMerge<
 
     const a = record[key] as ResultMember;
 
-    if (!(key in other)) {
+    if (!(hasOwnProperty(other, key))) {
       result[key] = a;
 
       continue;
