@@ -68,8 +68,9 @@ export function windowed<T>(
   /** length of the return array */
   const length = Math.floor((array.length - (partial ? 1 : size)) / step + 1);
 
-  return Array.from(
-    { length },
-    (_, i) => array.slice(i * step, i * step + size),
-  );
+  const result = [];
+  for (let i = 0; i < length; i++) {
+    result.push(array.slice(i * step, i * step + size));
+  }
+  return result;
 }
