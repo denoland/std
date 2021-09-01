@@ -41,62 +41,58 @@ deno run --allow-net --allow-read https://deno.land/std/http/file_server.ts
 
 ## Cookie
 
-Helper to manipulate `Cookie` through `ServerRequest` and `Response`.
+Helpers to manipulate the `Cookie` header.
+
+### getCookies
 
 ```ts
-import { ServerRequest } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
 import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
 
 const headers = new Headers();
 headers.set("Cookie", "full=of; tasty=chocolate");
 
 const cookies = getCookies(headers);
-console.log("cookies:", cookies);
-// cookies: { full: "of", tasty: "chocolate" }
+console.log(cookies); // { full: "of", tasty: "chocolate" }
 ```
 
-To set a `Cookie` you can add `CookieOptions` to properly set your `Cookie`:
+### setCookie
 
 ```ts
-import { Response } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
 import {
   Cookie,
   setCookie,
 } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
 
-let response: Response = {};
+const headers = new Headers();
 const cookie: Cookie = { name: "Space", value: "Cat" };
-setCookie(response, cookie);
+setCookie(headers, cookie);
 
-const cookieHeader = response.headers!.get("set-cookie");
-console.log("Set-Cookie:", cookieHeader);
-// Set-Cookie: Space=Cat
+const cookieHeader = headers.get("set-cookie");
+console.log(cookieHeader); // Space=Cat
 ```
 
-Deleting a `Cookie` will set its expiration date before now. Forcing the browser
+### deleteCookie
+> Note: Deleting a `Cookie` will set its expiration date before now. Forcing the browser
 to delete it.
 
 ```ts
-import { Response } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
 import { deleteCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
 
-let response: Response = {};
-deleteCookie(response, "deno");
+const headers = new Headers();
+deleteCookie(headers, "deno");
 
-const cookieHeader = response.headers!.get("set-cookie");
-console.log("Set-Cookie:", cookieHeader);
-// Set-Cookie: deno=; Expires=Thus, 01 Jan 1970 00:00:00 GMT
+const cookieHeader = headers.get("set-cookie");
+console.log(cookieHeader); // deno=; Expires=Thus, 01 Jan 1970 00:00:00 GMT
 ```
 
 > Note: It is possible to pass the exact same path and domain attributes that
 > were used to set the cookie.
 
 ```ts
-import { Response } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
 import { deleteCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
 
-let response: Response = {};
-deleteCookie(response, "deno", { path: "/", domain: "deno.land" });
+const headers = new Headers();
+deleteCookie(headers, "deno", { path: "/", domain: "deno.land" });
 ```
 
 **Note**: At the moment multiple `Set-Cookie` in a `Response` is not handled.
