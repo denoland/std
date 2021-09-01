@@ -75,7 +75,7 @@ Deno.test("deepMerge: prevent prototype merge", () => {
     {
       constructor: undefined,
       foo: true,
-    }
+    },
   );
 });
 
