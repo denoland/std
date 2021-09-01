@@ -1,18 +1,19 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Drop all elements in the given collection until the first element that does not match the given predicate.
+ * Returns a new array that drops all elements in the given collection until the
+ * first element that does not match the given predicate
  *
  * Example:
  *
  * ```ts
- * import { dropWhile } from "./drop_first_while.ts";
+ * import { dropWhile } from "./drop_while.ts";
  * import { assertEquals } from "../testing/asserts.ts";
  *
  * const numbers = [ 3, 2, 5, 2, 5 ]
  * const dropWhileNumbers = dropWhile(numbers, i => i !== 2)
  *
- * assertEquals(dropWhileNumbers, [ 5, 2, 5 ])
+ * assertEquals(dropWhileNumbers, [5, 2, 5 ])
  * ```
  */
 export function dropWhile<T>(

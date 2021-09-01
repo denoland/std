@@ -114,14 +114,14 @@ console.assert(distinctNumbers === [3, 2, 5]);
 
 ### dropWhile
 
-Drop all elements in the given collection until the first element that does not
-match the given predicate.
+Returns a new array that drops all elements in the given collection until the
+first element that does not match the given predicate.
 
 ```ts
 import { dropWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const numbers = [3, 2, 5, 2, 5];
-const dropWhileNumbers = dropFirstWhile(numbers, (i) => i !== 2);
+const dropWhileNumbers = dropWhile(numbers, (i) => i !== 2);
 
 console.assert(dropWhileNumbers === [5, 2, 5]);
 ```
