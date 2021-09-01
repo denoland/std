@@ -1,5 +1,6 @@
-import { types } from "../types.ts";
-export { types as default } from "../types.ts";
+import * as types from "../_util/_util_types.ts";
+
+export default types;
 
 export const {
   // isExternal,

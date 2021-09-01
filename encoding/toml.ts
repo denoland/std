@@ -8,7 +8,7 @@ function joinKeys(keys: string[]): string {
   // This allows for grouping similar properties together:
   return keys
     .map((str: string): string => {
-      return str.match(/[^A-Za-z0-9_-]/) ? `"${str}"` : str;
+      return str.match(/[^A-Za-z0-9_-]/) ? JSON.stringify(str) : str;
     })
     .join(".");
 }
@@ -177,7 +177,7 @@ class Dumper {
     return `${this.#declaration(keys)}${JSON.stringify(value)}`;
   }
   #strDeclaration(keys: string[], value: string): string {
-    return `${this.#declaration(keys)}"${value}"`;
+    return `${this.#declaration(keys)}${JSON.stringify(value)}`;
   }
   #numberDeclaration(keys: string[], value: number): string {
     switch (value) {

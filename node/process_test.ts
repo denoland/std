@@ -223,6 +223,8 @@ Deno.test({
 
 Deno.test({
   name: "process.hrtime",
+  // TODO(kt3k): Enable this test
+  ignore: true,
   fn() {
     const [sec0, nano0] = process.hrtime();
     // seconds and nano seconds are positive integers.
