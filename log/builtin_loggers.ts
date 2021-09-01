@@ -10,11 +10,14 @@ function defaultCatcher(err: unknown) {
   console.error(err);
 }
 
+export type AsyncLoggerOptions = {
+  catcher?: <E = unknown>(err: E) => void;
+};
 export function buildAsyncLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
   handler: (...handlerArgs: Parameters<LogHandler<L, M, A>>) => Promise<void>,
-  catcher: <E = unknown>(err: E) => void = defaultCatcher,
+  { catcher = defaultCatcher }: AsyncLoggerOptions = {},
 ): Logger<L, M, A> {
   return buildLogger(
     logLevels,
@@ -29,11 +32,20 @@ export function buildAsyncLogger<L extends LogLevels, M, A>(
   );
 }
 
+export type FileLoggerOptions<L extends LogLevels, M, A> = {
+  messageFormatter?: (
+    ...handlerArgs: Parameters<LogHandler<L, M, A>>
+  ) => string;
+  append?: boolean;
+};
 export function buildFileLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
   filename: string,
-  messageFormatter?: (...handlerArgs: Parameters<LogHandler<L, M, A>>) => string,
+  {
+    messageFormatter = buildDefaultLogMessage,
+    append = true,
+  }: FileLoggerOptions<L, M, A> = {},
 ): Logger<L, M, A> {
   return buildAsyncLogger(
     logLevels,
@@ -46,18 +58,22 @@ export function buildFileLogger<L extends LogLevels, M, A>(
         additionalData,
       );
 
-      return Deno.writeTextFile(filename, `{messageString}\n`, {
-        append: true,
-      });
+      return Deno.writeTextFile(filename, `${messageString}\n`, { append });
     },
   );
 }
 
+export type ConsoleLoggerOptions<L extends LogLevels, M, A> = {
+  messageFormatter?: (
+    ...handlerArgs: Parameters<LogHandler<L, M, A>>
+  ) => string;
+};
 export function buildConsoleLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
   isErrorLevel: (level: keyof L) => boolean,
-  messageFormatter?: (level: keyof L, message: M, additionalData: A) => string,
+  { messageFormatter = buildDefaultLogMessage }: ConsoleLoggerOptions<L, M, A> =
+    {},
 ): Logger<L, M, A> {
   return buildLogger(
     logLevels,

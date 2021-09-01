@@ -17,7 +17,7 @@ export type LogDispatcher<L extends LogLevels, M, A> = (
 ) => void;
 
 export function buildDefaultLogMessage<L extends LogLevels, M, A>(
-  [logLevel, message, additionalData]: Parameters<LogHandler<L, M, A>>,
+  ...[logLevel, message, additionalData]: Parameters<LogHandler<L, M, A>>
 ) {
   return `[${logLevel}]\t${new Date().toLocaleString()}\t${asString(message)}${
     additionalData ? ` ${asString(additionalData)}` : ""
