@@ -73,7 +73,7 @@ export function deepMerge<
 
     const a = record[key] as ResultMember;
 
-    if (!(hasOwn(other, key))) {
+    if (!hasOwn(other, key)) {
       result[key] = a;
 
       continue;
