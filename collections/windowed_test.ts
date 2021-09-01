@@ -16,6 +16,26 @@ function windowedTest<T>(
   assertEquals(actual, expected, message);
 }
 
+function windowedThrowsTest<T>(
+  input: [
+    collection: T[],
+    size: number,
+    config?: { step?: number; partial?: boolean },
+  ],
+  ErrorClass?: ErrorConstructor | undefined,
+  msgIncludes?: string,
+  msg?: string | undefined,
+) {
+  assertThrows(
+    () => {
+      windowed(...input);
+    },
+    ErrorClass,
+    msgIncludes,
+    msg,
+  );
+}
+
 Deno.test({
   name: "[collections/windowed] no mutation",
   fn() {
@@ -58,7 +78,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] step was set",
+  name: "[collections/windowed] step option",
   fn() {
     windowedTest([[1, 2, 3, 4, 5], 5, { step: 2 }], [
       [1, 2, 3, 4, 5],
@@ -76,7 +96,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] partial was set",
+  name: "[collections/windowed] partial option",
   fn() {
     windowedTest([[1, 2, 3, 4, 5], 5, { partial: true }], [
       [1, 2, 3, 4, 5],
@@ -103,7 +123,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] step and partial was set",
+  name: "[collections/windowed] step and partial option",
   fn() {
     windowedTest([[1, 2, 3, 4, 5], 5, { step: 2, partial: true }], [
       [1, 2, 3, 4, 5],
@@ -124,51 +144,107 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] size or step was invalid",
+  name: "[collections/windowed] invalid size or step: other than number",
   fn() {
-    assertThrows(
-      () => {
-        windowed([1, 2, 3, 4, 5], 0);
-      },
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], NaN],
       RangeError,
-      "Both size and step must be positive.",
+      "Both size and step must be positive integer.",
     );
-    assertThrows(
-      () => {
-        windowed([1, 2, 3, 4, 5], 3, { step: 0 });
-      },
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], 3, { step: NaN }],
       RangeError,
-      "Both size and step must be positive.",
+      "Both size and step must be positive integer.",
     );
-    assertThrows(
-      () => {
-        windowed([1, 2, 3, 4, 5], NaN);
-      },
+    windowedThrowsTest(
+      // @ts-ignore: for test
+      [[1, 2, 3, 4, 5], "invalid"],
       RangeError,
-      "Both size and step must be positive.",
+      "Both size and step must be positive integer.",
     );
-    assertThrows(
-      () => {
-        windowed([1, 2, 3, 4, 5], 3, { step: NaN });
-      },
+    windowedThrowsTest(
+      // @ts-ignore: for test
+      [[1, 2, 3, 4, 5], 3, { step: "invalid" }],
       RangeError,
-      "Both size and step must be positive.",
+      "Both size and step must be positive integer.",
     );
-    assertThrows(
-      () => {
-        // @ts-ignore: for test
-        windowed([1, 2, 3, 4, 5], "invalid");
-      },
+  },
+});
+
+Deno.test({
+  name: "[collections/windowed] invalid size or step: not integer number",
+  fn() {
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], 0.5],
       RangeError,
-      "Both size and step must be positive.",
+      "Both size and step must be positive integer.",
     );
-    assertThrows(
-      () => {
-        // @ts-ignore: for test
-        windowed([1, 2, 3, 4, 5], 3, { step: "invalid" });
-      },
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], 3, { step: 0.5 }],
       RangeError,
-      "Both size and step must be positive.",
+      "Both size and step must be positive integer.",
+    );
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], 1.5],
+      RangeError,
+      "Both size and step must be positive integer.",
+    );
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], 3, { step: 1.5 }],
+      RangeError,
+      "Both size and step must be positive integer.",
+    );
+  },
+});
+
+Deno.test({
+  name: "[collections/windowed] invalid size or step: not positive number",
+  fn() {
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], 0],
+      RangeError,
+      "Both size and step must be positive integer.",
+    );
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], 3, { step: 0 }],
+      RangeError,
+      "Both size and step must be positive integer.",
+    );
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], -1],
+      RangeError,
+      "Both size and step must be positive integer.",
+    );
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], 3, { step: -1 }],
+      RangeError,
+      "Both size and step must be positive integer.",
+    );
+  },
+});
+
+Deno.test({
+  name: "[collections/windowed] invalid size or step: infinity",
+  fn() {
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], Number.NEGATIVE_INFINITY],
+      RangeError,
+      "Both size and step must be positive integer.",
+    );
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], 3, { step: Number.NEGATIVE_INFINITY }],
+      RangeError,
+      "Both size and step must be positive integer.",
+    );
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], Number.POSITIVE_INFINITY],
+      RangeError,
+      "Both size and step must be positive integer.",
+    );
+    windowedThrowsTest(
+      [[1, 2, 3, 4, 5], 3, { step: Number.POSITIVE_INFINITY }],
+      RangeError,
+      "Both size and step must be positive integer.",
     );
   },
 });
