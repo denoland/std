@@ -510,6 +510,24 @@ console.assert(
 );
 ```
 
+### includesValue
+
+If the given value is part of the given object it returns true, otherwise it
+returns false. Doesn't work with non-primitive values: includesValue({x: {}},
+{}) returns false.
+
+```ts
+import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const input = {
+  first: 33,
+  second: 34,
+};
+
+assertEquals(includesValue(input, 34), true);
+```
+
 ### takeWhile
 
 Returns all elements in the given collection until the first element that does
