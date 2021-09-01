@@ -38,12 +38,12 @@ assertEquals(usersById, {
 });
 ```
 
-### chunked
+### chunk
 
 Splits the given array into chunks of the given size and returns them.
 
 ```ts
-import { chunked } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { chunk } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const words = [
   "lorem",
@@ -54,7 +54,7 @@ const words = [
   "consetetur",
   "sadipscing",
 ];
-const chunks = chunked(words, 3);
+const chunks = chunk(words, 3);
 
 console.assert(
   chunks === [
