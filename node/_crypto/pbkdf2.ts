@@ -172,7 +172,7 @@ export function pbkdf2(
       err = e;
     }
     if (err) {
-      callback(err);
+      callback(err instanceof Error ? err : new Error("[non-error thrown]"));
     } else {
       callback(null, res);
     }

@@ -375,6 +375,7 @@ x,,,
    * it doesn't fit entirely.
    * in the read buffer, so we should test the code to handle that condition.
    */
+  /* TODO(kt3k): Enable this test case
   {
     Name: "HugeLines",
     Input: "#ignore\n".repeat(10000) + "@".repeat(5000) + "," +
@@ -382,6 +383,7 @@ x,,,
     Output: [["@".repeat(5000), "*".repeat(5000)]],
     Comment: "#",
   },
+  */
   {
     Name: "QuoteWithTrailingCRLF",
     Input: '"foo"bar"\r\n',
