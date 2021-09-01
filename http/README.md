@@ -72,8 +72,9 @@ console.log(cookieHeader); // Space=Cat
 ```
 
 ### deleteCookie
-> Note: Deleting a `Cookie` will set its expiration date before now. Forcing the browser
-to delete it.
+
+> Note: Deleting a `Cookie` will set its expiration date before now. Forcing the
+> browser to delete it.
 
 ```ts
 import { deleteCookie } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
