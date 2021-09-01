@@ -4,11 +4,7 @@ import Readable from "./readable.ts";
 import Writable from "./writable.ts";
 import { pipeline } from "./promises.ts";
 import { deferred } from "../../async/mod.ts";
-import {
-  assert,
-  assertEquals,
-  assertThrowsAsync,
-} from "../../testing/asserts.ts";
+import { assert, assertEquals, assertRejects } from "../../testing/asserts.ts";
 
 Deno.test("Promise pipeline works correctly", async () => {
   let pipelineExecuted = 0;
@@ -76,7 +72,7 @@ Deno.test("Promise pipeline throws on readable destroyed", async () => {
   read.push("data");
   read.destroy();
 
-  await assertThrowsAsync(
+  await assertRejects(
     () => pipeline(read, write),
     Error,
     "Premature close",

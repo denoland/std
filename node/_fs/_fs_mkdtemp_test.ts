@@ -1,9 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import {
-  assert,
-  assertThrows,
-  assertThrowsAsync,
-} from "../../testing/asserts.ts";
+import { assert, assertRejects, assertThrows } from "../../testing/asserts.ts";
 import { mkdtemp, mkdtempSync } from "./_fs_mkdtemp.ts";
 import { existsSync } from "./_fs_exists.ts";
 import { env } from "../process.ts";
@@ -29,7 +25,7 @@ Deno.test({
 Deno.test({
   name: "[node/fs] mkdtemp (does not exists)",
   fn: async () => {
-    await assertThrowsAsync(() => mkdtempP(doesNotExists));
+    await assertRejects(() => mkdtempP(doesNotExists));
   },
 });
 
@@ -45,7 +41,7 @@ Deno.test({
 Deno.test({
   name: "[node/fs] mkdtemp (with bad options)",
   fn: async () => {
-    await assertThrowsAsync(() => mkdtempP(prefix, badOptions));
+    await assertRejects(() => mkdtempP(prefix, badOptions));
   },
 });
 

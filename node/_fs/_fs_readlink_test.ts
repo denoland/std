@@ -3,12 +3,13 @@ import { assertCallbackErrorUncaught } from "../_utils.ts";
 import { readlink, readlinkSync } from "./_fs_readlink.ts";
 import { assert, assertEquals } from "../../testing/asserts.ts";
 import * as path from "../path.ts";
+import { isWindows } from "../../_util/os.ts";
 
 const testDir = Deno.makeTempDirSync();
 const oldname = path.join(testDir, "oldname");
 const newname = path.join(testDir, "newname");
 
-if (Deno.build.os === "windows") {
+if (isWindows) {
   Deno.symlinkSync(oldname, newname, { type: "file" });
 } else {
   Deno.symlinkSync(oldname, newname);

@@ -1,14 +1,16 @@
-# Deno Node compatibility
+# Deno Node.js compatibility
 
 This module is meant to have a compatibility layer for the
-[NodeJS standard library](https://nodejs.org/docs/latest-v12.x/api/).
+[Node.js standard library](https://nodejs.org/docs/latest/api/).
 
 **Warning**: Any function of this module should not be referred anywhere in the
-deno standard library as it's a compatibility module.
+Deno standard library as it's a compatibility module.
 
-## Supported Builtins
+## Supported modules
 
 - [x] assert _partly_
+- [x] assert/strict _partly_
+- [ ] async_hooks
 - [x] buffer
 - [x] child_process _partly_
 - [ ] cluster
@@ -16,31 +18,43 @@ deno standard library as it's a compatibility module.
 - [x] constants _partly_
 - [x] crypto _partly_
 - [ ] dgram
+- [ ] diagnostics_channel
 - [ ] dns
 - [x] events
 - [x] fs _partly_
+- [x] fs/promises _partly_
 - [ ] http
 - [ ] http2
 - [ ] https
+- [ ] inspector
 - [x] module
 - [ ] net
 - [x] os _partly_
 - [x] path
-- [ ] perf_hooks
+- [x] path/posix
+- [x] path/win32
+- [x] perf_hooks
 - [x] process _partly_
 - [x] querystring
 - [ ] readline
 - [ ] repl
 - [x] stream
+- [x] stream/promises
+- [ ] stream/web
 - [x] string_decoder
-- [ ] sys
+- [x] sys
 - [x] timers
+- [x] timers/promises
 - [ ] tls
+- [ ] trace_events
 - [x] tty _partly_
 - [x] url
 - [x] util _partly_
-- ~~v8~~ _can't implement_
+- [x] util/types _partly_
+- [ ] v8
 - [ ] vm
+- [ ] wasi
+- [ ] webcrypto
 - [ ] worker_threads
 - [ ] zlib
 
@@ -48,7 +62,7 @@ deno standard library as it's a compatibility module.
 
 ### Deprecated
 
-These builtins are deprecated in NodeJS v13 and will probably not be polyfilled:
+These modules are deprecated in Node.js and will probably not be polyfilled:
 
 - domain
 - freelist
@@ -56,17 +70,18 @@ These builtins are deprecated in NodeJS v13 and will probably not be polyfilled:
 
 ### Experimental
 
-These builtins are experimental in NodeJS v13 and will not be polyfilled until
-they are stable:
+These modules are experimental in Node.js and will not be polyfilled until they
+are stable:
 
+- diagnostics_channel
 - async_hooks
-- inspector
 - policies
-- report
 - trace_events
 - wasi
+- webcrypto
+- stream/web
 
-## CommonJS Module Loading
+## CommonJS modules loading
 
 `createRequire(...)` is provided to create a `require` function for loading CJS
 modules. It also sets supported globals.
@@ -87,7 +102,7 @@ const leftPad = require("left-pad");
 
 ### Setting up the test runner
 
-This library contains automated tests pulled directly from the Node repo in
+This library contains automated tests pulled directly from the Node.js repo in
 order ensure compatibility.
 
 Setting up the test runner is as simple as running the `node/_tools/setup.ts`
@@ -110,7 +125,7 @@ actual node behavior.
 When converting from promise-based to callback-based APIs, the most obvious way
 is like this:
 
-```ts
+```ts, ignore
 promise.then((value) => callback(null, value)).catch(callback);
 ```
 
@@ -118,7 +133,7 @@ This has a subtle bug - if the callback throws an error, the catch statement
 will also catch _that_ error, and the callback will be called twice. The correct
 way to do it is like this:
 
-```ts
+```ts, ignore
 promise.then((value) => callback(null, value), callback);
 ```
 
@@ -128,7 +143,7 @@ from the existing promise, not the new one created by the callback.
 If the Deno equivalent is actually synchronous, there's a similar problem with
 try/catch statements:
 
-```ts
+```ts, ignore
 try {
   const value = process();
   callback(null, value);
@@ -142,7 +157,7 @@ caught and call the callback again.
 
 The correct way to do it is like this:
 
-```ts
+```ts, ignore
 let err, value;
 try {
   value = process();

@@ -2,10 +2,11 @@
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { delay } from "../async/delay.ts";
 import { onSignal, signal } from "./mod.ts";
+import { isWindows } from "../_util/os.ts";
 
 Deno.test({
   name: "signal() throws when called with empty signals",
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
   fn() {
     assertThrows(
       () => {
@@ -20,7 +21,7 @@ Deno.test({
 
 Deno.test({
   name: "signal() iterates for multiple signals",
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
   fn: async () => {
     // This prevents the program from exiting.
     const t = setInterval(() => {}, 1000);
@@ -61,7 +62,7 @@ Deno.test({
 
 Deno.test({
   name: "onSignal() registers and disposes of event handler",
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
   async fn() {
     // This prevents the program from exiting.
     const t = setInterval(() => {}, 1000);

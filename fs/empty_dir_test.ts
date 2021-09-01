@@ -2,9 +2,9 @@
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertStringIncludes,
   assertThrows,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 import { emptyDir, emptyDirSync } from "./empty_dir.ts";
@@ -69,14 +69,14 @@ Deno.test("emptyDirIfItExist", async function () {
     assertEquals(stat.isDirectory, true);
 
     // nest directory have been removed
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await Deno.stat(testNestDir);
       },
     );
 
     // test file have been removed
-    await assertThrowsAsync(
+    await assertRejects(
       async () => {
         await Deno.stat(testDirFile);
       },

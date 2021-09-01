@@ -43,7 +43,7 @@ export interface ReadableOptions {
   encoding?: Encodings;
   highWaterMark?: number;
   objectMode?: boolean;
-  read?(this: Readable): void;
+  read?(this: Readable, size?: number): void;
 }
 
 export class ReadableState {
@@ -661,14 +661,14 @@ class Readable extends Stream {
     // Proxy all the other methods. Important when wrapping filters and duplexes.
     for (const i in stream) {
       // deno-lint-ignore ban-ts-comment
-      //@ts-ignore
+      // @ts-ignore
       if (this[i] === undefined && typeof stream[i] === "function") {
         // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
+        // @ts-ignore
         this[i] = function methodWrap(method) {
           return function methodWrapReturnFunction() {
             // deno-lint-ignore ban-ts-comment
-            //@ts-ignore
+            // @ts-ignore
             return stream[method].apply(stream);
           };
         }(i);
@@ -700,7 +700,7 @@ class Readable extends Stream {
         paused = false;
         // By the time this is triggered, stream will be a readable stream
         // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
+        // @ts-ignore
         stream.resume();
       }
     };

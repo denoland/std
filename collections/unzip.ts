@@ -6,21 +6,25 @@
  *
  * Example:
  *
- * ```typescript
+ * ```ts
+ * import { unzip } from "./unzip.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
+ *
  * const parents = [
  *     [ 'Maria', 'Jeff' ],
  *     [ 'Anna', 'Kim' ],
  *     [ 'John', 'Leroy' ],
- * ]
+ * ] as [string, string][];
+ *
  * const [ moms, dads ] = unzip(parents)
  *
- * console.assert(moms === [ 'Maria', 'Anna', 'John' ])
- * console.assert(moms === [ 'Jeff', 'Kim', 'Leroy' ])
+ * assertEquals(moms, [ 'Maria', 'Anna', 'John' ])
+ * assertEquals(moms, [ 'Jeff', 'Kim', 'Leroy' ])
  * ```
  */
-export function unzip<T, U>(pairs: Array<[T, U]>): [Array<T>, Array<U>] {
+export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
   const { length } = pairs;
-  const ret: [Array<T>, Array<U>] = [
+  const ret: [T[], U[]] = [
     new Array(length),
     new Array(length),
   ];

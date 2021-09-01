@@ -21,6 +21,7 @@
 *************/
 
 import { unreachable } from "../testing/asserts.ts";
+import { osType } from "../_util/os.ts";
 import { inspect } from "./util.ts";
 
 /**
@@ -836,13 +837,12 @@ const linux: ErrMapData = [
   [-84, ["EILSEQ", "illegal byte sequence"]],
 ];
 
-const { os } = Deno.build;
 export const errorMap = new Map<number, [string, string]>(
-  os === "windows"
+  osType === "windows"
     ? windows
-    : os === "darwin"
+    : osType === "darwin"
     ? darwin
-    : os === "linux"
+    : osType === "linux"
     ? linux
     : unreachable(),
 );

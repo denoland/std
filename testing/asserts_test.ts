@@ -11,10 +11,10 @@ import {
   assertNotMatch,
   assertNotStrictEquals,
   assertObjectMatch,
+  assertRejects,
   assertStrictEquals,
   assertStringIncludes,
   assertThrows,
-  assertThrowsAsync,
   equal,
   fail,
   unimplemented,
@@ -164,7 +164,7 @@ Deno.test("testingEqual", function (): void {
   );
   assert(!equal({ hello: "world" }, new WeakRef({ hello: "world" })));
   assert(
-    equal(
+    !equal(
       new WeakRef({ hello: "world" }),
       // deno-lint-ignore ban-types
       new (class<T extends object> extends WeakRef<T> {})({ hello: "world" }),
@@ -177,6 +177,16 @@ Deno.test("testingEqual", function (): void {
       new (class<T extends object> extends WeakRef<T> {
         foo = "bar";
       })({ hello: "world" }),
+    ),
+  );
+  assert(
+    !equal(
+      new class A {
+        private hello = "world";
+      }(),
+      new class B {
+        private hello = "world";
+      }(),
     ),
   );
 });
@@ -290,11 +300,11 @@ Deno.test("testingAssertStringContainsThrow", function (): void {
   try {
     assertStringIncludes("Denosaurus from Jurassic", "Raptor");
   } catch (e) {
+    assert(e instanceof AssertionError);
     assert(
       e.message ===
         `actual: "Denosaurus from Jurassic" expected to contain: "Raptor"`,
     );
-    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assert(didThrow);
@@ -309,11 +319,11 @@ Deno.test("testingAssertStringMatchingThrows", function (): void {
   try {
     assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
   } catch (e) {
+    assert(e instanceof AssertionError);
     assert(
       e.message ===
         `actual: "Denosaurus from Jurassic" expected to match: "/Raptor/"`,
     );
-    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assert(didThrow);
@@ -328,11 +338,11 @@ Deno.test("testingAssertStringNotMatchingThrows", function (): void {
   try {
     assertNotMatch("Denosaurus from Jurassic", RegExp(/from/));
   } catch (e) {
+    assert(e instanceof AssertionError);
     assert(
       e.message ===
         `actual: "Denosaurus from Jurassic" expected to not match: "/from/"`,
     );
-    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assert(didThrow);
@@ -565,8 +575,8 @@ Deno.test("testingAssertsUnimplemented", function (): void {
   try {
     unimplemented();
   } catch (e) {
-    assert(e.message === "unimplemented");
     assert(e instanceof AssertionError);
+    assert(e.message === "unimplemented");
     didThrow = true;
   }
   assert(didThrow);
@@ -577,8 +587,8 @@ Deno.test("testingAssertsUnreachable", function (): void {
   try {
     unreachable();
   } catch (e) {
-    assert(e.message === "unreachable");
     assert(e instanceof AssertionError);
+    assert(e.message === "unreachable");
     didThrow = true;
   }
   assert(didThrow);
@@ -620,7 +630,7 @@ Deno.test("testingAssertThrowsWithReturnType", () => {
 });
 
 Deno.test("testingAssertThrowsAsyncWithReturnType", () => {
-  assertThrowsAsync(() => {
+  assertRejects(() => {
     throw new Error();
   });
 });
@@ -886,9 +896,9 @@ Deno.test("Assert Throws Non-Error Fail", () => {
 });
 
 Deno.test("Assert Throws Async Non-Error Fail", () => {
-  assertThrowsAsync(
+  assertRejects(
     () => {
-      return assertThrowsAsync(
+      return assertRejects(
         () => {
           return Promise.reject("Panic!");
         },
@@ -900,9 +910,9 @@ Deno.test("Assert Throws Async Non-Error Fail", () => {
     "A non-Error object was thrown or rejected.",
   );
 
-  assertThrowsAsync(
+  assertRejects(
     () => {
-      return assertThrowsAsync(() => {
+      return assertRejects(() => {
         return Promise.reject(null);
       });
     },
@@ -910,9 +920,9 @@ Deno.test("Assert Throws Async Non-Error Fail", () => {
     "A non-Error object was thrown or rejected.",
   );
 
-  assertThrowsAsync(
+  assertRejects(
     () => {
-      return assertThrowsAsync(() => {
+      return assertRejects(() => {
         return Promise.reject(undefined);
       });
     },
@@ -920,15 +930,26 @@ Deno.test("Assert Throws Async Non-Error Fail", () => {
     "A non-Error object was thrown or rejected.",
   );
 
-  assertThrowsAsync(
+  assertRejects(
     () => {
-      return assertThrowsAsync(() => {
+      return assertRejects(() => {
         throw undefined;
       });
     },
     AssertionError,
     "A non-Error object was thrown or rejected.",
   );
+});
+
+Deno.test("assertEquals compares objects structurally if one object's constructor is undefined and the other is Object", () => {
+  const a = Object.create(null);
+  a.prop = "test";
+  const b = {
+    prop: "test",
+  };
+
+  assertEquals(a, b);
+  assertEquals(b, a);
 });
 
 Deno.test("assertEquals diff for differently ordered objects", () => {
@@ -1031,11 +1052,26 @@ Deno.test("Assert Throws Parent Error", () => {
 });
 
 Deno.test("Assert Throws Async Parent Error", () => {
-  assertThrowsAsync(
+  assertRejects(
     () => {
       throw new AssertionError("Fail!");
     },
     Error,
     "Fail!",
+  );
+});
+
+Deno.test("Assert Throws Async promise rejected with custom Error", async () => {
+  class CustomError extends Error {}
+  class AnotherCustomError extends Error {}
+  await assertRejects(
+    () =>
+      assertRejects(
+        () => Promise.reject(new AnotherCustomError("failed")),
+        CustomError,
+        "fail",
+      ),
+    AssertionError,
+    'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
   );
 });

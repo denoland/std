@@ -68,7 +68,7 @@ export function open(
       try {
         res = openSync(path, flags, mode);
       } catch (error) {
-        err = error;
+        err = error instanceof Error ? error : new Error("[non-error thrown]");
       }
       if (err) {
         (callback as (err: Error) => void)(err);

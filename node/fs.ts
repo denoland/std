@@ -33,7 +33,7 @@ import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
 import { watch } from "./_fs/_fs_watch.ts";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
 
-import * as promises from "./_fs/promises/mod.ts";
+import * as promises from "./fs/promises.ts";
 
 export default {
   access,

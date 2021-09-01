@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { writeBufferSync } from "./fs.ts";
 import { assertEquals } from "../../testing/asserts.ts";
+import { isWindows } from "../../_util/os.ts";
 
 Deno.test("[node/internal_binding/fs] writeBufferSync", async () => {
   const tempfile = await Deno.makeTempFile();
@@ -44,7 +45,7 @@ Deno.test("[node/internal_binding/fs] writeBufferSync", async () => {
       ctx,
     );
     assertEquals(bytesWritten, 0);
-    if (Deno.build.os === "windows") {
+    if (isWindows) {
       assertEquals(ctx.errno, 5); // Access is denied
     } else {
       assertEquals(ctx.errno, 9); // Bad file descriptor

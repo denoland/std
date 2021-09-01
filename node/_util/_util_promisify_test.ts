@@ -23,8 +23,8 @@
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertStrictEquals,
-  assertThrowsAsync,
 } from "../../testing/asserts.ts";
 import { promisify } from "./_util_promisify.ts";
 import * as fs from "../fs.ts";
@@ -38,7 +38,7 @@ const customPromisifyArgs = Symbol.for("nodejs.util.promisify.customArgs");
 Deno.test(
   "Errors should reject the promise",
   async function testPromiseRejection() {
-    await assertThrowsAsync(() => readFile("/dontexist"), Deno.errors.NotFound);
+    await assertRejects(() => readFile("/dontexist"), Deno.errors.NotFound);
   },
 );
 
@@ -81,8 +81,11 @@ Deno.test("Invalid argument should throw", function testThrowInvalidArgument() {
   try {
     promisify(fn);
   } catch (e) {
-    assertStrictEquals(e.code, "ERR_INVALID_ARG_TYPE");
     assert(e instanceof TypeError);
+    assertStrictEquals(
+      (e as TypeError & { code: string }).code,
+      "ERR_INVALID_ARG_TYPE",
+    );
   }
 });
 
@@ -151,7 +154,7 @@ Deno.test(
     function fn(err: Error | null, val: null, callback: VoidFunction): void {
       callback(err, val);
     }
-    await assertThrowsAsync(
+    await assertRejects(
       () => promisify(fn)(new Error("oops"), null),
       Error,
       "oops",
@@ -225,8 +228,11 @@ Deno.test("Test invalid arguments", function testInvalidArguments() {
       // @ts-expect-error TypeScript
       promisify(input);
     } catch (e) {
-      assertStrictEquals(e.code, "ERR_INVALID_ARG_TYPE");
       assert(e instanceof TypeError);
+      assertStrictEquals(
+        (e as TypeError & { code: string }).code,
+        "ERR_INVALID_ARG_TYPE",
+      );
       assertEquals(
         e.message,
         `The "original" argument must be of type Function. Received ${typeof input}`,
