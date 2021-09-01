@@ -36,8 +36,8 @@ export interface WebSocketCloseEvent {
 export function isWebSocketCloseEvent(
   a: WebSocketEvent,
 ): a is WebSocketCloseEvent {
-  a as object // deno-lint-ignore ban-types
-  return hasOwn(a, "code");
+  // deno-lint-ignore ban-types
+  return hasOwn(a as object, "code");
 }
 
 export type WebSocketPingEvent = ["ping", Uint8Array];
