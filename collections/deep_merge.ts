@@ -2,9 +2,9 @@
 
 // deno-lint-ignore-file ban-types
 
-import { hasOwnProperty } from "../_util/has_own_property.ts";
-
 import { filterInPlace } from "./_utils.ts";
+
+const { hasOwn } = Object;
 
 /**
  * Merges the two given Records, recursively merging any nested Records with
@@ -73,7 +73,7 @@ export function deepMerge<
 
     const a = record[key] as ResultMember;
 
-    if (!(hasOwnProperty(other, key))) {
+    if (!(hasOwn(other, key))) {
       result[key] = a;
 
       continue;
