@@ -163,7 +163,13 @@ function validateDomain(domain: string): void {
 /**
  * Parse cookies of a header
  * @param {Headers} headers The headers instance to get cookies from
- * @return {Object} object with cookie names as keys
+ * @return {Object} Object with cookie names as keys
+ *
+ * Example:
+ *
+ * ```ts
+ * const cookies = getCookies(headers);
+ * ```
  */
 export function getCookies(headers: Headers): Record<string, string> {
   const cookie = headers.get("Cookie");
@@ -182,18 +188,15 @@ export function getCookies(headers: Headers): Record<string, string> {
 }
 
 /**
- * Set the cookie header properly in the Response
- * @param res An object which has a headers property
- * @param cookie Cookie to set
+ *
+ * @param {Headers} headers The headers instance to set the cookie to
+ * @param  {Object} cookie Cookie to set
  *
  * Example:
  *
  * ```ts
- * import { setCookie } from "./cookie.ts";
- *
- * const response = new Response("");
- * setCookie(response, { name: 'deno', value: 'runtime',
- *   httpOnly: true, secure: true, maxAge: 2, domain: "deno.land" });
+ * const headers = new Headers();
+ * setCookie(headers, { name: "deno", value: "runtime", httpOnly: true, secure: true, maxAge: 2, domain: "deno.land" });
  * ```
  */
 export function setCookie(headers: Headers, cookie: Cookie): void {
@@ -207,14 +210,16 @@ export function setCookie(headers: Headers, cookie: Cookie): void {
 }
 
 /**
- *  Set the cookie header properly in the Response to delete it
- * @param res Server Response
- * @param name Name of the cookie to Delete
+ * Set the cookie header properly in the headers to delete it
+ * @param {Headers} headers The headers instance to delete the cookie from
+ * @param {string} name Name of cookie
+ * @param {Object} attributes Additional cookie attributes
+ *
  * Example:
  *
- *     deleteCookie(res,'foo');
- *     deleteCookie(res,'foo', {path:'/demo'});
- *     deleteCookie(res,'foo', {domain:'deno.land'});
+ * ```ts
+ * deleteCookie(headers, "foo", { domain: "deno.land" });
+ * ```
  */
 export function deleteCookie(
   headers: Headers,
