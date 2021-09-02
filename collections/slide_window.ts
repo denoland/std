@@ -14,34 +14,34 @@
  * Example:
  *
  * ```ts
- * import { windowed } from "./windowed.ts"
+ * import { slideWindow } from "./slide_window.ts";
  * import { assertEquals } from "../testing/asserts.ts";
- * const numbers = [ 1, 2, 3, 4, 5 ]
+ * const numbers = [ 1, 2, 3, 4, 5 ];
  *
- * const windows = windowed(numbers, 3)
+ * const windows = slideWindow(numbers, 3);
  * assertEquals(windows, [
  *     [ 1, 2, 3 ],
  *     [ 2, 3, 4 ],
  *     [ 3, 4, 5 ],
- * ])
+ * ]);
  *
- * const windowsWithStep = windowed(numbers, 3, {step: 2})
+ * const windowsWithStep = slideWindow(numbers, 3, {step: 2});
  * assertEquals(windowsWithStep, [
  *     [ 1, 2, 3 ],
  *     [ 3, 4, 5 ],
- * ])
+ * ]);
  *
- * const windowsWithPartial = windowed(numbers, 3, {partial: true})
+ * const windowsWithPartial = slideWindow(numbers, 3, {partial: true});
  * assertEquals(windowsWithPartial, [
  *     [ 1, 2, 3 ],
  *     [ 2, 3, 4 ],
  *     [ 3, 4, 5 ],
  *     [4, 5],
  *     [5],
- * ])
+ * ]);
  * ```
  */
-export function windowed<T>(
+export function slideWindow<T>(
   array: readonly T[],
   size: number,
   { step = 1, partial = false }: {

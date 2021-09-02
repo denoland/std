@@ -1,9 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { windowed } from "./windowed.ts";
+import { slideWindow } from "./slide_window.ts";
 
-function windowedTest<T>(
+function slideWindowTest<T>(
   input: [
     collection: T[],
     size: number,
@@ -12,11 +12,11 @@ function windowedTest<T>(
   expected: T[][],
   message?: string,
 ) {
-  const actual = windowed(...input);
+  const actual = slideWindow(...input);
   assertEquals(actual, expected, message);
 }
 
-function windowedThrowsTest<T>(
+function slideWindowThrowsTest<T>(
   input: [
     collection: T[],
     size: number,
@@ -28,7 +28,7 @@ function windowedThrowsTest<T>(
 ) {
   assertThrows(
     () => {
-      windowed(...input);
+      slideWindow(...input);
     },
     ErrorClass,
     msgIncludes,
@@ -37,37 +37,37 @@ function windowedThrowsTest<T>(
 }
 
 Deno.test({
-  name: "[collections/windowed] no mutation",
+  name: "[collections/slideWindow] no mutation",
   fn() {
     const numbers = [1, 2, 3, 4, 5];
-    windowed(numbers, 3);
+    slideWindow(numbers, 3);
     assertEquals(numbers, [1, 2, 3, 4, 5]);
   },
 });
 
 Deno.test({
-  name: "[collections/windowed] empty input",
+  name: "[collections/slideWindow] empty input",
   fn() {
-    windowedTest([[], 3], []);
-    windowedTest([[], 3, {}], []);
-    windowedTest([[], 3, { step: 2 }], []);
-    windowedTest([[], 3, { partial: true }], []);
-    windowedTest([[], 3, { step: 2, partial: true }], []);
+    slideWindowTest([[], 3], []);
+    slideWindowTest([[], 3, {}], []);
+    slideWindowTest([[], 3, { step: 2 }], []);
+    slideWindowTest([[], 3, { partial: true }], []);
+    slideWindowTest([[], 3, { step: 2, partial: true }], []);
   },
 });
 
 Deno.test({
-  name: "[collections/windowed] default option",
+  name: "[collections/slideWindow] default option",
   fn() {
-    windowedTest([[1, 2, 3, 4, 5], 5], [
+    slideWindowTest([[1, 2, 3, 4, 5], 5], [
       [1, 2, 3, 4, 5],
     ]);
-    windowedTest([[1, 2, 3, 4, 5], 3], [
+    slideWindowTest([[1, 2, 3, 4, 5], 3], [
       [1, 2, 3],
       [2, 3, 4],
       [3, 4, 5],
     ]);
-    windowedTest([[1, 2, 3, 4, 5], 1], [
+    slideWindowTest([[1, 2, 3, 4, 5], 1], [
       [1],
       [2],
       [3],
@@ -78,16 +78,16 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] step option",
+  name: "[collections/slideWindow] step option",
   fn() {
-    windowedTest([[1, 2, 3, 4, 5], 5, { step: 2 }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 5, { step: 2 }], [
       [1, 2, 3, 4, 5],
     ]);
-    windowedTest([[1, 2, 3, 4, 5], 3, { step: 2 }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 3, { step: 2 }], [
       [1, 2, 3],
       [3, 4, 5],
     ]);
-    windowedTest([[1, 2, 3, 4, 5], 1, { step: 2 }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 1, { step: 2 }], [
       [1],
       [3],
       [5],
@@ -96,23 +96,23 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] partial option",
+  name: "[collections/slideWindow] partial option",
   fn() {
-    windowedTest([[1, 2, 3, 4, 5], 5, { partial: true }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 5, { partial: true }], [
       [1, 2, 3, 4, 5],
       [2, 3, 4, 5],
       [3, 4, 5],
       [4, 5],
       [5],
     ]);
-    windowedTest([[1, 2, 3, 4, 5], 3, { partial: true }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 3, { partial: true }], [
       [1, 2, 3],
       [2, 3, 4],
       [3, 4, 5],
       [4, 5],
       [5],
     ]);
-    windowedTest([[1, 2, 3, 4, 5], 1, { partial: true }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 1, { partial: true }], [
       [1],
       [2],
       [3],
@@ -123,19 +123,19 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] step and partial option",
+  name: "[collections/slideWindow] step and partial option",
   fn() {
-    windowedTest([[1, 2, 3, 4, 5], 5, { step: 2, partial: true }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 5, { step: 2, partial: true }], [
       [1, 2, 3, 4, 5],
       [3, 4, 5],
       [5],
     ]);
-    windowedTest([[1, 2, 3, 4, 5], 3, { step: 2, partial: true }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 3, { step: 2, partial: true }], [
       [1, 2, 3],
       [3, 4, 5],
       [5],
     ]);
-    windowedTest([[1, 2, 3, 4, 5], 1, { step: 2, partial: true }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 1, { step: 2, partial: true }], [
       [1],
       [3],
       [5],
@@ -144,25 +144,25 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] invalid size or step: other than number",
+  name: "[collections/slideWindow] invalid size or step: other than number",
   fn() {
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], NaN],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: NaN }],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       // @ts-ignore: for test
       [[1, 2, 3, 4, 5], "invalid"],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       // @ts-ignore: for test
       [[1, 2, 3, 4, 5], 3, { step: "invalid" }],
       RangeError,
@@ -172,24 +172,24 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] invalid size or step: not integer number",
+  name: "[collections/slideWindow] invalid size or step: not integer number",
   fn() {
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], 0.5],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: 0.5 }],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], 1.5],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: 1.5 }],
       RangeError,
       "Both size and step must be positive integer.",
@@ -198,24 +198,24 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] invalid size or step: not positive number",
+  name: "[collections/slideWindow] invalid size or step: not positive number",
   fn() {
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], 0],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: 0 }],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], -1],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: -1 }],
       RangeError,
       "Both size and step must be positive integer.",
@@ -224,24 +224,24 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] invalid size or step: infinity",
+  name: "[collections/slideWindow] invalid size or step: infinity",
   fn() {
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], Number.NEGATIVE_INFINITY],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: Number.NEGATIVE_INFINITY }],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], Number.POSITIVE_INFINITY],
       RangeError,
       "Both size and step must be positive integer.",
     );
-    windowedThrowsTest(
+    slideWindowThrowsTest(
       [[1, 2, 3, 4, 5], 3, { step: Number.POSITIVE_INFINITY }],
       RangeError,
       "Both size and step must be positive integer.",
@@ -250,11 +250,11 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] large size",
+  name: "[collections/slideWindow] large size",
   fn() {
-    windowedTest([[1, 2, 3, 4, 5], 100], []);
-    windowedTest([[1, 2, 3, 4, 5], 100, { step: 2 }], []);
-    windowedTest([[1, 2, 3, 4, 5], 100, { step: 2, partial: true }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 100], []);
+    slideWindowTest([[1, 2, 3, 4, 5], 100, { step: 2 }], []);
+    slideWindowTest([[1, 2, 3, 4, 5], 100, { step: 2, partial: true }], [
       [1, 2, 3, 4, 5],
       [3, 4, 5],
       [5],
@@ -263,29 +263,29 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/windowed] large step",
+  name: "[collections/slideWindow] large step",
   fn() {
-    windowedTest([[1, 2, 3, 4, 5], 3, { step: 100 }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 3, { step: 100 }], [
       [1, 2, 3],
     ]);
-    windowedTest([[1, 2, 3, 4, 5], 3, { step: 100, partial: true }], [
+    slideWindowTest([[1, 2, 3, 4, 5], 3, { step: 100, partial: true }], [
       [1, 2, 3],
     ]);
   },
 });
 
 Deno.test({
-  name: "[collections/windowed] empty Array",
+  name: "[collections/slideWindow] empty Array",
   fn() {
-    windowedTest([Array(5), 5], [
+    slideWindowTest([Array(5), 5], [
       Array(5),
     ]);
-    windowedTest([Array(5), 3], [
+    slideWindowTest([Array(5), 3], [
       Array(3),
       Array(3),
       Array(3),
     ]);
-    windowedTest([Array(5), 1], [
+    slideWindowTest([Array(5), 1], [
       Array(1),
       Array(1),
       Array(1),

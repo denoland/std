@@ -415,6 +415,46 @@ console.assert(
 );
 ```
 
+# slideWindow
+
+Generates sliding views of the given array of the given size and returns a new
+array containing all of them.
+
+If step is set, each window will start that many elements after the last
+window's start. (Default: 1)
+
+If partial is set, windows will be generated for the last elements of the
+collection, resulting in some undefined values if size is greather than 1.
+(Default: false)
+
+```ts
+import { slideWindow } from "./slide_window.ts";
+import { assertEquals } from "../testing/asserts.ts";
+const numbers = [1, 2, 3, 4, 5];
+
+const windows = slideWindow(numbers, 3);
+assertEquals(windows, [
+  [1, 2, 3],
+  [2, 3, 4],
+  [3, 4, 5],
+]);
+
+const windowsWithStep = slideWindow(numbers, 3, { step: 2 });
+assertEquals(windowsWithStep, [
+  [1, 2, 3],
+  [3, 4, 5],
+]);
+
+const windowsWithPartial = slideWindow(numbers, 3, { partial: true });
+assertEquals(windowsWithPartial, [
+  [1, 2, 3],
+  [2, 3, 4],
+  [3, 4, 5],
+  [4, 5],
+  [5],
+]);
+```
+
 ### sortBy
 
 Returns all elements in the given collection, sorted by their result using the
@@ -451,46 +491,6 @@ const saladIngredients = ["Carrots", "Radicchio", "Pepper"];
 const shoppingList = union(soupIngredients, saladIngredients);
 
 assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
-```
-
-# windowed
-
-Generates sliding views of the given array of the given size and returns a new
-array containing all of them.
-
-If step is set, each window will start that many elements after the last
-window's start. (Default: 1)
-
-If partial is set, windows will be generated for the last elements of the
-collection, resulting in some undefined values if size is greather than 1.
-(Default: false)
-
-```ts
-import { windowed } from "./windowed.ts";
-import { assertEquals } from "../testing/asserts.ts";
-const numbers = [1, 2, 3, 4, 5];
-
-const windows = windowed(numbers, 3);
-assertEquals(windows, [
-  [1, 2, 3],
-  [2, 3, 4],
-  [3, 4, 5],
-]);
-
-const windowsWithStep = windowed(numbers, 3, { step: 2 });
-assertEquals(windowsWithStep, [
-  [1, 2, 3],
-  [3, 4, 5],
-]);
-
-const windowsWithPartial = windowed(numbers, 3, { partial: true });
-assertEquals(windowsWithPartial, [
-  [1, 2, 3],
-  [2, 3, 4],
-  [3, 4, 5],
-  [4, 5],
-  [5],
-]);
 ```
 
 ### withoutAll
