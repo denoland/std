@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { listenAndServe } from "../../http/server.ts";
+import { listenAndServe } from "../../http/server_legacy.ts";
 import {
   acceptable,
   acceptWebSocket,

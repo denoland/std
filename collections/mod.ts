@@ -1,10 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 export * from "./associate_by.ts";
-export * from "./chunked.ts";
+export * from "./chunk.ts";
 export * from "./deep_merge.ts";
 export * from "./distinct.ts";
 export * from "./distinct_by.ts";
+export * from "./drop_while.ts";
 export * from "./filter_entries.ts";
 export * from "./filter_keys.ts";
 export * from "./filter_values.ts";
@@ -29,4 +30,9 @@ export * from "./without_all.ts";
 export * from "./unzip.ts";
 export * from "./zip.ts";
 export * from "./max_with.ts";
+export * from "./min_with.ts";
+export * from "./includes_value.ts";
+export * from "./take_last_while.ts";
+export * from "./take_while.ts";
 export * from "./first_not_nullish_of.ts";
+export * from "./drop_last_while.ts";

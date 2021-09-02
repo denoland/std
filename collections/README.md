@@ -38,12 +38,12 @@ assertEquals(usersById, {
 });
 ```
 
-### chunked
+### chunk
 
 Splits the given array into chunks of the given size and returns them.
 
 ```ts
-import { chunked } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { chunk } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 
 const words = [
   "lorem",
@@ -54,7 +54,7 @@ const words = [
   "consetetur",
   "sadipscing",
 ];
-const chunks = chunked(words, 3);
+const chunks = chunk(words, 3);
 
 console.assert(
   chunks === [
@@ -110,6 +110,20 @@ const numbers = [3, 2, 5, 2, 5];
 const distinctNumbers = distinct(numbers);
 
 console.assert(distinctNumbers === [3, 2, 5]);
+```
+
+### dropWhile
+
+Returns a new array that drops all elements in the given collection until the
+first element that does not match the given predicate.
+
+```ts
+import { dropWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+
+const numbers = [3, 2, 5, 2, 5];
+const dropWhileNumbers = dropWhile(numbers, (i) => i !== 2);
+
+console.assert(dropWhileNumbers === [2, 5, 2, 5]);
 ```
 
 ### filterEntries
@@ -525,6 +539,75 @@ const largestName = maxWith(people, (a, b) => a.length - b.length);
 assertEquals(largestName, "Arthur");
 ```
 
+### minWith
+
+Returns the first element having the smallest value according to the provided
+comparator or undefined if there are no elements
+
+```ts
+import { minWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = ["Kim", "Anna", "John"];
+const smallestName = minWith(people, (a, b) => a.length - b.length);
+
+assertEquals(smallestName, "Kim");
+```
+
+### includesValue
+
+If the given value is part of the given object it returns true, otherwise it
+returns false. Doesn't work with non-primitive values: includesValue({x: {}},
+{}) returns false.
+
+```ts
+import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const input = {
+  first: 33,
+  second: 34,
+};
+
+assertEquals(includesValue(input, 34), true);
+```
+
+### takeWhile
+
+Returns all elements in the given collection until the first element that does
+not match the given predicate.
+
+```ts
+import { takeWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const arr = [1, 2, 3, 4, 5, 6];
+
+assertEquals(
+  takeWhile(arr, (i) => i !== 4),
+  [1, 2, 3],
+);
+```
+
+### takeLastWhile
+
+Returns all elements in the given array after the last element that does not
+match the given predicate.
+
+Example:
+
+```ts
+import { takeLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const arr = [1, 2, 3, 4, 5, 6];
+
+assertEquals(
+  takeLastWhile(arr, (i) => i > 4),
+  [5, 6],
+);
+```
+
 ### firstNotNullishOf
 
 Applies the given selector to elements in the given array until a value is
@@ -583,4 +666,25 @@ const people = [
 const personWithMinAge = minBy(people, (i) => i.age);
 
 assertEquals(personWithMinAge, { name: "John", age: 23 });
+```
+
+### dropLastWhile
+
+Returns a new array that drops all elements in the given collection until the
+last element that does not match the given predicate
+
+Example:
+
+```ts
+import { dropLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const numbers = [22, 30, 44];
+
+const notFourtyFour = dropLastWhile(numbers, (i) => i != 44);
+
+assertEquals(
+  notFourtyFour,
+  [22, 30],
+);
 ```

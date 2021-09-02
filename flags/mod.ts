@@ -61,8 +61,10 @@ interface NestedMapping {
   [key: string]: NestedMapping | unknown;
 }
 
+const { hasOwn } = Object;
+
 function get<T>(obj: Record<string, T>, key: string): T | undefined {
-  if (Object.prototype.hasOwnProperty.call(obj, key)) {
+  if (hasOwn(obj, key)) {
     return obj[key];
   }
 }
