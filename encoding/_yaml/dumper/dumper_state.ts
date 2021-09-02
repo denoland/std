@@ -8,7 +8,7 @@ import { State } from "../state.ts";
 import type { StyleVariant, Type } from "../type.ts";
 import type { Any, ArrayObject } from "../utils.ts";
 
-const _hasOwnProperty = Object.prototype.hasOwnProperty;
+const { hasOwn } = Object;
 
 function compileStyleMap(
   schema: Schema,
@@ -31,7 +31,7 @@ function compileStyleMap(
     if (
       type &&
       typeof type.styleAliases !== "undefined" &&
-      _hasOwnProperty.call(type.styleAliases, style)
+      hasOwn(type.styleAliases, style)
     ) {
       style = type.styleAliases[style];
     }
