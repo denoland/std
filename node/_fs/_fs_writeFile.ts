@@ -60,7 +60,7 @@ export function writeFile(
 
       await writeAll(file, data as Uint8Array);
     } catch (e) {
-      error = e;
+      error = e instanceof Error ? e : new Error("[non-error thrown]");
     } finally {
       // Make sure to close resource
       if (!isRid && file) file.close();
@@ -105,7 +105,7 @@ export function writeFileSync(
 
     writeAllSync(file, data as Uint8Array);
   } catch (e) {
-    error = e;
+    error = e instanceof Error ? e : new Error("[non-error thrown]");
   } finally {
     // Make sure to close resource
     if (!isRid && file) file.close();

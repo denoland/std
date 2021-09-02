@@ -4,6 +4,8 @@
 
 import { filterInPlace } from "./_utils.ts";
 
+const { hasOwn } = Object;
+
 /**
  * Merges the two given Records, recursively merging any nested Records with
  * the second collection overriding the first in case of conflict
@@ -71,7 +73,7 @@ export function deepMerge<
 
     const a = record[key] as ResultMember;
 
-    if (!(key in other)) {
+    if (!hasOwn(other, key)) {
       result[key] = a;
 
       continue;

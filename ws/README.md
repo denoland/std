@@ -8,7 +8,7 @@ WebSockets, use the
 
 ```ts
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+import { serve } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
 import {
   acceptWebSocket,
   isWebSocketCloseEvent,
