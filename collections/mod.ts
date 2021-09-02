@@ -29,6 +29,7 @@ export * from "./union.ts";
 export * from "./without_all.ts";
 export * from "./unzip.ts";
 export * from "./zip.ts";
+export * from "./min_with.ts";
 export * from "./includes_value.ts";
 export * from "./take_last_while.ts";
 export * from "./take_while.ts";
