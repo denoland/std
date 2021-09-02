@@ -112,6 +112,20 @@ const distinctNumbers = distinct(numbers);
 console.assert(distinctNumbers === [3, 2, 5]);
 ```
 
+### dropWhile
+
+Returns a new array that drops all elements in the given collection until the
+first element that does not match the given predicate.
+
+```ts
+import { dropWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+
+const numbers = [3, 2, 5, 2, 5];
+const dropWhileNumbers = dropWhile(numbers, (i) => i !== 2);
+
+console.assert(dropWhileNumbers === [2, 5, 2, 5]);
+```
+
 ### filterEntries
 
 Returns a new record with all entries of the given record except the ones that
