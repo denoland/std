@@ -59,7 +59,8 @@ export type Handler = (
 ) => Response | Promise<Response>;
 
 /**
- * Parse an address from a string.
+ * Parse an address from a string. When only the port is given, the hostname
+ * defaults to 127.0.0.1
  *
  * ```ts
  * import { _parseAddrFromStr } from "https://deno.land/std@$STD_VERSION/http/server.ts";
@@ -78,7 +79,7 @@ export function _parseAddrFromStr(
   addr: string,
   defaultPort = HTTP_PORT,
 ): Deno.ListenOptions {
-  const host = addr.startsWith(":") ? `0.0.0.0${addr}` : addr;
+  const host = addr.startsWith(":") ? `127.0.0.1${addr}` : addr;
 
   let url: URL;
 

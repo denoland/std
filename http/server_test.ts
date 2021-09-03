@@ -156,7 +156,7 @@ Deno.test("_parseAddrFromStr should throw an error if the address string contain
 Deno.test("_parseAddrFromStr should parse port only address strings", () => {
   const addr = _parseAddrFromStr(":4505");
   assertEquals(addr.port, 4505);
-  assertEquals(addr.hostname, "0.0.0.0");
+  assertEquals(addr.hostname, "127.0.0.1");
 });
 
 Deno.test("_parseAddrFromStr should parse host only address strings using the default HTTP port", () => {
