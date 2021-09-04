@@ -41,15 +41,6 @@ function zip3Test<T, U, V>(
   assertEquals(actual, expected, message);
 }
 
-function zip4Test<T, U, V, W>(
-  input: [Array<T>, Array<U>, Array<V>, Array<W>],
-  expected: Array<[T, U, V, W]>,
-  message?: string,
-) {
-  const actual = zip(...input);
-  assertEquals(actual, expected, message);
-}
-
 Deno.test({
   name: "[collections/zip] Correctly zips three arrays",
   fn() {
