@@ -20,7 +20,7 @@
  * ```
  */
 export function reduceGroups<T, A>(
-  record: Record<string, Array<T>>,
+  record: Readonly<Record<string, Array<T>>>,
   reducer: (accumulator: A, current: T) => A,
   initialValue: A,
 ): Record<string, A> {
