@@ -3,6 +3,28 @@
 import { assertEquals } from "../testing/asserts.ts";
 import { zip } from "./zip.ts";
 
+function zip1Test<T>(
+  input: [Array<T>],
+  expected: Array<[T]>,
+  message?: string,
+) {
+  const actual = zip(...input);
+  assertEquals(actual, expected, message);
+}
+
+assertEquals(zip([]), []);
+
+Deno.test({
+  name: "[collections/zip] Correctly zips one array",
+  fn() {
+    zip1Test([
+      [1, 2, 3]
+    ],
+      [[1], [2], [3]]
+    );
+  },
+});
+
 function zipTest<T, U>(
   input: [Array<T>, Array<U>],
   expected: Array<[T, U]>,

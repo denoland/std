@@ -23,6 +23,8 @@
  */
 
 export function zip<T extends unknown[][]>(...arrays: T): T {
+  if (arrays.length === 0) return [] as unknown as T;
+
   let returnLength = arrays[0].length;
 
   for (let i = 1; i < arrays.length; i++) {
