@@ -194,7 +194,7 @@ export function getCookies(req: { headers: Headers }): Record<string, string> {
  * setCookie(response, { name: 'deno', value: 'runtime',
  *   httpOnly: true, secure: true, maxAge: 2, domain: "deno.land" });
  * ```
- * 
+ *
  * @param res An object which has a headers property.
  * @param cookie Cookie to set.
  */

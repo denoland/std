@@ -100,4 +100,4 @@ let response: Response = {};
 deleteCookie(response, "deno", { path: "/", domain: "deno.land" });
 ```
 
-**Note**: At the moment multiple `Set-Cookie` in a `Response` is not handled.
+> Note: At the moment multiple `Set-Cookie` in a `Response` is not handled.
