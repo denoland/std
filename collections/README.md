@@ -524,6 +524,21 @@ console.assert(
 );
 ```
 
+### maxWith
+
+Returns the first element having the largest value according to the provided
+comparator or undefined if there are no elements
+
+```ts
+import { maxWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = ["Kim", "Anna", "John", "Arthur"];
+const largestName = maxWith(people, (a, b) => a.length - b.length);
+
+assertEquals(largestName, "Arthur");
+```
+
 ### minWith
 
 Returns the first element having the smallest value according to the provided
