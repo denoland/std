@@ -405,7 +405,7 @@ Deno.test({
       const s = await r.readLine();
       assert(s !== null && s.includes("server listening"));
       await delay(100);
-      // Reqeusts to the server and immediately closes the connection
+      // Requests to the server and immediately closes the connection
       const conn = await Deno.connect({ port: 4502 });
       await conn.write(new TextEncoder().encode("GET / HTTP/1.0\n\n"));
       conn.close();
@@ -682,7 +682,7 @@ Deno.test({
         "",
       ].join("\r\n")),
     );
-    // After sending the two requests, don't receive the reponses.
+    // After sending the two requests, don't receive the responses.
 
     // Closing the connection now.
     conn.close();
