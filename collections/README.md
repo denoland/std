@@ -415,7 +415,7 @@ console.assert(
 );
 ```
 
-# slideWindow
+# slidingWindows
 
 Generates sliding views of the given array of the given size and returns a new
 array containing all of them.
@@ -428,24 +428,24 @@ collection, resulting in some undefined values if size is greather than 1.
 (Default: false)
 
 ```ts
-import { slideWindow } from "./slide_window.ts";
+import { slidingWindows } from "./sliding_windows.ts";
 import { assertEquals } from "../testing/asserts.ts";
 const numbers = [1, 2, 3, 4, 5];
 
-const windows = slideWindow(numbers, 3);
+const windows = slidingWindows(numbers, 3);
 assertEquals(windows, [
   [1, 2, 3],
   [2, 3, 4],
   [3, 4, 5],
 ]);
 
-const windowsWithStep = slideWindow(numbers, 3, { step: 2 });
+const windowsWithStep = slidingWindows(numbers, 3, { step: 2 });
 assertEquals(windowsWithStep, [
   [1, 2, 3],
   [3, 4, 5],
 ]);
 
-const windowsWithPartial = slideWindow(numbers, 3, { partial: true });
+const windowsWithPartial = slidingWindows(numbers, 3, { partial: true });
 assertEquals(windowsWithPartial, [
   [1, 2, 3],
   [2, 3, 4],

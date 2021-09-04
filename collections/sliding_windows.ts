@@ -14,34 +14,34 @@
  * Example:
  *
  * ```ts
- * import { slideWindow } from "./slide_window.ts";
+ * import { slidingWindows } from "./sliding_windows.ts";
  * import { assertEquals } from "../testing/asserts.ts";
- * const numbers = [ 1, 2, 3, 4, 5 ];
+ * const numbers = [1, 2, 3, 4, 5];
  *
- * const windows = slideWindow(numbers, 3);
+ * const windows = slidingWindows(numbers, 3);
  * assertEquals(windows, [
- *     [ 1, 2, 3 ],
- *     [ 2, 3, 4 ],
- *     [ 3, 4, 5 ],
+ *   [1, 2, 3],
+ *   [2, 3, 4],
+ *   [3, 4, 5],
  * ]);
  *
- * const windowsWithStep = slideWindow(numbers, 3, {step: 2});
+ * const windowsWithStep = slidingWindows(numbers, 3, { step: 2 });
  * assertEquals(windowsWithStep, [
- *     [ 1, 2, 3 ],
- *     [ 3, 4, 5 ],
+ *   [1, 2, 3],
+ *   [3, 4, 5],
  * ]);
  *
- * const windowsWithPartial = slideWindow(numbers, 3, {partial: true});
+ * const windowsWithPartial = slidingWindows(numbers, 3, { partial: true });
  * assertEquals(windowsWithPartial, [
- *     [ 1, 2, 3 ],
- *     [ 2, 3, 4 ],
- *     [ 3, 4, 5 ],
- *     [4, 5],
- *     [5],
+ *   [1, 2, 3],
+ *   [2, 3, 4],
+ *   [3, 4, 5],
+ *   [4, 5],
+ *   [5],
  * ]);
  * ```
  */
-export function slideWindow<T>(
+export function slidingWindows<T>(
   array: readonly T[],
   size: number,
   { step = 1, partial = false }: {
