@@ -22,17 +22,21 @@
  * assertEquals(moms, [ 'Jeff', 'Kim', 'Leroy' ])
  * ```
  */
-export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
-  const { length } = pairs;
-  const ret: [T[], U[]] = [
-    new Array(length),
-    new Array(length),
-  ];
 
-  pairs.forEach(([first, second], index) => {
-    ret[0][index] = first;
-    ret[1][index] = second;
-  });
+export function unzip<T extends unknown[][]>(
+  ...tuples: Readonly<T>
+): unknown[][] {
+  if (tuples.length === 0) return [];
+  const length = tuples[0].length;
+  const ret: [...unknown[]] = new Array(length);
 
-  return ret;
+  for (let i = 0; i < length; i++) {
+    const res = [];
+    for (const tuple of tuples) {
+      res.push(tuple[i]);
+    }
+    ret[i] = res;
+  }
+
+  return ret as T;
 }

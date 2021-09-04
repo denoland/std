@@ -22,7 +22,7 @@
  * ```
  */
 
-export function zip<T extends unknown[][]>(...arrays: T): T {
+export function zip<T extends unknown[][]>(...arrays: Readonly<T>): T {
   if (arrays.length === 0) return [] as unknown as T;
 
   let returnLength = arrays[0].length;
