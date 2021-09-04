@@ -18,10 +18,8 @@ Deno.test({
   name: "[collections/zip] Correctly zips one array",
   fn() {
     zip1Test([
-      [1, 2, 3]
-    ],
-      [[1], [2], [3]]
-    );
+      [1, 2, 3],
+    ], [[1], [2], [3]]);
   },
 });
 
@@ -59,25 +57,21 @@ Deno.test({
       [1, 2, 3],
       [4, 5, 6],
       [7, 8, 9],
-    ],
-      [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
-    );
+    ], [[1, 4, 7], [2, 5, 8], [3, 6, 9]]);
   },
 });
 
 Deno.test({
-  name: "[collections/zip] Correctly zips three arrays when the first is the shortest",
+  name:
+    "[collections/zip] Correctly zips three arrays when the first is the shortest",
   fn() {
     zip3Test([
       [1, 2],
       [4, 5, 6],
       [7, 8, 9],
-    ],
-      [[1, 4, 7], [2, 5, 8]]
-    );
+    ], [[1, 4, 7], [2, 5, 8]]);
   },
 });
-
 
 Deno.test({
   name: "[collections/zip] no mutation",

@@ -43,4 +43,3 @@ export function zip<T extends unknown[][]>(...arrays: T): T {
 
   return ret as T;
 }
-
