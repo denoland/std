@@ -24,19 +24,17 @@
  */
 
 export function unzip<T extends unknown[][]>(
-  ...tuples: Readonly<T>
+  tuples: Readonly<T>
 ): unknown[][] {
   if (tuples.length === 0) return [];
-  const length = tuples[0].length;
-  const ret: [...unknown[]] = new Array(length);
 
-  for (let i = 0; i < length; i++) {
-    const res = [];
+  const ret = [];
+  for (let i = 0; i < tuples[0].length; i++) {
+    let curr = [];
     for (const tuple of tuples) {
-      res.push(tuple[i]);
+      curr.push(tuple[i]);
     }
-    ret[i] = res;
+    ret.push(curr);
   }
-
-  return ret as T;
+  return ret;
 }
