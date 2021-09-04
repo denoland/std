@@ -111,6 +111,7 @@ Deno.test({
     try {
       decode("OOOO==");
     } catch (e) {
+      assert(e instanceof Error);
       assert(
         e.message.includes("Invalid string. Length must be a multiple of 8"),
       );
@@ -127,6 +128,7 @@ Deno.test({
     try {
       decode("OOOOOO==");
     } catch (e) {
+      assert(e instanceof Error);
       assert(e.message.includes("Invalid pad length"));
       errorCaught = true;
     }
