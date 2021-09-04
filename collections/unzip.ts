@@ -24,13 +24,13 @@
  */
 
 export function unzip<T extends unknown[][]>(
-  tuples: Readonly<T>
+  tuples: Readonly<T>,
 ): unknown[][] {
   if (tuples.length === 0) return [];
 
   const ret = [];
   for (let i = 0; i < tuples[0].length; i++) {
-    let curr = [];
+    const curr = [];
     for (const tuple of tuples) {
       curr.push(tuple[i]);
     }
