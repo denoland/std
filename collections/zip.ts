@@ -1,8 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Builds 2-tuples of elements from the given array with matching indices, stopping when the smaller array's end is reached
  *
+ * Builds 2-tuples of elements from the given array with matching indices, stopping when the smaller array's end is reached
  * Example:
  *
  * ```ts
@@ -21,17 +21,24 @@
  * ])
  * ```
  */
-export function zip<T, U>(
-  array: readonly T[],
-  withArray: readonly U[],
-): [T, U][] {
-  const returnLength = Math.min(array.length, withArray.length);
 
-  const ret = new Array<[T, U]>(returnLength);
+export function zip<T extends unknown[][]>(...arrays: T): T {
+  let returnLength = arrays[0].length;
 
-  for (let i = 0; i < returnLength; i += 1) {
-    ret[i] = [array[i], withArray[i]];
+  for (let i = 1; i < arrays.length; i++) {
+    returnLength = Math.min(returnLength, arrays[i].length);
   }
 
-  return ret;
+  const ret = new Array(returnLength);
+
+  for (let i = 0; i < returnLength; i += 1) {
+    const arr = [];
+    for (const array of arrays) {
+      arr.push(array[i]);
+    }
+    ret[i] = arr;
+  }
+
+  return ret as T;
 }
+

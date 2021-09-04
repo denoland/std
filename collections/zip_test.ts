@@ -12,6 +12,51 @@ function zipTest<T, U>(
   assertEquals(actual, expected, message);
 }
 
+function zip3Test<T, U, V>(
+  input: [Array<T>, Array<U>, Array<V>],
+  expected: Array<[T, U, V]>,
+  message?: string,
+) {
+  const actual = zip(...input);
+  assertEquals(actual, expected, message);
+}
+
+function zip4Test<T, U, V, W>(
+  input: [Array<T>, Array<U>, Array<V>, Array<W>],
+  expected: Array<[T, U, V, W]>,
+  message?: string,
+) {
+  const actual = zip(...input);
+  assertEquals(actual, expected, message);
+}
+
+Deno.test({
+  name: "[collections/zip] Correctly zips three arrays",
+  fn() {
+    zip3Test([
+      [1, 2, 3],
+      [4, 5, 6],
+      [7, 8, 9],
+    ],
+      [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
+    );
+  },
+});
+
+Deno.test({
+  name: "[collections/zip] Correctly zips three arrays when the first is the shortest",
+  fn() {
+    zip3Test([
+      [1, 2],
+      [4, 5, 6],
+      [7, 8, 9],
+    ],
+      [[1, 4, 7], [2, 5, 8]]
+    );
+  },
+});
+
+
 Deno.test({
   name: "[collections/zip] no mutation",
   fn() {
