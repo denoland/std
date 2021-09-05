@@ -112,6 +112,6 @@ Deno.test({
 Deno.test({
   name: "[collections/mapEntries] empty input",
   fn() {
-    reduceGroupsTest([{}, (sum, it) => 0, 0], {});
+    reduceGroupsTest([{}, () => 0, 0], {});
   },
 });

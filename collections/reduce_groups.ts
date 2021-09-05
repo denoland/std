@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+import { mapValues } from "./map_values.ts";
 
 /**
  * Applies the given reducer to each group in the given Grouping, returning the results together with the respective group keys
@@ -24,11 +25,5 @@ export function reduceGroups<T, A>(
   reducer: (accumulator: A, current: T) => A,
   initialValue: A,
 ): Record<string, A> {
-  const result: Record<string, A> = {};
-
-  for (const [key, values] of Object.entries(record)) {
-    result[key] = values.reduce(reducer, initialValue);
-  }
-
-  return result;
+  return mapValues(record, (it) => it.reduce(reducer, initialValue));
 }
