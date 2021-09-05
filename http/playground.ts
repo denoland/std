@@ -1,6 +1,9 @@
-import { HttpRequest, HttpResponse, Middleware, addMiddleware } from "./middleware.ts"
+import { assertEquals } from '../testing/asserts.ts'
+import { HttpRequest, Middleware, addMiddleware } from './middleware.ts'
 
 type AuthedRequest = HttpRequest & { auth: string }
+
+const passThrough: Middleware<HttpRequest> = (req, next) => next!(req)
 
 const authenticate: Middleware<HttpRequest, { auth: string }> = (req, next) => {
     const auth = req.path
@@ -22,13 +25,15 @@ const authorize = <R extends AuthedRequest>(req: R, next?: Middleware<R>) => {
     return next!(req)
 }
 
+const rainbow: Middleware<HttpRequest, { rainbow: boolean }> = (req, next) => next!({ ...req, rainbow: true })
 
-const passThrough: Middleware<HttpRequest> = (req, next) => next!(req)
-
-const handleGet: Middleware<AuthedRequest> = req => ({ body: "lawl" })
+const handleGet: Middleware<AuthedRequest> = req => ({ body: 'yey' })
 
 const stack = passThrough
 const withAuthentication = addMiddleware(stack, authenticate)
 const withAuthorization = addMiddleware(withAuthentication, authorize)
-const handler = addMiddleware(withAuthorization, handleGet)
+const withRainbow = addMiddleware(withAuthorization, rainbow)
+const withHandler = addMiddleware(withRainbow, handleGet)
 
+assertEquals(withHandler({ path: 'someuser' }), { body: 'nope' })
+assertEquals(withHandler({ path: 'admin' }), { body: 'yey' })
