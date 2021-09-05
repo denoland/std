@@ -1,31 +1,20 @@
-type Handler<
-    A,
-    B = A,
-> = (req: A, next?: Handler<B>) => void
+export type HttpRequest = { path: string }
+export type HttpResponse = { body: string }
 
-function addMiddleware<
-    A,
-    B,
-    C,
+export type Middleware<
+    Requires extends HttpRequest,
+    Adds = {},
+> = <Gets extends Requires>(req: Gets, next?: Middleware<Gets & Adds>) => HttpResponse
+
+export function addMiddleware<
+    StackAdd,
+    HandlerAdd,
 >(
-    stack: Handler<A, B>,
-    middleware: Handler<B, C>,
-): Handler<A, B & C> {
+    stack: Middleware<HttpRequest, StackAdd>,
+    middleware: Middleware<HttpRequest & StackAdd, HandlerAdd>,
+): Middleware<HttpRequest, HttpRequest & StackAdd & HandlerAdd> {
     return (req, next) => stack(
         req,
         r => middleware(r, next),
     )
 }
-
-const authMiddleware: Handler<{}, { auth: string }> = (req, next) => {
-    const auth = 'someuser'
-    const response = next({ auth })
-
-    return
-}
-const handleGet: Handler<{}> = (req: {}) => {}
-
-addMiddleware(
-    authMiddleware,
-    handleGet,
-)
