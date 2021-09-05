@@ -44,6 +44,7 @@ Splits the given array into chunks of the given size and returns them.
 
 ```ts
 import { chunked } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const words = [
   "lorem",
@@ -56,8 +57,9 @@ const words = [
 ];
 const chunks = chunked(words, 3);
 
-console.assert(
-  chunks === [
+assertEquals(
+  chunks,
+  [
     ["lorem", "ipsum", "dolor"],
     ["sit", "amet", "consetetur"],
     ["sadipscing"],
@@ -91,11 +93,12 @@ given selector, preserving order by first occurence.
 
 ```ts
 import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const names = ["Anna", "Kim", "Arnold", "Kate"];
 const exampleNamesByFirstLetter = distinctBy(names, (it) => it.charAt(0));
 
-console.assert(exampleNamesByFirstLetter === ["Anna", "Kim"]);
+assetEquals(exampleNamesByFirstLetter, ["Anna", "Kim"]);
 ```
 
 ### distinct
@@ -105,11 +108,12 @@ occurence.
 
 ```ts
 import { distinct } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [3, 2, 5, 2, 5];
 const distinctNumbers = distinct(numbers);
 
-console.assert(distinctNumbers === [3, 2, 5]);
+assetEquals(distinctNumbers, [3, 2, 5]);
 ```
 
 ### filterEntries
@@ -119,6 +123,7 @@ do not match the given predicate.
 
 ```ts
 import { filterEntries } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const menu = {
   "Salad": 11,
@@ -129,8 +134,10 @@ const myOptions = filterEntries(
   menu,
   ([item, price]) => item !== "Pasta" && price < 10,
 );
-console.assert(
-  myOptions === {
+
+assetEquals(
+  myOptions,
+  {
     "Soup": 8,
   },
 );
@@ -143,6 +150,7 @@ have a key that does not match the given predicate.
 
 ```ts
 import { filterKeys } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const menu = {
   "Salad": 11,
@@ -151,8 +159,9 @@ const menu = {
 };
 const menuWithoutSalad = filterKeys(menu, (it) => it !== "Salad");
 
-console.assert(
-  menuWithoutSalad === {
+assetEquals(
+  menuWithoutSalad,
+  {
     "Soup": 8,
     "Pasta": 13,
   },
@@ -166,6 +175,7 @@ have a value that does not match the given predicate.
 
 ```ts
 import { filterValues } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = {
   "Arnold": 37,
@@ -174,8 +184,9 @@ const people = {
 };
 const adults = filterValues(people, (it) => it >= 18);
 
-console.assert(
-  adults === {
+assetEquals(
+  adults,
+  {
     "Arnold": 37,
     "Kim": 23,
   },
@@ -188,11 +199,12 @@ Returns the last element in the given array matching the given predicate.
 
 ```ts
 import { findLast } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [4, 2, 7];
 const lastEvenNumber = findLast(numbers, (it) => it % 2 === 0);
 
-console.assert(lastEvenNumber === 2);
+assetEquals(lastEvenNumber, 2);
 ```
 
 ### findLastIndex
@@ -202,11 +214,12 @@ predicate.
 
 ```ts
 import { findLastIndex } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [0, 1, 2, 3, 4, 5, 6];
 const lastIndexEvenNumber = findLastIndex(numbers, (it) => it % 2 === 0);
 
-console.assert(lastIndexEvenNumber === 6);
+assetEquals(lastIndexEvenNumber, 6);
 ```
 
 ### groupBy
@@ -217,6 +230,7 @@ values.
 
 ```ts
 import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const people = [
   { name: "Anna" },
@@ -225,8 +239,9 @@ const people = [
 ];
 const peopleByFirstLetter = groupBy(people, (it) => it.name.charAt(0));
 
-console.assert(
-  peopleByFirstLetter === {
+assetEquals(
+  peopleByFirstLetter,
+  {
     "A": [{ name: "Anna" }, { name: "Arnold" }],
     "K": [{ name: "Kim" }],
   },
@@ -240,12 +255,13 @@ arrays.
 
 ```ts
 import { intersect } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const lisaInterests = ["Cooking", "Music", "Hiking"];
 const kimInterests = ["Music", "Tennis", "Cooking"];
 const commonInterests = intersect(lisaInterests, kimInterests);
 
-console.assert(commonInterests === ["Cooking", "Music"]);
+assetEquals(commonInterests, ["Cooking", "Music"]);
 ```
 
 ### mapEntries
@@ -255,6 +271,7 @@ new record containing the results.
 
 ```ts
 import { mapEntries } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const usersById = {
   "a2e": { name: "Kim", age: 22 },
@@ -263,8 +280,9 @@ const usersById = {
 };
 const agesByNames = mapEntries(usersById, ([id, { name, age }]) => [name, age]);
 
-console.assert(
-  agesByNames === {
+assetEquals(
+  agesByNames,
+  {
     "Kim": 22,
     "Anna": 31,
     "Tim": 58,
@@ -282,11 +300,13 @@ one will appear in the returned record.
 
 ```ts
 import { mapKeys } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const counts = { a: 5, b: 3, c: 8 };
 
-console.assert(
-  mapKeys(counts, (it) => it.toUpperCase()) === {
+assetEquals(
+  mapKeys(counts, (it) => it.toUpperCase()),
+  {
     A: 5,
     B: 3,
     C: 8,
@@ -323,6 +343,7 @@ them.
 
 ```ts
 import { mapValues } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const usersById = {
   "a5ec": { name: "Mischa" },
@@ -330,8 +351,9 @@ const usersById = {
 };
 const namesById = mapValues(usersById, (it) => it.name);
 
-console.assert(
-  namesById === {
+assetEquals(
+  namesById,
+  {
     "a5ec": "Mischa",
     "de4f": "Kim",
   },
@@ -346,12 +368,13 @@ that do not.
 
 ```ts
 import { partition } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [5, 6, 7, 8, 9];
 const [even, odd] = partition(numbers, (it) => it % 2 == 0);
 
-console.assert(even === [6, 8]);
-console.assert(odd === [5, 7, 9]);
+assetEquals(even, [6, 8]);
+assetEquals(odd, [5, 7, 9]);
 ```
 
 ### permutations
@@ -362,12 +385,14 @@ a given length of input.
 
 ```ts
 import { permutations } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [1, 2];
 const windows = permutations(numbers);
 
-console.assert(
-  windows === [
+assertEquals(
+  windows,
+  [
     [1, 2],
     [2, 1],
   ],
@@ -431,7 +456,7 @@ const parents = [
 const [moms, dads] = unzip(parents);
 
 assertEquals(moms, ["Maria", "Anna", "John"]);
-assertEquals(moms, ["Jeff", "Kim", "Leroy"]);
+assertEquals(dads, ["Jeff", "Kim", "Leroy"]);
 ```
 
 ### zip
@@ -441,13 +466,15 @@ when the smaller array's end is reached
 
 ```ts
 import { zip } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [1, 2, 3, 4];
 const letters = ["a", "b", "c", "d"];
 const pairs = zip(numbers, letters);
 
-console.assert(
-  pairs === [
+assetEquals(
+  pairs,
+  [
     [1, "a"],
     [2, "b"],
     [3, "c"],
