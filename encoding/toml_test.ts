@@ -542,6 +542,32 @@ b = [1,{c = 2,d = [{e = 3},true]}]
 });
 
 Deno.test({
+  name: "[TOML] Stringify with string values",
+  fn: (): void => {
+    const src = {
+      '"': '"',
+      "'": "'",
+      " ": " ",
+      "\\": "\\",
+      "\n": "\n",
+      "\t": "\t",
+    };
+    const expected = `
+"\\"" = "\\""
+"'"  = "'"
+" "  = " "
+"\\\\" = "\\\\"
+"\\n" = "\\n"
+"\\t" = "\\t"
+`.trim();
+    const actual = stringify(src).trim();
+    assertEquals(actual, expected);
+    const parsed = parse(actual);
+    assertEquals(src, parsed);
+  },
+});
+
+Deno.test({
   name: "[TOML] Comments",
   fn: () => {
     const expected = {

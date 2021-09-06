@@ -28,8 +28,13 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Run tests
+      - name: Run tests release
+        if: matrix.deno != 'canary'
         run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json
+
+      - name: Run tests canary
+        if: matrix.deno == 'canary'
+        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=_wasm_crypto/_build.ts,crypto/_benches,encoding/_yaml/example,examples/chat/server.ts,examples/echo_server.ts,examples/cat.ts,examples/gist.ts,examples/curl.ts,hash/_wasm/build.ts,http/bench.ts,http/bench_legacy.ts,http/racing_server.ts,http/testdata,node/cli.ts,node/_tools,node/testdata,node/_module,wasi/snapshot_preview1_test_runner.ts
 
       - name: Type check browser compatible modules
         shell: bash

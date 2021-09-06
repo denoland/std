@@ -60,11 +60,16 @@ function include(
   return true;
 }
 
-function wrapErrorWithRootPath(err: Error & { root: string }, root: string) {
-  if (err.root) return err;
-  err.root = root;
-  err.message = `${err.message} for path "${root}"`;
-  return err;
+function wrapErrorWithRootPath(err: unknown, root: string) {
+  if (err instanceof Error && "root" in err) return err;
+  const e = new Error() as Error & { root: string };
+  e.root = root;
+  e.message = err instanceof Error
+    ? `${err.message} for path "${root}"`
+    : `[non-error thrown] for path "${root}"`;
+  e.stack = err instanceof Error ? err.stack : undefined;
+  e.cause = err instanceof Error ? err.cause : undefined;
+  return e;
 }
 
 export interface WalkEntry extends Deno.DirEntry {

@@ -21,7 +21,7 @@ import {
   writeFrame,
 } from "./mod.ts";
 import { delay } from "../async/delay.ts";
-import { serve } from "../http/server.ts";
+import { serve } from "../http/server_legacy.ts";
 import { deferred } from "../async/deferred.ts";
 import { Buffer } from "../io/buffer.ts";
 
