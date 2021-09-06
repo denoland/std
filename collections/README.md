@@ -98,7 +98,7 @@ import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts
 const names = ["Anna", "Kim", "Arnold", "Kate"];
 const exampleNamesByFirstLetter = distinctBy(names, (it) => it.charAt(0));
 
-assetEquals(exampleNamesByFirstLetter, ["Anna", "Kim"]);
+assertEquals(exampleNamesByFirstLetter, ["Anna", "Kim"]);
 ```
 
 ### distinct
@@ -113,7 +113,7 @@ import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts
 const numbers = [3, 2, 5, 2, 5];
 const distinctNumbers = distinct(numbers);
 
-assetEquals(distinctNumbers, [3, 2, 5]);
+assertEquals(distinctNumbers, [3, 2, 5]);
 ```
 
 ### dropWhile
@@ -149,7 +149,7 @@ const myOptions = filterEntries(
   ([item, price]) => item !== "Pasta" && price < 10,
 );
 
-assetEquals(
+assertEquals(
   myOptions,
   {
     "Soup": 8,
@@ -173,7 +173,7 @@ const menu = {
 };
 const menuWithoutSalad = filterKeys(menu, (it) => it !== "Salad");
 
-assetEquals(
+assertEquals(
   menuWithoutSalad,
   {
     "Soup": 8,
@@ -198,7 +198,7 @@ const people = {
 };
 const adults = filterValues(people, (it) => it >= 18);
 
-assetEquals(
+assertEquals(
   adults,
   {
     "Arnold": 37,
@@ -218,7 +218,7 @@ import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts
 const numbers = [4, 2, 7];
 const lastEvenNumber = findLast(numbers, (it) => it % 2 === 0);
 
-assetEquals(lastEvenNumber, 2);
+assertEquals(lastEvenNumber, 2);
 ```
 
 ### findLastIndex
@@ -233,7 +233,7 @@ import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts
 const numbers = [0, 1, 2, 3, 4, 5, 6];
 const lastIndexEvenNumber = findLastIndex(numbers, (it) => it % 2 === 0);
 
-assetEquals(lastIndexEvenNumber, 6);
+assertEquals(lastIndexEvenNumber, 6);
 ```
 
 ### groupBy
@@ -253,7 +253,7 @@ const people = [
 ];
 const peopleByFirstLetter = groupBy(people, (it) => it.name.charAt(0));
 
-assetEquals(
+assertEquals(
   peopleByFirstLetter,
   {
     "A": [{ name: "Anna" }, { name: "Arnold" }],
@@ -275,7 +275,7 @@ const lisaInterests = ["Cooking", "Music", "Hiking"];
 const kimInterests = ["Music", "Tennis", "Cooking"];
 const commonInterests = intersect(lisaInterests, kimInterests);
 
-assetEquals(commonInterests, ["Cooking", "Music"]);
+assertEquals(commonInterests, ["Cooking", "Music"]);
 ```
 
 ### mapEntries
@@ -294,7 +294,7 @@ const usersById = {
 };
 const agesByNames = mapEntries(usersById, ([id, { name, age }]) => [name, age]);
 
-assetEquals(
+assertEquals(
   agesByNames,
   {
     "Kim": 22,
@@ -318,7 +318,7 @@ import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts
 
 const counts = { a: 5, b: 3, c: 8 };
 
-assetEquals(
+assertEquals(
   mapKeys(counts, (it) => it.toUpperCase()),
   {
     A: 5,
@@ -365,7 +365,7 @@ const usersById = {
 };
 const namesById = mapValues(usersById, (it) => it.name);
 
-assetEquals(
+assertEquals(
   namesById,
   {
     "a5ec": "Mischa",
@@ -428,8 +428,8 @@ import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts
 const numbers = [5, 6, 7, 8, 9];
 const [even, odd] = partition(numbers, (it) => it % 2 == 0);
 
-assetEquals(even, [6, 8]);
-assetEquals(odd, [5, 7, 9]);
+assertEquals(even, [6, 8]);
+assertEquals(odd, [5, 7, 9]);
 ```
 
 ### permutations
@@ -540,7 +540,7 @@ const numbers = [1, 2, 3, 4];
 const letters = ["a", "b", "c", "d"];
 const pairs = zip(numbers, letters);
 
-assetEquals(
+assertEquals(
   pairs,
   [
     [1, "a"],
