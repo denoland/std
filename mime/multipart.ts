@@ -269,7 +269,7 @@ export interface MultipartFormData {
  * @property prefix - a prefix that will be used for all files created if
  * maxMemory is exceeded.
  * @property suffix - a suffix that will be used for all files created if
- * maxMemory is exceeded, defaults to the fole extension
+ * maxMemory is exceeded, defaults to the file extension
  */
 export interface ReadFormOptions {
   maxMemory?: number;

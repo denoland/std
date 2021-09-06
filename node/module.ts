@@ -1099,7 +1099,7 @@ const CircularRequirePrototypeWarningProxy = new Proxy(
   },
 );
 
-// Object.prototype and ObjectProtoype refer to our 'primordials' versions
+// Object.prototype and ObjectPrototype refer to our 'primordials' versions
 // and are not identical to the versions on the global object.
 const PublicObjectPrototype = globalThis.Object.prototype;
 

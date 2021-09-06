@@ -8,7 +8,7 @@
  * window's start. (Default: 1)
  *
  * If partial is set, windows will be generated for the last elements of the
- * collection, resulting in some undefined values if size is greather than 1.
+ * collection, resulting in some undefined values if size is greater than 1.
  * (Default: false)
  *
  * Example:
@@ -52,7 +52,7 @@ export function slidingWindows<T>(
     step?: number;
     /**
      * If partial is set, windows will be generated for the last elements of the
-     * collection, resulting in some undefined values if size is greather than 1.
+     * collection, resulting in some undefined values if size is greater than 1.
      * (Default: false)
      */
     partial?: boolean;

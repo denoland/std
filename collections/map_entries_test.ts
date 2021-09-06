@@ -104,7 +104,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] normal mapppers",
+  name: "[collections/mapEntries] normal mappers",
   fn() {
     mapEntriesTest(
       [

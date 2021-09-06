@@ -327,5 +327,5 @@ export default process;
 
 //TODO(Soremwar)
 //Remove on 1.0
-//Kept for backwars compatibility with std
+//Kept for backwards compatibility with std
 export { process };

@@ -37,15 +37,15 @@ class Dumper {
     const out = [];
     const props = Object.keys(obj);
     const inlineProps = [];
-    const multilinePorps = [];
+    const multilineProps = [];
     for (const prop of props) {
       if (this.#isSimplySerializable(obj[prop])) {
         inlineProps.push(prop);
       } else {
-        multilinePorps.push(prop);
+        multilineProps.push(prop);
       }
     }
-    const sortedProps = inlineProps.concat(multilinePorps);
+    const sortedProps = inlineProps.concat(multilineProps);
     for (let i = 0; i < sortedProps.length; i++) {
       const prop = sortedProps[i];
       const value = obj[prop];
