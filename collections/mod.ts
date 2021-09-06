@@ -19,6 +19,7 @@ export * from "./map_not_nullish.ts";
 export * from "./map_values.ts";
 export * from "./partition.ts";
 export * from "./permutations.ts";
+export * from "./sliding_windows.ts";
 export * from "./sum_of.ts";
 export * from "./max_by.ts";
 export * from "./max_of.ts";
