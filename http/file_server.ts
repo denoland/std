@@ -234,9 +234,9 @@ function fileLenToString(len: number): string {
 }
 
 /**
- * Returns an HTTP Response with the requested file as the body
- * @param req The server request context used to cleanup the file handle
- * @param filePath Path of the file to serve
+ * Returns an HTTP Response with the requested file as the body.
+ * @param req The server request context used to cleanup the file handle.
+ * @param filePath Path of the file to serve.
  */
 export async function serveFile(
   req: Request,
