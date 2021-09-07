@@ -414,7 +414,7 @@ Deno.test({
       assert(serverIsRunning);
     } finally {
       // Stops the sever and allows `p.status()` promise to resolve
-      Deno.kill(p.pid, Deno.Signal.SIGKILL);
+      Deno.kill(p.pid, "SIGKILL");
       await statusPromise;
       p.stdout.close();
       p.close();
@@ -473,7 +473,7 @@ Deno.test({
       assert(serverIsRunning);
     } finally {
       // Stops the sever and allows `p.status()` promise to resolve
-      Deno.kill(p.pid, Deno.Signal.SIGKILL);
+      Deno.kill(p.pid, "SIGKILL");
       await statusPromise;
       p.stdout.close();
       p.close();

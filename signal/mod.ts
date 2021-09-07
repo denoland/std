@@ -9,7 +9,7 @@ export type Disposable = { dispose: () => void };
  *
  * Example:
  *
- *       const sig = signal(Deno.Signal.SIGUSR1, Deno.Signal.SIGINT);
+ *       const sig = signal("SIGUSR1", "SIGINT");
  *       setTimeout(() => {}, 5000); // Prevents exiting immediately
  *
  *       for await (const _ of sig) {
@@ -51,12 +51,12 @@ export function signal(
 /**
  * Registers a callback function to be called on triggering of a signal event.
  *
- *       const handle = onSignal(Deno.Signal.SIGINT, () => {
+ *       const handle = onSignal("SIGINT", () => {
  *         console.log('Received SIGINT');
  *         handle.dispose();  // de-register from receiving further events
  *       });
  *
- * @param signo One of Deno.Signal (e.g. Deno.Signal.SIGINT)
+ * @param signo One of Deno.Signal (e.g. "SIGINT")
  * @param callback Callback function triggered upon signal event
  */
 export function onSignal(signo: number, callback: () => void): Disposable {
