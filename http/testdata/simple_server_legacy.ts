@@ -3,7 +3,9 @@
 import { serve } from "../server_legacy.ts";
 
 const addr = "0.0.0.0:4502";
-console.log(`Simple server listening on ${addr}`);
+
+console.log(`Simple server listening on http://localhost:4502`);
+
 for await (const req of serve(addr)) {
   req.respond({});
 }

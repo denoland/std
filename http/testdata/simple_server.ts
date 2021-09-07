@@ -4,6 +4,6 @@ import { listenAndServe } from "../server.ts";
 
 const addr = "0.0.0.0:4504";
 
-console.log(`Simple server listening on http://${addr}`);
+console.log(`Simple server listening on http://localhost:4504`);
 
 await listenAndServe(addr, () => new Response());
