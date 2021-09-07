@@ -20,7 +20,7 @@ export interface ByteRange {
  *
  * ```ts
  * import { assertEquals } from "../testing/asserts.ts";
- * import { readRange } from "./util.ts";
+ * import { readRange } from "./files.ts";
  *
  * // Read the first 10 bytes of a file
  * const file = await Deno.open("example.txt", { read: true });
@@ -58,7 +58,7 @@ export async function readRange(
  *
  * ```ts
  * import { assertEquals } from "../testing/asserts.ts";
- * import { readRangeSync } from "./util.ts";
+ * import { readRangeSync } from "./files.ts";
  *
  * // Read the first 10 bytes of a file
  * const file = Deno.openSync("example.txt", { read: true });

@@ -367,7 +367,7 @@ export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array): void {
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { iterateReader } from "./util.ts";
+ * import { iterateReader } from "./streams.ts";
  *
  * let f = await Deno.open("/etc/passwd");
  * const it = iterateReader(f, {
@@ -458,7 +458,7 @@ export function* iterateReaderSync(
  * the first error encountered while copying.
  *
  * ```ts
- * import { copy } from "./util.ts";
+ * import { copy } from "./streams.ts";
  *
  * const source = await Deno.open("my_file.txt");
  * const bytesCopied1 = await copy(source, Deno.stdout);
