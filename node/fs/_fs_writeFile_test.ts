@@ -3,22 +3,23 @@ import {
   assert,
   assertEquals,
   assertNotEquals,
-  assertThrowsAsync,
+  assertRejects,
 } from "../../testing/asserts.ts";
 import { writeFile } from "./promises.ts";
 import type { TextEncodings } from "../_utils.ts";
+import { isWindows } from "../../_util/os.ts";
 
 const decoder = new TextDecoder("utf-8");
 
 Deno.test("Invalid encoding results in error()", function testEncodingErrors() {
-  assertThrowsAsync(
+  assertRejects(
     async () => {
       await writeFile("some/path", "some data", "made-up-encoding");
     },
     Error,
     `The value "made-up-encoding" is invalid for option "encoding"`,
   );
-  assertThrowsAsync(
+  assertRejects(
     async () => {
       await writeFile("some/path", "some data", {
         encoding: "made-up-encoding",
@@ -32,7 +33,7 @@ Deno.test("Invalid encoding results in error()", function testEncodingErrors() {
 Deno.test(
   "Unsupported encoding results in error()",
   function testUnsupportedEncoding() {
-    assertThrowsAsync(
+    assertRejects(
       async () => {
         await writeFile("some/path", "some data", "utf16le");
       },
@@ -102,7 +103,7 @@ Deno.test(
 );
 
 Deno.test("Mode is correctly set", async function testCorrectFileMode() {
-  if (Deno.build.os === "windows") return;
+  if (isWindows) return;
   const filename = "_fs_writeFile_test_file.txt";
   await writeFile(filename, "hello world", { mode: 0o777 });
 
@@ -115,7 +116,7 @@ Deno.test("Mode is correctly set", async function testCorrectFileMode() {
 Deno.test(
   "Mode is not set when rid is passed",
   async function testCorrectFileModeRid() {
-    if (Deno.build.os === "windows") return;
+    if (isWindows) return;
 
     const filename: string = await Deno.makeTempFile();
     const file: Deno.File = await Deno.open(filename, {

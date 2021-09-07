@@ -37,7 +37,7 @@ export class Scanner {
   constructor(private source: string) {}
 
   /**
-   * Get current charactor
+   * Get current character
    * @param index - relative index from current position
    */
   char(index = 0) {
@@ -215,7 +215,7 @@ function join<T>(
   parser: ParserComponent<T>,
   separator: string,
 ): ParserComponent<T[]> {
-  const Separator = charactor(separator);
+  const Separator = character(separator);
   return function Join(scanner: Scanner): ParseResult<T[]> {
     const first = parser(scanner);
     if (!first.ok) {
@@ -242,7 +242,7 @@ function kv<T>(
   separator: string,
   valueParser: ParserComponent<T>,
 ): ParserComponent<{ [key: string]: unknown }> {
-  const Separator = charactor(separator);
+  const Separator = character(separator);
   return function Kv(
     scanner: Scanner,
   ): ParseResult<{ [key: string]: unknown }> {
@@ -312,8 +312,8 @@ function surround<T>(
   parser: ParserComponent<T>,
   right: string,
 ): ParserComponent<T> {
-  const Left = charactor(left);
-  const Right = charactor(right);
+  const Left = character(left);
+  const Right = character(right);
   return function Surround(scanner: Scanner) {
     if (!Left(scanner).ok) {
       return failure();
@@ -331,8 +331,8 @@ function surround<T>(
   };
 }
 
-function charactor(str: string) {
-  return function Charactor(scanner: Scanner): ParseResult<void> {
+function character(str: string) {
+  return function character(scanner: Scanner): ParseResult<void> {
     scanner.nextUntilChar({ inline: true });
     if (scanner.slice(0, str.length) === str) {
       scanner.next(str.length);
@@ -862,7 +862,7 @@ export function ParserFactory<T>(parser: ParserComponent<T>) {
     try {
       parsed = parser(scanner);
     } catch (e) {
-      err = e;
+      err = e instanceof Error ? e : new Error("[non-error thrown]");
     }
 
     if (err || !parsed || !parsed.ok || !scanner.eof()) {
@@ -882,7 +882,7 @@ export function ParserFactory<T>(parser: ParserComponent<T>) {
         return count;
       })();
       const message = `Parse error on line ${row}, column ${column}: ${
-        err ? err.message : `Unexpected charactor: "${scanner.char()}"`
+        err ? err.message : `Unexpected character: "${scanner.char()}"`
       }`;
       throw new TOMLParseError(message);
     }

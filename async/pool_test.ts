@@ -4,8 +4,8 @@ import { pooledMap } from "./pool.ts";
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertStringIncludes,
-  assertThrowsAsync,
 } from "../testing/asserts.ts";
 
 Deno.test("[async] pooledMap", async function () {
@@ -32,8 +32,8 @@ Deno.test("[async] pooledMap errors", async function () {
     return n;
   }
   const mappedNumbers: number[] = [];
-  let error = new AggregateError([]);
-  await assertThrowsAsync(async () => {
+  let error: unknown;
+  await assertRejects(async () => {
     try {
       for await (const m of pooledMap(3, [1, 2, 3, 4], mapNumber)) {
         mappedNumbers.push(m);
@@ -44,7 +44,8 @@ Deno.test("[async] pooledMap errors", async function () {
     }
   }, AggregateError);
   assertEquals(mappedNumbers, [3]);
-  assertEquals(error?.errors.length, 2);
-  assertStringIncludes(error?.errors[0].stack, "Error: Bad number: 1");
-  assertStringIncludes(error?.errors[1].stack, "Error: Bad number: 2");
+  assert(error instanceof AggregateError);
+  assertEquals(error.errors.length, 2);
+  assertStringIncludes(error.errors[0].stack, "Error: Bad number: 1");
+  assertStringIncludes(error.errors[1].stack, "Error: Bad number: 2");
 });

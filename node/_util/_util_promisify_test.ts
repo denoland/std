@@ -23,8 +23,8 @@
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertStrictEquals,
-  assertThrowsAsync,
 } from "../../testing/asserts.ts";
 import { promisify } from "./_util_promisify.ts";
 import * as fs from "../fs.ts";
@@ -38,27 +38,27 @@ const customPromisifyArgs = Symbol.for("nodejs.util.promisify.customArgs");
 Deno.test(
   "Errors should reject the promise",
   async function testPromiseRejection() {
-    await assertThrowsAsync(() => readFile("/dontexist"), Deno.errors.NotFound);
+    await assertRejects(() => readFile("/dontexist"), Deno.errors.NotFound);
   },
 );
 
 Deno.test("Promisify.custom", async function testPromisifyCustom() {
   function fn(): void {}
 
-  function promisifedFn(): void {}
+  function promisifiedFn(): void {}
   // @ts-expect-error TypeScript (as of 3.7) does not support indexing namespaces by symbol
-  fn[promisify.custom] = promisifedFn;
+  fn[promisify.custom] = promisifiedFn;
 
   const promisifiedFnA = promisify(fn);
   const promisifiedFnB = promisify(promisifiedFnA);
-  assertStrictEquals(promisifiedFnA, promisifedFn);
-  assertStrictEquals(promisifiedFnB, promisifedFn);
+  assertStrictEquals(promisifiedFnA, promisifiedFn);
+  assertStrictEquals(promisifiedFnB, promisifiedFn);
 
   await promisifiedFnA;
   await promisifiedFnB;
 });
 
-Deno.test("promiisfy.custom symbol", function testPromisifyCustomSymbol() {
+Deno.test("promisify.custom symbol", function testPromisifyCustomSymbol() {
   function fn(): void {}
 
   function promisifiedFn(): void {}
@@ -81,8 +81,11 @@ Deno.test("Invalid argument should throw", function testThrowInvalidArgument() {
   try {
     promisify(fn);
   } catch (e) {
-    assertStrictEquals(e.code, "ERR_INVALID_ARG_TYPE");
     assert(e instanceof TypeError);
+    assertStrictEquals(
+      (e as TypeError & { code: string }).code,
+      "ERR_INVALID_ARG_TYPE",
+    );
   }
 });
 
@@ -151,7 +154,7 @@ Deno.test(
     function fn(err: Error | null, val: null, callback: VoidFunction): void {
       callback(err, val);
     }
-    await assertThrowsAsync(
+    await assertRejects(
       () => promisify(fn)(new Error("oops"), null),
       Error,
       "oops",
@@ -225,8 +228,11 @@ Deno.test("Test invalid arguments", function testInvalidArguments() {
       // @ts-expect-error TypeScript
       promisify(input);
     } catch (e) {
-      assertStrictEquals(e.code, "ERR_INVALID_ARG_TYPE");
       assert(e instanceof TypeError);
+      assertStrictEquals(
+        (e as TypeError & { code: string }).code,
+        "ERR_INVALID_ARG_TYPE",
+      );
       assertEquals(
         e.message,
         `The "original" argument must be of type Function. Received ${typeof input}`,

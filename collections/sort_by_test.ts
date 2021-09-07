@@ -2,15 +2,14 @@
 
 import { assertEquals } from "../testing/asserts.ts";
 import { sortBy } from "./sort_by.ts";
-import { Selector } from "./types.ts";
 
 function sortByTest<T>(
   input: [
     Array<T>,
-    | Selector<T, number>
-    | Selector<T, string>
-    | Selector<T, bigint>
-    | Selector<T, Date>,
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
   ],
   expected: Array<T>,
   message?: string,
@@ -26,6 +25,20 @@ Deno.test({
     sortBy(array, (it) => it.length);
 
     assertEquals(array, ["a", "abc", "ba"]);
+  },
+});
+
+Deno.test({
+  name: "[collections/sortBy] calls the selector function once",
+  fn() {
+    let callCount = 0;
+    const array = [0, 1, 2];
+    sortBy(array, (it) => {
+      callCount++;
+      return it;
+    });
+
+    assertEquals(callCount, array.length);
   },
 });
 
@@ -154,6 +167,21 @@ Deno.test({
         Number.NaN,
         Number.NaN,
       ],
+    );
+
+    // Test that NaN sort is stable.
+    const nanArray = [
+      { id: 1, nan: Number.NaN },
+      { id: 2, nan: Number.NaN },
+      { id: 3, nan: Number.NaN },
+      { id: 4, nan: Number.NaN },
+    ];
+    sortByTest(
+      [
+        nanArray,
+        ({ nan }) => nan,
+      ],
+      nanArray,
     );
   },
 });

@@ -21,6 +21,7 @@
 *************/
 
 import { unreachable } from "../testing/asserts.ts";
+import { osType } from "../_util/os.ts";
 import { inspect } from "./util.ts";
 
 /**
@@ -56,7 +57,7 @@ export class NodeErrorAbstraction extends Error {
     super(message);
     this.code = code;
     this.name = name;
-    //This number changes dependending on the name of this class
+    //This number changes depending on the name of this class
     //20 characters as of now
     this.stack = this.stack && `${name} [${this.code}]${this.stack.slice(20)}`;
   }
@@ -836,13 +837,12 @@ const linux: ErrMapData = [
   [-84, ["EILSEQ", "illegal byte sequence"]],
 ];
 
-const { os } = Deno.build;
 export const errorMap = new Map<number, [string, string]>(
-  os === "windows"
+  osType === "windows"
     ? windows
-    : os === "darwin"
+    : osType === "darwin"
     ? darwin
-    : os === "linux"
+    : osType === "linux"
     ? linux
     : unreachable(),
 );

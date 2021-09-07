@@ -14,13 +14,13 @@ const notImplementedEncodings = [
 function checkEncoding(encoding = "utf8", strict = true): Encodings {
   if (typeof encoding !== "string" || (strict && encoding === "")) {
     if (!strict) return "utf8";
-    throw new TypeError(`Unkown encoding: ${encoding}`);
+    throw new TypeError(`Unknown encoding: ${encoding}`);
   }
 
   const normalized = normalizeEncoding(encoding);
 
   if (normalized === undefined) {
-    throw new TypeError(`Unkown encoding: ${encoding}`);
+    throw new TypeError(`Unknown encoding: ${encoding}`);
   }
 
   if (notImplementedEncodings.includes(encoding)) {
@@ -600,4 +600,21 @@ export class Buffer extends Uint8Array {
   }
 }
 
-export default { Buffer };
+export const kMaxLength = 4294967296;
+export const kStringMaxLength = 536870888;
+export const constants = {
+  MAX_LENGTH: kMaxLength,
+  MAX_STRING_LENGTH: kStringMaxLength,
+};
+
+export const atob = globalThis.atob;
+export const btoa = globalThis.btoa;
+
+export default {
+  Buffer,
+  kMaxLength,
+  kStringMaxLength,
+  constants,
+  atob,
+  btoa,
+};

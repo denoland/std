@@ -2,10 +2,9 @@
 
 import { assertEquals } from "../testing/asserts.ts";
 import { mapEntries } from "./map_entries.ts";
-import { Selector } from "./types.ts";
 
 function mapEntriesTest<T, O>(
-  input: [Record<string, T>, Selector<[string, T], [string, O]>],
+  input: [Record<string, T>, (entry: [string, T]) => [string, O]],
   expected: Record<string, O>,
   message?: string,
 ) {
@@ -105,7 +104,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapEntries] normal mapppers",
+  name: "[collections/mapEntries] normal mappers",
   fn() {
     mapEntriesTest(
       [

@@ -73,7 +73,7 @@ create custom loggers, specify them in `loggers` when calling `log.setup`.
 well some meta data that can be later used when formatting a message.
 
 ```ts
-class LogRecord {
+interface LogRecord {
   readonly msg: string;
   readonly args: any[];
   readonly datetime: Date;
@@ -102,7 +102,9 @@ string and outputs it to target.
 This is the default logger. It will output color coded log messages to the
 console via `console.log()`. This logger takes `HandlerOptions`:
 
-```typescript
+```ts
+import type { LogRecord } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+
 type FormatterFunction = (logRecord: LogRecord) => string;
 
 interface HandlerOptions {
@@ -118,7 +120,12 @@ Logs can be manually flushed with `fileHandler.flush()`. Log messages with a log
 level greater than error are immediately flushed. Logs are also flushed on
 process completion. This logger takes `FileOptions`:
 
-```typescript
+```ts
+import {
+  FormatterFunction,
+  LogMode,
+} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+
 interface FileHandlerOptions {
   formatter?: string | FormatterFunction; //see `Custom message format` below
   filename: string;
@@ -164,7 +171,12 @@ completion.
 
 Options for this handler are:
 
-```typescript
+```ts
+import type {
+  FormatterFunction,
+  LogMode,
+} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+
 interface RotatingFileHandlerOptions {
   maxBytes: number;
   maxBackupCount: number;
@@ -199,14 +211,16 @@ The default log format is `{levelName} {msg}`.
 Eg.
 
 ```ts
+import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+
 await log.setup({
   handlers: {
     stringFmt: new log.handlers.ConsoleHandler("DEBUG", {
-      formatter: "[{levelName}] {msg}"
+      formatter: "[{levelName}] {msg}",
     }),
 
     functionFmt: new log.handlers.ConsoleHandler("DEBUG", {
-      formatter: logRecord => {
+      formatter: (logRecord) => {
         let msg = `${logRecord.level} ${logRecord.msg}`;
 
         logRecord.args.forEach((arg, index) => {
@@ -214,36 +228,36 @@ await log.setup({
         });
 
         return msg;
-      }
+      },
     }),
 
     anotherFmt: new log.handlers.ConsoleHandler("DEBUG", {
-      formatter: "[{loggerName}] - {levelName} {msg}"
+      formatter: "[{loggerName}] - {levelName} {msg}",
     }),
   },
 
   loggers: {
-     default: {
-       level: "DEBUG",
-       handlers: ["stringFmt", "functionFmt"],
-     },
-     dataLogger: {
-       level: "INFO",
-       handlers: ["anotherFmt"],
-     }
-  }
-})
+    default: {
+      level: "DEBUG",
+      handlers: ["stringFmt", "functionFmt"],
+    },
+    dataLogger: {
+      level: "INFO",
+      handlers: ["anotherFmt"],
+    },
+  },
+});
 
 // calling:
 log.debug("Hello, world!", 1, "two", [3, 4, 5]);
-// results in:
-[DEBUG] Hello, world! // output from "stringFmt" handler.
-10 Hello, world!, arg0: 1, arg1: two, arg3: [3, 4, 5] // output from "functionFmt" formatter.
+// results in: [DEBUG] Hello, world!
+// output from "stringFmt" handler.
+// 10 Hello, world!, arg0: 1, arg1: two, arg3: [3, 4, 5] // output from "functionFmt" formatter.
 
 // calling:
 log.getLogger("dataLogger").error("oh no!");
 // results in:
-[dataLogger] - ERROR oh no! // output from anotherFmt handler.
+// [dataLogger] - ERROR oh no! // output from anotherFmt handler.
 ```
 
 #### Custom handlers
@@ -267,6 +281,8 @@ Log functions return the data passed in the `msg` parameter. Data is returned
 regardless if the logger actually logs it.
 
 ```ts
+import * as logger from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+
 const stringData: string = logger.debug("hello world");
 const booleanData: boolean = logger.debug(true, 1, "abc");
 const fn = (): number => {
@@ -285,6 +301,12 @@ log evaluation to prevent the computation taking place if the logger won't log
 the message.
 
 ```ts
+import * as logger from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+
+function expensiveFn(num: number) {
+  // do some expensive computation
+}
+
 // `expensiveFn(5)` is only evaluated if this logger is configured for debug logging.
 logger.debug(() => `this is expensive: ${expensiveFn(5)}`);
 ```
@@ -297,6 +319,8 @@ logger.debug(() => `this is expensive: ${expensiveFn(5)}`);
 Example:
 
 ```ts
+import * as log from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+
 await log.setup({
   handlers: {
     console: new log.handlers.ConsoleHandler("DEBUG"),
@@ -310,7 +334,11 @@ await log.setup({
   },
 });
 
+function someExpensiveFn(num: number, bool: boolean) {
+  // do some expensive computation
+}
+
 // not logged, as debug < error.
-const data: string | undefined = logger.debug(() => someExpenseFn(5, true));
+const data = log.debug(() => someExpensiveFn(5, true));
 console.log(data); // undefined
 ```

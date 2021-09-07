@@ -1,10 +1,7 @@
 #!/usr/bin/env -S deno run
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import {
-  bench,
-  runBenchmarks,
-} from "https://deno.land/std@0.102.0/testing/bench.ts";
-import { createHash } from "https://deno.land/std@0.102.0/hash/mod.ts";
+import { bench, runBenchmarks } from "../../testing/bench.ts";
+import { createHash } from "../../hash/mod.ts";
 import { assert, assertEquals } from "../../testing/asserts.ts";
 
 import { crypto as stdCrypto } from "../mod.ts";

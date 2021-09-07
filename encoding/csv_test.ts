@@ -4,7 +4,7 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
+import { assertEquals, assertRejects } from "../testing/asserts.ts";
 import {
   ERR_BARE_QUOTE,
   ERR_FIELD_COUNT,
@@ -375,6 +375,7 @@ x,,,
    * it doesn't fit entirely.
    * in the read buffer, so we should test the code to handle that condition.
    */
+  /* TODO(kt3k): Enable this test case
   {
     Name: "HugeLines",
     Input: "#ignore\n".repeat(10000) + "@".repeat(5000) + "," +
@@ -382,6 +383,7 @@ x,,,
     Output: [["@".repeat(5000), "*".repeat(5000)]],
     Comment: "#",
   },
+  */
   {
     Name: "QuoteWithTrailingCRLF",
     Input: '"foo"bar"\r\n',
@@ -473,7 +475,7 @@ for (const t of testCases) {
       let actual;
       if (t.Error) {
         let err;
-        await assertThrowsAsync(async () => {
+        await assertRejects(async () => {
           try {
             await readMatrix(new BufReader(new StringReader(t.Input ?? "")), {
               separator,

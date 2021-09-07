@@ -6,25 +6,23 @@
  * Example:
  *
  * ```ts
- * import { chunked } from "./chunked.ts";
+ * import { chunk } from "./chunk.ts";
+ * import { assertEquals } from "../testing/asserts.ts";
  *
  * const words = [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consetetur', 'sadipscing' ]
- * const chunks = chunked(words, 3)
+ * const chunks = chunk(words, 3)
  *
- * console.assert(chunks === [
+ * assertEquals(chunks, [
  *     [ 'lorem', 'ipsum', 'dolor' ],
  *     [ 'sit', 'amet', 'consetetur' ],
  *     [ 'sadipscing' ],
  * ])
  * ```
  */
-export function chunked<T>(
-  array: Array<T>,
-  size: number,
-): Array<Array<T>> {
+export function chunk<T>(array: readonly T[], size: number): T[][] {
   if (size <= 0 || !Number.isInteger(size)) {
     throw new Error(
-      `Expected size to be an integer greather than 0 but found ${size}`,
+      `Expected size to be an integer greater than 0 but found ${size}`,
     );
   }
 

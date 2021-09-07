@@ -16,15 +16,15 @@ import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
-interface Constructor {
+export interface Constructor {
   // deno-lint-ignore no-explicit-any
   new (...args: any[]): any;
 }
 
 export class AssertionError extends Error {
+  name = "AssertionError";
   constructor(message: string) {
     super(message);
-    this.name = "AssertionError";
   }
 }
 
@@ -146,7 +146,7 @@ export function equal(c: unknown, d: unknown): boolean {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
-      if (a && b && (a.constructor !== b.constructor)) {
+      if (a && b && !constructorsEqual(a, b)) {
         return false;
       }
       if (a instanceof WeakMap || b instanceof WeakMap) {
@@ -209,6 +209,13 @@ export function equal(c: unknown, d: unknown): boolean {
     }
     return false;
   })(c, d);
+}
+
+// deno-lint-ignore ban-types
+function constructorsEqual(a: object, b: object) {
+  return a.constructor === b.constructor ||
+    a.constructor === Object && !b.constructor ||
+    !a.constructor && b.constructor === Object;
 }
 
 /** Make an assertion, error will be thrown if `expr` does not have truthy value. */
@@ -609,20 +616,18 @@ export function assertThrows<T = void>(
       throw new AssertionError("A non-Error object was thrown.");
     }
     if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg =
-        `Expected error to be instance of "${ErrorClass.name}", but was "${e.constructor.name}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+        typeof e === "object" ? e?.constructor?.name : "[not an object]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     if (
-      msgIncludes &&
-      !stripColor(e.message).includes(stripColor(msgIncludes))
+      msgIncludes && (!(e instanceof Error) ||
+        !stripColor(e.message).includes(stripColor(msgIncludes)))
     ) {
-      msg =
-        `Expected error message to include "${msgIncludes}", but got "${e.message}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error message to include "${msgIncludes}", but got "${
+        e instanceof Error ? e.message : "[not an Error]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     doesThrow = true;
@@ -638,7 +643,7 @@ export function assertThrows<T = void>(
  * If it does not, then it throws.  An error class and a string that should be
  * included in the error message can also be asserted.
  */
-export async function assertThrowsAsync<T = void>(
+export async function assertRejects<T = void>(
   fn: () => Promise<T>,
   ErrorClass?: Constructor,
   msgIncludes = "",
@@ -652,20 +657,18 @@ export async function assertThrowsAsync<T = void>(
       throw new AssertionError("A non-Error object was thrown or rejected.");
     }
     if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg =
-        `Expected error to be instance of "${ErrorClass.name}", but was "${e.constructor.name}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+        typeof e === "object" ? e?.constructor?.name : "[not an object]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     if (
-      msgIncludes &&
-      !stripColor(e.message).includes(stripColor(msgIncludes))
+      msgIncludes && (!(e instanceof Error) ||
+        !stripColor(e.message).includes(stripColor(msgIncludes)))
     ) {
-      msg =
-        `Expected error message to include "${msgIncludes}", but got "${e.message}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error message to include "${msgIncludes}", but got "${
+        e instanceof Error ? e.message : "[not an Error]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     doesThrow = true;
@@ -675,6 +678,15 @@ export async function assertThrowsAsync<T = void>(
     throw new AssertionError(msg);
   }
 }
+
+/**
+ * Executes a function which returns a promise, expecting it to throw or reject.
+ * If it does not, then it throws.  An error class and a string that should be
+ * included in the error message can also be asserted.
+ *
+ * @deprecated
+ */
+export { assertRejects as assertThrowsAsync };
 
 /** Use this to stub out methods that will throw when invoked. */
 export function unimplemented(msg?: string): never {
