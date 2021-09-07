@@ -125,7 +125,7 @@ export function cpus(): CPUCoreInfo[] {
  * Returns a string identifying the endianness of the CPU for which the Deno
  * binary was compiled. Possible values are 'BE' for big endian and 'LE' for
  * little endian.
- **/
+ */
 export function endianness(): "BE" | "LE" {
   // Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView#Endianness
   const buffer = new ArrayBuffer(2);
@@ -244,6 +244,7 @@ export const constants = {
   errno: {
     // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_error_constants
   },
+  // Needs to be kept in sync with `Deno.Signal` type.
   signals: {
     "SIGABRT": "SIGABRT",
     "SIGALRM": "SIGALRM",

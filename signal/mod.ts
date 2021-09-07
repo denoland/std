@@ -22,7 +22,7 @@ export type Disposable = { dispose: () => void };
  * @param signos - one or more `Deno.Signal`s to await on
  */
 export function signal(
-  ...signos: [number, ...number[]]
+  ...signos: [Deno.Signal, ...Deno.Signal[]]
 ): AsyncIterable<void> & Disposable {
   const mux = new MuxAsyncIterator<void>();
 
@@ -59,7 +59,7 @@ export function signal(
  * @param signo One of Deno.Signal (e.g. "SIGINT")
  * @param callback Callback function triggered upon signal event
  */
-export function onSignal(signo: number, callback: () => void): Disposable {
+export function onSignal(signo: Deno.Signal, callback: () => void): Disposable {
   const sig = signal(signo);
 
   // allows `sig` to be returned before blocking on the await
