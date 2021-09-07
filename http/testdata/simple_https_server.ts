@@ -11,6 +11,6 @@ const keyFile = join(moduleDir, "tls/localhost.key");
 const encoder = new TextEncoder();
 const body = encoder.encode("Hello HTTPS!");
 
-console.log(`Simple HTTPS server listening on https://${addr}`);
+console.log(`Simple HTTPS server listening on https://localhost:4505`);
 
 await listenAndServeTls(addr, certFile, keyFile, () => new Response(body));

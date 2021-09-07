@@ -681,7 +681,11 @@ function main(): void {
     listenAndServe(addr, handler);
   }
 
-  console.log(`${proto.toUpperCase()} server listening on ${proto}://${addr}/`);
+  console.log(
+    `${proto.toUpperCase()} server listening on ${proto}://${
+      addr.replace("0.0.0.0", "localhost")
+    }/`,
+  );
 }
 
 if (import.meta.main) {

@@ -92,12 +92,12 @@ export interface ServerInit {
    * Optionally specifies the address to listen on, in the form
    * "host:port".
    *
-   * If the port is omitted, ":80" is used by default for HTTP when invoking
-   * non-TLS methods such as `Server.listenAndServe`, and ":443" is
+   * If the port is omitted, `:80` is used by default for HTTP when invoking
+   * non-TLS methods such as `Server.listenAndServe`, and `:443` is
    * used by default for HTTPS when invoking TLS methods such as
-   * `server.listenAndServeTls`.
+   * `Server.listenAndServeTls`.
    *
-   * If the host is omitted, the non-routable meta-address "0.0.0.0" is used.
+   * If the host is omitted, the non-routable meta-address `0.0.0.0` is used.
    */
   addr?: string;
 
@@ -163,6 +163,8 @@ export class Server {
    * const server = new Server({ handler });
    * const listener = Deno.listen({ port: 4505 });
    *
+   * console.log("server listening on http://localhost:4505");
+   *
    * await server.serve(listener);
    * ```
    *
@@ -192,7 +194,11 @@ export class Server {
    * Create a listener on the server, accept incoming connections, and handle
    * requests on these connections with the given handler.
    *
-   * If the server was constructed without an address, ":80" is used.
+   * If the server was constructed with the port omitted from the address, `:80`
+   * is used.
+   *
+   * If the server was constructed with the host omitted from the address, the
+   * non-routable meta-address `0.0.0.0` is used.
    *
    * Throws a server closed error if the server has been closed.
    *
@@ -209,6 +215,9 @@ export class Server {
    * };
    *
    * const server = new Server({ addr, handler });
+   *
+   * console.log("server listening on http://localhost:4505");
+   *
    * await server.listenAndServe();
    * ```
    */
@@ -232,7 +241,11 @@ export class Server {
    * Create a listener on the server, accept incoming connections, upgrade them
    * to TLS, and handle requests on these connections with the given handler.
    *
-   * If the server was constructed without an address, ":443" is used.
+   * If the server was constructed with the port omitted from the address, `:443`
+   * is used.
+   *
+   * If the server was constructed with the host omitted from the address, the
+   * non-routable meta-address `0.0.0.0` is used.
    *
    * Throws a server closed error if the server has been closed.
    *
@@ -252,6 +265,8 @@ export class Server {
    *
    * const certFile = "/path/to/certFile.crt";
    * const keyFile = "/path/to/keyFile.key";
+   *
+   * console.log("server listening on https://localhost:4505");
    *
    * await server.listenAndServeTls(certFile, keyFile);
    * ```
@@ -526,6 +541,8 @@ export interface ServeInit {
  *
  * const listener = Deno.listen({ port: 4505 });
  *
+ * console.log("server listening on http://localhost:4505");
+ *
  * await serve(listener, (request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
@@ -558,12 +575,17 @@ export async function serve(
  * incoming connections, and handles requests on these connections with the
  * given handler.
  *
- * If the server was constructed without an address, ":80" is used.
+ * If the port is omitted from the address, `:80` is used.
+ *
+ * If the host is omitted from the address, the non-routable meta-address
+ * `0.0.0.0` is used.
  *
  * ```ts
  * import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
  * const addr = ":4505";
+ *
+ * console.log("server listening on http://localhost:4505");
  *
  * await listenAndServe(addr, (request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
@@ -597,7 +619,10 @@ export async function listenAndServe(
  * incoming connections, upgrades them to TLS, and handles requests on these
  * connections with the given handler.
  *
- * If the server was constructed without an address, ":443" is used.
+ * If the port is omitted from the address, `:443` is used.
+ *
+ * If the host is omitted from the address, the non-routable meta-address
+ * `0.0.0.0` is used.
  *
  * ```ts
  * import { listenAndServeTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
@@ -605,6 +630,8 @@ export async function listenAndServe(
  * const addr = ":4505";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
+ *
+ * console.log("server listening on http://localhost:4505");
  *
  * await listenAndServeTls(addr, certFile, keyFile, (request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
