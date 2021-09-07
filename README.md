@@ -90,7 +90,8 @@ For contributions to the Node compatibility library please check the
 
 _About CI checks_:
 
-We currently have 9 checks on CI. You need to pass the following 6 checks for your PR to be accepted:
+We currently have 9 checks on CI. You need to pass the following 6 checks for
+your PR to be accepted:
 
 - test with Deno 1.x on Windows
 - test with Deno 1.x on Linux
@@ -99,7 +100,9 @@ We currently have 9 checks on CI. You need to pass the following 6 checks for yo
 - wasm crypto check
 - CLA
 
-You don't need to pass the following 3 checks (These are informative checks for maintainers):
+You don't need to pass the following 3 checks (These are informative checks for
+maintainers):
+
 - test with Deno canary on Windows
 - test with Deno canary on Linux
 - test with Deno canary on macOS
