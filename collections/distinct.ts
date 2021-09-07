@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Returns all distinct elements in the given array, preserving order by first occurence
+ * Returns all distinct elements in the given array, preserving order by first occurrence
  *
  * Example:
  *

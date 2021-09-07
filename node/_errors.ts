@@ -57,7 +57,7 @@ export class NodeErrorAbstraction extends Error {
     super(message);
     this.code = code;
     this.name = name;
-    //This number changes dependending on the name of this class
+    //This number changes depending on the name of this class
     //20 characters as of now
     this.stack = this.stack && `${name} [${this.code}]${this.stack.slice(20)}`;
   }

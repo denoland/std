@@ -9,7 +9,7 @@ stdlib.
 - All functions are importable on their own by referencing their snake_case
   named file (e.g. `collections/sort_by.ts`)
 
-If you want to contribute or undestand why this is done the way it is, see the
+If you want to contribute or understand why this is done the way it is, see the
 [contribution guide](CONTRIBUTING.md).
 
 ## Usage
@@ -89,7 +89,7 @@ assertEquals(deepMerge(a, b), { foo: { bar: true } });
 ### distinctBy
 
 Returns all elements in the given array that produce a distinct value using the
-given selector, preserving order by first occurence.
+given selector, preserving order by first occurrence.
 
 ```ts
 import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
@@ -104,7 +104,7 @@ assertEquals(exampleNamesByFirstLetter, ["Anna", "Kim"]);
 ### distinct
 
 Returns all distinct elements in the given array, preserving order by first
-occurence.
+occurrence.
 
 ```ts
 import { distinct } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
@@ -435,7 +435,7 @@ assertEquals(odd, [5, 7, 9]);
 ### permutations
 
 Builds all possible orders of all elements in the given array Ignores equality
-of elements, meaning this will always reutrn the same number of permutations for
+of elements, meaning this will always return the same number of permutations for
 a given length of input.
 
 ```ts
@@ -463,7 +463,7 @@ If step is set, each window will start that many elements after the last
 window's start. (Default: 1)
 
 If partial is set, windows will be generated for the last elements of the
-collection, resulting in some undefined values if size is greather than 1.
+collection, resulting in some undefined values if size is greater than 1.
 (Default: false)
 
 ```ts
@@ -748,10 +748,10 @@ import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts
 
 const numbers = [22, 30, 44];
 
-const notFourtyFour = dropLastWhile(numbers, (i) => i != 44);
+const notFortyFour = dropLastWhile(numbers, (i) => i != 44);
 
 assertEquals(
-  notFourtyFour,
+  notFortyFour,
   [22, 30],
 );
 ```

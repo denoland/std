@@ -18,7 +18,7 @@ function setup() {
   return arr;
 }
 
-Deno.test("[byets] BytesList.size", () => {
+Deno.test("[bytes] BytesList.size", () => {
   assertEquals(new BytesList().size(), 0);
   assertEquals(setup().size(), 10);
 });

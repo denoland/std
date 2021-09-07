@@ -381,7 +381,7 @@ Deno.test(
 
 Deno.test({
   name:
-    "[ws] WebSocket should reject sending promise when connection reset forcely",
+    "[ws] WebSocket should reject sending promise when connection reset forcefully",
   fn: async () => {
     const buf = new Buffer();
     let timer: number | undefined;

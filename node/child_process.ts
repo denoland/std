@@ -414,7 +414,7 @@ function normalizeStdioOption(
 }
 
 function waitForReadableToClose(readable: Readable): Promise<void> {
-  readable.resume(); // Ensure bufferred data will be consumed.
+  readable.resume(); // Ensure buffered data will be consumed.
   return waitForStreamToClose(readable);
 }
 

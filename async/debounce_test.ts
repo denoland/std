@@ -16,7 +16,7 @@ Deno.test("[async] debounce: called", async function () {
   assertEquals(d.pending, false);
 });
 
-Deno.test("[async] debounce: canceld", async function () {
+Deno.test("[async] debounce: canceled", async function () {
   let called = 0;
   const d = debounce(() => called++, 100);
   d();

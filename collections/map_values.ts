@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Applies the given transformer to all valuesin the given record and returns a new record containing the resulting keys
+ * Applies the given transformer to all values in the given record and returns a new record containing the resulting keys
  * associated to the last value that produced them.
  *
  * Example:
