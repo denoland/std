@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 export * from "./associate_by.ts";
+export * from "./associate_with.ts";
 export * from "./chunk.ts";
 export * from "./deep_merge.ts";
 export * from "./distinct.ts";
