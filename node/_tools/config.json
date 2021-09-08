@@ -33,7 +33,8 @@
       "test-util-inherits.js",
       "test-net-isip.js",
       "test-net-isipv4.js",
-      "test-net-isipv6.js"
+      "test-net-isipv6.js",
+      "test-net-server-options.js"
     ]
   },
   "suitesFolder": "suites",
