@@ -180,11 +180,12 @@ export class Server extends EventEmitter {
  *
  * ```ts
  * import { createRequire } from "https://deno.land/std@$STD_VERSION/node/module.ts";
+ * import type { Socket } from "https://deno.land/std@$STD_VERSION/node/net.ts";
  *
  * const require = createRequire(import.meta.url);
  * const net = require("net");
  *
- * const server = net.createServer((c) => {
+ * const server = net.createServer((c: Socket) => {
  *   // "connection" listener.
  *   console.log("client connected");
  *   c.on("end", () => {
@@ -194,7 +195,7 @@ export class Server extends EventEmitter {
  *   c.pipe(c);
  * });
  *
- * server.on("error", (err) => {
+ * server.on("error", (err: Error) => {
  *   throw err;
  * });
  *
@@ -219,3 +220,10 @@ export function createServer(
 ): Server {
   return new Server(options, connectionListener);
 }
+
+export default {
+  createServer,
+  Server,
+  Socket,
+  Stream,
+};
