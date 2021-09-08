@@ -280,7 +280,7 @@ Deno.test(
           content: new TextEncoder().encode("hello tar world!".repeat(100)),
         },
         // Need to test at least two files, to make sure the first entry doesn't over-read
-        // Causing the next to fail with: chesum error
+        // Causing the next to fail with: checksum error
         {
           name: "deni.txt",
           content: new TextEncoder().encode("deno!".repeat(250)),

@@ -1,4 +1,4 @@
-The modules in this directory implement (simulate) C++ bindings inplemented in
+The modules in this directory implement (simulate) C++ bindings implemented in
 src/ directory of Node.js
 
 These bindings are created in the node.js source code by using

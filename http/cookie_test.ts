@@ -1,13 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { Response, ServerRequest } from "./server.ts";
 import { deleteCookie, getCookies, setCookie } from "./cookie.ts";
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 
 Deno.test({
   name: "Cookie parser",
   fn(): void {
-    const req = new ServerRequest();
-    req.headers = new Headers();
+    const req = { headers: new Headers() };
     assertEquals(getCookies(req), {});
     req.headers = new Headers();
     req.headers.set("Cookie", "foo=bar");
@@ -34,7 +32,7 @@ Deno.test({
 Deno.test({
   name: "Cookie Name Validation",
   fn(): void {
-    const res: Response = {};
+    const res = { headers: new Headers() };
     const tokens = [
       '"id"',
       "id\t",
@@ -46,7 +44,6 @@ Deno.test({
       '"',
       "id\u0091",
     ];
-    res.headers = new Headers();
     tokens.forEach((name) => {
       assertThrows(
         (): void => {
@@ -68,7 +65,7 @@ Deno.test({
 Deno.test({
   name: "Cookie Value Validation",
   fn(): void {
-    const res: Response = {};
+    const res = { headers: new Headers() };
     const tokens = [
       "1f\tWa",
       "\t",
@@ -81,7 +78,6 @@ Deno.test({
       "1fWa\u0005",
       "1f\u0091Wa",
     ];
-    res.headers = new Headers();
     tokens.forEach((value) => {
       assertThrows(
         (): void => {
@@ -106,9 +102,8 @@ Deno.test({
 Deno.test({
   name: "Cookie Path Validation",
   fn(): void {
-    const res: Response = {};
+    const res = { headers: new Headers() };
     const path = "/;domain=sub.domain.com";
-    res.headers = new Headers();
     assertThrows(
       (): void => {
         setCookie(res, {
@@ -129,9 +124,8 @@ Deno.test({
 Deno.test({
   name: "Cookie Domain Validation",
   fn(): void {
-    const res: Response = {};
+    const res = { headers: new Headers() };
     const tokens = ["-domain.com", "domain.org.", "domain.org-"];
-    res.headers = new Headers();
     tokens.forEach((domain) => {
       assertThrows(
         (): void => {
@@ -154,7 +148,7 @@ Deno.test({
 Deno.test({
   name: "Cookie Delete",
   fn(): void {
-    const res: Response = {};
+    const res = { headers: new Headers() };
     deleteCookie(res, "deno");
     assertEquals(
       res.headers?.get("Set-Cookie"),
@@ -178,9 +172,8 @@ Deno.test({
 Deno.test({
   name: "Cookie Set",
   fn(): void {
-    const res: Response = {};
+    const res = { headers: new Headers() };
 
-    res.headers = new Headers();
     setCookie(res, { name: "Space", value: "Cat" });
     assertEquals(res.headers.get("Set-Cookie"), "Space=Cat");
 

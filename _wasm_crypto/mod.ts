@@ -6,7 +6,7 @@ export * as crypto from "./crypto.js";
  *
  * For algorithms that are supported by WebCrypto, the name here must match the
  * one used by WebCrypto. Otherwise we should prefer the formatting used in the
- * official specification. All names are uppercase to faciliate case-insensitive
+ * official specification. All names are uppercase to facilitate case-insensitive
  * comparisons required by the WebCrypto spec.
  */
 export const digestAlgorithms = [

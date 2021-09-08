@@ -18,7 +18,7 @@ const hash = createHash("md5");
 ### Using hash instance
 
 You can use `update` method to feed data into your hash instance. Call `digest`
-method to retrive final hash value in ArrayBuffer.
+method to retrieve final hash value in ArrayBuffer.
 
 ```ts
 import { createHash } from "https://deno.land/std@$STD_VERSION/hash/mod.ts";
