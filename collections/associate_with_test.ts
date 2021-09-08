@@ -79,3 +79,21 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "[collections/associateWith] duplicate keys",
+  fn() {
+    associateWithTest(
+      [
+        ["Kim", "Marija", "Karl", "Jonathan", "Marija"],
+        (it) => it.charAt(0),
+      ],
+      {
+        "Jonathan": "J",
+        "Karl": "K",
+        "Kim": "K",
+        "Marija": "M",
+      },
+    );
+  },
+});
