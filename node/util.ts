@@ -153,7 +153,8 @@ function circularRemover(): (key: string, value: unknown) => unknown {
   };
 }
 
-function formatString(str: string) {
+function formatString(str: string, insideArrayOrObject = false) {
+  if (insideArrayOrObject) { return `'${str.replace(/\\/, "\\\\").replace(/"/g, '\\"')}'` }
   return `${str.replace(/\\/, "\\\\").replace(/"/g, '\\"')}`;
 }
 
@@ -161,6 +162,7 @@ function thingToString(
   thing: unknown,
   maxDepth?: number,
   depth = 1,
+  insideArrayOrObject = false,
 ): string {
   let result = "";
   if (typeof thing === "bigint") {
@@ -176,7 +178,7 @@ function thingToString(
     return `[Function ${thing.name || "(anonymous)"}]`;
   }
   if (typeof thing === "string") {
-    return formatString(thing);
+    return formatString(thing, insideArrayOrObject);
   }
   if (Array.isArray(thing)) {
     if (depth === maxDepth) {
@@ -189,7 +191,7 @@ function thingToString(
       if (isNaN(Number(key))) {
         result += `${key}: `;
       }
-      result += thingToString(value, maxDepth, depth + 1);
+      result += thingToString(value, maxDepth, depth + 1, true);
       if (i !== en.length - 1) {
         result += ", ";
       }
@@ -204,7 +206,7 @@ function thingToString(
   result += "{ ";
   for (let i = 0; i < en.length; i++) {
     const [key, value] = en[i];
-    result += `${key}: ${thingToString(value, maxDepth, depth + 1)}`;
+    result += `${key}: ${thingToString(value, maxDepth, depth + 1, true)}`;
     if (i !== en.length - 1) {
       result += ", ";
     }
