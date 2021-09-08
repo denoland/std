@@ -38,6 +38,25 @@ assertEquals(usersById, {
 });
 ```
 
+## associateWith
+
+Builds a new Record using the given array as keys and choosing a value for each
+key using the given selector.
+
+```ts
+import { associateWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const names = ["Kim", "Lara", "Jonathan"];
+const namesToLength = associateWith(names, (it) => it.length);
+
+assertEquals(namesToLength, {
+  "Kim": 3,
+  "Lara": 4,
+  "Jonathan": 8,
+});
+```
+
 ### chunk
 
 Splits the given array into chunks of the given size and returns them.
