@@ -20,10 +20,25 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { EventEmitter } from "./events.ts";
+import { isIP, isIPv4, isIPv6 } from "./_net/_net_ip.ts";
 import { asyncIdSymbol } from "./_async_hooks.ts";
 import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 import { notImplemented } from "./_utils.ts";
 import { Duplex } from "./stream.ts";
+
+// Primordials
+// TODO: correctly implement primordials properly, similar to
+// https://github.com/denoland/deno/blob/main/core/00_primordials.js
+// const ArrayIsArray = globalThis.Array.isArray;
+// const ArrayPrototypeIndexOf = globalThis.Array.prototype.indexOf;
+// const Boolean = globalThis.Boolean;
+// const Error = globalThis.Boolean;
+// const Number = globalThis.Boolean;
+// const NumberIsNaN = globalThis.Number.isNaN;
+// const NumberParseInt = globalThis.Number.parseInt;
+// const ObjectDefineProperty = globalThis.Object.defineProperty;
+// const ObjectSetPrototypeOf = globalThis.Object.setPrototypeOf;
+// const Symbol = globalThis.Symbol;
 
 export class Socket extends Duplex {
   constructor() {
@@ -221,7 +236,12 @@ export function createServer(
   return new Server(options, connectionListener);
 }
 
+export { isIP, isIPv4, isIPv6 };
+
 export default {
+  isIP,
+  isIPv4,
+  isIPv6,
   createServer,
   Server,
   Socket,

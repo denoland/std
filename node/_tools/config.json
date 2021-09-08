@@ -30,7 +30,10 @@
       "test-event-emitter-remove-listeners.js",
       "test-event-emitter-set-max-listeners-side-effects.js",
       "test-event-emitter-special-event-names.js",
-      "test-util-inherits.js"
+      "test-util-inherits.js",
+      "test-net-isip.js",
+      "test-net-isipv4.js",
+      "test-net-isipv6.js"
     ]
   },
   "suitesFolder": "suites",

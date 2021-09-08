@@ -31,6 +31,7 @@ import nodeChildProcess from "./child_process.ts";
 import nodeEvents from "./events.ts";
 import nodeFS from "./fs.ts";
 import nodeFSPromises from "./fs/promises.ts";
+import nodeNet from "./net.ts";
 import nodeOs from "./os.ts";
 import nodePath from "./path.ts";
 import nodePerfHooks from "./perf_hooks.ts";
@@ -649,6 +650,7 @@ nativeModulePolyfill.set(
   createNativeModule("fs/promises", nodeFSPromises),
 );
 nativeModulePolyfill.set("module", createNativeModule("module", Module));
+nativeModulePolyfill.set("net", createNativeModule("net", nodeNet));
 nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
 nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
 nativeModulePolyfill.set(
