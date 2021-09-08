@@ -2,7 +2,8 @@
 
 /**
  * Builds a new Record using the given array as keys and choosing a value for each
- * key using the given selector.
+ * key using the given selector. If any of two pairs would have the same value
+ * the latest on will be used (overriding the ones before it).
  *
  * Example:
  *
