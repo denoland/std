@@ -18,7 +18,6 @@
  *   'Lara': 4,
  *   'Jonathan': 8,
  * })
- *
  * ```
  */
 export function associateWith<T>(
