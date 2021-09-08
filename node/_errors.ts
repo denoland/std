@@ -22,7 +22,7 @@
 
 import { unreachable } from "../testing/asserts.ts";
 import { osType } from "../_util/os.ts";
-import { inspect } from "./util.ts";
+import { getSystemErrorName, inspect } from "./util.ts";
 
 /**
  * @see https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js
@@ -45,6 +45,54 @@ const kTypes = [
   "bigint",
   "symbol",
 ];
+
+const nodeInternalPrefix = "__node_internal_";
+
+// deno-lint-ignore no-explicit-any
+type GenericFunction = (...args: any[]) => any;
+
+/** This function removes unnecessary frames from Node.js core errors. */
+export function hideStackFrames(fn: GenericFunction) {
+  // We rename the functions that will be hidden to cut off the stacktrace
+  // at the outermost one.
+  const hidden = nodeInternalPrefix + fn.name;
+  Object.defineProperty(fn, "name", { value: hidden });
+
+  return fn;
+}
+
+const captureLargerStackTrace = hideStackFrames(
+  function captureLargerStackTrace(err) {
+    Error.captureStackTrace(err);
+
+    return err;
+  },
+);
+
+/**
+ * This used to be `util._errnoException()`.
+ *
+ * @param err A libuv error number
+ * @param syscall
+ * @param original
+ * @return
+ */
+export const errnoException = hideStackFrames(
+  function errnoException(err, syscall, original) {
+    const code = getSystemErrorName(err);
+    const message = original
+      ? `${syscall} ${code} ${original}`
+      : `${syscall} ${code}`;
+
+    // deno-lint-ignore no-explicit-any
+    const ex: any = new Error(message);
+    ex.errno = err;
+    ex.code = code;
+    ex.syscall = syscall;
+
+    return captureLargerStackTrace(ex);
+  },
+);
 
 /**
  * All error instances in Node have additional methods and properties

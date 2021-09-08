@@ -1,9 +1,3 @@
-// Primordials
-// TODO: correctly implement primordials properly, similar to
-// https://github.com/denoland/deno/blob/main/core/00_primordials.js
-const RegExp = globalThis.RegExp;
-const RegExpPrototypeTest = globalThis.RegExp.prototype.test;
-
 // IPv4 Segment
 const v4Seg = "(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])";
 const v4Str = `(${v4Seg}[.]){3}${v4Seg}`;
@@ -25,11 +19,11 @@ const IPv6Reg = new RegExp(
 );
 
 export function isIPv4(ip: string) {
-  return RegExpPrototypeTest.call(IPv4Reg, ip);
+  return RegExp.prototype.test.call(IPv4Reg, ip);
 }
 
 export function isIPv6(ip: string) {
-  return RegExpPrototypeTest.call(IPv6Reg, ip);
+  return RegExp.prototype.test.call(IPv6Reg, ip);
 }
 
 export function isIP(ip: string) {

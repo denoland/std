@@ -28,7 +28,7 @@ import {
 } from "./writable_internal.ts";
 import type { Encodings } from "../_utils.ts";
 
-type WritableEncodings = Encodings | "buffer";
+export type WritableEncodings = Encodings | "buffer";
 
 export interface WritableOptions {
   autoDestroy?: boolean;

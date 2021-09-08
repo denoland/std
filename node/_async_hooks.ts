@@ -19,4 +19,48 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import * as asyncWrap from "./internal_binding/async_wrap.ts";
+
 export { asyncIdSymbol, ownerSymbol } from "./internal_binding/symbols.ts";
+
+// Each constant tracks how many callbacks there are for any given step of
+// async execution. These are tracked so if the user didn't include callbacks
+// for a given step, that step can bail out early.
+const { kAsyncIdCounter, kDefaultTriggerAsyncId } = asyncWrap.constants;
+
+/**
+ * `asyncIdFields` is a `Float64Array`. Each index
+ * contains the ids for the various asynchronous states of the application.
+ * These are:
+ *
+ * - `kAsyncIdCounter`: Incremental counter tracking the next assigned asyncId.
+ */
+const { asyncIdFields } = asyncWrap;
+
+// Increment the internal id counter and return the value.
+export function newAsyncId() {
+  return ++asyncIdFields[kAsyncIdCounter];
+}
+
+export function defaultTriggerAsyncIdScope(
+  triggerAsyncId: number,
+  // deno-lint-ignore ban-types
+  block: Function,
+  // deno-lint-ignore  no-explicit-any
+  ...args: any[]
+) {
+  if (triggerAsyncId === undefined) {
+    return block.apply(null, args);
+  }
+
+  // CHECK(NumberIsSafeInteger(triggerAsyncId))
+  // CHECK(triggerAsyncId > 0)
+  const oldDefaultTriggerAsyncId = asyncIdFields[kDefaultTriggerAsyncId];
+  asyncIdFields[kDefaultTriggerAsyncId] = triggerAsyncId;
+
+  try {
+    return block.apply(null, args);
+  } finally {
+    asyncIdFields[kDefaultTriggerAsyncId] = oldDefaultTriggerAsyncId;
+  }
+}
