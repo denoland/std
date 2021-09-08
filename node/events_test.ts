@@ -35,7 +35,7 @@ Deno.test({
 
 Deno.test({
   name:
-    'When removing a listenert, "removeListener" event is fired after removal',
+    'When removing a listener, "removeListener" event is fired after removal',
   fn() {
     const eventsFired: string[] = [];
     const testEmitter = new EventEmitter();
@@ -140,7 +140,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Registered event names are returned as strings or Sybols",
+  name: "Registered event names are returned as strings or Symbols",
   fn() {
     const testEmitter = new EventEmitter();
     testEmitter.on("event", shouldNeverBeEmitted);
