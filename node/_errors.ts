@@ -69,16 +69,23 @@ const captureLargerStackTrace = hideStackFrames(
   },
 );
 
+export interface ErrnoException extends Error {
+  errno?: number;
+  code?: string;
+  path?: string;
+  syscall?: string;
+}
+
 /**
  * This used to be `util._errnoException()`.
  *
  * @param err A libuv error number
  * @param syscall
  * @param original
- * @return
+ * @return A `ErrnoException`
  */
 export const errnoException = hideStackFrames(
-  function errnoException(err, syscall, original) {
+  function errnoException(err, syscall, original): ErrnoException {
     const code = getSystemErrorName(err);
     const message = original
       ? `${syscall} ${code} ${original}`
