@@ -27,7 +27,7 @@ import {
 } from "./internal_binding/stream_wrap.ts";
 import { isUint8Array } from "./_util/_util_types.ts";
 import { errnoException } from "./_errors.ts";
-import { notImplemented } from "./_utils.ts";
+import { FastBuffer } from "./_buffer.ts";
 
 export const kMaybeDestroy = Symbol("kMaybeDestroy");
 export const kUpdateTimer = Symbol("kUpdateTimer");
@@ -40,13 +40,6 @@ export const kBufferCb = Symbol("kBufferCb");
 
 // TODO(cmorten): handle EOF
 const EOF = -1;
-
-// TODO(cmorten): implement FastBuffer polyfill
-class FastBuffer {
-  constructor(_arrayBuffer: unknown, _offset: unknown, _nread: unknown) {
-    notImplemented();
-  }
-}
 
 // deno-lint-ignore no-explicit-any
 export function onStreamRead(this: any, arrayBuffer: any) {
