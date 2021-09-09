@@ -28,6 +28,7 @@ import {
 import { isUint8Array } from "./_util/_util_types.ts";
 import { errnoException } from "./_errors.ts";
 import { FastBuffer } from "./_buffer.ts";
+import { UV_EOF } from "./internal_binding/uv.ts";
 
 export const kMaybeDestroy = Symbol("kMaybeDestroy");
 export const kUpdateTimer = Symbol("kUpdateTimer");
@@ -37,9 +38,6 @@ export const kSession = Symbol("kSession");
 export const kBuffer = Symbol("kBuffer");
 export const kBufferGen = Symbol("kBufferGen");
 export const kBufferCb = Symbol("kBufferCb");
-
-// TODO(cmorten): handle EOF
-const EOF = -1;
 
 // deno-lint-ignore no-explicit-any
 export function onStreamRead(this: any, arrayBuffer: any) {
@@ -91,7 +89,7 @@ export function onStreamRead(this: any, arrayBuffer: any) {
     return;
   }
 
-  if (nread !== EOF) {
+  if (nread !== UV_EOF) {
     // CallJSOnreadMethod expects the return value to be a buffer.
     // Ref: https://github.com/nodejs/node/pull/34375
     stream.destroy(errnoException(nread, "read"));

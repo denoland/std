@@ -18,26 +18,28 @@ const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
 const testsFolder = dirname(fromFileUrl(import.meta.url));
 
 for await (const file of dir) {
-  Deno.test({
-    name: relative(testsFolder, file.path),
-    fn: async () => {
-      const process = Deno.run({
-        cwd: testsFolder,
-        cmd: [
-          "deno",
-          "run",
-          "-A",
-          "--quiet",
-          "--unstable",
-          "require.ts",
-          file.path,
-        ],
-      });
+  if (file.path.includes("dns")) {
+    Deno.test({
+      name: relative(testsFolder, file.path),
+      fn: async () => {
+        const process = Deno.run({
+          cwd: testsFolder,
+          cmd: [
+            "deno",
+            "run",
+            "-A",
+            "--quiet",
+            "--unstable",
+            "require.ts",
+            file.path,
+          ],
+        });
 
-      const { code } = await process.status();
-      process.close();
+        const { code } = await process.status();
+        process.close();
 
-      assertEquals(code, 0);
-    },
-  });
+        assertEquals(code, 0);
+      },
+    });
+  }
 }

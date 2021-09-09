@@ -21,7 +21,10 @@
 
 import {
   ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_ARG_VALUE,
+  ERR_INVALID_CALLBACK,
   ERR_OUT_OF_RANGE,
+  ERR_SOCKET_BAD_PORT,
   hideStackFrames,
 } from "./_errors.ts";
 
@@ -46,6 +49,66 @@ export const validateInt32 = hideStackFrames(
 
     if (value < min || value > max) {
       throw new ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
+    }
+  },
+);
+
+export function validateString(value: unknown, name: string) {
+  if (typeof value !== "string") {
+    throw new ERR_INVALID_ARG_TYPE(name, "string", value);
+  }
+}
+
+export function validateNumber(value: unknown, name: string) {
+  if (typeof value !== "number") {
+    throw new ERR_INVALID_ARG_TYPE(name, "number", value);
+  }
+}
+
+export const validateOneOf = hideStackFrames(
+  (value: unknown, name: string, oneOf: unknown[]) => {
+    if (!Array.prototype.includes.call(oneOf, value)) {
+      const allowed = Array.prototype.join.call(
+        Array.prototype.map.call(
+          oneOf,
+          (v) => (typeof v === "string" ? `'${v}'` : String(v)),
+        ),
+        ", ",
+      );
+      const reason = "must be one of: " + allowed;
+
+      throw new ERR_INVALID_ARG_VALUE(name, value, reason);
+    }
+  },
+);
+
+// Check that the port number is not NaN when coerced to a number,
+// is an integer and that it falls within the legal range of port numbers.
+export function validatePort(port: unknown, name = "Port", allowZero = true) {
+  if (
+    (typeof port !== "number" && typeof port !== "string") ||
+    (typeof port === "string" &&
+      String.prototype.trim.call(port).length === 0) ||
+    +port !== (+port >>> 0) ||
+    port > 0xFFFF ||
+    (port === 0 && !allowZero)
+  ) {
+    throw new ERR_SOCKET_BAD_PORT(name, port, allowZero);
+  }
+
+  return port as number | 0;
+}
+
+export const validateCallback = hideStackFrames((callback: unknown) => {
+  if (typeof callback !== "function") {
+    throw new ERR_INVALID_CALLBACK(callback);
+  }
+});
+
+export const validateFunction = hideStackFrames(
+  (value: unknown, name: string) => {
+    if (typeof value !== "function") {
+      throw new ERR_INVALID_ARG_TYPE(name, "Function", value);
     }
   },
 );

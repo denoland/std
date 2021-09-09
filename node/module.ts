@@ -28,6 +28,7 @@ import nodeCrypto from "./crypto.ts";
 import nodeConsole from "./console.ts";
 import nodeConstants from "./constants.ts";
 import nodeChildProcess from "./child_process.ts";
+import nodeDns from "./dns.ts";
 import nodeEvents from "./events.ts";
 import nodeFS from "./fs.ts";
 import nodeFSPromises from "./fs/promises.ts";
@@ -640,6 +641,7 @@ nativeModulePolyfill.set(
   createNativeModule("child_process", nodeChildProcess),
 );
 nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
+nativeModulePolyfill.set("dns", createNativeModule("dns", nodeDns));
 nativeModulePolyfill.set(
   "events",
   createNativeModule("events", nodeEvents),

@@ -8,7 +8,6 @@
 * ERR_PACKAGE_PATH_NOT_EXPORTED
 * ERR_QUICSESSION_VERSION_NEGOTIATION
 * ERR_REQUIRE_ESM
-* ERR_SOCKET_BAD_PORT
 * ERR_TLS_CERT_ALTNAME_INVALID
 * ERR_UNHANDLED_ERROR
 * ERR_WORKER_INVALID_EXEC_ARGV
@@ -21,8 +20,10 @@
 *************/
 
 import { unreachable } from "../testing/asserts.ts";
-import { osType } from "../_util/os.ts";
 import { getSystemErrorName, inspect } from "./util.ts";
+import { UV_EAI_NODATA, UV_EAI_NONAME } from "./internal_binding/uv.ts";
+import { osType } from "../_util/os.ts";
+import { assert } from "../_util/assert.ts";
 
 /**
  * @see https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js
@@ -100,6 +101,88 @@ export const errnoException = hideStackFrames(
     return captureLargerStackTrace(ex);
   },
 );
+
+/**
+ * Deprecated, new function is `uvExceptionWithHostPort()`
+ * New function added the error description directly
+ * from C++. this method for backwards compatibility
+ * @param err A libuv error number
+ * @param syscall
+ * @param address
+ * @param port
+ * @param additional
+ */
+export const exceptionWithHostPort = hideStackFrames(
+  function exceptionWithHostPort(
+    err: number,
+    syscall: string,
+    address: string,
+    port: number,
+    additional: string,
+  ) {
+    const code = getSystemErrorName(err);
+    let details = "";
+
+    if (port && port > 0) {
+      details = ` ${address}:${port}`;
+    } else if (address) {
+      details = ` ${address}`;
+    }
+
+    if (additional) {
+      details += ` - Local (${additional})`;
+    }
+
+    // deno-lint-ignore no-explicit-any
+    const ex: any = new Error(`${syscall} ${code}${details}`);
+    ex.errno = err;
+    ex.code = code;
+    ex.syscall = syscall;
+    ex.address = address;
+
+    if (port) {
+      ex.port = port;
+    }
+
+    return captureLargerStackTrace(ex);
+  },
+);
+
+/**
+ * @param code A libuv error number or a c-ares error code
+ * @param syscall
+ * @param hostname
+ */
+export const dnsException = hideStackFrames(function (code, syscall, hostname) {
+  let errno;
+
+  // If `code` is of type number, it is a libuv error number, else it is a
+  // c-ares error code.
+  if (typeof code === "number") {
+    errno = code;
+    // ENOTFOUND is not a proper POSIX error, but this error has been in place
+    // long enough that it's not practical to remove it.
+    if (code === UV_EAI_NODATA || code === UV_EAI_NONAME) {
+      code = "ENOTFOUND"; // Fabricated error name.
+    } else {
+      code = getSystemErrorName(code);
+    }
+  }
+
+  const message = `${syscall} ${code}${hostname ? ` ${hostname}` : ""}`;
+
+  // deno-lint-ignore no-explicit-any
+  const ex: any = new Error(message);
+  ex.errno = errno;
+  ex.code = code;
+  ex.syscall = syscall;
+
+  if (hostname) {
+    ex.hostname = hostname;
+  }
+
+  return captureLargerStackTrace(ex);
+});
 
 /**
  * All error instances in Node have additional methods and properties
@@ -1874,6 +1957,21 @@ export class ERR_SOCKET_BAD_BUFFER_SIZE extends NodeTypeError {
     super(
       "ERR_SOCKET_BAD_BUFFER_SIZE",
       `Buffer size must be a positive integer`,
+    );
+  }
+}
+export class ERR_SOCKET_BAD_PORT extends NodeRangeError {
+  constructor(name: string, port: unknown, allowZero = true) {
+    assert(
+      typeof allowZero === "boolean",
+      "The 'allowZero' argument must be of type boolean.",
+    );
+
+    const operator = allowZero ? ">=" : ">";
+
+    super(
+      "ERR_SOCKET_BAD_PORT",
+      `${name} should be ${operator} 0 and < 65536. Received ${port}.`,
     );
   }
 }

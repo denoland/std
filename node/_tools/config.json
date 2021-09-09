@@ -4,16 +4,24 @@
     "common": [
       "index.js"
     ],
+    "internet": [
+      "test-dns-lookup.js"
+    ],
     "parallel": [
       "test-assert.js",
-      "test-assert-async.js"
+      "test-assert-async.js",
+      "test-dns-lookup.js"
     ]
   },
   "tests": {
+    "internet": [
+      "test-dns-lookup.js"
+    ],
     "parallel": [
       "test-assert.js",
       "test-assert-async.js",
       "test-assert-fail.js",
+      "test-dns-lookup.js",
       "test-event-emitter-add-listeners.js",
       "test-event-emitter-check-listener-leaks.js",
       "test-event-emitter-listeners-side-effects.js",

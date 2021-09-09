@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { EventEmitter } from "./events.ts";
-import { isIP, isIPv4, isIPv6 } from "./_net/_net_ip.ts";
+import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./_net.ts";
 import type { DuplexOptions } from "./_stream/duplex.ts";
 import type { WritableEncodings } from "./_stream/writable.ts";
 import { Duplex } from "./stream.ts";
@@ -30,7 +30,15 @@ import {
   newAsyncId,
   ownerSymbol,
 } from "./_async_hooks.ts";
-import { ERR_INVALID_ARG_TYPE, errnoException, NodeError } from "./_errors.ts";
+import {
+  ERR_INVALID_ADDRESS_FAMILY,
+  ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_IP_ADDRESS,
+  ERR_MISSING_ARGS,
+  errnoException,
+  exceptionWithHostPort,
+  NodeError,
+} from "./_errors.ts";
 import type { ErrnoException } from "./_errors.ts";
 import { Encodings, notImplemented } from "./_utils.ts";
 import { isUint8Array } from "./_util/_util_types.ts";
@@ -48,11 +56,78 @@ import { nextTick } from "./process.ts";
 import { DTRACE_NET_STREAM_END } from "./_dtrace.ts";
 import { Buffer } from "./buffer.ts";
 import type { LookupOneOptions } from "./dns.ts";
+import {
+  validateFunction,
+  validateNumber,
+  validatePort,
+  validateString,
+} from "./_validators.ts";
+import {
+  constants as TCPConstants,
+  TCP,
+  TCPConnectWrap,
+} from "./internal_binding/tcp_wrap.ts";
+import {
+  constants as PipeConstants,
+  Pipe,
+  PipeConnectWrap,
+} from "./internal_binding/pipe_wrap.ts";
+import { assert } from "../_util/assert.ts";
+import { isWindows } from "../_util/os.ts";
+import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
+import { UV_EADDRINUSE } from "./internal_binding/uv.ts";
 
 const kLastWriteQueueSize = Symbol("lastWriteQueueSize");
 const kSetNoDelay = Symbol("kSetNoDelay");
 const kBytesRead = Symbol("kBytesRead");
 const kBytesWritten = Symbol("kBytesWritten");
+
+const DEFAULT_IPV4_ADDR = "0.0.0.0";
+const DEFAULT_IPV6_ADDR = "::";
+
+interface Handle {
+  [ownerSymbol]: Socket;
+  reading: boolean;
+  bytesRead: number;
+  bytesWritten: number;
+  onread?: (arrayBuffer: unknown) => Uint8Array | undefined;
+  getAsyncId?: () => number;
+  getpeername?: (peername: unknown) => unknown;
+  getsockname?: (sockname: unknown) => unknown;
+  ref?: () => unknown;
+  unref?: () => unknown;
+  readStart(): Error | undefined;
+  readStop(): Error | undefined;
+  useUserBuffer(userBuf: true | Uint8Array): unknown;
+  bind(localAddress: string, localPort: number): Error | undefined;
+  bind6(
+    localAddress: string,
+    localPort: number,
+    flags: unknown,
+  ): Error | undefined;
+  connect(
+    req: TCPConnectWrap | PipeConnectWrap,
+    address: string,
+    // deno-lint-ignore ban-types
+    onConnect: Function,
+  ): Error | undefined;
+  connect(
+    req: TCPConnectWrap | PipeConnectWrap,
+    address: string,
+    port: number,
+  ): Error | undefined;
+  connect6(
+    req: TCPConnectWrap | PipeConnectWrap,
+    address: string,
+    port: number,
+  ): Error | undefined;
+}
+
+interface HandleOptions {
+  pauseOnCreate?: boolean;
+  manualStart?: boolean;
+  handle?: Handle;
+}
 
 interface OnReadOptions {
   buffer: Uint8Array | (() => Uint8Array);
@@ -78,28 +153,6 @@ interface ConnectOptions {
    * behave as expected.
    */
   onread?: OnReadOptions;
-}
-
-interface Handle {
-  [ownerSymbol]: Socket;
-  reading: boolean;
-  bytesRead: number;
-  bytesWritten: number;
-  onread?: (arrayBuffer: unknown) => Uint8Array | undefined;
-  getAsyncId?: () => number;
-  getpeername?: (peername: unknown) => unknown;
-  getsockname?: (sockname: unknown) => unknown;
-  ref?: () => unknown;
-  unref?: () => unknown;
-  readStart(): Error | undefined;
-  readStop(): Error | undefined;
-  useUserBuffer(userBuf: true | Uint8Array): unknown;
-}
-
-interface HandleOptions {
-  pauseOnCreate?: boolean;
-  manualStart?: boolean;
-  handle?: Handle;
 }
 
 interface SocketOptions extends ConnectOptions, HandleOptions, DuplexOptions {
@@ -166,6 +219,238 @@ function getNewAsyncId(handle?: Handle | null): number {
     : handle.getAsyncId();
 }
 
+interface NormalizedArgs {
+  0: Partial<SocketConnectOptions>;
+  1: ConnectionListener | null;
+  [normalizedArgsSymbol]?: boolean;
+}
+
+function toNumber(x: unknown) {
+  return (x = Number(x)) >= 0 ? x : false;
+}
+
+function isPipeName(s: unknown): s is string {
+  return typeof s === "string" && toNumber(s) === false;
+}
+
+// Returns an array [options, cb], where options is an object,
+// cb is either a function or null.
+// Used to normalize arguments of `Socket.prototype.connect()` and
+// `Server.prototype.listen()`. Possible combinations of parameters:
+// - (options[...][, cb])
+// - (path[...][, cb])
+// - ([port][, host][...][, cb])
+// For `Socket.prototype.connect()`, the [...] part is ignored
+// For `Server.prototype.listen()`, the [...] part is [, backlog]
+// but will not be handled here (handled in listen())
+function normalizeArgs(args: unknown[]): NormalizedArgs {
+  let arr: NormalizedArgs;
+
+  if (args.length === 0) {
+    arr = [{}, null];
+    arr[normalizedArgsSymbol] = true;
+
+    return arr;
+  }
+
+  const arg0 = args[0] as SocketConnectOptions | number | string;
+  let options: Partial<SocketConnectOptions> = {};
+
+  if (typeof arg0 === "object" && arg0 !== null) {
+    // (options[...][, cb])
+    options = arg0;
+  } else if (isPipeName(arg0)) {
+    // (path[...][, cb])
+    (options as IpcSocketConnectOptions).path = arg0;
+  } else {
+    // ([port][, host][...][, cb])
+    (options as TcpSocketConnectOptions).port = arg0;
+
+    if (args.length > 1 && typeof args[1] === "string") {
+      (options as TcpSocketConnectOptions).host = args[1];
+    }
+  }
+
+  const cb = args[args.length - 1];
+
+  if (!_isConnectionListener(cb)) {
+    arr = [options, null];
+  } else {
+    arr = [options, cb];
+  }
+
+  arr[normalizedArgsSymbol] = true;
+
+  return arr;
+}
+
+function afterConnect(
+  status: number,
+  // deno-lint-ignore no-explicit-any
+  handle: any,
+  // deno-lint-ignore no-explicit-any
+  req: any,
+  readable: boolean,
+  writable: boolean,
+) {
+  let self = handle[ownerSymbol];
+
+  if (self.constructor.name === "ReusedHandle") {
+    self = self.handle;
+  }
+
+  // Callback may come after call to destroy
+  if (self.destroyed) {
+    return;
+  }
+
+  assert(self.connecting);
+
+  self.connecting = false;
+  self._sockname = null;
+
+  if (status === 0) {
+    if (self.readable && !readable) {
+      self.push(null);
+      self.read();
+    }
+
+    if (self.writable && !writable) {
+      self.end();
+    }
+
+    self._unrefTimer();
+
+    self.emit("connect");
+    self.emit("ready");
+
+    // Start the first read, or get an immediate EOF.
+    // this doesn't actually consume any bytes, because len=0.
+    if (readable && !self.isPaused()) {
+      self.read(0);
+    }
+  } else {
+    self.connecting = false;
+    let details;
+
+    if (req.localAddress && req.localPort) {
+      details = req.localAddress + ":" + req.localPort;
+    }
+
+    const ex = exceptionWithHostPort(
+      status,
+      "connect",
+      req.address,
+      req.port,
+      details,
+    );
+
+    if (details) {
+      ex.localAddress = req.localAddress;
+      ex.localPort = req.localPort;
+    }
+
+    self.destroy(ex);
+  }
+}
+
+// deno-lint-ignore no-explicit-any
+function checkBindError(err: any, port: number, handle: any) {
+  // EADDRINUSE may not be reported until we call `listen()` or `connect()`.
+  // To complicate matters, a failed `bind()` followed by `listen()` or `connect()`
+  // will implicitly bind to a random port. Ergo, check that the socket is
+  // bound to the expected port before calling `listen()` or `connect()`.
+  if (err === 0 && port > 0 && handle.getsockname) {
+    const out = {};
+    err = handle.getsockname(out);
+
+    // deno-lint-ignore no-explicit-any
+    if (err === 0 && port !== (out as any).port) {
+      err = UV_EADDRINUSE;
+    }
+  }
+
+  return err;
+}
+
+function isPipe(
+  options: Partial<SocketConnectOptions>,
+): options is IpcSocketConnectOptions {
+  return "path" in options && !!options.path;
+}
+
+function connectErrorNT(self: Socket, err: Error) {
+  self.destroy(err);
+}
+
+function internalConnect(
+  self: Socket,
+  address: string,
+  port: number,
+  addressType: number,
+  localAddress: string,
+  localPort: number,
+  flags: unknown,
+) {
+  assert(self.connecting);
+
+  let err;
+
+  if (localAddress || localPort) {
+    if (addressType === 4) {
+      localAddress = localAddress || DEFAULT_IPV4_ADDR;
+      err = self._handle!.bind(localAddress, localPort);
+    } else {
+      // addressType === 6
+      localAddress = localAddress || DEFAULT_IPV6_ADDR;
+      err = self._handle!.bind6(localAddress, localPort, flags);
+    }
+
+    err = checkBindError(err, localPort, self._handle);
+
+    if (err) {
+      const ex = exceptionWithHostPort(err, "bind", localAddress, localPort);
+      self.destroy(ex);
+
+      return;
+    }
+  }
+
+  if (addressType === 6 || addressType === 4) {
+    const req = new TCPConnectWrap();
+    req.oncomplete = afterConnect;
+    req.address = address;
+    req.port = port;
+    req.localAddress = localAddress;
+    req.localPort = localPort;
+
+    if (addressType === 4) {
+      err = self._handle!.connect(req, address, port);
+    } else {
+      err = self._handle!.connect6(req, address, port);
+    }
+  } else {
+    const req = new PipeConnectWrap();
+    req.oncomplete = afterConnect;
+    req.address = address;
+
+    err = self._handle!.connect(req, address, afterConnect);
+  }
+
+  if (err) {
+    let details = "";
+
+    const sockname = self._getsockname();
+
+    if (sockname) {
+      details = `${sockname.address}:${sockname.port}`;
+    }
+
+    const ex = exceptionWithHostPort(err, "connect", address, port, details);
+    self.destroy(ex);
+  }
+}
+
 /**
  * This class is an abstraction of a TCP socket or a streaming `IPC` endpoint
  * (uses named pipes on Windows, and Unix domain sockets otherwise). It is also
@@ -205,6 +490,7 @@ export class Socket extends Duplex {
   _sockname?: AddressInfo | Record<string, never>;
   _pendingData: Uint8Array | string | null = null;
   _pendingEncoding = "";
+  _host: string | null = null;
 
   constructor(options: SocketOptions | number) {
     if (typeof options === "number") {
@@ -286,13 +572,84 @@ export class Socket extends Duplex {
    * This function should only be used for reconnecting a socket after `"close"` has been emitted or otherwise it may lead to undefined
    * behavior.
    */
-  connect(options: SocketConnectOptions, connectionListener?: () => void): this;
-  connect(port: number, host: string, connectionListener?: () => void): this;
-  connect(port: number, connectionListener?: () => void): this;
-  connect(path: string, connectionListener?: () => void): this;
-  connect(..._args: unknown[]): this {
-    // TODO(cmorten)
-    notImplemented();
+  connect(
+    options: SocketConnectOptions,
+    connectionListener?: ConnectionListener,
+  ): this;
+  connect(
+    port: number,
+    host: string,
+    connectionListener?: ConnectionListener,
+  ): this;
+  connect(port: number, connectionListener?: ConnectionListener): this;
+  connect(path: string, connectionListener?: ConnectionListener): this;
+  connect(...args: unknown[]): this {
+    let normalized: NormalizedArgs;
+
+    // If passed an array, it's treated as an array of arguments that have
+    // already been normalized (so we don't normalize more than once). This has
+    // been solved before in https://github.com/nodejs/node/pull/12342, but was
+    // reverted as it had unintended side effects.
+    if (
+      Array.isArray(args[0]) &&
+      (args[0] as unknown as NormalizedArgs)[normalizedArgsSymbol]
+    ) {
+      normalized = args[0] as unknown as NormalizedArgs;
+    } else {
+      normalized = normalizeArgs(args);
+    }
+
+    const options = normalized[0];
+    const cb = normalized[1];
+
+    // `options.port === null` will be checked later.
+    if (
+      (options as TcpSocketConnectOptions).port === undefined &&
+      (options as IpcSocketConnectOptions).path == null
+    ) {
+      throw new ERR_MISSING_ARGS("options", "port", "path");
+    }
+
+    if (this.write !== Socket.prototype.write) {
+      this.write = Socket.prototype.write;
+    }
+
+    if (this.destroyed) {
+      this._handle = null;
+      this._peername = undefined;
+      this._sockname = undefined;
+    }
+
+    if (!this._handle) {
+      // TODO(cmorten)
+      this._handle = isPipe(options) ? new Pipe(PipeConstants.SOCKET) : // deno-lint-ignore no-explicit-any
+        new TCP(TCPConstants.SOCKET) as any;
+
+      this.#initSocketHandle();
+    }
+
+    if (cb !== null) {
+      this.once("connect", cb);
+    }
+
+    this._unrefTimer();
+
+    this.connecting = true;
+
+    if (isPipe(options)) {
+      const { path } = options;
+      validateString(path, "options.path");
+      defaultTriggerAsyncIdScope(
+        this[asyncIdSymbol],
+        internalConnect,
+        this,
+        path,
+      );
+    } else {
+      this.#lookupAndConnect(options as TcpSocketConnectOptions);
+    }
+
+    return this;
   }
 
   /**
@@ -539,7 +896,7 @@ export class Socket extends Duplex {
    * connected, then it is set to `false` and the `"connect"` event is emitted. Note
    * that the `socket.connect(options[, connectListener])` callback is a listener for the `"connect"` event.
    */
-  readonly connecting = false;
+  connecting = false;
 
   /**
    * The string representation of the local IP address the remote client is
@@ -842,6 +1199,135 @@ export class Socket extends Duplex {
       }
     }
   }
+
+  #lookupAndConnect(options: TcpSocketConnectOptions): void {
+    // deno-lint-ignore no-this-alias
+    const self = this;
+    const { localAddress, localPort } = options;
+    const host = options.host || "localhost";
+    let { port } = options;
+
+    if (localAddress && !isIP(localAddress)) {
+      throw new ERR_INVALID_IP_ADDRESS(localAddress);
+    }
+
+    if (localPort) {
+      validateNumber(localPort, "options.localPort");
+    }
+
+    if (typeof port !== "undefined") {
+      if (typeof port !== "number" && typeof port !== "string") {
+        throw new ERR_INVALID_ARG_TYPE(
+          "options.port",
+          ["number", "string"],
+          port,
+        );
+      }
+
+      validatePort(port);
+    }
+
+    port |= 0;
+
+    // If host is an IP, skip performing a lookup
+    const addressType = isIP(host);
+    if (addressType) {
+      defaultTriggerAsyncIdScope(
+        this[asyncIdSymbol],
+        nextTick,
+        () => {
+          if (self.connecting) {
+            defaultTriggerAsyncIdScope(
+              self[asyncIdSymbol],
+              internalConnect,
+              self,
+              host,
+              port,
+              addressType,
+              localAddress,
+              localPort,
+            );
+          }
+        },
+      );
+
+      return;
+    }
+
+    if (options.lookup !== undefined) {
+      validateFunction(options.lookup, "options.lookup");
+    }
+
+    const dnsOpts = {
+      family: options.family,
+      hints: options.hints || 0,
+    };
+
+    if (
+      !isWindows &&
+      dnsOpts.family !== 4 &&
+      dnsOpts.family !== 6 &&
+      dnsOpts.hints === 0
+    ) {
+      dnsOpts.hints = ADDRCONFIG;
+    }
+
+    self._host = host;
+    const lookup = options.lookup || dnsLookup;
+
+    defaultTriggerAsyncIdScope(this[asyncIdSymbol], function () {
+      lookup(
+        host,
+        dnsOpts,
+        function emitLookup(
+          err: ErrnoException | null,
+          ip: string,
+          addressType: number,
+        ) {
+          self.emit("lookup", err, ip, addressType, host);
+
+          // It's possible we were destroyed while looking this up.
+          // XXX it would be great if we could cancel the promise returned by
+          // the look up.
+          if (!self.connecting) {
+            return;
+          }
+
+          if (err) {
+            // net.createConnection() creates a net.Socket object and immediately
+            // calls net.Socket.connect() on it (that's us). There are no event
+            // listeners registered yet so defer the error event to the next tick.
+            nextTick(connectErrorNT, self, err);
+          } else if (!isIP(ip)) {
+            err = new ERR_INVALID_IP_ADDRESS(ip);
+
+            nextTick(connectErrorNT, self, err);
+          } else if (addressType !== 4 && addressType !== 6) {
+            err = new ERR_INVALID_ADDRESS_FAMILY(
+              `${addressType}`,
+              options.host!,
+              options.port,
+            );
+
+            nextTick(connectErrorNT, self, err);
+          } else {
+            self._unrefTimer();
+
+            defaultTriggerAsyncIdScope(
+              self[asyncIdSymbol],
+              internalConnect,
+              self,
+              ip,
+              port,
+              addressType,
+              localAddress,
+              localPort,
+            );
+          }
+        },
+      );
+    });
+  }
 }
 
 export const Stream = Socket;
@@ -1107,7 +1593,7 @@ export class Server extends EventEmitter {
   _listen2(
     _address: string,
     _port: number,
-    _addressType: unknown,
+    _addressType: number,
     _backlog: unknown,
     _fd: number,
     _flags: unknown,

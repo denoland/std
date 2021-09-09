@@ -27,7 +27,14 @@ export function isIPv6(ip: string) {
 }
 
 export function isIP(ip: string) {
-  if (isIPv4(ip)) return 4;
-  if (isIPv6(ip)) return 6;
+  if (isIPv4(ip)) {
+    return 4;
+  }
+  if (isIPv6(ip)) {
+    return 6;
+  }
+
   return 0;
 }
+
+export const normalizedArgsSymbol = Symbol("normalizedArgs");

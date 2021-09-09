@@ -13,6 +13,58 @@
 const assert = require("assert");
 const util = require("util");
 
+function _expectWarning(name, expected, code) {
+  if (typeof expected === 'string') {
+    expected = [[expected, code]];
+  } else if (!Array.isArray(expected)) {
+    expected = Object.entries(expected).map(([a, b]) => [b, a]);
+  } else if (!(Array.isArray(expected[0]))) {
+    expected = [[expected[0], expected[1]]];
+  }
+  // Deprecation codes are mandatory, everything else is not.
+  if (name === 'DeprecationWarning') {
+    expected.forEach(([_, code]) => assert(code, expected));
+  }
+  return mustCall((warning) => {
+    const [ message, code ] = expected.shift();
+    assert.strictEqual(warning.name, name);
+    if (typeof message === 'string') {
+      assert.strictEqual(warning.message, message);
+    } else {
+      assert.match(warning.message, message);
+    }
+    assert.strictEqual(warning.code, code);
+  }, expected.length);
+}
+
+let catchWarning;
+
+// Accepts a warning name and description or array of descriptions or a map of
+// warning names to description(s) ensures a warning is generated for each
+// name/description pair.
+// The expected messages have to be unique per `expectWarning()` call.
+function expectWarning(nameOrMap, expected, code) {
+  if (catchWarning === undefined) {
+    catchWarning = {};
+    process.on('warning', (warning) => {
+      if (!catchWarning[warning.name]) {
+        throw new TypeError(
+          `"${warning.name}" was triggered without being expected.\n` +
+          util.inspect(warning)
+        );
+      }
+      catchWarning[warning.name](warning);
+    });
+  }
+  if (typeof nameOrMap === 'string') {
+    catchWarning[nameOrMap] = _expectWarning(nameOrMap, expected, code);
+  } else {
+    Object.keys(nameOrMap).forEach((name) => {
+      catchWarning[name] = _expectWarning(name, nameOrMap[name]);
+    });
+  }
+}
+
 /**
  * @param {Error} error
  */
@@ -35,6 +87,14 @@ const noop = () => {};
  */
 function mustCall(fn, exact) {
   return _mustCallInner(fn, exact, "exact");
+}
+
+function mustSucceed(fn, exact) {
+  return mustCall(function(err, ...args) {
+    assert.ifError(err);
+    if (typeof fn === 'function')
+      return fn.apply(this, args);
+  }, exact);
 }
 
 const mustCallChecks = [];
@@ -154,7 +214,9 @@ function invalidArgTypeHelper(input) {
 
 module.exports = {
   expectsError,
+  expectWarning,
   invalidArgTypeHelper,
   mustCall,
   mustNotCall,
+  mustSucceed
 };
