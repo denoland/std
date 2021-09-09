@@ -848,16 +848,45 @@ export const Stream = Socket;
 
 const SERVER_CONNECTION_EVENT = "connection";
 
+interface Abortable {
+  /**
+   * When provided the corresponding `AbortController` can be used to cancel an asynchronous action.
+   */
+  signal?: AbortSignal | undefined;
+}
+
+interface ListenOptions extends Abortable {
+  port?: number | undefined;
+  host?: string | undefined;
+  backlog?: number | undefined;
+  path?: string | undefined;
+  exclusive?: boolean | undefined;
+  readableAll?: boolean | undefined;
+  writableAll?: boolean | undefined;
+  /**
+   * Default: `false`
+   */
+  ipv6Only?: boolean | undefined;
+}
+
 type ConnectionListener = (socket: Socket) => void;
 
-interface ServerSocketOptions {
-  allowHalfOpen?: boolean;
-  pauseOnConnect?: boolean;
+interface ServerOptions {
+  /**
+   * Indicates whether half-opened TCP connections are allowed.
+   * Default: false
+   */
+  allowHalfOpen?: boolean | undefined;
+  /**
+   * Indicates whether the socket should be paused on incoming connections.
+   * Default: false
+   */
+  pauseOnConnect?: boolean | undefined;
 }
 
 function _isServerSocketOptions(
   options: unknown,
-): options is null | undefined | ServerSocketOptions {
+): options is null | undefined | ServerOptions {
   return options === null || typeof options === "undefined" ||
     typeof options === "object";
 }
@@ -891,8 +920,10 @@ export class Server extends EventEmitter {
    * - `"listening"` - Emitted when the server has been bound after calling
    * `server.listen()`.
    */
+  constructor(connectionListener?: ConnectionListener);
+  constructor(options?: ServerOptions, connectionListener?: ConnectionListener);
   constructor(
-    options?: ServerSocketOptions | ConnectionListener,
+    options?: ServerOptions | ConnectionListener,
     connectionListener?: ConnectionListener,
   ) {
     super();
@@ -911,47 +942,191 @@ export class Server extends EventEmitter {
     }
   }
 
-  _listen2() {
+  /**
+   * Start a server listening for connections. A `net.Server` can be a TCP or
+   * an `IPC` server depending on what it listens to.
+   *
+   * Possible signatures:
+   *
+   * - `server.listen(handle[, backlog][, callback])`
+   * - `server.listen(options[, callback])`
+   * - `server.listen(path[, backlog][, callback])` for `IPC` servers
+   * - `server.listen([port[, host[, backlog]]][, callback])` for TCP servers
+   *
+   * This function is asynchronous. When the server starts listening, the `'listening'` event will be emitted. The last parameter `callback`will be added as a listener for the `'listening'`
+   * event.
+   *
+   * All `listen()` methods can take a `backlog` parameter to specify the maximum
+   * length of the queue of pending connections. The actual length will be determined
+   * by the OS through sysctl settings such as `tcp_max_syn_backlog` and `somaxconn`on Linux. The default value of this parameter is 511 (not 512).
+   *
+   * All `Socket` are set to `SO_REUSEADDR` (see [`socket(7)`](https://man7.org/linux/man-pages/man7/socket.7.html) for
+   * details).
+   *
+   * The `server.listen()` method can be called again if and only if there was an
+   * error during the first `server.listen()` call or `server.close()` has been
+   * called. Otherwise, an `ERR_SERVER_ALREADY_LISTEN` error will be thrown.
+   *
+   * One of the most common errors raised when listening is `EADDRINUSE`.
+   * This happens when another server is already listening on the requested`port`/`path`/`handle`. One way to handle this would be to retry
+   * after a certain amount of time:
+   *
+   * ```ts
+   * import { createRequire } from "https://deno.land/std@$STD_VERSION/node/module.ts";
+   *
+   * const require = createRequire(import.meta.url);
+   * const net = require("net");
+   *
+   * const PORT = 3000;
+   * const HOST = "127.0.0.1";
+   * const server = new net.Server();
+   *
+   * server.on("error", (e: Error & { code: string; }) => {
+   *   if (e.code === "EADDRINUSE") {
+   *     console.log("Address in use, retrying...");
+   *     setTimeout(() => {
+   *       server.close();
+   *       server.listen(PORT, HOST);
+   *     }, 1000);
+   *   }
+   * });
+   * ```
+   */
+  listen(
+    port?: number,
+    hostname?: string,
+    backlog?: number,
+    listeningListener?: () => void,
+  ): this;
+  listen(
+    port?: number,
+    hostname?: string,
+    listeningListener?: () => void,
+  ): this;
+  listen(port?: number, backlog?: number, listeningListener?: () => void): this;
+  listen(port?: number, listeningListener?: () => void): this;
+  listen(path: string, backlog?: number, listeningListener?: () => void): this;
+  listen(path: string, listeningListener?: () => void): this;
+  listen(options: ListenOptions, listeningListener?: () => void): this;
+  // deno-lint-ignore no-explicit-any
+  listen(handle: any, backlog?: number, listeningListener?: () => void): this;
+  // deno-lint-ignore no-explicit-any
+  listen(handle: any, listeningListener?: () => void): this;
+  listen(..._args: unknown[]): this {
     // TODO(cmorten)
     notImplemented();
   }
 
-  listen(..._args: unknown[]) {
+  /**
+   * Stops the server from accepting new connections and keeps existing
+   * connections. This function is asynchronous, the server is finally closed
+   * when all connections are ended and the server emits a `"close"` event.
+   * The optional `callback` will be called once the `"close"` event occurs. Unlike
+   * that event, it will be called with an `Error` as its only argument if the server
+   * was not open when it was closed.
+   *
+   * @param cb Called when the server is closed.
+   */
+  close(_cb?: (err?: Error) => void): this {
     // TODO(cmorten)
     notImplemented();
   }
 
-  address() {
+  /**
+   * Returns the bound `address`, the address `family` name, and `port` of the server
+   * as reported by the operating system if listening on an IP socket
+   * (useful to find which port was assigned when getting an OS-assigned address):`{ port: 12346, family: "IPv4", address: "127.0.0.1" }`.
+   *
+   * For a server listening on a pipe or Unix domain socket, the name is returned
+   * as a string.
+   *
+   * ```ts
+   * import { createRequire } from "https://deno.land/std@$STD_VERSION/node/module.ts";
+   * import { Socket } from "https://deno.land/std@$STD_VERSION/node/net.ts";
+   *
+   * const require = createRequire(import.meta.url);
+   * const net = require("net");
+   *
+   * const server = net.createServer((socket: Socket) => {
+   *   socket.end("goodbye\n");
+   * }).on("error", (err: Error) => {
+   *   // Handle errors here.
+   *   throw err;
+   * });
+   *
+   * // Grab an arbitrary unused port.
+   * server.listen(() => {
+   *   console.log("opened server on", server.address());
+   * });
+   * ```
+   *
+   * `server.address()` returns `null` before the `"listening"` event has been
+   * emitted or after calling `server.close()`.
+   */
+  address(): AddressInfo | string | null {
     // TODO(cmorten)
     notImplemented();
   }
 
-  getConnections(_cb: (err: Error | null, connections: number) => void) {
+  /**
+   * Asynchronously get the number of concurrent connections on the server. Works
+   * when sockets were sent to forks.
+   *
+   * Callback should take two arguments `err` and `count`.
+   */
+  getConnections(_cb: (err: Error | null, count: number) => void): void {
     // TODO(cmorten)
     notImplemented();
   }
 
-  close(_cb?: (err?: Error) => void) {
+  /**
+   * Calling `unref()` on a server will allow the program to exit if this is the only
+   * active server in the event system. If the server is already `unref`ed calling `unref()` again will have no effect.
+   */
+  unref(): this {
     // TODO(cmorten)
     notImplemented();
   }
 
-  _emitClosedIfDrained() {
+  /**
+   * Opposite of `unref()`, calling `ref()` on a previously `unref`ed server will _not_ let the program exit if it's the only server left (the default behavior).
+   * If the server is `ref`ed calling `ref()` again will have no effect.
+   */
+  ref(): this {
     // TODO(cmorten)
     notImplemented();
   }
 
-  _setupWorker(_socketList: EventEmitter) {
+  /**
+   * Indicates whether or not the server is listening for connections.
+   */
+  get listening(): boolean {
+    return !!this._handle;
+  }
+
+  _listen2(
+    _address: string,
+    _port: number,
+    _addressType: unknown,
+    _backlog: unknown,
+    _fd: number,
+    _flags: unknown,
+  ): void {
     // TODO(cmorten)
     notImplemented();
   }
 
-  ref() {
+  _emitClosedIfDrained(): void {
     // TODO(cmorten)
     notImplemented();
   }
 
-  unref() {
+  _setupWorker(_socketList: EventEmitter): void {
+    // TODO(cmorten)
+    notImplemented();
+  }
+
+  [EventEmitter.captureRejectionSymbol](): void {
     // TODO(cmorten)
     notImplemented();
   }
@@ -1026,7 +1201,7 @@ export class Server extends EventEmitter {
  * @return A `net.Server`.
  */
 export function createServer(
-  options?: ServerSocketOptions,
+  options?: ServerOptions,
   connectionListener?: ConnectionListener,
 ): Server {
   return new Server(options, connectionListener);
