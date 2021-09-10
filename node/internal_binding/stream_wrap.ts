@@ -29,5 +29,27 @@ enum StreamBaseStateFields {
 
 export const kReadBytesOrError = StreamBaseStateFields.kReadBytesOrError;
 export const kArrayBufferOffset = StreamBaseStateFields.kArrayBufferOffset;
+export const kBytesWritten = StreamBaseStateFields.kBytesWritten;
+export const kLastWriteWasAsync = StreamBaseStateFields.kLastWriteWasAsync;
+export const kNumStreamBaseStateFields =
+  StreamBaseStateFields.kNumStreamBaseStateFields;
 
 export const streamBaseState = new Int8Array();
+
+export class WriteWrap {
+  // deno-lint-ignore no-explicit-any
+  handle!: any;
+  oncomplete!: (status: number) => void;
+  async!: boolean;
+  bytes!: number;
+  buffer!: unknown;
+  callback!: unknown;
+  _chunks!: unknown[];
+}
+
+export class ShutdownWrap {
+  // deno-lint-ignore no-explicit-any
+  handle!: any;
+  callback!: () => void;
+  oncomplete!: (status: number) => void;
+}

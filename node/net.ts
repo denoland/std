@@ -35,6 +35,7 @@ import {
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_IP_ADDRESS,
   ERR_MISSING_ARGS,
+  ERR_SOCKET_CLOSED,
   errnoException,
   exceptionWithHostPort,
   NodeError,
@@ -50,6 +51,8 @@ import {
   kHandle,
   kUpdateTimer,
   onStreamRead,
+  writeGeneric,
+  writevGeneric,
 } from "./_stream_base_commons.ts";
 import { kTimeout } from "./_timers.ts";
 import { nextTick } from "./process.ts";
@@ -72,10 +75,11 @@ import {
   Pipe,
   PipeConnectWrap,
 } from "./internal_binding/pipe_wrap.ts";
+import { ShutdownWrap } from "./internal_binding/stream_wrap.ts";
 import { assert } from "../_util/assert.ts";
 import { isWindows } from "../_util/os.ts";
 import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
-import { UV_EADDRINUSE } from "./internal_binding/uv.ts";
+import { UV_EADDRINUSE, UV_ENOTCONN } from "./internal_binding/uv.ts";
 
 const kLastWriteQueueSize = Symbol("lastWriteQueueSize");
 const kSetNoDelay = Symbol("kSetNoDelay");
@@ -90,6 +94,7 @@ interface Handle {
   reading: boolean;
   bytesRead: number;
   bytesWritten: number;
+  writeQueueSize: number;
   onread?: (arrayBuffer: unknown) => Uint8Array | undefined;
   getAsyncId?: () => number;
   getpeername?: (peername: unknown) => unknown;
@@ -121,6 +126,10 @@ interface Handle {
     address: string,
     port: number,
   ): Error | undefined;
+  setNoDelay?: (value: boolean) => void;
+  setKeepAlive?: (arg0: boolean, arg1: number) => void;
+  shutdown(req: ShutdownWrap): number | null;
+  close(cb: () => void): void;
 }
 
 interface HandleOptions {
@@ -234,6 +243,8 @@ interface NormalizedArgs {
   1: ConnectionListener | null;
   [normalizedArgsSymbol]?: boolean;
 }
+
+const _noop = () => {};
 
 function _toNumber(x: unknown) {
   return (x = Number(x)) >= 0 ? x : false;
@@ -691,6 +702,14 @@ function _lookupAndConnect(
   });
 }
 
+function _afterShutdown(this: ShutdownWrap) {
+  this.callback();
+}
+
+function _emitCloseNT(socket: Socket) {
+  socket.emit("close");
+}
+
 /**
  * This class is an abstraction of a TCP socket or a streaming `IPC` endpoint
  * (uses named pipes on Windows, and Unix domain sockets otherwise). It is also
@@ -713,7 +732,8 @@ export class Socket extends Duplex {
   [kHandle]: Handle | null = null;
   [kSetNoDelay] = false;
   [kLastWriteQueueSize] = 0;
-  [kTimeout] = null;
+  // deno-lint-ignore no-explicit-any
+  [kTimeout]: any = null;
   [kBuffer]: Uint8Array | boolean | null = null;
   [kBufferCb]: OnReadOptions["callback"] | null = null;
   [kBufferGen]: (() => Uint8Array) | null = null;
@@ -724,13 +744,16 @@ export class Socket extends Duplex {
 
   // Reserved properties
   server = null;
-  _server = null;
+  // deno-lint-ignore no-explicit-any
+  _server: any = null;
 
   _peername?: AddressInfo | Record<string, never>;
   _sockname?: AddressInfo | Record<string, never>;
   _pendingData: Uint8Array | string | null = null;
   _pendingEncoding = "";
   _host: string | null = null;
+  // deno-lint-ignore no-explicit-any
+  _parent: any = null;
 
   constructor(options: SocketOptions | number) {
     if (typeof options === "number") {
@@ -979,9 +1002,25 @@ export class Socket extends Duplex {
    * @param noDelay
    * @return The socket itself.
    */
-  setNoDelay(_noDelay?: boolean): this {
-    // TODO(cmorten)
-    notImplemented();
+  setNoDelay(noDelay?: boolean): this {
+    if (!this._handle) {
+      this.once(
+        "connect",
+        noDelay ? this.setNoDelay : () => this.setNoDelay(noDelay),
+      );
+
+      return this;
+    }
+
+    // Backwards compatibility: assume true when `noDelay` is omitted
+    const newValue = noDelay === undefined ? true : !!noDelay;
+
+    if (this._handle.setNoDelay && newValue !== this[kSetNoDelay]) {
+      this[kSetNoDelay] = newValue;
+      this._handle.setNoDelay(newValue);
+    }
+
+    return this;
   }
 
   /**
@@ -1003,9 +1042,18 @@ export class Socket extends Duplex {
    * @param initialDelay
    * @return The socket itself.
    */
-  setKeepAlive(_enable: boolean, _initialDelay?: unknown): this {
-    // TODO(cmorten)
-    notImplemented();
+  setKeepAlive(enable: boolean, initialDelay?: number): this {
+    if (!this._handle) {
+      this.once("connect", () => this.setKeepAlive(enable, initialDelay));
+
+      return this;
+    }
+
+    if (this._handle.setKeepAlive) {
+      this._handle.setKeepAlive(enable, ~~(initialDelay! / 1000));
+    }
+
+    return this;
   }
 
   /**
@@ -1013,8 +1061,7 @@ export class Socket extends Duplex {
    * socket as reported by the operating system:`{ port: 12346, family: "IPv4", address: "127.0.0.1" }`
    */
   address(): AddressInfo | Record<string, never> {
-    // TODO(cmorten)
-    notImplemented();
+    return this._getsockname();
   }
 
   /**
@@ -1026,6 +1073,7 @@ export class Socket extends Duplex {
   unref(): this {
     if (!this._handle) {
       this.once("connect", this.unref);
+
       return this;
     }
 
@@ -1045,6 +1093,7 @@ export class Socket extends Duplex {
   ref(): this {
     if (!this._handle) {
       this.once("connect", this.ref);
+
       return this;
     }
 
@@ -1245,18 +1294,59 @@ export class Socket extends Duplex {
   };
 
   _unrefTimer() {
-    // TODO(cmorten)
-    notImplemented();
+    // deno-lint-ignore no-this-alias
+    for (let s = this; s !== null; s = s._parent) {
+      if (s[kTimeout]) {
+        s[kTimeout].refresh();
+      }
+    }
   }
 
-  _final = (_cb: unknown) => {
-    // TODO(cmorten)
-    notImplemented();
+  // The user has called .end(), and all the bytes have been
+  // sent out to the other side.
+  // deno-lint-ignore no-explicit-any
+  _final = (cb: any): any => {
+    // If still connecting - defer handling `_final` until 'connect' will happen
+    if (this.pending) {
+      return this.once("connect", () => this._final(cb));
+    }
+
+    if (!this._handle) {
+      return cb();
+    }
+
+    const req = new ShutdownWrap();
+    req.oncomplete = _afterShutdown;
+    req.handle = this._handle;
+    req.callback = cb;
+    const err = this._handle.shutdown(req);
+
+    if (err === 1 || err === UV_ENOTCONN) {
+      // synchronous finish
+      return cb();
+    } else if (err !== 0) {
+      return cb(errnoException(err, "shutdown"));
+    }
   };
 
   _onTimeout() {
-    // TODO(cmorten)
-    notImplemented();
+    const handle = this._handle;
+    const lastWriteQueueSize = this[kLastWriteQueueSize];
+
+    if (lastWriteQueueSize > 0 && handle) {
+      // `lastWriteQueueSize !== writeQueueSize` means there is
+      // an active write in progress, so we suppress the timeout.
+      const { writeQueueSize } = handle;
+
+      if (lastWriteQueueSize !== writeQueueSize) {
+        this[kLastWriteQueueSize] = writeQueueSize;
+        this._unrefTimer();
+
+        return;
+      }
+    }
+
+    this.emit("timeout");
   }
 
   _read = (size?: number): void => {
@@ -1267,9 +1357,42 @@ export class Socket extends Duplex {
     }
   };
 
-  _destroy(_exception: unknown, _cb: unknown) {
-    // TODO(cmorten)
-    notImplemented();
+  _destroy(exception: Error | null, cb: (err?: Error | null) => void) {
+    this.connecting = false;
+
+    // deno-lint-ignore no-this-alias
+    for (let s = this; s !== null; s = s._parent) {
+      clearTimeout(s[kTimeout]);
+    }
+
+    if (this._handle) {
+      const isException = exception ? true : false;
+      // `bytesRead` and `kBytesWritten` should be accessible after `.destroy()`
+      this[kBytesRead] = this._handle.bytesRead;
+      this[kBytesWritten] = this._handle.bytesWritten;
+
+      this._handle.close(() => {
+        this.emit("close", isException);
+      });
+
+      // deno-lint-ignore no-explicit-any
+      this._handle.onread = _noop as any;
+      this._handle = null;
+      this._sockname = undefined;
+
+      cb(exception);
+    } else {
+      cb(exception);
+      nextTick(_emitCloseNT, this);
+    }
+
+    if (this._server) {
+      this._server._connections--;
+
+      if (this._server._emitCloseIfDrained) {
+        this._server._emitCloseIfDrained();
+      }
+    }
   }
 
   _getpeername(): AddressInfo | Record<string, never> {
@@ -1295,13 +1418,46 @@ export class Socket extends Duplex {
   }
 
   _writeGeneric(
-    _writev: boolean,
-    _data: unknown,
-    _encoding: unknown,
-    _cb: unknown,
+    writev: boolean,
+    // deno-lint-ignore no-explicit-any
+    data: any,
+    encoding: string,
+    cb: (error?: Error | null) => void,
   ) {
-    // TODO(cmorten)
-    notImplemented();
+    // If we are still connecting, then buffer this for later.
+    // The Writable logic will buffer up any more writes while
+    // waiting for this one to be done.
+    if (this.connecting) {
+      this._pendingData = data;
+      this._pendingEncoding = encoding;
+      this.once("connect", function connect(this: Socket) {
+        this._writeGeneric(writev, data, encoding, cb);
+      });
+
+      return;
+    }
+
+    this._pendingData = null;
+    this._pendingEncoding = "";
+
+    if (!this._handle) {
+      cb(new ERR_SOCKET_CLOSED());
+
+      return false;
+    }
+
+    this._unrefTimer();
+
+    let req;
+
+    if (writev) {
+      req = writevGeneric(this, data, cb);
+    } else {
+      req = writeGeneric(this, data, encoding, cb);
+    }
+    if (req.async) {
+      this[kLastWriteQueueSize] = req.bytes;
+    }
   }
 
   _writev = (
@@ -1362,8 +1518,15 @@ export const Stream = Socket;
 // connect(port, [host], [cb])
 // connect(path, [cb]);
 //
-export function connect(options: NetConnectOptions, connectionListener?: () => void): Socket;
-export function connect(port: number, host?: string, connectionListener?: () => void): Socket;
+export function connect(
+  options: NetConnectOptions,
+  connectionListener?: () => void,
+): Socket;
+export function connect(
+  port: number,
+  host?: string,
+  connectionListener?: () => void,
+): Socket;
 export function connect(path: string, connectionListener?: () => void): Socket;
 export function connect(...args: unknown[]) {
   const normalized = _normalizeArgs(args);

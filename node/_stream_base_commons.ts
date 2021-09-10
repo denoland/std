@@ -22,13 +22,17 @@
 import { ownerSymbol } from "./_async_hooks.ts";
 import {
   kArrayBufferOffset,
+  kBytesWritten,
+  kLastWriteWasAsync,
   kReadBytesOrError,
   streamBaseState,
+  WriteWrap,
 } from "./internal_binding/stream_wrap.ts";
 import { isUint8Array } from "./_util/_util_types.ts";
 import { errnoException } from "./_errors.ts";
 import { FastBuffer } from "./_buffer.ts";
 import { UV_EOF } from "./internal_binding/uv.ts";
+import { Buffer } from "./buffer.ts";
 
 export const kMaybeDestroy = Symbol("kMaybeDestroy");
 export const kUpdateTimer = Symbol("kUpdateTimer");
@@ -38,6 +42,169 @@ export const kSession = Symbol("kSession");
 export const kBuffer = Symbol("kBuffer");
 export const kBufferGen = Symbol("kBufferGen");
 export const kBufferCb = Symbol("kBufferCb");
+
+// deno-lint-ignore no-explicit-any
+function handleWriteReq(req: any, data: any, encoding: string) {
+  const { handle } = req;
+
+  switch (encoding) {
+    case "buffer": {
+      const ret = handle.writeBuffer(req, data);
+
+      if (streamBaseState[kLastWriteWasAsync]) {
+        req.buffer = data;
+      }
+
+      return ret;
+    }
+    case "latin1":
+    case "binary":
+      return handle.writeLatin1String(req, data);
+    case "utf8":
+    case "utf-8":
+      return handle.writeUtf8String(req, data);
+    case "ascii":
+      return handle.writeAsciiString(req, data);
+    case "ucs2":
+    case "ucs-2":
+    case "utf16le":
+    case "utf-16le":
+      return handle.writeUcs2String(req, data);
+    default: {
+      const buffer = Buffer.from(data, encoding);
+      const ret = handle.writeBuffer(req, buffer);
+
+      if (streamBaseState[kLastWriteWasAsync]) {
+        req.buffer = buffer;
+      }
+
+      return ret;
+    }
+  }
+}
+
+// deno-lint-ignore no-explicit-any
+function onWriteComplete(this: any, status: number) {
+  let stream = this.handle[ownerSymbol];
+
+  if (stream.constructor.name === "ReusedHandle") {
+    stream = stream.handle;
+  }
+
+  if (stream.destroyed) {
+    if (typeof this.callback === "function") {
+      this.callback(null);
+    }
+
+    return;
+  }
+
+  if (status < 0) {
+    const ex = errnoException(status, "write", this.error);
+
+    if (typeof this.callback === "function") {
+      this.callback(ex);
+    } else {
+      stream.destroy(ex);
+    }
+
+    return;
+  }
+
+  stream[kUpdateTimer]();
+  stream[kAfterAsyncWrite](this);
+
+  if (typeof this.callback === "function") {
+    this.callback(null);
+  }
+}
+
+// deno-lint-ignore no-explicit-any
+function createWriteWrap(handle: any, callback: (err?: Error | null) => void) {
+  const req = new WriteWrap();
+
+  req.handle = handle;
+  req.oncomplete = onWriteComplete;
+  req.async = false;
+  req.bytes = 0;
+  req.buffer = null;
+  req.callback = callback;
+
+  return req;
+}
+
+export function writevGeneric(
+  // deno-lint-ignore no-explicit-any
+  owner: any,
+  // deno-lint-ignore no-explicit-any
+  data: any,
+  cb: (err?: Error | null) => void,
+) {
+  const req = createWriteWrap(owner[kHandle], cb);
+  const allBuffers = data.allBuffers;
+  let chunks;
+
+  if (allBuffers) {
+    chunks = data;
+
+    for (let i = 0; i < data.length; i++) {
+      data[i] = data[i].chunk;
+    }
+  } else {
+    chunks = new Array(data.length << 1);
+
+    for (let i = 0; i < data.length; i++) {
+      const entry = data[i];
+      chunks[i * 2] = entry.chunk;
+      chunks[i * 2 + 1] = entry.encoding;
+    }
+  }
+
+  const err = req.handle.writev(req, chunks, allBuffers);
+
+  // Retain chunks
+  if (err === 0) {
+    req._chunks = chunks;
+  }
+
+  afterWriteDispatched(req, err, cb);
+
+  return req;
+}
+
+export function writeGeneric(
+  // deno-lint-ignore no-explicit-any
+  owner: any,
+  // deno-lint-ignore no-explicit-any
+  data: any,
+  encoding: string,
+  cb: (err?: Error | null) => void,
+) {
+  const req = createWriteWrap(owner[kHandle], cb);
+  const err = handleWriteReq(req, data, encoding);
+
+  afterWriteDispatched(req, err, cb);
+
+  return req;
+}
+
+function afterWriteDispatched(
+  // deno-lint-ignore no-explicit-any
+  req: any,
+  err: number,
+  cb: (err?: Error | null) => void,
+) {
+  req.bytes = streamBaseState[kBytesWritten];
+  req.async = !!streamBaseState[kLastWriteWasAsync];
+
+  if (err !== 0) {
+    return cb(errnoException(err, "write", req.error));
+  }
+
+  if (!req.async && typeof req.callback === "function") {
+    req.callback();
+  }
+}
 
 // deno-lint-ignore no-explicit-any
 export function onStreamRead(this: any, arrayBuffer: any) {
