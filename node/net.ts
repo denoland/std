@@ -181,6 +181,16 @@ interface SocketOptions extends ConnectOptions, HandleOptions, DuplexOptions {
   signal?: AbortSignal;
 }
 
+interface TcpNetConnectOptions extends TcpSocketConnectOptions, SocketOptions {
+  timeout?: number;
+}
+
+interface IpcNetConnectOptions extends IpcSocketConnectOptions, SocketOptions {
+  timeout?: number;
+}
+
+type NetConnectOptions = TcpNetConnectOptions | IpcNetConnectOptions;
+
 interface AddressInfo {
   address: string;
   family?: string;
@@ -220,7 +230,7 @@ function _getNewAsyncId(handle?: Handle | null): number {
 }
 
 interface NormalizedArgs {
-  0: Partial<SocketConnectOptions>;
+  0: Partial<NetConnectOptions>;
   1: ConnectionListener | null;
   [normalizedArgsSymbol]?: boolean;
 }
@@ -253,7 +263,7 @@ function _normalizeArgs(args: unknown[]): NormalizedArgs {
     return arr;
   }
 
-  const arg0 = args[0] as SocketConnectOptions | number | string;
+  const arg0 = args[0] as Partial<NetConnectOptions> | number | string;
   let options: Partial<SocketConnectOptions> = {};
 
   if (typeof arg0 === "object" && arg0 !== null) {
@@ -803,7 +813,7 @@ export class Socket extends Duplex {
    * behavior.
    */
   connect(
-    options: SocketConnectOptions,
+    options: SocketConnectOptions | NormalizedArgs,
     connectionListener?: ConnectionListener,
   ): this;
   connect(
@@ -1340,7 +1350,34 @@ export class Socket extends Duplex {
 
 export const Stream = Socket;
 
-const SERVER_CONNECTION_EVENT = "connection";
+// Target API:
+//
+// let s = net.connect({port: 80, host: 'google.com'}, function() {
+//   ...
+// });
+//
+// There are various forms:
+//
+// connect(options, [cb])
+// connect(port, [host], [cb])
+// connect(path, [cb]);
+//
+export function connect(options: NetConnectOptions, connectionListener?: () => void): Socket;
+export function connect(port: number, host?: string, connectionListener?: () => void): Socket;
+export function connect(path: string, connectionListener?: () => void): Socket;
+export function connect(...args: unknown[]) {
+  const normalized = _normalizeArgs(args);
+  const options = normalized[0];
+  const socket = new Socket(options);
+
+  if (options.timeout) {
+    socket.setTimeout(options.timeout);
+  }
+
+  return socket.connect(normalized);
+}
+
+export const createConnection = connect;
 
 interface Abortable {
   /**
@@ -1423,13 +1460,13 @@ export class Server extends EventEmitter {
     super();
 
     if (_isConnectionListener(options)) {
-      this.on(SERVER_CONNECTION_EVENT, options);
+      this.on("connection", options);
     } else if (_isServerSocketOptions(options)) {
       this.allowHalfOpen = options?.allowHalfOpen || false;
       this.pauseOnConnect = !!options?.pauseOnConnect;
 
       if (_isConnectionListener(connectionListener)) {
-        this.on(SERVER_CONNECTION_EVENT, connectionListener);
+        this.on("connection", connectionListener);
       }
     } else {
       throw new ERR_INVALID_ARG_TYPE("options", "Object", options);
@@ -1707,6 +1744,8 @@ export default {
   isIP,
   isIPv4,
   isIPv6,
+  connect,
+  createConnection,
   createServer,
   Server,
   Socket,
