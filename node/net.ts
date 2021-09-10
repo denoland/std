@@ -451,6 +451,230 @@ function internalConnect(
   }
 }
 
+// Provide a better error message when we call end() as a result
+// of the other side sending a FIN.  The standard "write after end"
+// is overly vague, and makes it seem like the user's code is to blame.
+function _writeAfterFIN(
+  this: Socket,
+  // deno-lint-ignore no-explicit-any
+  chunk: any,
+  encoding?:
+    | WritableEncodings
+    | null
+    | ((error: Error | null | undefined) => void),
+  cb?: ((error: Error | null | undefined) => void),
+): boolean {
+  if (!this.writableEnded) {
+    return Duplex.prototype.write.call(
+      this,
+      chunk,
+      encoding as WritableEncodings | null,
+      cb,
+    );
+  }
+
+  if (typeof encoding === "function") {
+    cb = encoding;
+    encoding = null;
+  }
+
+  const err = new NodeError(
+    "EPIPE",
+    "This socket has been ended by the other party",
+  );
+
+  if (typeof cb === "function") {
+    defaultTriggerAsyncIdScope(
+      this[asyncIdSymbol],
+      nextTick,
+      cb,
+      err,
+    );
+  }
+
+  this.destroy(err);
+
+  return false;
+}
+
+function _tryReadStart(socket: Socket): void {
+  // Not already reading, start the flow.
+  socket._handle!.reading = true;
+  const err = socket._handle!.readStart();
+
+  if (err) {
+    socket.destroy(errnoException(err, "read"));
+  }
+}
+
+// Called when the "end" event is emitted.
+function _onReadableStreamEnd(this: Socket): void {
+  if (!this.allowHalfOpen) {
+    this.write = _writeAfterFIN;
+  }
+}
+
+// Called when creating new Socket, or when re-using a closed Socket
+function _initSocketHandle(socket: Socket): void {
+  socket._undestroy();
+  socket._sockname = undefined;
+
+  // Handle creation may be deferred to bind() or connect() time.
+  if (socket._handle) {
+    socket._handle[ownerSymbol] = socket;
+    socket._handle.onread = onStreamRead;
+    socket[asyncIdSymbol] = getNewAsyncId(socket._handle);
+
+    let userBuf = socket[kBuffer];
+
+    if (userBuf) {
+      const bufGen = socket[kBufferGen];
+
+      if (bufGen !== null) {
+        userBuf = bufGen();
+
+        if (!isUint8Array(userBuf)) {
+          return;
+        }
+
+        socket[kBuffer] = userBuf;
+      }
+
+      socket._handle.useUserBuffer(userBuf);
+    }
+  }
+}
+
+function _lookupAndConnect(
+  socket: Socket,
+  options: TcpSocketConnectOptions,
+): void {
+  const { localAddress, localPort } = options;
+  const host = options.host || "localhost";
+  let { port } = options;
+
+  if (localAddress && !isIP(localAddress)) {
+    throw new ERR_INVALID_IP_ADDRESS(localAddress);
+  }
+
+  if (localPort) {
+    validateNumber(localPort, "options.localPort");
+  }
+
+  if (typeof port !== "undefined") {
+    if (typeof port !== "number" && typeof port !== "string") {
+      throw new ERR_INVALID_ARG_TYPE(
+        "options.port",
+        ["number", "string"],
+        port,
+      );
+    }
+
+    validatePort(port);
+  }
+
+  port |= 0;
+
+  // If host is an IP, skip performing a lookup
+  const addressType = isIP(host);
+  if (addressType) {
+    defaultTriggerAsyncIdScope(
+      socket[asyncIdSymbol],
+      nextTick,
+      () => {
+        if (socket.connecting) {
+          defaultTriggerAsyncIdScope(
+            socket[asyncIdSymbol],
+            internalConnect,
+            socket,
+            host,
+            port,
+            addressType,
+            localAddress,
+            localPort,
+          );
+        }
+      },
+    );
+
+    return;
+  }
+
+  if (options.lookup !== undefined) {
+    validateFunction(options.lookup, "options.lookup");
+  }
+
+  const dnsOpts = {
+    family: options.family,
+    hints: options.hints || 0,
+  };
+
+  if (
+    !isWindows &&
+    dnsOpts.family !== 4 &&
+    dnsOpts.family !== 6 &&
+    dnsOpts.hints === 0
+  ) {
+    dnsOpts.hints = ADDRCONFIG;
+  }
+
+  socket._host = host;
+  const lookup = options.lookup || dnsLookup;
+
+  defaultTriggerAsyncIdScope(socket[asyncIdSymbol], function () {
+    lookup(
+      host,
+      dnsOpts,
+      function emitLookup(
+        err: ErrnoException | null,
+        ip: string,
+        addressType: number,
+      ) {
+        socket.emit("lookup", err, ip, addressType, host);
+
+        // It's possible we were destroyed while looking this up.
+        // XXX it would be great if we could cancel the promise returned by
+        // the look up.
+        if (!socket.connecting) {
+          return;
+        }
+
+        if (err) {
+          // net.createConnection() creates a net.Socket object and immediately
+          // calls net.Socket.connect() on it (that's us). There are no event
+          // listeners registered yet so defer the error event to the next tick.
+          nextTick(connectErrorNT, socket, err);
+        } else if (!isIP(ip)) {
+          err = new ERR_INVALID_IP_ADDRESS(ip);
+
+          nextTick(connectErrorNT, socket, err);
+        } else if (addressType !== 4 && addressType !== 6) {
+          err = new ERR_INVALID_ADDRESS_FAMILY(
+            `${addressType}`,
+            options.host!,
+            options.port,
+          );
+
+          nextTick(connectErrorNT, socket, err);
+        } else {
+          socket._unrefTimer();
+
+          defaultTriggerAsyncIdScope(
+            socket[asyncIdSymbol],
+            internalConnect,
+            socket,
+            ip,
+            port,
+            addressType,
+            localAddress,
+            localPort,
+          );
+        }
+      },
+    );
+  });
+}
+
 /**
  * This class is an abstraction of a TCP socket or a streaming `IPC` endpoint
  * (uses named pipes on Windows, and Unix domain sockets otherwise). It is also
@@ -535,9 +759,9 @@ export class Socket extends Duplex {
       this[kBufferCb] = onread.callback;
     }
 
-    this.on("end", this.#onReadableStreamEnd);
+    this.on("end", _onReadableStreamEnd);
 
-    this.#initSocketHandle();
+    _initSocketHandle(this);
 
     // If we have a handle, then start the flow of data into the
     // buffer. If not, then this will happen when we connect.
@@ -625,7 +849,7 @@ export class Socket extends Duplex {
       this._handle = isPipe(options) ? new Pipe(PipeConstants.SOCKET) : // deno-lint-ignore no-explicit-any
         new TCP(TCPConstants.SOCKET) as any;
 
-      this.#initSocketHandle();
+      _initSocketHandle(this);
     }
 
     if (cb !== null) {
@@ -646,7 +870,7 @@ export class Socket extends Duplex {
         path,
       );
     } else {
-      this.#lookupAndConnect(options as TcpSocketConnectOptions);
+      _lookupAndConnect(this, options as TcpSocketConnectOptions);
     }
 
     return this;
@@ -687,7 +911,7 @@ export class Socket extends Duplex {
       this[kBuffer] && !this.connecting && this._handle &&
       !this._handle.reading
     ) {
-      this.#tryReadStart();
+      _tryReadStart(this);
     }
 
     return Duplex.prototype.resume.call(this) as unknown as this;
@@ -986,7 +1210,7 @@ export class Socket extends Duplex {
       this[kBuffer] && !this.connecting && this._handle &&
       !this._handle.reading
     ) {
-      this.#tryReadStart();
+      _tryReadStart(this);
     }
 
     return Duplex.prototype.read.call(this, size);
@@ -1023,7 +1247,7 @@ export class Socket extends Duplex {
     if (this.connecting || !this._handle) {
       this.once("connect", () => this._read(size));
     } else if (!this._handle.reading) {
-      this.#tryReadStart();
+      _tryReadStart(this);
     }
   };
 
@@ -1105,228 +1329,6 @@ export class Socket extends Duplex {
 
   set _handle(v: Handle | null) {
     this[kHandle] = v;
-  }
-
-  #tryReadStart(): void {
-    // Not already reading, start the flow.
-    this._handle!.reading = true;
-    const err = this._handle!.readStart();
-
-    if (err) {
-      this.destroy(errnoException(err, "read"));
-    }
-  }
-
-  // Provide a better error message when we call end() as a result
-  // of the other side sending a FIN.  The standard "write after end"
-  // is overly vague, and makes it seem like the user's code is to blame.
-  #writeAfterFIN(
-    // deno-lint-ignore no-explicit-any
-    chunk: any,
-    encoding?:
-      | WritableEncodings
-      | null
-      | ((error: Error | null | undefined) => void),
-    cb?: ((error: Error | null | undefined) => void),
-  ): boolean {
-    if (!this.writableEnded) {
-      return Duplex.prototype.write.call(
-        this,
-        chunk,
-        encoding as WritableEncodings | null,
-        cb,
-      );
-    }
-
-    if (typeof encoding === "function") {
-      cb = encoding;
-      encoding = null;
-    }
-
-    const err = new NodeError(
-      "EPIPE",
-      "This socket has been ended by the other party",
-    );
-
-    if (typeof cb === "function") {
-      defaultTriggerAsyncIdScope(
-        this[asyncIdSymbol],
-        nextTick,
-        cb,
-        err,
-      );
-    }
-
-    this.destroy(err);
-
-    return false;
-  }
-
-  // Called when the "end" event is emitted.
-  #onReadableStreamEnd(): void {
-    if (!this.allowHalfOpen) {
-      this.write = this.#writeAfterFIN;
-    }
-  }
-
-  // Called when creating new Socket, or when re-using a closed Socket
-  #initSocketHandle(): void {
-    this._undestroy();
-    this._sockname = undefined;
-
-    // Handle creation may be deferred to bind() or connect() time.
-    if (this._handle) {
-      this._handle[ownerSymbol] = this;
-      this._handle.onread = onStreamRead;
-      this[asyncIdSymbol] = getNewAsyncId(this._handle);
-
-      let userBuf = this[kBuffer];
-
-      if (userBuf) {
-        const bufGen = this[kBufferGen];
-
-        if (bufGen !== null) {
-          userBuf = bufGen();
-
-          if (!isUint8Array(userBuf)) {
-            return;
-          }
-
-          this[kBuffer] = userBuf;
-        }
-
-        this._handle.useUserBuffer(userBuf);
-      }
-    }
-  }
-
-  #lookupAndConnect(options: TcpSocketConnectOptions): void {
-    // deno-lint-ignore no-this-alias
-    const self = this;
-    const { localAddress, localPort } = options;
-    const host = options.host || "localhost";
-    let { port } = options;
-
-    if (localAddress && !isIP(localAddress)) {
-      throw new ERR_INVALID_IP_ADDRESS(localAddress);
-    }
-
-    if (localPort) {
-      validateNumber(localPort, "options.localPort");
-    }
-
-    if (typeof port !== "undefined") {
-      if (typeof port !== "number" && typeof port !== "string") {
-        throw new ERR_INVALID_ARG_TYPE(
-          "options.port",
-          ["number", "string"],
-          port,
-        );
-      }
-
-      validatePort(port);
-    }
-
-    port |= 0;
-
-    // If host is an IP, skip performing a lookup
-    const addressType = isIP(host);
-    if (addressType) {
-      defaultTriggerAsyncIdScope(
-        this[asyncIdSymbol],
-        nextTick,
-        () => {
-          if (self.connecting) {
-            defaultTriggerAsyncIdScope(
-              self[asyncIdSymbol],
-              internalConnect,
-              self,
-              host,
-              port,
-              addressType,
-              localAddress,
-              localPort,
-            );
-          }
-        },
-      );
-
-      return;
-    }
-
-    if (options.lookup !== undefined) {
-      validateFunction(options.lookup, "options.lookup");
-    }
-
-    const dnsOpts = {
-      family: options.family,
-      hints: options.hints || 0,
-    };
-
-    if (
-      !isWindows &&
-      dnsOpts.family !== 4 &&
-      dnsOpts.family !== 6 &&
-      dnsOpts.hints === 0
-    ) {
-      dnsOpts.hints = ADDRCONFIG;
-    }
-
-    self._host = host;
-    const lookup = options.lookup || dnsLookup;
-
-    defaultTriggerAsyncIdScope(this[asyncIdSymbol], function () {
-      lookup(
-        host,
-        dnsOpts,
-        function emitLookup(
-          err: ErrnoException | null,
-          ip: string,
-          addressType: number,
-        ) {
-          self.emit("lookup", err, ip, addressType, host);
-
-          // It's possible we were destroyed while looking this up.
-          // XXX it would be great if we could cancel the promise returned by
-          // the look up.
-          if (!self.connecting) {
-            return;
-          }
-
-          if (err) {
-            // net.createConnection() creates a net.Socket object and immediately
-            // calls net.Socket.connect() on it (that's us). There are no event
-            // listeners registered yet so defer the error event to the next tick.
-            nextTick(connectErrorNT, self, err);
-          } else if (!isIP(ip)) {
-            err = new ERR_INVALID_IP_ADDRESS(ip);
-
-            nextTick(connectErrorNT, self, err);
-          } else if (addressType !== 4 && addressType !== 6) {
-            err = new ERR_INVALID_ADDRESS_FAMILY(
-              `${addressType}`,
-              options.host!,
-              options.port,
-            );
-
-            nextTick(connectErrorNT, self, err);
-          } else {
-            self._unrefTimer();
-
-            defaultTriggerAsyncIdScope(
-              self[asyncIdSymbol],
-              internalConnect,
-              self,
-              ip,
-              port,
-              addressType,
-              localAddress,
-              localPort,
-            );
-          }
-        },
-      );
-    });
   }
 }
 
