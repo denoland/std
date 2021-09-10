@@ -213,7 +213,7 @@ interface IpcSocketConnectOptions extends ConnectOptions {
 
 type SocketConnectOptions = TcpSocketConnectOptions | IpcSocketConnectOptions;
 
-function getNewAsyncId(handle?: Handle | null): number {
+function _getNewAsyncId(handle?: Handle | null): number {
   return (!handle || typeof handle.getAsyncId !== "function")
     ? newAsyncId()
     : handle.getAsyncId();
@@ -225,12 +225,12 @@ interface NormalizedArgs {
   [normalizedArgsSymbol]?: boolean;
 }
 
-function toNumber(x: unknown) {
+function _toNumber(x: unknown) {
   return (x = Number(x)) >= 0 ? x : false;
 }
 
-function isPipeName(s: unknown): s is string {
-  return typeof s === "string" && toNumber(s) === false;
+function _isPipeName(s: unknown): s is string {
+  return typeof s === "string" && _toNumber(s) === false;
 }
 
 // Returns an array [options, cb], where options is an object,
@@ -243,7 +243,7 @@ function isPipeName(s: unknown): s is string {
 // For `Socket.prototype.connect()`, the [...] part is ignored
 // For `Server.prototype.listen()`, the [...] part is [, backlog]
 // but will not be handled here (handled in listen())
-function normalizeArgs(args: unknown[]): NormalizedArgs {
+function _normalizeArgs(args: unknown[]): NormalizedArgs {
   let arr: NormalizedArgs;
 
   if (args.length === 0) {
@@ -259,7 +259,7 @@ function normalizeArgs(args: unknown[]): NormalizedArgs {
   if (typeof arg0 === "object" && arg0 !== null) {
     // (options[...][, cb])
     options = arg0;
-  } else if (isPipeName(arg0)) {
+  } else if (_isPipeName(arg0)) {
     // (path[...][, cb])
     (options as IpcSocketConnectOptions).path = arg0;
   } else {
@@ -284,56 +284,61 @@ function normalizeArgs(args: unknown[]): NormalizedArgs {
   return arr;
 }
 
-function afterConnect(
+function _isTCPConnectWrap(
+  req: TCPConnectWrap | PipeConnectWrap,
+): req is TCPConnectWrap {
+  return "localAddress" in req && "localPort" in req;
+}
+
+function _afterConnect(
   status: number,
   // deno-lint-ignore no-explicit-any
   handle: any,
-  // deno-lint-ignore no-explicit-any
-  req: any,
+  req: PipeConnectWrap | TCPConnectWrap,
   readable: boolean,
   writable: boolean,
 ) {
-  let self = handle[ownerSymbol];
+  let socket = handle[ownerSymbol];
 
-  if (self.constructor.name === "ReusedHandle") {
-    self = self.handle;
+  if (socket.constructor.name === "ReusedHandle") {
+    socket = socket.handle;
   }
 
   // Callback may come after call to destroy
-  if (self.destroyed) {
+  if (socket.destroyed) {
     return;
   }
 
-  assert(self.connecting);
+  assert(socket.connecting);
 
-  self.connecting = false;
-  self._sockname = null;
+  socket.connecting = false;
+  socket._sockname = null;
 
   if (status === 0) {
-    if (self.readable && !readable) {
-      self.push(null);
-      self.read();
+    if (socket.readable && !readable) {
+      socket.push(null);
+      socket.read();
     }
 
-    if (self.writable && !writable) {
-      self.end();
+    if (socket.writable && !writable) {
+      socket.end();
     }
 
-    self._unrefTimer();
+    socket._unrefTimer();
 
-    self.emit("connect");
-    self.emit("ready");
+    socket.emit("connect");
+    socket.emit("ready");
 
     // Start the first read, or get an immediate EOF.
     // this doesn't actually consume any bytes, because len=0.
-    if (readable && !self.isPaused()) {
-      self.read(0);
+    if (readable && !socket.isPaused()) {
+      socket.read(0);
     }
   } else {
-    self.connecting = false;
+    socket.connecting = false;
     let details;
 
-    if (req.localAddress && req.localPort) {
+    if (_isTCPConnectWrap(req)) {
       details = req.localAddress + ":" + req.localPort;
     }
 
@@ -341,21 +346,22 @@ function afterConnect(
       status,
       "connect",
       req.address,
-      req.port,
+      // deno-lint-ignore no-explicit-any
+      (req as any).port,
       details,
     );
 
-    if (details) {
+    if (_isTCPConnectWrap(req)) {
       ex.localAddress = req.localAddress;
       ex.localPort = req.localPort;
     }
 
-    self.destroy(ex);
+    socket.destroy(ex);
   }
 }
 
 // deno-lint-ignore no-explicit-any
-function checkBindError(err: any, port: number, handle: any) {
+function _checkBindError(err: any, port: number, handle: any) {
   // EADDRINUSE may not be reported until we call `listen()` or `connect()`.
   // To complicate matters, a failed `bind()` followed by `listen()` or `connect()`
   // will implicitly bind to a random port. Ergo, check that the socket is
@@ -373,18 +379,18 @@ function checkBindError(err: any, port: number, handle: any) {
   return err;
 }
 
-function isPipe(
+function _isPipe(
   options: Partial<SocketConnectOptions>,
 ): options is IpcSocketConnectOptions {
   return "path" in options && !!options.path;
 }
 
-function connectErrorNT(self: Socket, err: Error) {
-  self.destroy(err);
+function _connectErrorNT(socket: Socket, err: Error) {
+  socket.destroy(err);
 }
 
-function internalConnect(
-  self: Socket,
+function _internalConnect(
+  socket: Socket,
   address: string,
   port: number,
   addressType: number,
@@ -392,25 +398,25 @@ function internalConnect(
   localPort: number,
   flags: unknown,
 ) {
-  assert(self.connecting);
+  assert(socket.connecting);
 
   let err;
 
   if (localAddress || localPort) {
     if (addressType === 4) {
       localAddress = localAddress || DEFAULT_IPV4_ADDR;
-      err = self._handle!.bind(localAddress, localPort);
+      err = socket._handle!.bind(localAddress, localPort);
     } else {
       // addressType === 6
       localAddress = localAddress || DEFAULT_IPV6_ADDR;
-      err = self._handle!.bind6(localAddress, localPort, flags);
+      err = socket._handle!.bind6(localAddress, localPort, flags);
     }
 
-    err = checkBindError(err, localPort, self._handle);
+    err = _checkBindError(err, localPort, socket._handle);
 
     if (err) {
       const ex = exceptionWithHostPort(err, "bind", localAddress, localPort);
-      self.destroy(ex);
+      socket.destroy(ex);
 
       return;
     }
@@ -418,36 +424,36 @@ function internalConnect(
 
   if (addressType === 6 || addressType === 4) {
     const req = new TCPConnectWrap();
-    req.oncomplete = afterConnect;
+    req.oncomplete = _afterConnect;
     req.address = address;
     req.port = port;
     req.localAddress = localAddress;
     req.localPort = localPort;
 
     if (addressType === 4) {
-      err = self._handle!.connect(req, address, port);
+      err = socket._handle!.connect(req, address, port);
     } else {
-      err = self._handle!.connect6(req, address, port);
+      err = socket._handle!.connect6(req, address, port);
     }
   } else {
     const req = new PipeConnectWrap();
-    req.oncomplete = afterConnect;
+    req.oncomplete = _afterConnect;
     req.address = address;
 
-    err = self._handle!.connect(req, address, afterConnect);
+    err = socket._handle!.connect(req, address, _afterConnect);
   }
 
   if (err) {
     let details = "";
 
-    const sockname = self._getsockname();
+    const sockname = socket._getsockname();
 
     if (sockname) {
       details = `${sockname.address}:${sockname.port}`;
     }
 
     const ex = exceptionWithHostPort(err, "connect", address, port, details);
-    self.destroy(ex);
+    socket.destroy(ex);
   }
 }
 
@@ -523,7 +529,7 @@ function _initSocketHandle(socket: Socket): void {
   if (socket._handle) {
     socket._handle[ownerSymbol] = socket;
     socket._handle.onread = onStreamRead;
-    socket[asyncIdSymbol] = getNewAsyncId(socket._handle);
+    socket[asyncIdSymbol] = _getNewAsyncId(socket._handle);
 
     let userBuf = socket[kBuffer];
 
@@ -585,7 +591,7 @@ function _lookupAndConnect(
         if (socket.connecting) {
           defaultTriggerAsyncIdScope(
             socket[asyncIdSymbol],
-            internalConnect,
+            _internalConnect,
             socket,
             host,
             port,
@@ -643,11 +649,11 @@ function _lookupAndConnect(
           // net.createConnection() creates a net.Socket object and immediately
           // calls net.Socket.connect() on it (that's us). There are no event
           // listeners registered yet so defer the error event to the next tick.
-          nextTick(connectErrorNT, socket, err);
+          nextTick(_connectErrorNT, socket, err);
         } else if (!isIP(ip)) {
           err = new ERR_INVALID_IP_ADDRESS(ip);
 
-          nextTick(connectErrorNT, socket, err);
+          nextTick(_connectErrorNT, socket, err);
         } else if (addressType !== 4 && addressType !== 6) {
           err = new ERR_INVALID_ADDRESS_FAMILY(
             `${addressType}`,
@@ -655,13 +661,13 @@ function _lookupAndConnect(
             options.port,
           );
 
-          nextTick(connectErrorNT, socket, err);
+          nextTick(_connectErrorNT, socket, err);
         } else {
           socket._unrefTimer();
 
           defaultTriggerAsyncIdScope(
             socket[asyncIdSymbol],
-            internalConnect,
+            _internalConnect,
             socket,
             ip,
             port,
@@ -736,7 +742,7 @@ export class Socket extends Duplex {
 
     if (options.handle) {
       this._handle = options.handle;
-      this[asyncIdSymbol] = getNewAsyncId(this._handle);
+      this[asyncIdSymbol] = _getNewAsyncId(this._handle);
     } else if (options.fd !== undefined) {
       // TODO(cmorten): deal with file descriptors, using `Deno.resources()`?
       notImplemented();
@@ -820,7 +826,7 @@ export class Socket extends Duplex {
     ) {
       normalized = args[0] as unknown as NormalizedArgs;
     } else {
-      normalized = normalizeArgs(args);
+      normalized = _normalizeArgs(args);
     }
 
     const options = normalized[0];
@@ -846,7 +852,7 @@ export class Socket extends Duplex {
 
     if (!this._handle) {
       // TODO(cmorten)
-      this._handle = isPipe(options) ? new Pipe(PipeConstants.SOCKET) : // deno-lint-ignore no-explicit-any
+      this._handle = _isPipe(options) ? new Pipe(PipeConstants.SOCKET) : // deno-lint-ignore no-explicit-any
         new TCP(TCPConstants.SOCKET) as any;
 
       _initSocketHandle(this);
@@ -860,12 +866,12 @@ export class Socket extends Duplex {
 
     this.connecting = true;
 
-    if (isPipe(options)) {
+    if (_isPipe(options)) {
       const { path } = options;
       validateString(path, "options.path");
       defaultTriggerAsyncIdScope(
         this[asyncIdSymbol],
-        internalConnect,
+        _internalConnect,
         this,
         path,
       );
