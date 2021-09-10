@@ -107,6 +107,11 @@ maintainers):
 - test with Deno canary on Linux
 - test with Deno canary on macOS
 
+_Typechecking code in Markdown files_:
+
+If you want to run `deno test --doc x.md` you will need to specify the flag
+`--import-map=test_import_map.json`, this import map is in the root of deno_std.
+
 _For maintainers_:
 
 To release a new version a tag in the form of `x.y.z` should be added.
