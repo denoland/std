@@ -109,7 +109,7 @@ maintainers):
 
 _Typechecking code in Markdown files_:
 
-If you want to run `deno test --doc x.md` you will need to specify the flag 
+If you want to run `deno test --doc x.md` you will need to specify the flag
 `--import-map=test_import_map.json`, this import map is in the root of deno_std.
 
 _For maintainers_:
