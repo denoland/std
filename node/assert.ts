@@ -850,6 +850,7 @@ Object.assign(strict, {
   doesNotThrow,
   equal: strictEqual,
   fail,
+  ifError,
   match,
   notDeepEqual: notDeepStrictEqual,
   notDeepStrictEqual,

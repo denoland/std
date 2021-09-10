@@ -161,17 +161,17 @@ function _ucs2decode(str: string) {
  * used; else, the lowercase form is used. The behavior is undefined
  * if `flag` is non-zero and `digit` has no uppercase form.
  */
-const _digitToBasic = function (digit: number, flag: number) {
+function _digitToBasic(digit: number, flag: number) {
   //  0..25 map to ASCII a..z or A..Z
   // 26..35 map to ASCII 0..9
   return digit + 22 + 75 * Number(digit < 26) - (Number(flag != 0) << 5);
-};
+}
 
 /**
  * Bias adaptation function as per section 3.4 of RFC 3492.
  * https://tools.ietf.org/html/rfc3492#section-3.4
  */
-function adapt(delta: number, numPoints: number, firstTime: boolean) {
+function _adapt(delta: number, numPoints: number, firstTime: boolean) {
   let k = 0;
   delta = firstTime ? Math.floor(delta / damp) : delta >> 1;
   delta += Math.floor(delta / numPoints);
@@ -190,7 +190,7 @@ function adapt(delta: number, numPoints: number, firstTime: boolean) {
  * @param str The string of Unicode symbols.
  * @return The resulting Punycode string of ASCII-only symbols.
  */
-const _encode = function (str: string) {
+function _encode(str: string) {
   const output = [];
 
   // Convert the input in UCS-2 to an array of Unicode code points.
@@ -273,7 +273,7 @@ const _encode = function (str: string) {
 
         output.push(String.fromCharCode(_digitToBasic(q, 0)));
 
-        bias = adapt(
+        bias = _adapt(
           delta,
           handledCPCountPlusOne,
           handledCPCount == basicLength,
@@ -289,7 +289,7 @@ const _encode = function (str: string) {
   }
 
   return output.join("");
-};
+}
 
 /**
  * Converts a Unicode string representing a domain name or an email address to
