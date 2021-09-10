@@ -42,6 +42,9 @@
 
 // Adapted from https://github.com/mathiasbynens/punycode.js
 
+// TODO(cmorten): migrate punycode logic to "icu" internal binding and/or "url"
+// internal module so there can be re-use within the "url" module etc.
+
 "use strict";
 
 /** Highest positive signed 32-bit float value */
