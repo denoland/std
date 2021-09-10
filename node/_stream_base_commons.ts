@@ -31,6 +31,8 @@ import {
 import { isUint8Array } from "./_util/_util_types.ts";
 import { errnoException } from "./_errors.ts";
 import { FastBuffer } from "./_buffer.ts";
+import { getTimerDuration, kTimeout, setUnrefTimeout } from "./_timers.ts";
+import { validateCallback } from "./_validators.ts";
 import { UV_EOF } from "./internal_binding/uv.ts";
 import { Buffer } from "./buffer.ts";
 
@@ -289,4 +291,44 @@ export function onStreamRead(this: any, arrayBuffer: any) {
     stream.push(null);
     stream.read(0);
   }
+}
+
+export function setStreamTimeout(
+  // deno-lint-ignore no-explicit-any
+  this: any,
+  msecs: number,
+  callback?: () => void,
+) {
+  if (this.destroyed) {
+    return this;
+  }
+
+  this.timeout = msecs;
+
+  // Type checking identical to timers.enroll()
+  msecs = getTimerDuration(msecs, "msecs");
+
+  // Attempt to clear an existing timer in both cases -
+  //  even if it will be rescheduled we don't want to leak an existing timer.
+  clearTimeout(this[kTimeout]);
+
+  if (msecs === 0) {
+    if (callback !== undefined) {
+      validateCallback(callback);
+      this.removeListener("timeout", callback);
+    }
+  } else {
+    this[kTimeout] = setUnrefTimeout(this._onTimeout.bind(this), msecs);
+
+    if (this[kSession]) {
+      this[kSession][kUpdateTimer]();
+    }
+
+    if (callback !== undefined) {
+      validateCallback(callback);
+      this.once("timeout", callback);
+    }
+  }
+
+  return this;
 }

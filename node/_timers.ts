@@ -19,4 +19,44 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import { validateCallback, validateNumber } from "./_validators.ts";
+import { ERR_OUT_OF_RANGE } from "./_errors.ts";
+import { emitWarning } from "./process.ts";
+
 export const kTimeout = Symbol("timeout");
+
+// Timeout values > TIMEOUT_MAX are set to 1.
+export const TIMEOUT_MAX = 2 ** 31 - 1;
+
+// deno-lint-ignore no-explicit-any
+export function setUnrefTimeout(callback: any, after: any) {
+  // Type checking identical to setTimeout()
+  validateCallback(callback);
+
+  // TODO(cmorten): do we need to replica the Node internals, or is this sham
+  // good enough?
+  const timer = setTimeout(callback, after);
+
+  return timer;
+}
+
+export function getTimerDuration(msecs: number, name: string) {
+  validateNumber(msecs, name);
+
+  if (msecs < 0 || !Number.isFinite(msecs)) {
+    throw new ERR_OUT_OF_RANGE(name, "a non-negative finite number", msecs);
+  }
+
+  // Ensure that msecs fits into signed int32
+  if (msecs > TIMEOUT_MAX) {
+    emitWarning(
+      `${msecs} does not fit into a 32-bit signed integer.` +
+        `\nTimer duration was truncated to ${TIMEOUT_MAX}.`,
+      "TimeoutOverflowWarning",
+    );
+
+    return TIMEOUT_MAX;
+  }
+
+  return msecs;
+}

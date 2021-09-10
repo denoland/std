@@ -51,6 +51,7 @@ import {
   kHandle,
   kUpdateTimer,
   onStreamRead,
+  setStreamTimeout,
   writeGeneric,
   writevGeneric,
 } from "./_stream_base_commons.ts";
@@ -982,10 +983,7 @@ export class Socket extends Duplex {
    * The optional `callback` parameter will be added as a one-time listener for the `"timeout"` event.
    * @return The socket itself.
    */
-  setTimeout(_timeout: number, _cb?: () => void): this {
-    // TODO(cmorten)
-    notImplemented();
-  }
+  setTimeout = setStreamTimeout;
 
   /**
    * Enable/disable the use of Nagle's algorithm.
