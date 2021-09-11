@@ -36,7 +36,7 @@ A small program for serving local files over HTTP.
 
 ```sh
 deno run --allow-net --allow-read https://deno.land/std/http/file_server.ts
-> HTTP server listening on http://0.0.0.0:4507/
+> HTTP server listening on http://localhost:4507/
 ```
 
 ## Cookie
@@ -96,4 +96,4 @@ const headers = new Headers();
 deleteCookie(headers, "deno", { path: "/", domain: "deno.land" });
 ```
 
-**Note**: At the moment multiple `Set-Cookie` in a `Response` is not handled.
+> Note: At the moment multiple `Set-Cookie` in a `Response` is not handled.

@@ -14,13 +14,13 @@ const notImplementedEncodings = [
 function checkEncoding(encoding = "utf8", strict = true): Encodings {
   if (typeof encoding !== "string" || (strict && encoding === "")) {
     if (!strict) return "utf8";
-    throw new TypeError(`Unkown encoding: ${encoding}`);
+    throw new TypeError(`Unknown encoding: ${encoding}`);
   }
 
   const normalized = normalizeEncoding(encoding);
 
   if (normalized === undefined) {
-    throw new TypeError(`Unkown encoding: ${encoding}`);
+    throw new TypeError(`Unknown encoding: ${encoding}`);
   }
 
   if (notImplementedEncodings.includes(encoding)) {

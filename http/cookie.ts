@@ -19,10 +19,12 @@ export interface Cookie {
   path?: string;
   /** Indicates if the cookie is made using SSL & HTTPS. */
   secure?: boolean;
-  /** Indicates that cookie is not accessible via JavaScript. **/
+  /** Indicates that cookie is not accessible via JavaScript. */
   httpOnly?: boolean;
-  /** Allows servers to assert that a cookie ought not to
-   * be sent along with cross-site requests. */
+  /**
+   * Allows servers to assert that a cookie ought not to
+   * be sent along with cross-site requests.
+   */
   sameSite?: "Strict" | "Lax" | "None";
   /** Additional key value pairs with the form "key=value" */
   unparsed?: string[];
@@ -96,7 +98,7 @@ function validateName(name: string | undefined | null): void {
 
 /**
  * Validate Path Value.
- * @see https://tools.ietf.org/html/rfc6265#section-4.1.2.4
+ * See {@link https://tools.ietf.org/html/rfc6265#section-4.1.2.4}.
  * @param path Path value.
  */
 function validatePath(path: string | null): void {
@@ -117,7 +119,7 @@ function validatePath(path: string | null): void {
 
 /**
  * Validate Cookie Value.
- * @see https://tools.ietf.org/html/rfc6265#section-4.1
+ * See {@link https://tools.ietf.org/html/rfc6265#section-4.1}.
  * @param value Cookie value.
  */
 function validateValue(name: string, value: string | null): void {
@@ -144,7 +146,7 @@ function validateValue(name: string, value: string | null): void {
 
 /**
  * Validate Cookie Domain.
- * @see https://datatracker.ietf.org/doc/html/rfc6265#section-4.1.2.3
+ * See {@link https://datatracker.ietf.org/doc/html/rfc6265#section-4.1.2.3}.
  * @param domain Cookie domain.
  */
 function validateDomain(domain: string): void {

@@ -45,20 +45,20 @@ Deno.test(
 Deno.test("Promisify.custom", async function testPromisifyCustom() {
   function fn(): void {}
 
-  function promisifedFn(): void {}
+  function promisifiedFn(): void {}
   // @ts-expect-error TypeScript (as of 3.7) does not support indexing namespaces by symbol
-  fn[promisify.custom] = promisifedFn;
+  fn[promisify.custom] = promisifiedFn;
 
   const promisifiedFnA = promisify(fn);
   const promisifiedFnB = promisify(promisifiedFnA);
-  assertStrictEquals(promisifiedFnA, promisifedFn);
-  assertStrictEquals(promisifiedFnB, promisifedFn);
+  assertStrictEquals(promisifiedFnA, promisifiedFn);
+  assertStrictEquals(promisifiedFnB, promisifiedFn);
 
   await promisifiedFnA;
   await promisifiedFnB;
 });
 
-Deno.test("promiisfy.custom symbol", function testPromisifyCustomSymbol() {
+Deno.test("promisify.custom symbol", function testPromisifyCustomSymbol() {
   function fn(): void {}
 
   function promisifiedFn(): void {}

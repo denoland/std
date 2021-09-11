@@ -16,15 +16,15 @@ import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
-interface Constructor {
+export interface Constructor {
   // deno-lint-ignore no-explicit-any
   new (...args: any[]): any;
 }
 
 export class AssertionError extends Error {
+  name = "AssertionError";
   constructor(message: string) {
     super(message);
-    this.name = "AssertionError";
   }
 }
 

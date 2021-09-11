@@ -41,7 +41,7 @@ Deno.test({
         futimes(123, Infinity, 0, (_err: Error | null) => {});
       },
       Error,
-      "invalid atime, must not be infitiny or NaN",
+      "invalid atime, must not be infinity or NaN",
     );
   },
 });
@@ -54,7 +54,7 @@ Deno.test({
         futimes(123, "some string", 0, (_err: Error | null) => {});
       },
       Error,
-      "invalid atime, must not be infitiny or NaN",
+      "invalid atime, must not be infinity or NaN",
     );
   },
 });
@@ -88,7 +88,7 @@ Deno.test({
         futimesSync(123, "some string", 0);
       },
       Error,
-      "invalid atime, must not be infitiny or NaN",
+      "invalid atime, must not be infinity or NaN",
     );
   },
 });
@@ -101,7 +101,7 @@ Deno.test({
         futimesSync(123, Infinity, 0);
       },
       Error,
-      "invalid atime, must not be infitiny or NaN",
+      "invalid atime, must not be infinity or NaN",
     );
   },
 });

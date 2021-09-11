@@ -653,7 +653,7 @@ export class EventEmitter {
 
     // TODO(uki00a): Here are two problems:
     // * If `global.ts` is not imported, then `globalThis.process` will be undefined.
-    // * Importing `process.ts` from this file will result in circurlar reference.
+    // * Importing `process.ts` from this file will result in circular reference.
     // As a workaround, explicitly check for the existence of `globalThis.process`.
     // deno-lint-ignore no-explicit-any
     const maybeProcess = (globalThis as any).process;

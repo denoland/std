@@ -234,9 +234,9 @@ function fileLenToString(len: number): string {
 }
 
 /**
- * Returns an HTTP Response with the requested file as the body
- * @param req The server request context used to cleanup the file handle
- * @param filePath Path of the file to serve
+ * Returns an HTTP Response with the requested file as the body.
+ * @param req The server request context used to cleanup the file handle.
+ * @param filePath Path of the file to serve.
  */
 export async function serveFile(
   req: Request,
@@ -681,7 +681,11 @@ function main(): void {
     listenAndServe(addr, handler);
   }
 
-  console.log(`${proto.toUpperCase()} server listening on ${proto}://${addr}/`);
+  console.log(
+    `${proto.toUpperCase()} server listening on ${proto}://${
+      addr.replace("0.0.0.0", "localhost")
+    }/`,
+  );
 }
 
 if (import.meta.main) {

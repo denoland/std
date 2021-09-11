@@ -6,10 +6,10 @@ import { extname } from "../path/mod.ts";
 import { BufReader, BufWriter } from "../io/bufio.ts";
 import { assert } from "../_util/assert.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { hasOwnProperty } from "../_util/has_own_property.ts";
 import { Buffer } from "../io/buffer.ts";
 import { copy } from "../io/util.ts";
 
+const { hasOwn } = Object;
 /** FormFile object */
 export interface FormFile {
   /** filename  */
@@ -29,7 +29,7 @@ export interface FormFile {
 /** Type guard for FormFile */
 // deno-lint-ignore no-explicit-any
 export function isFormFile(x: any): x is FormFile {
-  return hasOwnProperty(x, "filename") && hasOwnProperty(x, "type");
+  return hasOwn(x, "filename") && hasOwn(x, "type");
 }
 
 function randomBoundary(): string {
@@ -269,7 +269,7 @@ export interface MultipartFormData {
  * @property prefix - a prefix that will be used for all files created if
  * maxMemory is exceeded.
  * @property suffix - a suffix that will be used for all files created if
- * maxMemory is exceeded, defaults to the fole extension
+ * maxMemory is exceeded, defaults to the file extension
  */
 export interface ReadFormOptions {
   maxMemory?: number;
