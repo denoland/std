@@ -58,7 +58,7 @@ export function readerFromIterable(
   };
 }
 
-/** Create a `Writer` from a `WritableStreamDefaultReader`. */
+/** Create a `Writer` from a `WritableStreamDefaultWriter`. */
 export function writerFromStreamWriter(
   streamWriter: WritableStreamDefaultWriter<Uint8Array>,
 ): Deno.Writer {
