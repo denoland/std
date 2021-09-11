@@ -20,7 +20,13 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { EventEmitter } from "./events.ts";
-import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./_net.ts";
+import {
+  isIP,
+  isIPv4,
+  isIPv6,
+  makeSyncWrite,
+  normalizedArgsSymbol,
+} from "./_net.ts";
 import type { DuplexOptions } from "./_stream/duplex.ts";
 import type { WritableEncodings } from "./_stream/writable.ts";
 import { Duplex } from "./stream.ts";
@@ -33,15 +39,20 @@ import {
 import {
   ERR_INVALID_ADDRESS_FAMILY,
   ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_ARG_VALUE,
+  ERR_INVALID_FD_TYPE,
   ERR_INVALID_IP_ADDRESS,
   ERR_MISSING_ARGS,
+  ERR_SERVER_ALREADY_LISTEN,
+  ERR_SERVER_NOT_RUNNING,
   ERR_SOCKET_CLOSED,
   errnoException,
   exceptionWithHostPort,
   NodeError,
+  uvExceptionWithHostPort,
 } from "./_errors.ts";
 import type { ErrnoException } from "./_errors.ts";
-import { Encodings, notImplemented } from "./_utils.ts";
+import { Encodings } from "./_utils.ts";
 import { isUint8Array } from "./_util/_util_types.ts";
 import {
   kAfterAsyncWrite,
@@ -57,11 +68,16 @@ import {
 } from "./_stream_base_commons.ts";
 import { kTimeout } from "./_timers.ts";
 import { nextTick } from "./process.ts";
-import { DTRACE_NET_STREAM_END } from "./_dtrace.ts";
+import {
+  DTRACE_NET_SERVER_CONNECTION,
+  DTRACE_NET_STREAM_END,
+} from "./_dtrace.ts";
 import { Buffer } from "./buffer.ts";
 import type { LookupOneOptions } from "./dns.ts";
 import {
+  validateAbortSignal,
   validateFunction,
+  validateInt32,
   validateNumber,
   validatePort,
   validateString,
@@ -80,7 +96,16 @@ import { ShutdownWrap } from "./internal_binding/stream_wrap.ts";
 import { assert } from "../_util/assert.ts";
 import { isWindows } from "../_util/os.ts";
 import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
-import { UV_EADDRINUSE, UV_ENOTCONN } from "./internal_binding/uv.ts";
+import {
+  UV_EADDRINUSE,
+  UV_EINVAL,
+  UV_ENOTCONN,
+} from "./internal_binding/uv.ts";
+import { guessHandleType } from "./internal_binding/util.ts";
+
+// TODO(cmorten): this file is rife with "as any" and "unknown" types where
+// at the time of porting it wasn't clear what things were. Need to do a pass
+// over to tighten up / correct types in a good few places!
 
 const kLastWriteQueueSize = Symbol("lastWriteQueueSize");
 const kSetNoDelay = Symbol("kSetNoDelay");
@@ -90,6 +115,9 @@ const kBytesWritten = Symbol("kBytesWritten");
 const DEFAULT_IPV4_ADDR = "0.0.0.0";
 const DEFAULT_IPV6_ADDR = "::";
 
+// TODO(cmorten): currently using this type as a catch all in places where
+// really should be using the TCP or Pipe classes. Should look to refactor
+// this out in favour of actual classes.
 interface Handle {
   [ownerSymbol]: Socket;
   reading: boolean;
@@ -105,12 +133,12 @@ interface Handle {
   readStart(): Error | undefined;
   readStop(): Error | undefined;
   useUserBuffer(userBuf: true | Uint8Array): unknown;
-  bind(localAddress: string, localPort: number): Error | undefined;
+  bind(localAddress: string, localPort: number): number | undefined;
   bind6(
     localAddress: string,
     localPort: number,
     flags: unknown,
-  ): Error | undefined;
+  ): number | undefined;
   connect(
     req: TCPConnectWrap | PipeConnectWrap,
     address: string,
@@ -130,7 +158,10 @@ interface Handle {
   setNoDelay?: (value: boolean) => void;
   setKeepAlive?: (arg0: boolean, arg1: number) => void;
   shutdown(req: ShutdownWrap): number | null;
-  close(cb: () => void): void;
+  close(cb?: () => void): void;
+  open(fd: number): number | null;
+  setBlocking?: (enable: boolean) => number | null;
+  setPendingInstances?: (instances: number) => void;
 }
 
 interface HandleOptions {
@@ -240,19 +271,39 @@ function _getNewAsyncId(handle?: Handle | null): number {
 }
 
 interface NormalizedArgs {
-  0: Partial<NetConnectOptions>;
+  0: Partial<NetConnectOptions | ListenOptions>;
   1: ConnectionListener | null;
   [normalizedArgsSymbol]?: boolean;
 }
 
 const _noop = () => {};
 
-function _toNumber(x: unknown) {
-  return (x = Number(x)) >= 0 ? x : false;
+function _toNumber(x: unknown): number | false {
+  return (x = Number(x)) >= 0 ? x as number : false;
 }
 
 function _isPipeName(s: unknown): s is string {
   return typeof s === "string" && _toNumber(s) === false;
+}
+
+function _createHandle(fd: number, isServer: boolean) {
+  validateInt32(fd, "fd", 0);
+
+  const type = guessHandleType(fd);
+
+  if (type === "PIPE") {
+    return new Pipe(
+      isServer ? PipeConstants.SERVER : PipeConstants.SOCKET,
+    );
+  }
+
+  if (type === "TCP") {
+    return new TCP(
+      isServer ? TCPConstants.SERVER : TCPConstants.SOCKET,
+    );
+  }
+
+  throw new ERR_INVALID_FD_TYPE(type);
 }
 
 // Returns an array [options, cb], where options is an object,
@@ -265,7 +316,7 @@ function _isPipeName(s: unknown): s is string {
 // For `Socket.prototype.connect()`, the [...] part is ignored
 // For `Server.prototype.listen()`, the [...] part is [, backlog]
 // but will not be handled here (handled in listen())
-function _normalizeArgs(args: unknown[]): NormalizedArgs {
+export function _normalizeArgs(args: unknown[]): NormalizedArgs {
   let arr: NormalizedArgs;
 
   if (args.length === 0) {
@@ -778,8 +829,48 @@ export class Socket extends Duplex {
       this._handle = options.handle;
       this[asyncIdSymbol] = _getNewAsyncId(this._handle);
     } else if (options.fd !== undefined) {
-      // TODO(cmorten): deal with file descriptors, using `Deno.resources()`?
-      notImplemented();
+      const { fd } = options;
+      let err;
+
+      // createHandle will throw ERR_INVALID_FD_TYPE if `fd` is not
+      // a valid `PIPE` or `TCP` descriptor
+      this._handle = _createHandle(fd, false) as Handle;
+
+      err = this._handle.open(fd);
+
+      // While difficult to fabricate, in some architectures
+      // `open` may return an error code for valid file descriptors
+      // which cannot be opened. This is difficult to test as most
+      // un-openable fds will throw on `createHandle`
+      if (err) {
+        throw errnoException(err, "open");
+      }
+
+      this[asyncIdSymbol] = this._handle.getAsyncId!();
+
+      if (
+        (fd === 1 || fd === 2) &&
+        (this._handle instanceof Pipe) && isWindows
+      ) {
+        // Make stdout and stderr blocking on Windows
+        err = this._handle.setBlocking!(true);
+
+        if (err) {
+          throw errnoException(err, "setBlocking");
+        }
+
+        // deno-lint-ignore no-explicit-any
+        (this as any)._writev = null;
+        this._write = makeSyncWrite(fd);
+
+        // makeSyncWrite adjusts this value like the original handle would, so
+        // we need to let it do that by turning it into a writable, own
+        // property.
+        Object.defineProperty(this._handle, "bytesWritten", {
+          value: 0,
+          writable: true,
+        });
+      }
     }
 
     const onread = options.onread;
@@ -885,7 +976,6 @@ export class Socket extends Duplex {
     }
 
     if (!this._handle) {
-      // TODO(cmorten)
       this._handle = _isPipe(options) ? new Pipe(PipeConstants.SOCKET) : // deno-lint-ignore no-explicit-any
         new TCP(TCPConstants.SOCKET) as any;
 
@@ -1528,7 +1618,7 @@ export function connect(
 export function connect(path: string, connectionListener?: () => void): Socket;
 export function connect(...args: unknown[]) {
   const normalized = _normalizeArgs(args);
-  const options = normalized[0];
+  const options = normalized[0] as Partial<NetConnectOptions>;
   const socket = new Socket(options);
 
   if (options.timeout) {
@@ -1548,6 +1638,7 @@ interface Abortable {
 }
 
 interface ListenOptions extends Abortable {
+  fd?: number;
   port?: number | undefined;
   host?: string | undefined;
   backlog?: number | undefined;
@@ -1589,6 +1680,291 @@ function _isConnectionListener(
   return typeof connectionListener === "function";
 }
 
+function _getFlags(ipv6Only?: boolean) {
+  return ipv6Only === true ? TCPConstants.UV_TCP_IPV6ONLY : 0;
+}
+
+function _listenInCluster(
+  server: Server,
+  address: string | null,
+  port: number | null,
+  addressType: number | null,
+  backlog: number,
+  fd?: number,
+  exclusive?: boolean,
+  flags?: unknown,
+) {
+  exclusive = !!exclusive;
+
+  // TODO(cmorten): here we deviate somewhat from the Node implementation which
+  // makes use of the https://nodejs.org/api/cluster.html module to run servers
+  // across a "cluster" of Node processes to take advantage of multi-core
+  // systems.
+  //
+  // Though Deno has has a Worker capability from which we could simulate this,
+  // for now we assert that we are _always_ on the primary process.
+  const isPrimary = true;
+
+  if (isPrimary || exclusive) {
+    // Will create a new handle
+    // _listen2 sets up the listened handle, it is still named like this
+    // to avoid breaking code that wraps this method
+    server._listen2(address, port, addressType, backlog, fd, flags);
+
+    return;
+  }
+}
+
+function _lookupAndListen(
+  server: Server,
+  port: number,
+  address: string,
+  backlog: number,
+  exclusive: boolean | undefined,
+  flags: unknown,
+) {
+  dnsLookup(address, function doListen(err, ip, addressType) {
+    if (err) {
+      server.emit("error", err);
+    } else {
+      addressType = ip ? addressType : 4;
+
+      _listenInCluster(
+        server,
+        ip,
+        port,
+        addressType,
+        backlog,
+        undefined,
+        exclusive,
+        flags,
+      );
+    }
+  });
+}
+
+function _addAbortSignalOption(server: Server, options: ListenOptions) {
+  if (options?.signal === undefined) {
+    return;
+  }
+
+  validateAbortSignal(options.signal, "options.signal");
+
+  const { signal } = options;
+
+  const onAborted = () => {
+    self.close();
+  };
+
+  if (signal.aborted) {
+    nextTick(onAborted);
+  } else {
+    signal.addEventListener("abort", onAborted);
+    server.once("close", () => signal.removeEventListener("abort", onAborted));
+  }
+}
+
+// Returns handle if it can be created, or error code if it can't
+export function _createServerHandle(
+  address: string | number | null,
+  port: number | null,
+  addressType?: number | null,
+  fd?: number,
+  flags?: unknown,
+): Handle | number {
+  let err: number | null | undefined = 0;
+  // Assign handle in listen, and clean up if bind or listen fails
+  let handle;
+
+  let isTCP = false;
+
+  if (typeof fd === "number" && fd >= 0) {
+    try {
+      handle = _createHandle(fd, true);
+    } catch {
+      // Not a fd we can listen on.  This will trigger an error.
+      return UV_EINVAL;
+    }
+
+    err = (handle as Handle).open(fd);
+
+    if (err) {
+      return err;
+    }
+
+    assert(!address && !port);
+  } else if (port === -1 && addressType === -1) {
+    handle = new Pipe(PipeConstants.SERVER);
+
+    if (isWindows) {
+      const instances = Number.parseInt(
+        Deno.env.get("NODE_PENDING_PIPE_INSTANCES") ?? "",
+      );
+
+      if (!Number.isNaN(instances)) {
+        (handle as Handle).setPendingInstances!(instances);
+      }
+    }
+  } else {
+    handle = new TCP(TCPConstants.SERVER);
+    isTCP = true;
+  }
+
+  if (address || port || isTCP) {
+    if (!address) {
+      // Try binding to ipv6 first
+      err = (handle as Handle).bind6(DEFAULT_IPV6_ADDR, port as number, flags);
+
+      if (err) {
+        (handle as Handle).close();
+
+        // Fallback to ipv4
+        return _createServerHandle(DEFAULT_IPV4_ADDR, port);
+      }
+    } else if (addressType === 6) {
+      err = (handle as Handle).bind6(address as string, port as number, flags);
+    } else {
+      err = (handle as Handle).bind(address as string, port as number);
+    }
+  }
+
+  if (err) {
+    (handle as Handle).close();
+
+    return err;
+  }
+
+  return handle as Handle;
+}
+
+function _emitErrorNT(server: Server, err: Error) {
+  server.emit("error", err);
+}
+
+function _emitListeningNT(server: Server) {
+  // Ensure handle hasn't closed
+  if (server._handle) {
+    server.emit("listening");
+  }
+}
+
+// deno-lint-ignore no-explicit-any
+function _onconnection(this: any, err?: Error, clientHandle?: any) {
+  // deno-lint-ignore no-this-alias
+  const handle = this;
+  const self = handle[ownerSymbol];
+
+  if (err) {
+    self.emit("error", errnoException(err, "accept"));
+
+    return;
+  }
+
+  if (self.maxConnections && self._connections >= self.maxConnections) {
+    clientHandle.close();
+
+    return;
+  }
+
+  const socket = new Socket({
+    handle: clientHandle,
+    allowHalfOpen: self.allowHalfOpen,
+    pauseOnCreate: self.pauseOnConnect,
+    readable: true,
+    writable: true,
+  });
+
+  self._connections++;
+  socket.server = self;
+  socket._server = self;
+
+  DTRACE_NET_SERVER_CONNECTION(socket);
+  self.emit("connection", socket);
+}
+
+function _setupListenHandle(
+  this: Server,
+  address: string | number | null,
+  port: number | null,
+  addressType: number | null,
+  backlog?: number,
+  fd?: number,
+  flags?: unknown,
+): void {
+  // If there is not yet a handle, we need to create one and bind.
+  // In the case of a server sent via IPC, we don't need to do this.
+  if (!this._handle) {
+    let rval = null;
+
+    // Try to bind to the unspecified IPv6 address, see if IPv6 is available
+    if (!address && typeof fd !== "number") {
+      rval = _createServerHandle(DEFAULT_IPV6_ADDR, port, 6, fd, flags);
+
+      if (typeof rval === "number") {
+        rval = null;
+        address = DEFAULT_IPV4_ADDR;
+        addressType = 4;
+      } else {
+        address = DEFAULT_IPV6_ADDR;
+        addressType = 6;
+      }
+    }
+
+    if (rval === null) {
+      rval = _createServerHandle(address, port, addressType, fd, flags);
+    }
+
+    if (typeof rval === "number") {
+      const error = uvExceptionWithHostPort(rval, "listen", address, port);
+      nextTick(_emitErrorNT, this, error);
+
+      return;
+    }
+
+    this._handle = rval;
+  }
+
+  this[asyncIdSymbol] = _getNewAsyncId(this._handle);
+  this._handle.onconnection = _onconnection;
+  this._handle[ownerSymbol] = this;
+
+  // Use a backlog of 512 entries. We pass 511 to the listen() call because
+  // the kernel does: backlogsize = roundup_pow_of_two(backlogsize + 1);
+  // which will thus give us a backlog of 512 entries.
+  const err = this._handle.listen(backlog || 511);
+
+  if (err) {
+    const ex = uvExceptionWithHostPort(err, "listen", address, port);
+    this._handle.close();
+    this._handle = null;
+
+    defaultTriggerAsyncIdScope(
+      this[asyncIdSymbol],
+      nextTick,
+      _emitErrorNT,
+      this,
+      ex,
+    );
+
+    return;
+  }
+
+  // Generate connection key, this should be unique to the connection
+  this._connectionKey = addressType + ":" + address + ":" + port;
+
+  // Unref the handle if the server was unref'ed prior to listening
+  if (this._unref) {
+    this.unref();
+  }
+
+  defaultTriggerAsyncIdScope(
+    this[asyncIdSymbol],
+    nextTick,
+    _emitListeningNT,
+    this,
+  );
+}
+
 /** This class is used to create a TCP or IPC server. */
 export class Server extends EventEmitter {
   [asyncIdSymbol] = -1;
@@ -1596,7 +1972,15 @@ export class Server extends EventEmitter {
   allowHalfOpen = false;
   pauseOnConnect = false;
 
-  _handle = null;
+  // deno-lint-ignore no-explicit-any
+  _handle: any = null;
+  _connections = 0;
+  _usingWorkers = false;
+  // deno-lint-ignore no-explicit-any
+  _workers: any[] = [];
+  _unref = false;
+  _pipeName?: string;
+  _connectionKey?: string;
 
   /**
    * `net.Server` is an `EventEmitter` with the following events:
@@ -1650,7 +2034,7 @@ export class Server extends EventEmitter {
    *
    * All `listen()` methods can take a `backlog` parameter to specify the maximum
    * length of the queue of pending connections. The actual length will be determined
-   * by the OS through sysctl settings such as `tcp_max_syn_backlog` and `somaxconn`on Linux. The default value of this parameter is 511 (not 512).
+   * by the OS through sysctl settings such as `tcp_max_syn_backlog` and `somaxconn` on Linux. The default value of this parameter is 511 (not 512).
    *
    * All `Socket` are set to `SO_REUSEADDR` (see [`socket(7)`](https://man7.org/linux/man-pages/man7/socket.7.html) for
    * details).
@@ -1704,9 +2088,150 @@ export class Server extends EventEmitter {
   listen(handle: any, backlog?: number, listeningListener?: () => void): this;
   // deno-lint-ignore no-explicit-any
   listen(handle: any, listeningListener?: () => void): this;
-  listen(..._args: unknown[]): this {
-    // TODO(cmorten)
-    notImplemented();
+  listen(...args: unknown[]): this {
+    const normalized = _normalizeArgs(args);
+    let options = normalized[0] as Partial<ListenOptions>;
+    const cb = normalized[1];
+
+    if (this._handle) {
+      throw new ERR_SERVER_ALREADY_LISTEN();
+    }
+
+    if (cb !== null) {
+      this.once("listening", cb);
+    }
+
+    const backlogFromArgs: number =
+      // (handle, backlog) or (path, backlog) or (port, backlog)
+      _toNumber(args.length > 1 && args[1]) ||
+      _toNumber(args.length > 2 && args[2]) as number; // (port, host, backlog)
+
+    // deno-lint-ignore no-explicit-any
+    options = (options as any)._handle || (options as any).handle || options;
+    const flags = _getFlags(options.ipv6Only);
+
+    // (handle[, backlog][, cb]) where handle is an object with a handle
+    if (options instanceof TCP) {
+      this._handle = options;
+      this[asyncIdSymbol] = this._handle.getAsyncId();
+
+      _listenInCluster(this, null, -1, -1, backlogFromArgs);
+
+      return this;
+    }
+
+    _addAbortSignalOption(this, options);
+
+    // (handle[, backlog][, cb]) where handle is an object with a fd
+    if (typeof options.fd === "number" && options.fd >= 0) {
+      _listenInCluster(this, null, null, null, backlogFromArgs, options.fd);
+
+      return this;
+    }
+
+    // ([port][, host][, backlog][, cb]) where port is omitted,
+    // that is, listen(), listen(null), listen(cb), or listen(null, cb)
+    // or (options[, cb]) where options.port is explicitly set as undefined or
+    // null, bind to an arbitrary unused port
+    if (
+      args.length === 0 || typeof args[0] === "function" ||
+      (typeof options.port === "undefined" && "port" in options) ||
+      options.port === null
+    ) {
+      options.port = 0;
+    }
+
+    // ([port][, host][, backlog][, cb]) where port is specified
+    // or (options[, cb]) where options.port is specified
+    // or if options.port is normalized as 0 before
+    let backlog;
+
+    if (typeof options.port === "number" || typeof options.port === "string") {
+      validatePort(options.port, "options.port");
+      backlog = options.backlog || backlogFromArgs;
+
+      // start TCP server listening on host:port
+      if (options.host) {
+        _lookupAndListen(
+          this,
+          options.port | 0,
+          options.host,
+          backlog,
+          options.exclusive,
+          flags,
+        );
+      } else {
+        // Undefined host, listens on unspecified address
+        // Default addressType 4 will be used to search for primary server
+        _listenInCluster(
+          this,
+          null,
+          options.port | 0,
+          4,
+          backlog,
+          undefined,
+          options.exclusive,
+        );
+      }
+
+      return this;
+    }
+
+    // (path[, backlog][, cb]) or (options[, cb])
+    // where path or options.path is a UNIX domain socket or Windows pipe
+    if (options.path && _isPipeName(options.path)) {
+      const pipeName = this._pipeName = options.path;
+      backlog = options.backlog || backlogFromArgs;
+
+      _listenInCluster(
+        this,
+        pipeName,
+        -1,
+        -1,
+        backlog,
+        undefined,
+        options.exclusive,
+      );
+
+      if (!this._handle) {
+        // Failed and an error shall be emitted in the next tick.
+        // Therefore, we directly return.
+        return this;
+      }
+
+      let mode = 0;
+
+      if (options.readableAll === true) {
+        mode |= PipeConstants.UV_READABLE;
+      }
+
+      if (options.writableAll === true) {
+        mode |= PipeConstants.UV_WRITABLE;
+      }
+
+      if (mode !== 0) {
+        const err = this._handle.fchmod(mode);
+
+        if (err) {
+          this._handle.close();
+          this._handle = null;
+
+          throw errnoException(err, "uv_pipe_chmod");
+        }
+      }
+
+      return this;
+    }
+
+    if (!(("port" in options) || ("path" in options))) {
+      throw new ERR_INVALID_ARG_VALUE(
+        "options",
+        options,
+        'must have the property "port" or "path"',
+      );
+    }
+
+    throw new ERR_INVALID_ARG_VALUE("options", options, "");
   }
 
   /**
@@ -1719,9 +2244,46 @@ export class Server extends EventEmitter {
    *
    * @param cb Called when the server is closed.
    */
-  close(_cb?: (err?: Error) => void): this {
-    // TODO(cmorten)
-    notImplemented();
+  close(cb?: (err?: Error) => void): this {
+    if (typeof cb === "function") {
+      if (!this._handle) {
+        this.once("close", function close() {
+          cb(new ERR_SERVER_NOT_RUNNING());
+        });
+      } else {
+        this.once("close", cb);
+      }
+    }
+
+    if (this._handle) {
+      this._handle.close();
+      this._handle = null;
+    }
+
+    if (this._usingWorkers) {
+      let left = this._workers.length;
+      const onWorkerClose = () => {
+        if (--left !== 0) {
+          return;
+        }
+
+        this._connections = 0;
+        this._emitCloseIfDrained();
+      };
+
+      // Increment connections to be sure that, even if all sockets will be closed
+      // during polling of workers, `close` event will be emitted only once.
+      this._connections++;
+
+      // Poll workers
+      for (let n = 0; n < this._workers.length; n++) {
+        this._workers[n].close(onWorkerClose);
+      }
+    } else {
+      this._emitCloseIfDrained();
+    }
+
+    return this;
   }
 
   /**
@@ -1756,8 +2318,20 @@ export class Server extends EventEmitter {
    * emitted or after calling `server.close()`.
    */
   address(): AddressInfo | string | null {
-    // TODO(cmorten)
-    notImplemented();
+    if (this._handle && this._handle.getsockname) {
+      const out = {};
+      const err = this._handle.getsockname(out);
+
+      if (err) {
+        throw errnoException(err, "address");
+      }
+
+      return out as AddressInfo;
+    } else if (this._pipeName) {
+      return this._pipeName;
+    }
+
+    return null;
   }
 
   /**
@@ -1766,9 +2340,49 @@ export class Server extends EventEmitter {
    *
    * Callback should take two arguments `err` and `count`.
    */
-  getConnections(_cb: (err: Error | null, count: number) => void): void {
-    // TODO(cmorten)
-    notImplemented();
+  getConnections(cb: (err: Error | null, count: number) => void): this {
+    // deno-lint-ignore no-this-alias
+    const server = this;
+
+    function end(err: Error | null, connections?: number) {
+      defaultTriggerAsyncIdScope(
+        server[asyncIdSymbol],
+        nextTick,
+        cb,
+        err,
+        connections,
+      );
+    }
+
+    if (!this._usingWorkers) {
+      end(null, this._connections);
+
+      return this;
+    }
+
+    // Poll workers
+    let left = this._workers.length;
+    let total = this._connections;
+
+    function oncount(err: Error, count: number) {
+      if (err) {
+        left = -1;
+
+        return end(err);
+      }
+
+      total += count;
+
+      if (--left === 0) {
+        return end(null, total);
+      }
+    }
+
+    for (let n = 0; n < this._workers.length; n++) {
+      this._workers[n].getConnections(oncount);
+    }
+
+    return this;
   }
 
   /**
@@ -1776,8 +2390,13 @@ export class Server extends EventEmitter {
    * active server in the event system. If the server is already `unref`ed calling `unref()` again will have no effect.
    */
   unref(): this {
-    // TODO(cmorten)
-    notImplemented();
+    this._unref = true;
+
+    if (this._handle) {
+      this._handle.unref();
+    }
+
+    return this;
   }
 
   /**
@@ -1785,8 +2404,13 @@ export class Server extends EventEmitter {
    * If the server is `ref`ed calling `ref()` again will have no effect.
    */
   ref(): this {
-    // TODO(cmorten)
-    notImplemented();
+    this._unref = false;
+
+    if (this._handle) {
+      this._handle.ref();
+    }
+
+    return this;
   }
 
   /**
@@ -1796,31 +2420,45 @@ export class Server extends EventEmitter {
     return !!this._handle;
   }
 
-  _listen2(
-    _address: string,
-    _port: number,
-    _addressType: number,
-    _backlog: unknown,
-    _fd: number,
-    _flags: unknown,
+  _listen2 = _setupListenHandle;
+
+  _emitCloseIfDrained(): void {
+    if (this._handle || this._connections) {
+      return;
+    }
+
+    defaultTriggerAsyncIdScope(
+      this[asyncIdSymbol],
+      nextTick,
+      _emitCloseNT,
+      this,
+    );
+  }
+
+  _setupWorker(socketList: EventEmitter): void {
+    this._usingWorkers = true;
+    this._workers.push(socketList);
+
+    socketList.once("exit", (socketList) => {
+      const index = this._workers.indexOf(socketList);
+      this._workers.splice(index, 1);
+    });
+  }
+
+  [EventEmitter.captureRejectionSymbol](
+    err: Error,
+    event: string,
+    sock: Socket,
   ): void {
-    // TODO(cmorten)
-    notImplemented();
-  }
-
-  _emitClosedIfDrained(): void {
-    // TODO(cmorten)
-    notImplemented();
-  }
-
-  _setupWorker(_socketList: EventEmitter): void {
-    // TODO(cmorten)
-    notImplemented();
-  }
-
-  [EventEmitter.captureRejectionSymbol](): void {
-    // TODO(cmorten)
-    notImplemented();
+    switch (event) {
+      case "connection": {
+        sock.destroy(err);
+        break;
+      }
+      default: {
+        this.emit("error", err);
+      }
+    }
   }
 }
 
@@ -1902,6 +2540,8 @@ export function createServer(
 export { isIP, isIPv4, isIPv6 };
 
 export default {
+  _createServerHandle,
+  _normalizeArgs,
   isIP,
   isIPv4,
   isIPv6,

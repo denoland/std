@@ -19,17 +19,21 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import { notImplemented } from "../_utils.ts";
+
 export enum constants {
   SOCKET,
   SERVER,
   IPC,
-  READABLE,
-  WRITEABLE,
+  UV_READABLE,
+  UV_WRITABLE,
 }
 
 // TODO(cmorten)
 export class Pipe {
-  constructor(_type: constants) {}
+  constructor(_type: constants) {
+    notImplemented();
+  }
 }
 
 export class PipeConnectWrap {

@@ -21,7 +21,7 @@
 
 import { unreachable } from "../testing/asserts.ts";
 import { getSystemErrorName, inspect } from "./util.ts";
-import { UV_EAI_NODATA, UV_EAI_NONAME } from "./internal_binding/uv.ts";
+import { errmap, UV_EAI_NODATA, UV_EAI_NONAME } from "./internal_binding/uv.ts";
 import { osType } from "../_util/os.ts";
 import { assert } from "../_util/assert.ts";
 
@@ -78,6 +78,49 @@ export interface ErrnoException extends Error {
 }
 
 /**
+ * This creates an error compatible with errors produced in the C++
+ * This function should replace the deprecated
+ * `exceptionWithHostPort()` function.
+ *
+ * @param err A libuv error number
+ * @param syscall
+ * @param address
+ * @param port
+ * @return The error.
+ */
+export const uvExceptionWithHostPort = hideStackFrames(
+  function uvExceptionWithHostPort(
+    err: number,
+    syscall: string,
+    address: string,
+    port?: number,
+  ) {
+    const { 0: code, 1: uvmsg } = uvErrmapGet(err) || uvUnmappedError;
+    const message = `${syscall} ${code}: ${uvmsg}`;
+    let details = "";
+
+    if (port && port > 0) {
+      details = ` ${address}:${port}`;
+    } else if (address) {
+      details = ` ${address}`;
+    }
+
+    // deno-lint-ignore no-explicit-any
+    const ex: any = new Error(`${message}${details}`);
+    ex.code = code;
+    ex.errno = err;
+    ex.syscall = syscall;
+    ex.address = address;
+
+    if (port) {
+      ex.port = port;
+    }
+
+    return captureLargerStackTrace(ex);
+  },
+);
+
+/**
  * This used to be `util._errnoException()`.
  *
  * @param err A libuv error number
@@ -101,6 +144,62 @@ export const errnoException = hideStackFrames(
     return captureLargerStackTrace(ex);
   },
 );
+
+function uvErrmapGet(name: number) {
+  return errmap.get(name);
+}
+
+const uvUnmappedError = ["UNKNOWN", "unknown error"];
+
+/**
+ * This creates an error compatible with errors produced in the C++
+ * function UVException using a context object with data assembled in C++.
+ * The goal is to migrate them to ERR_* errors later when compatibility is
+ * not a concern.
+ *
+ * @param ctx
+ * @return The error.
+ */
+export const uvException = hideStackFrames(function uvException(ctx) {
+  const { 0: code, 1: uvmsg } = uvErrmapGet(ctx.errno) || uvUnmappedError;
+
+  let message = `${code}: ${ctx.message || uvmsg}, ${ctx.syscall}`;
+
+  let path;
+  let dest;
+
+  if (ctx.path) {
+    path = ctx.path.toString();
+    message += ` '${path}'`;
+  }
+  if (ctx.dest) {
+    dest = ctx.dest.toString();
+    message += ` -> '${dest}'`;
+  }
+
+  // deno-lint-ignore no-explicit-any
+  const err: any = new Error(message);
+
+  for (const prop of Object.keys(ctx)) {
+    if (prop === "message" || prop === "path" || prop === "dest") {
+      continue;
+    }
+
+    err[prop] = ctx[prop];
+  }
+
+  err.code = code;
+
+  if (path) {
+    err.path = path;
+  }
+
+  if (dest) {
+    err.dest = dest;
+  }
+
+  return captureLargerStackTrace(err);
+});
 
 /**
  * Deprecated, new function is `uvExceptionWithHostPort()`

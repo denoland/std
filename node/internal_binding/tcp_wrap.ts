@@ -19,15 +19,19 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import { notImplemented } from "../_utils.ts";
+
 export enum constants {
   SOCKET,
   SERVER,
-  TCP_IPV6ONLY,
+  UV_TCP_IPV6ONLY,
 }
 
 // TODO(cmorten)
 export class TCP {
-  constructor(_type: constants) {}
+  constructor(_type: constants) {
+    notImplemented();
+  }
 }
 
 export class TCPConnectWrap {

@@ -19,6 +19,10 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import { Buffer } from "./buffer.ts";
+import { uvException } from "./_errors.ts";
+import { writeBuffer } from "./internal_binding/fs.ts";
+
 // IPv4 Segment
 const v4Seg = "(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])";
 const v4Str = `(${v4Seg}[.]){3}${v4Seg}`;
@@ -56,6 +60,35 @@ export function isIP(ip: string) {
   }
 
   return 0;
+}
+
+export function makeSyncWrite(fd: number) {
+  return function (
+    // deno-lint-ignore no-explicit-any
+    this: any,
+    // deno-lint-ignore no-explicit-any
+    chunk: any,
+    enc: string,
+    cb: (err?: Error) => void,
+  ) {
+    if (enc !== "buffer") {
+      chunk = Buffer.from(chunk, enc);
+    }
+
+    this._handle.bytesWritten += chunk.length;
+
+    const ctx: { errno?: number } = {};
+    writeBuffer(fd, chunk, 0, chunk.length, null, ctx);
+
+    if (ctx.errno !== undefined) {
+      const ex = uvException(ctx);
+      ex.errno = ctx.errno;
+
+      return cb(ex);
+    }
+
+    cb();
+  };
 }
 
 export const normalizedArgsSymbol = Symbol("normalizedArgs");

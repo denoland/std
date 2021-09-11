@@ -105,6 +105,19 @@ export const validateCallback = hideStackFrames((callback: unknown) => {
   }
 });
 
+export const validateAbortSignal = hideStackFrames(
+  (signal: unknown, name: string) => {
+    if (
+      signal !== undefined &&
+      (signal === null ||
+        typeof signal !== "object" ||
+        !("aborted" in (signal as Record<string, unknown>)))
+    ) {
+      throw new ERR_INVALID_ARG_TYPE(name, "AbortSignal", signal);
+    }
+  },
+);
+
 export const validateFunction = hideStackFrames(
   (value: unknown, name: string) => {
     if (typeof value !== "function") {
