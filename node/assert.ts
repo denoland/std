@@ -654,17 +654,22 @@ function ifError(err: any) {
       // created ones.
       const tmp2 = origStack.split("\n");
       tmp2.shift();
+
       // Filter all frames existing in err.stack.
       let tmp1 = newErr!.stack?.split("\n");
+
       for (const errFrame of tmp2) {
         // Find the first occurrence of the frame.
         const pos = tmp1?.indexOf(errFrame);
+
         if (pos !== -1) {
           // Only keep new frames.
           tmp1 = tmp1?.slice(0, pos);
+
           break;
         }
       }
+
       newErr.stack = `${tmp1?.join("\n")}\n${tmp2.join("\n")}`;
     }
 

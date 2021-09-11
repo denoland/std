@@ -5,23 +5,38 @@
       "index.js"
     ],
     "internet": [
-      "test-dns-lookup.js"
+      "test-dns-idna.js",
+      "test-dns-ipv4.js",
+      "test-dns-ipv6.js",
+      "test-dns-lookup.js",
+      "test-dns.js"
     ],
     "parallel": [
       "test-assert.js",
       "test-assert-async.js",
-      "test-dns-lookup.js"
+      "test-dns-lookup.js",
+      "test-dns.js",
+      "test-net-dns-custom-lookup.js",
+      "test-net-dns-error.js",
+      "test-net-dns-lookup-skip.js",
+      "test-net-dns-lookup.js",
+      "test-net-normalize-args.js"
     ]
   },
   "tests": {
     "internet": [
-      "test-dns-lookup.js"
+      "test-dns-idna.js",
+      "test-dns-ipv4.js",
+      "test-dns-ipv6.js",
+      "test-dns-lookup.js",
+      "test-dns.js"
     ],
     "parallel": [
       "test-assert.js",
       "test-assert-async.js",
       "test-assert-fail.js",
       "test-dns-lookup.js",
+      "test-dns.js",
       "test-event-emitter-add-listeners.js",
       "test-event-emitter-check-listener-leaks.js",
       "test-event-emitter-listeners-side-effects.js",
@@ -38,11 +53,16 @@
       "test-event-emitter-remove-listeners.js",
       "test-event-emitter-set-max-listeners-side-effects.js",
       "test-event-emitter-special-event-names.js",
-      "test-util-inherits.js",
+      "test-net-dns-custom-lookup.js",
+      "test-net-dns-error.js",
+      "test-net-dns-lookup-skip.js",
+      "test-net-dns-lookup.js",
       "test-net-isip.js",
       "test-net-isipv4.js",
       "test-net-isipv6.js",
-      "test-net-server-options.js"
+      "test-net-normalize-args.js",
+      "test-net-server-options.js",
+      "test-util-inherits.js"
     ]
   },
   "suitesFolder": "suites",

@@ -23,18 +23,17 @@ import type { ErrnoException } from "../_errors.ts";
 import { isIPv4 } from "../_net.ts";
 import { UV_EAI_NODATA } from "./uv.ts";
 
-enum constants {
-  AF_INET = 1,
-  AF_INET6,
-  AF_UNSPEC,
-  AI_ADDRCONFIG,
-  AI_ALL,
-  AI_V4MAPPED,
-}
+// REF: https://github.com/nodejs/node/blob/master/deps/cares/include/ares.h#L190
 
-export const AI_ADDRCONFIG = constants.AI_ADDRCONFIG as number;
-export const AI_ALL = constants.AI_ALL as number;
-export const AI_V4MAPPED = constants.AI_V4MAPPED as number;
+export const ARES_AI_CANONNAME = (1 << 0);
+export const ARES_AI_NUMERICHOST = (1 << 1);
+export const ARES_AI_PASSIVE = (1 << 2);
+export const ARES_AI_NUMERICSERV = (1 << 3);
+export const AI_V4MAPPED = (1 << 4);
+export const AI_ALL = (1 << 5);
+export const AI_ADDRCONFIG = (1 << 6);
+export const ARES_AI_NOSORT = (1 << 7);
+export const ARES_AI_ENVHOSTS = (1 << 8);
 
 export class GetAddrInfoReqWrap {
   callback!: (
@@ -71,10 +70,9 @@ export function getaddrinfo(
 
     await Promise.allSettled(
       recordTypes.map((recordType) =>
-        Deno.resolveDns(hostname, recordType).then(
-          (records) => addresses.concat(records),
-          () => {},
-        )
+        Deno.resolveDns(hostname, recordType).then((records) => {
+          records.forEach((record) => addresses.push(record));
+        })
       ),
     );
 

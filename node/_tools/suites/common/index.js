@@ -212,11 +212,34 @@ function invalidArgTypeHelper(input) {
   return ` Received type ${typeof input} (${inspected})`;
 }
 
+const isWindows = process.platform === 'win32';
+const isAIX = process.platform === 'aix';
+const isSunOS = process.platform === 'sunos';
+const isFreeBSD = process.platform === 'freebsd';
+const isOpenBSD = process.platform === 'openbsd';
+const isLinux = process.platform === 'linux';
+const isOSX = process.platform === 'darwin';
+
 module.exports = {
   expectsError,
   expectWarning,
   invalidArgTypeHelper,
   mustCall,
   mustNotCall,
-  mustSucceed
+  mustSucceed,
+  isWindows,
+  isAIX,
+  isSunOS,
+  isFreeBSD,
+  isOpenBSD,
+  isLinux,
+  isOSX,
+  get hasIPv6() {
+    const iFaces = require('os').networkInterfaces();
+    const re = isWindows ? /Loopback Pseudo-Interface/ : /lo/;
+    return Object.keys(iFaces).some((name) => {
+      return re.test(name) &&
+             iFaces[name].some(({ family }) => family === 'IPv6');
+    });
+  },
 };
