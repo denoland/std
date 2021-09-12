@@ -476,6 +476,7 @@ assertEquals(inactiveBooking, undefined); // there are two applicable items
 ```
 
 =======
+
 # slidingWindows
 
 Generates sliding views of the given array of the given size and returns a new
