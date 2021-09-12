@@ -55,7 +55,10 @@ function defaultDispatch<L extends LogLevels, M, A>(
 ) {
   const [messageLevel] = handlerArgs;
 
-  if (thresholdLevel !== null && logLevels[thresholdLevel] > logLevels[messageLevel]) {
+  if (
+    thresholdLevel !== null &&
+    logLevels[thresholdLevel] > logLevels[messageLevel]
+  ) {
     return;
   }
 
