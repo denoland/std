@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 export * from "./associate_by.ts";
+export * from "./associate_with.ts";
 export * from "./chunk.ts";
 export * from "./deep_merge.ts";
 export * from "./distinct.ts";
@@ -19,6 +20,7 @@ export * from "./map_not_nullish.ts";
 export * from "./map_values.ts";
 export * from "./partition.ts";
 export * from "./permutations.ts";
+export * from "./find_single.ts";
 export * from "./sliding_windows.ts";
 export * from "./sum_of.ts";
 export * from "./max_by.ts";
@@ -38,3 +40,4 @@ export * from "./take_while.ts";
 export * from "./first_not_nullish_of.ts";
 export * from "./drop_last_while.ts";
 export * from "./reduce_groups.ts";
+export * from "./sample.ts";
