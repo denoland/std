@@ -1,11 +1,14 @@
+import { ConnInfo } from "./server.ts";
+
 export type Middleware<
   Requires extends Request,
   // deno-lint-ignore ban-types
   Adds = {},
 > = <Gets extends Requires>(
   req: Gets,
+  con: ConnInfo,
   next?: Middleware<Gets & Adds>,
-) => Promise<HttpResponse>;
+) => Promise<Response>;
 
 type MiddlewareStack<
   Requires extends Request,
@@ -23,13 +26,14 @@ function addMiddleware<
   StackAdd,
   HandlerAdd,
 >(
-  stack: Middleware<Request, StackAdd>,
-  middleware: Middleware<Request & StackAdd, HandlerAdd>,
+  first: Middleware<Request, StackAdd>,
+  second: Middleware<Request & StackAdd, HandlerAdd>,
 ): Middleware<Request, Request & StackAdd & HandlerAdd> {
-  return (req, next) =>
-    stack(
+  return (req, con, next) =>
+    first(
       req,
-      (r) => middleware(r, next),
+      con,
+      (r) => second(r, con, next),
     );
 }
 
