@@ -18,10 +18,10 @@
  * ```
  */
 export function runningReduce<T, A>(
-  collection: readonly T[],
+  array: readonly T[],
   reducer: (accumulator: A, current: T) => A,
   initialValue: A,
 ): A[] {
   let _initialValue = initialValue;
-  return collection.map((el) => _initialValue = reducer(_initialValue, el));
+  return array.map((el) => _initialValue = reducer(_initialValue, el));
 }
