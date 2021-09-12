@@ -38,3 +38,4 @@ export * from "./take_while.ts";
 export * from "./first_not_nullish_of.ts";
 export * from "./drop_last_while.ts";
 export * from "./reduce_groups.ts";
+export * from "./sample.ts";
