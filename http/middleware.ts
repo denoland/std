@@ -1,8 +1,5 @@
-export type HttpRequest = { path: string };
-export type HttpResponse = { body: string };
-
 export type Middleware<
-  Requires extends HttpRequest,
+  Requires extends Request,
   // deno-lint-ignore ban-types
   Adds = {},
 > = <Gets extends Requires>(
@@ -11,24 +8,24 @@ export type Middleware<
 ) => Promise<HttpResponse>;
 
 type MiddlewareStack<
-  Requires extends HttpRequest,
+  Requires extends Request,
   // deno-lint-ignore ban-types
   Adds = {},
 > = {
   handler: Middleware<Requires, Adds>;
 
   add<HandlerAdd>(
-    middleware: Middleware<HttpRequest & Adds, HandlerAdd>,
-  ): MiddlewareStack<Requires, HttpRequest & Adds & HandlerAdd>;
+    middleware: Middleware<Request & Adds, HandlerAdd>,
+  ): MiddlewareStack<Requires, Request & Adds & HandlerAdd>;
 };
 
 function addMiddleware<
   StackAdd,
   HandlerAdd,
 >(
-  stack: Middleware<HttpRequest, StackAdd>,
-  middleware: Middleware<HttpRequest & StackAdd, HandlerAdd>,
-): Middleware<HttpRequest, HttpRequest & StackAdd & HandlerAdd> {
+  stack: Middleware<Request, StackAdd>,
+  middleware: Middleware<Request & StackAdd, HandlerAdd>,
+): Middleware<Request, Request & StackAdd & HandlerAdd> {
   return (req, next) =>
     stack(
       req,
@@ -37,7 +34,7 @@ function addMiddleware<
 }
 
 // deno-lint-ignore ban-types
-export function stack<Requires extends HttpRequest, Adds = {}>(
+export function stack<Requires extends Request, Adds = {}>(
   middleware: Middleware<Requires, Adds>,
 ): MiddlewareStack<Requires, Adds> {
   return {
