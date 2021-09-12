@@ -10,9 +10,9 @@ function defaultCatcher(err: unknown) {
   console.error(err);
 }
 
-export type AsyncLoggerOptions = {
+export type AsyncLoggerOptions = Readonly<{
   catcher?: <E = unknown>(err: E) => void;
-};
+}>;
 export function buildAsyncLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
@@ -32,12 +32,12 @@ export function buildAsyncLogger<L extends LogLevels, M, A>(
   );
 }
 
-export type FileLoggerOptions<L extends LogLevels, M, A> = {
+export type FileLoggerOptions<L extends LogLevels, M, A> = Readonly<{
   messageFormatter?: (
     ...handlerArgs: Parameters<LogHandler<L, M, A>>
   ) => string;
   append?: boolean;
-};
+}>;
 export function buildFileLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
@@ -63,11 +63,11 @@ export function buildFileLogger<L extends LogLevels, M, A>(
   );
 }
 
-export type ConsoleLoggerOptions<L extends LogLevels, M, A> = {
+export type ConsoleLoggerOptions<L extends LogLevels, M, A> = Readonly<{
   messageFormatter?: (
     ...handlerArgs: Parameters<LogHandler<L, M, A>>
   ) => string;
-};
+}>;
 export function buildConsoleLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
@@ -95,10 +95,13 @@ export function buildConsoleLogger<L extends LogLevels, M, A>(
   );
 }
 
+export type MultiLoggerOptions<L extends LogLevels> = Readonly<{
+  thresholdLevel?: keyof L | null;
+}>;
 export function buildMultiLogger<L extends LogLevels, M, A>(
   logLevels: L,
-  thresholdLevel: keyof L,
   loggers: readonly Logger<L, M, A>[],
+  { thresholdLevel = null }: MultiLoggerOptions<L> = {},
 ): Logger<L, M, A> {
   return buildLogger(
     logLevels,

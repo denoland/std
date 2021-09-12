@@ -11,7 +11,7 @@ export type LogHandler<L extends LogLevels, M = unknown, A = unknown> = (
 ) => void;
 export type LogDispatcher<L extends LogLevels, M, A> = (
   logLevels: L,
-  thresholdLevel: keyof L,
+  thresholdLevel: keyof L | null,
   handler: LogHandler<L, M, A>,
   ...handlerArgs: Parameters<typeof handler>
 ) => void;
@@ -49,13 +49,13 @@ export function asString(data: unknown): string {
 
 function defaultDispatch<L extends LogLevels, M, A>(
   logLevels: L,
-  thresholdLevel: keyof L,
+  thresholdLevel: keyof L | null,
   handler: LogHandler<L, M, A>,
   ...handlerArgs: Parameters<typeof handler>
 ) {
   const [messageLevel] = handlerArgs;
 
-  if (logLevels[thresholdLevel] > logLevels[messageLevel]) {
+  if (thresholdLevel !== null && logLevels[thresholdLevel] > logLevels[messageLevel]) {
     return;
   }
 
@@ -64,7 +64,7 @@ function defaultDispatch<L extends LogLevels, M, A>(
 
 export function buildLogger<L extends LogLevels, M, A>(
   logLevels: L,
-  thresholdLevel: keyof L,
+  thresholdLevel: keyof L | null,
   handler: LogHandler<L, M, A>,
   dispatcher?: LogDispatcher<L, M, A>,
 ): Logger<L, M, A> {
