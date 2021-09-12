@@ -27,6 +27,6 @@ export function filterInPlace<T>(
 /**
  * Produces a random number between the inclusive `lower` and `upper` bounds.
  */
-export function randomNumber(lower: number, upper: number) {
+export function randomInteger(lower: number, upper: number) {
   return lower + Math.floor(Math.random() * (upper - lower + 1));
 }

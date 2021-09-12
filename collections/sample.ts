@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { randomNumber } from "./_utils.ts";
+import { randomInteger } from "./_utils.ts";
 
 /**
  * Returns a random element from the given array.
@@ -14,10 +14,10 @@ import { randomNumber } from "./_utils.ts";
  * const numbers = [1, 2, 3, 4];
  * const random = sample(numbers);
  *
- * assert(numbers.includes(random));
+ * assert(numbers.includes(random as number));
  * ```
  */
 export function sample<T>(array: readonly T[]): T | undefined {
   const length = array.length;
-  return length ? array[randomNumber(0, length - 1)] : undefined;
+  return length ? array[randomInteger(0, length - 1)] : undefined;
 }
