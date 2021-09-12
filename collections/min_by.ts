@@ -6,8 +6,8 @@
  * Example:
  *
  * ```ts
- * import { minBy } from "./min_by.ts";
- * import { assertEquals } from "../testing/asserts.ts"
+ * import { minBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const people = [
  *     { name: 'Anna', age: 34 },

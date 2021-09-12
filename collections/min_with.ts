@@ -6,8 +6,8 @@
  * Example:
  *
  * ```ts
- * import { minWith } from "./min_with.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { minWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = ["Kim", "Anna", "John"];
  * const smallestName = minWith(people, (a, b) => a.length - b.length);
