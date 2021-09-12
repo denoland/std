@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
-import { joinToString, JoinToStringOptions } from "./join_to_string.ts";
+import { joinToString } from "./join_to_string.ts";
 
 Deno.test({
   name: "[collections/joinToString] no mutation",
@@ -86,6 +86,24 @@ Deno.test({
     ];
     const out = joinToString(array, (it) => it.name, {
       suffix: " are winners",
+    });
+
+    assertEquals(out, "Kim, Anna, Tim are winners");
+  },
+});
+
+Deno.test({
+  name: "[collections/joinToString] all options",
+  fn() {
+    const array = [
+      { name: "Kim", age: 22 },
+      { name: "Anna", age: 31 },
+      { name: "Tim", age: 58 },
+    ];
+    const out = joinToString(array, (it) => it.name, {
+      suffix: " are winners",
+      prefix: "result ",
+      separator: " and ",
     });
 
     assertEquals(out, "Kim, Anna, Tim are winners");

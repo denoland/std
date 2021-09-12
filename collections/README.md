@@ -468,16 +468,16 @@ import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/mod
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const users = [
-  { name: "Kim", age: 22 },
-  { name: "Anna", age: 31 },
-  { name: "Tim", age: 58 },
+  { name: "Kim" },
+  { name: "Anna" },
+  { name: "Tim" },
 ];
 
-const names = joinToString(users, (it) => it.name, {
+const message = joinToString(users, (it) => it.name, {
   separator: " and ",
   prefix: "<",
   suffix: ">",
 });
 
-assertEquals(names, "<Kim and Anna and Tim>");
+assertEquals(message, "<Kim and Anna and Tim>");
 ```
