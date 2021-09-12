@@ -6,7 +6,7 @@
  * Example:
  *
  * ```ts
- * import { single } from "./single.ts";
+ * import { findSingle } from "./find_single.ts";
  * import { assertEquals } from "../testing/asserts.ts";
  *
  * const bookings = [
@@ -14,14 +14,14 @@
  *     { month: 'March', active: false },
  *     { month: 'June', active: true },
  * ];
- * const activeBooking = single(bookings, (it) => it.active);
- * const inactiveBooking = single(bookings, (it) => !it.active);
+ * const activeBooking = findSingle(bookings, (it) => it.active);
+ * const inactiveBooking = findSingle(bookings, (it) => !it.active);
  *
  * assertEquals(activeBooking, { month: "June", active: true });
  * assertEquals(inactiveBooking, undefined); // there are two applicable items
  * ```
  */
-export function single<T>(
+export function findSingle<T>(
   array: readonly T[],
   predicate: (el: T) => boolean = (_) => true,
 ): T | undefined {

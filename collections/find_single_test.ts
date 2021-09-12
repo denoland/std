@@ -1,14 +1,14 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
-import { single } from "./single.ts";
+import { findSingle } from "./find_single.ts";
 
-function singleTest<I>(
+function findSingleTest<I>(
   input: [Array<I>, (element: I) => boolean],
   expected: I | undefined,
   message?: string,
 ) {
-  const actual = single(...input);
+  const actual = findSingle(...input);
   assertEquals(actual, expected, message);
 }
 
@@ -17,24 +17,24 @@ function singleDefaultPredicatorTest<I>(
   expected: I | undefined,
   message?: string,
 ) {
-  const actual = single(input);
+  const actual = findSingle(input);
   assertEquals(actual, expected, message);
 }
 
 Deno.test({
-  name: "[collections/single] no mutation",
+  name: "[collections/findSingle] no mutation",
   fn() {
     const array = [1, 2, 3];
-    single(array, (it) => it % 2 === 0);
+    findSingle(array, (it) => it % 2 === 0);
 
     assertEquals(array, [1, 2, 3]);
   },
 });
 
 Deno.test({
-  name: "[collections/single] empty input",
+  name: "[collections/findSingle] empty input",
   fn() {
-    singleTest(
+    findSingleTest(
       [[], (_) => true],
       undefined,
     );
@@ -42,21 +42,21 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/single] only one element",
+  name: "[collections/findSingle] only one element",
   fn() {
-    singleTest(
+    findSingleTest(
       [[42], (_it) => true],
       42,
     );
-    singleTest(
+    findSingleTest(
       [["foo"], (_it) => true],
       "foo",
     );
-    singleTest(
+    findSingleTest(
       [[null], (_it) => true],
       null,
     );
-    singleTest(
+    findSingleTest(
       [[undefined], (_it) => true],
       undefined,
     );
@@ -64,17 +64,17 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/single] no matches",
+  name: "[collections/findSingle] no matches",
   fn() {
-    singleTest(
+    findSingleTest(
       [[9, 11, 13], (it) => it % 2 === 0],
       undefined,
     );
-    singleTest(
+    findSingleTest(
       [["foo", "bar"], (it) => it.startsWith("z")],
       undefined,
     );
-    singleTest(
+    findSingleTest(
       [[{ done: false }], (it) => it.done],
       undefined,
     );
@@ -82,17 +82,17 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/single] only match",
+  name: "[collections/findSingle] only match",
   fn() {
-    singleTest(
+    findSingleTest(
       [[9, 12, 13], (it) => it % 2 === 0],
       12,
     );
-    singleTest(
+    findSingleTest(
       [["zap", "foo", "bar"], (it) => it.startsWith("z")],
       "zap",
     );
-    singleTest(
+    findSingleTest(
       [[{ done: false }, { done: true }], (it) => it.done],
       { done: true },
     );
@@ -100,13 +100,13 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/single] multiple matches",
+  name: "[collections/findSingle] multiple matches",
   fn() {
-    singleTest(
+    findSingleTest(
       [[9, 12, 13, 14], (it) => it % 2 === 0],
       undefined,
     );
-    singleTest(
+    findSingleTest(
       [["zap", "foo", "bar", "zee"], (it) => it.startsWith("z")],
       undefined,
     );
@@ -114,7 +114,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/single] default predicator",
+  name: "[collections/findSingle] default predicator",
   fn() {
     singleDefaultPredicatorTest(
       [42],
