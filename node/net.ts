@@ -19,14 +19,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import { notImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
-import {
-  isIP,
-  isIPv4,
-  isIPv6,
-  makeSyncWrite,
-  normalizedArgsSymbol,
-} from "./_net.ts";
+import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./_net.ts";
 import type { DuplexOptions } from "./_stream/duplex.ts";
 import type { WritableEncodings } from "./_stream/writable.ts";
 import { Duplex } from "./stream.ts";
@@ -103,10 +98,6 @@ import {
 } from "./internal_binding/uv.ts";
 import { guessHandleType } from "./internal_binding/util.ts";
 
-// TODO(cmorten): this file is rife with "as any" and "unknown" types where
-// at the time of porting it wasn't clear what things were. Need to do a pass
-// over to tighten up / correct types in a good few places!
-
 const kLastWriteQueueSize = Symbol("lastWriteQueueSize");
 const kSetNoDelay = Symbol("kSetNoDelay");
 const kBytesRead = Symbol("kBytesRead");
@@ -115,54 +106,7 @@ const kBytesWritten = Symbol("kBytesWritten");
 const DEFAULT_IPV4_ADDR = "0.0.0.0";
 const DEFAULT_IPV6_ADDR = "::";
 
-// TODO(cmorten): currently using this type as a catch all in places where
-// really should be using the TCP or Pipe classes. Should look to refactor
-// this out in favour of actual classes.
-interface Handle {
-  [ownerSymbol]: Socket;
-  reading: boolean;
-  bytesRead: number;
-  bytesWritten: number;
-  writeQueueSize: number;
-  onread?: (arrayBuffer: unknown) => Uint8Array | undefined;
-  getAsyncId?: () => number;
-  getpeername?: (peername: unknown) => unknown;
-  getsockname?: (sockname: unknown) => unknown;
-  ref?: () => unknown;
-  unref?: () => unknown;
-  readStart(): Error | undefined;
-  readStop(): Error | undefined;
-  useUserBuffer(userBuf: true | Uint8Array): unknown;
-  bind(localAddress: string, localPort: number): number | undefined;
-  bind6(
-    localAddress: string,
-    localPort: number,
-    flags: unknown,
-  ): number | undefined;
-  connect(
-    req: TCPConnectWrap | PipeConnectWrap,
-    address: string,
-    // deno-lint-ignore ban-types
-    onConnect: Function,
-  ): Error | undefined;
-  connect(
-    req: TCPConnectWrap | PipeConnectWrap,
-    address: string,
-    port: number,
-  ): Error | undefined;
-  connect6(
-    req: TCPConnectWrap | PipeConnectWrap,
-    address: string,
-    port: number,
-  ): Error | undefined;
-  setNoDelay?: (value: boolean) => void;
-  setKeepAlive?: (arg0: boolean, arg1: number) => void;
-  shutdown(req: ShutdownWrap): number | null;
-  close(cb?: () => void): void;
-  open(fd: number): number | null;
-  setBlocking?: (enable: boolean) => number | null;
-  setPendingInstances?: (instances: number) => void;
-}
+type Handle = TCP | Pipe;
 
 interface HandleOptions {
   pauseOnCreate?: boolean;
@@ -264,7 +208,8 @@ interface IpcSocketConnectOptions extends ConnectOptions {
 
 type SocketConnectOptions = TcpSocketConnectOptions | IpcSocketConnectOptions;
 
-function _getNewAsyncId(handle?: Handle | null): number {
+// deno-lint-ignore no-explicit-any
+function _getNewAsyncId(handle?: any): number {
   return (!handle || typeof handle.getAsyncId !== "function")
     ? newAsyncId()
     : handle.getAsyncId();
@@ -286,7 +231,7 @@ function _isPipeName(s: unknown): s is string {
   return typeof s === "string" && _toNumber(s) === false;
 }
 
-function _createHandle(fd: number, isServer: boolean) {
+function _createHandle(fd: number, isServer: boolean): Handle {
   validateInt32(fd, "fd", 0);
 
   const type = guessHandleType(fd);
@@ -469,7 +414,7 @@ function _internalConnect(
   addressType: number,
   localAddress: string,
   localPort: number,
-  flags: unknown,
+  flags: number,
 ) {
   assert(socket.connecting);
 
@@ -478,11 +423,11 @@ function _internalConnect(
   if (localAddress || localPort) {
     if (addressType === 4) {
       localAddress = localAddress || DEFAULT_IPV4_ADDR;
-      err = socket._handle!.bind(localAddress, localPort);
+      err = (socket._handle as TCP).bind(localAddress, localPort);
     } else {
       // addressType === 6
       localAddress = localAddress || DEFAULT_IPV6_ADDR;
-      err = socket._handle!.bind6(localAddress, localPort, flags);
+      err = (socket._handle as TCP).bind6(localAddress, localPort, flags);
     }
 
     err = _checkBindError(err, localPort, socket._handle);
@@ -504,16 +449,16 @@ function _internalConnect(
     req.localPort = localPort;
 
     if (addressType === 4) {
-      err = socket._handle!.connect(req, address, port);
+      err = (socket._handle as TCP).connect(req, address, port);
     } else {
-      err = socket._handle!.connect6(req, address, port);
+      err = (socket._handle as TCP).connect6(req, address, port);
     }
   } else {
     const req = new PipeConnectWrap();
     req.oncomplete = _afterConnect;
     req.address = address;
 
-    err = socket._handle!.connect(req, address, _afterConnect);
+    err = (socket._handle as Pipe).connect(req, address, _afterConnect);
   }
 
   if (err) {
@@ -829,48 +774,8 @@ export class Socket extends Duplex {
       this._handle = options.handle;
       this[asyncIdSymbol] = _getNewAsyncId(this._handle);
     } else if (options.fd !== undefined) {
-      const { fd } = options;
-      let err;
-
-      // createHandle will throw ERR_INVALID_FD_TYPE if `fd` is not
-      // a valid `PIPE` or `TCP` descriptor
-      this._handle = _createHandle(fd, false) as Handle;
-
-      err = this._handle.open(fd);
-
-      // While difficult to fabricate, in some architectures
-      // `open` may return an error code for valid file descriptors
-      // which cannot be opened. This is difficult to test as most
-      // un-openable fds will throw on `createHandle`
-      if (err) {
-        throw errnoException(err, "open");
-      }
-
-      this[asyncIdSymbol] = this._handle.getAsyncId!();
-
-      if (
-        (fd === 1 || fd === 2) &&
-        (this._handle instanceof Pipe) && isWindows
-      ) {
-        // Make stdout and stderr blocking on Windows
-        err = this._handle.setBlocking!(true);
-
-        if (err) {
-          throw errnoException(err, "setBlocking");
-        }
-
-        // deno-lint-ignore no-explicit-any
-        (this as any)._writev = null;
-        this._write = makeSyncWrite(fd);
-
-        // makeSyncWrite adjusts this value like the original handle would, so
-        // we need to let it do that by turning it into a writable, own
-        // property.
-        Object.defineProperty(this._handle, "bytesWritten", {
-          value: 0,
-          writable: true,
-        });
-      }
+      // REF: https://github.com/denoland/deno/issues/6529
+      notImplemented();
     }
 
     const onread = options.onread;
@@ -1103,7 +1008,10 @@ export class Socket extends Duplex {
     // Backwards compatibility: assume true when `noDelay` is omitted
     const newValue = noDelay === undefined ? true : !!noDelay;
 
-    if (this._handle.setNoDelay && newValue !== this[kSetNoDelay]) {
+    if (
+      "setNoDelay" in this._handle && this._handle.setNoDelay &&
+      newValue !== this[kSetNoDelay]
+    ) {
       this[kSetNoDelay] = newValue;
       this._handle.setNoDelay(newValue);
     }
@@ -1137,7 +1045,7 @@ export class Socket extends Duplex {
       return this;
     }
 
-    if (this._handle.setKeepAlive) {
+    if ("setKeepAlive" in this._handle) {
       this._handle.setKeepAlive(enable, ~~(initialDelay! / 1000));
     }
 
@@ -1185,8 +1093,10 @@ export class Socket extends Duplex {
       return this;
     }
 
-    if (typeof this._handle.ref === "function") {
-      this._handle.ref();
+    // deno-lint-ignore no-explicit-any
+    if (typeof (this._handle as any).ref === "function") {
+      // deno-lint-ignore no-explicit-any
+      (this._handle as any).ref();
     }
 
     return this;
@@ -1484,7 +1394,7 @@ export class Socket extends Duplex {
   }
 
   _getpeername(): AddressInfo | Record<string, never> {
-    if (!this._handle || !this._handle.getpeername) {
+    if (!this._handle || !("getpeername" in this._handle)) {
       return this._peername || {};
     } else if (!this._peername) {
       this._peername = {};
@@ -1495,7 +1405,7 @@ export class Socket extends Duplex {
   }
 
   _getsockname(): AddressInfo | Record<string, never> {
-    if (!this._handle || !this._handle.getsockname) {
+    if (!this._handle || !("getsockname" in this._handle)) {
       return {};
     } else if (!this._sockname) {
       this._sockname = {};
@@ -1680,7 +1590,7 @@ function _isConnectionListener(
   return typeof connectionListener === "function";
 }
 
-function _getFlags(ipv6Only?: boolean) {
+function _getFlags(ipv6Only?: boolean): number {
   return ipv6Only === true ? TCPConstants.UV_TCP_IPV6ONLY : 0;
 }
 
@@ -1690,9 +1600,9 @@ function _listenInCluster(
   port: number | null,
   addressType: number | null,
   backlog: number,
-  fd?: number,
+  fd?: number | null,
   exclusive?: boolean,
-  flags?: unknown,
+  flags?: number,
 ) {
   exclusive = !!exclusive;
 
@@ -1720,8 +1630,8 @@ function _lookupAndListen(
   port: number,
   address: string,
   backlog: number,
-  exclusive: boolean | undefined,
-  flags: unknown,
+  exclusive: boolean,
+  flags: number,
 ) {
   dnsLookup(address, function doListen(err, ip, addressType) {
     if (err) {
@@ -1735,7 +1645,7 @@ function _lookupAndListen(
         port,
         addressType,
         backlog,
-        undefined,
+        null,
         exclusive,
         flags,
       );
@@ -1766,16 +1676,15 @@ function _addAbortSignalOption(server: Server, options: ListenOptions) {
 
 // Returns handle if it can be created, or error code if it can't
 export function _createServerHandle(
-  address: string | number | null,
+  address: string | null,
   port: number | null,
-  addressType?: number | null,
-  fd?: number,
-  flags?: unknown,
+  addressType: number | null,
+  fd?: number | null,
+  flags?: number,
 ): Handle | number {
-  let err: number | null | undefined = 0;
+  let err = 0;
   // Assign handle in listen, and clean up if bind or listen fails
   let handle;
-
   let isTCP = false;
 
   if (typeof fd === "number" && fd >= 0) {
@@ -1786,7 +1695,7 @@ export function _createServerHandle(
       return UV_EINVAL;
     }
 
-    err = (handle as Handle).open(fd);
+    err = handle.open(fd);
 
     if (err) {
       return err;
@@ -1802,7 +1711,7 @@ export function _createServerHandle(
       );
 
       if (!Number.isNaN(instances)) {
-        (handle as Handle).setPendingInstances!(instances);
+        handle.setPendingInstances!(instances);
       }
     }
   } else {
@@ -1813,28 +1722,32 @@ export function _createServerHandle(
   if (address || port || isTCP) {
     if (!address) {
       // Try binding to ipv6 first
-      err = (handle as Handle).bind6(DEFAULT_IPV6_ADDR, port as number, flags);
+      err = (handle as TCP).bind6(
+        DEFAULT_IPV6_ADDR,
+        port ?? 0,
+        flags ?? 0,
+      );
 
       if (err) {
-        (handle as Handle).close();
+        handle.close();
 
         // Fallback to ipv4
-        return _createServerHandle(DEFAULT_IPV4_ADDR, port);
+        return _createServerHandle(DEFAULT_IPV4_ADDR, port, 4, null, flags);
       }
     } else if (addressType === 6) {
-      err = (handle as Handle).bind6(address as string, port as number, flags);
+      err = (handle as TCP).bind6(address, port ?? 0, flags ?? 0);
     } else {
-      err = (handle as Handle).bind(address as string, port as number);
+      err = (handle as TCP).bind(address, port ?? 0);
     }
   }
 
   if (err) {
-    (handle as Handle).close();
+    handle.close();
 
     return err;
   }
 
-  return handle as Handle;
+  return handle;
 }
 
 function _emitErrorNT(server: Server, err: Error) {
@@ -1884,12 +1797,12 @@ function _onconnection(this: any, err?: Error, clientHandle?: any) {
 
 function _setupListenHandle(
   this: Server,
-  address: string | number | null,
+  address: string | null,
   port: number | null,
   addressType: number | null,
-  backlog?: number,
-  fd?: number,
-  flags?: unknown,
+  backlog: number,
+  fd?: number | null,
+  flags?: number,
 ): void {
   // If there is not yet a handle, we need to create one and bind.
   // In the case of a server sent via IPC, we don't need to do this.
@@ -2157,7 +2070,7 @@ export class Server extends EventEmitter {
           options.port | 0,
           options.host,
           backlog,
-          options.exclusive,
+          !!options.exclusive,
           flags,
         );
       } else {
