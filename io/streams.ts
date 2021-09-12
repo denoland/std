@@ -13,17 +13,24 @@ function isCloser(value: unknown): value is Deno.Closer {
 
 /** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
- *      // Server-sent events: Send runtime metrics to the client every second.
- *      request.respond({
- *        headers: new Headers({ "Content-Type": "text/event-stream" }),
- *        body: readerFromIterable((async function* () {
- *          while (true) {
- *            await new Promise((r) => setTimeout(r, 1000));
- *            const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
- *            yield new TextEncoder().encode(message);
- *          }
- *        })()),
- *      });
+ * ```ts
+ *      import { readerFromIterable } from "./streams.ts";
+ *      import { serve } from "../http/server_legacy.ts";
+ *
+ *      for await (const request of serve({ port: 8000 })) {
+ *        // Server-sent events: Send runtime metrics to the client every second.
+ *        request.respond({
+ *          headers: new Headers({ "Content-Type": "text/event-stream" }),
+ *          body: readerFromIterable((async function* () {
+ *            while (true) {
+ *              await new Promise((r) => setTimeout(r, 1000));
+ *              const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
+ *              yield new TextEncoder().encode(message);
+ *            }
+ *          })()),
+ *        });
+ *      }
+ * ```
  */
 export function readerFromIterable(
   iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,
@@ -58,7 +65,7 @@ export function readerFromIterable(
   };
 }
 
-/** Create a `Writer` from a `WritableStreamDefaultReader`. */
+/** Create a `Writer` from a `WritableStreamDefaultWriter`. */
 export function writerFromStreamWriter(
   streamWriter: WritableStreamDefaultWriter<Uint8Array>,
 ): Deno.Writer {
@@ -135,6 +142,9 @@ export function writableStreamFromWriter(
 
 /** Create a `ReadableStream` from any kind of iterable.
  *
+ * ```ts
+ *      import { readableStreamFromIterable } from "./streams.ts";
+ *
  *      const r1 = readableStreamFromIterable(["foo, bar, baz"]);
  *      const r2 = readableStreamFromIterable((async function* () {
  *        await new Promise(((r) => setTimeout(r, 1000)));
@@ -144,7 +154,8 @@ export function writableStreamFromWriter(
  *        await new Promise(((r) => setTimeout(r, 1000)));
  *        yield "baz";
  *      })());
-*/
+ * ```
+ */
 export function readableStreamFromIterable<T>(
   iterable: Iterable<T> | AsyncIterable<T>,
 ): ReadableStream<T> {

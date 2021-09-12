@@ -88,6 +88,30 @@ Ensure there is a related issue and it is referenced in the PR text.
 For contributions to the Node compatibility library please check the
 [`std/node` contributing guide](./node/README.md)
 
+_About CI checks_:
+
+We currently have 9 checks on CI. You need to pass the following 6 checks for
+your PR to be accepted:
+
+- test with Deno 1.x on Windows
+- test with Deno 1.x on Linux
+- test with Deno 1.x on macOS
+- lint
+- wasm crypto check
+- CLA
+
+You don't need to pass the following 3 checks (These are informative checks for
+maintainers):
+
+- test with Deno canary on Windows
+- test with Deno canary on Linux
+- test with Deno canary on macOS
+
+_Typechecking code in Markdown files_:
+
+If you want to run `deno test --doc x.md` you will need to specify the flag
+`--import-map=test_import_map.json`, this import map is in the root of deno_std.
+
 _For maintainers_:
 
 To release a new version a tag in the form of `x.y.z` should be added.
