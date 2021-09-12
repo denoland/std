@@ -455,3 +455,29 @@ console.assert(
   ],
 );
 ```
+
+### joinToString
+
+Transforms the elements in the given array to strings using the given selector.
+Joins the produced strings into one using the given separator and applying the
+given prefix and suffix to the whole string afterwards. Returns the resulting
+string
+
+```ts
+import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const users = [
+  { name: "Kim", age: 22 },
+  { name: "Anna", age: 31 },
+  { name: "Tim", age: 58 },
+];
+
+const names = joinToString(users, (it) => it.name, {
+  separator: " and ",
+  prefix: "<",
+  suffix: ">",
+});
+
+assertEquals(names, "<Kim and Anna and Tim>");
+```
