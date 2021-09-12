@@ -22,6 +22,6 @@ export function runningReduce<T, O>(
   reducer: (accumulator: O, current: T) => O,
   initialValue: O,
 ): O[] {
-  let _initialValue = initialValue;
-  return array.map((el) => _initialValue = reducer(_initialValue, el));
+  let currentResult = initialValue;
+  return array.map((el) => currentResult = reducer(currentResult, el));
 }
