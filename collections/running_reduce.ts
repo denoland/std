@@ -17,11 +17,11 @@
  * assertEquals(sumSteps, [1, 3, 6, 10, 15]);
  * ```
  */
-export function runningReduce<T, A>(
+export function runningReduce<T, O>(
   array: readonly T[],
-  reducer: (accumulator: A, current: T) => A,
-  initialValue: A,
-): A[] {
+  reducer: (accumulator: O, current: T) => O,
+  initialValue: O,
+): O[] {
   let _initialValue = initialValue;
   return array.map((el) => _initialValue = reducer(_initialValue, el));
 }
