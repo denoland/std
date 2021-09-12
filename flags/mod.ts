@@ -14,12 +14,14 @@ export interface ArgParsingOptions {
   /** When `true`, populate the result `_` with everything before the `--` and
    * the result `['--']` with everything after the `--`. Here's an example:
    *
+   * ```ts
    *      // $ deno run example.ts -- a arg1
    *      import { parse } from "./mod.ts";
    *      console.dir(parse(Deno.args, { "--": false }));
    *      // output: { _: [ "a", "arg1" ] }
    *      console.dir(parse(Deno.args, { "--": true }));
    *      // output: { _: [], --: [ "a", "arg1" ] }
+   * ```
    *
    * Defaults to `false`.
    */
@@ -94,7 +96,10 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
 /** Take a set of command line arguments, with an optional set of options, and
  * return an object representation of those argument.
  *
+ * ```ts
+ *      import { parse } from "./mod.ts";
  *      const parsedArgs = parse(Deno.args);
+ * ```
  */
 export function parse(
   args: string[],
