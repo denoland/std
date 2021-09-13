@@ -97,7 +97,7 @@ For arrays, maps and sets, a merging strategy can be specified to either
 include non enumerable properties too.
 
 ```ts
-import { deepMerge } from "./deep_merge.ts";
+import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const a = { foo: true };
@@ -423,7 +423,7 @@ return undefined
 
 ```ts
 import { minOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const inventory = [
   { name: "mustard", count: 2 },
@@ -510,8 +510,8 @@ collection, resulting in some undefined values if size is greater than 1.
 (Default: false)
 
 ```ts
-import { slidingWindows } from "./sliding_windows.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { slidingWindows } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 const numbers = [1, 2, 3, 4, 5];
 
 const windows = slidingWindows(numbers, 3);
@@ -833,4 +833,22 @@ const numbers = [1, 2, 3, 4];
 const random = sample(numbers);
 
 assert(numbers.includes(random as number));
+```
+
+### runningReduce
+
+Calls the given reducer on each element of the given collection, passing it's
+result as the accumulator to the next respective call, starting with the given
+initialValue. Returns all intermediate accumulator results.
+
+Example:
+
+```ts
+import { runningReduce } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const numbers = [1, 2, 3, 4, 5];
+const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
+
+assertEquals(sumSteps, [1, 3, 6, 10, 15]);
 ```
