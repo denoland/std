@@ -23,7 +23,7 @@
  */
 export function findSingle<T>(
   array: readonly T[],
-  predicate: (el: T) => boolean = (_) => true,
+  predicate: (el: T) => boolean,
 ): T | undefined {
   let match: T | undefined = undefined;
   let found = false;
