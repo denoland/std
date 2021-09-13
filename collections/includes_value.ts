@@ -21,7 +21,10 @@ export function includesValue<T>(
   value: T,
 ): boolean {
   for (const i in record) {
-    if (record[i] === value || Number.isNaN(value) && Number.isNaN(record[i])) {
+    if (
+      Object.hasOwn(record, i) &&
+      (record[i] === value || Number.isNaN(value) && Number.isNaN(record[i]))
+    ) {
       return true;
     }
   }
