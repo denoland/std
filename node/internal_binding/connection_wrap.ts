@@ -19,33 +19,26 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// This module implements:
+// This module ports:
 // - https://github.com/nodejs/node/blob/master/src/connection_wrap.h
 // - https://github.com/nodejs/node/blob/master/src/connection_wrap.cc
 
-import { TCPConnectWrap } from "./tcp_wrap.ts";
-import { PipeConnectWrap } from "./pipe_wrap.ts";
-import { ownerSymbol } from "../_async_hooks.ts";
+import { LibuvStreamWrap } from "./stream_wrap.ts";
+import { providerType } from "./async_wrap.ts";
 
-export class ConnectionWrap {
-  // deno-lint-ignore no-explicit-any
-  [ownerSymbol]: any = null;
-  provider: string;
-
+export class ConnectionWrap extends LibuvStreamWrap {
   onconnection: ((status: number, handle: ConnectionWrap) => void) | null =
     null;
 
-  constructor(provider: string) {
-    this.provider = provider;
+  constructor(provider: providerType) {
+    super(provider);
   }
 
-  afterConnect(req: TCPConnectWrap, status: number): void;
-  afterConnect(req: PipeConnectWrap, status: number): void;
-  afterConnect(req: unknown, status: number): void {
+  // deno-lint-ignore no-explicit-any
+  afterConnect(req: any, status: number): void {
     const readable = !!status;
     const writable = !!status;
 
-    // deno-lint-ignore no-explicit-any
-    return (req as any).oncomplete(status, this, req, readable, writable);
+    return req.oncomplete(status, this, req, readable, writable);
   }
 }

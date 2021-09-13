@@ -19,6 +19,12 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// This module ports:
+// - https://github.com/nodejs/node/blob/master/src/async_wrap.h
+// - https://github.com/nodejs/node/blob/master/src/async_wrap.cc
+
+import { newAsyncId } from "../_async_hooks.ts";
+
 export enum constants {
   kInit,
   kBefore,
@@ -56,3 +62,30 @@ asyncIdFields[UidFields.kAsyncIdCounter] = 1;
 asyncIdFields[UidFields.kDefaultTriggerAsyncId] = -1;
 
 export { asyncIdFields };
+
+export enum providerType {
+  NONE,
+  PIPESERVERWRAP,
+  PIPEWRAP,
+  TCPSERVERWRAP,
+  TCPWRAP,
+}
+
+const kInvalidAsyncId = -1;
+
+export class AsyncWrap {
+  provider: providerType = providerType.NONE;
+  asyncId = kInvalidAsyncId;
+
+  constructor(provider: providerType) {
+    this.provider = provider;
+  }
+
+  getAsyncId(): number {
+    return this.asyncId === kInvalidAsyncId ? newAsyncId() : this.asyncId;
+  }
+
+  getProviderType() {
+    return this.provider;
+  }
+}

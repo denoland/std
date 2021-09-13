@@ -19,33 +19,25 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// This module implements:
+// This module ports:
 // - https://github.com/nodejs/node/blob/master/src/tcp_wrap.h
 // - https://github.com/nodejs/node/blob/master/src/tcp_wrap.cc
 
 import { notImplemented } from "../_utils.ts";
 import { unreachable } from "../../testing/asserts.ts";
 import { ConnectionWrap } from "./connection_wrap.ts";
-import { ShutdownWrap } from "./stream_wrap.ts";
+import { providerType } from "./async_wrap.ts";
+import { ownerSymbol } from "./symbols.ts";
 
 export enum socketType {
   SOCKET,
   SERVER,
 }
 
-enum providerType {
-  TCPSocketWrap = "TCPSocketWrap",
-  TCPServerWrap = "TCPServerWrap",
-}
-
-// Extends:
-// - ConnectionWrap
-// - LibuvStreamWrap
-// - HandleWrap
-// - StreamBase
-// - ShutdownWrap
-// - WriteWrap
 export class TCP extends ConnectionWrap {
+  // deno-lint-ignore no-explicit-any
+  [ownerSymbol]: any = null;
+  onconnection = null;
   reading = false;
 
   constructor(type: number) {
@@ -53,12 +45,12 @@ export class TCP extends ConnectionWrap {
 
     switch (type) {
       case socketType.SOCKET: {
-        provider = providerType.TCPSocketWrap;
+        provider = providerType.TCPWRAP;
 
         break;
       }
       case socketType.SERVER: {
-        provider = providerType.TCPServerWrap;
+        provider = providerType.TCPSERVERWRAP;
 
         break;
       }
@@ -130,15 +122,15 @@ export class TCP extends ConnectionWrap {
     notImplemented();
   }
 
-  getsockname(_sockname: Record<string, never>): void {
+  getsockname(_sockname: Record<string, never>): number {
     notImplemented();
   }
 
-  getpeername(_peername: Record<string, never>): void {
+  getpeername(_peername: Record<string, never>): number {
     notImplemented();
   }
 
-  setNoDelay(_noDelay: boolean): void {
+  setNoDelay(_noDelay: boolean): number {
     notImplemented();
   }
 
@@ -156,103 +148,6 @@ export class TCP extends ConnectionWrap {
    * @deprecated
    */
   setSimultaneousAccepts(_enable: boolean) {
-    notImplemented();
-  }
-
-  getFD() {
-    notImplemented();
-  }
-
-  isAlive() {
-    notImplemented();
-  }
-
-  isClosing() {
-    notImplemented();
-  }
-
-  isIPCPipe() {
-    return false;
-  }
-
-  readStart(): number {
-    notImplemented();
-  }
-
-  readStop(): number {
-    notImplemented();
-  }
-
-  doShutdown() {
-    notImplemented();
-  }
-
-  doTryWrite() {
-    notImplemented();
-  }
-
-  doWrite() {
-    notImplemented();
-  }
-
-  writeQueueSize = 0;
-
-  setBlocking() {
-    notImplemented();
-  }
-
-  // deno-lint-ignore no-explicit-any
-  useUserBuffer(_userBuf: any) {
-    notImplemented();
-  }
-
-  shutdown(_req: ShutdownWrap): number {
-    notImplemented();
-  }
-
-  setWriteResult() {
-    notImplemented();
-  }
-
-  writev() {
-    notImplemented();
-  }
-
-  writeBuffer() {
-    notImplemented();
-  }
-
-  writeString() {
-    notImplemented();
-  }
-
-  bytesRead = 0;
-
-  bytesWritten = 0;
-
-  // deno-lint-ignore no-explicit-any
-  onread(_a: any, _b: any): any {
-    notImplemented();
-  }
-
-  // deno-lint-ignore ban-types
-  close(_cb?: Function) {
-    notImplemented();
-  }
-
-  ref() {
-    notImplemented();
-  }
-
-  unref() {
-    notImplemented();
-  }
-
-  hasRef() {
-    notImplemented();
-  }
-
-  onclose() {
     notImplemented();
   }
 }

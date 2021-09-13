@@ -208,8 +208,7 @@ interface IpcSocketConnectOptions extends ConnectOptions {
 
 type SocketConnectOptions = TcpSocketConnectOptions | IpcSocketConnectOptions;
 
-// deno-lint-ignore no-explicit-any
-function _getNewAsyncId(handle?: any): number {
+function _getNewAsyncId(handle?: Handle): number {
   return (!handle || typeof handle.getAsyncId !== "function")
     ? newAsyncId()
     : handle.getAsyncId();
@@ -364,8 +363,7 @@ function _afterConnect(
       status,
       "connect",
       req.address,
-      // deno-lint-ignore no-explicit-any
-      (req as any).port,
+      (req as TCPConnectWrap).port,
       details,
     );
 
@@ -378,18 +376,16 @@ function _afterConnect(
   }
 }
 
-// deno-lint-ignore no-explicit-any
-function _checkBindError(err: any, port: number, handle: any) {
+function _checkBindError(err: number, port: number, handle: TCP) {
   // EADDRINUSE may not be reported until we call `listen()` or `connect()`.
   // To complicate matters, a failed `bind()` followed by `listen()` or `connect()`
   // will implicitly bind to a random port. Ergo, check that the socket is
   // bound to the expected port before calling `listen()` or `connect()`.
   if (err === 0 && port > 0 && handle.getsockname) {
-    const out = {};
+    const out: AddressInfo | Record<string, never> = {};
     err = handle.getsockname(out);
 
-    // deno-lint-ignore no-explicit-any
-    if (err === 0 && port !== (out as any).port) {
+    if (err === 0 && port !== out.port) {
       err = UV_EADDRINUSE;
     }
   }
@@ -430,7 +426,7 @@ function _internalConnect(
       err = (socket._handle as TCP).bind6(localAddress, localPort, flags);
     }
 
-    err = _checkBindError(err, localPort, socket._handle);
+    err = _checkBindError(err, localPort, socket._handle as TCP);
 
     if (err) {
       const ex = exceptionWithHostPort(err, "bind", localAddress, localPort);
@@ -545,7 +541,8 @@ function _initSocketHandle(socket: Socket): void {
 
   // Handle creation may be deferred to bind() or connect() time.
   if (socket._handle) {
-    socket._handle[ownerSymbol] = socket;
+    // deno-lint-ignore no-explicit-any
+    (socket._handle as any)[ownerSymbol] = socket;
     socket._handle.onread = onStreamRead;
     socket[asyncIdSymbol] = _getNewAsyncId(socket._handle);
 
@@ -881,8 +878,9 @@ export class Socket extends Duplex {
     }
 
     if (!this._handle) {
-      this._handle = _isPipe(options) ? new Pipe(PipeConstants.SOCKET) : // deno-lint-ignore no-explicit-any
-        new TCP(TCPConstants.SOCKET) as any;
+      this._handle = _isPipe(options)
+        ? new Pipe(PipeConstants.SOCKET)
+        : new TCP(TCPConstants.SOCKET);
 
       _initSocketHandle(this);
     }
@@ -1093,10 +1091,8 @@ export class Socket extends Duplex {
       return this;
     }
 
-    // deno-lint-ignore no-explicit-any
-    if (typeof (this._handle as any).ref === "function") {
-      // deno-lint-ignore no-explicit-any
-      (this._handle as any).ref();
+    if (typeof this._handle.ref === "function") {
+      this._handle.ref();
     }
 
     return this;
@@ -1258,8 +1254,7 @@ export class Socket extends Duplex {
     encoding?: Encodings | (() => void),
     cb?: () => void,
   ): this {
-    // deno-lint-ignore no-explicit-any
-    Duplex.prototype.end.call(this, data, encoding as any, cb);
+    Duplex.prototype.end.call(this, data, encoding as Encodings, cb);
     DTRACE_NET_STREAM_END(this);
 
     return this;
@@ -1373,8 +1368,7 @@ export class Socket extends Duplex {
         this.emit("close", isException);
       });
 
-      // deno-lint-ignore no-explicit-any
-      this._handle.onread = _noop as any;
+      this._handle.onread = _noop;
       this._handle = null;
       this._sockname = undefined;
 

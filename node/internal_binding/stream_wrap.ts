@@ -19,6 +19,14 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// This module ports:
+// - https://github.com/nodejs/node/blob/master/src/stream_wrap.h
+// - https://github.com/nodejs/node/blob/master/src/stream_wrap.cc
+
+import { notImplemented } from "../_utils.ts";
+import { HandleWrap } from "./handle_wrap.ts";
+import { providerType } from "./async_wrap.ts";
+
 enum StreamBaseStateFields {
   kReadBytesOrError,
   kArrayBufferOffset,
@@ -52,4 +60,36 @@ export class ShutdownWrap {
   handle!: any;
   callback!: () => void;
   oncomplete!: (status: number) => void;
+}
+
+export class LibuvStreamWrap extends HandleWrap {
+  writeQueueSize = 0;
+  bytesRead = 0;
+  bytesWritten = 0;
+
+  constructor(provider: providerType) {
+    super(provider);
+  }
+
+  readStart(): number {
+    notImplemented();
+  }
+
+  readStop(): number {
+    notImplemented();
+  }
+
+  // deno-lint-ignore no-explicit-any
+  useUserBuffer(_userBuf: any) {
+    notImplemented();
+  }
+
+  shutdown(_req: ShutdownWrap): number {
+    notImplemented();
+  }
+
+  // deno-lint-ignore no-explicit-any
+  onread(_a: any, _b: any): any {
+    notImplemented();
+  }
 }

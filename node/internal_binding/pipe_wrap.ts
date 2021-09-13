@@ -19,13 +19,14 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// This module implements:
+// This module ports:
 // - https://github.com/nodejs/node/blob/master/src/pipe_wrap.h
 // - https://github.com/nodejs/node/blob/master/src/pipe_wrap.cc
 
 import { notImplemented } from "../_utils.ts";
 import { unreachable } from "../../testing/asserts.ts";
 import { ConnectionWrap } from "./connection_wrap.ts";
+import { providerType } from "./async_wrap.ts";
 
 export enum socketType {
   SOCKET,
@@ -33,18 +34,6 @@ export enum socketType {
   IPC,
 }
 
-enum providerType {
-  PipeSocketWrap = "PipeSocketWrap",
-  PipeServerWrap = "PipeServerWrap",
-}
-
-// Extends:
-// - ConnectionWrap
-// - LibuvStreamWrap
-// - HandleWrap
-// - StreamBase
-// - ShutdownWrap
-// - WriteWrap
 export class Pipe extends ConnectionWrap {
   reading = false;
   ipc: boolean;
@@ -55,19 +44,19 @@ export class Pipe extends ConnectionWrap {
 
     switch (type) {
       case socketType.SOCKET: {
-        provider = providerType.PipeSocketWrap;
+        provider = providerType.PIPEWRAP;
         ipc = false;
 
         break;
       }
       case socketType.SERVER: {
-        provider = providerType.PipeServerWrap;
+        provider = providerType.PIPESERVERWRAP;
         ipc = false;
 
         break;
       }
       case socketType.IPC: {
-        provider = providerType.PipeSocketWrap;
+        provider = providerType.PIPEWRAP;
         ipc = true;
 
         break;
@@ -114,102 +103,6 @@ export class Pipe extends ConnectionWrap {
   }
 
   fchmod() {
-    notImplemented();
-  }
-
-  getFD() {
-    notImplemented();
-  }
-
-  isAlive() {
-    notImplemented();
-  }
-
-  isClosing() {
-    notImplemented();
-  }
-
-  isIPCPipe() {
-    return this.ipc;
-  }
-
-  readStart() {
-    notImplemented();
-  }
-
-  readStop() {
-    notImplemented();
-  }
-
-  doShutdown() {
-    notImplemented();
-  }
-
-  doTryWrite() {
-    notImplemented();
-  }
-
-  doWrite() {
-    notImplemented();
-  }
-
-  writeQueueSize = 0;
-
-  setBlocking() {
-    notImplemented();
-  }
-
-  useUserBuffer() {
-    notImplemented();
-  }
-
-  shutdown() {
-    notImplemented();
-  }
-
-  setWriteResult() {
-    notImplemented();
-  }
-
-  writev() {
-    notImplemented();
-  }
-
-  writeBuffer() {
-    notImplemented();
-  }
-
-  writeString() {
-    notImplemented();
-  }
-
-  bytesRead = 0;
-
-  bytesWritten = 0;
-
-  // deno-lint-ignore no-explicit-any
-  onread(_a: any, _b: any): any {
-    notImplemented();
-  }
-
-  // deno-lint-ignore ban-types
-  close(_cb?: Function) {
-    notImplemented();
-  }
-
-  ref() {
-    notImplemented();
-  }
-
-  unref() {
-    notImplemented();
-  }
-
-  hasRef() {
-    notImplemented();
-  }
-
-  onclose() {
     notImplemented();
   }
 }

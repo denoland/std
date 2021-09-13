@@ -20,7 +20,27 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // This module ports:
-// - https://github.com/nodejs/node/blob/master/src/node_symbols.cc
+// - https://github.com/nodejs/node/blob/master/src/handle_wrap.h
+// - https://github.com/nodejs/node/blob/master/src/handle_wrap.cc
 
-export const asyncIdSymbol: unique symbol = Symbol("asyncIdSymbol");
-export const ownerSymbol: unique symbol = Symbol("ownerSymbol");
+import { notImplemented } from "../_utils.ts";
+import { AsyncWrap, providerType } from "./async_wrap.ts";
+
+export class HandleWrap extends AsyncWrap {
+  constructor(provider: providerType) {
+    super(provider);
+  }
+
+  // deno-lint-ignore ban-types
+  close(_cb?: Function) {
+    notImplemented();
+  }
+
+  ref() {
+    notImplemented();
+  }
+
+  unref() {
+    notImplemented();
+  }
+}
