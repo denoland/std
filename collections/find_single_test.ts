@@ -12,7 +12,6 @@ function findSingleTest<I>(
   assertEquals(actual, expected, message);
 }
 
-
 Deno.test({
   name: "[collections/findSingle] no mutation",
   fn() {
