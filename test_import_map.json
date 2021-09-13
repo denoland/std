@@ -1,6 +1,0 @@
-{
-  "imports": {
-    "https://deno.land/std@$STD_VERSION/": "./",
-    "https://deno.land/std@0.104.0/": "./"
-  }
-}
