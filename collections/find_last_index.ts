@@ -6,8 +6,8 @@
  * Example:
  *
  * ```ts
- * import { findLastIndex } from "./find_last_index.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { findLastIndex } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [ 4, 2, 7 ]
  * const lastIndexNumber = findLastIndex(numbers, it => it % 2 === 0)
