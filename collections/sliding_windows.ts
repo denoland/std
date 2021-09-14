@@ -14,8 +14,8 @@
  * Example:
  *
  * ```ts
- * import { slidingWindows } from "./sliding_windows.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { slidingWindows } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  * const numbers = [1, 2, 3, 4, 5];
  *
  * const windows = slidingWindows(numbers, 3);

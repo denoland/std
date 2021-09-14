@@ -9,6 +9,9 @@ export type Disposable = { dispose: () => void };
  *
  * Example:
  *
+ * ```ts
+ *       import { signal } from "./mod.ts";
+ *
  *       const sig = signal("SIGUSR1", "SIGINT");
  *       setTimeout(() => {}, 5000); // Prevents exiting immediately
  *
@@ -18,6 +21,7 @@ export type Disposable = { dispose: () => void };
  *
  *       // At some other point in your code when finished listening:
  *       sig.dispose();
+ * ```
  *
  * @param signos - one or more `Deno.Signal`s to await on
  */
@@ -51,10 +55,14 @@ export function signal(
 /**
  * Registers a callback function to be called on triggering of a signal event.
  *
+ * ```ts
+ *       import { onSignal } from "./mod.ts";
+ *
  *       const handle = onSignal("SIGINT", () => {
  *         console.log('Received SIGINT');
  *         handle.dispose();  // de-register from receiving further events
  *       });
+ * ```
  *
  * @param signo One of Deno.Signal (e.g. "SIGINT")
  * @param callback Callback function triggered upon signal event

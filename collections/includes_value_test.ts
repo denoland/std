@@ -101,3 +101,14 @@ Deno.test("[collections/includesValue] Works with NaN", () => {
 
   assert(actual);
 });
+
+Deno.test("[collections/includesValue] prevent enumerable prototype check", () => {
+  class Foo {}
+  // @ts-ignore: for test
+  Foo.prototype.a = "hello";
+  const input = new Foo() as Record<string, string>;
+
+  const actual = includesValue(input, "hello");
+
+  assert(!actual);
+});

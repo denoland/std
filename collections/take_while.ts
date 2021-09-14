@@ -4,8 +4,8 @@
  *
  * Example:
  * ```ts
- * import { takeWhile } from "./take_while.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { takeWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const arr = [1, 2, 3, 4, 5, 6];
  *

@@ -5,8 +5,8 @@
  *
  * Example:
  * ```ts
- * import { includesValue } from "./includes_value.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const input = {
  *   first: 33,
@@ -21,7 +21,10 @@ export function includesValue<T>(
   value: T,
 ): boolean {
   for (const i in record) {
-    if (record[i] === value || Number.isNaN(value) && Number.isNaN(record[i])) {
+    if (
+      Object.hasOwn(record, i) &&
+      (record[i] === value || Number.isNaN(value) && Number.isNaN(record[i]))
+    ) {
       return true;
     }
   }

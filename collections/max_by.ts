@@ -6,8 +6,8 @@
  * Example:
  *
  * ```ts
- * import { maxBy } from "./max_by.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = [
  *     { name: 'Anna', age: 34 },

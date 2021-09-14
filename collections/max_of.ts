@@ -8,8 +8,8 @@
  * Example:
  *
  * ```ts
- * import { maxOf } from "./max_of.ts"
- * import { assertEquals } from "../testing/asserts.ts"
+ * import { maxOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const inventory = [
  *      { name: "mustard", count: 2 },

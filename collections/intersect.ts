@@ -8,8 +8,8 @@ import { filterInPlace } from "./_utils.ts";
  * Example:
  *
  * ```ts
- * import { intersect } from "./intersect.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { intersect } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const lisaInterests = [ 'Cooking', 'Music', 'Hiking' ]
  * const kimInterests = [ 'Music', 'Tennis', 'Cooking' ]
