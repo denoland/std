@@ -612,7 +612,7 @@ export function assertThrows(
 ): void;
 export function assertThrows(
   fn: () => unknown,
-  errorCallback?: (e: Error) => unknown,
+  errorCallback: (e: Error) => unknown,
   msg?: string,
 ): void;
 export function assertThrows(
@@ -688,7 +688,7 @@ export function assertRejects(
 ): Promise<void>;
 export function assertRejects(
   fn: () => Promise<unknown>,
-  errorCallback?: (e: Error) => unknown,
+  errorCallback: (e: Error) => unknown,
   msg?: string,
 ): Promise<void>;
 export async function assertRejects(
