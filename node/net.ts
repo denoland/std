@@ -698,7 +698,7 @@ function _lookupAndConnect(
   });
 }
 
-function _afterShutdown(this: ShutdownWrap) {
+function _afterShutdown(this: ShutdownWrap<TCP>) {
   this.callback();
 }
 
@@ -1310,7 +1310,7 @@ export class Socket extends Duplex {
       return cb();
     }
 
-    const req = new ShutdownWrap();
+    const req = new ShutdownWrap<Handle>();
     req.oncomplete = _afterShutdown;
     req.handle = this._handle;
     req.callback = cb;
