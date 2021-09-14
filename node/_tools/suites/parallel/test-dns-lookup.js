@@ -150,22 +150,20 @@ dns.lookup('127.0.0.1', {
   assert.strictEqual(addressType, 4);
 }));
 
-let tickValue = 0;
+// let tickValue = 0;
 
-// ~Should fail due to stub.~
-// Don't have the ability to stub.
-dns.lookup('example.com', common.mustCall((error, result, addressType) => {
-  assert(error);
-  assert.strictEqual(tickValue, 1);
-  // assert.strictEqual(error.code, 'ENOMEM');
-  assert.strictEqual(error.code, 'ENOTFOUND');
-  const descriptor = Object.getOwnPropertyDescriptor(error, 'message');
-  // The error message should be non-enumerable.
-  assert.strictEqual(descriptor.enumerable, false);
-}));
+// Should fail due to stub.
+// dns.lookup('example.com', common.mustCall((error, result, addressType) => {
+//   assert(error);
+//   assert.strictEqual(tickValue, 1);
+//   assert.strictEqual(error.code, 'ENOMEM');
+//   const descriptor = Object.getOwnPropertyDescriptor(error, 'message');
+//   // The error message should be non-enumerable.
+//   assert.strictEqual(descriptor.enumerable, false);
+// }));
 
 // Make sure that the error callback is called on next tick.
-tickValue = 1;
+// tickValue = 1;
 
 // Should fail due to stub.
 // assert.rejects(dnsPromises.lookup('example.com'),
