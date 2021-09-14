@@ -156,7 +156,7 @@ function circularRemover(): (key: string, value: unknown) => unknown {
 function formatString(str: string, insideArrayOrObject = false) {
   if (insideArrayOrObject) {
     return `'${str.replace(/\\/, "\\\\").replace(/"/g, '\\"')}'`;
-  }  
+  }
   return `${str.replace(/\\/, "\\\\").replace(/"/g, '\\"')}`;
 }
 
