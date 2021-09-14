@@ -1659,7 +1659,7 @@ function _addAbortSignalOption(server: Server, options: ListenOptions) {
   const { signal } = options;
 
   const onAborted = () => {
-    self.close();
+    server.close();
   };
 
   if (signal.aborted) {
@@ -1758,7 +1758,7 @@ function _emitListeningNT(server: Server) {
 }
 
 // deno-lint-ignore no-explicit-any
-function _onconnection(this: any, err?: Error, clientHandle?: any) {
+function _onconnection(this: any, err: number, clientHandle?: any) {
   // deno-lint-ignore no-this-alias
   const handle = this;
   const self = handle[ownerSymbol];

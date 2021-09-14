@@ -24,8 +24,6 @@
 // - https://github.com/nodejs/node/blob/master/src/async_wrap.cc
 // - https://github.com/nodejs/node/blob/master/src/async_wrap.h
 
-import { newAsyncId } from "../_async_hooks.ts";
-
 export enum constants {
   kInit,
   kBefore,
@@ -40,6 +38,11 @@ export enum constants {
   kDefaultTriggerAsyncId,
   kUsesExecutionAsyncResource,
   kStackLength,
+}
+
+// Increment the internal id counter and return the value.
+export function newAsyncId() {
+  return ++asyncIdFields[constants.kAsyncIdCounter];
 }
 
 enum UidFields {

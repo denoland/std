@@ -25,12 +25,18 @@
 //
 // See also: http://docs.libuv.org/en/v1.x/errors.html#error-constants
 
+// TODO(cmorten): these are already set up in ./node/_errors.ts :facepalm:
+// Let's move to that!
+
 // REF: https://github.com/nodejs/node/blob/master/deps/uv/include/uv/errno.h
 export const UV_EAI_NODATA = -3007;
 export const UV_EAI_NONAME = -3008;
 export const UV_ENOTCONN = -4053;
 export const UV_EINVAL = -4071;
+export const UV_ECONNREFUSED = -4078;
+export const UV_EADDRNOTAVAIL = -4090;
 export const UV_EADDRINUSE = -4091;
+export const UV_UNKNOWN = -4094;
 export const UV_EOF = -4095;
 
 // REF: https://github.com/nodejs/node/blob/master/deps/uv/include/uv.h#L70

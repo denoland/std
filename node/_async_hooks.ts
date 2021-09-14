@@ -19,15 +19,6 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import * as asyncWrap from "./internal_binding/async_wrap.ts";
-
-export { asyncIdSymbol, ownerSymbol } from "./internal_binding/symbols.ts";
-
-// Each constant tracks how many callbacks there are for any given step of
-// async execution. These are tracked so if the user didn't include callbacks
-// for a given step, that step can bail out early.
-const { kAsyncIdCounter, kDefaultTriggerAsyncId } = asyncWrap.constants;
-
 /**
  * `asyncIdFields` is a `Float64Array`. Each index
  * contains the ids for the various asynchronous states of the application.
@@ -35,12 +26,15 @@ const { kAsyncIdCounter, kDefaultTriggerAsyncId } = asyncWrap.constants;
  *
  * - `kAsyncIdCounter`: Incremental counter tracking the next assigned asyncId.
  */
-const { asyncIdFields } = asyncWrap;
+import { asyncIdFields, constants } from "./internal_binding/async_wrap.ts";
 
-// Increment the internal id counter and return the value.
-export function newAsyncId() {
-  return ++asyncIdFields[kAsyncIdCounter];
-}
+export { asyncIdSymbol, ownerSymbol } from "./internal_binding/symbols.ts";
+export { newAsyncId } from "./internal_binding/async_wrap.ts";
+
+// Each constant tracks how many callbacks there are for any given step of
+// async execution. These are tracked so if the user didn't include callbacks
+// for a given step, that step can bail out early.
+const { kDefaultTriggerAsyncId } = constants;
 
 export function defaultTriggerAsyncIdScope(
   triggerAsyncId: number,
