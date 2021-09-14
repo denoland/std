@@ -19,6 +19,10 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// This module ports:
+// - https://github.com/nodejs/node/blob/master/src/cares_wrap.cc
+// - https://github.com/nodejs/node/blob/master/src/cares_wrap.h
+
 import type { ErrnoException } from "../_errors.ts";
 import { isIPv4 } from "../_net.ts";
 import { UV_EAI_NODATA } from "./uv.ts";

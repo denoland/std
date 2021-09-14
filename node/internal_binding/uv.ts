@@ -19,10 +19,13 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// REF: http://docs.libuv.org/en/v1.x/errors.html#error-constants
+// This module ports:
+// - https://github.com/nodejs/node/blob/master/src/uv.cc
+// - https://github.com/nodejs/node/blob/master/deps/uv
+//
+// See also: http://docs.libuv.org/en/v1.x/errors.html#error-constants
 
 // REF: https://github.com/nodejs/node/blob/master/deps/uv/include/uv/errno.h
-
 export const UV_EAI_NODATA = -3007;
 export const UV_EAI_NONAME = -3008;
 export const UV_ENOTCONN = -4053;
@@ -31,7 +34,6 @@ export const UV_EADDRINUSE = -4091;
 export const UV_EOF = -4095;
 
 // REF: https://github.com/nodejs/node/blob/master/deps/uv/include/uv.h#L70
-
 export const errmap = new Map([
   [UV_EAI_NODATA, ["UV_EAI_NODATA", "no address"]],
   [UV_EAI_NONAME, ["UV_EAI_NONAME", "unknown node or service"]],

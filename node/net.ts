@@ -1685,7 +1685,7 @@ export function _createServerHandle(
     try {
       handle = _createHandle(fd, true);
     } catch {
-      // Not a fd we can listen on.  This will trigger an error.
+      // Not a fd we can listen on. This will trigger an error.
       return UV_EINVAL;
     }
 

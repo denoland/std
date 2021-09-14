@@ -19,6 +19,11 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// This module ports:
+// - https://github.com/nodejs/node/blob/master/src/node_options-inl.h
+// - https://github.com/nodejs/node/blob/master/src/node_options.cc
+// - https://github.com/nodejs/node/blob/master/src/node_options.h
+
 import { parse } from "../../flags/mod.ts";
 
 export function getOptions() {

@@ -20,6 +20,9 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // This module ports:
+// - https://github.com/nodejs/node/blob/master/src/stream_base-inl.h
+// - https://github.com/nodejs/node/blob/master/src/stream_base.h
+// - https://github.com/nodejs/node/blob/master/src/stream_base.cc
 // - https://github.com/nodejs/node/blob/master/src/stream_wrap.h
 // - https://github.com/nodejs/node/blob/master/src/stream_wrap.cc
 

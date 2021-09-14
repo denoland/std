@@ -20,8 +20,8 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // This module ports:
-// - https://github.com/nodejs/node/blob/master/src/handle_wrap.h
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.cc
+// - https://github.com/nodejs/node/blob/master/src/handle_wrap.h
 
 import { notImplemented } from "../_utils.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";

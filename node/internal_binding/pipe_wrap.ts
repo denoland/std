@@ -20,8 +20,8 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // This module ports:
-// - https://github.com/nodejs/node/blob/master/src/pipe_wrap.h
 // - https://github.com/nodejs/node/blob/master/src/pipe_wrap.cc
+// - https://github.com/nodejs/node/blob/master/src/pipe_wrap.h
 
 import { notImplemented } from "../_utils.ts";
 import { unreachable } from "../../testing/asserts.ts";

@@ -19,6 +19,11 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// This module ports:
+// - https://github.com/nodejs/node/blob/master/src/util-inl.h
+// - https://github.com/nodejs/node/blob/master/src/util.cc
+// - https://github.com/nodejs/node/blob/master/src/util.h
+
 import { notImplemented } from "../_utils.ts";
 
 export function guessHandleType(_fd: number): string {

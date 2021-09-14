@@ -20,8 +20,8 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // This module ports:
-// - https://github.com/nodejs/node/blob/master/src/connection_wrap.h
 // - https://github.com/nodejs/node/blob/master/src/connection_wrap.cc
+// - https://github.com/nodejs/node/blob/master/src/connection_wrap.h
 
 import { LibuvStreamWrap } from "./stream_wrap.ts";
 import { providerType } from "./async_wrap.ts";

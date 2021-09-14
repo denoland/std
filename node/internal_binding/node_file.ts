@@ -1,7 +1,30 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { assert } from "../../testing/asserts.ts";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// This module implements functions in https://github.com/nodejs/node/blob/master/src/node_file.cc
+// This module ports:
+// - https://github.com/nodejs/node/blob/master/src/node_file-inl.h
+// - https://github.com/nodejs/node/blob/master/src/node_file.cc
+// - https://github.com/nodejs/node/blob/master/src/node_file.h
+
+import { assert } from "../../testing/asserts.ts";
 
 /**
  * Write to the given file from the given buffer synchronously.
@@ -30,10 +53,13 @@ export function writeBuffer(
     `buffer doesn't have enough data: byteLength = ${buffer.byteLength}, offset + length = ${offset +
       length}`,
   );
+
   if (position) {
     Deno.seekSync(fd, position, Deno.SeekMode.Current);
   }
+
   const subarray = buffer.subarray(offset, offset + length);
+
   try {
     return Deno.writeSync(fd, subarray);
   } catch (e) {
@@ -46,8 +72,10 @@ function extractOsErrorNumberFromErrorMessage(e: unknown): number {
   const match = e instanceof Error
     ? e.message.match(/\(os error (\d+)\)/)
     : false;
+
   if (match) {
     return +match[1];
   }
+
   return 255; // Unknown error
 }

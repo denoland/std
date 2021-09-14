@@ -20,8 +20,9 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // This module ports:
-// - https://github.com/nodejs/node/blob/master/src/async_wrap.h
+// - https://github.com/nodejs/node/blob/master/src/async_wrap-inl.h
 // - https://github.com/nodejs/node/blob/master/src/async_wrap.cc
+// - https://github.com/nodejs/node/blob/master/src/async_wrap.h
 
 import { newAsyncId } from "../_async_hooks.ts";
 
