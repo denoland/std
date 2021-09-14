@@ -187,10 +187,9 @@ function flow(stream: Duplex | Readable) {
 }
 
 /** Pluck off n bytes from an array of buffers.
-* Length is the combined lengths of all the buffers in the list.
-* This function is designed to be inlinable, so please take care when making
-* changes to the function body.
-*/
+ * Length is the combined lengths of all the buffers in the list.
+ * This function is designed to be inlinable, so please take care when making
+ * changes to the function body. */
 export function fromList(n: number, state: ReadableState) {
   // nothing buffered.
   if (state.length === 0) {
