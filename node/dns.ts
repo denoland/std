@@ -106,6 +106,12 @@ function onlookupall(
   this.callback(null, parsedAddresses);
 }
 
+type LookupCallback = (
+  err: ErrnoException | null,
+  addressOrAddresses?: string | LookupAddress[] | null,
+  family?: number,
+) => void;
+
 // Easy DNS A/AAAA look up
 // lookup(hostname, [options,] callback)
 function lookup(
@@ -116,8 +122,7 @@ function lookup(
     address: string,
     family: number,
   ) => void,
-  // deno-lint-ignore no-explicit-any
-): Record<string, any>;
+): GetAddrInfoReqWrap | Record<string, never>;
 function lookup(
   hostname: string,
   options: LookupOneOptions,
@@ -126,14 +131,12 @@ function lookup(
     address: string,
     family: number,
   ) => void,
-  // deno-lint-ignore no-explicit-any
-): Record<string, any>;
+): GetAddrInfoReqWrap | Record<string, never>;
 function lookup(
   hostname: string,
   options: LookupAllOptions,
   callback: (err: ErrnoException | null, addresses: LookupAddress[]) => void,
-  // deno-lint-ignore no-explicit-any
-): Record<string, any>;
+): GetAddrInfoReqWrap | Record<string, never>;
 function lookup(
   hostname: string,
   options: LookupOptions,
@@ -142,8 +145,7 @@ function lookup(
     address: string | LookupAddress[],
     family: number,
   ) => void,
-  // deno-lint-ignore no-explicit-any
-): Record<string, any>;
+): GetAddrInfoReqWrap | Record<string, never>;
 function lookup(
   hostname: string,
   callback: (
@@ -151,14 +153,12 @@ function lookup(
     address: string,
     family: number,
   ) => void,
-  // deno-lint-ignore no-explicit-any
-): Record<string, any>;
+): GetAddrInfoReqWrap | Record<string, never>;
 function lookup(
   hostname: string,
   options: unknown,
   callback?: unknown,
-  // deno-lint-ignore no-explicit-any
-): Record<string, any> {
+): GetAddrInfoReqWrap | Record<string, never> {
   let hints = 0;
   let family = -1;
   let all = false;
@@ -196,11 +196,9 @@ function lookup(
     emitInvalidHostnameWarning(hostname);
 
     if (all) {
-      // deno-lint-ignore no-explicit-any
-      nextTick(callback as any, null, []);
+      nextTick(callback as LookupCallback, null, []);
     } else {
-      // deno-lint-ignore no-explicit-any
-      nextTick(callback as any, null, null, family === 6 ? 6 : 4);
+      nextTick(callback as LookupCallback, null, null, family === 6 ? 6 : 4);
     }
 
     return {};
@@ -211,22 +209,19 @@ function lookup(
   if (matchedFamily) {
     if (all) {
       nextTick(
-        // deno-lint-ignore no-explicit-any
-        callback as any,
+        callback as LookupCallback,
         null,
         [{ address: hostname, family: matchedFamily }],
       );
     } else {
-      // deno-lint-ignore no-explicit-any
-      nextTick(callback as any, null, hostname, matchedFamily);
+      nextTick(callback as LookupCallback, null, hostname, matchedFamily);
     }
 
     return {};
   }
 
   const req = new GetAddrInfoReqWrap();
-  // deno-lint-ignore no-explicit-any
-  req.callback = callback as any;
+  req.callback = callback as LookupCallback;
   req.family = family;
   req.hostname = hostname;
   req.oncomplete = all ? onlookupall : onlookup;

@@ -26,7 +26,7 @@
 import { notImplemented } from "../_utils.ts";
 import { unreachable } from "../../testing/asserts.ts";
 import { ConnectionWrap } from "./connection_wrap.ts";
-import { providerType } from "./async_wrap.ts";
+import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { ownerSymbol } from "./symbols.ts";
 
 export enum socketType {
@@ -35,8 +35,7 @@ export enum socketType {
 }
 
 export class TCP extends ConnectionWrap {
-  // deno-lint-ignore no-explicit-any
-  [ownerSymbol]: any = null;
+  [ownerSymbol]: unknown = null;
   onconnection = null;
   reading = false;
 
@@ -152,7 +151,7 @@ export class TCP extends ConnectionWrap {
   }
 }
 
-export class TCPConnectWrap {
+export class TCPConnectWrap extends AsyncWrap {
   oncomplete!: (
     status: number,
     handle: ConnectionWrap,
@@ -164,6 +163,10 @@ export class TCPConnectWrap {
   port!: number;
   localAddress!: string;
   localPort!: number;
+
+  constructor() {
+    super(providerType.TCPCONNECTWRAP);
+  }
 }
 
 export enum constants {

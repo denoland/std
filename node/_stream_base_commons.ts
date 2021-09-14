@@ -25,6 +25,7 @@ import {
   kBytesWritten,
   kLastWriteWasAsync,
   kReadBytesOrError,
+  LibuvStreamWrap,
   streamBaseState,
   WriteWrap,
 } from "./internal_binding/stream_wrap.ts";
@@ -121,9 +122,11 @@ function onWriteComplete(this: any, status: number) {
   }
 }
 
-// deno-lint-ignore no-explicit-any
-function createWriteWrap(handle: any, callback: (err?: Error | null) => void) {
-  const req = new WriteWrap();
+function createWriteWrap(
+  handle: LibuvStreamWrap,
+  callback: (err?: Error | null) => void,
+) {
+  const req = new WriteWrap<LibuvStreamWrap>();
 
   req.handle = handle;
   req.oncomplete = onWriteComplete;
@@ -227,11 +230,14 @@ export function onStreamRead(this: any, arrayBuffer: any) {
     let ret;
     let result;
     const userBuf = stream[kBuffer];
+
     if (userBuf) {
       result = (stream[kBufferCb](nread, userBuf) !== false);
       const bufGen = stream[kBufferGen];
+
       if (bufGen !== null) {
         const nextBuf = bufGen();
+
         if (isUint8Array(nextBuf)) {
           stream[kBuffer] = ret = nextBuf;
         }
@@ -243,8 +249,10 @@ export function onStreamRead(this: any, arrayBuffer: any) {
     }
     if (!result) {
       handle.reading = false;
+
       if (!stream.destroyed) {
         const err = handle.readStop();
+
         if (err) {
           stream.destroy(errnoException(err, "read"));
         }
@@ -262,6 +270,7 @@ export function onStreamRead(this: any, arrayBuffer: any) {
     // CallJSOnreadMethod expects the return value to be a buffer.
     // Ref: https://github.com/nodejs/node/pull/34375
     stream.destroy(errnoException(nread, "read"));
+
     return;
   }
 
@@ -277,10 +286,12 @@ export function onStreamRead(this: any, arrayBuffer: any) {
 
     if (handle.readStop) {
       const err = handle.readStop();
+
       if (err) {
         // CallJSOnreadMethod expects the return value to be a buffer.
         // Ref: https://github.com/nodejs/node/pull/34375
         stream.destroy(errnoException(err, "read"));
+
         return;
       }
     }

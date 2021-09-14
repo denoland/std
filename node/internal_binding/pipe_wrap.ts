@@ -26,7 +26,7 @@
 import { notImplemented } from "../_utils.ts";
 import { unreachable } from "../../testing/asserts.ts";
 import { ConnectionWrap } from "./connection_wrap.ts";
-import { providerType } from "./async_wrap.ts";
+import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 export enum socketType {
   SOCKET,
@@ -107,7 +107,7 @@ export class Pipe extends ConnectionWrap {
   }
 }
 
-export class PipeConnectWrap {
+export class PipeConnectWrap extends AsyncWrap {
   oncomplete!: (
     status: number,
     handle: ConnectionWrap,
@@ -116,6 +116,10 @@ export class PipeConnectWrap {
     writeable: boolean,
   ) => void;
   address!: string;
+
+  constructor() {
+    super(providerType.PIPECONNECTWRAP);
+  }
 }
 
 export enum constants {

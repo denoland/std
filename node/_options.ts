@@ -19,7 +19,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { getOptions } from "./internal_binding/options.ts";
+import { getOptions } from "./internal_binding/node_options.ts";
 
 let optionsMap: Map<string, { value: string }>;
 

@@ -66,10 +66,15 @@ export { asyncIdFields };
 
 export enum providerType {
   NONE,
+  GETADDRINFOREQWRAP,
+  PIPECONNECTWRAP,
   PIPESERVERWRAP,
   PIPEWRAP,
+  SHUTDOWNWRAP,
+  TCPCONNECTWRAP,
   TCPSERVERWRAP,
   TCPWRAP,
+  WRITEWRAP,
 }
 
 const kInvalidAsyncId = -1;

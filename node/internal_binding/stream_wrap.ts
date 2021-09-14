@@ -28,7 +28,7 @@
 
 import { notImplemented } from "../_utils.ts";
 import { HandleWrap } from "./handle_wrap.ts";
-import { providerType } from "./async_wrap.ts";
+import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 enum StreamBaseStateFields {
   kReadBytesOrError,
@@ -47,22 +47,34 @@ export const kNumStreamBaseStateFields =
 
 export const streamBaseState = new Int8Array();
 
-export class WriteWrap {
-  // deno-lint-ignore no-explicit-any
-  handle!: any;
+export class StreamReq extends AsyncWrap {
+  done(_status: number, _errorStr: string) {}
+  ondone(_status: number) {}
+  dispose() {}
+}
+
+export class WriteWrap<H extends HandleWrap> extends StreamReq {
+  handle!: H;
   oncomplete!: (status: number) => void;
   async!: boolean;
   bytes!: number;
   buffer!: unknown;
   callback!: unknown;
   _chunks!: unknown[];
+
+  constructor() {
+    super(providerType.WRITEWRAP);
+  }
 }
 
-export class ShutdownWrap {
-  // deno-lint-ignore no-explicit-any
-  handle!: any;
-  callback!: () => void;
+export class ShutdownWrap<H extends HandleWrap> extends StreamReq {
+  handle!: H;
   oncomplete!: (status: number) => void;
+  callback!: () => void;
+
+  constructor() {
+    super(providerType.SHUTDOWNWRAP);
+  }
 }
 
 export class LibuvStreamWrap extends HandleWrap {
@@ -82,17 +94,25 @@ export class LibuvStreamWrap extends HandleWrap {
     notImplemented();
   }
 
-  // deno-lint-ignore no-explicit-any
-  useUserBuffer(_userBuf: any) {
+  useUserBuffer(_userBuf: unknown) {
     notImplemented();
   }
 
-  shutdown(_req: ShutdownWrap): number {
+  shutdown(_req: ShutdownWrap<LibuvStreamWrap>): number {
     notImplemented();
   }
 
-  // deno-lint-ignore no-explicit-any
-  onread(_a: any, _b: any): any {
+  onread(_a: unknown, _b: unknown): Uint8Array | undefined {
+    notImplemented();
+  }
+
+  writev(
+    _req: WriteWrap<LibuvStreamWrap>,
+    // deno-lint-ignore no-explicit-any
+    _chunks: any,
+    // deno-lint-ignore no-explicit-any
+    _allBuffers: any,
+  ): number {
     notImplemented();
   }
 }

@@ -220,7 +220,9 @@ interface NormalizedArgs {
   [normalizedArgsSymbol]?: boolean;
 }
 
-const _noop = () => {};
+const _noop = (_a: unknown, _b: unknown): undefined => {
+  return;
+};
 
 function _toNumber(x: unknown): number | false {
   return (x = Number(x)) >= 0 ? x as number : false;

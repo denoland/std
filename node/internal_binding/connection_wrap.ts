@@ -34,8 +34,11 @@ export class ConnectionWrap extends LibuvStreamWrap {
     super(provider);
   }
 
-  // deno-lint-ignore no-explicit-any
-  afterConnect(req: any, status: number): void {
+  afterConnect(
+    // deno-lint-ignore no-explicit-any
+    req: any,
+    status: number,
+  ): void {
     const readable = !!status;
     const writable = !!status;
 

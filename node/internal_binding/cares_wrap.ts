@@ -24,11 +24,12 @@
 // - https://github.com/nodejs/node/blob/master/src/cares_wrap.h
 
 import type { ErrnoException } from "../_errors.ts";
+import type { LookupAddress } from "../dns.ts";
 import { isIPv4 } from "../_net.ts";
 import { UV_EAI_NODATA } from "./uv.ts";
+import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 // REF: https://github.com/nodejs/node/blob/master/deps/cares/include/ares.h#L190
-
 export const ARES_AI_CANONNAME = (1 << 0);
 export const ARES_AI_NUMERICHOST = (1 << 1);
 export const ARES_AI_PASSIVE = (1 << 2);
@@ -39,15 +40,19 @@ export const AI_ADDRCONFIG = (1 << 6);
 export const ARES_AI_NOSORT = (1 << 7);
 export const ARES_AI_ENVHOSTS = (1 << 8);
 
-export class GetAddrInfoReqWrap {
+export class GetAddrInfoReqWrap extends AsyncWrap {
   callback!: (
     err: ErrnoException | null,
-    addressOrAddresses?: string | { address: string; family: number }[],
+    addressOrAddresses?: string | LookupAddress[] | null,
     family?: number,
   ) => void;
   family!: number;
   hostname!: string;
   oncomplete!: (err: number | null, addresses: string[]) => void;
+
+  constructor() {
+    super(providerType.GETADDRINFOREQWRAP);
+  }
 }
 
 export function getaddrinfo(

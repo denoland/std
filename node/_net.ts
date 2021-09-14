@@ -21,7 +21,7 @@
 
 import { Buffer } from "./buffer.ts";
 import { uvException } from "./_errors.ts";
-import { writeBuffer } from "./internal_binding/fs.ts";
+import { writeBuffer } from "./internal_binding/node_file.ts";
 
 // IPv4 Segment
 const v4Seg = "(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])";
