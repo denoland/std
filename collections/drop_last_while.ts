@@ -16,7 +16,6 @@
  *   [22, 30]
  * );
  * ```
- *
  */
 export function dropLastWhile<T>(
   array: readonly T[],

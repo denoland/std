@@ -47,7 +47,7 @@ export const cwd = Deno.cwd;
 /**
  * https://nodejs.org/api/process.html#process_process_env
  * Requires env permissions
- * */
+ */
 export const env: Record<string, string> = new Proxy({}, {
   get(_target, prop) {
     return Deno.env.get(String(prop));
@@ -207,7 +207,7 @@ class Process extends EventEmitter {
   /**
    * https://nodejs.org/api/process.html#process_process_argv
    * Read permissions are required in order to get the executable route
-   * */
+   */
   argv = argv;
 
   /** https://nodejs.org/api/process.html#process_process_chdir_directory */
@@ -222,7 +222,7 @@ class Process extends EventEmitter {
   /**
    * https://nodejs.org/api/process.html#process_process_env
    * Requires env permissions
-   * */
+   */
   env = env;
 
   /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */

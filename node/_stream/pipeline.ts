@@ -31,7 +31,7 @@ type TransformCallback =
  * This type represents an array that contains a data source,
  * many Transform Streams, a writable stream destination
  * and end in an optional callback
- * */
+ */
 type DataSource =
   // deno-lint-ignore no-explicit-any
   | (() => AsyncGenerator<any>)
