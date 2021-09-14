@@ -90,8 +90,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "`!!js/function` yaml type with extended schema throws while parsing",
+  name: "`!!js/function` yaml type with extended schema throws while parsing",
   fn(): void {
     const func = function foobar() {
       return "hello world!";

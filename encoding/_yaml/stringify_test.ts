@@ -79,8 +79,7 @@ undefined: !<tag:yaml.org,2002:js/undefined> ''
 });
 
 Deno.test({
-  name:
-    "`!!js/function` yaml with extended schema throws while stringifying",
+  name: "`!!js/function` yaml with extended schema throws while stringifying",
   fn(): void {
     const func = function foobar() {
       return "hello world!";

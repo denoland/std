@@ -449,8 +449,8 @@ console.log(data);
 // => [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" } ]
 ```
 
-To handle `regexp`, and `undefined` types, use the `EXTENDED_SCHEMA`.
-Note that functions are no longer supported for security reasons
+To handle `regexp`, and `undefined` types, use the `EXTENDED_SCHEMA`. Note that
+functions are no longer supported for security reasons
 
 ```ts
 import {
