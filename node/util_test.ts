@@ -309,5 +309,5 @@ Deno.test("[util] format", () => {
     `${expected} ${expected} 10`,
   );
 
-  assertEquals(util.format("hello %s", "there"), `hello there`)
+  assertEquals(util.format("hello %s", "there"), `hello there`);
 });
