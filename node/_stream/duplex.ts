@@ -313,7 +313,9 @@ class Duplex extends Stream {
     return res;
   }
 
-  pause = Readable.prototype.pause as () => this;
+  pause(): this {
+    return Readable.prototype.pause.call(this) as this;
+  }
 
   pipe = Readable.prototype.pipe;
 

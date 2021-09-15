@@ -917,7 +917,7 @@ export class Socket extends Duplex {
    *
    * @return The socket itself.
    */
-  pause = (): this => {
+  pause(): this {
     if (
       this[kBuffer] && !this.connecting && this._handle &&
       this._handle.reading
@@ -934,7 +934,7 @@ export class Socket extends Duplex {
     }
 
     return Duplex.prototype.pause.call(this) as unknown as this;
-  };
+  }
 
   /**
    * Resumes reading after a call to `socket.pause()`.
@@ -1135,14 +1135,14 @@ export class Socket extends Duplex {
   /**
    * The amount of bytes sent.
    */
-  get bytesWritten(): number {
+  get bytesWritten(): number | undefined {
     let bytes = this._bytesDispatched;
     const data = this._pendingData;
     const encoding = this._pendingEncoding;
     const writableBuffer = this.writableBuffer;
 
     if (!writableBuffer) {
-      return 0;
+      return undefined;
     }
 
     for (const el of writableBuffer) {

@@ -13,6 +13,8 @@
 const assert = require("assert");
 const util = require("util");
 
+let localhostIPv4 = null;
+
 function _expectWarning(name, expected, code) {
   if (typeof expected === 'string') {
     expected = [[expected, code]];
@@ -241,5 +243,12 @@ module.exports = {
       return re.test(name) &&
              iFaces[name].some(({ family }) => family === 'IPv6');
     });
+  },
+
+  get localhostIPv4() {
+    if (localhostIPv4 !== null) return localhostIPv4;
+    if (localhostIPv4 === null) localhostIPv4 = '127.0.0.1';
+
+    return localhostIPv4;
   },
 };

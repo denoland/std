@@ -88,7 +88,7 @@ export class LibuvStreamWrap extends HandleWrap {
 
   reading!: boolean;
   destroyed = false;
-  writeQueueSize = 0; // TODO(cmorten): there's always a spare part when put things back together 🤔
+  writeQueueSize = 0;
   bytesRead = 0;
   bytesWritten = 0;
 

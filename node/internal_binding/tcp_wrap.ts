@@ -78,7 +78,7 @@ export class TCP extends ConnectionWrap {
   #closed = false;
   #acceptBackoffDelay?: number;
 
-  constructor(type: number, object?: Deno.Reader & Deno.Writer & Deno.Closer) {
+  constructor(type: number, conn?: Deno.Conn) {
     let provider: providerType;
 
     switch (type) {
@@ -97,7 +97,19 @@ export class TCP extends ConnectionWrap {
       }
     }
 
-    super(provider, object);
+    super(provider, conn);
+
+    // TODO(cmorten): the handling of new connections and construction feels
+    // a little off. Suspect duplicating in some fashion.
+    if (conn && providerType.TCPWRAP) {
+      const localAddr = conn.localAddr as Deno.NetAddr;
+      this.#address = localAddr.hostname;
+      this.#port = localAddr.port;
+
+      const remoteAddr = conn.remoteAddr as Deno.NetAddr;
+      this.#remoteAddress = remoteAddr.hostname;
+      this.#remotePort = remoteAddr.port;
+    }
   }
 
   onClose() {
@@ -162,6 +174,9 @@ export class TCP extends ConnectionWrap {
   }
 
   #connect(req: TCPConnectWrap, address: string, port: number): number {
+    this.#remoteAddress = address;
+    this.#remotePort = port;
+
     const connectOptions: Deno.ConnectOptions = {
       hostname: address,
       port,
@@ -171,10 +186,9 @@ export class TCP extends ConnectionWrap {
     Deno.connect(connectOptions).then((conn: Deno.Conn) => {
       // Incorrect / backwards, but correcting the local address and port with
       // what was actually used given we can't actually specify these in Deno.
-      const address = conn.localAddr as Deno.NetAddr;
-
-      this.#address = req.localAddress = address.hostname;
-      this.#port = req.localPort = address.port;
+      const localAddr = conn.localAddr as Deno.NetAddr;
+      this.#address = req.localAddress = localAddr.hostname;
+      this.#port = req.localPort = localAddr.port;
 
       this.afterConnect(req, 0);
     }, () => {
@@ -225,7 +239,11 @@ export class TCP extends ConnectionWrap {
 
     try {
       connection = await this.#listener.accept();
-    } catch {
+    } catch (e) {
+      if (e instanceof Deno.errors.BadResource && this.#closed) {
+        return;
+      }
+
       // TODO(cmorten): map errors to appropriate error codes.
       this.onconnection!(UV_UNKNOWN, undefined);
 

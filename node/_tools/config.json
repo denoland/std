@@ -16,10 +16,14 @@
       "test-assert-async.js",
       "test-dns-lookup.js",
       "test-dns.js",
+      "test-net-access-byteswritten.js",
+      "test-net-after-close.js",
+      "test-net-allow-half-open.js",
       "test-net-dns-custom-lookup.js",
       "test-net-dns-error.js",
       "test-net-dns-lookup-skip.js",
       "test-net-dns-lookup.js",
+      "test-net-local-address-port.js",
       "test-net-normalize-args.js"
     ]
   },
@@ -53,6 +57,9 @@
       "test-event-emitter-remove-listeners.js",
       "test-event-emitter-set-max-listeners-side-effects.js",
       "test-event-emitter-special-event-names.js",
+      "test-net-access-byteswritten.js",
+      "test-net-after-close.js",
+      "test-net-allow-half-open.js",
       "test-net-dns-custom-lookup.js",
       "test-net-dns-error.js",
       "test-net-dns-lookup-skip.js",
@@ -60,6 +67,8 @@
       "test-net-isip.js",
       "test-net-isipv4.js",
       "test-net-isipv6.js",
+      "test-net-listening.js",
+      "test-net-local-address-port.js",
       "test-net-normalize-args.js",
       "test-net-server-options.js",
       "test-util-inherits.js"
