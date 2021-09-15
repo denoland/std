@@ -80,7 +80,7 @@ export class ShutdownWrap<H extends HandleWrap> extends StreamReq {
 }
 
 const SUGGESTED_SIZE = 64 * 1024;
-const kStreamBaseField = Symbol("kStreamBaseField");
+export const kStreamBaseField = Symbol("kStreamBaseField");
 
 export class LibuvStreamWrap extends HandleWrap {
   [kStreamBaseField]?: Deno.Reader & Deno.Writer & Deno.Closer;
@@ -155,11 +155,12 @@ export class LibuvStreamWrap extends HandleWrap {
     return 0;
   }
 
-  shutdown(_req: ShutdownWrap<LibuvStreamWrap>): number {
-    // TODO(cmorten): implement this - noop'd for now so can work on read and write without
-    // this throwing a wobbly.
+  shutdown(req: ShutdownWrap<LibuvStreamWrap>): number {
+    // TODO(cmorten): check this
+    req.dispose();
+    req.done(0, "");
+    req.oncomplete(0);
 
-    // notImplemented();
     return 0;
   }
 

@@ -2165,7 +2165,7 @@ export class Server extends EventEmitter {
     }
 
     if (this._handle) {
-      this._handle.close();
+      (this._handle as TCP).close();
       this._handle = null;
     }
 

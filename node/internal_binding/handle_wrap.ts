@@ -32,8 +32,11 @@ export class HandleWrap extends AsyncWrap {
   }
 
   close(cb?: () => void): void {
+    this.onClose();
     cb?.();
   }
+
+  onClose() {}
 
   ref() {
     notImplemented();

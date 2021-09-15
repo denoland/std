@@ -35,6 +35,7 @@ import {
   UV_UNKNOWN,
 } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
+import { kStreamBaseField } from "./stream_wrap.ts";
 
 export enum socketType {
   SOCKET,
@@ -63,14 +64,14 @@ export class TCP extends ConnectionWrap {
   [ownerSymbol]: unknown = null;
   reading = false;
 
-  #address!: string;
-  #port!: number;
+  #address?: string;
+  #port?: number;
 
-  #remoteAddress!: string;
-  #remoteFamily!: string;
-  #remotePort!: number;
+  #remoteAddress?: string;
+  #remoteFamily?: string;
+  #remotePort?: number;
 
-  #backlog!: number;
+  #backlog?: number;
   #listener!: Deno.Listener;
   #connections: Set<TCP> = new Set();
 
@@ -97,6 +98,38 @@ export class TCP extends ConnectionWrap {
     }
 
     super(provider, object);
+  }
+
+  onClose() {
+    this.#closed = true;
+    this.reading = false;
+
+    this.#address = undefined;
+    this.#port = undefined;
+
+    this.#remoteAddress = undefined;
+    this.#remoteFamily = undefined;
+    this.#remotePort = undefined;
+
+    this.#backlog = undefined;
+    this.#acceptBackoffDelay = undefined;
+
+    for (const connection of this.#connections) {
+      try {
+        connection.close();
+        connection[kStreamBaseField]!.close();
+      } catch {
+        // connection already closed
+      }
+    }
+
+    this.#connections.clear();
+
+    try {
+      this.#listener.close();
+    } catch {
+      // listener already closed
+    }
   }
 
   open(_fd: number): number {
@@ -184,7 +217,7 @@ export class TCP extends ConnectionWrap {
       return;
     }
 
-    if (this.#connections.size > this.#backlog) {
+    if (this.#connections.size > this.#backlog!) {
       return this.#acceptBackoff();
     }
 
@@ -212,8 +245,8 @@ export class TCP extends ConnectionWrap {
     this.#backlog = _ceilPowOf2(backlog + 1);
 
     const listenOptions = {
-      hostname: this.#address,
-      port: this.#port,
+      hostname: this.#address!,
+      port: this.#port!,
       transport: "tcp" as const,
     };
 
