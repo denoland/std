@@ -478,7 +478,9 @@ class Duplex extends Stream {
     return res;
   }
 
-  resume = Readable.prototype.resume as () => this;
+  resume(): this {
+    return Readable.prototype.resume.call(this) as this;
+  }
 
   setEncoding = Readable.prototype.setEncoding as (enc: string) => this;
 

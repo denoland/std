@@ -27,11 +27,14 @@ import { LibuvStreamWrap } from "./stream_wrap.ts";
 import { providerType } from "./async_wrap.ts";
 
 export class ConnectionWrap extends LibuvStreamWrap {
-  onconnection: ((status: number, handle: ConnectionWrap) => void) | null =
+  onconnection: ((status: number, handle?: ConnectionWrap) => void) | null =
     null;
 
-  constructor(provider: providerType) {
-    super(provider);
+  constructor(
+    provider: providerType,
+    object?: Deno.Reader & Deno.Writer & Deno.Closer,
+  ) {
+    super(provider, object);
   }
 
   afterConnect(

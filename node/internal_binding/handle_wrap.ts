@@ -31,9 +31,8 @@ export class HandleWrap extends AsyncWrap {
     super(provider);
   }
 
-  // deno-lint-ignore ban-types
-  close(_cb?: Function) {
-    notImplemented();
+  close(cb?: () => void): void {
+    cb?.();
   }
 
   ref() {

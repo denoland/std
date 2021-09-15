@@ -220,7 +220,7 @@ interface NormalizedArgs {
   [normalizedArgsSymbol]?: boolean;
 }
 
-const _noop = (_a: unknown, _b: unknown): undefined => {
+const _noop = (_arrayBuffer: Uint8Array): undefined => {
   return;
 };
 
@@ -941,7 +941,7 @@ export class Socket extends Duplex {
    *
    * @return The socket itself.
    */
-  resume = (): this => {
+  resume(): this {
     if (
       this[kBuffer] && !this.connecting && this._handle &&
       !this._handle.reading
@@ -949,8 +949,8 @@ export class Socket extends Duplex {
       _tryReadStart(this);
     }
 
-    return Duplex.prototype.resume.call(this) as unknown as this;
-  };
+    return Duplex.prototype.resume.call(this) as this;
+  }
 
   /**
    * Sets the socket to timeout after `timeout` milliseconds of inactivity on
@@ -1758,7 +1758,7 @@ function _emitListeningNT(server: Server) {
 }
 
 // deno-lint-ignore no-explicit-any
-function _onconnection(this: any, err: number, clientHandle?: any) {
+function _onconnection(this: any, err: number, clientHandle?: Handle) {
   // deno-lint-ignore no-this-alias
   const handle = this;
   const self = handle[ownerSymbol];
@@ -1770,7 +1770,7 @@ function _onconnection(this: any, err: number, clientHandle?: any) {
   }
 
   if (self.maxConnections && self._connections >= self.maxConnections) {
-    clientHandle.close();
+    clientHandle!.close();
 
     return;
   }

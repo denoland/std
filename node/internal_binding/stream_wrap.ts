@@ -29,6 +29,8 @@
 import { notImplemented } from "../_utils.ts";
 import { HandleWrap } from "./handle_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
+import { UV_EOF, UV_UNKNOWN } from "./uv.ts";
+import { writeAll } from "../../io/util.ts";
 
 enum StreamBaseStateFields {
   kReadBytesOrError,
@@ -45,7 +47,7 @@ export const kLastWriteWasAsync = StreamBaseStateFields.kLastWriteWasAsync;
 export const kNumStreamBaseStateFields =
   StreamBaseStateFields.kNumStreamBaseStateFields;
 
-export const streamBaseState = new Int8Array();
+export const streamBaseState = new Uint8Array(5);
 
 export class StreamReq extends AsyncWrap {
   done(_status: number, _errorStr: string) {}
@@ -77,32 +79,91 @@ export class ShutdownWrap<H extends HandleWrap> extends StreamReq {
   }
 }
 
+const SUGGESTED_SIZE = 64 * 1024;
+const kStreamBaseField = Symbol("kStreamBaseField");
+
 export class LibuvStreamWrap extends HandleWrap {
-  writeQueueSize = 0;
+  [kStreamBaseField]?: Deno.Reader & Deno.Writer & Deno.Closer;
+  [kArrayBufferOffset] = 0;
+
+  reading!: boolean;
+  destroyed = false;
+  writeQueueSize = 0; // TODO(cmorten): there's always a spare part when put things back together 🤔
   bytesRead = 0;
   bytesWritten = 0;
 
-  constructor(provider: providerType) {
+  // deno-lint-ignore no-explicit-any
+  onread!: (_arrayBuffer: any) => Uint8Array | undefined;
+
+  constructor(
+    provider: providerType,
+    object?: Deno.Reader & Deno.Writer & Deno.Closer,
+  ) {
     super(provider);
+    this.#attachToObject(object);
+  }
+
+  #attachToObject(object?: Deno.Reader & Deno.Writer & Deno.Closer) {
+    this[kStreamBaseField] = object;
+  }
+
+  async #read() {
+    if (!this.reading) {
+      return;
+    }
+
+    const buf = new Uint8Array(SUGGESTED_SIZE);
+
+    let nread: number | null;
+    try {
+      nread = await this[kStreamBaseField]!.read(buf);
+    } catch {
+      // TODO(cmorten): map err to status codes
+      streamBaseState[kReadBytesOrError] = UV_UNKNOWN;
+      this.onread!(buf);
+
+      return;
+    }
+
+    nread ??= UV_EOF;
+
+    if (nread > 0) {
+      // TODO(cmorten): resize the buffer based on nread
+      this[kArrayBufferOffset] += nread;
+      streamBaseState[kArrayBufferOffset] = this.bytesRead =
+        this[kArrayBufferOffset];
+    }
+
+    streamBaseState[kReadBytesOrError] = nread;
+    this.onread!(buf);
+
+    if (nread > 0) {
+      this.#read();
+    }
   }
 
   readStart(): number {
-    notImplemented();
+    this.reading = true;
+    this.#read();
+
+    return 0;
   }
 
   readStop(): number {
-    notImplemented();
-  }
+    this.reading = false;
 
-  useUserBuffer(_userBuf: unknown) {
-    notImplemented();
+    return 0;
   }
 
   shutdown(_req: ShutdownWrap<LibuvStreamWrap>): number {
-    notImplemented();
+    // TODO(cmorten): implement this - noop'd for now so can work on read and write without
+    // this throwing a wobbly.
+
+    // notImplemented();
+    return 0;
   }
 
-  onread(_a: unknown, _b: unknown): Uint8Array | undefined {
+  useUserBuffer(_userBuf: unknown) {
     notImplemented();
   }
 
@@ -113,6 +174,53 @@ export class LibuvStreamWrap extends HandleWrap {
     // deno-lint-ignore no-explicit-any
     _allBuffers: any,
   ): number {
+    // TODO(cmorten)
+    return 0;
+  }
+
+  async #write(req: WriteWrap<LibuvStreamWrap>, data: Uint8Array) {
+    const { byteLength } = data;
+
+    try {
+      // TODO(cmorten): somewhat over simplifying what Node appears to be doing,
+      // but perhaps fine for now?
+      await writeAll(this[kStreamBaseField]!, data);
+    } catch {
+      // TODO(cmorten): map err to status codes
+      return req.oncomplete(UV_UNKNOWN);
+    }
+
+    streamBaseState[kBytesWritten] = byteLength;
+    this.bytesWritten += byteLength;
+
+    return req.oncomplete(0);
+  }
+
+  writeBuffer(req: WriteWrap<LibuvStreamWrap>, data: Uint8Array): number {
+    // TODO(cmorten)
+    this.#write(req, data);
+    streamBaseState[kLastWriteWasAsync] = 1;
+
+    return 0;
+  }
+
+  writeAsciiString(): number {
+    // TODO(cmorten)
+    notImplemented();
+  }
+
+  writeUtf8String(): number {
+    // TODO(cmorten)
+    notImplemented();
+  }
+
+  writeUcs2String(): number {
+    // TODO(cmorten)
+    notImplemented();
+  }
+
+  writeLatin1String(): number {
+    // TODO(cmorten)
     notImplemented();
   }
 }

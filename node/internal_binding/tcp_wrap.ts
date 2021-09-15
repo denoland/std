@@ -53,6 +53,12 @@ const INITIAL_ACCEPT_BACKOFF_DELAY = 5;
 /** Max backoff delay of 1s following a temporary accept failure. */
 const MAX_ACCEPT_BACKOFF_DELAY = 1000;
 
+function _ceilPowOf2(n: number) {
+  const roundPowOf2 = 1 << 31 - Math.clz32(n);
+
+  return roundPowOf2 < n ? roundPowOf2 * 2 : roundPowOf2;
+}
+
 export class TCP extends ConnectionWrap {
   [ownerSymbol]: unknown = null;
   reading = false;
@@ -66,12 +72,12 @@ export class TCP extends ConnectionWrap {
 
   #backlog!: number;
   #listener!: Deno.Listener;
-  #connections: Deno.Conn[] = [];
+  #connections: Set<TCP> = new Set();
 
   #closed = false;
   #acceptBackoffDelay?: number;
 
-  constructor(type: number) {
+  constructor(type: number, object?: Deno.Reader & Deno.Writer & Deno.Closer) {
     let provider: providerType;
 
     switch (type) {
@@ -90,7 +96,7 @@ export class TCP extends ConnectionWrap {
       }
     }
 
-    super(provider);
+    super(provider, object);
   }
 
   open(_fd: number): number {
@@ -173,33 +179,37 @@ export class TCP extends ConnectionWrap {
     this.#accept();
   }
 
-  #accept() {
+  async #accept(): Promise<void> {
     if (this.#closed) {
       return;
     }
 
-    // TODO(cmorten): this logic doesn't quite hold due to pushing connections
-    // async meaning it is possible to exceed the backlog limit.
-    if (this.#connections.length <= this.#backlog) {
-      this.#listener.accept().then((connection) => {
-        this.#connections.push(connection);
-        this.#acceptBackoffDelay = undefined;
-
-        this.onconnection!(0, this);
-        this.#accept();
-      }, () => {
-        // TODO(cmorten): map errors to appropriate error codes.
-        this.onconnection!(UV_UNKNOWN, this);
-        this.#acceptBackoff();
-      });
-    } else {
-      this.#acceptBackoff();
+    if (this.#connections.size > this.#backlog) {
+      return this.#acceptBackoff();
     }
+
+    let connection: Deno.Conn;
+
+    try {
+      connection = await this.#listener.accept();
+    } catch {
+      // TODO(cmorten): map errors to appropriate error codes.
+      this.onconnection!(UV_UNKNOWN, undefined);
+
+      return this.#acceptBackoff();
+    }
+
+    this.#acceptBackoffDelay = undefined;
+
+    const connectionHandle = new TCP(socketType.SOCKET, connection);
+    this.#connections.add(connectionHandle);
+    this.onconnection!(0, connectionHandle);
+
+    return this.#accept();
   }
 
   listen(backlog: number): number {
-    const roundPowOf2 = 1 << 31 - Math.clz32(backlog + 1);
-    this.#backlog = roundPowOf2 <= backlog ? roundPowOf2 * 2 : roundPowOf2;
+    this.#backlog = _ceilPowOf2(backlog + 1);
 
     const listenOptions = {
       hostname: this.#address,

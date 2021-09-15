@@ -247,6 +247,7 @@ export function onStreamRead(this: any, arrayBuffer: any) {
       const buf = new FastBuffer(arrayBuffer, offset, nread);
       result = stream.push(buf);
     }
+
     if (!result) {
       handle.reading = false;
 
