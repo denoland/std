@@ -449,8 +449,8 @@ console.log(data);
 // => [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" } ]
 ```
 
-To handle `function`, `regexp`, and `undefined` types, use the
-`EXTENDED_SCHEMA`.
+To handle `regexp`, and `undefined` types, use the `EXTENDED_SCHEMA`. Note that
+functions are no longer supported for security reasons
 
 ```ts
 import {
@@ -464,10 +464,11 @@ const data = parse(
     simple: !!js/regexp foobar
     modifiers: !!js/regexp /foobar/mi
   undefined: !!js/undefined ~
-  function: !!js/function >
-    function foobar() {
-      return 'hello world!';
-    }
+# Disabled, see: https://github.com/denoland/deno_std/pull/1275
+#  function: !!js/function >
+#    function foobar() {
+#      return 'hello world!';
+#    }
 `,
   { schema: EXTENDED_SCHEMA },
 );

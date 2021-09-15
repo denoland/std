@@ -12,7 +12,7 @@ export type Disposable = { dispose: () => void };
  * ```ts
  *       import { signal } from "./mod.ts";
  *
- *       const sig = signal(Deno.Signal.SIGUSR1, Deno.Signal.SIGINT);
+ *       const sig = signal("SIGUSR1", "SIGINT");
  *       setTimeout(() => {}, 5000); // Prevents exiting immediately
  *
  *       for await (const _ of sig) {
@@ -26,7 +26,7 @@ export type Disposable = { dispose: () => void };
  * @param signos - one or more `Deno.Signal`s to await on
  */
 export function signal(
-  ...signos: [number, ...number[]]
+  ...signos: [Deno.Signal, ...Deno.Signal[]]
 ): AsyncIterable<void> & Disposable {
   const mux = new MuxAsyncIterator<void>();
 
@@ -58,16 +58,16 @@ export function signal(
  * ```ts
  *       import { onSignal } from "./mod.ts";
  *
- *       const handle = onSignal(Deno.Signal.SIGINT, () => {
+ *       const handle = onSignal("SIGINT", () => {
  *         console.log('Received SIGINT');
  *         handle.dispose();  // de-register from receiving further events
  *       });
  * ```
  *
- * @param signo One of Deno.Signal (e.g. Deno.Signal.SIGINT)
+ * @param signo One of Deno.Signal (e.g. "SIGINT")
  * @param callback Callback function triggered upon signal event
  */
-export function onSignal(signo: number, callback: () => void): Disposable {
+export function onSignal(signo: Deno.Signal, callback: () => void): Disposable {
   const sig = signal(signo);
 
   // allows `sig` to be returned before blocking on the await

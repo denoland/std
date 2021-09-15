@@ -90,7 +90,6 @@ export interface WalkEntry extends Deno.DirEntry {
  * - match?: RegExp[];
  * - skip?: RegExp[];
  *
- *
  * ```ts
  *       import { walk } from "./walk.ts";
  *       import { assert } from "../testing/asserts.ts";
