@@ -1263,8 +1263,8 @@ export class Socket extends Duplex {
   }
 
   /**
-  * @param size Optional argument to specify how much data to read.
-  */
+   * @param size Optional argument to specify how much data to read.
+   */
   read = (size?: number): string | Uint8Array | Buffer | null | undefined => {
     if (
       this[kBuffer] && !this.connecting && this._handle &&
