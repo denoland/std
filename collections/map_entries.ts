@@ -6,8 +6,8 @@
  * Example:
  *
  * ```ts
- * import { mapEntries } from "./map_entries.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { mapEntries } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const usersById = {
  *     'a2e': { name: 'Kim', age: 22 },

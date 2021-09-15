@@ -22,7 +22,7 @@ export interface FormFile {
   content?: Uint8Array;
   /** temporal file path.
    * Set if file size is bigger than specified max-memory size at reading form
-   * */
+   */
   tempfile?: string;
 }
 
@@ -300,7 +300,7 @@ export class MultipartReader {
    * String field values are never written to files.
    * null value means parsing or writing to file was failed in some reason.
    * @param maxMemory maximum memory size to store file in memory. bytes. @default 10485760 (10MB)
-   *  */
+   */
   async readForm(maxMemory?: number): Promise<MultipartFormData>;
   /** Read all form data from stream.
    * If total size of stored data in memory exceed options.maxMemory,
@@ -309,7 +309,7 @@ export class MultipartReader {
    * null value means parsing or writing to file was failed in some reason.
    * @param options options to configure the behavior of storing
    * overflow file data in temporal files.
-   *  */
+   */
   async readForm(options?: ReadFormOptions): Promise<MultipartFormData>;
   async readForm(
     maxMemoryOrOptions?: number | ReadFormOptions,

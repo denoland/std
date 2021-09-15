@@ -6,8 +6,8 @@
  * Example:
  *
  * ```ts
- * import { chunk } from "./chunk.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { chunk } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const words = [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consetetur', 'sadipscing' ]
  * const chunks = chunk(words, 3)

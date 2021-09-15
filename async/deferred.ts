@@ -14,9 +14,13 @@ export interface Deferred<T> extends Promise<T> {
 /** Creates a Promise with the `reject` and `resolve` functions
  * placed as methods on the promise object itself. It allows you to do:
  *
+ * ```ts
+ *     import { deferred } from "./deferred.ts";
+ *
  *     const p = deferred<number>();
  *     // ...
  *     p.resolve(42);
+ * ```
  */
 export function deferred<T>(): Deferred<T> {
   let methods;

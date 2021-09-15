@@ -6,8 +6,8 @@
  * Example:
  *
  * ```ts
- * import { filterValues } from "./filter_values.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { filterValues } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * type Person = { age: number };
  *

@@ -4,8 +4,8 @@
  *
  * Example:
  * ```ts
- * import { dropLastWhile } from "./drop_last_while.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { dropLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [22, 30, 44];
  *
@@ -16,7 +16,6 @@
  *   [22, 30]
  * );
  * ```
- *
  */
 export function dropLastWhile<T>(
   array: readonly T[],
