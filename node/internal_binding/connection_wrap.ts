@@ -24,12 +24,18 @@
 // - https://github.com/nodejs/node/blob/master/src/connection_wrap.h
 
 import { LibuvStreamWrap } from "./stream_wrap.ts";
-import { providerType } from "./async_wrap.ts";
+import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 export class ConnectionWrap extends LibuvStreamWrap {
+  /** Optional connection callback. */
   onconnection: ((status: number, handle?: ConnectionWrap) => void) | null =
     null;
 
+  /**
+   * Creates a new ConnectionWrap class instance.
+   * @param provider Provider type.
+   * @param object Optional stream object.
+   */
   constructor(
     provider: providerType,
     object?: Deno.Reader & Deno.Writer & Deno.Closer,
@@ -37,14 +43,34 @@ export class ConnectionWrap extends LibuvStreamWrap {
     super(provider, object);
   }
 
-  afterConnect(
-    // deno-lint-ignore no-explicit-any
-    req: any,
+  /**
+   * @param req A connect request.
+   * @param status An error status code.
+   */
+  afterConnect<
+    T extends AsyncWrap & {
+      oncomplete(
+        status: number,
+        handle: ConnectionWrap,
+        req: T,
+        readable: boolean,
+        writeable: boolean,
+      ): void;
+    },
+  >(
+    req: T,
     status: number,
   ): void {
-    const readable = !!status;
-    const writable = !!status;
+    const isSuccessStatus = !!status;
+    const readable = !!isSuccessStatus;
+    const writable = !!isSuccessStatus;
 
-    return req.oncomplete(status, this, req, readable, writable);
+    try {
+      req.oncomplete(status, this, req, readable, writable);
+    } catch {
+      // swallow callback errors.
+    }
+
+    return;
   }
 }

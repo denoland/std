@@ -32,11 +32,13 @@ export class HandleWrap extends AsyncWrap {
   }
 
   close(cb?: () => void): void {
-    this.onClose();
+    try {
+      this._onClose();
+    } catch {
+      // swallow callback errors.
+    }
     cb?.();
   }
-
-  onClose() {}
 
   ref() {
     notImplemented();
@@ -45,4 +47,6 @@ export class HandleWrap extends AsyncWrap {
   unref() {
     notImplemented();
   }
+
+  _onClose() {}
 }

@@ -49,13 +49,7 @@ export const kNumStreamBaseStateFields =
 
 export const streamBaseState = new Uint8Array(5);
 
-export class StreamReq extends AsyncWrap {
-  done(_status: number, _errorStr: string) {}
-  ondone(_status: number) {}
-  dispose() {}
-}
-
-export class WriteWrap<H extends HandleWrap> extends StreamReq {
+export class WriteWrap<H extends HandleWrap> extends AsyncWrap {
   handle!: H;
   oncomplete!: (status: number) => void;
   async!: boolean;
@@ -69,7 +63,7 @@ export class WriteWrap<H extends HandleWrap> extends StreamReq {
   }
 }
 
-export class ShutdownWrap<H extends HandleWrap> extends StreamReq {
+export class ShutdownWrap<H extends HandleWrap> extends AsyncWrap {
   handle!: H;
   oncomplete!: (status: number) => void;
   callback!: () => void;
@@ -79,12 +73,12 @@ export class ShutdownWrap<H extends HandleWrap> extends StreamReq {
   }
 }
 
-const SUGGESTED_SIZE = 64 * 1024;
 export const kStreamBaseField = Symbol("kStreamBaseField");
+
+const SUGGESTED_SIZE = 64 * 1024;
 
 export class LibuvStreamWrap extends HandleWrap {
   [kStreamBaseField]?: Deno.Reader & Deno.Writer & Deno.Closer;
-  [kArrayBufferOffset] = 0;
 
   reading!: boolean;
   destroyed = false;
@@ -92,22 +86,142 @@ export class LibuvStreamWrap extends HandleWrap {
   bytesRead = 0;
   bytesWritten = 0;
 
-  // deno-lint-ignore no-explicit-any
-  onread!: (_arrayBuffer: any) => Uint8Array | undefined;
+  onread!: (_arrayBuffer: Uint8Array) => Uint8Array | undefined;
 
   constructor(
     provider: providerType,
-    object?: Deno.Reader & Deno.Writer & Deno.Closer,
+    stream?: Deno.Reader & Deno.Writer & Deno.Closer,
   ) {
     super(provider);
-    this.#attachToObject(object);
+    this.#attachToObject(stream);
   }
 
-  #attachToObject(object?: Deno.Reader & Deno.Writer & Deno.Closer) {
-    this[kStreamBaseField] = object;
+  /**
+   * Start the reading of the stream.
+   * @return An error status code.
+   */
+  readStart(): number {
+    this.reading = true;
+    this.#read();
+
+    return 0;
   }
 
-  async #read() {
+  /**
+   * Stop the reading of the stream.
+   * @return An error status code.
+   */
+  readStop(): number {
+    this.reading = false;
+
+    return 0;
+  }
+
+  /**
+   * Shutdown the stream.
+   * @param req A shutdown request wrapper.
+   * @return An error status code.
+   */
+  shutdown(req: ShutdownWrap<LibuvStreamWrap>): number {
+    let status = 0;
+
+    try {
+      this[kStreamBaseField]?.close();
+    } catch {
+      // TODO(cmorten): map errors to appropriate error codes.
+      status = UV_UNKNOWN;
+    }
+
+    req.oncomplete(status);
+
+    return status;
+  }
+
+  /**
+   * @param userBuf
+   * @return An error status code.
+   */
+  useUserBuffer(_userBuf: unknown): number {
+    // TODO(cmorten)
+    notImplemented();
+  }
+
+  /**
+   * Write a buffer to the stream.
+   * @param req A write request wrapper.
+   * @param data The Uint8Array buffer to write to the stream.
+   * @return An error status code.
+   */
+  writeBuffer(req: WriteWrap<LibuvStreamWrap>, data: Uint8Array): number {
+    this.#write(req, data);
+    streamBaseState[kLastWriteWasAsync] = 1;
+
+    return 0;
+  }
+
+  /**
+   * Write multiple chunks at once.
+   * @param req A write request wrapper.
+   * @param chunks
+   * @param allBuffers
+   * @return An error status code.
+   */
+  writev(
+    _req: WriteWrap<LibuvStreamWrap>,
+    // deno-lint-ignore no-explicit-any
+    _chunks: any,
+    _allBuffers: boolean,
+  ): number {
+    // TODO(cmorten)
+    notImplemented();
+  }
+
+  /**
+   * Write an ASCII string to the stream.
+   * @return An error status code.
+   */
+  writeAsciiString(): number {
+    // TODO(cmorten)
+    notImplemented();
+  }
+
+  /**
+   * Write an UTF8 string to the stream.
+   * @return An error status code.
+   */
+  writeUtf8String(): number {
+    // TODO(cmorten)
+    notImplemented();
+  }
+
+  /**
+   * Write an UCS2 string to the stream.
+   * @return An error status code.
+   */
+  writeUcs2String(): number {
+    // TODO(cmorten)
+    notImplemented();
+  }
+
+  /**
+   * Write an LATIN1 string to the stream.
+   * @return An error status code.
+   */
+  writeLatin1String(): number {
+    // TODO(cmorten)
+    notImplemented();
+  }
+
+  /**
+   * Attaches the class to the underlying stream.
+   * @param stream The stream to attach to.
+   */
+  #attachToObject(stream?: Deno.Reader & Deno.Writer & Deno.Closer): void {
+    this[kStreamBaseField] = stream;
+  }
+
+  /** Internal method for reading from the attached stream. */
+  async #read(): Promise<void> {
     if (!this.reading) {
       return;
     }
@@ -120,7 +234,12 @@ export class LibuvStreamWrap extends HandleWrap {
     } catch {
       // TODO(cmorten): map err to status codes
       streamBaseState[kReadBytesOrError] = UV_UNKNOWN;
-      this.onread!(buf);
+
+      try {
+        this.onread!(buf);
+      } catch {
+        // swallow callback errors.
+      }
 
       return;
     }
@@ -129,99 +248,54 @@ export class LibuvStreamWrap extends HandleWrap {
 
     if (nread > 0) {
       // TODO(cmorten): resize the buffer based on nread
-      this[kArrayBufferOffset] += nread;
-      streamBaseState[kArrayBufferOffset] = this.bytesRead =
-        this[kArrayBufferOffset];
+      this.bytesRead += nread;
+      streamBaseState[kArrayBufferOffset] = this.bytesRead;
     }
 
     streamBaseState[kReadBytesOrError] = nread;
-    this.onread!(buf);
+
+    try {
+      this.onread!(buf);
+    } catch {
+      // swallow callback errors.
+    }
 
     if (nread > 0) {
       this.#read();
     }
   }
 
-  readStart(): number {
-    this.reading = true;
-    this.#read();
-
-    return 0;
-  }
-
-  readStop(): number {
-    this.reading = false;
-
-    return 0;
-  }
-
-  shutdown(req: ShutdownWrap<LibuvStreamWrap>): number {
-    // TODO(cmorten): check this
-    req.dispose();
-    req.done(0, "");
-    req.oncomplete(0);
-
-    return 0;
-  }
-
-  useUserBuffer(_userBuf: unknown) {
-    notImplemented();
-  }
-
-  writev(
-    _req: WriteWrap<LibuvStreamWrap>,
-    // deno-lint-ignore no-explicit-any
-    _chunks: any,
-    // deno-lint-ignore no-explicit-any
-    _allBuffers: any,
-  ): number {
-    // TODO(cmorten)
-    return 0;
-  }
-
+  /**
+   * Internal method for writing to the attached stream.
+   * @param req A write request wrapper.
+   * @param data The Uint8Array buffer to write to the stream.
+   */
   async #write(req: WriteWrap<LibuvStreamWrap>, data: Uint8Array) {
     const { byteLength } = data;
 
     try {
-      // TODO(cmorten): somewhat over simplifying what Node appears to be doing,
-      // but perhaps fine for now?
+      // TODO(cmorten): somewhat over simplifying what Node does.
       await writeAll(this[kStreamBaseField]!, data);
     } catch {
       // TODO(cmorten): map err to status codes
-      return req.oncomplete(UV_UNKNOWN);
+      try {
+        req.oncomplete(UV_UNKNOWN);
+      } catch {
+        // swallow callback errors.
+      }
+
+      return;
     }
 
     streamBaseState[kBytesWritten] = byteLength;
     this.bytesWritten += byteLength;
 
-    return req.oncomplete(0);
-  }
+    try {
+      req.oncomplete(0);
+    } catch {
+      // swallow callback errors.
+    }
 
-  writeBuffer(req: WriteWrap<LibuvStreamWrap>, data: Uint8Array): number {
-    // TODO(cmorten)
-    this.#write(req, data);
-    streamBaseState[kLastWriteWasAsync] = 1;
-
-    return 0;
-  }
-
-  writeAsciiString(): number {
-    // TODO(cmorten)
-    notImplemented();
-  }
-
-  writeUtf8String(): number {
-    // TODO(cmorten)
-    notImplemented();
-  }
-
-  writeUcs2String(): number {
-    // TODO(cmorten)
-    notImplemented();
-  }
-
-  writeLatin1String(): number {
-    // TODO(cmorten)
-    notImplemented();
+    return;
   }
 }
