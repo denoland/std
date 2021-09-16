@@ -669,7 +669,7 @@ export function assertThrows(
     throw new AssertionError(msg);
   }
   if (typeof errorCallback == "function") {
-    errorCallback(error);
+    errorCallback(error as Error);
   }
 }
 
@@ -745,7 +745,7 @@ export async function assertRejects(
     throw new AssertionError(msg);
   }
   if (typeof errorCallback == "function") {
-    errorCallback(error);
+    errorCallback(error as Error);
   }
 }
 
