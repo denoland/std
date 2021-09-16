@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+# The CLI release version specified below should be bumped just after a new one
+# publishes and just before cutting a new std release.
+# When doing this, ensure to:
+# - Reference the commit by hash so we aren't blocked on it publishing.
+# - Adapt to any breaking changes in CLI (`--unstable` or TypeScript).
+# - Remove accumulated `--ignore` entries from the canary tests.
+env:
+  DENO_VERSION_HASH: f27902e749fb3a78ca35a0dc41c9fc53cd2806e1 # 1.14.1
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -13,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno: [1.x, canary]
+        deno: [release, canary]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:
@@ -26,7 +35,7 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v1.0.0
         with:
-          deno-version: ${{ matrix.deno }}
+          deno-version: ${{ matrix.deno == 'release' && env.DENO_VERSION_HASH || matrix.deno }}
 
       - name: Run tests release
         if: matrix.deno != 'canary'
@@ -34,7 +43,7 @@ jobs:
 
       - name: Run tests canary
         if: matrix.deno == 'canary'
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=_wasm_crypto/_build.ts,crypto/_benches,encoding/_yaml/example,examples/chat/server.ts,examples/echo_server.ts,examples/cat.ts,examples/gist.ts,examples/curl.ts,hash/_wasm/build.ts,http/bench.ts,http/bench_legacy.ts,http/racing_server.ts,http/testdata,node/cli.ts,node/_tools,node/testdata,node/_module,wasi/snapshot_preview1_test_runner.ts
+        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json
 
       - name: Type check browser compatible modules
         shell: bash
