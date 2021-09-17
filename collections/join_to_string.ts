@@ -7,6 +7,10 @@ export type JoinToStringOptions = {
   separator?: string;
   prefix?: string;
   suffix?: string;
+  truncate?: {
+    after: number;
+    with?: string;
+  };
 };
 
 /**
@@ -42,9 +46,13 @@ export function joinToString<T>(
   array: readonly T[],
   selector: (el: T) => string,
   {
-    separator = ", ",
+    separator = ",",
     prefix = "",
     suffix = "",
+    truncate = {
+      after: -1,
+      with: "...",
+    },
   }: Readonly<JoinToStringOptions> = {},
 ): string {
   let ret = prefix;
@@ -55,6 +63,11 @@ export function joinToString<T>(
     }
 
     ret += selector(it);
+
+    if (truncate.after > -1 && index === truncate.after) {
+      ret += truncate.with;
+      break;
+    }
   });
 
   ret += suffix;
