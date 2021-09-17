@@ -545,6 +545,10 @@ export function assertObjectMatch(
   const seen = new WeakMap();
   return assertEquals(
     (function filter(a: loose, b: loose): loose {
+      // If the actual value is an array, let assertEquals do the assertion.
+      if (Array.isArray(a)) {
+        return a;
+      }
       // Prevent infinite loop with circular references with same filter
       if ((seen.has(a)) && (seen.get(a) === b)) {
         return a;
@@ -558,6 +562,7 @@ export function assertObjectMatch(
       ]
         .filter((key) => key in b)
         .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
+
       for (const [key, value] of entries) {
         // On array references, build a filtered array and filter nested objects inside
         if (Array.isArray(value)) {
