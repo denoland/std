@@ -58,8 +58,7 @@ export interface FinishedOptions {
 
 /**
  * Appends an ending callback triggered when a stream is no longer readable,
- * writable or has experienced an error or a premature close event
-*/
+ * writable or has experienced an error or a premature close event */
 export default function eos(
   stream: StreamImplementations,
   options: FinishedOptions | null,

@@ -212,6 +212,10 @@ function syscall<T extends CallableFunction>(target: T) {
         throw err;
       }
 
+      if (!(err instanceof Error)) {
+        return ERRNO_INVAL;
+      }
+
       switch (err.name) {
         case "NotFound":
           return ERRNO_NOENT;
@@ -299,7 +303,6 @@ export interface ContextOptions {
    * The string keys of are treated as directories within the sandboxed
    * filesystem, the values are the real paths to those directories on the host
    * machine.
-   *
    */
   preopens?: { [key: string]: string };
 

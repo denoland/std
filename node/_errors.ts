@@ -1,24 +1,24 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
-/************ NOT IMPLEMENTED
-* ERR_INVALID_MODULE_SPECIFIER
-* ERR_INVALID_PACKAGE_TARGET
-* ERR_INVALID_URL_SCHEME
-* ERR_MANIFEST_ASSERT_INTEGRITY
-* ERR_MODULE_NOT_FOUND
-* ERR_PACKAGE_PATH_NOT_EXPORTED
-* ERR_QUICSESSION_VERSION_NEGOTIATION
-* ERR_REQUIRE_ESM
-* ERR_SOCKET_BAD_PORT
-* ERR_TLS_CERT_ALTNAME_INVALID
-* ERR_UNHANDLED_ERROR
-* ERR_WORKER_INVALID_EXEC_ARGV
-* ERR_WORKER_PATH
-* ERR_QUIC_ERROR
-* ERR_SOCKET_BUFFER_SIZE //System error, shouldn't ever happen inside Deno
-* ERR_SYSTEM_ERROR //System error, shouldn't ever happen inside Deno
-* ERR_TTY_INIT_FAILED //System error, shouldn't ever happen inside Deno
-* ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
-*************/
+/** ********** NOT IMPLEMENTED
+ * ERR_INVALID_MODULE_SPECIFIER
+ * ERR_INVALID_PACKAGE_TARGET
+ * ERR_INVALID_URL_SCHEME
+ * ERR_MANIFEST_ASSERT_INTEGRITY
+ * ERR_MODULE_NOT_FOUND
+ * ERR_PACKAGE_PATH_NOT_EXPORTED
+ * ERR_QUICSESSION_VERSION_NEGOTIATION
+ * ERR_REQUIRE_ESM
+ * ERR_SOCKET_BAD_PORT
+ * ERR_TLS_CERT_ALTNAME_INVALID
+ * ERR_UNHANDLED_ERROR
+ * ERR_WORKER_INVALID_EXEC_ARGV
+ * ERR_WORKER_PATH
+ * ERR_QUIC_ERROR
+ * ERR_SOCKET_BUFFER_SIZE //System error, shouldn't ever happen inside Deno
+ * ERR_SYSTEM_ERROR //System error, shouldn't ever happen inside Deno
+ * ERR_TTY_INIT_FAILED //System error, shouldn't ever happen inside Deno
+ * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
+ * *********** */
 
 import { unreachable } from "../testing/asserts.ts";
 import { osType } from "../_util/os.ts";
@@ -57,7 +57,7 @@ export class NodeErrorAbstraction extends Error {
     super(message);
     this.code = code;
     this.name = name;
-    //This number changes dependending on the name of this class
+    //This number changes depending on the name of this class
     //20 characters as of now
     this.stack = this.stack && `${name} [${this.code}]${this.stack.slice(20)}`;
   }

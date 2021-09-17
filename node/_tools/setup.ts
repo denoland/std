@@ -1,4 +1,4 @@
-import { gunzip } from "https://deno.land/x/compress@v0.3.6/gzip/gzip.ts";
+import { gunzip } from "https://deno.land/x/compress@v0.3.9/gzip/gzip.ts";
 import { Untar } from "../../archive/tar.ts";
 import { walk } from "../../fs/walk.ts";
 import {
@@ -46,7 +46,7 @@ const decompressedSourcePath = join(
 
 /**
  * This will overwrite the file if found
- * */
+ */
 async function downloadFile(url: string, path: string) {
   console.log(`Downloading: ${url}...`);
   const fileContent = await fetch(url)
@@ -173,7 +173,7 @@ async function copyTests(filePath: string): Promise<void> {
       { read: true },
     );
     // This will allow CI to pass without checking linting and formatting
-    // on the test suite files, removing the need to mantain that as well
+    // on the test suite files, removing the need to maintain that as well
     await writeAll(
       destFile,
       new TextEncoder().encode(

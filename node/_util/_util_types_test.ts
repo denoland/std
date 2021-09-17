@@ -63,7 +63,7 @@ import {
 } from "./_util_types.ts";
 
 // Used to test isModuleNamespaceObject
-import * as testModuleNamespaceOpbject from "./_util_types.ts";
+import * as testModuleNamespaceObject from "./_util_types.ts";
 
 // isAnyArrayBuffer
 Deno.test("Should return true for valid ArrayBuffer types", () => {
@@ -324,7 +324,7 @@ Deno.test("Should return false for invalid Map iterator types", () => {
 
 // isModuleNamespaceObject
 Deno.test("Should return true for valid module namespace objects", () => {
-  assertStrictEquals(isModuleNamespaceObject(testModuleNamespaceOpbject), true);
+  assertStrictEquals(isModuleNamespaceObject(testModuleNamespaceObject), true);
 });
 
 Deno.test("Should return false for invalid  module namespace objects", () => {

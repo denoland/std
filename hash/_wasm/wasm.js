@@ -99,9 +99,8 @@ function passStringToWasm0(arg, malloc, realloc) {
   return ptr;
 }
 /**
-* @param {string} algorithm
-* @returns {DenoHash}
-*/
+ * @param {string} algorithm
+ * @returns {DenoHash} */
 export function create_hash(algorithm) {
   var ptr0 = passStringToWasm0(
     algorithm,
@@ -127,9 +126,8 @@ function passArray8ToWasm0(arg, malloc) {
   return ptr;
 }
 /**
-* @param {DenoHash} hash
-* @param {Uint8Array} data
-*/
+ * @param {DenoHash} hash
+ * @param {Uint8Array} data */
 export function update_hash(hash, data) {
   _assertClass(hash, DenoHash);
   var ptr0 = passArray8ToWasm0(data, wasm.__wbindgen_malloc);
@@ -152,9 +150,8 @@ function getArrayU8FromWasm0(ptr, len) {
   return getUint8Memory0().subarray(ptr / 1, ptr / 1 + len);
 }
 /**
-* @param {DenoHash} hash
-* @returns {Uint8Array}
-*/
+ * @param {DenoHash} hash
+ * @returns {Uint8Array} */
 export function digest_hash(hash) {
   try {
     const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -173,8 +170,7 @@ export function digest_hash(hash) {
 const DenoHashFinalization = new FinalizationRegistry((ptr) =>
   wasm.__wbg_denohash_free(ptr)
 );
-/**
-*/
+/**/
 export class DenoHash {
   static __wrap(ptr) {
     const obj = Object.create(DenoHash.prototype);

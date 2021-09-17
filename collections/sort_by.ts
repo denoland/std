@@ -1,13 +1,13 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 /**
- * Returns all elements in the given collection, sorted stably by their result using the given selector
+ * Returns all elements in the given collection, sorted stably by their result using the given selector. The selector function is called only once for each element.
  *
  * Example:
  *
  * ```ts
- * import { sortBy } from "./sort_by.ts"
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = [
  *     { name: 'Anna', age: 34 },
@@ -47,28 +47,27 @@ export function sortBy<T>(
     | ((el: T) => bigint)
     | ((el: T) => Date),
 ): T[] {
-  return Array.from(array).sort((a, b) => {
-    const selectedA = selector(a);
-    const selectedB = selector(b);
+  const len = array.length;
+  const indexes = new Array<number>(len);
+  const selectors = new Array<ReturnType<typeof selector> | null>(len);
 
-    if (typeof selectedA === "number") {
-      if (Number.isNaN(selectedA)) {
-        return 1;
-      }
+  for (let i = 0; i < len; i++) {
+    indexes[i] = i;
+    const s = selector(array[i]);
+    selectors[i] = Number.isNaN(s) ? null : s;
+  }
 
-      if (Number.isNaN(selectedB)) {
-        return -1;
-      }
-    }
-
-    if (selectedA > selectedB) {
-      return 1;
-    }
-
-    if (selectedA < selectedB) {
-      return -1;
-    }
-
-    return 0;
+  indexes.sort((ai, bi) => {
+    const a = selectors[ai];
+    const b = selectors[bi];
+    if (a === null) return 1;
+    if (b === null) return -1;
+    return a > b ? 1 : a < b ? -1 : 0;
   });
+
+  for (let i = 0; i < len; i++) {
+    (indexes as unknown as T[])[i] = array[indexes[i]];
+  }
+
+  return indexes as unknown as T[];
 }

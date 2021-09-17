@@ -47,6 +47,7 @@ import { assert } from "../_util/assert.ts";
 import { fileURLToPath, pathToFileURL } from "./url.ts";
 import { isWindows } from "../_util/os.ts";
 
+const { hasOwn } = Object;
 const CHAR_FORWARD_SLASH = "/".charCodeAt(0);
 const CHAR_BACKWARD_SLASH = "\\".charCodeAt(0);
 const CHAR_COLON = ":".charCodeAt(0);
@@ -523,10 +524,13 @@ class Module {
    * with `node_modules` lookup and `index.js` lookup support.
    * Also injects available Node.js builtin module polyfills.
    *
+   * ```ts
+   *     import { createRequire } from "./module.ts";
    *     const require = createRequire(import.meta.url);
    *     const fs = require("fs");
    *     const leftPad = require("left-pad");
    *     const cjsModule = require("./cjs_mod");
+   * ```
    *
    * @param filename path or URL to current module
    * @return Require function to import CJS modules
@@ -600,7 +604,10 @@ class Module {
     try {
       parent.paths = Module._nodeModulePaths(Deno.cwd());
     } catch (e) {
-      if (e.code !== "ENOENT") {
+      if (
+        !(e instanceof Error) ||
+        (e as Error & { code?: string }).code !== "ENOENT"
+      ) {
         throw e;
       }
     }
@@ -740,8 +747,11 @@ function readPackage(requestPath: string): PackageInfo | null {
     packageJsonCache.set(jsonPath, filtered);
     return filtered;
   } catch (e) {
-    e.path = jsonPath;
-    e.message = "Error parsing " + jsonPath + ": " + e.message;
+    const err = (e instanceof Error ? e : new Error("[non-error thrown]")) as
+      & Error
+      & { path?: string };
+    err.path = jsonPath;
+    err.message = "Error parsing " + jsonPath + ": " + err.message;
     throw e;
   }
 }
@@ -892,7 +902,7 @@ function applyExports(basePath: string, expansion: string): string {
   }
 
   if (typeof pkgExports === "object") {
-    if (Object.prototype.hasOwnProperty.call(pkgExports, mappingKey)) {
+    if (hasOwn(pkgExports, mappingKey)) {
       const mapping = pkgExports[mappingKey];
       return resolveExportsTarget(
         pathToFileURL(basePath + "/"),
@@ -1011,7 +1021,12 @@ function resolveExportsTarget(
           mappingKey,
         );
       } catch (e) {
-        if (e.code !== "MODULE_NOT_FOUND") throw e;
+        if (
+          !(e instanceof Error) ||
+          (e as Error & { code?: string }).code !== "MODULE_NOT_FOUND"
+        ) {
+          throw e;
+        }
       }
     }
   } else if (typeof target === "object" && target !== null) {
@@ -1019,7 +1034,7 @@ function resolveExportsTarget(
       if (key !== "default" && !cjsConditions.has(key)) {
         continue;
       }
-      if (Object.prototype.hasOwnProperty.call(target, key)) {
+      if (hasOwn(target, key)) {
         try {
           return resolveExportsTarget(
             pkgPath,
@@ -1029,7 +1044,12 @@ function resolveExportsTarget(
             mappingKey,
           );
         } catch (e) {
-          if (e.code !== "MODULE_NOT_FOUND") throw e;
+          if (
+            !(e instanceof Error) ||
+            (e as Error & { code?: string }).code !== "MODULE_NOT_FOUND"
+          ) {
+            throw e;
+          }
         }
       }
     }
@@ -1073,7 +1093,7 @@ const CircularRequirePrototypeWarningProxy = new Proxy(
     },
 
     getOwnPropertyDescriptor(target, prop): PropertyDescriptor | undefined {
-      if (Object.prototype.hasOwnProperty.call(target, prop)) {
+      if (hasOwn(target, prop)) {
         return Object.getOwnPropertyDescriptor(target, prop);
       }
       emitCircularRequireWarning(prop);
@@ -1082,7 +1102,7 @@ const CircularRequirePrototypeWarningProxy = new Proxy(
   },
 );
 
-// Object.prototype and ObjectProtoype refer to our 'primordials' versions
+// Object.prototype and ObjectPrototype refer to our 'primordials' versions
 // and are not identical to the versions on the global object.
 const PublicObjectPrototype = globalThis.Object.prototype;
 
@@ -1145,8 +1165,9 @@ Module._extensions[".json"] = (module: Module, filename: string): void => {
   try {
     module.exports = JSON.parse(stripBOM(content));
   } catch (err) {
-    err.message = filename + ": " + err.message;
-    throw err;
+    const e = err instanceof Error ? err : new Error("[non-error thrown]");
+    e.message = `${filename}: ${e.message}`;
+    throw e;
   }
 };
 

@@ -1,14 +1,45 @@
+### 0.107.0 / 2021.09.14
+
+- BREAKING(http): cookie headers as params (#1041)
+- feat(collection): add findSingle (#1166)
+- feat(collections): Add `associatewith` (#1213)
+- feat(collections): add `runningReduce` (#1226)
+- feat(collections): add `sample` API (#1212)
+- feat(collections): add dropWhile (#1185)
+- feat(collections): add maxWith (#1170)
+- feat(collections): add minWith (#1169)
+- feat(collections): add reduceGroups (#1187)
+- feat(collections): add slidingWindows (#1191)
+- feat(io/streams): propagate cancel in readableStreamFromIterable() (#1274)
+- fix(collections/includesValue): prevent enumerable prototype check (#1225)
+- fix(testing/asserts): export Constructor type (#1208)
+- fix(tests/yaml): expect !!js/function parse/stringify to throw (#1276)
+- fix: update to latest signal API changes
+- security(encoding/yaml): disable functions (#1275)
+
+### 0.106.0 / 2021.08.23
+
+- feat(async): add abort signal to delay (#1130)
+- feat(collection): find_last_index to return undefined on no index found
+  (#1072)
+- feat(node/buffer): add missing exports (#1140)
+- feat(node/buffer): export atob and btoa (#1147)
+- fix(node/perf-hooks): add PerformanceEntry to default export (#1152)
+- fix(testing): `assertEquals` now considers constructors equal if one is
+  nullable and the other is Object (#1159)
+- perf(collections): permutations optimisation (#1132)
+
 ### 0.105.0 / 2021.08.16
 
-- refactor(bytes): rename `contains` to `includes` with optional argument
-  `fromIndex` (#1133)
-- fix(crypto): make crypto bench depend on sibling version of testing module
-  (#1135)
-- fix(collections): intersect does not handle duplicate values in head properly
-  (#1131)
 - docs(collections): fix typo in collections docs (#1127)
 - feat(collections): compile time guarantee on pure functions (#1119)
 - fix: type check examples in README files (#1121)
+- fix(collections): intersect does not handle duplicate values in head properly
+  (#1131)
+- fix(crypto): make crypto bench depend on sibling version of testing module
+  (#1135)
+- refactor(bytes): rename `contains` to `includes` with optional argument
+  `fromIndex` (#1133)
 
 ### 0.104.0 / 2021.08.10
 

@@ -12,7 +12,7 @@ import { LoaderState, LoaderStateOptions, ResultType } from "./loader_state.ts";
 type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
 
-const _hasOwnProperty = Object.prototype.hasOwnProperty;
+const { hasOwn } = Object;
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -231,7 +231,7 @@ const directiveHandlers: DirectiveHandlers = {
       );
     }
 
-    if (_hasOwnProperty.call(state.tagMap, handle)) {
+    if (state.tagMap && hasOwn(state.tagMap, handle)) {
       return throwError(
         state,
         `there is a previously declared suffix for "${handle}" tag handle`,
@@ -299,7 +299,7 @@ function mergeMappings(
   const keys = Object.keys(source);
   for (let i = 0, len = keys.length; i < len; i++) {
     const key = keys[i];
-    if (!_hasOwnProperty.call(destination, key)) {
+    if (!hasOwn(destination, key)) {
       destination[key] = (source as ArrayObject)[key];
       overridableKeys[key] = true;
     }
@@ -364,8 +364,8 @@ function storeMappingPair(
   } else {
     if (
       !state.json &&
-      !_hasOwnProperty.call(overridableKeys, keyNode) &&
-      _hasOwnProperty.call(result, keyNode)
+      !hasOwn(overridableKeys, keyNode) &&
+      hasOwn(result, keyNode)
     ) {
       state.line = startLine || state.line;
       state.position = startPos || state.position;
@@ -1349,7 +1349,7 @@ function readTagProperty(state: LoaderState): boolean {
     state.tag = tagName;
   } else if (
     typeof state.tagMap !== "undefined" &&
-    _hasOwnProperty.call(state.tagMap, tagHandle)
+    hasOwn(state.tagMap, tagHandle)
   ) {
     state.tag = state.tagMap[tagHandle] + tagName;
   } else if (tagHandle === "!") {
@@ -1410,7 +1410,7 @@ function readAlias(state: LoaderState): boolean {
   const alias = state.input.slice(_position, state.position);
   if (
     typeof state.anchorMap !== "undefined" &&
-    !Object.prototype.hasOwnProperty.call(state.anchorMap, alias)
+    !hasOwn(state.anchorMap, alias)
   ) {
     return throwError(state, `unidentified alias "${alias}"`);
   }
@@ -1565,7 +1565,7 @@ function composeNode(
         }
       }
     } else if (
-      _hasOwnProperty.call(state.typeMap[state.kind || "fallback"], state.tag)
+      hasOwn(state.typeMap[state.kind || "fallback"], state.tag)
     ) {
       type = state.typeMap[state.kind || "fallback"][state.tag];
 
@@ -1664,7 +1664,7 @@ function readDocument(state: LoaderState): void {
 
     if (ch !== 0) readLineBreak(state);
 
-    if (_hasOwnProperty.call(directiveHandlers, directiveName)) {
+    if (hasOwn(directiveHandlers, directiveName)) {
       directiveHandlers[directiveName](state, directiveName, ...directiveArgs);
     } else {
       throwWarning(state, `unknown document directive "${directiveName}"`);

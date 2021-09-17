@@ -9,8 +9,8 @@
  * Example:
  *
  * ```ts
- * import { mapKeys } from "./map_keys.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { mapKeys } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const counts = { a: 5, b: 3, c: 8 }
  *
