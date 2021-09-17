@@ -41,6 +41,11 @@ export type Handler = (
 ) => Response | Promise<Response>;
 
 /**
+ * A definition for creating middleware
+ */
+export type Middleware = (next: Handler): Handler
+
+/**
  * Parse an address from a string.
  *
  * Throws a `TypeError` when the address is invalid.
