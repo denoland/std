@@ -2,14 +2,14 @@
 // This module is browser compatible.
 
 /**
- * Applies the given transformer to all valuesin the given record and returns a new record containing the resulting keys
+ * Applies the given transformer to all values in the given record and returns a new record containing the resulting keys
  * associated to the last value that produced them.
  *
  * Example:
  *
  * ```ts
- * import { mapValues } from "./map_values.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { mapValues } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const usersById = {
  *     'a5ec': { name: 'Mischa' },

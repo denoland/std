@@ -7,8 +7,8 @@
  * Example:
  *
  * ```ts
- * import { union } from "./union.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { union } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const soupIngredients = [ 'Pepper', 'Carrots', 'Leek' ]
  * const saladIngredients = [ 'Carrots', 'Radicchio', 'Pepper' ]

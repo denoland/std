@@ -187,10 +187,9 @@ function flow(stream: Duplex | Readable) {
 }
 
 /** Pluck off n bytes from an array of buffers.
-* Length is the combined lengths of all the buffers in the list.
-* This function is designed to be inlinable, so please take care when making
-* changes to the function body.
-*/
+ * Length is the combined lengths of all the buffers in the list.
+ * This function is designed to be inlinable, so please take care when making
+ * changes to the function body. */
 export function fromList(n: number, state: ReadableState) {
   // nothing buffered.
   if (state.length === 0) {
@@ -321,13 +320,13 @@ export function prependListener(
   // TODO(Soremwar)
   // Burn it with fire
   // deno-lint-ignore ban-ts-comment
-  //@ts-ignore
+  // @ts-ignore
   if (emitter._events.get(event)?.length) {
     // deno-lint-ignore ban-ts-comment
-    //@ts-ignore
+    // @ts-ignore
     const listeners = [fn, ...emitter._events.get(event)];
     // deno-lint-ignore ban-ts-comment
-    //@ts-ignore
+    // @ts-ignore
     emitter._events.set(event, listeners);
   } else {
     emitter.on(event, fn);

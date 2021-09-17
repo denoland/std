@@ -15,7 +15,7 @@ import {
   writeTrailers,
 } from "./_io.ts";
 import { BufReader, ReadLineResult } from "../io/bufio.ts";
-import { Response, ServerRequest } from "./server.ts";
+import { Response, ServerRequest } from "./server_legacy.ts";
 import { StringReader } from "../io/readers.ts";
 import { mockConn } from "./_mock_conn.ts";
 import { Buffer } from "../io/buffer.ts";
@@ -481,6 +481,7 @@ Deno.test("testReadRequestError", async function () {
     if (test.eof) {
       assertEquals(req, null);
     } else if (typeof test.err === "string") {
+      assert(err instanceof Error);
       assertEquals(err.message, test.err);
     } else if (test.err) {
       assert(err instanceof (test.err as typeof Deno.errors.UnexpectedEof));

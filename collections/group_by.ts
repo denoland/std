@@ -8,8 +8,8 @@
  * Example:
  *
  * ```ts
- * import { groupBy } from "./group_by.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * type Person = {
  *   name: string;

@@ -8,8 +8,8 @@
  * Example:
  *
  * ```ts
- * import { partition } from "./partition.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { partition } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [ 5, 6, 7, 8, 9 ]
  * const [ even, odd ] = partition(numbers, it => it % 2 == 0)

@@ -276,7 +276,7 @@ export function diffstr(A: string, B: string) {
     }
   }
 
-  // Create details by filtering revelant word-diff for current line
+  // Create details by filtering relevant word-diff for current line
   // and merge "space-diff" if surrounded by word-diff for cleaner displays
   function createDetails(
     line: DiffResult<string>,
