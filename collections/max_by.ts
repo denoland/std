@@ -21,13 +21,21 @@
  * ```
  */
 export function maxBy<T>(
-  collection: readonly T[],
+  array: readonly T[],
+  selector: (el: T) => number,
+): T | undefined;
+export function maxBy<T>(
+  array: readonly T[],
+  selector: (el: T) => string,
+): T | undefined;
+export function maxBy<T>(
+  array: readonly T[],
   selector: ((el: T) => number) | ((el: T) => string),
 ): T | undefined {
   let max: T | undefined = undefined;
   let maxValue: ReturnType<typeof selector> | undefined = undefined;
 
-  for (const current of collection) {
+  for (const current of array) {
     const currentValue = selector(current);
 
     if (maxValue === undefined || currentValue > maxValue) {

@@ -21,13 +21,21 @@
  * ```
  */
 export function minBy<T>(
-  collection: readonly T[],
+  array: readonly T[],
+  selector: (el: T) => number,
+): T | undefined;
+export function minBy<T>(
+  array: readonly T[],
+  selector: (el: T) => string,
+): T | undefined;
+export function minBy<T>(
+  array: readonly T[],
   selector: ((el: T) => number) | ((el: T) => string),
 ): T | undefined {
   let min: T | undefined = undefined;
   let minValue: ReturnType<typeof selector> | undefined = undefined;
 
-  for (const current of collection) {
+  for (const current of array) {
     const currentValue = selector(current);
 
     if (minValue === undefined || currentValue < minValue) {
