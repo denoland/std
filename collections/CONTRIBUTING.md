@@ -42,4 +42,5 @@ by solving most common review comments upfront.
 - Did you add tests ensuring no mutation, empty input and corner cases?
 - Are your types flat, meaning there is no unnecessary alias in them that makes
   your users "go to type definition" twice to understand what to pass?
-- [Document and maintain browser compatibility](https://deno.land/manual/contributing/style_guide#document-and-maintain-browser-compatibility). 
+- [Document and maintain browser
+  compatibility](https://deno.land/manual/contributing/style_guide#document-and-maintain-browser-compatibility).

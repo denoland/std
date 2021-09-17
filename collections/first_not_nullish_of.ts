@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Applies the given selector to elements in the given array until a value is produced that is neither `null` nor `undefined` and returns that value
