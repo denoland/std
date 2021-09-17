@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns all distinct elements in the given array, preserving order by first occurence

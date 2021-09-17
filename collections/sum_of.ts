@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Applies the given selector to all elements in the given collection and calculates the sum of the results

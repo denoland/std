@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns a new array, containing all elements in the given array transformed using the given transformer, except the ones

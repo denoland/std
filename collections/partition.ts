@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns a tuple of two arrays with the first one containing all elements in the given array that match the given predicate

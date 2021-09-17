@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns a new record with all entries of the given record except the ones that have a value that does not match the given predicate
