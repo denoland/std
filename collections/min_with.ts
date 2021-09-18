@@ -20,10 +20,12 @@ export function minWith<T>(
   comparator: (a: T, b: T) => number,
 ): T | undefined {
   let min: T | undefined = undefined;
+  let isFirst = true;
 
   for (const current of array) {
-    if (min === undefined || comparator(current, min) < 0) {
+    if (isFirst || comparator(current, <T> min) < 0) {
       min = current;
+      isFirst = false;
     }
   }
 
