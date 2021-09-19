@@ -3,6 +3,14 @@
 const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
+/** Transform a stream into a stream where each chunk is divided by a newline,
+ * be it `\n` or `\r\n`.
+ *
+ * ```ts
+ * const res = await fetch("https://example.com");
+ * const lines = res.body!.pipeThrough(new LineStream());
+ * ```
+ */
 export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
   #bufs: Uint8Array[] = [];
 
@@ -49,6 +57,15 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
   }
 }
 
+/** Transform a stream into a stream where each chunk is divided by a given delimiter.
+ *
+ * ```ts
+ * const res = await fetch("https://example.com");
+ * const lines = res.body!
+ *   .pipeThrough(new TextDecoderStream())
+ *   .pipeThrough(new TextDelimiterStream("foo"));
+ * ```
+ */
 export class TextDelimiterStream extends TransformStream<string, string> {
   #buf = "";
   #delimiter: string;
