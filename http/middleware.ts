@@ -17,23 +17,30 @@ type MiddlewareStack<
 > = {
   handler: Middleware<Requires, Adds>;
 
-  add<HandlerAdd>(
-    middleware: Middleware<Request & Adds, HandlerAdd>,
-  ): MiddlewareStack<Requires, Adds & HandlerAdd>;
+  add<AddedRequires extends Request, AddedAdds>(
+    middleware: Middleware<AddedRequires, AddedAdds>,
+  ): MiddlewareStack<Requires & Omit<AddedRequires, keyof Adds>, Adds & AddedAdds>;
 };
 
 export function addMiddleware<
-  StackAdd,
-  HandlerAdd,
+  FirstRequires extends Request,
+  FirstAdd,
+  SecondRequires extends Request,
+  SecondAdd,
 >(
-  first: Middleware<Request, StackAdd>,
-  second: Middleware<Request & StackAdd, HandlerAdd>,
-): Middleware<Request, Request & StackAdd & HandlerAdd> {
+  first: Middleware<FirstRequires, FirstAdd>,
+  second: Middleware<SecondRequires, SecondAdd>,
+): Middleware<FirstRequires & Omit<SecondRequires, keyof FirstAdd>, FirstAdd & SecondAdd> {
   return (req, con, next) =>
     first(
       req,
       con,
-      (r) => second(r, con, next),
+      (r) => second(
+          //@ts-ignore: TS does not know about the middleware magic
+          r,
+          con,
+          next
+      ), 
     );
 }
 
