@@ -114,7 +114,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in hash/_wasm/rust-toolchain:
-          rust-version: 1.54.0
+          rust-version: 1.55.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 

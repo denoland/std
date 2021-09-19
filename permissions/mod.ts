@@ -29,12 +29,15 @@ function getPermissionString(descriptors: Deno.PermissionDescriptor[]): string {
 /** Attempts to grant a set of permissions, resolving with the descriptors of
  * the permissions that are granted.
  *
+ * ```ts
+ *      import { grant } from "./mod.ts";
  *      const perms = await grant({ name: "net" }, { name: "read" });
  *      if (perms && perms.length === 2) {
  *        // do something cool that connects to the net and reads files
  *      } else {
  *        // notify user of missing permissions
  *      }
+ * ```
  *
  * If one of the permissions requires a prompt, the function will attempt to
  * prompt for it.  The function resolves with all of the granted permissions. */
@@ -44,12 +47,15 @@ export async function grant(
 /** Attempts to grant a set of permissions, resolving with the descriptors of
  * the permissions that are granted.
  *
+ * ```ts
+ *      import { grant } from "./mod.ts";
  *      const perms = await grant([{ name: "net" }, { name: "read" }]);
  *      if (perms && perms.length === 2) {
  *        // do something cool that connects to the net and reads files
  *      } else {
  *        // notify user of missing permissions
  *      }
+ * ```
  *
  * If one of the permissions requires a prompt, the function will attempt to
  * prompt for it.  The function resolves with all of the granted permissions. */
@@ -78,7 +84,10 @@ export async function grant(
 
 /** Attempts to grant a set of permissions or rejects.
  *
+ * ```ts
+ *      import { grantOrThrow } from "./mod.ts";
  *      await grantOrThrow({ name: "env" }, { name: "net" });
+ * ```
  *
  * If the permission can be prompted for, the function will attempt to prompt.
  * If any of the permissions are denied, the function will reject for the first
@@ -89,7 +98,10 @@ export async function grantOrThrow(
 ): Promise<void>;
 /** Attempts to grant a set of permissions or rejects.
  *
+ * ```ts
+ *      import { grantOrThrow } from "./mod.ts";
  *      await grantOrThrow([{ name: "env" }, { name: "net" }]);
+ * ```
  *
  * If the permission can be prompted for, the function will attempt to prompt.
  * If any of the permissions are denied, the function will reject mentioning the
