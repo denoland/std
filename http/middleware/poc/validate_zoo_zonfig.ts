@@ -34,5 +34,5 @@ export const validateZoo: Middleware<
     zoo: parsedBody,
   };
 
-  return next!(nextReq, con);
+  return await next!(nextReq, con);
 };

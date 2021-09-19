@@ -14,8 +14,8 @@ export const acceptJson: Middleware<Request, { parsedBody: unknown }> = async (
   } catch (e) {
     if (e instanceof SyntaxError) {
       return new Response(
-        e.message,
-        { status: 422, statusText: "Request could not be parsed" },
+        `Request could not be parsed as JSON: ${e.message}`,
+        { status: 422 },
       );
     }
 

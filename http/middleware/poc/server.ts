@@ -1,14 +1,14 @@
-import { router } from "../../router.ts";
+import { route } from "../router.ts"
 import { distinctBy } from "../../../collections/mod.ts";
 import { listenAndServe } from "../../server.ts";
 import { acceptYaml } from "../yaml.ts";
 import { acceptJson } from "../json.ts";
 import { log } from "../log.ts";
-import { stack } from "../../middleware.ts";
+import { stack, addMiddleware } from "../../middleware.ts";
 import { validateZoo } from "./validate_zoo_zonfig.ts";
 import { Zoo } from "./zoo.ts";
 
-async function createZoo(req: Request & { zoo: Zoo }) {
+function createZoo(req: Request & { zoo: Zoo }) {
   const { zoo } = req;
   const responseMessage = `
 Your nice ${zoo.name} Zoo was created.
@@ -21,33 +21,12 @@ All those ${
   } will surely amaze your visitors.
 `;
 
-  return new Response(responseMessage, {
-    status: 201,
-    statusText: "Zoo created",
-  });
+  return Promise.resolve(new Response(responseMessage, { status: 201 }));
 }
 
 const handleCreateZoo = stack(validateZoo)
   .add(createZoo)
   .handler;
 
-const handler = router(
-  new Map([
-    [
-      [/^\/zoos\/yaml$/, "POST"],
-      stack(log)
-        .add(acceptYaml)
-        .add(handleCreateZoo)
-        .handler,
-    ],
-    [
-      [/^\/zoos\/json/, "POST"],
-      stack(log)
-        .add(acceptJson)
-        .add(handleCreateZoo)
-        .handler,
-    ],
-  ]),
-);
-
-await listenAndServe(":5000", handler);
+addMiddleware(log, handleCreateZoo)
+//await listenAndServe(":5000", handler);

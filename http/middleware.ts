@@ -19,10 +19,10 @@ type MiddlewareStack<
 
   add<HandlerAdd>(
     middleware: Middleware<Request & Adds, HandlerAdd>,
-  ): MiddlewareStack<Requires, Request & Adds & HandlerAdd>;
+  ): MiddlewareStack<Requires, Adds & HandlerAdd>;
 };
 
-function addMiddleware<
+export function addMiddleware<
   StackAdd,
   HandlerAdd,
 >(
