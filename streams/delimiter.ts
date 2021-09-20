@@ -7,6 +7,7 @@ const LF = "\n".charCodeAt(0);
  * be it `\n` or `\r\n`.
  *
  * ```ts
+ * import { LineStream } from "./delimiter.ts";
  * const res = await fetch("https://example.com");
  * const lines = res.body!.pipeThrough(new LineStream());
  * ```
@@ -60,6 +61,7 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
  * ```ts
+ * import { TextDelimiterStream } from "./delimiter.ts";
  * const res = await fetch("https://example.com");
  * const lines = res.body!
  *   .pipeThrough(new TextDecoderStream())
