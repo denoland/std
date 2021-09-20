@@ -278,7 +278,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Buffer concat respects totalLenght parameter",
+  name: "Buffer concat respects totalLength parameter",
   fn() {
     const maxLength1 = 10;
     const buffer1 = Buffer.alloc(2);
@@ -463,7 +463,7 @@ Deno.test({
           buffer.toString(encoding);
         },
         TypeError,
-        `Unkown encoding: ${encoding}`,
+        `Unknown encoding: ${encoding}`,
         "Should throw on invalid encoding",
       );
     }
@@ -488,7 +488,7 @@ Deno.test({
           Buffer.from("yes", encoding);
         },
         TypeError,
-        `Unkown encoding: ${encoding}`,
+        `Unknown encoding: ${encoding}`,
       );
     }
   },

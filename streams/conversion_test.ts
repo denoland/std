@@ -308,6 +308,22 @@ Deno.test("[streams] readableStreamFromIterable() generator", async function () 
   assertEquals(readStrings, strings);
 });
 
+Deno.test("[io] readableStreamFromIterable() cancel", async function () {
+  let generatorError = null;
+  const readable = readableStreamFromIterable(async function* () {
+    try {
+      yield "foo";
+    } catch (error) {
+      generatorError = error;
+    }
+  }());
+  const reader = readable.getReader();
+  assertEquals(await reader.read(), { value: "foo", done: false });
+  const cancelReason = new Error("Cancelled by consumer.");
+  await reader.cancel(cancelReason);
+  assertEquals(generatorError, cancelReason);
+});
+
 class MockReaderCloser implements Deno.Reader, Deno.Closer {
   chunks: Uint8Array[] = [];
   closeCall = 0;

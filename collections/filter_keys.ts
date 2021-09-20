@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns a new record with all entries of the given record except the ones that have a key that does not match the given predicate
@@ -6,8 +7,8 @@
  * Example:
  *
  * ```ts
- * import { filterKeys } from "./filter_keys.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { filterKeys } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const menu = {
  *     'Salad': 11,
@@ -23,7 +24,7 @@
  * ```
  */
 export function filterKeys<T>(
-  record: Record<string, T>,
+  record: Readonly<Record<string, T>>,
   predicate: (key: string) => boolean,
 ): Record<string, T> {
   const ret: Record<string, T> = {};

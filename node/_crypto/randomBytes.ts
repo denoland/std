@@ -50,8 +50,10 @@ export default function randomBytes(
         e.message.includes('The value of "size" is out of range')
       ) {
         throw e;
-      } else {
+      } else if (e instanceof Error) {
         err = e;
+      } else {
+        err = new Error("[non-error thrown]");
       }
     }
     setTimeout(() => {

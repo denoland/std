@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Applies the given selector to all elements in the given collection and calculates the sum of the results
@@ -6,8 +7,8 @@
  * Example:
  *
  * ```ts
- * import { sumOf } from "./sum_of.ts"
- * import { assertEquals } from "../testing/asserts.ts"
+ * import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const people = [
  *     { name: 'Anna', age: 34 },
@@ -20,7 +21,7 @@
  * ```
  */
 export function sumOf<T>(
-  array: Array<T>,
+  array: readonly T[],
   selector: (el: T) => number,
 ): number {
   let sum = 0;

@@ -22,6 +22,7 @@ import { notImplemented } from "./_utils.ts";
 import { validateIntegerRange } from "./_utils.ts";
 import { EOL as fsEOL } from "../fs/eol.ts";
 import process from "./process.ts";
+import { isWindows, osType } from "../_util/os.ts";
 
 const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno/issues/3802";
 
@@ -124,7 +125,7 @@ export function cpus(): CPUCoreInfo[] {
  * Returns a string identifying the endianness of the CPU for which the Deno
  * binary was compiled. Possible values are 'BE' for big endian and 'LE' for
  * little endian.
- **/
+ */
 export function endianness(): "BE" | "LE" {
   // Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView#Endianness
   const buffer = new ArrayBuffer(2);
@@ -146,7 +147,7 @@ export function getPriority(pid = 0): number {
 
 /** Returns the string path of the current user's home directory. */
 export function homedir(): string | null {
-  switch (Deno.build.os) {
+  switch (osType) {
     case "windows":
       return Deno.env.get("USERPROFILE") || null;
     case "linux":
@@ -164,7 +165,7 @@ export function hostname(): string {
 
 /** Returns an array containing the 1, 5, and 15 minute load averages */
 export function loadavg(): number[] {
-  if (Deno.build.os === "windows") {
+  if (isWindows) {
     return [0, 0, 0];
   }
   return Deno.loadavg();
@@ -243,13 +244,48 @@ export const constants = {
   errno: {
     // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_error_constants
   },
-  signals: Deno.Signal,
+  // Needs to be kept in sync with `Deno.Signal` type.
+  signals: {
+    "SIGABRT": "SIGABRT",
+    "SIGALRM": "SIGALRM",
+    "SIGBUS": "SIGBUS",
+    "SIGCHLD": "SIGCHLD",
+    "SIGCONT": "SIGCONT",
+    "SIGEMT": "SIGEMT",
+    "SIGFPE": "SIGFPE",
+    "SIGHUP": "SIGHUP",
+    "SIGILL": "SIGILL",
+    "SIGINFO": "SIGINFO",
+    "SIGINT": "SIGINT",
+    "SIGIO": "SIGIO",
+    "SIGKILL": "SIGKILL",
+    "SIGPIPE": "SIGPIPE",
+    "SIGPROF": "SIGPROF",
+    "SIGPWR": "SIGPWR",
+    "SIGQUIT": "SIGQUIT",
+    "SIGSEGV": "SIGSEGV",
+    "SIGSTKFLT": "SIGSTKFLT",
+    "SIGSTOP": "SIGSTOP",
+    "SIGSYS": "SIGSYS",
+    "SIGTERM": "SIGTERM",
+    "SIGTRAP": "SIGTRAP",
+    "SIGTSTP": "SIGTSTP",
+    "SIGTTIN": "SIGTTIN",
+    "SIGTTOU": "SIGTTOU",
+    "SIGURG": "SIGURG",
+    "SIGUSR1": "SIGUSR1",
+    "SIGUSR2": "SIGUSR2",
+    "SIGVTALRM": "SIGVTALRM",
+    "SIGWINCH": "SIGWINCH",
+    "SIGXCPU": "SIGXCPU",
+    "SIGXFSZ": "SIGXFSZ",
+  },
   priority: {
     // see https://nodejs.org/docs/latest-v12.x/api/os.html#os_priority_constants
   },
 };
 
-export const EOL = Deno.build.os == "windows" ? fsEOL.CRLF : fsEOL.LF;
+export const EOL = isWindows ? fsEOL.CRLF : fsEOL.LF;
 
 export default {
   arch,

@@ -60,11 +60,16 @@ function include(
   return true;
 }
 
-function wrapErrorWithRootPath(err: Error & { root: string }, root: string) {
-  if (err.root) return err;
-  err.root = root;
-  err.message = `${err.message} for path "${root}"`;
-  return err;
+function wrapErrorWithRootPath(err: unknown, root: string) {
+  if (err instanceof Error && "root" in err) return err;
+  const e = new Error() as Error & { root: string };
+  e.root = root;
+  e.message = err instanceof Error
+    ? `${err.message} for path "${root}"`
+    : `[non-error thrown] for path "${root}"`;
+  e.stack = err instanceof Error ? err.stack : undefined;
+  e.cause = err instanceof Error ? err.cause : undefined;
+  return e;
 }
 
 export interface WalkEntry extends Deno.DirEntry {
@@ -85,11 +90,15 @@ export interface WalkEntry extends Deno.DirEntry {
  * - match?: RegExp[];
  * - skip?: RegExp[];
  *
+ * ```ts
+ *       import { walk } from "./walk.ts";
+ *       import { assert } from "../testing/asserts.ts";
  *
  *       for await (const entry of walk(".")) {
  *         console.log(entry.path);
  *         assert(entry.isFile);
  *       }
+ * ```
  */
 export async function* walk(
   root: string,

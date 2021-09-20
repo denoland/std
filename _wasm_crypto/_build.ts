@@ -76,7 +76,7 @@ const generatedWasm = await Deno.readFile(
   "./target/wasm32-bindgen-deno-js/deno_std_wasm_crypto_bg.wasm",
 );
 
-// Format WASM binary size with _ thousands separators for human readablity,
+// Format WASM binary size with _ thousands separators for human readability,
 // so that any changes in size will be clear in diffs.
 const formattedWasmSize = generatedWasm.length.toString().padStart(
   Math.ceil(generatedWasm.length.toString().length / 3) * 3,

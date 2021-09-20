@@ -8,6 +8,7 @@ import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
 import { readLines } from "../io/bufio.ts";
+import { isWindows } from "../_util/os.ts";
 
 export class ChildProcess extends EventEmitter {
   /**
@@ -189,7 +190,7 @@ export class ChildProcess extends EventEmitter {
     await Promise.all(promises);
   }
 
-  private _handleError(err: Error): void {
+  private _handleError(err: unknown): void {
     queueMicrotask(() => {
       this.emit("error", err); // TODO(uki00a) Convert `err` into nodejs's `SystemError` class.
     });
@@ -366,14 +367,14 @@ function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
         await stdin.write(bytes);
         callback();
       } catch (err) {
-        callback(err);
+        callback(err instanceof Error ? err : new Error("[non-error thrown]"));
       }
     },
     final(callback) {
       try {
         ensureClosed(stdin);
       } catch (err) {
-        callback(err);
+        callback(err instanceof Error ? err : new Error("[non-error thrown]"));
       }
     },
   });
@@ -395,7 +396,7 @@ function normalizeStdioOption(
   } else {
     switch (stdio) {
       case "overlapped":
-        if (Deno.build.os === "windows") {
+        if (isWindows) {
           notImplemented();
         }
         // 'overlapped' is same as 'piped' on non Windows system.
@@ -413,7 +414,7 @@ function normalizeStdioOption(
 }
 
 function waitForReadableToClose(readable: Readable): Promise<void> {
-  readable.resume(); // Ensure bufferred data will be consumed.
+  readable.resume(); // Ensure buffered data will be consumed.
   return waitForStreamToClose(readable);
 }
 
@@ -448,7 +449,7 @@ function buildCommand(
   const command = [file, ...args].join(" ");
   if (shell) {
     // Set the shell, switches, and commands.
-    if (Deno.build.os === "windows") {
+    if (isWindows) {
       // TODO(uki00a): Currently, due to escaping issues, it is difficult to reproduce the same behavior as Node.js's `child_process` module.
       // For more details, see the following issues:
       // * https://github.com/rust-lang/rust/issues/29494

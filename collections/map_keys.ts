@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Applies the given transformer to all keys in the given record's entries and returns a new record containing the
@@ -9,8 +10,8 @@
  * Example:
  *
  * ```ts
- * import { mapKeys } from "./map_keys.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { mapKeys } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const counts = { a: 5, b: 3, c: 8 }
  *
@@ -22,7 +23,7 @@
  * ```
  */
 export function mapKeys<T>(
-  record: Record<string, T>,
+  record: Readonly<Record<string, T>>,
   transformer: (key: string) => string,
 ): Record<string, T> {
   const ret: Record<string, T> = {};

@@ -46,7 +46,7 @@ function split(path: string): SplitPath {
   };
 }
 
-function throwUnlessNotFound(error: Error): void {
+function throwUnlessNotFound(error: unknown): void {
   if (!(error instanceof Deno.errors.NotFound)) {
     throw error;
   }
@@ -65,10 +65,12 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * syntax.
  *
  * Example:
- *
+ * ```ts
+ *      import { expandGlob } from "./expand_glob.ts";
  *      for await (const file of expandGlob("**\/*.ts")) {
  *        console.log(file);
  *      }
+ * ```
  */
 export async function* expandGlob(
   glob: string,
@@ -173,9 +175,12 @@ export async function* expandGlob(
  *
  * Example:
  *
+ * ```ts
+ *      import { expandGlobSync } from "./expand_glob.ts";
  *      for (const file of expandGlobSync("**\/*.ts")) {
  *        console.log(file);
  *      }
+ * ```
  */
 export function* expandGlobSync(
   glob: string,

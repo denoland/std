@@ -8,6 +8,7 @@ import {
 import { writeFile, writeFileSync } from "./_fs_writeFile.ts";
 import type { TextEncodings } from "../_utils.ts";
 import * as path from "../../path/mod.ts";
+import { isWindows } from "../../_util/os.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testDataDir = path.resolve(moduleDir, "testdata");
@@ -161,7 +162,7 @@ Deno.test(
 
 Deno.test("Path can be an URL", async function testCorrectWriteUsingURL() {
   const url = new URL(
-    Deno.build.os === "windows"
+    isWindows
       ? "file:///" +
         path
           .join(testDataDir, "_fs_writeFile_test_file_url.txt")
@@ -181,7 +182,7 @@ Deno.test("Path can be an URL", async function testCorrectWriteUsingURL() {
 });
 
 Deno.test("Mode is correctly set", async function testCorrectFileMode() {
-  if (Deno.build.os === "windows") return;
+  if (isWindows) return;
   const filename = "_fs_writeFile_test_file.txt";
 
   const res = await new Promise((resolve) => {
@@ -198,7 +199,7 @@ Deno.test("Mode is correctly set", async function testCorrectFileMode() {
 Deno.test(
   "Mode is not set when rid is passed",
   async function testCorrectFileModeRid() {
-    if (Deno.build.os === "windows") return;
+    if (isWindows) return;
 
     const filename: string = await Deno.makeTempFile();
     const file: Deno.File = await Deno.open(filename, {
@@ -283,7 +284,7 @@ Deno.test("sync: Path can be an URL", function testCorrectWriteSyncUsingURL() {
     "_fs_writeFileSync_test_file_url.txt",
   );
   const url = new URL(
-    Deno.build.os === "windows"
+    isWindows
       ? "file:///" + filePath.replace(/\\/g, "/")
       : "file://" + filePath,
   );
@@ -297,7 +298,7 @@ Deno.test("sync: Path can be an URL", function testCorrectWriteSyncUsingURL() {
 Deno.test(
   "Mode is correctly set when writing synchronously",
   function testCorrectFileModeSync() {
-    if (Deno.build.os === "windows") return;
+    if (isWindows) return;
     const filename = "_fs_writeFileSync_test_file.txt";
 
     writeFileSync(filename, "hello world", { mode: 0o777 });

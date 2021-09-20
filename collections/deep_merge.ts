@@ -1,8 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 // deno-lint-ignore-file ban-types
 
 import { filterInPlace } from "./_utils.ts";
+
+const { hasOwn } = Object;
 
 /**
  * Merges the two given Records, recursively merging any nested Records with
@@ -15,8 +18,8 @@ import { filterInPlace } from "./_utils.ts";
  * Example:
  *
  * ```ts
- * import { deepMerge } from "./deep_merge.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { deepMerge } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const a = {foo: true}
  * const b = {foo: {bar: true}}
@@ -27,9 +30,9 @@ import { filterInPlace } from "./_utils.ts";
 export function deepMerge<
   T extends Record<PropertyKey, unknown>,
 >(
-  record: Partial<T>,
-  other: Partial<T>,
-  options?: DeepMergeOptions,
+  record: Partial<Readonly<T>>,
+  other: Partial<Readonly<T>>,
+  options?: Readonly<DeepMergeOptions>,
 ): T;
 
 export function deepMerge<
@@ -37,9 +40,9 @@ export function deepMerge<
   U extends Record<PropertyKey, unknown>,
   Options extends DeepMergeOptions,
 >(
-  record: T,
-  other: U,
-  options?: Options,
+  record: Readonly<T>,
+  other: Readonly<U>,
+  options?: Readonly<Options>,
 ): DeepMerge<T, U, Options>;
 
 export function deepMerge<
@@ -51,9 +54,9 @@ export function deepMerge<
     maps: "merge";
   },
 >(
-  record: T,
-  other: U,
-  options?: Options,
+  record: Readonly<T>,
+  other: Readonly<U>,
+  options?: Readonly<Options>,
 ): DeepMerge<T, U, Options> {
   // Extract options
   // Clone left operand to avoid performing mutations in-place
@@ -71,7 +74,7 @@ export function deepMerge<
 
     const a = record[key] as ResultMember;
 
-    if (!(key in other)) {
+    if (!hasOwn(other, key)) {
       result[key] = a;
 
       continue;
@@ -93,14 +96,14 @@ export function deepMerge<
 }
 
 function mergeObjects(
-  left: NonNullable<object>,
-  right: NonNullable<object>,
-  options: DeepMergeOptions = {
+  left: Readonly<NonNullable<object>>,
+  right: Readonly<NonNullable<object>>,
+  options: Readonly<DeepMergeOptions> = {
     arrays: "merge",
     sets: "merge",
     maps: "merge",
   },
-): NonNullable<object> {
+): Readonly<NonNullable<object>> {
   // Recursively merge mergeable objects
   if (isMergeable(left) && isMergeable(right)) {
     return deepMerge(left, right);
@@ -151,7 +154,7 @@ function mergeObjects(
  */
 function isMergeable(
   value: NonNullable<object>,
-): boolean {
+): value is Record<PropertyKey, unknown> {
   return Object.getPrototypeOf(value) === Object.prototype;
 }
 
@@ -200,27 +203,27 @@ export type DeepMergeOptions = {
  *    Merge<
  *      {foo: string},
  *      {bar: string, baz: Set<unknown>},
- *    > // "foo" and "bar" will be handled with `MergeRightOmitComplexs`
+ *    > // "foo" and "bar" will be handled with `MergeRightOmitComplexes`
  *      // "baz" will be handled with `MergeAll*` type
  *
- * `MergeRightOmitComplexs<T, U>` will do the above: all T's
+ * `MergeRightOmitComplexes<T, U>` will do the above: all T's
  * exclusive keys will be kept, though common ones with U will have their
- * typing overriden instead:
+ * typing overridden instead:
  *
- *    MergeRightOmitComplexs<
+ *    MergeRightOmitComplexes<
  *      {foo: string, baz: number},
  *      {foo: boolean, bar: string}
  *    > // {baz: number, foo: boolean, bar: string}
  *      // "baz" was kept from T
- *      // "foo" was overriden by U's typing
+ *      // "foo" was overridden by U's typing
  *      // "bar" was added from U
  *
- * For Maps, Arrays, Sets and Records, we use `MergeAll*<T, U>` utilitary
- * types. They will extract revelant data structure from both T and U
+ * For Maps, Arrays, Sets and Records, we use `MergeAll*<T, U>` utility
+ * types. They will extract relevant data structure from both T and U
  * (providing that both have same data data structure, except for typing).
  *
  * From these, `*ValueType<T>` will extract values (and keys) types to be
- * able to create a new data structure with an unioned typing from both
+ * able to create a new data structure with an union typing from both
  * data structure of T and U:
  *
  *    MergeAllSets<
@@ -232,7 +235,7 @@ export type DeepMergeOptions = {
  *      // Process is similar for Maps, Arrays, and Sets
  *
  * `DeepMerge<T, U, Options>` is taking a third argument to be handle to
- * infer final typing dependending on merging strategy:
+ * infer final typing depending on merging strategy:
  *
  *    & (Options extends { sets: "replace" } ? PartialByType<U, Set<unknown>>
  *      : MergeAllSets<T, U>)
@@ -241,7 +244,7 @@ export type DeepMergeOptions = {
  * "replace", instead of performing merging of Sets type, it will take the
  * typing from right operand (U) instead, effectively replacing the typing.
  *
- * An additional note, we use `ExpandRecursively<T>` utilitary type to expand
+ * An additional note, we use `ExpandRecursively<T>` utility type to expand
  * the resulting typing and hide all the typing logic of deep merging so it is
  * more user friendly.
  */
@@ -319,7 +322,7 @@ type MergeAllRecords<
 > = Z;
 
 /** Exclude map, sets and array from type */
-type OmitComplexs<T> = Omit<
+type OmitComplexes<T> = Omit<
   T,
   keyof PartialByType<
     T,
@@ -339,10 +342,10 @@ type ObjectXorKeys<
 > = Y;
 
 /** Merge two objects, with left precedence */
-type MergeRightOmitComplexs<
+type MergeRightOmitComplexes<
   T,
   U,
-  X = ObjectXorKeys<T, U> & OmitComplexs<{ [K in keyof U]: U[K] }>,
+  X = ObjectXorKeys<T, U> & OmitComplexes<{ [K in keyof U]: U[K] }>,
 > = X;
 
 /** Merge two objects */
@@ -351,7 +354,7 @@ type Merge<
   U,
   Options,
   X =
-    & MergeRightOmitComplexs<T, U>
+    & MergeRightOmitComplexes<T, U>
     & MergeAllRecords<T, U, Options>
     & (Options extends { sets: "replace" } ? PartialByType<U, Set<unknown>>
       : MergeAllSets<T, U>)

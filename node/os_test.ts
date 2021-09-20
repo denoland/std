@@ -167,9 +167,9 @@ Deno.test({
   name: "Signals are as expected",
   fn() {
     // Test a few random signals for equality
-    assertEquals(os.constants.signals.SIGKILL, Deno.Signal.SIGKILL);
-    assertEquals(os.constants.signals.SIGCONT, Deno.Signal.SIGCONT);
-    assertEquals(os.constants.signals.SIGXFSZ, Deno.Signal.SIGXFSZ);
+    assertEquals(os.constants.signals.SIGKILL, "SIGKILL");
+    assertEquals(os.constants.signals.SIGCONT, "SIGCONT");
+    assertEquals(os.constants.signals.SIGXFSZ, "SIGXFSZ");
   },
 });
 

@@ -13,17 +13,24 @@ function isCloser(value: unknown): value is Deno.Closer {
 
 /** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
- *      // Server-sent events: Send runtime metrics to the client every second.
- *      request.respond({
- *        headers: new Headers({ "Content-Type": "text/event-stream" }),
- *        body: readerFromIterable((async function* () {
- *          while (true) {
- *            await new Promise((r) => setTimeout(r, 1000));
- *            const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
- *            yield new TextEncoder().encode(message);
- *          }
- *        })()),
- *      });
+ * ```ts
+ *      import { readerFromIterable } from "./streams.ts";
+ *      import { serve } from "../http/server_legacy.ts";
+ *
+ *      for await (const request of serve({ port: 8000 })) {
+ *        // Server-sent events: Send runtime metrics to the client every second.
+ *        request.respond({
+ *          headers: new Headers({ "Content-Type": "text/event-stream" }),
+ *          body: readerFromIterable((async function* () {
+ *            while (true) {
+ *              await new Promise((r) => setTimeout(r, 1000));
+ *              const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
+ *              yield new TextEncoder().encode(message);
+ *            }
+ *          })()),
+ *        });
+ *      }
+ * ```
  */
 export function readerFromIterable(
   iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,
@@ -58,7 +65,7 @@ export function readerFromIterable(
   };
 }
 
-/** Create a `Writer` from a `WritableStreamDefaultReader`. */
+/** Create a `Writer` from a `WritableStreamDefaultWriter`. */
 export function writerFromStreamWriter(
   streamWriter: WritableStreamDefaultWriter<Uint8Array>,
 ): Deno.Writer {
@@ -135,15 +142,39 @@ export function writableStreamFromWriter(
 
 /** Create a `ReadableStream` from any kind of iterable.
  *
+ * ```ts
+ *      import { readableStreamFromIterable } from "./streams.ts";
+ *
  *      const r1 = readableStreamFromIterable(["foo, bar, baz"]);
- *      const r2 = readableStreamFromIterable((async function* () {
+ *      const r2 = readableStreamFromIterable(async function* () {
  *        await new Promise(((r) => setTimeout(r, 1000)));
  *        yield "foo";
  *        await new Promise(((r) => setTimeout(r, 1000)));
  *        yield "bar";
  *        await new Promise(((r) => setTimeout(r, 1000)));
  *        yield "baz";
- *      })());
+ *      }());
+ * ```
+ *
+ * If the produced iterator (`iterable[Symbol.asyncIterator]()` or
+ * `iterable[Symbol.iterator]()`) is a generator, or more specifically is found
+ * to have a `.throw()` method on it, that will be called upon
+ * `readableStream.cancel()`. This is the case for the second input type above:
+ *
+ * ```ts
+ * import { readableStreamFromIterable } from "./streams.ts";
+ *
+ * const r3 = readableStreamFromIterable(async function* () {
+ *   try {
+ *     yield "foo";
+ *   } catch (error) {
+ *     console.log(error); // Error: Cancelled by consumer.
+ *   }
+ * }());
+ * const reader = r3.getReader();
+ * console.log(await reader.read()); // { value: "foo", done: false }
+ * await reader.cancel(new Error("Cancelled by consumer."));
+ * ```
  */
 export function readableStreamFromIterable<T>(
   iterable: Iterable<T> | AsyncIterable<T>,
@@ -154,11 +185,17 @@ export function readableStreamFromIterable<T>(
   return new ReadableStream({
     async pull(controller) {
       const { value, done } = await iterator.next();
-
       if (done) {
         controller.close();
       } else {
         controller.enqueue(value);
+      }
+    },
+    async cancel(reason) {
+      if (typeof iterator.throw == "function") {
+        try {
+          await iterator.throw(reason);
+        } catch { /* `iterator.throw()` always throws on site. We catch it. */ }
       }
     },
   });
@@ -194,7 +231,6 @@ export interface ReadableStreamFromReaderOptions {
  * const file = await Deno.open("./file.txt", { read: true });
  * const fileStream = readableStreamFromReader(file);
  * ```
- *
  */
 export function readableStreamFromReader(
   reader: Deno.Reader | (Deno.Reader & Deno.Closer),

@@ -7,6 +7,7 @@ import {
 } from "../../testing/asserts.ts";
 import { writeFile } from "./promises.ts";
 import type { TextEncodings } from "../_utils.ts";
+import { isWindows } from "../../_util/os.ts";
 
 const decoder = new TextDecoder("utf-8");
 
@@ -102,7 +103,7 @@ Deno.test(
 );
 
 Deno.test("Mode is correctly set", async function testCorrectFileMode() {
-  if (Deno.build.os === "windows") return;
+  if (isWindows) return;
   const filename = "_fs_writeFile_test_file.txt";
   await writeFile(filename, "hello world", { mode: 0o777 });
 
@@ -115,7 +116,7 @@ Deno.test("Mode is correctly set", async function testCorrectFileMode() {
 Deno.test(
   "Mode is not set when rid is passed",
   async function testCorrectFileModeRid() {
-    if (Deno.build.os === "windows") return;
+    if (isWindows) return;
 
     const filename: string = await Deno.makeTempFile();
     const file: Deno.File = await Deno.open(filename, {

@@ -37,6 +37,7 @@ const monitorEventLoopDelay = () =>
 export default {
   performance,
   PerformanceObserver,
+  PerformanceEntry,
   monitorEventLoopDelay,
   constants,
 };
