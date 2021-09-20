@@ -14,7 +14,7 @@ function isCloser(value: unknown): value is Deno.Closer {
 /** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
  * ```ts
- *      import { readerFromIterable } from "./streams.ts";
+ *      import { readerFromIterable } from "./conversion.ts";
  *      import { serve } from "../http/server_legacy.ts";
  *
  *      for await (const request of serve({ port: 8000 })) {
@@ -143,7 +143,7 @@ export function writableStreamFromWriter(
 /** Create a `ReadableStream` from any kind of iterable.
  *
  * ```ts
- *      import { readableStreamFromIterable } from "./streams.ts";
+ *      import { readableStreamFromIterable } from "./conversion.ts";
  *
  *      const r1 = readableStreamFromIterable(["foo, bar, baz"]);
  *      const r2 = readableStreamFromIterable(async function* () {
@@ -162,7 +162,7 @@ export function writableStreamFromWriter(
  * `readableStream.cancel()`. This is the case for the second input type above:
  *
  * ```ts
- * import { readableStreamFromIterable } from "./streams.ts";
+ * import { readableStreamFromIterable } from "./conversion.ts";
  *
  * const r3 = readableStreamFromIterable(async function* () {
  *   try {
