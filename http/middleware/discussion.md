@@ -157,9 +157,11 @@ implementation is very bad, but it works to show the idea.
 
 ## What now?
 
-There are several questions to answer here:
+There are two questions to answer here:
 
-- What have I missed? Is this something we want to go deeper on?
+- What have I missed? Is this something we want to go deeper on? I did not want
+  to invest more time into figuring out all the details before there is some
+  input on the core idea
 - How do we want the API for application and middleware authors to look like?
   See my take on `Request` below. The pattern above works either way, but I
   think we should take a look at that.
