@@ -52,7 +52,7 @@ The components are:
   - Optionally, what information the middleware adds to the request "context"
     (e.g. validating the body to be a valid `Animal` and adding an
     `animal: Animal` property) It could be used like this (lots of abstracted
-    ideas in there to show the idea):
+    functions in here to show the idea):
 
   ```typescript
   const validateFoo: Middleware<Request, { foo: Foo }> = async (req, con, next) => {
@@ -92,7 +92,7 @@ The components are:
   very ergonomic to use, as it can only handle two middlewares being combined.
 - A `stack` helper that wraps a given `Middleware` in an object thas has a
   chainable `.add()` method. This allows for nicer usage and follows the usual
-  `.use()` idea in spirit. It can used like this:
+  `.use()` idea in spirit. It can be used like this:
 
   ```typescript
   declare const authenticate: Middleware<Request, { auth: AuthInfo }>;
@@ -120,19 +120,19 @@ The components above fulfill the goals mentioned above:
 
 - `Middleware` is just a function, including the result of an arbitrary
   `stack().add().add().add().handler` chain
-- `Middleware<Request> is assignable to`std/http``Handler` - meaning there is no
+- `Middleware<Request>` is assignable to `std/http` `Handler` - meaning there is no
   additional wrapping necessary
 - Middleware composition is completely type safe and order-aware. This means
   that all requirements that are present but not fulfilled by previous
-  middleware "bubbles up" and will type error when trying to register it on the
+  middleware "bubble up" and will type error when trying to register it on the
   `Server`, stating which properties are missing
 
-  To be fair, it makes some assumptions. It assumes that you always add the same
-  type to your `next` call, so if you have conditional calls, you need to
-  "flatten" the types. It also assumes that you do not throw away the previous
-  request context. However, I think those are reasonable assumptions and they
-  are also present (and a lot less safe) in the current TS middleware concepts
-  e.g. in koa / oak.
+To be fair, it makes some assumptions. It assumes that you always add the same
+type to your `next` call, so if you have conditional `next` calls with different types, you need to
+"flatten" the types. It also assumes that you do not throw away the previous
+request context. However, I think those are reasonable assumptions and they
+are also present (and a lot less safe) in other current TS middleware concepts
+e.g. in koa / oak.
 
 ### Play around with it
 
@@ -141,15 +141,38 @@ below. **The implemented middleware is just for presentation purposes**, it's
 implementation is very bad, but it works to show the idea.
 
 1. Check out the branch, e.g. with
-   `$ git remote add lionc git@github.com:LionC/deno_std.git && git fetch && git switch middleware-experiment`
-2. Start the server with `$ deno run --allow-net http/middleware/poc/server.ts`
-3. Throw some requests at it, here are some `httpie` example commands:
 
-- Succeed (without any animals): `http --json 0.0.0.0:5000/ name=My entryFee:=10 animals:='[{"name": "Kim", "kind": "Tiger"}, {"name": "Flippo", "kind": "Hippo"}, {"name": "Jasmin", "kind": "Tiger"}]'`
-- Fail validation: `$ http --json 0.0.0.0:5000/ name=My entryFee:=10`
-- Fail JSON content type: `$ http --form 0.0.0.0:5000/ name=My entryFee:=10`
+   ```sh
+   git remote add lionc git@github.com:LionC/deno_std.git
+   git fetch
+   git switch middleware-experiment
+   ```
+2. Start the server with
 
-`http/middleware/poc/server.ts` is also a good place to play around with the type safe composition - try changing the order of middleware, leave a vital one out and see how LSP / tsc react.
+   ```sh
+  deno run --allow-net http/middleware/poc/server.ts
+  ```
+Now you can throw some requests at it, here are some `httpie` example commands:
+
+- Succeed
+
+  ```sh
+  http --json 0.0.0.0:5000/ name=My entryFee:=10 animals:='[{"name": "Kim", "kind": "Tiger"}, {"name": "Flippo", "kind": "Hippo"}, {"name": "Jasmin", "kind": "Tiger"}]'
+  ```
+- Fail validation:
+
+  ```sh
+  $ http --json 0.0.0.0:5000/ name=My entryFee:=10
+  ```
+- Fail JSON content type:
+
+  ```sh
+  $ http --form 0.0.0.0:5000/ name=My entryFee:=10
+  ```
+
+`http/middleware/poc/server.ts` is also a good place to play around with the
+type safe composition - try changing the order of middleware, leave a vital one
+out and see how LSP / tsc react.
 
 ## What now?
 
