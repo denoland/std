@@ -6,7 +6,7 @@ export const log: Middleware<Request> = async (req, con, next) => {
   const end = performance.now();
 
   console.log(
-    `${req.method} ${new URL(req.url).pathname}\t\t${response.status}\t\t${end -
+    `${req.method} ${new URL(req.url).pathname}\t${response.status}\t${end -
       start}ms`,
   );
 

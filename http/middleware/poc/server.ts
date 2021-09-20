@@ -1,13 +1,12 @@
-//import { route } from "../router.ts";
 import { distinctBy } from "../../../collections/mod.ts";
 import { listenAndServe } from "../../server.ts";
 import { acceptJson } from "../json.ts";
 import { log } from "../log.ts";
 import { Middleware, stack } from "../../middleware.ts";
-import { validateZoo } from "./validate_zoo_zonfig.ts";
+import { validateZoo } from "./validate_zoo.ts";
 import { Zoo } from "./zoo.ts";
 
-const createZoo: Middleware<Request & { zoo: Zoo }> = (req, con) => {
+const createZoo: Middleware<Request & { zoo: Zoo }> = (req) => {
   const { zoo } = req;
   const responseMessage = `
 Your nice ${zoo.name} Zoo was created.

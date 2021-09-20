@@ -151,9 +151,9 @@ implementation is very bad, but it works to show the idea.
 2. Start the server with `$ deno run --allow-net http/middleware/poc/server.ts`
 3. Throw some requests at it, here are some `httpie` example commands:
 
-- Succeed (without any animals): `http --json 0.0.0.0:5000/zoos/json name=My entryFee:=10 animals:='[{"name": "Kim", "kind": "Tiger"}, {"name": "Flippo", "kind": "Hippo"}, {"name": "Jasmin", "kind": "Tiger"}]'`
-- Fail validation: `$ http --json 0.0.0.0:5000/zoos/json name=My entryFee:=10`
-- Fail JSON content type: `$ http --form 0.0.0.0:5000/zoos/json name=My entryFee:=10`
+- Succeed (without any animals): `http --json 0.0.0.0:5000/ name=My entryFee:=10 animals:='[{"name": "Kim", "kind": "Tiger"}, {"name": "Flippo", "kind": "Hippo"}, {"name": "Jasmin", "kind": "Tiger"}]'`
+- Fail validation: `$ http --json 0.0.0.0:5000/ name=My entryFee:=10`
+- Fail JSON content type: `$ http --form 0.0.0.0:5000/ name=My entryFee:=10`
 
 `http/middleware/poc/server.ts` is also a good place to play around with the type safe composition - try changing the order of middleware, leave a vital one out and see how LSP / tsc react.
 
