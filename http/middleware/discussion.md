@@ -26,19 +26,17 @@
 
 ## POC
 
-TODO
+[Here is a branch](https://github.com/LionC/deno_std/tree/middleware-experiment/http) in
+which I have built a small dirty POC fullfiling the goals above. **This is just
+to show the idea**. It is not fleshed out, very rough around a lot of edges,
+has subpar ergonomics and several straight up bugs. All of them are solvable in
+several ways and their solution is not vital to the concept, so I left them as
+they are for the sake of starting a conversation.
 
-I have linked a branch in which I have built a small POC fullfiling the goals
-above. **This is just to show the idea**. It is not fleshed out, very rough
-around a lot of edged, has subpar ergonomics and several straight up bugs. All
-of them are solvable in several ways and the solution is not vital to the
-concept, so I left them as they are for the sake of discussion.
-
-I stopped writing as soon as I was sure enough that this can be done. There are
-many ways to do this basic concept and a lot of them are viable - I did not want
-to invest into one of them, just have something to start talking.
-
-## POC
+I stopped writing as soon as I was sure enough that this can be done
+reasonably. There are many ways to do this basic concept and a lot of them are
+viable - I did not want to invest into one of them, just have something to
+start talking.
 
 ### API
 
