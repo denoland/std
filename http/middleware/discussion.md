@@ -55,21 +55,17 @@ The components are:
     ideas in there to show the idea):
 
   ```typescript
-  const validateAnimal: Middleware<Request, { animal: Animal }> = async (
-    req,
-    con,
-    next,
-  ) => {
+  const validateFoo: Middleware<Request, { foo: Foo }> = async (req, con, next) => {
     const body = extractBody(req);
 
-    if (!isAnimal(body)) {
+    if (!isFoo(body)) {
       return new Response(
-        "Invalid Animal",
+        "Invalid Foo",
         { status: 422 },
       );
     }
 
-    const nextReq = extend(req, { animal: body });
+    const nextReq = extend(req, { foo: body });
 
     return await next!(nextReq, con);
   };
@@ -101,11 +97,11 @@ The components are:
   ```typescript
   declare const authenticate: Middleware<Request, { auth: AuthInfo }>;
   declare const authorize: Middleware<Request & { auth: AuthInfo }>;
-  declare const validateAnimal: Middleware<Request, { animal: Animal }>;
+  declare const validateFoo: Middleware<Request, { foo: Foo }>;
 
   const authAndValidate = stack(authenticate)
     .add(authorize)
-    .add(validateAnimal)
+    .add(validateFoo)
     .handler;
 
   assertType<Middleware<Request, { auth: AuthInfo; animal: Animal }>>(
