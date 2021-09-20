@@ -30,7 +30,19 @@ export function minBy<T>(
 ): T | undefined;
 export function minBy<T>(
   array: readonly T[],
-  selector: ((el: T) => number) | ((el: T) => string),
+  selector: (el: T) => bigint,
+): T | undefined;
+export function minBy<T>(
+  array: readonly T[],
+  selector: (el: T) => Date,
+): T | undefined;
+export function minBy<T>(
+  array: readonly T[],
+  selector:
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
 ): T | undefined {
   let min: T | undefined = undefined;
   let minValue: ReturnType<typeof selector> | undefined = undefined;

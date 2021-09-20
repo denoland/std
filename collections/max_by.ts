@@ -30,7 +30,19 @@ export function maxBy<T>(
 ): T | undefined;
 export function maxBy<T>(
   array: readonly T[],
-  selector: ((el: T) => number) | ((el: T) => string),
+  selector: (el: T) => bigint,
+): T | undefined;
+export function maxBy<T>(
+  array: readonly T[],
+  selector: (el: T) => Date,
+): T | undefined;
+export function maxBy<T>(
+  array: readonly T[],
+  selector:
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
 ): T | undefined {
   let max: T | undefined = undefined;
   let maxValue: ReturnType<typeof selector> | undefined = undefined;
