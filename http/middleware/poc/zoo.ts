@@ -6,11 +6,13 @@ export enum AnimalKind {
   Hippo = "Hippo",
 }
 
+export type Animal = {
+  name: string;
+  kind: AnimalKind;
+};
+
 export type Zoo = {
   name: string;
   entryFee: number;
-  animals: {
-    name: string;
-    kind: AnimalKind;
-  }[];
+  animals: Animal[];
 };

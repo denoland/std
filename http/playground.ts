@@ -1,39 +1,42 @@
-import { addMiddleware, stack, Middleware } from './middleware.ts'
-import { Handler } from './mod.ts'
+import { addMiddleware, Middleware, stack } from "./middleware.ts";
+import { Handler } from "./mod.ts";
 
-type AuthedRequest = Request & { auth: string }
+type AuthedRequest = Request & { auth: string };
 
-const passThrough: Middleware<Request> = (req, con, next) => next!(req, con)
+const passThrough: Middleware<Request> = (req, con, next) => next!(req, con);
 
-const authenticate: Middleware<Request, { auth: string }> = async (req, con, next) => {
-    const auth = req.headers.get('authorization') 
+const authenticate: Middleware<Request, { auth: string }> = async (
+  req,
+  con,
+  next,
+) => {
+  const auth = req.headers.get("authorization");
 
-    if (auth === null) {
-        return new Response(null, { status: 401 })
-    }
+  if (auth === null) {
+    return new Response(null, { status: 401 });
+  }
 
-    return await next!({ ...req, auth }, con)
-}
+  return await next!({ ...req, auth }, con);
+};
 
 const authorize: Middleware<AuthedRequest> = async (req, con, next) => {
-    const { auth } = req
+  const { auth } = req;
 
-    if (auth !== 'asdf') {
-        return new Response(null, { status: 401 })
-    }
+  if (auth !== "asdf") {
+    return new Response(null, { status: 401 });
+  }
 
-    return await next!(req, con)
-}
+  return await next!(req, con);
+};
 
 const handle: Middleware<AuthedRequest> = async (req: AuthedRequest) => {
-    return new Response(`Hi ${req.auth}`, { status: 200 })
-}
+  return new Response(`Hi ${req.auth}`, { status: 200 });
+};
 
 const test = stack(passThrough)
-    .add(authenticate)
-    .add(authorize)
-    .add(handle)
-    .handler
+  .add(authenticate)
+  .add(authorize)
+  .add(handle)
+  .handler;
 
-
-const http: Handler = test
+const http: Handler = test;

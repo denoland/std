@@ -10,10 +10,12 @@ export function route(routes: Routes): Middleware<Request> {
   const patternMap = new Map(
     Object
       .entries(routes)
-      .map(([pattern, methods]) => [new URLPattern({ pathname: pattern }), methods]),
+      .map((
+        [pattern, methods],
+      ) => [new URLPattern({ pathname: pattern }), methods]),
   );
 
-  const patterns = [ ...patternMap.keys() ];
+  const patterns = [...patternMap.keys()];
 
   return async (req, con) => {
     const matchedPattern = patterns.find((it) => it.exec(req.url));

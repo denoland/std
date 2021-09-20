@@ -1,6 +1,6 @@
 import { Middleware } from "../../middleware.ts";
 import { includesValue } from "../../../collections/includes_value.ts";
-import { AnimalKind, Zoo } from "./zoo.ts";
+import { Animal, AnimalKind, Zoo } from "./zoo.ts";
 
 function isZoo(subject: unknown): subject is Zoo {
   const cast = subject as Zoo;
@@ -9,7 +9,15 @@ function isZoo(subject: unknown): subject is Zoo {
     typeof cast.name === "string" &&
     typeof cast.entryFee === "number" &&
     Array.isArray(cast.animals) &&
-    (cast.animals as unknown[]).every(isAnimalKind);
+    (cast.animals as unknown[]).every(isAnimal);
+}
+
+function isAnimal(subject: unknown): subject is Animal {
+  const cast = subject as Animal;
+
+  return typeof cast === "object" &&
+    typeof cast.name === "string" &&
+    isAnimalKind(cast.kind as unknown);
 }
 
 function isAnimalKind(subject: unknown): subject is AnimalKind {
@@ -23,10 +31,7 @@ export const validateZoo: Middleware<
   const { parsedBody } = req;
 
   if (!isZoo(parsedBody)) {
-    return new Response(null, {
-      status: 422,
-      statusText: "Invalid ZooConfig",
-    });
+    return new Response("Invalid Zoo", { status: 422 });
   }
 
   const nextReq = {

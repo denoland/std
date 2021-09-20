@@ -5,6 +5,13 @@ export const acceptJson: Middleware<Request, { parsedBody: unknown }> = async (
   con,
   next,
 ) => {
+  if (!req.headers.get("content-type")?.includes("application/json")) {
+    return new Response(
+      "Content Type not supported, expected application/json",
+      { status: 415 },
+    );
+  }
+
   const body = await req.text();
 
   let parsedBody: unknown;
