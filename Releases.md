@@ -1,3 +1,22 @@
+### 0.107.0 / 2021.09.14
+
+- BREAKING(http): cookie headers as params (#1041)
+- feat(collection): add findSingle (#1166)
+- feat(collections): Add `associatewith` (#1213)
+- feat(collections): add `runningReduce` (#1226)
+- feat(collections): add `sample` API (#1212)
+- feat(collections): add dropWhile (#1185)
+- feat(collections): add maxWith (#1170)
+- feat(collections): add minWith (#1169)
+- feat(collections): add reduceGroups (#1187)
+- feat(collections): add slidingWindows (#1191)
+- feat(io/streams): propagate cancel in readableStreamFromIterable() (#1274)
+- fix(collections/includesValue): prevent enumerable prototype check (#1225)
+- fix(testing/asserts): export Constructor type (#1208)
+- fix(tests/yaml): expect !!js/function parse/stringify to throw (#1276)
+- fix: update to latest signal API changes
+- security(encoding/yaml): disable functions (#1275)
+
 ### 0.106.0 / 2021.08.23
 
 - feat(async): add abort signal to delay (#1130)

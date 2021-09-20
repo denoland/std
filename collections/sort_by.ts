@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns all elements in the given collection, sorted stably by their result using the given selector. The selector function is called only once for each element.
@@ -6,8 +7,8 @@
  * Example:
  *
  * ```ts
- * import { sortBy } from "./sort_by.ts"
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = [
  *     { name: 'Anna', age: 34 },

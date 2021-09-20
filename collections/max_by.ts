@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns the first element that is the largest value of the given function or undefined if there are no elements.
@@ -6,8 +7,8 @@
  * Example:
  *
  * ```ts
- * import { maxBy } from "./max_by.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = [
  *     { name: 'Anna', age: 34 },

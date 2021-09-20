@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns a new array that drops all elements in the given collection until the
@@ -7,8 +8,8 @@
  * Example:
  *
  * ```ts
- * import { dropWhile } from "./drop_while.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { dropWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [ 3, 2, 5, 2, 5 ]
  * const dropWhileNumbers = dropWhile(numbers, i => i !== 2)

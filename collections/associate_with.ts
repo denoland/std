@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Builds a new Record using the given array as keys and choosing a value for each
@@ -8,8 +9,8 @@
  * Example:
  *
  * ```ts
- * import { associateWith } from "./associate_with.ts"
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { associateWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const names = [ 'Kim', 'Lara', 'Jonathan' ]
  * const namesToLength = associateWith(names, it => it.length)

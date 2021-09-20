@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Applies the given selector to all elements of the given collection and
@@ -8,8 +9,8 @@
  * Example:
  *
  * ```ts
- * import { minOf } from "./min_of.ts"
- * import { assertEquals } from "../testing/asserts.ts"
+ * import { minOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts"
  *
  * const inventory = [
  *      { name: "mustard", count: 2 },

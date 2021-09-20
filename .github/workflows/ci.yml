@@ -30,7 +30,7 @@ jobs:
 
       - name: Run tests release
         if: matrix.deno != 'canary'
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json
+        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json
 
       - name: Run tests canary
         if: matrix.deno == 'canary'

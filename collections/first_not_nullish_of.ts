@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Applies the given selector to elements in the given array until a value is produced that is neither `null` nor `undefined` and returns that value
@@ -7,8 +8,8 @@
  * Example:
  *
  * ```ts
- * import { firstNotNullishOf } from "./first_not_nullish_of.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const tables = [
  *     { number: 11, order: null },

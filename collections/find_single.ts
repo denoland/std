@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns an element if and only if that element is the only one matching the given condition. Returns `undefined` otherwise.
@@ -6,8 +7,8 @@
  * Example:
  *
  * ```ts
- * import { findSingle } from "./find_single.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { findSingle } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const bookings = [
  *     { month: 'January', active: false },

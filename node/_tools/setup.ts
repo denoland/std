@@ -46,7 +46,7 @@ const decompressedSourcePath = join(
 
 /**
  * This will overwrite the file if found
- * */
+ */
 async function downloadFile(url: string, path: string) {
   console.log(`Downloading: ${url}...`);
   const fileContent = await fetch(url)

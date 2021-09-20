@@ -303,7 +303,6 @@ export interface ContextOptions {
    * The string keys of are treated as directories within the sandboxed
    * filesystem, the values are the real paths to those directories on the host
    * machine.
-   *
    */
   preopens?: { [key: string]: string };
 
