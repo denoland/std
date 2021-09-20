@@ -144,14 +144,14 @@ implementation is very bad, but it works to show the idea.
 
    ```sh
    git remote add lionc git@github.com:LionC/deno_std.git
-   git fetch
+   git fetch lionc
    git switch middleware-experiment
    ```
 2. Start the server with
 
    ```sh
-  deno run --allow-net http/middleware/poc/server.ts
-  ```
+   deno run --allow-net http/middleware/poc/server.ts
+   ```
 Now you can throw some requests at it, here are some `httpie` example commands:
 
 - Succeed
