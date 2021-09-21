@@ -12,7 +12,7 @@ Deno standard library as it's a compatibility module.
 - [x] assert/strict _partly_
 - [ ] async_hooks
 - [x] buffer
-- [x] child_process _partly_
+- [x] child*process \_partly*
 - [ ] cluster
 - [x] console _partly_
 - [x] constants _partly_
@@ -40,7 +40,7 @@ Deno standard library as it's a compatibility module.
 - [ ] repl
 - [x] stream
 - [x] stream/promises
-- [ ] stream/web
+- [x] stream/web _partly_
 - [x] string_decoder
 - [x] sys
 - [x] timers
@@ -87,15 +87,15 @@ are stable:
 modules. It also sets supported globals.
 
 ```ts
-import { createRequire } from "https://deno.land/std@$STD_VERSION/node/module.ts";
+import { createRequire } from 'https://deno.land/std@$STD_VERSION/node/module.ts'
 
-const require = createRequire(import.meta.url);
+const require = createRequire(import.meta.url)
 // Loads native module polyfill.
-const path = require("path");
+const path = require('path')
 // Loads extensionless module.
-const cjsModule = require("./my_mod");
+const cjsModule = require('./my_mod')
 // Visits node_modules.
-const leftPad = require("left-pad");
+const leftPad = require('left-pad')
 ```
 
 ## Contributing
