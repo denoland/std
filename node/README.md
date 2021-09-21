@@ -12,7 +12,7 @@ Deno standard library as it's a compatibility module.
 - [x] assert/strict _partly_
 - [ ] async_hooks
 - [x] buffer
-- [x] child_process \_partly_
+- [x] child_process _partly_
 - [ ] cluster
 - [x] console _partly_
 - [x] constants _partly_
