@@ -111,3 +111,29 @@ Deno.test("[collections/minBy] empty input", () => {
 
   assertEquals(min, undefined);
 });
+
+Deno.test({
+  name: "[collections/sortBy] bigint",
+  fn() {
+    const input = [
+      "9007199254740999",
+      "9007199254740991",
+      "9007199254740995",
+    ];
+
+    assertEquals(minBy(input, (it) => BigInt(it)), "9007199254740991");
+  },
+});
+
+Deno.test({
+  name: "[collections/sortBy] date",
+  fn() {
+    const input = [
+      "February 1, 2022",
+      "December 17, 1995",
+      "June 12, 2012",
+    ];
+
+    assertEquals(minBy(input, (it) => new Date(it)), "December 17, 1995");
+  },
+});
