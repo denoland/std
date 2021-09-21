@@ -434,6 +434,14 @@ Deno.test({
 });
 
 Deno.test({
+  name: "Buffer to string base64 with start and end specified",
+  fn() {
+    const buffer = Buffer.from("deno land deno land deno land");
+    assertEquals(buffer.toString("base64", 10, 19), "ZGVubyBsYW5k");
+  },
+});
+
+Deno.test({
   name: "Buffer to string hex",
   fn() {
     for (const encoding of ["hex", "HEX"]) {
