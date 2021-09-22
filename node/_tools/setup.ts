@@ -1,4 +1,4 @@
-import { gunzip } from "https://deno.land/x/compress@v0.3.9/gzip/gzip.ts";
+import { gunzip } from "https://deno.land/x/denoflate@1.2.1/mod.ts";
 import { Untar } from "../../archive/tar.ts";
 import { walk } from "../../fs/walk.ts";
 import {
