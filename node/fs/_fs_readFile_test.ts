@@ -43,7 +43,7 @@ Deno.test("readFileEncodeHexSuccess", async function () {
 Deno.test("readFileEncodeBase64Success", async function () {
   const data: string = await readFile(testData, { encoding: "base64" });
   assertEquals(typeof data, "string");
-  assertEquals(data as string, "aGVsbG8gd29ybGQA");
+  assertEquals(data as string, "aGVsbG8gd29ybGQ=");
 });
 
 Deno.test("readFileStringSuccess", async function () {
