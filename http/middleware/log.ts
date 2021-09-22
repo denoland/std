@@ -1,8 +1,8 @@
 import { Middleware } from "../middleware.ts";
 
-export const log: Middleware<Request> = async (req, con, next) => {
+export const log: Middleware = async (req, next) => {
   const start = performance.now();
-  const response = await next!(req, con);
+  const response = await next!(req);
   const end = performance.now();
 
   console.log(

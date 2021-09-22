@@ -1,23 +1,22 @@
-import { ConnInfo } from "./server.ts";
+import { HttpRequest } from "./request.ts";
 
 export type Middleware<
-  Requires extends Request,
+  Requires extends {} = {},
   // deno-lint-ignore ban-types
   Adds = {},
-> = <Gets extends Requires>(
+> = <Gets extends HttpRequest<Requires>>(
   req: Gets,
-  con: ConnInfo,
-  next?: Middleware<Gets & Adds>,
+  next?: Middleware<Requires & Adds>,
 ) => Promise<Response>;
 
 type MiddlewareStack<
-  Requires extends Request,
+  Requires extends {},
   // deno-lint-ignore ban-types
   Adds = {},
 > = {
   handler: Middleware<Requires, Adds>;
 
-  add<AddedRequires extends Request, AddedAdds>(
+  add<AddedRequires extends {}, AddedAdds = {}>(
     middleware: Middleware<AddedRequires, AddedAdds>,
   ): MiddlewareStack<
     Requires & Omit<AddedRequires, keyof Adds>,
@@ -25,11 +24,11 @@ type MiddlewareStack<
   >;
 };
 
-export function addMiddleware<
-  FirstRequires extends Request,
-  FirstAdd,
-  SecondRequires extends Request,
-  SecondAdd,
+export function composeMiddleware<
+  FirstRequires extends {},
+  FirstAdd extends {},
+  SecondRequires extends {},
+  SecondAdd extends {},
 >(
   first: Middleware<FirstRequires, FirstAdd>,
   second: Middleware<SecondRequires, SecondAdd>,
@@ -37,29 +36,27 @@ export function addMiddleware<
   FirstRequires & Omit<SecondRequires, keyof FirstAdd>,
   FirstAdd & SecondAdd
 > {
-  return (req, con, next) =>
+  return (req, next) =>
     first(
       req,
-      con,
       (r) =>
         second(
           //@ts-ignore: TS does not know about the middleware magic here
           r,
-          con,
           next,
         ),
     );
 }
 
 // deno-lint-ignore ban-types
-export function stack<Requires extends Request, Adds = {}>(
+export function stack<Requires extends {}, Adds = {}>(
   middleware: Middleware<Requires, Adds>,
 ): MiddlewareStack<Requires, Adds> {
   return {
     handler: middleware,
     add: (m) =>
       stack(
-        addMiddleware(
+        composeMiddleware(
           middleware,
           m,
         ),

@@ -1,8 +1,7 @@
 import { Middleware } from "../middleware.ts";
 
-export const acceptJson: Middleware<Request, { parsedBody: unknown }> = async (
+export const acceptJson: Middleware<{}, { parsedBody: unknown }> = async (
   req,
-  con,
   next,
 ) => {
   if (!req.headers.get("content-type")?.includes("application/json")) {
@@ -29,10 +28,7 @@ export const acceptJson: Middleware<Request, { parsedBody: unknown }> = async (
     throw e;
   }
 
-  const nextReq = {
-    ...req,
-    parsedBody,
-  };
+  const nextReq = req.addContext({ parsedBody });
 
-  return next!(nextReq, con);
+  return next!(nextReq);
 };

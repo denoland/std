@@ -1,5 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { delay } from "../async/mod.ts";
+import { HttpRequest } from "./request.ts";
 
 /** Thrown by Server after it has been closed. */
 const ERROR_SERVER_CLOSED = "Server closed";
@@ -35,10 +36,7 @@ export interface ConnInfo {
  * of the error is isolated to the individual request. It will catch the error
  * and close the underlying connection.
  */
-export type Handler = (
-  request: Request,
-  connInfo: ConnInfo,
-) => Response | Promise<Response>;
+export type Handler = (request: HttpRequest) => Response | Promise<Response>;
 
 /**
  * Parse an address from a string.
@@ -346,11 +344,9 @@ export class Server {
     connInfo: ConnInfo,
   ): Promise<void> {
     try {
+      const req = new HttpRequest(requestEvent.request, connInfo, {});
       // Handle the request event, generating a response.
-      const response = await this.#handler(
-        requestEvent.request,
-        connInfo,
-      );
+      const response = await this.#handler(req);
 
       // Send the response.
       await requestEvent.respondWith(response);

@@ -3,11 +3,12 @@ import { listenAndServe } from "../../server.ts";
 import { acceptJson } from "../json.ts";
 import { log } from "../log.ts";
 import { Middleware, stack } from "../../middleware.ts";
+import { HttpRequest } from "../../request.ts";
 import { validateZoo } from "./validate_zoo.ts";
 import { Zoo } from "./zoo.ts";
 
-const createZoo: Middleware<Request & { zoo: Zoo }> = (req) => {
-  const { zoo } = req;
+async function createZoo(req: HttpRequest<{ zoo: Zoo }>) {
+  const { zoo } = req.context;
   const responseMessage = `
 Your nice ${zoo.name} Zoo was created.
 
@@ -20,12 +21,15 @@ All those ${
 `;
 
   return Promise.resolve(new Response(responseMessage, { status: 201 }));
-};
+}
 
 const handleCreateZoo = stack(log)
   .add(acceptJson)
   .add(validateZoo)
-  .add(createZoo)
+  .add<{ zoo: Zoo }>(createZoo)
   .handler;
 
-await listenAndServe("0.0.0.0:5000", handleCreateZoo);
+await listenAndServe(
+  "0.0.0.0:5000",
+  handleCreateZoo,
+);

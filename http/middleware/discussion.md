@@ -26,17 +26,16 @@
 
 ## POC
 
-[Here is a branch](https://github.com/LionC/deno_std/tree/middleware-experiment/http) in
-which I have built a small dirty POC fullfiling the goals above. **This is just
-to show the idea**. It is not fleshed out, very rough around a lot of edges,
-has subpar ergonomics and several straight up bugs. All of them are solvable in
-several ways and their solution is not vital to the concept, so I left them as
-they are for the sake of starting a conversation.
+[Here is a branch](https://github.com/LionC/deno_std/tree/middleware-experiment/http)
+in which I have built a small dirty POC fullfiling the goals above. **This is
+just to show the idea**. It is not fleshed out, very rough around a lot of
+edges, has subpar ergonomics and several straight up bugs. All of them are
+solvable in several ways and their solution is not vital to the concept, so I
+left them as they are for the sake of starting a conversation.
 
-I stopped writing as soon as I was sure enough that this can be done
-reasonably. There are many ways to do this basic concept and a lot of them are
-viable - I did not want to invest into one of them, just have something to
-start talking.
+I stopped writing as soon as I was sure enough that this can be done reasonably.
+There are many ways to do this basic concept and a lot of them are viable - I
+did not want to invest into one of them, just have something to start talking.
 
 ### API
 
@@ -55,7 +54,11 @@ The components are:
     functions in here to show the idea):
 
   ```typescript
-  const validateFoo: Middleware<Request, { foo: Foo }> = async (req, con, next) => {
+  const validateFoo: Middleware<Request, { foo: Foo }> = async (
+    req,
+    con,
+    next,
+  ) => {
     const body = extractBody(req);
 
     if (!isFoo(body)) {
@@ -120,19 +123,19 @@ The components above fulfill the goals mentioned above:
 
 - `Middleware` is just a function, including the result of an arbitrary
   `stack().add().add().add().handler` chain
-- `Middleware<Request>` is assignable to `std/http` `Handler` - meaning there is no
-  additional wrapping necessary
+- `Middleware<Request>` is assignable to `std/http` `Handler` - meaning there is
+  no additional wrapping necessary
 - Middleware composition is completely type safe and order-aware. This means
   that all requirements that are present but not fulfilled by previous
   middleware "bubble up" and will type error when trying to register it on the
   `Server`, stating which properties are missing
 
 To be fair, it makes some assumptions. It assumes that you always add the same
-type to your `next` call, so if you have conditional `next` calls with different types, you need to
-"flatten" the types. It also assumes that you do not throw away the previous
-request context. However, I think those are reasonable assumptions and they
-are also present (and a lot less safe) in other current TS middleware concepts
-e.g. in koa / oak.
+type to your `next` call, so if you have conditional `next` calls with different
+types, you need to "flatten" the types. It also assumes that you do not throw
+away the previous request context. However, I think those are reasonable
+assumptions and they are also present (and a lot less safe) in other current TS
+middleware concepts e.g. in koa / oak.
 
 ### Play around with it
 
@@ -152,6 +155,7 @@ implementation is very bad, but it works to show the idea.
    ```sh
    deno run --allow-net http/middleware/poc/server.ts
    ```
+
 Now you can throw some requests at it, here are some `httpie` example commands:
 
 - Succeed

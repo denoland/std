@@ -24,20 +24,15 @@ function isAnimalKind(subject: unknown): subject is AnimalKind {
   return typeof subject === "string" && includesValue(AnimalKind, subject);
 }
 
-export const validateZoo: Middleware<
-  Request & { parsedBody: unknown },
-  { zoo: Zoo }
-> = async (req, con, next) => {
-  const { parsedBody } = req;
+export const validateZoo: Middleware<{ parsedBody: unknown }, { zoo: Zoo }> =
+  async (req, next) => {
+    const { parsedBody } = req.context;
 
-  if (!isZoo(parsedBody)) {
-    return new Response("Invalid Zoo", { status: 422 });
-  }
+    if (!isZoo(parsedBody)) {
+      return new Response("Invalid Zoo", { status: 422 });
+    }
 
-  const nextReq = {
-    ...req,
-    zoo: parsedBody,
+    const nextReq = req.addContext({ zoo: parsedBody });
+
+    return await next!(nextReq);
   };
-
-  return await next!(nextReq, con);
-};
