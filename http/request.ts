@@ -1,4 +1,5 @@
 import { ConnInfo } from "./server.ts";
+import { Expand } from "../_util/types.ts";
 
 export class HttpRequest<C extends {} = {}> implements Request {
   #context: C;
@@ -15,7 +16,7 @@ export class HttpRequest<C extends {} = {}> implements Request {
     return this.#context;
   }
 
-  addContext<N extends {}>(contextToAdd: N): HttpRequest<C & N> {
+  addContext<N extends {}>(contextToAdd: N): HttpRequest<Expand<C & N>> {
     this.#context = { ...this.#context, ...contextToAdd };
 
     //@ts-ignore Limitations of mutation and types, but we should mutate for performance

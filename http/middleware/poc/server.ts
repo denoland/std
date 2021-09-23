@@ -7,7 +7,7 @@ import { HttpRequest } from "../../request.ts";
 import { validateZoo } from "./validate_zoo.ts";
 import { Zoo } from "./zoo.ts";
 
-async function createZoo(req: HttpRequest<{ zoo: Zoo }>) {
+function createZoo(req: HttpRequest<{ zoo: Zoo }>) {
   const { zoo } = req.context;
   const responseMessage = `
 Your nice ${zoo.name} Zoo was created.
@@ -26,7 +26,7 @@ All those ${
 const handleCreateZoo = stack(log)
   .add(acceptJson)
   .add(validateZoo)
-  .add<{ zoo: Zoo }>(createZoo)
+  .add<{ zoo: Zoo }, {}>(createZoo)
   .handler;
 
 await listenAndServe(

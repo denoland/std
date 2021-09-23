@@ -1,43 +1,52 @@
+// deno-lint-ignore-file ban-types
+
 import { HttpRequest } from "./request.ts";
+import { Expand, SafeOmit } from "../_util/types.ts";
 
 export type Middleware<
-  Requires extends {} = {},
-  // deno-lint-ignore ban-types
+  Needs extends {} = {},
   Adds = {},
-> = <Gets extends HttpRequest<Requires>>(
-  req: Gets,
-  next?: Middleware<Requires & Adds>,
+> = (
+  req: HttpRequest<Needs>,
+  next?: Middleware<Expand<Needs & Adds>>,
 ) => Promise<Response>;
 
 type MiddlewareStack<
-  Requires extends {},
-  // deno-lint-ignore ban-types
+  Needs extends {},
   Adds = {},
 > = {
-  handler: Middleware<Requires, Adds>;
+  handler: Middleware<Needs, Adds>;
 
-  add<AddedRequires extends {}, AddedAdds = {}>(
-    middleware: Middleware<AddedRequires, AddedAdds>,
+  //  add<AddedNeeds>(
+  //    handler: (req: HttpRequest<AddedNeeds>) => Promise<Response>
+  //  ): TerminatedMiddlewareStack<Needs & SafeOmit<AddedNeeds, keyof Adds> >;
+  add<AddedNeeds, AddedAdds>(
+    middleware: Middleware<AddedNeeds, AddedAdds>,
   ): MiddlewareStack<
-    Requires & Omit<AddedRequires, keyof Adds>,
-    Adds & AddedAdds
+    Expand<Needs & SafeOmit<AddedNeeds, Adds>>,
+    Expand<Adds & AddedAdds>
   >;
 };
 
+type TerminatedMiddlewareStack<Needs extends {}> = {
+  handler: Middleware<Needs>;
+};
+
 export function composeMiddleware<
-  FirstRequires extends {},
+  FirstNeeds extends {},
   FirstAdd extends {},
-  SecondRequires extends {},
+  SecondNeeds extends {},
   SecondAdd extends {},
 >(
-  first: Middleware<FirstRequires, FirstAdd>,
-  second: Middleware<SecondRequires, SecondAdd>,
+  first: Middleware<FirstNeeds, FirstAdd>,
+  second: Middleware<SecondNeeds, SecondAdd>,
 ): Middleware<
-  FirstRequires & Omit<SecondRequires, keyof FirstAdd>,
-  FirstAdd & SecondAdd
+  Expand<FirstNeeds & SafeOmit<SecondNeeds, FirstAdd>>,
+  Expand<FirstAdd & SecondAdd>
 > {
   return (req, next) =>
     first(
+      //@ts-ignore asdf
       req,
       (r) =>
         second(
@@ -48,10 +57,9 @@ export function composeMiddleware<
     );
 }
 
-// deno-lint-ignore ban-types
-export function stack<Requires extends {}, Adds = {}>(
-  middleware: Middleware<Requires, Adds>,
-): MiddlewareStack<Requires, Adds> {
+export function stack<Needs extends {}, Adds = {}>(
+  middleware: Middleware<Needs, Adds>,
+): MiddlewareStack<Needs, Adds> {
   return {
     handler: middleware,
     add: (m) =>
