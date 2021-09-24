@@ -28,12 +28,7 @@ import { unreachable } from "../../testing/asserts.ts";
 import { ConnectionWrap } from "./connection_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { ownerSymbol } from "./symbols.ts";
-import {
-  UV_EADDRINUSE,
-  UV_EADDRNOTAVAIL,
-  UV_ECONNREFUSED,
-  UV_UNKNOWN,
-} from "./uv.ts";
+import { codeMap } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
 import { kStreamBaseField } from "./stream_wrap.ts";
 
@@ -218,13 +213,13 @@ export class TCP extends ConnectionWrap {
       listener = Deno.listen(listenOptions);
     } catch (e) {
       if (e instanceof Deno.errors.AddrInUse) {
-        return UV_EADDRINUSE;
+        return codeMap.get("EADDRINUSE")!;
       } else if (e instanceof Deno.errors.AddrNotAvailable) {
-        return UV_EADDRNOTAVAIL;
+        return codeMap.get("EADDRNOTAVAIL")!;
       }
 
       // TODO(cmorten): map errors to appropriate error codes.
-      return UV_UNKNOWN;
+      return codeMap.get("UNKNOWN")!;
     }
 
     const address = listener.addr as Deno.NetAddr;
@@ -246,7 +241,7 @@ export class TCP extends ConnectionWrap {
     if (
       typeof this.#address === "undefined" || typeof this.#port === "undefined"
     ) {
-      return UV_EADDRNOTAVAIL;
+      return codeMap.get("EADDRNOTAVAIL")!;
     }
 
     sockname.address = this.#address;
@@ -265,7 +260,7 @@ export class TCP extends ConnectionWrap {
       typeof this.#remoteAddress === "undefined" ||
       typeof this.#remotePort === "undefined"
     ) {
-      return UV_EADDRNOTAVAIL;
+      return codeMap.get("EADDRNOTAVAIL")!;
     }
 
     peername.address = this.#remoteAddress;
@@ -352,6 +347,7 @@ export class TCP extends ConnectionWrap {
       const localAddr = conn.localAddr as Deno.NetAddr;
       this.#address = req.localAddress = localAddr.hostname;
       this.#port = req.localPort = localAddr.port;
+      this[kStreamBaseField] = conn;
 
       try {
         this.afterConnect(req, 0);
@@ -361,7 +357,7 @@ export class TCP extends ConnectionWrap {
     }, () => {
       try {
         // TODO(cmorten): correct mapping of connection error to status code.
-        this.afterConnect(req, UV_ECONNREFUSED);
+        this.afterConnect(req, codeMap.get("ECONNREFUSED")!);
       } catch {
         // swallow callback errors.
       }
@@ -414,7 +410,7 @@ export class TCP extends ConnectionWrap {
 
       try {
         // TODO(cmorten): map errors to appropriate error codes.
-        this.onconnection!(UV_UNKNOWN, undefined);
+        this.onconnection!(codeMap.get("UNKNOWN")!, undefined);
       } catch {
         // swallow callback errors.
       }
@@ -443,7 +439,7 @@ export class TCP extends ConnectionWrap {
 
   /** Handle server closure. */
   _onClose(): void {
-    // TODO(cmorten): this isn't quite right
+    // TODO(cmorten): this isn't great
     this.#closed = true;
     this.reading = false;
 
@@ -457,10 +453,18 @@ export class TCP extends ConnectionWrap {
     this.#backlog = undefined;
     this.#acceptBackoffDelay = undefined;
 
+    // TCPWRAP
+    try {
+      this[kStreamBaseField]?.close();
+    } catch {
+      // connection already closed
+    }
+
+    // TCPSERVERWRAP
     for (const connection of this.#connections) {
       try {
         connection.close();
-        connection[kStreamBaseField]!.close();
+        connection[kStreamBaseField]?.close();
       } catch {
         // connection already closed
       }

@@ -29,7 +29,7 @@
 import { notImplemented } from "../_utils.ts";
 import { HandleWrap } from "./handle_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
-import { UV_EOF, UV_UNKNOWN } from "./uv.ts";
+import { codeMap } from "./uv.ts";
 import { writeAll } from "../../io/util.ts";
 
 enum StreamBaseStateFields {
@@ -86,7 +86,7 @@ export class LibuvStreamWrap extends HandleWrap {
   bytesRead = 0;
   bytesWritten = 0;
 
-  onread!: (_arrayBuffer: Uint8Array) => Uint8Array | undefined;
+  onread!: (_arrayBuffer: Uint8Array, _nread: number) => Uint8Array | undefined;
 
   constructor(
     provider: providerType,
@@ -129,7 +129,7 @@ export class LibuvStreamWrap extends HandleWrap {
       this[kStreamBaseField]?.close();
     } catch {
       // TODO(cmorten): map errors to appropriate error codes.
-      status = UV_UNKNOWN;
+      status = codeMap.get("ENOTCONN")!;
     }
 
     req.oncomplete(status);
@@ -153,8 +153,8 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   writeBuffer(req: WriteWrap<LibuvStreamWrap>, data: Uint8Array): number {
-    this.#write(req, data);
     streamBaseState[kLastWriteWasAsync] = 1;
+    this.#write(req, data);
 
     return 0;
   }
@@ -180,36 +180,40 @@ export class LibuvStreamWrap extends HandleWrap {
    * Write an ASCII string to the stream.
    * @return An error status code.
    */
-  writeAsciiString(): number {
-    // TODO(cmorten)
-    notImplemented();
+  writeAsciiString(req: WriteWrap<LibuvStreamWrap>, data: string): number {
+    const buffer = new TextEncoder().encode(data);
+
+    return this.writeBuffer(req, buffer);
   }
 
   /**
    * Write an UTF8 string to the stream.
    * @return An error status code.
    */
-  writeUtf8String(): number {
-    // TODO(cmorten)
-    notImplemented();
+  writeUtf8String(req: WriteWrap<LibuvStreamWrap>, data: string): number {
+    const buffer = new TextEncoder().encode(data);
+
+    return this.writeBuffer(req, buffer);
   }
 
   /**
    * Write an UCS2 string to the stream.
    * @return An error status code.
    */
-  writeUcs2String(): number {
-    // TODO(cmorten)
-    notImplemented();
+  writeUcs2String(req: WriteWrap<LibuvStreamWrap>, data: string): number {
+    const buffer = new TextEncoder().encode(data);
+
+    return this.writeBuffer(req, buffer);
   }
 
   /**
    * Write an LATIN1 string to the stream.
    * @return An error status code.
    */
-  writeLatin1String(): number {
-    // TODO(cmorten)
-    notImplemented();
+  writeLatin1String(req: WriteWrap<LibuvStreamWrap>, data: string): number {
+    const buffer = new TextEncoder().encode(data);
+
+    return this.writeBuffer(req, buffer);
   }
 
   /**
@@ -231,12 +235,23 @@ export class LibuvStreamWrap extends HandleWrap {
     let nread: number | null;
     try {
       nread = await this[kStreamBaseField]!.read(buf);
-    } catch {
-      // TODO(cmorten): map err to status codes
-      streamBaseState[kReadBytesOrError] = UV_UNKNOWN;
+    } catch (e) {
+      // TODO(cmorten): map all errors to status codes
+      let status: number;
+
+      if (
+        e instanceof Deno.errors.Interrupted ||
+        e instanceof Deno.errors.BadResource
+      ) {
+        status = codeMap.get("EOF")!;
+      } else {
+        status = codeMap.get("UNKNOWN")!;
+      }
+
+      this.reading = false;
 
       try {
-        this.onread!(buf);
+        this.onread!(buf, status);
       } catch {
         // swallow callback errors.
       }
@@ -244,18 +259,15 @@ export class LibuvStreamWrap extends HandleWrap {
       return;
     }
 
-    nread ??= UV_EOF;
+    nread ??= codeMap.get("EOF")!;
 
     if (nread > 0) {
       // TODO(cmorten): resize the buffer based on nread
       this.bytesRead += nread;
-      streamBaseState[kArrayBufferOffset] = this.bytesRead;
     }
 
-    streamBaseState[kReadBytesOrError] = nread;
-
     try {
-      this.onread!(buf);
+      this.onread!(buf, nread);
     } catch {
       // swallow callback errors.
     }
@@ -278,8 +290,10 @@ export class LibuvStreamWrap extends HandleWrap {
       await writeAll(this[kStreamBaseField]!, data);
     } catch {
       // TODO(cmorten): map err to status codes
+      const status = codeMap.get("UNKNOWN")!;
+
       try {
-        req.oncomplete(UV_UNKNOWN);
+        req.oncomplete(status);
       } catch {
         // swallow callback errors.
       }

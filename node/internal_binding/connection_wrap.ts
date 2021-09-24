@@ -61,9 +61,9 @@ export class ConnectionWrap extends LibuvStreamWrap {
     req: T,
     status: number,
   ): void {
-    const isSuccessStatus = !!status;
-    const readable = !!isSuccessStatus;
-    const writable = !!isSuccessStatus;
+    const isSuccessStatus = !status;
+    const readable = isSuccessStatus;
+    const writable = isSuccessStatus;
 
     try {
       req.oncomplete(status, this, req, readable, writable);

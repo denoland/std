@@ -24,6 +24,7 @@
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.h
 
 import { notImplemented } from "../_utils.ts";
+import { nextTick } from "../process.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 export class HandleWrap extends AsyncWrap {
@@ -31,13 +32,14 @@ export class HandleWrap extends AsyncWrap {
     super(provider);
   }
 
-  close(cb?: () => void): void {
+  close(cb: () => void = () => {}): void {
     try {
       this._onClose();
     } catch {
       // swallow callback errors.
     }
-    cb?.();
+
+    nextTick(cb);
   }
 
   ref() {

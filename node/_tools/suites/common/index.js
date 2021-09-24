@@ -91,6 +91,10 @@ function mustCall(fn, exact) {
   return _mustCallInner(fn, exact, "exact");
 }
 
+function mustCallAtLeast(fn, minimum) {
+  return _mustCallInner(fn, minimum, 'minimum');
+}
+
 function mustSucceed(fn, exact) {
   return mustCall(function(err, ...args) {
     assert.ifError(err);
@@ -227,6 +231,7 @@ module.exports = {
   expectWarning,
   invalidArgTypeHelper,
   mustCall,
+  mustCallAtLeast,
   mustNotCall,
   mustSucceed,
   isWindows,

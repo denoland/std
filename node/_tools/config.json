@@ -23,7 +23,6 @@
       "test-net-dns-error.js",
       "test-net-dns-lookup-skip.js",
       "test-net-dns-lookup.js",
-      "test-net-local-address-port.js",
       "test-net-normalize-args.js"
     ]
   },
@@ -60,6 +59,9 @@
       "test-net-access-byteswritten.js",
       "test-net-after-close.js",
       "test-net-allow-half-open.js",
+      "test-net-better-error-messages-listen.js",
+      "test-net-better-error-messages-port-hostname.js",
+      "test-net-bind-twice.js",
       "test-net-dns-custom-lookup.js",
       "test-net-dns-error.js",
       "test-net-dns-lookup-skip.js",

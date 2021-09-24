@@ -91,11 +91,7 @@ import { ShutdownWrap } from "./internal_binding/stream_wrap.ts";
 import { assert } from "../_util/assert.ts";
 import { isWindows } from "../_util/os.ts";
 import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
-import {
-  UV_EADDRINUSE,
-  UV_EINVAL,
-  UV_ENOTCONN,
-} from "./internal_binding/uv.ts";
+import { codeMap } from "./internal_binding/uv.ts";
 import { guessHandleType } from "./internal_binding/util.ts";
 
 const kLastWriteQueueSize = Symbol("lastWriteQueueSize");
@@ -220,7 +216,7 @@ interface NormalizedArgs {
   [normalizedArgsSymbol]?: boolean;
 }
 
-const _noop = (_arrayBuffer: Uint8Array): undefined => {
+const noop = (_arrayBuffer: Uint8Array): undefined => {
   return;
 };
 
@@ -388,7 +384,7 @@ function _checkBindError(err: number, port: number, handle: TCP) {
     err = handle.getsockname(out);
 
     if (err === 0 && port !== out.port) {
-      err = UV_EADDRINUSE;
+      err = codeMap.get("EADDRINUSE")!;
     }
   }
 
@@ -1265,7 +1261,7 @@ export class Socket extends Duplex {
   /**
    * @param size Optional argument to specify how much data to read.
    */
-  read = (size?: number): string | Uint8Array | Buffer | null | undefined => {
+  read(size?: number): string | Uint8Array | Buffer | null | undefined {
     if (
       this[kBuffer] && !this.connecting && this._handle &&
       !this._handle.reading
@@ -1274,9 +1270,9 @@ export class Socket extends Duplex {
     }
 
     return Duplex.prototype.read.call(this, size);
-  };
+  }
 
-  destroySoon = (): void => {
+  destroySoon(): void {
     if (this.writable) {
       this.end();
     }
@@ -1286,7 +1282,7 @@ export class Socket extends Duplex {
     } else {
       this.once("finish", this.destroy);
     }
-  };
+  }
 
   _unrefTimer() {
     // deno-lint-ignore no-this-alias
@@ -1299,8 +1295,9 @@ export class Socket extends Duplex {
 
   // The user has called .end(), and all the bytes have been
   // sent out to the other side.
+  // @ts-ignore Duplex defined as a property but want a function
   // deno-lint-ignore no-explicit-any
-  _final = (cb: any): any => {
+  _final(cb: any): any {
     // If still connecting - defer handling `_final` until 'connect' will happen
     if (this.pending) {
       return this.once("connect", () => this._final(cb));
@@ -1316,13 +1313,13 @@ export class Socket extends Duplex {
     req.callback = cb;
     const err = this._handle.shutdown(req);
 
-    if (err === 1 || err === UV_ENOTCONN) {
+    if (err === 1 || err === codeMap.get("ENOTCONN")) {
       // synchronous finish
       return cb();
     } else if (err !== 0) {
       return cb(errnoException(err, "shutdown"));
     }
-  };
+  }
 
   _onTimeout() {
     const handle = this._handle;
@@ -1344,13 +1341,13 @@ export class Socket extends Duplex {
     this.emit("timeout");
   }
 
-  _read = (size?: number): void => {
+  _read(size?: number): void {
     if (this.connecting || !this._handle) {
       this.once("connect", () => this._read(size));
     } else if (!this._handle.reading) {
       _tryReadStart(this);
     }
-  };
+  }
 
   _destroy(exception: Error | null, cb: (err?: Error | null) => void) {
     this.connecting = false;
@@ -1370,7 +1367,7 @@ export class Socket extends Duplex {
         this.emit("close", isException);
       });
 
-      this._handle.onread = _noop;
+      this._handle.onread = noop;
       this._handle = null;
       this._sockname = undefined;
 
@@ -1454,22 +1451,23 @@ export class Socket extends Duplex {
     }
   }
 
-  _writev = (
+  // @ts-ignore Duplex defining as a property when want a method.
+  _writev(
     // deno-lint-ignore no-explicit-any
     chunks: Array<{ chunk: any; encoding: string }>,
     cb: (error?: Error | null) => void,
-  ) => {
+  ) {
     this._writeGeneric(true, chunks, "", cb);
-  };
+  }
 
-  _write = (
+  _write(
     // deno-lint-ignore no-explicit-any
     data: any,
     encoding: string,
     cb: (error?: Error | null) => void,
-  ) => {
+  ) {
     this._writeGeneric(false, data, encoding, cb);
-  };
+  }
 
   [kAfterAsyncWrite](): void {
     this[kLastWriteQueueSize] = 0;
@@ -1688,7 +1686,7 @@ export function _createServerHandle(
       handle = _createHandle(fd, true);
     } catch {
       // Not a fd we can listen on. This will trigger an error.
-      return UV_EINVAL;
+      return codeMap.get("EINVAL")!;
     }
 
     err = handle.open(fd);

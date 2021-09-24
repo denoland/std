@@ -24,7 +24,6 @@ import {
   kArrayBufferOffset,
   kBytesWritten,
   kLastWriteWasAsync,
-  kReadBytesOrError,
   LibuvStreamWrap,
   streamBaseState,
   WriteWrap,
@@ -34,7 +33,7 @@ import { errnoException } from "./_errors.ts";
 import { FastBuffer } from "./_buffer.ts";
 import { getTimerDuration, kTimeout, setUnrefTimeout } from "./_timers.ts";
 import { validateCallback } from "./_validators.ts";
-import { UV_EOF } from "./internal_binding/uv.ts";
+import { codeMap } from "./internal_binding/uv.ts";
 import { Buffer } from "./buffer.ts";
 
 export const kMaybeDestroy = Symbol("kMaybeDestroy");
@@ -211,10 +210,16 @@ function afterWriteDispatched(
   }
 }
 
-// deno-lint-ignore no-explicit-any
-export function onStreamRead(this: any, arrayBuffer: any) {
-  const nread = streamBaseState[kReadBytesOrError];
-
+// Here we differ from Node slightly. Node makes use of the `kReadBytesOrError`
+// entry of the `streamBaseState` array from the `stream_wrap` internal binding.
+// Here we pass the `nread` value directly to this method as async Deno APIs
+// don't grant us the ability to rely on some mutable array entry setting.
+export function onStreamRead(
+  // deno-lint-ignore no-explicit-any
+  this: any,
+  arrayBuffer: Uint8Array,
+  nread: number,
+) {
   // deno-lint-ignore no-this-alias
   const handle = this;
 
@@ -267,7 +272,7 @@ export function onStreamRead(this: any, arrayBuffer: any) {
     return;
   }
 
-  if (nread !== UV_EOF) {
+  if (nread !== codeMap.get("EOF")) {
     // CallJSOnreadMethod expects the return value to be a buffer.
     // Ref: https://github.com/nodejs/node/pull/34375
     stream.destroy(errnoException(nread, "read"));

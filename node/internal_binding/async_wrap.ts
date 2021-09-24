@@ -88,10 +88,15 @@ export class AsyncWrap {
 
   constructor(provider: providerType) {
     this.provider = provider;
+    this.getAsyncId();
   }
 
   getAsyncId(): number {
-    return this.asyncId === kInvalidAsyncId ? newAsyncId() : this.asyncId;
+    this.asyncId = this.asyncId === kInvalidAsyncId
+      ? newAsyncId()
+      : this.asyncId;
+
+    return this.asyncId;
   }
 
   getProviderType() {

@@ -31,19 +31,13 @@ const common = require('../common');
 const assert = require('assert');
 const net = require('net');
 
-const server = net.createServer(common.mustCall(function(socket) {
-  assert.strictEqual(socket.localAddress, common.localhostIPv4);
-  assert.strictEqual(socket.localPort, this.address().port);
-  socket.on('end', function() {
-    server.close();
-  });
-  socket.resume();
-}));
+const server1 = net.createServer(common.mustNotCall());
+server1.listen(0, '127.0.0.1', common.mustCall(function() {
+  const server2 = net.createServer(common.mustNotCall());
+  server2.listen(this.address().port, '127.0.0.1', common.mustNotCall());
 
-server.listen(0, common.localhostIPv4, function() {
-  const client = net.createConnection(this.address()
-                    .port, common.localhostIPv4);
-  client.on('connect', function() {
-    client.end();
-  });
-});
+  server2.on('error', common.mustCall(function(e) {
+    assert.strictEqual(e.code, 'EADDRINUSE');
+    server1.close();
+  }));
+}));

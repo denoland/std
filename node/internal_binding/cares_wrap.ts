@@ -26,7 +26,7 @@
 import type { ErrnoException } from "../_errors.ts";
 import type { LookupAddress } from "../dns.ts";
 import { isIPv4 } from "../_net.ts";
-import { UV_EAI_NODATA } from "./uv.ts";
+import { codeMap } from "./uv.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 // REF: https://github.com/nodejs/node/blob/master/deps/cares/include/ares.h#L190
@@ -85,7 +85,7 @@ export function getaddrinfo(
       ),
     );
 
-    const error = addresses.length ? null : UV_EAI_NODATA;
+    const error = addresses.length ? null : codeMap.get("EAI_NODATA")!;
 
     if (!verbatim) {
       addresses.sort((a: string, b: string): number => {

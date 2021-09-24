@@ -13,6 +13,7 @@ const common = require('../common');
 const assert = require('assert');
 const net = require('net');
 // const { normalizedArgsSymbol } = require('internal/net');
+// TODO(cmorten): I'm sure we can do better here!
 const normalizedArgsSymbol = Object.getOwnPropertySymbols(net._normalizeArgs([{}, null]))[0];
 
 function validateNormalizedArgs(input, output) {

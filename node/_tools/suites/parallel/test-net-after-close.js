@@ -28,33 +28,33 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// 'use strict';
-// const common = require('../common');
-// const assert = require('assert');
-// const net = require('net');
+'use strict';
+const common = require('../common');
+const assert = require('assert');
+const net = require('net');
 
-// const server = net.createServer(common.mustCall((s) => {
-//   console.error('SERVER: got connection');
-//   s.end();
-// }));
+const server = net.createServer(common.mustCall((s) => {
+  console.error('SERVER: got connection');
+  s.end();
+}));
 
-// server.listen(0, common.mustCall(() => {
-//   const c = net.createConnection(server.address().port);
-//   c.on('close', common.mustCall(() => {
-//     /* eslint-disable no-unused-expressions */
-//     console.error('connection closed');
-//     assert.strictEqual(c._handle, null);
-//     // Calling functions / accessing properties of a closed socket should not
-//     // throw.
-//     c.setNoDelay();
-//     c.setKeepAlive();
-//     c.bufferSize;
-//     c.pause();
-//     c.resume();
-//     c.address();
-//     c.remoteAddress;
-//     c.remotePort;
-//     server.close();
-//     /* eslint-enable no-unused-expressions */
-//   }));
-// }));
+server.listen(0, common.mustCall(() => {
+  const c = net.createConnection(server.address().port);
+  c.on('close', common.mustCall(() => {
+    /* eslint-disable no-unused-expressions */
+    console.error('connection closed');
+    assert.strictEqual(c._handle, null);
+    // Calling functions / accessing properties of a closed socket should not
+    // throw.
+    // c.setNoDelay(); // TODO(cmorten): not implemented
+    // c.setKeepAlive(); // TODO(cmorten): not implemented
+    c.bufferSize;
+    c.pause();
+    c.resume();
+    c.address();
+    c.remoteAddress;
+    c.remotePort;
+    server.close();
+    /* eslint-enable no-unused-expressions */
+  }));
+}));
