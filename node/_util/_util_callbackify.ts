@@ -86,7 +86,7 @@ function callbackify<Arg1T, Arg2T, Arg3T, Arg4T, Arg5T, ResultT>(
 
 function callbackify<ResultT>(
   original: (...args: unknown[]) => PromiseLike<ResultT>,
-): (callback: Callback<ResultT>) => void {
+): (...args: unknown[]) => void {
   if (typeof original !== "function") {
     throw new NodeInvalidArgTypeError('"original"');
   }
