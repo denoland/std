@@ -17,19 +17,12 @@ type MiddlewareStack<
 > = {
   handler: Middleware<Needs, Adds>;
 
-  //  add<AddedNeeds>(
-  //    handler: (req: HttpRequest<AddedNeeds>) => Promise<Response>
-  //  ): TerminatedMiddlewareStack<Needs & SafeOmit<AddedNeeds, keyof Adds> >;
   add<AddedNeeds, AddedAdds>(
     middleware: Middleware<AddedNeeds, AddedAdds>,
   ): MiddlewareStack<
     Expand<Needs & SafeOmit<AddedNeeds, Adds>>,
     Expand<Adds & AddedAdds>
   >;
-};
-
-type TerminatedMiddlewareStack<Needs extends {}> = {
-  handler: Middleware<Needs>;
 };
 
 export function composeMiddleware<
