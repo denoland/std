@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns all elements in the given array that produce a distinct value using the given selector, preserving order by first occurrence

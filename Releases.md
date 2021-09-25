@@ -1,3 +1,15 @@
+### 0.108.0 / 2021.09.21
+
+- fix: use `strict-ts44.tsconfig.json` on release tests (#1278)
+- fix(collections): improve handling of arrays containing undefined (#1282)
+- feat(testing/asserts): add `assertThrows()` overload to receive error (#1219)
+- feat(std/node): add `ParsedUrlQuery` to `querystring` (#1229)
+- feat(collections): use function overloading (#1286)
+- chore(node/events): remove unnecessary `@ts-ignore` comments (#1280)
+- docs(collections): add browser-compatibility comment (#1285)
+- docs(encoding): add hex docs (#1287)
+- docs(collections): replace console.assert with assertEquals (#1293)
+
 ### 0.107.0 / 2021.09.14
 
 - BREAKING(http): cookie headers as params (#1041)

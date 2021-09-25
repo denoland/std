@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns the first element that is the smallest value of the given function or undefined if there are no elements.
@@ -21,13 +22,33 @@
  * ```
  */
 export function minBy<T>(
-  collection: readonly T[],
-  selector: ((el: T) => number) | ((el: T) => string),
+  array: readonly T[],
+  selector: (el: T) => number,
+): T | undefined;
+export function minBy<T>(
+  array: readonly T[],
+  selector: (el: T) => string,
+): T | undefined;
+export function minBy<T>(
+  array: readonly T[],
+  selector: (el: T) => bigint,
+): T | undefined;
+export function minBy<T>(
+  array: readonly T[],
+  selector: (el: T) => Date,
+): T | undefined;
+export function minBy<T>(
+  array: readonly T[],
+  selector:
+    | ((el: T) => number)
+    | ((el: T) => string)
+    | ((el: T) => bigint)
+    | ((el: T) => Date),
 ): T | undefined {
   let min: T | undefined = undefined;
   let minValue: ReturnType<typeof selector> | undefined = undefined;
 
-  for (const current of collection) {
+  for (const current of array) {
     const currentValue = selector(current);
 
     if (minValue === undefined || currentValue < minValue) {

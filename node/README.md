@@ -40,7 +40,7 @@ Deno standard library as it's a compatibility module.
 - [ ] repl
 - [x] stream
 - [x] stream/promises
-- [ ] stream/web
+- [x] stream/web _partly_
 - [x] string_decoder
 - [x] sys
 - [x] timers

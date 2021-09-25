@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Builds 2-tuples of elements from the given array with matching indices, stopping when the smaller array's end is reached

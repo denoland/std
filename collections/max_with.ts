@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns the first element having the largest value according to the provided
@@ -25,10 +26,12 @@ export function maxWith<T>(
   comparator: (a: T, b: T) => number,
 ): T | undefined {
   let max: T | undefined = undefined;
+  let isFirst = true;
 
   for (const current of array) {
-    if (max === undefined || comparator(current, max) > 0) {
+    if (isFirst || comparator(current, <T> max) > 0) {
       max = current;
+      isFirst = false;
     }
   }
 
