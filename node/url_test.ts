@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
 import * as url from "./url.ts";
+import { isWindows } from "../_util/os.ts";
 
 Deno.test({
   name: "[url] URL",
@@ -12,6 +13,7 @@ Deno.test({
 // todo(wafuwafu13) Add Windows and invalid case
 
 Deno.test({
+  ignore: isWindows,
   name: "fileURLToPath",
   fn() {
     // Lowercase ascii alpha
@@ -60,6 +62,7 @@ Deno.test({
 });
 
 Deno.test({
+  ignore: isWindows,
   name: "pathToFileURL",
   fn() {
     // Lowercase ascii alpha
