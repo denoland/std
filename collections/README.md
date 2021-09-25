@@ -839,7 +839,7 @@ assert(numbers.includes(random as number));
 ### runningReduce
 
 Calls the given reducer on each element of the given collection, passing it's
-result as the accumulator to the next respective call. If initialValue is given, 
+result as the accumulator to the next respective call. If initialValue is given,
 starting with that value. Returns all intermediate accumulator results.
 
 Example:
@@ -853,8 +853,12 @@ const result = runningReduce(firstNumbers, (sum, current) => sum + current);
 
 assertEquals(result, [1, 3, 6, 10, 15]);
 
-const secondNumbers = [1, 2, 3, 4, 5]
-const resultWithInitialValue = runningReduce(secondNumbers, (sum, current) => sum + current, 5);
+const secondNumbers = [1, 2, 3, 4, 5];
+const resultWithInitialValue = runningReduce(
+  secondNumbers,
+  (sum, current) => sum + current,
+  5,
+);
 
 assertEquals(resultWithInitialValue, [6, 8, 11, 15, 20]);
 ```
