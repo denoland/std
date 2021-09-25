@@ -848,13 +848,13 @@ Example:
 import { runningReduce } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
-const numbers = [1, 2, 3, 4, 5];
-const sumSteps = runningReduce(numbers, (sum, current) => sum + current);
+const firstNumbers = [1, 2, 3, 4, 5];
+const result = runningReduce(firstNumbers, (sum, current) => sum + current);
 
-assertEquals(sumSteps, [1, 3, 6, 10, 15]);
+assertEquals(result, [1, 3, 6, 10, 15]);
 
-const numbers = [1, 2, 3, 4, 5]
-const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 5);
+const secondNumbers = [1, 2, 3, 4, 5]
+const resultWithInitialValue = runningReduce(secondNumbers, (sum, current) => sum + current, 5);
 
-assertEquals(result, [6, 8, 11, 15, 20]);
+assertEquals(resultWithInitialValue, [6, 8, 11, 15, 20]);
 ```
