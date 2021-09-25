@@ -11,15 +11,15 @@ export type Middleware<
   next?: Middleware<Expand<Needs & Adds>>,
 ) => Promise<Response>;
 
-type MiddlewareStack<
+type MiddlewareChain<
   Needs extends {},
   Adds = {},
 > = {
-  handler: Middleware<Needs, Adds>;
+  (...args: Parameters<Middleware<Needs, Adds>>): ReturnType<Middleware<Needs, Adds>>
 
   add<AddedNeeds, AddedAdds>(
     middleware: Middleware<AddedNeeds, AddedAdds>,
-  ): MiddlewareStack<
+  ): MiddlewareChain<
     Expand<Needs & SafeOmit<AddedNeeds, Adds>>,
     Expand<Adds & AddedAdds>
   >;
@@ -50,17 +50,19 @@ export function composeMiddleware<
     );
 }
 
-export function stack<Needs extends {}, Adds = {}>(
+export function chain<Needs extends {}, Adds = {}>(
   middleware: Middleware<Needs, Adds>,
-): MiddlewareStack<Needs, Adds> {
-  return {
-    handler: middleware,
-    add: (m) =>
-      stack(
+): MiddlewareChain<Needs, Adds> {
+    const copy = middleware.bind({}) as MiddlewareChain<Needs, Adds>
+
+    copy.add = (m) =>
+      chain(
         composeMiddleware(
           middleware,
           m,
         ),
-      ),
-  };
+      )
+
+    return copy
 }
+

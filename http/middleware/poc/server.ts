@@ -2,7 +2,7 @@ import { distinctBy } from "../../../collections/mod.ts";
 import { listenAndServe } from "../../server.ts";
 import { acceptJson } from "../json.ts";
 import { log } from "../log.ts";
-import { stack } from "../../middleware.ts";
+import { chain } from "../../middleware.ts";
 import { HttpRequest } from "../../request.ts";
 import { validateZoo } from "./validate_zoo.ts";
 import { Zoo } from "./zoo.ts";
@@ -30,12 +30,11 @@ function passThrough(
   return next!(req);
 }
 
-const handleCreateZoo = stack(log)
+const handleCreateZoo = chain(log)
   .add(passThrough)
   .add(acceptJson)
   .add(validateZoo)
   .add(createZoo)
-  .handler;
 
 await listenAndServe(
   "0.0.0.0:5000",
