@@ -3,8 +3,8 @@
 
 /**
  * Calls the given reducer on each element of the given collection, passing it's
- * result as the accumulator to the next respective call, starting with the given
- * initialValue. Returns all intermediate accumulator results.
+ * result as the accumulator to the next respective call. If initialValue is given,
+ * starting with that value. Returns all intermediate accumulator results.
  *
  * Example:
  *
@@ -13,16 +13,35 @@
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [1, 2, 3, 4, 5];
- * const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
+ * const sumSteps = runningReduce(numbers, (sum, current) => sum + current);
  *
  * assertEquals(sumSteps, [1, 3, 6, 10, 15]);
+ *
+ * const numbers = [1, 2, 3, 4, 5]
+ * const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 5);
+ *
+ * assertEquals(result, [6, 8, 11, 15, 20]);
  * ```
  */
-export function runningReduce<T, O>(
+export function runningReduce<T>(
   array: readonly T[],
-  reducer: (accumulator: O, current: T) => O,
-  initialValue: O,
-): O[] {
-  let currentResult = initialValue;
+  reducer: (accumulator: T, current: T) => T,
+  initialValue?: T,
+): T[] {
+  let currentResult: T;
+
+  if (!initialValue) {
+    switch (typeof array[0]) {
+      case "string":
+        currentResult = "" as unknown as T;
+        break;
+      case "number":
+        currentResult = 0 as unknown as T;
+        break;
+    }
+  } else {
+    currentResult = initialValue;
+  }
+
   return array.map((el) => currentResult = reducer(currentResult, el));
 }
