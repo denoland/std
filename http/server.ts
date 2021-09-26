@@ -115,10 +115,10 @@ export class Server {
    * Constructs a new HTTP Server instance.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server, HttpRequest } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
    *
    * const addr = ":4505";
-   * const handler = (request: Request) => {
+   * const handler = (request: HttpRequest) => {
    *   const body = `Your user-agent is:\n\n${request.headers.get(
    *    "user-agent",
    *   ) ?? "Unknown"}`;
@@ -148,9 +148,9 @@ export class Server {
    * Will always close the created listener.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server, HttpRequest } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
    *
-   * const handler = (request: Request) => {
+   * const handler = (request: HttpRequest) => {
    *   const body = `Your user-agent is:\n\n${request.headers.get(
    *    "user-agent",
    *   ) ?? "Unknown"}`;
@@ -201,10 +201,10 @@ export class Server {
    * Throws a server closed error if the server has been closed.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server, HttpRequest } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
    *
    * const addr = ":4505";
-   * const handler = (request: Request) => {
+   * const handler = (request: HttpRequest) => {
    *   const body = `Your user-agent is:\n\n${request.headers.get(
    *    "user-agent",
    *   ) ?? "Unknown"}`;
@@ -248,10 +248,10 @@ export class Server {
    * Throws a server closed error if the server has been closed.
    *
    * ```ts
-   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   * import { Server, HttpRequest } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
    *
    * const addr = ":4505";
-   * const handler = (request: Request) => {
+   * const handler = (request: HttpRequest) => {
    *   const body = `Your user-agent is:\n\n${request.headers.get(
    *    "user-agent",
    *   ) ?? "Unknown"}`;
@@ -345,7 +345,7 @@ export class Server {
   ): Promise<void> {
     try {
       const req = new HttpRequest(requestEvent.request, connInfo, {});
-      // Handle the request event, generating a response.
+      // Handle the request, generating a response.
       const response = await this.#handler(req);
 
       // Send the response.
@@ -533,7 +533,7 @@ export interface ServeInit {
  * handles requests on these connections with the given handler.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
  *
  * const listener = Deno.listen({ port: 4505 });
  *
@@ -577,7 +577,7 @@ export async function serve(
  * `0.0.0.0` is used.
  *
  * ```ts
- * import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
  *
  * const addr = ":4505";
  *
@@ -621,7 +621,7 @@ export async function listenAndServe(
  * `0.0.0.0` is used.
  *
  * ```ts
- * import { listenAndServeTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { listenAndServeTls } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
  *
  * const addr = ":4505";
  * const certFile = "/path/to/certFile.crt";
