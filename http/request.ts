@@ -26,15 +26,15 @@ export class HttpRequest<C extends {} = {}> implements Request {
   }
 
   /**
-   * Current request context. Can be used to attach arbitrary request specific
-   * information e.g. in middleware.
+   * Contains arbitrary custom request specific context data. Can be set during
+   * construction or via `addContext`
    */
   get context(): C {
     return this.#context;
   }
 
   /**
-   * Add information to the request context. The passed object will be merged
+   * Add information to the request `context`. The passed object will be merged
    * with the current request context.
    *
    * Example:
