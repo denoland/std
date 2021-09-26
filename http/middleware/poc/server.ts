@@ -34,7 +34,7 @@ const handleCreateZoo = chain(log)
   .add(passThrough)
   .add(acceptJson)
   .add(validateZoo)
-  .add(createZoo)
+  .add(createZoo);
 
 await listenAndServe(
   "0.0.0.0:5000",
