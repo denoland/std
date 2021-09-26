@@ -62,95 +62,95 @@ export class HttpRequest<C extends {} = {}> implements Request {
   *  * Request Delegates *
   *  ********************* */
 
-  get cache(): RequestCache {
+  get cache() {
     return this.request.cache;
   }
 
-  get credentials(): RequestCredentials {
+  get credentials() {
     return this.request.credentials;
   }
 
-  get destination(): RequestDestination {
+  get destination() {
     return this.request.destination;
   }
 
-  get headers(): Headers {
+  get headers() {
     return this.request.headers;
   }
 
-  get integrity(): string {
+  get integrity() {
     return this.request.integrity;
   }
 
-  get isHistoryNavigation(): boolean {
+  get isHistoryNavigation() {
     return this.request.isHistoryNavigation;
   }
 
-  get isReloadNavigation(): boolean {
+  get isReloadNavigation() {
     return this.request.isReloadNavigation;
   }
 
-  get keepalive(): boolean {
+  get keepalive() {
     return this.request.keepalive;
   }
 
-  get method(): string {
+  get method() {
     return this.request.method;
   }
 
-  get mode(): RequestMode {
+  get mode() {
     return this.request.mode;
   }
 
-  get redirect(): RequestRedirect {
+  get redirect() {
     return this.request.redirect;
   }
 
-  get referrer(): string {
+  get referrer() {
     return this.request.referrer;
   }
 
-  get referrerPolicy(): ReferrerPolicy {
+  get referrerPolicy() {
     return this.request.referrerPolicy;
   }
 
-  get signal(): AbortSignal {
+  get signal() {
     return this.request.signal;
   }
 
-  get url(): string {
+  get url() {
     return this.request.url;
   }
 
-  get body(): ReadableStream<Uint8Array> | null {
+  get body() {
     return this.request.body;
   }
 
-  get bodyUsed(): boolean {
+  get bodyUsed() {
     return this.request.bodyUsed;
   }
 
-  arrayBuffer(): Promise<ArrayBuffer> {
+  arrayBuffer() {
     return this.request.arrayBuffer();
   }
 
-  blob(): Promise<Blob> {
+  blob() {
     return this.request.blob();
   }
 
-  formData(): Promise<FormData> {
+  formData() {
     return this.request.formData();
   }
 
-  json(): Promise<any> {
+  json() {
     return this.request.json();
   }
 
-  text(): Promise<string> {
+  text() {
     return this.request.text();
   }
 
-  clone(): Request {
+  clone() {
     return new HttpRequest<C>(
       this.request.clone(),
       this.connInfo,
