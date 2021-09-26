@@ -151,6 +151,10 @@ export class HttpRequest<C extends {} = {}> implements Request {
   }
 
   clone(): Request {
-    return this.request.clone();
+    return new HttpRequest<C>(
+      this.request.clone(),
+      this.connInfo,
+      this.context,
+    );
   }
 }
