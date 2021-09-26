@@ -1,10 +1,22 @@
 import { ConnInfo } from "./server.ts";
 import { Expand } from "../_util/types.ts";
 
+/**
+ * An incoming request. Follows the Request web standard, adding connection
+ * information, a mutable request context and some helpers for common use cases.
+ *
+ * @typeParam C - Type of the current request `context` */
 export class HttpRequest<C extends {} = {}> implements Request {
   #context: C;
   #parsedUrl?: URL = undefined;
 
+  /**
+   * Wraps a request, adding connection information and request context to it.
+   *
+   * @param request The incoming `Request` to wrap
+   * @param connInfo Connection information about the connection `request` was received on
+   * @param context Initial request context, set to `{}` for empty context
+   */
   constructor(
     private request: Request,
     readonly connInfo: ConnInfo,
@@ -13,10 +25,27 @@ export class HttpRequest<C extends {} = {}> implements Request {
     this.#context = context;
   }
 
+  /**
+   * Current request context. Can be used to attach arbitrary request specific
+   * information e.g. in middleware.
+   */
   get context(): C {
     return this.#context;
   }
 
+  /**
+   * Add information to the request context. The passed object will be merged
+   * with the current request context.
+   *
+   * Example:
+   *
+   * ```ts
+   * declare const req: HttpRequest
+   *
+   * const reqWithUser = req.addContext({ user: "Example" })
+   * assertEquals(reqWithUser.context.user, "Example")
+   * ```
+   */
   addContext<N extends {}>(contextToAdd: N): HttpRequest<Expand<C & N>> {
     this.#context = { ...this.#context, ...contextToAdd };
 
@@ -24,6 +53,7 @@ export class HttpRequest<C extends {} = {}> implements Request {
     return this as HttpRequest<C & N>;
   }
 
+  /** `URL` object representation of this request's url */
   get parsedUrl(): URL {
     return this.#parsedUrl ??
       (this.#parsedUrl = new URL(this.url));
