@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { grant, grantOrThrow } from "./mod.ts";
-import { assert, assertEquals, assertThrowsAsync } from "../testing/asserts.ts";
+import { assert, assertEquals, assertRejects } from "../testing/asserts.ts";
 
 Deno.test({
   name: "grant basic",
@@ -46,7 +46,7 @@ Deno.test({
 Deno.test({
   name: "grantOrThrow invalid argument",
   fn() {
-    assertThrowsAsync(
+    assertRejects(
       () => {
         return grantOrThrow();
       },
@@ -59,7 +59,7 @@ Deno.test({
 Deno.test({
   name: "grantOrThrow invalid permissionDescriptor name",
   fn() {
-    assertThrowsAsync(
+    assertRejects(
       () => {
         // deno-lint-ignore no-explicit-any
         return grantOrThrow({ name: "nett" } as any);
