@@ -70,4 +70,4 @@ Deno.test({
   },
 });
 
-// todo(wafuwafu13): Add denied case
+// TODO(wafuwafu13): Add denied case
