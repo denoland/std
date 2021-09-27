@@ -30,6 +30,7 @@
       "test-event-emitter-remove-listeners.js",
       "test-event-emitter-set-max-listeners-side-effects.js",
       "test-event-emitter-special-event-names.js",
+      "test-event-emitter-subclass.js",
       "test-util-inherits.js"
     ]
   },

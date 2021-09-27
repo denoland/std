@@ -82,10 +82,27 @@ export class EventEmitter {
   }
 
   private maxListeners: number | undefined;
-  private _events: EventMap;
+  private _events!: EventMap;
 
-  public constructor() {
-    this._events = Object.create(null);
+  static #init(emitter: EventEmitter): void {
+    if (
+      emitter._events == null ||
+      emitter._events === Object.getPrototypeOf(emitter)._events // If `emitter` does not own `_events` but the prototype does
+    ) {
+      emitter._events = Object.create(null);
+    }
+  }
+
+  /**
+   * Overrides `call` to mimic the es5 behavior with the es6 class.
+   */
+  // deno-lint-ignore no-explicit-any
+  static call = function call(thisArg: any): void {
+    EventEmitter.#init(thisArg);
+  };
+
+  constructor() {
+    EventEmitter.#init(this);
   }
 
   private _addListener(
@@ -107,8 +124,11 @@ export class EventEmitter {
       } else {
         listeners.push(listener);
       }
-    } else {
+    } else if (this._events) {
       this._events[eventName] = listener;
+    } else {
+      EventEmitter.#init(this);
+      (this._events as EventMap)[eventName] = listener;
     }
     const max = this.getMaxListeners();
     if (max > 0 && this.listenerCount(eventName) > max) {
@@ -168,7 +188,9 @@ export class EventEmitter {
    * registered listeners.
    */
   public eventNames(): [string | symbol] {
-    return Reflect.ownKeys(this._events) as [string | symbol];
+    return Reflect.ownKeys(this._events) as [
+      string | symbol,
+    ];
   }
 
   /**
