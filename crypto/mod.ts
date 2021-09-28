@@ -213,7 +213,7 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
         // to call an algorithm we don't recognize, pass it along to WebCrypto
         // in case it's a non-standard algorithm supported by the the runtime
         // they're using.
-        return await webCrypto.subtle.digest(
+        return webCrypto.subtle.digest(
           algorithm,
           data as unknown as Uint8Array,
         );
