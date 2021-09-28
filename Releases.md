@@ -1,3 +1,20 @@
+### 0.109.0 / 2021.09.28
+
+- chore(examples): update chat server example (#1292)
+- test(collections/running_reduce): add test case (#1320)
+- chore: clean up issue templates (#1318)
+- test(permissions): add invalid case (#1314)
+- fix(node/events): make `EventEmitter.call` compatible with es5 (#1315)
+- chore(node/url): add tests for `fileURLToPath` and `pathToFileURL` (#1309)
+- perf(crypto): reduce one mircotask (#1307)
+- docs: change CI rule (#1305)
+- chore: deprecate ws module (#1306)
+- chore(node/_util): remove `any` from `_util_callbackify.ts` (#1303)
+- chore(node/querystring): add test case for escape (#1304)
+- feat(std/node/stream): add partial support for `stream/web` (#1297)
+- fix(node/_tools): use denoflate to decompress Node test folder (#1299)
+- fix(std/node/module): treat .mjs files as ESM (#1301)
+
 ### 0.108.0 / 2021.09.21
 
 - fix: use `strict-ts44.tsconfig.json` on release tests (#1278)
