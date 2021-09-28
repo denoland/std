@@ -246,6 +246,16 @@ export class Buffer extends Uint8Array {
   }
 
   /**
+   * Reads byteLength number of bytes from buf at the specified offset and interprets
+   * the result as an unsigned big-endian integer supporting up to 32 bits of accuracy.
+   */
+  readUIntBE(offset = 0, byteLength: number) {
+    if (byteLength === 4) return this.readUInt32BE(offset);
+    if (byteLength === 2) return this.readUInt16BE(offset);
+    if (byteLength === 1) return this.readUInt8(offset);
+  }
+
+  /**
    * Copies data from a region of buf to a region in target, even if the target
    * memory region overlaps with buf.
    */
@@ -255,9 +265,10 @@ export class Buffer extends Uint8Array {
     sourceStart = 0,
     sourceEnd = this.length,
   ): number {
-    const sourceBuffer = this
-      .subarray(sourceStart, sourceEnd)
-      .subarray(0, Math.max(0, targetBuffer.length - targetStart));
+    const sourceBuffer = this.subarray(sourceStart, sourceEnd).subarray(
+      0,
+      Math.max(0, targetBuffer.length - targetStart),
+    );
 
     if (sourceBuffer.length === 0) return 0;
 
