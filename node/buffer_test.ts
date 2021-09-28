@@ -299,6 +299,27 @@ Deno.test({
 });
 
 Deno.test({
+  name: "Buffer readUIntBE",
+  fn() {
+    const buffer = Buffer.from([
+      0x01,
+      0x02,
+      0x03,
+      0x04,
+      0x05,
+      0x06,
+      0x07,
+      0x08,
+    ]);
+    assertEquals(buffer.readUIntBE(0, 1), 0x01);
+    assertEquals(buffer.readUIntBE(0, 2), 0x0102);
+    assertEquals(buffer.readUIntBE(0, 4), 0x01020304);
+    assertEquals(buffer.readUIntBE(1, 6), undefined);
+    assertEquals(buffer.readUIntBE(2, 8), undefined);
+  },
+});
+
+Deno.test({
   name: "Buffer copy works as expected",
   fn() {
     const data1 = new Uint8Array([1, 2, 3]);
