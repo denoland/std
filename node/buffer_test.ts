@@ -317,9 +317,11 @@ Deno.test({
     assertThrows(
       () => {
         assertEquals(buffer.readUIntBE(0, 5), 0x01020304);
+        assertEquals(buffer.readUIntBE(0, 6), 0x010203040506);
+        assertEquals(buffer.readUIntBE(1, 6), 0x020304050607);
       },
       Error,
-      `The value of "byteLength" is out of range. It must be >= 1 and <= 4. Received 5`,
+      `Not implemented: byteLength`,
     );
   },
 });

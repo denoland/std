@@ -246,7 +246,7 @@ export class Buffer extends Uint8Array {
     );
   }
 
-  boundsError(value: number, length: number, type: string): never {
+  private boundsError(value: number, length: number, type: string): never {
     if (Math.floor(value) !== value) {
       throw new ERR_OUT_OF_RANGE(type || "offset", "an integer", value);
     }
@@ -264,6 +264,9 @@ export class Buffer extends Uint8Array {
    * the result as an unsigned big-endian integer supporting up to 32 bits of accuracy.
    */
   readUIntBE(offset = 0, byteLength: number): number {
+    if (byteLength === 3 || byteLength === 5 || byteLength === 6) {
+      notImplemented(`byteLength ${byteLength}`);
+    }
     if (byteLength === 4) return this.readUInt32BE(offset);
     if (byteLength === 2) return this.readUInt16BE(offset);
     if (byteLength === 1) return this.readUInt8(offset);
