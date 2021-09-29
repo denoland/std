@@ -2,6 +2,7 @@
 import * as hex from "../encoding/hex.ts";
 import * as base64 from "../encoding/base64.ts";
 import { Encodings, normalizeEncoding, notImplemented } from "./_utils.ts";
+import { ERR_BUFFER_OUT_OF_BOUNDS, ERR_OUT_OF_RANGE } from "./_errors.ts";
 
 const notImplementedEncodings = [
   "ascii",
@@ -245,14 +246,28 @@ export class Buffer extends Uint8Array {
     );
   }
 
+  boundsError(value: number, length: number, type: string = "offset"): never {
+    if (Math.floor(value) !== value) {
+      throw new ERR_OUT_OF_RANGE(type, "an integer", value);
+    }
+    if (length < 0) throw new ERR_BUFFER_OUT_OF_BOUNDS();
+
+    throw new ERR_OUT_OF_RANGE(
+      type,
+      `>= ${type ? 1 : 0} and <= ${length}`,
+      value,
+    );
+  }
+
   /**
    * Reads byteLength number of bytes from buf at the specified offset and interprets
    * the result as an unsigned big-endian integer supporting up to 32 bits of accuracy.
    */
-  readUIntBE(offset = 0, byteLength: number) {
+  readUIntBE(offset = 0, byteLength: number): number {
     if (byteLength === 4) return this.readUInt32BE(offset);
     if (byteLength === 2) return this.readUInt16BE(offset);
     if (byteLength === 1) return this.readUInt8(offset);
+    this.boundsError(byteLength, 4, "byteLength");
   }
 
   /**
