@@ -68,7 +68,7 @@ function checkConfigTestFilesOrder() {
     );
   }
 
-  const ignoreCommonTests = config.ignore.parallel;
+  const ignoreCommonTests = config.ignore.common;
   const sortedIgnoreCommonTests = JSON.parse(JSON.stringify(ignoreCommonTests));
   sortedIgnoreCommonTests.sort();
   if (
