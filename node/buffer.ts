@@ -246,14 +246,14 @@ export class Buffer extends Uint8Array {
     );
   }
 
-  boundsError(value: number, length: number, type: string = "offset"): never {
+  boundsError(value: number, length: number, type: string): never {
     if (Math.floor(value) !== value) {
-      throw new ERR_OUT_OF_RANGE(type, "an integer", value);
+      throw new ERR_OUT_OF_RANGE(type || "offset", "an integer", value);
     }
     if (length < 0) throw new ERR_BUFFER_OUT_OF_BOUNDS();
 
     throw new ERR_OUT_OF_RANGE(
-      type,
+      type || "offset",
       `>= ${type ? 1 : 0} and <= ${length}`,
       value,
     );
