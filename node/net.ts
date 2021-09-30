@@ -93,6 +93,11 @@ import { isWindows } from "../_util/os.ts";
 import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
 import { codeMap } from "./internal_binding/uv.ts";
 import { guessHandleType } from "./internal_binding/util.ts";
+import { debuglog } from "./_util/_debuglog.ts";
+
+let debug = debuglog("net", (fn) => {
+  debug = fn;
+});
 
 const kLastWriteQueueSize = Symbol("lastWriteQueueSize");
 const kSetNoDelay = Symbol("kSetNoDelay");
@@ -216,7 +221,7 @@ interface NormalizedArgs {
   [normalizedArgsSymbol]?: boolean;
 }
 
-const noop = (_arrayBuffer: Uint8Array): undefined => {
+const _noop = (_arrayBuffer: Uint8Array, _nread: number): undefined => {
   return;
 };
 
@@ -324,6 +329,8 @@ function _afterConnect(
     return;
   }
 
+  debug("afterConnect");
+
   assert(socket.connecting);
 
   socket.connecting = false;
@@ -424,6 +431,13 @@ function _internalConnect(
       err = (socket._handle as TCP).bind6(localAddress, localPort, flags);
     }
 
+    debug(
+      "binding to localAddress: %s and localPort: %d (addressType: %d)",
+      localAddress,
+      localPort,
+      addressType,
+    );
+
     err = _checkBindError(err, localPort, socket._handle as TCP);
 
     if (err) {
@@ -517,6 +531,7 @@ function _writeAfterFIN(
 
 function _tryReadStart(socket: Socket): void {
   // Not already reading, start the flow.
+  debug("Socket._handle.readStart");
   socket._handle!.reading = true;
   const err = socket._handle!.readStart();
 
@@ -565,7 +580,7 @@ function _initSocketHandle(socket: Socket): void {
 }
 
 function _lookupAndConnect(
-  socket: Socket,
+  self: Socket,
   options: TcpSocketConnectOptions,
 ): void {
   const { localAddress, localPort } = options;
@@ -598,14 +613,14 @@ function _lookupAndConnect(
   const addressType = isIP(host);
   if (addressType) {
     defaultTriggerAsyncIdScope(
-      socket[asyncIdSymbol],
+      self[asyncIdSymbol],
       nextTick,
       () => {
-        if (socket.connecting) {
+        if (self.connecting) {
           defaultTriggerAsyncIdScope(
-            socket[asyncIdSymbol],
+            self[asyncIdSymbol],
             _internalConnect,
-            socket,
+            self,
             host,
             port,
             addressType,
@@ -637,10 +652,12 @@ function _lookupAndConnect(
     dnsOpts.hints = ADDRCONFIG;
   }
 
-  socket._host = host;
+  debug("connect: find host", host);
+  debug("connect: dns options", dnsOpts);
+  self._host = host;
   const lookup = options.lookup || dnsLookup;
 
-  defaultTriggerAsyncIdScope(socket[asyncIdSymbol], function () {
+  defaultTriggerAsyncIdScope(self[asyncIdSymbol], function () {
     lookup(
       host,
       dnsOpts,
@@ -649,12 +666,12 @@ function _lookupAndConnect(
         ip: string,
         addressType: number,
       ) {
-        socket.emit("lookup", err, ip, addressType, host);
+        self.emit("lookup", err, ip, addressType, host);
 
         // It's possible we were destroyed while looking this up.
         // XXX it would be great if we could cancel the promise returned by
         // the look up.
-        if (!socket.connecting) {
+        if (!self.connecting) {
           return;
         }
 
@@ -662,11 +679,11 @@ function _lookupAndConnect(
           // net.createConnection() creates a net.Socket object and immediately
           // calls net.Socket.connect() on it (that's us). There are no event
           // listeners registered yet so defer the error event to the next tick.
-          nextTick(_connectErrorNT, socket, err);
+          nextTick(_connectErrorNT, self, err);
         } else if (!isIP(ip)) {
           err = new ERR_INVALID_IP_ADDRESS(ip);
 
-          nextTick(_connectErrorNT, socket, err);
+          nextTick(_connectErrorNT, self, err);
         } else if (addressType !== 4 && addressType !== 6) {
           err = new ERR_INVALID_ADDRESS_FAMILY(
             `${addressType}`,
@@ -674,14 +691,14 @@ function _lookupAndConnect(
             options.port,
           );
 
-          nextTick(_connectErrorNT, socket, err);
+          nextTick(_connectErrorNT, self, err);
         } else {
-          socket._unrefTimer();
+          self._unrefTimer();
 
           defaultTriggerAsyncIdScope(
-            socket[asyncIdSymbol],
+            self[asyncIdSymbol],
             _internalConnect,
-            socket,
+            self,
             ip,
             port,
             addressType,
@@ -695,10 +712,16 @@ function _lookupAndConnect(
 }
 
 function _afterShutdown(this: ShutdownWrap<TCP>) {
+  // deno-lint-ignore no-explicit-any
+  const self: any = this.handle[ownerSymbol];
+
+  debug("afterShutdown destroyed=%j", self.destroyed, self._readableState);
+
   this.callback();
 }
 
 function _emitCloseNT(socket: Socket) {
+  debug("SERVER: emit close");
   socket.emit("close");
 }
 
@@ -1295,17 +1318,19 @@ export class Socket extends Duplex {
 
   // The user has called .end(), and all the bytes have been
   // sent out to the other side.
-  // @ts-ignore Duplex defined as a property but want a function
   // deno-lint-ignore no-explicit-any
-  _final(cb: any): any {
+  _final = (cb: any): any => {
     // If still connecting - defer handling `_final` until 'connect' will happen
     if (this.pending) {
+      debug("_final: not yet connected");
       return this.once("connect", () => this._final(cb));
     }
 
     if (!this._handle) {
       return cb();
     }
+
+    debug("_final: not ended, call shutdown()");
 
     const req = new ShutdownWrap<Handle>();
     req.oncomplete = _afterShutdown;
@@ -1319,7 +1344,7 @@ export class Socket extends Duplex {
     } else if (err !== 0) {
       return cb(errnoException(err, "shutdown"));
     }
-  }
+  };
 
   _onTimeout() {
     const handle = this._handle;
@@ -1338,11 +1363,14 @@ export class Socket extends Duplex {
       }
     }
 
+    debug("_onTimeout");
     this.emit("timeout");
   }
 
   _read(size?: number): void {
+    debug("_read");
     if (this.connecting || !this._handle) {
+      debug("_read wait for connection");
       this.once("connect", () => this._read(size));
     } else if (!this._handle.reading) {
       _tryReadStart(this);
@@ -1350,6 +1378,7 @@ export class Socket extends Duplex {
   }
 
   _destroy(exception: Error | null, cb: (err?: Error | null) => void) {
+    debug("destroy");
     this.connecting = false;
 
     // deno-lint-ignore no-this-alias
@@ -1357,27 +1386,36 @@ export class Socket extends Duplex {
       clearTimeout(s[kTimeout]);
     }
 
+    debug("close");
     if (this._handle) {
+      debug("close handle");
       const isException = exception ? true : false;
       // `bytesRead` and `kBytesWritten` should be accessible after `.destroy()`
       this[kBytesRead] = this._handle.bytesRead;
       this[kBytesWritten] = this._handle.bytesWritten;
 
+      // deno-lint-ignore no-this-alias
+      const that = this;
+
       this._handle.close(() => {
+        // Close is async, so we differ from Node here in explicitly waiting for
+        // the callback to have fired.
+        that._handle!.onread = _noop;
+        that._handle = null;
+        that._sockname = undefined;
+
+        cb(exception);
+
+        debug("emit close");
         this.emit("close", isException);
       });
-
-      this._handle.onread = noop;
-      this._handle = null;
-      this._sockname = undefined;
-
-      cb(exception);
     } else {
       cb(exception);
       nextTick(_emitCloseNT, this);
     }
 
     if (this._server) {
+      debug("has server");
       this._server._connections--;
 
       if (this._server._emitCloseIfDrained) {
@@ -1523,6 +1561,7 @@ export function connect(path: string, connectionListener?: () => void): Socket;
 export function connect(...args: unknown[]) {
   const normalized = _normalizeArgs(args);
   const options = normalized[0] as Partial<NetConnectOptions>;
+  debug("createConnection", normalized);
   const socket = new Socket(options);
 
   if (options.timeout) {
@@ -1684,8 +1723,9 @@ export function _createServerHandle(
   if (typeof fd === "number" && fd >= 0) {
     try {
       handle = _createHandle(fd, true);
-    } catch {
+    } catch (e) {
       // Not a fd we can listen on. This will trigger an error.
+      debug("listen invalid fd=%d:", fd, e.message);
       return codeMap.get("EINVAL")!;
     }
 
@@ -1714,6 +1754,7 @@ export function _createServerHandle(
   }
 
   if (address || port || isTCP) {
+    debug("bind to", address || "any");
     if (!address) {
       // Try binding to ipv6 first
       err = (handle as TCP).bind6(
@@ -1761,6 +1802,8 @@ function _onconnection(this: any, err: number, clientHandle?: Handle) {
   const handle = this;
   const self = handle[ownerSymbol];
 
+  debug("onconnection");
+
   if (err) {
     self.emit("error", errnoException(err, "accept"));
 
@@ -1798,9 +1841,15 @@ function _setupListenHandle(
   fd?: number | null,
   flags?: number,
 ): void {
+  debug("setupListenHandle", address, port, addressType, backlog, fd);
+
   // If there is not yet a handle, we need to create one and bind.
   // In the case of a server sent via IPC, we don't need to do this.
-  if (!this._handle) {
+  if (this._handle) {
+    debug("setupListenHandle: have a handle already");
+  } else {
+    debug("setupListenHandle: create a handle");
+
     let rval = null;
 
     // Try to bind to the unspecified IPv6 address, see if IPv6 is available
@@ -2330,7 +2379,11 @@ export class Server extends EventEmitter {
   _listen2 = _setupListenHandle;
 
   _emitCloseIfDrained(): void {
+    debug("SERVER _emitCloseIfDrained");
     if (this._handle || this._connections) {
+      debug(
+        `SERVER handle? ${!!this._handle}   connections? ${this._connections}`,
+      );
       return;
     }
 

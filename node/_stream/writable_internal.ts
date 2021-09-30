@@ -430,6 +430,12 @@ export function writeOrBuffer(
 
   state.length += len;
 
+  const ret = state.length < state.highWaterMark;
+
+  if (!ret) {
+    state.needDrain = true;
+  }
+
   if (state.writing || state.corked || state.errored || !state.constructed) {
     state.buffered.push({ chunk, encoding, callback });
     if (state.allBuffers && encoding !== "buffer") {
@@ -445,12 +451,6 @@ export function writeOrBuffer(
     state.sync = true;
     stream._write(chunk, encoding, state.onwrite);
     state.sync = false;
-  }
-
-  const ret = state.length < state.highWaterMark;
-
-  if (!ret) {
-    state.needDrain = true;
   }
 
   return ret && !state.errored && !state.destroyed;

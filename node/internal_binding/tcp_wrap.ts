@@ -27,6 +27,7 @@ import { notImplemented } from "../_utils.ts";
 import { unreachable } from "../../testing/asserts.ts";
 import { ConnectionWrap } from "./connection_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
+import { LibuvStreamWrap } from "./stream_wrap.ts";
 import { ownerSymbol } from "./symbols.ts";
 import { codeMap } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
@@ -97,7 +98,7 @@ export class TCP extends ConnectionWrap {
 
   #backlog?: number;
   #listener!: Deno.Listener;
-  #connections: Set<TCP> = new Set();
+  #connections = 0;
 
   #closed = false;
   #acceptBackoffDelay?: number;
@@ -130,7 +131,7 @@ export class TCP extends ConnectionWrap {
 
     // TODO(cmorten): the handling of new connections and construction feels
     // a little off. Suspect duplicating in some fashion.
-    if (conn && providerType.TCPWRAP) {
+    if (conn && provider === providerType.TCPWRAP) {
       const localAddr = conn.localAddr as Deno.NetAddr;
       this.#address = localAddr.hostname;
       this.#port = localAddr.port;
@@ -392,7 +393,7 @@ export class TCP extends ConnectionWrap {
       return;
     }
 
-    if (this.#connections.size > this.#backlog!) {
+    if (this.#connections > this.#backlog!) {
       this.#acceptBackoff();
 
       return;
@@ -424,9 +425,7 @@ export class TCP extends ConnectionWrap {
     this.#acceptBackoffDelay = undefined;
 
     const connectionHandle = new TCP(socketType.SOCKET, connection);
-    // TODO(cmorten): do we need to keep a refer to this here or will that get
-    // handled via the onconnection callback?
-    this.#connections.add(connectionHandle);
+    this.#connections++;
 
     try {
       this.onconnection!(0, connectionHandle);
@@ -438,7 +437,7 @@ export class TCP extends ConnectionWrap {
   }
 
   /** Handle server closure. */
-  _onClose(): void {
+  async _onClose(): Promise<number> {
     // TODO(cmorten): this isn't great
     this.#closed = true;
     this.reading = false;
@@ -451,31 +450,17 @@ export class TCP extends ConnectionWrap {
     this.#remotePort = undefined;
 
     this.#backlog = undefined;
+    this.#connections = 0;
     this.#acceptBackoffDelay = undefined;
 
-    // TCPWRAP
-    try {
-      this[kStreamBaseField]?.close();
-    } catch {
-      // connection already closed
-    }
-
-    // TCPSERVERWRAP
-    for (const connection of this.#connections) {
+    if (this.provider === providerType.TCPSERVERWRAP) {
       try {
-        connection.close();
-        connection[kStreamBaseField]?.close();
+        this.#listener.close();
       } catch {
-        // connection already closed
+        // listener already closed
       }
     }
 
-    this.#connections.clear();
-
-    try {
-      this.#listener.close();
-    } catch {
-      // listener already closed
-    }
+    return await LibuvStreamWrap.prototype._onClose.call(this);
   }
 }

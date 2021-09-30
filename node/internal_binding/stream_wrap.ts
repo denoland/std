@@ -49,6 +49,9 @@ export const kNumStreamBaseStateFields =
 
 export const streamBaseState = new Uint8Array(5);
 
+// This is Deno, it always will be async.
+streamBaseState[kLastWriteWasAsync] = 1;
+
 export class WriteWrap<H extends HandleWrap> extends AsyncWrap {
   handle!: H;
   oncomplete!: (status: number) => void;
@@ -81,6 +84,9 @@ export class LibuvStreamWrap extends HandleWrap {
   [kStreamBaseField]?: Deno.Reader & Deno.Writer & Deno.Closer;
 
   reading!: boolean;
+  #reading = false;
+  #currentReads: Set<Promise<void>> = new Set();
+  #currentWrites: Set<Promise<void>> = new Set();
   destroyed = false;
   writeQueueSize = 0;
   bytesRead = 0;
@@ -101,8 +107,15 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   readStart(): number {
-    this.reading = true;
-    this.#read();
+    if (!this.#reading) {
+      this.#reading = true;
+      const readPromise = this.#read();
+      this.#currentReads.add(readPromise);
+      readPromise.then(
+        () => this.#currentReads.delete(readPromise),
+        () => this.#currentReads.delete(readPromise),
+      );
+    }
 
     return 0;
   }
@@ -112,7 +125,7 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   readStop(): number {
-    this.reading = false;
+    this.#reading = false;
 
     return 0;
   }
@@ -123,18 +136,17 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   shutdown(req: ShutdownWrap<LibuvStreamWrap>): number {
-    let status = 0;
+    (async () => {
+      const status = await this._onClose();
 
-    try {
-      this[kStreamBaseField]?.close();
-    } catch {
-      // TODO(cmorten): map errors to appropriate error codes.
-      status = codeMap.get("ENOTCONN")!;
-    }
+      try {
+        req.oncomplete(status);
+      } catch {
+        // swallow callback error.
+      }
+    })();
 
-    req.oncomplete(status);
-
-    return status;
+    return 0;
   }
 
   /**
@@ -153,8 +165,12 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   writeBuffer(req: WriteWrap<LibuvStreamWrap>, data: Uint8Array): number {
-    streamBaseState[kLastWriteWasAsync] = 1;
-    this.#write(req, data);
+    const currentWrite = this.#write(req, data);
+    this.#currentWrites.add(currentWrite);
+    currentWrite.then(
+      () => this.#currentWrites.delete(currentWrite),
+      () => this.#currentWrites.delete(currentWrite),
+    );
 
     return 0;
   }
@@ -200,20 +216,32 @@ export class LibuvStreamWrap extends HandleWrap {
    * Write an UCS2 string to the stream.
    * @return An error status code.
    */
-  writeUcs2String(req: WriteWrap<LibuvStreamWrap>, data: string): number {
-    const buffer = new TextEncoder().encode(data);
-
-    return this.writeBuffer(req, buffer);
+  writeUcs2String(_req: WriteWrap<LibuvStreamWrap>, _data: string): number {
+    notImplemented();
   }
 
   /**
    * Write an LATIN1 string to the stream.
    * @return An error status code.
    */
-  writeLatin1String(req: WriteWrap<LibuvStreamWrap>, data: string): number {
-    const buffer = new TextEncoder().encode(data);
+  writeLatin1String(_req: WriteWrap<LibuvStreamWrap>, _data: string): number {
+    notImplemented();
+  }
 
-    return this.writeBuffer(req, buffer);
+  async _onClose(): Promise<number> {
+    let status = 0;
+    this.#reading = false;
+
+    try {
+      this[kStreamBaseField]?.close();
+    } catch {
+      status = codeMap.get("ENOTCONN")!;
+    }
+
+    await Promise.allSettled(this.#currentWrites);
+    await Promise.allSettled(this.#currentReads);
+
+    return status;
   }
 
   /**
@@ -226,45 +254,36 @@ export class LibuvStreamWrap extends HandleWrap {
 
   /** Internal method for reading from the attached stream. */
   async #read(): Promise<void> {
-    if (!this.reading) {
-      return;
-    }
-
-    const buf = new Uint8Array(SUGGESTED_SIZE);
+    let buf = new Uint8Array(SUGGESTED_SIZE);
 
     let nread: number | null;
+
     try {
       nread = await this[kStreamBaseField]!.read(buf);
     } catch (e) {
-      // TODO(cmorten): map all errors to status codes
-      let status: number;
-
       if (
         e instanceof Deno.errors.Interrupted ||
         e instanceof Deno.errors.BadResource
       ) {
-        status = codeMap.get("EOF")!;
+        nread = codeMap.get("EOF")!;
       } else {
-        status = codeMap.get("UNKNOWN")!;
+        nread = codeMap.get("UNKNOWN")!;
       }
 
-      this.reading = false;
-
-      try {
-        this.onread!(buf, status);
-      } catch {
-        // swallow callback errors.
-      }
-
-      return;
+      buf = new Uint8Array(0);
     }
 
     nread ??= codeMap.get("EOF")!;
 
+    streamBaseState[kReadBytesOrError] = nread;
+
     if (nread > 0) {
-      // TODO(cmorten): resize the buffer based on nread
       this.bytesRead += nread;
     }
+
+    buf = buf.slice(0, nread);
+
+    streamBaseState[kArrayBufferOffset] = 0;
 
     try {
       this.onread!(buf, nread);
@@ -272,8 +291,13 @@ export class LibuvStreamWrap extends HandleWrap {
       // swallow callback errors.
     }
 
-    if (nread > 0) {
-      this.#read();
+    if (nread >= 0 && this.#reading) {
+      const readPromise = this.#read();
+      this.#currentReads.add(readPromise);
+      readPromise.then(
+        () => this.#currentReads.delete(readPromise),
+        () => this.#currentReads.delete(readPromise),
+      );
     }
   }
 

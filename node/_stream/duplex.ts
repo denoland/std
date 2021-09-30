@@ -30,6 +30,11 @@ import {
   readableAddChunk,
 } from "./duplex_internal.ts";
 export { errorOrDestroy } from "./duplex_internal.ts";
+import { debuglog } from "../_util/_debuglog.ts";
+
+let debug = debuglog("stream", (fn) => {
+  debug = fn;
+});
 
 export interface DuplexOptions {
   allowHalfOpen?: boolean;
@@ -81,33 +86,6 @@ class Duplex extends Stream {
 
   constructor(options?: DuplexOptions) {
     super();
-
-    if (options) {
-      if (options.allowHalfOpen === false) {
-        this.allowHalfOpen = false;
-      }
-      if (typeof options.destroy === "function") {
-        this._destroy = options.destroy;
-      }
-      if (typeof options.final === "function") {
-        this._final = options.final;
-      }
-      if (typeof options.read === "function") {
-        this._read = options.read;
-      }
-      if (options.readable === false) {
-        this.readable = false;
-      }
-      if (options.writable === false) {
-        this.writable = false;
-      }
-      if (typeof options.write === "function") {
-        this._write = options.write;
-      }
-      if (typeof options.writev === "function") {
-        this._writev = options.writev;
-      }
-    }
 
     const readableOptions = {
       autoDestroy: options?.autoDestroy,
@@ -163,6 +141,40 @@ class Duplex extends Stream {
     //Very important to override onwrite here, duplex implementation adds a check
     //on the readable side
     this._writableState.onwrite = onwrite.bind(undefined, this);
+
+    if (options) {
+      if (options.allowHalfOpen === false) {
+        this.allowHalfOpen = false;
+      }
+      if (typeof options.destroy === "function") {
+        this._destroy = options.destroy;
+      }
+      if (typeof options.final === "function") {
+        this._final = options.final;
+      }
+      if (typeof options.read === "function") {
+        this._read = options.read;
+      }
+      if (options.readable === false) {
+        this.readable = false;
+        this._readableState.readable = false;
+        this._readableState.ended = true;
+        this._readableState.endEmitted = true;
+      }
+      if (options.writable === false) {
+        this.writable = false;
+        this._writableState.writable = false;
+        this._writableState.ending = true;
+        this._writableState.ended = true;
+        this._writableState.finished = true;
+      }
+      if (typeof options.write === "function") {
+        this._write = options.write;
+      }
+      if (typeof options.writev === "function") {
+        this._writev = options.writev;
+      }
+    }
   }
 
   [captureRejectionSymbol](err?: Error) {
@@ -337,6 +349,7 @@ class Duplex extends Stream {
 
   /** You can override either this method, or the async `_read` method */
   read(n?: number) {
+    debug("read", n);
     // Same as parseInt(undefined, 10), however V8 7.3 performance regressed
     // in this scenario, so we are doing it manually.
     if (n === undefined) {
@@ -361,6 +374,7 @@ class Duplex extends Stream {
         : state.length > 0) ||
         state.ended)
     ) {
+      debug("read: emitReadable", state.length, state.ended);
       if (state.length === 0 && state.ended) {
         endDuplex(this);
       } else {
@@ -379,10 +393,13 @@ class Duplex extends Stream {
     }
 
     let doRead = state.needReadable;
+    debug("need readable", doRead);
+
     if (
       state.length === 0 || state.length - (n as number) < state.highWaterMark
     ) {
       doRead = true;
+      debug("length less than watermark", doRead);
     }
 
     if (
@@ -390,13 +407,15 @@ class Duplex extends Stream {
       !state.constructed
     ) {
       doRead = false;
+      debug("reading, ended or constructing", doRead);
     } else if (doRead) {
+      debug("do read");
       state.reading = true;
       state.sync = true;
       if (state.length === 0) {
         state.needReadable = true;
       }
-      this._read();
+      this._read(state.highWaterMark);
       state.sync = false;
       if (!state.reading) {
         n = howMuchToRead(nOrig, state);
@@ -432,7 +451,8 @@ class Duplex extends Stream {
       }
     }
 
-    if (ret !== null) {
+    if (ret !== null && !state.errorEmitted && !state.closeEmitted) {
+      state.dataEmitted = true;
       this.emit("data", ret);
     }
 
@@ -513,10 +533,12 @@ class Duplex extends Stream {
   }
 
   get readable(): boolean {
-    return this._readableState?.readable &&
-      !this._readableState?.destroyed &&
-      !this._readableState?.errorEmitted &&
-      !this._readableState?.endEmitted;
+    const r = this._readableState;
+
+    return !!r && r.readable &&
+      !r.destroyed &&
+      !r.errorEmitted &&
+      !r.endEmitted;
   }
   set readable(val: boolean) {
     if (this._readableState) {
@@ -641,6 +663,7 @@ class Duplex extends Stream {
     let err: Error | undefined;
     if (!state.errored && !state.ending) {
       state.ending = true;
+      debug("** Writable.end calling finishMaybe", state);
       finishMaybe(this, state, true);
       state.ended = true;
     } else if (state.finished) {
@@ -681,7 +704,8 @@ class Duplex extends Stream {
 
   get writable() {
     const w = this._writableState;
-    return !w.destroyed && !w.errored && !w.ending && !w.ended;
+    return !!w && w.writable !== false && !w.destroyed && !w.errored &&
+      !w.ending && !w.ended;
   }
 
   set writable(val) {

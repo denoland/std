@@ -32,13 +32,8 @@ export class HandleWrap extends AsyncWrap {
     super(provider);
   }
 
-  close(cb: () => void = () => {}): void {
-    try {
-      this._onClose();
-    } catch {
-      // swallow callback errors.
-    }
-
+  async close(cb: () => void = () => {}): Promise<void> {
+    await this._onClose();
     nextTick(cb);
   }
 
@@ -50,5 +45,6 @@ export class HandleWrap extends AsyncWrap {
     notImplemented();
   }
 
-  _onClose() {}
+  // deno-lint-ignore no-explicit-any
+  async _onClose(): Promise<any> {}
 }

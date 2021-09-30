@@ -37,16 +37,14 @@ const net = require('net');
 
 {
   const server = net.createServer(common.mustCall((socket) => {
-    console.error('SERVER: got connection');
     socket.end(Buffer.alloc(1024));
   })).listen(0, common.mustCall(() => {
     const socket = net.connect(server.address().port);
     assert.strictEqual(socket.allowHalfOpen, false);
     socket.resume();
-    // TODO(cmorten): investigate why end event not emitted
-    // socket.on('end', common.mustCall(() => {
-    //   assert(!socket.destroyed);
-    // }));
+    socket.on('end', common.mustCall(() => {
+      assert(!socket.destroyed);
+    }));
     socket.end('asd');
     socket.on('finish', common.mustCall(() => {
       assert(!socket.destroyed);
