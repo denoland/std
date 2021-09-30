@@ -327,11 +327,10 @@ Deno.test({
         assertEquals(buffer.readUIntLE(1, 6), 0x070605040302);
       },
       Error,
-      `Not implemented: byteLength`
+      `Not implemented: byteLength`,
     );
   },
 });
-
 
 Deno.test({
   name: "Buffer copy works as expected",
