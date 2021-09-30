@@ -20,11 +20,7 @@ const coerceToBytes = (data: string | BufferSource): Uint8Array => {
     // This assumes UTF-8, which may not be correct.
     return new TextEncoder().encode(data);
   } else if (ArrayBuffer.isView(data)) {
-    return new Uint8Array(
-      data.buffer,
-      data.byteOffset,
-      data.byteLength,
-    );
+    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
   } else if (data instanceof ArrayBuffer) {
     return new Uint8Array(data);
   } else {
@@ -124,30 +120,51 @@ export class Hash extends Transform {
   }
 }
 
+class Hmac extends Hash {
+  constructor(alg: string, key: Uint8Array) {
+    super(alg);
+
+    const blocksize = (alg === "sha512" || alg === "sha384") ? 128 : 64;
+
+    if (key.length < blocksize) {
+      key = Buffer.concat([key, Buffer.alloc(128)], blocksize);
+    }
+  }
+}
+
 /**
  * Supported digest names that OpenSSL/Node and WebCrypto identify differently.
  */
 const opensslToWebCryptoDigestNames: Record<string, DigestAlgorithm> = {
-  "BLAKE2B512": "BLAKE2B",
-  "BLAKE2S256": "BLAKE2S",
-  "RIPEMD160": "RIPEMD-160",
-  "RMD160": "RIPEMD-160",
-  "SHA1": "SHA-1",
-  "SHA224": "SHA-224",
-  "SHA256": "SHA-256",
-  "SHA384": "SHA-384",
-  "SHA512": "SHA-512",
+  BLAKE2B512: "BLAKE2B",
+  BLAKE2S256: "BLAKE2S",
+  RIPEMD160: "RIPEMD-160",
+  RMD160: "RIPEMD-160",
+  SHA1: "SHA-1",
+  SHA224: "SHA-224",
+  SHA256: "SHA-256",
+  SHA384: "SHA-384",
+  SHA512: "SHA-512",
 };
 
 /**
  * Creates and returns a Hash object that can be used to generate hash digests
  * using the given `algorithm`. Optional `options` argument controls stream behavior.
  */
-export function createHash(
-  algorithm: string,
-  opts?: TransformOptions,
-) {
+export function createHash(algorithm: string, opts?: TransformOptions) {
   return new Hash(algorithm, opts);
+}
+
+/**
+ * Creates and returns a Hmac object.
+ */
+export function createHmac(alg: string, key: string | Uint8Array) {
+  if (typeof key === "string") {
+    key = Buffer.from(key);
+  }
+
+  alg = alg.toLowerCase();
+  return new Hmac(alg, key as Uint8Array);
 }
 
 /**
@@ -157,5 +174,13 @@ export function getHashes(): readonly string[] {
   return digestAlgorithms;
 }
 
-export default { Hash, createHash, getHashes, pbkdf2, pbkdf2Sync, randomBytes };
+export default {
+  Hash,
+  createHash,
+  createHmac,
+  getHashes,
+  pbkdf2,
+  pbkdf2Sync,
+  randomBytes,
+};
 export { pbkdf2, pbkdf2Sync, randomBytes };
