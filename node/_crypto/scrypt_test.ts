@@ -1,11 +1,6 @@
 import { scrypt, scryptSync } from "./scrypt.ts";
 import { Buffer } from "../buffer.ts";
-import {
-  assert,
-  assertEquals,
-  assertRejects,
-  assertThrows,
-} from "../../testing/asserts.ts";
+import { assertEquals } from "../../testing/asserts.ts";
 
 Deno.test("scrypt works correctly", () => {
   scrypt("password", "salt", 32, (err, key) => {
