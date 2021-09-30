@@ -342,15 +342,19 @@ export class Server {
    */
   async #respond(
     requestEvent: Deno.RequestEvent,
-    httpCon: Deno.HttpConn,
+    httpConn: Deno.HttpConn,
     connInfo: ConnInfo,
   ): Promise<void> {
     try {
       // Handle the request event, generating a response.
-      const response = await this.#handler(
+      const response = this.#handler(
         requestEvent.request,
         connInfo,
       );
+
+      if (response instanceof Promise) {
+        response.catch((_error) => this.#closeHttpConn(httpConn));
+      }
 
       // Send the response.
       await requestEvent.respondWith(response);
@@ -361,7 +365,7 @@ export class Server {
       // Alternatively the connection has already been closed, or there is some
       // other error with responding on this connection that prompts us to
       // close it and open a new connection.
-      return this.#closeHttpConn(httpCon);
+      return this.#closeHttpConn(httpConn);
     }
   }
 
@@ -395,8 +399,6 @@ export class Server {
       // allow the connection to handle multiple requests in the case of h2.
       this.#respond(requestEvent, httpConn, connInfo);
     }
-
-    this.#closeHttpConn(httpConn);
   }
 
   /**

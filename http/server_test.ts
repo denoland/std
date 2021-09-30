@@ -641,6 +641,34 @@ Deno.test(`listenAndServe should handle requests`, async () => {
   }
 });
 
+Deno.test(`listenAndServe should handle websocket requests`, async () => {
+  const addr = "localhost:4505";
+  const url = `ws://${addr}`;
+  const message = `${url} - Hello Deno on WebSocket!`;
+
+  const abortController = new AbortController();
+
+  const servePromise = listenAndServe(addr, (request) => {
+    const { socket, response } = Deno.upgradeWebSocket(request);
+    // Return the received message as it is
+    socket.onmessage = (event) => socket.send(event.data);
+    return response;
+  }, abortController);
+
+  const ws = new WebSocket(url);
+  try {
+    ws.onopen = () => ws.send(message);
+    const response = await new Promise((resolve) => {
+      ws.onmessage = (event) => resolve(event.data);
+    });
+    assertEquals(response, message);
+  } finally {
+    ws.close();
+    abortController.abort();
+    await servePromise;
+  }
+});
+
 Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
   const hostname = "localhost";
   const port = 4505;
