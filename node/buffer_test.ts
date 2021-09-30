@@ -299,7 +299,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Buffer readUIntBE",
+  name: "Buffer UInt",
   fn() {
     const buffer = Buffer.from([
       0x01,
@@ -312,19 +312,26 @@ Deno.test({
       0x08,
     ]);
     assertEquals(buffer.readUIntBE(0, 1), 0x01);
+    assertEquals(buffer.readUIntLE(0, 1), 0x01);
     assertEquals(buffer.readUIntBE(0, 2), 0x0102);
+    assertEquals(buffer.readUIntLE(0, 2), 0x0201);
     assertEquals(buffer.readUIntBE(0, 4), 0x01020304);
+    assertEquals(buffer.readUIntLE(0, 4), 0x04030201);
     assertThrows(
       () => {
         assertEquals(buffer.readUIntBE(0, 5), 0x01020304);
+        assertEquals(buffer.readUIntLE(0, 5), 0x04030201);
         assertEquals(buffer.readUIntBE(0, 6), 0x010203040506);
+        assertEquals(buffer.readUIntLE(0, 6), 0x060504030201);
         assertEquals(buffer.readUIntBE(1, 6), 0x020304050607);
+        assertEquals(buffer.readUIntLE(1, 6), 0x070605040302);
       },
       Error,
-      `Not implemented: byteLength`,
+      `Not implemented: byteLength`
     );
   },
 });
+
 
 Deno.test({
   name: "Buffer copy works as expected",
