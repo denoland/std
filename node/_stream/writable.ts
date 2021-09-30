@@ -64,13 +64,15 @@ export class WritableState {
   allBuffers = true;
   allNoop = true;
   autoDestroy: boolean;
-  buffered: Array<{
-    allBuffers?: boolean;
-    // deno-lint-ignore no-explicit-any
-    chunk: any;
-    encoding: string;
-    callback: (error: Error) => void;
-  }> = [];
+  buffered: Array<
+    {
+      allBuffers?: boolean;
+      // deno-lint-ignore no-explicit-any
+      chunk: any;
+      encoding: string;
+      callback: (error: Error) => void;
+    } | null
+  > = [];
   bufferedIndex = 0;
   bufferProcessing = false;
   closed = false;

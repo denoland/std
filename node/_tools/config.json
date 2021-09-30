@@ -62,6 +62,7 @@
       "test-net-better-error-messages-listen.js",
       "test-net-better-error-messages-port-hostname.js",
       "test-net-bind-twice.js",
+      "test-net-buffersize.js",
       "test-net-dns-custom-lookup.js",
       "test-net-dns-error.js",
       "test-net-dns-lookup-skip.js",

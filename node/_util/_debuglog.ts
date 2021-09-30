@@ -1,5 +1,6 @@
 import { sprintf } from "../../fmt/printf.ts";
 import { emitWarning, pid, stderr } from "../process.ts";
+import { inspect } from "../util.ts";
 
 // `debugImpls` and `testEnabled` are deliberately not initialized so any call
 // to `debuglog()` before `initializeDebugEnv()` is called will throw.
@@ -45,7 +46,7 @@ function debuglogImpl(
     if (enabled) {
       emitWarningIfNeeded(set);
       debugImpls[set] = function debug(...args: unknown[]) {
-        const msg = args.join(" ");
+        const msg = args.map((arg) => inspect(arg)).join(" ");
         stderr.write(sprintf("%s %s: %s\n", set, String(pid), msg));
       };
     } else {

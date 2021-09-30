@@ -1165,9 +1165,9 @@ export class Socket extends Duplex {
     }
 
     for (const el of writableBuffer) {
-      bytes += el.chunk instanceof Buffer
-        ? el.chunk.length
-        : Buffer.byteLength(el.chunk, el.encoding);
+      bytes += el!.chunk instanceof Buffer
+        ? el!.chunk.length
+        : Buffer.byteLength(el!.chunk, el!.encoding);
     }
 
     if (Array.isArray(data)) {
