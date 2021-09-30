@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { Buffer } from "./buffer.ts";
-import { createHash, getHashes } from "./crypto.ts";
+import { createHash, createHmac, getHashes, Hash } from "./crypto.ts";
 import { Readable } from "./stream.ts";
 
 Deno.test("[node/crypto.Hash] basic usage - buffer output", () => {
@@ -84,4 +84,10 @@ Deno.test("[node/crypto.getHashes]", () => {
     assert(d instanceof Buffer);
     assert(d.length > 0);
   }
+});
+
+Deno.test("[node/crypto.createHmac]", () => {
+  assert(
+    createHmac("sha256", "Test") instanceof Hash,
+  );
 });
