@@ -226,7 +226,7 @@ export function scryptSync(
   return fin;
 }
 
-type Callback = (err: Error | null, result?: Buffer) => void;
+type Callback = (err: unknown, result?: Buffer) => void;
 
 export function scrypt(
   password: HASH_DATA,
@@ -257,7 +257,7 @@ export function scrypt(
     const result = pbkdf2(password, out, 1, keylen, "sha256");
     scryptRom.clean();
     cb(null, result);
-  } catch (err) {
+  } catch (err: unknown) {
     return cb(err);
   }
 }
