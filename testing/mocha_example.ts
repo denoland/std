@@ -45,6 +45,6 @@ function onCompleted(failures: number): void {
 
 /**
  * And finally we run our tests, passing the onCompleted function
- * hook and setting some globals.
+ * hook.
  */
 mocha.run(onCompleted);
