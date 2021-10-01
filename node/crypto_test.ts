@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { Buffer } from "./buffer.ts";
-import { createHash, createHmac, getHashes } from "./crypto.ts";
+import { createHash, createHmac, getHashes,randomUUID  } from "./crypto.ts";
 import { Readable } from "./stream.ts";
 
 Deno.test("[node/crypto.Hash] basic usage - buffer output", () => {
@@ -89,4 +89,9 @@ Deno.test("[node/crypto.getHashes]", () => {
 Deno.test("[node/crypto.createHmac] basic usage - hex output", () => {
   const d = createHmac("sha1", "abc").update("def").digest("hex");
   assertEquals(d, "589c22335a381f122d129225f5c0ba3056ed5811");
+});
+
+Deno.test("[node/crypto.getRandomUUID] works the same way as Web Crypto API", () => {
+  assertEquals(randomUUID().length, crypto.randomUUID().length);
+  assertEquals(typeof randomUUID(), typeof crypto.randomUUID());
 });
