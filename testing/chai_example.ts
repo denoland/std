@@ -1,10 +1,12 @@
 // @deno-types="https://unpkg.com/@types/chai@4.2.22/index.d.ts"
 import "https://chaijs.com/chai.js";
 
+
+const foo = "bar";
+const beverages = { tea: ["chai", "matcha", "oolong"] };
+
 Deno.test("we can make chai assertions", () => {
   const assert = chai.assert;
-  const foo = "bar";
-  const beverages = { tea: ["chai", "matcha", "oolong"] };
 
   assert.typeOf(foo, "string"); // without optional message
   assert.typeOf(foo, "string", "foo is a string"); // with optional message
@@ -15,8 +17,6 @@ Deno.test("we can make chai assertions", () => {
 
 Deno.test("we can make chai expectations", () => {
   const expect = chai.expect;
-  const foo = "bar";
-  const beverages = { tea: ["chai", "matcha", "oolong"] };
 
   expect(foo).to.be.a("string");
   expect(foo).to.equal("bar");
@@ -26,8 +26,6 @@ Deno.test("we can make chai expectations", () => {
 
 Deno.test("we can use chai should style", () => {
   chai.should();
-  const foo = "bar";
-  const beverages = { tea: ["chai", "matcha", "oolong"] };
 
   foo.should.be.a("string");
   foo.should.equal("bar");
