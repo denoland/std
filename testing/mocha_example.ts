@@ -1,3 +1,8 @@
+/**
+ * Run this example with:
+ * 
+ * deno run --location=http://local ./testing/mocha_example.ts
+ */
 import mocha from "https://cdn.skypack.dev/mocha@9.1.2?dts";
 import chai from "https://cdn.skypack.dev/chai@4.3.4?dts";
 

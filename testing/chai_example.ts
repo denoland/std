@@ -1,3 +1,8 @@
+/**
+ * Run this example with:
+ * 
+ * deno test ./testing/chai_example.ts
+ */
 import chai from "https://cdn.skypack.dev/chai@4.3.4?dts";
 
 const foo = "bar";
