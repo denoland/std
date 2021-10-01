@@ -1,6 +1,4 @@
-// @deno-types="https://unpkg.com/@types/chai@4.2.22/index.d.ts"
-import "https://chaijs.com/chai.js";
-
+import chai from "https://cdn.skypack.dev/chai@4.3.4?dts";
 
 const foo = "bar";
 const beverages = { tea: ["chai", "matcha", "oolong"] };
