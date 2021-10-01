@@ -151,6 +151,10 @@ export function getHashes(): readonly string[] {
   return digestAlgorithms;
 }
 
+
+const randomUUID = () => crypto.randomUUID();
+
+
 export default {
   Hash,
   createHash,
@@ -160,5 +164,6 @@ export default {
   randomBytes,
   scrypt,
   scryptSync,
+  randomUUID
 };
-export { pbkdf2, pbkdf2Sync, randomBytes, scrypt, scryptSync };
+export { pbkdf2, pbkdf2Sync, randomBytes, scrypt, scryptSync, randomUUID };
