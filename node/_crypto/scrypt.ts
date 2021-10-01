@@ -196,13 +196,11 @@ export function scryptSync(
   keylen: number,
   _opts?: Opts,
 ): Buffer {
-  const opts = fixOpts(_opts);
-  const N = opts.N;
-  const r = opts.r;
-  const p = opts.p;
+  const { N, r, p, maxmem } = fixOpts(_opts);
+
   const blen = p * 128 * r;
 
-  if (32 * r * (N + 2) * 4 + blen > opts.maxmem) {
+  if (32 * r * (N + 2) * 4 + blen > maxmem) {
     throw new Error("excedes max memory");
   }
 
@@ -229,12 +227,10 @@ export function scrypt(
     cb = _opts as Callback;
     _opts = null;
   }
-  const opts = fixOpts(_opts as Opts);
-  const N = opts.N;
-  const r = opts.r;
-  const p = opts.p;
+  const { N, r, p, maxmem } = fixOpts(_opts as Opts);
+
   const blen = p * 128 * r;
-  if (32 * r * (N + 2) * 4 + blen > opts.maxmem) {
+  if (32 * r * (N + 2) * 4 + blen > maxmem) {
     throw new Error("excedes max memory");
   }
 
