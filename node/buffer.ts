@@ -261,7 +261,7 @@ export class Buffer extends Uint8Array {
 
   /**
    * Reads byteLength number of bytes from buf at the specified offset and interprets
-   * the result as an unsigned big-endian integer supporting up to 32 bits of accuracy.
+   * the result as an unsigned big-endian integer supporting up to 48 bits of accuracy.
    */
   readUIntBE(offset = 0, byteLength: number): number {
     if (byteLength === 3 || byteLength === 5 || byteLength === 6) {
@@ -275,7 +275,7 @@ export class Buffer extends Uint8Array {
 
   /**
    * Reads byteLength number of bytes from buf at the specified offset and interprets
-   * the result as an unsigned, little-endian integer supporting up to 32 bits of accuracy.
+   * the result as an unsigned, little-endian integer supporting up to 48 bits of accuracy.
    */
   readUIntLE(offset = 0, byteLength: number): number {
     if (byteLength === 3 || byteLength === 5 || byteLength === 6) {
