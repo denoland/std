@@ -13,12 +13,7 @@ type Opts = Partial<{
 }>;
 
 const fixOpts = (opts?: Opts) => {
-  const out = {
-    N: 16384,
-    p: 1,
-    r: 8,
-    maxmem: 32 << 20,
-  };
+  const out = { N: 16384, p: 1, r: 8, maxmem: 32 << 20 };
   if (!opts) return out;
 
   if (opts.N) out.N = opts.N;
@@ -37,9 +32,7 @@ const fixOpts = (opts?: Opts) => {
 
 function blockxor(S: Buffer, Si: number, D: Buffer, Di: number, len: number) {
   let i = -1;
-  while (++i < len) {
-    D[Di + i] ^= S[Si + i];
-  }
+  while (++i < len) D[Di + i] ^= S[Si + i];
 }
 function arraycopy(
   src: Buffer,
@@ -50,6 +43,8 @@ function arraycopy(
 ) {
   src.copy(dest, destPos, srcPos, srcPos + length);
 }
+
+const R = (a: number, b: number) => (a << b) | (a >>> (32 - b));
 
 class ScryptRom {
   B: Buffer;
@@ -95,7 +90,7 @@ class ScryptRom {
       this.blockmix_salsa8(blockLen);
     }
 
-    let j;
+    let j: number;
     for (let i2 = 0; i2 < N; i2++) {
       j = XY.readUInt32LE(offset) & (N - 1);
       blockxor(V, j * blockLen, XY, 0, blockLen);
@@ -134,9 +129,7 @@ class ScryptRom {
       B32[i] |= (B[i * 4 + 3] & 0xff) << 24;
     }
 
-    for (i = 0; i < 16; i++) {
-      x[i] = B32[i];
-    }
+    for (i = 0; i < 16; i++) x[i] = B32[i];
 
     for (i = 0; i < 4; i++) {
       x[4] ^= R(x[0] + x[12], 7);
@@ -172,9 +165,8 @@ class ScryptRom {
       x[14] ^= R(x[13] + x[12], 13);
       x[15] ^= R(x[14] + x[13], 18);
     }
-    for (i = 0; i < 16; i++) {
-      B32[i] += x[i];
-    }
+    for (i = 0; i < 16; i++) B32[i] += x[i];
+
     let bi;
 
     for (i = 0; i < 16; i++) {
@@ -198,8 +190,6 @@ class ScryptRom {
   }
 }
 
-const R = (a: number, b: number) => (a << b) | (a >>> (32 - b));
-
 export function scryptSync(
   password: HASH_DATA,
   salt: HASH_DATA,
@@ -210,12 +200,12 @@ export function scryptSync(
   const N = opts.N;
   const r = opts.r;
   const p = opts.p;
-  const maxmem = opts.maxmem;
   const blen = p * 128 * r;
-  const vlen = 32 * r * (N + 2) * 4;
-  if (vlen + blen > maxmem) {
+
+  if (32 * r * (N + 2) * 4 + blen > opts.maxmem) {
     throw new Error("excedes max memory");
   }
+
   const b = pbkdf2(password, salt, 1, blen, "sha256");
 
   const scryptRom = new ScryptRom(b, r, N, p);
@@ -243,12 +233,11 @@ export function scrypt(
   const N = opts.N;
   const r = opts.r;
   const p = opts.p;
-  const maxmem = opts.maxmem;
   const blen = p * 128 * r;
-  const vlen = 32 * r * (N + 2) * 4;
-  if (vlen + blen > maxmem) {
+  if (32 * r * (N + 2) * 4 + blen > opts.maxmem) {
     throw new Error("excedes max memory");
   }
+
   try {
     const b = pbkdf2(password, salt, 1, blen, "sha256");
 
