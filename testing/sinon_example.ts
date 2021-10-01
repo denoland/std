@@ -1,6 +1,6 @@
 /**
  * Run this example with:
- * 
+ *
  * deno test ./testing/sinon_example.ts
  */
 import sinon from "https://cdn.skypack.dev/sinon@11.1.2?dts";
