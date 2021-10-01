@@ -150,7 +150,7 @@ export function getHashes(): readonly string[] {
   return digestAlgorithms;
 }
 
-const randomUUID = globalThis.crypto.randomUUID;
+const randomUUID = () => crypto.randomUUID();
 
 export default {
   Hash,
