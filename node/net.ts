@@ -885,7 +885,7 @@ export class Socket extends Duplex {
       (options as TcpSocketConnectOptions).port === undefined &&
       (options as IpcSocketConnectOptions).path == null
     ) {
-      throw new ERR_MISSING_ARGS("options", "port", "path");
+      throw new ERR_MISSING_ARGS(["options", "port", "path"]);
     }
 
     if (this.write !== Socket.prototype.write) {

@@ -32,6 +32,7 @@ import { ownerSymbol } from "./symbols.ts";
 import { codeMap } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
 import { kStreamBaseField } from "./stream_wrap.ts";
+import { isIP } from "../_net.ts";
 
 /** The type of TCP socket. */
 enum socketType {
@@ -139,6 +140,7 @@ export class TCP extends ConnectionWrap {
       const remoteAddr = conn.remoteAddr as Deno.NetAddr;
       this.#remoteAddress = remoteAddr.hostname;
       this.#remotePort = remoteAddr.port;
+      this.#remoteFamily = isIP(remoteAddr.hostname) === 6 ? "ipv6" : "ipv4";
     }
   }
 
@@ -247,6 +249,7 @@ export class TCP extends ConnectionWrap {
 
     sockname.address = this.#address;
     sockname.port = this.#port;
+    sockname.family = isIP(this.#address) === 6 ? "ipv6" : "ipv4";
 
     return 0;
   }
@@ -266,7 +269,6 @@ export class TCP extends ConnectionWrap {
 
     peername.address = this.#remoteAddress;
     peername.port = this.#remotePort;
-    // TODO(cmorten): this isn't being set currently
     peername.family = this.#remoteFamily;
 
     return 0;
@@ -335,6 +337,7 @@ export class TCP extends ConnectionWrap {
   #connect(req: TCPConnectWrap, address: string, port: number): number {
     this.#remoteAddress = address;
     this.#remotePort = port;
+    this.#remoteFamily = isIP(address) === 6 ? "ipv6" : "ipv4";
 
     const connectOptions: Deno.ConnectOptions = {
       hostname: address,

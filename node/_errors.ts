@@ -1551,11 +1551,18 @@ export class ERR_METHOD_NOT_IMPLEMENTED extends NodeError {
   }
 }
 export class ERR_MISSING_ARGS extends NodeTypeError {
-  constructor(...args: string[]) {
-    args = args.map((a) => `"${a}"`);
-
+  constructor(...args: (string | string[])[]) {
     let msg = "The ";
-    switch (args.length) {
+
+    const len = args.length;
+
+    const wrap = (a: unknown) => `"${a}"`;
+
+    args = args.map(
+      (a) => (Array.isArray(a) ? a.map(wrap).join(" or ") : wrap(a)),
+    );
+
+    switch (len) {
       case 1:
         msg += `${args[0]} argument`;
         break;
@@ -1563,10 +1570,11 @@ export class ERR_MISSING_ARGS extends NodeTypeError {
         msg += `${args[0]} and ${args[1]} arguments`;
         break;
       default:
-        msg += args.slice(0, args.length - 1).join(", ");
-        msg += `, and ${args[args.length - 1]} arguments`;
+        msg += args.slice(0, len - 1).join(", ");
+        msg += `, and ${args[len - 1]} arguments`;
         break;
     }
+
     super(
       "ERR_MISSING_ARGS",
       `${msg} must be specified`,

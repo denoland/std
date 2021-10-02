@@ -28,16 +28,31 @@ export const kTimeout = Symbol("timeout");
 // Timeout values > TIMEOUT_MAX are set to 1.
 export const TIMEOUT_MAX = 2 ** 31 - 1;
 
+class Timeout {
+  #timeoutId: number;
+  // deno-lint-ignore no-explicit-any
+  #callback: any;
+  #after: number;
+
+  // deno-lint-ignore no-explicit-any
+  constructor(callback: any, after: number) {
+    this.#callback = callback;
+    this.#after = after;
+    this.#timeoutId = setTimeout(this.#callback, this.#after);
+  }
+
+  refresh() {
+    clearTimeout(this.#timeoutId);
+    this.#timeoutId = setTimeout(this.#callback, this.#after);
+  }
+}
+
 // deno-lint-ignore no-explicit-any
-export function setUnrefTimeout(callback: any, after: any) {
+export function setUnrefTimeout(callback: any, after: number) {
   // Type checking identical to setTimeout()
   validateCallback(callback);
 
-  // TODO(cmorten): do we need to replica the Node internals, or is this sham
-  // good enough?
-  const timer = setTimeout(callback, after);
-
-  return timer;
+  return new Timeout(callback, after);
 }
 
 export function getTimerDuration(msecs: number, name: string) {
