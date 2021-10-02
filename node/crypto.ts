@@ -166,4 +166,12 @@ export default {
   timingSafeEqual,
   randomUUID,
 };
-export { pbkdf2, pbkdf2Sync, randomBytes, randomUUID, scrypt, scryptSync, timingSafeEqual };
+export {
+  pbkdf2,
+  pbkdf2Sync,
+  randomBytes,
+  randomUUID,
+  scrypt,
+  scryptSync,
+  timingSafeEqual,
+};
