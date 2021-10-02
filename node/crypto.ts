@@ -12,6 +12,7 @@ import { Transform } from "./stream.ts";
 import { TransformOptions } from "./_stream/transform.ts";
 import { encode as encodeToHex } from "../encoding/hex.ts";
 import { encode as encodeToBase64 } from "../encoding/base64.ts";
+import { scrypt, scryptSync } from "./_crypto/scrypt.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
@@ -159,6 +160,8 @@ export default {
   pbkdf2,
   pbkdf2Sync,
   randomBytes,
+  scrypt,
+  scryptSync,
   randomUUID,
 };
-export { pbkdf2, pbkdf2Sync, randomBytes, randomUUID };
+export { pbkdf2, pbkdf2Sync, randomBytes, randomUUID, scrypt, scryptSync };
