@@ -1158,6 +1158,11 @@ Module._extensions[".js"] = (module: Module, filename: string): void => {
   module._compile(content, filename);
 };
 
+// Native extension for .mjs
+Module._extensions[".mjs"] = (): void => {
+  throw new Error("Importing ESM module");
+};
+
 // Native extension for .json
 Module._extensions[".json"] = (module: Module, filename: string): void => {
   const content = new TextDecoder().decode(Deno.readFileSync(filename));

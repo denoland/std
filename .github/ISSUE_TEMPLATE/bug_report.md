@@ -4,32 +4,28 @@ about: Create a report to help us improve
 title: ''
 labels: bug, needs triage
 assignees: ''
-
 ---
 
-**Describe the bug** A clear and concise description of what the bug is.
+**Describe the bug**
 
-**To Reproduce** Steps to reproduce the behavior:
+**Steps to Reproduce**
 
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
+<!--
+Example
+1. Create a file with the contents ...
+2. Create a script with the contents ...
+3. Execute the command ...
 4. See error
+-->
 
-**Expected behavior** A clear and concise description of what you expected to
-happen.
+**Expected behavior**
 
-**Screenshots** If applicable, add screenshots to help explain your problem.
+<!-- A clear and concise description of what you expected to happen. -->
 
-**Desktop (please complete the following information):**
+**Environment**
+
+<!-- please complete the following information -->
 
 - OS: [e.g. Ubuntu 20.04, MacOS 11]
-- Version
-
-```
-deno 1.11.0 (release, x86_64-unknown-linux-gnu)
-v8 9.1.269.35
-typescript 4.3.2
-```
-
-**Additional context** Add any other context about the problem here.
+- deno version:
+- std version:
