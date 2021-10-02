@@ -6,7 +6,8 @@
     ],
     "parallel": [
       "test-assert-async.js",
-      "test-assert.js"
+      "test-assert.js",
+      "test-url-fileurltopath.js"
     ]
   },
   "tests": {
@@ -31,6 +32,7 @@
       "test-event-emitter-set-max-listeners-side-effects.js",
       "test-event-emitter-special-event-names.js",
       "test-event-emitter-subclass.js",
+      "test-url-fileurltopath.js",
       "test-util-inherits.js"
     ]
   },
