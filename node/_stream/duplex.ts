@@ -29,8 +29,9 @@ import {
   onwrite,
   readableAddChunk,
 } from "./duplex_internal.ts";
-export { errorOrDestroy } from "./duplex_internal.ts";
 import { debuglog } from "../_util/_debuglog.ts";
+
+export { errorOrDestroy } from "./duplex_internal.ts";
 
 let debug = debuglog("stream", (fn) => {
   debug = fn;
@@ -197,7 +198,10 @@ class Duplex extends Stream {
   }
 
   _undestroy() {
-    return Readable.prototype._undestroy.call(this);
+    Writable.prototype._undestroy.call(this);
+    Readable.prototype._undestroy.call(this);
+
+    return;
   }
 
   destroy(err?: Error | null, cb?: (error?: Error | null) => void) {

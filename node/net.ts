@@ -898,8 +898,12 @@ export class Socket extends Duplex {
       this._sockname = undefined;
     }
 
+    const { path } = options as IpcNetConnectOptions;
+    const pipe = _isPipe(options);
+    debug("pipe", pipe, path);
+
     if (!this._handle) {
-      this._handle = _isPipe(options)
+      this._handle = pipe
         ? new Pipe(PipeConstants.SOCKET)
         : new TCP(TCPConstants.SOCKET);
 
@@ -914,8 +918,7 @@ export class Socket extends Duplex {
 
     this.connecting = true;
 
-    if (_isPipe(options)) {
-      const { path } = options;
+    if (pipe) {
       validateString(path, "options.path");
       defaultTriggerAsyncIdScope(
         this[asyncIdSymbol],
