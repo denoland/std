@@ -1728,7 +1728,8 @@ export function _createServerHandle(
       handle = _createHandle(fd, true);
     } catch (e) {
       // Not a fd we can listen on. This will trigger an error.
-      debug("listen invalid fd=%d:", fd, e.message);
+      debug("listen invalid fd=%d:", fd, (e as Error).message);
+
       return codeMap.get("EINVAL")!;
     }
 
@@ -1758,6 +1759,7 @@ export function _createServerHandle(
 
   if (address || port || isTCP) {
     debug("bind to", address || "any");
+
     if (!address) {
       // Try binding to ipv6 first
       err = (handle as TCP).bind6(
