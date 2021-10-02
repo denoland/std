@@ -65,10 +65,6 @@ function debuglog(
   set: string,
   cb: (debug: (...args: unknown[]) => void) => void,
 ) {
-  if (!testEnabled) {
-    initializeDebugEnv(Deno.env.get("NODE_DEBUG") ?? "");
-  }
-
   function init() {
     set = set.toUpperCase();
     enabled = testEnabled(set);
@@ -105,6 +101,14 @@ function debuglog(
   });
 
   return logger;
+}
+
+const { state } = await Deno.permissions.query({ name: "env", variable: "NODE_DEBUG" });
+
+if (state === "granted") {
+  initializeDebugEnv(Deno.env.get("NODE_DEBUG") ?? "");
+} else {
+  initializeDebugEnv("");
 }
 
 export default { debuglog };
