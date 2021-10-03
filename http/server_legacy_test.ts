@@ -377,6 +377,7 @@ Deno.test("requestBodyReaderWithTransferEncoding", async function (): Promise<
 
 Deno.test({
   name: "destroyed connection",
+  ignore: Deno.build.os == "windows",
   fn: async () => {
     // Runs a simple server as another process
     const p = Deno.run({
@@ -413,7 +414,7 @@ Deno.test({
       assert(serverIsRunning);
     } finally {
       // Stops the sever and allows `p.status()` promise to resolve
-      Deno.kill(p.pid, Deno.Signal.SIGKILL);
+      Deno.kill(p.pid, "SIGKILL");
       await statusPromise;
       p.stdout.close();
       p.close();
@@ -423,6 +424,7 @@ Deno.test({
 
 Deno.test({
   name: "serveTLS",
+  ignore: Deno.build.os == "windows",
   fn: async () => {
     // Runs a simple server as another process
     const p = Deno.run({
@@ -472,7 +474,7 @@ Deno.test({
       assert(serverIsRunning);
     } finally {
       // Stops the sever and allows `p.status()` promise to resolve
-      Deno.kill(p.pid, Deno.Signal.SIGKILL);
+      Deno.kill(p.pid, "SIGKILL");
       await statusPromise;
       p.stdout.close();
       p.close();

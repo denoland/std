@@ -1,3 +1,42 @@
+### 0.109.0 / 2021.09.28
+
+- feat(std/node/stream): add partial support for `stream/web` (#1297)
+- fix(node/_tools): use denoflate to decompress Node test folder (#1299)
+- fix(node/events): make `EventEmitter.call` compatible with es5 (#1315)
+- fix(std/node/module): treat .mjs files as ESM (#1301)
+- perf(crypto): reduce one mircotask (#1307)
+
+### 0.108.0 / 2021.09.21
+
+- fix: use `strict-ts44.tsconfig.json` on release tests (#1278)
+- fix(collections): improve handling of arrays containing undefined (#1282)
+- feat(testing/asserts): add `assertThrows()` overload to receive error (#1219)
+- feat(std/node): add `ParsedUrlQuery` to `querystring` (#1229)
+- feat(collections): use function overloading (#1286)
+- chore(node/events): remove unnecessary `@ts-ignore` comments (#1280)
+- docs(collections): add browser-compatibility comment (#1285)
+- docs(encoding): add hex docs (#1287)
+- docs(collections): replace console.assert with assertEquals (#1293)
+
+### 0.107.0 / 2021.09.14
+
+- BREAKING(http): cookie headers as params (#1041)
+- feat(collection): add findSingle (#1166)
+- feat(collections): Add `associatewith` (#1213)
+- feat(collections): add `runningReduce` (#1226)
+- feat(collections): add `sample` API (#1212)
+- feat(collections): add dropWhile (#1185)
+- feat(collections): add maxWith (#1170)
+- feat(collections): add minWith (#1169)
+- feat(collections): add reduceGroups (#1187)
+- feat(collections): add slidingWindows (#1191)
+- feat(io/streams): propagate cancel in readableStreamFromIterable() (#1274)
+- fix(collections/includesValue): prevent enumerable prototype check (#1225)
+- fix(testing/asserts): export Constructor type (#1208)
+- fix(tests/yaml): expect !!js/function parse/stringify to throw (#1276)
+- fix: update to latest signal API changes
+- security(encoding/yaml): disable functions (#1275)
+
 ### 0.106.0 / 2021.08.23
 
 - feat(async): add abort signal to delay (#1130)

@@ -1,12 +1,14 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import { mapValues } from "./map_values.ts";
 
 /**
  * Applies the given reducer to each group in the given Grouping, returning the results together with the respective group keys
  *
  * ```ts
- * import { reduceGroups } from "./reduce_groups.ts"
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { reduceGroups } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const votes = {
  *     'Woody': [ 2, 3, 1, 4 ],

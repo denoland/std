@@ -42,17 +42,17 @@ export class TextProtoReader {
    *
    * For example, consider this input:
    *
-   *	My-Key: Value 1
-   *	Long-Key: Even
-   *	       Longer Value
-   *	My-Key: Value 2
+   * 	My-Key: Value 1
+   * 	Long-Key: Even
+   * 	       Longer Value
+   * 	My-Key: Value 2
    *
    * Given that input, ReadMIMEHeader returns the map:
    *
-   *	map[string][]string{
-   *		"My-Key": {"Value 1", "Value 2"},
-   *		"Long-Key": {"Even Longer Value"},
-   *	}
+   * 	map[string][]string{
+   * 		"My-Key": {"Value 1", "Value 2"},
+   * 		"Long-Key": {"Even Longer Value"},
+   * 	}
    */
   async readMIMEHeader(): Promise<Headers | null> {
     const m = new Headers();

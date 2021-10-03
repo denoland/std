@@ -76,3 +76,24 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "[collections/maxWith] array containing undefined",
+  fn() {
+    maxWithTest(
+      [
+        [undefined, undefined, 1],
+        (a, b) => {
+          if (a === undefined) {
+            return 1;
+          }
+          if (b === undefined) {
+            return -1;
+          }
+          return 0;
+        },
+      ],
+      undefined,
+    );
+  },
+});

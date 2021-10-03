@@ -17,14 +17,13 @@ Deno.test("[async] delay with abort", async function () {
   const { signal } = abort;
   const delayedPromise = delay(100, { signal });
   setTimeout(() => abort.abort(), 0);
-  const result = await assertRejects(
+  await assertRejects(
     () => delayedPromise,
     DOMException,
     "Delay was aborted",
   );
 
   const diff = new Date().getTime() - start.getTime();
-  assert(result === undefined);
   assert(diff < 100);
 });
 

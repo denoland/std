@@ -524,10 +524,13 @@ class Module {
    * with `node_modules` lookup and `index.js` lookup support.
    * Also injects available Node.js builtin module polyfills.
    *
+   * ```ts
+   *     import { createRequire } from "./module.ts";
    *     const require = createRequire(import.meta.url);
    *     const fs = require("fs");
    *     const leftPad = require("left-pad");
    *     const cjsModule = require("./cjs_mod");
+   * ```
    *
    * @param filename path or URL to current module
    * @return Require function to import CJS modules
@@ -1153,6 +1156,11 @@ Module._extensions[".js"] = (module: Module, filename: string): void => {
   }
   const content = new TextDecoder().decode(Deno.readFileSync(filename));
   module._compile(content, filename);
+};
+
+// Native extension for .mjs
+Module._extensions[".mjs"] = (): void => {
+  throw new Error("Importing ESM module");
 };
 
 // Native extension for .json

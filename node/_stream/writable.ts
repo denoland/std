@@ -135,9 +135,8 @@ export class WritableState {
 }
 
 /** A bit simpler than readable streams.
-* Implement an async `._write(chunk, encoding, cb)`, and it'll handle all
-* the drain event emission and buffering.
-*/
+ * Implement an async `._write(chunk, encoding, cb)`, and it'll handle all
+ * the drain event emission and buffering. */
 class Writable extends Stream {
   _final?: (
     this: Writable,

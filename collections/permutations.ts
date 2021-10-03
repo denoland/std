@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Builds all possible orders of all elements in the given array
@@ -8,8 +9,8 @@
  * Example:
  *
  * ```ts
- * import { permutations } from "./permutations.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { permutations } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [ 1, 2 ]
  * const windows = permutations(numbers)

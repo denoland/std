@@ -629,9 +629,33 @@ Deno.test("testingAssertThrowsWithReturnType", () => {
   });
 });
 
-Deno.test("testingAssertThrowsAsyncWithReturnType", () => {
-  assertRejects(() => {
+Deno.test("testingAssertRejectsWithReturnType", async () => {
+  await assertRejects(() => {
     throw new Error();
+  });
+});
+
+Deno.test("testingAssertThrowsWithErrorCallback", () => {
+  assertThrows(() => {
+    throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
+  }, (error: Error) => {
+    assert(error instanceof AggregateError);
+    assertEquals(error.message, "baz");
+    assertEquals(error.errors.length, 2);
+    assertStringIncludes(error.errors[0].stack, "Error: foo");
+    assertStringIncludes(error.errors[1].stack, "Error: bar");
+  });
+});
+
+Deno.test("testingAssertRejectsWithErrorCallback", async () => {
+  await assertRejects(() => {
+    throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
+  }, (error: Error) => {
+    assert(error instanceof AggregateError);
+    assertEquals(error.message, "baz");
+    assertEquals(error.errors.length, 2);
+    assertStringIncludes(error.errors[0].stack, "Error: foo");
+    assertStringIncludes(error.errors[1].stack, "Error: bar");
   });
 });
 
