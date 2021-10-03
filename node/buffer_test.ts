@@ -327,6 +327,34 @@ Deno.test({
 });
 
 Deno.test({
+  name: "Buffer readUIntLE",
+  fn() {
+    const buffer = Buffer.from([
+      0x01,
+      0x02,
+      0x03,
+      0x04,
+      0x05,
+      0x06,
+      0x07,
+      0x08,
+    ]);
+    assertEquals(buffer.readUIntLE(0, 1), 0x01);
+    assertEquals(buffer.readUIntLE(0, 2), 0x0201);
+    assertEquals(buffer.readUIntLE(0, 4), 0x04030201);
+    assertThrows(
+      () => {
+        assertEquals(buffer.readUIntLE(0, 5), 0x04030201);
+        assertEquals(buffer.readUIntLE(0, 6), 0x060504030201);
+        assertEquals(buffer.readUIntLE(1, 6), 0x070605040302);
+      },
+      Error,
+      `Not implemented: byteLength`,
+    );
+  },
+});
+
+Deno.test({
   name: "Buffer copy works as expected",
   fn() {
     const data1 = new Uint8Array([1, 2, 3]);
