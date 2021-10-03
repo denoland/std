@@ -13,6 +13,10 @@
 const assert = require("assert");
 const util = require("util");
 
+function platformTimeout(ms) {
+  return ms;
+}
+
 let localhostIPv4 = null;
 
 function _expectWarning(name, expected, code) {
@@ -68,17 +72,28 @@ function expectWarning(nameOrMap, expected, code) {
 }
 
 /**
+ * Useful for testing expected internal/error objects
+ *
  * @param {Error} error
  */
-function expectsError({ code, type, message }) {
+function expectsError(validator, exact) {
   /**
    * @param {Error} error
    */
-  return function (error) {
-    assert.strictEqual(error.code, code);
-    assert.strictEqual(error.type, type);
-    assert.strictEqual(error.message, message);
-  };
+  return mustCall((...args) => {
+    if (args.length !== 1) {
+      // Do not use `assert.strictEqual()` to prevent `inspect` from
+      // always being called.
+      assert.fail(`Expected one argument, got ${util.inspect(args)}`);
+    }
+    const error = args.pop();
+    const descriptor = Object.getOwnPropertyDescriptor(error, 'message');
+    // The error message should be non-enumerable
+    assert.strictEqual(descriptor.enumerable, false);
+
+    assert.throws(() => { throw error; }, validator);
+    return true;
+  }, exact);
 }
 
 const noop = () => {};
@@ -234,6 +249,7 @@ module.exports = {
   mustCallAtLeast,
   mustNotCall,
   mustSucceed,
+  platformTimeout,
   isWindows,
   isAIX,
   isSunOS,
@@ -255,5 +271,9 @@ module.exports = {
     if (localhostIPv4 === null) localhostIPv4 = '127.0.0.1';
 
     return localhostIPv4;
+  },
+
+  get PORT() {
+    return 12346;
   },
 };

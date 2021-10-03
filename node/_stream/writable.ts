@@ -233,11 +233,11 @@ class Writable extends Stream {
     w.closeEmitted = false;
     w.errored = null;
     w.errorEmitted = false;
-    w.ended = false;
-    w.ending = false;
     w.finalCalled = false;
     w.prefinished = false;
-    w.finished = false;
+    w.ended = w.writable === false;
+    w.ending = w.writable === false;
+    w.finished = w.writable === false;
   }
 
   _destroy(err: Error | null, cb: (error?: Error | null) => void) {

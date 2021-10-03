@@ -535,8 +535,8 @@ class Readable extends Stream {
     r.errored = null;
     r.errorEmitted = false;
     r.reading = false;
-    r.ended = false;
-    r.endEmitted = false;
+    r.ended = r.readable === false;
+    r.endEmitted = r.readable === false;
   }
 
   _destroy(

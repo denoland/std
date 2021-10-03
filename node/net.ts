@@ -2192,7 +2192,7 @@ export class Server extends EventEmitter {
       );
     }
 
-    throw new ERR_INVALID_ARG_VALUE("options", options, "");
+    throw new ERR_INVALID_ARG_VALUE("options", options);
   }
 
   /**

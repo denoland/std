@@ -430,10 +430,13 @@ export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
 }
 
 export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
-  constructor(name: string, value: unknown, reason: string) {
+  constructor(name: string, value: unknown, reason: string = "is invalid") {
+    const type = name.includes(".") ? "property" : "argument";
+    const inspected = inspect(value);
+
     super(
       "ERR_INVALID_ARG_VALUE",
-      `The argument '${name}' ${reason}. Received ${inspect(value)}`,
+      `The ${type} '${name}' ${reason}. Received ${inspected}`,
     );
   }
 }
@@ -1330,7 +1333,7 @@ export class ERR_INVALID_CALLBACK extends NodeTypeError {
   constructor(object: unknown) {
     super(
       "ERR_INVALID_CALLBACK",
-      `Callback must be a function. Received ${JSON.stringify(object)}`,
+      `Callback must be a function. Received ${inspect(object)}`,
     );
   }
 }

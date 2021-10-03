@@ -30,7 +30,15 @@
       "test-net-end-close.js",
       "test-net-end-without-connect.js",
       "test-net-listen-invalid-port.js",
-      "test-net-normalize-args.js"
+      "test-net-normalize-args.js",
+      "test-net-server-call-listen-multiple-times.js",
+      "test-net-server-try-ports.js"
+    ],
+    "pummel": [
+      "test-net-write-callbacks.js"
+    ],
+    "sequential": [
+      "test-net-server-address.js"
     ]
   },
   "tests": {
@@ -63,6 +71,7 @@
       "test-event-emitter-remove-listeners.js",
       "test-event-emitter-set-max-listeners-side-effects.js",
       "test-event-emitter-special-event-names.js",
+      "test-event-emitter-subclass.js",
       "test-net-access-byteswritten.js",
       "test-net-after-close.js",
       "test-net-allow-half-open.js",
@@ -99,10 +108,49 @@
       "test-net-listen-invalid-port.js",
       "test-net-listening.js",
       "test-net-local-address-port.js",
+      "test-net-localerror.js",
       "test-net-normalize-args.js",
+      "test-net-options-lookup.js",
+      "test-net-pause-resume-connecting.js",
+      "test-net-reconnect.js",
+      "test-net-server-call-listen-multiple-times.js",
+      "test-net-server-close.js",
+      "test-net-server-listen-options-signal.js",
+      "test-net-server-listen-options.js",
+      "test-net-server-listen-remove-callback.js",
+      "test-net-server-max-connections.js",
       "test-net-server-options.js",
-      "test-event-emitter-subclass.js",
+      "test-net-server-pause-on-connect.js",
+      "test-net-server-try-ports.js",
+      "test-net-socket-connect-without-cb.js",
+      "test-net-socket-connecting.js",
+      "test-net-socket-destroy-send.js",
+      "test-net-socket-destroy-twice.js",
+      "test-net-socket-end-before-connect.js",
+      "test-net-socket-no-halfopen-enforcer.js",
+      "test-net-socket-ready-without-cb.js",
+      "test-net-socket-write-error.js",
+      "test-net-sync-cork.js",
+      "test-net-timeout-no-handle.js",
+      "test-net-writable.js",
+      "test-net-write-after-end-nt.js",
+      "test-net-write-arguments.js",
+      "test-net-write-connect-write.js",
+      "test-net-write-fully-async-buffer.js",
+      "test-net-write-fully-async-hex-string.js",
       "test-util-inherits.js"
+    ],
+    "pummel": [
+      "test-net-pingpong-delay.js",
+      "test-net-write-callbacks.js",
+      "test-net-write-callbacks.js"
+    ],
+    "sequential": [
+      "test-net-better-error-messages-port.js",
+      "test-net-connect-econnrefused.js",
+      "test-net-connect-handle-econnrefused.js",
+      "test-net-server-address.js",
+      "test-net-server-bind.js"
     ]
   },
   "suitesFolder": "suites",
