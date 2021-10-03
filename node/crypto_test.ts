@@ -86,9 +86,12 @@ Deno.test("[node/crypto.getHashes]", () => {
   }
 });
 
-Deno.test("[node/crypto.createHmac] basic usage - hex output", () => {
-  const d = createHmac("sha1", "abc").update("def").digest("hex");
-  assertEquals(d, "589c22335a381f122d129225f5c0ba3056ed5811");
+Deno.test("[node/crypto.createHmac] Not Implemented Algorithms", () => {
+  try {
+    createHmac("sha1", "abc").update("def").digest("hex");
+  } catch (e) {
+    assertEquals(e.message, "sha1 algorithm is not implemented!");
+  }
 });
 
 Deno.test("[node/crypto.getRandomUUID] works the same way as Web Crypto API", () => {

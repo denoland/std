@@ -123,13 +123,15 @@ export class Hash extends Transform {
 }
 
 class Hmac extends Hash {
+  readonly blocksize: number;
+
   constructor(alg: string, key: Uint8Array) {
     super(alg);
 
-    const blocksize = (alg === "sha512" || alg === "sha384") ? 128 : 64;
+    this.blocksize = (alg === "sha512" || alg === "sha384") ? 128 : 64;
 
-    if (key.length < blocksize) {
-      key = Buffer.concat([key, Buffer.alloc(128)], blocksize);
+    if (key.length < this.blocksize) {
+      key = Buffer.concat([key, Buffer.alloc(128)], this.blocksize);
     }
   }
 }
@@ -166,6 +168,13 @@ export function createHmac(alg: string, key: string | Uint8Array) {
   }
 
   alg = alg.toLowerCase();
+
+  switch (alg) {
+    default:
+      throw new Error(`${alg} algorithm is not implemented!`);
+  }
+
+  // deno-lint-ignore no-unreachable
   return new Hmac(alg, key as Uint8Array);
 }
 
@@ -201,4 +210,3 @@ export {
   scryptSync,
   timingSafeEqual,
 };
-
