@@ -1,5 +1,4 @@
 import { sprintf } from "../../fmt/printf.ts";
-import { emitWarning, pid, stderr } from "../process.ts";
 import { inspect } from "../util.ts";
 
 // `debugImpls` and `testEnabled` are deliberately not initialized so any call
@@ -26,12 +25,11 @@ function initializeDebugEnv(debugEnv: string) {
 // NODE_DEBUG=http or NODE_DEBUG=http2.
 function emitWarningIfNeeded(set: string) {
   if ("HTTP" === set || "HTTP2" === set) {
-    emitWarning(
+    console.warn(
       "Setting the NODE_DEBUG environment variable " +
         "to '" + set.toLowerCase() + "' can expose sensitive " +
         "data (such as passwords, tokens and authentication headers) " +
         "in the resulting log.",
-      null,
     );
   }
 }
@@ -47,7 +45,7 @@ function debuglogImpl(
       emitWarningIfNeeded(set);
       debugImpls[set] = function debug(...args: unknown[]) {
         const msg = args.map((arg) => inspect(arg)).join(" ");
-        stderr.write(sprintf("%s %s: %s\n", set, String(pid), msg));
+        console.error(sprintf("%s %s: %s\n", set, String(Deno.pid), msg));
       };
     } else {
       debugImpls[set] = noop;
