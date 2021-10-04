@@ -2,6 +2,7 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { default as randomBytes } from "./_crypto/randomBytes.ts";
 import randomFill, { randomFillSync } from "./_crypto/randomFill.ts";
+import randomInt from "./_crypto/randomInt.ts";
 import {
   crypto as wasmCrypto,
   DigestAlgorithm,
@@ -165,6 +166,7 @@ export default {
   pbkdf2Sync,
   randomBytes,
   scrypt,
+  randomInt,
   scryptSync,
   timingSafeEqual,
   randomUUID,
@@ -175,6 +177,7 @@ export {
   randomBytes,
   randomFill,
   randomFillSync,
+  randomInt,
   randomUUID,
   scrypt,
   scryptSync,
