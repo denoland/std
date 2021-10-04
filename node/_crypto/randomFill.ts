@@ -28,7 +28,7 @@ export default function randomFill(
   let trueSize = buf.length - trueOffset;
 
   if (size !== undefined) {
-    trueSize = size as number
+    trueSize = size as number;
   }
 
   if (trueSize + trueOffset > buf.length) {

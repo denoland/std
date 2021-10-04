@@ -159,6 +159,7 @@ export default {
   Hash,
   createHash,
   getHashes,
+  randomFill,
   randomFillSync,
   pbkdf2,
   pbkdf2Sync,
