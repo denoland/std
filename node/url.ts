@@ -63,9 +63,8 @@ function getPathFromURLWin(url: URL): string {
       const third = pathname.codePointAt(n + 2)! | 0x20;
       if (
         (pathname[n + 1] === "2" && third === 102) || // 2f 2F /
-        (pathname[n + 1] === "5" && third === 99)
+        (pathname[n + 1] === "5" && third === 99) // 5c 5C \
       ) {
-        // 5c 5C \
         throw new Deno.errors.InvalidData(
           "must not include encoded \\ or / characters",
         );
