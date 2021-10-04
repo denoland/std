@@ -60,7 +60,7 @@ function getPathFromURLWin(url: URL): string {
   let pathname = url.pathname;
   for (let n = 0; n < pathname.length; n++) {
     if (pathname[n] === "%") {
-      const third = pathname.codePointAt(n + 2) || 0x20;
+      const third = pathname.codePointAt(n + 2)! | 0x20;
       if (
         (pathname[n + 1] === "2" && third === 102) || // 2f 2F /
         (pathname[n + 1] === "5" && third === 99)
@@ -100,7 +100,7 @@ function getPathFromURLPosix(url: URL): string {
   const pathname = url.pathname;
   for (let n = 0; n < pathname.length; n++) {
     if (pathname[n] === "%") {
-      const third = pathname.codePointAt(n + 2) || 0x20;
+      const third = pathname.codePointAt(n + 2)! | 0x20;
       if (pathname[n + 1] === "2" && third === 102) {
         throw new Deno.errors.InvalidData(
           "must not include encoded / characters",
