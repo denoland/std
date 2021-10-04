@@ -19,28 +19,29 @@ export default function randomFill(
 
 export default function randomFill(
   buf: Buffer,
-  // deno-lint-ignore no-explicit-any
-  offset?: any,
-  // deno-lint-ignore no-explicit-any
-  size?: any,
+  offset?: number | ((err: Error | null, buf?: Buffer) => void),
+  size?: number | ((err: Error | null, buf?: Buffer) => void),
   cb?: (err: Error | null, buf?: Buffer) => void,
 ) {
-  if (size + offset > buf.length) {
+  const callback = cb as (err: Error | null, buf?: Buffer) => void;
+  const trueOffset = offset as unknown as number | 0;
+  let trueSize = buf.length - trueOffset;
+
+  if (size !== undefined) {
+    trueSize = size as number
+  }
+
+  if (trueSize + trueOffset > buf.length) {
     throw new RangeError(
-      `The value of "size + offset" is out of range. It must be <= ${buf.length}. Received ${(size +
-        offset)}.`,
+      `The value of "size + offset" is out of range. It must be <= ${buf.length}. Received ${(trueSize +
+        trueOffset)}.`,
     );
   }
 
-  const buffer = buf as Buffer;
-  const callback = cb as (err: Error | null, buf?: Buffer) => void;
-  const trueOffset = 0 | offset;
-  const trueSize = buffer.length - trueOffset;
-
-  randomBytes(size, (err, buf) => {
+  randomBytes(trueSize, (err, buf) => {
     if (err) return callback(err as Error);
-    buffer.copy(buf as Buffer, trueOffset, 0, trueSize);
-    callback(null, buffer);
+    buf?.copy(buf as Buffer, trueOffset, 0, trueSize);
+    callback(null, buf);
   });
 }
 
