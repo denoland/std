@@ -1,4 +1,4 @@
-import randomBytes,{MAX_SIZE as kMaxUint32} from "./randomBytes.ts";
+import randomBytes, { MAX_SIZE as kMaxUint32 } from "./randomBytes.ts";
 import { Buffer } from "../buffer.ts";
 
 const kBufferMaxLength = 0x7fffffff;

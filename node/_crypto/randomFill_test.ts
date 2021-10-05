@@ -1,9 +1,6 @@
 import { Buffer } from "../buffer.ts";
 import randomFill, { randomFillSync } from "./randomFill.ts";
-import {
-  assertEquals,
-  assertThrows,
-} from "../../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../../testing/asserts.ts";
 
 const validateNonZero = (buf: Buffer) => buf.some((ch) => ch > 0);
 const validateZero = (buf: Buffer) => {
