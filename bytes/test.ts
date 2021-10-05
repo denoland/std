@@ -119,23 +119,11 @@ Deno.test("[bytes] equals", () => {
   assert(!v3);
 });
 
-function rand(n: number): number {
-  return Math.floor(Math.random() * n);
-}
-
-function randArr(len: number): Uint8Array {
-  const arr = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    arr[i] = rand(256);
-  }
-  return arr;
-}
-
 Deno.test("[bytes] equals randomized testing", () => {
   // run tests before and after cutoff
   for (let len = 995; len <= 1005; len++) {
-    const arr1 = randArr(len);
-    const arr2 = randArr(len);
+    const arr1 = crypto.getRandomValues(new Uint8Array(len));
+    const arr2 = crypto.getRandomValues(new Uint8Array(len));
     const arr3 = arr1.slice(0);
     // the chance of arr1 equaling arr2 is basically 0
     // but introduce an inequality at the end just in case
