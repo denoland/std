@@ -10,55 +10,52 @@ const { isWindows } = require('../common');
 const assert = require('assert');
 const url = require('url');
 
-// TODO(wafuwafu13): enable this validation
-// function testInvalidArgs(...args) {
-//   for (const arg of args) {
-//     assert.throws(() => url.fileURLToPath(arg), {
-//       code: 'ERR_INVALID_ARG_TYPE'
-//     });
-//   }
-// }
+function testInvalidArgs(...args) {
+  for (const arg of args) {
+    assert.throws(() => url.fileURLToPath(arg), {
+      code: 'ERR_INVALID_ARG_TYPE'
+    });
+  }
+}
 
-// // Input must be string or URL
-// testInvalidArgs(null, undefined, 1, {}, true);
+// Input must be string or URL
+testInvalidArgs(null, undefined, 1, {}, true);
 
-// TODO(wafuwafu13): enable this validation
+// TODO(wafuwafu13): implement ERR_INVALID_URL_SCHEME
 // // Input must be a file URL
 // assert.throws(() => url.fileURLToPath('https://a/b/c'), {
 //   code: 'ERR_INVALID_URL_SCHEME'
 // });
 
-// TODO(wafuwafu13): enable this validation
-// {
-//   const withHost = new URL('file://host/a');
+{
+  const withHost = new URL('file://host/a');
 
-//   if (isWindows) {
-//     assert.strictEqual(url.fileURLToPath(withHost), '\\\\host\\a');
-//   } else {
-//     assert.throws(() => url.fileURLToPath(withHost), {
-//       code: 'ERR_INVALID_FILE_URL_HOST'
-//     });
-//   }
-// }
+  if (isWindows) {
+    assert.strictEqual(url.fileURLToPath(withHost), '\\\\host\\a');
+  } else {
+    assert.throws(() => url.fileURLToPath(withHost), {
+      code: 'ERR_INVALID_FILE_URL_HOST'
+    });
+  }
+}
 
-// TODO: enable this validation
-// {
-//   if (isWindows) {
-//     assert.throws(() => url.fileURLToPath('file:///C:/a%2F/'), {
-//       code: 'ERR_INVALID_FILE_URL_PATH'
-//     });
-//     assert.throws(() => url.fileURLToPath('file:///C:/a%5C/'), {
-//       code: 'ERR_INVALID_FILE_URL_PATH'
-//     });
-//     assert.throws(() => url.fileURLToPath('file:///?:/'), {
-//       code: 'ERR_INVALID_FILE_URL_PATH'
-//     });
-//   } else {
-//     assert.throws(() => url.fileURLToPath('file:///a%2F/'), {
-//       code: 'ERR_INVALID_FILE_URL_PATH'
-//     });
-//   }
-// }
+{
+  if (isWindows) {
+    assert.throws(() => url.fileURLToPath('file:///C:/a%2F/'), {
+      code: 'ERR_INVALID_FILE_URL_PATH'
+    });
+    assert.throws(() => url.fileURLToPath('file:///C:/a%5C/'), {
+      code: 'ERR_INVALID_FILE_URL_PATH'
+    });
+    assert.throws(() => url.fileURLToPath('file:///?:/'), {
+      code: 'ERR_INVALID_FILE_URL_PATH'
+    });
+  } else {
+    assert.throws(() => url.fileURLToPath('file:///a%2F/'), {
+      code: 'ERR_INVALID_FILE_URL_PATH'
+    });
+  }
+}
 
 {
   let testCases;

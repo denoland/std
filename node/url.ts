@@ -20,13 +20,18 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import {
+  ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_FILE_URL_HOST,
+  ERR_INVALID_FILE_URL_PATH,
+} from "./_errors.ts";
+import {
   CHAR_BACKWARD_SLASH,
   CHAR_FORWARD_SLASH,
   CHAR_LOWERCASE_A,
   CHAR_LOWERCASE_Z,
 } from "../path/_constants.ts";
 import * as path from "./path.ts";
-import { isWindows } from "../_util/os.ts";
+import { isWindows, osType } from "../_util/os.ts";
 
 const forwardSlashRegEx = /\//g;
 const percentRegEx = /%/g;
@@ -45,9 +50,7 @@ export { _url as URL };
 export function fileURLToPath(path: string | URL): string {
   if (typeof path === "string") path = new URL(path);
   else if (!(path instanceof URL)) {
-    throw new Deno.errors.InvalidData(
-      "invalid argument path , must be a string or URL",
-    );
+    throw new ERR_INVALID_ARG_TYPE("path", ["string", "URL"], path);
   }
   if (path.protocol !== "file:") {
     throw new Deno.errors.InvalidData("invalid url scheme");
@@ -65,7 +68,7 @@ function getPathFromURLWin(url: URL): string {
         (pathname[n + 1] === "2" && third === 102) || // 2f 2F /
         (pathname[n + 1] === "5" && third === 99) // 5c 5C \
       ) {
-        throw new Deno.errors.InvalidData(
+        throw new ERR_INVALID_FILE_URL_PATH(
           "must not include encoded \\ or / characters",
         );
       }
@@ -86,7 +89,7 @@ function getPathFromURLWin(url: URL): string {
       letter > CHAR_LOWERCASE_Z || // a..z A..Z
       sep !== ":"
     ) {
-      throw new Deno.errors.InvalidData("file url path must be absolute");
+      throw new ERR_INVALID_FILE_URL_PATH("must be absolute");
     }
     return pathname.slice(1);
   }
@@ -94,14 +97,14 @@ function getPathFromURLWin(url: URL): string {
 
 function getPathFromURLPosix(url: URL): string {
   if (url.hostname !== "") {
-    throw new Deno.errors.InvalidData("invalid file url hostname");
+    throw new ERR_INVALID_FILE_URL_HOST(osType);
   }
   const pathname = url.pathname;
   for (let n = 0; n < pathname.length; n++) {
     if (pathname[n] === "%") {
       const third = pathname.codePointAt(n + 2)! | 0x20;
       if (pathname[n + 1] === "2" && third === 102) {
-        throw new Deno.errors.InvalidData(
+        throw new ERR_INVALID_FILE_URL_PATH(
           "must not include encoded / characters",
         );
       }
