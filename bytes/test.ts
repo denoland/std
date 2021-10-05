@@ -133,7 +133,7 @@ function randArr(len: number): Uint8Array {
 
 Deno.test("[bytes] equals randomized testing", () => {
   // run tests before and after cutoff
-  for (let len = 995; len <= 1005; len ++) {
+  for (let len = 995; len <= 1005; len++) {
     const arr1 = randArr(len);
     const arr2 = randArr(len);
     const arr3 = arr1.slice(0);

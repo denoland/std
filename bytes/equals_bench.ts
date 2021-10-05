@@ -1,7 +1,4 @@
-import {
-  bench,
-  runBenchmarks,
-} from "../testing/bench.ts";
+import { bench, runBenchmarks } from "../testing/bench.ts";
 
 function equalsNaive(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) return false;
@@ -73,4 +70,3 @@ bench({
 });
 
 runBenchmarks();
-
