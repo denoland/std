@@ -119,6 +119,23 @@ To run the tests you have set up, do the following:
 $ deno test --allow-read --allow-run node/_tools/test.ts
 ```
 
+If you want to run specific tests in a local environment, add `--only` flag to
+the `node/_tools/config.json` as follows:
+
+```json
+...
+  "tests": {
+    "parallel": [
+      ...
+      "test-event-emitter-add-listeners.js",
+      "test-event-emitter-check-listener-leaks.js --only",
+      "test-event-emitter-invalid-listener.js",
+      ...
+    ]
+  }
+...
+```
+
 The test should be passing with the latest deno, so if the test fails, try the
 following:
 

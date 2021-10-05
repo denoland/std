@@ -1,3 +1,14 @@
+### 0.110.0 / 2021.10.04
+
+- feat(node): add missing modules (#1337)
+- feat(node): support `Buffer.readUIntLE` (#1326)
+- feat(node/buffer): support `Buffer.readUIntBE` (#1321)
+- feat(node/crypto): add `scrypt` and `scryptSync` (#1329)
+- feat(node/crypto): add `timingSafeEqual` (#1333)
+- feat(node/stream/web): export more APIs (#1338)
+- feat(std/node): add back os.tmpdir() implementation (#1308)
+- feat(std/node/crypto): Add `crypto.randomUUID` (#1332)
+
 ### 0.109.0 / 2021.09.28
 
 - feat(std/node/stream): add partial support for `stream/web` (#1297)

@@ -37,8 +37,9 @@ export class Sha1 {
   }
   protected init(sharedMemory: boolean) {
     if (sharedMemory) {
-      // deno-fmt-ignore
-      blocks[0] = blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      blocks[0] = blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] =
+        blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] =
+          blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
       this.#blocks = blocks;
     } else {
       this.#blocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -74,8 +75,9 @@ export class Sha1 {
       if (this.#hashed) {
         this.#hashed = false;
         blocks[0] = this.#block;
-        // deno-fmt-ignore
-        blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+        blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] =
+          blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] =
+            blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
       }
 
       if (typeof msg !== "string") {
@@ -138,8 +140,9 @@ export class Sha1 {
         this.hash();
       }
       blocks[0] = this.#block;
-      // deno-fmt-ignore
-      blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] = blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] = blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
+      blocks[16] = blocks[1] = blocks[2] = blocks[3] = blocks[4] = blocks[5] =
+        blocks[6] = blocks[7] = blocks[8] = blocks[9] = blocks[10] =
+          blocks[11] = blocks[12] = blocks[13] = blocks[14] = blocks[15] = 0;
     }
     blocks[14] = (this.#hBytes << 3) | (this.#bytes >>> 29);
     blocks[15] = this.#bytes << 3;
