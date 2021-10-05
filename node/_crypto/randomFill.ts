@@ -25,27 +25,27 @@ function assertSize(size: number, offset: number, length: number) {
 
 export default function randomFill(
   buf: Buffer,
-  cb: (err: Error | null, buf?: Buffer) => void,
+  cb: (err: Error | null, buf: Buffer) => void,
 ): void;
 
 export default function randomFill(
   buf: Buffer,
   offset: number,
-  cb: ((err: Error | null, buf?: Buffer) => void),
+  cb: ((err: Error | null, buf: Buffer) => void),
 ): void;
 
 export default function randomFill(
   buf: Buffer,
   offset: number,
   size: number,
-  cb: (err: Error | null, buf?: Buffer) => void,
+  cb: (err: Error | null, buf: Buffer) => void,
 ): void;
 
 export default function randomFill(
   buf: Buffer,
-  offset?: number | ((err: Error | null, buf?: Buffer) => void),
-  size?: number | ((err: Error | null, buf?: Buffer) => void),
-  cb?: ((err: Error | null, buf?: Buffer) => void),
+  offset?: number | ((err: Error | null, buf: Buffer) => void),
+  size?: number | ((err: Error | null, buf: Buffer) => void),
+  cb?: ((err: Error | null, buf: Buffer) => void),
 ): void {
   if (typeof offset === "function") {
     cb = offset;
@@ -60,7 +60,7 @@ export default function randomFill(
   assertSize(size as number, offset as number, buf.length);
 
   randomBytes(size as number, (err, bytes) => {
-    if (err) return cb!(err);
+    if (err) return cb!(err, buf);
     bytes?.copy(buf, offset as number);
     cb!(null, buf);
   });
