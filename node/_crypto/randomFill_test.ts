@@ -2,7 +2,6 @@ import { Buffer } from "../buffer.ts";
 import randomFill, { randomFillSync } from "./randomFill.ts";
 import {
   assertEquals,
-  assertNotEquals,
   assertThrows,
 } from "../../testing/asserts.ts";
 
@@ -17,7 +16,7 @@ Deno.test("[node/crypto.randomFill]", () => {
 
   randomFill(buf, 5, 5, (_err, bufTwo) => {
     const after = bufTwo?.toString("hex");
-    assertNotEquals(before.slice(0, 10), after?.slice(0, 10));
+    assertEquals(before.slice(0, 10), after?.slice(0, 10));
   });
 });
 

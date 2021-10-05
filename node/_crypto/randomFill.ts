@@ -1,15 +1,40 @@
 import randomBytes from "./randomBytes.ts";
 import { Buffer } from "../buffer.ts";
 
+const kMaxUint32 = Math.pow(2, 32) - 1;
+const kBufferMaxLength = 0x7fffffff;
+
+function assertOffset(offset: number, length: number) {
+  if (offset > kMaxUint32 || offset < 0) {
+    throw new TypeError("offset must be a uint32");
+  }
+
+  if (offset > kBufferMaxLength || offset > length) {
+    throw new RangeError("offset out of range");
+  }
+}
+
+function assertSize(size: number, offset: number, length: number) {
+  if (size > kMaxUint32 || size < 0) {
+    throw new TypeError("size must be a uint32");
+  }
+
+  if (size + offset > length || size > kBufferMaxLength) {
+    throw new RangeError("buffer too small");
+  }
+}
+
 export default function randomFill(
   buf: Buffer,
   cb: (err: Error | null, buf?: Buffer) => void,
 ): void;
+
 export default function randomFill(
   buf: Buffer,
   offset: number,
-  cb: (err: Error | null, buf?: Buffer) => void,
+  cb: ((err: Error | null, buf?: Buffer) => void),
 ): void;
+
 export default function randomFill(
   buf: Buffer,
   offset: number,
@@ -21,41 +46,37 @@ export default function randomFill(
   buf: Buffer,
   offset?: number | ((err: Error | null, buf?: Buffer) => void),
   size?: number | ((err: Error | null, buf?: Buffer) => void),
-  cb?: (err: Error | null, buf?: Buffer) => void,
-) {
-  const callback = cb as (err: Error | null, buf?: Buffer) => void;
-  const trueOffset = offset as unknown as number | 0;
-  let trueSize = buf.length - trueOffset;
-
-  if (size !== undefined) {
-    trueSize = size as number;
+  cb?: ((err: Error | null, buf?: Buffer) => void),
+): void {
+  if (typeof offset === "function") {
+    cb = offset;
+    offset = 0;
+    size = buf.length;
+  } else if (typeof size === "function") {
+    cb = size;
+    size = buf.length - Number(offset as number);
   }
 
-  if (trueSize + trueOffset > buf.length) {
-    throw new RangeError(
-      `The value of "size + offset" is out of range. It must be <= ${buf.length}. Received ${(trueSize +
-        trueOffset)}.`,
-    );
-  }
+  assertOffset(offset as number, buf.length);
+  assertSize(size as number, offset as number, buf.length);
 
-  randomBytes(trueSize, (err, buf) => {
-    if (err) return callback(err as Error);
-    buf?.copy(buf as Buffer, trueOffset, 0, trueSize);
-    callback(null, buf);
+  randomBytes(size as number, (err, bytes) => {
+    if (err) return cb!(err);
+    bytes?.copy(buf, offset as number);
+    cb!(null, buf);
   });
 }
 
-export function randomFillSync(buffer: Buffer, offset = 0, size?: number) {
-  if (size === undefined) {
-    size = buffer.length - offset;
-  }
+export function randomFillSync(buf: Buffer, offset = 0, size?: number) {
+  assertOffset(offset, buf.length);
 
-  if (size + offset > buffer.length) {
-    throw new RangeError(
-      `The value of "size + offset" is out of range. It must be <= ${buffer.length}. Received ${(size +
-        offset)}.`,
-    );
-  }
+  if (size === undefined) size = buf.length - offset;
 
-  randomBytes(size).copy(buffer, offset, 0, size);
+  assertSize(size, offset, buf.length);
+
+  const bytes = randomBytes(size);
+
+  bytes.copy(buf, offset);
+
+  return buf;
 }
