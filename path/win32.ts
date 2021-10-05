@@ -49,12 +49,7 @@ export function resolve(...pathSegments: string[]): string {
       ) {
         throw new TypeError("Resolved a relative path without a CWD.");
       }
-      // Windows has the concept of drive-specific current working
-      // directories. If we've resolved a drive letter but not yet an
-      // absolute path, get cwd for that drive, or the process cwd if
-      // the drive cwd is not available. We're sure the device is not
-      // a UNC path at this points, because UNC paths are always absolute.
-      path = Deno.env.get(`=${resolvedDevice}`) || Deno.cwd();
+      path = Deno.cwd();
 
       // Verify that a cwd was found and that it actually points
       // to our drive. If not, default to the drive's root.
