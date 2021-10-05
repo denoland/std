@@ -1,7 +1,6 @@
-import randomBytes from "./randomBytes.ts";
+import randomBytes,{MAX_SIZE as kMaxUint32} from "./randomBytes.ts";
 import { Buffer } from "../buffer.ts";
 
-const kMaxUint32 = Math.pow(2, 32) - 1;
 const kBufferMaxLength = 0x7fffffff;
 
 function assertOffset(offset: number, length: number) {
