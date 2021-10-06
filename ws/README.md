@@ -1,7 +1,11 @@
 # ws
 
-ws module is made to provide helpers to create WebSocket server. For client
-WebSockets, use the
+ws module was made to provide helpers to create WebSocket server, but it has
+been deprecated. This module will be removed in the future.
+
+For creating WebSocket server, use the
+[`Deno.upgradeWebSocket` API](https://doc.deno.land/builtin/stable#Deno.upgradeWebSocket).
+For client WebSockets, use the
 [WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API).
 
 ## Usage

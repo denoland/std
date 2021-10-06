@@ -14,7 +14,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] array of numbers",
+  name: "[collections/runningReduce] array of numbers initialValue 0",
   fn() {
     const numbers = [1, 2, 3, 4, 5];
     const result = runningReduce(numbers, (sum, current) => sum + current, 0);
@@ -24,7 +24,17 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] array of strings",
+  name: "[collections/runningReduce] array of numbers initialValue 5",
+  fn() {
+    const numbers = [1, 2, 3, 4, 5];
+    const result = runningReduce(numbers, (sum, current) => sum + current, 5);
+
+    assertEquals(result, [6, 8, 11, 15, 20]);
+  },
+});
+
+Deno.test({
+  name: `[collections/runningReduce] array of strings initialValue ""`,
   fn() {
     const strings = ["a", "b", "c", "d", "e"];
     const result = runningReduce(strings, (str, current) => str + current, "");
@@ -34,10 +44,69 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] empty input",
+  name: `[collections/runningReduce] array of strings initialValue "foo"`,
+  fn() {
+    const strings = ["a", "b", "c", "d", "e"];
+    const result = runningReduce(
+      strings,
+      (str, current) => str + current,
+      "foo",
+    );
+
+    assertEquals(result, ["fooa", "fooab", "fooabc", "fooabcd", "fooabcde"]);
+  },
+});
+
+Deno.test({
+  name: "[collections/runningReduce] empty array initialValue 0",
   fn() {
     const result = runningReduce([], (sum, current) => sum + current, 0);
 
     assertEquals(result, []);
+  },
+});
+
+Deno.test({
+  name: "[collections/runningReduce] empty array initialValue 5",
+  fn() {
+    const result = runningReduce([], (sum, current) => sum + current, 5);
+
+    assertEquals(result, []);
+  },
+});
+
+Deno.test({
+  name: "[collections/runningReduce] array of objects initialValue 0",
+  fn() {
+    const medals = [
+      { country: "USA", count: 113 },
+      { country: "CHN", count: 88 },
+      { country: "JPN", count: 58 },
+    ];
+    const result = runningReduce(
+      medals,
+      (sum, current) => sum + current.count,
+      0,
+    );
+
+    assertEquals(result, [113, 201, 259]);
+  },
+});
+
+Deno.test({
+  name: `[collections/runningReduce] array of objects initialValue ""`,
+  fn() {
+    const medals = [
+      { country: "USA", count: 113 },
+      { country: "CHN", count: 88 },
+      { country: "JPN", count: 58 },
+    ];
+    const result = runningReduce(
+      medals,
+      (sum, current) => sum + current.count,
+      "",
+    );
+
+    assertEquals(result, ["113", "11388", "1138858"]);
   },
 });

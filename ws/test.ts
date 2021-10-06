@@ -101,8 +101,19 @@ Deno.test("[ws] read unmasked ping / pong frame", async () => {
     new Buffer(ping.payload).bytes(),
   );
   assertEquals(actual1, "Hello");
-  // deno-fmt-ignore
-  const pongFrame = [0x8a, 0x85, 0x37, 0xfa, 0x21, 0x3d, 0x7f, 0x9f, 0x4d, 0x51, 0x58]
+  const pongFrame = [
+    0x8a,
+    0x85,
+    0x37,
+    0xfa,
+    0x21,
+    0x3d,
+    0x7f,
+    0x9f,
+    0x4d,
+    0x51,
+    0x58,
+  ];
   const buf2 = new BufReader(new Buffer(new Uint8Array(pongFrame)));
   const pong = await readFrame(buf2);
   assertEquals(pong.opcode, OpCode.Pong);
