@@ -2,7 +2,6 @@
 /** ********** NOT IMPLEMENTED
  * ERR_INVALID_MODULE_SPECIFIER
  * ERR_INVALID_PACKAGE_TARGET
- * ERR_INVALID_URL_SCHEME
  * ERR_MANIFEST_ASSERT_INTEGRITY
  * ERR_MODULE_NOT_FOUND
  * ERR_PACKAGE_PATH_NOT_EXPORTED
@@ -2393,5 +2392,18 @@ export class ERR_INVALID_URL extends NodeTypeError {
       `Invalid URL: ${input}`,
     );
     this.input = input;
+  }
+}
+
+export class ERR_INVALID_URL_SCHEME extends NodeTypeError {
+  constructor(expected: string | [string] | [string, string]) {
+    expected = Array.isArray(expected) ? expected : [expected];
+    const res = expected.length === 2
+      ? `one of scheme ${expected[0]} or ${expected[1]}`
+      : `of scheme ${expected[0]}`;
+    super(
+      "ERR_INVALID_URL_SCHEME",
+      `The URL must be ${res}`,
+    );
   }
 }
