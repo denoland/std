@@ -6,7 +6,8 @@
     ],
     "parallel": [
       "test-assert-async.js",
-      "test-assert.js"
+      "test-assert.js",
+      "test-url-pathtofileurl.js"
     ]
   },
   "tests": {
