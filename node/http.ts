@@ -1,4 +1,4 @@
-import { Status as STATUS_CODES } from "../http/mod.ts";
+import { Status as STATUS_CODES } from "../http/http_status.ts";
 
 const METHODS = [
   "ACL",
