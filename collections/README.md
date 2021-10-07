@@ -151,6 +151,27 @@ const dropWhileNumbers = dropWhile(numbers, (i) => i !== 2);
 assertEquals(dropWhileNumbers, [2, 5, 2, 5]);
 ```
 
+### dropLastWhile
+
+Returns a new array that drops all elements in the given collection until the
+last element that does not match the given predicate
+
+Example:
+
+```ts
+import { dropLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const numbers = [22, 30, 44];
+
+const notFortyFour = dropLastWhile(numbers, (i) => i != 44);
+
+assertEquals(
+  notFortyFour,
+  [22, 30],
+);
+```
+
 ### filterEntries
 
 Returns a new record with all entries of the given record except the ones that
@@ -228,6 +249,21 @@ assertEquals(
 );
 ```
 
+### findLastIndex
+
+Returns the index of the last element in the given array matching the given
+predicate.
+
+```ts
+import { findLastIndex } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const numbers = [0, 1, 2, 3, 4, 5, 6];
+const lastIndexEvenNumber = findLastIndex(numbers, (it) => it % 2 === 0);
+
+assertEquals(lastIndexEvenNumber, 6);
+```
+
 ### findLast
 
 Returns the last element in the given array matching the given predicate.
@@ -242,19 +278,45 @@ const lastEvenNumber = findLast(numbers, (it) => it % 2 === 0);
 assertEquals(lastEvenNumber, 2);
 ```
 
-### findLastIndex
+### findSingle
 
-Returns the index of the last element in the given array matching the given
-predicate.
+Returns an element if and only if that element is the only one matching the
+given condition. Returns `undefined` otherwise.
 
 ```ts
-import { findLastIndex } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { findSingle } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
-const numbers = [0, 1, 2, 3, 4, 5, 6];
-const lastIndexEvenNumber = findLastIndex(numbers, (it) => it % 2 === 0);
+const bookings = [
+  { month: "January", active: false },
+  { month: "March", active: false },
+  { month: "June", active: true },
+];
+const activeBooking = findSingle(bookings, (it) => it.active);
+const inactiveBooking = findSingle(bookings, (it) => !it.active);
 
-assertEquals(lastIndexEvenNumber, 6);
+assertEquals(activeBooking, { month: "June", active: true });
+assertEquals(inactiveBooking, undefined); // there are two applicable items
+```
+
+### firstNotNullishOf
+
+Applies the given selector to elements in the given array until a value is
+produced that is neither `null` nor `undefined` and returns that value. Returns
+`undefined` if no such value is produced
+
+```ts
+import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const tables = [
+  { number: 11, order: null },
+  { number: 12, order: "Soup" },
+  { number: 13, order: "Salad" },
+];
+const nextOrder = firstNotNullishOf(tables, (it) => it.order);
+
+assertEquals(nextOrder, "Soup");
 ```
 
 ### groupBy
@@ -281,6 +343,24 @@ assertEquals(
     "K": [{ name: "Kim" }],
   },
 );
+```
+
+### includesValue
+
+If the given value is part of the given object it returns true, otherwise it
+returns false. Doesn't work with non-primitive values: includesValue({x: {}},
+{}) returns false.
+
+```ts
+import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const input = {
+  first: 33,
+  second: 34,
+};
+
+assertEquals(includesValue(input, 34), true);
 ```
 
 ### intersect
@@ -395,6 +475,26 @@ assertEquals(
 );
 ```
 
+### maxBy
+
+Returns the first element that is the largest value of the given function or
+undefined if there are no elements.
+
+```ts
+import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+
+const personWithMaxAge = maxBy(people, (i) => i.age);
+
+assertEquals(personWithMaxAge, { name: "Kim", age: 42 });
+```
+
 ### maxOf
 
 Applies the given selector to all elements of the provided collection and
@@ -416,6 +516,41 @@ const maxCount = maxOf(inventory, (i) => i.count);
 assertEquals(maxCount, 32);
 ```
 
+### maxWith
+
+Returns the first element having the largest value according to the provided
+comparator or undefined if there are no elements
+
+```ts
+import { maxWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = ["Kim", "Anna", "John", "Arthur"];
+const largestName = maxWith(people, (a, b) => a.length - b.length);
+
+assertEquals(largestName, "Arthur");
+```
+
+### minBy
+
+Returns the first element that is the smallest value of the given function or
+undefined if there are no elements
+
+```ts
+import { minBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+
+const personWithMinAge = minBy(people, (i) => i.age);
+
+assertEquals(personWithMinAge, { name: "John", age: 23 });
+```
+
 ### minOf
 
 Applies the given selector to all elements of the given collection and returns
@@ -434,6 +569,21 @@ const inventory = [
 const minCount = minOf(inventory, (i) => i.count);
 
 assertEquals(minCount, 2);
+```
+
+### minWith
+
+Returns the first element having the smallest value according to the provided
+comparator or undefined if there are no elements
+
+```ts
+import { minWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = ["Kim", "Anna", "John"];
+const smallestName = minWith(people, (a, b) => a.length - b.length);
+
+assertEquals(smallestName, "Kim");
 ```
 
 ### partition
@@ -475,25 +625,58 @@ assertEquals(
 );
 ```
 
-### findSingle
+### reduceGroups
 
-Returns an element if and only if that element is the only one matching the
-given condition. Returns `undefined` otherwise.
+Applies the given reducer to each group in the given Grouping, returning the
+results together with the respective group keys
 
 ```ts
-import { findSingle } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { reduceGroups } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
-const bookings = [
-  { month: "January", active: false },
-  { month: "March", active: false },
-  { month: "June", active: true },
-];
-const activeBooking = findSingle(bookings, (it) => it.active);
-const inactiveBooking = findSingle(bookings, (it) => !it.active);
+const votes = {
+  "Woody": [2, 3, 1, 4],
+  "Buzz": [5, 9],
+};
 
-assertEquals(activeBooking, { month: "June", active: true });
-assertEquals(inactiveBooking, undefined); // there are two applicable items
+const totalVotes = reduceGroups(votes, (sum, it) => sum + it, 0);
+
+assertEquals(totalVotes, {
+  "Woody": 10,
+  "Buzz": 14,
+});
+```
+
+### runningReduce
+
+Calls the given reducer on each element of the given collection, passing it's
+result as the accumulator to the next respective call, starting with the given
+initialValue. Returns all intermediate accumulator results.
+
+Example:
+
+```ts
+import { runningReduce } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const numbers = [1, 2, 3, 4, 5];
+const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
+
+assertEquals(sumSteps, [1, 3, 6, 10, 15]);
+```
+
+### sample
+
+Returns a random element from the given array
+
+```ts
+import { sample } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const numbers = [1, 2, 3, 4];
+const random = sample(numbers);
+
+assert(numbers.includes(random as number));
 ```
 
 ### slidingWindows
@@ -559,6 +742,42 @@ assertEquals(sortedByAge, [
 ]);
 ```
 
+### takeLastWhile
+
+Returns all elements in the given array after the last element that does not
+match the given predicate.
+
+Example:
+
+```ts
+import { takeLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const arr = [1, 2, 3, 4, 5, 6];
+
+assertEquals(
+  takeLastWhile(arr, (i) => i > 4),
+  [5, 6],
+);
+```
+
+### takeWhile
+
+Returns all elements in the given collection until the first element that does
+not match the given predicate.
+
+```ts
+import { takeWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const arr = [1, 2, 3, 4, 5, 6];
+
+assertEquals(
+  takeWhile(arr, (i) => i !== 4),
+  [1, 2, 3],
+);
+```
+
 ### union
 
 Returns all distinct elements that appear in any of the given arrays
@@ -572,19 +791,6 @@ const saladIngredients = ["Carrots", "Radicchio", "Pepper"];
 const shoppingList = union(soupIngredients, saladIngredients);
 
 assertEquals(shoppingList, ["Pepper", "Carrots", "Leek", "Radicchio"]);
-```
-
-### withoutAll
-
-Returns an array excluding all given values
-
-```ts
-import { withoutAll } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const withoutList = withoutAll([2, 1, 2, 3], [1, 2]);
-
-assertEquals(withoutList, [3]);
 ```
 
 ### unzip
@@ -609,6 +815,19 @@ assertEquals(moms, ["Maria", "Anna", "John"]);
 assertEquals(dads, ["Jeff", "Kim", "Leroy"]);
 ```
 
+### withoutAll
+
+Returns an array excluding all given values
+
+```ts
+import { withoutAll } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const withoutList = withoutAll([2, 1, 2, 3], [1, 2]);
+
+assertEquals(withoutList, [3]);
+```
+
 ### zip
 
 Builds 2-tuples of elements from the given array with matching indices, stopping
@@ -631,223 +850,4 @@ assertEquals(
     [4, "d"],
   ],
 );
-```
-
-### maxWith
-
-Returns the first element having the largest value according to the provided
-comparator or undefined if there are no elements
-
-```ts
-import { maxWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const people = ["Kim", "Anna", "John", "Arthur"];
-const largestName = maxWith(people, (a, b) => a.length - b.length);
-
-assertEquals(largestName, "Arthur");
-```
-
-### minWith
-
-Returns the first element having the smallest value according to the provided
-comparator or undefined if there are no elements
-
-```ts
-import { minWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const people = ["Kim", "Anna", "John"];
-const smallestName = minWith(people, (a, b) => a.length - b.length);
-
-assertEquals(smallestName, "Kim");
-```
-
-### includesValue
-
-If the given value is part of the given object it returns true, otherwise it
-returns false. Doesn't work with non-primitive values: includesValue({x: {}},
-{}) returns false.
-
-```ts
-import { includesValue } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const input = {
-  first: 33,
-  second: 34,
-};
-
-assertEquals(includesValue(input, 34), true);
-```
-
-### takeWhile
-
-Returns all elements in the given collection until the first element that does
-not match the given predicate.
-
-```ts
-import { takeWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const arr = [1, 2, 3, 4, 5, 6];
-
-assertEquals(
-  takeWhile(arr, (i) => i !== 4),
-  [1, 2, 3],
-);
-```
-
-### takeLastWhile
-
-Returns all elements in the given array after the last element that does not
-match the given predicate.
-
-Example:
-
-```ts
-import { takeLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const arr = [1, 2, 3, 4, 5, 6];
-
-assertEquals(
-  takeLastWhile(arr, (i) => i > 4),
-  [5, 6],
-);
-```
-
-### firstNotNullishOf
-
-Applies the given selector to elements in the given array until a value is
-produced that is neither `null` nor `undefined` and returns that value. Returns
-`undefined` if no such value is produced
-
-```ts
-import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const tables = [
-  { number: 11, order: null },
-  { number: 12, order: "Soup" },
-  { number: 13, order: "Salad" },
-];
-const nextOrder = firstNotNullishOf(tables, (it) => it.order);
-
-assertEquals(nextOrder, "Soup");
-```
-
-### maxBy
-
-Returns the first element that is the largest value of the given function or
-undefined if there are no elements.
-
-```ts
-import { maxBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const people = [
-  { name: "Anna", age: 34 },
-  { name: "Kim", age: 42 },
-  { name: "John", age: 23 },
-];
-
-const personWithMaxAge = maxBy(people, (i) => i.age);
-
-assertEquals(personWithMaxAge, { name: "Kim", age: 42 });
-```
-
-### minBy
-
-Returns the first element that is the smallest value of the given function or
-undefined if there are no elements
-
-```ts
-import { minBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const people = [
-  { name: "Anna", age: 34 },
-  { name: "Kim", age: 42 },
-  { name: "John", age: 23 },
-];
-
-const personWithMinAge = minBy(people, (i) => i.age);
-
-assertEquals(personWithMinAge, { name: "John", age: 23 });
-```
-
-### dropLastWhile
-
-Returns a new array that drops all elements in the given collection until the
-last element that does not match the given predicate
-
-Example:
-
-```ts
-import { dropLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const numbers = [22, 30, 44];
-
-const notFortyFour = dropLastWhile(numbers, (i) => i != 44);
-
-assertEquals(
-  notFortyFour,
-  [22, 30],
-);
-```
-
-### reduceGroups
-
-Applies the given reducer to each group in the given Grouping, returning the
-results together with the respective group keys
-
-```ts
-import { reduceGroups } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const votes = {
-  "Woody": [2, 3, 1, 4],
-  "Buzz": [5, 9],
-};
-
-const totalVotes = reduceGroups(votes, (sum, it) => sum + it, 0);
-
-assertEquals(totalVotes, {
-  "Woody": 10,
-  "Buzz": 14,
-});
-```
-
-### sample
-
-Returns a random element from the given array
-
-```ts
-import { sample } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const numbers = [1, 2, 3, 4];
-const random = sample(numbers);
-
-assert(numbers.includes(random as number));
-```
-
-### runningReduce
-
-Calls the given reducer on each element of the given collection, passing it's
-result as the accumulator to the next respective call, starting with the given
-initialValue. Returns all intermediate accumulator results.
-
-Example:
-
-```ts
-import { runningReduce } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const numbers = [1, 2, 3, 4, 5];
-const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
-
-assertEquals(sumSteps, [1, 3, 6, 10, 15]);
 ```
