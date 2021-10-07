@@ -2,5 +2,11 @@
 export * from "./buffer.ts";
 export * from "./readers.ts";
 export * from "./streams.ts";
-export * from "./util.ts";
+export {
+  copyN,
+  readInt,
+  readLong,
+  readShort,
+  sliceLongToBytes,
+} from "./util.ts";
 export * from "./writers.ts";
