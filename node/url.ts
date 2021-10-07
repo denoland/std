@@ -23,6 +23,7 @@ import {
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_FILE_URL_HOST,
   ERR_INVALID_FILE_URL_PATH,
+  ERR_INVALID_URL_SCHEME,
 } from "./_errors.ts";
 import {
   CHAR_BACKWARD_SLASH,
@@ -53,7 +54,7 @@ export function fileURLToPath(path: string | URL): string {
     throw new ERR_INVALID_ARG_TYPE("path", ["string", "URL"], path);
   }
   if (path.protocol !== "file:") {
-    throw new Deno.errors.InvalidData("invalid url scheme");
+    throw new ERR_INVALID_URL_SCHEME("file");
   }
   return isWindows ? getPathFromURLWin(path) : getPathFromURLPosix(path);
 }

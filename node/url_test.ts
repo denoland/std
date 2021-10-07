@@ -10,8 +10,6 @@ Deno.test({
   },
 });
 
-// todo(wafuwafu13) Add Windows and invalid case
-
 Deno.test({
   ignore: isWindows,
   name: "fileURLToPath",
