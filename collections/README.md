@@ -38,7 +38,7 @@ assertEquals(usersById, {
 });
 ```
 
-## associateWith
+### associateWith
 
 Builds a new Record using the given array as keys and choosing a value for each
 key using the given selector. If any of two pairs would have the same value the
@@ -416,7 +416,7 @@ const maxCount = maxOf(inventory, (i) => i.count);
 assertEquals(maxCount, 32);
 ```
 
-## minOf
+### minOf
 
 Applies the given selector to all elements of the given collection and returns
 the min value of all elements. If an empty array is provided the function will
@@ -496,9 +496,7 @@ assertEquals(activeBooking, { month: "June", active: true });
 assertEquals(inactiveBooking, undefined); // there are two applicable items
 ```
 
-=======
-
-# slidingWindows
+### slidingWindows
 
 Generates sliding views of the given array of the given size and returns a new
 array containing all of them.
