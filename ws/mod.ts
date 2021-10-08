@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { BufReader, BufWriter } from "../io/bufio.ts";
-import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
+import { BufReader, BufWriter } from "../io/buffer.ts";
+import { readLong, readShort, sliceLongToBytes } from "../io/util.ts";
 import { crypto } from "../crypto/mod.ts";
 import * as base64 from "../encoding/base64.ts";
 

@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { copy } from "../io/util.ts";
+import { copy } from "../io/streams.ts";
 
 const hostname = "0.0.0.0";
 const port = 8080;
