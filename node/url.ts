@@ -115,7 +115,7 @@ function getPathFromURLPosix(url: URL): string {
   return decodeURIComponent(pathname);
 }
 
-function encodePathChars(filepath: string) {
+function encodePathChars(filepath: string): string {
   if (filepath.includes("%")) {
     filepath = filepath.replace(percentRegEx, "%25");
   }
