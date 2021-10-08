@@ -53,7 +53,6 @@ const url = require('url');
 {
   let testCases;
   if (isWindows) {
-    // TODO: fix case of Windows
     testCases = [
       // Lowercase ascii alpha
       { path: 'C:\\foo', expected: 'file:///C:/foo' },
