@@ -174,21 +174,7 @@ export function pathToFileURL(filepath: string): URL {
       resolved += "/";
     }
 
-    if (resolved.includes("%")) {
-      resolved = resolved.replace(percentRegEx, "%25");
-    }
-    // In posix, "/" is a valid character in paths
-    if (!isWindows && resolved.includes("\\")) {
-      resolved = resolved.replace(backslashRegEx, "%5C");
-    }
-    if (resolved.includes("\n")) {
-      resolved = resolved.replace(newlineRegEx, "%0A");
-    }
-    if (resolved.includes("\r")) {
-      resolved = resolved.replace(carriageReturnRegEx, "%0D");
-    }
-    if (resolved.includes("\t")) resolved = resolved.replace(tabRegEx, "%09");
-    outURL.pathname = resolved;
+    outURL.pathname = encodePathChars(resolved);
   }
   return outURL;
 }
