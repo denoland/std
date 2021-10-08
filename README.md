@@ -62,9 +62,11 @@ Follow the [style guide](https://deno.land/manual/contributing/style_guide).
 
 ### Opening a pull request
 
+After cloning don't forget to `git submodule update --init`. 
+
 Before opening a PR make sure to:
 
-- there are tests that cover the changes.
+- Add tests that cover your changes.
 - `deno test --unstable --allow-all` passes.
 - `deno fmt --check` passes without changing files.
 - `deno lint --unstable` passes.
