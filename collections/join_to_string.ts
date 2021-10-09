@@ -7,39 +7,37 @@ export type JoinToStringOptions = {
   separator?: string;
   prefix?: string;
   suffix?: string;
-  truncate?: {
-    after: number;
-    with?: string;
-  };
+  limit?: number;
+  truncated?: string;
 };
 
 /**
  * Transforms the elements in the given array to strings using the given selector.
- * Joins the produced strings into one using the given separator and applying the given prefix and suffix to the whole string afterwards.
+ * Joins the produced strings into one using the given `separator` and applying the given `prefix` and `suffix` to the whole string afterwards.
+ * If the array could be huge, you can specify a non-negative value of `limit`, in which case only the first `limit` elements will be appended, followed by the `truncated` string.
  * Returns the resulting string.
  *
  * Example:
  *
  * ```ts
- * import { joinToString } from "./join_to_string.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const users = [
- *     { name: 'Kim' },
- *     { name: 'Anna' },
- *     { name: 'Tim' },
+ *   { name: "Kim" },
+ *   { name: "Anna" },
+ *   { name: "Tim" },
  * ];
  *
- * const message = joinToString(users,
- *     (it) => it.name,
- *     {
- *       separator: " and ",
- *       prefix: "<",
- *       suffix: ">",
- *     },
- * );
+ *  const message = joinToString(users, (it) => it.name, {
+ *   suffix: " are winners",
+ *   prefix: "result: ",
+ *   separator: " and ",
+ *   limit: 1,
+ *   truncated: "others",
+ * });
  *
- * assertEquals(message, "<Kim and Anna and Tim>");
+ * assertEquals(message, "result: Kim and others are winners");
  * ```
  */
 export function joinToString<T>(
@@ -49,28 +47,29 @@ export function joinToString<T>(
     separator = ",",
     prefix = "",
     suffix = "",
-    truncate = {
-      after: -1,
-      with: "...",
-    },
+    limit = -1,
+    truncated = "...",
   }: Readonly<JoinToStringOptions> = {},
 ): string {
-  let ret = prefix;
+  let result = "";
 
-  array.forEach((it, index) => {
+  let index = -1;
+  while (++index < array.length) {
+    const el = array[index];
+
     if (index > 0) {
-      ret += separator;
+      result += separator;
     }
 
-    ret += selector(it);
-
-    if (truncate.after > -1 && index === truncate.after) {
-      ret += truncate.with;
+    if (limit > -1 && index >= limit) {
+      result += truncated;
       break;
     }
-  });
 
-  ret += suffix;
+    result += selector(el);
+  }
 
-  return ret;
+  result = prefix + result + suffix;
+
+  return result;
 }

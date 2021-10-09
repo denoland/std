@@ -654,7 +654,7 @@ const users = [
   { name: "Tim" },
 ];
 
-const message = joinToString(array, (it) => it.name, {
+const message = joinToString(users, (it) => it.name, {
   suffix: " are winners",
   prefix: "result: ",
   separator: " and ",
@@ -882,5 +882,4 @@ const numbers = [1, 2, 3, 4, 5];
 const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
 
 assertEquals(sumSteps, [1, 3, 6, 10, 15]);
->>>>>>> 36a270813b581d54ebde4162327ebd98672fbaf7
 ```
