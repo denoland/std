@@ -13,7 +13,6 @@ export type ParseOptions = LoaderStateOptions;
  *
  * Returns a JavaScript object or throws `YAMLException` on error.
  * By default, does not support regexps, functions and undefined. This method is safe for untrusted data.
- *
  */
 export function parse(content: string, options?: ParseOptions): unknown {
   return load(content, options);

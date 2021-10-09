@@ -300,11 +300,11 @@ Deno.test("testingAssertStringContainsThrow", function (): void {
   try {
     assertStringIncludes("Denosaurus from Jurassic", "Raptor");
   } catch (e) {
+    assert(e instanceof AssertionError);
     assert(
       e.message ===
         `actual: "Denosaurus from Jurassic" expected to contain: "Raptor"`,
     );
-    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assert(didThrow);
@@ -319,11 +319,11 @@ Deno.test("testingAssertStringMatchingThrows", function (): void {
   try {
     assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
   } catch (e) {
+    assert(e instanceof AssertionError);
     assert(
       e.message ===
         `actual: "Denosaurus from Jurassic" expected to match: "/Raptor/"`,
     );
-    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assert(didThrow);
@@ -338,11 +338,11 @@ Deno.test("testingAssertStringNotMatchingThrows", function (): void {
   try {
     assertNotMatch("Denosaurus from Jurassic", RegExp(/from/));
   } catch (e) {
+    assert(e instanceof AssertionError);
     assert(
       e.message ===
         `actual: "Denosaurus from Jurassic" expected to not match: "/from/"`,
     );
-    assert(e instanceof AssertionError);
     didThrow = true;
   }
   assert(didThrow);
@@ -575,8 +575,8 @@ Deno.test("testingAssertsUnimplemented", function (): void {
   try {
     unimplemented();
   } catch (e) {
-    assert(e.message === "unimplemented");
     assert(e instanceof AssertionError);
+    assert(e.message === "unimplemented");
     didThrow = true;
   }
   assert(didThrow);
@@ -587,8 +587,8 @@ Deno.test("testingAssertsUnreachable", function (): void {
   try {
     unreachable();
   } catch (e) {
-    assert(e.message === "unreachable");
     assert(e instanceof AssertionError);
+    assert(e.message === "unreachable");
     didThrow = true;
   }
   assert(didThrow);
@@ -629,9 +629,33 @@ Deno.test("testingAssertThrowsWithReturnType", () => {
   });
 });
 
-Deno.test("testingAssertThrowsAsyncWithReturnType", () => {
-  assertRejects(() => {
+Deno.test("testingAssertRejectsWithReturnType", async () => {
+  await assertRejects(() => {
     throw new Error();
+  });
+});
+
+Deno.test("testingAssertThrowsWithErrorCallback", () => {
+  assertThrows(() => {
+    throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
+  }, (error: Error) => {
+    assert(error instanceof AggregateError);
+    assertEquals(error.message, "baz");
+    assertEquals(error.errors.length, 2);
+    assertStringIncludes(error.errors[0].stack, "Error: foo");
+    assertStringIncludes(error.errors[1].stack, "Error: bar");
+  });
+});
+
+Deno.test("testingAssertRejectsWithErrorCallback", async () => {
+  await assertRejects(() => {
+    throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
+  }, (error: Error) => {
+    assert(error instanceof AggregateError);
+    assertEquals(error.message, "baz");
+    assertEquals(error.errors.length, 2);
+    assertStringIncludes(error.errors[0].stack, "Error: foo");
+    assertStringIncludes(error.errors[1].stack, "Error: bar");
   });
 });
 
@@ -939,6 +963,17 @@ Deno.test("Assert Throws Async Non-Error Fail", () => {
     AssertionError,
     "A non-Error object was thrown or rejected.",
   );
+});
+
+Deno.test("assertEquals compares objects structurally if one object's constructor is undefined and the other is Object", () => {
+  const a = Object.create(null);
+  a.prop = "test";
+  const b = {
+    prop: "test",
+  };
+
+  assertEquals(a, b);
+  assertEquals(b, a);
 });
 
 Deno.test("assertEquals diff for differently ordered objects", () => {

@@ -3,6 +3,7 @@ import {
   assert,
   assertEquals,
   assertStringIncludes,
+  assertThrows,
 } from "../testing/asserts.ts";
 
 import * as path from "../path/mod.ts";
@@ -68,6 +69,8 @@ Deno.test("requireStack", function () {
   try {
     hello();
   } catch (e) {
+    assert(e instanceof Error);
+    assert(e.stack);
     assertStringIncludes(e.stack, "/_module/cjs/cjs_throw.js");
   }
 });
@@ -163,4 +166,12 @@ Deno.test("Require file with shebang", () => {
 Deno.test("EventEmitter is exported correctly", () => {
   const EventEmitter = require("events");
   assertEquals(EventEmitter, EventEmitter.EventEmitter);
+});
+
+Deno.test("Require .mjs", () => {
+  assertThrows(
+    () => require("./testdata/inspect.mjs"),
+    undefined,
+    "Importing ESM module",
+  );
 });

@@ -40,7 +40,7 @@ Deno standard library as it's a compatibility module.
 - [ ] repl
 - [x] stream
 - [x] stream/promises
-- [ ] stream/web
+- [x] stream/web _partly_
 - [x] string_decoder
 - [x] sys
 - [x] timers
@@ -108,6 +108,23 @@ order ensure compatibility.
 Setting up the test runner is as simple as running the `node/_tools/setup.ts`
 file, this will pull the configured tests in and then add them to the test
 workflow.
+
+```zsh
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
+```
+
+To run the tests you have set up, do the following:
+
+```zsh
+$ deno test --allow-read --allow-run node/_tools/test.ts
+```
+
+The test should be passing with the latest deno, so if the test fails, try the
+following:
+
+```zsh
+$ deno upgrade
+```
 
 To enable new tests, simply add a new entry inside `node/_tools/config.json`
 under the `tests` property. The structure this entries must have has to resemble

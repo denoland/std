@@ -19,10 +19,12 @@ export interface Cookie {
   path?: string;
   /** Indicates if the cookie is made using SSL & HTTPS. */
   secure?: boolean;
-  /** Indicates that cookie is not accessible via JavaScript. **/
+  /** Indicates that cookie is not accessible via JavaScript. */
   httpOnly?: boolean;
-  /** Allows servers to assert that a cookie ought not to
-   * be sent along with cross-site requests. */
+  /**
+   * Allows servers to assert that a cookie ought not to
+   * be sent along with cross-site requests.
+   */
   sameSite?: "Strict" | "Lax" | "None";
   /** Additional key value pairs with the form "key=value" */
   unparsed?: string[];
@@ -96,7 +98,7 @@ function validateName(name: string | undefined | null): void {
 
 /**
  * Validate Path Value.
- * @see https://tools.ietf.org/html/rfc6265#section-4.1.2.4
+ * See {@link https://tools.ietf.org/html/rfc6265#section-4.1.2.4}.
  * @param path Path value.
  */
 function validatePath(path: string | null): void {
@@ -117,7 +119,7 @@ function validatePath(path: string | null): void {
 
 /**
  * Validate Cookie Value.
- * @see https://tools.ietf.org/html/rfc6265#section-4.1
+ * See {@link https://tools.ietf.org/html/rfc6265#section-4.1}.
  * @param value Cookie value.
  */
 function validateValue(name: string, value: string | null): void {
@@ -144,7 +146,7 @@ function validateValue(name: string, value: string | null): void {
 
 /**
  * Validate Cookie Domain.
- * @see https://datatracker.ietf.org/doc/html/rfc6265#section-4.1.2.3
+ * See {@link https://datatracker.ietf.org/doc/html/rfc6265#section-4.1.2.3}.
  * @param domain Cookie domain.
  */
 function validateDomain(domain: string): void {
@@ -161,11 +163,12 @@ function validateDomain(domain: string): void {
 }
 
 /**
- * Parse the cookies of the Server Request
- * @param req An object which has a `headers` property
+ * Parse cookies of a header
+ * @param {Headers} headers The headers instance to get cookies from
+ * @return {Object} Object with cookie names as keys
  */
-export function getCookies(req: { headers: Headers }): Record<string, string> {
-  const cookie = req.headers.get("Cookie");
+export function getCookies(headers: Headers): Record<string, string> {
+  const cookie = headers.get("Cookie");
   if (cookie != null) {
     const out: Record<string, string> = {};
     const c = cookie.split(";");
@@ -181,49 +184,32 @@ export function getCookies(req: { headers: Headers }): Record<string, string> {
 }
 
 /**
- * Set the cookie header properly in the Response
- * @param res An object which has a headers property
- * @param cookie Cookie to set
- *
- * Example:
- *
- * ```ts
- * import { setCookie } from "./cookie.ts";
- *
- * const response = new Response("");
- * setCookie(response, { name: 'deno', value: 'runtime',
- *   httpOnly: true, secure: true, maxAge: 2, domain: "deno.land" });
- * ```
+ * Set the cookie header properly in the headers
+ * @param {Headers} headers The headers instance to set the cookie to
+ * @param {Object} cookie Cookie to set
  */
-export function setCookie(res: { headers?: Headers }, cookie: Cookie): void {
-  if (!res.headers) {
-    res.headers = new Headers();
-  }
+export function setCookie(headers: Headers, cookie: Cookie): void {
   // TODO(zekth) : Add proper parsing of Set-Cookie headers
   // Parsing cookie headers to make consistent set-cookie header
   // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
   const v = toString(cookie);
   if (v) {
-    res.headers.append("Set-Cookie", v);
+    headers.append("Set-Cookie", v);
   }
 }
 
 /**
- *  Set the cookie header properly in the Response to delete it
- * @param res Server Response
- * @param name Name of the cookie to Delete
- * Example:
- *
- *     deleteCookie(res,'foo');
- *     deleteCookie(res,'foo', {path:'/demo'});
- *     deleteCookie(res,'foo', {domain:'deno.land'});
+ * Set the cookie header with empty value in the headers to delete it
+ * @param {Headers} headers The headers instance to delete the cookie from
+ * @param {string} name Name of cookie
+ * @param {Object} attributes Additional cookie attributes
  */
 export function deleteCookie(
-  res: { headers?: Headers },
+  headers: Headers,
   name: string,
   attributes?: { path?: string; domain?: string },
 ): void {
-  setCookie(res, {
+  setCookie(headers, {
     name: name,
     value: "",
     expires: new Date(0),

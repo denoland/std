@@ -137,7 +137,7 @@ Deno.test("Readable stream can be paused", () => {
   assert(!readable.isPaused());
 });
 
-Deno.test("Readable stream sets enconding correctly", () => {
+Deno.test("Readable stream sets encoding correctly", () => {
   const readable = new Readable({
     read() {},
   });

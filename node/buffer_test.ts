@@ -278,7 +278,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Buffer concat respects totalLenght parameter",
+  name: "Buffer concat respects totalLength parameter",
   fn() {
     const maxLength1 = 10;
     const buffer1 = Buffer.alloc(2);
@@ -294,6 +294,34 @@ Deno.test({
     assertEquals(
       Buffer.concat([buffer3, buffer4], maxLength2).length,
       maxLength2,
+    );
+  },
+});
+
+Deno.test({
+  name: "Buffer readUIntBE",
+  fn() {
+    const buffer = Buffer.from([
+      0x01,
+      0x02,
+      0x03,
+      0x04,
+      0x05,
+      0x06,
+      0x07,
+      0x08,
+    ]);
+    assertEquals(buffer.readUIntBE(0, 1), 0x01);
+    assertEquals(buffer.readUIntBE(0, 2), 0x0102);
+    assertEquals(buffer.readUIntBE(0, 4), 0x01020304);
+    assertThrows(
+      () => {
+        assertEquals(buffer.readUIntBE(0, 5), 0x01020304);
+        assertEquals(buffer.readUIntBE(0, 6), 0x010203040506);
+        assertEquals(buffer.readUIntBE(1, 6), 0x020304050607);
+      },
+      Error,
+      `Not implemented: byteLength`,
     );
   },
 });
@@ -463,7 +491,7 @@ Deno.test({
           buffer.toString(encoding);
         },
         TypeError,
-        `Unkown encoding: ${encoding}`,
+        `Unknown encoding: ${encoding}`,
         "Should throw on invalid encoding",
       );
     }
@@ -488,7 +516,7 @@ Deno.test({
           Buffer.from("yes", encoding);
         },
         TypeError,
-        `Unkown encoding: ${encoding}`,
+        `Unknown encoding: ${encoding}`,
       );
     }
   },

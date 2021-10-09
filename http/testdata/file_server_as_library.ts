@@ -1,12 +1,8 @@
-import { serve } from "../server.ts";
+import { listenAndServe } from "../server.ts";
 import { serveFile } from "../file_server.ts";
 
-const server = serve({ port: 8000 });
+listenAndServe(":8000", (req) => {
+  return serveFile(req, "./testdata/hello.html");
+});
 
 console.log("Server running...");
-
-for await (const req of server) {
-  serveFile(req, "./testdata/hello.html").then((response) => {
-    req.respond(response);
-  });
-}
