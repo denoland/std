@@ -653,3 +653,27 @@ console.log(encode(binaryData, { standard: "RFC 1924" }));
 console.log(encode(binaryData, { standard: "Z85" }));
 // => H{P}{
 ```
+
+## hex
+
+hexadecimal encoder/decoder for Deno.
+
+### Basic usage
+
+`encode` encodes a `Uint8Array` to hexadecimal `Uint8Array` with 2 * length, and
+`decode` decodes the given hexadecimal `Uint8Array` to a `Uint8Array`.
+
+```ts
+import {
+  decode,
+  encode,
+} from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+
+const binary = new TextEncoder().encode("abc");
+const encoded = encode(binary);
+console.log(encoded);
+// => Uint8Array(6) [ 54, 49, 54, 50, 54, 51 ]
+
+console.log(decode(encoded));
+// => Uint8Array(3) [ 97, 98, 99 ]
+```

@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { grant, grantOrThrow } from "./mod.ts";
-import { assert, assertEquals } from "../testing/asserts.ts";
+import { assert, assertEquals, assertRejects } from "../testing/asserts.ts";
 
 Deno.test({
   name: "grant basic",
@@ -42,3 +42,32 @@ Deno.test({
     await grantOrThrow([{ name: "net" }, { name: "env" }]);
   },
 });
+
+Deno.test({
+  name: "grantOrThrow invalid argument",
+  fn() {
+    assertRejects(
+      () => {
+        return grantOrThrow();
+      },
+      TypeError,
+      `Cannot read properties of undefined (reading 'name')`,
+    );
+  },
+});
+
+Deno.test({
+  name: "grantOrThrow invalid permissionDescriptor name",
+  fn() {
+    assertRejects(
+      () => {
+        // deno-lint-ignore no-explicit-any
+        return grantOrThrow({ name: "nett" } as any);
+      },
+      TypeError,
+      'The provided value "nett" is not a valid permission name',
+    );
+  },
+});
+
+// TODO(wafuwafu13): Add denied case

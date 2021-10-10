@@ -4,7 +4,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-import type { BufReader, ReadLineResult } from "../io/bufio.ts";
+import type { BufReader, ReadLineResult } from "../io/buffer.ts";
 import { concat } from "../bytes/mod.ts";
 
 // Constants created for DRY

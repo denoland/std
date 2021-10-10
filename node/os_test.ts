@@ -19,7 +19,6 @@ Deno.test({
 
 Deno.test({
   name: "tmp directory is a string",
-  ignore: true,
   fn() {
     assertEquals(typeof os.tmpdir(), "string");
   },

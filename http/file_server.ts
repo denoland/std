@@ -11,7 +11,7 @@ import { listenAndServe, listenAndServeTls } from "./server.ts";
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
-import { readRange } from "../io/util.ts";
+import { readRange } from "../io/files.ts";
 
 interface EntryInfo {
   mode: string;

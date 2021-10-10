@@ -1,9 +1,5 @@
 # std/io
 
-## Bufio
-
-**Uses:**
-
 ### readLines
 
 Read reader[like file], line by line:
@@ -36,8 +32,6 @@ for await (let line of readStringDelim(fileReader, "\n")) {
 }
 ```
 
-## Reader
-
 ### StringReader
 
 Create a `Reader` object for `string`.
@@ -66,8 +60,6 @@ console.log(new TextDecoder().decode(data)); // abcdef
 null
 abcdef
 ```
-
-## Writer
 
 ### StringWriter
 
@@ -98,8 +90,6 @@ console.log(w.toString()); // base0123456789
 base0123
 base0123456789
 ```
-
-## Streams
 
 ### readerFromStreamReader
 

@@ -143,11 +143,12 @@ first element that does not match the given predicate.
 
 ```ts
 import { dropWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const numbers = [3, 2, 5, 2, 5];
 const dropWhileNumbers = dropWhile(numbers, (i) => i !== 2);
 
-console.assert(dropWhileNumbers === [2, 5, 2, 5]);
+assertEquals(dropWhileNumbers, [2, 5, 2, 5]);
 ```
 
 ### filterEntries

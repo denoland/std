@@ -1,3 +1,34 @@
+### 0.110.0 / 2021.10.04
+
+- feat(node): add missing modules (#1337)
+- feat(node): support `Buffer.readUIntLE` (#1326)
+- feat(node/buffer): support `Buffer.readUIntBE` (#1321)
+- feat(node/crypto): add `scrypt` and `scryptSync` (#1329)
+- feat(node/crypto): add `timingSafeEqual` (#1333)
+- feat(node/stream/web): export more APIs (#1338)
+- feat(std/node): add back os.tmpdir() implementation (#1308)
+- feat(std/node/crypto): Add `crypto.randomUUID` (#1332)
+
+### 0.109.0 / 2021.09.28
+
+- feat(std/node/stream): add partial support for `stream/web` (#1297)
+- fix(node/_tools): use denoflate to decompress Node test folder (#1299)
+- fix(node/events): make `EventEmitter.call` compatible with es5 (#1315)
+- fix(std/node/module): treat .mjs files as ESM (#1301)
+- perf(crypto): reduce one mircotask (#1307)
+
+### 0.108.0 / 2021.09.21
+
+- fix: use `strict-ts44.tsconfig.json` on release tests (#1278)
+- fix(collections): improve handling of arrays containing undefined (#1282)
+- feat(testing/asserts): add `assertThrows()` overload to receive error (#1219)
+- feat(std/node): add `ParsedUrlQuery` to `querystring` (#1229)
+- feat(collections): use function overloading (#1286)
+- chore(node/events): remove unnecessary `@ts-ignore` comments (#1280)
+- docs(collections): add browser-compatibility comment (#1285)
+- docs(encoding): add hex docs (#1287)
+- docs(collections): replace console.assert with assertEquals (#1293)
+
 ### 0.107.0 / 2021.09.14
 
 - BREAKING(http): cookie headers as params (#1041)

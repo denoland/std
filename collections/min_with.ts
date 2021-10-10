@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns the first element having the smallest value according to the provided comparator or undefined if there are no elements
@@ -20,10 +21,12 @@ export function minWith<T>(
   comparator: (a: T, b: T) => number,
 ): T | undefined {
   let min: T | undefined = undefined;
+  let isFirst = true;
 
   for (const current of array) {
-    if (min === undefined || comparator(current, min) < 0) {
+    if (isFirst || comparator(current, <T> min) < 0) {
       min = current;
+      isFirst = false;
     }
   }
 

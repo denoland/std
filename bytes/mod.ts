@@ -69,18 +69,6 @@ export function lastIndexOf(
   return -1;
 }
 
-/** Check whether binary arrays are equal to each other.
- * @param a first array to check equality
- * @param b second array to check equality
- */
-export function equals(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < b.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
-
 /** Check whether binary array starts with prefix.
  * @param source source array
  * @param prefix prefix array to check in source
@@ -189,3 +177,5 @@ export function copy(src: Uint8Array, dst: Uint8Array, off = 0): number {
 
 /** @deprecated */
 export { includes as contains };
+
+export { equals } from "./equals.ts";

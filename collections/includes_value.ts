@@ -1,3 +1,6 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /**
  * If the given value is part of the given object it returns true, otherwise it
  * returns false.
