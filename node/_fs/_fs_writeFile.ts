@@ -2,7 +2,7 @@
 import { Encodings, notImplemented } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
-import { writeAll, writeAllSync } from "../../io/util.ts";
+import { writeAll, writeAllSync } from "../../io/streams.ts";
 import {
   CallbackWithError,
   checkEncoding,
@@ -60,7 +60,7 @@ export function writeFile(
 
       await writeAll(file, data as Uint8Array);
     } catch (e) {
-      error = e;
+      error = e instanceof Error ? e : new Error("[non-error thrown]");
     } finally {
       // Make sure to close resource
       if (!isRid && file) file.close();
@@ -105,7 +105,7 @@ export function writeFileSync(
 
     writeAllSync(file, data as Uint8Array);
   } catch (e) {
-    error = e;
+    error = e instanceof Error ? e : new Error("[non-error thrown]");
   } finally {
     // Make sure to close resource
     if (!isRid && file) file.close();

@@ -28,24 +28,24 @@ Deno.test({
 
     let c = 0;
     const sig = signal(
-      Deno.Signal.SIGUSR1,
-      Deno.Signal.SIGUSR2,
-      Deno.Signal.SIGINT,
+      "SIGUSR1",
+      "SIGUSR2",
+      "SIGINT",
     );
 
     setTimeout(async () => {
       await delay(20);
-      Deno.kill(Deno.pid, Deno.Signal.SIGINT);
+      Deno.kill(Deno.pid, "SIGINT");
       await delay(20);
-      Deno.kill(Deno.pid, Deno.Signal.SIGUSR2);
+      Deno.kill(Deno.pid, "SIGUSR2");
       await delay(20);
-      Deno.kill(Deno.pid, Deno.Signal.SIGUSR1);
+      Deno.kill(Deno.pid, "SIGUSR1");
       await delay(20);
-      Deno.kill(Deno.pid, Deno.Signal.SIGUSR2);
+      Deno.kill(Deno.pid, "SIGUSR2");
       await delay(20);
-      Deno.kill(Deno.pid, Deno.Signal.SIGUSR1);
+      Deno.kill(Deno.pid, "SIGUSR1");
       await delay(20);
-      Deno.kill(Deno.pid, Deno.Signal.SIGINT);
+      Deno.kill(Deno.pid, "SIGINT");
       await delay(20);
       sig.dispose();
     });
@@ -68,22 +68,22 @@ Deno.test({
     const t = setInterval(() => {}, 1000);
 
     let calledCount = 0;
-    const handle = onSignal(Deno.Signal.SIGINT, () => {
+    const handle = onSignal("SIGINT", () => {
       calledCount++;
     });
 
     await delay(20);
-    Deno.kill(Deno.pid, Deno.Signal.SIGINT);
+    Deno.kill(Deno.pid, "SIGINT");
     await delay(20);
-    Deno.kill(Deno.pid, Deno.Signal.SIGINT);
+    Deno.kill(Deno.pid, "SIGINT");
     await delay(20);
-    Deno.kill(Deno.pid, Deno.Signal.SIGUSR2);
+    Deno.kill(Deno.pid, "SIGUSR2");
     await delay(20);
     handle.dispose(); // stop monitoring SIGINT
     await delay(20);
-    Deno.kill(Deno.pid, Deno.Signal.SIGUSR1);
+    Deno.kill(Deno.pid, "SIGUSR1");
     await delay(20);
-    Deno.kill(Deno.pid, Deno.Signal.SIGINT);
+    Deno.kill(Deno.pid, "SIGINT");
     await delay(20);
     assertEquals(calledCount, 2);
 

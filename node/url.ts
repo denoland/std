@@ -20,13 +20,20 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import {
+  ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_ARG_VALUE,
+  ERR_INVALID_FILE_URL_HOST,
+  ERR_INVALID_FILE_URL_PATH,
+  ERR_INVALID_URL_SCHEME,
+} from "./_errors.ts";
+import {
   CHAR_BACKWARD_SLASH,
   CHAR_FORWARD_SLASH,
   CHAR_LOWERCASE_A,
   CHAR_LOWERCASE_Z,
 } from "../path/_constants.ts";
 import * as path from "./path.ts";
-import { isWindows } from "../_util/os.ts";
+import { isWindows, osType } from "../_util/os.ts";
 
 const forwardSlashRegEx = /\//g;
 const percentRegEx = /%/g;
@@ -45,12 +52,10 @@ export { _url as URL };
 export function fileURLToPath(path: string | URL): string {
   if (typeof path === "string") path = new URL(path);
   else if (!(path instanceof URL)) {
-    throw new Deno.errors.InvalidData(
-      "invalid argument path , must be a string or URL",
-    );
+    throw new ERR_INVALID_ARG_TYPE("path", ["string", "URL"], path);
   }
   if (path.protocol !== "file:") {
-    throw new Deno.errors.InvalidData("invalid url scheme");
+    throw new ERR_INVALID_URL_SCHEME("file");
   }
   return isWindows ? getPathFromURLWin(path) : getPathFromURLPosix(path);
 }
@@ -60,13 +65,12 @@ function getPathFromURLWin(url: URL): string {
   let pathname = url.pathname;
   for (let n = 0; n < pathname.length; n++) {
     if (pathname[n] === "%") {
-      const third = pathname.codePointAt(n + 2) || 0x20;
+      const third = pathname.codePointAt(n + 2)! | 0x20;
       if (
         (pathname[n + 1] === "2" && third === 102) || // 2f 2F /
-        (pathname[n + 1] === "5" && third === 99)
+        (pathname[n + 1] === "5" && third === 99) // 5c 5C \
       ) {
-        // 5c 5C \
-        throw new Deno.errors.InvalidData(
+        throw new ERR_INVALID_FILE_URL_PATH(
           "must not include encoded \\ or / characters",
         );
       }
@@ -87,7 +91,7 @@ function getPathFromURLWin(url: URL): string {
       letter > CHAR_LOWERCASE_Z || // a..z A..Z
       sep !== ":"
     ) {
-      throw new Deno.errors.InvalidData("file url path must be absolute");
+      throw new ERR_INVALID_FILE_URL_PATH("must be absolute");
     }
     return pathname.slice(1);
   }
@@ -95,14 +99,14 @@ function getPathFromURLWin(url: URL): string {
 
 function getPathFromURLPosix(url: URL): string {
   if (url.hostname !== "") {
-    throw new Deno.errors.InvalidData("invalid file url hostname");
+    throw new ERR_INVALID_FILE_URL_HOST(osType);
   }
   const pathname = url.pathname;
   for (let n = 0; n < pathname.length; n++) {
     if (pathname[n] === "%") {
-      const third = pathname.codePointAt(n + 2) || 0x20;
+      const third = pathname.codePointAt(n + 2)! | 0x20;
       if (pathname[n + 1] === "2" && third === 102) {
-        throw new Deno.errors.InvalidData(
+        throw new ERR_INVALID_FILE_URL_PATH(
           "must not include encoded / characters",
         );
       }
@@ -111,30 +115,67 @@ function getPathFromURLPosix(url: URL): string {
   return decodeURIComponent(pathname);
 }
 
+function encodePathChars(filepath: string): string {
+  if (filepath.includes("%")) {
+    filepath = filepath.replace(percentRegEx, "%25");
+  }
+  // In posix, backslash is a valid character in paths:
+  if (!isWindows && filepath.includes("\\")) {
+    filepath = filepath.replace(backslashRegEx, "%5C");
+  }
+  if (filepath.includes("\n")) {
+    filepath = filepath.replace(newlineRegEx, "%0A");
+  }
+  if (filepath.includes("\r")) {
+    filepath = filepath.replace(carriageReturnRegEx, "%0D");
+  }
+  if (filepath.includes("\t")) {
+    filepath = filepath.replace(tabRegEx, "%09");
+  }
+  return filepath;
+}
+
 /** Get fully resolved platform-specific File URL from the given file path */
 export function pathToFileURL(filepath: string): URL {
-  let resolved = path.resolve(filepath);
-  // path.resolve strips trailing slashes so we must add them back
-  const filePathLast = filepath.charCodeAt(filepath.length - 1);
-  if (
-    (filePathLast === CHAR_FORWARD_SLASH ||
-      (isWindows && filePathLast === CHAR_BACKWARD_SLASH)) &&
-    resolved[resolved.length - 1] !== path.sep
-  ) {
-    resolved += "/";
-  }
   const outURL = new URL("file://");
-  if (resolved.includes("%")) resolved = resolved.replace(percentRegEx, "%25");
-  // In posix, "/" is a valid character in paths
-  if (!isWindows && resolved.includes("\\")) {
-    resolved = resolved.replace(backslashRegEx, "%5C");
+  if (isWindows && filepath.startsWith("\\\\")) {
+    // UNC path format: \\server\share\resource
+    const paths = filepath.split("\\");
+    if (paths.length <= 3) {
+      throw new ERR_INVALID_ARG_VALUE(
+        "filepath",
+        filepath,
+        "Missing UNC resource path",
+      );
+    }
+    const hostname = paths[2];
+    if (hostname.length === 0) {
+      throw new ERR_INVALID_ARG_VALUE(
+        "filepath",
+        filepath,
+        "Empty UNC servername",
+      );
+    }
+
+    // TODO(wafuwafu13): To be `outURL.hostname = domainToASCII(hostname)` once `domainToASCII` are implemented
+    outURL.hostname = hostname;
+    outURL.pathname = encodePathChars(
+      paths.slice(3).join("/"),
+    );
+  } else {
+    let resolved = path.resolve(filepath);
+    // path.resolve strips trailing slashes so we must add them back
+    const filePathLast = filepath.charCodeAt(filepath.length - 1);
+    if (
+      (filePathLast === CHAR_FORWARD_SLASH ||
+        (isWindows && filePathLast === CHAR_BACKWARD_SLASH)) &&
+      resolved[resolved.length - 1] !== path.sep
+    ) {
+      resolved += "/";
+    }
+
+    outURL.pathname = encodePathChars(resolved);
   }
-  if (resolved.includes("\n")) resolved = resolved.replace(newlineRegEx, "%0A");
-  if (resolved.includes("\r")) {
-    resolved = resolved.replace(carriageReturnRegEx, "%0D");
-  }
-  if (resolved.includes("\t")) resolved = resolved.replace(tabRegEx, "%09");
-  outURL.pathname = resolved;
   return outURL;
 }
 

@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns all distinct elements that appear in any of the given arrays
@@ -6,8 +7,8 @@
  * Example:
  *
  * ```ts
- * import { union } from "./union.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { union } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const soupIngredients = [ 'Pepper', 'Carrots', 'Leek' ]
  * const saladIngredients = [ 'Carrots', 'Radicchio', 'Pepper' ]
