@@ -598,6 +598,71 @@ export function fail(msg?: string): never {
 }
 
 /**
+ * Make an assertion that `error` is an `Error`.
+ * If not then an error will be thrown.
+ * An error class and a string that should be included in the
+ * error message can also be asserted. Or you can pass a
+ * callback which will be passed the error, usually to apply some custom
+ * assertions on it.
+ */
+export function assertError(
+  error: unknown,
+  ErrorClass?: Constructor,
+  msgIncludes?: string,
+  msg?: string,
+): void;
+export function assertError(
+  error: unknown,
+  errorCallback: (e: Error) => unknown,
+  msg?: string,
+): void;
+export function assertError(
+  error: unknown,
+  errorClassOrCallback?: Constructor | ((e: Error) => unknown),
+  msgIncludesOrMsg?: string,
+  msg?: string,
+): void {
+  let ErrorClass;
+  let msgIncludes;
+  let errorCallback;
+  if (
+    errorClassOrCallback == null ||
+    errorClassOrCallback.prototype instanceof Error ||
+    errorClassOrCallback.prototype === Error.prototype
+  ) {
+    ErrorClass = errorClassOrCallback;
+    msgIncludes = msgIncludesOrMsg;
+    errorCallback = null;
+  } else {
+    ErrorClass = null;
+    msgIncludes = null;
+    errorCallback = errorClassOrCallback as (e: Error) => unknown;
+    msg = msgIncludesOrMsg;
+  }
+  if (error instanceof Error === false) {
+    throw new AssertionError(`Expected "error" to be an Error object.`);
+  }
+  if (ErrorClass && !(error instanceof ErrorClass)) {
+    msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+      typeof error === "object" ? error?.constructor?.name : "[not an object]"
+    }"${msg ? `: ${msg}` : "."}`;
+    throw new AssertionError(msg);
+  }
+  if (
+    msgIncludes && (!(error instanceof Error) ||
+      !stripColor(error.message).includes(stripColor(msgIncludes)))
+  ) {
+    msg = `Expected error message to include "${msgIncludes}", but got "${
+      error instanceof Error ? error.message : "[not an Error]"
+    }"${msg ? `: ${msg}` : "."}`;
+    throw new AssertionError(msg);
+  }
+  if (typeof errorCallback == "function") {
+    errorCallback(error as Error);
+  }
+}
+
+/**
  * Executes a function, expecting it to throw.  If it does not, then it
  * throws. An error class and a string that should be included in the
  * error message can also be asserted. Or you can pass a
@@ -621,55 +686,24 @@ export function assertThrows(
   msgIncludesOrMsg?: string,
   msg?: string,
 ): void {
-  let ErrorClass;
-  let msgIncludes;
-  let errorCallback;
-  if (
-    errorClassOrCallback == null ||
-    errorClassOrCallback.prototype instanceof Error ||
-    errorClassOrCallback.prototype === Error.prototype
-  ) {
-    ErrorClass = errorClassOrCallback;
-    msgIncludes = msgIncludesOrMsg;
-    errorCallback = null;
-  } else {
-    ErrorClass = null;
-    msgIncludes = null;
-    errorCallback = errorClassOrCallback as (e: Error) => unknown;
-    msg = msgIncludesOrMsg;
-  }
   let doesThrow = false;
-  let error = null;
   try {
     fn();
-  } catch (e) {
-    if (e instanceof Error === false) {
+  } catch (error) {
+    if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was thrown.");
     }
-    if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
-        typeof e === "object" ? e?.constructor?.name : "[not an object]"
-      }"${msg ? `: ${msg}` : "."}`;
-      throw new AssertionError(msg);
-    }
-    if (
-      msgIncludes && (!(e instanceof Error) ||
-        !stripColor(e.message).includes(stripColor(msgIncludes)))
-    ) {
-      msg = `Expected error message to include "${msgIncludes}", but got "${
-        e instanceof Error ? e.message : "[not an Error]"
-      }"${msg ? `: ${msg}` : "."}`;
-      throw new AssertionError(msg);
-    }
+    assertError(
+      error,
+      errorClassOrCallback as Constructor,
+      msgIncludesOrMsg,
+      msg,
+    );
     doesThrow = true;
-    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
-  }
-  if (typeof errorCallback == "function") {
-    errorCallback(error as Error);
   }
 }
 
@@ -697,55 +731,24 @@ export async function assertRejects(
   msgIncludesOrMsg?: string,
   msg?: string,
 ): Promise<void> {
-  let ErrorClass;
-  let msgIncludes;
-  let errorCallback;
-  if (
-    errorClassOrCallback == null ||
-    errorClassOrCallback.prototype instanceof Error ||
-    errorClassOrCallback.prototype === Error.prototype
-  ) {
-    ErrorClass = errorClassOrCallback;
-    msgIncludes = msgIncludesOrMsg;
-    errorCallback = null;
-  } else {
-    ErrorClass = null;
-    msgIncludes = null;
-    errorCallback = errorClassOrCallback as (e: Error) => unknown;
-    msg = msgIncludesOrMsg;
-  }
   let doesThrow = false;
-  let error = null;
   try {
     await fn();
-  } catch (e) {
-    if (e instanceof Error === false) {
+  } catch (error) {
+    if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was thrown or rejected.");
     }
-    if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
-        typeof e === "object" ? e?.constructor?.name : "[not an object]"
-      }"${msg ? `: ${msg}` : "."}`;
-      throw new AssertionError(msg);
-    }
-    if (
-      msgIncludes && (!(e instanceof Error) ||
-        !stripColor(e.message).includes(stripColor(msgIncludes)))
-    ) {
-      msg = `Expected error message to include "${msgIncludes}", but got "${
-        e instanceof Error ? e.message : "[not an Error]"
-      }"${msg ? `: ${msg}` : "."}`;
-      throw new AssertionError(msg);
-    }
+    assertError(
+      error,
+      errorClassOrCallback as Constructor,
+      msgIncludesOrMsg,
+      msg,
+    );
     doesThrow = true;
-    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
-  }
-  if (typeof errorCallback == "function") {
-    errorCallback(error as Error);
   }
 }
 

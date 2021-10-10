@@ -4,6 +4,7 @@ import {
   assert,
   assertArrayIncludes,
   assertEquals,
+  assertError,
   assertExists,
   AssertionError,
   assertMatch,
@@ -1092,6 +1093,54 @@ Deno.test("Assert Throws Async promise rejected with custom Error", async () => 
     () =>
       assertRejects(
         () => Promise.reject(new AnotherCustomError("failed")),
+        CustomError,
+        "fail",
+      ),
+    AssertionError,
+    'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
+  );
+});
+
+Deno.test("Assert Error Non-Error Fail", () => {
+  assertThrows(
+    () => assertError("Panic!", String, "Panic!"),
+    AssertionError,
+    `Expected "error" to be an Error object.`,
+  );
+
+  assertThrows(
+    () => assertError(null),
+    AssertionError,
+    `Expected "error" to be an Error object.`,
+  );
+
+  assertThrows(
+    () => assertError(undefined),
+    AssertionError,
+    `Expected "error" to be an Error object.`,
+  );
+});
+
+Deno.test("Assert Error Parent Error", () => {
+  assertError(
+    new AssertionError("Fail!"),
+    Error,
+    "Fail!",
+  );
+});
+
+Deno.test("Assert Error with custom Error", () => {
+  class CustomError extends Error {}
+  class AnotherCustomError extends Error {}
+  assertError(
+    new CustomError("failed"),
+    CustomError,
+    "fail",
+  );
+  assertThrows(
+    () =>
+      assertError(
+        new AnotherCustomError("failed"),
         CustomError,
         "fail",
       ),
