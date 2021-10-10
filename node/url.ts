@@ -115,6 +115,17 @@ function getPathFromURLPosix(url: URL): string {
   return decodeURIComponent(pathname);
 }
 
+// The following characters are percent-encoded when converting from file path
+// to URL:
+// - %: The percent character is the only character not encoded by the
+//        `pathname` setter.
+// - \: Backslash is encoded on non-windows platforms since it's a valid
+//      character but the `pathname` setters replaces it by a forward slash.
+// - LF: The newline character is stripped out by the `pathname` setter.
+//       (See whatwg/url#419)
+// - CR: The carriage return character is also stripped out by the `pathname`
+//       setter.
+// - TAB: The tab character is also stripped out by the `pathname` setter.
 function encodePathChars(filepath: string): string {
   if (filepath.includes("%")) {
     filepath = filepath.replace(percentRegEx, "%25");
