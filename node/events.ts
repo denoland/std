@@ -203,15 +203,8 @@ export class EventEmitter {
    * Returns an array listing the events for which the emitter has
    * registered listeners.
    */
-<<<<<<< HEAD
   public eventNames(): (string | symbol)[] {
     return Reflect.ownKeys(this._events);
-=======
-  public eventNames(): [string | symbol] {
-    return Reflect.ownKeys(this._events) as [
-      string | symbol,
-    ];
->>>>>>> main
   }
 
   /**
