@@ -4,7 +4,7 @@
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { BufReader } from "../io/bufio.ts";
+import { BufReader } from "../io/buffer.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { StringReader } from "../io/readers.ts";
 import { assert } from "../_util/assert.ts";
@@ -364,17 +364,21 @@ export interface ParseOptions extends ReadOptions {
 
   /** Parse function for rows.
    * Example:
-   *     const r = await parseFile('a,b,c\ne,f,g\n', {
+   * ```ts
+   *     import { parse } from "./csv.ts";
+   *     const r = await parse('a,b,c\ne,f,g\n', {
    *      columns: ["this", "is", "sparta"],
-   *       parse: (e: Record<string, unknown>) => {
+   *       parse: (_e: unknown) => {
+   *         const e = _e as { this: unknown, is: unknown, sparta: unknown };
    *         return { super: e.this, street: e.is, fighter: e.sparta };
    *       }
    *     });
    * // output
-   * [
-   *   { super: "a", street: "b", fighter: "c" },
-   *   { super: "e", street: "f", fighter: "g" }
-   * ]
+   * // [
+   * //   { super: "a", street: "b", fighter: "c" },
+   * //   { super: "e", street: "f", fighter: "g" }
+   * // ]
+   * ```
    */
   parse?: (input: unknown) => unknown;
 }

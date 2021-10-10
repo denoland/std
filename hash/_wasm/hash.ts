@@ -39,7 +39,7 @@ export class Hash implements Hasher {
       throw new Error("hash: `data` is invalid type");
     }
 
-    // Messages will be split into chunks of this size to avoid unneccessarily
+    // Messages will be split into chunks of this size to avoid unnecessarily
     // increasing the size of the WASM heap.
 
     const chunkSize = 65_536;

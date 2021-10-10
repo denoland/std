@@ -572,7 +572,7 @@ Deno.test("flagBuiltinProperty", function (): void {
   assertEquals(typeof argv.valueOf, "string");
 });
 
-Deno.test("numbericShortArgs", function (): void {
+Deno.test("numericShortArgs", function (): void {
   assertEquals(parse(["-n123"]), { n: 123, _: [] });
   assertEquals(parse(["-123", "456"]), { 1: true, 2: true, 3: 456, _: [] });
 });
@@ -672,7 +672,7 @@ Deno.test(
   },
 );
 
-Deno.test("stringAndAliasIsNotUnkown", function (): void {
+Deno.test("stringAndAliasIsNotUnknown", function (): void {
   const unknown: unknown[] = [];
   function unknownFn(arg: string, k?: string, v?: unknown): boolean {
     unknown.push({ arg, k, v });

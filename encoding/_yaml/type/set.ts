@@ -6,13 +6,13 @@
 import { Type } from "../type.ts";
 import type { Any } from "../utils.ts";
 
-const _hasOwnProperty = Object.prototype.hasOwnProperty;
+const { hasOwn } = Object;
 
 function resolveYamlSet(data: Any): boolean {
   if (data === null) return true;
 
   for (const key in data) {
-    if (_hasOwnProperty.call(data, key)) {
+    if (hasOwn(data, key)) {
       if (data[key] !== null) return false;
     }
   }

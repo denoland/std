@@ -82,10 +82,27 @@ export class EventEmitter {
   }
 
   private maxListeners: number | undefined;
-  private _events: EventMap;
+  private _events!: EventMap;
 
-  public constructor() {
-    this._events = Object.create(null);
+  static #init(emitter: EventEmitter): void {
+    if (
+      emitter._events == null ||
+      emitter._events === Object.getPrototypeOf(emitter)._events // If `emitter` does not own `_events` but the prototype does
+    ) {
+      emitter._events = Object.create(null);
+    }
+  }
+
+  /**
+   * Overrides `call` to mimic the es5 behavior with the es6 class.
+   */
+  // deno-lint-ignore no-explicit-any
+  static call = function call(thisArg: any): void {
+    EventEmitter.#init(thisArg);
+  };
+
+  constructor() {
+    EventEmitter.#init(this);
   }
 
   private _addListener(
@@ -96,13 +113,9 @@ export class EventEmitter {
     this.checkListenerArgument(listener);
     this.emit("newListener", eventName, this.unwrapListener(listener));
     if (this.hasListeners(eventName)) {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
       let listeners = this._events[eventName];
       if (!Array.isArray(listeners)) {
         listeners = [listeners];
-        // deno-lint-ignore ban-ts-comment
-        // @ts-expect-error
         this._events[eventName] = listeners;
       }
 
@@ -111,10 +124,11 @@ export class EventEmitter {
       } else {
         listeners.push(listener);
       }
-    } else {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
+    } else if (this._events) {
       this._events[eventName] = listener;
+    } else {
+      EventEmitter.#init(this);
+      (this._events as EventMap)[eventName] = listener;
     }
     const max = this.getMaxListeners();
     if (max > 0 && this.listenerCount(eventName) > max) {
@@ -149,10 +163,8 @@ export class EventEmitter {
         this.emit(EventEmitter.errorMonitor, ...args);
       }
 
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
-      const listeners = ensureArray<GenericFunction>(this._events[eventName])
-        .slice(); // We copy with slice() so array is not mutated during emit
+      const listeners = ensureArray(this._events[eventName]!)
+        .slice() as Array<GenericFunction>; // We copy with slice() so array is not mutated during emit
       for (const listener of listeners) {
         try {
           listener.apply(this, args);
@@ -176,7 +188,9 @@ export class EventEmitter {
    * registered listeners.
    */
   public eventNames(): [string | symbol] {
-    return Reflect.ownKeys(this._events) as [string | symbol];
+    return Reflect.ownKeys(this._events) as [
+      string | symbol,
+    ];
   }
 
   /**
@@ -196,8 +210,6 @@ export class EventEmitter {
    */
   public listenerCount(eventName: string | symbol): number {
     if (this.hasListeners(eventName)) {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
       const maybeListeners = this._events[eventName];
       return Array.isArray(maybeListeners) ? maybeListeners.length : 1;
     } else {
@@ -221,8 +233,6 @@ export class EventEmitter {
       return [];
     }
 
-    // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
     const eventListeners = target._events[eventName];
     if (Array.isArray(eventListeners)) {
       return unwrap
@@ -273,7 +283,7 @@ export class EventEmitter {
     // deno-lint-ignore no-unused-vars
     listener: GenericFunction,
     // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
+    // @ts-ignore
   ): this {
     // The body of this method is empty because it will be overwritten by later code. (`EventEmitter.prototype.off = EventEmitter.prototype.removeListener;`)
     // The purpose of this dirty hack is to get around the current limitation of TypeScript type checking.
@@ -292,7 +302,7 @@ export class EventEmitter {
     // deno-lint-ignore no-unused-vars
     listener: GenericFunction | WrappedFunction,
     // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
+    // @ts-ignore
   ): this {
     // The body of this method is empty because it will be overwritten by later code. (`EventEmitter.prototype.addListener = EventEmitter.prototype.on;`)
     // The purpose of this dirty hack is to get around the current limitation of TypeScript type checking.
@@ -387,8 +397,6 @@ export class EventEmitter {
 
     if (eventName) {
       if (this.hasListeners(eventName)) {
-        // deno-lint-ignore ban-ts-comment
-        // @ts-expect-error
         const listeners = ensureArray(this._events[eventName]).slice()
           .reverse();
         for (const listener of listeners) {
@@ -420,8 +428,6 @@ export class EventEmitter {
   ): this {
     this.checkListenerArgument(listener);
     if (this.hasListeners(eventName)) {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
       const maybeArr = this._events[eventName];
 
       assert(maybeArr);
@@ -442,13 +448,9 @@ export class EventEmitter {
       if (listenerIndex >= 0) {
         arr.splice(listenerIndex, 1);
         if (arr.length === 0) {
-          // deno-lint-ignore ban-ts-comment
-          // @ts-expect-error
           delete this._events[eventName];
         } else if (arr.length === 1) {
           // If there is only one listener, an array is not necessary.
-          // deno-lint-ignore ban-ts-comment
-          // @ts-expect-error
           this._events[eventName] = arr[0];
         }
 
@@ -642,8 +644,6 @@ export class EventEmitter {
   }
 
   private warnIfNeeded(eventName: string | symbol, warning: Error): void {
-    // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
     const listeners = this._events[eventName];
     if (listeners.warned) {
       return;
@@ -653,7 +653,7 @@ export class EventEmitter {
 
     // TODO(uki00a): Here are two problems:
     // * If `global.ts` is not imported, then `globalThis.process` will be undefined.
-    // * Importing `process.ts` from this file will result in circurlar reference.
+    // * Importing `process.ts` from this file will result in circular reference.
     // As a workaround, explicitly check for the existence of `globalThis.process`.
     // deno-lint-ignore no-explicit-any
     const maybeProcess = (globalThis as any).process;
@@ -663,8 +663,6 @@ export class EventEmitter {
   }
 
   private hasListeners(eventName: string | symbol): boolean {
-    // deno-lint-ignore ban-ts-comment
-    // @ts-expect-error
     return this._events && Boolean(this._events[eventName]);
   }
 }

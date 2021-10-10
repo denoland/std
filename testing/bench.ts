@@ -50,7 +50,7 @@ export interface BenchmarkClearOptions {
 export interface BenchmarkResult {
   /** The name of the benchmark */
   name: string;
-  /** The total time it took to run a given bechmark  */
+  /** The total time it took to run a given benchmark  */
   totalMs: number;
   /** Times the benchmark was run in succession. */
   runsCount: number;
@@ -300,11 +300,13 @@ export async function runBenchmarks(
         }
       }
     } catch (err) {
-      failError = err;
+      if (err instanceof Error) {
+        failError = err;
 
-      if (!silent) {
-        console.groupEnd();
-        console.error(red(err.stack));
+        if (!silent) {
+          console.groupEnd();
+          console.error(red(err.stack ?? ""));
+        }
       }
 
       break;

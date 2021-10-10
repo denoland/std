@@ -7,7 +7,7 @@ import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
-import { readLines } from "../io/bufio.ts";
+import { readLines } from "../io/buffer.ts";
 import { isWindows } from "../_util/os.ts";
 
 export class ChildProcess extends EventEmitter {
@@ -190,7 +190,7 @@ export class ChildProcess extends EventEmitter {
     await Promise.all(promises);
   }
 
-  private _handleError(err: Error): void {
+  private _handleError(err: unknown): void {
     queueMicrotask(() => {
       this.emit("error", err); // TODO(uki00a) Convert `err` into nodejs's `SystemError` class.
     });
@@ -367,14 +367,14 @@ function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
         await stdin.write(bytes);
         callback();
       } catch (err) {
-        callback(err);
+        callback(err instanceof Error ? err : new Error("[non-error thrown]"));
       }
     },
     final(callback) {
       try {
         ensureClosed(stdin);
       } catch (err) {
-        callback(err);
+        callback(err instanceof Error ? err : new Error("[non-error thrown]"));
       }
     },
   });
@@ -414,7 +414,7 @@ function normalizeStdioOption(
 }
 
 function waitForReadableToClose(readable: Readable): Promise<void> {
-  readable.resume(); // Ensure bufferred data will be consumed.
+  readable.resume(); // Ensure buffered data will be consumed.
   return waitForStreamToClose(readable);
 }
 

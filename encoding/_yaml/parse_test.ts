@@ -90,8 +90,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "`!!js/function` yaml type is correctly handled with extended schema while parsing",
+  name: "`!!js/function` yaml type with extended schema throws while parsing",
   fn(): void {
     const func = function foobar() {
       return "hello world!";
@@ -102,12 +101,7 @@ function: !!js/function >
 ${func.toString().split("\n").map((line) => `  ${line}`).join("\n")}
 `;
 
-    const parsed = parse(yaml, { schema: EXTENDED_SCHEMA }) as {
-      [key: string]: unknown;
-    };
-
-    assertEquals(Object.keys(parsed).length, 1);
-    assertEquals((parsed?.function as typeof func).toString(), func.toString());
+    assertThrows(() => parse(yaml, { schema: EXTENDED_SCHEMA }));
   },
 });
 

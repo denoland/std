@@ -4,12 +4,11 @@ import {
   assertEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import { BufReader } from "../io/bufio.ts";
+import { BufReader } from "../io/buffer.ts";
+import { iterateReader, readAll, writeAll } from "../io/streams.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { Response } from "./server.ts";
 import { FileServerArgs } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { iter, readAll, writeAll } from "../io/util.ts";
 import { isWindows } from "../_util/os.ts";
 
 let fileServer: Deno.Process<Deno.RunOptions & { stdout: "piped" }>;
@@ -83,16 +82,12 @@ async function killFileServer() {
   fileServer.stdout!.close();
 }
 
-interface StringResponse extends Response {
-  body: string;
-}
-
 /* HTTP GET request allowing arbitrary paths */
 async function fetchExactPath(
   hostname: string,
   port: number,
   path: string,
-): Promise<StringResponse> {
+): Promise<Response> {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const request = encoder.encode("GET " + path + " HTTP/1.1\r\n\r\n");
@@ -105,7 +100,7 @@ async function fetchExactPath(
     let currentResult = "";
     let contentLength = -1;
     let startOfBody = -1;
-    for await (const chunk of iter(conn)) {
+    for await (const chunk of iterateReader(conn)) {
       currentResult += decoder.decode(chunk);
       if (contentLength === -1) {
         const match = /^content-length: (.*)$/m.exec(currentResult);
@@ -143,11 +138,10 @@ async function fetchExactPath(
       }
       match = headersReg.exec(headersStr);
     }
-    return {
+    return new Response(body, {
       status: statusCode,
       headers: new Headers(headersObj),
-      body: body,
-    };
+    });
   } finally {
     if (conn) {
       Deno.close(conn.rid);
@@ -258,7 +252,7 @@ Deno.test("checkPathTraversalAbsoluteURI", async function () {
       "http://localhost/../../../..",
     );
     assertEquals(res.status, 200);
-    assertStringIncludes(res.body, "README.md");
+    assertStringIncludes(await res.text(), "README.md");
   } finally {
     await killFileServer();
   }
@@ -589,7 +583,7 @@ const getTestFileLastModified = async () => {
 
 const createEtagHash = async (message: string) => {
   // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-  const hashType = "SHA-1"; // Faster, and this isn't a security senitive cryptographic use case
+  const hashType = "SHA-1"; // Faster, and this isn't a security sensitive cryptographic use case
   const msgUint8 = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest(hashType, msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -806,7 +800,7 @@ Deno.test("file_server sets `Last-Modified` header correctly", async () => {
       ? fileInfo.mtime.getTime()
       : Number.NaN;
 
-    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
+    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accommodate minor variances in how long the test(s) take to execute
     assertEquals(round(lastModifiedTime), round(expectedTime));
     await res.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
@@ -824,7 +818,7 @@ Deno.test("file_server sets `Date` header correctly", async () => {
     const expectedTime = fileInfo.atime && fileInfo.atime instanceof Date
       ? fileInfo.atime.getTime()
       : Number.NaN;
-    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
+    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accommodate minor variances in how long the test(s) take to execute
     assertEquals(round(date), round(expectedTime));
     await res.text(); // Consuming the body so that the test doesn't leak resources
   } finally {

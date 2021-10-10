@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        deno: [1.x, canary]
+        deno: [canary]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:
@@ -28,8 +28,8 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Run tests
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json
+      - name: Run tests canary
+        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json
 
       - name: Type check browser compatible modules
         shell: bash
@@ -109,7 +109,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in hash/_wasm/rust-toolchain:
-          rust-version: 1.54.0
+          rust-version: 1.55.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 

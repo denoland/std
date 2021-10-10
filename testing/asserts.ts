@@ -16,15 +16,15 @@ import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
-interface Constructor {
+export interface Constructor {
   // deno-lint-ignore no-explicit-any
   new (...args: any[]): any;
 }
 
 export class AssertionError extends Error {
+  name = "AssertionError";
   constructor(message: string) {
     super(message);
-    this.name = "AssertionError";
   }
 }
 
@@ -599,16 +599,47 @@ export function fail(msg?: string): never {
 
 /**
  * Executes a function, expecting it to throw.  If it does not, then it
- * throws.  An error class and a string that should be included in the
- * error message can also be asserted.
+ * throws. An error class and a string that should be included in the
+ * error message can also be asserted. Or you can pass a
+ * callback which will be passed the error, usually to apply some custom
+ * assertions on it.
  */
-export function assertThrows<T = void>(
-  fn: () => T,
+export function assertThrows(
+  fn: () => unknown,
   ErrorClass?: Constructor,
-  msgIncludes = "",
+  msgIncludes?: string,
+  msg?: string,
+): void;
+export function assertThrows(
+  fn: () => unknown,
+  errorCallback: (e: Error) => unknown,
+  msg?: string,
+): void;
+export function assertThrows(
+  fn: () => unknown,
+  errorClassOrCallback?: Constructor | ((e: Error) => unknown),
+  msgIncludesOrMsg?: string,
   msg?: string,
 ): void {
+  let ErrorClass;
+  let msgIncludes;
+  let errorCallback;
+  if (
+    errorClassOrCallback == null ||
+    errorClassOrCallback.prototype instanceof Error ||
+    errorClassOrCallback.prototype === Error.prototype
+  ) {
+    ErrorClass = errorClassOrCallback;
+    msgIncludes = msgIncludesOrMsg;
+    errorCallback = null;
+  } else {
+    ErrorClass = null;
+    msgIncludes = null;
+    errorCallback = errorClassOrCallback as (e: Error) => unknown;
+    msg = msgIncludesOrMsg;
+  }
   let doesThrow = false;
+  let error = null;
   try {
     fn();
   } catch (e) {
@@ -616,42 +647,75 @@ export function assertThrows<T = void>(
       throw new AssertionError("A non-Error object was thrown.");
     }
     if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg =
-        `Expected error to be instance of "${ErrorClass.name}", but was "${e.constructor.name}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+        typeof e === "object" ? e?.constructor?.name : "[not an object]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     if (
-      msgIncludes &&
-      !stripColor(e.message).includes(stripColor(msgIncludes))
+      msgIncludes && (!(e instanceof Error) ||
+        !stripColor(e.message).includes(stripColor(msgIncludes)))
     ) {
-      msg =
-        `Expected error message to include "${msgIncludes}", but got "${e.message}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error message to include "${msgIncludes}", but got "${
+        e instanceof Error ? e.message : "[not an Error]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     doesThrow = true;
+    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
   }
+  if (typeof errorCallback == "function") {
+    errorCallback(error as Error);
+  }
 }
 
 /**
  * Executes a function which returns a promise, expecting it to throw or reject.
- * If it does not, then it throws.  An error class and a string that should be
- * included in the error message can also be asserted.
+ * If it does not, then it throws. An error class and a string that should be
+ * included in the error message can also be asserted. Or you can pass a
+ * callback which will be passed the error, usually to apply some custom
+ * assertions on it.
  */
-export async function assertRejects<T = void>(
-  fn: () => Promise<T>,
+export function assertRejects(
+  fn: () => Promise<unknown>,
   ErrorClass?: Constructor,
-  msgIncludes = "",
+  msgIncludes?: string,
+  msg?: string,
+): Promise<void>;
+export function assertRejects(
+  fn: () => Promise<unknown>,
+  errorCallback: (e: Error) => unknown,
+  msg?: string,
+): Promise<void>;
+export async function assertRejects(
+  fn: () => Promise<unknown>,
+  errorClassOrCallback?: Constructor | ((e: Error) => unknown),
+  msgIncludesOrMsg?: string,
   msg?: string,
 ): Promise<void> {
+  let ErrorClass;
+  let msgIncludes;
+  let errorCallback;
+  if (
+    errorClassOrCallback == null ||
+    errorClassOrCallback.prototype instanceof Error ||
+    errorClassOrCallback.prototype === Error.prototype
+  ) {
+    ErrorClass = errorClassOrCallback;
+    msgIncludes = msgIncludesOrMsg;
+    errorCallback = null;
+  } else {
+    ErrorClass = null;
+    msgIncludes = null;
+    errorCallback = errorClassOrCallback as (e: Error) => unknown;
+    msg = msgIncludesOrMsg;
+  }
   let doesThrow = false;
+  let error = null;
   try {
     await fn();
   } catch (e) {
@@ -659,27 +723,29 @@ export async function assertRejects<T = void>(
       throw new AssertionError("A non-Error object was thrown or rejected.");
     }
     if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg =
-        `Expected error to be instance of "${ErrorClass.name}", but was "${e.constructor.name}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+        typeof e === "object" ? e?.constructor?.name : "[not an object]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     if (
-      msgIncludes &&
-      !stripColor(e.message).includes(stripColor(msgIncludes))
+      msgIncludes && (!(e instanceof Error) ||
+        !stripColor(e.message).includes(stripColor(msgIncludes)))
     ) {
-      msg =
-        `Expected error message to include "${msgIncludes}", but got "${e.message}"${
-          msg ? `: ${msg}` : "."
-        }`;
+      msg = `Expected error message to include "${msgIncludes}", but got "${
+        e instanceof Error ? e.message : "[not an Error]"
+      }"${msg ? `: ${msg}` : "."}`;
       throw new AssertionError(msg);
     }
     doesThrow = true;
+    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
+  }
+  if (typeof errorCallback == "function") {
+    errorCallback(error as Error);
   }
 }
 
