@@ -50,3 +50,19 @@ Deno.test("[async] delay with signal aborted after delay", async function () {
   assert(result === undefined);
   assert(diff >= 100);
 });
+
+Deno.test("[async] delay with already aborted signal", async function () {
+  const start = new Date();
+  const abort = new AbortController();
+  abort.abort();
+  const { signal } = abort;
+  const delayedPromise = delay(100, { signal });
+  await assertRejects(
+    () => delayedPromise,
+    DOMException,
+    "Delay was aborted",
+  );
+
+  const diff = new Date().getTime() - start.getTime();
+  assert(diff < 100);
+});

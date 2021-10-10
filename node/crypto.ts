@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { default as randomBytes } from "./_crypto/randomBytes.ts";
+import randomFill, { randomFillSync } from "./_crypto/randomFill.ts";
 import {
   crypto as wasmCrypto,
   DigestAlgorithm,
@@ -12,6 +13,8 @@ import { Transform } from "./stream.ts";
 import { TransformOptions } from "./_stream/transform.ts";
 import { encode as encodeToHex } from "../encoding/hex.ts";
 import { encode as encodeToBase64 } from "../encoding/base64.ts";
+import { scrypt, scryptSync } from "./_crypto/scrypt.ts";
+import { timingSafeEqual } from "./_crypto/timingSafeEqual.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
@@ -156,9 +159,24 @@ export default {
   Hash,
   createHash,
   getHashes,
+  randomFill,
+  randomFillSync,
   pbkdf2,
   pbkdf2Sync,
   randomBytes,
+  scrypt,
+  scryptSync,
+  timingSafeEqual,
   randomUUID,
 };
-export { pbkdf2, pbkdf2Sync, randomBytes, randomUUID };
+export {
+  pbkdf2,
+  pbkdf2Sync,
+  randomBytes,
+  randomFill,
+  randomFillSync,
+  randomUUID,
+  scrypt,
+  scryptSync,
+  timingSafeEqual,
+};

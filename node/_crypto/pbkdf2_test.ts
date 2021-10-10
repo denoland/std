@@ -102,64 +102,6 @@ const fixtures: Pbkdf2Fixture[] = [
     },
   },
   {
-    "key": "password",
-    "salt": "salt",
-    "iterations": 4096,
-    "dkLen": 32,
-    "results": {
-      "md5": "15001f89b9c29ee6998c520d1a0629e893cc3f996a08d27060e4c33305bf0fb2",
-      "sha1":
-        "4b007901b765489abead49d926f721d065a429c12e463f6c4cd79401085b03db",
-      "sha256":
-        "c5e478d59288c841aa530db6845c4c8d962893a001ce4e11a4963873aa98134a",
-      "sha512":
-        "d197b1b33db0143e018b12f3d1d1479e6cdebdcc97c5c0f87f6902e072f457b5",
-      "sha224":
-        "218c453bf90635bd0a21a75d172703ff6108ef603f65bb821aedade1d6961683",
-      "sha384":
-        "559726be38db125bc85ed7895f6e3cf574c7a01c080c3447db1e8a76764deb3c",
-      "ripemd160":
-        "99a40d3fe4ee95869791d9faa24864562782762171480b620ca8bed3dafbbcac",
-    },
-  },
-  {
-    "key": "passwordPASSWORDpassword",
-    "salt": "saltSALTsaltSALTsaltSALTsaltSALTsalt",
-    "iterations": 4096,
-    "dkLen": 40,
-    "results": {
-      "md5":
-        "8d5d0aad94d14420429fbc7e5b087d7a5527e65dfd0d486a310e8a7b6ff5a21bed000b118b2c26a6",
-      "sha1":
-        "3d2eec4fe41c849b80c8d83662c0e44a8b291a964cf2f07038b6b89a48612c5a25284e6605e12329",
-      "sha256":
-        "348c89dbcbd32b2f32d814b8116e84cf2b17347ebc1800181c4e2a1fb8dd53e1c635518c7dac47e9",
-      "sha512":
-        "8c0511f4c6e597c6ac6315d8f0362e225f3c501495ba23b868c005174dc4ee71115b59f9e60cd953",
-      "sha224":
-        "056c4ba438ded91fc14e0594e6f52b87e1f3690c0dc0fbc05784ed9a754ca780e6c017e80c8de278",
-      "sha384":
-        "819143ad66df9a552559b9e131c52ae6c5c1b0eed18f4d283b8c5c9eaeb92b392c147cc2d2869d58",
-      "ripemd160":
-        "503b9a069633b261b2d3e4f21c5d0cafeb3f5008aec25ed21418d12630b6ce036ec82a0430ef1974",
-    },
-  },
-  {
-    "key": "pass\u00000word",
-    "salt": "sa\u00000lt",
-    "iterations": 4096,
-    "dkLen": 16,
-    "results": {
-      "md5": "2d6b566fd00069a30dd1ffdb4d598f54",
-      "sha1": "345cbad979dfccb90cac5257bea6ea46",
-      "sha256": "1df6274d3c0bd2fc7f54fb46f149dda4",
-      "sha512": "336d14366099e8aac2c46c94a8f178d2",
-      "sha224": "0aca9ca9634db6ef4927931f633c6453",
-      "sha384": "b6ab6f8f6532fd9c5c30a79e1f93dcc6",
-      "ripemd160": "914d58209e6483e491571a60e433124a",
-    },
-  },
-  {
     "key": "63ffeeddccbbaa",
     "salt": "salt",
     "iterations": 1,

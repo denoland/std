@@ -1,3 +1,9 @@
+# std/hash is deprecated
+
+`std/hash` is deprecated now. Use Web Crypto API or std/crypto instead.
+
+---
+
 # std/hash
 
 hash is module to provide interfaces for hash functions.

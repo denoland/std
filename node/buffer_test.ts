@@ -299,6 +299,48 @@ Deno.test({
 });
 
 Deno.test({
+  name: "Buffer 8 bit unsigned integers",
+  fn() {
+    const buffer = Buffer.from([0xff, 0x2a, 0x2a, 0x2a]);
+    assertEquals(buffer.readUInt8(0), 255);
+    assertEquals(buffer.readUInt8(1), 42);
+    assertEquals(buffer.readUInt8(2), 42);
+    assertEquals(buffer.readUInt8(3), 42);
+  },
+});
+
+Deno.test({
+  name: "Buffer 16 bit unsigned integers",
+  fn() {
+    const buffer = Buffer.from([0x00, 0x2a, 0x42, 0x3f]);
+    assertEquals(buffer.readUInt16BE(0), 0x2a);
+    assertEquals(buffer.readUInt16BE(1), 0x2a42);
+    assertEquals(buffer.readUInt16BE(2), 0x423f);
+    assertEquals(buffer.readUInt16LE(0), 0x2a00);
+    assertEquals(buffer.readUInt16LE(1), 0x422a);
+    assertEquals(buffer.readUInt16LE(2), 0x3f42);
+
+    buffer[0] = 0xfe;
+    buffer[1] = 0xfe;
+    assertEquals(buffer.readUInt16BE(0), 0xfefe);
+    assertEquals(buffer.readUInt16LE(0), 0xfefe);
+  },
+});
+
+Deno.test({
+  name: "Buffer 32 bit unsigned integers",
+  fn() {
+    const buffer = Buffer.from([0x32, 0x65, 0x42, 0x56, 0x23, 0xff]);
+    assertEquals(buffer.readUInt32BE(0), 0x32654256);
+    assertEquals(buffer.readUInt32BE(1), 0x65425623);
+    assertEquals(buffer.readUInt32BE(2), 0x425623ff);
+    assertEquals(buffer.readUInt32LE(0), 0x56426532);
+    assertEquals(buffer.readUInt32LE(1), 0x23564265);
+    assertEquals(buffer.readUInt32LE(2), 0xff235642);
+  },
+});
+
+Deno.test({
   name: "Buffer readUIntBE",
   fn() {
     const buffer = Buffer.from([
@@ -319,6 +361,34 @@ Deno.test({
         assertEquals(buffer.readUIntBE(0, 5), 0x01020304);
         assertEquals(buffer.readUIntBE(0, 6), 0x010203040506);
         assertEquals(buffer.readUIntBE(1, 6), 0x020304050607);
+      },
+      Error,
+      `Not implemented: byteLength`,
+    );
+  },
+});
+
+Deno.test({
+  name: "Buffer readUIntLE",
+  fn() {
+    const buffer = Buffer.from([
+      0x01,
+      0x02,
+      0x03,
+      0x04,
+      0x05,
+      0x06,
+      0x07,
+      0x08,
+    ]);
+    assertEquals(buffer.readUIntLE(0, 1), 0x01);
+    assertEquals(buffer.readUIntLE(0, 2), 0x0201);
+    assertEquals(buffer.readUIntLE(0, 4), 0x04030201);
+    assertThrows(
+      () => {
+        assertEquals(buffer.readUIntLE(0, 5), 0x04030201);
+        assertEquals(buffer.readUIntLE(0, 6), 0x060504030201);
+        assertEquals(buffer.readUIntLE(1, 6), 0x070605040302);
       },
       Error,
       `Not implemented: byteLength`,

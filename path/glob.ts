@@ -27,8 +27,22 @@ export interface GlobOptions {
 
 export type GlobToRegExpOptions = GlobOptions;
 
-// deno-fmt-ignore
-const regExpEscapeChars = ["!", "$", "(", ")", "*", "+", ".", "=", "?", "[", "\\", "^", "{", "|"];
+const regExpEscapeChars = [
+  "!",
+  "$",
+  "(",
+  ")",
+  "*",
+  "+",
+  ".",
+  "=",
+  "?",
+  "[",
+  "\\",
+  "^",
+  "{",
+  "|",
+];
 const rangeEscapeChars = ["-", "\\", "]"];
 
 /** Convert a glob string to a regular expression.

@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { BufReader, BufWriter } from "../io/bufio.ts";
+import { BufReader, BufWriter } from "../io/buffer.ts";
 import { assert } from "../_util/assert.ts";
 import { Deferred, deferred, MuxAsyncIterator } from "../async/mod.ts";
 import {
@@ -61,7 +61,7 @@ export class ServerRequest {
    *
    * ```ts
    * import { ServerRequest } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
-   * import { readAll } from "https://deno.land/std@$STD_VERSION/io/util.ts";
+   * import { readAll } from "https://deno.land/std@$STD_VERSION/io/streams.ts";
    *
    * const req = new ServerRequest();
    * const buf = await readAll(req.body);
