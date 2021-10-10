@@ -146,10 +146,10 @@ function encodePathChars(filepath: string): string {
   return filepath;
 }
 
-/** 
+/**
  * Get fully resolved platform-specific File URL from the given file path
  * @param filepath The file path string to convert to a file URL
- * */
+ */
 export function pathToFileURL(filepath: string): URL {
   const outURL = new URL("file://");
   if (isWindows && filepath.startsWith("\\\\")) {
