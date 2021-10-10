@@ -62,7 +62,7 @@ Follow the [style guide](https://deno.land/manual/contributing/style_guide).
 
 ### Opening a pull request
 
-After cloning don't forget to `git submodule update --init`. 
+After cloning don't forget to `git submodule update --init`.
 
 Before opening a PR make sure to:
 
