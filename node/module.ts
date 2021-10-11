@@ -21,7 +21,7 @@
 
 import "./global.ts";
 
-import nodeMods from './module_all.ts';
+import nodeMods from "./module_all.ts";
 
 import * as path from "../path/mod.ts";
 import { assert } from "../_util/assert.ts";
