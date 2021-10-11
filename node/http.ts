@@ -1,4 +1,5 @@
 import { Status as STATUS_CODES } from "../http/http_status.ts";
+import { Buffer } from "./buffer.ts";
 
 const METHODS = [
   "ACL",
@@ -37,7 +38,6 @@ const METHODS = [
   "UNSUBSCRIBE",
 ];
 
-import { Buffer } from "./buffer.ts";
 type Chunk = string | Buffer | Uint8Array;
 type Headers = Record<string, string>;
 
