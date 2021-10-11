@@ -1,5 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+import { BytesList } from "../bytes/bytes_list.ts";
+
 const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
@@ -13,7 +15,7 @@ const LF = "\n".charCodeAt(0);
  * ```
  */
 export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
-  #bufs: Uint8Array[] = [];
+  #bufs = new BytesList();
   #prevHadCR = false;
 
   constructor() {
@@ -37,7 +39,6 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
       this.#prevHadCR = false;
       if (lfIndex === 0) {
         controller.enqueue(this.#mergeBufs(true));
-        this.#bufs = [];
         this.#handle(chunk.subarray(1), controller);
         return;
       }
@@ -47,28 +48,22 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
       if (chunk.at(-1) === CR) {
         this.#prevHadCR = true;
       }
-      this.#bufs.push(chunk);
+      this.#bufs.add(chunk);
     } else {
       let crOrLfIndex = lfIndex;
       if (chunk[lfIndex - 1] === CR) {
         crOrLfIndex--;
       }
-      this.#bufs.push(chunk.subarray(0, crOrLfIndex));
+      this.#bufs.add(chunk.subarray(0, crOrLfIndex));
       controller.enqueue(this.#mergeBufs(false));
-      this.#bufs = [];
       this.#handle(chunk.subarray(lfIndex + 1), controller);
     }
   }
 
   #mergeBufs(prevHadCR: boolean): Uint8Array {
-    const mergeBuf = new Uint8Array(
-      this.#bufs.reduce((acc, buf) => acc + buf.length, 0),
-    );
-    let offset = 0;
-    for (const buf of this.#bufs) {
-      mergeBuf.set(buf, offset);
-      offset += buf.length;
-    }
+    const mergeBuf = this.#bufs.concat();
+    this.#bufs = new BytesList();
+
     if (prevHadCR) {
       return mergeBuf.subarray(0, -1);
     } else {
