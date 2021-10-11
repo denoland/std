@@ -94,10 +94,12 @@ const SUPPORTED_NODE_MODULES = [
   "console",
   "constants",
   "crypto",
+  "dns",
   "events",
   "fs",
   "fs/promises",
   "module",
+  "net",
   "os",
   "path",
   "perf_hooks",
@@ -111,11 +113,9 @@ const SUPPORTED_NODE_MODULES = [
   // TODO(kt3k): add these modules when implemented
   // require("cluster");
   // require("dgram");
-  // require("dns");
   // require("http");
   // require("http2");
   // require("https");
-  // require("net");
   // require("readline");
   // require("repl");
   // require("sys");
