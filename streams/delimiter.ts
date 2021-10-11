@@ -78,8 +78,8 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
  * import { DelimiterStream } from "./delimiter.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
- *   .pipeThrough(new DelimiterStream(new TextEncoder().encode("foo"))
- *   .pipeThrough(new TextDecoderStream()));
+ *   .pipeThrough(new DelimiterStream(new TextEncoder().encode("foo")))
+ *   .pipeThrough(new TextDecoderStream());
  * ```
  */
 export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
