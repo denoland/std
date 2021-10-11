@@ -2,13 +2,11 @@
 /** ********** NOT IMPLEMENTED
  * ERR_INVALID_MODULE_SPECIFIER
  * ERR_INVALID_PACKAGE_TARGET
- * ERR_INVALID_URL_SCHEME
  * ERR_MANIFEST_ASSERT_INTEGRITY
  * ERR_MODULE_NOT_FOUND
  * ERR_PACKAGE_PATH_NOT_EXPORTED
  * ERR_QUICSESSION_VERSION_NEGOTIATION
  * ERR_REQUIRE_ESM
- * ERR_SOCKET_BAD_PORT
  * ERR_TLS_CERT_ALTNAME_INVALID
  * ERR_UNHANDLED_ERROR
  * ERR_WORKER_INVALID_EXEC_ARGV
@@ -20,9 +18,11 @@
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
  * *********** */
 
-import { unreachable } from "../testing/asserts.ts";
-import { osType } from "../_util/os.ts";
-import { inspect } from "./util.ts";
+import { getSystemErrorName, inspect } from "./util.ts";
+import { codeMap, errorMap } from "./internal_binding/uv.ts";
+import { assert } from "../_util/assert.ts";
+
+export { errorMap };
 
 /**
  * @see https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js
@@ -45,6 +45,245 @@ const kTypes = [
   "bigint",
   "symbol",
 ];
+
+const nodeInternalPrefix = "__node_internal_";
+
+// deno-lint-ignore no-explicit-any
+type GenericFunction = (...args: any[]) => any;
+
+/** This function removes unnecessary frames from Node.js core errors. */
+export function hideStackFrames(fn: GenericFunction) {
+  // We rename the functions that will be hidden to cut off the stacktrace
+  // at the outermost one.
+  const hidden = nodeInternalPrefix + fn.name;
+  Object.defineProperty(fn, "name", { value: hidden });
+
+  return fn;
+}
+
+const captureLargerStackTrace = hideStackFrames(
+  function captureLargerStackTrace(err) {
+    Error.captureStackTrace(err);
+
+    return err;
+  },
+);
+
+export interface ErrnoException extends Error {
+  errno?: number;
+  code?: string;
+  path?: string;
+  syscall?: string;
+}
+
+/**
+ * This creates an error compatible with errors produced in the C++
+ * This function should replace the deprecated
+ * `exceptionWithHostPort()` function.
+ *
+ * @param err A libuv error number
+ * @param syscall
+ * @param address
+ * @param port
+ * @return The error.
+ */
+export const uvExceptionWithHostPort = hideStackFrames(
+  function uvExceptionWithHostPort(
+    err: number,
+    syscall: string,
+    address: string,
+    port?: number,
+  ) {
+    const { 0: code, 1: uvmsg } = uvErrmapGet(err) || uvUnmappedError;
+    const message = `${syscall} ${code}: ${uvmsg}`;
+    let details = "";
+
+    if (port && port > 0) {
+      details = ` ${address}:${port}`;
+    } else if (address) {
+      details = ` ${address}`;
+    }
+
+    // deno-lint-ignore no-explicit-any
+    const ex: any = new Error(`${message}${details}`);
+    ex.code = code;
+    ex.errno = err;
+    ex.syscall = syscall;
+    ex.address = address;
+
+    if (port) {
+      ex.port = port;
+    }
+
+    return captureLargerStackTrace(ex);
+  },
+);
+
+/**
+ * This used to be `util._errnoException()`.
+ *
+ * @param err A libuv error number
+ * @param syscall
+ * @param original
+ * @return A `ErrnoException`
+ */
+export const errnoException = hideStackFrames(
+  function errnoException(err, syscall, original): ErrnoException {
+    const code = getSystemErrorName(err);
+    const message = original
+      ? `${syscall} ${code} ${original}`
+      : `${syscall} ${code}`;
+
+    // deno-lint-ignore no-explicit-any
+    const ex: any = new Error(message);
+    ex.errno = err;
+    ex.code = code;
+    ex.syscall = syscall;
+
+    return captureLargerStackTrace(ex);
+  },
+);
+
+function uvErrmapGet(name: number) {
+  return errorMap.get(name);
+}
+
+const uvUnmappedError = ["UNKNOWN", "unknown error"];
+
+/**
+ * This creates an error compatible with errors produced in the C++
+ * function UVException using a context object with data assembled in C++.
+ * The goal is to migrate them to ERR_* errors later when compatibility is
+ * not a concern.
+ *
+ * @param ctx
+ * @return The error.
+ */
+export const uvException = hideStackFrames(function uvException(ctx) {
+  const { 0: code, 1: uvmsg } = uvErrmapGet(ctx.errno) || uvUnmappedError;
+
+  let message = `${code}: ${ctx.message || uvmsg}, ${ctx.syscall}`;
+
+  let path;
+  let dest;
+
+  if (ctx.path) {
+    path = ctx.path.toString();
+    message += ` '${path}'`;
+  }
+  if (ctx.dest) {
+    dest = ctx.dest.toString();
+    message += ` -> '${dest}'`;
+  }
+
+  // deno-lint-ignore no-explicit-any
+  const err: any = new Error(message);
+
+  for (const prop of Object.keys(ctx)) {
+    if (prop === "message" || prop === "path" || prop === "dest") {
+      continue;
+    }
+
+    err[prop] = ctx[prop];
+  }
+
+  err.code = code;
+
+  if (path) {
+    err.path = path;
+  }
+
+  if (dest) {
+    err.dest = dest;
+  }
+
+  return captureLargerStackTrace(err);
+});
+
+/**
+ * Deprecated, new function is `uvExceptionWithHostPort()`
+ * New function added the error description directly
+ * from C++. this method for backwards compatibility
+ * @param err A libuv error number
+ * @param syscall
+ * @param address
+ * @param port
+ * @param additional
+ */
+export const exceptionWithHostPort = hideStackFrames(
+  function exceptionWithHostPort(
+    err: number,
+    syscall: string,
+    address: string,
+    port: number,
+    additional: string,
+  ) {
+    const code = getSystemErrorName(err);
+    let details = "";
+
+    if (port && port > 0) {
+      details = ` ${address}:${port}`;
+    } else if (address) {
+      details = ` ${address}`;
+    }
+
+    if (additional) {
+      details += ` - Local (${additional})`;
+    }
+
+    // deno-lint-ignore no-explicit-any
+    const ex: any = new Error(`${syscall} ${code}${details}`);
+    ex.errno = err;
+    ex.code = code;
+    ex.syscall = syscall;
+    ex.address = address;
+
+    if (port) {
+      ex.port = port;
+    }
+
+    return captureLargerStackTrace(ex);
+  },
+);
+
+/**
+ * @param code A libuv error number or a c-ares error code
+ * @param syscall
+ * @param hostname
+ */
+export const dnsException = hideStackFrames(function (code, syscall, hostname) {
+  let errno;
+
+  // If `code` is of type number, it is a libuv error number, else it is a
+  // c-ares error code.
+  if (typeof code === "number") {
+    errno = code;
+    // ENOTFOUND is not a proper POSIX error, but this error has been in place
+    // long enough that it's not practical to remove it.
+    if (
+      code === codeMap.get("EAI_NODATA") ||
+      code === codeMap.get("EAI_NONAME")
+    ) {
+      code = "ENOTFOUND"; // Fabricated error name.
+    } else {
+      code = getSystemErrorName(code);
+    }
+  }
+
+  const message = `${syscall} ${code}${hostname ? ` ${hostname}` : ""}`;
+
+  // deno-lint-ignore no-explicit-any
+  const ex: any = new Error(message);
+  ex.errno = errno;
+  ex.code = code;
+  ex.syscall = syscall;
+
+  if (hostname) {
+    ex.hostname = hostname;
+  }
+
+  return captureLargerStackTrace(ex);
+});
 
 /**
  * All error instances in Node have additional methods and properties
@@ -190,10 +429,13 @@ export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
 }
 
 export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
-  constructor(name: string, value: unknown, reason: string) {
+  constructor(name: string, value: unknown, reason: string = "is invalid") {
+    const type = name.includes(".") ? "property" : "argument";
+    const inspected = inspect(value);
+
     super(
       "ERR_INVALID_ARG_VALUE",
-      `The argument '${name}' ${reason}. Received ${inspect(value)}`,
+      `The ${type} '${name}' ${reason}. Received ${inspected}`,
     );
   }
 }
@@ -574,278 +816,6 @@ export class ERR_ENCODING_INVALID_ENCODED_DATA extends NodeErrorAbstraction
   }
 }
 
-// In Node these values are coming from libuv:
-// Ref: https://github.com/libuv/libuv/blob/v1.x/include/uv/errno.h
-// Ref: https://github.com/nodejs/node/blob/524123fbf064ff64bb6fcd83485cfc27db932f68/lib/internal/errors.js#L383
-// Since there is no easy way to port code from libuv and these maps are
-// changing very rarely, we simply extract them from Node and store here.
-
-// Note
-// Run the following to get the map:
-// $ node -e "console.log(process.binding('uv').getErrorMap())"
-// This setup automatically exports maps from both "win", "linux" & darwin:
-// https://github.com/schwarzkopfb/node_errno_map
-
-type ErrMapData = Array<[number, [string, string]]>;
-
-const windows: ErrMapData = [
-  [-4093, ["E2BIG", "argument list too long"]],
-  [-4092, ["EACCES", "permission denied"]],
-  [-4091, ["EADDRINUSE", "address already in use"]],
-  [-4090, ["EADDRNOTAVAIL", "address not available"]],
-  [-4089, ["EAFNOSUPPORT", "address family not supported"]],
-  [-4088, ["EAGAIN", "resource temporarily unavailable"]],
-  [-3000, ["EAI_ADDRFAMILY", "address family not supported"]],
-  [-3001, ["EAI_AGAIN", "temporary failure"]],
-  [-3002, ["EAI_BADFLAGS", "bad ai_flags value"]],
-  [-3013, ["EAI_BADHINTS", "invalid value for hints"]],
-  [-3003, ["EAI_CANCELED", "request canceled"]],
-  [-3004, ["EAI_FAIL", "permanent failure"]],
-  [-3005, ["EAI_FAMILY", "ai_family not supported"]],
-  [-3006, ["EAI_MEMORY", "out of memory"]],
-  [-3007, ["EAI_NODATA", "no address"]],
-  [-3008, ["EAI_NONAME", "unknown node or service"]],
-  [-3009, ["EAI_OVERFLOW", "argument buffer overflow"]],
-  [-3014, ["EAI_PROTOCOL", "resolved protocol is unknown"]],
-  [-3010, ["EAI_SERVICE", "service not available for socket type"]],
-  [-3011, ["EAI_SOCKTYPE", "socket type not supported"]],
-  [-4084, ["EALREADY", "connection already in progress"]],
-  [-4083, ["EBADF", "bad file descriptor"]],
-  [-4082, ["EBUSY", "resource busy or locked"]],
-  [-4081, ["ECANCELED", "operation canceled"]],
-  [-4080, ["ECHARSET", "invalid Unicode character"]],
-  [-4079, ["ECONNABORTED", "software caused connection abort"]],
-  [-4078, ["ECONNREFUSED", "connection refused"]],
-  [-4077, ["ECONNRESET", "connection reset by peer"]],
-  [-4076, ["EDESTADDRREQ", "destination address required"]],
-  [-4075, ["EEXIST", "file already exists"]],
-  [-4074, ["EFAULT", "bad address in system call argument"]],
-  [-4036, ["EFBIG", "file too large"]],
-  [-4073, ["EHOSTUNREACH", "host is unreachable"]],
-  [-4072, ["EINTR", "interrupted system call"]],
-  [-4071, ["EINVAL", "invalid argument"]],
-  [-4070, ["EIO", "i/o error"]],
-  [-4069, ["EISCONN", "socket is already connected"]],
-  [-4068, ["EISDIR", "illegal operation on a directory"]],
-  [-4067, ["ELOOP", "too many symbolic links encountered"]],
-  [-4066, ["EMFILE", "too many open files"]],
-  [-4065, ["EMSGSIZE", "message too long"]],
-  [-4064, ["ENAMETOOLONG", "name too long"]],
-  [-4063, ["ENETDOWN", "network is down"]],
-  [-4062, ["ENETUNREACH", "network is unreachable"]],
-  [-4061, ["ENFILE", "file table overflow"]],
-  [-4060, ["ENOBUFS", "no buffer space available"]],
-  [-4059, ["ENODEV", "no such device"]],
-  [-4058, ["ENOENT", "no such file or directory"]],
-  [-4057, ["ENOMEM", "not enough memory"]],
-  [-4056, ["ENONET", "machine is not on the network"]],
-  [-4035, ["ENOPROTOOPT", "protocol not available"]],
-  [-4055, ["ENOSPC", "no space left on device"]],
-  [-4054, ["ENOSYS", "function not implemented"]],
-  [-4053, ["ENOTCONN", "socket is not connected"]],
-  [-4052, ["ENOTDIR", "not a directory"]],
-  [-4051, ["ENOTEMPTY", "directory not empty"]],
-  [-4050, ["ENOTSOCK", "socket operation on non-socket"]],
-  [-4049, ["ENOTSUP", "operation not supported on socket"]],
-  [-4048, ["EPERM", "operation not permitted"]],
-  [-4047, ["EPIPE", "broken pipe"]],
-  [-4046, ["EPROTO", "protocol error"]],
-  [-4045, ["EPROTONOSUPPORT", "protocol not supported"]],
-  [-4044, ["EPROTOTYPE", "protocol wrong type for socket"]],
-  [-4034, ["ERANGE", "result too large"]],
-  [-4043, ["EROFS", "read-only file system"]],
-  [-4042, ["ESHUTDOWN", "cannot send after transport endpoint shutdown"]],
-  [-4041, ["ESPIPE", "invalid seek"]],
-  [-4040, ["ESRCH", "no such process"]],
-  [-4039, ["ETIMEDOUT", "connection timed out"]],
-  [-4038, ["ETXTBSY", "text file is busy"]],
-  [-4037, ["EXDEV", "cross-device link not permitted"]],
-  [-4094, ["UNKNOWN", "unknown error"]],
-  [-4095, ["EOF", "end of file"]],
-  [-4033, ["ENXIO", "no such device or address"]],
-  [-4032, ["EMLINK", "too many links"]],
-  [-4031, ["EHOSTDOWN", "host is down"]],
-  [-4030, ["EREMOTEIO", "remote I/O error"]],
-  [-4029, ["ENOTTY", "inappropriate ioctl for device"]],
-  [-4028, ["EFTYPE", "inappropriate file type or format"]],
-  [-4027, ["EILSEQ", "illegal byte sequence"]],
-];
-
-const darwin: ErrMapData = [
-  [-7, ["E2BIG", "argument list too long"]],
-  [-13, ["EACCES", "permission denied"]],
-  [-48, ["EADDRINUSE", "address already in use"]],
-  [-49, ["EADDRNOTAVAIL", "address not available"]],
-  [-47, ["EAFNOSUPPORT", "address family not supported"]],
-  [-35, ["EAGAIN", "resource temporarily unavailable"]],
-  [-3000, ["EAI_ADDRFAMILY", "address family not supported"]],
-  [-3001, ["EAI_AGAIN", "temporary failure"]],
-  [-3002, ["EAI_BADFLAGS", "bad ai_flags value"]],
-  [-3013, ["EAI_BADHINTS", "invalid value for hints"]],
-  [-3003, ["EAI_CANCELED", "request canceled"]],
-  [-3004, ["EAI_FAIL", "permanent failure"]],
-  [-3005, ["EAI_FAMILY", "ai_family not supported"]],
-  [-3006, ["EAI_MEMORY", "out of memory"]],
-  [-3007, ["EAI_NODATA", "no address"]],
-  [-3008, ["EAI_NONAME", "unknown node or service"]],
-  [-3009, ["EAI_OVERFLOW", "argument buffer overflow"]],
-  [-3014, ["EAI_PROTOCOL", "resolved protocol is unknown"]],
-  [-3010, ["EAI_SERVICE", "service not available for socket type"]],
-  [-3011, ["EAI_SOCKTYPE", "socket type not supported"]],
-  [-37, ["EALREADY", "connection already in progress"]],
-  [-9, ["EBADF", "bad file descriptor"]],
-  [-16, ["EBUSY", "resource busy or locked"]],
-  [-89, ["ECANCELED", "operation canceled"]],
-  [-4080, ["ECHARSET", "invalid Unicode character"]],
-  [-53, ["ECONNABORTED", "software caused connection abort"]],
-  [-61, ["ECONNREFUSED", "connection refused"]],
-  [-54, ["ECONNRESET", "connection reset by peer"]],
-  [-39, ["EDESTADDRREQ", "destination address required"]],
-  [-17, ["EEXIST", "file already exists"]],
-  [-14, ["EFAULT", "bad address in system call argument"]],
-  [-27, ["EFBIG", "file too large"]],
-  [-65, ["EHOSTUNREACH", "host is unreachable"]],
-  [-4, ["EINTR", "interrupted system call"]],
-  [-22, ["EINVAL", "invalid argument"]],
-  [-5, ["EIO", "i/o error"]],
-  [-56, ["EISCONN", "socket is already connected"]],
-  [-21, ["EISDIR", "illegal operation on a directory"]],
-  [-62, ["ELOOP", "too many symbolic links encountered"]],
-  [-24, ["EMFILE", "too many open files"]],
-  [-40, ["EMSGSIZE", "message too long"]],
-  [-63, ["ENAMETOOLONG", "name too long"]],
-  [-50, ["ENETDOWN", "network is down"]],
-  [-51, ["ENETUNREACH", "network is unreachable"]],
-  [-23, ["ENFILE", "file table overflow"]],
-  [-55, ["ENOBUFS", "no buffer space available"]],
-  [-19, ["ENODEV", "no such device"]],
-  [-2, ["ENOENT", "no such file or directory"]],
-  [-12, ["ENOMEM", "not enough memory"]],
-  [-4056, ["ENONET", "machine is not on the network"]],
-  [-42, ["ENOPROTOOPT", "protocol not available"]],
-  [-28, ["ENOSPC", "no space left on device"]],
-  [-78, ["ENOSYS", "function not implemented"]],
-  [-57, ["ENOTCONN", "socket is not connected"]],
-  [-20, ["ENOTDIR", "not a directory"]],
-  [-66, ["ENOTEMPTY", "directory not empty"]],
-  [-38, ["ENOTSOCK", "socket operation on non-socket"]],
-  [-45, ["ENOTSUP", "operation not supported on socket"]],
-  [-1, ["EPERM", "operation not permitted"]],
-  [-32, ["EPIPE", "broken pipe"]],
-  [-100, ["EPROTO", "protocol error"]],
-  [-43, ["EPROTONOSUPPORT", "protocol not supported"]],
-  [-41, ["EPROTOTYPE", "protocol wrong type for socket"]],
-  [-34, ["ERANGE", "result too large"]],
-  [-30, ["EROFS", "read-only file system"]],
-  [-58, ["ESHUTDOWN", "cannot send after transport endpoint shutdown"]],
-  [-29, ["ESPIPE", "invalid seek"]],
-  [-3, ["ESRCH", "no such process"]],
-  [-60, ["ETIMEDOUT", "connection timed out"]],
-  [-26, ["ETXTBSY", "text file is busy"]],
-  [-18, ["EXDEV", "cross-device link not permitted"]],
-  [-4094, ["UNKNOWN", "unknown error"]],
-  [-4095, ["EOF", "end of file"]],
-  [-6, ["ENXIO", "no such device or address"]],
-  [-31, ["EMLINK", "too many links"]],
-  [-64, ["EHOSTDOWN", "host is down"]],
-  [-4030, ["EREMOTEIO", "remote I/O error"]],
-  [-25, ["ENOTTY", "inappropriate ioctl for device"]],
-  [-79, ["EFTYPE", "inappropriate file type or format"]],
-  [-92, ["EILSEQ", "illegal byte sequence"]],
-];
-
-const linux: ErrMapData = [
-  [-7, ["E2BIG", "argument list too long"]],
-  [-13, ["EACCES", "permission denied"]],
-  [-98, ["EADDRINUSE", "address already in use"]],
-  [-99, ["EADDRNOTAVAIL", "address not available"]],
-  [-97, ["EAFNOSUPPORT", "address family not supported"]],
-  [-11, ["EAGAIN", "resource temporarily unavailable"]],
-  [-3000, ["EAI_ADDRFAMILY", "address family not supported"]],
-  [-3001, ["EAI_AGAIN", "temporary failure"]],
-  [-3002, ["EAI_BADFLAGS", "bad ai_flags value"]],
-  [-3013, ["EAI_BADHINTS", "invalid value for hints"]],
-  [-3003, ["EAI_CANCELED", "request canceled"]],
-  [-3004, ["EAI_FAIL", "permanent failure"]],
-  [-3005, ["EAI_FAMILY", "ai_family not supported"]],
-  [-3006, ["EAI_MEMORY", "out of memory"]],
-  [-3007, ["EAI_NODATA", "no address"]],
-  [-3008, ["EAI_NONAME", "unknown node or service"]],
-  [-3009, ["EAI_OVERFLOW", "argument buffer overflow"]],
-  [-3014, ["EAI_PROTOCOL", "resolved protocol is unknown"]],
-  [-3010, ["EAI_SERVICE", "service not available for socket type"]],
-  [-3011, ["EAI_SOCKTYPE", "socket type not supported"]],
-  [-114, ["EALREADY", "connection already in progress"]],
-  [-9, ["EBADF", "bad file descriptor"]],
-  [-16, ["EBUSY", "resource busy or locked"]],
-  [-125, ["ECANCELED", "operation canceled"]],
-  [-4080, ["ECHARSET", "invalid Unicode character"]],
-  [-103, ["ECONNABORTED", "software caused connection abort"]],
-  [-111, ["ECONNREFUSED", "connection refused"]],
-  [-104, ["ECONNRESET", "connection reset by peer"]],
-  [-89, ["EDESTADDRREQ", "destination address required"]],
-  [-17, ["EEXIST", "file already exists"]],
-  [-14, ["EFAULT", "bad address in system call argument"]],
-  [-27, ["EFBIG", "file too large"]],
-  [-113, ["EHOSTUNREACH", "host is unreachable"]],
-  [-4, ["EINTR", "interrupted system call"]],
-  [-22, ["EINVAL", "invalid argument"]],
-  [-5, ["EIO", "i/o error"]],
-  [-106, ["EISCONN", "socket is already connected"]],
-  [-21, ["EISDIR", "illegal operation on a directory"]],
-  [-40, ["ELOOP", "too many symbolic links encountered"]],
-  [-24, ["EMFILE", "too many open files"]],
-  [-90, ["EMSGSIZE", "message too long"]],
-  [-36, ["ENAMETOOLONG", "name too long"]],
-  [-100, ["ENETDOWN", "network is down"]],
-  [-101, ["ENETUNREACH", "network is unreachable"]],
-  [-23, ["ENFILE", "file table overflow"]],
-  [-105, ["ENOBUFS", "no buffer space available"]],
-  [-19, ["ENODEV", "no such device"]],
-  [-2, ["ENOENT", "no such file or directory"]],
-  [-12, ["ENOMEM", "not enough memory"]],
-  [-64, ["ENONET", "machine is not on the network"]],
-  [-92, ["ENOPROTOOPT", "protocol not available"]],
-  [-28, ["ENOSPC", "no space left on device"]],
-  [-38, ["ENOSYS", "function not implemented"]],
-  [-107, ["ENOTCONN", "socket is not connected"]],
-  [-20, ["ENOTDIR", "not a directory"]],
-  [-39, ["ENOTEMPTY", "directory not empty"]],
-  [-88, ["ENOTSOCK", "socket operation on non-socket"]],
-  [-95, ["ENOTSUP", "operation not supported on socket"]],
-  [-1, ["EPERM", "operation not permitted"]],
-  [-32, ["EPIPE", "broken pipe"]],
-  [-71, ["EPROTO", "protocol error"]],
-  [-93, ["EPROTONOSUPPORT", "protocol not supported"]],
-  [-91, ["EPROTOTYPE", "protocol wrong type for socket"]],
-  [-34, ["ERANGE", "result too large"]],
-  [-30, ["EROFS", "read-only file system"]],
-  [-108, ["ESHUTDOWN", "cannot send after transport endpoint shutdown"]],
-  [-29, ["ESPIPE", "invalid seek"]],
-  [-3, ["ESRCH", "no such process"]],
-  [-110, ["ETIMEDOUT", "connection timed out"]],
-  [-26, ["ETXTBSY", "text file is busy"]],
-  [-18, ["EXDEV", "cross-device link not permitted"]],
-  [-4094, ["UNKNOWN", "unknown error"]],
-  [-4095, ["EOF", "end of file"]],
-  [-6, ["ENXIO", "no such device or address"]],
-  [-31, ["EMLINK", "too many links"]],
-  [-112, ["EHOSTDOWN", "host is down"]],
-  [-121, ["EREMOTEIO", "remote I/O error"]],
-  [-25, ["ENOTTY", "inappropriate ioctl for device"]],
-  [-4028, ["EFTYPE", "inappropriate file type or format"]],
-  [-84, ["EILSEQ", "illegal byte sequence"]],
-];
-
-export const errorMap = new Map<number, [string, string]>(
-  osType === "windows"
-    ? windows
-    : osType === "darwin"
-    ? darwin
-    : osType === "linux"
-    ? linux
-    : unreachable(),
-);
 export class ERR_ENCODING_NOT_SUPPORTED extends NodeRangeError {
   constructor(x: string) {
     super(
@@ -1362,7 +1332,7 @@ export class ERR_INVALID_CALLBACK extends NodeTypeError {
   constructor(object: unknown) {
     super(
       "ERR_INVALID_CALLBACK",
-      `Callback must be a function. Received ${JSON.stringify(object)}`,
+      `Callback must be a function. Received ${inspect(object)}`,
     );
   }
 }
@@ -1583,11 +1553,18 @@ export class ERR_METHOD_NOT_IMPLEMENTED extends NodeError {
   }
 }
 export class ERR_MISSING_ARGS extends NodeTypeError {
-  constructor(...args: string[]) {
-    args = args.map((a) => `"${a}"`);
-
+  constructor(...args: (string | string[])[]) {
     let msg = "The ";
-    switch (args.length) {
+
+    const len = args.length;
+
+    const wrap = (a: unknown) => `"${a}"`;
+
+    args = args.map(
+      (a) => (Array.isArray(a) ? a.map(wrap).join(" or ") : wrap(a)),
+    );
+
+    switch (len) {
       case 1:
         msg += `${args[0]} argument`;
         break;
@@ -1595,10 +1572,11 @@ export class ERR_MISSING_ARGS extends NodeTypeError {
         msg += `${args[0]} and ${args[1]} arguments`;
         break;
       default:
-        msg += args.slice(0, args.length - 1).join(", ");
-        msg += `, and ${args[args.length - 1]} arguments`;
+        msg += args.slice(0, len - 1).join(", ");
+        msg += `, and ${args[len - 1]} arguments`;
         break;
     }
+
     super(
       "ERR_MISSING_ARGS",
       `${msg} must be specified`,
@@ -1819,6 +1797,21 @@ export class ERR_SOCKET_BAD_BUFFER_SIZE extends NodeTypeError {
     super(
       "ERR_SOCKET_BAD_BUFFER_SIZE",
       `Buffer size must be a positive integer`,
+    );
+  }
+}
+export class ERR_SOCKET_BAD_PORT extends NodeRangeError {
+  constructor(name: string, port: unknown, allowZero = true) {
+    assert(
+      typeof allowZero === "boolean",
+      "The 'allowZero' argument must be of type boolean.",
+    );
+
+    const operator = allowZero ? ">=" : ">";
+
+    super(
+      "ERR_SOCKET_BAD_PORT",
+      `${name} should be ${operator} 0 and < 65536. Received ${port}.`,
     );
   }
 }
@@ -2393,5 +2386,18 @@ export class ERR_INVALID_URL extends NodeTypeError {
       `Invalid URL: ${input}`,
     );
     this.input = input;
+  }
+}
+
+export class ERR_INVALID_URL_SCHEME extends NodeTypeError {
+  constructor(expected: string | [string] | [string, string]) {
+    expected = Array.isArray(expected) ? expected : [expected];
+    const res = expected.length === 2
+      ? `one of scheme ${expected[0]} or ${expected[1]}`
+      : `of scheme ${expected[0]}`;
+    super(
+      "ERR_INVALID_URL_SCHEME",
+      `The URL must be ${res}`,
+    );
   }
 }

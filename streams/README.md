@@ -8,9 +8,9 @@ Creates a `Reader` from a `ReadableStreamDefaultReader`.
 
 ```ts
 import {
+  copy,
   readerFromStreamReader,
-} from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
-import { copy } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+} from "https://deno.land/std@$STD_VERSION/io/mod.ts";
 const res = await fetch("https://deno.land");
 const file = await Deno.open("./deno.land.html", { create: true, write: true });
 
@@ -25,9 +25,9 @@ Creates a `Writer` from a `WritableStreamDefaultWriter`.
 
 ```ts
 import {
+  copy,
   writerFromStreamWriter,
-} from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
-import { copy } from "https://deno.land/std@$STD_VERSION/io/mod.ts";
+} from "https://deno.land/std@$STD_VERSION/io/mod.ts";
 const file = await Deno.open("./deno.land.html", { read: true });
 
 const writableStream = new WritableStream({

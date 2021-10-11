@@ -28,9 +28,11 @@ import nodeCrypto from "./crypto.ts";
 import nodeConsole from "./console.ts";
 import nodeConstants from "./constants.ts";
 import nodeChildProcess from "./child_process.ts";
+import nodeDns from "./dns.ts";
 import nodeEvents from "./events.ts";
 import nodeFS from "./fs.ts";
 import nodeFSPromises from "./fs/promises.ts";
+import nodeNet from "./net.ts";
 import nodeOs from "./os.ts";
 import nodePath from "./path.ts";
 import nodePerfHooks from "./perf_hooks.ts";
@@ -642,6 +644,7 @@ nativeModulePolyfill.set(
   createNativeModule("child_process", nodeChildProcess),
 );
 nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
+nativeModulePolyfill.set("dns", createNativeModule("dns", nodeDns));
 nativeModulePolyfill.set(
   "events",
   createNativeModule("events", nodeEvents),
@@ -652,6 +655,7 @@ nativeModulePolyfill.set(
   createNativeModule("fs/promises", nodeFSPromises),
 );
 nativeModulePolyfill.set("module", createNativeModule("module", Module));
+nativeModulePolyfill.set("net", createNativeModule("net", nodeNet));
 nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
 nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
 nativeModulePolyfill.set(

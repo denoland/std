@@ -21,11 +21,10 @@ function testInvalidArgs(...args) {
 // Input must be string or URL
 testInvalidArgs(null, undefined, 1, {}, true);
 
-// TODO(wafuwafu13): implement ERR_INVALID_URL_SCHEME
-// // Input must be a file URL
-// assert.throws(() => url.fileURLToPath('https://a/b/c'), {
-//   code: 'ERR_INVALID_URL_SCHEME'
-// });
+// Input must be a file URL
+assert.throws(() => url.fileURLToPath('https://a/b/c'), {
+  code: 'ERR_INVALID_URL_SCHEME'
+});
 
 {
   const withHost = new URL('file://host/a');
