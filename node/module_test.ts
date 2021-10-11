@@ -111,18 +111,18 @@ const SUPPORTED_NODE_MODULES = [
   "url",
   "util",
   // TODO(kt3k): add these modules when implemented
-  // require("cluster");
-  // require("dgram");
-  // require("http");
-  // require("http2");
-  // require("https");
-  // require("readline");
-  // require("repl");
-  // require("sys");
-  // require("tls");
-  // require("vm");
-  // require("worker_threads");
-  // require("zlib");
+  // "cluster",
+  // "dgram",
+  // "http",
+  // "http2",
+  // "https",
+  // "readline",
+  // "repl",
+  // "sys",
+  // "tls",
+  // "vm",
+  // "worker_threads",
+  // "zlib",
 ];
 
 Deno.test("requireNodeJsNativeModules", () => {
