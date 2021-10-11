@@ -9,6 +9,7 @@ import dns from "./dns.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
+import http from "./http.ts";
 import net from "./net.ts";
 import os from "./os.ts";
 import path from "./path.ts";
@@ -23,7 +24,6 @@ import util from "./util.ts";
 // TODO(kt3k): add these modules when implemented
 // import cluster from "./cluster.ts";
 // import dgram from "./dgram.ts";
-// import http from "./http.ts";
 // import http2 from "./http2.ts";
 // import https from "./https.ts";
 // import readline from "./readline.ts";
@@ -47,6 +47,7 @@ export default {
   events,
   fs,
   "fs/promises": fsPromises,
+  http,
   net,
   os,
   path,
