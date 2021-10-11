@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { LineStream, TextDelimiterStream } from "./delimiter.ts";
+import { LineStream, DelimiterStream } from "./delimiter.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 
 Deno.test("[streams] LineStream", async () => {
@@ -35,18 +35,22 @@ Deno.test("[streams] LineStream", async () => {
   assert(f.done);
 });
 
-Deno.test("[streams] TextDelimiterStream", async () => {
+Deno.test("[streams] DelimiterStream", async () => {
   const textStream = new ReadableStream({
     start(controller) {
       controller.enqueue("qwertzu");
       controller.enqueue("iopasdfoomnbvc");
       controller.enqueue("xylkjhfoogfdsapfoooiuzt");
-      controller.enqueue("rewq0987654321");
+      controller.enqueue("rewq098765432fo");
+      controller.enqueue("o349012i491290");
       controller.close();
     },
   });
 
-  const lines = textStream.pipeThrough(new TextDelimiterStream("foo"));
+  const lines = textStream
+    .pipeThrough(new TextEncoderStream())
+    .pipeThrough(new DelimiterStream(new TextEncoder().encode("foo")))
+    .pipeThrough(new TextDecoderStream());
   const reader = lines.getReader();
 
   const a = await reader.read();
@@ -56,7 +60,9 @@ Deno.test("[streams] TextDelimiterStream", async () => {
   const c = await reader.read();
   assertEquals(c.value, "gfdsap");
   const d = await reader.read();
-  assertEquals(d.value, "oiuztrewq0987654321");
+  assertEquals(d.value, "oiuztrewq098765432");
   const e = await reader.read();
-  assert(e.done);
+  assertEquals(e.value, "349012i491290");
+  const f = await reader.read();
+  assert(f.done);
 });
