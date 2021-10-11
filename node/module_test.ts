@@ -127,7 +127,7 @@ const SUPPORTED_NODE_MODULES = [
 
 Deno.test("requireNodeJsNativeModules", () => {
   // Checks these exist and don't throw.
-  for(const name of SUPPORTED_NODE_MODULES) {
+  for (const name of SUPPORTED_NODE_MODULES) {
     require(name);
   }
 });
