@@ -9,7 +9,7 @@ export {
   doesNotThrow,
   equal,
   fail,
-  // ifError,
+  ifError,
   match,
   notDeepEqual,
   notDeepStrictEqual,

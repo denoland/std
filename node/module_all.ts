@@ -1,3 +1,4 @@
+// Keep in sync with ./module_all_star.ts
 import assert from "./assert.ts";
 import assertStrict from "./assert/strict.ts";
 import buffer from "./buffer.ts";
@@ -37,7 +38,7 @@ import util from "./util.ts";
 // Canonical mapping of supported modules
 export default {
   assert,
-  "assert/string": assertStrict,
+  "assert/strict": assertStrict,
   buffer,
   crypto,
   console,

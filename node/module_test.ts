@@ -9,6 +9,7 @@ import {
 import * as path from "../path/mod.ts";
 import { createRequire } from "./module.ts";
 import nodeMods from "./module_all.ts";
+import nodeModsStar from "./module_all_star.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, path.join("_fs", "testdata"));
@@ -126,4 +127,30 @@ Deno.test("Require .mjs", () => {
     undefined,
     "Importing ESM module",
   );
+});
+
+Deno.test("default imports match star imports", () => {
+  const SKIP = new Set(["assert", "assert/strict", "console", "constants"]);
+
+  assertEquals(Object.keys(nodeMods), Object.keys(nodeModsStar));
+
+  for (const key of Object.keys(nodeMods)) {
+    if (SKIP.has(key)) {
+      continue;
+    }
+
+    const modA = nodeMods[key] as Record<string, unknown>;
+    const modB = nodeModsStar[key] as Record<string, unknown>;
+    const keysA = Object.keys(modA);
+    const keysB = Object.keys(modB).filter((k) => k !== "default");
+    keysA.sort();
+    keysB.sort();
+
+    console.log(`mod: ${key}`);
+    assertEquals(keysA, keysB);
+
+    for (const subkey of keysA) {
+      assertEquals(modA[subkey], modB[subkey]);
+    }
+  }
 });
