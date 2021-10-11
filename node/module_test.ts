@@ -86,30 +86,28 @@ Deno.test("requireModuleWithConditionalExports", () => {
   assert(typeof blue === "function");
 });
 
-Deno.test("requireNodeJsNativeModules", () => {
-  // Checks these exist and don't throw.
-  require("assert");
-  require("assert/strict");
-  require("buffer");
-  require("child_process");
-  require("console");
-  require("constants");
-  require("crypto");
-  require("events");
-  require("fs");
-  require("fs/promises");
-  require("module");
-  require("os");
-  require("path");
-  require("perf_hooks");
-  require("querystring");
-  require("stream");
-  require("string_decoder");
-  require("timers");
-  require("tty");
-  require("url");
-  require("util");
-
+const SUPPORTED_NODE_MODULES = [
+  "assert",
+  "assert/strict",
+  "buffer",
+  "child_process",
+  "console",
+  "constants",
+  "crypto",
+  "events",
+  "fs",
+  "fs/promises",
+  "module",
+  "os",
+  "path",
+  "perf_hooks",
+  "querystring",
+  "stream",
+  "string_decoder",
+  "timers",
+  "tty",
+  "url",
+  "util",
   // TODO(kt3k): add these modules when implemented
   // require("cluster");
   // require("dgram");
@@ -125,29 +123,19 @@ Deno.test("requireNodeJsNativeModules", () => {
   // require("vm");
   // require("worker_threads");
   // require("zlib");
+];
+
+Deno.test("requireNodeJsNativeModules", () => {
+  // Checks these exist and don't throw.
+  for(const name of SUPPORTED_NODE_MODULES) {
+    require(name);
+  }
 });
 
 Deno.test("native modules are extensible", () => {
   const randomKey = "random-key";
   const randomValue = "random-value";
-  const modNames = [
-    "assert",
-    "buffer",
-    "child_process",
-    "crypto",
-    "events",
-    "fs",
-    "module",
-    "os",
-    "path",
-    "querystring",
-    "stream",
-    "string_decoder",
-    "timers",
-    "url",
-    "util",
-  ];
-  for (const name of modNames) {
+  for (const name of SUPPORTED_NODE_MODULES) {
     const mod = require(name);
     Object.defineProperty(mod, randomKey, {
       value: randomValue,
