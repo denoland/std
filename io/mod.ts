@@ -8,4 +8,5 @@ export {
   readShort,
   sliceLongToBytes,
 } from "./util.ts";
+export * from "./streams.ts";
 export * from "./writers.ts";
