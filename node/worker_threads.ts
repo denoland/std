@@ -1,4 +1,5 @@
-/// <reference lib="deno.worker"/>
+/// <reference no-default-lib="true" />
+/// <reference lib="deno.worker" />
 
 import { resolve, toFileUrl } from "../path/mod.ts";
 import { notImplemented } from "./_utils.ts";
