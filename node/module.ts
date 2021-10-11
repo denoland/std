@@ -670,9 +670,13 @@ nativeModulePolyfill.set(
 );
 nativeModulePolyfill.set("console", createNativeModule("console", nodeConsole));
 nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
+<<<<<<< HEAD
 nativeModulePolyfill.set("dgram", createNativeModule("dgram", nodeDgram));
 nativeModulePolyfill.set("dns", createNativeModule("dns", nodeDns));
 nativeModulePolyfill.set("domain", createNativeModule("domain", nodeDomain));
+=======
+nativeModulePolyfill.set("dns", createNativeModule("dns", nodeDns));
+>>>>>>> main
 nativeModulePolyfill.set(
   "events",
   createNativeModule("events", nodeEvents),
@@ -686,6 +690,7 @@ nativeModulePolyfill.set("http", createNativeModule("http", nodeHttp));
 nativeModulePolyfill.set("https", createNativeModule("https", nodeHttps));
 nativeModulePolyfill.set("net", createNativeModule("net", nodeNet));
 nativeModulePolyfill.set("module", createNativeModule("module", Module));
+nativeModulePolyfill.set("net", createNativeModule("net", nodeNet));
 nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
 nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
 nativeModulePolyfill.set(
