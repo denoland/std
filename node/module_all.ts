@@ -17,7 +17,6 @@ import perfHooks from "./perf_hooks.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
 import stream from "./stream.ts";
-import streamPromises from "./stream/promises.ts";
 import stringDecoder from "./string_decoder.ts";
 import sys from "./sys.ts";
 import timers from "./timers.ts";
@@ -60,7 +59,6 @@ export default {
   process,
   querystring,
   stream,
-  "stream/promises": streamPromises,
   "string_decoder": stringDecoder,
   sys,
   timers,
