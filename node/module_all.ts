@@ -58,4 +58,4 @@ export default {
   tty,
   url,
   util,
-} as Record<string, any>;
+} as Record<string, unknown>;
