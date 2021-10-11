@@ -21,34 +21,7 @@
 
 import "./global.ts";
 
-import nodeAssert from "./assert.ts";
-import nodeAssertStrict from "./assert/strict.ts";
-import nodeBuffer from "./buffer.ts";
-import nodeChildProcess from "./child_process.ts";
-import nodeConsole from "./console.ts";
-import nodeConstants from "./constants.ts";
-import nodeCrypto from "./crypto.ts";
-import nodeDns from "./dns.ts";
-import nodeEvents from "./events.ts";
-import nodeFS from "./fs.ts";
-import nodeFSPromises from "./fs/promises.ts";
-import nodeHttp from "./http.ts";
-import nodeNet from "./net.ts";
-import nodeOs from "./os.ts";
-import nodePath from "./path.ts";
-import nodePerfHooks from "./perf_hooks.ts";
-import nodeProcess from "./process.ts";
-import nodeQueryString from "./querystring.ts";
-import nodeStream from "./stream.ts";
-import nodeStreamPromises from "./stream/promises.ts";
-import nodeStringDecoder from "./string_decoder.ts";
-import nodeSys from "./sys.ts";
-import nodeTimers from "./timers.ts";
-import nodeTimersPromises from "./timers/promises.ts";
-import nodeTty from "./tty.ts";
-import nodeUrl from "./url.ts";
-import nodeUtil from "./util.ts";
-import nodeUtilTypes from "./util/types.ts";
+import nodeMods from "./module_all.ts";
 
 import * as path from "../path/mod.ts";
 import { assert } from "../_util/assert.ts";
@@ -634,74 +607,10 @@ function createNativeModule(id: string, exports: any): Module {
   mod.loaded = true;
   return mod;
 }
-
-nativeModulePolyfill.set("assert", createNativeModule("assert", nodeAssert));
-nativeModulePolyfill.set(
-  "assert/strict",
-  createNativeModule("assert/strict", nodeAssertStrict),
-);
-nativeModulePolyfill.set("buffer", createNativeModule("buffer", nodeBuffer));
-nativeModulePolyfill.set(
-  "constants",
-  createNativeModule("constants", nodeConstants),
-);
-nativeModulePolyfill.set(
-  "child_process",
-  createNativeModule("child_process", nodeChildProcess),
-);
-nativeModulePolyfill.set("console", createNativeModule("console", nodeConsole));
-nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
-nativeModulePolyfill.set("dns", createNativeModule("dns", nodeDns));
-nativeModulePolyfill.set(
-  "events",
-  createNativeModule("events", nodeEvents),
-);
-nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
-nativeModulePolyfill.set(
-  "fs/promises",
-  createNativeModule("fs/promises", nodeFSPromises),
-);
-nativeModulePolyfill.set("http", createNativeModule("http", nodeHttp));
-nativeModulePolyfill.set("net", createNativeModule("net", nodeNet));
-nativeModulePolyfill.set("module", createNativeModule("module", Module));
-nativeModulePolyfill.set("net", createNativeModule("net", nodeNet));
-nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
-nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
-nativeModulePolyfill.set(
-  "perf_hooks",
-  createNativeModule("perf_hooks", nodePerfHooks),
-);
-nativeModulePolyfill.set("process", createNativeModule("process", nodeProcess));
-nativeModulePolyfill.set(
-  "querystring",
-  createNativeModule("querystring", nodeQueryString),
-);
-nativeModulePolyfill.set(
-  "stream",
-  createNativeModule("stream", nodeStream),
-);
-nativeModulePolyfill.set(
-  "stream/promises",
-  createNativeModule("stream/promises", nodeStreamPromises),
-);
-nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
-nativeModulePolyfill.set(
-  "string_decoder",
-  createNativeModule("string_decoder", nodeStringDecoder),
-);
-nativeModulePolyfill.set("sys", createNativeModule("sys", nodeSys));
-nativeModulePolyfill.set("timers", createNativeModule("timers", nodeTimers));
-nativeModulePolyfill.set(
-  "timers/promises",
-  createNativeModule("timers/promises", nodeTimersPromises),
-);
-nativeModulePolyfill.set("tty", createNativeModule("tty", nodeTty));
-nativeModulePolyfill.set("url", createNativeModule("url", nodeUrl));
-nativeModulePolyfill.set("util", createNativeModule("util", nodeUtil));
-nativeModulePolyfill.set(
-  "util/types",
-  createNativeModule("util/types", nodeUtilTypes),
-);
+// Set polyfills defined in ./module_all.ts
+for (const key of Object.keys(nodeMods)) {
+  nativeModulePolyfill.set(key, createNativeModule(key, nodeMods[key]));
+}
 
 function loadNativeModule(
   _filename: string,
