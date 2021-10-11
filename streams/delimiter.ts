@@ -75,14 +75,14 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
  * ```ts
- * import { TextDelimiterStream } from "./delimiter.ts";
+ * import { DelimiterStream } from "./delimiter.ts";
  * const res = await fetch("https://example.com");
- * const lines = res.body!
- *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new TextDelimiterStream("foo"));
+ * const parts = res.body!
+ *   .pipeThrough(new DelimiterStream(new TextEncoder().encode("foo"))
+ *   .pipeThrough(new TextDecoderStream()));
  * ```
  */
-export class TextDelimiterStream extends TransformStream<string, string> {
+export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
   #buf = "";
   #delimiter: string;
 
