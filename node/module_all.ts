@@ -25,7 +25,6 @@ import timersPromises from "./timers/promises.ts";
 import tty from "./tty.ts";
 import url from "./url.ts";
 import util from "./util.ts";
-import utilTypes from "./util/types.ts";
 
 // TODO(kt3k): add these modules when implemented
 // import cluster from "./cluster.ts";
@@ -69,5 +68,4 @@ export default {
   tty,
   url,
   util,
-  "util/types": utilTypes,
 } as Record<string, unknown>;
