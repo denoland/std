@@ -20,12 +20,11 @@ import {
   ServerRequest,
   serveTLS,
 } from "./server_legacy.ts";
-import { BufReader, BufWriter } from "../io/bufio.ts";
+import { Buffer, BufReader, BufWriter } from "../io/buffer.ts";
+import { readAll, writeAll } from "../io/streams.ts";
 import { delay } from "../async/delay.ts";
 import { mockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { Buffer } from "../io/buffer.ts";
-import { readAll, writeAll } from "../io/util.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -378,6 +377,7 @@ Deno.test("requestBodyReaderWithTransferEncoding", async function (): Promise<
 
 Deno.test({
   name: "destroyed connection",
+  ignore: Deno.build.os == "windows",
   fn: async () => {
     // Runs a simple server as another process
     const p = Deno.run({
@@ -405,7 +405,7 @@ Deno.test({
       const s = await r.readLine();
       assert(s !== null && s.includes("server listening"));
       await delay(100);
-      // Reqeusts to the server and immediately closes the connection
+      // Requests to the server and immediately closes the connection
       const conn = await Deno.connect({ port: 4502 });
       await conn.write(new TextEncoder().encode("GET / HTTP/1.0\n\n"));
       conn.close();
@@ -414,7 +414,7 @@ Deno.test({
       assert(serverIsRunning);
     } finally {
       // Stops the sever and allows `p.status()` promise to resolve
-      Deno.kill(p.pid, Deno.Signal.SIGKILL);
+      Deno.kill(p.pid, "SIGKILL");
       await statusPromise;
       p.stdout.close();
       p.close();
@@ -424,6 +424,7 @@ Deno.test({
 
 Deno.test({
   name: "serveTLS",
+  ignore: Deno.build.os == "windows",
   fn: async () => {
     // Runs a simple server as another process
     const p = Deno.run({
@@ -473,7 +474,7 @@ Deno.test({
       assert(serverIsRunning);
     } finally {
       // Stops the sever and allows `p.status()` promise to resolve
-      Deno.kill(p.pid, Deno.Signal.SIGKILL);
+      Deno.kill(p.pid, "SIGKILL");
       await statusPromise;
       p.stdout.close();
       p.close();
@@ -682,7 +683,7 @@ Deno.test({
         "",
       ].join("\r\n")),
     );
-    // After sending the two requests, don't receive the reponses.
+    // After sending the two requests, don't receive the responses.
 
     // Closing the connection now.
     conn.close();

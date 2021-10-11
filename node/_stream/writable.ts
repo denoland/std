@@ -28,7 +28,7 @@ import {
 } from "./writable_internal.ts";
 import type { Encodings } from "../_utils.ts";
 
-type WritableEncodings = Encodings | "buffer";
+export type WritableEncodings = Encodings | "buffer";
 
 export interface WritableOptions {
   autoDestroy?: boolean;
@@ -64,13 +64,15 @@ export class WritableState {
   allBuffers = true;
   allNoop = true;
   autoDestroy: boolean;
-  buffered: Array<{
-    allBuffers?: boolean;
-    // deno-lint-ignore no-explicit-any
-    chunk: any;
-    encoding: string;
-    callback: (error: Error) => void;
-  }> = [];
+  buffered: Array<
+    {
+      allBuffers?: boolean;
+      // deno-lint-ignore no-explicit-any
+      chunk: any;
+      encoding: string;
+      callback: (error: Error) => void;
+    } | null
+  > = [];
   bufferedIndex = 0;
   bufferProcessing = false;
   closed = false;
@@ -135,9 +137,8 @@ export class WritableState {
 }
 
 /** A bit simpler than readable streams.
-* Implement an async `._write(chunk, encoding, cb)`, and it'll handle all
-* the drain event emission and buffering.
-*/
+ * Implement an async `._write(chunk, encoding, cb)`, and it'll handle all
+ * the drain event emission and buffering. */
 class Writable extends Stream {
   _final?: (
     this: Writable,
@@ -232,11 +233,11 @@ class Writable extends Stream {
     w.closeEmitted = false;
     w.errored = null;
     w.errorEmitted = false;
-    w.ended = false;
-    w.ending = false;
     w.finalCalled = false;
     w.prefinished = false;
-    w.finished = false;
+    w.ended = w.writable === false;
+    w.ending = w.writable === false;
+    w.finished = w.writable === false;
   }
 
   _destroy(err: Error | null, cb: (error?: Error | null) => void) {

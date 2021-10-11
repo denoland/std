@@ -20,10 +20,16 @@ import {
   ERR_STREAM_PUSH_AFTER_EOF,
   ERR_STREAM_UNSHIFT_AFTER_END_EVENT,
 } from "../_errors.ts";
+import { debuglog } from "../_util/_debuglog.ts";
+
+let debug = debuglog("stream", (fn) => {
+  debug = fn;
+});
 
 export function endDuplex(stream: Duplex) {
   const state = stream._readableState;
 
+  debug("endReadable", state.endEmitted);
   if (!state.endEmitted) {
     state.ended = true;
     queueMicrotask(() => endReadableNT(state, stream));
@@ -31,6 +37,7 @@ export function endDuplex(stream: Duplex) {
 }
 
 function endReadableNT(state: ReadableState, stream: Duplex) {
+  debug("endReadableNT", state.endEmitted, state.length);
   // Check that we didn't get one last unshift.
   if (
     !state.errorEmitted && !state.closeEmitted &&
@@ -40,7 +47,7 @@ function endReadableNT(state: ReadableState, stream: Duplex) {
     stream.emit("end");
 
     if (stream.writable && stream.allowHalfOpen === false) {
-      queueMicrotask(() => endWritableNT(state, stream));
+      queueMicrotask(() => endWritableNT(stream));
     } else if (state.autoDestroy) {
       // In case of duplex streams we need a way to detect
       // if the writable side is ready for autoDestroy as well.
@@ -59,7 +66,7 @@ function endReadableNT(state: ReadableState, stream: Duplex) {
   }
 }
 
-function endWritableNT(_state: ReadableState, stream: Duplex) {
+function endWritableNT(stream: Duplex) {
   const writable = stream.writable &&
     !stream.writableEnded &&
     !stream.destroyed;
@@ -235,6 +242,7 @@ export function readableAddChunk(
   encoding: undefined | string = undefined,
   addToFront: boolean,
 ) {
+  debug("readableAddChunk", chunk);
   const state = stream._readableState;
   let usedEncoding = encoding;
 

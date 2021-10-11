@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { BufReader, BufWriter } from "../io/bufio.ts";
+import { BufReader, BufWriter } from "../io/buffer.ts";
 import { assert } from "../_util/assert.ts";
 import { Deferred, deferred, MuxAsyncIterator } from "../async/mod.ts";
 import {
@@ -61,7 +61,7 @@ export class ServerRequest {
    *
    * ```ts
    * import { ServerRequest } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
-   * import { readAll } from "https://deno.land/std@$STD_VERSION/io/util.ts";
+   * import { readAll } from "https://deno.land/std@$STD_VERSION/io/streams.ts";
    *
    * const req = new ServerRequest();
    * const buf = await readAll(req.body);
@@ -270,14 +270,16 @@ export class Server implements AsyncIterable<ServerRequest> {
 }
 
 /**
- * Options for creating an HTTP server.
- *
  * @deprecated
+ *
+ * Options for creating an HTTP server.
  */
 export type HTTPOptions = Omit<Deno.ListenOptions, "transport">;
 
 /**
- * Create a HTTP server
+ * @deprecated
+ *
+ * Create an HTTP server.
  *
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
@@ -288,8 +290,6 @@ export type HTTPOptions = Omit<Deno.ListenOptions, "transport">;
  *   req.respond({ body });
  * }
  * ```
- *
- * @deprecated
  */
 export function serve(addr: string | HTTPOptions): Server {
   if (typeof addr === "string") {
@@ -301,7 +301,9 @@ export function serve(addr: string | HTTPOptions): Server {
 }
 
 /**
- * Start an HTTP server with given options and request handler
+ * @deprecated
+ *
+ * Start an HTTP server with given options and request handler.
  *
  * ```ts
  * import { listenAndServe, ServerRequest } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
@@ -313,9 +315,8 @@ export function serve(addr: string | HTTPOptions): Server {
  * });
  * ```
  *
- * @param options Server configuration
- * @param handler Request handler
- * @deprecated
+ * @param options Server configuration.
+ * @param handler Request handler.
  */
 export async function listenAndServe(
   addr: string | HTTPOptions,
@@ -336,7 +337,9 @@ export async function listenAndServe(
 export type HTTPSOptions = Omit<Deno.ListenTlsOptions, "transport">;
 
 /**
- * Create an HTTPS server with given options
+ * @deprecated
+ *
+ * Create an HTTPS server with given options.
  *
  * ```ts
  * import { serveTLS } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
@@ -353,9 +356,8 @@ export type HTTPSOptions = Omit<Deno.ListenTlsOptions, "transport">;
  * }
  * ```
  *
- * @param options Server configuration
- * @return Async iterable server instance for incoming requests
- * @deprecated
+ * @param options Server configuration.
+ * @return Async iterable server instance for incoming requests.
  */
 export function serveTLS(options: HTTPSOptions): Server {
   const tlsOptions: Deno.ListenTlsOptions = {
@@ -367,7 +369,9 @@ export function serveTLS(options: HTTPSOptions): Server {
 }
 
 /**
- * Start an HTTPS server with given options and request handler
+ * @deprecated
+ *
+ * Start an HTTPS server with given options and request handler.
  *
  * ```ts
  * import { listenAndServeTLS } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
@@ -384,9 +388,8 @@ export function serveTLS(options: HTTPSOptions): Server {
  * });
  * ```
  *
- * @param options Server configuration
- * @param handler Request handler
- * @deprecated
+ * @param options Server configuration.
+ * @param handler Request handler.
  */
 export async function listenAndServeTLS(
   options: HTTPSOptions,
@@ -400,11 +403,11 @@ export async function listenAndServeTLS(
 }
 
 /**
+ * @deprecated
+ *
  * Interface of HTTP server response.
  * If body is a Reader, response would be chunked.
  * If body is a string, it would be UTF-8 encoded by default.
- *
- * @deprecated
  */
 export interface Response {
   status?: number;

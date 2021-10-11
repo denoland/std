@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Splits the given array into chunks of the given size and returns them
@@ -6,8 +7,8 @@
  * Example:
  *
  * ```ts
- * import { chunk } from "./chunk.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { chunk } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const words = [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consetetur', 'sadipscing' ]
  * const chunks = chunk(words, 3)
@@ -22,7 +23,7 @@
 export function chunk<T>(array: readonly T[], size: number): T[][] {
   if (size <= 0 || !Number.isInteger(size)) {
     throw new Error(
-      `Expected size to be an integer greather than 0 but found ${size}`,
+      `Expected size to be an integer greater than 0 but found ${size}`,
     );
   }
 

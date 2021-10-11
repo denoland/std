@@ -7,12 +7,16 @@ import { config, testList } from "./common.ts";
  * This script will run the test files specified in the configuration file
  *
  * Each test file will be run independently and wait until completion, if an abnormal
- * code for the test is reported, the test suite will fail inmediately
+ * code for the test is reported, the test suite will fail immediately
  */
+
+const onlyFlagTestList = config.tests.parallel.filter((filename) =>
+  filename.match("--only")
+).map((filename) => new RegExp(filename.replace(/ --only/, "")));
 
 const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
   includeDirs: false,
-  match: testList,
+  match: onlyFlagTestList.length ? onlyFlagTestList : testList,
 });
 
 const testsFolder = dirname(fromFileUrl(import.meta.url));

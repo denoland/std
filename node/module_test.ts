@@ -3,10 +3,12 @@ import {
   assert,
   assertEquals,
   assertStringIncludes,
+  assertThrows,
 } from "../testing/asserts.ts";
 
 import * as path from "../path/mod.ts";
 import { createRequire } from "./module.ts";
+import nodeMods from "./module_all.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, path.join("_fs", "testdata"));
@@ -85,68 +87,19 @@ Deno.test("requireModuleWithConditionalExports", () => {
   assert(typeof blue === "function");
 });
 
+const SUPPORTED_NODE_MODULES = Object.keys(nodeMods);
+
 Deno.test("requireNodeJsNativeModules", () => {
   // Checks these exist and don't throw.
-  require("assert");
-  require("assert/strict");
-  require("buffer");
-  require("child_process");
-  require("console");
-  require("constants");
-  require("crypto");
-  require("events");
-  require("fs");
-  require("fs/promises");
-  require("module");
-  require("os");
-  require("path");
-  require("perf_hooks");
-  require("querystring");
-  require("stream");
-  require("string_decoder");
-  require("timers");
-  require("tty");
-  require("url");
-  require("util");
-
-  // TODO(kt3k): add these modules when implemented
-  // require("cluster");
-  // require("dgram");
-  // require("dns");
-  // require("http");
-  // require("http2");
-  // require("https");
-  // require("net");
-  // require("readline");
-  // require("repl");
-  // require("sys");
-  // require("tls");
-  // require("vm");
-  // require("worker_threads");
-  // require("zlib");
+  for (const name of SUPPORTED_NODE_MODULES) {
+    require(name);
+  }
 });
 
 Deno.test("native modules are extensible", () => {
   const randomKey = "random-key";
   const randomValue = "random-value";
-  const modNames = [
-    "assert",
-    "buffer",
-    "child_process",
-    "crypto",
-    "events",
-    "fs",
-    "module",
-    "os",
-    "path",
-    "querystring",
-    "stream",
-    "string_decoder",
-    "timers",
-    "url",
-    "util",
-  ];
-  for (const name of modNames) {
+  for (const name of SUPPORTED_NODE_MODULES) {
     const mod = require(name);
     Object.defineProperty(mod, randomKey, {
       value: randomValue,
@@ -165,4 +118,12 @@ Deno.test("Require file with shebang", () => {
 Deno.test("EventEmitter is exported correctly", () => {
   const EventEmitter = require("events");
   assertEquals(EventEmitter, EventEmitter.EventEmitter);
+});
+
+Deno.test("Require .mjs", () => {
+  assertThrows(
+    () => require("./testdata/inspect.mjs"),
+    undefined,
+    "Importing ESM module",
+  );
 });

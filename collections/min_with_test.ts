@@ -69,3 +69,24 @@ Deno.test({
     minWithTest([["John", "Kim", "Kim"], (a, b) => a.length - b.length], "Kim");
   },
 });
+
+Deno.test({
+  name: "[collections/minWith] array containing undefined",
+  fn() {
+    minWithTest(
+      [
+        [undefined, undefined, 1],
+        (a, b) => {
+          if (a === undefined) {
+            return -1;
+          }
+          if (b === undefined) {
+            return 1;
+          }
+          return 0;
+        },
+      ],
+      undefined,
+    );
+  },
+});

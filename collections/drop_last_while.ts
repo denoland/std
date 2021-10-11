@@ -1,22 +1,24 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /**
  * Returns a new array that drops all elements in the given collection until the
  * last element that does not match the given predicate
  *
  * Example:
  * ```ts
- * import { dropLastWhile } from "./drop_last_while.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { dropLastWhile } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [22, 30, 44];
  *
- * const notFourtyFour = dropLastWhile(numbers, i => i != 44);
+ * const notFortyFour = dropLastWhile(numbers, i => i != 44);
  *
  * assertEquals(
- *   notFourtyFour,
+ *   notFortyFour,
  *   [22, 30]
  * );
  * ```
- *
  */
 export function dropLastWhile<T>(
   array: readonly T[],

@@ -1,4 +1,4 @@
-import { gunzip } from "https://deno.land/x/compress@v0.3.9/gzip/gzip.ts";
+import { gunzip } from "https://deno.land/x/denoflate@1.2.1/mod.ts";
 import { Untar } from "../../archive/tar.ts";
 import { walk } from "../../fs/walk.ts";
 import {
@@ -11,7 +11,7 @@ import {
 import { ensureFile } from "../../fs/ensure_file.ts";
 import { config, ignoreList } from "./common.ts";
 import { Buffer } from "../../io/buffer.ts";
-import { copy, readAll, writeAll } from "../../io/util.ts";
+import { copy, readAll, writeAll } from "../../io/streams.ts";
 
 /**
  * This script will download and extract the test files specified in the
@@ -44,9 +44,48 @@ const decompressedSourcePath = join(
   NODE_FILE.replaceAll("NODE_VERSION", config.nodeVersion),
 );
 
+function checkConfigTestFilesOrder() {
+  const parallelTests = config.tests.parallel;
+  const sortedParallelTests = JSON.parse(JSON.stringify(parallelTests));
+  sortedParallelTests.sort();
+  if (JSON.stringify(parallelTests) !== JSON.stringify(sortedParallelTests)) {
+    throw new Error(
+      "File names in `config.tests.parallel` are not correct order.",
+    );
+  }
+
+  const ignoreParallelTests = config.ignore.parallel;
+  const sortedIgnoreParallelTests = JSON.parse(
+    JSON.stringify(ignoreParallelTests),
+  );
+  sortedIgnoreParallelTests.sort();
+  if (
+    JSON.stringify(ignoreParallelTests) !==
+      JSON.stringify(sortedIgnoreParallelTests)
+  ) {
+    throw new Error(
+      "File names in `config.ignore.parallel` are not correct order.",
+    );
+  }
+
+  const ignoreCommonTests = config.ignore.common;
+  const sortedIgnoreCommonTests = JSON.parse(JSON.stringify(ignoreCommonTests));
+  sortedIgnoreCommonTests.sort();
+  if (
+    JSON.stringify(ignoreCommonTests) !==
+      JSON.stringify(sortedIgnoreCommonTests)
+  ) {
+    throw new Error(
+      "File names in `config.ignore.common` are not correct order.",
+    );
+  }
+}
+
+checkConfigTestFilesOrder();
+
 /**
  * This will overwrite the file if found
- * */
+ */
 async function downloadFile(url: string, path: string) {
   console.log(`Downloading: ${url}...`);
   const fileContent = await fetch(url)
@@ -173,7 +212,7 @@ async function copyTests(filePath: string): Promise<void> {
       { read: true },
     );
     // This will allow CI to pass without checking linting and formatting
-    // on the test suite files, removing the need to mantain that as well
+    // on the test suite files, removing the need to maintain that as well
     await writeAll(
       destFile,
       new TextEncoder().encode(

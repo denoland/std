@@ -57,6 +57,9 @@ class AsyncIterableClone<T> implements AsyncIterable<T> {
  *
  * Example:
  *
+ * ```ts
+ *     import { tee } from "./tee.ts";
+ *
  *     const gen = async function* gen() {
  *       yield 1;
  *       yield 2;
@@ -76,6 +79,7 @@ class AsyncIterableClone<T> implements AsyncIterable<T> {
  *         console.log(n); // => 1, 2, 3
  *       }
  *     })();
+ * ```
  */
 export function tee<T, N extends number = 2>(
   src: AsyncIterable<T>,

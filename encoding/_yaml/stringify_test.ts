@@ -79,20 +79,14 @@ undefined: !<tag:yaml.org,2002:js/undefined> ''
 });
 
 Deno.test({
-  name:
-    "`!!js/function` yaml type is correctly handled with extended schema while stringifying",
+  name: "`!!js/function` yaml with extended schema throws while stringifying",
   fn(): void {
     const func = function foobar() {
       return "hello world!";
     };
 
-    const expected = `function: !<tag:yaml.org,2002:js/function> |-
-${func.toString().split("\n").map((line) => `  ${line}`).join("\n")}
-`;
-
-    assertEquals(
-      stringify({ function: func }, { schema: EXTENDED_SCHEMA }),
-      expected,
+    assertThrows(
+      () => stringify({ function: func }, { schema: EXTENDED_SCHEMA }),
     );
   },
 });

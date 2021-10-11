@@ -1,9 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 import { Buffer } from "./buffer.ts";
-import { writeAll } from "./util.ts";
 
 const DEFAULT_CHUNK_SIZE = 16_640;
+const DEFAULT_BUFFER_SIZE = 32 * 1024;
 
 function isCloser(value: unknown): value is Deno.Closer {
   return typeof value === "object" && value != null && "close" in value &&
@@ -13,17 +13,24 @@ function isCloser(value: unknown): value is Deno.Closer {
 
 /** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
- *      // Server-sent events: Send runtime metrics to the client every second.
- *      request.respond({
- *        headers: new Headers({ "Content-Type": "text/event-stream" }),
- *        body: readerFromIterable((async function* () {
- *          while (true) {
- *            await new Promise((r) => setTimeout(r, 1000));
- *            const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
- *            yield new TextEncoder().encode(message);
- *          }
- *        })()),
- *      });
+ * ```ts
+ *      import { readerFromIterable } from "./streams.ts";
+ *      import { serve } from "../http/server_legacy.ts";
+ *
+ *      for await (const request of serve({ port: 8000 })) {
+ *        // Server-sent events: Send runtime metrics to the client every second.
+ *        request.respond({
+ *          headers: new Headers({ "Content-Type": "text/event-stream" }),
+ *          body: readerFromIterable((async function* () {
+ *            while (true) {
+ *              await new Promise((r) => setTimeout(r, 1000));
+ *              const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
+ *              yield new TextEncoder().encode(message);
+ *            }
+ *          })()),
+ *        });
+ *      }
+ * ```
  */
 export function readerFromIterable(
   iterable: Iterable<Uint8Array> | AsyncIterable<Uint8Array>,
@@ -58,7 +65,7 @@ export function readerFromIterable(
   };
 }
 
-/** Create a `Writer` from a `WritableStreamDefaultReader`. */
+/** Create a `Writer` from a `WritableStreamDefaultWriter`. */
 export function writerFromStreamWriter(
   streamWriter: WritableStreamDefaultWriter<Uint8Array>,
 ): Deno.Writer {
@@ -135,16 +142,40 @@ export function writableStreamFromWriter(
 
 /** Create a `ReadableStream` from any kind of iterable.
  *
+ * ```ts
+ *      import { readableStreamFromIterable } from "./streams.ts";
+ *
  *      const r1 = readableStreamFromIterable(["foo, bar, baz"]);
- *      const r2 = readableStreamFromIterable((async function* () {
+ *      const r2 = readableStreamFromIterable(async function* () {
  *        await new Promise(((r) => setTimeout(r, 1000)));
  *        yield "foo";
  *        await new Promise(((r) => setTimeout(r, 1000)));
  *        yield "bar";
  *        await new Promise(((r) => setTimeout(r, 1000)));
  *        yield "baz";
- *      })());
-*/
+ *      }());
+ * ```
+ *
+ * If the produced iterator (`iterable[Symbol.asyncIterator]()` or
+ * `iterable[Symbol.iterator]()`) is a generator, or more specifically is found
+ * to have a `.throw()` method on it, that will be called upon
+ * `readableStream.cancel()`. This is the case for the second input type above:
+ *
+ * ```ts
+ * import { readableStreamFromIterable } from "./streams.ts";
+ *
+ * const r3 = readableStreamFromIterable(async function* () {
+ *   try {
+ *     yield "foo";
+ *   } catch (error) {
+ *     console.log(error); // Error: Cancelled by consumer.
+ *   }
+ * }());
+ * const reader = r3.getReader();
+ * console.log(await reader.read()); // { value: "foo", done: false }
+ * await reader.cancel(new Error("Cancelled by consumer."));
+ * ```
+ */
 export function readableStreamFromIterable<T>(
   iterable: Iterable<T> | AsyncIterable<T>,
 ): ReadableStream<T> {
@@ -154,11 +185,17 @@ export function readableStreamFromIterable<T>(
   return new ReadableStream({
     async pull(controller) {
       const { value, done } = await iterator.next();
-
       if (done) {
         controller.close();
       } else {
         controller.enqueue(value);
+      }
+    },
+    async cancel(reason) {
+      if (typeof iterator.throw == "function") {
+        try {
+          await iterator.throw(reason);
+        } catch { /* `iterator.throw()` always throws on site. We catch it. */ }
       }
     },
   });
@@ -194,7 +231,6 @@ export interface ReadableStreamFromReaderOptions {
  * const file = await Deno.open("./file.txt", { read: true });
  * const fileStream = readableStreamFromReader(file);
  * ```
- *
  */
 export function readableStreamFromReader(
   reader: Deno.Reader | (Deno.Reader & Deno.Closer),
@@ -232,4 +268,266 @@ export function readableStreamFromReader(
       }
     },
   }, strategy);
+}
+
+/** Read Reader `r` until EOF (`null`) and resolve to the content as
+ * Uint8Array`.
+ *
+ * ```ts
+ * import { Buffer } from "./buffer.ts";
+ * import { readAll } from "./streams.ts";
+ *
+ * // Example from stdin
+ * const stdinContent = await readAll(Deno.stdin);
+ *
+ * // Example from file
+ * const file = await Deno.open("my_file.txt", {read: true});
+ * const myFileContent = await readAll(file);
+ * Deno.close(file.rid);
+ *
+ * // Example from buffer
+ * const myData = new Uint8Array(100);
+ * // ... fill myData array with data
+ * const reader = new Buffer(myData.buffer);
+ * const bufferContent = await readAll(reader);
+ * ```
+ */
+export async function readAll(r: Deno.Reader): Promise<Uint8Array> {
+  const buf = new Buffer();
+  await buf.readFrom(r);
+  return buf.bytes();
+}
+
+/** Synchronously reads Reader `r` until EOF (`null`) and returns the content
+ * as `Uint8Array`.
+ *
+ * ```ts
+ * import { Buffer } from "./buffer.ts";
+ * import { readAllSync } from "./streams.ts";
+ *
+ * // Example from stdin
+ * const stdinContent = readAllSync(Deno.stdin);
+ *
+ * // Example from file
+ * const file = Deno.openSync("my_file.txt", {read: true});
+ * const myFileContent = readAllSync(file);
+ * Deno.close(file.rid);
+ *
+ * // Example from buffer
+ * const myData = new Uint8Array(100);
+ * // ... fill myData array with data
+ * const reader = new Buffer(myData.buffer);
+ * const bufferContent = readAllSync(reader);
+ * ```
+ */
+export function readAllSync(r: Deno.ReaderSync): Uint8Array {
+  const buf = new Buffer();
+  buf.readFromSync(r);
+  return buf.bytes();
+}
+
+/** Write all the content of the array buffer (`arr`) to the writer (`w`).
+ *
+ * ```ts
+ * import { Buffer } from "./buffer.ts";
+ * import { writeAll } from "./streams.ts";
+
+ * // Example writing to stdout
+ * let contentBytes = new TextEncoder().encode("Hello World");
+ * await writeAll(Deno.stdout, contentBytes);
+ *
+ * // Example writing to file
+ * contentBytes = new TextEncoder().encode("Hello World");
+ * const file = await Deno.open('test.file', {write: true});
+ * await writeAll(file, contentBytes);
+ * Deno.close(file.rid);
+ *
+ * // Example writing to buffer
+ * contentBytes = new TextEncoder().encode("Hello World");
+ * const writer = new Buffer();
+ * await writeAll(writer, contentBytes);
+ * console.log(writer.bytes().length);  // 11
+ * ```
+ */
+export async function writeAll(w: Deno.Writer, arr: Uint8Array) {
+  let nwritten = 0;
+  while (nwritten < arr.length) {
+    nwritten += await w.write(arr.subarray(nwritten));
+  }
+}
+
+/** Synchronously write all the content of the array buffer (`arr`) to the
+ * writer (`w`).
+ *
+ * ```ts
+ * import { Buffer } from "./buffer.ts";
+ * import { writeAllSync } from "./streams.ts";
+ *
+ * // Example writing to stdout
+ * let contentBytes = new TextEncoder().encode("Hello World");
+ * writeAllSync(Deno.stdout, contentBytes);
+ *
+ * // Example writing to file
+ * contentBytes = new TextEncoder().encode("Hello World");
+ * const file = Deno.openSync('test.file', {write: true});
+ * writeAllSync(file, contentBytes);
+ * Deno.close(file.rid);
+ *
+ * // Example writing to buffer
+ * contentBytes = new TextEncoder().encode("Hello World");
+ * const writer = new Buffer();
+ * writeAllSync(writer, contentBytes);
+ * console.log(writer.bytes().length);  // 11
+ * ```
+ */
+export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array): void {
+  let nwritten = 0;
+  while (nwritten < arr.length) {
+    nwritten += w.writeSync(arr.subarray(nwritten));
+  }
+}
+
+/** Turns a Reader, `r`, into an async iterator.
+ *
+ * ```ts
+ * import { iterateReader } from "./streams.ts";
+ *
+ * let f = await Deno.open("/etc/passwd");
+ * for await (const chunk of iterateReader(f)) {
+ *   console.log(chunk);
+ * }
+ * f.close();
+ * ```
+ *
+ * Second argument can be used to tune size of a buffer.
+ * Default size of the buffer is 32kB.
+ *
+ * ```ts
+ * import { iterateReader } from "./streams.ts";
+ *
+ * let f = await Deno.open("/etc/passwd");
+ * const it = iterateReader(f, {
+ *   bufSize: 1024 * 1024
+ * });
+ * for await (const chunk of it) {
+ *   console.log(chunk);
+ * }
+ * f.close();
+ * ```
+ *
+ * Iterator uses an internal buffer of fixed size for efficiency; it returns
+ * a view on that buffer on each iteration. It is therefore caller's
+ * responsibility to copy contents of the buffer if needed; otherwise the
+ * next iteration will overwrite contents of previously returned chunk.
+ */
+export async function* iterateReader(
+  r: Deno.Reader,
+  options?: {
+    bufSize?: number;
+  },
+): AsyncIterableIterator<Uint8Array> {
+  const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
+  const b = new Uint8Array(bufSize);
+  while (true) {
+    const result = await r.read(b);
+    if (result === null) {
+      break;
+    }
+
+    yield b.subarray(0, result);
+  }
+}
+
+/** Turns a ReaderSync, `r`, into an iterator.
+ *
+ * ```ts
+ * import { iterateReaderSync } from "./streams.ts";
+ *
+ * let f = Deno.openSync("/etc/passwd");
+ * for (const chunk of iterateReaderSync(f)) {
+ *   console.log(chunk);
+ * }
+ * f.close();
+ * ```
+ *
+ * Second argument can be used to tune size of a buffer.
+ * Default size of the buffer is 32kB.
+ *
+ * ```ts
+ * import { iterateReaderSync } from "./streams.ts";
+
+ * let f = await Deno.open("/etc/passwd");
+ * const iter = iterateReaderSync(f, {
+ *   bufSize: 1024 * 1024
+ * });
+ * for (const chunk of iter) {
+ *   console.log(chunk);
+ * }
+ * f.close();
+ * ```
+ *
+ * Iterator uses an internal buffer of fixed size for efficiency; it returns
+ * a view on that buffer on each iteration. It is therefore caller's
+ * responsibility to copy contents of the buffer if needed; otherwise the
+ * next iteration will overwrite contents of previously returned chunk.
+ */
+export function* iterateReaderSync(
+  r: Deno.ReaderSync,
+  options?: {
+    bufSize?: number;
+  },
+): IterableIterator<Uint8Array> {
+  const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
+  const b = new Uint8Array(bufSize);
+  while (true) {
+    const result = r.readSync(b);
+    if (result === null) {
+      break;
+    }
+
+    yield b.subarray(0, result);
+  }
+}
+
+/** Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
+ * an error occurs. It resolves to the number of bytes copied or rejects with
+ * the first error encountered while copying.
+ *
+ * ```ts
+ * import { copy } from "./streams.ts";
+ *
+ * const source = await Deno.open("my_file.txt");
+ * const bytesCopied1 = await copy(source, Deno.stdout);
+ * const destination = await Deno.create("my_file_2.txt");
+ * const bytesCopied2 = await copy(source, destination);
+ * ```
+ *
+ * @param src The source to copy from
+ * @param dst The destination to copy to
+ * @param options Can be used to tune size of the buffer. Default size is 32kB
+ */
+export async function copy(
+  src: Deno.Reader,
+  dst: Deno.Writer,
+  options?: {
+    bufSize?: number;
+  },
+): Promise<number> {
+  let n = 0;
+  const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
+  const b = new Uint8Array(bufSize);
+  let gotEOF = false;
+  while (gotEOF === false) {
+    const result = await src.read(b);
+    if (result === null) {
+      gotEOF = true;
+    } else {
+      let nwritten = 0;
+      while (nwritten < result) {
+        nwritten += await dst.write(b.subarray(nwritten, result));
+      }
+      n += nwritten;
+    }
+  }
+  return n;
 }
