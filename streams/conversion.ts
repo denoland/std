@@ -274,8 +274,8 @@ export function readableStreamFromReader(
  * Uint8Array`.
  *
  * ```ts
- * import { Buffer } from "./buffer.ts";
- * import { readAll } from "./streams.ts";
+ * import { Buffer } from "../io/buffer.ts";
+ * import { readAll } from "./conversion.ts";
  *
  * // Example from stdin
  * const stdinContent = await readAll(Deno.stdin);
@@ -302,8 +302,8 @@ export async function readAll(r: Deno.Reader): Promise<Uint8Array> {
  * as `Uint8Array`.
  *
  * ```ts
- * import { Buffer } from "./buffer.ts";
- * import { readAllSync } from "./streams.ts";
+ * import { Buffer } from "../io/buffer.ts";
+ * import { readAllSync } from "./conversion.ts";
  *
  * // Example from stdin
  * const stdinContent = readAllSync(Deno.stdin);
@@ -329,8 +329,8 @@ export function readAllSync(r: Deno.ReaderSync): Uint8Array {
 /** Write all the content of the array buffer (`arr`) to the writer (`w`).
  *
  * ```ts
- * import { Buffer } from "./buffer.ts";
- * import { writeAll } from "./streams.ts";
+ * import { Buffer } from "../io/buffer.ts";
+ * import { writeAll } from "./conversion.ts";
 
  * // Example writing to stdout
  * let contentBytes = new TextEncoder().encode("Hello World");
@@ -360,8 +360,8 @@ export async function writeAll(w: Deno.Writer, arr: Uint8Array) {
  * writer (`w`).
  *
  * ```ts
- * import { Buffer } from "./buffer.ts";
- * import { writeAllSync } from "./streams.ts";
+ * import { Buffer } from "../io/buffer.ts";
+ * import { writeAllSync } from "./conversion.ts";
  *
  * // Example writing to stdout
  * let contentBytes = new TextEncoder().encode("Hello World");
@@ -390,7 +390,7 @@ export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array): void {
 /** Turns a Reader, `r`, into an async iterator.
  *
  * ```ts
- * import { iterateReader } from "./streams.ts";
+ * import { iterateReader } from "./conversion.ts";
  *
  * let f = await Deno.open("/etc/passwd");
  * for await (const chunk of iterateReader(f)) {
@@ -403,7 +403,7 @@ export function writeAllSync(w: Deno.WriterSync, arr: Uint8Array): void {
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { iterateReader } from "./streams.ts";
+ * import { iterateReader } from "./conversion.ts";
  *
  * let f = await Deno.open("/etc/passwd");
  * const it = iterateReader(f, {
@@ -441,7 +441,7 @@ export async function* iterateReader(
 /** Turns a ReaderSync, `r`, into an iterator.
  *
  * ```ts
- * import { iterateReaderSync } from "./streams.ts";
+ * import { iterateReaderSync } from "./conversion.ts";
  *
  * let f = Deno.openSync("/etc/passwd");
  * for (const chunk of iterateReaderSync(f)) {
@@ -454,7 +454,7 @@ export async function* iterateReader(
  * Default size of the buffer is 32kB.
  *
  * ```ts
- * import { iterateReaderSync } from "./streams.ts";
+ * import { iterateReaderSync } from "./conversion.ts";
 
  * let f = await Deno.open("/etc/passwd");
  * const iter = iterateReaderSync(f, {
@@ -494,7 +494,7 @@ export function* iterateReaderSync(
  * the first error encountered while copying.
  *
  * ```ts
- * import { copy } from "./streams.ts";
+ * import { copy } from "./conversion.ts";
  *
  * const source = await Deno.open("my_file.txt");
  * const bytesCopied1 = await copy(source, Deno.stdout);

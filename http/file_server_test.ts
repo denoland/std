@@ -5,7 +5,7 @@ import {
   assertStringIncludes,
 } from "../testing/asserts.ts";
 import { BufReader } from "../io/buffer.ts";
-import { iterateReader, readAll, writeAll } from "../io/streams.ts";
+import { iterateReader, readAll, writeAll } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { FileServerArgs } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";

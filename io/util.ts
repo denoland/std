@@ -2,7 +2,7 @@
 import { assert } from "../_util/assert.ts";
 import type { BufReader } from "./buffer.ts";
 import type { Reader, Writer } from "./types.d.ts";
-import * as streams from "./streams.ts";
+import * as streams from "../streams/conversion.ts";
 import * as files from "./files.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;

@@ -29,7 +29,7 @@
 import { MultiReader } from "../io/readers.ts";
 import { Buffer, PartialReadError } from "../io/buffer.ts";
 import { assert } from "../_util/assert.ts";
-import { readAll } from "../io/streams.ts";
+import { readAll } from "../streams/conversion.ts";
 
 type Reader = Deno.Reader;
 type Seeker = Deno.Seeker;

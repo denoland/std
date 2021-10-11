@@ -21,7 +21,7 @@ import {
   serveTLS,
 } from "./server_legacy.ts";
 import { Buffer, BufReader, BufWriter } from "../io/buffer.ts";
-import { readAll, writeAll } from "../io/streams.ts";
+import { readAll, writeAll } from "../streams/conversion.ts";
 import { delay } from "../async/delay.ts";
 import { mockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
