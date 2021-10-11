@@ -41,7 +41,6 @@ import nodeProcess from "./process.ts";
 import nodeQueryString from "./querystring.ts";
 import nodeStream from "./stream.ts";
 import nodeStreamPromises from "./stream/promises.ts";
-import nodeStreamWeb from "./stream/web.ts";
 import nodeStringDecoder from "./string_decoder.ts";
 import nodeSys from "./sys.ts";
 import nodeTimers from "./timers.ts";
@@ -684,10 +683,6 @@ nativeModulePolyfill.set(
 nativeModulePolyfill.set(
   "stream/promises",
   createNativeModule("stream/promises", nodeStreamPromises),
-);
-nativeModulePolyfill.set(
-  "stream/web",
-  createNativeModule("stream/web", nodeStreamWeb),
 );
 nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
 nativeModulePolyfill.set(
