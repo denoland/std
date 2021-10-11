@@ -37,7 +37,7 @@ import util from "./util.ts";
 // Canonical mapping of supported modules
 export default {
   assert,
-  "assert/string": assertStrict,
+  "assert/strict": assertStrict,
   buffer,
   crypto,
   console,
