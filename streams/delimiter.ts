@@ -14,6 +14,7 @@ const LF = "\n".charCodeAt(0);
  */
 export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
   #bufs: Uint8Array[] = [];
+  #prevHadCR = false;
 
   constructor() {
     super({
@@ -21,7 +22,7 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
         this.#handle(chunk, controller);
       },
       flush: (controller) => {
-        controller.enqueue(this.#mergeBufs());
+        controller.enqueue(this.#mergeBufs(false));
       },
     });
   }
@@ -31,7 +32,21 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
     controller: TransformStreamDefaultController<Uint8Array>,
   ) {
     const lfIndex = chunk.indexOf(LF);
+
+    if (this.#prevHadCR) {
+      this.#prevHadCR = false;
+      if (lfIndex === 0) {
+        controller.enqueue(this.#mergeBufs(true));
+        this.#bufs = [];
+        this.#handle(chunk.subarray(1), controller);
+        return;
+      }
+    }
+
     if (lfIndex === -1) {
+      if (chunk.at(-1) === CR) {
+        this.#prevHadCR = true;
+      }
       this.#bufs.push(chunk);
     } else {
       let crOrLfIndex = lfIndex;
@@ -39,13 +54,13 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
         crOrLfIndex--;
       }
       this.#bufs.push(chunk.subarray(0, crOrLfIndex));
-      controller.enqueue(this.#mergeBufs());
+      controller.enqueue(this.#mergeBufs(false));
       this.#bufs = [];
       this.#handle(chunk.subarray(lfIndex + 1), controller);
     }
   }
 
-  #mergeBufs(): Uint8Array {
+  #mergeBufs(prevHadCR: boolean): Uint8Array {
     const mergeBuf = new Uint8Array(
       this.#bufs.reduce((acc, buf) => acc + buf.length, 0),
     );
@@ -54,7 +69,11 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
       mergeBuf.set(buf, offset);
       offset += buf.length;
     }
-    return mergeBuf;
+    if (prevHadCR) {
+      return mergeBuf.subarray(0, -1);
+    } else {
+      return mergeBuf;
+    }
   }
 }
 

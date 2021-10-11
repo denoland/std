@@ -9,7 +9,8 @@ Deno.test("[streams] LineStream", async () => {
       controller.enqueue("qwertzu");
       controller.enqueue("iopasd\r\nmnbvc");
       controller.enqueue("xylk\njhgfds\napoiuzt");
-      controller.enqueue("rewq0987654321");
+      controller.enqueue("qwr09eiqwrjiowqr\r");
+      controller.enqueue("\nrewq0987654321");
       controller.close();
     },
   });
@@ -27,9 +28,11 @@ Deno.test("[streams] LineStream", async () => {
   const c = await reader.read();
   assertEquals(c.value, "jhgfds");
   const d = await reader.read();
-  assertEquals(d.value, "apoiuztrewq0987654321");
+  assertEquals(d.value, "apoiuztqwr09eiqwrjiowqr");
   const e = await reader.read();
-  assert(e.done);
+  assertEquals(e.value, "rewq0987654321");
+  const f = await reader.read();
+  assert(f.done);
 });
 
 Deno.test("[streams] TextDelimiterStream", async () => {
