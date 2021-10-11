@@ -8,6 +8,7 @@ import {
 
 import * as path from "../path/mod.ts";
 import { createRequire } from "./module.ts";
+import nodeMods from "./module_all.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, path.join("_fs", "testdata"));
@@ -86,44 +87,7 @@ Deno.test("requireModuleWithConditionalExports", () => {
   assert(typeof blue === "function");
 });
 
-const SUPPORTED_NODE_MODULES = [
-  "assert",
-  "assert/strict",
-  "buffer",
-  "child_process",
-  "console",
-  "constants",
-  "crypto",
-  "dns",
-  "events",
-  "fs",
-  "fs/promises",
-  "module",
-  "net",
-  "os",
-  "path",
-  "perf_hooks",
-  "querystring",
-  "stream",
-  "string_decoder",
-  "timers",
-  "tty",
-  "url",
-  "util",
-  // TODO(kt3k): add these modules when implemented
-  // "cluster",
-  // "dgram",
-  // "http",
-  // "http2",
-  // "https",
-  // "readline",
-  // "repl",
-  // "sys",
-  // "tls",
-  // "vm",
-  // "worker_threads",
-  // "zlib",
-];
+const SUPPORTED_NODE_MODULES = Object.keys(nodeMods);
 
 Deno.test("requireNodeJsNativeModules", () => {
   // Checks these exist and don't throw.
