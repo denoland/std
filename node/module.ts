@@ -608,7 +608,7 @@ function createNativeModule(id: string, exports: any): Module {
   return mod;
 }
 // Set polyfills defined in ./module_all.ts
-for (const key of nodeMods) {
+for (const key of Object.keys(nodeMods)) {
   nativeModulePolyfill.set(key, createNativeModule(key, nodeMods[key]));
 }
 
