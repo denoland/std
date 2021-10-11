@@ -652,7 +652,7 @@ Deno.test("bufioReadLineBadResource", async () => {
   }, Deno.errors.BadResource);
 });
 
-Deno.test("bufioReadLineFullError", async () => {
+Deno.test("bufioReadLineBufferFullError", async () => {
   const input = "@".repeat(5000) + "\n";
   const bufReader = new BufReader(new StringReader(input));
   const r = await bufReader.readLine();
