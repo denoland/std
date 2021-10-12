@@ -186,7 +186,7 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
         } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
           return stdCrypto.subtle.digestSync(
             algorithm,
-            data as Iterable<BufferSource>
+            data as Iterable<BufferSource>,
           );
         } else if (
           (data as AsyncIterable<BufferSource>)[Symbol.asyncIterator]
@@ -202,7 +202,7 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
           return context.digestAndDrop(length);
         } else {
           throw new TypeError(
-            "data must be a BufferSource or [Async]Iterable<BufferSource>"
+            "data must be a BufferSource or [Async]Iterable<BufferSource>",
           );
         }
       } else if (webCrypto.subtle?.digest) {
@@ -212,7 +212,7 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
         // they're using.
         return webCrypto.subtle.digest(
           algorithm,
-          (data as unknown) as Uint8Array
+          (data as unknown) as Uint8Array,
         );
       } else {
         throw new TypeError(`unsupported digest algorithm: ${algorithm}`);
