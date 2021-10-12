@@ -37,7 +37,7 @@ Deno.test({
         utimes("some/path", Infinity, 0, (_err: Error | null) => {});
       },
       Error,
-      "invalid atime, must not be infitiny or NaN",
+      "invalid atime, must not be infinity or NaN",
     );
   },
 });
@@ -50,7 +50,7 @@ Deno.test({
         utimes("some/path", "some string", 0, (_err: Error | null) => {});
       },
       Error,
-      "invalid atime, must not be infitiny or NaN",
+      "invalid atime, must not be infinity or NaN",
     );
   },
 });
@@ -80,7 +80,7 @@ Deno.test({
         utimesSync("some/path", "some string", 0);
       },
       Error,
-      "invalid atime, must not be infitiny or NaN",
+      "invalid atime, must not be infinity or NaN",
     );
   },
 });
@@ -93,7 +93,7 @@ Deno.test({
         utimesSync("some/path", Infinity, 0);
       },
       Error,
-      "invalid atime, must not be infitiny or NaN",
+      "invalid atime, must not be infinity or NaN",
     );
   },
 });

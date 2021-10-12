@@ -1,7 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { hasOwnProperty } from "../_util/has_own_property.ts";
-import { BufReader, BufWriter } from "../io/bufio.ts";
-import { readLong, readShort, sliceLongToBytes } from "../io/ioutil.ts";
+import { BufReader, BufWriter } from "../io/buffer.ts";
+import { readLong, readShort, sliceLongToBytes } from "../io/util.ts";
 import { crypto } from "../crypto/mod.ts";
 import * as base64 from "../encoding/base64.ts";
 
@@ -11,6 +10,8 @@ import { Deferred, deferred } from "../async/deferred.ts";
 import { assert } from "../_util/assert.ts";
 import { concat } from "../bytes/mod.ts";
 
+const { hasOwn } = Object;
+/** @deprecated use Deno.upgradeWebSocket */
 export enum OpCode {
   Continue = 0x0,
   TextFrame = 0x1,
@@ -20,6 +21,7 @@ export enum OpCode {
   Pong = 0xa,
 }
 
+/** @deprecated use Deno.upgradeWebSocket */
 export type WebSocketEvent =
   | string
   | Uint8Array
@@ -27,38 +29,50 @@ export type WebSocketEvent =
   | WebSocketPingEvent // Received after pong frame responded.
   | WebSocketPongEvent;
 
+/** @deprecated use Deno.upgradeWebSocket */
 export interface WebSocketCloseEvent {
   code: number;
   reason?: string;
 }
 
-/** Returns true if input value is a WebSocketCloseEvent, false otherwise. */
+/** @deprecated use Deno.upgradeWebSocket
+ * Returns true if input value is a WebSocketCloseEvent, false otherwise.
+ */
 export function isWebSocketCloseEvent(
   a: WebSocketEvent,
 ): a is WebSocketCloseEvent {
-  return hasOwnProperty(a, "code");
+  // deno-lint-ignore ban-types
+  return hasOwn(a as object, "code");
 }
 
+/** @deprecated use Deno.upgradeWebSocket */
 export type WebSocketPingEvent = ["ping", Uint8Array];
 
-/** Returns true if input value is a WebSocketPingEvent, false otherwise. */
+/** @deprecated use Deno.upgradeWebSocket
+ * Returns true if input value is a WebSocketPingEvent, false otherwise.
+ */
 export function isWebSocketPingEvent(
   a: WebSocketEvent,
 ): a is WebSocketPingEvent {
   return Array.isArray(a) && a[0] === "ping" && a[1] instanceof Uint8Array;
 }
 
+/** @deprecated use Deno.upgradeWebSocket */
 export type WebSocketPongEvent = ["pong", Uint8Array];
 
-/** Returns true if input value is a WebSocketPongEvent, false otherwise. */
+/** @deprecated use Deno.upgradeWebSocket
+ * Returns true if input value is a WebSocketPongEvent, false otherwise.
+ */
 export function isWebSocketPongEvent(
   a: WebSocketEvent,
 ): a is WebSocketPongEvent {
   return Array.isArray(a) && a[0] === "pong" && a[1] instanceof Uint8Array;
 }
 
+/** @deprecated use Deno.upgradeWebSocket */
 export type WebSocketMessage = string | Uint8Array;
 
+/** @deprecated use Deno.upgradeWebSocket */
 export interface WebSocketFrame {
   isLastFrame: boolean;
   opcode: OpCode;
@@ -66,6 +80,7 @@ export interface WebSocketFrame {
   payload: Uint8Array;
 }
 
+/** @deprecated use Deno.upgradeWebSocket */
 export interface WebSocket extends AsyncIterable<WebSocketEvent> {
   readonly conn: Deno.Conn;
   readonly isClosed: boolean;
@@ -97,7 +112,9 @@ export interface WebSocket extends AsyncIterable<WebSocketEvent> {
   closeForce(): void;
 }
 
-/** Unmask masked websocket payload */
+/** @deprecated use Deno.upgradeWebSocket
+ * Unmask masked websocket payload
+ */
 export function unmask(payload: Uint8Array, mask?: Uint8Array): void {
   if (mask) {
     for (let i = 0, len = payload.length; i < len; i++) {
@@ -106,7 +123,10 @@ export function unmask(payload: Uint8Array, mask?: Uint8Array): void {
   }
 }
 
-/** Write WebSocket frame to inputted writer. */
+/**
+ * @deprecated use Deno.upgradeWebSocket
+ * Write WebSocket frame to inputted writer.
+ */
 export async function writeFrame(
   frame: WebSocketFrame,
   writer: Deno.Writer,
@@ -145,7 +165,8 @@ export async function writeFrame(
   await w.flush();
 }
 
-/** Read websocket frame from given BufReader
+/** @deprecated use Deno.upgradeWebSocket
+ * Read websocket frame from given BufReader
  * @throws `Deno.errors.UnexpectedEof` When peer closed connection without close frame
  * @throws `Error` Frame is invalid
  */
@@ -394,7 +415,9 @@ class WebSocketImpl implements WebSocket {
   }
 }
 
-/** Returns true if input headers are usable for WebSocket, otherwise false.  */
+/** @deprecated use Deno.upgradeWebSocket
+ * Returns true if input headers are usable for WebSocket, otherwise false.
+ */
 export function acceptable(req: { headers: Headers }): boolean {
   const upgrade = req.headers.get("upgrade");
   if (!upgrade || upgrade.toLowerCase() !== "websocket") {
@@ -410,14 +433,18 @@ export function acceptable(req: { headers: Headers }): boolean {
 
 const kGUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
-/** Create value of Sec-WebSocket-Accept header from inputted nonce. */
+/** @deprecated use Deno.upgradeWebSocket
+ * Create value of Sec-WebSocket-Accept header from inputted nonce.
+ */
 export function createSecAccept(nonce: string): string {
   return base64.encode(
     crypto.subtle.digestSync("SHA-1", new TextEncoder().encode(nonce + kGUID)),
   );
 }
 
-/** Upgrade inputted TCP connection into WebSocket connection. */
+/** @deprecated use Deno.upgradeWebSocket
+ * Upgrade inputted TCP connection into WebSocket connection.
+ */
 export async function acceptWebSocket(req: {
   conn: Deno.Conn;
   bufWriter: BufWriter;
@@ -456,7 +483,9 @@ export async function acceptWebSocket(req: {
 
 const kSecChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.~_";
 
-/** Returns base64 encoded 16 bytes string for Sec-WebSocket-Key header. */
+/** @deprecated use Deno.upgradeWebSocket
+ * Returns base64 encoded 16 bytes string for Sec-WebSocket-Key header.
+ */
 export function createSecKey(): string {
   let key = "";
   for (let i = 0; i < 16; i++) {
@@ -466,6 +495,7 @@ export function createSecKey(): string {
   return btoa(key);
 }
 
+/** @deprecated use Deno.upgradeWebSocket */
 export async function handshake(
   url: URL,
   headers: Headers,
@@ -526,6 +556,7 @@ export async function handshake(
   }
 }
 
+/** @deprecated use Deno.upgradeWebSocket */
 export function createWebSocket(params: {
   conn: Deno.Conn;
   bufWriter?: BufWriter;

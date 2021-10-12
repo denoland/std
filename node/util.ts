@@ -153,6 +153,73 @@ function circularRemover(): (key: string, value: unknown) => unknown {
   };
 }
 
+<<<<<<< HEAD
+=======
+function formatString(str: string, insideArrayOrObject = false) {
+  if (insideArrayOrObject) {
+    return `'${str.replace(/\\/, "\\\\").replace(/"/g, '\\"')}'`;
+  }
+  return `${str.replace(/\\/, "\\\\").replace(/"/g, '\\"')}`;
+}
+
+function thingToString(
+  thing: unknown,
+  maxDepth?: number,
+  depth = 1,
+  insideArrayOrObject = false,
+): string {
+  let result = "";
+  if (typeof thing === "bigint") {
+    return thing + "n";
+  }
+  if (
+    typeof thing === "undefined" || typeof thing === "number" ||
+    typeof thing === "boolean" || typeof thing === "symbol" || thing === null
+  ) {
+    return String(thing);
+  }
+  if (typeof thing === "function") {
+    return `[Function ${thing.name || "(anonymous)"}]`;
+  }
+  if (typeof thing === "string") {
+    return formatString(thing, insideArrayOrObject);
+  }
+  if (Array.isArray(thing)) {
+    if (depth === maxDepth) {
+      return "[Array]";
+    }
+    result += "[";
+    const en = Object.entries(thing);
+    for (let i = 0; i < en.length; i++) {
+      const [key, value] = en[i];
+      if (isNaN(Number(key))) {
+        result += `${key}: `;
+      }
+      result += thingToString(value, maxDepth, depth + 1, true);
+      if (i !== en.length - 1) {
+        result += ", ";
+      }
+    }
+    result += "]";
+    return result;
+  }
+  if (depth === maxDepth) {
+    return "[Object]";
+  }
+  const en = Object.entries(thing as Record<string, unknown>);
+  result += "{ ";
+  for (let i = 0; i < en.length; i++) {
+    const [key, value] = en[i];
+    result += `${key}: ${thingToString(value, maxDepth, depth + 1, true)}`;
+    if (i !== en.length - 1) {
+      result += ", ";
+    }
+  }
+  result += " }";
+  return result;
+}
+
+>>>>>>> cf15c5d56822badd33e3e88bc458ac2b2f236adf
 function toReplace(specifier: string, value: unknown): string {
   if (specifier === "%s") {
     if (typeof value === "string" || value instanceof String) {

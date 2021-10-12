@@ -126,7 +126,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/mapKeys] normal mapppers",
+  name: "[collections/mapKeys] normal mappers",
   fn() {
     mapKeysTest(
       [
