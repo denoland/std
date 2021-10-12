@@ -9,7 +9,7 @@ import {
 } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { readAll, writeAll } from "../io/streams.ts";
+import { readAll, writeAll } from "../streams/conversion.ts";
 import { deferred, delay } from "../async/mod.ts";
 import {
   assert,

@@ -11,7 +11,7 @@ import {
 import { ensureFile } from "../../fs/ensure_file.ts";
 import { config, ignoreList } from "./common.ts";
 import { Buffer } from "../../io/buffer.ts";
-import { copy, readAll, writeAll } from "../../io/streams.ts";
+import { copy, readAll, writeAll } from "../../streams/conversion.ts";
 
 /**
  * This script will download and extract the test files specified in the
