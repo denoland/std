@@ -29,86 +29,67 @@
 'use strict';
 require('../common');
 const assert = require('assert');
+
 const net = require('net');
 
-let exchanges = 0;
-let starttime = null;
-let timeouttime = null;
-const timeout = 1000;
+const N = 50;
+let client_recv_count = 0;
+let client_end_count = 0;
+let disconnect_count = 0;
 
-const echo_server = net.createServer((socket) => {
-  socket.setTimeout(timeout);
+const server = net.createServer(function(socket) {
+  console.error('SERVER: got socket connection');
+  socket.resume();
 
-  socket.on('timeout', () => {
-    console.log('server timeout');
-    timeouttime = new Date();
-    console.dir(timeouttime);
-    socket.destroy();
-  });
-
-  socket.on('error', (e) => {
-    throw new Error(
-      'Server side socket should not get error. We disconnect willingly.');
-  });
-
-  socket.on('data', (d) => {
-    socket.write(d);
-  });
+  console.error('SERVER connect, writing');
+  socket.write('hello\r\n');
 
   socket.on('end', () => {
+    console.error('SERVER socket end, calling end()');
     socket.end();
+  });
+
+  socket.on('close', (had_error) => {
+    console.log(`SERVER had_error: ${JSON.stringify(had_error)}`);
+    assert.strictEqual(had_error, false);
   });
 });
 
-echo_server.listen(0, () => {
-  const port = echo_server.address().port;
-  console.log(`server listening at ${port}`);
+server.listen(0, function() {
+  console.log('SERVER listening');
+  const client = net.createConnection(this.address().port);
 
-  const client = net.createConnection(port);
   client.setEncoding('UTF8');
-  client.setTimeout(0); // Disable the timeout for client
+
   client.on('connect', () => {
-    console.log('client connected.');
-    client.write('hello\r\n');
+    console.error('CLIENT connected', client._writableState);
   });
 
-  client.on('data', (chunk) => {
+  client.on('data', function(chunk) {
+    client_recv_count += 1;
+    console.log(`client_recv_count ${client_recv_count}`);
     assert.strictEqual(chunk, 'hello\r\n');
-    if (exchanges++ < 5) {
-      setTimeout(() => {
-        console.log('client write "hello"');
-        client.write('hello\r\n');
-      }, 500);
-
-      if (exchanges === 5) {
-        console.log(`wait for timeout - should come in ${timeout} ms`);
-        starttime = new Date();
-        console.dir(starttime);
-      }
-    }
-  });
-
-  client.on('timeout', () => {
-    throw new Error("client timeout - this shouldn't happen");
-  });
-
-  client.on('end', () => {
-    console.log('client end');
+    console.error('CLIENT: calling end', client._writableState);
     client.end();
   });
 
-  client.on('close', () => {
-    console.log('client disconnect');
-    echo_server.close();
+  client.on('end', () => {
+    console.error('CLIENT end');
+    client_end_count++;
+  });
+
+  client.on('close', (had_error) => {
+    console.log('CLIENT disconnect');
+    assert.strictEqual(had_error, false);
+    if (disconnect_count++ < N)
+      client.connect(server.address().port); // reconnect
+    else
+      server.close();
   });
 });
 
 process.on('exit', () => {
-  assert.ok(starttime != null);
-  assert.ok(timeouttime != null);
-
-  const diff = timeouttime - starttime;
-  console.log(`diff = ${diff}`);
-
-  assert.ok(timeout < diff);
+  assert.strictEqual(disconnect_count, N + 1);
+  assert.strictEqual(client_recv_count, N + 1);
+  assert.strictEqual(client_end_count, N + 1);
 });

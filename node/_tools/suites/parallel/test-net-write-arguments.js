@@ -9,7 +9,7 @@
 const common = require('../common');
 const net = require('net');
 const assert = require('assert');
-const socket = new net.Stream({ highWaterMark: 0 });
+const socket = net.Stream({ highWaterMark: 0 });
 
 // Make sure that anything besides a buffer or a string throws.
 socket.on('error', common.mustNotCall());
@@ -30,9 +30,9 @@ assert.throws(() => {
   +Infinity,
   -Infinity,
   [],
-  {},
+  {}
 ].forEach((value) => {
-  const socket = new net.Stream({ highWaterMark: 0 });
+  const socket = net.Stream({ highWaterMark: 0 });
   // We need to check the callback since 'error' will only
   // be emitted once per instance.
   assert.throws(() => {
