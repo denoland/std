@@ -1,23 +1,21 @@
 ### 0.111.0 / 2021.10.12
 
 - BREAKING(fs): deprecate exists and existsSync (#1364)
+- BREAKING(hash): deprecate std/hash (#1350)
 - BREAKING(io): reorganize modules (#813)
 - feat: streams utilities (#1141)
-- feat(node): update built-in modules in node/module.ts (#1378)
-- feat(node): first iteration of http (#1383)
 - feat(node): Add dns and net modules (#1375)
-- feat(node/crypto): add randomInt (#1356)
+- feat(node): first iteration of http (#1383)
+- feat(node): update built-in modules in node/module.ts (#1378)
 - feat(node/crypto): add randomFillSync an randomFill (#1340)
-- fix(async/delay): reject if signal is already aborted (#1363)
+- feat(node/crypto): add randomInt (#1356)
 - feat(node/http): Export STATUS_CODES and METHODS (#1357)
 - feat(node/url): add support for UNC path (#1365)
+- fix(async/delay): reject if signal is already aborted (#1363)
+- fix(encoding/base64url): allow passing strings to `encode` (#1361)
 - fix(node): typo from #1380 (#1381)
 - fix(node/url): improve compatibility of fileURLToPath (#1342)
-- fix(encoding/base64url): allow passing strings to `encode` (#1361)
 - perf(bytes): switch equals to simd for large byte arrays (#1349)
-- docs(node/url): add jsdoc for pathToFileURL (#1374)
-- docs(testing): add test examples using sinon and chai (#1334)
-- chore: deprecate std/hash (#1350)
 
 ### 0.110.0 / 2021.10.04
 
