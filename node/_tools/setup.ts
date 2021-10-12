@@ -123,7 +123,7 @@ async function clearTests() {
   console.log("Cleaning up previous tests");
 
   const files = walk(
-    (fromFileUrl(new URL(config.suitesFolder, import.meta.url))),
+    fromFileUrl(new URL(config.suitesFolder, import.meta.url)),
     {
       includeDirs: false,
       skip: ignoreList,

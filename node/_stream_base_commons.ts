@@ -237,7 +237,7 @@ export function onStreamRead(
     const userBuf = stream[kBuffer];
 
     if (userBuf) {
-      result = (stream[kBufferCb](nread, userBuf) !== false);
+      result = stream[kBufferCb](nread, userBuf) !== false;
       const bufGen = stream[kBufferGen];
 
       if (bufGen !== null) {
