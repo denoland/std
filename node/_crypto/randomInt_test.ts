@@ -12,9 +12,12 @@ Deno.test("[node/crypto.randomInt] Two Params: Max and Min", () => {
 });
 
 Deno.test("[node/crypto.randomInt] Max and Callback", () => {
+  let called = false;
   randomInt(3, (_err, val) => {
+    called = true;
     assert(between(val as number, 0, 3));
   });
+  assert(called);
 });
 
 Deno.test("[node/crypto.randomInt] Min, Max and Callback", () => {
