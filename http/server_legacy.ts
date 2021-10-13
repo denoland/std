@@ -61,7 +61,7 @@ export class ServerRequest {
    *
    * ```ts
    * import { ServerRequest } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
-   * import { readAll } from "https://deno.land/std@$STD_VERSION/io/streams.ts";
+   * import { readAll } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
    *
    * const req = new ServerRequest();
    * const buf = await readAll(req.body);

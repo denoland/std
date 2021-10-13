@@ -199,7 +199,7 @@ export function isTypedArray(value: unknown): boolean {
   return _isObjectLike(value) && reTypedTag.test(_toString.call(value));
 }
 
-export function isUint8Array(value: unknown): boolean {
+export function isUint8Array(value: unknown): value is Uint8Array {
   return (
     _isObjectLike(value) && _toString.call(value) === "[object Uint8Array]"
   );

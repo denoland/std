@@ -16,7 +16,7 @@ import {
 } from "./_io.ts";
 import { Buffer, BufReader, ReadLineResult } from "../io/buffer.ts";
 import { StringReader } from "../io/readers.ts";
-import { readAll } from "../io/streams.ts";
+import { readAll } from "../streams/conversion.ts";
 import { mockConn } from "./_mock_conn.ts";
 import { Response, ServerRequest } from "./server_legacy.ts";
 

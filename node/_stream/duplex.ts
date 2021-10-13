@@ -3,6 +3,7 @@ import { captureRejectionSymbol } from "../events.ts";
 import Readable, { ReadableState } from "./readable.ts";
 import Stream from "./stream.ts";
 import Writable, { WritableState } from "./writable.ts";
+import type { WritableEncodings } from "./writable.ts";
 import { Buffer } from "../buffer.ts";
 import {
   ERR_STREAM_ALREADY_FINISHED,
@@ -28,7 +29,13 @@ import {
   onwrite,
   readableAddChunk,
 } from "./duplex_internal.ts";
+import { debuglog } from "../_util/_debuglog.ts";
+
 export { errorOrDestroy } from "./duplex_internal.ts";
+
+let debug = debuglog("stream", (fn) => {
+  debug = fn;
+});
 
 export interface DuplexOptions {
   allowHalfOpen?: boolean;
@@ -80,33 +87,6 @@ class Duplex extends Stream {
 
   constructor(options?: DuplexOptions) {
     super();
-
-    if (options) {
-      if (options.allowHalfOpen === false) {
-        this.allowHalfOpen = false;
-      }
-      if (typeof options.destroy === "function") {
-        this._destroy = options.destroy;
-      }
-      if (typeof options.final === "function") {
-        this._final = options.final;
-      }
-      if (typeof options.read === "function") {
-        this._read = options.read;
-      }
-      if (options.readable === false) {
-        this.readable = false;
-      }
-      if (options.writable === false) {
-        this.writable = false;
-      }
-      if (typeof options.write === "function") {
-        this._write = options.write;
-      }
-      if (typeof options.writev === "function") {
-        this._writev = options.writev;
-      }
-    }
 
     const readableOptions = {
       autoDestroy: options?.autoDestroy,
@@ -162,6 +142,40 @@ class Duplex extends Stream {
     //Very important to override onwrite here, duplex implementation adds a check
     //on the readable side
     this._writableState.onwrite = onwrite.bind(undefined, this);
+
+    if (options) {
+      if (options.allowHalfOpen === false) {
+        this.allowHalfOpen = false;
+      }
+      if (typeof options.destroy === "function") {
+        this._destroy = options.destroy;
+      }
+      if (typeof options.final === "function") {
+        this._final = options.final;
+      }
+      if (typeof options.read === "function") {
+        this._read = options.read;
+      }
+      if (options.readable === false) {
+        this.readable = false;
+        this._readableState.readable = false;
+        this._readableState.ended = true;
+        this._readableState.endEmitted = true;
+      }
+      if (options.writable === false) {
+        this.writable = false;
+        this._writableState.writable = false;
+        this._writableState.ending = true;
+        this._writableState.ended = true;
+        this._writableState.finished = true;
+      }
+      if (typeof options.write === "function") {
+        this._write = options.write;
+      }
+      if (typeof options.writev === "function") {
+        this._writev = options.writev;
+      }
+    }
   }
 
   [captureRejectionSymbol](err?: Error) {
@@ -179,9 +193,16 @@ class Duplex extends Stream {
     callback(error);
   }
 
-  _read = Readable.prototype._read;
+  _read(size?: number) {
+    return Readable.prototype._read.call(this, size);
+  }
 
-  _undestroy = Readable.prototype._undestroy;
+  _undestroy() {
+    Writable.prototype._undestroy.call(this);
+    Readable.prototype._undestroy.call(this);
+
+    return;
+  }
 
   destroy(err?: Error | null, cb?: (error?: Error | null) => void) {
     const r = this._readableState;
@@ -265,7 +286,9 @@ class Duplex extends Stream {
     return this;
   }
 
-  isPaused = Readable.prototype.isPaused;
+  isPaused() {
+    return Readable.prototype.isPaused.call(this);
+  }
 
   off = this.removeListener;
 
@@ -313,9 +336,15 @@ class Duplex extends Stream {
     return res;
   }
 
-  pause = Readable.prototype.pause as () => this;
+  pause(): this {
+    return Readable.prototype.pause.call(this) as this;
+  }
 
-  pipe = Readable.prototype.pipe;
+  pipe<T extends Duplex | Writable>(dest: T, pipeOpts?: { end?: boolean }): T {
+    // deno-lint-ignore ban-ts-comment
+    // @ts-ignore
+    return Readable.prototype.pipe.call(this, dest, pipeOpts);
+  }
 
   // deno-lint-ignore no-explicit-any
   push(chunk: any, encoding?: Encodings): boolean {
@@ -324,6 +353,7 @@ class Duplex extends Stream {
 
   /** You can override either this method, or the async `_read` method */
   read(n?: number) {
+    debug("read", n);
     // Same as parseInt(undefined, 10), however V8 7.3 performance regressed
     // in this scenario, so we are doing it manually.
     if (n === undefined) {
@@ -348,6 +378,7 @@ class Duplex extends Stream {
         : state.length > 0) ||
         state.ended)
     ) {
+      debug("read: emitReadable", state.length, state.ended);
       if (state.length === 0 && state.ended) {
         endDuplex(this);
       } else {
@@ -366,10 +397,13 @@ class Duplex extends Stream {
     }
 
     let doRead = state.needReadable;
+    debug("need readable", doRead);
+
     if (
       state.length === 0 || state.length - (n as number) < state.highWaterMark
     ) {
       doRead = true;
+      debug("length less than watermark", doRead);
     }
 
     if (
@@ -377,13 +411,15 @@ class Duplex extends Stream {
       !state.constructed
     ) {
       doRead = false;
+      debug("reading, ended or constructing", doRead);
     } else if (doRead) {
+      debug("do read");
       state.reading = true;
       state.sync = true;
       if (state.length === 0) {
         state.needReadable = true;
       }
-      this._read();
+      this._read(state.highWaterMark);
       state.sync = false;
       if (!state.reading) {
         n = howMuchToRead(nOrig, state);
@@ -392,7 +428,7 @@ class Duplex extends Stream {
 
     let ret;
     if ((n as number) > 0) {
-      ret = fromList((n as number), state);
+      ret = fromList(n as number, state);
     } else {
       ret = null;
     }
@@ -419,7 +455,8 @@ class Duplex extends Stream {
       }
     }
 
-    if (ret !== null) {
+    if (ret !== null && !state.errorEmitted && !state.closeEmitted) {
+      state.dataEmitted = true;
       this.emit("data", ret);
     }
 
@@ -478,24 +515,34 @@ class Duplex extends Stream {
     return res;
   }
 
-  resume = Readable.prototype.resume as () => this;
+  resume(): this {
+    return Readable.prototype.resume.call(this) as this;
+  }
 
-  setEncoding = Readable.prototype.setEncoding as (enc: string) => this;
+  setEncoding(enc: Encodings): this {
+    return Readable.prototype.setEncoding.call(this, enc) as this;
+  }
 
   // deno-lint-ignore no-explicit-any
   unshift(chunk: any, encoding?: Encodings): boolean {
     return readableAddChunk(this, chunk, encoding, true);
   }
 
-  unpipe = Readable.prototype.unpipe as (dest?: Writable | undefined) => this;
+  unpipe(dest?: Writable): this {
+    return Readable.prototype.unpipe.call(this, dest) as this;
+  }
 
-  wrap = Readable.prototype.wrap as (stream: Stream) => this;
+  wrap(stream: Stream): this {
+    return Readable.prototype.wrap.call(this, stream) as this;
+  }
 
   get readable(): boolean {
-    return this._readableState?.readable &&
-      !this._readableState?.destroyed &&
-      !this._readableState?.errorEmitted &&
-      !this._readableState?.endEmitted;
+    const r = this._readableState;
+
+    return !!r && r.readable &&
+      !r.destroyed &&
+      !r.errorEmitted &&
+      !r.endEmitted;
   }
   set readable(val: boolean) {
     if (this._readableState) {
@@ -537,13 +584,32 @@ class Duplex extends Stream {
     return this._readableState ? this._readableState.endEmitted : false;
   }
 
-  _write = Writable.prototype._write;
+  _write(
+    // deno-lint-ignore no-explicit-any
+    chunk: any,
+    encoding: string,
+    cb: (error?: Error | null) => void,
+  ): void {
+    return Writable.prototype._write.call(this, chunk, encoding, cb);
+  }
 
-  write = Writable.prototype.write;
+  write(
+    // deno-lint-ignore no-explicit-any
+    chunk: any,
+    x?: WritableEncodings | null | ((error: Error | null | undefined) => void),
+    y?: ((error: Error | null | undefined) => void),
+  ) {
+    // deno-lint-ignore no-explicit-any
+    return Writable.prototype.write.call(this, chunk, x as any, y);
+  }
 
-  cork = Writable.prototype.cork;
+  cork() {
+    return Writable.prototype.cork.call(this);
+  }
 
-  uncork = Writable.prototype.uncork;
+  uncork() {
+    return Writable.prototype.uncork.call(this);
+  }
 
   setDefaultEncoding(encoding: string) {
     // node::ParseEncoding() requires lower case.
@@ -601,6 +667,7 @@ class Duplex extends Stream {
     let err: Error | undefined;
     if (!state.errored && !state.ending) {
       state.ending = true;
+      debug("** Writable.end calling finishMaybe", state);
       finishMaybe(this, state, true);
       state.ended = true;
     } else if (state.finished) {
@@ -641,7 +708,8 @@ class Duplex extends Stream {
 
   get writable() {
     const w = this._writableState;
-    return !w.destroyed && !w.errored && !w.ending && !w.ended;
+    return !!w && w.writable !== false && !w.destroyed && !w.errored &&
+      !w.ending && !w.ended;
   }
 
   set writable(val) {

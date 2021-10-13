@@ -11,7 +11,7 @@ import {
 import { ensureFile } from "../../fs/ensure_file.ts";
 import { config, ignoreList } from "./common.ts";
 import { Buffer } from "../../io/buffer.ts";
-import { copy, readAll, writeAll } from "../../io/streams.ts";
+import { copy, readAll, writeAll } from "../../streams/conversion.ts";
 
 /**
  * This script will download and extract the test files specified in the
@@ -123,7 +123,7 @@ async function clearTests() {
   console.log("Cleaning up previous tests");
 
   const files = walk(
-    (fromFileUrl(new URL(config.suitesFolder, import.meta.url))),
+    fromFileUrl(new URL(config.suitesFolder, import.meta.url)),
     {
       includeDirs: false,
       skip: ignoreList,

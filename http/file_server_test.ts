@@ -5,7 +5,7 @@ import {
   assertStringIncludes,
 } from "../testing/asserts.ts";
 import { BufReader } from "../io/buffer.ts";
-import { iterateReader, readAll, writeAll } from "../io/streams.ts";
+import { iterateReader, readAll, writeAll } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { FileServerArgs } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
@@ -475,7 +475,7 @@ Deno.test("file_server do not show dotfiles", async function () {
     assert(!(await res.text()).includes(".dotfile"));
 
     res = await fetch("http://localhost:4507/testdata/.dotfile");
-    assertEquals((await res.text()), "dotfile");
+    assertEquals(await res.text(), "dotfile");
   } finally {
     await killFileServer();
   }
