@@ -44,44 +44,28 @@ const decompressedSourcePath = join(
   NODE_FILE.replaceAll("NODE_VERSION", config.nodeVersion),
 );
 
-function checkConfigTestFilesOrder() {
-  const parallelTests = config.tests.parallel;
-  const sortedParallelTests = JSON.parse(JSON.stringify(parallelTests));
-  sortedParallelTests.sort();
-  if (JSON.stringify(parallelTests) !== JSON.stringify(sortedParallelTests)) {
-    throw new Error(
-      "File names in `config.tests.parallel` are not correct order.",
-    );
-  }
-
-  const ignoreParallelTests = config.ignore.parallel;
-  const sortedIgnoreParallelTests = JSON.parse(
-    JSON.stringify(ignoreParallelTests),
-  );
-  sortedIgnoreParallelTests.sort();
-  if (
-    JSON.stringify(ignoreParallelTests) !==
-      JSON.stringify(sortedIgnoreParallelTests)
-  ) {
-    throw new Error(
-      "File names in `config.ignore.parallel` are not correct order.",
-    );
-  }
-
-  const ignoreCommonTests = config.ignore.common;
-  const sortedIgnoreCommonTests = JSON.parse(JSON.stringify(ignoreCommonTests));
-  sortedIgnoreCommonTests.sort();
-  if (
-    JSON.stringify(ignoreCommonTests) !==
-      JSON.stringify(sortedIgnoreCommonTests)
-  ) {
-    throw new Error(
-      "File names in `config.ignore.common` are not correct order.",
-    );
+function checkConfigTestFilesOrder(testFileLists: Array<string[]>) {
+  for (const testFileList of testFileLists) {
+    const sortedTestList = JSON.parse(JSON.stringify(testFileList));
+    sortedTestList.sort();
+    if (JSON.stringify(testFileList) !== JSON.stringify(sortedTestList)) {
+      throw new Error(
+        `File names in \`config.json\` are not correct order.`,
+      );
+    }
   }
 }
 
-checkConfigTestFilesOrder();
+checkConfigTestFilesOrder([
+  config.ignore.internet,
+  config.ignore.parallel,
+  config.ignore.pummel,
+  config.ignore.sequential,
+  config.tests.internet,
+  config.tests.parallel,
+  config.tests.pummel,
+  config.tests.sequential,
+]);
 
 /**
  * This will overwrite the file if found
