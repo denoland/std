@@ -617,6 +617,66 @@ function gotUnwantedException(
   }
 }
 
+/**
+ * Throws `value` if the value is not `null` or `undefined`.
+ *
+ * @param err
+ */
+// deno-lint-ignore no-explicit-any
+function ifError(err: any) {
+  if (err !== null && err !== undefined) {
+    let message = "ifError got unwanted exception: ";
+
+    if (typeof err === "object" && typeof err.message === "string") {
+      if (err.message.length === 0 && err.constructor) {
+        message += err.constructor.name;
+      } else {
+        message += err.message;
+      }
+    } else {
+      message += inspect(err);
+    }
+
+    const newErr = new AssertionError({
+      actual: err,
+      expected: null,
+      operator: "ifError",
+      message,
+      stackStartFn: ifError,
+    });
+
+    // Make sure we actually have a stack trace!
+    const origStack = err.stack;
+
+    if (typeof origStack === "string") {
+      // This will remove any duplicated frames from the error frames taken
+      // from within `ifError` and add the original error frames to the newly
+      // created ones.
+      const tmp2 = origStack.split("\n");
+      tmp2.shift();
+
+      // Filter all frames existing in err.stack.
+      let tmp1 = newErr!.stack?.split("\n");
+
+      for (const errFrame of tmp2) {
+        // Find the first occurrence of the frame.
+        const pos = tmp1?.indexOf(errFrame);
+
+        if (pos !== -1) {
+          // Only keep new frames.
+          tmp1 = tmp1?.slice(0, pos);
+
+          break;
+        }
+      }
+
+      newErr.stack = `${tmp1?.join("\n")}\n${tmp2.join("\n")}`;
+    }
+
+    throw newErr;
+  }
+}
+
 interface ValidateThrownErrorOptions {
   operator: Function;
   validationFunctionName?: string;
@@ -795,6 +855,7 @@ Object.assign(strict, {
   doesNotThrow,
   equal: strictEqual,
   fail,
+  ifError,
   match,
   notDeepEqual: notDeepStrictEqual,
   notDeepStrictEqual,
@@ -816,6 +877,7 @@ export default Object.assign(assert, {
   doesNotThrow,
   equal,
   fail,
+  ifError,
   match,
   notDeepEqual,
   notDeepStrictEqual,
@@ -837,6 +899,7 @@ export {
   doesNotThrow,
   equal,
   fail,
+  ifError,
   match,
   notDeepEqual,
   notDeepStrictEqual,

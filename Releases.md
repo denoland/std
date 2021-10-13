@@ -1,14 +1,95 @@
+### 0.111.0 / 2021.10.12
+
+- BREAKING(fs): deprecate exists and existsSync (#1364)
+- BREAKING(hash): deprecate std/hash (#1350)
+- BREAKING(io): reorganize modules (#813)
+- feat: streams utilities (#1141)
+- feat(node): Add dns and net modules (#1375)
+- feat(node): first iteration of http (#1383)
+- feat(node): update built-in modules in node/module.ts (#1378)
+- feat(node/crypto): add randomFillSync an randomFill (#1340)
+- feat(node/crypto): add randomInt (#1356)
+- feat(node/http): Export STATUS_CODES and METHODS (#1357)
+- feat(node/url): add support for UNC path (#1365)
+- fix(async/delay): reject if signal is already aborted (#1363)
+- fix(encoding/base64url): allow passing strings to `encode` (#1361)
+- fix(node): typo from #1380 (#1381)
+- fix(node/url): improve compatibility of fileURLToPath (#1342)
+- perf(bytes): switch equals to simd for large byte arrays (#1349)
+
+### 0.110.0 / 2021.10.04
+
+- feat(node): add missing modules (#1337)
+- feat(node): support `Buffer.readUIntLE` (#1326)
+- feat(node/buffer): support `Buffer.readUIntBE` (#1321)
+- feat(node/crypto): add `scrypt` and `scryptSync` (#1329)
+- feat(node/crypto): add `timingSafeEqual` (#1333)
+- feat(node/stream/web): export more APIs (#1338)
+- feat(std/node): add back os.tmpdir() implementation (#1308)
+- feat(std/node/crypto): Add `crypto.randomUUID` (#1332)
+
+### 0.109.0 / 2021.09.28
+
+- feat(std/node/stream): add partial support for `stream/web` (#1297)
+- fix(node/_tools): use denoflate to decompress Node test folder (#1299)
+- fix(node/events): make `EventEmitter.call` compatible with es5 (#1315)
+- fix(std/node/module): treat .mjs files as ESM (#1301)
+- perf(crypto): reduce one mircotask (#1307)
+
+### 0.108.0 / 2021.09.21
+
+- fix: use `strict-ts44.tsconfig.json` on release tests (#1278)
+- fix(collections): improve handling of arrays containing undefined (#1282)
+- feat(testing/asserts): add `assertThrows()` overload to receive error (#1219)
+- feat(std/node): add `ParsedUrlQuery` to `querystring` (#1229)
+- feat(collections): use function overloading (#1286)
+- chore(node/events): remove unnecessary `@ts-ignore` comments (#1280)
+- docs(collections): add browser-compatibility comment (#1285)
+- docs(encoding): add hex docs (#1287)
+- docs(collections): replace console.assert with assertEquals (#1293)
+
+### 0.107.0 / 2021.09.14
+
+- BREAKING(http): cookie headers as params (#1041)
+- feat(collection): add findSingle (#1166)
+- feat(collections): Add `associatewith` (#1213)
+- feat(collections): add `runningReduce` (#1226)
+- feat(collections): add `sample` API (#1212)
+- feat(collections): add dropWhile (#1185)
+- feat(collections): add maxWith (#1170)
+- feat(collections): add minWith (#1169)
+- feat(collections): add reduceGroups (#1187)
+- feat(collections): add slidingWindows (#1191)
+- feat(io/streams): propagate cancel in readableStreamFromIterable() (#1274)
+- fix(collections/includesValue): prevent enumerable prototype check (#1225)
+- fix(testing/asserts): export Constructor type (#1208)
+- fix(tests/yaml): expect !!js/function parse/stringify to throw (#1276)
+- fix: update to latest signal API changes
+- security(encoding/yaml): disable functions (#1275)
+
+### 0.106.0 / 2021.08.23
+
+- feat(async): add abort signal to delay (#1130)
+- feat(collection): find_last_index to return undefined on no index found
+  (#1072)
+- feat(node/buffer): add missing exports (#1140)
+- feat(node/buffer): export atob and btoa (#1147)
+- fix(node/perf-hooks): add PerformanceEntry to default export (#1152)
+- fix(testing): `assertEquals` now considers constructors equal if one is
+  nullable and the other is Object (#1159)
+- perf(collections): permutations optimisation (#1132)
+
 ### 0.105.0 / 2021.08.16
 
-- refactor(bytes): rename `contains` to `includes` with optional argument
-  `fromIndex` (#1133)
-- fix(crypto): make crypto bench depend on sibling version of testing module
-  (#1135)
-- fix(collections): intersect does not handle duplicate values in head properly
-  (#1131)
 - docs(collections): fix typo in collections docs (#1127)
 - feat(collections): compile time guarantee on pure functions (#1119)
 - fix: type check examples in README files (#1121)
+- fix(collections): intersect does not handle duplicate values in head properly
+  (#1131)
+- fix(crypto): make crypto bench depend on sibling version of testing module
+  (#1135)
+- refactor(bytes): rename `contains` to `includes` with optional argument
+  `fromIndex` (#1133)
 
 ### 0.104.0 / 2021.08.10
 

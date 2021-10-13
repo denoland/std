@@ -1,11 +1,16 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { notImplemented } from "./_utils.ts";
-import EventEmitter from "./events.ts";
+import { EventEmitter } from "./events.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
+import { Readable, Writable } from "./stream.ts";
+import { Buffer } from "./buffer.ts";
+import { validateString } from "./_validators.ts";
+import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { getOptionValue } from "./_options.ts";
+import { assert } from "../_util/assert.ts";
 
-const customInspect = Symbol.for("Deno.customInspect");
 const notImplementedEvents = [
   "beforeExit",
   "disconnect",
@@ -33,17 +38,9 @@ export const arch = Deno.build.arch;
 // They will be overwritten by the below Object.defineProperty calls.
 const argv = ["", "", ...Deno.args];
 // Overwrites the 1st item with getter.
-Object.defineProperty(argv, "0", {
-  get() {
-    return Deno.execPath();
-  },
-});
-// Overwrites the 2nd item with getter.
-Object.defineProperty(argv, "1", {
-  get() {
-    return fromFileUrl(Deno.mainModule);
-  },
-});
+Object.defineProperty(argv, "0", { get: Deno.execPath });
+// Overwrites the 2st item with getter.
+Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
 
 /** https://nodejs.org/api/process.html#process_process_chdir_directory */
 export const chdir = Deno.chdir;
@@ -51,37 +48,16 @@ export const chdir = Deno.chdir;
 /** https://nodejs.org/api/process.html#process_process_cwd */
 export const cwd = Deno.cwd;
 
-//deno-lint-ignore ban-ts-comment
-//@ts-ignore
-const _env: {
-  [customInspect]: () => string;
-} = {};
-
-Object.defineProperty(_env, customInspect, {
-  enumerable: false,
-  configurable: true,
-  get: function () {
-    return Deno.env.toObject();
-  },
-});
-
 /**
  * https://nodejs.org/api/process.html#process_process_env
  * Requires env permissions
- * */
-export const env: Record<string, string> = new Proxy(_env, {
-  get(target, prop) {
-    if (prop === customInspect) {
-      return target[customInspect];
-    }
+ */
+export const env: Record<string, string> = new Proxy({}, {
+  get(_target, prop) {
     return Deno.env.get(String(prop));
   },
-  ownKeys() {
-    return Reflect.ownKeys(Deno.env.toObject());
-  },
-  getOwnPropertyDescriptor() {
-    return { enumerable: true, configurable: true };
-  },
+  ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
+  getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }),
   set(_target, prop, value) {
     Deno.env.set(String(prop), String(value));
     return value;
@@ -125,11 +101,216 @@ export const versions = {
   ...Deno.version,
 };
 
+interface _Readable extends Readable {
+  get isTTY(): true | undefined;
+  destroySoon: Readable["destroy"];
+  fd: number;
+  _isStdio: undefined;
+}
+
+interface _Writable extends Writable {
+  get isTTY(): true | undefined;
+  get columns(): number | undefined;
+  get rows(): number | undefined;
+  getWindowSize(): [columns: number, rows: number] | undefined;
+  destroySoon: Writable["destroy"];
+  fd: number;
+  _isStdio: true;
+}
+
+// https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
+function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
+  const stream = new Writable({
+    write(buf: Uint8Array, enc: string, cb) {
+      writer.writeSync(buf instanceof Uint8Array ? buf : Buffer.from(buf, enc));
+      cb();
+    },
+    destroy(err, cb) {
+      cb(err);
+      this._undestroy();
+      if (!this._writableState.emitClose) {
+        queueMicrotask(() => this.emit("close"));
+      }
+    },
+  }) as _Writable;
+  stream.fd = writer.rid;
+  stream.destroySoon = stream.destroy;
+  stream._isStdio = true;
+  stream.once("close", () => writer.close());
+  Object.defineProperties(stream, {
+    columns: {
+      enumerable: true,
+      configurable: true,
+      get: () =>
+        Deno.isatty(writer.rid)
+          ? Deno.consoleSize(writer.rid).columns
+          : undefined,
+    },
+    rows: {
+      enumerable: true,
+      configurable: true,
+      get: () =>
+        Deno.isatty(writer.rid) ? Deno.consoleSize(writer.rid).rows : undefined,
+    },
+    isTTY: {
+      enumerable: true,
+      configurable: true,
+      get: () => Deno.isatty(writer.rid),
+    },
+    getWindowSize: {
+      enumerable: true,
+      configurable: true,
+      value: () =>
+        Deno.isatty(writer.rid)
+          ? Object.values(Deno.consoleSize(writer.rid))
+          : undefined,
+    },
+  });
+  return stream;
+}
+
+/** https://nodejs.org/api/process.html#process_process_stderr */
+export const stderr = createWritableStdioStream(Deno.stderr);
+
+/** https://nodejs.org/api/process.html#process_process_stdin */
+export const stdin = new Readable({
+  read(this: Readable, size: number) {
+    const p = Buffer.alloc(size || 16 * 1024);
+    const length = Deno.stdin.readSync(p);
+    this.push(length === null ? null : p.slice(0, length));
+  },
+}) as _Readable;
+stdin.on("close", () => Deno.stdin.close());
+stdin.fd = Deno.stdin.rid;
+Object.defineProperty(stdin, "isTTY", {
+  enumerable: true,
+  configurable: true,
+  get() {
+    return Deno.isatty(Deno.stdin.rid);
+  },
+});
+
+/** https://nodejs.org/api/process.html#process_process_stdout */
+export const stdout = createWritableStdioStream(Deno.stdout);
+
+function addReadOnlyProcessAlias(
+  name: string,
+  option: string,
+  enumerable = true,
+) {
+  const value = getOptionValue(option);
+
+  if (value) {
+    Object.defineProperty(process, name, {
+      writable: false,
+      configurable: true,
+      enumerable,
+      value,
+    });
+  }
+}
+
+function createWarningObject(
+  warning: string,
+  type: string,
+  code?: string,
+  // deno-lint-ignore ban-types
+  ctor?: Function,
+  detail?: string,
+): Error {
+  assert(typeof warning === "string");
+
+  // deno-lint-ignore no-explicit-any
+  const warningErr: any = new Error(warning);
+  warningErr.name = String(type || "Warning");
+
+  if (code !== undefined) {
+    warningErr.code = code;
+  }
+  if (detail !== undefined) {
+    warningErr.detail = detail;
+  }
+
+  Error.captureStackTrace(warningErr, ctor || process.emitWarning);
+
+  return warningErr;
+}
+
+function doEmitWarning(warning: Error) {
+  process.emit("warning", warning);
+}
+
+/** https://nodejs.org/api/process.html#process_process_emitwarning_warning_options */
+export function emitWarning(
+  warning: string | Error,
+  type:
+    // deno-lint-ignore ban-types
+    | { type: string; detail: string; code: string; ctor: Function }
+    | string
+    | null,
+  code?: string,
+  // deno-lint-ignore ban-types
+  ctor?: Function,
+) {
+  let detail;
+
+  if (type !== null && typeof type === "object" && !Array.isArray(type)) {
+    ctor = type.ctor;
+    code = type.code;
+
+    if (typeof type.detail === "string") {
+      detail = type.detail;
+    }
+
+    type = type.type || "Warning";
+  } else if (typeof type === "function") {
+    ctor = type;
+    code = undefined;
+    type = "Warning";
+  }
+
+  if (type !== undefined) {
+    validateString(type, "type");
+  }
+
+  if (typeof code === "function") {
+    ctor = code;
+    code = undefined;
+  } else if (code !== undefined) {
+    validateString(code, "code");
+  }
+
+  if (typeof warning === "string") {
+    warning = createWarningObject(warning, type as string, code, ctor, detail);
+  } else if (!(warning instanceof Error)) {
+    throw new ERR_INVALID_ARG_TYPE("warning", ["Error", "string"], warning);
+  }
+
+  if (warning.name === "DeprecationWarning") {
+    // deno-lint-ignore no-explicit-any
+    if ((process as any).noDeprecation) {
+      return;
+    }
+
+    // deno-lint-ignore no-explicit-any
+    if ((process as any).throwDeprecation) {
+      // Delay throwing the error to guarantee that all former warnings were
+      // properly logged.
+      return process.nextTick(() => {
+        throw warning;
+      });
+    }
+  }
+
+  process.nextTick(doEmitWarning, warning);
+}
+
 class Process extends EventEmitter {
   constructor() {
     super();
 
     //This causes the exit event to be binded to the unload event
+    // deno-lint-ignore no-window-prefix
     window.addEventListener("unload", () => {
       //TODO(Soremwar)
       //Get the exit code from the unload event
@@ -143,7 +324,7 @@ class Process extends EventEmitter {
   /**
    * https://nodejs.org/api/process.html#process_process_argv
    * Read permissions are required in order to get the executable route
-   * */
+   */
   argv = argv;
 
   /** https://nodejs.org/api/process.html#process_process_chdir_directory */
@@ -158,7 +339,7 @@ class Process extends EventEmitter {
   /**
    * https://nodejs.org/api/process.html#process_process_env
    * Requires env permissions
-   * */
+   */
   env = env;
 
   /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
@@ -231,77 +412,22 @@ class Process extends EventEmitter {
   }
 
   /** https://nodejs.org/api/process.html#process_process_stderr */
-  get stderr() {
-    return {
-      fd: Deno.stderr.rid,
-      get isTTY(): boolean {
-        return Deno.isatty(this.fd);
-      },
-      pipe(_destination: Deno.Writer, _options: { end: boolean }): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-      // deno-lint-ignore ban-types
-      write(_chunk: string | Uint8Array, _callback: Function): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-      // deno-lint-ignore ban-types
-      on(_event: string, _callback: Function): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-    };
-  }
+  stderr = stderr;
 
   /** https://nodejs.org/api/process.html#process_process_stdin */
-  get stdin() {
-    return {
-      fd: Deno.stdin.rid,
-      get isTTY(): boolean {
-        return Deno.isatty(this.fd);
-      },
-      read(_size: number): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-      // deno-lint-ignore ban-types
-      on(_event: string, _callback: Function): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-    };
-  }
+  stdin = stdin;
 
   /** https://nodejs.org/api/process.html#process_process_stdout */
-  get stdout() {
-    return {
-      fd: Deno.stdout.rid,
-      get isTTY(): boolean {
-        return Deno.isatty(this.fd);
-      },
-      pipe(_destination: Deno.Writer, _options: { end: boolean }): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-      // deno-lint-ignore ban-types
-      write(_chunk: string | Uint8Array, _callback: Function): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-      // deno-lint-ignore ban-types
-      on(_event: string, _callback: Function): void {
-        // TODO(JayHelton): to be implemented
-        notImplemented();
-      },
-    };
-  }
+  stdout = stdout;
 
   /** https://nodejs.org/api/process.html#process_process_version */
   version = version;
 
   /** https://nodejs.org/api/process.html#process_process_versions */
   versions = versions;
+
+  /** https://nodejs.org/api/process.html#process_process_emitwarning_warning_options */
+  emitWarning = emitWarning;
 }
 
 /** https://nodejs.org/api/process.html#process_process */
@@ -314,15 +440,15 @@ Object.defineProperty(process, Symbol.toStringTag, {
   value: "process",
 });
 
+addReadOnlyProcessAlias("noDeprecation", "--no-deprecation");
+addReadOnlyProcessAlias("throwDeprecation", "--throw-deprecation");
+
 export const removeListener = process.removeListener;
 export const removeAllListeners = process.removeAllListeners;
-export const stderr = process.stderr;
-export const stdin = process.stdin;
-export const stdout = process.stdout;
 
 export default process;
 
 //TODO(Soremwar)
 //Remove on 1.0
-//Kept for backwars compatibility with std
+//Kept for backwards compatibility with std
 export { process };

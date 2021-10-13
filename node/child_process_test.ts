@@ -67,7 +67,7 @@ Deno.test({
       });
       childProcess.stdin.write("  console.log('hello')", "utf-8");
       childProcess.stdin.end();
-      childProcess.on("exit", () => {
+      childProcess.on("close", () => {
         promise.resolve();
       });
       await promise;

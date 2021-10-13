@@ -1,5 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+export interface ParsedUrlQuery {
+  [key: string]: string | string[] | undefined;
+}
+
 interface ParseOptions {
   /** The function to use when decoding percent-encoded characters in the query string. */
   decodeURIComponent?: (string: string) => string;
@@ -24,11 +28,11 @@ export function parse(
   sep = "&",
   eq = "=",
   { decodeURIComponent = unescape, maxKeys = 1000 }: ParseOptions = {},
-): { [key: string]: string[] | string } {
-  const entries = str
-    .split(sep)
-    .map((entry) => entry.split(eq).map(decodeURIComponent));
-  const final: { [key: string]: string[] | string } = {};
+): ParsedUrlQuery {
+  const entries = str.split(sep).map((entry) =>
+    entry.split(eq).map(decodeURIComponent)
+  );
+  const final: ParsedUrlQuery = {};
 
   let i = 0;
   while (true) {
@@ -90,8 +94,7 @@ export function encodeStr(
     }
     if (c < 0xd800 || c >= 0xe000) {
       lastPos = i + 1;
-      out += hexTable[0xe0 | (c >> 12)] +
-        hexTable[0x80 | ((c >> 6) & 0x3f)] +
+      out += hexTable[0xe0 | (c >> 12)] + hexTable[0x80 | ((c >> 6) & 0x3f)] +
         hexTable[0x80 | (c & 0x3f)];
       continue;
     }

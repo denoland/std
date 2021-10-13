@@ -65,6 +65,20 @@ Deno.test("deepMerge: nested merge", () => {
   );
 });
 
+Deno.test("deepMerge: prevent prototype merge", () => {
+  assertEquals(
+    deepMerge({
+      constructor: undefined,
+    }, {
+      foo: true,
+    }),
+    {
+      constructor: undefined,
+      foo: true,
+    },
+  );
+});
+
 Deno.test("deepMerge: override target (non-mergeable source)", () => {
   assertEquals(
     deepMerge({

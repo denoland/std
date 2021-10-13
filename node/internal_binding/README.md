@@ -1,8 +1,11 @@
-The modules in this directory implement (simulate) C++ bindings inplemented in
-src/ directory of Node.js
+# Internal Bindings
 
-These bindings are created in the node.js source code by using
+The modules in this directory implement (simulate) C++ bindings implemented in
+the `./src/` directory of the [Node.js](https://github.com/nodejs/node)
+repository.
+
+These bindings are created in the Node.js source code by using
 `NODE_MODULE_CONTEXT_AWARE_INTERNAL`.
 
-See:
-https://github.com/nodejs/node/blob/e46c680bf2b211bbd52cf959ca17ee98c7f657f5/src/README.md
+Please refer to <https://github.com/nodejs/node/blob/master/src/README.md> for
+further information.

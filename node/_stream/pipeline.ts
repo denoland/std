@@ -31,7 +31,7 @@ type TransformCallback =
  * This type represents an array that contains a data source,
  * many Transform Streams, a writable stream destination
  * and end in an optional callback
- * */
+ */
 type DataSource =
   // deno-lint-ignore no-explicit-any
   | (() => AsyncGenerator<any>)
@@ -148,7 +148,7 @@ async function pump(
   writable: Duplex | Writable,
   finish: (err?: NodeErrorAbstraction | null) => void,
 ) {
-  let error;
+  let error: NodeErrorAbstraction | null = null;
   try {
     for await (const chunk of iterable) {
       if (!writable.write(chunk)) {
@@ -158,7 +158,9 @@ async function pump(
     }
     writable.end();
   } catch (err) {
-    error = err;
+    if (err instanceof NodeErrorAbstraction) {
+      error = err;
+    }
   } finally {
     finish(error);
   }

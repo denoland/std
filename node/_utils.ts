@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "../async/mod.ts";
 import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
-import { readAll } from "../io/util.ts";
+import { readAll } from "../streams/conversion.ts";
 
 export type BinaryEncodings = "binary";
 
@@ -170,8 +170,7 @@ export function once<T = undefined>(
 
 /**
  * @param {number} [expectedExecutions = 1]
- * @param {number} [timeout = 1000] Milliseconds to wait before the promise is forcefully exited
-*/
+ * @param {number} [timeout = 1000] Milliseconds to wait before the promise is forcefully exited */
 export function mustCall<T extends unknown[]>(
   fn: ((...args: T) => void) = () => {},
   expectedExecutions = 1,

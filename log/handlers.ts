@@ -1,10 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-
 import { LogLevel, logLevels } from "./levels.ts";
 import { LogRecord } from "./logger.ts";
 import { blue, red, yellow } from "../fmt/colors.ts";
 import { existsSync } from "../fs/exists.ts";
-import { BufWriterSync } from "../io/bufio.ts";
+import { BufWriterSync } from "../io/buffer.ts";
 
 function defaultFormatter({ logLevel, message, args }: LogRecord) {
   return `${logLevel.name} ${[message, ...args].join(" ")}`;

@@ -2,7 +2,7 @@
 import type { CallbackWithError } from "./_fs_common.ts";
 import { notImplemented } from "../_utils.ts";
 
-/** Revist once https://github.com/denoland/deno/issues/4017 lands */
+/** Revisit once https://github.com/denoland/deno/issues/4017 lands */
 
 // TODO(bartlomieju) 'path' can also be a Buffer.  Neither of these polyfills
 //is available yet.  See https://github.com/denoland/deno/issues/3403

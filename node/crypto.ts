@@ -1,6 +1,8 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { default as randomBytes } from "./_crypto/randomBytes.ts";
+import randomFill, { randomFillSync } from "./_crypto/randomFill.ts";
+import randomInt from "./_crypto/randomInt.ts";
 import {
   crypto as wasmCrypto,
   DigestAlgorithm,
@@ -12,6 +14,8 @@ import { Transform } from "./stream.ts";
 import { TransformOptions } from "./_stream/transform.ts";
 import { encode as encodeToHex } from "../encoding/hex.ts";
 import { encode as encodeToBase64 } from "../encoding/base64.ts";
+import { scrypt, scryptSync } from "./_crypto/scrypt.ts";
+import { timingSafeEqual } from "./_crypto/timingSafeEqual.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
@@ -20,11 +24,7 @@ const coerceToBytes = (data: string | BufferSource): Uint8Array => {
     // This assumes UTF-8, which may not be correct.
     return new TextEncoder().encode(data);
   } else if (ArrayBuffer.isView(data)) {
-    return new Uint8Array(
-      data.buffer,
-      data.byteOffset,
-      data.byteLength,
-    );
+    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
   } else if (data instanceof ArrayBuffer) {
     return new Uint8Array(data);
   } else {
@@ -128,25 +128,22 @@ export class Hash extends Transform {
  * Supported digest names that OpenSSL/Node and WebCrypto identify differently.
  */
 const opensslToWebCryptoDigestNames: Record<string, DigestAlgorithm> = {
-  "BLAKE2B512": "BLAKE2B",
-  "BLAKE2S256": "BLAKE2S",
-  "RIPEMD160": "RIPEMD-160",
-  "RMD160": "RIPEMD-160",
-  "SHA1": "SHA-1",
-  "SHA224": "SHA-224",
-  "SHA256": "SHA-256",
-  "SHA384": "SHA-384",
-  "SHA512": "SHA-512",
+  BLAKE2B512: "BLAKE2B",
+  BLAKE2S256: "BLAKE2S",
+  RIPEMD160: "RIPEMD-160",
+  RMD160: "RIPEMD-160",
+  SHA1: "SHA-1",
+  SHA224: "SHA-224",
+  SHA256: "SHA-256",
+  SHA384: "SHA-384",
+  SHA512: "SHA-512",
 };
 
 /**
  * Creates and returns a Hash object that can be used to generate hash digests
  * using the given `algorithm`. Optional `options` argument controls stream behavior.
  */
-export function createHash(
-  algorithm: string,
-  opts?: TransformOptions,
-) {
+export function createHash(algorithm: string, opts?: TransformOptions) {
   return new Hash(algorithm, opts);
 }
 
@@ -157,5 +154,32 @@ export function getHashes(): readonly string[] {
   return digestAlgorithms;
 }
 
-export default { Hash, createHash, getHashes, pbkdf2, pbkdf2Sync, randomBytes };
-export { pbkdf2, pbkdf2Sync, randomBytes };
+const randomUUID = () => crypto.randomUUID();
+
+export default {
+  Hash,
+  createHash,
+  getHashes,
+  randomFill,
+  randomInt,
+  randomFillSync,
+  pbkdf2,
+  pbkdf2Sync,
+  randomBytes,
+  scrypt,
+  scryptSync,
+  timingSafeEqual,
+  randomUUID,
+};
+export {
+  pbkdf2,
+  pbkdf2Sync,
+  randomBytes,
+  randomFill,
+  randomFillSync,
+  randomInt,
+  randomUUID,
+  scrypt,
+  scryptSync,
+  timingSafeEqual,
+};
