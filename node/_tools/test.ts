@@ -10,9 +10,23 @@ import { config, testList } from "./common.ts";
  * code for the test is reported, the test suite will fail immediately
  */
 
-const onlyFlagTestList = config.tests.parallel.filter((filename) =>
-  filename.match("--only")
-).map((filename) => new RegExp(filename.replace(/ --only/, "")));
+const onlyFlagTestList: RegExp[] = [];
+
+function makeOnlyFlagTestList(testLists: Array<string[]>) {
+  for (const testList of testLists) {
+    const hasOnlyFlagTestList = testList.filter((filename) =>
+      filename.match("--only")
+    ).map((filename) => new RegExp(filename.replace(/ --only/, "")));
+    onlyFlagTestList.push(...hasOnlyFlagTestList);
+  }
+}
+
+makeOnlyFlagTestList([
+  config.tests.internet,
+  config.tests.parallel,
+  config.tests.pummel,
+  config.tests.sequential,
+]);
 
 const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
   includeDirs: false,
