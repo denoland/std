@@ -8,92 +8,108 @@ const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 const webCrypto = globalThis.crypto;
 
-Deno.test("[crypto/digest] Different ways to perform the same operation should produce the same result", async () => {
+Deno.test(
+  "[crypto/digest] Different ways to perform the same operation should produce the same result",
+  async () => {
+    const inputString = "taking the hobbits to isengard";
+    const inputBytes = new TextEncoder().encode(inputString);
+    const inputPieces = [inputBytes.slice(0, 8), inputBytes.slice(8)];
+
+    const emptyDigest =
+      "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b";
+    const expectedDigest =
+      "ae30c171b2b5a047b7986c185564407672441934a356686e6df3a8284f35214448c40738e65b8c308e38b068eed91676";
+
+    assertEquals(
+      toHexString(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
+      expectedDigest,
+    );
+
+    assertEquals(
+      toHexString(
+        await stdCrypto.subtle.digest(
+          "SHA-384",
+          new Blob([inputBytes]).stream(),
+        ),
+      ),
+      expectedDigest,
+    );
+
+    assertEquals(
+      toHexString(stdCrypto.subtle.digestSync("SHA-384", [inputBytes])),
+      expectedDigest,
+    );
+
+    assertEquals(
+      toHexString(
+        await stdCrypto.subtle.digest(
+          "SHA-384",
+          (async function* () {
+            yield new Uint16Array();
+            yield inputPieces[0];
+            yield new ArrayBuffer(0);
+            yield inputPieces[1];
+          })(),
+        ),
+      ),
+      expectedDigest,
+    );
+
+    assertEquals(
+      toHexString(
+        stdCrypto.subtle.digestSync(
+          "SHA-384",
+          (function* () {
+            yield new ArrayBuffer(0);
+            yield* inputPieces;
+            yield new Int8Array();
+          })(),
+        ),
+      ),
+      expectedDigest,
+    );
+
+    assertEquals(
+      toHexString(
+        await stdCrypto.subtle.digest(
+          "SHA-384",
+          (function* () {
+            yield inputBytes;
+          })(),
+        ),
+      ),
+      expectedDigest,
+    );
+
+    assertEquals(
+      toHexString(await webCrypto.subtle!.digest("SHA-384", inputBytes)),
+      expectedDigest,
+    );
+
+    assertEquals(
+      toHexString(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
+      emptyDigest,
+    );
+
+    assertEquals(
+      toHexString(await stdCrypto.subtle.digest("SHA-384", new ArrayBuffer(0))),
+      emptyDigest,
+    );
+  },
+);
+
+Deno.test("[crypto/digest] Should not ignore length option", async () => {
   const inputString = "taking the hobbits to isengard";
   const inputBytes = new TextEncoder().encode(inputString);
-  const inputPieces = [inputBytes.slice(0, 8), inputBytes.slice(8)];
-
-  const emptyDigest =
-    "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b";
-  const expectedDigest =
-    "ae30c171b2b5a047b7986c185564407672441934a356686e6df3a8284f35214448c40738e65b8c308e38b068eed91676";
 
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
-    expectedDigest,
+    await stdCrypto.subtle.digest({ name: "BLAKE3", length: 0 }, inputBytes),
+    new Uint8Array(0),
   );
 
   assertEquals(
-    toHexString(
-      await stdCrypto.subtle.digest("SHA-384", new Blob([inputBytes]).stream()),
-    ),
-    expectedDigest,
-  );
-
-  assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("SHA-384", [inputBytes])),
-    expectedDigest,
-  );
-
-  assertEquals(
-    toHexString(
-      await stdCrypto.subtle.digest(
-        "SHA-384",
-        (async function* () {
-          yield new Uint16Array();
-          yield inputPieces[0];
-          yield new ArrayBuffer(0);
-          yield inputPieces[1];
-        })(),
-      ),
-    ),
-    expectedDigest,
-  );
-
-  assertEquals(
-    toHexString(
-      stdCrypto.subtle.digestSync(
-        "SHA-384",
-        (function* () {
-          yield new ArrayBuffer(0);
-          yield* inputPieces;
-          yield new Int8Array();
-        })(),
-      ),
-    ),
-    expectedDigest,
-  );
-
-  assertEquals(
-    toHexString(
-      await stdCrypto.subtle.digest(
-        "SHA-384",
-        (function* () {
-          yield inputBytes;
-        })(),
-      ),
-    ),
-    expectedDigest,
-  );
-
-  assertEquals(
-    toHexString(await webCrypto.subtle!.digest("SHA-384", inputBytes)),
-    expectedDigest,
-  );
-
-  assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
-    emptyDigest,
-  );
-
-  assertEquals(
-    toHexString(await stdCrypto.subtle.digest("SHA-384", new ArrayBuffer(0))),
-    emptyDigest,
-  );
-
-  assertEquals(
-    toHexString(await webCrypto.subtle!.digest("SHA-384", new ArrayBuffer(0))),
-    emptyDigest,
+    await stdCrypto.subtle.digest({ name: "BLAKE3", length: 6 }, inputBytes),
+    new Uint8Array([167, 193, 151, 192, 40, 100]),
   );
 });
 
