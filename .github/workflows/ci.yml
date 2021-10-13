@@ -72,10 +72,10 @@ jobs:
         uses: denoland/setup-deno@v1.0.0
 
       - name: Format
-        run: deno fmt --check
+        run: deno fmt --check --config Deno.json
 
       - name: Lint
-        run: deno lint
+        run: deno lint --config Deno.json
 
   hash-wasm:
     name: "_wasm_crypto/"
