@@ -330,5 +330,5 @@ export default {
   userInfo,
   constants,
   EOL,
-  devNull
+  devNull,
 };
