@@ -7,6 +7,9 @@ export interface DelayOptions {
 /* Resolves after the given number of milliseconds. */
 export function delay(ms: number, options: DelayOptions = {}): Promise<void> {
   const { signal } = options;
+  if (signal?.aborted) {
+    return Promise.reject(new DOMException("Delay was aborted.", "AbortError"));
+  }
   return new Promise((resolve, reject): void => {
     const abort = () => {
       clearTimeout(i);

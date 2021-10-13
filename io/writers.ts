@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-type Writer = Deno.Writer;
-type WriterSync = Deno.WriterSync;
+
+import type { Writer, WriterSync } from "./types.d.ts";
 
 const decoder = new TextDecoder();
 

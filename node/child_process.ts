@@ -7,7 +7,7 @@ import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
-import { readLines } from "../io/bufio.ts";
+import { readLines } from "../io/buffer.ts";
 import { isWindows } from "../_util/os.ts";
 
 export class ChildProcess extends EventEmitter {

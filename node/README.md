@@ -19,7 +19,7 @@ Deno standard library as it's a compatibility module.
 - [x] crypto _partly_
 - [ ] dgram
 - [ ] diagnostics_channel
-- [ ] dns
+- [x] dns _partly_
 - [x] events
 - [x] fs _partly_
 - [x] fs/promises _partly_
@@ -28,7 +28,7 @@ Deno standard library as it's a compatibility module.
 - [ ] https
 - [ ] inspector
 - [x] module
-- [ ] net
+- [x] net
 - [x] os _partly_
 - [x] path
 - [x] path/posix
@@ -108,6 +108,40 @@ order ensure compatibility.
 Setting up the test runner is as simple as running the `node/_tools/setup.ts`
 file, this will pull the configured tests in and then add them to the test
 workflow.
+
+```zsh
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
+```
+
+To run the tests you have set up, do the following:
+
+```zsh
+$ deno test --allow-read --allow-run node/_tools/test.ts
+```
+
+If you want to run specific tests in a local environment, add `--only` flag to
+the `node/_tools/config.json` as follows:
+
+```json
+...
+  "tests": {
+    "parallel": [
+      ...
+      "test-event-emitter-add-listeners.js",
+      "test-event-emitter-check-listener-leaks.js --only",
+      "test-event-emitter-invalid-listener.js",
+      ...
+    ]
+  }
+...
+```
+
+The test should be passing with the latest deno, so if the test fails, try the
+following:
+
+```zsh
+$ deno upgrade
+```
 
 To enable new tests, simply add a new entry inside `node/_tools/config.json`
 under the `tests` property. The structure this entries must have has to resemble

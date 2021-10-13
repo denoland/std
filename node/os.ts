@@ -201,7 +201,29 @@ export function setPriority(pid: number, priority?: number): void {
 
 /** Returns the operating system's default directory for temporary files as a string. */
 export function tmpdir(): string | null {
-  notImplemented(SEE_GITHUB_ISSUE);
+  /* This follows the node js implementation, but has a few
+     differences:
+     * On windows, if none of the environment variables are defined,
+       we return null.
+     * On unix we use a plain Deno.env.get, instead of safeGetenv,
+       which special cases setuid binaries.
+     * Node removes a single trailing / or \, we remove all.
+  */
+  if (isWindows) {
+    const temp = Deno.env.get("TEMP") || Deno.env.get("TMP");
+    if (temp) {
+      return temp.replace(/(?<!:)[/\\]*$/, "");
+    }
+    const base = Deno.env.get("SYSTEMROOT") || Deno.env.get("WINDIR");
+    if (base) {
+      return base + "\\temp";
+    }
+    return null;
+  } else { // !isWindows
+    const temp = Deno.env.get("TMPDIR") || Deno.env.get("TMP") ||
+      Deno.env.get("TEMP") || "/tmp";
+    return temp.replace(/(?<!^)\/*$/, "");
+  }
 }
 
 /** Return total physical memory amount */

@@ -1,9 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { writeBufferSync } from "./fs.ts";
+import { writeBuffer } from "./node_file.ts";
 import { assertEquals } from "../../testing/asserts.ts";
 import { isWindows } from "../../_util/os.ts";
 
-Deno.test("[node/internal_binding/fs] writeBufferSync", async () => {
+Deno.test("[node/internal_binding/node_file] writeBuffer", async () => {
   const tempfile = await Deno.makeTempFile();
   await Deno.writeTextFile(tempfile, "01234567890123456789");
 
@@ -12,7 +12,7 @@ Deno.test("[node/internal_binding/fs] writeBufferSync", async () => {
 
   try {
     const ctx: { errno?: number } = {};
-    const bytesWritten = writeBufferSync(
+    const bytesWritten = writeBuffer(
       file.rid,
       new Uint8Array([65, 66, 67, 68, 69] /* abcde */),
       1,
@@ -29,14 +29,14 @@ Deno.test("[node/internal_binding/fs] writeBufferSync", async () => {
     await Deno.remove(tempfile);
   }
 });
-Deno.test("[node/internal_binding/fs] writeBufferSync", async () => {
+Deno.test("[node/internal_binding/node_file] writeBuffer", async () => {
   const tempfile = await Deno.makeTempFile();
   await Deno.writeTextFile(tempfile, "01234567890123456789");
   const file = await Deno.open(tempfile, { read: true, write: false });
 
   try {
     const ctx: { errno?: number } = {};
-    const bytesWritten = writeBufferSync(
+    const bytesWritten = writeBuffer(
       file.rid,
       new Uint8Array([65, 66, 67, 68, 69] /* abcde */),
       1,
