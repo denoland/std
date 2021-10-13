@@ -207,7 +207,7 @@ class Readable extends Stream {
 
     let ret;
     if ((n as number) > 0) {
-      ret = fromList((n as number), state);
+      ret = fromList(n as number, state);
     } else {
       ret = null;
     }
