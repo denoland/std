@@ -1,5 +1,6 @@
 import { Middleware } from "../middleware.ts";
 
+// deno-lint-ignore ban-types
 export const acceptJson: Middleware<{}, { parsedBody: unknown }> = async (
   req,
   next,

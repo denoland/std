@@ -1,7 +1,7 @@
 // deno-lint-ignore-file ban-types
 
 import { HttpRequest } from "./request.ts";
-import { Expand, SafeOmit } from "../_util/types.ts";
+import type { Expand, SafeOmit } from "../_util/types.ts";
 
 /**
 * Middleware Handler that is expected to call the `next` Middleware at some

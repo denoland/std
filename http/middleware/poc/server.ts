@@ -5,7 +5,7 @@ import { log } from "../log.ts";
 import { chain } from "../../middleware.ts";
 import { HttpRequest } from "../../request.ts";
 import { validateZoo } from "./validate_zoo.ts";
-import { Zoo } from "./zoo.ts";
+import type { Zoo } from "./zoo.ts";
 
 function createZoo(req: HttpRequest<{ zoo: Zoo }>) {
   const { zoo } = req.context;

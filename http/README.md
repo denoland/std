@@ -1,3 +1,15 @@
+- Minimal server
+- Handlers
+- Middleware
+- Remove Legacy Server
+
+# PR
+
+- Wrap Request
+  - Why
+    - Have single API
+    - Allows for cookies, comtext, lazy utilities…
+
 # http
 
 `http` is a module to provide HTTP client and server implementations.
