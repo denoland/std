@@ -57,14 +57,8 @@ function checkConfigTestFilesOrder(testFileLists: Array<string[]>) {
 }
 
 checkConfigTestFilesOrder([
-  config.ignore.internet,
-  config.ignore.parallel,
-  config.ignore.pummel,
-  config.ignore.sequential,
-  config.tests.internet,
-  config.tests.parallel,
-  config.tests.pummel,
-  config.tests.sequential,
+  ...Object.keys(config.ignore).map((suite) => config.ignore[suite]),
+  ...Object.keys(config.tests).map((suite) => config.tests[suite]),
 ]);
 
 /**

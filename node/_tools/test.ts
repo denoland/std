@@ -22,10 +22,7 @@ function makeOnlyFlagTestList(testLists: Array<string[]>) {
 }
 
 makeOnlyFlagTestList([
-  config.tests.internet,
-  config.tests.parallel,
-  config.tests.pummel,
-  config.tests.sequential,
+  ...Object.keys(config.tests).map((suite) => config.tests[suite]),
 ]);
 
 const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
