@@ -13,6 +13,7 @@ function defaultCatcher(err: unknown) {
 export type AsyncLoggerOptions = Readonly<{
   catcher?: <E = unknown>(err: E) => void;
 }>;
+
 export function buildAsyncLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
@@ -63,11 +64,20 @@ export function buildFileLogger<L extends LogLevels, M, A>(
   );
 }
 
+/** Options for `buildConsoleLogger` */
 export type ConsoleLoggerOptions<L extends LogLevels, M, A> = Readonly<{
   messageFormatter?: (
     ...handlerArgs: Parameters<LogHandler<L, M, A>>
   ) => string;
 }>;
+
+/**
+ * Creates a custom console logger that logs to stdout and stderr
+*
+* @param logLevels Log levels to be offered
+* @param thresholdLevel Threshold level messages need to match or surpass to be logged
+* @param isErrorLevel Predicate to decide whether messages of a given log level should be logged to stderr or stdout
+ */
 export function buildConsoleLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
@@ -98,6 +108,11 @@ export function buildConsoleLogger<L extends LogLevels, M, A>(
 export type MultiLoggerOptions<L extends LogLevels> = Readonly<{
   thresholdLevel?: keyof L | null;
 }>;
+
+/**
+ * Creates a custom multi logger that passes messages to all given loggers. Defaults to no threshold
+ * (and thus no filter), but a threshold can optionally be passed.
+ */
 export function buildMultiLogger<L extends LogLevels, M, A>(
   logLevels: L,
   loggers: readonly Logger<L, M, A>[],

@@ -1,4 +1,8 @@
-import { buildMultiLogger } from "./builtin_loggers.ts";
+import {
+  buildConsoleLogger,
+  buildFileLogger,
+  buildMultiLogger,
+} from "./builtin_loggers.ts";
 import { Logger } from "./logger.ts";
 
 /** Default log levels used for the default logger */
@@ -12,6 +16,8 @@ export const defaultLogLevels = {
 
 /** Default log levels type used for the default logger */
 export type DefaultLogLevels = typeof defaultLogLevels;
+
+type DefaultLogger = Logger<DefaultLogLevels, string, unknown>;
 
 const defaultLoggerConsumers: Logger<DefaultLogLevels, string, unknown>[] = [];
 
@@ -48,7 +54,7 @@ export function addDefaultLogger(
  *
  * If you are writing an application, consider using this if you want to use th default log levels.
  *
- * If you are a library and want to log for your consumers, use this to allow them to handle your messages in a standardized way.
+ * If you are a framework and want to log for your consumers, use this to allow them to handle your messages in a standardized way.
  *
  * Example:
  *
@@ -61,3 +67,31 @@ export function addDefaultLogger(
  * ```
  */
 export const log = defaultLogger;
+
+/**
+ * Creates a file loggre with thee defauult log levels using the givn threshold.
+ */
+export function buildDefaultFileLogger(
+  threshold: keyof DefaultLogLevels,
+  filename: string,
+): DefaultLogger {
+  return buildFileLogger(
+    defaultLogLevels,
+    threshold,
+    filename,
+  );
+}
+
+/**
+ * Creates a console logger with the default levels using the given threshold. If you simply want to
+ * log to stdoout, this is probably what you want to use.
+ */
+export function buildDefaultConsoleLogger(
+  threshold: keyof DefaultLogLevels,
+): DefaultLogger {
+  return buildConsoleLogger(
+    defaultLogLevels,
+    threshold,
+    (it) => defaultLogLevels[it] >= defaultLogLevels["warn"],
+  );
+}
