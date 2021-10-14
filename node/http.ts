@@ -155,7 +155,7 @@ export class IncomingMessage extends NodeReadable {
           const { value } = await reader!.read();
           this.push(value !== undefined ? Buffer.from(value) : null);
         } catch (err) {
-          this.destroy(err);
+          this.destroy(err as Error);
         }
       },
       destroy: (err, cb) => {
