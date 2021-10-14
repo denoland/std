@@ -66,4 +66,5 @@ export default {
   tty,
   url,
   util,
+  zlib: {},
 } as Record<string, unknown>;

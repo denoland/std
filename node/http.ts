@@ -108,9 +108,17 @@ export class IncomingMessage {
   get httpVersion() {
     return "1.1";
   }
+  listeners(_key: string) {
+    return [];
+  }
+  resume() {
+  }
 
   get headers() {
     return this.req.headers;
+  }
+  get method() {
+    return this.req.method;
   }
 
   get url() {
