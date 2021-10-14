@@ -342,7 +342,8 @@ class Process extends EventEmitter {
    */
   env = env;
 
-  // deno-lint-ignore no-explicit-any Typed as any to avoid importing "module" module for types
+  // Typed as any to avoid importing "module" module for types
+  // deno-lint-ignore no-explicit-any 
   mainModule: any = undefined;
 
   /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
