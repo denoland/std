@@ -19,28 +19,26 @@ export type DefaultLogLevels = typeof defaultLogLevels;
 
 type DefaultLogger = Logger<DefaultLogLevels, string, unknown>;
 
-const defaultLoggerConsumers: Logger<DefaultLogLevels, string, unknown>[] = [];
+const defaultLoggerConsumers: DefaultLogger[] = [];
 
-const defaultLogger = buildMultiLogger<
-  DefaultLogLevels,
-  string,
-  unknown
->(
+const defaultLogger = buildMultiLogger(
   defaultLogLevels,
   defaultLoggerConsumers,
 );
 
 /**
- * Registers a logger following the default logger types to get passed messages sent to the deefault logger (`log`).
+ * Registers a logger following the default logger types to get passed messages sent to the default logger (`log`).
  *
  * Example:
  *
  * ```typescript
- * import { log, addDefaultLogger, defaultConsoleLogger } from "https://deno.land/std/@STD_VERSION/log/mod.ts"
+ * import { log, addDefaultLogger, buildDefaultConsoleLogger } from "https://deno.land/std/@STD_VERSION/log/mod.ts"
  *
- * addDefaultLogger(defaultConsoleLogger)
+ * addDefaultLogger(
+ *   buildDefaultConsoleLogger("info")
+ * )
  *
- * log.info("Foo") // Will print "foo" through the registered logger above
+ * log.warn("Foo") // Will print "foo" through the registered logger above
  * ```
  */
 export function addDefaultLogger(
@@ -69,7 +67,7 @@ export function addDefaultLogger(
 export const log = defaultLogger;
 
 /**
- * Creates a file loggre with thee defauult log levels using the givn threshold.
+ * Creates a file loggre with thee default log levels using the givn threshold.
  */
 export function buildDefaultFileLogger(
   threshold: keyof DefaultLogLevels,

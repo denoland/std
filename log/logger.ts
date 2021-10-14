@@ -52,7 +52,7 @@ export function buildDefaultLogMessage<L extends LogLevels, M, A>(
 ) {
   return `[${logLevel}]\t${new Date().toLocaleString()}\t${
     toLoggableString(message)
-  }${additionalData ? ` ${toLoggableString(additionalData)}` : ""}}`;
+  }${additionalData ? ` ${toLoggableString(additionalData)}` : ""}`;
 }
 
 /**
@@ -125,7 +125,7 @@ export function defaultDispatch<L extends LogLevels, M, A>(
  * );
  * ```
  *
- * @param logLevels Log levels available to choose from for sending a messag
+ * @param logLevels Log levels available to choose from for sending a message
  * through this logger
  * @param thresholdLevel Threshold level for messages. If
  * the defaultDispatcher is used, it will filter out all messages below the

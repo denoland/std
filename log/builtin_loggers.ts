@@ -1,3 +1,4 @@
+import { BufWriterSync } from "../io/bufio.ts";
 import {
   buildDefaultLogMessage,
   buildLogger,
@@ -6,66 +7,60 @@ import {
   LogLevels,
 } from "./logger.ts";
 
-function defaultCatcher(err: unknown) {
-  console.error(err);
-}
-
-export type AsyncLoggerOptions = Readonly<{
-  catcher?: <E = unknown>(err: E) => void;
-}>;
-
-export function buildAsyncLogger<L extends LogLevels, M, A>(
-  logLevels: L,
-  thresholdLevel: keyof L,
-  handler: (...handlerArgs: Parameters<LogHandler<L, M, A>>) => Promise<void>,
-  { catcher = defaultCatcher }: AsyncLoggerOptions = {},
-): Logger<L, M, A> {
-  return buildLogger(
-    logLevels,
-    thresholdLevel,
-    async (level, message, additionalData) => {
-      try {
-        handler(level, message, additionalData);
-      } catch (e) {
-        catcher(e);
-      }
-    },
-  );
-}
-
+/** Options for `buildFileLogger` */
 export type FileLoggerOptions<L extends LogLevels, M, A> = Readonly<{
+  /** Formatter for incoming messages, defaults to `buildDefaultLogMessage` */
   messageFormatter?: (
     ...handlerArgs: Parameters<LogHandler<L, M, A>>
   ) => string;
-  append?: boolean;
+  /** Options for how the log file should handle existing files, see `Deno.OpenOptions` */
+  fileOptions?: Pick<
+    Deno.OpenOptions,
+    "append" | "truncate" | "create" | "createNew"
+  >;
 }>;
+
+/**
+ * Creates a file logger that writes log messages into the given file. Will create the file
+ * if it does not exist yet and append to it if it does by default, but can be configured
+ * with a subset of `Deno.OpenOptions`.
+ */
 export function buildFileLogger<L extends LogLevels, M, A>(
   logLevels: L,
   thresholdLevel: keyof L,
   filename: string,
   {
     messageFormatter = buildDefaultLogMessage,
-    append = true,
+    fileOptions = { append: true, create: true },
   }: FileLoggerOptions<L, M, A> = {},
 ): Logger<L, M, A> {
-  return buildAsyncLogger(
+  const file = Deno.openSync(filename, { ...fileOptions, write: true });
+  const buf = new BufWriterSync(file);
+  const encoder = new TextEncoder();
+
+  addEventListener("unload", () => {
+    buf.flush();
+    file.close();
+  });
+
+  return buildLogger(
     logLevels,
     thresholdLevel,
-    async (level, message, additionalData) => {
-      const formatter = messageFormatter ?? buildDefaultLogMessage;
-      const messageString = formatter(
+    (level, message, additionalData) => {
+      const messageString = messageFormatter(
         level,
         message,
         additionalData,
       );
 
-      return Deno.writeTextFile(filename, `${messageString}\n`, { append });
+      buf.writeSync(encoder.encode(`${messageString}\n`));
     },
   );
 }
 
 /** Options for `buildConsoleLogger` */
 export type ConsoleLoggerOptions<L extends LogLevels, M, A> = Readonly<{
+  /** Formatter for incoming messages, defaults to `buildDefaultLogMessage` */
   messageFormatter?: (
     ...handlerArgs: Parameters<LogHandler<L, M, A>>
   ) => string;
@@ -73,10 +68,8 @@ export type ConsoleLoggerOptions<L extends LogLevels, M, A> = Readonly<{
 
 /**
  * Creates a custom console logger that logs to stdout and stderr
-*
-* @param logLevels Log levels to be offered
-* @param thresholdLevel Threshold level messages need to match or surpass to be logged
-* @param isErrorLevel Predicate to decide whether messages of a given log level should be logged to stderr or stdout
+ *
+ * @param isErrorLevel Predicate to decide whether messages of a given log level should be logged to stderr or stdout
  */
 export function buildConsoleLogger<L extends LogLevels, M, A>(
   logLevels: L,
@@ -89,8 +82,7 @@ export function buildConsoleLogger<L extends LogLevels, M, A>(
     logLevels,
     thresholdLevel,
     (level, message, additionalData) => {
-      const formatter = messageFormatter ?? buildDefaultLogMessage;
-      const messageString = formatter(
+      const messageString = messageFormatter(
         level,
         message,
         additionalData,
