@@ -117,11 +117,10 @@ export function composeMiddleware<
 > {
   return (req, next) =>
     first(
-      //@ts-ignore asdf
-      req,
+      req as HttpRequest<FirstNeeds>,
       (r) =>
         second(
-          //@ts-ignore: TS does not know about the middleware magic here
+          // @ts-ignore This will bubble up for insufficient middlware chains
           r,
           next,
         ),
