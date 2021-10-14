@@ -1076,7 +1076,7 @@ function wrapSafe(filename: string, content: string): RequireWrapper {
   // deno-lint-ignore no-explicit-any
   const [f, err] = (Deno as any).core.evalContext(wrapper, filename);
   if (err) {
-    throw err;
+    throw err.thrown;
   }
   return f;
   // ESM code removed.
