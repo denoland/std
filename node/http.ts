@@ -45,7 +45,7 @@ type Headers = Record<string, string>;
 
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
-    // @ts-ignore core.encore
+    // @ts-ignore using core isn't a best practice but hey ...
     return Deno.core.encode(chunk);
   }
   return chunk;
@@ -119,18 +119,18 @@ export class ServerResponse extends NodeWritable {
     Object.assign(this.headers, headers);
   }
 
-  ensureHeaders() {
+  ensureHeaders(singleChunk?: Chunk) {
     if (this.status === null) {
       this.status = 200;
-      this.headers = { "content-type": "text/plain" };
+      this.headers = typeof singleChunk === "string" ? { "content-type": "text/plain" } : {};
     }
   }
 
   respond(singleChunk?: Chunk) {
     this.headersSent = true;
-    this.ensureHeaders();
+    this.ensureHeaders(singleChunk);
     const body = singleChunk ?? this.readable;
-    this.reqEvent.respondWith(new Response(body, { headers: this.headers }));
+    this.reqEvent.respondWith(new Response(body, { headers: this.headers, status: this.status }));
   }
 }
 
