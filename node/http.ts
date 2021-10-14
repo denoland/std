@@ -63,8 +63,7 @@ export class ServerResponse extends NodeWritable {
     let controller: ReadableByteStreamController;
     const readable = new ReadableStream({
       start(c) {
-        // @ts-ignore yolo ...
-        controller = c;
+        controller = c as ReadableByteStreamController;
       },
     });
     super({
