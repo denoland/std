@@ -17,7 +17,7 @@ import {
   writeVarnum,
 } from "./binary.ts";
 import { Buffer } from "../io/buffer.ts";
-import { readerFromIterable } from "../io/streams.ts";
+import { readerFromIterable } from "../streams/conversion.ts";
 
 Deno.test("testReadExactMultipleReads", async function () {
   const reader = readerFromIterable([

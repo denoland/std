@@ -2,7 +2,7 @@
 
 /* TODO(kt3k): Enable this test
 import { assert, assertEquals } from "../testing/asserts.ts";
-import { BufReader, BufWriter } from "../io/bufio.ts";
+import { BufReader, BufWriter } from "../io/buffer.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 
