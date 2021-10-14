@@ -7,17 +7,21 @@ import { Logger } from "./logger.ts";
 
 /** Default log levels used for the default logger */
 export const defaultLogLevels = {
-  trace: 10,
-  debug: 20,
-  info: 30,
-  warn: 40,
-  error: 50,
+  trace: 1,
+  debug: 2,
+  info: 3,
+  warn: 4,
+  error: 5,
 };
 
 /** Default log levels type used for the default logger */
 export type DefaultLogLevels = typeof defaultLogLevels;
 
-type DefaultLogger = Logger<DefaultLogLevels, string, unknown>;
+type DefaultLogger = Logger<
+    DefaultLogLevels,
+    string,
+    { source?: string } & Record<string, unknown>
+>;
 
 const defaultLoggerConsumers: DefaultLogger[] = [];
 
