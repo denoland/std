@@ -127,3 +127,11 @@ Deno.test("Require .mjs", () => {
     "Importing ESM module",
   );
 });
+
+Deno.test("requireErrorInEval", function () {
+  assertThrows(
+    () => require("./_module/cjs/cjs_import"),
+    SyntaxError,
+    "Cannot use import statement outside a module",
+  );
+});
