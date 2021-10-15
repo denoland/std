@@ -1182,6 +1182,48 @@ function stripBOM(content: string): string {
   return content;
 }
 
+// These two functions are not exported in Node, but it's very
+// helpful to have them available for compat mode in CLI
+export function resolveMainPath(main: string): undefined | string {
+  // Note extension resolution for the main entry point can be deprecated in a
+  // future major.
+  // Module._findPath is monkey-patchable here.
+  let mainPath = Module._findPath(path.resolve(main), null, true);
+  if (!mainPath) {
+    return;
+  }
+
+  // NOTE(bartlomieju): checking for `--preserve-symlinks-main` flag
+  // is skipped as this flag is not supported by Deno CLI.
+  // const preserveSymlinksMain = getOptionValue('--preserve-symlinks-main');
+  // if (!preserveSymlinksMain)
+  //   mainPath = toRealPath(mainPath);
+
+  return mainPath as string;
+}
+
+export function shouldUseESMLoader(mainPath: string): boolean {
+  // NOTE(bartlomieju): these two are skipped, because Deno CLI
+  // doesn't suport these flags
+  // const userLoader = getOptionValue('--experimental-loader');
+  // if (userLoader)
+  //   return true;
+  // const esModuleSpecifierResolution =
+  //   getOptionValue('--experimental-specifier-resolution');
+  // if (esModuleSpecifierResolution === 'node')
+  //   return true;
+
+  // Determine the module format of the main
+  if (mainPath && mainPath.endsWith(".mjs")) {
+    return true;
+  }
+  if (!mainPath || mainPath.endsWith(".cjs")) {
+    return false;
+  }
+  const pkg = readPackageScope(mainPath);
+  return pkg && pkg.data.type === "module";
+}
+
 export const builtinModules = Module.builtinModules;
 export const createRequire = Module.createRequire;
 export default Module;
