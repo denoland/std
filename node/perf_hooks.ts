@@ -17,13 +17,13 @@ const performance: Partial<Performance> & {
   // deno-lint-ignore no-explicit-any
   timeOrigin: any;
 } = {
-  clearMarks: shimPerformance.clearMarks,
+  clearMarks: (markName: string) => shimPerformance.clearMarks(markName),
   eventLoopUtilization: () =>
     notImplemented("eventLoopUtilization from performance"),
-  mark: shimPerformance.mark,
+  mark: (markName: string) => shimPerformance.mark(markName),
   measure: shimPerformance.measure,
   nodeTiming: {},
-  now: shimPerformance.now,
+  now: () => shimPerformance.now(),
   timerify: () => notImplemented("timerify from performance"),
   // deno-lint-ignore no-explicit-any
   timeOrigin: (shimPerformance as any).timeOrigin,
