@@ -1,5 +1,5 @@
 {
-  "nodeVersion": "15.5.1",
+  "nodeVersion": "16.11.1",
   "ignore": {
     "common": [
       "index.js"
@@ -16,6 +16,7 @@
       "test-assert.js",
       "test-dns-lookup.js",
       "test-dns.js",
+      "test-event-emitter-max-listeners.js",
       "test-net-access-byteswritten.js",
       "test-net-after-close.js",
       "test-net-bytes-stats.js",
@@ -32,16 +33,22 @@
       "test-net-listen-invalid-port.js",
       "test-net-normalize-args.js",
       "test-net-server-call-listen-multiple-times.js",
-      "test-net-server-try-ports.js"
+      "test-net-server-try-ports.js",
+      "test-net-write-arguments.js"
     ],
     "pummel": [
       "test-net-write-callbacks.js"
     ],
     "sequential": [
+      "test-net-connect-econnrefused.js",
       "test-net-server-address.js"
     ]
   },
   "tests": {
+    "common": [
+      "dns.js",
+      "internet.js"
+    ],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
@@ -112,7 +119,6 @@
       "test-net-normalize-args.js",
       "test-net-options-lookup.js",
       "test-net-pause-resume-connecting.js",
-      "test-net-reconnect.js",
       "test-net-server-call-listen-multiple-times.js",
       "test-net-server-close.js",
       "test-net-server-listen-options-signal.js",
@@ -144,6 +150,7 @@
     ],
     "pummel": [
       "test-net-pingpong-delay.js",
+      "test-net-timeout.js",
       "test-net-write-callbacks.js"
     ],
     "sequential": [

@@ -113,21 +113,6 @@ async function clearTests() {
   }
 }
 
-/**
- * This will iterate over test list defined in the configuration file and test the
- * passed file against it. If a match were to be found, it will return the test
- * suite specified for that file
- */
-function getRequestedFileSuite(file: string): string | undefined {
-  for (const suite in config.tests) {
-    for (const regex of config.tests[suite]) {
-      if (new RegExp(regex).test(file)) {
-        return suite;
-      }
-    }
-  }
-}
-
 async function decompressTests(archivePath: string) {
   console.log(`Decompressing ${basename(archivePath)}...`);
 
@@ -158,6 +143,21 @@ async function decompressTests(archivePath: string) {
     });
     await copy(entry, file);
     file.close();
+  }
+}
+
+/**
+ * This will iterate over test list defined in the configuration file and test the
+ * passed file against it. If a match were to be found, it will return the test
+ * suite specified for that file
+ */
+function getRequestedFileSuite(file: string): string | undefined {
+  for (const suite in config.tests) {
+    for (const regex of config.tests[suite]) {
+      if (new RegExp("^" + regex).test(file)) {
+        return suite;
+      }
+    }
   }
 }
 
