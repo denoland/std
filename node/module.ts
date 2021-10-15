@@ -381,8 +381,7 @@ class Module {
     const module = new Module(filename, parent);
 
     if (isMain) {
-      // TODO(bartlomieju): set process info
-      // process.mainModule = module;
+      process.mainModule = module;
       module.id = ".";
     }
 
@@ -1160,8 +1159,8 @@ function makeRequireFunction(mod: Module): RequireFunction {
   }
 
   resolve.paths = paths;
-  // TODO(bartlomieju): set main
-  // require.main = process.mainModule;
+
+  require.main = process.mainModule;
 
   // Enable support to add extra extension types.
   require.extensions = Module._extensions;

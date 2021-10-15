@@ -65,6 +65,16 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.mainModule",
+  fn() {
+    assertEquals(process.mainModule, undefined);
+    // Check that it is writable
+    process.mainModule = "foo";
+    assertEquals(process.mainModule, "foo");
+  },
+});
+
+Deno.test({
   name: "process.arch",
   fn() {
     assertEquals(typeof process.arch, "string");
