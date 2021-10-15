@@ -116,7 +116,6 @@
       "test-net-normalize-args.js",
       "test-net-options-lookup.js",
       "test-net-pause-resume-connecting.js",
-      "test-net-reconnect.js",
       "test-net-server-call-listen-multiple-times.js",
       "test-net-server-close.js",
       "test-net-server-listen-options-signal.js",
