@@ -122,7 +122,9 @@ export class ServerResponse extends NodeWritable {
   ensureHeaders(singleChunk?: Chunk) {
     if (this.status === null) {
       this.status = 200;
-      this.headers = typeof singleChunk === "string" ? { "content-type": "text/plain" } : {};
+      this.headers = typeof singleChunk === "string"
+        ? { "content-type": "text/plain" }
+        : {};
     }
   }
 
@@ -130,7 +132,9 @@ export class ServerResponse extends NodeWritable {
     this.headersSent = true;
     this.ensureHeaders(singleChunk);
     const body = singleChunk ?? this.readable;
-    this.reqEvent.respondWith(new Response(body, { headers: this.headers, status: this.status }));
+    this.reqEvent.respondWith(
+      new Response(body, { headers: this.headers, status: this.status }),
+    );
   }
 }
 
