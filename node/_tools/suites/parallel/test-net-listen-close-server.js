@@ -26,12 +26,12 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"use strict";
-const common = require("../common");
-const net = require("net");
+'use strict';
+const common = require('../common');
+const net = require('net');
 
-const server = net.createServer(function (socket) {
+const server = net.createServer(function(socket) {
 });
 server.listen(0, common.mustNotCall());
-server.on("error", common.mustNotCall());
+server.on('error', common.mustNotCall());
 server.close();

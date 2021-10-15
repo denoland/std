@@ -26,21 +26,18 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"use strict";
-const common = require("../common");
-const net = require("net");
+'use strict';
+const common = require('../common');
+const net = require('net');
 
 const server = net.createServer();
 server.listen(0);
 const port = server.address().port;
 const conn = net.createConnection(port);
 
-conn.on(
-  "error",
-  common.mustCall(() => {
-    conn.destroy();
-  }),
-);
+conn.on('error', common.mustCall(() => {
+  conn.destroy();
+}));
 
-conn.on("close", common.mustCall());
+conn.on('close', common.mustCall());
 server.close();

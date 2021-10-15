@@ -26,15 +26,15 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"use strict";
-const common = require("../common");
-const assert = require("assert");
-const net = require("net");
+'use strict';
+const common = require('../common');
+const assert = require('assert');
+const net = require('net');
 
 const sockets = [];
 
-const server = net.createServer(function (c) {
-  c.on("close", common.mustCall());
+const server = net.createServer(function(c) {
+  c.on('close', common.mustCall());
 
   sockets.push(c);
 
@@ -44,12 +44,9 @@ const server = net.createServer(function (c) {
   }
 });
 
-server.on("close", common.mustCall());
+server.on('close', common.mustCall());
 
-assert.strictEqual(
-  server,
-  server.listen(0, () => {
-    net.createConnection(server.address().port);
-    net.createConnection(server.address().port);
-  }),
-);
+assert.strictEqual(server, server.listen(0, () => {
+  net.createConnection(server.address().port);
+  net.createConnection(server.address().port);
+}));

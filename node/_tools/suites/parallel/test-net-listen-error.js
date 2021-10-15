@@ -26,11 +26,11 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-"use strict";
-const common = require("../common");
-const net = require("net");
+'use strict';
+const common = require('../common');
+const net = require('net');
 
-const server = net.createServer(function (socket) {
+const server = net.createServer(function(socket) {
 });
-server.listen(1, "1.1.1.1", common.mustNotCall()); // EACCES or EADDRNOTAVAIL
-server.on("error", common.mustCall());
+server.listen(1, '1.1.1.1', common.mustNotCall()); // EACCES or EADDRNOTAVAIL
+server.on('error', common.mustCall());
