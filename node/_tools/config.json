@@ -42,6 +42,10 @@
     ]
   },
   "tests": {
+    "common": [
+      "dns.js",
+      "internet.js"
+    ],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
