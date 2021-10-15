@@ -21,7 +21,20 @@ const performance: Partial<Performance> & {
   eventLoopUtilization: () =>
     notImplemented("eventLoopUtilization from performance"),
   mark: (markName: string) => shimPerformance.mark(markName),
-  measure: shimPerformance.measure,
+  measure: (
+    measureName: string,
+    startMark?: string | PerformanceMeasureOptions,
+    endMark?: string,
+  ): PerformanceMeasure => {
+    if (endMark) {
+      return shimPerformance.measure(measureName, startMark as string, endMark);
+    } else {
+      return shimPerformance.measure(
+        measureName,
+        startMark as PerformanceMeasureOptions,
+      );
+    }
+  },
   nodeTiming: {},
   now: () => shimPerformance.now(),
   timerify: () => notImplemented("timerify from performance"),
