@@ -154,7 +154,7 @@ async function decompressTests(archivePath: string) {
 function getRequestedFileSuite(file: string): string | undefined {
   for (const suite in config.tests) {
     for (const regex of config.tests[suite]) {
-      if (new RegExp('^' + regex).test(file)) {
+      if (new RegExp("^" + regex).test(file)) {
         return suite;
       }
     }
