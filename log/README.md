@@ -1,209 +1,159 @@
 # Log
 
-## Usage
+Module providing a global default logger that can be attached on to and functions to build custom loggers.
+
+**If you are a library author, please see the "Framework Logging" section at the bottom**
+
+## Get started
+
+If you just want to log to stdout an stderr, set up the default loggeer with
 
 ```ts
-import {
-  ConsoleHandler,
-  Logger,
-  logLevels,
-} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+import { addDefaultLogger, buildDefaultConsoleLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
-const consoleHandler = new ConsoleHandler(logLevels.trace);
-
-const logger = new Logger(logLevels.trace, { handlers: [consoleHandler] });
-
-logger.trace("Hello");
-logger.debug("world");
-logger.info(123456);
-logger.warn(true);
-logger.error({ foo: "bar", fizz: "bazz" });
+addDefaultLogger(
+  buildDefaultConsoleLogger("info")
+)
 ```
 
-Output
-
-```sh
-Hello
-world
-123456
-true
-{ foo: "bar", fizz: "bazz" }
-```
-
-## Advanced Usage
+and use the default logger in your code like this
 
 ```ts
-import {
-  ConsoleHandler,
-  FileHandler,
-  Logger,
-  logLevels,
-} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+import { log } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
-const consoleHandler = new ConsoleHandler(logLevels.info);
-const fileHandler = new FileHandler(logLevels.warn, {
-  filename: "./log.txt",
-  formatter: ({ logLevel, message }) => `${logLevel.name} ${message}`,
-});
-const firstLogger = new Logger(logLevels.info, {
-  handlers: [consoleHandler, fileHandler],
-});
-
-const secondLogger = new Logger(logLevels.error, {
-  handlers: [consoleHandler],
-});
-
-firstLogger.debug("fizz"); // logs to no handler, because `consoleHandler` handler requires "info" level and `fileHandler` handler requires "warn" level
-firstLogger.info("fizz"); // logs to `consoleHandler`, because `file` handler requires "warn" level
-firstLogger.warn(41256); // logs to both `consoleHandler` and `fileHandler`
-
-secondLogger.debug("fizz"); // logs to no handler, because this `secondLogger` has "Error" level
-secondLogger.error({ productType: "book", value: "126.11" }); // logs to `consoleHandler`
+log.info("Some message")
+log.error("Error!", someObject)
 ```
 
-## LogLevels
+This setup will log all messages of level `info` and above to `stdout` or `stderr` respectively.
 
-The default log levels are
+## Default Logging
 
-| LogLevel | Name    | Code |
-| -------: | ------- | ---- |
-|    trace | "trace" | 10   |
-|    debug | "debug" | 20   |
-|     info | "info"  | 30   |
-|     warn | "warn"  | 40   |
-|    error | "error" | 50   |
+The above example uses the default logger, which is exported as `log`. By default, it does nothing, but you can
+add loggers receiving it's messages to it using `addDefaultLogger`. The difference to setting up an own console
+logger is that third party code that wants to provide logs will be able to use the default logger as well, giving
+you a central place to control how they are handled as well. We will look at framework logging later.
 
-## Handler
+### Default Log Levels
 
-A handler is responsible for actual output of log messages. When a handler is
-called by a logger, it firstly checks that `LogRecord`'s level is not lower than
-level of the handler. If level check passes, handlers formats log record into
-string and outputs it to target.
+The default log levels are (in order of importance, top ones being more important):
 
-### Custom Message Format
+1. `error`
+2. `warn`
+3. `info`
+4. `debug`
+5. `trace`
 
-If you want to override default format of message you can define formatter
-option for handler.
+They are exported as `defaultLogLevels`, but will automatically be used by `log` and all `buildDefault-` loggers
 
-### Example
+## Builtin Logger Types & Custom Log Levels
+
+There are three builtin loggers that can be used with custom log levels to build custom loggers. They all use the
+same message formatter by default, but can be configured to use any custom one. They all accept a `threshold` to filter
+messages. They also accept optional type parameters to set the type for the passed `message`s and optional `additionalData`,
+allowing to enforce custom log formats throughout your application.
+
+You define custom log levels with a simple record like this:
 
 ```ts
-import {
-  ConsoleHandler,
-  Logger,
-  logLevels,
-} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
-const consoleHandler = new ConsoleHandler(logLevels.debug, {
-  formatter: ({ logLevel, message }) =>
-    `custom formatter: ${logLevel.name} ${message}`,
-});
-const logger = new Logger(logLevels.debug, {
-  handlers: [consoleHandler],
-});
-logger.debug("Hello world");
-```
-
-Output
-
-```sh
-custom formatter: debug Hello world
-```
-
-## Built-in Handlers
-
-This module has three built-in handlers:
-
-### ConsoleHandler
-
-This handler will output color coded log messages to the console.
-
-| Method | Color   |
-| -----: | ------- |
-|  trace | default |
-|  debug | default |
-|   info | blue    |
-|   warn | yellow  |
-|  error | red     |
-
-### FileHandler
-
-This handler will output to a file.
-
-#### Mode
-
-You can specify a `mode` to change the behavior of the handler:
-
-|                       Mode | Description                                                                                                                            |
-| -------------------------: | -------------------------------------------------------------------------------------------------------------------------------------- |
-| <nobr>"a" (default)</nobr> | Appends new log messages to the end of an existing log file, or create a new log file if none exists. The file will grow indefinitely. |
-|                        "w" | Upon creation of the handler, any existing log file will be removed and a new one created.                                             |
-|                        "x" | This will create a new log file and throw an error if one already exists.                                                              |
-
-#### Permissions
-
-This handler requires `--allow-write` permission on the log file.
-
-### RotatingFileHandler
-
-This handler extends the functionality of the `FileHandler` by _rotating_ the
-log file when it reaches a certain size. `maxBytes` specifies the maximum size
-in bytes that the log file can grow to before rolling over to a new one. If the
-size of the new log message plus the current log file size exceeds `maxBytes`
-then a roll over is triggered.
-
-When a roll over occurs, before the log message is written, the log file is
-renamed and appended with `.1`. If a `.1` version already existed, it would have
-been renamed `.2` first and so on.
-
-The maximum number of log files to keep is specified by `maxBackupCount`. After
-the renames are complete the log message is written to the original, now blank,
-file.
-
-#### Mode
-
-You can specify a `mode` to change the behavior of the handler:
-
-|                       Mode | Description                                                                                                                                                      |
-| -------------------------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <nobr>"a" (default)</nobr> | Appends new log messages to the end of an existing log file, or create a new log file if none exists. The file will grow indefinitely.                           |
-|                        "w" | In addition to starting with a clean log file, this mode will also cause any existing backups (up to `maxBackupCount`) to be deleted giving a fully clean slate. |
-|                        "x" | This will create a new log file and throw an error if one or any backups (up to `maxBackupCount`) already exists.                                                |
-
-#### Permissions
-
-This handler requires both `--allow-read` and `--allow-write` permissions on the
-log files.
-
-### Custom message format
-
-If you want to override default format of message you can define formatter
-option for handler. It can be either simple string-based format that uses
-LogRecord fields or more complicated function-based one that takes LogRecord as
-argument and outputs string.
-
-## Lazy Log Evaluation
-
-Some log statements are expensive to compute. In these cases, you can use lazy
-log evaluation to prevent the computation taking place if the logger won't log
-the message. Methods `trace`, `debug`, `info`, `warn`, and `error` can therefore
-also take a function as an argument.
-
-### Example
-
-```ts
-import {
-  Logger,
-  logLevels,
-} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
-const logger = new Logger(logLevels.error);
-
-function expensiveFn() {
-  const sum = 1 + 1;
-  return `this is the sum: ${sum}`;
+const myLogLevels = {
+  foo: 1,
+  bar: 2,
 }
 
-// expensiveFn is not being executed because logger has "error" level
-logger.debug(expensiveFn);
-// expensiveFn is being executed because logger has "error" level
-logger.error(expensiveFn);
+const logger = buildConsoleLogger(
+  myLogLevels,
+  "foo",
+  level => false,
+)
+
+logger.foo('A message')
+logger.bar('Another message', [ 'some', 'additional', 'data' ])
+```
+
+You could define a logger that just accepts `numbers` and no additional data
+to print them to a number log file like this:
+
+```ts
+const myLogLevels = {
+  minor: 1,
+  major: 2,
+}
+
+const logger = buildFileLogger<typeof myLogLevels, number, undefined>(
+  myLogLevels,
+  "major",
+  "numbers.log",
+)
+
+logger.minor(5)
+logger.major(10)
+```
+
+The three builtin loggers are:
+
+### Console Logger
+
+A logger that prints to `stdout` and `stderr`, see `buildConsoleLogger`.
+
+### File Logger
+
+A logger that writes lines to a file, see `buildFileLogger`. Keep in mind that this
+needs write permissions via `--allow-write`.
+
+### Multi Logger
+
+A logger that passes messages on to a list of other loggers, see `buildMultiLogger`. It
+pass on all messages by default (`threshold = null`) but can be configured to filter like
+any other logger.
+
+## Custom Loggers
+
+Using `buildLogger`, you can build a completely custom logger with custom log levels,
+message handling and even optional custom dispatching logic (the default dispatcher 
+is responsible for filtering messages based on `threshold`).
+
+A vote logger that will only show messages below the threshold after the 5th message, that accepts only
+strings and that truncates messages to 10 chars could look like this:
+
+```ts
+const logLevels = {
+  irrelevant: 1,
+  normal: 2,
+  important: 3,
+}
+
+const counts = {
+  irrelevant: 0,
+  normal: 0,
+  important: 0,
+}
+
+const logger = buildLogger(
+  logLevels,
+  "normal",
+  (level, message: string) => {
+    console.log(message.substr(0, 10))
+  },
+  (levels, threshold, handler, level, message) => {
+    counts[level] += 1
+
+    if (levels[threshold] > levels[level] || counts[level] >= 5)
+      handler(level, message)
+  },
+)
+```
+
+### Framework Logging
+
+If you are a framework or library author that wants to log for their users, please use
+`buildFrameworkLogger` and pass a key to it that is unique to your library. It passes that
+information on under the hood and allows to offer more advanced source-speecific logging rules.
+
+```ts
+import { buildFrameworkLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+
+const logger = buildFrameworkLogger("awesome-lib")
+
+logger.info("Some message")
 ```
