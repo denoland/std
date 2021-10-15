@@ -3,7 +3,7 @@ import {
   buildFileLogger,
   buildMultiLogger,
 } from "./builtin_loggers.ts";
-import { Logger } from "./logger.ts";
+import { buildLogger, Logger } from "./logger.ts";
 
 /** Default log levels used for the default logger */
 export const defaultLogLevels = {
@@ -97,3 +97,22 @@ export function buildDefaultConsoleLogger(
     (it) => defaultLogLevels[it] >= defaultLogLevels["warn"],
   );
 }
+
+export function buildFrameworkLogger(source: string) {
+    return buildLogger<
+        DefaultLogLevels,
+        string,
+        Record<string, unknown>
+    >(
+        defaultLogLevels,
+        null,
+        (level, message, additionalData) => defaultLogger[level](
+            message,
+            {
+                ...additionalData,
+                source,
+            },
+        ),
+    )
+}
+
