@@ -144,7 +144,6 @@
     ],
     "pummel": [
       "test-net-pingpong-delay.js",
-      "test-net-write-callbacks.js",
       "test-net-write-callbacks.js"
     ],
     "sequential": [
