@@ -54,6 +54,24 @@ Deno.test({
     assertEquals(typeof process.version, "string");
     assertEquals(typeof process.versions, "object");
     assertEquals(typeof process.versions.node, "string");
+    assertEquals(typeof process.versions.v8, "string");
+    assertEquals(typeof process.versions.uv, "string");
+    assertEquals(typeof process.versions.zlib, "string");
+    assertEquals(typeof process.versions.brotli, "string");
+    assertEquals(typeof process.versions.ares, "string");
+    assertEquals(typeof process.versions.modules, "string");
+    assertEquals(typeof process.versions.nghttp2, "string");
+    assertEquals(typeof process.versions.napi, "string");
+    assertEquals(typeof process.versions.llhttp, "string");
+    assertEquals(typeof process.versions.openssl, "string");
+    assertEquals(typeof process.versions.cldr, "string");
+    assertEquals(typeof process.versions.icu, "string");
+    assertEquals(typeof process.versions.tz, "string");
+    assertEquals(typeof process.versions.unicode, "string");
+    // These two are not present in `process.versions` in Node, but we
+    // add them anyway
+    assertEquals(typeof process.versions.deno, "string");
+    assertEquals(typeof process.versions.typescript, "string");
   },
 });
 
