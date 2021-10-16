@@ -64,17 +64,16 @@ for (const obj of throwsObjs) {
 
 e.emit('maxListeners');
 
-// TODO(wafuwafu13): enable this validation
-// {
-//   const { EventEmitter, defaultMaxListeners } = events;
-//   for (const obj of throwsObjs) {
-//     assert.throws(() => EventEmitter.setMaxListeners(obj), {
-//       code: 'ERR_OUT_OF_RANGE',
-//     });
-//   }
+{
+  const { EventEmitter, defaultMaxListeners } = events;
+  for (const obj of throwsObjs) {
+    assert.throws(() => EventEmitter.setMaxListeners(obj), {
+      code: 'ERR_OUT_OF_RANGE',
+    });
+  }
 
-//   assert.throws(
-//     () => EventEmitter.setMaxListeners(defaultMaxListeners, 'INVALID_EMITTER'),
-//     { code: 'ERR_INVALID_ARG_TYPE' }
-//   );
-// }
+  assert.throws(
+    () => EventEmitter.setMaxListeners(defaultMaxListeners, 'INVALID_EMITTER'),
+    { code: 'ERR_INVALID_ARG_TYPE' }
+  );
+}

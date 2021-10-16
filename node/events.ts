@@ -22,6 +22,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { assert } from "../_util/assert.ts";
+import { notImplemented } from "./_utils.ts";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE } from "./_errors.ts";
 import { inspect } from "./util.ts";
 
@@ -62,8 +63,34 @@ type EventMap = Record<
 
 export let defaultMaxListeners = 10;
 function validateMaxListeners(n: number, name: string): void {
-  if (!Number.isInteger(n) || n < 0) {
+  if (!Number.isInteger(n) || Number.isNaN(n) || n < 0) {
     throw new ERR_OUT_OF_RANGE(name, "a non-negative number", inspect(n));
+  }
+}
+
+function setMaxListeners(
+  n: number,
+  ...eventTargets: Array<EventEmitter | EventTarget>
+): void {
+  validateMaxListeners(n, "n");
+  if (eventTargets.length === 0) {
+    defaultMaxListeners = n;
+  } else {
+    for (const target of eventTargets) {
+      if (target instanceof EventEmitter) {
+        target.setMaxListeners(n);
+      } else if (target instanceof EventTarget) {
+        notImplemented(
+          "setMaxListeners currently does not support EventTarget",
+        );
+      } else {
+        throw new ERR_INVALID_ARG_TYPE(
+          "eventTargets",
+          ["EventEmitter", "EventTarget"],
+          target,
+        );
+      }
+    }
   }
 }
 
@@ -690,7 +717,7 @@ class MaxListenersExceededWarning extends Error {
   }
 }
 
-export default Object.assign(EventEmitter, { EventEmitter });
+export default Object.assign(EventEmitter, { EventEmitter, setMaxListeners });
 
 export const captureRejectionSymbol = EventEmitter.captureRejectionSymbol;
 export const errorMonitor = EventEmitter.errorMonitor;

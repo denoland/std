@@ -16,7 +16,6 @@
       "test-assert.js",
       "test-dns-lookup.js",
       "test-dns.js",
-      "test-event-emitter-max-listeners.js",
       "test-net-access-byteswritten.js",
       "test-net-after-close.js",
       "test-net-bytes-stats.js",
