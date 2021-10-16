@@ -68,7 +68,10 @@ function validateMaxListeners(n: number, name: string): void {
   }
 }
 
-function setMaxListeners(n: number, ...eventTargets: Array<EventEmitter | EventTarget>): void {
+function setMaxListeners(
+  n: number,
+  ...eventTargets: Array<EventEmitter | EventTarget>
+): void {
   validateMaxListeners(n, "n");
   if (eventTargets.length === 0) {
     defaultMaxListeners = n;
@@ -77,12 +80,15 @@ function setMaxListeners(n: number, ...eventTargets: Array<EventEmitter | EventT
       if (target instanceof EventEmitter) {
         target.setMaxListeners(n);
       } else if (target instanceof EventTarget) {
-        notImplemented("setMaxListeners currently does not support EventTarget");
+        notImplemented(
+          "setMaxListeners currently does not support EventTarget",
+        );
       } else {
         throw new ERR_INVALID_ARG_TYPE(
           "eventTargets",
           ["EventEmitter", "EventTarget"],
-          target);
+          target,
+        );
       }
     }
   }
@@ -701,7 +707,8 @@ class MaxListenersExceededWarning extends Error {
   ) {
     const listenerCount = emitter.listenerCount(type);
     const message = "Possible EventEmitter memory leak detected. " +
-      `${listenerCount} ${type == null ? "null" : type.toString()
+      `${listenerCount} ${
+        type == null ? "null" : type.toString()
       } listeners added to [${emitter.constructor.name}]. ` +
       " Use emitter.setMaxListeners() to increase limit";
     super(message);
