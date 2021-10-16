@@ -139,3 +139,7 @@ Deno.test("requireErrorInEval", function () {
 Deno.test("requireCjsWithDynamicImport", function () {
   require("./_module/cjs/cjs_with_dynamic_import");
 });
+
+Deno.test("requireWithImportsExports", function () {
+  require("./_module/cjs/cjs_imports_exports");
+});
