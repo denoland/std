@@ -3,9 +3,9 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-import { BufReader } from "../io/bufio.ts";
-import { TextProtoReader } from "./mod.ts";
+import { BufReader } from "../io/buffer.ts";
 import { StringReader } from "../io/readers.ts";
+import { TextProtoReader } from "./mod.ts";
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 
 function reader(s: string): TextProtoReader {

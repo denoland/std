@@ -5,7 +5,7 @@
 ```ts
 import { Tar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
 import { Buffer } from "https://deno.land/std@$STD_VERSION/io/buffer.ts";
-import { copy } from "https://deno.land/std@$STD_VERSION/io/util.ts";
+import { copy } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
 
 const tar = new Tar();
 const content = new TextEncoder().encode("Deno.land");
@@ -32,7 +32,7 @@ writer.close();
 import { Untar } from "https://deno.land/std@$STD_VERSION/archive/tar.ts";
 import { ensureFile } from "https://deno.land/std@$STD_VERSION/fs/ensure_file.ts";
 import { ensureDir } from "https://deno.land/std@$STD_VERSION/fs/ensure_dir.ts";
-import { copy } from "https://deno.land/std@$STD_VERSION/io/util.ts";
+import { copy } from "https://deno.land/std@$STD_VERSION/streams/conversion.ts";
 
 const reader = await Deno.open("./out.tar", { read: true });
 const untar = new Untar(reader);

@@ -21,26 +21,7 @@
 
 import "./global.ts";
 
-import nodeAssert from "./assert.ts";
-import nodeAssertStrict from "./assert/strict.ts";
-import nodeBuffer from "./buffer.ts";
-import nodeCrypto from "./crypto.ts";
-import nodeConsole from "./console.ts";
-import nodeConstants from "./constants.ts";
-import nodeChildProcess from "./child_process.ts";
-import nodeEvents from "./events.ts";
-import nodeFS from "./fs.ts";
-import nodeFSPromises from "./fs/promises.ts";
-import nodeOs from "./os.ts";
-import nodePath from "./path.ts";
-import nodePerfHooks from "./perf_hooks.ts";
-import nodeQueryString from "./querystring.ts";
-import nodeStream from "./stream.ts";
-import nodeStringDecoder from "./string_decoder.ts";
-import nodeTimers from "./timers.ts";
-import nodeTty from "./tty.ts";
-import nodeUrl from "./url.ts";
-import nodeUtil from "./util.ts";
+import nodeMods from "./module_all.ts";
 
 import * as path from "../path/mod.ts";
 import { assert } from "../_util/assert.ts";
@@ -400,8 +381,7 @@ class Module {
     const module = new Module(filename, parent);
 
     if (isMain) {
-      // TODO(bartlomieju): set process info
-      // process.mainModule = module;
+      process.mainModule = module;
       module.id = ".";
     }
 
@@ -626,55 +606,10 @@ function createNativeModule(id: string, exports: any): Module {
   mod.loaded = true;
   return mod;
 }
-
-nativeModulePolyfill.set("assert", createNativeModule("assert", nodeAssert));
-nativeModulePolyfill.set(
-  "assert/strict",
-  createNativeModule("assert/strict", nodeAssertStrict),
-);
-nativeModulePolyfill.set("buffer", createNativeModule("buffer", nodeBuffer));
-nativeModulePolyfill.set(
-  "constants",
-  createNativeModule("constants", nodeConstants),
-);
-nativeModulePolyfill.set(
-  "child_process",
-  createNativeModule("child_process", nodeChildProcess),
-);
-nativeModulePolyfill.set("crypto", createNativeModule("crypto", nodeCrypto));
-nativeModulePolyfill.set(
-  "events",
-  createNativeModule("events", nodeEvents),
-);
-nativeModulePolyfill.set("fs", createNativeModule("fs", nodeFS));
-nativeModulePolyfill.set(
-  "fs/promises",
-  createNativeModule("fs/promises", nodeFSPromises),
-);
-nativeModulePolyfill.set("module", createNativeModule("module", Module));
-nativeModulePolyfill.set("os", createNativeModule("os", nodeOs));
-nativeModulePolyfill.set("path", createNativeModule("path", nodePath));
-nativeModulePolyfill.set(
-  "perf_hooks",
-  createNativeModule("perf_hooks", nodePerfHooks),
-);
-nativeModulePolyfill.set(
-  "querystring",
-  createNativeModule("querystring", nodeQueryString),
-);
-nativeModulePolyfill.set(
-  "stream",
-  createNativeModule("stream", nodeStream),
-);
-nativeModulePolyfill.set(
-  "string_decoder",
-  createNativeModule("string_decoder", nodeStringDecoder),
-);
-nativeModulePolyfill.set("timers", createNativeModule("timers", nodeTimers));
-nativeModulePolyfill.set("tty", createNativeModule("tty", nodeTty));
-nativeModulePolyfill.set("url", createNativeModule("url", nodeUrl));
-nativeModulePolyfill.set("util", createNativeModule("util", nodeUtil));
-nativeModulePolyfill.set("console", createNativeModule("console", nodeConsole));
+// Set polyfills defined in ./module_all.ts
+for (const key of Object.keys(nodeMods)) {
+  nativeModulePolyfill.set(key, createNativeModule(key, nodeMods[key]));
+}
 
 function loadNativeModule(
   _filename: string,
@@ -1140,7 +1075,7 @@ function wrapSafe(filename: string, content: string): RequireWrapper {
   // deno-lint-ignore no-explicit-any
   const [f, err] = (Deno as any).core.evalContext(wrapper, filename);
   if (err) {
-    throw err;
+    throw err.thrown;
   }
   return f;
   // ESM code removed.
@@ -1224,8 +1159,8 @@ function makeRequireFunction(mod: Module): RequireFunction {
   }
 
   resolve.paths = paths;
-  // TODO(bartlomieju): set main
-  // require.main = process.mainModule;
+
+  require.main = process.mainModule;
 
   // Enable support to add extra extension types.
   require.extensions = Module._extensions;
@@ -1245,6 +1180,48 @@ function stripBOM(content: string): string {
     content = content.slice(1);
   }
   return content;
+}
+
+// These two functions are not exported in Node, but it's very
+// helpful to have them available for compat mode in CLI
+export function resolveMainPath(main: string): undefined | string {
+  // Note extension resolution for the main entry point can be deprecated in a
+  // future major.
+  // Module._findPath is monkey-patchable here.
+  let mainPath = Module._findPath(path.resolve(main), [], true);
+  if (!mainPath) {
+    return;
+  }
+
+  // NOTE(bartlomieju): checking for `--preserve-symlinks-main` flag
+  // is skipped as this flag is not supported by Deno CLI.
+  // const preserveSymlinksMain = getOptionValue('--preserve-symlinks-main');
+  // if (!preserveSymlinksMain)
+  //   mainPath = toRealPath(mainPath);
+
+  return mainPath as string;
+}
+
+export function shouldUseESMLoader(mainPath: string): boolean {
+  // NOTE(bartlomieju): these two are skipped, because Deno CLI
+  // doesn't suport these flags
+  // const userLoader = getOptionValue('--experimental-loader');
+  // if (userLoader)
+  //   return true;
+  // const esModuleSpecifierResolution =
+  //   getOptionValue('--experimental-specifier-resolution');
+  // if (esModuleSpecifierResolution === 'node')
+  //   return true;
+
+  // Determine the module format of the main
+  if (mainPath && mainPath.endsWith(".mjs")) {
+    return true;
+  }
+  if (!mainPath || mainPath.endsWith(".cjs")) {
+    return false;
+  }
+  const pkg = readPackageScope(mainPath);
+  return pkg && pkg.data.type === "module";
 }
 
 export const builtinModules = Module.builtinModules;

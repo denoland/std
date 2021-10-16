@@ -261,7 +261,7 @@ export class Buffer extends Uint8Array {
 
   /**
    * Reads byteLength number of bytes from buf at the specified offset and interprets
-   * the result as an unsigned big-endian integer supporting up to 32 bits of accuracy.
+   * the result as an unsigned big-endian integer supporting up to 48 bits of accuracy.
    */
   readUIntBE(offset = 0, byteLength: number): number {
     if (byteLength === 3 || byteLength === 5 || byteLength === 6) {
@@ -269,6 +269,20 @@ export class Buffer extends Uint8Array {
     }
     if (byteLength === 4) return this.readUInt32BE(offset);
     if (byteLength === 2) return this.readUInt16BE(offset);
+    if (byteLength === 1) return this.readUInt8(offset);
+    this.boundsError(byteLength, 4, "byteLength");
+  }
+
+  /**
+   * Reads byteLength number of bytes from buf at the specified offset and interprets
+   * the result as an unsigned, little-endian integer supporting up to 48 bits of accuracy.
+   */
+  readUIntLE(offset = 0, byteLength: number): number {
+    if (byteLength === 3 || byteLength === 5 || byteLength === 6) {
+      notImplemented(`byteLength ${byteLength}`);
+    }
+    if (byteLength === 4) return this.readUInt32LE(offset);
+    if (byteLength === 2) return this.readUInt16LE(offset);
     if (byteLength === 1) return this.readUInt8(offset);
     this.boundsError(byteLength, 4, "byteLength");
   }
@@ -628,6 +642,26 @@ export class Buffer extends Uint8Array {
     return offset + 4;
   }
 }
+// Make Buffer static methods enumerable (so they can be copied by safe-buffer, etc...)
+for (
+  const prop of [
+    "alloc",
+    "allocUnsafe",
+    "byteLength",
+    "from",
+    "isBuffer",
+    "isEncoding",
+  ]
+) {
+  Reflect.defineProperty(Buffer, prop, { enumerable: true });
+}
+// Allow calling Buffer() without new (translate it to a Buffer.from call, for safe-buffer, etc..)
+const PBuffer = new Proxy(Buffer, {
+  apply(_target, _thisArg, args) {
+    // @ts-ignore tedious to replicate types ...
+    return Buffer.from(...args);
+  },
+});
 
 export const kMaxLength = 4294967296;
 export const kStringMaxLength = 536870888;
@@ -640,7 +674,7 @@ export const atob = globalThis.atob;
 export const btoa = globalThis.btoa;
 
 export default {
-  Buffer,
+  Buffer: PBuffer,
   kMaxLength,
   kStringMaxLength,
   constants,

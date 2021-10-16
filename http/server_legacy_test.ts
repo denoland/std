@@ -20,12 +20,11 @@ import {
   ServerRequest,
   serveTLS,
 } from "./server_legacy.ts";
-import { BufReader, BufWriter } from "../io/bufio.ts";
+import { Buffer, BufReader, BufWriter } from "../io/buffer.ts";
+import { readAll, writeAll } from "../streams/conversion.ts";
 import { delay } from "../async/delay.ts";
 import { mockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { Buffer } from "../io/buffer.ts";
-import { readAll, writeAll } from "../io/util.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");

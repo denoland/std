@@ -4,11 +4,11 @@ import {
   assertEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import { BufReader } from "../io/bufio.ts";
+import { BufReader } from "../io/buffer.ts";
+import { iterateReader, readAll, writeAll } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { FileServerArgs } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { iter, readAll, writeAll } from "../io/util.ts";
 import { isWindows } from "../_util/os.ts";
 
 let fileServer: Deno.Process<Deno.RunOptions & { stdout: "piped" }>;
@@ -100,7 +100,7 @@ async function fetchExactPath(
     let currentResult = "";
     let contentLength = -1;
     let startOfBody = -1;
-    for await (const chunk of iter(conn)) {
+    for await (const chunk of iterateReader(conn)) {
       currentResult += decoder.decode(chunk);
       if (contentLength === -1) {
         const match = /^content-length: (.*)$/m.exec(currentResult);
@@ -475,7 +475,7 @@ Deno.test("file_server do not show dotfiles", async function () {
     assert(!(await res.text()).includes(".dotfile"));
 
     res = await fetch("http://localhost:4507/testdata/.dotfile");
-    assertEquals((await res.text()), "dotfile");
+    assertEquals(await res.text(), "dotfile");
   } finally {
     await killFileServer();
   }

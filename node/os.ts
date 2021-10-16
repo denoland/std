@@ -308,6 +308,7 @@ export const constants = {
 };
 
 export const EOL = isWindows ? fsEOL.CRLF : fsEOL.LF;
+export const devNull = isWindows ? "\\\\.\\nul" : "/dev/null";
 
 export default {
   arch,
@@ -329,4 +330,5 @@ export default {
   userInfo,
   constants,
   EOL,
+  devNull,
 };
