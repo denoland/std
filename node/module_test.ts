@@ -135,3 +135,7 @@ Deno.test("requireErrorInEval", function () {
     "Cannot use import statement outside a module",
   );
 });
+
+Deno.test("requireCjsWithDynamicImport", function () {
+  require("./_module/cjs/cjs_with_dynamic_import");
+});
