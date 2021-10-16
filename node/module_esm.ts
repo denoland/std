@@ -518,8 +518,9 @@ function resolvePackageTarget(
           internal,
           conditions,
         );
-      } catch (e) {
+      } catch (e: unknown) {
         lastException = e;
+        // @ts-ignore
         if (e.code === "ERR_INVALID_PACKAGE_TARGET") {
           continue;
         }
@@ -535,7 +536,7 @@ function resolvePackageTarget(
       return resolved;
     }
     if (lastException === undefined || lastException === null) {
-      return lastException;
+      return undefined;
     }
     throw lastException;
   } else if (typeof target === "object" && target !== null) {
@@ -734,6 +735,7 @@ function getPackageConfig(
     throw ERR_INVALID_PACKAGE_CONFIG(
       path,
       (base ? `"${specifier}" from ` : "") + fileURLToPath(base || specifier),
+      // @ts-ignore
       error.message,
     );
   }

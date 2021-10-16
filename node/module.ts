@@ -174,6 +174,7 @@ function trySelf(parentPath: string | undefined, request: string) {
       pkgPath,
     );
   } catch (e) {
+    // @ts-ignore
     if (e.code === "ERR_MODULE_NOT_FOUND") {
       throw createEsmNotFoundErr(request, pkgPath + "/package.json");
     }
@@ -369,6 +370,7 @@ class Module {
               pkg.path,
             );
           } catch (e) {
+            // @ts-ignore
             if (e.code === "ERR_MODULE_NOT_FOUND") {
               throw createEsmNotFoundErr(request);
             }
