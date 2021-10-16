@@ -383,7 +383,7 @@ class Process extends EventEmitter {
   //deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented();
+      notImplemented(`process.on("${event}")`);
     }
 
     super.on(event, listener);
@@ -397,8 +397,8 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_platform */
   platform = platform;
 
-  removeAllListeners(_event: string): never {
-    notImplemented();
+  removeAllListeners(event: string): never {
+    notImplemented(`process.removeAllListeners("${event}")`);
   }
 
   removeListener(
@@ -410,7 +410,7 @@ class Process extends EventEmitter {
   //deno-lint-ignore no-explicit-any
   removeListener(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented();
+      notImplemented(`process.removeListener("${event}")`);
     }
 
     super.removeListener("exit", listener);
