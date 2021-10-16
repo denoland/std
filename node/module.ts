@@ -71,6 +71,74 @@ function updateChildren(
   }
 }
 
+function finalizeEsmResolution(resolved, parentPath, pkgPath) {
+  if (RegExpPrototypeTest(encodedSepRegEx, resolved))
+    throw new ERR_INVALID_MODULE_SPECIFIER(
+      resolved, 'must not include encoded "/" or "\\" characters', parentPath);
+  const filename = fileURLToPath(resolved);
+  const actual = tryFile(filename);
+  if (actual)
+    return actual;
+  const err = createEsmNotFoundErr(filename,
+                                   path.resolve(pkgPath, 'package.json'));
+  throw err;
+}
+
+function createEsmNotFoundErr(request: string, path?: string) {
+  const err = new Error(`Cannot find module '${request}'`)  as Error & {
+    code: string;
+    path?: string;
+  };
+  err.code = 'MODULE_NOT_FOUND';
+  if (path) {
+    err.path = path;
+  }
+  return err;
+}
+
+function trySelfParentPath(parent: Module | undefined) {
+  if (!parent) return false;
+
+  if (parent.filename) {
+    return parent.filename;
+  } else if (parent.id === '<repl>' || parent.id === 'internal/preload') {
+    try {
+      return process.cwd() + path.sep;
+    } catch {
+      return false;
+    }
+  }
+}
+
+function trySelf(parentPath: string | undefined, request: string) {
+  if (!parentPath) return false;
+
+  const { data: pkg, path: pkgPath } = readPackageScope(parentPath) || {};
+  if (!pkg || pkg.exports === undefined) return false;
+  if (typeof pkg.name !== 'string') return false;
+
+  let expansion;
+  if (request === pkg.name) {
+    expansion = '.';
+  } else if (request.startsWith(`${pkg.name}/`)) {
+    expansion = '.' + request.slice(pkg.name.length);
+  } else {
+    return false;
+  }
+
+  try {
+    return finalizeEsmResolution(packageExportsResolve(
+      pathToFileURL(pkgPath + '/package.json'), expansion, pkg,
+      pathToFileURL(parentPath), cjsConditions), parentPath, pkgPath);
+  } catch (e) {
+    if (e.code === 'ERR_MODULE_NOT_FOUND') {
+      throw createEsmNotFoundErr(request, pkgPath + '/package.json');
+    }
+    throw e;
+  }
+}
+
+
 class Module {
   id: string;
   // deno-lint-ignore no-explicit-any
@@ -244,6 +312,34 @@ class Module {
       paths = Module._resolveLookupPaths(request, parent)!;
     }
 
+    if (parent?.filename) {
+      if (request[0] === '#') {
+        const pkg = readPackageScope(parent.filename) || { path: undefined, data: {} as PackageInfo };
+        if (pkg.data?.imports != null) {
+          try {
+            return finalizeEsmResolution(
+              packageImportsResolve(request, pathToFileURL(parent.filename),
+                                    cjsConditions), parent.filename,
+              pkg.path);
+          } catch (e) {
+            if (e.code === 'ERR_MODULE_NOT_FOUND')
+              throw createEsmNotFoundErr(request);
+            throw e;
+          }
+        }
+      }
+    }
+  
+    // Try module self resolution first
+    const parentPath = trySelfParentPath(parent);
+    const selfResolved = trySelf(parentPath, request);
+    if (selfResolved) {
+      const cacheKey = request + '\x00' +
+           (paths.length === 1 ? paths[0] : paths.join('\x00'));
+      Module._pathCache[cacheKey] = selfResolved;
+      return selfResolved;
+    }
+  
     // Look up the filename first, since that's the cache key.
     const filename = Module._findPath(request, paths, isMain);
     if (!filename) {
@@ -646,6 +742,8 @@ interface PackageInfo {
   // deno-lint-ignore no-explicit-any
   exports?: any;
   // deno-lint-ignore no-explicit-any
+  imports?: any
+  // deno-lint-ignore no-explicit-any
   type?: any;
 }
 
@@ -676,7 +774,9 @@ function readPackage(requestPath: string): PackageInfo | null {
     const filtered = {
       name: parsed.name,
       main: parsed.main,
+      path: jsonPath,
       exports: parsed.exports,
+      imports: parsed.imports,
       type: parsed.type,
     };
     packageJsonCache.set(jsonPath, filtered);
@@ -797,8 +897,6 @@ function findLongestRegisteredExtension(filename: string): string {
   }
   return ".js";
 }
-
-// --experimental-resolve-self trySelf() support removed.
 
 // deno-lint-ignore no-explicit-any
 function isConditionalDotExportSugar(exports: any, _basePath: string): boolean {
