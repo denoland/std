@@ -37,6 +37,7 @@ const relativeResolveCache = Object.create(null);
 
 let requireDepth = 0;
 let statCache: Map<string, StatResult> | null = null;
+const encodedSepRegEx = /%2F|%2C/i;
 
 type StatResult = -1 | 0 | 1;
 // Returns 0 if the path refers to
@@ -71,25 +72,51 @@ function updateChildren(
   }
 }
 
-function finalizeEsmResolution(resolved, parentPath, pkgPath) {
-  if (RegExpPrototypeTest(encodedSepRegEx, resolved))
-    throw new ERR_INVALID_MODULE_SPECIFIER(
-      resolved, 'must not include encoded "/" or "\\" characters', parentPath);
+function ERR_INVALID_MODULE_SPECIFIER(
+  request: string,
+  reason: string,
+  base?: string,
+): TypeError & { code: string } {
+  const err = new TypeError(
+    `Invalid module "${request}" ${reason}${
+      base ? ` imported from ${base}` : ""
+    }`,
+  ) as TypeError & { code: string };
+
+  err.code = "ERR_INVALID_MODULE_SPECIFIER";
+
+  return err;
+}
+function finalizeEsmResolution(
+  resolved: string,
+  parentPath: string,
+  pkgPath: string,
+) {
+  if (encodedSepRegEx.test(resolved)) {
+    throw ERR_INVALID_MODULE_SPECIFIER(
+      resolved,
+      'must not include encoded "/" or "\\" characters',
+      parentPath,
+    );
+  }
   const filename = fileURLToPath(resolved);
-  const actual = tryFile(filename);
-  if (actual)
+  const actual = tryFile(filename, false);
+  if (actual) {
     return actual;
-  const err = createEsmNotFoundErr(filename,
-                                   path.resolve(pkgPath, 'package.json'));
+  }
+  const err = createEsmNotFoundErr(
+    filename,
+    path.resolve(pkgPath, "package.json"),
+  );
   throw err;
 }
 
 function createEsmNotFoundErr(request: string, path?: string) {
-  const err = new Error(`Cannot find module '${request}'`)  as Error & {
+  const err = new Error(`Cannot find module '${request}'`) as Error & {
     code: string;
     path?: string;
   };
-  err.code = 'MODULE_NOT_FOUND';
+  err.code = "MODULE_NOT_FOUND";
   if (path) {
     err.path = path;
   }
@@ -101,7 +128,7 @@ function trySelfParentPath(parent: Module | undefined) {
 
   if (parent.filename) {
     return parent.filename;
-  } else if (parent.id === '<repl>' || parent.id === 'internal/preload') {
+  } else if (parent.id === "<repl>" || parent.id === "internal/preload") {
     try {
       return process.cwd() + path.sep;
     } catch {
@@ -115,29 +142,282 @@ function trySelf(parentPath: string | undefined, request: string) {
 
   const { data: pkg, path: pkgPath } = readPackageScope(parentPath) || {};
   if (!pkg || pkg.exports === undefined) return false;
-  if (typeof pkg.name !== 'string') return false;
+  if (typeof pkg.name !== "string") return false;
 
   let expansion;
   if (request === pkg.name) {
-    expansion = '.';
+    expansion = ".";
   } else if (request.startsWith(`${pkg.name}/`)) {
-    expansion = '.' + request.slice(pkg.name.length);
+    expansion = "." + request.slice(pkg.name.length);
   } else {
     return false;
   }
 
   try {
-    return finalizeEsmResolution(packageExportsResolve(
-      pathToFileURL(pkgPath + '/package.json'), expansion, pkg,
-      pathToFileURL(parentPath), cjsConditions), parentPath, pkgPath);
+    return finalizeEsmResolution(
+      packageExportsResolve(
+        pathToFileURL(pkgPath + "/package.json"),
+        expansion,
+        pkg,
+        pathToFileURL(parentPath),
+        cjsConditions,
+      ),
+      parentPath,
+      pkgPath,
+    );
   } catch (e) {
-    if (e.code === 'ERR_MODULE_NOT_FOUND') {
-      throw createEsmNotFoundErr(request, pkgPath + '/package.json');
+    if (e.code === "ERR_MODULE_NOT_FOUND") {
+      throw createEsmNotFoundErr(request, pkgPath + "/package.json");
     }
     throw e;
   }
 }
 
+function throwImportNotDefined(
+  specifier: string,
+  packageJSONUrl: URL | undefined,
+  base: string,
+): TypeError & { code: string } {
+  const packagePath = packageJSONUrl &&
+    fileURLToPath(new URL(".", packageJSONUrl));
+  const err = new TypeError(
+    `Package import specifier "${specifier}" is not defined${
+      packagePath ? ` in package ${packagePath}package.json` : ""
+    } imported from ${fileURLToPath(base)}`,
+  ) as TypeError & { code: string };
+  err.code = "ERR_PACKAGE_IMPORT_NOT_DEFINED";
+
+  throw err;
+}
+
+function throwExportsNotFound(
+  subpath: string,
+  packageJSONUrl: URL,
+  base?: string,
+): Error & { code: string } {
+  const pkgPath = fileURLToPath(new URL(".", packageJSONUrl));
+  const basePath = base && fileURLToPath(base);
+
+  let msg: string;
+  if (subpath === ".") {
+    msg = `No "exports" main defined in ${pkgPath}package.json${
+      basePath ? ` imported from ${basePath}` : ""
+    }`;
+  } else {
+    `Package subpath '${subpath}' is not defined by "exports" in ${pkgPath}package.json${
+      basePath ? ` imported from ${basePath}` : ""
+    }`;
+  }
+
+  const err = new Error(msg) as Error & { code: string };
+  err.code = "ERR_PACKAGE_PATH_NOT_EXPORTED";
+
+  throw err;
+}
+
+function patternKeyCompare(a: string, b: string): number {
+  const aPatternIndex = a.indexOf("*");
+  const bPatternIndex = b.indexOf("*");
+  const baseLenA = aPatternIndex === -1 ? a.length : aPatternIndex + 1;
+  const baseLenB = bPatternIndex === -1 ? b.length : bPatternIndex + 1;
+  if (baseLenA > baseLenB) return -1;
+  if (baseLenB > baseLenA) return 1;
+  if (aPatternIndex === -1) return 1;
+  if (bPatternIndex === -1) return -1;
+  if (a.length > b.length) return -1;
+  if (b.length > a.length) return 1;
+  return 0;
+}
+
+/**
+ * @param {URL} packageJSONUrl
+ * @param {string} packageSubpath
+ * @param {PackageConfig} packageConfig
+ * @param {string | URL | undefined} base
+ * @param {Set<string>} conditions
+ * @returns {URL}
+ */
+function packageExportsResolve(
+  packageJSONUrl,
+  packageSubpath,
+  packageConfig,
+  base,
+  conditions,
+) {
+  let exports = packageConfig.exports;
+  if (isConditionalExportsMainSugar(exports, packageJSONUrl, base)) {
+    exports = { ".": exports };
+  }
+
+  if (
+    hasOwn(exports, packageSubpath) &&
+    !packageSubpath.includes("*") &&
+    !packageSubpath.endsWith("/")
+  ) {
+    const target = exports[packageSubpath];
+    const resolved = resolvePackageTarget(
+      packageJSONUrl,
+      target,
+      "",
+      packageSubpath,
+      base,
+      false,
+      false,
+      conditions,
+    );
+    if (resolved === null || resolved === undefined) {
+      throwExportsNotFound(packageSubpath, packageJSONUrl, base);
+    }
+    return resolved;
+  }
+
+  let bestMatch = "";
+  let bestMatchSubpath;
+  const keys = Object.getOwnPropertyNames(exports);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const patternIndex = key.indexOf("*");
+    if (
+      patternIndex !== -1 &&
+      packageSubpath.startsWith(key.slice(0, patternIndex))
+    ) {
+      // When this reaches EOL, this can throw at the top of the whole function:
+      //
+      // if (StringPrototypeEndsWith(packageSubpath, '/'))
+      //   throwInvalidSubpath(packageSubpath)
+      //
+      // To match "imports" and the spec.
+      if (packageSubpath.endsWith("/")) {
+        emitTrailingSlashPatternDeprecation(
+          packageSubpath,
+          packageJSONUrl,
+          base,
+        );
+      }
+      const patternTrailer = key.slice(patternIndex + 1);
+      if (
+        packageSubpath.length >= key.length &&
+        packageSubpath.endsWith(patternTrailer) &&
+        patternKeyCompare(bestMatch, key) === 1 &&
+        key.lastIndexOf("*") === patternIndex
+      ) {
+        bestMatch = key;
+        bestMatchSubpath = packageSubpath.slice(
+          patternIndex,
+          packageSubpath.length - patternTrailer.length,
+        );
+      }
+    }
+  }
+
+  if (bestMatch) {
+    const target = exports[bestMatch];
+    const resolved = resolvePackageTarget(
+      packageJSONUrl,
+      target,
+      bestMatchSubpath,
+      bestMatch,
+      base,
+      true,
+      false,
+      conditions,
+    );
+    if (resolved === null || resolved === undefined) {
+      throwExportsNotFound(packageSubpath, packageJSONUrl, base);
+    }
+    return resolved;
+  }
+
+  throwExportsNotFound(packageSubpath, packageJSONUrl, base);
+}
+
+/**
+ * @param {string} name
+ * @param {string | URL | undefined} base
+ * @param {Set<string>} conditions
+ * @returns
+ */
+function packageImportsResolve(name, base, conditions) {
+  if (
+    name === "#" || name.startsWith("#/") ||
+    name.startsWith("/")
+  ) {
+    const reason = "is not a valid internal imports specifier name";
+    throw ERR_INVALID_MODULE_SPECIFIER(name, reason, fileURLToPath(base));
+  }
+  let packageJSONUrl;
+  const packageConfig = getPackageScopeConfig(base);
+  if (packageConfig.exists) {
+    packageJSONUrl = pathToFileURL(packageConfig.pjsonPath);
+    const imports = packageConfig.imports;
+    if (imports) {
+      if (
+        hasOwn(imports, name) &&
+        !name.includes("*")
+      ) {
+        const resolved = resolvePackageTarget(
+          packageJSONUrl,
+          imports[name],
+          "",
+          name,
+          base,
+          false,
+          true,
+          conditions,
+        );
+        if (resolved !== null && resolved !== undefined) {
+          return resolved;
+        }
+      } else {
+        let bestMatch = "";
+        let bestMatchSubpath;
+        const keys = Object.getOwnPropertyNames(imports);
+        for (let i = 0; i < keys.length; i++) {
+          const key = keys[i];
+          const patternIndex = key.indexOf("*");
+          if (
+            patternIndex !== -1 &&
+            name.startsWith(
+              key.slice(0, patternIndex),
+            )
+          ) {
+            const patternTrailer = key.slice(patternIndex + 1);
+            if (
+              name.length >= key.length &&
+              name.endsWith(patternTrailer) &&
+              patternKeyCompare(bestMatch, key) === 1 &&
+              key.lastIndexOf("*") === patternIndex
+            ) {
+              bestMatch = key;
+              bestMatchSubpath = name.slice(
+                patternIndex,
+                name.length - patternTrailer.length,
+              );
+            }
+          }
+        }
+
+        if (bestMatch) {
+          const target = imports[bestMatch];
+          const resolved = resolvePackageTarget(
+            packageJSONUrl,
+            target,
+            bestMatchSubpath,
+            bestMatch,
+            base,
+            true,
+            true,
+            conditions,
+          );
+          if (resolved !== null && resolved !== undefined) {
+            return resolved;
+          }
+        }
+      }
+    }
+  }
+  throwImportNotDefined(name, packageJSONUrl, base);
+}
 
 class Module {
   id: string;
@@ -313,33 +593,40 @@ class Module {
     }
 
     if (parent?.filename) {
-      if (request[0] === '#') {
-        const pkg = readPackageScope(parent.filename) || { path: undefined, data: {} as PackageInfo };
+      if (request[0] === "#") {
+        const pkg = readPackageScope(parent.filename) ||
+          { path: undefined, data: {} as PackageInfo };
         if (pkg.data?.imports != null) {
           try {
             return finalizeEsmResolution(
-              packageImportsResolve(request, pathToFileURL(parent.filename),
-                                    cjsConditions), parent.filename,
-              pkg.path);
+              packageImportsResolve(
+                request,
+                pathToFileURL(parent.filename),
+                cjsConditions,
+              ),
+              parent.filename,
+              pkg.path,
+            );
           } catch (e) {
-            if (e.code === 'ERR_MODULE_NOT_FOUND')
+            if (e.code === "ERR_MODULE_NOT_FOUND") {
               throw createEsmNotFoundErr(request);
+            }
             throw e;
           }
         }
       }
     }
-  
+
     // Try module self resolution first
     const parentPath = trySelfParentPath(parent);
     const selfResolved = trySelf(parentPath, request);
     if (selfResolved) {
-      const cacheKey = request + '\x00' +
-           (paths.length === 1 ? paths[0] : paths.join('\x00'));
+      const cacheKey = request + "\x00" +
+        (paths.length === 1 ? paths[0] : paths.join("\x00"));
       Module._pathCache[cacheKey] = selfResolved;
       return selfResolved;
     }
-  
+
     // Look up the filename first, since that's the cache key.
     const filename = Module._findPath(request, paths, isMain);
     if (!filename) {
@@ -742,7 +1029,7 @@ interface PackageInfo {
   // deno-lint-ignore no-explicit-any
   exports?: any;
   // deno-lint-ignore no-explicit-any
-  imports?: any
+  imports?: any;
   // deno-lint-ignore no-explicit-any
   type?: any;
 }
@@ -899,6 +1186,40 @@ function findLongestRegisteredExtension(filename: string): string {
 }
 
 // deno-lint-ignore no-explicit-any
+function isConditionalExportsMainSugar(
+  exports: any,
+  packageJSONUrl: URL,
+  base: string,
+): boolean {
+  if (typeof exports === "string" || Array.isArray(exports)) return true;
+  if (typeof exports !== "object" || exports === null) return false;
+
+  const keys = Object.getOwnPropertyNames(exports);
+  let isConditionalSugar = false;
+  let i = 0;
+  for (let j = 0; j < keys.length; j++) {
+    const key = keys[j];
+    const curIsConditionalSugar = key === "" || key[0] !== ".";
+    if (i++ === 0) {
+      isConditionalSugar = curIsConditionalSugar;
+    } else if (isConditionalSugar !== curIsConditionalSugar) {
+      const message =
+        "\"exports\" cannot contain some keys starting with '.' and some not." +
+        " The exports object must either be an object of package subpath keys" +
+        " or an object of main entry condition name keys only.";
+      const msg = `Invalid package config ${fileURLToPath(packageJSONUrl)}${
+        base ? ` while importing ${base}` : ""
+      }${message ? `. ${message}` : ""}`;
+      const err = new Error(msg) as Error & { code: string };
+      err.code = "ERR_INVALID_PACKAGE_CONFIG";
+
+      throw err;
+    }
+  }
+  return isConditionalSugar;
+}
+
+// deno-lint-ignore no-explicit-any
 function isConditionalDotExportSugar(exports: any, _basePath: string): boolean {
   if (typeof exports === "string") return true;
   if (Array.isArray(exports)) return true;
@@ -1009,7 +1330,7 @@ function resolveExports(
 // Node.js uses these keys for resolving conditional exports.
 // ref: https://nodejs.org/api/packages.html#packages_conditional_exports
 // ref: https://github.com/nodejs/node/blob/2c77fe1/lib/internal/modules/cjs/helpers.js#L33
-const cjsConditions = new Set(["require", "node"]);
+const cjsConditions = new Set(["deno", "require", "node"]);
 
 function resolveExportsTarget(
   pkgPath: URL,
