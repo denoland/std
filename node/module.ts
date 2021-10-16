@@ -387,8 +387,7 @@ class Module {
 
     Module._cache[filename] = module;
     if (parent !== undefined) {
-      assert(relResolveCacheIdentifier);
-      relativeResolveCache[relResolveCacheIdentifier] = filename;
+      relativeResolveCache[relResolveCacheIdentifier!] = filename;
     }
 
     let threw = true;
@@ -400,8 +399,7 @@ class Module {
       if (threw) {
         delete Module._cache[filename];
         if (parent !== undefined) {
-          assert(relResolveCacheIdentifier);
-          delete relativeResolveCache[relResolveCacheIdentifier];
+          delete relativeResolveCache[relResolveCacheIdentifier!];
         }
       } else if (
         module.exports &&
@@ -610,6 +608,14 @@ function createNativeModule(id: string, exports: any): Module {
 for (const key of Object.keys(nodeMods)) {
   nativeModulePolyfill.set(key, createNativeModule(key, nodeMods[key]));
 }
+nativeModulePolyfill.set(
+  "module",
+  createNativeModule("module", {
+    default: Module,
+    builtinModules: Module.builtinModules,
+    createRequire: Module.createRequire,
+  }),
+);
 
 function loadNativeModule(
   _filename: string,
