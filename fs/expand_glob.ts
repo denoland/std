@@ -127,10 +127,7 @@ export async function* expandGlob(
       }
       return;
     } else if (globSegment == "**") {
-      return yield* walk(walkInfo.path, {
-        includeFiles: false,
-        skip: excludePatterns,
-      });
+      return yield* walk(walkInfo.path, { skip: excludePatterns });
     }
     const globPattern = globToRegExp(globSegment, globOptions);
     for await (
@@ -238,10 +235,7 @@ export function* expandGlobSync(
       }
       return;
     } else if (globSegment == "**") {
-      return yield* walkSync(walkInfo.path, {
-        includeFiles: false,
-        skip: excludePatterns,
-      });
+      return yield* walkSync(walkInfo.path, { skip: excludePatterns });
     }
     const globPattern = globToRegExp(globSegment, globOptions);
     for (
