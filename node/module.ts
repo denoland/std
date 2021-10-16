@@ -27,6 +27,11 @@ import * as path from "../path/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { fileURLToPath, pathToFileURL } from "./url.ts";
 import { isWindows } from "../_util/os.ts";
+import {
+  ERR_INVALID_MODULE_SPECIFIER,
+  ERR_MODULE_NOT_FOUND,
+  NodeError,
+} from "./_errors.ts";
 import type { PackageConfig } from "./module_esm.ts";
 import {
   encodedSepRegEx,
@@ -77,28 +82,13 @@ function updateChildren(
   }
 }
 
-function ERR_INVALID_MODULE_SPECIFIER(
-  request: string,
-  reason: string,
-  base?: string,
-): TypeError & { code: string } {
-  const err = new TypeError(
-    `Invalid module "${request}" ${reason}${
-      base ? ` imported from ${base}` : ""
-    }`,
-  ) as TypeError & { code: string };
-
-  err.code = "ERR_INVALID_MODULE_SPECIFIER";
-
-  return err;
-}
 function finalizeEsmResolution(
   resolved: string,
   parentPath: string,
   pkgPath: string,
 ) {
   if (encodedSepRegEx.test(resolved)) {
-    throw ERR_INVALID_MODULE_SPECIFIER(
+    throw new ERR_INVALID_MODULE_SPECIFIER(
       resolved,
       'must not include encoded "/" or "\\" characters',
       parentPath,
@@ -109,11 +99,10 @@ function finalizeEsmResolution(
   if (actual) {
     return actual;
   }
-  const err = createEsmNotFoundErr(
+  throw new ERR_MODULE_NOT_FOUND(
     filename,
     path.resolve(pkgPath, "package.json"),
   );
-  throw err;
 }
 
 function createEsmNotFoundErr(request: string, path?: string) {
@@ -174,8 +163,7 @@ function trySelf(parentPath: string | undefined, request: string) {
       pkgPath,
     );
   } catch (e) {
-    // @ts-ignore
-    if (e.code === "ERR_MODULE_NOT_FOUND") {
+    if (e instanceof NodeError && e.code === "ERR_MODULE_NOT_FOUND") {
       throw createEsmNotFoundErr(request, pkgPath + "/package.json");
     }
     throw e;
@@ -370,8 +358,7 @@ class Module {
               pkg.path,
             );
           } catch (e) {
-            // @ts-ignore
-            if (e.code === "ERR_MODULE_NOT_FOUND") {
+            if (e instanceof NodeError && e.code === "ERR_MODULE_NOT_FOUND") {
               throw createEsmNotFoundErr(request);
             }
             throw e;

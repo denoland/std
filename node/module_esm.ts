@@ -27,84 +27,20 @@
 
 import "./global.ts";
 
-import { assert } from "../_util/assert.ts";
 import { fileURLToPath, pathToFileURL } from "./url.ts";
+import {
+  ERR_INVALID_MODULE_SPECIFIER,
+  ERR_INVALID_PACKAGE_CONFIG,
+  ERR_INVALID_PACKAGE_TARGET,
+  ERR_MODULE_NOT_FOUND,
+  ERR_PACKAGE_IMPORT_NOT_DEFINED,
+  ERR_PACKAGE_PATH_NOT_EXPORTED,
+  NodeError,
+} from "./_errors.ts";
 
 const { hasOwn } = Object;
 
 export const encodedSepRegEx = /%2F|%2C/i;
-
-function ERR_MODULE_NOT_FOUND(
-  path: string,
-  base: string,
-  type: string = "package",
-): Error & { code: string } {
-  const err = new Error(
-    `Cannot find ${type} '${path}' imported from ${base}`,
-  ) as Error & { code: string };
-  err.code = "ERR_MODULE_NOT_FOUND";
-  return err;
-}
-
-function ERR_INVALID_PACKAGE_CONFIG(
-  path: string,
-  base?: string,
-  message?: string,
-): Error & { code: string } {
-  const msg = `Invalid package config ${path}${
-    base ? ` while importing ${base}` : ""
-  }${message ? `. ${message}` : ""}`;
-  const err = new Error(msg) as Error & { code: string };
-  err.code = "ERR_INVALID_PACKAGE_CONFIG";
-  return err;
-}
-
-function ERR_INVALID_MODULE_SPECIFIER(
-  request: string,
-  reason: string,
-  base?: string,
-): TypeError & { code: string } {
-  const err = new TypeError(
-    `Invalid module "${request}" ${reason}${
-      base ? ` imported from ${base}` : ""
-    }`,
-  ) as TypeError & { code: string };
-
-  err.code = "ERR_INVALID_MODULE_SPECIFIER";
-
-  return err;
-}
-
-// deno-lint-ignore no-explicit-any
-function ERR_INVALID_PACKAGE_TARGET(
-  pkgPath: string,
-  key: string,
-  target: any,
-  isImport?: boolean,
-  base?: string,
-): Error & { code: string } {
-  let msg: string;
-  const relError = typeof target === "string" && !isImport &&
-    target.length && !target.startsWith("./");
-  if (key === ".") {
-    assert(isImport === false);
-    msg = `Invalid "exports" main target ${JSON.stringify(target)} defined ` +
-      `in the package config ${pkgPath}package.json${
-        base ? ` imported from ${base}` : ""
-      }${relError ? '; targets must start with "./"' : ""}`;
-  } else {
-    msg = `Invalid "${isImport ? "imports" : "exports"}" target ${
-      JSON.stringify(target)
-    } defined for '${key}' in the package config ${pkgPath}package.json${
-      base ? ` imported from ${base}` : ""
-    }${relError ? '; targets must start with "./"' : ""}`;
-  }
-
-  const err = new Error(msg) as Error & { code: string };
-
-  err.code = "ERR_INVALID_PACKAGE_TARGET";
-  return err;
-}
 
 function throwInvalidSubpath(
   subpath: string,
@@ -115,7 +51,7 @@ function throwInvalidSubpath(
   const reason = `request is not a valid subpath for the "${
     internal ? "imports" : "exports"
   }" resolution of ${fileURLToPath(packageJSONUrl)}`;
-  throw ERR_INVALID_MODULE_SPECIFIER(
+  throw new ERR_INVALID_MODULE_SPECIFIER(
     subpath,
     reason,
     base && fileURLToPath(base),
@@ -135,7 +71,7 @@ function throwInvalidPackageTarget(
   } else {
     target = `${target}`;
   }
-  throw ERR_INVALID_PACKAGE_TARGET(
+  throw new ERR_INVALID_PACKAGE_TARGET(
     fileURLToPath(new URL(".", packageJSONUrl)),
     subpath,
     target,
@@ -149,16 +85,7 @@ function throwImportNotDefined(
   packageJSONUrl: URL | undefined,
   base: string | URL,
 ): TypeError & { code: string } {
-  const packagePath = packageJSONUrl &&
-    fileURLToPath(new URL(".", packageJSONUrl));
-  const err = new TypeError(
-    `Package import specifier "${specifier}" is not defined${
-      packagePath ? ` in package ${packagePath}package.json` : ""
-    } imported from ${fileURLToPath(base)}`,
-  ) as TypeError & { code: string };
-  err.code = "ERR_PACKAGE_IMPORT_NOT_DEFINED";
-
-  throw err;
+  throw new ERR_PACKAGE_IMPORT_NOT_DEFINED(specifier, packageJSONUrl, base);
 }
 
 function throwExportsNotFound(
@@ -166,25 +93,11 @@ function throwExportsNotFound(
   packageJSONUrl: string,
   base?: string,
 ): Error & { code: string } {
-  const pkgPath = fileURLToPath(new URL(".", packageJSONUrl));
-  const basePath = base && fileURLToPath(base);
-
-  let msg: string;
-  if (subpath === ".") {
-    msg = `No "exports" main defined in ${pkgPath}package.json${
-      basePath ? ` imported from ${basePath}` : ""
-    }`;
-  } else {
-    msg =
-      `Package subpath '${subpath}' is not defined by "exports" in ${pkgPath}package.json${
-        basePath ? ` imported from ${basePath}` : ""
-      }`;
-  }
-
-  const err = new Error(msg) as Error & { code: string };
-  err.code = "ERR_PACKAGE_PATH_NOT_EXPORTED";
-
-  throw err;
+  throw new ERR_PACKAGE_PATH_NOT_EXPORTED(
+    subpath,
+    packageJSONUrl,
+    base,
+  );
 }
 
 function patternKeyCompare(a: string, b: string): number {
@@ -287,7 +200,7 @@ function legacyMainResolve(
     return guess;
   }
   // Not found.
-  throw ERR_MODULE_NOT_FOUND(
+  throw new ERR_MODULE_NOT_FOUND(
     fileURLToPath(new URL(".", packageJSONUrl)),
     fileURLToPath(base),
   );
@@ -323,7 +236,7 @@ function parsePackageName(
   }
 
   if (!validPackageName) {
-    throw ERR_INVALID_MODULE_SPECIFIER(
+    throw new ERR_INVALID_MODULE_SPECIFIER(
       specifier,
       "is not a valid package name",
       fileURLToPath(base),
@@ -403,7 +316,7 @@ function packageResolve(
     // Cross-platform root check.
   } while (packageJSONPath.length !== lastPath.length);
 
-  throw ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base));
+  throw new ERR_MODULE_NOT_FOUND(packageName, fileURLToPath(base));
 }
 
 const invalidSegmentRegEx = /(^|\\|\/)(\.\.?|node_modules)(\\|\/|$)/;
@@ -520,8 +433,7 @@ function resolvePackageTarget(
         );
       } catch (e: unknown) {
         lastException = e;
-        // @ts-ignore
-        if (e.code === "ERR_INVALID_PACKAGE_TARGET") {
+        if (e instanceof NodeError && e.code === "ERR_INVALID_PACKAGE_TARGET") {
           continue;
         }
         throw e;
@@ -544,7 +456,7 @@ function resolvePackageTarget(
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       if (isArrayIndex(key)) {
-        throw ERR_INVALID_PACKAGE_CONFIG(
+        throw new ERR_INVALID_PACKAGE_CONFIG(
           fileURLToPath(packageJSONUrl),
           base,
           '"exports" cannot contain numeric property keys.',
@@ -732,10 +644,9 @@ function getPackageConfig(
   try {
     packageJSON = JSON.parse(source);
   } catch (error) {
-    throw ERR_INVALID_PACKAGE_CONFIG(
+    throw new ERR_INVALID_PACKAGE_CONFIG(
       path,
       (base ? `"${specifier}" from ` : "") + fileURLToPath(base || specifier),
-      // @ts-ignore
       error.message,
     );
   }
@@ -806,7 +717,7 @@ export function packageImportsResolve(
     name.startsWith("/")
   ) {
     const reason = "is not a valid internal imports specifier name";
-    throw ERR_INVALID_MODULE_SPECIFIER(name, reason, fileURLToPath(base));
+    throw new ERR_INVALID_MODULE_SPECIFIER(name, reason, fileURLToPath(base));
   }
   let packageJSONUrl;
   const packageConfig = getPackageScopeConfig(base);
@@ -904,7 +815,7 @@ function isConditionalExportsMainSugar(
         "\"exports\" cannot contain some keys starting with '.' and some not." +
         " The exports object must either be an object of package subpath keys" +
         " or an object of main entry condition name keys only.";
-      throw ERR_INVALID_PACKAGE_CONFIG(
+      throw new ERR_INVALID_PACKAGE_CONFIG(
         fileURLToPath(packageJSONUrl),
         base,
         message,
