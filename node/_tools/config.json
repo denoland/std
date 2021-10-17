@@ -145,6 +145,7 @@
       "test-net-write-fully-async-buffer.js",
       "test-net-write-fully-async-hex-string.js",
       "test-url-fileurltopath.js",
+      "test-url-format-whatwg.js",
       "test-url-pathtofileurl.js",
       "test-util-inherits.js"
     ],
