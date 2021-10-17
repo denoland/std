@@ -63,8 +63,12 @@ export function toLoggableString(data: unknown): string {
     return data;
   }
 
-  if (typeof data === "object" && data !== null) {
+  if (typeof data === "object") {
     return JSON.stringify(data);
+  }
+
+  if (typeof data === "function") {
+    return "<Function>"
   }
 
   return String(data);
