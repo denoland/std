@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { join } from "../path/mod.ts";
+import { join, toFileUrl } from "../path/mod.ts";
 import { delay } from "../async/delay.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
@@ -24,7 +24,10 @@ Deno.test("[node/_tools/setup] downloadFile", async () => {
     await delay(1000);
 
     const downloadedFile = join(tmpdir, "downloaded.txt");
-    await downloadFile("http://localhost:4507/dummy.txt", downloadedFile);
+    await downloadFile(
+      "http://localhost:4507/dummy.txt",
+      toFileUrl(downloadedFile),
+    );
     assertEquals((await Deno.readTextFile(downloadedFile)).length, 100_000);
     p.close();
   } finally {
