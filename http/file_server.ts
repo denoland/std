@@ -11,7 +11,6 @@ import { listenAndServe, listenAndServeTls } from "./server.ts";
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
-import { readRange } from "../io/files.ts";
 
 interface EntryInfo {
   mode: string;
@@ -331,19 +330,44 @@ export async function serveFile(
 
   let body = null;
 
-  try {
-    // Read the selected range of the file
-    const bytes = await readRange(file, { start, end });
-
-    // Set content length and response body
-    headers.set("content-length", bytes.length.toString());
-    body = bytes;
-  } catch (e) {
-    // Fallback on URIError (400 Bad Request) if unable to read range
-    throw URIError(String(e));
-  }
-
-  file.close();
+  let offset = start;
+  // create readable stream to read the selected range of the file
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        await file.seek(offset, Deno.SeekMode.Start);
+      } catch (error) {
+        file.close();
+        controller.error(error);
+      }
+    },
+    async pull(controller) {
+      try {
+        const p = new Uint8Array(1024 * 8);
+        const nread = await file.read(p);
+        assert(nread !== null, "Unexpected EOF reach while reading a range.");
+        assert(nread > 0, "Unexpected read of 0 bytes while reading a range.");
+        if (offset + nread <= end) {
+          offset += nread;
+          controller.enqueue(p);
+        } else {
+          const remainder = end - offset + 1;
+          controller.enqueue(p.slice(0, remainder));
+          controller.close();
+          file.close();
+        }
+      } catch (error) {
+        file.close();
+        controller.error(error);
+      }
+    },
+    cancel() {
+      file.close();
+    },
+  });
+  // Set content length and response body
+  headers.set("content-length", (end - start + 1).toString());
+  body = stream;
 
   const statusText = STATUS_TEXT.get(status);
 
