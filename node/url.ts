@@ -56,19 +56,6 @@ export { _url as URL };
  * @param options.search `true` if the serialized URL string should include the search query, **Default**: `true`.
  * @param options.unicode `true` if Unicode characters appearing in the host component of the URL string should be encoded directly as opposed to being Punycode encoded. **Default**: `false`.
  * @returns a customizable serialization of a URL `String` representation of a `WHATWG URL` object.
- *
- * ```ts
- * const myURL = new URL('https://a:b@測試?abc#foo');
- *
- * console.log(myURL.href);
- * // Prints https://a:b@xn--g6w251d/?abc#foo
- *
- * console.log(myURL.toString());
- * // Prints https://a:b@xn--g6w251d/?abc#foo
- *
- * console.log(url.format(myURL, { fragment: false, unicode: true, auth: false }));
- * // Prints 'https://測試/?abc'
- * ```
  */
 export function format(
   urlObject: URL,
