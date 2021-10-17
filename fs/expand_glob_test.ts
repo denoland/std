@@ -142,7 +142,6 @@ Deno.test("expandGlobPermError", async function () {
 });
 
 Deno.test("expandGlobRootIsNotGlob", async function () {
-  const options = EG_OPTIONS;
-  options.root = join(options.root!, "a[b]c");
+  const options = { ...EG_OPTIONS, root: join(EG_OPTIONS.root!, "a[b]c") };
   assertEquals(await expandGlobArray("*", options), ["foo"]);
 });
