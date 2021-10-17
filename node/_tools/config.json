@@ -33,7 +33,8 @@
       "test-net-normalize-args.js",
       "test-net-server-call-listen-multiple-times.js",
       "test-net-server-try-ports.js",
-      "test-net-write-arguments.js"
+      "test-net-write-arguments.js",
+      "test-url-format-whatwg.js"
     ],
     "pummel": [
       "test-net-write-callbacks.js"
@@ -144,6 +145,7 @@
       "test-net-write-fully-async-buffer.js",
       "test-net-write-fully-async-hex-string.js",
       "test-url-fileurltopath.js",
+      "test-url-format-whatwg.js",
       "test-url-pathtofileurl.js",
       "test-util-inherits.js"
     ],

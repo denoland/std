@@ -46,6 +46,76 @@ const _url = URL;
 export { _url as URL };
 
 /**
+ * The URL object has both a `toString()` method and `href` property that return string serializations of the URL.
+ * These are not, however, customizable in any way.
+ * This method allows for basic customization of the output.
+ * @param urlObject
+ * @param options
+ * @param options.auth `true` if the serialized URL string should include the username and password, `false` otherwise. **Default**: `true`.
+ * @param options.fragment `true` if the serialized URL string should include the fragment, `false` otherwise. **Default**: `true`.
+ * @param options.search `true` if the serialized URL string should include the search query, **Default**: `true`.
+ * @param options.unicode `true` if Unicode characters appearing in the host component of the URL string should be encoded directly as opposed to being Punycode encoded. **Default**: `false`.
+ * @returns a customizable serialization of a URL `String` representation of a `WHATWG URL` object.
+ */
+export function format(
+  urlObject: URL,
+  options?: {
+    auth: boolean;
+    fragment: boolean;
+    search: boolean;
+    unicode: boolean;
+  },
+): string {
+  if (options) {
+    if (typeof options !== "object") {
+      throw new ERR_INVALID_ARG_TYPE("options", "object", options);
+    }
+  }
+
+  options = {
+    auth: true,
+    fragment: true,
+    search: true,
+    unicode: false,
+    ...options,
+  };
+
+  let ret = urlObject.protocol;
+  if (urlObject.host !== null) {
+    ret += "//";
+    const hasUsername = urlObject.username !== "";
+    const hasPassword = urlObject.password !== "";
+    if (options.auth && (hasUsername || hasPassword)) {
+      if (hasUsername) {
+        ret += urlObject.username;
+      }
+      if (hasPassword) {
+        ret += `:${urlObject.password}`;
+      }
+      ret += "@";
+    }
+    // TODO(wafuwfu13): Support unicode option
+    // ret += options.unicode ?
+    //   domainToUnicode(urlObject.host) : urlObject.host;
+    ret += urlObject.host;
+    if (urlObject.port) {
+      ret += `:${urlObject.port}`;
+    }
+  }
+
+  ret += urlObject.pathname;
+
+  if (options.search) {
+    ret += urlObject.search;
+  }
+  if (options.fragment) {
+    ret += urlObject.hash;
+  }
+
+  return ret;
+}
+
+/**
  * Get fully resolved platform-specific file path from the given URL string/ object
  * @param path The file URL string or URL object to convert to a path
  */
@@ -196,6 +266,7 @@ export function pathToFileURL(filepath: string): URL {
 }
 
 export default {
+  format,
   fileURLToPath,
   pathToFileURL,
   URL,
