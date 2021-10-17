@@ -543,50 +543,51 @@ export function assertObjectMatch(
 ): void {
   type loose = Record<PropertyKey, unknown>;
   const seen = new WeakMap();
-  return assertEquals(
-    (function filter(a: loose, b: loose): loose {
-      // Prevent infinite loop with circular references with same filter
-      if ((seen.has(a)) && (seen.get(a) === b)) {
-        return a;
-      }
-      seen.set(a, b);
-      // Filter keys and symbols which are present in both actual and expected
-      const filtered = {} as loose;
-      const entries = [
-        ...Object.getOwnPropertyNames(a),
-        ...Object.getOwnPropertySymbols(a),
-      ]
-        .filter((key) => key in b)
-        .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
-      for (const [key, value] of entries) {
-        // On array references, build a filtered array and filter nested objects inside
-        if (Array.isArray(value)) {
-          const subset = (b as loose)[key];
-          if (Array.isArray(subset)) {
-            filtered[key] = value
-              .slice(0, subset.length)
-              .map((element, index) => {
-                const subsetElement = subset[index];
-                if ((typeof subsetElement === "object") && (subsetElement)) {
-                  return filter(element, subsetElement);
-                }
-                return element;
-              });
-            continue;
-          }
-        } // On nested objects references, build a filtered object recursively
-        else if (typeof value === "object") {
-          const subset = (b as loose)[key];
-          if ((typeof subset === "object") && (subset)) {
-            filtered[key] = filter(value as loose, subset as loose);
-            continue;
-          }
+  function filter(a: loose, b: loose): loose {
+    // Prevent infinite loop with circular references with same filter
+    if ((seen.has(a)) && (seen.get(a) === b)) {
+      return a;
+    }
+    seen.set(a, b);
+    // Filter keys and symbols which are present in both actual and expected
+    const filtered = {} as loose;
+    const entries = [
+      ...Object.getOwnPropertyNames(a),
+      ...Object.getOwnPropertySymbols(a),
+    ]
+      .filter((key) => key in b)
+      .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
+    for (const [key, value] of entries) {
+      // On array references, build a filtered array and filter nested objects inside
+      if (Array.isArray(value)) {
+        const subset = (b as loose)[key];
+        if (Array.isArray(subset)) {
+          filtered[key] = value
+            .slice(0, subset.length)
+            .map((element, index) => {
+              const subsetElement = subset[index];
+              if ((typeof subsetElement === "object") && (subsetElement)) {
+                return filter(element, subsetElement);
+              }
+              return element;
+            });
+          continue;
         }
-        filtered[key] = value;
+      } // On nested objects references, build a filtered object recursively
+      else if (typeof value === "object") {
+        const subset = (b as loose)[key];
+        if ((typeof subset === "object") && (subset)) {
+          filtered[key] = filter(value as loose, subset as loose);
+          continue;
+        }
       }
-      return filtered;
-    })(actual, expected),
-    expected,
+      filtered[key] = value;
+    }
+    return filtered;
+  }
+  return assertEquals(
+    filter(actual, expected),
+    filter(expected, expected),
   );
 }
 
