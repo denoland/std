@@ -9,20 +9,20 @@ Deno.test({
     assertEquals(perfHooks.performance.clearMarks, performance.clearMarks);
     assertEquals(perfHooks.performance.mark, performance.mark);
     assertEquals(perfHooks.performance.now, performance.now);
-    perfHooks.performance.measure!("test");
-    perfHooks.performance.mark!("test");
-    perfHooks.performance.clearMarks!("test");
-    perfHooks.performance.now!();
+    perfHooks.performance.measure("test");
+    perfHooks.performance.mark("test");
+    perfHooks.performance.clearMarks("test");
+    perfHooks.performance.now();
   },
 });
 
 Deno.test({
   name: "[perf_hooks] performance destructured",
   fn() {
-    performance.measure!("test");
-    performance.mark!("test");
-    performance.clearMarks!("test");
-    performance.now!();
+    performance.measure("test");
+    performance.mark("test");
+    performance.clearMarks("test");
+    performance.now();
   },
 });
 
