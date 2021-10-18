@@ -568,6 +568,19 @@ Deno.test("testingAssertObjectMatching", function (): void {
     }
     assertEquals(didThrow, true);
   }
+  // actual/expected value as instance of class
+  {
+    class A {
+      a: number;
+      constructor(a: number) {
+        this.a = a;
+      }
+    }
+    assertObjectMatch({ test: new A(1) }, { test: { a: 1 } });
+    assertObjectMatch({ test: { a: 1 } }, { test: { a: 1 } });
+    assertObjectMatch({ test: { a: 1 } }, { test: new A(1) });
+    assertObjectMatch({ test: new A(1) }, { test: new A(1) });
+  }
 });
 
 Deno.test("testingAssertsUnimplemented", function (): void {
