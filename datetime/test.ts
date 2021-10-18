@@ -161,6 +161,68 @@ Deno.test({
     assertEquals(datetime.dayOfYear(new Date("2007-04-01T00:00:00.000Z")), 91);
     assertEquals(datetime.dayOfYear(new Date("2007-12-31T00:00:00.000Z")), 365);
 
+    assertEquals(datetime.dayOfYear(new Date("2007-01-01T00:00:00.000Z")), 1);
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-02-01T00:00:00.000Z")),
+      31 + 1,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-03-01T00:00:00.000Z")),
+      31 + 28 + 1,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-03-24T00:00:00.000Z")),
+      31 + 28 + 24,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-03-25T00:00:00.000Z")),
+      31 + 28 + 25,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-04-01T00:00:00.000Z")),
+      31 + 28 + 31 + 1,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-05-01T00:00:00.000Z")),
+      31 + 28 + 31 + 30 + 1,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-06-01T00:00:00.000Z")),
+      31 + 28 + 31 + 30 + 31 + 1,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-07-01T00:00:00.000Z")),
+      31 + 28 + 31 + 30 + 31 + 30 + 1,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-08-01T00:00:00.000Z")),
+      31 + 28 + 31 + 30 + 31 + 30 + 31 + 1,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-09-01T00:00:00.000Z")),
+      31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 1,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-10-01T00:00:00.000Z")),
+      31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 1,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-10-27T00:00:00.000Z")),
+      31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 27,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-10-28T00:00:00.000Z")),
+      31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 28,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-11-01T00:00:00.000Z")),
+      31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 1,
+    );
+    assertEquals(
+      datetime.dayOfYear(new Date("2007-12-01T00:00:00.000Z")),
+      31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 1,
+    );
+
     // Leap-year tests
     assertEquals(datetime.dayOfYear(new Date("2008-01-01T00:00:00.000Z")), 1);
     assertEquals(datetime.dayOfYear(new Date("2008-01-15T00:00:00.000Z")), 15);

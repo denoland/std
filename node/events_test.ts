@@ -695,3 +695,29 @@ Deno.test("Elements that extend EventEmitter listener alias don't end up in a de
     fail();
   }
 });
+
+Deno.test("EventEmitter.setMaxListeners: if not targets are specified, it sets `n` to `defaultMaxListeners`.", () => {
+  const prevMaxListeners = EventEmitter.defaultMaxListeners;
+  try {
+    const n = prevMaxListeners + 10;
+    EventEmitter.setMaxListeners(n);
+    assertEquals(EventEmitter.defaultMaxListeners, n);
+  } finally {
+    EventEmitter.setMaxListeners(prevMaxListeners);
+  }
+});
+
+Deno.test("EventEmitter.setMaxListeners: it sets `n` as number of max listeners to each target.", () => {
+  const defaultMaxListeners = EventEmitter.defaultMaxListeners;
+  const n = defaultMaxListeners + 5;
+  const emitter1 = new EventEmitter();
+  const emitter2 = new EventEmitter();
+  EventEmitter.setMaxListeners(n, emitter1, emitter2);
+  assertEquals(emitter1.getMaxListeners(), n);
+  assertEquals(emitter2.getMaxListeners(), n);
+  assertEquals(
+    EventEmitter.defaultMaxListeners,
+    defaultMaxListeners,
+    "defaultMaxListeners shouldn't be mutated.",
+  );
+});

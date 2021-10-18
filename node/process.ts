@@ -6,6 +6,10 @@ import { fromFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { Readable, Writable } from "./stream.ts";
 import { Buffer } from "./buffer.ts";
+import { validateString } from "./_validators.ts";
+import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { getOptionValue } from "./_options.ts";
+import { assert } from "../_util/assert.ts";
 
 const notImplementedEvents = [
   "beforeExit",
@@ -88,12 +92,39 @@ export const pid = Deno.pid;
 /** https://nodejs.org/api/process.html#process_process_platform */
 export const platform = isWindows ? "win32" : Deno.build.os;
 
-/** https://nodejs.org/api/process.html#process_process_version */
-export const version = `v${Deno.version.deno}`;
+/**
+ * https://nodejs.org/api/process.html#process_process_version
+ *
+ * This value is hard coded to latest stable release of Node, as
+ * some packages are checking it for compatibility. Previously
+ * it pointed to Deno version, but that led to incompability
+ * with some packages.
+ */
+export const version = "v16.11.1";
 
-/** https://nodejs.org/api/process.html#process_process_versions */
+/**
+ * https://nodejs.org/api/process.html#process_process_versions
+ *
+ * This value is hard coded to latest stable release of Node, as
+ * some packages are checking it for compatibility. Previously
+ * it contained only output of `Deno.version`, but that led to incompability
+ * with some packages. Value of `v8` field is still taken from `Deno.version`.
+ */
 export const versions = {
-  node: Deno.version.deno,
+  node: "16.11.1",
+  uv: "1.42.0",
+  zlib: "1.2.11",
+  brotli: "1.0.9",
+  ares: "1.17.2",
+  modules: "93",
+  nghttp2: "1.45.1",
+  napi: "8",
+  llhttp: "6.0.4",
+  openssl: "1.1.1l",
+  cldr: "39.0",
+  icu: "69.1",
+  tz: "2021a",
+  unicode: "13.0",
   ...Deno.version,
 };
 
@@ -189,6 +220,118 @@ Object.defineProperty(stdin, "isTTY", {
 /** https://nodejs.org/api/process.html#process_process_stdout */
 export const stdout = createWritableStdioStream(Deno.stdout);
 
+function addReadOnlyProcessAlias(
+  name: string,
+  option: string,
+  enumerable = true,
+) {
+  const value = getOptionValue(option);
+
+  if (value) {
+    Object.defineProperty(process, name, {
+      writable: false,
+      configurable: true,
+      enumerable,
+      value,
+    });
+  }
+}
+
+function createWarningObject(
+  warning: string,
+  type: string,
+  code?: string,
+  // deno-lint-ignore ban-types
+  ctor?: Function,
+  detail?: string,
+): Error {
+  assert(typeof warning === "string");
+
+  // deno-lint-ignore no-explicit-any
+  const warningErr: any = new Error(warning);
+  warningErr.name = String(type || "Warning");
+
+  if (code !== undefined) {
+    warningErr.code = code;
+  }
+  if (detail !== undefined) {
+    warningErr.detail = detail;
+  }
+
+  Error.captureStackTrace(warningErr, ctor || process.emitWarning);
+
+  return warningErr;
+}
+
+function doEmitWarning(warning: Error) {
+  process.emit("warning", warning);
+}
+
+/** https://nodejs.org/api/process.html#process_process_emitwarning_warning_options */
+export function emitWarning(
+  warning: string | Error,
+  type:
+    // deno-lint-ignore ban-types
+    | { type: string; detail: string; code: string; ctor: Function }
+    | string
+    | null,
+  code?: string,
+  // deno-lint-ignore ban-types
+  ctor?: Function,
+) {
+  let detail;
+
+  if (type !== null && typeof type === "object" && !Array.isArray(type)) {
+    ctor = type.ctor;
+    code = type.code;
+
+    if (typeof type.detail === "string") {
+      detail = type.detail;
+    }
+
+    type = type.type || "Warning";
+  } else if (typeof type === "function") {
+    ctor = type;
+    code = undefined;
+    type = "Warning";
+  }
+
+  if (type !== undefined) {
+    validateString(type, "type");
+  }
+
+  if (typeof code === "function") {
+    ctor = code;
+    code = undefined;
+  } else if (code !== undefined) {
+    validateString(code, "code");
+  }
+
+  if (typeof warning === "string") {
+    warning = createWarningObject(warning, type as string, code, ctor, detail);
+  } else if (!(warning instanceof Error)) {
+    throw new ERR_INVALID_ARG_TYPE("warning", ["Error", "string"], warning);
+  }
+
+  if (warning.name === "DeprecationWarning") {
+    // deno-lint-ignore no-explicit-any
+    if ((process as any).noDeprecation) {
+      return;
+    }
+
+    // deno-lint-ignore no-explicit-any
+    if ((process as any).throwDeprecation) {
+      // Delay throwing the error to guarantee that all former warnings were
+      // properly logged.
+      return process.nextTick(() => {
+        throw warning;
+      });
+    }
+  }
+
+  process.nextTick(doEmitWarning, warning);
+}
+
 class Process extends EventEmitter {
   constructor() {
     super();
@@ -226,6 +369,10 @@ class Process extends EventEmitter {
    */
   env = env;
 
+  // Typed as any to avoid importing "module" module for types
+  // deno-lint-ignore no-explicit-any
+  mainModule: any = undefined;
+
   /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
   nextTick = nextTick;
 
@@ -236,7 +383,7 @@ class Process extends EventEmitter {
   //deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented();
+      notImplemented(`process.on("${event}")`);
     }
 
     super.on(event, listener);
@@ -250,8 +397,8 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_platform */
   platform = platform;
 
-  removeAllListeners(_event: string): never {
-    notImplemented();
+  removeAllListeners(event: string): never {
+    notImplemented(`process.removeAllListeners("${event}")`);
   }
 
   removeListener(
@@ -263,7 +410,7 @@ class Process extends EventEmitter {
   //deno-lint-ignore no-explicit-any
   removeListener(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented();
+      notImplemented(`process.removeListener("${event}")`);
     }
 
     super.removeListener("exit", listener);
@@ -309,6 +456,9 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#process_process_versions */
   versions = versions;
+
+  /** https://nodejs.org/api/process.html#process_process_emitwarning_warning_options */
+  emitWarning = emitWarning;
 }
 
 /** https://nodejs.org/api/process.html#process_process */
@@ -320,6 +470,9 @@ Object.defineProperty(process, Symbol.toStringTag, {
   configurable: false,
   value: "process",
 });
+
+addReadOnlyProcessAlias("noDeprecation", "--no-deprecation");
+addReadOnlyProcessAlias("throwDeprecation", "--throw-deprecation");
 
 export const removeListener = process.removeListener;
 export const removeAllListeners = process.removeAllListeners;

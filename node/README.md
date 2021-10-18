@@ -19,7 +19,7 @@ Deno standard library as it's a compatibility module.
 - [x] crypto _partly_
 - [ ] dgram
 - [ ] diagnostics_channel
-- [ ] dns
+- [x] dns _partly_
 - [x] events
 - [x] fs _partly_
 - [x] fs/promises _partly_
@@ -28,7 +28,7 @@ Deno standard library as it's a compatibility module.
 - [ ] https
 - [ ] inspector
 - [x] module
-- [ ] net
+- [x] net
 - [x] os _partly_
 - [x] path
 - [x] path/posix
@@ -125,6 +125,7 @@ the `node/_tools/config.json` as follows:
 ```json
 ...
   "tests": {
+    ...
     "parallel": [
       ...
       "test-event-emitter-add-listeners.js",
@@ -132,6 +133,7 @@ the `node/_tools/config.json` as follows:
       "test-event-emitter-invalid-listener.js",
       ...
     ]
+    ...
   }
 ...
 ```

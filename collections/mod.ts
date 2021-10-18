@@ -32,6 +32,7 @@ export * from "./union.ts";
 export * from "./without_all.ts";
 export * from "./unzip.ts";
 export * from "./zip.ts";
+export * from "./join_to_string.ts";
 export * from "./max_with.ts";
 export * from "./min_with.ts";
 export * from "./includes_value.ts";

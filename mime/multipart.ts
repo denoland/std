@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { equals, indexOf, lastIndexOf, startsWith } from "../bytes/mod.ts";
 import { Buffer, BufReader, BufWriter } from "../io/buffer.ts";
-import { copy } from "../io/streams.ts";
+import { copy } from "../streams/conversion.ts";
 import { copyN } from "../io/util.ts";
 import { MultiReader } from "../io/readers.ts";
 import { extname } from "../path/mod.ts";

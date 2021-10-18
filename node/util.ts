@@ -308,6 +308,7 @@ export type TextEncoder = import("./_utils.ts")._TextEncoder;
 export const TextEncoder = _TextEncoder;
 
 export default {
+  format,
   inspect,
   isArray,
   isBoolean,

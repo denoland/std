@@ -95,17 +95,7 @@ format(CRLFinput, EOL.LF); // output "deno\nis not\nnode"
 
 ### exists
 
-Test whether or not the given path exists by checking with the file system.
-
-```ts
-import {
-  exists,
-  existsSync,
-} from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
-
-exists("./foo"); // returns a Promise<boolean>
-existsSync("./foo"); // returns boolean
-```
+This function is now deprecated.
 
 ### move
 

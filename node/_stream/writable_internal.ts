@@ -118,7 +118,7 @@ export function clearBuffer(stream: Duplex | Writable, state: WritableState) {
     return;
   }
 
-  const i = bufferedIndex;
+  let i = bufferedIndex;
 
   state.bufferProcessing = true;
   if (bufferedLength > 1 && stream._writev) {
@@ -126,7 +126,7 @@ export function clearBuffer(stream: Duplex | Writable, state: WritableState) {
 
     const callback = state.allNoop ? nop : (err: Error) => {
       for (let n = i; n < buffered.length; ++n) {
-        buffered[n].callback(err);
+        buffered[n]!.callback(err);
       }
     };
     const chunks = state.allNoop && i === 0 ? buffered : buffered.slice(i);
@@ -136,7 +136,8 @@ export function clearBuffer(stream: Duplex | Writable, state: WritableState) {
     resetBuffer(state);
   } else {
     do {
-      const { chunk, encoding, callback } = buffered[i];
+      const { chunk, encoding, callback } = buffered[i]!;
+      buffered[i++] = null;
       const len = objectMode ? 1 : chunk.length;
       doWrite(stream, state, false, len, chunk, encoding, callback);
     } while (i < buffered.length && !state.writing);
@@ -217,7 +218,7 @@ export function errorBuffer(state: WritableState) {
   }
 
   for (let n = state.bufferedIndex; n < state.buffered.length; ++n) {
-    const { chunk, callback } = state.buffered[n];
+    const { chunk, callback } = state.buffered[n]!;
     const len = state.objectMode ? 1 : chunk.length;
     state.length -= len;
     callback(new ERR_STREAM_DESTROYED("write"));
@@ -430,6 +431,12 @@ export function writeOrBuffer(
 
   state.length += len;
 
+  const ret = state.length < state.highWaterMark;
+
+  if (!ret) {
+    state.needDrain = true;
+  }
+
   if (state.writing || state.corked || state.errored || !state.constructed) {
     state.buffered.push({ chunk, encoding, callback });
     if (state.allBuffers && encoding !== "buffer") {
@@ -445,12 +452,6 @@ export function writeOrBuffer(
     state.sync = true;
     stream._write(chunk, encoding, state.onwrite);
     state.sync = false;
-  }
-
-  const ret = state.length < state.highWaterMark;
-
-  if (!ret) {
-    state.needDrain = true;
   }
 
   return ret && !state.errored && !state.destroyed;
