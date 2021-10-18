@@ -1,9 +1,123 @@
-/// <reference no-default-lib="true" />
-/// <reference lib="deno.worker" />
-
 import { resolve, toFileUrl } from "../path/mod.ts";
 import { notImplemented } from "./_utils.ts";
 import { EventEmitter, GenericFunction, once } from "./events.ts";
+
+declare global {
+  interface WorkerLocation {
+    readonly hash: string;
+    readonly host: string;
+    readonly hostname: string;
+    readonly href: string;
+    toString(): string;
+    readonly origin: string;
+    readonly pathname: string;
+    readonly port: string;
+    readonly protocol: string;
+    readonly search: string;
+  }
+
+  interface WorkerNavigator {
+    readonly gpu: GPU;
+    readonly hardwareConcurrency: number;
+  }
+
+  interface WorkerGlobalScope extends EventTarget {
+    readonly location: WorkerLocation;
+    readonly navigator: WorkerNavigator;
+    onerror: ((this: WorkerGlobalScope, ev: ErrorEvent) => any) | null;
+
+    readonly self: WorkerGlobalScope & typeof globalThis;
+
+    addEventListener<K extends keyof WorkerGlobalScopeEventMap>(
+      type: K,
+      listener: (
+        this: WorkerGlobalScope,
+        ev: WorkerGlobalScopeEventMap[K],
+      ) => any,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    addEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    removeEventListener<K extends keyof WorkerGlobalScopeEventMap>(
+      type: K,
+      listener: (
+        this: WorkerGlobalScope,
+        ev: WorkerGlobalScopeEventMap[K],
+      ) => any,
+      options?: boolean | EventListenerOptions,
+    ): void;
+    removeEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | EventListenerOptions,
+    ): void;
+
+    Deno: typeof Deno;
+  }
+
+  var WorkerGlobalScope: {
+    prototype: WorkerGlobalScope;
+    new (): WorkerGlobalScope;
+  };
+
+  interface DedicatedWorkerGlobalScope extends WorkerGlobalScope {
+    readonly name: string;
+    onmessage:
+      | ((this: DedicatedWorkerGlobalScope, ev: MessageEvent) => any)
+      | null;
+    onmessageerror:
+      | ((this: DedicatedWorkerGlobalScope, ev: MessageEvent) => any)
+      | null;
+    close(): void;
+    postMessage(message: any, transfer: Transferable[]): void;
+    postMessage(message: any, options?: StructuredSerializeOptions): void;
+    addEventListener<K extends keyof DedicatedWorkerGlobalScopeEventMap>(
+      type: K,
+      listener: (
+        this: DedicatedWorkerGlobalScope,
+        ev: DedicatedWorkerGlobalScopeEventMap[K],
+      ) => any,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    addEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | AddEventListenerOptions,
+    ): void;
+    removeEventListener<K extends keyof DedicatedWorkerGlobalScopeEventMap>(
+      type: K,
+      listener: (
+        this: DedicatedWorkerGlobalScope,
+        ev: DedicatedWorkerGlobalScopeEventMap[K],
+      ) => any,
+      options?: boolean | EventListenerOptions,
+    ): void;
+    removeEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | EventListenerOptions,
+    ): void;
+  }
+
+  var DedicatedWorkerGlobalScope: {
+    prototype: DedicatedWorkerGlobalScope;
+    new (): DedicatedWorkerGlobalScope;
+  };
+
+  interface WorkerGlobalScopeEventMap {
+    "error": ErrorEvent;
+  }
+
+  interface DedicatedWorkerGlobalScopeEventMap
+    extends WorkerGlobalScopeEventMap {
+    "message": MessageEvent;
+    "messageerror": MessageEvent;
+    "offline": Event;
+  }
+}
 
 let environmentData = new Map();
 let threads = 0;
@@ -40,7 +154,7 @@ class _Worker extends EventEmitter {
     codeRangeSizeMb: -1,
     stackSizeMb: 4,
   };
-  private readonly [kHandle]: globalThis.Worker;
+  private readonly [kHandle]: Worker;
 
   postMessage: Worker["postMessage"];
 
@@ -51,7 +165,7 @@ class _Worker extends EventEmitter {
     } else if (typeof specifier === "string") {
       specifier = toFileUrl(resolve(specifier));
     }
-    const handle = this[kHandle] = new globalThis.Worker(
+    const handle = this[kHandle] = new Worker(
       specifier,
       {
         ...(options || {}),
@@ -120,10 +234,7 @@ interface NodeEventTarget extends
   removeListener: NodeEventTarget["off"];
 }
 
-type ParentPort =
-  & DedicatedWorkerGlobalScope
-  & typeof globalThis
-  & NodeEventTarget;
+type ParentPort = typeof self & NodeEventTarget;
 
 // deno-lint-ignore no-explicit-any
 let parentPort: ParentPort = null as any;
@@ -170,13 +281,15 @@ if (!isMainThread) {
   parentPort.emit = () => notImplemented();
   parentPort.removeAllListeners = () => notImplemented();
 
-  ([{ threadId, workerData, environmentData }] = await once(
+  [{ threadId, workerData, environmentData }] = await once(
     parentPort,
     "message",
-  ));
+  );
 
   // alias
-  parentPort.addEventListener("offline", () => parentPort.emit("close"));
+  parentPort.addEventListener("offline", () => {
+    parentPort.emit("close");
+  });
 }
 
 export function getEnvironmentData(key: unknown) {
@@ -191,11 +304,14 @@ export function setEnvironmentData(key: unknown, value?: unknown) {
   }
 }
 
-export const MessagePort = globalThis.MessagePort;
-export const MessageChannel = globalThis.MessageChannel;
+const _MessagePort: typeof MessagePort = (globalThis as any).MessagePort;
+const _MessageChannel: typeof MessageChannel =
+  (globalThis as any).MessageChannel;
 export const BroadcastChannel = globalThis.BroadcastChannel;
 export const SHARE_ENV = Symbol.for("nodejs.worker_threads.SHARE_ENV");
 export {
+  _MessageChannel as MessageChannel,
+  _MessagePort as MessagePort,
   _Worker as Worker,
   notImplemented as markAsUntransferable,
   notImplemented as moveMessagePortToContext,
@@ -209,8 +325,8 @@ export default {
   markAsUntransferable: notImplemented,
   moveMessagePortToContext: notImplemented,
   receiveMessageOnPort: notImplemented,
-  MessagePort,
-  MessageChannel,
+  MessagePort: _MessagePort,
+  MessageChannel: _MessageChannel,
   BroadcastChannel,
   Worker: _Worker,
   getEnvironmentData,

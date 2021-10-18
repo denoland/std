@@ -428,13 +428,13 @@ Deno.test({
 Deno.test({
   name: "Can add once event listener to EventTarget via standalone function",
   async fn() {
-    const et: EventTarget = new EventTarget();
+    const et = new EventTarget();
     setTimeout(() => {
       const event: Event = new Event("event", { composed: true });
       et.dispatchEvent(event);
     }, 0);
     // deno-lint-ignore no-explicit-any
-    const eventObj: any[] = await once(et, "event");
+    const eventObj: any[] = await once(et as any, "event");
     assert(!eventObj[0].isTrusted);
   },
 });
