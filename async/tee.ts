@@ -19,8 +19,6 @@ class Queue<T> {
   head: QueueNode<T>;
 
   done: boolean;
-  // deno-lint-ignore no-explicit-any
-  return: { value: any; isExsit: boolean };
 
   constructor(iterable: AsyncIterable<T>) {
     this.#source = iterable[Symbol.asyncIterator]();
@@ -30,10 +28,6 @@ class Queue<T> {
     };
     this.head = this.#queue;
     this.done = false;
-    this.return = {
-      value: undefined!,
-      isExsit: false,
-    };
   }
 
   async next(): Promise<void> {
@@ -47,12 +41,6 @@ class Queue<T> {
       this.#queue = nextNode;
     } else {
       this.done = true;
-      if (this.#source.return) {
-        this.return = {
-          value: result.value,
-          isExsit: true,
-        };
-      }
     }
   }
 }
@@ -70,9 +58,7 @@ export function tee<T, N extends number = 2>(
         buffer = buffer.next;
         yield buffer.value;
       } else if (queue.done) {
-        if (queue.return.isExsit) {
-          return queue.return.value;
-        }
+        return;
       } else {
         await queue.next();
       }
