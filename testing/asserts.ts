@@ -586,7 +586,11 @@ export function assertObjectMatch(
     return filtered;
   }
   return assertEquals(
+    // get the intersection of "actual" and "expected"
+    // side effect: all the instances' constructor field is "Object" now.
     filter(actual, expected),
+    // set (nested) instances' constructor field to be "Object" without changing expected value.
+    // see https://github.com/denoland/deno_std/pull/1419
     filter(expected, expected),
   );
 }
