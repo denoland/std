@@ -11,7 +11,7 @@ export const {
   TransformStreamDefaultController,
   WritableStream,
   WritableStreamDefaultController,
-  WritableStreamDefaultWriter
+  WritableStreamDefaultWriter,
 } = globalThis;
 
 export default {
