@@ -347,14 +347,10 @@ export class Server {
   ): Promise<void> {
     try {
       // Handle the request event, generating a response.
-      const response = this.#handler(
+      const response = await this.#handler(
         requestEvent.request,
         connInfo,
       );
-
-      if (response instanceof Promise) {
-        response.catch((_error) => this.#closeHttpConn(httpConn));
-      }
 
       // Send the response.
       await requestEvent.respondWith(response);
@@ -399,6 +395,8 @@ export class Server {
       // allow the connection to handle multiple requests in the case of h2.
       this.#respond(requestEvent, httpConn, connInfo);
     }
+
+    this.#closeHttpConn(httpConn);
   }
 
   /**
