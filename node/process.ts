@@ -92,12 +92,39 @@ export const pid = Deno.pid;
 /** https://nodejs.org/api/process.html#process_process_platform */
 export const platform = isWindows ? "win32" : Deno.build.os;
 
-/** https://nodejs.org/api/process.html#process_process_version */
-export const version = `v${Deno.version.deno}`;
+/**
+ * https://nodejs.org/api/process.html#process_process_version
+ *
+ * This value is hard coded to latest stable release of Node, as
+ * some packages are checking it for compatibility. Previously
+ * it pointed to Deno version, but that led to incompability
+ * with some packages.
+ */
+export const version = "v16.11.1";
 
-/** https://nodejs.org/api/process.html#process_process_versions */
+/**
+ * https://nodejs.org/api/process.html#process_process_versions
+ *
+ * This value is hard coded to latest stable release of Node, as
+ * some packages are checking it for compatibility. Previously
+ * it contained only output of `Deno.version`, but that led to incompability
+ * with some packages. Value of `v8` field is still taken from `Deno.version`.
+ */
 export const versions = {
-  node: Deno.version.deno,
+  node: "16.11.1",
+  uv: "1.42.0",
+  zlib: "1.2.11",
+  brotli: "1.0.9",
+  ares: "1.17.2",
+  modules: "93",
+  nghttp2: "1.45.1",
+  napi: "8",
+  llhttp: "6.0.4",
+  openssl: "1.1.1l",
+  cldr: "39.0",
+  icu: "69.1",
+  tz: "2021a",
+  unicode: "13.0",
   ...Deno.version,
 };
 
@@ -342,6 +369,10 @@ class Process extends EventEmitter {
    */
   env = env;
 
+  // Typed as any to avoid importing "module" module for types
+  // deno-lint-ignore no-explicit-any
+  mainModule: any = undefined;
+
   /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
   nextTick = nextTick;
 
@@ -352,7 +383,7 @@ class Process extends EventEmitter {
   //deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented();
+      notImplemented(`process.on("${event}")`);
     }
 
     super.on(event, listener);
@@ -366,8 +397,8 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_platform */
   platform = platform;
 
-  removeAllListeners(_event: string): never {
-    notImplemented();
+  removeAllListeners(event: string): never {
+    notImplemented(`process.removeAllListeners("${event}")`);
   }
 
   removeListener(
@@ -379,7 +410,7 @@ class Process extends EventEmitter {
   //deno-lint-ignore no-explicit-any
   removeListener(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented();
+      notImplemented(`process.removeListener("${event}")`);
     }
 
     super.removeListener("exit", listener);

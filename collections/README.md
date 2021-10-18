@@ -379,6 +379,36 @@ const commonInterests = intersect(lisaInterests, kimInterests);
 assertEquals(commonInterests, ["Cooking", "Music"]);
 ```
 
+### joinToString
+
+Transforms the elements in the given array to strings using the given selector.
+Joins the produced strings into one using the given `separator` and applying the
+given `prefix` and `suffix` to the whole string afterwards. If the array could
+be huge, you can specify a non-negative value of `limit`, in which case only the
+first `limit` elements will be appended, followed by the `truncated` string.
+Returns the resulting string.
+
+```ts
+import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const users = [
+  { name: "Kim" },
+  { name: "Anna" },
+  { name: "Tim" },
+];
+
+const message = joinToString(users, (it) => it.name, {
+  suffix: " are winners",
+  prefix: "result: ",
+  separator: " and ",
+  limit: 1,
+  truncated: "others",
+});
+
+assertEquals(message, "result: Kim and others are winners");
+```
+
 ### mapEntries
 
 Applies the given transformer to all entries in the given record and returns a

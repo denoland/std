@@ -652,6 +652,18 @@ Deno.test("bufioReadLineBadResource", async () => {
   }, Deno.errors.BadResource);
 });
 
+Deno.test("bufioReadLineBufferFullError", async () => {
+  const input = "@".repeat(5000) + "\n";
+  const bufReader = new BufReader(new StringReader(input));
+  const r = await bufReader.readLine();
+
+  assert(r !== null);
+
+  const { line, more } = r;
+  assertEquals(more, true);
+  assertEquals(line, encoder.encode("@".repeat(4096)));
+});
+
 Deno.test("[io] readStringDelim basic", async () => {
   const delim = "!#$%&()=~";
   const exp = [
