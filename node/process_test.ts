@@ -292,6 +292,7 @@ Deno.test({
     });
     p.stdin.write(new TextEncoder().encode("it works?!"));
     p.stdin.write(new TextEncoder().encode("yes!"));
+    p.stdin.close();
     const stderr = new TextDecoder().decode(await p.stderrOutput());
     const stdout = new TextDecoder().decode(await p.output());
     assertEquals(
