@@ -1,3 +1,26 @@
+### 0.112.0 / 2021.10.18
+
+- feat(collections): add joinToString (#1223)
+- feat(node): CJS-ESM integration (#1412)
+- feat(node): add helpers for determining CJS/ESM loader (#1407)
+- feat(node): barebones express compatibility (#1398)
+- feat(node): define process.mainModule (#1400)
+- feat(node/events): implement setMaxListeners (#1414)
+- feat(node/http): request & response streams (#1403)
+- feat(node/os): add devNull constant (#1397)
+- feat(node/url): add `url.format(URL[, options])` (#1420)
+- fix(datetime): fix dayOfYear for the southern hemisphere (#1384)
+- fix(fs/expand_glob): don't parse root as glob (#1417)
+- fix(node): 'Illegal invocation' in 'perf_hooks' module (#1410)
+- fix(node): add 'module' to native modules polyfill (#1408)
+- fix(node): declare 'global' types inline (#1409)
+- fix(node): export util.format() (#1401)
+- fix(node): require doesn't throw error (#1399)
+- fix(node): use hardcoded versions (#1406)
+- fix(std/io): fix readline when catch BufferFullError (#1377)
+- fix(testing): improve assertObjectMatch (#1419)
+- chore(node): upgrade Node.js version from 15.5.1 to 16.11.1 (#1405)
+
 ### 0.111.0 / 2021.10.12
 
 - BREAKING(fs): deprecate exists and existsSync (#1364)
