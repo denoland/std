@@ -281,10 +281,10 @@ if (!isMainThread) {
   parentPort.emit = () => notImplemented();
   parentPort.removeAllListeners = () => notImplemented();
 
-  ([{ threadId, workerData, environmentData }] = await once(
+  [{ threadId, workerData, environmentData }] = await once(
     parentPort,
     "message",
-  ));
+  );
 
   // alias
   parentPort.addEventListener("offline", () => {
