@@ -13,14 +13,14 @@ interface QueueNode<T> {
   next: QueueNode<T> | undefined;
 }
 
-// deno-lint-ignore no-explicit-any
-class Queue<T, TReturn = any> {
+class Queue<T> {
   #source: AsyncIterator<T>;
   #queue: QueueNode<T>;
   head: QueueNode<T>;
 
   done: boolean;
-  return: { value: TReturn; isExsit: boolean };
+  // deno-lint-ignore no-explicit-any
+  return: { value: any; isExsit: boolean };
 
   constructor(iterable: AsyncIterable<T>) {
     this.#source = iterable[Symbol.asyncIterator]();
