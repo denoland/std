@@ -8,11 +8,9 @@ const _ByteLengthQueuingStrategy = ByteLengthQueuingStrategy,
   _TextDecoderStream = TextDecoderStream,
   _TextEncoderStream = TextEncoderStream,
   _TransformStream = TransformStream,
-  _TransformStreamDefaultController = (globalThis
-.TransformStreamDefaultController as unknown) as TransformStreamDefaultController,
+  _TransformStreamDefaultController = TransformStreamDefaultController,
   _WritableStream = WritableStream,
-  _WritableStreamDefaultController = (globalThis
-.WritableStreamDefaultController as unknown) as WritableStreamDefaultController,
+  _WritableStreamDefaultController = WritableStreamDefaultController,
   _WritableStreamDefaultWriter = WritableStreamDefaultWriter;
 
 export {
