@@ -12,6 +12,7 @@ import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { readRange } from "../io/files.ts";
+import { blue, red } from "../fmt/colors.ts";
 
 interface EntryInfo {
   mode: string;
@@ -430,8 +431,9 @@ function serveFallback(_req: Request, e: Error): Promise<Response> {
 function serverLog(req: Request, res: Response): void {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
-  const s = `${dateFmt} "${req.method} ${req.url}" ${res.status}`;
-  console.log(s);
+  const normalizedUrl = normalizeURL(req.url);
+  const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${res.status}`;
+  console.log(blue(s));
 }
 
 function setBaseHeaders(): Headers {
@@ -658,7 +660,7 @@ function main(): void {
       }
     } catch (e) {
       const err = e instanceof Error ? e : new Error("[non-error thrown]");
-      console.error(err.message);
+      console.error(red(err.message));
       response = await serveFallback(req, err);
     }
 
@@ -682,9 +684,11 @@ function main(): void {
   }
 
   console.log(
-    `${proto.toUpperCase()} server listening on ${proto}://${
-      addr.replace("0.0.0.0", "localhost")
-    }/`,
+    blue(
+      `${proto.toUpperCase()} server listening on ${proto}://${
+        addr.replace("0.0.0.0", "localhost")
+      }/`,
+    ),
   );
 }
 
