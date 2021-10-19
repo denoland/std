@@ -342,7 +342,7 @@ export class Server {
    */
   async #respond(
     requestEvent: Deno.RequestEvent,
-    httpCon: Deno.HttpConn,
+    httpConn: Deno.HttpConn,
     connInfo: ConnInfo,
   ): Promise<void> {
     try {
@@ -361,7 +361,7 @@ export class Server {
       // Alternatively the connection has already been closed, or there is some
       // other error with responding on this connection that prompts us to
       // close it and open a new connection.
-      return this.#closeHttpConn(httpCon);
+      return this.#closeHttpConn(httpConn);
     }
   }
 
