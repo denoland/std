@@ -516,7 +516,8 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
       </head>
       <body>
         <main>
-          <h1>Index of ${
+          <h1>Index of
+          <a href="/">home</a>${
     paths.map((path, index, array) => {
       if (path === "") return "";
       const link = array.slice(0, index + 1).join("/");
