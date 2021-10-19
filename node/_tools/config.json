@@ -34,7 +34,8 @@
       "test-net-server-call-listen-multiple-times.js",
       "test-net-server-try-ports.js",
       "test-net-write-arguments.js",
-      "test-url-format-whatwg.js"
+      "test-url-format-whatwg.js",
+      "test-url-urltooptions.js"
     ],
     "pummel": [
       "test-net-write-callbacks.js"
@@ -147,6 +148,7 @@
       "test-url-fileurltopath.js",
       "test-url-format-whatwg.js",
       "test-url-pathtofileurl.js",
+      "test-url-urltooptions.js",
       "test-util-inherits.js"
     ],
     "pummel": [
