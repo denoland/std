@@ -1,4 +1,4 @@
-export const {
+const {
   ByteLengthQueuingStrategy,
   CountQueuingStrategy,
   ReadableByteStreamController,
@@ -13,6 +13,22 @@ export const {
   WritableStreamDefaultController,
   WritableStreamDefaultWriter,
 } = globalThis;
+
+export {
+  ByteLengthQueuingStrategy,
+  CountQueuingStrategy,
+  ReadableByteStreamController,
+  ReadableStream,
+  ReadableStreamDefaultController,
+  ReadableStreamDefaultReader,
+  TextDecoderStream,
+  TextEncoderStream,
+  TransformStream,
+  TransformStreamDefaultController,
+  WritableStream,
+  WritableStreamDefaultController,
+  WritableStreamDefaultWriter,
+}
 
 export default {
   ReadableStream,
