@@ -2,14 +2,17 @@ const _ByteLengthQueuingStrategy = ByteLengthQueuingStrategy,
   _CountQueuingStrategy = CountQueuingStrategy,
   _ReadableByteStreamController = ReadableByteStreamController,
   _ReadableStream = ReadableStream,
-  _ReadableStreamDefaultController = globalThis.ReadableStreamDefaultController as ReadableStreamDefaultController,
+  _ReadableStreamDefaultController = globalThis
+.ReadableStreamDefaultController as unknown as ReadableStreamDefaultController,
   _ReadableStreamDefaultReader = ReadableStreamDefaultReader,
   _TextDecoderStream = TextDecoderStream,
   _TextEncoderStream = TextEncoderStream,
   _TransformStream = TransformStream,
-  _TransformStreamDefaultController = globalThis.TransformStreamDefaultController as TransformStreamDefaultController,
+  _TransformStreamDefaultController = globalThis
+.TransformStreamDefaultController as unknown as TransformStreamDefaultController,
   _WritableStream = WritableStream,
-  _WritableStreamDefaultController = globalThis.WritableStreamDefaultController as WritableStreamDefaultController,
+  _WritableStreamDefaultController = globalThis
+.WritableStreamDefaultController as unknown as WritableStreamDefaultController,
   _WritableStreamDefaultWriter = WritableStreamDefaultWriter;
 
 export {
@@ -32,12 +35,12 @@ export default {
   ReadableStream,
   ReadableStreamDefaultReader,
   ReadableByteStreamController,
-  ReadableStreamDefaultController,
+  ReadableStreamDefaultController: _ReadableStreamDefaultController,
   TransformStream,
-  TransformStreamDefaultController,
+  TransformStreamDefaultController: _TransformStreamDefaultcontroller,
   WritableStream,
   WritableStreamDefaultWriter,
-  WritableStreamDefaultController,
+  WritableStreamDefaultController: _WriteableStreamDefaultController,
   ByteLengthQueuingStrategy,
   CountQueuingStrategy,
   TextEncoderStream,
