@@ -15,7 +15,7 @@ Deno.test("[node/_tools/setup] downloadFile", async () => {
       // Responds with 100KB data
       return new Response("0".repeat(100_000));
     }, { signal: controller.signal });
-    delay(100);
+    await delay(50);
 
     const downloadedFile = join(tmpdir, "downloaded.txt");
     await downloadFile(
