@@ -21,7 +21,7 @@ Deno.test("[node/_tools/setup] downloadFile", async () => {
         tmpdir,
       ],
     });
-    await delay(2000);
+    await delay(5000);
 
     const downloadedFile = join(tmpdir, "downloaded.txt");
     await downloadFile(
