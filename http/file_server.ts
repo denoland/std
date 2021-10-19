@@ -463,7 +463,6 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-        <link rel="icon" type="image/svg+xml" href="https://deno.land/logo.svg" />
         <title>Deno File Server</title>
         <style>
           :root {
