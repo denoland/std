@@ -126,7 +126,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[collections/runningReduce] reduce array of strings with index",
+  name: "[collections/runningReduce] reduce array of strings with currentIndex",
   fn() {
     const strings = ["a", "b", "c", "d", "e"];
     const result = runningReduce(
