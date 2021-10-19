@@ -5,7 +5,8 @@
   "main": "index.js",
   "dependencies": {
     "colorette": "1.2.1",
-    "left-pad": "1.3.0"
+    "left-pad": "1.3.0",
+    "imports_exports": "1.0.0"
   },
   "devDependencies": {},
   "scripts": {

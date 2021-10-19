@@ -1,5 +1,5 @@
 {
-  "nodeVersion": "15.5.1",
+  "nodeVersion": "16.11.1",
   "ignore": {
     "common": [
       "index.js"
@@ -32,16 +32,24 @@
       "test-net-listen-invalid-port.js",
       "test-net-normalize-args.js",
       "test-net-server-call-listen-multiple-times.js",
-      "test-net-server-try-ports.js"
+      "test-net-server-try-ports.js",
+      "test-net-write-arguments.js",
+      "test-url-format-whatwg.js",
+      "test-url-urltooptions.js"
     ],
     "pummel": [
       "test-net-write-callbacks.js"
     ],
     "sequential": [
+      "test-net-connect-econnrefused.js",
       "test-net-server-address.js"
     ]
   },
   "tests": {
+    "common": [
+      "dns.js",
+      "internet.js"
+    ],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
@@ -112,7 +120,6 @@
       "test-net-normalize-args.js",
       "test-net-options-lookup.js",
       "test-net-pause-resume-connecting.js",
-      "test-net-reconnect.js",
       "test-net-server-call-listen-multiple-times.js",
       "test-net-server-close.js",
       "test-net-server-listen-options-signal.js",
@@ -139,12 +146,14 @@
       "test-net-write-fully-async-buffer.js",
       "test-net-write-fully-async-hex-string.js",
       "test-url-fileurltopath.js",
+      "test-url-format-whatwg.js",
       "test-url-pathtofileurl.js",
+      "test-url-urltooptions.js",
       "test-util-inherits.js"
     ],
     "pummel": [
       "test-net-pingpong-delay.js",
-      "test-net-write-callbacks.js",
+      "test-net-timeout.js",
       "test-net-write-callbacks.js"
     ],
     "sequential": [

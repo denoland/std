@@ -52,6 +52,7 @@ const EG_OPTIONS: ExpandGlobOptions = {
 Deno.test("expandGlobWildcard", async function () {
   const options = EG_OPTIONS;
   assertEquals(await expandGlobArray("*", options), [
+    "a[b]c",
     "abc",
     "abcdef",
     "abcdefghi",
@@ -61,12 +62,13 @@ Deno.test("expandGlobWildcard", async function () {
 
 Deno.test("expandGlobTrailingSeparator", async function () {
   const options = EG_OPTIONS;
-  assertEquals(await expandGlobArray("*/", options), ["subdir"]);
+  assertEquals(await expandGlobArray("*/", options), ["a[b]c", "subdir"]);
 });
 
 Deno.test("expandGlobParent", async function () {
   const options = EG_OPTIONS;
   assertEquals(await expandGlobArray("subdir/../*", options), [
+    "a[b]c",
     "abc",
     "abcdef",
     "abcdefghi",
@@ -137,4 +139,9 @@ Deno.test("expandGlobPermError", async function () {
     "Uncaught PermissionDenied",
   );
   p.close();
+});
+
+Deno.test("expandGlobRootIsNotGlob", async function () {
+  const options = { ...EG_OPTIONS, root: join(EG_OPTIONS.root!, "a[b]c") };
+  assertEquals(await expandGlobArray("*", options), ["foo"]);
 });

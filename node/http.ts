@@ -1,5 +1,7 @@
 import { Status as STATUS_CODES } from "../http/http_status.ts";
 import { Buffer } from "./buffer.ts";
+import NodeReadable from "./_stream/readable.ts";
+import NodeWritable from "./_stream/writable.ts";
 
 const METHODS = [
   "ACL",
@@ -41,17 +43,65 @@ const METHODS = [
 type Chunk = string | Buffer | Uint8Array;
 type Headers = Record<string, string>;
 
-export class ServerResponse {
-  status?: number;
-  headers: Headers;
-  chunks: Chunk[];
+function chunkToU8(chunk: Chunk): Uint8Array {
+  if (typeof chunk === "string") {
+    // @ts-ignore using core isn't a best practice but hey ...
+    return Deno.core.encode(chunk);
+  }
+  return chunk;
+}
+
+export class ServerResponse extends NodeWritable {
+  private status?: number;
+  private headers: Headers;
+  private readable: ReadableStream;
   headersSent: boolean;
   private reqEvent: Deno.RequestEvent;
+  private firstChunk: Chunk | null;
 
   constructor(reqEvent: Deno.RequestEvent) {
+    let controller: ReadableByteStreamController;
+    const readable = new ReadableStream({
+      start(c) {
+        controller = c as ReadableByteStreamController;
+      },
+    });
+    super({
+      autoDestroy: true,
+      defaultEncoding: "utf-8",
+      emitClose: true,
+      write: (chunk, _encoding, cb) => {
+        if (!this.headersSent) {
+          if (this.firstChunk === null) {
+            this.firstChunk = chunk;
+            return cb();
+          } else {
+            controller.enqueue(chunkToU8(this.firstChunk));
+            this.firstChunk = null;
+            this.respond();
+          }
+        }
+        controller.enqueue(chunkToU8(chunk));
+        return cb();
+      },
+      final: (cb) => {
+        if (this.firstChunk) {
+          this.respond(this.firstChunk);
+        }
+        controller.close();
+        return cb();
+      },
+      destroy: (err, cb) => {
+        if (err) {
+          controller.error(err);
+        }
+        return cb(null);
+      },
+    });
+    this.readable = readable;
     this.status = undefined;
     this.headers = {};
-    this.chunks = [];
+    this.firstChunk = null;
     this.headersSent = false;
     this.reqEvent = reqEvent;
   }
@@ -68,49 +118,68 @@ export class ServerResponse {
     this.status = status;
     Object.assign(this.headers, headers);
   }
-  write(chunk: Chunk) {
-    this._addChunk(chunk);
-  }
 
-  _addChunk(chunk: Chunk) {
+  ensureHeaders(singleChunk?: Chunk) {
     if (this.status === null) {
       this.status = 200;
-      this.headers = { "content-type": "text/plain" };
+      this.headers = typeof singleChunk === "string"
+        ? { "content-type": "text/plain" }
+        : {};
     }
-    this.chunks.push(chunk);
   }
 
-  _body(lastChunk?: Chunk) {
-    // TODO: incorrectly assumes all chunks are strings
-    return this.chunks ? this.chunks.join("") + lastChunk : lastChunk;
-  }
-
-  end(lastChunk: Chunk) {
-    const body = this._body(lastChunk);
+  respond(singleChunk?: Chunk) {
     this.headersSent = true;
-    this.reqEvent.respondWith(new Response(body, { headers: this.headers }));
+    this.ensureHeaders(singleChunk);
+    const body = singleChunk ?? this.readable;
+    this.reqEvent.respondWith(
+      new Response(body, { headers: this.headers, status: this.status }),
+    );
   }
 }
 
-export class IncomingMessage {
+// TODO(@AaronO): optimize
+export class IncomingMessage extends NodeReadable {
   private req: Request;
 
   constructor(req: Request) {
+    // Check if no body (GET/HEAD/OPTIONS/...)
+    const reader = req.body?.getReader();
+    super({
+      autoDestroy: true,
+      emitClose: true,
+      objectMode: false,
+      read: async function (_size) {
+        if (!reader) {
+          return this.push(null);
+        }
+
+        try {
+          const { value } = await reader!.read();
+          this.push(value !== undefined ? Buffer.from(value) : null);
+        } catch (err) {
+          this.destroy(err as Error);
+        }
+      },
+      destroy: (err, cb) => {
+        reader?.cancel().finally(() => cb(err));
+      },
+    });
     this.req = req;
   }
 
   get aborted() {
     return false;
   }
-  get completed() {
-    return true;
-  }
   get httpVersion() {
     return "1.1";
   }
 
   get headers() {
-    return this.req.headers;
+    return Object.fromEntries(this.req.headers.entries());
+  }
+  get method() {
+    return this.req.method;
   }
 
   get url() {
