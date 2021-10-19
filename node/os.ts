@@ -118,7 +118,7 @@ export function arch(): string {
 
 /** Not yet implemented */
 export function cpus(): CPUCoreInfo[] {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return [];
 }
 
 /**
