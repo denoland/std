@@ -693,6 +693,21 @@ const numbers = [1, 2, 3, 4, 5];
 const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
 
 assertEquals(sumSteps, [1, 3, 6, 10, 15]);
+
+const strings = ["a", "b", "c", "d", "e"];
+const sumStepsWithCurrentIndex = runningReduce(
+  strings,
+  (sum, current, currentIndex) => sum + current + currentIndex,
+  "",
+);
+
+assertEquals(sumStepsWithCurrentIndex, [
+  "a0",
+  "a0b1",
+  "a0b1c2",
+  "a0b1c2d3",
+  "a0b1c2d3e4",
+]);
 ```
 
 ### sample
