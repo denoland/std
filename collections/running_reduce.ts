@@ -35,11 +35,11 @@
  */
 export function runningReduce<T, O>(
   array: readonly T[],
-  reducer: (accumulator: O, current: T, currentIndex: O) => O,
+  reducer: (accumulator: O, current: T, currentIndex: number) => O,
   initialValue: O,
 ): O[] {
   let currentResult = initialValue;
   return array.map((el, currentIndex) =>
-    currentResult = reducer(currentResult, el, currentIndex as unknown as O)
+    currentResult = reducer(currentResult, el, currentIndex)
   );
 }
