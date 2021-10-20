@@ -16,6 +16,7 @@ import path from "./path.ts";
 import perfHooks from "./perf_hooks.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
+import readline from "./readline.ts";
 import stream from "./stream.ts";
 import stringDecoder from "./string_decoder.ts";
 import sys from "./sys.ts";
@@ -30,7 +31,6 @@ import util from "./util.ts";
 // import dgram from "./dgram.ts";
 // import http2 from "./http2.ts";
 // import https from "./https.ts";
-// import readline from "./readline.ts";
 // import repl from "./repl.ts";
 // import sys from "./sys.ts";
 // import tls from "./tls.ts";
@@ -63,7 +63,7 @@ export default {
   "string_decoder": stringDecoder,
   sys,
   timers,
-  readline: {},
+  readline,
   "timers/promises": timersPromises,
   tty,
   tls: {},

@@ -142,6 +142,7 @@ export class ServerResponse extends NodeWritable {
 // TODO(@AaronO): optimize
 export class IncomingMessage extends NodeReadable {
   private req: Request;
+  #url: string;
 
   constructor(req: Request) {
     // Check if no body (GET/HEAD/OPTIONS/...)
@@ -167,6 +168,9 @@ export class IncomingMessage extends NodeReadable {
       },
     });
     this.req = req;
+    // TODO: consider more robust path extraction, e.g:
+    // url: (new URL(request.url).pathname),
+    this.#url = this.req.url.slice(this.req.url.indexOf("/", 8));
   }
 
   get aborted() {
@@ -184,9 +188,11 @@ export class IncomingMessage extends NodeReadable {
   }
 
   get url() {
-    // TODO: consider more robust path extraction, e.g:
-    // url: (new URL(request.url).pathname),
-    return this.req.url.slice(this.req.url.indexOf("/", 8));
+    return this.#url;
+  }
+
+  set url(url: string) {
+    this.#url = url;
   }
 }
 

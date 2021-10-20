@@ -1,1 +1,10 @@
-throw new Error('"readline" is not yet implemented.');
+export function cursorTo() {
+}
+
+export function clearScreenDown() {
+}
+
+export default {
+  cursorTo,
+  clearScreenDown,
+};
