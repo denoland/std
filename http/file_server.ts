@@ -12,7 +12,7 @@ import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { readRange } from "../io/files.ts";
-import { blue, red } from "../fmt/colors.ts";
+import { red } from "../fmt/colors.ts";
 
 interface EntryInfo {
   mode: string;
@@ -433,7 +433,7 @@ function serverLog(req: Request, res: Response): void {
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const normalizedUrl = normalizeURL(req.url);
   const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${res.status}`;
-  console.log(blue(s));
+  console.log(s);
 }
 
 function setBaseHeaders(): Headers {
@@ -684,11 +684,9 @@ function main(): void {
   }
 
   console.log(
-    blue(
-      `${proto.toUpperCase()} server listening on ${proto}://${
-        addr.replace("0.0.0.0", "localhost")
-      }/`,
-    ),
+    `${proto.toUpperCase()} server listening on ${proto}://${
+      addr.replace("0.0.0.0", "localhost")
+    }/`,
   );
 }
 
