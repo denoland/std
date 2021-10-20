@@ -106,6 +106,7 @@ export class ChildProcess extends EventEmitter {
 
       if (stdout === "pipe") {
         assert(this.#process.stdout);
+        console.log("creating stdout");
         this.stdout = createReadableFromReader(this.#process.stdout);
       }
 
@@ -171,7 +172,7 @@ export class ChildProcess extends EventEmitter {
   }
 
   unref(): void {
-    notImplemented("ChildProcess.unref()");
+    // notImplemented("ChildProcess.unref()");
   }
 
   private async _waitForChildStreamsToClose(): Promise<void> {
@@ -339,6 +340,7 @@ async function* readLinesSafely(
 ): AsyncIterableIterator<string> {
   try {
     for await (const line of readLines(reader)) {
+      console.log("read line!");
       yield line.length === 0 ? line : line + "\n";
     }
   } catch (err) {

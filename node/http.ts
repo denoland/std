@@ -2,6 +2,7 @@ import { Status as STATUS_CODES } from "../http/http_status.ts";
 import { Buffer } from "./buffer.ts";
 import NodeReadable from "./_stream/readable.ts";
 import NodeWritable from "./_stream/writable.ts";
+import { EventEmitter } from "./events.ts";
 
 const METHODS = [
   "ACL",
@@ -191,10 +192,11 @@ export class IncomingMessage extends NodeReadable {
 
 type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
 
-export class Server {
+export class Server extends EventEmitter {
   handler: ServerHandler;
 
   constructor(handler: ServerHandler) {
+    super();
     this.handler = handler;
   }
 

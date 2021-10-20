@@ -24,7 +24,7 @@ const notImplementedEvents = [
   "SIGILL",
   "SIGINT",
   "SIGSEGV",
-  "SIGTERM",
+  // "SIGTERM",
   "SIGWINCH",
   "uncaughtException",
   "uncaughtExceptionMonitor",
@@ -386,7 +386,15 @@ class Process extends EventEmitter {
       notImplemented(`process.on("${event}")`);
     }
 
-    super.on(event, listener);
+    if (event == "SIGTERM") {
+      (async () => {
+        for await (const _ of Deno.signal("SIGTERM")) {
+          listener();
+        }
+      })()
+    } else {
+      super.on(event, listener);
+    }
 
     return this;
   }
