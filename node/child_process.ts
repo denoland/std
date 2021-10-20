@@ -7,9 +7,8 @@ import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
-import { BufReader, readLines } from "../io/buffer.ts";
+import { iterateReader } from "../streams/conversion.ts";
 import { isWindows } from "../_util/os.ts";
-import { Buffer } from "./buffer.ts";
 
 export class ChildProcess extends EventEmitter {
   /**
@@ -335,30 +334,11 @@ function isAlreadyClosed(err: unknown): boolean {
   return err instanceof Deno.errors.BadResource;
 }
 
-async function* readLinesSafely(
-  reader: Deno.Reader,
-): AsyncIterableIterator<Buffer> {
-  try {
-    const bufreader = new BufReader(reader);
-    while (true) {
-      const line = await bufreader.readSlice("\n".charCodeAt(0));
-      console.log(line?.at(-1));
-      if (line === null) break;
-      yield new Buffer(line);
-    }
-  } catch (err) {
-    if (isAlreadyClosed(err)) {
-      return;
-    }
-    throw err;
-  }
-}
-
 function createReadableFromReader(
   reader: Deno.Reader,
 ): Readable {
   // TODO(uki00a): This could probably be more efficient.
-  return Readable.from(readLinesSafely(reader), {
+  return Readable.from(iterateReader(reader), {
     objectMode: false,
   });
 }
