@@ -355,8 +355,13 @@ function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
   return new Writable({
     async write(chunk, encoding, callback) {
       try {
-        if (encoding !== null) {
+        if (encoding !== "buffer") {
           chunk = encoder.encode(chunk);
+        }
+        if (!(chunk instanceof Uint8Array)) {
+          throw new TypeError(
+            `Expected chunk to be of type Uint8Array, got ${typeof chunk}`,
+          );
         }
         await writeAll(stdin, chunk);
         callback();
