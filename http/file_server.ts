@@ -454,6 +454,8 @@ function setCORS(res: Response): void {
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
+  const paths = dirname.split("/");
+
   return html`
     <!DOCTYPE html>
     <html lang="en">
@@ -507,13 +509,23 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
             text-align: left;
           }
           table td {
-            padding: 12px 24px 0 0;
+            padding: 6px 24px 6px 4px;
           }
         </style>
       </head>
       <body>
         <main>
-          <h1>Index of ${dirname}</h1>
+          <h1>Index of
+          <a href="/">home</a>${
+    paths.map((path, index, array) => {
+      if (path === "") return "";
+      const link = array.slice(0, index + 1).join("/");
+      return (
+        html`<a href="${link}">${path}</a>`
+      );
+    }).join("/")
+  }
+          </h1>
           <table>
             <tr>
               <th>Mode</th>
