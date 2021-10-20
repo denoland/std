@@ -12,6 +12,7 @@ import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { readRange } from "../io/files.ts";
+import { red } from "../fmt/colors.ts";
 
 interface EntryInfo {
   mode: string;
@@ -430,7 +431,8 @@ function serveFallback(_req: Request, e: Error): Promise<Response> {
 function serverLog(req: Request, res: Response): void {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
-  const s = `${dateFmt} "${req.method} ${req.url}" ${res.status}`;
+  const normalizedUrl = normalizeURL(req.url);
+  const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${res.status}`;
   console.log(s);
 }
 
@@ -670,7 +672,7 @@ function main(): void {
       }
     } catch (e) {
       const err = e instanceof Error ? e : new Error("[non-error thrown]");
-      console.error(err.message);
+      console.error(red(err.message));
       response = await serveFallback(req, err);
     }
 
