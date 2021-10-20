@@ -1,5 +1,5 @@
 {
-  "nodeVersion": "16.11.1",
+  "nodeVersion": "17.0.0",
   "ignore": {
     "common": [
       "index.js"
