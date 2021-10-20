@@ -79,7 +79,7 @@ export default function from(
       needToClose = false;
       console.log("reading from stream");
       const { value, done } = await iterator.next();
-      console.log("read from stream");
+      console.log("read from stream", value);
       needToClose = !done;
       if (done) {
         readable.push(null);

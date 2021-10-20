@@ -7,8 +7,9 @@ import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
-import { readLines } from "../io/buffer.ts";
+import { BufReader, readLines } from "../io/buffer.ts";
 import { isWindows } from "../_util/os.ts";
+import { Buffer } from "./buffer.ts";
 
 export class ChildProcess extends EventEmitter {
   /**
@@ -106,7 +107,6 @@ export class ChildProcess extends EventEmitter {
 
       if (stdout === "pipe") {
         assert(this.#process.stdout);
-        console.log("creating stdout");
         this.stdout = createReadableFromReader(this.#process.stdout);
       }
 
@@ -337,11 +337,14 @@ function isAlreadyClosed(err: unknown): boolean {
 
 async function* readLinesSafely(
   reader: Deno.Reader,
-): AsyncIterableIterator<string> {
+): AsyncIterableIterator<Buffer> {
   try {
-    for await (const line of readLines(reader)) {
-      console.log("read line!");
-      yield line.length === 0 ? line : line + "\n";
+    const bufreader = new BufReader(reader);
+    while (true) {
+      const line = await bufreader.readSlice("\n".charCodeAt(0));
+      console.log(line?.at(-1));
+      if (line === null) break;
+      yield new Buffer(line);
     }
   } catch (err) {
     if (isAlreadyClosed(err)) {
@@ -363,10 +366,12 @@ function createReadableFromReader(
 function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
   const encoder = new TextEncoder();
   return new Writable({
-    async write(chunk, _, callback) {
+    async write(chunk, encoding, callback) {
       try {
-        const bytes = encoder.encode(chunk);
-        await stdin.write(bytes);
+        if (encoding !== null) {
+          chunk = encoder.encode(chunk);
+        }
+        await stdin.write(chunk);
         callback();
       } catch (err) {
         callback(err instanceof Error ? err : new Error("[non-error thrown]"));
