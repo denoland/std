@@ -168,7 +168,7 @@ export class ChildProcess extends EventEmitter {
   }
 
   ref(): void {
-    notImplemented("ChildProcess.ref()");
+    // notImplemented("ChildProcess.ref()");
   }
 
   unref(): void {
