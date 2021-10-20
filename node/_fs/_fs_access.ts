@@ -17,5 +17,6 @@ export function access(
 // TODO(bartlomieju) 'path' can also be a Buffer.  Neither of these polyfills
 // is available yet.  See https://github.com/denoland/deno/issues/3403
 export function accessSync(_path: string | URL, _mode?: number): void {
-  notImplemented("Not yet available");
+  // TODO(lucacasonato): this is not the right syscall, but it shoudl work for now sorta.
+  Deno.lstatSync(_path);
 }

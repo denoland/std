@@ -7,8 +7,9 @@ import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
-import { iterateReader } from "../streams/conversion.ts";
+import { iterateReader, writeAll } from "../streams/conversion.ts";
 import { isWindows } from "../_util/os.ts";
+import { Buffer } from "./buffer.ts";
 
 export class ChildProcess extends EventEmitter {
   /**
@@ -338,9 +339,15 @@ function createReadableFromReader(
   reader: Deno.Reader,
 ): Readable {
   // TODO(uki00a): This could probably be more efficient.
-  return Readable.from(iterateReader(reader), {
+  return Readable.from(cloneIterator(iterateReader(reader)), {
     objectMode: false,
   });
+}
+
+async function* cloneIterator(iterator: AsyncIterableIterator<Uint8Array>) {
+  for await (const chunk of iterator) {
+    yield new Buffer(chunk);
+  }
 }
 
 function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
@@ -351,7 +358,7 @@ function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
         if (encoding !== null) {
           chunk = encoder.encode(chunk);
         }
-        await stdin.write(chunk);
+        await writeAll(stdin, chunk);
         callback();
       } catch (err) {
         callback(err instanceof Error ? err : new Error("[non-error thrown]"));
