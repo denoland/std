@@ -59,6 +59,12 @@ Deno.test("requireIndexJS", function () {
   assert(isIndex);
 });
 
+Deno.test("requireWithNodePrefix", function () {
+  const osWithPrefix = require("node:os");
+  const os = require("node:os");
+  assert(os === osWithPrefix);
+});
+
 Deno.test("requireNodeOs", function () {
   const os = require("os");
   assert(os.arch);

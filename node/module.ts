@@ -301,7 +301,9 @@ class Module {
     options?: { paths: string[] },
   ): string {
     // Polyfills.
-    if (nativeModuleCanBeRequiredByUsers(request)) {
+    if (
+      request.startsWith("node:") || nativeModuleCanBeRequiredByUsers(request)
+    ) {
       return request;
     }
 
@@ -496,6 +498,15 @@ class Module {
     }
 
     const filename = Module._resolveFilename(request, parent, isMain);
+    if (filename.startsWith("node:")) {
+      // Slice 'node:' prefix
+      const id = filename.slice(5);
+
+      const module = loadNativeModule(id, request);
+      // NOTE: Skip checking if can be required by user,
+      // because we don't support internal modules anyway.
+      return module?.exports;
+    }
 
     const cachedModule = Module._cache[filename];
     if (cachedModule !== undefined) {
