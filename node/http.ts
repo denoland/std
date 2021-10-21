@@ -88,6 +88,8 @@ export class ServerResponse extends NodeWritable {
       final: (cb) => {
         if (this.firstChunk) {
           this.respond(this.firstChunk);
+        } else if (!this.headersSent) {
+          this.respond();
         }
         controller.close();
         return cb();
@@ -125,11 +127,10 @@ export class ServerResponse extends NodeWritable {
   }
 
   ensureHeaders(singleChunk?: Chunk) {
-    if (this.status === null) {
-      this.status = 200;
-      this.headers = typeof singleChunk === "string"
-        ? { "content-type": "text/plain" }
-        : {};
+    this.status = this.status ?? 200;
+    const hasCT = (this.hasHeader("content-type") || this.hasHeader("Content-Type"));
+    if (typeof singleChunk === "string" && !hasCT) {
+      Object.assign(this.headers, { "content-type": "text/plain" })
     }
   }
 
