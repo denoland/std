@@ -10,6 +10,19 @@ Deno.test({
 });
 
 Deno.test({
+  name: "build architecture",
+  fn() {
+    if (Deno.build.arch == "x86_64") {
+      assertEquals(os.arch(), "x64");
+    } else if (Deno.build.arch == "aarch64") {
+      assertEquals(os.arch(), "arm64");
+    } else {
+      throw new Error("unreachable");
+    }
+  },
+});
+
+Deno.test({
   name: "home directory is a string",
   ignore: true,
   fn() {

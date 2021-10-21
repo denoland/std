@@ -115,8 +115,10 @@ interface UserInfo {
 export function arch(): string {
   if (Deno.build.arch == "x86_64") {
     return "x64";
-  } else {
+  } else if (Deno.build.arch == "aarch64") {
     return "arm64";
+  } else {
+    throw Error("unreachable");
   }
 }
 
