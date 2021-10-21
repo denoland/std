@@ -341,6 +341,7 @@ export async function serveFile(
       headers,
     });
   }
+
   const contentLength = end - start + 1;
   // create readable stream to read the selected range of the file
   const body = readableStreamFromRange(file, {
@@ -385,7 +386,7 @@ async function serveDir(
       continue;
     }
     const filePath = posix.join(dirPath, entry.name);
-    const fileUrl = posix.join(dirUrl, entry.name);
+    const fileUrl = encodeURI(posix.join(dirUrl, entry.name));
     if (entry.name === "index.html" && entry.isFile) {
       // in case index.html as dir...
       return serveFile(req, filePath);
@@ -592,13 +593,7 @@ function normalizeURL(url: string): string {
     }
   }
 
-  try {
-    normalizedUrl = decodeURI(normalizedUrl);
-  } catch (e) {
-    if (!(e instanceof URIError)) {
-      throw e;
-    }
-  }
+  normalizedUrl = decodeURI(normalizedUrl);
 
   if (normalizedUrl[0] !== "/") {
     throw new URIError("The request URI is malformed.");
