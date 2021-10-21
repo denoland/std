@@ -13,6 +13,8 @@ import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { readRange } from "../io/files.ts";
 import { red } from "../fmt/colors.ts";
+import { LimitedReader } from "../io/readers.ts";
+import { readableStreamFromReader } from "../streams/conversion.ts";
 
 interface EntryInfo {
   mode: string;
@@ -332,19 +334,16 @@ export async function serveFile(
 
   let body = null;
 
-  try {
-    // Read the selected range of the file
-    const bytes = await readRange(file, { start, end });
 
-    // Set content length and response body
-    headers.set("content-length", bytes.length.toString());
-    body = bytes;
-  } catch (e) {
-    // Fallback on URIError (400 Bad Request) if unable to read range
-    throw URIError(String(e));
-  }
-
-  file.close();
+  const contentLength = end - start + 1;
+  // create readable stream to read the selected range of the file
+  file.seek(start, Deno.SeekMode.Start);
+  const stream = readableStreamFromReader(
+    new LimitedReader(file, contentLength),
+  );
+  // Set content length and response body
+  headers.set("content-length", contentLength.toString());
+  body = stream;
 
   const statusText = STATUS_TEXT.get(status);
 
