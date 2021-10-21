@@ -113,7 +113,13 @@ interface UserInfo {
 
 /** Returns the operating system CPU architecture for which the Deno binary was compiled */
 export function arch(): string {
-  return Deno.build.arch;
+  if (Deno.build.arch == "x86_64") {
+    return "x64";
+  } else if (Deno.build.arch == "aarch64") {
+    return "arm64";
+  } else {
+    throw Error("unreachable");
+  }
 }
 
 /** Not yet implemented */
