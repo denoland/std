@@ -79,7 +79,7 @@ export class ServerResponse extends NodeWritable {
           } else {
             controller.enqueue(chunkToU8(this.firstChunk));
             this.firstChunk = null;
-            this.respond();
+            this.respond(false);
           }
         }
         controller.enqueue(chunkToU8(chunk));
@@ -87,9 +87,9 @@ export class ServerResponse extends NodeWritable {
       },
       final: (cb) => {
         if (this.firstChunk) {
-          this.respond(this.firstChunk);
+          this.respond(true, this.firstChunk);
         } else if (!this.headersSent) {
-          this.respond();
+          this.respond(true);
         }
         controller.close();
         return cb();
@@ -134,10 +134,10 @@ export class ServerResponse extends NodeWritable {
     }
   }
 
-  respond(singleChunk?: Chunk) {
+  respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
     this.ensureHeaders(singleChunk);
-    const body = singleChunk ?? this.readable;
+    const body = singleChunk ?? (final ? null : this.readable);
     this.reqEvent.respondWith(
       new Response(body, { headers: this.headers, status: this.status }),
     );
