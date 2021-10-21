@@ -16,9 +16,10 @@ import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
-export interface Constructor {
+// deno-lint-ignore no-explicit-any
+export interface Constructor<T = any> {
   // deno-lint-ignore no-explicit-any
-  new (...args: any[]): any;
+  new (...args: any[]): T;
 }
 
 export class AssertionError extends Error {
@@ -608,12 +609,12 @@ export function fail(msg?: string): never {
  * An error class and a string that should be included in the
  * error message can also be asserted.
  */
-export function assertError(
+export function assertIsError<E extends Error = Error>(
   error: unknown,
-  ErrorClass?: Constructor,
+  ErrorClass?: Constructor<E>,
   msgIncludes?: string,
   msg?: string,
-): void {
+): asserts error is E {
   if (error instanceof Error === false) {
     throw new AssertionError(`Expected "error" to be an Error object.`);
   }
@@ -641,9 +642,9 @@ export function assertError(
  * callback which will be passed the error, usually to apply some custom
  * assertions on it.
  */
-export function assertThrows(
+export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
-  ErrorClass?: Constructor,
+  ErrorClass?: Constructor<E>,
   msgIncludes?: string,
   msg?: string,
 ): void;
@@ -652,13 +653,13 @@ export function assertThrows(
   errorCallback: (e: Error) => unknown,
   msg?: string,
 ): void;
-export function assertThrows(
+export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
-  errorClassOrCallback?: Constructor | ((e: Error) => unknown),
+  errorClassOrCallback?: Constructor<E> | ((e: Error) => unknown),
   msgIncludesOrMsg?: string,
   msg?: string,
 ): void {
-  let ErrorClass: Constructor | undefined = undefined;
+  let ErrorClass: Constructor<E> | undefined = undefined;
   let msgIncludes: string | undefined = undefined;
   let errorCallback;
   if (
@@ -666,7 +667,7 @@ export function assertThrows(
     errorClassOrCallback.prototype instanceof Error ||
     errorClassOrCallback.prototype === Error.prototype
   ) {
-    ErrorClass = errorClassOrCallback as Constructor;
+    ErrorClass = errorClassOrCallback as Constructor<E>;
     msgIncludes = msgIncludesOrMsg;
     errorCallback = null;
   } else {
@@ -680,14 +681,14 @@ export function assertThrows(
     if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was thrown.");
     }
-    assertError(
+    assertIsError(
       error,
       ErrorClass,
       msgIncludes,
       msg,
     );
     if (typeof errorCallback == "function") {
-      errorCallback(error as Error);
+      errorCallback(error);
     }
     doesThrow = true;
   }
@@ -704,9 +705,9 @@ export function assertThrows(
  * callback which will be passed the error, usually to apply some custom
  * assertions on it.
  */
-export function assertRejects(
+export function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
-  ErrorClass?: Constructor,
+  ErrorClass?: Constructor<E>,
   msgIncludes?: string,
   msg?: string,
 ): Promise<void>;
@@ -715,13 +716,13 @@ export function assertRejects(
   errorCallback: (e: Error) => unknown,
   msg?: string,
 ): Promise<void>;
-export async function assertRejects(
+export async function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
-  errorClassOrCallback?: Constructor | ((e: Error) => unknown),
+  errorClassOrCallback?: Constructor<E> | ((e: Error) => unknown),
   msgIncludesOrMsg?: string,
   msg?: string,
 ): Promise<void> {
-  let ErrorClass: Constructor | undefined = undefined;
+  let ErrorClass: Constructor<E> | undefined = undefined;
   let msgIncludes: string | undefined = undefined;
   let errorCallback;
   if (
@@ -729,7 +730,7 @@ export async function assertRejects(
     errorClassOrCallback.prototype instanceof Error ||
     errorClassOrCallback.prototype === Error.prototype
   ) {
-    ErrorClass = errorClassOrCallback as Constructor;
+    ErrorClass = errorClassOrCallback as Constructor<E>;
     msgIncludes = msgIncludesOrMsg;
     errorCallback = null;
   } else {
@@ -743,14 +744,14 @@ export async function assertRejects(
     if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was thrown or rejected.");
     }
-    assertError(
+    assertIsError(
       error,
       ErrorClass,
       msgIncludes,
       msg,
     );
     if (typeof errorCallback == "function") {
-      errorCallback(error as Error);
+      errorCallback(error);
     }
     doesThrow = true;
   }

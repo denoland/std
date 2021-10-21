@@ -4,9 +4,9 @@ import {
   assert,
   assertArrayIncludes,
   assertEquals,
-  assertError,
   assertExists,
   AssertionError,
+  assertIsError,
   assertMatch,
   assertNotEquals,
   assertNotMatch,
@@ -1114,45 +1114,45 @@ Deno.test("Assert Throws Async promise rejected with custom Error", async () => 
   );
 });
 
-Deno.test("Assert Error Non-Error Fail", () => {
+Deno.test("Assert Is Error Non-Error Fail", () => {
   assertThrows(
-    () => assertError("Panic!", String, "Panic!"),
+    () => assertIsError("Panic!", undefined, "Panic!"),
     AssertionError,
     `Expected "error" to be an Error object.`,
   );
 
   assertThrows(
-    () => assertError(null),
+    () => assertIsError(null),
     AssertionError,
     `Expected "error" to be an Error object.`,
   );
 
   assertThrows(
-    () => assertError(undefined),
+    () => assertIsError(undefined),
     AssertionError,
     `Expected "error" to be an Error object.`,
   );
 });
 
-Deno.test("Assert Error Parent Error", () => {
-  assertError(
+Deno.test("Assert Is Error Parent Error", () => {
+  assertIsError(
     new AssertionError("Fail!"),
     Error,
     "Fail!",
   );
 });
 
-Deno.test("Assert Error with custom Error", () => {
+Deno.test("Assert Is Error with custom Error", () => {
   class CustomError extends Error {}
   class AnotherCustomError extends Error {}
-  assertError(
+  assertIsError(
     new CustomError("failed"),
     CustomError,
     "fail",
   );
   assertThrows(
     () =>
-      assertError(
+      assertIsError(
         new AnotherCustomError("failed"),
         CustomError,
         "fail",
