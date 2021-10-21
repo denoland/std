@@ -205,6 +205,16 @@ Deno.test("serveDirectory", async function () {
     await killFileServer();
   }
 });
+Deno.test("serveDirectory with filename including percent symbol", async function () {
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/");
+    const page = await res.text();
+    assertStringIncludes(page, "%2525A.txt");
+  } finally {
+    await killFileServer();
+  }
+});
 
 Deno.test("serveFallback", async function () {
   await startFileServer();
