@@ -29,9 +29,9 @@ export function parse(
   eq = "=",
   { decodeURIComponent = unescape, maxKeys = 1000 }: ParseOptions = {},
 ): ParsedUrlQuery {
-  const entries = str.split(sep).map((entry) =>
+  const entries = str?.split(sep).map((entry) =>
     entry.split(eq).map(decodeURIComponent)
-  );
+  ) ?? [];
   const final: ParsedUrlQuery = {};
 
   let i = 0;
