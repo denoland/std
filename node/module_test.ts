@@ -63,8 +63,8 @@ Deno.test("requireWithNodePrefix", function () {
   const osWithPrefix = require("node:os");
   const os = require("os");
   assert(osWithPrefix === os);
-  assert(os.arch);
-  assert(typeof os.arch() == "string");
+  assert(osWithPrefix.arch);
+  assert(typeof osWithPrefix.arch() == "string");
 });
 
 Deno.test("requireNodeOs", function () {
