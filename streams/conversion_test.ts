@@ -1,11 +1,17 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assert, assertEquals } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertThrowsAsync,
+  unreachable,
+} from "../testing/asserts.ts";
 import {
   copy,
   iterateReader,
   iterateReaderSync,
   readableStreamFromIterable,
+  readableStreamFromRange,
   readableStreamFromReader,
   readAll,
   readAllSync,
@@ -369,11 +375,6 @@ Deno.test("[streams] readableStreamFromReader()", async function () {
   assertEquals(decoder.decode(concat(...actual)), "hello deno land");
 });
 
-Deno.test({
-  name: "[streams] readableStreamFromReader() auto closes closer",
-  async fn() {},
-});
-
 Deno.test("[streams] readableStreamFromReader() - calls close", async function () {
   const encoder = new TextEncoder();
   const reader = new MockReaderCloser();
@@ -428,6 +429,113 @@ Deno.test("[streams] readableStreamFromReader() - chunkSize", async function () 
   assertEquals(decoder.decode(concat(...actual)), "hello deno land");
   assertEquals(reader.closeCall, 1);
 });
+
+class MockSeeker implements Deno.Seeker, Deno.Closer, Deno.Reader {
+  closeCall = 0;
+  offset = 0;
+  buf: Uint8Array;
+  constructor(buf: Uint8Array) {
+    this.buf = buf;
+  }
+  seek(offset: number, whence: Deno.SeekMode): Promise<number> {
+    switch (whence) {
+      case Deno.SeekMode.Current:
+        this.offset += offset;
+        break;
+      case Deno.SeekMode.End:
+        this.offset = this.buf.length;
+        break;
+      case Deno.SeekMode.Start:
+        this.offset = offset;
+        break;
+      default:
+        unreachable();
+    }
+    return Promise.resolve(this.offset);
+  }
+  read(p: Uint8Array): Promise<number | null> {
+    const nbyte = copyBytes(this.buf.subarray(this.offset), p);
+    this.offset += nbyte;
+    return Promise.resolve(nbyte);
+  }
+  close() {
+    this.closeCall++;
+  }
+}
+
+Deno.test(
+  "[stream] readableStreamFromRange()",
+  async () => {
+    const encoder = new TextEncoder();
+    const seeker = new MockSeeker(encoder.encode("hello deno land"));
+
+    const stream = readableStreamFromRange(seeker, {
+      start: 0,
+      end: 4,
+    });
+    const actual: Uint8Array[] = [];
+    for await (const p of stream) {
+      actual.push(p);
+    }
+    const decoder = new TextDecoder();
+    assertEquals(decoder.decode(concat(...actual)), "hello");
+    assertEquals(seeker.closeCall, 1);
+  },
+);
+Deno.test(
+  "[stream] readableStreamFromRange() - chunk size",
+  async () => {
+    const encoder = new TextEncoder();
+    const seeker = new MockSeeker(encoder.encode("hello deno land"));
+
+    const stream = readableStreamFromRange(seeker, {
+      start: 0,
+      end: 4,
+      chunkSize: 1,
+    });
+    const actual: Uint8Array[] = [];
+    for await (const p of stream) {
+      actual.push(p);
+    }
+    const decoder = new TextDecoder();
+    assertEquals(actual.length, 5);
+    assertEquals(decoder.decode(concat(...actual)), "hello");
+    assertEquals(seeker.closeCall, 1);
+  },
+);
+Deno.test(
+  "[stream] readableStreamFromRange() - throw if range is too large",
+  async () => {
+    const encoder = new TextEncoder();
+    const seeker = new MockSeeker(encoder.encode("hello deno land"));
+
+    const stream = readableStreamFromRange(seeker, {
+      start: 11,
+      end: 15,
+    });
+    await assertThrowsAsync(async () => {
+      for await (const _ of stream) {
+        // empty
+      }
+    }, RangeError, "Too large range");
+    assertEquals(seeker.closeCall, 1);
+  },
+);
+
+Deno.test(
+  "[stream] readableStreamFromRange() - throw if range is invalid",
+  async () => {
+    const encoder = new TextEncoder();
+    const seeker = new MockSeeker(encoder.encode("hello deno land"));
+
+    await assertThrowsAsync(async () => {
+      readableStreamFromRange(seeker, {
+        start: 5,
+        end: 0,
+      });
+    }, RangeError, "Invalid range");
+  },
+);
 
 // N controls how many iterations of certain checks are performed.
 const N = 100;

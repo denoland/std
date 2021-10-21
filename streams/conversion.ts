@@ -270,6 +270,96 @@ export function readableStreamFromReader(
   }, strategy);
 }
 
+export interface ReadableStreamFromRangeOptions
+  extends ReadableStreamFromReaderOptions {
+  /** The 0 based index of the start byte for a range. */
+  start: number;
+  /** The 0 based index of the end byte for a range, which is inclusive. */
+  end: number;
+}
+
+/**
+ * Create a `ReadableStream<Uint8Array>` from a `Deno.Reader & Deno.Seeker`.
+ *
+ * When the pull algorithm is called on the stream, a chunk from the reader
+ * will be read.  When the reader is shorter than the `end`, set an
+ * `RangeError` to controller.
+ *
+ * An example converting a `Deno.File` into a readable stream:
+ *
+ * ```ts
+ * import { readableStreamFromRange } from "./mod.ts";
+ *
+ * const file = await Deno.open("./file.txt", { read: true });
+ * const fileStream = readableStreamFromRange(file,{
+ *   start: 0,
+ *   end: 10,
+ * });
+ * ```
+ */
+export function readableStreamFromRange(
+  reader: Deno.Reader & Deno.Seeker | (Deno.Reader & Deno.Seeker & Deno.Closer),
+  options: ReadableStreamFromRangeOptions,
+): ReadableStream<Uint8Array> {
+  const {
+    start,
+    end,
+    autoClose = true,
+    chunkSize = DEFAULT_CHUNK_SIZE,
+    strategy,
+  } = options;
+  if( start < 0 || end < 0 || start > end ){
+    throw new RangeError("Invalid range pass");
+  }
+  let offset = start;
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        await reader.seek(offset, Deno.SeekMode.Start);
+      } catch (error) {
+        if (isCloser(reader)) {
+          reader.close();
+        }
+        controller.error(error);
+      }
+    },
+    async pull(controller) {
+      // byte ranges are inclusive, so we have to add one to the end
+      const remainder = end - offset + 1;
+      const chunk = new Uint8Array(Math.min(chunkSize, remainder));
+      try {
+        const read = await reader.read(chunk);
+        if (read === null) {
+          throw new RangeError("Too large range");
+        }
+        if (offset + read <= end) {
+          if (chunk.length !== read) {
+            throw new RangeError("Too large range");
+          }
+          offset += read;
+          controller.enqueue(chunk);
+        } else {
+          controller.enqueue(chunk.slice(0, remainder));
+          controller.close();
+          if (isCloser(reader) && autoClose) {
+            reader.close();
+          }
+        }
+      } catch (e) {
+        controller.error(e);
+        if (isCloser(reader)) {
+          reader.close();
+        }
+      }
+    },
+    cancel() {
+      if (isCloser(reader) && autoClose) {
+        reader.close();
+      }
+    },
+  }, strategy);
+}
+
 /** Read Reader `r` until EOF (`null`) and resolve to the content as
  * Uint8Array`.
  *

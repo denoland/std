@@ -11,10 +11,8 @@ import { listenAndServe, listenAndServeTls } from "./server.ts";
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
-import { readRange } from "../io/files.ts";
 import { red } from "../fmt/colors.ts";
-import { LimitedReader } from "../io/readers.ts";
-import { readableStreamFromReader } from "../streams/conversion.ts";
+import { readableStreamFromRange } from "../streams/conversion.ts";
 
 interface EntryInfo {
   mode: string;
@@ -306,6 +304,18 @@ export async function serveFile(
   const end = parsed && parsed[2] ? +parsed[2] : Math.max(0, fileInfo.size - 1);
 
   let status = Status.OK;
+  
+  // Return 200 if `fileInfo.size` is zero
+  if ( fileInfo.size === 0 ){
+    file.close();
+    const statusText = STATUS_TEXT.get(status);
+ 
+    return new Response(null,{
+      status,
+      statusText,
+      headers
+    });
+  }
 
   // If there is a range, set the status to 206, and set the "Content-range" header.
   if (range && parsed) {
@@ -331,19 +341,14 @@ export async function serveFile(
       headers,
     });
   }
-
-  let body = null;
-
-
   const contentLength = end - start + 1;
   // create readable stream to read the selected range of the file
-  file.seek(start, Deno.SeekMode.Start);
-  const stream = readableStreamFromReader(
-    new LimitedReader(file, contentLength),
-  );
+  const body = readableStreamFromRange(file, {
+    start: start,
+    end: end,
+  });
   // Set content length and response body
   headers.set("content-length", contentLength.toString());
-  body = stream;
 
   const statusText = STATUS_TEXT.get(status);
 
