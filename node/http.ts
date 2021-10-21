@@ -206,17 +206,30 @@ export class Server extends EventEmitter {
     this.handler = handler;
   }
 
-  async listen(port: number) {
-    for await (const conn of Deno.listen({ port })) {
-      (async () => {
-        for await (const reqEvent of Deno.serveHttp(conn)) {
-          this.handler(
-            new IncomingMessage(reqEvent.request),
-            new ServerResponse(reqEvent),
-          );
-        }
-      })();
-    }
+  async listen(port: number, host: string, cb: any) {
+    this._host = host;
+    this._port = port;
+    this.once("listening", cb);
+    (async () => {
+      for await (const conn of Deno.listen({ hostname: host, port })) {
+        (async () => {
+          for await (const reqEvent of Deno.serveHttp(conn)) {
+            this.handler(
+              new IncomingMessage(reqEvent.request),
+              new ServerResponse(reqEvent),
+            );
+          }
+        })();
+      }
+    })();
+    this.emit("listening");
+  }
+
+  address() {
+    return {
+      port: this._port,
+      address: this._host,
+    };
   }
 }
 

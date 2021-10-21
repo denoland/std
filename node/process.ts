@@ -391,7 +391,7 @@ class Process extends EventEmitter {
         for await (const _ of Deno.signal("SIGTERM")) {
           listener();
         }
-      })()
+      })();
     } else {
       super.on(event, listener);
     }
