@@ -107,6 +107,10 @@ export class ServerResponse extends NodeWritable {
     this.reqEvent = reqEvent;
   }
 
+  hasHeader(name: string): boolean {
+    return name in this.headers;
+  }
+
   setHeader(name: string, value: string) {
     this.headers[name] = value;
   }
