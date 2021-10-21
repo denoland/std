@@ -110,3 +110,51 @@ Deno.test({
     assertEquals(result, ["113", "11388", "1138858"]);
   },
 });
+
+Deno.test({
+  name: "[collections/runningReduce] reduce array of numbers with currentIndex",
+  fn() {
+    const numbers = [1, 2, 3, 4, 5];
+    const result = runningReduce(
+      numbers,
+      (sum, current, currentIndex) => sum + current + currentIndex,
+      0,
+    );
+
+    assertEquals(result, [1, 4, 9, 16, 25]);
+  },
+});
+
+Deno.test({
+  name: "[collections/runningReduce] reduce array of strings with currentIndex",
+  fn() {
+    const strings = ["a", "b", "c", "d", "e"];
+    const result = runningReduce(
+      strings,
+      (sum, current, currentIndex) => sum + current + currentIndex,
+      "",
+    );
+
+    assertEquals(result, ["a0", "a0b1", "a0b1c2", "a0b1c2d3", "a0b1c2d3e4"]);
+  },
+});
+
+Deno.test({
+  name: "[collections/runningReduce] reduce array of objects with currentIndex",
+  fn() {
+    const medals = [
+      { country: "USA", count: 113 },
+      { country: "CHN", count: 88 },
+      { country: "JPN", count: 58 },
+    ];
+    const result = runningReduce(
+      medals,
+      (_, current, currentIndex) => {
+        return currentIndex + current.country;
+      },
+      "",
+    );
+
+    assertEquals(result, ["0USA", "1CHN", "2JPN"]);
+  },
+});

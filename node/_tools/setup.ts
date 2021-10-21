@@ -12,6 +12,7 @@ import { ensureFile } from "../../fs/ensure_file.ts";
 import { config, ignoreList } from "./common.ts";
 import { Buffer } from "../../io/buffer.ts";
 import { copy, readAll, writeAll } from "../../streams/conversion.ts";
+import { downloadFile } from "../../_util/download_file.ts";
 
 /**
  * This script will download and extract the test files specified in the
@@ -60,42 +61,6 @@ checkConfigTestFilesOrder([
   ...Object.keys(config.ignore).map((suite) => config.ignore[suite]),
   ...Object.keys(config.tests).map((suite) => config.tests[suite]),
 ]);
-
-/**
- * This will overwrite the file if found
- */
-async function downloadFile(url: string, path: string) {
-  console.log(`Downloading: ${url}...`);
-  const fileContent = await fetch(url)
-    .then((response) => {
-      if (response.ok) {
-        if (!response.body) {
-          throw new Error(
-            `The requested download url ${url} doesn't contain an archive to download`,
-          );
-        }
-        return response.body.getIterator();
-      } else if (response.status === 404) {
-        throw new Error(
-          `The requested version ${config.nodeVersion} could not be found for download`,
-        );
-      }
-      throw new Error(`Request failed with status ${response.status}`);
-    });
-
-  const filePath = fromFileUrl(new URL(path, import.meta.url));
-
-  await ensureFile(filePath);
-  const file = await Deno.open(filePath, {
-    truncate: true,
-    write: true,
-  });
-  for await (const chunk of fileContent) {
-    await Deno.write(file.rid, chunk);
-  }
-  file.close();
-  console.log(`Downloaded: ${url} into ${path}`);
-}
 
 async function clearTests() {
   console.log("Cleaning up previous tests");
@@ -231,7 +196,8 @@ try {
 
 if (shouldDownload) {
   console.log(`Downloading ${url} in path "${archivePath}" ...`);
-  await downloadFile(url, archivePath);
+  await downloadFile(url, new URL(archivePath, import.meta.url));
+  console.log(`Downloaded: ${url} into ${archivePath}`);
 }
 
 let shouldDecompress = false;
