@@ -501,8 +501,7 @@ class Module {
     if (filename.startsWith("node:")) {
       // Slice 'node:' prefix
       const id = filename.slice(5);
-
-      const module = loadNativeModule(id, request);
+      const module = loadNativeModule(id, id);
       // NOTE: Skip checking if can be required by user,
       // because we don't support internal modules anyway.
       return module?.exports;
