@@ -16,12 +16,6 @@ import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
-// deno-lint-ignore no-explicit-any
-export interface Constructor<T = any> {
-  // deno-lint-ignore no-explicit-any
-  new (...args: any[]): T;
-}
-
 export class AssertionError extends Error {
   name = "AssertionError";
   constructor(message: string) {
