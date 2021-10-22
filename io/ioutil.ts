@@ -4,13 +4,13 @@
 
 import * as util from "./util.ts";
 
-/** @deprecated */
+/** @deprecated Use copyN from https://deno.land/std/io/util.ts instead. */
 export const copyN = util.copyN;
-/** @deprecated */
+/** @deprecated Use readShort from https://deno.land/std/io/util.ts instead. */
 export const readShort = util.readShort;
-/** @deprecated */
+/** @deprecated Use readInt from https://deno.land/std/io/util.ts instead. */
 export const readInt = util.readInt;
-/** @deprecated */
+/** @deprecated Use readLong from https://deno.land/std/io/util.ts instead. */
 export const readLong = util.readLong;
-/** @deprecated */
+/** @deprecated Use readLongToBytes from https://deno.land/std/io/util.ts instead. */
 export const sliceLongToBytes = util.sliceLongToBytes;
