@@ -22,7 +22,7 @@ const notImplementedEvents = [
   "SIGFPE",
   "SIGHUP",
   "SIGILL",
-  "SIGINT",
+  // "SIGINT",
   "SIGSEGV",
   // "SIGTERM",
   "SIGWINCH",
@@ -389,6 +389,12 @@ class Process extends EventEmitter {
     if (event == "SIGTERM") {
       (async () => {
         for await (const _ of Deno.signal("SIGTERM")) {
+          listener();
+        }
+      })();
+    } else if (event == "SIGINT") {
+      (async () => {
+        for await (const _ of Deno.signal("SIGINT")) {
           listener();
         }
       })();
