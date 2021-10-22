@@ -424,7 +424,9 @@ function parse(e, r, p) {
     C;
 }
 
-export { parse, resolve, resolveObject, Url };
+const _URLSearchParams = globalThis.URLSearchParams;
+
+export { parse, resolve, resolveObject, Url, _URLSearchParams as URLSearchParams };
 
 interface HttpOptions {
   protocol: string;
@@ -486,4 +488,5 @@ export default {
   pathToFileURL,
   urlToHttpOptions,
   URL,
+  URLSearchParams,
 };
