@@ -286,6 +286,8 @@ export async function serveFile(
       const status = Status.NotModified;
       const statusText = STATUS_TEXT.get(status);
 
+      file.close();
+
       return new Response(null, {
         status,
         statusText,
@@ -322,6 +324,8 @@ export async function serveFile(
   ) {
     const status = Status.RequestedRangeNotSatisfiable;
     const statusText = STATUS_TEXT.get(status);
+
+    file.close();
 
     return new Response(statusText, {
       status,
