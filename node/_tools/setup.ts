@@ -76,7 +76,7 @@ async function clearTests() {
   for await (const file of files) {
     await Deno.remove(file.path);
   }
-  console.log("✨ Cleaned!")
+  console.log("✨ Cleaned!");
 }
 
 async function decompressTests(archivePath: string) {
@@ -110,7 +110,7 @@ async function decompressTests(archivePath: string) {
     await copy(entry, file);
     file.close();
   }
-  console.log("✅ Decompressed!")
+  console.log("✅ Decompressed!");
 }
 
 /**
@@ -171,7 +171,7 @@ async function copyTests(filePath: string): Promise<void> {
     srcFile.close();
     destFile.close();
   }
-  console.log("✅ Copied!")
+  console.log("✅ Copied!");
 }
 
 let shouldDownload = false;
