@@ -1,5 +1,6 @@
 import { Status as STATUS_CODES } from "../http/http_status.ts";
 import { Buffer } from "./buffer.ts";
+import { EventEmitter } from "./events.ts";
 import NodeReadable from "./_stream/readable.ts";
 import NodeWritable from "./_stream/writable.ts";
 
@@ -41,7 +42,6 @@ const METHODS = [
 ];
 
 type Chunk = string | Buffer | Uint8Array;
-type Headers = Record<string, string>;
 
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
@@ -52,12 +52,13 @@ function chunkToU8(chunk: Chunk): Uint8Array {
 }
 
 export class ServerResponse extends NodeWritable {
-  private status?: number;
-  private headers: Headers;
+  statusCode?: number = undefined;
+  statusMessage?: string = undefined;
+  #headers = new Headers({});
   private readable: ReadableStream;
-  headersSent: boolean;
-  private reqEvent: Deno.RequestEvent;
-  private firstChunk: Chunk | null;
+  headersSent = false;
+  #reqEvent: Deno.RequestEvent;
+  #firstChunk: Chunk | null = null;
 
   constructor(reqEvent: Deno.RequestEvent) {
     let controller: ReadableByteStreamController;
@@ -72,12 +73,12 @@ export class ServerResponse extends NodeWritable {
       emitClose: true,
       write: (chunk, _encoding, cb) => {
         if (!this.headersSent) {
-          if (this.firstChunk === null) {
-            this.firstChunk = chunk;
+          if (this.#firstChunk === null) {
+            this.#firstChunk = chunk;
             return cb();
           } else {
-            controller.enqueue(chunkToU8(this.firstChunk));
-            this.firstChunk = null;
+            controller.enqueue(chunkToU8(this.#firstChunk));
+            this.#firstChunk = null;
             this.respond();
           }
         }
@@ -85,8 +86,8 @@ export class ServerResponse extends NodeWritable {
         return cb();
       },
       final: (cb) => {
-        if (this.firstChunk) {
-          this.respond(this.firstChunk);
+        if (this.#firstChunk) {
+          this.respond(this.#firstChunk);
         }
         controller.close();
         return cb();
@@ -99,41 +100,55 @@ export class ServerResponse extends NodeWritable {
       },
     });
     this.readable = readable;
-    this.status = undefined;
-    this.headers = {};
-    this.firstChunk = null;
-    this.headersSent = false;
-    this.reqEvent = reqEvent;
+    this.#reqEvent = reqEvent;
   }
 
   setHeader(name: string, value: string) {
-    this.headers[name] = value;
+    this.#headers.set(name, value);
+    return this;
   }
 
   getHeader(name: string) {
-    return this.headers[name];
+    return this.#headers.get(name);
+  }
+  removeHeader(name: string) {
+    return this.#headers.delete(name);
+  }
+  getHeaderNames() {
+    return Array.from(this.#headers.keys());
+  }
+  hasHeader(name: string) {
+    return this.#headers.has(name);
   }
 
   writeHead(status: number, headers: Headers) {
-    this.status = status;
-    Object.assign(this.headers, headers);
+    this.statusCode = status;
+    for (const [k, v] of headers.entries()) {
+      this.#headers.set(k, v);
+    }
+    return this;
   }
 
-  ensureHeaders(singleChunk?: Chunk) {
-    if (this.status === null) {
-      this.status = 200;
-      this.headers = typeof singleChunk === "string"
-        ? { "content-type": "text/plain" }
-        : {};
+  #ensureHeaders(singleChunk?: Chunk) {
+    if (this.statusCode == null) {
+      this.statusCode = 200;
+      this.statusMessage = "OK";
+      this.#headers = new Headers(
+        typeof singleChunk === "string" ? { "content-type": "text/plain" } : {},
+      );
     }
   }
 
   respond(singleChunk?: Chunk) {
     this.headersSent = true;
-    this.ensureHeaders(singleChunk);
+    this.#ensureHeaders(singleChunk);
     const body = singleChunk ?? this.readable;
-    this.reqEvent.respondWith(
-      new Response(body, { headers: this.headers, status: this.status }),
+    this.#reqEvent.respondWith(
+      new Response(body, {
+        headers: this.#headers,
+        status: this.statusCode,
+        statusText: this.statusMessage,
+      }),
     );
   }
 }
@@ -191,24 +206,31 @@ export class IncomingMessage extends NodeReadable {
 
 type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
 
-export class Server {
+export class Server extends EventEmitter {
   handler: ServerHandler;
+  #listener?: Deno.Listener;
+  listening = false;
 
   constructor(handler: ServerHandler) {
+    super();
     this.handler = handler;
   }
 
   async listen(port: number) {
-    for await (const conn of Deno.listen({ port })) {
-      (async () => {
-        for await (const reqEvent of Deno.serveHttp(conn)) {
-          this.handler(
-            new IncomingMessage(reqEvent.request),
-            new ServerResponse(reqEvent),
-          );
-        }
-      })();
+    this.#listener = Deno.listen({ port });
+    this.listening = true;
+    for await (const conn of this.#listener) {
+      for await (const reqEvent of Deno.serveHttp(conn)) {
+        const req = new IncomingMessage(reqEvent.request);
+        const res = new ServerResponse(reqEvent);
+        this.emit("request", req, res);
+        this.handler(req, res);
+      }
     }
+  }
+  close() {
+    this.#listener!.close();
+    this.emit("close");
   }
 }
 
