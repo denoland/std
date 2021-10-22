@@ -611,7 +611,8 @@ export function fail(msg?: string): never {
  */
 export function assertIsError<E extends Error = Error>(
   error: unknown,
-  ErrorClass?: Constructor<E>,
+  // deno-lint-ignore no-explicit-any
+  ErrorClass?: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
 ): asserts error is E {
@@ -644,7 +645,8 @@ export function assertIsError<E extends Error = Error>(
  */
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
-  ErrorClass?: Constructor<E>,
+  // deno-lint-ignore no-explicit-any
+  ErrorClass?: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
 ): void;
@@ -655,11 +657,15 @@ export function assertThrows(
 ): void;
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
-  errorClassOrCallback?: Constructor<E> | ((e: Error) => unknown),
+  errorClassOrCallback?:
+    // deno-lint-ignore no-explicit-any
+    | (new (...args: any[]) => E)
+    | ((e: Error) => unknown),
   msgIncludesOrMsg?: string,
   msg?: string,
 ): void {
-  let ErrorClass: Constructor<E> | undefined = undefined;
+  // deno-lint-ignore no-explicit-any
+  let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
   let msgIncludes: string | undefined = undefined;
   let errorCallback;
   if (
@@ -667,7 +673,8 @@ export function assertThrows<E extends Error = Error>(
     errorClassOrCallback.prototype instanceof Error ||
     errorClassOrCallback.prototype === Error.prototype
   ) {
-    ErrorClass = errorClassOrCallback as Constructor<E>;
+    // deno-lint-ignore no-explicit-any
+    ErrorClass = errorClassOrCallback as new (...args: any[]) => E;
     msgIncludes = msgIncludesOrMsg;
     errorCallback = null;
   } else {
@@ -707,7 +714,8 @@ export function assertThrows<E extends Error = Error>(
  */
 export function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
-  ErrorClass?: Constructor<E>,
+  // deno-lint-ignore no-explicit-any
+  ErrorClass?: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
 ): Promise<void>;
@@ -718,11 +726,15 @@ export function assertRejects(
 ): Promise<void>;
 export async function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
-  errorClassOrCallback?: Constructor<E> | ((e: Error) => unknown),
+  errorClassOrCallback?:
+    // deno-lint-ignore no-explicit-any
+    | (new (...args: any[]) => E)
+    | ((e: Error) => unknown),
   msgIncludesOrMsg?: string,
   msg?: string,
 ): Promise<void> {
-  let ErrorClass: Constructor<E> | undefined = undefined;
+  // deno-lint-ignore no-explicit-any
+  let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
   let msgIncludes: string | undefined = undefined;
   let errorCallback;
   if (
@@ -730,7 +742,8 @@ export async function assertRejects<E extends Error = Error>(
     errorClassOrCallback.prototype instanceof Error ||
     errorClassOrCallback.prototype === Error.prototype
   ) {
-    ErrorClass = errorClassOrCallback as Constructor<E>;
+    // deno-lint-ignore no-explicit-any
+    ErrorClass = errorClassOrCallback as new (...args: any[]) => E;
     msgIncludes = msgIncludesOrMsg;
     errorCallback = null;
   } else {
