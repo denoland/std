@@ -6,7 +6,7 @@ import { Readable as NodeReadable } from "../stream.ts";
 
 class ReadStream extends NodeReadable {
   public path: string;
-  
+
   constructor(path: string | URL, opts: Record<string, unknown>) {
     path = path instanceof URL ? fromFileUrl(path) : path;
     const hasBadOptions = opts && (
@@ -16,7 +16,7 @@ class ReadStream extends NodeReadable {
       notImplemented();
     }
     const file = Deno.openSync(path, { read: true });
-    const buffer = new Uint8Array(16*1024);
+    const buffer = new Uint8Array(16 * 1024);
     super({
       autoDestroy: true,
       emitClose: true,

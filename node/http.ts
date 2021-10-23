@@ -128,9 +128,10 @@ export class ServerResponse extends NodeWritable {
 
   ensureHeaders(singleChunk?: Chunk) {
     this.statusCode = this.statusCode ?? 200;
-    const hasCT = (this.hasHeader("content-type") || this.hasHeader("Content-Type"));
+    const hasCT =
+      (this.hasHeader("content-type") || this.hasHeader("Content-Type"));
     if (typeof singleChunk === "string" && !hasCT) {
-      Object.assign(this.headers, { "content-type": "text/plain" })
+      Object.assign(this.headers, { "content-type": "text/plain" });
     }
   }
 

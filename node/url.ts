@@ -426,7 +426,13 @@ function parse(e, r, p) {
 
 const _URLSearchParams = globalThis.URLSearchParams;
 
-export { parse, resolve, resolveObject, Url, _URLSearchParams as URLSearchParams };
+export {
+  _URLSearchParams as URLSearchParams,
+  parse,
+  resolve,
+  resolveObject,
+  Url,
+};
 
 interface HttpOptions {
   protocol: string;
