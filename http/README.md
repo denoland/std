@@ -39,6 +39,20 @@ deno run --allow-net --allow-read https://deno.land/std/http/file_server.ts
 > HTTP server listening on http://localhost:4507/
 ```
 
+## HTTP Status Code and Status Text
+
+Helper for processing status code and status text.
+
+```ts
+import {
+  Status,
+  STATUS_TEXT,
+} from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
+
+console.log(Status.Teapot); //=> 418
+console.log(STATUS_TEXT.get(Status.Teapot)); //=> "I'm a teapot"
+```
+
 ## Cookie
 
 Helpers to manipulate the `Cookie` header.
