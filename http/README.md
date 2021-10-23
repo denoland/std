@@ -49,8 +49,8 @@ import {
   STATUS_TEXT,
 } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
 
-console.log(Status.Teapot); //=> 418
-console.log(STATUS_TEXT.get(Status.Teapot)); //=> "I'm a teapot"
+console.log(Status.NotFound); //=> 404
+console.log(STATUS_TEXT.get(Status.NotFound)); //=> "Not Found"
 ```
 
 ## Cookie
