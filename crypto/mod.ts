@@ -177,10 +177,7 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
         // and the data is a single buffer,
         bytes
       ) {
-        return webCrypto.subtle.digest(
-          algorithm,
-          bytes,
-        );
+        return webCrypto.subtle.digest(algorithm, bytes);
       } else if (wasmDigestAlgorithms.includes(name)) {
         if (bytes) {
           // Otherwise, we use our bundled WASM implementation via digestSync
@@ -215,7 +212,7 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
         // they're using.
         return webCrypto.subtle.digest(
           algorithm,
-          data as unknown as Uint8Array,
+          (data as unknown) as Uint8Array,
         );
       } else {
         throw new TypeError(`unsupported digest algorithm: ${algorithm}`);
@@ -235,7 +232,7 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
       const bytes = bufferSourceBytes(data);
 
       if (bytes) {
-        return wasmCrypto.digest(algorithm.name, bytes, undefined);
+        return wasmCrypto.digest(algorithm.name, bytes, algorithm.length);
       } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
         const context = new wasmCrypto.DigestContext(algorithm.name);
         for (const chunk of data as Iterable<BufferSource>) {

@@ -12,6 +12,7 @@ import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { readRange } from "../io/files.ts";
+import { red } from "../fmt/colors.ts";
 
 interface EntryInfo {
   mode: string;
@@ -285,6 +286,8 @@ export async function serveFile(
       const status = Status.NotModified;
       const statusText = STATUS_TEXT.get(status);
 
+      file.close();
+
       return new Response(null, {
         status,
         statusText,
@@ -321,6 +324,8 @@ export async function serveFile(
   ) {
     const status = Status.RequestedRangeNotSatisfiable;
     const statusText = STATUS_TEXT.get(status);
+
+    file.close();
 
     return new Response(statusText, {
       status,
@@ -380,7 +385,7 @@ async function serveDir(
       continue;
     }
     const filePath = posix.join(dirPath, entry.name);
-    const fileUrl = posix.join(dirUrl, entry.name);
+    const fileUrl = encodeURI(posix.join(dirUrl, entry.name));
     if (entry.name === "index.html" && entry.isFile) {
       // in case index.html as dir...
       return serveFile(req, filePath);
@@ -430,7 +435,8 @@ function serveFallback(_req: Request, e: Error): Promise<Response> {
 function serverLog(req: Request, res: Response): void {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
-  const s = `${dateFmt} "${req.method} ${req.url}" ${res.status}`;
+  const normalizedUrl = normalizeURL(req.url);
+  const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${res.status}`;
   console.log(s);
 }
 
@@ -454,6 +460,8 @@ function setCORS(res: Response): void {
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
+  const paths = dirname.split("/");
+
   return html`
     <!DOCTYPE html>
     <html lang="en">
@@ -507,13 +515,23 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
             text-align: left;
           }
           table td {
-            padding: 12px 24px 0 0;
+            padding: 6px 24px 6px 4px;
           }
         </style>
       </head>
       <body>
         <main>
-          <h1>Index of ${dirname}</h1>
+          <h1>Index of
+          <a href="/">home</a>${
+    paths.map((path, index, array) => {
+      if (path === "") return "";
+      const link = array.slice(0, index + 1).join("/");
+      return (
+        html`<a href="${link}">${path}</a>`
+      );
+    }).join("/")
+  }
+          </h1>
           <table>
             <tr>
               <th>Mode</th>
@@ -658,7 +676,7 @@ function main(): void {
       }
     } catch (e) {
       const err = e instanceof Error ? e : new Error("[non-error thrown]");
-      console.error(err.message);
+      console.error(red(err.message));
       response = await serveFallback(req, err);
     }
 

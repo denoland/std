@@ -1,5 +1,5 @@
 {
-  "nodeVersion": "16.11.1",
+  "nodeVersion": "16.12.0",
   "ignore": {
     "common": [
       "index.js"
@@ -34,7 +34,8 @@
       "test-net-server-call-listen-multiple-times.js",
       "test-net-server-try-ports.js",
       "test-net-write-arguments.js",
-      "test-url-format-whatwg.js"
+      "test-url-format-whatwg.js",
+      "test-url-urltooptions.js"
     ],
     "pummel": [
       "test-net-write-callbacks.js"
@@ -64,6 +65,8 @@
       "test-dns.js",
       "test-event-emitter-add-listeners.js",
       "test-event-emitter-check-listener-leaks.js",
+      "test-event-emitter-emit-context.js",
+      "test-event-emitter-get-max-listeners.js",
       "test-event-emitter-invalid-listener.js",
       "test-event-emitter-listener-count.js",
       "test-event-emitter-listeners-side-effects.js",
@@ -147,6 +150,7 @@
       "test-url-fileurltopath.js",
       "test-url-format-whatwg.js",
       "test-url-pathtofileurl.js",
+      "test-url-urltooptions.js",
       "test-util-inherits.js"
     ],
     "pummel": [

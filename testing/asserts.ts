@@ -16,11 +16,6 @@ import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
-export interface Constructor {
-  // deno-lint-ignore no-explicit-any
-  new (...args: any[]): any;
-}
-
 export class AssertionError extends Error {
   name = "AssertionError";
   constructor(message: string) {
@@ -603,15 +598,49 @@ export function fail(msg?: string): never {
 }
 
 /**
+ * Make an assertion that `error` is an `Error`.
+ * If not then an error will be thrown.
+ * An error class and a string that should be included in the
+ * error message can also be asserted.
+ */
+export function assertIsError<E extends Error = Error>(
+  error: unknown,
+  // deno-lint-ignore no-explicit-any
+  ErrorClass?: new (...args: any[]) => E,
+  msgIncludes?: string,
+  msg?: string,
+): asserts error is E {
+  if (error instanceof Error === false) {
+    throw new AssertionError(`Expected "error" to be an Error object.`);
+  }
+  if (ErrorClass && !(error instanceof ErrorClass)) {
+    msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+      typeof error === "object" ? error?.constructor?.name : "[not an object]"
+    }"${msg ? `: ${msg}` : "."}`;
+    throw new AssertionError(msg);
+  }
+  if (
+    msgIncludes && (!(error instanceof Error) ||
+      !stripColor(error.message).includes(stripColor(msgIncludes)))
+  ) {
+    msg = `Expected error message to include "${msgIncludes}", but got "${
+      error instanceof Error ? error.message : "[not an Error]"
+    }"${msg ? `: ${msg}` : "."}`;
+    throw new AssertionError(msg);
+  }
+}
+
+/**
  * Executes a function, expecting it to throw.  If it does not, then it
  * throws. An error class and a string that should be included in the
  * error message can also be asserted. Or you can pass a
  * callback which will be passed the error, usually to apply some custom
  * assertions on it.
  */
-export function assertThrows(
+export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
-  ErrorClass?: Constructor,
+  // deno-lint-ignore no-explicit-any
+  ErrorClass?: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
 ): void;
@@ -620,61 +649,53 @@ export function assertThrows(
   errorCallback: (e: Error) => unknown,
   msg?: string,
 ): void;
-export function assertThrows(
+export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
-  errorClassOrCallback?: Constructor | ((e: Error) => unknown),
+  errorClassOrCallback?:
+    // deno-lint-ignore no-explicit-any
+    | (new (...args: any[]) => E)
+    | ((e: Error) => unknown),
   msgIncludesOrMsg?: string,
   msg?: string,
 ): void {
-  let ErrorClass;
-  let msgIncludes;
+  // deno-lint-ignore no-explicit-any
+  let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
+  let msgIncludes: string | undefined = undefined;
   let errorCallback;
   if (
     errorClassOrCallback == null ||
     errorClassOrCallback.prototype instanceof Error ||
     errorClassOrCallback.prototype === Error.prototype
   ) {
-    ErrorClass = errorClassOrCallback;
+    // deno-lint-ignore no-explicit-any
+    ErrorClass = errorClassOrCallback as new (...args: any[]) => E;
     msgIncludes = msgIncludesOrMsg;
     errorCallback = null;
   } else {
-    ErrorClass = null;
-    msgIncludes = null;
     errorCallback = errorClassOrCallback as (e: Error) => unknown;
     msg = msgIncludesOrMsg;
   }
   let doesThrow = false;
-  let error = null;
   try {
     fn();
-  } catch (e) {
-    if (e instanceof Error === false) {
+  } catch (error) {
+    if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was thrown.");
     }
-    if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
-        typeof e === "object" ? e?.constructor?.name : "[not an object]"
-      }"${msg ? `: ${msg}` : "."}`;
-      throw new AssertionError(msg);
-    }
-    if (
-      msgIncludes && (!(e instanceof Error) ||
-        !stripColor(e.message).includes(stripColor(msgIncludes)))
-    ) {
-      msg = `Expected error message to include "${msgIncludes}", but got "${
-        e instanceof Error ? e.message : "[not an Error]"
-      }"${msg ? `: ${msg}` : "."}`;
-      throw new AssertionError(msg);
+    assertIsError(
+      error,
+      ErrorClass,
+      msgIncludes,
+      msg,
+    );
+    if (typeof errorCallback == "function") {
+      errorCallback(error);
     }
     doesThrow = true;
-    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
-  }
-  if (typeof errorCallback == "function") {
-    errorCallback(error as Error);
   }
 }
 
@@ -685,9 +706,10 @@ export function assertThrows(
  * callback which will be passed the error, usually to apply some custom
  * assertions on it.
  */
-export function assertRejects(
+export function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
-  ErrorClass?: Constructor,
+  // deno-lint-ignore no-explicit-any
+  ErrorClass?: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
 ): Promise<void>;
@@ -696,61 +718,53 @@ export function assertRejects(
   errorCallback: (e: Error) => unknown,
   msg?: string,
 ): Promise<void>;
-export async function assertRejects(
+export async function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
-  errorClassOrCallback?: Constructor | ((e: Error) => unknown),
+  errorClassOrCallback?:
+    // deno-lint-ignore no-explicit-any
+    | (new (...args: any[]) => E)
+    | ((e: Error) => unknown),
   msgIncludesOrMsg?: string,
   msg?: string,
 ): Promise<void> {
-  let ErrorClass;
-  let msgIncludes;
+  // deno-lint-ignore no-explicit-any
+  let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
+  let msgIncludes: string | undefined = undefined;
   let errorCallback;
   if (
     errorClassOrCallback == null ||
     errorClassOrCallback.prototype instanceof Error ||
     errorClassOrCallback.prototype === Error.prototype
   ) {
-    ErrorClass = errorClassOrCallback;
+    // deno-lint-ignore no-explicit-any
+    ErrorClass = errorClassOrCallback as new (...args: any[]) => E;
     msgIncludes = msgIncludesOrMsg;
     errorCallback = null;
   } else {
-    ErrorClass = null;
-    msgIncludes = null;
     errorCallback = errorClassOrCallback as (e: Error) => unknown;
     msg = msgIncludesOrMsg;
   }
   let doesThrow = false;
-  let error = null;
   try {
     await fn();
-  } catch (e) {
-    if (e instanceof Error === false) {
+  } catch (error) {
+    if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was thrown or rejected.");
     }
-    if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
-        typeof e === "object" ? e?.constructor?.name : "[not an object]"
-      }"${msg ? `: ${msg}` : "."}`;
-      throw new AssertionError(msg);
-    }
-    if (
-      msgIncludes && (!(e instanceof Error) ||
-        !stripColor(e.message).includes(stripColor(msgIncludes)))
-    ) {
-      msg = `Expected error message to include "${msgIncludes}", but got "${
-        e instanceof Error ? e.message : "[not an Error]"
-      }"${msg ? `: ${msg}` : "."}`;
-      throw new AssertionError(msg);
+    assertIsError(
+      error,
+      ErrorClass,
+      msgIncludes,
+      msg,
+    );
+    if (typeof errorCallback == "function") {
+      errorCallback(error);
     }
     doesThrow = true;
-    error = e;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
-  }
-  if (typeof errorCallback == "function") {
-    errorCallback(error as Error);
   }
 }
 
