@@ -34,6 +34,7 @@
       "test-net-server-call-listen-multiple-times.js",
       "test-net-server-try-ports.js",
       "test-net-write-arguments.js",
+      "test-querystring.js",
       "test-url-format-whatwg.js",
       "test-url-urltooptions.js"
     ],
