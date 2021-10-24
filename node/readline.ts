@@ -3,7 +3,7 @@ import {
   clearScreenDown,
   cursorTo,
   moveCursor,
-} from "./_readline/callbacks.js";
+} from "./internal/readline/callbacks.js";
 
 export default {
   clearLine,
