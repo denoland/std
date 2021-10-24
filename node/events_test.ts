@@ -425,8 +425,12 @@ Deno.test({
   },
 });
 
+// FIXME(bartlomieju): this test is currently broken. It uses `EventTarget`
+// from the global scope which is a DOM EventTarget and not Node.js
+// specific `EventTarget`.
 Deno.test({
   name: "Can add once event listener to EventTarget via standalone function",
+  ignore: true,
   async fn() {
     const et = new EventTarget();
     setTimeout(() => {
