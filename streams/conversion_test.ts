@@ -15,8 +15,8 @@ import {
   writeAll,
   writeAllSync,
   writerFromStreamWriter,
-} from "./streams.ts";
-import { Buffer } from "./buffer.ts";
+} from "./conversion.ts";
+import { Buffer } from "../io/buffer.ts";
 import { concat, copy as copyBytes } from "../bytes/mod.ts";
 
 function repeat(c: string, bytes: number): Uint8Array {
@@ -26,7 +26,7 @@ function repeat(c: string, bytes: number): Uint8Array {
   return ui8;
 }
 
-Deno.test("[io] readerFromIterable()", async function () {
+Deno.test("[streams] readerFromIterable()", async function () {
   const reader = readerFromIterable((function* () {
     const encoder = new TextEncoder();
     for (const string of ["hello", "deno", "foo"]) {
@@ -47,7 +47,7 @@ Deno.test("[io] readerFromIterable()", async function () {
   assertEquals(readStrings, ["hell", "o", "deno", "foo"]);
 });
 
-Deno.test("[io] writerFromStreamWriter()", async function () {
+Deno.test("[streams] writerFromStreamWriter()", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const writableStream = new WritableStream({
@@ -69,7 +69,7 @@ Deno.test("[io] writerFromStreamWriter()", async function () {
   assertEquals(written, chunks);
 });
 
-Deno.test("[io] readerFromStreamReader()", async function () {
+Deno.test("[streams] readerFromStreamReader()", async function () {
   const chunks: string[] = ["hello", "deno", "land"];
   const expected = chunks.slice();
   const readChunks: Uint8Array[] = [];
@@ -105,7 +105,7 @@ Deno.test("[io] readerFromStreamReader()", async function () {
   );
 });
 
-Deno.test("[io] readerFromStreamReader() big chunks", async function () {
+Deno.test("[streams] readerFromStreamReader() big chunks", async function () {
   const bufSize = 1024;
   const chunkSize = 3 * bufSize;
   const writer = new Buffer();
@@ -136,7 +136,7 @@ Deno.test("[io] readerFromStreamReader() big chunks", async function () {
   assertEquals(writer.length, expectedWritten);
 });
 
-Deno.test("[io] readerFromStreamReader() irregular chunks", async function () {
+Deno.test("[streams] readerFromStreamReader() irregular chunks", async function () {
   const bufSize = 1024;
   const chunkSize = 3 * bufSize;
   const writer = new Buffer();
@@ -189,7 +189,7 @@ class MockWriterCloser implements Deno.Writer, Deno.Closer {
   }
 }
 
-Deno.test("[io] writableStreamFromWriter()", async function () {
+Deno.test("[streams] writableStreamFromWriter()", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const decoder = new TextDecoder();
@@ -211,7 +211,7 @@ Deno.test("[io] writableStreamFromWriter()", async function () {
   assertEquals(written, chunks);
 });
 
-Deno.test("[io] writableStreamFromWriter() - calls close on close", async function () {
+Deno.test("[streams] writableStreamFromWriter() - calls close on close", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const decoder = new TextDecoder();
@@ -234,7 +234,7 @@ Deno.test("[io] writableStreamFromWriter() - calls close on close", async functi
   assertEquals(writer.closeCall, 1);
 });
 
-Deno.test("[io] writableStreamFromWriter() - calls close on abort", async function () {
+Deno.test("[streams] writableStreamFromWriter() - calls close on abort", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const decoder = new TextDecoder();
@@ -257,7 +257,7 @@ Deno.test("[io] writableStreamFromWriter() - calls close on abort", async functi
   assertEquals(writer.closeCall, 1);
 });
 
-Deno.test("[io] writableStreamFromWriter() - doesn't call close with autoClose false", async function () {
+Deno.test("[streams] writableStreamFromWriter() - doesn't call close with autoClose false", async function () {
   const written: string[] = [];
   const chunks: string[] = ["hello", "deno", "land"];
   const decoder = new TextDecoder();
@@ -280,7 +280,7 @@ Deno.test("[io] writableStreamFromWriter() - doesn't call close with autoClose f
   assertEquals(writer.closeCall, 0);
 });
 
-Deno.test("[io] readableStreamFromIterable() array", async function () {
+Deno.test("[streams] readableStreamFromIterable() array", async function () {
   const strings: string[] = ["hello", "deno", "land"];
   const encoder = new TextEncoder();
   const readableStream = readableStreamFromIterable(
@@ -296,7 +296,7 @@ Deno.test("[io] readableStreamFromIterable() array", async function () {
   assertEquals(readStrings, strings);
 });
 
-Deno.test("[io] readableStreamFromIterable() generator", async function () {
+Deno.test("[streams] readableStreamFromIterable() generator", async function () {
   const strings: string[] = ["hello", "deno", "land"];
   const readableStream = readableStreamFromIterable((function* () {
     const encoder = new TextEncoder();
@@ -314,7 +314,7 @@ Deno.test("[io] readableStreamFromIterable() generator", async function () {
   assertEquals(readStrings, strings);
 });
 
-Deno.test("[io] readableStreamFromIterable() cancel", async function () {
+Deno.test("[streams] readableStreamFromIterable() cancel", async function () {
   let generatorError = null;
   const readable = readableStreamFromIterable(async function* () {
     try {
@@ -357,7 +357,7 @@ class MockReaderCloser implements Deno.Reader, Deno.Closer {
   }
 }
 
-Deno.test("[io] readableStreamFromReader()", async function () {
+Deno.test("[streams] readableStreamFromReader()", async function () {
   const encoder = new TextEncoder();
   const reader = new Buffer(encoder.encode("hello deno land"));
   const stream = readableStreamFromReader(reader);
@@ -370,11 +370,11 @@ Deno.test("[io] readableStreamFromReader()", async function () {
 });
 
 Deno.test({
-  name: "[io] readableStreamFromReader() auto closes closer",
+  name: "[streams] readableStreamFromReader() auto closes closer",
   async fn() {},
 });
 
-Deno.test("[io] readableStreamFromReader() - calls close", async function () {
+Deno.test("[streams] readableStreamFromReader() - calls close", async function () {
   const encoder = new TextEncoder();
   const reader = new MockReaderCloser();
   reader.chunks = [
@@ -392,7 +392,7 @@ Deno.test("[io] readableStreamFromReader() - calls close", async function () {
   assertEquals(reader.closeCall, 1);
 });
 
-Deno.test("[io] readableStreamFromReader() - doesn't call close with autoClose false", async function () {
+Deno.test("[streams] readableStreamFromReader() - doesn't call close with autoClose false", async function () {
   const encoder = new TextEncoder();
   const reader = new MockReaderCloser();
   reader.chunks = [
@@ -410,7 +410,7 @@ Deno.test("[io] readableStreamFromReader() - doesn't call close with autoClose f
   assertEquals(reader.closeCall, 0);
 });
 
-Deno.test("[io] readableStreamFromReader() - chunkSize", async function () {
+Deno.test("[streams] readableStreamFromReader() - chunkSize", async function () {
   const encoder = new TextEncoder();
   const reader = new MockReaderCloser();
   reader.chunks = [

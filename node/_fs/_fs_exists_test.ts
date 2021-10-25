@@ -5,7 +5,7 @@ import {
   assertStringIncludes,
 } from "../../testing/asserts.ts";
 import { exists, existsSync } from "./_fs_exists.ts";
-import { readAll } from "../../io/streams.ts";
+import { readAll } from "../../streams/conversion.ts";
 
 Deno.test("existsFile", async function () {
   const availableFile = await new Promise((resolve) => {

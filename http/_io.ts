@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { BufReader, BufWriter } from "../io/buffer.ts";
-import { copy, iterateReader } from "../io/streams.ts";
+import { copy, iterateReader } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { Response, ServerRequest } from "./server_legacy.ts";

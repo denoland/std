@@ -23,7 +23,7 @@ import {
 } from "./buffer.ts";
 import * as iotest from "./_iotest.ts";
 import { StringReader } from "./readers.ts";
-import { writeAllSync } from "./streams.ts";
+import { writeAllSync } from "../streams/conversion.ts";
 import { StringWriter } from "./writers.ts";
 
 const MAX_SIZE = 2 ** 32 - 2;
@@ -650,6 +650,18 @@ Deno.test("bufioReadLineBadResource", async () => {
   assertRejects(async () => {
     await bufReader.readLine();
   }, Deno.errors.BadResource);
+});
+
+Deno.test("bufioReadLineBufferFullError", async () => {
+  const input = "@".repeat(5000) + "\n";
+  const bufReader = new BufReader(new StringReader(input));
+  const r = await bufReader.readLine();
+
+  assert(r !== null);
+
+  const { line, more } = r;
+  assertEquals(more, true);
+  assertEquals(line, encoder.encode("@".repeat(4096)));
 });
 
 Deno.test("[io] readStringDelim basic", async () => {

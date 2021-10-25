@@ -60,6 +60,14 @@ Deno.test("requireIndexJS", function () {
   assert(isIndex);
 });
 
+Deno.test("requireWithNodePrefix", function () {
+  const osWithPrefix = require("node:os");
+  const os = require("os");
+  assert(osWithPrefix === os);
+  assert(osWithPrefix.arch);
+  assert(typeof osWithPrefix.arch() == "string");
+});
+
 Deno.test("requireNodeOs", function () {
   const os = require("os");
   assert(os.arch);
@@ -129,6 +137,48 @@ Deno.test("Require .mjs", () => {
   );
 });
 
+Deno.test("requireErrorInEval", async function () {
+  const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+
+  const p = Deno.run({
+    cmd: [
+      Deno.execPath(),
+      "run",
+      "--unstable",
+      "--allow-read",
+      "./_module/cjs/test_cjs_import.js",
+    ],
+    cwd,
+    stdout: "piped",
+    stderr: "piped",
+  });
+
+  const decoder = new TextDecoder();
+  const output = await p.output();
+  const outputError = decoder.decode(await p.stderrOutput());
+
+  assert(!output.length);
+  assert(
+    outputError.includes(
+      'To load an ES module, set "type": "module" in the package.json or use the .mjs extension.',
+    ),
+  );
+  assert(
+    outputError.includes(
+      "SyntaxError: Cannot use import statement outside a module",
+    ),
+  );
+  p.close();
+});
+
+Deno.test("requireCjsWithDynamicImport", function () {
+  require("./_module/cjs/cjs_with_dynamic_import");
+});
+
+Deno.test("requireWithImportsExports", function () {
+  require("./_module/cjs/cjs_imports_exports");
+});
+
 Deno.test("default imports match star imports", () => {
   const SKIP = new Set(["assert", "assert/strict", "console", "constants"]);
 
@@ -146,8 +196,7 @@ Deno.test("default imports match star imports", () => {
     keysA.sort();
     keysB.sort();
 
-    console.log(`mod: ${key}`);
-    assertEquals(keysA, keysB);
+    assertEquals(keysA, keysB, `keys mismatch in mod: ${key}`);
 
     for (const subkey of keysA) {
       assertEquals(modA[subkey], modB[subkey]);
