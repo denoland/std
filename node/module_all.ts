@@ -9,7 +9,7 @@ import dns from "./dns.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
-import * as internalReadlineUtils from "./internal/readline/utils.js";
+import internalReadlineUtils from "./internal/readline/utils.js";
 import http from "./http.ts";
 import net from "./net.ts";
 import os from "./os.ts";

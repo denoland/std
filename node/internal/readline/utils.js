@@ -571,3 +571,11 @@ export function commonPrefix(strings) {
   }
   return min;
 }
+
+export default {
+  CSI,
+  charLengthAt,
+  charLengthLeft,
+  emitKeys,
+  commonPrefix,
+};
