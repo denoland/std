@@ -136,12 +136,38 @@ Deno.test("Require .mjs", () => {
   );
 });
 
-Deno.test("requireErrorInEval", function () {
-  assertThrows(
-    () => require("./_module/cjs/cjs_import"),
-    SyntaxError,
-    "Cannot use import statement outside a module",
+Deno.test("requireErrorInEval", async function () {
+  const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+
+  const p = Deno.run({
+    cmd: [
+      Deno.execPath(),
+      "run",
+      "--unstable",
+      "--allow-read",
+      "./_module/cjs/test_cjs_import.js",
+    ],
+    cwd,
+    stdout: "piped",
+    stderr: "piped",
+  });
+
+  const decoder = new TextDecoder();
+  const output = await p.output();
+  const outputError = decoder.decode(await p.stderrOutput());
+
+  assert(!output.length);
+  assert(
+    outputError.includes(
+      'To load an ES module, set "type": "module" in the package.json or use the .mjs extension.',
+    ),
   );
+  assert(
+    outputError.includes(
+      "SyntaxError: Cannot use import statement outside a module",
+    ),
+  );
+  p.close();
 });
 
 Deno.test("requireCjsWithDynamicImport", function () {

@@ -65,6 +65,8 @@
       "test-dns.js",
       "test-event-emitter-add-listeners.js",
       "test-event-emitter-check-listener-leaks.js",
+      "test-event-emitter-emit-context.js",
+      "test-event-emitter-get-max-listeners.js",
       "test-event-emitter-invalid-listener.js",
       "test-event-emitter-listener-count.js",
       "test-event-emitter-listeners-side-effects.js",
