@@ -27,4 +27,5 @@ Deno.test("[node/_tools/setup] downloadFile", async () => {
   } finally {
     await Deno.remove(tmpdir, { recursive: true });
   }
+  await delay(50);
 });
