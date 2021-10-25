@@ -7,7 +7,8 @@
 - feat(collections/running_reduce): support `currentIndex` (#1431)
 - feat(node/url): add `url.urlToHttpOptions(url)` (#1426)
 - fix(node): show warning when using import/export in CJS module (#1452)
-- fix(node/events): make on and emit methods callable by non-EventEmitter objects (#1454)
+- fix(node/events): make on and emit methods callable by non-EventEmitter
+  objects (#1454)
 - fix(http/file_server): fix leak file resource (#1443)
 - fix(http/file_server): fix encoded url in dir html (#1442)
 - fix(node): match Node's os.arch values (#1440)
@@ -15,7 +16,8 @@
 - fix(std/async): fix async/tee concurent .next calls error (#1425)
 - fix(node/_tools): fix node test setup script (#1422)
 - fix(crypto): support length option in crypto.subtle.digest (#1386)
-- test(http/server): add a test case for the combination of `Deno.upgradeWebSocket()` and `listenAndServe()` (#1324)
+- test(http/server): add a test case for the combination of
+  `Deno.upgradeWebSocket()` and `listenAndServe()` (#1324)
 - docs(http/http_status): add documents for http_status.ts (#1451)
 - docs(node/url): add tests information (#1449)
 - docs(crypto): update README.md exaples (#1447)
