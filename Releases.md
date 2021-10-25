@@ -1,3 +1,23 @@
+### 0.113.0 / 2021.10.25
+
+- feat(collections/running_reduce): support `currentIndex` (#1431)
+- feat(http/file_server): add color to log message (#1434)
+- feat(http/file_server): add breadcrumbs navigation (#1433)
+- feat(node): allow require with 'node:' prefix (#1438)
+- feat(node/url): add `url.urlToHttpOptions(url)` (#1426)
+- feat(testing): add assertIsError (#1376)
+- fix(async): fix async/tee concurent .next calls error (#1425)
+- fix(crypto): support length option in crypto.subtle.digest (#1386)
+- fix(http/file_server): fix encoded url in dir html (#1442)
+- fix(http/file_server): fix leak file resource (#1443)
+- fix(node): match Node's os.arch values (#1440)
+- fix(node): show warning when using import/export in CJS module (#1452)
+- fix(node/events): make on and emit methods callable by non-EventEmitter
+  objects (#1454)
+- fix(node/util): improve util.format (#1181)
+- fix(node/_tools): fix node test setup script (#1422)
+- chore(node): update Node version from 16.11.1 to 16.12.0 (#1441)
+
 ### 0.112.0 / 2021.10.18
 
 - feat(collections): add joinToString (#1223)
