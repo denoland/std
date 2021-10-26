@@ -695,6 +695,25 @@ const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
 assertEquals(sumSteps, [1, 3, 6, 10, 15]);
 ```
 
+### sumOf
+
+Applies the given selector to all elements in the given collection and
+calculates the sum of the results.
+
+```ts
+import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+const totalAge = sumOf(people, (i) => i.age);
+
+assertEquals(totalAge, 99);
+```
+
 ### sample
 
 Returns a random element from the given array

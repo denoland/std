@@ -239,7 +239,7 @@ class Module {
   // deno-lint-ignore no-explicit-any
   _compile(content: string, filename: string): any {
     // manifest code removed
-    const compiledWrapper = wrapSafe(filename, content);
+    const compiledWrapper = wrapSafe(filename, content, this);
     // inspector code remove
     const dirname = path.dirname(filename);
     const require = makeRequireFunction(this);
@@ -301,7 +301,9 @@ class Module {
     options?: { paths: string[] },
   ): string {
     // Polyfills.
-    if (nativeModuleCanBeRequiredByUsers(request)) {
+    if (
+      request.startsWith("node:") || nativeModuleCanBeRequiredByUsers(request)
+    ) {
       return request;
     }
 
@@ -496,6 +498,14 @@ class Module {
     }
 
     const filename = Module._resolveFilename(request, parent, isMain);
+    if (filename.startsWith("node:")) {
+      // Slice 'node:' prefix
+      const id = filename.slice(5);
+      const module = loadNativeModule(id, id);
+      // NOTE: Skip checking if can be required by user,
+      // because we don't support internal modules anyway.
+      return module?.exports;
+    }
 
     const cachedModule = Module._cache[filename];
     if (cachedModule !== undefined) {
@@ -1210,16 +1220,36 @@ type RequireWrapper = (
   __dirname: string,
 ) => void;
 
-function wrapSafe(filename: string, content: string): RequireWrapper {
+function enrichCJSError(error: Error) {
+  if (error instanceof SyntaxError) {
+    if (
+      error.message.includes("Cannot use import statement outside a module") ||
+      error.message.includes("Unexpected token 'export'")
+    ) {
+      console.error(
+        'To load an ES module, set "type": "module" in the package.json or use ' +
+          "the .mjs extension.",
+      );
+    }
+  }
+}
+
+function wrapSafe(
+  filename: string,
+  content: string,
+  cjsModuleInstance: Module,
+): RequireWrapper {
   // TODO(bartlomieju): fix this
   const wrapper = Module.wrap(content);
   // deno-lint-ignore no-explicit-any
   const [f, err] = (Deno as any).core.evalContext(wrapper, filename);
   if (err) {
+    if (process.mainModule === cjsModuleInstance) {
+      enrichCJSError(err.thrown);
+    }
     throw err.thrown;
   }
   return f;
-  // ESM code removed.
 }
 
 // Native extension for .js

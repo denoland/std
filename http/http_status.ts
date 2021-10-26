@@ -1,6 +1,18 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-/** HTTP status codes */
+/**
+ * Enum of HTTP status codes.
+ *
+ * ```ts
+ * import {
+ *   Status,
+ *   STATUS_TEXT,
+ * } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
+ *
+ * console.log(Status.NotFound); //=> 404
+ * console.log(STATUS_TEXT.get(Status.NotFound)); //=> "Not Found"
+ * ```
+ */
 export enum Status {
   /** RFC 7231, 6.2.1 */
   Continue = 100,
@@ -131,6 +143,19 @@ export enum Status {
   NetworkAuthenticationRequired = 511,
 }
 
+/**
+ * Map from status code to status text.
+ *
+ * ```ts
+ * import {
+ *   Status,
+ *   STATUS_TEXT,
+ * } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
+ *
+ * console.log(Status.NotFound); //=> 404
+ * console.log(STATUS_TEXT.get(Status.NotFound)); //=> "Not Found"
+ * ```
+ */
 export const STATUS_TEXT = new Map<Status, string>([
   [Status.Continue, "Continue"],
   [Status.SwitchingProtocols, "Switching Protocols"],
