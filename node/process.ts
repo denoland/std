@@ -369,8 +369,9 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#process_process_events */
   //deno-lint-ignore ban-types
-  on(event: typeof notImplementedEvents[number], listener: Function): never;
   on(event: "exit", listener: (code: number) => void): this;
+  on(event: string, listener: (...args: any[]) => void): this;
+  on(event: typeof notImplementedEvents[number], listener: Function): never;
   //deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
@@ -387,8 +388,9 @@ class Process extends EventEmitter {
   }
 
   //deno-lint-ignore ban-types
-  off(event: typeof notImplementedEvents[number], listener: Function): never;
   off(event: "exit", listener: (code: number) => void): this;
+  off(event: string, listener: (...args: any[]) => void): this;
+  off(event: typeof notImplementedEvents[number], listener: Function): never;
   //deno-lint-ignore no-explicit-any
   off(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {

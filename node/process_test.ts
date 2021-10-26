@@ -156,7 +156,7 @@ Deno.test({
 Deno.test({
   name: "process.on signal",
   async fn() {
-    const promise = deferred<void>();
+    const promise = deferred();
     let c = 0;
     const listener = () => {
       c += 1;
@@ -180,7 +180,7 @@ Deno.test({
 Deno.test({
   name: "process.off signal",
   async fn() {
-    const promise = deferred<void>();
+    const promise = deferred();
     let c = 0;
     const listener = () => {
       c += 1;
