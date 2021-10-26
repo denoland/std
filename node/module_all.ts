@@ -19,6 +19,7 @@ import process from "./process.ts";
 import querystring from "./querystring.ts";
 import readline from "./readline.ts";
 import stream from "./stream.ts";
+import streamWeb from "./stream/web.ts";
 import stringDecoder from "./string_decoder.ts";
 import sys from "./sys.ts";
 import timers from "./timers.ts";
@@ -62,6 +63,7 @@ export default {
   querystring,
   readline,
   stream,
+  "stream/web": streamWeb,
   "string_decoder": stringDecoder,
   sys,
   timers,

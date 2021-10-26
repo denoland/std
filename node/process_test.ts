@@ -9,6 +9,7 @@ import {
   assertThrows,
 } from "../testing/asserts.ts";
 import { stripColor } from "../fmt/colors.ts";
+import { deferred } from "../async/deferred.ts";
 import * as path from "../path/mod.ts";
 import { delay } from "../async/delay.ts";
 import { env } from "./process.ts";
@@ -149,6 +150,56 @@ Deno.test({
       "1\n2",
     );
     p.close();
+  },
+});
+
+Deno.test({
+  name: "process.on signal",
+  ignore: Deno.build.os == "windows",
+  async fn() {
+    const promise = deferred();
+    let c = 0;
+    const listener = () => {
+      c += 1;
+    };
+    process.on("SIGINT", listener);
+    setTimeout(async () => {
+      // Sends SIGINT 3 times.
+      for (const _ of Array(3)) {
+        await delay(20);
+        Deno.kill(Deno.pid, "SIGINT");
+      }
+      await delay(20);
+      Deno.removeSignalListener("SIGINT", listener);
+      promise.resolve();
+    });
+    await promise;
+    assertEquals(c, 3);
+  },
+});
+
+Deno.test({
+  name: "process.off signal",
+  ignore: Deno.build.os == "windows",
+  async fn() {
+    const promise = deferred();
+    let c = 0;
+    const listener = () => {
+      c += 1;
+      process.off("SIGINT", listener);
+    };
+    process.on("SIGINT", listener);
+    setTimeout(async () => {
+      // Sends SIGINT 3 times.
+      for (const _ of Array(3)) {
+        await delay(20);
+        Deno.kill(Deno.pid, "SIGINT");
+      }
+      await delay(20);
+      promise.resolve();
+    });
+    await promise;
+    assertEquals(c, 1);
   },
 });
 
