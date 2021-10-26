@@ -143,12 +143,50 @@ Deno.test({
     });
 
     const decoder = new TextDecoder();
-    const rawOutput = await p.output();
+    let rawOutput = await p.output();
     assertEquals(
       stripColor(decoder.decode(rawOutput).trim()),
       "1\n2",
     );
     p.close();
+
+    const p1 = Deno.run({
+      cmd: [
+        Deno.execPath(),
+        "run",
+        "--quiet",
+        "--unstable",
+        "./testdata/process_on_signal.ts",
+      ],
+      cwd,
+      stdout: "piped",
+    });
+    p1.kill("SIGINT");
+    rawOutput = await p1.output();
+    assertEquals(
+      stripColor(decoder.decode(rawOutput).trim()),
+      "1\n2",
+    );
+    p1.close();
+
+    const p2 = Deno.run({
+      cmd: [
+        Deno.execPath(),
+        "run",
+        "--quiet",
+        "--unstable",
+        "./testdata/process_off_signal.ts",
+      ],
+      cwd,
+      stdout: "piped",
+    });
+    p1.kill("SIGINT");
+    rawOutput = await p2.output();
+    assertEquals(
+      stripColor(decoder.decode(rawOutput).trim()),
+      "",
+    );
+    p2.close();
   },
 });
 

@@ -17,15 +17,6 @@ const notImplementedEvents = [
   "message",
   "multipleResolves",
   "rejectionHandled",
-  "SIGBREAK",
-  "SIGBUS",
-  "SIGFPE",
-  "SIGHUP",
-  "SIGILL",
-  "SIGINT",
-  "SIGSEGV",
-  "SIGTERM",
-  "SIGWINCH",
   "uncaughtException",
   "uncaughtExceptionMonitor",
   "unhandledRejection",
@@ -386,7 +377,29 @@ class Process extends EventEmitter {
       notImplemented(`process.on("${event}")`);
     }
 
-    super.on(event, listener);
+    if (event.startsWith("SIG")) {
+      Deno.addSignalListener(event, listener);
+    } else {
+      super.on(event, listener);
+    }
+
+    return this;
+  }
+
+  //deno-lint-ignore ban-types
+  off(event: typeof notImplementedEvents[number], listener: Function): never;
+  off(event: "exit", listener: (code: number) => void): this;
+  //deno-lint-ignore no-explicit-any
+  off(event: string, listener: (...args: any[]) => void): this {
+    if (notImplementedEvents.includes(event)) {
+      notImplemented(`process.off("${event}")`);
+    }
+
+    if (event.startsWith("SIG")) {
+      Deno.removeSignalListener(event, listener);
+    } else {
+      super.off(event, listener);
+    }
 
     return this;
   }
