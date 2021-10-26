@@ -9,6 +9,7 @@ import {
   assertThrows,
 } from "../testing/asserts.ts";
 import { stripColor } from "../fmt/colors.ts";
+import { deferred } from "../async/deferred.ts";
 import * as path from "../path/mod.ts";
 import { delay } from "../async/delay.ts";
 import { env } from "./process.ts";
@@ -155,54 +156,48 @@ Deno.test({
 Deno.test({
   name: "process.on signal",
   async fn() {
-    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
-    const p1 = Deno.run({
-      cmd: [
-        Deno.execPath(),
-        "run",
-        "--quiet",
-        "--unstable",
-        "./testdata/process_on_signal.ts",
-      ],
-      cwd,
-      stdout: "piped",
+    const promise = deferred<void>();
+    let c = 0;
+    const listener = () => {
+      c += 1;
+    };
+    process.on("SIGUSR1", listener);
+    setTimeout(async () => {
+      // Sends SIGUSR1 3 times.
+      for (const _ of Array(3)) {
+        await delay(20);
+        Deno.kill(Deno.pid, "SIGUSR1");
+      }
+      await delay(20);
+      Deno.removeSignalListener("SIGUSR1", listener);
+      promise.resolve();
     });
-    await delay(1000);
-    p1.kill("SIGINT");
-    const decoder = new TextDecoder();
-    const rawOutput = await p1.output();
-    decoder.decode(rawOutput).trim();
-    assertEquals(
-      stripColor(decoder.decode(rawOutput).trim()),
-      "got signal",
-    );
-    p1.close();
+    await promise;
+    assertEquals(c, 3);
   },
 });
 
 Deno.test({
   name: "process.off signal",
   async fn() {
-    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
-    const p2 = Deno.run({
-      cmd: [
-        Deno.execPath(),
-        "run",
-        "--quiet",
-        "--unstable",
-        "./testdata/process_off_signal.ts",
-      ],
-      cwd,
-      stdout: "piped",
+    const promise = deferred<void>();
+    let c = 0;
+    const listener = () => {
+      c += 1;
+      process.off("SIGUSR1", listener);
+    };
+    process.on("SIGUSR1", listener);
+    setTimeout(async () => {
+      // Sends SIGUSR1 3 times.
+      for (const _ of Array(3)) {
+        await delay(20);
+        Deno.kill(Deno.pid, "SIGUSR1");
+      }
+      await delay(20);
+      promise.resolve();
     });
-    p2.kill("SIGINT");
-    const decoder = new TextDecoder();
-    const rawOutput = await p2.output();
-    assertEquals(
-      stripColor(decoder.decode(rawOutput).trim()),
-      "",
-    );
-    p2.close();
+    await promise;
+    assertEquals(c, 1);
   },
 });
 
