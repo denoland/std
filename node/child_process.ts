@@ -331,7 +331,8 @@ function ensureClosed(closer: Deno.Closer): void {
 }
 
 function isAlreadyClosed(err: unknown): boolean {
-  return err instanceof Deno.errors.BadResource;
+  return err instanceof Deno.errors.BadResource ||
+    err instanceof Deno.errors.Interrupted;
 }
 
 async function* readLinesSafely(
