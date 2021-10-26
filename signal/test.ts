@@ -70,8 +70,12 @@ Deno.test({
     const sigIter = sig[Symbol.asyncIterator]();
     let done0 = false;
     let done1 = false;
-    sigIter.next().then(() => { done0 = true });
-    sigIter.next().then(() => { done1 = true });
+    sigIter.next().then(() => {
+      done0 = true;
+    });
+    sigIter.next().then(() => {
+      done1 = true;
+    });
     Deno.kill(Deno.pid, "SIGUSR1");
     await delay(20);
     assert(done0);

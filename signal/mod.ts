@@ -53,33 +53,28 @@ export function signal(
   return Object.assign(mux, { dispose });
 }
 
-function createSignalStream(signal: Deno.Signal): AsyncIterable<void> & Disposable {
-  let streamFinished = deferred<boolean>();
-
+function createSignalStream(
+  signal: Deno.Signal,
+): AsyncIterable<void> & Disposable {
+  let streamContinues = deferred<boolean>();
   const handler = () => {
-    streamFinished.resolve(false);
-    streamFinished = deferred<boolean>()
+    streamContinues.resolve(true);
   };
   Deno.addSignalListener(signal, handler);
 
-  const stream = {
-    async next() {
-      return {
-        done: await streamFinished,
-        value: undefined,
-      }
-    },
-    [Symbol.asyncIterator]() {
-      return stream;
-    },
-    dispose() {
-      streamFinished.resolve(true);
-      streamFinished = deferred<boolean>()
-      Deno.removeSignalListener(signal, handler);
+  const gen = async function* () {
+    while (await streamContinues) {
+      streamContinues = deferred<boolean>();
+      yield undefined;
     }
-  }
+  };
 
-  return stream;
+  return Object.assign(gen(), {
+    dispose() {
+      streamContinues.resolve(false);
+      Deno.removeSignalListener(signal, handler);
+    },
+  });
 }
 
 /**
@@ -98,12 +93,15 @@ function createSignalStream(signal: Deno.Signal): AsyncIterable<void> & Disposab
  * @param callback Callback function triggered upon signal event
  * @deprecated Use Deno.addSignalListener and Deno.removeSignalListener instead.
  */
-export function onSignal(signal: Deno.Signal, callback: () => void): Disposable {
+export function onSignal(
+  signal: Deno.Signal,
+  callback: () => void,
+): Disposable {
   Deno.addSignalListener(signal, callback);
 
   return {
     dispose() {
       Deno.removeSignalListener(signal, callback);
-    }
-  }
+    },
+  };
 }
