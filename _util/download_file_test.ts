@@ -11,7 +11,7 @@ Deno.test("[node/_tools/setup] downloadFile", async () => {
   const tmpdir = await Deno.makeTempDir();
   try {
     const controller = new AbortController();
-    listenAndServe(":8080", () => {
+    const serverPromise = listenAndServe(":8080", () => {
       // Responds with 100KB data
       return new Response("0".repeat(100_000));
     }, { signal: controller.signal });
@@ -24,8 +24,8 @@ Deno.test("[node/_tools/setup] downloadFile", async () => {
     );
     assertEquals((await Deno.readTextFile(downloadedFile)).length, 100_000);
     controller.abort();
+    await serverPromise;
   } finally {
     await Deno.remove(tmpdir, { recursive: true });
   }
-  await delay(50);
 });
