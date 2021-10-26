@@ -378,7 +378,7 @@ class Process extends EventEmitter {
     }
 
     if (event.startsWith("SIG")) {
-      Deno.addSignalListener(event, listener);
+      Deno.addSignalListener(event as Deno.Signal, listener);
     } else {
       super.on(event, listener);
     }
@@ -396,7 +396,7 @@ class Process extends EventEmitter {
     }
 
     if (event.startsWith("SIG")) {
-      Deno.removeSignalListener(event, listener);
+      Deno.removeSignalListener(event as Deno.Signal, listener);
     } else {
       super.off(event, listener);
     }

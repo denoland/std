@@ -149,7 +149,13 @@ Deno.test({
       "1\n2",
     );
     p.close();
+  },
+});
 
+Deno.test({
+  name: "process.on signal",
+  async fn() {
+    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
     const p1 = Deno.run({
       cmd: [
         Deno.execPath(),
@@ -161,14 +167,23 @@ Deno.test({
       cwd,
       stdout: "piped",
     });
+    await delay(1000);
     p1.kill("SIGINT");
-    rawOutput = await p1.output();
+    const decoder = new TextDecoder();
+    const rawOutput = await p1.output();
+    decoder.decode(rawOutput).trim();
     assertEquals(
       stripColor(decoder.decode(rawOutput).trim()),
-      "1\n2",
+      "got signal",
     );
     p1.close();
+  },
+});
 
+Deno.test({
+  name: "process.off signal",
+  async fn() {
+    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
     const p2 = Deno.run({
       cmd: [
         Deno.execPath(),
@@ -180,8 +195,9 @@ Deno.test({
       cwd,
       stdout: "piped",
     });
-    p1.kill("SIGINT");
-    rawOutput = await p2.output();
+    p2.kill("SIGINT");
+    const decoder = new TextDecoder();
+    const rawOutput = await p2.output();
     assertEquals(
       stripColor(decoder.decode(rawOutput).trim()),
       "",
