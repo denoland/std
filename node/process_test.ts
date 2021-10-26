@@ -144,7 +144,7 @@ Deno.test({
     });
 
     const decoder = new TextDecoder();
-    let rawOutput = await p.output();
+    const rawOutput = await p.output();
     assertEquals(
       stripColor(decoder.decode(rawOutput).trim()),
       "1\n2",
@@ -161,15 +161,15 @@ Deno.test({
     const listener = () => {
       c += 1;
     };
-    process.on("SIGUSR1", listener);
+    process.on("SIGINT", listener);
     setTimeout(async () => {
-      // Sends SIGUSR1 3 times.
+      // Sends SIGINT 3 times.
       for (const _ of Array(3)) {
         await delay(20);
-        Deno.kill(Deno.pid, "SIGUSR1");
+        Deno.kill(Deno.pid, "SIGINT");
       }
       await delay(20);
-      Deno.removeSignalListener("SIGUSR1", listener);
+      Deno.removeSignalListener("SIGINT", listener);
       promise.resolve();
     });
     await promise;
@@ -184,14 +184,14 @@ Deno.test({
     let c = 0;
     const listener = () => {
       c += 1;
-      process.off("SIGUSR1", listener);
+      process.off("SIGINT", listener);
     };
-    process.on("SIGUSR1", listener);
+    process.on("SIGINT", listener);
     setTimeout(async () => {
-      // Sends SIGUSR1 3 times.
+      // Sends SIGINT 3 times.
       for (const _ of Array(3)) {
         await delay(20);
-        Deno.kill(Deno.pid, "SIGUSR1");
+        Deno.kill(Deno.pid, "SIGINT");
       }
       await delay(20);
       promise.resolve();
