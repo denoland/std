@@ -372,6 +372,7 @@ function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
           );
         }
         await writeAll(stdin, chunk);
+        callback();
       } catch (err) {
         callback(err instanceof Error ? err : new Error("[non-error thrown]"));
       }
