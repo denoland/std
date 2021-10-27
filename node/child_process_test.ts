@@ -99,11 +99,13 @@ Deno.test({
       let data: Buffer;
       childProcess.stdout.on("data", (chunk) => {
         data = chunk;
-        promise.resolve();
       });
       const buffer = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
       childProcess.stdin.write(buffer);
       childProcess.stdin.end();
+      childProcess.on("close", () => {
+        promise.resolve();
+      });
       await promise;
       assertEquals(new Uint8Array(data!), buffer);
     } finally {
