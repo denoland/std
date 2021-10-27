@@ -12,15 +12,6 @@ function findSingleTest<I>(
   assertEquals(actual, expected, message);
 }
 
-function singleDefaultPredicatorTest<I>(
-  input: Array<I>,
-  expected: I | undefined,
-  message?: string,
-) {
-  const actual = findSingle(input);
-  assertEquals(actual, expected, message);
-}
-
 Deno.test({
   name: "[collections/findSingle] no mutation",
   fn() {
@@ -108,28 +99,6 @@ Deno.test({
     );
     findSingleTest(
       [["zap", "foo", "bar", "zee"], (it) => it.startsWith("z")],
-      undefined,
-    );
-  },
-});
-
-Deno.test({
-  name: "[collections/findSingle] default predicator",
-  fn() {
-    singleDefaultPredicatorTest(
-      [42],
-      42,
-    );
-    singleDefaultPredicatorTest(
-      ["foo"],
-      "foo",
-    );
-    singleDefaultPredicatorTest(
-      [9, 11, 13],
-      undefined,
-    );
-    singleDefaultPredicatorTest(
-      ["foo", "bar"],
       undefined,
     );
   },
