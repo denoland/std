@@ -497,6 +497,6 @@ check(qs.parse('%\u0100=%\u0101'), { '%Ā': '%ā' });
 //     createWithNoPrototype([{ key: 'f__', value: 'b_r' }]));
 //   qs.unescape = prevUnescape;
 // }
-// TODO(wafuwafu13): Enable this
+
 // Test separator and "equals" parsing order
 check(qs.parse('foo&bar', '&', '&'), { foo: '', bar: '' });
