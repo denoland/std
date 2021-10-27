@@ -105,7 +105,6 @@ Deno.test({
       childProcess.stdin.write(buffer);
       childProcess.stdin.end();
       await promise;
-      childProcess.stdout.destroy();
       assertEquals(new Uint8Array(data!), buffer);
     } finally {
       childProcess.kill();
