@@ -35,7 +35,7 @@ import util from "./util.ts";
 // import sys from "./sys.ts";
 // import tls from "./tls.ts";
 // import vm from "./vm.ts";
-// import workerThreads from "./worker_threads.ts";
+import workerThreads from "./worker_threads.js";
 // import zlib from "./zlib.ts";
 
 // Canonical mapping of supported modules
@@ -66,5 +66,6 @@ export default {
   tty,
   url,
   util,
+  "worker_threads": workerThreads,
   zlib: {},
 } as Record<string, unknown>;

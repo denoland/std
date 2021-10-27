@@ -4,7 +4,7 @@ import {
   parentPort,
   threadId,
   workerData,
-} from "../worker_threads.ts";
+} from "../worker_threads.js";
 import { once } from "../events.ts";
 
 async function message(expectedMessage: string) {
