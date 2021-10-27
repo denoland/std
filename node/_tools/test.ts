@@ -56,3 +56,22 @@ for await (const file of dir) {
     },
   });
 }
+
+function checkConfigTestFilesOrder(testFileLists: Array<string[]>) {
+  for (const testFileList of testFileLists) {
+    const sortedTestList = JSON.parse(JSON.stringify(testFileList));
+    sortedTestList.sort();
+    if (JSON.stringify(testFileList) !== JSON.stringify(sortedTestList)) {
+      throw new Error(
+        `File names in \`config.json\` are not correct order.`,
+      );
+    }
+  }
+}
+
+Deno.test("checkConfigTestFilesOrder", function () {
+  checkConfigTestFilesOrder([
+    ...Object.keys(config.ignore).map((suite) => config.ignore[suite]),
+    ...Object.keys(config.tests).map((suite) => config.tests[suite]),
+  ]);
+});

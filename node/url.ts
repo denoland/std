@@ -49,6 +49,7 @@ export { _url as URL };
  * The URL object has both a `toString()` method and `href` property that return string serializations of the URL.
  * These are not, however, customizable in any way.
  * This method allows for basic customization of the output.
+ * @see Tested in `parallel/test-url-format-whatwg.js`.
  * @param urlObject
  * @param options
  * @param options.auth `true` if the serialized URL string should include the username and password, `false` otherwise. **Default**: `true`.
@@ -116,8 +117,10 @@ export function format(
 }
 
 /**
- * Get fully resolved platform-specific file path from the given URL string/ object
- * @param path The file URL string or URL object to convert to a path
+ * This function ensures the correct decodings of percent-encoded characters as well as ensuring a cross-platform valid absolute path string.
+ * @see Tested in `parallel/test-fileurltopath.js`.
+ * @param path The file URL string or URL object to convert to a path.
+ * @returns The fully-resolved platform-specific Node.js file path.
  */
 export function fileURLToPath(path: string | URL): string {
   if (typeof path === "string") path = new URL(path);
@@ -219,8 +222,10 @@ function encodePathChars(filepath: string): string {
 }
 
 /**
- * Get fully resolved platform-specific File URL from the given file path
- * @param filepath The file path string to convert to a file URL
+ * This function ensures that `filepath` is resolved absolutely, and that the URL control characters are correctly encoded when converting into a File URL.
+ * @see Tested in `parallel/test-url-pathtofileurl.js`.
+ * @param filepath The file path string to convert to a file URL.
+ * @returns The file URL object.
  */
 export function pathToFileURL(filepath: string): URL {
   const outURL = new URL("file://");
@@ -448,6 +453,7 @@ interface HttpOptions {
 
 /**
  * This utility function converts a URL object into an ordinary options object as expected by the `http.request()` and `https.request()` APIs.
+ * @see Tested in `parallel/test-url-urltooptions.js`.
  * @param url The `WHATWG URL` object to convert to an options object.
  * @returns HttpOptions
  * @returns HttpOptions.protocol Protocol to use.

@@ -17,15 +17,6 @@ const notImplementedEvents = [
   "message",
   "multipleResolves",
   "rejectionHandled",
-  "SIGBREAK",
-  "SIGBUS",
-  "SIGFPE",
-  "SIGHUP",
-  "SIGILL",
-  // "SIGINT",
-  "SIGSEGV",
-  // "SIGTERM",
-  "SIGWINCH",
   "uncaughtException",
   "uncaughtExceptionMonitor",
   "unhandledRejection",
@@ -378,28 +369,38 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#process_process_events */
   //deno-lint-ignore ban-types
-  on(event: typeof notImplementedEvents[number], listener: Function): never;
   on(event: "exit", listener: (code: number) => void): this;
+  on(event: string, listener: (...args: any[]) => void): this;
+  on(event: typeof notImplementedEvents[number], listener: Function): never;
   //deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       notImplemented(`process.on("${event}")`);
     }
 
-    if (event == "SIGTERM") {
-      (async () => {
-        for await (const _ of Deno.signal("SIGTERM")) {
-          listener();
-        }
-      })();
-    } else if (event == "SIGINT") {
-      (async () => {
-        for await (const _ of Deno.signal("SIGINT")) {
-          listener();
-        }
-      })();
+    if (event.startsWith("SIG")) {
+      Deno.addSignalListener(event as Deno.Signal, listener);
     } else {
       super.on(event, listener);
+    }
+
+    return this;
+  }
+
+  //deno-lint-ignore ban-types
+  off(event: "exit", listener: (code: number) => void): this;
+  off(event: string, listener: (...args: any[]) => void): this;
+  off(event: typeof notImplementedEvents[number], listener: Function): never;
+  //deno-lint-ignore no-explicit-any
+  off(event: string, listener: (...args: any[]) => void): this {
+    if (notImplementedEvents.includes(event)) {
+      notImplemented(`process.off("${event}")`);
+    }
+
+    if (event.startsWith("SIG")) {
+      Deno.removeSignalListener(event as Deno.Signal, listener);
+    } else {
+      super.off(event, listener);
     }
 
     return this;

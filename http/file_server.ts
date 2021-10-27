@@ -286,6 +286,8 @@ export async function serveFile(
       const status = Status.NotModified;
       const statusText = STATUS_TEXT.get(status);
 
+      file.close();
+
       return new Response(null, {
         status,
         statusText,
@@ -322,6 +324,8 @@ export async function serveFile(
   ) {
     const status = Status.RequestedRangeNotSatisfiable;
     const statusText = STATUS_TEXT.get(status);
+
+    file.close();
 
     return new Response(statusText, {
       status,
@@ -381,7 +385,7 @@ async function serveDir(
       continue;
     }
     const filePath = posix.join(dirPath, entry.name);
-    const fileUrl = posix.join(dirUrl, entry.name);
+    const fileUrl = encodeURI(posix.join(dirUrl, entry.name));
     if (entry.name === "index.html" && entry.isFile) {
       // in case index.html as dir...
       return serveFile(req, filePath);

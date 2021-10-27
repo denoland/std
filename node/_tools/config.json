@@ -1,5 +1,5 @@
 {
-  "nodeVersion": "16.11.1",
+  "nodeVersion": "16.12.0",
   "ignore": {
     "common": [
       "index.js"
@@ -19,6 +19,7 @@
       "test-net-access-byteswritten.js",
       "test-net-after-close.js",
       "test-net-bytes-stats.js",
+      "test-net-bytes-written-large.js",
       "test-net-connect-buffer.js",
       "test-net-connect-buffer2.js",
       "test-net-connect-no-arg.js",
@@ -34,6 +35,7 @@
       "test-net-server-call-listen-multiple-times.js",
       "test-net-server-try-ports.js",
       "test-net-write-arguments.js",
+      "test-querystring.js",
       "test-url-format-whatwg.js",
       "test-url-urltooptions.js"
     ],
@@ -65,6 +67,8 @@
       "test-dns.js",
       "test-event-emitter-add-listeners.js",
       "test-event-emitter-check-listener-leaks.js",
+      "test-event-emitter-emit-context.js",
+      "test-event-emitter-get-max-listeners.js",
       "test-event-emitter-invalid-listener.js",
       "test-event-emitter-listener-count.js",
       "test-event-emitter-listeners-side-effects.js",
@@ -145,6 +149,7 @@
       "test-net-write-connect-write.js",
       "test-net-write-fully-async-buffer.js",
       "test-net-write-fully-async-hex-string.js",
+      "test-querystring.js",
       "test-url-fileurltopath.js",
       "test-url-format-whatwg.js",
       "test-url-pathtofileurl.js",

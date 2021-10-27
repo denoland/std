@@ -1237,7 +1237,7 @@ function enrichCJSError(error: Error) {
 function wrapSafe(
   filename: string,
   content: string,
-  cjsModuleInstance,
+  cjsModuleInstance: Module,
 ): RequireWrapper {
   // TODO(bartlomieju): fix this
   const wrapper = Module.wrap(content);
@@ -1245,7 +1245,7 @@ function wrapSafe(
   const [f, err] = (Deno as any).core.evalContext(wrapper, filename);
   if (err) {
     if (process.mainModule === cjsModuleInstance) {
-      enrichCJSError(err.thrown, content);
+      enrichCJSError(err.thrown);
     }
     throw err.thrown;
   }
