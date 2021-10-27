@@ -1,6 +1,6 @@
 import { resolve, toFileUrl } from "../path/mod.ts";
 import { notImplemented } from "./_utils.ts";
-import { EventEmitter, GenericFunction, once } from "./events.ts";
+import { EventEmitter, once } from "./events.ts";
 
 let environmentData = new Map();
 let threads = 0;
