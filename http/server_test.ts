@@ -4,7 +4,7 @@ import {
   ConnInfo,
   listenAndServe,
   listenAndServeTls,
-  serve,
+  serveListener,
   Server,
 } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
@@ -321,7 +321,7 @@ Deno.test("serve should not throw if abort when the server is already closed", a
   const handler = () => new Response();
   const abortController = new AbortController();
 
-  const servePromise = serve(listener, handler, {
+  const servePromise = serveListener(listener, handler, {
     signal: abortController.signal,
   });
 
@@ -603,7 +603,7 @@ Deno.test(`serve should handle requests`, async () => {
   const handler = () => new Response(body, { status });
   const abortController = new AbortController();
 
-  const servePromise = serve(listener, handler, {
+  const servePromise = serveListener(listener, handler, {
     signal: abortController.signal,
   });
 

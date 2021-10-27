@@ -537,13 +537,13 @@ export interface ServeInit {
  * handles requests on these connections with the given handler.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveListener } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
  * const listener = Deno.listen({ port: 4505 });
  *
  * console.log("server listening on http://localhost:4505");
  *
- * await serve(listener, (request) => {
+ * await serveListener(listener, (request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
  *   ) ?? "Unknown"}`;
@@ -556,7 +556,7 @@ export interface ServeInit {
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
  */
-export async function serve(
+export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
   options?: ServeInit,
@@ -568,6 +568,13 @@ export async function serve(
   }
 
   return await server.serve(listener);
+}
+
+/** Serve HTTP requests on port 8000 */
+export async function serve(handler: Handler): Promise<void> {
+  const addr = ":8000";
+  const server = new Server({ addr, handler });
+  return await server.listenAndServe();
 }
 
 /**
