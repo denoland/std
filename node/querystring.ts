@@ -17,8 +17,6 @@ for (let i = 0; i < 256; ++i) {
 }
 
 function charCodes(str: string): number[] {
-  if (str.length === 0) return [];
-  if (str.length === 1) return [str.charCodeAt(0)];
   const ret = new Array(str.length);
   for (let i = 0; i < str.length; ++i) {
     ret[i] = str.charCodeAt(i);
@@ -157,7 +155,6 @@ export function parse(
         if (--pairs === 0) {
           return obj;
         }
-        // keyEncoded = valEncoded = customDecode;
         key = value = "";
         encodeCheck = 0;
         lastPos = i + 1;
