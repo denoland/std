@@ -87,24 +87,11 @@ export function parse(
   eq = "=",
   { decodeURIComponent = unescape, maxKeys = 1000 }: ParseOptions = {},
 ): ParsedUrlQuery {
-<<<<<<< HEAD
-  const entries =
-    str?.split(sep).map((entry) => entry.split(eq).map(decodeURIComponent)) ??
-      [];
-  const final: ParsedUrlQuery = {};
-
-  let i = 0;
-  while (true) {
-    if ((Object.keys(final).length === maxKeys && !!maxKeys) || !entries[i]) {
-      break;
-    }
-=======
   const obj: ParsedUrlQuery = Object.create(null);
 
   if (typeof str !== "string" || str.length === 0) {
     return obj;
   }
->>>>>>> main
 
   const sepCodes = (!sep ? [38] /* & */ : charCodes(String(sep)));
   const eqCodes = (!eq ? [61] /* = */ : charCodes(String(eq)));
