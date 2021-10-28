@@ -2,12 +2,15 @@
 
 import {
   assert,
+  assertEquals,
   assertNotStrictEquals,
   assertStrictEquals,
 } from "../testing/asserts.ts";
 import { spawn } from "./child_process.ts";
 import { Deferred, deferred } from "../async/deferred.ts";
 import { isWindows } from "../_util/os.ts";
+import * as path from "../path/mod.ts";
+import { Buffer } from "./buffer.ts";
 
 function withTimeout(timeoutInMS: number): Deferred<void> {
   const promise = deferred<void>();
@@ -78,7 +81,40 @@ Deno.test({
   },
 });
 
-/* Start of ported part */
+Deno.test({
+  name: "[node/child_process spawn] stdin and stdout with binary data",
+  fn: async () => {
+    const promise = withTimeout(10000);
+    const p = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "./testdata/binary_stdio.js",
+    );
+    const childProcess = spawn(Deno.execPath(), ["run", p], {
+      env: { NO_COLOR: "true" },
+      stdio: ["pipe", "pipe"],
+    });
+    try {
+      assert(childProcess.stdin, "stdin should be defined");
+      assert(childProcess.stdout, "stdout should be defined");
+      let data: Buffer;
+      childProcess.stdout.on("data", (chunk) => {
+        data = chunk;
+      });
+      const buffer = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+      childProcess.stdin.write(buffer);
+      childProcess.stdin.end();
+      childProcess.on("close", () => {
+        promise.resolve();
+      });
+      await promise;
+      assertEquals(new Uint8Array(data!), buffer);
+    } finally {
+      childProcess.kill();
+    }
+  },
+});
+
+/* Start of ported part */ 3;
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // Ported from Node 15.5.1
 
