@@ -215,7 +215,7 @@ export class Server extends EventEmitter {
   async listen(port: number, host: string, cb: any) {
     this._host = host;
     this._port = port;
-    this.once("listening", cb);
+    this.once("listening", cb ?? (() => {}));
     (async () => {
       for await (const conn of Deno.listen({ hostname: host, port })) {
         (async () => {
