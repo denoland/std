@@ -97,6 +97,7 @@
       "test-net-write-fully-async-buffer.js",
       "test-net-write-fully-async-hex-string.js",
       "test-querystring.js",
+      "test-readline-csi.js",
       "test-url-fileurltopath.js",
       "test-url-format-whatwg.js",
       "test-url-urltooptions.js",
