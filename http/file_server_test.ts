@@ -285,9 +285,16 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
 Deno.test("serveWithUnorthodoxFilename", async function () {
   await startFileServer();
   try {
-    const malformedRes = await fetch("http://localhost:4507/testdata/%");
-    assertEquals(malformedRes.status, 400);
-    await malformedRes.text(); // Consuming the body so that the test doesn't leak resources
+    let res = await fetch("http://localhost:4507/testdata/%");
+    assert(res.headers.has("access-control-allow-origin"));
+    assert(res.headers.has("access-control-allow-headers"));
+    assertEquals(res.status, 200);
+    let _ = await res.text();
+    res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+    assert(res.headers.has("access-control-allow-origin"));
+    assert(res.headers.has("access-control-allow-headers"));
+    assertEquals(res.status, 200);
+    await res.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
     await killFileServer();
   }
