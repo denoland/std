@@ -346,8 +346,15 @@ function createReadableFromReader(
 }
 
 async function* cloneIterator(iterator: AsyncIterableIterator<Uint8Array>) {
-  for await (const chunk of iterator) {
-    yield new Buffer(chunk);
+  try {
+    for await (const chunk of iterator) {
+      yield new Buffer(chunk);
+    }
+  } catch (e) {
+    if (isAlreadyClosed(e)) {
+      return;
+    }
+    throw e;
   }
 }
 

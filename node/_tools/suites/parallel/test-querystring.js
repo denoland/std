@@ -44,90 +44,88 @@ function createWithNoPrototype(properties) {
 // Folding block, commented to pass gjslint
 // {{{
 // [ wonkyQS, canonicalQS, obj ]
-// TODO(wafuwafu13): Enable all case
 const qsTestCases = [
   ['__proto__=1',
    '__proto__=1',
    createWithNoPrototype([{ key: '__proto__', value: '1' }])],
-  // ['__defineGetter__=asdf',
-  //  '__defineGetter__=asdf',
-  //  JSON.parse('{"__defineGetter__":"asdf"}')],
+  ['__defineGetter__=asdf',
+   '__defineGetter__=asdf',
+   JSON.parse('{"__defineGetter__":"asdf"}')],
   ['foo=918854443121279438895193',
    'foo=918854443121279438895193',
    { 'foo': '918854443121279438895193' }],
   ['foo=bar', 'foo=bar', { 'foo': 'bar' }],
   ['foo=bar&foo=quux', 'foo=bar&foo=quux', { 'foo': ['bar', 'quux'] }],
   ['foo=1&bar=2', 'foo=1&bar=2', { 'foo': '1', 'bar': '2' }],
-  // ['my+weird+field=q1%212%22%27w%245%267%2Fz8%29%3F',
-  //  'my%20weird%20field=q1!2%22\'w%245%267%2Fz8)%3F',
-  //  { 'my weird field': 'q1!2"\'w$5&7/z8)?' }],
+  ['my+weird+field=q1%212%22%27w%245%267%2Fz8%29%3F',
+   'my%20weird%20field=q1!2%22\'w%245%267%2Fz8)%3F',
+   { 'my weird field': 'q1!2"\'w$5&7/z8)?' }],
   ['foo%3Dbaz=bar', 'foo%3Dbaz=bar', { 'foo=baz': 'bar' }],
-  // ['foo=baz=bar', 'foo=baz%3Dbar', { 'foo': 'baz=bar' }],
-  // ['str=foo&arr=1&arr=2&arr=3&somenull=&undef=',
-  //  'str=foo&arr=1&arr=2&arr=3&somenull=&undef=',
-  //  { 'str': 'foo',
-  //    'arr': ['1', '2', '3'],
-  //    'somenull': '',
-  //    'undef': '' }],
+  ['foo=baz=bar', 'foo=baz%3Dbar', { 'foo': 'baz=bar' }],
+  ['str=foo&arr=1&arr=2&arr=3&somenull=&undef=',
+   'str=foo&arr=1&arr=2&arr=3&somenull=&undef=',
+   { 'str': 'foo',
+     'arr': ['1', '2', '3'],
+     'somenull': '',
+     'undef': '' }],
   [' foo = bar ', '%20foo%20=%20bar%20', { ' foo ': ' bar ' }],
-  // ['foo=%zx', 'foo=%25zx', { 'foo': '%zx' }],
-  // ['foo=%EF%BF%BD', 'foo=%EF%BF%BD', { 'foo': '\ufffd' }],
-  // // See: https://github.com/joyent/node/issues/1707
-  // ['hasOwnProperty=x&toString=foo&valueOf=bar&__defineGetter__=baz',
-  //  'hasOwnProperty=x&toString=foo&valueOf=bar&__defineGetter__=baz',
-  //  { hasOwnProperty: 'x',
-  //    toString: 'foo',
-  //    valueOf: 'bar',
-  //    __defineGetter__: 'baz' }],
-  // // See: https://github.com/joyent/node/issues/3058
-  // ['foo&bar=baz', 'foo=&bar=baz', { foo: '', bar: 'baz' }],
-  // ['a=b&c&d=e', 'a=b&c=&d=e', { a: 'b', c: '', d: 'e' }],
+  ['foo=%zx', 'foo=%25zx', { 'foo': '%zx' }],
+  ['foo=%EF%BF%BD', 'foo=%EF%BF%BD', { 'foo': '\ufffd' }],
+  // See: https://github.com/joyent/node/issues/1707
+  ['hasOwnProperty=x&toString=foo&valueOf=bar&__defineGetter__=baz',
+   'hasOwnProperty=x&toString=foo&valueOf=bar&__defineGetter__=baz',
+   { hasOwnProperty: 'x',
+     toString: 'foo',
+     valueOf: 'bar',
+     __defineGetter__: 'baz' }],
+  // See: https://github.com/joyent/node/issues/3058
+  ['foo&bar=baz', 'foo=&bar=baz', { foo: '', bar: 'baz' }],
+  ['a=b&c&d=e', 'a=b&c=&d=e', { a: 'b', c: '', d: 'e' }],
   ['a=b&c=&d=e', 'a=b&c=&d=e', { a: 'b', c: '', d: 'e' }],
-  // ['a=b&=c&d=e', 'a=b&=c&d=e', { 'a': 'b', '': 'c', 'd': 'e' }],
+  ['a=b&=c&d=e', 'a=b&=c&d=e', { 'a': 'b', '': 'c', 'd': 'e' }],
   ['a=b&=&c=d', 'a=b&=&c=d', { 'a': 'b', '': '', 'c': 'd' }],
-  // ['&&foo=bar&&', 'foo=bar', { foo: 'bar' }],
-  // ['&', '', {}],
-  // ['&&&&', '', {}],
-  // ['&=&', '=', { '': '' }],
-  // ['&=&=', '=&=', { '': [ '', '' ] }],
-  // ['=', '=', { '': '' }],
-  // ['+', '%20=', { ' ': '' }],
-  // ['+=', '%20=', { ' ': '' }],
-  // ['+&', '%20=', { ' ': '' }],
-  // ['=+', '=%20', { '': ' ' }],
-  // ['+=&', '%20=', { ' ': '' }],
-  // ['a&&b', 'a=&b=', { 'a': '', 'b': '' }],
-  // ['a=a&&b=b', 'a=a&b=b', { 'a': 'a', 'b': 'b' }],
-  // ['&a', 'a=', { 'a': '' }],
-  // ['&=', '=', { '': '' }],
-  // ['a&a&', 'a=&a=', { a: [ '', '' ] }],
-  // ['a&a&a&', 'a=&a=&a=', { a: [ '', '', '' ] }],
-  // ['a&a&a&a&', 'a=&a=&a=&a=', { a: [ '', '', '', '' ] }],
-  // ['a=&a=value&a=', 'a=&a=value&a=', { a: [ '', 'value', '' ] }],
-  // ['foo+bar=baz+quux', 'foo%20bar=baz%20quux', { 'foo bar': 'baz quux' }],
-  // ['+foo=+bar', '%20foo=%20bar', { ' foo': ' bar' }],
-  // ['a+', 'a%20=', { 'a ': '' }],
-  // ['=a+', '=a%20', { '': 'a ' }],
-  // ['a+&', 'a%20=', { 'a ': '' }],
-  // ['=a+&', '=a%20', { '': 'a ' }],
-  // ['%20+', '%20%20=', { '  ': '' }],
-  // ['=%20+', '=%20%20', { '': '  ' }],
-  // ['%20+&', '%20%20=', { '  ': '' }],
-  // ['=%20+&', '=%20%20', { '': '  ' }],
-  // [null, '', {}],
-  // [undefined, '', {}],
+  ['&&foo=bar&&', 'foo=bar', { foo: 'bar' }],
+  ['&', '', {}],
+  ['&&&&', '', {}],
+  ['&=&', '=', { '': '' }],
+  ['&=&=', '=&=', { '': [ '', '' ] }],
+  ['=', '=', { '': '' }],
+  ['+', '%20=', { ' ': '' }],
+  ['+=', '%20=', { ' ': '' }],
+  ['+&', '%20=', { ' ': '' }],
+  ['=+', '=%20', { '': ' ' }],
+  ['+=&', '%20=', { ' ': '' }],
+  ['a&&b', 'a=&b=', { 'a': '', 'b': '' }],
+  ['a=a&&b=b', 'a=a&b=b', { 'a': 'a', 'b': 'b' }],
+  ['&a', 'a=', { 'a': '' }],
+  ['&=', '=', { '': '' }],
+  ['a&a&', 'a=&a=', { a: [ '', '' ] }],
+  ['a&a&a&', 'a=&a=&a=', { a: [ '', '', '' ] }],
+  ['a&a&a&a&', 'a=&a=&a=&a=', { a: [ '', '', '', '' ] }],
+  ['a=&a=value&a=', 'a=&a=value&a=', { a: [ '', 'value', '' ] }],
+  ['foo+bar=baz+quux', 'foo%20bar=baz%20quux', { 'foo bar': 'baz quux' }],
+  ['+foo=+bar', '%20foo=%20bar', { ' foo': ' bar' }],
+  ['a+', 'a%20=', { 'a ': '' }],
+  ['=a+', '=a%20', { '': 'a ' }],
+  ['a+&', 'a%20=', { 'a ': '' }],
+  ['=a+&', '=a%20', { '': 'a ' }],
+  ['%20+', '%20%20=', { '  ': '' }],
+  ['=%20+', '=%20%20', { '': '  ' }],
+  ['%20+&', '%20%20=', { '  ': '' }],
+  ['=%20+&', '=%20%20', { '': '  ' }],
+  [null, '', {}],
+  [undefined, '', {}],
 ];
 
 // [ wonkyQS, canonicalQS, obj ]
-// TODO(wafuwafu13): Enable all case
 const qsColonTestCases = [
   ['foo:bar', 'foo:bar', { 'foo': 'bar' }],
   ['foo:bar;foo:quux', 'foo:bar;foo:quux', { 'foo': ['bar', 'quux'] }],
-  // ['foo:1&bar:2;baz:quux',
-  //  'foo:1%26bar%3A2;baz:quux',
-  //  { 'foo': '1&bar:2', 'baz': 'quux' }],
+  ['foo:1&bar:2;baz:quux',
+   'foo:1%26bar%3A2;baz:quux',
+   { 'foo': '1&bar:2', 'baz': 'quux' }],
   ['foo%3Abaz:bar', 'foo%3Abaz:bar', { 'foo:baz': 'bar' }],
-  // ['foo:baz:bar', 'foo:baz%3Abar', { 'foo': 'baz:bar' }],
+  ['foo:baz:bar', 'foo:baz%3Abar', { 'foo': 'baz:bar' }],
 ];
 
 // [wonkyObj, qs, canonicalObj]
@@ -154,7 +152,7 @@ const qsWeirdObjects = [
   [{ n: null }, 'n=', { 'n': '' }],
   // [{ nan: NaN }, 'nan=', { 'nan': '' }],
   // [{ inf: Infinity }, 'inf=', { 'inf': '' }],
-  // [{ a: [], b: [] }, '', {}],
+  [{ a: [], b: [] }, '', {}],
   [{ a: 1, b: [] }, 'a=1', { 'a': '1' }],
 ];
 // }}}
@@ -196,8 +194,7 @@ assert.strictEqual(qs.parse('id=918854443121279438895193').id,
                    '918854443121279438895193');
 
 function check(actual, expected, input) {
-  // TODO(wafuwafu13): Enable this
-  // assert(!(actual instanceof Object));
+  assert(!(actual instanceof Object));
   const actualKeys = Object.keys(actual).sort();
   const expectedKeys = Object.keys(expected).sort();
   let msg;
@@ -339,8 +336,7 @@ assert.strictEqual(qs.stringify({ foo: 1e21 }), 'foo=1e%2B21');
   assert.strictEqual(f, 'a=b&q=x%3Dy%26y%3Dz');
 }
 
-// TODO(wafuwafu13): Fix `TypeError: Cannot read properties of undefined (reading 'split')`
-// qs.parse(undefined); // Should not throw.
+qs.parse(undefined); // Should not throw.
 
 // nested in colon
 {
@@ -355,52 +351,47 @@ assert.strictEqual(qs.stringify({ foo: 1e21 }), 'foo=1e%2B21');
 }
 
 // TODO(wafuwafu13): Fix `TypeError: Cannot convert undefined or null to object`
-// // empty string
+// empty string
 // assert.strictEqual(qs.stringify(), '');
 // assert.strictEqual(qs.stringify(0), '');
 // assert.strictEqual(qs.stringify([]), '');
 // assert.strictEqual(qs.stringify(null), '');
 // assert.strictEqual(qs.stringify(true), '');
 
-// TODO(wafuwafu13): Fix `TypeError: Cannot read properties of undefined (reading 'split')`
-// check(qs.parse(), {});
+check(qs.parse(), {});
 
-// TODO(wafuwafu13): Enable this
-// // empty sep
-// check(qs.parse('a', []), { a: '' });
+// empty sep
+check(qs.parse('a', []), { a: '' });
 
-// TODO(wafuwafu13): Enable this
-// // empty eq
-// check(qs.parse('a', null, []), { '': 'a' });
+// empty eq
+check(qs.parse('a', null, []), { '': 'a' });
 
 // Test limiting
 assert.strictEqual(
   Object.keys(qs.parse('a=1&b=1&c=1', null, null, { maxKeys: 1 })).length,
   1);
 
-// TODO(wafuwafu13): Enable this
-// // Test limiting with a case that starts from `&`
-// assert.strictEqual(
-//   Object.keys(qs.parse('&a', null, null, { maxKeys: 1 })).length,
-//   0);
+// Test limiting with a case that starts from `&`
+assert.strictEqual(
+  Object.keys(qs.parse('&a', null, null, { maxKeys: 1 })).length,
+  0);
 
-// TODO(wafuwafu13): Enable this
-// // Test removing limit
-// {
-//   function testUnlimitedKeys() {
-//     const query = {};
+// Test removing limit
+{
+  function testUnlimitedKeys() {
+    const query = {};
 
-//     for (let i = 0; i < 2000; i++) query[i] = i;
+    for (let i = 0; i < 2000; i++) query[i] = i;
 
-//     const url = qs.stringify(query);
+    const url = qs.stringify(query);
 
-//     assert.strictEqual(
-//       Object.keys(qs.parse(url, null, null, { maxKeys: 0 })).length,
-//       2000);
-//   }
+    assert.strictEqual(
+      Object.keys(qs.parse(url, null, null, { maxKeys: 0 })).length,
+      2000);
+  }
 
-//   testUnlimitedKeys();
-// }
+  testUnlimitedKeys();
+}
 
 // TODO(wafuwafu13): Implement `qs.unescapeBuffer`
 // {
@@ -437,24 +428,22 @@ assert.strictEqual(
 // assert.strictEqual(qs.unescapeBuffer('a%2g').toString(), 'a%2g');
 // assert.strictEqual(qs.unescapeBuffer('a%%').toString(), 'a%%');
 
-// TODO(wafuwafu13): Enable this
-// // Test invalid encoded string
-// check(qs.parse('%\u0100=%\u0101'), { '%Ā': '%ā' });
+// Test invalid encoded string
+check(qs.parse('%\u0100=%\u0101'), { '%Ā': '%ā' });
 
-// TODO(wafuwafu13): Enable this
-// // Test custom decode
-// {
-//   function demoDecode(str) {
-//     return str + str;
-//   }
+// Test custom decode
+{
+  function demoDecode(str) {
+    return str + str;
+  }
 
-//   check(
-//     qs.parse('a=a&b=b&c=c', null, null, { decodeURIComponent: demoDecode }),
-//     { aa: 'aa', bb: 'bb', cc: 'cc' });
-//   check(
-//     qs.parse('a=a&b=b&c=c', null, '==', { decodeURIComponent: (str) => str }),
-//     { 'a=a': '', 'b=b': '', 'c=c': '' });
-// }
+  check(
+    qs.parse('a=a&b=b&c=c', null, null, { decodeURIComponent: demoDecode }),
+    { aa: 'aa', bb: 'bb', cc: 'cc' });
+  check(
+    qs.parse('a=a&b=b&c=c', null, '==', { decodeURIComponent: (str) => str }),
+    { 'a=a': '', 'b=b': '', 'c=c': '' });
+}
 
 // TODO(wafuwafu13): Enable this
 // // Test QueryString.unescape
@@ -508,6 +497,6 @@ assert.strictEqual(
 //     createWithNoPrototype([{ key: 'f__', value: 'b_r' }]));
 //   qs.unescape = prevUnescape;
 // }
-// TODO(wafuwafu13): Enable this
-// // Test separator and "equals" parsing order
-// check(qs.parse('foo&bar', '&', '&'), { foo: '', bar: '' });
+
+// Test separator and "equals" parsing order
+check(qs.parse('foo&bar', '&', '&'), { foo: '', bar: '' });
