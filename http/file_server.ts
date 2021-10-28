@@ -2,7 +2,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 // This program serves files in the current directory over HTTP.
-// TODO(bartlomieju): Stream responses instead of reading them into memory.
 // TODO(bartlomieju): Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
@@ -11,8 +10,9 @@ import { listenAndServe, listenAndServeTls } from "./server.ts";
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
-import { readRange } from "../io/files.ts";
 import { red } from "../fmt/colors.ts";
+
+const DEFAULT_CHUNK_SIZE = 16_640;
 
 interface EntryInfo {
   mode: string;
@@ -303,7 +303,7 @@ export async function serveFile(
 
   // Use the parsed value if available, fallback to the start and end of the entire file
   const start = parsed && parsed[1] ? +parsed[1] : 0;
-  const end = parsed && parsed[2] ? +parsed[2] : Math.max(0, fileInfo.size - 1);
+  const end = parsed && parsed[2] ? +parsed[2] : fileInfo.size - 1;
 
   let status = Status.OK;
 
@@ -314,12 +314,11 @@ export async function serveFile(
   }
 
   // Return 416 if `start` isn't less than or equal to `end`, or `start` or `end` are greater than the file's size
-  const maxRange =
-    (typeof fileInfo.size === "number" ? Math.max(0, fileInfo.size - 1) : 0);
+  const maxRange = fileInfo.size - 1;
 
   if (
-    range && !parsed ||
-    (typeof start !== "number" || start > end || start > maxRange ||
+    range && (!parsed ||
+      typeof start !== "number" || start > end || start > maxRange ||
       end > maxRange)
   ) {
     const status = Status.RequestedRangeNotSatisfiable;
@@ -334,21 +333,34 @@ export async function serveFile(
     });
   }
 
-  let body = null;
+  // Set content length
+  const contentLength = end - start + 1;
+  headers.set("content-length", `${contentLength}`);
 
-  try {
-    // Read the selected range of the file
-    const bytes = await readRange(file, { start, end });
-
-    // Set content length and response body
-    headers.set("content-length", bytes.length.toString());
-    body = bytes;
-  } catch (e) {
-    // Fallback on URIError (400 Bad Request) if unable to read range
-    throw URIError(String(e));
-  }
-
-  file.close();
+  // Create a stream of the file instead of loading it into memory
+  let bytesSent = 0;
+  const body = new ReadableStream({
+    async start() {
+      await file.seek(start, Deno.SeekMode.Start);
+    },
+    async pull(controller) {
+      const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
+      const bytesRead = await file.read(bytes);
+      if (bytesRead === null) {
+        file.close();
+        controller.close();
+        return;
+      }
+      controller.enqueue(
+        bytes.slice(0, Math.min(bytesRead, contentLength - bytesSent)),
+      );
+      bytesSent += bytesRead;
+      if (bytesSent > contentLength) {
+        file.close();
+        controller.close();
+      }
+    },
+  });
 
   const statusText = STATUS_TEXT.get(status);
 
