@@ -7,8 +7,9 @@ import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
-import { readLines } from "../io/buffer.ts";
+import { iterateReader, writeAll } from "../streams/conversion.ts";
 import { isWindows } from "../_util/os.ts";
+import { Buffer } from "./buffer.ts";
 
 export class ChildProcess extends EventEmitter {
   /**
@@ -335,37 +336,42 @@ function isAlreadyClosed(err: unknown): boolean {
     err instanceof Deno.errors.Interrupted;
 }
 
-async function* readLinesSafely(
-  reader: Deno.Reader,
-): AsyncIterableIterator<string> {
-  try {
-    for await (const line of readLines(reader)) {
-      yield line.length === 0 ? line : line + "\n";
-    }
-  } catch (err) {
-    if (isAlreadyClosed(err)) {
-      return;
-    }
-    throw err;
-  }
-}
-
 function createReadableFromReader(
   reader: Deno.Reader,
 ): Readable {
   // TODO(uki00a): This could probably be more efficient.
-  return Readable.from(readLinesSafely(reader), {
+  return Readable.from(cloneIterator(iterateReader(reader)), {
     objectMode: false,
   });
+}
+
+async function* cloneIterator(iterator: AsyncIterableIterator<Uint8Array>) {
+  try {
+    for await (const chunk of iterator) {
+      yield new Buffer(chunk);
+    }
+  } catch (e) {
+    if (isAlreadyClosed(e)) {
+      return;
+    }
+    throw e;
+  }
 }
 
 function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
   const encoder = new TextEncoder();
   return new Writable({
-    async write(chunk, _, callback) {
+    async write(chunk, encoding, callback) {
       try {
-        const bytes = encoder.encode(chunk);
-        await stdin.write(bytes);
+        if (encoding !== "buffer") {
+          chunk = encoder.encode(chunk);
+        }
+        if (!(chunk instanceof Uint8Array)) {
+          throw new TypeError(
+            `Expected chunk to be of type Uint8Array, got ${typeof chunk}`,
+          );
+        }
+        await writeAll(stdin, chunk);
         callback();
       } catch (err) {
         callback(err instanceof Error ? err : new Error("[non-error thrown]"));
