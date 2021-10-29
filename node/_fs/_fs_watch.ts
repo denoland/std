@@ -96,6 +96,8 @@ export function watch(
   return fsWatcher;
 }
 
+export { watch as watchFile };
+
 class FSWatcher extends EventEmitter {
   close: () => void;
   constructor(closer: () => void) {
