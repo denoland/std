@@ -1,8 +1,8 @@
 import { Status as STATUS_CODES } from "../http/http_status.ts";
 import { Buffer } from "./buffer.ts";
+import { EventEmitter } from "./events.ts";
 import NodeReadable from "./_stream/readable.ts";
 import NodeWritable from "./_stream/writable.ts";
-import { EventEmitter } from "./events.ts";
 
 const METHODS = [
   "ACL",
@@ -42,7 +42,6 @@ const METHODS = [
 ];
 
 type Chunk = string | Buffer | Uint8Array;
-type Headers = Record<string, string>;
 
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
@@ -53,12 +52,13 @@ function chunkToU8(chunk: Chunk): Uint8Array {
 }
 
 export class ServerResponse extends NodeWritable {
-  private statusCode?: number;
-  private headers: Headers;
+  statusCode?: number = undefined;
+  statusMessage?: string = undefined;
+  #headers = new Headers({});
   private readable: ReadableStream;
-  headersSent: boolean;
-  private reqEvent: Deno.RequestEvent;
-  private firstChunk: Chunk | null;
+  headersSent = false;
+  #reqEvent: Deno.RequestEvent;
+  #firstChunk: Chunk | null = null;
 
   constructor(reqEvent: Deno.RequestEvent) {
     let controller: ReadableByteStreamController;
@@ -73,12 +73,12 @@ export class ServerResponse extends NodeWritable {
       emitClose: true,
       write: (chunk, _encoding, cb) => {
         if (!this.headersSent) {
-          if (this.firstChunk === null) {
-            this.firstChunk = chunk;
+          if (this.#firstChunk === null) {
+            this.#firstChunk = chunk;
             return cb();
           } else {
-            controller.enqueue(chunkToU8(this.firstChunk));
-            this.firstChunk = null;
+            controller.enqueue(chunkToU8(this.#firstChunk));
+            this.#firstChunk = null;
             this.respond(false);
           }
         }
@@ -86,8 +86,8 @@ export class ServerResponse extends NodeWritable {
         return cb();
       },
       final: (cb) => {
-        if (this.firstChunk) {
-          this.respond(true, this.firstChunk);
+        if (this.#firstChunk) {
+          this.respond(true, this.#firstChunk);
         } else if (!this.headersSent) {
           this.respond(true);
         }
@@ -102,45 +102,55 @@ export class ServerResponse extends NodeWritable {
       },
     });
     this.readable = readable;
-    this.statusCode = undefined;
-    this.headers = {};
-    this.firstChunk = null;
-    this.headersSent = false;
-    this.reqEvent = reqEvent;
-  }
-
-  hasHeader(name: string): boolean {
-    return name in this.headers;
+    this.#reqEvent = reqEvent;
   }
 
   setHeader(name: string, value: string) {
-    this.headers[name] = value;
+    this.#headers.set(name, value);
+    return this;
   }
 
   getHeader(name: string) {
-    return this.headers[name];
+    return this.#headers.get(name);
+  }
+  removeHeader(name: string) {
+    return this.#headers.delete(name);
+  }
+  getHeaderNames() {
+    return Array.from(this.#headers.keys());
+  }
+  hasHeader(name: string) {
+    return this.#headers.has(name);
   }
 
-  writeHead(statusCode: number, headers: Headers) {
-    this.statusCode = statusCode;
-    Object.assign(this.headers, headers);
+  writeHead(status: number, headers: Record<string, string>) {
+    this.statusCode = status;
+    for (const k in headers) {
+      this.#headers.set(k, headers[k]);
+    }
+    return this;
   }
 
-  ensureHeaders(singleChunk?: Chunk) {
-    this.statusCode = this.statusCode ?? 200;
-    const hasCT =
-      (this.hasHeader("content-type") || this.hasHeader("Content-Type"));
-    if (typeof singleChunk === "string" && !hasCT) {
-      Object.assign(this.headers, { "content-type": "text/plain" });
+  #ensureHeaders(singleChunk?: Chunk) {
+    if (this.statusCode === undefined) {
+      this.statusCode = 200;
+      this.statusMessage = "OK";
+    }
+    if (typeof singleChunk === "string" && !this.hasHeader("content-type")) {
+      this.setHeader("content-type", "text/plain;charset=UTF-8");
     }
   }
 
   respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
-    this.ensureHeaders(singleChunk);
+    this.#ensureHeaders(singleChunk);
     const body = singleChunk ?? (final ? null : this.readable);
-    this.reqEvent.respondWith(
-      new Response(body, { headers: this.headers, status: this.statusCode }),
+    this.#reqEvent.respondWith(
+      new Response(body, {
+        headers: this.#headers,
+        status: this.statusCode,
+        statusText: this.statusMessage,
+      }),
     );
   }
 }
@@ -148,7 +158,7 @@ export class ServerResponse extends NodeWritable {
 // TODO(@AaronO): optimize
 export class IncomingMessage extends NodeReadable {
   private req: Request;
-  #url: string;
+  url: string;
 
   constructor(req: Request) {
     // Check if no body (GET/HEAD/OPTIONS/...)
@@ -176,7 +186,7 @@ export class IncomingMessage extends NodeReadable {
     this.req = req;
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
-    this.#url = this.req.url.slice(this.req.url.indexOf("/", 8));
+    this.url = req.url.slice(this.req.url.indexOf("/", 8));
   }
 
   get aborted() {
@@ -192,49 +202,59 @@ export class IncomingMessage extends NodeReadable {
   get method() {
     return this.req.method;
   }
-
-  get url() {
-    return this.#url;
-  }
-
-  set url(url: string) {
-    this.#url = url;
-  }
 }
 
 type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
 
 export class Server extends EventEmitter {
-  handler: ServerHandler;
+  #handler: ServerHandler;
+  #listener?: Deno.Listener;
+  #listening = false;
 
   constructor(handler: ServerHandler) {
     super();
-    this.handler = handler;
+    this.#handler = handler;
   }
 
-  async listen(port: number, host: string, cb: any) {
-    this._host = host;
-    this._port = port;
+  // TODO(AaronO): support options object
+  listen(port: number, host?: string, cb?: CallableFunction) {
+    this.#listener = Deno.listen({ port, hostname: host });
+    this.#listening = true;
+    // TODO(@AaronO):
+    // @ts-ignore change EventEmitter's sig to use CallabeFunction
     this.once("listening", cb ?? (() => {}));
-    (async () => {
-      for await (const conn of Deno.listen({ hostname: host, port })) {
-        (async () => {
-          for await (const reqEvent of Deno.serveHttp(conn)) {
-            this.handler(
-              new IncomingMessage(reqEvent.request),
-              new ServerResponse(reqEvent),
-            );
-          }
-        })();
-      }
-    })();
+    this.#listenLoop();
     this.emit("listening");
   }
 
+  async #listenLoop() {
+    for await (const conn of this.#listener!) {
+      (async () => {
+        for await (const reqEvent of Deno.serveHttp(conn)) {
+          const req = new IncomingMessage(reqEvent.request);
+          const res = new ServerResponse(reqEvent);
+          this.emit("request", req, res);
+          this.#handler(req, res);
+        }
+      })();
+    }
+  }
+
+  get listening() {
+    return this.#listening;
+  }
+
+  close() {
+    this.#listening = false;
+    this.#listener!.close();
+    this.emit("close");
+  }
+
   address() {
+    const addr = this.#listener!.addr as Deno.NetAddr;
     return {
-      port: this._port,
-      address: this._host,
+      port: addr.port,
+      address: addr.hostname,
     };
   }
 }
