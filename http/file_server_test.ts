@@ -7,7 +7,7 @@ import {
 import { BufReader } from "../io/buffer.ts";
 import { iterateReader, readAll, writeAll } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { FileServerArgs } from "./file_server.ts";
+import { FileServerArgs, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 
@@ -205,6 +205,16 @@ Deno.test("serveDirectory", async function () {
     await killFileServer();
   }
 });
+Deno.test("serveDirectory with filename including percent symbol", async function () {
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/");
+    const page = await res.text();
+    assertStringIncludes(page, "%2525A.txt");
+  } finally {
+    await killFileServer();
+  }
+});
 
 Deno.test("serveFallback", async function () {
   await startFileServer();
@@ -275,9 +285,16 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
 Deno.test("serveWithUnorthodoxFilename", async function () {
   await startFileServer();
   try {
-    const malformedRes = await fetch("http://localhost:4507/testdata/%");
-    assertEquals(malformedRes.status, 400);
-    await malformedRes.text(); // Consuming the body so that the test doesn't leak resources
+    let res = await fetch("http://localhost:4507/testdata/%");
+    assert(res.headers.has("access-control-allow-origin"));
+    assert(res.headers.has("access-control-allow-headers"));
+    assertEquals(res.status, 200);
+    let _ = await res.text();
+    res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+    assert(res.headers.has("access-control-allow-origin"));
+    assert(res.headers.has("access-control-allow-headers"));
+    assertEquals(res.status, 200);
+    await res.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
     await killFileServer();
   }
@@ -900,5 +917,41 @@ Deno.test(
     } finally {
       await killFileServer();
     }
+  },
+);
+
+Deno.test(
+  "file_server `serveFile` serve test file",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    const localFile = new TextDecoder().decode(
+      await Deno.readFile(testdataPath),
+    );
+    assertEquals(res.status, 200);
+    assertEquals(await res.text(), localFile);
+  },
+);
+Deno.test(
+  "file_server `serveFile` should return 416 due to a bad range request (500-200)",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    req.headers.set("range", "bytes=500-200");
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 416);
+  },
+);
+Deno.test(
+  "file_server `serveFile` returns 304 for requests with if-modified-since if the requested resource has not been modified after the given date",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    const expectedEtag = await getTestFileEtag();
+    req.headers.set("if-none-match", expectedEtag);
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 304);
+    assertEquals(res.statusText, "Not Modified");
   },
 );

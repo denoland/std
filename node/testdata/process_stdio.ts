@@ -25,10 +25,6 @@ process.stderr.write(Buffer.from("world").toString("base64"), "base64");
 process.stdout.write("hello");
 process.stdout.write(Buffer.from("world").toString("base64"), "base64");
 
-process.stderr.destroy();
-// this should throw if stdout is closed
-Deno.stderr.write(new Uint8Array([1])).catch(() => {});
-
 process.stdin.destroy();
 try {
   // this should throw if stdout is closed
@@ -40,5 +36,9 @@ try {
 process.stdout.destroy();
 // this should throw if stdout is closed
 Deno.stdout.write(new Uint8Array([1])).catch(() => {});
+
+process.stderr.destroy();
+// this should throw if stdout is closed
+Deno.stderr.write(new Uint8Array([1])).catch(() => {});
 
 Deno.exit(0);

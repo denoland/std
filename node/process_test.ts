@@ -9,6 +9,7 @@ import {
   assertThrows,
 } from "../testing/asserts.ts";
 import { stripColor } from "../fmt/colors.ts";
+import { deferred } from "../async/deferred.ts";
 import * as path from "../path/mod.ts";
 import { delay } from "../async/delay.ts";
 import { env } from "./process.ts";
@@ -54,6 +55,24 @@ Deno.test({
     assertEquals(typeof process.version, "string");
     assertEquals(typeof process.versions, "object");
     assertEquals(typeof process.versions.node, "string");
+    assertEquals(typeof process.versions.v8, "string");
+    assertEquals(typeof process.versions.uv, "string");
+    assertEquals(typeof process.versions.zlib, "string");
+    assertEquals(typeof process.versions.brotli, "string");
+    assertEquals(typeof process.versions.ares, "string");
+    assertEquals(typeof process.versions.modules, "string");
+    assertEquals(typeof process.versions.nghttp2, "string");
+    assertEquals(typeof process.versions.napi, "string");
+    assertEquals(typeof process.versions.llhttp, "string");
+    assertEquals(typeof process.versions.openssl, "string");
+    assertEquals(typeof process.versions.cldr, "string");
+    assertEquals(typeof process.versions.icu, "string");
+    assertEquals(typeof process.versions.tz, "string");
+    assertEquals(typeof process.versions.unicode, "string");
+    // These two are not present in `process.versions` in Node, but we
+    // add them anyway
+    assertEquals(typeof process.versions.deno, "string");
+    assertEquals(typeof process.versions.typescript, "string");
   },
 });
 
@@ -61,6 +80,16 @@ Deno.test({
   name: "process.platform",
   fn() {
     assertEquals(typeof process.platform, "string");
+  },
+});
+
+Deno.test({
+  name: "process.mainModule",
+  fn() {
+    assertEquals(process.mainModule, undefined);
+    // Check that it is writable
+    process.mainModule = "foo";
+    assertEquals(process.mainModule, "foo");
   },
 });
 
@@ -121,6 +150,56 @@ Deno.test({
       "1\n2",
     );
     p.close();
+  },
+});
+
+Deno.test({
+  name: "process.on signal",
+  ignore: Deno.build.os == "windows",
+  async fn() {
+    const promise = deferred();
+    let c = 0;
+    const listener = () => {
+      c += 1;
+    };
+    process.on("SIGINT", listener);
+    setTimeout(async () => {
+      // Sends SIGINT 3 times.
+      for (const _ of Array(3)) {
+        await delay(20);
+        Deno.kill(Deno.pid, "SIGINT");
+      }
+      await delay(20);
+      Deno.removeSignalListener("SIGINT", listener);
+      promise.resolve();
+    });
+    await promise;
+    assertEquals(c, 3);
+  },
+});
+
+Deno.test({
+  name: "process.off signal",
+  ignore: Deno.build.os == "windows",
+  async fn() {
+    const promise = deferred();
+    let c = 0;
+    const listener = () => {
+      c += 1;
+      process.off("SIGINT", listener);
+    };
+    process.on("SIGINT", listener);
+    setTimeout(async () => {
+      // Sends SIGINT 3 times.
+      for (const _ of Array(3)) {
+        await delay(20);
+        Deno.kill(Deno.pid, "SIGINT");
+      }
+      await delay(20);
+      promise.resolve();
+    });
+    await promise;
+    assertEquals(c, 1);
   },
 });
 
@@ -264,6 +343,7 @@ Deno.test({
     });
     p.stdin.write(new TextEncoder().encode("it works?!"));
     p.stdin.write(new TextEncoder().encode("yes!"));
+    p.stdin.close();
     const stderr = new TextDecoder().decode(await p.stderrOutput());
     const stdout = new TextDecoder().decode(await p.output());
     assertEquals(

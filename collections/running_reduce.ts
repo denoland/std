@@ -20,9 +20,11 @@
  */
 export function runningReduce<T, O>(
   array: readonly T[],
-  reducer: (accumulator: O, current: T) => O,
+  reducer: (accumulator: O, current: T, currentIndex: number) => O,
   initialValue: O,
 ): O[] {
   let currentResult = initialValue;
-  return array.map((el) => currentResult = reducer(currentResult, el));
+  return array.map((el, currentIndex) =>
+    currentResult = reducer(currentResult, el, currentIndex)
+  );
 }

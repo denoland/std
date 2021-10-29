@@ -10,9 +10,20 @@ import { config, testList } from "./common.ts";
  * code for the test is reported, the test suite will fail immediately
  */
 
-const onlyFlagTestList = config.tests.parallel.filter((filename) =>
-  filename.match("--only")
-).map((filename) => new RegExp(filename.replace(/ --only/, "")));
+const onlyFlagTestList: RegExp[] = [];
+
+function makeOnlyFlagTestList(testLists: Array<string[]>) {
+  for (const testList of testLists) {
+    const hasOnlyFlagTestList = testList.filter((filename) =>
+      filename.match("--only")
+    ).map((filename) => new RegExp(filename.replace(/ --only/, "")));
+    onlyFlagTestList.push(...hasOnlyFlagTestList);
+  }
+}
+
+makeOnlyFlagTestList([
+  ...Object.keys(config.tests).map((suite) => config.tests[suite]),
+]);
 
 const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
   includeDirs: false,
@@ -45,3 +56,22 @@ for await (const file of dir) {
     },
   });
 }
+
+function checkConfigTestFilesOrder(testFileLists: Array<string[]>) {
+  for (const testFileList of testFileLists) {
+    const sortedTestList = JSON.parse(JSON.stringify(testFileList));
+    sortedTestList.sort();
+    if (JSON.stringify(testFileList) !== JSON.stringify(sortedTestList)) {
+      throw new Error(
+        `File names in \`config.json\` are not correct order.`,
+      );
+    }
+  }
+}
+
+Deno.test("checkConfigTestFilesOrder", function () {
+  checkConfigTestFilesOrder([
+    ...Object.keys(config.ignore).map((suite) => config.ignore[suite]),
+    ...Object.keys(config.tests).map((suite) => config.tests[suite]),
+  ]);
+});
