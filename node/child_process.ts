@@ -318,7 +318,21 @@ export function spawn(
   return new ChildProcess(command, args, options);
 }
 
-export default { spawn };
+export function fork(
+  modulePath: string,
+  argsOrOptions?: string[] | SpawnOptions,
+  maybeOptions?: SpawnOptions,
+): ChildProcess {
+  const args = Array.isArray(argsOrOptions) ? argsOrOptions : [];
+  const options = !Array.isArray(argsOrOptions) && argsOrOptions != null
+  ? argsOrOptions
+  : maybeOptions;
+  args.push(modulePath)
+  console.log("fork", Deno.execPath, args, options);
+  return new ChildProcess(Deno.execPath(), args, options);
+}
+
+export default { spawn, fork };
 
 function ensureClosed(closer: Deno.Closer): void {
   try {

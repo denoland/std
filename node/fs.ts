@@ -164,7 +164,6 @@ export {
   unlink,
   unlinkSync,
   utimes,
-  utimesSync,
   watch,
   watchFile,
   writeFile,
