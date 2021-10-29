@@ -79,7 +79,7 @@ export class ServerResponse extends NodeWritable {
           } else {
             controller.enqueue(chunkToU8(this.#firstChunk));
             this.#firstChunk = null;
-            this.respond();
+            this.respond(false);
           }
         }
         controller.enqueue(chunkToU8(chunk));
@@ -87,7 +87,9 @@ export class ServerResponse extends NodeWritable {
       },
       final: (cb) => {
         if (this.#firstChunk) {
-          this.respond(this.#firstChunk);
+          this.respond(true, this.#firstChunk);
+        } else if (!this.headersSent) {
+          this.respond(true);
         }
         controller.close();
         return cb();
@@ -121,28 +123,28 @@ export class ServerResponse extends NodeWritable {
     return this.#headers.has(name);
   }
 
-  writeHead(status: number, headers: Headers) {
+  writeHead(status: number, headers: Record<string, string>) {
     this.statusCode = status;
-    for (const [k, v] of headers.entries()) {
-      this.#headers.set(k, v);
+    for (const k in headers) {
+      this.#headers.set(k, headers[k]);
     }
     return this;
   }
 
   #ensureHeaders(singleChunk?: Chunk) {
-    if (this.statusCode == null) {
+    if (this.statusCode === undefined) {
       this.statusCode = 200;
       this.statusMessage = "OK";
-      this.#headers = new Headers(
-        typeof singleChunk === "string" ? { "content-type": "text/plain" } : {},
-      );
+    }
+    if (typeof singleChunk === "string" && !this.hasHeader("content-type")) {
+      this.setHeader("content-type", "text/plain;charset=UTF-8");
     }
   }
 
-  respond(singleChunk?: Chunk) {
+  respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
     this.#ensureHeaders(singleChunk);
-    const body = singleChunk ?? this.readable;
+    const body = singleChunk ?? (final ? null : this.readable);
     this.#reqEvent.respondWith(
       new Response(body, {
         headers: this.#headers,
@@ -156,6 +158,7 @@ export class ServerResponse extends NodeWritable {
 // TODO(@AaronO): optimize
 export class IncomingMessage extends NodeReadable {
   private req: Request;
+  url: string;
 
   constructor(req: Request) {
     // Check if no body (GET/HEAD/OPTIONS/...)
@@ -181,6 +184,9 @@ export class IncomingMessage extends NodeReadable {
       },
     });
     this.req = req;
+    // TODO: consider more robust path extraction, e.g:
+    // url: (new URL(request.url).pathname),
+    this.url = req.url.slice(this.req.url.indexOf("/", 8));
   }
 
   get aborted() {
@@ -196,41 +202,60 @@ export class IncomingMessage extends NodeReadable {
   get method() {
     return this.req.method;
   }
-
-  get url() {
-    // TODO: consider more robust path extraction, e.g:
-    // url: (new URL(request.url).pathname),
-    return this.req.url.slice(this.req.url.indexOf("/", 8));
-  }
 }
 
 type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
 
 export class Server extends EventEmitter {
-  handler: ServerHandler;
+  #handler: ServerHandler;
   #listener?: Deno.Listener;
-  listening = false;
+  #listening = false;
 
   constructor(handler: ServerHandler) {
     super();
-    this.handler = handler;
+    this.#handler = handler;
   }
 
-  async listen(port: number) {
-    this.#listener = Deno.listen({ port });
-    this.listening = true;
-    for await (const conn of this.#listener) {
-      for await (const reqEvent of Deno.serveHttp(conn)) {
-        const req = new IncomingMessage(reqEvent.request);
-        const res = new ServerResponse(reqEvent);
-        this.emit("request", req, res);
-        this.handler(req, res);
-      }
+  // TODO(AaronO): support options object
+  listen(port: number, host?: string, cb?: CallableFunction) {
+    this.#listener = Deno.listen({ port, hostname: host });
+    this.#listening = true;
+    // TODO(@AaronO):
+    // @ts-ignore change EventEmitter's sig to use CallabeFunction
+    this.once("listening", cb ?? (() => {}));
+    this.#listenLoop();
+    this.emit("listening");
+  }
+
+  async #listenLoop() {
+    for await (const conn of this.#listener!) {
+      (async () => {
+        for await (const reqEvent of Deno.serveHttp(conn)) {
+          const req = new IncomingMessage(reqEvent.request);
+          const res = new ServerResponse(reqEvent);
+          this.emit("request", req, res);
+          this.#handler(req, res);
+        }
+      })();
     }
   }
+
+  get listening() {
+    return this.#listening;
+  }
+
   close() {
+    this.#listening = false;
     this.#listener!.close();
     this.emit("close");
+  }
+
+  address() {
+    const addr = this.#listener!.addr as Deno.NetAddr;
+    return {
+      port: addr.port,
+      address: addr.hostname,
+    };
   }
 }
 
