@@ -4,7 +4,6 @@
  * ERR_QUICSESSION_VERSION_NEGOTIATION
  * ERR_REQUIRE_ESM
  * ERR_TLS_CERT_ALTNAME_INVALID
- * ERR_UNHANDLED_ERROR
  * ERR_WORKER_INVALID_EXEC_ARGV
  * ERR_WORKER_PATH
  * ERR_QUIC_ERROR
@@ -2069,6 +2068,14 @@ export class ERR_UNESCAPED_CHARACTERS extends NodeTypeError {
     super(
       "ERR_UNESCAPED_CHARACTERS",
       `${x} contains unescaped characters`,
+    );
+  }
+}
+export class ERR_UNHANDLED_ERROR extends NodeError {
+  constructor(x: string) {
+    super(
+      "ERR_UNHANDLED_ERROR",
+      `Unhandled error. (${x})`,
     );
   }
 }

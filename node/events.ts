@@ -23,7 +23,11 @@
 
 import { assert } from "../_util/assert.ts";
 import { notImplemented } from "./_utils.ts";
-import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE } from "./_errors.ts";
+import {
+  ERR_INVALID_ARG_TYPE,
+  ERR_OUT_OF_RANGE,
+  ERR_UNHANDLED_ERROR,
+} from "./_errors.ts";
 import { inspect } from "./util.ts";
 
 // deno-lint-ignore no-explicit-any
@@ -170,8 +174,15 @@ export class EventEmitter {
       if (hasListeners(this._events, EventEmitter.errorMonitor)) {
         this.emit(EventEmitter.errorMonitor, ...args);
       }
-      const errMsg = args.length > 0 ? args[0] : Error("Unhandled error.");
-      throw errMsg;
+      let err = args.length > 0 ? args[0] : "Unhandled error.";
+      if (err instanceof Error) {
+        throw err;
+      }
+
+      try {
+        err = inspect(err);
+      } catch {}
+      throw new ERR_UNHANDLED_ERROR(err);
     }
     return false;
   }
