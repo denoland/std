@@ -61,12 +61,12 @@ for await (const file of dir) {
       ]);
       test.close();
 
-      let stdout = decoder.decode(rawOutput);
-      if (rawOutput.length) console.log(stdout);
-      if (rawStderr.length) console.error(await decoder.decode(rawStderr));
+      let stderr = decoder.decode(rawStderr);
+      if (rawStderr.length) console.error(stderr);
+      if (rawOutput.length) console.log(decoder.decode(rawOutput));
 
       if (status.code !== 0) {
-        fail(stdout);
+        fail(stderr);
       }
     },
   });
