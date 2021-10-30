@@ -131,18 +131,17 @@ const qsColonTestCases = [
 // [wonkyObj, qs, canonicalObj]
 function extendedFunction() {}
 extendedFunction.prototype = { a: 'b' };
-// TODO(wafuwafu13): Enable all case
 const qsWeirdObjects = [
   // eslint-disable-next-line node-core/no-unescaped-regexp-dot
   [{ regexp: /./g }, 'regexp=', { 'regexp': '' }],
   // eslint-disable-next-line node-core/no-unescaped-regexp-dot
   [{ regexp: new RegExp('.', 'g') }, 'regexp=', { 'regexp': '' }],
-  // [{ fn: () => {} }, 'fn=', { 'fn': '' }],
-  // [{ fn: new Function('') }, 'fn=', { 'fn': '' }],
-    [{ math: Math }, 'math=', { 'math': '' }],
-  // [{ e: extendedFunction }, 'e=', { 'e': '' }],
+  [{ fn: () => {} }, 'fn=', { 'fn': '' }],
+  [{ fn: new Function('') }, 'fn=', { 'fn': '' }],
+  [{ math: Math }, 'math=', { 'math': '' }],
+  [{ e: extendedFunction }, 'e=', { 'e': '' }],
   [{ d: new Date() }, 'd=', { 'd': '' }],
-  // [{ d: Date }, 'd=', { 'd': '' }],
+  [{ d: Date }, 'd=', { 'd': '' }],
   [
     { f: new Boolean(false), t: new Boolean(true) },
     'f=&t=',
@@ -150,12 +149,11 @@ const qsWeirdObjects = [
   ],
   [{ f: false, t: true }, 'f=false&t=true', { 'f': 'false', 't': 'true' }],
   [{ n: null }, 'n=', { 'n': '' }],
-  // [{ nan: NaN }, 'nan=', { 'nan': '' }],
-  // [{ inf: Infinity }, 'inf=', { 'inf': '' }],
+  [{ nan: NaN }, 'nan=', { 'nan': '' }],
+  [{ inf: Infinity }, 'inf=', { 'inf': '' }],
   [{ a: [], b: [] }, '', {}],
   [{ a: 1, b: [] }, 'a=1', { 'a': '1' }],
 ];
-// }}}
 
 // TODO(wafuwafu13): Enable this when `vm` is implemented.
 // const vm = require('vm');
@@ -318,11 +316,9 @@ assert.strictEqual(qs.stringify({ foo: 0 }), 'foo=0');
 assert.strictEqual(qs.stringify({ foo: -0 }), 'foo=0');
 assert.strictEqual(qs.stringify({ foo: 3 }), 'foo=3');
 assert.strictEqual(qs.stringify({ foo: -72.42 }), 'foo=-72.42');
-// TODO(wafuwafu13): Enable this
-// assert.strictEqual(qs.stringify({ foo: NaN }), 'foo=');
+assert.strictEqual(qs.stringify({ foo: NaN }), 'foo=');
 assert.strictEqual(qs.stringify({ foo: 1e21 }), 'foo=1e%2B21');
-// TODO(wafuwafu13): Enable this
-// assert.strictEqual(qs.stringify({ foo: Infinity }), 'foo=');
+assert.strictEqual(qs.stringify({ foo: Infinity }), 'foo=');
 
 // nested
 {
@@ -350,13 +346,12 @@ qs.parse(undefined); // Should not throw.
   assert.strictEqual(f, 'a:b;q:x%3Ay%3By%3Az');
 }
 
-// TODO(wafuwafu13): Fix `TypeError: Cannot convert undefined or null to object`
 // empty string
-// assert.strictEqual(qs.stringify(), '');
-// assert.strictEqual(qs.stringify(0), '');
-// assert.strictEqual(qs.stringify([]), '');
-// assert.strictEqual(qs.stringify(null), '');
-// assert.strictEqual(qs.stringify(true), '');
+assert.strictEqual(qs.stringify(), '');
+assert.strictEqual(qs.stringify(0), '');
+assert.strictEqual(qs.stringify([]), '');
+assert.strictEqual(qs.stringify(null), '');
+assert.strictEqual(qs.stringify(true), '');
 
 check(qs.parse(), {});
 
