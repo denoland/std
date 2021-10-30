@@ -31,6 +31,7 @@ const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
 });
 
 const testsFolder = dirname(fromFileUrl(import.meta.url));
+const decoder = new TextDecoder();
 
 for await (const file of dir) {
   Deno.test({
@@ -49,22 +50,23 @@ for await (const file of dir) {
           "require.ts",
           file.path,
         ],
+        stderr: "piped",
         stdout: "piped",
       });
 
-      const [rawOutput, status] = await Promise.all([
+      const [rawStderr, rawOutput, status] = await Promise.all([
+        test.stderrOutput(),
         test.output(),
         test.status(),
       ]);
       test.close();
 
-      let output = new TextDecoder().decode(rawOutput);
-      if (rawOutput.length) {
-        console.log(output);
-      }
+      let stdout = decoder.decode(rawOutput);
+      if (rawOutput.length) console.log(stdout);
+      if (rawStderr.length) console.error(await decoder.decode(rawStderr));
 
       if (status.code !== 0) {
-        fail(output);
+        fail(stdout);
       }
     },
   });
