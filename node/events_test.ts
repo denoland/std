@@ -500,6 +500,20 @@ Deno.test({
 });
 
 Deno.test({
+  name:
+    'When there is no "error" listener, emit() throws the first error passed to it as is',
+  fn() {
+    class CustomError extends Error {}
+    const ee = new EventEmitter();
+    assertThrows(
+      () => ee.emit("error", new CustomError("foo")),
+      CustomError,
+      "foo",
+    );
+  },
+});
+
+Deno.test({
   name: "asynchronous iteration of events are handled as expected",
   async fn() {
     const ee = new EventEmitter();

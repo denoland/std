@@ -247,7 +247,7 @@ export function parse(
 
 interface StringifyOptions {
   /** The function to use when converting URL-unsafe characters to percent-encoding in the query string. */
-  encodeURIComponent?: (string: string) => string;
+  encodeURIComponent: (string: string) => string;
 }
 
 export function encodeStr(
@@ -308,6 +308,50 @@ export function encodeStr(
   return out;
 }
 
+// deno-lint-ignore no-explicit-any
+function stringifyPrimitive(v: any): string {
+  if (typeof v === "string") {
+    return v;
+  }
+  if (typeof v === "number" && isFinite(v)) {
+    return "" + v;
+  }
+  if (typeof v === "bigint") {
+    return "" + v;
+  }
+  if (typeof v === "boolean") {
+    return v ? "true" : "false";
+  }
+  return "";
+}
+
+function encodeStringifiedCustom(
+  // deno-lint-ignore no-explicit-any
+  v: any,
+  encode: (string: string) => string,
+): string {
+  return encode(stringifyPrimitive(v));
+}
+
+// deno-lint-ignore no-explicit-any
+function encodeStringified(v: any, encode: (string: string) => string): string {
+  if (typeof v === "string") {
+    return (v.length ? encode(v) : "");
+  }
+  if (typeof v === "number" && isFinite(v)) {
+    // Values >= 1e21 automatically switch to scientific notation which requires
+    // escaping due to the inclusion of a '+' in the output
+    return (Math.abs(v) < 1e21 ? "" + v : encode("" + v));
+  }
+  if (typeof v === "bigint") {
+    return "" + v;
+  }
+  if (typeof v === "boolean") {
+    return v ? "true" : "false";
+  }
+  return "";
+}
+
 /**
  * Produces a URL query string from a given obj by iterating through the object's "own properties".
  * @param obj The object to serialize into a URL query string.
@@ -318,25 +362,49 @@ export function encodeStr(
 export function stringify(
   // deno-lint-ignore no-explicit-any
   obj: Record<string, any>,
-  sep = "&",
-  eq = "=",
-  { encodeURIComponent = escape }: StringifyOptions = {},
+  sep?: string,
+  eq?: string,
+  options?: StringifyOptions,
 ): string {
-  const final = [];
+  sep ||= "&";
+  eq ||= "=";
+  const encode = options ? options.encodeURIComponent : escape;
+  const convert = options ? encodeStringifiedCustom : encodeStringified;
 
-  for (const entry of Object.entries(obj)) {
-    if (Array.isArray(entry[1])) {
-      for (const val of entry[1]) {
-        final.push(encodeURIComponent(entry[0]) + eq + encodeURIComponent(val));
+  if (obj !== null && typeof obj === "object") {
+    const keys = Object.keys(obj);
+    const len = keys.length;
+    let fields = "";
+    for (let i = 0; i < len; ++i) {
+      const k = keys[i];
+      const v = obj[k];
+      let ks = convert(k, encode);
+      ks += eq;
+
+      if (Array.isArray(v)) {
+        const vlen = v.length;
+        if (vlen === 0) continue;
+        if (fields) {
+          fields += sep;
+        }
+        for (let j = 0; j < vlen; ++j) {
+          if (j) {
+            fields += sep;
+          }
+          fields += ks;
+          fields += convert(v[j], encode);
+        }
+      } else {
+        if (fields) {
+          fields += sep;
+        }
+        fields += ks;
+        fields += convert(v, encode);
       }
-    } else if (typeof entry[1] !== "object" && entry[1] !== undefined) {
-      final.push(entry.map(encodeURIComponent).join(eq));
-    } else {
-      final.push(encodeURIComponent(entry[0]) + eq);
     }
+    return fields;
   }
-
-  return final.join(sep);
+  return "";
 }
 
 /** Alias of querystring.parse() */
