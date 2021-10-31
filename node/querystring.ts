@@ -247,7 +247,7 @@ export function parse(
 
 interface StringifyOptions {
   /** The function to use when converting URL-unsafe characters to percent-encoding in the query string. */
-  encodeURIComponent?: (string: string) => string;
+  encodeURIComponent: (string: string) => string;
 }
 
 export function encodeStr(
@@ -362,16 +362,14 @@ function encodeStringified(v: any, encode: (string: string) => string): string {
 export function stringify(
   // deno-lint-ignore no-explicit-any
   obj: Record<string, any>,
-  sep = "&",
-  eq = "=",
-  options: StringifyOptions = {},
+  sep?: string,
+  eq?: string,
+  options?: StringifyOptions,
 ): string {
-  const encode = options.encodeURIComponent
-    ? options.encodeURIComponent
-    : escape;
-  const convert = options.encodeURIComponent
-    ? encodeStringifiedCustom
-    : encodeStringified;
+  sep ||= "&";
+  eq ||= "=";
+  const encode = options ? options.encodeURIComponent : escape;
+  const convert = options ? encodeStringifiedCustom : encodeStringified;
 
   if (obj !== null && typeof obj === "object") {
     const keys = Object.keys(obj);

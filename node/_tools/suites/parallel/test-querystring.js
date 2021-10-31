@@ -287,18 +287,16 @@ assert.strictEqual(qs.stringify({ foo: 2n ** 1023n }),
 assert.strictEqual(qs.stringify([0n, 1n, 2n]),
                    '0=0&1=1&2=2');
 
-// TODO(wafuwafu13): Enable this
-// assert.strictEqual(qs.stringify({ foo: 2n ** 1023n },
-//                                 null,
-//                                 null,
-//                                 { encodeURIComponent: (c) => c }),
-//                    'foo=' + 2n ** 1023n);
-// TODO(wafuwafu13): Enable this
-// assert.strictEqual(qs.stringify([0n, 1n, 2n],
-//                                 null,
-//                                 null,
-//                                 { encodeURIComponent: (c) => c }),
-//                    '0=0&1=1&2=2');
+assert.strictEqual(qs.stringify({ foo: 2n ** 1023n },
+                                null,
+                                null,
+                                { encodeURIComponent: (c) => c }),
+                   'foo=' + 2n ** 1023n);
+assert.strictEqual(qs.stringify([0n, 1n, 2n],
+                                null,
+                                null,
+                                { encodeURIComponent: (c) => c }),
+                   '0=0&1=1&2=2');
 
 // TODO(wafuwafu13): Enable this
 // // Invalid surrogate pair throws URIError
@@ -451,27 +449,25 @@ check(qs.parse('%\u0100=%\u0101'), { '%Ā': '%ā' });
 //         { a: 'a' });
 // }
 
-// TODO(wafuwafu13): Enable this
-// // Test custom encode
-// {
-//   function demoEncode(str) {
-//     return str[0];
-//   }
+// Test custom encode
+{
+  function demoEncode(str) {
+    return str[0];
+  }
 
-//   const obj = { aa: 'aa', bb: 'bb', cc: 'cc' };
-//   assert.strictEqual(
-//     qs.stringify(obj, null, null, { encodeURIComponent: demoEncode }),
-//     'a=a&b=b&c=c');
-// }
+  const obj = { aa: 'aa', bb: 'bb', cc: 'cc' };
+  assert.strictEqual(
+    qs.stringify(obj, null, null, { encodeURIComponent: demoEncode }),
+    'a=a&b=b&c=c');
+}
 
-// TODO(wafuwafu13): Enable this
-// // Test custom encode for different types
-// {
-//   const obj = { number: 1, bigint: 2n, true: true, false: false, object: {} };
-//   assert.strictEqual(
-//     qs.stringify(obj, null, null, { encodeURIComponent: (v) => v }),
-//     'number=1&bigint=2&true=true&false=false&object=');
-// }
+// Test custom encode for different types
+{
+  const obj = { number: 1, bigint: 2n, true: true, false: false, object: {} };
+  assert.strictEqual(
+    qs.stringify(obj, null, null, { encodeURIComponent: (v) => v }),
+    'number=1&bigint=2&true=true&false=false&object=');
+}
 
 // TODO(wafuwafu13): Enable this
 // // Test QueryString.unescapeBuffer
