@@ -449,7 +449,6 @@ check(qs.parse('%\u0100=%\u0101'), { '%Ā': '%ā' });
 //         { a: 'a' });
 // }
 
-// TODO(wafuwafu13): Enable this
 // Test custom encode
 {
   function demoEncode(str) {
@@ -462,7 +461,6 @@ check(qs.parse('%\u0100=%\u0101'), { '%Ā': '%ā' });
     'a=a&b=b&c=c');
 }
 
-// TODO(wafuwafu13): Enable this
 // Test custom encode for different types
 {
   const obj = { number: 1, bigint: 2n, true: true, false: false, object: {} };
