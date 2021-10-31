@@ -345,6 +345,9 @@ class Process extends EventEmitter {
    */
   argv = argv;
 
+  /** https://nodejs.org/api/process.html#process_process_execargv */
+  execArgv = [];
+
   /** https://nodejs.org/api/process.html#process_process_chdir_directory */
   chdir = chdir;
 
