@@ -122,9 +122,20 @@ export function arch(): string {
   }
 }
 
-/** Not yet implemented */
 export function cpus(): CPUCoreInfo[] {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return Array.from(Array(navigator.hardwareConcurrency)).map(() => {
+    return {
+      model: "",
+      speed: 0,
+      times: {
+        user: 0,
+        nice: 0,
+        sys: 0,
+        idle: 0,
+        irq: 0,
+      },
+    };
+  });
 }
 
 /**
