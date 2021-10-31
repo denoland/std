@@ -1,6 +1,6 @@
 import { walk } from "../../fs/walk.ts";
 import { dirname, fromFileUrl, relative } from "../../path/mod.ts";
-import { assertEquals, fail } from "../../testing/asserts.ts";
+import { fail } from "../../testing/asserts.ts";
 import { config, testList } from "./common.ts";
 
 /**
