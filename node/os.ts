@@ -115,9 +115,20 @@ export function arch(): string {
 // deno-lint-ignore no-explicit-any
 (uptime as any)[Symbol.toPrimitive] = (): number => uptime();
 
-/** Not yet implemented */
 export function cpus(): CPUCoreInfo[] {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return Array.from(Array(navigator.hardwareConcurrency)).map(() => {
+    return {
+      model: "",
+      speed: 0,
+      times: {
+        user: 0,
+        nice: 0,
+        sys: 0,
+        idle: 0,
+        irq: 0,
+      },
+    };
+  });
 }
 
 /**
