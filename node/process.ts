@@ -17,9 +17,9 @@ const notImplementedEvents = [
   "message",
   "multipleResolves",
   "rejectionHandled",
-  "uncaughtException",
+  // "uncaughtException",
   "uncaughtExceptionMonitor",
-  "unhandledRejection",
+  // "unhandledRejection",
 ];
 
 /** https://nodejs.org/api/process.html#process_process_arch */

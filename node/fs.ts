@@ -36,6 +36,12 @@ import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
 
 import * as promises from "./fs/promises.ts";
 
+realpath.native = realpath;
+realpathSync.native = realpathSync;
+function read() {
+
+}
+
 export default {
   access,
   accessSync,
@@ -76,6 +82,7 @@ export default {
   open,
   openSync,
   promises,
+  read,
   readdir,
   readdirSync,
   readFile,
@@ -143,6 +150,7 @@ export {
   open,
   openSync,
   promises,
+  read,
   readdir,
   readdirSync,
   readFile,

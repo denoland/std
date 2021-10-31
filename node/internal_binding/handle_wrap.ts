@@ -42,7 +42,7 @@ export class HandleWrap extends AsyncWrap {
   }
 
   unref() {
-    notImplemented();
+    // notImplemented();
   }
 
   // deno-lint-ignore no-explicit-any

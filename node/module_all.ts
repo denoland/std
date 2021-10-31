@@ -40,6 +40,12 @@ import util from "./util.ts";
 // import workerThreads from "./worker_threads.ts";
 // import zlib from "./zlib.ts";
 
+class Script {
+  constructor() {
+
+  }
+}
+
 // Canonical mapping of supported modules
 export default {
   assert,
@@ -74,5 +80,9 @@ export default {
   url,
   "worker_threads": {},
   util,
+  vm: {
+    Script,
+  },
+  v8: {},
   zlib: {},
 } as Record<string, unknown>;
