@@ -90,8 +90,12 @@ interface UserInfo {
   homedir: string;
 }
 
+export function arch(): string {
+  return process.arch;
+}
+
 // deno-lint-ignore no-explicit-any
-(arch as any)[Symbol.toPrimitive] = (): string => arch();
+(arch as any)[Symbol.toPrimitive] = (): string => process.arch;
 // deno-lint-ignore no-explicit-any
 (endianness as any)[Symbol.toPrimitive] = (): string => endianness();
 // deno-lint-ignore no-explicit-any
@@ -110,17 +114,6 @@ interface UserInfo {
 (type as any)[Symbol.toPrimitive] = (): string => type();
 // deno-lint-ignore no-explicit-any
 (uptime as any)[Symbol.toPrimitive] = (): number => uptime();
-
-/** Returns the operating system CPU architecture for which the Deno binary was compiled */
-export function arch(): string {
-  if (Deno.build.arch == "x86_64") {
-    return "x64";
-  } else if (Deno.build.arch == "aarch64") {
-    return "arm64";
-  } else {
-    throw Error("unreachable");
-  }
-}
 
 /** Not yet implemented */
 export function cpus(): CPUCoreInfo[] {
