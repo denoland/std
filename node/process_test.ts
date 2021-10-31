@@ -97,8 +97,13 @@ Deno.test({
   name: "process.arch",
   fn() {
     assertEquals(typeof process.arch, "string");
-    // TODO(rsp): make sure that the arch strings should be the same in Node and Deno:
-    assertEquals(process.arch, Deno.build.arch);
+    if (Deno.build.arch == "x86_64") {
+      assertEquals(process.arch, "x64");
+    } else if (Deno.build.arch == "aarch64") {
+      assertEquals(process.arch, "arm64");
+    } else {
+      throw new Error("unreachable");
+    }
   },
 });
 
