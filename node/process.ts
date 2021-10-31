@@ -6,6 +6,7 @@ import { fromFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { Readable, Writable } from "./stream.ts";
 import { Buffer } from "./buffer.ts";
+import { arch as osArch } from "./os.ts";
 import { validateString } from "./_validators.ts";
 import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 import { getOptionValue } from "./_options.ts";
@@ -23,7 +24,7 @@ const notImplementedEvents = [
 ];
 
 /** https://nodejs.org/api/process.html#process_process_arch */
-export const arch = Deno.build.arch;
+export const arch = osArch();
 
 // The first 2 items are placeholders.
 // They will be overwritten by the below Object.defineProperty calls.
@@ -207,6 +208,9 @@ Object.defineProperty(stdin, "isTTY", {
     return Deno.isatty(Deno.stdin.rid);
   },
 });
+stdin.setRawMode = () => {
+  console.log("called setRawMode");
+};
 
 /** https://nodejs.org/api/process.html#process_process_stdout */
 export const stdout = createWritableStdioStream(Deno.stdout);
