@@ -62,6 +62,13 @@ Deno.test({
     );
     assertThrows(
       () => {
+        vm.runInThisContext("", {});
+      },
+      Error,
+      "Not implemented",
+    );
+    assertThrows(
+      () => {
         vm.isContext({});
       },
       Error,

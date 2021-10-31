@@ -50,6 +50,13 @@ export function runInNewContext(
   notImplemented();
 }
 
+export function runInNewContext(
+  _code: string,
+  _options: any,
+) {
+  notImplemented();
+}
+
 export function isContext(_maybeContext: any) {
   notImplemented();
 }
@@ -61,3 +68,15 @@ export function compileFunction(_code: string, _params: any, _options: any) {
 export function measureMemory(_options: any) {
   notImplemented();
 }
+
+export default {
+  Script,
+  createContext,
+  createScript,
+  runInContext,
+  runInNewContext,
+  runInThisContext,
+  isContext,
+  compileFunction,
+  measureMemory,
+};
