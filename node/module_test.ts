@@ -181,5 +181,17 @@ Deno.test("requireWithImportsExports", function () {
 Deno.test("module has proper members", function () {
   const module = require("module");
 
-  assert(module.Module);
+  assert(module._cache);
+  assert(module._extensions);
+  assert(typeof module._findPath == "function");
+  assert(typeof module._initPaths == "function");
+  assert(typeof module._load == "function");
+  assert(typeof module._nodeModulePaths == "function");
+  assert(module._pathCache);
+  assert(typeof module._preloadModules == "function");
+  assert(typeof module._resolveFilename == "function");
+  assert(typeof module._resolveLookupPaths == "function");
+  assert(module.globalPaths);
+  assert(module.Module === Module);
+  assert(typeof module.wrap == "function");
 });
