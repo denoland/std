@@ -50,7 +50,7 @@ export function runInNewContext(
   notImplemented();
 }
 
-export function runInNewContext(
+export function runInThisContext(
   _code: string,
   _options: any,
 ) {
