@@ -23,7 +23,7 @@ const notImplementedEvents = [
 ];
 
 /** Returns the operating system CPU architecture for which the Deno binary was compiled */
-export function _arch(): string {
+function _arch(): string {
   if (Deno.build.arch == "x86_64") {
     return "x64";
   } else if (Deno.build.arch == "aarch64") {
