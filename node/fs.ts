@@ -39,7 +39,6 @@ import * as promises from "./fs/promises.ts";
 realpath.native = realpath;
 realpathSync.native = realpathSync;
 function read() {
-
 }
 
 export default {

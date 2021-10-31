@@ -325,9 +325,9 @@ export function fork(
 ): ChildProcess {
   const args = Array.isArray(argsOrOptions) ? argsOrOptions : [];
   const options = !Array.isArray(argsOrOptions) && argsOrOptions != null
-  ? argsOrOptions
-  : maybeOptions;
-  args.push(modulePath)
+    ? argsOrOptions
+    : maybeOptions;
+  args.push(modulePath);
   console.log("fork", Deno.execPath, args, options);
   return new ChildProcess(Deno.execPath(), args, options);
 }

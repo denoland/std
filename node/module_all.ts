@@ -42,7 +42,6 @@ import util from "./util.ts";
 
 class Script {
   constructor() {
-
   }
 }
 
