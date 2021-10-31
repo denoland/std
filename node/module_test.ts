@@ -7,7 +7,7 @@ import {
 } from "../testing/asserts.ts";
 
 import * as path from "../path/mod.ts";
-import { createRequire } from "./module.ts";
+import Module, { createRequire } from "./module.ts";
 import nodeMods from "./module_all.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
@@ -176,4 +176,10 @@ Deno.test("requireCjsWithDynamicImport", function () {
 
 Deno.test("requireWithImportsExports", function () {
   require("./_module/cjs/cjs_imports_exports");
+});
+
+Deno.test("module has proper members", function () {
+  const module = require("module");
+
+  assert(module.Module);
 });
