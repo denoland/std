@@ -526,10 +526,33 @@ export class Server {
   }
 }
 
+export interface TlsSettings {
+  /** The path to the file containing the TLS private key. */
+  keyFile: string;
+
+  /** The path to the file containing the TLS certificate */
+  certFile: string;
+}
+
 /** Additional serve options. */
 export interface ServeInit {
+  /**
+   * Optionally specifies the address to listen on, in the form
+   * "host:port". The default is ":8000".
+   *
+   * If the port is omitted, `:80` is used by default for HTTP when invoking
+   * without `tls` options, and `:443` is
+   * used by default for HTTPS when invoking with `tls` options.
+   *
+   * If the host is omitted, the non-routable meta-address `0.0.0.0` is used.
+   */
+  addr?: string;
+
   /** An AbortSignal to close the server and all connections. */
   signal?: AbortSignal;
+
+  /** Optional TLS settings. If specified the method serves with TLS connection */
+  tls?: TlsSettings;
 }
 
 /**
@@ -559,7 +582,7 @@ export interface ServeInit {
 export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
-  options?: ServeInit,
+  options?: Omit<ServeInit, "addr" | "tls">,
 ): Promise<void> {
   const server = new Server({ handler });
 
@@ -570,11 +593,56 @@ export async function serveListener(
   return await server.serve(listener);
 }
 
-/** Serve HTTP requests on port 8000 */
-export async function serve(handler: Handler): Promise<void> {
-  const addr = ":8000";
+/** Serve HTTP requests with the given handler
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * serve((_req) => new Response("Hello, world"));
+ * ```
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * console.log("server is starting at localhost:3000");
+ * serve((_req) => new Response("Hello, world"), { addr: ":3000" });
+ * ```
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * const certFile = "/path/to/certFile.crt";
+ * const keyFile = "/path/to/keyFile.key";
+ * console.log("server is starting at https://localhost:8000");
+ * serve((_req) => new Response("Hello, world"), {
+ *   tls: { certFile, keyFile },
+ * });
+ * ```
+ */
+export async function serve(
+  handler: Handler,
+  options: ServeInit = {},
+): Promise<void> {
+  const addr = options.addr ?? ":8000";
   const server = new Server({ addr, handler });
-  return await server.listenAndServe();
+
+  if (options?.signal) {
+    options.signal.onabort = () => server.close();
+  }
+
+  if (!options.tls) {
+    return await server.listenAndServe();
+  }
+
+  if (!options.tls.keyFile) {
+    throw new Error("TLS config is given, but 'keyFile' is missing.");
+  }
+
+  if (!options.tls.certFile) {
+    throw new Error("TLS config is given, but 'certFile' is missing.");
+  }
+
+  return await server.listenAndServeTls(
+    options.tls.certFile,
+    options.tls.keyFile,
+  );
 }
 
 /**
@@ -606,6 +674,8 @@ export async function serve(handler: Handler): Promise<void> {
  * @param addr The address to listen on.
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
+ *
+ * @deprecated Use `serve` instead.
  */
 export async function listenAndServe(
   addr: string,
@@ -654,6 +724,9 @@ export async function listenAndServe(
  * @param keyFile The path to the file containing the TLS private key.
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
+ *
+ * @deprecated Use `serve` instead. `serve` supports `tls` options, which starts the server with
+ * TLS connections.
  */
 export async function listenAndServeTls(
   addr: string,
