@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+import { ERR_INVALID_URI } from "./_errors.ts";
 
 export interface ParsedUrlQuery {
   [key: string]: string | string[] | undefined;
@@ -371,38 +372,42 @@ export function stringify(
   const encode = options ? options.encodeURIComponent : escape;
   const convert = options ? encodeStringifiedCustom : encodeStringified;
 
-  if (obj !== null && typeof obj === "object") {
-    const keys = Object.keys(obj);
-    const len = keys.length;
-    let fields = "";
-    for (let i = 0; i < len; ++i) {
-      const k = keys[i];
-      const v = obj[k];
-      let ks = convert(k, encode);
-      ks += eq;
+  try {
+    if (obj !== null && typeof obj === "object") {
+      const keys = Object.keys(obj);
+      const len = keys.length;
+      let fields = "";
+      for (let i = 0; i < len; ++i) {
+        const k = keys[i];
+        const v = obj[k];
+        let ks = convert(k, encode);
+        ks += eq;
 
-      if (Array.isArray(v)) {
-        const vlen = v.length;
-        if (vlen === 0) continue;
-        if (fields) {
-          fields += sep;
-        }
-        for (let j = 0; j < vlen; ++j) {
-          if (j) {
+        if (Array.isArray(v)) {
+          const vlen = v.length;
+          if (vlen === 0) continue;
+          if (fields) {
+            fields += sep;
+          }
+          for (let j = 0; j < vlen; ++j) {
+            if (j) {
+              fields += sep;
+            }
+            fields += ks;
+            fields += convert(v[j], encode);
+          }
+        } else {
+          if (fields) {
             fields += sep;
           }
           fields += ks;
-          fields += convert(v[j], encode);
+          fields += convert(v, encode);
         }
-      } else {
-        if (fields) {
-          fields += sep;
-        }
-        fields += ks;
-        fields += convert(v, encode);
       }
+      return fields;
     }
-    return fields;
+  } catch (_) {
+    throw new ERR_INVALID_URI();
   }
   return "";
 }
