@@ -647,6 +647,26 @@ Deno.test(`serve should handle requests`, async () => {
   }
 });
 
+Deno.test(`serve listens on the port 8000 by default`, async () => {
+  const url = "http://localhost:8000";
+  const body = "Hello from port 8000";
+
+  const handler = () => new Response(body);
+  const abortController = new AbortController();
+
+  const servePromise = serve(handler, {
+    signal: abortController.signal,
+  });
+
+  try {
+    const response = await fetch(url);
+    assertEquals(await response.text(), body);
+  } finally {
+    abortController.abort();
+    await servePromise;
+  }
+});
+
 Deno.test(`serve should handle websocket requests`, async () => {
   const addr = "localhost:4505";
   const url = `ws://${addr}`;
