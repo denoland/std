@@ -228,6 +228,17 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.execArgv",
+  fn() {
+    assert(Array.isArray(process.execArgv));
+    assert(process.execArgv.length == 0);
+    // execArgv supports array methods.
+    assert(Array.isArray(process.argv.slice(0)));
+    assertEquals(process.argv.indexOf("foo"), -1);
+  },
+});
+
+Deno.test({
   name: "process.env",
   fn() {
     Deno.env.set("HELLO", "WORLD");
