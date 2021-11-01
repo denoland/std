@@ -191,6 +191,8 @@ Deno.test("module has proper members", function () {
   assert(typeof module._preloadModules == "function");
   assert(typeof module._resolveFilename == "function");
   assert(typeof module._resolveLookupPaths == "function");
+  assert(module.builtinModules);
+  assert(typeof module.createRequire == "function");
   assert(module.globalPaths);
   assert(module.Module === Module);
   assert(typeof module.wrap == "function");
