@@ -82,10 +82,14 @@ Deno.test("deepMerge: prevent prototype merge", () => {
 Deno.test("deepMerge: prevent calling Object.prototype.__proto__ accessor property", () => {
   Object.defineProperty(Object.prototype, "__proto__", {
     get() {
-      throw new Error("Unexpected Object.prototype.__proto__ getter property call");
+      throw new Error(
+        "Unexpected Object.prototype.__proto__ getter property call",
+      );
     },
     set() {
-      throw new Error("Unexpected Object.prototype.__proto__ setter property call");
+      throw new Error(
+        "Unexpected Object.prototype.__proto__ setter property call",
+      );
     },
     configurable: true,
   });
