@@ -25,6 +25,7 @@ import sys from "./sys.ts";
 import timers from "./timers.ts";
 import timersPromises from "./timers/promises.ts";
 import tty from "./tty.ts";
+import vm from "./vm.ts";
 import url from "./url.ts";
 import util from "./util.ts";
 
@@ -36,7 +37,6 @@ import util from "./util.ts";
 // import repl from "./repl.ts";
 // import sys from "./sys.ts";
 // import tls from "./tls.ts";
-// import vm from "./vm.ts";
 // import workerThreads from "./worker_threads.ts";
 // import zlib from "./zlib.ts";
 
@@ -71,5 +71,6 @@ export default {
   tty,
   url,
   util,
+  vm,
   zlib: {},
 } as Record<string, unknown>;
