@@ -234,15 +234,25 @@ Deno.test({
 });
 
 Deno.test({
+  name: "os.cpus()",
+  fn() {
+    assertEquals(os.cpus().length, navigator.hardwareConcurrency);
+
+    for (const cpu of os.cpus()) {
+      assertEquals(cpu.model, "");
+      assertEquals(cpu.speed, 0);
+      assertEquals(cpu.times.user, 0);
+      assertEquals(cpu.times.nice, 0);
+      assertEquals(cpu.times.sys, 0);
+      assertEquals(cpu.times.idle, 0);
+      assertEquals(cpu.times.irq, 0);
+    }
+  },
+});
+
+Deno.test({
   name: "APIs not yet implemented",
   fn() {
-    assertThrows(
-      () => {
-        os.cpus();
-      },
-      Error,
-      "Not implemented",
-    );
     assertThrows(
       () => {
         os.getPriority();

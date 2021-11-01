@@ -23,8 +23,19 @@ const notImplementedEvents = [
   // "unhandledRejection",
 ];
 
+/** Returns the operating system CPU architecture for which the Deno binary was compiled */
+function _arch(): string {
+  if (Deno.build.arch == "x86_64") {
+    return "x64";
+  } else if (Deno.build.arch == "aarch64") {
+    return "arm64";
+  } else {
+    throw Error("unreachable");
+  }
+}
+
 /** https://nodejs.org/api/process.html#process_process_arch */
-export const arch = osArch();
+export const arch = _arch();
 
 // The first 2 items are placeholders.
 // They will be overwritten by the below Object.defineProperty calls.
@@ -349,6 +360,7 @@ class Process extends EventEmitter {
    */
   argv = argv;
 
+  /** https://nodejs.org/api/process.html#process_process_execargv */
   execArgv = [];
 
   /** https://nodejs.org/api/process.html#process_process_chdir_directory */
