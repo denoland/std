@@ -777,8 +777,12 @@ var require_buffer = __commonJS({
     };
     Buffer2.prototype.toLocaleString = Buffer2.prototype.toString;
     Buffer2.prototype.equals = function equals(b) {
-      if (!Buffer2.isBuffer(b)) {
-        throw new TypeError("Argument must be a Buffer");
+      if (!isUint8Array(b)) {
+        throw new ERR_INVALID_ARG_TYPE(
+          "otherBuffer",
+          ["Buffer", "Uint8Array"],
+          b,
+        );
       }
       if (this === b) {
         return true;
