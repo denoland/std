@@ -507,7 +507,7 @@ var require_buffer = __commonJS({
         return buf;
       }
       if (obj.length !== void 0) {
-        if (typeof obj.length !== "number" || numberIsNaN(obj.length)) {
+        if (typeof obj.length !== "number" || Number.isNaN(obj.length)) {
           return createBuffer(0);
         }
         return fromArrayLike(obj);
@@ -889,18 +889,25 @@ var require_buffer = __commonJS({
       if (buffer.length === 0) {
         return -1;
       }
+
       if (typeof byteOffset === "string") {
         encoding = byteOffset;
-        byteOffset = 0;
-      } else if (byteOffset > 2147483647) {
-        byteOffset = 2147483647;
-      } else if (byteOffset < -2147483648) {
-        byteOffset = -2147483648;
+        byteOffset = undefined;
+      } else if (byteOffset > 0x7fffffff) {
+        byteOffset = 0x7fffffff;
+      } else if (byteOffset < -0x80000000) {
+        byteOffset = -0x80000000;
       }
       byteOffset = +byteOffset;
-      if (numberIsNaN(byteOffset)) {
-        byteOffset = dir ? 0 : buffer.length - 1;
+      if (Number.isNaN(byteOffset)) {
+        byteOffset = dir ? 0 : (buffer.length || buffer.byteLength);
       }
+      dir = !!dir;
+
+      if (typeof val === "number") {
+        throw new Error("Not implemented");
+      }
+
       if (byteOffset < 0) {
         byteOffset = buffer.length + byteOffset;
       }
@@ -1038,7 +1045,7 @@ var require_buffer = __commonJS({
       let i;
       for (i = 0; i < length; ++i) {
         const parsed = parseInt(string.substr(i * 2, 2), 16);
-        if (numberIsNaN(parsed)) {
+        if (Number.isNaN(parsed)) {
           return i;
         }
         buf[offset + i] = parsed;
@@ -2313,9 +2320,6 @@ var require_buffer = __commonJS({
       return obj instanceof type ||
         obj != null && obj.constructor != null &&
           obj.constructor.name != null && obj.constructor.name === type.name;
-    }
-    function numberIsNaN(obj) {
-      return obj !== obj;
     }
     var hexSliceLookupTable = function () {
       const alphabet = "0123456789abcdef";
