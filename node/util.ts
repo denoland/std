@@ -33,6 +33,7 @@ export function inspect(object: unknown, ...opts: any): string {
   if (typeof object === "string" && !object.includes("'")) {
     return `'${object}'`;
   }
+
   opts = { ...DEFAULT_INSPECT_OPTIONS, ...opts };
   return Deno.inspect(object, {
     depth: opts.depth,
