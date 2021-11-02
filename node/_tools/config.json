@@ -14,6 +14,7 @@
     "parallel": [
       "test-assert-async.js",
       "test-assert.js",
+      "test-buffer-arraybuffer.js",
       "test-dns-lookup.js",
       "test-dns.js",
       "test-event-emitter-errors.js",
@@ -67,6 +68,7 @@
       "test-assert-async.js",
       "test-assert-fail.js",
       "test-assert.js",
+      "test-buffer-arraybuffer.js",
       "test-dns-lookup.js",
       "test-dns.js",
       "test-event-emitter-add-listeners.js",

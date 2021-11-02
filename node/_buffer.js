@@ -1,3 +1,7 @@
+import { ERR_BUFFER_OUT_OF_BOUNDS, ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+
+// TODO(Soremwar)
+// Find correct crediting and license
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -312,7 +316,7 @@ var require_buffer = __commonJS({
         return fromArrayView(value);
       }
       if (value == null) {
-        throw new TypeError(
+        throw new ERR_INVALID_ARG_TYPE(
           "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " +
             typeof value,
         );
@@ -331,7 +335,7 @@ var require_buffer = __commonJS({
         return fromArrayBuffer(value, encodingOrOffset, length);
       }
       if (typeof value === "number") {
-        throw new TypeError(
+        throw new ERR_INVALID_ARG_TYPE(
           'The "value" argument must not be of type number. Received type number',
         );
       }
@@ -353,7 +357,7 @@ var require_buffer = __commonJS({
           length,
         );
       }
-      throw new TypeError(
+      throw new ERR_INVALID_ARG_TYPE(
         "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " +
           typeof value,
       );
@@ -429,10 +433,14 @@ var require_buffer = __commonJS({
     }
     function fromArrayBuffer(array, byteOffset, length) {
       if (byteOffset < 0 || array.byteLength < byteOffset) {
-        throw new RangeError('"offset" is outside of buffer bounds');
+        throw new ERR_BUFFER_OUT_OF_BOUNDS(
+          "offset",
+        );
       }
       if (array.byteLength < byteOffset + (length || 0)) {
-        throw new RangeError('"length" is outside of buffer bounds');
+        throw new ERR_BUFFER_OUT_OF_BOUNDS(
+          "length",
+        );
       }
       let buf;
       if (byteOffset === void 0 && length === void 0) {
@@ -2004,12 +2012,6 @@ var require_buffer = __commonJS({
         }
       };
     }
-    E("ERR_BUFFER_OUT_OF_BOUNDS", function (name) {
-      if (name) {
-        return `${name} is outside of buffer bounds`;
-      }
-      return "Attempt to access memory outside buffer bounds";
-    }, RangeError);
     E("ERR_INVALID_ARG_TYPE", function (name, actual) {
       return `The "${name}" argument must be of type number. Received type ${typeof actual}`;
     }, TypeError);
@@ -2079,7 +2081,7 @@ var require_buffer = __commonJS({
         );
       }
       if (length < 0) {
-        throw new errors.ERR_BUFFER_OUT_OF_BOUNDS();
+        throw new ERR_BUFFER_OUT_OF_BOUNDS();
       }
       throw new errors.ERR_OUT_OF_RANGE(
         type || "offset",
