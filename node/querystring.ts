@@ -251,9 +251,37 @@ interface StringifyOptions {
   encodeURIComponent: (string: string) => string;
 }
 
-export function encodeStr(
+/**
+ * These characters do not need escaping when generating query strings:
+ * ! - . _ ~
+ * ' ( ) *
+ * digits
+ * alpha (uppercase)
+ * alpha (lowercase)
+ */
+// deno-fmt-ignore
+const noEscape = new Int8Array([
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0 - 15
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 16 - 31
+  0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, // 32 - 47
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, // 48 - 63
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 64 - 79
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, // 80 - 95
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 96 - 111
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0,  // 112 - 127
+]);
+
+/**
+ * replaces encodeURIComponent()
+ * @see https://www.ecma-international.org/ecma-262/5.1/#sec-15.1.3.4
+ */
+function qsEscape(str: string): string {
+  return encodeStr(str, noEscape, hexTable);
+}
+
+function encodeStr(
   str: string,
-  noEscapeTable: number[],
+  noEscapeTable: Int8Array,
   hexTable: string[],
 ): string {
   const len = str.length;
@@ -293,7 +321,7 @@ export function encodeStr(
     // This branch should never happen because all URLSearchParams entries
     // should already be converted to USVString. But, included for
     // completion's sake anyway.
-    if (i >= len) throw new Deno.errors.InvalidData("invalid URI");
+    if (i >= len) throw new ERR_INVALID_URI();
 
     const c2 = str.charCodeAt(i) & 0x3ff;
 
@@ -369,45 +397,41 @@ export function stringify(
 ): string {
   sep ||= "&";
   eq ||= "=";
-  const encode = options ? options.encodeURIComponent : escape;
+  const encode = options ? options.encodeURIComponent : qsEscape;
   const convert = options ? encodeStringifiedCustom : encodeStringified;
 
-  try {
-    if (obj !== null && typeof obj === "object") {
-      const keys = Object.keys(obj);
-      const len = keys.length;
-      let fields = "";
-      for (let i = 0; i < len; ++i) {
-        const k = keys[i];
-        const v = obj[k];
-        let ks = convert(k, encode);
-        ks += eq;
+  if (obj !== null && typeof obj === "object") {
+    const keys = Object.keys(obj);
+    const len = keys.length;
+    let fields = "";
+    for (let i = 0; i < len; ++i) {
+      const k = keys[i];
+      const v = obj[k];
+      let ks = convert(k, encode);
+      ks += eq;
 
-        if (Array.isArray(v)) {
-          const vlen = v.length;
-          if (vlen === 0) continue;
-          if (fields) {
-            fields += sep;
-          }
-          for (let j = 0; j < vlen; ++j) {
-            if (j) {
-              fields += sep;
-            }
-            fields += ks;
-            fields += convert(v[j], encode);
-          }
-        } else {
-          if (fields) {
+      if (Array.isArray(v)) {
+        const vlen = v.length;
+        if (vlen === 0) continue;
+        if (fields) {
+          fields += sep;
+        }
+        for (let j = 0; j < vlen; ++j) {
+          if (j) {
             fields += sep;
           }
           fields += ks;
-          fields += convert(v, encode);
+          fields += convert(v[j], encode);
         }
+      } else {
+        if (fields) {
+          fields += sep;
+        }
+        fields += ks;
+        fields += convert(v, encode);
       }
-      return fields;
     }
-  } catch (_) {
-    throw new ERR_INVALID_URI();
+    return fields;
   }
   return "";
 }
@@ -421,7 +445,6 @@ export const escape = encodeURIComponent;
 
 export default {
   parse,
-  encodeStr,
   stringify,
   hexTable,
   decode,
