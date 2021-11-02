@@ -1,4 +1,5 @@
 import { ERR_BUFFER_OUT_OF_BOUNDS, ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { notImplemented } from "./_utils.ts";
 
 // TODO(Soremwar)
 // Find correct crediting and license
@@ -585,9 +586,10 @@ var require_buffer = __commonJS({
         return string.byteLength;
       }
       if (typeof string !== "string") {
-        throw new TypeError(
-          'The "string" argument must be one of type string, Buffer, or ArrayBuffer. Received type ' +
-            typeof string,
+        throw new ERR_INVALID_ARG_TYPE(
+          "string",
+          ["string", "Buffer", "ArrayBuffer"],
+          string,
         );
       }
       const len = string.length;
@@ -614,6 +616,8 @@ var require_buffer = __commonJS({
             return len >>> 1;
           case "base64":
             return base64ToBytes(string).length;
+          case "base64url":
+            notImplemented();
           default:
             if (loweredCase) {
               return mustMatch ? -1 : utf8ToBytes(string).length;
