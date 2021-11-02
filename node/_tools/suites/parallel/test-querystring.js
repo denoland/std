@@ -298,16 +298,15 @@ assert.strictEqual(qs.stringify([0n, 1n, 2n],
                                 { encodeURIComponent: (c) => c }),
                    '0=0&1=1&2=2');
 
-// TODO(wafuwafu13): Enable this
-// // Invalid surrogate pair throws URIError
-// assert.throws(
-//   () => qs.stringify({ foo: '\udc00' }),
-//   {
-//     code: 'ERR_INVALID_URI',
-//     name: 'URIError',
-//     message: 'URI malformed'
-//   }
-// );
+// Invalid surrogate pair throws URIError
+assert.throws(
+  () => qs.stringify({ foo: '\udc00' }),
+  {
+    code: 'ERR_INVALID_URI',
+    name: 'URIError',
+    message: 'URI malformed'
+  }
+);
 
 // Coerce numbers to string
 assert.strictEqual(qs.stringify({ foo: 0 }), 'foo=0');
