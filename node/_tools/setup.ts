@@ -24,16 +24,15 @@ import { downloadFile } from "../../_util/download_file.ts";
  * Usage: `deno run --allow-read --allow-net --allow-write setup.ts`
  *
  * You can aditionally pass a flag to indicate if cache should be used for generating
- * the tests, or to generate the tests from scratch (-Y/-N)
+ * the tests, or to generate the tests from scratch (-y/-n)
  */
 
-const args = Deno.args.map((arg) => arg.toUpperCase());
-const USE_CACHE = args.includes("-Y");
-const DONT_USE_CACHE = args.includes("-N");
+const USE_CACHE = Deno.args.includes("-y");
+const DONT_USE_CACHE = Deno.args.includes("-n");
 
 if (USE_CACHE && DONT_USE_CACHE) {
   throw new Error(
-    '"-Y" and "-N" options for cache can\'t be used at the same time',
+    '"-y" and "-n" options for cache can\'t be used at the same time',
   );
 }
 

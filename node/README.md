@@ -118,9 +118,9 @@ tests from scratch instead of being prompted at the moment of running it.
 
 ```zsh
 # Will use downloaded tests instead of prompting user
-$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts -y
 # Will not prompt but will download and extract the tests directly
-$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts -n
 ```
 
 To run the tests you have set up, do the following:
