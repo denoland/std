@@ -593,18 +593,29 @@ export async function serveListener(
   return await server.serve(listener);
 }
 
-/** Serve HTTP requests with the given handler
+/** Serve HTTP requests with the given handler.
+ *
+ * You can specifies `addr` option, which is the address to listen on,
+ * in the form "host:port". The default is "0.0.0.0:8000".
+ *
+ * The below example serves with the port 8000.
  *
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * serve((_req) => new Response("Hello, world"));
  * ```
  *
+ * You can change the listening address by `addr` option. The below example
+ * serves with the port 3000.
+ *
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * console.log("server is starting at localhost:3000");
  * serve((_req) => new Response("Hello, world"), { addr: ":3000" });
  * ```
+ *
+ * If `tls` option is specified, then the server serves with TLS connections with the
+ * given certificates.
  *
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
@@ -615,6 +626,9 @@ export async function serveListener(
  *   tls: { certFile, keyFile },
  * });
  * ```
+ *
+ * @param handler The handler for individual HTTP requests.
+ * @param options Optional serve options. See `ServeInit` documentation for details.
  */
 export async function serve(
   handler: Handler,
