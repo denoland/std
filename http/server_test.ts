@@ -5,6 +5,7 @@ import {
   serve,
   serveListener,
   Server,
+  serveTls,
 } from "./server.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
@@ -352,19 +353,17 @@ Deno.test("serve should not throw if abort when the server is already closed", a
   }
 });
 
-Deno.test("serve (with tls options) should not throw if abort when the server is already closed", async () => {
+Deno.test("serveTls should not throw if abort when the server is already closed", async () => {
   const addr = "localhost:4505";
   const certFile = join(testdataDir, "tls/localhost.crt");
   const keyFile = join(testdataDir, "tls/localhost.key");
   const handler = () => new Response();
   const abortController = new AbortController();
 
-  const servePromise = serve(handler, {
+  const servePromise = serveTls(handler, {
     addr,
-    tls: {
-      certFile,
-      keyFile,
-    },
+    certFile,
+    keyFile,
     signal: abortController.signal,
   });
 
@@ -712,12 +711,10 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
   const handler = () => new Response(body, { status });
   const abortController = new AbortController();
 
-  const servePromise = serve(handler, {
+  const servePromise = serveTls(handler, {
     addr,
-    tls: {
-      certFile,
-      keyFile,
-    },
+    certFile,
+    keyFile,
     signal: abortController.signal,
   });
 

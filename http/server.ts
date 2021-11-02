@@ -526,14 +526,6 @@ export class Server {
   }
 }
 
-export interface TlsSettings {
-  /** The path to the file containing the TLS private key. */
-  keyFile: string;
-
-  /** The path to the file containing the TLS certificate */
-  certFile: string;
-}
-
 /** Additional serve options. */
 export interface ServeInit {
   /**
@@ -550,9 +542,6 @@ export interface ServeInit {
 
   /** An AbortSignal to close the server and all connections. */
   signal?: AbortSignal;
-
-  /** Optional TLS settings. If specified the method serves with TLS connection */
-  tls?: TlsSettings;
 }
 
 /**
@@ -582,7 +571,7 @@ export interface ServeInit {
 export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
-  options?: Omit<ServeInit, "addr" | "tls">,
+  options?: Omit<ServeInit, "addr">,
 ): Promise<void> {
   const server = new Server({ handler });
 
@@ -593,7 +582,7 @@ export async function serveListener(
   return await server.serve(listener);
 }
 
-/** Serve HTTP requests with the given handler.
+/** Serves HTTP requests with the given handler.
  *
  * You can specifies `addr` option, which is the address to listen on,
  * in the form "host:port". The default is "0.0.0.0:8000".
@@ -614,21 +603,8 @@ export async function serveListener(
  * serve((_req) => new Response("Hello, world"), { addr: ":3000" });
  * ```
  *
- * If `tls` option is specified, then the server serves with TLS connections with the
- * given certificates.
- *
- * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- * const certFile = "/path/to/certFile.crt";
- * const keyFile = "/path/to/keyFile.key";
- * console.log("server is starting at https://localhost:8000");
- * serve((_req) => new Response("Hello, world"), {
- *   tls: { certFile, keyFile },
- * });
- * ```
- *
  * @param handler The handler for individual HTTP requests.
- * @param options Optional serve options. See `ServeInit` documentation for details.
+ * @param options The options. See `ServeInit` documentation for details.
  */
 export async function serve(
   handler: Handler,
@@ -641,21 +617,60 @@ export async function serve(
     options.signal.onabort = () => server.close();
   }
 
-  if (!options.tls) {
-    return await server.listenAndServe();
-  }
+  return await server.listenAndServe();
+}
 
-  if (!options.tls.keyFile) {
+interface ServeTlsInit extends ServeInit {
+  /** The path to the file containing the TLS private key. */
+  keyFile: string;
+
+  /** The path to the file containing the TLS certificate */
+  certFile: string;
+}
+
+/** Serves HTTPS requests with the given handler.
+ *
+ * You must specify `keyFile` and `certFile` options.
+ *
+ * You can specifies `addr` option, which is the address to listen on,
+ * in the form "host:port". The default is "0.0.0.0:8443".
+ *
+ * The below example serves with the default port 8443.
+ *
+ * ```ts
+ * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * const certFile = "/path/to/certFile.crt";
+ * const keyFile = "/path/to/keyFile.key";
+ * console.log("server is starting at https://localhost:8443");
+ * serveTls((_req) => new Response("Hello, world"), { certFile, keyFile });
+ * ```
+ *
+ * @param handler The handler for individual HTTPS requests.
+ * @param options The options. See `ServeTlsInit` documentation for details.
+ * @returns
+ */
+export async function serveTls(
+  handler: Handler,
+  options: ServeTlsInit,
+): Promise<void> {
+  if (!options.keyFile) {
     throw new Error("TLS config is given, but 'keyFile' is missing.");
   }
 
-  if (!options.tls.certFile) {
+  if (!options.certFile) {
     throw new Error("TLS config is given, but 'certFile' is missing.");
   }
 
+  const addr = options.addr ?? ":8443";
+  const server = new Server({ addr, handler });
+
+  if (options?.signal) {
+    options.signal.onabort = () => server.close();
+  }
+
   return await server.listenAndServeTls(
-    options.tls.certFile,
-    options.tls.keyFile,
+    options.certFile,
+    options.keyFile,
   );
 }
 
