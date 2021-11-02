@@ -565,7 +565,7 @@ var require_buffer = __commonJS({
     };
     Buffer2.concat = function concat(list, length) {
       if (!Array.isArray(list)) {
-        throw new TypeError('"list" argument must be an Array of Buffers');
+        throw new ERR_INVALID_ARG_TYPE("list", "Array", list);
       }
       if (list.length === 0) {
         return Buffer2.alloc(0);
@@ -591,7 +591,11 @@ var require_buffer = __commonJS({
             Uint8Array.prototype.set.call(buffer, buf, pos);
           }
         } else if (!Buffer2.isBuffer(buf)) {
-          throw new TypeError('"list" argument must be an Array of Buffers');
+          throw new ERR_INVALID_ARG_TYPE(
+            `list[${i}]`,
+            ["Buffer", "Uint8Array"],
+            buf,
+          );
         } else {
           buf.copy(buffer, pos);
         }
