@@ -74,6 +74,7 @@
       "test-buffer-badhex.js",
       "test-buffer-bigint64.js",
       "test-buffer-bytelength.js",
+      "test-buffer-compare-offset.js",
       "test-dns-lookup.js",
       "test-dns.js",
       "test-event-emitter-add-listeners.js",

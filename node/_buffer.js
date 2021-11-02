@@ -1,5 +1,26 @@
-import { ERR_BUFFER_OUT_OF_BOUNDS, ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import {
+  ERR_BUFFER_OUT_OF_BOUNDS,
+  ERR_INVALID_ARG_TYPE,
+  ERR_OUT_OF_RANGE,
+} from "./_errors.ts";
 import { notImplemented } from "./_utils.ts";
+
+const validateOffset = (
+  value,
+  name,
+  min = 0,
+  max = Number.MAX_SAFE_INTEGER,
+) => {
+  if (typeof value !== "number") {
+    throw new ERR_INVALID_ARG_TYPE(name, "number", value);
+  }
+  if (!Number.isInteger(value)) {
+    throw new ERR_OUT_OF_RANGE(name, "an integer", value);
+  }
+  if (value < min || value > max) {
+    throw new ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
+  }
+};
 
 // TODO(Soremwar)
 // Find correct crediting and license
@@ -761,29 +782,44 @@ var require_buffer = __commonJS({
         target = Buffer2.from(target, target.offset, target.byteLength);
       }
       if (!Buffer2.isBuffer(target)) {
-        throw new TypeError(
-          'The "target" argument must be one of type Buffer or Uint8Array. Received type ' +
-            typeof target,
+        throw new ERR_INVALID_ARG_TYPE(
+          "target",
+          ["Buffer", "Uint8Array"],
+          target,
         );
       }
-      if (start === void 0) {
+
+      if (start === undefined) {
         start = 0;
+      } else {
+        validateOffset(start, "targetStart", 0, K_MAX_LENGTH);
       }
-      if (end === void 0) {
-        end = target ? target.length : 0;
+
+      if (end === undefined) {
+        end = target.length;
+      } else {
+        validateOffset(end, "targetEnd", 0, target.length);
       }
-      if (thisStart === void 0) {
+
+      if (thisStart === undefined) {
         thisStart = 0;
+      } else {
+        validateOffset(start, "sourceStart", 0, K_MAX_LENGTH);
       }
-      if (thisEnd === void 0) {
+
+      if (thisEnd === undefined) {
         thisEnd = this.length;
+      } else {
+        validateOffset(end, "sourceEnd", 0, this.length);
       }
+
       if (
         start < 0 || end > target.length || thisStart < 0 ||
         thisEnd > this.length
       ) {
-        throw new RangeError("out of range index");
+        throw new ERR_OUT_OF_RANGE("out of range index");
       }
+
       if (thisStart >= thisEnd && start >= end) {
         return 0;
       }
