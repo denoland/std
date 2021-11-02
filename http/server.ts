@@ -754,8 +754,7 @@ export async function listenAndServe(
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
  *
- * @deprecated Use `serve` instead. `serve` supports `tls` options, which starts the server with
- * TLS connections.
+ * @deprecated Use `serveTls` instead.
  */
 export async function listenAndServeTls(
   addr: string,
