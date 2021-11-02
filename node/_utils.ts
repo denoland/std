@@ -23,6 +23,11 @@ export function notImplemented(msg?: string): never {
   throw new Error(message);
 }
 
+export function warnNotImplemented(msg?: string): void {
+  const message = msg ? `Not implemented: ${msg}` : "Not implemented";
+  console.warn(message);
+}
+
 export type _TextDecoder = typeof TextDecoder.prototype;
 export const _TextDecoder = TextDecoder;
 

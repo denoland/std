@@ -119,13 +119,6 @@ Deno.test({
   name: "process.on",
   async fn() {
     assertEquals(typeof process.on, "function");
-    assertThrows(
-      () => {
-        process.on("uncaughtException", (_err: Error) => {});
-      },
-      Error,
-      "implemented",
-    );
 
     let triggered = false;
     process.on("exit", () => {
@@ -369,4 +362,24 @@ Deno.test({
   },
   sanitizeResources: false,
   sanitizeOps: false,
+});
+
+Deno.test("process.on, process.off, process.removeListener doesn't throw on unimplemented events", () => {
+  const events = [
+    "beforeExit",
+    "disconnect",
+    "message",
+    "multipleResolves",
+    "rejectionHandled",
+    "uncaughtException",
+    "uncaughtExceptionMonitor",
+    "unhandledRejection",
+  ];
+  const handler = () => {};
+  events.forEach((ev) => {
+    process.on(ev, handler);
+    process.off(ev, handler);
+    process.on(ev, handler);
+    process.removeListener(ev, handler);
+  });
 });
