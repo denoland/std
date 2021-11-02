@@ -113,7 +113,7 @@ workflow.
 $ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
 ```
 
-You can aditionally pass the `-Y`/`-N` flag to use test cache or generating
+You can aditionally pass the `-y`/`-n` flag to use test cache or generating
 tests from scratch instead of being prompted at the moment of running it.
 
 ```zsh
