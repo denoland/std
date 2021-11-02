@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
-import { notImplemented } from "./_utils.ts";
+import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
@@ -385,14 +385,12 @@ class Process extends EventEmitter {
   //deno-lint-ignore ban-types
   on(event: "exit", listener: (code: number) => void): this;
   on(event: string, listener: (...args: any[]) => void): this;
-  on(event: typeof notImplementedEvents[number], listener: Function): never;
+  on(event: typeof notImplementedEvents[number], listener: Function): this;
   //deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented(`process.on("${event}")`);
-    }
-
-    if (event.startsWith("SIG")) {
+      warnNotImplemented(`process.on("${event}")`);
+    } else if (event.startsWith("SIG")) {
       Deno.addSignalListener(event as Deno.Signal, listener);
     } else {
       super.on(event, listener);
@@ -404,14 +402,12 @@ class Process extends EventEmitter {
   //deno-lint-ignore ban-types
   off(event: "exit", listener: (code: number) => void): this;
   off(event: string, listener: (...args: any[]) => void): this;
-  off(event: typeof notImplementedEvents[number], listener: Function): never;
+  off(event: typeof notImplementedEvents[number], listener: Function): this;
   //deno-lint-ignore no-explicit-any
   off(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented(`process.off("${event}")`);
-    }
-
-    if (event.startsWith("SIG")) {
+      warnNotImplemented(`process.off("${event}")`);
+    } else if (event.startsWith("SIG")) {
       Deno.removeSignalListener(event as Deno.Signal, listener);
     } else {
       super.off(event, listener);
@@ -426,20 +422,21 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_platform */
   platform = platform;
 
-  removeAllListeners(event: string): never {
-    notImplemented(`process.removeAllListeners("${event}")`);
+  removeAllListeners(eventName?: string | symbol): this {
+    return super.removeAllListeners(eventName);
   }
 
   removeListener(
     event: typeof notImplementedEvents[number],
     //deno-lint-ignore ban-types
     listener: Function,
-  ): never;
+  ): this;
   removeListener(event: "exit", listener: (code: number) => void): this;
   //deno-lint-ignore no-explicit-any
   removeListener(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented(`process.removeListener("${event}")`);
+      warnNotImplemented(`process.removeListener("${event}")`);
+      return this;
     }
 
     super.removeListener("exit", listener);
