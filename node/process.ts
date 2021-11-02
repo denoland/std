@@ -470,6 +470,10 @@ class Process extends EventEmitter {
     const [prevSec, prevNano] = time;
     return [sec - prevSec, nano - prevNano];
   }
+  
+  memoryUsage() {
+    return Deno.memoryUsage();
+  }
 
   /** https://nodejs.org/api/process.html#process_process_stderr */
   stderr = stderr;
