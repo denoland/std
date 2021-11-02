@@ -6,7 +6,6 @@ import { fromFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { Readable, Writable } from "./stream.ts";
 import { Buffer } from "./buffer.ts";
-import { arch as osArch } from "./os.ts";
 import { validateString } from "./_validators.ts";
 import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 import { getOptionValue } from "./_options.ts";
@@ -18,9 +17,9 @@ const notImplementedEvents = [
   "message",
   "multipleResolves",
   "rejectionHandled",
-  // "uncaughtException",
+  "uncaughtException",
   "uncaughtExceptionMonitor",
-  // "unhandledRejection",
+  "unhandledRejection",
 ];
 
 /** Returns the operating system CPU architecture for which the Deno binary was compiled */
