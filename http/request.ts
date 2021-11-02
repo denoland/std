@@ -1,12 +1,15 @@
 import { ConnInfo } from "./server.ts";
 import { Expand } from "../_util/types.ts";
 
+export type EmptyContext = Record<never, never>;
+
 /**
  * An incoming request. Follows the Request web standard, adding connection
  * information, a mutable request context and some helpers for common use cases.
  *
  * @typeParam C - Type of the current request `context` */
-export class HttpRequest<C extends {} = {}> implements Request {
+export class HttpRequest<C extends EmptyContext = EmptyContext>
+  implements Request {
   #context: C;
   #parsedUrl?: URL = undefined;
 
@@ -46,7 +49,9 @@ export class HttpRequest<C extends {} = {}> implements Request {
    * assertEquals(reqWithUser.context.user, "Example")
    * ```
    */
-  addContext<N extends {}>(contextToAdd: N): HttpRequest<Expand<C & N>> {
+  addContext<N extends EmptyContext>(
+    contextToAdd: N,
+  ): HttpRequest<Expand<C & N>> {
     this.#context = { ...this.#context, ...contextToAdd };
 
     //@ts-ignore Limitations of mutation and types, but we should mutate for performance

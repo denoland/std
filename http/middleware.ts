@@ -1,6 +1,7 @@
 // deno-lint-ignore-file ban-types
 
 import { HttpRequest } from "./request.ts";
+import type { EmptyContext } from "./request.ts";
 import type { Expand, SafeOmit } from "../_util/types.ts";
 
 /**
@@ -11,10 +12,10 @@ import type { Expand, SafeOmit } from "../_util/types.ts";
 * available to the `next` middleware.
 *
 * @typeParam Needs - Request context required by this Middleware, defaults to
-* empty context `{}`
+* `EmptyContext` which is the empty object
 *
 * @typeParam Adds - Request context this Middleware will add and thus make
-* available to the `next` Middleware, defaults to empty context `{}`
+* available to the `next` Middleware, defaults to `EmptyContext` which is the empty object
 *
 * Example:
 *
@@ -35,8 +36,8 @@ import type { Expand, SafeOmit } from "../_util/types.ts";
 * ```
 */
 export type Middleware<
-  Needs extends {} = {},
-  Adds = {},
+  Needs extends EmptyContext = EmptyContext,
+  Adds = EmptyContext,
 > = (
   req: HttpRequest<Needs>,
   next?: Middleware<Expand<Needs & Adds>>,
@@ -46,8 +47,8 @@ export type Middleware<
  * A `Middleware` that can be chained onto with `.add()`. Use `chain()` to wrap
  * a `Middleware` as a `MiddlewareChain`. */
 export type MiddlewareChain<
-  Needs extends {},
-  Adds = {},
+  Needs extends EmptyContext,
+  Adds = EmptyContext,
 > = {
   (
     ...args: Parameters<Middleware<Needs, Adds>>
@@ -92,7 +93,7 @@ export type MiddlewareChain<
  * Example:
  *
  * ```ts
- * const findUser: Middleware<{}, { user: string }> = (req, next) => {
+ * const findUser: Middleware<EmptyContext, { user: string }> = (req, next) => {
  *   return await next!(
  *     req.addContext({ user: "Kim" });
  *   );
@@ -104,10 +105,10 @@ export type MiddlewareChain<
  * const handler = composeMiddleware(findUser, hello)
  * ``` */
 export function composeMiddleware<
-  FirstNeeds extends {},
-  FirstAdd extends {},
-  SecondNeeds extends {},
-  SecondAdd extends {},
+  FirstNeeds extends EmptyContext,
+  FirstAdd extends EmptyContext,
+  SecondNeeds extends EmptyContext,
+  SecondAdd extends EmptyContext,
 >(
   first: Middleware<FirstNeeds, FirstAdd>,
   second: Middleware<SecondNeeds, SecondAdd>,
@@ -128,7 +129,7 @@ export function composeMiddleware<
 }
 
 /** Wraps the given middleware in a `MiddlewareChain` so it can be `.add()`ed onto */
-export function chain<Needs extends {}, Adds = {}>(
+export function chain<Needs extends EmptyContext, Adds = EmptyContext>(
   middleware: Middleware<Needs, Adds>,
 ): MiddlewareChain<Needs, Adds> {
   const copy = middleware.bind({}) as MiddlewareChain<Needs, Adds>;
