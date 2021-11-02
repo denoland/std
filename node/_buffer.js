@@ -356,54 +356,53 @@ var require_buffer = __commonJS({
       if (typeof value === "string") {
         return fromString(value, encodingOrOffset);
       }
-      if (ArrayBuffer.isView(value)) {
-        return fromArrayView(value);
+
+      if (typeof value === "object" && value !== null) {
+        if (ArrayBuffer.isView(value)) {
+          return fromArrayView(value);
+        }
+
+        if (
+          isInstance(value, ArrayBuffer) ||
+          value && isInstance(value.buffer, ArrayBuffer)
+        ) {
+          return fromArrayBuffer(value, encodingOrOffset, length);
+        }
+
+        if (
+          typeof SharedArrayBuffer !== "undefined" &&
+          (isInstance(value, SharedArrayBuffer) ||
+            value && isInstance(value.buffer, SharedArrayBuffer))
+        ) {
+          return fromArrayBuffer(value, encodingOrOffset, length);
+        }
+
+        const valueOf = value.valueOf && value.valueOf();
+        if (
+          valueOf != null &&
+          valueOf !== value &&
+          (typeof valueOf === "string" || typeof valueOf === "object")
+        ) {
+          return Buffer2.from(valueOf, encodingOrOffset, length);
+        }
+
+        const b = fromObject(value);
+        if (b) {
+          return b;
+        }
+
+        if (typeof value[Symbol.toPrimitive] === "function") {
+          const primitive = value[Symbol.toPrimitive]("string");
+          if (typeof primitive === "string") {
+            return fromString(primitive, encodingOrOffset);
+          }
+        }
       }
-      if (value == null) {
-        throw new ERR_INVALID_ARG_TYPE(
-          "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " +
-            typeof value,
-        );
-      }
-      if (
-        isInstance(value, ArrayBuffer) ||
-        value && isInstance(value.buffer, ArrayBuffer)
-      ) {
-        return fromArrayBuffer(value, encodingOrOffset, length);
-      }
-      if (
-        typeof SharedArrayBuffer !== "undefined" &&
-        (isInstance(value, SharedArrayBuffer) ||
-          value && isInstance(value.buffer, SharedArrayBuffer))
-      ) {
-        return fromArrayBuffer(value, encodingOrOffset, length);
-      }
-      if (typeof value === "number") {
-        throw new ERR_INVALID_ARG_TYPE(
-          'The "value" argument must not be of type number. Received type number',
-        );
-      }
-      const valueOf = value.valueOf && value.valueOf();
-      if (valueOf != null && valueOf !== value) {
-        return Buffer2.from(valueOf, encodingOrOffset, length);
-      }
-      const b = fromObject(value);
-      if (b) {
-        return b;
-      }
-      if (
-        typeof Symbol !== "undefined" && Symbol.toPrimitive != null &&
-        typeof value[Symbol.toPrimitive] === "function"
-      ) {
-        return Buffer2.from(
-          value[Symbol.toPrimitive]("string"),
-          encodingOrOffset,
-          length,
-        );
-      }
+
       throw new ERR_INVALID_ARG_TYPE(
-        "The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type " +
-          typeof value,
+        "first argument",
+        ["string", "Buffer", "ArrayBuffer", "Array", "Array-like Object"],
+        value,
       );
     }
     Buffer2.from = function (value, encodingOrOffset, length) {
