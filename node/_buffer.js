@@ -5,6 +5,22 @@ import {
 } from "./_errors.ts";
 import { notImplemented } from "./_utils.ts";
 
+function isUint8Array(element) {
+  return element instanceof Uint8Array;
+}
+
+function toInteger(n, defaultVal) {
+  n = +n;
+  if (
+    !Number.isNaN(n) &&
+    n >= Number.MIN_SAFE_INTEGER &&
+    n <= Number.MAX_SAFE_INTEGER
+  ) {
+    return ((n % 1) === 0 ? n : Math.floor(n));
+  }
+  return defaultVal;
+}
+
 const validateOffset = (
   value,
   name,
@@ -1921,55 +1937,86 @@ var require_buffer = __commonJS({
     ) {
       return writeDouble(this, value, offset, false, noAssert);
     };
-    Buffer2.prototype.copy = function copy(target, targetStart, start, end) {
-      if (!Buffer2.isBuffer(target)) {
-        throw new TypeError("argument should be a Buffer");
+    Buffer2.prototype.copy = function copy(
+      target,
+      targetStart,
+      sourceStart,
+      sourceEnd,
+    ) {
+      if (!isUint8Array(this)) {
+        throw new ERR_INVALID_ARG_TYPE(
+          "source",
+          ["Buffer", "Uint8Array"],
+          this,
+        );
       }
-      if (!start) {
-        start = 0;
+
+      if (!isUint8Array(target)) {
+        throw new ERR_INVALID_ARG_TYPE(
+          "target",
+          ["Buffer", "Uint8Array"],
+          target,
+        );
       }
-      if (!end && end !== 0) {
-        end = this.length;
-      }
-      if (targetStart >= target.length) {
-        targetStart = target.length;
-      }
-      if (!targetStart) {
+
+      if (targetStart === undefined) {
         targetStart = 0;
+      } else {
+        targetStart = toInteger(targetStart, 0);
+        if (targetStart < 0) {
+          throw new ERR_OUT_OF_RANGE("targetStart", ">= 0", targetStart);
+        }
       }
-      if (end > 0 && end < start) {
-        end = start;
+
+      if (sourceStart === undefined) {
+        sourceStart = 0;
+      } else {
+        sourceStart = toInteger(sourceStart, 0);
+        if (sourceStart < 0) {
+          throw new ERR_OUT_OF_RANGE("sourceStart", ">= 0", sourceStart);
+        }
       }
-      if (end === start) {
+
+      if (sourceEnd === undefined) {
+        sourceEnd = this.length;
+      } else {
+        sourceEnd = toInteger(sourceEnd, 0);
+        if (sourceEnd < 0) {
+          throw new ERR_OUT_OF_RANGE("sourceEnd", ">= 0", sourceEnd);
+        }
+      }
+
+      if (targetStart >= target.length) {
+        return 0;
+      }
+
+      if (sourceEnd > 0 && sourceEnd < sourceStart) {
+        sourceEnd = sourceStart;
+      }
+      if (sourceEnd === sourceStart) {
         return 0;
       }
       if (target.length === 0 || this.length === 0) {
         return 0;
       }
-      if (targetStart < 0) {
-        throw new RangeError("targetStart out of bounds");
+
+      if (sourceEnd > this.length) {
+        sourceEnd = this.length;
       }
-      if (start < 0 || start >= this.length) {
-        throw new RangeError("Index out of range");
+
+      if (target.length - targetStart < sourceEnd - sourceStart) {
+        sourceEnd = target.length - targetStart + sourceStart;
       }
-      if (end < 0) {
-        throw new RangeError("sourceEnd out of bounds");
-      }
-      if (end > this.length) {
-        end = this.length;
-      }
-      if (target.length - targetStart < end - start) {
-        end = target.length - targetStart + start;
-      }
-      const len = end - start;
+
+      const len = sourceEnd - sourceStart;
       if (
         this === target && typeof Uint8Array.prototype.copyWithin === "function"
       ) {
-        this.copyWithin(targetStart, start, end);
+        this.copyWithin(targetStart, sourceStart, sourceEnd);
       } else {
         Uint8Array.prototype.set.call(
           target,
-          this.subarray(start, end),
+          this.subarray(sourceStart, sourceEnd),
           targetStart,
         );
       }

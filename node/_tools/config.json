@@ -77,6 +77,7 @@
       "test-buffer-compare-offset.js",
       "test-buffer-concat.js",
       "test-buffer-constants.js",
+      "test-buffer-copy.js",
       "test-dns-lookup.js",
       "test-dns.js",
       "test-event-emitter-add-listeners.js",
