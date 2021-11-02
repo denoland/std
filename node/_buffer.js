@@ -266,6 +266,12 @@ var require_buffer = __commonJS({
     exports.INSPECT_MAX_BYTES = 50;
     var K_MAX_LENGTH = 2147483647;
     exports.kMaxLength = K_MAX_LENGTH;
+    var K_STRING_MAX_LENGTH = 536870888;
+    exports.kStringMaxLength = K_STRING_MAX_LENGTH;
+    exports.constants = {
+      MAX_LENGTH: K_MAX_LENGTH,
+      MAX_STRING_LENGTH: K_STRING_MAX_LENGTH,
+    };
     Buffer2.TYPED_ARRAY_SUPPORT = typedArraySupport();
     if (
       !Buffer2.TYPED_ARRAY_SUPPORT && typeof console !== "undefined" &&
