@@ -252,7 +252,6 @@
       "test-stream-write-destroy.js",
       "test-stream-write-drain.js",
       "test-stream-write-final.js",
-      "test-stream2-base64-single-char-read-end.js",
       "test-stream2-compatibility.js",
       "test-stream2-finish-pipe.js",
       "test-stream2-large-read-stall.js",
