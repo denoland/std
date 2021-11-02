@@ -119,12 +119,21 @@ To run the tests you have set up, do the following:
 $ deno test --allow-read --allow-run node/_tools/test.ts
 ```
 
-If you want to run specific tests in a local environment, add `--only` flag to
-the `node/_tools/config.json` as follows:
+If you want to run specific tests in a local environment, try one of the
+following:
+
+- Use `node/_tools/require.ts` as follows(recommended):
+
+```zsh
+$ deno run -A node/_tools/require.ts /Abs/path/to/deno_std/node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js
+```
+
+- Add `--only` flag to the `node/_tools/config.json`.
 
 ```json
 ...
   "tests": {
+    ...
     "parallel": [
       ...
       "test-event-emitter-add-listeners.js",
@@ -132,6 +141,7 @@ the `node/_tools/config.json` as follows:
       "test-event-emitter-invalid-listener.js",
       ...
     ]
+    ...
   }
 ...
 ```
@@ -139,9 +149,10 @@ the `node/_tools/config.json` as follows:
 The test should be passing with the latest deno, so if the test fails, try the
 following:
 
-```zsh
-$ deno upgrade
-```
+- `$ deno upgrade`
+- `$ git submodule update --init`
+- Use
+  [`--unstable` flag](https://deno.land/manual@v1.15.3/runtime/stability#standard-modules)
 
 To enable new tests, simply add a new entry inside `node/_tools/config.json`
 under the `tests` property. The structure this entries must have has to resemble

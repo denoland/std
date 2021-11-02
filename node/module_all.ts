@@ -9,6 +9,7 @@ import dns from "./dns.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
+import internalReadlineUtils from "./internal/readline/utils.js";
 import http from "./http.ts";
 import net from "./net.ts";
 import os from "./os.ts";
@@ -16,7 +17,9 @@ import path from "./path.ts";
 import perfHooks from "./perf_hooks.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
+import readline from "./readline.ts";
 import stream from "./stream.ts";
+import streamWeb from "./stream/web.ts";
 import stringDecoder from "./string_decoder.ts";
 import sys from "./sys.ts";
 import timers from "./timers.ts";
@@ -30,7 +33,6 @@ import util from "./util.ts";
 // import dgram from "./dgram.ts";
 // import http2 from "./http2.ts";
 // import https from "./https.ts";
-// import readline from "./readline.ts";
 // import repl from "./repl.ts";
 // import sys from "./sys.ts";
 // import tls from "./tls.ts";
@@ -52,13 +54,16 @@ export default {
   fs,
   "fs/promises": fsPromises,
   http,
+  "internal/readline/utils": internalReadlineUtils,
   net,
   os,
   path,
   "perf_hooks": perfHooks,
   process,
   querystring,
+  readline,
   stream,
+  "stream/web": streamWeb,
   "string_decoder": stringDecoder,
   sys,
   timers,

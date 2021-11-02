@@ -1,3 +1,46 @@
+### 0.113.0 / 2021.10.25
+
+- feat(collections/running_reduce): support `currentIndex` (#1431)
+- feat(http/file_server): add color to log message (#1434)
+- feat(http/file_server): add breadcrumbs navigation (#1433)
+- feat(node): allow require with 'node:' prefix (#1438)
+- feat(node/url): add `url.urlToHttpOptions(url)` (#1426)
+- feat(testing): add assertIsError (#1376)
+- fix(async): fix async/tee concurent .next calls error (#1425)
+- fix(crypto): support length option in crypto.subtle.digest (#1386)
+- fix(http/file_server): fix encoded url in dir html (#1442)
+- fix(http/file_server): fix leak file resource (#1443)
+- fix(node): match Node's os.arch values (#1440)
+- fix(node): show warning when using import/export in CJS module (#1452)
+- fix(node/events): make on and emit methods callable by non-EventEmitter
+  objects (#1454)
+- fix(node/util): improve util.format (#1181)
+- fix(node/_tools): fix node test setup script (#1422)
+- chore(node): update Node version from 16.11.1 to 16.12.0 (#1441)
+
+### 0.112.0 / 2021.10.18
+
+- feat(collections): add joinToString (#1223)
+- feat(node): CJS-ESM integration (#1412)
+- feat(node): add helpers for determining CJS/ESM loader (#1407)
+- feat(node): barebones express compatibility (#1398)
+- feat(node): define process.mainModule (#1400)
+- feat(node/events): implement setMaxListeners (#1414)
+- feat(node/http): request & response streams (#1403)
+- feat(node/os): add devNull constant (#1397)
+- feat(node/url): add `url.format(URL[, options])` (#1420)
+- fix(datetime): fix dayOfYear for the southern hemisphere (#1384)
+- fix(fs/expand_glob): don't parse root as glob (#1417)
+- fix(node): 'Illegal invocation' in 'perf_hooks' module (#1410)
+- fix(node): add 'module' to native modules polyfill (#1408)
+- fix(node): declare 'global' types inline (#1409)
+- fix(node): export util.format() (#1401)
+- fix(node): require doesn't throw error (#1399)
+- fix(node): use hardcoded versions (#1406)
+- fix(std/io): fix readline when catch BufferFullError (#1377)
+- fix(testing): improve assertObjectMatch (#1419)
+- chore(node): upgrade Node.js version from 15.5.1 to 16.11.1 (#1405)
+
 ### 0.111.0 / 2021.10.12
 
 - BREAKING(fs): deprecate exists and existsSync (#1364)

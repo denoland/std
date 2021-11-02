@@ -1,5 +1,3 @@
-- Minimal server
-- Handlers
 - Middleware
 - Remove Legacy Server
 
@@ -26,18 +24,182 @@ await listenAndServe(":8000", () => new Response("Hello World"));
 
 ## Handling Requests
 
-`listenAndServe` expects a `Handler`, which is a function that receives an `HttpRequest` and returns a `Response`:
+`listenAndServe` expects a `Handler`, which is a function that receives an [`HttpRequest`](https://doc.deno.land/https/deno.land/std/http/mod.ts#HttpRequest) and returns a [`Response`](https://doc.deno.land/builtin/stable#Response):
 
 ```typescript
 export type Handler = (request: HttpRequest) => Response | Promise<Response>;
 ```
 
-`std/http` follows web standards, specifically parts of the Fetch API. `HttpRequest` is an extenstion of the
-[`Request` web standard](TODO MDN LINK), adding connection information and some helper functions to make it
+`std/http` follows web standards, specifically parts of the Fetch API. 
+[`Request` web standard](https://developer.mozilla.org/en-US/docs/Web/API/Request), adding connection information and some helper functions to make it
 more convenient to use on servers. The expected return value follows the same standard and is expected to be
-a [`Response`](TODO MDN LINK).
+a [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response).
 
-Here is an example handler that echoes the request body 
+Here is an example handler that echoes the request body back:
+
+```typescript
+const handle: Handler = (req) => {
+    return new Response(
+        req.body,
+        { status: 200 },
+    )
+}
+```
+
+## HTTP Status Code and Status Text
+
+`Status` offers  constants for standard HTTP status codes:
+
+```ts
+import { listenAndServe, Status } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+
+function handle(req: HttpRequest) {
+    if (req.method !== "GET") {
+        // Will respond with an empty 404
+        return new Reponse(null, { status: Status.NotFound });
+    }
+
+    return new Response("Hello!");
+}
+
+await listenAndServe(":8000", handle);
+```
+
+## Middleware
+
+Middleware is a common pattern to include recurring logic done on requests and responses like deserialization, compression, validation, CORS etc.
+
+A middleware is a special kind of `Handler` that can pass control on to a next handler during its flow, allowing it to only solve a specific part of handling
+the request without needing to know about the rest. As the handler it passes onto can be a middleware itself, this allows to build chains like this:
+
+```
+Request ----------------------------------------->
+
+log - authenticate - parseJson - validate - handle
+
+<-----------------------------------------Response
+```
+
+Middleware is just code - so it can do anything a normal handler could do, except that it **can** call the next handler. Middleware will sometimes be used
+to ensure that some condition is met before passing the request on (e.g. authentication, validation), to pre-process requests in some way to make handling
+it simpler and less repetitive (deserialization, database preloading) or to format responses in some way (CORS, compression).
+
+`std/http` has a simple, yet powerful, strongly typed middleware system:
+
+### Using Middleware
+
+To chain middleware, use the `chain()` function:
+
+```typescript
+import { chain } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+import { auth, cors } from "./my_middleware.ts";
+
+function sayHello() {
+    return new Response("Hello");
+}
+
+const handler = chain(auth)
+    .add(cors)
+    .add(sayHello);
+
+await listenAndServe(":8000", handler);
+```
+
+This will pass requests through `auth`, which passes on to `cors`, which passes them on to `sayHello`, with the response from `sayHello` taking the reverse way.
+
+A chain is itself just a middleware again, so you can pass around and nest chains as much as you like.
+
+### Request Context
+
+Request context is a way to pass additional data between middlewares. Each `HttpRequest`s has an attached `context` object. Arbitrary properties with arbitrary
+data can be added to the context via the `.addContext()` method.
+
+Contexts are very strictly typed to prevent runtime errors due to missing context data. 
+
+
+### Writing Middleware
+
+Writing middleware is pretty straightforward, there are just two things you need to decide upfront:
+
+1. Does your middleware depend on any specific context data of previous middleware?
+2. Does your middleware add any data to the context for it's following middleware to consume?
+
+Then you write a function using the `Middleware` type, which takes the two points above as optional type arguments, defaulting to nothing / the `EmptyContext`:
+
+A simple middleware that logs requests to the stdout could be written like this:
+
+```typescript
+import { Middleware } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+
+export const log: Middleware = async (req, next) => {
+    const start = performance.now();
+    const res = await next(req);
+    const duration = perormance.now() - start;
+
+    console.log(`${req.method} ${req.url} - ${res.status}, ${duration.toFixed(1)}ms`);
+
+    return res;
+};
+```
+
+A middleware that ensures the incoming payload is yaml and parses it into the request context as `data` for following middleware to consume could be written like this:
+
+```typescript
+import { Middleware } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+import { parse } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
+
+export const yaml: Middleware<{}, { data: unknown }> = async (
+  req,
+  next,
+) => {
+  const rawBody = await req.text()
+  const data = parse(rawBody)
+  const newReq = req.addContext({ data })
+
+  return await next!(newReq);
+};
+```
+
+The Typescript compiler will make sure that you actually pass the `data` context that you decided onto the `next()` handler.
+
+Let's write a middleware that will later depend on that `data` property, validating that it is a list of strings:
+
+```typescript
+import { Middleware } from "../../../middleware.ts";
+
+export const validate: Middleware<{ data: unknown }> = async (
+  req,
+  next,
+) => {
+  const { data } = req.context
+
+  if (Array.isArray(data) && data.every(it => typeof it === "string")) {
+      return await next!(req)
+  }
+
+  return new Response(
+      "Invalid input, expected an array of string",
+      { status: 422 },
+  )
+};
+```
+
+Without explicitly declaring in the `Middleware` type that you depend on a certain piece of context data, Typescript will not let you access it on the actual request context object.
+
+### Chain Type Safety
+
+Middleware chains built with the `chain()` function are type safe and order-aware regarding request context, even for arbitrary nesting.
+
+This means that Typescript will error if you try to use a chain as a handler for e.g. `listenAndServe` if that chain does not satisfy all it's internal context requirements itself in the right order. An example using the two middleares we wrote above:
+
+```typescript
+function handler(req: HttpRequest<{ data: unknown }>): Response {
+    
+}
+```
+
+```typescript
+```
 
 ## File Server
 

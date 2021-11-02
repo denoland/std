@@ -379,6 +379,36 @@ const commonInterests = intersect(lisaInterests, kimInterests);
 assertEquals(commonInterests, ["Cooking", "Music"]);
 ```
 
+### joinToString
+
+Transforms the elements in the given array to strings using the given selector.
+Joins the produced strings into one using the given `separator` and applying the
+given `prefix` and `suffix` to the whole string afterwards. If the array could
+be huge, you can specify a non-negative value of `limit`, in which case only the
+first `limit` elements will be appended, followed by the `truncated` string.
+Returns the resulting string.
+
+```ts
+import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const users = [
+  { name: "Kim" },
+  { name: "Anna" },
+  { name: "Tim" },
+];
+
+const message = joinToString(users, (it) => it.name, {
+  suffix: " are winners",
+  prefix: "result: ",
+  separator: " and ",
+  limit: 1,
+  truncated: "others",
+});
+
+assertEquals(message, "result: Kim and others are winners");
+```
+
 ### mapEntries
 
 Applies the given transformer to all entries in the given record and returns a
@@ -663,6 +693,25 @@ const numbers = [1, 2, 3, 4, 5];
 const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
 
 assertEquals(sumSteps, [1, 3, 6, 10, 15]);
+```
+
+### sumOf
+
+Applies the given selector to all elements in the given collection and
+calculates the sum of the results.
+
+```ts
+import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+const totalAge = sumOf(people, (i) => i.age);
+
+assertEquals(totalAge, 99);
 ```
 
 ### sample
