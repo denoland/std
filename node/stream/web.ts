@@ -28,7 +28,7 @@ export {
   _WritableStreamDefaultWriter as WritableStreamDefaultWriter,
 };
 
-export default {
+const streams = {
   ReadableStream,
   ReadableStreamDefaultReader,
   ReadableByteStreamController,
@@ -43,3 +43,5 @@ export default {
   TextEncoderStream,
   TextDecoderStream,
 };
+
+export default streams;
