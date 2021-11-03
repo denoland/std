@@ -98,17 +98,51 @@ Deno.test(
   },
 );
 
+Deno.test("[crypto/digest] Should return an ArrayBuffer", async () => {
+  const inputString = "taking the hobbits to isengard";
+  const inputBytes = new TextEncoder().encode(inputString);
+
+  assert(
+    (await stdCrypto.subtle.digest(
+      "BLAKE3",
+      inputBytes,
+    )) instanceof ArrayBuffer,
+  );
+
+  assert(
+    (await stdCrypto.subtle.digest(
+      "BLAKE3",
+      (function* () {
+        yield inputBytes;
+      })(),
+    )) instanceof ArrayBuffer,
+  );
+
+  assert(
+    (await stdCrypto.subtle.digest(
+      "BLAKE3",
+      (async function* () {
+        yield inputBytes;
+      })(),
+    )) instanceof ArrayBuffer,
+  );
+});
+
 Deno.test("[crypto/digest] Should not ignore length option", async () => {
   const inputString = "taking the hobbits to isengard";
   const inputBytes = new TextEncoder().encode(inputString);
 
   assertEquals(
-    await stdCrypto.subtle.digest({ name: "BLAKE3", length: 0 }, inputBytes),
+    new Uint8Array(
+      await stdCrypto.subtle.digest({ name: "BLAKE3", length: 0 }, inputBytes),
+    ),
     new Uint8Array(0),
   );
 
   assertEquals(
-    await stdCrypto.subtle.digest({ name: "BLAKE3", length: 6 }, inputBytes),
+    new Uint8Array(
+      await stdCrypto.subtle.digest({ name: "BLAKE3", length: 6 }, inputBytes),
+    ),
     new Uint8Array([167, 193, 151, 192, 40, 100]),
   );
 });
