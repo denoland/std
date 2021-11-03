@@ -550,8 +550,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
             </tr>
             ${
     entries.map(
-      (entry) =>
-        `
+      (entry) => `
                   <tr>
                     <td class="mode">
                       ${entry.mode}
