@@ -754,9 +754,21 @@ for (const key of Object.keys(nodeMods)) {
 nativeModulePolyfill.set(
   "module",
   createNativeModule("module", {
-    default: Module,
+    _cache: Module._cache,
+    _extensions: Module._extensions,
+    _findPath: Module._findPath,
+    _initPaths: Module._initPaths,
+    _load: Module._load,
+    _nodeModulePaths: Module._nodeModulePaths,
+    _pathCache: Module._pathCache,
+    _preloadModules: Module._preloadModules,
+    _resolveFilename: Module._resolveFilename,
+    _resolveLookupPaths: Module._resolveLookupPaths,
     builtinModules: Module.builtinModules,
     createRequire: Module.createRequire,
+    globalPaths: Module.globalPaths,
+    Module,
+    wrap: Module.wrap,
   }),
 );
 

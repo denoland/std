@@ -97,8 +97,13 @@ Deno.test({
   name: "process.arch",
   fn() {
     assertEquals(typeof process.arch, "string");
-    // TODO(rsp): make sure that the arch strings should be the same in Node and Deno:
-    assertEquals(process.arch, Deno.build.arch);
+    if (Deno.build.arch == "x86_64") {
+      assertEquals(process.arch, "x64");
+    } else if (Deno.build.arch == "aarch64") {
+      assertEquals(process.arch, "arm64");
+    } else {
+      throw new Error("unreachable");
+    }
   },
 });
 
@@ -114,13 +119,6 @@ Deno.test({
   name: "process.on",
   async fn() {
     assertEquals(typeof process.on, "function");
-    assertThrows(
-      () => {
-        process.on("uncaughtException", (_err: Error) => {});
-      },
-      Error,
-      "implemented",
-    );
 
     let triggered = false;
     process.on("exit", () => {
@@ -219,6 +217,17 @@ Deno.test({
     assert(Array.isArray(process.argv.slice(2)));
     assertEquals(process.argv.indexOf(Deno.execPath()), 0);
     assertEquals(process.argv.indexOf(path.fromFileUrl(Deno.mainModule)), 1);
+  },
+});
+
+Deno.test({
+  name: "process.execArgv",
+  fn() {
+    assert(Array.isArray(process.execArgv));
+    assert(process.execArgv.length == 0);
+    // execArgv supports array methods.
+    assert(Array.isArray(process.argv.slice(0)));
+    assertEquals(process.argv.indexOf("foo"), -1);
   },
 });
 
@@ -353,4 +362,24 @@ Deno.test({
   },
   sanitizeResources: false,
   sanitizeOps: false,
+});
+
+Deno.test("process.on, process.off, process.removeListener doesn't throw on unimplemented events", () => {
+  const events = [
+    "beforeExit",
+    "disconnect",
+    "message",
+    "multipleResolves",
+    "rejectionHandled",
+    "uncaughtException",
+    "uncaughtExceptionMonitor",
+    "unhandledRejection",
+  ];
+  const handler = () => {};
+  events.forEach((ev) => {
+    process.on(ev, handler);
+    process.off(ev, handler);
+    process.on(ev, handler);
+    process.removeListener(ev, handler);
+  });
 });
