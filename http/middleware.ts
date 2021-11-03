@@ -1,8 +1,6 @@
-// deno-lint-ignore-file ban-types
-
 import { HttpRequest } from "./request.ts";
 import type { EmptyContext } from "./request.ts";
-import type { Expand, SafeOmit } from "../_util/types.ts";
+import type { CommonKeys, Expand, SafeOmit } from "../_util/types.ts";
 
 /**
 * Middleware Handler that is expected to call the `next` Middleware at some
@@ -37,10 +35,10 @@ import type { Expand, SafeOmit } from "../_util/types.ts";
 */
 export type Middleware<
   Needs extends EmptyContext = EmptyContext,
-  Adds = EmptyContext,
+  Adds extends EmptyContext = EmptyContext,
 > = (
   req: HttpRequest<Needs>,
-  next?: Middleware<Expand<Needs & Adds>>,
+  next?: Middleware<Expand<MergeContext<Needs, Adds>>>,
 ) => Promise<Response>;
 
 /**
@@ -48,7 +46,7 @@ export type Middleware<
  * a `Middleware` as a `MiddlewareChain`. */
 export type MiddlewareChain<
   Needs extends EmptyContext,
-  Adds = EmptyContext,
+  Adds extends EmptyContext = EmptyContext,
 > = {
   (
     ...args: Parameters<Middleware<Needs, Adds>>
@@ -82,8 +80,8 @@ export type MiddlewareChain<
   add<AddedNeeds, AddedAdds>(
     middleware: Middleware<AddedNeeds, AddedAdds>,
   ): MiddlewareChain<
-    Expand<Needs & SafeOmit<AddedNeeds, Adds>>,
-    Expand<Adds & AddedAdds>
+    Expand<Needs & SafeOmit<AddedNeeds, Adds>>, // todo does safeomit handle assignability? e.g. require string, provide 'a'
+    Expand<MergeContext<Adds, AddedAdds>>
   >;
 };
 
@@ -114,7 +112,7 @@ export function composeMiddleware<
   second: Middleware<SecondNeeds, SecondAdd>,
 ): Middleware<
   Expand<FirstNeeds & SafeOmit<SecondNeeds, FirstAdd>>,
-  Expand<FirstAdd & SecondAdd>
+  Expand<MergeContext<FirstAdd, SecondAdd>>
 > {
   return (req, next) =>
     first(
@@ -129,7 +127,10 @@ export function composeMiddleware<
 }
 
 /** Wraps the given middleware in a `MiddlewareChain` so it can be `.add()`ed onto */
-export function chain<Needs extends EmptyContext, Adds = EmptyContext>(
+export function chain<
+  Needs extends EmptyContext,
+  Adds extends EmptyContext = EmptyContext,
+>(
   middleware: Middleware<Needs, Adds>,
 ): MiddlewareChain<Needs, Adds> {
   const copy = middleware.bind({}) as MiddlewareChain<Needs, Adds>;
@@ -144,3 +145,26 @@ export function chain<Needs extends EmptyContext, Adds = EmptyContext>(
 
   return copy;
 }
+
+type LeftDistinct<
+  Left extends EmptyContext,
+  Right extends EmptyContext,
+> = {
+  [Prop in keyof Omit<Left, keyof Right>]: Left[Prop];
+};
+
+type CommonMerge<
+  Left extends EmptyContext,
+  Right extends EmptyContext,
+> = {
+  [Prop in CommonKeys<Left, Right>]: Right[Prop] extends never ? Left[Prop]
+    : Right[Prop];
+};
+
+type MergeContext<
+  Left extends EmptyContext,
+  Right extends EmptyContext,
+> =
+  & CommonMerge<Left, Right>
+  & LeftDistinct<Left, Right>
+  & LeftDistinct<Right, Left>;
