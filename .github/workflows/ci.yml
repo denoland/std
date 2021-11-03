@@ -30,7 +30,7 @@ jobs:
 
       - name: Run tests canary
         shell: bash
-        run: ./tools/test.js --coverage=./cov
+        run: ./_tools/test.js --coverage=./cov
 
       - name: Type check browser compatible modules
         shell: bash
@@ -74,11 +74,11 @@ jobs:
 
       - name: Format
         shell: bash
-        run: ./tools/format.js --check
+        run: ./_tools/format.js --check
 
       - name: Lint
         shell: bash
-        run: ./tools/lint.js
+        run: ./_tools/lint.js
 
   hash-wasm:
     name: "_wasm_crypto/"
