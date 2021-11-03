@@ -29,7 +29,8 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests canary
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/_tools/versions/
+        shell: bash
+        run: ./tools/test.js --coverage=./cov
 
       - name: Type check browser compatible modules
         shell: bash
@@ -72,10 +73,12 @@ jobs:
         uses: denoland/setup-deno@v1.0.0
 
       - name: Format
-        run: deno fmt --check --config deno.json
+        shell: bash
+        run: ./tools/format.js --check
 
       - name: Lint
-        run: deno lint --config deno.json
+        shell: bash
+        run: ./tools/lint.js
 
   hash-wasm:
     name: "_wasm_crypto/"
