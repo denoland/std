@@ -35,9 +35,10 @@ export type Handler = (request: HttpRequest) => Response | Promise<Response>;
 ```
 
 `std/http` follows web standards, specifically parts of the Fetch API.
+`HttpRequest` is an extension of the
 [`Request` web standard](https://developer.mozilla.org/en-US/docs/Web/API/Request),
 adding connection information and some helper functions to make it more
-convenient to use on servers. The expected return value follows the same
+convenient to use on servers. The expected return value follows the same Fetch
 standard and is expected to be a
 [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response).
 
@@ -59,19 +60,20 @@ codes and methods:
 
 ```ts
 import {
+  Handler,
   listenAndServe,
-  Status,
   Method,
+  Status,
 } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 
-function handle(req: HttpRequest) {
+const handle: Handler = (req) => {
   if (req.method !== Method.Get) {
     // Will respond with an empty 404
     return new Reponse(null, { status: Status.NotFound });
   }
 
   return new Response("Hello!");
-}
+};
 
 await listenAndServe(":8000", handle);
 ```
@@ -233,11 +235,31 @@ requirements itself in the right order. An example using the two middleares we
 wrote above:
 
 ```typescript
-function handler(req: HttpRequest<{ data: unknown }>): Response {
-}
+const handle: Handler<{ data: unknown {> = (req) => {
+    console.dir(req.context.data);
+
+    return new Response("Thank you for your strings");
+};
 ```
 
+This will not pass the type checker:
+
 ```typescript
+const handleStringArray = chain(validate)
+  .add(yaml)
+  .add(handle);
+
+await listenAndServe(":8000", handleStringArray);
+```
+
+But this will:
+
+```typescript
+const handleStringArray = chain(yaml)
+  .add(validate)
+  .add(handle);
+
+await listenAndServe(":8000", handleStringArray);
 ```
 
 ## File Server
