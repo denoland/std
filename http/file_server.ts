@@ -21,32 +21,46 @@ interface EntryInfo {
   name: string;
 }
 
-export interface FileServerArgs {
+interface FileServerArgs {
   _: string[];
   // -p --port
-  p?: number;
-  port?: number;
+  port: string;
   // --cors
-  cors?: boolean;
+  cors: boolean;
   // --no-dir-listing
-  "dir-listing"?: boolean;
-  dotfiles?: boolean;
+  "dir-listing": boolean;
+  dotfiles: boolean;
   // --host
-  host?: string;
+  host: string;
   // -c --cert
-  c?: string;
-  cert?: string;
+  cert: string;
   // -k --key
-  k?: string;
-  key?: string;
+  key: string;
   // -h --help
-  h?: boolean;
-  help?: boolean;
+  help: boolean;
 }
 
 const encoder = new TextEncoder();
 
-const serverArgs = parse(Deno.args) as FileServerArgs;
+const serverArgs = parse(Deno.args, {
+  string: ["port", "host", "cert", "key"],
+  boolean: ["help", "dir-listing", "dotfiles", "cors"],
+  default: {
+    "dir-listing": true,
+    "dotfiles": true,
+    "cors": true,
+    "host": "0.0.0.0",
+    "port": "4507",
+    "cert": "",
+    "key": "",
+  },
+  alias: {
+    p: "port",
+    c: "cert",
+    k: "key",
+    h: "help",
+  },
+}) as FileServerArgs;
 const target = posix.resolve(serverArgs._[0] ?? "");
 
 const MEDIA_TYPES: Record<string, string> = {
@@ -188,7 +202,7 @@ async function createEtagHash(message: string) {
   const hashType = "SHA-1"; // Faster, and this isn't a security sensitive cryptographic use case
 
   // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-  const msgUint8 = new TextEncoder().encode(message);
+  const msgUint8 = encoder.encode(message);
   const hashBuffer = await crypto.subtle.digest(hashType, msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(byteToHex).join("");
@@ -625,22 +639,22 @@ function normalizeURL(url: string): string {
 }
 
 function main(): void {
-  const CORSEnabled = serverArgs.cors ? true : false;
-  const port = serverArgs.port ?? serverArgs.p ?? 4507;
-  const host = serverArgs.host ?? "0.0.0.0";
+  const CORSEnabled = serverArgs.cors;
+  const port = serverArgs.port;
+  const host = serverArgs.host;
   const addr = `${host}:${port}`;
-  const certFile = serverArgs.cert ?? serverArgs.c ?? "";
-  const keyFile = serverArgs.key ?? serverArgs.k ?? "";
-  const dirListingEnabled = serverArgs["dir-listing"] ?? true;
+  const certFile = serverArgs.cert;
+  const keyFile = serverArgs.key;
+  const dirListingEnabled = serverArgs["dir-listing"];
 
   if (keyFile || certFile) {
     if (keyFile === "" || certFile === "") {
       console.log("--key and --cert are required for TLS");
-      serverArgs.h = true;
+      serverArgs.help = true;
     }
   }
 
-  if (serverArgs.h ?? serverArgs.help) {
+  if (serverArgs.help) {
     console.log(`Deno File Server
     Serves a local directory in HTTP.
 

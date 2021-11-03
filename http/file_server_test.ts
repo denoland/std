@@ -7,20 +7,30 @@ import {
 import { BufReader } from "../io/buffer.ts";
 import { iterateReader, readAll, writeAll } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { FileServerArgs, serveFile } from "./file_server.ts";
+import { serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 
 let fileServer: Deno.Process<Deno.RunOptions & { stdout: "piped" }>;
 
-type FileServerCfg = Omit<FileServerArgs, "_"> & { target?: string };
+interface FileServerCfg {
+  port?: string;
+  cors?: boolean;
+  "dir-listing"?: boolean;
+  dotfiles?: boolean;
+  host?: string;
+  cert?: string;
+  key?: string;
+  help?: boolean;
+  target?: string;
+}
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 
 async function startFileServer({
   target = ".",
-  port = 4507,
+  port = "4507",
   "dir-listing": dirListing = true,
   dotfiles = true,
 }: FileServerCfg = {}) {
@@ -382,7 +392,7 @@ Deno.test("file_server should ignore query params", async () => {
 
 async function startTlsFileServer({
   target = ".",
-  port = 4577,
+  port = "4577",
 }: FileServerCfg = {}) {
   fileServer = Deno.run({
     cmd: [
