@@ -1,4 +1,4 @@
-import { Status as STATUS_CODES } from "../http/http_status.ts";
+import { Status as STATUS_CODES } from "../http/helper_constants.ts";
 import { Buffer } from "./buffer.ts";
 import { EventEmitter } from "./events.ts";
 import NodeReadable from "./_stream/readable.ts";

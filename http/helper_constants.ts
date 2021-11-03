@@ -1,5 +1,13 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+export enum Method {
+  Get = "GET",
+  Post = "POST",
+  Put = "PUT",
+  Delete = "DELETE",
+  Head = "HEAD",
+  Options = "OPTIONS",
+}
 /**
  * Enum of HTTP status codes.
  *
@@ -7,7 +15,7 @@
  * import {
  *   Status,
  *   STATUS_TEXT,
- * } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
+ * } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
  *
  * console.log(Status.NotFound); //=> 404
  * console.log(STATUS_TEXT.get(Status.NotFound)); //=> "Not Found"
@@ -150,7 +158,7 @@ export enum Status {
  * import {
  *   Status,
  *   STATUS_TEXT,
- * } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
+ * } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
  *
  * console.log(Status.NotFound); //=> 404
  * console.log(STATUS_TEXT.get(Status.NotFound)); //=> "Not Found"

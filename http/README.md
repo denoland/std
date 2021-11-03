@@ -52,18 +52,20 @@ const handle: Handler = (req) => {
 };
 ```
 
-## HTTP Status Code and Status Text
+## HTTP Status Codes and Methods
 
-`Status` offers constants for standard HTTP status codes:
+The `Status` and `Method` enums offers helper constants for standard HTTP status
+codes and methods:
 
 ```ts
 import {
   listenAndServe,
   Status,
+  Method,
 } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 
 function handle(req: HttpRequest) {
-  if (req.method !== "GET") {
+  if (req.method !== Method.Get) {
     // Will respond with an empty 404
     return new Reponse(null, { status: Status.NotFound });
   }

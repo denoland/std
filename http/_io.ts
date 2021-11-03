@@ -4,7 +4,7 @@ import { copy, iterateReader } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { Response, ServerRequest } from "./server_legacy.ts";
-import { STATUS_TEXT } from "./http_status.ts";
+import { STATUS_TEXT } from "./helper_constants.ts";
 
 const encoder = new TextEncoder();
 

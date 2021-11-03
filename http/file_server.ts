@@ -7,7 +7,7 @@
 
 import { extname, posix } from "../path/mod.ts";
 import { listenAndServe, listenAndServeTls } from "./server.ts";
-import { Status, STATUS_TEXT } from "./http_status.ts";
+import { Status, STATUS_TEXT } from "./helper_constants.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { red } from "../fmt/colors.ts";
