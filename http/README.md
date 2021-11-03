@@ -128,7 +128,25 @@ This will pass requests through `auth`, which passes on to `cors`, which passes
 them on to `sayHello`, with the response from `sayHello` taking the reverse way.
 
 A chain is itself just a middleware again, so you can pass around and nest
-chains as much as you like.
+chains as much as you like. This (nonsensical) example does the exact same as
+the one above:
+
+```typescript
+import { chain } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+import { auth, cors } from "./my_middleware.ts";
+
+function sayHello() {
+  return new Response("Hello");
+}
+
+const core = chain(cors)
+  .add(sayHello);
+
+const handler = chain(auth)
+  .add(core);
+
+await listenAndServe(":8000", handler);
+```
 
 ### Request Context
 
