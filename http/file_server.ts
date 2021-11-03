@@ -474,7 +474,7 @@ function setCORS(res: Response): void {
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
   const paths = dirname.split("/");
 
-  return html`
+  return `
     <!DOCTYPE html>
     <html lang="en">
       <head>
@@ -538,9 +538,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
     paths.map((path, index, array) => {
       if (path === "") return "";
       const link = array.slice(0, index + 1).join("/");
-      return (
-        html`<a href="${link}">${path}</a>`
-      );
+      return `<a href="${link}">${path}</a>`;
     }).join("/")
   }
           </h1>
@@ -553,7 +551,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
             ${
     entries.map(
       (entry) =>
-        html`
+        `
                   <tr>
                     <td class="mode">
                       ${entry.mode}
@@ -566,29 +564,13 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                     </td>
                   </tr>
                 `,
-    )
+    ).join("")
   }
           </table>
         </main>
       </body>
     </html>
   `;
-}
-
-function html(strings: TemplateStringsArray, ...values: unknown[]): string {
-  const l = strings.length - 1;
-  let html = "";
-
-  for (let i = 0; i < l; i++) {
-    let v = values[i];
-    if (v instanceof Array) {
-      v = v.join("");
-    }
-    const s = strings[i] + v;
-    html += s;
-  }
-  html += strings[l];
-  return html;
 }
 
 function normalizeURL(url: string): string {
