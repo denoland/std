@@ -28,6 +28,7 @@ async function startFileServer({
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -51,10 +52,11 @@ async function startFileServer({
 }
 
 async function startFileServerAsLibrary({}: FileServerCfg = {}) {
-  fileServer = await Deno.run({
+  fileServer = Deno.run({
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -324,6 +326,7 @@ Deno.test("printHelp", async function () {
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       // TODO(ry) It ought to be possible to get the help output without
       // --allow-read.
@@ -388,6 +391,7 @@ async function startTlsFileServer({
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -444,6 +448,7 @@ Deno.test("partial TLS arguments fail", async function () {
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
