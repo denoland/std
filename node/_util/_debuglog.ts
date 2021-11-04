@@ -104,10 +104,10 @@ function debuglog(
 const state = "";
 
 if (Deno.permissions) {
-  state = await Deno.permissions.query({
+  state = (await Deno.permissions.query({
     name: "env",
     variable: "NODE_DEBUG",
-  }).state;
+  })).state;
 }
 
 if (state === "granted") {
