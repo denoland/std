@@ -369,9 +369,9 @@ async function serveDir(
   req: Request,
   dirPath: string,
   options: {
-    dotfiles: boolean,
-    target: string,
-  }
+    dotfiles: boolean;
+    target: string;
+  },
 ): Promise<Response> {
   const showDotfiles = options.dotfiles;
   const dirUrl = `/${posix.relative(options.target, dirPath)}`;
@@ -660,7 +660,10 @@ function main(): void {
 
       if (fileInfo.isDirectory) {
         if (dirListingEnabled) {
-          response = await serveDir(req, fsPath, { dotfiles: serverArgs.dotfiles, target });
+          response = await serveDir(req, fsPath, {
+            dotfiles: serverArgs.dotfiles,
+            target,
+          });
         } else {
           throw new Deno.errors.NotFound();
         }
