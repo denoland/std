@@ -276,8 +276,15 @@ const noEscape = new Int8Array([
  * replaces encodeURIComponent()
  * @see https://www.ecma-international.org/ecma-262/5.1/#sec-15.1.3.4
  */
-function qsEscape(str: string): string {
-  return encodeStr(str, noEscape, hexTable);
+function qsEscape(str: unknown): string {
+  if (typeof str !== "string") {
+    if (typeof str === "object") {
+      str = String(str);
+    } else {
+      str += "";
+    }
+  }
+  return encodeStr(str as string, noEscape, hexTable);
 }
 
 function encodeStr(
@@ -515,7 +522,7 @@ export const decode = parse;
 /** Alias of querystring.stringify() */
 export const encode = stringify;
 export const unescape = qsUnescape;
-export const escape = encodeURIComponent;
+export const escape = qsEscape;
 
 export default {
   parse,
