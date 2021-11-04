@@ -530,13 +530,7 @@ export class Server {
 export interface ServeInit {
   /**
    * Optionally specifies the address to listen on, in the form
-   * "host:port". The default is ":8000".
-   *
-   * If the port is omitted, `:80` is used by default for HTTP when invoking
-   * without `tls` options, and `:443` is
-   * used by default for HTTPS when invoking with `tls` options.
-   *
-   * If the host is omitted, the non-routable meta-address `0.0.0.0` is used.
+   * "host:port".
    */
   addr?: string;
 
