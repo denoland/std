@@ -338,9 +338,6 @@ Deno.test("printHelp", async function () {
       "run",
       "--no-check",
       "--quiet",
-      // TODO(ry) It ought to be possible to get the help output without
-      // --allow-read.
-      "--allow-read",
       "file_server.ts",
       "--help",
     ],

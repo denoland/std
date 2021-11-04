@@ -42,27 +42,6 @@ interface FileServerArgs {
 
 const encoder = new TextEncoder();
 
-const serverArgs = parse(Deno.args, {
-  string: ["port", "host", "cert", "key"],
-  boolean: ["help", "dir-listing", "dotfiles", "cors"],
-  default: {
-    "dir-listing": true,
-    "dotfiles": true,
-    "cors": true,
-    "host": "0.0.0.0",
-    "port": "4507",
-    "cert": "",
-    "key": "",
-  },
-  alias: {
-    p: "port",
-    c: "cert",
-    k: "key",
-    h: "help",
-  },
-}) as FileServerArgs;
-const target = posix.resolve(serverArgs._[0] ?? "");
-
 const MEDIA_TYPES: Record<string, string> = {
   ".md": "text/markdown",
   ".html": "text/html",
@@ -389,9 +368,13 @@ export async function serveFile(
 async function serveDir(
   req: Request,
   dirPath: string,
+  options: {
+    dotfiles: boolean,
+    target: string,
+  }
 ): Promise<Response> {
-  const showDotfiles = serverArgs.dotfiles ?? true;
-  const dirUrl = `/${posix.relative(target, dirPath)}`;
+  const showDotfiles = options.dotfiles;
+  const dirUrl = `/${posix.relative(options.target, dirPath)}`;
   const listEntry: EntryInfo[] = [];
 
   // if ".." makes sense
@@ -620,6 +603,25 @@ function normalizeURL(url: string): string {
 }
 
 function main(): void {
+  const serverArgs = parse(Deno.args, {
+    string: ["port", "host", "cert", "key"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors"],
+    default: {
+      "dir-listing": true,
+      "dotfiles": true,
+      "cors": true,
+      "host": "0.0.0.0",
+      "port": "4507",
+      "cert": "",
+      "key": "",
+    },
+    alias: {
+      p: "port",
+      c: "cert",
+      k: "key",
+      h: "help",
+    },
+  }) as FileServerArgs;
   const CORSEnabled = serverArgs.cors;
   const port = serverArgs.port;
   const host = serverArgs.host;
@@ -628,36 +630,20 @@ function main(): void {
   const keyFile = serverArgs.key;
   const dirListingEnabled = serverArgs["dir-listing"];
 
+  if (serverArgs.help) {
+    printUsage();
+    Deno.exit();
+  }
+
   if (keyFile || certFile) {
     if (keyFile === "" || certFile === "") {
       console.log("--key and --cert are required for TLS");
-      serverArgs.help = true;
+      printUsage();
+      Deno.exit(1);
     }
   }
 
-  if (serverArgs.help) {
-    console.log(`Deno File Server
-    Serves a local directory in HTTP.
-
-  INSTALL:
-    deno install --allow-net --allow-read https://deno.land/std/http/file_server.ts
-
-  USAGE:
-    file_server [path] [options]
-
-  OPTIONS:
-    -h, --help          Prints help information
-    -p, --port <PORT>   Set port
-    --cors              Enable CORS via the "Access-Control-Allow-Origin" header
-    --host     <HOST>   Hostname (default is 0.0.0.0)
-    -c, --cert <FILE>   TLS certificate file (enables TLS)
-    -k, --key  <FILE>   TLS key file (enables TLS)
-    --no-dir-listing    Disable directory listing
-    --no-dotfiles       Do not show dotfiles
-
-    All TLS options are required when one is provided.`);
-    Deno.exit();
-  }
+  const target = posix.resolve(serverArgs._[0] ?? "");
 
   const handler = async (req: Request): Promise<Response> => {
     let response: Response;
@@ -674,7 +660,7 @@ function main(): void {
 
       if (fileInfo.isDirectory) {
         if (dirListingEnabled) {
-          response = await serveDir(req, fsPath);
+          response = await serveDir(req, fsPath, { dotfiles: serverArgs.dotfiles, target });
         } else {
           throw new Deno.errors.NotFound();
         }
@@ -711,6 +697,29 @@ function main(): void {
       addr.replace("0.0.0.0", "localhost")
     }/`,
   );
+}
+
+function printUsage() {
+  console.log(`Deno File Server
+  Serves a local directory in HTTP.
+
+INSTALL:
+  deno install --allow-net --allow-read https://deno.land/std/http/file_server.ts
+
+USAGE:
+  file_server [path] [options]
+
+OPTIONS:
+  -h, --help          Prints help information
+  -p, --port <PORT>   Set port
+  --cors              Enable CORS via the "Access-Control-Allow-Origin" header
+  --host     <HOST>   Hostname (default is 0.0.0.0)
+  -c, --cert <FILE>   TLS certificate file (enables TLS)
+  -k, --key  <FILE>   TLS key file (enables TLS)
+  --no-dir-listing    Disable directory listing
+  --no-dotfiles       Do not show dotfiles
+
+  All TLS options are required when one is provided.`);
 }
 
 if (import.meta.main) {
