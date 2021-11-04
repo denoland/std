@@ -159,6 +159,7 @@
       "test-net-write-connect-write.js",
       "test-net-write-fully-async-buffer.js",
       "test-net-write-fully-async-hex-string.js",
+      "test-querystring-escape.js",
       "test-querystring.js",
       "test-readline-csi.js",
       "test-stream-await-drain-writers-in-synchronously-recursion-write.js",
