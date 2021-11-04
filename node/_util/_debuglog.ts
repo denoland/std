@@ -101,13 +101,13 @@ function debuglog(
   return logger;
 }
 
+const state = "";
+
 if (Deno.permissions) {
-  const { state } = await Deno.permissions.query({
+  state = await Deno.permissions.query({
     name: "env",
     variable: "NODE_DEBUG",
-  });
-} else {
-  state = "";
+  }).state;
 }
 
 if (state === "granted") {
