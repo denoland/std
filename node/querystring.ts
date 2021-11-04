@@ -276,8 +276,7 @@ const noEscape = new Int8Array([
  * replaces encodeURIComponent()
  * @see https://www.ecma-international.org/ecma-262/5.1/#sec-15.1.3.4
  */
-// deno-lint-ignore no-explicit-any
-function qsEscape(str: any): string {
+function qsEscape(str: unknown): string {
   if (typeof str !== "string") {
     if (typeof str === "object") {
       str = String(str);
@@ -285,7 +284,7 @@ function qsEscape(str: any): string {
       str += "";
     }
   }
-  return encodeStr(str, noEscape, hexTable);
+  return encodeStr(str as string, noEscape, hexTable);
 }
 
 function encodeStr(
