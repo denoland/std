@@ -101,7 +101,7 @@ function debuglog(
   return logger;
 }
 
-const state = "";
+let state = "";
 
 if (Deno.permissions) {
   state = (await Deno.permissions.query({
