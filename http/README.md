@@ -1,4 +1,4 @@
-- Middleware
+- Type enhancements in middleware
 - Remove Legacy Server
 
 # PR
@@ -216,26 +216,33 @@ The Typescript compiler will make sure that you actually pass the `data` context
 that you decided onto the `next()` handler.
 
 Let's write a middleware that will later depend on that `data` property,
-validating that it is a list of strings:
+validating that it is a list of strings. Note that we also change the context
+here, overriding the `data` property to be `string[]` after this middleware
+instead of `unknown`, which will allow following code to work with it safely:
 
 ```typescript
 import { Middleware } from "../../../middleware.ts";
 
-export const validate: Middleware<{ data: unknown }> = async (
-  req,
-  next,
-) => {
-  const { data } = req.context;
+export const validate: Middleware<{ data: unknown }, { data: string[] }> =
+  async (
+    req,
+    next,
+  ) => {
+    const { data } = req.context;
 
-  if (Array.isArray(data) && data.every((it) => typeof it === "string")) {
-    return await next!(req);
-  }
+    if (Array.isArray(data) && data.every((it) => typeof it === "string")) {
+      const newReq = req.addContext({
+        data: data as string[],
+      });
 
-  return new Response(
-    "Invalid input, expected an array of string",
-    { status: 422 },
-  );
-};
+      return await next!(newReq);
+    }
+
+    return new Response(
+      "Invalid input, expected an array of string",
+      { status: 422 },
+    );
+  };
 ```
 
 Without explicitly declaring in the `Middleware` type that you depend on a
