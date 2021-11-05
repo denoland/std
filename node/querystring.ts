@@ -100,8 +100,8 @@ export function parse(
   const sepLen = sepCodes.length;
   const eqLen = eqCodes.length;
 
-  let pairs = 2000;
-  if (maxKeys) {
+  let pairs = 1000;
+  if (typeof maxKeys === 'number') {
     // -1 is used in place of a value like Infinity for meaning
     // "unlimited pairs" because of additional checks V8 (at least as of v5.4)
     // has to do when using variables that contain values like Infinity. Since
