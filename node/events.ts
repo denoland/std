@@ -697,8 +697,8 @@ export class EventEmitter {
     // As a workaround, explicitly check for the existence of `globalThis.process`.
     // deno-lint-ignore no-explicit-any
     const maybeProcess = (globalThis as any).process;
-    if (maybeProcess instanceof EventEmitter) {
-      maybeProcess.emit("warning", warning);
+    if (maybeProcess) {
+      maybeProcess.emitWarning(warning);
     }
   }
 }
