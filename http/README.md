@@ -1,4 +1,5 @@
-- Type enhancements in middleware
+# Todos
+
 - Remove Legacy Server
 
 # PR
@@ -159,8 +160,11 @@ context data.
 
 ### Writing Middleware
 
-Writing middleware is pretty straightforward, there are just two things you need
-to decide upfront:
+Writing a middleware is the same as writing a `Handler`, except that it gets
+passed an additional argument, which is the rest of the chain and should be called
+to pass control on.
+
+To write middleware in typescript, there are two core things to decide upfront:
 
 1. Does your middleware depend on any specific context data of previous
    middleware?
@@ -169,7 +173,8 @@ to decide upfront:
 
 Then you write a function using the `Middleware` type, which takes the two
 points above as optional type arguments, defaulting to the `EmptyContext` (which
-is an empty object). A simple middleware that logs requests could be written like this:
+is an empty object). A simple middleware that logs requests could be written
+like this:
 
 ```typescript
 import { Middleware } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
@@ -177,7 +182,7 @@ import { Middleware } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 export const log: Middleware = async (req, next) => {
   const start = performance.now();
   const res = await next(req);
-  const duration = perormance.now() - start;
+  const duration = performance.now() - start;
 
   console.log(
     `${req.method} ${req.url} - ${res.status}, ${duration.toFixed(1)}ms`,
@@ -186,6 +191,11 @@ export const log: Middleware = async (req, next) => {
   return res;
 };
 ```
+
+Note that because we neither depend on any context data nor add any ourselves,
+we can use the bare `Middleware` type here, which is short for
+`Middleware<EmptyContext, EmptyContext>`, meaning we depend on the empty context
+and add nothing.
 
 A middleware that ensures the incoming payload is yaml and parses it into the
 request context as `data` for following middleware to consume could be written
