@@ -1,5 +1,5 @@
-import { HttpRequest } from "./request.ts";
-import type { EmptyContext } from "./request.ts";
+import type { Handler } from "./server.ts";
+import type { HttpRequest, EmptyContext } from "./request.ts";
 import type { CommonKeys, Expand, SafeOmit } from "../_util/types.ts";
 
 /**
@@ -38,8 +38,8 @@ export type Middleware<
   Adds extends EmptyContext = EmptyContext,
 > = (
   req: HttpRequest<Needs>,
-  next?: Middleware<Expand<MergeContext<Needs, Adds>>>,
-) => Promise<Response>;
+  next: Handler<Expand<MergeContext<Needs, Adds>>>,
+) => Response | Promise<Response>;
 
 /**
  * A `Middleware` that can be chained onto with `.add()`. Use `chain()` to wrap
@@ -49,7 +49,8 @@ export type MiddlewareChain<
   Adds extends EmptyContext = EmptyContext,
 > = {
   (
-    ...args: Parameters<Middleware<Needs, Adds>>
+      req: Parameters<Middleware<Needs, Adds>>[0],
+      next?: Parameters<Middleware<Needs, Adds>>[1],
   ): ReturnType<Middleware<Needs, Adds>>;
 
   /**
