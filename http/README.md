@@ -224,10 +224,7 @@ instead of `unknown`, which will allow following code to work with it safely:
 import { Middleware } from "../../../middleware.ts";
 
 export const validate: Middleware<{ data: unknown }, { data: string[] }> =
-  async (
-    req,
-    next,
-  ) => {
+  async (req, next) => {
     const { data } = req.context;
 
     if (Array.isArray(data) && data.every((it) => typeof it === "string")) {
@@ -260,10 +257,10 @@ requirements itself in the right order. An example using the two middleares we
 wrote above:
 
 ```typescript
-const handle: Handler<{ data: unknown {> = (req) => {
-    console.dir(req.context.data);
+const handle: Handler<{ data: string }> = (req) => {
+  console.dir(req.context.data);
 
-    return new Response("Thank you for your strings");
+  return new Response("Thank you for your strings");
 };
 ```
 
