@@ -162,9 +162,9 @@ context data.
 
 Writing a middleware is the same as writing a `Handler`, except that it gets
 passed an additional argument, which is the rest of the chain and should be called
-to pass control on.
+to pass control on. Canonically, that parameter is called `next`.
 
-To write middleware in typescript, there are two core things to decide upfront:
+To write middleware in typescript, there are two things to decide upfront:
 
 1. Does your middleware depend on any specific context data of previous
    middleware?
@@ -216,7 +216,7 @@ export const yaml: Middleware<EmptyContext, { data: unknown }> = async (
   const data = parse(rawBody);
   const newReq = req.addContext({ data });
 
-  return await next!(newReq);
+  return await next(newReq);
 };
 ```
 
@@ -232,7 +232,7 @@ instead of `unknown`, which will allow following code to work with it safely:
 import { Middleware } from "../../../middleware.ts";
 
 export const validate: Middleware<{ data: unknown }, { data: string[] }> =
-  async (req, next) => {
+  (req, next) => {
     const { data } = req.context;
 
     if (Array.isArray(data) && data.every((it) => typeof it === "string")) {
@@ -240,7 +240,7 @@ export const validate: Middleware<{ data: unknown }, { data: string[] }> =
         data: data as string[],
       });
 
-      return await next!(newReq);
+      return next(newReq);
     }
 
     return new Response(
