@@ -168,10 +168,8 @@ to decide upfront:
    middleware to consume?
 
 Then you write a function using the `Middleware` type, which takes the two
-points above as optional type arguments, defaulting to nothing / the
-`EmptyContext`:
-
-A simple middleware that logs requests to the stdout could be written like this:
+points above as optional type arguments, defaulting to the `EmptyContext` (which
+is an empty object). A simple middleware that logs requests could be written like this:
 
 ```typescript
 import { Middleware } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
