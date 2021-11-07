@@ -988,56 +988,6 @@ var require_buffer = __commonJS({
       return ops.byteLength(string);
     }
     Buffer2.byteLength = byteLength;
-    function slowToString(encoding, start, end) {
-      let loweredCase = false;
-      if (start === void 0 || start < 0) {
-        start = 0;
-      }
-      if (start > this.length) {
-        return "";
-      }
-      if (end === void 0 || end > this.length) {
-        end = this.length;
-      }
-      if (end <= 0) {
-        return "";
-      }
-      end >>>= 0;
-      start >>>= 0;
-      if (end <= start) {
-        return "";
-      }
-      if (!encoding) {
-        encoding = "utf8";
-      }
-      while (true) {
-        switch (encoding) {
-          case "hex":
-            return hexSlice(this, start, end);
-          case "utf8":
-          case "utf-8":
-            return utf8Slice(this, start, end);
-          case "ascii":
-            return asciiSlice(this, start, end);
-          case "latin1":
-          case "binary":
-            return latin1Slice(this, start, end);
-          case "base64":
-            return base64Slice(this, start, end);
-          case "ucs2":
-          case "ucs-2":
-          case "utf16le":
-          case "utf-16le":
-            return utf16leSlice(this, start, end);
-          default:
-            if (loweredCase) {
-              throw new TypeError("Unknown encoding: " + encoding);
-            }
-            encoding = (encoding + "").toLowerCase();
-            loweredCase = true;
-        }
-      }
-    }
     Buffer2.prototype._isBuffer = true;
     function swap(b, n, m) {
       const i = b[n];
@@ -1078,15 +1028,41 @@ var require_buffer = __commonJS({
       }
       return this;
     };
-    Buffer2.prototype.toString = function toString() {
-      const length = this.length;
-      if (length === 0) {
+    Buffer2.prototype.toString = function toString(encoding, start, end) {
+      if (arguments.length === 0) {
+        return this.utf8Slice(0, this.length);
+      }
+
+      const len = this.length;
+
+      if (start <= 0) {
+        start = 0;
+      } else if (start >= len) {
+        return "";
+      } else {
+        start |= 0;
+      }
+
+      if (end === undefined || end > len) {
+        end = len;
+      } else {
+        end |= 0;
+      }
+
+      if (end <= start) {
         return "";
       }
-      if (arguments.length === 0) {
-        return utf8Slice(this, 0, length);
+
+      if (encoding === undefined) {
+        return this.utf8Slice(start, end);
       }
-      return slowToString.apply(this, arguments);
+
+      const ops = getEncodingOps(encoding);
+      if (ops === undefined) {
+        throw new ERR_UNKNOWN_ENCODING(encoding);
+      }
+
+      return ops.slice(this, start, end);
     };
     Buffer2.prototype.toLocaleString = Buffer2.prototype.toString;
     Buffer2.prototype.equals = function equals(b) {
@@ -1391,8 +1367,18 @@ var require_buffer = __commonJS({
         length,
       );
     }
+    Buffer2.prototype.asciiSlice = function asciiSlice(string, offset, length) {
+      return _asciiSlice(this, string, offset, length);
+    };
     Buffer2.prototype.asciiWrite = function asciiWrite(string, offset, length) {
       return _asciiWrite(this, string, offset, length);
+    };
+    Buffer2.prototype.base64Slice = function base64Slice(
+      string,
+      offset,
+      length,
+    ) {
+      return _base64Slice(this, string, offset, length);
     };
     Buffer2.prototype.base64Write = function base64Write(
       string,
@@ -1411,6 +1397,16 @@ var require_buffer = __commonJS({
     Buffer2.prototype.hexWrite = function hexWrite(string, offset, length) {
       return _hexWrite(this, string, offset, length);
     };
+    Buffer2.prototype.hexSlice = function hexSlice(string, offset, length) {
+      return _hexSlice(this, string, offset, length);
+    };
+    Buffer2.prototype.latin1Slice = function latin1Slice(
+      string,
+      offset,
+      length,
+    ) {
+      return _latin1Slice(this, string, offset, length);
+    };
     Buffer2.prototype.latin1Write = function latin1Write(
       string,
       offset,
@@ -1418,8 +1414,14 @@ var require_buffer = __commonJS({
     ) {
       return _asciiWrite(this, string, offset, length);
     };
+    Buffer2.prototype.ucs2Slice = function ucs2Slice(string, offset, length) {
+      return _ucs2Slice(this, string, offset, length);
+    };
     Buffer2.prototype.ucs2Write = function ucs2Write(string, offset, length) {
       return _ucs2Write(this, string, offset, length);
+    };
+    Buffer2.prototype.utf8Slice = function utf8Slice(string, offset, length) {
+      return _utf8Slice(this, string, offset, length);
     };
     Buffer2.prototype.utf8Write = function utf8Write(string, offset, length) {
       return _utf8Write(this, string, offset, length);
@@ -1505,14 +1507,14 @@ var require_buffer = __commonJS({
       Object.setPrototypeOf(buffer, Buffer2.prototype);
       return buffer;
     }
-    function base64Slice(buf, start, end) {
+    function _base64Slice(buf, start, end) {
       if (start === 0 && end === buf.length) {
         return base64.fromByteArray(buf);
       } else {
         return base64.fromByteArray(buf.slice(start, end));
       }
     }
-    function utf8Slice(buf, start, end) {
+    function _utf8Slice(buf, start, end) {
       end = Math.min(buf.length, end);
       const res = [];
       let i = start;
@@ -1603,7 +1605,7 @@ var require_buffer = __commonJS({
       }
       return res;
     }
-    function asciiSlice(buf, start, end) {
+    function _asciiSlice(buf, start, end) {
       let ret = "";
       end = Math.min(buf.length, end);
       for (let i = start; i < end; ++i) {
@@ -1611,7 +1613,7 @@ var require_buffer = __commonJS({
       }
       return ret;
     }
-    function latin1Slice(buf, start, end) {
+    function _latin1Slice(buf, start, end) {
       let ret = "";
       end = Math.min(buf.length, end);
       for (let i = start; i < end; ++i) {
@@ -1619,7 +1621,7 @@ var require_buffer = __commonJS({
       }
       return ret;
     }
-    function hexSlice(buf, start, end) {
+    function _hexSlice(buf, start, end) {
       const len = buf.length;
       if (!start || start < 0) {
         start = 0;
@@ -1633,7 +1635,7 @@ var require_buffer = __commonJS({
       }
       return out;
     }
-    function utf16leSlice(buf, start, end) {
+    function _ucs2Slice(buf, start, end) {
       const bytes = buf.slice(start, end);
       let res = "";
       for (let i = 0; i < bytes.length - 1; i += 2) {
