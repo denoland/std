@@ -7,12 +7,12 @@ function buildRequest(body?: string) {
     {
       localAddr: {
         transport: "tcp",
-        hostname: "test",
+        hostname: "test.host",
         port: 1234,
       },
       remoteAddr: {
         transport: "tcp",
-        hostname: "test",
+        hostname: "test.client",
         port: 1234,
       },
     },
