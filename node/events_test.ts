@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
+  assertArrayIncludes,
   assertEquals,
   assertThrows,
   fail,
@@ -734,4 +735,15 @@ Deno.test("EventEmitter.setMaxListeners: it sets `n` as number of max listeners 
     defaultMaxListeners,
     "defaultMaxListeners shouldn't be mutated.",
   );
+});
+
+// https://github.com/denoland/deno_std/issues/1511
+Deno.test("EventEmitter's public methods should be enumerable", () => {
+  const keys = Object.keys(EventEmitter.prototype);
+  assertArrayIncludes(keys, [
+    "emit",
+    "on",
+    "once",
+    "off",
+  ]);
 });
