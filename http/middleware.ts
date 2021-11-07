@@ -103,7 +103,7 @@ export type MiddlewareChain<
  * // This Handler will respond with "Hello Kim"
  * const handler = composeMiddleware(findUser, hello)
  * ``` */
-export function composeMiddleware<
+function composeMiddleware<
   FirstNeeds extends EmptyContext,
   FirstAdd extends EmptyContext,
   SecondNeeds extends EmptyContext,
