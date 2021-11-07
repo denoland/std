@@ -736,22 +736,7 @@ var require_buffer = __commonJS({
       }
 
       if (typeof value === "object" && value !== null) {
-        if (ArrayBuffer.isView(value)) {
-          return fromArrayView(value);
-        }
-
-        if (
-          isInstance(value, ArrayBuffer) ||
-          value && isInstance(value.buffer, ArrayBuffer)
-        ) {
-          return fromArrayBuffer(value, encodingOrOffset, length);
-        }
-
-        if (
-          typeof SharedArrayBuffer !== "undefined" &&
-          (isInstance(value, SharedArrayBuffer) ||
-            value && isInstance(value.buffer, SharedArrayBuffer))
-        ) {
+        if (isAnyArrayBuffer(value)) {
           return fromArrayBuffer(value, encodingOrOffset, length);
         }
 
@@ -761,7 +746,7 @@ var require_buffer = __commonJS({
           valueOf !== value &&
           (typeof valueOf === "string" || typeof valueOf === "object")
         ) {
-          return Buffer2.from(valueOf, encodingOrOffset, length);
+          return from(valueOf, encodingOrOffset, length);
         }
 
         const b = fromObject(value);
@@ -837,35 +822,6 @@ var require_buffer = __commonJS({
       for (let i = 0; i < length; i += 1) {
         buf[i] = array[i] & 255;
       }
-      return buf;
-    }
-    function fromArrayView(arrayView) {
-      if (isInstance(arrayView, Uint8Array)) {
-        const copy = new Uint8Array(arrayView);
-        return fromArrayBuffer(copy.buffer, copy.byteOffset, copy.byteLength);
-      }
-      return fromArrayLike(arrayView);
-    }
-    function fromArrayBuffer(array, byteOffset, length) {
-      if (byteOffset < 0 || array.byteLength < byteOffset) {
-        throw new ERR_BUFFER_OUT_OF_BOUNDS(
-          "offset",
-        );
-      }
-      if (array.byteLength < byteOffset + (length || 0)) {
-        throw new ERR_BUFFER_OUT_OF_BOUNDS(
-          "length",
-        );
-      }
-      let buf;
-      if (byteOffset === void 0 && length === void 0) {
-        buf = new Uint8Array(array);
-      } else if (length === void 0) {
-        buf = new Uint8Array(array, byteOffset);
-      } else {
-        buf = new Uint8Array(array, byteOffset, length);
-      }
-      Object.setPrototypeOf(buf, Buffer2.prototype);
       return buf;
     }
     function fromObject(obj) {
@@ -1514,6 +1470,41 @@ var require_buffer = __commonJS({
         data: Array.prototype.slice.call(this._arr || this, 0),
       };
     };
+    function fromArrayBuffer(obj, byteOffset, length) {
+      // Convert byteOffset to integer
+      if (byteOffset === undefined) {
+        byteOffset = 0;
+      } else {
+        byteOffset = +byteOffset;
+        if (Number.isNaN(byteOffset)) {
+          byteOffset = 0;
+        }
+      }
+
+      const maxLength = obj.byteLength - byteOffset;
+
+      if (maxLength < 0) {
+        throw new ERR_BUFFER_OUT_OF_BOUNDS("offset");
+      }
+
+      if (length === undefined) {
+        length = maxLength;
+      } else {
+        // Convert length to non-negative integer.
+        length = +length;
+        if (length > 0) {
+          if (length > maxLength) {
+            throw new ERR_BUFFER_OUT_OF_BOUNDS("length");
+          }
+        } else {
+          length = 0;
+        }
+      }
+
+      const buffer = new Uint8Array(obj, byteOffset, length);
+      Object.setPrototypeOf(buffer, Buffer2.prototype);
+      return buffer;
+    }
     function base64Slice(buf, start, end) {
       if (start === 0 && end === buf.length) {
         return base64.fromByteArray(buf);
