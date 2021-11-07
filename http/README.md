@@ -157,8 +157,8 @@ To write middleware in typescript, there are two things to decide upfront:
 
 1. Does your middleware depend on any specific context data of previous
    middleware?
-2. Does your middleware add any data to the context for its following
-   middleware to consume?
+2. Does your middleware add any data to the context for its following middleware
+   to consume?
 
 Then you write a function using the `Middleware` type, which takes the two
 points above as optional type arguments, defaulting to the `EmptyContext` (which
