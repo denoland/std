@@ -83,6 +83,7 @@
       "test-buffer-failed-alloc-typed-arrays.js",
       "test-buffer-fakes.js",
       "test-buffer-from.js",
+      "test-buffer-write.js",
       "test-buffer-writeuint.js",
       "test-buffer-zero-fill-cli.js",
       "test-buffer-zero-fill-reset.js",

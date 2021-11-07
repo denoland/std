@@ -447,6 +447,18 @@ export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
   }
 }
 
+class ERR_INVALID_ARG_VALUE_RANGE extends NodeRangeError {
+  constructor(name: string, value: unknown, reason: string = "is invalid") {
+    const type = name.includes(".") ? "property" : "argument";
+    const inspected = inspect(value);
+
+    super(
+      "ERR_INVALID_ARG_VALUE",
+      `The ${type} '${name}' ${reason}. Received ${inspected}`,
+    );
+  }
+}
+
 export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
   constructor(name: string, value: unknown, reason: string = "is invalid") {
     const type = name.includes(".") ? "property" : "argument";
@@ -457,6 +469,8 @@ export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
       `The ${type} '${name}' ${reason}. Received ${inspected}`,
     );
   }
+
+  static RangeError = ERR_INVALID_ARG_VALUE_RANGE;
 }
 
 // A helper function to simplify checking for ERR_INVALID_ARG_TYPE output.

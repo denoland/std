@@ -1,9 +1,158 @@
 import {
   ERR_BUFFER_OUT_OF_BOUNDS,
   ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_ARG_VALUE,
   ERR_OUT_OF_RANGE,
+  ERR_UNKNOWN_ENCODING,
 } from "./_errors.ts";
-import { notImplemented } from "./_utils.ts";
+import { isAnyArrayBuffer, isArrayBufferView } from "./_util/_util_types.ts";
+
+function base64UrlToBytes(str) {
+  return new Uint8Array(
+    [...atob(str.replace(/-/g, "+").replace(/_/g, "/"))].map((val) =>
+      val.charCodeAt(0)
+    ),
+  );
+}
+
+function byteLengthUtf8(str) {
+  return new TextEncoder().encode(str).length;
+}
+
+function base64ByteLength(str, bytes) {
+  // Handle padding
+  if (str.charCodeAt(bytes - 1) === 0x3D) {
+    bytes--;
+  }
+  if (bytes > 1 && str.charCodeAt(bytes - 1) === 0x3D) {
+    bytes--;
+  }
+
+  // Base64 ratio: 3/4
+  return (bytes * 3) >>> 2;
+}
+
+const encodingsMap = {};
+
+const encodingOps = {
+  utf8: {
+    encoding: "utf8",
+    encodingVal: encodingsMap.utf8,
+    byteLength: byteLengthUtf8,
+    write: (buf, string, offset, len) => buf.utf8Write(string, offset, len),
+    slice: (buf, start, end) => buf.utf8Slice(start, end),
+  },
+  ucs2: {
+    encoding: "ucs2",
+    encodingVal: encodingsMap.utf16le,
+    byteLength: (string) => string.length * 2,
+    write: (buf, string, offset, len) => buf.ucs2Write(string, offset, len),
+    slice: (buf, start, end) => buf.ucs2Slice(start, end),
+  },
+  utf16le: {
+    encoding: "utf16le",
+    encodingVal: encodingsMap.utf16le,
+    byteLength: (string) => string.length * 2,
+    write: (buf, string, offset, len) => buf.ucs2Write(string, offset, len),
+    slice: (buf, start, end) => buf.ucs2Slice(start, end),
+  },
+  latin1: {
+    encoding: "latin1",
+    encodingVal: encodingsMap.latin1,
+    byteLength: (string) => string.length,
+    write: (buf, string, offset, len) => buf.latin1Write(string, offset, len),
+    slice: (buf, start, end) => buf.latin1Slice(start, end),
+  },
+  ascii: {
+    encoding: "ascii",
+    encodingVal: encodingsMap.ascii,
+    byteLength: (string) => string.length,
+    write: (buf, string, offset, len) => buf.asciiWrite(string, offset, len),
+    slice: (buf, start, end) => buf.asciiSlice(start, end),
+  },
+  base64: {
+    encoding: "base64",
+    encodingVal: encodingsMap.base64,
+    byteLength: (string) => base64ByteLength(string, string.length),
+    write: (buf, string, offset, len) => buf.base64Write(string, offset, len),
+    slice: (buf, start, end) => buf.base64Slice(start, end),
+  },
+  base64url: {
+    encoding: "base64url",
+    encodingVal: encodingsMap.base64url,
+    byteLength: (string) => base64ByteLength(string, string.length),
+    write: (buf, string, offset, len) =>
+      buf.base64urlWrite(string, offset, len),
+    slice: (buf, start, end) => buf.base64urlSlice(start, end),
+  },
+  hex: {
+    encoding: "hex",
+    encodingVal: encodingsMap.hex,
+    byteLength: (string) => string.length >>> 1,
+    write: (buf, string, offset, len) => buf.hexWrite(string, offset, len),
+    slice: (buf, start, end) => buf.hexSlice(start, end),
+  },
+};
+
+function getEncodingOps(encoding) {
+  encoding = String(encoding).toLowerCase();
+  switch (encoding.length) {
+    case 4:
+      if (encoding === "utf8") return encodingOps.utf8;
+      if (encoding === "ucs2") return encodingOps.ucs2;
+      break;
+    case 5:
+      if (encoding === "utf-8") return encodingOps.utf8;
+      if (encoding === "ascii") return encodingOps.ascii;
+      if (encoding === "ucs-2") return encodingOps.ucs2;
+      break;
+    case 7:
+      if (encoding === "utf16le") {
+        return encodingOps.utf16le;
+      }
+      break;
+    case 8:
+      if (encoding === "utf-16le") {
+        return encodingOps.utf16le;
+      }
+      break;
+    case 6:
+      if (encoding === "latin1" || encoding === "binary") {
+        return encodingOps.latin1;
+      }
+      if (encoding === "base64") return encodingOps.base64;
+    case 3:
+      if (encoding === "hex") {
+        return encodingOps.hex;
+      }
+      break;
+    case 9:
+      if (encoding === "base64url") {
+        return encodingOps.base64url;
+      }
+      break;
+  }
+}
+
+function _copyActual(source, target, targetStart, sourceStart, sourceEnd) {
+  if (sourceEnd - sourceStart > target.length - targetStart) {
+    sourceEnd = sourceStart + target.length - targetStart;
+  }
+
+  let nb = sourceEnd - sourceStart;
+  const sourceLen = source.length - sourceStart;
+  if (nb > sourceLen) {
+    nb = sourceLen;
+  }
+
+  if (sourceStart !== 0 || sourceEnd < source.length) {
+    source = new Uint8Array(source.buffer, source.byteOffset + sourceStart, nb);
+  }
+
+  target.set(source, targetStart);
+
+  return nb;
+}
 
 function boundsError(value, length, type) {
   if (Math.floor(value) !== value) {
@@ -640,25 +789,19 @@ var require_buffer = __commonJS({
     Object.setPrototypeOf(Buffer2.prototype, Uint8Array.prototype);
     Object.setPrototypeOf(Buffer2, Uint8Array);
     function assertSize(size) {
-      if (typeof size !== "number") {
-        throw new TypeError('"size" argument must be of type number');
-      } else if (size < 0) {
-        throw new RangeError(
-          'The value "' + size + '" is invalid for option "size"',
-        );
+      validateNumber(size, "size");
+      if (!(size >= 0 && size <= kMaxLength)) {
+        throw new ERR_INVALID_ARG_VALUE.RangeError("size", size);
       }
     }
     function alloc(size, fill, encoding) {
       assertSize(size);
-      if (size <= 0) {
-        return createBuffer(size);
+
+      let buffer = createBuffer(size);
+      if (fill !== undefined) {
+        return buffer.fill(fill, encoding);
       }
-      if (fill !== void 0) {
-        return typeof encoding === "string"
-          ? createBuffer(size).fill(fill, encoding)
-          : createBuffer(size).fill(fill);
-      }
-      return createBuffer(size);
+      return buffer;
     }
     Buffer2.alloc = function (size, fill, encoding) {
       return alloc(size, fill, encoding);
@@ -817,90 +960,76 @@ var require_buffer = __commonJS({
       if (!Array.isArray(list)) {
         throw new ERR_INVALID_ARG_TYPE("list", "Array", list);
       }
+
       if (list.length === 0) {
         return Buffer2.alloc(0);
       }
-      let i;
-      if (length === void 0) {
+
+      if (length === undefined) {
         length = 0;
-        for (i = 0; i < list.length; ++i) {
-          length += list[i].length;
-        }
-      }
-      const buffer = Buffer2.allocUnsafe(length);
-      let pos = 0;
-      for (i = 0; i < list.length; ++i) {
-        let buf = list[i];
-        if (isInstance(buf, Uint8Array)) {
-          if (pos + buf.length > buffer.length) {
-            if (!Buffer2.isBuffer(buf)) {
-              buf = Buffer2.from(buf);
-            }
-            buf.copy(buffer, pos);
-          } else {
-            Uint8Array.prototype.set.call(buffer, buf, pos);
+        for (let i = 0; i < list.length; i++) {
+          if (list[i].length) {
+            length += list[i].length;
           }
-        } else if (!Buffer2.isBuffer(buf)) {
+        }
+      } else {
+        validateOffset(length, "length");
+      }
+
+      const buffer = Buffer.allocUnsafe(length);
+      let pos = 0;
+      for (let i = 0; i < list.length; i++) {
+        const buf = list[i];
+        if (!isUint8Array(buf)) {
+          // TODO(BridgeAR): This should not be of type ERR_INVALID_ARG_TYPE.
+          // Instead, find the proper error code for this.
           throw new ERR_INVALID_ARG_TYPE(
             `list[${i}]`,
             ["Buffer", "Uint8Array"],
-            buf,
+            list[i],
           );
-        } else {
-          buf.copy(buffer, pos);
         }
-        pos += buf.length;
+        pos += _copyActual(buf, buffer, pos, 0, buf.length);
       }
+
+      // Note: `length` is always equal to `buffer.length` at this point
+      if (pos < length) {
+        // Zero-fill the remaining bytes if the specified `length` was more than
+        // the actual total length, i.e. if we have some remaining allocated bytes
+        // there were not initialized.
+        buffer.fill(0, pos, length);
+      }
+
       return buffer;
     };
     function byteLength(string, encoding) {
-      if (Buffer2.isBuffer(string)) {
-        return string.length;
-      }
-      if (ArrayBuffer.isView(string) || isInstance(string, ArrayBuffer)) {
-        return string.byteLength;
-      }
       if (typeof string !== "string") {
+        if (isArrayBufferView(string) || isAnyArrayBuffer(string)) {
+          return string.byteLength;
+        }
+
         throw new ERR_INVALID_ARG_TYPE(
           "string",
           ["string", "Buffer", "ArrayBuffer"],
           string,
         );
       }
+
       const len = string.length;
-      const mustMatch = arguments.length > 2 && arguments[2] === true;
+      const mustMatch = (arguments.length > 2 && arguments[2] === true);
       if (!mustMatch && len === 0) {
         return 0;
       }
-      let loweredCase = false;
-      for (;;) {
-        switch (encoding) {
-          case "ascii":
-          case "latin1":
-          case "binary":
-            return len;
-          case "utf8":
-          case "utf-8":
-            return utf8ToBytes(string).length;
-          case "ucs2":
-          case "ucs-2":
-          case "utf16le":
-          case "utf-16le":
-            return len * 2;
-          case "hex":
-            return len >>> 1;
-          case "base64":
-            return base64ToBytes(string).length;
-          case "base64url":
-            notImplemented();
-          default:
-            if (loweredCase) {
-              return mustMatch ? -1 : utf8ToBytes(string).length;
-            }
-            encoding = ("" + encoding).toLowerCase();
-            loweredCase = true;
-        }
+
+      if (!encoding) {
+        return (mustMatch ? -1 : byteLengthUtf8(string));
       }
+
+      const ops = getEncodingOps(encoding);
+      if (ops === undefined) {
+        return (mustMatch ? -1 : byteLengthUtf8(string));
+      }
+      return ops.byteLength(string);
     }
     Buffer2.byteLength = byteLength;
     function slowToString(encoding, start, end) {
@@ -1256,7 +1385,7 @@ var require_buffer = __commonJS({
     ) {
       return bidirectionalIndexOf(this, val, byteOffset, encoding, false);
     };
-    function hexWrite(buf, string, offset, length) {
+    function _hexWrite(buf, string, offset, length) {
       offset = Number(offset) || 0;
       const remaining = buf.length - offset;
       if (!length) {
@@ -1281,7 +1410,7 @@ var require_buffer = __commonJS({
       }
       return i;
     }
-    function utf8Write(buf, string, offset, length) {
+    function _utf8Write(buf, string, offset, length) {
       return blitBuffer(
         utf8ToBytes(string, buf.length - offset),
         buf,
@@ -1289,13 +1418,16 @@ var require_buffer = __commonJS({
         length,
       );
     }
-    function asciiWrite(buf, string, offset, length) {
+    function _asciiWrite(buf, string, offset, length) {
       return blitBuffer(asciiToBytes(string), buf, offset, length);
     }
-    function base64Write(buf, string, offset, length) {
+    function _base64Write(buf, string, offset, length) {
       return blitBuffer(base64ToBytes(string), buf, offset, length);
     }
-    function ucs2Write(buf, string, offset, length) {
+    function _base64urlWrite(buf, string, offset, length) {
+      return blitBuffer(base64UrlToBytes(string), buf, offset, length);
+    }
+    function _ucs2Write(buf, string, offset, length) {
       return blitBuffer(
         utf16leToBytes(string, buf.length - offset),
         buf,
@@ -1303,70 +1435,78 @@ var require_buffer = __commonJS({
         length,
       );
     }
+    Buffer2.prototype.asciiWrite = function asciiWrite(string, offset, length) {
+      return _asciiWrite(this, string, offset, length);
+    };
+    Buffer2.prototype.base64Write = function base64Write(
+      string,
+      offset,
+      length,
+    ) {
+      return _base64Write(this, string, offset, length);
+    };
+    Buffer2.prototype.base64urlWrite = function base64urlWrite(
+      string,
+      offset,
+      length,
+    ) {
+      return _base64urlWrite(this, string, offset, length);
+    };
+    Buffer2.prototype.hexWrite = function hexWrite(string, offset, length) {
+      return _hexWrite(this, string, offset, length);
+    };
+    Buffer2.prototype.latin1Write = function latin1Write(
+      string,
+      offset,
+      length,
+    ) {
+      return _asciiWrite(this, string, offset, length);
+    };
+    Buffer2.prototype.ucs2Write = function ucs2Write(string, offset, length) {
+      return _ucs2Write(this, string, offset, length);
+    };
+    Buffer2.prototype.utf8Write = function utf8Write(string, offset, length) {
+      return _utf8Write(this, string, offset, length);
+    };
     Buffer2.prototype.write = function write(string, offset, length, encoding) {
-      if (offset === void 0) {
-        encoding = "utf8";
-        length = this.length;
-        offset = 0;
-      } else if (length === void 0 && typeof offset === "string") {
+      // Buffer#write(string);
+      if (offset === undefined) {
+        return this.utf8Write(string, 0, this.length);
+      }
+      // Buffer#write(string, encoding)
+      if (length === undefined && typeof offset === "string") {
         encoding = offset;
         length = this.length;
         offset = 0;
-      } else if (isFinite(offset)) {
-        offset = offset >>> 0;
-        if (isFinite(length)) {
-          length = length >>> 0;
-          if (encoding === void 0) {
-            encoding = "utf8";
-          }
-        } else {
-          encoding = length;
-          length = void 0;
-        }
+
+        // Buffer#write(string, offset[, length][, encoding])
       } else {
-        throw new Error(
-          "Buffer.write(string, encoding, offset[, length]) is no longer supported",
-        );
-      }
-      const remaining = this.length - offset;
-      if (length === void 0 || length > remaining) {
-        length = remaining;
-      }
-      if (
-        string.length > 0 && (length < 0 || offset < 0) || offset > this.length
-      ) {
-        throw new RangeError("Attempt to write outside buffer bounds");
-      }
-      if (!encoding) {
-        encoding = "utf8";
-      }
-      let loweredCase = false;
-      for (;;) {
-        switch (encoding) {
-          case "hex":
-            return hexWrite(this, string, offset, length);
-          case "utf8":
-          case "utf-8":
-            return utf8Write(this, string, offset, length);
-          case "ascii":
-          case "latin1":
-          case "binary":
-            return asciiWrite(this, string, offset, length);
-          case "base64":
-            return base64Write(this, string, offset, length);
-          case "ucs2":
-          case "ucs-2":
-          case "utf16le":
-          case "utf-16le":
-            return ucs2Write(this, string, offset, length);
-          default:
-            if (loweredCase) {
-              throw new TypeError("Unknown encoding: " + encoding);
-            }
-            encoding = ("" + encoding).toLowerCase();
-            loweredCase = true;
+        validateOffset(offset, "offset", 0, this.length);
+
+        const remaining = this.length - offset;
+
+        if (length === undefined) {
+          length = remaining;
+        } else if (typeof length === "string") {
+          encoding = length;
+          length = remaining;
+        } else {
+          validateOffset(length, "length", 0, this.length);
+          if (length > remaining) {
+            length = remaining;
+          }
         }
       }
+
+      if (!encoding) {
+        return this.utf8Write(string, offset, length);
+      }
+
+      const ops = getEncodingOps(encoding);
+      if (ops === undefined) {
+        throw new ERR_UNKNOWN_ENCODING(encoding);
+      }
+      return ops.write(this, string, offset, length);
     };
     Buffer2.prototype.toJSON = function toJSON() {
       return {
