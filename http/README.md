@@ -97,12 +97,12 @@ log - authenticate - parseJson - validate - handle
 <-----------------------------------------Response
 ```
 
-Middleware is just code - so it can do anything a normal handler could do,
-except that it **can** call the next handler. Middleware will sometimes be used
-to ensure that some condition is met before passing the request on (e.g.
-authentication, validation), to pre-process requests in some way to make
-handling it simpler and less repetitive (deserialization, database preloading)
-or to format responses in some way (CORS, compression).
+Middleware is just a handler that **can** call the next handler to pass on
+control. Middleware will sometimes be used to ensure that some condition is met
+before passing the request on (e.g. authentication, validation), to pre-process
+requests in some way to make handling it simpler and less repetitive
+(deserialization, database preloading) or to format responses in some way (CORS,
+compression).
 
 `std/http` has a simple, yet powerful, strongly typed middleware system:
 
