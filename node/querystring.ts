@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+import { Buffer } from "./buffer.ts";
 import { ERR_INVALID_URI } from "./_errors.ts";
 
 export interface ParsedUrlQuery {
@@ -99,8 +100,8 @@ export function parse(
   const sepLen = sepCodes.length;
   const eqLen = eqCodes.length;
 
-  let pairs = 2000;
-  if (maxKeys) {
+  let pairs = 1000;
+  if (typeof maxKeys === "number") {
     // -1 is used in place of a value like Infinity for meaning
     // "unlimited pairs" because of additional checks V8 (at least as of v5.4)
     // has to do when using variables that contain values like Infinity. Since
@@ -275,8 +276,15 @@ const noEscape = new Int8Array([
  * replaces encodeURIComponent()
  * @see https://www.ecma-international.org/ecma-262/5.1/#sec-15.1.3.4
  */
-function qsEscape(str: string): string {
-  return encodeStr(str, noEscape, hexTable);
+function qsEscape(str: unknown): string {
+  if (typeof str !== "string") {
+    if (typeof str === "object") {
+      str = String(str);
+    } else {
+      str += "";
+    }
+  }
+  return encodeStr(str as string, noEscape, hexTable);
 }
 
 function encodeStr(
@@ -436,12 +444,85 @@ export function stringify(
   return "";
 }
 
+// deno-fmt-ignore
+const unhexTable = new Int8Array([
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 0 - 15
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 16 - 31
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 32 - 47
+  +0, +1, +2, +3, +4, +5, +6, +7, +8, +9, -1, -1, -1, -1, -1, -1, // 48 - 63
+  -1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 64 - 79
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 80 - 95
+  -1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 96 - 111
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 112 - 127
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 128 ...
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // ... 255
+]);
+
+function qsUnescape(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return unescapeBuffer(s).toString();
+  }
+}
+
+/**
+ * A safe fast alternative to decodeURIComponent
+ */
+export function unescapeBuffer(s: string, decodeSpaces = false): Buffer {
+  const out = new Buffer(s.length);
+  let index = 0;
+  let outIndex = 0;
+  let currentChar;
+  let nextChar;
+  let hexHigh;
+  let hexLow;
+  const maxLength = s.length - 2;
+  // Flag to know if some hex chars have been decoded
+  let hasHex = false;
+  while (index < s.length) {
+    currentChar = s.charCodeAt(index);
+    if (currentChar === 43 /* '+' */ && decodeSpaces) {
+      out[outIndex++] = 32; // ' '
+      index++;
+      continue;
+    }
+    if (currentChar === 37 /* '%' */ && index < maxLength) {
+      currentChar = s.charCodeAt(++index);
+      hexHigh = unhexTable[currentChar];
+      if (!(hexHigh >= 0)) {
+        out[outIndex++] = 37; // '%'
+        continue;
+      } else {
+        nextChar = s.charCodeAt(++index);
+        hexLow = unhexTable[nextChar];
+        if (!(hexLow >= 0)) {
+          out[outIndex++] = 37; // '%'
+          index--;
+        } else {
+          hasHex = true;
+          currentChar = hexHigh * 16 + hexLow;
+        }
+      }
+    }
+    out[outIndex++] = currentChar;
+    index++;
+  }
+  return hasHex ? out.slice(0, outIndex) : out;
+}
+
 /** Alias of querystring.parse() */
 export const decode = parse;
 /** Alias of querystring.stringify() */
 export const encode = stringify;
-export const unescape = decodeURIComponent;
-export const escape = encodeURIComponent;
+export const unescape = qsUnescape;
+export const escape = qsEscape;
 
 export default {
   parse,
@@ -451,4 +532,5 @@ export default {
   encode,
   unescape,
   escape,
+  unescapeBuffer,
 };
