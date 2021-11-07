@@ -168,7 +168,7 @@ To write middleware in typescript, there are two things to decide upfront:
 
 1. Does your middleware depend on any specific context data of previous
    middleware?
-2. Does your middleware add any data to the context for it's following
+2. Does your middleware add any data to the context for its following
    middleware to consume?
 
 Then you write a function using the `Middleware` type, which takes the two
@@ -262,7 +262,7 @@ Middleware chains built with the `chain()` function are type safe and
 order-aware regarding request context, even for arbitrary nesting.
 
 This means that Typescript will error if you try to use a chain as a handler for
-e.g. `listenAndServe` if that chain does not satisfy all it's internal context
+e.g. `listenAndServe` if that chain does not satisfy all its internal context
 requirements itself in the right order. An example using the two middleares we
 wrote above:
 
