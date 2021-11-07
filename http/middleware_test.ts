@@ -21,7 +21,7 @@ function buildRequest(body?: string) {
 }
 
 Deno.test({
-  name: `chain() does not change a handler's behaviour`,
+  name: `[http/middleware] chain() does not change a handler's behaviour`,
   fn: () => {
     const handled = new Array<string>();
 
@@ -45,7 +45,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: `chain() should pass next in the given order`,
+  name: `[http/middleware] chain() should pass next in the given order`,
   fn: () => {
     const called = new Array<number>();
 
@@ -69,7 +69,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: `nested chains should call depth first`,
+  name: `[http/middleware] nested chains should call depth first`,
   fn: () => {
     const called = new Array<number>();
 
