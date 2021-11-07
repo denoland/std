@@ -1,14 +1,3 @@
-# Todos
-
-- Remove Legacy Server
-
-# PR
-
-- Wrap Request
-  - Why
-    - Have single API
-    - Allows for cookies, comtext, lazy utilities…
-
 # http
 
 Deno's standard HTTP server based on the
