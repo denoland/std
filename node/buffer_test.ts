@@ -5,20 +5,6 @@ import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { Buffer } from "./buffer.ts";
 
 Deno.test({
-  name: "alloc fails on negative numbers",
-  fn() {
-    assertThrows(
-      () => {
-        Buffer.alloc(-1);
-      },
-      RangeError,
-      'The value "-1" is invalid for option "size"',
-      "should throw on negative numbers",
-    );
-  },
-});
-
-Deno.test({
   name: "alloc fails if size is not a number",
   fn() {
     const invalidSizes = [{}, "1", "foo", []];
@@ -53,17 +39,6 @@ Deno.test({
         'The value "" is invalid for argument "value"',
         "should throw for empty Buffer/Uint8Array",
       );
-    }
-  },
-});
-
-Deno.test({
-  name: "alloc(0) doesn't fail if value is an empty Buffer/Uint8Array",
-  fn() {
-    const invalidValues = [new Uint8Array(), Buffer.alloc(0)];
-
-    for (const value of invalidValues) {
-      assertEquals(Buffer.alloc(0, value).length, 0);
     }
   },
 });
