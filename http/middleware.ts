@@ -1,5 +1,5 @@
 import type { Handler } from "./server.ts";
-import type { HttpRequest, EmptyContext } from "./request.ts";
+import type { EmptyContext, HttpRequest } from "./request.ts";
 import type { CommonKeys, Expand, SafeOmit } from "../_util/types.ts";
 
 /**
@@ -49,8 +49,8 @@ export type MiddlewareChain<
   Adds extends EmptyContext = EmptyContext,
 > = {
   (
-      req: Parameters<Middleware<Needs, Adds>>[0],
-      next?: Parameters<Middleware<Needs, Adds>>[1],
+    req: Parameters<Middleware<Needs, Adds>>[0],
+    next?: Parameters<Middleware<Needs, Adds>>[1],
   ): ReturnType<Middleware<Needs, Adds>>;
 
   /**

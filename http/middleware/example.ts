@@ -49,7 +49,11 @@ const validate: Middleware<{ data: unknown }, { data: string[] }> = (
 const handle: Handler<{ data: string[] }> = (req) => {
   const { data } = req.context;
 
-  return new Response(data.map((it) => `Hello ${it}`).join("\n"));
+  return new Response(
+    data
+      .map((it) => `Hello ${it}!`)
+      .join("\n"),
+  );
 };
 
 const stack = chain(log)

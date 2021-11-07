@@ -161,8 +161,8 @@ context data.
 ### Writing Middleware
 
 Writing a middleware is the same as writing a `Handler`, except that it gets
-passed an additional argument, which is the rest of the chain and should be called
-to pass control on. Canonically, that parameter is called `next`.
+passed an additional argument, which is the rest of the chain and should be
+called to pass control on. Canonically, that parameter is called `next`.
 
 To write middleware in typescript, there are two things to decide upfront:
 
@@ -231,23 +231,25 @@ instead of `unknown`, which will allow following code to work with it safely:
 ```typescript
 import { Middleware } from "../../../middleware.ts";
 
-export const validate: Middleware<{ data: unknown }, { data: string[] }> =
-  (req, next) => {
-    const { data } = req.context;
+export const validate: Middleware<{ data: unknown }, { data: string[] }> = (
+  req,
+  next,
+) => {
+  const { data } = req.context;
 
-    if (Array.isArray(data) && data.every((it) => typeof it === "string")) {
-      const newReq = req.addContext({
-        data: data as string[],
-      });
+  if (Array.isArray(data) && data.every((it) => typeof it === "string")) {
+    const newReq = req.addContext({
+      data: data as string[],
+    });
 
-      return next(newReq);
-    }
+    return next(newReq);
+  }
 
-    return new Response(
-      "Invalid input, expected an array of string",
-      { status: 422 },
-    );
-  };
+  return new Response(
+    "Invalid input, expected an array of string",
+    { status: 422 },
+  );
+};
 ```
 
 Without explicitly declaring in the `Middleware` type that you depend on a
@@ -265,10 +267,14 @@ requirements itself in the right order. An example using the two middleares we
 wrote above:
 
 ```typescript
-const handle: Handler<{ data: string }> = (req) => {
-  console.dir(req.context.data);
+const handle: Handler<{ data: string[] }> = (req) => {
+  const { data } = req.context;
 
-  return new Response("Thank you for your strings");
+  return new Response(
+    data
+      .map((it) => `Hello ${it}!`)
+      .join("\n"),
+  );
 };
 ```
 
@@ -294,21 +300,24 @@ await listenAndServe(":8000", handleStringArray);
 
 ## File Server
 
-A small program for serving local files over HTTP.
+There is a small server that serves files from the folder it is running in using
+this module:
 
 ```sh
 deno run --allow-net --allow-read https://deno.land/std/http/file_server.ts
 > HTTP server listening on http://localhost:4507/
 ```
 
-## Cookie
+## Cookies
 
-Helpers to manipulate the `Cookie` header.
+The module exports some helpers to read and write cookies:
 
 ### getCookies
 
+`getCookies` reads cookies from a given `Headers` object:
+
 ```ts
-import { getCookies } from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+import { getCookies } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 
 const headers = new Headers();
 headers.set("Cookie", "full=of; tasty=chocolate");
@@ -319,11 +328,13 @@ console.log(cookies); // { full: "of", tasty: "chocolate" }
 
 ### setCookie
 
+`setCookie` will set a cookie on a given `Headers` object:
+
 ```ts
 import {
   Cookie,
   setCookie,
-} from "https://deno.land/std@$STD_VERSION/http/cookie.ts";
+} from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 
 const headers = new Headers();
 const cookie: Cookie = { name: "Space", value: "Cat" };
@@ -334,6 +345,8 @@ console.log(cookieHeader); // Space=Cat
 ```
 
 ### deleteCookie
+
+`deleteCookie` will delete a cookie on a given `Headers` object:
 
 > Note: Deleting a `Cookie` will set its expiration date before now. Forcing the
 > browser to delete it.
