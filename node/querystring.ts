@@ -4,13 +4,13 @@ import { ERR_INVALID_URI } from "./_errors.ts";
 
 /**
  * Alias of querystring.parse()
- * @deprecated
+ * @legacy
  */
 export const decode = parse;
 
 /**
  * Alias of querystring.stringify()
- * @deprecated
+ * @legacy
  */
 export const encode = stringify;
 
@@ -96,7 +96,7 @@ function qsEscape(str: unknown): string {
  * Performs URL percent-encoding on the given `str` in a manner that is optimized for the specific requirements of URL query strings.
  * Used by `querystring.stringify()` and is generally not expected to be used directly.
  * It is exported primarily to allow application code to provide a replacement percent-encoding implementation if necessary by assigning `querystring.escape` to an alternative function.
- * @deprecated
+ * @legacy
  * @see Tested in `test-querystring-escape.js`
  */
 export const escape = qsEscape;
@@ -178,7 +178,7 @@ function addKeyVal(
  * @param options The parse options
  * @param options.decodeURIComponent The function to use when decoding percent-encoded characters in the query string. Default: `querystring.unescape()`.
  * @param options.maxKeys Specifies the maximum number of keys to parse. Specify `0` to remove key counting limitations. Default: `1000`.
- * @deprecated
+ * @legacy
  * @see Tested in test-querystring.js
  */
 export function parse(
@@ -421,7 +421,7 @@ function encodeStringified(v: any, encode: (string: string) => string): string {
  * @param eq The substring used to delimit keys and values in the query string. Default: '='.
  * @param options The stringify options
  * @param options.encodeURIComponent The function to use when converting URL-unsafe characters to percent-encoding in the query string. Default: `querystring.escape()`.
- * @deprecated
+ * @legacy
  * @see Tested in `test-querystring.js`
  */
 export function stringify(
@@ -549,7 +549,7 @@ function qsUnescape(s: string): string {
  * Performs decoding of URL percent-encoded characters on the given `str`.
  * Used by `querystring.parse()` and is generally not expected to be used directly.
  * It is exported primarily to allow application code to provide a replacement decoding implementation if necessary by assigning `querystring.unescape` to an alternative function.
- * @deprecated
+ * @legacy
  * @see Tested in `test-querystring-escape.js`
  */
 export const unescape = qsUnescape;
