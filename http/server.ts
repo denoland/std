@@ -669,6 +669,8 @@ export async function serveTls(
 }
 
 /**
+ * @deprecated Use `serve` instead.
+ *
  * Constructs a server, creates a listener on the given address, accepts
  * incoming connections, and handles requests on these connections with the
  * given handler.
@@ -697,8 +699,6 @@ export async function serveTls(
  * @param addr The address to listen on.
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
- *
- * @deprecated Use `serve` instead.
  */
 export async function listenAndServe(
   addr: string,
@@ -715,6 +715,8 @@ export async function listenAndServe(
 }
 
 /**
+ * @deprecated Use `serveTls` instead.
+ *
  * Constructs a server, creates a listener on the given address, accepts
  * incoming connections, upgrades them to TLS, and handles requests on these
  * connections with the given handler.
@@ -747,8 +749,6 @@ export async function listenAndServe(
  * @param keyFile The path to the file containing the TLS private key.
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
- *
- * @deprecated Use `serveTls` instead.
  */
 export async function listenAndServeTls(
   addr: string,
