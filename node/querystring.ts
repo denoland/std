@@ -2,23 +2,17 @@
 import { Buffer } from "./buffer.ts";
 import { ERR_INVALID_URI } from "./_errors.ts";
 
-/******************** querystring.decode() ********************/
-
 /**
  * Alias of querystring.parse()
  * @deprecated
  */
 export const decode = parse;
 
-/******************** querystring.encode() ********************/
-
 /**
  * Alias of querystring.stringify()
  * @deprecated
  */
 export const encode = stringify;
-
-/******************** querystring.escape(str) ********************/
 
 const hexTable = new Array(256);
 for (let i = 0; i < 256; ++i) {
@@ -106,8 +100,6 @@ function qsEscape(str: unknown): string {
  * @see Tested in `test-querystring-escape.js`
  */
 export const escape = qsEscape;
-
-/******************** querystring.parse(str[, sep[, eq[, options]]]) ********************/
 
 interface ParsedUrlQuery {
   [key: string]: string | string[] | undefined;
@@ -353,8 +345,6 @@ export function parse(
   return obj;
 }
 
-/******************** querystring.stringify(obj[, sep[, eq[, options]]]) ********************/
-
 interface StringifyOptions {
   /** The function to use when converting URL-unsafe characters to percent-encoding in the query string. */
   encodeURIComponent: (string: string) => string;
@@ -481,8 +471,6 @@ export function stringify(
   }
   return "";
 }
-
-/******************** querystring.unescape(str) ********************/
 
 // deno-fmt-ignore
 const unhexTable = new Int8Array([
