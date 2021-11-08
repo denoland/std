@@ -250,3 +250,17 @@ export async function assertCallbackErrorUncaught(
   assert(!status.success);
   assertStringIncludes(stderr, "Error: success");
 }
+
+export function makeMethodsEnumerable(klass: { new (): unknown }): void {
+  const proto = klass.prototype;
+  for (const key of Object.getOwnPropertyNames(proto)) {
+    const value = proto[key];
+    if (typeof value === "function") {
+      const desc = Reflect.getOwnPropertyDescriptor(proto, key);
+      if (desc) {
+        desc.enumerable = true;
+        Object.defineProperty(proto, key, desc);
+      }
+    }
+  }
+}
