@@ -260,6 +260,7 @@ function createWarningObject(
     warningErr.detail = detail;
   }
 
+  // @ts-ignore this function is not available in lib.dom.d.ts
   Error.captureStackTrace(warningErr, ctor || process.emitWarning);
 
   return warningErr;
