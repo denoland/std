@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// deno-lint-ignore-file no-var
 import processModule from "./process.ts";
 import { Buffer as bufferModule } from "./buffer.ts";
 import timers from "./timers.ts";

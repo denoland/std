@@ -2449,10 +2449,10 @@ export class ERR_INVALID_MODULE_SPECIFIER extends NodeTypeError {
 }
 
 export class ERR_INVALID_PACKAGE_TARGET extends NodeError {
-  // deno-lint-ignore no-explicit-any
   constructor(
     pkgPath: string,
     key: string,
+    // deno-lint-ignore no-explicit-any
     target: any,
     isImport?: boolean,
     base?: string,

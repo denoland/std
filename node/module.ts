@@ -1371,7 +1371,7 @@ export function resolveMainPath(main: string): undefined | string {
   // Note extension resolution for the main entry point can be deprecated in a
   // future major.
   // Module._findPath is monkey-patchable here.
-  let mainPath = Module._findPath(path.resolve(main), [], true);
+  const mainPath = Module._findPath(path.resolve(main), [], true);
   if (!mainPath) {
     return;
   }
