@@ -6,6 +6,12 @@ Deno's standard HTTP server based on the
 ## Table of Contents
 
 - [Minimal Server](#minimal-server)
+- [Handling Requests](#handling-requests)
+    - [HTTP Status Codes and Methods](#http-status-codes-and-methods)
+- [Middleware](#middleware)
+    - [Writing Simple Middleware]()
+    - [Request Context]()
+    - [Using Middleware]()
 
 ## Minimal Server
 
@@ -101,82 +107,22 @@ compression).
 
 `std/http` has a simple, yet powerful, strongly typed middleware system:
 
-### Using Middleware
-
-To chain middleware, use the `chain()` function:
-
-```typescript
-import { chain } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
-import { auth, cors } from "./my_middleware.ts";
-
-function sayHello() {
-  return new Response("Hello");
-}
-
-const handler = chain(auth)
-  .add(cors)
-  .add(sayHello);
-
-await listenAndServe(":8000", handler);
-```
-
-This will pass requests through `auth`, which passes on to `cors`, which passes
-them on to `sayHello`, with the response from `sayHello` taking the reverse way.
-
-A chain is itself just a middleware again, so you can pass around and nest
-chains as much as you like. This (nonsensical) example does the exact same as
-the one above:
-
-```typescript
-import { chain } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
-import { auth, cors } from "./my_middleware.ts";
-
-function sayHello() {
-  return new Response("Hello");
-}
-
-const core = chain(cors)
-  .add(sayHello);
-
-const handler = chain(auth)
-  .add(core);
-
-await listenAndServe(":8000", handler);
-```
-
-### Request Context
-
-Request context is a way to pass additional data between middlewares. Each
-`HttpRequest`s has an attached `context` object. Arbitrary properties with
-arbitrary data can be added to the context via the `.addContext()` method.
-
-Contexts are very strictly typed to prevent runtime errors due to missing
-context data.
-
 ### Writing Middleware
 
-Writing a middleware is the same as writing a `Handler`, except that it gets
-passed an additional argument - the rest of the chain, which should be
-called to pass control on. Canonically, that parameter is called `next`.
+Writing middleware is the same as writing a `Handler`, except that it gets
+passed an additional argument, canonically called `next`, which is a handler
+representing the rest of the chain after this middleware. `std/http` exports
+a `Middleware` function type that helps to write a function with the middleware
+signature.
 
-To write middleware in typescript, there are two things to decide upfront:
-
-1. Does your middleware depend on any specific context data of previous
-   middleware?
-2. Does your middleware add any data to the context for its following middleware
-   to consume?
-
-Then you write a function using the `Middleware` type, which takes the two
-points above as optional type arguments, defaulting to the `EmptyContext` (which
-is an empty object). A simple middleware that logs requests could be written
-like this:
+Let's look at an example. A simple middleware that logs requests could be written like this:
 
 ```typescript
 import { Middleware } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 
 export const log: Middleware = async (req, next) => {
   const start = performance.now();
-  const res = await next(req);
+  const res = await next(req); 
   const duration = performance.now() - start;
 
   console.log(
@@ -187,11 +133,23 @@ export const log: Middleware = async (req, next) => {
 };
 ```
 
-Note that because we neither depend on any context data nor add any ourselves,
-we can use the bare `Middleware` type here, which is short for
-`Middleware<EmptyContext, EmptyContext>`, meaning we depend on the empty context
-and add nothing.
+This will log a message to stdout for every request, noting how long it took
+to respond, the requests method and url and the response's status code.
 
+Note that we choose when or even if we call `next` and what to do with its result.
+`next` is just a handler function and as long as our middleware returns a `Response`,
+it does not matter how we produced it.
+
+To write middleware in typescript, there are two things to decide upfront:
+
+1. Does your middleware depend on any specific context data of previous
+   middleware?
+2. Does your middleware add any data to the context for its following middleware
+   to consume?
+
+Then you write a function using the `Middleware` type, which takes the two
+points above as optional type arguments, defaulting to the `EmptyContext` (which
+is an empty object). 
 A middleware that ensures the incoming payload is yaml and parses it into the
 request context as `data` for following middleware to consume could be written
 like this:
@@ -251,6 +209,58 @@ Without explicitly declaring in the `Middleware` type that you depend on a
 certain piece of context data, Typescript will not let you access it on the
 actual request context object.
 
+
+### Using Middleware
+
+To chain middleware, use the `chain()` function:
+
+```typescript
+import { chain } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+import { auth, cors } from "./my_middleware.ts";
+
+function sayHello() {
+  return new Response("Hello");
+}
+
+const handler = chain(auth)
+  .add(cors)
+  .add(sayHello);
+
+await listenAndServe(":8000", handler);
+```
+
+This will pass requests through `auth`, which passes on to `cors`, which passes
+them on to `sayHello`, with the response from `sayHello` taking the reverse way.
+
+A chain is itself just a middleware again, so you can pass around and nest
+chains as much as you like. This (nonsensical) example does the exact same as
+the one above:
+
+```typescript
+import { chain } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+import { auth, cors } from "./my_middleware.ts";
+
+function sayHello() {
+  return new Response("Hello");
+}
+
+const core = chain(cors)
+  .add(sayHello);
+
+const handler = chain(auth)
+  .add(core);
+
+await listenAndServe(":8000", handler);
+```
+
+### Request Context
+
+Request context is a way to pass additional data between middlewares. Each
+`HttpRequest`s has an attached `context` object. Arbitrary properties with
+arbitrary data can be added to the context via the `.addContext()` method.
+
+Contexts are very strictly typed to prevent runtime errors due to missing
+context data.
 ### Chain Type Safety
 
 Middleware chains built with the `chain()` function are type safe and
