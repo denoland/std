@@ -659,6 +659,7 @@ function getPackageConfig(
     throw new ERR_INVALID_PACKAGE_CONFIG(
       path,
       (base ? `"${specifier}" from ` : "") + fileURLToPath(base || specifier),
+      // @ts-ignore there's no assertion for type and `error` is thus `unknown`
       error.message,
     );
   }
