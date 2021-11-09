@@ -181,7 +181,9 @@ export class EventEmitter {
 
       try {
         err = inspect(err);
-      } catch {}
+      } catch {
+        // pass
+      }
       throw new ERR_UNHANDLED_ERROR(err);
     }
     return false;
