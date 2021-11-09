@@ -260,6 +260,7 @@ function createWarningObject(
     warningErr.detail = detail;
   }
 
+  // @ts-ignore this function is not available in lib.dom.d.ts
   Error.captureStackTrace(warningErr, ctor || process.emitWarning);
 
   return warningErr;
@@ -382,11 +383,12 @@ class Process extends EventEmitter {
   nextTick = nextTick;
 
   /** https://nodejs.org/api/process.html#process_process_events */
-  //deno-lint-ignore ban-types
   on(event: "exit", listener: (code: number) => void): this;
+  // deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this;
+  // deno-lint-ignore ban-types
   on(event: typeof notImplementedEvents[number], listener: Function): this;
-  //deno-lint-ignore no-explicit-any
+  // deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.on("${event}")`);
@@ -399,11 +401,12 @@ class Process extends EventEmitter {
     return this;
   }
 
-  //deno-lint-ignore ban-types
   off(event: "exit", listener: (code: number) => void): this;
+  // deno-lint-ignore no-explicit-any
   off(event: string, listener: (...args: any[]) => void): this;
+  // deno-lint-ignore ban-types
   off(event: typeof notImplementedEvents[number], listener: Function): this;
-  //deno-lint-ignore no-explicit-any
+  // deno-lint-ignore no-explicit-any
   off(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.off("${event}")`);
