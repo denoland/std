@@ -59,6 +59,7 @@ export function hideStackFrames(fn: GenericFunction) {
 
 const captureLargerStackTrace = hideStackFrames(
   function captureLargerStackTrace(err) {
+    // @ts-ignore this function is not available in lib.dom.d.ts
     Error.captureStackTrace(err);
 
     return err;
