@@ -1,8 +1,11 @@
 # http
 
 Deno's standard HTTP server based on the
-[blazing fast native http API](https://deno.land/manual/runtime/http_server_apis#http-server-apis)
-under the hood.
+[blazing fast native http API](https://deno.land/manual/runtime/http_server_apis#http-server-apis).
+
+## Table of Contents
+
+- [Minimal Server](#minimal-server)
 
 ## Minimal Server
 
@@ -25,6 +28,7 @@ export type Handler = (request: HttpRequest) => Response | Promise<Response>;
 ```
 
 `std/http` follows web standards, specifically parts of the Fetch API.
+
 `HttpRequest` is an extension of the
 [`Request` web standard](https://developer.mozilla.org/en-US/docs/Web/API/Request),
 adding connection information and some helper functions to make it more
@@ -32,7 +36,7 @@ convenient to use on servers. The expected return value follows the same Fetch
 standard and is expected to be a
 [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response).
 
-Here is an example handler that echoes the request body back:
+Here is an example handler that echoes the request body:
 
 ```typescript
 const handle: Handler = (req) => {
@@ -45,7 +49,7 @@ const handle: Handler = (req) => {
 
 ## HTTP Status Codes and Methods
 
-The `Status` and `Method` enums offers helper constants for standard HTTP status
+The `Status` and `Method` enums offer helper constants for standard HTTP status
 codes and methods:
 
 ```ts
@@ -75,8 +79,8 @@ responses like deserialization, compression, validation, CORS etc.
 
 A middleware is a special kind of `Handler` that can pass control on to a next
 handler during its flow, allowing it to only solve a specific part of handling
-the request without needing to know about the rest. As the handler it passes
-onto can be a middleware itself, this allows to build chains like this:
+the request without needing to know about the rest. The next handler can also
+be middleware itself, enabling to build chains like this:
 
 ```
 Request ----------------------------------------->
@@ -87,9 +91,11 @@ log - authenticate - parseJson - validate - handle
 ```
 
 Middleware is just a handler that **can** call the next handler to pass on
-control. Middleware will sometimes be used to ensure that some condition is met
+control.
+
+Middleware will sometimes be used to ensure that some condition is met
 before passing the request on (e.g. authentication, validation), to pre-process
-requests in some way to make handling it simpler and less repetitive
+requests in some way to make handling them simpler and less repetitive
 (deserialization, database preloading) or to format responses in some way (CORS,
 compression).
 
@@ -150,7 +156,7 @@ context data.
 ### Writing Middleware
 
 Writing a middleware is the same as writing a `Handler`, except that it gets
-passed an additional argument, which is the rest of the chain and should be
+passed an additional argument - the rest of the chain, which should be
 called to pass control on. Canonically, that parameter is called `next`.
 
 To write middleware in typescript, there are two things to decide upfront:
