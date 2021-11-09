@@ -4,12 +4,5 @@ export function unlink(path: string | URL, callback: (err?: Error) => void) {
 }
 
 export function unlinkSync(path: string | URL) {
-  try {
-    Deno.removeSync(path);
-  } catch (e) {
-    if (e instanceof Deno.errors.NotFound) {
-      e.code = "ENOENT";
-    }
-    throw e;
-  }
+  Deno.removeSync(path);
 }

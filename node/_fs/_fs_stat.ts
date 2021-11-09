@@ -284,14 +284,6 @@ export function statSync(
   path: string | URL,
   options: statOptions = { bigint: false },
 ): Stats | BigIntStats {
-  let origin;
-  try {
-    origin = Deno.statSync(path);
-  } catch (e) {
-    if (e instanceof Deno.errors.NotFound) {
-      e.code = "ENOENT";
-    }
-    throw e;
-  }
+  const origin = Deno.statSync(path);
   return CFISBIS(origin, options.bigint);
 }
