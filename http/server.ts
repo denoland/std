@@ -528,6 +528,12 @@ export class Server {
 
 /** Additional serve options. */
 export interface ServeInit {
+  /**
+   * Optionally specifies the address to listen on, in the form
+   * "host:port".
+   */
+  addr?: string;
+
   /** An AbortSignal to close the server and all connections. */
   signal?: AbortSignal;
 }
@@ -537,13 +543,13 @@ export interface ServeInit {
  * handles requests on these connections with the given handler.
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveListener } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
  * const listener = Deno.listen({ port: 4505 });
  *
  * console.log("server listening on http://localhost:4505");
  *
- * await serve(listener, (request) => {
+ * await serveListener(listener, (request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
  *   ) ?? "Unknown"}`;
@@ -556,10 +562,10 @@ export interface ServeInit {
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
  */
-export async function serve(
+export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
-  options?: ServeInit,
+  options?: Omit<ServeInit, "addr">,
 ): Promise<void> {
   const server = new Server({ handler });
 
@@ -570,7 +576,101 @@ export async function serve(
   return await server.serve(listener);
 }
 
+/** Serves HTTP requests with the given handler.
+ *
+ * You can specifies `addr` option, which is the address to listen on,
+ * in the form "host:port". The default is "0.0.0.0:8000".
+ *
+ * The below example serves with the port 8000.
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * serve((_req) => new Response("Hello, world"));
+ * ```
+ *
+ * You can change the listening address by `addr` option. The below example
+ * serves with the port 3000.
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * console.log("server is starting at localhost:3000");
+ * serve((_req) => new Response("Hello, world"), { addr: ":3000" });
+ * ```
+ *
+ * @param handler The handler for individual HTTP requests.
+ * @param options The options. See `ServeInit` documentation for details.
+ */
+export async function serve(
+  handler: Handler,
+  options: ServeInit = {},
+): Promise<void> {
+  const addr = options.addr ?? ":8000";
+  const server = new Server({ addr, handler });
+
+  if (options?.signal) {
+    options.signal.onabort = () => server.close();
+  }
+
+  return await server.listenAndServe();
+}
+
+interface ServeTlsInit extends ServeInit {
+  /** The path to the file containing the TLS private key. */
+  keyFile: string;
+
+  /** The path to the file containing the TLS certificate */
+  certFile: string;
+}
+
+/** Serves HTTPS requests with the given handler.
+ *
+ * You must specify `keyFile` and `certFile` options.
+ *
+ * You can specifies `addr` option, which is the address to listen on,
+ * in the form "host:port". The default is "0.0.0.0:8443".
+ *
+ * The below example serves with the default port 8443.
+ *
+ * ```ts
+ * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * const certFile = "/path/to/certFile.crt";
+ * const keyFile = "/path/to/keyFile.key";
+ * console.log("server is starting at https://localhost:8443");
+ * serveTls((_req) => new Response("Hello, world"), { certFile, keyFile });
+ * ```
+ *
+ * @param handler The handler for individual HTTPS requests.
+ * @param options The options. See `ServeTlsInit` documentation for details.
+ * @returns
+ */
+export async function serveTls(
+  handler: Handler,
+  options: ServeTlsInit,
+): Promise<void> {
+  if (!options.keyFile) {
+    throw new Error("TLS config is given, but 'keyFile' is missing.");
+  }
+
+  if (!options.certFile) {
+    throw new Error("TLS config is given, but 'certFile' is missing.");
+  }
+
+  const addr = options.addr ?? ":8443";
+  const server = new Server({ addr, handler });
+
+  if (options?.signal) {
+    options.signal.onabort = () => server.close();
+  }
+
+  return await server.listenAndServeTls(
+    options.certFile,
+    options.keyFile,
+  );
+}
+
 /**
+ * @deprecated Use `serve` instead.
+ *
  * Constructs a server, creates a listener on the given address, accepts
  * incoming connections, and handles requests on these connections with the
  * given handler.
@@ -615,6 +715,8 @@ export async function listenAndServe(
 }
 
 /**
+ * @deprecated Use `serveTls` instead.
+ *
  * Constructs a server, creates a listener on the given address, accepts
  * incoming connections, upgrades them to TLS, and handles requests on these
  * connections with the given handler.
