@@ -666,6 +666,7 @@ Deno.test(`serve listens on the port 8000 by default`, async () => {
   }
 });
 
+/* TODO(kt3k): enable this test case
 Deno.test(`serve should handle websocket requests`, async () => {
   const addr = "localhost:4505";
   const url = `ws://${addr}`;
@@ -696,6 +697,7 @@ Deno.test(`serve should handle websocket requests`, async () => {
     await servePromise;
   }
 });
+*/
 
 Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
   const hostname = "localhost";
