@@ -61,7 +61,7 @@ for await (const file of dir) {
       ]);
       test.close();
 
-      let stderr = decoder.decode(rawStderr);
+      const stderr = decoder.decode(rawStderr);
       if (rawStderr.length) console.error(stderr);
       if (rawOutput.length) console.log(decoder.decode(rawOutput));
 

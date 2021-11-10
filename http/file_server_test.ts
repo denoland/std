@@ -301,7 +301,7 @@ Deno.test("serveWithUnorthodoxFilename", async function () {
     assert(res.headers.has("access-control-allow-origin"));
     assert(res.headers.has("access-control-allow-headers"));
     assertEquals(res.status, 200);
-    let _ = await res.text();
+    const _ = await res.text();
     res = await fetch("http://localhost:4507/testdata/test%20file.txt");
     assert(res.headers.has("access-control-allow-origin"));
     assert(res.headers.has("access-control-allow-headers"));
