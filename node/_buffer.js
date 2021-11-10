@@ -1,3 +1,5 @@
+// deno-lint-ignore-file
+
 import {
   ERR_BUFFER_OUT_OF_BOUNDS,
   ERR_INVALID_ARG_TYPE,

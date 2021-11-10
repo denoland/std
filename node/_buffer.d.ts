@@ -1,3 +1,5 @@
+// deno-lint-ignore-file
+
 type BufferEncoding = string;
 
 type WithImplicitCoercion<T> =
