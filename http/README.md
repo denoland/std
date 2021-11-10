@@ -18,14 +18,14 @@ Deno's standard HTTP server based on the
 Run this file with `--allow-net` and try requesting `http://localhost:8000`:
 
 ```ts
-import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+import { serve } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 
-await listenAndServe(":8000", () => new Response("Hello World"));
+await serve(() => new Response("Hello World"));
 ```
 
 ## Handling Requests
 
-`listenAndServe` expects a `Handler`, which is a function that receives an
+`serve` expects a `Handler`, which is a function that receives an
 [`HttpRequest`](https://doc.deno.land/https/deno.land/std/http/mod.ts#HttpRequest)
 and returns a [`Response`](https://doc.deno.land/builtin/stable#Response):
 
@@ -61,7 +61,7 @@ codes and methods:
 ```ts
 import {
   Handler,
-  listenAndServe,
+  serve,
   Method,
   Status,
 } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
@@ -75,7 +75,7 @@ const handle: Handler = (req) => {
   return new Response("Hello!");
 };
 
-await listenAndServe(":8000", handle);
+await serve(handle);
 ```
 
 ## Middleware
@@ -292,7 +292,7 @@ chains as much as you like. This (nonsensical) example does the exact same as
 the one above:
 
 ```typescript
-import { chain } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+import { chain, serve } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 import { auth, cors } from "./my_middleware.ts";
 
 function sayHello() {
@@ -305,7 +305,7 @@ const core = chain(cors)
 const handler = chain(auth)
   .add(core);
 
-await listenAndServe(":8000", handler);
+await serve(handler);
 ```
 
 ### Chain Type Safety
@@ -314,7 +314,7 @@ Middleware chains built with the `chain()` function are type safe and
 order-aware regarding request context, even for arbitrary nesting.
 
 This means that Typescript will error if you try to use a chain as a handler for
-e.g. `listenAndServe` if that chain does not satisfy all its internal context
+e.g. `serve` if that chain does not satisfy all its internal context
 requirements itself in the right order. An example using the two middleares we
 wrote above:
 
@@ -337,7 +337,7 @@ const handleStringArray = chain(validate)
   .add(yaml)
   .add(handle);
 
-await listenAndServe(":8000", handleStringArray);
+await serve(handleStringArray);
 ```
 
 But this will:
@@ -347,7 +347,7 @@ const handleStringArray = chain(yaml)
   .add(validate)
   .add(handle);
 
-await listenAndServe(":8000", handleStringArray);
+await serve(handleStringArray);
 ```
 
 ## File Server

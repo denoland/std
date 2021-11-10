@@ -40,7 +40,8 @@
       "test-querystring.js",
       "test-readline-csi.js",
       "test-url-format-whatwg.js",
-      "test-url-urltooptions.js"
+      "test-url-urltooptions.js",
+      "test-util.js"
     ],
     "pummel": [
       "test-net-write-callbacks.js"
@@ -161,8 +162,10 @@
       "test-net-write-fully-async-hex-string.js",
       "test-querystring-escape.js",
       "test-querystring-maxKeys-non-finite.js",
+      "test-querystring-multichar-separator.js",
       "test-querystring.js",
       "test-readline-csi.js",
+      "test-readline-emit-keypress-events.js",
       "test-stream-await-drain-writers-in-synchronously-recursion-write.js",
       "test-stream-big-packet.js",
       "test-stream-big-push.js",
@@ -269,7 +272,8 @@
       "test-url-format-whatwg.js",
       "test-url-pathtofileurl.js",
       "test-url-urltooptions.js",
-      "test-util-inherits.js"
+      "test-util-inherits.js",
+      "test-util.js"
     ],
     "pummel": [
       "test-net-pingpong-delay.js",

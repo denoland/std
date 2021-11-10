@@ -175,7 +175,10 @@ function isNonNullObject(value: unknown): value is NonNullable<object> {
 
 function getKeys<T extends object>(record: T): Array<keyof T> {
   const ret = Object.getOwnPropertySymbols(record) as Array<keyof T>;
-  filterInPlace(ret, (key) => record.propertyIsEnumerable(key));
+  filterInPlace(
+    ret,
+    (key) => Object.prototype.propertyIsEnumerable.call(record, key),
+  );
   ret.push(...(Object.keys(record) as Array<keyof T>));
 
   return ret;
