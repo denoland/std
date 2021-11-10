@@ -50,8 +50,14 @@ export type MiddlewareChain<
 > = {
   (
     req: Parameters<Middleware<Needs, Adds>>[0],
-    next?: Parameters<Middleware<Needs, Adds>>[1],
+    next: Parameters<Middleware<Needs, Adds>>[1],
   ): ReturnType<Middleware<Needs, Adds>>;
+
+  add<AddedNeeds>(
+    handler: Handler<AddedNeeds>,
+  ): Handler<
+    Expand<Needs & SafeOmit<AddedNeeds, Adds>>
+  >;
 
   /**
    * Chain a given middleware to this middleware, returning a new
@@ -107,10 +113,10 @@ function composeMiddleware<
   FirstNeeds extends EmptyContext,
   FirstAdd extends EmptyContext,
   SecondNeeds extends EmptyContext,
-  SecondAdd extends EmptyContext,
+  SecondAdd extends EmptyContext = EmptyContext,
 >(
   first: Middleware<FirstNeeds, FirstAdd>,
-  second: Middleware<SecondNeeds, SecondAdd>,
+  second: Middleware<SecondNeeds, SecondAdd> | Handler<SecondNeeds>,
 ): Middleware<
   Expand<FirstNeeds & SafeOmit<SecondNeeds, FirstAdd>>,
   Expand<MergeContext<FirstAdd, SecondAdd>>
@@ -127,15 +133,25 @@ function composeMiddleware<
     );
 }
 
-/** Wraps the given middleware in a `MiddlewareChain` so it can be `.add()`ed onto */
+export function chain<Needs extends EmptyContext>(
+  handler: Handler<Needs>,
+): Handler<Needs>;
 export function chain<
   Needs extends EmptyContext,
   Adds extends EmptyContext = EmptyContext,
 >(
   middleware: Middleware<Needs, Adds>,
-): MiddlewareChain<Needs, Adds> {
-  const copy = middleware.bind({}) as MiddlewareChain<Needs, Adds>;
+): MiddlewareChain<Needs, Adds>;
+/** Wraps the given middleware in a `MiddlewareChain` so it can be `.add()`ed onto */
+export function chain<
+  Needs extends EmptyContext,
+  Adds extends EmptyContext = EmptyContext,
+>(
+  middleware: Middleware<Needs, Adds> | Handler<Needs>,
+): MiddlewareChain<Needs, Adds> | Handler<Needs> {
+  const copy = middleware.bind({}) as typeof middleware;
 
+  // @ts-ignore the type is already defined and the implementation is the same
   copy.add = (m) =>
     chain(
       composeMiddleware(
@@ -144,7 +160,7 @@ export function chain<
       ),
     );
 
-  return copy;
+  return copy as MiddlewareChain<Needs, Adds> | Handler<Needs>;
 }
 
 type LeftDistinct<
