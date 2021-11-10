@@ -165,6 +165,7 @@
       "test-querystring-multichar-separator.js",
       "test-querystring.js",
       "test-readline-csi.js",
+      "test-readline-emit-keypress-events.js",
       "test-stream-await-drain-writers-in-synchronously-recursion-write.js",
       "test-stream-big-packet.js",
       "test-stream-big-push.js",
