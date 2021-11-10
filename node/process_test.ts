@@ -383,3 +383,19 @@ Deno.test("process.on, process.off, process.removeListener doesn't throw on unim
     process.removeListener(ev, handler);
   });
 });
+
+Deno.test("process in worker", async () => {
+  const promise = deferred();
+
+  const worker = new Worker(
+    new URL("./testdata/process_worker.ts", import.meta.url).href,
+    { type: "module", deno: true },
+  );
+  worker.addEventListener("message", (e) => {
+    assertEquals(e.data, "hello");
+    promise.resolve();
+  });
+
+  await promise;
+  worker.terminate();
+});
