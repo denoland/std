@@ -140,6 +140,18 @@ Note that we choose when or even if we call `next` and what to do with its resul
 `next` is just a handler function and as long as our middleware returns a `Response`,
 it does not matter how we produced it.
 
+### Request Context
+
+Sometimes you want your middleware to pass information onto the handlers after it.
+The way to do that is request context.
+
+Each `HttpRequest`s has an attached `context` object. Arbitrary properties with
+arbitrary data can be added to the context via the `.addContext()` method to later
+be read by other functions handling the same request.
+
+Contexts are very strictly typed to prevent runtime errors due to missing
+context data.
+
 To write middleware in typescript, there are two things to decide upfront:
 
 1. Does your middleware depend on any specific context data of previous
@@ -253,14 +265,6 @@ const handler = chain(auth)
 await listenAndServe(":8000", handler);
 ```
 
-### Request Context
-
-Request context is a way to pass additional data between middlewares. Each
-`HttpRequest`s has an attached `context` object. Arbitrary properties with
-arbitrary data can be added to the context via the `.addContext()` method.
-
-Contexts are very strictly typed to prevent runtime errors due to missing
-context data.
 ### Chain Type Safety
 
 Middleware chains built with the `chain()` function are type safe and
