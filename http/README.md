@@ -7,11 +7,11 @@ Deno's standard HTTP server based on the
 
 - [Minimal Server](#minimal-server)
 - [Handling Requests](#handling-requests)
-    - [HTTP Status Codes and Methods](#http-status-codes-and-methods)
+  - [HTTP Status Codes and Methods](#http-status-codes-and-methods)
 - [Middleware](#middleware)
-    - [Writing Simple Middleware]()
-    - [Request Context]()
-    - [Using Middleware]()
+  - [Writing Simple Middleware]()
+  - [Request Context]()
+  - [Using Middleware]()
 
 ## Minimal Server
 
@@ -85,8 +85,8 @@ responses like deserialization, compression, validation, CORS etc.
 
 A middleware is a special kind of `Handler` that can pass control on to a next
 handler during its flow, allowing it to only solve a specific part of handling
-the request without needing to know about the rest. The next handler can also
-be middleware itself, enabling to build chains like this:
+the request without needing to know about the rest. The next handler can also be
+middleware itself, enabling to build chains like this:
 
 ```
 Request ----------------------------------------->
@@ -99,30 +99,30 @@ log - authenticate - parseJson - validate - handle
 Middleware is just a handler that **can** call the next handler to pass on
 control.
 
-Middleware will sometimes be used to ensure that some condition is met
-before passing the request on (e.g. authentication, validation), to pre-process
+Middleware will sometimes be used to ensure that some condition is met before
+passing the request on (e.g. authentication, validation), to pre-process
 requests in some way to make handling them simpler and less repetitive
 (deserialization, database preloading) or to format responses in some way (CORS,
 compression).
 
-`std/http` has a simple, yet powerful, strongly typed middleware system:
+`std/http` has a simple, yet powerful, strongly typed middleware system.
 
 ### Writing Middleware
 
 Writing middleware is the same as writing a `Handler`, except that it gets
-passed an additional argument, canonically called `next`, which is a handler
-representing the rest of the chain after this middleware. `std/http` exports
-a `Middleware` function type that helps to write a function with the middleware
-signature.
+passed an additional argument - canonically called `next` - which is a handler
+representing the rest of the chain after our middleware. `std/http` exports a
+`Middleware` function type that can be used to write Middleware.
 
-Let's look at an example. A simple middleware that logs requests could be written like this:
+Let's look at an example. A simple middleware that logs requests could be
+written like this:
 
 ```typescript
 import { Middleware } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 
 export const log: Middleware = async (req, next) => {
   const start = performance.now();
-  const res = await next(req); 
+  const res = await next(req);
   const duration = performance.now() - start;
 
   console.log(
@@ -133,43 +133,44 @@ export const log: Middleware = async (req, next) => {
 };
 ```
 
-This will log a message to stdout for every request, noting how long it took
-to respond, the requests method and url and the response's status code.
+This will log a message to stdout for every request, noting how long it took to
+respond, the requests method and url and the response's status code.
 
-Note that we choose when or even if we call `next` and what to do with its result.
-`next` is just a handler function and as long as our middleware returns a `Response`,
-it does not matter how we produced it.
+Note that we choose when or even if we call `next` and what to do with its
+result. `next` is just a handler function and as long as our middleware returns
+a `Response`, it does not matter how we produced it.
 
 ### Request Context
 
-Sometimes you want your middleware to pass information onto the handlers after it.
-The way to do that is request context.
+Sometimes you want your middleware to pass information onto the handlers after
+it. The way to do that is request context.
 
 Each `HttpRequest`s has an attached `context` object. Arbitrary properties with
-arbitrary data can be added to the context via the `.addContext()` method to later
-be read by other functions handling the same request.
+arbitrary data can be added to the context via the `.addContext()` method to
+later be read by other functions handling the same request.
 
-Contexts are very strictly typed to prevent runtime errors due to missing
-context data.
+Contexts are very strictly typed to prevent runtime errors.
 
 To write middleware in typescript, there are two things to decide upfront:
 
-1. Does your middleware depend on any specific context data of previous
-   middleware?
-2. Does your middleware add any data to the context for its following middleware
-   to consume?
+### Adding Context
 
-Then you write a function using the `Middleware` type, which takes the two
-points above as optional type arguments, defaulting to the `EmptyContext` (which
-is an empty object). 
-A middleware that ensures the incoming payload is yaml and parses it into the
-request context as `data` for following middleware to consume could be written
-like this:
+The `Middleware` type actually takes two optional type arguments:
+
+- Context of previous middleware we need
+- Context we add for handlers after us to consume
+
+Both default to the `EmptyContext`. Let's look at an example on how to add
+context:
+
+Assume our server wants to accept data in the YAML format. To deal with the YAML
+parsing and error handling, we could write a middleware like this:
 
 ```typescript
 import {
   EmptyContext,
   Middleware,
+  Status,
 } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 import { parse } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
 
@@ -177,21 +178,39 @@ export const yaml: Middleware<EmptyContext, { data: unknown }> = async (
   req,
   next,
 ) => {
-  const rawBody = await req.text();
-  const data = parse(rawBody);
+  let data: unknown;
+
+  try {
+    const rawBody = await req.text();
+    data = parse(rawBody);
+  } catch {
+    return new Response(
+      "Could not parse input. Please provide valid YAML",
+      { status: Status.UnsupportedMediaType },
+    );
+  }
+
   const newReq = req.addContext({ data });
 
   return await next(newReq);
 };
 ```
 
-The Typescript compiler will make sure that you actually pass the `data` context
-that you decided onto the `next()` handler.
+This will respond early with an error if the request does not contain a valid
+YAML body and will otherwise parse that YAML, add the parsed Javascript value to
+the request context and pass that on to the rest of the chain.
 
-Let's write a middleware that will later depend on that `data` property,
-validating that it is a list of strings. Note that we also change the context
-here, overriding the `data` property to be `string[]` after this middleware
-instead of `unknown`, which will allow following code to work with it safely:
+The Typescript compiler will ensure that we actually pass the promised `data`
+property in the context to the `next` handler, because we told it that we will
+by setting `Middleware`s second type parameter.
+
+### Reading Context
+
+Assume our server only accepts a list of strings as an input and we want to
+write a middleware that handles that validation.
+
+To do that, we need to access the previously added `data` property on the
+context:
 
 ```typescript
 import { Middleware } from "../../../middleware.ts";
@@ -217,12 +236,16 @@ export const validate: Middleware<{ data: unknown }, { data: string[] }> = (
 };
 ```
 
-Without explicitly declaring in the `Middleware` type that you depend on a
-certain piece of context data, Typescript will not let you access it on the
-actual request context object.
+This will check if the parsed `data` value is an Array and if every element in
+it is a string. If that is true, it will pass on to the rest of the chain. Note
+that we actually change the context - we declare that after our middleware, the
+`data` property has the type `string[]` instead of the previous `unknown`.
 
+Without explicitly declaring in the `Middleware` type that we depend on `data`
+in the context, Typescript would not have let us access it on the request
+context.
 
-### Using Middleware
+### Chaining Middleware
 
 To chain middleware, use the `chain()` function:
 
