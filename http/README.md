@@ -61,8 +61,8 @@ codes and methods:
 ```ts
 import {
   Handler,
-  serve,
   Method,
+  serve,
   Status,
 } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 
