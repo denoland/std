@@ -383,3 +383,13 @@ Deno.test("process.on, process.off, process.removeListener doesn't throw on unim
     process.removeListener(ev, handler);
   });
 });
+
+Deno.test("process.memoryUsage()", () => {
+  const mem = process.memoryUsage();
+  assert(typeof mem.rss === "number");
+  assert(typeof mem.heapTotal === "number");
+  assert(typeof mem.heapUsed === "number");
+  assert(typeof mem.external === "number");
+  assert(typeof mem.arrayBuffers === "number");
+  assertEquals(mem.arrayBuffers, 0);
+});

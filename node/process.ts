@@ -471,6 +471,19 @@ class Process extends EventEmitter {
     return [sec - prevSec, nano - prevNano];
   }
 
+  memoryUsage(): {
+    rss: number;
+    heapTotal: number;
+    heapUsed: number;
+    external: number;
+    arrayBuffers: number;
+  } {
+    return {
+      ...Deno.memoryUsage(),
+      arrayBuffers: 0,
+    };
+  }
+
   /** https://nodejs.org/api/process.html#process_process_stderr */
   stderr = stderr;
 
