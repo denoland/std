@@ -200,7 +200,13 @@ Deno.test("module has proper members", function () {
 });
 
 Deno.test("default imports match star imports", () => {
-  const SKIP = new Set(["assert", "assert/strict", "console", "constants"]);
+  const SKIP = new Set([
+    "assert",
+    "assert/strict",
+    "console",
+    "constants",
+    "internal/readline/utils",
+  ]);
 
   assertEquals(Object.keys(nodeMods), Object.keys(nodeModsStar));
 
@@ -219,7 +225,7 @@ Deno.test("default imports match star imports", () => {
     assertEquals(keysA, keysB, `keys mismatch in mod: ${key}`);
 
     for (const subkey of keysA) {
-      assertEquals(modA[subkey], modB[subkey]);
+      assertEquals(modA[subkey], modB[subkey], `${key} has mismatched members`);
     }
   }
 });
