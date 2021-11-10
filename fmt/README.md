@@ -247,7 +247,7 @@ Note: This module was ported from
 ## Usage
 
 ```ts
-import { prettyBytes } from "https://deno.land/x/pretty_bytes@v1.0.5/mod.ts";
+import { prettyBytes } from "https://deno.land/std@$STD_VERSION/fmt/bytes.ts";
 
 prettyBytes(1337);
 //=> '1.34 kB'
