@@ -245,23 +245,42 @@ Without explicitly declaring in the `Middleware` type that we depend on `data`
 in the context, Typescript would not have let us access it on the request
 context.
 
-### Chaining Middleware
-
-To chain middleware, use the `chain()` function:
+This also works with `Handler` - we can and need to tell it which request context
+we depend on to use it. Assume that after our middleware above, we want to respond
+with a greeting for each string in the provided Array:
 
 ```typescript
-import { chain } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
-import { auth, cors } from "./my_middleware.ts";
+import { Handler } from "../../../middleware.ts";
 
-function sayHello() {
-  return new Response("Hello");
-}
+export const handleGreetings: Handler<{ data: string[] }> = (
+  req,
+  next,
+) => {
+  const { data } = req.context;
+  const greetings = data
+    .map(it => `Hello ${it}!`)
+    .join("\n");
 
-const handler = chain(auth)
-  .add(cors)
-  .add(sayHello);
+  return new Response(greetings);
+};
+```
 
-await listenAndServe(":8000", handler);
+### Chaining Middleware
+
+How do we actually connect middleware and handlers into a chain? For that, we need
+the `chain` function.
+
+Let's do that using our previous examples (assumed to be exported by the `examples.ts` file here):
+
+```typescript
+import { chain, serve } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+import { yaml, validate, handleGreeting } from "./examples.ts"
+
+const handler = chain(yaml)
+  .add(validate)
+  .add(handleGreeting);
+
+await serve(handler);
 ```
 
 This will pass requests through `auth`, which passes on to `cors`, which passes
