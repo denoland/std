@@ -5,22 +5,32 @@ import {
   assertStringIncludes,
 } from "../testing/asserts.ts";
 import { BufReader } from "../io/buffer.ts";
-import { iterateReader, readAll, writeAll } from "../io/streams.ts";
+import { iterateReader, readAll, writeAll } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { FileServerArgs } from "./file_server.ts";
+import { serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 
 let fileServer: Deno.Process<Deno.RunOptions & { stdout: "piped" }>;
 
-type FileServerCfg = Omit<FileServerArgs, "_"> & { target?: string };
+interface FileServerCfg {
+  port?: string;
+  cors?: boolean;
+  "dir-listing"?: boolean;
+  dotfiles?: boolean;
+  host?: string;
+  cert?: string;
+  key?: string;
+  help?: boolean;
+  target?: string;
+}
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 
 async function startFileServer({
   target = ".",
-  port = 4507,
+  port = "4507",
   "dir-listing": dirListing = true,
   dotfiles = true,
 }: FileServerCfg = {}) {
@@ -28,6 +38,7 @@ async function startFileServer({
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -51,10 +62,11 @@ async function startFileServer({
 }
 
 async function startFileServerAsLibrary({}: FileServerCfg = {}) {
-  fileServer = await Deno.run({
+  fileServer = Deno.run({
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -205,6 +217,16 @@ Deno.test("serveDirectory", async function () {
     await killFileServer();
   }
 });
+Deno.test("serveDirectory with filename including percent symbol", async function () {
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/");
+    const page = await res.text();
+    assertStringIncludes(page, "%2525A.txt");
+  } finally {
+    await killFileServer();
+  }
+});
 
 Deno.test("serveFallback", async function () {
   await startFileServer();
@@ -275,9 +297,16 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
 Deno.test("serveWithUnorthodoxFilename", async function () {
   await startFileServer();
   try {
-    const malformedRes = await fetch("http://localhost:4507/testdata/%");
-    assertEquals(malformedRes.status, 400);
-    await malformedRes.text(); // Consuming the body so that the test doesn't leak resources
+    let res = await fetch("http://localhost:4507/testdata/%");
+    assert(res.headers.has("access-control-allow-origin"));
+    assert(res.headers.has("access-control-allow-headers"));
+    assertEquals(res.status, 200);
+    const _ = await res.text();
+    res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+    assert(res.headers.has("access-control-allow-origin"));
+    assert(res.headers.has("access-control-allow-headers"));
+    assertEquals(res.status, 200);
+    await res.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
     await killFileServer();
   }
@@ -307,10 +336,8 @@ Deno.test("printHelp", async function () {
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
-      // TODO(ry) It ought to be possible to get the help output without
-      // --allow-read.
-      "--allow-read",
       "file_server.ts",
       "--help",
     ],
@@ -365,12 +392,13 @@ Deno.test("file_server should ignore query params", async () => {
 
 async function startTlsFileServer({
   target = ".",
-  port = 4577,
+  port = "4577",
 }: FileServerCfg = {}) {
   fileServer = Deno.run({
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -427,6 +455,7 @@ Deno.test("partial TLS arguments fail", async function () {
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -475,7 +504,7 @@ Deno.test("file_server do not show dotfiles", async function () {
     assert(!(await res.text()).includes(".dotfile"));
 
     res = await fetch("http://localhost:4507/testdata/.dotfile");
-    assertEquals((await res.text()), "dotfile");
+    assertEquals(await res.text(), "dotfile");
   } finally {
     await killFileServer();
   }
@@ -900,5 +929,41 @@ Deno.test(
     } finally {
       await killFileServer();
     }
+  },
+);
+
+Deno.test(
+  "file_server `serveFile` serve test file",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    const localFile = new TextDecoder().decode(
+      await Deno.readFile(testdataPath),
+    );
+    assertEquals(res.status, 200);
+    assertEquals(await res.text(), localFile);
+  },
+);
+Deno.test(
+  "file_server `serveFile` should return 416 due to a bad range request (500-200)",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    req.headers.set("range", "bytes=500-200");
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 416);
+  },
+);
+Deno.test(
+  "file_server `serveFile` returns 304 for requests with if-modified-since if the requested resource has not been modified after the given date",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    const expectedEtag = await getTestFileEtag();
+    req.headers.set("if-none-match", expectedEtag);
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 304);
+    assertEquals(res.statusText, "Not Modified");
   },
 );

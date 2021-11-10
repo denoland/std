@@ -10,6 +10,19 @@ Deno.test({
 });
 
 Deno.test({
+  name: "build architecture",
+  fn() {
+    if (Deno.build.arch == "x86_64") {
+      assertEquals(os.arch(), "x64");
+    } else if (Deno.build.arch == "aarch64") {
+      assertEquals(os.arch(), "arm64");
+    } else {
+      throw new Error("unreachable");
+    }
+  },
+});
+
+Deno.test({
   name: "home directory is a string",
   ignore: true,
   fn() {
@@ -221,15 +234,25 @@ Deno.test({
 });
 
 Deno.test({
+  name: "os.cpus()",
+  fn() {
+    assertEquals(os.cpus().length, navigator.hardwareConcurrency);
+
+    for (const cpu of os.cpus()) {
+      assertEquals(cpu.model, "");
+      assertEquals(cpu.speed, 0);
+      assertEquals(cpu.times.user, 0);
+      assertEquals(cpu.times.nice, 0);
+      assertEquals(cpu.times.sys, 0);
+      assertEquals(cpu.times.idle, 0);
+      assertEquals(cpu.times.irq, 0);
+    }
+  },
+});
+
+Deno.test({
   name: "APIs not yet implemented",
   fn() {
-    assertThrows(
-      () => {
-        os.cpus();
-      },
-      Error,
-      "Not implemented",
-    );
     assertThrows(
       () => {
         os.getPriority();

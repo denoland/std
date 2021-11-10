@@ -1,14 +1,9 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
 /** ********** NOT IMPLEMENTED
- * ERR_INVALID_MODULE_SPECIFIER
- * ERR_INVALID_PACKAGE_TARGET
  * ERR_MANIFEST_ASSERT_INTEGRITY
- * ERR_MODULE_NOT_FOUND
- * ERR_PACKAGE_PATH_NOT_EXPORTED
  * ERR_QUICSESSION_VERSION_NEGOTIATION
  * ERR_REQUIRE_ESM
  * ERR_TLS_CERT_ALTNAME_INVALID
- * ERR_UNHANDLED_ERROR
  * ERR_WORKER_INVALID_EXEC_ARGV
  * ERR_WORKER_PATH
  * ERR_QUIC_ERROR
@@ -21,6 +16,7 @@
 import { getSystemErrorName, inspect } from "./util.ts";
 import { codeMap, errorMap } from "./internal_binding/uv.ts";
 import { assert } from "../_util/assert.ts";
+import { fileURLToPath } from "./url.ts";
 
 export { errorMap };
 
@@ -63,6 +59,7 @@ export function hideStackFrames(fn: GenericFunction) {
 
 const captureLargerStackTrace = hideStackFrames(
   function captureLargerStackTrace(err) {
+    // @ts-ignore this function is not available in lib.dom.d.ts
     Error.captureStackTrace(err);
 
     return err;
@@ -317,6 +314,9 @@ export class NodeSyntaxError extends NodeErrorAbstraction
   constructor(code: string, message: string) {
     super(SyntaxError.prototype.name, code, message);
     Object.setPrototypeOf(this, SyntaxError.prototype);
+    this.toString = function () {
+      return `${this.name} [${this.code}]: ${this.message}`;
+    };
   }
 }
 
@@ -324,6 +324,9 @@ export class NodeRangeError extends NodeErrorAbstraction {
   constructor(code: string, message: string) {
     super(RangeError.prototype.name, code, message);
     Object.setPrototypeOf(this, RangeError.prototype);
+    this.toString = function () {
+      return `${this.name} [${this.code}]: ${this.message}`;
+    };
   }
 }
 
@@ -331,6 +334,9 @@ export class NodeTypeError extends NodeErrorAbstraction implements TypeError {
   constructor(code: string, message: string) {
     super(TypeError.prototype.name, code, message);
     Object.setPrototypeOf(this, TypeError.prototype);
+    this.toString = function () {
+      return `${this.name} [${this.code}]: ${this.message}`;
+    };
   }
 }
 
@@ -338,6 +344,9 @@ export class NodeURIError extends NodeErrorAbstraction implements URIError {
   constructor(code: string, message: string) {
     super(URIError.prototype.name, code, message);
     Object.setPrototypeOf(this, URIError.prototype);
+    this.toString = function () {
+      return `${this.name} [${this.code}]: ${this.message}`;
+    };
   }
 }
 
@@ -2063,6 +2072,14 @@ export class ERR_UNESCAPED_CHARACTERS extends NodeTypeError {
     );
   }
 }
+export class ERR_UNHANDLED_ERROR extends NodeError {
+  constructor(x: string) {
+    super(
+      "ERR_UNHANDLED_ERROR",
+      `Unhandled error. (${x})`,
+    );
+  }
+}
 export class ERR_UNKNOWN_BUILTIN_MODULE extends NodeError {
   constructor(x: string) {
     super(
@@ -2399,5 +2416,104 @@ export class ERR_INVALID_URL_SCHEME extends NodeTypeError {
       "ERR_INVALID_URL_SCHEME",
       `The URL must be ${res}`,
     );
+  }
+}
+
+export class ERR_MODULE_NOT_FOUND extends NodeError {
+  constructor(path: string, base: string, type: string = "package") {
+    super(
+      "ERR_MODULE_NOT_FOUND",
+      `Cannot find ${type} '${path}' imported from ${base}`,
+    );
+  }
+}
+
+export class ERR_INVALID_PACKAGE_CONFIG extends NodeError {
+  constructor(path: string, base?: string, message?: string) {
+    const msg = `Invalid package config ${path}${
+      base ? ` while importing ${base}` : ""
+    }${message ? `. ${message}` : ""}`;
+    super("ERR_INVALID_PACKAGE_CONFIG", msg);
+  }
+}
+
+export class ERR_INVALID_MODULE_SPECIFIER extends NodeTypeError {
+  constructor(request: string, reason: string, base?: string) {
+    super(
+      "ERR_INVALID_MODULE_SPECIFIER",
+      `Invalid module "${request}" ${reason}${
+        base ? ` imported from ${base}` : ""
+      }`,
+    );
+  }
+}
+
+export class ERR_INVALID_PACKAGE_TARGET extends NodeError {
+  constructor(
+    pkgPath: string,
+    key: string,
+    // deno-lint-ignore no-explicit-any
+    target: any,
+    isImport?: boolean,
+    base?: string,
+  ) {
+    let msg: string;
+    const relError = typeof target === "string" && !isImport &&
+      target.length && !target.startsWith("./");
+    if (key === ".") {
+      assert(isImport === false);
+      msg = `Invalid "exports" main target ${JSON.stringify(target)} defined ` +
+        `in the package config ${pkgPath}package.json${
+          base ? ` imported from ${base}` : ""
+        }${relError ? '; targets must start with "./"' : ""}`;
+    } else {
+      msg = `Invalid "${isImport ? "imports" : "exports"}" target ${
+        JSON.stringify(target)
+      } defined for '${key}' in the package config ${pkgPath}package.json${
+        base ? ` imported from ${base}` : ""
+      }${relError ? '; targets must start with "./"' : ""}`;
+    }
+    super("ERR_INVALID_PACKAGE_TARGET", msg);
+  }
+}
+
+export class ERR_PACKAGE_IMPORT_NOT_DEFINED extends NodeTypeError {
+  constructor(
+    specifier: string,
+    packageJSONUrl: URL | undefined,
+    base: string | URL,
+  ) {
+    const packagePath = packageJSONUrl &&
+      fileURLToPath(new URL(".", packageJSONUrl));
+    const msg = `Package import specifier "${specifier}" is not defined${
+      packagePath ? ` in package ${packagePath}package.json` : ""
+    } imported from ${fileURLToPath(base)}`;
+
+    super("ERR_PACKAGE_IMPORT_NOT_DEFINED", msg);
+  }
+}
+
+export class ERR_PACKAGE_PATH_NOT_EXPORTED extends NodeError {
+  constructor(
+    subpath: string,
+    packageJSONUrl: string,
+    base?: string,
+  ) {
+    const pkgPath = fileURLToPath(new URL(".", packageJSONUrl));
+    const basePath = base && fileURLToPath(base);
+
+    let msg: string;
+    if (subpath === ".") {
+      msg = `No "exports" main defined in ${pkgPath}package.json${
+        basePath ? ` imported from ${basePath}` : ""
+      }`;
+    } else {
+      msg =
+        `Package subpath '${subpath}' is not defined by "exports" in ${pkgPath}package.json${
+          basePath ? ` imported from ${basePath}` : ""
+        }`;
+    }
+
+    super("ERR_PACKAGE_PATH_NOT_EXPORTED", msg);
   }
 }

@@ -55,8 +55,7 @@ export function dayOfYear(date: Date): number {
 
   yearStart.setUTCFullYear(date.getUTCFullYear(), 0, 0);
   const diff = date.getTime() -
-    yearStart.getTime() +
-    (yearStart.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
+    yearStart.getTime();
 
   return Math.floor(diff / DAY);
 }

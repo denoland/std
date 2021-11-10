@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
+  assertArrayIncludes,
   assertEquals,
   assertThrows,
   fail,
@@ -500,6 +501,20 @@ Deno.test({
 });
 
 Deno.test({
+  name:
+    'When there is no "error" listener, emit() throws the first error passed to it as is',
+  fn() {
+    class CustomError extends Error {}
+    const ee = new EventEmitter();
+    assertThrows(
+      () => ee.emit("error", new CustomError("foo")),
+      CustomError,
+      "foo",
+    );
+  },
+});
+
+Deno.test({
   name: "asynchronous iteration of events are handled as expected",
   async fn() {
     const ee = new EventEmitter();
@@ -694,4 +709,41 @@ Deno.test("Elements that extend EventEmitter listener alias don't end up in a de
   } catch {
     fail();
   }
+});
+
+Deno.test("EventEmitter.setMaxListeners: if not targets are specified, it sets `n` to `defaultMaxListeners`.", () => {
+  const prevMaxListeners = EventEmitter.defaultMaxListeners;
+  try {
+    const n = prevMaxListeners + 10;
+    EventEmitter.setMaxListeners(n);
+    assertEquals(EventEmitter.defaultMaxListeners, n);
+  } finally {
+    EventEmitter.setMaxListeners(prevMaxListeners);
+  }
+});
+
+Deno.test("EventEmitter.setMaxListeners: it sets `n` as number of max listeners to each target.", () => {
+  const defaultMaxListeners = EventEmitter.defaultMaxListeners;
+  const n = defaultMaxListeners + 5;
+  const emitter1 = new EventEmitter();
+  const emitter2 = new EventEmitter();
+  EventEmitter.setMaxListeners(n, emitter1, emitter2);
+  assertEquals(emitter1.getMaxListeners(), n);
+  assertEquals(emitter2.getMaxListeners(), n);
+  assertEquals(
+    EventEmitter.defaultMaxListeners,
+    defaultMaxListeners,
+    "defaultMaxListeners shouldn't be mutated.",
+  );
+});
+
+// https://github.com/denoland/deno_std/issues/1511
+Deno.test("EventEmitter's public methods should be enumerable", () => {
+  const keys = Object.keys(EventEmitter.prototype);
+  assertArrayIncludes(keys, [
+    "emit",
+    "on",
+    "once",
+    "off",
+  ]);
 });

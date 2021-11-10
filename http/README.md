@@ -8,9 +8,9 @@ Server APIs utilizing Deno's
 [HTTP server APIs](https://deno.land/manual/runtime/http_server_apis#http-server-apis).
 
 ```ts
-import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
 
-listenAndServe(":8000", () => new Response("Hello World\n"));
+serve(() => new Response("Hello World\n"));
 
 console.log("http://localhost:8000/");
 ```
@@ -37,6 +37,20 @@ A small program for serving local files over HTTP.
 ```sh
 deno run --allow-net --allow-read https://deno.land/std/http/file_server.ts
 > HTTP server listening on http://localhost:4507/
+```
+
+## HTTP Status Code and Status Text
+
+Helper for processing status code and status text.
+
+```ts
+import {
+  Status,
+  STATUS_TEXT,
+} from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
+
+console.log(Status.NotFound); //=> 404
+console.log(STATUS_TEXT.get(Status.NotFound)); //=> "Not Found"
 ```
 
 ## Cookie

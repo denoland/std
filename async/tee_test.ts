@@ -60,3 +60,21 @@ Deno.test("async/tee - 3 branches - delayed consumption", async () => {
     ],
   );
 });
+
+Deno.test("async/tee - concurent .next calls", async () => {
+  const [left] = tee(gen());
+  const l = left[Symbol.asyncIterator]();
+  assertEquals(await Promise.all([l.next(), l.next(), l.next(), l.next()]), [{
+    value: 1,
+    done: false,
+  }, {
+    value: 2,
+    done: false,
+  }, {
+    value: 3,
+    done: false,
+  }, {
+    value: undefined,
+    done: true,
+  }]);
+});
