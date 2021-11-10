@@ -197,12 +197,13 @@ if (CACHE_MODE === "prompt") {
   let testArchiveExists = false;
 
   try {
-    Deno.lstat(new URL(archivePath, import.meta.url));
+    Deno.lstatSync(new URL(archivePath, import.meta.url));
     testArchiveExists = true;
   } catch (e) {
     if (!(e instanceof Deno.errors.NotFound)) {
       throw e;
     }
+    shouldDownload = true;
   }
 
   if (testArchiveExists) {
