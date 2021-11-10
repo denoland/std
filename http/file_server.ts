@@ -2,7 +2,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
 // This program serves files in the current directory over HTTP.
-// TODO(bartlomieju): Stream responses instead of reading them into memory.
 // TODO(bartlomieju): Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
@@ -11,8 +10,9 @@ import { listenAndServe, listenAndServeTls } from "./server.ts";
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
-import { readRange } from "../io/files.ts";
 import { red } from "../fmt/colors.ts";
+
+const DEFAULT_CHUNK_SIZE = 16_640;
 
 interface EntryInfo {
   mode: string;
@@ -21,33 +21,26 @@ interface EntryInfo {
   name: string;
 }
 
-export interface FileServerArgs {
+interface FileServerArgs {
   _: string[];
   // -p --port
-  p?: number;
-  port?: number;
+  port: string;
   // --cors
-  cors?: boolean;
+  cors: boolean;
   // --no-dir-listing
-  "dir-listing"?: boolean;
-  dotfiles?: boolean;
+  "dir-listing": boolean;
+  dotfiles: boolean;
   // --host
-  host?: string;
+  host: string;
   // -c --cert
-  c?: string;
-  cert?: string;
+  cert: string;
   // -k --key
-  k?: string;
-  key?: string;
+  key: string;
   // -h --help
-  h?: boolean;
-  help?: boolean;
+  help: boolean;
 }
 
 const encoder = new TextEncoder();
-
-const serverArgs = parse(Deno.args) as FileServerArgs;
-const target = posix.resolve(serverArgs._[0] ?? "");
 
 const MEDIA_TYPES: Record<string, string> = {
   ".md": "text/markdown",
@@ -188,7 +181,7 @@ async function createEtagHash(message: string) {
   const hashType = "SHA-1"; // Faster, and this isn't a security sensitive cryptographic use case
 
   // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-  const msgUint8 = new TextEncoder().encode(message);
+  const msgUint8 = encoder.encode(message);
   const hashBuffer = await crypto.subtle.digest(hashType, msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(byteToHex).join("");
@@ -303,7 +296,7 @@ export async function serveFile(
 
   // Use the parsed value if available, fallback to the start and end of the entire file
   const start = parsed && parsed[1] ? +parsed[1] : 0;
-  const end = parsed && parsed[2] ? +parsed[2] : Math.max(0, fileInfo.size - 1);
+  const end = parsed && parsed[2] ? +parsed[2] : fileInfo.size - 1;
 
   let status = Status.OK;
 
@@ -314,12 +307,11 @@ export async function serveFile(
   }
 
   // Return 416 if `start` isn't less than or equal to `end`, or `start` or `end` are greater than the file's size
-  const maxRange =
-    (typeof fileInfo.size === "number" ? Math.max(0, fileInfo.size - 1) : 0);
+  const maxRange = fileInfo.size - 1;
 
   if (
-    range && !parsed ||
-    (typeof start !== "number" || start > end || start > maxRange ||
+    range && (!parsed ||
+      typeof start !== "number" || start > end || start > maxRange ||
       end > maxRange)
   ) {
     const status = Status.RequestedRangeNotSatisfiable;
@@ -334,21 +326,34 @@ export async function serveFile(
     });
   }
 
-  let body = null;
+  // Set content length
+  const contentLength = end - start + 1;
+  headers.set("content-length", `${contentLength}`);
 
-  try {
-    // Read the selected range of the file
-    const bytes = await readRange(file, { start, end });
-
-    // Set content length and response body
-    headers.set("content-length", bytes.length.toString());
-    body = bytes;
-  } catch (e) {
-    // Fallback on URIError (400 Bad Request) if unable to read range
-    throw URIError(String(e));
-  }
-
-  file.close();
+  // Create a stream of the file instead of loading it into memory
+  let bytesSent = 0;
+  const body = new ReadableStream({
+    async start() {
+      await file.seek(start, Deno.SeekMode.Start);
+    },
+    async pull(controller) {
+      const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
+      const bytesRead = await file.read(bytes);
+      if (bytesRead === null) {
+        file.close();
+        controller.close();
+        return;
+      }
+      controller.enqueue(
+        bytes.slice(0, Math.min(bytesRead, contentLength - bytesSent)),
+      );
+      bytesSent += bytesRead;
+      if (bytesSent > contentLength) {
+        file.close();
+        controller.close();
+      }
+    },
+  });
 
   const statusText = STATUS_TEXT.get(status);
 
@@ -363,9 +368,13 @@ export async function serveFile(
 async function serveDir(
   req: Request,
   dirPath: string,
+  options: {
+    dotfiles: boolean;
+    target: string;
+  },
 ): Promise<Response> {
-  const showDotfiles = serverArgs.dotfiles ?? true;
-  const dirUrl = `/${posix.relative(target, dirPath)}`;
+  const showDotfiles = options.dotfiles;
+  const dirUrl = `/${posix.relative(options.target, dirPath)}`;
   const listEntry: EntryInfo[] = [];
 
   // if ".." makes sense
@@ -462,7 +471,7 @@ function setCORS(res: Response): void {
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
   const paths = dirname.split("/");
 
-  return html`
+  return `
     <!DOCTYPE html>
     <html lang="en">
       <head>
@@ -526,9 +535,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
     paths.map((path, index, array) => {
       if (path === "") return "";
       const link = array.slice(0, index + 1).join("/");
-      return (
-        html`<a href="${link}">${path}</a>`
-      );
+      return `<a href="${link}">${path}</a>`;
     }).join("/")
   }
           </h1>
@@ -540,8 +547,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
             </tr>
             ${
     entries.map(
-      (entry) =>
-        html`
+      (entry) => `
                   <tr>
                     <td class="mode">
                       ${entry.mode}
@@ -554,29 +560,13 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                     </td>
                   </tr>
                 `,
-    )
+    ).join("")
   }
           </table>
         </main>
       </body>
     </html>
   `;
-}
-
-function html(strings: TemplateStringsArray, ...values: unknown[]): string {
-  const l = strings.length - 1;
-  let html = "";
-
-  for (let i = 0; i < l; i++) {
-    let v = values[i];
-    if (v instanceof Array) {
-      v = v.join("");
-    }
-    const s = strings[i] + v;
-    html += s;
-  }
-  html += strings[l];
-  return html;
 }
 
 function normalizeURL(url: string): string {
@@ -613,44 +603,47 @@ function normalizeURL(url: string): string {
 }
 
 function main(): void {
-  const CORSEnabled = serverArgs.cors ? true : false;
-  const port = serverArgs.port ?? serverArgs.p ?? 4507;
-  const host = serverArgs.host ?? "0.0.0.0";
+  const serverArgs = parse(Deno.args, {
+    string: ["port", "host", "cert", "key"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors"],
+    default: {
+      "dir-listing": true,
+      "dotfiles": true,
+      "cors": true,
+      "host": "0.0.0.0",
+      "port": "4507",
+      "cert": "",
+      "key": "",
+    },
+    alias: {
+      p: "port",
+      c: "cert",
+      k: "key",
+      h: "help",
+    },
+  }) as FileServerArgs;
+  const CORSEnabled = serverArgs.cors;
+  const port = serverArgs.port;
+  const host = serverArgs.host;
   const addr = `${host}:${port}`;
-  const certFile = serverArgs.cert ?? serverArgs.c ?? "";
-  const keyFile = serverArgs.key ?? serverArgs.k ?? "";
-  const dirListingEnabled = serverArgs["dir-listing"] ?? true;
+  const certFile = serverArgs.cert;
+  const keyFile = serverArgs.key;
+  const dirListingEnabled = serverArgs["dir-listing"];
+
+  if (serverArgs.help) {
+    printUsage();
+    Deno.exit();
+  }
 
   if (keyFile || certFile) {
     if (keyFile === "" || certFile === "") {
       console.log("--key and --cert are required for TLS");
-      serverArgs.h = true;
+      printUsage();
+      Deno.exit(1);
     }
   }
 
-  if (serverArgs.h ?? serverArgs.help) {
-    console.log(`Deno File Server
-    Serves a local directory in HTTP.
-
-  INSTALL:
-    deno install --allow-net --allow-read https://deno.land/std/http/file_server.ts
-
-  USAGE:
-    file_server [path] [options]
-
-  OPTIONS:
-    -h, --help          Prints help information
-    -p, --port <PORT>   Set port
-    --cors              Enable CORS via the "Access-Control-Allow-Origin" header
-    --host     <HOST>   Hostname (default is 0.0.0.0)
-    -c, --cert <FILE>   TLS certificate file (enables TLS)
-    -k, --key  <FILE>   TLS key file (enables TLS)
-    --no-dir-listing    Disable directory listing
-    --no-dotfiles       Do not show dotfiles
-
-    All TLS options are required when one is provided.`);
-    Deno.exit();
-  }
+  const target = posix.resolve(serverArgs._[0] ?? "");
 
   const handler = async (req: Request): Promise<Response> => {
     let response: Response;
@@ -667,7 +660,10 @@ function main(): void {
 
       if (fileInfo.isDirectory) {
         if (dirListingEnabled) {
-          response = await serveDir(req, fsPath);
+          response = await serveDir(req, fsPath, {
+            dotfiles: serverArgs.dotfiles,
+            target,
+          });
         } else {
           throw new Deno.errors.NotFound();
         }
@@ -704,6 +700,29 @@ function main(): void {
       addr.replace("0.0.0.0", "localhost")
     }/`,
   );
+}
+
+function printUsage() {
+  console.log(`Deno File Server
+  Serves a local directory in HTTP.
+
+INSTALL:
+  deno install --allow-net --allow-read https://deno.land/std/http/file_server.ts
+
+USAGE:
+  file_server [path] [options]
+
+OPTIONS:
+  -h, --help          Prints help information
+  -p, --port <PORT>   Set port
+  --cors              Enable CORS via the "Access-Control-Allow-Origin" header
+  --host     <HOST>   Hostname (default is 0.0.0.0)
+  -c, --cert <FILE>   TLS certificate file (enables TLS)
+  -k, --key  <FILE>   TLS key file (enables TLS)
+  --no-dir-listing    Disable directory listing
+  --no-dotfiles       Do not show dotfiles
+
+  All TLS options are required when one is provided.`);
 }
 
 if (import.meta.main) {

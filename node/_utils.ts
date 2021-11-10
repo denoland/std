@@ -23,6 +23,11 @@ export function notImplemented(msg?: string): never {
   throw new Error(message);
 }
 
+export function warnNotImplemented(msg?: string): void {
+  const message = msg ? `Not implemented: ${msg}` : "Not implemented";
+  console.warn(message);
+}
+
 export type _TextDecoder = typeof TextDecoder.prototype;
 export const _TextDecoder = TextDecoder;
 
@@ -244,4 +249,18 @@ export async function assertCallbackErrorUncaught(
   await cleanup?.();
   assert(!status.success);
   assertStringIncludes(stderr, "Error: success");
+}
+
+export function makeMethodsEnumerable(klass: { new (): unknown }): void {
+  const proto = klass.prototype;
+  for (const key of Object.getOwnPropertyNames(proto)) {
+    const value = proto[key];
+    if (typeof value === "function") {
+      const desc = Reflect.getOwnPropertyDescriptor(proto, key);
+      if (desc) {
+        desc.enumerable = true;
+        Object.defineProperty(proto, key, desc);
+      }
+    }
+  }
 }

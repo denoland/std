@@ -1,6 +1,6 @@
 import { walk } from "../../fs/walk.ts";
 import { dirname, fromFileUrl, relative } from "../../path/mod.ts";
-import { assertEquals } from "../../testing/asserts.ts";
+import { fail } from "../../testing/asserts.ts";
 import { config, testList } from "./common.ts";
 
 /**
@@ -31,12 +31,15 @@ const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
 });
 
 const testsFolder = dirname(fromFileUrl(import.meta.url));
+const decoder = new TextDecoder();
 
 for await (const file of dir) {
   Deno.test({
     name: relative(testsFolder, file.path),
     fn: async () => {
-      const process = Deno.run({
+      // Pipe stdout in order to output each test result as Deno.test output
+      // That way the tests will respect the `--quiet` option when provided
+      const test = Deno.run({
         cwd: testsFolder,
         cmd: [
           "deno",
@@ -47,12 +50,24 @@ for await (const file of dir) {
           "require.ts",
           file.path,
         ],
+        stderr: "piped",
+        stdout: "piped",
       });
 
-      const { code } = await process.status();
-      process.close();
+      const [rawStderr, rawOutput, status] = await Promise.all([
+        test.stderrOutput(),
+        test.output(),
+        test.status(),
+      ]);
+      test.close();
 
-      assertEquals(code, 0);
+      const stderr = decoder.decode(rawStderr);
+      if (rawStderr.length) console.error(stderr);
+      if (rawOutput.length) console.log(decoder.decode(rawOutput));
+
+      if (status.code !== 0) {
+        fail(stderr);
+      }
     },
   });
 }

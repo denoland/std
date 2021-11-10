@@ -4,7 +4,6 @@
  * ERR_QUICSESSION_VERSION_NEGOTIATION
  * ERR_REQUIRE_ESM
  * ERR_TLS_CERT_ALTNAME_INVALID
- * ERR_UNHANDLED_ERROR
  * ERR_WORKER_INVALID_EXEC_ARGV
  * ERR_WORKER_PATH
  * ERR_QUIC_ERROR
@@ -60,6 +59,7 @@ export function hideStackFrames(fn: GenericFunction) {
 
 const captureLargerStackTrace = hideStackFrames(
   function captureLargerStackTrace(err) {
+    // @ts-ignore this function is not available in lib.dom.d.ts
     Error.captureStackTrace(err);
 
     return err;
@@ -314,6 +314,9 @@ export class NodeSyntaxError extends NodeErrorAbstraction
   constructor(code: string, message: string) {
     super(SyntaxError.prototype.name, code, message);
     Object.setPrototypeOf(this, SyntaxError.prototype);
+    this.toString = function () {
+      return `${this.name} [${this.code}]: ${this.message}`;
+    };
   }
 }
 
@@ -321,6 +324,9 @@ export class NodeRangeError extends NodeErrorAbstraction {
   constructor(code: string, message: string) {
     super(RangeError.prototype.name, code, message);
     Object.setPrototypeOf(this, RangeError.prototype);
+    this.toString = function () {
+      return `${this.name} [${this.code}]: ${this.message}`;
+    };
   }
 }
 
@@ -328,6 +334,9 @@ export class NodeTypeError extends NodeErrorAbstraction implements TypeError {
   constructor(code: string, message: string) {
     super(TypeError.prototype.name, code, message);
     Object.setPrototypeOf(this, TypeError.prototype);
+    this.toString = function () {
+      return `${this.name} [${this.code}]: ${this.message}`;
+    };
   }
 }
 
@@ -335,6 +344,9 @@ export class NodeURIError extends NodeErrorAbstraction implements URIError {
   constructor(code: string, message: string) {
     super(URIError.prototype.name, code, message);
     Object.setPrototypeOf(this, URIError.prototype);
+    this.toString = function () {
+      return `${this.name} [${this.code}]: ${this.message}`;
+    };
   }
 }
 
@@ -2060,6 +2072,14 @@ export class ERR_UNESCAPED_CHARACTERS extends NodeTypeError {
     );
   }
 }
+export class ERR_UNHANDLED_ERROR extends NodeError {
+  constructor(x: string) {
+    super(
+      "ERR_UNHANDLED_ERROR",
+      `Unhandled error. (${x})`,
+    );
+  }
+}
 export class ERR_UNKNOWN_BUILTIN_MODULE extends NodeError {
   constructor(x: string) {
     super(
@@ -2429,10 +2449,10 @@ export class ERR_INVALID_MODULE_SPECIFIER extends NodeTypeError {
 }
 
 export class ERR_INVALID_PACKAGE_TARGET extends NodeError {
-  // deno-lint-ignore no-explicit-any
   constructor(
     pkgPath: string,
     key: string,
+    // deno-lint-ignore no-explicit-any
     target: any,
     isImport?: boolean,
     base?: string,

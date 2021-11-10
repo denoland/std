@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
+  assertArrayIncludes,
   assertEquals,
   assertThrows,
   fail,
@@ -500,6 +501,20 @@ Deno.test({
 });
 
 Deno.test({
+  name:
+    'When there is no "error" listener, emit() throws the first error passed to it as is',
+  fn() {
+    class CustomError extends Error {}
+    const ee = new EventEmitter();
+    assertThrows(
+      () => ee.emit("error", new CustomError("foo")),
+      CustomError,
+      "foo",
+    );
+  },
+});
+
+Deno.test({
   name: "asynchronous iteration of events are handled as expected",
   async fn() {
     const ee = new EventEmitter();
@@ -720,4 +735,15 @@ Deno.test("EventEmitter.setMaxListeners: it sets `n` as number of max listeners 
     defaultMaxListeners,
     "defaultMaxListeners shouldn't be mutated.",
   );
+});
+
+// https://github.com/denoland/deno_std/issues/1511
+Deno.test("EventEmitter's public methods should be enumerable", () => {
+  const keys = Object.keys(EventEmitter.prototype);
+  assertArrayIncludes(keys, [
+    "emit",
+    "on",
+    "once",
+    "off",
+  ]);
 });

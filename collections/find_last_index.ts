@@ -2,6 +2,8 @@
 // This module is browser compatible.
 
 /**
+ * @deprecated Use `Array.prototype.findLastIndex`. This function will be removed in std@0.117.0.
+ *
  * Returns the index of the last element in the given array matching the given predicate
  *
  * Example:

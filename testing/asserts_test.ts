@@ -1024,12 +1024,13 @@ Deno.test("assert diff formatting (strings)", () => {
     },
     undefined,
     `
-    a
-    b
-${green("+   x")}
-${red("-   c")}
-    d
+    a\\n
+    b\\n
+${green("+   x")}\\n
+${green("+   d")}\\n
 ${green("+   e")}
+${red("-   c")}\\n
+${red("-   d")}
 `,
   );
 });

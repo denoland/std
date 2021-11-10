@@ -7,7 +7,7 @@ import {
 } from "../testing/asserts.ts";
 
 import * as path from "../path/mod.ts";
-import { createRequire } from "./module.ts";
+import Module, { createRequire } from "./module.ts";
 import nodeMods from "./module_all.ts";
 import nodeModsStar from "./module_all_star.ts";
 
@@ -177,6 +177,26 @@ Deno.test("requireCjsWithDynamicImport", function () {
 
 Deno.test("requireWithImportsExports", function () {
   require("./_module/cjs/cjs_imports_exports");
+});
+
+Deno.test("module has proper members", function () {
+  const module = require("module");
+
+  assert(module._cache);
+  assert(module._extensions);
+  assert(typeof module._findPath == "function");
+  assert(typeof module._initPaths == "function");
+  assert(typeof module._load == "function");
+  assert(typeof module._nodeModulePaths == "function");
+  assert(module._pathCache);
+  assert(typeof module._preloadModules == "function");
+  assert(typeof module._resolveFilename == "function");
+  assert(typeof module._resolveLookupPaths == "function");
+  assert(module.builtinModules);
+  assert(typeof module.createRequire == "function");
+  assert(module.globalPaths);
+  assert(module.Module === Module);
+  assert(typeof module.wrap == "function");
 });
 
 Deno.test("default imports match star imports", () => {

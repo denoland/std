@@ -1,3 +1,44 @@
+### 0.114.0 / 2021.11.09
+
+- BREAKING(http): update `serve`, add `serveListener`, deprecate
+  `listenAndServe` (#1506)
+- BREAKING(std/collections): deprecate findLast (#1532)
+- feat(http/file_server): add streaming support, fix empty file handling (#1479)
+- feat(node): add readline module (#1453)
+- feat(node): process.on and process.off for signals (#1466)
+- feat(node/_fs): Add watchFile function (#1483)
+- feat(node/http): HTTP Server/Response improvements (#1448)
+- feat(node/querystring): implement qs.unescapeBuffer (#1516)
+- feat(node): mock 'vm' module (#1501)
+- feat(node): os.cpus() (#1500)
+- feat(node): process.execArgv (#1499)
+- fix(collections): prevent calling `Object.prototype.__proto__` in
+  collections/deep_merge.ts (#1504)
+- fix(collections): remove default selector for `findSingle` (#1232)
+- fix(crypto/digest): always return the underlying ArrayBuffer (#1515)
+- fix(http/file_server): don't require --allow-read for showing help message
+  (#1521)
+- fix(node): //@ts-ignore Error.captureStackTrace (#1533)
+- fix(node): add proper module.export for 'module' (#1497)
+- fix(node): child_process stdio for binary data (#1477)
+- fix(node): fix flaky downloadFile test (#1460)
+- fix(node): fix process.arch (#1498)
+- fix(node): fix string representation of node errors (#1470)
+- fix(node): isAlreadyClosed for child_process (#1469)
+- fix(node/_tools): Better error and output logging (#1492)
+- fix(node/_util): Deno.permissions is no longer called unless it exists.
+  (#1520)
+- fix(node/events): enable remaining tests for EventEmitter (#1489)
+- fix(node/events): make EventEmitter's public methods enumerable (#1530)
+- fix(node/process): warn on not implemented event instead of throw (#1510)
+- fix(node/querystring): improve `querystring.parse` (#1473)
+- fix(node/querystring): Improve querystring.stringify (#1488)
+- fix(node/querystring/stringify): invalid surrogate pair throws URIError
+  (#1505)
+- fix(node/querystring/stringify): Remove initialValue (#1494)
+- fix(signal): update signal module for canary API change (#1468)
+- fix(testing): show special characters in assertEquals results (#1450)
+
 ### 0.113.0 / 2021.10.25
 
 - feat(collections/running_reduce): support `currentIndex` (#1431)

@@ -9,6 +9,7 @@ import {
   assertThrows,
 } from "../testing/asserts.ts";
 import { stripColor } from "../fmt/colors.ts";
+import { deferred } from "../async/deferred.ts";
 import * as path from "../path/mod.ts";
 import { delay } from "../async/delay.ts";
 import { env } from "./process.ts";
@@ -96,8 +97,13 @@ Deno.test({
   name: "process.arch",
   fn() {
     assertEquals(typeof process.arch, "string");
-    // TODO(rsp): make sure that the arch strings should be the same in Node and Deno:
-    assertEquals(process.arch, Deno.build.arch);
+    if (Deno.build.arch == "x86_64") {
+      assertEquals(process.arch, "x64");
+    } else if (Deno.build.arch == "aarch64") {
+      assertEquals(process.arch, "arm64");
+    } else {
+      throw new Error("unreachable");
+    }
   },
 });
 
@@ -113,13 +119,6 @@ Deno.test({
   name: "process.on",
   async fn() {
     assertEquals(typeof process.on, "function");
-    assertThrows(
-      () => {
-        process.on("uncaughtException", (_err: Error) => {});
-      },
-      Error,
-      "implemented",
-    );
 
     let triggered = false;
     process.on("exit", () => {
@@ -153,6 +152,56 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.on signal",
+  ignore: Deno.build.os == "windows",
+  async fn() {
+    const promise = deferred();
+    let c = 0;
+    const listener = () => {
+      c += 1;
+    };
+    process.on("SIGINT", listener);
+    setTimeout(async () => {
+      // Sends SIGINT 3 times.
+      for (const _ of Array(3)) {
+        await delay(20);
+        Deno.kill(Deno.pid, "SIGINT");
+      }
+      await delay(20);
+      Deno.removeSignalListener("SIGINT", listener);
+      promise.resolve();
+    });
+    await promise;
+    assertEquals(c, 3);
+  },
+});
+
+Deno.test({
+  name: "process.off signal",
+  ignore: Deno.build.os == "windows",
+  async fn() {
+    const promise = deferred();
+    let c = 0;
+    const listener = () => {
+      c += 1;
+      process.off("SIGINT", listener);
+    };
+    process.on("SIGINT", listener);
+    setTimeout(async () => {
+      // Sends SIGINT 3 times.
+      for (const _ of Array(3)) {
+        await delay(20);
+        Deno.kill(Deno.pid, "SIGINT");
+      }
+      await delay(20);
+      promise.resolve();
+    });
+    await promise;
+    assertEquals(c, 1);
+  },
+});
+
+Deno.test({
   name: "process.argv",
   fn() {
     assert(Array.isArray(process.argv));
@@ -168,6 +217,17 @@ Deno.test({
     assert(Array.isArray(process.argv.slice(2)));
     assertEquals(process.argv.indexOf(Deno.execPath()), 0);
     assertEquals(process.argv.indexOf(path.fromFileUrl(Deno.mainModule)), 1);
+  },
+});
+
+Deno.test({
+  name: "process.execArgv",
+  fn() {
+    assert(Array.isArray(process.execArgv));
+    assert(process.execArgv.length == 0);
+    // execArgv supports array methods.
+    assert(Array.isArray(process.argv.slice(0)));
+    assertEquals(process.argv.indexOf("foo"), -1);
   },
 });
 
@@ -302,4 +362,55 @@ Deno.test({
   },
   sanitizeResources: false,
   sanitizeOps: false,
+});
+
+Deno.test("process.on, process.off, process.removeListener doesn't throw on unimplemented events", () => {
+  const events = [
+    "beforeExit",
+    "disconnect",
+    "message",
+    "multipleResolves",
+    "rejectionHandled",
+    "uncaughtException",
+    "uncaughtExceptionMonitor",
+    "unhandledRejection",
+  ];
+  const handler = () => {};
+  events.forEach((ev) => {
+    process.on(ev, handler);
+    process.off(ev, handler);
+    process.on(ev, handler);
+    process.removeListener(ev, handler);
+  });
+});
+
+Deno.test("process.memoryUsage()", () => {
+  const mem = process.memoryUsage();
+  assert(typeof mem.rss === "number");
+  assert(typeof mem.heapTotal === "number");
+  assert(typeof mem.heapUsed === "number");
+  assert(typeof mem.external === "number");
+  assert(typeof mem.arrayBuffers === "number");
+  assertEquals(mem.arrayBuffers, 0);
+});
+
+Deno.test("process.memoryUsage.rss()", () => {
+  const rss = process.memoryUsage.rss();
+  assert(typeof rss === "number");
+});
+
+Deno.test("process in worker", async () => {
+  const promise = deferred();
+
+  const worker = new Worker(
+    new URL("./testdata/process_worker.ts", import.meta.url).href,
+    { type: "module", deno: true },
+  );
+  worker.addEventListener("message", (e) => {
+    assertEquals(e.data, "hello");
+    promise.resolve();
+  });
+
+  await promise;
+  worker.terminate();
 });

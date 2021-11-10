@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
-import { notImplemented } from "./_utils.ts";
+import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
@@ -17,22 +17,24 @@ const notImplementedEvents = [
   "message",
   "multipleResolves",
   "rejectionHandled",
-  "SIGBREAK",
-  "SIGBUS",
-  "SIGFPE",
-  "SIGHUP",
-  "SIGILL",
-  "SIGINT",
-  "SIGSEGV",
-  "SIGTERM",
-  "SIGWINCH",
   "uncaughtException",
   "uncaughtExceptionMonitor",
   "unhandledRejection",
 ];
 
+/** Returns the operating system CPU architecture for which the Deno binary was compiled */
+function _arch(): string {
+  if (Deno.build.arch == "x86_64") {
+    return "x64";
+  } else if (Deno.build.arch == "aarch64") {
+    return "arm64";
+  } else {
+    throw Error("unreachable");
+  }
+}
+
 /** https://nodejs.org/api/process.html#process_process_arch */
-export const arch = Deno.build.arch;
+export const arch = _arch();
 
 // The first 2 items are placeholders.
 // They will be overwritten by the below Object.defineProperty calls.
@@ -258,6 +260,7 @@ function createWarningObject(
     warningErr.detail = detail;
   }
 
+  // @ts-ignore this function is not available in lib.dom.d.ts
   Error.captureStackTrace(warningErr, ctor || process.emitWarning);
 
   return warningErr;
@@ -332,13 +335,29 @@ export function emitWarning(
   process.nextTick(doEmitWarning, warning);
 }
 
+function memoryUsage(): {
+  rss: number;
+  heapTotal: number;
+  heapUsed: number;
+  external: number;
+  arrayBuffers: number;
+} {
+  return {
+    ...Deno.memoryUsage(),
+    arrayBuffers: 0,
+  };
+}
+
+memoryUsage.rss = function (): number {
+  return memoryUsage().rss;
+};
+
 class Process extends EventEmitter {
   constructor() {
     super();
 
     //This causes the exit event to be binded to the unload event
-    // deno-lint-ignore no-window-prefix
-    window.addEventListener("unload", () => {
+    globalThis.addEventListener("unload", () => {
       //TODO(Soremwar)
       //Get the exit code from the unload event
       super.emit("exit", 0);
@@ -353,6 +372,9 @@ class Process extends EventEmitter {
    * Read permissions are required in order to get the executable route
    */
   argv = argv;
+
+  /** https://nodejs.org/api/process.html#process_process_execargv */
+  execArgv = [];
 
   /** https://nodejs.org/api/process.html#process_process_chdir_directory */
   chdir = chdir;
@@ -377,16 +399,38 @@ class Process extends EventEmitter {
   nextTick = nextTick;
 
   /** https://nodejs.org/api/process.html#process_process_events */
-  //deno-lint-ignore ban-types
-  on(event: typeof notImplementedEvents[number], listener: Function): never;
   on(event: "exit", listener: (code: number) => void): this;
-  //deno-lint-ignore no-explicit-any
+  // deno-lint-ignore no-explicit-any
+  on(event: string, listener: (...args: any[]) => void): this;
+  // deno-lint-ignore ban-types
+  on(event: typeof notImplementedEvents[number], listener: Function): this;
+  // deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented(`process.on("${event}")`);
+      warnNotImplemented(`process.on("${event}")`);
+    } else if (event.startsWith("SIG")) {
+      Deno.addSignalListener(event as Deno.Signal, listener);
+    } else {
+      super.on(event, listener);
     }
 
-    super.on(event, listener);
+    return this;
+  }
+
+  off(event: "exit", listener: (code: number) => void): this;
+  // deno-lint-ignore no-explicit-any
+  off(event: string, listener: (...args: any[]) => void): this;
+  // deno-lint-ignore ban-types
+  off(event: typeof notImplementedEvents[number], listener: Function): this;
+  // deno-lint-ignore no-explicit-any
+  off(event: string, listener: (...args: any[]) => void): this {
+    if (notImplementedEvents.includes(event)) {
+      warnNotImplemented(`process.off("${event}")`);
+    } else if (event.startsWith("SIG")) {
+      Deno.removeSignalListener(event as Deno.Signal, listener);
+    } else {
+      super.off(event, listener);
+    }
 
     return this;
   }
@@ -397,20 +441,21 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_platform */
   platform = platform;
 
-  removeAllListeners(event: string): never {
-    notImplemented(`process.removeAllListeners("${event}")`);
+  removeAllListeners(eventName?: string | symbol): this {
+    return super.removeAllListeners(eventName);
   }
 
   removeListener(
     event: typeof notImplementedEvents[number],
     //deno-lint-ignore ban-types
     listener: Function,
-  ): never;
+  ): this;
   removeListener(event: "exit", listener: (code: number) => void): this;
   //deno-lint-ignore no-explicit-any
   removeListener(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented(`process.removeListener("${event}")`);
+      warnNotImplemented(`process.removeListener("${event}")`);
+      return this;
     }
 
     super.removeListener("exit", listener);
@@ -441,6 +486,8 @@ class Process extends EventEmitter {
     const [prevSec, prevNano] = time;
     return [sec - prevSec, nano - prevNano];
   }
+
+  memoryUsage = memoryUsage;
 
   /** https://nodejs.org/api/process.html#process_process_stderr */
   stderr = stderr;
