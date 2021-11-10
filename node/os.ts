@@ -90,8 +90,12 @@ interface UserInfo {
   homedir: string;
 }
 
+export function arch(): string {
+  return process.arch;
+}
+
 // deno-lint-ignore no-explicit-any
-(arch as any)[Symbol.toPrimitive] = (): string => arch();
+(arch as any)[Symbol.toPrimitive] = (): string => process.arch;
 // deno-lint-ignore no-explicit-any
 (endianness as any)[Symbol.toPrimitive] = (): string => endianness();
 // deno-lint-ignore no-explicit-any
@@ -111,14 +115,20 @@ interface UserInfo {
 // deno-lint-ignore no-explicit-any
 (uptime as any)[Symbol.toPrimitive] = (): number => uptime();
 
-/** Returns the operating system CPU architecture for which the Deno binary was compiled */
-export function arch(): string {
-  return Deno.build.arch;
-}
-
-/** Not yet implemented */
 export function cpus(): CPUCoreInfo[] {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return Array.from(Array(navigator.hardwareConcurrency)).map(() => {
+    return {
+      model: "",
+      speed: 0,
+      times: {
+        user: 0,
+        nice: 0,
+        sys: 0,
+        idle: 0,
+        irq: 0,
+      },
+    };
+  });
 }
 
 /**
@@ -308,6 +318,7 @@ export const constants = {
 };
 
 export const EOL = isWindows ? fsEOL.CRLF : fsEOL.LF;
+export const devNull = isWindows ? "\\\\.\\nul" : "/dev/null";
 
 export default {
   arch,
@@ -329,4 +340,5 @@ export default {
   userInfo,
   constants,
   EOL,
+  devNull,
 };

@@ -2,7 +2,7 @@
 import { assert } from "../_util/assert.ts";
 import type { BufReader } from "./buffer.ts";
 import type { Reader, Writer } from "./types.d.ts";
-import * as streams from "./streams.ts";
+import * as streams from "../streams/conversion.ts";
 import * as files from "./files.ts";
 
 const DEFAULT_BUFFER_SIZE = 32 * 1024;
@@ -100,21 +100,21 @@ export function sliceLongToBytes(d: number, dest = new Array(8)): number[] {
   return dest;
 }
 
-/** @deprecated */
+/** @deprecated Use readAll from https://deno.land/std/streams/conversion.ts instead. */
 export const readAll = streams.readAll;
-/** @deprecated */
+/** @deprecated Use readAllSync from https://deno.land/std/streams/conversion.ts instead. */
 export const readAllSync = streams.readAllSync;
-/** @deprecated */
+/** @deprecated Use writeAll from https://deno.land/std/streams/conversion.ts instead. */
 export const writeAll = streams.writeAll;
-/** @deprecated */
+/** @deprecated Use writeAllSync from https://deno.land/std/streams/conversion.ts instead. */
 export const writeAllSync = streams.writeAllSync;
-/** @deprecated */
+/** @deprecated Use iterateReader from https://deno.land/std/streams/conversion.ts instead. */
 export const iter = streams.iterateReader;
-/** @deprecated */
+/** @deprecated Use iterateReaderSync from https://deno.land/std/streams/conversion.ts instead. */
 export const iterSync = streams.iterateReaderSync;
-/** @deprecated */
+/** @deprecated Use copy from https://deno.land/std/streams/conversion.ts instead. */
 export const copy = streams.copy;
-/** @deprecated */
+/** @deprecated Use readRange from https://deno.land/std/io/files.ts instead. */
 export const readRange = files.readRange;
-/** @deprecated */
+/** @deprecated Use readRangeSync from https://deno.land/std/io/files.ts instead. */
 export const readRangeSync = files.readRangeSync;

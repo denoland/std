@@ -9,6 +9,7 @@ import {
   assertThrows,
 } from "../testing/asserts.ts";
 import { stripColor } from "../fmt/colors.ts";
+import { deferred } from "../async/deferred.ts";
 import * as path from "../path/mod.ts";
 import { delay } from "../async/delay.ts";
 import { env } from "./process.ts";
@@ -54,6 +55,24 @@ Deno.test({
     assertEquals(typeof process.version, "string");
     assertEquals(typeof process.versions, "object");
     assertEquals(typeof process.versions.node, "string");
+    assertEquals(typeof process.versions.v8, "string");
+    assertEquals(typeof process.versions.uv, "string");
+    assertEquals(typeof process.versions.zlib, "string");
+    assertEquals(typeof process.versions.brotli, "string");
+    assertEquals(typeof process.versions.ares, "string");
+    assertEquals(typeof process.versions.modules, "string");
+    assertEquals(typeof process.versions.nghttp2, "string");
+    assertEquals(typeof process.versions.napi, "string");
+    assertEquals(typeof process.versions.llhttp, "string");
+    assertEquals(typeof process.versions.openssl, "string");
+    assertEquals(typeof process.versions.cldr, "string");
+    assertEquals(typeof process.versions.icu, "string");
+    assertEquals(typeof process.versions.tz, "string");
+    assertEquals(typeof process.versions.unicode, "string");
+    // These two are not present in `process.versions` in Node, but we
+    // add them anyway
+    assertEquals(typeof process.versions.deno, "string");
+    assertEquals(typeof process.versions.typescript, "string");
   },
 });
 
@@ -65,11 +84,26 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.mainModule",
+  fn() {
+    assertEquals(process.mainModule, undefined);
+    // Check that it is writable
+    process.mainModule = "foo";
+    assertEquals(process.mainModule, "foo");
+  },
+});
+
+Deno.test({
   name: "process.arch",
   fn() {
     assertEquals(typeof process.arch, "string");
-    // TODO(rsp): make sure that the arch strings should be the same in Node and Deno:
-    assertEquals(process.arch, Deno.build.arch);
+    if (Deno.build.arch == "x86_64") {
+      assertEquals(process.arch, "x64");
+    } else if (Deno.build.arch == "aarch64") {
+      assertEquals(process.arch, "arm64");
+    } else {
+      throw new Error("unreachable");
+    }
   },
 });
 
@@ -85,13 +119,6 @@ Deno.test({
   name: "process.on",
   async fn() {
     assertEquals(typeof process.on, "function");
-    assertThrows(
-      () => {
-        process.on("uncaughtException", (_err: Error) => {});
-      },
-      Error,
-      "implemented",
-    );
 
     let triggered = false;
     process.on("exit", () => {
@@ -125,6 +152,56 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.on signal",
+  ignore: Deno.build.os == "windows",
+  async fn() {
+    const promise = deferred();
+    let c = 0;
+    const listener = () => {
+      c += 1;
+    };
+    process.on("SIGINT", listener);
+    setTimeout(async () => {
+      // Sends SIGINT 3 times.
+      for (const _ of Array(3)) {
+        await delay(20);
+        Deno.kill(Deno.pid, "SIGINT");
+      }
+      await delay(20);
+      Deno.removeSignalListener("SIGINT", listener);
+      promise.resolve();
+    });
+    await promise;
+    assertEquals(c, 3);
+  },
+});
+
+Deno.test({
+  name: "process.off signal",
+  ignore: Deno.build.os == "windows",
+  async fn() {
+    const promise = deferred();
+    let c = 0;
+    const listener = () => {
+      c += 1;
+      process.off("SIGINT", listener);
+    };
+    process.on("SIGINT", listener);
+    setTimeout(async () => {
+      // Sends SIGINT 3 times.
+      for (const _ of Array(3)) {
+        await delay(20);
+        Deno.kill(Deno.pid, "SIGINT");
+      }
+      await delay(20);
+      promise.resolve();
+    });
+    await promise;
+    assertEquals(c, 1);
+  },
+});
+
+Deno.test({
   name: "process.argv",
   fn() {
     assert(Array.isArray(process.argv));
@@ -140,6 +217,17 @@ Deno.test({
     assert(Array.isArray(process.argv.slice(2)));
     assertEquals(process.argv.indexOf(Deno.execPath()), 0);
     assertEquals(process.argv.indexOf(path.fromFileUrl(Deno.mainModule)), 1);
+  },
+});
+
+Deno.test({
+  name: "process.execArgv",
+  fn() {
+    assert(Array.isArray(process.execArgv));
+    assert(process.execArgv.length == 0);
+    // execArgv supports array methods.
+    assert(Array.isArray(process.argv.slice(0)));
+    assertEquals(process.argv.indexOf("foo"), -1);
   },
 });
 
@@ -264,6 +352,7 @@ Deno.test({
     });
     p.stdin.write(new TextEncoder().encode("it works?!"));
     p.stdin.write(new TextEncoder().encode("yes!"));
+    p.stdin.close();
     const stderr = new TextDecoder().decode(await p.stderrOutput());
     const stdout = new TextDecoder().decode(await p.output());
     assertEquals(
@@ -273,4 +362,40 @@ Deno.test({
   },
   sanitizeResources: false,
   sanitizeOps: false,
+});
+
+Deno.test("process.on, process.off, process.removeListener doesn't throw on unimplemented events", () => {
+  const events = [
+    "beforeExit",
+    "disconnect",
+    "message",
+    "multipleResolves",
+    "rejectionHandled",
+    "uncaughtException",
+    "uncaughtExceptionMonitor",
+    "unhandledRejection",
+  ];
+  const handler = () => {};
+  events.forEach((ev) => {
+    process.on(ev, handler);
+    process.off(ev, handler);
+    process.on(ev, handler);
+    process.removeListener(ev, handler);
+  });
+});
+
+Deno.test("process in worker", async () => {
+  const promise = deferred();
+
+  const worker = new Worker(
+    new URL("./testdata/process_worker.ts", import.meta.url).href,
+    { type: "module", deno: true },
+  );
+  worker.addEventListener("message", (e) => {
+    assertEquals(e.data, "hello");
+    promise.resolve();
+  });
+
+  await promise;
+  worker.terminate();
 });

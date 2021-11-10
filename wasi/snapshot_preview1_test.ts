@@ -3,7 +3,7 @@ import Context from "./snapshot_preview1.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { copy } from "../fs/mod.ts";
 import * as path from "../path/mod.ts";
-import { readAll, writeAll } from "../io/streams.ts";
+import { readAll, writeAll } from "../streams/conversion.ts";
 import { isWindows } from "../_util/os.ts";
 
 const tests = [

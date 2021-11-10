@@ -514,6 +514,8 @@ export class BufReader implements Reader {
         throw err;
       }
 
+      partial = err.partial;
+
       // Handle the case where "\r\n" straddles the buffer.
       if (
         !this.eof && partial &&

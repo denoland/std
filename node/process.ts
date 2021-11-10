@@ -1,11 +1,15 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
-import { notImplemented } from "./_utils.ts";
+import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { Readable, Writable } from "./stream.ts";
 import { Buffer } from "./buffer.ts";
+import { validateString } from "./_validators.ts";
+import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { getOptionValue } from "./_options.ts";
+import { assert } from "../_util/assert.ts";
 
 const notImplementedEvents = [
   "beforeExit",
@@ -13,22 +17,24 @@ const notImplementedEvents = [
   "message",
   "multipleResolves",
   "rejectionHandled",
-  "SIGBREAK",
-  "SIGBUS",
-  "SIGFPE",
-  "SIGHUP",
-  "SIGILL",
-  "SIGINT",
-  "SIGSEGV",
-  "SIGTERM",
-  "SIGWINCH",
   "uncaughtException",
   "uncaughtExceptionMonitor",
   "unhandledRejection",
 ];
 
+/** Returns the operating system CPU architecture for which the Deno binary was compiled */
+function _arch(): string {
+  if (Deno.build.arch == "x86_64") {
+    return "x64";
+  } else if (Deno.build.arch == "aarch64") {
+    return "arm64";
+  } else {
+    throw Error("unreachable");
+  }
+}
+
 /** https://nodejs.org/api/process.html#process_process_arch */
-export const arch = Deno.build.arch;
+export const arch = _arch();
 
 // The first 2 items are placeholders.
 // They will be overwritten by the below Object.defineProperty calls.
@@ -88,12 +94,39 @@ export const pid = Deno.pid;
 /** https://nodejs.org/api/process.html#process_process_platform */
 export const platform = isWindows ? "win32" : Deno.build.os;
 
-/** https://nodejs.org/api/process.html#process_process_version */
-export const version = `v${Deno.version.deno}`;
+/**
+ * https://nodejs.org/api/process.html#process_process_version
+ *
+ * This value is hard coded to latest stable release of Node, as
+ * some packages are checking it for compatibility. Previously
+ * it pointed to Deno version, but that led to incompability
+ * with some packages.
+ */
+export const version = "v16.11.1";
 
-/** https://nodejs.org/api/process.html#process_process_versions */
+/**
+ * https://nodejs.org/api/process.html#process_process_versions
+ *
+ * This value is hard coded to latest stable release of Node, as
+ * some packages are checking it for compatibility. Previously
+ * it contained only output of `Deno.version`, but that led to incompability
+ * with some packages. Value of `v8` field is still taken from `Deno.version`.
+ */
 export const versions = {
-  node: Deno.version.deno,
+  node: "16.11.1",
+  uv: "1.42.0",
+  zlib: "1.2.11",
+  brotli: "1.0.9",
+  ares: "1.17.2",
+  modules: "93",
+  nghttp2: "1.45.1",
+  napi: "8",
+  llhttp: "6.0.4",
+  openssl: "1.1.1l",
+  cldr: "39.0",
+  icu: "69.1",
+  tz: "2021a",
+  unicode: "13.0",
   ...Deno.version,
 };
 
@@ -189,13 +222,125 @@ Object.defineProperty(stdin, "isTTY", {
 /** https://nodejs.org/api/process.html#process_process_stdout */
 export const stdout = createWritableStdioStream(Deno.stdout);
 
+function addReadOnlyProcessAlias(
+  name: string,
+  option: string,
+  enumerable = true,
+) {
+  const value = getOptionValue(option);
+
+  if (value) {
+    Object.defineProperty(process, name, {
+      writable: false,
+      configurable: true,
+      enumerable,
+      value,
+    });
+  }
+}
+
+function createWarningObject(
+  warning: string,
+  type: string,
+  code?: string,
+  // deno-lint-ignore ban-types
+  ctor?: Function,
+  detail?: string,
+): Error {
+  assert(typeof warning === "string");
+
+  // deno-lint-ignore no-explicit-any
+  const warningErr: any = new Error(warning);
+  warningErr.name = String(type || "Warning");
+
+  if (code !== undefined) {
+    warningErr.code = code;
+  }
+  if (detail !== undefined) {
+    warningErr.detail = detail;
+  }
+
+  // @ts-ignore this function is not available in lib.dom.d.ts
+  Error.captureStackTrace(warningErr, ctor || process.emitWarning);
+
+  return warningErr;
+}
+
+function doEmitWarning(warning: Error) {
+  process.emit("warning", warning);
+}
+
+/** https://nodejs.org/api/process.html#process_process_emitwarning_warning_options */
+export function emitWarning(
+  warning: string | Error,
+  type:
+    // deno-lint-ignore ban-types
+    | { type: string; detail: string; code: string; ctor: Function }
+    | string
+    | null,
+  code?: string,
+  // deno-lint-ignore ban-types
+  ctor?: Function,
+) {
+  let detail;
+
+  if (type !== null && typeof type === "object" && !Array.isArray(type)) {
+    ctor = type.ctor;
+    code = type.code;
+
+    if (typeof type.detail === "string") {
+      detail = type.detail;
+    }
+
+    type = type.type || "Warning";
+  } else if (typeof type === "function") {
+    ctor = type;
+    code = undefined;
+    type = "Warning";
+  }
+
+  if (type !== undefined) {
+    validateString(type, "type");
+  }
+
+  if (typeof code === "function") {
+    ctor = code;
+    code = undefined;
+  } else if (code !== undefined) {
+    validateString(code, "code");
+  }
+
+  if (typeof warning === "string") {
+    warning = createWarningObject(warning, type as string, code, ctor, detail);
+  } else if (!(warning instanceof Error)) {
+    throw new ERR_INVALID_ARG_TYPE("warning", ["Error", "string"], warning);
+  }
+
+  if (warning.name === "DeprecationWarning") {
+    // deno-lint-ignore no-explicit-any
+    if ((process as any).noDeprecation) {
+      return;
+    }
+
+    // deno-lint-ignore no-explicit-any
+    if ((process as any).throwDeprecation) {
+      // Delay throwing the error to guarantee that all former warnings were
+      // properly logged.
+      return process.nextTick(() => {
+        throw warning;
+      });
+    }
+  }
+
+  process.nextTick(doEmitWarning, warning);
+}
+
 class Process extends EventEmitter {
   constructor() {
     super();
 
     //This causes the exit event to be binded to the unload event
-    // deno-lint-ignore no-window-prefix
-    window.addEventListener("unload", () => {
+    globalThis.addEventListener("unload", () => {
       //TODO(Soremwar)
       //Get the exit code from the unload event
       super.emit("exit", 0);
@@ -210,6 +355,9 @@ class Process extends EventEmitter {
    * Read permissions are required in order to get the executable route
    */
   argv = argv;
+
+  /** https://nodejs.org/api/process.html#process_process_execargv */
+  execArgv = [];
 
   /** https://nodejs.org/api/process.html#process_process_chdir_directory */
   chdir = chdir;
@@ -226,20 +374,46 @@ class Process extends EventEmitter {
    */
   env = env;
 
+  // Typed as any to avoid importing "module" module for types
+  // deno-lint-ignore no-explicit-any
+  mainModule: any = undefined;
+
   /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
   nextTick = nextTick;
 
   /** https://nodejs.org/api/process.html#process_process_events */
-  //deno-lint-ignore ban-types
-  on(event: typeof notImplementedEvents[number], listener: Function): never;
   on(event: "exit", listener: (code: number) => void): this;
-  //deno-lint-ignore no-explicit-any
+  // deno-lint-ignore no-explicit-any
+  on(event: string, listener: (...args: any[]) => void): this;
+  // deno-lint-ignore ban-types
+  on(event: typeof notImplementedEvents[number], listener: Function): this;
+  // deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented();
+      warnNotImplemented(`process.on("${event}")`);
+    } else if (event.startsWith("SIG")) {
+      Deno.addSignalListener(event as Deno.Signal, listener);
+    } else {
+      super.on(event, listener);
     }
 
-    super.on(event, listener);
+    return this;
+  }
+
+  off(event: "exit", listener: (code: number) => void): this;
+  // deno-lint-ignore no-explicit-any
+  off(event: string, listener: (...args: any[]) => void): this;
+  // deno-lint-ignore ban-types
+  off(event: typeof notImplementedEvents[number], listener: Function): this;
+  // deno-lint-ignore no-explicit-any
+  off(event: string, listener: (...args: any[]) => void): this {
+    if (notImplementedEvents.includes(event)) {
+      warnNotImplemented(`process.off("${event}")`);
+    } else if (event.startsWith("SIG")) {
+      Deno.removeSignalListener(event as Deno.Signal, listener);
+    } else {
+      super.off(event, listener);
+    }
 
     return this;
   }
@@ -250,20 +424,21 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_platform */
   platform = platform;
 
-  removeAllListeners(_event: string): never {
-    notImplemented();
+  removeAllListeners(eventName?: string | symbol): this {
+    return super.removeAllListeners(eventName);
   }
 
   removeListener(
     event: typeof notImplementedEvents[number],
     //deno-lint-ignore ban-types
     listener: Function,
-  ): never;
+  ): this;
   removeListener(event: "exit", listener: (code: number) => void): this;
   //deno-lint-ignore no-explicit-any
   removeListener(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
-      notImplemented();
+      warnNotImplemented(`process.removeListener("${event}")`);
+      return this;
     }
 
     super.removeListener("exit", listener);
@@ -309,6 +484,9 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#process_process_versions */
   versions = versions;
+
+  /** https://nodejs.org/api/process.html#process_process_emitwarning_warning_options */
+  emitWarning = emitWarning;
 }
 
 /** https://nodejs.org/api/process.html#process_process */
@@ -320,6 +498,9 @@ Object.defineProperty(process, Symbol.toStringTag, {
   configurable: false,
   value: "process",
 });
+
+addReadOnlyProcessAlias("noDeprecation", "--no-deprecation");
+addReadOnlyProcessAlias("throwDeprecation", "--throw-deprecation");
 
 export const removeListener = process.removeListener;
 export const removeAllListeners = process.removeAllListeners;
