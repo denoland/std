@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/**
+/*
  * Builds two separate arrays from the given array of 2-tuples, with the first returned array holding all first
  * tuple elements and the second one holding all the second elements
  *
@@ -23,19 +23,17 @@
  * assertEquals(moms, [ 'Jeff', 'Kim', 'Leroy' ])
  * ```
  */
+export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
+  const { length } = pairs;
+  const ret: [T[], U[]] = [
+    new Array(length),
+    new Array(length),
+  ];
 
-export function unzip<T extends unknown[][]>(
-  tuples: Readonly<T>,
-): unknown[][] {
-  if (tuples.length === 0) return [];
+  pairs.forEach(([first, second], index) => {
+    ret[0][index] = first;
+    ret[1][index] = second;
+  });
 
-  const ret = [];
-  for (let i = 0; i < tuples[0].length; i++) {
-    const curr = [];
-    for (const tuple of tuples) {
-      curr.push(tuple[i]);
-    }
-    ret.push(curr);
-  }
   return ret;
 }
