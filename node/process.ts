@@ -340,8 +340,7 @@ class Process extends EventEmitter {
     super();
 
     //This causes the exit event to be binded to the unload event
-    // deno-lint-ignore no-window-prefix
-    window.addEventListener("unload", () => {
+    globalThis.addEventListener("unload", () => {
       //TODO(Soremwar)
       //Get the exit code from the unload event
       super.emit("exit", 0);
