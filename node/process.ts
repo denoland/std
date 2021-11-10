@@ -335,6 +335,23 @@ export function emitWarning(
   process.nextTick(doEmitWarning, warning);
 }
 
+function memoryUsage(): {
+  rss: number;
+  heapTotal: number;
+  heapUsed: number;
+  external: number;
+  arrayBuffers: number;
+} {
+  return {
+    ...Deno.memoryUsage(),
+    arrayBuffers: 0,
+  };
+}
+
+memoryUsage.rss = function (): number {
+  return memoryUsage().rss;
+};
+
 class Process extends EventEmitter {
   constructor() {
     super();
@@ -470,18 +487,7 @@ class Process extends EventEmitter {
     return [sec - prevSec, nano - prevNano];
   }
 
-  memoryUsage(): {
-    rss: number;
-    heapTotal: number;
-    heapUsed: number;
-    external: number;
-    arrayBuffers: number;
-  } {
-    return {
-      ...Deno.memoryUsage(),
-      arrayBuffers: 0,
-    };
-  }
+  memoryUsage = memoryUsage;
 
   /** https://nodejs.org/api/process.html#process_process_stderr */
   stderr = stderr;

@@ -394,6 +394,11 @@ Deno.test("process.memoryUsage()", () => {
   assertEquals(mem.arrayBuffers, 0);
 });
 
+Deno.test("process.memoryUsage.rss()", () => {
+  const rss = process.memoryUsage.rss();
+  assert(typeof rss === "number");
+});
+
 Deno.test("process in worker", async () => {
   const promise = deferred();
 
