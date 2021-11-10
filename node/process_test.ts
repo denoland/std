@@ -393,3 +393,19 @@ Deno.test("process.memoryUsage()", () => {
   assert(typeof mem.arrayBuffers === "number");
   assertEquals(mem.arrayBuffers, 0);
 });
+
+Deno.test("process in worker", async () => {
+  const promise = deferred();
+
+  const worker = new Worker(
+    new URL("./testdata/process_worker.ts", import.meta.url).href,
+    { type: "module", deno: true },
+  );
+  worker.addEventListener("message", (e) => {
+    assertEquals(e.data, "hello");
+    promise.resolve();
+  });
+
+  await promise;
+  worker.terminate();
+});
