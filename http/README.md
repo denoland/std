@@ -8,9 +8,9 @@ Server APIs utilizing Deno's
 [HTTP server APIs](https://deno.land/manual/runtime/http_server_apis#http-server-apis).
 
 ```ts
-import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
 
-listenAndServe(":8000", () => new Response("Hello World\n"));
+serve(() => new Response("Hello World\n"));
 
 console.log("http://localhost:8000/");
 ```
