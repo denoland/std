@@ -245,9 +245,9 @@ Without explicitly declaring in the `Middleware` type that we depend on `data`
 in the context, Typescript would not have let us access it on the request
 context.
 
-This also works with `Handler` - we can and need to tell it which request context
-we depend on to use it. Assume that after our middleware above, we want to respond
-with a greeting for each string in the provided Array:
+This also works with `Handler` - we can and need to tell it which request
+context we depend on to use it. Assume that after our middleware above, we want
+to respond with a greeting for each string in the provided Array:
 
 ```typescript
 import { Handler } from "../../../middleware.ts";
@@ -258,7 +258,7 @@ export const handleGreetings: Handler<{ data: string[] }> = (
 ) => {
   const { data } = req.context;
   const greetings = data
-    .map(it => `Hello ${it}!`)
+    .map((it) => `Hello ${it}!`)
     .join("\n");
 
   return new Response(greetings);
@@ -267,14 +267,15 @@ export const handleGreetings: Handler<{ data: string[] }> = (
 
 ### Chaining Middleware
 
-How do we actually connect middleware and handlers into a chain? For that, we need
-the `chain` function.
+How do we actually connect middleware and handlers into a chain? For that, we
+need the `chain` function.
 
-Let's do that using our previous examples (assumed to be exported by the `examples.ts` file here):
+Let's do that using our previous examples (assumed to be exported by the
+`examples.ts` file here):
 
 ```typescript
 import { chain, serve } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
-import { yaml, validate, handleGreeting } from "./examples.ts"
+import { handleGreeting, validate, yaml } from "./examples.ts";
 
 const handler = chain(yaml)
   .add(validate)
