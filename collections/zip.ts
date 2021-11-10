@@ -23,24 +23,21 @@
  * ```
  */
 
-export function zip<T extends unknown[][]>(...arrays: Readonly<T>): T {
-  if (arrays.length === 0) return [] as unknown as T;
+export function zip<T extends unknown[]>(...arrays: { [K in keyof T]: T[K][] }): T[] {
+  const arrLength = arrays.map(i => i.length);
 
-  let returnLength = arrays[0].length;
+  const returnLength = Math.min(...arrLength);
 
-  for (let i = 1; i < arrays.length; i++) {
-    returnLength = Math.min(returnLength, arrays[i].length);
-  }
-
-  const ret = new Array(returnLength);
+  const ret: T[] = new Array(returnLength);
 
   for (let i = 0; i < returnLength; i += 1) {
     const arr = [];
     for (const array of arrays) {
       arr.push(array[i]);
     }
-    ret[i] = arr;
+    ret[i] = arr as T;
   }
 
-  return ret as T;
+  return ret;
 }
+
