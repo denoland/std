@@ -149,11 +149,11 @@ export async function* expandGlob(
     // Advancing the list of current matches may introduce duplicates, so we
     // pass everything through this Map.
     const nextMatchMap: Map<string, WalkEntry> = new Map();
-    for (const currentMatch of currentMatches) {
+    await Promise.all(currentMatches.map(async (currentMatch) => {
       for await (const nextMatch of advanceMatch(currentMatch, segment)) {
         nextMatchMap.set(nextMatch.path, nextMatch);
       }
-    }
+    }));
     currentMatches = [...nextMatchMap.values()].sort(comparePath);
   }
   if (hasTrailingSep) {

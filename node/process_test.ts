@@ -383,3 +383,34 @@ Deno.test("process.on, process.off, process.removeListener doesn't throw on unim
     process.removeListener(ev, handler);
   });
 });
+
+Deno.test("process.memoryUsage()", () => {
+  const mem = process.memoryUsage();
+  assert(typeof mem.rss === "number");
+  assert(typeof mem.heapTotal === "number");
+  assert(typeof mem.heapUsed === "number");
+  assert(typeof mem.external === "number");
+  assert(typeof mem.arrayBuffers === "number");
+  assertEquals(mem.arrayBuffers, 0);
+});
+
+Deno.test("process.memoryUsage.rss()", () => {
+  const rss = process.memoryUsage.rss();
+  assert(typeof rss === "number");
+});
+
+Deno.test("process in worker", async () => {
+  const promise = deferred();
+
+  const worker = new Worker(
+    new URL("./testdata/process_worker.ts", import.meta.url).href,
+    { type: "module", deno: true },
+  );
+  worker.addEventListener("message", (e) => {
+    assertEquals(e.data, "hello");
+    promise.resolve();
+  });
+
+  await promise;
+  worker.terminate();
+});

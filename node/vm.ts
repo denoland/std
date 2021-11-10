@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-// deno-lint-ignore no-explicit-any
+// deno-lint-ignore-file no-explicit-any
 
 import { notImplemented } from "./_utils.ts";
 

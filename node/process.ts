@@ -263,6 +263,7 @@ function createWarningObject(
     warningErr.detail = detail;
   }
 
+  // @ts-ignore this function is not available in lib.dom.d.ts
   Error.captureStackTrace(warningErr, ctor || process.emitWarning);
 
   return warningErr;
@@ -337,13 +338,29 @@ export function emitWarning(
   process.nextTick(doEmitWarning, warning);
 }
 
+function memoryUsage(): {
+  rss: number;
+  heapTotal: number;
+  heapUsed: number;
+  external: number;
+  arrayBuffers: number;
+} {
+  return {
+    ...Deno.memoryUsage(),
+    arrayBuffers: 0,
+  };
+}
+
+memoryUsage.rss = function (): number {
+  return memoryUsage().rss;
+};
+
 class Process extends EventEmitter {
   constructor() {
     super();
 
     //This causes the exit event to be binded to the unload event
-    // deno-lint-ignore no-window-prefix
-    window.addEventListener("unload", () => {
+    globalThis.addEventListener("unload", () => {
       //TODO(Soremwar)
       //Get the exit code from the unload event
       super.emit("exit", 0);
@@ -385,11 +402,12 @@ class Process extends EventEmitter {
   nextTick = nextTick;
 
   /** https://nodejs.org/api/process.html#process_process_events */
-  //deno-lint-ignore ban-types
   on(event: "exit", listener: (code: number) => void): this;
+  // deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this;
+  // deno-lint-ignore ban-types
   on(event: typeof notImplementedEvents[number], listener: Function): this;
-  //deno-lint-ignore no-explicit-any
+  // deno-lint-ignore no-explicit-any
   on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.on("${event}")`);
@@ -402,11 +420,12 @@ class Process extends EventEmitter {
     return this;
   }
 
-  //deno-lint-ignore ban-types
   off(event: "exit", listener: (code: number) => void): this;
+  // deno-lint-ignore no-explicit-any
   off(event: string, listener: (...args: any[]) => void): this;
+  // deno-lint-ignore ban-types
   off(event: typeof notImplementedEvents[number], listener: Function): this;
-  //deno-lint-ignore no-explicit-any
+  // deno-lint-ignore no-explicit-any
   off(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.off("${event}")`);
@@ -474,6 +493,8 @@ class Process extends EventEmitter {
   memoryUsage() {
     return Deno.memoryUsage();
   }
+
+  memoryUsage = memoryUsage;
 
   /** https://nodejs.org/api/process.html#process_process_stderr */
   stderr = stderr;

@@ -21,33 +21,26 @@ interface EntryInfo {
   name: string;
 }
 
-export interface FileServerArgs {
+interface FileServerArgs {
   _: string[];
   // -p --port
-  p?: number;
-  port?: number;
+  port: string;
   // --cors
-  cors?: boolean;
+  cors: boolean;
   // --no-dir-listing
-  "dir-listing"?: boolean;
-  dotfiles?: boolean;
+  "dir-listing": boolean;
+  dotfiles: boolean;
   // --host
-  host?: string;
+  host: string;
   // -c --cert
-  c?: string;
-  cert?: string;
+  cert: string;
   // -k --key
-  k?: string;
-  key?: string;
+  key: string;
   // -h --help
-  h?: boolean;
-  help?: boolean;
+  help: boolean;
 }
 
 const encoder = new TextEncoder();
-
-const serverArgs = parse(Deno.args) as FileServerArgs;
-const target = posix.resolve(serverArgs._[0] ?? "");
 
 const MEDIA_TYPES: Record<string, string> = {
   ".md": "text/markdown",
@@ -188,7 +181,7 @@ async function createEtagHash(message: string) {
   const hashType = "SHA-1"; // Faster, and this isn't a security sensitive cryptographic use case
 
   // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-  const msgUint8 = new TextEncoder().encode(message);
+  const msgUint8 = encoder.encode(message);
   const hashBuffer = await crypto.subtle.digest(hashType, msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(byteToHex).join("");
@@ -375,9 +368,13 @@ export async function serveFile(
 async function serveDir(
   req: Request,
   dirPath: string,
+  options: {
+    dotfiles: boolean;
+    target: string;
+  },
 ): Promise<Response> {
-  const showDotfiles = serverArgs.dotfiles ?? true;
-  const dirUrl = `/${posix.relative(target, dirPath)}`;
+  const showDotfiles = options.dotfiles;
+  const dirUrl = `/${posix.relative(options.target, dirPath)}`;
   const listEntry: EntryInfo[] = [];
 
   // if ".." makes sense
@@ -474,7 +471,7 @@ function setCORS(res: Response): void {
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
   const paths = dirname.split("/");
 
-  return html`
+  return `
     <!DOCTYPE html>
     <html lang="en">
       <head>
@@ -538,9 +535,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
     paths.map((path, index, array) => {
       if (path === "") return "";
       const link = array.slice(0, index + 1).join("/");
-      return (
-        html`<a href="${link}">${path}</a>`
-      );
+      return `<a href="${link}">${path}</a>`;
     }).join("/")
   }
           </h1>
@@ -552,8 +547,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
             </tr>
             ${
     entries.map(
-      (entry) =>
-        html`
+      (entry) => `
                   <tr>
                     <td class="mode">
                       ${entry.mode}
@@ -566,29 +560,13 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                     </td>
                   </tr>
                 `,
-    )
+    ).join("")
   }
           </table>
         </main>
       </body>
     </html>
   `;
-}
-
-function html(strings: TemplateStringsArray, ...values: unknown[]): string {
-  const l = strings.length - 1;
-  let html = "";
-
-  for (let i = 0; i < l; i++) {
-    let v = values[i];
-    if (v instanceof Array) {
-      v = v.join("");
-    }
-    const s = strings[i] + v;
-    html += s;
-  }
-  html += strings[l];
-  return html;
 }
 
 function normalizeURL(url: string): string {
@@ -625,44 +603,47 @@ function normalizeURL(url: string): string {
 }
 
 function main(): void {
-  const CORSEnabled = serverArgs.cors ? true : false;
-  const port = serverArgs.port ?? serverArgs.p ?? 4507;
-  const host = serverArgs.host ?? "0.0.0.0";
+  const serverArgs = parse(Deno.args, {
+    string: ["port", "host", "cert", "key"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors"],
+    default: {
+      "dir-listing": true,
+      "dotfiles": true,
+      "cors": true,
+      "host": "0.0.0.0",
+      "port": "4507",
+      "cert": "",
+      "key": "",
+    },
+    alias: {
+      p: "port",
+      c: "cert",
+      k: "key",
+      h: "help",
+    },
+  }) as FileServerArgs;
+  const CORSEnabled = serverArgs.cors;
+  const port = serverArgs.port;
+  const host = serverArgs.host;
   const addr = `${host}:${port}`;
-  const certFile = serverArgs.cert ?? serverArgs.c ?? "";
-  const keyFile = serverArgs.key ?? serverArgs.k ?? "";
-  const dirListingEnabled = serverArgs["dir-listing"] ?? true;
+  const certFile = serverArgs.cert;
+  const keyFile = serverArgs.key;
+  const dirListingEnabled = serverArgs["dir-listing"];
+
+  if (serverArgs.help) {
+    printUsage();
+    Deno.exit();
+  }
 
   if (keyFile || certFile) {
     if (keyFile === "" || certFile === "") {
       console.log("--key and --cert are required for TLS");
-      serverArgs.h = true;
+      printUsage();
+      Deno.exit(1);
     }
   }
 
-  if (serverArgs.h ?? serverArgs.help) {
-    console.log(`Deno File Server
-    Serves a local directory in HTTP.
-
-  INSTALL:
-    deno install --allow-net --allow-read https://deno.land/std/http/file_server.ts
-
-  USAGE:
-    file_server [path] [options]
-
-  OPTIONS:
-    -h, --help          Prints help information
-    -p, --port <PORT>   Set port
-    --cors              Enable CORS via the "Access-Control-Allow-Origin" header
-    --host     <HOST>   Hostname (default is 0.0.0.0)
-    -c, --cert <FILE>   TLS certificate file (enables TLS)
-    -k, --key  <FILE>   TLS key file (enables TLS)
-    --no-dir-listing    Disable directory listing
-    --no-dotfiles       Do not show dotfiles
-
-    All TLS options are required when one is provided.`);
-    Deno.exit();
-  }
+  const target = posix.resolve(serverArgs._[0] ?? "");
 
   const handler = async (req: Request): Promise<Response> => {
     let response: Response;
@@ -679,7 +660,10 @@ function main(): void {
 
       if (fileInfo.isDirectory) {
         if (dirListingEnabled) {
-          response = await serveDir(req, fsPath);
+          response = await serveDir(req, fsPath, {
+            dotfiles: serverArgs.dotfiles,
+            target,
+          });
         } else {
           throw new Deno.errors.NotFound();
         }
@@ -716,6 +700,29 @@ function main(): void {
       addr.replace("0.0.0.0", "localhost")
     }/`,
   );
+}
+
+function printUsage() {
+  console.log(`Deno File Server
+  Serves a local directory in HTTP.
+
+INSTALL:
+  deno install --allow-net --allow-read https://deno.land/std/http/file_server.ts
+
+USAGE:
+  file_server [path] [options]
+
+OPTIONS:
+  -h, --help          Prints help information
+  -p, --port <PORT>   Set port
+  --cors              Enable CORS via the "Access-Control-Allow-Origin" header
+  --host     <HOST>   Hostname (default is 0.0.0.0)
+  -c, --cert <FILE>   TLS certificate file (enables TLS)
+  -k, --key  <FILE>   TLS key file (enables TLS)
+  --no-dir-listing    Disable directory listing
+  --no-dotfiles       Do not show dotfiles
+
+  All TLS options are required when one is provided.`);
 }
 
 if (import.meta.main) {
