@@ -40,7 +40,8 @@
       "test-querystring.js",
       "test-readline-csi.js",
       "test-url-format-whatwg.js",
-      "test-url-urltooptions.js"
+      "test-url-urltooptions.js",
+      "test-util.js"
     ],
     "pummel": [
       "test-net-write-callbacks.js"
@@ -270,7 +271,8 @@
       "test-url-format-whatwg.js",
       "test-url-pathtofileurl.js",
       "test-url-urltooptions.js",
-      "test-util-inherits.js"
+      "test-util-inherits.js",
+      "test-util.js"
     ],
     "pummel": [
       "test-net-pingpong-delay.js",
