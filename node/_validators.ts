@@ -32,6 +32,10 @@ export function isInt32(value: number): boolean {
   return value === (value | 0);
 }
 
+function isUint32(value: number): boolean {
+  return value === (value >>> 0);
+}
+
 export const validateInt32 = hideStackFrames(
   (value, name, min = -2147483648, max = 2147483647) => {
     // The defaults for min and max correspond to the limits of 32-bit integers.
@@ -49,6 +53,25 @@ export const validateInt32 = hideStackFrames(
 
     if (value < min || value > max) {
       throw new ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
+    }
+  },
+);
+
+export const validateUint32 = hideStackFrames(
+  (value, name, positive: boolean) => {
+    if (!isUint32(value)) {
+      if (typeof value !== "number") {
+        throw new ERR_INVALID_ARG_TYPE(name, "number", value);
+      }
+      if (!Number.isInteger(value)) {
+        throw new ERR_OUT_OF_RANGE(name, "an integer", value);
+      }
+      const min = positive ? 1 : 0;
+      // 2 ** 32 === 4294967296
+      throw new ERR_OUT_OF_RANGE(name, `>= ${min} && < 4294967296`, value);
+    }
+    if (positive && value === 0) {
+      throw new ERR_OUT_OF_RANGE(name, ">= 1 && < 4294967296", value);
     }
   },
 );
@@ -122,6 +145,18 @@ export const validateFunction = hideStackFrames(
   (value: unknown, name: string) => {
     if (typeof value !== "function") {
       throw new ERR_INVALID_ARG_TYPE(name, "Function", value);
+    }
+  },
+);
+
+export const validateArray = hideStackFrames(
+  (value: unknown, name: string, minLength = 0) => {
+    if (!Array.isArray(value)) {
+      throw new ERR_INVALID_ARG_TYPE(name, "Array", value);
+    }
+    if (value.length < minLength) {
+      const reason = `must be longer than ${minLength}`;
+      throw new ERR_INVALID_ARG_VALUE(name, value, reason);
     }
   },
 );

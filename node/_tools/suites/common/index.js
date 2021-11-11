@@ -241,6 +241,14 @@ const isOpenBSD = process.platform === 'openbsd';
 const isLinux = process.platform === 'linux';
 const isOSX = process.platform === 'darwin';
 
+const isDumbTerminal = process.env.TERM === 'dumb';
+
+function skipIfDumbTerminal() {
+  if (isDumbTerminal) {
+    skip('skipping - dumb terminal');
+  }
+}
+
 module.exports = {
   expectsError,
   expectWarning,
@@ -250,6 +258,8 @@ module.exports = {
   mustNotCall,
   mustSucceed,
   platformTimeout,
+  skipIfDumbTerminal,
+  isDumbTerminal,
   isWindows,
   isAIX,
   isSunOS,
