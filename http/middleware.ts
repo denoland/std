@@ -1,3 +1,5 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
 import type { Handler } from "./server.ts";
 import type { EmptyContext, HttpRequest } from "./request.ts";
 import type { CommonKeys, Expand, SafeOmit } from "../_util/types.ts";

@@ -1,3 +1,5 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
 import { chain, Handler, HttpRequest, Middleware, serve } from "./mod.ts";
 import {
   handleGreetings,

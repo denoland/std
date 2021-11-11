@@ -1,3 +1,5 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
 import { EmptyContext, Handler, Middleware, Status } from "../mod.ts";
 import { parse } from "../../encoding/yaml.ts";
 
