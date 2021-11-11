@@ -112,6 +112,7 @@ assert.strictEqual(util.isPrimitive(Infinity), true);
 assert.strictEqual(util.isPrimitive(NaN), true);
 assert.strictEqual(util.isPrimitive(Symbol('symbol')), true);
 
+// TODO(wafuwafu13): Enable this when `isBuffer` is ready.
 // isBuffer
 // assert.strictEqual(util.isBuffer('foo'), false);
 // assert.strictEqual(util.isBuffer(Buffer.from('foo')), true);
