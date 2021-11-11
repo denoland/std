@@ -1,10 +1,4 @@
-import {
-  chain,
-  EmptyContext,
-  Handler,
-  listenAndServe,
-  Middleware,
-} from "../mod.ts";
+import { chain, EmptyContext, Handler, Middleware, serve } from "../mod.ts";
 import { parse } from "../../encoding/yaml.ts";
 
 const log: Middleware = async (req, next) => {
@@ -56,9 +50,9 @@ const handle: Handler<{ data: string[] }> = (req) => {
   );
 };
 
-const stack = chain(log)
+const handler = chain(log)
   .add(yaml)
   .add(validate)
   .add(handle);
 
-await listenAndServe(":8000", stack);
+await serve(handler);
