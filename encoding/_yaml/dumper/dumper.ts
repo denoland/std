@@ -872,7 +872,7 @@ function getDuplicateReferences(
   for (let index = 0; index < length; index += 1) {
     state.duplicates.push(objects[duplicatesIndexes[index]]);
   }
-  state.usedDuplicates = new Array(length);
+  state.usedDuplicates = Array.from({ length: length });
 }
 
 export function dump(input: Any, options?: DumperStateOptions): string {
