@@ -94,6 +94,7 @@
       "test-buffer-parent-property.js",
       "test-buffer-readdouble.js",
       "test-buffer-readfloat.js",
+      "test-buffer-readint.js",
       "test-buffer-tojson.js",
       "test-buffer-tostring-range.js",
       "test-buffer-tostring-rangeerror.js",
