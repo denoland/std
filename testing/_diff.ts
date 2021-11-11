@@ -79,7 +79,10 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   const offset = N;
   const delta = M - N;
   const size = M + N + 1;
-  const fp = new Array(size).fill({ y: -1 });
+  const fp: FarthestPoint[] = Array.from(
+    { length: size },
+    () => ({ y: -1, id: -1 }),
+  );
   /**
    * INFO:
    * This buffer is used to save memory and improve performance.

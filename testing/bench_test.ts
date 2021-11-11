@@ -40,7 +40,7 @@ Deno.test({
     });
 
     bench(async function promiseAllFetchDenolandX10(b) {
-      const urls = new Array(10).fill("https://deno.land/");
+      const urls = Array.from({ length: 10 }, () => "https://deno.land/");
       b.start();
       await Promise.all(
         urls.map(
