@@ -1166,7 +1166,7 @@ var require_buffer = __commonJS({
         return fromArrayLike(obj);
       }
 
-      if (obj.type === "Buffer" && ArrayIsArray(obj.data)) {
+      if (obj.type === "Buffer" && Array.isArray(obj.data)) {
         return fromArrayLike(obj.data);
       }
     }
@@ -2282,21 +2282,6 @@ var require_buffer = __commonJS({
         ? readDoubleForwards(this, offset)
         : readDoubleBackwards(this, offset);
     };
-    function checkInt(buf, value, offset, ext, max, min) {
-      if (!Buffer2.isBuffer(buf)) {
-        throw new ERR_INVALID_ARG_TYPE(
-          "buffer",
-          "Buffer",
-          buf,
-        );
-      }
-      if (value > max || value < min) {
-        throw new ERR_OUT_OF_RANGE("value", `>= ${min} and <= ${max}`, value);
-      }
-      if (offset + ext > buf.length) {
-        throw new RangeError("Index out of range");
-      }
-    }
     Buffer2.prototype.writeUintLE = Buffer2.prototype.writeUIntLE =
       function writeUIntLE(value, offset, byteLength) {
         if (byteLength === 6) {
