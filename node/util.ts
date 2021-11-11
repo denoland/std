@@ -103,7 +103,7 @@ export function isRegExp(value: unknown): boolean {
   return value instanceof RegExp;
 }
 
-/** @deprecated - use `value instanceof Date` instead. */
+/** @deprecated */
 export function isDate(value: unknown): boolean {
   return types.isDate(value);
 }
