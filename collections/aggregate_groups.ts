@@ -22,7 +22,7 @@ import { mapEntries } from "./map_entries.ts";
  *     },
  * )
  *
- * assertEquals(descriptions === {
+ * assertEquals(descriptions, {
  *     'Curry': 'Curry is spicy and vegan',
  *     'Omelette': 'Omelette is creamy and vegetarian',
  * })
