@@ -103,6 +103,11 @@ export function isRegExp(value: unknown): boolean {
   return value instanceof RegExp;
 }
 
+/** @deprecated */
+export function isDate(value: unknown): boolean {
+  return types.isDate(value);
+}
+
 /** @deprecated - use `value === null || (typeof value !== "object" && typeof value !== "function")` instead. */
 export function isPrimitive(value: unknown): boolean {
   return (
@@ -279,6 +284,7 @@ export default {
   isError,
   isFunction,
   isRegExp,
+  isDate,
   isPrimitive,
   getSystemErrorName,
   deprecate,
