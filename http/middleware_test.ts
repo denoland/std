@@ -1,4 +1,10 @@
-import { chain, Handler, HttpRequest, Middleware } from "./mod.ts";
+import { chain, Handler, HttpRequest, Middleware, serve } from "./mod.ts";
+import {
+  handleGreetings,
+  log,
+  validate,
+  yaml,
+} from "./middleware/example_middleware.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
 function buildRequest(body?: string) {
@@ -102,5 +108,40 @@ Deno.test({
     chained(buildRequest());
 
     assertEquals(called, [1, 2, 3, 4]);
+  },
+});
+
+Deno.test({
+  name: `[http/middleware] unterminated chains should not be passable to serve`,
+  fn: () => {
+    const chained = chain(yaml).add(validate);
+
+    const _ = () => {
+      // @ts-expect-error Should not be assignable
+      serve(chained);
+    };
+  },
+});
+
+Deno.test({
+  name:
+    `[http/middleware] terminated chains that still depend on some context should not be passable to serve`,
+  fn: () => {
+    const chained = chain(validate).add(handleGreetings);
+
+    const _ = () => {
+      // @ts-expect-error Should not be assignable
+      serve(chained);
+    };
+  },
+});
+
+Deno.test({
+  name: `[http/middleware] terminated chains should not allow to call add`,
+  fn: () => {
+    const chained = chain(yaml).add(validate).add(handleGreetings);
+
+    // @ts-expect-error Should not be assignable
+    chained.add(log);
   },
 });

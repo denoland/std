@@ -1,14 +1,7 @@
-import {
-  chain,
-  EmptyContext,
-  Handler,
-  Middleware,
-  serve,
-  Status,
-} from "../mod.ts";
+import { EmptyContext, Handler, Middleware, Status } from "../mod.ts";
 import { parse } from "../../encoding/yaml.ts";
 
-const log: Middleware = async (req, next) => {
+export const log: Middleware = async (req, next) => {
   const start = performance.now();
   const res = await next(req);
   const duration = performance.now() - start;
@@ -20,7 +13,7 @@ const log: Middleware = async (req, next) => {
   return res;
 };
 
-const yaml: Middleware<EmptyContext, { data: unknown }> = async (
+export const yaml: Middleware<EmptyContext, { data: unknown }> = async (
   req,
   next,
 ) => {
@@ -31,7 +24,7 @@ const yaml: Middleware<EmptyContext, { data: unknown }> = async (
   return await next(newReq);
 };
 
-const validate: Middleware<{ data: unknown }, { data: string[] }> = (
+export const validate: Middleware<{ data: unknown }, { data: string[] }> = (
   req,
   next,
 ) => {
@@ -47,7 +40,7 @@ const validate: Middleware<{ data: unknown }, { data: string[] }> = (
   );
 };
 
-const handle: Handler<{ data: string[] }> = (req) => {
+export const handleGreetings: Handler<{ data: string[] }> = (req) => {
   const { data } = req.context;
 
   return new Response(
@@ -56,10 +49,3 @@ const handle: Handler<{ data: string[] }> = (req) => {
       .join("\n"),
   );
 };
-
-const handler = chain(log)
-  .add(yaml)
-  .add(validate)
-  .add(handle);
-
-await serve(handler);
