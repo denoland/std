@@ -79,7 +79,7 @@ import {
 const handle: Handler = (req) => {
   if (req.method !== Method.Get) {
     // Will respond with an empty 404
-    return new Reponse(null, { status: Status.NotFound });
+    return new Response(null, { status: Status.NotFound });
   }
 
   return new Response("Hello!");

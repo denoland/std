@@ -43,6 +43,8 @@ export class HttpRequest<C extends EmptyContext = EmptyContext>
    * Example:
    *
    * ```ts
+   * import { HttpRequest } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+   *
    * declare const req: HttpRequest
    *
    * const reqWithUser = req.addContext({ user: "Example" })

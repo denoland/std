@@ -17,10 +17,11 @@ import type { CommonKeys, Expand, SafeOmit } from "../_util/types.ts";
 *
 * Example:
 *
-* ```ts import { Middleware } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+* ```ts
+* import { Middleware } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 *
 * // Log response time, method and path for requests going through this middleware
-* const log: Middleware = (req, next) => {
+* const log: Middleware = async (req, next) => {
 *   const start = performance.now();
 *   const response = await next(req);
 *   const end = performance.now();
@@ -60,17 +61,19 @@ export type MiddlewareChain<
    * Example:
    *
    * ```ts
-   * const first: Middleware = (req, next) => {
+   * import { Middleware, Handler, chain } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+   *
+   * const first: Middleware = async (req, next) => {
    *   console.log("Hey");
    *   return await next(req);
    * };
    *
-   * const second: Middleware = (req, next) => {
+   * const second: Middleware = async (req, next) => {
    *   console.log("there!");
    *   return await next(req);
    * };
    *
-   * const helloWorld = (req) => new Response("Hello world");
+   * const helloWorld: Handler = (req) => new Response("Hello world");
    *
    * // This Handler will log "Hey", log "there!" and then respond with "Hello World"
    * const handler = chain(first)
@@ -91,12 +94,14 @@ export type MiddlewareChain<
    * Example:
    *
    * ```ts
-   * const first: Middleware = (req, next) => {
+   * import { Middleware, chain } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+   *
+   * const first: Middleware = async (req, next) => {
    *   console.log("Hey");
    *   return await next(req);
    * };
    *
-   * const second: Middleware = (req, next) => {
+   * const second: Middleware = async (req, next) => {
    *   console.log("there!");
    *   return await next(req);
    * };
