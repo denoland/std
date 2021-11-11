@@ -39,6 +39,7 @@
       "test-net-write-arguments.js",
       "test-querystring.js",
       "test-readline-csi.js",
+      "test-readline-interface.js",
       "test-url-format-whatwg.js",
       "test-url-urltooptions.js",
       "test-util.js"
@@ -166,6 +167,7 @@
       "test-querystring.js",
       "test-readline-csi.js",
       "test-readline-emit-keypress-events.js",
+      "test-readline-interface.js",
       "test-readline.js",
       "test-stream-await-drain-writers-in-synchronously-recursion-write.js",
       "test-stream-big-packet.js",

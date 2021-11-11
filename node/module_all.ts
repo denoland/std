@@ -9,6 +9,7 @@ import dns from "./dns.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
+import internalUtilInspect from "./internal/util/inspect.js";
 import internalReadlineUtils from "./internal/readline/utils.js";
 import http from "./http.ts";
 import net from "./net.ts";
@@ -55,6 +56,7 @@ export default {
   "fs/promises": fsPromises,
   http,
   "internal/readline/utils": internalReadlineUtils,
+  "internal/util/inspect": internalUtilInspect,
   net,
   os,
   path,

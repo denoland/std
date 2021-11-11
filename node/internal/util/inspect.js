@@ -115,3 +115,8 @@ export function stripVTControlCharacters(str) {
 
   return str.replace(ansi, "");
 }
+
+export default {
+  getStringWidth,
+  stripVTControlCharacters,
+};
