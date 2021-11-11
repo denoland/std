@@ -859,11 +859,11 @@ var require_buffer = __commonJS({
       return length | 0;
     }
     function SlowBuffer(length) {
-      if (+length != length) {
-        length = 0;
-      }
+      assertSize(length);
       return Buffer2.alloc(+length);
     }
+    Object.setPrototypeOf(SlowBuffer.prototype, Uint8Array.prototype);
+    Object.setPrototypeOf(SlowBuffer, Uint8Array);
     Buffer2.isBuffer = function isBuffer(b) {
       return b != null && b._isBuffer === true && b !== Buffer2.prototype;
     };
