@@ -83,10 +83,11 @@ await serve(handle);
 Middleware is a common pattern to include recurring logic done on requests and
 responses like deserialization, compression, validation, CORS etc.
 
-A middleware is a special kind of `Handler` that can pass control on to a next
-handler during its flow, allowing it to only solve a specific part of handling
-the request without needing to know about the rest. The next handler can also be
-middleware itself, enabling to build chains like this:
+A middleware is like a `Handler` except that it expects an additional parameter
+containing a next handler it can pass on to, allowing it to only solve a
+specific part of handling the request without needing to know about the rest.
+The next handler can contain middleware again, enabling to build chains like
+this:
 
 ```
 Request ----------------------------------------->
@@ -96,14 +97,15 @@ log - authenticate - parseJson - validate - handle
 <-----------------------------------------Response
 ```
 
-Middleware is just a handler that **can** call the next handler to pass on
-control.
+Middleware is a handler that **can** call the next handler to pass on control.
 
-Middleware will sometimes be used to ensure that some condition is met before
+Middleware will often be used to ensure that some condition is met before
 passing the request on (e.g. authentication, validation), to pre-process
 requests in some way to make handling them simpler and less repetitive
 (deserialization, database preloading) or to format responses in some way (CORS,
-compression).
+compression). The middleware pattern decouples those parts of the logic from the
+rest of the application, allowing to distribute it as reusable modules, even
+from third parties.
 
 `std/http` has a simple, yet powerful, strongly typed middleware system.
 
@@ -112,7 +114,7 @@ compression).
 Writing middleware is the same as writing a `Handler`, except that it gets
 passed an additional argument - canonically called `next` - which is a handler
 representing the rest of the chain after our middleware. `std/http` exports a
-`Middleware` function type that can be used to write Middleware.
+`Middleware` function type that should be used to write Middleware.
 
 Let's look at an example. A simple middleware that logs requests could be
 written like this:
@@ -142,7 +144,7 @@ a `Response`, it does not matter how we produced it.
 
 ### Request Context
 
-Sometimes you want your middleware to pass information onto the handlers after
+Sometimes you want your middleware to pass information onto the handler after
 it. The way to do that is request context.
 
 Each `HttpRequest`s has an attached `context` object. Arbitrary properties with
@@ -150,8 +152,6 @@ arbitrary data can be added to the context via the `.addContext()` method to
 later be read by other functions handling the same request.
 
 Contexts are very strictly typed to prevent runtime errors.
-
-To write middleware in typescript, there are two things to decide upfront:
 
 ### Adding Context
 
@@ -161,7 +161,7 @@ The `Middleware` type actually takes two optional type arguments:
 - Context we add for handlers after us to consume
 
 Both default to the `EmptyContext`. Let's look at an example on how to add
-context:
+context.
 
 Assume our server wants to accept data in the YAML format. To deal with the YAML
 parsing and error handling, we could write a middleware like this:
@@ -198,7 +198,7 @@ export const yaml: Middleware<EmptyContext, { data: unknown }> = async (
 
 This will respond early with an error if the request does not contain a valid
 YAML body and will otherwise parse that YAML, add the parsed Javascript value to
-the request context and pass that on to the rest of the chain.
+the request context and pass that on to the next handler.
 
 The Typescript compiler will ensure that we actually pass the promised `data`
 property in the context to the `next` handler, because we told it that we will
@@ -237,9 +237,10 @@ export const validate: Middleware<{ data: unknown }, { data: string[] }> = (
 ```
 
 This will check if the parsed `data` value is an Array and if every element in
-it is a string. If that is true, it will pass on to the rest of the chain. Note
-that we actually change the context - we declare that after our middleware, the
-`data` property has the type `string[]` instead of the previous `unknown`.
+it is a string. If that is true, it will pass on to the next handler. Note that
+we actually change the context - we declare (in the second type parameter of
+`Middleware`) that after our middleware, the `data` property has the type
+`string[]` instead of the previous `unknown`.
 
 Without explicitly declaring in the `Middleware` type that we depend on `data`
 in the context, Typescript would not have let us access it on the request
@@ -252,10 +253,7 @@ to respond with a greeting for each string in the provided Array:
 ```typescript
 import { Handler } from "../../../middleware.ts";
 
-export const handleGreetings: Handler<{ data: string[] }> = (
-  req,
-  next,
-) => {
+export const handleGreetings: Handler<{ data: string[] }> = (req) => {
   const { data } = req.context;
   const greetings = data
     .map((it) => `Hello ${it}!`)
@@ -264,6 +262,9 @@ export const handleGreetings: Handler<{ data: string[] }> = (
   return new Response(greetings);
 };
 ```
+
+If we would not have explicitly added `{ data: string[] }` to `Handler`,
+Typescript would not have let us access that context.
 
 ### Chaining Middleware
 
@@ -274,49 +275,51 @@ Let's do that using our previous examples (assumed to be exported by the
 `examples.ts` file here):
 
 ```typescript
-import { chain, serve } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
-import { handleGreeting, validate, yaml } from "./examples.ts";
+import { chain, serve } from "https://deno.land/std@$std_version/http/mod.ts";
+import { handlegreeting, validate, yaml } from "./examples.ts";
 
 const handler = chain(yaml)
   .add(validate)
-  .add(handleGreeting);
+  .add(handlegreeting);
 
 await serve(handler);
 ```
 
-This will pass requests through `auth`, which passes on to `cors`, which passes
-them on to `sayHello`, with the response from `sayHello` taking the reverse way.
+This will build a new function by chaining the given functions in the given
+order. You can `.add()` as many middlewares as you want until you `.add()` a
+`Handler`, which will terminate the chain, turning it into a `Handler` itself,
+meaning you can no longer add to it.
 
-A chain is itself just a middleware again, so you can pass around and nest
-chains as much as you like. This (nonsensical) example does the exact same as
-the one above:
+### Chain Nesting
+
+Chains are just middlewares (or `Handler`s if they are terminated) again, so you
+can pass around and nest them in other chains as much and as deeply as you want.
+
+This example does the exact same as the one above:
 
 ```typescript
-import { chain, serve } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
-import { auth, cors } from "./my_middleware.ts";
+import { chain, serve } from "https://deno.land/std@$std_version/http/mod.ts";
+import { handlegreeting, validate, yaml } from "./examples.ts";
 
-function sayHello() {
-  return new Response("Hello");
-}
+const validateAndGreet = chain(validate)
+  .add(handleGreeting);
 
-const core = chain(cors)
-  .add(sayHello);
-
-const handler = chain(auth)
-  .add(core);
+const handler = chain(yaml)
+  .add(valideAndGreet);
 
 await serve(handler);
 ```
 
 ### Chain Type Safety
 
-Middleware chains built with the `chain()` function are type safe and
-order-aware regarding request context, even for arbitrary nesting.
+Chains built with the `chain()` function are type safe and order-aware regarding
+request context, even for arbitrary nesting.
 
 This means that Typescript will error if you try to use a chain as a handler for
 e.g. `serve` if that chain does not satisfy all its internal context
-requirements itself in the right order. An example using the two middleares we
-wrote above:
+requirements itself in the right order.
+
+Let's use our examples from above again to demonstrate this:
 
 ```typescript
 const handle: Handler<{ data: string[] }> = (req) => {
