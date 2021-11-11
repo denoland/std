@@ -724,8 +724,10 @@ var require_buffer = __commonJS({
     function Buffer2(arg, encodingOrOffset, length) {
       if (typeof arg === "number") {
         if (typeof encodingOrOffset === "string") {
-          throw new TypeError(
-            'The "string" argument must be of type string. Received type number',
+          throw new ERR_INVALID_ARG_TYPE(
+            "string",
+            "string",
+            arg,
           );
         }
         return allocUnsafe(arg);
@@ -2423,65 +2425,6 @@ var require_buffer = __commonJS({
       }
       return this;
     };
-    var errors = {};
-    function E(sym, getMessage, Base) {
-      errors[sym] = class NodeError extends Base {
-        constructor() {
-          super();
-          Object.defineProperty(this, "message", {
-            value: getMessage.apply(this, arguments),
-            writable: true,
-            configurable: true,
-          });
-          this.name = `${this.name} [${sym}]`;
-          this.stack;
-          delete this.name;
-        }
-        get code() {
-          return sym;
-        }
-        set code(value) {
-          Object.defineProperty(this, "code", {
-            configurable: true,
-            enumerable: true,
-            value,
-            writable: true,
-          });
-        }
-        toString() {
-          return `${this.name} [${sym}]: ${this.message}`;
-        }
-      };
-    }
-    E("ERR_INVALID_ARG_TYPE", function (name, actual) {
-      return `The "${name}" argument must be of type number. Received type ${typeof actual}`;
-    }, TypeError);
-    E("ERR_OUT_OF_RANGE", function (str, range, input) {
-      let msg = `The value of "${str}" is out of range.`;
-      let received = input;
-      if (Number.isInteger(input) && Math.abs(input) > 2 ** 32) {
-        received = addNumericalSeparator(String(input));
-      } else if (typeof input === "bigint") {
-        received = String(input);
-        if (
-          input > BigInt(2) ** BigInt(32) || input < -(BigInt(2) ** BigInt(32))
-        ) {
-          received = addNumericalSeparator(received);
-        }
-        received += "n";
-      }
-      msg += ` It must be ${range}. Received ${received}`;
-      return msg;
-    }, RangeError);
-    function addNumericalSeparator(val) {
-      let res = "";
-      let i = val.length;
-      const start = val[0] === "-" ? 1 : 0;
-      for (; i >= start + 4; i -= 3) {
-        res = `_${val.slice(i - 3, i)}${res}`;
-      }
-      return `${val.slice(0, i)}${res}`;
-    }
     function checkBounds(buf, offset, byteLength2) {
       validateNumber(offset, "offset");
       if (buf[offset] === void 0 || buf[offset + byteLength2] === void 0) {
@@ -2503,7 +2446,7 @@ var require_buffer = __commonJS({
         } else {
           range = `>= ${min}${n} and <= ${max}${n}`;
         }
-        throw new errors.ERR_OUT_OF_RANGE("value", range, value);
+        throw new ERR_OUT_OF_RANGE("value", range, value);
       }
       checkBounds(buf, offset, byteLength2);
     }

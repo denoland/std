@@ -85,6 +85,8 @@
       "test-buffer-from.js",
       "test-buffer-inheritance.js",
       "test-buffer-isencoding.js",
+      "test-buffer-iterator.js",
+      "test-buffer-new.js",
       "test-buffer-tojson.js",
       "test-buffer-tostring-range.js",
       "test-buffer-tostring-rangeerror.js",
