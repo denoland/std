@@ -9,7 +9,7 @@ Deno's standard HTTP server based on the
 - [Handling Requests](#handling-requests)
   - [HTTP Status Codes and Methods](#http-status-codes-and-methods)
 - [Middleware](#middleware)
-  - [Writing Middleware]()
+  - [Writing Middleware](#writing-middleware)
   - [Request Context](#request-context)
   - [Adding Context](#adding-context)
   - [Reading Context](#reading-context)
@@ -20,7 +20,7 @@ Deno's standard HTTP server based on the
 - [Cookies](#cookies)
   - [getCookies](#getcookies)
   - [setCookie](#setcookie)
-  - [deleteCookie]($deletecookie)
+  - [deleteCookie](#deletecookie)
 
 ## Minimal Server
 
