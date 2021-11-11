@@ -19,11 +19,11 @@ common.skipIfDumbTerminal();
     terminal: true,
     input: input
   });
-
+  
   rl.on('line', common.mustCall((data) => {
     assert.strictEqual(data, 'abc');
   }));
-
+  
   input.end('abc');
 }
 

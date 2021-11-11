@@ -19,6 +19,8 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import { validateString } from "../../_validators.ts";
+
 // Regex used for ansi escape code splitting
 // Adopted from https://github.com/chalk/ansi-regex/blob/HEAD/index.js
 // License: MIT, authors: @sindresorhus, Qix-, arjunmehta and LitoMore
@@ -38,9 +40,9 @@ export function getStringWidth(str, removeControlChars = true) {
   if (removeControlChars) {
     str = stripVTControlCharacters(str);
   }
-  str = StringPrototypeNormalize(str, "NFC");
-  for (const char of new SafeStringIterator(str)) {
-    const code = StringPrototypeCodePointAt(char, 0);
+  str = str.normalize("NFC");
+  for (const char of str[Symbol.iterator]()) {
+    const code = char.codePointAt(0);
     if (isFullWidthCodePoint(code)) {
       width += 2;
     } else if (!isZeroWidthCodePoint(code)) {

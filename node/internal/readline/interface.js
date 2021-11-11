@@ -92,7 +92,6 @@ export const kWordRight = Symbol("_wordRight");
 export const kWriteToOutput = Symbol("_writeToOutput");
 
 export function InterfaceConstructor(input, output, completer, terminal) {
-  console.log("calling interface constr");
   this[kSawReturnAt] = 0;
   // TODO(BridgeAR): Document this property. The name is not ideal, so we
   // might want to expose an alias and document that instead.
