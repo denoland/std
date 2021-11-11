@@ -1,5 +1,5 @@
 // TODO(Soremwar)
-// This implementation has an unreliable indexOf and includes implementation
+// This implementation has an unreliable indexOf, includes and base64url encoding implementation
 
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // Copyright Feross Aboukhadijeh, and other contributors. All rights reserved. MIT license.

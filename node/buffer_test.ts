@@ -1,8 +1,3 @@
-// TODO(Soremwar)
-// Review failed checks individually
-// deno-lint-ignore ban-ts-comment
-// @ts-nocheck
-
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { Buffer } from "./buffer.ts";
@@ -35,7 +30,6 @@ Deno.test({
     for (const value of invalidValues) {
       assertThrows(
         () => {
-          console.log(value.constructor.name);
           Buffer.alloc(1, value);
         },
         TypeError,
@@ -516,8 +510,6 @@ Deno.test({
     const invalidEncodings = ["deno", "base645"];
 
     for (const encoding of defaultToUtf8Encodings) {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
       assertEquals(Buffer.from("yes", encoding).toString(), "yes");
     }
 
@@ -624,8 +616,7 @@ Deno.test({
       0,
       -1,
     ].forEach((enc) => {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
+      // @ts-expect-error This deliberately ignores the type constraint
       assertEquals(Buffer.isEncoding(enc), false);
     });
   },

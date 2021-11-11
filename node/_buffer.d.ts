@@ -345,7 +345,7 @@ declare namespace Buffer {
      */
     static alloc(
       size: number,
-      fill?: string | Buffer | number,
+      fill?: string | Uint8Array | number,
       encoding?: Encoding,
     ): Buffer;
     /**

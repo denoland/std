@@ -18,11 +18,7 @@ function maybeDecode(
   data: Uint8Array,
   encoding: Encodings | null,
 ): string | Buffer {
-  // TODO(Soremwar)
-  // Verify validity of overload
-  // deno-lint-ignore ban-ts-comment
-  // @ts-ignore
-  const buffer = new Buffer(data.buffer, data.byteOffset, data.byteLength);
+  const buffer = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
   if (encoding && encoding !== "binary") return buffer.toString(encoding);
   return buffer;
 }
