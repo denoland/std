@@ -880,7 +880,7 @@ assertEquals(withoutList, [3]);
 ### zip
 
 Builds N-tuples of elements from the given N arrays with matching indices,
-stopping when the smaller array's end is reached
+stopping when the smallest array's end is reached
 
 ```ts
 import { zip } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
