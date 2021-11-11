@@ -9,9 +9,18 @@ Deno's standard HTTP server based on the
 - [Handling Requests](#handling-requests)
   - [HTTP Status Codes and Methods](#http-status-codes-and-methods)
 - [Middleware](#middleware)
-  - [Writing Simple Middleware]()
-  - [Request Context]()
-  - [Using Middleware]()
+  - [Writing Middleware]()
+  - [Request Context](#request-context)
+  - [Adding Context](#adding-context)
+  - [Reading Context](#reading-context)
+  - [Chaining Middleware](#chaining-middleware)
+  - [Nesting Chains](#nesting-chains)
+  - [Chain Type Safety](#chain-type-safety)
+- [File Server](#file-server)
+- [Cookies](#cookies)
+  - [getCookies](#getcookies)
+  - [setCookie](#setcookie)
+  - [deleteCookie]($deletecookie)
 
 ## Minimal Server
 
@@ -290,7 +299,7 @@ order. You can `.add()` as many middlewares as you want until you `.add()` a
 `Handler`, which will terminate the chain, turning it into a `Handler` itself,
 meaning you can no longer add to it.
 
-### Chain Nesting
+### Nesting Chains
 
 Chains are just middlewares (or `Handler`s if they are terminated) again, so you
 can pass around and nest them in other chains as much and as deeply as you want.
@@ -319,31 +328,22 @@ This means that Typescript will error if you try to use a chain as a handler for
 e.g. `serve` if that chain does not satisfy all its internal context
 requirements itself in the right order.
 
-Let's use our examples from above again to demonstrate this:
+Let's use our examples from above again to demonstrate this. This will not pass
+the type checker:
 
 ```typescript
-const handle: Handler<{ data: string[] }> = (req) => {
-  const { data } = req.context;
+import { chain, serve } from "https://deno.land/std@$std_version/http/mod.ts";
+import { handlegreeting, validate, yaml } from "./examples.ts";
 
-  return new Response(
-    data
-      .map((it) => `Hello ${it}!`)
-      .join("\n"),
-  );
-};
-```
-
-This will not pass the type checker:
-
-```typescript
 const handleStringArray = chain(validate)
   .add(yaml)
   .add(handle);
 
+// TS will correctly tell you that this Handler requires { data: unknown } context, which `serve` will not provide
 await serve(handleStringArray);
 ```
 
-But this will:
+But this will work, with the only difference being the order:
 
 ```typescript
 const handleStringArray = chain(yaml)
@@ -352,6 +352,20 @@ const handleStringArray = chain(yaml)
 
 await serve(handleStringArray);
 ```
+
+As `serve` only accepts `Handler`, Typescript will also stop you from passing it
+an unterminated chain:
+
+```typescript
+const handleStringArray = chain(yaml)
+  .add(validate);
+
+// TS will tell you that the MiddlewareChain is not assignable to the Handler here
+await serve(handleStringArray);
+```
+
+Those checks will help you not to run into runtime problems, even for more
+complex, nested setups.
 
 ## File Server
 
