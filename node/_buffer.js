@@ -1103,22 +1103,14 @@ var require_buffer = __commonJS({
       return buf;
     }
     function fromObject(obj) {
-      if (Buffer2.isBuffer(obj)) {
-        const len = checked(obj.length) | 0;
-        const buf = createBuffer(len);
-        if (buf.length === 0) {
-          return buf;
-        }
-        obj.copy(buf, 0, 0, len);
-        return buf;
-      }
-      if (obj.length !== void 0) {
-        if (typeof obj.length !== "number" || Number.isNaN(obj.length)) {
+      if (obj.length !== undefined || isAnyArrayBuffer(obj.buffer)) {
+        if (typeof obj.length !== "number") {
           return createBuffer(0);
         }
         return fromArrayLike(obj);
       }
-      if (obj.type === "Buffer" && Array.isArray(obj.data)) {
+
+      if (obj.type === "Buffer" && ArrayIsArray(obj.data)) {
         return fromArrayLike(obj.data);
       }
     }
