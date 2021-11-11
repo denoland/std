@@ -1,4 +1,11 @@
-import { chain, EmptyContext, Handler, Middleware, serve } from "../mod.ts";
+import {
+  chain,
+  EmptyContext,
+  Handler,
+  Middleware,
+  serve,
+  Status,
+} from "../mod.ts";
 import { parse } from "../../encoding/yaml.ts";
 
 const log: Middleware = async (req, next) => {
@@ -36,7 +43,7 @@ const validate: Middleware<{ data: unknown }, { data: string[] }> = (
 
   return new Response(
     "Invalid input, expected an array of string",
-    { status: 422 },
+    { status: Status.UnprocessableEntity },
   );
 };
 

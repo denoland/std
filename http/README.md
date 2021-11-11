@@ -305,6 +305,9 @@ order. You can `.add()` as many middlewares as you want until you `.add()` a
 `Handler`, which will terminate the chain, turning it into a `Handler` itself,
 meaning you can no longer add to it.
 
+All examples up to this point can be found in
+[`middleware/example.ts`](middleware/example.ts).
+
 ### Nesting Chains
 
 Chains are just `Middleware`s (or `Handler`s if they are terminated) themself,
