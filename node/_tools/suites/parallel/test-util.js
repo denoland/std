@@ -71,8 +71,7 @@ assert.strictEqual(util.isDate(Date()), false);
 assert.strictEqual(util.isDate({}), false);
 assert.strictEqual(util.isDate([]), false);
 assert.strictEqual(util.isDate(new Error()), false);
-// TODO(wafuwafu13): Enable this.
-// assert.strictEqual(util.isDate(Object.create(Date.prototype)), false);
+assert.strictEqual(util.isDate(Object.create(Date.prototype)), false);
 
 // isError
 assert.strictEqual(util.isError(new Error()), true);

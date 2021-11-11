@@ -105,7 +105,7 @@ export function isRegExp(value: unknown): boolean {
 
 /** @deprecated - use `value instanceof Date` instead. */
 export function isDate(value: unknown): boolean {
-  return value instanceof Date;
+  return types.isDate(value);
 }
 
 /** @deprecated - use `value === null || (typeof value !== "object" && typeof value !== "function")` instead. */
