@@ -34,6 +34,7 @@ import {
   stripVTControlCharacters,
 } from "../util/inspect.js";
 import EventEmitter from "../../events.ts";
+import { emitKeypressEvents } from "./emitKeypressEvents.js";
 import {
   charLengthAt,
   charLengthLeft,
@@ -43,8 +44,6 @@ import {
 import { clearScreenDown, cursorTo, moveCursor } from "./callbacks.js";
 
 import { StringDecoder } from "../../string_decoder.ts";
-
-let emitKeypressEvents;
 
 // Lazy load Readable for startup performance.
 let Readable;
@@ -246,9 +245,7 @@ export function InterfaceConstructor(input, output, completer, terminal) {
     input.on("data", ondata);
     input.on("end", onend);
     self.once("close", onSelfCloseWithoutTerminal);
-    console.log("setting decoder");
     this[kDecoder] = new StringDecoder("utf8");
-    console.log("set decoder", this[kDecoder]);
   } else {
     function onSelfCloseWithTerminal() {
       input.removeListener("keypress", onkeypress);
@@ -259,7 +256,6 @@ export function InterfaceConstructor(input, output, completer, terminal) {
       }
     }
 
-    emitKeypressEvents ??= require("internal/readline/emitKeypressEvents");
     emitKeypressEvents(input, this);
 
     // `input` usually refers to stdin

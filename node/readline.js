@@ -85,16 +85,17 @@ function Interface(input, output, completer, terminal) {
     completer = (v, cb) => cb(null, realCompleter(v));
   }
 
-  console.log("call interface constr", InterfaceConstructor);
-  Function.prototype.call(
-    InterfaceConstructor,
+  // NOTE(bartlomieju): in Node this is `FunctionPrototypeCall(...)`,
+  // but trying to do `Function.prototype.call()` somehow doesn't work here
+  // /shrug
+  InterfaceConstructor.bind(
     this,
+  )(
     input,
     output,
     completer,
     terminal,
   );
-  console.log("called interface constr");
   if (process.env.TERM === "dumb") {
     this._ttyWrite = _ttyWriteDumb.bind(this);
   }
