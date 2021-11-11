@@ -26,8 +26,8 @@
 export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
   const { length } = pairs;
   const ret: [T[], U[]] = [
-    Array.from({ length: length }),
-    Array.from({ length: length }),
+    Array.from({ length }),
+    Array.from({ length }),
   ];
 
   pairs.forEach(([first, second], index) => {
