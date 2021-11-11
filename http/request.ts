@@ -44,6 +44,7 @@ export class HttpRequest<C extends EmptyContext = EmptyContext>
    *
    * ```ts
    * import { HttpRequest } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
+   * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
    *
    * declare const req: HttpRequest
    *
