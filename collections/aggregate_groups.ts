@@ -1,24 +1,25 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+import { mapEntries } from "./map_entries.ts";
+
 /**
  * Applies the given aggregator to each group in the given Grouping, returning the results together with the respective group keys
  *
  * ```ts
  * import { aggregateGroups } from "./aggregate_groups.ts"
  * import { assertEquals } from "../testing/asserts.ts";
- * 
+ *
  * const foodProperties = {
  *     'Curry': [ 'spicy', 'vegan' ],
  *     'Omelette': [ 'creamy', 'vegetarian' ],
  * }
  * const descriptions = aggregateGroups(foodProperties,
- *     (acc, current, key, first) => {
+ *     (current, key, first, acc) => {
  *         if (first)
  *             return `${key} is ${current}`
  *
  *         return `${acc} and ${current}`
  *     },
- *     '',
  * )
  *
  * assetEquals(descriptions === {
@@ -28,19 +29,19 @@
  * ```
  */
 export function aggregateGroups<T, A>(
-  record: Record<string, Array<T>>,
-  aggregator: (accumulator: A, current: T, key: string, first: boolean) => A,
-  initalValue: A,
+  record: Readonly<Record<string, Array<T>>>,
+  aggregator: (current: T, key: string, first: boolean, accumulator?: A) => A,
 ): Record<string, A> {
-  const result: Record<string, A> = {};
-
-  for (const [key, values] of Object.entries(record)) {
-    result[key] = values.reduce(
-      (accumulator, current, currentIndex) =>
-        aggregator(accumulator, current, key, currentIndex === 0),
-      initalValue,
-    );
-  }
-
-  return result;
+  return mapEntries(
+    record,
+    ([key, values]) => [
+      key,
+      // Need the type assertions here because the reduce type does not support the type transition we need
+      values.reduce(
+        (accumulator, current, currentIndex) =>
+          aggregator(current, key, currentIndex === 0, accumulator),
+        undefined as A | undefined,
+      ) as A,
+    ],
+  );
 }
