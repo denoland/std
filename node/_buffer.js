@@ -8,6 +8,7 @@ import {
   ERR_UNKNOWN_ENCODING,
 } from "./_errors.ts";
 import { isAnyArrayBuffer, isArrayBufferView } from "./_util/_util_types.ts";
+import { normalizeEncoding } from "./internal/util.ts";
 
 function base64UrlToBytes(str) {
   return new Uint8Array(
@@ -897,22 +898,8 @@ var require_buffer = __commonJS({
       return 0;
     };
     Buffer2.isEncoding = function isEncoding(encoding) {
-      switch (String(encoding).toLowerCase()) {
-        case "hex":
-        case "utf8":
-        case "utf-8":
-        case "ascii":
-        case "latin1":
-        case "binary":
-        case "base64":
-        case "ucs2":
-        case "ucs-2":
-        case "utf16le":
-        case "utf-16le":
-          return true;
-        default:
-          return false;
-      }
+      return typeof encoding === "string" && encoding.length !== 0 &&
+        normalizeEncoding(encoding) !== undefined;
     };
     Buffer2.concat = function concat(list, length) {
       if (!Array.isArray(list)) {

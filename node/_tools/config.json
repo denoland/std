@@ -83,6 +83,8 @@
       "test-buffer-failed-alloc-typed-arrays.js",
       "test-buffer-fakes.js",
       "test-buffer-from.js",
+      "test-buffer-inheritance.js",
+      "test-buffer-isencoding.js",
       "test-buffer-tojson.js",
       "test-buffer-tostring-range.js",
       "test-buffer-tostring-rangeerror.js",
