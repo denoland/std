@@ -167,6 +167,38 @@ function readDoubleForwards(buffer, offset = 0) {
   return float64Array[0];
 }
 
+function writeDoubleForwards(buffer, val, offset = 0) {
+  val = +val;
+  checkBounds(buffer, offset, 7);
+
+  float64Array[0] = val;
+  buffer[offset++] = uInt8Float64Array[0];
+  buffer[offset++] = uInt8Float64Array[1];
+  buffer[offset++] = uInt8Float64Array[2];
+  buffer[offset++] = uInt8Float64Array[3];
+  buffer[offset++] = uInt8Float64Array[4];
+  buffer[offset++] = uInt8Float64Array[5];
+  buffer[offset++] = uInt8Float64Array[6];
+  buffer[offset++] = uInt8Float64Array[7];
+  return offset;
+}
+
+function writeDoubleBackwards(buffer, val, offset = 0) {
+  val = +val;
+  checkBounds(buffer, offset, 7);
+
+  float64Array[0] = val;
+  buffer[offset++] = uInt8Float64Array[7];
+  buffer[offset++] = uInt8Float64Array[6];
+  buffer[offset++] = uInt8Float64Array[5];
+  buffer[offset++] = uInt8Float64Array[4];
+  buffer[offset++] = uInt8Float64Array[3];
+  buffer[offset++] = uInt8Float64Array[2];
+  buffer[offset++] = uInt8Float64Array[1];
+  buffer[offset++] = uInt8Float64Array[0];
+  return offset;
+}
+
 function readFloatBackwards(buffer, offset = 0) {
   validateNumber(offset, "offset");
   const first = buffer[offset];
@@ -195,6 +227,30 @@ function readFloatForwards(buffer, offset = 0) {
   uInt8Float32Array[2] = buffer[++offset];
   uInt8Float32Array[3] = last;
   return float32Array[0];
+}
+
+function writeFloatForwards(buffer, val, offset = 0) {
+  val = +val;
+  checkBounds(buffer, offset, 3);
+
+  float32Array[0] = val;
+  buffer[offset++] = uInt8Float32Array[0];
+  buffer[offset++] = uInt8Float32Array[1];
+  buffer[offset++] = uInt8Float32Array[2];
+  buffer[offset++] = uInt8Float32Array[3];
+  return offset;
+}
+
+function writeFloatBackwards(buffer, val, offset = 0) {
+  val = +val;
+  checkBounds(buffer, offset, 3);
+
+  float32Array[0] = val;
+  buffer[offset++] = uInt8Float32Array[3];
+  buffer[offset++] = uInt8Float32Array[2];
+  buffer[offset++] = uInt8Float32Array[1];
+  buffer[offset++] = uInt8Float32Array[0];
+  return offset;
 }
 
 function readInt24LE(buf, offset = 0) {
@@ -2516,73 +2572,37 @@ var require_buffer = __commonJS({
         );
       },
     );
-    function checkIEEE754(buf, value, offset, ext, max, min) {
-      if (offset + ext > buf.length) {
-        throw new RangeError("Index out of range");
-      }
-      if (offset < 0) {
-        throw new RangeError("Index out of range");
-      }
-    }
-    function writeFloat(buf, value, offset, littleEndian, noAssert) {
-      value = +value;
-      offset = offset >>> 0;
-      if (!noAssert) {
-        checkIEEE754(
-          buf,
-          value,
-          offset,
-          4,
-          34028234663852886e22,
-          -34028234663852886e22,
-        );
-      }
-      ieee754.write(buf, value, offset, littleEndian, 23, 4);
-      return offset + 4;
-    }
     Buffer2.prototype.writeFloatLE = function writeFloatLE(
       value,
       offset,
-      noAssert,
     ) {
-      return writeFloat(this, value, offset, true, noAssert);
+      return bigEndian
+        ? writeFloatBackwards(this, value, offset)
+        : writeFloatForwards(this, value, offset);
     };
     Buffer2.prototype.writeFloatBE = function writeFloatBE(
       value,
       offset,
-      noAssert,
     ) {
-      return writeFloat(this, value, offset, false, noAssert);
+      return bigEndian
+        ? writeFloatForwards(this, value, offset)
+        : writeFloatBackwards(this, value, offset);
     };
-    function writeDouble(buf, value, offset, littleEndian, noAssert) {
-      value = +value;
-      offset = offset >>> 0;
-      if (!noAssert) {
-        checkIEEE754(
-          buf,
-          value,
-          offset,
-          8,
-          17976931348623157e292,
-          -17976931348623157e292,
-        );
-      }
-      ieee754.write(buf, value, offset, littleEndian, 52, 8);
-      return offset + 8;
-    }
     Buffer2.prototype.writeDoubleLE = function writeDoubleLE(
       value,
       offset,
-      noAssert,
     ) {
-      return writeDouble(this, value, offset, true, noAssert);
+      return bigEndian
+        ? writeDoubleBackwards(this, value, offset)
+        : writeDoubleForwards(this, value, offset);
     };
     Buffer2.prototype.writeDoubleBE = function writeDoubleBE(
       value,
       offset,
-      noAssert,
     ) {
-      return writeDouble(this, value, offset, false, noAssert);
+      return bigEndian
+        ? writeDoubleForwards(this, value, offset)
+        : writeDoubleBackwards(this, value, offset);
     };
     Buffer2.prototype.copy = function copy(
       target,
