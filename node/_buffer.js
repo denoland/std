@@ -1,4 +1,3 @@
-// deno-lint-ignore-file
 // TODO(Soremwar)
 // This implementation has an unreliable indexOf and includes implementation
 
@@ -49,28 +48,30 @@ import {
   writeDoubleForwards,
   writeFloatBackwards,
   writeFloatForwards,
+  // deno-lint-ignore camelcase
   writeU_Int16BE,
+  // deno-lint-ignore camelcase
   writeU_Int16LE,
+  // deno-lint-ignore camelcase
   writeU_Int24BE,
+  // deno-lint-ignore camelcase
   writeU_Int24LE,
+  // deno-lint-ignore camelcase
   writeU_Int32BE,
+  // deno-lint-ignore camelcase
   writeU_Int32LE,
+  // deno-lint-ignore camelcase
   writeU_Int40BE,
+  // deno-lint-ignore camelcase
   writeU_Int40LE,
+  // deno-lint-ignore camelcase
   writeU_Int48BE,
+  // deno-lint-ignore camelcase
   writeU_Int48LE,
+  // deno-lint-ignore camelcase
   writeU_Int8,
 } from "./internal/buffer.js";
 import * as base65 from "../encoding/base64.ts";
-
-// TODO(Soremwar)
-// Find correct crediting and license
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <https://feross.org>
- * @license  MIT
- */
 
 export const kMaxLength = 2147483647;
 export const kStringMaxLength = 536870888;
@@ -104,7 +105,7 @@ function typedArraySupport() {
     Object.setPrototypeOf(proto, Uint8Array.prototype);
     Object.setPrototypeOf(arr, proto);
     return arr.foo() === 42;
-  } catch (e) {
+  } catch (_) {
     return false;
   }
 }
@@ -202,7 +203,7 @@ function assertSize(size) {
 function alloc(size, fill, encoding) {
   assertSize(size);
 
-  let buffer = createBuffer(size);
+  const buffer = createBuffer(size);
   if (fill !== undefined) {
     return buffer.fill(fill, encoding);
   }
@@ -987,7 +988,9 @@ function _utf8Slice(buf, start, end) {
   }
   return decodeCodePointsArray(res);
 }
-var MAX_ARGUMENTS_LENGTH = 4096;
+
+const MAX_ARGUMENTS_LENGTH = 4096;
+
 function decodeCodePointsArray(codePoints) {
   const len = codePoints.length;
   if (len <= MAX_ARGUMENTS_LENGTH) {
@@ -1068,14 +1071,6 @@ Buffer2.prototype.slice = function slice(start, end) {
   Object.setPrototypeOf(newBuf, Buffer2.prototype);
   return newBuf;
 };
-function checkOffset(offset, ext, length) {
-  if (offset % 1 !== 0 || offset < 0) {
-    throw new RangeError("offset is not uint");
-  }
-  if (offset + ext > length) {
-    throw new RangeError("Trying to access beyond buffer length");
-  }
-}
 Buffer2.prototype.readUintLE = Buffer2.prototype.readUIntLE =
   function readUIntLE(offset, byteLength) {
     if (offset === undefined) {
@@ -1800,7 +1795,7 @@ function checkIntBI(value, min, max, buf, offset, byteLength2) {
   }
   checkBounds(buf, offset, byteLength2);
 }
-var INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
+const INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
 function base64clean(str) {
   str = str.split("=")[0];
   str = str.trim().replace(INVALID_BASE64_RE, "");
@@ -1925,7 +1920,7 @@ function isInstance(obj, type) {
     obj != null && obj.constructor != null &&
       obj.constructor.name != null && obj.constructor.name === type.name;
 }
-var hexSliceLookupTable = function () {
+const hexSliceLookupTable = function () {
   const alphabet = "0123456789abcdef";
   const table = new Array(256);
   for (let i = 0; i < 16; ++i) {

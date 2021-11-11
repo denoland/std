@@ -1,6 +1,20 @@
-// deno-lint-ignore-file
+// Copyright DefinitelyTyped contributors. All rights reserved. MIT license.
 
-type BufferEncoding = string;
+/**
+ * One of many allowed encodings for the buffer content
+ * - ascii
+ * - base64
+ * - base64url
+ * - binary
+ * - hex
+ * - latin1
+ * - ucs-2
+ * - ucs2
+ * - utf-8
+ * - utf16le
+ * - utf8
+ */
+type Encoding = unknown;
 
 type WithImplicitCoercion<T> =
   | T
@@ -62,7 +76,7 @@ declare namespace Buffer {
      * @param encoding encoding to use, optional.  Default is 'utf8'
      * @deprecated since v10.0.0 - Use `Buffer.from(string[, encoding])` instead.
      */
-    constructor(str: string, encoding?: BufferEncoding);
+    constructor(str: string, encoding?: Encoding);
     /**
      * Allocates a new buffer of {size} octets.
      *
@@ -91,7 +105,7 @@ declare namespace Buffer {
      * @param array The octets to store.
      * @deprecated since v10.0.0 - Use `Buffer.from(array)` instead.
      */
-    constructor(array: ReadonlyArray<any>);
+    constructor(array: ReadonlyArray<unknown>);
     /**
      * Copies the passed {buffer} data onto a new {Buffer} instance.
      *
@@ -140,7 +154,7 @@ declare namespace Buffer {
         | {
           [Symbol.toPrimitive](hint: "string"): string;
         },
-      encoding?: BufferEncoding,
+      encoding?: Encoding,
     ): Buffer;
     /**
      * Creates a new Buffer using the passed {data}
@@ -161,7 +175,7 @@ declare namespace Buffer {
      * ```
      * @since v0.1.101
      */
-    static isBuffer(obj: any): obj is Buffer;
+    static isBuffer(obj: unknown): obj is Buffer;
     /**
      * Returns `true` if `encoding` is the name of a supported character encoding,
      * or `false` otherwise.
@@ -184,7 +198,7 @@ declare namespace Buffer {
      * @since v0.9.1
      * @param encoding A character encoding name to check.
      */
-    static isEncoding(encoding: string): encoding is BufferEncoding;
+    static isEncoding(encoding: string): boolean;
     /**
      * Returns the byte length of a string when encoded using `encoding`.
      * This is not the same as [`String.prototype.length`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/length), which does not account
@@ -220,7 +234,7 @@ declare namespace Buffer {
         | ArrayBufferView
         | ArrayBuffer
         | SharedArrayBuffer,
-      encoding?: BufferEncoding,
+      encoding?: Encoding,
     ): number;
     /**
      * Returns a new `Buffer` which is the result of concatenating all the `Buffer`instances in the `list` together.
@@ -332,7 +346,7 @@ declare namespace Buffer {
     static alloc(
       size: number,
       fill?: string | Buffer | number,
-      encoding?: BufferEncoding,
+      encoding?: Encoding,
     ): Buffer;
     /**
      * Allocates a new `Buffer` of `size` bytes. If `size` is larger than {@link constants.MAX_LENGTH} or smaller than 0, `ERR_INVALID_ARG_VALUE` is thrown.
@@ -452,13 +466,13 @@ declare namespace Buffer {
      * @param [encoding='utf8'] The character encoding of `string`.
      * @return Number of bytes written.
      */
-    write(string: string, encoding?: BufferEncoding): number;
-    write(string: string, offset: number, encoding?: BufferEncoding): number;
+    write(string: string, encoding?: Encoding): number;
+    write(string: string, offset: number, encoding?: Encoding): number;
     write(
       string: string,
       offset: number,
       length: number,
-      encoding?: BufferEncoding,
+      encoding?: Encoding,
     ): number;
     /**
      * Decodes `buf` to a string according to the specified character encoding in`encoding`. `start` and `end` may be passed to decode only a subset of `buf`.
@@ -498,7 +512,7 @@ declare namespace Buffer {
      * @param [start=0] The byte offset to start decoding at.
      * @param [end=buf.length] The byte offset to stop decoding at (not inclusive).
      */
-    toString(encoding?: BufferEncoding, start?: number, end?: number): string;
+    toString(encoding?: Encoding, start?: number, end?: number): string;
     /**
      * Returns a JSON representation of `buf`. [`JSON.stringify()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) implicitly calls
      * this function when stringifying a `Buffer` instance.
@@ -1766,7 +1780,7 @@ declare namespace Buffer {
       value: string | Uint8Array | number,
       offset?: number,
       end?: number,
-      encoding?: BufferEncoding,
+      encoding?: Encoding,
     ): this;
     /**
      * If `value` is:
@@ -1839,7 +1853,7 @@ declare namespace Buffer {
     indexOf(
       value: string | number | Uint8Array,
       byteOffset?: number,
-      encoding?: BufferEncoding,
+      encoding?: Encoding,
     ): number;
     /**
      * Identical to `buf.indexOf()`, except the last occurrence of `value` is found
@@ -1911,7 +1925,7 @@ declare namespace Buffer {
     lastIndexOf(
       value: string | number | Uint8Array,
       byteOffset?: number,
-      encoding?: BufferEncoding,
+      encoding?: Encoding,
     ): number;
     /**
      * Creates and returns an [iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols) of `[index, byte]` pairs from the contents
@@ -1970,7 +1984,7 @@ declare namespace Buffer {
     includes(
       value: string | number | Buffer,
       byteOffset?: number,
-      encoding?: BufferEncoding,
+      encoding?: Encoding,
     ): boolean;
     /**
      * Creates and returns an [iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols) of `buf` keys (indices).
