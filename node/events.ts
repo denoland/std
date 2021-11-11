@@ -166,8 +166,7 @@ export class EventEmitter {
         try {
           listener.apply(this, args);
         } catch (err) {
-          // console.log("err", err);
-          // this.emit("error", err);
+          this.emit("error", err);
         }
       }
       return true;
