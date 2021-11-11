@@ -1,275 +1,75 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { BufReader, BufWriter } from "../io/bufio.ts";
-import { assert } from "../_util/assert.ts";
-import { Deferred, deferred, MuxAsyncIterator } from "../async/mod.ts";
-import {
-  bodyReader,
-  chunkedBodyReader,
-  emptyReader,
-  readRequest,
-  writeResponse,
-} from "./_io.ts";
-export class ServerRequest {
-  url!: string;
-  method!: string;
-  proto!: string;
-  protoMinor!: number;
-  protoMajor!: number;
-  headers!: Headers;
-  conn!: Deno.Conn;
-  r!: BufReader;
-  w!: BufWriter;
+import { delay } from "../async/mod.ts";
 
-  #done: Deferred<Error | undefined> = deferred();
-  #contentLength?: number | null = undefined;
-  #body?: Deno.Reader = undefined;
-  #finalized = false;
+/** Thrown by Server after it has been closed. */
+const ERROR_SERVER_CLOSED = "Server closed";
 
-  get done(): Promise<Error | undefined> {
-    return this.#done.then((e) => e);
-  }
+/** Thrown when parsing an invalid address string. */
+const ERROR_ADDRESS_INVALID = "Invalid address";
 
-  /**
-   * Value of Content-Length header.
-   * If null, then content length is invalid or not given (e.g. chunked encoding).
-   */
-  get contentLength(): number | null {
-    // undefined means not cached.
-    // null means invalid or not provided.
-    if (this.#contentLength === undefined) {
-      const cl = this.headers.get("content-length");
-      if (cl) {
-        this.#contentLength = parseInt(cl);
-        // Convert NaN to null (as NaN harder to test)
-        if (Number.isNaN(this.#contentLength)) {
-          this.#contentLength = null;
-        }
-      } else {
-        this.#contentLength = null;
-      }
-    }
-    return this.#contentLength;
-  }
+/** Default port for serving HTTP. */
+const HTTP_PORT = 80;
 
-  /**
-   * Body of the request.  The easiest way to consume the body is:
-   *
-   *     const buf: Uint8Array = await readAll(req.body);
-   */
-  get body(): Deno.Reader {
-    if (!this.#body) {
-      if (this.contentLength != null) {
-        this.#body = bodyReader(this.contentLength, this.r);
-      } else {
-        const transferEncoding = this.headers.get("transfer-encoding");
-        if (transferEncoding != null) {
-          const parts = transferEncoding
-            .split(",")
-            .map((e): string => e.trim().toLowerCase());
-          assert(
-            parts.includes("chunked"),
-            'transfer-encoding must include "chunked" if content-length is not set',
-          );
-          this.#body = chunkedBodyReader(this.headers, this.r);
-        } else {
-          // Neither content-length nor transfer-encoding: chunked
-          this.#body = emptyReader();
-        }
-      }
-    }
-    return this.#body;
-  }
+/** Default port for serving HTTPS. */
+const HTTPS_PORT = 443;
 
-  async respond(r: Response) {
-    let err: Error | undefined;
-    try {
-      // Write our response!
-      await writeResponse(this.w, r);
-    } catch (e) {
-      try {
-        // Eagerly close on error.
-        this.conn.close();
-      } catch {
-        // Pass
-      }
-      err = e;
-    }
-    // Signal that this request has been processed and the next pipelined
-    // request on the same connection can be accepted.
-    this.#done.resolve(err);
-    if (err) {
-      // Error during responding, rethrow.
-      throw err;
-    }
-  }
+/** Initial backoff delay of 5ms following a temporary accept failure. */
+const INITIAL_ACCEPT_BACKOFF_DELAY = 5;
 
-  async finalize() {
-    if (this.#finalized) return;
-    // Consume unread body
-    const body = this.body;
-    const buf = new Uint8Array(1024);
-    while ((await body.read(buf)) !== null) {
-      // Pass
-    }
-    this.#finalized = true;
-  }
+/** Max backoff delay of 1s following a temporary accept failure. */
+const MAX_ACCEPT_BACKOFF_DELAY = 1000;
+
+/** Information about the connection a request arrived on. */
+export interface ConnInfo {
+  /** The local address of the connection. */
+  readonly localAddr: Deno.Addr;
+  /** The remote address of the connection. */
+  readonly remoteAddr: Deno.Addr;
 }
-
-export class Server implements AsyncIterable<ServerRequest> {
-  #closing = false;
-  #connections: Deno.Conn[] = [];
-
-  constructor(public listener: Deno.Listener) {}
-
-  close(): void {
-    this.#closing = true;
-    this.listener.close();
-    for (const conn of this.#connections) {
-      try {
-        conn.close();
-      } catch (e) {
-        // Connection might have been already closed
-        if (!(e instanceof Deno.errors.BadResource)) {
-          throw e;
-        }
-      }
-    }
-  }
-
-  // Yields all HTTP requests on a single TCP connection.
-  private async *iterateHttpRequests(
-    conn: Deno.Conn,
-  ): AsyncIterableIterator<ServerRequest> {
-    const reader = new BufReader(conn);
-    const writer = new BufWriter(conn);
-
-    while (!this.#closing) {
-      let request: ServerRequest | null;
-      try {
-        request = await readRequest(conn, reader);
-      } catch (error) {
-        if (
-          error instanceof Deno.errors.InvalidData ||
-          error instanceof Deno.errors.UnexpectedEof
-        ) {
-          // An error was thrown while parsing request headers.
-          // Try to send the "400 Bad Request" before closing the connection.
-          try {
-            await writeResponse(writer, {
-              status: 400,
-              body: new TextEncoder().encode(`${error.message}\r\n\r\n`),
-            });
-          } catch {
-            // The connection is broken.
-          }
-        }
-        break;
-      }
-      if (request === null) {
-        break;
-      }
-
-      request.w = writer;
-      yield request;
-
-      // Wait for the request to be processed before we accept a new request on
-      // this connection.
-      const responseError = await request.done;
-      if (responseError) {
-        // Something bad happened during response.
-        // (likely other side closed during pipelined req)
-        // req.done implies this connection already closed, so we can just return.
-        this.untrackConnection(request.conn);
-        return;
-      }
-
-      try {
-        // Consume unread body and trailers if receiver didn't consume those data
-        await request.finalize();
-      } catch {
-        // Invalid data was received or the connection was closed.
-        break;
-      }
-    }
-
-    this.untrackConnection(conn);
-    try {
-      conn.close();
-    } catch {
-      // might have been already closed
-    }
-  }
-
-  private trackConnection(conn: Deno.Conn): void {
-    this.#connections.push(conn);
-  }
-
-  private untrackConnection(conn: Deno.Conn): void {
-    const index = this.#connections.indexOf(conn);
-    if (index !== -1) {
-      this.#connections.splice(index, 1);
-    }
-  }
-
-  // Accepts a new TCP connection and yields all HTTP requests that arrive on
-  // it. When a connection is accepted, it also creates a new iterator of the
-  // same kind and adds it to the request multiplexer so that another TCP
-  // connection can be accepted.
-  private async *acceptConnAndIterateHttpRequests(
-    mux: MuxAsyncIterator<ServerRequest>,
-  ): AsyncIterableIterator<ServerRequest> {
-    if (this.#closing) return;
-    // Wait for a new connection.
-    let conn: Deno.Conn;
-    try {
-      conn = await this.listener.accept();
-    } catch (error) {
-      if (
-        // The listener is closed:
-        error instanceof Deno.errors.BadResource ||
-        // TLS handshake errors:
-        error instanceof Deno.errors.InvalidData ||
-        error instanceof Deno.errors.UnexpectedEof ||
-        error instanceof Deno.errors.ConnectionReset ||
-        error instanceof Deno.errors.NotConnected
-      ) {
-        return mux.add(this.acceptConnAndIterateHttpRequests(mux));
-      }
-      throw error;
-    }
-    this.trackConnection(conn);
-    // Try to accept another connection and add it to the multiplexer.
-    mux.add(this.acceptConnAndIterateHttpRequests(mux));
-    // Yield the requests that arrive on the just-accepted connection.
-    yield* this.iterateHttpRequests(conn);
-  }
-
-  [Symbol.asyncIterator](): AsyncIterableIterator<ServerRequest> {
-    const mux: MuxAsyncIterator<ServerRequest> = new MuxAsyncIterator();
-    mux.add(this.acceptConnAndIterateHttpRequests(mux));
-    return mux.iterate();
-  }
-}
-
-/** Options for creating an HTTP server. */
-export type HTTPOptions = Omit<Deno.ListenOptions, "transport">;
 
 /**
- * Parse addr from string
+ * A handler for HTTP requests. Consumes a request and connection information
+ * and returns a response.
  *
- *     const addr = "::1:8000";
- *     parseAddrFromString(addr);
- *
- * @param addr Address string
+ * If a handler throws, the server calling the handler will assume the impact
+ * of the error is isolated to the individual request. It will catch the error
+ * and close the underlying connection.
  */
-export function _parseAddrFromStr(addr: string): HTTPOptions {
+export type Handler = (
+  request: Request,
+  connInfo: ConnInfo,
+) => Response | Promise<Response>;
+
+/**
+ * Parse an address from a string.
+ *
+ * Throws a `TypeError` when the address is invalid.
+ *
+ * ```ts
+ * import { _parseAddrFromStr } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
+ * const addr = "::1:8000";
+ * const listenOptions = _parseAddrFromStr(addr);
+ * ```
+ *
+ * @param addr The address string to parse.
+ * @param defaultPort Default port when not included in the address string.
+ * @return The parsed address.
+ */
+export function _parseAddrFromStr(
+  addr: string,
+  defaultPort = HTTP_PORT,
+): Deno.ListenOptions {
+  const host = addr.startsWith(":") ? `0.0.0.0${addr}` : addr;
+
   let url: URL;
+
   try {
-    const host = addr.startsWith(":") ? `0.0.0.0${addr}` : addr;
     url = new URL(`http://${host}`);
   } catch {
-    throw new TypeError("Invalid address.");
+    throw new TypeError(ERROR_ADDRESS_INVALID);
   }
+
   if (
     url.username ||
     url.password ||
@@ -277,123 +77,691 @@ export function _parseAddrFromStr(addr: string): HTTPOptions {
     url.search ||
     url.hash
   ) {
-    throw new TypeError("Invalid address.");
+    throw new TypeError(ERROR_ADDRESS_INVALID);
   }
 
   return {
     hostname: url.hostname,
-    port: url.port === "" ? 80 : Number(url.port),
+    port: url.port === "" ? defaultPort : Number(url.port),
   };
 }
 
-/**
- * Create a HTTP server
- *
- *     import { serve } from "https://deno.land/std/http/server.ts";
- *     const body = "Hello World\n";
- *     const server = serve({ port: 8000 });
- *     for await (const req of server) {
- *       req.respond({ body });
- *     }
- */
-export function serve(addr: string | HTTPOptions): Server {
-  if (typeof addr === "string") {
-    addr = _parseAddrFromStr(addr);
+/** Options for running an HTTP server. */
+export interface ServerInit {
+  /**
+   * Optionally specifies the address to listen on, in the form
+   * "host:port".
+   *
+   * If the port is omitted, `:80` is used by default for HTTP when invoking
+   * non-TLS methods such as `Server.listenAndServe`, and `:443` is
+   * used by default for HTTPS when invoking TLS methods such as
+   * `Server.listenAndServeTls`.
+   *
+   * If the host is omitted, the non-routable meta-address `0.0.0.0` is used.
+   */
+  addr?: string;
+
+  /** The handler to invoke for individual HTTP requests. */
+  handler: Handler;
+}
+
+/** Used to construct an HTTP server. */
+export class Server {
+  #addr?: string;
+  #handler: Handler;
+  #closed = false;
+  #listeners: Set<Deno.Listener> = new Set();
+  #httpConnections: Set<Deno.HttpConn> = new Set();
+
+  /**
+   * Constructs a new HTTP Server instance.
+   *
+   * ```ts
+   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   *
+   * const addr = ":4505";
+   * const handler = (request: Request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
+   *
+   *   return new Response(body, { status: 200 });
+   * };
+   *
+   * const server = new Server({ addr, handler });
+   * ```
+   *
+   * @param serverInit Options for running an HTTP server.
+   */
+  constructor(serverInit: ServerInit) {
+    this.#addr = serverInit.addr;
+    this.#handler = serverInit.handler;
   }
 
-  const listener = Deno.listen(addr);
-  return new Server(listener);
+  /**
+   * Accept incoming connections on the given listener, and handle requests on
+   * these connections with the given handler.
+   *
+   * HTTP/2 support is only enabled if the provided Deno.Listener returns TLS
+   * connections and was configured with "h2" in the ALPN protocols.
+   *
+   * Throws a server closed error if called after the server has been closed.
+   *
+   * Will always close the created listener.
+   *
+   * ```ts
+   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   *
+   * const handler = (request: Request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
+   *
+   *   return new Response(body, { status: 200 });
+   * };
+   *
+   * const server = new Server({ handler });
+   * const listener = Deno.listen({ port: 4505 });
+   *
+   * console.log("server listening on http://localhost:4505");
+   *
+   * await server.serve(listener);
+   * ```
+   *
+   * @param listener The listener to accept connections from.
+   */
+  async serve(listener: Deno.Listener): Promise<void> {
+    if (this.#closed) {
+      throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
+    }
+
+    this.#trackListener(listener);
+
+    try {
+      return await this.#accept(listener);
+    } finally {
+      this.#untrackListener(listener);
+
+      try {
+        listener.close();
+      } catch {
+        // Listener has already been closed.
+      }
+    }
+  }
+
+  /**
+   * Create a listener on the server, accept incoming connections, and handle
+   * requests on these connections with the given handler.
+   *
+   * If the server was constructed with the port omitted from the address, `:80`
+   * is used.
+   *
+   * If the server was constructed with the host omitted from the address, the
+   * non-routable meta-address `0.0.0.0` is used.
+   *
+   * Throws a server closed error if the server has been closed.
+   *
+   * ```ts
+   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   *
+   * const addr = ":4505";
+   * const handler = (request: Request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
+   *
+   *   return new Response(body, { status: 200 });
+   * };
+   *
+   * const server = new Server({ addr, handler });
+   *
+   * console.log("server listening on http://localhost:4505");
+   *
+   * await server.listenAndServe();
+   * ```
+   */
+  async listenAndServe(): Promise<void> {
+    if (this.#closed) {
+      throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
+    }
+
+    const addr = this.#addr ?? `:${HTTP_PORT}`;
+    const listenOptions = _parseAddrFromStr(addr, HTTP_PORT);
+
+    const listener = Deno.listen({
+      ...listenOptions,
+      transport: "tcp",
+    });
+
+    return await this.serve(listener);
+  }
+
+  /**
+   * Create a listener on the server, accept incoming connections, upgrade them
+   * to TLS, and handle requests on these connections with the given handler.
+   *
+   * If the server was constructed with the port omitted from the address, `:443`
+   * is used.
+   *
+   * If the server was constructed with the host omitted from the address, the
+   * non-routable meta-address `0.0.0.0` is used.
+   *
+   * Throws a server closed error if the server has been closed.
+   *
+   * ```ts
+   * import { Server } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+   *
+   * const addr = ":4505";
+   * const handler = (request: Request) => {
+   *   const body = `Your user-agent is:\n\n${request.headers.get(
+   *    "user-agent",
+   *   ) ?? "Unknown"}`;
+   *
+   *   return new Response(body, { status: 200 });
+   * };
+   *
+   * const server = new Server({ addr, handler });
+   *
+   * const certFile = "/path/to/certFile.crt";
+   * const keyFile = "/path/to/keyFile.key";
+   *
+   * console.log("server listening on https://localhost:4505");
+   *
+   * await server.listenAndServeTls(certFile, keyFile);
+   * ```
+   *
+   * @param certFile The path to the file containing the TLS certificate.
+   * @param keyFile The path to the file containing the TLS private key.
+   */
+  async listenAndServeTls(certFile: string, keyFile: string): Promise<void> {
+    if (this.#closed) {
+      throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
+    }
+
+    const addr = this.#addr ?? `:${HTTPS_PORT}`;
+    const listenOptions = _parseAddrFromStr(addr, HTTPS_PORT);
+
+    const listener = Deno.listenTls({
+      ...listenOptions,
+      certFile,
+      keyFile,
+      transport: "tcp",
+      // ALPN protocol support not yet stable.
+      // alpnProtocols: ["h2", "http/1.1"],
+    });
+
+    return await this.serve(listener);
+  }
+
+  /**
+   * Immediately close the server listeners and associated HTTP connections.
+   *
+   * Throws a server closed error if called after the server has been closed.
+   */
+  close(): void {
+    if (this.#closed) {
+      throw new Deno.errors.Http(ERROR_SERVER_CLOSED);
+    }
+
+    this.#closed = true;
+
+    for (const listener of this.#listeners) {
+      try {
+        listener.close();
+      } catch {
+        // Listener has already been closed.
+      }
+    }
+
+    this.#listeners.clear();
+
+    for (const httpConn of this.#httpConnections) {
+      this.#closeHttpConn(httpConn);
+    }
+
+    this.#httpConnections.clear();
+  }
+
+  /** Get whether the server is closed. */
+  get closed(): boolean {
+    return this.#closed;
+  }
+
+  /** Get the list of network addresses the server is listening on. */
+  get addrs(): Deno.Addr[] {
+    return Array.from(this.#listeners).map((listener) => listener.addr);
+  }
+
+  /**
+   * Responds to an HTTP request.
+   *
+   * @param requestEvent The HTTP request to respond to.
+   * @param httpCon The HTTP connection to yield requests from.
+   * @param connInfo Information about the underlying connection.
+   */
+  async #respond(
+    requestEvent: Deno.RequestEvent,
+    httpConn: Deno.HttpConn,
+    connInfo: ConnInfo,
+  ): Promise<void> {
+    try {
+      // Handle the request event, generating a response.
+      const response = await this.#handler(
+        requestEvent.request,
+        connInfo,
+      );
+
+      // Send the response.
+      await requestEvent.respondWith(response);
+    } catch {
+      // If the handler throws then it is assumed that the impact of the error
+      // is isolated to the individual request, so we close the connection.
+      //
+      // Alternatively the connection has already been closed, or there is some
+      // other error with responding on this connection that prompts us to
+      // close it and open a new connection.
+      return this.#closeHttpConn(httpConn);
+    }
+  }
+
+  /**
+   * Serves all HTTP requests on a single connection.
+   *
+   * @param httpConn The HTTP connection to yield requests from.
+   * @param connInfo Information about the underlying connection.
+   */
+  async #serveHttp(
+    httpConn: Deno.HttpConn,
+    connInfo: ConnInfo,
+  ): Promise<void> {
+    while (!this.#closed) {
+      let requestEvent: Deno.RequestEvent | null;
+
+      try {
+        // Yield the new HTTP request on the connection.
+        requestEvent = await httpConn.nextRequest();
+      } catch {
+        // Connection has been closed.
+        break;
+      }
+
+      if (requestEvent === null) {
+        // Connection has been closed.
+        break;
+      }
+
+      // Respond to the request. Note we do not await this async method to
+      // allow the connection to handle multiple requests in the case of h2.
+      this.#respond(requestEvent, httpConn, connInfo);
+    }
+
+    this.#closeHttpConn(httpConn);
+  }
+
+  /**
+   * Accepts all connections on a single network listener.
+   *
+   * @param listener The listener to accept connections from.
+   */
+  async #accept(
+    listener: Deno.Listener,
+  ): Promise<void> {
+    let acceptBackoffDelay: number | undefined;
+
+    while (!this.#closed) {
+      let conn: Deno.Conn;
+
+      try {
+        // Wait for a new connection.
+        conn = await listener.accept();
+      } catch (error) {
+        if (
+          // The listener is closed.
+          error instanceof Deno.errors.BadResource ||
+          // TLS handshake errors.
+          error instanceof Deno.errors.InvalidData ||
+          error instanceof Deno.errors.UnexpectedEof ||
+          error instanceof Deno.errors.ConnectionReset ||
+          error instanceof Deno.errors.NotConnected
+        ) {
+          // Backoff after transient errors to allow time for the system to
+          // recover, and avoid blocking up the event loop with a continuously
+          // running loop.
+          if (!acceptBackoffDelay) {
+            acceptBackoffDelay = INITIAL_ACCEPT_BACKOFF_DELAY;
+          } else {
+            acceptBackoffDelay *= 2;
+          }
+
+          if (acceptBackoffDelay >= MAX_ACCEPT_BACKOFF_DELAY) {
+            acceptBackoffDelay = MAX_ACCEPT_BACKOFF_DELAY;
+          }
+
+          await delay(acceptBackoffDelay);
+
+          continue;
+        }
+
+        throw error;
+      }
+
+      acceptBackoffDelay = undefined;
+
+      // "Upgrade" the network connection into an HTTP connection.
+      let httpConn: Deno.HttpConn;
+
+      try {
+        httpConn = Deno.serveHttp(conn);
+      } catch {
+        // Connection has been closed.
+        continue;
+      }
+
+      // Closing the underlying listener will not close HTTP connections, so we
+      // track for closure upon server close.
+      this.#trackHttpConnection(httpConn);
+
+      const connInfo: ConnInfo = {
+        localAddr: conn.localAddr,
+        remoteAddr: conn.remoteAddr,
+      };
+
+      // Serve the requests that arrive on the just-accepted connection. Note
+      // we do not await this async method to allow the server to accept new
+      // connections.
+      this.#serveHttp(httpConn, connInfo);
+    }
+  }
+
+  /**
+   * Untracks and closes an HTTP connection.
+   *
+   * @param httpConn The HTTP connection to close.
+   */
+  #closeHttpConn(httpConn: Deno.HttpConn): void {
+    this.#untrackHttpConnection(httpConn);
+
+    try {
+      httpConn.close();
+    } catch {
+      // Connection has already been closed.
+    }
+  }
+
+  /**
+   * Adds the listener to the internal tracking list.
+   *
+   * @param listener Listener to track.
+   */
+  #trackListener(listener: Deno.Listener): void {
+    this.#listeners.add(listener);
+  }
+
+  /**
+   * Removes the listener from the internal tracking list.
+   *
+   * @param listener Listener to untrack.
+   */
+  #untrackListener(listener: Deno.Listener): void {
+    this.#listeners.delete(listener);
+  }
+
+  /**
+   * Adds the HTTP connection to the internal tracking list.
+   *
+   * @param httpConn HTTP connection to track.
+   */
+  #trackHttpConnection(httpConn: Deno.HttpConn): void {
+    this.#httpConnections.add(httpConn);
+  }
+
+  /**
+   * Removes the HTTP connection from the internal tracking list.
+   *
+   * @param httpConn HTTP connection to untrack.
+   */
+  #untrackHttpConnection(httpConn: Deno.HttpConn): void {
+    this.#httpConnections.delete(httpConn);
+  }
+}
+
+/** Additional serve options. */
+export interface ServeInit {
+  /**
+   * Optionally specifies the address to listen on, in the form
+   * "host:port".
+   */
+  addr?: string;
+
+  /** An AbortSignal to close the server and all connections. */
+  signal?: AbortSignal;
 }
 
 /**
- * Start an HTTP server with given options and request handler
+ * Constructs a server, accepts incoming connections on the given listener, and
+ * handles requests on these connections with the given handler.
  *
- *     const body = "Hello World\n";
- *     const options = { port: 8000 };
- *     listenAndServe(options, (req) => {
- *       req.respond({ body });
- *     });
+ * ```ts
+ * import { serveListener } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  *
- * @param options Server configuration
- * @param handler Request handler
+ * const listener = Deno.listen({ port: 4505 });
+ *
+ * console.log("server listening on http://localhost:4505");
+ *
+ * await serveListener(listener, (request) => {
+ *   const body = `Your user-agent is:\n\n${request.headers.get(
+ *     "user-agent",
+ *   ) ?? "Unknown"}`;
+ *
+ *   return new Response(body, { status: 200 });
+ * });
+ * ```
+ *
+ * @param listener The listener to accept connections from.
+ * @param handler The handler for individual HTTP requests.
+ * @param options Optional serve options.
+ */
+export async function serveListener(
+  listener: Deno.Listener,
+  handler: Handler,
+  options?: Omit<ServeInit, "addr">,
+): Promise<void> {
+  const server = new Server({ handler });
+
+  if (options?.signal) {
+    options.signal.onabort = () => server.close();
+  }
+
+  return await server.serve(listener);
+}
+
+/** Serves HTTP requests with the given handler.
+ *
+ * You can specifies `addr` option, which is the address to listen on,
+ * in the form "host:port". The default is "0.0.0.0:8000".
+ *
+ * The below example serves with the port 8000.
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * serve((_req) => new Response("Hello, world"));
+ * ```
+ *
+ * You can change the listening address by `addr` option. The below example
+ * serves with the port 3000.
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * console.log("server is starting at localhost:3000");
+ * serve((_req) => new Response("Hello, world"), { addr: ":3000" });
+ * ```
+ *
+ * @param handler The handler for individual HTTP requests.
+ * @param options The options. See `ServeInit` documentation for details.
+ */
+export async function serve(
+  handler: Handler,
+  options: ServeInit = {},
+): Promise<void> {
+  const addr = options.addr ?? ":8000";
+  const server = new Server({ addr, handler });
+
+  if (options?.signal) {
+    options.signal.onabort = () => server.close();
+  }
+
+  return await server.listenAndServe();
+}
+
+interface ServeTlsInit extends ServeInit {
+  /** The path to the file containing the TLS private key. */
+  keyFile: string;
+
+  /** The path to the file containing the TLS certificate */
+  certFile: string;
+}
+
+/** Serves HTTPS requests with the given handler.
+ *
+ * You must specify `keyFile` and `certFile` options.
+ *
+ * You can specifies `addr` option, which is the address to listen on,
+ * in the form "host:port". The default is "0.0.0.0:8443".
+ *
+ * The below example serves with the default port 8443.
+ *
+ * ```ts
+ * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * const certFile = "/path/to/certFile.crt";
+ * const keyFile = "/path/to/keyFile.key";
+ * console.log("server is starting at https://localhost:8443");
+ * serveTls((_req) => new Response("Hello, world"), { certFile, keyFile });
+ * ```
+ *
+ * @param handler The handler for individual HTTPS requests.
+ * @param options The options. See `ServeTlsInit` documentation for details.
+ * @returns
+ */
+export async function serveTls(
+  handler: Handler,
+  options: ServeTlsInit,
+): Promise<void> {
+  if (!options.keyFile) {
+    throw new Error("TLS config is given, but 'keyFile' is missing.");
+  }
+
+  if (!options.certFile) {
+    throw new Error("TLS config is given, but 'certFile' is missing.");
+  }
+
+  const addr = options.addr ?? ":8443";
+  const server = new Server({ addr, handler });
+
+  if (options?.signal) {
+    options.signal.onabort = () => server.close();
+  }
+
+  return await server.listenAndServeTls(
+    options.certFile,
+    options.keyFile,
+  );
+}
+
+/**
+ * @deprecated Use `serve` instead.
+ *
+ * Constructs a server, creates a listener on the given address, accepts
+ * incoming connections, and handles requests on these connections with the
+ * given handler.
+ *
+ * If the port is omitted from the address, `:80` is used.
+ *
+ * If the host is omitted from the address, the non-routable meta-address
+ * `0.0.0.0` is used.
+ *
+ * ```ts
+ * import { listenAndServe } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
+ * const addr = ":4505";
+ *
+ * console.log("server listening on http://localhost:4505");
+ *
+ * await listenAndServe(addr, (request) => {
+ *   const body = `Your user-agent is:\n\n${request.headers.get(
+ *     "user-agent",
+ *   ) ?? "Unknown"}`;
+ *
+ *   return new Response(body, { status: 200 });
+ * });
+ * ```
+ *
+ * @param addr The address to listen on.
+ * @param handler The handler for individual HTTP requests.
+ * @param options Optional serve options.
  */
 export async function listenAndServe(
-  addr: string | HTTPOptions,
-  handler: (req: ServerRequest) => void,
-) {
-  const server = serve(addr);
+  addr: string,
+  handler: Handler,
+  options?: ServeInit,
+): Promise<void> {
+  const server = new Server({ addr, handler });
 
-  for await (const request of server) {
-    handler(request);
+  if (options?.signal) {
+    options.signal.onabort = () => server.close();
   }
-}
 
-/** Options for creating an HTTPS server. */
-export type HTTPSOptions = Omit<Deno.ListenTlsOptions, "transport">;
-
-/**
- * Create an HTTPS server with given options
- *
- *     const body = "Hello HTTPS";
- *     const options = {
- *       hostname: "localhost",
- *       port: 443,
- *       certFile: "./path/to/localhost.crt",
- *       keyFile: "./path/to/localhost.key",
- *     };
- *     for await (const req of serveTLS(options)) {
- *       req.respond({ body });
- *     }
- *
- * @param options Server configuration
- * @return Async iterable server instance for incoming requests
- */
-export function serveTLS(options: HTTPSOptions): Server {
-  const tlsOptions: Deno.ListenTlsOptions = {
-    ...options,
-    transport: "tcp",
-  };
-  const listener = Deno.listenTls(tlsOptions);
-  return new Server(listener);
+  return await server.listenAndServe();
 }
 
 /**
- * Start an HTTPS server with given options and request handler
+ * @deprecated Use `serveTls` instead.
  *
- *     const body = "Hello HTTPS";
- *     const options = {
- *       hostname: "localhost",
- *       port: 443,
- *       certFile: "./path/to/localhost.crt",
- *       keyFile: "./path/to/localhost.key",
- *     };
- *     listenAndServeTLS(options, (req) => {
- *       req.respond({ body });
- *     });
+ * Constructs a server, creates a listener on the given address, accepts
+ * incoming connections, upgrades them to TLS, and handles requests on these
+ * connections with the given handler.
  *
- * @param options Server configuration
- * @param handler Request handler
+ * If the port is omitted from the address, `:443` is used.
+ *
+ * If the host is omitted from the address, the non-routable meta-address
+ * `0.0.0.0` is used.
+ *
+ * ```ts
+ * import { listenAndServeTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
+ * const addr = ":4505";
+ * const certFile = "/path/to/certFile.crt";
+ * const keyFile = "/path/to/keyFile.key";
+ *
+ * console.log("server listening on http://localhost:4505");
+ *
+ * await listenAndServeTls(addr, certFile, keyFile, (request) => {
+ *   const body = `Your user-agent is:\n\n${request.headers.get(
+ *     "user-agent",
+ *   ) ?? "Unknown"}`;
+ *
+ *   return new Response(body, { status: 200 });
+ * });
+ * ```
+ *
+ * @param addr The address to listen on.
+ * @param certFile The path to the file containing the TLS certificate.
+ * @param keyFile The path to the file containing the TLS private key.
+ * @param handler The handler for individual HTTP requests.
+ * @param options Optional serve options.
  */
-export async function listenAndServeTLS(
-  options: HTTPSOptions,
-  handler: (req: ServerRequest) => void,
-) {
-  const server = serveTLS(options);
+export async function listenAndServeTls(
+  addr: string,
+  certFile: string,
+  keyFile: string,
+  handler: Handler,
+  options?: ServeInit,
+): Promise<void> {
+  const server = new Server({ addr, handler });
 
-  for await (const request of server) {
-    handler(request);
+  if (options?.signal) {
+    options.signal.onabort = () => server.close();
   }
-}
 
-/**
- * Interface of HTTP server response.
- * If body is a Reader, response would be chunked.
- * If body is a string, it would be UTF-8 encoded by default.
- */
-export interface Response {
-  status?: number;
-  statusText?: string;
-  headers?: Headers;
-  body?: Uint8Array | Deno.Reader | string;
-  trailers?: () => Promise<Headers> | Headers;
+  return await server.listenAndServeTls(certFile, keyFile);
 }

@@ -3,7 +3,9 @@
 import { Hash } from "./_wasm/hash.ts";
 import type { Hasher } from "./hasher.ts";
 
+/** @deprecated */
 export type { Hasher } from "./hasher.ts";
+/** @deprecated */
 export const supportedAlgorithms = [
   "md2",
   "md4",
@@ -25,11 +27,13 @@ export const supportedAlgorithms = [
   "keccak512",
   "blake3",
 ] as const;
+/** @deprecated */
 export type SupportedAlgorithm = typeof supportedAlgorithms[number];
 /**
  * Creates a new `Hash` instance.
  *
  * @param algorithm name of hash algorithm to use
+ * @deprecated
  */
 export function createHash(algorithm: SupportedAlgorithm): Hasher {
   return new Hash(algorithm as string);

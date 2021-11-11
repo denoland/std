@@ -22,7 +22,7 @@ const DEFAULT_INSPECT_OPTIONS = {
 };
 
 inspect.defaultOptions = DEFAULT_INSPECT_OPTIONS;
-inspect.custom = Symbol.for("Deno.customInspect");
+inspect.custom = Symbol.for("nodejs.util.inspect.custom");
 
 // TODO(schwarzkopfb): make it in-line with Node's implementation
 // Ref: https://nodejs.org/dist/latest-v14.x/docs/api/util.html#util_util_inspect_object_options
@@ -140,82 +140,11 @@ export function deprecate<T extends (...args: any) => any>(
   };
 }
 
-function circularRemover(): (key: string, value: unknown) => unknown {
-  const seen = new WeakSet();
-  return (_key, value) => {
-    if (typeof value === "object" && value !== null) {
-      if (seen.has(value)) {
-        return;
-      }
-      seen.add(value);
-    }
-    return value;
-  };
-}
-
-function formatString(str: string) {
-  return `"${str.replace(/\\/, "\\\\").replace(/"/g, '\\"')}"`;
-}
-
-function thingToString(
-  thing: unknown,
-  maxDepth?: number,
-  depth = 1,
-): string {
-  let result = "";
-  if (typeof thing === "bigint") {
-    return thing + "n";
-  }
-  if (
-    typeof thing === "undefined" || typeof thing === "number" ||
-    typeof thing === "boolean" || typeof thing === "symbol" || thing === null
-  ) {
-    return String(thing);
-  }
-  if (typeof thing === "function") {
-    return `[Function ${thing.name || "(anonymous)"}]`;
-  }
-  if (typeof thing === "string") {
-    return formatString(thing);
-  }
-  if (Array.isArray(thing)) {
-    if (depth === maxDepth) {
-      return "[Array]";
-    }
-    result += "[";
-    const en = Object.entries(thing);
-    for (let i = 0; i < en.length; i++) {
-      const [key, value] = en[i];
-      if (isNaN(Number(key))) {
-        result += `${key}: `;
-      }
-      result += thingToString(value, maxDepth, depth + 1);
-      if (i !== en.length - 1) {
-        result += ", ";
-      }
-    }
-    result += "]";
-    return result;
-  }
-  if (depth === maxDepth) {
-    return "[Object]";
-  }
-  const en = Object.entries(thing as Record<string, unknown>);
-  result += "{ ";
-  for (let i = 0; i < en.length; i++) {
-    const [key, value] = en[i];
-    result += `${key}: ${thingToString(value, maxDepth, depth + 1)}`;
-    if (i !== en.length - 1) {
-      result += ", ";
-    }
-  }
-  result += " }";
-  return result;
-}
-
 function toReplace(specifier: string, value: unknown): string {
   if (specifier === "%s") {
-    return thingToString(value, 2);
+    if (typeof value === "string" || value instanceof String) {
+      return value as string;
+    } else return Deno.inspect(value, { depth: 1 });
   }
   if (specifier === "%d") {
     if (typeof value === "bigint") {
@@ -233,10 +162,21 @@ function toReplace(specifier: string, value: unknown): string {
     return parseFloat(value as string).toString();
   }
   if (specifier === "%j") {
-    return JSON.stringify(value, circularRemover());
+    try {
+      return JSON.stringify(value);
+    } catch (e) {
+      // nodeJS => 'cyclic object value' , deno => 'Converting circular structure to JSON ...'
+      // ref: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify>
+      if (e instanceof TypeError && e.message.match(/cyclic|circular/)) {
+        return "[Circular]";
+      } else throw e;
+    }
   }
-  if (specifier === "%o" || specifier === "%O") {
-    return thingToString(value);
+  if (specifier === "%o") {
+    return Deno.inspect(value, { showHidden: true, showProxy: true });
+  }
+  if (specifier === "%O") {
+    return Deno.inspect(value);
   }
   if (specifier === "%c") {
     return "";
@@ -244,27 +184,44 @@ function toReplace(specifier: string, value: unknown): string {
   return "";
 }
 
-export function format(input: string, ...args: unknown[]) {
+// ref: <https://nodejs.org/docs/latest-v16.x/api/console.html#console_console_log_data_args>
+// ref: <https://nodejs.org/docs/latest-v16.x/api/util.html#util_util_format_format_args>
+// modified from <https://deno.land/std@0.105.0/node/util.ts#L247-L266>
+export function format(...args: unknown[]) {
   const replacement: [number, string][] = [];
-  const regex = /%(s|d|i|f|j|o|O|c)/g;
-  let i = 0;
+  const formatSpecifierRx = /%(s|d|i|f|j|o|O|c|%)/g;
+  const hasFormatTemplate = args.length > 0 &&
+    (typeof args[0] === "string" || args[0] instanceof String);
+  const formatTemplate = hasFormatTemplate ? (args[0] as string) : "";
+  let i = hasFormatTemplate ? 1 : 0;
   let arr: RegExpExecArray | null = null;
-  while ((arr = regex.exec(input)) !== null && i < args.length) {
-    replacement.push([arr["index"], toReplace(arr[0], args[i])]);
-    i++;
+  let done = false;
+  while ((arr = formatSpecifierRx.exec(formatTemplate)) !== null && !done) {
+    if (arr[0] === "%%") {
+      replacement.push([arr["index"], "%"]);
+    } else if (i < args.length) {
+      replacement.push([arr["index"], toReplace(arr[0], args[i])]);
+      i++;
+    } else done = true;
   }
+  const lastArgUsed = i;
   let result = "";
   let last = 0;
   for (let i = 0; i < replacement.length; i++) {
     const item = replacement[i];
-    result += input.slice(last, item[0]);
+    result += formatTemplate.slice(last, item[0]);
     result += item[1];
     last = item[0] + 2;
   }
-  result += input.slice(last);
+  result += formatTemplate.slice(last);
+  for (let i = lastArgUsed; i < args.length; i++) {
+    if (i > 0) result += " ";
+    if (typeof args[i] === "string") {
+      result += args[i];
+    } else result += Deno.inspect(args[i], { colors: true });
+  }
   return result;
 }
-
 /**
  * https://nodejs.org/api/util.html#util_util_inherits_constructor_superconstructor
  * @param ctor Constructor function which needs to inherit the prototype.
@@ -308,6 +265,7 @@ export type TextEncoder = import("./_utils.ts")._TextEncoder;
 export const TextEncoder = _TextEncoder;
 
 export default {
+  format,
   inspect,
   isArray,
   isBoolean,

@@ -19,7 +19,7 @@ Deno standard library as it's a compatibility module.
 - [x] crypto _partly_
 - [ ] dgram
 - [ ] diagnostics_channel
-- [ ] dns
+- [x] dns _partly_
 - [x] events
 - [x] fs _partly_
 - [x] fs/promises _partly_
@@ -28,7 +28,7 @@ Deno standard library as it's a compatibility module.
 - [ ] https
 - [ ] inspector
 - [x] module
-- [ ] net
+- [x] net
 - [x] os _partly_
 - [x] path
 - [x] path/posix
@@ -40,7 +40,7 @@ Deno standard library as it's a compatibility module.
 - [ ] repl
 - [x] stream
 - [x] stream/promises
-- [ ] stream/web
+- [x] stream/web _partly_
 - [x] string_decoder
 - [x] sys
 - [x] timers
@@ -108,6 +108,61 @@ order ensure compatibility.
 Setting up the test runner is as simple as running the `node/_tools/setup.ts`
 file, this will pull the configured tests in and then add them to the test
 workflow.
+
+```zsh
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
+```
+
+You can aditionally pass the `-y`/`-n` flag to use test cache or generating
+tests from scratch instead of being prompted at the moment of running it.
+
+```zsh
+# Will use downloaded tests instead of prompting user
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts -y
+# Will not prompt but will download and extract the tests directly
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts -n
+```
+
+To run the tests you have set up, do the following:
+
+```zsh
+$ deno test --allow-read --allow-run node/_tools/test.ts
+```
+
+If you want to run specific tests in a local environment, try one of the
+following:
+
+- Use `node/_tools/require.ts` as follows(recommended):
+
+```zsh
+$ deno run -A --unstable node/_tools/require.ts /Abs/path/to/deno_std/node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js
+```
+
+- Add `--only` flag to the `node/_tools/config.json`.
+
+```json
+...
+  "tests": {
+    ...
+    "parallel": [
+      ...
+      "test-event-emitter-add-listeners.js",
+      "test-event-emitter-check-listener-leaks.js --only",
+      "test-event-emitter-invalid-listener.js",
+      ...
+    ]
+    ...
+  }
+...
+```
+
+The test should be passing with the latest deno, so if the test fails, try the
+following:
+
+- `$ deno upgrade`
+- `$ git submodule update --init`
+- Use
+  [`--unstable` flag](https://deno.land/manual@v1.15.3/runtime/stability#standard-modules)
 
 To enable new tests, simply add a new entry inside `node/_tools/config.json`
 under the `tests` property. The structure this entries must have has to resemble

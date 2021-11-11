@@ -8,47 +8,40 @@ type TupleOf<T, N extends number, R extends unknown[]> = R["length"] extends N
   ? R
   : TupleOf<T, N, [T, ...R]>;
 
-const noop = () => {};
+interface QueueNode<T> {
+  value: T;
+  next: QueueNode<T> | undefined;
+}
 
-class AsyncIterableClone<T> implements AsyncIterable<T> {
-  currentPromise: Promise<IteratorResult<T>>;
-  resolveCurrent: (x: Promise<IteratorResult<T>>) => void = noop;
-  consumed: Promise<void>;
-  consume: () => void = noop;
+class Queue<T> {
+  #source: AsyncIterator<T>;
+  #queue: QueueNode<T>;
+  head: QueueNode<T>;
 
-  constructor() {
-    this.currentPromise = new Promise<IteratorResult<T>>((resolve) => {
-      this.resolveCurrent = resolve;
-    });
-    this.consumed = new Promise<void>((resolve) => {
-      this.consume = resolve;
-    });
+  done: boolean;
+
+  constructor(iterable: AsyncIterable<T>) {
+    this.#source = iterable[Symbol.asyncIterator]();
+    this.#queue = {
+      value: undefined!,
+      next: undefined,
+    };
+    this.head = this.#queue;
+    this.done = false;
   }
 
-  reset() {
-    this.currentPromise = new Promise<IteratorResult<T>>((resolve) => {
-      this.resolveCurrent = resolve;
-    });
-    this.consumed = new Promise<void>((resolve) => {
-      this.consume = resolve;
-    });
-  }
-
-  async next(): Promise<IteratorResult<T>> {
-    const res = await this.currentPromise;
-    this.consume();
-    this.reset();
-    return res;
-  }
-
-  async push(res: Promise<IteratorResult<T>>): Promise<void> {
-    this.resolveCurrent(res);
-    // Wait until current promise is consumed and next item is requested.
-    await this.consumed;
-  }
-
-  [Symbol.asyncIterator](): AsyncIterator<T> {
-    return this;
+  async next(): Promise<void> {
+    const result = await this.#source.next();
+    if (!result.done) {
+      const nextNode: QueueNode<T> = {
+        value: result.value,
+        next: undefined,
+      };
+      this.#queue.next = nextNode;
+      this.#queue = nextNode;
+    } else {
+      this.done = true;
+    }
   }
 }
 
@@ -56,6 +49,9 @@ class AsyncIterableClone<T> implements AsyncIterable<T> {
  * Branches the given async iterable into the n branches.
  *
  * Example:
+ *
+ * ```ts
+ *     import { tee } from "./tee.ts";
  *
  *     const gen = async function* gen() {
  *       yield 1;
@@ -76,27 +72,33 @@ class AsyncIterableClone<T> implements AsyncIterable<T> {
  *         console.log(n); // => 1, 2, 3
  *       }
  *     })();
+ * ```
  */
 export function tee<T, N extends number = 2>(
-  src: AsyncIterable<T>,
+  iterable: AsyncIterable<T>,
   n: N = 2 as N,
 ): Tuple<AsyncIterable<T>, N> {
-  const clones: Tuple<AsyncIterableClone<T>, N> = Array.from({ length: n }).map(
-    () => new AsyncIterableClone(),
-    // deno-lint-ignore no-explicit-any
-  ) as any;
-  (async () => {
-    const iter = src[Symbol.asyncIterator]();
-    await Promise.resolve();
+  const queue = new Queue<T>(iterable);
+
+  async function* generator(): AsyncGenerator<T> {
+    let buffer = queue.head;
     while (true) {
-      const res = iter.next();
-      await Promise.all(clones.map((c) => c.push(res)));
-      if ((await res).done) {
-        break;
+      if (buffer.next) {
+        buffer = buffer.next;
+        yield buffer.value;
+      } else if (queue.done) {
+        return;
+      } else {
+        await queue.next();
       }
     }
-  })().catch((e) => {
-    console.error(e);
-  });
-  return clones;
+  }
+
+  const branches = Array.from({ length: n }).map(
+    () => generator(),
+  ) as Tuple<
+    AsyncIterable<T>,
+    N
+  >;
+  return branches;
 }

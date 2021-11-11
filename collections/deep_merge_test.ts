@@ -65,6 +65,53 @@ Deno.test("deepMerge: nested merge", () => {
   );
 });
 
+Deno.test("deepMerge: prevent prototype merge", () => {
+  assertEquals(
+    deepMerge({
+      constructor: undefined,
+    }, {
+      foo: true,
+    }),
+    {
+      constructor: undefined,
+      foo: true,
+    },
+  );
+});
+
+Deno.test("deepMerge: prevent calling Object.prototype.__proto__ accessor property", () => {
+  Object.defineProperty(Object.prototype, "__proto__", {
+    get() {
+      throw new Error(
+        "Unexpected Object.prototype.__proto__ getter property call",
+      );
+    },
+    set() {
+      throw new Error(
+        "Unexpected Object.prototype.__proto__ setter property call",
+      );
+    },
+    configurable: true,
+  });
+  try {
+    assertEquals(
+      deepMerge({
+        foo: true,
+      }, {
+        bar: true,
+        ["__proto__"]: {},
+      }),
+      {
+        foo: true,
+        bar: true,
+      },
+    );
+  } finally {
+    // deno-lint-ignore no-explicit-any
+    delete (Object.prototype as any).__proto__;
+  }
+});
+
 Deno.test("deepMerge: override target (non-mergeable source)", () => {
   assertEquals(
     deepMerge({

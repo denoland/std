@@ -62,9 +62,11 @@ Follow the [style guide](https://deno.land/manual/contributing/style_guide).
 
 ### Opening a pull request
 
+After cloning don't forget to `git submodule update --init`.
+
 Before opening a PR make sure to:
 
-- there are tests that cover the changes.
+- Add tests that cover your changes.
 - `deno test --unstable --allow-all` passes.
 - `deno fmt --check` passes without changing files.
 - `deno lint --unstable` passes.
@@ -87,6 +89,23 @@ Ensure there is a related issue and it is referenced in the PR text.
 
 For contributions to the Node compatibility library please check the
 [`std/node` contributing guide](./node/README.md)
+
+_About CI checks_:
+
+We currently have 6 checks on CI. Each PR should pass all of these checks to be
+accepted.
+
+- test with Deno canary on Windows
+- test with Deno canary on Linux
+- test with Deno canary on macOS
+- lint
+- wasm crypto check
+- CLA
+
+_Typechecking code in Markdown files_:
+
+If you want to run `deno test --doc x.md` you will need to specify the flag
+`--import-map=test_import_map.json`, this import map is in the root of deno_std.
 
 _For maintainers_:
 

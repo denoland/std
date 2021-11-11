@@ -6,7 +6,7 @@
 import { Type } from "../type.ts";
 import type { Any } from "../utils.ts";
 
-const _hasOwnProperty = Object.prototype.hasOwnProperty;
+const { hasOwn } = Object;
 const _toString = Object.prototype.toString;
 
 function resolveYamlOmap(data: Any): boolean {
@@ -20,7 +20,7 @@ function resolveYamlOmap(data: Any): boolean {
     if (_toString.call(pair) !== "[object Object]") return false;
 
     for (pairKey in pair) {
-      if (_hasOwnProperty.call(pair, pairKey)) {
+      if (hasOwn(pair, pairKey)) {
         if (!pairHasKey) pairHasKey = true;
         else return false;
       }

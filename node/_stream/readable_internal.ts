@@ -10,6 +10,11 @@ import {
   ERR_STREAM_PUSH_AFTER_EOF,
   ERR_STREAM_UNSHIFT_AFTER_END_EVENT,
 } from "../_errors.ts";
+import { debuglog } from "../_util/_debuglog.ts";
+
+let debug = debuglog("stream", (fn) => {
+  debug = fn;
+});
 
 export function _destroy(
   self: Readable,
@@ -104,8 +109,10 @@ export function computeNewHighWaterMark(n: number) {
 
 export function emitReadable(stream: Duplex | Readable) {
   const state = stream._readableState;
+  debug("emitReadable", state.needReadable, state.emittedReadable);
   state.needReadable = false;
   if (!state.emittedReadable) {
+    debug("emitReadable", state.flowing);
     state.emittedReadable = true;
     queueMicrotask(() => emitReadable_(stream));
   }
@@ -113,6 +120,7 @@ export function emitReadable(stream: Duplex | Readable) {
 
 function emitReadable_(stream: Duplex | Readable) {
   const state = stream._readableState;
+  debug("emitReadable_", state.destroyed, state.length, state.ended);
   if (!state.destroyed && !state.errored && (state.length || state.ended)) {
     stream.emit("readable");
     state.emittedReadable = false;
@@ -127,6 +135,7 @@ function emitReadable_(stream: Duplex | Readable) {
 export function endReadable(stream: Readable) {
   const state = stream._readableState;
 
+  debug("endReadable", state.endEmitted);
   if (!state.endEmitted) {
     state.ended = true;
     queueMicrotask(() => endReadableNT(state, stream));
@@ -134,6 +143,7 @@ export function endReadable(stream: Readable) {
 }
 
 function endReadableNT(state: ReadableState, stream: Readable) {
+  debug("endReadableNT", state.endEmitted, state.length);
   if (
     !state.errorEmitted && !state.closeEmitted &&
     !state.endEmitted && state.length === 0
@@ -183,14 +193,14 @@ export function errorOrDestroy(
 
 function flow(stream: Duplex | Readable) {
   const state = stream._readableState;
+  debug("flow", state.flowing);
   while (state.flowing && stream.read() !== null);
 }
 
 /** Pluck off n bytes from an array of buffers.
-* Length is the combined lengths of all the buffers in the list.
-* This function is designed to be inlinable, so please take care when making
-* changes to the function body.
-*/
+ * Length is the combined lengths of all the buffers in the list.
+ * This function is designed to be inlinable, so please take care when making
+ * changes to the function body. */
 export function fromList(n: number, state: ReadableState) {
   // nothing buffered.
   if (state.length === 0) {
@@ -250,6 +260,7 @@ function maybeReadMore_(stream: Readable, state: ReadableState) {
       (state.flowing && state.length === 0))
   ) {
     const len = state.length;
+    debug("maybeReadMore read 0");
     stream.read(0);
     if (len === state.length) {
       // Didn't get any data, stop spinning.
@@ -260,10 +271,12 @@ function maybeReadMore_(stream: Readable, state: ReadableState) {
 }
 
 export function nReadingNextTick(self: Duplex | Readable) {
+  debug("readable nexttick read 0");
   self.read(0);
 }
 
 export function onEofChunk(stream: Duplex | Readable, state: ReadableState) {
+  debug("onEofChunk");
   if (state.ended) return;
   if (state.decoder) {
     const chunk = state.decoder.end();
@@ -288,8 +301,13 @@ export function pipeOnDrain(src: Duplex | Readable, dest: Duplex | Writable) {
     const state = src._readableState;
 
     if (state.awaitDrainWriters === dest) {
+      debug("pipeOnDrain", 1);
       state.awaitDrainWriters = null;
     } else if (state.multiAwaitDrain) {
+      debug(
+        "pipeOnDrain",
+        (state.awaitDrainWriters as Set<Duplex | Writable>).size,
+      );
       (state.awaitDrainWriters as Set<Duplex | Writable>).delete(dest);
     }
 
@@ -321,13 +339,13 @@ export function prependListener(
   // TODO(Soremwar)
   // Burn it with fire
   // deno-lint-ignore ban-ts-comment
-  //@ts-ignore
+  // @ts-ignore
   if (emitter._events.get(event)?.length) {
     // deno-lint-ignore ban-ts-comment
-    //@ts-ignore
+    // @ts-ignore
     const listeners = [fn, ...emitter._events.get(event)];
     // deno-lint-ignore ban-ts-comment
-    //@ts-ignore
+    // @ts-ignore
     emitter._events.set(event, listeners);
   } else {
     emitter.on(event, fn);
@@ -408,6 +426,7 @@ export function resume(stream: Duplex | Readable, state: ReadableState) {
 }
 
 function resume_(stream: Duplex | Readable, state: ReadableState) {
+  debug("resume", state.reading);
   if (!state.reading) {
     stream.read(0);
   }
