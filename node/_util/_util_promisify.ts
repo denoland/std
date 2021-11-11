@@ -43,7 +43,7 @@ interface SymbolConstructor {
 const kCustomPromisifiedSymbol = Symbol.for("nodejs.util.promisify.custom");
 // This is an internal Node symbol used by functions returning multiple
 // arguments, e.g. ['bytesRead', 'buffer'] for fs.read().
-const kCustomPromisifyArgsSymbol = Symbol.for(
+export const kCustomPromisifyArgsSymbol = Symbol.for(
   "nodejs.util.promisify.customArgs",
 );
 

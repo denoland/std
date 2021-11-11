@@ -3,10 +3,12 @@ import {
   assert,
   assertEquals,
   assertStringIncludes,
+  assertThrows,
 } from "../testing/asserts.ts";
 
 import * as path from "../path/mod.ts";
-import { createRequire } from "./module.ts";
+import Module, { createRequire } from "./module.ts";
+import nodeMods from "./module_all.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, path.join("_fs", "testdata"));
@@ -57,6 +59,14 @@ Deno.test("requireIndexJS", function () {
   assert(isIndex);
 });
 
+Deno.test("requireWithNodePrefix", function () {
+  const osWithPrefix = require("node:os");
+  const os = require("os");
+  assert(osWithPrefix === os);
+  assert(osWithPrefix.arch);
+  assert(typeof osWithPrefix.arch() == "string");
+});
+
 Deno.test("requireNodeOs", function () {
   const os = require("os");
   assert(os.arch);
@@ -68,6 +78,8 @@ Deno.test("requireStack", function () {
   try {
     hello();
   } catch (e) {
+    assert(e instanceof Error);
+    assert(e.stack);
     assertStringIncludes(e.stack, "/_module/cjs/cjs_throw.js");
   }
 });
@@ -83,68 +95,19 @@ Deno.test("requireModuleWithConditionalExports", () => {
   assert(typeof blue === "function");
 });
 
+const SUPPORTED_NODE_MODULES = Object.keys(nodeMods);
+
 Deno.test("requireNodeJsNativeModules", () => {
   // Checks these exist and don't throw.
-  require("assert");
-  require("assert/strict");
-  require("buffer");
-  require("child_process");
-  require("console");
-  require("constants");
-  require("crypto");
-  require("events");
-  require("fs");
-  require("fs/promises");
-  require("module");
-  require("os");
-  require("path");
-  require("perf_hooks");
-  require("querystring");
-  require("stream");
-  require("string_decoder");
-  require("timers");
-  require("tty");
-  require("url");
-  require("util");
-
-  // TODO(kt3k): add these modules when implemented
-  // require("cluster");
-  // require("dgram");
-  // require("dns");
-  // require("http");
-  // require("http2");
-  // require("https");
-  // require("net");
-  // require("readline");
-  // require("repl");
-  // require("sys");
-  // require("tls");
-  // require("vm");
-  // require("worker_threads");
-  // require("zlib");
+  for (const name of SUPPORTED_NODE_MODULES) {
+    require(name);
+  }
 });
 
 Deno.test("native modules are extensible", () => {
   const randomKey = "random-key";
   const randomValue = "random-value";
-  const modNames = [
-    "assert",
-    "buffer",
-    "child_process",
-    "crypto",
-    "events",
-    "fs",
-    "module",
-    "os",
-    "path",
-    "querystring",
-    "stream",
-    "string_decoder",
-    "timers",
-    "url",
-    "util",
-  ];
-  for (const name of modNames) {
+  for (const name of SUPPORTED_NODE_MODULES) {
     const mod = require(name);
     Object.defineProperty(mod, randomKey, {
       value: randomValue,
@@ -163,4 +126,74 @@ Deno.test("Require file with shebang", () => {
 Deno.test("EventEmitter is exported correctly", () => {
   const EventEmitter = require("events");
   assertEquals(EventEmitter, EventEmitter.EventEmitter);
+});
+
+Deno.test("Require .mjs", () => {
+  assertThrows(
+    () => require("./testdata/inspect.mjs"),
+    undefined,
+    "Importing ESM module",
+  );
+});
+
+Deno.test("requireErrorInEval", async function () {
+  const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+
+  const p = Deno.run({
+    cmd: [
+      Deno.execPath(),
+      "run",
+      "--unstable",
+      "--allow-read",
+      "./_module/cjs/test_cjs_import.js",
+    ],
+    cwd,
+    stdout: "piped",
+    stderr: "piped",
+  });
+
+  const decoder = new TextDecoder();
+  const output = await p.output();
+  const outputError = decoder.decode(await p.stderrOutput());
+
+  assert(!output.length);
+  assert(
+    outputError.includes(
+      'To load an ES module, set "type": "module" in the package.json or use the .mjs extension.',
+    ),
+  );
+  assert(
+    outputError.includes(
+      "SyntaxError: Cannot use import statement outside a module",
+    ),
+  );
+  p.close();
+});
+
+Deno.test("requireCjsWithDynamicImport", function () {
+  require("./_module/cjs/cjs_with_dynamic_import");
+});
+
+Deno.test("requireWithImportsExports", function () {
+  require("./_module/cjs/cjs_imports_exports");
+});
+
+Deno.test("module has proper members", function () {
+  const module = require("module");
+
+  assert(module._cache);
+  assert(module._extensions);
+  assert(typeof module._findPath == "function");
+  assert(typeof module._initPaths == "function");
+  assert(typeof module._load == "function");
+  assert(typeof module._nodeModulePaths == "function");
+  assert(module._pathCache);
+  assert(typeof module._preloadModules == "function");
+  assert(typeof module._resolveFilename == "function");
+  assert(typeof module._resolveLookupPaths == "function");
+  assert(module.builtinModules);
+  assert(typeof module.createRequire == "function");
+  assert(module.globalPaths);
+  assert(module.Module === Module);
+  assert(typeof module.wrap == "function");
 });

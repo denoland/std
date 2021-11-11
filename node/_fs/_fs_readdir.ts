@@ -69,7 +69,7 @@ export function readdir(
       } else result.push(decode(val.name));
     });
   } catch (error) {
-    callback(error);
+    callback(error instanceof Error ? error : new Error("[non-error thrown]"));
   }
 }
 

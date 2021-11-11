@@ -13,18 +13,87 @@
 const assert = require("assert");
 const util = require("util");
 
+function platformTimeout(ms) {
+  return ms;
+}
+
+let localhostIPv4 = null;
+
+function _expectWarning(name, expected, code) {
+  if (typeof expected === 'string') {
+    expected = [[expected, code]];
+  } else if (!Array.isArray(expected)) {
+    expected = Object.entries(expected).map(([a, b]) => [b, a]);
+  } else if (!(Array.isArray(expected[0]))) {
+    expected = [[expected[0], expected[1]]];
+  }
+  // Deprecation codes are mandatory, everything else is not.
+  if (name === 'DeprecationWarning') {
+    expected.forEach(([_, code]) => assert(code, expected));
+  }
+  return mustCall((warning) => {
+    const [ message, code ] = expected.shift();
+    assert.strictEqual(warning.name, name);
+    if (typeof message === 'string') {
+      assert.strictEqual(warning.message, message);
+    } else {
+      assert.match(warning.message, message);
+    }
+    assert.strictEqual(warning.code, code);
+  }, expected.length);
+}
+
+let catchWarning;
+
+// Accepts a warning name and description or array of descriptions or a map of
+// warning names to description(s) ensures a warning is generated for each
+// name/description pair.
+// The expected messages have to be unique per `expectWarning()` call.
+function expectWarning(nameOrMap, expected, code) {
+  if (catchWarning === undefined) {
+    catchWarning = {};
+    process.on('warning', (warning) => {
+      if (!catchWarning[warning.name]) {
+        throw new TypeError(
+          `"${warning.name}" was triggered without being expected.\n` +
+          util.inspect(warning)
+        );
+      }
+      catchWarning[warning.name](warning);
+    });
+  }
+  if (typeof nameOrMap === 'string') {
+    catchWarning[nameOrMap] = _expectWarning(nameOrMap, expected, code);
+  } else {
+    Object.keys(nameOrMap).forEach((name) => {
+      catchWarning[name] = _expectWarning(name, nameOrMap[name]);
+    });
+  }
+}
+
 /**
+ * Useful for testing expected internal/error objects
+ *
  * @param {Error} error
  */
-function expectsError({ code, type, message }) {
+function expectsError(validator, exact) {
   /**
    * @param {Error} error
    */
-  return function (error) {
-    assert.strictEqual(error.code, code);
-    assert.strictEqual(error.type, type);
-    assert.strictEqual(error.message, message);
-  };
+  return mustCall((...args) => {
+    if (args.length !== 1) {
+      // Do not use `assert.strictEqual()` to prevent `inspect` from
+      // always being called.
+      assert.fail(`Expected one argument, got ${util.inspect(args)}`);
+    }
+    const error = args.pop();
+    const descriptor = Object.getOwnPropertyDescriptor(error, 'message');
+    // The error message should be non-enumerable
+    assert.strictEqual(descriptor.enumerable, false);
+
+    assert.throws(() => { throw error; }, validator);
+    return true;
+  }, exact);
 }
 
 const noop = () => {};
@@ -35,6 +104,18 @@ const noop = () => {};
  */
 function mustCall(fn, exact) {
   return _mustCallInner(fn, exact, "exact");
+}
+
+function mustCallAtLeast(fn, minimum) {
+  return _mustCallInner(fn, minimum, 'minimum');
+}
+
+function mustSucceed(fn, exact) {
+  return mustCall(function(err, ...args) {
+    assert.ifError(err);
+    if (typeof fn === 'function')
+      return fn.apply(this, args);
+  }, exact);
 }
 
 const mustCallChecks = [];
@@ -71,7 +152,7 @@ function runCallChecks(exitCode) {
  * @param {"exact" | "minimum"} field
  */
 function _mustCallInner(fn, criteria = 1, field) {
-  //@ts-ignore
+  // @ts-ignore
   if (process._exiting) {
     throw new Error("Cannot use common.mustCall*() in process exit handler");
   }
@@ -152,9 +233,47 @@ function invalidArgTypeHelper(input) {
   return ` Received type ${typeof input} (${inspected})`;
 }
 
+const isWindows = process.platform === 'win32';
+const isAIX = process.platform === 'aix';
+const isSunOS = process.platform === 'sunos';
+const isFreeBSD = process.platform === 'freebsd';
+const isOpenBSD = process.platform === 'openbsd';
+const isLinux = process.platform === 'linux';
+const isOSX = process.platform === 'darwin';
+
 module.exports = {
   expectsError,
+  expectWarning,
   invalidArgTypeHelper,
   mustCall,
+  mustCallAtLeast,
   mustNotCall,
+  mustSucceed,
+  platformTimeout,
+  isWindows,
+  isAIX,
+  isSunOS,
+  isFreeBSD,
+  isOpenBSD,
+  isLinux,
+  isOSX,
+  get hasIPv6() {
+    const iFaces = require('os').networkInterfaces();
+    const re = isWindows ? /Loopback Pseudo-Interface/ : /lo/;
+    return Object.keys(iFaces).some((name) => {
+      return re.test(name) &&
+             iFaces[name].some(({ family }) => family === 'IPv6');
+    });
+  },
+
+  get localhostIPv4() {
+    if (localhostIPv4 !== null) return localhostIPv4;
+    if (localhostIPv4 === null) localhostIPv4 = '127.0.0.1';
+
+    return localhostIPv4;
+  },
+
+  get PORT() {
+    return 12346;
+  },
 };

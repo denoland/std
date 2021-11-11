@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Transforms the given array into a Record, extracting the key of each element using the given selector.
@@ -8,8 +9,8 @@
  * Example:
  *
  * ```ts
- * import { associateBy } from "./associate_by.ts"
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { associateBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const users = [
  *     { id: 'a2e', userName: 'Anna' },

@@ -478,7 +478,10 @@ export function parse(path: string): ParsedPath {
 /**
  * Converts a file URL to a path string.
  *
+ * ```ts
+ *      import { fromFileUrl } from "./posix.ts";
  *      fromFileUrl("file:///home/foo"); // "/home/foo"
+ * ```
  * @param url of a file URL
  */
 export function fromFileUrl(url: string | URL): string {
@@ -494,7 +497,10 @@ export function fromFileUrl(url: string | URL): string {
 /**
  * Converts a path string to a file URL.
  *
+ * ```ts
+ *      import { toFileUrl } from "./posix.ts";
  *      toFileUrl("/home/foo"); // new URL("file:///home/foo")
+ * ```
  * @param path to convert to file URL
  */
 export function toFileUrl(path: string): URL {

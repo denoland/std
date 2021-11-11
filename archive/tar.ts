@@ -27,10 +27,9 @@
  * THE SOFTWARE.
  */
 import { MultiReader } from "../io/readers.ts";
-import { PartialReadError } from "../io/bufio.ts";
+import { Buffer, PartialReadError } from "../io/buffer.ts";
 import { assert } from "../_util/assert.ts";
-import { Buffer } from "../io/buffer.ts";
-import { readAll } from "../io/util.ts";
+import { readAll } from "../streams/conversion.ts";
 
 type Reader = Deno.Reader;
 type Seeker = Deno.Seeker;

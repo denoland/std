@@ -2,6 +2,7 @@
 import * as hex from "../encoding/hex.ts";
 import * as base64 from "../encoding/base64.ts";
 import { Encodings, normalizeEncoding, notImplemented } from "./_utils.ts";
+import { ERR_BUFFER_OUT_OF_BOUNDS, ERR_OUT_OF_RANGE } from "./_errors.ts";
 
 const notImplementedEncodings = [
   "ascii",
@@ -14,13 +15,13 @@ const notImplementedEncodings = [
 function checkEncoding(encoding = "utf8", strict = true): Encodings {
   if (typeof encoding !== "string" || (strict && encoding === "")) {
     if (!strict) return "utf8";
-    throw new TypeError(`Unkown encoding: ${encoding}`);
+    throw new TypeError(`Unknown encoding: ${encoding}`);
   }
 
   const normalized = normalizeEncoding(encoding);
 
   if (normalized === undefined) {
-    throw new TypeError(`Unkown encoding: ${encoding}`);
+    throw new TypeError(`Unknown encoding: ${encoding}`);
   }
 
   if (notImplementedEncodings.includes(encoding)) {
@@ -245,6 +246,47 @@ export class Buffer extends Uint8Array {
     );
   }
 
+  private boundsError(value: number, length: number, type: string): never {
+    if (Math.floor(value) !== value) {
+      throw new ERR_OUT_OF_RANGE(type || "offset", "an integer", value);
+    }
+    if (length < 0) throw new ERR_BUFFER_OUT_OF_BOUNDS();
+
+    throw new ERR_OUT_OF_RANGE(
+      type || "offset",
+      `>= ${type ? 1 : 0} and <= ${length}`,
+      value,
+    );
+  }
+
+  /**
+   * Reads byteLength number of bytes from buf at the specified offset and interprets
+   * the result as an unsigned big-endian integer supporting up to 48 bits of accuracy.
+   */
+  readUIntBE(offset = 0, byteLength: number): number {
+    if (byteLength === 3 || byteLength === 5 || byteLength === 6) {
+      notImplemented(`byteLength ${byteLength}`);
+    }
+    if (byteLength === 4) return this.readUInt32BE(offset);
+    if (byteLength === 2) return this.readUInt16BE(offset);
+    if (byteLength === 1) return this.readUInt8(offset);
+    this.boundsError(byteLength, 4, "byteLength");
+  }
+
+  /**
+   * Reads byteLength number of bytes from buf at the specified offset and interprets
+   * the result as an unsigned, little-endian integer supporting up to 48 bits of accuracy.
+   */
+  readUIntLE(offset = 0, byteLength: number): number {
+    if (byteLength === 3 || byteLength === 5 || byteLength === 6) {
+      notImplemented(`byteLength ${byteLength}`);
+    }
+    if (byteLength === 4) return this.readUInt32LE(offset);
+    if (byteLength === 2) return this.readUInt16LE(offset);
+    if (byteLength === 1) return this.readUInt8(offset);
+    this.boundsError(byteLength, 4, "byteLength");
+  }
+
   /**
    * Copies data from a region of buf to a region in target, even if the target
    * memory region overlaps with buf.
@@ -255,9 +297,10 @@ export class Buffer extends Uint8Array {
     sourceStart = 0,
     sourceEnd = this.length,
   ): number {
-    const sourceBuffer = this
-      .subarray(sourceStart, sourceEnd)
-      .subarray(0, Math.max(0, targetBuffer.length - targetStart));
+    const sourceBuffer = this.subarray(sourceStart, sourceEnd).subarray(
+      0,
+      Math.max(0, targetBuffer.length - targetStart),
+    );
 
     if (sourceBuffer.length === 0) return 0;
 
@@ -437,7 +480,7 @@ export class Buffer extends Uint8Array {
 
     const b = this.subarray(start, end);
     if (encoding === "hex") return new TextDecoder().decode(hex.encode(b));
-    if (encoding === "base64") return base64.encode(b.buffer);
+    if (encoding === "base64") return base64.encode(b);
 
     return new TextDecoder(encoding).decode(b);
   }
@@ -599,6 +642,26 @@ export class Buffer extends Uint8Array {
     return offset + 4;
   }
 }
+// Make Buffer static methods enumerable (so they can be copied by safe-buffer, etc...)
+for (
+  const prop of [
+    "alloc",
+    "allocUnsafe",
+    "byteLength",
+    "from",
+    "isBuffer",
+    "isEncoding",
+  ]
+) {
+  Reflect.defineProperty(Buffer, prop, { enumerable: true });
+}
+// Allow calling Buffer() without new (translate it to a Buffer.from call, for safe-buffer, etc..)
+const PBuffer = new Proxy(Buffer, {
+  apply(_target, _thisArg, args) {
+    // @ts-ignore tedious to replicate types ...
+    return Buffer.from(...args);
+  },
+});
 
 export const kMaxLength = 4294967296;
 export const kStringMaxLength = 536870888;
@@ -611,7 +674,7 @@ export const atob = globalThis.atob;
 export const btoa = globalThis.btoa;
 
 export default {
-  Buffer,
+  Buffer: PBuffer,
   kMaxLength,
   kStringMaxLength,
   constants,

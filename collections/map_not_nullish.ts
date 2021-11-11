@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns a new array, containing all elements in the given array transformed using the given transformer, except the ones
@@ -7,8 +8,8 @@
  * Example:
  *
  * ```ts
- * import { mapNotNullish } from "./map_not_nullish.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { mapNotNullish } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = [
  *     { middleName: null },

@@ -14,7 +14,7 @@ import { assert, assertEquals } from "../testing/asserts.ts";
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
 import { Tar, Untar } from "./tar.ts";
 import { Buffer } from "../io/buffer.ts";
-import { copy, readAll } from "../io/util.ts";
+import { copy, readAll } from "../streams/conversion.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
@@ -100,7 +100,7 @@ Deno.test("appendFileWithLongNameToTarArchive", async function (): Promise<
   void
 > {
   // 9 * 15 + 13 = 148 bytes
-  const fileName = new Array(10).join("long-file-name/") + "file-name.txt";
+  const fileName = "long-file-name/".repeat(10) + "file-name.txt";
   const text = "hello tar world!";
 
   // create a tar archive
@@ -280,7 +280,7 @@ Deno.test(
           content: new TextEncoder().encode("hello tar world!".repeat(100)),
         },
         // Need to test at least two files, to make sure the first entry doesn't over-read
-        // Causing the next to fail with: chesum error
+        // Causing the next to fail with: checksum error
         {
           name: "deni.txt",
           content: new TextEncoder().encode("deno!".repeat(250)),

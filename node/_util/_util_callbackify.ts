@@ -84,8 +84,9 @@ function callbackify<Arg1T, Arg2T, Arg3T, Arg4T, Arg5T, ResultT>(
   callback: Callback<ResultT>,
 ) => void;
 
-// deno-lint-ignore no-explicit-any
-function callbackify(original: any): any {
+function callbackify<ResultT>(
+  original: (...args: unknown[]) => PromiseLike<ResultT>,
+): (...args: unknown[]) => void {
   if (typeof original !== "function") {
     throw new NodeInvalidArgTypeError('"original"');
   }

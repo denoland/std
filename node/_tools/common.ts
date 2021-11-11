@@ -18,7 +18,7 @@ interface Config {
    *
    * The files to be generated with the update script must be listed here as well,
    * but they won't be regenerated if they are listed in the `ignore` configuration
-   * */
+   */
   tests: TestSuites;
   suitesFolder: string;
   versionsFolder: string;

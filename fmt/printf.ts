@@ -59,7 +59,7 @@ class Printf {
   constructor(format: string, ...args: unknown[]) {
     this.format = format;
     this.args = args;
-    this.haveSeen = new Array(args.length);
+    this.haveSeen = Array.from({ length: args.length });
     this.i = 0;
   }
 
