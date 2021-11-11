@@ -10,6 +10,86 @@ import {
 import { isAnyArrayBuffer, isArrayBufferView } from "./_util/_util_types.ts";
 import { normalizeEncoding } from "./internal/util.ts";
 
+// Temporary buffers to convert numbers.
+const float32Array = new Float32Array(1);
+const uInt8Float32Array = new Uint8Array(float32Array.buffer);
+const float64Array = new Float64Array(1);
+const uInt8Float64Array = new Uint8Array(float64Array.buffer);
+
+// Check endianness.
+float32Array[0] = -1; // 0xBF800000
+// Either it is [0, 0, 128, 191] or [191, 128, 0, 0]. It is not possible to
+// check this with `os.endianness()` because that is determined at compile time.
+const bigEndian = uInt8Float32Array[3] === 0;
+
+function readDoubleBackwards(buffer, offset = 0) {
+  validateNumber(offset, "offset");
+  const first = buffer[offset];
+  const last = buffer[offset + 7];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, buffer.length - 8);
+  }
+
+  uInt8Float64Array[7] = first;
+  uInt8Float64Array[6] = buffer[++offset];
+  uInt8Float64Array[5] = buffer[++offset];
+  uInt8Float64Array[4] = buffer[++offset];
+  uInt8Float64Array[3] = buffer[++offset];
+  uInt8Float64Array[2] = buffer[++offset];
+  uInt8Float64Array[1] = buffer[++offset];
+  uInt8Float64Array[0] = last;
+  return float64Array[0];
+}
+
+function readDoubleForwards(buffer, offset = 0) {
+  validateNumber(offset, "offset");
+  const first = buffer[offset];
+  const last = buffer[offset + 7];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, buffer.length - 8);
+  }
+
+  uInt8Float64Array[0] = first;
+  uInt8Float64Array[1] = buffer[++offset];
+  uInt8Float64Array[2] = buffer[++offset];
+  uInt8Float64Array[3] = buffer[++offset];
+  uInt8Float64Array[4] = buffer[++offset];
+  uInt8Float64Array[5] = buffer[++offset];
+  uInt8Float64Array[6] = buffer[++offset];
+  uInt8Float64Array[7] = last;
+  return float64Array[0];
+}
+
+function readFloatBackwards(buffer, offset = 0) {
+  validateNumber(offset, "offset");
+  const first = buffer[offset];
+  const last = buffer[offset + 3];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, buffer.length - 4);
+  }
+
+  uInt8Float32Array[3] = first;
+  uInt8Float32Array[2] = buffer[++offset];
+  uInt8Float32Array[1] = buffer[++offset];
+  uInt8Float32Array[0] = last;
+  return float32Array[0];
+}
+
+function readFloatForwards(buffer, offset = 0) {
+  validateNumber(offset, "offset");
+  const first = buffer[offset];
+  const last = buffer[offset + 3];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, buffer.length - 4);
+  }
+
+  uInt8Float32Array[0] = first;
+  uInt8Float32Array[1] = buffer[++offset];
+  uInt8Float32Array[2] = buffer[++offset];
+  uInt8Float32Array[3] = last;
+  return float32Array[0];
+}
+
 function base64UrlToBytes(str) {
   return new Uint8Array(
     [...atob(str.replace(/-/g, "+").replace(/_/g, "/"))].map((val) =>
@@ -1897,33 +1977,25 @@ var require_buffer = __commonJS({
           );
       },
     );
-    Buffer2.prototype.readFloatLE = function readFloatLE(offset, noAssert) {
-      offset = offset >>> 0;
-      if (!noAssert) {
-        checkOffset(offset, 4, this.length);
-      }
-      return ieee754.read(this, offset, true, 23, 4);
+    Buffer2.prototype.readFloatLE = function readFloatLE(offset) {
+      return bigEndian
+        ? readFloatBackwards(this, offset)
+        : readFloatForwards(this, offset);
     };
-    Buffer2.prototype.readFloatBE = function readFloatBE(offset, noAssert) {
-      offset = offset >>> 0;
-      if (!noAssert) {
-        checkOffset(offset, 4, this.length);
-      }
-      return ieee754.read(this, offset, false, 23, 4);
+    Buffer2.prototype.readFloatBE = function readFloatBE(offset) {
+      return bigEndian
+        ? readFloatForwards(this, offset)
+        : readFloatBackwards(this, offset);
     };
-    Buffer2.prototype.readDoubleLE = function readDoubleLE(offset, noAssert) {
-      offset = offset >>> 0;
-      if (!noAssert) {
-        checkOffset(offset, 8, this.length);
-      }
-      return ieee754.read(this, offset, true, 52, 8);
+    Buffer2.prototype.readDoubleLE = function readDoubleLE(offset) {
+      return bigEndian
+        ? readDoubleBackwards(this, offset)
+        : readDoubleForwards(this, offset);
     };
-    Buffer2.prototype.readDoubleBE = function readDoubleBE(offset, noAssert) {
-      offset = offset >>> 0;
-      if (!noAssert) {
-        checkOffset(offset, 8, this.length);
-      }
-      return ieee754.read(this, offset, false, 52, 8);
+    Buffer2.prototype.readDoubleBE = function readDoubleBE(offset) {
+      return bigEndian
+        ? readDoubleForwards(this, offset)
+        : readDoubleBackwards(this, offset);
     };
     function checkInt(buf, value, offset, ext, max, min) {
       if (!Buffer2.isBuffer(buf)) {
