@@ -6,7 +6,8 @@ import {
   serveListener,
   Server,
   serveTls,
-} from "./server.ts";
+  HttpRequest,
+} from "./mod.ts";
 import { mockConn as createMockConn } from "./_mock_conn.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { readAll, writeAll } from "../streams/conversion.ts";
@@ -1040,11 +1041,11 @@ Deno.test("Server.serve can be called multiple times", async () => {
   const listenerOne = Deno.listen(listenerOneOptions);
   const listenerTwo = Deno.listen(listenerTwoOptions);
 
-  const handler = (_request: Request, connInfo: ConnInfo) => {
-    if ((connInfo.localAddr as Deno.NetAddr).port === listenerOneOptions.port) {
+  const handler = (request: HttpRequest) => {
+    if ((request.connInfo.localAddr as Deno.NetAddr).port === listenerOneOptions.port) {
       return new Response("Hello listener one!");
     } else if (
-      (connInfo.localAddr as Deno.NetAddr).port === listenerTwoOptions.port
+      (request.connInfo.localAddr as Deno.NetAddr).port === listenerTwoOptions.port
     ) {
       return new Response("Hello listener two!");
     }
@@ -1115,9 +1116,9 @@ Deno.test("Handler is called with the request instance and connection informatio
   let receivedRequest: Request;
   let receivedConnInfo: ConnInfo;
 
-  const handler = (request: Request, connInfo: ConnInfo) => {
+  const handler = (request: HttpRequest) => {
     receivedRequest = request;
-    receivedConnInfo = connInfo;
+    receivedConnInfo = request.connInfo;
 
     return new Response("Hello Deno!");
   };
