@@ -109,6 +109,7 @@
       "test-buffer-write.js",
       "test-buffer-writedouble.js",
       "test-buffer-writefloat.js",
+      "test-buffer-writeint.js",
       "test-buffer-writeuint.js",
       "test-buffer-zero-fill-cli.js",
       "test-buffer-zero-fill-reset.js",
