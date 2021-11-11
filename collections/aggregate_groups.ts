@@ -6,8 +6,8 @@ import { mapEntries } from "./map_entries.ts";
  * Applies the given aggregator to each group in the given Grouping, returning the results together with the respective group keys
  *
  * ```ts
- * import { aggregateGroups } from "./aggregate_groups.ts"
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { aggregateGroups } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const foodProperties = {
  *     'Curry': [ 'spicy', 'vegan' ],
