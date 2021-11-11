@@ -1,5 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+export * from "./aggregate_groups.ts";
 export * from "./associate_by.ts";
 export * from "./associate_with.ts";
 export * from "./chunk.ts";
