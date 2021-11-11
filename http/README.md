@@ -5,7 +5,7 @@ Deno's standard HTTP server based on the
 
 ## Table of Contents
 
-- [Minimal Server](#minimal-server)
+- [Minimal Server Example](#minimal-server-example)
 - [Handling Requests](#handling-requests)
   - [HTTP Status Codes and Methods](#http-status-codes-and-methods)
 - [Middleware](#middleware)
@@ -16,15 +16,17 @@ Deno's standard HTTP server based on the
   - [Chaining Middleware](#chaining-middleware)
   - [Nesting Chains](#nesting-chains)
   - [Chain Type Safety](#chain-type-safety)
+  - [Error Handling](#error-handling)
 - [File Server](#file-server)
 - [Cookies](#cookies)
   - [getCookies](#getcookies)
   - [setCookie](#setcookie)
   - [deleteCookie](#deletecookie)
 
-## Minimal Server
+## Minimal Server Example
 
-Run this file with `--allow-net` and try requesting `http://localhost:8000`:
+Run this file with `--allow-net` and try requesting `http://localhost:8000`
+(default port if no second argument is supplied to `serve`):
 
 ```ts
 import { serve } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
@@ -42,14 +44,12 @@ and returns a [`Response`](https://doc.deno.land/builtin/stable#Response):
 export type Handler = (request: HttpRequest) => Response | Promise<Response>;
 ```
 
-`std/http` follows web standards, specifically parts of the Fetch API.
-
-`HttpRequest` is an extension of the
-[`Request` web standard](https://developer.mozilla.org/en-US/docs/Web/API/Request),
+`std/http` follows web standards, specifically parts of the Fetch API, with
+`HttpRequest` being an extension of the
+[`Request` standard](https://developer.mozilla.org/en-US/docs/Web/API/Request),
 adding connection information and some helper functions to make it more
-convenient to use on servers. The expected return value follows the same Fetch
-standard and is expected to be a
-[`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response).
+convenient to use on servers, and the expected response value being a
+[standard `Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response).
 
 Here is an example handler that echoes the request body:
 
@@ -57,6 +57,7 @@ Here is an example handler that echoes the request body:
 const handle: Handler = (req) => {
   return new Response(
     req.body,
+    // This is how you explicitly set the response status code - 200 is the default
     { status: 200 },
   );
 };
@@ -89,8 +90,8 @@ await serve(handle);
 
 ## Middleware
 
-Middleware is a common pattern to include recurring logic done on requests and
-responses like deserialization, compression, validation, CORS etc.
+Middleware is a common pattern to modularize recurring logic done on requests
+and responses like deserialization, compression, validation, CORS etc.
 
 A middleware is like a `Handler` except that it expects an additional parameter
 containing a next handler it can pass on to, allowing it to only solve a
@@ -99,30 +100,27 @@ The next handler can contain middleware again, enabling to build chains like
 this:
 
 ```
-Request ----------------------------------------->
+Request -------------------------->
 
-log - authenticate - parseJson - validate - handle
+log - parseYaml - validate - handle
 
-<-----------------------------------------Response
+<------------------------- Response
 ```
-
-Middleware is a handler that **can** call the next handler to pass on control.
 
 Middleware will often be used to ensure that some condition is met before
 passing the request on (e.g. authentication, validation), to pre-process
 requests in some way to make handling them simpler and less repetitive
 (deserialization, database preloading) or to format responses in some way (CORS,
-compression). The middleware pattern decouples those parts of the logic from the
-rest of the application, allowing to distribute it as reusable modules, even
-from third parties.
+compression). The middleware pattern decouples those parts from the rest of the
+handling logic, allowing to distribute middleware as reusable modules.
 
-`std/http` has a simple, yet powerful, strongly typed middleware system.
+`std/http` has a simple, yet powerful, Typescript-native middleware system.
 
 ### Writing Middleware
 
 Writing middleware is the same as writing a `Handler`, except that it gets
 passed an additional argument - canonically called `next` - which is a handler
-representing the rest of the chain after our middleware. `std/http` exports a
+representing the rest of the chain _after_ our middleware. `std/http` exports a
 `Middleware` function type that should be used to write Middleware.
 
 Let's look at an example. A simple middleware that logs requests could be
@@ -154,13 +152,15 @@ a `Response`, it does not matter how we produced it.
 ### Request Context
 
 Sometimes you want your middleware to pass information onto the handler after
-it. The way to do that is request context.
+it. As middleware is meant to be modular and independently composable, the way
+to do that is request context.
 
-Each `HttpRequest`s has an attached `context` object. Arbitrary properties with
-arbitrary data can be added to the context via the `.addContext()` method to
-later be read by other functions handling the same request.
+Each `HttpRequest`s has an attached `context` object, which starts out emty.
+Arbitrary properties with arbitrary data can be added to the context via the
+`.addContext()` method to later be read by other functions handling the same
+request.
 
-Contexts are very strictly typed to prevent runtime errors.
+Request contexts are very strictly typed to prevent runtime errors.
 
 ### Adding Context
 
@@ -172,8 +172,8 @@ The `Middleware` type actually takes two optional type arguments:
 Both default to the `EmptyContext`. Let's look at an example on how to add
 context.
 
-Assume our server wants to accept data in the YAML format. To deal with the YAML
-parsing and error handling, we could write a middleware like this:
+Assume our server wants to accept data in the YAML format. To deal with YAML
+parsing and handling parsing errors, we could write a middleware like this:
 
 ```typescript
 import {
@@ -183,6 +183,7 @@ import {
 } from "https://deno.land/std@$STD_VERSION/http/mod.ts";
 import { parse } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
 
+// We depend on no context data, but we add a `data` property with the type `unknown`
 export const yaml: Middleware<EmptyContext, { data: unknown }> = async (
   req,
   next,
@@ -194,11 +195,12 @@ export const yaml: Middleware<EmptyContext, { data: unknown }> = async (
     data = parse(rawBody);
   } catch {
     return new Response(
-      "Could not parse input. Please provide valid YAML",
+      "Could not parse input - please provide valid YAML",
       { status: Status.UnsupportedMediaType },
     );
   }
 
+  // addContext() returns a new request reference with the new context type
   const newReq = req.addContext({ data });
 
   return await next(newReq);
@@ -222,8 +224,9 @@ To do that, we need to access the previously added `data` property on the
 context:
 
 ```typescript
-import { Middleware } from "../../../middleware.ts";
+import { Middleware, Status } from "../../../middleware.ts";
 
+// We depend on a `data: unkown` context and we will add a `data: string[]` context
 export const validate: Middleware<{ data: unknown }, { data: string[] }> = (
   req,
   next,
@@ -239,29 +242,32 @@ export const validate: Middleware<{ data: unknown }, { data: string[] }> = (
   }
 
   return new Response(
-    "Invalid input, expected an array of string",
-    { status: 422 },
+    "Invalid input, expected an array of strings",
+    { status: Status.UnprocessableEntity },
   );
 };
 ```
 
-This will check if the parsed `data` value is an Array and if every element in
-it is a string. If that is true, it will pass on to the next handler. Note that
-we actually change the context - we declare (in the second type parameter of
-`Middleware`) that after our middleware, the `data` property has the type
-`string[]` instead of the previous `unknown`.
+This will access the `data` value on the context, check if it is an Array and if
+every element in it is a string. If that is true, it will pass on to the next
+handler. Note that we actually change the context as well - we declare (in the
+second type parameter of `Middleware`) that after our middleware, the `data`
+property has the type `string[]` instead of the previous `unknown`. We could
+have added a new property as well, but now that we know `data`s type, it does
+not make a lot of sense to keep the `unknown` property.
 
 Without explicitly declaring in the `Middleware` type that we depend on `data`
-in the context, Typescript would not have let us access it on the request
-context.
+in the context, Typescript would not have let us access it.
 
-This also works with `Handler` - we can and need to tell it which request
-context we depend on to use it. Assume that after our middleware above, we want
-to respond with a greeting for each string in the provided Array:
+`Handler`s read context the same way - we can and need to tell the `Handler`
+type which request context we depend on to access it. Assume that after our
+middleware above, we want to respond with a greeting for each string in the
+provided Array:
 
 ```typescript
 import { Handler } from "../../../middleware.ts";
 
+// We explicitly declare that we need a `data: string[]` context
 export const handleGreetings: Handler<{ data: string[] }> = (req) => {
   const { data } = req.context;
   const greetings = data
@@ -272,26 +278,26 @@ export const handleGreetings: Handler<{ data: string[] }> = (req) => {
 };
 ```
 
-If we would not have explicitly added `{ data: string[] }` to `Handler`,
-Typescript would not have let us access that context.
+If we would not have explicitly passed `{ data: string[] }` to the `Handler`
+type, Typescript would not have let us access that context.
 
 ### Chaining Middleware
 
 How do we actually connect middleware and handlers into a chain? For that, we
-need the `chain` function.
+need the `chain()` function.
 
 Let's do that using our previous examples (assumed to be exported by the
-`examples.ts` file here):
+`./examples.ts` file here):
 
 ```typescript
 import { chain, serve } from "https://deno.land/std@$std_version/http/mod.ts";
-import { handlegreeting, validate, yaml } from "./examples.ts";
+import { handleGreetings, validate, yaml } from "./examples.ts";
 
-const handler = chain(yaml)
+const serverHandler = chain(yaml)
   .add(validate)
-  .add(handlegreeting);
+  .add(handleGreetings);
 
-await serve(handler);
+await serve(serverHandler);
 ```
 
 This will build a new function by chaining the given functions in the given
@@ -301,22 +307,23 @@ meaning you can no longer add to it.
 
 ### Nesting Chains
 
-Chains are just middlewares (or `Handler`s if they are terminated) again, so you
-can pass around and nest them in other chains as much and as deeply as you want.
+Chains are just `Middleware`s (or `Handler`s if they are terminated) themself,
+so you can pass around and nest them in other chains as much and as deeply as
+you want.
 
 This example does the exact same as the one above:
 
 ```typescript
 import { chain, serve } from "https://deno.land/std@$std_version/http/mod.ts";
-import { handlegreeting, validate, yaml } from "./examples.ts";
+import { handleGreetings, validate, yaml } from "./examples.ts";
 
 const validateAndGreet = chain(validate)
-  .add(handleGreeting);
+  .add(handleGreetings);
 
-const handler = chain(yaml)
+const serverHandler = chain(yaml)
   .add(valideAndGreet);
 
-await serve(handler);
+await serve(serverHandler);
 ```
 
 ### Chain Type Safety
@@ -343,7 +350,8 @@ const handleStringArray = chain(validate)
 await serve(handleStringArray);
 ```
 
-But this will work, with the only difference being the order:
+But this will work - note that the only difference to the eaxmple above is the
+order:
 
 ```typescript
 const handleStringArray = chain(yaml)
@@ -353,8 +361,8 @@ const handleStringArray = chain(yaml)
 await serve(handleStringArray);
 ```
 
-As `serve` only accepts `Handler`, Typescript will also stop you from passing it
-an unterminated chain:
+As `serve` only accepts a `Handler`, Typescript will also stop you from passing
+it an unterminated chain:
 
 ```typescript
 const handleStringArray = chain(yaml)
@@ -366,6 +374,42 @@ await serve(handleStringArray);
 
 Those checks will help you not to run into runtime problems, even for more
 complex, nested setups.
+
+### Error Handling
+
+Chains are really just functions - which means that a request passing thrugh a
+chain is just passing through a normal call stack.
+
+This means that you can handle `Error`s exactly as you would with any other
+normal nested functions, with `Error`s bubbling up the middleware chain until
+they are caught (which `serve` will do if no other function did it before).
+
+So you could easily write custom `Error` for downstream functions to use and
+handle it in your middleware:
+
+```typescript
+import {
+  Middleware,
+  Status,
+} from "https://deno.land/std@$std_version/http/mod.ts";
+
+export class AuthorizationError extends Error {}
+
+export const authError: Middleware = async (req, next) => {
+  try {
+    return await next(req);
+  } catch (e) {
+    if (e instanceof AuthorizationError) {
+      return new Response(
+        null,
+        { status: Status.Forbidden },
+      );
+    }
+
+    throw e;
+  }
+};
+```
 
 ## File Server
 
