@@ -539,6 +539,11 @@ export function assertObjectMatch(
   type loose = Record<PropertyKey, unknown>;
   const seen = new WeakMap();
   function filter(a: loose, b: loose): loose {
+    // If the actual value is an array, let assertEquals do the assertion.
+    if (Array.isArray(a)) {
+      return a;
+    }
+
     // Prevent infinite loop with circular references with same filter
     if ((seen.has(a)) && (seen.get(a) === b)) {
       return a;
