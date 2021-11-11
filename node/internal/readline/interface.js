@@ -19,6 +19,8 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// deno-lint-ignore-file camelcase no-inner-declarations no-this-alias
+
 import { ERR_INVALID_ARG_VALUE } from "../../_errors.ts";
 import {
   validateAbortSignal,
