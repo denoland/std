@@ -68,8 +68,8 @@ Before opening a PR make sure to:
 
 - Add tests that cover your changes.
 - `deno test --unstable --allow-all` passes.
-- `deno fmt --check` passes without changing files.
-- `deno lint --unstable` passes.
+- `deno run -A _tools/format.js` passes without changing files.
+- `deno run -A _tools/lint.js` passes.
 
 Give the PR a descriptive title.
 
