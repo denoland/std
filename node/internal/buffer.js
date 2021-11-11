@@ -1,4 +1,5 @@
-// deno-lint-ignore-file
+// Copyright Joyent and Node contributors. All rights reserved. MIT license.
+// Copyright Feross Aboukhadijeh, and other contributors. All rights reserved. MIT license.
 
 import {
   ERR_BUFFER_OUT_OF_BOUNDS,
@@ -444,6 +445,7 @@ export function getEncodingOps(encoding) {
         return encodingOps.utf16le;
       }
       break;
+    // deno-lint-ignore no-fallthrough
     case 6:
       if (encoding === "latin1" || encoding === "binary") {
         return encodingOps.latin1;
@@ -553,6 +555,7 @@ export function toInteger(n, defaultVal) {
   return defaultVal;
 }
 
+// deno-lint-ignore camelcase
 export function writeU_Int8(buf, value, offset, min, max) {
   value = +value;
   validateNumber(offset, "offset");
@@ -567,6 +570,7 @@ export function writeU_Int8(buf, value, offset, min, max) {
   return offset + 1;
 }
 
+// deno-lint-ignore camelcase
 export function writeU_Int16BE(buf, value, offset, min, max) {
   value = +value;
   checkInt(value, min, max, buf, offset, 1);
@@ -590,6 +594,7 @@ export function _writeUInt32LE(buf, value, offset, min, max) {
   return offset;
 }
 
+// deno-lint-ignore camelcase
 export function writeU_Int16LE(buf, value, offset, min, max) {
   value = +value;
   checkInt(value, min, max, buf, offset, 1);
@@ -613,6 +618,7 @@ export function _writeUInt32BE(buf, value, offset, min, max) {
   return offset + 4;
 }
 
+// deno-lint-ignore camelcase
 export function writeU_Int48BE(buf, value, offset, min, max) {
   value = +value;
   checkInt(value, min, max, buf, offset, 5);
@@ -630,6 +636,7 @@ export function writeU_Int48BE(buf, value, offset, min, max) {
   return offset + 4;
 }
 
+// deno-lint-ignore camelcase
 export function writeU_Int40BE(buf, value, offset, min, max) {
   value = +value;
   checkInt(value, min, max, buf, offset, 4);
@@ -645,6 +652,7 @@ export function writeU_Int40BE(buf, value, offset, min, max) {
   return offset + 4;
 }
 
+// deno-lint-ignore camelcase
 export function writeU_Int32BE(buf, value, offset, min, max) {
   value = +value;
   checkInt(value, min, max, buf, offset, 3);
@@ -659,6 +667,7 @@ export function writeU_Int32BE(buf, value, offset, min, max) {
   return offset + 4;
 }
 
+// deno-lint-ignore camelcase
 export function writeU_Int24BE(buf, value, offset, min, max) {
   value = +value;
   checkInt(value, min, max, buf, offset, 2);
@@ -688,6 +697,7 @@ export function validateOffset(
   }
 }
 
+// deno-lint-ignore camelcase
 export function writeU_Int48LE(buf, value, offset, min, max) {
   value = +value;
   checkInt(value, min, max, buf, offset, 5);
@@ -705,6 +715,7 @@ export function writeU_Int48LE(buf, value, offset, min, max) {
   return offset;
 }
 
+// deno-lint-ignore camelcase
 export function writeU_Int40LE(buf, value, offset, min, max) {
   value = +value;
   checkInt(value, min, max, buf, offset, 4);
@@ -720,6 +731,8 @@ export function writeU_Int40LE(buf, value, offset, min, max) {
   buf[offset++] = Math.floor(newVal * 2 ** -32);
   return offset;
 }
+
+// deno-lint-ignore camelcase
 export function writeU_Int32LE(buf, value, offset, min, max) {
   value = +value;
   checkInt(value, min, max, buf, offset, 3);
@@ -734,6 +747,7 @@ export function writeU_Int32LE(buf, value, offset, min, max) {
   return offset;
 }
 
+// deno-lint-ignore camelcase
 export function writeU_Int24LE(buf, value, offset, min, max) {
   value = +value;
   checkInt(value, min, max, buf, offset, 2);
