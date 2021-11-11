@@ -22,6 +22,113 @@ float32Array[0] = -1; // 0xBF800000
 // check this with `os.endianness()` because that is determined at compile time.
 const bigEndian = uInt8Float32Array[3] === 0;
 
+function readUInt48LE(buf, offset = 0) {
+  validateNumber(offset, "offset");
+  const first = buf[offset];
+  const last = buf[offset + 5];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, buf.length - 6);
+  }
+
+  return first +
+    buf[++offset] * 2 ** 8 +
+    buf[++offset] * 2 ** 16 +
+    buf[++offset] * 2 ** 24 +
+    (buf[++offset] + last * 2 ** 8) * 2 ** 32;
+}
+
+function readUInt40LE(buf, offset = 0) {
+  validateNumber(offset, "offset");
+  const first = buf[offset];
+  const last = buf[offset + 4];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, buf.length - 5);
+  }
+
+  return first +
+    buf[++offset] * 2 ** 8 +
+    buf[++offset] * 2 ** 16 +
+    buf[++offset] * 2 ** 24 +
+    last * 2 ** 32;
+}
+
+function readUInt24LE(buf, offset = 0) {
+  validateNumber(offset, "offset");
+  const first = buf[offset];
+  const last = buf[offset + 2];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, buf.length - 3);
+  }
+
+  return first + buf[++offset] * 2 ** 8 + last * 2 ** 16;
+}
+
+function readUInt48BE(buf, offset = 0) {
+  validateNumber(offset, "offset");
+  const first = buf[offset];
+  const last = buf[offset + 5];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, buf.length - 6);
+  }
+
+  return (first * 2 ** 8 + buf[++offset]) * 2 ** 32 +
+    buf[++offset] * 2 ** 24 +
+    buf[++offset] * 2 ** 16 +
+    buf[++offset] * 2 ** 8 +
+    last;
+}
+
+function readUInt40BE(buf, offset = 0) {
+  validateNumber(offset, "offset");
+  const first = buf[offset];
+  const last = buf[offset + 4];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, buf.length - 5);
+  }
+
+  return first * 2 ** 32 +
+    buf[++offset] * 2 ** 24 +
+    buf[++offset] * 2 ** 16 +
+    buf[++offset] * 2 ** 8 +
+    last;
+}
+
+function readUInt24BE(buf, offset = 0) {
+  validateNumber(offset, "offset");
+  const first = buf[offset];
+  const last = buf[offset + 2];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, buf.length - 3);
+  }
+
+  return first * 2 ** 16 + buf[++offset] * 2 ** 8 + last;
+}
+
+function readUInt16BE(offset = 0) {
+  validateNumber(offset, "offset");
+  const first = this[offset];
+  const last = this[offset + 1];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, this.length - 2);
+  }
+
+  return first * 2 ** 8 + last;
+}
+
+function readUInt32BE(offset = 0) {
+  validateNumber(offset, "offset");
+  const first = this[offset];
+  const last = this[offset + 3];
+  if (first === undefined || last === undefined) {
+    boundsError(offset, this.length - 4);
+  }
+
+  return first * 2 ** 24 +
+    this[++offset] * 2 ** 16 +
+    this[++offset] * 2 ** 8 +
+    last;
+}
+
 function readDoubleBackwards(buffer, offset = 0) {
   validateNumber(offset, "offset");
   const first = buffer[offset];
@@ -1836,76 +1943,96 @@ var require_buffer = __commonJS({
       }
     }
     Buffer2.prototype.readUintLE = Buffer2.prototype.readUIntLE =
-      function readUIntLE(offset, byteLength2, noAssert) {
-        offset = offset >>> 0;
-        byteLength2 = byteLength2 >>> 0;
-        if (!noAssert) {
-          checkOffset(offset, byteLength2, this.length);
+      function readUIntLE(offset, byteLength) {
+        if (offset === undefined) {
+          throw new ERR_INVALID_ARG_TYPE("offset", "number", offset);
         }
-        let val = this[offset];
-        let mul = 1;
-        let i = 0;
-        while (++i < byteLength2 && (mul *= 256)) {
-          val += this[offset + i] * mul;
+        if (byteLength === 6) {
+          return readUInt48LE(this, offset);
         }
-        return val;
+        if (byteLength === 5) {
+          return readUInt40LE(this, offset);
+        }
+        if (byteLength === 3) {
+          return readUInt24LE(this, offset);
+        }
+        if (byteLength === 4) {
+          return this.readUInt32LE(offset);
+        }
+        if (byteLength === 2) {
+          return this.readUInt16LE(offset);
+        }
+        if (byteLength === 1) {
+          return this.readUInt8(offset);
+        }
+
+        boundsError(byteLength, 6, "byteLength");
       };
     Buffer2.prototype.readUintBE = Buffer2.prototype.readUIntBE =
-      function readUIntBE(offset, byteLength2, noAssert) {
-        offset = offset >>> 0;
-        byteLength2 = byteLength2 >>> 0;
-        if (!noAssert) {
-          checkOffset(offset, byteLength2, this.length);
+      function readUIntBE(offset, byteLength) {
+        if (offset === undefined) {
+          throw new ERR_INVALID_ARG_TYPE("offset", "number", offset);
         }
-        let val = this[offset + --byteLength2];
-        let mul = 1;
-        while (byteLength2 > 0 && (mul *= 256)) {
-          val += this[offset + --byteLength2] * mul;
+        if (byteLength === 6) {
+          return readUInt48BE(this, offset);
         }
-        return val;
+        if (byteLength === 5) {
+          return readUInt40BE(this, offset);
+        }
+        if (byteLength === 3) {
+          return readUInt24BE(this, offset);
+        }
+        if (byteLength === 4) {
+          return this.readUInt32BE(offset);
+        }
+        if (byteLength === 2) {
+          return this.readUInt16BE(offset);
+        }
+        if (byteLength === 1) {
+          return this.readUInt8(offset);
+        }
+
+        boundsError(byteLength, 6, "byteLength");
       };
     Buffer2.prototype.readUint8 = Buffer2.prototype.readUInt8 =
-      function readUInt8(offset, noAssert) {
-        offset = offset >>> 0;
-        if (!noAssert) {
-          checkOffset(offset, 1, this.length);
+      function readUInt8(offset = 0) {
+        validateNumber(offset, "offset");
+        const val = this[offset];
+        if (val === undefined) {
+          boundsError(offset, this.length - 1);
         }
-        return this[offset];
-      };
-    Buffer2.prototype.readUint16LE = Buffer2.prototype.readUInt16LE =
-      function readUInt16LE(offset, noAssert) {
-        offset = offset >>> 0;
-        if (!noAssert) {
-          checkOffset(offset, 2, this.length);
-        }
-        return this[offset] | this[offset + 1] << 8;
+
+        return val;
       };
     Buffer2.prototype.readUint16BE = Buffer2.prototype.readUInt16BE =
-      function readUInt16BE(offset, noAssert) {
-        offset = offset >>> 0;
-        if (!noAssert) {
-          checkOffset(offset, 2, this.length);
+      readUInt16BE;
+    Buffer2.prototype.readUint16LE = Buffer2.prototype.readUInt16LE =
+      function readUInt16LE(offset = 0) {
+        validateNumber(offset, "offset");
+        const first = this[offset];
+        const last = this[offset + 1];
+        if (first === undefined || last === undefined) {
+          boundsError(offset, this.length - 2);
         }
-        return this[offset] << 8 | this[offset + 1];
+
+        return first + last * 2 ** 8;
       };
     Buffer2.prototype.readUint32LE = Buffer2.prototype.readUInt32LE =
-      function readUInt32LE(offset, noAssert) {
-        offset = offset >>> 0;
-        if (!noAssert) {
-          checkOffset(offset, 4, this.length);
+      function readUInt32LE(offset = 0) {
+        validateNumber(offset, "offset");
+        const first = this[offset];
+        const last = this[offset + 3];
+        if (first === undefined || last === undefined) {
+          boundsError(offset, this.length - 4);
         }
-        return (this[offset] | this[offset + 1] << 8 | this[offset + 2] << 16) +
-          this[offset + 3] * 16777216;
+
+        return first +
+          this[++offset] * 2 ** 8 +
+          this[++offset] * 2 ** 16 +
+          last * 2 ** 24;
       };
     Buffer2.prototype.readUint32BE = Buffer2.prototype.readUInt32BE =
-      function readUInt32BE(offset, noAssert) {
-        offset = offset >>> 0;
-        if (!noAssert) {
-          checkOffset(offset, 4, this.length);
-        }
-        return this[offset] * 16777216 +
-          (this[offset + 1] << 16 | this[offset + 2] << 8 | this[offset + 3]);
-      };
+      readUInt32BE;
     Buffer2.prototype.readBigUint64LE = Buffer2.prototype.readBigUInt64LE =
       defineBigIntMethod(
         function readBigUInt64LE(offset) {
