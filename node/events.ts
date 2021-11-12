@@ -68,7 +68,7 @@ type EventMap = Record<
 export let defaultMaxListeners = 10;
 function validateMaxListeners(n: number, name: string): void {
   if (!Number.isInteger(n) || Number.isNaN(n) || n < 0) {
-    throw new ERR_OUT_OF_RANGE(name, "a non-negative number", inspect(n));
+    throw new ERR_OUT_OF_RANGE(name, "a non-negative number", n);
   }
 }
 

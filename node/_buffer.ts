@@ -19,6 +19,8 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// TODO(Soremwar)
+// Verify need for FastBuffer
 export class FastBuffer extends Uint8Array {
   // Using an explicit constructor here is necessary to avoid relying on
   // `Array.prototype[Symbol.iterator]`, which can be mutated by users.
