@@ -33,6 +33,7 @@ export function inspect(object: unknown, ...opts: any): string {
   if (typeof object === "string" && !object.includes("'")) {
     return `'${object}'`;
   }
+
   opts = { ...DEFAULT_INSPECT_OPTIONS, ...opts };
   return Deno.inspect(object, {
     depth: opts.depth,
@@ -101,6 +102,11 @@ export function isFunction(value: unknown): boolean {
 /** @deprecated - use `value instanceof RegExp` instead. */
 export function isRegExp(value: unknown): boolean {
   return value instanceof RegExp;
+}
+
+/** @deprecated */
+export function isDate(value: unknown): boolean {
+  return types.isDate(value);
 }
 
 /** @deprecated - use `value === null || (typeof value !== "object" && typeof value !== "function")` instead. */
@@ -279,6 +285,7 @@ export default {
   isError,
   isFunction,
   isRegExp,
+  isDate,
   isPrimitive,
   getSystemErrorName,
   deprecate,

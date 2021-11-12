@@ -60,6 +60,16 @@ export class AbortError extends Error {
 // deno-lint-ignore no-explicit-any
 type GenericFunction = (...args: any[]) => any;
 
+function addNumericalSeparator(val: string) {
+  let res = "";
+  let i = val.length;
+  const start = val[0] === "-" ? 1 : 0;
+  for (; i >= start + 4; i -= 3) {
+    res = `_${val.slice(i - 3, i)}${res}`;
+  }
+  return `${val.slice(0, i)}${res}`;
+}
+
 /** This function removes unnecessary frames from Node.js core errors. */
 export function hideStackFrames(fn: GenericFunction) {
   // We rename the functions that will be hidden to cut off the stacktrace
@@ -460,7 +470,6 @@ export class ERR_INVALID_ARG_TYPE_RANGE extends NodeRangeError {
   }
 }
 
-
 export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
   constructor(name: string, expected: string | string[], actual: unknown) {
     const msg = createInvalidArgType(name, expected, actual);
@@ -484,6 +493,8 @@ export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
       `The ${type} '${name}' ${reason}. Received ${inspected}`,
     );
   }
+
+  static RangeError = ERR_INVALID_ARG_VALUE_RANGE;
 }
 
 // A helper function to simplify checking for ERR_INVALID_ARG_TYPE output.
@@ -511,10 +522,31 @@ function invalidArgTypeHelper(input: any) {
 export class ERR_OUT_OF_RANGE extends RangeError {
   code = "ERR_OUT_OF_RANGE";
 
-  constructor(str: string, range: string, received: unknown) {
-    super(
-      `The value of "${str}" is out of range. It must be ${range}. Received ${received}`,
-    );
+  constructor(
+    str: string,
+    range: string,
+    input: unknown,
+    replaceDefaultBoolean = false,
+  ) {
+    assert(range, 'Missing "range" argument');
+    let msg = replaceDefaultBoolean
+      ? str
+      : `The value of "${str}" is out of range.`;
+    let received;
+    if (Number.isInteger(input) && Math.abs(input as number) > 2 ** 32) {
+      received = addNumericalSeparator(String(input));
+    } else if (typeof input === "bigint") {
+      received = String(input);
+      if (input > 2n ** 32n || input < -(2n ** 32n)) {
+        received = addNumericalSeparator(received);
+      }
+      received += "n";
+    } else {
+      received = inspect(input);
+    }
+    msg += ` It must be ${range}. Received ${received}`;
+
+    super(msg);
 
     const { name } = this;
     // Add the error code to the name to include it in the stack trace.

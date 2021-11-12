@@ -42,7 +42,7 @@ export function uuidToBytes(uuid: string): number[] {
  */
 export function stringToBytes(str: string): number[] {
   str = unescape(encodeURIComponent(str));
-  const bytes = new Array(str.length);
+  const bytes = Array.from<number>({ length: str.length });
   for (let i = 0; i < str.length; i++) {
     bytes[i] = str.charCodeAt(i);
   }

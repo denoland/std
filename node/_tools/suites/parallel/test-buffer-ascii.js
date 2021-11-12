@@ -28,36 +28,26 @@
 
 'use strict';
 require('../common');
-const { Readable: R, Writable: W } = require('stream');
 const assert = require('assert');
 
-const src = new R({ encoding: 'base64' });
-const dst = new W();
-let hasRead = false;
-const accum = [];
+// ASCII conversion in node.js simply masks off the high bits,
+// it doesn't do transliteration.
+assert.strictEqual(Buffer.from('hérité').toString('ascii'), 'hC)ritC)');
 
-src._read = function(n) {
-  if (!hasRead) {
-    hasRead = true;
-    process.nextTick(function() {
-      src.push(Buffer.from('1'));
-      src.push(null);
-    });
-  }
-};
+// 71 characters, 78 bytes. The ’ character is a triple-byte sequence.
+const input = 'C’est, graphiquement, la réunion d’un accent aigu ' +
+              'et d’un accent grave.';
 
-dst._write = function(chunk, enc, cb) {
-  accum.push(chunk);
-  cb();
-};
+const expected = 'Cb\u0000\u0019est, graphiquement, la rC)union ' +
+                 'db\u0000\u0019un accent aigu et db\u0000\u0019un ' +
+                 'accent grave.';
 
-src.on('end', function() {
-  assert.strictEqual(String(Buffer.concat(accum)), 'MQ==');
-  clearTimeout(timeout);
-});
+const buf = Buffer.from(input);
 
-src.pipe(dst);
+for (let i = 0; i < expected.length; ++i) {
+  assert.strictEqual(buf.slice(i).toString('ascii'), expected.slice(i));
 
-const timeout = setTimeout(function() {
-  assert.fail('timed out waiting for _write');
-}, 100);
+  // Skip remainder of multi-byte sequence.
+  if (input.charCodeAt(i) > 65535) ++i;
+  if (input.charCodeAt(i) > 127) ++i;
+}

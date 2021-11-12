@@ -55,6 +55,10 @@ Deno.test({
 Deno.test({
   name: "[collection/withoutAll] leaves duplicate elements",
   fn() {
-    withoutAllTest(new Array(110).fill(3), [1], new Array(110).fill(3));
+    withoutAllTest(
+      Array.from({ length: 110 }, () => 3),
+      [1],
+      Array.from({ length: 110 }, () => 3),
+    );
   },
 });

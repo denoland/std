@@ -9,7 +9,7 @@ import type { Any } from "../utils.ts";
 const _toString = Object.prototype.toString;
 
 function resolveYamlPairs(data: Any[][]): boolean {
-  const result = new Array(data.length);
+  const result = Array.from({ length: data.length });
 
   for (let index = 0; index < data.length; index++) {
     const pair = data[index];
@@ -29,7 +29,7 @@ function resolveYamlPairs(data: Any[][]): boolean {
 function constructYamlPairs(data: string): Any[] {
   if (data === null) return [];
 
-  const result = new Array(data.length);
+  const result = Array.from({ length: data.length });
 
   for (let index = 0; index < data.length; index += 1) {
     const pair = data[index];

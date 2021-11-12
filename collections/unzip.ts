@@ -17,17 +17,17 @@
  *     [ 'John', 'Leroy' ],
  * ] as [string, string][];
  *
- * const [ moms, dads ] = unzip(parents)
+ * const [ moms, dads ] = unzip(parents);
  *
- * assertEquals(moms, [ 'Maria', 'Anna', 'John' ])
- * assertEquals(moms, [ 'Jeff', 'Kim', 'Leroy' ])
+ * assertEquals(moms, [ 'Maria', 'Anna', 'John' ]);
+ * assertEquals(dads, [ 'Jeff', 'Kim', 'Leroy' ]);
  * ```
  */
 export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
   const { length } = pairs;
   const ret: [T[], U[]] = [
-    new Array(length),
-    new Array(length),
+    Array.from({ length }),
+    Array.from({ length }),
   ];
 
   pairs.forEach(([first, second], index) => {
