@@ -126,15 +126,18 @@ export async function* walk(
       assert(entry.name != null);
       let path = join(root, entry.name);
 
+      let isFile = entry.isFile;
+
       if (entry.isSymlink) {
         if (followSymlinks) {
           path = await Deno.realPath(path);
+          isFile = await Deno.lstat(path).then((s) => s.isFile);
         } else {
           continue;
         }
       }
 
-      if (entry.isFile) {
+      if (isFile) {
         if (includeFiles && include(path, exts, match, skip)) {
           yield { path, ...entry };
         }
@@ -187,15 +190,17 @@ export function* walkSync(
     assert(entry.name != null);
     let path = join(root, entry.name);
 
+    let isFile = entry.isFile;
     if (entry.isSymlink) {
       if (followSymlinks) {
         path = Deno.realPathSync(path);
+        isFile = Deno.lstatSync(path).isFile;
       } else {
         continue;
       }
     }
 
-    if (entry.isFile) {
+    if (isFile) {
       if (includeFiles && include(path, exts, match, skip)) {
         yield { path, ...entry };
       }

@@ -218,18 +218,19 @@ function invalidArgTypeHelper(input) {
   if (input == null) {
     return ` Received ${input}`;
   }
-  if (typeof input === 'function' && input.name) {
+  if (typeof input === "function" && input.name) {
     return ` Received function ${input.name}`;
   }
-  if (typeof input === 'object') {
+  if (typeof input === "object") {
     if (input.constructor && input.constructor.name) {
       return ` Received an instance of ${input.constructor.name}`;
     }
     return ` Received ${util.inspect(input, { depth: -1 })}`;
   }
   let inspected = util.inspect(input, { colors: false });
-  if (inspected.length > 25)
+  if (inspected.length > 25) {
     inspected = `${inspected.slice(0, 25)}...`;
+  }
   return ` Received type ${typeof input} (${inspected})`;
 }
 

@@ -47,6 +47,7 @@ for await (const file of dir) {
           "-A",
           "--quiet",
           "--unstable",
+          "--no-check",
           "require.ts",
           file.path,
         ],
