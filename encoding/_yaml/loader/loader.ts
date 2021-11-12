@@ -150,8 +150,8 @@ function charFromCodepoint(c: number): string {
   );
 }
 
-const simpleEscapeCheck = new Array(256); // integer, for fast access
-const simpleEscapeMap = new Array(256);
+const simpleEscapeCheck = Array.from<number>({ length: 256 }); // integer, for fast access
+const simpleEscapeMap = Array.from<string>({ length: 256 });
 for (let i = 0; i < 256; i++) {
   simpleEscapeCheck[i] = simpleEscapeSequence(i) ? 1 : 0;
   simpleEscapeMap[i] = simpleEscapeSequence(i);

@@ -62,17 +62,16 @@ assert.strictEqual(util.isRegExp(new Date()), false);
 // TODO(wafuwafu13): Enable this.
 // assert.strictEqual(util.isRegExp(Object.create(RegExp.prototype)), false);
 
-// TODO(wafuwafu13): Enable this when `isDate` is ready.
 // isDate
-// assert.strictEqual(util.isDate(new Date()), true);
-// assert.strictEqual(util.isDate(new Date(0), 'foo'), true);
+assert.strictEqual(util.isDate(new Date()), true);
+assert.strictEqual(util.isDate(new Date(0), 'foo'), true);
 // TODO(wafuwafu13): Enable this when "vm" is ready.
 // assert.strictEqual(util.isDate(new (context('Date'))()), true);
-// assert.strictEqual(util.isDate(Date()), false);
-// assert.strictEqual(util.isDate({}), false);
-// assert.strictEqual(util.isDate([]), false);
-// assert.strictEqual(util.isDate(new Error()), false);
-// assert.strictEqual(util.isDate(Object.create(Date.prototype)), false);
+assert.strictEqual(util.isDate(Date()), false);
+assert.strictEqual(util.isDate({}), false);
+assert.strictEqual(util.isDate([]), false);
+assert.strictEqual(util.isDate(new Error()), false);
+assert.strictEqual(util.isDate(Object.create(Date.prototype)), false);
 
 // isError
 assert.strictEqual(util.isError(new Error()), true);
