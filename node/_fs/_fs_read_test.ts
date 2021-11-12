@@ -77,8 +77,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "[std/node/fs] Read only five bytes, specifies where to begin reading from in the file",
+  name: "[std/node/fs] Specifies where to begin reading from in the file",
   async fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
