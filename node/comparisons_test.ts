@@ -1,7 +1,7 @@
 import { assertEquals } from "../testing/asserts.ts";
 import { isDeepStrictEqual } from "./comparisons.ts";
 
-Deno.test("for basic Objects", async (t) => {
+Deno.test("[node/comparison] for basic Objects", async (t) => {
   const a = { ch: 1 };
   const b = { ch: 1 };
   const c = { ch: "1" };
@@ -19,24 +19,27 @@ Deno.test("for basic Objects", async (t) => {
   });
 });
 
-Deno.test("objects that don't have their own properties", async (t) => {
-  const object = {};
-  const fakeDate = {};
-  const date = new Date();
+Deno.test(
+  "[node/comparison] objects that don't have their own properties",
+  async (t) => {
+    const object = {};
+    const fakeDate = {};
+    const date = new Date();
 
-  Object.setPrototypeOf(fakeDate, Date.prototype);
+    Object.setPrototypeOf(fakeDate, Date.prototype);
 
-  await t.step("comparing object with fakeDate", () => {
-    assertEquals(isDeepStrictEqual(object, fakeDate), false);
-  });
+    await t.step("comparing object with fakeDate", () => {
+      assertEquals(isDeepStrictEqual(object, fakeDate), false);
+    });
 
-  // FAILING TEST
-  await t.step("comparing date with fakeDate", () => {
-    assertEquals(isDeepStrictEqual(date, fakeDate), false);
-  });
-});
+    // FAILING TEST
+    await t.step("comparing date with fakeDate", () => {
+      assertEquals(isDeepStrictEqual(date, fakeDate), false);
+    });
+  },
+);
 
-Deno.test("general primitive based cases", async (t) => {
+Deno.test("[node/comparison] general primitive based cases", async (t) => {
   await t.step("handling NaN cases", () => {
     assertEquals(isDeepStrictEqual(NaN, NaN), true);
   });
@@ -46,7 +49,7 @@ Deno.test("general primitive based cases", async (t) => {
   });
 });
 
-Deno.test("wrapped cases", async (t) => {
+Deno.test("[node/comparison] wrapped cases", async (t) => {
   await t.step("wrapped numbers", () => {
     assertEquals(isDeepStrictEqual(new Number(1), new Number(2)), false);
     assertEquals(isDeepStrictEqual(new Number(5), new Object(5)), true);
@@ -60,7 +63,7 @@ Deno.test("wrapped cases", async (t) => {
   });
 });
 
-Deno.test("symbol cases", async (t) => {
+Deno.test("[node/comparison] symbol cases", async (t) => {
   const symbol1 = Symbol();
   const symbol2 = Symbol();
 
@@ -72,7 +75,7 @@ Deno.test("symbol cases", async (t) => {
   });
 });
 
-Deno.test("map cases", async (t) => {
+Deno.test("[node/comparison] map cases", async (t) => {
   const weakMap1 = new WeakMap();
   const weakMap2 = new WeakMap([[{}, {}]]);
   const weakMap3 = new WeakMap();
