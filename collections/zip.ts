@@ -22,20 +22,18 @@
  * ```
  */
 
+import { minOf } from "./min_of.ts";
+
 export function zip<T extends unknown[]>(
   ...arrays: { [K in keyof T]: T[K][] }
 ): T[] {
-  const arrLength = arrays.map((i) => i.length);
+  let minLength = minOf(arrays, (it) => it.length);
+  if (minLength === undefined) minLength = 0;
 
-  const returnLength = Math.min(...arrLength);
+  const ret: T[] = new Array(minLength);
 
-  const ret: T[] = new Array(returnLength);
-
-  for (let i = 0; i < returnLength; i += 1) {
-    const arr = [];
-    for (const array of arrays) {
-      arr.push(array[i]);
-    }
+  for (let i = 0; i < minLength; i += 1) {
+    const arr = arrays.map((it) => it[i]);
     ret[i] = arr as T;
   }
 
