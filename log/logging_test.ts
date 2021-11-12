@@ -1,4 +1,10 @@
-import { buildDefaultLogMessage, buildLogger, LogHandler } from "./logging.ts";
+import {
+    buildDefaultLogMessage,
+    buildLogger,
+    defaultDispatch,
+    LogHandler,
+    toLoggableString,
+} from "./logging.ts";
 import { assert, assertEquals, assertMatch } from "../testing/asserts.ts";
 
 const testLevels = {
@@ -36,7 +42,86 @@ Deno.test("Custom handler gets called", () => {
   ]);
 });
 
-Deno.test("Default dispatching filters by level priority", () => {
+Deno.test("toLoggableString string conversions", () => {
+  assertEquals(toLoggableString(""), "");
+  assertEquals(toLoggableString(() => {}), "<Function>");
+  assertEquals(toLoggableString({ a: true }), `{"a":true}`);
+  assertEquals(toLoggableString(null), "null");
+  assertEquals(toLoggableString([1, 2]), "[1,2]");
+  assertEquals(toLoggableString(undefined), "undefined");
+  assertEquals(toLoggableString(Number.NaN), "NaN");
+});
+
+Deno.test("Default message formatter returns a string for any input", () => {
+  assertEquals(typeof buildDefaultLogMessage("some", "", ""), "string");
+  assertEquals(typeof buildDefaultLogMessage("some", () => {}, -15), "string");
+  assertEquals(typeof buildDefaultLogMessage("some", undefined, {}), "string");
+  assertEquals(typeof buildDefaultLogMessage("some", null, []), "string");
+  assertEquals(typeof buildDefaultLogMessage("some", [1, 2], null), "string");
+  assertEquals(
+    typeof buildDefaultLogMessage("some", { a: 15, b: "asdf" }, BigInt(-23)),
+    "string",
+  );
+  assertEquals(
+    typeof buildDefaultLogMessage("some", Number.NaN, Symbol.iterator),
+    "string",
+  );
+});
+
+Deno.test("Default message formatter formatting", () => {
+  const formattingTest = (data: unknown, endsIn: string) => {
+    const message = buildDefaultLogMessage("asdf", "test", data);
+
+    assertMatch(message, /^\[asdf\]\t\[.+\]/u);
+    assert(message.endsWith(endsIn), `Message ends with ${endsIn}`);
+  };
+
+  formattingTest(undefined, "test");
+  formattingTest({}, "{}");
+  formattingTest([], "[]");
+  formattingTest(5, "5");
+  formattingTest(null, "test");
+  formattingTest({ a: true, b: "asd" }, `{"a":true,"b":"asd"}`);
+  formattingTest(() => {}, "<Function>");
+});
+
+Deno.test("Default disptacher filters by urgency vs threshold", () => {
+    resetTestMessages();
+
+    const calls: Parameters<typeof testHandler>[] = [
+        [ "middle", 1 ],
+        [ "high", 5 ],
+        [ "low", 10 ],
+        [ "low", -2.2 ],
+        [ "high", 8 ],
+        [ "low", 1 ],
+        [ "middle", 0 ],
+        [ "low", 4 ],
+        [ "high", 23 ],
+    ];
+
+    calls.forEach(it => {
+        defaultDispatch(
+            testLevels,
+            "middle",
+            testHandler,
+            ...it,
+        )
+    });
+
+    assertEquals(
+        messages,
+        calls
+            .filter(
+                ([level]) => level !== "low"
+            )
+            .map(([...elements]) =>
+                 [ ...elements, undefined ]
+            ),
+     );
+});
+
+Deno.test("Default logger uses default dispatcher", () => {
   resetTestMessages();
 
   testLogger.middle(1);
@@ -57,6 +142,7 @@ Deno.test("Default dispatching filters by level priority", () => {
     ["high", 23, undefined],
   ]);
 });
+
 
 Deno.test("Custom dispatcher is in control", () => {
   resetTestMessages();
@@ -93,35 +179,3 @@ Deno.test("Custom dispatcher is in control", () => {
   ]);
 });
 
-Deno.test("Default message formatter returns a string for any input", () => {
-  assertEquals(typeof buildDefaultLogMessage("some", "", ""), "string");
-  assertEquals(typeof buildDefaultLogMessage("some", () => {}, -15), "string");
-  assertEquals(typeof buildDefaultLogMessage("some", undefined, {}), "string");
-  assertEquals(typeof buildDefaultLogMessage("some", null, []), "string");
-  assertEquals(typeof buildDefaultLogMessage("some", [1, 2], null), "string");
-  assertEquals(
-    typeof buildDefaultLogMessage("some", { a: 15, b: "asdf" }, BigInt(-23)),
-    "string",
-  );
-  assertEquals(
-    typeof buildDefaultLogMessage("some", Number.NaN, Symbol.iterator),
-    "string",
-  );
-});
-
-Deno.test("Default message formatter formatting", () => {
-  const formattingTest = (data: unknown, endsIn: string) => {
-    const message = buildDefaultLogMessage("asdf", "test", data);
-
-    assertMatch(message, /^\[asdf\]\t\[.+\]/u);
-    assert(message.endsWith(endsIn), `Message ends with ${endsIn}`);
-  };
-
-  formattingTest(undefined, "test");
-  formattingTest({}, "{}");
-  formattingTest([], "[]");
-  formattingTest(5, "5");
-  formattingTest(null, "test");
-  formattingTest({ a: true, b: "asd" }, `{"a":true,"b":"asd"}`);
-  formattingTest(() => {}, "<Function>");
-});
