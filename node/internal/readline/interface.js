@@ -398,7 +398,7 @@ export class Interface extends InterfaceConstructor {
       if (this.removeHistoryDuplicates) {
         // Remove older history line if identical to new one
         const dupIndex = this.history.indexOf(this.line);
-        if (dupIndex !== -1) this.history.slice(dupIndex, 1);
+        if (dupIndex !== -1) this.history.splice(dupIndex, 1);
       }
 
       this.history.unshift(this.line);
