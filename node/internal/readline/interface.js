@@ -898,7 +898,7 @@ export class Interface extends InterfaceConstructor {
       !key.shift
     ) {
       if (this[kSubstringSearch] === null) {
-        this[kSubstringSearch] = line.slice(
+        this[kSubstringSearch] = this.line.slice(
           0,
           this.cursor,
         );
