@@ -58,10 +58,11 @@ export function EventEmitter(opts) {
   EventEmitter.init.call(this, opts);
 }
 export default EventEmitter;
+EventEmitter.on = on;
 EventEmitter.once = once;
+EventEmitter.getEventListeners = getEventListeners;
 // Backwards-compat with node 0.10.x
 EventEmitter.EventEmitter = EventEmitter;
-
 EventEmitter.usingDomains = false;
 
 EventEmitter.captureRejectionSymbol = kRejection;

@@ -774,16 +774,17 @@ assert.strictEqual(getStringWidth('\u001b[31m> \u001b[39m> '), 4);
 assert.strictEqual(getStringWidth('\u001b[31m\u001b[39m'), 0);
 assert.strictEqual(getStringWidth('> '), 2);
 
+// FIXME(bartlomieju): this causes hang
 // Check EventEmitter memory leak
-for (let i = 0; i < 12; i++) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-  rl.close();
-  assert.strictEqual(isWarned(process.stdin._events), false);
-  assert.strictEqual(isWarned(process.stdout._events), false);
-}
+// for (let i = 0; i < 12; i++) {
+//   const rl = readline.createInterface({
+//     input: process.stdin,
+//     output: process.stdout
+//   });
+//   rl.close();
+//   assert.strictEqual(isWarned(process.stdin._events), false);
+//   assert.strictEqual(isWarned(process.stdout._events), false);
+// }
 
 [true, false].forEach((terminal) => {
   // Disable history
@@ -1160,47 +1161,48 @@ for (let i = 0; i < 12; i++) {
   rl.cursor = rl.line.length;
 }
 
-{
-  const fi = new FakeInput();
-  const signal = AbortSignal.abort();
+// FIXME(bartlomieju): these tests depend on "event_target" module
+// {
+//   const fi = new FakeInput();
+//   const signal = AbortSignal.abort();
 
-  const rl = readline.createInterface({
-    input: fi,
-    output: fi,
-    signal,
-  });
-  rl.on('close', common.mustCall());
-  assert.strictEqual(getEventListeners(signal, 'abort').length, 0);
-}
+//   const rl = readline.createInterface({
+//     input: fi,
+//     output: fi,
+//     signal,
+//   });
+//   rl.on('close', common.mustCall());
+//   assert.strictEqual(getEventListeners(signal, 'abort').length, 0);
+// }
 
-{
-  const fi = new FakeInput();
-  const ac = new AbortController();
-  const { signal } = ac;
-  const rl = readline.createInterface({
-    input: fi,
-    output: fi,
-    signal,
-  });
-  assert.strictEqual(getEventListeners(signal, 'abort').length, 1);
-  rl.on('close', common.mustCall());
-  ac.abort();
-  assert.strictEqual(getEventListeners(signal, 'abort').length, 0);
-}
+// {
+//   const fi = new FakeInput();
+//   const ac = new AbortController();
+//   const { signal } = ac;
+//   const rl = readline.createInterface({
+//     input: fi,
+//     output: fi,
+//     signal,
+//   });
+//   assert.strictEqual(getEventListeners(signal, 'abort').length, 1);
+//   rl.on('close', common.mustCall());
+//   ac.abort();
+//   assert.strictEqual(getEventListeners(signal, 'abort').length, 0);
+// }
 
-{
-  const fi = new FakeInput();
-  const ac = new AbortController();
-  const { signal } = ac;
-  const rl = readline.createInterface({
-    input: fi,
-    output: fi,
-    signal,
-  });
-  assert.strictEqual(getEventListeners(signal, 'abort').length, 1);
-  rl.close();
-  assert.strictEqual(getEventListeners(signal, 'abort').length, 0);
-}
+// {
+//   const fi = new FakeInput();
+//   const ac = new AbortController();
+//   const { signal } = ac;
+//   const rl = readline.createInterface({
+//     input: fi,
+//     output: fi,
+//     signal,
+//   });
+//   assert.strictEqual(getEventListeners(signal, 'abort').length, 1);
+//   rl.close();
+//   assert.strictEqual(getEventListeners(signal, 'abort').length, 0);
+// }
 
 {
   // Constructor throws if signal is not an abort signal

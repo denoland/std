@@ -139,7 +139,7 @@ Interface.prototype.question = function (query, options, cb) {
   }
 
   if (typeof cb === "function") {
-    FunctionPrototypeCall.prototype.call(superQuestion, this, query, cb);
+    superQuestion.call(this, query, cb);
   }
 };
 Interface.prototype.question[promisify.custom] = function (query, options) {
