@@ -48,7 +48,7 @@ declare namespace Events {
   interface NodeEventTarget {
     once(eventName: string | symbol, listener: (...args: any[]) => void): this;
   }
-  interface DOMEventTarget {
+  interface EventTarget {
     addEventListener(
       eventName: string,
       listener: (...args: any[]) => void,
@@ -497,7 +497,7 @@ declare namespace Events {
       options?: StaticEventEmitterOptions,
     ): Promise<any[]>;
     static once(
-      emitter: DOMEventTarget,
+      emitter: EventTarget,
       eventName: string,
       options?: StaticEventEmitterOptions,
     ): Promise<any[]>;
@@ -612,7 +612,7 @@ declare namespace Events {
      * @since v15.2.0
      */
     static getEventListeners(
-      emitter: DOMEventTarget | EventEmitter,
+      emitter: EventTarget | EventEmitter,
       name: string | symbol,
     ): Function[];
     /**
