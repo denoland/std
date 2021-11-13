@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { notImplemented } from "./_utils.ts";
-import { EventEmitter } from "./events.ts";
+import { EventEmitter } from "./events.js";
 import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./_net.ts";
 import type { DuplexOptions } from "./_stream/duplex.ts";
 import type { WritableEncodings } from "./_stream/writable.ts";
@@ -2404,7 +2404,8 @@ export class Server extends EventEmitter {
     this._usingWorkers = true;
     this._workers.push(socketList);
 
-    socketList.once("exit", (socketList) => {
+    // deno-lint-ignore no-explicit-any
+    socketList.once("exit", (socketList: any) => {
       const index = this._workers.indexOf(socketList);
       this._workers.splice(index, 1);
     });

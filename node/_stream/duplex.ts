@@ -1,5 +1,5 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
-import { captureRejectionSymbol } from "../events.ts";
+import { captureRejectionSymbol } from "../events.js";
 import Readable, { ReadableState } from "./readable.ts";
 import Stream from "./stream.ts";
 import Writable, { WritableState } from "./writable.ts";
@@ -70,6 +70,7 @@ export interface DuplexOptions {
   writev?: writeV;
 }
 
+// @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
 interface Duplex extends Readable, Writable {}
 
 /**
@@ -463,6 +464,7 @@ class Duplex extends Stream {
     return ret;
   }
 
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeAllListeners(
     ev:
       | "close"
@@ -484,18 +486,23 @@ class Duplex extends Stream {
     return res;
   }
 
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     event: "close" | "end" | "pause" | "readable" | "resume",
     listener: () => void,
   ): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   // deno-lint-ignore no-explicit-any
   removeListener(event: "data", listener: (chunk: any) => void): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(event: "error", listener: (err: Error) => void): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     event: string | symbol,
     // deno-lint-ignore no-explicit-any
     listener: (...args: any[]) => void,
   ): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     ev: string | symbol,
     fn:
@@ -505,13 +512,14 @@ class Duplex extends Stream {
       | ((err: Error) => void)
       // deno-lint-ignore no-explicit-any
       | ((...args: any[]) => void),
-  ) {
+  ): this {
     const res = super.removeListener.call(this, ev, fn);
 
     if (ev === "readable") {
       queueMicrotask(() => updateReadableListening(this));
     }
 
+    // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
     return res;
   }
 
