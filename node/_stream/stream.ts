@@ -2,7 +2,7 @@
 import { Buffer } from "../buffer.ts";
 import type Duplex from "./duplex.ts";
 import type eos from "./end_of_stream.ts";
-import EventEmitter from "../events.ts";
+import EventEmitter from "../events.js";
 import type PassThrough from "./passthrough.ts";
 import type pipeline from "./pipeline.ts";
 import type * as promises from "./promises.ts";

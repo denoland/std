@@ -177,7 +177,7 @@ export function destroy(this: Writable, err?: Error | null, cb?: () => void) {
   w.destroyed = true;
 
   if (!w.constructed) {
-    this.once(kDestroy, (er) => {
+    this.once(kDestroy, (er: Error) => {
       _destroy(this, err || er, cb);
     });
   } else {

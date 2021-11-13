@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { warnNotImplemented } from "./_utils.ts";
-import { EventEmitter } from "./events.ts";
+import { EventEmitter } from "./events.js";
 import { fromFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { Readable, Writable } from "./stream.ts";
@@ -441,16 +441,21 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_platform */
   platform = platform;
 
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeAllListeners(eventName?: string | symbol): this {
+    // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
     return super.removeAllListeners(eventName);
   }
 
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     event: typeof notImplementedEvents[number],
     //deno-lint-ignore ban-types
     listener: Function,
   ): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(event: "exit", listener: (code: number) => void): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   //deno-lint-ignore no-explicit-any
   removeListener(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {

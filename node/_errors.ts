@@ -44,6 +44,19 @@ const kTypes = [
 
 const nodeInternalPrefix = "__node_internal_";
 
+// Node uses an AbortError that isn't exactly the same as the DOMException
+// to make usage of the error in userland and readable-stream easier.
+// It is a regular error with `.code` and `.name`.
+export class AbortError extends Error {
+  code: string;
+
+  constructor() {
+    super("The operation was aborted");
+    this.code = "ABORT_ERR";
+    this.name = "AbortError";
+  }
+}
+
 // deno-lint-ignore no-explicit-any
 type GenericFunction = (...args: any[]) => any;
 
