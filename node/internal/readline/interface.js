@@ -33,7 +33,7 @@ import {
   getStringWidth,
   stripVTControlCharacters,
 } from "../util/inspect.js";
-import EventEmitter from "../../events.ts";
+import EventEmitter from "../../events.js";
 import { emitKeypressEvents } from "./emitKeypressEvents.js";
 import {
   charLengthAt,
