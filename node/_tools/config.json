@@ -225,6 +225,7 @@
       "test-readline-keys.js",
       "test-readline-position.js",
       "test-readline-reopen.js",
+      "test-readline-set-raw-mode.js",
       "test-readline-undefined-columns.js",
       "test-readline.js",
       "test-stream-await-drain-writers-in-synchronously-recursion-write.js",
