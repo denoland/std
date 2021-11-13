@@ -20,7 +20,9 @@
       "test-dns-lookup.js",
       "test-dns.js",
       "test-event-emitter-errors.js",
+      "test-event-emitter-max-listeners.js",
       "test-event-emitter-no-error-provided-to-error-event.js",
+      "test-event-emitter-prepend.js",
       "test-net-access-byteswritten.js",
       "test-net-after-close.js",
       "test-net-bytes-stats.js",
@@ -43,6 +45,8 @@
       "test-querystring.js",
       "test-readline-csi.js",
       "test-readline-interface.js",
+      "test-stream-pipe-event.js",
+      "test-stream-readable-event.js",
       "test-url-format-whatwg.js",
       "test-url-urltooptions.js",
       "test-util.js"

@@ -3,7 +3,7 @@ import { once } from "../_utils.ts";
 import { destroyer as implDestroyer } from "./destroy.ts";
 import eos from "./end_of_stream.ts";
 import createReadableStreamAsyncIterator from "./async_iterator.ts";
-import * as events from "../events.ts";
+import * as events from "../events.js";
 import PassThrough from "./passthrough.ts";
 import {
   ERR_INVALID_ARG_TYPE,
@@ -84,7 +84,7 @@ function destroyer(
   return (err: NodeErrorAbstraction) => {
     if (finished) return;
     finished = true;
-    implDestroyer(stream, err);
+    implDestroyer(stream as unknown as Stream, err);
     callback(err || new ERR_STREAM_DESTROYED("pipe"));
   };
 }
@@ -153,7 +153,7 @@ async function pump(
     for await (const chunk of iterable) {
       if (!writable.write(chunk)) {
         if (writable.destroyed) return;
-        await events.once(writable, "drain");
+        await events.once(writable as unknown as Stream, "drain");
       }
     }
     writable.end();

@@ -88,6 +88,12 @@ export function validateNumber(value: unknown, name: string) {
   }
 }
 
+export function validateBoolean(value: unknown, name: string) {
+  if (typeof value !== "boolean") {
+    throw new ERR_INVALID_ARG_TYPE(name, "boolean", value);
+  }
+}
+
 export const validateOneOf = hideStackFrames(
   (value: unknown, name: string, oneOf: unknown[]) => {
     if (!Array.prototype.includes.call(oneOf, value)) {

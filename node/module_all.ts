@@ -6,7 +6,7 @@ import console from "./console.ts";
 import constants from "./constants.ts";
 import crypto from "./crypto.ts";
 import dns from "./dns.ts";
-import events from "./events.ts";
+import events from "./events.js";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
 import internalUtilInspect from "./internal/util/inspect.js";

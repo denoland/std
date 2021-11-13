@@ -1,7 +1,7 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
 import { Buffer } from "../buffer.ts";
 import Stream from "./stream.ts";
-import { captureRejectionSymbol } from "../events.ts";
+import { captureRejectionSymbol } from "../events.js";
 import {
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_OPT_VALUE,

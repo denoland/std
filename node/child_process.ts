@@ -3,7 +3,7 @@
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
 import { assert } from "../_util/assert.ts";
-import { EventEmitter } from "./events.ts";
+import { EventEmitter } from "./events.js";
 import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
@@ -422,7 +422,7 @@ function normalizeStdioOption(
 
 function waitForReadableToClose(readable: Readable): Promise<void> {
   readable.resume(); // Ensure buffered data will be consumed.
-  return waitForStreamToClose(readable);
+  return waitForStreamToClose(readable as unknown as Stream);
 }
 
 function waitForStreamToClose(stream: Stream): Promise<void> {

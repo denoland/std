@@ -151,7 +151,7 @@ export function finishMaybe(
   sync?: boolean,
 ) {
   if (needFinish(state)) {
-    prefinish(stream as Writable, state);
+    prefinish(stream as unknown as Writable, state);
     if (state.pendingcb === 0 && needFinish(state)) {
       state.pendingcb++;
       if (sync) {
@@ -210,7 +210,7 @@ export function onwrite(stream: Duplex, er?: Error | null) {
         state.afterWriteTickInfo = {
           count: 1,
           cb: (cb as (error?: Error) => void),
-          stream: stream as Writable,
+          stream: stream as unknown as Writable,
           state,
         };
         queueMicrotask(() =>
@@ -218,7 +218,12 @@ export function onwrite(stream: Duplex, er?: Error | null) {
         );
       }
     } else {
-      afterWrite(stream as Writable, state, 1, cb as (error?: Error) => void);
+      afterWrite(
+        stream as unknown as Writable,
+        state,
+        1,
+        cb as (error?: Error) => void,
+      );
     }
   }
 }

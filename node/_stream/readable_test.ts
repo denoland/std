@@ -1,13 +1,14 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
 import { Buffer } from "../buffer.ts";
 import Readable from "../_stream/readable.ts";
-import { once } from "../events.ts";
+import { once } from "../events.js";
 import { deferred } from "../../async/mod.ts";
 import {
   assert,
   assertEquals,
   assertStrictEquals,
 } from "../../testing/asserts.ts";
+import type { EventEmitter } from "../events.d.ts";
 
 Deno.test("Readable stream from iterator", async () => {
   function* generate() {
@@ -85,7 +86,7 @@ Deno.test("Readable stream gets destroyed on error", async () => {
 
   stream.read();
 
-  const [err] = await once(stream, "error");
+  const [err] = await once(stream as unknown as EventEmitter, "error");
   assertStrictEquals(err.message, "kaboom");
   assertStrictEquals(stream.destroyed, true);
 });
@@ -265,7 +266,7 @@ Deno.test("Readable stream: 'on' event", async () => {
     assertStrictEquals(chunk, expected.shift());
   });
 
-  await once(stream, "end");
+  await once(stream as unknown as EventEmitter, "end");
 
   assertStrictEquals(iterations, 3);
 });
@@ -288,7 +289,7 @@ Deno.test("Readable stream: 'data' event", async () => {
     assertStrictEquals(chunk.toString(), expected.shift());
   });
 
-  await once(stream, "end");
+  await once(stream as unknown as EventEmitter, "end");
 
   assertStrictEquals(iterations, 3);
 });
@@ -311,7 +312,7 @@ Deno.test("Readable stream: 'data' event on non-object", async () => {
     assertStrictEquals(chunk.toString(), expected.shift());
   });
 
-  await once(stream, "end");
+  await once(stream as unknown as EventEmitter, "end");
 
   assertStrictEquals(iterations, 3);
 });
