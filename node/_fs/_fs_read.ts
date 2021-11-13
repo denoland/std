@@ -17,6 +17,7 @@ type BinaryCallback = (
 ) => void;
 type Callback = BinaryCallback;
 
+export function read(fd: number, callback: Callback): void;
 export function read(
   fd: number,
   options: readOptions,
@@ -32,8 +33,8 @@ export function read(
 ): void;
 export function read(
   fd: number,
-  optOrBuffer: Buffer | Uint8Array | readOptions,
-  offsetOrCallback: number | Callback,
+  optOrBuffer?: Buffer | Uint8Array | readOptions | Callback,
+  offsetOrCallback?: number | Callback,
   length?: number,
   position?: number | null,
   callback?: Callback,
@@ -42,15 +43,26 @@ export function read(
   let offset: number = 0,
     buffer: Buffer | Uint8Array;
 
+  if (length == null) {
+    length = 0;
+  }
+
   if (typeof offsetOrCallback === "function") {
     cb = offsetOrCallback;
+  } else if (typeof optOrBuffer === "undefined") {
+    cb = optOrBuffer;
   } else {
-    offset = offsetOrCallback;
+    offset = offsetOrCallback as number;
     cb = callback;
   }
 
-  if (optOrBuffer instanceof Buffer) {
+  if (optOrBuffer instanceof Buffer || optOrBuffer instanceof Uint8Array) {
     buffer = optOrBuffer;
+  } else if (typeof optOrBuffer === "function") {
+    offset = 0;
+    buffer = Buffer.alloc(16384);
+    length = buffer.byteLength;
+    position = null;
   } else {
     let opt = optOrBuffer as readOptions;
     offset = opt.offset;
@@ -59,15 +71,12 @@ export function read(
     length = opt.length;
   }
 
-  if (length == null) {
-    length = 0;
-  }
-
   assert(offset >= 0, "offset should be greater or equal to 0");
   assert(
     offset + length <= buffer.byteLength,
-    `buffer doesn't have enough data: byteLength = ${buffer.byteLength}, offset + length = ${offset +
-      length}`,
+    `buffer doesn't have enough data: byteLength = ${buffer.byteLength}, offset + length = ${
+      offset + length
+    }`,
   );
 
   if (buffer.byteLength == 0) {
@@ -95,7 +104,7 @@ export function read(
     if (err) {
       (callback as (err: Error) => void)(err);
     } else {
-      const data = new Buffer(buffer.buffer, offset, length);
+      const data = Buffer.from(buffer.buffer, offset, length);
       cb(null, numberOfBytesRead, data);
     }
   }

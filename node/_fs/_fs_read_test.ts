@@ -5,7 +5,7 @@ import {
   assertStrictEquals,
 } from "../../testing/asserts.ts";
 import { read } from "./_fs_read.ts";
-import { open } from "./_fs_open.ts";
+import { open, openSync } from "./_fs_open.ts";
 import { Buffer } from "../buffer.ts";
 import * as path from "../../path/mod.ts";
 import { closeSync } from "./_fs_close.ts";
@@ -96,5 +96,48 @@ Deno.test({
         );
       },
     );
+  },
+});
+
+Deno.test({
+  name: "[std/node/fs] Read fs.read(fd, options, cb) signature",
+  async fn() {
+    const file = Deno.makeTempFileSync();
+    Deno.writeTextFileSync(file, "hi there");
+    const fd = openSync(file, "r+");
+    const buf = Buffer.alloc(11);
+    await read(
+      fd,
+      {
+        buffer: buf,
+        offset: buf.byteOffset,
+        length: buf.byteLength,
+        position: null,
+      },
+      (err, bytesRead, data) => {
+        assertEquals(err, null);
+        assertStrictEquals(bytesRead, 8);
+        assertEquals(
+          data,
+          Buffer.from([104, 105, 32, 116, 104, 101, 114, 101, 0, 0, 0]),
+        );
+      },
+    );
+    closeSync(fd);
+  },
+});
+
+Deno.test({
+  name: "[std/node/fs] Read fs.read(fd, cb) signature",
+  async fn() {
+    const file = Deno.makeTempFileSync();
+    Deno.writeTextFileSync(file, "hi deno");
+    const fd = openSync(file, "r+");
+    await read(fd, (err, bytesRead, data) => {
+      assertEquals(err, null);
+      assertStrictEquals(bytesRead, 7);
+      assertStrictEquals(data?.byteLength, 16384);
+    });
+    closeSync(fd);
   },
 });
