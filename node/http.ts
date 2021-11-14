@@ -1,6 +1,6 @@
 import { Status as STATUS_CODES } from "../http/http_status.ts";
 import { Buffer } from "./buffer.ts";
-import { EventEmitter } from "./events.js";
+import { EventEmitter } from "./events.ts";
 import NodeReadable from "./_stream/readable.ts";
 import NodeWritable from "./_stream/writable.ts";
 

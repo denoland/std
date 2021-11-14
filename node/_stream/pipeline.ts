@@ -3,7 +3,7 @@ import { once } from "../_utils.ts";
 import { destroyer as implDestroyer } from "./destroy.ts";
 import eos from "./end_of_stream.ts";
 import createReadableStreamAsyncIterator from "./async_iterator.ts";
-import * as events from "../events.js";
+import * as events from "../events.ts";
 import PassThrough from "./passthrough.ts";
 import {
   ERR_INVALID_ARG_TYPE,
