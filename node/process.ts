@@ -135,6 +135,9 @@ interface _Readable extends Readable {
   destroySoon: Readable["destroy"];
   fd: number;
   _isStdio: undefined;
+  _isRawMode: boolean;
+  get isRaw(): boolean
+  setRawMode(enable: boolean): this;
 }
 
 interface _Writable extends Writable {
@@ -216,6 +219,19 @@ Object.defineProperty(stdin, "isTTY", {
   configurable: true,
   get() {
     return Deno.isatty(Deno.stdin.rid);
+  },
+});
+stdin._isRawMode = false;
+stdin.setRawMode = (enable) => {
+  Deno.setRaw(Deno.stdin.rid, enable);
+  stdin._isRawMode = enable;
+  return stdin;
+};
+Object.defineProperty(stdin, "isRaw", {
+  enumerable: true,
+  configurable: true,
+  get() {
+    return stdin._isRawMode;
   },
 });
 
