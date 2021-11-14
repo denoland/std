@@ -122,9 +122,7 @@ export function isBuffer(value: unknown): boolean {
   return Buffer.isBuffer(value);
 }
 
-/**
- * @deprecated Use Object.assign() instead.
- */
+/** @deprecated Use Object.assign() instead. */
 export function _extend(
   target: Record<string, unknown>,
   source: unknown,
