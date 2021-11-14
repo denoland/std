@@ -266,6 +266,23 @@ testWalk(
   },
 );
 
+// https://github.com/denoland/deno_std/issues/1358
+testWalk(
+  async (d: string) => {
+    await Deno.mkdir(d + "/a");
+    await touch(d + "/a/x");
+    await touch(d + "/a/y");
+    await touch(d + "/b");
+    await Deno.symlink(d + "/b", d + "/a/bb");
+  },
+  async function symlinkPointsToFile() {
+    assertReady(5);
+    const files = await walkArray("a", { followSymlinks: true });
+    assertEquals(files.length, 4);
+    assert(files.some((f): boolean => f.endsWith("/b")));
+  },
+);
+
 testWalk(
   async (d: string) => {
     await Deno.mkdir(d + "/a/b", { recursive: true });
