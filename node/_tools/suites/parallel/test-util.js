@@ -112,20 +112,18 @@ assert.strictEqual(util.isPrimitive(Infinity), true);
 assert.strictEqual(util.isPrimitive(NaN), true);
 assert.strictEqual(util.isPrimitive(Symbol('symbol')), true);
 
-// TODO(wafuwafu13): Enable this when `isBuffer` is ready.
 // isBuffer
-// assert.strictEqual(util.isBuffer('foo'), false);
-// assert.strictEqual(util.isBuffer(Buffer.from('foo')), true);
+assert.strictEqual(util.isBuffer('foo'), false);
+assert.strictEqual(util.isBuffer(Buffer.from('foo')), true);
 
-// TODO(wafuwafu13): Enable this when `_extend` is ready.
 // _extend
-// assert.deepStrictEqual(util._extend({ a: 1 }), { a: 1 });
-// assert.deepStrictEqual(util._extend({ a: 1 }, []), { a: 1 });
-// assert.deepStrictEqual(util._extend({ a: 1 }, null), { a: 1 });
-// assert.deepStrictEqual(util._extend({ a: 1 }, true), { a: 1 });
-// assert.deepStrictEqual(util._extend({ a: 1 }, false), { a: 1 });
-// assert.deepStrictEqual(util._extend({ a: 1 }, { b: 2 }), { a: 1, b: 2 });
-// assert.deepStrictEqual(util._extend({ a: 1, b: 2 }, { b: 3 }), { a: 1, b: 3 });
+assert.deepStrictEqual(util._extend({ a: 1 }), { a: 1 });
+assert.deepStrictEqual(util._extend({ a: 1 }, []), { a: 1 });
+assert.deepStrictEqual(util._extend({ a: 1 }, null), { a: 1 });
+assert.deepStrictEqual(util._extend({ a: 1 }, true), { a: 1 });
+assert.deepStrictEqual(util._extend({ a: 1 }, false), { a: 1 });
+assert.deepStrictEqual(util._extend({ a: 1 }, { b: 2 }), { a: 1, b: 2 });
+assert.deepStrictEqual(util._extend({ a: 1, b: 2 }, { b: 3 }), { a: 1, b: 3 });
 
 // deprecated
 assert.strictEqual(util.isBoolean(true), true);
