@@ -1,4 +1,4 @@
-// deno-lint-ignore-file
+// deno-lint-ignore-file no-explicit-any
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/9b9cd671114a2a5178809798d8e7f4d8ca6c2671/types/node/events.d.ts
 
@@ -36,6 +36,7 @@ export const errorMonitor: unique symbol;
 export function getEventListeners(
   emitter: EventTarget | EventEmitter,
   name: string | symbol,
+  // deno-lint-ignore ban-types
 ): Function[];
 
 /**
