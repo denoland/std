@@ -1,5 +1,5 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
-import { captureRejectionSymbol } from "../events.js";
+import { captureRejectionSymbol } from "../events.ts";
 import Stream from "./stream.ts";
 import type { Buffer } from "../buffer.ts";
 import BufferList from "./buffer_list.ts";

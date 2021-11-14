@@ -1,5 +1,6 @@
 // TODO(Soremwar)
 // This implementation has an unreliable indexOf, includes and base64url encoding implementation
+// It also lacks the resolveObjectURL, transcode and INSPECT_MAX_BYTES exports
 
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // Copyright Feross Aboukhadijeh, and other contributors. All rights reserved. MIT license.
@@ -2081,7 +2082,14 @@ function BufferBigIntNotDefined() {
   throw new Error("BigInt not supported");
 }
 
+export const atob = globalThis.atob;
+export const Blob = globalThis.Blob;
+export const btoa = globalThis.btoa;
+
 export default {
+  atob,
+  btoa,
+  Blob,
   Buffer,
   constants,
   kMaxLength,

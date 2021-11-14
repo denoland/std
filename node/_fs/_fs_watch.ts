@@ -1,5 +1,5 @@
 import { fromFileUrl } from "../path.ts";
-import { EventEmitter } from "../events.js";
+import { EventEmitter } from "../events.ts";
 import { notImplemented } from "../_utils.ts";
 
 export function asyncIterableIteratorToCallback<T>(

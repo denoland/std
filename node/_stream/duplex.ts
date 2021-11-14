@@ -1,5 +1,5 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
-import { captureRejectionSymbol } from "../events.js";
+import { captureRejectionSymbol } from "../events.ts";
 import Readable, { ReadableState } from "./readable.ts";
 import Stream from "./stream.ts";
 import Writable, { WritableState } from "./writable.ts";

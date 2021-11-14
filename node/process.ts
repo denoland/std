@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { warnNotImplemented } from "./_utils.ts";
-import { EventEmitter } from "./events.js";
+import { EventEmitter } from "./events.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 import { Readable, Writable } from "./stream.ts";

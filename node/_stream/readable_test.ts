@@ -1,14 +1,14 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
 import { Buffer } from "../buffer.ts";
 import Readable from "../_stream/readable.ts";
-import { once } from "../events.js";
+import { once } from "../events.ts";
 import { deferred } from "../../async/mod.ts";
 import {
   assert,
   assertEquals,
   assertStrictEquals,
 } from "../../testing/asserts.ts";
-import type { EventEmitter } from "../events.d.ts";
+import type { EventEmitter } from "../events.ts";
 
 Deno.test("Readable stream from iterator", async () => {
   function* generate() {
