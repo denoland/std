@@ -2,7 +2,6 @@
 import { Encodings, notImplemented } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
-import { writeAll, writeAllSync } from "../../streams/conversion.ts";
 import {
   CallbackWithError,
   checkEncoding,
@@ -12,6 +11,7 @@ import {
   WriteFileOptions,
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
+import { AbortError } from "../_errors.ts";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -58,7 +58,10 @@ export function writeFile(
         await Deno.chmod(pathOrRid as string, mode);
       }
 
-      await writeAll(file, data as Uint8Array);
+      const signal: AbortSignal | undefined = isFileOptions(options)
+        ? options.signal
+        : undefined;
+      await writeAll(file, data as Uint8Array, { signal });
     } catch (e) {
       error = e instanceof Error ? e : new Error("[non-error thrown]");
     } finally {
@@ -103,7 +106,10 @@ export function writeFileSync(
       Deno.chmodSync(pathOrRid as string, mode);
     }
 
-    writeAllSync(file, data as Uint8Array);
+    const signal: AbortSignal | undefined = isFileOptions(options)
+      ? options.signal
+      : undefined;
+    writeAllSync(file, data as Uint8Array, { signal });
   } catch (e) {
     error = e instanceof Error ? e : new Error("[non-error thrown]");
   } finally {
@@ -112,4 +118,58 @@ export function writeFileSync(
   }
 
   if (error) throw error;
+}
+
+interface WriteAllOptions {
+  offset?: number;
+  length?: number;
+  signal?: AbortSignal;
+}
+
+function writeAllSync(
+  w: Deno.WriterSync,
+  arr: Uint8Array,
+  options: WriteAllOptions = {},
+): void {
+  const { offset = 0, length = arr.byteLength, signal } = options;
+  checkAborted(signal);
+
+  const written = w.writeSync(arr.subarray(offset, offset + length));
+
+  if (written === length) {
+    return;
+  }
+
+  writeAllSync(w, arr, {
+    offset: offset + written,
+    length: length - written,
+    signal,
+  });
+}
+
+async function writeAll(
+  w: Deno.Writer,
+  arr: Uint8Array,
+  options: WriteAllOptions = {},
+) {
+  const { offset = 0, length = arr.byteLength, signal } = options;
+  checkAborted(signal);
+
+  const written = await w.write(arr.subarray(offset, offset + length));
+
+  if (written === length) {
+    return;
+  }
+
+  await writeAll(w, arr, {
+    offset: offset + written,
+    length: length - written,
+    signal,
+  });
+}
+
+function checkAborted(signal?: AbortSignal) {
+  if (signal?.aborted) {
+    throw new AbortError();
+  }
 }
