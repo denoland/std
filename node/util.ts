@@ -126,7 +126,7 @@ export function isBuffer(value: unknown): boolean {
 export function _extend(
   target: Record<string, unknown>,
   source: unknown,
-): unknown {
+): Record<string, unknown> {
   // Don't do anything if source isn't an object
   if (source === null || typeof source !== "object") return target;
 
