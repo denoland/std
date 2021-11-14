@@ -216,7 +216,20 @@ interface EventTarget {
 interface StaticEventEmitterOptions {
   signal?: AbortSignal | undefined;
 }
-export interface EventEmitter {
+/**
+ * The `EventEmitter` class is defined and exposed by the `events` module:
+ *
+ * ```js
+ * const EventEmitter = require('events');
+ * ```
+ *
+ * All `EventEmitter`s emit the event `'newListener'` when new listeners are
+ * added and `'removeListener'` when existing listeners are removed.
+ *
+ * It supports the following option:
+ * @since v0.1.26
+ */
+export class EventEmitter {
   /**
    * Alias for `emitter.on(eventName, listener)`.
    * @since v0.1.26
@@ -549,21 +562,7 @@ export interface EventEmitter {
    * @since v6.0.0
    */
   eventNames(): Array<string | symbol>;
-}
-/**
- * The `EventEmitter` class is defined and exposed by the `events` module:
- *
- * ```js
- * const EventEmitter = require('events');
- * ```
- *
- * All `EventEmitter`s emit the event `'newListener'` when new listeners are
- * added and `'removeListener'` when existing listeners are removed.
- *
- * It supports the following option:
- * @since v0.1.26
- */
-export class EventEmitter {
+
   constructor(options?: EventEmitterOptions);
   /**
    * Creates a `Promise` that is fulfilled when the `EventEmitter` emits the given
