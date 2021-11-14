@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { notImplemented } from "./_utils.ts";
-import { EventEmitter } from "./events.js";
+import { EventEmitter } from "./events.ts";
 import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./_net.ts";
 import type { DuplexOptions } from "./_stream/duplex.ts";
 import type { WritableEncodings } from "./_stream/writable.ts";

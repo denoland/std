@@ -3,7 +3,7 @@
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
 import { assert } from "../_util/assert.ts";
-import { EventEmitter } from "./events.js";
+import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
