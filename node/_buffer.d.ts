@@ -22,8 +22,6 @@ type WithImplicitCoercion<T> =
     valueOf(): T;
   };
 
-export const Blob: Blob;
-
 /**
  * `Buffer` objects are used to represent a fixed-length sequence of bytes. Many
  * Node.js APIs support `Buffer`s.
@@ -2045,4 +2043,31 @@ export class Buffer extends Uint8Array {
   values(): IterableIterator<number>;
 }
 
-export default Buffer;
+export const SlowBuffer: {
+  /** @deprecated since v6.0.0, use `Buffer.allocUnsafeSlow()` */
+  new (size: number): Buffer;
+  prototype: Buffer;
+};
+
+export const atob: typeof globalThis.atob;
+export const Blob: Blob;
+export const btoa: typeof globalThis.btoa;
+export const constants: {
+  MAX_LENGTH: number;
+  MAX_STRING_LENGTH: number;
+};
+export const kMaxLength: number;
+export const kStringMaxLength: number;
+
+declare const exports: {
+  atob: typeof atob;
+  Blob: Blob;
+  btoa: typeof btoa;
+  Buffer: Buffer;
+  constants: typeof constants;
+  kMaxLength: typeof kMaxLength;
+  kStringMaxLength: typeof kStringMaxLength;
+  SlowBuffer: typeof SlowBuffer;
+};
+
+export default exports;
