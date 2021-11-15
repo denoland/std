@@ -11,6 +11,7 @@ import {
   ERR_STREAM_PREMATURE_CLOSE,
   NodeErrorAbstraction,
 } from "../_errors.ts";
+import { nextTick } from "../_next_tick.ts";
 
 export type StreamImplementations = Duplex | Readable | Stream | Writable;
 
@@ -218,7 +219,7 @@ export default function eos(
   );
 
   if (closed) {
-    queueMicrotask(callback);
+    nextTick(callback);
   }
 
   return function () {

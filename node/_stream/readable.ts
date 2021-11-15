@@ -31,6 +31,7 @@ import Writable from "./writable.ts";
 import { errorOrDestroy as errorOrDestroyWritable } from "./writable_internal.ts";
 import Duplex, { errorOrDestroy as errorOrDestroyDuplex } from "./duplex.ts";
 import { debuglog } from "../_util/_debuglog.ts";
+import { nextTick } from "../_next_tick.ts";
 
 let debug = debuglog("stream", (fn) => {
   debug = fn;
@@ -273,7 +274,7 @@ class Readable extends Stream {
 
     const endFn = doEnd ? onend : unpipe;
     if (state.endEmitted) {
-      queueMicrotask(endFn);
+      nextTick(endFn);
     } else {
       this.once("end", endFn);
     }
@@ -451,7 +452,7 @@ class Readable extends Stream {
         if (state.length) {
           emitReadable(this);
         } else if (!state.reading) {
-          queueMicrotask(() => nReadingNextTick(this));
+          nextTick(nReadingNextTick, this);
         }
       }
     }
@@ -489,7 +490,7 @@ class Readable extends Stream {
     const res = super.removeListener.call(this, ev, fn);
 
     if (ev === "readable") {
-      queueMicrotask(() => updateReadableListening(this));
+      nextTick(updateReadableListening, this);
     }
 
     // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
@@ -617,7 +618,7 @@ class Readable extends Stream {
     const res = super.removeAllListeners(ev);
 
     if (ev === "readable" || ev === undefined) {
-      queueMicrotask(() => updateReadableListening(this));
+      nextTick(updateReadableListening, this);
     }
 
     return res;

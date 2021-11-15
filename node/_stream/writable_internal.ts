@@ -4,6 +4,7 @@ import type Writable from "./writable.ts";
 import type { WritableState } from "./writable.ts";
 import { kDestroy } from "./symbols.ts";
 import { ERR_MULTIPLE_CALLBACK, ERR_STREAM_DESTROYED } from "../_errors.ts";
+import { nextTick } from "../_next_tick.ts";
 
 export type writeV = (
   // deno-lint-ignore no-explicit-any
@@ -44,7 +45,7 @@ function _destroy(
     }
 
     if (err) {
-      queueMicrotask(() => {
+      nextTick(() => {
         if (!w.errorEmitted) {
           w.errorEmitted = true;
           self.emit("error", err);
@@ -55,7 +56,7 @@ function _destroy(
         }
       });
     } else {
-      queueMicrotask(() => {
+      nextTick(() => {
         w.closeEmitted = true;
         if (w.emitClose) {
           self.emit("close");
@@ -248,7 +249,7 @@ export function errorOrDestroy(stream: Writable, err: Error, sync = false) {
       w.errored = err;
     }
     if (sync) {
-      queueMicrotask(() => {
+      nextTick(() => {
         if (w.errorEmitted) {
           return;
         }
@@ -294,7 +295,7 @@ export function finishMaybe(
     if (state.pendingcb === 0 && needFinish(state)) {
       state.pendingcb++;
       if (sync) {
-        queueMicrotask(() => finish(stream, state));
+        nextTick(finish, stream, state);
       } else {
         finish(stream, state);
       }
@@ -358,7 +359,7 @@ export function onwrite(stream: Writable, er?: Error | null) {
     }
 
     if (sync) {
-      queueMicrotask(() => onwriteError(stream, state, er, cb));
+      nextTick(onwriteError, stream, state, er, cb);
     } else {
       onwriteError(stream, state, er, cb);
     }
@@ -380,8 +381,9 @@ export function onwrite(stream: Writable, er?: Error | null) {
           stream,
           state,
         };
-        queueMicrotask(() =>
-          afterWriteTick(state.afterWriteTickInfo as AfterWriteTick)
+        nextTick(
+          afterWriteTick,
+          state.afterWriteTickInfo as AfterWriteTick,
         );
       }
     } else {
@@ -408,7 +410,7 @@ export function prefinish(stream: Writable, state: WritableState) {
           state.prefinished = true;
           stream.emit("prefinish");
           state.pendingcb++;
-          queueMicrotask(() => finish(stream, state));
+          nextTick(finish, stream, state);
         }
       });
       state.sync = false;
