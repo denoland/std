@@ -4,6 +4,7 @@ import { closeSync } from "./_fs_close.ts";
 import { existsSync } from "../../fs/exists.ts";
 import { join } from "../../path/mod.ts";
 import { assertCallbackErrorUncaught } from "../_utils.ts";
+import { isWindows } from "../../_util/os.ts";
 
 Deno.test({
   name: "ASYNC: removing empty folder",
@@ -65,7 +66,7 @@ Deno.test({
         closeRes(rBefore, rAfter);
       });
   },
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
 });
 
 Deno.test({
@@ -83,7 +84,7 @@ Deno.test({
     const rAfter = Deno.resources();
     closeRes(rBefore, rAfter);
   },
-  ignore: Deno.build.os === "windows",
+  ignore: isWindows,
 });
 
 Deno.test("[std/node/fs] rmdir callback isn't called twice if error is thrown", async () => {

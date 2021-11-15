@@ -2,7 +2,7 @@
 import { Encodings, notImplemented } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
-import { writeAll, writeAllSync } from "../../io/util.ts";
+import { writeAll, writeAllSync } from "../../streams/conversion.ts";
 import {
   CallbackWithError,
   checkEncoding,
@@ -11,6 +11,7 @@ import {
   isFileOptions,
   WriteFileOptions,
 } from "./_fs_common.ts";
+import { isWindows } from "../../_util/os.ts";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -53,13 +54,13 @@ export function writeFile(
         : await Deno.open(pathOrRid as string, openOptions);
 
       if (!isRid && mode) {
-        if (Deno.build.os === "windows") notImplemented(`"mode" on Windows`);
+        if (isWindows) notImplemented(`"mode" on Windows`);
         await Deno.chmod(pathOrRid as string, mode);
       }
 
       await writeAll(file, data as Uint8Array);
     } catch (e) {
-      error = e;
+      error = e instanceof Error ? e : new Error("[non-error thrown]");
     } finally {
       // Make sure to close resource
       if (!isRid && file) file.close();
@@ -98,13 +99,13 @@ export function writeFileSync(
       : Deno.openSync(pathOrRid as string, openOptions);
 
     if (!isRid && mode) {
-      if (Deno.build.os === "windows") notImplemented(`"mode" on Windows`);
+      if (isWindows) notImplemented(`"mode" on Windows`);
       Deno.chmodSync(pathOrRid as string, mode);
     }
 
     writeAllSync(file, data as Uint8Array);
   } catch (e) {
-    error = e;
+    error = e instanceof Error ? e : new Error("[non-error thrown]");
   } finally {
     // Make sure to close resource
     if (!isRid && file) file.close();

@@ -1,13 +1,16 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
+ * @deprecated Use `Array.prototype.findLastIndex`. This function will be removed in std@0.117.0.
+ *
  * Returns the index of the last element in the given array matching the given predicate
  *
  * Example:
  *
  * ```ts
- * import { findLastIndex } from "./find_last_index.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { findLastIndex } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [ 4, 2, 7 ]
  * const lastIndexNumber = findLastIndex(numbers, it => it % 2 === 0)
@@ -16,9 +19,9 @@
  * ```
  */
 export function findLastIndex<T>(
-  array: Array<T>,
+  array: readonly T[],
   predicate: (el: T) => boolean,
-): number {
+): number | undefined {
   for (let i = array.length - 1; i >= 0; i -= 1) {
     const element = array[i];
 
@@ -27,5 +30,5 @@ export function findLastIndex<T>(
     }
   }
 
-  return -1;
+  return undefined;
 }

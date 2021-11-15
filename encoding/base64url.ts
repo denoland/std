@@ -29,11 +29,11 @@ function convertBase64ToBase64url(b64: string): string {
 }
 
 /**
- * Encodes a given Uint8Array into a base64url representation
- * @param uint8
+ * Encodes a given ArrayBuffer or string into a base64url representation
+ * @param data
  */
-export function encode(uint8: Uint8Array): string {
-  return convertBase64ToBase64url(base64.encode(uint8));
+export function encode(data: ArrayBuffer | string): string {
+  return convertBase64ToBase64url(base64.encode(data));
 }
 
 /**

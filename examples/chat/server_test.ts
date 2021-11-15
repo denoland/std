@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../../testing/asserts.ts";
 import { TextProtoReader } from "../../textproto/mod.ts";
-import { BufReader } from "../../io/bufio.ts";
+import { BufReader } from "../../io/buffer.ts";
 import { delay } from "../../async/delay.ts";
 import { dirname, fromFileUrl, resolve } from "../../path/mod.ts";
 
@@ -61,15 +61,15 @@ Deno.test({
     try {
       ws = new WebSocket("ws://127.0.0.1:8080/ws");
       await new Promise<void>((resolve) => {
-        ws.onmessage = ((message) => {
+        ws.onmessage = (message) => {
           assertEquals(message.data, "Connected: [1]");
-          ws.onmessage = ((message) => {
+          ws.onmessage = (message) => {
             assertEquals(message.data, "[1]: Hello");
             ws.close();
             resolve();
-          });
+          };
           ws.send("Hello");
-        });
+        };
       });
     } catch (err) {
       console.log(err);

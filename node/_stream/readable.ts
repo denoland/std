@@ -30,6 +30,11 @@ import {
 import Writable from "./writable.ts";
 import { errorOrDestroy as errorOrDestroyWritable } from "./writable_internal.ts";
 import Duplex, { errorOrDestroy as errorOrDestroyDuplex } from "./duplex.ts";
+import { debuglog } from "../_util/_debuglog.ts";
+
+let debug = debuglog("stream", (fn) => {
+  debug = fn;
+});
 
 export interface ReadableOptions {
   autoDestroy?: boolean;
@@ -43,7 +48,7 @@ export interface ReadableOptions {
   encoding?: Encodings;
   highWaterMark?: number;
   objectMode?: boolean;
-  read?(this: Readable): void;
+  read?(this: Readable, size?: number): void;
 }
 
 export class ReadableState {
@@ -72,6 +77,7 @@ export class ReadableState {
   readableListening = false;
   reading = false;
   readingMore = false;
+  dataEmitted = false;
   resumeScheduled = false;
   sync = true;
   emitClose: boolean;
@@ -132,6 +138,7 @@ class Readable extends Stream {
 
   // You can override either this method, or the async _read(n) below.
   read(n?: number) {
+    debug("read", n);
     // Same as parseInt(undefined, 10), however V8 7.3 performance regressed
     // in this scenario, so we are doing it manually.
     if (n === undefined) {
@@ -200,7 +207,7 @@ class Readable extends Stream {
 
     let ret;
     if ((n as number) > 0) {
-      ret = fromList((n as number), state);
+      ret = fromList(n as number, state);
     } else {
       ret = null;
     }
@@ -253,6 +260,7 @@ class Readable extends Stream {
     }
 
     state.pipes.push(dest);
+    debug("pipe count=%d opts=%j", state.pipes.length, pipeOpts);
 
     const doEnd = (!pipeOpts || pipeOpts.end !== false);
 
@@ -272,6 +280,7 @@ class Readable extends Stream {
 
     dest.on("unpipe", onunpipe);
     function onunpipe(readable: Readable, unpipeInfo: { hasUnpiped: boolean }) {
+      debug("onunpipe");
       if (readable === src) {
         if (unpipeInfo && unpipeInfo.hasUnpiped === false) {
           unpipeInfo.hasUnpiped = true;
@@ -281,6 +290,7 @@ class Readable extends Stream {
     }
 
     function onend() {
+      debug("onend");
       dest.end();
     }
 
@@ -288,6 +298,7 @@ class Readable extends Stream {
 
     let cleanedUp = false;
     function cleanup() {
+      debug("cleanup");
       dest.removeListener("close", onclose);
       dest.removeListener("finish", onfinish);
       if (ondrain) {
@@ -311,13 +322,17 @@ class Readable extends Stream {
     this.on("data", ondata);
     // deno-lint-ignore no-explicit-any
     function ondata(chunk: any) {
+      debug("ondata");
       const ret = dest.write(chunk);
+      debug("dest.write", ret);
       if (ret === false) {
         if (!cleanedUp) {
           if (state.pipes.length === 1 && state.pipes[0] === dest) {
+            debug("false write response, pause", 0);
             state.awaitDrainWriters = dest;
             state.multiAwaitDrain = false;
           } else if (state.pipes.length > 1 && state.pipes.includes(dest)) {
+            debug("false write response, pause");
             (state.awaitDrainWriters as Set<Duplex | Writable>).add(dest);
           }
           src.pause();
@@ -330,6 +345,7 @@ class Readable extends Stream {
     }
 
     function onerror(er: Error) {
+      debug("onerror", er);
       unpipe();
       dest.removeListener("error", onerror);
       if (dest.listenerCount("error") === 0) {
@@ -346,7 +362,7 @@ class Readable extends Stream {
       }
     }
 
-    prependListener(dest, "error", onerror);
+    prependListener(dest as unknown as Stream, "error", onerror);
 
     function onclose() {
       dest.removeListener("finish", onfinish);
@@ -354,18 +370,21 @@ class Readable extends Stream {
     }
     dest.once("close", onclose);
     function onfinish() {
+      debug("onfinish");
       dest.removeListener("close", onclose);
       unpipe();
     }
     dest.once("finish", onfinish);
 
     function unpipe() {
+      debug("unpipe");
       src.unpipe(dest as Writable);
     }
 
-    dest.emit("pipe", this);
+    dest.emit("pipe", src);
 
     if (!state.flowing) {
+      debug("pipe resume");
       this.resume();
     }
 
@@ -440,18 +459,23 @@ class Readable extends Stream {
     return res;
   }
 
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     event: "close" | "end" | "pause" | "readable" | "resume",
     listener: () => void,
   ): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   // deno-lint-ignore no-explicit-any
   removeListener(event: "data", listener: (chunk: any) => void): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(event: "error", listener: (err: Error) => void): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     event: string | symbol,
     // deno-lint-ignore no-explicit-any
     listener: (...args: any[]) => void,
   ): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     ev: string | symbol,
     fn:
@@ -461,13 +485,14 @@ class Readable extends Stream {
       | ((err: Error) => void)
       // deno-lint-ignore no-explicit-any
       | ((...args: any[]) => void),
-  ) {
+  ): this {
     const res = super.removeListener.call(this, ev, fn);
 
     if (ev === "readable") {
       queueMicrotask(() => updateReadableListening(this));
     }
 
+    // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
     return res;
   }
 
@@ -516,8 +541,8 @@ class Readable extends Stream {
     r.errored = null;
     r.errorEmitted = false;
     r.reading = false;
-    r.ended = false;
-    r.endEmitted = false;
+    r.ended = r.readable === false;
+    r.endEmitted = r.readable === false;
   }
 
   _destroy(
@@ -576,6 +601,7 @@ class Readable extends Stream {
     return this;
   }
 
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeAllListeners(
     ev:
       | "close"
@@ -600,6 +626,7 @@ class Readable extends Stream {
   resume() {
     const state = this._readableState;
     if (!state.flowing) {
+      debug("resume");
       // We flow only if there is no one listening
       // for readable, but we still have to call
       // resume().
@@ -611,7 +638,9 @@ class Readable extends Stream {
   }
 
   pause() {
+    debug("call pause flowing=%j", this._readableState.flowing);
     if (this._readableState.flowing !== false) {
+      debug("pause");
       this._readableState.flowing = false;
       this.emit("pause");
     }
@@ -635,7 +664,8 @@ class Readable extends Stream {
       this.push(null);
     });
 
-    stream.on("data", (chunk) => {
+    // deno-lint-ignore no-explicit-any
+    stream.on("data", (chunk: any) => {
       if (state.decoder) {
         chunk = state.decoder.write(chunk);
       }
@@ -661,21 +691,21 @@ class Readable extends Stream {
     // Proxy all the other methods. Important when wrapping filters and duplexes.
     for (const i in stream) {
       // deno-lint-ignore ban-ts-comment
-      //@ts-ignore
+      // @ts-ignore
       if (this[i] === undefined && typeof stream[i] === "function") {
         // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
+        // @ts-ignore
         this[i] = function methodWrap(method) {
           return function methodWrapReturnFunction() {
             // deno-lint-ignore ban-ts-comment
-            //@ts-ignore
+            // @ts-ignore
             return stream[method].apply(stream);
           };
         }(i);
       }
     }
 
-    stream.on("error", (err) => {
+    stream.on("error", (err: Error) => {
       errorOrDestroy(this, err);
     });
 
@@ -700,7 +730,7 @@ class Readable extends Stream {
         paused = false;
         // By the time this is triggered, stream will be a readable stream
         // deno-lint-ignore ban-ts-comment
-        //@ts-ignore
+        // @ts-ignore
         stream.resume();
       }
     };

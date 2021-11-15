@@ -1,0 +1,24 @@
+{
+  "fmt": {
+    "files": {
+      "exclude": [
+        ".git",
+        "_wasm_crypto/target",
+        "node/_tools/versions",
+        "node/_tools/suites",
+        "wasi/testdata"
+      ]
+    }
+  },
+  "lint": {
+    "files": {
+      "exclude": [
+        ".git",
+        "_wasm_crypto/target",
+        "node/_tools/versions",
+        "node/_tools/suites",
+        "wasi/testdata"
+      ]
+    }
+  }
+}

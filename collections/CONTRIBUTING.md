@@ -2,7 +2,9 @@
 
 First, thank you for being interested in contributing! We hope this page helps
 as a guide. When in doubt, look at the files in this folder, read through issues
-and PRs regarding the `collections` module or visit the
+and PRs regarding the `collections`
+module([Issue](https://github.com/denoland/deno_std/issues/1173),
+[Discussion](https://github.com/denoland/deno_std/discussions/970)) or visit the
 [#deno-std channel on our Discord](https://discord.gg/Ub9bRxHv) and ask.
 
 ## Philosophy
@@ -21,15 +23,15 @@ Currently, those are the general ideas behind how the module is implemented:
   for now
 - Some implementations for common tasks are pretty trivial - this is fine. It
   still provides a readable vocabulary to express a common task, is as optimized
-  as possible and helps newcomers. Be aware that it might not be everyones style
-  to use small functions and we do not want to change that, just offer a way to
-  do so if desired
+  as possible and helps newcomers. Be aware that it might not be everyone's
+  style to use small functions and we do not want to change that, just offer a
+  way to do so if desired
 - All functions can be imported in isolation to reduce bundle size if important
 - All functions are implemented in Typescript
 
 ## Contribution Checklist
 
-If you want to post a PR, this checklis might help you to speed up the process
+If you want to post a PR, this checklist might help you to speed up the process
 by solving most common review comments upfront.
 
 - Did you support importing from `mod.ts` as well as your functions file?
@@ -42,3 +44,5 @@ by solving most common review comments upfront.
 - Did you add tests ensuring no mutation, empty input and corner cases?
 - Are your types flat, meaning there is no unnecessary alias in them that makes
   your users "go to type definition" twice to understand what to pass?
+- [Document and maintain browser
+  compatibility](https://deno.land/manual/contributing/style_guide#document-and-maintain-browser-compatibility).

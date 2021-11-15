@@ -36,22 +36,10 @@ writeVarbig(w: Deno.Writer, x: bigint, o: VarbigOptions = {}): Promise<number>
 
 #### `readMatrix`
 
-```ts
-(reader: BufReader, opt: ReadOptions = {
-  comma: ",",
-  trimLeadingSpace: false,
-  lazyQuotes: false,
-}): Promise<string[][]>
-```
-
 Parse the CSV from the `reader` with the options provided and return
 `string[][]`.
 
 #### `parse`
-
-```ts
-(input: string | BufReader, opt: ParseOptions = { skipFirstRow: false }): Promise<unknown[]>
-```
 
 Parse the CSV string/buffer with the options provided. The result of this
 function is as follows:
@@ -94,10 +82,6 @@ function is as follows:
   first row is used as referral for the number of fields.
 
 #### `stringify`
-
-```ts
-(data: DataItem[], columns: Column[], options?: StringifyOptions): Promise<string>
-```
 
 - **`data`** is the source data to stringify. It's an array of items which are
   plain objects or arrays.
@@ -465,8 +449,8 @@ console.log(data);
 // => [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" } ]
 ```
 
-To handle `function`, `regexp`, and `undefined` types, use the
-`EXTENDED_SCHEMA`.
+To handle `regexp`, and `undefined` types, use the `EXTENDED_SCHEMA`. Note that
+functions are no longer supported for security reasons
 
 ```ts
 import {
@@ -480,10 +464,11 @@ const data = parse(
     simple: !!js/regexp foobar
     modifiers: !!js/regexp /foobar/mi
   undefined: !!js/undefined ~
-  function: !!js/function >
-    function foobar() {
-      return 'hello world!';
-    }
+# Disabled, see: https://github.com/denoland/deno_std/pull/1275
+#  function: !!js/function >
+#    function foobar() {
+#      return 'hello world!';
+#    }
 `,
   { schema: EXTENDED_SCHEMA },
 );
@@ -493,11 +478,16 @@ You can also use custom types by extending schemas.
 
 ```ts
 import {
+  DEFAULT_SCHEMA,
   parse,
   Type,
 } from "https://deno.land/std@$STD_VERSION/encoding/yaml.ts";
 
-const MyYamlType = new Type("!myYamlType", {/* your type definition here*/});
+const yaml = "...";
+const MyYamlType = new Type("!myYamlType", {
+  kind: "sequence",
+  /* other type options here*/
+});
 const MY_SCHEMA = DEFAULT_SCHEMA.extend({ explicit: [MyYamlType] });
 
 parse(yaml, { schema: MY_SCHEMA });
@@ -662,4 +652,28 @@ console.log(encode(binaryData, { standard: "RFC 1924" }));
 // => h_p`_
 console.log(encode(binaryData, { standard: "Z85" }));
 // => H{P}{
+```
+
+## hex
+
+hexadecimal encoder/decoder for Deno.
+
+### Basic usage
+
+`encode` encodes a `Uint8Array` to hexadecimal `Uint8Array` with 2 * length, and
+`decode` decodes the given hexadecimal `Uint8Array` to a `Uint8Array`.
+
+```ts
+import {
+  decode,
+  encode,
+} from "https://deno.land/std@$STD_VERSION/encoding/hex.ts";
+
+const binary = new TextEncoder().encode("abc");
+const encoded = encode(binary);
+console.log(encoded);
+// => Uint8Array(6) [ 54, 49, 54, 50, 54, 51 ]
+
+console.log(decode(encoded));
+// => Uint8Array(3) [ 97, 98, 99 ]
 ```

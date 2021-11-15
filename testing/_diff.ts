@@ -79,7 +79,10 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
   const offset = N;
   const delta = M - N;
   const size = M + N + 1;
-  const fp = new Array(size).fill({ y: -1 });
+  const fp: FarthestPoint[] = Array.from(
+    { length: size },
+    () => ({ y: -1, id: -1 }),
+  );
   /**
    * INFO:
    * This buffer is used to save memory and improve performance.
@@ -235,6 +238,20 @@ export function diff<T>(A: T[], B: T[]): Array<DiffResult<T>> {
  * @param B Expected string
  */
 export function diffstr(A: string, B: string) {
+  function unescape(string: string): string {
+    // unescape invisible characters.
+    // ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String#escape_sequences
+    return string
+      .replaceAll("\b", "\\b")
+      .replaceAll("\f", "\\f")
+      .replaceAll("\t", "\\t")
+      .replaceAll("\v", "\\v")
+      .replaceAll( // does not remove line breaks
+        /\r\n|\r|\n/g,
+        (str) => str === "\r" ? "\\r" : str === "\n" ? "\\n\n" : "\\r\\n\r\n",
+      );
+  }
+
   function tokenize(string: string, { wordDiff = false } = {}): string[] {
     if (wordDiff) {
       // Split string on whitespace symbols
@@ -276,7 +293,7 @@ export function diffstr(A: string, B: string) {
     }
   }
 
-  // Create details by filtering revelant word-diff for current line
+  // Create details by filtering relevant word-diff for current line
   // and merge "space-diff" if surrounded by word-diff for cleaner displays
   function createDetails(
     line: DiffResult<string>,
@@ -296,7 +313,11 @@ export function diffstr(A: string, B: string) {
   }
 
   // Compute multi-line diff
-  const diffResult = diff(tokenize(`${A}\n`), tokenize(`${B}\n`));
+  const diffResult = diff(
+    tokenize(`${unescape(A)}\n`),
+    tokenize(`${unescape(B)}\n`),
+  );
+
   const added = [], removed = [];
   for (const result of diffResult) {
     if (result.type === DiffType.added) {

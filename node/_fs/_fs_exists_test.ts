@@ -5,7 +5,7 @@ import {
   assertStringIncludes,
 } from "../../testing/asserts.ts";
 import { exists, existsSync } from "./_fs_exists.ts";
-import { readAll } from "../../io/util.ts";
+import { readAll } from "../../streams/conversion.ts";
 
 Deno.test("existsFile", async function () {
   const availableFile = await new Promise((resolve) => {
@@ -42,7 +42,7 @@ Deno.test("[std/node/fs] exists callback isn't called twice if error is thrown",
       import { exists } from ${JSON.stringify(importUrl)};
 
       exists(${JSON.stringify(tempFile)}, (exists) => {
-        // If the bug is present and the callback is called again with false (meaning an error occured),
+        // If the bug is present and the callback is called again with false (meaning an error occurred),
         // don't throw another error, so if the subprocess fails we know it had the correct behaviour.
         if (exists) throw new Error("success");
       });`,

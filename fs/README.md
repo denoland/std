@@ -74,7 +74,11 @@ ensureSymlinkSync("./folder/targetFile.dat", "./folder/targetFile.link.dat"); //
 Detects and format the passed string for the targeted End Of Line character.
 
 ```ts
-import { format, detect, EOL } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+import {
+  detect,
+  EOL,
+  format,
+} from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
 
 const CRLFinput = "deno\r\nis not\r\nnode";
 const Mixedinput = "deno\nis not\r\nnode";
@@ -87,22 +91,11 @@ detect(Mixedinput); // output EOL.CRLF
 detect(NoNLinput); // output null
 
 format(CRLFinput, EOL.LF); // output "deno\nis not\nnode"
-...
 ```
 
 ### exists
 
-Test whether or not the given path exists by checking with the file system.
-
-```ts
-import {
-  exists,
-  existsSync,
-} from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
-
-exists("./foo"); // returns a Promise<boolean>
-existsSync("./foo"); // returns boolean
-```
+This function is now deprecated.
 
 ### move
 

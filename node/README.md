@@ -1,12 +1,12 @@
-# Deno Node compatibility
+# Deno Node.js compatibility
 
 This module is meant to have a compatibility layer for the
-[NodeJS standard library](https://nodejs.org/docs/latest-v12.x/api/).
+[Node.js standard library](https://nodejs.org/docs/latest/api/).
 
 **Warning**: Any function of this module should not be referred anywhere in the
-deno standard library as it's a compatibility module.
+Deno standard library as it's a compatibility module.
 
-## Supported Builtins
+## Supported modules
 
 - [x] assert _partly_
 - [x] assert/strict _partly_
@@ -19,7 +19,7 @@ deno standard library as it's a compatibility module.
 - [x] crypto _partly_
 - [ ] dgram
 - [ ] diagnostics_channel
-- [ ] dns
+- [x] dns _partly_
 - [x] events
 - [x] fs _partly_
 - [x] fs/promises _partly_
@@ -28,7 +28,7 @@ deno standard library as it's a compatibility module.
 - [ ] https
 - [ ] inspector
 - [x] module
-- [ ] net
+- [x] net
 - [x] os _partly_
 - [x] path
 - [x] path/posix
@@ -40,7 +40,7 @@ deno standard library as it's a compatibility module.
 - [ ] repl
 - [x] stream
 - [x] stream/promises
-- [ ] stream/web
+- [x] stream/web _partly_
 - [x] string_decoder
 - [x] sys
 - [x] timers
@@ -54,6 +54,7 @@ deno standard library as it's a compatibility module.
 - [ ] v8
 - [ ] vm
 - [ ] wasi
+- [ ] webcrypto
 - [ ] worker_threads
 - [ ] zlib
 
@@ -61,7 +62,7 @@ deno standard library as it's a compatibility module.
 
 ### Deprecated
 
-These builtins are deprecated in NodeJS v13 and will probably not be polyfilled:
+These modules are deprecated in Node.js and will probably not be polyfilled:
 
 - domain
 - freelist
@@ -69,17 +70,18 @@ These builtins are deprecated in NodeJS v13 and will probably not be polyfilled:
 
 ### Experimental
 
-These builtins are experimental in NodeJS v13 and will not be polyfilled until
-they are stable:
+These modules are experimental in Node.js and will not be polyfilled until they
+are stable:
 
+- diagnostics_channel
 - async_hooks
-- inspector
 - policies
-- report
 - trace_events
 - wasi
+- webcrypto
+- stream/web
 
-## CommonJS Module Loading
+## CommonJS modules loading
 
 `createRequire(...)` is provided to create a `require` function for loading CJS
 modules. It also sets supported globals.
@@ -100,12 +102,67 @@ const leftPad = require("left-pad");
 
 ### Setting up the test runner
 
-This library contains automated tests pulled directly from the Node repo in
+This library contains automated tests pulled directly from the Node.js repo in
 order ensure compatibility.
 
 Setting up the test runner is as simple as running the `node/_tools/setup.ts`
 file, this will pull the configured tests in and then add them to the test
 workflow.
+
+```zsh
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
+```
+
+You can aditionally pass the `-y`/`-n` flag to use test cache or generating
+tests from scratch instead of being prompted at the moment of running it.
+
+```zsh
+# Will use downloaded tests instead of prompting user
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts -y
+# Will not prompt but will download and extract the tests directly
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts -n
+```
+
+To run the tests you have set up, do the following:
+
+```zsh
+$ deno test --allow-read --allow-run node/_tools/test.ts
+```
+
+If you want to run specific tests in a local environment, try one of the
+following:
+
+- Use `node/_tools/require.ts` as follows(recommended):
+
+```zsh
+$ deno run -A --unstable node/_tools/require.ts /Abs/path/to/deno_std/node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js
+```
+
+- Add `--only` flag to the `node/_tools/config.json`.
+
+```json
+...
+  "tests": {
+    ...
+    "parallel": [
+      ...
+      "test-event-emitter-add-listeners.js",
+      "test-event-emitter-check-listener-leaks.js --only",
+      "test-event-emitter-invalid-listener.js",
+      ...
+    ]
+    ...
+  }
+...
+```
+
+The test should be passing with the latest deno, so if the test fails, try the
+following:
+
+- `$ deno upgrade`
+- `$ git submodule update --init`
+- Use
+  [`--unstable` flag](https://deno.land/manual@v1.15.3/runtime/stability#standard-modules)
 
 To enable new tests, simply add a new entry inside `node/_tools/config.json`
 under the `tests` property. The structure this entries must have has to resemble
@@ -123,7 +180,7 @@ actual node behavior.
 When converting from promise-based to callback-based APIs, the most obvious way
 is like this:
 
-```ts
+```ts, ignore
 promise.then((value) => callback(null, value)).catch(callback);
 ```
 
@@ -131,7 +188,7 @@ This has a subtle bug - if the callback throws an error, the catch statement
 will also catch _that_ error, and the callback will be called twice. The correct
 way to do it is like this:
 
-```ts
+```ts, ignore
 promise.then((value) => callback(null, value), callback);
 ```
 
@@ -141,7 +198,7 @@ from the existing promise, not the new one created by the callback.
 If the Deno equivalent is actually synchronous, there's a similar problem with
 try/catch statements:
 
-```ts
+```ts, ignore
 try {
   const value = process();
   callback(null, value);
@@ -155,7 +212,7 @@ caught and call the callback again.
 
 The correct way to do it is like this:
 
-```ts
+```ts, ignore
 let err, value;
 try {
   value = process();

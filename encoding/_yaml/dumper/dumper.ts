@@ -12,7 +12,7 @@ type Any = common.Any;
 type ArrayObject<T = Any> = common.ArrayObject<T>;
 
 const _toString = Object.prototype.toString;
-const _hasOwnProperty = Object.prototype.hasOwnProperty;
+const { hasOwn } = Object;
 
 const CHAR_TAB = 0x09; /* Tab */
 const CHAR_LINE_FEED = 0x0a; /* LF */
@@ -716,7 +716,7 @@ function detectType(
 
         if (_toString.call(type.represent) === "[object Function]") {
           _result = (type.represent as RepresentFn)(object, style);
-        } else if (_hasOwnProperty.call(type.represent, style)) {
+        } else if (hasOwn(type.represent, style)) {
           _result = (type.represent as ArrayObject<RepresentFn>)[style](
             object,
             style,
@@ -872,7 +872,7 @@ function getDuplicateReferences(
   for (let index = 0; index < length; index += 1) {
     state.duplicates.push(objects[duplicatesIndexes[index]]);
   }
-  state.usedDuplicates = new Array(length);
+  state.usedDuplicates = Array.from({ length });
 }
 
 export function dump(input: Any, options?: DumperStateOptions): string {

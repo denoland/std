@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Applies the given selector to each element in the given array, returning a Record containing the results as keys
@@ -7,8 +8,8 @@
  * Example:
  *
  * ```ts
- * import { groupBy } from "./group_by.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { groupBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * type Person = {
  *   name: string;
@@ -28,10 +29,10 @@
  * ```
  */
 export function groupBy<T>(
-  array: Array<T>,
+  array: readonly T[],
   selector: (el: T) => string,
-): Record<string, Array<T>> {
-  const ret: { [key: string]: Array<T> } = {};
+): Record<string, T[]> {
+  const ret: Record<string, T[]> = {};
 
   for (const element of array) {
     const key = selector(element);

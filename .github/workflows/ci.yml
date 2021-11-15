@@ -13,9 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # TODO(ry): reenable canary when on-going builds in deno repo do not
-        # result in red builds in std.
-        deno: [1.x] # [1.x, canary]
+        deno: [canary]
         os: [macOS-latest, ubuntu-latest, windows-2019]
 
     steps:
@@ -30,8 +28,8 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Run tests
-        run: deno test --doc --unstable --allow-all --coverage=./cov
+      - name: Run tests canary
+        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/_tools/versions/
 
       - name: Type check browser compatible modules
         shell: bash
@@ -74,10 +72,12 @@ jobs:
         uses: denoland/setup-deno@v1.0.0
 
       - name: Format
-        run: deno fmt --check
+        shell: bash
+        run: ./_tools/format.js --check
 
       - name: Lint
-        run: deno lint
+        shell: bash
+        run: ./_tools/lint.js
 
   hash-wasm:
     name: "_wasm_crypto/"
@@ -111,7 +111,7 @@ jobs:
         if: success() && steps.source.outputs.modified == 'true'
         with:
           # This must match the version in hash/_wasm/rust-toolchain:
-          rust-version: 1.54.0
+          rust-version: 1.55.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 

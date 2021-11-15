@@ -5,6 +5,7 @@ import { isWindows, osType } from "../_util/os.ts";
 import { SEP, SEP_PATTERN } from "./separator.ts";
 import * as _win32 from "./win32.ts";
 import * as _posix from "./posix.ts";
+import type { OSType } from "../_util/os.ts";
 
 const path = isWindows ? _win32 : _posix;
 const { join, normalize } = path;
@@ -21,13 +22,27 @@ export interface GlobOptions {
   /** Whether globstar should be case insensitive. */
   caseInsensitive?: boolean;
   /** Operating system. Defaults to the native OS. */
-  os?: "darwin" | "linux" | "windows";
+  os?: OSType;
 }
 
 export type GlobToRegExpOptions = GlobOptions;
 
-// deno-fmt-ignore
-const regExpEscapeChars = ["!", "$", "(", ")", "*", "+", ".", "=", "?", "[", "\\", "^", "{", "|"];
+const regExpEscapeChars = [
+  "!",
+  "$",
+  "(",
+  ")",
+  "*",
+  "+",
+  ".",
+  "=",
+  "?",
+  "[",
+  "\\",
+  "^",
+  "{",
+  "|",
+];
 const rangeEscapeChars = ["-", "\\", "]"];
 
 /** Convert a glob string to a regular expression.
@@ -73,10 +88,10 @@ const rangeEscapeChars = ["-", "\\", "]"];
  * - Absolute globs will only match absolute paths, etc.
  * - Empty globs will match nothing.
  * - Any special glob syntax must be contained to one path segment. For example,
- *   `?(foo|bar/baz)` is invalid. The separator will take precendence and the
+ *   `?(foo|bar/baz)` is invalid. The separator will take precedence and the
  *   first segment ends with an unclosed group.
  * - If a path segment ends with unclosed groups or a dangling escape prefix, a
- *   parse error has occured. Every character for that segment is taken
+ *   parse error has occurred. Every character for that segment is taken
  *   literally in this event.
  *
  * Limitations:

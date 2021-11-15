@@ -1,10 +1,10 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { BufReader, BufWriter } from "../io/bufio.ts";
+import { BufReader, BufWriter } from "../io/buffer.ts";
+import { copy, iterateReader } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 import { assert } from "../_util/assert.ts";
-import { Response, ServerRequest } from "./server.ts";
+import { Response, ServerRequest } from "./server_legacy.ts";
 import { STATUS_TEXT } from "./http_status.ts";
-import { copy, iter } from "../io/util.ts";
 
 const encoder = new TextEncoder();
 
@@ -116,13 +116,15 @@ export function chunkedBodyReader(h: Headers, r: BufReader): Deno.Reader {
   return { read };
 }
 
-function isProhibidedForTrailer(key: string): boolean {
+function isProhibitedForTrailer(key: string): boolean {
   const s = new Set(["transfer-encoding", "content-length", "trailer"]);
   return s.has(key.toLowerCase());
 }
 
-/** Read trailer headers from reader and append values to headers. "trailer"
- * field will be deleted. */
+/**
+ * Read trailer headers from reader and append values to headers. "trailer"
+ * field will be deleted.
+ */
 export async function readTrailers(
   headers: Headers,
   r: BufReader,
@@ -163,7 +165,7 @@ function parseTrailer(field: string | null): Headers | undefined {
   if (trailerNames.length === 0) {
     throw new Deno.errors.InvalidData("Empty trailer header.");
   }
-  const prohibited = trailerNames.filter((k) => isProhibidedForTrailer(k));
+  const prohibited = trailerNames.filter((k) => isProhibitedForTrailer(k));
   if (prohibited.length > 0) {
     throw new Deno.errors.InvalidData(
       `Prohibited trailer names: ${Deno.inspect(prohibited)}.`,
@@ -176,7 +178,7 @@ export async function writeChunkedBody(
   w: BufWriter,
   r: Deno.Reader,
 ) {
-  for await (const chunk of iter(r)) {
+  for await (const chunk of iterateReader(r)) {
     if (chunk.byteLength <= 0) continue;
     const start = encoder.encode(`${chunk.byteLength.toString(16)}\r\n`);
     const end = encoder.encode("\r\n");
@@ -190,8 +192,10 @@ export async function writeChunkedBody(
   await w.write(endChunk);
 }
 
-/** Write trailer headers to writer. It should mostly should be called after
- * `writeResponse()`. */
+/**
+ * Write trailer headers to writer. It should mostly should be called after
+ * `writeResponse()`.
+ */
 export async function writeTrailers(
   w: Deno.Writer,
   headers: Headers,
@@ -210,7 +214,7 @@ export async function writeTrailers(
   const writer = BufWriter.create(w);
   const trailerNames = trailer.split(",").map((s) => s.trim().toLowerCase());
   const prohibitedTrailers = trailerNames.filter((k) =>
-    isProhibidedForTrailer(k)
+    isProhibitedForTrailer(k)
   );
   if (prohibitedTrailers.length > 0) {
     throw new TypeError(
@@ -241,7 +245,7 @@ export async function writeResponse(
   const writer = BufWriter.create(w);
   if (statusText === null) {
     throw new Deno.errors.InvalidData(
-      "Empty statusText (explicitely pass an empty string if this was intentional)",
+      "Empty statusText (explicitly pass an empty string if this was intentional)",
     );
   }
   if (!r.body) {

@@ -93,7 +93,7 @@ function finish(self: ReadableStreamAsyncIterator, err?: Error) {
           resolve(createIterResult(undefined, true));
         }
       });
-      destroyer(stream, err);
+      destroyer(stream as unknown as Stream, err);
     },
   );
 }
@@ -205,8 +205,8 @@ const createReadableStreamAsyncIterator = (stream: IterableStreams) => {
   // deno-lint-ignore no-explicit-any
   if (typeof (stream as any).read !== "function") {
     const src = stream;
-    stream = new Readable({ objectMode: true }).wrap(src);
-    finished(stream, (err) => destroyer(src, err));
+    stream = new Readable({ objectMode: true }).wrap(src as unknown as Stream);
+    finished(stream, (err) => destroyer(src as unknown as Stream, err));
   }
 
   const iterator = new ReadableStreamAsyncIterator(stream as Readable);

@@ -31,13 +31,12 @@ pretty-printed diff of failing assertion.
   this function does. Also compares any errors thrown to an optional expected
   `Error` class and checks that the error `.message` includes an optional
   string.
-- `assertThrowsAsync()` - Expects the passed `fn` to be async and throw (or
-  return a `Promise` that rejects). If the `fn` does not throw or reject, this
-  function will throw asynchronously _(⚠️ assertion should be awaited or be the
-  return value of the test function to avoid any uncaught rejections which could
-  result in unexpected process exit)_. Also compares any errors thrown to an
-  optional expected `Error` class and checks that the error `.message` includes
-  an optional string.
+- `assertRejects()` - Expects the passed `fn` to be async and throw and return a
+  `Promise` that rejects. If the `fn` does not throw or reject, this function
+  will reject _(⚠️ you should normally await this assertion)_. Also optionally
+  accepts an Error class which the expected error must be an instance of, and a
+  string which must be a substring of the error's `.message`.
+- `assertThrowsAsync()` - Deprecated. Use `assertRejects`.
 - `unimplemented()` - Use this to stub out methods that will throw when invoked.
 - `unreachable()` - Used to assert unreachable code.
 
@@ -58,6 +57,8 @@ Deno.test({
 Short syntax (named function instead of object):
 
 ```ts
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
 Deno.test("example", function (): void {
   assertEquals("world", "world");
   assertEquals({ hello: "world" }, { hello: "world" });
@@ -67,6 +68,8 @@ Deno.test("example", function (): void {
 Using `assertStrictEquals()`:
 
 ```ts
+import { assertStrictEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
 Deno.test("isStrictlyEqual", function (): void {
   const a = {};
   const b = a;
@@ -84,6 +87,8 @@ Deno.test("isNotStrictlyEqual", function (): void {
 Using `assertThrows()`:
 
 ```ts
+import { assertThrows } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
 Deno.test("doesThrow", function (): void {
   assertThrows((): void => {
     throw new TypeError("hello world!");
@@ -111,6 +116,8 @@ Deno.test("fails", function (): void {
 Using `assertThrowsAsync()`:
 
 ```ts
+import { assertThrowsAsync } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
 Deno.test("doesThrow", async function () {
   await assertThrowsAsync(
     async () => {
@@ -177,6 +184,8 @@ runBenchmarks();
 Averaging execution time over multiple runs:
 
 ```ts
+import { bench } from "https://deno.land/std@$STD_VERSION/testing/bench.ts";
+
 bench({
   name: "runs100ForIncrementX1e6",
   runs: 100,
@@ -191,6 +200,10 @@ bench({
 Running specific benchmarks using regular expressions:
 
 ```ts
+import {
+  runBenchmarks,
+} from "https://deno.land/std@$STD_VERSION/testing/bench.ts";
+
 runBenchmarks({ only: /desired/, skip: /exceptions/ });
 ```
 
@@ -201,6 +214,11 @@ the benchmarking results yourself. It contains detailed results of each
 benchmark's run as `BenchmarkResult` s.
 
 ```ts
+import {
+  BenchmarkRunResult,
+  runBenchmarks,
+} from "https://deno.land/std@$STD_VERSION/testing/bench.ts";
+
 runBenchmarks()
   .then((results: BenchmarkRunResult) => {
     console.log(results);
@@ -219,11 +237,19 @@ Using `{ silent: true }` means you wont see the default progression logs in the
 commandline.
 
 ```ts
+import {
+  BenchmarkRunProgress,
+  ProgressState,
+  runBenchmarks,
+} from "https://deno.land/std@$STD_VERSION/testing/bench.ts";
+
 runBenchmarks({ silent: true }, (p: BenchmarkRunProgress) => {
   // initial progress data.
   if (p.state === ProgressState.BenchmarkingStart) {
     console.log(
-      `Starting benchmarking. Queued: ${p.queued.length}, filtered: ${p.filtered}`,
+      `Starting benchmarking. Queued: ${
+        p.queued!.length
+      }, filtered: ${p.filtered}`,
     );
   }
   // ...

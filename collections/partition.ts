@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Returns a tuple of two arrays with the first one containing all elements in the given array that match the given predicate
@@ -7,8 +8,8 @@
  * Example:
  *
  * ```ts
- * import { partition } from "./partition.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { partition } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const numbers = [ 5, 6, 7, 8, 9 ]
  * const [ even, odd ] = partition(numbers, it => it % 2 == 0)
@@ -18,9 +19,9 @@
  * ```
  */
 export function partition<T>(
-  array: Array<T>,
+  array: readonly T[],
   predicate: (el: T) => boolean,
-): [Array<T>, Array<T>] {
+): [T[], T[]] {
   const matches: Array<T> = [];
   const rest: Array<T> = [];
 

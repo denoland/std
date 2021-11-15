@@ -3,7 +3,8 @@ import Context from "./snapshot_preview1.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { copy } from "../fs/mod.ts";
 import * as path from "../path/mod.ts";
-import { readAll, writeAll } from "../io/util.ts";
+import { readAll, writeAll } from "../streams/conversion.ts";
+import { isWindows } from "../_util/os.ts";
 
 const tests = [
   "testdata/std_env_args.wasm",
@@ -50,7 +51,7 @@ const ignore = [];
 // The failing tests all involve symlinks in some way, my best guess so far is
 // that there's something going wrong with copying the symlinks over to the
 // temporary working directory, but only in some cases.
-if (Deno.build.os == "windows") {
+if (isWindows) {
   ignore.push("testdata/std_fs_metadata.wasm");
   ignore.push("testdata/std_fs_read_dir.wasm");
   ignore.push("testdata/wasi_path_open.wasm");

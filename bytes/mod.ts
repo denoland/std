@@ -1,35 +1,32 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-/** Find first index of binary pattern from source. If not found, then return -1
- * @param source source array
- * @param pat pattern to find in source array
- * @param start the index to start looking in the source
- */
+/** Returns the index of the first occurrence of the pattern array in the source
+ * array, or -1 if it is not present. */
 export function indexOf(
   source: Uint8Array,
-  pat: Uint8Array,
-  start = 0,
+  pattern: Uint8Array,
+  fromIndex = 0,
 ): number {
-  if (start >= source.length) {
+  if (fromIndex >= source.length) {
     return -1;
   }
-  if (start < 0) {
-    start = 0;
+  if (fromIndex < 0) {
+    fromIndex = Math.max(0, source.length + fromIndex);
   }
-  const s = pat[0];
-  for (let i = start; i < source.length; i++) {
+  const s = pattern[0];
+  for (let i = fromIndex; i < source.length; i++) {
     if (source[i] !== s) continue;
     const pin = i;
     let matched = 1;
     let j = i;
-    while (matched < pat.length) {
+    while (matched < pattern.length) {
       j++;
-      if (source[j] !== pat[j - pin]) {
+      if (source[j] !== pattern[j - pin]) {
         break;
       }
       matched++;
     }
-    if (matched === pat.length) {
+    if (matched === pattern.length) {
       return pin;
     }
   }
@@ -70,18 +67,6 @@ export function lastIndexOf(
     }
   }
   return -1;
-}
-
-/** Check whether binary arrays are equal to each other.
- * @param a first array to check equality
- * @param b second array to check equality
- */
-export function equals(a: Uint8Array, b: Uint8Array): boolean {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < b.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
 }
 
 /** Check whether binary array starts with prefix.
@@ -162,12 +147,13 @@ export function concat(...buf: Uint8Array[]): Uint8Array {
   return output;
 }
 
-/** Check source array contains pattern array.
- * @param source source array
- * @param pat patter array
- */
-export function contains(source: Uint8Array, pat: Uint8Array): boolean {
-  return indexOf(source, pat) != -1;
+/** Determines whether the source array includes the pattern array. */
+export function includes(
+  source: Uint8Array,
+  pattern: Uint8Array,
+  fromIndex = 0,
+): boolean {
+  return indexOf(source, pattern, fromIndex) !== -1;
 }
 
 /**
@@ -188,3 +174,8 @@ export function copy(src: Uint8Array, dst: Uint8Array, off = 0): number {
   dst.set(src, off);
   return src.byteLength;
 }
+
+/** @deprecated */
+export { includes as contains };
+
+export { equals } from "./equals.ts";

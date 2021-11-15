@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /**
  * Builds two separate arrays from the given array of 2-tuples, with the first returned array holding all first
@@ -7,8 +8,8 @@
  * Example:
  *
  * ```ts
- * import { unzip } from "./unzip.ts";
- * import { assertEquals } from "../testing/asserts.ts";
+ * import { unzip } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const parents = [
  *     [ 'Maria', 'Jeff' ],
@@ -16,17 +17,17 @@
  *     [ 'John', 'Leroy' ],
  * ] as [string, string][];
  *
- * const [ moms, dads ] = unzip(parents)
+ * const [ moms, dads ] = unzip(parents);
  *
- * assertEquals(moms, [ 'Maria', 'Anna', 'John' ])
- * assertEquals(moms, [ 'Jeff', 'Kim', 'Leroy' ])
+ * assertEquals(moms, [ 'Maria', 'Anna', 'John' ]);
+ * assertEquals(dads, [ 'Jeff', 'Kim', 'Leroy' ]);
  * ```
  */
-export function unzip<T, U>(pairs: Array<[T, U]>): [Array<T>, Array<U>] {
+export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
   const { length } = pairs;
-  const ret: [Array<T>, Array<U>] = [
-    new Array(length),
-    new Array(length),
+  const ret: [T[], U[]] = [
+    Array.from({ length }),
+    Array.from({ length }),
   ];
 
   pairs.forEach(([first, second], index) => {

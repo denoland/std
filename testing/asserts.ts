@@ -16,15 +16,10 @@ import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
-interface Constructor {
-  // deno-lint-ignore no-explicit-any
-  new (...args: any[]): any;
-}
-
 export class AssertionError extends Error {
+  name = "AssertionError";
   constructor(message: string) {
     super(message);
-    this.name = "AssertionError";
   }
 }
 
@@ -146,7 +141,7 @@ export function equal(c: unknown, d: unknown): boolean {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
-      if (a && b && (a.constructor !== b.constructor)) {
+      if (a && b && !constructorsEqual(a, b)) {
         return false;
       }
       if (a instanceof WeakMap || b instanceof WeakMap) {
@@ -209,6 +204,13 @@ export function equal(c: unknown, d: unknown): boolean {
     }
     return false;
   })(c, d);
+}
+
+// deno-lint-ignore ban-types
+function constructorsEqual(a: object, b: object) {
+  return a.constructor === b.constructor ||
+    a.constructor === Object && !b.constructor ||
+    !a.constructor && b.constructor === Object;
 }
 
 /** Make an assertion, error will be thrown if `expr` does not have truthy value. */
@@ -536,50 +538,60 @@ export function assertObjectMatch(
 ): void {
   type loose = Record<PropertyKey, unknown>;
   const seen = new WeakMap();
-  return assertEquals(
-    (function filter(a: loose, b: loose): loose {
-      // Prevent infinite loop with circular references with same filter
-      if ((seen.has(a)) && (seen.get(a) === b)) {
-        return a;
-      }
-      seen.set(a, b);
-      // Filter keys and symbols which are present in both actual and expected
-      const filtered = {} as loose;
-      const entries = [
-        ...Object.getOwnPropertyNames(a),
-        ...Object.getOwnPropertySymbols(a),
-      ]
-        .filter((key) => key in b)
-        .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
-      for (const [key, value] of entries) {
-        // On array references, build a filtered array and filter nested objects inside
-        if (Array.isArray(value)) {
-          const subset = (b as loose)[key];
-          if (Array.isArray(subset)) {
-            filtered[key] = value
-              .slice(0, subset.length)
-              .map((element, index) => {
-                const subsetElement = subset[index];
-                if ((typeof subsetElement === "object") && (subsetElement)) {
-                  return filter(element, subsetElement);
-                }
-                return element;
-              });
-            continue;
-          }
-        } // On nested objects references, build a filtered object recursively
-        else if (typeof value === "object") {
-          const subset = (b as loose)[key];
-          if ((typeof subset === "object") && (subset)) {
-            filtered[key] = filter(value as loose, subset as loose);
-            continue;
-          }
+  function filter(a: loose, b: loose): loose {
+    // If the actual value is an array, let assertEquals do the assertion.
+    if (Array.isArray(a)) {
+      return a;
+    }
+
+    // Prevent infinite loop with circular references with same filter
+    if ((seen.has(a)) && (seen.get(a) === b)) {
+      return a;
+    }
+    seen.set(a, b);
+    // Filter keys and symbols which are present in both actual and expected
+    const filtered = {} as loose;
+    const entries = [
+      ...Object.getOwnPropertyNames(a),
+      ...Object.getOwnPropertySymbols(a),
+    ]
+      .filter((key) => key in b)
+      .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
+    for (const [key, value] of entries) {
+      // On array references, build a filtered array and filter nested objects inside
+      if (Array.isArray(value)) {
+        const subset = (b as loose)[key];
+        if (Array.isArray(subset)) {
+          filtered[key] = value
+            .slice(0, subset.length)
+            .map((element, index) => {
+              const subsetElement = subset[index];
+              if ((typeof subsetElement === "object") && (subsetElement)) {
+                return filter(element, subsetElement);
+              }
+              return element;
+            });
+          continue;
         }
-        filtered[key] = value;
+      } // On nested objects references, build a filtered object recursively
+      else if (typeof value === "object") {
+        const subset = (b as loose)[key];
+        if ((typeof subset === "object") && (subset)) {
+          filtered[key] = filter(value as loose, subset as loose);
+          continue;
+        }
       }
-      return filtered;
-    })(actual, expected),
-    expected,
+      filtered[key] = value;
+    }
+    return filtered;
+  }
+  return assertEquals(
+    // get the intersection of "actual" and "expected"
+    // side effect: all the instances' constructor field is "Object" now.
+    filter(actual, expected),
+    // set (nested) instances' constructor field to be "Object" without changing expected value.
+    // see https://github.com/denoland/deno_std/pull/1419
+    filter(expected, expected),
   );
 }
 
@@ -591,39 +603,98 @@ export function fail(msg?: string): never {
 }
 
 /**
- * Executes a function, expecting it to throw.  If it does not, then it
- * throws.  An error class and a string that should be included in the
+ * Make an assertion that `error` is an `Error`.
+ * If not then an error will be thrown.
+ * An error class and a string that should be included in the
  * error message can also be asserted.
  */
-export function assertThrows<T = void>(
-  fn: () => T,
-  ErrorClass?: Constructor,
-  msgIncludes = "",
+export function assertIsError<E extends Error = Error>(
+  error: unknown,
+  // deno-lint-ignore no-explicit-any
+  ErrorClass?: new (...args: any[]) => E,
+  msgIncludes?: string,
+  msg?: string,
+): asserts error is E {
+  if (error instanceof Error === false) {
+    throw new AssertionError(`Expected "error" to be an Error object.`);
+  }
+  if (ErrorClass && !(error instanceof ErrorClass)) {
+    msg = `Expected error to be instance of "${ErrorClass.name}", but was "${
+      typeof error === "object" ? error?.constructor?.name : "[not an object]"
+    }"${msg ? `: ${msg}` : "."}`;
+    throw new AssertionError(msg);
+  }
+  if (
+    msgIncludes && (!(error instanceof Error) ||
+      !stripColor(error.message).includes(stripColor(msgIncludes)))
+  ) {
+    msg = `Expected error message to include "${msgIncludes}", but got "${
+      error instanceof Error ? error.message : "[not an Error]"
+    }"${msg ? `: ${msg}` : "."}`;
+    throw new AssertionError(msg);
+  }
+}
+
+/**
+ * Executes a function, expecting it to throw.  If it does not, then it
+ * throws. An error class and a string that should be included in the
+ * error message can also be asserted. Or you can pass a
+ * callback which will be passed the error, usually to apply some custom
+ * assertions on it.
+ */
+export function assertThrows<E extends Error = Error>(
+  fn: () => unknown,
+  // deno-lint-ignore no-explicit-any
+  ErrorClass?: new (...args: any[]) => E,
+  msgIncludes?: string,
+  msg?: string,
+): void;
+export function assertThrows(
+  fn: () => unknown,
+  errorCallback: (e: Error) => unknown,
+  msg?: string,
+): void;
+export function assertThrows<E extends Error = Error>(
+  fn: () => unknown,
+  errorClassOrCallback?:
+    // deno-lint-ignore no-explicit-any
+    | (new (...args: any[]) => E)
+    | ((e: Error) => unknown),
+  msgIncludesOrMsg?: string,
   msg?: string,
 ): void {
+  // deno-lint-ignore no-explicit-any
+  let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
+  let msgIncludes: string | undefined = undefined;
+  let errorCallback;
+  if (
+    errorClassOrCallback == null ||
+    errorClassOrCallback.prototype instanceof Error ||
+    errorClassOrCallback.prototype === Error.prototype
+  ) {
+    // deno-lint-ignore no-explicit-any
+    ErrorClass = errorClassOrCallback as new (...args: any[]) => E;
+    msgIncludes = msgIncludesOrMsg;
+    errorCallback = null;
+  } else {
+    errorCallback = errorClassOrCallback as (e: Error) => unknown;
+    msg = msgIncludesOrMsg;
+  }
   let doesThrow = false;
   try {
     fn();
-  } catch (e) {
-    if (e instanceof Error === false) {
+  } catch (error) {
+    if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was thrown.");
     }
-    if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg =
-        `Expected error to be instance of "${ErrorClass.name}", but was "${e.constructor.name}"${
-          msg ? `: ${msg}` : "."
-        }`;
-      throw new AssertionError(msg);
-    }
-    if (
-      msgIncludes &&
-      !stripColor(e.message).includes(stripColor(msgIncludes))
-    ) {
-      msg =
-        `Expected error message to include "${msgIncludes}", but got "${e.message}"${
-          msg ? `: ${msg}` : "."
-        }`;
-      throw new AssertionError(msg);
+    assertIsError(
+      error,
+      ErrorClass,
+      msgIncludes,
+      msg,
+    );
+    if (typeof errorCallback == "function") {
+      errorCallback(error);
     }
     doesThrow = true;
   }
@@ -635,38 +706,64 @@ export function assertThrows<T = void>(
 
 /**
  * Executes a function which returns a promise, expecting it to throw or reject.
- * If it does not, then it throws.  An error class and a string that should be
- * included in the error message can also be asserted.
+ * If it does not, then it throws. An error class and a string that should be
+ * included in the error message can also be asserted. Or you can pass a
+ * callback which will be passed the error, usually to apply some custom
+ * assertions on it.
  */
-export async function assertRejects<T = void>(
-  fn: () => Promise<T>,
-  ErrorClass?: Constructor,
-  msgIncludes = "",
+export function assertRejects<E extends Error = Error>(
+  fn: () => Promise<unknown>,
+  // deno-lint-ignore no-explicit-any
+  ErrorClass?: new (...args: any[]) => E,
+  msgIncludes?: string,
+  msg?: string,
+): Promise<void>;
+export function assertRejects(
+  fn: () => Promise<unknown>,
+  errorCallback: (e: Error) => unknown,
+  msg?: string,
+): Promise<void>;
+export async function assertRejects<E extends Error = Error>(
+  fn: () => Promise<unknown>,
+  errorClassOrCallback?:
+    // deno-lint-ignore no-explicit-any
+    | (new (...args: any[]) => E)
+    | ((e: Error) => unknown),
+  msgIncludesOrMsg?: string,
   msg?: string,
 ): Promise<void> {
+  // deno-lint-ignore no-explicit-any
+  let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
+  let msgIncludes: string | undefined = undefined;
+  let errorCallback;
+  if (
+    errorClassOrCallback == null ||
+    errorClassOrCallback.prototype instanceof Error ||
+    errorClassOrCallback.prototype === Error.prototype
+  ) {
+    // deno-lint-ignore no-explicit-any
+    ErrorClass = errorClassOrCallback as new (...args: any[]) => E;
+    msgIncludes = msgIncludesOrMsg;
+    errorCallback = null;
+  } else {
+    errorCallback = errorClassOrCallback as (e: Error) => unknown;
+    msg = msgIncludesOrMsg;
+  }
   let doesThrow = false;
   try {
     await fn();
-  } catch (e) {
-    if (e instanceof Error === false) {
+  } catch (error) {
+    if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was thrown or rejected.");
     }
-    if (ErrorClass && !(e instanceof ErrorClass)) {
-      msg =
-        `Expected error to be instance of "${ErrorClass.name}", but was "${e.constructor.name}"${
-          msg ? `: ${msg}` : "."
-        }`;
-      throw new AssertionError(msg);
-    }
-    if (
-      msgIncludes &&
-      !stripColor(e.message).includes(stripColor(msgIncludes))
-    ) {
-      msg =
-        `Expected error message to include "${msgIncludes}", but got "${e.message}"${
-          msg ? `: ${msg}` : "."
-        }`;
-      throw new AssertionError(msg);
+    assertIsError(
+      error,
+      ErrorClass,
+      msgIncludes,
+      msg,
+    );
+    if (typeof errorCallback == "function") {
+      errorCallback(error);
     }
     doesThrow = true;
   }

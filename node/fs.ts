@@ -25,12 +25,13 @@ import { readlink, readlinkSync } from "./_fs/_fs_readlink.ts";
 import { realpath, realpathSync } from "./_fs/_fs_realpath.ts";
 import { rename, renameSync } from "./_fs/_fs_rename.ts";
 import { rmdir, rmdirSync } from "./_fs/_fs_rmdir.ts";
+import { rm, rmSync } from "./_fs/_fs_rm.ts";
 import { stat, statSync } from "./_fs/_fs_stat.ts";
 import { symlink, symlinkSync } from "./_fs/_fs_symlink.ts";
 import { truncate, truncateSync } from "./_fs/_fs_truncate.ts";
 import { unlink, unlinkSync } from "./_fs/_fs_unlink.ts";
 import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
-import { watch } from "./_fs/_fs_watch.ts";
+import { watch, watchFile } from "./_fs/_fs_watch.ts";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
 
 import * as promises from "./fs/promises.ts";
@@ -86,6 +87,8 @@ export default {
   renameSync,
   rmdir,
   rmdirSync,
+  rm,
+  rmSync,
   stat,
   statSync,
   symlink,
@@ -97,6 +100,7 @@ export default {
   utimes,
   utimesSync,
   watch,
+  watchFile,
   writeFile,
   writeFileSync,
 };
@@ -150,8 +154,10 @@ export {
   realpathSync,
   rename,
   renameSync,
+  rm,
   rmdir,
   rmdirSync,
+  rmSync,
   stat,
   statSync,
   symlink,
@@ -163,6 +169,7 @@ export {
   utimes,
   utimesSync,
   watch,
+  watchFile,
   writeFile,
   writeFileSync,
 };

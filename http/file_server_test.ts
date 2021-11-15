@@ -4,23 +4,33 @@ import {
   assertEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import { BufReader } from "../io/bufio.ts";
+import { BufReader } from "../io/buffer.ts";
+import { iterateReader, readAll, writeAll } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { Response } from "./server.ts";
-import { FileServerArgs } from "./file_server.ts";
+import { serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
-import { iter, readAll, writeAll } from "../io/util.ts";
+import { isWindows } from "../_util/os.ts";
 
 let fileServer: Deno.Process<Deno.RunOptions & { stdout: "piped" }>;
 
-type FileServerCfg = Omit<FileServerArgs, "_"> & { target?: string };
+interface FileServerCfg {
+  port?: string;
+  cors?: boolean;
+  "dir-listing"?: boolean;
+  dotfiles?: boolean;
+  host?: string;
+  cert?: string;
+  key?: string;
+  help?: boolean;
+  target?: string;
+}
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 const testdataDir = resolve(moduleDir, "testdata");
 
 async function startFileServer({
   target = ".",
-  port = 4507,
+  port = "4507",
   "dir-listing": dirListing = true,
   dotfiles = true,
 }: FileServerCfg = {}) {
@@ -28,6 +38,7 @@ async function startFileServer({
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -51,10 +62,11 @@ async function startFileServer({
 }
 
 async function startFileServerAsLibrary({}: FileServerCfg = {}) {
-  fileServer = await Deno.run({
+  fileServer = Deno.run({
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -82,16 +94,12 @@ async function killFileServer() {
   fileServer.stdout!.close();
 }
 
-interface StringResponse extends Response {
-  body: string;
-}
-
 /* HTTP GET request allowing arbitrary paths */
 async function fetchExactPath(
   hostname: string,
   port: number,
   path: string,
-): Promise<StringResponse> {
+): Promise<Response> {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const request = encoder.encode("GET " + path + " HTTP/1.1\r\n\r\n");
@@ -104,7 +112,7 @@ async function fetchExactPath(
     let currentResult = "";
     let contentLength = -1;
     let startOfBody = -1;
-    for await (const chunk of iter(conn)) {
+    for await (const chunk of iterateReader(conn)) {
       currentResult += decoder.decode(chunk);
       if (contentLength === -1) {
         const match = /^content-length: (.*)$/m.exec(currentResult);
@@ -142,11 +150,10 @@ async function fetchExactPath(
       }
       match = headersReg.exec(headersStr);
     }
-    return {
+    return new Response(body, {
       status: statusCode,
       headers: new Headers(headersObj),
-      body: body,
-    };
+    });
   } finally {
     if (conn) {
       Deno.close(conn.rid);
@@ -201,11 +208,21 @@ Deno.test("serveDirectory", async function () {
     // `Deno.FileInfo` is not completely compatible with Windows yet
     // TODO(bartlomieju): `mode` should work correctly in the future.
     // Correct this test case accordingly.
-    Deno.build.os !== "windows" &&
+    isWindows === false &&
       assert(/<td class="mode">(\s)*\([a-zA-Z-]{10}\)(\s)*<\/td>/.test(page));
-    Deno.build.os === "windows" &&
+    isWindows &&
       assert(/<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/.test(page));
     assert(page.includes(`<a href="/README.md">README.md</a>`));
+  } finally {
+    await killFileServer();
+  }
+});
+Deno.test("serveDirectory with filename including percent symbol", async function () {
+  await startFileServer();
+  try {
+    const res = await fetch("http://localhost:4507/testdata/");
+    const page = await res.text();
+    assertStringIncludes(page, "%2525A.txt");
   } finally {
     await killFileServer();
   }
@@ -257,7 +274,7 @@ Deno.test("checkPathTraversalAbsoluteURI", async function () {
       "http://localhost/../../../..",
     );
     assertEquals(res.status, 200);
-    assertStringIncludes(res.body, "README.md");
+    assertStringIncludes(await res.text(), "README.md");
   } finally {
     await killFileServer();
   }
@@ -280,9 +297,16 @@ Deno.test("checkURIEncodedPathTraversal", async function () {
 Deno.test("serveWithUnorthodoxFilename", async function () {
   await startFileServer();
   try {
-    const malformedRes = await fetch("http://localhost:4507/testdata/%");
-    assertEquals(malformedRes.status, 400);
-    await malformedRes.text(); // Consuming the body so that the test doesn't leak resources
+    let res = await fetch("http://localhost:4507/testdata/%");
+    assert(res.headers.has("access-control-allow-origin"));
+    assert(res.headers.has("access-control-allow-headers"));
+    assertEquals(res.status, 200);
+    const _ = await res.text();
+    res = await fetch("http://localhost:4507/testdata/test%20file.txt");
+    assert(res.headers.has("access-control-allow-origin"));
+    assert(res.headers.has("access-control-allow-headers"));
+    assertEquals(res.status, 200);
+    await res.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
     await killFileServer();
   }
@@ -312,10 +336,8 @@ Deno.test("printHelp", async function () {
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
-      // TODO(ry) It ought to be possible to get the help output without
-      // --allow-read.
-      "--allow-read",
       "file_server.ts",
       "--help",
     ],
@@ -370,12 +392,13 @@ Deno.test("file_server should ignore query params", async () => {
 
 async function startTlsFileServer({
   target = ".",
-  port = 4577,
+  port = "4577",
 }: FileServerCfg = {}) {
   fileServer = Deno.run({
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -432,6 +455,7 @@ Deno.test("partial TLS arguments fail", async function () {
     cmd: [
       Deno.execPath(),
       "run",
+      "--no-check",
       "--quiet",
       "--allow-read",
       "--allow-net",
@@ -480,7 +504,7 @@ Deno.test("file_server do not show dotfiles", async function () {
     assert(!(await res.text()).includes(".dotfile"));
 
     res = await fetch("http://localhost:4507/testdata/.dotfile");
-    assertEquals((await res.text()), "dotfile");
+    assertEquals(await res.text(), "dotfile");
   } finally {
     await killFileServer();
   }
@@ -588,7 +612,7 @@ const getTestFileLastModified = async () => {
 
 const createEtagHash = async (message: string) => {
   // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-  const hashType = "SHA-1"; // Faster, and this isn't a security senitive cryptographic use case
+  const hashType = "SHA-1"; // Faster, and this isn't a security sensitive cryptographic use case
   const msgUint8 = new TextEncoder().encode(message);
   const hashBuffer = await crypto.subtle.digest(hashType, msgUint8);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -805,7 +829,7 @@ Deno.test("file_server sets `Last-Modified` header correctly", async () => {
       ? fileInfo.mtime.getTime()
       : Number.NaN;
 
-    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
+    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accommodate minor variances in how long the test(s) take to execute
     assertEquals(round(lastModifiedTime), round(expectedTime));
     await res.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
@@ -823,7 +847,7 @@ Deno.test("file_server sets `Date` header correctly", async () => {
     const expectedTime = fileInfo.atime && fileInfo.atime instanceof Date
       ? fileInfo.atime.getTime()
       : Number.NaN;
-    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accomodate minor variances in how long the test(s) take to execute
+    const round = (d: number) => Math.floor(d / 1000 / 60 / 30); // Rounds epochs to 2 minute units, to accommodate minor variances in how long the test(s) take to execute
     assertEquals(round(date), round(expectedTime));
     await res.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
@@ -905,5 +929,41 @@ Deno.test(
     } finally {
       await killFileServer();
     }
+  },
+);
+
+Deno.test(
+  "file_server `serveFile` serve test file",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    const localFile = new TextDecoder().decode(
+      await Deno.readFile(testdataPath),
+    );
+    assertEquals(res.status, 200);
+    assertEquals(await res.text(), localFile);
+  },
+);
+Deno.test(
+  "file_server `serveFile` should return 416 due to a bad range request (500-200)",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    req.headers.set("range", "bytes=500-200");
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 416);
+  },
+);
+Deno.test(
+  "file_server `serveFile` returns 304 for requests with if-modified-since if the requested resource has not been modified after the given date",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/test file.txt");
+    const expectedEtag = await getTestFileEtag();
+    req.headers.set("if-none-match", expectedEtag);
+    const testdataPath = join(testdataDir, "test file.txt");
+    const res = await serveFile(req, testdataPath);
+    assertEquals(res.status, 304);
+    assertEquals(res.statusText, "Not Modified");
   },
 );

@@ -15,7 +15,7 @@ function getValidTime(
     (Number.isNaN(time) || !Number.isFinite(time))
   ) {
     throw new Deno.errors.InvalidData(
-      `invalid ${name}, must not be infitiny or NaN`,
+      `invalid ${name}, must not be infinity or NaN`,
     );
   }
 

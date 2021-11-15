@@ -3,21 +3,6 @@
 import { assertEquals } from "../testing/asserts.ts";
 import { sortBy } from "./sort_by.ts";
 
-function sortByTest<T>(
-  input: [
-    Array<T>,
-    | ((el: T) => number)
-    | ((el: T) => string)
-    | ((el: T) => bigint)
-    | ((el: T) => Date),
-  ],
-  expected: Array<T>,
-  message?: string,
-) {
-  const actual = sortBy(...input);
-  assertEquals(actual, expected, message);
-}
-
 Deno.test({
   name: "[collections/sortBy] no mutation",
   fn() {
@@ -29,42 +14,44 @@ Deno.test({
 });
 
 Deno.test({
+  name: "[collections/sortBy] calls the selector function once",
+  fn() {
+    let callCount = 0;
+    const array = [0, 1, 2];
+    sortBy(array, (it) => {
+      callCount++;
+      return it;
+    });
+
+    assertEquals(callCount, array.length);
+  },
+});
+
+Deno.test({
   name: "[collections/sortBy] empty input",
   fn() {
-    sortByTest(
-      [[], () => 5],
-      [],
-    );
+    assertEquals(sortBy([], () => 5), []);
   },
 });
 
 Deno.test({
   name: "[collections/sortBy] identity selector",
   fn() {
-    sortByTest(
-      [
-        [2, 3, 1],
-        (it) => it,
-      ],
-      [1, 2, 3],
-    );
+    assertEquals(sortBy([2, 3, 1], (it) => it), [1, 2, 3]);
   },
 });
 
 Deno.test({
   name: "[collections/sortBy] stable sort",
   fn() {
-    sortByTest(
-      [
-        [
-          { id: 1, date: "February 1, 2022" },
-          { id: 2, date: "December 17, 1995" },
-          { id: 3, date: "June 12, 2012" },
-          { id: 4, date: "December 17, 1995" },
-          { id: 5, date: "June 12, 2012" },
-        ],
-        (it) => new Date(it.date),
-      ],
+    assertEquals(
+      sortBy([
+        { id: 1, date: "February 1, 2022" },
+        { id: 2, date: "December 17, 1995" },
+        { id: 3, date: "June 12, 2012" },
+        { id: 4, date: "December 17, 1995" },
+        { id: 5, date: "June 12, 2012" },
+      ], (it) => new Date(it.date)),
       [
         { id: 2, date: "December 17, 1995" },
         { id: 4, date: "December 17, 1995" },
@@ -73,17 +60,15 @@ Deno.test({
         { id: 1, date: "February 1, 2022" },
       ],
     );
-    sortByTest(
-      [
-        [
-          { id: 1, str: "c" },
-          { id: 2, str: "a" },
-          { id: 3, str: "b" },
-          { id: 4, str: "a" },
-          { id: 5, str: "b" },
-        ],
-        (it) => it.str,
-      ],
+
+    assertEquals(
+      sortBy([
+        { id: 1, str: "c" },
+        { id: 2, str: "a" },
+        { id: 3, str: "b" },
+        { id: 4, str: "a" },
+        { id: 5, str: "b" },
+      ], (it) => it.str),
       [
         { id: 2, str: "a" },
         { id: 4, str: "a" },
@@ -98,20 +83,17 @@ Deno.test({
 Deno.test({
   name: "[collections/sortBy] special number values",
   fn() {
-    sortByTest(
-      [
-        [
-          1,
-          Number.POSITIVE_INFINITY,
-          2,
-          Number.NEGATIVE_INFINITY,
-          3,
-          Number.NaN,
-          4,
-          Number.NaN,
-        ],
-        (it) => it,
-      ],
+    assertEquals(
+      sortBy([
+        1,
+        Number.POSITIVE_INFINITY,
+        2,
+        Number.NEGATIVE_INFINITY,
+        3,
+        Number.NaN,
+        4,
+        Number.NaN,
+      ], (it) => it),
       [
         Number.NEGATIVE_INFINITY,
         1,
@@ -123,23 +105,21 @@ Deno.test({
         Number.NaN,
       ],
     );
-    sortByTest(
-      [
-        [
-          Number.NaN,
-          1,
-          Number.POSITIVE_INFINITY,
-          Number.NaN,
-          7,
-          Number.NEGATIVE_INFINITY,
-          Number.NaN,
-          2,
-          6,
-          5,
-          9,
-        ],
-        (it) => it,
-      ],
+
+    assertEquals(
+      sortBy([
+        Number.NaN,
+        1,
+        Number.POSITIVE_INFINITY,
+        Number.NaN,
+        7,
+        Number.NEGATIVE_INFINITY,
+        Number.NaN,
+        2,
+        6,
+        5,
+        9,
+      ], (it) => it),
       [
         Number.NEGATIVE_INFINITY,
         1,
@@ -154,6 +134,15 @@ Deno.test({
         Number.NaN,
       ],
     );
+
+    // Test that NaN sort is stable.
+    const nanArray = [
+      { id: 1, nan: Number.NaN },
+      { id: 2, nan: Number.NaN },
+      { id: 3, nan: Number.NaN },
+      { id: 4, nan: Number.NaN },
+    ];
+    assertEquals(sortBy(nanArray, ({ nan }) => nan), nanArray);
   },
 });
 
@@ -167,54 +156,39 @@ Deno.test({
       { name: "deploy", stage: 4 },
     ];
 
-    sortByTest(
-      [
-        testArray,
-        (it) => it.stage,
-      ],
-      [
-        { name: "build", stage: 1 },
-        { name: "test", stage: 2 },
-        { name: "benchmark", stage: 3 },
-        { name: "deploy", stage: 4 },
-      ],
-    );
-    sortByTest(
-      [
-        testArray,
-        (it) => it.name,
-      ],
-      [
-        { name: "benchmark", stage: 3 },
-        { name: "build", stage: 1 },
-        { name: "deploy", stage: 4 },
-        { name: "test", stage: 2 },
-      ],
-    );
-    sortByTest(
-      [
-        [
-          "9007199254740999",
-          "9007199254740991",
-          "9007199254740995",
-        ],
-        (it) => BigInt(it),
-      ],
+    assertEquals(sortBy(testArray, (it) => it.stage), [
+      { name: "build", stage: 1 },
+      { name: "test", stage: 2 },
+      { name: "benchmark", stage: 3 },
+      { name: "deploy", stage: 4 },
+    ]);
+
+    assertEquals(sortBy(testArray, (it) => it.name), [
+      { name: "benchmark", stage: 3 },
+      { name: "build", stage: 1 },
+      { name: "deploy", stage: 4 },
+      { name: "test", stage: 2 },
+    ]);
+
+    assertEquals(
+      sortBy([
+        "9007199254740999",
+        "9007199254740991",
+        "9007199254740995",
+      ], (it) => BigInt(it)),
       [
         "9007199254740991",
         "9007199254740995",
         "9007199254740999",
       ],
     );
-    sortByTest(
-      [
-        [
-          "February 1, 2022",
-          "December 17, 1995",
-          "June 12, 2012",
-        ],
-        (it) => new Date(it),
-      ],
+
+    assertEquals(
+      sortBy([
+        "February 1, 2022",
+        "December 17, 1995",
+        "June 12, 2012",
+      ], (it) => new Date(it)),
       [
         "December 17, 1995",
         "June 12, 2012",

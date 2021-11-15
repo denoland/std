@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "../async/mod.ts";
 import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
-import { readAll } from "../io/util.ts";
+import { readAll } from "../streams/conversion.ts";
 
 export type BinaryEncodings = "binary";
 
@@ -21,6 +21,11 @@ export type Encodings = BinaryEncodings | TextEncodings;
 export function notImplemented(msg?: string): never {
   const message = msg ? `Not implemented: ${msg}` : "Not implemented";
   throw new Error(message);
+}
+
+export function warnNotImplemented(msg?: string): void {
+  const message = msg ? `Not implemented: ${msg}` : "Not implemented";
+  console.warn(message);
 }
 
 export type _TextDecoder = typeof TextDecoder.prototype;
@@ -170,8 +175,7 @@ export function once<T = undefined>(
 
 /**
  * @param {number} [expectedExecutions = 1]
- * @param {number} [timeout = 1000] Milliseconds to wait before the promise is forcefully exited
-*/
+ * @param {number} [timeout = 1000] Milliseconds to wait before the promise is forcefully exited */
 export function mustCall<T extends unknown[]>(
   fn: ((...args: T) => void) = () => {},
   expectedExecutions = 1,
@@ -245,4 +249,18 @@ export async function assertCallbackErrorUncaught(
   await cleanup?.();
   assert(!status.success);
   assertStringIncludes(stderr, "Error: success");
+}
+
+export function makeMethodsEnumerable(klass: { new (): unknown }): void {
+  const proto = klass.prototype;
+  for (const key of Object.getOwnPropertyNames(proto)) {
+    const value = proto[key];
+    if (typeof value === "function") {
+      const desc = Reflect.getOwnPropertyDescriptor(proto, key);
+      if (desc) {
+        desc.enumerable = true;
+        Object.defineProperty(proto, key, desc);
+      }
+    }
+  }
 }

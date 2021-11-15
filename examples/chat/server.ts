@@ -1,12 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { listenAndServe } from "../../http/server.ts";
-import {
-  acceptable,
-  acceptWebSocket,
-  isWebSocketCloseEvent,
-  WebSocket,
-} from "../../ws/mod.ts";
 import { fromFileUrl } from "../../path/mod.ts";
+import { readableStreamFromReader } from "../../streams/conversion.ts";
 
 const clients = new Map<number, WebSocket>();
 let clientId = 0;
@@ -15,67 +9,72 @@ function dispatch(msg: string): void {
     client.send(msg);
   }
 }
-async function wsHandler(ws: WebSocket) {
+
+function wsHandler(ws: WebSocket) {
   const id = ++clientId;
   clients.set(id, ws);
-  dispatch(`Connected: [${id}]`);
-  for await (const msg of ws) {
-    console.log(`msg:${id}`, msg);
-    if (typeof msg === "string") {
-      dispatch(`[${id}]: ${msg}`);
-    } else if (isWebSocketCloseEvent(msg)) {
-      clients.delete(id);
-      dispatch(`Closed: [${id}]`);
-      break;
-    }
-  }
+  ws.onopen = () => {
+    dispatch(`Connected: [${id}]`);
+  };
+  ws.onmessage = (e) => {
+    console.log(`msg:${id}`, e.data);
+    dispatch(`[${id}]: ${e.data}`);
+  };
+  ws.onclose = () => {
+    clients.delete(id);
+    dispatch(`Closed: [${id}]`);
+  };
 }
 
-listenAndServe({ port: 8080 }, async (req) => {
-  if (req.method === "GET" && req.url === "/") {
+async function requestHandler(req: Deno.RequestEvent) {
+  const pathname = new URL(req.request.url).pathname;
+  if (req.request.method === "GET" && pathname === "/") {
     //Serve with hack
     const u = new URL("./index.html", import.meta.url);
     if (u.protocol.startsWith("http")) {
       // server launched by deno run http(s)://.../server.ts,
       fetch(u.href).then(async (resp) => {
         const body = new Uint8Array(await resp.arrayBuffer());
-        return req.respond({
-          status: resp.status,
-          headers: new Headers({
-            "content-type": "text/html",
+        req.respondWith(
+          new Response(body, {
+            status: resp.status,
+            headers: {
+              "content-type": "text/html",
+            },
           }),
-          body,
-        });
+        );
       });
     } else {
       // server launched by deno run ./server.ts
       const file = await Deno.open(fromFileUrl(u));
-      req.respond({
-        status: 200,
-        headers: new Headers({
-          "content-type": "text/html",
+      req.respondWith(
+        new Response(readableStreamFromReader(file), {
+          status: 200,
+          headers: {
+            "content-type": "text/html",
+          },
         }),
-        body: file,
-      });
+      );
     }
+  } else if (
+    req.request.method === "GET" && pathname === "/favicon.ico"
+  ) {
+    req.respondWith(Response.redirect("https://deno.land/favicon.ico", 302));
+  } else if (req.request.method === "GET" && pathname === "/ws") {
+    const { socket, response } = Deno.upgradeWebSocket(req.request);
+    wsHandler(socket);
+    req.respondWith(response);
   }
-  if (req.method === "GET" && req.url === "/favicon.ico") {
-    req.respond({
-      status: 302,
-      headers: new Headers({
-        location: "https://deno.land/favicon.ico",
-      }),
-    });
-  }
-  if (req.method === "GET" && req.url === "/ws") {
-    if (acceptable(req)) {
-      acceptWebSocket({
-        conn: req.conn,
-        bufReader: req.r,
-        bufWriter: req.w,
-        headers: req.headers,
-      }).then(wsHandler);
-    }
-  }
-});
+}
+
+const server = Deno.listen({ port: 8080 });
 console.log("chat server starting on :8080....");
+
+for await (const conn of server) {
+  (async () => {
+    const httpConn = Deno.serveHttp(conn);
+    for await (const requestEvent of httpConn) {
+      requestHandler(requestEvent);
+    }
+  })();
+}
