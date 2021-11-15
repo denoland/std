@@ -29,7 +29,7 @@ jobs:
           deno-version: ${{ matrix.deno }}
 
       - name: Run tests canary
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/_tools/versions/
+        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/_tools/test.ts,node/_tools/versions/
 
       - name: Type check browser compatible modules
         shell: bash
@@ -58,6 +58,30 @@ jobs:
         run: |
           rm -rf ./cov/
           rm cov.lcov
+
+  node:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        deno: [canary]
+        os: [macOS-latest, ubuntu-latest, windows-2019]
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          persist-credentials: false
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1.0.0
+        with:
+          deno-version: ${{ matrix.deno }}
+
+      - name: Run Node tests canary
+        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/_tools/test.ts
 
   lint:
     runs-on: ubuntu-latest
