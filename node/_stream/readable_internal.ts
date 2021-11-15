@@ -115,7 +115,7 @@ export function emitReadable(stream: Duplex | Readable) {
   if (!state.emittedReadable) {
     debug("emitReadable", state.flowing);
     state.emittedReadable = true;
-    nextTick(() => emitReadable_(stream));
+    nextTick(emitReadable_, stream);
   }
 }
 
@@ -139,7 +139,7 @@ export function endReadable(stream: Readable) {
   debug("endReadable", state.endEmitted);
   if (!state.endEmitted) {
     state.ended = true;
-    nextTick(() => endReadableNT(state, stream));
+    nextTick(endReadableNT, state, stream);
   }
 }
 

@@ -33,7 +33,7 @@ export function endDuplex(stream: Duplex) {
   debug("endReadable", state.endEmitted);
   if (!state.endEmitted) {
     state.ended = true;
-    nextTick(() => endReadableNT(state, stream));
+    nextTick(endReadableNT, state, stream);
   }
 }
 
@@ -48,7 +48,7 @@ function endReadableNT(state: ReadableState, stream: Duplex) {
     stream.emit("end");
 
     if (stream.writable && stream.allowHalfOpen === false) {
-      nextTick(() => endWritableNT(stream));
+      nextTick(endWritableNT, stream);
     } else if (state.autoDestroy) {
       // In case of duplex streams we need a way to detect
       // if the writable side is ready for autoDestroy as well.
@@ -156,7 +156,7 @@ export function finishMaybe(
     if (state.pendingcb === 0 && needFinish(state)) {
       state.pendingcb++;
       if (sync) {
-        nextTick(() => finish(stream, state));
+        nextTick(finish, stream, state);
       } else {
         finish(stream, state);
       }
@@ -192,7 +192,7 @@ export function onwrite(stream: Duplex, er?: Error | null) {
     }
 
     if (sync) {
-      nextTick(() => onwriteError(stream, state, er, cb));
+      nextTick(onwriteError, stream, state, er, cb);
     } else {
       onwriteError(stream, state, er, cb);
     }
@@ -214,9 +214,7 @@ export function onwrite(stream: Duplex, er?: Error | null) {
           stream: stream as unknown as Writable,
           state,
         };
-        nextTick(() =>
-          afterWriteTick(state.afterWriteTickInfo as AfterWriteTick)
-        );
+        nextTick(afterWriteTick, state.afterWriteTickInfo as AfterWriteTick);
       }
     } else {
       afterWrite(

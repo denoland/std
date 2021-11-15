@@ -248,7 +248,7 @@ class Writable extends Stream {
   destroy(err?: Error | null, cb?: () => void) {
     const state = this._writableState;
     if (!state.destroyed) {
-      nextTick(() => errorBuffer(state));
+      nextTick(errorBuffer, state);
     }
     destroy.call(this, err, cb);
     return this;
@@ -308,9 +308,10 @@ class Writable extends Stream {
 
     if (typeof cb === "function") {
       if (err || state.finished) {
-        nextTick(() => {
-          (cb as (error?: Error | undefined) => void)(err);
-        });
+        nextTick(
+          cb as (error?: Error | undefined) => void,
+          err,
+        );
       } else {
         state[kOnFinished].push(cb);
       }
@@ -405,7 +406,7 @@ class Writable extends Stream {
     }
 
     if (err) {
-      nextTick(() => cb(err));
+      nextTick(cb, err);
       errorOrDestroy(this, err, true);
       return false;
     }

@@ -329,7 +329,7 @@ class Duplex extends Stream {
         if (state.length) {
           emitReadable(this);
         } else if (!state.reading) {
-          nextTick(() => nReadingNextTick(this));
+          nextTick(nReadingNextTick, this);
         }
       }
     }
@@ -480,7 +480,7 @@ class Duplex extends Stream {
     const res = super.removeAllListeners(ev);
 
     if (ev === "readable" || ev === undefined) {
-      nextTick(() => updateReadableListening(this));
+      nextTick(updateReadableListening, this);
     }
 
     return res;
@@ -516,7 +516,7 @@ class Duplex extends Stream {
     const res = super.removeListener.call(this, ev, fn);
 
     if (ev === "readable") {
-      nextTick(() => updateReadableListening(this));
+      nextTick(updateReadableListening, this);
     }
 
     // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
@@ -686,9 +686,10 @@ class Duplex extends Stream {
 
     if (typeof cb === "function") {
       if (err || state.finished) {
-        nextTick(() => {
-          (cb as (error?: Error | undefined) => void)(err);
-        });
+        nextTick(
+          cb as (error?: Error | undefined) => void,
+          err,
+        );
       } else {
         state[kOnFinished].push(cb);
       }

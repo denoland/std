@@ -295,7 +295,7 @@ export function finishMaybe(
     if (state.pendingcb === 0 && needFinish(state)) {
       state.pendingcb++;
       if (sync) {
-        nextTick(() => finish(stream, state));
+        nextTick(finish, stream, state);
       } else {
         finish(stream, state);
       }
@@ -359,7 +359,7 @@ export function onwrite(stream: Writable, er?: Error | null) {
     }
 
     if (sync) {
-      nextTick(() => onwriteError(stream, state, er, cb));
+      nextTick(onwriteError, stream, state, er, cb);
     } else {
       onwriteError(stream, state, er, cb);
     }
@@ -381,8 +381,9 @@ export function onwrite(stream: Writable, er?: Error | null) {
           stream,
           state,
         };
-        nextTick(() =>
-          afterWriteTick(state.afterWriteTickInfo as AfterWriteTick)
+        nextTick(
+          afterWriteTick,
+          state.afterWriteTickInfo as AfterWriteTick,
         );
       }
     } else {
@@ -409,7 +410,7 @@ export function prefinish(stream: Writable, state: WritableState) {
           state.prefinished = true;
           stream.emit("prefinish");
           state.pendingcb++;
-          nextTick(() => finish(stream, state));
+          nextTick(finish, stream, state);
         }
       });
       state.sync = false;

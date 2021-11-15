@@ -60,8 +60,8 @@ export default function from(
     if (needToClose) {
       needToClose = false;
       close().then(
-        () => nextTick(() => cb(error)),
-        (e) => nextTick(() => cb(error || e)),
+        () => nextTick(cb, error),
+        (e) => nextTick(cb, error || e),
       );
     } else {
       cb(error);
