@@ -136,7 +136,7 @@ interface _Readable extends Readable {
   fd: number;
   _isStdio: undefined;
   _isRawMode: boolean;
-  get isRaw(): boolean
+  get isRaw(): boolean;
   setRawMode(enable: boolean): this;
 }
 
