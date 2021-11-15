@@ -71,7 +71,7 @@ export function addDefaultLogger(
 export const log = defaultLogger;
 
 /**
- * Creates a file loggre with thee default log levels using the givn threshold.
+ * Creates a file logger with the default log levels using the given threshold.
  */
 export function buildDefaultFileLogger(
   threshold: keyof DefaultLogLevels,
