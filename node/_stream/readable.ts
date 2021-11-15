@@ -141,11 +141,13 @@ class Readable extends Stream {
     debug("read", n);
     // Same as parseInt(undefined, 10), however V8 7.3 performance regressed
     // in this scenario, so we are doing it manually.
+    console.log("pre read n", n, (new Error()).stack);
     if (n === undefined) {
       n = NaN;
     }
     const state = this._readableState;
     const nOrig = n;
+    console.log("read n", nOrig);
 
     if (n > state.highWaterMark) {
       state.highWaterMark = computeNewHighWaterMark(n);
@@ -171,7 +173,9 @@ class Readable extends Stream {
       return null;
     }
 
+    console.log("pre first howMuchToRead", n);
     n = howMuchToRead(n, state);
+    console.log("after first howMuchToRead", n);
 
     if (n === 0 && state.ended) {
       if (state.length === 0) {
@@ -198,10 +202,15 @@ class Readable extends Stream {
       if (state.length === 0) {
         state.needReadable = true;
       }
-      this._read();
+      console.log("before _read", state.highWaterMark);
+      this._read(state.highWaterMark);
       state.sync = false;
+      console.log("after _read", state.reading);
+      // console.log("before _read", nOrig, state);
       if (!state.reading) {
+        console.log("before second howMuchToRead", nOrig, state);
         n = howMuchToRead(nOrig, state);
+        console.log("after second howMuchToRead", n);
       }
     }
 
@@ -212,6 +221,7 @@ class Readable extends Stream {
       ret = null;
     }
 
+    console.log("ret value", ret, nOrig, n, state);
     if (ret === null) {
       state.needReadable = state.length <= state.highWaterMark;
       n = 0;
@@ -234,7 +244,9 @@ class Readable extends Stream {
       }
     }
 
-    if (ret !== null) {
+    if (ret !== null && !state.errorEmitted && !state.closeEmitted) {
+      console.log("emit in readable", ret);
+      state.dataEmitted = true;
       this.emit("data", ret);
     }
 

@@ -193,6 +193,7 @@ export function errorOrDestroy(
 
 function flow(stream: Duplex | Readable) {
   const state = stream._readableState;
+  console.log("flow", state);
   debug("flow", state.flowing);
   while (state.flowing && stream.read() !== null);
 }
@@ -359,6 +360,7 @@ export function readableAddChunk(
   addToFront: boolean,
 ) {
   const state = stream._readableState;
+  console.log("readableAddChunk", (new Error()).stack, state, chunk, addToFront);
   let usedEncoding = encoding;
 
   let err;
@@ -381,6 +383,7 @@ export function readableAddChunk(
   if (err) {
     errorOrDestroy(stream, err);
   } else if (chunk === null) {
+    console.log("chunk null");
     state.reading = false;
     onEofChunk(stream, state);
   } else if (state.objectMode || (chunk.length > 0)) {
@@ -395,6 +398,7 @@ export function readableAddChunk(
     } else if (state.destroyed || state.errored) {
       return false;
     } else {
+      console.log("not object mode", state.objectMode, chunk.length);
       state.reading = false;
       if (state.decoder && !usedEncoding) {
         //TODO(Soremwar)
@@ -410,6 +414,7 @@ export function readableAddChunk(
       }
     }
   } else if (!addToFront) {
+    console.log("not add to front");
     state.reading = false;
     maybeReadMore(stream, state);
   }
@@ -421,19 +426,22 @@ export function readableAddChunk(
 export function resume(stream: Duplex | Readable, state: ReadableState) {
   if (!state.resumeScheduled) {
     state.resumeScheduled = true;
+    console.log("scheduling resume_", (new Error()).stack);
     queueMicrotask(() => resume_(stream, state));
   }
 }
 
 function resume_(stream: Duplex | Readable, state: ReadableState) {
   debug("resume", state.reading);
+  console.log("before stream.read()");
   if (!state.reading) {
     stream.read(0);
   }
-
+  console.log("after stream.read()");
   state.resumeScheduled = false;
   stream.emit("resume");
   flow(stream);
+  console.log("after flow", state.flowing, state.reading);
   if (state.flowing && !state.reading) {
     stream.read(0);
   }

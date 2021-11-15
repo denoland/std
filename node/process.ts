@@ -206,9 +206,15 @@ export const stderr = createWritableStdioStream(Deno.stderr);
 
 /** https://nodejs.org/api/process.html#process_process_stdin */
 export const stdin = new Readable({
-  read(this: Readable, size: number) {
-    const p = Buffer.alloc(size || 16 * 1024);
+  highWaterMark: 0,
+  emitClose: false,
+  read(this: Readable, size?: number) {
+    console.log("readable size", size);
+    const p = Buffer.alloc(size ?? 16 * 1024);
     const length = Deno.stdin.readSync(p);
+    if (length === 0) {
+      return;
+    }
     this.push(length === null ? null : p.slice(0, length));
   },
 }) as _Readable;
