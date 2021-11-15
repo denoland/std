@@ -1,3 +1,5 @@
 #!/usr/bin/env -S deno run --allow-read --allow-run
 const p = Deno.run({ cmd: [Deno.execPath(), "lint", "--config", "deno.json"] });
-Deno.exit(await p.status().code);
+const status = await p.status();
+console.log("status", status);
+Deno.exit(status.code);
