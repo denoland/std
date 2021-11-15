@@ -43,7 +43,7 @@ export type LogDispatcher<L extends LogLevels, M, A> = (
 ) => void;
 
 /**
- * Default log message builder useed by all builtin loggers. Converts message
+ * Default log message builder used by all builtin loggers. Converts message
  * and addition data to strings using `toLoggableString` and prefixes them with
  * log level and timestamp.
  */
