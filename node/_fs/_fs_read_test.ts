@@ -16,10 +16,18 @@ async function readTest(
   offset: number,
   length: number,
   position: number | null = null,
-  expected: (fd: number, bytesRead: number, data: Buffer) => void,
+  expected: (
+    fd: number,
+    bytesRead: number | null,
+    data: Buffer | undefined,
+  ) => void,
 ) {
   let fd1 = 0;
-  await new Promise<any>((resolve, reject) => {
+  await new Promise<{
+    fd: number;
+    bytesRead: number | null;
+    data: Buffer | undefined;
+  }>((resolve, reject) => {
     open(testData, "r", (err, fd) => {
       if (err) reject(err);
       read(fd, buffer, offset, length, position, (err, bytesRead, data) => {
@@ -37,11 +45,11 @@ async function readTest(
 
 Deno.test({
   name: "readSuccess",
-  fn() {
+  async fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buf = Buffer.alloc(1024);
-    readTest(
+    await readTest(
       testData,
       buf,
       buf.byteOffset,
@@ -49,7 +57,8 @@ Deno.test({
       null,
       (_fd, bytesRead, data) => {
         assertStrictEquals(bytesRead, 11);
-        assertMatch(data.toString(), /hello world/);
+        assertEquals(data instanceof Buffer, true);
+        assertMatch((data as Buffer).toString(), /hello world/);
       },
     );
   },
@@ -58,24 +67,32 @@ Deno.test({
 Deno.test({
   name:
     "[std/node/fs] Read only five bytes, so that the position moves to five",
-  fn() {
+  async fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buf = Buffer.alloc(5);
-    readTest(testData, buf, buf.byteOffset, 5, null, (_fd, bytesRead, data) => {
-      assertStrictEquals(bytesRead, 5);
-      assertEquals(data.toString(), "hello");
-    });
+    await readTest(
+      testData,
+      buf,
+      buf.byteOffset,
+      5,
+      null,
+      (_fd, bytesRead, data) => {
+        assertStrictEquals(bytesRead, 5);
+        assertEquals(data instanceof Buffer, true);
+        assertEquals((data as Buffer).toString(), "hello");
+      },
+    );
   },
 });
 
 Deno.test({
   name: "[std/node/fs] Specifies where to begin reading from in the file",
-  fn() {
+  async fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buf = Buffer.alloc(11);
-    readTest(
+    await readTest(
       testData,
       buf,
       buf.byteOffset,
@@ -94,12 +111,12 @@ Deno.test({
 
 Deno.test({
   name: "[std/node/fs] Read fs.read(fd, options, cb) signature",
-  fn() {
+  async fn() {
     const file = Deno.makeTempFileSync();
     Deno.writeTextFileSync(file, "hi there");
     const fd = openSync(file, "r+");
     const buf = Buffer.alloc(11);
-    read(
+    await read(
       fd,
       {
         buffer: buf,
@@ -122,11 +139,11 @@ Deno.test({
 
 Deno.test({
   name: "[std/node/fs] Read fs.read(fd, cb) signature",
-  fn() {
+  async fn() {
     const file = Deno.makeTempFileSync();
     Deno.writeTextFileSync(file, "hi deno");
     const fd = openSync(file, "r+");
-    read(fd, (err, bytesRead, data) => {
+    await read(fd, (err, bytesRead, data) => {
       assertEquals(err, null);
       assertStrictEquals(bytesRead, 7);
       assertStrictEquals(data?.byteLength, 16384);

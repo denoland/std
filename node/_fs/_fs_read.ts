@@ -40,7 +40,7 @@ export function read(
   callback?: Callback,
 ): void {
   let cb: Callback | undefined;
-  let offset: number = 0,
+  let offset = 0,
     buffer: Buffer | Uint8Array;
 
   if (length == null) {
@@ -66,7 +66,7 @@ export function read(
     length = buffer.byteLength;
     position = null;
   } else {
-    let opt = optOrBuffer as readOptions;
+    const opt = optOrBuffer as readOptions;
     offset = opt.offset ?? 0;
     buffer = opt.buffer ?? Buffer.alloc(16384);
     length = opt.length ?? buffer.byteLength;
