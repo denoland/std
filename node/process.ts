@@ -10,8 +10,7 @@ import { validateString } from "./_validators.ts";
 import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
-import { nextTick } from "./_next_tick.ts";
-export { nextTick } from "./_next_tick.ts";
+import { nextTick as _nextTick } from "./_next_tick.ts";
 
 const notImplementedEvents = [
   "beforeExit",
@@ -51,6 +50,9 @@ export const chdir = Deno.chdir;
 
 /** https://nodejs.org/api/process.html#process_process_cwd */
 export const cwd = Deno.cwd;
+
+/** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
+export const nextTick = _nextTick;
 
 /**
  * https://nodejs.org/api/process.html#process_process_env
@@ -141,7 +143,7 @@ function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
       cb(err);
       this._undestroy();
       if (!this._writableState.emitClose) {
-        nextTick(() => this.emit("close"));
+        _nextTick(() => this.emit("close"));
       }
     },
   }) as _Writable;
@@ -379,7 +381,7 @@ class Process extends EventEmitter {
   mainModule: any = undefined;
 
   /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
-  nextTick = nextTick;
+  nextTick = _nextTick;
 
   /** https://nodejs.org/api/process.html#process_process_events */
   on(event: "exit", listener: (code: number) => void): this;
