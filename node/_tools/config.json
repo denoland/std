@@ -336,9 +336,6 @@
       "test-util-inherits.js",
       "test-util.js"
     ],
-    "pseudo-tty": [
-      "stdin-setrawmode.js"
-    ],
     "pummel": [
       "test-net-pingpong-delay.js",
       "test-net-timeout.js",
