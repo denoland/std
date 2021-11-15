@@ -56,7 +56,7 @@ export function buildDefaultLogMessage<L extends LogLevels, M, A>(
 }
 
 /**
- * Default string converter for arbitrary data to be logged
+ * Default string converter for arbitrary data to be logged.
  */
 export function toLoggableString(data: unknown): string {
   if (typeof data === "string") {
