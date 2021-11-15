@@ -1,7 +1,4 @@
-import {
-  _normalizeArgs,
-  ListenOptions,
-} from "./net.ts";
+import { _normalizeArgs, ListenOptions } from "./net.ts";
 import { Status as STATUS_CODES } from "../http/http_status.ts";
 import { Buffer } from "./buffer.ts";
 import { EventEmitter } from "./events.ts";
