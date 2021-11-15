@@ -220,7 +220,6 @@ export class Server extends EventEmitter {
     this.#handler = handler;
   }
 
-  // TODO(AaronO): support options object
   listen(...args: unknown[]): this {
     // TODO(bnoordhuis) Delegate to net.Server#listen().
     const normalized = _normalizeArgs(args);
