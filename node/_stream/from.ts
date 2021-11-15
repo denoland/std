@@ -3,6 +3,7 @@ import { Buffer } from "../buffer.ts";
 import Readable from "./readable.ts";
 import type { ReadableOptions } from "./readable.ts";
 import { ERR_INVALID_ARG_TYPE, ERR_STREAM_NULL_VALUES } from "../_errors.ts";
+import { nextTick } from "../_next_tick.ts";
 
 export default function from(
   // deno-lint-ignore no-explicit-any
@@ -59,8 +60,8 @@ export default function from(
     if (needToClose) {
       needToClose = false;
       close().then(
-        () => queueMicrotask(() => cb(error)),
-        (e) => queueMicrotask(() => cb(error || e)),
+        () => nextTick(() => cb(error)),
+        (e) => nextTick(() => cb(error || e)),
       );
     } else {
       cb(error);

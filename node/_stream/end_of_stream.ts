@@ -218,7 +218,7 @@ export default function eos(
   );
 
   if (closed) {
-    queueMicrotask(callback);
+    nextTick(callback);
   }
 
   return function () {

@@ -21,6 +21,7 @@ import {
   ERR_STREAM_UNSHIFT_AFTER_END_EVENT,
 } from "../_errors.ts";
 import { debuglog } from "../_util/_debuglog.ts";
+import { nextTick } from "../_next_tick.ts";
 
 let debug = debuglog("stream", (fn) => {
   debug = fn;
@@ -32,7 +33,7 @@ export function endDuplex(stream: Duplex) {
   debug("endReadable", state.endEmitted);
   if (!state.endEmitted) {
     state.ended = true;
-    queueMicrotask(() => endReadableNT(state, stream));
+    nextTick(() => endReadableNT(state, stream));
   }
 }
 
@@ -47,7 +48,7 @@ function endReadableNT(state: ReadableState, stream: Duplex) {
     stream.emit("end");
 
     if (stream.writable && stream.allowHalfOpen === false) {
-      queueMicrotask(() => endWritableNT(stream));
+      nextTick(() => endWritableNT(stream));
     } else if (state.autoDestroy) {
       // In case of duplex streams we need a way to detect
       // if the writable side is ready for autoDestroy as well.
@@ -103,7 +104,7 @@ export function errorOrDestroy(
     }
 
     if (sync) {
-      queueMicrotask(() => {
+      nextTick(() => {
         if (w.errorEmitted || r.errorEmitted) {
           return;
         }
@@ -155,7 +156,7 @@ export function finishMaybe(
     if (state.pendingcb === 0 && needFinish(state)) {
       state.pendingcb++;
       if (sync) {
-        queueMicrotask(() => finish(stream, state));
+        nextTick(() => finish(stream, state));
       } else {
         finish(stream, state);
       }
@@ -191,7 +192,7 @@ export function onwrite(stream: Duplex, er?: Error | null) {
     }
 
     if (sync) {
-      queueMicrotask(() => onwriteError(stream, state, er, cb));
+      nextTick(() => onwriteError(stream, state, er, cb));
     } else {
       onwriteError(stream, state, er, cb);
     }
@@ -213,7 +214,7 @@ export function onwrite(stream: Duplex, er?: Error | null) {
           stream: stream as unknown as Writable,
           state,
         };
-        queueMicrotask(() =>
+        nextTick(() =>
           afterWriteTick(state.afterWriteTickInfo as AfterWriteTick)
         );
       }

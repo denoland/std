@@ -4,6 +4,7 @@ import finished from "./end_of_stream.ts";
 import Readable from "./readable.ts";
 import type Stream from "./stream.ts";
 import { destroyer } from "./destroy.ts";
+import { nextTick } from "../_next_tick.ts";
 
 const kLastResolve = Symbol("lastResolve");
 const kLastReject = Symbol("lastReject");
@@ -56,7 +57,7 @@ function readAndResolve(iter: ReadableStreamAsyncIterator) {
 }
 
 function onReadable(iter: ReadableStreamAsyncIterator) {
-  queueMicrotask(() => readAndResolve(iter));
+  nextTick(() => readAndResolve(iter));
 }
 
 function wrapForNext(

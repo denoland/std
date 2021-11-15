@@ -10,6 +10,8 @@ import { validateString } from "./_validators.ts";
 import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
+import { nextTick } from "./_next_tick.ts";
+export { nextTick } from "./_next_tick.ts";
 
 const notImplementedEvents = [
   "beforeExit",
@@ -68,25 +70,6 @@ export const env: Record<string, string> = new Proxy({}, {
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
 export const exit = Deno.exit;
-
-/** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
-export function nextTick(this: unknown, cb: () => void): void;
-export function nextTick<T extends Array<unknown>>(
-  this: unknown,
-  cb: (...args: T) => void,
-  ...args: T
-): void;
-export function nextTick<T extends Array<unknown>>(
-  this: unknown,
-  cb: (...args: T) => void,
-  ...args: T
-) {
-  if (args) {
-    queueMicrotask(() => cb.call(this, ...args));
-  } else {
-    queueMicrotask(cb);
-  }
-}
 
 /** https://nodejs.org/api/process.html#process_process_pid */
 export const pid = Deno.pid;
@@ -158,7 +141,7 @@ function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
       cb(err);
       this._undestroy();
       if (!this._writableState.emitClose) {
-        queueMicrotask(() => this.emit("close"));
+        nextTick(() => this.emit("close"));
       }
     },
   }) as _Writable;
