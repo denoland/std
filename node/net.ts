@@ -1583,7 +1583,7 @@ interface Abortable {
   signal?: AbortSignal | undefined;
 }
 
-interface ListenOptions extends Abortable {
+export interface ListenOptions extends Abortable {
   fd?: number;
   port?: number | undefined;
   host?: string | undefined;
