@@ -27,8 +27,8 @@ export type FileLogger<L extends LogLevels, M, A> =
         close(): void
     }
 /**
- * Creates a file logger that writes log messages into the given file. Will create the file
- * if it does not exist yet and append to it if it does by default, but can be configured
+ * Creates a file logger that writes log messages into the given file. By default a new file will be created if
+ * one does not exist yet or append to already existing file. This behavior can be configured
  * with a subset of `Deno.OpenOptions`.
  */
 export function buildFileLogger<L extends LogLevels, M, A>(
