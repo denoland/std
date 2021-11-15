@@ -30,7 +30,7 @@ import {
   readableAddChunk,
 } from "./duplex_internal.ts";
 import { debuglog } from "../_util/_debuglog.ts";
-
+import { nextTick } from "../_next_tick.ts";
 export { errorOrDestroy } from "./duplex_internal.ts";
 
 let debug = debuglog("stream", (fn) => {
@@ -253,7 +253,7 @@ class Duplex extends Stream {
       }
 
       if (err) {
-        queueMicrotask(() => {
+        nextTick(() => {
           const r = this._readableState;
           const w = this._writableState;
 
@@ -271,7 +271,7 @@ class Duplex extends Stream {
           }
         });
       } else {
-        queueMicrotask(() => {
+        nextTick(() => {
           const r = this._readableState;
           const w = this._writableState;
 
@@ -329,7 +329,7 @@ class Duplex extends Stream {
         if (state.length) {
           emitReadable(this);
         } else if (!state.reading) {
-          queueMicrotask(() => nReadingNextTick(this));
+          nextTick(nReadingNextTick, this);
         }
       }
     }
@@ -480,7 +480,7 @@ class Duplex extends Stream {
     const res = super.removeAllListeners(ev);
 
     if (ev === "readable" || ev === undefined) {
-      queueMicrotask(() => updateReadableListening(this));
+      nextTick(updateReadableListening, this);
     }
 
     return res;
@@ -516,7 +516,7 @@ class Duplex extends Stream {
     const res = super.removeListener.call(this, ev, fn);
 
     if (ev === "readable") {
-      queueMicrotask(() => updateReadableListening(this));
+      nextTick(updateReadableListening, this);
     }
 
     // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
@@ -686,9 +686,10 @@ class Duplex extends Stream {
 
     if (typeof cb === "function") {
       if (err || state.finished) {
-        queueMicrotask(() => {
-          (cb as (error?: Error | undefined) => void)(err);
-        });
+        nextTick(
+          cb as (error?: Error | undefined) => void,
+          err,
+        );
       } else {
         state[kOnFinished].push(cb);
       }

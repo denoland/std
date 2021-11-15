@@ -11,6 +11,7 @@ import {
   ERR_STREAM_UNSHIFT_AFTER_END_EVENT,
 } from "../_errors.ts";
 import { debuglog } from "../_util/_debuglog.ts";
+import { nextTick } from "../_next_tick.ts";
 
 let debug = debuglog("stream", (fn) => {
   debug = fn;
@@ -40,7 +41,7 @@ export function _destroy(
     }
 
     if (err) {
-      queueMicrotask(() => {
+      nextTick(() => {
         if (!r.errorEmitted) {
           r.errorEmitted = true;
           self.emit("error", err);
@@ -51,7 +52,7 @@ export function _destroy(
         }
       });
     } else {
-      queueMicrotask(() => {
+      nextTick(() => {
         r.closeEmitted = true;
         if (r.emitClose) {
           self.emit("close");
@@ -114,7 +115,7 @@ export function emitReadable(stream: Duplex | Readable) {
   if (!state.emittedReadable) {
     debug("emitReadable", state.flowing);
     state.emittedReadable = true;
-    queueMicrotask(() => emitReadable_(stream));
+    nextTick(emitReadable_, stream);
   }
 }
 
@@ -138,7 +139,7 @@ export function endReadable(stream: Readable) {
   debug("endReadable", state.endEmitted);
   if (!state.endEmitted) {
     state.ended = true;
-    queueMicrotask(() => endReadableNT(state, stream));
+    nextTick(endReadableNT, state, stream);
   }
 }
 
@@ -178,7 +179,7 @@ export function errorOrDestroy(
       r.errored = err;
     }
     if (sync) {
-      queueMicrotask(() => {
+      nextTick(() => {
         if (!r.errorEmitted) {
           r.errorEmitted = true;
           stream.emit("error", err);
@@ -250,7 +251,7 @@ export function howMuchToRead(n: number, state: ReadableState) {
 export function maybeReadMore(stream: Readable, state: ReadableState) {
   if (!state.readingMore && state.constructed) {
     state.readingMore = true;
-    queueMicrotask(() => maybeReadMore_(stream, state));
+    nextTick(() => maybeReadMore_(stream, state));
   }
 }
 
@@ -427,7 +428,7 @@ export function resume(stream: Duplex | Readable, state: ReadableState) {
   if (!state.resumeScheduled) {
     state.resumeScheduled = true;
     console.log("scheduling resume_", (new Error()).stack);
-    queueMicrotask(() => resume_(stream, state));
+    nextTick(resume_, stream, state);
   }
 }
 
