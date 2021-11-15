@@ -1,3 +1,7 @@
+import {
+  _normalizeArgs,
+  ListenOptions,
+} from "./net.ts";
 import { Status as STATUS_CODES } from "../http/http_status.ts";
 import { Buffer } from "./buffer.ts";
 import { EventEmitter } from "./events.ts";
@@ -217,14 +221,27 @@ export class Server extends EventEmitter {
   }
 
   // TODO(AaronO): support options object
-  listen(port: number, host?: string, cb?: CallableFunction) {
-    this.#listener = Deno.listen({ port, hostname: host });
+  listen(...args: unknown[]): this {
+    // TODO(bnoordhuis) Delegate to net.Server#listen().
+    const normalized = _normalizeArgs(args);
+    const options = normalized[0] as Partial<ListenOptions>;
+    const cb = normalized[1];
+
+    if (cb !== null) {
+      // @ts-ignore change EventEmitter's sig to use CallableFunction
+      this.once("listening", cb);
+    }
+
+    // TODO(bnoordhuis) Node prefers [::] when host is omitted,
+    // we on the other hand default to 0.0.0.0.
+    const port = options.port ?? 0;
+    const hostname = options.host ?? "";
+
+    this.#listener = Deno.listen({ port, hostname });
     this.#listening = true;
-    // TODO(@AaronO):
-    // @ts-ignore change EventEmitter's sig to use CallabeFunction
-    this.once("listening", cb ?? (() => {}));
     this.#listenLoop();
     this.emit("listening");
+    return this;
   }
 
   async #listenLoop() {
