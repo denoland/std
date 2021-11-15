@@ -86,7 +86,7 @@ export function buildDefaultFileLogger(
 
 /**
  * Creates a console logger with the default levels using the given threshold. If you simply want to
- * log to stdoout, this is probably what you want to use.
+ * log to stdout, this is what you want to use.
  */
 export function buildDefaultConsoleLogger(
   threshold: keyof DefaultLogLevels,
