@@ -31,8 +31,7 @@
 const common = require('../common');
 const assert = require('assert');
 const util = require('util');
-// TODO(wafuwafu13): Enable this when "internal/errors" is ready.
-// const errors = require('internal/errors');
+const errors = require('internal/errors');
 // TODO(wafuwafu13): Enable this when "vm" is ready.
 // const context = require('vm').runInNewContext;
 
@@ -189,11 +188,10 @@ assert.strictEqual(util.isFunction('string'), false);
     util.types.isNativeError(Object.create(Error.prototype)),
     false
   );
-  // TODO(wafuwafu13): Enable this when "internal/errors" is ready.
-  // assert.strictEqual(
-  //   util.types.isNativeError(new errors.codes.ERR_IPC_CHANNEL_CLOSED()),
-  //   true
-  // );
+  assert.strictEqual(
+    util.types.isNativeError(new errors.codes.ERR_IPC_CHANNEL_CLOSED()),
+    true
+  );
 }
 
 // TODO(wafuwafu13): Enable this.

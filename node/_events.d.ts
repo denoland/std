@@ -426,6 +426,7 @@ export class EventEmitter {
    * ```
    * @since v0.1.26
    */
+  // deno-lint-ignore ban-types
   listeners(eventName: string | symbol): Function[];
   /**
    * Returns a copy of the array of listeners for the event named `eventName`,
@@ -456,6 +457,7 @@ export class EventEmitter {
    * ```
    * @since v9.4.0
    */
+  // deno-lint-ignore ban-types
   rawListeners(eventName: string | symbol): Function[];
   /**
    * Synchronously calls each of the listeners registered for the event named`eventName`, in the order they were registered, passing the supplied arguments
