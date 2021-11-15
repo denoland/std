@@ -100,9 +100,9 @@ export function isFunction(value: unknown): boolean {
   return typeof value === "function";
 }
 
-/** @deprecated - use `value instanceof RegExp` instead. */
+/** @deprecated */
 export function isRegExp(value: unknown): boolean {
-  return value instanceof RegExp;
+  return types.isRegExp(value);
 }
 
 /** @deprecated Use util.types.isDate() instead. */

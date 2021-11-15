@@ -59,7 +59,7 @@ assert.strictEqual(util.isRegExp({}), false);
 assert.strictEqual(util.isRegExp([]), false);
 assert.strictEqual(util.isRegExp(new Date()), false);
 // TODO(wafuwafu13): Enable this.
-// assert.strictEqual(util.isRegExp(Object.create(RegExp.prototype)), false);
+assert.strictEqual(util.isRegExp(Object.create(RegExp.prototype)), false);
 
 // isDate
 assert.strictEqual(util.isDate(new Date()), true);
