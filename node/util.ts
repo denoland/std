@@ -100,7 +100,7 @@ export function isFunction(value: unknown): boolean {
   return typeof value === "function";
 }
 
-/** @deprecated */
+/** @deprecated Use util.types.RegExp() instead. */
 export function isRegExp(value: unknown): boolean {
   return types.isRegExp(value);
 }
