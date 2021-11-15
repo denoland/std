@@ -18,7 +18,7 @@ async function readTest(
   position: number | null = null,
   expected: (fd: number, bytesRead: number, data: Buffer) => void,
 ) {
-  let fd1: number = 0;
+  let fd1 = 0;
   await new Promise<any>((resolve, reject) => {
     open(testData, "r", (err, fd) => {
       if (err) reject(err);
@@ -37,11 +37,11 @@ async function readTest(
 
 Deno.test({
   name: "readSuccess",
-  async fn() {
+  fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buf = Buffer.alloc(1024);
-    await readTest(
+    readTest(
       testData,
       buf,
       buf.byteOffset,
@@ -58,31 +58,24 @@ Deno.test({
 Deno.test({
   name:
     "[std/node/fs] Read only five bytes, so that the position moves to five",
-  async fn() {
+  fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buf = Buffer.alloc(5);
-    await readTest(
-      testData,
-      buf,
-      buf.byteOffset,
-      5,
-      null,
-      (_fd, bytesRead, data) => {
-        assertStrictEquals(bytesRead, 5);
-        assertEquals(data.toString(), "hello");
-      },
-    );
+    readTest(testData, buf, buf.byteOffset, 5, null, (_fd, bytesRead, data) => {
+      assertStrictEquals(bytesRead, 5);
+      assertEquals(data.toString(), "hello");
+    });
   },
 });
 
 Deno.test({
   name: "[std/node/fs] Specifies where to begin reading from in the file",
-  async fn() {
+  fn() {
     const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
     const testData = path.resolve(moduleDir, "testdata", "hello.txt");
     const buf = Buffer.alloc(11);
-    await readTest(
+    readTest(
       testData,
       buf,
       buf.byteOffset,
@@ -101,12 +94,12 @@ Deno.test({
 
 Deno.test({
   name: "[std/node/fs] Read fs.read(fd, options, cb) signature",
-  async fn() {
+  fn() {
     const file = Deno.makeTempFileSync();
     Deno.writeTextFileSync(file, "hi there");
     const fd = openSync(file, "r+");
     const buf = Buffer.alloc(11);
-    await read(
+    read(
       fd,
       {
         buffer: buf,
@@ -129,11 +122,11 @@ Deno.test({
 
 Deno.test({
   name: "[std/node/fs] Read fs.read(fd, cb) signature",
-  async fn() {
+  fn() {
     const file = Deno.makeTempFileSync();
     Deno.writeTextFileSync(file, "hi deno");
     const fd = openSync(file, "r+");
-    await read(fd, (err, bytesRead, data) => {
+    read(fd, (err, bytesRead, data) => {
       assertEquals(err, null);
       assertStrictEquals(bytesRead, 7);
       assertStrictEquals(data?.byteLength, 16384);

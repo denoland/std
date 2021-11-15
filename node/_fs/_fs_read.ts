@@ -49,12 +49,14 @@ export function read(
 
   if (typeof offsetOrCallback === "function") {
     cb = offsetOrCallback;
-  } else if (typeof optOrBuffer === "undefined") {
+  } else if (typeof optOrBuffer === "function") {
     cb = optOrBuffer;
   } else {
     offset = offsetOrCallback as number;
     cb = callback;
   }
+
+  if (!cb) throw new Error("No callback function supplied");
 
   if (optOrBuffer instanceof Buffer || optOrBuffer instanceof Uint8Array) {
     buffer = optOrBuffer;
@@ -65,10 +67,10 @@ export function read(
     position = null;
   } else {
     let opt = optOrBuffer as readOptions;
-    offset = opt.offset;
-    buffer = opt.buffer;
-    position = opt.position;
-    length = opt.length;
+    offset = opt.offset ?? 0;
+    buffer = opt.buffer ?? Buffer.alloc(16384);
+    length = opt.length ?? buffer.byteLength;
+    position = opt.position ?? null;
   }
 
   assert(offset >= 0, "offset should be greater or equal to 0");
@@ -100,13 +102,11 @@ export function read(
     err = error instanceof Error ? error : new Error("[non-error thrown]");
   }
 
-  if (cb) {
-    if (err) {
-      (callback as (err: Error) => void)(err);
-    } else {
-      const data = Buffer.from(buffer.buffer, offset, length);
-      cb(null, numberOfBytesRead, data);
-    }
+  if (err) {
+    (callback as (err: Error) => void)(err);
+  } else {
+    const data = Buffer.from(buffer.buffer, offset, length);
+    cb(null, numberOfBytesRead, data);
   }
 
   return;
