@@ -7,7 +7,7 @@
 
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 
-// import { validateCallback } from "./_validators.ts";
+import { validateCallback } from "./_validators.ts";
 
 // deno-lint-ignore no-explicit-any
 const core = ((Deno as any).core as any);
@@ -222,15 +222,7 @@ export function nextTick<T extends Array<unknown>>(
   callback: (...args: T) => void,
   ...args: T
 ) {
-  // FIXME(bartlomieju): probably a circular imports as I'm getting
-  // error: Uncaught ReferenceError: Cannot access 'nodeInternalPrefix' before initialization
-  // const hidden = nodeInternalPrefix + fn.name;
-  // at hideStackFrames (file:///Users/biwanczuk/dev/deno_std/node/_errors.ts:77:18)
-  // validateCallback(callback);
-  if (typeof callback !== "function") {
-    throw new TypeError("expected callback to be a function");
-    // throw new ERR_INVALID_CALLBACK(callback);
-  }
+  validateCallback(callback);
 
   // FIXME(bartlomieju):
   // if (process._exiting)
