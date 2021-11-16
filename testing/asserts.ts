@@ -778,9 +778,10 @@ export async function assertRejects<E extends Error = Error>(
  * If it does not, then it throws.  An error class and a string that should be
  * included in the error message can also be asserted.
  *
- * @deprecated
+ * @deprecated Use assertRejects instead.
  */
-export { assertRejects as assertThrowsAsync };
+export const assertThrowsAsync = assertRejects;
+
 
 /** Use this to stub out methods that will throw when invoked. */
 export function unimplemented(msg?: string): never {
