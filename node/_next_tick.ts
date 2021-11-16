@@ -1,13 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-// FIXME(bartlomieju): currently this implementation is buggy
-// See:
-// - https://github.com/denoland/deno_std/issues/1482
-// - https://github.com/denoland/deno/issues/12735
-
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 
 import { validateCallback } from "./_validators.ts";
+import { process } from "./process.ts";
 
 // deno-lint-ignore no-explicit-any
 const core = ((Deno as any).core as any);
@@ -224,9 +220,8 @@ export function nextTick<T extends Array<unknown>>(
 ) {
   validateCallback(callback);
 
-  // FIXME(bartlomieju):
-  // if (process._exiting)
-  //   return;
+  if (process._exiting)
+    return;
 
   // TODO(bartlomieju): seems superfluous if we don't depend on `arguments`
   let args_;
