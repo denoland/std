@@ -115,7 +115,7 @@ moveSync("./foo", "./existingFolder", { overwrite: true });
 copy a file or directory. Overwrites it if option provided.
 
 ```ts
-import { copy, copySync } from "https://deno.land/std@$STD_VERSION/fs/mod.ts";
+import { copy, copySync } from "https://deno.land/std@$STD_VERSION/fs/copy.ts";
 
 copy("./foo", "./bar"); // returns a promise
 copySync("./foo", "./bar"); // void
