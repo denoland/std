@@ -135,7 +135,6 @@ class FixedQueue {
 
 const queue = new FixedQueue();
 
-// deno-lint-ignore no-unused-vars
 function runNextTicks() {
   // FIXME(bartlomieju):
   // if (!hasTickScheduled() && !hasRejectionToWarn())
