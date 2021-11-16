@@ -150,10 +150,11 @@ function runNextTicks() {
     core.runMicrotasks();
   }
   if (!core.hasTickScheduled()) {
-    return;
+    return true;
   }
 
   processTicksAndRejections();
+  return true;
 }
 
 function processTicksAndRejections() {
@@ -207,7 +208,7 @@ function processTicksAndRejections() {
 }
 
 core.setNextTickCallback(processTicksAndRejections);
-
+core.setMacrotaskCallback(runNextTicks);
 // `nextTick()` will not enqueue any callback when the process is about to
 // exit since the callback would not have a chance to be executed.
 export function nextTick(this: unknown, callback: () => void): void;
