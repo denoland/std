@@ -782,7 +782,6 @@ export async function assertRejects<E extends Error = Error>(
  */
 export const assertThrowsAsync = assertRejects;
 
-
 /** Use this to stub out methods that will throw when invoked. */
 export function unimplemented(msg?: string): never {
   throw new AssertionError(msg || "unimplemented");
