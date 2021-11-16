@@ -220,8 +220,9 @@ export function nextTick<T extends Array<unknown>>(
 ) {
   validateCallback(callback);
 
-  if (process._exiting)
+  if (process._exiting) {
     return;
+  }
 
   // TODO(bartlomieju): seems superfluous if we don't depend on `arguments`
   let args_;
