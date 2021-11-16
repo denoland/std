@@ -2,7 +2,8 @@
   "nodeVersion": "16.13.0",
   "ignore": {
     "common": [
-      "index.js"
+      "index.js",
+      "tmpdir.js"
     ],
     "internet": [
       "test-dns-idna.js",
@@ -148,6 +149,7 @@
       "test-event-emitter-symbols.js",
       "test-events-list.js",
       "test-events-once.js",
+      "test-fs-write-file.js",
       "test-net-access-byteswritten.js",
       "test-net-after-close.js",
       "test-net-allow-half-open.js",

@@ -11,6 +11,7 @@ export type CallbackWithError = (err: Error | null) => void;
 export interface FileOptions {
   encoding?: Encodings;
   flag?: string;
+  signal?: AbortSignal;
 }
 
 export type TextOptionsArgument =
@@ -33,6 +34,7 @@ export function isFileOptions(
   return (
     (fileOptions as FileOptions).encoding != undefined ||
     (fileOptions as FileOptions).flag != undefined ||
+    (fileOptions as FileOptions).signal != undefined ||
     (fileOptions as WriteFileOptions).mode != undefined
   );
 }
