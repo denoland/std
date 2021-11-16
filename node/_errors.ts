@@ -42,8 +42,6 @@ const kTypes = [
   "symbol",
 ];
 
-const nodeInternalPrefix = "__node_internal_";
-
 // Node uses an AbortError that isn't exactly the same as the DOMException
 // to make usage of the error in userland and readable-stream easier.
 // It is a regular error with `.code` and `.name`.
@@ -74,7 +72,7 @@ function addNumericalSeparator(val: string) {
 export function hideStackFrames(fn: GenericFunction) {
   // We rename the functions that will be hidden to cut off the stacktrace
   // at the outermost one.
-  const hidden = nodeInternalPrefix + fn.name;
+  const hidden = "__node_internal_" + fn.name;
   Object.defineProperty(fn, "name", { value: hidden });
 
   return fn;
