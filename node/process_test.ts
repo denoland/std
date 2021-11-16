@@ -423,7 +423,7 @@ Deno.test("process.exitCode", () => {
 
 Deno.test("process.config", () => {
   assert(process.config !== undefined);
-  assert(process.config.target_default !== undefined);
+  assert(process.config.target_defaults !== undefined);
   assert(process.config.variables !== undefined);
 });
 
