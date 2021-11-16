@@ -380,6 +380,12 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_chdir_directory */
   chdir = chdir;
 
+  /** https://nodejs.org/api/process.html#processconfig */
+  config = {
+    target_defaults: {},
+    variables: {},
+  };
+
   /** https://nodejs.org/api/process.html#process_process_cwd */
   cwd = cwd;
 
