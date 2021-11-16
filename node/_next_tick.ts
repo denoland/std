@@ -137,6 +137,7 @@ class FixedQueue<T> {
 
 const queue = new FixedQueue<Tock<unknown>>();
 
+// deno-lint-ignore no-unused-vars
 function runNextTicks() {
   // FIXME(bartlomieju):
   // if (!hasTickScheduled() && !hasRejectionToWarn())
@@ -159,6 +160,7 @@ function runNextTicks() {
 function processTicksAndRejections() {
   let tock;
   do {
+    // deno-lint-ignore no-cond-assign
     while (tock = queue.shift()) {
       // FIXME(bartlomieju):
       // const asyncId = tock[async_id_symbol];
