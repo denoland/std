@@ -28,6 +28,7 @@ import tty from "./tty.ts";
 import vm from "./vm.ts";
 import url from "./url.ts";
 import util from "./util.ts";
+import wasi from "./wasi.ts";
 
 // TODO(kt3k): add these modules when implemented
 // import cluster from "./cluster.ts";
@@ -73,4 +74,5 @@ export default {
   util,
   vm,
   zlib: {},
+  wasi,
 } as Record<string, unknown>;
