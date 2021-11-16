@@ -1,9 +1,11 @@
-import { _normalizeArgs, ListenOptions } from "./net.ts";
-import { Status as STATUS_CODES } from "../http/http_status.ts";
-import { Buffer } from "./buffer.ts";
-import { EventEmitter } from "./events.ts";
 import NodeReadable from "./_stream/readable.ts";
 import NodeWritable from "./_stream/writable.ts";
+import { Buffer } from "./buffer.ts";
+import { EventEmitter } from "./events.ts";
+import { Status as STATUS_CODES } from "../http/http_status.ts";
+import { _normalizeArgs, ListenOptions } from "./net.ts";
+import { nextTick } from "./_next_tick.ts";
+import { validatePort } from "./_validators.ts";
 
 const METHODS = [
   "ACL",
@@ -208,13 +210,15 @@ export class IncomingMessage extends NodeReadable {
 type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
 
 export class Server extends EventEmitter {
-  #handler: ServerHandler;
   #listener?: Deno.Listener;
   #listening = false;
 
-  constructor(handler: ServerHandler) {
+  constructor(handler?: ServerHandler) {
     super();
-    this.#handler = handler;
+
+    if (handler !== undefined) {
+      this.on("request", handler);
+    }
   }
 
   listen(...args: unknown[]): this {
@@ -228,15 +232,24 @@ export class Server extends EventEmitter {
       this.once("listening", cb);
     }
 
+    let port = 0;
+    if (typeof options.port === "number" || typeof options.port === "string") {
+      validatePort(options.port, "options.port");
+      port = options.port | 0;
+    }
+
     // TODO(bnoordhuis) Node prefers [::] when host is omitted,
     // we on the other hand default to 0.0.0.0.
-    const port = options.port ?? 0;
     const hostname = options.host ?? "";
 
     this.#listener = Deno.listen({ port, hostname });
     this.#listening = true;
-    this.#listenLoop();
-    this.emit("listening");
+
+    nextTick(() => {
+      this.emit("listening");
+      this.#listenLoop();
+    });
+
     return this;
   }
 
@@ -247,7 +260,6 @@ export class Server extends EventEmitter {
           const req = new IncomingMessage(reqEvent.request);
           const res = new ServerResponse(reqEvent);
           this.emit("request", req, res);
-          this.#handler(req, res);
         }
       })();
     }
@@ -272,7 +284,7 @@ export class Server extends EventEmitter {
   }
 }
 
-export function createServer(handler: ServerHandler) {
+export function createServer(handler?: ServerHandler) {
   return new Server(handler);
 }
 
