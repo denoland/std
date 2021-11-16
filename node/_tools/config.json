@@ -220,6 +220,7 @@
       "test-next-tick-intentional-starvation.js",
       "test-next-tick-ordering.js",
       "test-next-tick-ordering2.js",
+      "test-next-tick-when-exiting.js",
       "test-next-tick.js",
       "test-querystring-escape.js",
       "test-querystring-maxKeys-non-finite.js",
