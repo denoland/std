@@ -78,7 +78,7 @@ export const exit = (code?: number) => {
 
   if (!process._exiting) {
     process._exiting = true;
-    process.emit("exit", 0);
+    process.emit("exit", process.exitCode || 0);
   }
 
   Deno.exit(process.exitCode || 0);
