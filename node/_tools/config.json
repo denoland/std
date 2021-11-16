@@ -24,7 +24,6 @@
       "test-event-emitter-max-listeners.js",
       "test-event-emitter-no-error-provided-to-error-event.js",
       "test-event-emitter-prepend.js",
-      "test-fs-write-file.js",
       "test-net-access-byteswritten.js",
       "test-net-after-close.js",
       "test-net-bytes-stats.js",
