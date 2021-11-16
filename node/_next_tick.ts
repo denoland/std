@@ -9,6 +9,9 @@
 
 // import { validateCallback } from "./_validators.ts";
 
+// deno-lint-ignore no-explicit-any
+const core = ((Deno as any).core as any);
+
 // Currently optimal queue size, tested on V8 6.0 - 6.6. Must be power of two.
 const kSize = 2048;
 const kMask = kSize - 1;
@@ -61,11 +64,11 @@ const kMask = kSize - 1;
 // `top + 1 === bottom` it's full. This wastes a single space of storage
 // but allows much quicker checks.
 
-class FixedCircularBuffer<T> {
+class FixedCircularBuffer {
   bottom: number;
   top: number;
-  list: undefined | Array<T>;
-  next: FixedCircularBuffer<T> | null;
+  list: undefined | Array<unknown>;
+  next: FixedCircularBuffer | null;
 
   constructor() {
     this.bottom = 0;
@@ -82,7 +85,7 @@ class FixedCircularBuffer<T> {
     return ((this.top + 1) & kMask) === this.bottom;
   }
 
-  push(data: T) {
+  push(data: unknown) {
     this.list![this.top] = data;
     this.top = (this.top + 1) & kMask;
   }
@@ -92,20 +95,19 @@ class FixedCircularBuffer<T> {
     if (nextItem === undefined) {
       return null;
     }
-    // @ts-ignore FIXME(bartlomieju)
     this.list![this.bottom] = undefined;
     this.bottom = (this.bottom + 1) & kMask;
     return nextItem;
   }
 }
 
-interface Tock<T> {
-  callback: (...args: Array<T>) => void;
-  args: Array<T>;
+interface Tock {
+  callback: (...args: Array<unknown>) => void;
+  args: Array<unknown>;
 }
-class FixedQueue<T> {
-  head: FixedCircularBuffer<T>;
-  tail: FixedCircularBuffer<T>;
+class FixedQueue {
+  head: FixedCircularBuffer;
+  tail: FixedCircularBuffer;
 
   constructor() {
     this.head = this.tail = new FixedCircularBuffer();
@@ -115,7 +117,7 @@ class FixedQueue<T> {
     return this.head.isEmpty();
   }
 
-  push(data: T) {
+  push(data: unknown) {
     if (this.head.isFull()) {
       // Head is full: Creates a new queue, sets the old queue's `.next` to it,
       // and sets it as the new main queue.
@@ -135,7 +137,7 @@ class FixedQueue<T> {
   }
 }
 
-const queue = new FixedQueue<Tock<unknown>>();
+const queue = new FixedQueue();
 
 // deno-lint-ignore no-unused-vars
 function runNextTicks() {
@@ -144,13 +146,10 @@ function runNextTicks() {
   //   runMicrotasks();
   // if (!hasTickScheduled() && !hasRejectionToWarn())
   //   return;
-  // @ts-ignore FIXME(bartlomieju)
-  if (!Deno.core.hasTickScheduled()) {
-    // @ts-ignore FIXME(bartlomieju)
-    Deno.core.runMicrotasks();
+  if (!core.hasTickScheduled()) {
+    core.runMicrotasks();
   }
-  // @ts-ignore FIXME(bartlomieju)
-  if (!Deno.core.hasTickScheduled()) {
+  if (!core.hasTickScheduled()) {
     return;
   }
 
@@ -167,11 +166,11 @@ function processTicksAndRejections() {
       // emitBefore(asyncId, tock[trigger_async_id_symbol], tock);
 
       try {
-        const callback = tock.callback;
-        if (tock.args === undefined) {
+        const callback = (tock as Tock).callback;
+        if ((tock as Tock).args === undefined) {
           callback();
         } else {
-          const args = tock.args;
+          const args = (tock as Tock).args;
           switch (args.length) {
             case 1:
               callback(args[0]);
@@ -198,19 +197,16 @@ function processTicksAndRejections() {
       // FIXME(bartlomieju):
       // emitAfter(asyncId);
     }
-    // @ts-ignore FIXME(bartlomieju)
-    Deno.core.runMicrotasks();
+    core.runMicrotasks();
     // FIXME(bartlomieju):
     // } while (!queue.isEmpty() || processPromiseRejections());
   } while (!queue.isEmpty());
-  // @ts-ignore FIXME(bartlomieju)
-  Deno.core.setHasTickScheduled(false);
+  core.setHasTickScheduled(false);
   // FIXME(bartlomieju):
   // setHasRejectionToWarn(false);
 }
 
-// @ts-ignore FIXME(bartlomieju)
-Deno.core.setNextTickCallback(processTicksAndRejections);
+core.setNextTickCallback(processTicksAndRejections);
 
 // `nextTick()` will not enqueue any callback when the process is about to
 // exit since the callback would not have a chance to be executed.
@@ -225,6 +221,10 @@ export function nextTick<T extends Array<unknown>>(
   callback: (...args: T) => void,
   ...args: T
 ) {
+  // FIXME(bartlomieju): probably a circular imports as I'm getting
+  // error: Uncaught ReferenceError: Cannot access 'nodeInternalPrefix' before initialization
+  // const hidden = nodeInternalPrefix + fn.name;
+  // at hideStackFrames (file:///Users/biwanczuk/dev/deno_std/node/_errors.ts:77:18)
   // validateCallback(callback);
   if (typeof callback !== "function") {
     throw new TypeError("expected callback to be a function");
@@ -257,8 +257,7 @@ export function nextTick<T extends Array<unknown>>(
   }
 
   if (queue.isEmpty()) {
-    // @ts-ignore FIXME(bartlomieju)
-    Deno.core.setHasTickScheduled(true);
+    core.setHasTickScheduled(true);
   }
   // FIXME(bartlomieju):
   // const asyncId = newAsyncId();
@@ -271,6 +270,5 @@ export function nextTick<T extends Array<unknown>>(
   };
   // if (initHooksExist())
   //   emitInit(asyncId, 'TickObject', triggerAsyncId, tickObject);
-  // @ts-ignore FIXME(bartlomieju)
   queue.push(tickObject);
 }
