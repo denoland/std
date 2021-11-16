@@ -64,7 +64,9 @@ export function writeFile(
         : undefined;
       await writeAll(file, data as Uint8Array, { signal });
     } catch (e) {
-      error = e instanceof Error ? convertDenoErrorToNodeError(e) : new Error("[non-error thrown]");
+      error = e instanceof Error
+        ? convertDenoErrorToNodeError(e)
+        : new Error("[non-error thrown]");
     } finally {
       // Make sure to close resource
       if (!isRid && file) file.close();
@@ -109,7 +111,9 @@ export function writeFileSync(
 
     writeAllSync(file, data as Uint8Array);
   } catch (e) {
-    error = e instanceof Error ? convertDenoErrorToNodeError(e) : new Error("[non-error thrown]");
+    error = e instanceof Error
+      ? convertDenoErrorToNodeError(e)
+      : new Error("[non-error thrown]");
   } finally {
     // Make sure to close resource
     if (!isRid && file) file.close();
@@ -152,7 +156,7 @@ function checkAborted(signal?: AbortSignal) {
 
 function convertDenoErrorToNodeError(e: Error) {
   const errno = extractOsErrorNumberFromErrorMessage(e);
-  if (typeof errno === 'undefined') {
+  if (typeof errno === "undefined") {
     return e;
   }
 
