@@ -2,6 +2,7 @@
 import { Encodings, notImplemented } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
+import { writeAllSync } from "../../streams/conversion.ts";
 import {
   CallbackWithError,
   checkEncoding,
@@ -11,7 +12,7 @@ import {
   WriteFileOptions,
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
-import { AbortError } from "../_errors.ts";
+import { AbortError, uvException } from "../_errors.ts";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -63,7 +64,7 @@ export function writeFile(
         : undefined;
       await writeAll(file, data as Uint8Array, { signal });
     } catch (e) {
-      error = e instanceof Error ? e : new Error("[non-error thrown]");
+      error = e instanceof Error ? convertDenoErrorToNodeError(e) : new Error("[non-error thrown]");
     } finally {
       // Make sure to close resource
       if (!isRid && file) file.close();
@@ -106,12 +107,9 @@ export function writeFileSync(
       Deno.chmodSync(pathOrRid as string, mode);
     }
 
-    const signal: AbortSignal | undefined = isFileOptions(options)
-      ? options.signal
-      : undefined;
-    writeAllSync(file, data as Uint8Array, { signal });
+    writeAllSync(file, data as Uint8Array);
   } catch (e) {
-    error = e instanceof Error ? e : new Error("[non-error thrown]");
+    error = e instanceof Error ? convertDenoErrorToNodeError(e) : new Error("[non-error thrown]");
   } finally {
     // Make sure to close resource
     if (!isRid && file) file.close();
@@ -125,28 +123,6 @@ interface WriteAllOptions {
   length?: number;
   signal?: AbortSignal;
 }
-
-function writeAllSync(
-  w: Deno.WriterSync,
-  arr: Uint8Array,
-  options: WriteAllOptions = {},
-): void {
-  const { offset = 0, length = arr.byteLength, signal } = options;
-  checkAborted(signal);
-
-  const written = w.writeSync(arr.subarray(offset, offset + length));
-
-  if (written === length) {
-    return;
-  }
-
-  writeAllSync(w, arr, {
-    offset: offset + written,
-    length: length - written,
-    signal,
-  });
-}
-
 async function writeAll(
   w: Deno.Writer,
   arr: Uint8Array,
@@ -172,4 +148,29 @@ function checkAborted(signal?: AbortSignal) {
   if (signal?.aborted) {
     throw new AbortError();
   }
+}
+
+function convertDenoErrorToNodeError(e: Error) {
+  const errno = extractOsErrorNumberFromErrorMessage(e);
+  if (typeof errno === 'undefined') {
+    return e;
+  }
+
+  const ex = uvException({
+    errno: -errno,
+    syscall: "writeFile",
+  });
+  return ex;
+}
+
+function extractOsErrorNumberFromErrorMessage(e: unknown): number | undefined {
+  const match = e instanceof Error
+    ? e.message.match(/\(os error (\d+)\)/)
+    : false;
+
+  if (match) {
+    return +match[1];
+  }
+
+  return undefined;
 }
