@@ -414,3 +414,19 @@ Deno.test("process in worker", async () => {
   await promise;
   worker.terminate();
 });
+
+Deno.test("process.exitCode", () => {
+  assert(process.exitCode === undefined);
+  process.exitCode = 127;
+  assert(process.exitCode === 127);
+});
+
+Deno.test("process.config", () => {
+  assert(process.config !== undefined);
+  assert(process.config.target_default !== undefined);
+  assert(process.config.variables !== undefined);
+});
+
+Deno.test("process._exiting", () => {
+  assert(process._exiting === false);
+});
