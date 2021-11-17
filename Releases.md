@@ -17,7 +17,6 @@
 - node: add nextTick helper module (#1584)
 - node: polyfill process.nextTick using Deno.core bindings (#1588)
 - node: Use upstream source for "events" module (#1558)
-- test(node/fs): enable `test-fs-write-file.js` (#1564)
 
 ### 0.114.0 / 2021.11.09
 
