@@ -135,8 +135,10 @@ class FixedQueue {
 
 const queue = new FixedQueue();
 
-let _nextTick;
+// deno-lint-ignore no-explicit-any
+let _nextTick: any;
 
+// @ts-ignore Deno.core is not defined in types
 if (Deno?.core?.setNextTickCallback) {
   // deno-lint-ignore no-explicit-any
   const core = ((Deno as any).core as any);
@@ -212,6 +214,7 @@ if (Deno?.core?.setNextTickCallback) {
   core.setMacrotaskCallback(runNextTicks);
 
   function __nextTickNative<T extends Array<unknown>>(
+    this: unknown,
     callback: (...args: T) => void,
     ...args: T
   ) {
@@ -262,6 +265,7 @@ if (Deno?.core?.setNextTickCallback) {
   _nextTick = __nextTickNative;
 } else {
   function __nextTickQueueMicrotask<T extends Array<unknown>>(
+    this: unknown,
     callback: (...args: T) => void,
     ...args: T
   ) {
