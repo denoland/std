@@ -530,17 +530,18 @@ function formatRaw(ctx: any, value: any, recurseTimes: any, typedArray: any) {
   let tag = value[Symbol.toStringTag];
   // Only list the tag in case it's non-enumerable / not an own property.
   // Otherwise we'd print this twice.
-  if (
-    typeof tag !== "string" ||
-    (tag !== "" &&
-      (ctx.showHidden
-        ? Object.prototype.hasOwnProperty
-        : Object.prototype.propertyIsEnumerable)(
-          value, /** TODO(wafuwafu13): figure out Symbol.toStringTag */
-        ))
-  ) {
-    tag = "";
-  }
+  // TODO(wafuwafu13): Implement
+  // if (
+  //   typeof tag !== "string" ||
+  //   (tag !== "" &&
+  //     (ctx.showHidden
+  //       ? Object.prototype.hasOwnProperty
+  //       : Object.prototype.propertyIsEnumerable)(
+  //         value, /** TODO(wafuwafu13): figure out Symbol.toStringTag */
+  //       ))
+  // ) {
+  //   tag = "";
+  // }
   let base = "";
   let formatter = getEmptyFormatArray;
   let braces;
@@ -815,11 +816,7 @@ function formatRaw(ctx: any, value: any, recurseTimes: any, typedArray: any) {
 }
 
 const builtInObjects = new Set(
-  Array.prototype.filter(
-    // @ts-ignore TODO(wafuwafu13)
-    Object.getOwnPropertyNames(globalThis),
-    (e: any) => /^[A-Z][a-zA-Z0-9]+$/.test(e),
-  ),
+  Object.getOwnPropertyNames(globalThis).filter((e: any) => /^[A-Z][a-zA-Z0-9]+$/.test(e))
 );
 
 function addPrototypeProperties(
@@ -1086,13 +1083,14 @@ function getKeys(value: any, showHidden: any) {
       keys = Object.getOwnPropertyNames(value);
     }
     if (symbols.length !== 0) {
-      const filter = (key: any) =>
-        // @ts-ignore TODO(wafuwafu13)
-        Object.prototype.propertyIsEnumerable(value, key);
-      Array.prototype.push.apply(
-        keys,
-        Array.prototype.filter(symbols as any, filter),
-      );
+      // TODO(wafuwafu13): Implement
+      // const filter = (key: any) =>
+      //   // @ts-ignore TODO(wafuwafu13)
+      //   Object.prototype.propertyIsEnumerable(value, key);
+      // Array.prototype.push.apply(
+      //   keys,
+      //   symbols.filter(filter),
+      // );
     }
   }
   return keys;
