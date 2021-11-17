@@ -8,6 +8,7 @@ import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import {
+  _exiting,
   arch,
   chdir,
   cwd,
@@ -256,7 +257,7 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_exit_code */
   exit = exit;
 
-  _exiting = false;
+  _exiting = _exiting;
 
   /** https://nodejs.org/api/process.html#processexitcode_1 */
   exitCode: undefined | number = undefined;

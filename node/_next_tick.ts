@@ -21,7 +21,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { validateCallback } from "./_validators.ts";
-import { process } from "./process.ts";
+import { _exiting } from "./_process/process.ts";
 import { FixedQueue } from "./_fixed_queue.ts";
 
 // deno-lint-ignore no-explicit-any
@@ -121,7 +121,7 @@ export function nextTick<T extends Array<unknown>>(
 ) {
   validateCallback(callback);
 
-  if (process._exiting) {
+  if (_exiting) {
     return;
   }
 
