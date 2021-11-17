@@ -48,7 +48,6 @@
       "test-net-server-try-ports.js",
       "test-net-write-arguments.js",
       "test-querystring.js",
-      "test-readline-csi.js",
       "test-stream-pipe-error-handling.js",
       "test-stream-pipe-event.js",
       "test-stream-readable-add-chunk-during-data.js",
