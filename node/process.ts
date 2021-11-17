@@ -2,15 +2,35 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
-import { fromFileUrl } from "../path/mod.ts";
-import { isWindows } from "../_util/os.ts";
-import { Readable, Writable } from "./stream.ts";
-import { Buffer } from "./buffer.ts";
 import { validateString } from "./_validators.ts";
 import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
-import { nextTick as _nextTick } from "./_next_tick.ts";
+import { fromFileUrl } from "../path/mod.ts";
+import {
+  arch,
+  chdir,
+  cwd,
+  env,
+  nextTick as _nextTick,
+  pid,
+  platform,
+  version,
+  versions,
+} from "./_process/process.ts";
+export {
+  _nextTick as nextTick,
+  arch,
+  chdir,
+  cwd,
+  env,
+  pid,
+  platform,
+  version,
+  versions,
+};
+import { stderr, stdin, stdout } from "./_process/streams.ts";
+export { stderr, stdin, stdout };
 
 const notImplementedEvents = [
   "beforeExit",
@@ -23,20 +43,6 @@ const notImplementedEvents = [
   "unhandledRejection",
 ];
 
-/** Returns the operating system CPU architecture for which the Deno binary was compiled */
-function _arch(): string {
-  if (Deno.build.arch == "x86_64") {
-    return "x64";
-  } else if (Deno.build.arch == "aarch64") {
-    return "arm64";
-  } else {
-    throw Error("unreachable");
-  }
-}
-
-/** https://nodejs.org/api/process.html#process_process_arch */
-export const arch = _arch();
-
 // The first 2 items are placeholders.
 // They will be overwritten by the below Object.defineProperty calls.
 const argv = ["", "", ...Deno.args];
@@ -44,31 +50,6 @@ const argv = ["", "", ...Deno.args];
 Object.defineProperty(argv, "0", { get: Deno.execPath });
 // Overwrites the 2st item with getter.
 Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
-
-/** https://nodejs.org/api/process.html#process_process_chdir_directory */
-export const chdir = Deno.chdir;
-
-/** https://nodejs.org/api/process.html#process_process_cwd */
-export const cwd = Deno.cwd;
-
-/** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
-export const nextTick = _nextTick;
-
-/**
- * https://nodejs.org/api/process.html#process_process_env
- * Requires env permissions
- */
-export const env: Record<string, string> = new Proxy({}, {
-  get(_target, prop) {
-    return Deno.env.get(String(prop));
-  },
-  ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
-  getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }),
-  set(_target, prop, value) {
-    Deno.env.set(String(prop), String(value));
-    return value;
-  },
-});
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
 export const exit = (code?: number) => {
@@ -83,156 +64,6 @@ export const exit = (code?: number) => {
 
   Deno.exit(process.exitCode || 0);
 };
-
-/** https://nodejs.org/api/process.html#process_process_pid */
-export const pid = Deno.pid;
-
-/** https://nodejs.org/api/process.html#process_process_platform */
-export const platform = isWindows ? "win32" : Deno.build.os;
-
-/**
- * https://nodejs.org/api/process.html#process_process_version
- *
- * This value is hard coded to latest stable release of Node, as
- * some packages are checking it for compatibility. Previously
- * it pointed to Deno version, but that led to incompability
- * with some packages.
- */
-export const version = "v16.11.1";
-
-/**
- * https://nodejs.org/api/process.html#process_process_versions
- *
- * This value is hard coded to latest stable release of Node, as
- * some packages are checking it for compatibility. Previously
- * it contained only output of `Deno.version`, but that led to incompability
- * with some packages. Value of `v8` field is still taken from `Deno.version`.
- */
-export const versions = {
-  node: "16.11.1",
-  uv: "1.42.0",
-  zlib: "1.2.11",
-  brotli: "1.0.9",
-  ares: "1.17.2",
-  modules: "93",
-  nghttp2: "1.45.1",
-  napi: "8",
-  llhttp: "6.0.4",
-  openssl: "1.1.1l",
-  cldr: "39.0",
-  icu: "69.1",
-  tz: "2021a",
-  unicode: "13.0",
-  ...Deno.version,
-};
-
-interface _Readable extends Readable {
-  get isTTY(): true | undefined;
-  destroySoon: Readable["destroy"];
-  fd: number;
-  _isStdio: undefined;
-  _isRawMode: boolean;
-  get isRaw(): boolean;
-  setRawMode(enable: boolean): this;
-}
-
-interface _Writable extends Writable {
-  get isTTY(): true | undefined;
-  get columns(): number | undefined;
-  get rows(): number | undefined;
-  getWindowSize(): [columns: number, rows: number] | undefined;
-  destroySoon: Writable["destroy"];
-  fd: number;
-  _isStdio: true;
-}
-
-// https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
-function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
-  const stream = new Writable({
-    write(buf: Uint8Array, enc: string, cb) {
-      writer.writeSync(buf instanceof Uint8Array ? buf : Buffer.from(buf, enc));
-      cb();
-    },
-    destroy(err, cb) {
-      cb(err);
-      this._undestroy();
-      if (!this._writableState.emitClose) {
-        _nextTick(() => this.emit("close"));
-      }
-    },
-  }) as _Writable;
-  stream.fd = writer.rid;
-  stream.destroySoon = stream.destroy;
-  stream._isStdio = true;
-  stream.once("close", () => writer.close());
-  Object.defineProperties(stream, {
-    columns: {
-      enumerable: true,
-      configurable: true,
-      get: () =>
-        Deno.isatty(writer.rid)
-          ? Deno.consoleSize(writer.rid).columns
-          : undefined,
-    },
-    rows: {
-      enumerable: true,
-      configurable: true,
-      get: () =>
-        Deno.isatty(writer.rid) ? Deno.consoleSize(writer.rid).rows : undefined,
-    },
-    isTTY: {
-      enumerable: true,
-      configurable: true,
-      get: () => Deno.isatty(writer.rid),
-    },
-    getWindowSize: {
-      enumerable: true,
-      configurable: true,
-      value: () =>
-        Deno.isatty(writer.rid)
-          ? Object.values(Deno.consoleSize(writer.rid))
-          : undefined,
-    },
-  });
-  return stream;
-}
-
-/** https://nodejs.org/api/process.html#process_process_stderr */
-export const stderr = createWritableStdioStream(Deno.stderr);
-
-/** https://nodejs.org/api/process.html#process_process_stdin */
-export const stdin = new Readable({
-  read(this: Readable, size: number) {
-    const p = Buffer.alloc(size || 16 * 1024);
-    const length = Deno.stdin.readSync(p);
-    this.push(length === null ? null : p.slice(0, length));
-  },
-}) as _Readable;
-stdin.on("close", () => Deno.stdin.close());
-stdin.fd = Deno.stdin.rid;
-Object.defineProperty(stdin, "isTTY", {
-  enumerable: true,
-  configurable: true,
-  get() {
-    return Deno.isatty(Deno.stdin.rid);
-  },
-});
-stdin._isRawMode = false;
-stdin.setRawMode = (enable) => {
-  Deno.setRaw(Deno.stdin.rid, enable);
-  stdin._isRawMode = enable;
-  return stdin;
-};
-Object.defineProperty(stdin, "isRaw", {
-  enumerable: true,
-  configurable: true,
-  get() {
-    return stdin._isRawMode;
-  },
-});
-
-/** https://nodejs.org/api/process.html#process_process_stdout */
-export const stdout = createWritableStdioStream(Deno.stdout);
 
 function addReadOnlyProcessAlias(
   name: string,
