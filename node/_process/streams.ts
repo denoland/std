@@ -1,6 +1,6 @@
 import { Readable, Writable } from "../stream.ts";
 import { Buffer } from "../buffer.ts";
-import { nextTick } from "./process.ts";
+import { nextTick } from "../_next_tick.ts";
 
 interface _Readable extends Readable {
   get isTTY(): true | undefined;
