@@ -18,7 +18,19 @@ import {
   version,
   versions,
 } from "./_process/process.ts";
+export {
+  _nextTick as nextTick,
+  arch,
+  chdir,
+  cwd,
+  env,
+  pid,
+  platform,
+  version,
+  versions,
+};
 import { stderr, stdin, stdout } from "./_process/streams.ts";
+export { stderr, stdin, stdout };
 
 const notImplementedEvents = [
   "beforeExit",
