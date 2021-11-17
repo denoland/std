@@ -76,19 +76,28 @@ export const validateUint32 = hideStackFrames(
   },
 );
 
-export function validateString(value: unknown, name: string) {
+export function validateString(
+  value: unknown,
+  name: string,
+): asserts value is string {
   if (typeof value !== "string") {
     throw new ERR_INVALID_ARG_TYPE(name, "string", value);
   }
 }
 
-export function validateNumber(value: unknown, name: string) {
+export function validateNumber(
+  value: unknown,
+  name: string,
+): asserts value is number {
   if (typeof value !== "number") {
     throw new ERR_INVALID_ARG_TYPE(name, "number", value);
   }
 }
 
-export function validateBoolean(value: unknown, name: string) {
+export function validateBoolean(
+  value: unknown,
+  name: string,
+): asserts value is boolean {
   if (typeof value !== "boolean") {
     throw new ERR_INVALID_ARG_TYPE(name, "boolean", value);
   }

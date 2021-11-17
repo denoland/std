@@ -34,7 +34,7 @@ const ansi = new RegExp(ansiPattern, "g");
 /**
  * Returns the number of columns required to display the given string.
  */
-export function getStringWidth(str, removeControlChars = true) {
+export function getStringWidth(str: string, removeControlChars = true): number {
   let width = 0;
 
   if (removeControlChars) {
@@ -43,9 +43,9 @@ export function getStringWidth(str, removeControlChars = true) {
   str = str.normalize("NFC");
   for (const char of str[Symbol.iterator]()) {
     const code = char.codePointAt(0);
-    if (isFullWidthCodePoint(code)) {
+    if (isFullWidthCodePoint(code!)) {
       width += 2;
-    } else if (!isZeroWidthCodePoint(code)) {
+    } else if (!isZeroWidthCodePoint(code!)) {
       width++;
     }
   }
@@ -57,7 +57,7 @@ export function getStringWidth(str, removeControlChars = true) {
  * Returns true if the character represented by a given
  * Unicode code point is full-width. Otherwise returns false.
  */
-const isFullWidthCodePoint = (code) => {
+const isFullWidthCodePoint = (code: number): boolean => {
   // Code points are partially derived from:
   // https://www.unicode.org/Public/UNIDATA/EastAsianWidth.txt
   return code >= 0x1100 && (
@@ -95,7 +95,7 @@ const isFullWidthCodePoint = (code) => {
   );
 };
 
-const isZeroWidthCodePoint = (code) => {
+const isZeroWidthCodePoint = (code: number): boolean => {
   return code <= 0x1F || // C0 control codes
     (code >= 0x7F && code <= 0x9F) || // C1 control codes
     (code >= 0x300 && code <= 0x36F) || // Combining Diacritical Marks
@@ -110,7 +110,7 @@ const isZeroWidthCodePoint = (code) => {
 /**
  * Remove all VT control characters. Use to estimate displayed string width.
  */
-export function stripVTControlCharacters(str) {
+export function stripVTControlCharacters(str: unknown): string {
   validateString(str, "str");
 
   return str.replace(ansi, "");
