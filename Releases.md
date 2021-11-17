@@ -1,3 +1,23 @@
+### 0.115.0 / 2021.11.17
+
+- feat(node): add wasi module (#1534)
+- feat(node): process.config, process.exitCode, process._exiting (#1597)
+- feat(node): process.stdin.setRawMode (#1572)
+- feat(node/_fs): Add `fs.readSync` (#1598)
+- feat(node/fs): add `fs.read` API (#1557)
+- feat(node/fs): implement `fs.rm` and `fs.rmSync` (#1568)
+- feat(node/process): add process.hrtime.bigint() (#1600)
+- feat(node/util): Add `util.isBuffer` and `util._extend` (#1567)
+- fix(node): Align exports and declarations for Buffer and Events module (#1570)
+- fix(node): improve http.Server.listen() compat (#1574)
+- fix(node/http): fix no body chunked response (#1603)
+- fix(node/http): improve http.Server compatibility (#1595)
+- fix(node/http): improve http.Server#close() compat (#1602)
+- fix(node/util): improve test coverage (#1591)
+- node: add nextTick helper module (#1584)
+- node: polyfill process.nextTick using Deno.core bindings (#1588)
+- node: Use upstream source for "events" module (#1558)
+
 ### 0.114.0 / 2021.11.09
 
 - BREAKING(http): update `serve`, add `serveListener`, deprecate
