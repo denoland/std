@@ -92,3 +92,27 @@ Deno.test("[node/http close]", async () => {
     await promise2;
   }
 });
+
+Deno.test("[node/http chunked response", async () => {
+  for (const body of [undefined, "", "ok"]) {
+    const expected = body ?? "";
+    const promise = deferred<void>();
+
+    const server = http.createServer((_req, res) => {
+      res.writeHead(200, { "transfer-encoding": "chunked" });
+      res.end(body);
+    });
+
+    server.listen(async () => {
+      const res = await fetch(`http://127.0.0.1:${server.address().port}/`);
+      assert(res.ok);
+
+      const actual = await res.text();
+      assertEquals(actual, expected);
+
+      server.close(() => promise.resolve());
+    });
+
+    await promise;
+  }
+});

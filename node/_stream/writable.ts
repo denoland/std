@@ -254,11 +254,11 @@ class Writable extends Stream {
     return this;
   }
 
-  end(cb?: () => void): void;
+  end(cb?: () => void): this;
   // deno-lint-ignore no-explicit-any
-  end(chunk: any, cb?: () => void): void;
+  end(chunk: any, cb?: () => void): this;
   // deno-lint-ignore no-explicit-any
-  end(chunk: any, encoding: WritableEncodings, cb?: () => void): void;
+  end(chunk: any, encoding: WritableEncodings, cb?: () => void): this;
 
   end(
     // deno-lint-ignore no-explicit-any
