@@ -65,6 +65,8 @@ Deno.test({
       assert(childProcess.stdin, "stdin should be defined");
       assert(childProcess.stdout, "stdout should be defined");
       let data = "";
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       childProcess.stdout.on("data", (chunk) => {
         data += chunk;
       });
@@ -97,6 +99,8 @@ Deno.test({
       assert(childProcess.stdin, "stdin should be defined");
       assert(childProcess.stdout, "stdout should be defined");
       let data: Buffer;
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       childProcess.stdout.on("data", (chunk) => {
         data = chunk;
       });
@@ -208,6 +212,8 @@ Deno.test({
         "echo foo",
       );
       assert(echo.stdout);
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       echo.stdout.on("data", (data) => {
         echoOutput += data;
       });
@@ -236,6 +242,8 @@ Deno.test({
       let commandOutput = "";
 
       assert(command.stdout);
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       command.stdout.on("data", (data) => {
         commandOutput += data;
       });
@@ -271,6 +279,8 @@ Deno.test({
 
       assert(env.stdout);
       env.on("error", (err: Error) => promise.reject(err));
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       env.stdout.on("data", (data) => {
         envOutput += data;
       });

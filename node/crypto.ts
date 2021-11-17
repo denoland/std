@@ -11,11 +11,15 @@ import {
 import { pbkdf2, pbkdf2Sync } from "./_crypto/pbkdf2.ts";
 import { Buffer } from "./buffer.ts";
 import { Transform } from "./stream.ts";
-import { TransformOptions } from "./_stream/transform.ts";
+// FIXME(Soremwar)
+// import { TransformOptions } from "./_stream/transform.ts";
 import { encode as encodeToHex } from "../encoding/hex.ts";
 import { encode as encodeToBase64 } from "../encoding/base64.ts";
 import { scrypt, scryptSync } from "./_crypto/scrypt.ts";
 import { timingSafeEqual } from "./_crypto/timingSafeEqual.ts";
+
+// deno-lint-ignore no-explicit-any
+type TransformOptions = any;
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {

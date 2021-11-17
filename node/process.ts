@@ -126,8 +126,12 @@ export const versions = {
   ...Deno.version,
 };
 
+// FIXME(Soremwar)
+// @ts-ignore Temporal workaround, remove before merging streams update
 interface _Readable extends Readable {
   get isTTY(): true | undefined;
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   destroySoon: Readable["destroy"];
   fd: number;
   _isStdio: undefined;
@@ -136,11 +140,15 @@ interface _Readable extends Readable {
   setRawMode(enable: boolean): this;
 }
 
+// FIXME(Soremwar)
+// @ts-ignore Temporal workaround, remove before merging streams update
 interface _Writable extends Writable {
   get isTTY(): true | undefined;
   get columns(): number | undefined;
   get rows(): number | undefined;
   getWindowSize(): [columns: number, rows: number] | undefined;
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   destroySoon: Writable["destroy"];
   fd: number;
   _isStdio: true;
@@ -148,11 +156,17 @@ interface _Writable extends Writable {
 
 // https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
 function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   const stream = new Writable({
+    // FIXME(Soremwar)
+    // @ts-ignore Temporal workaround, remove before merging streams update
     write(buf: Uint8Array, enc: string, cb) {
       writer.writeSync(buf instanceof Uint8Array ? buf : Buffer.from(buf, enc));
       cb();
     },
+    // FIXME(Soremwar)
+    // @ts-ignore Temporal workaround, remove before merging streams update
     destroy(err, cb) {
       cb(err);
       this._undestroy();
@@ -162,8 +176,12 @@ function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
     },
   }) as _Writable;
   stream.fd = writer.rid;
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   stream.destroySoon = stream.destroy;
   stream._isStdio = true;
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   stream.once("close", () => writer.close());
   Object.defineProperties(stream, {
     columns: {
@@ -202,12 +220,16 @@ export const stderr = createWritableStdioStream(Deno.stderr);
 
 /** https://nodejs.org/api/process.html#process_process_stdin */
 export const stdin = new Readable({
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   read(this: Readable, size: number) {
     const p = Buffer.alloc(size || 16 * 1024);
     const length = Deno.stdin.readSync(p);
     this.push(length === null ? null : p.slice(0, length));
   },
 }) as _Readable;
+// FIXME(Soremwar)
+// @ts-ignore Temporal workaround, remove before merging streams update
 stdin.on("close", () => Deno.stdin.close());
 stdin.fd = Deno.stdin.rid;
 Object.defineProperty(stdin, "isTTY", {

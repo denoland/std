@@ -1,5 +1,7 @@
-import NodeReadable from "./_stream/readable.ts";
-import NodeWritable from "./_stream/writable.ts";
+import {
+  Readable as NodeReadable,
+  Writable as NodeWritable,
+} from "./stream.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
 import { EventEmitter } from "./events.ts";
@@ -75,6 +77,8 @@ export class ServerResponse extends NodeWritable {
       autoDestroy: true,
       defaultEncoding: "utf-8",
       emitClose: true,
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       write: (chunk, _encoding, cb) => {
         if (!this.headersSent) {
           if (this.#firstChunk === null) {
@@ -89,6 +93,8 @@ export class ServerResponse extends NodeWritable {
         controller.enqueue(chunkToU8(chunk));
         return cb();
       },
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       final: (cb) => {
         if (this.#firstChunk) {
           this.respond(true, this.#firstChunk);
@@ -98,6 +104,8 @@ export class ServerResponse extends NodeWritable {
         controller.close();
         return cb();
       },
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       destroy: (err, cb) => {
         if (err) {
           controller.error(err);
@@ -183,6 +191,8 @@ export class IncomingMessage extends NodeReadable {
       autoDestroy: true,
       emitClose: true,
       objectMode: false,
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       read: async function (_size) {
         if (!reader) {
           return this.push(null);
@@ -195,6 +205,8 @@ export class IncomingMessage extends NodeReadable {
           this.destroy(err as Error);
         }
       },
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       destroy: (err, cb) => {
         reader?.cancel().finally(() => cb(err));
       },

@@ -40,21 +40,29 @@ export class ChildProcess extends EventEmitter {
   /**
    * This property represents the child process's stdin.
    */
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   stdin: Writable | null = null;
 
   /**
    * This property represents the child process's stdout.
    */
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   stdout: Readable | null = null;
 
   /**
    * This property represents the child process's stderr.
    */
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   stderr: Readable | null = null;
 
   /**
    * Pipes to this child process.
    */
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   stdio: [Writable | null, Readable | null, Readable | null] = [
     null,
     null,
@@ -200,6 +208,8 @@ export class ChildProcess extends EventEmitter {
 
 const supportedNodeStdioTypes: NodeStdio[] = ["pipe", "ignore", "inherit"];
 function toDenoStdio(
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   pipe: NodeStdio | number | Stream | null | undefined,
 ): DenoStdio {
   if (
@@ -240,6 +250,8 @@ interface ChildProcessOptions {
    * This option defines child process's stdio configuration.
    * @see https://nodejs.org/api/child_process.html#child_process_options_stdio
    */
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   stdio?: Array<NodeStdio | number | Stream | null | undefined> | NodeStdio;
 
   /**
@@ -338,6 +350,8 @@ function isAlreadyClosed(err: unknown): boolean {
 
 function createReadableFromReader(
   reader: Deno.Reader,
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
 ): Readable {
   // TODO(uki00a): This could probably be more efficient.
   return Readable.from(cloneIterator(iterateReader(reader)), {
@@ -358,9 +372,13 @@ async function* cloneIterator(iterator: AsyncIterableIterator<Uint8Array>) {
   }
 }
 
+// FIXME(Soremwar)
+// @ts-ignore Temporal workaround, remove before merging streams update
 function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
   const encoder = new TextEncoder();
   return new Writable({
+    // FIXME(Soremwar)
+    // @ts-ignore Temporal workaround, remove before merging streams update
     async write(chunk, encoding, callback) {
       try {
         if (encoding !== "buffer") {
@@ -377,6 +395,8 @@ function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
         callback(err instanceof Error ? err : new Error("[non-error thrown]"));
       }
     },
+    // FIXME(Soremwar)
+    // @ts-ignore Temporal workaround, remove before merging streams update
     final(callback) {
       try {
         ensureClosed(stdin);
@@ -388,6 +408,8 @@ function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
 }
 
 function normalizeStdioOption(
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   stdio: Array<NodeStdio | number | null | undefined | Stream> | NodeStdio = [
     "pipe",
     "pipe",
@@ -420,11 +442,17 @@ function normalizeStdioOption(
   }
 }
 
+// FIXME(Soremwar)
+// @ts-ignore Temporal workaround, remove before merging streams update
 function waitForReadableToClose(readable: Readable): Promise<void> {
   readable.resume(); // Ensure buffered data will be consumed.
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   return waitForStreamToClose(readable as unknown as Stream);
 }
 
+// FIXME(Soremwar)
+// @ts-ignore Temporal workaround, remove before merging streams update
 function waitForStreamToClose(stream: Stream): Promise<void> {
   const promise = deferred<void>();
   const cleanup = () => {

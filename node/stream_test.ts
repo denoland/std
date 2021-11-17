@@ -66,6 +66,8 @@ Deno.test("Readable and Writable stream backpressure test", async () => {
   });
 
   const ws = new Writable({
+    // FIXME(Soremwar)
+    // @ts-ignore Temporal workaround, remove before merging streams update
     write: function (_data, _enc, cb) {
       wsExecuted++;
       if (wsExecuted == wsExecutedExpected) {
@@ -88,6 +90,8 @@ Deno.test("Readable and Writable stream backpressure test", async () => {
 });
 
 Deno.test("Readable can be piped through Transform", async () => {
+  // FIXME(Soremwar)
+  // @ts-ignore Temporal workaround, remove before merging streams update
   const [readExecution, readCb] = mustCall(function (this: Readable) {
     this.push("content");
     this.push(null);
@@ -99,6 +103,8 @@ Deno.test("Readable can be piped through Transform", async () => {
 
   const [transformExecution, transformCb] = mustCall(
     function (
+      // FIXME(Soremwar)
+      // @ts-ignore Temporal workaround, remove before merging streams update
       this: Transform,
       chunk: unknown,
       _e,
@@ -110,6 +116,8 @@ Deno.test("Readable can be piped through Transform", async () => {
   );
 
   const [flushExecution, flushCb] = mustCall(
+    // FIXME(Soremwar)
+    // @ts-ignore Temporal workaround, remove before merging streams update
     function (this: Transform, callback: (error?: Error | null) => void) {
       callback();
     },

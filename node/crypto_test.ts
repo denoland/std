@@ -44,6 +44,8 @@ Deno.test("[node/crypto.Hash] streaming usage", async () => {
   const dest = source.pipe(hash);
   const result = await new Promise((resolve, _) => {
     let buffer = Buffer.from([]);
+    // FIXME(Soremwar)
+    // @ts-ignore Temporal workaround, remove before merging streams update
     dest.on("data", (data) => {
       buffer = Buffer.concat([buffer, data]);
     });
