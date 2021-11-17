@@ -1,3 +1,5 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { Readable, Writable } from "../stream.ts";
 import { Buffer } from "../buffer.ts";
 import { nextTick } from "../_next_tick.ts";
