@@ -1583,7 +1583,7 @@ interface Abortable {
   signal?: AbortSignal | undefined;
 }
 
-interface ListenOptions extends Abortable {
+export interface ListenOptions extends Abortable {
   fd?: number;
   port?: number | undefined;
   host?: string | undefined;
@@ -2404,7 +2404,8 @@ export class Server extends EventEmitter {
     this._usingWorkers = true;
     this._workers.push(socketList);
 
-    socketList.once("exit", (socketList) => {
+    // deno-lint-ignore no-explicit-any
+    socketList.once("exit", (socketList: any) => {
       const index = this._workers.indexOf(socketList);
       this._workers.splice(index, 1);
     });

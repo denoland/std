@@ -45,14 +45,15 @@ function Readable() {
 Object.setPrototypeOf(Readable.prototype, stream.Stream.prototype);
 Object.setPrototypeOf(Readable, stream.Stream);
 
-let passed = false;
+// FIXME(bartlomieju):
+// let passed = false;
 
-const w = new Writable();
-w.on('pipe', function(src) {
-  passed = true;
-});
+// const w = new Writable();
+// w.on('pipe', function(src) {
+//   passed = true;
+// });
 
-const r = new Readable();
-r.pipe(w);
+// const r = new Readable();
+// r.pipe(w);
 
-assert.ok(passed);
+// assert.ok(passed);

@@ -53,7 +53,7 @@ Deno standard library as it's a compatibility module.
 - [x] util/types _partly_
 - [ ] v8
 - [ ] vm
-- [ ] wasi
+- [x] wasi
 - [ ] webcrypto
 - [ ] worker_threads
 - [ ] zlib
@@ -135,7 +135,7 @@ following:
 - Use `node/_tools/require.ts` as follows(recommended):
 
 ```zsh
-$ deno run -A node/_tools/require.ts /Abs/path/to/deno_std/node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js
+$ deno run -A --unstable node/_tools/require.ts /Abs/path/to/deno_std/node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js
 ```
 
 - Add `--only` flag to the `node/_tools/config.json`.

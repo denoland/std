@@ -25,6 +25,7 @@ import { readlink, readlinkSync } from "./_fs/_fs_readlink.ts";
 import { realpath, realpathSync } from "./_fs/_fs_realpath.ts";
 import { rename, renameSync } from "./_fs/_fs_rename.ts";
 import { rmdir, rmdirSync } from "./_fs/_fs_rmdir.ts";
+import { rm, rmSync } from "./_fs/_fs_rm.ts";
 import { stat, statSync } from "./_fs/_fs_stat.ts";
 import { createReadStream } from "./_fs/_fs_streams.ts";
 import { symlink, symlinkSync } from "./_fs/_fs_symlink.ts";
@@ -94,6 +95,8 @@ export default {
   renameSync,
   rmdir,
   rmdirSync,
+  rm,
+  rmSync,
   stat,
   statSync,
   symlink,
@@ -160,8 +163,10 @@ export {
   realpathSync,
   rename,
   renameSync,
+  rm,
   rmdir,
   rmdirSync,
+  rmSync,
   stat,
   statSync,
   symlink,

@@ -23,7 +23,7 @@ function getStringFromWasm0(ptr, len) {
   return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
 
-const heap = new Array(32).fill(undefined);
+const heap = Array.from({ length: 32 });
 
 heap.push(undefined, null, true, false);
 

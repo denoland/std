@@ -10,7 +10,7 @@ import { deferred } from "../async/deferred.ts";
 import { iterateReader, writeAll } from "../streams/conversion.ts";
 import { isWindows } from "../_util/os.ts";
 import { Buffer } from "./buffer.ts";
-
+import { nextTick } from "./_next_tick.ts";
 export class ChildProcess extends EventEmitter {
   /**
    * The exit code of the child process. This property will be `null` until the child process exits.
@@ -119,7 +119,7 @@ export class ChildProcess extends EventEmitter {
       this.stdio[1] = this.stdout;
       this.stdio[2] = this.stderr;
 
-      queueMicrotask(() => {
+      nextTick(() => {
         this.emit("spawn");
         this.#spawned.resolve();
       });
@@ -192,7 +192,7 @@ export class ChildProcess extends EventEmitter {
   }
 
   private _handleError(err: unknown): void {
-    queueMicrotask(() => {
+    nextTick(() => {
       this.emit("error", err); // TODO(uki00a) Convert `err` into nodejs's `SystemError` class.
     });
   }
@@ -436,7 +436,7 @@ function normalizeStdioOption(
 
 function waitForReadableToClose(readable: Readable): Promise<void> {
   readable.resume(); // Ensure buffered data will be consumed.
-  return waitForStreamToClose(readable);
+  return waitForStreamToClose(readable as unknown as Stream);
 }
 
 function waitForStreamToClose(stream: Stream): Promise<void> {

@@ -9,6 +9,8 @@ import dns from "./dns.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
+import internalErrors from "./internal/errors.ts";
+import internalUtilInspect from "./internal/util/inspect.js";
 import internalReadlineUtils from "./internal/readline/utils.js";
 import http from "./http.ts";
 import net from "./net.ts";
@@ -28,6 +30,7 @@ import tty from "./tty.ts";
 import vm from "./vm.ts";
 import url from "./url.ts";
 import util from "./util.ts";
+import wasi from "./wasi.ts";
 
 // TODO(kt3k): add these modules when implemented
 // import cluster from "./cluster.ts";
@@ -56,6 +59,8 @@ export default {
   http,
   https: {},
   "internal/readline/utils": internalReadlineUtils,
+  "internal/util/inspect": internalUtilInspect,
+  "internal/errors": internalErrors,
   net,
   os,
   path,
@@ -77,4 +82,5 @@ export default {
   v8: {},
   vm,
   zlib: {},
+  wasi,
 } as Record<string, unknown>;

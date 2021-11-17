@@ -31,7 +31,7 @@ export function chunk<T>(array: readonly T[], size: number): T[][] {
     return [];
   }
 
-  const ret = new Array(Math.ceil(array.length / size));
+  const ret = Array.from<T[]>({ length: Math.ceil(array.length / size) });
   let readIndex = 0;
   let writeIndex = 0;
 

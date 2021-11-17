@@ -30,7 +30,6 @@ import {
 } from "./internal_binding/stream_wrap.ts";
 import { isUint8Array } from "./_util/_util_types.ts";
 import { errnoException } from "./_errors.ts";
-import { FastBuffer } from "./_buffer.ts";
 import { getTimerDuration, kTimeout, setUnrefTimeout } from "./_timers.ts";
 import { validateCallback } from "./_validators.ts";
 import { codeMap } from "./internal_binding/uv.ts";
@@ -249,7 +248,7 @@ export function onStreamRead(
       }
     } else {
       const offset = streamBaseState[kArrayBufferOffset];
-      const buf = new FastBuffer(arrayBuffer, offset, nread);
+      const buf = Buffer.from(arrayBuffer, offset, nread);
       result = stream.push(buf);
     }
 

@@ -10,6 +10,7 @@ import { validateString } from "./_validators.ts";
 import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
+import { nextTick as _nextTick } from "./_next_tick.ts";
 
 const notImplementedEvents = [
   "beforeExit",
@@ -50,6 +51,9 @@ export const chdir = Deno.chdir;
 /** https://nodejs.org/api/process.html#process_process_cwd */
 export const cwd = Deno.cwd;
 
+/** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
+export const nextTick = _nextTick;
+
 /**
  * https://nodejs.org/api/process.html#process_process_env
  * Requires env permissions
@@ -67,26 +71,18 @@ export const env: Record<string, string> = new Proxy({}, {
 });
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
-export const exit = Deno.exit;
-
-/** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
-export function nextTick(this: unknown, cb: () => void): void;
-export function nextTick<T extends Array<unknown>>(
-  this: unknown,
-  cb: (...args: T) => void,
-  ...args: T
-): void;
-export function nextTick<T extends Array<unknown>>(
-  this: unknown,
-  cb: (...args: T) => void,
-  ...args: T
-) {
-  if (args) {
-    queueMicrotask(() => cb.call(this, ...args));
-  } else {
-    queueMicrotask(cb);
+export const exit = (code?: number) => {
+  if (code || code === 0) {
+    process.exitCode = code;
   }
-}
+
+  if (!process._exiting) {
+    process._exiting = true;
+    process.emit("exit", process.exitCode || 0);
+  }
+
+  Deno.exit(process.exitCode || 0);
+};
 
 /** https://nodejs.org/api/process.html#process_process_pid */
 export const pid = Deno.pid;
@@ -135,6 +131,9 @@ interface _Readable extends Readable {
   destroySoon: Readable["destroy"];
   fd: number;
   _isStdio: undefined;
+  _isRawMode: boolean;
+  get isRaw(): boolean;
+  setRawMode(enable: boolean): this;
 }
 
 interface _Writable extends Writable {
@@ -158,7 +157,7 @@ function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
       cb(err);
       this._undestroy();
       if (!this._writableState.emitClose) {
-        queueMicrotask(() => this.emit("close"));
+        _nextTick(() => this.emit("close"));
       }
     },
   }) as _Writable;
@@ -218,9 +217,19 @@ Object.defineProperty(stdin, "isTTY", {
     return Deno.isatty(Deno.stdin.rid);
   },
 });
-stdin.setRawMode = () => {
-  console.log("called setRawMode");
+stdin._isRawMode = false;
+stdin.setRawMode = (enable) => {
+  Deno.setRaw(Deno.stdin.rid, enable);
+  stdin._isRawMode = enable;
+  return stdin;
 };
+Object.defineProperty(stdin, "isRaw", {
+  enumerable: true,
+  configurable: true,
+  get() {
+    return stdin._isRawMode;
+  },
+});
 
 /** https://nodejs.org/api/process.html#process_process_stdout */
 export const stdout = createWritableStdioStream(Deno.stdout);
@@ -338,6 +347,22 @@ export function emitWarning(
   process.nextTick(doEmitWarning, warning);
 }
 
+function hrtime(time?: [number, number]): [number, number] {
+  const milli = performance.now();
+  const sec = Math.floor(milli / 1000);
+  const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
+  if (!time) {
+    return [sec, nano];
+  }
+  const [prevSec, prevNano] = time;
+  return [sec - prevSec, nano - prevNano];
+}
+
+hrtime.bigint = function (): BigInt {
+  const [sec, nano] = hrtime();
+  return BigInt(sec) * 1_000_000_000n + BigInt(nano);
+};
+
 function memoryUsage(): {
   rss: number;
   heapTotal: number;
@@ -376,17 +401,17 @@ class Process extends EventEmitter {
    */
   argv = argv;
 
-  /** https://nodejs.org/api/process.html#process_process_execargv */
-  execArgv = [];
-
   /** https://nodejs.org/api/process.html#process_process_chdir_directory */
   chdir = chdir;
 
+  /** https://nodejs.org/api/process.html#processconfig */
+  config = {
+    target_defaults: {},
+    variables: {},
+  };
+
   /** https://nodejs.org/api/process.html#process_process_cwd */
   cwd = cwd;
-
-  /** https://nodejs.org/api/process.html#process_process_exit_code */
-  exit = exit;
 
   /**
    * https://nodejs.org/api/process.html#process_process_env
@@ -394,12 +419,23 @@ class Process extends EventEmitter {
    */
   env = env;
 
+  /** https://nodejs.org/api/process.html#process_process_execargv */
+  execArgv = [];
+
+  /** https://nodejs.org/api/process.html#process_process_exit_code */
+  exit = exit;
+
+  _exiting = false;
+
+  /** https://nodejs.org/api/process.html#processexitcode_1 */
+  exitCode: undefined | number = undefined;
+
   // Typed as any to avoid importing "module" module for types
   // deno-lint-ignore no-explicit-any
   mainModule: any = undefined;
 
   /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
-  nextTick = nextTick;
+  nextTick = _nextTick;
 
   /** https://nodejs.org/api/process.html#process_process_events */
   on(event: "exit", listener: (code: number) => void): this;
@@ -444,16 +480,21 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_platform */
   platform = platform;
 
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeAllListeners(eventName?: string | symbol): this {
+    // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
     return super.removeAllListeners(eventName);
   }
 
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     event: typeof notImplementedEvents[number],
     //deno-lint-ignore ban-types
     listener: Function,
   ): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(event: "exit", listener: (code: number) => void): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   //deno-lint-ignore no-explicit-any
   removeListener(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
@@ -479,17 +520,8 @@ class Process extends EventEmitter {
    * These times are relative to an arbitrary time in the past, and not related to the time of day and therefore not subject to clock drift. The primary use is for measuring performance between intervals.
    * https://nodejs.org/api/process.html#process_process_hrtime_time
    */
-  hrtime(time?: [number, number]): [number, number] {
-    const milli = performance.now();
-    const sec = Math.floor(milli / 1000);
-    const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
-    if (!time) {
-      return [sec, nano];
-    }
-    const [prevSec, prevNano] = time;
-    return [sec - prevSec, nano - prevNano];
-  }
-  
+  hrtime = hrtime;
+
   memoryUsage = memoryUsage;
 
   /** https://nodejs.org/api/process.html#process_process_stderr */

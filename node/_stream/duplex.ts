@@ -30,7 +30,7 @@ import {
   readableAddChunk,
 } from "./duplex_internal.ts";
 import { debuglog } from "../_util/_debuglog.ts";
-
+import { nextTick } from "../_next_tick.ts";
 export { errorOrDestroy } from "./duplex_internal.ts";
 
 let debug = debuglog("stream", (fn) => {
@@ -70,6 +70,7 @@ export interface DuplexOptions {
   writev?: writeV;
 }
 
+// @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
 interface Duplex extends Readable, Writable {}
 
 /**
@@ -252,7 +253,7 @@ class Duplex extends Stream {
       }
 
       if (err) {
-        queueMicrotask(() => {
+        nextTick(() => {
           const r = this._readableState;
           const w = this._writableState;
 
@@ -270,7 +271,7 @@ class Duplex extends Stream {
           }
         });
       } else {
-        queueMicrotask(() => {
+        nextTick(() => {
           const r = this._readableState;
           const w = this._writableState;
 
@@ -328,7 +329,7 @@ class Duplex extends Stream {
         if (state.length) {
           emitReadable(this);
         } else if (!state.reading) {
-          queueMicrotask(() => nReadingNextTick(this));
+          nextTick(nReadingNextTick, this);
         }
       }
     }
@@ -463,6 +464,7 @@ class Duplex extends Stream {
     return ret;
   }
 
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeAllListeners(
     ev:
       | "close"
@@ -478,24 +480,29 @@ class Duplex extends Stream {
     const res = super.removeAllListeners(ev);
 
     if (ev === "readable" || ev === undefined) {
-      queueMicrotask(() => updateReadableListening(this));
+      nextTick(updateReadableListening, this);
     }
 
     return res;
   }
 
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     event: "close" | "end" | "pause" | "readable" | "resume",
     listener: () => void,
   ): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   // deno-lint-ignore no-explicit-any
   removeListener(event: "data", listener: (chunk: any) => void): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(event: "error", listener: (err: Error) => void): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     event: string | symbol,
     // deno-lint-ignore no-explicit-any
     listener: (...args: any[]) => void,
   ): this;
+  // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
   removeListener(
     ev: string | symbol,
     fn:
@@ -505,13 +512,14 @@ class Duplex extends Stream {
       | ((err: Error) => void)
       // deno-lint-ignore no-explicit-any
       | ((...args: any[]) => void),
-  ) {
+  ): this {
     const res = super.removeListener.call(this, ev, fn);
 
     if (ev === "readable") {
-      queueMicrotask(() => updateReadableListening(this));
+      nextTick(updateReadableListening, this);
     }
 
+    // @ts-ignore `deno_std`'s types are scricter than types from DefinitelyTyped for Node.js thus causing problems
     return res;
   }
 
@@ -678,9 +686,10 @@ class Duplex extends Stream {
 
     if (typeof cb === "function") {
       if (err || state.finished) {
-        queueMicrotask(() => {
-          (cb as (error?: Error | undefined) => void)(err);
-        });
+        nextTick(
+          cb as (error?: Error | undefined) => void,
+          err,
+        );
       } else {
         state[kOnFinished].push(cb);
       }
