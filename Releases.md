@@ -1,4 +1,4 @@
-### 0.116.0 / 2021.11.17
+### 0.115.1 / 2021.11.17
 
 - fix(node): use old "process.nextTick" polyfill if Deno.core is not available
   (#1612)
