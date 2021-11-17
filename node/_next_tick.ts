@@ -1,13 +1,12 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
+// deno-lint-ignore-file no-inner-declarations
+
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 
 import { validateCallback } from "./_validators.ts";
 // FIXME(bartlomieju):
 // import { process } from "./process.ts";
-
-// deno-lint-ignore no-explicit-any
-const core = ((Deno as any).core as any);
 
 // Currently optimal queue size, tested on V8 6.0 - 6.6. Must be power of two.
 const kSize = 2048;
@@ -136,75 +135,150 @@ class FixedQueue {
 
 const queue = new FixedQueue();
 
-function runNextTicks() {
-  // FIXME(bartlomieju):
-  // if (!hasTickScheduled() && !hasRejectionToWarn())
-  //   runMicrotasks();
-  // if (!hasTickScheduled() && !hasRejectionToWarn())
-  //   return;
-  if (!core.hasTickScheduled()) {
-    core.runMicrotasks();
-  }
-  if (!core.hasTickScheduled()) {
+// deno-lint-ignore no-explicit-any
+let _nextTick: any;
+
+// @ts-ignore Deno.core is not defined in types
+if (Deno?.core?.setNextTickCallback) {
+  // deno-lint-ignore no-explicit-any
+  const core = ((Deno as any).core as any);
+
+  function runNextTicks() {
+    // FIXME(bartlomieju):
+    // if (!hasTickScheduled() && !hasRejectionToWarn())
+    //   runMicrotasks();
+    // if (!hasTickScheduled() && !hasRejectionToWarn())
+    //   return;
+    if (!core.hasTickScheduled()) {
+      core.runMicrotasks();
+    }
+    if (!core.hasTickScheduled()) {
+      return true;
+    }
+
+    processTicksAndRejections();
     return true;
   }
 
-  processTicksAndRejections();
-  return true;
-}
-
-function processTicksAndRejections() {
-  let tock;
-  do {
-    // deno-lint-ignore no-cond-assign
-    while (tock = queue.shift()) {
-      // FIXME(bartlomieju):
-      // const asyncId = tock[async_id_symbol];
-      // emitBefore(asyncId, tock[trigger_async_id_symbol], tock);
-
-      try {
-        const callback = (tock as Tock).callback;
-        if ((tock as Tock).args === undefined) {
-          callback();
-        } else {
-          const args = (tock as Tock).args;
-          switch (args.length) {
-            case 1:
-              callback(args[0]);
-              break;
-            case 2:
-              callback(args[0], args[1]);
-              break;
-            case 3:
-              callback(args[0], args[1], args[2]);
-              break;
-            case 4:
-              callback(args[0], args[1], args[2], args[3]);
-              break;
-            default:
-              callback(...args);
-          }
-        }
-      } finally {
+  function processTicksAndRejections() {
+    let tock;
+    do {
+      // deno-lint-ignore no-cond-assign
+      while (tock = queue.shift()) {
         // FIXME(bartlomieju):
-        // if (destroyHooksExist())
-        // emitDestroy(asyncId);
-      }
+        // const asyncId = tock[async_id_symbol];
+        // emitBefore(asyncId, tock[trigger_async_id_symbol], tock);
 
+        try {
+          const callback = (tock as Tock).callback;
+          if ((tock as Tock).args === undefined) {
+            callback();
+          } else {
+            const args = (tock as Tock).args;
+            switch (args.length) {
+              case 1:
+                callback(args[0]);
+                break;
+              case 2:
+                callback(args[0], args[1]);
+                break;
+              case 3:
+                callback(args[0], args[1], args[2]);
+                break;
+              case 4:
+                callback(args[0], args[1], args[2], args[3]);
+                break;
+              default:
+                callback(...args);
+            }
+          }
+        } finally {
+          // FIXME(bartlomieju):
+          // if (destroyHooksExist())
+          // emitDestroy(asyncId);
+        }
+
+        // FIXME(bartlomieju):
+        // emitAfter(asyncId);
+      }
+      core.runMicrotasks();
       // FIXME(bartlomieju):
-      // emitAfter(asyncId);
-    }
-    core.runMicrotasks();
+      // } while (!queue.isEmpty() || processPromiseRejections());
+    } while (!queue.isEmpty());
+    core.setHasTickScheduled(false);
     // FIXME(bartlomieju):
-    // } while (!queue.isEmpty() || processPromiseRejections());
-  } while (!queue.isEmpty());
-  core.setHasTickScheduled(false);
-  // FIXME(bartlomieju):
-  // setHasRejectionToWarn(false);
+    // setHasRejectionToWarn(false);
+  }
+
+  core.setNextTickCallback(processTicksAndRejections);
+  core.setMacrotaskCallback(runNextTicks);
+
+  function __nextTickNative<T extends Array<unknown>>(
+    this: unknown,
+    callback: (...args: T) => void,
+    ...args: T
+  ) {
+    validateCallback(callback);
+
+    // FIXME(bartlomieju):
+    // if (process._exiting) {
+    //   return;
+    // }
+
+    // TODO(bartlomieju): seems superfluous if we don't depend on `arguments`
+    let args_;
+    switch (args.length) {
+      case 0:
+        break;
+      case 1:
+        args_ = [args[0]];
+        break;
+      case 2:
+        args_ = [args[0], args[1]];
+        break;
+      case 3:
+        args_ = [args[0], args[1], args[2]];
+        break;
+      default:
+        args_ = new Array(args.length);
+        for (let i = 0; i < args.length; i++) {
+          args_[i] = args[i];
+        }
+    }
+
+    if (queue.isEmpty()) {
+      core.setHasTickScheduled(true);
+    }
+    // FIXME(bartlomieju):
+    // const asyncId = newAsyncId();
+    // const triggerAsyncId = getDefaultTriggerAsyncId();
+    const tickObject = {
+      // [async_id_symbol]: asyncId,
+      // [trigger_async_id_symbol]: triggerAsyncId,
+      callback,
+      args: args_,
+    };
+    // if (initHooksExist())
+    //   emitInit(asyncId, 'TickObject', triggerAsyncId, tickObject);
+    queue.push(tickObject);
+  }
+  _nextTick = __nextTickNative;
+} else {
+  function __nextTickQueueMicrotask<T extends Array<unknown>>(
+    this: unknown,
+    callback: (...args: T) => void,
+    ...args: T
+  ) {
+    if (args) {
+      queueMicrotask(() => callback.call(this, ...args));
+    } else {
+      queueMicrotask(callback);
+    }
+  }
+
+  _nextTick = __nextTickQueueMicrotask;
 }
 
-core.setNextTickCallback(processTicksAndRejections);
-core.setMacrotaskCallback(runNextTicks);
 // `nextTick()` will not enqueue any callback when the process is about to
 // exit since the callback would not have a chance to be executed.
 export function nextTick(this: unknown, callback: () => void): void;
@@ -218,47 +292,5 @@ export function nextTick<T extends Array<unknown>>(
   callback: (...args: T) => void,
   ...args: T
 ) {
-  validateCallback(callback);
-
-  // FIXME(bartlomieju):
-  // if (process._exiting) {
-  //   return;
-  // }
-
-  // TODO(bartlomieju): seems superfluous if we don't depend on `arguments`
-  let args_;
-  switch (args.length) {
-    case 0:
-      break;
-    case 1:
-      args_ = [args[0]];
-      break;
-    case 2:
-      args_ = [args[0], args[1]];
-      break;
-    case 3:
-      args_ = [args[0], args[1], args[2]];
-      break;
-    default:
-      args_ = new Array(args.length);
-      for (let i = 0; i < args.length; i++) {
-        args_[i] = args[i];
-      }
-  }
-
-  if (queue.isEmpty()) {
-    core.setHasTickScheduled(true);
-  }
-  // FIXME(bartlomieju):
-  // const asyncId = newAsyncId();
-  // const triggerAsyncId = getDefaultTriggerAsyncId();
-  const tickObject = {
-    // [async_id_symbol]: asyncId,
-    // [trigger_async_id_symbol]: triggerAsyncId,
-    callback,
-    args: args_,
-  };
-  // if (initHooksExist())
-  //   emitInit(asyncId, 'TickObject', triggerAsyncId, tickObject);
-  queue.push(tickObject);
+  _nextTick(callback, ...args);
 }
