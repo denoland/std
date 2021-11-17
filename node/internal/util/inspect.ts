@@ -43,9 +43,9 @@ export function getStringWidth(str: string, removeControlChars = true): number {
   str = str.normalize("NFC");
   for (const char of str[Symbol.iterator]()) {
     const code = char.codePointAt(0);
-    if (isFullWidthCodePoint(code!)) {
+    if (code && isFullWidthCodePoint(code)) {
       width += 2;
-    } else if (!isZeroWidthCodePoint(code!)) {
+    } else if (code && !isZeroWidthCodePoint(code)) {
       width++;
     }
   }
