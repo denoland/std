@@ -816,7 +816,9 @@ function formatRaw(ctx: any, value: any, recurseTimes: any, typedArray: any) {
 }
 
 const builtInObjects = new Set(
-  Object.getOwnPropertyNames(globalThis).filter((e: any) => /^[A-Z][a-zA-Z0-9]+$/.test(e))
+  Object.getOwnPropertyNames(globalThis).filter((e: any) =>
+    /^[A-Z][a-zA-Z0-9]+$/.test(e)
+  ),
 );
 
 function addPrototypeProperties(
