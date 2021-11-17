@@ -3,7 +3,8 @@
 /** https://nodejs.org/api/process.html#process_process_nexttick_callback_args */
 
 import { validateCallback } from "./_validators.ts";
-import { process } from "./process.ts";
+// FIXME(bartlomieju):
+// import { process } from "./process.ts";
 
 // deno-lint-ignore no-explicit-any
 const core = ((Deno as any).core as any);
@@ -219,9 +220,10 @@ export function nextTick<T extends Array<unknown>>(
 ) {
   validateCallback(callback);
 
-  if (process._exiting) {
-    return;
-  }
+  // FIXME(bartlomieju):
+  // if (process._exiting) {
+  //   return;
+  // }
 
   // TODO(bartlomieju): seems superfluous if we don't depend on `arguments`
   let args_;
