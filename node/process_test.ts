@@ -334,7 +334,18 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.hrtime.bigint",
+  fn() {
+    const time = process.hrtime.bigint();
+    assertEquals(typeof time, "bigint");
+    assert(time > 0n);
+  },
+});
+
+// FIXME(bartlomieju):
+Deno.test({
   name: "[process] stdio",
+  ignore: true,
   async fn() {
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
     const p = Deno.run({
@@ -413,4 +424,20 @@ Deno.test("process in worker", async () => {
 
   await promise;
   worker.terminate();
+});
+
+Deno.test("process.exitCode", () => {
+  assert(process.exitCode === undefined);
+  process.exitCode = 127;
+  assert(process.exitCode === 127);
+});
+
+Deno.test("process.config", () => {
+  assert(process.config !== undefined);
+  assert(process.config.target_defaults !== undefined);
+  assert(process.config.variables !== undefined);
+});
+
+Deno.test("process._exiting", () => {
+  assert(process._exiting === false);
 });

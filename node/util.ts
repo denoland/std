@@ -1,10 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { promisify } from "./_util/_util_promisify.ts";
 import { callbackify } from "./_util/_util_callbackify.ts";
+import { stripVTControlCharacters } from "./internal/util/inspect.js";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
 import * as types from "./_util/_util_types.ts";
 import { Buffer } from "./buffer.ts";
-export { callbackify, promisify, types };
+export { callbackify, promisify, stripVTControlCharacters, types };
 
 const NumberIsSafeInteger = Number.isSafeInteger;
 
@@ -100,9 +101,9 @@ export function isFunction(value: unknown): boolean {
   return typeof value === "function";
 }
 
-/** @deprecated - use `value instanceof RegExp` instead. */
+/** @deprecated Use util.types.RegExp() instead. */
 export function isRegExp(value: unknown): boolean {
-  return value instanceof RegExp;
+  return types.isRegExp(value);
 }
 
 /** @deprecated Use util.types.isDate() instead. */
@@ -317,6 +318,7 @@ export default {
   promisify,
   inherits,
   types,
+  stripVTControlCharacters,
   TextDecoder,
   TextEncoder,
 };

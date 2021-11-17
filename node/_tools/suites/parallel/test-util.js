@@ -59,7 +59,7 @@ assert.strictEqual(util.isRegExp({}), false);
 assert.strictEqual(util.isRegExp([]), false);
 assert.strictEqual(util.isRegExp(new Date()), false);
 // TODO(wafuwafu13): Enable this.
-// assert.strictEqual(util.isRegExp(Object.create(RegExp.prototype)), false);
+assert.strictEqual(util.isRegExp(Object.create(RegExp.prototype)), false);
 
 // isDate
 assert.strictEqual(util.isDate(new Date()), true);
@@ -194,11 +194,10 @@ assert.strictEqual(util.isFunction('string'), false);
   );
 }
 
-// TODO(wafuwafu13): Enable this.
-// assert.throws(() => {
-//   util.stripVTControlCharacters({});
-// }, {
-//   code: 'ERR_INVALID_ARG_TYPE',
-//   message: 'The "str" argument must be of type string.' +
-//            common.invalidArgTypeHelper({})
-// });
+assert.throws(() => {
+  util.stripVTControlCharacters({});
+}, {
+  code: 'ERR_INVALID_ARG_TYPE',
+  message: 'The "str" argument must be of type string.' +
+           common.invalidArgTypeHelper({})
+});

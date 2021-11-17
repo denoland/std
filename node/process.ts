@@ -71,7 +71,18 @@ export const env: Record<string, string> = new Proxy({}, {
 });
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
-export const exit = Deno.exit;
+export const exit = (code?: number) => {
+  if (code || code === 0) {
+    process.exitCode = code;
+  }
+
+  if (!process._exiting) {
+    process._exiting = true;
+    process.emit("exit", process.exitCode || 0);
+  }
+
+  Deno.exit(process.exitCode || 0);
+};
 
 /** https://nodejs.org/api/process.html#process_process_pid */
 export const pid = Deno.pid;
@@ -342,6 +353,22 @@ export function emitWarning(
   process.nextTick(doEmitWarning, warning);
 }
 
+function hrtime(time?: [number, number]): [number, number] {
+  const milli = performance.now();
+  const sec = Math.floor(milli / 1000);
+  const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
+  if (!time) {
+    return [sec, nano];
+  }
+  const [prevSec, prevNano] = time;
+  return [sec - prevSec, nano - prevNano];
+}
+
+hrtime.bigint = function (): BigInt {
+  const [sec, nano] = hrtime();
+  return BigInt(sec) * 1_000_000_000n + BigInt(nano);
+};
+
 function memoryUsage(): {
   rss: number;
   heapTotal: number;
@@ -380,23 +407,34 @@ class Process extends EventEmitter {
    */
   argv = argv;
 
-  /** https://nodejs.org/api/process.html#process_process_execargv */
-  execArgv = [];
-
   /** https://nodejs.org/api/process.html#process_process_chdir_directory */
   chdir = chdir;
 
+  /** https://nodejs.org/api/process.html#processconfig */
+  config = {
+    target_defaults: {},
+    variables: {},
+  };
+
   /** https://nodejs.org/api/process.html#process_process_cwd */
   cwd = cwd;
-
-  /** https://nodejs.org/api/process.html#process_process_exit_code */
-  exit = exit;
 
   /**
    * https://nodejs.org/api/process.html#process_process_env
    * Requires env permissions
    */
   env = env;
+
+  /** https://nodejs.org/api/process.html#process_process_execargv */
+  execArgv = [];
+
+  /** https://nodejs.org/api/process.html#process_process_exit_code */
+  exit = exit;
+
+  _exiting = false;
+
+  /** https://nodejs.org/api/process.html#processexitcode_1 */
+  exitCode: undefined | number = undefined;
 
   // Typed as any to avoid importing "module" module for types
   // deno-lint-ignore no-explicit-any
@@ -488,16 +526,7 @@ class Process extends EventEmitter {
    * These times are relative to an arbitrary time in the past, and not related to the time of day and therefore not subject to clock drift. The primary use is for measuring performance between intervals.
    * https://nodejs.org/api/process.html#process_process_hrtime_time
    */
-  hrtime(time?: [number, number]): [number, number] {
-    const milli = performance.now();
-    const sec = Math.floor(milli / 1000);
-    const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
-    if (!time) {
-      return [sec, nano];
-    }
-    const [prevSec, prevNano] = time;
-    return [sec - prevSec, nano - prevNano];
-  }
+  hrtime = hrtime;
 
   memoryUsage = memoryUsage;
 
