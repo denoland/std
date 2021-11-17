@@ -27,28 +27,20 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 'use strict';
-const common = require('../common');
+require('../common');
 const assert = require('assert');
-const net = require('net');
 
-// FIXME(bartlomieju):
-// const server = net.createServer(function(socket) {
-//   socket.pipe(socket);
-// }).listen(0, common.mustCall(function() {
-//   const conn = net.connect(this.address().port);
-//   let received = '';
+const order = [];
+process.nextTick(function() {
+  setTimeout(function() {
+    order.push('setTimeout');
+  }, 0);
 
-//   conn.setEncoding('utf8');
-//   conn.write('before');
-//   conn.on('connect', function() {
-//     conn.write(' after');
-//   });
-//   conn.on('data', function(buf) {
-//     received += buf;
-//     conn.end();
-//   });
-//   conn.on('end', common.mustCall(function() {
-//     server.close();
-//     assert.strictEqual(received, 'before after');
-//   }));
-// }));
+  process.nextTick(function() {
+    order.push('nextTick');
+  });
+});
+
+process.on('exit', function() {
+  assert.deepStrictEqual(order, ['nextTick', 'setTimeout']);
+});

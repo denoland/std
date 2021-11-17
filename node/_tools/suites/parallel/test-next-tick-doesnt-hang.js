@@ -27,28 +27,11 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 'use strict';
-const common = require('../common');
-const assert = require('assert');
-const net = require('net');
 
-// FIXME(bartlomieju):
-// const server = net.createServer(function(socket) {
-//   socket.pipe(socket);
-// }).listen(0, common.mustCall(function() {
-//   const conn = net.connect(this.address().port);
-//   let received = '';
+// This test verifies that having a single nextTick statement and nothing else
+// does not hang the event loop. If this test times out it has failed.
 
-//   conn.setEncoding('utf8');
-//   conn.write('before');
-//   conn.on('connect', function() {
-//     conn.write(' after');
-//   });
-//   conn.on('data', function(buf) {
-//     received += buf;
-//     conn.end();
-//   });
-//   conn.on('end', common.mustCall(function() {
-//     server.close();
-//     assert.strictEqual(received, 'before after');
-//   }));
-// }));
+require('../common');
+process.nextTick(function() {
+  // Nothing
+});
