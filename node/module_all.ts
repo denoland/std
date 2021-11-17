@@ -10,7 +10,7 @@ import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
 import internalErrors from "./internal/errors.ts";
-import internalUtilInspect from "./internal/util/inspect.js";
+import internalUtilInspect from "./internal/util/inspect.ts";
 import internalReadlineUtils from "./internal/readline/utils.js";
 import http from "./http.ts";
 import net from "./net.ts";
