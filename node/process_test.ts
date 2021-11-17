@@ -334,6 +334,15 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.hrtime.bigint",
+  fn() {
+    const time = process.hrtime.bigint();
+    assertEquals(typeof time, "bigint");
+    assert(time > 0n);
+  },
+});
+
+Deno.test({
   name: "[process] stdio",
   async fn() {
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));

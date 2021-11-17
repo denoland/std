@@ -347,6 +347,22 @@ export function emitWarning(
   process.nextTick(doEmitWarning, warning);
 }
 
+function hrtime(time?: [number, number]): [number, number] {
+  const milli = performance.now();
+  const sec = Math.floor(milli / 1000);
+  const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
+  if (!time) {
+    return [sec, nano];
+  }
+  const [prevSec, prevNano] = time;
+  return [sec - prevSec, nano - prevNano];
+}
+
+hrtime.bigint = function (): BigInt {
+  const [sec, nano] = hrtime();
+  return BigInt(sec) * 1_000_000_000n + BigInt(nano);
+};
+
 function memoryUsage(): {
   rss: number;
   heapTotal: number;
@@ -504,16 +520,7 @@ class Process extends EventEmitter {
    * These times are relative to an arbitrary time in the past, and not related to the time of day and therefore not subject to clock drift. The primary use is for measuring performance between intervals.
    * https://nodejs.org/api/process.html#process_process_hrtime_time
    */
-  hrtime(time?: [number, number]): [number, number] {
-    const milli = performance.now();
-    const sec = Math.floor(milli / 1000);
-    const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
-    if (!time) {
-      return [sec, nano];
-    }
-    const [prevSec, prevNano] = time;
-    return [sec - prevSec, nano - prevNano];
-  }
+  hrtime = hrtime;
 
   memoryUsage = memoryUsage;
 
