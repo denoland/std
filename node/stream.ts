@@ -3,6 +3,7 @@
 
 import { Buffer } from "./buffer.ts";
 import { EventEmitter } from "./events.ts";
+import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 
 // shim for using process in browser
 const process = {};
@@ -2495,9 +2496,6 @@ var require_from_browser = __commonJS({
       } else obj[key] = value;
       return obj;
     }
-
-    var ERR_INVALID_ARG_TYPE =
-      require("../../../errors").codes.ERR_INVALID_ARG_TYPE;
 
     function from(Readable, iterable, opts) {
       var iterator;
