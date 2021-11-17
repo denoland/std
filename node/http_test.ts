@@ -1,9 +1,10 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { assertEquals } from "../testing/asserts.ts";
-import { deferred } from "../async/deferred.ts";
 import EventEmitter from "./events.ts";
 import http from "./http.ts";
+import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
+import { assert, assertEquals } from "../testing/asserts.ts";
+import { deferred } from "../async/deferred.ts";
 
 Deno.test("[node/http listen]", async () => {
   {
@@ -50,5 +51,44 @@ Deno.test("[node/http listen]", async () => {
     });
 
     await promise;
+  }
+});
+
+Deno.test("[node/http close]", async () => {
+  {
+    const promise1 = deferred<void>();
+    const promise2 = deferred<void>();
+    // Node quirk: callback gets exception object, event listener does not.
+    const server = http.createServer().close((err) => {
+      assert(err instanceof ERR_SERVER_NOT_RUNNING);
+      promise1.resolve();
+    });
+    server.on("close", (err) => {
+      assertEquals(err, undefined);
+      promise2.resolve();
+    });
+    server.on("listening", () => {
+      throw Error("unreachable");
+    });
+    await promise1;
+    await promise2;
+  }
+
+  {
+    const promise1 = deferred<void>();
+    const promise2 = deferred<void>();
+    const server = http.createServer().listen().close((err) => {
+      assertEquals(err, undefined);
+      promise1.resolve();
+    });
+    server.on("close", (err) => {
+      assertEquals(err, undefined);
+      promise2.resolve();
+    });
+    server.on("listening", () => {
+      throw Error("unreachable");
+    });
+    await promise1;
+    await promise2;
   }
 });

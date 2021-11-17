@@ -1,6 +1,7 @@
 import NodeReadable from "./_stream/readable.ts";
 import NodeWritable from "./_stream/writable.ts";
 import { Buffer } from "./buffer.ts";
+import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
 import { EventEmitter } from "./events.ts";
 import { Status as STATUS_CODES } from "../http/http_status.ts";
 import { _normalizeArgs, ListenOptions } from "./net.ts";
@@ -210,8 +211,8 @@ export class IncomingMessage extends NodeReadable {
 type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
 
 export class Server extends EventEmitter {
+  #httpConnections: Set<Deno.HttpConn> = new Set();
   #listener?: Deno.Listener;
-  #listening = false;
 
   constructor(handler?: ServerHandler) {
     super();
@@ -243,36 +244,78 @@ export class Server extends EventEmitter {
     const hostname = options.host ?? "";
 
     this.#listener = Deno.listen({ port, hostname });
-    this.#listening = true;
-
-    nextTick(() => {
-      this.emit("listening");
-      this.#listenLoop();
-    });
+    nextTick(() => this.#listenLoop());
 
     return this;
   }
 
   async #listenLoop() {
-    for await (const conn of this.#listener!) {
-      (async () => {
-        for await (const reqEvent of Deno.serveHttp(conn)) {
+    const go = async (httpConn: Deno.HttpConn) => {
+      try {
+        for await (const reqEvent of httpConn) {
           const req = new IncomingMessage(reqEvent.request);
           const res = new ServerResponse(reqEvent);
           this.emit("request", req, res);
         }
-      })();
+      } finally {
+        this.#httpConnections.delete(httpConn);
+      }
+    };
+
+    const listener = this.#listener;
+
+    if (listener !== undefined) {
+      this.emit("listening");
+
+      for await (const conn of listener) {
+        let httpConn: Deno.HttpConn;
+        try {
+          httpConn = Deno.serveHttp(conn);
+        } catch {
+          continue; /// Connection closed.
+        }
+
+        this.#httpConnections.add(httpConn);
+        go(httpConn);
+      }
     }
   }
 
   get listening() {
-    return this.#listening;
+    return this.#listener !== undefined;
   }
 
-  close() {
-    this.#listening = false;
-    this.#listener!.close();
-    this.emit("close");
+  close(cb?: (err?: Error) => void): this {
+    const listening = this.listening;
+
+    if (typeof cb === "function") {
+      if (listening) {
+        this.once("close", cb);
+      } else {
+        this.once("close", function close() {
+          cb(new ERR_SERVER_NOT_RUNNING());
+        });
+      }
+    }
+
+    nextTick(() => this.emit("close"));
+
+    if (listening) {
+      this.#listener!.close();
+      this.#listener = undefined;
+
+      for (const httpConn of this.#httpConnections) {
+        try {
+          httpConn.close();
+        } catch {
+          // Already closed.
+        }
+      }
+
+      this.#httpConnections.clear();
+    }
+
+    return this;
   }
 
   address() {
