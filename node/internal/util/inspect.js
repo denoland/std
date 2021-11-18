@@ -21,6 +21,11 @@
 
 import { validateString } from "../../_validators.ts";
 import * as types from "../../_util/_util_types.ts";
+import {
+  ALL_PROPERTIES,
+  getOwnNonIndexProperties,
+  ONLY_ENUMERABLE,
+} from "../../internal_binding/util.ts";
 
 const kObjectType = 0;
 const kArrayType = 1;
@@ -520,11 +525,11 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
     tag = "";
   }
   let base = "";
-  const formatter = getEmptyFormatArray;
+  let formatter = getEmptyFormatArray;
   let braces;
   let noIterator = true;
   let i = 0;
-  // const filter = ctx.showHidden ? ALL_PROPERTIES : ONLY_ENUMERABLE;
+  const filter = ctx.showHidden ? ALL_PROPERTIES : ONLY_ENUMERABLE;
 
   let extrasType = kObjectType;
 
@@ -538,15 +543,13 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
       const prefix = (constructor !== "Array" || tag !== "")
         ? getPrefix(constructor, tag, "Array", `(${value.length})`)
         : "";
-      // TODO(wafafuwafu13): Imprement
-      keys = [value];
-      // keys = getOwnNonIndexProperties(value, filter);
+      keys = getOwnNonIndexProperties(value, filter);
       braces = [`${prefix}[`, "]"];
       if (value.length === 0 && keys.length === 0 && protoProps === undefined) {
         return `${braces[0]}]`;
       }
       extrasType = kArrayExtrasType;
-      (formatter) = formatArray;
+      formatter = formatArray;
     } else if (types.isSet(value)) {
       const size = value.size;
       const prefix = getPrefix(constructor, tag, "Set", `(${size})`);
