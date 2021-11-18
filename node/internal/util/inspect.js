@@ -504,21 +504,20 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
     protoProps = undefined;
   }
 
-  const tag = value[Symbol.toStringTag];
+  let tag = value[Symbol.toStringTag];
   // Only list the tag in case it's non-enumerable / not an own property.
   // Otherwise we'd print this twice.
-  // TODO(wafuwafu13): Implement
-  // if (
-  //   typeof tag !== "string" ||
-  //   (tag !== "" &&
-  //     (ctx.showHidden
-  //       ? Object.prototype.hasOwnProperty
-  //       : Object.prototype.propertyIsEnumerable)(
-  //         value, /** TODO(wafuwafu13): figure out Symbol.toStringTag */
-  //       ))
-  // ) {
-  //   tag = "";
-  // }
+  if (
+    typeof tag !== "string" ||
+    (tag !== "" &&
+      (ctx.showHidden
+        ? Object.prototype.hasOwnProperty
+        : Object.prototype.propertyIsEnumerable)(
+          value, Symbol.toStringTag
+        ))
+  ) {
+    tag = "";
+  }
   let base = "";
   const formatter = getEmptyFormatArray;
   let braces;
