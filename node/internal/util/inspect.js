@@ -513,7 +513,8 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
       (ctx.showHidden
         ? Object.prototype.hasOwnProperty
         : Object.prototype.propertyIsEnumerable)(
-          value, Symbol.toStringTag
+          value,
+          Symbol.toStringTag,
         ))
   ) {
     tag = "";
