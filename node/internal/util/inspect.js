@@ -37,7 +37,6 @@ const kIterator = 1;
 const kMapEntries = 2;
 
 const kPending = 0;
-const kFulfilled = 1;
 const kRejected = 2;
 
 // Escaped control characters (plus the single quote and the backslash). Use
@@ -63,14 +62,18 @@ const meta = [
 // https://tc39.es/ecma262/#sec-IsHTMLDDA-internal-slot
 const isUndetectableObject = (v) => typeof v === "undefined" && v !== undefined;
 
+// deno-lint-ignore no-control-regex
 const strEscapeSequencesRegExp = /[\x00-\x1f\x27\x5c\x7f-\x9f]/;
+// deno-lint-ignore no-control-regex
 const strEscapeSequencesReplacer = /[\x00-\x1f\x27\x5c\x7f-\x9f]/g;
+// deno-lint-ignore no-control-regex
 const strEscapeSequencesRegExpSingle = /[\x00-\x1f\x5c\x7f-\x9f]/;
+// deno-lint-ignore no-control-regex
 const strEscapeSequencesReplacerSingle = /[\x00-\x1f\x5c\x7f-\x9f]/g;
 
 const keyStrRegExp = /^[a-zA-Z_][a-zA-Z_0-9]*$/;
 const numberRegExp = /^(0|[1-9][0-9]*)$/;
-
+// deno-lint-ignore no-regex-spaces
 const coreModuleRegExp = /^    at (?:[^/\\(]+ \(|)node:(.+):\d+:\d+\)?$/;
 const nodeModulesRegExp = /[/\\]node_modules[/\\](.+?)(?=[/\\])/g;
 
@@ -128,7 +131,9 @@ function getUserOptions(ctx, isCrossContext) {
       let stylized;
       try {
         stylized = `${ctx.stylize(value, flavour)}`;
-      } catch {}
+      } catch {
+        // noop
+      }
 
       if (typeof stylized !== "string") return value;
       // `stylized` is a string as it should be, which is safe to pass along.
@@ -142,9 +147,6 @@ function getUserOptions(ctx, isCrossContext) {
 /**
  * Echos the value of any input. Tries to print the value out
  * in the best way possible given the different types.
- *
- * @param {any} value The value to print out.
- * @param {Object} opts Optional options object that alters the output.
  */
 /* Legacy: value, showHidden, depth, colors */
 export function inspect(value, opts) {
@@ -188,6 +190,7 @@ export function inspect(value, opts) {
         // this function public or add a new API with a similar or better
         // functionality.
         if (
+          // deno-lint-ignore no-prototype-builtins
           inspectDefaultOptions.hasOwnProperty(key) ||
           key === "stylize"
         ) {
@@ -522,11 +525,11 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
   //   tag = "";
   // }
   let base = "";
-  let formatter = getEmptyFormatArray;
+  const formatter = getEmptyFormatArray;
   let braces;
   let noIterator = true;
   let i = 0;
-  const filter = ctx.showHidden ? ALL_PROPERTIES : ONLY_ENUMERABLE;
+  // const filter = ctx.showHidden ? ALL_PROPERTIES : ONLY_ENUMERABLE;
 
   let extrasType = kObjectType;
 
@@ -575,8 +578,8 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
       // TODO(wafuwafu13): Imprement
       keys = [value];
       // keys = getOwnNonIndexProperties(value, filter);
-      let bound = value;
-      let fallback = "";
+      const bound = value;
+      const fallback = "";
       if (constructor === null) {
         // TODO(wafuwafu13): Implement
         // fallback = TypedArrayPrototypeGetSymbolToStringTag(value);
@@ -828,6 +831,7 @@ function addPrototypeProperties(
       // Ignore the `constructor` property and keys that exist on layers above.
       if (
         key === "constructor" ||
+        // deno-lint-ignore no-prototype-builtins
         main.hasOwnProperty(key) ||
         (depth !== 0 && keySet.has(key))
       ) {
@@ -1003,6 +1007,7 @@ function formatArray(ctx, value, recurseTimes) {
   const output = [];
   for (let i = 0; i < len; i++) {
     // Special handle sparse arrays.
+    // deno-lint-ignore no-prototype-builtins
     if (!value.hasOwnProperty(i)) {
       return formatSpecialArray(ctx, value, recurseTimes, len, output, i);
     }
@@ -1014,7 +1019,7 @@ function formatArray(ctx, value, recurseTimes) {
   return output;
 }
 
-function getCtxStyle(value, constructor, tag) {
+function getCtxStyle(_value, constructor, tag) {
   let fallback = "";
   if (constructor === null) {
     // TODO(wafuwafu13): Implement
@@ -1043,7 +1048,7 @@ function getKeys(value, showHidden) {
     // and modify this logic as needed.
     try {
       keys = Object.keys(value);
-    } catch (err) {
+    } catch (_err) {
       // TODO(wafuwafu13): Implement
       // assert(isNativeError(err) && err.name === 'ReferenceError' &&
       //        isModuleNamespaceObject(value));
@@ -1063,7 +1068,7 @@ function getKeys(value, showHidden) {
   return keys;
 }
 
-function formatSet(value, ctx, ignored, recurseTimes) {
+function formatSet(value, ctx, _ignored, recurseTimes) {
   const output = [];
   ctx.indentationLvl += 2;
   for (const v of value) {
@@ -1073,7 +1078,7 @@ function formatSet(value, ctx, ignored, recurseTimes) {
   return output;
 }
 
-function formatMap(value, ctx, ignored, recurseTimes) {
+function formatMap(value, ctx, _gnored, recurseTimes) {
   const output = [];
   ctx.indentationLvl += 2;
   for (const { 0: k, 1: v } of value) {
@@ -1091,7 +1096,7 @@ function formatTypedArray(
   value,
   length,
   ctx,
-  ignored,
+  _ignored,
   recurseTimes,
 ) {
   const maxLength = Math.min(Math.max(0, ctx.maxArrayLength), length);
@@ -1256,7 +1261,7 @@ function formatError(
     let newStack = stack.slice(0, stackStart);
     const lines = stack.slice(stackStart + 1).split("\n");
     for (const line of lines) {
-      const core = line.match(coreModuleRegExp);
+      // const core = line.match(coreModuleRegExp);
       // TODO(wafuwafu13): Implement
       // if (core !== null && NativeModule.exists(core[1])) {
       //   newStack += `\n${ctx.stylize(line, 'undefined')}`;
@@ -1265,6 +1270,7 @@ function formatError(
       let nodeModule;
       newStack += "\n";
       let pos = 0;
+      // deno-lint-ignore no-cond-assign
       while (nodeModule = nodeModulesRegExp.exec(line)) {
         // '/node_modules/'.length === 14
         newStack += line.slice(pos, nodeModule.index + 14);
@@ -1425,10 +1431,10 @@ function formatProperty(
 }
 
 function handleMaxCallStackSize(
-  ctx,
-  err,
-  constructorName,
-  indentationLvl,
+  _ctx,
+  _err,
+  _constructorName,
+  _indentationLvl,
 ) {
   // TODO(wafuwafu13): Implement
   // if (types.isStackOverflowError(err)) {
@@ -1444,6 +1450,7 @@ function handleMaxCallStackSize(
   // assert.fail(err.stack);
 }
 
+// deno-lint-ignore no-control-regex
 const colorRegExp = /\u001b\[\d\d?m/g;
 function removeColors(str) {
   return str.replace(colorRegExp, "");
@@ -1494,7 +1501,7 @@ function formatNamespaceObject(
         keys[i],
         kObjectType,
       );
-    } catch (err) {
+    } catch (_err) {
       // TODO(wafuwfu13): Implement
       // assert(isNativeError(err) && err.name === 'ReferenceError');
       // Use the existing functionality. This makes sure the indentation and
@@ -1610,6 +1617,7 @@ function getBoxedBase(
 }
 
 function getClassBase(value, constructor, tag) {
+  // deno-lint-ignore no-prototype-builtins
   const hasName = value.hasOwnProperty("name");
   const name = (hasName && value.name) || "(anonymous)";
   let base = `class ${name}`;
