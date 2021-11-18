@@ -513,14 +513,15 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
   // Only list the tag in case it's non-enumerable / not an own property.
   // Otherwise we'd print this twice.
   if (
-    typeof tag !== "string" ||
-    (tag !== "" &&
-      (ctx.showHidden
-        ? Object.prototype.hasOwnProperty
-        : Object.prototype.propertyIsEnumerable)(
-          value,
-          Symbol.toStringTag,
-        ))
+    typeof tag !== "string"
+    // TODO(wafuwafu13): Implement
+    // (tag !== "" &&
+    //   (ctx.showHidden
+    //     ? Object.prototype.hasOwnProperty
+    //     : Object.prototype.propertyIsEnumerable)(
+    //       value,
+    //       Symbol.toStringTag,
+    //     ))
   ) {
     tag = "";
   }
