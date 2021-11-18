@@ -4,7 +4,7 @@ import {
   assertMatch,
   assertStrictEquals,
 } from "../../testing/asserts.ts";
-import { read } from "./_fs_read.ts";
+import { read, readSync } from "./_fs_read.ts";
 import { open, openSync } from "./_fs_open.ts";
 import { Buffer } from "../buffer.ts";
 import * as path from "../../path/mod.ts";
@@ -148,6 +148,55 @@ Deno.test({
       assertStrictEquals(bytesRead, 7);
       assertStrictEquals(data?.byteLength, 16384);
     });
+    closeSync(fd);
+  },
+});
+
+Deno.test({
+  name: "SYNC: readSuccess",
+  fn() {
+    const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+    const testData = path.resolve(moduleDir, "testdata", "hello.txt");
+    const buffer = Buffer.alloc(1024);
+    const fd = openSync(testData);
+    const bytesRead = readSync(
+      fd,
+      buffer,
+      buffer.byteOffset,
+      buffer.byteLength,
+      null,
+    );
+    assertStrictEquals(bytesRead, 11);
+    closeSync(fd);
+  },
+});
+
+Deno.test({
+  name: "[std/node/fs] Read only two bytes, so that the position moves to two",
+  fn() {
+    const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+    const testData = path.resolve(moduleDir, "testdata", "hello.txt");
+    const buffer = Buffer.alloc(2);
+    const fd = openSync(testData);
+    const bytesRead = readSync(fd, buffer, buffer.byteOffset, 2, null);
+    assertStrictEquals(bytesRead, 2);
+    closeSync(fd);
+  },
+});
+
+Deno.test({
+  name: "[std/node/fs] Read fs.readSync(fd, buffer[, options]) signature",
+  fn() {
+    const file = Deno.makeTempFileSync();
+    Deno.writeTextFileSync(file, "hello deno");
+    const buffer = Buffer.alloc(1024);
+    const fd = openSync(file, "r+");
+    const bytesRead = readSync(fd, buffer, {
+      length: buffer.byteLength,
+      offset: buffer.byteOffset,
+      position: null,
+    });
+    assertStrictEquals(bytesRead, 10);
     closeSync(fd);
   },
 });

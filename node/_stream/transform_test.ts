@@ -5,48 +5,52 @@ import finished from "./end_of_stream.ts";
 import { deferred } from "../../async/mod.ts";
 import { assert, assertEquals } from "../../testing/asserts.ts";
 
-Deno.test("Transform stream finishes correctly", async () => {
-  let finishedExecuted = 0;
-  const finishedExecutedExpected = 1;
-  const finishedExecution = deferred();
+Deno.test({
+  name: "Transform stream finishes correctly",
+  ignore: true,
+  fn: async () => {
+    let finishedExecuted = 0;
+    const finishedExecutedExpected = 1;
+    const finishedExecution = deferred();
 
-  const tr = new Transform({
-    transform(_data, _enc, cb) {
-      cb();
-    },
-  });
+    const tr = new Transform({
+      transform(_data, _enc, cb) {
+        cb();
+      },
+    });
 
-  let finish = false;
-  let ended = false;
+    let finish = false;
+    let ended = false;
 
-  tr.on("end", () => {
-    ended = true;
-  });
+    tr.on("end", () => {
+      ended = true;
+    });
 
-  tr.on("finish", () => {
-    finish = true;
-  });
+    tr.on("finish", () => {
+      finish = true;
+    });
 
-  finished(tr, (err) => {
-    finishedExecuted++;
-    if (finishedExecuted === finishedExecutedExpected) {
-      finishedExecution.resolve();
-    }
-    assert(!err, "no error");
-    assert(finish);
-    assert(ended);
-  });
+    finished(tr, (err) => {
+      finishedExecuted++;
+      if (finishedExecuted === finishedExecutedExpected) {
+        finishedExecution.resolve();
+      }
+      assert(!err, "no error");
+      assert(finish);
+      assert(ended);
+    });
 
-  tr.end();
-  tr.resume();
+    tr.end();
+    tr.resume();
 
-  const finishedTimeout = setTimeout(
-    () => finishedExecution.reject(),
-    1000,
-  );
-  await finishedExecution;
-  clearTimeout(finishedTimeout);
-  assertEquals(finishedExecuted, finishedExecutedExpected);
+    const finishedTimeout = setTimeout(
+      () => finishedExecution.reject(),
+      1000,
+    );
+    await finishedExecution;
+    clearTimeout(finishedTimeout);
+    assertEquals(finishedExecuted, finishedExecutedExpected);
+  },
 });
 
 Deno.test("Transform stream flushes data correctly", () => {

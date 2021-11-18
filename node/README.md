@@ -53,7 +53,7 @@ Deno standard library as it's a compatibility module.
 - [x] util/types _partly_
 - [ ] v8
 - [ ] vm
-- [ ] wasi
+- [x] wasi
 - [ ] webcrypto
 - [ ] worker_threads
 - [ ] zlib

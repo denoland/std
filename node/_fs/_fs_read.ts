@@ -10,6 +10,12 @@ type readOptions = {
   position: number | null;
 };
 
+type readSyncOptions = {
+  offset: number;
+  length: number;
+  position: number | null;
+};
+
 type BinaryCallback = (
   err: Error | null,
   bytesRead: number | null,
@@ -110,4 +116,63 @@ export function read(
   }
 
   return;
+}
+
+export function readSync(
+  fd: number,
+  buffer: Buffer | Uint8Array,
+  offset: number,
+  length: number,
+  position: number | null,
+): number;
+export function readSync(
+  fd: number,
+  buffer: Buffer | Uint8Array,
+  opt: readSyncOptions,
+): number;
+export function readSync(
+  fd: number,
+  buffer: Buffer | Uint8Array,
+  offsetOrOpt?: number | readSyncOptions,
+  length?: number,
+  position?: number | null,
+): number {
+  let offset = 0;
+
+  if (length == null) {
+    length = 0;
+  }
+
+  if (buffer.byteLength == 0) {
+    throw new ERR_INVALID_ARG_VALUE(
+      "buffer",
+      buffer,
+      "is empty and cannot be written",
+    );
+  }
+
+  if (typeof offsetOrOpt === "number") {
+    offset = offsetOrOpt;
+  } else {
+    const opt = offsetOrOpt as readSyncOptions;
+    offset = opt.offset ?? 0;
+    length = opt.length ?? buffer.byteLength;
+    position = opt.position ?? null;
+  }
+
+  assert(offset >= 0, "offset should be greater or equal to 0");
+  assert(
+    offset + length <= buffer.byteLength,
+    `buffer doesn't have enough data: byteLength = ${buffer.byteLength}, offset + length = ${
+      offset + length
+    }`,
+  );
+
+  if (position) {
+    Deno.seekSync(fd, position, Deno.SeekMode.Current);
+  }
+
+  const numberOfBytesRead = Deno.readSync(fd, buffer);
+
+  return numberOfBytesRead ?? 0;
 }

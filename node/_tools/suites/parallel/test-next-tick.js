@@ -28,27 +28,43 @@
 
 'use strict';
 const common = require('../common');
+
 const assert = require('assert');
-const net = require('net');
 
-// FIXME(bartlomieju):
-// const server = net.createServer(function(socket) {
-//   socket.pipe(socket);
-// }).listen(0, common.mustCall(function() {
-//   const conn = net.connect(this.address().port);
-//   let received = '';
+process.nextTick(common.mustCall(function() {
+  process.nextTick(common.mustCall(function() {
+    process.nextTick(common.mustCall());
+  }));
+}));
 
-//   conn.setEncoding('utf8');
-//   conn.write('before');
-//   conn.on('connect', function() {
-//     conn.write(' after');
-//   });
-//   conn.on('data', function(buf) {
-//     received += buf;
-//     conn.end();
-//   });
-//   conn.on('end', common.mustCall(function() {
-//     server.close();
-//     assert.strictEqual(received, 'before after');
-//   }));
-// }));
+setTimeout(common.mustCall(function() {
+  process.nextTick(common.mustCall());
+}), 50);
+
+process.nextTick(common.mustCall());
+
+const obj = {};
+
+process.nextTick(function(a, b) {
+  assert.strictEqual(a, 42);
+  assert.strictEqual(b, obj);
+  assert.strictEqual(this, undefined);
+}, 42, obj);
+
+process.nextTick((a, b) => {
+  assert.strictEqual(a, 42);
+  assert.strictEqual(b, obj);
+  assert.deepStrictEqual(this, {});
+}, 42, obj);
+
+process.nextTick(function() {
+  assert.strictEqual(this, undefined);
+}, 1, 2, 3, 4);
+
+process.nextTick(() => {
+  assert.deepStrictEqual(this, {});
+}, 1, 2, 3, 4);
+
+process.on('exit', function() {
+  process.nextTick(common.mustNotCall());
+});

@@ -27,28 +27,36 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 'use strict';
-const common = require('../common');
+require('../common');
 const assert = require('assert');
-const net = require('net');
+let i;
 
-// FIXME(bartlomieju):
-// const server = net.createServer(function(socket) {
-//   socket.pipe(socket);
-// }).listen(0, common.mustCall(function() {
-//   const conn = net.connect(this.address().port);
-//   let received = '';
+const N = 30;
+const done = [];
 
-//   conn.setEncoding('utf8');
-//   conn.write('before');
-//   conn.on('connect', function() {
-//     conn.write(' after');
-//   });
-//   conn.on('data', function(buf) {
-//     received += buf;
-//     conn.end();
-//   });
-//   conn.on('end', common.mustCall(function() {
-//     server.close();
-//     assert.strictEqual(received, 'before after');
-//   }));
-// }));
+function get_printer(timeout) {
+  return function() {
+    console.log(`Running from setTimeout ${timeout}`);
+    done.push(timeout);
+  };
+}
+
+process.nextTick(function() {
+  console.log('Running from nextTick');
+  done.push('nextTick');
+});
+
+for (i = 0; i < N; i += 1) {
+  setTimeout(get_printer(i), i);
+}
+
+console.log('Running from main.');
+
+
+process.on('exit', function() {
+  assert.strictEqual(done[0], 'nextTick');
+  // Disabling this test. I don't think we can ensure the order
+  // for (i = 0; i < N; i += 1) {
+  //  assert.strictEqual(i, done[i + 1]);
+  // }
+});
