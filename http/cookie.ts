@@ -32,6 +32,14 @@ export interface Cookie {
 
 const FIELD_CONTENT_REGEXP = /^(?=[\x20-\x7E]*$)[^()@<>,;:\\"\[\]?={}\s]+$/;
 
+function getHeaders(object: Request | Response | Headers): Headers {
+  if (object instanceof Request || object instanceof Response) {
+    return object.headers;
+  } else {
+    return object;
+  }
+}
+
 function toString(cookie: Cookie): string {
   if (!cookie.name) {
     return "";
@@ -164,10 +172,13 @@ function validateDomain(domain: string): void {
 
 /**
  * Parse cookies of a header
- * @param {Headers} headers The headers instance to get cookies from
+ * @param {Headers | Request} object The instance to get cookies from
  * @return {Object} Object with cookie names as keys
  */
-export function getCookies(headers: Headers): Record<string, string> {
+export function getCookies(
+  object: Headers | Request,
+): Record<string, string> {
+  const headers = getHeaders(object);
   const cookie = headers.get("Cookie");
   if (cookie != null) {
     const out: Record<string, string> = {};
@@ -185,13 +196,14 @@ export function getCookies(headers: Headers): Record<string, string> {
 
 /**
  * Set the cookie header properly in the headers
- * @param {Headers} headers The headers instance to set the cookie to
+ * @param {Headers | Response} object The instance to set the cookie to
  * @param {Object} cookie Cookie to set
  */
-export function setCookie(headers: Headers, cookie: Cookie): void {
+export function setCookie(object: Headers | Response, cookie: Cookie): void {
   // TODO(zekth) : Add proper parsing of Set-Cookie headers
   // Parsing cookie headers to make consistent set-cookie header
   // ref: https://tools.ietf.org/html/rfc6265#section-4.1.1
+  const headers = getHeaders(object);
   const v = toString(cookie);
   if (v) {
     headers.append("Set-Cookie", v);
@@ -200,15 +212,16 @@ export function setCookie(headers: Headers, cookie: Cookie): void {
 
 /**
  * Set the cookie header with empty value in the headers to delete it
- * @param {Headers} headers The headers instance to delete the cookie from
+ * @param {Headers | Response} object The instance to delete the cookie from
  * @param {string} name Name of cookie
  * @param {Object} attributes Additional cookie attributes
  */
 export function deleteCookie(
-  headers: Headers,
+  object: Headers | Response,
   name: string,
   attributes?: { path?: string; domain?: string },
 ): void {
+  const headers = getHeaders(object);
   setCookie(headers, {
     name: name,
     value: "",

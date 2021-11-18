@@ -26,6 +26,12 @@ Deno.test({
       wide: "1",
       SID: "123",
     });
+
+    let request = new Request("https://example.com");
+    assertEquals(getCookies(request), {});
+    request = new Request("https://example.com");
+    request.headers.set("Cookie", "foo=bar");
+    assertEquals(getCookies(request), { foo: "bar" });
   },
 });
 
@@ -165,6 +171,12 @@ Deno.test({
     assertEquals(
       headers.get("Set-Cookie"),
       "Space=Cat; Domain=deno.land; Path=/, Space=; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+    );
+    const response = new Response();
+    deleteCookie(response, "deno");
+    assertEquals(
+      response.headers.get("Set-Cookie"),
+      "deno=; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
     );
   },
 });
@@ -354,5 +366,17 @@ Deno.test({
     headers = new Headers();
     setCookie(headers, { name: "", value: "" });
     assertEquals(headers.get("Set-Cookie"), null);
+
+    let response = new Response();
+    setCookie(response, { name: "Space", value: "Cat" });
+    assertEquals(response.headers.get("Set-Cookie"), "Space=Cat");
+
+    response = new Response();
+    setCookie(response, { name: "cookie-1", value: "value-1", secure: true });
+    setCookie(response, { name: "cookie-2", value: "value-2", maxAge: 3600 });
+    assertEquals(
+      response.headers.get("Set-Cookie"),
+      "cookie-1=value-1; Secure, cookie-2=value-2; Max-Age=3600",
+    );
   },
 });
