@@ -22,9 +22,6 @@
 import { validateString } from "../../_validators.ts";
 import * as types from "../../_util/_util_types.ts";
 
-const ALL_PROPERTIES = 0;
-const ONLY_ENUMERABLE = 2;
-
 const kObjectType = 0;
 const kArrayType = 1;
 const kArrayExtrasType = 2;
@@ -73,8 +70,6 @@ const strEscapeSequencesReplacerSingle = /[\x00-\x1f\x5c\x7f-\x9f]/g;
 
 const keyStrRegExp = /^[a-zA-Z_][a-zA-Z_0-9]*$/;
 const numberRegExp = /^(0|[1-9][0-9]*)$/;
-// deno-lint-ignore no-regex-spaces
-const coreModuleRegExp = /^    at (?:[^/\\(]+ \(|)node:(.+):\d+:\d+\)?$/;
 const nodeModulesRegExp = /[/\\]node_modules[/\\](.+?)(?=[/\\])/g;
 
 const classRegExp = /^(\s+[^(]*?)\s*{/;
@@ -509,7 +504,7 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
     protoProps = undefined;
   }
 
-  let tag = value[Symbol.toStringTag];
+  const tag = value[Symbol.toStringTag];
   // Only list the tag in case it's non-enumerable / not an own property.
   // Otherwise we'd print this twice.
   // TODO(wafuwafu13): Implement
