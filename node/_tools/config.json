@@ -30,6 +30,7 @@
       "test-fs-write-file.js",
       "test-net-access-byteswritten.js",
       "test-net-after-close.js",
+      "test-net-allow-half-open.js",
       "test-net-bytes-stats.js",
       "test-net-bytes-written-large.js",
       "test-net-connect-buffer.js",
