@@ -84,7 +84,7 @@ function destroyer(
   return (err: NodeErrorAbstraction) => {
     if (finished) return;
     finished = true;
-    implDestroyer(stream, err);
+    implDestroyer(stream as unknown as Stream, err);
     callback(err || new ERR_STREAM_DESTROYED("pipe"));
   };
 }
@@ -153,7 +153,7 @@ async function pump(
     for await (const chunk of iterable) {
       if (!writable.write(chunk)) {
         if (writable.destroyed) return;
-        await events.once(writable, "drain");
+        await events.once(writable as unknown as Stream, "drain");
       }
     }
     writable.end();

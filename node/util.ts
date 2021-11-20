@@ -1,9 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { promisify } from "./_util/_util_promisify.ts";
 import { callbackify } from "./_util/_util_callbackify.ts";
+import { stripVTControlCharacters } from "./internal/util/inspect.js";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
 import * as types from "./_util/_util_types.ts";
-export { callbackify, promisify, types };
+import { Buffer } from "./buffer.ts";
+export { callbackify, promisify, stripVTControlCharacters, types };
 
 const NumberIsSafeInteger = Number.isSafeInteger;
 
@@ -33,6 +35,7 @@ export function inspect(object: unknown, ...opts: any): string {
   if (typeof object === "string" && !object.includes("'")) {
     return `'${object}'`;
   }
+
   opts = { ...DEFAULT_INSPECT_OPTIONS, ...opts };
   return Deno.inspect(object, {
     depth: opts.depth,
@@ -98,12 +101,12 @@ export function isFunction(value: unknown): boolean {
   return typeof value === "function";
 }
 
-/** @deprecated - use `value instanceof RegExp` instead. */
+/** @deprecated Use util.types.RegExp() instead. */
 export function isRegExp(value: unknown): boolean {
-  return value instanceof RegExp;
+  return types.isRegExp(value);
 }
 
-/** @deprecated */
+/** @deprecated Use util.types.isDate() instead. */
 export function isDate(value: unknown): boolean {
   return types.isDate(value);
 }
@@ -113,6 +116,27 @@ export function isPrimitive(value: unknown): boolean {
   return (
     value === null || (typeof value !== "object" && typeof value !== "function")
   );
+}
+
+/** @deprecated  Use Buffer.isBuffer() instead. */
+export function isBuffer(value: unknown): boolean {
+  return Buffer.isBuffer(value);
+}
+
+/** @deprecated Use Object.assign() instead. */
+export function _extend(
+  target: Record<string, unknown>,
+  source: unknown,
+): Record<string, unknown> {
+  // Don't do anything if source isn't an object
+  if (source === null || typeof source !== "object") return target;
+
+  const keys = Object.keys(source!);
+  let i = keys.length;
+  while (i--) {
+    target[keys[i]] = (source as Record<string, unknown>)[keys[i]];
+  }
+  return target;
 }
 
 /**
@@ -286,12 +310,15 @@ export default {
   isRegExp,
   isDate,
   isPrimitive,
+  isBuffer,
+  _extend,
   getSystemErrorName,
   deprecate,
   callbackify,
   promisify,
   inherits,
   types,
+  stripVTControlCharacters,
   TextDecoder,
   TextEncoder,
 };

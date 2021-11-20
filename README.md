@@ -73,13 +73,13 @@ Before opening a PR make sure to:
 
 Give the PR a descriptive title.
 
-Examples of good title:
+Examples of good titles:
 
 - fix(http): Fix race condition in server
 - docs(fmt): Update docstrings
 - feat(log): Handle nested messages
 
-Examples of bad title:
+Examples of bad titles:
 
 - fix #7123
 - update docs
@@ -92,12 +92,15 @@ For contributions to the Node compatibility library please check the
 
 _About CI checks_:
 
-We currently have 6 checks on CI. Each PR should pass all of these checks to be
+We currently have 9 checks on CI. Each PR should pass all of these checks to be
 accepted.
 
 - test with Deno canary on Windows
 - test with Deno canary on Linux
 - test with Deno canary on macOS
+- test Node polyfill with Deno canary on Windows
+- test Node polyfill with Deno canary on Linux
+- test Node polyfill with Deno canary on macOS
 - lint
 - wasm crypto check
 - CLA

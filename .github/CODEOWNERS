@@ -21,8 +21,7 @@ http/         @bartlomieju @kt3k
 io/           @bartlomieju @kt3k
 log/          @bartlomieju @kt3k
 mime/         @bartlomieju @kt3k
-node/         @bartlomieju @kt3k
-node/         @bartlomieju @kt3k
+node/         @bartlomieju @kt3k @bnoordhuis
 path/         @bartlomieju @kt3k
 permissions/  @bartlomieju @kt3k
 signal/       @bartlomieju @kt3k

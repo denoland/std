@@ -27,6 +27,7 @@ import {
   writeOrBuffer,
 } from "./writable_internal.ts";
 import type { Encodings } from "../_utils.ts";
+import { nextTick } from "../_next_tick.ts";
 
 export type WritableEncodings = Encodings | "buffer";
 
@@ -247,17 +248,17 @@ class Writable extends Stream {
   destroy(err?: Error | null, cb?: () => void) {
     const state = this._writableState;
     if (!state.destroyed) {
-      queueMicrotask(() => errorBuffer(state));
+      nextTick(errorBuffer, state);
     }
     destroy.call(this, err, cb);
     return this;
   }
 
-  end(cb?: () => void): void;
+  end(cb?: () => void): this;
   // deno-lint-ignore no-explicit-any
-  end(chunk: any, cb?: () => void): void;
+  end(chunk: any, cb?: () => void): this;
   // deno-lint-ignore no-explicit-any
-  end(chunk: any, encoding: WritableEncodings, cb?: () => void): void;
+  end(chunk: any, encoding: WritableEncodings, cb?: () => void): this;
 
   end(
     // deno-lint-ignore no-explicit-any
@@ -307,9 +308,10 @@ class Writable extends Stream {
 
     if (typeof cb === "function") {
       if (err || state.finished) {
-        queueMicrotask(() => {
-          (cb as (error?: Error | undefined) => void)(err);
-        });
+        nextTick(
+          cb as (error?: Error | undefined) => void,
+          err,
+        );
       } else {
         state[kOnFinished].push(cb);
       }
@@ -404,7 +406,7 @@ class Writable extends Stream {
     }
 
     if (err) {
-      queueMicrotask(() => cb(err));
+      nextTick(cb, err);
       errorOrDestroy(this, err, true);
       return false;
     }

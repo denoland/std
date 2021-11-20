@@ -7,7 +7,7 @@ export const open = promisify(fs.open);
 // export const opendir = promisify(fs.opendir);
 export const rename = promisify(fs.rename);
 export const truncate = promisify(fs.truncate);
-// export const rm = promisify(fs.rm);
+export const rm = promisify(fs.rm);
 export const rmdir = promisify(fs.rmdir);
 export const mkdir = promisify(fs.mkdir);
 export const readdir = promisify(fs.readdir);
@@ -35,7 +35,7 @@ export default {
   // opendir,
   rename,
   truncate,
-  // rm,
+  rm,
   rmdir,
   mkdir,
   readdir,

@@ -42,11 +42,12 @@ for await (const file of dir) {
       const test = Deno.run({
         cwd: testsFolder,
         cmd: [
-          "deno",
+          Deno.execPath(),
           "run",
           "-A",
           "--quiet",
           "--unstable",
+          "--no-check",
           "require.ts",
           file.path,
         ],

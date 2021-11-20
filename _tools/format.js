@@ -2,4 +2,5 @@
 const p = Deno.run({
   cmd: [Deno.execPath(), "fmt", "--config", "deno.json", ...Deno.args],
 });
-Deno.exit(await p.status());
+const status = await p.status();
+Deno.exit(status.code);

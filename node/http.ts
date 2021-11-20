@@ -1,8 +1,12 @@
-import { Status as STATUS_CODES } from "../http/http_status.ts";
-import { Buffer } from "./buffer.ts";
-import { EventEmitter } from "./events.ts";
 import NodeReadable from "./_stream/readable.ts";
 import NodeWritable from "./_stream/writable.ts";
+import { Buffer } from "./buffer.ts";
+import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
+import { EventEmitter } from "./events.ts";
+import { Status as STATUS_CODES } from "../http/http_status.ts";
+import { _normalizeArgs, ListenOptions } from "./net.ts";
+import { nextTick } from "./_next_tick.ts";
+import { validatePort } from "./_validators.ts";
 
 const METHODS = [
   "ACL",
@@ -153,6 +157,18 @@ export class ServerResponse extends NodeWritable {
       }),
     );
   }
+
+  // deno-lint-ignore no-explicit-any
+  end(chunk?: any, encoding?: any, cb?: any): this {
+    if (!chunk) {
+      // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
+      // the trailing "0\r\n", but respondWith() just hangs when I try that.
+      this.#headers.set("content-length", "0");
+      this.#headers.delete("transfer-encoding");
+    }
+
+    return super.end(chunk, encoding, cb);
+  }
 }
 
 // TODO(@AaronO): optimize
@@ -207,47 +223,111 @@ export class IncomingMessage extends NodeReadable {
 type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
 
 export class Server extends EventEmitter {
-  #handler: ServerHandler;
+  #httpConnections: Set<Deno.HttpConn> = new Set();
   #listener?: Deno.Listener;
-  #listening = false;
 
-  constructor(handler: ServerHandler) {
+  constructor(handler?: ServerHandler) {
     super();
-    this.#handler = handler;
+
+    if (handler !== undefined) {
+      this.on("request", handler);
+    }
   }
 
-  // TODO(AaronO): support options object
-  listen(port: number, host?: string, cb?: CallableFunction) {
-    this.#listener = Deno.listen({ port, hostname: host });
-    this.#listening = true;
-    // TODO(@AaronO):
-    // @ts-ignore change EventEmitter's sig to use CallabeFunction
-    this.once("listening", cb ?? (() => {}));
-    this.#listenLoop();
-    this.emit("listening");
+  listen(...args: unknown[]): this {
+    // TODO(bnoordhuis) Delegate to net.Server#listen().
+    const normalized = _normalizeArgs(args);
+    const options = normalized[0] as Partial<ListenOptions>;
+    const cb = normalized[1];
+
+    if (cb !== null) {
+      // @ts-ignore change EventEmitter's sig to use CallableFunction
+      this.once("listening", cb);
+    }
+
+    let port = 0;
+    if (typeof options.port === "number" || typeof options.port === "string") {
+      validatePort(options.port, "options.port");
+      port = options.port | 0;
+    }
+
+    // TODO(bnoordhuis) Node prefers [::] when host is omitted,
+    // we on the other hand default to 0.0.0.0.
+    const hostname = options.host ?? "";
+
+    this.#listener = Deno.listen({ port, hostname });
+    nextTick(() => this.#listenLoop());
+
+    return this;
   }
 
   async #listenLoop() {
-    for await (const conn of this.#listener!) {
-      (async () => {
-        for await (const reqEvent of Deno.serveHttp(conn)) {
+    const go = async (httpConn: Deno.HttpConn) => {
+      try {
+        for await (const reqEvent of httpConn) {
           const req = new IncomingMessage(reqEvent.request);
           const res = new ServerResponse(reqEvent);
           this.emit("request", req, res);
-          this.#handler(req, res);
         }
-      })();
+      } finally {
+        this.#httpConnections.delete(httpConn);
+      }
+    };
+
+    const listener = this.#listener;
+
+    if (listener !== undefined) {
+      this.emit("listening");
+
+      for await (const conn of listener) {
+        let httpConn: Deno.HttpConn;
+        try {
+          httpConn = Deno.serveHttp(conn);
+        } catch {
+          continue; /// Connection closed.
+        }
+
+        this.#httpConnections.add(httpConn);
+        go(httpConn);
+      }
     }
   }
 
   get listening() {
-    return this.#listening;
+    return this.#listener !== undefined;
   }
 
-  close() {
-    this.#listening = false;
-    this.#listener!.close();
-    this.emit("close");
+  close(cb?: (err?: Error) => void): this {
+    const listening = this.listening;
+
+    if (typeof cb === "function") {
+      if (listening) {
+        this.once("close", cb);
+      } else {
+        this.once("close", function close() {
+          cb(new ERR_SERVER_NOT_RUNNING());
+        });
+      }
+    }
+
+    nextTick(() => this.emit("close"));
+
+    if (listening) {
+      this.#listener!.close();
+      this.#listener = undefined;
+
+      for (const httpConn of this.#httpConnections) {
+        try {
+          httpConn.close();
+        } catch {
+          // Already closed.
+        }
+      }
+
+      this.#httpConnections.clear();
+    }
+
+    return this;
   }
 
   address() {
@@ -259,7 +339,7 @@ export class Server extends EventEmitter {
   }
 }
 
-export function createServer(handler: ServerHandler) {
+export function createServer(handler?: ServerHandler) {
   return new Server(handler);
 }
 

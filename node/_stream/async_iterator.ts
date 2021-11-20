@@ -4,6 +4,7 @@ import finished from "./end_of_stream.ts";
 import Readable from "./readable.ts";
 import type Stream from "./stream.ts";
 import { destroyer } from "./destroy.ts";
+import { nextTick } from "../_next_tick.ts";
 
 const kLastResolve = Symbol("lastResolve");
 const kLastReject = Symbol("lastReject");
@@ -56,7 +57,7 @@ function readAndResolve(iter: ReadableStreamAsyncIterator) {
 }
 
 function onReadable(iter: ReadableStreamAsyncIterator) {
-  queueMicrotask(() => readAndResolve(iter));
+  nextTick(() => readAndResolve(iter));
 }
 
 function wrapForNext(
@@ -93,7 +94,7 @@ function finish(self: ReadableStreamAsyncIterator, err?: Error) {
           resolve(createIterResult(undefined, true));
         }
       });
-      destroyer(stream, err);
+      destroyer(stream as unknown as Stream, err);
     },
   );
 }
@@ -205,8 +206,8 @@ const createReadableStreamAsyncIterator = (stream: IterableStreams) => {
   // deno-lint-ignore no-explicit-any
   if (typeof (stream as any).read !== "function") {
     const src = stream;
-    stream = new Readable({ objectMode: true }).wrap(src);
-    finished(stream, (err) => destroyer(src, err));
+    stream = new Readable({ objectMode: true }).wrap(src as unknown as Stream);
+    finished(stream, (err) => destroyer(src as unknown as Stream, err));
   }
 
   const iterator = new ReadableStreamAsyncIterator(stream as Readable);
