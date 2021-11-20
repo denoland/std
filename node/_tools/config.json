@@ -1,10 +1,7 @@
 {
   "nodeVersion": "16.13.0",
   "ignore": {
-    "common": [
-      "index.js",
-      "tmpdir.js"
-    ],
+    "common": ["index.js", "tmpdir.js"],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
@@ -61,19 +58,14 @@
       "test-url-urltooptions.js",
       "test-util.js"
     ],
-    "pummel": [
-      "test-net-write-callbacks.js"
-    ],
+    "pummel": ["test-net-write-callbacks.js"],
     "sequential": [
       "test-net-connect-econnrefused.js",
       "test-net-server-address.js"
     ]
   },
   "tests": {
-    "common": [
-      "dns.js",
-      "internet.js"
-    ],
+    "common": ["dns.js", "internet.js"],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
@@ -344,6 +336,7 @@
       "test-url-pathtofileurl.js",
       "test-url-urltooptions.js",
       "test-util-inherits.js",
+      "test-util-isDeepStrictEqual.js --only",
       "test-util.js"
     ],
     "pummel": [

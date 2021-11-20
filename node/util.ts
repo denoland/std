@@ -6,6 +6,7 @@ import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
 import * as types from "./_util/_util_types.ts";
 import { Buffer } from "./buffer.ts";
 export { callbackify, promisify, stripVTControlCharacters, types };
+import { isDeepStrictEqual } from "./comparisons.ts";
 
 const NumberIsSafeInteger = Number.isSafeInteger;
 
@@ -321,4 +322,5 @@ export default {
   stripVTControlCharacters,
   TextDecoder,
   TextEncoder,
+  isDeepStrictEqual,
 };
