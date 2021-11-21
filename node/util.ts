@@ -1,50 +1,13 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { promisify } from "./_util/_util_promisify.ts";
 import { callbackify } from "./_util/_util_callbackify.ts";
-import { stripVTControlCharacters } from "./internal/util/inspect.js";
+import { inspect, stripVTControlCharacters } from "./internal/util/inspect.js";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
 import * as types from "./_util/_util_types.ts";
 import { Buffer } from "./buffer.ts";
-export { callbackify, promisify, stripVTControlCharacters, types };
+export { callbackify, inspect, promisify, stripVTControlCharacters, types };
 
 const NumberIsSafeInteger = Number.isSafeInteger;
-
-const DEFAULT_INSPECT_OPTIONS = {
-  showHidden: false,
-  depth: 2,
-  colors: false,
-  customInspect: true,
-  showProxy: false,
-  maxArrayLength: 100,
-  maxStringLength: Infinity,
-  breakLength: 80,
-  compact: 3,
-  sorted: false,
-  getters: false,
-};
-
-inspect.defaultOptions = DEFAULT_INSPECT_OPTIONS;
-inspect.custom = Symbol.for("nodejs.util.inspect.custom");
-
-// TODO(schwarzkopfb): make it in-line with Node's implementation
-// Ref: https://nodejs.org/dist/latest-v14.x/docs/api/util.html#util_util_inspect_object_options
-// deno-lint-ignore no-explicit-any
-export function inspect(object: unknown, ...opts: any): string {
-  // In Node.js, strings should be enclosed in single quotes.
-  // TODO(uki00a): Strings in objects and arrays should also be enclosed in single quotes.
-  if (typeof object === "string" && !object.includes("'")) {
-    return `'${object}'`;
-  }
-
-  opts = { ...DEFAULT_INSPECT_OPTIONS, ...opts };
-  return Deno.inspect(object, {
-    depth: opts.depth,
-    iterableLimit: opts.maxArrayLength,
-    compact: !!opts.compact,
-    sorted: !!opts.sorted,
-    showProxy: !!opts.showProxy,
-  });
-}
 
 /** @deprecated - use `Array.isArray()` instead. */
 export function isArray(value: unknown): boolean {
