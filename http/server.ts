@@ -354,13 +354,15 @@ export class Server {
 
       // Send the response.
       await requestEvent.respondWith(response);
-    } catch {
+    } catch (error) {
       // If the handler throws then it is assumed that the impact of the error
-      // is isolated to the individual request, so we close the connection.
+      // is isolated to the individual request, so we log the error and close
+      // the connection.
       //
       // Alternatively the connection has already been closed, or there is some
       // other error with responding on this connection that prompts us to
       // close it and open a new connection.
+      console.error(error);
       return this.#closeHttpConn(httpConn);
     }
   }
