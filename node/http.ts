@@ -264,7 +264,21 @@ export class Server extends EventEmitter {
   async #listenLoop() {
     const go = async (httpConn: Deno.HttpConn) => {
       try {
-        for await (const reqEvent of httpConn) {
+        for (;;) {
+          let reqEvent = null;
+          try {
+            // Note: httpConn.nextRequest() calls httpConn.close() on error.
+            reqEvent = await httpConn.nextRequest();
+          } catch {
+            // Connection closed.
+            // TODO(bnoordhuis) Emit "clientError" event on the http.Server
+            // instance? Node emits it when request parsing fails and expects
+            // the listener to send a raw 4xx HTTP response on the underlying
+            // net.Socket but we don't have one to pass to the listener.
+          }
+          if (reqEvent === null) {
+            break;
+          }
           const req = new IncomingMessage(reqEvent.request);
           const res = new ServerResponse(reqEvent);
           this.emit("request", req, res);
