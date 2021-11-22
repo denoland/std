@@ -3,7 +3,7 @@ import {
   buildFileLogger,
   buildMultiLogger,
 } from "./builtin_loggers.ts";
-import { buildLogger, Logger } from "./logger.ts";
+import { buildLogger, Logger } from "./logging.ts";
 
 /** Default log levels used for the default logger */
 export const defaultLogLevels = {
