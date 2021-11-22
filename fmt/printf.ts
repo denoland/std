@@ -503,12 +503,6 @@ class Printf {
    * @param fractional
    * @param precision
    * @returns tuple of fractional and round
-   * ```ts
-   * //inner of class Printf
-   * assertEquals(this.roundFractionToPrecision("3",3), ["300",false]);
-   * assertEquals(this.roundFractionToPrecision("33456",3), ["335",false]);
-   * assertEquals(this.roundFractionToPrecision("99999",3), ["000",true]);
-   * ```
    */
   roundFractionToPrecision(
     fractional: string,
