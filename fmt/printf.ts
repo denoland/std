@@ -502,20 +502,32 @@ class Printf {
    * Round fraction to precision
    * @param fractional
    * @param precision
+   * @returns tuple of fractional and round
+   * ```ts
+   * //inner of class Printf
+   * assertEquals(this.roundFractionToPrecision("3",3), ["300",false]);
+   * assertEquals(this.roundFractionToPrecision("33456",3), ["335",false]);
+   * assertEquals(this.roundFractionToPrecision("99999",3), ["000",true]);
+   * ```
    */
-  roundFractionToPrecision(fractional: string, precision: number): string {
+  roundFractionToPrecision(
+    fractional: string,
+    precision: number,
+  ): [string, boolean] {
+    let round = false;
     if (fractional.length > precision) {
       fractional = "1" + fractional; // prepend a 1 in case of leading 0
       let tmp = parseInt(fractional.substr(0, precision + 2)) / 10;
       tmp = Math.round(tmp);
       fractional = Math.floor(tmp).toString();
+      round = fractional[0] === "2";
       fractional = fractional.substr(1); // remove extra 1
     } else {
       while (fractional.length < precision) {
         fractional += "0";
       }
     }
-    return fractional;
+    return [fractional, round];
   }
 
   /**
@@ -533,20 +545,31 @@ class Printf {
     if (!m) {
       throw Error("can't happen, bug");
     }
-
     let fractional = m[F.fractional];
     const precision = this.flags.precision !== -1
       ? this.flags.precision
       : DEFAULT_PRECISION;
-    fractional = this.roundFractionToPrecision(fractional, precision);
+    let rounding = false;
+    [fractional, rounding] = this.roundFractionToPrecision(
+      fractional,
+      precision,
+    );
 
     let e = m[F.exponent];
+    let esign = m[F.esign];
     // scientific notation output with exponent padded to minlen 2
+    let mantissa = parseInt(m[F.mantissa]);
+    if (rounding) {
+      mantissa += 1;
+      if (10 <= mantissa) {
+        mantissa = 1;
+        const r = parseInt(esign + e) + 1;
+        e = r.toString();
+        esign = r < 0 ? "-" : "+";
+      }
+    }
     e = e.length == 1 ? "0" + e : e;
-
-    const val = `${m[F.mantissa]}.${fractional}${upcase ? "E" : "e"}${
-      m[F.esign]
-    }${e}`;
+    const val = `${mantissa}.${fractional}${upcase ? "E" : "e"}${esign}${e}`;
     return this.padNum(val, n < 0);
   }
 
@@ -587,14 +610,17 @@ class Printf {
     // avoiding sign makes padding easier
     const val = expandNumber(Math.abs(n)) as string;
     const arr = val.split(".");
-    const dig = arr[0];
+    let dig = arr[0];
     let fractional = arr[1];
 
     const precision = this.flags.precision !== -1
       ? this.flags.precision
       : DEFAULT_PRECISION;
-    fractional = this.roundFractionToPrecision(fractional, precision);
-
+    let round = false;
+    [fractional, round] = this.roundFractionToPrecision(fractional, precision);
+    if (round) {
+      dig = (parseInt(dig) + 1).toString();
+    }
     return this.padNum(`${dig}.${fractional}`, n < 0);
   }
 
