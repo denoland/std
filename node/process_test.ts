@@ -432,6 +432,38 @@ Deno.test("process.exitCode", () => {
   assert(process.exitCode === 127);
 });
 
+Deno.test("process.exitCode when exiting", async () => {
+  const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+
+  const p = Deno.run({
+    cmd: [
+      Deno.execPath(),
+      "run",
+      "--quiet",
+      "--unstable",
+      "./testdata/process_exit_code.ts",
+    ],
+    cwd,
+    stdout: "piped",
+    stderr: "piped",
+  });
+
+  const decoder = new TextDecoder();
+  const rawOutput = await p.output();
+  assertEquals(
+    decoder.decode(rawOutput).trim(),
+    "",
+  );
+  const rawOutputError = await p.stderrOutput();
+  assertEquals(
+    decoder.decode(rawOutputError).trim(),
+    "Something went wrong! boom!",
+  );
+  const { code } = await p.status();
+  assertEquals(code, 2);
+  p.close();
+});
+
 Deno.test("process.config", () => {
   assert(process.config !== undefined);
   assert(process.config.target_defaults !== undefined);
