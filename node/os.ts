@@ -24,7 +24,7 @@ import { EOL as fsEOL } from "../fs/eol.ts";
 import process from "./process.ts";
 import { isWindows, osType } from "../_util/os.ts";
 
-const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno/issues/3802";
+const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno_std/issues/1436";
 
 interface CPUTimes {
   /** The number of milliseconds the CPU has spent in user mode */
