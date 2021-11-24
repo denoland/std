@@ -157,6 +157,9 @@ export function getPriority(pid = 0): number {
 
 /** Returns the string path of the current user's home directory. */
 export function homedir(): string | null {
+  // Note: Node/libuv calls getpwuid() / GetUserProfileDirectory() when the
+  // environment variable isn't set but that's the (very uncommon) fallback
+  // path. IMO, it's okay to punt on that for now.
   switch (osType) {
     case "windows":
       return Deno.env.get("USERPROFILE") || null;
