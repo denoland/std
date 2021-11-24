@@ -173,7 +173,7 @@ export function homedir(): string | null {
 
 /** Returns the host name of the operating system as a string. */
 export function hostname(): string {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return Deno.hostname();
 }
 
 /** Returns an array containing the 1, 5, and 15 minute load averages */
