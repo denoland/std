@@ -188,6 +188,13 @@ function getPathFromURLPosix(url: URL): string {
   return decodeURIComponent(pathname);
 }
 
+export function toPathIfFileURL(fileURLOrPath: string | URL) {
+  if (!(fileURLOrPath instanceof URL)) {
+    return fileURLOrPath;
+  }
+  return fileURLToPath(fileURLOrPath);
+}
+
 /**
  *  The following characters are percent-encoded when converting from file path
  *  to URL:
@@ -325,6 +332,7 @@ export default {
   format,
   fileURLToPath,
   pathToFileURL,
+  toPathIfFileURL,
   urlToHttpOptions,
   URL,
 };

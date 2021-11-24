@@ -22,6 +22,7 @@ import dns from "./dns.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
+import internalFsUtils from "./internal/fs/utils.js";
 import http from "./http.ts";
 import internalErrors from "./internal/errors.js";
 import internalReadlineUtils from "./internal/readline/utils.js";
@@ -84,6 +85,7 @@ export default {
   "internal/streams/add-abort-signal": internalStreamsAddAbortSignal,
   "internal/streams/buffer_list": internalStreamsAddBufferList,
   "internal/util/inspect": internalUtilInspect,
+  "internal/fs/utils": internalFsUtils,
   net,
   os,
   path,
