@@ -1,3 +1,11 @@
+### 0.116.0 / 2021.11.24
+
+- feat(node/os): implement os.hostname() (#1631)
+- feat(node/util): add `util.inspect` (#1592)
+- fix(fmt/printf): print with rounding taken into account (#1623)
+- fix(node/http): ignore server request parse errors (#1624)
+- refactor(node): reorganize _next_tick.ts module (#1608)
+
 ### 0.115.1 / 2021.11.17
 
 - fix(node): use old "process.nextTick" polyfill if Deno.core is not available
