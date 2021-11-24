@@ -1,4 +1,5 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
+// deno-lint-ignore-file
 
 import { addAbortSignalNoValidate } from "./add-abort-signal.js";
 import { Buffer } from "../../buffer.ts";

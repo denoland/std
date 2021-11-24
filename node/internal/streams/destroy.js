@@ -1,4 +1,5 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
+// deno-lint-ignore-file
 
 import { aggregateTwoErrors } from "../errors.js";
 import { ERR_MULTIPLE_CALLBACK } from "../../_errors.ts";

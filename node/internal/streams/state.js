@@ -1,4 +1,5 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
+// deno-lint-ignore-file
 
 import { ERR_INVALID_ARG_VALUE } from "../../_errors.ts";
 

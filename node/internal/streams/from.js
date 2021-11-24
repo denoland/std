@@ -1,4 +1,5 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
+// deno-lint-ignore-file
 
 import { Buffer } from "../../buffer.ts";
 import { ERR_INVALID_ARG_TYPE, ERR_STREAM_NULL_VALUES } from "../../_errors.ts";

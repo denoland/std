@@ -1,4 +1,5 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
+// deno-lint-ignore-file
 
 import { Buffer } from "../../buffer.ts";
 import { inspect } from "../util/inspect.js";

@@ -1,4 +1,5 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
+// deno-lint-ignore-file
 
 const { pipeline } = require("internal/streams/pipeline");
 const Duplex = require("internal/streams/duplex");
