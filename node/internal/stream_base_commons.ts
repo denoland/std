@@ -19,7 +19,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { ownerSymbol } from "./_async_hooks.ts";
+import { ownerSymbol } from "../_async_hooks.ts";
 import {
   kArrayBufferOffset,
   kBytesWritten,
@@ -27,13 +27,13 @@ import {
   LibuvStreamWrap,
   streamBaseState,
   WriteWrap,
-} from "./internal_binding/stream_wrap.ts";
-import { isUint8Array } from "./_util/_util_types.ts";
-import { errnoException } from "./_errors.ts";
-import { getTimerDuration, kTimeout, setUnrefTimeout } from "./_timers.ts";
-import { validateCallback } from "./_validators.ts";
-import { codeMap } from "./internal_binding/uv.ts";
-import { Buffer } from "./buffer.ts";
+} from "../internal_binding/stream_wrap.ts";
+import { isUint8Array } from "../_util/_util_types.ts";
+import { errnoException } from "../_errors.ts";
+import { getTimerDuration, kTimeout, setUnrefTimeout } from "../_timers.ts";
+import { validateCallback } from "../_validators.ts";
+import { codeMap } from "../internal_binding/uv.ts";
+import { Buffer } from "../buffer.ts";
 
 export const kMaybeDestroy = Symbol("kMaybeDestroy");
 export const kUpdateTimer = Symbol("kUpdateTimer");

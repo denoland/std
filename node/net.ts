@@ -60,7 +60,7 @@ import {
   setStreamTimeout,
   writeGeneric,
   writevGeneric,
-} from "./_stream_base_commons.ts";
+} from "./internal/stream_base_commons.ts";
 import { kTimeout } from "./_timers.ts";
 import { nextTick } from "./_next_tick.ts";
 import {
