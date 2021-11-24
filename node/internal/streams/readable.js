@@ -661,9 +661,13 @@ Readable.prototype.pipe = function (dest, pipeOpts) {
   state.pipes.push(dest);
   debug("pipe count=%d opts=%j", state.pipes.length, pipeOpts);
 
-  const doEnd = (!pipeOpts || pipeOpts.end !== false) &&
-    dest !== process.stdout &&
-    dest !== process.stderr;
+  // FIXME(Soremwar)
+  // Enable stdout and stderr check
+  // const doEnd = (!pipeOpts || pipeOpts.end !== false) &&
+  //   dest !== process.stdout &&
+  //   dest !== process.stderr;
+
+  const doEnd = (!pipeOpts || pipeOpts.end !== false);
 
   const endFn = doEnd ? onend : unpipe;
   if (state.endEmitted) {
