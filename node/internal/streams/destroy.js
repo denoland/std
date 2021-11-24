@@ -1,14 +1,8 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-const {
-  aggregateTwoErrors,
-  codes: {
-    ERR_MULTIPLE_CALLBACK,
-  },
-} = require("internal/errors");
-const {
-  Symbol,
-} = primordials;
+import { aggregateTwoErrors } from "../errors.js";
+import { ERR_MULTIPLE_CALLBACK } from "../../_errors.ts";
+import * as process from "../../_process/process.ts";
 
 const kDestroy = Symbol("kDestroy");
 const kConstruct = Symbol("kConstruct");
@@ -315,10 +309,11 @@ function destroyer(stream, err) {
   if (typeof stream.close === "function") return stream.close();
 }
 
-module.exports = {
+export default {
   construct,
   destroyer,
   destroy,
   undestroy,
   errorOrDestroy,
 };
+export { construct, destroy, destroyer, errorOrDestroy, undestroy };

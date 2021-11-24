@@ -1,55 +1,35 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-const {
-  ArrayPrototypeIndexOf,
-  NumberIsInteger,
-  NumberIsNaN,
-  NumberParseInt,
-  ObjectDefineProperties,
-  ObjectKeys,
-  ObjectSetPrototypeOf,
-  Promise,
-  SafeSet,
-  SymbolAsyncIterator,
-  Symbol,
-} = primordials;
-
-module.exports = Readable;
-Readable.ReadableState = ReadableState;
-
-const EE = require("events");
-const { Stream, prependListener } = require("internal/streams/legacy");
-const { Buffer } = require("buffer");
-
-const {
-  addAbortSignalNoValidate,
-} = require("internal/streams/add-abort-signal");
-
-let debug = require("internal/util/debuglog").debuglog("stream", (fn) => {
-  debug = fn;
-});
-const BufferList = require("internal/streams/buffer_list");
-const destroyImpl = require("internal/streams/destroy");
-const {
-  getHighWaterMark,
-  getDefaultHighWaterMark,
-} = require("internal/streams/state");
-
-const {
+import { addAbortSignalNoValidate } from "./add-abort-signal.js";
+import { Buffer } from "../../buffer.ts";
+import { getDefaultHighWaterMark, getHighWaterMark } from "./state.js";
+import { prependListener, Stream } from "./legacy.js";
+import { StringDecoder } from "../../string_decoder.ts";
+import { validateObject } from "../validators.js";
+import {
   ERR_INVALID_ARG_TYPE,
-  ERR_STREAM_PUSH_AFTER_EOF,
   ERR_METHOD_NOT_IMPLEMENTED,
+  ERR_STREAM_PUSH_AFTER_EOF,
   ERR_STREAM_UNSHIFT_AFTER_END_EVENT,
-} = require("internal/errors").codes;
-const { validateObject } = require("internal/validators");
+} from "../../_errors.ts";
+import * as process from "../../_process/process.ts";
+import _from from "./from.js";
+import BufferList from "./buffer_list.js";
+import destroyImpl from "./destroy.js";
+import EE from "../../events.ts";
+
+// TODO(Soremwar)
+// Maybe we can use the debug calls to ensure correct functionality in the implementation?
+// Find out and shim in the meanwhile
+// let debug = require("internal/util/debuglog").debuglog("stream", (fn) => {
+//   debug = fn;
+// });
+function debug() {}
 
 const kPaused = Symbol("kPaused");
 
-const { StringDecoder } = require("string_decoder");
-const from = require("internal/streams/from");
-
-ObjectSetPrototypeOf(Readable.prototype, Stream.prototype);
-ObjectSetPrototypeOf(Readable, Stream);
+Object.setPrototypeOf(Readable.prototype, Stream.prototype);
+Object.setPrototypeOf(Readable, Stream);
 const nop = () => {};
 
 const { errorOrDestroy } = destroyImpl;
@@ -376,7 +356,7 @@ function howMuchToRead(n, state) {
   if (state.objectMode) {
     return 1;
   }
-  if (NumberIsNaN(n)) {
+  if (Number.isNaN(n)) {
     // Only flow one buffer at a time.
     if (state.flowing && state.length) {
       return state.buffer.first().length;
@@ -396,8 +376,8 @@ Readable.prototype.read = function (n) {
   // in this scenario, so we are doing it manually.
   if (n === undefined) {
     n = NaN;
-  } else if (!NumberIsInteger(n)) {
-    n = NumberParseInt(n, 10);
+  } else if (!Number.isInteger(n)) {
+    n = Number.parseInt(n, 10);
   }
   const state = this._readableState;
   const nOrig = n;
@@ -671,7 +651,7 @@ Readable.prototype.pipe = function (dest, pipeOpts) {
   if (state.pipes.length === 1) {
     if (!state.multiAwaitDrain) {
       state.multiAwaitDrain = true;
-      state.awaitDrainWriters = new SafeSet(
+      state.awaitDrainWriters = new Set(
         state.awaitDrainWriters ? [state.awaitDrainWriters] : [],
       );
     }
@@ -877,7 +857,7 @@ Readable.prototype.unpipe = function (dest) {
   }
 
   // Try to find the right one.
-  const index = ArrayPrototypeIndexOf(state.pipes, dest);
+  const index = state.pipes.indexOf(dest);
   if (index === -1) {
     return this;
   }
@@ -1075,7 +1055,7 @@ Readable.prototype.wrap = function (stream) {
   };
 
   // Proxy all the other methods. Important when wrapping filters and duplexes.
-  const streamKeys = ObjectKeys(stream);
+  const streamKeys = Object.keys(stream);
   for (let j = 1; j < streamKeys.length; j++) {
     const i = streamKeys[j];
     if (this[i] === undefined && typeof stream[i] === "function") {
@@ -1086,7 +1066,7 @@ Readable.prototype.wrap = function (stream) {
   return this;
 };
 
-Readable.prototype[SymbolAsyncIterator] = function () {
+Readable.prototype[Symbol.asyncIterator] = function () {
   return streamToAsyncIterator(this);
 };
 
@@ -1183,7 +1163,7 @@ async function* createAsyncIterator(stream, options) {
 // Making it explicit these properties are not enumerable
 // because otherwise some prototype manipulation in
 // userland will fail.
-ObjectDefineProperties(Readable.prototype, {
+Object.defineProperties(Readable.prototype, {
   readable: {
     get() {
       const r = this._readableState;
@@ -1293,7 +1273,7 @@ ObjectDefineProperties(Readable.prototype, {
   },
 });
 
-ObjectDefineProperties(ReadableState.prototype, {
+Object.defineProperties(ReadableState.prototype, {
   // Legacy getter for `pipesCount`.
   pipesCount: {
     get() {
@@ -1311,9 +1291,6 @@ ObjectDefineProperties(ReadableState.prototype, {
     },
   },
 });
-
-// Exposed for testing purposes only.
-Readable._fromList = fromList;
 
 // Pluck off n bytes from an array of buffers.
 // Length is the combined lengths of all the buffers in the list.
@@ -1395,11 +1372,11 @@ function endWritableNT(stream) {
   }
 }
 
-Readable.from = function (iterable, opts) {
-  return from(Readable, iterable, opts);
-};
+function readableFrom(iterable, opts) {
+  return _from(Readable, iterable, opts);
+}
 
-Readable.wrap = function (src, options) {
+function wrap(src, options) {
   return new Readable({
     objectMode: src.readableObjectMode ?? src.objectMode ?? true,
     ...options,
@@ -1408,4 +1385,13 @@ Readable.wrap = function (src, options) {
       callback(err);
     },
   }).wrap(src);
-};
+}
+
+// Exposed for testing purposes only.
+Readable._fromList = fromList;
+Readable.ReadableState = ReadableState;
+Readable.from = readableFrom;
+Readable.wrap = wrap;
+
+export default Readable;
+export { fromList as _fromList, readableFrom as from, ReadableState, wrap };

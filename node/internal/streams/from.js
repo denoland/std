@@ -1,18 +1,10 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-const {
-  PromisePrototypeThen,
-  SymbolAsyncIterator,
-  SymbolIterator,
-} = primordials;
-const { Buffer } = require("buffer");
+import { Buffer } from "../../buffer.ts";
+import { ERR_INVALID_ARG_TYPE, ERR_STREAM_NULL_VALUES } from "../../_errors.ts";
+import * as process from "../../_process/process.ts";
 
-const {
-  ERR_INVALID_ARG_TYPE,
-  ERR_STREAM_NULL_VALUES,
-} = require("internal/errors").codes;
-
-function from(Readable, iterable, opts) {
+function _from(Readable, iterable, opts) {
   let iterator;
   if (typeof iterable === "string" || iterable instanceof Buffer) {
     return new Readable({
@@ -26,12 +18,12 @@ function from(Readable, iterable, opts) {
   }
 
   let isAsync;
-  if (iterable && iterable[SymbolAsyncIterator]) {
+  if (iterable && iterable[Symbol.asyncIterator]) {
     isAsync = true;
-    iterator = iterable[SymbolAsyncIterator]();
-  } else if (iterable && iterable[SymbolIterator]) {
+    iterator = iterable[Symbol.asyncIterator]();
+  } else if (iterable && iterable[Symbol.iterator]) {
     isAsync = false;
-    iterator = iterable[SymbolIterator]();
+    iterator = iterable[Symbol.iterator]();
   } else {
     throw new ERR_INVALID_ARG_TYPE("iterable", ["Iterable"], iterable);
   }
@@ -55,8 +47,7 @@ function from(Readable, iterable, opts) {
   };
 
   readable._destroy = function (error, cb) {
-    PromisePrototypeThen(
-      close(error),
+    close(error).then(
       () => process.nextTick(cb, error), // nextTick is here in case cb throws
       (e) => process.nextTick(cb, e || error),
     );
@@ -110,4 +101,4 @@ function from(Readable, iterable, opts) {
   return readable;
 }
 
-module.exports = from;
+export default _from;

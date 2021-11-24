@@ -1,19 +1,14 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
-
-const {
-  ArrayIsArray,
-  ObjectSetPrototypeOf,
-} = primordials;
-
-const EE = require("events");
+import EE from "../../events.ts";
 
 function Stream(opts) {
   EE.call(this, opts);
 }
-ObjectSetPrototypeOf(Stream.prototype, EE.prototype);
-ObjectSetPrototypeOf(Stream, EE);
+Object.setPrototypeOf(Stream.prototype, EE.prototype);
+Object.setPrototypeOf(Stream, EE);
 
 Stream.prototype.pipe = function (dest, options) {
+  // deno-lint-ignore no-this-alias
   const source = this;
 
   function ondata(chunk) {
@@ -105,11 +100,11 @@ function prependListener(emitter, event, fn) {
   // the prependListener() method. The goal is to eventually remove this hack.
   if (!emitter._events || !emitter._events[event]) {
     emitter.on(event, fn);
-  } else if (ArrayIsArray(emitter._events[event])) {
+  } else if (Array.isArray(emitter._events[event])) {
     emitter._events[event].unshift(fn);
   } else {
     emitter._events[event] = [fn, emitter._events[event]];
   }
 }
 
-module.exports = { Stream, prependListener };
+export { prependListener, Stream };

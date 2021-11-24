@@ -1,18 +1,13 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-const {
-  AbortError,
-  codes,
-} = require("internal/errors");
-const {
-  ERR_STREAM_PREMATURE_CLOSE,
-} = codes;
-const { once } = require("internal/util");
-const {
+import { AbortError, ERR_STREAM_PREMATURE_CLOSE } from "../../_errors.ts";
+import { once } from "../util.ts";
+import {
   validateAbortSignal,
   validateFunction,
   validateObject,
-} = require("internal/validators");
+} from "../validators.js";
+import * as process from "../../_process/process.ts";
 
 function isRequest(stream) {
   return stream.setHeader && typeof stream.abort === "function";
@@ -229,4 +224,4 @@ function eos(stream, options, callback) {
   return cleanup;
 }
 
-module.exports = eos;
+export default eos;

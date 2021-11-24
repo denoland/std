@@ -1,16 +1,9 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-const {
-  StringPrototypeSlice,
-  SymbolIterator,
-  TypedArrayPrototypeSet,
-  Uint8Array,
-} = primordials;
+import { Buffer } from "../../buffer.ts";
+import { inspect } from "../util/inspect.js";
 
-const { Buffer } = require("buffer");
-const { inspect } = require("internal/util/inspect");
-
-module.exports = class BufferList {
+class BufferList {
   constructor() {
     this.head = null;
     this.tail = null;
@@ -76,7 +69,7 @@ module.exports = class BufferList {
     let p = this.head;
     let i = 0;
     while (p) {
-      TypedArrayPrototypeSet(ret, p.data, i);
+      ret.set(p.data, i);
       i += p.data.length;
       p = p.next;
     }
@@ -104,7 +97,7 @@ module.exports = class BufferList {
     return this.head.data;
   }
 
-  *[SymbolIterator]() {
+  *[Symbol.iterator]() {
     for (let p = this.head; p; p = p.next) {
       yield p.data;
     }
@@ -130,9 +123,9 @@ module.exports = class BufferList {
             this.head = this.tail = null;
           }
         } else {
-          ret += StringPrototypeSlice(str, 0, n);
+          ret += str.slice(0, n);
           this.head = p;
-          p.data = StringPrototypeSlice(str, n);
+          p.data = str.slice(n);
         }
         break;
       }
@@ -151,11 +144,11 @@ module.exports = class BufferList {
     do {
       const buf = p.data;
       if (n > buf.length) {
-        TypedArrayPrototypeSet(ret, buf, retLen - n);
+        ret.set(buf, retLen - n);
         n -= buf.length;
       } else {
         if (n === buf.length) {
-          TypedArrayPrototypeSet(ret, buf, retLen - n);
+          ret.set(buf, retLen - n);
           ++c;
           if (p.next) {
             this.head = p.next;
@@ -163,8 +156,7 @@ module.exports = class BufferList {
             this.head = this.tail = null;
           }
         } else {
-          TypedArrayPrototypeSet(
-            ret,
+          ret.set(
             new Uint8Array(buf.buffer, buf.byteOffset, n),
             retLen - n,
           );
@@ -189,4 +181,6 @@ module.exports = class BufferList {
       customInspect: false,
     });
   }
-};
+}
+
+export default BufferList;

@@ -1,11 +1,6 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-const {
-  MathFloor,
-  NumberIsInteger,
-} = primordials;
-
-const { ERR_INVALID_ARG_VALUE } = require("internal/errors").codes;
+import { ERR_INVALID_ARG_VALUE } from "../../_errors.ts";
 
 function highWaterMarkFrom(options, isDuplex, duplexKey) {
   return options.highWaterMark != null
@@ -22,18 +17,19 @@ function getDefaultHighWaterMark(objectMode) {
 function getHighWaterMark(state, options, duplexKey, isDuplex) {
   const hwm = highWaterMarkFrom(options, isDuplex, duplexKey);
   if (hwm != null) {
-    if (!NumberIsInteger(hwm) || hwm < 0) {
+    if (!Number.isInteger(hwm) || hwm < 0) {
       const name = isDuplex ? `options.${duplexKey}` : "options.highWaterMark";
       throw new ERR_INVALID_ARG_VALUE(name, hwm);
     }
-    return MathFloor(hwm);
+    return Math.floor(hwm);
   }
 
   // Default value
   return getDefaultHighWaterMark(state.objectMode);
 }
 
-module.exports = {
+export default {
   getHighWaterMark,
   getDefaultHighWaterMark,
 };
+export { getDefaultHighWaterMark, getHighWaterMark };

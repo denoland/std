@@ -1,12 +1,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-const {
-  AbortError,
-  codes,
-} = require("internal/errors");
-
-const eos = require("internal/streams/end-of-stream");
-const { ERR_INVALID_ARG_TYPE } = codes;
+import { AbortError, ERR_INVALID_ARG_TYPE } from "../../_errors.ts";
+import eos from "./end-of-stream.js";
 
 // This method is inlined here for readable-stream
 // It also does not allow for signal to not exist on the stream
@@ -24,14 +19,14 @@ function isStream(obj) {
   return !!(obj && typeof obj.pipe === "function");
 }
 
-module.exports.addAbortSignal = function addAbortSignal(signal, stream) {
+function addAbortSignal(signal, stream) {
   validateAbortSignal(signal, "signal");
   if (!isStream(stream)) {
     throw new ERR_INVALID_ARG_TYPE("stream", "stream.Stream", stream);
   }
-  return module.exports.addAbortSignalNoValidate(signal, stream);
-};
-module.exports.addAbortSignalNoValidate = function (signal, stream) {
+  return addAbortSignalNoValidate(signal, stream);
+}
+function addAbortSignalNoValidate(signal, stream) {
   if (typeof signal !== "object" || !("aborted" in signal)) {
     return stream;
   }
@@ -45,4 +40,7 @@ module.exports.addAbortSignalNoValidate = function (signal, stream) {
     eos(stream, () => signal.removeEventListener("abort", onAbort));
   }
   return stream;
-};
+}
+
+export default { addAbortSignal, addAbortSignalNoValidate };
+export { addAbortSignal, addAbortSignalNoValidate };
