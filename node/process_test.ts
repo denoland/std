@@ -457,7 +457,10 @@ Deno.test("process.exitCode when exiting", async () => {
   const rawOutputError = await p.stderrOutput();
   assertEquals(
     decoder.decode(rawOutputError).trim(),
-    "Something went wrong! boom!",
+    `Something went wrong! boom!
+unload 1
+unload 2
+unload microtask`,
   );
   const { code } = await p.status();
   assertEquals(code, 2);

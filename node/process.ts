@@ -218,8 +218,17 @@ class Process extends EventEmitter {
 
     // This causes the exit event to be binded to the unload event
     globalThis.addEventListener("unload", () => {
-      super.emit("exit", process.exitCode);
-      Deno.exit(process.exitCode || 0);
+      const emit = super.emit.bind(this);
+      let depth = 10;
+      function exitHandler() {
+        depth--;
+        if (depth === 0) {
+          emit("exit", process.exitCode);
+          Deno.exit(process.exitCode || 0);
+        }
+        queueMicrotask(exitHandler);
+      }
+      queueMicrotask(exitHandler);
     });
   }
 
