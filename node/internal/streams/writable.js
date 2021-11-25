@@ -33,7 +33,7 @@ function isDuplexStream(maybe_duplex) {
 
   let prototype = maybe_duplex;
   let isDuplex = false;
-  while (prototype.constructor.name !== "Object") {
+  while (prototype?.constructor && prototype.constructor.name !== "Object") {
     if (prototype.constructor.name === "Duplex") {
       isDuplex = true;
       break;

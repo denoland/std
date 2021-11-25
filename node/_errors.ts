@@ -2153,10 +2153,10 @@ export class ERR_UNKNOWN_CREDENTIAL extends NodeError {
   }
 }
 export class ERR_UNKNOWN_ENCODING extends NodeTypeError {
-  constructor(x: string) {
+  constructor(x: unknown) {
     super(
       "ERR_UNKNOWN_ENCODING",
-      `Unknown encoding: ${x}`,
+      `Unknown encoding: ${inspect(x)}`,
     );
   }
 }
