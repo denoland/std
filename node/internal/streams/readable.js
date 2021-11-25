@@ -7,6 +7,7 @@ import { getDefaultHighWaterMark, getHighWaterMark } from "./state.js";
 import { prependListener, Stream } from "./legacy.js";
 import { StringDecoder } from "../../string_decoder.ts";
 import { validateObject } from "../validators.js";
+import { Writable } from "./writable.js";
 import {
   ERR_INVALID_ARG_TYPE,
   ERR_METHOD_NOT_IMPLEMENTED,
@@ -661,13 +662,9 @@ Readable.prototype.pipe = function (dest, pipeOpts) {
   state.pipes.push(dest);
   debug("pipe count=%d opts=%j", state.pipes.length, pipeOpts);
 
-  // FIXME(Soremwar)
-  // Enable stdout and stderr check
-  // const doEnd = (!pipeOpts || pipeOpts.end !== false) &&
-  //   dest !== process.stdout &&
-  //   dest !== process.stderr;
-
-  const doEnd = (!pipeOpts || pipeOpts.end !== false);
+  const doEnd = (!pipeOpts || pipeOpts.end !== false) &&
+    dest !== stdout &&
+    dest !== stderr;
 
   const endFn = doEnd ? onend : unpipe;
   if (state.endEmitted) {
@@ -1400,3 +1397,59 @@ Readable.wrap = wrap;
 
 export default Readable;
 export { fromList as _fromList, readableFrom as from, ReadableState, wrap };
+
+// https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
+function createWritableStdioStream(writer) {
+  const stream = new Writable({
+    write(buf, enc, cb) {
+      writer.writeSync(buf instanceof Uint8Array ? buf : Buffer.from(buf, enc));
+      cb();
+    },
+    destroy(err, cb) {
+      cb(err);
+      this._undestroy();
+      if (!this._writableState.emitClose) {
+        nextTick(() => this.emit("close"));
+      }
+    },
+  });
+  stream.fd = writer.rid;
+  stream.destroySoon = stream.destroy;
+  stream._isStdio = true;
+  stream.once("close", () => writer.close());
+  Object.defineProperties(stream, {
+    columns: {
+      enumerable: true,
+      configurable: true,
+      get: () =>
+        Deno.isatty(writer.rid)
+          ? Deno.consoleSize(writer.rid).columns
+          : undefined,
+    },
+    rows: {
+      enumerable: true,
+      configurable: true,
+      get: () =>
+        Deno.isatty(writer.rid) ? Deno.consoleSize(writer.rid).rows : undefined,
+    },
+    isTTY: {
+      enumerable: true,
+      configurable: true,
+      get: () => Deno.isatty(writer.rid),
+    },
+    getWindowSize: {
+      enumerable: true,
+      configurable: true,
+      value: () =>
+        Deno.isatty(writer.rid)
+          ? Object.values(Deno.consoleSize(writer.rid))
+          : undefined,
+    },
+  });
+  return stream;
+}
+
+// The following are exports of the process module, they have to be instantiated here to prevent
+// a circular dependency between the process module and the stream module
+export const stderr = createWritableStdioStream(Deno.stderr);
+export const stdout = createWritableStdioStream(Deno.stdout);

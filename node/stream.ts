@@ -4,4 +4,5 @@ export {
   default,
   Readable,
   Stream,
+  Writable,
 } from "./_stream.js";

@@ -1,50 +1,28 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-const {
-  ArrayPrototypeSlice,
-  Error,
-  FunctionPrototypeSymbolHasInstance,
-  ObjectDefineProperty,
-  ObjectDefineProperties,
-  ObjectSetPrototypeOf,
-  StringPrototypeToLowerCase,
-  Symbol,
-  SymbolHasInstance,
-} = primordials;
-
-module.exports = Writable;
-Writable.WritableState = WritableState;
-
-const EE = require("events");
-const Stream = require("internal/streams/legacy").Stream;
-const { Buffer } = require("buffer");
-const destroyImpl = require("internal/streams/destroy");
-
-const {
-  addAbortSignalNoValidate,
-} = require("internal/streams/add-abort-signal");
-
-const {
-  getHighWaterMark,
-  getDefaultHighWaterMark,
-} = require("internal/streams/state");
-const {
+import { addAbortSignalNoValidate } from "./add-abort-signal.js";
+import { Buffer } from "../../buffer.ts";
+import { getDefaultHighWaterMark, getHighWaterMark } from "./state.js";
+import { Stream } from "./legacy.js";
+import {
   ERR_INVALID_ARG_TYPE,
   ERR_METHOD_NOT_IMPLEMENTED,
   ERR_MULTIPLE_CALLBACK,
+  ERR_STREAM_ALREADY_FINISHED,
   ERR_STREAM_CANNOT_PIPE,
   ERR_STREAM_DESTROYED,
-  ERR_STREAM_ALREADY_FINISHED,
   ERR_STREAM_NULL_VALUES,
   ERR_STREAM_WRITE_AFTER_END,
   ERR_UNKNOWN_ENCODING,
-} = require("internal/errors").codes;
+} from "../../_errors.ts";
+import destroyImpl from "./destroy.js";
+import EE from "../../events.ts";
 
 const { errorOrDestroy } = destroyImpl;
 
-ObjectSetPrototypeOf(Writable.prototype, Stream.prototype);
-ObjectSetPrototypeOf(Writable, Stream);
+Object.setPrototypeOf(Writable.prototype, Stream.prototype);
+Object.setPrototypeOf(Writable, Stream);
 
 function nop() {}
 
@@ -185,10 +163,10 @@ function resetBuffer(state) {
 }
 
 WritableState.prototype.getBuffer = function getBuffer() {
-  return ArrayPrototypeSlice(this.buffered, this.bufferedIndex);
+  return this.buffered.slice(this.bufferedIndex);
 };
 
-ObjectDefineProperty(WritableState.prototype, "bufferedRequestCount", {
+Object.defineProperty(WritableState.prototype, "bufferedRequestCount", {
   get() {
     return this.buffered.length - this.bufferedIndex;
   },
@@ -207,7 +185,7 @@ function Writable(options) {
   // the WritableState constructor, at least with V8 6.5.
   const isDuplex = (this instanceof Stream.Duplex);
 
-  if (!isDuplex && !FunctionPrototypeSymbolHasInstance(Writable, this)) {
+  if (!isDuplex && !Writable[Symbol.hasInstance](this)) {
     return new Writable(options);
   }
 
@@ -251,9 +229,9 @@ function Writable(options) {
   });
 }
 
-ObjectDefineProperty(Writable, SymbolHasInstance, {
+Object.defineProperty(Writable, Symbol.hasInstance, {
   value: function (object) {
-    if (FunctionPrototypeSymbolHasInstance(this, object)) return true;
+    if (this[Symbol.hasInstance](object)) return true;
     if (this !== Writable) return false;
 
     return object && object._writableState instanceof WritableState;
@@ -343,7 +321,7 @@ Writable.prototype.uncork = function () {
 Writable.prototype.setDefaultEncoding = function setDefaultEncoding(encoding) {
   // node::ParseEncoding() requires lower case.
   if (typeof encoding === "string") {
-    encoding = StringPrototypeToLowerCase(encoding);
+    encoding = encoding.toLowerCase();
   }
   if (!Buffer.isEncoding(encoding)) {
     throw new ERR_UNKNOWN_ENCODING(encoding);
@@ -553,9 +531,7 @@ function clearBuffer(stream, state) {
     };
     // Make a copy of `buffered` if it's going to be used by `callback` above,
     // since `doWrite` will mutate the array.
-    const chunks = state.allNoop && i === 0
-      ? buffered
-      : ArrayPrototypeSlice(buffered, i);
+    const chunks = state.allNoop && i === 0 ? buffered : buffered.slice(i);
     chunks.allBuffers = state.allBuffers;
 
     doWrite(stream, state, true, state.length, chunks, "", callback);
@@ -766,7 +742,7 @@ function finish(stream, state) {
   }
 }
 
-ObjectDefineProperties(Writable.prototype, {
+Object.defineProperties(Writable.prototype, {
   destroyed: {
     get() {
       return this._writableState ? this._writableState.destroyed : false;
@@ -873,3 +849,8 @@ Writable.prototype._destroy = function (err, cb) {
 Writable.prototype[EE.captureRejectionSymbol] = function (err) {
   this.destroy(err);
 };
+
+Writable.WritableState = WritableState;
+
+export default { Writable, WritableState };
+export { Writable, WritableState };
