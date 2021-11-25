@@ -108,6 +108,8 @@ Deno.test("testFloate", function (): void {
   assertEquals(S("%e", -4.1), "-4.100000e+00");
   assertEquals(S("%e", Number.MAX_SAFE_INTEGER), "9.007199e+15");
   assertEquals(S("%e", Number.MIN_SAFE_INTEGER), "-9.007199e+15");
+  assertEquals(S("%.3e", 1.9999), "2.000e+00");
+  assertEquals(S("%.3e", 29.99999), "3.000e+01");
 });
 Deno.test("testFloatE", function (): void {
   assertEquals(S("%E", 4), "4.000000E+00");
@@ -146,6 +148,8 @@ Deno.test("testFloatfF", function (): void {
     S("%F", Number.MAX_VALUE),
     "179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.000000",
   );
+  assertEquals(S("%.3f", 0.9999), "1.000");
+  assertEquals(S("%.3f", 1.9999), "2.000");
 });
 
 Deno.test("testString", function (): void {

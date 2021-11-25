@@ -38,8 +38,7 @@ const writable = new TestWritable();
 
 assert.strictEqual(readline.clearScreenDown(writable), true);
 assert.deepStrictEqual(writable.data, CSI.kClearScreenDown);
-// FIXME(bartlomieju): mustCall fails
-// assert.strictEqual(readline.clearScreenDown(writable, common.mustCall()), true);
+assert.strictEqual(readline.clearScreenDown(writable, common.mustCall()), true);
 
 // Verify that clearScreenDown() throws on invalid callback.
 assert.throws(() => {
@@ -74,9 +73,8 @@ assert.strictEqual(readline.clearLine(writable, 0), true);
 assert.deepStrictEqual(writable.data, CSI.kClearLine);
 
 writable.data = "";
-// FIXME(bartlomieju): mustCall fails
-// assert.strictEqual(readline.clearLine(writable, -1, common.mustCall()), true);
-// assert.deepStrictEqual(writable.data, CSI.kClearToLineBeginning);
+assert.strictEqual(readline.clearLine(writable, -1, common.mustCall()), true);
+assert.deepStrictEqual(writable.data, CSI.kClearToLineBeginning);
 
 // Verify that clearLine() throws on invalid callback.
 assert.throws(() => {
@@ -114,12 +112,11 @@ assert.strictEqual(readline.clearLine(undefined, 0, common.mustCall()), true);
   assert.strictEqual(readline.moveCursor(writable, set[0], set[1]), true);
   assert.deepStrictEqual(writable.data, set[2]);
   writable.data = "";
-  // FIXME(bartlomieju): mustCall fails
-  // assert.strictEqual(
-  //   readline.moveCursor(writable, set[0], set[1], common.mustCall()),
-  //   true,
-  // );
-  // assert.deepStrictEqual(writable.data, set[2]);
+  assert.strictEqual(
+    readline.moveCursor(writable, set[0], set[1], common.mustCall()),
+    true,
+  );
+  assert.deepStrictEqual(writable.data, set[2]);
 });
 
 // Verify that moveCursor() throws on invalid callback.
@@ -193,10 +190,9 @@ writable.data = "";
 assert.strictEqual(readline.cursorTo(writable, 1, 2), true);
 assert.strictEqual(writable.data, "\x1b[3;2H");
 
-// FIXME(bartlomieju): mustCall fails
-// writable.data = "";
-// assert.strictEqual(readline.cursorTo(writable, 1, 2, common.mustCall()), true);
-// assert.strictEqual(writable.data, "\x1b[3;2H");
+writable.data = "";
+assert.strictEqual(readline.cursorTo(writable, 1, 2, common.mustCall()), true);
+assert.strictEqual(writable.data, "\x1b[3;2H");
 
 writable.data = "";
 assert.strictEqual(readline.cursorTo(writable, 1, common.mustCall()), true);

@@ -24,7 +24,7 @@ import { EOL as fsEOL } from "../fs/eol.ts";
 import process from "./process.ts";
 import { isWindows, osType } from "../_util/os.ts";
 
-const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno/issues/3802";
+const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno_std/issues/1436";
 
 interface CPUTimes {
   /** The number of milliseconds the CPU has spent in user mode */
@@ -157,6 +157,9 @@ export function getPriority(pid = 0): number {
 
 /** Returns the string path of the current user's home directory. */
 export function homedir(): string | null {
+  // Note: Node/libuv calls getpwuid() / GetUserProfileDirectory() when the
+  // environment variable isn't set but that's the (very uncommon) fallback
+  // path. IMO, it's okay to punt on that for now.
   switch (osType) {
     case "windows":
       return Deno.env.get("USERPROFILE") || null;
@@ -170,7 +173,7 @@ export function homedir(): string | null {
 
 /** Returns the host name of the operating system as a string. */
 export function hostname(): string {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return Deno.hostname();
 }
 
 /** Returns an array containing the 1, 5, and 15 minute load averages */

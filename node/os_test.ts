@@ -24,7 +24,6 @@ Deno.test({
 
 Deno.test({
   name: "home directory is a string",
-  ignore: true,
   fn() {
     assertEquals(typeof os.homedir(), "string");
   },
@@ -39,7 +38,6 @@ Deno.test({
 
 Deno.test({
   name: "hostname is a string",
-  ignore: true,
   fn() {
     assertEquals(typeof os.hostname(), "string");
   },

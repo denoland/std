@@ -62,7 +62,7 @@ import {
   writevGeneric,
 } from "./_stream_base_commons.ts";
 import { kTimeout } from "./_timers.ts";
-import { nextTick } from "./process.ts";
+import { nextTick } from "./_next_tick.ts";
 import {
   DTRACE_NET_SERVER_CONNECTION,
   DTRACE_NET_STREAM_END,

@@ -30,6 +30,7 @@
       "test-fs-write-file.js",
       "test-net-access-byteswritten.js",
       "test-net-after-close.js",
+      "test-net-allow-half-open.js",
       "test-net-bytes-stats.js",
       "test-net-bytes-written-large.js",
       "test-net-connect-buffer.js",
@@ -60,6 +61,10 @@
       "test-stream3-pause-then-read.js",
       "test-url-format-whatwg.js",
       "test-url-urltooptions.js",
+      "test-util-inspect-getters-accessing-this.js",
+      "test-util-inspect-namespace.js",
+      "test-util-inspect-proxy.js",
+      "test-util-inspect.js",
       "test-util.js"
     ],
     "pummel": [
@@ -353,6 +358,11 @@
       "test-url-pathtofileurl.js",
       "test-url-urltooptions.js",
       "test-util-inherits.js",
+      "test-util-inspect-getters-accessing-this.js",
+      "test-util-inspect-long-running.js",
+      "test-util-inspect-namespace.js",
+      "test-util-inspect-proxy.js",
+      "test-util-inspect.js",
       "test-util.js"
     ],
     "pummel": [
