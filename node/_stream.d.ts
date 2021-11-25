@@ -2,6 +2,28 @@
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/4f538975138678878fed5b2555c0672aa578ab7d/types/node/stream.d.ts
 
+/// <reference="./_events.d.ts" />
+
+type BufferEncoding =
+  | "ascii"
+  | "utf8"
+  | "utf-8"
+  | "utf16le"
+  | "ucs2"
+  | "ucs-2"
+  | "base64"
+  | "base64url"
+  | "latin1"
+  | "binary"
+  | "hex";
+
+interface Abortable {
+  /**
+   * When provided the corresponding `AbortController` can be used to cancel an asynchronous action.
+   */
+  signal?: AbortSignal | undefined;
+}
+
 export class Stream extends EventEmitter {
   pipe<T extends NodeJS.WritableStream>(
     destination: T,
