@@ -2,7 +2,8 @@
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/4f538975138678878fed5b2555c0672aa578ab7d/types/node/stream.d.ts
 
-/// <reference="./_events.d.ts" />
+import { EventEmitter } from "./_events.d.ts";
+import { Buffer } from "./buffer.ts";
 
 type BufferEncoding =
   | "ascii"
@@ -24,8 +25,50 @@ interface Abortable {
   signal?: AbortSignal | undefined;
 }
 
+interface ErrnoException extends Error {
+  errno?: number | undefined;
+  code?: string | undefined;
+  path?: string | undefined;
+  syscall?: string | undefined;
+}
+
+interface ReadableStream extends EventEmitter {
+  readable: boolean;
+  read(size?: number): string | Buffer;
+  setEncoding(encoding: BufferEncoding): this;
+  pause(): this;
+  resume(): this;
+  isPaused(): boolean;
+  pipe<T extends WritableStream>(
+    destination: T,
+    options?: { end?: boolean | undefined },
+  ): T;
+  unpipe(destination?: WritableStream): this;
+  unshift(chunk: string | Uint8Array, encoding?: BufferEncoding): void;
+  wrap(oldStream: ReadableStream): this;
+  [Symbol.asyncIterator](): AsyncIterableIterator<string | Buffer>;
+}
+
+interface WritableStream extends EventEmitter {
+  writable: boolean;
+  write(
+    buffer: Uint8Array | string,
+    cb?: (err?: Error | null) => void,
+  ): boolean;
+  write(
+    str: string,
+    encoding?: BufferEncoding,
+    cb?: (err?: Error | null) => void,
+  ): boolean;
+  end(cb?: () => void): void;
+  end(data: string | Uint8Array, cb?: () => void): void;
+  end(str: string, encoding?: BufferEncoding, cb?: () => void): void;
+}
+
+interface ReadWriteStream extends ReadableStream, WritableStream {}
+
 export class Stream extends EventEmitter {
-  pipe<T extends NodeJS.WritableStream>(
+  pipe<T extends WritableStream>(
     destination: T,
     options?: {
       end?: boolean | undefined;
@@ -53,7 +96,7 @@ interface ReadableOptions extends StreamOptions<Readable> {
 /**
  * @since v0.9.4
  */
-export class Readable extends Stream implements NodeJS.ReadableStream {
+export class Readable extends Stream implements ReadableStream {
   /**
    * A utility method for creating Readable Streams out of iterators.
    */
@@ -65,7 +108,7 @@ export class Readable extends Stream implements NodeJS.ReadableStream {
    * Returns whether the stream has been read from or cancelled.
    * @since v16.8.0
    */
-  static isDisturbed(stream: Readable | NodeJS.ReadableStream): boolean;
+  static isDisturbed(stream: Readable | ReadableStream): boolean;
   /**
    * Returns whether the stream was destroyed or errored before emitting `'end'`.
    * @since v16.8.0
@@ -311,7 +354,7 @@ export class Readable extends Stream implements NodeJS.ReadableStream {
    * @since v0.9.4
    * @param destination Optional specific stream to unpipe
    */
-  unpipe(destination?: NodeJS.WritableStream): this;
+  unpipe(destination?: WritableStream): this;
   /**
    * Passing `chunk` as `null` signals the end of the stream (EOF) and behaves the
    * same as `readable.push(null)`, after which no more data can be written. The EOF
@@ -403,7 +446,7 @@ export class Readable extends Stream implements NodeJS.ReadableStream {
    * @since v0.9.4
    * @param stream An "old style" readable stream
    */
-  wrap(stream: NodeJS.ReadableStream): this;
+  wrap(stream: ReadableStream): this;
   push(chunk: any, encoding?: BufferEncoding): boolean;
   _destroy(
     error: Error | null,
@@ -524,7 +567,7 @@ interface WritableOptions extends StreamOptions<Writable> {
 /**
  * @since v0.9.4
  */
-export class Writable extends Stream implements NodeJS.WritableStream {
+export class Writable extends Stream implements WritableStream {
   /**
    * Is `true` if it is safe to call `writable.write()`, which means
    * the stream has not been destroyed, errored or ended.
@@ -1050,7 +1093,10 @@ export class PassThrough extends Transform {}
  * @param signal A signal representing possible cancellation
  * @param stream a stream to attach a signal to
  */
-function addAbortSignal<T extends Stream>(signal: AbortSignal, stream: T): T;
+export function addAbortSignal<T extends Stream>(
+  signal: AbortSignal,
+  stream: T,
+): T;
 interface FinishedOptions extends Abortable {
   error?: boolean | undefined;
   readable?: boolean | undefined;
@@ -1112,27 +1158,27 @@ interface FinishedOptions extends Abortable {
  * @param callback A callback function that takes an optional error argument.
  * @return A cleanup function which removes all registered listeners.
  */
-function finished(
+export function finished(
   stream:
-    | NodeJS.ReadableStream
-    | NodeJS.WritableStream
-    | NodeJS.ReadWriteStream,
+    | ReadableStream
+    | WritableStream
+    | ReadWriteStream,
   options: FinishedOptions,
-  callback: (err?: NodeJS.ErrnoException | null) => void,
+  callback: (err?: ErrnoException | null) => void,
 ): () => void;
-function finished(
+export function finished(
   stream:
-    | NodeJS.ReadableStream
-    | NodeJS.WritableStream
-    | NodeJS.ReadWriteStream,
-  callback: (err?: NodeJS.ErrnoException | null) => void,
+    | ReadableStream
+    | WritableStream
+    | ReadWriteStream,
+  callback: (err?: ErrnoException | null) => void,
 ): () => void;
-namespace finished {
+export namespace finished {
   function __promisify__(
     stream:
-      | NodeJS.ReadableStream
-      | NodeJS.WritableStream
-      | NodeJS.ReadWriteStream,
+      | ReadableStream
+      | WritableStream
+      | ReadWriteStream,
     options?: FinishedOptions,
   ): Promise<void>;
 }
@@ -1140,10 +1186,10 @@ type PipelineSourceFunction<T> = () => Iterable<T> | AsyncIterable<T>;
 type PipelineSource<T> =
   | Iterable<T>
   | AsyncIterable<T>
-  | NodeJS.ReadableStream
+  | ReadableStream
   | PipelineSourceFunction<T>;
 type PipelineTransform<S extends PipelineTransformSource<any>, U> =
-  | NodeJS.ReadWriteStream
+  | ReadWriteStream
   | ((
     source: S extends
       (...args: any[]) => Iterable<infer ST> | AsyncIterable<infer ST>
@@ -1161,14 +1207,14 @@ type PipelineDestinationPromiseFunction<T, P> = (
 ) => Promise<P>;
 type PipelineDestination<S extends PipelineTransformSource<any>, P> = S extends
   PipelineTransformSource<infer ST> ? 
-  | NodeJS.WritableStream
+  | WritableStream
   | PipelineDestinationIterableFunction<ST>
   | PipelineDestinationPromiseFunction<ST, P>
   : never;
 type PipelineCallback<S extends PipelineDestination<any, any>> = S extends
   PipelineDestinationPromiseFunction<any, infer P>
-  ? (err: NodeJS.ErrnoException | null, value: P) => void
-  : (err: NodeJS.ErrnoException | null) => void;
+  ? (err: ErrnoException | null, value: P) => void
+  : (err: ErrnoException | null) => void;
 type PipelinePromise<S extends PipelineDestination<any, any>> = S extends
   PipelineDestinationPromiseFunction<any, infer P> ? Promise<P>
   : Promise<void>;
@@ -1300,15 +1346,15 @@ interface PipelineOptions {
  * @since v10.0.0
  * @param callback Called when the pipeline is fully done.
  */
-function pipeline<
+export function pipeline<
   A extends PipelineSource<any>,
   B extends PipelineDestination<A, any>,
 >(
   source: A,
   destination: B,
   callback?: PipelineCallback<B>,
-): B extends NodeJS.WritableStream ? B : NodeJS.WritableStream;
-function pipeline<
+): B extends WritableStream ? B : WritableStream;
+export function pipeline<
   A extends PipelineSource<any>,
   T1 extends PipelineTransform<A, any>,
   B extends PipelineDestination<T1, any>,
@@ -1317,8 +1363,8 @@ function pipeline<
   transform1: T1,
   destination: B,
   callback?: PipelineCallback<B>,
-): B extends NodeJS.WritableStream ? B : NodeJS.WritableStream;
-function pipeline<
+): B extends WritableStream ? B : WritableStream;
+export function pipeline<
   A extends PipelineSource<any>,
   T1 extends PipelineTransform<A, any>,
   T2 extends PipelineTransform<T1, any>,
@@ -1329,8 +1375,8 @@ function pipeline<
   transform2: T2,
   destination: B,
   callback?: PipelineCallback<B>,
-): B extends NodeJS.WritableStream ? B : NodeJS.WritableStream;
-function pipeline<
+): B extends WritableStream ? B : WritableStream;
+export function pipeline<
   A extends PipelineSource<any>,
   T1 extends PipelineTransform<A, any>,
   T2 extends PipelineTransform<T1, any>,
@@ -1343,8 +1389,8 @@ function pipeline<
   transform3: T3,
   destination: B,
   callback?: PipelineCallback<B>,
-): B extends NodeJS.WritableStream ? B : NodeJS.WritableStream;
-function pipeline<
+): B extends WritableStream ? B : WritableStream;
+export function pipeline<
   A extends PipelineSource<any>,
   T1 extends PipelineTransform<A, any>,
   T2 extends PipelineTransform<T1, any>,
@@ -1359,23 +1405,23 @@ function pipeline<
   transform4: T4,
   destination: B,
   callback?: PipelineCallback<B>,
-): B extends NodeJS.WritableStream ? B : NodeJS.WritableStream;
-function pipeline(
+): B extends WritableStream ? B : WritableStream;
+export function pipeline(
   streams: ReadonlyArray<
-    NodeJS.ReadableStream | NodeJS.WritableStream | NodeJS.ReadWriteStream
+    ReadableStream | WritableStream | ReadWriteStream
   >,
-  callback?: (err: NodeJS.ErrnoException | null) => void,
-): NodeJS.WritableStream;
-function pipeline(
-  stream1: NodeJS.ReadableStream,
-  stream2: NodeJS.ReadWriteStream | NodeJS.WritableStream,
+  callback?: (err: ErrnoException | null) => void,
+): WritableStream;
+export function pipeline(
+  stream1: ReadableStream,
+  stream2: ReadWriteStream | WritableStream,
   ...streams: Array<
-    | NodeJS.ReadWriteStream
-    | NodeJS.WritableStream
-    | ((err: NodeJS.ErrnoException | null) => void)
+    | ReadWriteStream
+    | WritableStream
+    | ((err: ErrnoException | null) => void)
   >
-): NodeJS.WritableStream;
-namespace pipeline {
+): WritableStream;
+export namespace pipeline {
   function __promisify__<
     A extends PipelineSource<any>,
     B extends PipelineDestination<A, any>,
@@ -1434,15 +1480,15 @@ namespace pipeline {
   ): PipelinePromise<B>;
   function __promisify__(
     streams: ReadonlyArray<
-      NodeJS.ReadableStream | NodeJS.WritableStream | NodeJS.ReadWriteStream
+      ReadableStream | WritableStream | ReadWriteStream
     >,
     options?: PipelineOptions,
   ): Promise<void>;
   function __promisify__(
-    stream1: NodeJS.ReadableStream,
-    stream2: NodeJS.ReadWriteStream | NodeJS.WritableStream,
+    stream1: ReadableStream,
+    stream2: ReadWriteStream | WritableStream,
     ...streams: Array<
-      NodeJS.ReadWriteStream | NodeJS.WritableStream | PipelineOptions
+      ReadWriteStream | WritableStream | PipelineOptions
     >
   ): Promise<void>;
 }
