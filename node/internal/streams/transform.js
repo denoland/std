@@ -1,18 +1,12 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-const {
-  ObjectSetPrototypeOf,
-  Symbol,
-} = primordials;
+import { ERR_METHOD_NOT_IMPLEMENTED } from "../../_errors.ts";
+import * as process from "../../_process/process.ts";
+import Duplex from "./duplex.js";
 
-module.exports = Transform;
-const {
-  ERR_METHOD_NOT_IMPLEMENTED,
-} = require("internal/errors").codes;
-const Duplex = require("internal/streams/duplex");
-ObjectSetPrototypeOf(Transform.prototype, Duplex.prototype);
-ObjectSetPrototypeOf(Transform, Duplex);
+Object.setPrototypeOf(Transform.prototype, Duplex.prototype);
+Object.setPrototypeOf(Transform, Duplex);
 
 const kCallback = Symbol("kCallback");
 
@@ -192,3 +186,5 @@ Transform.prototype._read = function () {
     callback();
   }
 };
+
+export default Transform;
