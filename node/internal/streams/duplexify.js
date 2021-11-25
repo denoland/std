@@ -1,37 +1,28 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-const {
+import { AbortError } from "../errors.js";
+import { createDeferredPromise } from "../util.ts";
+import { destroyer } from "./destroy.js";
+import { isBlob } from "../blob.js";
+import {
+  ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_RETURN_VALUE,
+} from "../../_errors.ts";
+import {
+  isDuplexNodeStream,
   isIterable,
   isNodeStream,
   isReadable,
   isReadableNodeStream,
   isWritable,
   isWritableNodeStream,
-  isDuplexNodeStream,
-} = require("internal/streams/utils");
-const eos = require("internal/streams/end-of-stream");
-const {
-  AbortError,
-  codes: {
-    ERR_INVALID_ARG_TYPE,
-    ERR_INVALID_RETURN_VALUE,
-  },
-} = require("internal/errors");
-const { destroyer } = require("internal/streams/destroy");
-const Duplex = require("internal/streams/duplex");
-const Readable = require("internal/streams/readable");
-const { createDeferredPromise } = require("internal/util");
-const from = require("internal/streams/from");
-
-const {
-  isBlob,
-} = require("internal/blob");
-const { AbortController } = require("internal/abort_controller");
-
-const {
-  FunctionPrototypeCall,
-} = primordials;
+} from "./utils.js";
+import * as process from "../../_process/process.ts";
+import _from from "./from.js";
+import Duplex from "./duplex.js";
+import eos from "./end-of-stream.js";
+import Readable from "./readable.js";
 
 // This is needed for pre node 17.
 class Duplexify extends Duplex {
@@ -55,7 +46,7 @@ class Duplexify extends Duplex {
   }
 }
 
-module.exports = function duplexify(body, name) {
+function duplexify(body, name) {
   if (isDuplexNodeStream(body)) {
     return body;
   }
@@ -86,7 +77,7 @@ module.exports = function duplexify(body, name) {
     const { value, write, final, destroy } = fromAsyncGen(body);
 
     if (isIterable(value)) {
-      return from(Duplexify, value, {
+      return _from(Duplexify, value, {
         // TODO (ronag): highWaterMark?
         objectMode: true,
         write,
@@ -99,8 +90,7 @@ module.exports = function duplexify(body, name) {
     if (typeof then === "function") {
       let d;
 
-      const promise = FunctionPrototypeCall(
-        then,
+      const promise = then.call(
         value,
         (val) => {
           if (val != null) {
@@ -143,7 +133,7 @@ module.exports = function duplexify(body, name) {
   }
 
   if (isIterable(body)) {
-    return from(Duplexify, body, {
+    return _from(Duplexify, body, {
       // TODO (ronag): highWaterMark?
       objectMode: true,
       writable: false,
@@ -181,8 +171,7 @@ module.exports = function duplexify(body, name) {
   if (typeof then === "function") {
     let d;
 
-    FunctionPrototypeCall(
-      then,
+    then.call(
       body,
       (val) => {
         if (val != null) {
@@ -217,7 +206,7 @@ module.exports = function duplexify(body, name) {
     ],
     body,
   );
-};
+}
 
 function fromAsyncGen(fn) {
   let { promise, resolve } = createDeferredPromise();
@@ -393,3 +382,5 @@ function _duplexify(pair) {
 
   return d;
 }
+
+export default duplexify;

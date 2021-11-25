@@ -16,9 +16,8 @@ import * as process from "../../_process/process.ts";
 import destroyImpl from "./destroy.js";
 import Duplex from "./duplex.js";
 import eos from "./end-of-stream.js";
-
-let PassThrough;
-let Readable;
+import Readable from "./readable.js";
+import PassThrough from "./passthrough.js";
 
 function destroyer(stream, reading, writing, callback) {
   callback = once(callback);
@@ -85,10 +84,6 @@ function makeAsyncIterable(val) {
 }
 
 async function* fromReadable(val) {
-  if (!Readable) {
-    Readable = require("internal/streams/readable");
-  }
-
   yield* Readable.prototype[Symbol.asyncIterator].call(val);
 }
 
@@ -248,10 +243,6 @@ function pipelineImpl(streams, callback, opts) {
           );
         }
       } else {
-        if (!PassThrough) {
-          PassThrough = require("internal/streams/passthrough");
-        }
-
         // If the last argument to pipeline is not a stream
         // we must create a proxy stream so that pipeline(...)
         // always returns a stream which can be further

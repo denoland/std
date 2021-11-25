@@ -1,25 +1,14 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-const {
-  ObjectDefineProperties,
-  ObjectDefineProperty,
-  ObjectSetPrototypeOf,
-} = primordials;
-
-const stream = require("stream");
-
-const {
-  getDefaultEncoding,
-} = require("internal/crypto/util");
-
-module.exports = LazyTransform;
+import { getDefaultEncoding } from "../crypto/util.js";
+import stream from "../../stream.ts";
 
 function LazyTransform(options) {
   this._options = options;
 }
-ObjectSetPrototypeOf(LazyTransform.prototype, stream.Transform.prototype);
-ObjectSetPrototypeOf(LazyTransform, stream.Transform);
+Object.setPrototypeOf(LazyTransform.prototype, stream.Transform.prototype);
+Object.setPrototypeOf(LazyTransform, stream.Transform);
 
 function makeGetter(name) {
   return function () {
@@ -36,7 +25,7 @@ function makeGetter(name) {
 
 function makeSetter(name) {
   return function (val) {
-    ObjectDefineProperty(this, name, {
+    Object.defineProperty(this, name, {
       value: val,
       enumerable: true,
       configurable: true,
@@ -45,7 +34,7 @@ function makeSetter(name) {
   };
 }
 
-ObjectDefineProperties(LazyTransform.prototype, {
+Object.defineProperties(LazyTransform.prototype, {
   _readableState: {
     get: makeGetter("_readableState"),
     set: makeSetter("_readableState"),
@@ -59,3 +48,5 @@ ObjectDefineProperties(LazyTransform.prototype, {
     enumerable: true,
   },
 });
+
+export default LazyTransform;

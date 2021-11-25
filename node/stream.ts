@@ -2,6 +2,7 @@ export {
   _isUint8Array,
   _uint8ArrayToBuffer,
   addAbortSignal,
+  compose,
   default,
   destroy,
   Duplex,
