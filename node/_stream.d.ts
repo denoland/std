@@ -4,8 +4,6 @@
 
 import { EventEmitter } from "./_events.d.ts";
 import { Buffer } from "./buffer.ts";
-export { _uint8ArrayToBuffer } from "./internal/streams/_utils.ts";
-export { isUint8Array as _isUint8Array } from "./_util/_util_types.ts";
 
 /** One of:
  * | "ascii"
@@ -1502,3 +1500,7 @@ interface Pipe {
   ref(): void;
   unref(): void;
 }
+
+// These have to be at the bottom of the file to work correctly, for some reason
+export { _uint8ArrayToBuffer } from "./internal/streams/_utils.ts";
+export { isUint8Array as _isUint8Array } from "./_util/_util_types.ts";
