@@ -29,6 +29,7 @@
       "test-event-emitter-prepend.js",
       "test-fs-write-file.js",
       "test-querystring.js",
+      "test-stream-writable-change-default-encoding.js",
       "test-url-format-whatwg.js",
       "test-url-urltooptions.js",
       "test-util-inspect-getters-accessing-this.js",
