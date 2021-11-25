@@ -1,21 +1,12 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-const { pipeline } = require("internal/streams/pipeline");
-const Duplex = require("internal/streams/duplex");
-const { destroyer } = require("internal/streams/destroy");
-const {
-  isNodeStream,
-  isReadable,
-  isWritable,
-} = require("internal/streams/utils");
-const {
-  AbortError,
-  codes: {
-    ERR_INVALID_ARG_VALUE,
-    ERR_MISSING_ARGS,
-  },
-} = require("internal/errors");
+import { AbortError } from "../errors.js";
+import { destroyer } from "./destroy.js";
+import { isNodeStream, isReadable, isWritable } from "./utils.js";
+import { pipeline } from "./pipeline.js";
+import { ERR_INVALID_ARG_VALUE, ERR_MISSING_ARGS } from "../../_errors.ts";
+import Duplex from "./duplex.js";
 
 // This is needed for pre node 17.
 class ComposeDuplex extends Duplex {
@@ -39,7 +30,7 @@ class ComposeDuplex extends Duplex {
   }
 }
 
-module.exports = function compose(...streams) {
+function compose(...streams) {
   if (streams.length === 0) {
     throw new ERR_MISSING_ARGS("streams");
   }
@@ -194,4 +185,6 @@ module.exports = function compose(...streams) {
   };
 
   return d;
-};
+}
+
+export default compose;

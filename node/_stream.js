@@ -6,6 +6,7 @@ import { destroyer } from "./internal/streams/destroy.js";
 import { isDisturbed } from "./internal/streams/utils.js";
 import { isUint8Array } from "./_util/_util_types.ts";
 import { Stream } from "./internal/streams/legacy.js";
+import compose from "./internal/streams/compose.js";
 import Duplex from "./internal/streams/duplex.js";
 import eos from "./internal/streams/end-of-stream.js";
 import PassThrough from "./internal/streams/passthrough.js";
@@ -17,7 +18,6 @@ import Writable from "./internal/streams/writable.js";
 // const {
 //   promisify: { custom: customPromisify },
 // } = require("internal/util");
-// const compose = require("internal/streams/compose");
 // const promises = require("stream/promises");
 
 Stream.isDisturbed = isDisturbed;
@@ -30,7 +30,7 @@ Stream.pipeline = pipeline;
 Stream.addAbortSignal = addAbortSignal;
 Stream.finished = eos;
 Stream.destroy = destroyer;
-// Stream.compose = compose;
+Stream.compose = compose;
 
 // Object.defineProperty(Stream, "promises", {
 //   configurable: true,
@@ -71,6 +71,7 @@ export default Stream;
 export {
   _uint8ArrayToBuffer,
   addAbortSignal,
+  compose,
   destroyer as destroy,
   Duplex,
   eos as finished,
