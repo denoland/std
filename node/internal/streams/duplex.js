@@ -1,6 +1,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
+import duplexify from "./duplexify.js";
 import Readable from "./readable.js";
 import Writable from "./writable.js";
 
@@ -96,12 +97,7 @@ Object.defineProperties(Duplex.prototype, {
   },
 });
 
-let duplexify;
-
 function _from(body) {
-  if (!duplexify) {
-    duplexify = require("internal/streams/duplexify");
-  }
   return duplexify(body, "body");
 }
 
