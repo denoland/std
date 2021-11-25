@@ -18,7 +18,13 @@ import { Buffer } from "./buffer.ts";
  * | "binary"
  * | "hex";
  */
-type BufferEncoding = string;
+export type BufferEncoding = string;
+
+interface Buffered {
+  chunk: Buffer;
+  encoding: string;
+  callback: Function;
+}
 
 interface Abortable {
   /**
@@ -170,6 +176,7 @@ export class Readable extends Stream implements ReadableStream {
   constructor(opts?: ReadableOptions);
   _construct?(callback: (error?: Error | null) => void): void;
   _read(size: number): void;
+  _undestroy(): void;
   /**
    * The `readable.read()` method pulls some data out of the internal buffer and
    * returns it. If no data available to be read, `null` is returned. By default,
@@ -576,6 +583,7 @@ export class Writable extends Stream implements WritableStream {
    * @since v11.4.0
    */
   readonly writable: boolean;
+  readonly writableBuffer?: Buffered[];
   /**
    * Is `true` after `writable.end()` has been called. This property
    * does not indicate whether the data has been flushed, for this use `writable.writableFinished` instead.
@@ -871,7 +879,7 @@ export class Writable extends Stream implements WritableStream {
     listener: (...args: any[]) => void,
   ): this;
 }
-interface DuplexOptions extends ReadableOptions, WritableOptions {
+export interface DuplexOptions extends ReadableOptions, WritableOptions {
   allowHalfOpen?: boolean | undefined;
   readableObjectMode?: boolean | undefined;
   writableObjectMode?: boolean | undefined;
@@ -913,6 +921,7 @@ interface DuplexOptions extends ReadableOptions, WritableOptions {
  */
 export class Duplex extends Readable implements Writable {
   readonly writable: boolean;
+  readonly writableBuffer?: Buffered[];
   readonly writableEnded: boolean;
   readonly writableFinished: boolean;
   readonly writableHighWaterMark: number;
@@ -994,7 +1003,7 @@ export class Duplex extends Readable implements Writable {
   uncork(): void;
 }
 type TransformCallback = (error?: Error | null, data?: any) => void;
-interface TransformOptions extends DuplexOptions {
+export interface TransformOptions extends DuplexOptions {
   construct?(this: Transform, callback: (error?: Error | null) => void): void;
   read?(this: Transform, size: number): void;
   write?(
