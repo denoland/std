@@ -1,9 +1,13 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import { Stream } from "./internal/streams/legacy.js";
-import { isUint8Array } from "./_util/_util_types.ts";
+import { addAbortSignal } from "./internal/streams/add-abort-signal.js";
 import { Buffer } from "./buffer.ts";
+import { destroyer } from "./internal/streams/destroy.js";
+import { isDisturbed } from "./internal/streams/utils.js";
+import { isUint8Array } from "./_util/_util_types.ts";
+import { Stream } from "./internal/streams/legacy.js";
 import Duplex from "./internal/streams/duplex.js";
+import eos from "./internal/streams/end-of-stream.js";
 import PassThrough from "./internal/streams/passthrough.js";
 import pipeline from "./internal/streams/pipeline.js";
 import Readable from "./internal/streams/readable.js";
@@ -14,21 +18,18 @@ import Writable from "./internal/streams/writable.js";
 //   promisify: { custom: customPromisify },
 // } = require("internal/util");
 // const compose = require("internal/streams/compose");
-// const { destroyer } = require("internal/streams/destroy");
-// const eos = require("internal/streams/end-of-stream");
-// const { addAbortSignal } = require("internal/streams/add-abort-signal");
 // const promises = require("stream/promises");
 
-// Stream.isDisturbed = require("internal/streams/utils").isDisturbed;
+Stream.isDisturbed = isDisturbed;
 Stream.Readable = Readable;
 Stream.Writable = Writable;
 Stream.Duplex = Duplex;
 Stream.Transform = Transform;
 Stream.PassThrough = PassThrough;
 Stream.pipeline = pipeline;
-// Stream.addAbortSignal = addAbortSignal;
-// Stream.finished = eos;
-// Stream.destroy = destroyer;
+Stream.addAbortSignal = addAbortSignal;
+Stream.finished = eos;
+Stream.destroy = destroyer;
 // Stream.compose = compose;
 
 // Object.defineProperty(Stream, "promises", {
@@ -69,7 +70,11 @@ Stream._uint8ArrayToBuffer = _uint8ArrayToBuffer;
 export default Stream;
 export {
   _uint8ArrayToBuffer,
+  addAbortSignal,
+  destroyer as destroy,
   Duplex,
+  eos as finished,
+  isDisturbed,
   isUint8Array as _isUint8Array,
   PassThrough,
   pipeline,

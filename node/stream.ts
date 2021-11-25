@@ -1,8 +1,12 @@
 export {
   _isUint8Array,
   _uint8ArrayToBuffer,
+  addAbortSignal,
   default,
+  destroy,
   Duplex,
+  finished,
+  isDisturbed,
   PassThrough,
   pipeline,
   Readable,
