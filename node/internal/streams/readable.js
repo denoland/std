@@ -3,6 +3,7 @@
 
 import { addAbortSignalNoValidate } from "./add-abort-signal.js";
 import { Buffer } from "../../buffer.ts";
+import { debuglog } from "../util/debuglog.ts";
 import { getDefaultHighWaterMark, getHighWaterMark } from "./state.js";
 import { prependListener, Stream } from "./legacy.js";
 import { StringDecoder } from "../../string_decoder.ts";
@@ -20,13 +21,9 @@ import BufferList from "./buffer_list.js";
 import destroyImpl from "./destroy.js";
 import EE from "../../events.ts";
 
-// TODO(Soremwar)
-// Maybe we can use the debug calls to ensure correct functionality in the implementation?
-// Find out and shim in the meanwhile
-// let debug = require("internal/util/debuglog").debuglog("stream", (fn) => {
-//   debug = fn;
-// });
-function debug() {}
+let debug = debuglog("stream", (fn) => {
+  debug = fn;
+});
 
 const kPaused = Symbol("kPaused");
 
