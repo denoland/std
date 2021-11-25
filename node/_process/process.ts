@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
-// The following is all the process APIs that don't depend on the stream module
+// The following are all the process APIs that don't depend on the stream module
 // They have to be split this way to prevent a circular dependency
 
 import { isWindows } from "../../_util/os.ts";
