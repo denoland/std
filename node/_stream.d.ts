@@ -23,7 +23,7 @@ export type BufferEncoding = string;
 interface Buffered {
   chunk: Buffer;
   encoding: string;
-  callback: Function;
+  callback: (err?: Error | null) => void;
 }
 
 interface Abortable {
@@ -970,6 +970,7 @@ export class Duplex extends Readable implements Writable {
       | AsyncIterable<any>
       | AsyncGeneratorFunction
       | Promise<any>
+      // deno-lint-ignore ban-types
       | Object,
   ): Duplex;
   _write(
