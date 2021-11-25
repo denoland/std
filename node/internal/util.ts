@@ -1,3 +1,5 @@
+import { promisify } from "../_util/_util_promisify.ts";
+
 function normalizeEncoding(enc: string | null) {
   if (enc == null || enc === "utf8" || enc === "utf-8") return "utf8";
   return slowCases(enc as string);
@@ -94,5 +96,6 @@ export default {
   createDeferredPromise,
   normalizeEncoding,
   once,
+  promisify,
 };
-export { createDeferredPromise, normalizeEncoding, once };
+export { createDeferredPromise, normalizeEncoding, once, promisify };

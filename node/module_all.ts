@@ -21,6 +21,7 @@ import process from "./process.ts";
 import querystring from "./querystring.ts";
 import readline from "./readline.ts";
 import stream from "./stream.ts";
+import streamPromises from "./stream/promises.js";
 import streamWeb from "./stream/web.ts";
 import stringDecoder from "./string_decoder.ts";
 import sys from "./sys.ts";
@@ -68,6 +69,7 @@ export default {
   querystring,
   readline,
   stream,
+  "stream/promises": streamPromises,
   "stream/web": streamWeb,
   "string_decoder": stringDecoder,
   sys,

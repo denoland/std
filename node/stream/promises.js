@@ -1,20 +1,8 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-// TODO(Soremwar)
-// Add entry to module_all
-
-const {
-  ArrayPrototypePop,
-  Promise,
-} = primordials;
-
-const {
-  isIterable,
-  isNodeStream,
-} = require("internal/streams/utils");
-
-const { pipelineImpl: pl } = require("internal/streams/pipeline");
-const eos = require("internal/streams/end-of-stream");
+import { isIterable, isNodeStream } from "../internal/streams/utils.js";
+import { pipelineImpl as pl } from "../internal/streams/pipeline.js";
+import eos from "../internal/streams/end-of-stream.js";
 
 function pipeline(...streams) {
   return new Promise((resolve, reject) => {
@@ -25,7 +13,7 @@ function pipeline(...streams) {
       lastArg && typeof lastArg === "object" &&
       !isNodeStream(lastArg) && !isIterable(lastArg)
     ) {
-      const options = ArrayPrototypePop(streams);
+      const options = streams.pop();
       signal = options.signal;
       end = options.end;
     }
@@ -52,7 +40,8 @@ function finished(stream, opts) {
   });
 }
 
-module.exports = {
+export default {
   finished,
   pipeline,
 };
+export { finished, pipeline };
