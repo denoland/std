@@ -3,6 +3,7 @@
 import { Stream } from "./internal/streams/legacy.js";
 import { isUint8Array } from "./_util/_util_types.ts";
 import { Buffer } from "./buffer.ts";
+import Duplex from "./internal/streams/duplex.js";
 import Readable from "./internal/streams/readable.js";
 import Writable from "./internal/streams/writable.js";
 
@@ -19,7 +20,7 @@ import Writable from "./internal/streams/writable.js";
 // Stream.isDisturbed = require("internal/streams/utils").isDisturbed;
 Stream.Readable = Readable;
 Stream.Writable = Writable;
-// Stream.Duplex = require("internal/streams/duplex");
+Stream.Duplex = Duplex;
 // Stream.Transform = require("internal/streams/transform");
 // Stream.PassThrough = require("internal/streams/passthrough");
 // Stream.pipeline = pipeline;
@@ -66,6 +67,7 @@ Stream._uint8ArrayToBuffer = _uint8ArrayToBuffer;
 export default Stream;
 export {
   _uint8ArrayToBuffer,
+  Duplex,
   isUint8Array as _isUint8Array,
   Readable,
   Stream,

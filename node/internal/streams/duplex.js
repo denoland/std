@@ -1,24 +1,15 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-const {
-  ObjectDefineProperties,
-  ObjectGetOwnPropertyDescriptor,
-  ObjectKeys,
-  ObjectSetPrototypeOf,
-} = primordials;
+import Readable from "./readable.js";
+import Writable from "./writable.js";
 
-module.exports = Duplex;
-
-const Readable = require("internal/streams/readable");
-const Writable = require("internal/streams/writable");
-
-ObjectSetPrototypeOf(Duplex.prototype, Readable.prototype);
-ObjectSetPrototypeOf(Duplex, Readable);
+Object.setPrototypeOf(Duplex.prototype, Readable.prototype);
+Object.setPrototypeOf(Duplex, Readable);
 
 {
   // Allow the keys array to be GC'ed.
-  for (const method of ObjectKeys(Writable.prototype)) {
+  for (const method of Object.keys(Writable.prototype)) {
     if (!Duplex.prototype[method]) {
       Duplex.prototype[method] = Writable.prototype[method];
     }
@@ -49,37 +40,37 @@ function Duplex(options) {
   }
 }
 
-ObjectDefineProperties(Duplex.prototype, {
-  writable: ObjectGetOwnPropertyDescriptor(Writable.prototype, "writable"),
-  writableHighWaterMark: ObjectGetOwnPropertyDescriptor(
+Object.defineProperties(Duplex.prototype, {
+  writable: Object.getOwnPropertyDescriptor(Writable.prototype, "writable"),
+  writableHighWaterMark: Object.getOwnPropertyDescriptor(
     Writable.prototype,
     "writableHighWaterMark",
   ),
-  writableObjectMode: ObjectGetOwnPropertyDescriptor(
+  writableObjectMode: Object.getOwnPropertyDescriptor(
     Writable.prototype,
     "writableObjectMode",
   ),
-  writableBuffer: ObjectGetOwnPropertyDescriptor(
+  writableBuffer: Object.getOwnPropertyDescriptor(
     Writable.prototype,
     "writableBuffer",
   ),
-  writableLength: ObjectGetOwnPropertyDescriptor(
+  writableLength: Object.getOwnPropertyDescriptor(
     Writable.prototype,
     "writableLength",
   ),
-  writableFinished: ObjectGetOwnPropertyDescriptor(
+  writableFinished: Object.getOwnPropertyDescriptor(
     Writable.prototype,
     "writableFinished",
   ),
-  writableCorked: ObjectGetOwnPropertyDescriptor(
+  writableCorked: Object.getOwnPropertyDescriptor(
     Writable.prototype,
     "writableCorked",
   ),
-  writableEnded: ObjectGetOwnPropertyDescriptor(
+  writableEnded: Object.getOwnPropertyDescriptor(
     Writable.prototype,
     "writableEnded",
   ),
-  writableNeedDrain: ObjectGetOwnPropertyDescriptor(
+  writableNeedDrain: Object.getOwnPropertyDescriptor(
     Writable.prototype,
     "writableNeedDrain",
   ),
@@ -107,9 +98,14 @@ ObjectDefineProperties(Duplex.prototype, {
 
 let duplexify;
 
-Duplex.from = function (body) {
+function _from(body) {
   if (!duplexify) {
     duplexify = require("internal/streams/duplexify");
   }
   return duplexify(body, "body");
-};
+}
+
+Duplex.from = _from;
+
+export default Duplex;
+export { _from as from };
