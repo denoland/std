@@ -208,7 +208,9 @@ function Writable(options) {
   // the WritableState constructor, at least with V8 6.5.
   const isDuplex = isDuplexStream(this);
 
-  if (!isDuplex && !Writable[Symbol.hasInstance](this)) {
+  if (
+    !isDuplex && !Function.prototype[Symbol.hasInstance].call(Writable, this)
+  ) {
     return new Writable(options);
   }
 
@@ -254,7 +256,7 @@ function Writable(options) {
 
 Object.defineProperty(Writable, Symbol.hasInstance, {
   value: function (object) {
-    if (this[Symbol.hasInstance](object)) return true;
+    if (Function.prototype[Symbol.hasInstance].call(this, object)) return true;
     if (this !== Writable) return false;
 
     return object && object._writableState instanceof WritableState;
@@ -875,5 +877,5 @@ Writable.prototype[EE.captureRejectionSymbol] = function (err) {
 
 Writable.WritableState = WritableState;
 
-export default { Writable, WritableState };
+export default Writable;
 export { Writable, WritableState };
