@@ -26,19 +26,18 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-'use strict';
-const common = require('../common');
-const assert = require('assert');
-const net = require('net');
-const msg = 'test';
+"use strict";
+const common = require("../common");
+const assert = require("assert");
+const net = require("net");
+const msg = "test";
 let stopped = true;
 let server1Sock;
 
-
 const server1ConnHandler = (socket) => {
-  socket.on('data', function(data) {
+  socket.on("data", function (data) {
     if (stopped) {
-      assert.fail('data event should not have happened yet');
+      assert.fail("data event should not have happened yet");
     }
 
     assert.strictEqual(data.toString(), msg);
@@ -52,7 +51,7 @@ const server1ConnHandler = (socket) => {
 const server1 = net.createServer({ pauseOnConnect: true }, server1ConnHandler);
 
 const server2ConnHandler = (socket) => {
-  socket.on('data', function(data) {
+  socket.on("data", function (data) {
     assert.strictEqual(data.toString(), msg);
     socket.end();
     server2.close();
@@ -65,15 +64,15 @@ const server2ConnHandler = (socket) => {
 
 const server2 = net.createServer({ pauseOnConnect: false }, server2ConnHandler);
 
-server1.listen(0, function() {
-  const clientHandler = common.mustCall(function() {
-    server2.listen(0, function() {
+server1.listen(0, function () {
+  const clientHandler = common.mustCall(function () {
+    server2.listen(0, function () {
       net.createConnection({ port: this.address().port }).write(msg);
     });
   });
   net.createConnection({ port: this.address().port }).write(msg, clientHandler);
 });
 
-process.on('exit', function() {
+process.on("exit", function () {
   assert.strictEqual(stopped, false);
 });

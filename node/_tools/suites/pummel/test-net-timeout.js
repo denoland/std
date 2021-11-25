@@ -26,10 +26,10 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-'use strict';
-require('../common');
-const assert = require('assert');
-const net = require('net');
+"use strict";
+require("../common");
+const assert = require("assert");
+const net = require("net");
 
 let exchanges = 0;
 let starttime = null;
@@ -39,23 +39,24 @@ const timeout = 1000;
 const echo_server = net.createServer((socket) => {
   socket.setTimeout(timeout);
 
-  socket.on('timeout', () => {
-    console.log('server timeout');
+  socket.on("timeout", () => {
+    console.log("server timeout");
     timeouttime = new Date();
     console.dir(timeouttime);
     socket.destroy();
   });
 
-  socket.on('error', (e) => {
+  socket.on("error", (e) => {
     throw new Error(
-      'Server side socket should not get error. We disconnect willingly.');
+      "Server side socket should not get error. We disconnect willingly.",
+    );
   });
 
-  socket.on('data', (d) => {
+  socket.on("data", (d) => {
     socket.write(d);
   });
 
-  socket.on('end', () => {
+  socket.on("end", () => {
     socket.end();
   });
 });
@@ -65,19 +66,19 @@ echo_server.listen(0, () => {
   console.log(`server listening at ${port}`);
 
   const client = net.createConnection(port);
-  client.setEncoding('UTF8');
+  client.setEncoding("UTF8");
   client.setTimeout(0); // Disable the timeout for client
-  client.on('connect', () => {
-    console.log('client connected.');
-    client.write('hello\r\n');
+  client.on("connect", () => {
+    console.log("client connected.");
+    client.write("hello\r\n");
   });
 
-  client.on('data', (chunk) => {
-    assert.strictEqual(chunk, 'hello\r\n');
+  client.on("data", (chunk) => {
+    assert.strictEqual(chunk, "hello\r\n");
     if (exchanges++ < 5) {
       setTimeout(() => {
         console.log('client write "hello"');
-        client.write('hello\r\n');
+        client.write("hello\r\n");
       }, 500);
 
       if (exchanges === 5) {
@@ -88,22 +89,22 @@ echo_server.listen(0, () => {
     }
   });
 
-  client.on('timeout', () => {
+  client.on("timeout", () => {
     throw new Error("client timeout - this shouldn't happen");
   });
 
-  client.on('end', () => {
-    console.log('client end');
+  client.on("end", () => {
+    console.log("client end");
     client.end();
   });
 
-  client.on('close', () => {
-    console.log('client disconnect');
+  client.on("close", () => {
+    console.log("client disconnect");
     echo_server.close();
   });
 });
 
-process.on('exit', () => {
+process.on("exit", () => {
   assert.ok(starttime != null);
   assert.ok(timeouttime != null);
 
