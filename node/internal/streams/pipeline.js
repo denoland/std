@@ -4,6 +4,7 @@
 import { AbortError, aggregateTwoErrors } from "../errors.js";
 import { isIterable, isNodeStream, isReadableNodeStream } from "./utils.js";
 import { once } from "../util.ts";
+import { stderr, stdout } from "./readable.js";
 import { validateAbortSignal, validateCallback } from "../validators.js";
 import {
   ERR_INVALID_ARG_TYPE,
@@ -11,6 +12,7 @@ import {
   ERR_MISSING_ARGS,
   ERR_STREAM_DESTROYED,
 } from "../../_errors.ts";
+import * as process from "../../_process/process.ts";
 import destroyImpl from "./destroy.js";
 import Duplex from "./duplex.js";
 import eos from "./end-of-stream.js";
@@ -292,7 +294,7 @@ function pipelineImpl(streams, callback, opts) {
         // Compat. Before node v10.12.0 stdio used to throw an error so
         // pipe() did/does not end() stdio destinations.
         // Now they allow it but "secretly" don't close the underlying fd.
-        if (stream === process.stdout || stream === process.stderr) {
+        if (stream === stdout || stream === stderr) {
           ret.on("end", () => stream.end());
         }
       } else {

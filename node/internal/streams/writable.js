@@ -16,6 +16,7 @@ import {
   ERR_STREAM_WRITE_AFTER_END,
   ERR_UNKNOWN_ENCODING,
 } from "../../_errors.ts";
+import * as process from "../../_process/process.ts";
 import destroyImpl from "./destroy.js";
 import EE from "../../events.ts";
 
