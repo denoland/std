@@ -4,6 +4,8 @@ import { Stream } from "./internal/streams/legacy.js";
 import { isUint8Array } from "./_util/_util_types.ts";
 import { Buffer } from "./buffer.ts";
 import Duplex from "./internal/streams/duplex.js";
+import PassThrough from "./internal/streams/passthrough.js";
+import pipeline from "./internal/streams/pipeline.js";
 import Readable from "./internal/streams/readable.js";
 import Transform from "./internal/streams/transform.js";
 import Writable from "./internal/streams/writable.js";
@@ -12,7 +14,6 @@ import Writable from "./internal/streams/writable.js";
 //   promisify: { custom: customPromisify },
 // } = require("internal/util");
 // const compose = require("internal/streams/compose");
-// const { pipeline } = require("internal/streams/pipeline");
 // const { destroyer } = require("internal/streams/destroy");
 // const eos = require("internal/streams/end-of-stream");
 // const { addAbortSignal } = require("internal/streams/add-abort-signal");
@@ -23,8 +24,8 @@ Stream.Readable = Readable;
 Stream.Writable = Writable;
 Stream.Duplex = Duplex;
 Stream.Transform = Transform;
-// Stream.PassThrough = require("internal/streams/passthrough");
-// Stream.pipeline = pipeline;
+Stream.PassThrough = PassThrough;
+Stream.pipeline = pipeline;
 // Stream.addAbortSignal = addAbortSignal;
 // Stream.finished = eos;
 // Stream.destroy = destroyer;
@@ -70,6 +71,8 @@ export {
   _uint8ArrayToBuffer,
   Duplex,
   isUint8Array as _isUint8Array,
+  PassThrough,
+  pipeline,
   Readable,
   Stream,
   Transform,

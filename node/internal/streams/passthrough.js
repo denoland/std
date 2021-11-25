@@ -1,15 +1,10 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-const {
-  ObjectSetPrototypeOf,
-} = primordials;
+import Transform from "./transform.js";
 
-module.exports = PassThrough;
-
-const Transform = require("internal/streams/transform");
-ObjectSetPrototypeOf(PassThrough.prototype, Transform.prototype);
-ObjectSetPrototypeOf(PassThrough, Transform);
+Object.setPrototypeOf(PassThrough.prototype, Transform.prototype);
+Object.setPrototypeOf(PassThrough, Transform);
 
 function PassThrough(options) {
   if (!(this instanceof PassThrough)) {
@@ -22,3 +17,5 @@ function PassThrough(options) {
 PassThrough.prototype._transform = function (chunk, encoding, cb) {
   cb(null, chunk);
 };
+
+export default PassThrough;

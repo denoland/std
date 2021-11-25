@@ -1,12 +1,6 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-const {
-  Symbol,
-  SymbolAsyncIterator,
-  SymbolIterator,
-} = primordials;
-
 const kIsDisturbed = Symbol("kIsDisturbed");
 
 function isReadableNodeStream(obj) {
@@ -51,10 +45,10 @@ function isNodeStream(obj) {
 
 function isIterable(obj, isAsync) {
   if (obj == null) return false;
-  if (isAsync === true) return typeof obj[SymbolAsyncIterator] === "function";
-  if (isAsync === false) return typeof obj[SymbolIterator] === "function";
-  return typeof obj[SymbolAsyncIterator] === "function" ||
-    typeof obj[SymbolIterator] === "function";
+  if (isAsync === true) return typeof obj[Symbol.asyncIterator] === "function";
+  if (isAsync === false) return typeof obj[Symbol.iterator] === "function";
+  return typeof obj[Symbol.asyncIterator] === "function" ||
+    typeof obj[Symbol.iterator] === "function";
 }
 
 function isDestroyed(stream) {
@@ -213,7 +207,7 @@ function willEmitClose(stream) {
   );
 }
 
-module.exports = {
+export default {
   isDisturbed,
   kIsDisturbed,
   isClosed,
@@ -232,5 +226,26 @@ module.exports = {
   isWritableFinished,
   isServerRequest,
   isServerResponse,
+  willEmitClose,
+};
+export {
+  isClosed,
+  isDestroyed,
+  isDisturbed,
+  isDuplexNodeStream,
+  isFinished,
+  isIterable,
+  isNodeStream,
+  isReadable,
+  isReadableEnded,
+  isReadableFinished,
+  isReadableNodeStream,
+  isServerRequest,
+  isServerResponse,
+  isWritable,
+  isWritableEnded,
+  isWritableFinished,
+  isWritableNodeStream,
+  kIsDisturbed,
   willEmitClose,
 };

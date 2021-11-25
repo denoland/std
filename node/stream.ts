@@ -3,6 +3,8 @@ export {
   _uint8ArrayToBuffer,
   default,
   Duplex,
+  PassThrough,
+  pipeline,
   Readable,
   Stream,
   Transform,

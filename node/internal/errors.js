@@ -1,5 +1,5 @@
 // Copyright Node.js contributors. All rights reserved. MIT License.
-import { ERR_IPC_CHANNEL_CLOSED } from "../_errors.ts";
+import { AbortError, ERR_IPC_CHANNEL_CLOSED } from "../_errors.ts";
 
 function aggregateTwoErrors(innerError, outerError) {
   if (innerError && outerError && innerError !== outerError) {
@@ -30,4 +30,4 @@ export default {
   codes,
   aggregateTwoErrors,
 };
-export { aggregateTwoErrors, codes };
+export { AbortError, aggregateTwoErrors, codes };

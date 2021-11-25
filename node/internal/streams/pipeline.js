@@ -1,38 +1,19 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-const {
-  ArrayIsArray,
-  Promise,
-  SymbolAsyncIterator,
-} = primordials;
-
-const eos = require("internal/streams/end-of-stream");
-const { once } = require("internal/util");
-const destroyImpl = require("internal/streams/destroy");
-const Duplex = require("internal/streams/duplex");
-const {
-  aggregateTwoErrors,
-  codes: {
-    ERR_INVALID_ARG_TYPE,
-    ERR_INVALID_RETURN_VALUE,
-    ERR_MISSING_ARGS,
-    ERR_STREAM_DESTROYED,
-  },
-  AbortError,
-} = require("internal/errors");
-
-const {
-  validateCallback,
-  validateAbortSignal,
-} = require("internal/validators");
-
-const {
-  isIterable,
-  isReadableNodeStream,
-  isNodeStream,
-} = require("internal/streams/utils");
-const { AbortController } = require("internal/abort_controller");
+import { AbortError, aggregateTwoErrors } from "../errors.js";
+import { isIterable, isNodeStream, isReadableNodeStream } from "./utils.js";
+import { once } from "../util.ts";
+import { validateAbortSignal, validateCallback } from "../validators.js";
+import {
+  ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_RETURN_VALUE,
+  ERR_MISSING_ARGS,
+  ERR_STREAM_DESTROYED,
+} from "../../_errors.ts";
+import destroyImpl from "./destroy.js";
+import Duplex from "./duplex.js";
+import eos from "./end-of-stream.js";
 
 let PassThrough;
 let Readable;
@@ -106,7 +87,7 @@ async function* fromReadable(val) {
     Readable = require("internal/streams/readable");
   }
 
-  yield* Readable.prototype[SymbolAsyncIterator].call(val);
+  yield* Readable.prototype[Symbol.asyncIterator].call(val);
 }
 
 async function pump(iterable, writable, finish) {
@@ -171,7 +152,7 @@ function pipeline(...streams) {
   const callback = once(popCallback(streams));
 
   // stream.pipeline(streams, callback)
-  if (ArrayIsArray(streams[0]) && streams.length === 1) {
+  if (Array.isArray(streams[0]) && streams.length === 1) {
     streams = streams[0];
   }
 
@@ -333,4 +314,5 @@ function pipelineImpl(streams, callback, opts) {
   return ret;
 }
 
-module.exports = { pipelineImpl, pipeline };
+export default { pipeline, pipelineImpl };
+export { pipeline, pipelineImpl };
