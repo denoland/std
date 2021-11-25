@@ -1,12 +1,14 @@
-import NodeReadable from "./_stream/readable.ts";
-import NodeWritable from "./_stream/writable.ts";
+import { _normalizeArgs, ListenOptions } from "./net.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
 import { EventEmitter } from "./events.ts";
-import { Status as STATUS_CODES } from "../http/http_status.ts";
-import { _normalizeArgs, ListenOptions } from "./net.ts";
 import { nextTick } from "./_next_tick.ts";
+import { Status as STATUS_CODES } from "../http/http_status.ts";
 import { validatePort } from "./_validators.ts";
+import {
+  Readable as NodeReadable,
+  Writable as NodeWritable,
+} from "./stream.ts";
 
 const METHODS = [
   "ACL",

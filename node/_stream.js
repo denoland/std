@@ -1,10 +1,10 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import { addAbortSignal } from "./internal/streams/add-abort-signal.js";
-import { Buffer } from "./buffer.ts";
 import { destroyer } from "./internal/streams/destroy.js";
 import { isDisturbed } from "./internal/streams/utils.js";
 import { isUint8Array } from "./_util/_util_types.ts";
+import { _uint8ArrayToBuffer } from "./internal/streams/_utils.ts";
 import { Stream } from "./internal/streams/legacy.js";
 import compose from "./internal/streams/compose.js";
 import Duplex from "./internal/streams/duplex.js";
@@ -53,14 +53,6 @@ Stream.compose = compose;
 //     return promises.finished;
 //   },
 // });
-
-function _uint8ArrayToBuffer(chunk) {
-  return Buffer.from(
-    chunk.buffer,
-    chunk.byteOffset,
-    chunk.byteLength,
-  );
-}
 
 // Backwards-compat with node 0.4.x
 Stream.Stream = Stream;

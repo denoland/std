@@ -1,4 +1,9 @@
-import { ERR_INVALID_ARG_TYPE } from "../_errors.ts";
+import { ERR_INVALID_ARG_TYPE, hideStackFrames } from "../_errors.ts";
+import {
+  validateAbortSignal,
+  validateCallback,
+  validateFunction,
+} from "../_validators.ts";
 
 /**
  * @param {unknown} value
@@ -9,7 +14,7 @@ import { ERR_INVALID_ARG_TYPE } from "../_errors.ts";
  *   nullable?: boolean
  * }} [options]
  */
-export function validateObject(value, name, options) {
+const validateObject = hideStackFrames((value, name, options) => {
   const useDefaultOptions = options == null;
   const allowArray = useDefaultOptions ? false : options.allowArray;
   const allowFunction = useDefaultOptions ? false : options.allowFunction;
@@ -23,6 +28,17 @@ export function validateObject(value, name, options) {
   ) {
     throw new ERR_INVALID_ARG_TYPE(name, "Object", value);
   }
-}
+});
 
-export { validateAbortSignal, validateFunction } from "../_validators.ts";
+export default {
+  validateAbortSignal,
+  validateCallback,
+  validateFunction,
+  validateObject,
+};
+export {
+  validateAbortSignal,
+  validateCallback,
+  validateFunction,
+  validateObject,
+};

@@ -1,9 +1,11 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
+import { _uint8ArrayToBuffer } from "./_utils.ts";
 import { addAbortSignalNoValidate } from "./add-abort-signal.js";
 import { Buffer } from "../../buffer.ts";
 import { getDefaultHighWaterMark, getHighWaterMark } from "./state.js";
+import { isUint8Array } from "../../_util/_util_types.ts";
 import { Stream } from "./legacy.js";
 import {
   ERR_INVALID_ARG_TYPE,
@@ -19,8 +21,28 @@ import {
 import * as process from "../../_process/process.ts";
 import destroyImpl from "./destroy.js";
 import EE from "../../events.ts";
+import Readable from "./readable.js";
 
 const { errorOrDestroy } = destroyImpl;
+
+// This function prevents a circular dependency with Duplex
+// This checks if the passed stream is an instance of a Readable stream
+// and one of its prototypes is named Duplex
+function isDuplexStream(maybe_duplex) {
+  const isReadable = Readable.prototype.isPrototypeOf(maybe_duplex);
+
+  let prototype = maybe_duplex;
+  let isDuplex = false;
+  while (prototype.constructor.name !== "Object") {
+    if (prototype.constructor.name === "Duplex") {
+      isDuplex = true;
+      break;
+    }
+    prototype = Object.getPrototypeOf(prototype);
+  }
+
+  return isReadable && isDuplex;
+}
 
 Object.setPrototypeOf(Writable.prototype, Stream.prototype);
 Object.setPrototypeOf(Writable, Stream);
@@ -36,7 +58,7 @@ function WritableState(options, stream, isDuplex) {
   // values for the readable and the writable sides of the duplex stream,
   // e.g. options.readableObjectMode vs. options.writableObjectMode, etc.
   if (typeof isDuplex !== "boolean") {
-    isDuplex = stream instanceof Stream.Duplex;
+    isDuplex = isDuplexStream(stream);
   }
 
   // Object stream flag to indicate whether or not this stream
@@ -184,7 +206,7 @@ function Writable(options) {
 
   // Checking for a Stream.Duplex instance is faster here instead of inside
   // the WritableState constructor, at least with V8 6.5.
-  const isDuplex = (this instanceof Stream.Duplex);
+  const isDuplex = isDuplexStream(this);
 
   if (!isDuplex && !Writable[Symbol.hasInstance](this)) {
     return new Writable(options);
@@ -271,8 +293,8 @@ function _write(stream, chunk, encoding, cb) {
       }
     } else if (chunk instanceof Buffer) {
       encoding = "buffer";
-    } else if (Stream._isUint8Array(chunk)) {
-      chunk = Stream._uint8ArrayToBuffer(chunk);
+    } else if (isUint8Array(chunk)) {
+      chunk = _uint8ArrayToBuffer(chunk);
       encoding = "buffer";
     } else {
       throw new ERR_INVALID_ARG_TYPE(

@@ -22,8 +22,6 @@
 import { notImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./_net.ts";
-import type { DuplexOptions } from "./_stream/duplex.ts";
-import type { WritableEncodings } from "./_stream/writable.ts";
 import { Duplex } from "./stream.ts";
 import {
   asyncIdSymbol,
@@ -94,6 +92,13 @@ import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
 import { codeMap } from "./internal_binding/uv.ts";
 import { guessHandleType } from "./internal_binding/util.ts";
 import { debuglog } from "./_util/_debuglog.ts";
+
+// TODO(Soremwar)
+// Use actual types
+// import type { DuplexOptions } from "./_stream/duplex.ts";
+// import type { WritableEncodings } from "./_stream/writable.ts";
+interface DuplexOptions {}
+interface WritableEncodings {}
 
 let debug = debuglog("net", (fn) => {
   debug = fn;
