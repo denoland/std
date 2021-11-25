@@ -169,6 +169,7 @@ export class ServerResponse extends NodeWritable {
       this.#headers.delete("transfer-encoding");
     }
 
+    // @ts-expect-error The signature for cb is stricter than the one implemented here
     return super.end(chunk, encoding, cb);
   }
 }
