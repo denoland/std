@@ -1,13 +1,16 @@
+// compose, destroy and isDisturbed are experimental APIs without
+// typings. They can be exposed once they are released as stable in Node
+
 export {
   _isUint8Array,
   _uint8ArrayToBuffer,
   addAbortSignal,
-  compose,
+  // compose,
   default,
-  destroy,
+  // destroy,
   Duplex,
   finished,
-  isDisturbed,
+  // isDisturbed,
   PassThrough,
   pipeline,
   Readable,
