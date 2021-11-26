@@ -77,6 +77,7 @@
       "test-buffer-failed-alloc-typed-arrays.js",
       "test-buffer-fakes.js",
       "test-buffer-from.js",
+      "test-buffer-indexof.js",
       "test-buffer-inheritance.js",
       "test-buffer-isencoding.js",
       "test-buffer-iterator.js",

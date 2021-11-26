@@ -6,6 +6,7 @@ import {
   ERR_INVALID_ARG_TYPE,
   ERR_OUT_OF_RANGE,
 } from "../_errors.ts";
+import { encodings } from "../internal_binding/string_decoder.ts";
 
 // Temporary buffers to convert numbers.
 const float32Array = new Float32Array(1);
@@ -361,65 +362,70 @@ function base64ByteLength(str, bytes) {
   return (bytes * 3) >>> 2;
 }
 
-const encodingsMap = {};
+export const encodingsMap = Object.create(null);
+for (let i = 0; i < encodings.length; ++i) {
+  encodingsMap[encodings[i]] = i;
+}
 
-const encodingOps = {
-  utf8: {
-    encoding: "utf8",
-    encodingVal: encodingsMap.utf8,
-    byteLength: byteLengthUtf8,
-    write: (buf, string, offset, len) => buf.utf8Write(string, offset, len),
-    slice: (buf, start, end) => buf.utf8Slice(start, end),
-  },
-  ucs2: {
-    encoding: "ucs2",
-    encodingVal: encodingsMap.utf16le,
-    byteLength: (string) => string.length * 2,
-    write: (buf, string, offset, len) => buf.ucs2Write(string, offset, len),
-    slice: (buf, start, end) => buf.ucs2Slice(start, end),
-  },
-  utf16le: {
-    encoding: "utf16le",
-    encodingVal: encodingsMap.utf16le,
-    byteLength: (string) => string.length * 2,
-    write: (buf, string, offset, len) => buf.ucs2Write(string, offset, len),
-    slice: (buf, start, end) => buf.ucs2Slice(start, end),
-  },
-  latin1: {
-    encoding: "latin1",
-    encodingVal: encodingsMap.latin1,
-    byteLength: (string) => string.length,
-    write: (buf, string, offset, len) => buf.latin1Write(string, offset, len),
-    slice: (buf, start, end) => buf.latin1Slice(start, end),
-  },
+console.log(encodingsMap);
+
+export const encodingOps = {
   ascii: {
+    byteLength: (string) => string.length,
     encoding: "ascii",
     encodingVal: encodingsMap.ascii,
-    byteLength: (string) => string.length,
-    write: (buf, string, offset, len) => buf.asciiWrite(string, offset, len),
     slice: (buf, start, end) => buf.asciiSlice(start, end),
+    write: (buf, string, offset, len) => buf.asciiWrite(string, offset, len),
   },
   base64: {
+    byteLength: (string) => base64ByteLength(string, string.length),
     encoding: "base64",
     encodingVal: encodingsMap.base64,
-    byteLength: (string) => base64ByteLength(string, string.length),
-    write: (buf, string, offset, len) => buf.base64Write(string, offset, len),
     slice: (buf, start, end) => buf.base64Slice(start, end),
+    write: (buf, string, offset, len) => buf.base64Write(string, offset, len),
   },
   base64url: {
+    byteLength: (string) => base64ByteLength(string, string.length),
     encoding: "base64url",
     encodingVal: encodingsMap.base64url,
-    byteLength: (string) => base64ByteLength(string, string.length),
+    slice: (buf, start, end) => buf.base64urlSlice(start, end),
     write: (buf, string, offset, len) =>
       buf.base64urlWrite(string, offset, len),
-    slice: (buf, start, end) => buf.base64urlSlice(start, end),
   },
   hex: {
+    byteLength: (string) => string.length >>> 1,
     encoding: "hex",
     encodingVal: encodingsMap.hex,
-    byteLength: (string) => string.length >>> 1,
-    write: (buf, string, offset, len) => buf.hexWrite(string, offset, len),
     slice: (buf, start, end) => buf.hexSlice(start, end),
+    write: (buf, string, offset, len) => buf.hexWrite(string, offset, len),
+  },
+  latin1: {
+    byteLength: (string) => string.length,
+    encoding: "latin1",
+    encodingVal: encodingsMap.latin1,
+    slice: (buf, start, end) => buf.latin1Slice(start, end),
+    write: (buf, string, offset, len) => buf.latin1Write(string, offset, len),
+  },
+  ucs2: {
+    byteLength: (string) => string.length * 2,
+    encoding: "ucs2",
+    encodingVal: encodingsMap.utf16le,
+    slice: (buf, start, end) => buf.ucs2Slice(start, end),
+    write: (buf, string, offset, len) => buf.ucs2Write(string, offset, len),
+  },
+  utf8: {
+    byteLength: byteLengthUtf8,
+    encoding: "utf8",
+    encodingVal: encodingsMap.utf8,
+    slice: (buf, start, end) => buf.utf8Slice(start, end),
+    write: (buf, string, offset, len) => buf.utf8Write(string, offset, len),
+  },
+  utf16le: {
+    byteLength: (string) => string.length * 2,
+    encoding: "utf16le",
+    encodingVal: encodingsMap.utf16le,
+    slice: (buf, start, end) => buf.ucs2Slice(start, end),
+    write: (buf, string, offset, len) => buf.ucs2Write(string, offset, len),
   },
 };
 
@@ -505,10 +511,6 @@ export function boundsError(value, length, type) {
     `>= ${type ? 1 : 0} and <= ${length}`,
     value,
   );
-}
-
-export function isUint8Array(element) {
-  return element instanceof Uint8Array;
 }
 
 export function validateNumber(value, name) {

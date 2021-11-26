@@ -4,6 +4,17 @@ import {
   validateCallback,
   validateFunction,
 } from "../_validators.ts";
+import { isArrayBufferView } from "./util/types.js";
+
+const validateBuffer = hideStackFrames((buffer, name = "buffer") => {
+  if (!isArrayBufferView(buffer)) {
+    throw new ERR_INVALID_ARG_TYPE(
+      name,
+      ["Buffer", "TypedArray", "DataView"],
+      buffer,
+    );
+  }
+});
 
 /**
  * @param {unknown} value
@@ -32,12 +43,14 @@ const validateObject = hideStackFrames((value, name, options) => {
 
 export default {
   validateAbortSignal,
+  validateBuffer,
   validateCallback,
   validateFunction,
   validateObject,
 };
 export {
   validateAbortSignal,
+  validateBuffer,
   validateCallback,
   validateFunction,
   validateObject,

@@ -22,8 +22,9 @@ import {
   bigEndian,
   boundsError,
   byteLengthUtf8,
+  encodingOps,
+  encodingsMap,
   getEncodingOps,
-  isUint8Array,
   readDoubleBackwards,
   readDoubleForwards,
   readFloatBackwards,
@@ -72,6 +73,8 @@ import {
   // deno-lint-ignore camelcase
   writeU_Int8,
 } from "./internal/buffer.js";
+import { validateBuffer } from "./internal/validators.js";
+import { isUint8Array } from "./internal/util/types.js";
 import * as base64 from "../encoding/base64.ts";
 
 export const kMaxLength = 2147483647;
@@ -621,9 +624,7 @@ Buffer.prototype.compare = function compare(
 };
 
 function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
-  if (buffer.length === 0) {
-    return -1;
-  }
+  validateBuffer(buffer);
 
   if (typeof byteOffset === "string") {
     encoding = byteOffset;
@@ -643,46 +644,32 @@ function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
     throw new Error("Not implemented");
   }
 
-  if (byteOffset < 0) {
-    byteOffset = buffer.length + byteOffset;
+  let ops;
+  if (encoding === undefined) {
+    ops = encodingOps.utf8;
+  } else {
+    ops = getEncodingOps(encoding);
   }
-  if (byteOffset >= buffer.length) {
-    if (dir) {
-      return -1;
-    } else {
-      byteOffset = buffer.length - 1;
-    }
-  } else if (byteOffset < 0) {
-    if (dir) {
-      byteOffset = 0;
-    } else {
-      return -1;
-    }
-  }
+
   if (typeof val === "string") {
-    val = Buffer.from(val, encoding);
-  }
-  if (Buffer.isBuffer(val)) {
-    if (val.length === 0) {
-      return -1;
+    if (ops === undefined) {
+      throw new ERR_UNKNOWN_ENCODING(encoding);
     }
-    return arrayIndexOf(buffer, val, byteOffset, encoding, dir);
-  } else if (typeof val === "number") {
-    val = val & 255;
-    if (typeof Uint8Array.prototype.indexOf === "function") {
-      if (dir) {
-        return Uint8Array.prototype.indexOf.call(buffer, val, byteOffset);
-      } else {
-        return Uint8Array.prototype.lastIndexOf.call(
-          buffer,
-          val,
-          byteOffset,
-        );
-      }
-    }
-    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir);
+    return ops.indexOf(buffer, val, byteOffset, dir);
   }
-  throw new TypeError("val must be string, number or Buffer");
+
+  if (isUint8Array(val)) {
+    const encodingVal = (ops === undefined
+      ? encodingsMap.utf8
+      : ops.encodingVal);
+    return indexOfBuffer(buffer, val, byteOffset, encodingVal, dir);
+  }
+
+  throw new ERR_INVALID_ARG_TYPE(
+    "value",
+    ["number", "string", "Buffer", "Uint8Array"],
+    val,
+  );
 }
 
 function arrayIndexOf(arr, val, byteOffset, encoding, dir) {
