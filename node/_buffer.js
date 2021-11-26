@@ -1,5 +1,5 @@
 // TODO(Soremwar)
-// This implementation has an unreliable indexOf, includes and base64url encoding implementation
+// This implementation has an unreliable indexOf and includes implementation
 // It also lacks the resolveObjectURL, transcode and INSPECT_MAX_BYTES exports
 
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
@@ -72,7 +72,7 @@ import {
   // deno-lint-ignore camelcase
   writeU_Int8,
 } from "./internal/buffer.js";
-import * as base65 from "../encoding/base64.ts";
+import * as base64 from "../encoding/base64.ts";
 
 export const kMaxLength = 2147483647;
 export const kStringMaxLength = 536870888;
@@ -979,9 +979,9 @@ function fromArrayBuffer(obj, byteOffset, length) {
 
 function _base64Slice(buf, start, end) {
   if (start === 0 && end === buf.length) {
-    return base65.encode(buf);
+    return base64.encode(buf);
   } else {
-    return base65.encode(buf.slice(start, end));
+    return base64.encode(buf.slice(start, end));
   }
 }
 
@@ -2042,7 +2042,7 @@ function utf16leToBytes(str, units) {
 }
 
 function base64ToBytes(str) {
-  return base65.decode(base64clean(str));
+  return base64.decode(base64clean(str));
 }
 
 function blitBuffer(src, dst, offset, length) {
