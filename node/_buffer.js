@@ -18,6 +18,8 @@ import {
   _copyActual,
   _writeUInt32BE,
   _writeUInt32LE,
+  asciiToBytes,
+  base64ToBytes,
   base64UrlToBytes,
   bigEndian,
   boundsError,
@@ -25,6 +27,7 @@ import {
   encodingOps,
   encodingsMap,
   getEncodingOps,
+  hexToBytes,
   readDoubleBackwards,
   readDoubleForwards,
   readFloatBackwards,
@@ -672,72 +675,6 @@ function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
   );
 }
 
-function arrayIndexOf(arr, val, byteOffset, encoding, dir) {
-  let indexSize = 1;
-  let arrLength = arr.length;
-  let valLength = val.length;
-  if (encoding !== void 0) {
-    encoding = String(encoding).toLowerCase();
-    if (
-      encoding === "ucs2" || encoding === "ucs-2" ||
-      encoding === "utf16le" || encoding === "utf-16le"
-    ) {
-      if (arr.length < 2 || val.length < 2) {
-        return -1;
-      }
-      indexSize = 2;
-      arrLength /= 2;
-      valLength /= 2;
-      byteOffset /= 2;
-    }
-  }
-  function read(buf, i2) {
-    if (indexSize === 1) {
-      return buf[i2];
-    } else {
-      return buf.readUInt16BE(i2 * indexSize);
-    }
-  }
-  let i;
-  if (dir) {
-    let foundIndex = -1;
-    for (i = byteOffset; i < arrLength; i++) {
-      if (
-        read(arr, i) === read(val, foundIndex === -1 ? 0 : i - foundIndex)
-      ) {
-        if (foundIndex === -1) {
-          foundIndex = i;
-        }
-        if (i - foundIndex + 1 === valLength) {
-          return foundIndex * indexSize;
-        }
-      } else {
-        if (foundIndex !== -1) {
-          i -= i - foundIndex;
-        }
-        foundIndex = -1;
-      }
-    }
-  } else {
-    if (byteOffset + valLength > arrLength) {
-      byteOffset = arrLength - valLength;
-    }
-    for (i = byteOffset; i >= 0; i--) {
-      let found = true;
-      for (let j = 0; j < valLength; j++) {
-        if (read(arr, i + j) !== read(val, j)) {
-          found = false;
-          break;
-        }
-      }
-      if (found) {
-        return i;
-      }
-    }
-  }
-  return -1;
-}
-
 Buffer.prototype.includes = function includes(val, byteOffset, encoding) {
   return this.indexOf(val, byteOffset, encoding) !== -1;
 };
@@ -754,29 +691,12 @@ Buffer.prototype.lastIndexOf = function lastIndexOf(
   return bidirectionalIndexOf(this, val, byteOffset, encoding, false);
 };
 function _hexWrite(buf, string, offset, length) {
-  offset = Number(offset) || 0;
-  const remaining = buf.length - offset;
-  if (!length) {
-    length = remaining;
-  } else {
-    length = Number(length);
-    if (length > remaining) {
-      length = remaining;
-    }
-  }
-  const strLen = string.length;
-  if (length > strLen / 2) {
-    length = strLen / 2;
-  }
-  let i;
-  for (i = 0; i < length; ++i) {
-    const parsed = parseInt(string.substr(i * 2, 2), 16);
-    if (Number.isNaN(parsed)) {
-      return i;
-    }
-    buf[offset + i] = parsed;
-  }
-  return i;
+  return blitBuffer(
+    hexToBytes(string, buf.length - offset),
+    buf,
+    offset,
+    length,
+  );
 }
 
 function _utf8Write(buf, string, offset, length) {
@@ -1916,20 +1836,6 @@ function checkIntBI(value, min, max, buf, offset, byteLength2) {
   checkBounds(buf, offset, byteLength2);
 }
 
-const INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
-
-function base64clean(str) {
-  str = str.split("=")[0];
-  str = str.trim().replace(INVALID_BASE64_RE, "");
-  if (str.length < 2) {
-    return "";
-  }
-  while (str.length % 4 !== 0) {
-    str = str + "=";
-  }
-  return str;
-}
-
 function utf8ToBytes(string, units) {
   units = units || Infinity;
   let codePoint;
@@ -2004,14 +1910,6 @@ function utf8ToBytes(string, units) {
   return bytes;
 }
 
-function asciiToBytes(str) {
-  const byteArray = [];
-  for (let i = 0; i < str.length; ++i) {
-    byteArray.push(str.charCodeAt(i) & 255);
-  }
-  return byteArray;
-}
-
 function utf16leToBytes(str, units) {
   let c, hi, lo;
   const byteArray = [];
@@ -2026,10 +1924,6 @@ function utf16leToBytes(str, units) {
     byteArray.push(hi);
   }
   return byteArray;
-}
-
-function base64ToBytes(str) {
-  return base64.decode(base64clean(str));
 }
 
 function blitBuffer(src, dst, offset, length) {

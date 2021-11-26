@@ -7,6 +7,56 @@ import {
   ERR_OUT_OF_RANGE,
 } from "../_errors.ts";
 import { encodings } from "../internal_binding/string_decoder.ts";
+import { indexOfBuffer, indexOfString } from "../internal_binding/buffer.ts";
+import * as base64 from "../../encoding/base64.ts";
+
+const INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
+
+function base64clean(str) {
+  str = str.split("=")[0];
+  str = str.trim().replace(INVALID_BASE64_RE, "");
+  if (str.length < 2) {
+    return "";
+  }
+  while (str.length % 4 !== 0) {
+    str = str + "=";
+  }
+  return str;
+}
+
+export function asciiToBytes(str) {
+  const byteArray = [];
+  for (let i = 0; i < str.length; ++i) {
+    byteArray.push(str.charCodeAt(i) & 255);
+  }
+  return byteArray;
+}
+
+export function base64ToBytes(str) {
+  return base64.decode(base64clean(str));
+}
+
+export function base64UrlToBytes(str) {
+  return new Uint8Array(
+    [...atob(str.replace(/-/g, "+").replace(/_/g, "/"))].map((val) =>
+      val.charCodeAt(0)
+    ),
+  );
+}
+
+export function hexToBytes(str) {
+  const byteArray = new Uint8Array(Math.floor((str || "").length / 2));
+  let i;
+  for (i = 0; i < byteArray.length; i++) {
+    const a = Number.parseInt(str[i * 2], 16);
+    const b = Number.parseInt(str[i * 2 + 1], 16);
+    if (Number.isNaN(a) && Number.isNaN(b)) {
+      break;
+    }
+    byteArray[i] = (a << 4) | b;
+  }
+  return i === byteArray.length ? byteArray : byteArray.slice(0, i);
+}
 
 // Temporary buffers to convert numbers.
 const float32Array = new Float32Array(1);
@@ -337,14 +387,6 @@ export function readInt40BE(buf, offset = 0) {
     last;
 }
 
-export function base64UrlToBytes(str) {
-  return new Uint8Array(
-    [...atob(str.replace(/-/g, "+").replace(/_/g, "/"))].map((val) =>
-      val.charCodeAt(0)
-    ),
-  );
-}
-
 export function byteLengthUtf8(str) {
   return new TextEncoder().encode(str).length;
 }
@@ -367,13 +409,19 @@ for (let i = 0; i < encodings.length; ++i) {
   encodingsMap[encodings[i]] = i;
 }
 
-console.log(encodingsMap);
-
 export const encodingOps = {
   ascii: {
     byteLength: (string) => string.length,
     encoding: "ascii",
     encodingVal: encodingsMap.ascii,
+    indexOf: (buf, val, byteOffset, dir) =>
+      indexOfBuffer(
+        buf,
+        new Uint8Array(asciiToBytes(val)),
+        byteOffset,
+        encodingsMap.ascii,
+        dir,
+      ),
     slice: (buf, start, end) => buf.asciiSlice(start, end),
     write: (buf, string, offset, len) => buf.asciiWrite(string, offset, len),
   },
@@ -381,6 +429,14 @@ export const encodingOps = {
     byteLength: (string) => base64ByteLength(string, string.length),
     encoding: "base64",
     encodingVal: encodingsMap.base64,
+    indexOf: (buf, val, byteOffset, dir) =>
+      indexOfBuffer(
+        buf,
+        new Uint8Array(base64ToBytes(val)),
+        byteOffset,
+        encodingsMap.base64,
+        dir,
+      ),
     slice: (buf, start, end) => buf.base64Slice(start, end),
     write: (buf, string, offset, len) => buf.base64Write(string, offset, len),
   },
@@ -388,6 +444,14 @@ export const encodingOps = {
     byteLength: (string) => base64ByteLength(string, string.length),
     encoding: "base64url",
     encodingVal: encodingsMap.base64url,
+    indexOf: (buf, val, byteOffset, dir) =>
+      indexOfBuffer(
+        buf,
+        new Uint8Array(base64UrlToBytes(val)),
+        byteOffset,
+        encodingsMap.base64url,
+        dir,
+      ),
     slice: (buf, start, end) => buf.base64urlSlice(start, end),
     write: (buf, string, offset, len) =>
       buf.base64urlWrite(string, offset, len),
@@ -396,6 +460,14 @@ export const encodingOps = {
     byteLength: (string) => string.length >>> 1,
     encoding: "hex",
     encodingVal: encodingsMap.hex,
+    indexOf: (buf, val, byteOffset, dir) =>
+      indexOfBuffer(
+        buf,
+        new Uint8Array(hexToBytes(val)),
+        byteOffset,
+        encodingsMap.hex,
+        dir,
+      ),
     slice: (buf, start, end) => buf.hexSlice(start, end),
     write: (buf, string, offset, len) => buf.hexWrite(string, offset, len),
   },
@@ -403,6 +475,8 @@ export const encodingOps = {
     byteLength: (string) => string.length,
     encoding: "latin1",
     encodingVal: encodingsMap.latin1,
+    indexOf: (buf, val, byteOffset, dir) =>
+      indexOfString(buf, val, byteOffset, encodingsMap.latin1, dir),
     slice: (buf, start, end) => buf.latin1Slice(start, end),
     write: (buf, string, offset, len) => buf.latin1Write(string, offset, len),
   },
@@ -410,6 +484,8 @@ export const encodingOps = {
     byteLength: (string) => string.length * 2,
     encoding: "ucs2",
     encodingVal: encodingsMap.utf16le,
+    indexOf: (buf, val, byteOffset, dir) =>
+      indexOfString(buf, val, byteOffset, encodingsMap.utf16le, dir),
     slice: (buf, start, end) => buf.ucs2Slice(start, end),
     write: (buf, string, offset, len) => buf.ucs2Write(string, offset, len),
   },
@@ -417,6 +493,8 @@ export const encodingOps = {
     byteLength: byteLengthUtf8,
     encoding: "utf8",
     encodingVal: encodingsMap.utf8,
+    indexOf: (buf, val, byteOffset, dir) =>
+      indexOfString(buf, val, byteOffset, encodingsMap.utf8, dir),
     slice: (buf, start, end) => buf.utf8Slice(start, end),
     write: (buf, string, offset, len) => buf.utf8Write(string, offset, len),
   },
@@ -424,6 +502,8 @@ export const encodingOps = {
     byteLength: (string) => string.length * 2,
     encoding: "utf16le",
     encodingVal: encodingsMap.utf16le,
+    indexOf: (buf, val, byteOffset, dir) =>
+      indexOfString(buf, val, byteOffset, encodingsMap.utf16le, dir),
     slice: (buf, start, end) => buf.ucs2Slice(start, end),
     write: (buf, string, offset, len) => buf.ucs2Write(string, offset, len),
   },
