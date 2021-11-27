@@ -684,11 +684,11 @@ Buffer.prototype.includes = function includes(val, byteOffset, encoding) {
   return this.indexOf(val, byteOffset, encoding) !== -1;
 };
 
-Buffer.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
+Buffer.prototype.indexOf = function (val, byteOffset, encoding) {
   return bidirectionalIndexOf(this, val, byteOffset, encoding, true);
 };
 
-Buffer.prototype.lastIndexOf = function lastIndexOf(
+Buffer.prototype.lastIndexOf = function (
   val,
   byteOffset,
   encoding,

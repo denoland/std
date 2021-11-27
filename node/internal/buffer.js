@@ -13,20 +13,6 @@ import * as base64url from "../../encoding/base64url.ts";
 
 const utf8Encoder = new TextEncoder();
 
-export function numberToBytes(n) {
-  const byteArray = new Uint8Array();
-
-  if (!n) return byteArray;
-
-  const bytes = [];
-  bytes.unshift(n & 255);
-  while (n >= 256) {
-    n = n >>> 8;
-    bytes.unshift(n & 255);
-  }
-  return new Uint8Array(bytes);
-}
-
 export function asciiToBytes(str) {
   const byteArray = [];
   for (let i = 0; i < str.length; ++i) {

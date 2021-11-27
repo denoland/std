@@ -589,52 +589,52 @@ const reallyLong = Buffer.from(parts.join(' '));
 assert.strictEqual(reallyLong.slice(0, 19).toString(), 'yolo swag swag yolo');
 
 // Expensive reverse searches. Stress test lastIndexOf:
-pattern = reallyLong.slice(0, 100000);  // First 1/50th of the pattern.
-assert.strictEqual(reallyLong.lastIndexOf(pattern), 4751360);
-assert.strictEqual(reallyLong.lastIndexOf(pattern, 4000000), 3932160);
-assert.strictEqual(reallyLong.lastIndexOf(pattern, 3000000), 2949120);
-pattern = reallyLong.slice(100000, 200000);  // Second 1/50th.
-assert.strictEqual(reallyLong.lastIndexOf(pattern), 4728480);
-pattern = reallyLong.slice(0, 1000000);  // First 1/5th.
-assert.strictEqual(reallyLong.lastIndexOf(pattern), 3932160);
-pattern = reallyLong.slice(0, 2000000);  // first 2/5ths.
-assert.strictEqual(reallyLong.lastIndexOf(pattern), 0);
+// pattern = reallyLong.slice(0, 100000);  // First 1/50th of the pattern.
+// assert.strictEqual(reallyLong.lastIndexOf(pattern), 4751360);
+// assert.strictEqual(reallyLong.lastIndexOf(pattern, 4000000), 3932160);
+// assert.strictEqual(reallyLong.lastIndexOf(pattern, 3000000), 2949120);
+// pattern = reallyLong.slice(100000, 200000);  // Second 1/50th.
+// assert.strictEqual(reallyLong.lastIndexOf(pattern), 4728480);
+// pattern = reallyLong.slice(0, 1000000);  // First 1/5th.
+// assert.strictEqual(reallyLong.lastIndexOf(pattern), 3932160);
+// pattern = reallyLong.slice(0, 2000000);  // first 2/5ths.
+// assert.strictEqual(reallyLong.lastIndexOf(pattern), 0);
 
-// Test truncation of Number arguments to uint8
-{
-  const buf = Buffer.from('this is a test');
-  assert.strictEqual(buf.indexOf(0x6973), 3);
-  assert.strictEqual(buf.indexOf(0x697320), 4);
-  assert.strictEqual(buf.indexOf(0x69732069), 2);
-  assert.strictEqual(buf.indexOf(0x697374657374), 0);
-  assert.strictEqual(buf.indexOf(0x69737374), 0);
-  assert.strictEqual(buf.indexOf(0x69737465), 11);
-  assert.strictEqual(buf.indexOf(0x69737465), 11);
-  assert.strictEqual(buf.indexOf(-140), 0);
-  assert.strictEqual(buf.indexOf(-152), 1);
-  assert.strictEqual(buf.indexOf(0xff), -1);
-  assert.strictEqual(buf.indexOf(0xffff), -1);
-}
+// // Test truncation of Number arguments to uint8
+// {
+//   const buf = Buffer.from('this is a test');
+//   assert.strictEqual(buf.indexOf(0x6973), 3);
+//   assert.strictEqual(buf.indexOf(0x697320), 4);
+//   assert.strictEqual(buf.indexOf(0x69732069), 2);
+//   assert.strictEqual(buf.indexOf(0x697374657374), 0);
+//   assert.strictEqual(buf.indexOf(0x69737374), 0);
+//   assert.strictEqual(buf.indexOf(0x69737465), 11);
+//   assert.strictEqual(buf.indexOf(0x69737465), 11);
+//   assert.strictEqual(buf.indexOf(-140), 0);
+//   assert.strictEqual(buf.indexOf(-152), 1);
+//   assert.strictEqual(buf.indexOf(0xff), -1);
+//   assert.strictEqual(buf.indexOf(0xffff), -1);
+// }
 
-// Test that Uint8Array arguments are okay.
-{
-  const needle = new Uint8Array([ 0x66, 0x6f, 0x6f ]);
-  const haystack = Buffer.from('a foo b foo');
-  assert.strictEqual(haystack.indexOf(needle), 2);
-  assert.strictEqual(haystack.lastIndexOf(needle), haystack.length - 3);
-}
+// // Test that Uint8Array arguments are okay.
+// {
+//   const needle = new Uint8Array([ 0x66, 0x6f, 0x6f ]);
+//   const haystack = Buffer.from('a foo b foo');
+//   assert.strictEqual(haystack.indexOf(needle), 2);
+//   assert.strictEqual(haystack.lastIndexOf(needle), haystack.length - 3);
+// }
 
-// Avoid abort because of invalid usage
-// see https://github.com/nodejs/node/issues/32753
-{
-  assert.throws(() => {
-    const buffer = require('buffer');
-    new buffer.Buffer.prototype.lastIndexOf(1, 'str');
-  }, {
-    code: 'ERR_INVALID_ARG_TYPE',
-    name: 'TypeError',
-    message: 'The "buffer" argument must be an instance of Buffer, ' +
-             'TypedArray, or DataView. ' +
-             'Received an instance of lastIndexOf'
-  });
-}
+// // Avoid abort because of invalid usage
+// // see https://github.com/nodejs/node/issues/32753
+// {
+//   assert.throws(() => {
+//     const buffer = require('buffer');
+//     new buffer.Buffer.prototype.lastIndexOf(1, 'str');
+//   }, {
+//     code: 'ERR_INVALID_ARG_TYPE',
+//     name: 'TypeError',
+//     message: 'The "buffer" argument must be an instance of Buffer, ' +
+//              'TypedArray, or DataView. ' +
+//              'Received an instance of lastIndexOf'
+//   });
+// }
