@@ -24,6 +24,8 @@ import {
   bigEndian,
   boundsError,
   byteLengthUtf8,
+  bytesToAscii,
+  bytesToUtf16le,
   encodingOps,
   encodingsMap,
   getEncodingOps,
@@ -47,6 +49,7 @@ import {
   readUInt48BE,
   readUInt48LE,
   toInteger,
+  utf16leToBytes,
   validateNumber,
   validateOffset,
   writeDoubleBackwards,
@@ -76,9 +79,11 @@ import {
   // deno-lint-ignore camelcase
   writeU_Int8,
 } from "./internal/buffer.js";
+import { indexOfBuffer, indexOfNumber } from "./internal_binding/buffer.ts";
 import { validateBuffer } from "./internal/validators.js";
 import { isUint8Array } from "./internal/util/types.js";
 import * as base64 from "../encoding/base64.ts";
+import * as base64url from "../encoding/base64url.ts";
 
 export const kMaxLength = 2147483647;
 export const kStringMaxLength = 536870888;
@@ -644,7 +649,7 @@ function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
   dir = !!dir;
 
   if (typeof val === "number") {
-    throw new Error("Not implemented");
+    return indexOfNumber(buffer, val >>> 0, byteOffset, dir);
   }
 
   let ops;
@@ -720,29 +725,27 @@ function _base64urlWrite(buf, string, offset, length) {
   return blitBuffer(base64UrlToBytes(string), buf, offset, length);
 }
 
-function _ucs2Write(buf, string, offset, length) {
-  return blitBuffer(
-    utf16leToBytes(string, buf.length - offset),
-    buf,
-    offset,
-    length,
-  );
-}
-
-Buffer.prototype.asciiSlice = function asciiSlice(string, offset, length) {
-  return _asciiSlice(this, string, offset, length);
+Buffer.prototype.asciiSlice = function (offset, length) {
+  if (offset === 0 && length === this.length) {
+    return bytesToAscii(this);
+  } else {
+    return bytesToAscii(this.slice(offset, length));
+  }
 };
 
 Buffer.prototype.asciiWrite = function asciiWrite(string, offset, length) {
   return _asciiWrite(this, string, offset, length);
 };
 
-Buffer.prototype.base64Slice = function base64Slice(
-  string,
+Buffer.prototype.base64Slice = function (
   offset,
   length,
 ) {
-  return _base64Slice(this, string, offset, length);
+  if (offset === 0 && length === this.length) {
+    return base64.encode(this);
+  } else {
+    return base64.encode(this.slice(offset, length));
+  }
 };
 
 Buffer.prototype.base64Write = function base64Write(
@@ -751,6 +754,17 @@ Buffer.prototype.base64Write = function base64Write(
   length,
 ) {
   return _base64Write(this, string, offset, length);
+};
+
+Buffer.prototype.base64urlSlice = function (
+  offset,
+  length,
+) {
+  if (offset === 0 && length === this.length) {
+    return base64url.encode(this);
+  } else {
+    return base64url.encode(this.slice(offset, length));
+  }
 };
 
 Buffer.prototype.base64urlWrite = function base64urlWrite(
@@ -785,12 +799,21 @@ Buffer.prototype.latin1Write = function latin1Write(
   return _asciiWrite(this, string, offset, length);
 };
 
-Buffer.prototype.ucs2Slice = function ucs2Slice(string, offset, length) {
-  return _ucs2Slice(this, string, offset, length);
+Buffer.prototype.ucs2Slice = function (offset, length) {
+  if (offset === 0 && length === this.length) {
+    return bytesToUtf16le(this);
+  } else {
+    return bytesToUtf16le(this.slice(offset, length));
+  }
 };
 
 Buffer.prototype.ucs2Write = function ucs2Write(string, offset, length) {
-  return _ucs2Write(this, string, offset, length);
+  return blitBuffer(
+    utf16leToBytes(string, this.length - offset),
+    this,
+    offset,
+    length,
+  );
 };
 
 Buffer.prototype.utf8Slice = function utf8Slice(string, offset, length) {
@@ -986,15 +1009,6 @@ function decodeCodePointsArray(codePoints) {
   return res;
 }
 
-function _asciiSlice(buf, start, end) {
-  let ret = "";
-  end = Math.min(buf.length, end);
-  for (let i = start; i < end; ++i) {
-    ret += String.fromCharCode(buf[i] & 127);
-  }
-  return ret;
-}
-
 function _latin1Slice(buf, start, end) {
   let ret = "";
   end = Math.min(buf.length, end);
@@ -1017,15 +1031,6 @@ function _hexSlice(buf, start, end) {
     out += hexSliceLookupTable[buf[i]];
   }
   return out;
-}
-
-function _ucs2Slice(buf, start, end) {
-  const bytes = buf.slice(start, end);
-  let res = "";
-  for (let i = 0; i < bytes.length - 1; i += 2) {
-    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
-  }
-  return res;
 }
 
 Buffer.prototype.slice = function slice(start, end) {
@@ -1908,22 +1913,6 @@ function utf8ToBytes(string, units) {
     }
   }
   return bytes;
-}
-
-function utf16leToBytes(str, units) {
-  let c, hi, lo;
-  const byteArray = [];
-  for (let i = 0; i < str.length; ++i) {
-    if ((units -= 2) < 0) {
-      break;
-    }
-    c = str.charCodeAt(i);
-    hi = c >> 8;
-    lo = c % 256;
-    byteArray.push(lo);
-    byteArray.push(hi);
-  }
-  return byteArray;
 }
 
 function blitBuffer(src, dst, offset, length) {

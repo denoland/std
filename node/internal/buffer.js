@@ -7,21 +7,24 @@ import {
   ERR_OUT_OF_RANGE,
 } from "../_errors.ts";
 import { encodings } from "../internal_binding/string_decoder.ts";
-import { indexOfBuffer, indexOfString } from "../internal_binding/buffer.ts";
+import { indexOfBuffer } from "../internal_binding/buffer.ts";
 import * as base64 from "../../encoding/base64.ts";
+import * as base64url from "../../encoding/base64url.ts";
 
-const INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
+const utf8Encoder = new TextEncoder();
 
-function base64clean(str) {
-  str = str.split("=")[0];
-  str = str.trim().replace(INVALID_BASE64_RE, "");
-  if (str.length < 2) {
-    return "";
+export function numberToBytes(n) {
+  const byteArray = new Uint8Array();
+
+  if (!n) return byteArray;
+
+  const bytes = [];
+  bytes.unshift(n & 255);
+  while (n >= 256) {
+    n = n >>> 8;
+    bytes.unshift(n & 255);
   }
-  while (str.length % 4 !== 0) {
-    str = str + "=";
-  }
-  return str;
+  return new Uint8Array(bytes);
 }
 
 export function asciiToBytes(str) {
@@ -29,19 +32,15 @@ export function asciiToBytes(str) {
   for (let i = 0; i < str.length; ++i) {
     byteArray.push(str.charCodeAt(i) & 255);
   }
-  return byteArray;
+  return new Uint8Array(byteArray);
 }
 
 export function base64ToBytes(str) {
-  return base64.decode(base64clean(str));
+  return base64.decode(str);
 }
 
 export function base64UrlToBytes(str) {
-  return new Uint8Array(
-    [...atob(str.replace(/-/g, "+").replace(/_/g, "/"))].map((val) =>
-      val.charCodeAt(0)
-    ),
-  );
+  return base64url.decode(str);
 }
 
 export function hexToBytes(str) {
@@ -55,7 +54,41 @@ export function hexToBytes(str) {
     }
     byteArray[i] = (a << 4) | b;
   }
-  return i === byteArray.length ? byteArray : byteArray.slice(0, i);
+  return new Uint8Array(
+    i === byteArray.length ? byteArray : byteArray.slice(0, i),
+  );
+}
+
+export function utf16leToBytes(str, units) {
+  let c, hi, lo;
+  const byteArray = [];
+  for (let i = 0; i < str.length; ++i) {
+    if ((units -= 2) < 0) {
+      break;
+    }
+    c = str.charCodeAt(i);
+    hi = c >> 8;
+    lo = c % 256;
+    byteArray.push(lo);
+    byteArray.push(hi);
+  }
+  return new Uint8Array(byteArray);
+}
+
+export function bytesToAscii(bytes) {
+  let ret = "";
+  for (let i = 0; i < bytes.length; ++i) {
+    ret += String.fromCharCode(bytes[i] & 127);
+  }
+  return ret;
+}
+
+export function bytesToUtf16le(bytes) {
+  let res = "";
+  for (let i = 0; i < bytes.length - 1; i += 2) {
+    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256);
+  }
+  return res;
 }
 
 // Temporary buffers to convert numbers.
@@ -388,7 +421,7 @@ export function readInt40BE(buf, offset = 0) {
 }
 
 export function byteLengthUtf8(str) {
-  return new TextEncoder().encode(str).length;
+  return utf8Encoder.encode(str).length;
 }
 
 function base64ByteLength(str, bytes) {
@@ -417,7 +450,7 @@ export const encodingOps = {
     indexOf: (buf, val, byteOffset, dir) =>
       indexOfBuffer(
         buf,
-        new Uint8Array(asciiToBytes(val)),
+        asciiToBytes(val),
         byteOffset,
         encodingsMap.ascii,
         dir,
@@ -432,7 +465,7 @@ export const encodingOps = {
     indexOf: (buf, val, byteOffset, dir) =>
       indexOfBuffer(
         buf,
-        new Uint8Array(base64ToBytes(val)),
+        base64ToBytes(val),
         byteOffset,
         encodingsMap.base64,
         dir,
@@ -447,7 +480,7 @@ export const encodingOps = {
     indexOf: (buf, val, byteOffset, dir) =>
       indexOfBuffer(
         buf,
-        new Uint8Array(base64UrlToBytes(val)),
+        base64UrlToBytes(val),
         byteOffset,
         encodingsMap.base64url,
         dir,
@@ -463,7 +496,7 @@ export const encodingOps = {
     indexOf: (buf, val, byteOffset, dir) =>
       indexOfBuffer(
         buf,
-        new Uint8Array(hexToBytes(val)),
+        hexToBytes(val),
         byteOffset,
         encodingsMap.hex,
         dir,
@@ -476,7 +509,13 @@ export const encodingOps = {
     encoding: "latin1",
     encodingVal: encodingsMap.latin1,
     indexOf: (buf, val, byteOffset, dir) =>
-      indexOfString(buf, val, byteOffset, encodingsMap.latin1, dir),
+      indexOfBuffer(
+        buf,
+        asciiToBytes(val),
+        byteOffset,
+        encodingsMap.latin1,
+        dir,
+      ),
     slice: (buf, start, end) => buf.latin1Slice(start, end),
     write: (buf, string, offset, len) => buf.latin1Write(string, offset, len),
   },
@@ -485,7 +524,13 @@ export const encodingOps = {
     encoding: "ucs2",
     encodingVal: encodingsMap.utf16le,
     indexOf: (buf, val, byteOffset, dir) =>
-      indexOfString(buf, val, byteOffset, encodingsMap.utf16le, dir),
+      indexOfBuffer(
+        buf,
+        utf16leToBytes(val),
+        byteOffset,
+        encodingsMap.utf16le,
+        dir,
+      ),
     slice: (buf, start, end) => buf.ucs2Slice(start, end),
     write: (buf, string, offset, len) => buf.ucs2Write(string, offset, len),
   },
@@ -494,7 +539,13 @@ export const encodingOps = {
     encoding: "utf8",
     encodingVal: encodingsMap.utf8,
     indexOf: (buf, val, byteOffset, dir) =>
-      indexOfString(buf, val, byteOffset, encodingsMap.utf8, dir),
+      indexOfBuffer(
+        buf,
+        utf8Encoder.encode(val),
+        byteOffset,
+        encodingsMap.utf8,
+        dir,
+      ),
     slice: (buf, start, end) => buf.utf8Slice(start, end),
     write: (buf, string, offset, len) => buf.utf8Write(string, offset, len),
   },
@@ -503,7 +554,13 @@ export const encodingOps = {
     encoding: "utf16le",
     encodingVal: encodingsMap.utf16le,
     indexOf: (buf, val, byteOffset, dir) =>
-      indexOfString(buf, val, byteOffset, encodingsMap.utf16le, dir),
+      indexOfBuffer(
+        buf,
+        utf16leToBytes(val),
+        byteOffset,
+        encodingsMap.utf16le,
+        dir,
+      ),
     slice: (buf, start, end) => buf.ucs2Slice(start, end),
     write: (buf, string, offset, len) => buf.ucs2Write(string, offset, len),
   },
