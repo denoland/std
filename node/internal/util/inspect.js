@@ -1574,26 +1574,20 @@ function getBoxedBase(
   constructor,
   tag,
 ) {
-  let fn;
   let type;
   if (types.isNumberObject(value)) {
-    fn = Number.prototype.valueOf;
     type = "Number";
   } else if (types.isStringObject(value)) {
-    fn = String.prototype.valueOf;
     type = "String";
     // For boxed Strings, we have to remove the 0-n indexed entries,
     // since they just noisy up the output and are redundant
     // Make boxed primitive Strings look like such
     keys.splice(0, value.length);
   } else if (types.isBooleanObject(value)) {
-    fn = Boolean.prototype.valueOf;
     type = "Boolean";
   } else if (types.isBigIntObject(value)) {
-    fn = BigInt.prototype.valueOf;
     type = "BigInt";
   } else {
-    fn = Symbol.prototype.valueOf;
     type = "Symbol";
   }
   let base = `[${type}`;
