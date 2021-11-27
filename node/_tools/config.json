@@ -29,7 +29,6 @@
       "test-event-emitter-prepend.js",
       "test-fs-write-file.js",
       "test-querystring.js",
-      "test-readline-csi.js",
       "test-readline-interface.js",
       "test-stream-pipe-error-handling.js",
       "test-stream-pipe-event.js",

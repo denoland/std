@@ -119,19 +119,18 @@ function assertCursorRowsAndCols(rli, rows, cols) {
     });
   });
 
-  // TODO(bartlomieju): fix me, we need to support `ERR_INVALID_ARG_VALUE.RangeError`
   // Constructor throws if historySize is not a positive number
-  // ['not a number', -1, NaN, {}, true, Symbol(), null].forEach((historySize) => {
-  //   assert.throws(() => {
-  //     readline.createInterface({
-  //       input,
-  //       historySize,
-  //     });
-  //   }, {
-  //     name: 'RangeError',
-  //     code: 'ERR_INVALID_ARG_VALUE'
-  //   });
-  // });
+  ['not a number', -1, NaN, {}, true, Symbol(), null].forEach((historySize) => {
+    assert.throws(() => {
+      readline.createInterface({
+        input,
+        historySize,
+      });
+    }, {
+      name: 'RangeError',
+      code: 'ERR_INVALID_ARG_VALUE'
+    });
+  });
 
   // Check for invalid tab sizes.
   assert.throws(
