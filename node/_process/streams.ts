@@ -1,8 +1,11 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
-import { Readable, Writable } from "../stream.ts";
+import {
+  stderr as _stderr,
+  stdout as _stdout,
+} from "../internal/streams/readable.js";
 import { Buffer } from "../buffer.ts";
-import { nextTick } from "../_next_tick.ts";
+import { Readable, Writable } from "../stream.ts";
 
 interface _Readable extends Readable {
   get isTTY(): true | undefined;
@@ -24,59 +27,8 @@ interface _Writable extends Writable {
   _isStdio: true;
 }
 
-// https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
-function createWritableStdioStream(writer: typeof Deno.stdout): _Writable {
-  const stream = new Writable({
-    write(buf: Uint8Array, enc: string, cb) {
-      writer.writeSync(buf instanceof Uint8Array ? buf : Buffer.from(buf, enc));
-      cb();
-    },
-    destroy(err, cb) {
-      cb(err);
-      this._undestroy();
-      if (!this._writableState.emitClose) {
-        nextTick(() => this.emit("close"));
-      }
-    },
-  }) as _Writable;
-  stream.fd = writer.rid;
-  stream.destroySoon = stream.destroy;
-  stream._isStdio = true;
-  stream.once("close", () => writer.close());
-  Object.defineProperties(stream, {
-    columns: {
-      enumerable: true,
-      configurable: true,
-      get: () =>
-        Deno.isatty(writer.rid)
-          ? Deno.consoleSize(writer.rid).columns
-          : undefined,
-    },
-    rows: {
-      enumerable: true,
-      configurable: true,
-      get: () =>
-        Deno.isatty(writer.rid) ? Deno.consoleSize(writer.rid).rows : undefined,
-    },
-    isTTY: {
-      enumerable: true,
-      configurable: true,
-      get: () => Deno.isatty(writer.rid),
-    },
-    getWindowSize: {
-      enumerable: true,
-      configurable: true,
-      value: () =>
-        Deno.isatty(writer.rid)
-          ? Object.values(Deno.consoleSize(writer.rid))
-          : undefined,
-    },
-  });
-  return stream;
-}
-
 /** https://nodejs.org/api/process.html#process_process_stderr */
-export const stderr = createWritableStdioStream(Deno.stderr);
+export const stderr = _stderr as unknown as _Writable;
 
 /** https://nodejs.org/api/process.html#process_process_stdin */
 export const stdin = new Readable({
@@ -112,4 +64,4 @@ Object.defineProperty(stdin, "isRaw", {
 });
 
 /** https://nodejs.org/api/process.html#process_process_stdout */
-export const stdout = createWritableStdioStream(Deno.stdout);
+export const stdout = _stdout as unknown as _Writable;

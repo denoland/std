@@ -770,23 +770,22 @@ assert.strictEqual(util.inspect(-5e-324), '-5e-324');
 //   assert.strictEqual(out[out.length - 1], '}');
 // }
 
-// TODO(wafuwafu13): Fix
 // // Doesn't capture stack trace.
-// {
-//   function BadCustomError(msg) {
-//     Error.call(this);
-//     Object.defineProperty(this, 'message',
-//                           { value: msg, enumerable: false });
-//     Object.defineProperty(this, 'name',
-//                           { value: 'BadCustomError', enumerable: false });
-//   }
-//   Object.setPrototypeOf(BadCustomError.prototype, Error.prototype);
-//   Object.setPrototypeOf(BadCustomError, Error);
-//   assert.strictEqual(
-//     util.inspect(new BadCustomError('foo')),
-//     '[BadCustomError: foo]'
-//   );
-// }
+{
+  function BadCustomError(msg) {
+    Error.call(this);
+    Object.defineProperty(this, 'message',
+                          { value: msg, enumerable: false });
+    Object.defineProperty(this, 'name',
+                          { value: 'BadCustomError', enumerable: false });
+  }
+  Object.setPrototypeOf(BadCustomError.prototype, Error.prototype);
+  Object.setPrototypeOf(BadCustomError, Error);
+  assert.strictEqual(
+    util.inspect(new BadCustomError('foo')),
+    '[BadCustomError: foo]'
+  );
+}
 
 // TODO(wafuwafu13): Fix
 // // Tampered error stack or name property (different type than string).
@@ -1041,44 +1040,43 @@ assert.strictEqual(
   '[ x, x, x ]'
 );
 
+// Using `util.inspect` with "colors" option should produce as many lines as
+// without it.
+{
+  function testLines(input) {
+    const countLines = (str) => (str.match(/\n/g) || []).length;
+    const withoutColor = util.inspect(input);
+    const withColor = util.inspect(input, { colors: true });
+    assert.strictEqual(countLines(withoutColor), countLines(withColor));
+  }
+
+  const bigArray = new Array(100).fill().map((value, index) => index);
+
+  testLines([1, 2, 3, 4, 5, 6, 7]);
+  testLines(bigArray);
+  testLines({ foo: 'bar', baz: 35, b: { a: 35 } });
+  testLines({ a: { a: 3, b: 1, c: 1, d: 1, e: 1, f: 1, g: 1, h: 1 }, b: 1 });
+  testLines({
+    foo: 'bar',
+    baz: 35,
+    b: { a: 35 },
+    veryLongKey: 'very long value',
+    evenLongerKey: ['with even longer value in array']
+  });
+}
+
+// Test boxed primitives output the correct values.
+assert.strictEqual(util.inspect(new String('test')), "[String: 'test']");
+assert.strictEqual(
+  util.inspect(new String('test'), { colors: true }),
+  "\u001b[32m[String: 'test']\u001b[39m"
+);
+assert.strictEqual(
+  util.inspect(Object(Symbol('test'))),
+  '[Symbol: Symbol(test)]'
+);
+assert.strictEqual(util.inspect(new Boolean(false)), '[Boolean: false]');
 // TODO(wafuwafu13): Fix
-// // Using `util.inspect` with "colors" option should produce as many lines as
-// // without it.
-// {
-//   function testLines(input) {
-//     const countLines = (str) => (str.match(/\n/g) || []).length;
-//     const withoutColor = util.inspect(input);
-//     const withColor = util.inspect(input, { colors: true });
-//     assert.strictEqual(countLines(withoutColor), countLines(withColor));
-//   }
-
-//   const bigArray = new Array(100).fill().map((value, index) => index);
-
-//   testLines([1, 2, 3, 4, 5, 6, 7]);
-//   testLines(bigArray);
-//   testLines({ foo: 'bar', baz: 35, b: { a: 35 } });
-//   testLines({ a: { a: 3, b: 1, c: 1, d: 1, e: 1, f: 1, g: 1, h: 1 }, b: 1 });
-//   testLines({
-//     foo: 'bar',
-//     baz: 35,
-//     b: { a: 35 },
-//     veryLongKey: 'very long value',
-//     evenLongerKey: ['with even longer value in array']
-//   });
-// }
-
-// TODO(wafuwafu13): Fix
-// // Test boxed primitives output the correct values.
-// assert.strictEqual(util.inspect(new String('test')), "[String: 'test']");
-// assert.strictEqual(
-//   util.inspect(new String('test'), { colors: true }),
-//   "\u001b[32m[String: 'test']\u001b[39m"
-// );
-// assert.strictEqual(
-//   util.inspect(Object(Symbol('test'))),
-//   '[Symbol: Symbol(test)]'
-// );
-// assert.strictEqual(util.inspect(new Boolean(false)), '[Boolean: false]');
 // assert.strictEqual(
 //   util.inspect(Object.setPrototypeOf(new Boolean(true), null)),
 //   '[Boolean (null prototype): true]'
@@ -1094,32 +1092,31 @@ assert.strictEqual(
 //   ),
 //   '[Number (Array): -0] [Foobar]'
 // );
-// assert.strictEqual(util.inspect(new Number(-1.1)), '[Number: -1.1]');
-// assert.strictEqual(util.inspect(new Number(13.37)), '[Number: 13.37]');
+assert.strictEqual(util.inspect(new Number(-1.1)), '[Number: -1.1]');
+assert.strictEqual(util.inspect(new Number(13.37)), '[Number: 13.37]');
 
-// TODO(wafuwafu13): Fix
-// // Test boxed primitives with own properties.
-// {
-//   const str = new String('baz');
-//   str.foo = 'bar';
-//   assert.strictEqual(util.inspect(str), "[String: 'baz'] { foo: 'bar' }");
+// Test boxed primitives with own properties.
+{
+  const str = new String('baz');
+  str.foo = 'bar';
+  assert.strictEqual(util.inspect(str), "[String: 'baz'] { foo: 'bar' }");
 
-//   const bool = new Boolean(true);
-//   bool.foo = 'bar';
-//   assert.strictEqual(util.inspect(bool), "[Boolean: true] { foo: 'bar' }");
+  const bool = new Boolean(true);
+  bool.foo = 'bar';
+  assert.strictEqual(util.inspect(bool), "[Boolean: true] { foo: 'bar' }");
 
-//   const num = new Number(13.37);
-//   num.foo = 'bar';
-//   assert.strictEqual(util.inspect(num), "[Number: 13.37] { foo: 'bar' }");
+  const num = new Number(13.37);
+  num.foo = 'bar';
+  assert.strictEqual(util.inspect(num), "[Number: 13.37] { foo: 'bar' }");
 
-//   const sym = Object(Symbol('foo'));
-//   sym.foo = 'bar';
-//   assert.strictEqual(util.inspect(sym), "[Symbol: Symbol(foo)] { foo: 'bar' }");
+  const sym = Object(Symbol('foo'));
+  sym.foo = 'bar';
+  assert.strictEqual(util.inspect(sym), "[Symbol: Symbol(foo)] { foo: 'bar' }");
 
-//   const big = Object(BigInt(55));
-//   big.foo = 'bar';
-//   assert.strictEqual(util.inspect(big), "[BigInt: 55n] { foo: 'bar' }");
-// }
+  const big = Object(BigInt(55));
+  big.foo = 'bar';
+  assert.strictEqual(util.inspect(big), "[BigInt: 55n] { foo: 'bar' }");
+}
 
 // Test es6 Symbol.
 if (typeof Symbol !== 'undefined') {
@@ -1496,16 +1493,18 @@ if (typeof Symbol !== 'undefined') {
   ).endsWith('1 more item ]'));
 }
 
-// TODO(wafuwafu13): Fix
-// {
-//   const x = new Uint8Array(101);
-//   assert(util.inspect(x).endsWith('1 more item\n]'));
-//   assert(!util.inspect(x, { maxArrayLength: 101 }).includes('1 more item'));
-//   assert.strictEqual(util.inspect(x, { maxArrayLength: 0 }),
-//                      'Uint8Array(101) [ ... 101 more items ]');
-//   assert(!util.inspect(x, { maxArrayLength: null }).includes('1 more item'));
-//   assert(util.inspect(x, { maxArrayLength: Infinity }).endsWith(' 0, 0\n]'));
-// }
+{
+  const x = new Uint8Array(101);
+  // TODO(wafuwafu13): Fix
+  // assert(util.inspect(x).endsWith('1 more item\n]'));
+  assert(!util.inspect(x, { maxArrayLength: 101 }).includes('1 more item'));
+  // TODO(wafuwafu13): Fix
+  // assert.strictEqual(util.inspect(x, { maxArrayLength: 0 }),
+  //                    'Uint8Array(101) [ ... 101 more items ]');
+  assert(!util.inspect(x, { maxArrayLength: null }).includes('1 more item'));
+  // TODO(wafuwafu13): Fix
+  // assert(util.inspect(x, { maxArrayLength: Infinity }).endsWith(' 0, 0\n]'));
+}
 
 {
   const obj = { foo: 'abc', bar: 'xyz' };
@@ -1523,60 +1522,62 @@ if (typeof Symbol !== 'undefined') {
   assert.strictEqual(twoLines, "{\n  foo: 'abc',\n  bar: 'xyz'\n}");
 }
 
-// TODO(wafuwafu13): Fix
-// // util.inspect.defaultOptions tests.
-// {
-//   const arr = new Array(101).fill();
-//   const obj = { a: { a: { a: { a: 1 } } } };
+// util.inspect.defaultOptions tests.
+{
+  const arr = new Array(101).fill();
+  const obj = { a: { a: { a: { a: 1 } } } };
 
-//   const oldOptions = { ...util.inspect.defaultOptions };
+  const oldOptions = { ...util.inspect.defaultOptions };
 
-//   // Set single option through property assignment.
-//   util.inspect.defaultOptions.maxArrayLength = null;
-//   assert.doesNotMatch(util.inspect(arr), /1 more item/);
-//   util.inspect.defaultOptions.maxArrayLength = oldOptions.maxArrayLength;
-//   assert.match(util.inspect(arr), /1 more item/);
-//   util.inspect.defaultOptions.depth = null;
-//   assert.doesNotMatch(util.inspect(obj), /Object/);
-//   util.inspect.defaultOptions.depth = oldOptions.depth;
-//   assert.match(util.inspect(obj), /Object/);
-//   assert.strictEqual(
-//     JSON.stringify(util.inspect.defaultOptions),
-//     JSON.stringify(oldOptions)
-//   );
+  // Set single option through property assignment.
+  util.inspect.defaultOptions.maxArrayLength = null;
+  assert.doesNotMatch(util.inspect(arr), /1 more item/);
+  util.inspect.defaultOptions.maxArrayLength = oldOptions.maxArrayLength;
+  // TODO(wafuwafu13): Fix
+  // assert.match(util.inspect(arr), /1 more item/);
+  util.inspect.defaultOptions.depth = null;
+  assert.doesNotMatch(util.inspect(obj), /Object/);
+  util.inspect.defaultOptions.depth = oldOptions.depth;
+  assert.match(util.inspect(obj), /Object/);
+  assert.strictEqual(
+    JSON.stringify(util.inspect.defaultOptions),
+    JSON.stringify(oldOptions)
+  );
 
-//   // Set multiple options through object assignment.
-//   util.inspect.defaultOptions = { maxArrayLength: null, depth: 2 };
-//   assert.doesNotMatch(util.inspect(arr), /1 more item/);
-//   assert.match(util.inspect(obj), /Object/);
-//   util.inspect.defaultOptions = oldOptions;
-//   assert.match(util.inspect(arr), /1 more item/);
-//   assert.match(util.inspect(obj), /Object/);
-//   assert.strictEqual(
-//     JSON.stringify(util.inspect.defaultOptions),
-//     JSON.stringify(oldOptions)
-//   );
+  // Set multiple options through object assignment.
+  util.inspect.defaultOptions = { maxArrayLength: null, depth: 2 };
+  assert.doesNotMatch(util.inspect(arr), /1 more item/);
+  assert.match(util.inspect(obj), /Object/);
+  util.inspect.defaultOptions = oldOptions;
+  // assert.match(util.inspect(arr), /1 more item/);
+  assert.match(util.inspect(obj), /Object/);
+  assert.strictEqual(
+    JSON.stringify(util.inspect.defaultOptions),
+    JSON.stringify(oldOptions)
+  );
 
-//   assert.throws(() => {
-//     util.inspect.defaultOptions = null;
-//   }, {
-//     code: 'ERR_INVALID_ARG_TYPE',
-//     name: 'TypeError',
-//     message: 'The "options" argument must be of type object. ' +
-//              'Received null'
-//   }
-//   );
+  // TODO(wafuwafu13): Fix
+  // assert.throws(() => {
+  //   util.inspect.defaultOptions = null;
+  // }, {
+  //   code: 'ERR_INVALID_ARG_TYPE',
+  //   name: 'TypeError',
+  //   message: 'The "options" argument must be of type object. ' +
+  //            'Received null'
+  // }
+  // );
 
-//   assert.throws(() => {
-//     util.inspect.defaultOptions = 'bad';
-//   }, {
-//     code: 'ERR_INVALID_ARG_TYPE',
-//     name: 'TypeError',
-//     message: 'The "options" argument must be of type object. ' +
-//              "Received type string ('bad')"
-//   }
-//   );
-// }
+  // TODO(wafuwafu13): Fix
+  // assert.throws(() => {
+  //   util.inspect.defaultOptions = 'bad';
+  // }, {
+  //   code: 'ERR_INVALID_ARG_TYPE',
+  //   name: 'TypeError',
+  //   message: 'The "options" argument must be of type object. ' +
+  //            "Received type string ('bad')"
+  // }
+  // );
+}
 
 util.inspect(process);
 
@@ -1590,67 +1591,69 @@ util.inspect(process);
 //   );
 // }
 
-// TODO(wafuwafu13): Fix
-// {
-//   // @@toStringTag
-//   const obj = { [Symbol.toStringTag]: 'a' };
-//   assert.strictEqual(
-//     util.inspect(obj),
-//     "{ [Symbol(Symbol.toStringTag)]: 'a' }"
-//   );
-//   Object.defineProperty(obj, Symbol.toStringTag, {
-//     value: 'a',
-//     enumerable: false
-//   });
-//   assert.strictEqual(util.inspect(obj), 'Object [a] {}');
-//   assert.strictEqual(
-//     util.inspect(obj, { showHidden: true }),
-//     "{ [Symbol(Symbol.toStringTag)]: 'a' }"
-//   );
+{
+  // @@toStringTag
+  const obj = { [Symbol.toStringTag]: 'a' };
+  // TODO(wafuwafu13): Fix
+  // assert.strictEqual(
+  //   util.inspect(obj),
+  //   "{ [Symbol(Symbol.toStringTag)]: 'a' }"
+  // );
+  Object.defineProperty(obj, Symbol.toStringTag, {
+    value: 'a',
+    enumerable: false
+  });
+  assert.strictEqual(util.inspect(obj), 'Object [a] {}');
+  // TODO(wafuwafu13): Fix
+  // assert.strictEqual(
+  //   util.inspect(obj, { showHidden: true }),
+  //   "{ [Symbol(Symbol.toStringTag)]: 'a' }"
+  // );
 
-//   class Foo {
-//     constructor() {
-//       this.foo = 'bar';
-//     }
+  class Foo {
+    constructor() {
+      this.foo = 'bar';
+    }
 
-//     get [Symbol.toStringTag]() {
-//       return this.foo;
-//     }
-//   }
+    get [Symbol.toStringTag]() {
+      return this.foo;
+    }
+  }
 
-//   assert.strictEqual(util.inspect(
-//     Object.create(null, { [Symbol.toStringTag]: { value: 'foo' } })),
-//                      '[Object: null prototype] [foo] {}');
+  // TODO(wafuwafu13): Fix
+  // assert.strictEqual(util.inspect(
+  //   Object.create(null, { [Symbol.toStringTag]: { value: 'foo' } })),
+  //                    '[Object: null prototype] [foo] {}');
 
-//   assert.strictEqual(util.inspect(new Foo()), "Foo [bar] { foo: 'bar' }");
+  assert.strictEqual(util.inspect(new Foo()), "Foo [bar] { foo: 'bar' }");
 
-//   assert.strictEqual(
-//     util.inspect(new (class extends Foo {})()),
-//     "Foo [bar] { foo: 'bar' }");
+  assert.strictEqual(
+    util.inspect(new (class extends Foo {})()),
+    "Foo [bar] { foo: 'bar' }");
 
-//   assert.strictEqual(
-//     util.inspect(Object.create(Object.create(Foo.prototype), {
-//       foo: { value: 'bar', enumerable: true }
-//     })),
-//     "Foo [bar] { foo: 'bar' }");
+  assert.strictEqual(
+    util.inspect(Object.create(Object.create(Foo.prototype), {
+      foo: { value: 'bar', enumerable: true }
+    })),
+    "Foo [bar] { foo: 'bar' }");
 
-//   class ThrowingClass {
-//     get [Symbol.toStringTag]() {
-//       throw new Error('toStringTag error');
-//     }
-//   }
+  class ThrowingClass {
+    get [Symbol.toStringTag]() {
+      throw new Error('toStringTag error');
+    }
+  }
 
-//   assert.throws(() => util.inspect(new ThrowingClass()), /toStringTag error/);
+  assert.throws(() => util.inspect(new ThrowingClass()), /toStringTag error/);
 
-//   class NotStringClass {
-//     get [Symbol.toStringTag]() {
-//       return null;
-//     }
-//   }
+  class NotStringClass {
+    get [Symbol.toStringTag]() {
+      return null;
+    }
+  }
 
-//   assert.strictEqual(util.inspect(new NotStringClass()),
-//                      'NotStringClass {}');
-// }
+  assert.strictEqual(util.inspect(new NotStringClass()),
+                     'NotStringClass {}');
+}
 
 {
   const o = {
@@ -1724,28 +1727,28 @@ util.inspect(process);
   assert.strictEqual(out, expect);
 
   // TODO(wafuwafu13): Fix
-  // o.a = () => {};
-  // o.b = new Number(3);
-  // out = util.inspect(o, { compact: false, breakLength: 3 });
-  // expect = [
-  //   '{',
-  //   '  a: [Function (anonymous)],',
-  //   '  b: [Number: 3]',
-  //   '}',
-  // ].join('\n');
-  // assert.strictEqual(out, expect);
+  o.a = () => {};
+  o.b = new Number(3);
+  out = util.inspect(o, { compact: false, breakLength: 3 });
+  expect = [
+    '{',
+    '  a: [Function (anonymous)],',
+    '  b: [Number: 3]',
+    '}',
+  ].join('\n');
+  assert.strictEqual(out, expect);
 
-  // out = util.inspect(o, { compact: false, breakLength: 3, showHidden: true });
-  // expect = [
-  //   '{',
-  //   '  a: [Function (anonymous)] {',
-  //   '    [length]: 0,',
-  //   "    [name]: ''",
-  //   '  },',
-  //   '  b: [Number: 3]',
-  //   '}',
-  // ].join('\n');
-  // assert.strictEqual(out, expect);
+  out = util.inspect(o, { compact: false, breakLength: 3, showHidden: true });
+  expect = [
+    '{',
+    '  a: [Function (anonymous)] {',
+    '    [length]: 0,',
+    "    [name]: ''",
+    '  },',
+    '  b: [Number: 3]',
+    '}',
+  ].join('\n');
+  assert.strictEqual(out, expect);
 
   o[util.inspect.custom] = () => 42;
   out = util.inspect(o, { compact: false, breakLength: 3 });
@@ -1966,25 +1969,25 @@ util.inspect(process);
   assert.strictEqual(util.inspect(args), "[Arguments] { '0': 'a' }");
 }
 
-// TODO(wafuwafu13): Fix
-// {
-//   // Test that a long linked list can be inspected without throwing an error.
-//   const list = {};
-//   let head = list;
-//   // A linked list of length 100k should be inspectable in some way, even though
-//   // the real cutoff value is much lower than 100k.
-//   for (let i = 0; i < 100000; i++)
-//     head = head.next = {};
-//   assert.strictEqual(
-//     util.inspect(list),
-//     '{ next: { next: { next: [Object] } } }'
-//   );
-//   const longList = util.inspect(list, { depth: Infinity });
-//   const match = longList.match(/next/g);
-//   assert(match.length > 500 && match.length < 10000);
-//   assert(longList.includes('[Object: Inspection interrupted ' +
-//     'prematurely. Maximum call stack size exceeded.]'));
-// }
+{
+  // Test that a long linked list can be inspected without throwing an error.
+  const list = {};
+  let head = list;
+  // A linked list of length 100k should be inspectable in some way, even though
+  // the real cutoff value is much lower than 100k.
+  for (let i = 0; i < 100000; i++)
+    head = head.next = {};
+  assert.strictEqual(
+    util.inspect(list),
+    '{ next: { next: { next: [Object] } } }'
+  );
+  const longList = util.inspect(list, { depth: Infinity });
+  const match = longList.match(/next/g);
+  assert(match.length > 500 && match.length < 10000);
+  // TODO(wafuwafu13): Fix
+  // assert(longList.includes('[Object: Inspection interrupted ' +
+  //   'prematurely. Maximum call stack size exceeded.]'));
+}
 
 // Do not escape single quotes if no double quote or backtick is present.
 assert.strictEqual(util.inspect("'"), '"\'"');
@@ -2269,9 +2272,9 @@ assert.strictEqual(util.inspect('"\'${a}'), "'\"\\'${a}'");
 // });
 
 assert.strictEqual(inspect(1n), '1n');
+assert.strictEqual(inspect(Object(-1n)), '[BigInt: -1n]');
+assert.strictEqual(inspect(Object(13n)), '[BigInt: 13n]');
 // TODO(wafuwafu13): Fix
-// assert.strictEqual(inspect(Object(-1n)), '[BigInt: -1n]');
-// assert.strictEqual(inspect(Object(13n)), '[BigInt: 13n]');
 // assert.strictEqual(inspect(new BigInt64Array([0n])), 'BigInt64Array(1) [ 0n ]');
 // assert.strictEqual(
 //   inspect(new BigUint64Array([0n])), 'BigUint64Array(1) [ 0n ]');
@@ -2498,318 +2501,323 @@ assert.strictEqual(
   //     "'foobar', { x: 1 } },\n  inc: [Getter: NaN]\n}");
 }
 
-// TODO(wafuwafu13): Fix
-// // Check compact number mode.
-// {
-//   let obj = {
-//     a: {
-//       b: {
-//         x: 5,
-//         c: {
-//           x: '10000000000000000 00000000000000000 '.repeat(1e1),
-//           d: 2,
-//           e: 3
-//         }
-//       }
-//     },
-//     b: [
-//       1,
-//       2,
-//       [ 1, 2, { a: 1, b: 2, c: 3 } ],
-//     ],
-//     c: ['foo', 4, 444444],
-//     d: Array.from({ length: 101 }).map((e, i) => {
-//       return i % 2 === 0 ? i * i : i;
-//     }),
-//     e: Array(6).fill('foobar'),
-//     f: Array(9).fill('foobar'),
-//     g: Array(21).fill('foobar baz'),
-//     h: [100].concat(Array.from({ length: 9 }).map((e, n) => (n))),
-//     long: Array(9).fill('This text is too long for grouping!')
-//   };
+// Check compact number mode.
+{
+  let obj = {
+    a: {
+      b: {
+        x: 5,
+        c: {
+          x: '10000000000000000 00000000000000000 '.repeat(1e1),
+          d: 2,
+          e: 3
+        }
+      }
+    },
+    b: [
+      1,
+      2,
+      [ 1, 2, { a: 1, b: 2, c: 3 } ],
+    ],
+    c: ['foo', 4, 444444],
+    d: Array.from({ length: 101 }).map((e, i) => {
+      return i % 2 === 0 ? i * i : i;
+    }),
+    e: Array(6).fill('foobar'),
+    f: Array(9).fill('foobar'),
+    g: Array(21).fill('foobar baz'),
+    h: [100].concat(Array.from({ length: 9 }).map((e, n) => (n))),
+    long: Array(9).fill('This text is too long for grouping!')
+  };
 
-//   let out = util.inspect(obj, { compact: 3, depth: 10, breakLength: 60 });
-//   let expected = [
-//     '{',
-//     '  a: {',
-//     '    b: {',
-//     '      x: 5,',
-//     '      c: {',
-//     "        x: '10000000000000000 00000000000000000 10000000000000000 " +
-//       '00000000000000000 10000000000000000 00000000000000000 ' +
-//       '10000000000000000 00000000000000000 10000000000000000 ' +
-//       '00000000000000000 10000000000000000 00000000000000000 ' +
-//       '10000000000000000 00000000000000000 10000000000000000 ' +
-//       '00000000000000000 10000000000000000 00000000000000000 ' +
-//       "10000000000000000 00000000000000000 ',",
-//     '        d: 2,',
-//     '        e: 3',
-//     '      }',
-//     '    }',
-//     '  },',
-//     '  b: [ 1, 2, [ 1, 2, { a: 1, b: 2, c: 3 } ] ],',
-//     "  c: [ 'foo', 4, 444444 ],",
-//     '  d: [',
-//     '       0,    1,    4,    3,   16,    5,   36,    7,   64,',
-//     '       9,  100,   11,  144,   13,  196,   15,  256,   17,',
-//     '     324,   19,  400,   21,  484,   23,  576,   25,  676,',
-//     '      27,  784,   29,  900,   31, 1024,   33, 1156,   35,',
-//     '    1296,   37, 1444,   39, 1600,   41, 1764,   43, 1936,',
-//     '      45, 2116,   47, 2304,   49, 2500,   51, 2704,   53,',
-//     '    2916,   55, 3136,   57, 3364,   59, 3600,   61, 3844,',
-//     '      63, 4096,   65, 4356,   67, 4624,   69, 4900,   71,',
-//     '    5184,   73, 5476,   75, 5776,   77, 6084,   79, 6400,',
-//     '      81, 6724,   83, 7056,   85, 7396,   87, 7744,   89,',
-//     '    8100,   91, 8464,   93, 8836,   95, 9216,   97, 9604,',
-//     '      99,',
-//     '    ... 1 more item',
-//     '  ],',
-//     '  e: [',
-//     "    'foobar',",
-//     "    'foobar',",
-//     "    'foobar',",
-//     "    'foobar',",
-//     "    'foobar',",
-//     "    'foobar'",
-//     '  ],',
-//     '  f: [',
-//     "    'foobar', 'foobar',",
-//     "    'foobar', 'foobar',",
-//     "    'foobar', 'foobar',",
-//     "    'foobar', 'foobar',",
-//     "    'foobar'",
-//     '  ],',
-//     '  g: [',
-//     "    'foobar baz', 'foobar baz',",
-//     "    'foobar baz', 'foobar baz',",
-//     "    'foobar baz', 'foobar baz',",
-//     "    'foobar baz', 'foobar baz',",
-//     "    'foobar baz', 'foobar baz',",
-//     "    'foobar baz', 'foobar baz',",
-//     "    'foobar baz', 'foobar baz',",
-//     "    'foobar baz', 'foobar baz',",
-//     "    'foobar baz', 'foobar baz',",
-//     "    'foobar baz', 'foobar baz',",
-//     "    'foobar baz'",
-//     '  ],',
-//     '  h: [',
-//     '    100, 0, 1, 2, 3,',
-//     '      4, 5, 6, 7, 8',
-//     '  ],',
-//     '  long: [',
-//     "    'This text is too long for grouping!',",
-//     "    'This text is too long for grouping!',",
-//     "    'This text is too long for grouping!',",
-//     "    'This text is too long for grouping!',",
-//     "    'This text is too long for grouping!',",
-//     "    'This text is too long for grouping!',",
-//     "    'This text is too long for grouping!',",
-//     "    'This text is too long for grouping!',",
-//     "    'This text is too long for grouping!'",
-//     '  ]',
-//     '}',
-//   ].join('\n');
+  let out = util.inspect(obj, { compact: 3, depth: 10, breakLength: 60 });
+  let expected = [
+    '{',
+    '  a: {',
+    '    b: {',
+    '      x: 5,',
+    '      c: {',
+    "        x: '10000000000000000 00000000000000000 10000000000000000 " +
+      '00000000000000000 10000000000000000 00000000000000000 ' +
+      '10000000000000000 00000000000000000 10000000000000000 ' +
+      '00000000000000000 10000000000000000 00000000000000000 ' +
+      '10000000000000000 00000000000000000 10000000000000000 ' +
+      '00000000000000000 10000000000000000 00000000000000000 ' +
+      "10000000000000000 00000000000000000 ',",
+    '        d: 2,',
+    '        e: 3',
+    '      }',
+    '    }',
+    '  },',
+    '  b: [ 1, 2, [ 1, 2, { a: 1, b: 2, c: 3 } ] ],',
+    "  c: [ 'foo', 4, 444444 ],",
+    '  d: [',
+    '       0,    1,    4,    3,   16,    5,   36,    7,   64,',
+    '       9,  100,   11,  144,   13,  196,   15,  256,   17,',
+    '     324,   19,  400,   21,  484,   23,  576,   25,  676,',
+    '      27,  784,   29,  900,   31, 1024,   33, 1156,   35,',
+    '    1296,   37, 1444,   39, 1600,   41, 1764,   43, 1936,',
+    '      45, 2116,   47, 2304,   49, 2500,   51, 2704,   53,',
+    '    2916,   55, 3136,   57, 3364,   59, 3600,   61, 3844,',
+    '      63, 4096,   65, 4356,   67, 4624,   69, 4900,   71,',
+    '    5184,   73, 5476,   75, 5776,   77, 6084,   79, 6400,',
+    '      81, 6724,   83, 7056,   85, 7396,   87, 7744,   89,',
+    '    8100,   91, 8464,   93, 8836,   95, 9216,   97, 9604,',
+    '      99,',
+    '    ... 1 more item',
+    '  ],',
+    '  e: [',
+    "    'foobar',",
+    "    'foobar',",
+    "    'foobar',",
+    "    'foobar',",
+    "    'foobar',",
+    "    'foobar'",
+    '  ],',
+    '  f: [',
+    "    'foobar', 'foobar',",
+    "    'foobar', 'foobar',",
+    "    'foobar', 'foobar',",
+    "    'foobar', 'foobar',",
+    "    'foobar'",
+    '  ],',
+    '  g: [',
+    "    'foobar baz', 'foobar baz',",
+    "    'foobar baz', 'foobar baz',",
+    "    'foobar baz', 'foobar baz',",
+    "    'foobar baz', 'foobar baz',",
+    "    'foobar baz', 'foobar baz',",
+    "    'foobar baz', 'foobar baz',",
+    "    'foobar baz', 'foobar baz',",
+    "    'foobar baz', 'foobar baz',",
+    "    'foobar baz', 'foobar baz',",
+    "    'foobar baz', 'foobar baz',",
+    "    'foobar baz'",
+    '  ],',
+    '  h: [',
+    '    100, 0, 1, 2, 3,',
+    '      4, 5, 6, 7, 8',
+    '  ],',
+    '  long: [',
+    "    'This text is too long for grouping!',",
+    "    'This text is too long for grouping!',",
+    "    'This text is too long for grouping!',",
+    "    'This text is too long for grouping!',",
+    "    'This text is too long for grouping!',",
+    "    'This text is too long for grouping!',",
+    "    'This text is too long for grouping!',",
+    "    'This text is too long for grouping!',",
+    "    'This text is too long for grouping!'",
+    '  ]',
+    '}',
+  ].join('\n');
 
-//   assert.strictEqual(out, expected);
+  // TODO(wafuwafu13): Fix
+  // assert.strictEqual(out, expected);
 
-//   obj = [
-//     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-//     1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-//     1, 1, 1, 1, 1, 1, 123456789,
-//   ];
+  obj = [
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 123456789,
+  ];
 
-//   out = util.inspect(obj, { compact: 3 });
+  out = util.inspect(obj, { compact: 3 });
 
-//   expected = [
-//     '[',
-//     '  1, 1,         1, 1,',
-//     '  1, 1,         1, 1,',
-//     '  1, 1,         1, 1,',
-//     '  1, 1,         1, 1,',
-//     '  1, 1,         1, 1,',
-//     '  1, 1,         1, 1,',
-//     '  1, 1, 123456789',
-//     ']',
-//   ].join('\n');
+  expected = [
+    '[',
+    '  1, 1,         1, 1,',
+    '  1, 1,         1, 1,',
+    '  1, 1,         1, 1,',
+    '  1, 1,         1, 1,',
+    '  1, 1,         1, 1,',
+    '  1, 1,         1, 1,',
+    '  1, 1, 123456789',
+    ']',
+  ].join('\n');
 
-//   assert.strictEqual(out, expected);
+  // TODO(wafuwafu13): Fix
+  // assert.strictEqual(out, expected);
 
-//   // Unicode support. あ has a length of one and a width of two.
-//   obj = [
-//     '123', '123', '123', '123', 'あああ',
-//     '123', '123', '123', '123', 'あああ',
-//   ];
+  // Unicode support. あ has a length of one and a width of two.
+  obj = [
+    '123', '123', '123', '123', 'あああ',
+    '123', '123', '123', '123', 'あああ',
+  ];
 
-//   out = util.inspect(obj, { compact: 3 });
+  out = util.inspect(obj, { compact: 3 });
 
-//   expected = [
-//     '[',
-//     "  '123',    '123',",
-//     "  '123',    '123',",
-//     "  'あああ', '123',",
-//     "  '123',    '123',",
-//     "  '123',    'あああ'",
-//     ']',
-//   ].join('\n');
+  expected = [
+    '[',
+    "  '123',    '123',",
+    "  '123',    '123',",
+    "  'あああ', '123',",
+    "  '123',    '123',",
+    "  '123',    'あああ'",
+    ']',
+  ].join('\n');
 
-//   assert.strictEqual(out, expected);
+  // TODO(wafuwafu13): Fix
+  // assert.strictEqual(out, expected);
 
-//   // Verify that array grouping and line consolidation does not happen together.
-//   obj = {
-//     a: {
-//       b: {
-//         x: 5,
-//         c: {
-//           d: 2,
-//           e: 3
-//         }
-//       }
-//     },
-//     b: Array.from({ length: 9 }).map((e, n) => {
-//       return n % 2 === 0 ? 'foobar' : 'baz';
-//     })
-//   };
+  // Verify that array grouping and line consolidation does not happen together.
+  obj = {
+    a: {
+      b: {
+        x: 5,
+        c: {
+          d: 2,
+          e: 3
+        }
+      }
+    },
+    b: Array.from({ length: 9 }).map((e, n) => {
+      return n % 2 === 0 ? 'foobar' : 'baz';
+    })
+  };
 
-//   out = util.inspect(obj, { compact: 1, breakLength: Infinity, colors: true });
+  out = util.inspect(obj, { compact: 1, breakLength: Infinity, colors: true });
 
-//   expected = [
-//     '{',
-//     '  a: {',
-//     '    b: { x: \u001b[33m5\u001b[39m, c: \u001b[36m[Object]\u001b[39m }',
-//     '  },',
-//     '  b: [',
-//     "    \u001b[32m'foobar'\u001b[39m, \u001b[32m'baz'\u001b[39m,",
-//     "    \u001b[32m'foobar'\u001b[39m, \u001b[32m'baz'\u001b[39m,",
-//     "    \u001b[32m'foobar'\u001b[39m, \u001b[32m'baz'\u001b[39m,",
-//     "    \u001b[32m'foobar'\u001b[39m, \u001b[32m'baz'\u001b[39m,",
-//     "    \u001b[32m'foobar'\u001b[39m",
-//     '  ]',
-//     '}',
-//   ].join('\n');
+  expected = [
+    '{',
+    '  a: {',
+    '    b: { x: \u001b[33m5\u001b[39m, c: \u001b[36m[Object]\u001b[39m }',
+    '  },',
+    '  b: [',
+    "    \u001b[32m'foobar'\u001b[39m, \u001b[32m'baz'\u001b[39m,",
+    "    \u001b[32m'foobar'\u001b[39m, \u001b[32m'baz'\u001b[39m,",
+    "    \u001b[32m'foobar'\u001b[39m, \u001b[32m'baz'\u001b[39m,",
+    "    \u001b[32m'foobar'\u001b[39m, \u001b[32m'baz'\u001b[39m,",
+    "    \u001b[32m'foobar'\u001b[39m",
+    '  ]',
+    '}',
+  ].join('\n');
 
-//   assert.strictEqual(out, expected);
+  // TODO(wafuwafu13): Fix
+  // assert.strictEqual(out, expected);
 
-//   obj = Array.from({ length: 60 }).map((e, i) => i);
-//   out = util.inspect(obj, { compact: 1, breakLength: Infinity, colors: true });
+  obj = Array.from({ length: 60 }).map((e, i) => i);
+  out = util.inspect(obj, { compact: 1, breakLength: Infinity, colors: true });
 
-//   expected = [
-//     '[',
-//     /* eslint-disable max-len */
-//     '   \u001b[33m0\u001b[39m,  \u001b[33m1\u001b[39m,  \u001b[33m2\u001b[39m,  \u001b[33m3\u001b[39m,',
-//     '   \u001b[33m4\u001b[39m,  \u001b[33m5\u001b[39m,  \u001b[33m6\u001b[39m,  \u001b[33m7\u001b[39m,',
-//     '   \u001b[33m8\u001b[39m,  \u001b[33m9\u001b[39m, \u001b[33m10\u001b[39m, \u001b[33m11\u001b[39m,',
-//     '  \u001b[33m12\u001b[39m, \u001b[33m13\u001b[39m, \u001b[33m14\u001b[39m, \u001b[33m15\u001b[39m,',
-//     '  \u001b[33m16\u001b[39m, \u001b[33m17\u001b[39m, \u001b[33m18\u001b[39m, \u001b[33m19\u001b[39m,',
-//     '  \u001b[33m20\u001b[39m, \u001b[33m21\u001b[39m, \u001b[33m22\u001b[39m, \u001b[33m23\u001b[39m,',
-//     '  \u001b[33m24\u001b[39m, \u001b[33m25\u001b[39m, \u001b[33m26\u001b[39m, \u001b[33m27\u001b[39m,',
-//     '  \u001b[33m28\u001b[39m, \u001b[33m29\u001b[39m, \u001b[33m30\u001b[39m, \u001b[33m31\u001b[39m,',
-//     '  \u001b[33m32\u001b[39m, \u001b[33m33\u001b[39m, \u001b[33m34\u001b[39m, \u001b[33m35\u001b[39m,',
-//     '  \u001b[33m36\u001b[39m, \u001b[33m37\u001b[39m, \u001b[33m38\u001b[39m, \u001b[33m39\u001b[39m,',
-//     '  \u001b[33m40\u001b[39m, \u001b[33m41\u001b[39m, \u001b[33m42\u001b[39m, \u001b[33m43\u001b[39m,',
-//     '  \u001b[33m44\u001b[39m, \u001b[33m45\u001b[39m, \u001b[33m46\u001b[39m, \u001b[33m47\u001b[39m,',
-//     '  \u001b[33m48\u001b[39m, \u001b[33m49\u001b[39m, \u001b[33m50\u001b[39m, \u001b[33m51\u001b[39m,',
-//     '  \u001b[33m52\u001b[39m, \u001b[33m53\u001b[39m, \u001b[33m54\u001b[39m, \u001b[33m55\u001b[39m,',
-//     '  \u001b[33m56\u001b[39m, \u001b[33m57\u001b[39m, \u001b[33m58\u001b[39m, \u001b[33m59\u001b[39m',
-//     /* eslint-enable max-len */
-//     ']',
-//   ].join('\n');
+  expected = [
+    '[',
+    /* eslint-disable max-len */
+    '   \u001b[33m0\u001b[39m,  \u001b[33m1\u001b[39m,  \u001b[33m2\u001b[39m,  \u001b[33m3\u001b[39m,',
+    '   \u001b[33m4\u001b[39m,  \u001b[33m5\u001b[39m,  \u001b[33m6\u001b[39m,  \u001b[33m7\u001b[39m,',
+    '   \u001b[33m8\u001b[39m,  \u001b[33m9\u001b[39m, \u001b[33m10\u001b[39m, \u001b[33m11\u001b[39m,',
+    '  \u001b[33m12\u001b[39m, \u001b[33m13\u001b[39m, \u001b[33m14\u001b[39m, \u001b[33m15\u001b[39m,',
+    '  \u001b[33m16\u001b[39m, \u001b[33m17\u001b[39m, \u001b[33m18\u001b[39m, \u001b[33m19\u001b[39m,',
+    '  \u001b[33m20\u001b[39m, \u001b[33m21\u001b[39m, \u001b[33m22\u001b[39m, \u001b[33m23\u001b[39m,',
+    '  \u001b[33m24\u001b[39m, \u001b[33m25\u001b[39m, \u001b[33m26\u001b[39m, \u001b[33m27\u001b[39m,',
+    '  \u001b[33m28\u001b[39m, \u001b[33m29\u001b[39m, \u001b[33m30\u001b[39m, \u001b[33m31\u001b[39m,',
+    '  \u001b[33m32\u001b[39m, \u001b[33m33\u001b[39m, \u001b[33m34\u001b[39m, \u001b[33m35\u001b[39m,',
+    '  \u001b[33m36\u001b[39m, \u001b[33m37\u001b[39m, \u001b[33m38\u001b[39m, \u001b[33m39\u001b[39m,',
+    '  \u001b[33m40\u001b[39m, \u001b[33m41\u001b[39m, \u001b[33m42\u001b[39m, \u001b[33m43\u001b[39m,',
+    '  \u001b[33m44\u001b[39m, \u001b[33m45\u001b[39m, \u001b[33m46\u001b[39m, \u001b[33m47\u001b[39m,',
+    '  \u001b[33m48\u001b[39m, \u001b[33m49\u001b[39m, \u001b[33m50\u001b[39m, \u001b[33m51\u001b[39m,',
+    '  \u001b[33m52\u001b[39m, \u001b[33m53\u001b[39m, \u001b[33m54\u001b[39m, \u001b[33m55\u001b[39m,',
+    '  \u001b[33m56\u001b[39m, \u001b[33m57\u001b[39m, \u001b[33m58\u001b[39m, \u001b[33m59\u001b[39m',
+    /* eslint-enable max-len */
+    ']',
+  ].join('\n');
 
-//   assert.strictEqual(out, expected);
+  // TODO(wafuwafu13): Fix
+  // assert.strictEqual(out, expected);
 
-//   out = util.inspect([1, 2, 3, 4], { compact: 1, colors: true });
-//   expected = '[ \u001b[33m1\u001b[39m, \u001b[33m2\u001b[39m, ' +
-//     '\u001b[33m3\u001b[39m, \u001b[33m4\u001b[39m ]';
+  out = util.inspect([1, 2, 3, 4], { compact: 1, colors: true });
+  expected = '[ \u001b[33m1\u001b[39m, \u001b[33m2\u001b[39m, ' +
+    '\u001b[33m3\u001b[39m, \u001b[33m4\u001b[39m ]';
 
-//   assert.strictEqual(out, expected);
+  assert.strictEqual(out, expected);
 
-//   obj = [
-//     'Object', 'Function', 'Array',
-//     'Number', 'parseFloat', 'parseInt',
-//     'Infinity', 'NaN', 'undefined',
-//     'Boolean', 'String', 'Symbol',
-//     'Date', 'Promise', 'RegExp',
-//     'Error', 'EvalError', 'RangeError',
-//     'ReferenceError', 'SyntaxError', 'TypeError',
-//     'URIError', 'JSON', 'Math',
-//     'console', 'Intl', 'ArrayBuffer',
-//     'Uint8Array', 'Int8Array', 'Uint16Array',
-//     'Int16Array', 'Uint32Array', 'Int32Array',
-//     'Float32Array', 'Float64Array', 'Uint8ClampedArray',
-//     'BigUint64Array', 'BigInt64Array', 'DataView',
-//     'Map', 'BigInt', 'Set',
-//     'WeakMap', 'WeakSet', 'Proxy',
-//     'Reflect', 'decodeURI', 'decodeURIComponent',
-//     'encodeURI', 'encodeURIComponent', 'escape',
-//     'unescape', 'eval', 'isFinite',
-//     'isNaN', 'SharedArrayBuffer', 'Atomics',
-//     'globalThis', 'WebAssembly', 'global',
-//     'process', 'Buffer', 'URL',
-//     'URLSearchParams', 'TextEncoder', 'TextDecoder',
-//     'clearInterval', 'clearTimeout', 'setInterval',
-//     'setTimeout', 'queueMicrotask', 'clearImmediate',
-//     'setImmediate', 'module', 'require',
-//     'assert', 'async_hooks', 'buffer',
-//     'child_process', 'cluster', 'crypto',
-//     'dgram', 'dns', 'domain',
-//     'events', 'fs', 'http',
-//     'http2', 'https', 'inspector',
-//     'net', 'os', 'path',
-//     'perf_hooks', 'punycode', 'querystring',
-//     'readline', 'repl', 'stream',
-//     'string_decoder', 'tls', 'trace_events',
-//     'tty', 'url', 'v8',
-//     'vm', 'worker_threads', 'zlib',
-//     '_', '_error', 'util',
-//   ];
+  obj = [
+    'Object', 'Function', 'Array',
+    'Number', 'parseFloat', 'parseInt',
+    'Infinity', 'NaN', 'undefined',
+    'Boolean', 'String', 'Symbol',
+    'Date', 'Promise', 'RegExp',
+    'Error', 'EvalError', 'RangeError',
+    'ReferenceError', 'SyntaxError', 'TypeError',
+    'URIError', 'JSON', 'Math',
+    'console', 'Intl', 'ArrayBuffer',
+    'Uint8Array', 'Int8Array', 'Uint16Array',
+    'Int16Array', 'Uint32Array', 'Int32Array',
+    'Float32Array', 'Float64Array', 'Uint8ClampedArray',
+    'BigUint64Array', 'BigInt64Array', 'DataView',
+    'Map', 'BigInt', 'Set',
+    'WeakMap', 'WeakSet', 'Proxy',
+    'Reflect', 'decodeURI', 'decodeURIComponent',
+    'encodeURI', 'encodeURIComponent', 'escape',
+    'unescape', 'eval', 'isFinite',
+    'isNaN', 'SharedArrayBuffer', 'Atomics',
+    'globalThis', 'WebAssembly', 'global',
+    'process', 'Buffer', 'URL',
+    'URLSearchParams', 'TextEncoder', 'TextDecoder',
+    'clearInterval', 'clearTimeout', 'setInterval',
+    'setTimeout', 'queueMicrotask', 'clearImmediate',
+    'setImmediate', 'module', 'require',
+    'assert', 'async_hooks', 'buffer',
+    'child_process', 'cluster', 'crypto',
+    'dgram', 'dns', 'domain',
+    'events', 'fs', 'http',
+    'http2', 'https', 'inspector',
+    'net', 'os', 'path',
+    'perf_hooks', 'punycode', 'querystring',
+    'readline', 'repl', 'stream',
+    'string_decoder', 'tls', 'trace_events',
+    'tty', 'url', 'v8',
+    'vm', 'worker_threads', 'zlib',
+    '_', '_error', 'util',
+  ];
 
-//   out = util.inspect(
-//     obj,
-//     { compact: 3, breakLength: 80, maxArrayLength: 250 }
-//   );
-//   expected = [
-//     '[',
-//     "  'Object',          'Function',           'Array',",
-//     "  'Number',          'parseFloat',         'parseInt',",
-//     "  'Infinity',        'NaN',                'undefined',",
-//     "  'Boolean',         'String',             'Symbol',",
-//     "  'Date',            'Promise',            'RegExp',",
-//     "  'Error',           'EvalError',          'RangeError',",
-//     "  'ReferenceError',  'SyntaxError',        'TypeError',",
-//     "  'URIError',        'JSON',               'Math',",
-//     "  'console',         'Intl',               'ArrayBuffer',",
-//     "  'Uint8Array',      'Int8Array',          'Uint16Array',",
-//     "  'Int16Array',      'Uint32Array',        'Int32Array',",
-//     "  'Float32Array',    'Float64Array',       'Uint8ClampedArray',",
-//     "  'BigUint64Array',  'BigInt64Array',      'DataView',",
-//     "  'Map',             'BigInt',             'Set',",
-//     "  'WeakMap',         'WeakSet',            'Proxy',",
-//     "  'Reflect',         'decodeURI',          'decodeURIComponent',",
-//     "  'encodeURI',       'encodeURIComponent', 'escape',",
-//     "  'unescape',        'eval',               'isFinite',",
-//     "  'isNaN',           'SharedArrayBuffer',  'Atomics',",
-//     "  'globalThis',      'WebAssembly',        'global',",
-//     "  'process',         'Buffer',             'URL',",
-//     "  'URLSearchParams', 'TextEncoder',        'TextDecoder',",
-//     "  'clearInterval',   'clearTimeout',       'setInterval',",
-//     "  'setTimeout',      'queueMicrotask',     'clearImmediate',",
-//     "  'setImmediate',    'module',             'require',",
-//     "  'assert',          'async_hooks',        'buffer',",
-//     "  'child_process',   'cluster',            'crypto',",
-//     "  'dgram',           'dns',                'domain',",
-//     "  'events',          'fs',                 'http',",
-//     "  'http2',           'https',              'inspector',",
-//     "  'net',             'os',                 'path',",
-//     "  'perf_hooks',      'punycode',           'querystring',",
-//     "  'readline',        'repl',               'stream',",
-//     "  'string_decoder',  'tls',                'trace_events',",
-//     "  'tty',             'url',                'v8',",
-//     "  'vm',              'worker_threads',     'zlib',",
-//     "  '_',               '_error',             'util'",
-//     ']',
-//   ].join('\n');
+  out = util.inspect(
+    obj,
+    { compact: 3, breakLength: 80, maxArrayLength: 250 }
+  );
+  expected = [
+    '[',
+    "  'Object',          'Function',           'Array',",
+    "  'Number',          'parseFloat',         'parseInt',",
+    "  'Infinity',        'NaN',                'undefined',",
+    "  'Boolean',         'String',             'Symbol',",
+    "  'Date',            'Promise',            'RegExp',",
+    "  'Error',           'EvalError',          'RangeError',",
+    "  'ReferenceError',  'SyntaxError',        'TypeError',",
+    "  'URIError',        'JSON',               'Math',",
+    "  'console',         'Intl',               'ArrayBuffer',",
+    "  'Uint8Array',      'Int8Array',          'Uint16Array',",
+    "  'Int16Array',      'Uint32Array',        'Int32Array',",
+    "  'Float32Array',    'Float64Array',       'Uint8ClampedArray',",
+    "  'BigUint64Array',  'BigInt64Array',      'DataView',",
+    "  'Map',             'BigInt',             'Set',",
+    "  'WeakMap',         'WeakSet',            'Proxy',",
+    "  'Reflect',         'decodeURI',          'decodeURIComponent',",
+    "  'encodeURI',       'encodeURIComponent', 'escape',",
+    "  'unescape',        'eval',               'isFinite',",
+    "  'isNaN',           'SharedArrayBuffer',  'Atomics',",
+    "  'globalThis',      'WebAssembly',        'global',",
+    "  'process',         'Buffer',             'URL',",
+    "  'URLSearchParams', 'TextEncoder',        'TextDecoder',",
+    "  'clearInterval',   'clearTimeout',       'setInterval',",
+    "  'setTimeout',      'queueMicrotask',     'clearImmediate',",
+    "  'setImmediate',    'module',             'require',",
+    "  'assert',          'async_hooks',        'buffer',",
+    "  'child_process',   'cluster',            'crypto',",
+    "  'dgram',           'dns',                'domain',",
+    "  'events',          'fs',                 'http',",
+    "  'http2',           'https',              'inspector',",
+    "  'net',             'os',                 'path',",
+    "  'perf_hooks',      'punycode',           'querystring',",
+    "  'readline',        'repl',               'stream',",
+    "  'string_decoder',  'tls',                'trace_events',",
+    "  'tty',             'url',                'v8',",
+    "  'vm',              'worker_threads',     'zlib',",
+    "  '_',               '_error',             'util'",
+    ']',
+  ].join('\n');
 
-//   assert.strictEqual(out, expected);
-// }
+  // TODO(wafuwafu13): Fix
+  // assert.strictEqual(out, expected);
+}
 
 // TODO(wafuwafu13): Fix
 // {
@@ -2844,15 +2852,15 @@ assert.strictEqual(
 //   });
 // }
 
-{
-  // Cross platform checks.
-  const err = new Error('foo');
-  util.inspect(err, { colors: true }).split('\n').forEach((line, i) => {
-    assert(i < 2 || line.startsWith('\u001b[90m'));
-  });
-}
+// {
+//   // Cross platform checks.
+//   const err = new Error('foo');
+//   util.inspect(err, { colors: true }).split('\n').forEach((line, i) => {
+//     assert(i < 2 || line.startsWith('\u001b[90m'));
+//   });
+// }
 
-// TODO(wafuwafu13): Fix
+// TODO(wafuwafu13): Implement "trace_events"
 // {
 //   // Tracing class respects inspect depth.
 //   try {
@@ -3134,7 +3142,7 @@ assert.strictEqual(
   );
 }
 
-// TODO(wafuwafu13): Fix
+// TODO(wafuwafu13): Fix TypeError: main.hasOwnProperty is not a function
 // {
 //   // Confirm null prototype of generator prototype displays as expected.
 
