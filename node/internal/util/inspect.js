@@ -555,7 +555,7 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
       const size = value.size;
       const prefix = getPrefix(constructor, tag, "Set", `(${size})`);
       keys = getKeys(value, ctx.showHidden);
-      (formatter) = constructor !== null
+      formatter = constructor !== null
         ? formatSet.bind(null, value)
         : formatSet.bind(null, value.values());
       if (size === 0 && keys.length === 0 && protoProps === undefined) {
@@ -566,7 +566,7 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
       const size = value.size;
       const prefix = getPrefix(constructor, tag, "Map", `(${size})`);
       keys = getKeys(value, ctx.showHidden);
-      (formatter) = constructor !== null
+      formatter = constructor !== null
         ? formatMap.bind(null, value)
         : formatMap.bind(null, value.entries());
       if (size === 0 && keys.length === 0 && protoProps === undefined) {
@@ -644,7 +644,7 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
       // Make dates with properties first say the date
       base = Number.isNaN(value.getTime())
         ? value.toString()
-        : value.toISOString(value);
+        : value.toISOString();
       const prefix = getPrefix(constructor, tag, "Date");
       if (prefix !== "Date ") {
         base = `${prefix}${base}`;
@@ -1203,7 +1203,7 @@ function formatError(
 ) {
   const name = err.name != null ? String(err.name) : "Error";
   let len = name.length;
-  let stack = err.stack ? String(err.stack) : err.toString;
+  let stack = err.stack ? String(err.stack) : err.toString();
 
   // Do not "duplicate" error properties that are already included in the output
   // otherwise.
@@ -1605,7 +1605,7 @@ function getBoxedBase(
     }
   }
 
-  base += `: ${formatPrimitive(stylizeNoColor, fn(value), ctx)}]`;
+  base += `: ${formatPrimitive(stylizeNoColor, value.valueOf(), ctx)}]`;
   if (tag !== "" && tag !== constructor) {
     base += ` [${tag}]`;
   }
@@ -1814,7 +1814,7 @@ function groupArrayElements(ctx, output, value) {
         // done line by line as some lines might contain more colors than
         // others.
         const padding = maxLineLength[j - i] + output[j].length - dataLen[j];
-        str += order(`${output[j]}, `, padding, " ");
+        str += `${output[j]}, `.padStart(padding, " ");
       }
       if (order === String.prototype.padStart) {
         const padding = maxLineLength[j - i] +
