@@ -374,7 +374,6 @@ export class NodeURIError extends NodeErrorAbstraction implements URIError {
 function createInvalidArgType(
   name: string,
   expected: string | string[],
-  actual: unknown,
 ): string {
   // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
   expected = Array.isArray(expected) ? expected : [expected];
@@ -459,7 +458,7 @@ function createInvalidArgType(
 
 export class ERR_INVALID_ARG_TYPE_RANGE extends NodeRangeError {
   constructor(name: string, expected: string | string[], actual: unknown) {
-    const msg = createInvalidArgType(name, expected, actual);
+    const msg = createInvalidArgType(name, expected);
 
     super(
       "ERR_INVALID_ARG_TYPE",
@@ -470,7 +469,7 @@ export class ERR_INVALID_ARG_TYPE_RANGE extends NodeRangeError {
 
 export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
   constructor(name: string, expected: string | string[], actual: unknown) {
-    const msg = createInvalidArgType(name, expected, actual);
+    const msg = createInvalidArgType(name, expected);
 
     super(
       "ERR_INVALID_ARG_TYPE",
