@@ -14,22 +14,18 @@ function isCloser(value: unknown): value is Deno.Closer {
 /** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
  * ```ts
- *      import { readerFromIterable } from "./conversion.ts";
+ *      import { readerFromIterable, readAll } from "./conversion.ts";
  *      import { serve } from "../http/server_legacy.ts";
  *
- *      for await (const request of serve({ port: 8000 })) {
- *        // Server-sent events: Send runtime metrics to the client every second.
- *        request.respond({
- *          headers: new Headers({ "Content-Type": "text/event-stream" }),
- *          body: readerFromIterable((async function* () {
- *            while (true) {
- *              await new Promise((r) => setTimeout(r, 1000));
- *              const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
- *              yield new TextEncoder().encode(message);
- *            }
- *          })()),
- *        });
- *      }
+ *      const reader = readerFromIterable((async function* () {
+ *        while (true) {
+ *          await new Promise((r) => setTimeout(r, 1000));
+ *          const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
+ *          yield new TextEncoder().encode(message);
+ *        }
+ *      })());
+ *      const fileContent = readAll(reader);
+ *      await Deno.writeTextFile("metrics.txt", fileContent);
  * ```
  */
 export function readerFromIterable(
