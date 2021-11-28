@@ -256,6 +256,47 @@ export const TextDecoder = _TextDecoder;
 export type TextEncoder = import("./_utils.ts")._TextEncoder;
 export const TextEncoder = _TextEncoder;
 
+function pad(n: number) {
+  return n.toString().padStart(2, "0");
+}
+
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/**
+ * @returns 26 Feb 16:19:34
+ */
+function timestamp(): string {
+  const d = new Date();
+  const t = [
+    pad(d.getHours()),
+    pad(d.getMinutes()),
+    pad(d.getSeconds()),
+  ].join(":");
+  return `${(d.getDate())} ${months[(d).getMonth()]} ${t}`;
+}
+
+/**
+ * Log is just a thin wrapper to console.log that prepends a timestamp
+ * @deprecated
+ */
+// deno-lint-ignore no-explicit-any
+function log(...args: any[]): void {
+  console.log("%s - %s", timestamp(), format(...args));
+}
+
 export default {
   format,
   inspect,
@@ -284,4 +325,5 @@ export default {
   stripVTControlCharacters,
   TextDecoder,
   TextEncoder,
+  log,
 };
