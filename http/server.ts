@@ -593,7 +593,6 @@ export async function serveListener(
  *
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- * console.log("server is starting at localhost:3000");
  * serve((_req) => new Response("Hello, world"), { addr: ":3000" });
  * ```
  *
@@ -604,12 +603,14 @@ export async function serve(
   handler: Handler,
   options: ServeInit = {},
 ): Promise<void> {
-  const addr = options.addr ?? ":8000";
+  const addr = options.addr ?? "127.0.0.1:8000";
   const server = new Server({ addr, handler });
 
   if (options?.signal) {
     options.signal.onabort = () => server.close();
   }
+
+  console.log(`Listening on http://${addr}/`);
 
   return await server.listenAndServe();
 }
