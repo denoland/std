@@ -3,7 +3,7 @@ import { promisify } from "./_util/_util_promisify.ts";
 import { callbackify } from "./_util/_util_callbackify.ts";
 import { inspect, stripVTControlCharacters } from "./internal/util/inspect.js";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
-import * as types from "./_util/_util_types.ts";
+import * as types from "./internal/util/types.ts";
 import { Buffer } from "./buffer.ts";
 export { callbackify, inspect, promisify, stripVTControlCharacters, types };
 

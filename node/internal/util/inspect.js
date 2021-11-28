@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { validateString } from "../../_validators.ts";
-import * as types from "../../_util/_util_types.ts";
+import * as types from "./types.ts";
 import {
   ALL_PROPERTIES,
   getOwnNonIndexProperties,

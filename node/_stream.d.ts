@@ -1513,4 +1513,4 @@ interface Pipe {
 
 // These have to be at the bottom of the file to work correctly, for some reason
 export { _uint8ArrayToBuffer } from "./internal/streams/_utils.ts";
-export { isUint8Array as _isUint8Array } from "./_util/_util_types.ts";
+export { isUint8Array as _isUint8Array } from "./internal/util/types.ts";

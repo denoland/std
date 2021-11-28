@@ -12,7 +12,7 @@ import {
   ERR_OUT_OF_RANGE,
   ERR_UNKNOWN_ENCODING,
 } from "./_errors.ts";
-import { isAnyArrayBuffer, isArrayBufferView } from "./_util/_util_types.ts";
+import { isAnyArrayBuffer, isArrayBufferView } from "./internal/util/types.ts";
 import { normalizeEncoding } from "./internal/util.ts";
 import {
   _copyActual,
