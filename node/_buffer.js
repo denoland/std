@@ -100,33 +100,6 @@ export const constants = {
   MAX_STRING_LENGTH: kStringMaxLength,
 };
 
-Buffer.TYPED_ARRAY_SUPPORT = typedArraySupport();
-
-if (
-  !Buffer.TYPED_ARRAY_SUPPORT && typeof console !== "undefined" &&
-  typeof console.error === "function"
-) {
-  console.error(
-    "This browser lacks typed array (Uint8Array) support which is required by `buffer` v5.x. Use `buffer` v4.x if you require old browser support.",
-  );
-}
-
-function typedArraySupport() {
-  try {
-    const arr = new Uint8Array(1);
-    const proto = {
-      foo: function () {
-        return 42;
-      },
-    };
-    Object.setPrototypeOf(proto, Uint8Array.prototype);
-    Object.setPrototypeOf(arr, proto);
-    return arr.foo() === 42;
-  } catch (_) {
-    return false;
-  }
-}
-
 Object.defineProperty(Buffer.prototype, "parent", {
   enumerable: true,
   get: function () {

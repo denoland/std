@@ -1,9 +1,12 @@
 import { Encodings } from "./_node.ts";
 import { indexOf } from "../../bytes/mod.ts";
 
+// TODO(Soremwar)
+// Check if offset or buffer can be transform in order to just use std's lastIndexOf directly
 // This implementation differs from std's lastIndexOf in the fact that
 // it also includes items outside of the offset as long as part of the
 // set is contained inside of the offset
+// Probably way slower too
 function findLastIndex(
   targetBuffer: Uint8Array,
   buffer: Uint8Array,
@@ -12,22 +15,32 @@ function findLastIndex(
   offset = offset > targetBuffer.length ? targetBuffer.length : offset;
 
   const searchableBuffer = targetBuffer.slice(0, offset + buffer.length);
-  // console.log({ buffer, targetBuffer, offset, searchableBuffer });
+  const searchableBufferLastIndex = searchableBuffer.length - 1;
+  const bufferLastIndex = buffer.length - 1;
 
+  // Important to keep track of the last match index in order to backtrack after an incomplete match
+  // Not doing this will cause the search to skip all possible matches that happened in the
+  // last match range
+  let lastMatchIndex = -1;
   let matches = 0;
   let index = -1;
-  for (let x = 0; x < searchableBuffer.length; x++) {
-    // console.log({
-    //   sb: searchableBuffer[searchableBuffer.length - 1 - x],
-    //   b: buffer[buffer.length - 1 - matches],
-    // });
+  for (let x = 0; x <= searchableBufferLastIndex; x++) {
     if (
-      searchableBuffer[searchableBuffer.length - 1 - x] ===
-        buffer[buffer.length - 1 - matches]
+      searchableBuffer[searchableBufferLastIndex - x] ===
+        buffer[bufferLastIndex - matches]
     ) {
+      if (lastMatchIndex === -1) {
+        lastMatchIndex = x;
+      }
       matches++;
     } else {
       matches = 0;
+      if (lastMatchIndex !== -1) {
+        // Restart the search right after the last index was ignored
+        x = lastMatchIndex + 1;
+        lastMatchIndex = -1;
+      }
+      continue;
     }
 
     if (matches === buffer.length) {
@@ -38,7 +51,7 @@ function findLastIndex(
 
   if (index === -1) return index;
 
-  return searchableBuffer.length - 1 - index;
+  return searchableBufferLastIndex - index;
 }
 
 function indexOfBuffer(

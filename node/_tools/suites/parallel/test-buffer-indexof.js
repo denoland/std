@@ -589,18 +589,18 @@ const reallyLong = Buffer.from(parts.join(' '));
 assert.strictEqual(reallyLong.slice(0, 19).toString(), 'yolo swag swag yolo');
 
 // Expensive reverse searches. Stress test lastIndexOf:
-// pattern = reallyLong.slice(0, 100000);  // First 1/50th of the pattern.
-// assert.strictEqual(reallyLong.lastIndexOf(pattern), 4751360);
-// assert.strictEqual(reallyLong.lastIndexOf(pattern, 4000000), 3932160);
-// assert.strictEqual(reallyLong.lastIndexOf(pattern, 3000000), 2949120);
-// pattern = reallyLong.slice(100000, 200000);  // Second 1/50th.
-// assert.strictEqual(reallyLong.lastIndexOf(pattern), 4728480);
-// pattern = reallyLong.slice(0, 1000000);  // First 1/5th.
-// assert.strictEqual(reallyLong.lastIndexOf(pattern), 3932160);
-// pattern = reallyLong.slice(0, 2000000);  // first 2/5ths.
-// assert.strictEqual(reallyLong.lastIndexOf(pattern), 0);
+pattern = reallyLong.slice(0, 100000);  // First 1/50th of the pattern.
+assert.strictEqual(reallyLong.lastIndexOf(pattern), 4751360);
+assert.strictEqual(reallyLong.lastIndexOf(pattern, 4000000), 3932160);
+assert.strictEqual(reallyLong.lastIndexOf(pattern, 3000000), 2949120);
+pattern = reallyLong.slice(100000, 200000);  // Second 1/50th.
+assert.strictEqual(reallyLong.lastIndexOf(pattern), 4728480);
+pattern = reallyLong.slice(0, 1000000);  // First 1/5th.
+assert.strictEqual(reallyLong.lastIndexOf(pattern), 3932160);
+pattern = reallyLong.slice(0, 2000000);  // first 2/5ths.
+assert.strictEqual(reallyLong.lastIndexOf(pattern), 0);
 
-// // Test truncation of Number arguments to uint8
+// Test truncation of Number arguments to uint8
 // {
 //   const buf = Buffer.from('this is a test');
 //   assert.strictEqual(buf.indexOf(0x6973), 3);
@@ -616,16 +616,16 @@ assert.strictEqual(reallyLong.slice(0, 19).toString(), 'yolo swag swag yolo');
 //   assert.strictEqual(buf.indexOf(0xffff), -1);
 // }
 
-// // Test that Uint8Array arguments are okay.
-// {
-//   const needle = new Uint8Array([ 0x66, 0x6f, 0x6f ]);
-//   const haystack = Buffer.from('a foo b foo');
-//   assert.strictEqual(haystack.indexOf(needle), 2);
-//   assert.strictEqual(haystack.lastIndexOf(needle), haystack.length - 3);
-// }
+// Test that Uint8Array arguments are okay.
+{
+  const needle = new Uint8Array([ 0x66, 0x6f, 0x6f ]);
+  const haystack = Buffer.from('a foo b foo');
+  assert.strictEqual(haystack.indexOf(needle), 2);
+  assert.strictEqual(haystack.lastIndexOf(needle), haystack.length - 3);
+}
 
-// // Avoid abort because of invalid usage
-// // see https://github.com/nodejs/node/issues/32753
+// Avoid abort because of invalid usage
+// see https://github.com/nodejs/node/issues/32753
 // {
 //   assert.throws(() => {
 //     const buffer = require('buffer');
