@@ -15,7 +15,6 @@ function isCloser(value: unknown): value is Deno.Closer {
  *
  * ```ts
  *      import { readerFromIterable, readAll } from "./conversion.ts";
- *      import { serve } from "../http/server_legacy.ts";
  *
  *      const reader = readerFromIterable((async function* () {
  *        while (true) {
