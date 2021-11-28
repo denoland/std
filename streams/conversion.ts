@@ -14,8 +14,9 @@ function isCloser(value: unknown): value is Deno.Closer {
 /** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
  * ```ts
- *      import { readerFromIterable, readAll } from "./conversion.ts";
+ *      import { readerFromIterable } from "./conversion.ts";
  *
+ *      const file = await Deno.open("metrics.txt", { write: true });
  *      const reader = readerFromIterable((async function* () {
  *        while (true) {
  *          await new Promise((r) => setTimeout(r, 1000));
@@ -23,8 +24,7 @@ function isCloser(value: unknown): value is Deno.Closer {
  *          yield new TextEncoder().encode(message);
  *        }
  *      })());
- *      const fileContent = readAll(reader);
- *      await Deno.writeTextFile("metrics.txt", fileContent);
+ *      await Deno.copy(reader, file);
  * ```
  */
 export function readerFromIterable(
