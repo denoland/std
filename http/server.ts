@@ -375,7 +375,6 @@ export class Server {
         connInfo,
       );
     } catch (error) {
-      console.log(error);
       // Invoke onError handler when request handler throws.
       response = await this.#onError(error as Error);
     }
