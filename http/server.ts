@@ -369,25 +369,22 @@ export class Server {
   ): Promise<void> {
     let response: Response;
     try {
-      try {
-        // Handle the request event, generating a response.
-        response = await this.#handler(
-          requestEvent.request,
-          connInfo,
-        );
-      } catch (error) {
-        console.log(error);
-        // Invoke onError handler when request handler throws.
-        response = await this.#onError(error);
-      }
+      // Handle the request event, generating a response.
+      response = await this.#handler(
+        requestEvent.request,
+        connInfo,
+      );
+    } catch (error) {
+      console.log(error);
+      // Invoke onError handler when request handler throws.
+      response = await this.#onError(error);
+    }
 
+    try {
       // Send the response.
       await requestEvent.respondWith(response);
     } catch {
-      // If the handler throws then it is assumed that the impact of the error
-      // is isolated to the individual request, so we close the connection.
-      //
-      // Alternatively the connection has already been closed, or there is some
+      // respondWith() fails when the connection has already been closed, or there is some
       // other error with responding on this connection that prompts us to
       // close it and open a new connection.
       return this.#closeHttpConn(httpConn);
