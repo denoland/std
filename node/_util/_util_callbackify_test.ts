@@ -237,6 +237,9 @@ Deno.test(
       });
     }
 
+    // TODO(kt3k): workaround for https://github.com/denoland/deno_std/issues/1651
+    // ref: https://github.com/denoland/deno/pull/12908
+    await new Promise((resolve) => setTimeout(resolve, 0));
     await testQueue.waitForCompletion();
   },
 );
@@ -286,6 +289,9 @@ Deno.test("callbackify passes arguments to the original", async () => {
     });
   }
 
+  // TODO(kt3k): workaround for https://github.com/denoland/deno_std/issues/1651
+  // ref: https://github.com/denoland/deno/pull/12908
+  await new Promise((resolve) => setTimeout(resolve, 0));
   await testQueue.waitForCompletion();
 });
 
@@ -335,6 +341,9 @@ Deno.test("callbackify preserves the `this` binding", async () => {
     });
   }
 
+  // TODO(kt3k): workaround for https://github.com/denoland/deno_std/issues/1651
+  // ref: https://github.com/denoland/deno/pull/12908
+  await new Promise((resolve) => setTimeout(resolve, 0));
   await testQueue.waitForCompletion();
 });
 
