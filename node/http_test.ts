@@ -70,6 +70,7 @@ Deno.test("[node/http close]", async () => {
     server.on("listening", () => {
       throw Error("unreachable");
     });
+    await new Promise((resolve) => setTimeout(resolve, 0));
     await promise1;
     await promise2;
   }
@@ -113,6 +114,7 @@ Deno.test("[node/http chunked response", async () => {
       server.close(() => promise.resolve());
     });
 
+    await new Promise((resolve) => setTimeout(resolve, 0));
     await promise;
   }
 });
