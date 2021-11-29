@@ -18,6 +18,7 @@
       "test-buffer-arraybuffer.js",
       "test-buffer-bytelength.js",
       "test-buffer-from.js",
+      "test-buffer-indexof.js",
       "test-dns-lookup.js",
       "test-dns.js",
       "test-event-emitter-errors.js",

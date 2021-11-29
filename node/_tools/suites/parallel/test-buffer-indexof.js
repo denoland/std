@@ -601,6 +601,8 @@ pattern = reallyLong.slice(0, 2000000);  // first 2/5ths.
 assert.strictEqual(reallyLong.lastIndexOf(pattern), 0);
 
 // Test truncation of Number arguments to uint8
+// TODO(Soremwar)
+// Enable once multi byte number search is available
 // {
 //   const buf = Buffer.from('this is a test');
 //   assert.strictEqual(buf.indexOf(0x6973), 3);

@@ -1,6 +1,18 @@
 import { Encodings } from "./_node.ts";
 import { indexOf } from "../../bytes/mod.ts";
 
+export function numberToBytes(n: number): Uint8Array {
+  if (n === 0) return new Uint8Array([0]);
+
+  const bytes = [];
+  bytes.unshift(n & 255);
+  while (n >= 256) {
+    n = n >>> 8;
+    bytes.unshift(n & 255);
+  }
+  return new Uint8Array(bytes);
+}
+
 // TODO(Soremwar)
 // Check if offset or buffer can be transform in order to just use std's lastIndexOf directly
 // This implementation differs from std's lastIndexOf in the fact that
@@ -88,24 +100,26 @@ function indexOfBuffer(
   return indexOf(targetBuffer, buffer, byteOffset);
 }
 
+// TODO(Soremwar)
+// Node's implementation is a very obscure algorithm that I haven't been able to crack just yet
 function indexOfNumber(
   targetBuffer: Uint8Array,
   number: number,
   byteOffset: number,
   forwardDirection: boolean,
 ) {
-  if (!forwardDirection) {
-    return Uint8Array.prototype.lastIndexOf.call(
-      targetBuffer,
-      number,
-      byteOffset,
-    );
+  const bytes = numberToBytes(number);
+
+  if (bytes.length > 1) {
+    throw new Error("Multi byte number search is not supported");
   }
 
-  return Uint8Array.prototype.indexOf.call(
+  return indexOfBuffer(
     targetBuffer,
-    number,
+    numberToBytes(number),
     byteOffset,
+    Encodings.UTF8,
+    forwardDirection,
   );
 }
 
