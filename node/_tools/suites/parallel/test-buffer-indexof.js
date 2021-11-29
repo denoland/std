@@ -83,6 +83,8 @@ assert.strictEqual(b.indexOf(Buffer.from('f'), 5), 5);
 assert.strictEqual(b.indexOf(Buffer.from('f'), -1), 5);
 assert.strictEqual(b.indexOf(Buffer.from('f'), 6), -1);
 
+// TODO(Soremwar)
+// Enable again once encoding is taking into account when evaluating indexOf
 // assert.strictEqual(Buffer.from('ff').indexOf(Buffer.from('f'), 1, 'ucs2'), -1);
 
 // Test invalid and uppercase encoding
@@ -343,6 +345,8 @@ assert.strictEqual(Buffer.from('aaaaa').indexOf('b', 'ucs2'), -1);
   }
 }
 
+// TODO(Soremwar)
+// Enable again once encoding is taking into account when evaluating indexOf
 // {
 //   // Find substrings in Usc2.
 //   const lengths = [2, 4, 16];  // Single char, simple and complex.

@@ -66,6 +66,8 @@ function findLastIndex(
   return searchableBufferLastIndex - index;
 }
 
+// TODO
+// Take encoding into account when evaluating index
 function indexOfBuffer(
   targetBuffer: Uint8Array,
   buffer: Uint8Array,

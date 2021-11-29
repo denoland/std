@@ -18,18 +18,12 @@ import {
   _copyActual,
   _writeUInt32BE,
   _writeUInt32LE,
-  asciiToBytes,
-  base64ToBytes,
-  base64UrlToBytes,
   bigEndian,
   boundsError,
   byteLengthUtf8,
-  bytesToAscii,
-  bytesToUtf16le,
   encodingOps,
   encodingsMap,
   getEncodingOps,
-  hexToBytes,
   readDoubleBackwards,
   readDoubleForwards,
   readFloatBackwards,
@@ -49,7 +43,6 @@ import {
   readUInt48BE,
   readUInt48LE,
   toInteger,
-  utf16leToBytes,
   validateNumber,
   validateOffset,
   writeDoubleBackwards,
@@ -79,6 +72,15 @@ import {
   // deno-lint-ignore camelcase
   writeU_Int8,
 } from "./internal/buffer.js";
+import {
+  asciiToBytes,
+  base64ToBytes,
+  base64UrlToBytes,
+  bytesToAscii,
+  bytesToUtf16le,
+  hexToBytes,
+  utf16leToBytes,
+} from "./internal_binding/_utils.ts";
 import { indexOfBuffer, indexOfNumber } from "./internal_binding/buffer.ts";
 import { validateBuffer } from "./internal/validators.js";
 import { isUint8Array } from "./internal/util/types.js";
@@ -668,35 +670,6 @@ Buffer.prototype.lastIndexOf = function (
 ) {
   return bidirectionalIndexOf(this, val, byteOffset, encoding, false);
 };
-function _hexWrite(buf, string, offset, length) {
-  return blitBuffer(
-    hexToBytes(string, buf.length - offset),
-    buf,
-    offset,
-    length,
-  );
-}
-
-function _utf8Write(buf, string, offset, length) {
-  return blitBuffer(
-    utf8ToBytes(string, buf.length - offset),
-    buf,
-    offset,
-    length,
-  );
-}
-
-function _asciiWrite(buf, string, offset, length) {
-  return blitBuffer(asciiToBytes(string), buf, offset, length);
-}
-
-function _base64Write(buf, string, offset, length) {
-  return blitBuffer(base64ToBytes(string), buf, offset, length);
-}
-
-function _base64urlWrite(buf, string, offset, length) {
-  return blitBuffer(base64UrlToBytes(string), buf, offset, length);
-}
 
 Buffer.prototype.asciiSlice = function (offset, length) {
   if (offset === 0 && length === this.length) {
@@ -707,7 +680,7 @@ Buffer.prototype.asciiSlice = function (offset, length) {
 };
 
 Buffer.prototype.asciiWrite = function asciiWrite(string, offset, length) {
-  return _asciiWrite(this, string, offset, length);
+  return blitBuffer(asciiToBytes(string), this, offset, length);
 };
 
 Buffer.prototype.base64Slice = function (
@@ -726,7 +699,7 @@ Buffer.prototype.base64Write = function base64Write(
   offset,
   length,
 ) {
-  return _base64Write(this, string, offset, length);
+  return blitBuffer(base64ToBytes(string), this, offset, length);
 };
 
 Buffer.prototype.base64urlSlice = function (
@@ -745,11 +718,16 @@ Buffer.prototype.base64urlWrite = function base64urlWrite(
   offset,
   length,
 ) {
-  return _base64urlWrite(this, string, offset, length);
+  return blitBuffer(base64UrlToBytes(string), this, offset, length);
 };
 
 Buffer.prototype.hexWrite = function hexWrite(string, offset, length) {
-  return _hexWrite(this, string, offset, length);
+  return blitBuffer(
+    hexToBytes(string, this.length - offset),
+    this,
+    offset,
+    length,
+  );
 };
 
 Buffer.prototype.hexSlice = function hexSlice(string, offset, length) {
@@ -769,7 +747,7 @@ Buffer.prototype.latin1Write = function latin1Write(
   offset,
   length,
 ) {
-  return _asciiWrite(this, string, offset, length);
+  return blitBuffer(asciiToBytes(string), this, offset, length);
 };
 
 Buffer.prototype.ucs2Slice = function (offset, length) {
@@ -794,7 +772,12 @@ Buffer.prototype.utf8Slice = function utf8Slice(string, offset, length) {
 };
 
 Buffer.prototype.utf8Write = function utf8Write(string, offset, length) {
-  return _utf8Write(this, string, offset, length);
+  return blitBuffer(
+    utf8ToBytes(string, this.length - offset),
+    this,
+    offset,
+    length,
+  );
 };
 
 Buffer.prototype.write = function write(string, offset, length, encoding) {
