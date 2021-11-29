@@ -21,7 +21,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import * as bindingTypes from "../../internal_binding/types.ts"
+import * as bindingTypes from "../../internal_binding/types.ts";
 
 const _toString = Object.prototype.toString;
 

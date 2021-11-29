@@ -16,7 +16,7 @@ import {
   isBigUint64Array,
   isDate,
   isUint8Array,
-} from "../../_util/_util_types.ts";
+} from "../util/types.ts";
 import { once } from "../util.ts";
 import { toPathIfFileURL } from "../../url.ts";
 import {

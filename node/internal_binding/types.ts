@@ -177,4 +177,4 @@ export default {
   isNumberObject,
   isBooleanObject,
   isBigIntObject,
-}
+};
