@@ -2,78 +2,15 @@
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/4f538975138678878fed5b2555c0672aa578ab7d/types/node/stream.d.ts
 
-import { EventEmitter } from "./_events.d.ts";
-import { Buffer } from "./buffer.ts";
-
-/** One of:
- * | "ascii"
- * § | "utf8"
- * | "utf-8"
- * | "utf16le"
- * | "ucs2"
- * | "ucs-2"
- * | "base64"
- * | "base64url"
- * | "latin1"
- * | "binary"
- * | "hex";
- */
-export type BufferEncoding = string;
-
-interface Buffered {
-  chunk: Buffer;
-  encoding: string;
-  callback: (err?: Error | null) => void;
-}
-
-interface Abortable {
-  /**
-   * When provided the corresponding `AbortController` can be used to cancel an asynchronous action.
-   */
-  signal?: AbortSignal | undefined;
-}
-
-interface ErrnoException extends Error {
-  errno?: number | undefined;
-  code?: string | undefined;
-  path?: string | undefined;
-  syscall?: string | undefined;
-}
-
-interface ReadableStream extends EventEmitter {
-  readable: boolean;
-  read(size?: number): string | Buffer;
-  setEncoding(encoding: BufferEncoding): this;
-  pause(): this;
-  resume(): this;
-  isPaused(): boolean;
-  pipe<T extends WritableStream>(
-    destination: T,
-    options?: { end?: boolean | undefined },
-  ): T;
-  unpipe(destination?: WritableStream): this;
-  unshift(chunk: string | Uint8Array, encoding?: BufferEncoding): void;
-  wrap(oldStream: ReadableStream): this;
-  [Symbol.asyncIterator](): AsyncIterableIterator<string | Buffer>;
-}
-
-interface WritableStream extends EventEmitter {
-  writable: boolean;
-  write(
-    buffer: Uint8Array | string,
-    cb?: (err?: Error | null) => void,
-  ): boolean;
-  write(
-    str: string,
-    encoding?: BufferEncoding,
-    cb?: (err?: Error | null) => void,
-  ): boolean;
-  end(cb?: () => void): void;
-  end(data: string | Uint8Array, cb?: () => void): void;
-  end(str: string, encoding?: BufferEncoding, cb?: () => void): void;
-}
-
-interface ReadWriteStream extends ReadableStream, WritableStream {}
+import { Abortable, EventEmitter } from "./_events.d.ts";
+import {
+  Buffered,
+  BufferEncoding,
+  ErrnoException,
+  ReadableStream,
+  ReadWriteStream,
+  WritableStream,
+} from "./_global.d.ts";
 
 export class Stream extends EventEmitter {
   pipe<T extends WritableStream>(
