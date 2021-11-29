@@ -92,7 +92,8 @@ import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
 import { codeMap } from "./internal_binding/uv.ts";
 import { guessHandleType } from "./internal_binding/util.ts";
 import { debuglog } from "./_util/_debuglog.ts";
-import type { BufferEncoding, DuplexOptions } from "./_stream.d.ts";
+import type { DuplexOptions } from "./_stream.d.ts";
+import type { BufferEncoding } from "./_global.d.ts";
 
 let debug = debuglog("net", (fn) => {
   debug = fn;
