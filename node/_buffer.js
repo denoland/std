@@ -142,14 +142,14 @@ export function Buffer(arg, encodingOrOffset, length) {
         arg,
       );
     }
-    return allocUnsafe(arg);
+    return _allocUnsafe(arg);
   }
-  return from(arg, encodingOrOffset, length);
+  return _from(arg, encodingOrOffset, length);
 }
 
 Buffer.poolSize = 8192;
 
-function from(value, encodingOrOffset, length) {
+function _from(value, encodingOrOffset, length) {
   if (typeof value === "string") {
     return fromString(value, encodingOrOffset);
   }
@@ -165,7 +165,7 @@ function from(value, encodingOrOffset, length) {
       valueOf !== value &&
       (typeof valueOf === "string" || typeof valueOf === "object")
     ) {
-      return from(valueOf, encodingOrOffset, length);
+      return _from(valueOf, encodingOrOffset, length);
     }
 
     const b = fromObject(value);
@@ -188,8 +188,8 @@ function from(value, encodingOrOffset, length) {
   );
 }
 
-Buffer.from = function (value, encodingOrOffset, length) {
-  return from(value, encodingOrOffset, length);
+Buffer.from = function from(value, encodingOrOffset, length) {
+  return _from(value, encodingOrOffset, length);
 };
 
 Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype);
@@ -203,7 +203,7 @@ function assertSize(size) {
   }
 }
 
-function alloc(size, fill, encoding) {
+function _alloc(size, fill, encoding) {
   assertSize(size);
 
   const buffer = createBuffer(size);
@@ -213,21 +213,21 @@ function alloc(size, fill, encoding) {
   return buffer;
 }
 
-Buffer.alloc = function (size, fill, encoding) {
-  return alloc(size, fill, encoding);
+Buffer.alloc = function alloc(size, fill, encoding) {
+  return _alloc(size, fill, encoding);
 };
 
-function allocUnsafe(size) {
+function _allocUnsafe(size) {
   assertSize(size);
   return createBuffer(size < 0 ? 0 : checked(size) | 0);
 }
 
-Buffer.allocUnsafe = function (size) {
-  return allocUnsafe(size);
+Buffer.allocUnsafe = function allocUnsafe(size) {
+  return _allocUnsafe(size);
 };
 
-Buffer.allocUnsafeSlow = function (size) {
-  return allocUnsafe(size);
+Buffer.allocUnsafeSlow = function allocUnsafeSlow(size) {
+  return _allocUnsafe(size);
 };
 
 function fromString(string, encoding) {
@@ -659,11 +659,11 @@ Buffer.prototype.includes = function includes(val, byteOffset, encoding) {
   return this.indexOf(val, byteOffset, encoding) !== -1;
 };
 
-Buffer.prototype.indexOf = function (val, byteOffset, encoding) {
+Buffer.prototype.indexOf = function indexOf(val, byteOffset, encoding) {
   return bidirectionalIndexOf(this, val, byteOffset, encoding, true);
 };
 
-Buffer.prototype.lastIndexOf = function (
+Buffer.prototype.lastIndexOf = function lastIndexOf(
   val,
   byteOffset,
   encoding,
@@ -671,7 +671,7 @@ Buffer.prototype.lastIndexOf = function (
   return bidirectionalIndexOf(this, val, byteOffset, encoding, false);
 };
 
-Buffer.prototype.asciiSlice = function (offset, length) {
+Buffer.prototype.asciiSlice = function asciiSlice(offset, length) {
   if (offset === 0 && length === this.length) {
     return bytesToAscii(this);
   } else {
@@ -683,7 +683,7 @@ Buffer.prototype.asciiWrite = function asciiWrite(string, offset, length) {
   return blitBuffer(asciiToBytes(string), this, offset, length);
 };
 
-Buffer.prototype.base64Slice = function (
+Buffer.prototype.base64Slice = function base64Slice(
   offset,
   length,
 ) {
@@ -702,7 +702,7 @@ Buffer.prototype.base64Write = function base64Write(
   return blitBuffer(base64ToBytes(string), this, offset, length);
 };
 
-Buffer.prototype.base64urlSlice = function (
+Buffer.prototype.base64urlSlice = function base64urlSlice(
   offset,
   length,
 ) {
@@ -750,7 +750,7 @@ Buffer.prototype.latin1Write = function latin1Write(
   return blitBuffer(asciiToBytes(string), this, offset, length);
 };
 
-Buffer.prototype.ucs2Slice = function (offset, length) {
+Buffer.prototype.ucs2Slice = function ucs2Slice(offset, length) {
   if (offset === 0 && length === this.length) {
     return bytesToUtf16le(this);
   } else {

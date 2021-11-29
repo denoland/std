@@ -632,15 +632,15 @@ assert.strictEqual(reallyLong.lastIndexOf(pattern), 0);
 
 // Avoid abort because of invalid usage
 // see https://github.com/nodejs/node/issues/32753
-// {
-//   assert.throws(() => {
-//     const buffer = require('buffer');
-//     new buffer.Buffer.prototype.lastIndexOf(1, 'str');
-//   }, {
-//     code: 'ERR_INVALID_ARG_TYPE',
-//     name: 'TypeError',
-//     message: 'The "buffer" argument must be an instance of Buffer, ' +
-//              'TypedArray, or DataView. ' +
-//              'Received an instance of lastIndexOf'
-//   });
-// }
+{
+  assert.throws(() => {
+    const buffer = require('buffer');
+    new buffer.Buffer.prototype.lastIndexOf(1, 'str');
+  }, {
+    code: 'ERR_INVALID_ARG_TYPE',
+    name: 'TypeError',
+    message: 'The "buffer" argument must be an instance of Buffer, ' +
+             'TypedArray, or DataView. ' +
+             'Received an instance of lastIndexOf'
+  });
+}

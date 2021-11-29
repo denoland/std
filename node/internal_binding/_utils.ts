@@ -1,6 +1,5 @@
 import * as base64 from "../../encoding/base64.ts";
 import * as base64url from "../../encoding/base64url.ts";
-import { Encodings } from "./_node.ts";
 
 export function asciiToBytes(str: string) {
   const byteArray = [];
