@@ -383,7 +383,7 @@ export class Server {
 
       // Send the response.
       await requestEvent.respondWith(response);
-    } catch (error) {
+    } catch {
       // If the handler throws then it is assumed that the impact of the error
       // is isolated to the individual request, so we close the connection.
       //
