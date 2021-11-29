@@ -38,6 +38,8 @@ export const stdin = new Readable({
     const p = Buffer.alloc(size || 16 * 1024);
     Deno.stdin.read(p).then((length) => {
       this.push(length === null ? null : p.slice(0, length));
+    }, (error) => {
+      this.destroy(error);
     });
   },
 }) as _Readable;
