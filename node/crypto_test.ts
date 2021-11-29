@@ -42,6 +42,7 @@ Deno.test("[node/crypto.Hash] streaming usage", async () => {
   const source = Readable.from(["abc", "def"]);
   const hash = createHash("sha1");
   const dest = source.pipe(hash);
+  await new Promise<void>((resolve) => setTimeout(resolve, 10));
   const result = await new Promise((resolve, _) => {
     let buffer = Buffer.from([]);
     dest.on("data", (data) => {
