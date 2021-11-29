@@ -467,7 +467,7 @@ function _ttyWriteDumb(s, key) {
   }
 }
 
-export default {
+export {
   Interface,
   clearLine,
   clearScreenDown,
