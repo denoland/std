@@ -27,7 +27,7 @@ import {
   validateArray,
   validateString,
   validateUint32,
-} from "../../_validators.ts";
+} from "../validators.js";
 import {
   //   inspect,
   getStringWidth,

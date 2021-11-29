@@ -26,7 +26,7 @@ import {
   ERR_INVALID_CURSOR_POS,
 } from "../../_errors.ts";
 
-import { validateCallback } from "../../_validators.ts";
+import { validateCallback } from "../validators.js";
 
 import { CSI } from "./utils.js";
 

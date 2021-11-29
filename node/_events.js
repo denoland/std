@@ -37,7 +37,7 @@ import {
   validateAbortSignal,
   validateBoolean,
   validateFunction,
-} from "./_validators.ts";
+} from "./internal/validators.js";
 import { spliceOne } from "./_utils.ts";
 
 const kCapture = Symbol("kCapture");

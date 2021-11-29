@@ -74,7 +74,7 @@ import {
   validateNumber,
   validatePort,
   validateString,
-} from "./_validators.ts";
+} from "./internal/validators.js";
 import {
   constants as TCPConstants,
   TCP,
