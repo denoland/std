@@ -138,6 +138,7 @@
       "test-event-emitter-symbols.js",
       "test-events-list.js",
       "test-events-once.js",
+      "test-fs-rm.js",
       "test-fs-write-file.js",
       "test-next-tick-doesnt-hang.js",
       "test-next-tick-fixed-queue-regression.js",

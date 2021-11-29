@@ -14,11 +14,17 @@
  * *********** */
 
 import { getSystemErrorName, inspect } from "./util.ts";
-import { codeMap, errorMap } from "./internal_binding/uv.ts";
+import {
+  codeMap,
+  errorMap,
+  mapSysErrnoToUvErrno,
+} from "./internal_binding/uv.ts";
 import { assert } from "../_util/assert.ts";
 import { fileURLToPath } from "./url.ts";
 
 export { errorMap };
+
+const kIsNodeError = Symbol("kIsNodeError");
 
 /**
  * @see https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js
@@ -370,6 +376,118 @@ export class NodeURIError extends NodeErrorAbstraction implements URIError {
     };
   }
 }
+
+interface NodeSystemErrorCtx {
+  code: string;
+  syscall: string;
+  message: string;
+  errno: number;
+  path?: string;
+  dest?: string;
+}
+// A specialized Error that includes an additional info property with
+// additional information about the error condition.
+// It has the properties present in a UVException but with a custom error
+// message followed by the uv error code and uv error message.
+// It also has its own error code with the original uv error context put into
+// `err.info`.
+// The context passed into this error must have .code, .syscall and .message,
+// and may have .path and .dest.
+class NodeSystemError extends NodeErrorAbstraction {
+  constructor(key: string, context: NodeSystemErrorCtx, msgPrefix: string) {
+    let message = `${msgPrefix}: ${context.syscall} returned ` +
+      `${context.code} (${context.message})`;
+
+    if (context.path !== undefined) {
+      message += ` ${context.path}`;
+    }
+    if (context.dest !== undefined) {
+      message += ` => ${context.dest}`;
+    }
+
+    super("SystemError", key, message);
+
+    captureLargerStackTrace(this);
+
+    Object.defineProperties(this, {
+      [kIsNodeError]: {
+        value: true,
+        enumerable: false,
+        writable: false,
+        configurable: true,
+      },
+      info: {
+        value: context,
+        enumerable: true,
+        configurable: true,
+        writable: false,
+      },
+      errno: {
+        get() {
+          return context.errno;
+        },
+        set: (value) => {
+          context.errno = value;
+        },
+        enumerable: true,
+        configurable: true,
+      },
+      syscall: {
+        get() {
+          return context.syscall;
+        },
+        set: (value) => {
+          context.syscall = value;
+        },
+        enumerable: true,
+        configurable: true,
+      },
+    });
+
+    if (context.path !== undefined) {
+      Object.defineProperty(this, "path", {
+        get() {
+          return context.path;
+        },
+        set: (value) => {
+          context.path = value;
+        },
+        enumerable: true,
+        configurable: true,
+      });
+    }
+
+    if (context.dest !== undefined) {
+      Object.defineProperty(this, "dest", {
+        get() {
+          return context.dest;
+        },
+        set: (value) => {
+          context.dest = value;
+        },
+        enumerable: true,
+        configurable: true,
+      });
+    }
+  }
+
+  toString() {
+    return `${this.name} [${this.code}]: ${this.message}`;
+  }
+}
+
+function makeSystemErrorWithCode(key: string, msgPrfix: string) {
+  return class NodeError extends NodeSystemError {
+    constructor(ctx: NodeSystemErrorCtx) {
+      super(key, ctx, msgPrfix);
+    }
+  };
+}
+
+export const ERR_FS_EISDIR = makeSystemErrorWithCode(
+  "ERR_FS_EISDIR",
+  "Path is a directory",
+);
 
 function createInvalidArgType(
   name: string,
@@ -2594,4 +2712,47 @@ export class ERR_PACKAGE_PATH_NOT_EXPORTED extends NodeError {
 
     super("ERR_PACKAGE_PATH_NOT_EXPORTED", msg);
   }
+}
+
+export class ERR_INTERNAL_ASSERTION extends NodeError {
+  constructor(
+    message?: string,
+  ) {
+    const suffix = "This is caused by either a bug in Node.js " +
+      "or incorrect usage of Node.js internals.\n" +
+      "Please open an issue with this stack trace at " +
+      "https://github.com/nodejs/node/issues\n";
+    super(
+      "ERR_INTERNAL_ASSERTION",
+      message === undefined ? suffix : `${message}\n${suffix}`,
+    );
+  }
+}
+
+interface UvExceptionContext {
+  syscall: string;
+}
+export function denoErrorToNodeError(e: Error, ctx: UvExceptionContext) {
+  const errno = extractOsErrorNumberFromErrorMessage(e);
+  if (typeof errno === "undefined") {
+    return e;
+  }
+
+  const ex = uvException({
+    errno: mapSysErrnoToUvErrno(errno),
+    ...ctx,
+  });
+  return ex;
+}
+
+function extractOsErrorNumberFromErrorMessage(e: unknown): number | undefined {
+  const match = e instanceof Error
+    ? e.message.match(/\(os error (\d+)\)/)
+    : false;
+
+  if (match) {
+    return +match[1];
+  }
+
+  return undefined;
 }
