@@ -28,7 +28,7 @@ import {
   moveCursor,
 } from "./internal/readline/callbacks.js";
 import { emitKeypressEvents } from "./internal/readline/emitKeypressEvents.js";
-import { validateAbortSignal } from "./_validators.ts";
+import { validateAbortSignal } from "./internal/validators.js";
 import { promisify } from "./_util/_util_promisify.ts";
 import { AbortError } from "./_errors.ts";
 
