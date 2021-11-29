@@ -10,6 +10,16 @@ import {
   moveCursor,
 } from "./_readline.js";
 
+export {
+  clearLine,
+  clearScreenDown,
+  createInterface,
+  cursorTo,
+  emitKeypressEvents,
+  Interface,
+  moveCursor,
+};
+
 export default {
   Interface,
   clearLine,
