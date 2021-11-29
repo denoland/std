@@ -35,7 +35,7 @@ import path from "./path.ts";
 import perfHooks from "./perf_hooks.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
-import readline from "./readline.js";
+import readline from "./readline.ts";
 import stream from "./stream.ts";
 import streamConsumers from "./stream/consumers.js";
 import streamPromises from "./stream/promises.js";
