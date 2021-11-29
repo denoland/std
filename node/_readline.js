@@ -468,11 +468,11 @@ function _ttyWriteDumb(s, key) {
 }
 
 export {
-  Interface,
   clearLine,
   clearScreenDown,
   createInterface,
   cursorTo,
   emitKeypressEvents,
+  Interface,
   moveCursor,
 };
