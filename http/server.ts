@@ -103,6 +103,13 @@ export interface ServerInit {
 
   /** The handler to invoke for individual HTTP requests. */
   handler: Handler;
+
+  /**
+   * The handler to invoke when route handlers throw an error.
+   *
+   * The default error handler logs and returns the error in JSON format.
+   */
+  onError?: (error: Error) => Response | Promise<Response>;
 }
 
 /** Used to construct an HTTP server. */
@@ -112,6 +119,7 @@ export class Server {
   #closed = false;
   #listeners: Set<Deno.Listener> = new Set();
   #httpConnections: Set<Deno.HttpConn> = new Set();
+  #onError: (error: Error) => Response | Promise<Response>;
 
   /**
    * Constructs a new HTTP Server instance.
@@ -136,6 +144,20 @@ export class Server {
   constructor(serverInit: ServerInit) {
     this.#addr = serverInit.addr;
     this.#handler = serverInit.handler;
+    this.#onError = serverInit.onError ?? function (error: Error) {
+      console.error(error);
+      return new Response(
+        JSON.stringify(
+          {
+            error: "Internal Server Error",
+            message: error.message,
+          },
+          null,
+          2,
+        ),
+        { status: 500 },
+      );
+    };
   }
 
   /**
@@ -345,24 +367,29 @@ export class Server {
     httpConn: Deno.HttpConn,
     connInfo: ConnInfo,
   ): Promise<void> {
+    let response: Response;
     try {
-      // Handle the request event, generating a response.
-      const response = await this.#handler(
-        requestEvent.request,
-        connInfo,
-      );
+      try {
+        // Handle the request event, generating a response.
+        response = await this.#handler(
+          requestEvent.request,
+          connInfo,
+        );
+      } catch (error) {
+        console.log(error);
+        // Invoke onError handler when request handler throws.
+        response = await this.#onError(error);
+      }
 
       // Send the response.
       await requestEvent.respondWith(response);
     } catch (error) {
       // If the handler throws then it is assumed that the impact of the error
-      // is isolated to the individual request, so we log the error and close
-      // the connection.
+      // is isolated to the individual request, so we close the connection.
       //
       // Alternatively the connection has already been closed, or there is some
       // other error with responding on this connection that prompts us to
       // close it and open a new connection.
-      console.error(error);
       return this.#closeHttpConn(httpConn);
     }
   }
@@ -538,6 +565,9 @@ export interface ServeInit {
 
   /** An AbortSignal to close the server and all connections. */
   signal?: AbortSignal;
+
+  /** The handler to invoke when route handlers throw an error. */
+  onError?: (error: Error) => Response | Promise<Response>;
 }
 
 /**
@@ -607,7 +637,7 @@ export async function serve(
   options: ServeInit = {},
 ): Promise<void> {
   const addr = options.addr ?? ":8000";
-  const server = new Server({ addr, handler });
+  const server = new Server({ addr, handler, onError: options.onError });
 
   if (options?.signal) {
     options.signal.onabort = () => server.close();
