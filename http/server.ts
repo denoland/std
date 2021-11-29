@@ -377,7 +377,7 @@ export class Server {
     } catch (error) {
       console.log(error);
       // Invoke onError handler when request handler throws.
-      response = await this.#onError(error);
+      response = await this.#onError(error as Error);
     }
 
     try {
