@@ -1148,3 +1148,57 @@ Deno.test("Handler is called with the request instance and connection informatio
     await servePromise;
   }
 });
+
+Deno.test("Default onError is called when Handler throws", async () => {
+  const addr = "localhost:4505";
+  const url = `http://${addr}`;
+  const handler = (_request: Request, _connInfo: ConnInfo) => {
+    throw new Error("I failed to serve the request");
+  };
+  const abortController = new AbortController();
+
+  const servePromise = serve(handler, {
+    addr,
+    signal: abortController.signal,
+  });
+
+  try {
+    const response = await fetch(url);
+    const expected = {
+      error: "Internal Server Error",
+      message: "I failed to serve the request",
+    };
+    assertEquals(await response.json(), expected);
+    assertEquals(response.status, 500);
+  } finally {
+    abortController.abort();
+    await servePromise;
+  }
+});
+
+Deno.test("Custom onError is called when Handler throws", async () => {
+  const addr = "localhost:4505";
+  const url = `http://${addr}`;
+  const handler = (_request: Request, _connInfo: ConnInfo) => {
+    throw new Error("I failed to serve the request");
+  };
+  const onError = (_error: Error) => {
+    return new Response("custom error page", { status: 500 });
+  };
+  const abortController = new AbortController();
+
+  const servePromise = serve(handler, {
+    addr,
+    onError,
+    signal: abortController.signal,
+  });
+
+  try {
+    const response = await fetch(url);
+    assertEquals(await response.text(), "custom error page");
+    assertEquals(response.status, 500);
+  } finally {
+    abortController.abort();
+    await servePromise;
+  }
+});
