@@ -11,7 +11,7 @@ import { CHAR_COLON } from "./_constants.ts";
  * Normalize the `path`, resolving `'..'` and `'.'` segments.
  * @param path to be normalized
  */
-export function resolve(
+export function normalize(
   path: string,
   { os = Deno.build.os }: { os?: typeof Deno.build.os } = {},
 ) {

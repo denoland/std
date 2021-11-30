@@ -3,4 +3,9 @@
 
 import { isWindows } from "../_util/os.ts";
 
-export const delimiter = isWindows ? ";" : ":";
+export const delimiters = {
+  win32: ";",
+  posix: ":",
+};
+
+export const delimiter = isWindows ? delimiters.win32 : delimiters.posix;
