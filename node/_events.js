@@ -22,9 +22,8 @@
 "use strict";
 
 const kRejection = Symbol.for("nodejs.rejection");
-// TODO(bartlomieju): `inspect` is not ported yet
-// const { inspect } = require('internal/util/inspect');
 
+import { inspect } from "./internal/util/inspect.js";
 import {
   AbortError,
   // kEnhanceStackBeforeInspector,
@@ -359,14 +358,12 @@ EventEmitter.prototype.emit = function emit(type, ...args) {
       throw er; // Unhandled 'error' event
     }
 
-    // TODO(bartlomieju):
-    // let stringifiedEr;
-    // try {
-    //   stringifiedEr = inspect(er);
-    // } catch {
-    //   stringifiedEr = er;
-    // }
-    const stringifiedEr = er;
+    let stringifiedEr;
+    try {
+      stringifiedEr = inspect(er);
+    } catch {
+      stringifiedEr = er;
+    }
 
     // At least give some kind of context to the user
     const err = new ERR_UNHANDLED_ERROR(stringifiedEr);
@@ -459,9 +456,7 @@ function _addListener(target, type, listener, prepend) {
       const w = new Error(
         "Possible EventEmitter memory leak detected. " +
           `${existing.length} ${String(type)} listeners ` +
-          // TODO(bartlomieju):
-          // `added to ${inspect(target, { depth: -1 })}. Use ` +
-          `added to ${target}. Use ` +
+          `added to ${inspect(target, { depth: -1 })}. Use ` +
           "emitter.setMaxListeners() to increase limit",
       );
       w.name = "MaxListenersExceededWarning";

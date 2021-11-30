@@ -342,10 +342,8 @@ Deno.test({
   },
 });
 
-// FIXME(bartlomieju):
 Deno.test({
   name: "[process] stdio",
-  ignore: true,
   async fn() {
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
     const p = Deno.run({
