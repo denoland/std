@@ -21,7 +21,7 @@ export function resolve(
     case "windows":
       return resolveWindows(...pathSegments);
     default:
-      return resolveLinux(...pathSegments);
+      return resolvePosix(...pathSegments);
   }
 }
 
@@ -29,7 +29,7 @@ export function resolve(
  * Resolves `pathSegments` into an absolute path.
  * @param pathSegments an array of path segments
  */
-function resolveLinux(...pathSegments: string[]): string {
+function resolvePosix(...pathSegments: string[]): string {
   let resolvedPath = "";
   let resolvedAbsolute = false;
 
