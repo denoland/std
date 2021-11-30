@@ -5,7 +5,7 @@ import { isAbsolute } from "./is_absolute.ts";
  * Converts a path string to a file URL.
  *
  * ```ts
- *      import { toFileUrl } from "./mod.ts";
+ *      import { toFileUrl } from "./to_file_url.ts";
  *      toFileUrl("/home/foo", {os:"linux"}); // new URL("file:///home/foo")
  *      toFileUrl("\\home\\foo", {os:"windows"}); // new URL("file:///home/foo")
  *      toFileUrl("C:\\Users\\foo", {os:"windows"}); // new URL("file:///C:/Users/foo")
