@@ -46,7 +46,7 @@ import {
 } from "./_errors.ts";
 import type { ErrnoException } from "./_errors.ts";
 import { Encodings } from "./_utils.ts";
-import { isUint8Array } from "./_util/_util_types.ts";
+import { isUint8Array } from "./internal/util/types.ts";
 import {
   kAfterAsyncWrite,
   kBuffer,

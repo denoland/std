@@ -4,7 +4,7 @@ import { _uint8ArrayToBuffer } from "./internal/streams/_utils.ts";
 import { addAbortSignal } from "./internal/streams/add-abort-signal.js";
 import { destroyer } from "./internal/streams/destroy.js";
 import { isDisturbed } from "./internal/streams/utils.js";
-import { isUint8Array } from "./_util/_util_types.ts";
+import { isUint8Array } from "./internal/util/types.ts";
 import { pipeline } from "./internal/streams/pipeline.js";
 import { promisify } from "./internal/util.ts";
 import { Stream } from "./internal/streams/legacy.js";
