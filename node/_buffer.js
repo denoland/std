@@ -83,7 +83,7 @@ import {
 } from "./internal_binding/_utils.ts";
 import { indexOfBuffer, indexOfNumber } from "./internal_binding/buffer.ts";
 import { validateBuffer } from "./internal/validators.js";
-import { isUint8Array } from "./internal/util/types.js";
+import { isUint8Array } from "./internal/util/types.ts";
 import * as base64 from "../encoding/base64.ts";
 import * as base64url from "../encoding/base64url.ts";
 
