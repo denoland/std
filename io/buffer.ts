@@ -276,11 +276,11 @@ export interface ReadLineResult {
 
 /** BufReader implements buffering for a Reader object. */
 export class BufReader implements Reader {
-  private buf!: Uint8Array;
-  private rd!: Reader; // Reader provided by caller.
-  private r = 0; // buf read position.
-  private w = 0; // buf write position.
-  private eof = false;
+  #buf!: Uint8Array;
+  #rd!: Reader; // Reader provided by caller.
+  #r = 0; // buf read position.
+  #w = 0; // buf write position.
+  #eof = false;
   // private lastByte: number;
   // private lastCharSize: number;
 
@@ -293,40 +293,40 @@ export class BufReader implements Reader {
     if (size < MIN_BUF_SIZE) {
       size = MIN_BUF_SIZE;
     }
-    this._reset(new Uint8Array(size), rd);
+    this.#reset(new Uint8Array(size), rd);
   }
 
   /** Returns the size of the underlying buffer in bytes. */
   size(): number {
-    return this.buf.byteLength;
+    return this.#buf.byteLength;
   }
 
   buffered(): number {
-    return this.w - this.r;
+    return this.#w - this.#r;
   }
 
   // Reads a new chunk into the buffer.
-  private async _fill() {
+  async #fill() {
     // Slide existing data to beginning.
-    if (this.r > 0) {
-      this.buf.copyWithin(0, this.r, this.w);
-      this.w -= this.r;
-      this.r = 0;
+    if (this.#r > 0) {
+      this.#buf.copyWithin(0, this.#r, this.#w);
+      this.#w -= this.#r;
+      this.#r = 0;
     }
 
-    if (this.w >= this.buf.byteLength) {
+    if (this.#w >= this.#buf.byteLength) {
       throw Error("bufio: tried to fill full buffer");
     }
 
     // Read new data: try a limited number of times.
     for (let i = MAX_CONSECUTIVE_EMPTY_READS; i > 0; i--) {
-      const rr = await this.rd.read(this.buf.subarray(this.w));
+      const rr = await this.#rd.read(this.#buf.subarray(this.#w));
       if (rr === null) {
-        this.eof = true;
+        this.#eof = true;
         return;
       }
       assert(rr >= 0, "negative read");
-      this.w += rr;
+      this.#w += rr;
       if (rr > 0) {
         return;
       }
@@ -341,13 +341,13 @@ export class BufReader implements Reader {
    * the buffered reader to read from r.
    */
   reset(r: Reader): void {
-    this._reset(this.buf, r);
+    this.#reset(this.#buf, r);
   }
 
-  private _reset(buf: Uint8Array, rd: Reader): void {
-    this.buf = buf;
-    this.rd = rd;
-    this.eof = false;
+  #reset(buf: Uint8Array, rd: Reader): void {
+    this.#buf = buf;
+    this.#rd = rd;
+    this.#eof = false;
     // this.lastByte = -1;
     // this.lastCharSize = -1;
   }
@@ -362,11 +362,11 @@ export class BufReader implements Reader {
     let rr: number | null = p.byteLength;
     if (p.byteLength === 0) return rr;
 
-    if (this.r === this.w) {
-      if (p.byteLength >= this.buf.byteLength) {
+    if (this.#r === this.#w) {
+      if (p.byteLength >= this.#buf.byteLength) {
         // Large read, empty buffer.
         // Read directly into p to avoid copy.
-        const rr = await this.rd.read(p);
+        const rr = await this.#rd.read(p);
         const nread = rr ?? 0;
         assert(nread >= 0, "negative read");
         // if (rr.nread > 0) {
@@ -378,17 +378,17 @@ export class BufReader implements Reader {
 
       // One read.
       // Do not use this.fill, which will loop.
-      this.r = 0;
-      this.w = 0;
-      rr = await this.rd.read(this.buf);
+      this.#r = 0;
+      this.#w = 0;
+      rr = await this.#rd.read(this.#buf);
       if (rr === 0 || rr === null) return rr;
       assert(rr >= 0, "negative read");
-      this.w += rr;
+      this.#w += rr;
     }
 
     // copy as much as we can
-    const copied = copy(this.buf.subarray(this.r, this.w), p, 0);
-    this.r += copied;
+    const copied = copy(this.#buf.subarray(this.#r, this.#w), p, 0);
+    this.#r += copied;
     // this.lastByte = this.buf[this.r - 1];
     // this.lastCharSize = -1;
     return copied;
@@ -440,12 +440,12 @@ export class BufReader implements Reader {
 
   /** Returns the next byte [0, 255] or `null`. */
   async readByte(): Promise<number | null> {
-    while (this.r === this.w) {
-      if (this.eof) return null;
-      await this._fill(); // buffer is empty.
+    while (this.#r === this.#w) {
+      if (this.#eof) return null;
+      await this.#fill(); // buffer is empty.
     }
-    const c = this.buf[this.r];
-    this.r++;
+    const c = this.#buf[this.#r];
+    this.#r++;
     // this.lastByte = c;
     return c;
   }
@@ -518,19 +518,19 @@ export class BufReader implements Reader {
 
       // Handle the case where "\r\n" straddles the buffer.
       if (
-        !this.eof && partial &&
+        !this.#eof && partial &&
         partial.byteLength > 0 &&
         partial[partial.byteLength - 1] === CR
       ) {
         // Put the '\r' back on buf and drop it from line.
         // Let the next call to ReadLine check for "\r\n".
-        assert(this.r > 0, "bufio: tried to rewind past start of buffer");
-        this.r--;
+        assert(this.#r > 0, "bufio: tried to rewind past start of buffer");
+        this.#r--;
         partial = partial.subarray(0, partial.byteLength - 1);
       }
 
       if (partial) {
-        return { line: partial, more: !this.eof };
+        return { line: partial, more: !this.#eof };
       }
     }
 
@@ -574,39 +574,39 @@ export class BufReader implements Reader {
 
     while (true) {
       // Search buffer.
-      let i = this.buf.subarray(this.r + s, this.w).indexOf(delim);
+      let i = this.#buf.subarray(this.#r + s, this.#w).indexOf(delim);
       if (i >= 0) {
         i += s;
-        slice = this.buf.subarray(this.r, this.r + i + 1);
-        this.r += i + 1;
+        slice = this.#buf.subarray(this.#r, this.#r + i + 1);
+        this.#r += i + 1;
         break;
       }
 
       // EOF?
-      if (this.eof) {
-        if (this.r === this.w) {
+      if (this.#eof) {
+        if (this.#r === this.#w) {
           return null;
         }
-        slice = this.buf.subarray(this.r, this.w);
-        this.r = this.w;
+        slice = this.#buf.subarray(this.#r, this.#w);
+        this.#r = this.#w;
         break;
       }
 
       // Buffer full?
-      if (this.buffered() >= this.buf.byteLength) {
-        this.r = this.w;
+      if (this.buffered() >= this.#buf.byteLength) {
+        this.#r = this.#w;
         // #4521 The internal buffer should not be reused across reads because it causes corruption of data.
-        const oldbuf = this.buf;
-        const newbuf = this.buf.slice(0);
-        this.buf = newbuf;
+        const oldbuf = this.#buf;
+        const newbuf = this.#buf.slice(0);
+        this.#buf = newbuf;
         throw new BufferFullError(oldbuf);
       }
 
-      s = this.w - this.r; // do not rescan area we scanned before
+      s = this.#w - this.#r; // do not rescan area we scanned before
 
       // Buffer is not full.
       try {
-        await this._fill();
+        await this.#fill();
       } catch (err) {
         if (err instanceof PartialReadError) {
           err.partial = slice;
@@ -648,16 +648,16 @@ export class BufReader implements Reader {
       throw Error("negative count");
     }
 
-    let avail = this.w - this.r;
-    while (avail < n && avail < this.buf.byteLength && !this.eof) {
+    let avail = this.#w - this.#r;
+    while (avail < n && avail < this.#buf.byteLength && !this.#eof) {
       try {
-        await this._fill();
+        await this.#fill();
       } catch (err) {
         if (err instanceof PartialReadError) {
-          err.partial = this.buf.subarray(this.r, this.w);
+          err.partial = this.#buf.subarray(this.#r, this.#w);
         } else if (err instanceof Error) {
           const e = new PartialReadError();
-          e.partial = this.buf.subarray(this.r, this.w);
+          e.partial = this.#buf.subarray(this.#r, this.#w);
           e.stack = err.stack;
           e.message = err.message;
           e.cause = err.cause;
@@ -665,25 +665,29 @@ export class BufReader implements Reader {
         }
         throw err;
       }
-      avail = this.w - this.r;
+      avail = this.#w - this.#r;
     }
 
-    if (avail === 0 && this.eof) {
+    if (avail === 0 && this.#eof) {
       return null;
-    } else if (avail < n && this.eof) {
-      return this.buf.subarray(this.r, this.r + avail);
+    } else if (avail < n && this.#eof) {
+      return this.#buf.subarray(this.#r, this.#r + avail);
     } else if (avail < n) {
-      throw new BufferFullError(this.buf.subarray(this.r, this.w));
+      throw new BufferFullError(this.#buf.subarray(this.#r, this.#w));
     }
 
-    return this.buf.subarray(this.r, this.r + n);
+    return this.#buf.subarray(this.#r, this.#r + n);
   }
 }
 
 abstract class AbstractBufBase {
-  buf!: Uint8Array;
+  buf: Uint8Array;
   usedBufferBytes = 0;
   err: Error | null = null;
+
+  constructor(buf: Uint8Array) {
+    this.buf = buf;
+  }
 
   /** Size returns the size of the underlying buffer in bytes. */
   size(): number {
@@ -711,17 +715,20 @@ abstract class AbstractBufBase {
  * the underlying deno.Writer.
  */
 export class BufWriter extends AbstractBufBase implements Writer {
+  #writer: Writer;
+
   /** return new BufWriter unless writer is BufWriter */
   static create(writer: Writer, size: number = DEFAULT_BUF_SIZE): BufWriter {
     return writer instanceof BufWriter ? writer : new BufWriter(writer, size);
   }
 
-  constructor(private writer: Writer, size: number = DEFAULT_BUF_SIZE) {
-    super();
+  constructor(writer: Writer, size: number = DEFAULT_BUF_SIZE) {
     if (size <= 0) {
       size = DEFAULT_BUF_SIZE;
     }
-    this.buf = new Uint8Array(size);
+    const buf = new Uint8Array(size);
+    super(buf);
+    this.#writer = writer;
   }
 
   /** Discards any unflushed buffered data, clears any error, and
@@ -730,7 +737,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
   reset(w: Writer): void {
     this.err = null;
     this.usedBufferBytes = 0;
-    this.writer = w;
+    this.#writer = w;
   }
 
   /** Flush writes any buffered data to the underlying io.Writer. */
@@ -742,7 +749,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
       const p = this.buf.subarray(0, this.usedBufferBytes);
       let nwritten = 0;
       while (nwritten < p.length) {
-        nwritten += await this.writer.write(p.subarray(nwritten));
+        nwritten += await this.#writer.write(p.subarray(nwritten));
       }
     } catch (e) {
       if (e instanceof Error) {
@@ -773,7 +780,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
         // Large write, empty buffer.
         // Write directly from data to avoid copy.
         try {
-          numBytesWritten = await this.writer.write(data);
+          numBytesWritten = await this.#writer.write(data);
         } catch (e) {
           if (e instanceof Error) {
             this.err = e;
@@ -804,6 +811,8 @@ export class BufWriter extends AbstractBufBase implements Writer {
  * the underlying deno.WriterSync.
  */
 export class BufWriterSync extends AbstractBufBase implements WriterSync {
+  #writer: WriterSync;
+
   /** return new BufWriterSync unless writer is BufWriterSync */
   static create(
     writer: WriterSync,
@@ -814,12 +823,13 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
       : new BufWriterSync(writer, size);
   }
 
-  constructor(private writer: WriterSync, size: number = DEFAULT_BUF_SIZE) {
-    super();
+  constructor(writer: WriterSync, size: number = DEFAULT_BUF_SIZE) {
     if (size <= 0) {
       size = DEFAULT_BUF_SIZE;
     }
-    this.buf = new Uint8Array(size);
+    const buf = new Uint8Array(size);
+    super(buf);
+    this.#writer = writer;
   }
 
   /** Discards any unflushed buffered data, clears any error, and
@@ -828,7 +838,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
   reset(w: WriterSync): void {
     this.err = null;
     this.usedBufferBytes = 0;
-    this.writer = w;
+    this.#writer = w;
   }
 
   /** Flush writes any buffered data to the underlying io.WriterSync. */
@@ -840,7 +850,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
       const p = this.buf.subarray(0, this.usedBufferBytes);
       let nwritten = 0;
       while (nwritten < p.length) {
-        nwritten += this.writer.writeSync(p.subarray(nwritten));
+        nwritten += this.#writer.writeSync(p.subarray(nwritten));
       }
     } catch (e) {
       if (e instanceof Error) {
@@ -871,7 +881,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
         // Large write, empty buffer.
         // Write directly from data to avoid copy.
         try {
-          numBytesWritten = this.writer.writeSync(data);
+          numBytesWritten = this.#writer.writeSync(data);
         } catch (e) {
           if (e instanceof Error) {
             this.err = e;
