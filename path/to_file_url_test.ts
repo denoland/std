@@ -1,53 +1,83 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { posix, win32 } from "./mod.ts";
+import { toFileUrl } from "./to_file_url.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 
 Deno.test("[path] toFileUrl", function () {
-  assertEquals(posix.toFileUrl("/home/foo").href, "file:///home/foo");
-  assertEquals(posix.toFileUrl("/home/ ").href, "file:///home/%20");
-  assertEquals(posix.toFileUrl("/home/%20").href, "file:///home/%2520");
-  assertEquals(posix.toFileUrl("/home\\foo").href, "file:///home%5Cfoo");
+  assertEquals(
+    toFileUrl("/home/foo", { os: "linux" }).href,
+    "file:///home/foo",
+  );
+  assertEquals(toFileUrl("/home/ ", { os: "linux" }).href, "file:///home/%20");
+  assertEquals(
+    toFileUrl("/home/%20", { os: "linux" }).href,
+    "file:///home/%2520",
+  );
+  assertEquals(
+    toFileUrl("/home\\foo", { os: "linux" }).href,
+    "file:///home%5Cfoo",
+  );
   assertThrows(
-    () => posix.toFileUrl("foo").href,
+    () => toFileUrl("foo", { os: "linux" }).href,
     TypeError,
     "Must be an absolute path.",
   );
   assertThrows(
-    () => posix.toFileUrl("C:/"),
+    () => toFileUrl("C:/", { os: "linux" }),
     TypeError,
     "Must be an absolute path.",
   );
   assertEquals(
-    posix.toFileUrl("//localhost/home/foo").href,
+    toFileUrl("//localhost/home/foo", { os: "linux" }).href,
     "file:///localhost/home/foo",
   );
-  assertEquals(posix.toFileUrl("//localhost/").href, "file:///localhost/");
-  assertEquals(posix.toFileUrl("//:/home/foo").href, "file:///:/home/foo");
+  assertEquals(
+    toFileUrl("//localhost/", { os: "linux" }).href,
+    "file:///localhost/",
+  );
+  assertEquals(
+    toFileUrl("//:/home/foo", { os: "linux" }).href,
+    "file:///:/home/foo",
+  );
 });
 
 Deno.test("[path] toFileUrl (win32)", function () {
-  assertEquals(win32.toFileUrl("/home/foo").href, "file:///home/foo");
-  assertEquals(win32.toFileUrl("/home/ ").href, "file:///home/%20");
-  assertEquals(win32.toFileUrl("/home/%20").href, "file:///home/%2520");
-  assertEquals(win32.toFileUrl("/home\\foo").href, "file:///home/foo");
-  assertThrows(
-    () => win32.toFileUrl("foo").href,
-    TypeError,
-    "Must be an absolute path.",
-  );
-  assertEquals(win32.toFileUrl("C:/").href, "file:///C:/");
   assertEquals(
-    win32.toFileUrl("//localhost/home/foo").href,
+    toFileUrl("/home/foo", { os: "windows" }).href,
     "file:///home/foo",
   );
   assertEquals(
-    win32.toFileUrl("//127.0.0.1/home/foo").href,
+    toFileUrl("/home/ ", { os: "windows" }).href,
+    "file:///home/%20",
+  );
+  assertEquals(
+    toFileUrl("/home/%20", { os: "windows" }).href,
+    "file:///home/%2520",
+  );
+  assertEquals(
+    toFileUrl("/home\\foo", { os: "windows" }).href,
+    "file:///home/foo",
+  );
+  assertThrows(
+    () => toFileUrl("foo", { os: "windows" }).href,
+    TypeError,
+    "Must be an absolute path.",
+  );
+  assertEquals(toFileUrl("C:/", { os: "windows" }).href, "file:///C:/");
+  assertEquals(
+    toFileUrl("//localhost/home/foo", { os: "windows" }).href,
+    "file:///home/foo",
+  );
+  assertEquals(
+    toFileUrl("//127.0.0.1/home/foo", { os: "windows" }).href,
     "file://127.0.0.1/home/foo",
   );
-  assertEquals(win32.toFileUrl("//localhost/").href, "file:///");
-  assertEquals(win32.toFileUrl("//127.0.0.1/").href, "file://127.0.0.1/");
+  assertEquals(toFileUrl("//localhost/", { os: "windows" }).href, "file:///");
+  assertEquals(
+    toFileUrl("//127.0.0.1/", { os: "windows" }).href,
+    "file://127.0.0.1/",
+  );
   assertThrows(
-    () => win32.toFileUrl("//:/home/foo").href,
+    () => toFileUrl("//:/home/foo", { os: "windows" }).href,
     TypeError,
     "Invalid hostname.",
   );
