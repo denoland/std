@@ -2,7 +2,7 @@
  * Converts a file URL to a path string.
  *
  * ```ts
- *      import { fromFileUrl } from "./mod.ts";
+ *      import { fromFileUrl } from "./from_file_url.ts";
  *      fromFileUrl("file:///home/foo", {os:"linux"}); // "/home/foo"
  *      fromFileUrl("file:///home/foo", {os:"windows"}); // "\\home\\foo"
  *      fromFileUrl("file:///C:/Users/foo", {os:"windows"}); // "C:\\Users\\foo"
