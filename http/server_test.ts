@@ -1182,7 +1182,7 @@ Deno.test("Custom onError is called when Handler throws", async () => {
   const handler = (_request: Request, _connInfo: ConnInfo) => {
     throw new Error("I failed to serve the request");
   };
-  const onError = (_error: Error) => {
+  const onError = (_error: unknown) => {
     return new Response("custom error page", { status: 500 });
   };
   const abortController = new AbortController();
