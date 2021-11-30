@@ -23,7 +23,7 @@ export function normalize(
     case "windows":
       return normalizeWindows(path);
     default:
-      return normalizeLinux(path);
+      return normalizePosix(path);
   }
 }
 
@@ -31,7 +31,7 @@ export function normalize(
  * Normalize the `path`, resolving `'..'` and `'.'` segments.
  * @param path to be normalized
  */
-function normalizeLinux(path: string): string {
+function normalizePosix(path: string): string {
   const isAbsolute = isPosixPathSeparator(path.charCodeAt(0));
   const trailingSeparator = isPosixPathSeparator(
     path.charCodeAt(path.length - 1),
