@@ -344,13 +344,13 @@ export class BufReader implements Reader {
     this.#reset(this.#buf, r);
   }
 
-  #reset(buf: Uint8Array, rd: Reader): void {
+  #reset = (buf: Uint8Array, rd: Reader): void => {
     this.#buf = buf;
     this.#rd = rd;
     this.#eof = false;
     // this.lastByte = -1;
     // this.lastCharSize = -1;
-  }
+  };
 
   /** reads data into p.
    * It returns the number of bytes read into p.
