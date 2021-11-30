@@ -32,10 +32,15 @@ export const stderr = _stderr as unknown as _Writable;
 
 /** https://nodejs.org/api/process.html#process_process_stdin */
 export const stdin = new Readable({
+  highWaterMark: 0,
+  emitClose: false,
   read(this: Readable, size: number) {
     const p = Buffer.alloc(size || 16 * 1024);
-    const length = Deno.stdin.readSync(p);
-    this.push(length === null ? null : p.slice(0, length));
+    Deno.stdin.read(p).then((length) => {
+      this.push(length === null ? null : p.slice(0, length));
+    }, (error) => {
+      this.destroy(error);
+    });
   },
 }) as _Readable;
 stdin.on("close", () => Deno.stdin.close());

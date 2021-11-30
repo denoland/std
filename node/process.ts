@@ -2,7 +2,7 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
-import { validateString } from "./_validators.ts";
+import { validateString } from "./internal/validators.js";
 import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";

@@ -6,6 +6,12 @@ export const captureRejectionSymbol: unique symbol;
 export const defaultMaxListeners: number;
 export const errorMonitor: unique symbol;
 
+export interface Abortable {
+  /**
+   * When provided the corresponding `AbortController` can be used to cancel an asynchronous action.
+   */
+  signal?: AbortSignal | undefined;
+}
 /**
  * Returns a copy of the array of listeners for the event named `eventName`.
  *

@@ -27,7 +27,7 @@ import {
   validateInteger,
   validateObject,
   validateUint32,
-} from "../../_validators.ts";
+} from "../validators.js";
 import pathModule from "../../path.ts";
 const kType = Symbol("type");
 const kStats = Symbol("stats");

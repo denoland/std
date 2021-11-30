@@ -19,8 +19,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { validateString } from "../../_validators.ts";
 import * as types from "./types.ts";
+import { validateString } from "../validators.js";
+
 import {
   ALL_PROPERTIES,
   getOwnNonIndexProperties,

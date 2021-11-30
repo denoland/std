@@ -3,7 +3,7 @@
 
 // deno-lint-ignore-file no-inner-declarations
 
-import { validateCallback } from "./_validators.ts";
+import { validateCallback } from "./internal/validators.js";
 import { _exiting } from "./_process/process.ts";
 import { FixedQueue } from "./_fixed_queue.ts";
 
