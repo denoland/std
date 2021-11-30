@@ -109,7 +109,7 @@ export interface ServerInit {
    *
    * The default error handler logs and returns the error in JSON format.
    */
-  onError?: (error: Error) => Response | Promise<Response>;
+  onError?: (error: unknown) => Response | Promise<Response>;
 }
 
 /** Used to construct an HTTP server. */
@@ -119,7 +119,7 @@ export class Server {
   #closed = false;
   #listeners: Set<Deno.Listener> = new Set();
   #httpConnections: Set<Deno.HttpConn> = new Set();
-  #onError: (error: Error) => Response | Promise<Response>;
+  #onError: (error: unknown) => Response | Promise<Response>;
 
   /**
    * Constructs a new HTTP Server instance.
@@ -144,18 +144,24 @@ export class Server {
   constructor(serverInit: ServerInit) {
     this.#addr = serverInit.addr;
     this.#handler = serverInit.handler;
-    this.#onError = serverInit.onError ?? function (error: Error) {
+    this.#onError = serverInit.onError ?? function (error: unknown) {
       console.error(error);
+      const message = error instanceof Error ? error.message : error;
       return new Response(
         JSON.stringify(
           {
             error: "Internal Server Error",
-            message: error.message,
+            message,
           },
           null,
           2,
         ),
-        { status: 500 },
+        {
+          status: 500,
+          headers: {
+            "content-type": "application/json",
+          },
+        },
       );
     };
   }
@@ -374,9 +380,9 @@ export class Server {
         requestEvent.request,
         connInfo,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       // Invoke onError handler when request handler throws.
-      response = await this.#onError(error as Error);
+      response = await this.#onError(error);
     }
 
     try {
@@ -563,7 +569,7 @@ export interface ServeInit {
   signal?: AbortSignal;
 
   /** The handler to invoke when route handlers throw an error. */
-  onError?: (error: Error) => Response | Promise<Response>;
+  onError?: (error: unknown) => Response | Promise<Response>;
 }
 
 /**
