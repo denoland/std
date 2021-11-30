@@ -306,7 +306,7 @@ export class BufReader implements Reader {
   }
 
   // Reads a new chunk into the buffer.
-  async #fill() {
+  #fill = async () => {
     // Slide existing data to beginning.
     if (this.#r > 0) {
       this.#buf.copyWithin(0, this.#r, this.#w);
@@ -335,7 +335,7 @@ export class BufReader implements Reader {
     throw new Error(
       `No progress after ${MAX_CONSECUTIVE_EMPTY_READS} read() calls`,
     );
-  }
+  };
 
   /** Discards any buffered data, resets all state, and switches
    * the buffered reader to read from r.
