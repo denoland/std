@@ -146,23 +146,7 @@ export class Server {
     this.#handler = serverInit.handler;
     this.#onError = serverInit.onError ?? function (error: unknown) {
       console.error(error);
-      const message = error instanceof Error ? error.message : error;
-      return new Response(
-        JSON.stringify(
-          {
-            error: "Internal Server Error",
-            message,
-          },
-          null,
-          2,
-        ),
-        {
-          status: 500,
-          headers: {
-            "content-type": "application/json",
-          },
-        },
-      );
+      return new Response("Internal Server Error", { status: 500 });
     };
   }
 

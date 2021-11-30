@@ -1164,11 +1164,7 @@ Deno.test("Default onError is called when Handler throws", async () => {
 
   try {
     const response = await fetch(url);
-    const expected = {
-      error: "Internal Server Error",
-      message: "I failed to serve the request",
-    };
-    assertEquals(await response.json(), expected);
+    assertEquals(await response.text(), "Internal Server Error");
     assertEquals(response.status, 500);
   } finally {
     abortController.abort();
