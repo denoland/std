@@ -12,9 +12,11 @@ import { CHAR_COLON } from "./_constants.ts";
  * @param pathSegments an array of path segments
  */
 export function resolve(
-  pathSegments: string[],
+  pathSegments: string|string[],
   { os = Deno.build.os }: { os?: typeof Deno.build.os } = {},
 ) {
+  if (!Array.isArray(pathSegments))
+    pathSegments = [pathSegments]
   switch (os) {
     case "windows":
       return resolveWindows(...pathSegments);
