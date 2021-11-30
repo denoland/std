@@ -11,5 +11,5 @@ export const separators = {
 export const separator = isWindows ? separators.win32 : separators.posix;
 
 export const SEP = separator;
-export const sep = SEP
+export const sep = SEP;
 export const SEP_PATTERN = isWindows ? /[\\/]+/ : /\/+/;
