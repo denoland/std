@@ -3,7 +3,4 @@
 
 import { isWindows } from "../_util/os.ts";
 
-export const SEP = isWindows ? "\\" : "/";
-export const SEP_PATTERN = isWindows ? /[\\/]+/ : /\/+/;
-
-export const separator = SEP
+export const delimiter = isWindows ? ";" : ":";
