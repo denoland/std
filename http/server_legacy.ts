@@ -30,10 +30,7 @@ const ERROR_ADDRESS_INVALID = "Invalid address";
  * @param defaultPort Default port when not included in the address string.
  * @return The parsed address.
  */
-export function _parseAddrFromStr(
-  addr: string,
-  defaultPort = 80,
-): Deno.ListenOptions {
+function _parseAddrFromStr(addr: string, defaultPort = 80): Deno.ListenOptions {
   const host = addr.startsWith(":") ? `0.0.0.0${addr}` : addr;
 
   let url: URL;
