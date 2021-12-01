@@ -18,7 +18,7 @@ import {
   isUint8Array,
 } from "../util/types.ts";
 import { once } from "../util.ts";
-import { toPathIfFileURL } from "../../url.ts";
+import { toPathIfFileURL } from "../url.ts";
 import {
   validateAbortSignal,
   validateBoolean,
