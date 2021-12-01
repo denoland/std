@@ -4,6 +4,7 @@
       "exclude": [
         ".git",
         "_wasm_crypto/target",
+        "cov",
         "node/_tools/versions",
         "node/_tools/suites",
         "wasi/testdata"
@@ -15,6 +16,7 @@
       "exclude": [
         ".git",
         "_wasm_crypto/target",
+        "cov",
         "node/_tools/versions",
         "node/_tools/suites",
         "wasi/testdata"

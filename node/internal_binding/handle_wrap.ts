@@ -24,7 +24,7 @@
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.h
 
 import { notImplemented } from "../_utils.ts";
-import { nextTick } from "../process.ts";
+import { nextTick } from "../_next_tick.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 export class HandleWrap extends AsyncWrap {

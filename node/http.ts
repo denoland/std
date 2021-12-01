@@ -1,12 +1,14 @@
-import NodeReadable from "./_stream/readable.ts";
-import NodeWritable from "./_stream/writable.ts";
+import { _normalizeArgs, ListenOptions } from "./net.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
 import { EventEmitter } from "./events.ts";
-import { Status as STATUS_CODES } from "../http/http_status.ts";
-import { _normalizeArgs, ListenOptions } from "./net.ts";
 import { nextTick } from "./_next_tick.ts";
-import { validatePort } from "./_validators.ts";
+import { Status as STATUS_CODES } from "../http/http_status.ts";
+import { validatePort } from "./internal/validators.js";
+import {
+  Readable as NodeReadable,
+  Writable as NodeWritable,
+} from "./stream.ts";
 
 const METHODS = [
   "ACL",
@@ -157,6 +159,19 @@ export class ServerResponse extends NodeWritable {
       }),
     );
   }
+
+  // deno-lint-ignore no-explicit-any
+  end(chunk?: any, encoding?: any, cb?: any): this {
+    if (!chunk) {
+      // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
+      // the trailing "0\r\n", but respondWith() just hangs when I try that.
+      this.#headers.set("content-length", "0");
+      this.#headers.delete("transfer-encoding");
+    }
+
+    // @ts-expect-error The signature for cb is stricter than the one implemented here
+    return super.end(chunk, encoding, cb);
+  }
 }
 
 // TODO(@AaronO): optimize
@@ -252,7 +267,21 @@ export class Server extends EventEmitter {
   async #listenLoop() {
     const go = async (httpConn: Deno.HttpConn) => {
       try {
-        for await (const reqEvent of httpConn) {
+        for (;;) {
+          let reqEvent = null;
+          try {
+            // Note: httpConn.nextRequest() calls httpConn.close() on error.
+            reqEvent = await httpConn.nextRequest();
+          } catch {
+            // Connection closed.
+            // TODO(bnoordhuis) Emit "clientError" event on the http.Server
+            // instance? Node emits it when request parsing fails and expects
+            // the listener to send a raw 4xx HTTP response on the underlying
+            // net.Socket but we don't have one to pass to the listener.
+          }
+          if (reqEvent === null) {
+            break;
+          }
           const req = new IncomingMessage(reqEvent.request);
           const res = new ServerResponse(reqEvent);
           this.emit("request", req, res);

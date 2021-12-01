@@ -19,6 +19,7 @@ import { lstat, lstatSync } from "./_fs/_fs_lstat.ts";
 import { mkdir, mkdirSync } from "./_fs/_fs_mkdir.ts";
 import { mkdtemp, mkdtempSync } from "./_fs/_fs_mkdtemp.ts";
 import { open, openSync } from "./_fs/_fs_open.ts";
+import { read, readSync } from "./_fs/_fs_read.ts";
 import { readdir, readdirSync } from "./_fs/_fs_readdir.ts";
 import { readFile, readFileSync } from "./_fs/_fs_readFile.ts";
 import { readlink, readlinkSync } from "./_fs/_fs_readlink.ts";
@@ -81,6 +82,8 @@ export default {
   mkdtempSync,
   open,
   openSync,
+  read,
+  readSync,
   promises,
   read,
   readdir,
@@ -159,6 +162,7 @@ export {
   readFileSync,
   readlink,
   readlinkSync,
+  readSync,
   realpath,
   realpathSync,
   rename,
