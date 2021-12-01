@@ -143,6 +143,7 @@
       "test-next-tick-ordering2.js",
       "test-next-tick-when-exiting.js",
       "test-next-tick.js",
+      "test-process-binding-internalbinding-allowlist.js",
       "test-querystring-escape.js",
       "test-querystring-maxKeys-non-finite.js",
       "test-querystring-multichar-separator.js",
