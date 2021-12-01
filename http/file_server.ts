@@ -273,8 +273,9 @@ export async function serveFile(
     const ifModifiedSince = req.headers.get("if-modified-since");
     if (
       (ifNoneMatch && ifNoneMatch === simpleEtag) ||
-      (ifNoneMatch === null && ifModifiedSince &&
-        fileInfo.mtime.getTime() < (new Date(ifModifiedSince).getTime() + 1000))
+      (ifNoneMatch === null &&
+        ifModifiedSince &&
+        fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
     ) {
       const status = Status.NotModified;
       const statusText = STATUS_TEXT.get(status);
@@ -310,8 +311,11 @@ export async function serveFile(
   const maxRange = fileInfo.size - 1;
 
   if (
-    range && (!parsed ||
-      typeof start !== "number" || start > end || start > maxRange ||
+    range &&
+    (!parsed ||
+      typeof start !== "number" ||
+      start > end ||
+      start > maxRange ||
       end > maxRange)
   ) {
     const status = Status.RequestedRangeNotSatisfiable;
@@ -532,11 +536,13 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
         <main>
           <h1>Index of
           <a href="/">home</a>${
-    paths.map((path, index, array) => {
-      if (path === "") return "";
-      const link = array.slice(0, index + 1).join("/");
-      return `<a href="${link}">${path}</a>`;
-    }).join("/")
+    paths
+      .map((path, index, array) => {
+        if (path === "") return "";
+        const link = array.slice(0, index + 1).join("/");
+        return `<a href="${link}">${path}</a>`;
+      })
+      .join("/")
   }
           </h1>
           <table>
@@ -546,8 +552,9 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
               <th>Name</th>
             </tr>
             ${
-    entries.map(
-      (entry) => `
+    entries
+      .map(
+        (entry) => `
                   <tr>
                     <td class="mode">
                       ${entry.mode}
@@ -560,7 +567,8 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                     </td>
                   </tr>
                 `,
-    ).join("")
+      )
+      .join("")
   }
           </table>
         </main>
@@ -576,7 +584,8 @@ function normalizeURL(url: string): string {
     //allowed per https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html
     const absoluteURI = new URL(normalizedUrl);
     normalizedUrl = absoluteURI.pathname;
-  } catch (e) { //wasn't an absoluteURI
+  } catch (e) {
+    //wasn't an absoluteURI
     if (!(e instanceof TypeError)) {
       throw e;
     }
@@ -608,12 +617,12 @@ function main(): void {
     boolean: ["help", "dir-listing", "dotfiles", "cors"],
     default: {
       "dir-listing": true,
-      "dotfiles": true,
-      "cors": true,
-      "host": "0.0.0.0",
-      "port": "4507",
-      "cert": "",
-      "key": "",
+      dotfiles: true,
+      cors: true,
+      host: "0.0.0.0",
+      port: "4507",
+      cert: "",
+      key: "",
     },
     alias: {
       p: "port",
@@ -625,7 +634,6 @@ function main(): void {
   const CORSEnabled = serverArgs.cors;
   const port = serverArgs.port;
   const host = serverArgs.host;
-  const addr = `${host}:${port}`;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
   const dirListingEnabled = serverArgs["dir-listing"];
@@ -690,15 +698,23 @@ function main(): void {
 
   if (keyFile || certFile) {
     proto += "s";
-    serveTls(handler, { addr, certFile, keyFile });
+    serveTls(handler, {
+      port: Number(port),
+      hostname: host,
+      certFile,
+      keyFile,
+    });
   } else {
-    serve(handler, { addr });
+    serve(handler, { port: Number(port), hostname: host });
   }
 
   console.log(
     `${proto.toUpperCase()} server listening on ${proto}://${
-      addr.replace("0.0.0.0", "localhost")
-    }/`,
+      host.replace(
+        "0.0.0.0",
+        "localhost",
+      )
+    }:${port}/`,
   );
 }
 

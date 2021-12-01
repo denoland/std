@@ -9,7 +9,6 @@ import {
   readRequest,
   writeResponse,
 } from "./_io.ts";
-import { _parseAddrFromStr } from "./server.ts";
 
 /**
  * @deprecated
@@ -291,11 +290,7 @@ export type HTTPOptions = Omit<Deno.ListenOptions, "transport">;
  * }
  * ```
  */
-export function serve(addr: string | HTTPOptions): Server {
-  if (typeof addr === "string") {
-    addr = _parseAddrFromStr(addr);
-  }
-
+export function serve(addr: Deno.ListenOptions | HTTPOptions): Server {
   const listener = Deno.listen(addr);
   return new Server(listener);
 }
@@ -319,7 +314,7 @@ export function serve(addr: string | HTTPOptions): Server {
  * @param handler Request handler.
  */
 export async function listenAndServe(
-  addr: string | HTTPOptions,
+  addr: Deno.ListenOptions | HTTPOptions,
   handler: (req: ServerRequest) => void,
 ) {
   const server = serve(addr);
