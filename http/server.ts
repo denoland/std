@@ -34,7 +34,7 @@ export interface ConnInfo {
  */
 export type Handler = (
   request: Request,
-  connInfo: ConnInfo
+  connInfo: ConnInfo,
 ) => Response | Promise<Response>;
 
 /** Options for running an HTTP server. */
@@ -84,8 +84,7 @@ export class Server {
     this.#port = serverInit.port;
     this.#host = serverInit.hostname;
     this.#handler = serverInit.handler;
-    this.#onError =
-      serverInit.onError ??
+    this.#onError = serverInit.onError ??
       function (error: unknown) {
         console.error(error);
         return new Response("Internal Server Error", { status: 500 });
@@ -291,7 +290,7 @@ export class Server {
   async #respond(
     requestEvent: Deno.RequestEvent,
     httpConn: Deno.HttpConn,
-    connInfo: ConnInfo
+    connInfo: ConnInfo,
   ): Promise<void> {
     let response: Response;
     try {
@@ -505,7 +504,7 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
-  options?: Omit<ServeInit, "port" | "hostname">
+  options?: Omit<ServeInit, "port" | "hostname">,
 ): Promise<void> {
   const server = new Server({ handler });
 
@@ -542,7 +541,7 @@ export async function serveListener(
  */
 export async function serve(
   handler: Handler,
-  options: ServeInit = {}
+  options: ServeInit = {},
 ): Promise<void> {
   const server = new Server({
     port: options.port ?? 8000,
@@ -589,7 +588,7 @@ interface ServeTlsInit extends ServeInit {
  */
 export async function serveTls(
   handler: Handler,
-  options: ServeTlsInit
+  options: ServeTlsInit,
 ): Promise<void> {
   if (!options.keyFile) {
     throw new Error("TLS config is given, but 'keyFile' is missing.");
@@ -647,7 +646,7 @@ export async function serveTls(
 export async function listenAndServe(
   config: Partial<Deno.ListenOptions>,
   handler: Handler,
-  options?: ServeInit
+  options?: ServeInit,
 ): Promise<void> {
   const server = new Server({ ...config, handler });
 
@@ -699,7 +698,7 @@ export async function listenAndServeTls(
   certFile: string,
   keyFile: string,
   handler: Handler,
-  options?: ServeInit
+  options?: ServeInit,
 ): Promise<void> {
   const server = new Server({ ...config, handler });
 
