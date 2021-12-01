@@ -18,6 +18,7 @@ import childProcess from "./child_process.ts";
 import console from "./console.ts";
 import constants from "./constants.ts";
 import crypto from "./crypto.ts";
+import dgram from "./dgram.ts";
 import dns from "./dns.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
@@ -52,7 +53,6 @@ import wasi from "./wasi.ts";
 
 // TODO(kt3k): add these modules when implemented
 // import cluster from "./cluster.ts";
-// import dgram from "./dgram.ts";
 // import http2 from "./http2.ts";
 // import https from "./https.ts";
 // import repl from "./repl.ts";
@@ -75,6 +75,7 @@ export default {
   console,
   constants,
   "child_process": childProcess,
+  dgram,
   dns,
   events,
   fs,

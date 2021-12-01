@@ -32,6 +32,8 @@ export {
 };
 import { stderr, stdin, stdout } from "./_process/streams.ts";
 export { stderr, stdin, stdout };
+import { getBinding } from "./internal_binding/mod.ts";
+import type { BindingName } from "./internal_binding/mod.ts";
 
 const notImplementedEvents = [
   "beforeExit",
@@ -373,6 +375,10 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#process_process_emitwarning_warning_options */
   emitWarning = emitWarning;
+
+  binding(name: BindingName) {
+    return getBinding(name);
+  }
 }
 
 /** https://nodejs.org/api/process.html#process_process */

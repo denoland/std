@@ -34,13 +34,20 @@ export interface ConnInfo {
  */
 export type Handler = (
   request: Request,
-  connInfo: ConnInfo,
+  connInfo: ConnInfo
 ) => Response | Promise<Response>;
 
 /** Options for running an HTTP server. */
 export interface ServerInit extends Partial<Deno.ListenOptions> {
   /** The handler to invoke for individual HTTP requests. */
   handler: Handler;
+
+  /**
+   * The handler to invoke when route handlers throw an error.
+   *
+   * The default error handler logs and returns the error in JSON format.
+   */
+  onError?: (error: unknown) => Response | Promise<Response>;
 }
 
 /** Used to construct an HTTP server. */
@@ -51,6 +58,7 @@ export class Server {
   #closed = false;
   #listeners: Set<Deno.Listener> = new Set();
   #httpConnections: Set<Deno.HttpConn> = new Set();
+  #onError: (error: unknown) => Response | Promise<Response>;
 
   /**
    * Constructs a new HTTP Server instance.
@@ -76,6 +84,12 @@ export class Server {
     this.#port = serverInit.port;
     this.#host = serverInit.hostname;
     this.#handler = serverInit.handler;
+    this.#onError =
+      serverInit.onError ??
+      function (error: unknown) {
+        console.error(error);
+        return new Response("Internal Server Error", { status: 500 });
+      };
   }
 
   /**
@@ -277,19 +291,22 @@ export class Server {
   async #respond(
     requestEvent: Deno.RequestEvent,
     httpConn: Deno.HttpConn,
-    connInfo: ConnInfo,
+    connInfo: ConnInfo
   ): Promise<void> {
+    let response: Response;
     try {
       // Handle the request event, generating a response.
-      const response = await this.#handler(requestEvent.request, connInfo);
+      response = await this.#handler(requestEvent.request, connInfo);
+    } catch (error: unknown) {
+      // Invoke onError handler when request handler throws.
+      response = await this.#onError(error);
+    }
 
+    try {
       // Send the response.
       await requestEvent.respondWith(response);
     } catch {
-      // If the handler throws then it is assumed that the impact of the error
-      // is isolated to the individual request, so we close the connection.
-      //
-      // Alternatively the connection has already been closed, or there is some
+      // respondWith() fails when the connection has already been closed, or there is some
       // other error with responding on this connection that prompts us to
       // close it and open a new connection.
       return this.#closeHttpConn(httpConn);
@@ -456,6 +473,9 @@ export class Server {
 export interface ServeInit extends Partial<Deno.ListenOptions> {
   /** An AbortSignal to close the server and all connections. */
   signal?: AbortSignal;
+
+  /** The handler to invoke when route handlers throw an error. */
+  onError?: (error: unknown) => Response | Promise<Response>;
 }
 
 /**
@@ -485,7 +505,7 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
-  options?: Omit<ServeInit, "port" | "hostname">,
+  options?: Omit<ServeInit, "port" | "hostname">
 ): Promise<void> {
   const server = new Server({ handler });
 
@@ -522,12 +542,13 @@ export async function serveListener(
  */
 export async function serve(
   handler: Handler,
-  options: ServeInit = {},
+  options: ServeInit = {}
 ): Promise<void> {
   const server = new Server({
     port: options.port ?? 8000,
     hostname: options.hostname ?? "0.0.0.0",
     handler,
+    onError: options.onError,
   });
 
   if (options?.signal) {
@@ -568,7 +589,7 @@ interface ServeTlsInit extends ServeInit {
  */
 export async function serveTls(
   handler: Handler,
-  options: ServeTlsInit,
+  options: ServeTlsInit
 ): Promise<void> {
   if (!options.keyFile) {
     throw new Error("TLS config is given, but 'keyFile' is missing.");
@@ -626,7 +647,7 @@ export async function serveTls(
 export async function listenAndServe(
   config: Partial<Deno.ListenOptions>,
   handler: Handler,
-  options?: ServeInit,
+  options?: ServeInit
 ): Promise<void> {
   const server = new Server({ ...config, handler });
 
@@ -678,7 +699,7 @@ export async function listenAndServeTls(
   certFile: string,
   keyFile: string,
   handler: Handler,
-  options?: ServeInit,
+  options?: ServeInit
 ): Promise<void> {
   const server = new Server({ ...config, handler });
 

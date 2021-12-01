@@ -8,7 +8,7 @@ import {
   ERR_SOCKET_BAD_PORT,
   hideStackFrames,
 } from "../_errors.ts";
-import { isArrayBufferView } from "./util/types.js";
+import { isArrayBufferView } from "./util/types.ts";
 
 /**
  * @param {number} value
