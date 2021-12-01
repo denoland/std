@@ -508,7 +508,7 @@ Deno.test({
 });
 
 Deno.test("close server while iterating", async () => {
-  const server = serve({ port: 8123 });
+  const server = serve(":8123");
   const nextWhileClosing = server[Symbol.asyncIterator]().next();
   server.close();
   assertEquals(await nextWhileClosing, { value: undefined, done: true });
@@ -526,7 +526,7 @@ Deno.test({
       }
     }
 
-    const server = serve({ port: 8123 });
+    const server = serve(":8123");
     const p = iteratorReq(server);
     const conn = await Deno.connect({ hostname: "127.0.0.1", port: 8123 });
     await writeAll(
@@ -552,7 +552,7 @@ Deno.test({
   name: "respond error closes connection",
   async fn() {
     const serverRoutine = async () => {
-      const server = serve({ port: 8124 });
+      const server = serve(":8124");
       for await (const req of server) {
         await assertRejects(
           async () => {
@@ -583,7 +583,7 @@ Deno.test({
 Deno.test({
   name: "[http] request error gets 400 response",
   async fn() {
-    const server = serve({ port: 8124 });
+    const server = serve(":8124");
     const entry = server[Symbol.asyncIterator]().next();
     const conn = await Deno.connect({
       hostname: "127.0.0.1",
@@ -610,7 +610,7 @@ Deno.test({
   name: "[http] finalizing invalid chunked data closes connection",
   async fn() {
     const serverRoutine = async () => {
-      const server = serve({ port: 8124 });
+      const server = serve(":8124");
       for await (const req of server) {
         await req.respond({ status: 200, body: "Hello, world!" });
         break;
@@ -643,7 +643,7 @@ Deno.test({
   name: "[http] finalizing chunked unexpected EOF closes connection",
   async fn() {
     const serverRoutine = async () => {
-      const server = serve({ port: 8124 });
+      const server = serve(":8124");
       for await (const req of server) {
         await req.respond({ status: 200, body: "Hello, world!" });
         break;
@@ -676,7 +676,7 @@ Deno.test({
   name:
     "[http] receiving bad request from a closed connection should not throw",
   async fn() {
-    const server = serve({ port: 8124 });
+    const server = serve(":8124");
     const serverRoutine = async () => {
       for await (const req of server) {
         await req.respond({ status: 200, body: "Hello, world!" });
@@ -781,7 +781,7 @@ Deno.test({
 Deno.test({
   name: "server.serve() should be able to parse IPV4 address",
   fn: (): void => {
-    const server = serve({ hostname: "127.0.0.1", port: 8124 });
+    const server = serve("127.0.0.1:8124");
     const addr = server.listener.addr as Deno.NetAddr;
     assertEquals(addr.hostname, "127.0.0.1");
     assertEquals(addr.port, 8124);
@@ -793,7 +793,7 @@ Deno.test({
 Deno.test({
   name: "server.serve() should be able to parse IPV6 address",
   fn: (): void => {
-    const server = serve({ hostname: "[::1]", port: 8124 });
+    const server = serve("[::1]:8124");
     const addr = server.listener.addr as Deno.NetAddr;
     assertEquals(addr.hostname, "::1");
     assertEquals(addr.port, 8124);

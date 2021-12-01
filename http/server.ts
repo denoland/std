@@ -34,7 +34,7 @@ export interface ConnInfo {
  */
 export type Handler = (
   request: Request,
-  connInfo: ConnInfo
+  connInfo: ConnInfo,
 ) => Response | Promise<Response>;
 
 /** Options for running an HTTP server. */
@@ -277,7 +277,7 @@ export class Server {
   async #respond(
     requestEvent: Deno.RequestEvent,
     httpConn: Deno.HttpConn,
-    connInfo: ConnInfo
+    connInfo: ConnInfo,
   ): Promise<void> {
     try {
       // Handle the request event, generating a response.
@@ -485,7 +485,7 @@ export interface ServeInit extends Partial<Deno.ListenOptions> {
 export async function serveListener(
   listener: Deno.Listener,
   handler: Handler,
-  options?: Omit<ServeInit, "port" | "hostname">
+  options?: Omit<ServeInit, "port" | "hostname">,
 ): Promise<void> {
   const server = new Server({ handler });
 
@@ -522,7 +522,7 @@ export async function serveListener(
  */
 export async function serve(
   handler: Handler,
-  options: ServeInit = {}
+  options: ServeInit = {},
 ): Promise<void> {
   const server = new Server({
     port: options.port ?? 8000,
@@ -549,7 +549,7 @@ interface ServeTlsInit extends ServeInit {
  *
  * You must specify `keyFile` and `certFile` options.
  *
- *You can specify an object with a port and hostname option, which is the address to listen on.
+ * You can specify an object with a port and hostname option, which is the address to listen on.
  * The default is port 8443 on hostname "0.0.0.0".
  *
  * The below example serves with the default port 8443.
@@ -568,7 +568,7 @@ interface ServeTlsInit extends ServeInit {
  */
 export async function serveTls(
   handler: Handler,
-  options: ServeTlsInit
+  options: ServeTlsInit,
 ): Promise<void> {
   if (!options.keyFile) {
     throw new Error("TLS config is given, but 'keyFile' is missing.");
@@ -626,7 +626,7 @@ export async function serveTls(
 export async function listenAndServe(
   config: Partial<Deno.ListenOptions>,
   handler: Handler,
-  options?: ServeInit
+  options?: ServeInit,
 ): Promise<void> {
   const server = new Server({ ...config, handler });
 
@@ -678,7 +678,7 @@ export async function listenAndServeTls(
   certFile: string,
   keyFile: string,
   handler: Handler,
-  options?: ServeInit
+  options?: ServeInit,
 ): Promise<void> {
   const server = new Server({ ...config, handler });
 

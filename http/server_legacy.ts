@@ -10,6 +10,56 @@ import {
   writeResponse,
 } from "./_io.ts";
 
+/** Thrown when parsing an invalid address string. */
+const ERROR_ADDRESS_INVALID = "Invalid address";
+
+/**
+ * @deprecated
+ * Parse an address from a string. Only used for the legacy server.
+ *
+ * Throws a `TypeError` when the address is invalid.
+ *
+ * ```ts
+ * import { _parseAddrFromStr } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ *
+ * const addr = "::1:8000";
+ * const listenOptions = _parseAddrFromStr(addr);
+ * ```
+ *
+ * @param addr The address string to parse.
+ * @param defaultPort Default port when not included in the address string.
+ * @return The parsed address.
+ */
+export function _parseAddrFromStr(
+  addr: string,
+  defaultPort = 80,
+): Deno.ListenOptions {
+  const host = addr.startsWith(":") ? `0.0.0.0${addr}` : addr;
+
+  let url: URL;
+
+  try {
+    url = new URL(`http://${host}`);
+  } catch {
+    throw new TypeError(ERROR_ADDRESS_INVALID);
+  }
+
+  if (
+    url.username ||
+    url.password ||
+    url.pathname != "/" ||
+    url.search ||
+    url.hash
+  ) {
+    throw new TypeError(ERROR_ADDRESS_INVALID);
+  }
+
+  return {
+    hostname: url.hostname,
+    port: url.port === "" ? defaultPort : Number(url.port),
+  };
+}
+
 /**
  * @deprecated
  */
@@ -290,8 +340,9 @@ export type HTTPOptions = Omit<Deno.ListenOptions, "transport">;
  * }
  * ```
  */
-export function serve(addr: Deno.ListenOptions | HTTPOptions): Server {
-  const listener = Deno.listen(addr);
+export function serve(addr: string | HTTPOptions): Server {
+  const opts = typeof addr === "string" ? _parseAddrFromStr(addr) : addr;
+  const listener = Deno.listen(opts);
   return new Server(listener);
 }
 
@@ -314,7 +365,7 @@ export function serve(addr: Deno.ListenOptions | HTTPOptions): Server {
  * @param handler Request handler.
  */
 export async function listenAndServe(
-  addr: Deno.ListenOptions | HTTPOptions,
+  addr: string | HTTPOptions,
   handler: (req: ServerRequest) => void,
 ) {
   const server = serve(addr);
