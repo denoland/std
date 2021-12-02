@@ -27,12 +27,44 @@ import {
   ERR_INVALID_URL_SCHEME,
 } from "./_errors.ts";
 import {
+  CHAR_0,
+  CHAR_9,
+  CHAR_AT,
   CHAR_BACKWARD_SLASH,
+  CHAR_CARRIAGE_RETURN,
+  CHAR_CIRCUMFLEX_ACCENT,
+  CHAR_DOT,
+  CHAR_DOUBLE_QUOTE,
+  CHAR_FORM_FEED,
   CHAR_FORWARD_SLASH,
+  CHAR_GRAVE_ACCENT,
+  CHAR_HASH,
+  CHAR_HYPHEN_MINUS,
+  CHAR_LEFT_ANGLE_BRACKET,
+  CHAR_LEFT_CURLY_BRACKET,
+  CHAR_LEFT_SQUARE_BRACKET,
+  CHAR_LINE_FEED,
   CHAR_LOWERCASE_A,
   CHAR_LOWERCASE_Z,
+  CHAR_NO_BREAK_SPACE,
+  CHAR_PERCENT,
+  CHAR_PLUS,
+  CHAR_QUESTION_MARK,
+  CHAR_RIGHT_ANGLE_BRACKET,
+  CHAR_RIGHT_CURLY_BRACKET,
+  CHAR_RIGHT_SQUARE_BRACKET,
+  CHAR_SEMICOLON,
+  CHAR_SINGLE_QUOTE,
+  CHAR_SPACE,
+  CHAR_TAB,
+  CHAR_UNDERSCORE,
+  CHAR_UPPERCASE_A,
+  CHAR_UPPERCASE_Z,
+  CHAR_VERTICAL_LINE,
+  CHAR_ZERO_WIDTH_NOBREAK_SPACE,
 } from "../path/_constants.ts";
 import * as path from "./path.ts";
+import { toASCII } from "./_idna.ts";
 import { isWindows, osType } from "../_util/os.ts";
 
 const forwardSlashRegEx = /\//g;
@@ -41,6 +73,38 @@ const backslashRegEx = /\\/g;
 const newlineRegEx = /\n/g;
 const carriageReturnRegEx = /\r/g;
 const tabRegEx = /\t/g;
+// Reference: RFC 3986, RFC 1808, RFC 2396
+
+// define these here so at least they only have to be
+// compiled once on the first module load.
+const protocolPattern = /^[a-z0-9.+-]+:/i;
+const portPattern = /:[0-9]*$/;
+const hostPattern = /^\/\/[^@/]+@[^@/]+/;
+// Special case for a simple path URL
+const simplePathPattern = /^(\/\/?(?!\/)[^?\s]*)(\?[^\s]*)?$/;
+// Protocols that can allow "unsafe" and "unwise" chars.
+const unsafeProtocol = new Set(["javascript", "javascript:"]);
+// Protocols that never have a hostname.
+const hostlessProtocol = new Set(["javascript", "javascript:"]);
+// Protocols that always contain a // bit.
+const slashedProtocol = new Set([
+  "http",
+  "http:",
+  "https",
+  "https:",
+  "ftp",
+  "ftp:",
+  "gopher",
+  "gopher:",
+  "file",
+  "file:",
+  "ws",
+  "ws:",
+  "wss",
+  "wss:",
+]);
+
+const hostnameMaxLen = 255;
 
 const _url = URL;
 export { _url as URL };
@@ -114,6 +178,296 @@ export function format(
   }
 
   return ret;
+}
+
+function isIpv6Hostname(hostname: string) {
+  return (
+    hostname.charCodeAt(0) === CHAR_LEFT_SQUARE_BRACKET &&
+    hostname.charCodeAt(hostname.length - 1) === CHAR_RIGHT_SQUARE_BRACKET
+  );
+}
+
+function getHostname(self: URL, rest: string) {
+  for (let i = 0; i < self.hostname.length; ++i) {
+    const code = self.hostname.charCodeAt(i);
+    const isValid = (code >= CHAR_LOWERCASE_A && code <= CHAR_LOWERCASE_Z) ||
+      code === CHAR_DOT ||
+      (code >= CHAR_UPPERCASE_A && code <= CHAR_UPPERCASE_Z) ||
+      (code >= CHAR_0 && code <= CHAR_9) ||
+      code === CHAR_HYPHEN_MINUS ||
+      code === CHAR_PLUS ||
+      code === CHAR_UNDERSCORE ||
+      code > 127;
+
+    // Invalid host character
+    if (!isValid) {
+      self.hostname = self.hostname.slice(0, i);
+      return `/${self.hostname.slice(i)}${rest}`;
+    }
+  }
+  return rest;
+}
+
+/**
+ * The url.parse() method takes a URL string, parses it, and returns a URL object..
+ *
+ * @param url The URL string to parse.
+ * @param parseQueryString If `true`, the query property will always be set to an object returned by the querystring module's parse() method. If false,
+ * the query property on the returned URL object will be an unparsed, undecoded string. Default: false.
+ * @param slashesDenoteHost If `true`, the first token after the literal string // and preceding the next / will be interpreted as the host
+ */
+export function parse(
+  url: string,
+  parseQueryString: boolean,
+  slashesDenoteHost: boolean,
+) {
+  // Copy chrome, IE, opera backslash-handling behavior.
+  // Back slashes before the query string get converted to forward slashes
+  // See: https://code.google.com/p/chromium/issues/detail?id=25916
+  let hasHash = false;
+  let start = -1;
+  let end = -1;
+  let rest = "";
+  let lastPos = 0;
+  for (let i = 0, inWs = false, split = false; i < url.length; ++i) {
+    const code = url.charCodeAt(i);
+
+    // Find first and last non-whitespace characters for trimming
+    const isWs = code === CHAR_SPACE ||
+      code === CHAR_TAB ||
+      code === CHAR_CARRIAGE_RETURN ||
+      code === CHAR_LINE_FEED ||
+      code === CHAR_FORM_FEED ||
+      code === CHAR_NO_BREAK_SPACE ||
+      code === CHAR_ZERO_WIDTH_NOBREAK_SPACE;
+    if (start === -1) {
+      if (isWs) continue;
+      lastPos = start = i;
+    } else if (inWs) {
+      if (!isWs) {
+        end = -1;
+        inWs = false;
+      }
+    } else if (isWs) {
+      end = i;
+      inWs = true;
+    }
+
+    // Only convert backslashes while we haven't seen a split character
+    if (!split) {
+      switch (code) {
+        case CHAR_HASH:
+          hasHash = true;
+        // Fall through
+        case CHAR_QUESTION_MARK:
+          split = true;
+          break;
+        case CHAR_BACKWARD_SLASH:
+          if (i - lastPos > 0) rest += url.slice(lastPos, i);
+          rest += "/";
+          lastPos = i + 1;
+          break;
+      }
+    } else if (!hasHash && code === CHAR_HASH) {
+      hasHash = true;
+    }
+  }
+
+  // Check if string was non-empty (including strings with only whitespace)
+  if (start !== -1) {
+    if (lastPos === start) {
+      // We didn't convert any backslashes
+
+      if (end === -1) {
+        if (start === 0) rest = url;
+        else rest = url.slice(start);
+      } else {
+        rest = url.slice(start, end);
+      }
+    } else if (end === -1 && lastPos < url.length) {
+      // We converted some backslashes and have only part of the entire string
+      rest += url.slice(lastPos);
+    } else if (end !== -1 && lastPos < end) {
+      // We converted some backslashes and have only part of the entire string
+      rest += url.slice(lastPos, end);
+    }
+  }
+
+  const self = new URL(url);
+
+  let proto = protocolPattern.exec(rest)?.toString();
+  let lowerProto = "";
+  if (proto) {
+    proto = proto[0];
+    lowerProto = proto.toLowerCase();
+    self.protocol = lowerProto;
+    rest = rest.slice(proto.length);
+  }
+
+  // Figure out if it's got a host
+  // user@server is *always* interpreted as a hostname, and url
+  // resolution will treat //foo/bar as host=foo,path=bar because that's
+  // how the browser resolves relative URLs.
+  let slashes;
+  if (slashesDenoteHost || proto || hostPattern.test(rest)) {
+    slashes = rest.charCodeAt(0) === CHAR_FORWARD_SLASH &&
+      rest.charCodeAt(1) === CHAR_FORWARD_SLASH;
+    if (slashes && !(proto && hostlessProtocol.has(lowerProto))) {
+      rest = rest.slice(2);
+    }
+  }
+
+  if (
+    !hostlessProtocol.has(lowerProto) &&
+    (slashes || (proto && !slashedProtocol.has(proto)))
+  ) {
+    // there's a hostname.
+    // the first instance of /, ?, ;, or # ends the host.
+    //
+    // If there is an @ in the hostname, then non-host chars *are* allowed
+    // to the left of the last @ sign, unless some host-ending character
+    // comes *before* the @-sign.
+    // URLs are obnoxious.
+    //
+    // ex:
+    // http://a@b@c/ => user:a@b host:c
+    // http://a@b?@c => user:a host:b path:/?@c
+
+    let hostEnd = -1;
+    let atSign = -1;
+    let nonHost = -1;
+    for (let i = 0; i < rest.length; ++i) {
+      switch (rest.charCodeAt(i)) {
+        case CHAR_TAB:
+        case CHAR_LINE_FEED:
+        case CHAR_CARRIAGE_RETURN:
+        case CHAR_SPACE:
+        case CHAR_DOUBLE_QUOTE:
+        case CHAR_PERCENT:
+        case CHAR_SINGLE_QUOTE:
+        case CHAR_SEMICOLON:
+        case CHAR_LEFT_ANGLE_BRACKET:
+        case CHAR_RIGHT_ANGLE_BRACKET:
+        case CHAR_BACKWARD_SLASH:
+        case CHAR_CIRCUMFLEX_ACCENT:
+        case CHAR_GRAVE_ACCENT:
+        case CHAR_LEFT_CURLY_BRACKET:
+        case CHAR_VERTICAL_LINE:
+        case CHAR_RIGHT_CURLY_BRACKET:
+          // Characters that are never ever allowed in a hostname from RFC 2396
+          if (nonHost === -1) nonHost = i;
+          break;
+        case CHAR_HASH:
+        case CHAR_FORWARD_SLASH:
+        case CHAR_QUESTION_MARK:
+          // Find the first instance of any host-ending characters
+          if (nonHost === -1) nonHost = i;
+          hostEnd = i;
+          break;
+        case CHAR_AT:
+          // At this point, either we have an explicit point where the
+          // auth portion cannot go past, or the last @ char is the decider.
+          atSign = i;
+          nonHost = -1;
+          break;
+      }
+      if (hostEnd !== -1) break;
+    }
+    start = 0;
+    if (atSign !== -1) {
+      start = atSign + 1;
+    }
+    if (nonHost === -1) {
+      self.host = rest.slice(start);
+      rest = "";
+    } else {
+      self.host = rest.slice(start, nonHost);
+      rest = rest.slice(nonHost);
+    }
+
+    // We've indicated that there is a hostname,
+    // so even if it's empty, it has to be present.
+    if (typeof self.hostname !== "string") self.hostname = "";
+
+    // If hostname begins with [ and ends with ]
+    // assume that it's an IPv6 address.
+    const ipv6Hostname = isIpv6Hostname(self.hostname);
+
+    // validate a little.
+    if (!ipv6Hostname) {
+      rest = getHostname(self, rest);
+    }
+
+    if (self.hostname.length > hostnameMaxLen) {
+      self.hostname = "";
+    } else {
+      // Hostnames are always lower case.
+      self.hostname = self.hostname.toLowerCase();
+    }
+
+    if (!ipv6Hostname) {
+      // IDNA Support: Returns a punycoded representation of "domain".
+      // It only converts parts of the domain name that
+      // have non-ASCII characters, i.e. it doesn't matter if
+      // you call it with a domain that already is ASCII-only.
+
+      // Use lenient mode (`true`) to try to support even non-compliant
+      // URLs.
+      self.hostname = toASCII(self.hostname);
+    }
+
+    const p = self.port ? ":" + self.port : "";
+    const h = self.hostname || "";
+    self.host = h + p;
+
+    // strip [ and ] from the hostname
+    // the host field still retains them, though
+    if (ipv6Hostname) {
+      self.hostname = self.hostname.slice(1, -1);
+      if (rest[0] !== "/") {
+        rest = "/" + rest;
+      }
+    }
+  }
+
+  let questionIdx = -1;
+  let hashIdx = -1;
+  for (let i = 0; i < rest.length; ++i) {
+    const code = rest.charCodeAt(i);
+    if (code === CHAR_HASH) {
+      self.hash = rest.slice(i);
+      hashIdx = i;
+      break;
+    } else if (code === CHAR_QUESTION_MARK && questionIdx === -1) {
+      questionIdx = i;
+    }
+  }
+
+  if (questionIdx !== -1) {
+    if (hashIdx === -1) {
+      self.search = rest.slice(questionIdx);
+    } else {
+      self.search = rest.slice(questionIdx, hashIdx);
+    }
+  } else if (parseQueryString) {
+    // No query string, but parseQueryString still requested
+    self.search = "";
+  }
+
+  const useQuestionIdx = questionIdx !== -1 &&
+    (hashIdx === -1 || questionIdx < hashIdx);
+  const firstIdx = useQuestionIdx ? questionIdx : hashIdx;
+  if (firstIdx === -1) {
+    if (rest.length > 0) self.pathname = rest;
+  } else if (firstIdx > 0) {
+    self.pathname = rest.slice(0, firstIdx);
+  }
+  if (slashedProtocol.has(lowerProto) && self.hostname && !self.pathname) {
+    self.pathname = "/";
+  }
+
+  // Finally, reconstruct the href based on what has been validated.
+  self.href = format(self);
 }
 
 /**
