@@ -78,12 +78,7 @@ const tabRegEx = /\t/g;
 // define these here so at least they only have to be
 // compiled once on the first module load.
 const protocolPattern = /^[a-z0-9.+-]+:/i;
-const portPattern = /:[0-9]*$/;
 const hostPattern = /^\/\/[^@/]+@[^@/]+/;
-// Special case for a simple path URL
-const simplePathPattern = /^(\/\/?(?!\/)[^?\s]*)(\?[^\s]*)?$/;
-// Protocols that can allow "unsafe" and "unwise" chars.
-const unsafeProtocol = new Set(["javascript", "javascript:"]);
 // Protocols that never have a hostname.
 const hostlessProtocol = new Set(["javascript", "javascript:"]);
 // Protocols that always contain a // bit.
