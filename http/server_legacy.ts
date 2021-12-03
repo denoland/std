@@ -19,13 +19,6 @@ const ERROR_ADDRESS_INVALID = "Invalid address";
  *
  * Throws a `TypeError` when the address is invalid.
  *
- * ```ts
- * import { _parseAddrFromStr } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- *
- * const addr = "::1:8000";
- * const listenOptions = _parseAddrFromStr(addr);
- * ```
- *
  * @param addr The address string to parse.
  * @param defaultPort Default port when not included in the address string.
  * @return The parsed address.
@@ -125,7 +118,7 @@ export class ServerRequest {
             .map((e): string => e.trim().toLowerCase());
           assert(
             parts.includes("chunked"),
-            'transfer-encoding must include "chunked" if content-length is not set',
+            'transfer-encoding must include "chunked" if content-length is not set'
           );
           this.#body = chunkedBodyReader(this.headers, this.r);
         } else {
@@ -202,7 +195,7 @@ export class Server implements AsyncIterable<ServerRequest> {
 
   // Yields all HTTP requests on a single TCP connection.
   private async *iterateHttpRequests(
-    conn: Deno.Conn,
+    conn: Deno.Conn
   ): AsyncIterableIterator<ServerRequest> {
     const reader = new BufReader(conn);
     const writer = new BufWriter(conn);
@@ -280,7 +273,7 @@ export class Server implements AsyncIterable<ServerRequest> {
   // same kind and adds it to the request multiplexer so that another TCP
   // connection can be accepted.
   private async *acceptConnAndIterateHttpRequests(
-    mux: MuxAsyncIterator<ServerRequest>,
+    mux: MuxAsyncIterator<ServerRequest>
   ): AsyncIterableIterator<ServerRequest> {
     if (this.#closing) return;
     // Wait for a new connection.
@@ -363,7 +356,7 @@ export function serve(addr: string | HTTPOptions): Server {
  */
 export async function listenAndServe(
   addr: string | HTTPOptions,
-  handler: (req: ServerRequest) => void,
+  handler: (req: ServerRequest) => void
 ) {
   const server = serve(addr);
 
@@ -436,7 +429,7 @@ export function serveTLS(options: HTTPSOptions): Server {
  */
 export async function listenAndServeTLS(
   options: HTTPSOptions,
-  handler: (req: ServerRequest) => void,
+  handler: (req: ServerRequest) => void
 ) {
   const server = serveTLS(options);
 
