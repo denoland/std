@@ -817,8 +817,9 @@ function autoEscapeStr(rest: string) {
 }
 
 /**
- * The url.urlParse() method takes a URL string, parses it, and returns a URL object..
+ * The url.urlParse() method takes a URL string, parses it, and returns a URL object.
  *
+ * @see Tested in `parallel/test-url-parse-format.js`.
  * @param url The URL string to parse.
  * @param parseQueryString If `true`, the query property will always be set to an object returned by the querystring module's parse() method. If false,
  * the query property on the returned URL object will be an unparsed, undecoded string. Default: false.
