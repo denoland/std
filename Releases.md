@@ -1,3 +1,14 @@
+### 0.117.0 / 2021.12.03
+
+- feat(http): introduce onError option on ServerInit (#1621)
+- feat(node/readline): Interface, createInterface (#1554)
+- fix(node): use async read for stdin (#1653)
+- fix(std/node): Add base64url encoding support, indexOf, lastIndexOf and
+  includes to Buffer (#1636)
+- test(node/fs): enable `test-fs-rm.js` (#1632)
+- fix(node/util/inspect): Fix some bugs (#1637)
+- fix(node): Use upstream implementation for streams (#1634)
+
 ### 0.116.0 / 2021.11.24
 
 - feat(node/os): implement os.hostname() (#1631)
