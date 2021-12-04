@@ -21,11 +21,11 @@ export type FileLoggerOptions<L extends LogLevels, M, A> = Readonly<{
 }>;
 
 export type FileLogger<L extends LogLevels, M, A> =
-    & Logger<L, M, A>
-    & {
-        flush(): void
-        close(): void
-    }
+  & Logger<L, M, A>
+  & {
+    flush(): void;
+    close(): void;
+  };
 /**
  * Creates a file logger that writes log messages into the given file. By default a new file will be created if
  * one does not exist yet or append to already existing file. This behavior can be configured
@@ -56,18 +56,18 @@ export function buildFileLogger<L extends LogLevels, M, A>(
 
       buf.writeSync(encoder.encode(`${messageString}\n`));
     },
-  ) as FileLogger<L, M, A> ;
+  ) as FileLogger<L, M, A>;
 
-  logger.flush = () => buf.flush()
+  logger.flush = () => buf.flush();
   logger.close = () => {
-      logger.flush()
-      file.close()
-      removeEventListener("unload", logger.close)
-  }
+    logger.flush();
+    file.close();
+    removeEventListener("unload", logger.close);
+  };
 
   addEventListener("unload", logger.close);
 
-  return logger
+  return logger;
 }
 
 /** Options for `buildConsoleLogger` */

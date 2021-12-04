@@ -68,7 +68,7 @@ export function toLoggableString(data: unknown): string {
   }
 
   if (typeof data === "function") {
-    return "<Function>"
+    return "<Function>";
   }
 
   return String(data);

@@ -1,19 +1,24 @@
 # Log
 
-Module providing a global default logger that can be attached on to and functions to build custom loggers.
+Module providing a global default logger that can be attached on to and
+functions to build custom loggers.
 
-**If you are a library author, please see the "Framework Logging" section at the bottom**
+**If you are a library author, please see the "Framework Logging" section at the
+bottom**
 
 ## Get started
 
 If you just want to log to stdout an stderr, set up the default loggeer with
 
 ```ts
-import { addDefaultLogger, buildDefaultConsoleLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
+import {
+  addDefaultLogger,
+  buildDefaultConsoleLogger,
+} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
 addDefaultLogger(
-  buildDefaultConsoleLogger("info")
-)
+  buildDefaultConsoleLogger("info"),
+);
 ```
 
 and use the default logger in your code like this
@@ -21,22 +26,26 @@ and use the default logger in your code like this
 ```ts
 import { log } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
-log.info("Some message")
-log.error("Error!", someObject)
+log.info("Some message");
+log.error("Error!", someObject);
 ```
 
-This setup will log all messages of level `info` and above to `stdout` or `stderr` respectively.
+This setup will log all messages of level `info` and above to `stdout` or
+`stderr` respectively.
 
 ## Default Logging
 
-The above example uses the default logger, which is exported as `log`. By default, it does nothing, but you can
-add loggers receiving it's messages to it using `addDefaultLogger`. The difference to setting up an own console
-logger is that third party code that wants to provide logs will be able to use the default logger as well, giving
-you a central place to control how they are handled as well. We will look at framework logging later.
+The above example uses the default logger, which is exported as `log`. By
+default, it does nothing, but you can add loggers receiving it's messages to it
+using `addDefaultLogger`. The difference to setting up an own console logger is
+that third party code that wants to provide logs will be able to use the default
+logger as well, giving you a central place to control how they are handled as
+well. We will look at framework logging later.
 
 ### Default Log Levels
 
-The default log levels are (in order of importance, top ones being more important):
+The default log levels are (in order of importance, top ones being more
+important):
 
 1. `error`
 2. `warn`
@@ -44,14 +53,17 @@ The default log levels are (in order of importance, top ones being more importan
 4. `debug`
 5. `trace`
 
-They are exported as `defaultLogLevels`, but will automatically be used by `log` and all `buildDefault-` loggers
+They are exported as `defaultLogLevels`, but will automatically be used by `log`
+and all `buildDefault-` loggers
 
 ## Builtin Logger Types & Custom Log Levels
 
-There are three builtin loggers that can be used with custom log levels to build custom loggers. They all use the
-same message formatter by default, but can be configured to use any custom one. They all accept a `threshold` to filter
-messages. They also accept optional type parameters to set the type for the passed `message`s and optional `additionalData`,
-allowing to enforce custom log formats throughout your application.
+There are three builtin loggers that can be used with custom log levels to build
+custom loggers. They all use the same message formatter by default, but can be
+configured to use any custom one. They all accept a `threshold` to filter
+messages. They also accept optional type parameters to set the type for the
+passed `message`s and optional `additionalData`, allowing to enforce custom log
+formats throughout your application.
 
 You define custom log levels with a simple record like this:
 
@@ -59,35 +71,35 @@ You define custom log levels with a simple record like this:
 const myLogLevels = {
   foo: 1,
   bar: 2,
-}
+};
 
 const logger = buildConsoleLogger(
   myLogLevels,
   "foo",
-  level => false,
-)
+  (level) => false,
+);
 
-logger.foo('A message')
-logger.bar('Another message', [ 'some', 'additional', 'data' ])
+logger.foo("A message");
+logger.bar("Another message", ["some", "additional", "data"]);
 ```
 
-You could define a logger that just accepts `numbers` and no additional data
-to print them to a number log file like this:
+You could define a logger that just accepts `numbers` and no additional data to
+print them to a number log file like this:
 
 ```ts
 const myLogLevels = {
   minor: 1,
   major: 2,
-}
+};
 
 const logger = buildFileLogger<typeof myLogLevels, number, undefined>(
   myLogLevels,
   "major",
   "numbers.log",
-)
+);
 
-logger.minor(5)
-logger.major(10)
+logger.minor(5);
+logger.major(10);
 ```
 
 The three builtin loggers are:
@@ -98,62 +110,65 @@ A logger that prints to `stdout` and `stderr`, see `buildConsoleLogger`.
 
 ### File Logger
 
-A logger that writes lines to a file, see `buildFileLogger`. Keep in mind that this
-needs write permissions via `--allow-write`.
+A logger that writes lines to a file, see `buildFileLogger`. Keep in mind that
+this needs write permissions via `--allow-write`.
 
 ### Multi Logger
 
-A logger that passes messages on to a list of other loggers, see `buildMultiLogger`. It
-pass on all messages by default (`threshold = null`) but can be configured to filter like
-any other logger.
+A logger that passes messages on to a list of other loggers, see
+`buildMultiLogger`. It pass on all messages by default (`threshold = null`) but
+can be configured to filter like any other logger.
 
 ## Custom Loggers
 
-Using `buildLogger`, you can build a completely custom logger with custom log levels,
-message handling and even optional custom dispatching logic (the default dispatcher 
-is responsible for filtering messages based on `threshold`).
+Using `buildLogger`, you can build a completely custom logger with custom log
+levels, message handling and even optional custom dispatching logic (the default
+dispatcher is responsible for filtering messages based on `threshold`).
 
-A vote logger that will only show messages below the threshold after the 5th message, that accepts only
-strings and that truncates messages to 10 chars could look like this:
+A vote logger that will only show messages below the threshold after the 5th
+message, that accepts only strings and that truncates messages to 10 chars could
+look like this:
 
 ```ts
 const logLevels = {
   irrelevant: 1,
   normal: 2,
   important: 3,
-}
+};
 
 const counts = {
   irrelevant: 0,
   normal: 0,
   important: 0,
-}
+};
 
 const logger = buildLogger(
   logLevels,
   "normal",
   (level, message: string) => {
-    console.log(message.substr(0, 10))
+    console.log(message.substr(0, 10));
   },
   (levels, threshold, handler, level, message) => {
-    counts[level] += 1
+    counts[level] += 1;
 
-    if (levels[threshold] > levels[level] || counts[level] >= 5)
-      handler(level, message)
+    if (levels[threshold] > levels[level] || counts[level] >= 5) {
+      handler(level, message);
+    }
   },
-)
+);
 ```
 
 ### Framework Logging
 
-If you are a framework or library author that wants to log for their users, please use
-`buildFrameworkLogger` and pass a key to it that is unique to your library. It passes that
-information on under the hood and allows to offer more advanced source-speecific logging rules.
+If you are a framework or library author that wants to log for their users,
+please use `buildFrameworkLogger` and pass a key to it that is unique to your
+library. It passes that information on under the hood and allows to offer more
+advanced source-speecific logging rules.
 
 ```ts
 import { buildFrameworkLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
-const logger = buildFrameworkLogger("awesome-lib")
+const logger = buildFrameworkLogger("awesome-lib");
 
-logger.info("Some message")
+logger.info("Some message");
 ```

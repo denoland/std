@@ -1148,59 +1148,63 @@ Buffer.prototype.slice = function slice(start, end) {
   return newBuf;
 };
 
-Buffer.prototype.readUintLE = Buffer.prototype.readUIntLE =
-  function readUIntLE(offset, byteLength) {
-    if (offset === undefined) {
-      throw new ERR_INVALID_ARG_TYPE("offset", "number", offset);
-    }
-    if (byteLength === 6) {
-      return readUInt48LE(this, offset);
-    }
-    if (byteLength === 5) {
-      return readUInt40LE(this, offset);
-    }
-    if (byteLength === 3) {
-      return readUInt24LE(this, offset);
-    }
-    if (byteLength === 4) {
-      return this.readUInt32LE(offset);
-    }
-    if (byteLength === 2) {
-      return this.readUInt16LE(offset);
-    }
-    if (byteLength === 1) {
-      return this.readUInt8(offset);
-    }
+Buffer.prototype.readUintLE = Buffer.prototype.readUIntLE = function readUIntLE(
+  offset,
+  byteLength,
+) {
+  if (offset === undefined) {
+    throw new ERR_INVALID_ARG_TYPE("offset", "number", offset);
+  }
+  if (byteLength === 6) {
+    return readUInt48LE(this, offset);
+  }
+  if (byteLength === 5) {
+    return readUInt40LE(this, offset);
+  }
+  if (byteLength === 3) {
+    return readUInt24LE(this, offset);
+  }
+  if (byteLength === 4) {
+    return this.readUInt32LE(offset);
+  }
+  if (byteLength === 2) {
+    return this.readUInt16LE(offset);
+  }
+  if (byteLength === 1) {
+    return this.readUInt8(offset);
+  }
 
-    boundsError(byteLength, 6, "byteLength");
-  };
+  boundsError(byteLength, 6, "byteLength");
+};
 
-Buffer.prototype.readUintBE = Buffer.prototype.readUIntBE =
-  function readUIntBE(offset, byteLength) {
-    if (offset === undefined) {
-      throw new ERR_INVALID_ARG_TYPE("offset", "number", offset);
-    }
-    if (byteLength === 6) {
-      return readUInt48BE(this, offset);
-    }
-    if (byteLength === 5) {
-      return readUInt40BE(this, offset);
-    }
-    if (byteLength === 3) {
-      return readUInt24BE(this, offset);
-    }
-    if (byteLength === 4) {
-      return this.readUInt32BE(offset);
-    }
-    if (byteLength === 2) {
-      return this.readUInt16BE(offset);
-    }
-    if (byteLength === 1) {
-      return this.readUInt8(offset);
-    }
+Buffer.prototype.readUintBE = Buffer.prototype.readUIntBE = function readUIntBE(
+  offset,
+  byteLength,
+) {
+  if (offset === undefined) {
+    throw new ERR_INVALID_ARG_TYPE("offset", "number", offset);
+  }
+  if (byteLength === 6) {
+    return readUInt48BE(this, offset);
+  }
+  if (byteLength === 5) {
+    return readUInt40BE(this, offset);
+  }
+  if (byteLength === 3) {
+    return readUInt24BE(this, offset);
+  }
+  if (byteLength === 4) {
+    return this.readUInt32BE(offset);
+  }
+  if (byteLength === 2) {
+    return this.readUInt16BE(offset);
+  }
+  if (byteLength === 1) {
+    return this.readUInt8(offset);
+  }
 
-    boundsError(byteLength, 6, "byteLength");
-  };
+  boundsError(byteLength, 6, "byteLength");
+};
 
 Buffer.prototype.readUint8 = Buffer.prototype.readUInt8 = function readUInt8(
   offset = 0,
@@ -1509,10 +1513,12 @@ Buffer.prototype.writeUintBE = Buffer.prototype.writeUIntBE =
     boundsError(byteLength, 6, "byteLength");
   };
 
-Buffer.prototype.writeUint8 = Buffer.prototype.writeUInt8 =
-  function writeUInt8(value, offset = 0) {
-    return writeU_Int8(this, value, offset, 0, 0xff);
-  };
+Buffer.prototype.writeUint8 = Buffer.prototype.writeUInt8 = function writeUInt8(
+  value,
+  offset = 0,
+) {
+  return writeU_Int8(this, value, offset, 0, 0xff);
+};
 
 Buffer.prototype.writeUint16LE = Buffer.prototype.writeUInt16LE =
   function writeUInt16LE(value, offset = 0) {

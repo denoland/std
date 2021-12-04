@@ -1,9 +1,9 @@
 import {
-    buildDefaultLogMessage,
-    buildLogger,
-    defaultDispatch,
-    LogHandler,
-    toLoggableString,
+  buildDefaultLogMessage,
+  buildLogger,
+  defaultDispatch,
+  LogHandler,
+  toLoggableString,
 } from "./logging.ts";
 import { assert, assertEquals, assertMatch } from "../testing/asserts.ts";
 
@@ -86,39 +86,37 @@ Deno.test("Default message formatter formatting", () => {
 });
 
 Deno.test("Default disptacher filters by urgency vs threshold", () => {
-    resetTestMessages();
+  resetTestMessages();
 
-    const calls: Parameters<typeof testHandler>[] = [
-        [ "middle", 1 ],
-        [ "high", 5 ],
-        [ "low", 10 ],
-        [ "low", -2.2 ],
-        [ "high", 8 ],
-        [ "low", 1 ],
-        [ "middle", 0 ],
-        [ "low", 4 ],
-        [ "high", 23 ],
-    ];
+  const calls: Parameters<typeof testHandler>[] = [
+    ["middle", 1],
+    ["high", 5],
+    ["low", 10],
+    ["low", -2.2],
+    ["high", 8],
+    ["low", 1],
+    ["middle", 0],
+    ["low", 4],
+    ["high", 23],
+  ];
 
-    calls.forEach(it => {
-        defaultDispatch(
-            testLevels,
-            "middle",
-            testHandler,
-            ...it,
-        )
-    });
+  calls.forEach((it) => {
+    defaultDispatch(
+      testLevels,
+      "middle",
+      testHandler,
+      ...it,
+    );
+  });
 
-    assertEquals(
-        messages,
-        calls
-            .filter(
-                ([level]) => level !== "low"
-            )
-            .map(([...elements]) =>
-                 [ ...elements, undefined ]
-            ),
-     );
+  assertEquals(
+    messages,
+    calls
+      .filter(
+        ([level]) => level !== "low",
+      )
+      .map(([...elements]) => [...elements, undefined]),
+  );
 });
 
 Deno.test("Default logger uses default dispatcher", () => {
@@ -142,7 +140,6 @@ Deno.test("Default logger uses default dispatcher", () => {
     ["high", 23, undefined],
   ]);
 });
-
 
 Deno.test("Custom dispatcher is in control", () => {
   resetTestMessages();
@@ -178,4 +175,3 @@ Deno.test("Custom dispatcher is in control", () => {
     ["low", 4, undefined],
   ]);
 });
-
