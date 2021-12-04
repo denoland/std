@@ -26,6 +26,8 @@ function readLogFile() {
   return Deno.readTextFileSync(logFile);
 }
 
+addEventListener("unload", () => Deno.removeSync(logFile))
+
 function buildTestFileLogger(
   options?: FileLoggerOptions<TestLevels, number, unknown>,
 ) {
