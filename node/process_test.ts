@@ -397,6 +397,8 @@ Deno.test("process.exitCode", () => {
   assert(process.exitCode === undefined);
   process.exitCode = 127;
   assert(process.exitCode === 127);
+  process.exitCode = undefined;
+  assert(process.exitCode === undefined);
 });
 
 Deno.test("process.exitCode when exiting", async () => {

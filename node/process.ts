@@ -54,6 +54,8 @@ Object.defineProperty(argv, "0", { get: Deno.execPath });
 // Overwrites the 2st item with getter.
 Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
 
+let _exitCode: number | undefined;
+
 /** https://nodejs.org/api/process.html#process_process_exit_code */
 export const exit = (code?: number) => {
   if (code || code === 0) {
@@ -220,17 +222,7 @@ class Process extends EventEmitter {
 
     // This causes the exit event to be binded to the unload event
     globalThis.addEventListener("unload", () => {
-      const emit = super.emit.bind(this);
-      let depth = 10;
-      function exitHandler() {
-        depth--;
-        if (depth === 0) {
-          emit("exit", process.exitCode);
-          Deno.exit(process.exitCode || 0);
-        }
-        queueMicrotask(exitHandler);
-      }
-      queueMicrotask(exitHandler);
+      super.emit("exit", process.exitCode);
     });
   }
 
@@ -270,7 +262,15 @@ class Process extends EventEmitter {
   _exiting = _exiting;
 
   /** https://nodejs.org/api/process.html#processexitcode_1 */
-  exitCode: undefined | number = undefined;
+  get exitCode(): undefined | number {
+    return _exitCode;
+  }
+
+  set exitCode(code: number | undefined) {
+    _exitCode = code;
+    // @ts-ignore Deno.core is not defined in types
+    Deno.core.opSync("op_set_exit_code", code);
+  }
 
   // Typed as any to avoid importing "module" module for types
   // deno-lint-ignore no-explicit-any

@@ -51,7 +51,7 @@ type Chunk = string | Buffer | Uint8Array;
 
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
-    // @ts-ignore using core isn't a best practice but hey ...
+    // @ts-ignore Deno.core is not defined in types
     return Deno.core.encode(chunk);
   }
   return chunk;
