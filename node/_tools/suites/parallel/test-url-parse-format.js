@@ -8,8 +8,9 @@
 'use strict';
 const common = require('../common');
 
-if (!common.hasIntl)
-  common.skip('missing Intl');
+// TODO(wafuwafu): Implement `hasIntl`, `skip`
+// if (!common.hasIntl)
+//   common.skip('missing Intl');
 
 const assert = require('assert');
 const inspect = require('util').inspect;
