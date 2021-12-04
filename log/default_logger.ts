@@ -18,17 +18,10 @@ export const defaultLogLevels = {
 export type DefaultLogLevels = typeof defaultLogLevels;
 
 type DefaultLogger = Logger<
-    DefaultLogLevels,
-    string,
-    { source?: string } & Record<string, unknown>
+  DefaultLogLevels,
+  string,
+  { source?: string } & Record<string, unknown>
 >;
-
-const defaultLoggerConsumers: DefaultLogger[] = [];
-
-const defaultLogger = buildMultiLogger(
-  defaultLogLevels,
-  defaultLoggerConsumers,
-);
 
 /**
  * Registers a logger following the default logger types to get passed messages sent to the default logger (`log`).
@@ -46,10 +39,94 @@ const defaultLogger = buildMultiLogger(
  * ```
  */
 export function addDefaultLogger(
-  logger: Logger<DefaultLogLevels, string, unknown>,
+  logger: DefaultLogger,
 ) {
   defaultLoggerConsumers.push(logger);
 }
+
+/**
+ * Creates a file logger with the default log levels using the given threshold.
+ */
+export function buildDefaultFileLogger(
+  threshold: keyof DefaultLogLevels,
+  filename: string,
+): DefaultLogger {
+  return buildFileLogger(
+    defaultLogLevels,
+    threshold,
+    filename,
+  );
+}
+
+type DefaultConsoleLogger = DefaultLogger & { marker: symbol };
+const defaultConsoleLoggerMarker = Symbol("Default Console Logger");
+/**
+ * Creates a console logger with the default levels using the given threshold. If you simply want to
+ * log to stdout, this is what you want to use.
+ */
+export function buildDefaultConsoleLogger(
+  threshold: keyof DefaultLogLevels,
+): DefaultConsoleLogger {
+  return {
+    ...buildConsoleLogger(
+      defaultLogLevels,
+      threshold,
+      (it) => defaultLogLevels[it] >= defaultLogLevels["warn"],
+    ),
+    marker: defaultConsoleLoggerMarker,
+  };
+}
+
+export function buildFrameworkLogger(source: string) {
+  return buildLogger<
+    DefaultLogLevels,
+    string,
+    Record<string, unknown>
+  >(
+    defaultLogLevels,
+    null,
+    (level, message, additionalData) =>
+      defaultLogger[level](
+        message,
+        {
+          ...additionalData,
+          source,
+        },
+      ),
+  );
+}
+
+const defaultLoggerConsumers: (DefaultLogger | DefaultConsoleLogger)[] = [
+  buildDefaultConsoleLogger("info"),
+];
+
+export function disableDefaultConsoleLogger() {
+  const index = defaultLoggerConsumers.findIndex((it) =>
+    (it as DefaultConsoleLogger).marker === defaultConsoleLoggerMarker
+  );
+
+  if (index === -1) {
+    throw new Error(
+      "Tried disabling the default console logger, but it has already been disabled",
+    );
+  }
+
+  defaultLoggerConsumers.splice(index, 1);
+}
+
+export function setDefaultConsoleLoggerThreshold(
+  threshold: keyof DefaultLogLevels,
+) {
+  disableDefaultConsoleLogger();
+  addDefaultLogger(
+    buildDefaultConsoleLogger(threshold),
+  );
+}
+
+const defaultLogger = buildMultiLogger(
+  defaultLogLevels,
+  defaultLoggerConsumers,
+);
 
 /**
  * The default logger. Does nothing by default, as it is ane empty multi logger - use `addDefaultLogger` to add loggers to handle it's meessages.
@@ -69,50 +146,3 @@ export function addDefaultLogger(
  * ```
  */
 export const log = defaultLogger;
-
-/**
- * Creates a file logger with the default log levels using the given threshold.
- */
-export function buildDefaultFileLogger(
-  threshold: keyof DefaultLogLevels,
-  filename: string,
-): DefaultLogger {
-  return buildFileLogger(
-    defaultLogLevels,
-    threshold,
-    filename,
-  );
-}
-
-/**
- * Creates a console logger with the default levels using the given threshold. If you simply want to
- * log to stdout, this is what you want to use.
- */
-export function buildDefaultConsoleLogger(
-  threshold: keyof DefaultLogLevels,
-): DefaultLogger {
-  return buildConsoleLogger(
-    defaultLogLevels,
-    threshold,
-    (it) => defaultLogLevels[it] >= defaultLogLevels["warn"],
-  );
-}
-
-export function buildFrameworkLogger(source: string) {
-    return buildLogger<
-        DefaultLogLevels,
-        string,
-        Record<string, unknown>
-    >(
-        defaultLogLevels,
-        null,
-        (level, message, additionalData) => defaultLogger[level](
-            message,
-            {
-                ...additionalData,
-                source,
-            },
-        ),
-    )
-}
-
