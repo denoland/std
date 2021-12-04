@@ -16,7 +16,8 @@ import { AbortError, denoErrorToNodeError } from "../_errors.ts";
 
 export function writeFile(
   pathOrRid: string | number | URL,
-  data: string | Uint8Array,
+  // deno-lint-ignore ban-types
+  data: string | Uint8Array | Object,
   optOrCallback: Encodings | CallbackWithError | WriteFileOptions | undefined,
   callback?: CallbackWithError,
 ): void {
@@ -42,7 +43,9 @@ export function writeFile(
   const encoding = checkEncoding(getEncoding(options)) || "utf8";
   const openOptions = getOpenOptions(flag || "w");
 
-  if (typeof data === "string") data = Buffer.from(data, encoding);
+  if (!ArrayBuffer.isView(data)) {
+    data = Buffer.from(String(data), encoding);
+  }
 
   const isRid = typeof pathOrRid === "number";
   let file;
@@ -77,7 +80,8 @@ export function writeFile(
 
 export function writeFileSync(
   pathOrRid: string | number | URL,
-  data: string | Uint8Array,
+  // deno-lint-ignore ban-types
+  data: string | Uint8Array | Object,
   options?: Encodings | WriteFileOptions,
 ): void {
   pathOrRid = pathOrRid instanceof URL ? fromFileUrl(pathOrRid) : pathOrRid;
@@ -93,7 +97,9 @@ export function writeFileSync(
   const encoding = checkEncoding(getEncoding(options)) || "utf8";
   const openOptions = getOpenOptions(flag || "w");
 
-  if (typeof data === "string") data = Buffer.from(data, encoding);
+  if (!ArrayBuffer.isView(data)) {
+    data = Buffer.from(String(data), encoding);
+  }
 
   const isRid = typeof pathOrRid === "number";
   let file;

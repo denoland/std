@@ -379,6 +379,9 @@ class Process extends EventEmitter {
   binding(name: BindingName) {
     return getBinding(name);
   }
+
+  /** https://nodejs.org/api/process.html#processumaskmask */
+  umask = Deno.umask;
 }
 
 /** https://nodejs.org/api/process.html#process_process */
