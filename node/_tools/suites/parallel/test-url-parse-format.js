@@ -8,7 +8,7 @@
 'use strict';
 const common = require('../common');
 
-// TODO(wafuwafu): Implement `hasIntl`, `skip`
+// TODO(getspooky): Implement `hasIntl`, `skip`
 // if (!common.hasIntl)
 //   common.skip('missing Intl');
 
