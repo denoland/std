@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import * as types from "./types.ts";
-import { validateString } from "../validators.js";
+import { validateObject, validateString } from "../validators.js";
 
 import {
   ALL_PROPERTIES,
@@ -216,8 +216,7 @@ Object.defineProperty(inspect, "defaultOptions", {
     return inspectDefaultOptions;
   },
   set(options) {
-    // TODO(wafuwafu13): Validate
-    // validateObject(options, 'options');
+    validateObject(options, "options");
     return Object.assign(inspectDefaultOptions, options);
   },
 });
