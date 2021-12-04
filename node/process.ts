@@ -2,7 +2,7 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
-import { validateString } from "./_validators.ts";
+import { validateString } from "./internal/validators.js";
 import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
 import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
@@ -32,6 +32,8 @@ export {
 };
 import { stderr, stdin, stdout } from "./_process/streams.ts";
 export { stderr, stdin, stdout };
+import { getBinding } from "./internal_binding/mod.ts";
+import type { BindingName } from "./internal_binding/mod.ts";
 
 const notImplementedEvents = [
   "beforeExit",
@@ -381,6 +383,13 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#process_process_emitwarning_warning_options */
   emitWarning = emitWarning;
+
+  binding(name: BindingName) {
+    return getBinding(name);
+  }
+
+  /** https://nodejs.org/api/process.html#processumaskmask */
+  umask = Deno.umask;
 }
 
 /** https://nodejs.org/api/process.html#process_process */

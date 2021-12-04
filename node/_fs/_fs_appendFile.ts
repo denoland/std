@@ -5,7 +5,7 @@ import {
   isFileOptions,
   WriteFileOptions,
 } from "./_fs_common.ts";
-import { Encodings, notImplemented } from "../_utils.ts";
+import { Encodings } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 
 /**
@@ -44,11 +44,7 @@ export function appendFile(
         ? options.flag
         : undefined;
 
-      if (mode) {
-        // TODO(bartlomieju) rework once https://github.com/denoland/deno/issues/4017 completes
-        notImplemented("Deno does not yet support setting mode on create");
-      }
-      Deno.open(pathOrRid as string, getOpenOptions(flag))
+      Deno.open(pathOrRid as string, { ...getOpenOptions(flag), mode })
         .then(({ rid: openedFileRid }) => {
           rid = openedFileRid;
           return Deno.write(openedFileRid, buffer);
@@ -97,12 +93,7 @@ export function appendFileSync(
         ? options.flag
         : undefined;
 
-      if (mode) {
-        // TODO(bartlomieju) rework once https://github.com/denoland/deno/issues/4017 completes
-        notImplemented("Deno does not yet support setting mode on create");
-      }
-
-      const file = Deno.openSync(pathOrRid, getOpenOptions(flag));
+      const file = Deno.openSync(pathOrRid, { ...getOpenOptions(flag), mode });
       rid = file.rid;
     }
 

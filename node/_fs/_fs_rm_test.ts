@@ -14,7 +14,7 @@ Deno.test({
   async fn() {
     const dir = Deno.makeTempDirSync();
     await new Promise<void>((resolve, reject) => {
-      rm(dir, (err) => {
+      rm(dir, { recursive: true }, (err) => {
         if (err) reject(err);
         resolve();
       });
@@ -108,7 +108,7 @@ Deno.test({
   name: "SYNC: removing empty folder",
   fn() {
     const dir = Deno.makeTempDirSync();
-    rmSync(dir);
+    rmSync(dir, { recursive: true });
     assertEquals(existsSync(dir), false);
   },
 });
