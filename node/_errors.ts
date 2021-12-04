@@ -21,6 +21,14 @@ import {
 } from "./internal_binding/uv.ts";
 import { assert } from "../_util/assert.ts";
 import { fileURLToPath } from "./url.ts";
+import { isWindows } from "../_util/os.ts";
+import { os as osConstants } from "./internal_binding/constants.ts";
+const {
+  errno: {
+    ENOTDIR,
+    ENOENT,
+  },
+} = osConstants;
 
 export { errorMap };
 
@@ -2726,6 +2734,21 @@ export class ERR_INTERNAL_ASSERTION extends NodeError {
       "ERR_INTERNAL_ASSERTION",
       message === undefined ? suffix : `${message}\n${suffix}`,
     );
+  }
+}
+
+// Using `fs.rmdir` on a path that is a file results in an ENOENT error on Windows and an ENOTDIR error on POSIX.
+export class ERR_FS_RMDIR_ENOTDIR extends NodeSystemError {
+  constructor(path: string) {
+    const code = isWindows ? "ENOENT" : "ENOTDIR";
+    const ctx: NodeSystemErrorCtx = {
+      message: "not a directory",
+      path,
+      syscall: "rmdir",
+      code,
+      errno: isWindows ? ENOENT : ENOTDIR,
+    };
+    super(code, ctx, "Path is not a directory");
   }
 }
 
