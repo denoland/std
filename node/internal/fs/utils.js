@@ -748,11 +748,13 @@ const validatePath = hideStackFrames((path, propName = "path") => {
   }
 });
 
-const getValidatedPath = hideStackFrames((fileURLOrPath, propName = "path") => {
-  const path = toPathIfFileURL(fileURLOrPath);
-  validatePath(path, propName);
-  return path;
-});
+export const getValidatedPath = hideStackFrames(
+  (fileURLOrPath, propName = "path") => {
+    const path = toPathIfFileURL(fileURLOrPath);
+    validatePath(path, propName);
+    return path;
+  },
+);
 
 const getValidatedFd = hideStackFrames((fd, propName = "fd") => {
   if (Object.is(fd, -0)) {
@@ -893,7 +895,7 @@ export const validateRmOptionsSync = hideStackFrames(
 );
 
 let recursiveRmdirWarned = process.noDeprecation;
-function emitRecursiveRmdirWarning() {
+export function emitRecursiveRmdirWarning() {
   if (!recursiveRmdirWarned) {
     process.emitWarning(
       "In future versions of Node.js, fs.rmdir(path, { recursive: true }) " +
@@ -905,7 +907,7 @@ function emitRecursiveRmdirWarning() {
   }
 }
 
-const validateRmdirOptions = hideStackFrames(
+export const validateRmdirOptions = hideStackFrames(
   (options, defaults = defaultRmdirOptions) => {
     if (options === undefined) {
       return defaults;
