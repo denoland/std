@@ -17,7 +17,7 @@ export const defaultLogLevels = {
 /** Default log levels type used for the default logger */
 export type DefaultLogLevels = typeof defaultLogLevels;
 
-type DefaultLogger = Logger<
+export type DefaultLogger = Logger<
   DefaultLogLevels,
   string,
   { source?: string } & Record<string, unknown>
@@ -77,6 +77,29 @@ export function buildDefaultConsoleLogger(
   };
 }
 
+const sourceThresholds: {
+  default: keyof DefaultLogLevels;
+  sources: ThirdPartyThresholds;
+} = {
+  default: "warn",
+  sources: {},
+};
+
+export type ThirdPartyThresholds = {
+  [source: string]: keyof DefaultLogLevels;
+};
+
+export function setThirdPartyThresholds(thresholds: ThirdPartyThresholds) {
+    sourceThresholds.sources = {
+        ...sourceThresholds.sources,
+        ...thresholds,
+    }
+}
+
+export function setThirdPartyDefaultThreshold(threshold: keyof DefaultLogLevels) {
+    sourceThresholds.default = threshold
+}
+
 export function buildFrameworkLogger(source: string) {
   return buildLogger<
     DefaultLogLevels,
@@ -87,14 +110,18 @@ export function buildFrameworkLogger(source: string) {
     null,
     (level, message, additionalData) =>
       defaultLogger[level](
-        message,
-        {
-          ...additionalData,
-          source,
-        },
+        `[${source}]\t${message}`,
+        additionalData
       ),
+    (levels, _, handler, level, ...rest) => {
+        if (levels[level] >= levels[sourceThresholds.sources[source] ?? sourceThresholds.default]) {
+            handler(level, ...rest)
+        }
+    },
   );
 }
+
+
 
 const defaultLoggerConsumers: (DefaultLogger | DefaultConsoleLogger)[] = [
   buildDefaultConsoleLogger("info"),
