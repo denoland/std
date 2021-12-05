@@ -78,17 +78,36 @@ export function buildDefaultConsoleLogger(
 }
 
 const sourceThresholds: {
-  default: keyof DefaultLogLevels;
-  sources: ThirdPartyThresholds;
+  default: keyof DefaultLogLevels | false;
+  sources: Partial<ThirdPartyThresholds>;
 } = {
   default: "warn",
   sources: {},
 };
 
 export type ThirdPartyThresholds = {
-  [source: string]: keyof DefaultLogLevels;
+  [source: string]: keyof DefaultLogLevels | false;
 };
 
+/**
+ * Sets the thresholds for log messages from third parties, with property
+ * names being source identifier (which you will see prefixed in all their log messages)
+ * with values being the respective log level threshold.
+ *
+ * Pass a threshold value of `false` to disable messages for a particular source.
+ *
+ * Example:
+ *
+ * ```ts
+ * import { setThirdPartyThresholds } from "https://deno.land/std/@STD_VERSION/log/mod.ts"
+ *
+ * setThirdPartyThresholds({
+ *   "awesome-lib": "info",
+ *   "super-framework": "trace",
+ *   "annoying-module": false,
+ * })
+ * ```
+ */
 export function setThirdPartyThresholds(thresholds: ThirdPartyThresholds) {
   sourceThresholds.sources = {
     ...sourceThresholds.sources,
@@ -96,12 +115,32 @@ export function setThirdPartyThresholds(thresholds: ThirdPartyThresholds) {
   };
 }
 
+/**
+ * Sets the threshold for log messages from third party modules, which starts
+ * out as `"warn"`.
+ *
+ * Pass `false` to disable third party logging from source you have not explicitly
+ * configured otherwise.
+ *
+ * Example:
+ *
+ * ```ts
+ * import { setThirdPartyDefaultThreshold } from "https://deno.land/std/@STD_VERSION/log/mod.ts"
+ *
+ * setThirdPartyDefaultThreshold("info")
+ * ```
+ */
 export function setThirdPartyDefaultThreshold(
-  threshold: keyof DefaultLogLevels,
+  threshold: keyof DefaultLogLevels | false,
 ) {
   sourceThresholds.default = threshold;
 }
 
+/**
+ * Creates a logger for an external module. Use this to log if you are writing a library.
+ * The given source identifier will appear as a prefix on every log message and can be
+ * used by users to configure logging filters for your module.
+ */
 export function buildThirdPartyLogger(source: string) {
   return buildLogger<
     DefaultLogLevels,
@@ -116,10 +155,15 @@ export function buildThirdPartyLogger(source: string) {
         additionalData,
       ),
     (levels, _, handler, level, ...rest) => {
-      if (
-        levels[level] >=
-          levels[sourceThresholds.sources[source] ?? sourceThresholds.default]
-      ) {
+      const messageLevel = levels[level];
+      const sourceThreshold = sourceThresholds.sources[source] ??
+        sourceThresholds.default;
+
+      if (sourceThreshold === false) {
+        return;
+      }
+
+      if (messageLevel >= levels[sourceThreshold]) {
         handler(level, ...rest);
       }
     },
@@ -130,6 +174,7 @@ const defaultLoggerConsumers: (DefaultLogger | DefaultConsoleLogger)[] = [
   buildDefaultConsoleLogger("info"),
 ];
 
+/** Stops the default logger from logging to the console */
 export function disableDefaultConsoleLogger() {
   const index = defaultLoggerConsumers.findIndex((it) =>
     (it as DefaultConsoleLogger).marker === defaultConsoleLoggerMarker
@@ -144,6 +189,10 @@ export function disableDefaultConsoleLogger() {
   defaultLoggerConsumers.splice(index, 1);
 }
 
+/**
+ * Sets the threshold for messages the default logger will log
+ * to the console. Starts out as "info"
+ */
 export function setDefaultConsoleLoggerThreshold(
   threshold: keyof DefaultLogLevels,
 ) {
