@@ -20,10 +20,8 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { notImplemented } from "./_utils.ts";
-import { EventEmitter } from "./events.js";
+import { EventEmitter } from "./events.ts";
 import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./_net.ts";
-import type { DuplexOptions } from "./_stream/duplex.ts";
-import type { WritableEncodings } from "./_stream/writable.ts";
 import { Duplex } from "./stream.ts";
 import {
   asyncIdSymbol,
@@ -48,7 +46,7 @@ import {
 } from "./_errors.ts";
 import type { ErrnoException } from "./_errors.ts";
 import { Encodings } from "./_utils.ts";
-import { isUint8Array } from "./_util/_util_types.ts";
+import { isUint8Array } from "./internal/util/types.ts";
 import {
   kAfterAsyncWrite,
   kBuffer,
@@ -60,9 +58,9 @@ import {
   setStreamTimeout,
   writeGeneric,
   writevGeneric,
-} from "./_stream_base_commons.ts";
+} from "./internal/stream_base_commons.ts";
 import { kTimeout } from "./_timers.ts";
-import { nextTick } from "./process.ts";
+import { nextTick } from "./_next_tick.ts";
 import {
   DTRACE_NET_SERVER_CONNECTION,
   DTRACE_NET_STREAM_END,
@@ -76,7 +74,7 @@ import {
   validateNumber,
   validatePort,
   validateString,
-} from "./_validators.ts";
+} from "./internal/validators.js";
 import {
   constants as TCPConstants,
   TCP,
@@ -94,6 +92,8 @@ import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
 import { codeMap } from "./internal_binding/uv.ts";
 import { guessHandleType } from "./internal_binding/util.ts";
 import { debuglog } from "./_util/_debuglog.ts";
+import type { DuplexOptions } from "./_stream.d.ts";
+import type { BufferEncoding } from "./_global.d.ts";
 
 let debug = debuglog("net", (fn) => {
   debug = fn;
@@ -491,7 +491,7 @@ function _writeAfterFIN(
   // deno-lint-ignore no-explicit-any
   chunk: any,
   encoding?:
-    | WritableEncodings
+    | BufferEncoding
     | null
     | ((error: Error | null | undefined) => void),
   cb?: ((error: Error | null | undefined) => void),
@@ -500,7 +500,8 @@ function _writeAfterFIN(
     return Duplex.prototype.write.call(
       this,
       chunk,
-      encoding as WritableEncodings | null,
+      encoding as BufferEncoding | null,
+      // @ts-expect-error Using `call` seem to be interfering with the overload for write
       cb,
     );
   }
@@ -824,6 +825,7 @@ export class Socket extends Duplex {
         // Stop the handle from reading and pause the stream
         this._handle.reading = false;
         this._handle.readStop();
+        // @ts-expect-error This property shouldn't be modified
         this.readableFlowing = false;
       } else if (!options.manualStart) {
         this.read(0);
@@ -1380,7 +1382,10 @@ export class Socket extends Duplex {
     }
   }
 
-  _destroy(exception: Error | null, cb: (err?: Error | null) => void) {
+  _destroy(
+    exception: Error | null,
+    cb: (err: Error | null) => void,
+  ) {
     debug("destroy");
     this.connecting = false;
 
@@ -1583,7 +1588,7 @@ interface Abortable {
   signal?: AbortSignal | undefined;
 }
 
-interface ListenOptions extends Abortable {
+export interface ListenOptions extends Abortable {
   fd?: number;
   port?: number | undefined;
   host?: string | undefined;

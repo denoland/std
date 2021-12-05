@@ -131,6 +131,5 @@ const Readable = require('stream').Readable;
 
   r.removeAllListeners();
 
-  // FIXME(bartlomieju):
-  // assert.strictEqual(r.eventNames().length, 0);
+  assert.strictEqual(r.eventNames().length, 0);
 }

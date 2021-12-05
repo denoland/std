@@ -3,14 +3,14 @@
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
 import { assert } from "../_util/assert.ts";
-import { EventEmitter } from "./events.js";
+import { EventEmitter } from "./events.ts";
 import { notImplemented } from "./_utils.ts";
 import { Readable, Stream, Writable } from "./stream.ts";
 import { deferred } from "../async/deferred.ts";
 import { iterateReader, writeAll } from "../streams/conversion.ts";
 import { isWindows } from "../_util/os.ts";
 import { Buffer } from "./buffer.ts";
-
+import { nextTick } from "./_next_tick.ts";
 export class ChildProcess extends EventEmitter {
   /**
    * The exit code of the child process. This property will be `null` until the child process exits.
@@ -119,7 +119,7 @@ export class ChildProcess extends EventEmitter {
       this.stdio[1] = this.stdout;
       this.stdio[2] = this.stderr;
 
-      queueMicrotask(() => {
+      nextTick(() => {
         this.emit("spawn");
         this.#spawned.resolve();
       });
@@ -192,7 +192,7 @@ export class ChildProcess extends EventEmitter {
   }
 
   private _handleError(err: unknown): void {
-    queueMicrotask(() => {
+    nextTick(() => {
       this.emit("error", err); // TODO(uki00a) Convert `err` into nodejs's `SystemError` class.
     });
   }

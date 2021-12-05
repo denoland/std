@@ -2,7 +2,7 @@
 import { Encodings, notImplemented } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
-import { writeAll, writeAllSync } from "../../streams/conversion.ts";
+import { writeAllSync } from "../../streams/conversion.ts";
 import {
   CallbackWithError,
   checkEncoding,
@@ -12,10 +12,12 @@ import {
   WriteFileOptions,
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
+import { AbortError, denoErrorToNodeError } from "../_errors.ts";
 
 export function writeFile(
   pathOrRid: string | number | URL,
-  data: string | Uint8Array,
+  // deno-lint-ignore ban-types
+  data: string | Uint8Array | Object,
   optOrCallback: Encodings | CallbackWithError | WriteFileOptions | undefined,
   callback?: CallbackWithError,
 ): void {
@@ -41,7 +43,9 @@ export function writeFile(
   const encoding = checkEncoding(getEncoding(options)) || "utf8";
   const openOptions = getOpenOptions(flag || "w");
 
-  if (typeof data === "string") data = Buffer.from(data, encoding);
+  if (!ArrayBuffer.isView(data)) {
+    data = Buffer.from(String(data), encoding);
+  }
 
   const isRid = typeof pathOrRid === "number";
   let file;
@@ -58,9 +62,14 @@ export function writeFile(
         await Deno.chmod(pathOrRid as string, mode);
       }
 
-      await writeAll(file, data as Uint8Array);
+      const signal: AbortSignal | undefined = isFileOptions(options)
+        ? options.signal
+        : undefined;
+      await writeAll(file, data as Uint8Array, { signal });
     } catch (e) {
-      error = e instanceof Error ? e : new Error("[non-error thrown]");
+      error = e instanceof Error
+        ? denoErrorToNodeError(e, { syscall: "write" })
+        : new Error("[non-error thrown]");
     } finally {
       // Make sure to close resource
       if (!isRid && file) file.close();
@@ -71,7 +80,8 @@ export function writeFile(
 
 export function writeFileSync(
   pathOrRid: string | number | URL,
-  data: string | Uint8Array,
+  // deno-lint-ignore ban-types
+  data: string | Uint8Array | Object,
   options?: Encodings | WriteFileOptions,
 ): void {
   pathOrRid = pathOrRid instanceof URL ? fromFileUrl(pathOrRid) : pathOrRid;
@@ -87,7 +97,9 @@ export function writeFileSync(
   const encoding = checkEncoding(getEncoding(options)) || "utf8";
   const openOptions = getOpenOptions(flag || "w");
 
-  if (typeof data === "string") data = Buffer.from(data, encoding);
+  if (!ArrayBuffer.isView(data)) {
+    data = Buffer.from(String(data), encoding);
+  }
 
   const isRid = typeof pathOrRid === "number";
   let file;
@@ -105,11 +117,45 @@ export function writeFileSync(
 
     writeAllSync(file, data as Uint8Array);
   } catch (e) {
-    error = e instanceof Error ? e : new Error("[non-error thrown]");
+    error = e instanceof Error
+      ? denoErrorToNodeError(e, { syscall: "write" })
+      : new Error("[non-error thrown]");
   } finally {
     // Make sure to close resource
     if (!isRid && file) file.close();
   }
 
   if (error) throw error;
+}
+
+interface WriteAllOptions {
+  offset?: number;
+  length?: number;
+  signal?: AbortSignal;
+}
+async function writeAll(
+  w: Deno.Writer,
+  arr: Uint8Array,
+  options: WriteAllOptions = {},
+) {
+  const { offset = 0, length = arr.byteLength, signal } = options;
+  checkAborted(signal);
+
+  const written = await w.write(arr.subarray(offset, offset + length));
+
+  if (written === length) {
+    return;
+  }
+
+  await writeAll(w, arr, {
+    offset: offset + written,
+    length: length - written,
+    signal,
+  });
+}
+
+function checkAborted(signal?: AbortSignal) {
+  if (signal?.aborted) {
+    throw new AbortError();
+  }
 }
