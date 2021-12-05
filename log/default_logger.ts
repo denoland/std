@@ -29,7 +29,7 @@ export type DefaultLogger = Logger<
  * Example:
  *
  * ```typescript
- * import { log, addDefaultLogger, buildDefaultConsoleLogger } from "https://deno.land/std/@STD_VERSION/log/mod.ts"
+ * import { log, addDefaultLogger, buildDefaultConsoleLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts"
  *
  * addDefaultLogger(
  *   buildDefaultConsoleLogger("info")
@@ -99,7 +99,7 @@ export type ThirdPartyThresholds = {
  * Example:
  *
  * ```ts
- * import { setThirdPartyThresholds } from "https://deno.land/std/@STD_VERSION/log/mod.ts"
+ * import { setThirdPartyThresholds } from "https://deno.land/std@$STD_VERION/log/mod.ts"
  *
  * setThirdPartyThresholds({
  *   "awesome-lib": "info",
@@ -125,7 +125,7 @@ export function setThirdPartyThresholds(thresholds: ThirdPartyThresholds) {
  * Example:
  *
  * ```ts
- * import { setThirdPartyDefaultThreshold } from "https://deno.land/std/@STD_VERSION/log/mod.ts"
+ * import { setThirdPartyDefaultThreshold } from "https://deno.land/std@$STD_VERION/log/mod.ts"
  *
  * setThirdPartyDefaultThreshold("info")
  * ```
@@ -217,7 +217,7 @@ const defaultLogger = buildMultiLogger(
  * Example:
  *
  * ```typescript
- * import { log } from "https://deno.land/std/@STD_VERSION/log/mod.ts"
+ * import { log } from "https://deno.land/std@$STD_VERION/log/mod.ts"
  *
  * log.info('Some messge')
  * log.debug('A debug message')
