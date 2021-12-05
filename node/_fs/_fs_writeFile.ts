@@ -13,6 +13,7 @@ import {
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
 import { AbortError, denoErrorToNodeError } from "../_errors.ts";
+import { validateStringAfterArrayBufferView } from "../internal/fs/utils.js";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -44,6 +45,7 @@ export function writeFile(
   const openOptions = getOpenOptions(flag || "w");
 
   if (!ArrayBuffer.isView(data)) {
+    validateStringAfterArrayBufferView(data, "data");
     data = Buffer.from(String(data), encoding);
   }
 
@@ -98,6 +100,7 @@ export function writeFileSync(
   const openOptions = getOpenOptions(flag || "w");
 
   if (!ArrayBuffer.isView(data)) {
+    validateStringAfterArrayBufferView(data, "data");
     data = Buffer.from(String(data), encoding);
   }
 
