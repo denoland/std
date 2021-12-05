@@ -1,5 +1,5 @@
 import {
-    buildFrameworkLogger,
+    buildThirdPartyLogger,
   addDefaultLogger,
   disableDefaultConsoleLogger,
   log,
@@ -40,8 +40,8 @@ Deno.test("default logger registrations get called", () => {
 Deno.test("Framework logging", () => {
   resetCalls()
 
-  const fooLogger = buildFrameworkLogger("foo")
-  const barLogger = buildFrameworkLogger("bar")
+  const fooLogger = buildThirdPartyLogger("foo")
+  const barLogger = buildThirdPartyLogger("bar")
 
   setThirdPartyDefaultThreshold("info")
   setThirdPartyThresholds({

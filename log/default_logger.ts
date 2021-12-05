@@ -100,7 +100,7 @@ export function setThirdPartyDefaultThreshold(threshold: keyof DefaultLogLevels)
     sourceThresholds.default = threshold
 }
 
-export function buildFrameworkLogger(source: string) {
+export function buildThirdPartyLogger(source: string) {
   return buildLogger<
     DefaultLogLevels,
     string,
