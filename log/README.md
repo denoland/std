@@ -1,27 +1,14 @@
 # Log
 
-Module providing a global default logger that can be attached on to and
-functions to build custom loggers.
+Module providing a preconfigured default logger, logging for external modules
+and functions to build custom loggers.
 
-**If you are a library author, please see the "Framework Logging" section at the
+**If you are a library author, please see the "Third Party Logging" section at the
 bottom**
 
 ## Get started
 
-If you just want to log to stdout an stderr, set up the default loggeer with
-
-```ts
-import {
-  addDefaultLogger,
-  buildDefaultConsoleLogger,
-} from "https://deno.land/std@$STD_VERSION/log/mod.ts";
-
-addDefaultLogger(
-  buildDefaultConsoleLogger("info"),
-);
-```
-
-and use the default logger in your code like this
+If you just want to log to stdout and stderr, use the default logger like this:
 
 ```ts
 import { log } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
@@ -30,17 +17,14 @@ log.info("Some message");
 log.error("Error!", someObject);
 ```
 
-This setup will log all messages of level `info` and above to `stdout` or
-`stderr` respectively.
-
 ## Default Logging
 
 The above example uses the default logger, which is exported as `log`. By
-default, it does nothing, but you can add loggers receiving it's messages to it
-using `addDefaultLogger`. The difference to setting up an own console logger is
-that third party code that wants to provide logs will be able to use the default
-logger as well, giving you a central place to control how they are handled as
-well. We will look at framework logging later.
+default, it will log anything above and including "info" level messages to
+stdout/stderr, but you can fully customize it, disabling the default behaviour,
+changing its threshold or adding more loggers receiving it's messages. Third
+party loggers will use the defautl logger as well, giving you a central place
+to control how they are handled. We will look at framework logging later.
 
 ### Default Log Levels
 
@@ -178,7 +162,7 @@ logger.info("Some message");
 
 #### As a consumer
 
-If you are a `import`ing external modules, you can customize the thresholds for
+If you are a importing external modules, you can customize the thresholds for
 their messages using `setThirdPartyThresholds` together with their name, which
 you will find at the beginning of their messages:
 
@@ -190,7 +174,7 @@ setThirdPartyThresholds({
 });
 ```
 
-By default, theit threshold is set to `warn` - you can change that default for
+By default, their threshold is set to `warn` - you can change that default for
 all externals modules using `setThirdPartyDefaultThreshold`:
 
 ```typescript
