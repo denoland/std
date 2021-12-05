@@ -35,21 +35,20 @@ async function launch(
 
 Deno.test("Default logger with no customization logs to the console with info threshold", async () => {
   const threshold = "info";
-  const calls:
-    ([keyof DefaultLogLevels, number] | [
-      keyof DefaultLogLevels,
-      number,
-      unknown,
-    ])[] = [
-      ["info", 5],
-      ["trace", 1, {}],
-      ["debug", 19],
-      ["info", -3, []],
-      ["warn", 32],
-      ["error", 24, "asdf"],
-      ["info", 0],
-      ["trace", 13],
-    ];
+  const calls: ([keyof DefaultLogLevels, number] | [
+    keyof DefaultLogLevels,
+    number,
+    unknown,
+  ])[] = [
+    ["info", 5],
+    ["trace", 1, {}],
+    ["debug", 19],
+    ["info", -3, []],
+    ["warn", 32],
+    ["error", 24, "asdf"],
+    ["info", 0],
+    ["trace", 13],
+  ];
 
   const { stdout, stderr, success } = await launch(
     "./test_scripts/default_log_test_process.ts",
@@ -71,21 +70,20 @@ Deno.test("Default logger with no customization logs to the console with info th
 
 Deno.test("Console logger logs to the console", async () => {
   const threshold = "info";
-  const calls:
-    ([keyof DefaultLogLevels, number] | [
-      keyof DefaultLogLevels,
-      number,
-      unknown,
-    ])[] = [
-      ["info", 5],
-      ["trace", 1, {}],
-      ["debug", 19],
-      ["info", -3, []],
-      ["warn", 32],
-      ["error", 24, "asdf"],
-      ["info", 0],
-      ["trace", 13],
-    ];
+  const calls: ([keyof DefaultLogLevels, number] | [
+    keyof DefaultLogLevels,
+    number,
+    unknown,
+  ])[] = [
+    ["info", 5],
+    ["trace", 1, {}],
+    ["debug", 19],
+    ["info", -3, []],
+    ["warn", 32],
+    ["error", 24, "asdf"],
+    ["info", 0],
+    ["trace", 13],
+  ];
 
   const { stdout, stderr, success } = await launch(
     "./test_scripts/console_test_process.ts",

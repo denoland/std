@@ -3,8 +3,8 @@
 Module providing a preconfigured default logger, logging for external modules
 and functions to build custom loggers.
 
-**If you are a library author, please see the "Third Party Logging" section at the
-bottom**
+**If you are a library author, please see the "Third Party Logging" section at
+the bottom**
 
 ## Get started
 
@@ -23,8 +23,8 @@ The above example uses the default logger, which is exported as `log`. By
 default, it will log anything above and including "info" level messages to
 stdout/stderr, but you can fully customize it, disabling the default behaviour,
 changing its threshold or adding more loggers receiving it's messages. Third
-party loggers will use the defautl logger as well, giving you a central place
-to control how they are handled. We will look at framework logging later.
+party loggers will use the defautl logger as well, giving you a central place to
+control how they are handled. We will look at framework logging later.
 
 ### Default Log Levels
 
