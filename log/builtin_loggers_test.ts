@@ -1,6 +1,5 @@
 import { buildFileLogger, FileLoggerOptions } from "./builtin_loggers.ts";
-import { buildDefaultLogMessage } from "./logging.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assertOutputMatches, callsToExpectations } from "./test_utils.ts";
 
 const testLevels = {
   low: 1,
@@ -55,16 +54,18 @@ Deno.test("File logger with default settings logs to and overwrites the given fi
   calls.forEach(([level, message, data]) => logger[level](message, data));
   logger.flush();
 
-  const logged = calls
-    .filter(([level]) => level !== "low")
-    .map(([level, message, data]) =>
-      `${buildDefaultLogMessage(level, message, data)}\n`
-    )
-    .join("");
+  const { std: expected } = callsToExpectations(
+    testLevels,
+    "middle",
+    calls,
+  );
 
-  assertEquals(
+  assertOutputMatches(
     readLogFile(),
-    `${testLine}${logged}`,
+    [
+      [testLine.trim(), ""],
+      ...expected,
+    ],
   );
 
   logger.close();
