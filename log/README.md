@@ -163,10 +163,10 @@ const logger = buildLogger(
 #### As a Third Party
 
 If you are a framework or library author that wants to log for their users,
-please use `buildThirdPartyLogger` and pass an identifier to it that is unique to your
-library. That identifier will be displayed in log messages. Users of your module will
-be able to customize logging behaviour for your messages, passing warning and errors on
-by default:
+please use `buildThirdPartyLogger` and pass an identifier to it that is unique
+to your library. That identifier will be displayed in log messages. Users of
+your module will be able to customize logging behaviour for your messages,
+passing warning and errors on by default:
 
 ```ts
 import { buildThirdPartyLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
@@ -178,23 +178,23 @@ logger.info("Some message");
 
 #### As a consumer
 
-If you are a `import`ing external modules, you can customize the thresholds for their
-messages using `setThirdPartyThresholds` together with their name, which you will find
-at the beginning of their messages:
+If you are a `import`ing external modules, you can customize the thresholds for
+their messages using `setThirdPartyThresholds` together with their name, which
+you will find at the beginning of their messages:
 
 ```typescript
 import { setThirdPartyThresholds } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
 setThirdPartyThresholds({
-  "awesome-lib": "info"
-})
+  "awesome-lib": "info",
+});
 ```
 
-By default, theit threshold is set to `warn` - you can change that default for all externals
-modules using `setThirdPartyDefaultThreshold`:
+By default, theit threshold is set to `warn` - you can change that default for
+all externals modules using `setThirdPartyDefaultThreshold`:
 
 ```typescript
 import { setThirdPartyDefaultThreshold } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
-setThirdPartyDefaultThreshold("info")
+setThirdPartyDefaultThreshold("info");
 ```

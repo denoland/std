@@ -90,14 +90,16 @@ export type ThirdPartyThresholds = {
 };
 
 export function setThirdPartyThresholds(thresholds: ThirdPartyThresholds) {
-    sourceThresholds.sources = {
-        ...sourceThresholds.sources,
-        ...thresholds,
-    }
+  sourceThresholds.sources = {
+    ...sourceThresholds.sources,
+    ...thresholds,
+  };
 }
 
-export function setThirdPartyDefaultThreshold(threshold: keyof DefaultLogLevels) {
-    sourceThresholds.default = threshold
+export function setThirdPartyDefaultThreshold(
+  threshold: keyof DefaultLogLevels,
+) {
+  sourceThresholds.default = threshold;
 }
 
 export function buildThirdPartyLogger(source: string) {
@@ -111,17 +113,18 @@ export function buildThirdPartyLogger(source: string) {
     (level, message, additionalData) =>
       defaultLogger[level](
         `[${source}]\t${message}`,
-        additionalData
+        additionalData,
       ),
     (levels, _, handler, level, ...rest) => {
-        if (levels[level] >= levels[sourceThresholds.sources[source] ?? sourceThresholds.default]) {
-            handler(level, ...rest)
-        }
+      if (
+        levels[level] >=
+          levels[sourceThresholds.sources[source] ?? sourceThresholds.default]
+      ) {
+        handler(level, ...rest);
+      }
     },
   );
 }
-
-
 
 const defaultLoggerConsumers: (DefaultLogger | DefaultConsoleLogger)[] = [
   buildDefaultConsoleLogger("info"),
