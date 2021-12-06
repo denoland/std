@@ -59,8 +59,8 @@ export function writeFile(
         ? new Deno.File(pathOrRid as number)
         : await Deno.open(pathOrRid as string, openOptions);
 
-      if (!isRid && mode && mode !== 0o666) {
-        if (isWindows) notImplemented(`"mode" on Windows`);
+      // TODO: remove `!isWindows` when `Deno.chmod` is supported
+      if (!isRid && mode && !isWindows) {
         await Deno.chmod(pathOrRid as string, mode);
       }
 
@@ -113,8 +113,8 @@ export function writeFileSync(
       ? new Deno.File(pathOrRid as number)
       : Deno.openSync(pathOrRid as string, openOptions);
 
-    if (!isRid && mode && mode !== 0o666) {
-      if (isWindows) notImplemented(`"mode" on Windows`);
+    // TODO: remove `!isWindows` when `Deno.chmod` is supported
+    if (!isRid && mode && !isWindows) {
       Deno.chmodSync(pathOrRid as string, mode);
     }
 
