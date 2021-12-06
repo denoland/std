@@ -1198,3 +1198,90 @@ Deno.test("Custom onError is called when Handler throws", async () => {
     await servePromise;
   }
 });
+
+Deno.test("Custom onError is called when Handler throws", async () => {
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+  };
+  const listener = Deno.listen(listenOptions);
+
+  const url = `http://${listenOptions.hostname}:${listenOptions.port}`;
+  const handler = (_request: Request, _connInfo: ConnInfo) => {
+    throw new Error("I failed to serve the request");
+  };
+  const onError = (_error: unknown) => {
+    return new Response("custom error page", { status: 500 });
+  };
+  const abortController = new AbortController();
+
+  const servePromise = serveListener(listener, handler, {
+    onError,
+    signal: abortController.signal,
+  });
+
+  try {
+    const response = await fetch(url);
+    assertEquals(await response.text(), "custom error page");
+    assertEquals(response.status, 500);
+  } finally {
+    abortController.abort();
+    await servePromise;
+  }
+});
+
+Deno.test("Server.listenAndServeTls should support custom onError", async () => {
+  const hostname = "localhost";
+  const port = 4505;
+  const addr = `${hostname}:${port}`;
+  const certFile = join(testdataDir, "tls/localhost.crt");
+  const keyFile = join(testdataDir, "tls/localhost.key");
+  const status = 500;
+  const method = "PATCH";
+  const body = "custom error page";
+
+  const handler = () => {
+    throw new Error("I failed to serve the request.");
+  };
+  const onError = (_error: unknown) => new Response(body, { status });
+  const abortController = new AbortController();
+
+  const servePromise = serveTls(handler, {
+    addr,
+    certFile,
+    keyFile,
+    onError,
+    signal: abortController.signal,
+  });
+
+  try {
+    const conn = await Deno.connectTls({
+      hostname,
+      port,
+      certFile: join(testdataDir, "tls/RootCA.pem"),
+    });
+
+    await writeAll(
+      conn,
+      new TextEncoder().encode(
+        `${method.toUpperCase()} / HTTP/1.0\r\n\r\n`,
+      ),
+    );
+
+    const response = new TextDecoder().decode(await readAll(conn));
+
+    conn.close();
+
+    assert(
+      response.includes(`HTTP/1.0 ${status}`),
+      "Status code not correct",
+    );
+    assert(
+      response.includes(body),
+      "Response body not correct",
+    );
+  } finally {
+    abortController.abort();
+    await servePromise;
+  }
+});
