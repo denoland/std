@@ -176,7 +176,7 @@ const throwNextTick = (e) => { process.nextTick(() => { throw e; }); };
   }));
 }
 
-// FIXME: fs.promises.appendFile support FileHandle
+// FIXME(F3n67u): fs.promises.appendFile support FileHandle
 // Test that appendFile accepts file descriptors (promises API).
 // {
 //   const filename = join(tmpdir.path, 'append-descriptors-promises.txt');
