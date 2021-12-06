@@ -552,7 +552,9 @@ export class DateTimeFormatter {
         case "month": {
           const value = Number(part.value) - 1;
           if (dayPart) {
-            utc ? date.setUTCMonth(value, Number(dayPart.value)) : date.setMonth(value, Number(dayPart.value));
+            utc
+              ? date.setUTCMonth(value, Number(dayPart.value))
+              : date.setMonth(value, Number(dayPart.value));
           } else {
             utc ? date.setUTCMonth(value) : date.setMonth(value);
           }
