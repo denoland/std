@@ -28,8 +28,19 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
+      - name: Install fakedate
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt install faketime
+
       - name: Run tests canary
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/
+        run: |
+          deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/
+
+      - name: Run test with the date 2021-12-31
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          faketime '2021-12-31' deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json datetime/test_2021_12_31.ts
 
       - name: Type check browser compatible modules
         shell: bash
