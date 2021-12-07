@@ -250,6 +250,15 @@ function skipIfDumbTerminal() {
   }
 }
 
+function printSkipMessage(msg) {
+  console.log(`1..0 # Skipped: ${msg}`);
+}
+
+function skip(msg) {
+  printSkipMessage(msg);
+  process.exit(0);
+}
+
 module.exports = {
   expectsError,
   expectWarning,
@@ -268,6 +277,8 @@ module.exports = {
   isOpenBSD,
   isLinux,
   isOSX,
+  isMainThread: true, // TODO(f3n67u): replace with `worker_thread.isMainThread` when `worker_thread` implemented
+  skip,
   get hasIPv6() {
     const iFaces = require('os').networkInterfaces();
     const re = isWindows ? /Loopback Pseudo-Interface/ : /lo/;

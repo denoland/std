@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+import { validateCallback } from "../internal/validators.js";
 import {
   BinaryEncodings,
   Encodings,
@@ -161,4 +162,12 @@ export function getOpenOptions(flag: string | undefined): Deno.OpenOptions {
   }
 
   return openOptions;
+}
+
+export { isUint32 as isFd } from "../internal/validators.js";
+
+export function maybeCallback(cb: unknown) {
+  validateCallback(cb);
+
+  return cb as CallbackWithError;
 }
