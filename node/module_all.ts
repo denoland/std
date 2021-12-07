@@ -29,6 +29,7 @@ import internalErrors from "./internal/errors.js";
 import internalReadlineUtils from "./internal/readline/utils.js";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.js";
 import internalStreamsAddBufferList from "./internal/streams/buffer_list.js";
+import internalTestBinding from "./internal/test/binding.ts";
 import internalUtilInspect from "./internal/util/inspect.js";
 import net from "./net.ts";
 import os from "./os.ts";
@@ -82,11 +83,12 @@ export default {
   "fs/promises": fsPromises,
   http,
   "internal/errors": internalErrors,
+  "internal/fs/utils": internalFsUtils,
   "internal/readline/utils": internalReadlineUtils,
   "internal/streams/add-abort-signal": internalStreamsAddAbortSignal,
   "internal/streams/buffer_list": internalStreamsAddBufferList,
+  "internal/test/binding": internalTestBinding,
   "internal/util/inspect": internalUtilInspect,
-  "internal/fs/utils": internalFsUtils,
   net,
   os,
   path,

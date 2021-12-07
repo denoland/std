@@ -37,6 +37,13 @@ import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
 
 import * as promises from "./fs/promises.ts";
 
+const {
+  F_OK,
+  R_OK,
+  W_OK,
+  X_OK,
+} = constants;
+
 export default {
   access,
   accessSync,
@@ -55,6 +62,7 @@ export default {
   Dirent,
   exists,
   existsSync,
+  F_OK,
   fdatasync,
   fdatasyncSync,
   fstat,
@@ -78,6 +86,7 @@ export default {
   read,
   readSync,
   promises,
+  R_OK,
   readdir,
   readdirSync,
   readFile,
@@ -102,10 +111,12 @@ export default {
   unlinkSync,
   utimes,
   utimesSync,
+  W_OK,
   watch,
   watchFile,
   writeFile,
   writeFileSync,
+  X_OK,
 };
 
 export {
@@ -126,6 +137,7 @@ export {
   Dirent,
   exists,
   existsSync,
+  F_OK,
   fdatasync,
   fdatasyncSync,
   fstat,
@@ -147,6 +159,7 @@ export {
   open,
   openSync,
   promises,
+  R_OK,
   read,
   readdir,
   readdirSync,
@@ -173,8 +186,10 @@ export {
   unlinkSync,
   utimes,
   utimesSync,
+  W_OK,
   watch,
   watchFile,
   writeFile,
   writeFileSync,
+  X_OK,
 };

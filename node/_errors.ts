@@ -83,7 +83,9 @@ function addNumericalSeparator(val: string) {
 }
 
 /** This function removes unnecessary frames from Node.js core errors. */
-export function hideStackFrames(fn: GenericFunction) {
+export function hideStackFrames<T extends GenericFunction = GenericFunction>(
+  fn: T,
+): T {
   // We rename the functions that will be hidden to cut off the stacktrace
   // at the outermost one.
   const hidden = "__node_internal_" + fn.name;

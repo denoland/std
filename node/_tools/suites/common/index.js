@@ -9,7 +9,7 @@
  * That file has a lot of node functionality not currently supported, so this is a lite
  * version of that file, which most tests should be able to use
  */
-
+'use strict';
 const assert = require("assert");
 const util = require("util");
 

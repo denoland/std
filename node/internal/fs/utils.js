@@ -924,7 +924,7 @@ export const validateRmdirOptions = hideStackFrames(
   },
 );
 
-const getValidMode = hideStackFrames((mode, type) => {
+export const getValidMode = hideStackFrames((mode, type) => {
   let min = kMinimumAccessMode;
   let max = kMaximumAccessMode;
   let def = F_OK;
