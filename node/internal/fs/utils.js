@@ -176,7 +176,7 @@ for (const name of Reflect.ownKeys(Dirent.prototype)) {
   };
 }
 
-function copyObject(source) {
+export function copyObject(source) {
   const target = {};
   for (const key in source) {
     target[key] = source[key];
@@ -287,7 +287,7 @@ function getDirent(path, name, type, callback) {
   }
 }
 
-function getOptions(options, defaultOptions) {
+export function getOptions(options, defaultOptions) {
   if (
     options === null || options === undefined ||
     typeof options === "function"
@@ -951,26 +951,28 @@ const getValidMode = hideStackFrames((mode, type) => {
   );
 });
 
-const validateStringAfterArrayBufferView = hideStackFrames((buffer, name) => {
-  if (typeof buffer === "string") {
-    return;
-  }
+export const validateStringAfterArrayBufferView = hideStackFrames(
+  (buffer, name) => {
+    if (typeof buffer === "string") {
+      return;
+    }
 
-  if (
-    typeof buffer === "object" &&
-    buffer !== null &&
-    typeof buffer.toString === "function" &&
-    Object.prototype.hasOwnProperty.call(buffer, "toString")
-  ) {
-    return;
-  }
+    if (
+      typeof buffer === "object" &&
+      buffer !== null &&
+      typeof buffer.toString === "function" &&
+      Object.prototype.hasOwnProperty.call(buffer, "toString")
+    ) {
+      return;
+    }
 
-  throw new ERR_INVALID_ARG_TYPE(
-    name,
-    ["string", "Buffer", "TypedArray", "DataView"],
-    buffer,
-  );
-});
+    throw new ERR_INVALID_ARG_TYPE(
+      name,
+      ["string", "Buffer", "TypedArray", "DataView"],
+      buffer,
+    );
+  },
+);
 
 const validatePosition = hideStackFrames((position) => {
   if (typeof position === "number") {

@@ -19,7 +19,7 @@ function isInt32(value) {
 }
 
 /**
- * @param {number} value
+ * @param {unknown} value
  * @returns {boolean}
  */
 function isUint32(value) {
