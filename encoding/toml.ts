@@ -210,7 +210,7 @@ class Dumper {
     return `${this.#declaration(keys)}${this.#printDate(value)}`;
   }
   #format(): string[] {
-    const rDeclaration = /^(".*"|[^=]*)\s=/;
+    const rDeclaration = /^(\".*\"|[^=]*)\s=/;
     const out = [];
     for (let i = 0; i < this.output.length; i++) {
       const l = this.output[i];
