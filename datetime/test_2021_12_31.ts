@@ -5,5 +5,5 @@ import { assertEquals } from "../testing/asserts.ts";
 Deno.test("The date is 2021-12-31", () => {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
-  assertEquals(d, new Date(2021, 11, 31));
+  assertEquals(d, new Date(2021, 12, 31));
 });
