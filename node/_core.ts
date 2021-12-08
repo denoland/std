@@ -9,6 +9,7 @@ export let core: any;
 
 // @ts-ignore Deno.core is not defined in types
 if (Deno?.core) {
+  // @ts-ignore Deno.core is not defined in types
   core = Deno.core;
 } else {
   core = {
