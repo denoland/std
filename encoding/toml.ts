@@ -73,7 +73,7 @@ class Dumper {
         } else {
           // this is a complex array, use the inline format.
           const str = value.map((x) => this.#printAsInlineValue(x)).join(",");
-          out.push(`${prop} = [${str}]`);
+          out.push(`${this.#declaration([prop])}[${str}]`);
         }
       } else if (typeof value === "object") {
         out.push("");
@@ -210,7 +210,7 @@ class Dumper {
     return `${this.#declaration(keys)}${this.#printDate(value)}`;
   }
   #format(): string[] {
-    const rDeclaration = /(.*)\s=/;
+    const rDeclaration = /^(\".*\"|[^=]*)\s=/;
     const out = [];
     for (let i = 0; i < this.output.length; i++) {
       const l = this.output[i];
