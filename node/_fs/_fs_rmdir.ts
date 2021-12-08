@@ -7,6 +7,7 @@ import {
 } from "../internal/fs/utils.js";
 import { toNamespacedPath } from "../path.ts";
 import { denoErrorToNodeError, ERR_FS_RMDIR_ENOTDIR } from "../_errors.ts";
+import { Buffer } from "../buffer.ts";
 
 type rmdirOptions = {
   maxRetries?: number;
@@ -69,7 +70,7 @@ export function rmdir(
   }
 }
 
-export function rmdirSync(path: string | URL, options?: rmdirOptions) {
+export function rmdirSync(path: string | Buffer | URL, options?: rmdirOptions) {
   path = getValidatedPath(path);
   if (options?.recursive) {
     emitRecursiveRmdirWarning();
