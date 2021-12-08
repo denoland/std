@@ -29,11 +29,13 @@ export function access(
       cb(null);
     } else {
       // some required flags don't
-      const e = new Error("no enough access for " + path);
+      const e = new Error(`EACCES: permission denied, access '${path}'`);
       // deno-lint-ignore no-explicit-any
-      (e as any).code = "ENOENT";
+      (e as any).code = "EACCES";
       // deno-lint-ignore no-explicit-any
       (e as any).path = path;
+      // deno-lint-ignore no-explicit-any
+      (e as any).syscall = "access";
       cb(e);
     }
   }, (err) => {
@@ -68,11 +70,13 @@ export function accessSync(path: string | Buffer | URL, mode?: number): void {
       // all required flags exist
     } else {
       // some required flags don't
-      const e = new Error("no enough access for " + path);
+      const e = new Error(`EACCES: permission denied, access '${path}'`);
       // deno-lint-ignore no-explicit-any
-      (e as any).code = "ENOENT";
+      (e as any).code = "EACCES";
       // deno-lint-ignore no-explicit-any
       (e as any).path = path;
+      // deno-lint-ignore no-explicit-any
+      (e as any).syscall = "access";
       throw e;
     }
   } catch (err) {
