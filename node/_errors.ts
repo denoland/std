@@ -83,7 +83,9 @@ function addNumericalSeparator(val: string) {
 }
 
 /** This function removes unnecessary frames from Node.js core errors. */
-export function hideStackFrames(fn: GenericFunction) {
+export function hideStackFrames<T extends GenericFunction = GenericFunction>(
+  fn: T,
+): T {
   // We rename the functions that will be hidden to cut off the stacktrace
   // at the outermost one.
   const hidden = "__node_internal_" + fn.name;
@@ -123,8 +125,8 @@ export const uvExceptionWithHostPort = hideStackFrames(
   function uvExceptionWithHostPort(
     err: number,
     syscall: string,
-    address: string,
-    port?: number,
+    address?: string | null,
+    port?: number | null,
   ) {
     const { 0: code, 1: uvmsg } = uvErrmapGet(err) || uvUnmappedError;
     const message = `${syscall} ${code}: ${uvmsg}`;
@@ -160,7 +162,7 @@ export const uvExceptionWithHostPort = hideStackFrames(
  * @return A `ErrnoException`
  */
 export const errnoException = hideStackFrames(
-  function errnoException(err, syscall, original): ErrnoException {
+  function errnoException(err, syscall, original?): ErrnoException {
     const code = getSystemErrorName(err);
     const message = original
       ? `${syscall} ${code} ${original}`
@@ -248,7 +250,7 @@ export const exceptionWithHostPort = hideStackFrames(
     syscall: string,
     address: string,
     port: number,
-    additional: string,
+    additional?: string,
   ) {
     const code = getSystemErrorName(err);
     let details = "";

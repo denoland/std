@@ -382,6 +382,12 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#processumaskmask */
   umask = Deno.umask;
+
+  /** https://nodejs.org/api/process.html#processgetuid */
+  getuid(): number {
+    // TODO(kt3k): return user id in mac and linux
+    return NaN;
+  }
 }
 
 /** https://nodejs.org/api/process.html#process_process */

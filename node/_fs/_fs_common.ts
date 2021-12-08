@@ -171,3 +171,15 @@ export function maybeCallback(cb: unknown) {
 
   return cb as CallbackWithError;
 }
+
+// Ensure that callbacks run in the global context. Only use this function
+// for callbacks that are passed to the binding layer, callbacks that are
+// invoked from JS already run in the proper scope.
+export function makeCallback(
+  this: unknown,
+  cb?: (...args: unknown[]) => void,
+) {
+  validateCallback(cb);
+
+  return (...args: unknown[]) => Reflect.apply(cb!, this, args);
+}
