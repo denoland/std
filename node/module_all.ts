@@ -25,6 +25,7 @@ import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
 import internalFsUtils from "./internal/fs/utils.js";
 import http from "./http.ts";
+import inspector from "./inspector.ts";
 import internalErrors from "./internal/errors.js";
 import internalReadlineUtils from "./internal/readline/utils.js";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.js";
@@ -81,6 +82,7 @@ export default {
   fs,
   "fs/promises": fsPromises,
   http,
+  inspector,
   "internal/errors": internalErrors,
   "internal/readline/utils": internalReadlineUtils,
   "internal/streams/add-abort-signal": internalStreamsAddAbortSignal,
