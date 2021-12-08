@@ -175,6 +175,10 @@ export class Url {
     if (host) this.hostname = host;
   }
 
+  public resolve(relative: string) {
+    return this.resolveObject(parse(relative, false, true)).format();
+  }
+
   public resolveObject(relative: string | Url) {
     if (typeof relative === "string") {
       const rel = new Url();
@@ -210,7 +214,8 @@ export class Url {
 
       // urlParse appends trailing / to urls like http://www.example.com
       if (
-        result.protocol && slashedProtocol.has(result.protocol) &&
+        result.protocol &&
+        slashedProtocol.has(result.protocol) &&
         result.hostname &&
         !result.pathname
       ) {
@@ -307,8 +312,7 @@ export class Url {
         }
         relative.host = null;
       }
-      mustEndAbs = mustEndAbs &&
-        (relPath[0] === "" || srcPath[0] === "");
+      mustEndAbs = mustEndAbs && (relPath[0] === "" || srcPath[0] === "");
     }
 
     if (isRelAbs) {
@@ -343,8 +347,7 @@ export class Url {
         // Occasionally the auth can get stuck only in host.
         // This especially happens in cases like
         // url.resolveObject('mailto:local1@domain1', 'local2@domain2')
-        const authInHost = result.host &&
-          result.host.indexOf("@") > 0 &&
+        const authInHost = result.host && result.host.indexOf("@") > 0 &&
           result.host.split("@");
         if (authInHost) {
           result.auth = authInHost.shift() || null;
@@ -499,10 +502,7 @@ export class Url {
 
     let search = this.search || (query && "?" + query) || "";
 
-    if (
-      protocol &&
-      protocol.charCodeAt(protocol.length - 1) !== 58 /* : */
-    ) {
+    if (protocol && protocol.charCodeAt(protocol.length - 1) !== 58 /* : */) {
       protocol += ":";
     }
 
@@ -665,9 +665,7 @@ export class Url {
       }
     }
 
-    let proto: RegExpExecArray | null | string = protocolPattern.exec(
-      rest,
-    );
+    let proto: RegExpExecArray | null | string = protocolPattern.exec(rest);
     let lowerProto = "";
     if (proto) {
       proto = proto[0];
@@ -859,11 +857,7 @@ export class Url {
     } else if (firstIdx > 0) {
       this.pathname = rest.slice(0, firstIdx);
     }
-    if (
-      slashedProtocol.has(lowerProto) &&
-      this.hostname &&
-      !this.pathname
-    ) {
+    if (slashedProtocol.has(lowerProto) && this.hostname && !this.pathname) {
       this.pathname = "/";
     }
 
@@ -983,19 +977,132 @@ function getHostname(self: Url, rest: string, hostname: string) {
 // Using Array is faster than Object/Map
 // deno-fmt-ignore
 const escapedCodes = [
-  /* 0 - 9 */ '', '', '', '', '', '', '', '', '', '%09',
-  /* 10 - 19 */ '%0A', '', '', '%0D', '', '', '', '', '', '',
-  /* 20 - 29 */ '', '', '', '', '', '', '', '', '', '',
-  /* 30 - 39 */ '', '', '%20', '', '%22', '', '', '', '', '%27',
-  /* 40 - 49 */ '', '', '', '', '', '', '', '', '', '',
-  /* 50 - 59 */ '', '', '', '', '', '', '', '', '', '',
-  /* 60 - 69 */ '%3C', '', '%3E', '', '', '', '', '', '', '',
-  /* 70 - 79 */ '', '', '', '', '', '', '', '', '', '',
-  /* 80 - 89 */ '', '', '', '', '', '', '', '', '', '',
-  /* 90 - 99 */ '', '', '%5C', '', '%5E', '', '%60', '', '', '',
-  /* 100 - 109 */ '', '', '', '', '', '', '', '', '', '',
-  /* 110 - 119 */ '', '', '', '', '', '', '', '', '', '',
-  /* 120 - 125 */ '', '', '', '%7B', '%7C', '%7D',
+  /* 0 - 9 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "%09",
+  /* 10 - 19 */ "%0A",
+  "",
+  "",
+  "%0D",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 20 - 29 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 30 - 39 */ "",
+  "",
+  "%20",
+  "",
+  "%22",
+  "",
+  "",
+  "",
+  "",
+  "%27",
+  /* 40 - 49 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 50 - 59 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 60 - 69 */ "%3C",
+  "",
+  "%3E",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 70 - 79 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 80 - 89 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 90 - 99 */ "",
+  "",
+  "%5C",
+  "",
+  "%5E",
+  "",
+  "%60",
+  "",
+  "",
+  "",
+  /* 100 - 109 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 110 - 119 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 120 - 125 */ "",
+  "",
+  "",
+  "%7B",
+  "%7C",
+  "%7D"
 ];
 
 // Automatically escape all delimiters and unwise characters from RFC 2396.
@@ -1048,6 +1155,10 @@ export function parse(
   const urlObject = new Url();
   urlObject.urlParse(url, parseQueryString, slashesDenoteHost);
   return urlObject;
+}
+
+export function resolve(relative: string) {
+  return parse(relative, false, true).resolve(relative);
 }
 
 /**
@@ -1257,6 +1368,7 @@ function urlToHttpOptions(url: URL): HttpOptions {
 export default {
   parse,
   format,
+  resolve,
   fileURLToPath,
   pathToFileURL,
   urlToHttpOptions,
