@@ -1,3 +1,4 @@
+import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions } from "./net.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
@@ -51,8 +52,7 @@ type Chunk = string | Buffer | Uint8Array;
 
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
-    // @ts-ignore using core isn't a best practice but hey ...
-    return Deno.core.encode(chunk);
+    return core.encode(chunk);
   }
   return chunk;
 }

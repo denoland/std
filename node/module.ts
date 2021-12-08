@@ -21,6 +21,7 @@
 
 import "./global.ts";
 
+import { core } from "./_core.ts";
 import nodeMods from "./module_all.ts";
 
 import * as path from "../path/mod.ts";
@@ -1253,8 +1254,7 @@ function wrapSafe(
 ): RequireWrapper {
   // TODO(bartlomieju): fix this
   const wrapper = Module.wrap(content);
-  // deno-lint-ignore no-explicit-any
-  const [f, err] = (Deno as any).core.evalContext(wrapper, filename);
+  const [f, err] = core.evalContext(wrapper, filename);
   if (err) {
     if (process.mainModule === cjsModuleInstance) {
       enrichCJSError(err.thrown);
