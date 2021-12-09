@@ -13,5 +13,5 @@ export enum Encodings {
   HEX, // 5
   BUFFER, // 6
   BASE64URL, // 7
-  LATIN1 = 4 // 4 = BINARY,
+  LATIN1 = 4, // 4 = BINARY
 }
