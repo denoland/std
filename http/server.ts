@@ -687,7 +687,7 @@ export async function listenAndServe(
  * });
  * ```
  *
- * @param addr The Deno.ListenOptions to specify the hostname and port.
+ * @param config The Deno.ListenOptions to specify the hostname and port.
  * @param certFile The path to the file containing the TLS certificate.
  * @param keyFile The path to the file containing the TLS private key.
  * @param handler The handler for individual HTTP requests.
