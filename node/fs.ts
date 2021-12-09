@@ -35,6 +35,8 @@ import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
 import { watch, watchFile } from "./_fs/_fs_watch.ts";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
 
+import { Stats } from "./internal/fs/utils.js";
+
 import * as promises from "./fs/promises.ts";
 
 const {
@@ -102,6 +104,7 @@ export default {
   rm,
   rmSync,
   stat,
+  Stats,
   statSync,
   symlink,
   symlinkSync,
@@ -177,6 +180,7 @@ export {
   rmdirSync,
   rmSync,
   stat,
+  Stats,
   statSync,
   symlink,
   symlinkSync,
