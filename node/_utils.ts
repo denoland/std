@@ -230,7 +230,9 @@ export async function assertCallbackErrorUncaught(
     cmd: [
       Deno.execPath(),
       "eval",
-      "--no-check", // Running TSC for every one of these tests would take way too long
+      // TODO(kt3k): Uncomment the below option when
+      // https://github.com/denoland/deno/issues/13026 is resolved.
+      // "--no-check", // Running TSC for every one of these tests would take way too long
       "--unstable",
       `${prelude ?? ""}
 
