@@ -639,7 +639,7 @@ export async function serveTls(
  * });
  * ```
  *
- * @param addr The Deno.ListenOptions to specify the hostname and port.
+ * @param config The Deno.ListenOptions to specify the hostname and port.
  * @param handler The handler for individual HTTP requests.
  * @param options Optional serve options.
  */
