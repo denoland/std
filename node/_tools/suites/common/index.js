@@ -9,7 +9,7 @@
  * That file has a lot of node functionality not currently supported, so this is a lite
  * version of that file, which most tests should be able to use
  */
-
+'use strict';
 const assert = require("assert");
 const util = require("util");
 
@@ -218,18 +218,19 @@ function invalidArgTypeHelper(input) {
   if (input == null) {
     return ` Received ${input}`;
   }
-  if (typeof input === 'function' && input.name) {
+  if (typeof input === "function" && input.name) {
     return ` Received function ${input.name}`;
   }
-  if (typeof input === 'object') {
+  if (typeof input === "object") {
     if (input.constructor && input.constructor.name) {
       return ` Received an instance of ${input.constructor.name}`;
     }
     return ` Received ${util.inspect(input, { depth: -1 })}`;
   }
   let inspected = util.inspect(input, { colors: false });
-  if (inspected.length > 25)
+  if (inspected.length > 25) {
     inspected = `${inspected.slice(0, 25)}...`;
+  }
   return ` Received type ${typeof input} (${inspected})`;
 }
 
@@ -241,6 +242,23 @@ const isOpenBSD = process.platform === 'openbsd';
 const isLinux = process.platform === 'linux';
 const isOSX = process.platform === 'darwin';
 
+const isDumbTerminal = process.env.TERM === 'dumb';
+
+function skipIfDumbTerminal() {
+  if (isDumbTerminal) {
+    skip('skipping - dumb terminal');
+  }
+}
+
+function printSkipMessage(msg) {
+  console.log(`1..0 # Skipped: ${msg}`);
+}
+
+function skip(msg) {
+  printSkipMessage(msg);
+  process.exit(0);
+}
+
 module.exports = {
   expectsError,
   expectWarning,
@@ -250,6 +268,8 @@ module.exports = {
   mustNotCall,
   mustSucceed,
   platformTimeout,
+  skipIfDumbTerminal,
+  isDumbTerminal,
   isWindows,
   isAIX,
   isSunOS,
@@ -257,6 +277,8 @@ module.exports = {
   isOpenBSD,
   isLinux,
   isOSX,
+  isMainThread: true, // TODO(f3n67u): replace with `worker_thread.isMainThread` when `worker_thread` implemented
+  skip,
   get hasIPv6() {
     const iFaces = require('os').networkInterfaces();
     const re = isWindows ? /Loopback Pseudo-Interface/ : /lo/;

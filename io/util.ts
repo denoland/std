@@ -91,7 +91,10 @@ export async function readLong(buf: BufReader): Promise<number | null> {
  * @param d The number to be sliced
  * @param dest The sliced array
  */
-export function sliceLongToBytes(d: number, dest = new Array(8)): number[] {
+export function sliceLongToBytes(
+  d: number,
+  dest = Array.from<number>({ length: 8 }),
+): number[] {
   let big = BigInt(d);
   for (let i = 0; i < 8; i++) {
     dest[7 - i] = Number(big & 0xffn);

@@ -1,6 +1,44 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+import { Buffer } from "./buffer.ts";
+import { encodeStr, hexTable } from "./internal/querystring.ts";
 
-export interface ParsedUrlQuery {
+/**
+ * Alias of querystring.parse()
+ * @legacy
+ */
+export const decode = parse;
+
+/**
+ * Alias of querystring.stringify()
+ * @legacy
+ */
+export const encode = stringify;
+
+/**
+ * replaces encodeURIComponent()
+ * @see https://www.ecma-international.org/ecma-262/5.1/#sec-15.1.3.4
+ */
+function qsEscape(str: unknown): string {
+  if (typeof str !== "string") {
+    if (typeof str === "object") {
+      str = String(str);
+    } else {
+      str += "";
+    }
+  }
+  return encodeStr(str as string, noEscape, hexTable);
+}
+
+/**
+ * Performs URL percent-encoding on the given `str` in a manner that is optimized for the specific requirements of URL query strings.
+ * Used by `querystring.stringify()` and is generally not expected to be used directly.
+ * It is exported primarily to allow application code to provide a replacement percent-encoding implementation if necessary by assigning `querystring.escape` to an alternative function.
+ * @legacy
+ * @see Tested in `test-querystring-escape.js`
+ */
+export const escape = qsEscape;
+
+interface ParsedUrlQuery {
   [key: string]: string | string[] | undefined;
 }
 
@@ -11,10 +49,25 @@ interface ParseOptions {
   maxKeys?: number;
 }
 
-export const hexTable = new Array(256);
-for (let i = 0; i < 256; ++i) {
-  hexTable[i] = "%" + ((i < 16 ? "0" : "") + i.toString(16)).toUpperCase();
-}
+// deno-fmt-ignore
+const isHexTable = new Int8Array([
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0 - 15
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 16 - 31
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 32 - 47
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, // 48 - 63
+  0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 64 - 79
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 80 - 95
+  0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 96 - 111
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 112 - 127
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 128 ...
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // ... 256
+]);
 
 function charCodes(str: string): number[] {
   const ret = new Array(str.length);
@@ -54,32 +107,16 @@ function addKeyVal(
   }
 }
 
-// deno-fmt-ignore
-const isHexTable = new Int8Array([
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0 - 15
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 16 - 31
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 32 - 47
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, // 48 - 63
-  0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 64 - 79
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 80 - 95
-  0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 96 - 111
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 112 - 127
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 128 ...
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // ... 256
-]);
-
 /**
  * Parses a URL query string into a collection of key and value pairs.
  * @param str The URL query string to parse
  * @param sep The substring used to delimit key and value pairs in the query string. Default: '&'.
  * @param eq The substring used to delimit keys and values in the query string. Default: '='.
  * @param options The parse options
+ * @param options.decodeURIComponent The function to use when decoding percent-encoded characters in the query string. Default: `querystring.unescape()`.
+ * @param options.maxKeys Specifies the maximum number of keys to parse. Specify `0` to remove key counting limitations. Default: `1000`.
+ * @legacy
+ * @see Tested in test-querystring.js
  */
 export function parse(
   str: string,
@@ -98,8 +135,8 @@ export function parse(
   const sepLen = sepCodes.length;
   const eqLen = eqCodes.length;
 
-  let pairs = 2000;
-  if (maxKeys) {
+  let pairs = 1000;
+  if (typeof maxKeys === "number") {
     // -1 is used in place of a value like Infinity for meaning
     // "unlimited pairs" because of additional checks V8 (at least as of v5.4)
     // has to do when using variables that contain values like Infinity. Since
@@ -250,63 +287,25 @@ interface StringifyOptions {
   encodeURIComponent: (string: string) => string;
 }
 
-export function encodeStr(
-  str: string,
-  noEscapeTable: number[],
-  hexTable: string[],
-): string {
-  const len = str.length;
-  if (len === 0) return "";
-
-  let out = "";
-  let lastPos = 0;
-
-  for (let i = 0; i < len; i++) {
-    let c = str.charCodeAt(i);
-    // ASCII
-    if (c < 0x80) {
-      if (noEscapeTable[c] === 1) continue;
-      if (lastPos < i) out += str.slice(lastPos, i);
-      lastPos = i + 1;
-      out += hexTable[c];
-      continue;
-    }
-
-    if (lastPos < i) out += str.slice(lastPos, i);
-
-    // Multi-byte characters ...
-    if (c < 0x800) {
-      lastPos = i + 1;
-      out += hexTable[0xc0 | (c >> 6)] + hexTable[0x80 | (c & 0x3f)];
-      continue;
-    }
-    if (c < 0xd800 || c >= 0xe000) {
-      lastPos = i + 1;
-      out += hexTable[0xe0 | (c >> 12)] + hexTable[0x80 | ((c >> 6) & 0x3f)] +
-        hexTable[0x80 | (c & 0x3f)];
-      continue;
-    }
-    // Surrogate pair
-    ++i;
-
-    // This branch should never happen because all URLSearchParams entries
-    // should already be converted to USVString. But, included for
-    // completion's sake anyway.
-    if (i >= len) throw new Deno.errors.InvalidData("invalid URI");
-
-    const c2 = str.charCodeAt(i) & 0x3ff;
-
-    lastPos = i + 1;
-    c = 0x10000 + (((c & 0x3ff) << 10) | c2);
-    out += hexTable[0xf0 | (c >> 18)] +
-      hexTable[0x80 | ((c >> 12) & 0x3f)] +
-      hexTable[0x80 | ((c >> 6) & 0x3f)] +
-      hexTable[0x80 | (c & 0x3f)];
-  }
-  if (lastPos === 0) return str;
-  if (lastPos < len) return out + str.slice(lastPos);
-  return out;
-}
+/**
+ * These characters do not need escaping when generating query strings:
+ * ! - . _ ~
+ * ' ( ) *
+ * digits
+ * alpha (uppercase)
+ * alpha (lowercase)
+ */
+// deno-fmt-ignore
+const noEscape = new Int8Array([
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 0 - 15
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 16 - 31
+  0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, // 32 - 47
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, // 48 - 63
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 64 - 79
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, // 80 - 95
+  0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 96 - 111
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0,  // 112 - 127
+]);
 
 // deno-lint-ignore no-explicit-any
 function stringifyPrimitive(v: any): string {
@@ -358,6 +357,9 @@ function encodeStringified(v: any, encode: (string: string) => string): string {
  * @param sep The substring used to delimit key and value pairs in the query string. Default: '&'.
  * @param eq The substring used to delimit keys and values in the query string. Default: '='.
  * @param options The stringify options
+ * @param options.encodeURIComponent The function to use when converting URL-unsafe characters to percent-encoding in the query string. Default: `querystring.escape()`.
+ * @legacy
+ * @see Tested in `test-querystring.js`
  */
 export function stringify(
   // deno-lint-ignore no-explicit-any
@@ -368,7 +370,7 @@ export function stringify(
 ): string {
   sep ||= "&";
   eq ||= "=";
-  const encode = options ? options.encodeURIComponent : escape;
+  const encode = options ? options.encodeURIComponent : qsEscape;
   const convert = options ? encodeStringifiedCustom : encodeStringified;
 
   if (obj !== null && typeof obj === "object") {
@@ -407,20 +409,94 @@ export function stringify(
   return "";
 }
 
-/** Alias of querystring.parse() */
-export const decode = parse;
-/** Alias of querystring.stringify() */
-export const encode = stringify;
-export const unescape = decodeURIComponent;
-export const escape = encodeURIComponent;
+// deno-fmt-ignore
+const unhexTable = new Int8Array([
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 0 - 15
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 16 - 31
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 32 - 47
+  +0, +1, +2, +3, +4, +5, +6, +7, +8, +9, -1, -1, -1, -1, -1, -1, // 48 - 63
+  -1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 64 - 79
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 80 - 95
+  -1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 96 - 111
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 112 - 127
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 128 ...
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // ... 255
+]);
+
+/**
+ * A safe fast alternative to decodeURIComponent
+ */
+export function unescapeBuffer(s: string, decodeSpaces = false): Buffer {
+  const out = new Buffer(s.length);
+  let index = 0;
+  let outIndex = 0;
+  let currentChar;
+  let nextChar;
+  let hexHigh;
+  let hexLow;
+  const maxLength = s.length - 2;
+  // Flag to know if some hex chars have been decoded
+  let hasHex = false;
+  while (index < s.length) {
+    currentChar = s.charCodeAt(index);
+    if (currentChar === 43 /* '+' */ && decodeSpaces) {
+      out[outIndex++] = 32; // ' '
+      index++;
+      continue;
+    }
+    if (currentChar === 37 /* '%' */ && index < maxLength) {
+      currentChar = s.charCodeAt(++index);
+      hexHigh = unhexTable[currentChar];
+      if (!(hexHigh >= 0)) {
+        out[outIndex++] = 37; // '%'
+        continue;
+      } else {
+        nextChar = s.charCodeAt(++index);
+        hexLow = unhexTable[nextChar];
+        if (!(hexLow >= 0)) {
+          out[outIndex++] = 37; // '%'
+          index--;
+        } else {
+          hasHex = true;
+          currentChar = hexHigh * 16 + hexLow;
+        }
+      }
+    }
+    out[outIndex++] = currentChar;
+    index++;
+  }
+  return hasHex ? out.slice(0, outIndex) : out;
+}
+
+function qsUnescape(s: string): string {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return unescapeBuffer(s).toString();
+  }
+}
+
+/**
+ * Performs decoding of URL percent-encoded characters on the given `str`.
+ * Used by `querystring.parse()` and is generally not expected to be used directly.
+ * It is exported primarily to allow application code to provide a replacement decoding implementation if necessary by assigning `querystring.unescape` to an alternative function.
+ * @legacy
+ * @see Tested in `test-querystring-escape.js`
+ */
+export const unescape = qsUnescape;
 
 export default {
   parse,
-  encodeStr,
   stringify,
-  hexTable,
   decode,
   encode,
   unescape,
   escape,
+  unescapeBuffer,
 };

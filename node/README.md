@@ -53,7 +53,7 @@ Deno standard library as it's a compatibility module.
 - [x] util/types _partly_
 - [ ] v8
 - [ ] vm
-- [ ] wasi
+- [x] wasi
 - [ ] webcrypto
 - [ ] worker_threads
 - [ ] zlib
@@ -113,6 +113,16 @@ workflow.
 $ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
 ```
 
+You can aditionally pass the `-y`/`-n` flag to use test cache or generating
+tests from scratch instead of being prompted at the moment of running it.
+
+```zsh
+# Will use downloaded tests instead of prompting user
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts -y
+# Will not prompt but will download and extract the tests directly
+$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts -n
+```
+
 To run the tests you have set up, do the following:
 
 ```zsh
@@ -122,28 +132,10 @@ $ deno test --allow-read --allow-run node/_tools/test.ts
 If you want to run specific tests in a local environment, try one of the
 following:
 
-- Use `node/_tools/require.ts` as follows(recommended):
+- Use `node/_tools/require.ts` as follows:
 
 ```zsh
-$ deno run -A node/_tools/require.ts /Abs/path/to/deno_std/node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js
-```
-
-- Add `--only` flag to the `node/_tools/config.json`.
-
-```json
-...
-  "tests": {
-    ...
-    "parallel": [
-      ...
-      "test-event-emitter-add-listeners.js",
-      "test-event-emitter-check-listener-leaks.js --only",
-      "test-event-emitter-invalid-listener.js",
-      ...
-    ]
-    ...
-  }
-...
+$ deno run -A --unstable node/_tools/require.ts /Abs/path/to/deno_std/node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js
 ```
 
 The test should be passing with the latest deno, so if the test fails, try the

@@ -539,6 +539,11 @@ export function assertObjectMatch(
   type loose = Record<PropertyKey, unknown>;
   const seen = new WeakMap();
   function filter(a: loose, b: loose): loose {
+    // If the actual value is an array, let assertEquals do the assertion.
+    if (Array.isArray(a)) {
+      return a;
+    }
+
     // Prevent infinite loop with circular references with same filter
     if ((seen.has(a)) && (seen.get(a) === b)) {
       return a;
@@ -773,9 +778,9 @@ export async function assertRejects<E extends Error = Error>(
  * If it does not, then it throws.  An error class and a string that should be
  * included in the error message can also be asserted.
  *
- * @deprecated
+ * @deprecated Use assertRejects instead.
  */
-export { assertRejects as assertThrowsAsync };
+export const assertThrowsAsync = assertRejects;
 
 /** Use this to stub out methods that will throw when invoked. */
 export function unimplemented(msg?: string): never {

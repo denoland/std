@@ -14,6 +14,36 @@ If you want to contribute or understand why this is done the way it is, see the
 
 ## Usage
 
+### aggregateGroups
+
+Applies the given aggregator to each group in the given grouping, returning the
+results together with the respective group keys
+
+```ts
+import { aggregateGroups } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const foodProperties = {
+  "Curry": ["spicy", "vegan"],
+  "Omelette": ["creamy", "vegetarian"],
+};
+const descriptions = aggregateGroups(
+  foodProperties,
+  (current, key, first, acc) => {
+    if (first) {
+      return `${key} is ${current}`;
+    }
+
+    return `${acc} and ${current}`;
+  },
+);
+
+assertEquals(descriptions, {
+  "Curry": "Curry is spicy and vegan",
+  "Omelette": "Omelette is creamy and vegetarian",
+});
+```
+
 ### associateBy
 
 Transforms the given array into a Record, extracting the key of each element
@@ -865,8 +895,8 @@ assertEquals(withoutList, [3]);
 
 ### zip
 
-Builds 2-tuples of elements from the given array with matching indices, stopping
-when the smaller array's end is reached
+Builds N-tuples of elements from the given N arrays with matching indices,
+stopping when the smallest array's end is reached
 
 ```ts
 import { zip } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";

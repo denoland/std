@@ -101,10 +101,14 @@ function debuglog(
   return logger;
 }
 
-const { state } = await Deno.permissions.query({
-  name: "env",
-  variable: "NODE_DEBUG",
-});
+let state = "";
+
+if (Deno.permissions) {
+  state = (await Deno.permissions.query({
+    name: "env",
+    variable: "NODE_DEBUG",
+  })).state;
+}
 
 if (state === "granted") {
   initializeDebugEnv(Deno.env.get("NODE_DEBUG") ?? "");

@@ -14,11 +14,25 @@
  * *********** */
 
 import { getSystemErrorName, inspect } from "./util.ts";
-import { codeMap, errorMap } from "./internal_binding/uv.ts";
+import {
+  codeMap,
+  errorMap,
+  mapSysErrnoToUvErrno,
+} from "./internal_binding/uv.ts";
 import { assert } from "../_util/assert.ts";
 import { fileURLToPath } from "./url.ts";
+import { isWindows } from "../_util/os.ts";
+import { os as osConstants } from "./internal_binding/constants.ts";
+const {
+  errno: {
+    ENOTDIR,
+    ENOENT,
+  },
+} = osConstants;
 
 export { errorMap };
+
+const kIsNodeError = Symbol("kIsNodeError");
 
 /**
  * @see https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js
@@ -42,16 +56,39 @@ const kTypes = [
   "symbol",
 ];
 
-const nodeInternalPrefix = "__node_internal_";
+// Node uses an AbortError that isn't exactly the same as the DOMException
+// to make usage of the error in userland and readable-stream easier.
+// It is a regular error with `.code` and `.name`.
+export class AbortError extends Error {
+  code: string;
+
+  constructor() {
+    super("The operation was aborted");
+    this.code = "ABORT_ERR";
+    this.name = "AbortError";
+  }
+}
 
 // deno-lint-ignore no-explicit-any
 type GenericFunction = (...args: any[]) => any;
 
+function addNumericalSeparator(val: string) {
+  let res = "";
+  let i = val.length;
+  const start = val[0] === "-" ? 1 : 0;
+  for (; i >= start + 4; i -= 3) {
+    res = `_${val.slice(i - 3, i)}${res}`;
+  }
+  return `${val.slice(0, i)}${res}`;
+}
+
 /** This function removes unnecessary frames from Node.js core errors. */
-export function hideStackFrames(fn: GenericFunction) {
+export function hideStackFrames<T extends GenericFunction = GenericFunction>(
+  fn: T,
+): T {
   // We rename the functions that will be hidden to cut off the stacktrace
   // at the outermost one.
-  const hidden = nodeInternalPrefix + fn.name;
+  const hidden = "__node_internal_" + fn.name;
   Object.defineProperty(fn, "name", { value: hidden });
 
   return fn;
@@ -59,6 +96,7 @@ export function hideStackFrames(fn: GenericFunction) {
 
 const captureLargerStackTrace = hideStackFrames(
   function captureLargerStackTrace(err) {
+    // @ts-ignore this function is not available in lib.dom.d.ts
     Error.captureStackTrace(err);
 
     return err;
@@ -87,8 +125,8 @@ export const uvExceptionWithHostPort = hideStackFrames(
   function uvExceptionWithHostPort(
     err: number,
     syscall: string,
-    address: string,
-    port?: number,
+    address?: string | null,
+    port?: number | null,
   ) {
     const { 0: code, 1: uvmsg } = uvErrmapGet(err) || uvUnmappedError;
     const message = `${syscall} ${code}: ${uvmsg}`;
@@ -124,7 +162,7 @@ export const uvExceptionWithHostPort = hideStackFrames(
  * @return A `ErrnoException`
  */
 export const errnoException = hideStackFrames(
-  function errnoException(err, syscall, original): ErrnoException {
+  function errnoException(err, syscall, original?): ErrnoException {
     const code = getSystemErrorName(err);
     const message = original
       ? `${syscall} ${code} ${original}`
@@ -212,7 +250,7 @@ export const exceptionWithHostPort = hideStackFrames(
     syscall: string,
     address: string,
     port: number,
-    additional: string,
+    additional?: string,
   ) {
     const code = getSystemErrorName(err);
     let details = "";
@@ -349,89 +387,235 @@ export class NodeURIError extends NodeErrorAbstraction implements URIError {
   }
 }
 
-export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
-  constructor(name: string, expected: string | string[], actual: unknown) {
-    // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
-    expected = Array.isArray(expected) ? expected : [expected];
-    let msg = "The ";
-    if (name.endsWith(" argument")) {
-      // For cases like 'first argument'
-      msg += `${name} `;
+interface NodeSystemErrorCtx {
+  code: string;
+  syscall: string;
+  message: string;
+  errno: number;
+  path?: string;
+  dest?: string;
+}
+// A specialized Error that includes an additional info property with
+// additional information about the error condition.
+// It has the properties present in a UVException but with a custom error
+// message followed by the uv error code and uv error message.
+// It also has its own error code with the original uv error context put into
+// `err.info`.
+// The context passed into this error must have .code, .syscall and .message,
+// and may have .path and .dest.
+class NodeSystemError extends NodeErrorAbstraction {
+  constructor(key: string, context: NodeSystemErrorCtx, msgPrefix: string) {
+    let message = `${msgPrefix}: ${context.syscall} returned ` +
+      `${context.code} (${context.message})`;
+
+    if (context.path !== undefined) {
+      message += ` ${context.path}`;
+    }
+    if (context.dest !== undefined) {
+      message += ` => ${context.dest}`;
+    }
+
+    super("SystemError", key, message);
+
+    captureLargerStackTrace(this);
+
+    Object.defineProperties(this, {
+      [kIsNodeError]: {
+        value: true,
+        enumerable: false,
+        writable: false,
+        configurable: true,
+      },
+      info: {
+        value: context,
+        enumerable: true,
+        configurable: true,
+        writable: false,
+      },
+      errno: {
+        get() {
+          return context.errno;
+        },
+        set: (value) => {
+          context.errno = value;
+        },
+        enumerable: true,
+        configurable: true,
+      },
+      syscall: {
+        get() {
+          return context.syscall;
+        },
+        set: (value) => {
+          context.syscall = value;
+        },
+        enumerable: true,
+        configurable: true,
+      },
+    });
+
+    if (context.path !== undefined) {
+      Object.defineProperty(this, "path", {
+        get() {
+          return context.path;
+        },
+        set: (value) => {
+          context.path = value;
+        },
+        enumerable: true,
+        configurable: true,
+      });
+    }
+
+    if (context.dest !== undefined) {
+      Object.defineProperty(this, "dest", {
+        get() {
+          return context.dest;
+        },
+        set: (value) => {
+          context.dest = value;
+        },
+        enumerable: true,
+        configurable: true,
+      });
+    }
+  }
+
+  toString() {
+    return `${this.name} [${this.code}]: ${this.message}`;
+  }
+}
+
+function makeSystemErrorWithCode(key: string, msgPrfix: string) {
+  return class NodeError extends NodeSystemError {
+    constructor(ctx: NodeSystemErrorCtx) {
+      super(key, ctx, msgPrfix);
+    }
+  };
+}
+
+export const ERR_FS_EISDIR = makeSystemErrorWithCode(
+  "ERR_FS_EISDIR",
+  "Path is a directory",
+);
+
+function createInvalidArgType(
+  name: string,
+  expected: string | string[],
+): string {
+  // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
+  expected = Array.isArray(expected) ? expected : [expected];
+  let msg = "The ";
+  if (name.endsWith(" argument")) {
+    // For cases like 'first argument'
+    msg += `${name} `;
+  } else {
+    const type = name.includes(".") ? "property" : "argument";
+    msg += `"${name}" ${type} `;
+  }
+  msg += "must be ";
+
+  const types = [];
+  const instances = [];
+  const other = [];
+  for (const value of expected) {
+    if (kTypes.includes(value)) {
+      types.push(value.toLocaleLowerCase());
+    } else if (classRegExp.test(value)) {
+      instances.push(value);
     } else {
-      const type = name.includes(".") ? "property" : "argument";
-      msg += `"${name}" ${type} `;
+      other.push(value);
     }
-    msg += "must be ";
+  }
 
-    const types = [];
-    const instances = [];
-    const other = [];
-    for (const value of expected) {
-      if (kTypes.includes(value)) {
-        types.push(value.toLocaleLowerCase());
-      } else if (classRegExp.test(value)) {
-        instances.push(value);
-      } else {
-        other.push(value);
-      }
+  // Special handle `object` in case other instances are allowed to outline
+  // the differences between each other.
+  if (instances.length > 0) {
+    const pos = types.indexOf("object");
+    if (pos !== -1) {
+      types.splice(pos, 1);
+      instances.push("Object");
     }
+  }
 
-    // Special handle `object` in case other instances are allowed to outline
-    // the differences between each other.
-    if (instances.length > 0) {
-      const pos = types.indexOf("object");
-      if (pos !== -1) {
-        types.splice(pos, 1);
-        instances.push("Object");
-      }
+  if (types.length > 0) {
+    if (types.length > 2) {
+      const last = types.pop();
+      msg += `one of type ${types.join(", ")}, or ${last}`;
+    } else if (types.length === 2) {
+      msg += `one of type ${types[0]} or ${types[1]}`;
+    } else {
+      msg += `of type ${types[0]}`;
     }
+    if (instances.length > 0 || other.length > 0) {
+      msg += " or ";
+    }
+  }
 
-    if (types.length > 0) {
-      if (types.length > 2) {
-        const last = types.pop();
-        msg += `one of type ${types.join(", ")}, or ${last}`;
-      } else if (types.length === 2) {
-        msg += `one of type ${types[0]} or ${types[1]}`;
-      } else {
-        msg += `of type ${types[0]}`;
-      }
-      if (instances.length > 0 || other.length > 0) {
-        msg += " or ";
+  if (instances.length > 0) {
+    if (instances.length > 2) {
+      const last = instances.pop();
+      msg += `an instance of ${instances.join(", ")}, or ${last}`;
+    } else {
+      msg += `an instance of ${instances[0]}`;
+      if (instances.length === 2) {
+        msg += ` or ${instances[1]}`;
       }
     }
-
-    if (instances.length > 0) {
-      if (instances.length > 2) {
-        const last = instances.pop();
-        msg += `an instance of ${instances.join(", ")}, or ${last}`;
-      } else {
-        msg += `an instance of ${instances[0]}`;
-        if (instances.length === 2) {
-          msg += ` or ${instances[1]}`;
-        }
-      }
-      if (other.length > 0) {
-        msg += " or ";
-      }
-    }
-
     if (other.length > 0) {
-      if (other.length > 2) {
-        const last = other.pop();
-        msg += `one of ${other.join(", ")}, or ${last}`;
-      } else if (other.length === 2) {
-        msg += `one of ${other[0]} or ${other[1]}`;
-      } else {
-        if (other[0].toLowerCase() !== other[0]) {
-          msg += "an ";
-        }
-        msg += `${other[0]}`;
-      }
+      msg += " or ";
     }
+  }
+
+  if (other.length > 0) {
+    if (other.length > 2) {
+      const last = other.pop();
+      msg += `one of ${other.join(", ")}, or ${last}`;
+    } else if (other.length === 2) {
+      msg += `one of ${other[0]} or ${other[1]}`;
+    } else {
+      if (other[0].toLowerCase() !== other[0]) {
+        msg += "an ";
+      }
+      msg += `${other[0]}`;
+    }
+  }
+
+  return msg;
+}
+
+export class ERR_INVALID_ARG_TYPE_RANGE extends NodeRangeError {
+  constructor(name: string, expected: string | string[], actual: unknown) {
+    const msg = createInvalidArgType(name, expected);
 
     super(
       "ERR_INVALID_ARG_TYPE",
       `${msg}.${invalidArgTypeHelper(actual)}`,
+    );
+  }
+}
+
+export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
+  constructor(name: string, expected: string | string[], actual: unknown) {
+    const msg = createInvalidArgType(name, expected);
+
+    super(
+      "ERR_INVALID_ARG_TYPE",
+      `${msg}.${invalidArgTypeHelper(actual)}`,
+    );
+  }
+
+  static RangeError = ERR_INVALID_ARG_TYPE_RANGE;
+}
+
+class ERR_INVALID_ARG_VALUE_RANGE extends NodeRangeError {
+  constructor(name: string, value: unknown, reason: string = "is invalid") {
+    const type = name.includes(".") ? "property" : "argument";
+    const inspected = inspect(value);
+
+    super(
+      "ERR_INVALID_ARG_VALUE",
+      `The ${type} '${name}' ${reason}. Received ${inspected}`,
     );
   }
 }
@@ -446,6 +630,8 @@ export class ERR_INVALID_ARG_VALUE extends NodeTypeError {
       `The ${type} '${name}' ${reason}. Received ${inspected}`,
     );
   }
+
+  static RangeError = ERR_INVALID_ARG_VALUE_RANGE;
 }
 
 // A helper function to simplify checking for ERR_INVALID_ARG_TYPE output.
@@ -473,10 +659,31 @@ function invalidArgTypeHelper(input: any) {
 export class ERR_OUT_OF_RANGE extends RangeError {
   code = "ERR_OUT_OF_RANGE";
 
-  constructor(str: string, range: string, received: unknown) {
-    super(
-      `The value of "${str}" is out of range. It must be ${range}. Received ${received}`,
-    );
+  constructor(
+    str: string,
+    range: string,
+    input: unknown,
+    replaceDefaultBoolean = false,
+  ) {
+    assert(range, 'Missing "range" argument');
+    let msg = replaceDefaultBoolean
+      ? str
+      : `The value of "${str}" is out of range.`;
+    let received;
+    if (Number.isInteger(input) && Math.abs(input as number) > 2 ** 32) {
+      received = addNumericalSeparator(String(input));
+    } else if (typeof input === "bigint") {
+      received = String(input);
+      if (input > 2n ** 32n || input < -(2n ** 32n)) {
+        received = addNumericalSeparator(received);
+      }
+      received += "n";
+    } else {
+      received = inspect(input);
+    }
+    msg += ` It must be ${range}. Received ${received}`;
+
+    super(msg);
 
     const { name } = this;
     // Add the error code to the name to include it in the stack trace.
@@ -2448,10 +2655,10 @@ export class ERR_INVALID_MODULE_SPECIFIER extends NodeTypeError {
 }
 
 export class ERR_INVALID_PACKAGE_TARGET extends NodeError {
-  // deno-lint-ignore no-explicit-any
   constructor(
     pkgPath: string,
     key: string,
+    // deno-lint-ignore no-explicit-any
     target: any,
     isImport?: boolean,
     base?: string,
@@ -2515,4 +2722,62 @@ export class ERR_PACKAGE_PATH_NOT_EXPORTED extends NodeError {
 
     super("ERR_PACKAGE_PATH_NOT_EXPORTED", msg);
   }
+}
+
+export class ERR_INTERNAL_ASSERTION extends NodeError {
+  constructor(
+    message?: string,
+  ) {
+    const suffix = "This is caused by either a bug in Node.js " +
+      "or incorrect usage of Node.js internals.\n" +
+      "Please open an issue with this stack trace at " +
+      "https://github.com/nodejs/node/issues\n";
+    super(
+      "ERR_INTERNAL_ASSERTION",
+      message === undefined ? suffix : `${message}\n${suffix}`,
+    );
+  }
+}
+
+// Using `fs.rmdir` on a path that is a file results in an ENOENT error on Windows and an ENOTDIR error on POSIX.
+export class ERR_FS_RMDIR_ENOTDIR extends NodeSystemError {
+  constructor(path: string) {
+    const code = isWindows ? "ENOENT" : "ENOTDIR";
+    const ctx: NodeSystemErrorCtx = {
+      message: "not a directory",
+      path,
+      syscall: "rmdir",
+      code,
+      errno: isWindows ? ENOENT : ENOTDIR,
+    };
+    super(code, ctx, "Path is not a directory");
+  }
+}
+
+interface UvExceptionContext {
+  syscall: string;
+}
+export function denoErrorToNodeError(e: Error, ctx: UvExceptionContext) {
+  const errno = extractOsErrorNumberFromErrorMessage(e);
+  if (typeof errno === "undefined") {
+    return e;
+  }
+
+  const ex = uvException({
+    errno: mapSysErrnoToUvErrno(errno),
+    ...ctx,
+  });
+  return ex;
+}
+
+function extractOsErrorNumberFromErrorMessage(e: unknown): number | undefined {
+  const match = e instanceof Error
+    ? e.message.match(/\(os error (\d+)\)/)
+    : false;
+
+  if (match) {
+    return +match[1];
+  }
+
+  return undefined;
 }

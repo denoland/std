@@ -22,7 +22,28 @@ import { downloadFile } from "../../_util/download_file.ts";
  * section of the configuration file
  *
  * Usage: `deno run --allow-read --allow-net --allow-write setup.ts`
+ *
+ * You can aditionally pass a flag to indicate if cache should be used for generating
+ * the tests, or to generate the tests from scratch (-y/-n)
  */
+
+const USE_CACHE = Deno.args.includes("-y");
+const DONT_USE_CACHE = Deno.args.includes("-n");
+
+if (USE_CACHE && DONT_USE_CACHE) {
+  throw new Error(
+    '"-y" and "-n" options for cache can\'t be used at the same time',
+  );
+}
+
+let CACHE_MODE: "cache" | "prompt" | "no_cache";
+if (USE_CACHE) {
+  CACHE_MODE = "cache";
+} else if (DONT_USE_CACHE) {
+  CACHE_MODE = "no_cache";
+} else {
+  CACHE_MODE = "prompt";
+}
 
 const NODE_URL = "https://nodejs.org/dist/vNODE_VERSION";
 const NODE_FILE = "node-vNODE_VERSION";
@@ -172,25 +193,35 @@ async function copyTests(filePath: string): Promise<void> {
 }
 
 let shouldDownload = false;
-try {
-  Deno.lstatSync(new URL(archivePath, import.meta.url));
-  while (true) {
-    const r = (prompt(`File "${archivePath}" found, use file? Y/N:`) ?? "")
-      .trim()
-      .toUpperCase();
-    if (r === "Y") {
-      break;
-    } else if (r === "N") {
-      shouldDownload = true;
-      break;
-    } else {
-      console.log(`Unexpected: "${r}"`);
+if (CACHE_MODE === "prompt") {
+  let testArchiveExists = false;
+
+  try {
+    Deno.lstatSync(new URL(archivePath, import.meta.url));
+    testArchiveExists = true;
+  } catch (e) {
+    if (!(e instanceof Deno.errors.NotFound)) {
+      throw e;
+    }
+    shouldDownload = true;
+  }
+
+  if (testArchiveExists) {
+    while (true) {
+      const r = (prompt(`File "${archivePath}" found, use file? Y/N:`) ?? "")
+        .trim()
+        .toUpperCase();
+      if (r === "Y") {
+        break;
+      } else if (r === "N") {
+        shouldDownload = true;
+        break;
+      } else {
+        console.log(`Unexpected: "${r}"`);
+      }
     }
   }
-} catch (e) {
-  if (!(e instanceof Deno.errors.NotFound)) {
-    throw e;
-  }
+} else if (CACHE_MODE === "no_cache") {
   shouldDownload = true;
 }
 
@@ -201,27 +232,35 @@ if (shouldDownload) {
 }
 
 let shouldDecompress = false;
-try {
-  const p = new URL(decompressedSourcePath, import.meta.url);
-  Deno.lstatSync(p);
-  while (true) {
-    const r = (prompt(
-      `Decompressed file "${decompressedSourcePath}" found, use file? Y/N:`,
-    ) ?? "").trim()
-      .toUpperCase();
-    if (r === "Y") {
-      break;
-    } else if (r === "N") {
-      shouldDecompress = true;
-      break;
-    } else {
-      console.log(`Unexpected: "${r}"`);
+if (CACHE_MODE === "prompt") {
+  let testFolderExists = false;
+  try {
+    Deno.lstatSync(new URL(decompressedSourcePath, import.meta.url));
+    testFolderExists = true;
+  } catch (e) {
+    if (!(e instanceof Deno.errors.NotFound)) {
+      throw e;
+    }
+    shouldDecompress = true;
+  }
+
+  if (testFolderExists) {
+    while (true) {
+      const r = (prompt(
+        `Decompressed file "${decompressedSourcePath}" found, use file? Y/N:`,
+      ) ?? "").trim()
+        .toUpperCase();
+      if (r === "Y") {
+        break;
+      } else if (r === "N") {
+        shouldDecompress = true;
+        break;
+      } else {
+        console.log(`Unexpected: "${r}"`);
+      }
     }
   }
-} catch (e) {
-  if (!(e instanceof Deno.errors.NotFound)) {
-    throw e;
-  }
+} else if (CACHE_MODE === "no_cache") {
   shouldDecompress = true;
 }
 

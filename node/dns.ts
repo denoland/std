@@ -19,13 +19,13 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { nextTick } from "./process.ts";
+import { nextTick } from "./_next_tick.ts";
 import { kCustomPromisifyArgsSymbol as customPromisifyArgs } from "./_util/_util_promisify.ts";
 import {
   validateCallback,
   validateOneOf,
   validateString,
-} from "./_validators.ts";
+} from "./internal/validators.js";
 import { isIP } from "./_net.ts";
 import {
   emitInvalidHostnameWarning,
