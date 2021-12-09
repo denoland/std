@@ -116,7 +116,7 @@ export type MiddlewareChain<
   add<AddedNeeds, AddedAdds>(
     middleware: Middleware<AddedNeeds, AddedAdds>,
   ): MiddlewareChain<
-    Expand<Needs & SafeOmit<AddedNeeds, Adds>>, // todo does safeomit handle assignability? e.g. require string, provide 'a'
+    Expand<Needs & SafeOmit<AddedNeeds, Adds>>,
     Expand<MergeContext<Adds, AddedAdds>>
   >;
 };
