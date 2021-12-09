@@ -254,7 +254,7 @@ class Process extends EventEmitter {
   env = env;
 
   /** https://nodejs.org/api/process.html#process_process_execargv */
-  execArgv = [];
+  execArgv: string[] = [];
 
   /** https://nodejs.org/api/process.html#process_process_exit_code */
   exit = exit;
