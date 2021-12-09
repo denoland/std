@@ -1,3 +1,4 @@
+import { validateString } from "./validators.js";
 import { promisify } from "../_util/_util_promisify.ts";
 export { promisify };
 
@@ -92,11 +93,50 @@ export function createDeferredPromise() {
   return { promise, resolve, reject };
 }
 
+// Keep a list of deprecation codes that have been warned on so we only warn on
+// each one once.
+const codesWarned = new Set();
+
 // Mark that a method should not be used.
 // Returns a modified function which warns once by default.
 // If --no-deprecation is set, then it is a no-op.
 export function deprecate(fn, msg, code) {
-  
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  if (code !== undefined)
+    validateString(code, 'code');
+
+  let warned = false;
+  function deprecated(...args) {
+    if (!warned) {
+      warned = true;
+      if (code !== undefined) {
+        if (!codesWarned.has(code)) {
+          process.emitWarning(msg, 'DeprecationWarning', code, deprecated);
+          codesWarned.add(code);
+        }
+      } else {
+        process.emitWarning(msg, 'DeprecationWarning', deprecated);
+      }
+    }
+    if (new.target) {
+      return Reflect.construct(fn, args, new.target);
+    }
+    return Reflect.apply(fn, this, args);
+  }
+
+  // The wrapper will keep the same prototype as fn to maintain prototype chain
+  Object.setPrototypeOf(deprecated, fn);
+  if (fn.prototype) {
+    // Setting this (rather than using Object.setPrototype, as above) ensures
+    // that calling the unwrapped constructor gives an instanceof the wrapped
+    // constructor.
+    deprecated.prototype = fn.prototype;
+  }
+
+  return deprecated;
 }
 
 export default {
