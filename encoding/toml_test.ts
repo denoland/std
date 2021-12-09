@@ -526,15 +526,15 @@ Deno.test({
         },
       },
     };
-    const expected = `emptyArray = []
-mixedArray1 = [1,{b = 2}]
-mixedArray2 = [{b = 2},1]
+    const expected = `emptyArray   = []
+mixedArray1  = [1,{b = 2}]
+mixedArray2  = [{b = 2},1]
 nestedArray1 = [[{b = 1}]]
 nestedArray2 = [[[{b = 1}]]]
 nestedArray3 = [[],[{b = 1}]]
 
 [deepNested.a]
-b = [1,{c = 2,d = [{e = 3},true]}]
+b            = [1,{c = 2,d = [{e = 3},true]}]
 `;
     const actual = stringify(src);
     assertEquals(actual, expected);
@@ -671,5 +671,22 @@ Deno.test({
       Error,
       "Contains invalid whitespaces: `\\u3000`",
     );
+  },
+});
+
+// https://github.com/denoland/deno_std/issues/1067#issuecomment-907740319
+Deno.test({
+  name: "[TOML] object value contains '='",
+  fn(): void {
+    const src = {
+      "a": "a = 1",
+      "helloooooooo": 1,
+    };
+
+    const actual = stringify(src);
+    const expected = `a            = "a = 1"
+helloooooooo = 1
+`;
+    assertEquals(actual, expected);
   },
 });

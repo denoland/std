@@ -506,7 +506,7 @@ export async function serveListener(
   handler: Handler,
   options?: Omit<ServeInit, "port" | "hostname">,
 ): Promise<void> {
-  const server = new Server({ handler });
+  const server = new Server({ handler, onError: options?.onError });
 
   if (options?.signal) {
     options.signal.onabort = () => server.close();
@@ -602,6 +602,7 @@ export async function serveTls(
     port: options.port ?? 8443,
     hostname: options.hostname ?? "0.0.0.0",
     handler,
+    onError: options.onError,
   });
 
   if (options?.signal) {
