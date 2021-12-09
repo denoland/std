@@ -105,7 +105,6 @@ export class ChildProcess extends EventEmitter {
       stdio = ["pipe", "pipe", "pipe"],
       shell = false,
     } = options || {};
-    console.log("stdio", stdio);
     const [
       stdin = "pipe",
       stdout = "pipe",
@@ -232,7 +231,6 @@ const supportedNodeStdioTypes: NodeStdio[] = ["pipe", "ignore", "inherit"];
 function toDenoStdio(
   pipe: NodeStdio | number | Stream | null | undefined,
 ): DenoStdio {
-  console.log("toDenoStdio", pipe);
   if (
     !supportedNodeStdioTypes.includes(pipe as NodeStdio) ||
     typeof pipe === "number" || pipe instanceof Stream
