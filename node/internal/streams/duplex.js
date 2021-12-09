@@ -2,7 +2,7 @@
 // deno-lint-ignore-file
 
 import { AbortError } from "../errors.js";
-import { createDeferredPromise } from "../util.ts";
+import { createDeferredPromise } from "../util.js";
 import { destroyer } from "./destroy.js";
 import { isBlob } from "../blob.js";
 import {

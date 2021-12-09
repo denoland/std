@@ -6,7 +6,7 @@ import { destroyer } from "./internal/streams/destroy.js";
 import { isDisturbed } from "./internal/streams/utils.js";
 import { isUint8Array } from "./internal/util/types.ts";
 import { pipeline } from "./internal/streams/pipeline.js";
-import { promisify } from "./internal/util.ts";
+import { promisify } from "./internal/util.js";
 import { Stream } from "./internal/streams/legacy.js";
 import compose from "./internal/streams/compose.js";
 import Duplex from "./internal/streams/duplex.js";

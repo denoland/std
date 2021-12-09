@@ -1,11 +1,12 @@
 import { promisify } from "../_util/_util_promisify.ts";
+export { promisify };
 
-function normalizeEncoding(enc) {
+export function normalizeEncoding(enc) {
   if (enc == null || enc === "utf8" || enc === "utf-8") return "utf8";
   return slowCases(enc);
 }
 
-function slowCases(enc) {
+export function slowCases(enc) {
   switch (enc.length) {
     case 4:
       if (enc === "UTF8") return "utf8";
@@ -71,17 +72,16 @@ function slowCases(enc) {
   }
 }
 
-// deno-lint-ignore ban-types
-function once(callback) {
+export function once(callback) {
   let called = false;
-  return function (this, ...args) {
+  return function (...args) {
     if (called) return;
     called = true;
     Reflect.apply(callback, this, args);
   };
 }
 
-function createDeferredPromise() {
+export function createDeferredPromise() {
   let resolve;
   let reject;
   const promise = new Promise((res, rej) => {
@@ -92,10 +92,16 @@ function createDeferredPromise() {
   return { promise, resolve, reject };
 }
 
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+export function deprecate(fn, msg, code) {
+  
+}
+
 export default {
   createDeferredPromise,
   normalizeEncoding,
   once,
-  promisify,
+  deprecate,
 };
-export { createDeferredPromise, normalizeEncoding, once, promisify };

@@ -1,11 +1,12 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { promisify } from "./_util/_util_promisify.ts";
 import { callbackify } from "./_util/_util_callbackify.ts";
+import { deprecate } from "./internal/util.js";
 import { inspect, stripVTControlCharacters } from "./internal/util/inspect.js";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
 import * as types from "./internal/util/types.ts";
 import { Buffer } from "./buffer.ts";
-export { callbackify, inspect, promisify, stripVTControlCharacters, types };
+export { callbackify, inspect, promisify, stripVTControlCharacters, types, deprecate };
 
 const NumberIsSafeInteger = Number.isSafeInteger;
 
@@ -114,22 +115,6 @@ export function getSystemErrorName(code: number): string | undefined {
     throw new ERR_OUT_OF_RANGE("err", "a negative integer", code);
   }
   return errorMap.get(code)?.[0];
-}
-
-/**
- * https://nodejs.org/api/util.html#util_util_deprecate_fn_msg_code
- * @param _code This implementation of deprecate won't apply the deprecation code
- */
-// deno-lint-ignore no-explicit-any
-export function deprecate<T extends (...args: any) => any>(
-  fn: T,
-  msg: string,
-  _code?: string,
-): (...args: Parameters<T>) => ReturnType<T> {
-  return function (...args) {
-    console.warn(msg);
-    return fn.apply(undefined, args);
-  };
 }
 
 function toReplace(specifier: string, value: unknown): string {
