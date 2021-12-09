@@ -199,7 +199,7 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
             }
             context.update(chunkBytes);
           }
-          return context.digestAndDrop(length);
+          return context.digestAndDrop(length).buffer;
         } else {
           throw new TypeError(
             "data must be a BufferSource or [Async]Iterable<BufferSource>",
@@ -232,7 +232,8 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
       const bytes = bufferSourceBytes(data);
 
       if (bytes) {
-        return wasmCrypto.digest(algorithm.name, bytes, algorithm.length);
+        return wasmCrypto.digest(algorithm.name, bytes, algorithm.length)
+          .buffer;
       } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
         const context = new wasmCrypto.DigestContext(algorithm.name);
         for (const chunk of data as Iterable<BufferSource>) {
@@ -242,7 +243,7 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
           }
           context.update(chunkBytes);
         }
-        return context.digestAndDrop(algorithm.length);
+        return context.digestAndDrop(algorithm.length).buffer;
       } else {
         throw new TypeError(
           "data must be a BufferSource or Iterable<BufferSource>",

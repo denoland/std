@@ -1,5 +1,6 @@
 import { walk } from "../../fs/walk.ts";
-import { dirname, fromFileUrl, relative } from "../../path/mod.ts";
+import { magenta } from "../../fmt/colors.ts";
+import { dirname, fromFileUrl, join, relative } from "../../path/mod.ts";
 import { fail } from "../../testing/asserts.ts";
 import { config, testList } from "./common.ts";
 
@@ -10,26 +11,10 @@ import { config, testList } from "./common.ts";
  * code for the test is reported, the test suite will fail immediately
  */
 
-const onlyFlagTestList: RegExp[] = [];
-
-function makeOnlyFlagTestList(testLists: Array<string[]>) {
-  for (const testList of testLists) {
-    const hasOnlyFlagTestList = testList.filter((filename) =>
-      filename.match("--only")
-    ).map((filename) => new RegExp(filename.replace(/ --only/, "")));
-    onlyFlagTestList.push(...hasOnlyFlagTestList);
-  }
-}
-
-makeOnlyFlagTestList([
-  ...Object.keys(config.tests).map((suite) => config.tests[suite]),
-]);
-
 const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
   includeDirs: false,
-  match: onlyFlagTestList.length ? onlyFlagTestList : testList,
+  match: testList,
 });
-
 const testsFolder = dirname(fromFileUrl(import.meta.url));
 const decoder = new TextDecoder();
 
@@ -37,19 +22,20 @@ for await (const file of dir) {
   Deno.test({
     name: relative(testsFolder, file.path),
     fn: async () => {
+      const cmd = [
+        Deno.execPath(),
+        "run",
+        "-A",
+        "--quiet",
+        "--unstable",
+        "--no-check",
+        join("node", "_tools", "require.ts"),
+        file.path,
+      ];
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided
       const test = Deno.run({
-        cwd: testsFolder,
-        cmd: [
-          "deno",
-          "run",
-          "-A",
-          "--quiet",
-          "--unstable",
-          "require.ts",
-          file.path,
-        ],
+        cmd,
         stderr: "piped",
         stdout: "piped",
       });
@@ -61,11 +47,16 @@ for await (const file of dir) {
       ]);
       test.close();
 
-      let stderr = decoder.decode(rawStderr);
+      const stderr = decoder.decode(rawStderr);
       if (rawStderr.length) console.error(stderr);
       if (rawOutput.length) console.log(decoder.decode(rawOutput));
 
       if (status.code !== 0) {
+        console.log(`Error: "${file.path}" failed`);
+        console.log(
+          "You can repeat only this test with the command:",
+          magenta(cmd.join(" ")),
+        );
         fail(stderr);
       }
     },

@@ -29,3 +29,14 @@ import { notImplemented } from "../_utils.ts";
 export function guessHandleType(_fd: number): string {
   notImplemented();
 }
+
+export const ALL_PROPERTIES = 0;
+export const ONLY_ENUMERABLE = 2;
+
+// TODO(wafuwafu13): Implement correctly
+export const getOwnNonIndexProperties = (
+  _value: unknown,
+  _filter: number,
+): [] => {
+  return [];
+};

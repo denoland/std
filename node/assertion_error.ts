@@ -89,7 +89,7 @@ export function inspectValue(val: unknown): string {
   return inspect(
     val,
     {
-      compact: false,
+      compact: true,
       customInspect: false,
       depth: 1000,
       maxArrayLength: Infinity,
@@ -526,6 +526,7 @@ export class AssertionError extends Error {
       this.operator = operator;
     }
 
+    // @ts-ignore this function is not available in lib.dom.d.ts
     Error.captureStackTrace(this, stackStartFn || stackStartFunction);
     // Create error message including the error code in the name.
     this.stack;

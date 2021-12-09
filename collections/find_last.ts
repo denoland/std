@@ -2,6 +2,8 @@
 // This module is browser compatible.
 
 /**
+ * @deprecated Use `Array.prototype.findLast`. This function will be removed in std@0.117.0.
+ *
  * Returns the last element in the given array matching the given predicate
  *
  * Example:

@@ -119,13 +119,6 @@ Deno.test({
   name: "process.on",
   async fn() {
     assertEquals(typeof process.on, "function");
-    assertThrows(
-      () => {
-        process.on("uncaughtException", (_err: Error) => {});
-      },
-      Error,
-      "implemented",
-    );
 
     let triggered = false;
     process.on("exit", () => {
@@ -341,32 +334,77 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[process] stdio",
-  async fn() {
-    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
-    const p = Deno.run({
-      cmd: [
-        Deno.execPath(),
-        "run",
-        "--unstable",
-        "--quiet",
-        "./testdata/process_stdio.ts",
-      ],
-      cwd,
-      stderr: "piped",
-      stdin: "piped",
-      stdout: "piped",
-    });
-    p.stdin.write(new TextEncoder().encode("it works?!"));
-    p.stdin.write(new TextEncoder().encode("yes!"));
-    p.stdin.close();
-    const stderr = new TextDecoder().decode(await p.stderrOutput());
-    const stdout = new TextDecoder().decode(await p.output());
-    assertEquals(
-      stderr + stdout,
-      "helloworldhelloworldfrom pipereceived:it works?!yes!helloworldhelloworldfrom pipe",
-    );
+  name: "process.hrtime.bigint",
+  fn() {
+    const time = process.hrtime.bigint();
+    assertEquals(typeof time, "bigint");
+    assert(time > 0n);
   },
-  sanitizeResources: false,
-  sanitizeOps: false,
+});
+
+Deno.test("process.on, process.off, process.removeListener doesn't throw on unimplemented events", () => {
+  const events = [
+    "beforeExit",
+    "disconnect",
+    "message",
+    "multipleResolves",
+    "rejectionHandled",
+    "uncaughtException",
+    "uncaughtExceptionMonitor",
+    "unhandledRejection",
+  ];
+  const handler = () => {};
+  events.forEach((ev) => {
+    process.on(ev, handler);
+    process.off(ev, handler);
+    process.on(ev, handler);
+    process.removeListener(ev, handler);
+  });
+});
+
+Deno.test("process.memoryUsage()", () => {
+  const mem = process.memoryUsage();
+  assert(typeof mem.rss === "number");
+  assert(typeof mem.heapTotal === "number");
+  assert(typeof mem.heapUsed === "number");
+  assert(typeof mem.external === "number");
+  assert(typeof mem.arrayBuffers === "number");
+  assertEquals(mem.arrayBuffers, 0);
+});
+
+Deno.test("process.memoryUsage.rss()", () => {
+  const rss = process.memoryUsage.rss();
+  assert(typeof rss === "number");
+});
+
+Deno.test("process in worker", async () => {
+  const promise = deferred();
+
+  const worker = new Worker(
+    new URL("./testdata/process_worker.ts", import.meta.url).href,
+    { type: "module", deno: true },
+  );
+  worker.addEventListener("message", (e) => {
+    assertEquals(e.data, "hello");
+    promise.resolve();
+  });
+
+  await promise;
+  worker.terminate();
+});
+
+Deno.test("process.exitCode", () => {
+  assert(process.exitCode === undefined);
+  process.exitCode = 127;
+  assert(process.exitCode === 127);
+});
+
+Deno.test("process.config", () => {
+  assert(process.config !== undefined);
+  assert(process.config.target_defaults !== undefined);
+  assert(process.config.variables !== undefined);
+});
+
+Deno.test("process._exiting", () => {
+  assert(process._exiting === false);
 });

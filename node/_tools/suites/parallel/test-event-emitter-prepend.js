@@ -44,6 +44,7 @@ function Readable() {
 Object.setPrototypeOf(Readable.prototype, stream.Stream.prototype);
 Object.setPrototypeOf(Readable, stream.Stream);
 
-const w = new Writable();
-const r = new Readable();
-r.pipe(w);
+// FIXME(bartlomieju):
+// const w = new Writable();
+// const r = new Readable();
+// r.pipe(w);

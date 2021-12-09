@@ -365,6 +365,9 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const g: r = { foo: true, bar: false };
   const h = { foo: [1, 2, 3], bar: true };
   const i = { foo: [a, e], bar: true };
+  const j = { foo: [[1, 2, 3]], bar: true };
+  const k = { foo: [[1, [2, [3]]]], bar: true };
+  const l = { foo: [[1, [2, [a, e, j, k]]]], bar: true };
 
   // Simple subset
   assertObjectMatch(a, {
@@ -422,6 +425,10 @@ Deno.test("testingAssertObjectMatching", function (): void {
       { bar: { bar: { bar: { foo: true } } } },
     ],
   });
+  // Subset with nested array inside
+  assertObjectMatch(j, { foo: [[1, 2, 3]] });
+  assertObjectMatch(k, { foo: [[1, [2, [3]]]] });
+  assertObjectMatch(l, { foo: [[1, [2, [a, e, j, k]]]] });
   // Missing key
   {
     let didThrow;

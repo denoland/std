@@ -28,8 +28,19 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
+      - name: Install fakedate
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt install faketime
+
       - name: Run tests canary
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/_tools/versions/
+        run: |
+          deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/
+
+      - name: Run test with the date 2021-12-31
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          faketime '2021-12-31' deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json datetime/test_2021_12_31.ts
 
       - name: Type check browser compatible modules
         shell: bash
@@ -59,6 +70,37 @@ jobs:
           rm -rf ./cov/
           rm cov.lcov
 
+  node:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        deno: [canary]
+        os: [macOS-latest, ubuntu-latest, windows-2019]
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          persist-credentials: false
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1.0.0
+        with:
+          deno-version: ${{ matrix.deno }}
+
+      # FIXME(bartlomieju): currently doc tests are failing, we need --compat mode in "deno test" to get them working
+      # - name: Doctest node/
+      #   run: deno test --doc --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/
+
+      - name: Unit test node/
+        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/ --ignore=node/_tools/test.ts,node/_tools/versions/
+
+      - name: Run Node tests canary
+        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/_tools/test.ts
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -72,10 +114,12 @@ jobs:
         uses: denoland/setup-deno@v1.0.0
 
       - name: Format
-        run: deno fmt --check --config deno.json
+        shell: bash
+        run: ./_tools/format.js --check
 
       - name: Lint
-        run: deno lint --config deno.json
+        shell: bash
+        run: ./_tools/lint.js
 
   hash-wasm:
     name: "_wasm_crypto/"

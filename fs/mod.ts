@@ -7,6 +7,8 @@ export * from "./ensure_symlink.ts";
 export * from "./exists.ts";
 export * from "./expand_glob.ts";
 export * from "./move.ts";
-export * from "./copy.ts";
+// TODO(ry) copy.ts depends on unstable Deno.utime API. For now exclude it.
+// https://github.com/denoland/deno_std/issues/1539
+// export * from "./copy.ts";
 export * from "./walk.ts";
 export * from "./eol.ts";
