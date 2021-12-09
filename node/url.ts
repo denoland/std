@@ -1161,6 +1161,11 @@ export function resolve(relative: string) {
   return parse(relative, false, true).resolve(relative);
 }
 
+export function resolveObject(source: string | Url, relative: string) {
+  if (!source) return relative;
+  return parse(source, false, true).resolveObject(relative);
+}
+
 /**
  * This function ensures the correct decodings of percent-encoded characters as well as ensuring a cross-platform valid absolute path string.
  * @see Tested in `parallel/test-fileurltopath.js`.
@@ -1369,6 +1374,7 @@ export default {
   parse,
   format,
   resolve,
+  resolveObject,
   fileURLToPath,
   pathToFileURL,
   urlToHttpOptions,
