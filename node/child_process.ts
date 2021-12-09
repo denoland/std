@@ -19,7 +19,6 @@ const denoCompatArgv = [
   "--compat",
   "--unstable",
   "--no-check",
-  "--location=https://example.com",
   "--allow-all",
 ];
 /**
