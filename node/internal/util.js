@@ -1,11 +1,11 @@
 import { promisify } from "../_util/_util_promisify.ts";
 
-function normalizeEncoding(enc: string | null) {
+function normalizeEncoding(enc) {
   if (enc == null || enc === "utf8" || enc === "utf-8") return "utf8";
-  return slowCases(enc as string);
+  return slowCases(enc);
 }
 
-function slowCases(enc: string) {
+function slowCases(enc) {
   switch (enc.length) {
     case 4:
       if (enc === "UTF8") return "utf8";
@@ -72,9 +72,9 @@ function slowCases(enc: string) {
 }
 
 // deno-lint-ignore ban-types
-function once(callback: Function) {
+function once(callback) {
   let called = false;
-  return function (this: unknown, ...args: unknown[]) {
+  return function (this, ...args) {
     if (called) return;
     called = true;
     Reflect.apply(callback, this, args);
