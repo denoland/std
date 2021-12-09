@@ -1205,7 +1205,6 @@ Deno.test("Custom onError is called when Handler throws", async () => {
 Deno.test("Server.listenAndServeTls should support custom onError", async () => {
   const hostname = "localhost";
   const port = 4505;
-  const addr = `${hostname}:${port}`;
   const certFile = join(testdataDir, "tls/localhost.crt");
   const keyFile = join(testdataDir, "tls/localhost.key");
   const status = 500;
@@ -1219,7 +1218,8 @@ Deno.test("Server.listenAndServeTls should support custom onError", async () => 
   const abortController = new AbortController();
 
   const servePromise = serveTls(handler, {
-    addr,
+    hostname,
+    port,
     certFile,
     keyFile,
     onError,
