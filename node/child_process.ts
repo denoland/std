@@ -63,11 +63,11 @@ export function fork(
   execArgv = options.execArgv || process.execArgv;
 
   if (execArgv === process.execArgv && process._eval != null) {
-    const index = Array.prototype.lastIndexOf(execArgv, process._eval);
+    const index = execArgv.lastIndexOf(process._eval);
     if (index > 0) {
       // Remove the -e switch to avoid fork bombing ourselves.
-      execArgv = Array.prototype.slice.call(execArgv, 0);
-      Array.prototype.splice.call(execArgv, index - 1, 2);
+      execArgv = execArgv.slice(0);
+      execArgv.splice(index - 1, 2);
     }
   }
 
