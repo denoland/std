@@ -630,7 +630,7 @@ export async function serveTls(
  *
  * console.log("server listening on http://localhost:4505");
  *
- * await listenAndServe({port}, (request) => {
+ * await listenAndServe({ port }, (request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
  *   ) ?? "Unknown"}`;
