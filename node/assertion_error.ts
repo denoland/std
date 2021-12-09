@@ -89,7 +89,7 @@ export function inspectValue(val: unknown): string {
   return inspect(
     val,
     {
-      compact: false,
+      compact: true,
       customInspect: false,
       depth: 1000,
       maxArrayLength: Infinity,

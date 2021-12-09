@@ -27,6 +27,7 @@
 
 import { unreachable } from "../../testing/asserts.ts";
 import { osType } from "../../_util/os.ts";
+import { uvTranslateSysError } from "./_libuv_winerror.ts";
 
 // In Node these values are coming from libuv:
 // Ref: https://github.com/libuv/libuv/blob/v1.x/include/uv/errno.h
@@ -323,3 +324,12 @@ export const codeMap = new Map<string, number>(
     ? errorToCodeLinux
     : unreachable(),
 );
+
+export function mapSysErrnoToUvErrno(sysErrno: number): number {
+  if (osType === "windows") {
+    const code = uvTranslateSysError(sysErrno);
+    return codeMap.get(code) ?? -sysErrno;
+  } else {
+    return -sysErrno;
+  }
+}

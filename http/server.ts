@@ -103,6 +103,13 @@ export interface ServerInit {
 
   /** The handler to invoke for individual HTTP requests. */
   handler: Handler;
+
+  /**
+   * The handler to invoke when route handlers throw an error.
+   *
+   * The default error handler logs and returns the error in JSON format.
+   */
+  onError?: (error: unknown) => Response | Promise<Response>;
 }
 
 /** Used to construct an HTTP server. */
@@ -112,6 +119,7 @@ export class Server {
   #closed = false;
   #listeners: Set<Deno.Listener> = new Set();
   #httpConnections: Set<Deno.HttpConn> = new Set();
+  #onError: (error: unknown) => Response | Promise<Response>;
 
   /**
    * Constructs a new HTTP Server instance.
@@ -136,6 +144,10 @@ export class Server {
   constructor(serverInit: ServerInit) {
     this.#addr = serverInit.addr;
     this.#handler = serverInit.handler;
+    this.#onError = serverInit.onError ?? function (error: unknown) {
+      console.error(error);
+      return new Response("Internal Server Error", { status: 500 });
+    };
   }
 
   /**
@@ -345,18 +357,22 @@ export class Server {
     httpConn: Deno.HttpConn,
     connInfo: ConnInfo,
   ): Promise<void> {
+    let response: Response;
     try {
+      // Handle the request event, generating a response.
       const req = new HttpRequest(requestEvent.request, connInfo, {});
       // Handle the request, generating a response.
-      const response = await this.#handler(req);
+      response = await this.#handler(req);
+    } catch (error: unknown) {
+      // Invoke onError handler when request handler throws.
+      response = await this.#onError(error);
+    }
 
+    try {
       // Send the response.
       await requestEvent.respondWith(response);
     } catch {
-      // If the handler throws then it is assumed that the impact of the error
-      // is isolated to the individual request, so we close the connection.
-      //
-      // Alternatively the connection has already been closed, or there is some
+      // respondWith() fails when the connection has already been closed, or there is some
       // other error with responding on this connection that prompts us to
       // close it and open a new connection.
       return this.#closeHttpConn(httpConn);
@@ -534,6 +550,9 @@ export interface ServeInit {
 
   /** An AbortSignal to close the server and all connections. */
   signal?: AbortSignal;
+
+  /** The handler to invoke when route handlers throw an error. */
+  onError?: (error: unknown) => Response | Promise<Response>;
 }
 
 /**
@@ -565,7 +584,7 @@ export async function serveListener(
   handler: Handler,
   options?: Omit<ServeInit, "addr">,
 ): Promise<void> {
-  const server = new Server({ handler });
+  const server = new Server({ handler, onError: options?.onError });
 
   if (options?.signal) {
     options.signal.onabort = () => server.close();
@@ -603,7 +622,7 @@ export async function serve(
   options: ServeInit = {},
 ): Promise<void> {
   const addr = options.addr ?? ":8000";
-  const server = new Server({ addr, handler });
+  const server = new Server({ addr, handler, onError: options.onError });
 
   if (options?.signal) {
     options.signal.onabort = () => server.close();
@@ -654,7 +673,7 @@ export async function serveTls(
   }
 
   const addr = options.addr ?? ":8443";
-  const server = new Server({ addr, handler });
+  const server = new Server({ addr, handler, onError: options.onError });
 
   if (options?.signal) {
     options.signal.onabort = () => server.close();

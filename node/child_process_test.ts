@@ -27,7 +27,7 @@ function withTimeout(timeoutInMS: number): Deferred<void> {
 Deno.test("[node/child_process spawn] The 'error' event is emitted when no binary is found", async () => {
   const promise = withTimeout(1000);
   const childProcess = spawn("no-such-cmd");
-  childProcess.on("error", (_err) => {
+  childProcess.on("error", (_err: Error) => {
     // TODO Assert an error message.
     promise.resolve();
   });
@@ -41,7 +41,7 @@ Deno.test("[node/child_process spawn] The 'exit' event is emitted with an exit c
   });
   try {
     let exitCode = null;
-    childProcess.on("exit", (code) => {
+    childProcess.on("exit", (code: number) => {
       promise.resolve();
       exitCode = code;
     });
@@ -174,7 +174,7 @@ Deno.test("[child_process spawn] Verify that a shell is executed", async () => {
     doesNotExist.on("error", () => {
       promise.reject("The 'error' event must not be emitted.");
     });
-    doesNotExist.on("exit", (code, signal) => {
+    doesNotExist.on("exit", (code: number, signal: null) => {
       assertStrictEquals(signal, null);
 
       if (isWindows) {
@@ -270,7 +270,7 @@ Deno.test({
       let envOutput = "";
 
       assert(env.stdout);
-      env.on("error", (err) => promise.reject(err));
+      env.on("error", (err: Error) => promise.reject(err));
       env.stdout.on("data", (data) => {
         envOutput += data;
       });

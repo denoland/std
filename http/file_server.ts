@@ -6,7 +6,7 @@
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 import { extname, posix } from "../path/mod.ts";
-import { listenAndServe, listenAndServeTls } from "./server.ts";
+import { serve, serveTls } from "./server.ts";
 import { Status, STATUS_TEXT } from "./helper_constants.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
@@ -690,9 +690,9 @@ function main(): void {
 
   if (keyFile || certFile) {
     proto += "s";
-    listenAndServeTls(addr, certFile, keyFile, handler);
+    serveTls(handler, { addr, certFile, keyFile });
   } else {
-    listenAndServe(addr, handler);
+    serve(handler, { addr });
   }
 
   console.log(

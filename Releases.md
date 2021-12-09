@@ -1,3 +1,47 @@
+### 0.117.0 / 2021.12.03
+
+- feat(http): introduce onError option on ServerInit (#1621)
+- feat(node/readline): Interface, createInterface (#1554)
+- fix(node): use async read for stdin (#1653)
+- fix(std/node): Add base64url encoding support, indexOf, lastIndexOf and
+  includes to Buffer (#1636)
+- test(node/fs): enable `test-fs-rm.js` (#1632)
+- fix(node/util/inspect): Fix some bugs (#1637)
+- fix(node): Use upstream implementation for streams (#1634)
+
+### 0.116.0 / 2021.11.24
+
+- feat(node/os): implement os.hostname() (#1631)
+- feat(node/util): add `util.inspect` (#1592)
+- fix(fmt/printf): print with rounding taken into account (#1623)
+- fix(node/http): ignore server request parse errors (#1624)
+- refactor(node): reorganize _next_tick.ts module (#1608)
+
+### 0.115.1 / 2021.11.17
+
+- fix(node): use old "process.nextTick" polyfill if Deno.core is not available
+  (#1612)
+
+### 0.115.0 / 2021.11.17
+
+- feat(node): add wasi module (#1534)
+- feat(node): process.config, process.exitCode, process._exiting (#1597)
+- feat(node): process.stdin.setRawMode (#1572)
+- feat(node/_fs): Add `fs.readSync` (#1598)
+- feat(node/fs): add `fs.read` API (#1557)
+- feat(node/fs): implement `fs.rm` and `fs.rmSync` (#1568)
+- feat(node/process): add process.hrtime.bigint() (#1600)
+- feat(node/util): Add `util.isBuffer` and `util._extend` (#1567)
+- fix(node): Align exports and declarations for Buffer and Events module (#1570)
+- fix(node): improve http.Server.listen() compat (#1574)
+- fix(node/http): fix no body chunked response (#1603)
+- fix(node/http): improve http.Server compatibility (#1595)
+- fix(node/http): improve http.Server#close() compat (#1602)
+- fix(node/util): improve test coverage (#1591)
+- node: add nextTick helper module (#1584)
+- node: polyfill process.nextTick using Deno.core bindings (#1588)
+- node: Use upstream source for "events" module (#1558)
+
 ### 0.114.0 / 2021.11.09
 
 - BREAKING(http): update `serve`, add `serveListener`, deprecate
