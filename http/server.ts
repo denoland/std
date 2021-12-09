@@ -678,7 +678,7 @@ export async function listenAndServe(
  *
  * console.log("server listening on http://localhost:4505");
  *
- * await listenAndServeTls({port}, certFile, keyFile, (request) => {
+ * await listenAndServeTls({ port }, certFile, keyFile, (request) => {
  *   const body = `Your user-agent is:\n\n${request.headers.get(
  *     "user-agent",
  *   ) ?? "Unknown"}`;
