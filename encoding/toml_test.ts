@@ -683,8 +683,8 @@ Deno.test({
       "helloooooooo": 1,
     };
 
-    const actual = stringify(src);
-    const expected = `a = "a = 1"
+    const actual = stringify(src, { keyAlignment: true });
+    const expected = `a            = "a = 1"
 helloooooooo = 1
 `;
     assertEquals(actual, expected);
