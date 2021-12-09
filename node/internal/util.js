@@ -105,8 +105,9 @@ export function deprecate(fn, msg, code) {
     return fn;
   }
 
-  if (code !== undefined)
-    validateString(code, 'code');
+  if (code !== undefined) {
+    validateString(code, "code");
+  }
 
   let warned = false;
   function deprecated(...args) {
@@ -114,11 +115,11 @@ export function deprecate(fn, msg, code) {
       warned = true;
       if (code !== undefined) {
         if (!codesWarned.has(code)) {
-          process.emitWarning(msg, 'DeprecationWarning', code, deprecated);
+          process.emitWarning(msg, "DeprecationWarning", code, deprecated);
           codesWarned.add(code);
         }
       } else {
-        process.emitWarning(msg, 'DeprecationWarning', deprecated);
+        process.emitWarning(msg, "DeprecationWarning", deprecated);
       }
     }
     if (new.target) {

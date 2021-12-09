@@ -6,7 +6,14 @@ import { inspect, stripVTControlCharacters } from "./internal/util/inspect.js";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
 import * as types from "./internal/util/types.ts";
 import { Buffer } from "./buffer.ts";
-export { callbackify, inspect, promisify, stripVTControlCharacters, types, deprecate };
+export {
+  callbackify,
+  deprecate,
+  inspect,
+  promisify,
+  stripVTControlCharacters,
+  types,
+};
 
 const NumberIsSafeInteger = Number.isSafeInteger;
 
