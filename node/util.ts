@@ -297,6 +297,11 @@ function log(...args: any[]): void {
   console.log("%s - %s", timestamp(), format(...args));
 }
 
+// TODO(kt3k): implement debuglog correctly
+function debuglog() {
+  return console.log;
+}
+
 export default {
   format,
   inspect,
@@ -326,4 +331,5 @@ export default {
   TextDecoder,
   TextEncoder,
   log,
+  debuglog,
 };

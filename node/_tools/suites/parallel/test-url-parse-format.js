@@ -8,9 +8,8 @@
 'use strict';
 const common = require('../common');
 
-// TODO(getspooky): Implement `hasIntl`, `skip`
-// if (!common.hasIntl)
-//   common.skip('missing Intl');
+if (!common.hasIntl)
+  common.skip('missing Intl');
 
 const assert = require('assert');
 const inspect = require('util').inspect;
@@ -982,9 +981,8 @@ for (const u in parseTests) {
   expected = parseTests[u].href;
   actual = url.format(parseTests[u]);
 
-  // assert.strictEqual(actual, expected,
-  //   `format(${u}) == ${u}\nactual:${actual}`);
-    
+  assert.strictEqual(actual, expected,
+                     `format(${u}) == ${u}\nactual:${actual}`);
 }
 
 {
