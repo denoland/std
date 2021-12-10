@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 
-import { kTimerId, Timeout, TIMEOUT_MAX } from "./internal/timers.js";
+import { Timeout, TIMEOUT_MAX } from "./internal/timers.js";
 import { validateCallback } from "./internal/validators.js";
 const setTimeout_ = globalThis.setTimeout;
 const clearTimeout_ = globalThis.clearTimeout;
