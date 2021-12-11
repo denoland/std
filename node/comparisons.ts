@@ -44,7 +44,7 @@ function isDeepEqual(
   val1: unknown,
   val2: unknown,
   strict: boolean,
-  memos = memo
+  memos = memo,
 ): boolean {
   // Basic case covered by Strict Equality Comparison
   if (val1 === val2) {
@@ -115,7 +115,7 @@ function isDeepEqual(
       val2 as object,
       strict,
       memos,
-      valueType.noIterator
+      valueType.noIterator,
     );
   } else if (val1 instanceof Date) {
     if (!(val2 instanceof Date) || val1.getTime() !== val2.getTime()) {
@@ -171,7 +171,7 @@ function isDeepEqual(
       strict,
       memos,
       valueType.noIterator,
-      keysVal1
+      keysVal1,
     );
   } else if (isSet(val1)) {
     if (
@@ -185,7 +185,7 @@ function isDeepEqual(
       val2 as object,
       strict,
       memos,
-      valueType.isSet
+      valueType.isSet,
     );
   } else if (isMap(val1)) {
     if (
@@ -199,7 +199,7 @@ function isDeepEqual(
       val2 as object,
       strict,
       memos,
-      valueType.isMap
+      valueType.isMap,
     );
   } else if (isAnyArrayBuffer(val1)) {
     if (!isAnyArrayBuffer(val2) || !areEqualArrayBuffers(val1, val2)) {
@@ -228,7 +228,7 @@ function isDeepEqual(
     val2 as object,
     strict,
     memos,
-    valueType.noIterator
+    valueType.noIterator,
   );
 }
 
@@ -238,7 +238,7 @@ function keyCheck(
   strict: boolean,
   memos: Memo,
   iterationType: valueType,
-  aKeys: string[] = []
+  aKeys: string[] = [],
 ) {
   if (arguments.length === 5) {
     aKeys = Object.keys(val1);
@@ -353,12 +353,10 @@ function areSimilarTypedArrays(arr1: any, arr2: any): boolean {
   if (arr1.byteLength !== arr2.byteLength) {
     return false;
   }
-  console.log(`------------------data--------------`);
-  console.log(`----received is arr1=${arr1} and arr2=${arr2}---------`);
   return (
     Buffer.compare(
       new Uint8Array(arr1.buffer, arr1.byteOffset, arr1.byteLength),
-      new Uint8Array(arr2.buffer, arr2.byteOffset, arr2.byteLength)
+      new Uint8Array(arr2.buffer, arr2.byteOffset, arr2.byteLength),
     ) === 0
   );
 }
@@ -372,48 +370,53 @@ function areEqualArrayBuffers(buf1: any, buf2: any): boolean {
 
 function isEqualBoxedPrimitive(a: any, b: any): boolean {
   console.log("Checking for boxed primitive equality");
+  console.log(a, b);
   if (isNumberObject(a)) {
+    console.log("Number Object");
     return (
       isNumberObject(b) &&
       Object.is(
-        Object.prototype.valueOf.call(a).valueOf(),
-        Object.prototype.valueOf.call(b).valueOf()
+        Number.prototype.valueOf.call(a),
+        Number.prototype.valueOf.call(b),
       )
     );
   }
   if (isStringObject(a)) {
+    console.log("String Object");
     return (
       isStringObject(b) &&
-      // Object.is(
-      Object.prototype.valueOf.call(a).valueOf() ===
-        Object.prototype.valueOf.call(b).valueOf()
-      // )
+      (String.prototype.valueOf(a) === String.prototype.valueOf(b) ||
+        String.prototype.valueOf.call(a) === String.prototype.valueOf.call(b))
     );
   }
   if (isBooleanObject(a)) {
+    console.log("Boolean Object");
     return (
       isBooleanObject(b) &&
-      // Object.is(
+      // Boolean.prototype.valueOf.call(a) === Boolean.prototype.valueOf.call(b)
       Object.prototype.valueOf.call(a).valueOf() ===
         Object.prototype.valueOf.call(b).valueOf()
-      // )
     );
   }
   if (isBigIntObject(a)) {
+    console.log("BigInt Object");
     return (
       isBigIntObject(b) &&
+      // BigInt.prototype.valueOf.call(a) === BigInt.prototype.valueOf.call(b)
       Object.prototype.valueOf.call(a).valueOf() ===
         Object.prototype.valueOf.call(b).valueOf()
     );
   }
   if (isSymbolObject(a)) {
+    console.log("Symbol Object");
     return (
       isSymbolObject(b) &&
       Object.prototype.valueOf.call(a).valueOf() ===
         Object.prototype.valueOf.call(b).valueOf()
+      // Symbol.prototype.valueOf.call(a) === Symbol.prototype.valueOf.call(b)
     );
   }
-  // throw `Unknown boxed type ${a}`;
+  throw `Unknown boxed type ${a}`;
   // return false;
 }
 
@@ -437,7 +440,7 @@ function objEquiv(
   strict: boolean,
   keys: any,
   memos: Memo,
-  iterationType: valueType
+  iterationType: valueType,
 ): boolean {
   let i = 0;
 
@@ -592,7 +595,7 @@ function setHasEqualElement(
   set: any,
   val1: any,
   strict: boolean,
-  memos: Memo
+  memos: Memo,
 ): boolean {
   for (const val2 of set) {
     if (isDeepEqual(val1, val2, strict, memos)) {
@@ -610,7 +613,7 @@ function mapHasEqualEntry(
   key1: any,
   item1: any,
   strict: boolean,
-  memos: Memo
+  memos: Memo,
 ): boolean {
   for (const key2 of set) {
     if (
