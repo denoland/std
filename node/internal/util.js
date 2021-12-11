@@ -1,4 +1,3 @@
-import process from "../process.ts";
 import { validateString } from "./validators.js";
 import { promisify } from "../_util/_util_promisify.ts";
 export { promisify };
