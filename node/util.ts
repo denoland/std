@@ -1,51 +1,14 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { promisify } from "./_util/_util_promisify.ts";
 import { callbackify } from "./_util/_util_callbackify.ts";
-import { stripVTControlCharacters } from "./internal/util/inspect.js";
+import { inspect, stripVTControlCharacters } from "./internal/util/inspect.js";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
-import * as types from "./_util/_util_types.ts";
+import * as types from "./internal/util/types.ts";
 import { Buffer } from "./buffer.ts";
-export { callbackify, promisify, stripVTControlCharacters, types };
+export { callbackify, inspect, promisify, stripVTControlCharacters, types };
 import { isDeepStrictEqual } from "./comparisons.ts";
 
 const NumberIsSafeInteger = Number.isSafeInteger;
-
-const DEFAULT_INSPECT_OPTIONS = {
-  showHidden: false,
-  depth: 2,
-  colors: false,
-  customInspect: true,
-  showProxy: false,
-  maxArrayLength: 100,
-  maxStringLength: Infinity,
-  breakLength: 80,
-  compact: 3,
-  sorted: false,
-  getters: false,
-};
-
-inspect.defaultOptions = DEFAULT_INSPECT_OPTIONS;
-inspect.custom = Symbol.for("nodejs.util.inspect.custom");
-
-// TODO(schwarzkopfb): make it in-line with Node's implementation
-// Ref: https://nodejs.org/dist/latest-v14.x/docs/api/util.html#util_util_inspect_object_options
-// deno-lint-ignore no-explicit-any
-export function inspect(object: unknown, ...opts: any): string {
-  // In Node.js, strings should be enclosed in single quotes.
-  // TODO(uki00a): Strings in objects and arrays should also be enclosed in single quotes.
-  if (typeof object === "string" && !object.includes("'")) {
-    return `'${object}'`;
-  }
-
-  opts = { ...DEFAULT_INSPECT_OPTIONS, ...opts };
-  return Deno.inspect(object, {
-    depth: opts.depth,
-    iterableLimit: opts.maxArrayLength,
-    compact: !!opts.compact,
-    sorted: !!opts.sorted,
-    showProxy: !!opts.showProxy,
-  });
-}
 
 /** @deprecated - use `Array.isArray()` instead. */
 export function isArray(value: unknown): boolean {
@@ -294,6 +257,52 @@ export const TextDecoder = _TextDecoder;
 export type TextEncoder = import("./_utils.ts")._TextEncoder;
 export const TextEncoder = _TextEncoder;
 
+function pad(n: number) {
+  return n.toString().padStart(2, "0");
+}
+
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/**
+ * @returns 26 Feb 16:19:34
+ */
+function timestamp(): string {
+  const d = new Date();
+  const t = [
+    pad(d.getHours()),
+    pad(d.getMinutes()),
+    pad(d.getSeconds()),
+  ].join(":");
+  return `${(d.getDate())} ${months[(d).getMonth()]} ${t}`;
+}
+
+/**
+ * Log is just a thin wrapper to console.log that prepends a timestamp
+ * @deprecated
+ */
+// deno-lint-ignore no-explicit-any
+function log(...args: any[]): void {
+  console.log("%s - %s", timestamp(), format(...args));
+}
+
+// TODO(kt3k): implement debuglog correctly
+function debuglog() {
+  return console.log;
+}
+
 export default {
   format,
   inspect,
@@ -322,5 +331,7 @@ export default {
   stripVTControlCharacters,
   TextDecoder,
   TextEncoder,
+  log,
+  debuglog,
   isDeepStrictEqual,
 };

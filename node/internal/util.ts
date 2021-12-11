@@ -1,4 +1,6 @@
-export function normalizeEncoding(enc: string | null) {
+import { promisify } from "../_util/_util_promisify.ts";
+
+function normalizeEncoding(enc: string | null) {
   if (enc == null || enc === "utf8" || enc === "utf-8") return "utf8";
   return slowCases(enc as string);
 }
@@ -69,6 +71,31 @@ function slowCases(enc: string) {
   }
 }
 
+// deno-lint-ignore ban-types
+function once(callback: Function) {
+  let called = false;
+  return function (this: unknown, ...args: unknown[]) {
+    if (called) return;
+    called = true;
+    Reflect.apply(callback, this, args);
+  };
+}
+
+function createDeferredPromise() {
+  let resolve;
+  let reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  return { promise, resolve, reject };
+}
+
 export default {
+  createDeferredPromise,
   normalizeEncoding,
+  once,
+  promisify,
 };
+export { createDeferredPromise, normalizeEncoding, once, promisify };

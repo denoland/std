@@ -342,39 +342,6 @@ Deno.test({
   },
 });
 
-// FIXME(bartlomieju):
-Deno.test({
-  name: "[process] stdio",
-  ignore: true,
-  async fn() {
-    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
-    const p = Deno.run({
-      cmd: [
-        Deno.execPath(),
-        "run",
-        "--unstable",
-        "--quiet",
-        "./testdata/process_stdio.ts",
-      ],
-      cwd,
-      stderr: "piped",
-      stdin: "piped",
-      stdout: "piped",
-    });
-    p.stdin.write(new TextEncoder().encode("it works?!"));
-    p.stdin.write(new TextEncoder().encode("yes!"));
-    p.stdin.close();
-    const stderr = new TextDecoder().decode(await p.stderrOutput());
-    const stdout = new TextDecoder().decode(await p.output());
-    assertEquals(
-      stderr + stdout,
-      "helloworldhelloworldfrom pipereceived:it works?!yes!helloworldhelloworldfrom pipe",
-    );
-  },
-  sanitizeResources: false,
-  sanitizeOps: false,
-});
-
 Deno.test("process.on, process.off, process.removeListener doesn't throw on unimplemented events", () => {
   const events = [
     "beforeExit",
