@@ -1,4 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+
+/* TODO(kt3k): enable colors test when
+ * https://github.com/denoland/deno/issues/13050 is resolved.
 import { assertEquals } from "../testing/asserts.ts";
 import * as c from "./colors.ts";
 import "../examples/colors.ts";
@@ -232,3 +235,4 @@ Deno.test("test_bgRgb24", function (): void {
 Deno.test("test_bgRgb24number", function (): void {
   assertEquals(c.bgRgb24("foo bar", 0x070809), "[48;2;7;8;9mfoo bar[49m");
 });
+*/

@@ -116,17 +116,16 @@ const { Stream, PassThrough } = require('stream');
   removed = true;
 }
 
-// FIXME(bartlomieju):
-// {
-//   const _err = new Error('this should be handled');
-//   const destination = new PassThrough();
-//   destination.once('error', common.mustCall((err) => {
-//     assert.strictEqual(err, _err);
-//   }));
+{
+  const _err = new Error('this should be handled');
+  const destination = new PassThrough();
+  destination.once('error', common.mustCall((err) => {
+    assert.strictEqual(err, _err);
+  }));
 
-//   const stream = new Stream();
-//   stream
-//     .pipe(destination);
+  const stream = new Stream();
+  stream
+    .pipe(destination);
 
-//   destination.destroy(_err);
-// }
+  destination.destroy(_err);
+}

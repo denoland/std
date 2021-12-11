@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { Encodings, notImplemented } from "../_utils.ts";
+import { Encodings } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
 import { writeAllSync } from "../../streams/conversion.ts";
@@ -12,11 +12,13 @@ import {
   WriteFileOptions,
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
-import { AbortError, uvException } from "../_errors.ts";
+import { AbortError, denoErrorToNodeError } from "../_errors.ts";
+import { validateStringAfterArrayBufferView } from "../internal/fs/utils.js";
 
 export function writeFile(
   pathOrRid: string | number | URL,
-  data: string | Uint8Array,
+  // deno-lint-ignore ban-types
+  data: string | Uint8Array | Object,
   optOrCallback: Encodings | CallbackWithError | WriteFileOptions | undefined,
   callback?: CallbackWithError,
 ): void {
@@ -42,7 +44,10 @@ export function writeFile(
   const encoding = checkEncoding(getEncoding(options)) || "utf8";
   const openOptions = getOpenOptions(flag || "w");
 
-  if (typeof data === "string") data = Buffer.from(data, encoding);
+  if (!ArrayBuffer.isView(data)) {
+    validateStringAfterArrayBufferView(data, "data");
+    data = Buffer.from(String(data), encoding);
+  }
 
   const isRid = typeof pathOrRid === "number";
   let file;
@@ -54,8 +59,9 @@ export function writeFile(
         ? new Deno.File(pathOrRid as number)
         : await Deno.open(pathOrRid as string, openOptions);
 
-      if (!isRid && mode) {
-        if (isWindows) notImplemented(`"mode" on Windows`);
+      // ignore mode because it's not supported on windows
+      // TODO: remove `!isWindows` when `Deno.chmod` is supported
+      if (!isRid && mode && !isWindows) {
         await Deno.chmod(pathOrRid as string, mode);
       }
 
@@ -65,7 +71,7 @@ export function writeFile(
       await writeAll(file, data as Uint8Array, { signal });
     } catch (e) {
       error = e instanceof Error
-        ? convertDenoErrorToNodeError(e)
+        ? denoErrorToNodeError(e, { syscall: "write" })
         : new Error("[non-error thrown]");
     } finally {
       // Make sure to close resource
@@ -77,7 +83,8 @@ export function writeFile(
 
 export function writeFileSync(
   pathOrRid: string | number | URL,
-  data: string | Uint8Array,
+  // deno-lint-ignore ban-types
+  data: string | Uint8Array | Object,
   options?: Encodings | WriteFileOptions,
 ): void {
   pathOrRid = pathOrRid instanceof URL ? fromFileUrl(pathOrRid) : pathOrRid;
@@ -93,7 +100,10 @@ export function writeFileSync(
   const encoding = checkEncoding(getEncoding(options)) || "utf8";
   const openOptions = getOpenOptions(flag || "w");
 
-  if (typeof data === "string") data = Buffer.from(data, encoding);
+  if (!ArrayBuffer.isView(data)) {
+    validateStringAfterArrayBufferView(data, "data");
+    data = Buffer.from(String(data), encoding);
+  }
 
   const isRid = typeof pathOrRid === "number";
   let file;
@@ -104,15 +114,16 @@ export function writeFileSync(
       ? new Deno.File(pathOrRid as number)
       : Deno.openSync(pathOrRid as string, openOptions);
 
-    if (!isRid && mode) {
-      if (isWindows) notImplemented(`"mode" on Windows`);
+    // ignore mode because it's not supported on windows
+    // TODO: remove `!isWindows` when `Deno.chmod` is supported
+    if (!isRid && mode && !isWindows) {
       Deno.chmodSync(pathOrRid as string, mode);
     }
 
     writeAllSync(file, data as Uint8Array);
   } catch (e) {
     error = e instanceof Error
-      ? convertDenoErrorToNodeError(e)
+      ? denoErrorToNodeError(e, { syscall: "write" })
       : new Error("[non-error thrown]");
   } finally {
     // Make sure to close resource
@@ -152,29 +163,4 @@ function checkAborted(signal?: AbortSignal) {
   if (signal?.aborted) {
     throw new AbortError();
   }
-}
-
-function convertDenoErrorToNodeError(e: Error) {
-  const errno = extractOsErrorNumberFromErrorMessage(e);
-  if (typeof errno === "undefined") {
-    return e;
-  }
-
-  const ex = uvException({
-    errno: -errno,
-    syscall: "writeFile",
-  });
-  return ex;
-}
-
-function extractOsErrorNumberFromErrorMessage(e: unknown): number | undefined {
-  const match = e instanceof Error
-    ? e.message.match(/\(os error (\d+)\)/)
-    : false;
-
-  if (match) {
-    return +match[1];
-  }
-
-  return undefined;
 }

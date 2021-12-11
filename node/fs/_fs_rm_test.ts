@@ -8,7 +8,7 @@ Deno.test({
   name: "ASYNC: removing empty folder",
   async fn() {
     const dir = Deno.makeTempDirSync();
-    await rm(dir)
+    await rm(dir, { recursive: true })
       .then(() => assertEquals(existsSync(dir), false), () => fail())
       .finally(() => {
         if (existsSync(dir)) Deno.removeSync(dir);
