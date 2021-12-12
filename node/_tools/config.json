@@ -5,6 +5,9 @@
       "index.js",
       "tmpdir.js"
     ],
+    "fixtures": [
+      "child-process-spawn-node.js"
+    ],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
@@ -49,7 +52,11 @@
   "tests": {
     "common": [
       "dns.js",
+      "fixtures.js",
       "internet.js"
+    ],
+    "fixtures": [
+      "child-process-spawn-node.js"
     ],
     "internet": [
       "test-dns-idna.js",
