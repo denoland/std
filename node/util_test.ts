@@ -233,31 +233,6 @@ Deno.test({
   },
 });
 
-Deno.test("[util] deprecate", () => {
-  const warn = console.warn.bind(null);
-
-  let output;
-  console.warn = function (str: string) {
-    output = str;
-    warn(output);
-  };
-
-  const message = "testFunction is deprecated";
-
-  function testFunction(this: string): string {
-    return this;
-  }
-
-  const expected = "hello world";
-
-  const testFn1 = util.deprecate(testFunction.bind(expected), message);
-
-  assertEquals(testFn1(), expected);
-  assertEquals(output, message);
-
-  console.warn = warn;
-});
-
 Deno.test("[util] format", () => {
   assertEquals(util.format("%c %j %d"), "%c %j %d");
   assertEquals(util.format("%c", "color: red;"), "");
