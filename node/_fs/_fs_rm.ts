@@ -1,4 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+import {
+  validateRmOptions,
+  validateRmOptionsSync,
+} from "../internal/fs/utils.js";
+import { denoErrorToNodeError } from "../_errors.ts";
 type rmOptions = {
   force?: boolean;
   maxRetries?: number;
@@ -6,7 +11,7 @@ type rmOptions = {
   retryDelay?: number;
 };
 
-type rmCallback = (err?: Error) => void;
+type rmCallback = (err: Error | null) => void;
 
 export function rm(path: string | URL, callback: rmCallback): void;
 export function rm(
@@ -28,23 +33,42 @@ export function rm(
 
   if (!callback) throw new Error("No callback function supplied");
 
-  Deno.remove(path, { recursive: options?.recursive })
-    .then((_) => callback(), (err) => {
-      if (options?.force && err instanceof Deno.errors.NotFound) {
-        callback();
-      } else {
-        callback(err);
+  validateRmOptions(
+    path,
+    options,
+    false,
+    (err: Error | null, options: rmOptions) => {
+      if (err) {
+        return callback(err);
       }
-    });
+      Deno.remove(path, { recursive: options?.recursive })
+        .then((_) => callback(null), (err: unknown) => {
+          if (options?.force && err instanceof Deno.errors.NotFound) {
+            callback(null);
+          } else {
+            callback(
+              err instanceof Error
+                ? denoErrorToNodeError(err, { syscall: "rm" })
+                : err,
+            );
+          }
+        });
+    },
+  );
 }
 
 export function rmSync(path: string | URL, options?: rmOptions) {
+  options = validateRmOptionsSync(path, options, false);
   try {
     Deno.removeSync(path, { recursive: options?.recursive });
-  } catch (err) {
+  } catch (err: unknown) {
     if (options?.force && err instanceof Deno.errors.NotFound) {
       return;
     }
-    throw err;
+    if (err instanceof Error) {
+      throw denoErrorToNodeError(err, { syscall: "stat" });
+    } else {
+      throw err;
+    }
   }
 }

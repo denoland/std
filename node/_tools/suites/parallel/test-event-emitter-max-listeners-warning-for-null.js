@@ -22,9 +22,8 @@ process.on('warning', common.mustCall((warning) => {
   assert.strictEqual(warning.emitter, e);
   assert.strictEqual(warning.count, 2);
   assert.strictEqual(warning.type, null);
-  // FIXME(bartlomieju):
-  // assert.ok(warning.message.includes(
-  //   '2 null listeners added to [EventEmitter].'));
+  assert.ok(warning.message.includes(
+    '2 null listeners added to [EventEmitter].'));
 }));
 
 e.on(null, () => {});
