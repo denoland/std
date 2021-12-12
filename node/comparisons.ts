@@ -154,7 +154,6 @@ function isDeepEqual(
     } else if (!areSimilarTypedArrays(val1, val2)) {
       return false;
     }
-    // Buffer.compare returns true, so val1.length === val2.length
     // const filter = strict ? ONLY_ENUMBERABLE : ONLY_ENUMERABLE | SKIP_SYMBOLS;
     const keysVal1 = getOwnNonIndexProperties(val1 as object);
     const keysVal2 = getOwnNonIndexProperties(val2 as object);
