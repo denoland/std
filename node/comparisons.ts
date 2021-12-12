@@ -18,7 +18,7 @@ import {
   isStringObject,
   isSymbolObject,
   isTypedArray,
-} from "./_util/_util_types.ts";
+} from "./internal/util/types.ts";
 
 import { Buffer } from "./_buffer.js";
 
