@@ -83,12 +83,10 @@ function isDeepEqual(
   let val1Tag;
   let val2Tag;
   if (typeof val1 === "object" && val1 !== null) {
-    val1Tag = Object.prototype.toString.call(val1);
-    // val1Tag = (val1 as object).toString();
+    val1Tag = (val1 as object).toString();
   }
   if (typeof val2 === "object" && val2 !== null) {
-    val2Tag = Object.prototype.toString.call(val2);
-    // val2Tag = (val2 as object).toString();
+    val2Tag = (val2 as object).toString();
   }
 
   // prototype must be Strictly Equal
@@ -102,7 +100,7 @@ function isDeepEqual(
     if (!Array.isArray(val2) || val1.length !== val2.length) {
       return false;
     }
-    // const filter = strict ? ONLY_ENUMBERABLE : ONLY_ENUMERABLE | SKIP_SYMBOLS;
+    // TODO Either change the name here or improve the function to do what it says
     const keysVal1 = getOwnNonIndexProperties(val1);
     const keysVal2 = getOwnNonIndexProperties(val2);
     if (keysVal1.length !== keysVal2.length) {
@@ -143,14 +141,12 @@ function isDeepEqual(
     if (
       isTypedArray(val1) &&
       isTypedArray(val2) &&
-      // (val1 as []).toString() !== (val2 as []).toString()
-      TypedArrayPrototypeGetSymbolToStringTag(val1 as []) !==
-        TypedArrayPrototypeGetSymbolToStringTag(val2 as [])
-      // Deviation
-      // TypedArrayPrototypeGetSymbolToStringTag is this same as toString
+      (TypedArrayPrototypeGetSymbolToStringTag(val1 as []) !==
+        TypedArrayPrototypeGetSymbolToStringTag(val2 as []))
     ) {
       return false;
     }
+
     if (!strict && (isFloat32Array(val1) || isFloat64Array(val1))) {
       if (!areSimilarFloatArrays(val1, val2)) {
         return false;
@@ -238,7 +234,7 @@ function keyCheck(
   strict: boolean,
   memos: Memo,
   iterationType: valueType,
-  aKeys: string[] = [],
+  aKeys: (string | symbol)[] = [],
 ) {
   if (arguments.length === 5) {
     aKeys = Object.keys(val1);
@@ -369,65 +365,55 @@ function areEqualArrayBuffers(buf1: any, buf2: any): boolean {
 }
 
 function isEqualBoxedPrimitive(a: any, b: any): boolean {
-  console.log("Checking for boxed primitive equality");
-  console.log(a, b);
   if (isNumberObject(a)) {
-    console.log("Number Object");
     return (
       isNumberObject(b) &&
       Object.is(
-        Number.prototype.valueOf.call(a),
-        Number.prototype.valueOf.call(b),
+        a.valueOf(),
+        b.valueOf(),
       )
     );
   }
   if (isStringObject(a)) {
-    console.log("String Object");
     return (
       isStringObject(b) &&
-      (String.prototype.valueOf(a) === String.prototype.valueOf(b) ||
-        String.prototype.valueOf.call(a) === String.prototype.valueOf.call(b))
+      (a.valueOf() === b.valueOf())
     );
   }
   if (isBooleanObject(a)) {
-    console.log("Boolean Object");
     return (
       isBooleanObject(b) &&
-      // Boolean.prototype.valueOf.call(a) === Boolean.prototype.valueOf.call(b)
-      Object.prototype.valueOf.call(a).valueOf() ===
-        Object.prototype.valueOf.call(b).valueOf()
+      (a.valueOf() === b.valueOf())
     );
   }
   if (isBigIntObject(a)) {
-    console.log("BigInt Object");
     return (
       isBigIntObject(b) &&
-      // BigInt.prototype.valueOf.call(a) === BigInt.prototype.valueOf.call(b)
-      Object.prototype.valueOf.call(a).valueOf() ===
-        Object.prototype.valueOf.call(b).valueOf()
+      (a.valueOf() === b.valueOf())
     );
   }
   if (isSymbolObject(a)) {
-    console.log("Symbol Object");
     return (
       isSymbolObject(b) &&
-      Object.prototype.valueOf.call(a).valueOf() ===
-        Object.prototype.valueOf.call(b).valueOf()
-      // Symbol.prototype.valueOf.call(a) === Symbol.prototype.valueOf.call(b)
+      (a.valueOf() === b.valueOf())
     );
   }
-  throw `Unknown boxed type ${a}`;
-  // return false;
+  return false;
 }
 
 // This will be tricky it requires the bindings to provide this method in node using the
 // v8: IndexFilter, check if this is implemented in RustyV8
 // https://github.com/nodejs/node/blob/master/src/node_util.cc
-function getOwnNonIndexProperties(obj: object): string[] {
+
+// TODO This is not optimized since we are actually returning all the properties
+// and not just the non-indexed properties, VERY COSTLY right now
+function getOwnNonIndexProperties(obj: object): (string | symbol)[] {
   if (Array.isArray(obj)) return [];
-  // Object.keys(SET) will return an empty array for sets as well as weaksets
-  // Object.keys(MAP) will return an empty array for sets as well as weakmaps
-  return Object.keys(obj);
+
+  return [
+    ...Object.getOwnPropertyNames(obj),
+    ...Object.getOwnPropertySymbols(obj),
+  ];
 }
 
 function getEnumerables(val: any, keys: any) {
@@ -538,6 +524,7 @@ function setEquiv(set1: any, set2: any, strict: boolean, memos: Memo): boolean {
   return true;
 }
 
+// TODO Implementation of non-strict cases is pending
 function mapEquiv(map1: any, map2: any, strict: boolean, memos: Memo): boolean {
   let set = null;
 
