@@ -14,6 +14,7 @@ import {
   chunkExpression as RE_TE_CHUNKED,
 } from "./_http_common.ts";
 import { defaultTriggerAsyncIdScope, symbols } from "./internal/async_hooks.ts";
+// deno-lint-ignore camelcase
 const { async_id_symbol } = symbols;
 import {
   ERR_HTTP_HEADERS_SENT,
@@ -733,6 +734,7 @@ Object.defineProperty(OutgoingMessage.prototype, "writableNeedDrain", {
   },
 });
 
+// deno-lint-ignore camelcase
 const crlf_buf = Buffer.from("\r\n");
 OutgoingMessage.prototype.write = function write(
   // deno-lint-ignore no-explicit-any
