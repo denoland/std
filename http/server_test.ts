@@ -14,8 +14,8 @@ import { deferred, delay } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
   unreachable,
 } from "../testing/asserts.ts";
 
@@ -270,7 +270,7 @@ Deno.test("Server.serve should throw an error if the server is already closed", 
   };
   const listener = Deno.listen(listenOptions);
 
-  await assertThrowsAsync(
+  await assertRejects(
     () => server.serve(listener),
     Deno.errors.Http,
     "Server closed",
@@ -290,7 +290,7 @@ Deno.test("Server.listenAndServe should throw an error if the server is already 
   const server = new Server({ handler });
   server.close();
 
-  await assertThrowsAsync(
+  await assertRejects(
     () => server.listenAndServe(),
     Deno.errors.Http,
     "Server closed",
@@ -305,7 +305,7 @@ Deno.test("Server.listenAndServeTls should throw an error if the server is alrea
   const certFile = join(testdataDir, "tls/localhost.crt");
   const keyFile = join(testdataDir, "tls/localhost.key");
 
-  await assertThrowsAsync(
+  await assertRejects(
     () => server.listenAndServeTls(certFile, keyFile),
     Deno.errors.Http,
     "Server closed",
@@ -478,7 +478,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
       // missing certFile
     });
 
-    await assertThrowsAsync(
+    await assertRejects(
       () => badConn.read(new Uint8Array(1)),
       Deno.errors.InvalidData,
       "invalid peer certificate contents: invalid peer certificate: UnknownIssuer",
@@ -550,7 +550,7 @@ Deno.test({
         // missing certFile
       });
 
-      await assertThrowsAsync(
+      await assertRejects(
         () => badConn.read(new Uint8Array(1)),
         Deno.errors.InvalidData,
         "invalid peer certificate contents: invalid peer certificate: UnknownIssuer",
@@ -727,7 +727,7 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
       // missing certFile
     });
 
-    await assertThrowsAsync(
+    await assertRejects(
       () => badConn.read(new Uint8Array(1)),
       Deno.errors.InvalidData,
       "invalid peer certificate contents: invalid peer certificate: UnknownIssuer",
@@ -918,7 +918,7 @@ Deno.test("Server should reject if the listener throws an unexpected error accep
   const listener = new MockListener({ conn, rejectionError });
   const handler = () => new Response();
   const server = new Server({ handler });
-  await assertThrowsAsync(
+  await assertRejects(
     () => server.serve(listener),
     Error,
     rejectionError.message,
@@ -1080,7 +1080,7 @@ Deno.test("Server.listenAndServe should throw if called multiple times", async (
   const servePromise = server.listenAndServe();
 
   try {
-    assertThrowsAsync(() => server.listenAndServe(), Deno.errors.AddrInUse);
+    assertRejects(() => server.listenAndServe(), Deno.errors.AddrInUse);
   } finally {
     server.close();
     await servePromise;
@@ -1097,7 +1097,7 @@ Deno.test("Server.listenAndServeTls should throw if called multiple times", asyn
   const servePromise = server.listenAndServeTls(certFile, keyFile);
 
   try {
-    assertThrowsAsync(
+    assertRejects(
       () => server.listenAndServeTls(certFile, keyFile),
       Deno.errors.AddrInUse,
     );
