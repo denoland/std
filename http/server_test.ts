@@ -894,7 +894,7 @@ Deno.test(
     const listener = new MockListener({ conn, rejectionError });
     const handler = () => new Response();
     const server = new Server({ handler });
-    await assertThrowsAsync(
+    await assertRejects(
       () => server.serve(listener),
       Error,
       rejectionError.message,
