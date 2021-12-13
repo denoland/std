@@ -17,7 +17,7 @@ import {
   isDate,
   isUint8Array,
 } from "../util/types.ts";
-import { once } from "../util.ts";
+import { once } from "../util.js";
 import { toPathIfFileURL } from "../url.ts";
 import {
   validateAbortSignal,

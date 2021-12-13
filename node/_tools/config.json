@@ -5,6 +5,9 @@
       "index.js",
       "tmpdir.js"
     ],
+    "fixtures": [
+      "child-process-spawn-node.js"
+    ],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
@@ -20,6 +23,7 @@
       "test-buffer-from.js",
       "test-buffer-includes.js",
       "test-buffer-indexof.js",
+      "test-child-process-fork.js",
       "test-dns-lookup.js",
       "test-dns.js",
       "test-event-emitter-errors.js",
@@ -35,6 +39,7 @@
       "test-stream-readable-event.js",
       "test-stream-writable-change-default-encoding.js",
       "test-url-format-whatwg.js",
+      "test-url-parse-format.js",
       "test-url-urltooptions.js",
       "test-util-inspect-getters-accessing-this.js",
       "test-util-inspect-namespace.js",
@@ -47,7 +52,11 @@
   "tests": {
     "common": [
       "dns.js",
+      "fixtures.js",
       "internet.js"
+    ],
+    "fixtures": [
+      "child-process-spawn-node.js"
     ],
     "internet": [
       "test-dns-idna.js",
@@ -106,6 +115,7 @@
       "test-buffer-zero-fill-cli.js",
       "test-buffer-zero-fill-reset.js",
       "test-buffer-zero-fill.js",
+      "test-child-process-fork.js",
       "test-dns-lookup.js",
       "test-dns.js",
       "test-event-emitter-add-listeners.js",
@@ -326,6 +336,8 @@
       "test-url-parse-format.js",
       "test-url-pathtofileurl.js",
       "test-url-urltooptions.js",
+      "test-util-deprecate-invalid-code.js",
+      "test-util-deprecate.js",
       "test-util-inherits.js",
       "test-util-inspect-getters-accessing-this.js",
       "test-util-inspect-long-running.js",
