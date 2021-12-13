@@ -10,7 +10,7 @@ Deno.test({
   fn: async () => {
     const abortController = new AbortController();
     const serverPromise = listenAndServe(
-      ":8081",
+      { port: 8081 },
       () => new Response("Hello world"),
       { signal: abortController.signal },
     );

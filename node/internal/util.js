@@ -1,11 +1,13 @@
+import { validateString } from "./validators.js";
 import { promisify } from "../_util/_util_promisify.ts";
+export { promisify };
 
-function normalizeEncoding(enc: string | null) {
+export function normalizeEncoding(enc) {
   if (enc == null || enc === "utf8" || enc === "utf-8") return "utf8";
-  return slowCases(enc as string);
+  return slowCases(enc);
 }
 
-function slowCases(enc: string) {
+export function slowCases(enc) {
   switch (enc.length) {
     case 4:
       if (enc === "UTF8") return "utf8";
@@ -71,17 +73,16 @@ function slowCases(enc: string) {
   }
 }
 
-// deno-lint-ignore ban-types
-function once(callback: Function) {
+export function once(callback) {
   let called = false;
-  return function (this: unknown, ...args: unknown[]) {
+  return function (...args) {
     if (called) return;
     called = true;
     Reflect.apply(callback, this, args);
   };
 }
 
-function createDeferredPromise() {
+export function createDeferredPromise() {
   let resolve;
   let reject;
   const promise = new Promise((res, rej) => {
@@ -92,10 +93,56 @@ function createDeferredPromise() {
   return { promise, resolve, reject };
 }
 
+// Keep a list of deprecation codes that have been warned on so we only warn on
+// each one once.
+const codesWarned = new Set();
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+export function deprecate(fn, msg, code) {
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  if (code !== undefined) {
+    validateString(code, "code");
+  }
+
+  let warned = false;
+  function deprecated(...args) {
+    if (!warned) {
+      warned = true;
+      if (code !== undefined) {
+        if (!codesWarned.has(code)) {
+          process.emitWarning(msg, "DeprecationWarning", code, deprecated);
+          codesWarned.add(code);
+        }
+      } else {
+        process.emitWarning(msg, "DeprecationWarning", deprecated);
+      }
+    }
+    if (new.target) {
+      return Reflect.construct(fn, args, new.target);
+    }
+    return Reflect.apply(fn, this, args);
+  }
+
+  // The wrapper will keep the same prototype as fn to maintain prototype chain
+  Object.setPrototypeOf(deprecated, fn);
+  if (fn.prototype) {
+    // Setting this (rather than using Object.setPrototype, as above) ensures
+    // that calling the unwrapped constructor gives an instanceof the wrapped
+    // constructor.
+    deprecated.prototype = fn.prototype;
+  }
+
+  return deprecated;
+}
+
 export default {
   createDeferredPromise,
   normalizeEncoding,
   once,
-  promisify,
+  deprecate,
 };
-export { createDeferredPromise, normalizeEncoding, once, promisify };
