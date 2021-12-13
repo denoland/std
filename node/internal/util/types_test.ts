@@ -20,7 +20,7 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
-import { assertStrictEquals } from "../../testing/asserts.ts";
+import { assertStrictEquals } from "../../../testing/asserts.ts";
 import {
   isAnyArrayBuffer,
   isArgumentsObject,
@@ -60,10 +60,10 @@ import {
   isUint8ClampedArray,
   isWeakMap,
   isWeakSet,
-} from "./_util_types.ts";
+} from "./types.ts";
 
 // Used to test isModuleNamespaceObject
-import * as testModuleNamespaceObject from "./_util_types.ts";
+import * as testModuleNamespaceObject from "./types.ts";
 
 // isAnyArrayBuffer
 Deno.test("Should return true for valid ArrayBuffer types", () => {

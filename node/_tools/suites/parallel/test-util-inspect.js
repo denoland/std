@@ -1556,27 +1556,25 @@ if (typeof Symbol !== 'undefined') {
     JSON.stringify(oldOptions)
   );
 
-  // TODO(wafuwafu13): Fix
-  // assert.throws(() => {
-  //   util.inspect.defaultOptions = null;
-  // }, {
-  //   code: 'ERR_INVALID_ARG_TYPE',
-  //   name: 'TypeError',
-  //   message: 'The "options" argument must be of type object. ' +
-  //            'Received null'
-  // }
-  // );
+  assert.throws(() => {
+    util.inspect.defaultOptions = null;
+  }, {
+    code: 'ERR_INVALID_ARG_TYPE',
+    name: 'TypeError',
+    message: 'The "options" argument must be of type object. ' +
+             'Received null'
+  }
+  );
 
-  // TODO(wafuwafu13): Fix
-  // assert.throws(() => {
-  //   util.inspect.defaultOptions = 'bad';
-  // }, {
-  //   code: 'ERR_INVALID_ARG_TYPE',
-  //   name: 'TypeError',
-  //   message: 'The "options" argument must be of type object. ' +
-  //            "Received type string ('bad')"
-  // }
-  // );
+  assert.throws(() => {
+    util.inspect.defaultOptions = 'bad';
+  }, {
+    code: 'ERR_INVALID_ARG_TYPE',
+    name: 'TypeError',
+    message: 'The "options" argument must be of type object. ' +
+             "Received type string ('bad')"
+  }
+  );
 }
 
 util.inspect(process);
