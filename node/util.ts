@@ -1,11 +1,19 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { promisify } from "./_util/_util_promisify.ts";
 import { callbackify } from "./_util/_util_callbackify.ts";
+import { deprecate } from "./internal/util.js";
 import { inspect, stripVTControlCharacters } from "./internal/util/inspect.js";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
-import * as types from "./_util/_util_types.ts";
+import * as types from "./internal/util/types.ts";
 import { Buffer } from "./buffer.ts";
-export { callbackify, inspect, promisify, stripVTControlCharacters, types };
+export {
+  callbackify,
+  deprecate,
+  inspect,
+  promisify,
+  stripVTControlCharacters,
+  types,
+};
 
 const NumberIsSafeInteger = Number.isSafeInteger;
 
@@ -114,22 +122,6 @@ export function getSystemErrorName(code: number): string | undefined {
     throw new ERR_OUT_OF_RANGE("err", "a negative integer", code);
   }
   return errorMap.get(code)?.[0];
-}
-
-/**
- * https://nodejs.org/api/util.html#util_util_deprecate_fn_msg_code
- * @param _code This implementation of deprecate won't apply the deprecation code
- */
-// deno-lint-ignore no-explicit-any
-export function deprecate<T extends (...args: any) => any>(
-  fn: T,
-  msg: string,
-  _code?: string,
-): (...args: Parameters<T>) => ReturnType<T> {
-  return function (...args) {
-    console.warn(msg);
-    return fn.apply(undefined, args);
-  };
 }
 
 function toReplace(specifier: string, value: unknown): string {
@@ -256,6 +248,52 @@ export const TextDecoder = _TextDecoder;
 export type TextEncoder = import("./_utils.ts")._TextEncoder;
 export const TextEncoder = _TextEncoder;
 
+function pad(n: number) {
+  return n.toString().padStart(2, "0");
+}
+
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/**
+ * @returns 26 Feb 16:19:34
+ */
+function timestamp(): string {
+  const d = new Date();
+  const t = [
+    pad(d.getHours()),
+    pad(d.getMinutes()),
+    pad(d.getSeconds()),
+  ].join(":");
+  return `${(d.getDate())} ${months[(d).getMonth()]} ${t}`;
+}
+
+/**
+ * Log is just a thin wrapper to console.log that prepends a timestamp
+ * @deprecated
+ */
+// deno-lint-ignore no-explicit-any
+function log(...args: any[]): void {
+  console.log("%s - %s", timestamp(), format(...args));
+}
+
+// TODO(kt3k): implement debuglog correctly
+function debuglog() {
+  return console.log;
+}
+
 export default {
   format,
   inspect,
@@ -284,4 +322,6 @@ export default {
   stripVTControlCharacters,
   TextDecoder,
   TextEncoder,
+  log,
+  debuglog,
 };

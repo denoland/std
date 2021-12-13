@@ -25,7 +25,7 @@ import {
   validateCallback,
   validateOneOf,
   validateString,
-} from "./_validators.ts";
+} from "./internal/validators.js";
 import { isIP } from "./_net.ts";
 import {
   emitInvalidHostnameWarning,

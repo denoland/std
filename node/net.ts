@@ -46,7 +46,7 @@ import {
 } from "./_errors.ts";
 import type { ErrnoException } from "./_errors.ts";
 import { Encodings } from "./_utils.ts";
-import { isUint8Array } from "./_util/_util_types.ts";
+import { isUint8Array } from "./internal/util/types.ts";
 import {
   kAfterAsyncWrite,
   kBuffer,
@@ -74,7 +74,7 @@ import {
   validateNumber,
   validatePort,
   validateString,
-} from "./_validators.ts";
+} from "./internal/validators.js";
 import {
   constants as TCPConstants,
   TCP,
@@ -92,7 +92,8 @@ import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
 import { codeMap } from "./internal_binding/uv.ts";
 import { guessHandleType } from "./internal_binding/util.ts";
 import { debuglog } from "./_util/_debuglog.ts";
-import type { BufferEncoding, DuplexOptions } from "./_stream.d.ts";
+import type { DuplexOptions } from "./_stream.d.ts";
+import type { BufferEncoding } from "./_global.d.ts";
 
 let debug = debuglog("net", (fn) => {
   debug = fn;

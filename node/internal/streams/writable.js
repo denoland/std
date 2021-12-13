@@ -5,7 +5,7 @@ import { _uint8ArrayToBuffer } from "./_utils.ts";
 import { addAbortSignalNoValidate } from "./add-abort-signal.js";
 import { Buffer } from "../../buffer.ts";
 import { getDefaultHighWaterMark, getHighWaterMark } from "./state.js";
-import { isUint8Array } from "../../_util/_util_types.ts";
+import { isUint8Array } from "../util/types.ts";
 import { Stream } from "./legacy.js";
 import {
   ERR_INVALID_ARG_TYPE,

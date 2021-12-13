@@ -773,15 +773,6 @@ export async function assertRejects<E extends Error = Error>(
   }
 }
 
-/**
- * Executes a function which returns a promise, expecting it to throw or reject.
- * If it does not, then it throws.  An error class and a string that should be
- * included in the error message can also be asserted.
- *
- * @deprecated Use assertRejects instead.
- */
-export const assertThrowsAsync = assertRejects;
-
 /** Use this to stub out methods that will throw when invoked. */
 export function unimplemented(msg?: string): never {
   throw new AssertionError(msg || "unimplemented");
