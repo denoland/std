@@ -100,6 +100,8 @@ jobs:
 
       - name: Run Node tests canary
         run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/_tools/test.ts
+        env:
+          DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 
   lint:
     runs-on: ubuntu-latest

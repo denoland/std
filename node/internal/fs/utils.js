@@ -17,7 +17,7 @@ import {
   isDate,
   isUint8Array,
 } from "../util/types.ts";
-import { once } from "../util.ts";
+import { once } from "../util.js";
 import { toPathIfFileURL } from "../url.ts";
 import {
   validateAbortSignal,
@@ -508,7 +508,7 @@ BigIntStats.prototype._checkModeProperty = function (property) {
   return (this.mode & BigInt(S_IFMT)) === BigInt(property);
 };
 
-function Stats(
+export function Stats(
   dev,
   mode,
   nlink,

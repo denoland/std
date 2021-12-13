@@ -52,6 +52,7 @@ import url from "./url.ts";
 import util from "./util.ts";
 import vm from "./vm.ts";
 import wasi from "./wasi.ts";
+import zlib from "./zlib.ts";
 
 // TODO(kt3k): add these modules when implemented
 // import cluster from "./cluster.ts";
@@ -61,7 +62,6 @@ import wasi from "./wasi.ts";
 // import sys from "./sys.ts";
 // import tls from "./tls.ts";
 // import workerThreads from "./worker_threads.ts";
-// import zlib from "./zlib.ts";
 
 // Canonical mapping of supported modules
 export default {
@@ -110,6 +110,6 @@ export default {
   url,
   util,
   vm,
-  zlib: {},
+  zlib,
   wasi,
 } as Record<string, unknown>;

@@ -2,7 +2,7 @@
 // deno-lint-ignore-file
 
 import { AbortError, ERR_STREAM_PREMATURE_CLOSE } from "../../_errors.ts";
-import { once } from "../util.ts";
+import { once } from "../util.js";
 import {
   validateAbortSignal,
   validateFunction,
