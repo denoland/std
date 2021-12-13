@@ -19,7 +19,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { validateCallback, validateNumber } from "./_validators.ts";
+import { validateCallback, validateNumber } from "./internal/validators.js";
 import { ERR_OUT_OF_RANGE } from "./_errors.ts";
 import { emitWarning } from "./process.ts";
 

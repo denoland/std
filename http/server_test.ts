@@ -14,8 +14,8 @@ import { deferred, delay } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
+  assertRejects,
   assertThrows,
-  assertThrowsAsync,
   unreachable,
 } from "../testing/asserts.ts";
 
@@ -270,7 +270,7 @@ Deno.test("Server.serve should throw an error if the server is already closed", 
   };
   const listener = Deno.listen(listenOptions);
 
-  await assertThrowsAsync(
+  await assertRejects(
     () => server.serve(listener),
     Deno.errors.Http,
     "Server closed",
@@ -290,7 +290,7 @@ Deno.test("Server.listenAndServe should throw an error if the server is already 
   const server = new Server({ handler });
   server.close();
 
-  await assertThrowsAsync(
+  await assertRejects(
     () => server.listenAndServe(),
     Deno.errors.Http,
     "Server closed",
@@ -305,7 +305,7 @@ Deno.test("Server.listenAndServeTls should throw an error if the server is alrea
   const certFile = join(testdataDir, "tls/localhost.crt");
   const keyFile = join(testdataDir, "tls/localhost.key");
 
-  await assertThrowsAsync(
+  await assertRejects(
     () => server.listenAndServeTls(certFile, keyFile),
     Deno.errors.Http,
     "Server closed",
@@ -478,10 +478,10 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
       // missing certFile
     });
 
-    await assertThrowsAsync(
+    await assertRejects(
       () => badConn.read(new Uint8Array(1)),
       Deno.errors.InvalidData,
-      "invalid certificate: UnknownIssuer",
+      "invalid peer certificate contents: invalid peer certificate: UnknownIssuer",
       "Read with missing certFile didn't throw an InvalidData error when it should have.",
     );
 
@@ -550,10 +550,10 @@ Deno.test({
         // missing certFile
       });
 
-      await assertThrowsAsync(
+      await assertRejects(
         () => badConn.read(new Uint8Array(1)),
         Deno.errors.InvalidData,
-        "invalid certificate: UnknownIssuer",
+        "invalid peer certificate contents: invalid peer certificate: UnknownIssuer",
         "Read with missing certFile didn't throw an InvalidData error when it should have.",
       );
 
@@ -727,10 +727,10 @@ Deno.test(`Server.listenAndServeTls should handle requests`, async () => {
       // missing certFile
     });
 
-    await assertThrowsAsync(
+    await assertRejects(
       () => badConn.read(new Uint8Array(1)),
       Deno.errors.InvalidData,
-      "invalid certificate: UnknownIssuer",
+      "invalid peer certificate contents: invalid peer certificate: UnknownIssuer",
       "Read with missing certFile didn't throw an InvalidData error when it should have.",
     );
 
@@ -918,7 +918,7 @@ Deno.test("Server should reject if the listener throws an unexpected error accep
   const listener = new MockListener({ conn, rejectionError });
   const handler = () => new Response();
   const server = new Server({ handler });
-  await assertThrowsAsync(
+  await assertRejects(
     () => server.serve(listener),
     Error,
     rejectionError.message,
@@ -1080,7 +1080,7 @@ Deno.test("Server.listenAndServe should throw if called multiple times", async (
   const servePromise = server.listenAndServe();
 
   try {
-    assertThrowsAsync(() => server.listenAndServe(), Deno.errors.AddrInUse);
+    assertRejects(() => server.listenAndServe(), Deno.errors.AddrInUse);
   } finally {
     server.close();
     await servePromise;
@@ -1097,7 +1097,7 @@ Deno.test("Server.listenAndServeTls should throw if called multiple times", asyn
   const servePromise = server.listenAndServeTls(certFile, keyFile);
 
   try {
-    assertThrowsAsync(
+    assertRejects(
       () => server.listenAndServeTls(certFile, keyFile),
       Deno.errors.AddrInUse,
     );
@@ -1145,6 +1145,143 @@ Deno.test("Handler is called with the request instance and connection informatio
     );
   } finally {
     server.close();
+    await servePromise;
+  }
+});
+
+Deno.test("Default onError is called when Handler throws", async () => {
+  const addr = "localhost:4505";
+  const url = `http://${addr}`;
+  const handler = (_request: Request, _connInfo: ConnInfo) => {
+    throw new Error("I failed to serve the request");
+  };
+  const abortController = new AbortController();
+
+  const servePromise = serve(handler, {
+    addr,
+    signal: abortController.signal,
+  });
+
+  try {
+    const response = await fetch(url);
+    assertEquals(await response.text(), "Internal Server Error");
+    assertEquals(response.status, 500);
+  } finally {
+    abortController.abort();
+    await servePromise;
+  }
+});
+
+Deno.test("Custom onError is called when Handler throws", async () => {
+  const addr = "localhost:4505";
+  const url = `http://${addr}`;
+  const handler = (_request: Request, _connInfo: ConnInfo) => {
+    throw new Error("I failed to serve the request");
+  };
+  const onError = (_error: unknown) => {
+    return new Response("custom error page", { status: 500 });
+  };
+  const abortController = new AbortController();
+
+  const servePromise = serve(handler, {
+    addr,
+    onError,
+    signal: abortController.signal,
+  });
+
+  try {
+    const response = await fetch(url);
+    assertEquals(await response.text(), "custom error page");
+    assertEquals(response.status, 500);
+  } finally {
+    abortController.abort();
+    await servePromise;
+  }
+});
+
+Deno.test("Custom onError is called when Handler throws", async () => {
+  const listenOptions = {
+    hostname: "localhost",
+    port: 4505,
+  };
+  const listener = Deno.listen(listenOptions);
+
+  const url = `http://${listenOptions.hostname}:${listenOptions.port}`;
+  const handler = (_request: Request, _connInfo: ConnInfo) => {
+    throw new Error("I failed to serve the request");
+  };
+  const onError = (_error: unknown) => {
+    return new Response("custom error page", { status: 500 });
+  };
+  const abortController = new AbortController();
+
+  const servePromise = serveListener(listener, handler, {
+    onError,
+    signal: abortController.signal,
+  });
+
+  try {
+    const response = await fetch(url);
+    assertEquals(await response.text(), "custom error page");
+    assertEquals(response.status, 500);
+  } finally {
+    abortController.abort();
+    await servePromise;
+  }
+});
+
+Deno.test("Server.listenAndServeTls should support custom onError", async () => {
+  const hostname = "localhost";
+  const port = 4505;
+  const addr = `${hostname}:${port}`;
+  const certFile = join(testdataDir, "tls/localhost.crt");
+  const keyFile = join(testdataDir, "tls/localhost.key");
+  const status = 500;
+  const method = "PATCH";
+  const body = "custom error page";
+
+  const handler = () => {
+    throw new Error("I failed to serve the request.");
+  };
+  const onError = (_error: unknown) => new Response(body, { status });
+  const abortController = new AbortController();
+
+  const servePromise = serveTls(handler, {
+    addr,
+    certFile,
+    keyFile,
+    onError,
+    signal: abortController.signal,
+  });
+
+  try {
+    const conn = await Deno.connectTls({
+      hostname,
+      port,
+      certFile: join(testdataDir, "tls/RootCA.pem"),
+    });
+
+    await writeAll(
+      conn,
+      new TextEncoder().encode(
+        `${method.toUpperCase()} / HTTP/1.0\r\n\r\n`,
+      ),
+    );
+
+    const response = new TextDecoder().decode(await readAll(conn));
+
+    conn.close();
+
+    assert(
+      response.includes(`HTTP/1.0 ${status}`),
+      "Status code not correct",
+    );
+    assert(
+      response.includes(body),
+      "Response body not correct",
+    );
+  } finally {
+    abortController.abort();
     await servePromise;
   }
 });

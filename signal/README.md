@@ -23,16 +23,3 @@ for await (const _ of sig) {
 // At some other point in your code when finished listening:
 sig.dispose();
 ```
-
-## onSignal
-
-Registers a callback function to be called on triggering of a signal event.
-
-```typescript
-import { onSignal } from "https://deno.land/std/signal/mod.ts";
-
-const handle = onSignal("SIGINT", () => {
-  // ...
-  handle.dispose(); // de-register from receiving further events.
-});
-```

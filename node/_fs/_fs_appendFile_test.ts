@@ -14,7 +14,7 @@ Deno.test({
         appendFile("some/path", "some data", "utf8");
       },
       Error,
-      "No callback function supplied",
+      "Callback must be a function. Received 'utf8'",
     );
   },
 });
@@ -28,7 +28,7 @@ Deno.test({
         appendFile("some/path", "some data", "made-up-encoding", () => {});
       },
       Error,
-      "Only 'utf8' encoding is currently supported",
+      "The argument 'made-up-encoding' is invalid encoding. Received 'encoding'",
     );
     assertThrows(
       () => {
@@ -41,13 +41,13 @@ Deno.test({
         );
       },
       Error,
-      "Only 'utf8' encoding is currently supported",
+      "The argument 'made-up-encoding' is invalid encoding. Received 'encoding'",
     );
     assertThrows(
       // @ts-expect-error Type '"made-up-encoding"' is not assignable to type
       () => appendFileSync("some/path", "some data", "made-up-encoding"),
       Error,
-      "Only 'utf8' encoding is currently supported",
+      "The argument 'made-up-encoding' is invalid encoding. Received 'encoding'",
     );
     assertThrows(
       () =>
@@ -56,7 +56,7 @@ Deno.test({
           encoding: "made-up-encoding",
         }),
       Error,
-      "Only 'utf8' encoding is currently supported",
+      "The argument 'made-up-encoding' is invalid encoding. Received 'encoding'",
     );
   },
 });
@@ -196,7 +196,7 @@ Deno.test({
     const tempFile: string = Deno.makeTempFileSync();
     assertThrows(
       () => appendFileSync(tempFile, "hello world", { flag: "ax" }),
-      Deno.errors.AlreadyExists,
+      Error,
       "",
     );
     assertEquals(Deno.resources(), openResourcesBeforeAppend);

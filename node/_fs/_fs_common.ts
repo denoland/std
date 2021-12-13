@@ -1,4 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+import { validateCallback } from "../internal/validators.js";
 import {
   BinaryEncodings,
   Encodings,
@@ -161,4 +162,24 @@ export function getOpenOptions(flag: string | undefined): Deno.OpenOptions {
   }
 
   return openOptions;
+}
+
+export { isUint32 as isFd } from "../internal/validators.js";
+
+export function maybeCallback(cb: unknown) {
+  validateCallback(cb);
+
+  return cb as CallbackWithError;
+}
+
+// Ensure that callbacks run in the global context. Only use this function
+// for callbacks that are passed to the binding layer, callbacks that are
+// invoked from JS already run in the proper scope.
+export function makeCallback(
+  this: unknown,
+  cb?: (...args: unknown[]) => void,
+) {
+  validateCallback(cb);
+
+  return (...args: unknown[]) => Reflect.apply(cb!, this, args);
 }
