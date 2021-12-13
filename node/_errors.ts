@@ -21,6 +21,14 @@ import {
 } from "./internal_binding/uv.ts";
 import { assert } from "../_util/assert.ts";
 import { fileURLToPath } from "./url.ts";
+import { isWindows } from "../_util/os.ts";
+import { os as osConstants } from "./internal_binding/constants.ts";
+const {
+  errno: {
+    ENOTDIR,
+    ENOENT,
+  },
+} = osConstants;
 
 export { errorMap };
 
@@ -75,7 +83,9 @@ function addNumericalSeparator(val: string) {
 }
 
 /** This function removes unnecessary frames from Node.js core errors. */
-export function hideStackFrames(fn: GenericFunction) {
+export function hideStackFrames<T extends GenericFunction = GenericFunction>(
+  fn: T,
+): T {
   // We rename the functions that will be hidden to cut off the stacktrace
   // at the outermost one.
   const hidden = "__node_internal_" + fn.name;
@@ -115,8 +125,8 @@ export const uvExceptionWithHostPort = hideStackFrames(
   function uvExceptionWithHostPort(
     err: number,
     syscall: string,
-    address: string,
-    port?: number,
+    address?: string | null,
+    port?: number | null,
   ) {
     const { 0: code, 1: uvmsg } = uvErrmapGet(err) || uvUnmappedError;
     const message = `${syscall} ${code}: ${uvmsg}`;
@@ -152,7 +162,7 @@ export const uvExceptionWithHostPort = hideStackFrames(
  * @return A `ErrnoException`
  */
 export const errnoException = hideStackFrames(
-  function errnoException(err, syscall, original): ErrnoException {
+  function errnoException(err, syscall, original?): ErrnoException {
     const code = getSystemErrorName(err);
     const message = original
       ? `${syscall} ${code} ${original}`
@@ -240,7 +250,7 @@ export const exceptionWithHostPort = hideStackFrames(
     syscall: string,
     address: string,
     port: number,
-    additional: string,
+    additional?: string,
   ) {
     const code = getSystemErrorName(err);
     let details = "";
@@ -489,91 +499,113 @@ export const ERR_FS_EISDIR = makeSystemErrorWithCode(
   "Path is a directory",
 );
 
-export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
-  constructor(name: string, expected: string | string[], actual: unknown) {
-    // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
-    expected = Array.isArray(expected) ? expected : [expected];
-    let msg = "The ";
-    if (name.endsWith(" argument")) {
-      // For cases like 'first argument'
-      msg += `${name} `;
+function createInvalidArgType(
+  name: string,
+  expected: string | string[],
+): string {
+  // https://github.com/nodejs/node/blob/f3eb224/lib/internal/errors.js#L1037-L1087
+  expected = Array.isArray(expected) ? expected : [expected];
+  let msg = "The ";
+  if (name.endsWith(" argument")) {
+    // For cases like 'first argument'
+    msg += `${name} `;
+  } else {
+    const type = name.includes(".") ? "property" : "argument";
+    msg += `"${name}" ${type} `;
+  }
+  msg += "must be ";
+
+  const types = [];
+  const instances = [];
+  const other = [];
+  for (const value of expected) {
+    if (kTypes.includes(value)) {
+      types.push(value.toLocaleLowerCase());
+    } else if (classRegExp.test(value)) {
+      instances.push(value);
     } else {
-      const type = name.includes(".") ? "property" : "argument";
-      msg += `"${name}" ${type} `;
+      other.push(value);
     }
-    msg += "must be ";
+  }
 
-    const types = [];
-    const instances = [];
-    const other = [];
-    for (const value of expected) {
-      if (kTypes.includes(value)) {
-        types.push(value.toLocaleLowerCase());
-      } else if (classRegExp.test(value)) {
-        instances.push(value);
-      } else {
-        other.push(value);
-      }
+  // Special handle `object` in case other instances are allowed to outline
+  // the differences between each other.
+  if (instances.length > 0) {
+    const pos = types.indexOf("object");
+    if (pos !== -1) {
+      types.splice(pos, 1);
+      instances.push("Object");
     }
+  }
 
-    // Special handle `object` in case other instances are allowed to outline
-    // the differences between each other.
-    if (instances.length > 0) {
-      const pos = types.indexOf("object");
-      if (pos !== -1) {
-        types.splice(pos, 1);
-        instances.push("Object");
-      }
+  if (types.length > 0) {
+    if (types.length > 2) {
+      const last = types.pop();
+      msg += `one of type ${types.join(", ")}, or ${last}`;
+    } else if (types.length === 2) {
+      msg += `one of type ${types[0]} or ${types[1]}`;
+    } else {
+      msg += `of type ${types[0]}`;
     }
+    if (instances.length > 0 || other.length > 0) {
+      msg += " or ";
+    }
+  }
 
-    if (types.length > 0) {
-      if (types.length > 2) {
-        const last = types.pop();
-        msg += `one of type ${types.join(", ")}, or ${last}`;
-      } else if (types.length === 2) {
-        msg += `one of type ${types[0]} or ${types[1]}`;
-      } else {
-        msg += `of type ${types[0]}`;
-      }
-      if (instances.length > 0 || other.length > 0) {
-        msg += " or ";
+  if (instances.length > 0) {
+    if (instances.length > 2) {
+      const last = instances.pop();
+      msg += `an instance of ${instances.join(", ")}, or ${last}`;
+    } else {
+      msg += `an instance of ${instances[0]}`;
+      if (instances.length === 2) {
+        msg += ` or ${instances[1]}`;
       }
     }
-
-    if (instances.length > 0) {
-      if (instances.length > 2) {
-        const last = instances.pop();
-        msg += `an instance of ${instances.join(", ")}, or ${last}`;
-      } else {
-        msg += `an instance of ${instances[0]}`;
-        if (instances.length === 2) {
-          msg += ` or ${instances[1]}`;
-        }
-      }
-      if (other.length > 0) {
-        msg += " or ";
-      }
-    }
-
     if (other.length > 0) {
-      if (other.length > 2) {
-        const last = other.pop();
-        msg += `one of ${other.join(", ")}, or ${last}`;
-      } else if (other.length === 2) {
-        msg += `one of ${other[0]} or ${other[1]}`;
-      } else {
-        if (other[0].toLowerCase() !== other[0]) {
-          msg += "an ";
-        }
-        msg += `${other[0]}`;
-      }
+      msg += " or ";
     }
+  }
+
+  if (other.length > 0) {
+    if (other.length > 2) {
+      const last = other.pop();
+      msg += `one of ${other.join(", ")}, or ${last}`;
+    } else if (other.length === 2) {
+      msg += `one of ${other[0]} or ${other[1]}`;
+    } else {
+      if (other[0].toLowerCase() !== other[0]) {
+        msg += "an ";
+      }
+      msg += `${other[0]}`;
+    }
+  }
+
+  return msg;
+}
+
+export class ERR_INVALID_ARG_TYPE_RANGE extends NodeRangeError {
+  constructor(name: string, expected: string | string[], actual: unknown) {
+    const msg = createInvalidArgType(name, expected);
 
     super(
       "ERR_INVALID_ARG_TYPE",
       `${msg}.${invalidArgTypeHelper(actual)}`,
     );
   }
+}
+
+export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
+  constructor(name: string, expected: string | string[], actual: unknown) {
+    const msg = createInvalidArgType(name, expected);
+
+    super(
+      "ERR_INVALID_ARG_TYPE",
+      `${msg}.${invalidArgTypeHelper(actual)}`,
+    );
+  }
+
+  static RangeError = ERR_INVALID_ARG_TYPE_RANGE;
 }
 
 class ERR_INVALID_ARG_VALUE_RANGE extends NodeRangeError {
@@ -2704,6 +2736,21 @@ export class ERR_INTERNAL_ASSERTION extends NodeError {
       "ERR_INTERNAL_ASSERTION",
       message === undefined ? suffix : `${message}\n${suffix}`,
     );
+  }
+}
+
+// Using `fs.rmdir` on a path that is a file results in an ENOENT error on Windows and an ENOTDIR error on POSIX.
+export class ERR_FS_RMDIR_ENOTDIR extends NodeSystemError {
+  constructor(path: string) {
+    const code = isWindows ? "ENOENT" : "ENOTDIR";
+    const ctx: NodeSystemErrorCtx = {
+      message: "not a directory",
+      path,
+      syscall: "rmdir",
+      code,
+      errno: isWindows ? ENOENT : ENOTDIR,
+    };
+    super(code, ctx, "Path is not a directory");
   }
 }
 

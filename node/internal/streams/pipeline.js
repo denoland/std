@@ -3,7 +3,7 @@
 
 import { AbortError, aggregateTwoErrors } from "../errors.js";
 import { isIterable, isNodeStream, isReadableNodeStream } from "./utils.js";
-import { once } from "../util.ts";
+import { once } from "../util.js";
 import { stderr, stdout } from "./readable.js";
 import { validateAbortSignal, validateCallback } from "../validators.js";
 import {

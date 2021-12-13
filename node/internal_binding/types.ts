@@ -1,4 +1,3 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 //
 // Adapted from Node.js. Copyright Joyent, Inc. and other Node contributors.
 //
@@ -37,10 +36,6 @@ export function isAnyArrayBuffer(value: unknown): boolean {
   );
 }
 
-export function isArrayBufferView(value: unknown): boolean {
-  return ArrayBuffer.isView(value);
-}
-
 export function isArgumentsObject(value: unknown): boolean {
   return _isObjectLike(value) && _toString.call(value) === "[object Arguments]";
 }
@@ -54,18 +49,6 @@ export function isArrayBuffer(value: unknown): boolean {
 export function isAsyncFunction(value: unknown): boolean {
   return (
     _isFunctionLike(value) && _toString.call(value) === "[object AsyncFunction]"
-  );
-}
-
-export function isBigInt64Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object BigInt64Array]"
-  );
-}
-
-export function isBigUint64Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object BigUint64Array]"
   );
 }
 
@@ -91,20 +74,6 @@ export function isDate(value: unknown): boolean {
   return _isObjectLike(value) && _toString.call(value) === "[object Date]";
 }
 
-// isExternal: Not implemented
-
-export function isFloat32Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Float32Array]"
-  );
-}
-
-export function isFloat64Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Float64Array]"
-  );
-}
-
 export function isGeneratorFunction(value: unknown): boolean {
   return (
     _isFunctionLike(value) &&
@@ -114,22 +83,6 @@ export function isGeneratorFunction(value: unknown): boolean {
 
 export function isGeneratorObject(value: unknown): boolean {
   return _isObjectLike(value) && _toString.call(value) === "[object Generator]";
-}
-
-export function isInt8Array(value: unknown): boolean {
-  return _isObjectLike(value) && _toString.call(value) === "[object Int8Array]";
-}
-
-export function isInt16Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Int16Array]"
-  );
-}
-
-export function isInt32Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Int32Array]"
-  );
 }
 
 export function isMap(value: unknown): boolean {
@@ -191,39 +144,6 @@ export function isSymbolObject(value: unknown): boolean {
   return _isObjectLike(value) && _toString.call(value) === "[object Symbol]";
 }
 
-// Adapted from Lodash
-export function isTypedArray(value: unknown): boolean {
-  /** Used to match `toStringTag` values of typed arrays. */
-  const reTypedTag =
-    /^\[object (?:Float(?:32|64)|(?:Int|Uint)(?:8|16|32)|Uint8Clamped)Array\]$/;
-  return _isObjectLike(value) && reTypedTag.test(_toString.call(value));
-}
-
-export function isUint8Array(value: unknown): value is Uint8Array {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Uint8Array]"
-  );
-}
-
-export function isUint8ClampedArray(value: unknown): boolean {
-  return (
-    _isObjectLike(value) &&
-    _toString.call(value) === "[object Uint8ClampedArray]"
-  );
-}
-
-export function isUint16Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Uint16Array]"
-  );
-}
-
-export function isUint32Array(value: unknown): boolean {
-  return (
-    _isObjectLike(value) && _toString.call(value) === "[object Uint32Array]"
-  );
-}
-
 export function isWeakMap(value: unknown): boolean {
   return _isObjectLike(value) && _toString.call(value) === "[object WeakMap]";
 }
@@ -231,3 +151,29 @@ export function isWeakMap(value: unknown): boolean {
 export function isWeakSet(value: unknown): boolean {
   return _isObjectLike(value) && _toString.call(value) === "[object WeakSet]";
 }
+
+export default {
+  isAsyncFunction,
+  isGeneratorFunction,
+  isAnyArrayBuffer,
+  isArrayBuffer,
+  isArgumentsObject,
+  isBoxedPrimitive,
+  isDataView,
+  // isExternal,
+  isMap,
+  isMapIterator,
+  isModuleNamespaceObject,
+  isNativeError,
+  isPromise,
+  isSet,
+  isSetIterator,
+  isWeakMap,
+  isWeakSet,
+  isRegExp,
+  isDate,
+  isStringObject,
+  isNumberObject,
+  isBooleanObject,
+  isBigIntObject,
+};

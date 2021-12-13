@@ -11,7 +11,6 @@ export * from "./drop_while.ts";
 export * from "./filter_entries.ts";
 export * from "./filter_keys.ts";
 export * from "./filter_values.ts";
-export * from "./find_last.ts";
 export * from "./find_last_index.ts";
 export * from "./group_by.ts";
 export * from "./intersect.ts";

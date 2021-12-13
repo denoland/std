@@ -9,7 +9,7 @@
  * That file has a lot of node functionality not currently supported, so this is a lite
  * version of that file, which most tests should be able to use
  */
-
+'use strict';
 const assert = require("assert");
 const util = require("util");
 
@@ -242,6 +242,23 @@ const isOpenBSD = process.platform === 'openbsd';
 const isLinux = process.platform === 'linux';
 const isOSX = process.platform === 'darwin';
 
+const isDumbTerminal = process.env.TERM === 'dumb';
+
+function skipIfDumbTerminal() {
+  if (isDumbTerminal) {
+    skip('skipping - dumb terminal');
+  }
+}
+
+function printSkipMessage(msg) {
+  console.log(`1..0 # Skipped: ${msg}`);
+}
+
+function skip(msg) {
+  printSkipMessage(msg);
+  process.exit(0);
+}
+
 module.exports = {
   expectsError,
   expectWarning,
@@ -251,6 +268,8 @@ module.exports = {
   mustNotCall,
   mustSucceed,
   platformTimeout,
+  skipIfDumbTerminal,
+  isDumbTerminal,
   isWindows,
   isAIX,
   isSunOS,
@@ -258,6 +277,8 @@ module.exports = {
   isOpenBSD,
   isLinux,
   isOSX,
+  isMainThread: true, // TODO(f3n67u): replace with `worker_thread.isMainThread` when `worker_thread` implemented
+  skip,
   get hasIPv6() {
     const iFaces = require('os').networkInterfaces();
     const re = isWindows ? /Loopback Pseudo-Interface/ : /lo/;

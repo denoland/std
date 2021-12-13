@@ -76,32 +76,3 @@ function createSignalStream(
     },
   });
 }
-
-/**
- * Registers a callback function to be called on triggering of a signal event.
- *
- * ```ts
- *       import { onSignal } from "./mod.ts";
- *
- *       const handle = onSignal("SIGINT", () => {
- *         console.log('Received SIGINT');
- *         handle.dispose();  // de-register from receiving further events
- *       });
- * ```
- *
- * @param signo One of Deno.Signal (e.g. "SIGINT")
- * @param callback Callback function triggered upon signal event
- * @deprecated Use Deno.addSignalListener and Deno.removeSignalListener instead.
- */
-export function onSignal(
-  signal: Deno.Signal,
-  callback: () => void,
-): Disposable {
-  Deno.addSignalListener(signal, callback);
-
-  return {
-    dispose() {
-      Deno.removeSignalListener(signal, callback);
-    },
-  };
-}
