@@ -11,10 +11,14 @@ Deno.test("[node/_tools/setup] downloadFile", async () => {
   const tmpdir = await Deno.makeTempDir();
   try {
     const controller = new AbortController();
-    const serverPromise = listenAndServe(":8080", () => {
-      // Responds with 100KB data
-      return new Response("0".repeat(100_000));
-    }, { signal: controller.signal });
+    const serverPromise = listenAndServe(
+      { port: 8080 },
+      () => {
+        // Responds with 100KB data
+        return new Response("0".repeat(100_000));
+      },
+      { signal: controller.signal },
+    );
     await delay(50);
 
     const downloadedFile = join(tmpdir, "downloaded.txt");
