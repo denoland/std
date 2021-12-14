@@ -11,6 +11,7 @@ import {
   Writable as NodeWritable,
 } from "./stream.ts";
 import { OutgoingMessage } from "./_http_outgoing.ts";
+import { Agent } from "./_http_agent.js";
 
 const METHODS = [
   "ACL",
@@ -361,8 +362,9 @@ export function createServer(handler?: ServerHandler) {
   return new Server(handler);
 }
 
-export { METHODS, OutgoingMessage, STATUS_CODES };
+export { Agent, METHODS, OutgoingMessage, STATUS_CODES };
 export default {
+  Agent,
   STATUS_CODES,
   METHODS,
   createServer,

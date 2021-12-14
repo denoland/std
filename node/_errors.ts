@@ -1528,7 +1528,7 @@ export class ERR_INSPECTOR_NOT_WORKER extends NodeError {
   }
 }
 export class ERR_INVALID_ASYNC_ID extends NodeRangeError {
-  constructor(x: string, y: string) {
+  constructor(x: string, y: string | number) {
     super(
       "ERR_INVALID_ASYNC_ID",
       `Invalid ${x} value: ${y}`,
