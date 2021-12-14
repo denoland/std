@@ -4,6 +4,7 @@ import { callbackify } from "./_util/_util_callbackify.ts";
 import { deprecate } from "./internal/util.js";
 import {
   format,
+  formatWithOptions,
   inspect,
   stripVTControlCharacters,
 } from "./internal/util/inspect.js";
@@ -14,6 +15,7 @@ export {
   callbackify,
   deprecate,
   format,
+  formatWithOptions,
   inspect,
   promisify,
   stripVTControlCharacters,
@@ -129,88 +131,6 @@ export function getSystemErrorName(code: number): string | undefined {
   return errorMap.get(code)?.[0];
 }
 
-function toReplace(specifier: string, value: unknown): string {
-  if (specifier === "%s") {
-    if (typeof value === "string" || value instanceof String) {
-      return value as string;
-    } else return Deno.inspect(value, { depth: 1 });
-  }
-  if (specifier === "%d") {
-    if (typeof value === "bigint") {
-      return value + "n";
-    }
-    return Number(value).toString();
-  }
-  if (specifier === "%i") {
-    if (typeof value === "bigint") {
-      return value + "n";
-    }
-    return parseInt(value as string).toString();
-  }
-  if (specifier === "%f") {
-    return parseFloat(value as string).toString();
-  }
-  if (specifier === "%j") {
-    try {
-      return JSON.stringify(value);
-    } catch (e) {
-      // nodeJS => 'cyclic object value' , deno => 'Converting circular structure to JSON ...'
-      // ref: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify>
-      if (e instanceof TypeError && e.message.match(/cyclic|circular/)) {
-        return "[Circular]";
-      } else throw e;
-    }
-  }
-  if (specifier === "%o") {
-    return Deno.inspect(value, { showHidden: true, showProxy: true });
-  }
-  if (specifier === "%O") {
-    return Deno.inspect(value);
-  }
-  if (specifier === "%c") {
-    return "";
-  }
-  return "";
-}
-
-// ref: <https://nodejs.org/docs/latest-v16.x/api/console.html#console_console_log_data_args>
-// ref: <https://nodejs.org/docs/latest-v16.x/api/util.html#util_util_format_format_args>
-// modified from <https://deno.land/std@0.105.0/node/util.ts#L247-L266>
-// export function format(...args: unknown[]) {
-//   const replacement: [number, string][] = [];
-//   const formatSpecifierRx = /%(s|d|i|f|j|o|O|c|%)/g;
-//   const hasFormatTemplate = args.length > 0 &&
-//     (typeof args[0] === "string" || args[0] instanceof String);
-//   const formatTemplate = hasFormatTemplate ? (args[0] as string) : "";
-//   let i = hasFormatTemplate ? 1 : 0;
-//   let arr: RegExpExecArray | null = null;
-//   let done = false;
-//   while ((arr = formatSpecifierRx.exec(formatTemplate)) !== null && !done) {
-//     if (arr[0] === "%%") {
-//       replacement.push([arr["index"], "%"]);
-//     } else if (i < args.length) {
-//       replacement.push([arr["index"], toReplace(arr[0], args[i])]);
-//       i++;
-//     } else done = true;
-//   }
-//   const lastArgUsed = i;
-//   let result = "";
-//   let last = 0;
-//   for (let i = 0; i < replacement.length; i++) {
-//     const item = replacement[i];
-//     result += formatTemplate.slice(last, item[0]);
-//     result += item[1];
-//     last = item[0] + 2;
-//   }
-//   result += formatTemplate.slice(last);
-//   for (let i = lastArgUsed; i < args.length; i++) {
-//     if (i > 0) result += " ";
-//     if (typeof args[i] === "string") {
-//       result += args[i];
-//     } else result += Deno.inspect(args[i], { colors: true });
-//   }
-//   return result;
-// }
 /**
  * https://nodejs.org/api/util.html#util_util_inherits_constructor_superconstructor
  * @param ctor Constructor function which needs to inherit the prototype.
@@ -301,6 +221,7 @@ function debuglog() {
 
 export default {
   format,
+  formatWithOptions,
   inspect,
   isArray,
   isBoolean,

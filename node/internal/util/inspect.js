@@ -21,6 +21,7 @@
 
 import * as types from "./types.ts";
 import { validateObject, validateString } from "../validators.js";
+import { ERR_INVALID_ARG_TYPE } from "../../_errors.ts";
 
 import {
   ALL_PROPERTIES,
@@ -2030,8 +2031,45 @@ function hasBuiltInToString(value) {
     builtInObjects.has(descriptor.value.name);
 }
 
+const firstErrorLine = (error) => error.message.split("\n", 1)[0];
+let CIRCULAR_ERROR_MESSAGE;
+function tryStringify(arg) {
+  try {
+    return JSON.stringify(arg);
+  } catch (err) {
+    // Populate the circular error message lazily
+    if (!CIRCULAR_ERROR_MESSAGE) {
+      try {
+        const a = {};
+        a.a = a;
+        JSON.stringify(a);
+      } catch (circularError) {
+        CIRCULAR_ERROR_MESSAGE = firstErrorLine(circularError);
+      }
+    }
+    if (
+      err.name === "TypeError" &&
+      firstErrorLine(err) === CIRCULAR_ERROR_MESSAGE
+    ) {
+      return "[Circular]";
+    }
+    throw err;
+  }
+}
+
 export function format(...args) {
   return formatWithOptionsInternal(undefined, args);
+}
+
+export function formatWithOptions(inspectOptions, ...args) {
+  if (typeof inspectOptions !== "object" || inspectOptions === null) {
+    throw new ERR_INVALID_ARG_TYPE(
+      "inspectOptions",
+      "object",
+      inspectOptions,
+    );
+  }
+  return formatWithOptionsInternal(inspectOptions, args);
 }
 
 function formatNumberNoColor(number, options) {
@@ -2064,8 +2102,8 @@ function formatWithOptionsInternal(inspectOptions, args) {
     let lastPos = 0;
 
     for (let i = 0; i < first.length - 1; i++) {
-      if (String.prototype.charCodeAt(first, i) === 37) { // '%'
-        const nextChar = String.prototype.charCodeAt(first, ++i);
+      if (first.charCodeAt(i) === 37) { // '%'
+        const nextChar = first.charCodeAt(++i);
         if (a + 1 !== args.length) {
           switch (nextChar) {
             // deno-lint-ignore no-case-declarations
@@ -2146,19 +2184,19 @@ function formatWithOptionsInternal(inspectOptions, args) {
               tempStr = "";
               break;
             case 37: // '%'
-              str += String.prototype.slice(first, lastPos, i);
+              str += first.slice(lastPos, i);
               lastPos = i + 1;
               continue;
             default: // Any other character is not a correct placeholder
               continue;
           }
           if (lastPos !== i - 1) {
-            str += String.prototype.slice(first, lastPos, i - 1);
+            str += first.slice(lastPos, i - 1);
           }
           str += tempStr;
           lastPos = i + 1;
         } else if (nextChar === 37) {
-          str += String.prototype.slice(first, lastPos, i);
+          str += first.slice(lastPos, i);
           lastPos = i + 1;
         }
       }
@@ -2167,7 +2205,7 @@ function formatWithOptionsInternal(inspectOptions, args) {
       a++;
       join = " ";
       if (lastPos < first.length) {
-        str += String.prototype.slice(first, lastPos);
+        str += first.slice(lastPos);
       }
     }
   }
@@ -2194,4 +2232,5 @@ export function stripVTControlCharacters(str) {
 export default {
   getStringWidth,
   stripVTControlCharacters,
+  formatWithOptions,
 };

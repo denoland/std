@@ -41,6 +41,7 @@
       "test-url-format-whatwg.js",
       "test-url-parse-format.js",
       "test-url-urltooptions.js",
+      "test-util-format.js",
       "test-util-inspect-getters-accessing-this.js",
       "test-util-inspect-namespace.js",
       "test-util-inspect-proxy.js",
