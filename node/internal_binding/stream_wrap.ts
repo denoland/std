@@ -26,6 +26,7 @@
 // - https://github.com/nodejs/node/blob/master/src/stream_wrap.h
 // - https://github.com/nodejs/node/blob/master/src/stream_wrap.cc
 
+import { Buffer } from "../buffer.ts";
 import { notImplemented } from "../_utils.ts";
 import { HandleWrap } from "./handle_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
@@ -224,8 +225,9 @@ export class LibuvStreamWrap extends HandleWrap {
    * Write an LATIN1 string to the stream.
    * @return An error status code.
    */
-  writeLatin1String(_req: WriteWrap<LibuvStreamWrap>, _data: string): number {
-    notImplemented();
+  writeLatin1String(req: WriteWrap<LibuvStreamWrap>, data: string): number {
+    const buffer = Buffer.from(data, "latin1");
+    return this.writeBuffer(req, buffer);
   }
 
   async _onClose(): Promise<number> {

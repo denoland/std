@@ -347,7 +347,7 @@ function calculateServerName(options, req) {
         servername = hostHeader.substr(1, index - 1);
       }
     } else {
-      servername = hostHeader.splice(":", 1)[0];
+      servername = hostHeader.split(":", 1)[0];
     }
   }
   // Don't implicitly set invalid (IP) servernames.
@@ -380,7 +380,7 @@ function installListeners(agent, s, options) {
     // Destroy if in free list.
     // TODO(ronag): Always destroy, even if not in free list.
     const sockets = agent.freeSockets;
-    if (ObjectKeys(sockets).some((name) => sockets[name].includes(s))) {
+    if (Object.keys(sockets).some((name) => sockets[name].includes(s))) {
       return s.destroy();
     }
   }
