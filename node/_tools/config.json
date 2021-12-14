@@ -325,6 +325,7 @@
       "test-url-format-whatwg.js",
       "test-url-parse-format.js",
       "test-url-pathtofileurl.js",
+      "test-url-relative.js",
       "test-url-urltooptions.js",
       "test-util-inherits.js",
       "test-util-inspect-getters-accessing-this.js",
