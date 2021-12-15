@@ -12,7 +12,9 @@ import { config, getPathsFromTestSuites } from "./common.ts";
 
 const toolsPath = dirname(fromFileUrl(import.meta.url));
 const testPaths = getPathsFromTestSuites(config.tests);
-const windowsIgnorePaths = new Set(getPathsFromTestSuites(config.windowsIgnore));
+const windowsIgnorePaths = new Set(
+  getPathsFromTestSuites(config.windowsIgnore),
+);
 
 const decoder = new TextDecoder();
 
