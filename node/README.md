@@ -129,13 +129,26 @@ To run the tests you have set up, do the following:
 $ deno test --allow-read --allow-run node/_tools/test.ts
 ```
 
-If you want to run specific tests in a local environment, try one of the
-following:
+If you want to run specific Node.js test files, you can use the following
+command
 
-- Use `node/_tools/require.ts` as follows:
+```shellsession
+$ deno test -A node/_tools/test.ts -- <pattern-to-match>
+```
 
-```zsh
-$ deno run -A --unstable node/_tools/require.ts /Abs/path/to/deno_std/node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js
+For example, if you want to run only
+`node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js`, you
+can use:
+
+```shellsession
+$ deno test -A node/_tools/test.ts -- test-event-emitter-check-listener-leaks.js
+```
+
+If you want to run all test files which contains `event-emitter` in filename,
+then you can use:
+
+```shellsession
+$ deno test -A node/_tools/test.ts -- event-emitter
 ```
 
 The test should be passing with the latest deno, so if the test fails, try the
