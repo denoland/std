@@ -18,9 +18,9 @@ import {
   isStringObject,
   isSymbolObject,
   isTypedArray,
-} from "./internal/util/types.ts";
+} from "./types.ts";
 
-import { Buffer } from "./_buffer.js";
+import { Buffer } from "../../_buffer.js";
 
 enum valueType {
   noIterator,
@@ -100,7 +100,7 @@ function isDeepEqual(
     if (!Array.isArray(val2) || val1.length !== val2.length) {
       return false;
     }
-    // TODO Either change the name here or improve the function to do what it says
+    // TODO(standvpmnt): Either change the name here or improve the function to do what it says
     const keysVal1 = getOwnNonIndexProperties(val1);
     const keysVal2 = getOwnNonIndexProperties(val2);
     if (keysVal1.length !== keysVal2.length) {
@@ -287,7 +287,6 @@ function keyCheck(
       }
     }
   }
-  // iterationType must be an enumerable
   if (
     aKeys.length === 0 &&
     (iterationType === valueType.noIterator ||
@@ -329,12 +328,11 @@ function areSimilarRegExps(a: RegExp, b: RegExp) {
   return a.source === b.source && a.flags === b.flags;
 }
 
-// TODO add type for arguments
+// TODO(standvpmnt): add type for arguments
 function areSimilarFloatArrays(arr1: any, arr2: any): boolean {
   if (arr1.byteLength !== arr2.byteLength) {
     return false;
   }
-  // node implementation uses the word offset to iterate
   for (let i = 0; i < arr1.byteLength; i++) {
     if (arr1[i] !== arr2[i]) {
       return false;
@@ -343,7 +341,7 @@ function areSimilarFloatArrays(arr1: any, arr2: any): boolean {
   return true;
 }
 
-// TODO add type for arguments
+// TODO(standvpmnt): add type for arguments
 function areSimilarTypedArrays(arr1: any, arr2: any): boolean {
   if (arr1.byteLength !== arr2.byteLength) {
     return false;
@@ -355,7 +353,7 @@ function areSimilarTypedArrays(arr1: any, arr2: any): boolean {
     ) === 0
   );
 }
-// TODO add type for arguments
+// TODO(standvpmnt): add type for arguments
 function areEqualArrayBuffers(buf1: any, buf2: any): boolean {
   return (
     buf1.byteLength === buf2.byteLength &&
@@ -400,11 +398,8 @@ function isEqualBoxedPrimitive(a: any, b: any): boolean {
   return false;
 }
 
-// This will be tricky it requires the bindings to provide this method in node using the
-// v8: IndexFilter, check if this is implemented in RustyV8
-// https://github.com/nodejs/node/blob/master/src/node_util.cc
-
-// TODO This is not optimized since we are actually returning all the properties
+// TODO(standvpmnt): Reduce COST from this
+// This is not optimized since we are actually returning all the properties
 // and not just the non-indexed properties, VERY COSTLY right now
 function getOwnNonIndexProperties(obj: object): (string | symbol)[] {
   if (Array.isArray(obj)) return [];
@@ -493,6 +488,7 @@ function setEquiv(set1: any, set2: any, strict: boolean, memos: Memo): boolean {
     } else if (!set2.has(item)) {
       if (strict) return false;
 
+      // TODO(standvpmnt): handling of non-strict is pending
       // Since we do not need to handle non-strict case
       // if (!setMightHaveLoosePrim(set1, set2, item)) {
       //   return false;
@@ -523,7 +519,7 @@ function setEquiv(set1: any, set2: any, strict: boolean, memos: Memo): boolean {
   return true;
 }
 
-// TODO Implementation of non-strict cases is pending
+// TODO(standvpmnt): Implementation of non-strict cases is pending
 function mapEquiv(map1: any, map2: any, strict: boolean, memos: Memo): boolean {
   let set = null;
 
@@ -540,11 +536,7 @@ function mapEquiv(map1: any, map2: any, strict: boolean, memos: Memo): boolean {
         !isDeepEqual(item1, item2, strict, memos)
       ) {
         if (strict) return false;
-        // if (!mapMightHaveLoosePrim(map1, map2, key, item1, memos)) return false;
-        // if (set === null) {
-        //   set = new Set();
-        // }
-        // set.add(key);
+        // TODO(standvpmnt): Implementation of non-strict cases is pending
       }
     }
   }
@@ -556,6 +548,7 @@ function mapEquiv(map1: any, map2: any, strict: boolean, memos: Memo): boolean {
           return false;
         }
       }
+      // TODO(standvpmnt): Implement handling of case with non-strict equal
       // else if (
       //   !strict &&
       //   // (!map1.has(key) || !isDeepEqual(map1.get(key), item, false, memos)) &&
@@ -570,6 +563,7 @@ function mapEquiv(map1: any, map2: any, strict: boolean, memos: Memo): boolean {
   return true;
 }
 
+// TODO(standvpmnt): Implement handling of case with non-strict equal
 // function setMightHaveLoosePrim(set1, set2, primitive) {
 //   const altValue = findLooseMatchingPrimitives(primitive);
 //   if (altValue != null) return altValue;
@@ -613,7 +607,3 @@ function mapHasEqualEntry(
 
   return false;
 }
-
-// function compare(a: Uint8Array, b: Uint8Array): number {
-//   return 0;
-// }
