@@ -26,7 +26,7 @@ import {
   validateOneOf,
   validateString,
 } from "./internal/validators.js";
-import { isIP } from "./_net.ts";
+import { isIP } from "./internal/net.ts";
 import {
   emitInvalidHostnameWarning,
   getDefaultVerbatim,
