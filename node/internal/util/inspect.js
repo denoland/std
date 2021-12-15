@@ -2013,7 +2013,7 @@ function hasBuiltInToString(value) {
   }
 
   // The object has a own `toString` property. Thus it's not not a built-in one.
-  if (Object.prototype.hasOwnProperty(value, "toString")) {
+  if (Object.prototype.hasOwnProperty.call(value, "toString")) {
     return false;
   }
 
@@ -2022,7 +2022,7 @@ function hasBuiltInToString(value) {
   let pointer = value;
   do {
     pointer = Object.getPrototypeOf(pointer);
-  } while (!Object.prototype.hasOwnProperty(pointer, "toString"));
+  } while (!Object.prototype.hasOwnProperty.call(pointer, "toString"));
 
   // Check closer if the object is a built-in.
   const descriptor = Object.getOwnPropertyDescriptor(pointer, "constructor");
