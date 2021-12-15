@@ -35,11 +35,3 @@ export const ignoreList = Object.entries(config.ignore).reduce(
   },
   [],
 );
-
-export const testList = Object.entries(config.tests).reduce(
-  (total: RegExp[], [suite, paths]) => {
-    paths.forEach((path) => total.push(new RegExp(join(suite, path))));
-    return total;
-  },
-  [],
-);
