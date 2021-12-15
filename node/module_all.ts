@@ -1,6 +1,8 @@
 // This aliases are used in some node tests and represent a legacy alias
 // for the stream modules
 // deno-lint-ignore camelcase
+import _http_outgoing from "./_http_outgoing.ts";
+// deno-lint-ignore camelcase
 import _stream_duplex from "./internal/streams/duplex.js";
 // deno-lint-ignore camelcase
 import _stream_passthrough from "./internal/streams/passthrough.js";
@@ -27,9 +29,11 @@ import internalFsUtils from "./internal/fs/utils.js";
 import http from "./http.ts";
 import inspector from "./inspector.ts";
 import internalErrors from "./internal/errors.js";
+import internalHttp from "./internal/http.ts";
 import internalReadlineUtils from "./internal/readline/utils.js";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.js";
 import internalStreamsAddBufferList from "./internal/streams/buffer_list.js";
+import internalStreamsState from "./internal/streams/state.js";
 import internalTestBinding from "./internal/test/binding.ts";
 import internalUtilInspect from "./internal/util/inspect.js";
 import net from "./net.ts";
@@ -65,6 +69,7 @@ import zlib from "./zlib.ts";
 
 // Canonical mapping of supported modules
 export default {
+  _http_outgoing,
   _stream_duplex,
   _stream_passthrough,
   _stream_readable,
@@ -86,9 +91,11 @@ export default {
   inspector,
   "internal/errors": internalErrors,
   "internal/fs/utils": internalFsUtils,
+  "internal/http": internalHttp,
   "internal/readline/utils": internalReadlineUtils,
   "internal/streams/add-abort-signal": internalStreamsAddAbortSignal,
   "internal/streams/buffer_list": internalStreamsAddBufferList,
+  "internal/streams/state": internalStreamsState,
   "internal/test/binding": internalTestBinding,
   "internal/util/inspect": internalUtilInspect,
   net,

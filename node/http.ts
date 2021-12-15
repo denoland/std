@@ -10,6 +10,7 @@ import {
   Readable as NodeReadable,
   Writable as NodeWritable,
 } from "./stream.ts";
+import { OutgoingMessage } from "./_http_outgoing.ts";
 
 const METHODS = [
   "ACL",
@@ -360,12 +361,13 @@ export function createServer(handler?: ServerHandler) {
   return new Server(handler);
 }
 
-export { METHODS, STATUS_CODES };
+export { METHODS, OutgoingMessage, STATUS_CODES };
 export default {
   STATUS_CODES,
   METHODS,
   createServer,
   Server,
   IncomingMessage,
+  OutgoingMessage,
   ServerResponse,
 };
