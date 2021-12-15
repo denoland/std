@@ -1,7 +1,7 @@
 import { magenta } from "../../fmt/colors.ts";
 import { dirname, fromFileUrl, join } from "../../path/mod.ts";
 import { fail } from "../../testing/asserts.ts";
-import { config } from "./common.ts";
+import { config, getPathsFromTestSuites } from "./common.ts";
 
 /**
  * This script will run the test files specified in the configuration file
@@ -11,20 +11,16 @@ import { config } from "./common.ts";
  */
 
 const toolsPath = dirname(fromFileUrl(import.meta.url));
-const testPaths: string[] = [];
-for (const [dir, paths] of Object.entries(config.tests)) {
-  if (dir === "parallel" || dir === "internet") {
-    for (const path of paths) {
-      testPaths.push(join(config.suitesFolder, dir, path));
-    }
-  }
-}
+const testPaths = getPathsFromTestSuites(config.tests);
+const windowsIgnorePaths = new Set(getPathsFromTestSuites(config.windowsIgnore));
 
 const decoder = new TextDecoder();
 
 for await (const path of testPaths) {
+  const ignore = Deno.build.os === "windows" && windowsIgnorePaths.has(path);
   Deno.test({
     name: `Node.js compatibility "${path}"`,
+    ignore,
     fn: async () => {
       const cmd = [
         Deno.execPath(),
@@ -34,7 +30,7 @@ for await (const path of testPaths) {
         "--unstable",
         "--no-check",
         join("node", "_tools", "require.ts"),
-        join(toolsPath, path),
+        join(toolsPath, config.suitesFolder, path),
       ];
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided

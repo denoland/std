@@ -20,6 +20,7 @@ interface Config {
    * but they won't be regenerated if they are listed in the `ignore` configuration
    */
   tests: TestSuites;
+  windowsIgnore: TestSuites;
   suitesFolder: string;
   versionsFolder: string;
 }
@@ -35,3 +36,15 @@ export const ignoreList = Object.entries(config.ignore).reduce(
   },
   [],
 );
+
+export function getPathsFromTestSuites(suites: TestSuites): string[] {
+  const testPaths: string[] = [];
+  for (const [dir, paths] of Object.entries(suites)) {
+    if (dir === "parallel" || dir === "internet") {
+      for (const path of paths) {
+        testPaths.push(join(dir, path));
+      }
+    }
+  }
+  return testPaths;
+}
