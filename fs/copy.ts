@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import * as path from "../path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
+import { emptyDir, emptyDirSync } from "./empty_dir.ts"; 
 import { getFileInfoType, isSubdir } from "./_util.ts";
 import { assert } from "../_util/assert.ts";
 import { isWindows } from "../_util/os.ts";
@@ -171,6 +172,7 @@ async function copyDir(
     ...options,
     isFolder: true,
   });
+  
 
   if (!destStat) {
     await ensureDir(dest);
@@ -181,6 +183,10 @@ async function copyDir(
     assert(srcStatInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(srcStatInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
     await Deno.utime(dest, srcStatInfo.atime, srcStatInfo.mtime);
+  }
+
+  if (options.overwrite) {
+    emptyDir(dest);
   }
 
   for await (const entry of Deno.readDir(src)) {
@@ -205,6 +211,10 @@ function copyDirSync(src: string, dest: string, options: CopyOptions): void {
 
   if (!destStat) {
     ensureDirSync(dest);
+  }
+
+  if (options.overwrite) {
+    emptyDirSync(dest);
   }
 
   if (options.preserveTimestamps) {
