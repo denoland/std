@@ -4,6 +4,11 @@ import { dirname, fromFileUrl, join, relative } from "../../path/mod.ts";
 import { fail } from "../../testing/asserts.ts";
 import { config, testList } from "./common.ts";
 
+// If the test case is invoked like
+// deno test -A node/_tools/test.ts -- <test-names>
+// Use the test-names as filters
+const filters = Deno.args;
+
 /**
  * This script will run the test files specified in the configuration file
  *
@@ -19,6 +24,14 @@ const testsFolder = dirname(fromFileUrl(import.meta.url));
 const decoder = new TextDecoder();
 
 for await (const file of dir) {
+  // If filter patterns are given and any pattern doesn't match
+  // to the file path, then skip the case
+  if (
+    filters.length > 0 &&
+    filters.every((pattern) => !file.path.includes(pattern))
+  ) {
+    continue;
+  }
   Deno.test({
     name: relative(testsFolder, file.path),
     fn: async () => {
