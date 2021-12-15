@@ -81,4 +81,4 @@ export default {
   TIMEOUT_MAX,
   setUnrefTimeout,
   getTimerDuration,
-}
+};
