@@ -101,9 +101,10 @@ const codesWarned = new Set();
 // Returns a modified function which warns once by default.
 // If --no-deprecation is set, then it is a no-op.
 export function deprecate(fn, msg, code) {
-  if (process.noDeprecation === true) {
-    return fn;
-  }
+  // TODO(kt3k): Uncomment this
+  // if (process.noDeprecation === true) {
+  //  return fn;
+  // }
 
   if (code !== undefined) {
     validateString(code, "code");
