@@ -16,7 +16,7 @@ import { OutgoingMessage } from "./_http_outgoing.ts";
 import Agent from "./_http_agent.js";
 import { Buffer } from "./buffer.ts";
 import { defaultTriggerAsyncIdScope } from "./internal/async_hooks.ts";
-import { searchParamsSymbol, urlToHttpOptions } from "./internal/url.ts";
+import { urlToHttpOptions } from "./internal/url.ts";
 import { kNeedDrain, kOutHeaders } from "./internal/http.ts";
 import {
   connResetException,
@@ -70,10 +70,7 @@ export function ClientRequest(input, options, cb) {
   if (typeof input === "string") {
     const urlStr = input;
     input = urlToHttpOptions(new URL(urlStr));
-  } else if (
-    input && input[searchParamsSymbol] &&
-    input[searchParamsSymbol][searchParamsSymbol]
-  ) {
+  } else if (input instanceof URL) {
     // url.URL instance
     input = urlToHttpOptions(input);
   } else {

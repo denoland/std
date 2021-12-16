@@ -9,8 +9,100 @@ import { FreeList } from "./internal/freelist.ts";
 // @deno-types="./vendor/http_parser.d.ts"
 import { HTTPParser, HTTPParserJS } from "./vendor/http_parser.js";
 
+function parserOnHeaders() {
+  // skip
+}
+
+function parserOnHeadersComplete(
+  this: {
+    onIncoming:(res: unknown, shouldKeepAlive: boolean ) => void,
+    socket: unknown,
+  },
+  versionMajor: unknown,
+  versionMinor: unknown,
+  headers: unknown,
+  method: unknown,
+  url: unknown,
+  statusCode: unknown,
+  statusMessage: unknown,
+  upgrade: unknown,
+  shouldKeepAlive: boolean,
+) {
+  const incoming = Object.assign(this.socket, {
+    versionMajor,
+    versionMinor,
+    headers,
+    method,
+    url,
+    statusCode,
+    statusMessage,
+    upgrade,
+  });
+  this.onIncoming(incoming, shouldKeepAlive)
+}
+
+function parserOnBody(
+  // deno-lint-ignore no-explicit-any
+  this: { incoming: any, socket: any },
+  b: Buffer,
+  start: number,
+  len: number,
+) {
+  const stream = this.incoming;
+
+  // If the stream has already been removed, then drop it.
+  if (stream === null)
+    return;
+
+  // Pretend this was the result of a stream._read call.
+  if (len > 0 && !stream._dumped) {
+    const slice = b.slice(start, start + len);
+    const ret = stream.push(slice);
+    if (!ret) {
+      if (this.socket) {
+        this.socket.pause();
+      }
+    }
+  }
+}
+
+function parserOnMessageComplete(
+  // deno-lint-ignore no-explicit-any
+  this: { incoming: any, _headers: any, _url: any, socket: any }
+) {
+  // deno-lint-ignore no-this-alias
+  const parser = this;
+  const stream = parser.incoming;
+
+  if (stream !== null) {
+    stream.complete = true;
+    // Emit any trailing headers.
+    const headers = parser._headers;
+    if (headers.length) {
+      stream._addHeaderLines(headers, headers.length);
+      parser._headers = [];
+      parser._url = '';
+    }
+
+    // For emit end event
+    stream.push(null);
+  }
+
+  // Force to read the next incoming message
+  const socket = parser.socket;
+  if (socket && !socket._paused && socket.readable)
+    socket.resume();
+}
+
 export const parsers = new FreeList("parsers", 1000, function parsersCb() {
   const parser = new HTTPParser();
+
+  parser[HTTPParser.kOnHeaders] = parserOnHeaders;
+  // deno-lint-ignore no-explicit-any
+  (parser as any)[HTTPParser.kOnHeadersComplete] = parserOnHeadersComplete;
+  parser[HTTPParser.kOnBody] = parserOnBody;
+  parser[HTTPParser.kOnMessageComplete] = parserOnMessageComplete;
+
   return parser;
 });
 

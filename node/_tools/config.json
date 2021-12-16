@@ -169,7 +169,6 @@
       "test-http-agent-close.js",
       "test-http-agent-getname.js",
       "test-http-agent-timeout-option.js",
-      "test-http-client-abort-destroy.js",
       "test-http-client-abort-event.js",
       "test-http-client-abort-keep-alive-destroy-res.js",
       "test-http-client-abort-keep-alive-queued-tcp-socket.js",
