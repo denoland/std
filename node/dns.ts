@@ -26,7 +26,7 @@ import {
   validateOneOf,
   validateString,
 } from "./internal/validators.js";
-import { isIP } from "./_net.ts";
+import { isIP } from "./internal/net.ts";
 import {
   emitInvalidHostnameWarning,
   getDefaultVerbatim,
@@ -39,7 +39,7 @@ import {
   getaddrinfo,
   GetAddrInfoReqWrap,
 } from "./internal_binding/cares_wrap.ts";
-import { toASCII } from "./_idna.ts";
+import { toASCII } from "./internal/idna.ts";
 
 export interface LookupOptions {
   family?: number | undefined;

@@ -32,7 +32,7 @@ import { ownerSymbol } from "./symbols.ts";
 import { codeMap } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
 import { kStreamBaseField } from "./stream_wrap.ts";
-import { isIP } from "../_net.ts";
+import { isIP } from "../internal/net.ts";
 
 /** The type of TCP socket. */
 enum socketType {

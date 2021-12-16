@@ -1,8 +1,7 @@
-import { walk } from "../../fs/walk.ts";
 import { magenta } from "../../fmt/colors.ts";
-import { dirname, fromFileUrl, join, relative } from "../../path/mod.ts";
+import { dirname, fromFileUrl, join } from "../../path/mod.ts";
 import { fail } from "../../testing/asserts.ts";
-import { config, testList } from "./common.ts";
+import { config, getPathsFromTestSuites } from "./common.ts";
 
 // If the test case is invoked like
 // deno test -A node/_tools/test.ts -- <test-names>
@@ -16,24 +15,27 @@ const filters = Deno.args;
  * code for the test is reported, the test suite will fail immediately
  */
 
-const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
-  includeDirs: false,
-  match: testList,
-});
-const testsFolder = dirname(fromFileUrl(import.meta.url));
+const toolsPath = dirname(fromFileUrl(import.meta.url));
+const testPaths = getPathsFromTestSuites(config.tests);
+const windowsIgnorePaths = new Set(
+  getPathsFromTestSuites(config.windowsIgnore),
+);
+
 const decoder = new TextDecoder();
 
-for await (const file of dir) {
+for await (const path of testPaths) {
   // If filter patterns are given and any pattern doesn't match
   // to the file path, then skip the case
   if (
     filters.length > 0 &&
-    filters.every((pattern) => !file.path.includes(pattern))
+    filters.every((pattern) => !path.includes(pattern))
   ) {
     continue;
   }
+  const ignore = Deno.build.os === "windows" && windowsIgnorePaths.has(path);
   Deno.test({
-    name: relative(testsFolder, file.path),
+    name: `Node.js compatibility "${path}"`,
+    ignore,
     fn: async () => {
       const cmd = [
         Deno.execPath(),
@@ -43,7 +45,7 @@ for await (const file of dir) {
         "--unstable",
         "--no-check",
         join("node", "_tools", "require.ts"),
-        file.path,
+        join(toolsPath, config.suitesFolder, path),
       ];
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided
@@ -65,7 +67,7 @@ for await (const file of dir) {
       if (rawOutput.length) console.log(decoder.decode(rawOutput));
 
       if (status.code !== 0) {
-        console.log(`Error: "${file.path}" failed`);
+        console.log(`Error: "${path}" failed`);
         console.log(
           "You can repeat only this test with the command:",
           magenta(cmd.join(" ")),

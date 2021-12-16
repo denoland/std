@@ -21,7 +21,7 @@
 
 import { notImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
-import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./_net.ts";
+import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./internal/net.ts";
 import { Duplex } from "./stream.ts";
 import {
   asyncIdSymbol,
