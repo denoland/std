@@ -17,6 +17,7 @@
         ".git",
         "_wasm_crypto/target",
         "cov",
+        "node/vendor",
         "node/_tools/versions",
         "node/_tools/suites",
         "wasi/testdata"

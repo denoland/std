@@ -6,6 +6,7 @@ import assert from "./internal/assert.js";
 import EE from "./events.ts";
 import { Stream } from "./stream.ts";
 import * as internalUtil from "./internal/util.js";
+import type { Socket } from "./net.ts";
 import { kNeedDrain, kOutHeaders, utcDate } from "./internal/http.ts";
 import { Buffer } from "./buffer.ts";
 import {
@@ -904,7 +905,8 @@ function onFinish(outmsg: any) {
 OutgoingMessage.prototype.end = function end(
   // deno-lint-ignore no-explicit-any
   chunk: any,
-  encoding: string | null,
+  // deno-lint-ignore no-explicit-any
+  encoding: any,
   // deno-lint-ignore no-explicit-any
   callback: any,
 ) {
@@ -1029,8 +1031,7 @@ OutgoingMessage.prototype._flush = function _flush() {
   }
 };
 
-// deno-lint-ignore no-explicit-any
-OutgoingMessage.prototype._flushOutput = function _flushOutput(socket: any) {
+OutgoingMessage.prototype._flushOutput = function _flushOutput(socket: Socket) {
   while (this[kCorked]) {
     this[kCorked]--;
     socket.cork();

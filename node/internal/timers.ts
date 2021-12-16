@@ -19,9 +19,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { validateCallback, validateNumber } from "./internal/validators.js";
-import { ERR_OUT_OF_RANGE } from "./_errors.ts";
-import { emitWarning } from "./process.ts";
+import { validateCallback, validateNumber } from "./validators.js";
+import { ERR_OUT_OF_RANGE } from "../_errors.ts";
+import { emitWarning } from "../process.ts";
 
 export const kTimeout = Symbol("timeout");
 
@@ -75,3 +75,10 @@ export function getTimerDuration(msecs: number, name: string) {
 
   return msecs;
 }
+
+export default {
+  kTimeout,
+  TIMEOUT_MAX,
+  setUnrefTimeout,
+  getTimerDuration,
+};

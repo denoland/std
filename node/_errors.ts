@@ -2781,3 +2781,10 @@ function extractOsErrorNumberFromErrorMessage(e: unknown): number | undefined {
 
   return undefined;
 }
+
+export function connResetException(msg: string) {
+  const ex = new Error(msg);
+  // deno-lint-ignore no-explicit-any
+  (ex as any).code = "ECONNRESET";
+  return ex;
+}

@@ -57,7 +57,6 @@ const {
   kPromiseResolve,
   kTotals,
   kCheck,
-  kExecutionAsyncId,
   kAsyncIdCounter,
   kDefaultTriggerAsyncId,
   kStackLength,
@@ -223,10 +222,11 @@ export function newAsyncId(): number {
 // the user to safeguard this call and make sure it's zero'd out when the
 // constructor is complete.
 export function getDefaultTriggerAsyncId() {
-  const defaultTriggerAsyncId = async_id_fields[kDefaultTriggerAsyncId];
+  const defaultTriggerAsyncId =
+    async_id_fields[async_wrap.UidFields.kDefaultTriggerAsyncId];
   // If defaultTriggerAsyncId isn't set, use the executionAsyncId
   if (defaultTriggerAsyncId < 0) {
-    return async_id_fields[kExecutionAsyncId];
+    return async_id_fields[async_wrap.UidFields.kExecutionAsyncId];
   }
   return defaultTriggerAsyncId;
 }

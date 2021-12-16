@@ -59,12 +59,12 @@ import {
   writeGeneric,
   writevGeneric,
 } from "./internal/stream_base_commons.ts";
-import { kTimeout } from "./_timers.ts";
+import { kTimeout } from "./internal/timers.ts";
 import { nextTick } from "./_next_tick.ts";
 import {
   DTRACE_NET_SERVER_CONNECTION,
   DTRACE_NET_STREAM_END,
-} from "./_dtrace.ts";
+} from "./internal/dtrace.ts";
 import { Buffer } from "./buffer.ts";
 import type { LookupOneOptions } from "./dns.ts";
 import {
