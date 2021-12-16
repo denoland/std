@@ -1,3 +1,30 @@
+### 0.118.0 / 2021.12.16
+
+- [BREAKING] Remove 'findLast' from 'collections' module (#1527)
+- [BREAKING] Remove 'findLastIndex' from 'collections' module (#1528)
+- [BREAKING] Remove 'server_legacy' from 'http' module (#1648)
+- [BREAKING] Remove 'ws' module (#1647)
+- [BREAKING] Remove assertThrowsAsync from 'testing/' (#1646)
+- [BREAKING] Remove Go-style address in 'http' module (#1660)
+- [BREAKING] Remove onSignal from 'signals/' (#1644)
+- feat(http): add onError option to serveListener and serveTls (#1679)
+- feat(node): add child_process.fork (#1695)
+- feat(node): add http.Agent (#1706)
+- feat(node): add http.OutgoingMessage (#1705)
+- feat(node): add http.request (#1712)
+- feat(node): add missing url.parse (#1667)
+- feat(node): add mock inspector module (#1688)
+- feat(node): add mock zlib module (#1698)
+- feat(node): add util.isDeepStrictEqual (#1556)
+- feat(node): export fs.Stats class (#1696)
+- feat(node/fs): add fs.access (#1687)
+- feat(node/url): add url.resolveObject (#1691)
+- feat(node/util): add util.deprecate (#1697)
+- feat(toml): align keys by option (#1693)
+- fix(datetime): fix bug for parse at the end of the month (#1676)
+- fix(node/util/inspect): validate invalid options (#1672)
+- fix(toml): parse declaration correctly (#1682)
+
 ### 0.117.0 / 2021.12.03
 
 - feat(http): introduce onError option on ServerInit (#1621)
