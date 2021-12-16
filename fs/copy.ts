@@ -186,7 +186,7 @@ async function copyDir(
   }
 
   if (options.overwrite) {
-    emptyDir(dest);
+    await emptyDir(dest);
   }
 
   for await (const entry of Deno.readDir(src)) {
