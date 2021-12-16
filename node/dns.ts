@@ -39,7 +39,7 @@ import {
   getaddrinfo,
   GetAddrInfoReqWrap,
 } from "./internal_binding/cares_wrap.ts";
-import { toASCII } from "./_idna.ts";
+import { toASCII } from "./internal/idna.ts";
 
 export interface LookupOptions {
   family?: number | undefined;

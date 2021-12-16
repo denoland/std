@@ -64,7 +64,7 @@ import {
   CHAR_ZERO_WIDTH_NOBREAK_SPACE,
 } from "../path/_constants.ts";
 import * as path from "./path.ts";
-import { toASCII } from "./_idna.ts";
+import { toASCII } from "./internal/idna.ts";
 import { isWindows, osType } from "../_util/os.ts";
 import { encodeStr, hexTable } from "./internal/querystring.ts";
 
