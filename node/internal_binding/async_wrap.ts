@@ -24,6 +24,15 @@
 // - https://github.com/nodejs/node/blob/master/src/async_wrap.cc
 // - https://github.com/nodejs/node/blob/master/src/async_wrap.h
 
+export function registerDestroyHook(
+  // deno-lint-ignore no-explicit-any
+  _target: any,
+  _asyncId: number,
+  _prop: { destroyed: boolean },
+) {
+  // TODO(kt3k): implement actual procedures
+}
+
 export enum constants {
   kInit,
   kBefore,
@@ -39,6 +48,10 @@ export enum constants {
   kUsesExecutionAsyncResource,
   kStackLength,
 }
+
+const asyncHookFields = new Uint32Array(Object.keys(constants).length);
+
+export { asyncHookFields as async_hook_fields };
 
 // Increment the internal id counter and return the value.
 export function newAsyncId() {

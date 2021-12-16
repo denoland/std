@@ -52,7 +52,9 @@
   },
   "tests": {
     "common": [
+      "countdown.js",
       "dns.js",
+      "duplexpair.js",
       "fixtures.js",
       "internet.js"
     ],
@@ -163,6 +165,7 @@
       "test-fs-write-file-invalid-path.js",
       "test-fs-write-file-sync.js",
       "test-fs-write-file.js",
+      "test-http-agent-getname.js",
       "test-http-outgoing-buffer.js",
       "test-http-outgoing-destroy.js",
       "test-http-outgoing-internal-headernames-getter.js",
