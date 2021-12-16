@@ -1,13 +1,8 @@
 {
   "nodeVersion": "16.13.0",
   "ignore": {
-    "common": [
-      "index.js",
-      "tmpdir.js"
-    ],
-    "fixtures": [
-      "child-process-spawn-node.js"
-    ],
+    "common": ["index.js", "tmpdir.js"],
+    "fixtures": ["child-process-spawn-node.js"],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
@@ -46,6 +41,7 @@
       "test-util-inspect-namespace.js",
       "test-util-inspect-proxy.js",
       "test-util-inspect.js",
+      "test-util-isDeepStrictEqual.js",
       "test-util-types.js",
       "test-util.js"
     ]
@@ -358,6 +354,7 @@
       "test-util-inspect-namespace.js",
       "test-util-inspect-proxy.js",
       "test-util-inspect.js",
+      "test-util-isDeepStrictEqual.js",
       "test-util-types.js",
       "test-util.js"
     ]
