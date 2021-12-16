@@ -165,7 +165,7 @@ export class ServerResponse extends NodeWritable {
 
   // deno-lint-ignore no-explicit-any
   end(chunk?: any, encoding?: any, cb?: any): this {
-    if (!chunk) {
+    if (!chunk && this.#headers.has("transfer-encoding")) {
       // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
       // the trailing "0\r\n", but respondWith() just hangs when I try that.
       this.#headers.set("content-length", "0");
