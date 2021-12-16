@@ -1,6 +1,8 @@
 // This aliases are used in some node tests and represent a legacy alias
 // for the stream modules
 // deno-lint-ignore camelcase
+import _http_agent from "./_http_agent.js";
+// deno-lint-ignore camelcase
 import _http_outgoing from "./_http_outgoing.ts";
 // deno-lint-ignore camelcase
 import _stream_duplex from "./internal/streams/duplex.js";
@@ -15,6 +17,8 @@ import _stream_writable from "./internal/streams/writable.js";
 
 import assert from "./assert.ts";
 import assertStrict from "./assert/strict.ts";
+// deno-lint-ignore camelcase
+import async_hooks from "./async_hooks.ts";
 import buffer from "./buffer.ts";
 import childProcess from "./child_process.ts";
 import console from "./console.ts";
@@ -69,6 +73,7 @@ import zlib from "./zlib.ts";
 
 // Canonical mapping of supported modules
 export default {
+  _http_agent,
   _http_outgoing,
   _stream_duplex,
   _stream_passthrough,
@@ -77,6 +82,7 @@ export default {
   _stream_writable,
   assert,
   "assert/strict": assertStrict,
+  async_hooks,
   buffer,
   crypto,
   console,
