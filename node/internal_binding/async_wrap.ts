@@ -58,7 +58,7 @@ export function newAsyncId() {
   return ++asyncIdFields[constants.kAsyncIdCounter];
 }
 
-enum UidFields {
+export enum UidFields {
   kExecutionAsyncId,
   kTriggerAsyncId,
   kAsyncIdCounter,

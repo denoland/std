@@ -350,7 +350,7 @@ ClientRequest.prototype.destroy = function destroy(err) {
 
   // If we're aborting, we don't care about any more response data.
   if (this.res) {
-    this.res._dump();
+    this.res._dump?.();
   }
 
   this[kError] = err;

@@ -228,7 +228,11 @@ export class IncomingMessage extends NodeReadable {
 
 type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
 
-export class Server extends EventEmitter {
+export function Server(handler?: ServerHandler): ServerImpl {
+  return new ServerImpl(handler);
+}
+
+class ServerImpl extends EventEmitter {
   #httpConnections: Set<Deno.HttpConn> = new Set();
   #listener?: Deno.Listener;
 
@@ -359,8 +363,10 @@ export class Server extends EventEmitter {
   }
 }
 
+Server.prototype = ServerImpl.prototype;
+
 export function createServer(handler?: ServerHandler) {
-  return new Server(handler);
+  return Server(handler);
 }
 
 /**

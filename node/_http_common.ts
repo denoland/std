@@ -15,8 +15,8 @@ function parserOnHeaders() {
 
 function parserOnHeadersComplete(
   this: {
-    onIncoming:(res: unknown, shouldKeepAlive: boolean ) => void,
-    socket: unknown,
+    onIncoming: (res: unknown, shouldKeepAlive: boolean) => void;
+    socket: unknown;
   },
   versionMajor: unknown,
   versionMinor: unknown,
@@ -28,6 +28,8 @@ function parserOnHeadersComplete(
   upgrade: unknown,
   shouldKeepAlive: boolean,
 ) {
+  // FIXME(kt3k): Implement IncomingMessage class correctly.
+  // Uses socket object as incoming for now
   const incoming = Object.assign(this.socket, {
     versionMajor,
     versionMinor,
@@ -38,12 +40,12 @@ function parserOnHeadersComplete(
     statusMessage,
     upgrade,
   });
-  this.onIncoming(incoming, shouldKeepAlive)
+  this.onIncoming(incoming, shouldKeepAlive);
 }
 
 function parserOnBody(
   // deno-lint-ignore no-explicit-any
-  this: { incoming: any, socket: any },
+  this: { incoming: any; socket: any },
   b: Buffer,
   start: number,
   len: number,
@@ -51,8 +53,9 @@ function parserOnBody(
   const stream = this.incoming;
 
   // If the stream has already been removed, then drop it.
-  if (stream === null)
+  if (stream == null) {
     return;
+  }
 
   // Pretend this was the result of a stream._read call.
   if (len > 0 && !stream._dumped) {
@@ -68,20 +71,20 @@ function parserOnBody(
 
 function parserOnMessageComplete(
   // deno-lint-ignore no-explicit-any
-  this: { incoming: any, _headers: any, _url: any, socket: any }
+  this: { incoming: any; _headers: any; _url: any; socket: any },
 ) {
   // deno-lint-ignore no-this-alias
   const parser = this;
   const stream = parser.incoming;
 
-  if (stream !== null) {
+  if (stream != null) {
     stream.complete = true;
     // Emit any trailing headers.
     const headers = parser._headers;
     if (headers.length) {
       stream._addHeaderLines(headers, headers.length);
       parser._headers = [];
-      parser._url = '';
+      parser._url = "";
     }
 
     // For emit end event
@@ -90,8 +93,9 @@ function parserOnMessageComplete(
 
   // Force to read the next incoming message
   const socket = parser.socket;
-  if (socket && !socket._paused && socket.readable)
+  if (socket && !socket._paused && socket.readable) {
     socket.resume();
+  }
 }
 
 export const parsers = new FreeList("parsers", 1000, function parsersCb() {
