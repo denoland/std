@@ -112,7 +112,7 @@ Deno.test({
       match(
         "[[:alnum:]abc]/bar.txt",
         "1/bar.txt",
-        { globstar: false },
+         { globstar: false },
       ),
     );
     assert(
@@ -159,7 +159,7 @@ Deno.test({
       assert(match("[[:upper:]]", c, { globstar: false }), c);
     }
     for (const c of "09AZaz_") {
-      assert(match("[[:word:]]", c, { globstar: false }), c);
+      assert(match("[[:word:]]", c, {  globstar: false }), c);
     }
     for (const c of "09AFaf") {
       assert(match("[[:xdigit:]]", c, { globstar: false }), c);
@@ -293,9 +293,7 @@ Deno.test({
     assert(match("?(ba*|qux)baz.txt", "batttbaz.txt", { extended: true }));
     assert(match("?(ba*|qux)baz.txt", "quxbaz.txt", { extended: true }));
     assert(match("?(ba?(z|r)|qux)baz.txt", "bazbaz.txt", { extended: true }));
-    assert(
-      match("?(ba?(z|?(r))|qux)baz.txt", "bazbaz.txt", { extended: true }),
-    );
+    assert(match("?(ba?(z|?(r))|qux)baz.txt", "bazbaz.txt", { extended: true }));
     assert(!match("?(foo|bar)baz.txt", "foobarbaz.txt", { extended: true }));
     assert(!match("?(ba[zr]|qux)baz.txt", "bazquxbaz.txt", { extended: true }));
     assert(!match("?(ba[!zr]|qux)baz.txt", "bazbaz.txt", { extended: true }));
@@ -320,14 +318,8 @@ Deno.test({
     assert(match("*(foo|b*[rt]).txt", "blat.txt", { extended: true }));
     assert(!match("*(foo|b*[rt]).txt", "tlat.txt", { extended: true }));
     assert(match("*(*).txt", "whatever.txt", { extended: true }));
-    assert(
-      match("*(foo|bar)/**/*.txt", "foo/hello/world/bar.txt", {
-        extended: true,
-      }),
-    );
-    assert(
-      match("*(foo|bar)/**/*.txt", "foo/world/bar.txt", { extended: true }),
-    );
+    assert(match("*(foo|bar)/**/*.txt", "foo/hello/world/bar.txt", { extended: true }));
+    assert(match("*(foo|bar)/**/*.txt", "foo/world/bar.txt", { extended: true }));
   },
 });
 
