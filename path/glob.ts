@@ -103,7 +103,7 @@ const rangeEscapeChars = ["-", "\\", "]"];
 export function globToRegExp(
   glob: string,
   {
-    extended = true,
+    extended = false,
     globstar: globstarOption = true,
     os = osType,
     caseInsensitive = false,
