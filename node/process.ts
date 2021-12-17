@@ -254,7 +254,7 @@ class Process extends EventEmitter {
   env = env;
 
   /** https://nodejs.org/api/process.html#process_process_execargv */
-  execArgv = [];
+  execArgv: string[] = [];
 
   /** https://nodejs.org/api/process.html#process_process_exit_code */
   exit = exit;
@@ -390,6 +390,15 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#processumaskmask */
   umask = Deno.umask;
+
+  /** https://nodejs.org/api/process.html#processgetuid */
+  getuid(): number {
+    // TODO(kt3k): return user id in mac and linux
+    return NaN;
+  }
+
+  // TODO(kt3k): Implement this when we added -e option to node compat mode
+  _eval: string | undefined = undefined;
 }
 
 /** https://nodejs.org/api/process.html#process_process */

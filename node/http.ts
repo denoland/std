@@ -1,3 +1,4 @@
+import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions } from "./net.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
@@ -9,6 +10,9 @@ import {
   Readable as NodeReadable,
   Writable as NodeWritable,
 } from "./stream.ts";
+import { OutgoingMessage } from "./_http_outgoing.ts";
+import { Agent } from "./_http_agent.js";
+import { ClientRequest } from "./_http_client.js";
 
 const METHODS = [
   "ACL",
@@ -51,8 +55,7 @@ type Chunk = string | Buffer | Uint8Array;
 
 function chunkToU8(chunk: Chunk): Uint8Array {
   if (typeof chunk === "string") {
-    // @ts-ignore Deno.core is not defined in types
-    return Deno.core.encode(chunk);
+    return core.encode(chunk);
   }
   return chunk;
 }
@@ -162,7 +165,7 @@ export class ServerResponse extends NodeWritable {
 
   // deno-lint-ignore no-explicit-any
   end(chunk?: any, encoding?: any, cb?: any): this {
-    if (!chunk) {
+    if (!chunk && this.#headers.has("transfer-encoding")) {
       // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
       // the trailing "0\r\n", but respondWith() just hangs when I try that.
       this.#headers.set("content-length", "0");
@@ -225,7 +228,11 @@ export class IncomingMessage extends NodeReadable {
 
 type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
 
-export class Server extends EventEmitter {
+export function Server(handler?: ServerHandler): ServerImpl {
+  return new ServerImpl(handler);
+}
+
+class ServerImpl extends EventEmitter {
   #httpConnections: Set<Deno.HttpConn> = new Set();
   #listener?: Deno.Listener;
 
@@ -356,16 +363,106 @@ export class Server extends EventEmitter {
   }
 }
 
+Server.prototype = ServerImpl.prototype;
+
 export function createServer(handler?: ServerHandler) {
-  return new Server(handler);
+  return Server(handler);
 }
 
-export { METHODS, STATUS_CODES };
+/**
+ * @typedef {object} HTTPRequestOptions
+ * @property {httpAgent.Agent | boolean} [agent]
+ * @property {string} [auth]
+ * @property {Function} [createConnection]
+ * @property {number} [defaultPort]
+ * @property {number} [family]
+ * @property {object} [headers]
+ * @property {number} [hints]
+ * @property {string} [host]
+ * @property {string} [hostname]
+ * @property {boolean} [insecureHTTPParser]
+ * @property {string} [localAddress]
+ * @property {number} [localPort]
+ * @property {Function} [lookup]
+ * @property {number} [maxHeaderSize]
+ * @property {string} [method]
+ * @property {string} [path]
+ * @property {number} [port]
+ * @property {string} [protocol]
+ * @property {boolean} [setHost]
+ * @property {string} [socketPath]
+ * @property {number} [timeout]
+ * @property {AbortSignal} [signal]
+ */
+interface HTTPRequestOptions {
+  agent?: Agent;
+  auth?: string;
+  createConnection?: () => unknown;
+  defaultPort?: number;
+  family?: number;
+  headers?: Record<string, string>;
+  hints?: number;
+  host?: string;
+  hostname?: string;
+  insecureHTTPParser?: boolean;
+  localAddress?: string;
+  localPort?: number;
+  lookup?: () => void;
+  maxHeaderSize?: number;
+  method?: string;
+  path?: string;
+  port?: number;
+  protocol?: string;
+  setHost?: boolean;
+  socketPath?: string;
+  timeout?: number;
+  signal?: AbortSignal;
+}
+
+/**
+ * Makes an HTTP request.
+ * @param url
+ * @param options
+ * @param cb
+ */
+export function request(
+  url: string | URL,
+  options?: HTTPRequestOptions,
+  // deno-lint-ignore ban-types
+  cb?: Function,
+): ClientRequest {
+  return new ClientRequest(url, options, cb);
+}
+
+/**
+ * Makes a `GET` HTTP request.
+ * @param url
+ * @param options
+ * @param cb
+ */
+export function get(
+  url: string | URL,
+  options?: HTTPRequestOptions,
+  // deno-lint-ignore ban-types
+  cb?: Function,
+) {
+  const req = request(url, options, cb);
+  // deno-lint-ignore no-explicit-any
+  (req as any).end();
+  return req;
+}
+
+export { Agent, ClientRequest, METHODS, OutgoingMessage, STATUS_CODES };
 export default {
+  Agent,
+  ClientRequest,
   STATUS_CODES,
   METHODS,
   createServer,
   Server,
   IncomingMessage,
+  OutgoingMessage,
   ServerResponse,
+  request,
+  get,
 };

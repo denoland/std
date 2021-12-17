@@ -21,6 +21,14 @@ import {
 } from "./internal_binding/uv.ts";
 import { assert } from "../_util/assert.ts";
 import { fileURLToPath } from "./url.ts";
+import { isWindows } from "../_util/os.ts";
+import { os as osConstants } from "./internal_binding/constants.ts";
+const {
+  errno: {
+    ENOTDIR,
+    ENOENT,
+  },
+} = osConstants;
 
 export { errorMap };
 
@@ -75,7 +83,9 @@ function addNumericalSeparator(val: string) {
 }
 
 /** This function removes unnecessary frames from Node.js core errors. */
-export function hideStackFrames(fn: GenericFunction) {
+export function hideStackFrames<T extends GenericFunction = GenericFunction>(
+  fn: T,
+): T {
   // We rename the functions that will be hidden to cut off the stacktrace
   // at the outermost one.
   const hidden = "__node_internal_" + fn.name;
@@ -115,8 +125,8 @@ export const uvExceptionWithHostPort = hideStackFrames(
   function uvExceptionWithHostPort(
     err: number,
     syscall: string,
-    address: string,
-    port?: number,
+    address?: string | null,
+    port?: number | null,
   ) {
     const { 0: code, 1: uvmsg } = uvErrmapGet(err) || uvUnmappedError;
     const message = `${syscall} ${code}: ${uvmsg}`;
@@ -152,7 +162,7 @@ export const uvExceptionWithHostPort = hideStackFrames(
  * @return A `ErrnoException`
  */
 export const errnoException = hideStackFrames(
-  function errnoException(err, syscall, original): ErrnoException {
+  function errnoException(err, syscall, original?): ErrnoException {
     const code = getSystemErrorName(err);
     const message = original
       ? `${syscall} ${code} ${original}`
@@ -240,7 +250,7 @@ export const exceptionWithHostPort = hideStackFrames(
     syscall: string,
     address: string,
     port: number,
-    additional: string,
+    additional?: string,
   ) {
     const code = getSystemErrorName(err);
     let details = "";
@@ -1518,7 +1528,7 @@ export class ERR_INSPECTOR_NOT_WORKER extends NodeError {
   }
 }
 export class ERR_INVALID_ASYNC_ID extends NodeRangeError {
-  constructor(x: string, y: string) {
+  constructor(x: string, y: string | number) {
     super(
       "ERR_INVALID_ASYNC_ID",
       `Invalid ${x} value: ${y}`,
@@ -2729,6 +2739,21 @@ export class ERR_INTERNAL_ASSERTION extends NodeError {
   }
 }
 
+// Using `fs.rmdir` on a path that is a file results in an ENOENT error on Windows and an ENOTDIR error on POSIX.
+export class ERR_FS_RMDIR_ENOTDIR extends NodeSystemError {
+  constructor(path: string) {
+    const code = isWindows ? "ENOENT" : "ENOTDIR";
+    const ctx: NodeSystemErrorCtx = {
+      message: "not a directory",
+      path,
+      syscall: "rmdir",
+      code,
+      errno: isWindows ? ENOENT : ENOTDIR,
+    };
+    super(code, ctx, "Path is not a directory");
+  }
+}
+
 interface UvExceptionContext {
   syscall: string;
 }
@@ -2755,4 +2780,11 @@ function extractOsErrorNumberFromErrorMessage(e: unknown): number | undefined {
   }
 
   return undefined;
+}
+
+export function connResetException(msg: string) {
+  const ex = new Error(msg);
+  // deno-lint-ignore no-explicit-any
+  (ex as any).code = "ECONNRESET";
+  return ex;
 }

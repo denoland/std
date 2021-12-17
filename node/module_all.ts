@@ -1,6 +1,10 @@
 // This aliases are used in some node tests and represent a legacy alias
 // for the stream modules
 // deno-lint-ignore camelcase
+import _http_agent from "./_http_agent.js";
+// deno-lint-ignore camelcase
+import _http_outgoing from "./_http_outgoing.ts";
+// deno-lint-ignore camelcase
 import _stream_duplex from "./internal/streams/duplex.js";
 // deno-lint-ignore camelcase
 import _stream_passthrough from "./internal/streams/passthrough.js";
@@ -13,6 +17,8 @@ import _stream_writable from "./internal/streams/writable.js";
 
 import assert from "./assert.ts";
 import assertStrict from "./assert/strict.ts";
+// deno-lint-ignore camelcase
+import async_hooks from "./async_hooks.ts";
 import buffer from "./buffer.ts";
 import childProcess from "./child_process.ts";
 import console from "./console.ts";
@@ -25,10 +31,15 @@ import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
 import internalFsUtils from "./internal/fs/utils.js";
 import http from "./http.ts";
+import inspector from "./inspector.ts";
 import internalErrors from "./internal/errors.js";
+import internalHttp from "./internal/http.ts";
 import internalReadlineUtils from "./internal/readline/utils.js";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.js";
 import internalStreamsAddBufferList from "./internal/streams/buffer_list.js";
+import internalStreamsState from "./internal/streams/state.js";
+import internalTestBinding from "./internal/test/binding.ts";
+import internalTimers from "./internal/timers.ts";
 import internalUtilInspect from "./internal/util/inspect.js";
 import net from "./net.ts";
 import os from "./os.ts";
@@ -50,6 +61,7 @@ import url from "./url.ts";
 import util from "./util.ts";
 import vm from "./vm.ts";
 import wasi from "./wasi.ts";
+import zlib from "./zlib.ts";
 
 // TODO(kt3k): add these modules when implemented
 // import cluster from "./cluster.ts";
@@ -59,10 +71,11 @@ import wasi from "./wasi.ts";
 // import sys from "./sys.ts";
 // import tls from "./tls.ts";
 // import workerThreads from "./worker_threads.ts";
-// import zlib from "./zlib.ts";
 
 // Canonical mapping of supported modules
 export default {
+  _http_agent,
+  _http_outgoing,
   _stream_duplex,
   _stream_passthrough,
   _stream_readable,
@@ -70,6 +83,7 @@ export default {
   _stream_writable,
   assert,
   "assert/strict": assertStrict,
+  async_hooks,
   buffer,
   crypto,
   console,
@@ -81,12 +95,17 @@ export default {
   fs,
   "fs/promises": fsPromises,
   http,
+  inspector,
   "internal/errors": internalErrors,
+  "internal/fs/utils": internalFsUtils,
+  "internal/http": internalHttp,
   "internal/readline/utils": internalReadlineUtils,
   "internal/streams/add-abort-signal": internalStreamsAddAbortSignal,
   "internal/streams/buffer_list": internalStreamsAddBufferList,
+  "internal/streams/state": internalStreamsState,
+  "internal/test/binding": internalTestBinding,
+  "internal/timers": internalTimers,
   "internal/util/inspect": internalUtilInspect,
-  "internal/fs/utils": internalFsUtils,
   net,
   os,
   path,
@@ -106,6 +125,6 @@ export default {
   url,
   util,
   vm,
-  zlib: {},
+  zlib,
   wasi,
 } as Record<string, unknown>;

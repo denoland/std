@@ -13,7 +13,7 @@ import {
   ERR_UNKNOWN_ENCODING,
 } from "./_errors.ts";
 import { isAnyArrayBuffer, isArrayBufferView } from "./internal/util/types.ts";
-import { normalizeEncoding } from "./internal/util.ts";
+import { normalizeEncoding } from "./internal/util.js";
 import {
   _copyActual,
   _writeUInt32BE,

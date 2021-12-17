@@ -279,35 +279,6 @@ assertEquals(
 );
 ```
 
-### findLastIndex
-
-Returns the index of the last element in the given array matching the given
-predicate.
-
-```ts
-import { findLastIndex } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const numbers = [0, 1, 2, 3, 4, 5, 6];
-const lastIndexEvenNumber = findLastIndex(numbers, (it) => it % 2 === 0);
-
-assertEquals(lastIndexEvenNumber, 6);
-```
-
-### findLast
-
-Returns the last element in the given array matching the given predicate.
-
-```ts
-import { findLast } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const numbers = [4, 2, 7];
-const lastEvenNumber = findLast(numbers, (it) => it % 2 === 0);
-
-assertEquals(lastEvenNumber, 2);
-```
-
 ### findSingle
 
 Returns an element if and only if that element is the only one matching the

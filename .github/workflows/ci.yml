@@ -28,36 +28,48 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
+      - name: Install fakedate
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt install faketime
+
       - name: Run tests canary
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/
+        run: |
+          deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/
+
+      - name: Run test with the date 2021-12-31
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          faketime '2021-12-31' deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json datetime/test_2021_12_31.ts
 
       - name: Type check browser compatible modules
         shell: bash
         run: |
           git grep --name-only "// This module is browser compatible." | grep -v ".github/workflows" | xargs deno cache --config browser-compat.tsconfig.json
 
-      - name: Generate lcov
-        shell: bash
-        # TODO(kt3k): Excludes ubuntu for now because it panics while processing io/util.ts
-        # See https://github.com/denoland/deno/issues/10420
-        if: matrix.os != 'ubuntu-latest'
-        # excludes tests, testdata, and generated sources from coverage report
-        run: |
-          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
+      # TODO(bartlomieju): it appears coverage broke in Deno v1.17 release
+      # - name: Generate lcov
+        # shell: bash
+        # # TODO(kt3k): Excludes ubuntu for now because it panics while processing io/util.ts
+        # # See https://github.com/denoland/deno/issues/10420
+        # if: matrix.os != 'ubuntu-latest'
+        # # excludes tests, testdata, and generated sources from coverage report
+        # run: |
+        #  deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
 
-      - name: Upload coverage
-        uses: codecov/codecov-action@v1
-        if: matrix.os != 'ubuntu-latest'
-        with:
-          name: ${{ matrix.os }}-${{ matrix.deno }}
-          files: cov.lcov
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v1
+      #   if: matrix.os != 'ubuntu-latest'
+      #   with:
+      #     name: ${{ matrix.os }}-${{ matrix.deno }}
+      #     files: cov.lcov
 
-      - name: Remove coverage report
-        shell: bash
-        if: matrix.os != 'ubuntu-latest'
-        run: |
-          rm -rf ./cov/
-          rm cov.lcov
+      # - name: Remove coverage report
+      #   shell: bash
+      #   if: matrix.os != 'ubuntu-latest'
+      #   run: |
+      #     rm -rf ./cov/
+      #     rm cov.lcov
 
   node:
     runs-on: ${{ matrix.os }}
@@ -89,6 +101,8 @@ jobs:
 
       - name: Run Node tests canary
         run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/_tools/test.ts
+        env:
+          DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 
   lint:
     runs-on: ubuntu-latest

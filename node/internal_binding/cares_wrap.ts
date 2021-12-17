@@ -25,7 +25,7 @@
 
 import type { ErrnoException } from "../_errors.ts";
 import type { LookupAddress } from "../dns.ts";
-import { isIPv4 } from "../_net.ts";
+import { isIPv4 } from "../internal/net.ts";
 import { codeMap } from "./uv.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 

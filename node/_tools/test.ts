@@ -1,7 +1,12 @@
-import { walk } from "../../fs/walk.ts";
-import { dirname, fromFileUrl, relative } from "../../path/mod.ts";
+import { magenta } from "../../fmt/colors.ts";
+import { dirname, fromFileUrl, join } from "../../path/mod.ts";
 import { fail } from "../../testing/asserts.ts";
-import { config, testList } from "./common.ts";
+import { config, getPathsFromTestSuites } from "./common.ts";
+
+// If the test case is invoked like
+// deno test -A node/_tools/test.ts -- <test-names>
+// Use the test-names as filters
+const filters = Deno.args;
 
 /**
  * This script will run the test files specified in the configuration file
@@ -10,47 +15,42 @@ import { config, testList } from "./common.ts";
  * code for the test is reported, the test suite will fail immediately
  */
 
-const onlyFlagTestList: RegExp[] = [];
+const toolsPath = dirname(fromFileUrl(import.meta.url));
+const testPaths = getPathsFromTestSuites(config.tests);
+const windowsIgnorePaths = new Set(
+  getPathsFromTestSuites(config.windowsIgnore),
+);
 
-function makeOnlyFlagTestList(testLists: Array<string[]>) {
-  for (const testList of testLists) {
-    const hasOnlyFlagTestList = testList.filter((filename) =>
-      filename.match("--only")
-    ).map((filename) => new RegExp(filename.replace(/ --only/, "")));
-    onlyFlagTestList.push(...hasOnlyFlagTestList);
-  }
-}
-
-makeOnlyFlagTestList([
-  ...Object.keys(config.tests).map((suite) => config.tests[suite]),
-]);
-
-const dir = walk(fromFileUrl(new URL(config.suitesFolder, import.meta.url)), {
-  includeDirs: false,
-  match: onlyFlagTestList.length ? onlyFlagTestList : testList,
-});
-
-const testsFolder = dirname(fromFileUrl(import.meta.url));
 const decoder = new TextDecoder();
 
-for await (const file of dir) {
+for await (const path of testPaths) {
+  // If filter patterns are given and any pattern doesn't match
+  // to the file path, then skip the case
+  if (
+    filters.length > 0 &&
+    filters.every((pattern) => !path.includes(pattern))
+  ) {
+    continue;
+  }
+  const ignore = Deno.build.os === "windows" && windowsIgnorePaths.has(path);
   Deno.test({
-    name: relative(testsFolder, file.path),
+    name: `Node.js compatibility "${path}"`,
+    ignore,
     fn: async () => {
+      const cmd = [
+        Deno.execPath(),
+        "run",
+        "-A",
+        "--quiet",
+        "--unstable",
+        "--no-check",
+        join("node", "_tools", "require.ts"),
+        join(toolsPath, config.suitesFolder, path),
+      ];
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided
       const test = Deno.run({
-        cwd: testsFolder,
-        cmd: [
-          Deno.execPath(),
-          "run",
-          "-A",
-          "--quiet",
-          "--unstable",
-          "--no-check",
-          "require.ts",
-          file.path,
-        ],
+        cmd,
         stderr: "piped",
         stdout: "piped",
       });
@@ -67,6 +67,11 @@ for await (const file of dir) {
       if (rawOutput.length) console.log(decoder.decode(rawOutput));
 
       if (status.code !== 0) {
+        console.log(`Error: "${path}" failed`);
+        console.log(
+          "You can repeat only this test with the command:",
+          magenta(cmd.join(" ")),
+        );
         fail(stderr);
       }
     },
