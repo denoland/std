@@ -24,7 +24,7 @@
 import {
   ERR_INVALID_ARG_VALUE,
   ERR_INVALID_CURSOR_POS,
-} from "../../_errors.ts";
+} from "../../internal/errors.ts";
 
 import { validateCallback } from "../validators.js";
 

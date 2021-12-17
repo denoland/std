@@ -8,7 +8,7 @@ import { isBlob } from "../blob.js";
 import {
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_RETURN_VALUE,
-} from "../../_errors.ts";
+} from "../../internal/errors.ts";
 import {
   isDuplexNodeStream,
   isIterable,

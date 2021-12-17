@@ -1,4 +1,4 @@
-import { denoErrorToNodeError } from "../_errors.ts";
+import { denoErrorToNodeError } from "../internal/errors.ts";
 
 export type statOptions = {
   bigint: boolean;
@@ -182,7 +182,7 @@ export function convertFileInfoToStats(origin: Deno.FileInfo): Stats {
     isCharacterDevice: () => false,
     isSocket: () => false,
     ctime: origin.mtime,
-    ctimeMs: origin.mtime?.getTime() || null,
+    ctimeMs: origin.mtime?.getTime() || null
   };
 }
 
@@ -192,7 +192,7 @@ function toBigInt(number?: number | null) {
 }
 
 export function convertFileInfoToBigIntStats(
-  origin: Deno.FileInfo,
+  origin: Deno.FileInfo
 ): BigIntStats {
   return {
     dev: toBigInt(origin.dev),
@@ -226,7 +226,7 @@ export function convertFileInfoToBigIntStats(
     isSocket: () => false,
     ctime: origin.mtime,
     ctimeMs: origin.mtime ? BigInt(origin.mtime.getTime()) : null,
-    ctimeNs: origin.mtime ? BigInt(origin.mtime.getTime()) * 1000000n : null,
+    ctimeNs: origin.mtime ? BigInt(origin.mtime.getTime()) * 1000000n : null
   };
 }
 
@@ -236,10 +236,7 @@ export function CFISBIS(fileInfo: Deno.FileInfo, bigInt: boolean) {
   return convertFileInfoToStats(fileInfo);
 }
 
-export type statCallbackBigInt = (
-  err: Error | null,
-  stat: BigIntStats,
-) => void;
+export type statCallbackBigInt = (err: Error | null, stat: BigIntStats) => void;
 
 export type statCallback = (err: Error | null, stat: Stats) => void;
 
@@ -247,55 +244,56 @@ export function stat(path: string | URL, callback: statCallback): void;
 export function stat(
   path: string | URL,
   options: { bigint: false },
-  callback: statCallback,
+  callback: statCallback
 ): void;
 export function stat(
   path: string | URL,
   options: { bigint: true },
-  callback: statCallbackBigInt,
+  callback: statCallbackBigInt
 ): void;
 export function stat(
   path: string | URL,
   optionsOrCallback: statCallback | statCallbackBigInt | statOptions,
-  maybeCallback?: statCallback | statCallbackBigInt,
+  maybeCallback?: statCallback | statCallbackBigInt
 ) {
-  const callback =
-    (typeof optionsOrCallback === "function"
-      ? optionsOrCallback
-      : maybeCallback) as (
-        ...args: [Error] | [null, BigIntStats | Stats]
-      ) => void;
-  const options = typeof optionsOrCallback === "object"
+  const callback = (typeof optionsOrCallback === "function"
     ? optionsOrCallback
-    : { bigint: false };
+    : maybeCallback) as (
+    ...args: [Error] | [null, BigIntStats | Stats]
+  ) => void;
+  const options =
+    typeof optionsOrCallback === "object"
+      ? optionsOrCallback
+      : { bigint: false };
 
   if (!callback) throw new Error("No callback function supplied");
 
   Deno.stat(path).then(
-    (stat) => callback(null, CFISBIS(stat, options.bigint)),
-    (err) => callback(denoErrorToNodeError(err, { syscall: "stat" })),
+    stat => callback(null, CFISBIS(stat, options.bigint)),
+    err => callback(denoErrorToNodeError(err, { syscall: "stat" }))
   );
 }
 
 export function statSync(path: string | URL): Stats;
 export function statSync(
   path: string | URL,
-  options: { bigint: false; throwIfNoEntry?: boolean },
+  options: { bigint: false; throwIfNoEntry?: boolean }
 ): Stats;
 export function statSync(
   path: string | URL,
-  options: { bigint: true; throwIfNoEntry?: boolean },
+  options: { bigint: true; throwIfNoEntry?: boolean }
 ): BigIntStats;
 export function statSync(
   path: string | URL,
-  options: statOptions = { bigint: false, throwIfNoEntry: true },
+  options: statOptions = { bigint: false, throwIfNoEntry: true }
 ): Stats | BigIntStats | undefined {
   try {
     const origin = Deno.statSync(path);
     return CFISBIS(origin, options.bigint);
-  } catch (err: unknown) {
+  } catch (err) {
     if (
-      options?.throwIfNoEntry === false && err instanceof Deno.errors.NotFound
+      options?.throwIfNoEntry === false &&
+      err instanceof Deno.errors.NotFound
     ) {
       return;
     }

@@ -21,7 +21,7 @@
 
 // deno-lint-ignore-file camelcase no-inner-declarations no-this-alias
 
-import { ERR_INVALID_ARG_VALUE } from "../../_errors.ts";
+import { ERR_INVALID_ARG_VALUE } from "../../internal/errors.ts";
 import {
   validateAbortSignal,
   validateArray,

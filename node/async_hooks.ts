@@ -1,7 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import { ERR_ASYNC_TYPE, ERR_INVALID_ASYNC_ID } from "./_errors.ts";
+import { ERR_ASYNC_TYPE, ERR_INVALID_ASYNC_ID } from "./internal/errors.ts";
 import { validateFunction, validateString } from "./internal/validators.js";
 import {
   // deno-lint-ignore camelcase

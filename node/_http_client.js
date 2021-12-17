@@ -25,7 +25,7 @@ import {
   ERR_INVALID_HTTP_TOKEN,
   ERR_INVALID_PROTOCOL,
   ERR_UNESCAPED_CHARACTERS,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 import { validateInteger } from "./internal/validators.js";
 import { getTimerDuration } from "./internal/timers.ts";
 import {

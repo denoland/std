@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { Buffer } from "../buffer.ts";
-import { uvException } from "../_errors.ts";
+import { uvException } from "../internal/errors.ts";
 import { writeBuffer } from "../internal_binding/node_file.ts";
 
 // IPv4 Segment

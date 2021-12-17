@@ -32,7 +32,7 @@ import {
   ERR_INVALID_MODULE_SPECIFIER,
   ERR_MODULE_NOT_FOUND,
   NodeError,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 import type { PackageConfig } from "./module_esm.ts";
 import {
   encodedSepRegEx,

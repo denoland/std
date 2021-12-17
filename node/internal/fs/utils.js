@@ -9,7 +9,7 @@ import {
   ERR_OUT_OF_RANGE,
   hideStackFrames,
   uvException,
-} from "../../_errors.ts";
+} from "../../internal/errors.ts";
 
 import {
   isArrayBufferView,

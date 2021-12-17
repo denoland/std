@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { validateCallback, validateNumber } from "./validators.js";
-import { ERR_OUT_OF_RANGE } from "../_errors.ts";
+import { ERR_OUT_OF_RANGE } from "../internal/errors.ts";
 import { emitWarning } from "../process.ts";
 
 export const kTimeout = Symbol("timeout");

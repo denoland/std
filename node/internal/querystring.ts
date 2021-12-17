@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { ERR_INVALID_URI } from "../_errors.ts";
+import { ERR_INVALID_URI } from "../internal/errors.ts";
 
 export const hexTable = new Array(256);
 for (let i = 0; i < 256; ++i) {

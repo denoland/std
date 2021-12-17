@@ -23,7 +23,7 @@
 // - https://github.com/nodejs/node/blob/master/src/cares_wrap.cc
 // - https://github.com/nodejs/node/blob/master/src/cares_wrap.h
 
-import type { ErrnoException } from "../_errors.ts";
+import type { ErrnoException } from "../internal/errors.ts";
 import type { LookupAddress } from "../dns.ts";
 import { isIPv4 } from "../internal/net.ts";
 import { codeMap } from "./uv.ts";

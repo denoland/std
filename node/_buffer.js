@@ -11,7 +11,7 @@ import {
   ERR_INVALID_ARG_VALUE,
   ERR_OUT_OF_RANGE,
   ERR_UNKNOWN_ENCODING,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 import { isAnyArrayBuffer, isArrayBufferView } from "./internal/util/types.ts";
 import { normalizeEncoding } from "./internal/util.js";
 import {

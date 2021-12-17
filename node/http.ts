@@ -1,7 +1,7 @@
 import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions } from "./net.ts";
 import { Buffer } from "./buffer.ts";
-import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
+import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { EventEmitter } from "./events.ts";
 import { nextTick } from "./_next_tick.ts";
 import { Status as STATUS_CODES } from "../http/http_status.ts";

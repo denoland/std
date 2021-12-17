@@ -11,7 +11,7 @@ import {
   ERR_INVALID_RETURN_VALUE,
   ERR_MISSING_ARGS,
   ERR_STREAM_DESTROYED,
-} from "../../_errors.ts";
+} from "../../internal/errors.ts";
 import * as process from "../../_process/process.ts";
 import destroyImpl from "./destroy.js";
 import Duplex from "./duplex.js";

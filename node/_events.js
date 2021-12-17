@@ -30,7 +30,7 @@ import {
   ERR_INVALID_ARG_TYPE,
   ERR_OUT_OF_RANGE,
   ERR_UNHANDLED_ERROR,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 
 import {
   validateAbortSignal,

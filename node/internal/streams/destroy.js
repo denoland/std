@@ -2,7 +2,7 @@
 // deno-lint-ignore-file
 
 import { aggregateTwoErrors } from "../errors.js";
-import { ERR_MULTIPLE_CALLBACK } from "../../_errors.ts";
+import { ERR_MULTIPLE_CALLBACK } from "../../internal/errors.ts";
 import * as process from "../../_process/process.ts";
 
 const kDestroy = Symbol("kDestroy");

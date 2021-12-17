@@ -10,8 +10,8 @@ import {
 import { validateString } from "./internal/validators.js";
 import {
   ERR_CHILD_PROCESS_IPC_REQUIRED,
-  ERR_INVALID_ARG_VALUE,
-} from "./_errors.ts";
+  ERR_INVALID_ARG_VALUE
+} from "./internal/errors.ts";
 import { process } from "./process.ts";
 
 const denoCompatArgv = [
