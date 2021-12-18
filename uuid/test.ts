@@ -11,6 +11,8 @@ Deno.test("[UUID] isNil", () => {
 
 Deno.test("[UUID] validate", () => {
   const u = "582cbcff-dad6-4f28-888a-e062ae36bafc";
+  const nil = NIL_UUID;
   assert(validate(u));
+  assert(validate(nil));
   assert(!validate("not a UUID"));
 });
