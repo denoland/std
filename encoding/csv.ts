@@ -334,20 +334,12 @@ export async function readMatrix(
  * Parse the CSV string/buffer with the options provided.
  *
  * ColumnOptions provides the column definition
- * and the parse function for each entry of the
- * column.
  */
 export interface ColumnOptions {
   /**
    * Name of the column to be used as property
    */
   name: string;
-  /**
-   * Parse function for the column.
-   * This is executed on each entry of the header.
-   * This can be combined with the Parse function of the rows.
-   */
-  parse?: (input: string) => unknown;
 }
 
 export interface ParseOptions extends ReadOptions {
@@ -414,6 +406,7 @@ export async function parse(
         );
       }
     }
+
     return r.map((e) => {
       if (e.length !== headers.length) {
         throw `Error number of fields line:${i}`;
