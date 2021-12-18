@@ -25,7 +25,6 @@
       "test-event-emitter-max-listeners.js",
       "test-event-emitter-no-error-provided-to-error-event.js",
       "test-event-emitter-prepend.js",
-      "test-fs-append-file.js",
       "test-fs-rmdir-recursive.js",
       "test-fs-write-file.js",
       "test-querystring.js",
