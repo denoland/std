@@ -421,8 +421,7 @@ export async function parse(
       i++;
       const out: Record<string, unknown> = {};
       for (let j = 0; j < e.length; j++) {
-        const h = headers[j];
-        out[h.name] = e[j];
+        out[headers[j].name] = e[j];
       }
       return out;
     });
