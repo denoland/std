@@ -365,11 +365,11 @@ export interface ParseOptions extends ReadOptions {
 
 /**
  * Csv parse helper to manipulate data.
- * Provides an auto/custom mapper for columns for columns and rows.
+ * Provides an auto/custom mapper for columns.
  * @param input Input to parse. Can be a string or BufReader.
  * @param opt options of the parser.
- * @returns If you don't provide `opt.skipFirstRow`, `opt.parse`, and `opt.columns`, it returns `string[][]`.
- *   If you provide `opt.skipFirstRow` or `opt.columns` but not `opt.parse`, it returns `object[]`.
+ * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
+ *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unkown>[]`.
  */
 export async function parse(
   input: string | BufReader,
