@@ -10,6 +10,13 @@ import { stripColor } from "../fmt/colors.ts";
 import * as util from "./util.ts";
 
 Deno.test({
+  name: "[util] format",
+  fn() {
+    assertEquals(util.format("%o", [10, 11]), "[ 10, 11, [length]: 2 ]");
+  },
+});
+
+Deno.test({
   name: "[util] inspect.custom",
   fn() {
     assertEquals(util.inspect.custom, Symbol.for("nodejs.util.inspect.custom"));
