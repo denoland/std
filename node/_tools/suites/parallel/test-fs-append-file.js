@@ -178,24 +178,24 @@ const throwNextTick = (e) => { process.nextTick(() => { throw e; }); };
 
 // FIXME(F3n67u): fs.promises.appendFile support FileHandle
 // Test that appendFile accepts file descriptors (promises API).
-// {
-//   const filename = join(tmpdir.path, 'append-descriptors-promises.txt');
-//   fs.writeFileSync(filename, currentFileData);
+{
+  const filename = join(tmpdir.path, 'append-descriptors-promises.txt');
+  fs.writeFileSync(filename, currentFileData);
 
-//   let fd;
-//   fs.promises.open(filename, 'a+')
-//     .then(common.mustCall((fileDescriptor) => {
-//       fd = fileDescriptor;
-//       return fs.promises.appendFile(fd, s);
-//     }))
-//     .then(common.mustCall(() => fd.close()))
-//     .then(common.mustCall(() => fs.promises.readFile(filename)))
-//     .then(common.mustCall((buffer) => {
-//       assert.strictEqual(Buffer.byteLength(s) + currentFileData.length,
-//                          buffer.length);
-//     }))
-//     .catch(throwNextTick);
-// }
+  let fd;
+  fs.promises.open(filename, 'a+')
+    .then(common.mustCall((fileDescriptor) => {
+      fd = fileDescriptor;
+      return fs.promises.appendFile(fd, s);
+    }))
+    .then(common.mustCall(() => fd.close()))
+    .then(common.mustCall(() => fs.promises.readFile(filename)))
+    .then(common.mustCall((buffer) => {
+      assert.strictEqual(Buffer.byteLength(s) + currentFileData.length,
+                         buffer.length);
+    }))
+    .catch(throwNextTick);
+}
 
 assert.throws(
   () => fs.appendFile(join(tmpdir.path, 'append6.txt'), console.log),
