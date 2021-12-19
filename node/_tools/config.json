@@ -149,6 +149,7 @@
       "test-fs-access.js",
       "test-fs-append-file-sync.js",
       "test-fs-append-file.js",
+      "test-fs-readfile-empty.js",
       "test-fs-rm.js",
       "test-fs-rmdir-recursive-sync-warns-not-found.js",
       "test-fs-rmdir-recursive-sync-warns-on-file.js",
