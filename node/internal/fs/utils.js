@@ -116,7 +116,7 @@ const kReadFileBufferLength = 512 * 1024;
 
 const kWriteFileMaxChunkSize = 512 * 1024;
 
-const kMaxUserId = 2 ** 32 - 1;
+export const kMaxUserId = 2 ** 32 - 1;
 
 function assertEncoding(encoding) {
   if (encoding && !Buffer.isEncoding(encoding)) {

@@ -2,7 +2,7 @@
   "nodeVersion": "16.13.0",
   "ignore": {
     "common": ["index.js", "tmpdir.js"],
-    "fixtures": ["child-process-spawn-node.js"],
+    "fixtures": ["child-process-spawn-node.js", "empty.txt"],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
@@ -57,7 +57,8 @@
       "internet.js"
     ],
     "fixtures": [
-      "child-process-spawn-node.js"
+      "child-process-spawn-node.js",
+      "empty.txt"
     ],
     "internet": [
       "test-dns-idna.js",
@@ -153,6 +154,7 @@
       "test-fs-append-file.js",
       "test-fs-chmod-mask.js",
       "test-fs-chmod.js",
+      "test-fs-chown-type-check.js",
       "test-fs-readfile-empty.js",
       "test-fs-rm.js",
       "test-fs-rmdir-recursive-sync-warns-not-found.js",
