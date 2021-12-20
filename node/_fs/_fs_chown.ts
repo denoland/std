@@ -18,20 +18,27 @@ export function chown(
 ): void {
   callback = makeCallback(callback);
   path = getValidatedPath(path).toString();
-  validateInteger(uid, 'uid', -1, kMaxUserId);
-  validateInteger(gid, 'gid', -1, kMaxUserId);
+  validateInteger(uid, "uid", -1, kMaxUserId);
+  validateInteger(gid, "gid", -1, kMaxUserId);
 
-  Deno.chown(pathModule.toNamespacedPath(path), uid, gid).then(() => callback(null), callback);
+  Deno.chown(pathModule.toNamespacedPath(path), uid, gid).then(
+    () => callback(null),
+    callback,
+  );
 }
 
 /**
  * Synchronously changes the owner and group
  * of a file.
  */
-export function chownSync(path: string | Buffer | URL, uid: number, gid: number): void {
+export function chownSync(
+  path: string | Buffer | URL,
+  uid: number,
+  gid: number,
+): void {
   path = getValidatedPath(path).toString();
-  validateInteger(uid, 'uid', -1, kMaxUserId);
-  validateInteger(gid, 'gid', -1, kMaxUserId);
+  validateInteger(uid, "uid", -1, kMaxUserId);
+  validateInteger(gid, "gid", -1, kMaxUserId);
 
   Deno.chownSync(pathModule.toNamespacedPath(path), uid, gid);
 }
