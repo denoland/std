@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { promisify } from "./_util/_util_promisify.ts";
 import { callbackify } from "./_util/_util_callbackify.ts";
+import { debuglog } from "./_util/_debuglog.ts";
 import { deprecate } from "./internal/util.js";
 import {
   format,
@@ -15,6 +16,7 @@ import { isDeepStrictEqual } from "./internal/util/comparisons.ts";
 
 export {
   callbackify,
+  debuglog,
   deprecate,
   format,
   formatWithOptions,
@@ -214,11 +216,6 @@ function timestamp(): string {
 // deno-lint-ignore no-explicit-any
 function log(...args: any[]): void {
   console.log("%s - %s", timestamp(), format(...args));
-}
-
-// TODO(kt3k): implement debuglog correctly
-function debuglog() {
-  return console.log;
 }
 
 export default {
