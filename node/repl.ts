@@ -3,15 +3,17 @@
 
 import { notImplemented } from "./_utils.ts";
 
-export function create() {
-  notImplemented();
-}
-export class Domain {
+class REPLServer {
   constructor() {
     notImplemented();
   }
 }
+export const builtinModules = undefined;
+export function start() {
+  notImplemented();
+}
 export default {
-  create,
-  Domain,
+  REPLServer,
+  builtinModules,
+  start,
 };
