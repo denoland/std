@@ -50,7 +50,7 @@ export const constants = {};
 export function getDefaultSettings() {}
 export function getPackedSettings() {}
 export function getUnpackedSettings() {}
-export const sensitiveHeaders = undefined;
+export const sensitiveHeaders = Symbol("nodejs.http2.sensitiveHeaders");
 export class Http2ServerRequest {
   constructor() {
     notImplemented();
