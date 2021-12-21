@@ -46,7 +46,7 @@ export class Http2SecureServer {
 export function createServer() {}
 export function createSecureServer() {}
 export function connect() {}
-export const constants = undefined;
+export const constants = {};
 export function getDefaultSettings() {}
 export function getPackedSettings() {}
 export function getUnpackedSettings() {}
