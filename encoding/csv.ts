@@ -334,6 +334,8 @@ export async function readMatrix(
  * Parse the CSV string/buffer with the options provided.
  *
  * ColumnOptions provides the column definition
+ * and the parse function for each entry of the
+ * column.
  */
 export interface ColumnOptions {
   /**
@@ -363,6 +365,29 @@ export interface ParseOptions extends ReadOptions {
  * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
  *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unkown>[]`.
  */
+export async function parse(
+  input: string | BufReader,
+): Promise<string[][]>;
+export async function parse(
+  input: string | BufReader,
+  opt: Omit<ParseOptions, "columns" | "skipFirstRow">,
+): Promise<string[][]>;
+export async function parse(
+  input: string | BufReader,
+  opt: Omit<ParseOptions, "columns"> & {
+    columns: string[] | ColumnOptions[];
+  },
+): Promise<Record<string, unknown>[]>;
+export async function parse(
+  input: string | BufReader,
+  opt: Omit<ParseOptions, "skipFirstRow"> & {
+    skipFirstRow: true;
+  },
+): Promise<Record<string, unknown>[]>;
+export async function parse(
+  input: string | BufReader,
+  opt: ParseOptions,
+): Promise<string[][] | Record<string, unknown>[]>;
 export async function parse(
   input: string | BufReader,
   opt: ParseOptions = {
