@@ -7,10 +7,6 @@ import timers from "./timers.ts";
 type GlobalType = {
   process: typeof processModule;
   Buffer: typeof bufferModule;
-  setTimeout: typeof timers.setTimeout;
-  clearTimeout: typeof timers.clearTimeout;
-  setInterval: typeof timers.setInterval;
-  clearInterval: typeof timers.clearInterval;
   setImmediate: typeof timers.setImmediate;
   clearImmediate: typeof timers.clearImmediate;
 };
@@ -49,34 +45,6 @@ Object.defineProperty(globalThis, "process", {
 Object.defineProperty(globalThis, "Buffer", {
   value: bufferModule,
   enumerable: false,
-  writable: true,
-  configurable: true,
-});
-
-Object.defineProperty(globalThis, "setTimeout", {
-  value: timers.setTimeout,
-  enumerable: true,
-  writable: true,
-  configurable: true,
-});
-
-Object.defineProperty(globalThis, "clearTimeout", {
-  value: timers.clearTimeout,
-  enumerable: true,
-  writable: true,
-  configurable: true,
-});
-
-Object.defineProperty(globalThis, "setInterval", {
-  value: timers.setInterval,
-  enumerable: true,
-  writable: true,
-  configurable: true,
-});
-
-Object.defineProperty(globalThis, "clearInterval", {
-  value: timers.clearInterval,
-  enumerable: true,
   writable: true,
   configurable: true,
 });
