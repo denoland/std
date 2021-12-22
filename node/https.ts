@@ -1,6 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
-// deno-lint-ignore-file no-explicit-any ban-types
 
 import { notImplemented } from "./_utils.ts";
 import { Readable, Writable } from "./stream.ts";
@@ -23,9 +22,11 @@ export function createServer() {
 interface RequestOptions {
   agent?: Agent | boolean;
   auth?: string;
+  // deno-lint-ignore ban-types
   createConnection?: Function;
   defaultPort?: number;
   family?: number;
+  // deno-lint-ignore ban-types
   headers?: Object;
   hints?: number;
   host?: string;
@@ -33,6 +34,7 @@ interface RequestOptions {
   insecureHTTPParser?: boolean;
   localAddress?: string;
   localPort?: number;
+  // deno-lint-ignore ban-types
   lookup?: Function;
   maxHeaderSize?: number;
   method?: string;
@@ -65,6 +67,7 @@ export function get(
   opts: RequestOptions,
   cb?: (res: HttpsIncomingMessage) => void,
 ): HttpsClientRequest;
+// deno-lint-ignore no-explicit-any
 export function get(...args: any[]) {
   const req = request(args[0], args[1], args[2]);
   req.end();
@@ -83,6 +86,7 @@ class HttpsClientRequest extends Writable {
     super();
   }
 
+  // deno-lint-ignore no-explicit-any
   _write(chunk: any, _enc: string, cb: () => void) {
     if (this.controller) {
       this.controller.enqueue(chunk);
@@ -158,7 +162,8 @@ class HttpsIncomingMessage extends Readable {
       }
       this.push(res.value);
     } catch (e) {
-      this.destroy(e);
+      // deno-lint-ignore no-explicit-any
+      this.destroy(e as any);
     }
   }
 
