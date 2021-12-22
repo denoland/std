@@ -230,7 +230,7 @@ export interface ReadableStreamFromReaderOptions {
 export function readableStreamFromReader(
   reader: Deno.Reader | (Deno.Reader & Deno.Closer),
   options: ReadableStreamFromReaderOptions = {},
-): ReadableStream<Uint8Array> {
+): ReadableStream {
   const {
     autoClose = true,
     chunkSize = DEFAULT_CHUNK_SIZE,
@@ -238,6 +238,7 @@ export function readableStreamFromReader(
   } = options;
 
   return new ReadableStream({
+    type: "bytes",
     async pull(controller) {
       const chunk = new Uint8Array(chunkSize);
       try {
