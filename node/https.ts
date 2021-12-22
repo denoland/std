@@ -194,6 +194,7 @@ export function request(
   opts: RequestOptions,
   cb?: (res: HttpsIncomingMessage) => void,
 ): HttpsClientRequest;
+// deno-lint-ignore no-explicit-any
 export function request(...args: any[]) {
   let options = {};
   if (typeof args[0] === "string") {
