@@ -131,7 +131,8 @@ export function freeParser(
   if (parsers.free(parser) === false) {
     // Make sure the parser's stack has unwound before deleting the
     // corresponding C++ object through .close().
-    setImmediate(closeParserInstance, parser);
+    // deno-lint-ignore no-explicit-any
+    setImmediate(closeParserInstance as any, parser);
   } else {
     // Since the Parser destructor isn't going to run the destroy() callbacks
     // it needs to be triggered manually.

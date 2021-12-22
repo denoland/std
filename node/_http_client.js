@@ -27,7 +27,7 @@ import {
   ERR_UNESCAPED_CHARACTERS,
 } from "./_errors.ts";
 import { validateInteger } from "./internal/validators.js";
-import { getTimerDuration } from "./internal/timers.ts";
+import { getTimerDuration } from "./internal/timers.js";
 import {
   DTRACE_HTTP_CLIENT_REQUEST,
   DTRACE_HTTP_CLIENT_RESPONSE,

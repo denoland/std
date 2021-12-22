@@ -25,6 +25,13 @@ export function setTimeout(
   ));
   return timer;
 }
+export function setUnrefTimeout(
+  cb: TimerParams[0],
+  timeout?: TimerParams[1],
+  ...args: unknown[]
+) {
+  setTimeout(cb, timeout, ...args).unref();
+}
 export function clearTimeout(timeout?: Timeout | number) {
   if (timeout == null) {
     return;
