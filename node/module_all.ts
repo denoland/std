@@ -1,3 +1,4 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // This aliases are used in some node tests and represent a legacy alias
 // for the stream modules
 // deno-lint-ignore camelcase
