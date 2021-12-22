@@ -1,3 +1,10 @@
+### 0.119.0 / 2021.12.22
+
+- feat(hash): add Tiger hash (#1729)
+- feat(node): expose util.debuglog (#1735)
+- feat(node/util): implement `getOwnNonIndexProperties` (#1728)
+- feat(uuid): add `validate` function to check UUID (#1720)
+
 ### 0.118.0 / 2021.12.16
 
 - [BREAKING] Remove 'findLast' from 'collections' module (#1527)
