@@ -383,7 +383,8 @@
       "test-util-inspect.js",
       "test-util-isDeepStrictEqual.js",
       "test-util-types.js",
-      "test-util.js"
+      "test-util.js",
+      "test-vm-static-this.js"
     ]
   },
   "windowsIgnore": {

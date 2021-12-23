@@ -5,12 +5,13 @@
 import { notImplemented } from "./_utils.ts";
 
 export class Script {
+  code: string;
   constructor(code: string, _options = {}) {
-    code = `${code}`;
+    this.code = `${code}`;
   }
 
   runInThisContext(_options: any) {
-    notImplemented();
+    return eval.call(globalThis, this.code);
   }
 
   runInContext(_contextifiedObject: any, _options: any) {
@@ -31,7 +32,7 @@ export function createContext(_contextObject: any, _options: any) {
 }
 
 export function createScript(code: string, options: any) {
-  return new Script(code, options);
+  return new Script(code, options).runInThisContext(options);
 }
 
 export function runInContext(
@@ -51,10 +52,10 @@ export function runInNewContext(
 }
 
 export function runInThisContext(
-  _code: string,
-  _options: any,
+  code: string,
+  options: any,
 ) {
-  notImplemented();
+  return createScript(code, options);
 }
 
 export function isContext(_maybeContext: any) {
