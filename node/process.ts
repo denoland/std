@@ -391,6 +391,11 @@ class Process extends EventEmitter {
 
   // TODO(kt3k): Implement this when we added -e option to node compat mode
   _eval: string | undefined = undefined;
+
+  /** https://nodejs.org/api/process.html#processexecpath */
+  get execPath() {
+    return argv[0];
+  }
 }
 
 /** https://nodejs.org/api/process.html#process_process */

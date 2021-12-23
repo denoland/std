@@ -408,3 +408,7 @@ Deno.test("process.config", () => {
 Deno.test("process._exiting", () => {
   assert(process._exiting === false);
 });
+
+Deno.test("process.execPath", () => {
+  assertEquals(process.execPath, process.argv[0]);
+});
