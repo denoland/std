@@ -1,13 +1,13 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { makeCallback } from "./_fs_common.ts";
+import { type CallbackWithError, makeCallback } from "./_fs_common.ts";
 import { fs } from "../internal_binding/constants.ts";
 import { getValidatedPath, getValidMode } from "../internal/fs/utils.js";
-import { Buffer } from "../buffer.ts";
+import type { Buffer } from "../buffer.ts";
 
 export function access(
   path: string | Buffer | URL,
-  mode: number | ((...args: unknown[]) => void),
-  callback?: (...args: unknown[]) => void,
+  mode: number | CallbackWithError,
+  callback?: CallbackWithError,
 ): void {
   if (typeof mode === "function") {
     callback = mode;

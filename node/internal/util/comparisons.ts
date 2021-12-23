@@ -21,6 +21,11 @@ import {
 } from "./types.ts";
 
 import { Buffer } from "../../_buffer.js";
+import {
+  getOwnNonIndexProperties,
+  ONLY_ENUMERABLE,
+  SKIP_SYMBOLS,
+} from "../../internal_binding/util.ts";
 
 enum valueType {
   noIterator,
@@ -100,13 +105,13 @@ function isDeepEqual(
     if (!Array.isArray(val2) || val1.length !== val2.length) {
       return false;
     }
-    // TODO(standvpmnt): Either change the name here or improve the function to do what it says
-    const keysVal1 = getOwnNonIndexProperties(val1);
-    const keysVal2 = getOwnNonIndexProperties(val2);
-    if (keysVal1.length !== keysVal2.length) {
+    const filter = strict ? ONLY_ENUMERABLE : ONLY_ENUMERABLE | SKIP_SYMBOLS;
+    const keys1 = getOwnNonIndexProperties(val1, filter);
+    const keys2 = getOwnNonIndexProperties(val2, filter);
+    if (keys1.length !== keys2.length) {
       return false;
     }
-    return keyCheck(val1, val2, strict, memos, valueType.isArray, keysVal1);
+    return keyCheck(val1, val2, strict, memos, valueType.isArray, keys1);
   } else if (val1Tag === "[object Object]") {
     return keyCheck(
       val1 as object,
@@ -154,9 +159,9 @@ function isDeepEqual(
     } else if (!areSimilarTypedArrays(val1, val2)) {
       return false;
     }
-    // const filter = strict ? ONLY_ENUMBERABLE : ONLY_ENUMERABLE | SKIP_SYMBOLS;
-    const keysVal1 = getOwnNonIndexProperties(val1 as object);
-    const keysVal2 = getOwnNonIndexProperties(val2 as object);
+    const filter = strict ? ONLY_ENUMERABLE : ONLY_ENUMERABLE | SKIP_SYMBOLS;
+    const keysVal1 = getOwnNonIndexProperties(val1 as object, filter);
+    const keysVal2 = getOwnNonIndexProperties(val2 as object, filter);
     if (keysVal1.length !== keysVal2.length) {
       return false;
     }
@@ -396,18 +401,6 @@ function isEqualBoxedPrimitive(a: any, b: any): boolean {
     );
   }
   return false;
-}
-
-// TODO(standvpmnt): Reduce COST from this
-// This is not optimized since we are actually returning all the properties
-// and not just the non-indexed properties, VERY COSTLY right now
-function getOwnNonIndexProperties(obj: object): (string | symbol)[] {
-  if (Array.isArray(obj)) return [];
-
-  return [
-    ...Object.getOwnPropertyNames(obj),
-    ...Object.getOwnPropertySymbols(obj),
-  ];
 }
 
 function getEnumerables(val: any, keys: any) {

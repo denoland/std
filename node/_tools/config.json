@@ -2,7 +2,7 @@
   "nodeVersion": "16.13.0",
   "ignore": {
     "common": ["index.js", "tmpdir.js"],
-    "fixtures": ["child-process-spawn-node.js"],
+    "fixtures": ["child-process-spawn-node.js", "empty.txt"],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
@@ -11,7 +11,6 @@
       "test-dns.js"
     ],
     "parallel": [
-      "test-assert-async.js",
       "test-assert.js",
       "test-buffer-arraybuffer.js",
       "test-buffer-bytelength.js",
@@ -21,20 +20,17 @@
       "test-child-process-fork.js",
       "test-dns-lookup.js",
       "test-dns.js",
-      "test-event-emitter-errors.js",
       "test-event-emitter-max-listeners.js",
       "test-event-emitter-no-error-provided-to-error-event.js",
       "test-event-emitter-prepend.js",
       "test-fs-append-file.js",
+      "test-fs-chmod-mask.js",
+      "test-fs-chmod.js",
       "test-fs-rmdir-recursive.js",
       "test-fs-write-file.js",
       "test-querystring.js",
       "test-readline-interface.js",
-      "test-stream-pipe-event.js",
-      "test-stream-readable-event.js",
       "test-stream-writable-change-default-encoding.js",
-      "test-url-format-whatwg.js",
-      "test-url-parse-format.js",
       "test-url-urltooptions.js",
       "test-util-format.js",
       "test-util-inspect-getters-accessing-this.js",
@@ -55,7 +51,8 @@
       "internet.js"
     ],
     "fixtures": [
-      "child-process-spawn-node.js"
+      "child-process-spawn-node.js",
+      "empty.txt"
     ],
     "internet": [
       "test-dns-idna.js",
@@ -149,6 +146,10 @@
       "test-fs-access.js",
       "test-fs-append-file-sync.js",
       "test-fs-append-file.js",
+      "test-fs-chmod-mask.js",
+      "test-fs-chmod.js",
+      "test-fs-chown-type-check.js",
+      "test-fs-readfile-empty.js",
       "test-fs-rm.js",
       "test-fs-rmdir-recursive-sync-warns-not-found.js",
       "test-fs-rmdir-recursive-sync-warns-on-file.js",
@@ -382,7 +383,8 @@
       "test-util-inspect.js",
       "test-util-isDeepStrictEqual.js",
       "test-util-types.js",
-      "test-util.js"
+      "test-util.js",
+      "test-vm-static-this.js"
     ]
   },
   "windowsIgnore": {

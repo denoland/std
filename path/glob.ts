@@ -394,7 +394,7 @@ export function normalizeGlob(
 /** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
 export function joinGlobs(
   globs: string[],
-  { extended = false, globstar = false }: GlobOptions = {},
+  { extended = true, globstar = false }: GlobOptions = {},
 ): string {
   if (!globstar || globs.length == 0) {
     return join(...globs);

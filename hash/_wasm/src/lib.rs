@@ -30,6 +30,7 @@ pub fn create_hash(algorithm: &str) -> Result<DenoHash, JsValue> {
     "keccak384" => Some(Box::new(sha3::Keccak384::new())),
     "keccak512" => Some(Box::new(sha3::Keccak512::new())),
     "blake3" => Some(Box::new(blake3::Hasher::new())),
+    "tiger" => Some(Box::new(tiger::Tiger::new())),
     _ => None,
   };
 
