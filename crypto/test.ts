@@ -364,6 +364,7 @@ const allErrors = {
   "SHA-512": Error,
   SHAKE128: Error,
   SHAKE256: Error,
+  TIGER: Error,
 } as const;
 
 // Test inputs and expected results for each algorithm.
@@ -416,6 +417,7 @@ const digestCases: [
       "7f9c2ba4e88f827d616045507605853ed73b8093f6efbc88eb1a6eacfa66ef26",
     SHAKE256:
       "46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762fd75dc4ddd8c0f200cb05019d67b592f6fc821c49479ab48640292eacb3b7c4be",
+    TIGER: "3293ac630c13f0245f92bbb1766e16167a4e58492dde73f3",
   }],
 
   [
@@ -463,6 +465,7 @@ const digestCases: [
         "0b784469a0628e03861cd8a196dfafa0e9e8056d04cddcc49f0746b9ad43ccb2",
       SHAKE256:
         "b8d01df855f7075882c636f6ddeacf41e5de0bbf30042ef0a86e36f4b8600d546c516501a6a3c821678d3d9943fa9e74b9b99fccd47aecc91dd1f4946b8355b3",
+      TIGER: "5d9ed00a030e638bdb753a6a24fb900e5a63b8e73e6c25b6",
     },
   ],
 
@@ -491,6 +494,7 @@ const digestCases: [
     "SHA-512": Error,
     SHAKE128: "3a9159f071e4dd1c8c4f968607c30942e120d815",
     SHAKE256: "369771bb2cb9d2b04c1d54cca487e372d9f187f7",
+    TIGER: Error,
   }],
 
   ["Output length: 3", [["hello world"], ["hell", "o w", "orld"]], {
@@ -518,6 +522,7 @@ const digestCases: [
     "SHA-512": Error,
     SHAKE128: "3a9159",
     SHAKE256: "369771",
+    TIGER: Error,
   }],
 
   ["Output length: 123", [["hello world"], ["hell", "o w", "orld"]], {
@@ -548,6 +553,7 @@ const digestCases: [
       "3a9159f071e4dd1c8c4f968607c30942e120d8156b8b1e72e0d376e8871cb8b899072665674f26cc494a4bcf027c58267e8ee2da60e942759de86d2670bba1aa47bffd20b48b1d2aa7c3349f8215d1b99ca65bdb1770a220f67456f602436032afce7f24e534e7bfcdab9b35affa0ff891074302c19970d7359a8c",
     SHAKE256:
       "369771bb2cb9d2b04c1d54cca487e372d9f187f73f7ba3f65b95c8ee7798c527f4f3c2d55c2d46a29f2e945d469c3df27853a8735271f5cc2d9e889544357116bb60a24af659151563156eebbf68810dd95c6fcccac0650132ba30bef9bf75b0d483becb935be8688b26ffb294d8284edd64a97325d6be0a423f23",
+    TIGER: Error,
   }],
 
   ["Output length: 0", [[""]], {
@@ -575,6 +581,7 @@ const digestCases: [
     "SHA-512": Error,
     SHAKE128: "",
     SHAKE256: "",
+    TIGER: Error,
   }],
 
   ["Negative length", [[""]], { length: -1 }, allErrors],
@@ -629,6 +636,7 @@ const digestCases: [
       "1e99e4ac28efec6bc3af203f6a161b976389a2d036d0e42026141860d1e3a08a",
     SHAKE256:
       "e39016c524adfa6efd8019d6bc6584bbb912bed38ab896a546a2ef648e120838085103118d3409caab6ed847a67b27085bdce9ffaa6408410431a706625f07bf",
+    TIGER: "111764e3c4f512abce83c7ebdf061caca4f9a04177046509",
   }],
 
   [
@@ -674,6 +682,7 @@ const digestCases: [
         "ab4c60827e1521de623d8b41227d6b4a7406875f44db2356091c10f9d78e55d7",
       SHAKE256:
         "ad4ffc105a791884afd92917a64af4d9d25b1c9d41a8e06683ad03a62ee5c7166a98fdcb4b60ee55722582c0eb9f103be3b55166efa4c20fdfcc5a4e026330dd",
+      TIGER: "affa436814964b03d0ab7d5743fcfdcaee2ad5ecb792e1eb",
     },
   ],
 
@@ -728,6 +737,7 @@ const digestCases: [
         "8b8d4e2daec80c06cdf68170c54ade9745945bbd5f998763ac9f90586f203a3f",
       SHAKE256:
         "5eb886f6cfe4460a3bac6e19bae068ea67e2d13507f880b770fe32c57914e9f10b6ffee3154e4bef277499055eb6c59138ecfa74f47c47b63edc451d57606b28",
+      TIGER: "198fb3a090bd39a7f084a6296b466f49e47e81112268ec22",
     },
   ],
 
