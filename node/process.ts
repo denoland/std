@@ -218,11 +218,11 @@ class Process extends EventEmitter {
   constructor() {
     super();
 
-    //This causes the exit event to be binded to the unload event
     globalThis.addEventListener("unload", () => {
-      //TODO(Soremwar)
-      //Get the exit code from the unload event
-      super.emit("exit", 0);
+      if (!process._exiting) {
+        process._exiting = true;
+        super.emit("exit", process.exitCode || 0);
+      }
     });
   }
 
