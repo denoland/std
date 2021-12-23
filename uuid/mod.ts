@@ -33,7 +33,7 @@ export function isNil(id: string): boolean {
  * validate("6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b") // true
  * ```
  */
-export function validate(uuid: string) {
+export function validate(uuid: string): boolean {
   return /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i
     .test(
       uuid,
