@@ -32,7 +32,7 @@ export function createContext(_contextObject: any, _options: any) {
 }
 
 export function createScript(code: string, options: any) {
-  return new Script(code, options).runInThisContext(options);
+  return new Script(code, options);
 }
 
 export function runInContext(
@@ -55,7 +55,7 @@ export function runInThisContext(
   code: string,
   options: any,
 ) {
-  return createScript(code, options);
+  return createScript(code, options).runInThisContext(options);
 }
 
 export function isContext(_maybeContext: any) {
