@@ -29,6 +29,7 @@ sha2 = "0.9.5"
 sha3 = "0.9.1"
 typenum = "1.13.0"
 wasm-bindgen = "0.2.74"
+tiger = "0.1.0"
 
 [dependencies.blake3]
 version = "1.0.0"

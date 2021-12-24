@@ -26,6 +26,7 @@ export const digestAlgorithms = [
   "SHA3-512",
   "SHAKE128",
   "SHAKE256",
+  "TIGER",
   // insecure (length-extendable):
   "RIPEMD-160",
   "SHA-224",

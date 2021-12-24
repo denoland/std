@@ -132,7 +132,8 @@ function getArrayU8FromWasm0(ptr, len) {
  * @param {string} algorithm
  * @param {Uint8Array} data
  * @param {number | undefined} length
- * @returns {Uint8Array} */
+ * @returns {Uint8Array}
+ */
 export function digest(algorithm, data, length) {
   try {
     const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
@@ -164,7 +165,8 @@ const DigestContextFinalization = new FinalizationRegistry((ptr) =>
   wasm.__wbg_digestcontext_free(ptr)
 );
 /**
- * A context for incrementally computing a digest using a given hash algorithm. */
+ * A context for incrementally computing a digest using a given hash algorithm.
+ */
 export class DigestContext {
   static __wrap(ptr) {
     const obj = Object.create(DigestContext.prototype);

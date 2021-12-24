@@ -29,6 +29,7 @@ pub enum Context {
   Sha512(Box<sha2::Sha512>),
   Shake128(Box<sha3::Shake128>),
   Shake256(Box<sha3::Shake256>),
+  Tiger(Box<tiger::Tiger>),
 }
 
 use Context::*;
@@ -62,6 +63,7 @@ impl Context {
       "SHA-512" => Sha512(Default::default()),
       "SHAKE128" => Shake128(Default::default()),
       "SHAKE256" => Shake256(Default::default()),
+      "TIGER" => Tiger(Default::default()),
       _ => return Err("unsupported algorithm"),
     })
   }
@@ -95,6 +97,7 @@ impl Context {
       Sha256(context) => static_block_length(&**context),
       Sha384(context) => static_block_length(&**context),
       Sha512(context) => static_block_length(&**context),
+      Tiger(context) => static_block_length(&**context),
 
       // https://doi.org/10.6028/NIST.FIPS.202 specifies that:
       // - In general, the input block size (in bits) of a sponge function is
@@ -134,6 +137,7 @@ impl Context {
       Sha256(context) => context.output_size(),
       Sha384(context) => context.output_size(),
       Sha512(context) => context.output_size(),
+      Tiger(context) => context.output_size(),
 
       // https://doi.org/10.6028/NIST.FIPS.202's Table 4 indicates that in order
       // to reach the target security strength for these algorithms, the output
@@ -180,6 +184,7 @@ impl Context {
       Sha512(_) => "SHA-512",
       Shake128(_) => "SHAKE128",
       Shake256(_) => "SHAKE256",
+      Tiger(_) => "TIGER",
     }
   }
 
@@ -207,6 +212,7 @@ impl Context {
       Sha512(context) => Reset::reset(&mut **context),
       Shake128(context) => Reset::reset(&mut **context),
       Shake256(context) => Reset::reset(&mut **context),
+      Tiger(context) => Reset::reset(&mut **context),
     };
   }
 
@@ -232,6 +238,7 @@ impl Context {
       Sha256(context) => Digest::update(&mut **context, data),
       Sha384(context) => Digest::update(&mut **context, data),
       Sha512(context) => Digest::update(&mut **context, data),
+      Tiger(context) => Digest::update(&mut **context, data),
       Shake128(context) => (&mut **context).update(data),
       Shake256(context) => (&mut **context).update(data),
     };
@@ -272,6 +279,7 @@ impl Context {
       Sha256(context) => context.finalize(),
       Sha384(context) => context.finalize(),
       Sha512(context) => context.finalize(),
+      Tiger(context) => context.finalize(),
       Shake128(context) => context.finalize_boxed(length),
       Shake256(context) => context.finalize_boxed(length),
     })
@@ -311,6 +319,7 @@ impl Context {
       Sha256(context) => DynDigest::finalize_reset(context.as_mut()),
       Sha384(context) => DynDigest::finalize_reset(context.as_mut()),
       Sha512(context) => DynDigest::finalize_reset(context.as_mut()),
+      Tiger(context) => DynDigest::finalize_reset(context.as_mut()),
       Shake128(context) => context.finalize_boxed_reset(length),
       Shake256(context) => context.finalize_boxed_reset(length),
     })
