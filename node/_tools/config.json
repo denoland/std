@@ -371,6 +371,7 @@
     "parallel": [
       "test-child-process-fork.js",
       "test-fs-access.js",
+      "test-fs-readdir-stack-overflow.js",
       "test-fs-write-file-invalid-path.js",
       "test-fs-write-file-sync.js",
       "test-fs-write-file.js",
