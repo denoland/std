@@ -1,7 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-// deno-lint-ignore-file no-explicit-any
 
-import * as https from "./https.ts";
 import { serveTls } from "../http/server.ts";
 import { dirname, fromFileUrl, join } from "../path/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
@@ -10,6 +8,7 @@ const stdRoot = dirname(dirname(fromFileUrl(import.meta.url)));
 const tlsDataDir = join(stdRoot, "http", "testdata", "tls");
 const keyFile = join(tlsDataDir, "localhost.key");
 const certFile = join(tlsDataDir, "localhost.crt");
+const dec = new TextDecoder();
 
 Deno.test("[node/https] request makes https request", async () => {
   const controller = new AbortController();
@@ -19,17 +18,30 @@ Deno.test("[node/https] request makes https request", async () => {
     return new Response("abcd\n".repeat(1_000));
   }, { keyFile, certFile, port: 4505, hostname: "localhost", signal });
 
-  https.request("https://localhost:4505", (res: any) => {
-    let data = "";
-    res.on("data", (chunk: any) => {
-      data += chunk;
-    });
-    res.on("end", () => {
-      assertEquals(data.length, 5_000);
-      controller.abort();
-    });
-  }).end();
-
+  const p = Deno.run({
+    cmd: [
+      Deno.execPath(),
+      "run",
+      "--quiet",
+      "--unstable",
+      "--allow-all",
+      "--no-check",
+      "node/testdata/https-request.ts",
+    ],
+    stdout: "piped",
+    stderr: "piped",
+    env: {
+      NODE_EXTRA_CA_CERTS: join(tlsDataDir, "RootCA.pem"),
+    },
+  });
+  const [output, stderrOutput] = await Promise.all([
+    p.output(),
+    p.stderrOutput(),
+  ]);
+  assertEquals(dec.decode(stderrOutput), "");
+  assertEquals(dec.decode(output), "abcd\n".repeat(1_000) + "\n");
+  p.close();
+  controller.abort();
   await serveFinish;
 });
 
@@ -41,16 +53,29 @@ Deno.test("[node/https] get makes https GET request", async () => {
     return new Response("abcd\n".repeat(1_000));
   }, { keyFile, certFile, port: 4505, hostname: "localhost", signal });
 
-  https.get("https://localhost:4505", (res: any) => {
-    let data = "";
-    res.on("data", (chunk: any) => {
-      data += chunk;
-    });
-    res.on("end", () => {
-      assertEquals(data.length, 5_000);
-      controller.abort();
-    });
-  }).end();
-
+  const p = Deno.run({
+    cmd: [
+      Deno.execPath(),
+      "run",
+      "--quiet",
+      "--unstable",
+      "--allow-all",
+      "--no-check",
+      "node/testdata/https-get.ts",
+    ],
+    stdout: "piped",
+    stderr: "piped",
+    env: {
+      NODE_EXTRA_CA_CERTS: join(tlsDataDir, "RootCA.pem"),
+    },
+  });
+  const [output, stderrOutput] = await Promise.all([
+    p.output(),
+    p.stderrOutput(),
+  ]);
+  assertEquals(dec.decode(stderrOutput), "");
+  assertEquals(dec.decode(output), "abcd\n".repeat(1_000) + "\n");
+  p.close();
+  controller.abort();
   await serveFinish;
 });
