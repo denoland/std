@@ -29,7 +29,7 @@ import {
 } from "./internal/readline/callbacks.js";
 import { emitKeypressEvents } from "./internal/readline/emitKeypressEvents.js";
 import { validateAbortSignal } from "./internal/validators.js";
-import { promisify } from "./_util/_util_promisify.ts";
+import { promisify } from "./internal/util.js";
 import { AbortError } from "./_errors.ts";
 
 import {

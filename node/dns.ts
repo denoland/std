@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { nextTick } from "./_next_tick.ts";
-import { kCustomPromisifyArgsSymbol as customPromisifyArgs } from "./_util/_util_promisify.ts";
+import { customPromisifyArgs } from "./internal/util.js";
 import {
   validateCallback,
   validateOneOf,

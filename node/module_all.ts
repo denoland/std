@@ -45,6 +45,7 @@ import internalStreamsState from "./internal/streams/state.js";
 import internalTestBinding from "./internal/test/binding.ts";
 import internalTimers from "./internal/timers.ts";
 import internalUtilInspect from "./internal/util/inspect.js";
+import internalUtil from "./internal/util.js";
 import net from "./net.ts";
 import os from "./os.ts";
 import path from "./path.ts";
@@ -109,6 +110,7 @@ export default {
   "internal/test/binding": internalTestBinding,
   "internal/timers": internalTimers,
   "internal/util/inspect": internalUtilInspect,
+  "internal/util": internalUtil,
   net,
   os,
   path,
