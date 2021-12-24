@@ -149,6 +149,8 @@
       "test-fs-chmod-mask.js",
       "test-fs-chmod.js",
       "test-fs-chown-type-check.js",
+      "test-fs-readdir-stack-overflow.js",
+      "test-fs-readdir.js",
       "test-fs-readfile-empty.js",
       "test-fs-rm.js",
       "test-fs-rmdir-recursive-sync-warns-not-found.js",
@@ -369,6 +371,7 @@
     "parallel": [
       "test-child-process-fork.js",
       "test-fs-access.js",
+      "test-fs-readdir-stack-overflow.js",
       "test-fs-write-file-invalid-path.js",
       "test-fs-write-file-sync.js",
       "test-fs-write-file.js",

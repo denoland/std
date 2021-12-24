@@ -22,6 +22,7 @@ export function asyncIterableIteratorToCallback<T>(
 export function asyncIterableToCallback<T>(
   iter: AsyncIterable<T>,
   callback: (val: T, done?: boolean) => void,
+  errCallback: (e: unknown) => void,
 ) {
   const iterator = iter[Symbol.asyncIterator]();
   function next() {
@@ -32,7 +33,7 @@ export function asyncIterableToCallback<T>(
       }
       callback(obj.value);
       next();
-    });
+    }, errCallback);
   }
   next();
 }
@@ -91,6 +92,8 @@ export function watch(
   asyncIterableToCallback<Deno.FsEvent>(iterator, (val, done) => {
     if (done) return;
     fsWatcher.emit("change", val.kind, val.paths[0]);
+  }, (e) => {
+    fsWatcher.emit("error", e);
   });
 
   return fsWatcher;

@@ -1,6 +1,8 @@
 import { asyncIterableToCallback } from "./_fs_watch.ts";
 import Dirent from "./_fs_dirent.ts";
-import { fromFileUrl } from "../path.ts";
+import { denoErrorToNodeError } from "../_errors.ts";
+import { getValidatedPath } from "../internal/fs/utils.js";
+import { Buffer } from "../buffer.ts";
 
 function toDirent(val: Deno.DirEntry): Dirent {
   return new Dirent(val);
@@ -20,18 +22,18 @@ type readDirBoth = (
 ) => void;
 
 export function readdir(
-  path: string | URL,
+  path: string | Buffer | URL,
   options: { withFileTypes?: false; encoding?: string },
   callback: readDirCallback,
 ): void;
 export function readdir(
-  path: string | URL,
+  path: string | Buffer | URL,
   options: { withFileTypes: true; encoding?: string },
   callback: readDirCallbackDirent,
 ): void;
 export function readdir(path: string | URL, callback: readDirCallback): void;
 export function readdir(
-  path: string | URL,
+  path: string | Buffer | URL,
   optionsOrCallback: readDirOptions | readDirCallback | readDirCallbackDirent,
   maybeCallback?: readDirCallback | readDirCallbackDirent,
 ) {
@@ -43,7 +45,7 @@ export function readdir(
     ? optionsOrCallback
     : null;
   const result: Array<string | Dirent> = [];
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = getValidatedPath(path);
 
   if (!callback) throw new Error("No callback function supplied");
 
@@ -58,7 +60,7 @@ export function readdir(
   }
 
   try {
-    asyncIterableToCallback(Deno.readDir(path), (val, done) => {
+    asyncIterableToCallback(Deno.readDir(path.toString()), (val, done) => {
       if (typeof path !== "string") return;
       if (done) {
         callback(null, result);
@@ -67,9 +69,11 @@ export function readdir(
       if (options?.withFileTypes) {
         result.push(toDirent(val));
       } else result.push(decode(val.name));
+    }, (e) => {
+      callback(denoErrorToNodeError(e as Error, { syscall: "readdir" }));
     });
-  } catch (error) {
-    callback(error instanceof Error ? error : new Error("[non-error thrown]"));
+  } catch (e) {
+    callback(denoErrorToNodeError(e as Error, { syscall: "readdir" }));
   }
 }
 
@@ -83,19 +87,19 @@ function decode(str: string, encoding?: string): string {
 }
 
 export function readdirSync(
-  path: string | URL,
+  path: string | Buffer | URL,
   options: { withFileTypes: true; encoding?: string },
 ): Dirent[];
 export function readdirSync(
-  path: string | URL,
+  path: string | Buffer | URL,
   options?: { withFileTypes?: false; encoding?: string },
 ): string[];
 export function readdirSync(
-  path: string | URL,
+  path: string | Buffer | URL,
   options?: readDirOptions,
 ): Array<string | Dirent> {
   const result = [];
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  path = getValidatedPath(path);
 
   if (options?.encoding) {
     try {
@@ -107,10 +111,14 @@ export function readdirSync(
     }
   }
 
-  for (const file of Deno.readDirSync(path)) {
-    if (options?.withFileTypes) {
-      result.push(toDirent(file));
-    } else result.push(decode(file.name));
+  try {
+    for (const file of Deno.readDirSync(path.toString())) {
+      if (options?.withFileTypes) {
+        result.push(toDirent(file));
+      } else result.push(decode(file.name));
+    }
+  } catch (e) {
+    throw denoErrorToNodeError(e as Error, { syscall: "readdir" });
   }
   return result;
 }
