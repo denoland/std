@@ -73,7 +73,7 @@ export function readdir(
       callback(denoErrorToNodeError(e as Error, { syscall: "readdir" }));
     });
   } catch (e) {
-    callback(denoErrorToNodeError(e, { syscall: "readdir" }));
+    callback(denoErrorToNodeError(e as Error, { syscall: "readdir" }));
   }
 }
 
@@ -118,7 +118,7 @@ export function readdirSync(
       } else result.push(decode(file.name));
     }
   } catch (e) {
-    throw denoErrorToNodeError(e, { syscall: "readdir" });
+    throw denoErrorToNodeError(e as Error, { syscall: "readdir" });
   }
   return result;
 }
