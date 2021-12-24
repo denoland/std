@@ -382,6 +382,7 @@
       "test-util-inspect-proxy.js",
       "test-util-inspect.js",
       "test-util-isDeepStrictEqual.js",
+      "test-util-promisify.js",
       "test-util-types.js",
       "test-util.js"
     ]
