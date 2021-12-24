@@ -2,8 +2,12 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import { notImplemented } from "./_utils.ts";
-import { Readable, Writable } from "./stream.ts";
 import { urlToHttpOptions } from "./internal/url.ts";
+import {
+  ClientRequest,
+  IncomingMessageForClient as IncomingMessage,
+  type RequestOptions,
+} from "./http.ts";
 
 export class Agent {
   constructor() {
@@ -19,33 +23,8 @@ export function createServer() {
   notImplemented();
 }
 
-interface RequestOptions {
-  agent?: Agent | boolean;
-  auth?: string;
-  // deno-lint-ignore ban-types
-  createConnection?: Function;
-  defaultPort?: number;
-  family?: number;
-  // deno-lint-ignore ban-types
-  headers?: Object;
-  hints?: number;
-  host?: string;
-  hostname?: string;
-  insecureHTTPParser?: boolean;
-  localAddress?: string;
-  localPort?: number;
-  // deno-lint-ignore ban-types
-  lookup?: Function;
-  maxHeaderSize?: number;
-  method?: string;
-  path?: string;
-  port?: number;
-  protocol?: string;
-  setHost?: boolean;
-  socketPath?: string;
-  timeout?: number;
-  signal?: AbortSignal;
-  href?: string;
+interface HttpsRequestOptions extends RequestOptions {
+  _: unknown;
 }
 
 // Store additional root CAs.
@@ -56,16 +35,16 @@ let caCerts: string[] | undefined | null;
 /** Makes a request to an https server. */
 export function get(
   url: string | URL,
-  cb?: (res: HttpsIncomingMessage) => void,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 export function get(
-  opts: RequestOptions,
-  cb?: (res: HttpsIncomingMessage) => void,
+  opts: HttpsRequestOptions,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 export function get(
   url: string | URL,
-  opts: RequestOptions,
-  cb?: (res: HttpsIncomingMessage) => void,
+  opts: HttpsRequestOptions,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 // deno-lint-ignore no-explicit-any
 export function get(...args: any[]) {
@@ -76,46 +55,8 @@ export function get(...args: any[]) {
 
 export const globalAgent = undefined;
 /** HttpsClientRequest class loosely follows http.ClientRequest class API. */
-class HttpsClientRequest extends Writable {
-  body: null | ReadableStream = null;
-  controller: ReadableStreamDefaultController | null = null;
-  constructor(
-    public opts: RequestOptions,
-    public cb: (res: HttpsIncomingMessage) => void,
-  ) {
-    super();
-  }
-
-  // deno-lint-ignore no-explicit-any
-  _write(chunk: any, _enc: string, cb: () => void) {
-    if (this.controller) {
-      this.controller.enqueue(chunk);
-      cb();
-      return;
-    }
-
-    this.body = new ReadableStream({
-      start: (controller) => {
-        this.controller = controller;
-        controller.enqueue(chunk);
-        cb();
-      },
-    });
-  }
-
-  async _final() {
-    const client = await this.#createCustomClient();
-    const opts = { body: this.body, method: this.opts.method, client };
-    const res = new HttpsIncomingMessage(await fetch(this.opts.href!, opts));
-    if (client) {
-      res.on("end", () => {
-        client.close();
-      });
-    }
-    this.cb(res);
-  }
-
-  async #createCustomClient(): Promise<Deno.HttpClient | undefined> {
+class HttpsClientRequest extends ClientRequest {
+  async _createCustomClient(): Promise<Deno.HttpClient | undefined> {
     if (caCerts === null) {
       return undefined;
     }
@@ -141,58 +82,19 @@ class HttpsClientRequest extends Writable {
   }
 }
 
-/** HttpsIncomingMessage class loosely follows http.IncomingMessage class API. */
-class HttpsIncomingMessage extends Readable {
-  reader: ReadableStreamDefaultReader | undefined;
-  constructor(public resp: Response) {
-    super();
-    this.reader = resp.body?.getReader();
-  }
-
-  async _read(_size: number) {
-    if (this.reader === undefined) {
-      this.push(null);
-      return;
-    }
-    try {
-      const res = await this.reader.read();
-      if (res.done) {
-        this.push(null);
-        return;
-      }
-      this.push(res.value);
-    } catch (e) {
-      // deno-lint-ignore no-explicit-any
-      this.destroy(e as any);
-    }
-  }
-
-  get headers() {
-    return this.resp.headers;
-  }
-
-  get statusCode() {
-    return this.resp.status;
-  }
-
-  get statusMessage() {
-    return this.resp.statusText;
-  }
-}
-
 /** Makes a request to an https server. */
 export function request(
   url: string | URL,
-  cb?: (res: HttpsIncomingMessage) => void,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 export function request(
-  opts: RequestOptions,
-  cb?: (res: HttpsIncomingMessage) => void,
+  opts: HttpsRequestOptions,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 export function request(
   url: string | URL,
-  opts: RequestOptions,
-  cb?: (res: HttpsIncomingMessage) => void,
+  opts: HttpsRequestOptions,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 // deno-lint-ignore no-explicit-any
 export function request(...args: any[]) {
