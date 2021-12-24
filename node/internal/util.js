@@ -173,7 +173,7 @@ export function promisify(
   const argumentNames = original[kCustomPromisifyArgsSymbol];
   function fn(...args) {
     return new Promise((resolve, reject) => {
-      original.call(...args, (err, ...values) => {
+      args.push((err, ...values) => {
         if (err) {
           return reject(err);
         }
@@ -187,6 +187,7 @@ export function promisify(
           resolve(values[0]);
         }
       });
+      Reflect.apply(original, this, args);
     });
   }
 
