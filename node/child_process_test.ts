@@ -12,8 +12,8 @@ import { isWindows } from "../_util/os.ts";
 import * as path from "../path/mod.ts";
 import { Buffer } from "./buffer.ts";
 
-function withTimeout(timeoutInMS: number): Deferred<void> {
-  const promise = deferred<void>();
+function withTimeout<T>(timeoutInMS: number): Deferred<T> {
+  const promise = deferred<T>();
   const timer = setTimeout(() => {
     promise.reject("Timeout");
   }, timeoutInMS);
@@ -111,6 +111,54 @@ Deno.test({
     } finally {
       childProcess.kill();
     }
+  },
+});
+
+async function spawnAndGetEnvValue(
+  inputValue: string | number | boolean,
+): Promise<string> {
+  const promise = withTimeout<string>(3000);
+  const env = spawn(
+    `"${Deno.execPath()}" eval -p "Deno.env.toObject().BAZ"`,
+    {
+      env: { BAZ: inputValue, NO_COLOR: "true" },
+      shell: true,
+    },
+  );
+  try {
+    let envOutput = "";
+
+    assert(env.stdout);
+    env.on("error", (err: Error) => promise.reject(err));
+    env.stdout.on("data", (data) => {
+      envOutput += data;
+    });
+    env.on("close", () => {
+      promise.resolve(envOutput.trim());
+    });
+    return await promise;
+  } finally {
+    env.kill();
+  }
+}
+
+Deno.test({
+  ignore: isWindows,
+  name:
+    "[node/child_process spawn] Verify that environment values can be numbers",
+  async fn() {
+    const envOutputValue = await spawnAndGetEnvValue(42);
+    assertStrictEquals(envOutputValue, "42");
+  },
+});
+
+Deno.test({
+  ignore: isWindows,
+  name:
+    "[node/child_process spawn] Verify that environment values can be booleans",
+  async fn() {
+    const envOutputValue = await spawnAndGetEnvValue(false);
+    assertStrictEquals(envOutputValue, "false");
   },
 });
 
