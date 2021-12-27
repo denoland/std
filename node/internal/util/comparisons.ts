@@ -366,6 +366,10 @@ function areEqualArrayBuffers(buf1: any, buf2: any): boolean {
   );
 }
 
+// TODO(standvpmnt):  this check of getOwnPropertySymbols and getOwnPropertyNames
+// length is sufficient to handle the current test case, however this will fail
+// to catch a scenario wherein the getOwnPropertySymbols and getOwnPropertyNames
+// length is the same(will be very contrived but a possible shortcoming
 function isEqualBoxedPrimitive(a: any, b: any): boolean {
   if (
     Object.getOwnPropertyNames(a).length !==
