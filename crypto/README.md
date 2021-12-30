@@ -21,7 +21,9 @@ console.log(
 
 ## Supported algorithms
 
-Here is a list of supported algorithms. If the algorithm name in WebCrypto and WASM/Rust is the same, this library prefers to use algorithms that are supported by WebCrypto.
+Here is a list of supported algorithms. If the algorithm name in WebCrypto and
+WASM/Rust is the same, this library prefers to use algorithms that are supported
+by WebCrypto.
 
 WebCrypto
 
