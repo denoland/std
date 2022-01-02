@@ -9,7 +9,7 @@ type WebCryptoAlgorithmIdentifier = string | { name: string };
 
 // TODO(jeremyBanks): Remove this once the built-in `Crypto` interface is
 // complete and stable. For now we use this incomplete-but-stable definition.
-interface WebCrypto {
+export interface WebCrypto {
   getRandomValues<T extends BufferSource>(buffer: T): T;
   randomUUID?(): string;
   subtle?: {
