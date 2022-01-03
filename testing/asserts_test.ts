@@ -703,6 +703,8 @@ Deno.test({
     assertEquals({ a: 10 }, { a: 10 });
     assertEquals(true, true);
     assertEquals(10, 10);
+    assertEquals(0, -0);
+    assertEquals(+0, -0);
     assertEquals("abc", "abc");
     assertEquals({ a: 10, b: { c: "1" } }, { a: 10, b: { c: "1" } });
     assertEquals(new Date("invalid"), new Date("invalid"));

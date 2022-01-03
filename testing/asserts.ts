@@ -140,6 +140,12 @@ export function equal(c: unknown, d: unknown): boolean {
     if (Object.is(a, b)) {
       return true;
     }
+    if (typeof a === "number" && typeof b === "number") {
+      if (Number.isNaN(a) && Number.isNaN(b)) {
+        return true;
+      }
+      return a === b;
+    }
     if (a && typeof a === "object" && b && typeof b === "object") {
       if (a && b && !constructorsEqual(a, b)) {
         return false;
@@ -180,7 +186,10 @@ export function equal(c: unknown, d: unknown): boolean {
 
         return unmatchedEntries === 0;
       }
-      const merged = { ...a, ...b };
+      const merged = {
+        ...a,
+        ...b,
+      };
       for (
         const key of [
           ...Object.getOwnPropertyNames(merged),
@@ -191,7 +200,7 @@ export function equal(c: unknown, d: unknown): boolean {
         if (!compare(a && a[key as Key], b && b[key as Key])) {
           return false;
         }
-        if (((key in a) && (!(key in b))) || ((key in b) && (!(key in a)))) {
+        if ((key in a && !(key in b)) || (key in b && !(key in a))) {
           return false;
         }
       }
