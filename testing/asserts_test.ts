@@ -26,6 +26,9 @@ import { bold, gray, green, red, stripColor, yellow } from "../fmt/colors.ts";
 Deno.test("testingEqual", function (): void {
   assert(equal("world", "world"));
   assert(!equal("hello", "world"));
+  assert(equal(-0, 0));
+  assert(equal(0, +0));
+  assert(equal(-0, +0));
   assert(equal(5, 5));
   assert(!equal(5, 6));
   assert(equal(NaN, NaN));
