@@ -217,7 +217,8 @@ export class RotatingFileHandler extends FileHandler {
       this.#currentFileSize = 0;
     }
 
-    this._buf.writeSync(this._encoder.encode(msg + "\n"));
+    super.log(msg);
+
     this.#currentFileSize += msgByteLength;
   }
 
