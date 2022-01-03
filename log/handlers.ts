@@ -138,6 +138,9 @@ export class FileHandler extends WriterHandler {
   }
 
   log(msg: string): void {
+    if (this._encoder.encode(msg).byteLength + 1 > this._buf.available()) {
+      this.flush();
+    }
     this._buf.writeSync(this._encoder.encode(msg + "\n"));
   }
 
