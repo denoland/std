@@ -130,6 +130,45 @@ Deno.test("testFormatterAsFunction", function (): void {
 });
 
 Deno.test({
+  name: "FileHandler Shouldn't Have Broken line",
+  async fn() {
+    class TestFileHandler extends FileHandler {
+      flush() {
+        super.flush();
+        const decoder = new TextDecoder("utf-8");
+        const data = Deno.readFileSync(LOG_FILE);
+        const text = decoder.decode(data);
+        assertEquals(text.slice(-1), "\n");
+      }
+
+      async destroy() {
+        await super.destroy();
+        Deno.removeSync(LOG_FILE);
+      }
+    }
+
+    const testFileHandler = new TestFileHandler("WARNING", {
+      filename: LOG_FILE,
+      mode: "w",
+    });
+    await testFileHandler.setup();
+
+    for (let i = 0; i < 300; i++) {
+      testFileHandler.handle(
+        new LogRecord({
+          msg: "The starry heavens above me and the moral law within me.",
+          args: [],
+          level: LogLevels.WARNING,
+          loggerName: "default",
+        }),
+      );
+    }
+
+    await testFileHandler.destroy();
+  },
+});
+
+Deno.test({
   name: "FileHandler with mode 'w' will wipe clean existing log file",
   async fn() {
     const fileHandler = new FileHandler("WARNING", {
