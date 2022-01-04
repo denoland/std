@@ -23,12 +23,21 @@ import {
 } from "./asserts.ts";
 import { bold, gray, green, red, stripColor, yellow } from "../fmt/colors.ts";
 
+Deno.test("testingEqualDifferentZero", () => {
+  assert(equal(0, -0));
+  assert(equal(0, +0));
+  assert(equal(+0, -0));
+  assert(equal([0], [-0]));
+  assert(equal(["hello", 12.21, 0], ["hello", 12.21, -0]));
+  assert(equal(["hello", 12.21, 0], ["hello", 12.21, +0]));
+  assert(equal(["hello", 12.21, -0], ["hello", 12.21, +0]));
+  assert(equal({ msg: "hello", case: 0 }, { msg: "hello", case: -0 }));
+  assert(equal({ msg: "hello", array: [0] }, { msg: "hello", array: [-0] }));
+});
+
 Deno.test("testingEqual", function (): void {
   assert(equal("world", "world"));
   assert(!equal("hello", "world"));
-  assert(equal(-0, 0));
-  assert(equal(0, +0));
-  assert(equal(-0, +0));
   assert(equal(5, 5));
   assert(!equal(5, 6));
   assert(equal(NaN, NaN));
