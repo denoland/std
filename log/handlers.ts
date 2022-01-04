@@ -102,9 +102,9 @@ export class FileHandler extends WriterHandler {
   protected _mode: LogMode;
   protected _openOptions: Deno.OpenOptions;
   protected _encoder = new TextEncoder();
-  #unloadCallback() {
+  #unloadCallback = (()=> {
     this.destroy();
-  }
+  }).bind(this);
 
   constructor(levelName: LevelName, options: FileHandlerOptions) {
     super(levelName, options);
@@ -125,7 +125,7 @@ export class FileHandler extends WriterHandler {
     this._writer = this._file;
     this._buf = new BufWriterSync(this._file);
 
-    addEventListener("unload", this.#unloadCallback.bind(this));
+    addEventListener("unload", this.#unloadCallback);
   }
 
   handle(logRecord: LogRecord): void {

@@ -138,9 +138,7 @@ Deno.test({
         const decoder = new TextDecoder("utf-8");
         const data = Deno.readFileSync(LOG_FILE);
         const text = decoder.decode(data);
-        if (text !== "") {
-          assert(text.endsWith("\n"));
-        }
+        assertEquals(text.slice(-1), "\n");
       }
 
       async destroy() {
@@ -499,6 +497,7 @@ Deno.test({
     ); // 'ERROR AAA\n' = 10 bytes
 
     assertEquals((await Deno.stat(LOG_FILE)).size, 0);
+    dispatchEvent(new Event("unload"));
     dispatchEvent(new Event("unload"));
     assertEquals((await Deno.stat(LOG_FILE)).size, 10);
 
