@@ -137,8 +137,10 @@ Deno.test({
         super.flush();
         const decoder = new TextDecoder("utf-8");
         const data = Deno.readFileSync(LOG_FILE);
-        const text = decoder.decode(data);
-        assertEquals(text.slice(-1), "\n");
+        text = decoder.decode(data);
+        if (text !== "") {
+          assert(text.endsWith("\n"));
+        }
       }
 
       async destroy() {
