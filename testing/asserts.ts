@@ -137,6 +137,9 @@ export function equal(c: unknown, d: unknown): boolean {
       }
       return a.getTime() === b.getTime();
     }
+    if (typeof a === "number" && typeof b === "number") {
+      return Number.isNaN(a) && Number.isNaN(b) || a === b;
+    }
     if (Object.is(a, b)) {
       return true;
     }
