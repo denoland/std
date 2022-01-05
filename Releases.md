@@ -1,3 +1,18 @@
+### 0.120.0 / 2022.01.05
+
+- feat(crypto): add Tiger hash (#1749)
+- feat(node): add https.request (#1746)
+- feat(node): add process.execPath (#1748)
+- feat(node): add vm.runInThisContext (#1747)
+- feat(uuid): add function to detect RFC version of a UUID (#1766)
+- fix(examples/chat): fix applyState call (#1760)
+- fix(node): don't emit exit twice (#1753)
+- fix(node): fix fs.readdir (#1758)
+- fix(node): improve util.isDeepStrictEqual (#1765)
+- fix(node/child_process): allow number and boolean env vars (#1762)
+- fix(path): change default of 'extended' options of glob methods (#1719)
+- fix(testing/assert): inequality of -0 and 0 (#1783)
+
 ### 0.119.0 / 2021.12.22
 
 - feat(hash): add Tiger hash (#1729)
