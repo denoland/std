@@ -38,6 +38,8 @@ interface FileServerArgs {
   key: string;
   // -h --help
   help: boolean;
+  // --quiet
+  quiet: boolean;
 }
 
 const encoder = new TextEncoder();
@@ -450,7 +452,8 @@ function serverLog(req: Request, res: Response): void {
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const normalizedUrl = normalizeURL(req.url);
   const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${res.status}`;
-  console.log(s);
+  // using console.debug instead of console.log so chrome inspect users can hide request logs
+  console.debug(s);
 }
 
 function setBaseHeaders(): Headers {
@@ -614,11 +617,12 @@ function normalizeURL(url: string): string {
 function main(): void {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors", "quiet"],
     default: {
       "dir-listing": true,
       dotfiles: true,
       cors: true,
+      quiet: false,
       host: "0.0.0.0",
       port: "4507",
       cert: "",
@@ -637,6 +641,7 @@ function main(): void {
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
   const dirListingEnabled = serverArgs["dir-listing"];
+  const quiet = serverArgs.quiet;
 
   if (serverArgs.help) {
     printUsage();
@@ -689,7 +694,7 @@ function main(): void {
       setCORS(response);
     }
 
-    serverLog(req, response!);
+    if (!quiet) serverLog(req, response!);
 
     return response!;
   };
@@ -737,6 +742,7 @@ OPTIONS:
   -k, --key  <FILE>   TLS key file (enables TLS)
   --no-dir-listing    Disable directory listing
   --no-dotfiles       Do not show dotfiles
+  --quiet             Do not print request level logs
 
   All TLS options are required when one is provided.`);
 }
