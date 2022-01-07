@@ -342,10 +342,42 @@ function skip(msg) {
   process.exit(0);
 }
 
+function getArrayBufferViews(buf) {
+  const { buffer, byteOffset, byteLength } = buf;
+
+  const out = [];
+
+  const arrayBufferViews = [
+    Int8Array,
+    Uint8Array,
+    Uint8ClampedArray,
+    Int16Array,
+    Uint16Array,
+    Int32Array,
+    Uint32Array,
+    Float32Array,
+    Float64Array,
+    DataView,
+  ];
+
+  for (const type of arrayBufferViews) {
+    const { BYTES_PER_ELEMENT = 1 } = type;
+    if (byteLength % BYTES_PER_ELEMENT === 0) {
+      out.push(new type(buffer, byteOffset, byteLength / BYTES_PER_ELEMENT));
+    }
+  }
+  return out;
+}
+
+function getBufferSources(buf) {
+  return [...getArrayBufferViews(buf), new Uint8Array(buf).buffer];
+}
+
 module.exports = {
   allowGlobals,
   expectsError,
   expectWarning,
+  getBufferSources,
   invalidArgTypeHelper,
   mustCall,
   mustCallAtLeast,
