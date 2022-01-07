@@ -343,13 +343,14 @@ testWalk(
 );
 
 testWalk(
-  async (d: string) => {
-    await Deno.mkdir(d + "/a", { recursive: true });
-    Deno.run({cmd:['mkfifo', `${d}/mkfifo`]})
+  (d: string) => {
+    return Deno.run({cmd:['mkfifo', `${d}/mkfifo`]});
   },
-  async function subDirWithSocket() {
+  async function fifoSocket(listener: Deno.Process) {
     assertReady(1);
-    const arr = await walkArray("a");
-    assertEquals(arr, ["a"]);
-  }
+    const files = await walkArray(".", { followSymlinks: true });
+    assertEquals(files, ["."]);
+    listener.close();
+  },
+  Deno.build.os === "windows",
 );
