@@ -366,7 +366,8 @@
       "test-util-promisify.js",
       "test-util-types.js",
       "test-util.js",
-      "test-vm-static-this.js"
+      "test-vm-static-this.js",
+      "test-zlib-unzip-one-byte-chunks.js"
     ]
   },
   "windowsIgnore": {

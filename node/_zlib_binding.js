@@ -4,12 +4,7 @@
 // deno-lint-ignore-file
 
 import assert from "./assert.ts";
-import {
-  constants,
-  deflate as zlib_deflate,
-  inflate as zlib_inflate,
-  Zstream,
-} from "./_pako.js";
+import { constants, zlib_deflate, zlib_inflate, Zstream } from "./_pako.js";
 
 export const Z_NO_FLUSH = constants.Z_NO_FLUSH;
 export const Z_PARTIAL_FLUSH = constants.Z_PARTIAL_FLUSH;
@@ -32,9 +27,9 @@ export const Z_BEST_COMPRESSION = constants.Z_BEST_COMPRESSION;
 export const Z_DEFAULT_COMPRESSION = constants.Z_DEFAULT_COMPRESSION;
 export const Z_FILTERED = constants.Z_FILTERED;
 export const Z_HUFFMAN_ONLY = constants.Z_HUFFMAN_ONLYZ_FILTERED;
-export const Z_RLE = constants.Z_RLEZ_FILTERED;
-export const Z_FIXED = constants.Z_FIXEDZ_FILTERED;
-export const Z_DEFAULT_STRATEGY = constants.Z_DEFAULT_STRATEGYZ_FILTERED;
+export const Z_RLE = constants.Z_RLE;
+export const Z_FIXED = constants.Z_FIXED;
+export const Z_DEFAULT_STRATEGY = constants.Z_DEFAULT_STRATEGY;
 export const Z_BINARY = constants.Z_BINARY;
 export const Z_TEXT = constants.Z_TEXT;
 export const Z_UNKNOWN = constants.Z_UNKNOWN;
