@@ -65,6 +65,7 @@ import timersPromises from "./timers/promises.ts";
 import tls from "./tls.ts";
 import tty from "./tty.ts";
 import url from "./url.ts";
+import utilTypes from "./util/types.js";
 import util from "./util.ts";
 import v8 from "./v8.ts";
 import vm from "./vm.ts";
@@ -130,6 +131,7 @@ export default {
   tls,
   tty,
   url,
+  "util/types": utilTypes,
   util,
   v8,
   vm,
