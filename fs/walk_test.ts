@@ -341,3 +341,15 @@ testWalk(
   // TODO(kt3k): Enable this test
   true,
 );
+
+testWalk(
+  async (d: string) => {
+    await Deno.mkdir(d + "/a", { recursive: true });
+    Deno.run({cmd:['mkfifo', `${d}/mkfifo`]})
+  },
+  async function subDirWithSocket() {
+    assertReady(1);
+    const arr = await walkArray("a");
+    assertEquals(arr, ["a"]);
+  }
+);
