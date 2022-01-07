@@ -41,7 +41,11 @@
       "test-util-promisify.js",
       "test-util-types.js",
       "test-util.js",
-      "test-zlib-convenience-methods.js"
+      "test-zlib-convenience-methods.js",
+      "test-zlib-empty-buffer.js",
+      "test-zlib-write-after-flush.js",
+      "test-zlib-zero-byte.js",
+      "test-zlib-zero-windowBits.js"
     ]
   },
   "tests": {
@@ -373,7 +377,18 @@
       "test-zlib-convenience-methods.js",
       "test-zlib-deflate-raw-inherits.js",
       "test-zlib-destroy-pipe.js",
-      "test-zlib-unzip-one-byte-chunks.js"
+      "test-zlib-empty-buffer.js",
+      "test-zlib-from-string.js",
+      "test-zlib-invalid-input.js",
+      "test-zlib-no-stream.js",
+      "test-zlib-random-byte-pipes.js",
+      "test-zlib-sync-no-event.js",
+      "test-zlib-truncated.js",
+      "test-zlib-unzip-one-byte-chunks.js",
+      "test-zlib-write-after-end.js",
+      "test-zlib-write-after-flush.js",
+      "test-zlib-zero-byte.js",
+      "test-zlib-zero-windowBits.js"
     ]
   },
   "windowsIgnore": {
