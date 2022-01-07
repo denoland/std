@@ -5,43 +5,14 @@
 
 import { Buffer } from "./buffer.ts";
 import { Transform } from "./stream.ts";
-import binding from "./_zlib_binding.js";
+import * as binding from "./_zlib_binding.js";
 import util from "./util.ts";
 import { ok as assert } from "./assert.ts";
-import { kMaxLength } from "./buffer.ts";
+import { kMaxLength } from "./_buffer.js";
+import { zlib as zlibConstants } from "./internal_binding/constants.ts";
 
 var kRangeErrorMessage = "Cannot create final Buffer. It would be larger " +
   "than 0x" + kMaxLength.toString(16) + " bytes";
-
-// zlib doesn't provide these, so kludge them in following the same
-// const naming scheme zlib uses.
-binding.Z_MIN_WINDOWBITS = 8;
-binding.Z_MAX_WINDOWBITS = 15;
-binding.Z_DEFAULT_WINDOWBITS = 15;
-
-// fewer than 64 bytes per chunk is stupid.
-// technically it could work with as few as 8, but even 64 bytes
-// is absurdly low.  Usually a MB or more is best.
-binding.Z_MIN_CHUNK = 64;
-binding.Z_MAX_CHUNK = Infinity;
-binding.Z_DEFAULT_CHUNK = 16 * 1024;
-
-binding.Z_MIN_MEMLEVEL = 1;
-binding.Z_MAX_MEMLEVEL = 9;
-binding.Z_DEFAULT_MEMLEVEL = 8;
-
-binding.Z_MIN_LEVEL = -1;
-binding.Z_MAX_LEVEL = 9;
-binding.Z_DEFAULT_LEVEL = binding.Z_DEFAULT_COMPRESSION;
-
-// expose all the zlib constants
-
-const Z_DEFAULT_COMPRESSION = binding.Z_DEFAULT_COMPRESSION;
-const Z_FILTERED = binding.Z_FILTERED;
-const Z_HUFFMAN_ONLY = binding.Z_HUFFMAN_ONLYZ_FILTERED;
-const Z_RLE = binding.Z_RLEZ_FILTERED;
-const Z_FIXED = binding.Z_FIXEDZ_FILTERED;
-const Z_DEFAULT_STRATEGY = binding.Z_DEFAULT_STRATEGYZ_FILTERED;
 
 // translation table for return codes.
 export const codes = {
@@ -285,7 +256,7 @@ function Zlib(opts, mode) {
   var _this = this;
 
   this._opts = opts = opts || {};
-  this._chunkSize = opts.chunkSize || Z_DEFAULT_CHUNK;
+  this._chunkSize = opts.chunkSize || zlibConstants.Z_DEFAULT_CHUNK;
 
   Transform.call(this, opts);
 
@@ -302,36 +273,48 @@ function Zlib(opts, mode) {
     : binding.Z_FINISH;
 
   if (opts.chunkSize) {
-    if (opts.chunkSize < Z_MIN_CHUNK || opts.chunkSize > Z_MAX_CHUNK) {
+    if (
+      opts.chunkSize < zlibConstants.Z_MIN_CHUNK ||
+      opts.chunkSize > zlibConstants.Z_MAX_CHUNK
+    ) {
       throw new Error("Invalid chunk size: " + opts.chunkSize);
     }
   }
 
   if (opts.windowBits) {
     if (
-      opts.windowBits < Z_MIN_WINDOWBITS || opts.windowBits > Z_MAX_WINDOWBITS
+      opts.windowBits < zlibConstants.Z_MIN_WINDOWBITS ||
+      opts.windowBits > zlibConstants.Z_MAX_WINDOWBITS
     ) {
       throw new Error("Invalid windowBits: " + opts.windowBits);
     }
   }
 
   if (opts.level) {
-    if (opts.level < Z_MIN_LEVEL || opts.level > Z_MAX_LEVEL) {
+    if (
+      opts.level < zlibConstants.Z_MIN_LEVEL ||
+      opts.level > zlibConstants.Z_MAX_LEVEL
+    ) {
       throw new Error("Invalid compression level: " + opts.level);
     }
   }
 
   if (opts.memLevel) {
-    if (opts.memLevel < Z_MIN_MEMLEVEL || opts.memLevel > Z_MAX_MEMLEVEL) {
+    if (
+      opts.memLevel < zlibConstants.Z_MIN_MEMLEVEL ||
+      opts.memLevel > zlibConstants.Z_MAX_MEMLEVEL
+    ) {
       throw new Error("Invalid memLevel: " + opts.memLevel);
     }
   }
 
   if (opts.strategy) {
     if (
-      opts.strategy != Z_FILTERED && opts.strategy != Z_HUFFMAN_ONLY &&
-      opts.strategy != Z_RLE && opts.strategy != Z_FIXED &&
-      opts.strategy != Z_DEFAULT_STRATEGY
+      opts.strategy != zlibConstants.Z_FILTERED &&
+      opts.strategy != zlibConstants.Z_HUFFMAN_ONLY &&
+      opts.strategy != zlibConstants.Z_RLE &&
+      opts.strategy != zlibConstants.Z_FIXED &&
+      opts.strategy != zlibConstants.Z_DEFAULT_STRATEGY
     ) {
       throw new Error("Invalid strategy: " + opts.strategy);
     }
@@ -359,16 +342,16 @@ function Zlib(opts, mode) {
     self.emit("error", error);
   };
 
-  var level = Z_DEFAULT_COMPRESSION;
+  var level = zlibConstants.Z_DEFAULT_COMPRESSION;
   if (typeof opts.level === "number") level = opts.level;
 
-  var strategy = Z_DEFAULT_STRATEGY;
+  var strategy = zlibConstants.Z_DEFAULT_STRATEGY;
   if (typeof opts.strategy === "number") strategy = opts.strategy;
 
   this._handle.init(
-    opts.windowBits || Z_DEFAULT_WINDOWBITS,
+    opts.windowBits || zlibConstants.Z_DEFAULT_WINDOWBITS,
     level,
-    opts.memLevel || Z_DEFAULT_MEMLEVEL,
+    opts.memLevel || zlibConstants.Z_DEFAULT_MEMLEVEL,
     strategy,
     opts.dictionary,
   );
@@ -392,12 +375,15 @@ function Zlib(opts, mode) {
 util.inherits(Zlib, Transform);
 
 Zlib.prototype.params = function (level, strategy, callback) {
-  if (level < Z_MIN_LEVEL || level > Z_MAX_LEVEL) {
+  if (level < zlibConstants.Z_MIN_LEVEL || level > zlibConstants.Z_MAX_LEVEL) {
     throw new RangeError("Invalid compression level: " + level);
   }
   if (
-    strategy != Z_FILTERED && strategy != Z_HUFFMAN_ONLY && strategy != Z_RLE &&
-    strategy != Z_FIXED && strategy != Z_DEFAULT_STRATEGY
+    strategy != zlibConstants.Z_FILTERED &&
+    strategy != zlibConstants.Z_HUFFMAN_ONLY &&
+    strategy != zlibConstants.Z_RLE &&
+    strategy != zlibConstants.Z_FIXED &&
+    strategy != zlibConstants.Z_DEFAULT_STRATEGY
   ) {
     throw new TypeError("Invalid strategy: " + strategy);
   }
