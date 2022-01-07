@@ -18,6 +18,8 @@
 //   misrepresented as being the original software.
 // 3. This notice may not be removed or altered from any source distribution.
 
+// deno-lint-ignore-file
+
 /* eslint-disable space-unary-ops */
 
 /* Public constants ==========================================================*/
@@ -6992,5 +6994,5 @@ export {
   inflateRaw_1 as inflateRaw,
   pako as default,
   ungzip_1 as ungzip,
-  Zstream,
+  ZStream as Zstream,
 };

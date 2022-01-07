@@ -1,6 +1,8 @@
 // Copyright (c) 2014-2015 Devon Govett <devongovett@gmail.com>
 // Forked from https://github.com/browserify/browserify-zlib
 
+// deno-lint-ignore-file
+
 import { Buffer } from "./buffer.ts";
 import { Transform } from "./stream.ts";
 import binding from "./_zlib_binding.js";

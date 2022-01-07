@@ -1,6 +1,8 @@
 // Copyright (c) 2014-2015 Devon Govett <devongovett@gmail.com>
 // Forked from https://github.com/browserify/browserify-zlib
 
+// deno-lint-ignore-file
+
 import assert from "./assert.ts";
 import { constants, zlib_deflate, zlib_inflate, Zstream } from "./_pako.js";
 
