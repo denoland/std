@@ -15,7 +15,7 @@ var kRangeErrorMessage = "Cannot create final Buffer. It would be larger " +
   "than 0x" + kMaxLength.toString(16) + " bytes";
 
 // translation table for return codes.
-export const codes = {
+export const codes = Object.freeze({
   Z_OK: binding.Z_OK,
   Z_STREAM_END: binding.Z_STREAM_END,
   Z_NEED_DICT: binding.Z_NEED_DICT,
@@ -34,7 +34,7 @@ export const codes = {
   [binding.Z_MEM_ERROR]: "Z_MEM_ERROR",
   [binding.Z_BUF_ERROR]: "Z_BUF_ERROR",
   [binding.Z_VERSION_ERRO]: "Z_VERSION_ERROR",
-};
+});
 
 export const createDeflate = function (o) {
   return new Deflate(o);

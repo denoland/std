@@ -40,7 +40,8 @@
       "test-util-isDeepStrictEqual.js",
       "test-util-promisify.js",
       "test-util-types.js",
-      "test-util.js"
+      "test-util.js",
+      "test-zlib-convenience-methods.js"
     ]
   },
   "tests": {
@@ -367,6 +368,11 @@
       "test-util-types.js",
       "test-util.js",
       "test-vm-static-this.js",
+      "test-zlib-close-after-error.js",
+      "test-zlib-close-after-write.js",
+      "test-zlib-convenience-methods.js",
+      "test-zlib-deflate-raw-inherits.js",
+      "test-zlib-destroy-pipe.js",
       "test-zlib-unzip-one-byte-chunks.js"
     ]
   },

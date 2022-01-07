@@ -2,6 +2,7 @@
 import { notImplemented } from "./_utils.ts";
 import { zlib as constants } from "./internal_binding/constants.ts";
 import {
+  codes,
   createDeflate,
   createDeflateRaw,
   createGunzip,
@@ -75,6 +76,7 @@ export function brotliDecompress() {
 export function brotliDecompressSync() {
   notImplemented();
 }
+
 export default {
   Options,
   BrotliOptions,
@@ -89,6 +91,7 @@ export default {
   Unzip,
   ZlibBase,
   constants,
+  codes,
   createBrotliCompress,
   createBrotliDecompress,
   createDeflate,
