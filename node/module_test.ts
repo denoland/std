@@ -108,6 +108,9 @@ Deno.test("native modules are extensible", () => {
   const randomKey = "random-key";
   const randomValue = "random-value";
   for (const name of SUPPORTED_NODE_MODULES) {
+    if (name == "util/types") {
+      continue;
+    }
     const mod = require(name);
     Object.defineProperty(mod, randomKey, {
       value: randomValue,
