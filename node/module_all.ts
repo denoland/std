@@ -72,6 +72,9 @@ import workerThreads from "./worker_threads.ts";
 import wasi from "./wasi.ts";
 import zlib from "./zlib.ts";
 
+// Upstream modules
+import callerPath from "./upstream/caller-path.js";
+
 // Canonical mapping of supported modules
 export default {
   _http_agent,
@@ -136,4 +139,7 @@ export default {
   wasi,
   workerThreads,
   zlib,
+
+  // upstream modules
+  "caller-path": callerPath,
 } as Record<string, unknown>;
