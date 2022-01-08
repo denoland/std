@@ -10,4 +10,4 @@ module.exports = () => {
 
 export default {
   "caller-path": callerPath,
-} as Record<string, unknown>;
+} as Record<string, string>;
