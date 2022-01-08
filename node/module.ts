@@ -23,6 +23,7 @@ import "./global.ts";
 
 import { core } from "./_core.ts";
 import nodeMods from "./module_all.ts";
+import upstreamMods from "./upstream_modules.ts";
 
 import * as path from "../path/mod.ts";
 import { assert } from "../_util/assert.ts";
@@ -303,7 +304,8 @@ class Module {
   ): string {
     // Polyfills.
     if (
-      request.startsWith("node:") || nativeModuleCanBeRequiredByUsers(request)
+      request.startsWith("node:") ||
+      nativeModuleCanBeRequiredByUsers(request)
     ) {
       return request;
     }
@@ -520,6 +522,11 @@ class Module {
     // Native module polyfills
     const mod = loadNativeModule(filename, request);
     if (mod) return mod.exports;
+
+    // NOTE(@bartlomieju): this is a temporary solution. We provide some
+    // npm modules with fixes in inconsistencies between Deno and Node.js.
+    const upstreamMod = loadUpstreamModule(filename, parent, request);
+    if (upstreamMod) return upstreamMod.exports;
 
     // Don't call updateChildren(), Module constructor already does.
     const module = new Module(filename, parent);
@@ -787,6 +794,38 @@ function nativeModuleCanBeRequiredByUsers(request: string): boolean {
 // Populate with polyfill names
 for (const id of nativeModulePolyfill.keys()) {
   Module.builtinModules.push(id);
+}
+
+// NOTE(@bartlomieju): temporary solution, to smooth out inconsistencies between
+// Deno and Node.js.
+const upstreamModules = new Map<string, Module>();
+
+function loadUpstreamModule(
+  filename: string,
+  parent: Module | null,
+  request: string,
+): Module | undefined {
+  if (typeof upstreamMods[request] !== "undefined") {
+    if (!upstreamModules.has(filename)) {
+      upstreamModules.set(
+        filename,
+        createUpstreamModule(filename, parent, upstreamMods[request]),
+      );
+    }
+    return upstreamModules.get(filename);
+  }
+}
+function createUpstreamModule(
+  filename: string,
+  parent: Module | null,
+  content: string,
+): Module {
+  const mod = new Module(filename, parent);
+  mod.filename = filename;
+  mod.paths = Module._nodeModulePaths(path.dirname(filename));
+  mod._compile(content, filename);
+  mod.loaded = true;
+  return mod;
 }
 
 let modulePaths: string[] = [];
