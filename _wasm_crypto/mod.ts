@@ -33,6 +33,7 @@ export const digestAlgorithms = [
   "SHA-256",
   "SHA-512",
   // insecure (collidable and length-extendable):
+  "MD4",
   "MD5",
   "SHA-1",
 ] as const;
