@@ -206,9 +206,9 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
     .reverse()
     .slice(0, 3)
     .forEach((v): void => {
-      output = modeMap[+v] + output;
+      output = `${modeMap[+v]} ${output}`;
     });
-  output = `(${isDir ? "d" : "-"}${output})`;
+  output = `${isDir ? "d" : "-"} ${output}`;
   return output;
 }
 
@@ -533,6 +533,12 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           table td {
             padding: 6px 24px 6px 4px;
           }
+          .mode {
+            font-family: monospace, monospace;
+          }
+          .size {
+            text-align: right;
+          }
         </style>
       </head>
       <body>
@@ -550,6 +556,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           </h1>
           <table>
             <tr>
+              <th></th>
               <th>Mode</th>
               <th>Size</th>
               <th>Name</th>
@@ -559,10 +566,13 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
       .map(
         (entry) => `
                   <tr>
+                    <td>
+                      ${entry.mode[0] === "d" ? "🗂" : "📄"}
+                    </td>
                     <td class="mode">
                       ${entry.mode}
                     </td>
-                    <td>
+                    <td class="size">
                       ${entry.size}
                     </td>
                     <td>
