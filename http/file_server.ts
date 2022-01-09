@@ -564,7 +564,6 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           <table>
             <thead>
               <tr>
-                <th></th>
                 <th>Mode</th>
                 <th>Size</th>
                 <th>Name</th>
@@ -575,9 +574,6 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
       .map(
         (entry) => `
                   <tr>
-                    <td>
-                      ${entry.mode[0] === "d" ? "🗂" : "📄"}
-                    </td>
                     <td class="mode">
                       ${entry.mode}
                     </td>
