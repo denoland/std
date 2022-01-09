@@ -9,8 +9,8 @@ should not be imported directly.
 Requires the wasm-bindgen CLI.
 
 ```sh
-# This must match the version in hash/_wasm/Cargo.lock:
-cargo install -f wasm-bindgen-cli --version 0.2.74
+# This must match the version of wasm-bindgen in Cargo.lock:
+cargo install -f wasm-bindgen-cli --version 0.2.78
 ```
 
 ### Build

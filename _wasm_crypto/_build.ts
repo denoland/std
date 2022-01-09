@@ -33,8 +33,6 @@ if (
       "cargo",
       "build",
       "--release",
-      "--target",
-      "wasm32-unknown-unknown",
     ],
     env: {
       // eliminate some potential sources of non-determinism
