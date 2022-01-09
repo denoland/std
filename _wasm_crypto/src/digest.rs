@@ -78,6 +78,7 @@ impl Context {
       Blake2b256(context) => static_block_length(&**context),
       Blake2b384(context) => static_block_length(&**context),
       Blake2s(context) => static_block_length(&**context),
+      Blake3(_) => 64,
       Keccak224(context) => static_block_length(&**context),
       Keccak256(context) => static_block_length(&**context),
       Keccak384(context) => static_block_length(&**context),
@@ -94,12 +95,6 @@ impl Context {
       Sha384(context) => static_block_length(&**context),
       Sha512(context) => static_block_length(&**context),
       Tiger(context) => static_block_length(&**context),
-
-      // The first sentence of the BLAKE3 specification tells us:
-      // - The input of BLAKE3 is split into contiguous chunks of 1024 bytes,
-      //   such that the last chunk may be shorter, but not empty, unless the
-      //   entire input is empty.
-      Blake3(_) => 1024,
 
       // https://doi.org/10.6028/NIST.FIPS.202 specifies that:
       // - In general, the input block size (in bits) of a sponge function is
