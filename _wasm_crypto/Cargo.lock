@@ -105,6 +105,7 @@ dependencies = [
  "generic-array",
  "js-sys",
  "md-5",
+ "md4",
  "ripemd",
  "sha-1",
  "sha2",
@@ -190,6 +191,15 @@ name = "md-5"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6a38fc55c8bbc10058782919516f88826e70320db6d206aebc49611d24216ae"
+dependencies = [
+ "digest",
+]
+
+[[package]]
+name = "md4"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64c723ddc2df3075fba1182ff9cefd68fb1137936b6c35b6b8df548d78443fa9"
 dependencies = [
  "digest",
 ]
