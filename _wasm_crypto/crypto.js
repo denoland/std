@@ -334,26 +334,26 @@ export class DigestContext {
 
 const imports = {
   __wbindgen_placeholder__: {
-    __wbg_new_f85dbdfb9cdbe2ec: function (arg0, arg1) {
+    __wbg_new_a4b61a0f54824cfd: function (arg0, arg1) {
       var ret = new TypeError(getStringFromWasm0(arg0, arg1));
       return addHeapObject(ret);
     },
     __wbindgen_object_drop_ref: function (arg0) {
       takeObject(arg0);
     },
-    __wbg_byteLength_e0515bc94cfc5dee: function (arg0) {
+    __wbg_byteLength_3e250b41a8915757: function (arg0) {
       var ret = getObject(arg0).byteLength;
       return ret;
     },
-    __wbg_byteOffset_77eec84716a2e737: function (arg0) {
+    __wbg_byteOffset_4204ecb24a6e5df9: function (arg0) {
       var ret = getObject(arg0).byteOffset;
       return ret;
     },
-    __wbg_buffer_1c5918a4ab656ff7: function (arg0) {
+    __wbg_buffer_facf0398a281c85b: function (arg0) {
       var ret = getObject(arg0).buffer;
       return addHeapObject(ret);
     },
-    __wbg_newwithbyteoffsetandlength_e57ad1f2ce812c03: function (
+    __wbg_newwithbyteoffsetandlength_4b9b8c4e3f5adbff: function (
       arg0,
       arg1,
       arg2,
@@ -361,7 +361,7 @@ const imports = {
       var ret = new Uint8Array(getObject(arg0), arg1 >>> 0, arg2 >>> 0);
       return addHeapObject(ret);
     },
-    __wbg_length_2d56cb37075fcfb1: function (arg0) {
+    __wbg_length_1eb8fc608a0d4cdb: function (arg0) {
       var ret = getObject(arg0).length;
       return ret;
     },
@@ -369,15 +369,15 @@ const imports = {
       var ret = wasm.memory;
       return addHeapObject(ret);
     },
-    __wbg_buffer_9e184d6f785de5ed: function (arg0) {
+    __wbg_buffer_397eaa4d72ee94dd: function (arg0) {
       var ret = getObject(arg0).buffer;
       return addHeapObject(ret);
     },
-    __wbg_new_e8101319e4cf95fc: function (arg0) {
+    __wbg_new_a7ce447f15ff496f: function (arg0) {
       var ret = new Uint8Array(getObject(arg0));
       return addHeapObject(ret);
     },
-    __wbg_set_e8ae7b27314e8b98: function (arg0, arg1, arg2) {
+    __wbg_set_969ad0a60e51d320: function (arg0, arg1, arg2) {
       getObject(arg0).set(getObject(arg1), arg2 >>> 0);
     },
     __wbindgen_throw: function (arg0, arg1) {

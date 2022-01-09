@@ -1,16 +1,17 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 use digest::{
-  BlockInput, Digest, DynDigest, ExtendableOutput, Reset, Update,
-  VariableOutput,
+  core_api::BlockSizeUser, Digest, DynDigest, ExtendableOutput,
+  ExtendableOutputReset, Reset, Update,
 };
+use typenum::{U32, U48};
 
 /// Enum wrapper over all supported digest implementations.
 #[derive(Clone)]
 pub enum Context {
-  Blake2b(Box<blake2::Blake2b>),
-  Blake2b256(Box<blake2::VarBlake2b>),
-  Blake2b384(Box<blake2::VarBlake2b>),
-  Blake2s(Box<blake2::Blake2s>),
+  Blake2b(Box<blake2::Blake2b512>),
+  Blake2b256(Box<blake2::Blake2b<U32>>),
+  Blake2b384(Box<blake2::Blake2b<U48>>),
+  Blake2s(Box<blake2::Blake2s256>),
   Blake3(Box<blake3::Hasher>),
   Keccak224(Box<sha3::Keccak224>),
   Keccak256(Box<sha3::Keccak256>),
@@ -18,7 +19,7 @@ pub enum Context {
   Keccak512(Box<sha3::Keccak512>),
   Md4(Box<md4::Md4>),
   Md5(Box<md5::Md5>),
-  Ripemd160(Box<ripemd160::Ripemd160>),
+  Ripemd160(Box<ripemd::Ripemd160>),
   Sha1(Box<sha1::Sha1>),
   Sha3_224(Box<sha3::Sha3_224>),
   Sha3_256(Box<sha3::Sha3_256>),
@@ -39,12 +40,8 @@ impl Context {
   pub fn new(algorithm_name: &str) -> Result<Context, &'static str> {
     Ok(match algorithm_name {
       "BLAKE2B" => Blake2b(Default::default()),
-      "BLAKE2B-256" => {
-        Blake2b256(Box::new(blake2::VarBlake2b::new(256 / 8).unwrap()))
-      }
-      "BLAKE2B-384" => {
-        Blake2b384(Box::new(blake2::VarBlake2b::new(384 / 8).unwrap()))
-      }
+      "BLAKE2B-256" => Blake2b256(Default::default()),
+      "BLAKE2B-384" => Blake2b384(Default::default()),
       "BLAKE2S" => Blake2s(Default::default()),
       "BLAKE3" => Blake3(Default::default()),
       "KECCAK-224" => Keccak224(Default::default()),
@@ -74,7 +71,7 @@ impl Context {
   pub fn input_block_length(&self) -> usize {
     // For algorithm types that implement BlockInput and have a statically
     // available BlockSize as part of their type definition, we use that value.
-    fn static_block_length<T: BlockInput>(_: &T) -> usize {
+    fn static_block_length<T: BlockSizeUser>(_: &T) -> usize {
       <T::BlockSize as typenum::Unsigned>::to_usize()
     }
 
@@ -83,7 +80,7 @@ impl Context {
       Blake2b256(context) => static_block_length(&**context),
       Blake2b384(context) => static_block_length(&**context),
       Blake2s(context) => static_block_length(&**context),
-      Blake3(context) => static_block_length(&**context),
+      Blake3(_) => 64,
       Keccak224(context) => static_block_length(&**context),
       Keccak256(context) => static_block_length(&**context),
       Keccak384(context) => static_block_length(&**context),
@@ -225,8 +222,8 @@ impl Context {
   pub fn update(&mut self, data: &[u8]) {
     match self {
       Blake2b(context) => Digest::update(&mut **context, data),
-      Blake2b256(context) => (&mut **context).update(data),
-      Blake2b384(context) => (&mut **context).update(data),
+      Blake2b256(context) => Digest::update(&mut **context, data),
+      Blake2b384(context) => Digest::update(&mut **context, data),
       Blake2s(context) => Digest::update(&mut **context, data),
       Blake3(context) => Digest::update(&mut **context, data),
       Keccak224(context) => Digest::update(&mut **context, data),
@@ -267,8 +264,8 @@ impl Context {
 
     Ok(match self {
       Blake2b(context) => context.finalize(),
-      Blake2b256(context) => context.finalize_boxed(),
-      Blake2b384(context) => context.finalize_boxed(),
+      Blake2b256(context) => context.finalize(),
+      Blake2b384(context) => context.finalize(),
       Blake2s(context) => context.finalize(),
       Blake3(context) => context.finalize_boxed(length),
       Keccak224(context) => context.finalize(),
@@ -308,10 +305,12 @@ impl Context {
     let length = length.unwrap_or_else(|| self.output_length());
     Ok(match self {
       Blake2b(context) => DynDigest::finalize_reset(context.as_mut()),
-      Blake2b256(context) => context.finalize_boxed_reset(),
-      Blake2b384(context) => context.finalize_boxed_reset(),
+      Blake2b256(context) => DynDigest::finalize_reset(context.as_mut()),
+      Blake2b384(context) => DynDigest::finalize_reset(context.as_mut()),
       Blake2s(context) => DynDigest::finalize_reset(context.as_mut()),
-      Blake3(context) => context.finalize_boxed_reset(length),
+      Blake3(context) => {
+        ExtendableOutputReset::finalize_boxed_reset(context.as_mut(), length)
+      }
       Keccak224(context) => DynDigest::finalize_reset(context.as_mut()),
       Keccak256(context) => DynDigest::finalize_reset(context.as_mut()),
       Keccak384(context) => DynDigest::finalize_reset(context.as_mut()),
@@ -329,8 +328,12 @@ impl Context {
       Sha384(context) => DynDigest::finalize_reset(context.as_mut()),
       Sha512(context) => DynDigest::finalize_reset(context.as_mut()),
       Tiger(context) => DynDigest::finalize_reset(context.as_mut()),
-      Shake128(context) => context.finalize_boxed_reset(length),
-      Shake256(context) => context.finalize_boxed_reset(length),
+      Shake128(context) => {
+        ExtendableOutputReset::finalize_boxed_reset(context.as_mut(), length)
+      }
+      Shake256(context) => {
+        ExtendableOutputReset::finalize_boxed_reset(context.as_mut(), length)
+      }
     })
   }
 
