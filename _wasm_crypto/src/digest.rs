@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 use digest::{
-  core_api::BlockSizeUser, Digest, DynDigest, ExtendableOutput, Reset, Update,
+  core_api::BlockSizeUser, Digest, DynDigest, ExtendableOutput,
+  ExtendableOutputReset, Reset, Update,
 };
 use typenum::{U32, U48};
 
@@ -98,7 +99,7 @@ impl Context {
       // - The input of BLAKE3 is split into contiguous chunks of 1024 bytes,
       //   such that the last chunk may be shorter, but not empty, unless the
       //   entire input is empty.
-      Blake3(context) => 1024,
+      Blake3(_) => 1024,
 
       // https://doi.org/10.6028/NIST.FIPS.202 specifies that:
       // - In general, the input block size (in bits) of a sponge function is
@@ -220,8 +221,8 @@ impl Context {
   pub fn update(&mut self, data: &[u8]) {
     match self {
       Blake2b(context) => Digest::update(&mut **context, data),
-      Blake2b256(context) => (&mut **context).update(data),
-      Blake2b384(context) => (&mut **context).update(data),
+      Blake2b256(context) => Digest::update(&mut **context, data),
+      Blake2b384(context) => Digest::update(&mut **context, data),
       Blake2s(context) => Digest::update(&mut **context, data),
       Blake3(context) => Digest::update(&mut **context, data),
       Keccak224(context) => Digest::update(&mut **context, data),
@@ -304,7 +305,9 @@ impl Context {
       Blake2b256(context) => DynDigest::finalize_reset(context.as_mut()),
       Blake2b384(context) => DynDigest::finalize_reset(context.as_mut()),
       Blake2s(context) => DynDigest::finalize_reset(context.as_mut()),
-      Blake3(context) => DynDigest::finalize_reset(context.as_mut()),
+      Blake3(context) => {
+        ExtendableOutputReset::finalize_boxed_reset(context.as_mut(), length)
+      }
       Keccak224(context) => DynDigest::finalize_reset(context.as_mut()),
       Keccak256(context) => DynDigest::finalize_reset(context.as_mut()),
       Keccak384(context) => DynDigest::finalize_reset(context.as_mut()),
@@ -321,8 +324,12 @@ impl Context {
       Sha384(context) => DynDigest::finalize_reset(context.as_mut()),
       Sha512(context) => DynDigest::finalize_reset(context.as_mut()),
       Tiger(context) => DynDigest::finalize_reset(context.as_mut()),
-      Shake128(context) => context.finalize_boxed_reset(length),
-      Shake256(context) => context.finalize_boxed_reset(length),
+      Shake128(context) => {
+        ExtendableOutputReset::finalize_boxed_reset(context.as_mut(), length)
+      }
+      Shake256(context) => {
+        ExtendableOutputReset::finalize_boxed_reset(context.as_mut(), length)
+      }
     })
   }
 
