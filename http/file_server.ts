@@ -206,9 +206,9 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
     .reverse()
     .slice(0, 3)
     .forEach((v): void => {
-      output = modeMap[+v] + output;
+      output = `${modeMap[+v]} ${output}`;
     });
-  output = `(${isDir ? "d" : "-"}${output})`;
+  output = `${isDir ? "d" : "-"} ${output}`;
   return output;
 }
 
@@ -493,8 +493,11 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           }
           @media (prefers-color-scheme: dark) {
             :root {
-              --background-color: #303030;
+              --background-color: #292929;
               --color: #fff;
+            }
+            thead {
+              color: #7f7f7f;
             }
           }
           @media (min-width: 960px) {
@@ -527,11 +530,21 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           a:hover {
             text-decoration: underline;
           }
-          table th {
+          thead {
             text-align: left;
           }
+          thead th {
+            padding-bottom: 12px;
+          }
           table td {
-            padding: 6px 24px 6px 4px;
+            padding: 6px 36px 6px 0px;
+          }
+          .size {
+            text-align: right;
+            padding: 6px 12px 6px 24px;
+          }
+          .mode {
+            font-family: monospace, monospace;
           }
         </style>
       </head>
@@ -549,11 +562,13 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
   }
           </h1>
           <table>
-            <tr>
-              <th>Mode</th>
-              <th>Size</th>
-              <th>Name</th>
-            </tr>
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Size</th>
+                <th>Name</th>
+              </tr>
+            </thead>
             ${
     entries
       .map(
@@ -562,7 +577,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                     <td class="mode">
                       ${entry.mode}
                     </td>
-                    <td>
+                    <td class="size">
                       ${entry.size}
                     </td>
                     <td>
