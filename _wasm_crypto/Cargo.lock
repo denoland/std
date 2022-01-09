@@ -105,7 +105,7 @@ dependencies = [
  "generic-array",
  "js-sys",
  "md-5",
- "ripemd160",
+ "ripemd",
  "sha-1",
  "sha2",
  "sha3",
@@ -213,10 +213,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "ripemd160"
-version = "0.10.0"
+name = "ripemd"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f923401a7e6614f2838037bd9bac86c003d1629446d2b5816d3159472071be4f"
+checksum = "ea54b64a1a8410c48395c154adadbad7e1bcd02debca79fc3694386cf73e5799"
+dependencies = [
+ "digest",
+]
 
 [[package]]
 name = "rustc_version"
