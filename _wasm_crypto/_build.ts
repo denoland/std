@@ -33,8 +33,6 @@ if (
       "cargo",
       "build",
       "--release",
-      "--target",
-      "wasm32-unknown-unknown",
     ],
     env: {
       // eliminate some potential sources of non-determinism
@@ -117,8 +115,9 @@ import wasmBytes from "./crypto.wasm.js";
 
 ${
   generatedScript.replace(
-    /^const file =.*?;\nconst wasmFile =.*?;\nconst wasmModule =.*?;\n/sm,
-    `const wasmModule = new WebAssembly.Module(wasmBytes);`,
+    /^const wasm_url =.*?;\nlet wasmCode =.*?;\n.*?const wasmInstance =.*?;\n/sm,
+    `const wasmModule = new WebAssembly.Module(wasmBytes);\n` +
+      `const wasmInstance = new WebAssembly.Instance(wasmModule, imports);`,
   )
 }
 
