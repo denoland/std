@@ -192,6 +192,7 @@
       "test-next-tick.js",
       "test-outgoing-message-destroy.js",
       "test-outgoing-message-pipe.js",
+      "test-path.js",
       "test-process-binding-internalbinding-allowlist.js",
       "test-querystring-escape.js",
       "test-querystring-maxKeys-non-finite.js",
