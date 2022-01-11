@@ -12,6 +12,7 @@ import {
   isPosixPathSeparator,
   normalizeString,
 } from "./_util.ts";
+import { ERR_INVALID_ARG_TYPE } from "../node/_errors.ts";
 
 export const sep = "/";
 export const delimiter = ":";
@@ -248,7 +249,7 @@ export function dirname(path: string): string {
  */
 export function basename(path: string, ext = ""): string {
   if (ext !== undefined && typeof ext !== "string") {
-    throw new TypeError('"ext" argument must be a string');
+    throw new ERR_INVALID_ARG_TYPE("ext", ["string"], ext);
   }
   assertPath(path);
 

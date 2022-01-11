@@ -30,7 +30,6 @@
 const common = require('../common');
 const assert = require('assert');
 const path = require('path');
-console.log(path)
 
 // Test thrown TypeErrors
 const typeErrorTests = [true, false, 7, null, {}, undefined, [], NaN];
