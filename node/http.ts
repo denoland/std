@@ -165,7 +165,7 @@ export class IncomingMessageForClient extends NodeReadable {
   }
 
   get headers() {
-    return this.resp.headers;
+    return Object.fromEntries(this.resp.headers.entries());
   }
 
   get trailers() {
