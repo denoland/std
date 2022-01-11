@@ -120,12 +120,17 @@ class ClientRequest extends NodeWritable {
     const res = new IncomingMessageForClient(
       await fetch(this.opts.href!, opts),
     );
+    this.emit("response", res);
     if (client) {
       res.on("end", () => {
         client.close();
       });
     }
     this.cb(res);
+  }
+
+  abort() {
+    this.destroy();
   }
 
   _createCustomClient(): Promise<Deno.HttpClient | undefined> {
@@ -161,6 +166,10 @@ export class IncomingMessageForClient extends NodeReadable {
 
   get headers() {
     return this.resp.headers;
+  }
+
+  get trailers() {
+    return {};
   }
 
   get statusCode() {
