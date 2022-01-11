@@ -388,6 +388,12 @@ class Process extends EventEmitter {
     // TODO(kt3k): return user id in mac and linux
     return NaN;
   }
+  
+  /** https://nodejs.org/api/process.html#processgetgid */
+  getgid(): number {
+    // TODO(kt3k): return group id in mac and linux
+    return NaN;
+  }
 
   // TODO(kt3k): Implement this when we added -e option to node compat mode
   _eval: string | undefined = undefined;
