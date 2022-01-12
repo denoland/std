@@ -5,114 +5,11 @@ import {
   digestAlgorithms as wasmDigestAlgorithms,
 } from "../_wasm_crypto/mod.ts";
 
-type WebCryptoAlgorithmIdentifier = string | { name: string };
-
-// TODO(jeremyBanks): Remove this once the built-in `Crypto` interface is
-// complete and stable. For now we use this incomplete-but-stable definition.
-export interface WebCrypto {
-  getRandomValues<T extends BufferSource>(buffer: T): T;
-  randomUUID?(): string;
-  subtle?: {
-    // see https://www.w3.org/TR/WebCryptoAPI/#subtlecrypto-interface
-
-    /**
-     * Returns a new `Promise` object that will encrypt `data` using the
-     * specified `AlgorithmIdentifier` with the supplied `CryptoKey`.
-     */
-    encrypt?(
-      algorithm: WebCryptoAlgorithmIdentifier,
-      key: unknown,
-      data: BufferSource,
-    ): Promise<unknown>;
-    /**
-     * Returns a new `Promise` object that will decrypt `data` using the
-     * specified `AlgorithmIdentifier` with the supplied `CryptoKey`.
-     */
-    decrypt?(
-      algorithm: WebCryptoAlgorithmIdentifier,
-      key: unknown,
-      data: BufferSource,
-    ): Promise<unknown>;
-
-    /**
-     * Returns a new `Promise` object that will sign `data` using the specified
-     * `AlgorithmIdentifier` with the supplied `CryptoKey`.
-     */
-    sign?(
-      algorithm: WebCryptoAlgorithmIdentifier,
-      key: unknown,
-      data: BufferSource,
-    ): Promise<unknown>;
-    /**
-     * Returns a new `Promise` object that will verify `data` using the
-     * specified `AlgorithmIdentifier` with the supplied `CryptoKey`.
-     */
-    verify?(
-      algorithm: WebCryptoAlgorithmIdentifier,
-      key: unknown,
-      signature: BufferSource,
-      data: BufferSource,
-    ): Promise<unknown>;
-
-    /**
-     * Returns a new `Promise` object that will digest `data` using the
-     * specified `AlgorithmIdentifier`.
-     */
-    digest?(
-      algorithm: WebCryptoAlgorithmIdentifier,
-      data: BufferSource,
-    ): Promise<ArrayBuffer>;
-
-    generateKey?(
-      algorithm: WebCryptoAlgorithmIdentifier,
-      extractable: boolean,
-      keyUsages: string[],
-    ): Promise<unknown>;
-    deriveKey?(
-      algorithm: WebCryptoAlgorithmIdentifier,
-      baseKey: unknown,
-      derivedKeyType: string,
-      extractable: boolean,
-      keyUsages: string[],
-    ): Promise<unknown>;
-    deriveBits?(
-      algorithm: WebCryptoAlgorithmIdentifier,
-      baseKey: unknown,
-      length: number,
-    ): Promise<unknown>;
-
-    importKey?(
-      format: string,
-      keyData: BufferSource | unknown,
-      algorithm: WebCryptoAlgorithmIdentifier,
-      extractable: boolean,
-      keyUsages: string[],
-    ): Promise<unknown>;
-    exportKey?(format: string, key: unknown): Promise<unknown>;
-
-    wrapKey?(
-      format: string,
-      key: unknown,
-      wrappingKey: unknown,
-      wrappingAlgorithm: WebCryptoAlgorithmIdentifier,
-    ): Promise<unknown>;
-    unwrapKey?(
-      format: string,
-      wrappedKey: BufferSource,
-      unwrappingKey: unknown,
-      unwrapAlgorithm: WebCryptoAlgorithmIdentifier,
-      unwrappedKeyAlgorithm: WebCryptoAlgorithmIdentifier,
-      extractable: boolean,
-      keyUsages: string[],
-    ): Promise<unknown>;
-  };
-}
-
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
  * safe to re-export.
  */
-const webCrypto: WebCrypto = ((crypto) => ({
+const webCrypto = ((crypto) => ({
   getRandomValues: crypto.getRandomValues?.bind(crypto),
   randomUUID: crypto.randomUUID?.bind(crypto),
   subtle: {
@@ -129,7 +26,7 @@ const webCrypto: WebCrypto = ((crypto) => ({
     verify: crypto.subtle?.verify?.bind(crypto.subtle),
     wrapKey: crypto.subtle?.wrapKey?.bind(crypto.subtle),
   },
-}))(globalThis.crypto as WebCrypto);
+}))(globalThis.crypto);
 
 const bufferSourceBytes = (data: BufferSource | unknown) => {
   let bytes: Uint8Array | undefined;
@@ -152,7 +49,7 @@ const bufferSourceBytes = (data: BufferSource | unknown) => {
  * algorithms, but delegating to the runtime WebCrypto implementation whenever
  * possible.
  */
-const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
+const stdCrypto = ((x) => x)({
   ...webCrypto,
   subtle: {
     ...webCrypto.subtle,
@@ -170,8 +67,6 @@ const stdCrypto = (<T extends WebCrypto>(x: T) => x)({
 
       // We delegate to WebCrypto whenever possible,
       if (
-        // if the SubtleCrypto interface is available,
-        webCrypto.subtle?.digest &&
         // if the algorithm is supported by the WebCrypto standard,
         (webCryptoDigestAlgorithms as readonly string[]).includes(name) &&
         // and the data is a single buffer,
