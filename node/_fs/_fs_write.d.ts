@@ -1,5 +1,3 @@
-// deno-lint-ignore-file no-explicit-any
-
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/d9df51e34526f48bef4e2546a006157b391ad96c/types/node/fs.d.ts
 
 import { BufferEncoding, ErrnoException } from "../_global.d.ts";
