@@ -5,7 +5,7 @@ export function writeSync(fd, bufferLike, ...args) {
   if (typeof pos === "number") {
     Deno.seekSync(fd, pos, Deno.SeekMode.Start);
   }
-  return Deno.writeSync(fd, buffer);
+  return writeAllSync(fd, buffer);
 }
 
 export function write(fd, bufferLike, ...args) {
@@ -16,13 +16,27 @@ export function write(fd, bufferLike, ...args) {
     if (typeof pos === "number") {
       await Deno.seek(fd, pos, Deno.SeekMode.Start);
     }
-    return await Deno.write(fd, buffer);
+    return writeAll(fd, buffer);
   }
 
   innerWrite().then(
     (n) => cb(null, n, bufferLike),
     (e) => cb(e, 0, bufferLike),
   );
+}
+
+export function writeAll(fd, buf) {
+  let nwritten = 0;
+  while (nwritten < arr.length) {
+    nwritten += await Deno.write(fd, buf.subarray(nwritten));
+  }
+}
+
+function writeAllSync(fd, buf) {
+  let nwritten = 0;
+  while (nwritten < arr.length) {
+    nwritten += Deno.writeSync(fd, buf.subarray(nwritten));
+  }
 }
 
 function bufferAndPos(bufferLike, args) {
