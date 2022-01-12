@@ -1,4 +1,5 @@
 import { Buffer } from "../buffer.ts";
+import { writeAll, writeAllSync } from "../../streams/conversion.ts";
 
 export function writeSync(fd, bufferLike, ...args) {
   const [buffer, pos] = bufferAndPos(bufferLike, args);
@@ -23,20 +24,6 @@ export function write(fd, bufferLike, ...args) {
     (n) => cb(null, n, bufferLike),
     (e) => cb(e, 0, bufferLike),
   );
-}
-
-async function writeAll(fd, buf) {
-  let nwritten = 0;
-  while (nwritten < buf.length) {
-    nwritten += await Deno.write(fd, buf.subarray(nwritten));
-  }
-}
-
-function writeAllSync(fd, buf) {
-  let nwritten = 0;
-  while (nwritten < buf.length) {
-    nwritten += Deno.writeSync(fd, buf.subarray(nwritten));
-  }
 }
 
 function bufferAndPos(bufferLike, args) {
