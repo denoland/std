@@ -25,7 +25,7 @@ export function write(fd, bufferLike, ...args) {
   );
 }
 
-export function writeAll(fd, buf) {
+async function writeAll(fd, buf) {
   let nwritten = 0;
   while (nwritten < arr.length) {
     nwritten += await Deno.write(fd, buf.subarray(nwritten));
