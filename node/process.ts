@@ -1,5 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
+import * as DenoUnstable from "../_deno_unstable.ts";
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.js";
@@ -294,7 +295,7 @@ class Process extends EventEmitter {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.on("${event}")`);
     } else if (event.startsWith("SIG")) {
-      Deno.addSignalListener(event as Deno.Signal, listener);
+      DenoUnstable.addSignalListener(event as Deno.Signal, listener);
     } else {
       super.on(event, listener);
     }
@@ -312,7 +313,7 @@ class Process extends EventEmitter {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.off("${event}")`);
     } else if (event.startsWith("SIG")) {
-      Deno.removeSignalListener(event as Deno.Signal, listener);
+      DenoUnstable.removeSignalListener(event as Deno.Signal, listener);
     } else {
       super.off(event, listener);
     }
@@ -393,7 +394,7 @@ class Process extends EventEmitter {
   }
 
   /** https://nodejs.org/api/process.html#processumaskmask */
-  umask = Deno.umask;
+  umask = DenoUnstable.umask;
 
   /** https://nodejs.org/api/process.html#processgetuid */
   getuid(): number {

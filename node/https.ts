@@ -1,6 +1,7 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
+import * as DenoUnstable from "../_deno_unstable.ts";
 import { notImplemented } from "./_utils.ts";
 import { urlToHttpOptions } from "./internal/url.ts";
 import {
@@ -56,12 +57,12 @@ export function get(...args: any[]) {
 export const globalAgent = undefined;
 /** HttpsClientRequest class loosely follows http.ClientRequest class API. */
 class HttpsClientRequest extends ClientRequest {
-  async _createCustomClient(): Promise<Deno.HttpClient | undefined> {
+  async _createCustomClient(): Promise<DenoUnstable.HttpClient | undefined> {
     if (caCerts === null) {
       return undefined;
     }
     if (caCerts !== undefined) {
-      return Deno.createHttpClient({ caCerts });
+      return DenoUnstable.createHttpClient({ caCerts });
     }
     const status = await Deno.permissions.query({
       name: "env",
@@ -78,7 +79,7 @@ class HttpsClientRequest extends ClientRequest {
     }
     const caCert = await Deno.readTextFile(certFilename);
     caCerts = [caCert];
-    return Deno.createHttpClient({ caCerts });
+    return DenoUnstable.createHttpClient({ caCerts });
   }
 }
 
