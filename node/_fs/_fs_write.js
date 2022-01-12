@@ -27,14 +27,14 @@ export function write(fd, bufferLike, ...args) {
 
 async function writeAll(fd, buf) {
   let nwritten = 0;
-  while (nwritten < arr.length) {
+  while (nwritten < buf.length) {
     nwritten += await Deno.write(fd, buf.subarray(nwritten));
   }
 }
 
 function writeAllSync(fd, buf) {
   let nwritten = 0;
-  while (nwritten < arr.length) {
+  while (nwritten < buf.length) {
     nwritten += Deno.writeSync(fd, buf.subarray(nwritten));
   }
 }
