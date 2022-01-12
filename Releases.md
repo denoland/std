@@ -1,3 +1,19 @@
+### 0.121.0 / 2022.01.12
+
+- feat(crypto): add md4 hash (#1799)
+- feat(http): add eyecandy to file_server (#1804)
+- feat(http/file_server): add 'quiet' flag (#1773)
+- feat(node): add zlib (#1790)
+- feat(node): mock more APIs (#1802)
+- feat(node): upstream caller-path package (#1801)
+- feat(node/fs): fs.write()/fs.writeSync() (#1817)
+- fix(node): placeholder process.getgid() (#1814)
+- fix(node): process.env ownPropertyDescriptor (#1795)
+- fix(node): set prototype for Module (#1797)
+- fix(node/http): client emit response, trailers & abort (#1809)
+- fix(node/http/client): convert response's Headers to plain Object (#1811)
+- fix(node/url): format auth/search/hash corruption (#1810)
+
 ### 0.120.0 / 2022.01.05
 
 - feat(crypto): add Tiger hash (#1749)
