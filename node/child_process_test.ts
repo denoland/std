@@ -6,11 +6,14 @@ import {
   assertNotStrictEquals,
   assertStrictEquals,
 } from "../testing/asserts.ts";
-import { spawn } from "./child_process.ts";
+import CP from "./child_process.ts";
 import { Deferred, deferred } from "../async/deferred.ts";
 import { isWindows } from "../_util/os.ts";
 import * as path from "../path/mod.ts";
 import { Buffer } from "./buffer.ts";
+import { ERR_CHILD_PROCESS_STDIO_MAXBUFFER } from "./internal/errors.ts";
+
+const { spawn, execFile, ChildProcess } = CP;
 
 function withTimeout<T>(timeoutInMS: number): Deferred<T> {
   const promise = deferred<T>();
@@ -333,3 +336,131 @@ Deno.test({
   },
 });
 /* End of ported part */
+
+Deno.test({
+  name: "[node/child_process execFile] Get stdout as a string",
+  async fn() {
+    let child: unknown;
+    const script = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "./testdata/exec_file_text_output.js",
+    );
+    const promise = new Promise<string | null>((resolve, reject) => {
+      child = execFile(Deno.execPath(), ["run", script], (err, stdout) => {
+        if (err) reject(err);
+        else if (stdout) resolve(stdout as string);
+        else resolve(null);
+      });
+    });
+    try {
+      const stdout = await promise;
+      assertEquals(stdout, "Hello World!\n");
+    } finally {
+      if (child instanceof ChildProcess) {
+        child.kill();
+      }
+    }
+  },
+});
+
+Deno.test({
+  name: "[node/child_process execFile] Get stdout as a buffer",
+  async fn() {
+    let child: unknown;
+    const script = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "./testdata/exec_file_text_output.js",
+    );
+    const promise = new Promise<Buffer | null>((resolve, reject) => {
+      child = execFile(
+        Deno.execPath(),
+        ["run", script],
+        { encoding: "buffer" },
+        (err, stdout) => {
+          if (err) reject(err);
+          else if (stdout) resolve(stdout as Buffer);
+          else resolve(null);
+        },
+      );
+    });
+    try {
+      const stdout = await promise;
+      assert(Buffer.isBuffer(stdout));
+      assertEquals(stdout.toString("utf8"), "Hello World!\n");
+    } finally {
+      if (child instanceof ChildProcess) {
+        child.kill();
+      }
+    }
+  },
+});
+
+Deno.test({
+  name: "[node/child_process execFile] Get stderr",
+  async fn() {
+    let child: unknown;
+    const script = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "./testdata/exec_file_text_error.js",
+    );
+    const promise = new Promise<
+      { err: Error | null; stderr?: string | Buffer }
+    >((resolve) => {
+      child = execFile(Deno.execPath(), ["run", script], (err, _, stderr) => {
+        resolve({ err, stderr });
+      });
+    });
+    try {
+      const { err, stderr } = await promise;
+      if (child instanceof ChildProcess) {
+        assertEquals(child.exitCode, 1);
+        assertEquals(stderr, "yikes!\n");
+      } else {
+        throw err;
+      }
+    } finally {
+      if (child instanceof ChildProcess) {
+        child.kill();
+      }
+    }
+  },
+});
+
+Deno.test({
+  name: "[node/child_process execFile] Exceed given maxBuffer limit",
+  async fn() {
+    let child: unknown;
+    const script = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "./testdata/exec_file_text_error.js",
+    );
+    const promise = new Promise<
+      { err: Error | null; stderr?: string | Buffer }
+    >((resolve) => {
+      child = execFile(Deno.execPath(), ["run", script], {
+        encoding: "buffer",
+        maxBuffer: 3,
+      }, (err, _, stderr) => {
+        resolve({ err, stderr });
+      });
+    });
+    try {
+      const { err, stderr } = await promise;
+      if (child instanceof ChildProcess) {
+        assert(err);
+        assertEquals(
+          (err as ERR_CHILD_PROCESS_STDIO_MAXBUFFER).code,
+          "ERR_CHILD_PROCESS_STDIO_MAXBUFFER",
+        );
+        assertEquals(err.message, "stderr maxBuffer length exceeded");
+        assertEquals((stderr as Buffer).toString("utf8"), "yik");
+      } else {
+        throw err;
+      }
+    } finally {
+      if (child instanceof ChildProcess) {
+        child.kill();
+      }
+    }
+  },
+});
