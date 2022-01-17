@@ -279,7 +279,8 @@ export class TCP extends ConnectionWrap {
    * @return An error status code.
    */
   setNoDelay(_noDelay: boolean): number {
-    notImplemented();
+    // TODO(bnoordhuis) https://github.com/denoland/deno/pull/13103
+    return 0;
   }
 
   /**
@@ -288,7 +289,8 @@ export class TCP extends ConnectionWrap {
    * @return An error status code.
    */
   setKeepAlive(_enable: boolean, _initialDelay: number): number {
-    notImplemented();
+    // TODO(bnoordhuis) https://github.com/denoland/deno/pull/13103
+    return 0;
   }
 
   /**
