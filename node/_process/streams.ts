@@ -36,6 +36,14 @@ export const stdin = new Readable({
   emitClose: false,
   read(this: Readable, size: number) {
     const p = Buffer.alloc(size || 16 * 1024);
+
+    if (!Deno.stdin) {
+      this.destroy(
+        new Error("Deno.stdin is not available in this environment"),
+      );
+      return;
+    }
+
     Deno.stdin.read(p).then((length) => {
       this.push(length === null ? null : p.slice(0, length));
     }, (error) => {
@@ -43,18 +51,18 @@ export const stdin = new Readable({
     });
   },
 }) as _Readable;
-stdin.on("close", () => Deno.stdin.close());
-stdin.fd = Deno.stdin.rid;
+stdin.on("close", () => Deno.stdin?.close());
+stdin.fd = Deno.stdin?.rid ?? -1;
 Object.defineProperty(stdin, "isTTY", {
   enumerable: true,
   configurable: true,
   get() {
-    return Deno.isatty(Deno.stdin.rid);
+    return Deno.isatty?.(Deno.stdin.rid);
   },
 });
 stdin._isRawMode = false;
 stdin.setRawMode = (enable) => {
-  Deno.setRaw(Deno.stdin.rid, enable);
+  Deno.setRaw?.(Deno.stdin?.rid, enable);
   stdin._isRawMode = enable;
   return stdin;
 };
