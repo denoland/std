@@ -1,5 +1,5 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { promisify } from "./_util/_util_promisify.ts";
+import { promisify } from "./internal/util.js";
 import { callbackify } from "./_util/_util_callbackify.ts";
 import { debuglog } from "./_util/_debuglog.ts";
 import { deprecate } from "./internal/util.js";
@@ -10,7 +10,7 @@ import {
   stripVTControlCharacters,
 } from "./internal/util/inspect.js";
 import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
-import * as types from "./internal/util/types.ts";
+import types from "./util/types.js";
 import { Buffer } from "./buffer.ts";
 import { isDeepStrictEqual } from "./internal/util/comparisons.ts";
 

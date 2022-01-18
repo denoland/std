@@ -165,7 +165,7 @@ export class TCP extends ConnectionWrap {
   }
 
   /**
-   * Bind to an IPv4 address.
+   * Bind to an IPv6 address.
    * @param address The hostname to bind to.
    * @param port The port to bind to
    * @return An error status code.

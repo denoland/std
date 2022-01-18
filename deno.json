@@ -18,6 +18,7 @@
         "_wasm_crypto/target",
         "cov",
         "node/vendor",
+        "node/_module/node_modules/",
         "node/_tools/versions",
         "node/_tools/suites",
         "wasi/testdata"

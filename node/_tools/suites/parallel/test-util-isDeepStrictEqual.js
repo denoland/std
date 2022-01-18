@@ -94,7 +94,6 @@ function utilIsDeepStrict(a, b) {
   assert.strictEqual(util.isDeepStrictEqual(a, b), true);
   assert.strictEqual(util.isDeepStrictEqual(b, a), true);
 }
-
 function notUtilIsDeepStrict(a, b) {
   assert.strictEqual(util.isDeepStrictEqual(a, b), false);
   assert.strictEqual(util.isDeepStrictEqual(b, a), false);
@@ -548,32 +547,30 @@ assert.strictEqual(
   utilIsDeepStrict(Object(BigInt(1)), Object(BigInt(1)));
   notUtilIsDeepStrict(Object(BigInt(1)), Object(BigInt(2)));
 
-  // TODO Decide if Deno implementation will require these cases wherein
-  // prototype of the object is artifically/superficially modified
-  // const booleanish = new Boolean(true);
-  // Object.defineProperty(booleanish, Symbol.toStringTag, { value: "String" });
-  // Object.setPrototypeOf(booleanish, String.prototype);
-  // notUtilIsDeepStrict(booleanish, new String("true"));
+  const booleanish = new Boolean(true);
+  Object.defineProperty(booleanish, Symbol.toStringTag, { value: "String" });
+  Object.setPrototypeOf(booleanish, String.prototype);
+  notUtilIsDeepStrict(booleanish, new String("true"));
 
-  // const numberish = new Number(42);
-  // Object.defineProperty(numberish, Symbol.toStringTag, { value: "String" });
-  // Object.setPrototypeOf(numberish, String.prototype);
-  // notUtilIsDeepStrict(numberish, new String("42"));
+  const numberish = new Number(42);
+  Object.defineProperty(numberish, Symbol.toStringTag, { value: "String" });
+  Object.setPrototypeOf(numberish, String.prototype);
+  notUtilIsDeepStrict(numberish, new String("42"));
 
-  // const stringish = new String("0");
-  // Object.defineProperty(stringish, Symbol.toStringTag, { value: "Number" });
-  // Object.setPrototypeOf(stringish, Number.prototype);
-  // notUtilIsDeepStrict(stringish, new Number(0));
+  const stringish = new String("0");
+  Object.defineProperty(stringish, Symbol.toStringTag, { value: "Number" });
+  Object.setPrototypeOf(stringish, Number.prototype);
+  notUtilIsDeepStrict(stringish, new Number(0));
 
-  // const bigintish = new Object(BigInt(42));
-  // Object.defineProperty(bigintish, Symbol.toStringTag, { value: "String" });
-  // Object.setPrototypeOf(bigintish, String.prototype);
-  // notUtilIsDeepStrict(bigintish, new String("42"));
+  const bigintish = new Object(BigInt(42));
+  Object.defineProperty(bigintish, Symbol.toStringTag, { value: "String" });
+  Object.setPrototypeOf(bigintish, String.prototype);
+  notUtilIsDeepStrict(bigintish, new String("42"));
 
-  // const symbolish = new Object(Symbol("fhqwhgads"));
-  // Object.defineProperty(symbolish, Symbol.toStringTag, { value: "String" });
-  // Object.setPrototypeOf(symbolish, String.prototype);
-  // notUtilIsDeepStrict(symbolish, new String("fhqwhgads"));
+  const symbolish = new Object(Symbol("fhqwhgads"));
+  Object.defineProperty(symbolish, Symbol.toStringTag, { value: "String" });
+  Object.setPrototypeOf(symbolish, String.prototype);
+  notUtilIsDeepStrict(symbolish, new String("fhqwhgads"));
 }
 
 // Minus zero

@@ -218,11 +218,11 @@ class Process extends EventEmitter {
   constructor() {
     super();
 
-    //This causes the exit event to be binded to the unload event
     globalThis.addEventListener("unload", () => {
-      //TODO(Soremwar)
-      //Get the exit code from the unload event
-      super.emit("exit", 0);
+      if (!process._exiting) {
+        process._exiting = true;
+        super.emit("exit", process.exitCode || 0);
+      }
     });
   }
 
@@ -389,8 +389,19 @@ class Process extends EventEmitter {
     return NaN;
   }
 
+  /** https://nodejs.org/api/process.html#processgetgid */
+  getgid(): number {
+    // TODO(kt3k): return group id in mac and linux
+    return NaN;
+  }
+
   // TODO(kt3k): Implement this when we added -e option to node compat mode
   _eval: string | undefined = undefined;
+
+  /** https://nodejs.org/api/process.html#processexecpath */
+  get execPath() {
+    return argv[0];
+  }
 }
 
 /** https://nodejs.org/api/process.html#process_process */

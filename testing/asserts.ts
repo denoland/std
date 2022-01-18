@@ -135,7 +135,10 @@ export function equal(c: unknown, d: unknown): boolean {
       if (Number.isNaN(aTime) && Number.isNaN(bTime)) {
         return true;
       }
-      return a.getTime() === b.getTime();
+      return aTime === bTime;
+    }
+    if (typeof a === "number" && typeof b === "number") {
+      return Number.isNaN(a) && Number.isNaN(b) || a === b;
     }
     if (Object.is(a, b)) {
       return true;

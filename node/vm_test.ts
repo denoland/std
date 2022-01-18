@@ -8,13 +8,6 @@ Deno.test("createScript", function () {
 
   assertThrows(
     () => {
-      script.runInThisContext({});
-    },
-    Error,
-    "Not implemented",
-  );
-  assertThrows(
-    () => {
       script.runInContext({}, {});
     },
     Error,
@@ -56,13 +49,6 @@ Deno.test({
     assertThrows(
       () => {
         vm.runInNewContext("", {}, {});
-      },
-      Error,
-      "Not implemented",
-    );
-    assertThrows(
-      () => {
-        vm.runInThisContext("", {});
       },
       Error,
       "Not implemented",

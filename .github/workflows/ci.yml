@@ -140,7 +140,7 @@ jobs:
           declare modifications="$(git diff --name-only HEAD~ -- ./_wasm_crypto)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "::set-output name=modified::$modified"
-          echo "Hash source modified in this commit? $modified"
+          echo "WASM crypto source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
@@ -151,15 +151,15 @@ jobs:
         uses: hecrj/setup-rust-action@v1
         if: success() && steps.source.outputs.modified == 'true'
         with:
-          # This must match the version in hash/_wasm/rust-toolchain:
-          rust-version: 1.55.0
+          # This must match the version in _wasm_crypto/rust-toolchain.toml:
+          rust-version: 1.57.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
       - name: Set up wasm-bindgen-cli
         run: |-
           # This must match the version in _wasm_crypto/Cargo.lock:
-          cargo install -f wasm-bindgen-cli --version 0.2.74
+          cargo install -f wasm-bindgen-cli --version 0.2.78
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Rebuild WASM
