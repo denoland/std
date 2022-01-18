@@ -50,7 +50,7 @@ function bufferAndPos(bufferLike, args) {
 
   const [offset, length, position] = args;
   if (typeof offset === "number") {
-    validateInteger(offset, 'offset', 0);
+    validateInteger(offset, "offset", 0);
   }
   return [Buffer.from(bufferLike.buffer, offset, length), position];
 }
