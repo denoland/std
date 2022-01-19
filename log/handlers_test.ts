@@ -143,7 +143,7 @@ Deno.test({
 
       async destroy() {
         await super.destroy();
-        Deno.removeSync(LOG_FILE);
+        await Deno.remove(LOG_FILE);
       }
     }
 
