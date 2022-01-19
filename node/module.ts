@@ -40,6 +40,12 @@ import {
   packageExportsResolve,
   packageImportsResolve,
 } from "./module_esm.ts";
+import {
+  clearInterval,
+  clearTimeout,
+  setInterval,
+  setTimeout,
+} from "./timers.ts";
 
 const { hasOwn } = Object;
 const CHAR_FORWARD_SLASH = "/".charCodeAt(0);
@@ -200,9 +206,10 @@ class Module {
   static _cache: { [key: string]: Module } = Object.create(null);
   static _pathCache = Object.create(null);
   static globalPaths: string[] = [];
-  // Proxy related code removed.
   static wrapper = [
-    "(function (exports, require, module, __filename, __dirname) { ",
+    // We provide non standard timer APIs in the CommonJS wrapper
+    // to avoid exposing them in global namespace.
+    "(function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) { ",
     "\n});",
   ];
 
@@ -257,6 +264,10 @@ class Module {
       this,
       filename,
       dirname,
+      setTimeout,
+      clearTimeout,
+      setInterval,
+      clearInterval,
     );
     if (requireDepth === 0) {
       statCache = null;
@@ -1272,6 +1283,10 @@ type RequireWrapper = (
   module: Module,
   __filename: string,
   __dirname: string,
+  setTimeout_: typeof setTimeout,
+  clearTimeout_: typeof clearTimeout,
+  setInterval_: typeof setInterval,
+  clearInterval_: typeof clearInterval,
 ) => void;
 
 function enrichCJSError(error: Error) {
