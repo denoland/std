@@ -1,5 +1,5 @@
 import { Buffer } from "../buffer.ts";
-import { writeAll, writeAllSync } from "../../streams/conversion.ts";
+import { validateInteger } from "../internal/validators.js";
 
 export function writeSync(fd, bufferLike, ...args) {
   const [buffer, pos] = bufferAndPos(bufferLike, args);
@@ -26,12 +26,31 @@ export function write(fd, bufferLike, ...args) {
   );
 }
 
+async function writeAll(fd, buf) {
+  let nwritten = 0;
+  while (nwritten < buf.length) {
+    nwritten += await Deno.write(fd, buf.subarray(nwritten));
+  }
+  return nwritten;
+}
+
+function writeAllSync(fd, buf) {
+  let nwritten = 0;
+  while (nwritten < buf.length) {
+    nwritten += Deno.writeSync(fd, buf.subarray(nwritten));
+  }
+  return nwritten;
+}
+
 function bufferAndPos(bufferLike, args) {
   if (typeof bufferLike === "string") {
     const [position, encoding] = args;
-    return [Buffer.from(bufferLike, encoding), position];
+    return [Buffer.from(bufferLike.buffer, encoding), position];
   }
 
   const [offset, length, position] = args;
-  return [Buffer.from(bufferLike, offset, length), position];
+  if (typeof offset === "number") {
+    validateInteger(offset, "offset", 0);
+  }
+  return [Buffer.from(bufferLike.buffer, offset, length), position];
 }
