@@ -206,8 +206,9 @@ class Module {
   static _cache: { [key: string]: Module } = Object.create(null);
   static _pathCache = Object.create(null);
   static globalPaths: string[] = [];
-  // Proxy related code removed.
   static wrapper = [
+    // We provide non standard timer APIs in the CommonJS wrapper
+    // to avoid exposing them in global namespace.
     "(function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) { ",
     "\n});",
   ];
