@@ -1,3 +1,4 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // This aliases are used in some node tests and represent a legacy alias
 // for the stream modules
 // deno-lint-ignore camelcase
@@ -43,7 +44,7 @@ import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.j
 import internalStreamsAddBufferList from "./internal/streams/buffer_list.js";
 import internalStreamsState from "./internal/streams/state.js";
 import internalTestBinding from "./internal/test/binding.ts";
-import internalTimers from "./internal/timers.ts";
+import internalTimers from "./internal/timers.js";
 import internalUtilInspect from "./internal/util/inspect.js";
 import internalUtil from "./internal/util.js";
 import net from "./net.ts";
