@@ -143,9 +143,27 @@ export class AsyncResource {
   }
 }
 
+function executionAsyncId() {
+  return 1;
+}
+
+class AsyncHook {
+  enable() {
+  }
+
+  disable() {
+  }
+}
+
+function createHook() {
+  return new AsyncHook();
+}
+
 // Placing all exports down here because the exported classes won't export
 // otherwise.
 export default {
   // Embedder API
   AsyncResource,
+  executionAsyncId,
+  createHook,
 };

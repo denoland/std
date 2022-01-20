@@ -246,6 +246,14 @@ Deno.test({
 
     assert(Object.getOwnPropertyNames(process.env).includes("HELLO"));
     assert(Object.keys(process.env).includes("HELLO"));
+
+    assert(Object.prototype.hasOwnProperty.call(process.env, "HELLO"));
+    assert(
+      !Object.prototype.hasOwnProperty.call(
+        process.env,
+        "SURELY_NON_EXISTENT_VAR",
+      ),
+    );
   },
 });
 
