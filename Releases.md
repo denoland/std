@@ -1,11 +1,13 @@
 ### 0.122.0 / 2022.01.20
 
-- BREAKING(encoding/csv): add return type to csv's parse and remove a parse func from args (#1724)
+- BREAKING(encoding/csv): add return type to csv's parse and remove a parse func
+  from args (#1724)
 - feat(node): add Timeout class (#1699)
 - feat(node): provide node compatible timer APIs in commonjs wrapper (#1834)
 - fix(log): flush to file when buffer is full (#1782)
 - fix(node): fix fs.write/fs.writeAll (#1832)
-- fix(node): make stdio streams optional if not present on Deno namespace (#1829)
+- fix(node): make stdio streams optional if not present on Deno namespace
+  (#1829)
 - fix(node/net): setNoDelay and setKeepAlive no-ops (#1828)
 - fix(node/timers): work around |this| check in deno (#1827)
 
