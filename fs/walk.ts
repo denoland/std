@@ -126,22 +126,18 @@ export async function* walk(
       assert(entry.name != null);
       let path = join(root, entry.name);
 
-      let isFile = entry.isFile;
+      let { isSymlink, isDirectory } = entry;
 
-      if (entry.isSymlink) {
-        if (followSymlinks) {
-          path = await Deno.realPath(path);
-          isFile = await Deno.lstat(path).then((s) => s.isFile);
-        } else {
-          continue;
-        }
+      if (isSymlink) {
+        if (!followSymlinks) continue;
+        path = await Deno.realPath(path);
+        // Caveat emptor: don't assume |path| is not a symlink. realpath()
+        // resolves symlinks but another process can replace the file system
+        // entity with a different type of entity before we call lstat().
+        ({ isSymlink, isDirectory } = await Deno.lstat(path));
       }
 
-      if (isFile) {
-        if (includeFiles && include(path, exts, match, skip)) {
-          yield { path, ...entry };
-        }
-      } else {
+      if (isSymlink || isDirectory) {
         yield* walk(path, {
           maxDepth: maxDepth - 1,
           includeFiles,
@@ -151,6 +147,8 @@ export async function* walk(
           match,
           skip,
         });
+      } else if (includeFiles && include(path, exts, match, skip)) {
+        yield { path, ...entry };
       }
     }
   } catch (err) {
@@ -190,21 +188,18 @@ export function* walkSync(
     assert(entry.name != null);
     let path = join(root, entry.name);
 
-    let isFile = entry.isFile;
-    if (entry.isSymlink) {
-      if (followSymlinks) {
-        path = Deno.realPathSync(path);
-        isFile = Deno.lstatSync(path).isFile;
-      } else {
-        continue;
-      }
+    let { isSymlink, isDirectory } = entry;
+
+    if (isSymlink) {
+      if (!followSymlinks) continue;
+      path = Deno.realPathSync(path);
+      // Caveat emptor: don't assume |path| is not a symlink. realpath()
+      // resolves symlinks but another process can replace the file system
+      // entity with a different type of entity before we call lstat().
+      ({ isSymlink, isDirectory } = Deno.lstatSync(path));
     }
 
-    if (isFile) {
-      if (includeFiles && include(path, exts, match, skip)) {
-        yield { path, ...entry };
-      }
-    } else {
+    if (isSymlink || isDirectory) {
       yield* walkSync(path, {
         maxDepth: maxDepth - 1,
         includeFiles,
@@ -214,6 +209,8 @@ export function* walkSync(
         match,
         skip,
       });
+    } else if (includeFiles && include(path, exts, match, skip)) {
+      yield { path, ...entry };
     }
   }
 }
