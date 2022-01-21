@@ -340,7 +340,9 @@ export async function serveFile(
   let bytesSent = 0;
   const body = new ReadableStream({
     async start() {
-      await file.seek(start, Deno.SeekMode.Start);
+      if (start > 0) {
+        await file.seek(start, Deno.SeekMode.Start);
+      }
     },
     async pull(controller) {
       const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
