@@ -12,7 +12,7 @@ import {
 } from "./stream.ts";
 import { OutgoingMessage } from "./_http_outgoing.ts";
 import { Agent } from "./_http_agent.js";
-import { ClientRequest } from "./_http_client.js";
+import { urlToHttpOptions } from "./internal/url.ts";
 
 const METHODS = [
   "ACL",
@@ -58,6 +58,127 @@ function chunkToU8(chunk: Chunk): Uint8Array {
     return core.encode(chunk);
   }
   return chunk;
+}
+
+export interface RequestOptions {
+  agent?: Agent;
+  auth?: string;
+  createConnection?: () => unknown;
+  defaultPort?: number;
+  family?: number;
+  headers?: Record<string, string>;
+  hints?: number;
+  host?: string;
+  hostname?: string;
+  insecureHTTPParser?: boolean;
+  localAddress?: string;
+  localPort?: number;
+  lookup?: () => void;
+  maxHeaderSize?: number;
+  method?: string;
+  path?: string;
+  port?: number;
+  protocol?: string;
+  setHost?: boolean;
+  socketPath?: string;
+  timeout?: number;
+  signal?: AbortSignal;
+  href?: string;
+}
+
+/** ClientRequest represents the http(s) request from the client */
+class ClientRequest extends NodeWritable {
+  body: null | ReadableStream = null;
+  controller: ReadableStreamDefaultController | null = null;
+  constructor(
+    public opts: RequestOptions,
+    public cb: (res: IncomingMessageForClient) => void,
+  ) {
+    super();
+  }
+
+  // deno-lint-ignore no-explicit-any
+  _write(chunk: any, _enc: string, cb: () => void) {
+    if (this.controller) {
+      this.controller.enqueue(chunk);
+      cb();
+      return;
+    }
+
+    this.body = new ReadableStream({
+      start: (controller) => {
+        this.controller = controller;
+        controller.enqueue(chunk);
+        cb();
+      },
+    });
+  }
+
+  async _final() {
+    const client = await this._createCustomClient();
+    const opts = { body: this.body, method: this.opts.method, client };
+    const res = new IncomingMessageForClient(
+      await fetch(this.opts.href!, opts),
+    );
+    this.emit("response", res);
+    if (client) {
+      res.on("end", () => {
+        client.close();
+      });
+    }
+    this.cb(res);
+  }
+
+  abort() {
+    this.destroy();
+  }
+
+  _createCustomClient(): Promise<Deno.HttpClient | undefined> {
+    return Promise.resolve(undefined);
+  }
+}
+
+/** IncomingMessage for http(s) client */
+export class IncomingMessageForClient extends NodeReadable {
+  reader: ReadableStreamDefaultReader | undefined;
+  constructor(public resp: Response) {
+    super();
+    this.reader = resp.body?.getReader();
+  }
+
+  async _read(_size: number) {
+    if (this.reader === undefined) {
+      this.push(null);
+      return;
+    }
+    try {
+      const res = await this.reader.read();
+      if (res.done) {
+        this.push(null);
+        return;
+      }
+      this.push(res.value);
+    } catch (e) {
+      // deno-lint-ignore no-explicit-any
+      this.destroy(e as any);
+    }
+  }
+
+  get headers() {
+    return Object.fromEntries(this.resp.headers.entries());
+  }
+
+  get trailers() {
+    return {};
+  }
+
+  get statusCode() {
+    return this.resp.status;
+  }
+
+  get statusMessage() {
+    return this.resp.statusText;
+  }
 }
 
 export class ServerResponse extends NodeWritable {
@@ -178,7 +299,7 @@ export class ServerResponse extends NodeWritable {
 }
 
 // TODO(@AaronO): optimize
-export class IncomingMessage extends NodeReadable {
+export class IncomingMessageForServer extends NodeReadable {
   private req: Request;
   url: string;
 
@@ -226,7 +347,10 @@ export class IncomingMessage extends NodeReadable {
   }
 }
 
-type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
+type ServerHandler = (
+  req: IncomingMessageForServer,
+  res: ServerResponse,
+) => void;
 
 export function Server(handler?: ServerHandler): ServerImpl {
   return new ServerImpl(handler);
@@ -289,7 +413,7 @@ class ServerImpl extends EventEmitter {
           if (reqEvent === null) {
             break;
           }
-          const req = new IncomingMessage(reqEvent.request);
+          const req = new IncomingMessageForServer(reqEvent.request);
           const res = new ServerResponse(reqEvent);
           this.emit("request", req, res);
         }
@@ -369,86 +493,53 @@ export function createServer(handler?: ServerHandler) {
   return Server(handler);
 }
 
-/**
- * @typedef {object} HTTPRequestOptions
- * @property {httpAgent.Agent | boolean} [agent]
- * @property {string} [auth]
- * @property {Function} [createConnection]
- * @property {number} [defaultPort]
- * @property {number} [family]
- * @property {object} [headers]
- * @property {number} [hints]
- * @property {string} [host]
- * @property {string} [hostname]
- * @property {boolean} [insecureHTTPParser]
- * @property {string} [localAddress]
- * @property {number} [localPort]
- * @property {Function} [lookup]
- * @property {number} [maxHeaderSize]
- * @property {string} [method]
- * @property {string} [path]
- * @property {number} [port]
- * @property {string} [protocol]
- * @property {boolean} [setHost]
- * @property {string} [socketPath]
- * @property {number} [timeout]
- * @property {AbortSignal} [signal]
- */
-interface HTTPRequestOptions {
-  agent?: Agent;
-  auth?: string;
-  createConnection?: () => unknown;
-  defaultPort?: number;
-  family?: number;
-  headers?: Record<string, string>;
-  hints?: number;
-  host?: string;
-  hostname?: string;
-  insecureHTTPParser?: boolean;
-  localAddress?: string;
-  localPort?: number;
-  lookup?: () => void;
-  maxHeaderSize?: number;
-  method?: string;
-  path?: string;
-  port?: number;
-  protocol?: string;
-  setHost?: boolean;
-  socketPath?: string;
-  timeout?: number;
-  signal?: AbortSignal;
-}
-
-/**
- * Makes an HTTP request.
- * @param url
- * @param options
- * @param cb
- */
+/** Makes an HTTP request. */
 export function request(
   url: string | URL,
-  options?: HTTPRequestOptions,
-  // deno-lint-ignore ban-types
-  cb?: Function,
-): ClientRequest {
-  return new ClientRequest(url, options, cb);
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function request(
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function request(
+  url: string | URL,
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+// deno-lint-ignore no-explicit-any
+export function request(...args: any[]) {
+  let options = {};
+  if (typeof args[0] === "string") {
+    options = urlToHttpOptions(new URL(args.shift()));
+  } else if (args[0] instanceof URL) {
+    options = urlToHttpOptions(args.shift());
+  }
+  if (args[0] && typeof args[0] !== "function") {
+    Object.assign(options, args.shift());
+  }
+  args.unshift(options);
+  return new ClientRequest(args[0], args[1]);
 }
 
-/**
- * Makes a `GET` HTTP request.
- * @param url
- * @param options
- * @param cb
- */
+/** Makes a `GET` HTTP request. */
 export function get(
   url: string | URL,
-  options?: HTTPRequestOptions,
-  // deno-lint-ignore ban-types
-  cb?: Function,
-) {
-  const req = request(url, options, cb);
-  // deno-lint-ignore no-explicit-any
-  (req as any).end();
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function get(
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function get(
+  url: string | URL,
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+// deno-lint-ignore no-explicit-any
+export function get(...args: any[]) {
+  const req = request(args[0], args[1], args[2]);
+  req.end();
   return req;
 }
 
@@ -460,7 +551,7 @@ export default {
   METHODS,
   createServer,
   Server,
-  IncomingMessage,
+  IncomingMessage: IncomingMessageForServer,
   OutgoingMessage,
   ServerResponse,
   request,

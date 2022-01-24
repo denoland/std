@@ -26,6 +26,34 @@ function isUint32(value) {
   return value === (value >>> 0);
 }
 
+const octalReg = /^[0-7]+$/;
+const modeDesc = "must be a 32-bit unsigned integer or an octal string";
+
+/**
+ * Parse and validate values that will be converted into mode_t (the S_*
+ * constants). Only valid numbers and octal strings are allowed. They could be
+ * converted to 32-bit unsigned integers or non-negative signed integers in the
+ * C++ land, but any value higher than 0o777 will result in platform-specific
+ * behaviors.
+ *
+ * @param {*} value Values to be validated
+ * @param {string} name Name of the argument
+ * @param {number} [def] If specified, will be returned for invalid values
+ * @returns {number}
+ */
+function parseFileMode(value, name, def) {
+  value ??= def;
+  if (typeof value === "string") {
+    if (!octalReg.test(value)) {
+      throw new ERR_INVALID_ARG_VALUE(name, value, modeDesc);
+    }
+    value = Number.parseInt(value, 8);
+  }
+
+  validateInt32(value, name, 0, 2 ** 32 - 1);
+  return value;
+}
+
 const validateBuffer = hideStackFrames((buffer, name = "buffer") => {
   if (!isArrayBufferView(buffer)) {
     throw new ERR_INVALID_ARG_TYPE(
@@ -250,6 +278,7 @@ const validateArray = hideStackFrames(
 export default {
   isInt32,
   isUint32,
+  parseFileMode,
   validateAbortSignal,
   validateArray,
   validateBoolean,
@@ -268,6 +297,7 @@ export default {
 export {
   isInt32,
   isUint32,
+  parseFileMode,
   validateAbortSignal,
   validateArray,
   validateBoolean,

@@ -1396,9 +1396,15 @@ export default Readable;
 export { fromList as _fromList, readableFrom as from, ReadableState, wrap };
 
 // https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
-function createWritableStdioStream(writer) {
+function createWritableStdioStream(writer, name) {
   const stream = new Writable({
     write(buf, enc, cb) {
+      if (!writer) {
+        this.destroy(
+          new Error(`Deno.${name} is not available in this environment`),
+        );
+        return;
+      }
       writer.writeSync(buf instanceof Uint8Array ? buf : Buffer.from(buf, enc));
       cb();
     },
@@ -1410,36 +1416,38 @@ function createWritableStdioStream(writer) {
       }
     },
   });
-  stream.fd = writer.rid;
+  stream.fd = writer?.rid ?? -1;
   stream.destroySoon = stream.destroy;
   stream._isStdio = true;
-  stream.once("close", () => writer.close());
+  stream.once("close", () => writer?.close());
   Object.defineProperties(stream, {
     columns: {
       enumerable: true,
       configurable: true,
       get: () =>
-        Deno.isatty(writer.rid)
-          ? Deno.consoleSize(writer.rid).columns
+        Deno.isatty?.(writer?.rid)
+          ? Deno.consoleSize?.(writer?.rid).columns
           : undefined,
     },
     rows: {
       enumerable: true,
       configurable: true,
       get: () =>
-        Deno.isatty(writer.rid) ? Deno.consoleSize(writer.rid).rows : undefined,
+        Deno.isatty?.(writer?.rid)
+          ? Deno.consoleSize?.(writer?.rid).rows
+          : undefined,
     },
     isTTY: {
       enumerable: true,
       configurable: true,
-      get: () => Deno.isatty(writer.rid),
+      get: () => Deno.isatty?.(writer?.rid),
     },
     getWindowSize: {
       enumerable: true,
       configurable: true,
       value: () =>
-        Deno.isatty(writer.rid)
-          ? Object.values(Deno.consoleSize(writer.rid))
+        Deno.isatty?.(writer?.rid)
+          ? Object.values(Deno.consoleSize?.(writer?.rid))
           : undefined,
     },
   });
@@ -1448,5 +1456,5 @@ function createWritableStdioStream(writer) {
 
 // The following are exports of the process module, they have to be instantiated here to prevent
 // a circular dependency between the process module and the stream module
-export const stderr = createWritableStdioStream(Deno.stderr);
-export const stdout = createWritableStdioStream(Deno.stdout);
+export const stderr = createWritableStdioStream(Deno.stderr, "stderr");
+export const stdout = createWritableStdioStream(Deno.stdout, "stdout");

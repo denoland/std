@@ -153,7 +153,7 @@ export function uvTranslateSysError(sysErrno: number): string {
     case winErrors.ERROR_BAD_PATHNAME:
       return "ENOENT";
     case winErrors.ERROR_DIRECTORY:
-      return "ENOENT";
+      return "ENOTDIR";
     case winErrors.ERROR_ENVVAR_NOT_FOUND:
       return "ENOENT";
     case winErrors.ERROR_FILE_NOT_FOUND:

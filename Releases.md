@@ -1,3 +1,54 @@
+### 0.122.0 / 2022.01.20
+
+- BREAKING(encoding/csv): add return type to csv's parse and remove a parse func
+  from args (#1724)
+- feat(node): add Timeout class (#1699)
+- feat(node): provide node compatible timer APIs in commonjs wrapper (#1834)
+- fix(log): flush to file when buffer is full (#1782)
+- fix(node): fix fs.write/fs.writeAll (#1832)
+- fix(node): make stdio streams optional if not present on Deno namespace
+  (#1829)
+- fix(node/net): setNoDelay and setKeepAlive no-ops (#1828)
+- fix(node/timers): work around |this| check in deno (#1827)
+
+### 0.121.0 / 2022.01.12
+
+- feat(crypto): add md4 hash (#1799)
+- feat(http): add eyecandy to file_server (#1804)
+- feat(http/file_server): add 'quiet' flag (#1773)
+- feat(node): add zlib (#1790)
+- feat(node): mock more APIs (#1802)
+- feat(node): upstream caller-path package (#1801)
+- feat(node/fs): fs.write()/fs.writeSync() (#1817)
+- fix(node): placeholder process.getgid() (#1814)
+- fix(node): process.env ownPropertyDescriptor (#1795)
+- fix(node): set prototype for Module (#1797)
+- fix(node/http): client emit response, trailers & abort (#1809)
+- fix(node/http/client): convert response's Headers to plain Object (#1811)
+- fix(node/url): format auth/search/hash corruption (#1810)
+
+### 0.120.0 / 2022.01.05
+
+- feat(crypto): add Tiger hash (#1749)
+- feat(node): add https.request (#1746)
+- feat(node): add process.execPath (#1748)
+- feat(node): add vm.runInThisContext (#1747)
+- feat(uuid): add function to detect RFC version of a UUID (#1766)
+- fix(examples/chat): fix applyState call (#1760)
+- fix(node): don't emit exit twice (#1753)
+- fix(node): fix fs.readdir (#1758)
+- fix(node): improve util.isDeepStrictEqual (#1765)
+- fix(node/child_process): allow number and boolean env vars (#1762)
+- fix(path): change default of 'extended' options of glob methods (#1719)
+- fix(testing/assert): inequality of -0 and 0 (#1783)
+
+### 0.119.0 / 2021.12.22
+
+- feat(hash): add Tiger hash (#1729)
+- feat(node): expose util.debuglog (#1735)
+- feat(node/util): implement `getOwnNonIndexProperties` (#1728)
+- feat(uuid): add `validate` function to check UUID (#1720)
+
 ### 0.118.0 / 2021.12.16
 
 - [BREAKING] Remove 'findLast' from 'collections' module (#1527)

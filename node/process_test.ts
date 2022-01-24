@@ -246,6 +246,14 @@ Deno.test({
 
     assert(Object.getOwnPropertyNames(process.env).includes("HELLO"));
     assert(Object.keys(process.env).includes("HELLO"));
+
+    assert(Object.prototype.hasOwnProperty.call(process.env, "HELLO"));
+    assert(
+      !Object.prototype.hasOwnProperty.call(
+        process.env,
+        "SURELY_NON_EXISTENT_VAR",
+      ),
+    );
   },
 });
 
@@ -407,4 +415,35 @@ Deno.test("process.config", () => {
 
 Deno.test("process._exiting", () => {
   assert(process._exiting === false);
+});
+
+Deno.test("process.execPath", () => {
+  assertEquals(process.execPath, process.argv[0]);
+});
+
+Deno.test({
+  name: "process.exit",
+  async fn() {
+    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+
+    const p = Deno.run({
+      cmd: [
+        Deno.execPath(),
+        "run",
+        "--quiet",
+        "--unstable",
+        "./testdata/process_exit2.ts",
+      ],
+      cwd,
+      stdout: "piped",
+    });
+
+    const decoder = new TextDecoder();
+    const rawOutput = await p.output();
+    assertEquals(
+      stripColor(decoder.decode(rawOutput).trim()),
+      "exit",
+    );
+    p.close();
+  },
 });

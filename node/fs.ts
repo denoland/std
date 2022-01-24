@@ -33,6 +33,8 @@ import { truncate, truncateSync } from "./_fs/_fs_truncate.ts";
 import { unlink, unlinkSync } from "./_fs/_fs_unlink.ts";
 import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
 import { watch, watchFile } from "./_fs/_fs_watch.ts";
+// @deno-types="./_fs/_fs_write.d.ts"
+import { write, writeSync } from "./_fs/_fs_write.js";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
 
 import { Stats } from "./internal/fs/utils.js";
@@ -117,6 +119,8 @@ export default {
   W_OK,
   watch,
   watchFile,
+  write,
+  writeSync,
   writeFile,
   writeFileSync,
   X_OK,
@@ -193,7 +197,9 @@ export {
   W_OK,
   watch,
   watchFile,
+  write,
   writeFile,
   writeFileSync,
+  writeSync,
   X_OK,
 };

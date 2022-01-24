@@ -26,6 +26,7 @@ export const supportedAlgorithms = [
   "keccak384",
   "keccak512",
   "blake3",
+  "tiger",
 ] as const;
 /** @deprecated */
 export type SupportedAlgorithm = typeof supportedAlgorithms[number];

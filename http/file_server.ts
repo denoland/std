@@ -38,6 +38,8 @@ interface FileServerArgs {
   key: string;
   // -h --help
   help: boolean;
+  // --quiet
+  quiet: boolean;
 }
 
 const encoder = new TextEncoder();
@@ -204,9 +206,9 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
     .reverse()
     .slice(0, 3)
     .forEach((v): void => {
-      output = modeMap[+v] + output;
+      output = `${modeMap[+v]} ${output}`;
     });
-  output = `(${isDir ? "d" : "-"}${output})`;
+  output = `${isDir ? "d" : "-"} ${output}`;
   return output;
 }
 
@@ -338,7 +340,9 @@ export async function serveFile(
   let bytesSent = 0;
   const body = new ReadableStream({
     async start() {
-      await file.seek(start, Deno.SeekMode.Start);
+      if (start > 0) {
+        await file.seek(start, Deno.SeekMode.Start);
+      }
     },
     async pull(controller) {
       const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
@@ -450,7 +454,8 @@ function serverLog(req: Request, res: Response): void {
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const normalizedUrl = normalizeURL(req.url);
   const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${res.status}`;
-  console.log(s);
+  // using console.debug instead of console.log so chrome inspect users can hide request logs
+  console.debug(s);
 }
 
 function setBaseHeaders(): Headers {
@@ -490,8 +495,11 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           }
           @media (prefers-color-scheme: dark) {
             :root {
-              --background-color: #303030;
+              --background-color: #292929;
               --color: #fff;
+            }
+            thead {
+              color: #7f7f7f;
             }
           }
           @media (min-width: 960px) {
@@ -524,11 +532,21 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           a:hover {
             text-decoration: underline;
           }
-          table th {
+          thead {
             text-align: left;
           }
+          thead th {
+            padding-bottom: 12px;
+          }
           table td {
-            padding: 6px 24px 6px 4px;
+            padding: 6px 36px 6px 0px;
+          }
+          .size {
+            text-align: right;
+            padding: 6px 12px 6px 24px;
+          }
+          .mode {
+            font-family: monospace, monospace;
           }
         </style>
       </head>
@@ -546,11 +564,13 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
   }
           </h1>
           <table>
-            <tr>
-              <th>Mode</th>
-              <th>Size</th>
-              <th>Name</th>
-            </tr>
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Size</th>
+                <th>Name</th>
+              </tr>
+            </thead>
             ${
     entries
       .map(
@@ -559,7 +579,7 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                     <td class="mode">
                       ${entry.mode}
                     </td>
-                    <td>
+                    <td class="size">
                       ${entry.size}
                     </td>
                     <td>
@@ -614,11 +634,12 @@ function normalizeURL(url: string): string {
 function main(): void {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors", "quiet"],
     default: {
       "dir-listing": true,
       dotfiles: true,
       cors: true,
+      quiet: false,
       host: "0.0.0.0",
       port: "4507",
       cert: "",
@@ -637,6 +658,7 @@ function main(): void {
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
   const dirListingEnabled = serverArgs["dir-listing"];
+  const quiet = serverArgs.quiet;
 
   if (serverArgs.help) {
     printUsage();
@@ -689,7 +711,7 @@ function main(): void {
       setCORS(response);
     }
 
-    serverLog(req, response!);
+    if (!quiet) serverLog(req, response!);
 
     return response!;
   };
@@ -737,6 +759,7 @@ OPTIONS:
   -k, --key  <FILE>   TLS key file (enables TLS)
   --no-dir-listing    Disable directory listing
   --no-dotfiles       Do not show dotfiles
+  --quiet             Do not print request level logs
 
   All TLS options are required when one is provided.`);
 }

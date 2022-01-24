@@ -919,8 +919,8 @@ export function format(
   let ret = urlObject.protocol;
   if (urlObject.host !== null) {
     ret += "//";
-    const hasUsername = urlObject.username !== "";
-    const hasPassword = urlObject.password !== "";
+    const hasUsername = !!urlObject.username;
+    const hasPassword = !!urlObject.password;
     if (options.auth && (hasUsername || hasPassword)) {
       if (hasUsername) {
         ret += urlObject.username;
@@ -941,10 +941,10 @@ export function format(
 
   ret += urlObject.pathname;
 
-  if (options.search) {
+  if (options.search && urlObject.search) {
     ret += urlObject.search;
   }
-  if (options.fragment) {
+  if (options.fragment && urlObject.hash) {
     ret += urlObject.hash;
   }
 

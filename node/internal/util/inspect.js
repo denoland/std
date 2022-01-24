@@ -575,9 +575,7 @@ function formatRaw(ctx, value, recurseTimes, typedArray) {
       }
       braces = [`${prefix}{`, "}"];
     } else if (types.isTypedArray(value)) {
-      // TODO(wafuwafu13): Imprement
-      keys = [value];
-      // keys = getOwnNonIndexProperties(value, filter);
+      keys = getOwnNonIndexProperties(value, filter);
       const bound = value;
       const fallback = "";
       if (constructor === null) {

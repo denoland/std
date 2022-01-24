@@ -1,3 +1,4 @@
+// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // This aliases are used in some node tests and represent a legacy alias
 // for the stream modules
 // deno-lint-ignore camelcase
@@ -21,16 +22,20 @@ import assertStrict from "./assert/strict.ts";
 import async_hooks from "./async_hooks.ts";
 import buffer from "./buffer.ts";
 import childProcess from "./child_process.ts";
+import cluster from "./cluster.ts";
 import console from "./console.ts";
 import constants from "./constants.ts";
 import crypto from "./crypto.ts";
 import dgram from "./dgram.ts";
 import dns from "./dns.ts";
+import domain from "./domain.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
 import internalFsUtils from "./internal/fs/utils.js";
 import http from "./http.ts";
+import http2 from "./http2.ts";
+import https from "./https.ts";
 import inspector from "./inspector.ts";
 import internalErrors from "./internal/errors.js";
 import internalHttp from "./internal/http.ts";
@@ -39,8 +44,9 @@ import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.j
 import internalStreamsAddBufferList from "./internal/streams/buffer_list.js";
 import internalStreamsState from "./internal/streams/state.js";
 import internalTestBinding from "./internal/test/binding.ts";
-import internalTimers from "./internal/timers.ts";
+import internalTimers from "./internal/timers.js";
 import internalUtilInspect from "./internal/util/inspect.js";
+import internalUtil from "./internal/util.js";
 import net from "./net.ts";
 import os from "./os.ts";
 import path from "./path.ts";
@@ -48,6 +54,7 @@ import perfHooks from "./perf_hooks.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
 import readline from "./readline.ts";
+import repl from "./repl.ts";
 import stream from "./stream.ts";
 import streamConsumers from "./stream/consumers.js";
 import streamPromises from "./stream/promises.js";
@@ -56,21 +63,16 @@ import stringDecoder from "./string_decoder.ts";
 import sys from "./sys.ts";
 import timers from "./timers.ts";
 import timersPromises from "./timers/promises.ts";
+import tls from "./tls.ts";
 import tty from "./tty.ts";
 import url from "./url.ts";
+import utilTypes from "./util/types.js";
 import util from "./util.ts";
+import v8 from "./v8.ts";
 import vm from "./vm.ts";
+import workerThreads from "./worker_threads.ts";
 import wasi from "./wasi.ts";
 import zlib from "./zlib.ts";
-
-// TODO(kt3k): add these modules when implemented
-// import cluster from "./cluster.ts";
-// import http2 from "./http2.ts";
-// import https from "./https.ts";
-// import repl from "./repl.ts";
-// import sys from "./sys.ts";
-// import tls from "./tls.ts";
-// import workerThreads from "./worker_threads.ts";
 
 // Canonical mapping of supported modules
 export default {
@@ -89,12 +91,16 @@ export default {
   console,
   constants,
   "child_process": childProcess,
+  cluster,
   dgram,
   dns,
+  domain,
   events,
   fs,
   "fs/promises": fsPromises,
   http,
+  http2,
+  https,
   inspector,
   "internal/errors": internalErrors,
   "internal/fs/utils": internalFsUtils,
@@ -106,6 +112,7 @@ export default {
   "internal/test/binding": internalTestBinding,
   "internal/timers": internalTimers,
   "internal/util/inspect": internalUtilInspect,
+  "internal/util": internalUtil,
   net,
   os,
   path,
@@ -113,6 +120,7 @@ export default {
   process,
   querystring,
   readline,
+  repl,
   stream,
   "stream/consumers": streamConsumers,
   "stream/promises": streamPromises,
@@ -121,10 +129,14 @@ export default {
   sys,
   timers,
   "timers/promises": timersPromises,
+  tls,
   tty,
   url,
+  "util/types": utilTypes,
   util,
+  v8,
   vm,
-  zlib,
   wasi,
+  workerThreads,
+  zlib,
 } as Record<string, unknown>;

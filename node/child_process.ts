@@ -116,4 +116,8 @@ export function spawn(
   return new ChildProcess(command, args, options);
 }
 
-export default { fork, spawn };
+export function execFile() {
+  throw new Error("not implemented");
+}
+
+export default { fork, spawn, execFile, ChildProcess };

@@ -11,7 +11,8 @@ import { iterateReader, writeAll } from "../../streams/conversion.ts";
 import { isWindows } from "../../_util/os.ts";
 import { Buffer } from "../buffer.ts";
 import { nextTick } from "../_next_tick.ts";
-import { ERR_INVALID_ARG_VALUE } from "../internal/errors.ts";
+import { ERR_INVALID_ARG_VALUE } from "./errors.ts";
+import { mapValues } from "../../collections/map_values.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
@@ -119,10 +120,12 @@ export class ChildProcess extends EventEmitter {
     this.spawnfile = cmd[0];
     this.spawnargs = cmd;
 
+    const stringEnv = mapValues(env, (value) => value.toString());
+
     try {
       this.#process = Deno.run({
         cmd,
-        env,
+        env: stringEnv,
         stdin: toDenoStdio(stdin as NodeStdio | number),
         stdout: toDenoStdio(stdout as NodeStdio | number),
         stderr: toDenoStdio(stderr as NodeStdio | number),
@@ -260,7 +263,7 @@ export interface ChildProcessOptions {
   /**
    * Environment variables passed to the child process.
    */
-  env?: Record<string, string>;
+  env?: Record<string, string | number | boolean>;
 
   /**
    * This option defines child process's stdio configuration.
