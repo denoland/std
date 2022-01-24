@@ -120,6 +120,10 @@ jobs:
         shell: bash
         run: ./_tools/lint.js
 
+      - name: Check circular dependencies
+        shell: bash
+        run: ./_tools/check_circular_deps.ts
+
   hash-wasm:
     name: "_wasm_crypto/"
     runs-on: ubuntu-latest

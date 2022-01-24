@@ -9,6 +9,9 @@ import {
 import { stripColor } from "../fmt/colors.ts";
 import * as util from "./util.ts";
 
+// Note: Need to import this to lazily initialize error classes
+import "./internal/errors.ts";
+
 Deno.test({
   name: "[util] format",
   fn() {

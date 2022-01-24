@@ -1,5 +1,5 @@
 import { sprintf } from "../../fmt/printf.ts";
-import { inspect } from "../util.ts";
+import { inspect } from "../internal/util/inspect.js";
 
 // `debugImpls` and `testEnabled` are deliberately not initialized so any call
 // to `debuglog()` before `initializeDebugEnv()` is called will throw.

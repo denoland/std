@@ -5,7 +5,7 @@
 
 import { core } from "./_core.ts";
 import { validateCallback } from "./internal/validators.js";
-import { _exiting } from "./_process/process.ts";
+import { _exiting } from "./_process/exiting.ts";
 import { FixedQueue } from "./_fixed_queue.ts";
 
 interface Tock {

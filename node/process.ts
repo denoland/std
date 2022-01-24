@@ -8,7 +8,6 @@ import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import {
-  _exiting,
   arch,
   chdir,
   cwd,
@@ -19,6 +18,7 @@ import {
   version,
   versions,
 } from "./_process/process.ts";
+import { _exiting } from "./_process/exiting.ts";
 export {
   _nextTick as nextTick,
   arch,
@@ -30,7 +30,18 @@ export {
   version,
   versions,
 };
-import { stderr, stdin, stdout } from "./_process/streams.ts";
+import {
+  stderr as stderr_,
+  stdin as stdin_,
+  stdout as stdout_,
+} from "./_process/streams.js";
+// TODO(kt3k): Give better types to stdio objects
+// deno-lint-ignore no-explicit-any
+const stderr = stderr_ as any;
+// deno-lint-ignore no-explicit-any
+const stdin = stdin_ as any;
+// deno-lint-ignore no-explicit-any
+const stdout = stdout_ as any;
 export { stderr, stdin, stdout };
 import { getBinding } from "./internal_binding/mod.ts";
 import type { BindingName } from "./internal_binding/mod.ts";

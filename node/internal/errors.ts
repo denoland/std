@@ -13,19 +13,21 @@
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
  * *********** */
 
-import { getSystemErrorName, inspect } from "../util.ts";
+import { getSystemErrorName } from "../util.ts";
+import { inspect } from "../internal/util/inspect.js";
+import { codes } from "./error_codes.ts";
 import {
   codeMap,
   errorMap,
   mapSysErrnoToUvErrno,
 } from "../internal_binding/uv.ts";
 import { assert } from "../../_util/assert.ts";
-import { fileURLToPath } from "../url.ts";
 import { isWindows } from "../../_util/os.ts";
 import { os as osConstants } from "../internal_binding/constants.ts";
 const {
   errno: { ENOTDIR, ENOENT },
 } = osConstants;
+import { hideStackFrames } from "./hide_stack_frames.ts";
 
 export { errorMap };
 
@@ -77,18 +79,6 @@ function addNumericalSeparator(val: string) {
     res = `_${val.slice(i - 3, i)}${res}`;
   }
   return `${val.slice(0, i)}${res}`;
-}
-
-/** This function removes unnecessary frames from Node.js core errors. */
-export function hideStackFrames<T extends GenericFunction = GenericFunction>(
-  fn: T,
-): T {
-  // We rename the functions that will be hidden to cut off the stacktrace
-  // at the outermost one.
-  const hidden = "__node_internal_" + fn.name;
-  Object.defineProperty(fn, "name", { value: hidden });
-
-  return fn;
 }
 
 const captureLargerStackTrace = hideStackFrames(
@@ -2393,24 +2383,19 @@ export class ERR_INVALID_PACKAGE_TARGET extends NodeError {
 export class ERR_PACKAGE_IMPORT_NOT_DEFINED extends NodeTypeError {
   constructor(
     specifier: string,
-    packageJSONUrl: URL | undefined,
-    base: string | URL,
+    packagePath: string | undefined,
+    base: string,
   ) {
-    const packagePath = packageJSONUrl &&
-      fileURLToPath(new URL(".", packageJSONUrl));
     const msg = `Package import specifier "${specifier}" is not defined${
       packagePath ? ` in package ${packagePath}package.json` : ""
-    } imported from ${fileURLToPath(base)}`;
+    } imported from ${base}`;
 
     super("ERR_PACKAGE_IMPORT_NOT_DEFINED", msg);
   }
 }
 
 export class ERR_PACKAGE_PATH_NOT_EXPORTED extends NodeError {
-  constructor(subpath: string, packageJSONUrl: string, base?: string) {
-    const pkgPath = fileURLToPath(new URL(".", packageJSONUrl));
-    const basePath = base && fileURLToPath(base);
-
+  constructor(subpath: string, pkgPath: string, basePath?: string) {
     let msg: string;
     if (subpath === ".") {
       msg = `No "exports" main defined in ${pkgPath}package.json${
@@ -2514,11 +2499,17 @@ export function aggregateTwoErrors(
   }
   return innerError || outerError;
 }
+codes.ERR_IPC_CHANNEL_CLOSED = ERR_IPC_CHANNEL_CLOSED;
+codes.ERR_INVALID_ARG_TYPE = ERR_INVALID_ARG_TYPE;
+codes.ERR_INVALID_ARG_VALUE = ERR_INVALID_ARG_VALUE;
+codes.ERR_INVALID_CALLBACK = ERR_INVALID_CALLBACK;
+codes.ERR_OUT_OF_RANGE = ERR_OUT_OF_RANGE;
+codes.ERR_SOCKET_BAD_PORT = ERR_SOCKET_BAD_PORT;
+codes.ERR_BUFFER_OUT_OF_BOUNDS = ERR_BUFFER_OUT_OF_BOUNDS;
+codes.ERR_UNKNOWN_ENCODING = ERR_UNKNOWN_ENCODING;
+// TODO(kt3k): assign all error classes here.
 
-export const codes = {
-  ERR_IPC_CHANNEL_CLOSED,
-  // TODO(kt3k): list all error classes here.
-};
+export { codes, hideStackFrames };
 
 export default {
   AbortError,

@@ -6,9 +6,7 @@
 
 import { isWindows } from "../../_util/os.ts";
 import { nextTick as _nextTick } from "../_next_tick.ts";
-
-// deno-lint-ignore prefer-const
-export let _exiting = false;
+import { _exiting } from "./exiting.ts";
 
 /** Returns the operating system CPU architecture for which the Deno binary was compiled */
 function _arch(): string {

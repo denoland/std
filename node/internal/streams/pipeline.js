@@ -3,7 +3,7 @@
 
 import { isIterable, isNodeStream, isReadableNodeStream } from "./utils.js";
 import { once } from "../util.js";
-import { stderr, stdout } from "./readable.js";
+import { stdio } from "../../_process/stdio.js";
 import { validateAbortSignal, validateCallback } from "../validators.js";
 import {
   AbortError,
@@ -286,7 +286,7 @@ function pipelineImpl(streams, callback, opts) {
         // Compat. Before node v10.12.0 stdio used to throw an error so
         // pipe() did/does not end() stdio destinations.
         // Now they allow it but "secretly" don't close the underlying fd.
-        if (stream === stdout || stream === stderr) {
+        if (stream === stdio.stdout || stream === stdio.stderr) {
           ret.on("end", () => stream.end());
         }
       } else {

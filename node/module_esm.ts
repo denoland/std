@@ -85,7 +85,11 @@ function throwImportNotDefined(
   packageJSONUrl: URL | undefined,
   base: string | URL,
 ): TypeError & { code: string } {
-  throw new ERR_PACKAGE_IMPORT_NOT_DEFINED(specifier, packageJSONUrl, base);
+  throw new ERR_PACKAGE_IMPORT_NOT_DEFINED(
+    specifier,
+    packageJSONUrl && fileURLToPath(new URL(".", packageJSONUrl)),
+    fileURLToPath(base),
+  );
 }
 
 function throwExportsNotFound(
@@ -95,8 +99,8 @@ function throwExportsNotFound(
 ): Error & { code: string } {
   throw new ERR_PACKAGE_PATH_NOT_EXPORTED(
     subpath,
-    packageJSONUrl,
-    base,
+    fileURLToPath(new URL(".", packageJSONUrl)),
+    base && fileURLToPath(base),
   );
 }
 
