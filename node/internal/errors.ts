@@ -2515,7 +2515,13 @@ export function aggregateTwoErrors(
   return innerError || outerError;
 }
 
+export const codes = {
+  ERR_IPC_CHANNEL_CLOSED,
+  // TODO(kt3k): list all error classes here.
+}
+
 export default {
   AbortError,
   aggregateTwoErrors,
+  codes,
 };
