@@ -36,7 +36,7 @@ import {
   ERR_PACKAGE_IMPORT_NOT_DEFINED,
   ERR_PACKAGE_PATH_NOT_EXPORTED,
   NodeError,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 
 const { hasOwn } = Object;
 

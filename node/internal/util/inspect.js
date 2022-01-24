@@ -21,7 +21,7 @@
 
 import * as types from "./types.ts";
 import { validateObject, validateString } from "../validators.js";
-import { ERR_INVALID_ARG_TYPE } from "../../_errors.ts";
+import { ERR_INVALID_ARG_TYPE } from "../errors.ts";
 
 import {
   ALL_PROPERTIES,

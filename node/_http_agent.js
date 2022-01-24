@@ -11,7 +11,7 @@ import { AsyncResource } from "./async_hooks.ts";
 import { symbols } from "./internal/async_hooks.ts";
 // deno-lint-ignore camelcase
 const { async_id_symbol } = symbols;
-import { ERR_OUT_OF_RANGE } from "./_errors.ts";
+import { ERR_OUT_OF_RANGE } from "./internal/errors.ts";
 import { once } from "./internal/util.js";
 import {
   validateNumber,

@@ -9,7 +9,11 @@ import {
   inspect,
   stripVTControlCharacters,
 } from "./internal/util/inspect.js";
-import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
+import {
+  ERR_INVALID_ARG_TYPE,
+  ERR_OUT_OF_RANGE,
+  errorMap,
+} from "./internal/errors.ts";
 import types from "./util/types.js";
 import { Buffer } from "./buffer.ts";
 import { isDeepStrictEqual } from "./internal/util/comparisons.ts";

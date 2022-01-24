@@ -5,7 +5,7 @@ import {
   ERR_BUFFER_OUT_OF_BOUNDS,
   ERR_INVALID_ARG_TYPE,
   ERR_OUT_OF_RANGE,
-} from "../_errors.ts";
+} from "./errors.ts";
 import { encodings } from "../internal_binding/string_decoder.ts";
 import { indexOfBuffer } from "../internal_binding/buffer.ts";
 import {

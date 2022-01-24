@@ -7,7 +7,7 @@ import {
   ERR_OUT_OF_RANGE,
   ERR_SOCKET_BAD_PORT,
   hideStackFrames,
-} from "../_errors.ts";
+} from "./errors.ts";
 import { isArrayBufferView } from "./util/types.ts";
 
 /**

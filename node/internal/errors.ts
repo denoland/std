@@ -13,21 +13,18 @@
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
  * *********** */
 
-import { getSystemErrorName, inspect } from "./util.ts";
+import { getSystemErrorName, inspect } from "../util.ts";
 import {
   codeMap,
   errorMap,
   mapSysErrnoToUvErrno,
-} from "./internal_binding/uv.ts";
-import { assert } from "../_util/assert.ts";
-import { fileURLToPath } from "./url.ts";
-import { isWindows } from "../_util/os.ts";
-import { os as osConstants } from "./internal_binding/constants.ts";
+} from "../internal_binding/uv.ts";
+import { assert } from "../../_util/assert.ts";
+import { fileURLToPath } from "../url.ts";
+import { isWindows } from "../../_util/os.ts";
+import { os as osConstants } from "../internal_binding/constants.ts";
 const {
-  errno: {
-    ENOTDIR,
-    ENOENT,
-  },
+  errno: { ENOTDIR, ENOENT },
 } = osConstants;
 
 export { errorMap };
@@ -161,22 +158,24 @@ export const uvExceptionWithHostPort = hideStackFrames(
  * @param original
  * @return A `ErrnoException`
  */
-export const errnoException = hideStackFrames(
-  function errnoException(err, syscall, original?): ErrnoException {
-    const code = getSystemErrorName(err);
-    const message = original
-      ? `${syscall} ${code} ${original}`
-      : `${syscall} ${code}`;
+export const errnoException = hideStackFrames(function errnoException(
+  err,
+  syscall,
+  original?,
+): ErrnoException {
+  const code = getSystemErrorName(err);
+  const message = original
+    ? `${syscall} ${code} ${original}`
+    : `${syscall} ${code}`;
 
-    // deno-lint-ignore no-explicit-any
-    const ex: any = new Error(message);
-    ex.errno = err;
-    ex.code = code;
-    ex.syscall = syscall;
+  // deno-lint-ignore no-explicit-any
+  const ex: any = new Error(message);
+  ex.errno = err;
+  ex.code = code;
+  ex.syscall = syscall;
 
-    return captureLargerStackTrace(ex);
-  },
-);
+  return captureLargerStackTrace(ex);
+});
 
 function uvErrmapGet(name: number) {
   return errorMap.get(name);
@@ -588,10 +587,7 @@ export class ERR_INVALID_ARG_TYPE_RANGE extends NodeRangeError {
   constructor(name: string, expected: string | string[], actual: unknown) {
     const msg = createInvalidArgType(name, expected);
 
-    super(
-      "ERR_INVALID_ARG_TYPE",
-      `${msg}.${invalidArgTypeHelper(actual)}`,
-    );
+    super("ERR_INVALID_ARG_TYPE", `${msg}.${invalidArgTypeHelper(actual)}`);
   }
 }
 
@@ -599,10 +595,7 @@ export class ERR_INVALID_ARG_TYPE extends NodeTypeError {
   constructor(name: string, expected: string | string[], actual: unknown) {
     const msg = createInvalidArgType(name, expected);
 
-    super(
-      "ERR_INVALID_ARG_TYPE",
-      `${msg}.${invalidArgTypeHelper(actual)}`,
-    );
+    super("ERR_INVALID_ARG_TYPE", `${msg}.${invalidArgTypeHelper(actual)}`);
   }
 
   static RangeError = ERR_INVALID_ARG_TYPE_RANGE;
@@ -753,10 +746,7 @@ export class ERR_BUFFER_TOO_LARGE extends NodeRangeError {
 
 export class ERR_CANNOT_WATCH_SIGINT extends NodeError {
   constructor() {
-    super(
-      "ERR_CANNOT_WATCH_SIGINT",
-      "Cannot watch for SIGINT signals",
-    );
+    super("ERR_CANNOT_WATCH_SIGINT", "Cannot watch for SIGINT signals");
   }
 }
 
@@ -798,19 +788,13 @@ export class ERR_CONSOLE_WRITABLE_STREAM extends NodeTypeError {
 
 export class ERR_CONTEXT_NOT_INITIALIZED extends NodeError {
   constructor() {
-    super(
-      "ERR_CONTEXT_NOT_INITIALIZED",
-      "context used is not initialized",
-    );
+    super("ERR_CONTEXT_NOT_INITIALIZED", "context used is not initialized");
   }
 }
 
 export class ERR_CPU_USAGE extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_CPU_USAGE",
-      `Unable to obtain cpu usage ${x}`,
-    );
+    super("ERR_CPU_USAGE", `Unable to obtain cpu usage ${x}`);
   }
 }
 
@@ -825,10 +809,7 @@ export class ERR_CRYPTO_CUSTOM_ENGINE_NOT_SUPPORTED extends NodeError {
 
 export class ERR_CRYPTO_ECDH_INVALID_FORMAT extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_CRYPTO_ECDH_INVALID_FORMAT",
-      `Invalid ECDH format: ${x}`,
-    );
+    super("ERR_CRYPTO_ECDH_INVALID_FORMAT", `Invalid ECDH format: ${x}`);
   }
 }
 
@@ -843,10 +824,7 @@ export class ERR_CRYPTO_ECDH_INVALID_PUBLIC_KEY extends NodeError {
 
 export class ERR_CRYPTO_ENGINE_UNKNOWN extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_CRYPTO_ENGINE_UNKNOWN",
-      `Engine "${x}" was not found`,
-    );
+    super("ERR_CRYPTO_ENGINE_UNKNOWN", `Engine "${x}" was not found`);
   }
 }
 
@@ -870,28 +848,19 @@ export class ERR_CRYPTO_FIPS_UNAVAILABLE extends NodeError {
 
 export class ERR_CRYPTO_HASH_FINALIZED extends NodeError {
   constructor() {
-    super(
-      "ERR_CRYPTO_HASH_FINALIZED",
-      "Digest already called",
-    );
+    super("ERR_CRYPTO_HASH_FINALIZED", "Digest already called");
   }
 }
 
 export class ERR_CRYPTO_HASH_UPDATE_FAILED extends NodeError {
   constructor() {
-    super(
-      "ERR_CRYPTO_HASH_UPDATE_FAILED",
-      "Hash update failed",
-    );
+    super("ERR_CRYPTO_HASH_UPDATE_FAILED", "Hash update failed");
   }
 }
 
 export class ERR_CRYPTO_INCOMPATIBLE_KEY extends NodeError {
   constructor(x: string, y: string) {
-    super(
-      "ERR_CRYPTO_INCOMPATIBLE_KEY",
-      `Incompatible ${x}: ${y}`,
-    );
+    super("ERR_CRYPTO_INCOMPATIBLE_KEY", `Incompatible ${x}: ${y}`);
   }
 }
 
@@ -906,10 +875,7 @@ export class ERR_CRYPTO_INCOMPATIBLE_KEY_OPTIONS extends NodeError {
 
 export class ERR_CRYPTO_INVALID_DIGEST extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_CRYPTO_INVALID_DIGEST",
-      `Invalid digest: ${x}`,
-    );
+    super("ERR_CRYPTO_INVALID_DIGEST", `Invalid digest: ${x}`);
   }
 }
 
@@ -924,55 +890,37 @@ export class ERR_CRYPTO_INVALID_KEY_OBJECT_TYPE extends NodeTypeError {
 
 export class ERR_CRYPTO_INVALID_STATE extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_CRYPTO_INVALID_STATE",
-      `Invalid state for operation ${x}`,
-    );
+    super("ERR_CRYPTO_INVALID_STATE", `Invalid state for operation ${x}`);
   }
 }
 
 export class ERR_CRYPTO_PBKDF2_ERROR extends NodeError {
   constructor() {
-    super(
-      "ERR_CRYPTO_PBKDF2_ERROR",
-      "PBKDF2 error",
-    );
+    super("ERR_CRYPTO_PBKDF2_ERROR", "PBKDF2 error");
   }
 }
 
 export class ERR_CRYPTO_SCRYPT_INVALID_PARAMETER extends NodeError {
   constructor() {
-    super(
-      "ERR_CRYPTO_SCRYPT_INVALID_PARAMETER",
-      "Invalid scrypt parameter",
-    );
+    super("ERR_CRYPTO_SCRYPT_INVALID_PARAMETER", "Invalid scrypt parameter");
   }
 }
 
 export class ERR_CRYPTO_SCRYPT_NOT_SUPPORTED extends NodeError {
   constructor() {
-    super(
-      "ERR_CRYPTO_SCRYPT_NOT_SUPPORTED",
-      "Scrypt algorithm not supported",
-    );
+    super("ERR_CRYPTO_SCRYPT_NOT_SUPPORTED", "Scrypt algorithm not supported");
   }
 }
 
 export class ERR_CRYPTO_SIGN_KEY_REQUIRED extends NodeError {
   constructor() {
-    super(
-      "ERR_CRYPTO_SIGN_KEY_REQUIRED",
-      "No key provided to sign",
-    );
+    super("ERR_CRYPTO_SIGN_KEY_REQUIRED", "No key provided to sign");
   }
 }
 
 export class ERR_DIR_CLOSED extends NodeError {
   constructor() {
-    super(
-      "ERR_DIR_CLOSED",
-      "Directory handle was closed",
-    );
+    super("ERR_DIR_CLOSED", "Directory handle was closed");
   }
 }
 
@@ -1033,18 +981,12 @@ export class ERR_ENCODING_INVALID_ENCODED_DATA extends NodeErrorAbstraction
 
 export class ERR_ENCODING_NOT_SUPPORTED extends NodeRangeError {
   constructor(x: string) {
-    super(
-      "ERR_ENCODING_NOT_SUPPORTED",
-      `The "${x}" encoding is not supported`,
-    );
+    super("ERR_ENCODING_NOT_SUPPORTED", `The "${x}" encoding is not supported`);
   }
 }
 export class ERR_EVAL_ESM_CANNOT_PRINT extends NodeError {
   constructor() {
-    super(
-      "ERR_EVAL_ESM_CANNOT_PRINT",
-      `--print cannot be used with ESM input`,
-    );
+    super("ERR_EVAL_ESM_CANNOT_PRINT", `--print cannot be used with ESM input`);
   }
 }
 export class ERR_EVENT_RECURSION extends NodeError {
@@ -1065,10 +1007,7 @@ export class ERR_FEATURE_UNAVAILABLE_ON_PLATFORM extends NodeTypeError {
 }
 export class ERR_FS_FILE_TOO_LARGE extends NodeRangeError {
   constructor(x: string) {
-    super(
-      "ERR_FS_FILE_TOO_LARGE",
-      `File size (${x}) is greater than 2 GB`,
-    );
+    super("ERR_FS_FILE_TOO_LARGE", `File size (${x}) is greater than 2 GB`);
   }
 }
 export class ERR_FS_INVALID_SYMLINK_TYPE extends NodeError {
@@ -1137,10 +1076,7 @@ export class ERR_HTTP2_HEADERS_AFTER_RESPOND extends NodeError {
 }
 export class ERR_HTTP2_HEADERS_SENT extends NodeError {
   constructor() {
-    super(
-      "ERR_HTTP2_HEADERS_SENT",
-      `Response has already been initiated.`,
-    );
+    super("ERR_HTTP2_HEADERS_SENT", `Response has already been initiated.`);
   }
 }
 export class ERR_HTTP2_HEADER_SINGLE_VALUE extends NodeTypeError {
@@ -1209,18 +1145,12 @@ export class ERR_HTTP2_INVALID_PSEUDOHEADER extends NodeTypeError {
 }
 export class ERR_HTTP2_INVALID_SESSION extends NodeError {
   constructor() {
-    super(
-      "ERR_HTTP2_INVALID_SESSION",
-      `The session has been destroyed`,
-    );
+    super("ERR_HTTP2_INVALID_SESSION", `The session has been destroyed`);
   }
 }
 export class ERR_HTTP2_INVALID_STREAM extends NodeError {
   constructor() {
-    super(
-      "ERR_HTTP2_INVALID_STREAM",
-      `The stream has been destroyed`,
-    );
+    super("ERR_HTTP2_INVALID_STREAM", `The stream has been destroyed`);
   }
 }
 export class ERR_HTTP2_MAX_PENDING_SETTINGS_ACK extends NodeError {
@@ -1273,18 +1203,12 @@ export class ERR_HTTP2_PAYLOAD_FORBIDDEN extends NodeError {
 }
 export class ERR_HTTP2_PING_CANCEL extends NodeError {
   constructor() {
-    super(
-      "ERR_HTTP2_PING_CANCEL",
-      `HTTP2 ping cancelled`,
-    );
+    super("ERR_HTTP2_PING_CANCEL", `HTTP2 ping cancelled`);
   }
 }
 export class ERR_HTTP2_PING_LENGTH extends NodeRangeError {
   constructor() {
-    super(
-      "ERR_HTTP2_PING_LENGTH",
-      `HTTP2 ping payload must be 8 bytes`,
-    );
+    super("ERR_HTTP2_PING_LENGTH", `HTTP2 ping payload must be 8 bytes`);
   }
 }
 export class ERR_HTTP2_PSEUDOHEADER_NOT_ALLOWED extends NodeTypeError {
@@ -1297,18 +1221,12 @@ export class ERR_HTTP2_PSEUDOHEADER_NOT_ALLOWED extends NodeTypeError {
 }
 export class ERR_HTTP2_PUSH_DISABLED extends NodeError {
   constructor() {
-    super(
-      "ERR_HTTP2_PUSH_DISABLED",
-      `HTTP/2 client has disabled push streams`,
-    );
+    super("ERR_HTTP2_PUSH_DISABLED", `HTTP/2 client has disabled push streams`);
   }
 }
 export class ERR_HTTP2_SEND_FILE extends NodeError {
   constructor() {
-    super(
-      "ERR_HTTP2_SEND_FILE",
-      `Directories cannot be sent`,
-    );
+    super("ERR_HTTP2_SEND_FILE", `Directories cannot be sent`);
   }
 }
 export class ERR_HTTP2_SEND_FILE_NOSEEK extends NodeError {
@@ -1321,18 +1239,12 @@ export class ERR_HTTP2_SEND_FILE_NOSEEK extends NodeError {
 }
 export class ERR_HTTP2_SESSION_ERROR extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_HTTP2_SESSION_ERROR",
-      `Session closed with error code ${x}`,
-    );
+    super("ERR_HTTP2_SESSION_ERROR", `Session closed with error code ${x}`);
   }
 }
 export class ERR_HTTP2_SETTINGS_CANCEL extends NodeError {
   constructor() {
-    super(
-      "ERR_HTTP2_SETTINGS_CANCEL",
-      `HTTP2 session settings canceled`,
-    );
+    super("ERR_HTTP2_SETTINGS_CANCEL", `HTTP2 session settings canceled`);
   }
 }
 export class ERR_HTTP2_SOCKET_BOUND extends NodeError {
@@ -1361,18 +1273,12 @@ export class ERR_HTTP2_STATUS_101 extends NodeError {
 }
 export class ERR_HTTP2_STATUS_INVALID extends NodeRangeError {
   constructor(x: string) {
-    super(
-      "ERR_HTTP2_STATUS_INVALID",
-      `Invalid status code: ${x}`,
-    );
+    super("ERR_HTTP2_STATUS_INVALID", `Invalid status code: ${x}`);
   }
 }
 export class ERR_HTTP2_STREAM_ERROR extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_HTTP2_STREAM_ERROR",
-      `Stream closed with error code ${x}`,
-    );
+    super("ERR_HTTP2_STREAM_ERROR", `Stream closed with error code ${x}`);
   }
 }
 export class ERR_HTTP2_STREAM_SELF_DEPENDENCY extends NodeError {
@@ -1401,10 +1307,7 @@ export class ERR_HTTP2_TRAILERS_NOT_READY extends NodeError {
 }
 export class ERR_HTTP2_UNSUPPORTED_PROTOCOL extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_HTTP2_UNSUPPORTED_PROTOCOL",
-      `protocol "${x}" is unsupported.`,
-    );
+    super("ERR_HTTP2_UNSUPPORTED_PROTOCOL", `protocol "${x}" is unsupported.`);
   }
 }
 export class ERR_HTTP_HEADERS_SENT extends NodeError {
@@ -1425,10 +1328,7 @@ export class ERR_HTTP_INVALID_HEADER_VALUE extends NodeTypeError {
 }
 export class ERR_HTTP_INVALID_STATUS_CODE extends NodeRangeError {
   constructor(x: string) {
-    super(
-      "ERR_HTTP_INVALID_STATUS_CODE",
-      `Invalid status code: ${x}`,
-    );
+    super("ERR_HTTP_INVALID_STATUS_CODE", `Invalid status code: ${x}`);
   }
 }
 export class ERR_HTTP_SOCKET_ENCODING extends NodeError {
@@ -1473,74 +1373,47 @@ export class ERR_INSPECTOR_ALREADY_ACTIVATED extends NodeError {
 }
 export class ERR_INSPECTOR_ALREADY_CONNECTED extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_INSPECTOR_ALREADY_CONNECTED",
-      `${x} is already connected`,
-    );
+    super("ERR_INSPECTOR_ALREADY_CONNECTED", `${x} is already connected`);
   }
 }
 export class ERR_INSPECTOR_CLOSED extends NodeError {
   constructor() {
-    super(
-      "ERR_INSPECTOR_CLOSED",
-      `Session was closed`,
-    );
+    super("ERR_INSPECTOR_CLOSED", `Session was closed`);
   }
 }
 export class ERR_INSPECTOR_COMMAND extends NodeError {
   constructor(x: number, y: string) {
-    super(
-      "ERR_INSPECTOR_COMMAND",
-      `Inspector error ${x}: ${y}`,
-    );
+    super("ERR_INSPECTOR_COMMAND", `Inspector error ${x}: ${y}`);
   }
 }
 export class ERR_INSPECTOR_NOT_ACTIVE extends NodeError {
   constructor() {
-    super(
-      "ERR_INSPECTOR_NOT_ACTIVE",
-      `Inspector is not active`,
-    );
+    super("ERR_INSPECTOR_NOT_ACTIVE", `Inspector is not active`);
   }
 }
 export class ERR_INSPECTOR_NOT_AVAILABLE extends NodeError {
   constructor() {
-    super(
-      "ERR_INSPECTOR_NOT_AVAILABLE",
-      `Inspector is not available`,
-    );
+    super("ERR_INSPECTOR_NOT_AVAILABLE", `Inspector is not available`);
   }
 }
 export class ERR_INSPECTOR_NOT_CONNECTED extends NodeError {
   constructor() {
-    super(
-      "ERR_INSPECTOR_NOT_CONNECTED",
-      `Session is not connected`,
-    );
+    super("ERR_INSPECTOR_NOT_CONNECTED", `Session is not connected`);
   }
 }
 export class ERR_INSPECTOR_NOT_WORKER extends NodeError {
   constructor() {
-    super(
-      "ERR_INSPECTOR_NOT_WORKER",
-      `Current thread is not a worker`,
-    );
+    super("ERR_INSPECTOR_NOT_WORKER", `Current thread is not a worker`);
   }
 }
 export class ERR_INVALID_ASYNC_ID extends NodeRangeError {
   constructor(x: string, y: string | number) {
-    super(
-      "ERR_INVALID_ASYNC_ID",
-      `Invalid ${x} value: ${y}`,
-    );
+    super("ERR_INVALID_ASYNC_ID", `Invalid ${x} value: ${y}`);
   }
 }
 export class ERR_INVALID_BUFFER_SIZE extends NodeRangeError {
   constructor(x: string) {
-    super(
-      "ERR_INVALID_BUFFER_SIZE",
-      `Buffer size must be a multiple of ${x}`,
-    );
+    super("ERR_INVALID_BUFFER_SIZE", `Buffer size must be a multiple of ${x}`);
   }
 }
 export class ERR_INVALID_CALLBACK extends NodeTypeError {
@@ -1561,18 +1434,12 @@ export class ERR_INVALID_CURSOR_POS extends NodeTypeError {
 }
 export class ERR_INVALID_FD extends NodeRangeError {
   constructor(x: string) {
-    super(
-      "ERR_INVALID_FD",
-      `"fd" must be a positive integer: ${x}`,
-    );
+    super("ERR_INVALID_FD", `"fd" must be a positive integer: ${x}`);
   }
 }
 export class ERR_INVALID_FD_TYPE extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_INVALID_FD_TYPE",
-      `Unsupported fd type: ${x}`,
-    );
+    super("ERR_INVALID_FD_TYPE", `Unsupported fd type: ${x}`);
   }
 }
 export class ERR_INVALID_FILE_URL_HOST extends NodeTypeError {
@@ -1585,34 +1452,22 @@ export class ERR_INVALID_FILE_URL_HOST extends NodeTypeError {
 }
 export class ERR_INVALID_FILE_URL_PATH extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_INVALID_FILE_URL_PATH",
-      `File URL path ${x}`,
-    );
+    super("ERR_INVALID_FILE_URL_PATH", `File URL path ${x}`);
   }
 }
 export class ERR_INVALID_HANDLE_TYPE extends NodeTypeError {
   constructor() {
-    super(
-      "ERR_INVALID_HANDLE_TYPE",
-      `This handle type cannot be sent`,
-    );
+    super("ERR_INVALID_HANDLE_TYPE", `This handle type cannot be sent`);
   }
 }
 export class ERR_INVALID_HTTP_TOKEN extends NodeTypeError {
   constructor(x: string, y: string) {
-    super(
-      "ERR_INVALID_HTTP_TOKEN",
-      `${x} must be a valid HTTP token ["${y}"]`,
-    );
+    super("ERR_INVALID_HTTP_TOKEN", `${x} must be a valid HTTP token ["${y}"]`);
   }
 }
 export class ERR_INVALID_IP_ADDRESS extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_INVALID_IP_ADDRESS",
-      `Invalid IP address: ${x}`,
-    );
+    super("ERR_INVALID_IP_ADDRESS", `Invalid IP address: ${x}`);
   }
 }
 export class ERR_INVALID_OPT_VALUE_ENCODING extends NodeTypeError {
@@ -1649,10 +1504,7 @@ export class ERR_INVALID_REPL_EVAL_CONFIG extends NodeTypeError {
 }
 export class ERR_INVALID_REPL_INPUT extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_INVALID_REPL_INPUT",
-      `${x}`,
-    );
+    super("ERR_INVALID_REPL_INPUT", `${x}`);
   }
 }
 export class ERR_INVALID_SYNC_FORK_INPUT extends NodeTypeError {
@@ -1665,58 +1517,37 @@ export class ERR_INVALID_SYNC_FORK_INPUT extends NodeTypeError {
 }
 export class ERR_INVALID_THIS extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_INVALID_THIS",
-      `Value of "this" must be of type ${x}`,
-    );
+    super("ERR_INVALID_THIS", `Value of "this" must be of type ${x}`);
   }
 }
 export class ERR_INVALID_TUPLE extends NodeTypeError {
   constructor(x: string, y: string) {
-    super(
-      "ERR_INVALID_TUPLE",
-      `${x} must be an iterable ${y} tuple`,
-    );
+    super("ERR_INVALID_TUPLE", `${x} must be an iterable ${y} tuple`);
   }
 }
 export class ERR_INVALID_URI extends NodeURIError {
   constructor() {
-    super(
-      "ERR_INVALID_URI",
-      `URI malformed`,
-    );
+    super("ERR_INVALID_URI", `URI malformed`);
   }
 }
 export class ERR_IPC_CHANNEL_CLOSED extends NodeError {
   constructor() {
-    super(
-      "ERR_IPC_CHANNEL_CLOSED",
-      `Channel closed`,
-    );
+    super("ERR_IPC_CHANNEL_CLOSED", `Channel closed`);
   }
 }
 export class ERR_IPC_DISCONNECTED extends NodeError {
   constructor() {
-    super(
-      "ERR_IPC_DISCONNECTED",
-      `IPC channel is already disconnected`,
-    );
+    super("ERR_IPC_DISCONNECTED", `IPC channel is already disconnected`);
   }
 }
 export class ERR_IPC_ONE_PIPE extends NodeError {
   constructor() {
-    super(
-      "ERR_IPC_ONE_PIPE",
-      `Child process can have only one IPC pipe`,
-    );
+    super("ERR_IPC_ONE_PIPE", `Child process can have only one IPC pipe`);
   }
 }
 export class ERR_IPC_SYNC_FORK extends NodeError {
   constructor() {
-    super(
-      "ERR_IPC_SYNC_FORK",
-      `IPC cannot be used with synchronous forks`,
-    );
+    super("ERR_IPC_SYNC_FORK", `IPC cannot be used with synchronous forks`);
   }
 }
 export class ERR_MANIFEST_DEPENDENCY_MISSING extends NodeError {
@@ -1745,10 +1576,7 @@ export class ERR_MANIFEST_INVALID_RESOURCE_FIELD extends NodeTypeError {
 }
 export class ERR_MANIFEST_TDZ extends NodeError {
   constructor() {
-    super(
-      "ERR_MANIFEST_TDZ",
-      `Manifest initialization has not yet run`,
-    );
+    super("ERR_MANIFEST_TDZ", `Manifest initialization has not yet run`);
   }
 }
 export class ERR_MANIFEST_UNKNOWN_ONERROR extends NodeSyntaxError {
@@ -1761,10 +1589,7 @@ export class ERR_MANIFEST_UNKNOWN_ONERROR extends NodeSyntaxError {
 }
 export class ERR_METHOD_NOT_IMPLEMENTED extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_METHOD_NOT_IMPLEMENTED",
-      `The ${x} method is not implemented`,
-    );
+    super("ERR_METHOD_NOT_IMPLEMENTED", `The ${x} method is not implemented`);
   }
 }
 export class ERR_MISSING_ARGS extends NodeTypeError {
@@ -1775,8 +1600,8 @@ export class ERR_MISSING_ARGS extends NodeTypeError {
 
     const wrap = (a: unknown) => `"${a}"`;
 
-    args = args.map(
-      (a) => (Array.isArray(a) ? a.map(wrap).join(" or ") : wrap(a)),
+    args = args.map((a) =>
+      Array.isArray(a) ? a.map(wrap).join(" or ") : wrap(a)
     );
 
     switch (len) {
@@ -1792,34 +1617,22 @@ export class ERR_MISSING_ARGS extends NodeTypeError {
         break;
     }
 
-    super(
-      "ERR_MISSING_ARGS",
-      `${msg} must be specified`,
-    );
+    super("ERR_MISSING_ARGS", `${msg} must be specified`);
   }
 }
 export class ERR_MISSING_OPTION extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_MISSING_OPTION",
-      `${x} is required`,
-    );
+    super("ERR_MISSING_OPTION", `${x} is required`);
   }
 }
 export class ERR_MULTIPLE_CALLBACK extends NodeError {
   constructor() {
-    super(
-      "ERR_MULTIPLE_CALLBACK",
-      `Callback called multiple times`,
-    );
+    super("ERR_MULTIPLE_CALLBACK", `Callback called multiple times`);
   }
 }
 export class ERR_NAPI_CONS_FUNCTION extends NodeTypeError {
   constructor() {
-    super(
-      "ERR_NAPI_CONS_FUNCTION",
-      `Constructor must be a function`,
-    );
+    super("ERR_NAPI_CONS_FUNCTION", `Constructor must be a function`);
   }
 }
 export class ERR_NAPI_INVALID_DATAVIEW_ARGS extends NodeRangeError {
@@ -1840,10 +1653,7 @@ export class ERR_NAPI_INVALID_TYPEDARRAY_ALIGNMENT extends NodeRangeError {
 }
 export class ERR_NAPI_INVALID_TYPEDARRAY_LENGTH extends NodeRangeError {
   constructor() {
-    super(
-      "ERR_NAPI_INVALID_TYPEDARRAY_LENGTH",
-      `Invalid typed array length`,
-    );
+    super("ERR_NAPI_INVALID_TYPEDARRAY_LENGTH", `Invalid typed array length`);
   }
 }
 export class ERR_NO_CRYPTO extends NodeError {
@@ -1888,18 +1698,12 @@ export class ERR_QUICSESSION_DESTROYED extends NodeError {
 }
 export class ERR_QUICSESSION_INVALID_DCID extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_QUICSESSION_INVALID_DCID",
-      `Invalid DCID value: ${x}`,
-    );
+    super("ERR_QUICSESSION_INVALID_DCID", `Invalid DCID value: ${x}`);
   }
 }
 export class ERR_QUICSESSION_UPDATEKEY extends NodeError {
   constructor() {
-    super(
-      "ERR_QUICSESSION_UPDATEKEY",
-      `Unable to update QuicSession keys`,
-    );
+    super("ERR_QUICSESSION_UPDATEKEY", `Unable to update QuicSession keys`);
   }
 }
 export class ERR_QUICSOCKET_DESTROYED extends NodeError {
@@ -1921,10 +1725,7 @@ export class ERR_QUICSOCKET_INVALID_STATELESS_RESET_SECRET_LENGTH
 }
 export class ERR_QUICSOCKET_LISTENING extends NodeError {
   constructor() {
-    super(
-      "ERR_QUICSOCKET_LISTENING",
-      `This QuicSocket is already listening`,
-    );
+    super("ERR_QUICSOCKET_LISTENING", `This QuicSocket is already listening`);
   }
 }
 export class ERR_QUICSOCKET_UNBOUND extends NodeError {
@@ -1953,10 +1754,7 @@ export class ERR_QUICSTREAM_INVALID_PUSH extends NodeError {
 }
 export class ERR_QUICSTREAM_OPEN_FAILED extends NodeError {
   constructor() {
-    super(
-      "ERR_QUICSTREAM_OPEN_FAILED",
-      `Opening a new QuicStream failed`,
-    );
+    super("ERR_QUICSTREAM_OPEN_FAILED", `Opening a new QuicStream failed`);
   }
 }
 export class ERR_QUICSTREAM_UNSUPPORTED_PUSH extends NodeError {
@@ -1969,10 +1767,7 @@ export class ERR_QUICSTREAM_UNSUPPORTED_PUSH extends NodeError {
 }
 export class ERR_QUIC_TLS13_REQUIRED extends NodeError {
   constructor() {
-    super(
-      "ERR_QUIC_TLS13_REQUIRED",
-      `QUIC requires TLS version 1.3`,
-    );
+    super("ERR_QUIC_TLS13_REQUIRED", `QUIC requires TLS version 1.3`);
   }
 }
 export class ERR_SCRIPT_EXECUTION_INTERRUPTED extends NodeError {
@@ -1993,18 +1788,12 @@ export class ERR_SERVER_ALREADY_LISTEN extends NodeError {
 }
 export class ERR_SERVER_NOT_RUNNING extends NodeError {
   constructor() {
-    super(
-      "ERR_SERVER_NOT_RUNNING",
-      `Server is not running.`,
-    );
+    super("ERR_SERVER_NOT_RUNNING", `Server is not running.`);
   }
 }
 export class ERR_SOCKET_ALREADY_BOUND extends NodeError {
   constructor() {
-    super(
-      "ERR_SOCKET_ALREADY_BOUND",
-      `Socket is already bound`,
-    );
+    super("ERR_SOCKET_ALREADY_BOUND", `Socket is already bound`);
   }
 }
 export class ERR_SOCKET_BAD_BUFFER_SIZE extends NodeTypeError {
@@ -2040,34 +1829,22 @@ export class ERR_SOCKET_BAD_TYPE extends NodeTypeError {
 }
 export class ERR_SOCKET_CLOSED extends NodeError {
   constructor() {
-    super(
-      "ERR_SOCKET_CLOSED",
-      `Socket is closed`,
-    );
+    super("ERR_SOCKET_CLOSED", `Socket is closed`);
   }
 }
 export class ERR_SOCKET_DGRAM_IS_CONNECTED extends NodeError {
   constructor() {
-    super(
-      "ERR_SOCKET_DGRAM_IS_CONNECTED",
-      `Already connected`,
-    );
+    super("ERR_SOCKET_DGRAM_IS_CONNECTED", `Already connected`);
   }
 }
 export class ERR_SOCKET_DGRAM_NOT_CONNECTED extends NodeError {
   constructor() {
-    super(
-      "ERR_SOCKET_DGRAM_NOT_CONNECTED",
-      `Not connected`,
-    );
+    super("ERR_SOCKET_DGRAM_NOT_CONNECTED", `Not connected`);
   }
 }
 export class ERR_SOCKET_DGRAM_NOT_RUNNING extends NodeError {
   constructor() {
-    super(
-      "ERR_SOCKET_DGRAM_NOT_RUNNING",
-      `Not running`,
-    );
+    super("ERR_SOCKET_DGRAM_NOT_RUNNING", `Not running`);
   }
 }
 export class ERR_SRI_PARSE extends NodeSyntaxError {
@@ -2088,10 +1865,7 @@ export class ERR_STREAM_ALREADY_FINISHED extends NodeError {
 }
 export class ERR_STREAM_CANNOT_PIPE extends NodeError {
   constructor() {
-    super(
-      "ERR_STREAM_CANNOT_PIPE",
-      `Cannot pipe, not readable`,
-    );
+    super("ERR_STREAM_CANNOT_PIPE", `Cannot pipe, not readable`);
   }
 }
 export class ERR_STREAM_DESTROYED extends NodeError {
@@ -2104,26 +1878,17 @@ export class ERR_STREAM_DESTROYED extends NodeError {
 }
 export class ERR_STREAM_NULL_VALUES extends NodeTypeError {
   constructor() {
-    super(
-      "ERR_STREAM_NULL_VALUES",
-      `May not write null values to stream`,
-    );
+    super("ERR_STREAM_NULL_VALUES", `May not write null values to stream`);
   }
 }
 export class ERR_STREAM_PREMATURE_CLOSE extends NodeError {
   constructor() {
-    super(
-      "ERR_STREAM_PREMATURE_CLOSE",
-      `Premature close`,
-    );
+    super("ERR_STREAM_PREMATURE_CLOSE", `Premature close`);
   }
 }
 export class ERR_STREAM_PUSH_AFTER_EOF extends NodeError {
   constructor() {
-    super(
-      "ERR_STREAM_PUSH_AFTER_EOF",
-      `stream.push() after EOF`,
-    );
+    super("ERR_STREAM_PUSH_AFTER_EOF", `stream.push() after EOF`);
   }
 }
 export class ERR_STREAM_UNSHIFT_AFTER_END_EVENT extends NodeError {
@@ -2144,42 +1909,27 @@ export class ERR_STREAM_WRAP extends NodeError {
 }
 export class ERR_STREAM_WRITE_AFTER_END extends NodeError {
   constructor() {
-    super(
-      "ERR_STREAM_WRITE_AFTER_END",
-      `write after end`,
-    );
+    super("ERR_STREAM_WRITE_AFTER_END", `write after end`);
   }
 }
 export class ERR_SYNTHETIC extends NodeError {
   constructor() {
-    super(
-      "ERR_SYNTHETIC",
-      `JavaScript Callstack`,
-    );
+    super("ERR_SYNTHETIC", `JavaScript Callstack`);
   }
 }
 export class ERR_TLS_DH_PARAM_SIZE extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_TLS_DH_PARAM_SIZE",
-      `DH parameter size ${x} is less than 2048`,
-    );
+    super("ERR_TLS_DH_PARAM_SIZE", `DH parameter size ${x} is less than 2048`);
   }
 }
 export class ERR_TLS_HANDSHAKE_TIMEOUT extends NodeError {
   constructor() {
-    super(
-      "ERR_TLS_HANDSHAKE_TIMEOUT",
-      `TLS handshake timeout`,
-    );
+    super("ERR_TLS_HANDSHAKE_TIMEOUT", `TLS handshake timeout`);
   }
 }
 export class ERR_TLS_INVALID_CONTEXT extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_TLS_INVALID_CONTEXT",
-      `${x} must be a SecureContext`,
-    );
+    super("ERR_TLS_INVALID_CONTEXT", `${x} must be a SecureContext`);
   }
 }
 export class ERR_TLS_INVALID_STATE extends NodeError {
@@ -2248,10 +1998,7 @@ export class ERR_TRACE_EVENTS_CATEGORY_REQUIRED extends NodeTypeError {
 }
 export class ERR_TRACE_EVENTS_UNAVAILABLE extends NodeError {
   constructor() {
-    super(
-      "ERR_TRACE_EVENTS_UNAVAILABLE",
-      `Trace events are unavailable`,
-    );
+    super("ERR_TRACE_EVENTS_UNAVAILABLE", `Trace events are unavailable`);
   }
 }
 export class ERR_UNAVAILABLE_DURING_EXIT extends NodeError {
@@ -2272,42 +2019,27 @@ export class ERR_UNCAUGHT_EXCEPTION_CAPTURE_ALREADY_SET extends NodeError {
 }
 export class ERR_UNESCAPED_CHARACTERS extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_UNESCAPED_CHARACTERS",
-      `${x} contains unescaped characters`,
-    );
+    super("ERR_UNESCAPED_CHARACTERS", `${x} contains unescaped characters`);
   }
 }
 export class ERR_UNHANDLED_ERROR extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_UNHANDLED_ERROR",
-      `Unhandled error. (${x})`,
-    );
+    super("ERR_UNHANDLED_ERROR", `Unhandled error. (${x})`);
   }
 }
 export class ERR_UNKNOWN_BUILTIN_MODULE extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_UNKNOWN_BUILTIN_MODULE",
-      `No such built-in module: ${x}`,
-    );
+    super("ERR_UNKNOWN_BUILTIN_MODULE", `No such built-in module: ${x}`);
   }
 }
 export class ERR_UNKNOWN_CREDENTIAL extends NodeError {
   constructor(x: string, y: string) {
-    super(
-      "ERR_UNKNOWN_CREDENTIAL",
-      `${x} identifier does not exist: ${y}`,
-    );
+    super("ERR_UNKNOWN_CREDENTIAL", `${x} identifier does not exist: ${y}`);
   }
 }
 export class ERR_UNKNOWN_ENCODING extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_UNKNOWN_ENCODING",
-      `Unknown encoding: ${x}`,
-    );
+    super("ERR_UNKNOWN_ENCODING", `Unknown encoding: ${x}`);
   }
 }
 export class ERR_UNKNOWN_FILE_EXTENSION extends NodeTypeError {
@@ -2320,18 +2052,12 @@ export class ERR_UNKNOWN_FILE_EXTENSION extends NodeTypeError {
 }
 export class ERR_UNKNOWN_MODULE_FORMAT extends NodeRangeError {
   constructor(x: string) {
-    super(
-      "ERR_UNKNOWN_MODULE_FORMAT",
-      `Unknown module format: ${x}`,
-    );
+    super("ERR_UNKNOWN_MODULE_FORMAT", `Unknown module format: ${x}`);
   }
 }
 export class ERR_UNKNOWN_SIGNAL extends NodeTypeError {
   constructor(x: string) {
-    super(
-      "ERR_UNKNOWN_SIGNAL",
-      `Unknown signal: ${x}`,
-    );
+    super("ERR_UNKNOWN_SIGNAL", `Unknown signal: ${x}`);
   }
 }
 export class ERR_UNSUPPORTED_DIR_IMPORT extends NodeError {
@@ -2376,10 +2102,7 @@ export class ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING extends NodeTypeError {
 }
 export class ERR_VM_MODULE_ALREADY_LINKED extends NodeError {
   constructor() {
-    super(
-      "ERR_VM_MODULE_ALREADY_LINKED",
-      `Module has already been linked`,
-    );
+    super("ERR_VM_MODULE_ALREADY_LINKED", `Module has already been linked`);
   }
 }
 export class ERR_VM_MODULE_CANNOT_CREATE_CACHED_DATA extends NodeError {
@@ -2416,34 +2139,22 @@ export class ERR_VM_MODULE_NOT_MODULE extends NodeError {
 }
 export class ERR_VM_MODULE_STATUS extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_VM_MODULE_STATUS",
-      `Module status ${x}`,
-    );
+    super("ERR_VM_MODULE_STATUS", `Module status ${x}`);
   }
 }
 export class ERR_WASI_ALREADY_STARTED extends NodeError {
   constructor() {
-    super(
-      "ERR_WASI_ALREADY_STARTED",
-      `WASI instance has already started`,
-    );
+    super("ERR_WASI_ALREADY_STARTED", `WASI instance has already started`);
   }
 }
 export class ERR_WORKER_INIT_FAILED extends NodeError {
   constructor(x: string) {
-    super(
-      "ERR_WORKER_INIT_FAILED",
-      `Worker initialization failure: ${x}`,
-    );
+    super("ERR_WORKER_INIT_FAILED", `Worker initialization failure: ${x}`);
   }
 }
 export class ERR_WORKER_NOT_RUNNING extends NodeError {
   constructor() {
-    super(
-      "ERR_WORKER_NOT_RUNNING",
-      `Worker instance not running`,
-    );
+    super("ERR_WORKER_NOT_RUNNING", `Worker instance not running`);
   }
 }
 export class ERR_WORKER_OUT_OF_MEMORY extends NodeError {
@@ -2480,19 +2191,13 @@ export class ERR_WORKER_UNSUPPORTED_OPERATION extends NodeTypeError {
 }
 export class ERR_ZLIB_INITIALIZATION_FAILED extends NodeError {
   constructor() {
-    super(
-      "ERR_ZLIB_INITIALIZATION_FAILED",
-      `Initialization failed`,
-    );
+    super("ERR_ZLIB_INITIALIZATION_FAILED", `Initialization failed`);
   }
 }
 export class ERR_FALSY_VALUE_REJECTION extends NodeError {
   reason: string;
   constructor(reason: string) {
-    super(
-      "ERR_FALSY_VALUE_REJECTION",
-      "Promise was rejected with falsy value",
-    );
+    super("ERR_FALSY_VALUE_REJECTION", "Promise was rejected with falsy value");
     this.reason = reason;
   }
 }
@@ -2584,7 +2289,9 @@ export class ERR_INVALID_RETURN_PROPERTY_VALUE extends NodeTypeError {
     super(
       "ERR_INVALID_RETURN_PROPERTY_VALUE",
       `Expected ${input} to be returned for the "${prop}" from the "${name}" function but got ${
-        buildReturnPropertyType(value)
+        buildReturnPropertyType(
+          value,
+        )
       }.`,
     );
   }
@@ -2595,7 +2302,9 @@ export class ERR_INVALID_RETURN_VALUE extends NodeTypeError {
     super(
       "ERR_INVALID_RETURN_VALUE",
       `Expected ${input} to be returned from the "${name}" function but got ${
-        buildReturnPropertyType(value)
+        buildReturnPropertyType(
+          value,
+        )
       }.`,
     );
   }
@@ -2604,10 +2313,7 @@ export class ERR_INVALID_RETURN_VALUE extends NodeTypeError {
 export class ERR_INVALID_URL extends NodeTypeError {
   input: string;
   constructor(input: string) {
-    super(
-      "ERR_INVALID_URL",
-      `Invalid URL: ${input}`,
-    );
+    super("ERR_INVALID_URL", `Invalid URL: ${input}`);
     this.input = input;
   }
 }
@@ -2618,10 +2324,7 @@ export class ERR_INVALID_URL_SCHEME extends NodeTypeError {
     const res = expected.length === 2
       ? `one of scheme ${expected[0]} or ${expected[1]}`
       : `of scheme ${expected[0]}`;
-    super(
-      "ERR_INVALID_URL_SCHEME",
-      `The URL must be ${res}`,
-    );
+    super("ERR_INVALID_URL_SCHEME", `The URL must be ${res}`);
   }
 }
 
@@ -2664,8 +2367,10 @@ export class ERR_INVALID_PACKAGE_TARGET extends NodeError {
     base?: string,
   ) {
     let msg: string;
-    const relError = typeof target === "string" && !isImport &&
-      target.length && !target.startsWith("./");
+    const relError = typeof target === "string" &&
+      !isImport &&
+      target.length &&
+      !target.startsWith("./");
     if (key === ".") {
       assert(isImport === false);
       msg = `Invalid "exports" main target ${JSON.stringify(target)} defined ` +
@@ -2674,7 +2379,9 @@ export class ERR_INVALID_PACKAGE_TARGET extends NodeError {
         }${relError ? '; targets must start with "./"' : ""}`;
     } else {
       msg = `Invalid "${isImport ? "imports" : "exports"}" target ${
-        JSON.stringify(target)
+        JSON.stringify(
+          target,
+        )
       } defined for '${key}' in the package config ${pkgPath}package.json${
         base ? ` imported from ${base}` : ""
       }${relError ? '; targets must start with "./"' : ""}`;
@@ -2700,11 +2407,7 @@ export class ERR_PACKAGE_IMPORT_NOT_DEFINED extends NodeTypeError {
 }
 
 export class ERR_PACKAGE_PATH_NOT_EXPORTED extends NodeError {
-  constructor(
-    subpath: string,
-    packageJSONUrl: string,
-    base?: string,
-  ) {
+  constructor(subpath: string, packageJSONUrl: string, base?: string) {
     const pkgPath = fileURLToPath(new URL(".", packageJSONUrl));
     const basePath = base && fileURLToPath(base);
 
@@ -2725,9 +2428,7 @@ export class ERR_PACKAGE_PATH_NOT_EXPORTED extends NodeError {
 }
 
 export class ERR_INTERNAL_ASSERTION extends NodeError {
-  constructor(
-    message?: string,
-  ) {
+  constructor(message?: string) {
     const suffix = "This is caused by either a bug in Node.js " +
       "or incorrect usage of Node.js internals.\n" +
       "Please open an issue with this stack trace at " +
@@ -2788,3 +2489,39 @@ export function connResetException(msg: string) {
   (ex as any).code = "ECONNRESET";
   return ex;
 }
+
+export function aggregateTwoErrors(
+  innerError: AggregateError,
+  outerError: AggregateError & { code: string },
+) {
+  if (innerError && outerError && innerError !== outerError) {
+    if (Array.isArray(outerError.errors)) {
+      // If `outerError` is already an `AggregateError`.
+      outerError.errors.push(innerError);
+      return outerError;
+    }
+    // eslint-disable-next-line no-restricted-syntax
+    const err = new AggregateError(
+      [
+        outerError,
+        innerError,
+      ],
+      outerError.message,
+    );
+    // deno-lint-ignore no-explicit-any
+    (err as any).code = outerError.code;
+    return err;
+  }
+  return innerError || outerError;
+}
+
+export const codes = {
+  ERR_IPC_CHANNEL_CLOSED,
+  // TODO(kt3k): list all error classes here.
+};
+
+export default {
+  AbortError,
+  aggregateTwoErrors,
+  codes,
+};

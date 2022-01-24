@@ -32,8 +32,8 @@ import {
   getDefaultVerbatim,
   validateHints,
 } from "./_dns/_utils.ts";
-import type { ErrnoException } from "./_errors.ts";
-import { dnsException } from "./_errors.ts";
+import type { ErrnoException } from "./internal/errors.ts";
+import { dnsException } from "./internal/errors.ts";
 import {
   AI_ADDRCONFIG as ADDRCONFIG,
   getaddrinfo,
