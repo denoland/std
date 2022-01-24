@@ -2514,3 +2514,8 @@ export function aggregateTwoErrors(
   }
   return innerError || outerError;
 }
+
+export default {
+  AbortError,
+  aggregateTwoErrors,
+}
