@@ -24,7 +24,7 @@ import {
   ERR_INVALID_ARG_VALUE,
   ERR_INVALID_FILE_URL_HOST,
   ERR_INVALID_FILE_URL_PATH,
-  ERR_INVALID_URL_SCHEME
+  ERR_INVALID_URL_SCHEME,
 } from "./internal/errors.ts";
 import {
   CHAR_0,

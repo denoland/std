@@ -3,7 +3,7 @@ import { existsSync } from "./_fs_exists.ts";
 import { mkdir, mkdirSync } from "./_fs_mkdir.ts";
 import {
   ERR_INVALID_CALLBACK,
-  ERR_INVALID_OPT_VALUE_ENCODING
+  ERR_INVALID_OPT_VALUE_ENCODING,
 } from "../internal/errors.ts";
 
 export type mkdtempCallback = (

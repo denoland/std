@@ -35,7 +35,7 @@ import {
   ERR_MODULE_NOT_FOUND,
   ERR_PACKAGE_IMPORT_NOT_DEFINED,
   ERR_PACKAGE_PATH_NOT_EXPORTED,
-  NodeError
+  NodeError,
 } from "./internal/errors.ts";
 
 const { hasOwn } = Object;

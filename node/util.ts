@@ -12,7 +12,7 @@ import {
 import {
   ERR_INVALID_ARG_TYPE,
   ERR_OUT_OF_RANGE,
-  errorMap
+  errorMap,
 } from "./internal/errors.ts";
 import types from "./util/types.js";
 import { Buffer } from "./buffer.ts";

@@ -10,7 +10,7 @@ import {
 import { validateString } from "./internal/validators.js";
 import {
   ERR_CHILD_PROCESS_IPC_REQUIRED,
-  ERR_INVALID_ARG_VALUE
+  ERR_INVALID_ARG_VALUE,
 } from "./internal/errors.ts";
 import { process } from "./process.ts";
 

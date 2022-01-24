@@ -8,7 +8,7 @@ import {
 import { toNamespacedPath } from "../path.ts";
 import {
   denoErrorToNodeError,
-  ERR_FS_RMDIR_ENOTDIR
+  ERR_FS_RMDIR_ENOTDIR,
 } from "../internal/errors.ts";
 import { Buffer } from "../buffer.ts";
 
