@@ -2518,4 +2518,4 @@ export function aggregateTwoErrors(
 export default {
   AbortError,
   aggregateTwoErrors,
-}
+};
