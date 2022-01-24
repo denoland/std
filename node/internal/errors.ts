@@ -2489,3 +2489,28 @@ export function connResetException(msg: string) {
   (ex as any).code = "ECONNRESET";
   return ex;
 }
+
+export function aggregateTwoErrors(
+  innerError: AggregateError,
+  outerError: AggregateError & { code: string },
+) {
+  if (innerError && outerError && innerError !== outerError) {
+    if (Array.isArray(outerError.errors)) {
+      // If `outerError` is already an `AggregateError`.
+      outerError.errors.push(innerError);
+      return outerError;
+    }
+    // eslint-disable-next-line no-restricted-syntax
+    const err = new AggregateError(
+      [
+        outerError,
+        innerError,
+      ],
+      outerError.message,
+    );
+    // deno-lint-ignore no-explicit-any
+    (err as any).code = outerError.code;
+    return err;
+  }
+  return innerError || outerError;
+}

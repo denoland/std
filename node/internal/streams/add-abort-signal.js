@@ -1,7 +1,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { AbortError, ERR_INVALID_ARG_TYPE } from "../../internal/errors.ts";
+import { AbortError, ERR_INVALID_ARG_TYPE } from "../errors.ts";
 import eos from "./end-of-stream.js";
 
 // This method is inlined here for readable-stream

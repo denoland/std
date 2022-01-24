@@ -1,10 +1,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import {
-  AbortError,
-  ERR_STREAM_PREMATURE_CLOSE,
-} from "../../internal/errors.ts";
+import { AbortError, ERR_STREAM_PREMATURE_CLOSE } from "../errors.ts";
 import { once } from "../util.js";
 import {
   validateAbortSignal,

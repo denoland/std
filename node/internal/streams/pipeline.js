@@ -1,17 +1,18 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { AbortError, aggregateTwoErrors } from "../errors.js";
 import { isIterable, isNodeStream, isReadableNodeStream } from "./utils.js";
 import { once } from "../util.js";
 import { stderr, stdout } from "./readable.js";
 import { validateAbortSignal, validateCallback } from "../validators.js";
 import {
+  AbortError,
+  aggregateTwoErrors,
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_RETURN_VALUE,
   ERR_MISSING_ARGS,
   ERR_STREAM_DESTROYED,
-} from "../../internal/errors.ts";
+} from "../errors.ts";
 import * as process from "../../_process/process.ts";
 import destroyImpl from "./destroy.js";
 import Duplex from "./duplex.js";

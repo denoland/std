@@ -14,7 +14,7 @@ import {
   ERR_METHOD_NOT_IMPLEMENTED,
   ERR_STREAM_PUSH_AFTER_EOF,
   ERR_STREAM_UNSHIFT_AFTER_END_EVENT,
-} from "../../internal/errors.ts";
+} from "../errors.ts";
 import * as process from "../../_process/process.ts";
 import _from from "./from.js";
 import BufferList from "./buffer_list.js";

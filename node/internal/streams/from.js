@@ -2,10 +2,7 @@
 // deno-lint-ignore-file
 
 import { Buffer } from "../../buffer.ts";
-import {
-  ERR_INVALID_ARG_TYPE,
-  ERR_STREAM_NULL_VALUES,
-} from "../../internal/errors.ts";
+import { ERR_INVALID_ARG_TYPE, ERR_STREAM_NULL_VALUES } from "../errors.ts";
 import * as process from "../../_process/process.ts";
 
 function _from(Readable, iterable, opts) {

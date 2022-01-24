@@ -1,4 +1,4 @@
-import { ERR_INTERNAL_ASSERTION } from "../internal/errors.ts";
+import { ERR_INTERNAL_ASSERTION } from "./errors.ts";
 
 function assert(value, message) {
   if (!value) {

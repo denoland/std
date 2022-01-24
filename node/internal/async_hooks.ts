@@ -3,7 +3,7 @@
 
 // deno-lint-ignore camelcase
 import * as async_wrap from "../internal_binding/async_wrap.ts";
-import { ERR_ASYNC_CALLBACK } from "../internal/errors.ts";
+import { ERR_ASYNC_CALLBACK } from "./errors.ts";
 
 interface ActiveHooks {
   array: AsyncHook[];
