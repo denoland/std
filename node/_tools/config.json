@@ -410,6 +410,7 @@
   },
   "windowsIgnore": {
     "parallel": [
+      "test-child-process-execfile.js",
       "test-child-process-fork.js",
       "test-fs-access.js",
       "test-fs-readdir-stack-overflow.js",
