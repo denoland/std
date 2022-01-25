@@ -2,7 +2,7 @@
   "nodeVersion": "16.13.0",
   "ignore": {
     "common": ["index.js", "tmpdir.js"],
-    "fixtures": ["child-process-spawn-node.js", "empty.txt", "exit.js"],
+    "fixtures": ["child-process-spawn-node.js", "empty.txt"],
     "internet": [
       "test-dns-idna.js",
       "test-dns-ipv4.js",
@@ -197,6 +197,9 @@
       "test-outgoing-message-destroy.js",
       "test-outgoing-message-pipe.js",
       "test-process-binding-internalbinding-allowlist.js",
+      "test-process-exit-handler.js",
+      "test-process-exit-recursive.js",
+      "test-process-exit.js",
       "test-querystring-escape.js",
       "test-querystring-maxKeys-non-finite.js",
       "test-querystring-multichar-separator.js",

@@ -66,10 +66,14 @@ Object.defineProperty(argv, "0", { get: Deno.execPath });
 Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
-// TODO(Nautigsam) Node 16 supports passing a string as a code. Should we support it as well?
-export const exit = (code?: number) => {
+export const exit = (code?: number | string) => {
   if (code || code === 0) {
-    process.exitCode = code;
+    if (typeof code === "string") {
+      const parsedCode = parseInt(code);
+      process.exitCode = isNaN(parsedCode) ? undefined : parsedCode;
+    } else {
+      process.exitCode = code;
+    }
   }
 
   if (!process._exiting) {
