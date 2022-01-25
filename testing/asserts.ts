@@ -543,7 +543,7 @@ export function assertObjectMatch(
   const seen = new WeakMap();
   function filter(a: loose, b: loose): loose {
     // If the actual value is an array, let assertEquals do the assertion.
-    if (Array.isArray(a)) {
+    if (Array.isArray(a) || ArrayBuffer.isView(a)) {
       return a;
     }
 
@@ -577,7 +577,7 @@ export function assertObjectMatch(
           continue;
         }
       } // On nested objects references, build a filtered object recursively
-      else if (typeof value === "object" && !ArrayBuffer.isView(value)) {
+      else if (typeof value === "object") {
         const subset = (b as loose)[key];
         if ((typeof subset === "object") && (subset)) {
           filtered[key] = filter(value as loose, subset as loose);
