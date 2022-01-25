@@ -606,6 +606,12 @@ Deno.test("testingAssertObjectMatching", function (): void {
     const body = new Uint8Array([0, 1, 2]);
     assertObjectMatch({ body, foo: "foo" }, { body });
   }
+  {
+    // match subsets of arrays
+    assertObjectMatch({ positions: [[1, 2, 3, 4]] }, {
+      positions: [[1, 2, 3]],
+    });
+  }
 });
 
 Deno.test("testingAssertsUnimplemented", function (): void {

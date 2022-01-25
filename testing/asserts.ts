@@ -540,9 +540,11 @@ export function assertObjectMatch(
   expected: Record<PropertyKey, unknown>,
 ): void {
   type loose = Record<PropertyKey, unknown>;
+
   function filter(a: loose, b: loose) {
     const seen = new WeakMap();
     return fn(a, b);
+
     function fn(a: loose, b: loose): loose {
       // Prevent infinite loop with circular references with same filter
       if ((seen.has(a)) && (seen.get(a) === b)) {
@@ -562,15 +564,7 @@ export function assertObjectMatch(
         if (Array.isArray(value)) {
           const subset = (b as loose)[key];
           if (Array.isArray(subset)) {
-            filtered[key] = value
-              .slice(0, subset.length)
-              .map((element, index) => {
-                const subsetElement = subset[index];
-                if ((typeof subsetElement === "object") && (subsetElement)) {
-                  return fn(element, subsetElement);
-                }
-                return element;
-              });
+            filtered[key] = fn({ ...value }, { ...subset });
             continue;
           }
         } // On nested objects references, build a filtered object recursively
