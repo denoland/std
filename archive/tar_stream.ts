@@ -42,7 +42,7 @@ async function readBlock(
   p: Uint8Array,
 ): Promise<number | null> {
   let bytesRead = 0;
-  const reader = readable.getReader({mode: "byob"});
+  const reader = readable.getReader({ mode: "byob" });
   while (bytesRead < p.length) {
     const res = await reader.read(p.subarray(bytesRead));
     if (res.done) {
@@ -332,7 +332,9 @@ class TarEntry extends ReadableStream<Uint8Array> {
         const offset = bytesLeft < n ? bytesLeft : n;
         p.set(block.subarray(0, offset), 0);
 
-        controller.byobRequest!.respond(offset < 0 ? n - Math.abs(offset) : offset);
+        controller.byobRequest!.respond(
+          offset < 0 ? n - Math.abs(offset) : offset,
+        );
       },
       // @ts-ignore incompatible, bad typings
       type: "bytes",
@@ -409,8 +411,11 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
           }
         }
 
-        const mode = chunk.fileMode || (info && info.mode) || parseInt("777", 8) & 0xfff;
-        const mtime = Math.floor(chunk.mtime ?? (info?.mtime ?? new Date()).valueOf() / 1000);
+        const mode = chunk.fileMode || (info && info.mode) ||
+          parseInt("777", 8) & 0xfff;
+        const mtime = Math.floor(
+          chunk.mtime ?? (info?.mtime ?? new Date()).valueOf() / 1000,
+        );
         const uid = chunk.uid || 0;
         const gid = chunk.gid || 0;
 
@@ -469,18 +474,24 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
           readable = readFile(chunk.filePath);
         }
 
+        console.log("bar");
         for await (const chunk of readable) {
           controller.enqueue(chunk);
         }
 
         // to the nearest multiple of recordSize
         assert(tarData.fileSize != null, "fileSize must be set");
-        controller.enqueue(clean(recordSize - (parseInt(tarData.fileSize, 8) % recordSize || recordSize)));
+        controller.enqueue(
+          clean(
+            recordSize -
+              (parseInt(tarData.fileSize, 8) % recordSize || recordSize),
+          ),
+        );
       },
       flush(controller) {
         // append 2 empty records
         controller.enqueue(clean(recordSize * 2));
-      }
+      },
     });
   }
 }
