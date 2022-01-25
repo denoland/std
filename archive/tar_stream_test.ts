@@ -12,12 +12,11 @@
 import { assert, assertEquals } from "../testing/asserts.ts";
 
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
-import { TarStream, UntarStream } from "./stream_tar.ts";
+import { TarStream, UntarStream } from "./tar_stream.ts";
 import { Buffer } from "../io/buffer.ts";
 import {
-  copy,
   readableStreamFromReader,
-  readAll, writableStreamFromWriter,
+  writableStreamFromWriter,
   writeAll,
 } from "../streams/conversion.ts";
 
@@ -31,7 +30,9 @@ interface TestEntry {
   filePath?: string;
 }
 
-async function createTar(entries: TestEntry[]): Promise<ReadableStream<Uint8Array>> {
+async function createTar(
+  entries: TestEntry[],
+): Promise<ReadableStream<Uint8Array>> {
   const { readable, writable } = new TarStream();
 
   const writer = writable.getWriter();
@@ -42,10 +43,12 @@ async function createTar(entries: TestEntry[]): Promise<ReadableStream<Uint8Arra
     if (file.content) {
       options = {
         name: file.name,
-        readable: new ReadableStream({start(c) {
-          c.enqueue(file.content);
-          c.close();
-        }}),
+        readable: new ReadableStream({
+          start(c) {
+            c.enqueue(file.content);
+            c.close();
+          },
+        }),
         contentSize: file.content.byteLength,
       };
     } else {
@@ -60,17 +63,19 @@ async function createTar(entries: TestEntry[]): Promise<ReadableStream<Uint8Arra
 
 Deno.test("createTarArchive", async function () {
   // initialize
-  const {readable, writable} = new TarStream();
+  const { readable, writable } = new TarStream();
 
   const writer = writable.getWriter();
   // put data on memory
   const content = new TextEncoder().encode("hello tar world!");
   await writer.write({
     name: "output.txt",
-    readable: new ReadableStream({start(c) {
+    readable: new ReadableStream({
+      start(c) {
         c.enqueue(content);
         c.close();
-      }}),
+      },
+    }),
     contentSize: content.byteLength,
   });
 
@@ -101,10 +106,12 @@ Deno.test("deflateTarArchive", async function () {
   const content = new TextEncoder().encode(text);
   await writer.write({
     name: fileName,
-    readable: new ReadableStream({start(c) {
+    readable: new ReadableStream({
+      start(c) {
         c.enqueue(content);
         c.close();
-      }}),
+      },
+    }),
     contentSize: content.byteLength,
   });
 
@@ -126,7 +133,7 @@ Deno.test("deflateTarArchive", async function () {
 
 Deno.test("appendFileWithLongNameToTarArchive", async function (): Promise<
   void
-  > {
+> {
   // 9 * 15 + 13 = 148 bytes
   const fileName = "long-file-name/".repeat(10) + "file-name.txt";
   const text = "hello tar world!";
@@ -137,10 +144,12 @@ Deno.test("appendFileWithLongNameToTarArchive", async function (): Promise<
   const content = new TextEncoder().encode(text);
   await writer.write({
     name: fileName,
-    readable: new ReadableStream({start(c) {
-      c.enqueue(content);
-      c.close();
-    }}),
+    readable: new ReadableStream({
+      start(c) {
+        c.enqueue(content);
+        c.close();
+      },
+    }),
     contentSize: content.byteLength,
   });
   writer.releaseLock();
@@ -205,7 +214,7 @@ Deno.test("untarAsyncIterator", async function () {
 
 Deno.test("untarAsyncIteratorWithoutReadingBody", async function (): Promise<
   void
-  > {
+> {
   const entries: TestEntry[] = [
     {
       name: "output.txt",
@@ -452,7 +461,11 @@ Deno.test("directoryEntryType", async function () {
 
   await tarWriter.write({
     name: "directory/",
-    readable: new ReadableStream({start(c) { c.close() }}),
+    readable: new ReadableStream({
+      start(c) {
+        c.close();
+      },
+    }),
     contentSize: 0,
     type: "directory",
   });
