@@ -193,16 +193,19 @@ export function networkInterfaces(): NetworkInterfaces {
       .networkInterfaces()
   ) {
     const addresses = interfaces[name] ||= [];
-    addresses.push({
+    const networkAddress: NetworkAddress = {
       address,
       netmask,
       family,
       mac,
       internal: (family === "IPv4" && isIPv4LoopbackAddr(address)) ||
         (family === "IPv6" && isIPv6LoopbackAddr(address)),
-      scopeid: scopeid ?? undefined,
       cidr,
-    });
+    };
+    if (family === "IPv6") {
+      networkAddress.scopeid = scopeid!;
+    }
+    addresses.push(networkAddress);
   }
   return interfaces;
 }
