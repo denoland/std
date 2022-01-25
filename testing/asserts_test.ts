@@ -603,8 +603,11 @@ Deno.test("testingAssertObjectMatching", function (): void {
     assertObjectMatch({ test: { a: 1 } }, { test: new A(1) });
     assertObjectMatch({ test: new A(1) }, { test: new A(1) });
   }
-  // subset with TypedArray instance inside
-  assertObjectMatch(m, { bar: new Uint8Array([1, 2]) });
+  {
+    // actual/expected contains same instance of Map/TypedArray/etc
+    const body = new Uint8Array([0, 1, 2]);
+    assertObjectMatch({ body, foo: "foo" }, { body });
+  }
 });
 
 Deno.test("testingAssertsUnimplemented", function (): void {
