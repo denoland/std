@@ -603,7 +603,7 @@ Deno.test("testingAssertObjectMatching", function (): void {
     assertObjectMatch({ test: { a: 1 } }, { test: new A(1) });
     assertObjectMatch({ test: new A(1) }, { test: new A(1) });
   }
-  // subset with one of the arraybuffer views inside
+  // subset with TypedArray instance inside
   assertObjectMatch(m, { bar: new Uint8Array([1, 2]) });
 });
 
