@@ -381,6 +381,8 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const k = { foo: [[1, [2, [3]]]], bar: true };
   const l = { foo: [[1, [2, [a, e, j, k]]]], bar: true };
 
+  const m = { foo: [1, 2], bar: new Uint8Array([1, 2]) };
+
   // Simple subset
   assertObjectMatch(a, {
     foo: true,
@@ -601,6 +603,8 @@ Deno.test("testingAssertObjectMatching", function (): void {
     assertObjectMatch({ test: { a: 1 } }, { test: new A(1) });
     assertObjectMatch({ test: new A(1) }, { test: new A(1) });
   }
+  // subset with one of the arraybuffer views inside
+  assertObjectMatch(m, { bar: new Uint8Array([1, 2]) });
 });
 
 Deno.test("testingAssertsUnimplemented", function (): void {
