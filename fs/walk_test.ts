@@ -349,7 +349,7 @@ testWalk(
   async function fifoSocket(listener: Deno.Process) {
     assertReady(1);
     const files = await walkArray(".", { followSymlinks: true });
-    assertEquals(files, ["."]);
+    assertEquals(files, [".", "mkfifo"]);
     listener.close();
   },
   Deno.build.os === "windows",
