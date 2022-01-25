@@ -184,10 +184,37 @@ export function loadavg(): number[] {
   return Deno.loadavg();
 }
 
-/** Not yet implemented */
+/** Returns an object containing network interfaces that have been assigned a network address.
+ * Each key on the returned object identifies a network interface. The associated value is an array of objects that each describe an assigned network address. */
 export function networkInterfaces(): NetworkInterfaces {
-  notImplemented(SEE_GITHUB_ISSUE);
+  const interfaces: NetworkInterfaces = {};
+  for (
+    const { name, address, netmask, family, mac, scopeid, cidr } of Deno
+      .networkInterfaces()
+  ) {
+    const addresses = interfaces[name] ||= [];
+    addresses.push({
+      address,
+      netmask,
+      family,
+      mac,
+      internal: (family === "IPv4" && isIPv4LoopbackAddr(address)) ||
+        (family === "IPv6" && isIPv6LoopbackAddr(address)),
+      scopeid: scopeid ?? undefined,
+      cidr,
+    });
+  }
+  return interfaces;
 }
+
+function isIPv4LoopbackAddr(addr: string) {
+  return addr.startsWith("127");
+}
+
+function isIPv6LoopbackAddr(addr: string) {
+  return addr === "::1" || addr === "fe80::1";
+}
+
 /** Returns the a string identifying the operating system platform. The value is set at compile time. Possible values are 'darwin', 'linux', and 'win32'. */
 export function platform(): string {
   return process.platform;
