@@ -1,5 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import "./internal/errors.ts";
 import { Buffer } from "./buffer.ts";
 
 Deno.test({

@@ -1,13 +1,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import {
-  ERR_INVALID_ARG_TYPE,
-  ERR_INVALID_ARG_VALUE,
-  ERR_INVALID_CALLBACK,
-  ERR_OUT_OF_RANGE,
-  ERR_SOCKET_BAD_PORT,
-  hideStackFrames,
-} from "./errors.ts";
+import { codes } from "./error_codes.ts";
+import { hideStackFrames } from "./hide_stack_frames.ts";
 import { isArrayBufferView } from "./util/types.ts";
 
 /**
@@ -45,7 +39,7 @@ function parseFileMode(value, name, def) {
   value ??= def;
   if (typeof value === "string") {
     if (!octalReg.test(value)) {
-      throw new ERR_INVALID_ARG_VALUE(name, value, modeDesc);
+      throw new codes.ERR_INVALID_ARG_VALUE(name, value, modeDesc);
     }
     value = Number.parseInt(value, 8);
   }
@@ -56,7 +50,7 @@ function parseFileMode(value, name, def) {
 
 const validateBuffer = hideStackFrames((buffer, name = "buffer") => {
   if (!isArrayBufferView(buffer)) {
-    throw new ERR_INVALID_ARG_TYPE(
+    throw new codes.ERR_INVALID_ARG_TYPE(
       name,
       ["Buffer", "TypedArray", "DataView"],
       buffer,
@@ -72,13 +66,13 @@ const validateInteger = hideStackFrames(
     max = Number.MAX_SAFE_INTEGER,
   ) => {
     if (typeof value !== "number") {
-      throw new ERR_INVALID_ARG_TYPE(name, "number", value);
+      throw new codes.ERR_INVALID_ARG_TYPE(name, "number", value);
     }
     if (!Number.isInteger(value)) {
-      throw new ERR_OUT_OF_RANGE(name, "an integer", value);
+      throw new codes.ERR_OUT_OF_RANGE(name, "an integer", value);
     }
     if (value < min || value > max) {
-      throw new ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
+      throw new codes.ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
     }
   },
 );
@@ -104,7 +98,7 @@ const validateObject = hideStackFrames((value, name, options) => {
       !allowFunction || typeof value !== "function"
     ))
   ) {
-    throw new ERR_INVALID_ARG_TYPE(name, "Object", value);
+    throw new codes.ERR_INVALID_ARG_TYPE(name, "Object", value);
   }
 });
 
@@ -113,18 +107,18 @@ const validateInt32 = hideStackFrames(
     // The defaults for min and max correspond to the limits of 32-bit integers.
     if (!isInt32(value)) {
       if (typeof value !== "number") {
-        throw new ERR_INVALID_ARG_TYPE(name, "number", value);
+        throw new codes.ERR_INVALID_ARG_TYPE(name, "number", value);
       }
 
       if (!Number.isInteger(value)) {
-        throw new ERR_OUT_OF_RANGE(name, "an integer", value);
+        throw new codes.ERR_OUT_OF_RANGE(name, "an integer", value);
       }
 
-      throw new ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
+      throw new codes.ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
     }
 
     if (value < min || value > max) {
-      throw new ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
+      throw new codes.ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
     }
   },
 );
@@ -133,17 +127,21 @@ const validateUint32 = hideStackFrames(
   (value, name, positive) => {
     if (!isUint32(value)) {
       if (typeof value !== "number") {
-        throw new ERR_INVALID_ARG_TYPE(name, "number", value);
+        throw new codes.ERR_INVALID_ARG_TYPE(name, "number", value);
       }
       if (!Number.isInteger(value)) {
-        throw new ERR_OUT_OF_RANGE(name, "an integer", value);
+        throw new codes.ERR_OUT_OF_RANGE(name, "an integer", value);
       }
       const min = positive ? 1 : 0;
       // 2 ** 32 === 4294967296
-      throw new ERR_OUT_OF_RANGE(name, `>= ${min} && < 4294967296`, value);
+      throw new codes.ERR_OUT_OF_RANGE(
+        name,
+        `>= ${min} && < 4294967296`,
+        value,
+      );
     }
     if (positive && value === 0) {
-      throw new ERR_OUT_OF_RANGE(name, ">= 1 && < 4294967296", value);
+      throw new codes.ERR_OUT_OF_RANGE(name, ">= 1 && < 4294967296", value);
     }
   },
 );
@@ -154,7 +152,7 @@ const validateUint32 = hideStackFrames(
  */
 function validateString(value, name) {
   if (typeof value !== "string") {
-    throw new ERR_INVALID_ARG_TYPE(name, "string", value);
+    throw new codes.ERR_INVALID_ARG_TYPE(name, "string", value);
   }
 }
 
@@ -164,7 +162,7 @@ function validateString(value, name) {
  */
 function validateNumber(value, name) {
   if (typeof value !== "number") {
-    throw new ERR_INVALID_ARG_TYPE(name, "number", value);
+    throw new codes.ERR_INVALID_ARG_TYPE(name, "number", value);
   }
 }
 
@@ -174,7 +172,7 @@ function validateNumber(value, name) {
  */
 function validateBoolean(value, name) {
   if (typeof value !== "boolean") {
-    throw new ERR_INVALID_ARG_TYPE(name, "boolean", value);
+    throw new codes.ERR_INVALID_ARG_TYPE(name, "boolean", value);
   }
 }
 
@@ -195,7 +193,7 @@ const validateOneOf = hideStackFrames(
       );
       const reason = "must be one of: " + allowed;
 
-      throw new ERR_INVALID_ARG_VALUE(name, value, reason);
+      throw new codes.ERR_INVALID_ARG_VALUE(name, value, reason);
     }
   },
 );
@@ -215,7 +213,7 @@ function validatePort(port, name = "Port", allowZero = true) {
     port > 0xFFFF ||
     (port === 0 && !allowZero)
   ) {
-    throw new ERR_SOCKET_BAD_PORT(name, port, allowZero);
+    throw new codes.ERR_SOCKET_BAD_PORT(name, port, allowZero);
   }
 
   return port;
@@ -226,7 +224,7 @@ function validatePort(port, name = "Port", allowZero = true) {
  */
 const validateCallback = hideStackFrames((callback) => {
   if (typeof callback !== "function") {
-    throw new ERR_INVALID_CALLBACK(callback);
+    throw new codes.ERR_INVALID_CALLBACK(callback);
   }
 });
 
@@ -242,7 +240,7 @@ const validateAbortSignal = hideStackFrames(
         typeof signal !== "object" ||
         !("aborted" in signal))
     ) {
-      throw new ERR_INVALID_ARG_TYPE(name, "AbortSignal", signal);
+      throw new codes.ERR_INVALID_ARG_TYPE(name, "AbortSignal", signal);
     }
   },
 );
@@ -254,7 +252,7 @@ const validateAbortSignal = hideStackFrames(
 const validateFunction = hideStackFrames(
   (value, name) => {
     if (typeof value !== "function") {
-      throw new ERR_INVALID_ARG_TYPE(name, "Function", value);
+      throw new codes.ERR_INVALID_ARG_TYPE(name, "Function", value);
     }
   },
 );
@@ -266,11 +264,11 @@ const validateFunction = hideStackFrames(
 const validateArray = hideStackFrames(
   (value, name, minLength = 0) => {
     if (!Array.isArray(value)) {
-      throw new ERR_INVALID_ARG_TYPE(name, "Array", value);
+      throw new codes.ERR_INVALID_ARG_TYPE(name, "Array", value);
     }
     if (value.length < minLength) {
       const reason = `must be longer than ${minLength}`;
-      throw new ERR_INVALID_ARG_VALUE(name, value, reason);
+      throw new codes.ERR_INVALID_ARG_VALUE(name, value, reason);
     }
   },
 );
