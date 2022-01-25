@@ -381,8 +381,6 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const k = { foo: [[1, [2, [3]]]], bar: true };
   const l = { foo: [[1, [2, [a, e, j, k]]]], bar: true };
 
-  const m = { foo: [1, 2], bar: new Uint8Array([1, 2]) };
-
   // Simple subset
   assertObjectMatch(a, {
     foo: true,
