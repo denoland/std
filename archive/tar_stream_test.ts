@@ -17,7 +17,6 @@ import { Buffer } from "../io/buffer.ts";
 import {
   readableStreamFromReader,
   writableStreamFromWriter,
-  writeAll,
 } from "../streams/conversion.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -65,6 +64,11 @@ Deno.test("createTarArchive", async function () {
   // initialize
   const { readable, writable } = new TarStream();
 
+  // write tar data to a buffer
+  const buf = new Buffer();
+
+  const promise = readable.pipeTo(writableStreamFromWriter(buf));
+
   const writer = writable.getWriter();
   // put data on memory
   const content = new TextEncoder().encode("hello tar world!");
@@ -81,12 +85,9 @@ Deno.test("createTarArchive", async function () {
 
   // put a file
   await writer.write({ name: "dir/tar.ts", filePath });
+  await writer.close();
 
-  // write tar data to a buffer
-  const buf = new Buffer();
-  for await (const x of readable) {
-    await writeAll(buf, x);
-  }
+  await promise;
 
   /**
    * 3072 = 512 (header) + 512 (content) + 512 (header) + 512 (content)
@@ -102,6 +103,25 @@ Deno.test("deflateTarArchive", async function () {
   // create a tar archive
   const tar = new TarStream();
 
+  const promise = (async () => {
+    // read data from a tar archive
+    const untar = new UntarStream();
+    const promise2 = tar.readable.pipeTo(untar.writable);
+    const reader = untar.readable.getReader();
+    const result = await reader.read();
+    assert(!result.done);
+    let untarText = "";
+    for await (const s of result.value.pipeThrough(new TextDecoderStream())) {
+      untarText += s;
+    }
+    await promise2;
+
+    assert((await reader.read()).done); // EOF
+    // tests
+    assertEquals(result.value.fileName, fileName);
+    assertEquals(untarText, text);
+  })();
+
   const writer = tar.writable.getWriter();
   const content = new TextEncoder().encode(text);
   await writer.write({
@@ -114,21 +134,9 @@ Deno.test("deflateTarArchive", async function () {
     }),
     contentSize: content.byteLength,
   });
+  await writer.close();
 
-  // read data from a tar archive
-  const untar = new UntarStream();
-  const reader = untar.readable.getReader();
-  const result = await reader.read();
-  assert(!result.done);
-  let untarText = "";
-  for await (const s of result.value.pipeThrough(new TextDecoderStream())) {
-    untarText += s;
-  }
-
-  assert((await reader.read()).done); // EOF
-  // tests
-  assertEquals(result.value.fileName, fileName);
-  assertEquals(untarText, text);
+  await promise;
 });
 
 Deno.test("appendFileWithLongNameToTarArchive", async function (): Promise<

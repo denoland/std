@@ -474,7 +474,6 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
           readable = readFile(chunk.filePath);
         }
 
-        console.log("bar");
         for await (const chunk of readable) {
           controller.enqueue(chunk);
         }
