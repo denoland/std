@@ -175,8 +175,8 @@ export class ChildProcess extends EventEmitter {
   /**
    * @param signal NOTE: this parameter is not yet implemented.
    */
-  kill(signal?: number): boolean {
-    if (signal != null) {
+  kill(signal?: number | string): boolean {
+    if (signal !== undefined) {
       notImplemented("`ChildProcess.kill()` with the `signal` parameter");
     }
 
