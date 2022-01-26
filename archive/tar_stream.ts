@@ -26,9 +26,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-import { PartialReadError } from "../io/buffer.ts";
+import { Buffer, PartialReadError } from "../io/buffer.ts";
 import { assert } from "../_util/assert.ts";
-import { readableStreamFromReader } from "../streams/conversion.ts";
+import { readableStreamFromReader, writeAll } from "../streams/conversion.ts";
 
 const recordSize = 512;
 const ustar = "ustar\u000000";
@@ -42,9 +42,9 @@ async function readBlock(
   p: Uint8Array,
 ): Promise<number | null> {
   let bytesRead = 0;
-  const reader = readable.getReader({ mode: "byob" });
+  const reader = readable.getReader();
   while (bytesRead < p.length) {
-    const res = await reader.read(p.subarray(bytesRead));
+    const res = await reader.read();
     if (res.done) {
       if (bytesRead === 0) {
         return null;
@@ -52,6 +52,7 @@ async function readBlock(
         throw new PartialReadError();
       }
     }
+    p.set(res.value, bytesRead);
     bytesRead += res.value.byteLength;
   }
   reader.releaseLock();
@@ -305,8 +306,7 @@ class TarEntry extends ReadableStream<Uint8Array> {
     readable: ReadableStream<Uint8Array>,
   ) {
     super({
-      // @ts-ignore incompatible, bad typings
-      pull: async (controller: ReadableByteStreamController) => {
+      pull: async (controller) => {
         const p = new Uint8Array(controller.byobRequest!.view!.buffer);
         // Bytes left for entry
         const entryBytesLeft = this.#entrySize - this.#read;
@@ -315,9 +315,9 @@ class TarEntry extends ReadableStream<Uint8Array> {
 
         if (entryBytesLeft <= 0) {
           this.#consumed = true;
-          return null;
+          controller.close();
+          return;
         }
-
         const block = new Uint8Array(bufSize);
         const n = await readBlock(this.#readable, block);
         const bytesLeft = this.#size - this.#read;
@@ -325,18 +325,18 @@ class TarEntry extends ReadableStream<Uint8Array> {
         this.#read += n || 0;
         if (n === null || bytesLeft <= 0) {
           if (n === null) this.#consumed = true;
-          return null;
+          controller.close();
+          return;
         }
 
         // Remove zero filled
         const offset = bytesLeft < n ? bytesLeft : n;
         p.set(block.subarray(0, offset), 0);
-
         controller.byobRequest!.respond(
           offset < 0 ? n - Math.abs(offset) : offset,
         );
       },
-      // @ts-ignore incompatible, bad typings
+      autoAllocateChunkSize: 512,
       type: "bytes",
     });
 
