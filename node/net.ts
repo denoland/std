@@ -21,7 +21,7 @@
 
 import { notImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
-import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./_net.ts";
+import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./internal/net.ts";
 import { Duplex } from "./stream.ts";
 import {
   asyncIdSymbol,
@@ -43,8 +43,8 @@ import {
   exceptionWithHostPort,
   NodeError,
   uvExceptionWithHostPort,
-} from "./_errors.ts";
-import type { ErrnoException } from "./_errors.ts";
+} from "./internal/errors.ts";
+import type { ErrnoException } from "./internal/errors.ts";
 import { Encodings } from "./_utils.ts";
 import { isUint8Array } from "./internal/util/types.ts";
 import {
@@ -59,12 +59,12 @@ import {
   writeGeneric,
   writevGeneric,
 } from "./internal/stream_base_commons.ts";
-import { kTimeout } from "./_timers.ts";
+import { kTimeout } from "./internal/timers.js";
 import { nextTick } from "./_next_tick.ts";
 import {
   DTRACE_NET_SERVER_CONNECTION,
   DTRACE_NET_STREAM_END,
-} from "./_dtrace.ts";
+} from "./internal/dtrace.ts";
 import { Buffer } from "./buffer.ts";
 import type { LookupOneOptions } from "./dns.ts";
 import {

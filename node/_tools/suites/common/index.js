@@ -19,6 +19,89 @@ function platformTimeout(ms) {
 
 let localhostIPv4 = null;
 
+let knownGlobals = [
+  atob,
+  btoa,
+  clearImmediate,
+  global.clearInterval,
+  global.clearTimeout,
+  global,
+  setImmediate,
+  global.setInterval,
+  global.setTimeout,
+  queueMicrotask,
+  Deno,
+  dispatchEvent,
+  addEventListener,
+  removeEventListener,
+  AbortSignal,
+  crypto,
+  fetch,
+  location,
+  navigator,
+  close,
+  closed,
+  alert,
+  confirm,
+  prompt,
+  localStorage,
+  sessionStorage,
+  onload,
+  onunload,
+  getParent,
+];
+
+if (global.AbortController)
+  knownGlobals.push(global.AbortController);
+
+if (global.gc) {
+  knownGlobals.push(global.gc);
+}
+
+if (global.performance) {
+  knownGlobals.push(global.performance);
+}
+if (global.PerformanceMark) {
+  knownGlobals.push(global.PerformanceMark);
+}
+if (global.PerformanceMeasure) {
+  knownGlobals.push(global.PerformanceMeasure);
+}
+
+if (global.structuredClone) {
+  knownGlobals.push(global.structuredClone);
+}
+
+function allowGlobals(...allowlist) {
+  knownGlobals = knownGlobals.concat(allowlist);
+}
+
+if (process.env.NODE_TEST_KNOWN_GLOBALS !== '0') {
+  if (process.env.NODE_TEST_KNOWN_GLOBALS) {
+    const knownFromEnv = process.env.NODE_TEST_KNOWN_GLOBALS.split(',');
+    allowGlobals(...knownFromEnv);
+  }
+
+  function leakedGlobals() {
+    const leaked = [];
+
+    for (const val in global) {
+      if (!knownGlobals.includes(global[val])) {
+        leaked.push(val);
+      }
+    }
+
+    return leaked;
+  }
+
+  process.on('exit', function() {
+    const leaked = leakedGlobals();
+    if (leaked.length > 0) {
+      assert.fail(`Unexpected global(s) found: ${leaked.join(', ')}`);
+    }
+  });
+}
+
 function _expectWarning(name, expected, code) {
   if (typeof expected === 'string') {
     expected = [[expected, code]];
@@ -259,9 +342,42 @@ function skip(msg) {
   process.exit(0);
 }
 
+function getArrayBufferViews(buf) {
+  const { buffer, byteOffset, byteLength } = buf;
+
+  const out = [];
+
+  const arrayBufferViews = [
+    Int8Array,
+    Uint8Array,
+    Uint8ClampedArray,
+    Int16Array,
+    Uint16Array,
+    Int32Array,
+    Uint32Array,
+    Float32Array,
+    Float64Array,
+    DataView,
+  ];
+
+  for (const type of arrayBufferViews) {
+    const { BYTES_PER_ELEMENT = 1 } = type;
+    if (byteLength % BYTES_PER_ELEMENT === 0) {
+      out.push(new type(buffer, byteOffset, byteLength / BYTES_PER_ELEMENT));
+    }
+  }
+  return out;
+}
+
+function getBufferSources(buf) {
+  return [...getArrayBufferViews(buf), new Uint8Array(buf).buffer];
+}
+
 module.exports = {
+  allowGlobals,
   expectsError,
   expectWarning,
+  getBufferSources,
   invalidArgTypeHelper,
   mustCall,
   mustCallAtLeast,

@@ -49,12 +49,9 @@ jobs:
 
       - name: Generate lcov
         shell: bash
-        # TODO(kt3k): Excludes ubuntu for now because it panics while processing io/util.ts
-        # See https://github.com/denoland/deno/issues/10420
-        if: matrix.os != 'ubuntu-latest'
         # excludes tests, testdata, and generated sources from coverage report
         run: |
-          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
+         deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
@@ -100,6 +97,8 @@ jobs:
 
       - name: Run Node tests canary
         run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/_tools/test.ts
+        env:
+          DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 
   lint:
     runs-on: ubuntu-latest
@@ -121,6 +120,10 @@ jobs:
         shell: bash
         run: ./_tools/lint.js
 
+      - name: Check circular dependencies
+        shell: bash
+        run: ./_tools/check_circular_deps.ts
+
   hash-wasm:
     name: "_wasm_crypto/"
     runs-on: ubuntu-latest
@@ -141,7 +144,7 @@ jobs:
           declare modifications="$(git diff --name-only HEAD~ -- ./_wasm_crypto)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "::set-output name=modified::$modified"
-          echo "Hash source modified in this commit? $modified"
+          echo "WASM crypto source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
@@ -152,15 +155,15 @@ jobs:
         uses: hecrj/setup-rust-action@v1
         if: success() && steps.source.outputs.modified == 'true'
         with:
-          # This must match the version in hash/_wasm/rust-toolchain:
-          rust-version: 1.55.0
+          # This must match the version in _wasm_crypto/rust-toolchain.toml:
+          rust-version: 1.57.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
       - name: Set up wasm-bindgen-cli
         run: |-
           # This must match the version in _wasm_crypto/Cargo.lock:
-          cargo install -f wasm-bindgen-cli --version 0.2.74
+          cargo install -f wasm-bindgen-cli --version 0.2.78
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Rebuild WASM

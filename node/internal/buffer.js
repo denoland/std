@@ -1,11 +1,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // Copyright Feross Aboukhadijeh, and other contributors. All rights reserved. MIT license.
 
-import {
-  ERR_BUFFER_OUT_OF_BOUNDS,
-  ERR_INVALID_ARG_TYPE,
-  ERR_OUT_OF_RANGE,
-} from "../_errors.ts";
+import { codes } from "./error_codes.ts";
 import { encodings } from "../internal_binding/string_decoder.ts";
 import { indexOfBuffer } from "../internal_binding/buffer.ts";
 import {
@@ -563,14 +559,14 @@ export function _copyActual(
 export function boundsError(value, length, type) {
   if (Math.floor(value) !== value) {
     validateNumber(value, type);
-    throw new ERR_OUT_OF_RANGE(type || "offset", "an integer", value);
+    throw new codes.ERR_OUT_OF_RANGE(type || "offset", "an integer", value);
   }
 
   if (length < 0) {
-    throw new ERR_BUFFER_OUT_OF_BOUNDS();
+    throw new codes.ERR_BUFFER_OUT_OF_BOUNDS();
   }
 
-  throw new ERR_OUT_OF_RANGE(
+  throw new codes.ERR_OUT_OF_RANGE(
     type || "offset",
     `>= ${type ? 1 : 0} and <= ${length}`,
     value,
@@ -579,7 +575,7 @@ export function boundsError(value, length, type) {
 
 export function validateNumber(value, name) {
   if (typeof value !== "number") {
-    throw new ERR_INVALID_ARG_TYPE(name, "number", value);
+    throw new codes.ERR_INVALID_ARG_TYPE(name, "number", value);
   }
 }
 
@@ -604,7 +600,7 @@ function checkInt(value, min, max, buf, offset, byteLength) {
     } else {
       range = `>= ${min}${n} and <= ${max}${n}`;
     }
-    throw new ERR_OUT_OF_RANGE("value", range, value);
+    throw new codes.ERR_OUT_OF_RANGE("value", range, value);
   }
   checkBounds(buf, offset, byteLength);
 }
@@ -626,7 +622,7 @@ export function writeU_Int8(buf, value, offset, min, max) {
   value = +value;
   validateNumber(offset, "offset");
   if (value > max || value < min) {
-    throw new ERR_OUT_OF_RANGE("value", `>= ${min} and <= ${max}`, value);
+    throw new codes.ERR_OUT_OF_RANGE("value", `>= ${min} and <= ${max}`, value);
   }
   if (buf[offset] === undefined) {
     boundsError(offset, buf.length - 1);
@@ -753,13 +749,13 @@ export function validateOffset(
   max = Number.MAX_SAFE_INTEGER,
 ) {
   if (typeof value !== "number") {
-    throw new ERR_INVALID_ARG_TYPE(name, "number", value);
+    throw new codes.ERR_INVALID_ARG_TYPE(name, "number", value);
   }
   if (!Number.isInteger(value)) {
-    throw new ERR_OUT_OF_RANGE(name, "an integer", value);
+    throw new codes.ERR_OUT_OF_RANGE(name, "an integer", value);
   }
   if (value < min || value > max) {
-    throw new ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
+    throw new codes.ERR_OUT_OF_RANGE(name, `>= ${min} && <= ${max}`, value);
   }
 }
 

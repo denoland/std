@@ -1,5 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { validateCallback } from "../internal/validators.js";
+import type { ErrnoException } from "../_global.d.ts";
 import {
   BinaryEncodings,
   Encodings,
@@ -7,7 +8,7 @@ import {
   TextEncodings,
 } from "../_utils.ts";
 
-export type CallbackWithError = (err: Error | null) => void;
+export type CallbackWithError = (err: ErrnoException | null) => void;
 
 export interface FileOptions {
   encoding?: Encodings;
@@ -177,7 +178,7 @@ export function maybeCallback(cb: unknown) {
 // invoked from JS already run in the proper scope.
 export function makeCallback(
   this: unknown,
-  cb?: (...args: unknown[]) => void,
+  cb?: (err: Error | null, result?: unknown) => void,
 ) {
   validateCallback(cb);
 

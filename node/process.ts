@@ -3,12 +3,11 @@
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.js";
-import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { ERR_INVALID_ARG_TYPE } from "./internal/errors.ts";
 import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import {
-  _exiting,
   arch,
   chdir,
   cwd,
@@ -19,6 +18,7 @@ import {
   version,
   versions,
 } from "./_process/process.ts";
+import { _exiting } from "./_process/exiting.ts";
 export {
   _nextTick as nextTick,
   arch,
@@ -30,7 +30,18 @@ export {
   version,
   versions,
 };
-import { stderr, stdin, stdout } from "./_process/streams.ts";
+import {
+  stderr as stderr_,
+  stdin as stdin_,
+  stdout as stdout_,
+} from "./_process/streams.js";
+// TODO(kt3k): Give better types to stdio objects
+// deno-lint-ignore no-explicit-any
+const stderr = stderr_ as any;
+// deno-lint-ignore no-explicit-any
+const stdin = stdin_ as any;
+// deno-lint-ignore no-explicit-any
+const stdout = stdout_ as any;
 export { stderr, stdin, stdout };
 import { getBinding } from "./internal_binding/mod.ts";
 import type { BindingName } from "./internal_binding/mod.ts";
@@ -55,6 +66,7 @@ Object.defineProperty(argv, "0", { get: Deno.execPath });
 Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
+// TODO(Nautigsam) Node 16 supports passing a string as a code. Should we support it as well?
 export const exit = (code?: number) => {
   if (code || code === 0) {
     process.exitCode = code;
@@ -218,11 +230,11 @@ class Process extends EventEmitter {
   constructor() {
     super();
 
-    //This causes the exit event to be binded to the unload event
     globalThis.addEventListener("unload", () => {
-      //TODO(Soremwar)
-      //Get the exit code from the unload event
-      super.emit("exit", 0);
+      if (!process._exiting) {
+        process._exiting = true;
+        super.emit("exit", process.exitCode || 0);
+      }
     });
   }
 
@@ -254,7 +266,7 @@ class Process extends EventEmitter {
   env = env;
 
   /** https://nodejs.org/api/process.html#process_process_execargv */
-  execArgv = [];
+  execArgv: string[] = [];
 
   /** https://nodejs.org/api/process.html#process_process_exit_code */
   exit = exit;
@@ -387,6 +399,20 @@ class Process extends EventEmitter {
   getuid(): number {
     // TODO(kt3k): return user id in mac and linux
     return NaN;
+  }
+
+  /** https://nodejs.org/api/process.html#processgetgid */
+  getgid(): number {
+    // TODO(kt3k): return group id in mac and linux
+    return NaN;
+  }
+
+  // TODO(kt3k): Implement this when we added -e option to node compat mode
+  _eval: string | undefined = undefined;
+
+  /** https://nodejs.org/api/process.html#processexecpath */
+  get execPath() {
+    return argv[0];
   }
 }
 

@@ -6,9 +6,7 @@
 
 import { isWindows } from "../../_util/os.ts";
 import { nextTick as _nextTick } from "../_next_tick.ts";
-
-// deno-lint-ignore prefer-const
-export let _exiting = false;
+import { _exiting } from "./exiting.ts";
 
 /** Returns the operating system CPU architecture for which the Deno binary was compiled */
 function _arch(): string {
@@ -42,7 +40,17 @@ export const env: Record<string, string> = new Proxy({}, {
     return Deno.env.get(String(prop));
   },
   ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
-  getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }),
+  getOwnPropertyDescriptor: (_target, name) => {
+    const e = Deno.env.toObject();
+    if (name in Deno.env.toObject()) {
+      const o = { enumerable: true, configurable: true };
+      if (typeof name === "string") {
+        // @ts-ignore we do want to set it only when name is of type string
+        o.value = e[name];
+      }
+      return o;
+    }
+  },
   set(_target, prop, value) {
     Deno.env.set(String(prop), String(value));
     return value;

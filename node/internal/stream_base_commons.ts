@@ -29,8 +29,9 @@ import {
   WriteWrap,
 } from "../internal_binding/stream_wrap.ts";
 import { isUint8Array } from "./util/types.ts";
-import { errnoException } from "../_errors.ts";
-import { getTimerDuration, kTimeout, setUnrefTimeout } from "../_timers.ts";
+import { errnoException } from "./errors.ts";
+import { getTimerDuration, kTimeout } from "./timers.js";
+import { setUnrefTimeout } from "../timers.ts";
 import { validateCallback } from "./validators.js";
 import { codeMap } from "../internal_binding/uv.ts";
 import { Buffer } from "../buffer.ts";

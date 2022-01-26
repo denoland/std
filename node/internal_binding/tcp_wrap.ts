@@ -32,7 +32,7 @@ import { ownerSymbol } from "./symbols.ts";
 import { codeMap } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
 import { kStreamBaseField } from "./stream_wrap.ts";
-import { isIP } from "../_net.ts";
+import { isIP } from "../internal/net.ts";
 
 /** The type of TCP socket. */
 enum socketType {
@@ -165,7 +165,7 @@ export class TCP extends ConnectionWrap {
   }
 
   /**
-   * Bind to an IPv4 address.
+   * Bind to an IPv6 address.
    * @param address The hostname to bind to.
    * @param port The port to bind to
    * @return An error status code.
@@ -279,7 +279,8 @@ export class TCP extends ConnectionWrap {
    * @return An error status code.
    */
   setNoDelay(_noDelay: boolean): number {
-    notImplemented();
+    // TODO(bnoordhuis) https://github.com/denoland/deno/pull/13103
+    return 0;
   }
 
   /**
@@ -288,7 +289,8 @@ export class TCP extends ConnectionWrap {
    * @return An error status code.
    */
   setKeepAlive(_enable: boolean, _initialDelay: number): number {
-    notImplemented();
+    // TODO(bnoordhuis) https://github.com/denoland/deno/pull/13103
+    return 0;
   }
 
   /**

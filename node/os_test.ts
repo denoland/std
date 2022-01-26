@@ -260,13 +260,6 @@ Deno.test({
     );
     assertThrows(
       () => {
-        os.networkInterfaces();
-      },
-      Error,
-      "Not implemented",
-    );
-    assertThrows(
-      () => {
         os.setPriority(0);
       },
       Error,

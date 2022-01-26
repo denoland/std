@@ -23,6 +23,18 @@ import {
 } from "./asserts.ts";
 import { bold, gray, green, red, stripColor, yellow } from "../fmt/colors.ts";
 
+Deno.test("testingEqualDifferentZero", () => {
+  assert(equal(0, -0));
+  assert(equal(0, +0));
+  assert(equal(+0, -0));
+  assert(equal([0], [-0]));
+  assert(equal(["hello", 12.21, 0], ["hello", 12.21, -0]));
+  assert(equal(["hello", 12.21, 0], ["hello", 12.21, +0]));
+  assert(equal(["hello", 12.21, -0], ["hello", 12.21, +0]));
+  assert(equal({ msg: "hello", case: 0 }, { msg: "hello", case: -0 }));
+  assert(equal({ msg: "hello", array: [0] }, { msg: "hello", array: [-0] }));
+});
+
 Deno.test("testingEqual", function (): void {
   assert(equal("world", "world"));
   assert(!equal("hello", "world"));
@@ -588,6 +600,17 @@ Deno.test("testingAssertObjectMatching", function (): void {
     assertObjectMatch({ test: { a: 1 } }, { test: { a: 1 } });
     assertObjectMatch({ test: { a: 1 } }, { test: new A(1) });
     assertObjectMatch({ test: new A(1) }, { test: new A(1) });
+  }
+  {
+    // actual/expected contains same instance of Map/TypedArray/etc
+    const body = new Uint8Array([0, 1, 2]);
+    assertObjectMatch({ body, foo: "foo" }, { body });
+  }
+  {
+    // match subsets of arrays
+    assertObjectMatch({ positions: [[1, 2, 3, 4]] }, {
+      positions: [[1, 2, 3]],
+    });
   }
 });
 

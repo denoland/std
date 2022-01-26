@@ -1,14 +1,14 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { AbortError } from "../errors.js";
-import { createDeferredPromise } from "../util.ts";
+import { createDeferredPromise } from "../util.js";
 import { destroyer } from "./destroy.js";
 import { isBlob } from "../blob.js";
 import {
+  AbortError,
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_RETURN_VALUE,
-} from "../../_errors.ts";
+} from "../errors.ts";
 import {
   isDuplexNodeStream,
   isIterable,

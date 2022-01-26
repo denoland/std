@@ -25,7 +25,7 @@ import {
   ERR_INVALID_FILE_URL_HOST,
   ERR_INVALID_FILE_URL_PATH,
   ERR_INVALID_URL_SCHEME,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 import {
   CHAR_0,
   CHAR_9,
@@ -64,7 +64,7 @@ import {
   CHAR_ZERO_WIDTH_NOBREAK_SPACE,
 } from "../path/_constants.ts";
 import * as path from "./path.ts";
-import { toASCII } from "./_idna.ts";
+import { toASCII } from "./internal/idna.ts";
 import { isWindows, osType } from "../_util/os.ts";
 import { encodeStr, hexTable } from "./internal/querystring.ts";
 
@@ -913,8 +913,8 @@ export function format(
   let ret = urlObject.protocol;
   if (urlObject.host !== null) {
     ret += "//";
-    const hasUsername = urlObject.username !== "";
-    const hasPassword = urlObject.password !== "";
+    const hasUsername = !!urlObject.username;
+    const hasPassword = !!urlObject.password;
     if (options.auth && (hasUsername || hasPassword)) {
       if (hasUsername) {
         ret += urlObject.username;
@@ -935,10 +935,10 @@ export function format(
 
   ret += urlObject.pathname;
 
-  if (options.search) {
+  if (options.search && urlObject.search) {
     ret += urlObject.search;
   }
-  if (options.fragment) {
+  if (options.fragment && urlObject.hash) {
     ret += urlObject.hash;
   }
 

@@ -1,4 +1,4 @@
-import { denoErrorToNodeError } from "../_errors.ts";
+import { denoErrorToNodeError } from "../internal/errors.ts";
 
 export type statOptions = {
   bigint: boolean;
@@ -236,10 +236,7 @@ export function CFISBIS(fileInfo: Deno.FileInfo, bigInt: boolean) {
   return convertFileInfoToStats(fileInfo);
 }
 
-export type statCallbackBigInt = (
-  err: Error | null,
-  stat: BigIntStats,
-) => void;
+export type statCallbackBigInt = (err: Error | null, stat: BigIntStats) => void;
 
 export type statCallback = (err: Error | null, stat: Stats) => void;
 
@@ -293,9 +290,10 @@ export function statSync(
   try {
     const origin = Deno.statSync(path);
     return CFISBIS(origin, options.bigint);
-  } catch (err: unknown) {
+  } catch (err) {
     if (
-      options?.throwIfNoEntry === false && err instanceof Deno.errors.NotFound
+      options?.throwIfNoEntry === false &&
+      err instanceof Deno.errors.NotFound
     ) {
       return;
     }

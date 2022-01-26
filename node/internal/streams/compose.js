@@ -1,11 +1,14 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { AbortError } from "../errors.js";
 import { destroyer } from "./destroy.js";
 import { isNodeStream, isReadable, isWritable } from "./utils.js";
 import { pipeline } from "./pipeline.js";
-import { ERR_INVALID_ARG_VALUE, ERR_MISSING_ARGS } from "../../_errors.ts";
+import {
+  AbortError,
+  ERR_INVALID_ARG_VALUE,
+  ERR_MISSING_ARGS,
+} from "../errors.ts";
 import Duplex from "./duplex.js";
 
 // This is needed for pre node 17.

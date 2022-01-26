@@ -13,7 +13,6 @@ const util = require('util');
 
 const EE = new EventEmitter();
 
-/* TODO(uki00a): Uncomment this block when `util.inspect` becomes compatible with Node.js.
 assert.throws(
   () => EE.emit('error', 'Accepts a string'),
   {
@@ -43,4 +42,3 @@ assert.throws(
     message: 'Unhandled error. ([object Object])'
   }
 );
-*/
