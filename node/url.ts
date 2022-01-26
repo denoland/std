@@ -1157,8 +1157,12 @@ export function parse(
   return urlObject;
 }
 
-export function resolve(relative: string) {
-  return parse(relative, false, true).resolve(relative);
+/** The url.resolve() method resolves a target URL relative to a base URL in a manner similar to that of a Web browser resolving an anchor tag HREF.
+ * @see https://nodejs.org/api/url.html#urlresolvefrom-to
+ * @legacy
+ */
+export function resolve(from: string, to: string) {
+  return parse(from, false, true).resolve(to);
 }
 
 export function resolveObject(source: string | Url, relative: string) {
