@@ -68,6 +68,7 @@ import { toASCII } from "./internal/idna.ts";
 import { isWindows, osType } from "../_util/os.ts";
 import { encodeStr, hexTable } from "./internal/querystring.ts";
 import querystring from "./querystring.ts";
+import type { ParsedUrlQuery } from "./querystring.ts";
 
 const forwardSlashRegEx = /\//g;
 const percentRegEx = /%/g;
@@ -139,7 +140,7 @@ export class Url {
   public hostname: string | null;
   public hash: string | null;
   public search: string | null;
-  public query: string | null;
+  public query: string | ParsedUrlQuery | null;
   public pathname: string | null;
   public path: string | null;
   public href: string | null;
@@ -645,9 +646,6 @@ export class Url {
         if (simplePath[2]) {
           this.search = simplePath[2];
           if (parseQueryString) {
-            if (querystring === undefined) {
-              querystring = import("./querystring.ts");
-            }
             this.query = querystring.parse(this.search.slice(1));
           } else {
             this.query = this.search.slice(1);
@@ -833,9 +831,6 @@ export class Url {
         this.query = rest.slice(questionIdx + 1, hashIdx);
       }
       if (parseQueryString) {
-        if (querystring === undefined) {
-          querystring = import("./querystring.ts");
-        }
         this.query = querystring.parse(this.query);
       }
     } else if (parseQueryString) {
