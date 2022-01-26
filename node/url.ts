@@ -67,6 +67,7 @@ import * as path from "./path.ts";
 import { toASCII } from "./internal/idna.ts";
 import { isWindows, osType } from "../_util/os.ts";
 import { encodeStr, hexTable } from "./internal/querystring.ts";
+import querystring from "./querystring.ts";
 
 const forwardSlashRegEx = /\//g;
 const percentRegEx = /%/g;
@@ -124,9 +125,6 @@ const noEscapeAuth = new Int8Array([
   0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 0x60 - 0x6F
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0,  // 0x70 - 0x7F
 ]);
-
-// deno-lint-ignore no-explicit-any
-let querystring: any = null;
 
 const _url = URL;
 export { _url as URL };
@@ -393,12 +391,12 @@ export class Url {
     for (let i = srcPath.length - 1; i >= 0; i--) {
       last = srcPath[i];
       if (last === ".") {
-        srcPath.slice(i);
+        srcPath.splice(i, 1);
       } else if (last === "..") {
-        srcPath.slice(i);
+        srcPath.splice(i, 1);
         up++;
       } else if (up) {
-        srcPath.splice(i);
+        srcPath.splice(i, 1);
         up--;
       }
     }
@@ -468,7 +466,7 @@ export class Url {
     return result;
   }
 
-  private format() {
+  format() {
     let auth = this.auth || "";
     if (auth) {
       auth = encodeStr(auth, noEscapeAuth, hexTable);
@@ -494,9 +492,6 @@ export class Url {
     }
 
     if (this.query !== null && typeof this.query === "object") {
-      if (querystring === undefined) {
-        querystring = import("./querystring.ts");
-      }
       query = querystring.stringify(this.query);
     }
 
@@ -874,6 +869,25 @@ export class Url {
   }
 }
 
+export function format(
+  urlObject: string | URL | Url,
+  options?: {
+    auth: boolean;
+    fragment: boolean;
+    search: boolean;
+    unicode: boolean;
+  },
+): string {
+  if (urlObject instanceof URL) {
+    return formatWhatwg(urlObject, options);
+  }
+
+  if (typeof urlObject === "string") {
+    urlObject = parse(urlObject, true, false);
+  }
+  return urlObject.format();
+}
+
 /**
  * The URL object has both a `toString()` method and `href` property that return string serializations of the URL.
  * These are not, however, customizable in any way.
@@ -887,8 +901,8 @@ export class Url {
  * @param options.unicode `true` if Unicode characters appearing in the host component of the URL string should be encoded directly as opposed to being Punycode encoded. **Default**: `false`.
  * @returns a customizable serialization of a URL `String` representation of a `WHATWG URL` object.
  */
-export function format(
-  urlObject: URL,
+function formatWhatwg(
+  urlObject: string | URL,
   options?: {
     auth: boolean;
     fragment: boolean;
@@ -896,6 +910,9 @@ export function format(
     unicode: boolean;
   },
 ): string {
+  if (typeof urlObject === "string") {
+    urlObject = new URL(urlObject);
+  }
   if (options) {
     if (typeof options !== "object") {
       throw new ERR_INVALID_ARG_TYPE("options", "object", options);
