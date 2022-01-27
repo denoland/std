@@ -1,3 +1,13 @@
+### 0.123.0 / 2022.01.27
+
+- feat(node): add os.networkInterfaces (#1846)
+- feat(node/child_process): add execFile (#1838)
+- fix(node/process): can not pass exit code as a string (#1849)
+- fix(testing): `assertObjectMatch` matches ArrayBuffer views correctly (#1843)
+- refactor(node): move _errors to internal/errors (#1841)
+- refactor(node): reduce circular dependencies under std/node and check it in CI
+  (#1844)
+
 ### 0.122.0 / 2022.01.20
 
 - BREAKING(encoding/csv): add return type to csv's parse and remove a parse func
