@@ -26,9 +26,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-import { Buffer, PartialReadError } from "../io/buffer.ts";
+import { PartialReadError } from "../io/buffer.ts";
 import { assert } from "../_util/assert.ts";
-import { readableStreamFromReader, writeAll } from "../streams/conversion.ts";
 
 const recordSize = 512;
 const ustar = "ustar\u000000";
@@ -57,14 +56,6 @@ async function readBlock(
   }
   reader.releaseLock();
   return bytesRead;
-}
-
-/**
- * Simple file reader
- */
-function readFile(path: string): ReadableStream<Uint8Array> {
-  const file = Deno.openSync(path, { read: true });
-  return readableStreamFromReader(file);
 }
 
 /**
@@ -125,7 +116,7 @@ struct posix_header {           // byte offset
 };
 */
 
-const ustarStructure: Array<{ field: string; length: number }> = [
+const ustarStructure = [
   {
     field: "fileName",
     length: 100,
@@ -190,41 +181,40 @@ const ustarStructure: Array<{ field: string; length: number }> = [
     field: "padding",
     length: 12,
   },
-];
+] as const;
 
 /**
  * Create header for a file in a tar archive
  */
 function formatHeader(data: TarData): Uint8Array {
-  const encoder = new TextEncoder(),
-    buffer = clean(512);
+  const encoder = new TextEncoder();
+  const buffer = clean(512);
   let offset = 0;
-  ustarStructure.forEach(function (value): void {
-    const entry = encoder.encode(data[value.field as keyof TarData] || "");
+  for (const value of ustarStructure) {
+    const entry = encoder.encode(data[value.field as keyof TarData]);
     buffer.set(entry, offset);
     offset += value.length; // space it out with nulls
-  });
+  }
   return buffer;
 }
+
+type TarHeader = Record<(typeof ustarStructure)[number]["field"], Uint8Array>;
 
 /**
  * Parse file header in a tar archive
  * @param buffer
  */
-function parseHeader(buffer: Uint8Array): { [key: string]: Uint8Array } {
-  const data: { [key: string]: Uint8Array } = {};
+function parseHeader(buffer: Uint8Array): TarHeader {
+  const data: Record<string, Uint8Array> = {};
   let offset = 0;
-  ustarStructure.forEach(function (value): void {
-    const arr = buffer.subarray(offset, offset + value.length);
-    data[value.field] = arr;
+  for (const value of ustarStructure) {
+    data[value.field] = buffer.subarray(offset, offset + value.length);
     offset += value.length;
-  });
-  return data;
+
+  }
+  return data as TarHeader;
 }
 
-interface TarHeader {
-  [key: string]: Uint8Array;
-}
 
 export interface TarData {
   fileName?: string;
@@ -232,7 +222,7 @@ export interface TarData {
   fileMode?: string;
   uid?: string;
   gid?: string;
-  fileSize?: string;
+  fileSize: string;
   mtime?: string;
   checksum?: string;
   type?: string;
@@ -243,13 +233,9 @@ export interface TarData {
 
 export interface TarDataWithSource extends TarData {
   /**
-   * file to read
-   */
-  filePath?: string;
-  /**
    * buffer to read
    */
-  readable?: ReadableStream<Uint8Array>;
+  readable: ReadableStream<Uint8Array>;
 }
 
 export interface TarInfo {
@@ -259,7 +245,7 @@ export interface TarInfo {
   gid?: number;
   owner?: string;
   group?: string;
-  type?: string;
+  type?: keyof typeof FileTypes;
 }
 
 export interface TarOptions extends TarInfo {
@@ -269,19 +255,14 @@ export interface TarOptions extends TarInfo {
   name: string;
 
   /**
-   * append file
-   */
-  filePath?: string;
-
-  /**
    * append any arbitrary content
    */
-  readable?: ReadableStream<Uint8Array>;
+  readable: ReadableStream<Uint8Array>;
 
   /**
    * size of the content to be appended
    */
-  contentSize?: number;
+  contentSize: number;
 }
 
 export interface TarMeta extends TarInfo {
@@ -372,7 +353,7 @@ class TarEntry extends ReadableStream<Uint8Array> {
 export class TarStream extends TransformStream<TarOptions, Uint8Array> {
   constructor() {
     super({
-      transform: async (chunk, controller) => {
+      transform: async (chunk: TarOptions, controller) => {
         // separate file name into two parts if needed
         let fileNamePrefix: string | undefined;
         let fileName = chunk.name;
@@ -400,22 +381,8 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
           }
         }
 
-        let readable = chunk.readable;
-        // set meta data
-        let info: Deno.FileInfo | undefined;
-        if (chunk.filePath) {
-          info = await Deno.stat(chunk.filePath);
-          if (info.isDirectory) {
-            info.size = 0;
-            readable = new ReadableStream();
-          }
-        }
-
-        const mode = chunk.fileMode || (info && info.mode) ||
-          parseInt("777", 8) & 0xfff;
-        const mtime = Math.floor(
-          chunk.mtime ?? (info?.mtime ?? new Date()).valueOf() / 1000,
-        );
+        const mode = chunk.fileMode || parseInt("777", 8) & 0xfff;
+        const mtime = Math.floor(chunk.mtime ?? new Date().valueOf() / 1000);
         const uid = chunk.uid || 0;
         const gid = chunk.gid || 0;
 
@@ -430,12 +397,7 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
           );
         }
 
-        const fileSize = info?.size ?? chunk.contentSize;
-        assert(fileSize != null, "fileSize must be set");
-
-        const type = chunk.type
-          ? FileTypes[chunk.type as keyof typeof FileTypes]
-          : (info?.isDirectory ? FileTypes.directory : FileTypes.file);
+        const type = chunk.type ? FileTypes[chunk.type] : FileTypes.file;
 
         const tarData: TarDataWithSource = {
           fileName,
@@ -443,49 +405,35 @@ export class TarStream extends TransformStream<TarOptions, Uint8Array> {
           fileMode: pad(mode, 7),
           uid: pad(uid, 7),
           gid: pad(gid, 7),
-          fileSize: pad(fileSize, 11),
+          fileSize: pad(chunk.contentSize, 11),
           mtime: pad(mtime, 11),
           checksum: "        ",
           type: type.toString(),
           ustar,
           owner: chunk.owner || "",
           group: chunk.group || "",
-          filePath: chunk.filePath,
-          readable,
+          readable: chunk.readable,
         };
 
         // calculate the checksum
         let checksum = 0;
         const encoder = new TextEncoder();
-        Object.keys(tarData)
-          .filter((key) => !["filePath", "readable"].includes(key))
-          .forEach((key) => {
-            checksum += encoder
-              .encode(tarData[key as keyof TarData])
-              .reduce((p, c) => p + c, 0);
-          });
+        for (const key in tarData) {
+          if (key === "filePath" || key === "readable") {
+            continue;
+          }
+          checksum += encoder.encode(tarData[key as keyof TarData]).reduce((p, c) => p + c, 0)
+        }
 
         tarData.checksum = pad(checksum, 6) + "\u0000 ";
 
-        const headerBuf = formatHeader(tarData);
-        controller.enqueue(headerBuf);
-        if (!readable) {
-          assert(chunk.filePath != null);
-          readable = readFile(chunk.filePath);
+        controller.enqueue(formatHeader(tarData));
+
+        for await (const readableChunk of chunk.readable) {
+          controller.enqueue(readableChunk);
         }
 
-        for await (const chunk of readable) {
-          controller.enqueue(chunk);
-        }
-
-        // to the nearest multiple of recordSize
-        assert(tarData.fileSize != null, "fileSize must be set");
-        controller.enqueue(
-          clean(
-            recordSize -
-              (parseInt(tarData.fileSize, 8) % recordSize || recordSize),
-          ),
-        );
+        controller.enqueue(clean(recordSize - (parseInt(tarData.fileSize, 8) % recordSize || recordSize)));
       },
       flush(controller) {
         // append 2 empty records
@@ -578,12 +526,12 @@ function getMetadata(header: TarHeader): TarMeta {
   for (const key of ["owner", "group", "type"] as const) {
     const arr = trim(header[key]);
     if (arr.byteLength > 0) {
-      meta[key] = decoder.decode(arr);
+      meta[key] = decoder.decode(arr) as any;
     }
   }
 
   meta.fileSize = parseInt(decoder.decode(header.fileSize), 8);
-  meta.type = FileTypes[parseInt(meta.type!)] ?? meta.type;
+  meta.type = (FileTypes[parseInt(meta.type!)] ?? meta.type) as keyof typeof FileTypes;
 
   return meta;
 }
