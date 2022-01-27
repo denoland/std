@@ -61,6 +61,7 @@
     ],
     "fixtures": [
       "child-process-spawn-node.js",
+      "echo.js",
       "empty.txt",
       "exit.js"
     ],
