@@ -418,6 +418,12 @@ class Process extends EventEmitter {
   get execPath() {
     return argv[0];
   }
+
+  #startTime = Date.now();
+  /** https://nodejs.org/api/process.html#processuptime */
+  uptime() {
+    return (Date.now() - this.#startTime) / 1000;
+  }
 }
 
 /** https://nodejs.org/api/process.html#process_process */
