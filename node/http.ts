@@ -92,7 +92,7 @@ class ClientRequest extends NodeWritable {
   controller: ReadableStreamDefaultController | null = null;
   constructor(
     public opts: RequestOptions,
-    public cb: (res: IncomingMessageForClient) => void,
+    public cb?: (res: IncomingMessageForClient) => void,
   ) {
     super();
   }
@@ -132,7 +132,7 @@ class ClientRequest extends NodeWritable {
         client.close();
       });
     }
-    this.cb(res);
+    this.cb?.(res);
   }
 
   abort() {
