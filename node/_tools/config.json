@@ -379,6 +379,7 @@
       "test-url-format-whatwg.js",
       "test-url-parse-format.js",
       "test-url-pathtofileurl.js",
+      "test-url-relative.js",
       "test-url-urltooptions.js",
       "test-util-deprecate-invalid-code.js",
       "test-util-deprecate.js",

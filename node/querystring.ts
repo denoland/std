@@ -38,7 +38,7 @@ function qsEscape(str: unknown): string {
  */
 export const escape = qsEscape;
 
-interface ParsedUrlQuery {
+export interface ParsedUrlQuery {
   [key: string]: string | string[] | undefined;
 }
 
