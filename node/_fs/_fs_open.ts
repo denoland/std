@@ -2,7 +2,7 @@ import { existsSync } from "../../fs/exists.ts";
 import { fromFileUrl } from "../path.ts";
 import { getOpenOptions } from "./_fs_common.ts";
 
-type openFlags =
+export type openFlags =
   | "a"
   | "ax"
   | "a+"
