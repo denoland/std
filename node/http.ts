@@ -1,5 +1,5 @@
 import { core } from "./_core.ts";
-import { _normalizeArgs, ListenOptions } from "./net.ts";
+import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { EventEmitter } from "./events.ts";
@@ -125,7 +125,10 @@ class ClientRequest extends NodeWritable {
       }
       return undefined;
     });
-    const res = new IncomingMessageForClient(await mayResponse);
+    const res = new IncomingMessageForClient(
+      await mayResponse,
+      this._createSocket(),
+    );
     this.emit("response", res);
     if (client) {
       res.on("end", () => {
@@ -142,12 +145,19 @@ class ClientRequest extends NodeWritable {
   _createCustomClient(): Promise<Deno.HttpClient | undefined> {
     return Promise.resolve(undefined);
   }
+
+  _createSocket(): Socket {
+    // Note: Creates a dummy socket for the compatibility
+    // Sometimes the libraries check some properties of socket
+    // e.g. if (!response.socket.authorized) { ... }
+    return new Socket({});
+  }
 }
 
 /** IncomingMessage for http(s) client */
 export class IncomingMessageForClient extends NodeReadable {
   reader: ReadableStreamDefaultReader | undefined;
-  constructor(public response: Response | undefined) {
+  constructor(public response: Response | undefined, public socket: Socket) {
     super();
     this.reader = response?.body?.getReader();
   }
