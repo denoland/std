@@ -51,6 +51,7 @@ import net from "./net.ts";
 import os from "./os.ts";
 import path from "./path.ts";
 import perfHooks from "./perf_hooks.ts";
+import punycode from "./punycode.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
 import readline from "./readline.ts";
@@ -118,6 +119,7 @@ export default {
   path,
   "perf_hooks": perfHooks,
   process,
+  punycode,
   querystring,
   readline,
   repl,
