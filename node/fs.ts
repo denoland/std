@@ -37,6 +37,7 @@ import { watch, watchFile } from "./_fs/_fs_watch.ts";
 import { write, writeSync } from "./_fs/_fs_write.js";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
 import { Stats } from "./internal/fs/utils.js";
+import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
 
 import { promisify } from "./util.ts";
 
@@ -92,6 +93,7 @@ export default {
   constants,
   copyFile,
   copyFileSync,
+  createWriteStream,
   Dir,
   Dirent,
   exists,
@@ -150,9 +152,10 @@ export default {
   watch,
   watchFile,
   write,
-  writeSync,
   writeFile,
   writeFileSync,
+  WriteStream,
+  writeSync,
   X_OK,
 };
 
@@ -170,6 +173,7 @@ export {
   constants,
   copyFile,
   copyFileSync,
+  createWriteStream,
   Dir,
   Dirent,
   exists,
@@ -230,6 +234,7 @@ export {
   write,
   writeFile,
   writeFileSync,
+  WriteStream,
   writeSync,
   X_OK,
 };
