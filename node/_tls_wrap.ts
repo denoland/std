@@ -7,10 +7,10 @@ import tls from "./tls.ts";
 import { kStreamBaseField } from "./internal_binding/stream_wrap.ts";
 import { notImplemented } from "./_utils.ts";
 
-const kConnectOptions = Symbol('connect-options');
-const kIsVerified = Symbol('verified');
-const kPendingSession = Symbol('pendingSession');
-const kRes = Symbol('res');
+const kConnectOptions = Symbol("connect-options");
+const kIsVerified = Symbol("verified");
+const kPendingSession = Symbol("pendingSession");
+const kRes = Symbol("res");
 
 const debug = console.log; // TODO(bnoordhuis)
 
@@ -20,10 +20,10 @@ function onConnectSecure() {
   // Check the size of DHE parameter above minimum requirement
   // specified in options.
   const ekeyinfo = this.getEphemeralKeyInfo();
-  if (ekeyinfo.type === 'DH' && ekeyinfo.size < options.minDHSize) {
+  if (ekeyinfo.type === "DH" && ekeyinfo.size < options.minDHSize) {
     const err = new ERR_TLS_DH_PARAM_SIZE(ekeyinfo.size);
-    debug('client emit:', err);
-    this.emit('error', err);
+    debug("client emit:", err);
+    this.emit("error", err);
     this.destroy();
     return;
   }
@@ -34,9 +34,9 @@ function onConnectSecure() {
   // Unless server has resumed our existing session
   if (!verifyError && !this.isSessionReused()) {
     const hostname = options.servername ||
-                   options.host ||
-                   (options.socket && options.socket._host) ||
-                   'localhost';
+      options.host ||
+      (options.socket && options.socket._host) ||
+      "localhost";
     const cert = this.getPeerCertificate(true);
     verifyError = options.checkServerIdentity(hostname, cert);
   }
@@ -57,25 +57,29 @@ function onConnectSecure() {
       this.destroy(verifyError);
       return;
     }
-    debug('client emit secureConnect. rejectUnauthorized: %s, ' +
-          'authorizationError: %s', options.rejectUnauthorized,
-          this.authorizationError);
+    debug(
+      "client emit secureConnect. rejectUnauthorized: %s, " +
+        "authorizationError: %s",
+      options.rejectUnauthorized,
+      this.authorizationError,
+    );
     this.secureConnecting = false;
-    this.emit('secureConnect');
+    this.emit("secureConnect");
   } else {
     this.authorized = true;
-    debug('client emit secureConnect. authorized:', this.authorized);
+    debug("client emit secureConnect. authorized:", this.authorized);
     this.secureConnecting = false;
-    this.emit('secureConnect');
+    this.emit("secureConnect");
   }
 
   this[kIsVerified] = true;
   const session = this[kPendingSession];
   this[kPendingSession] = null;
-  if (session)
-    this.emit('session', session);
+  if (session) {
+    this.emit("session", session);
+  }
 
-  this.removeListener('end', onConnectEnd);
+  this.removeListener("end", onConnectEnd);
 }
 
 function onConnectEnd() {
@@ -83,9 +87,11 @@ function onConnectEnd() {
   if (!this._hadError) {
     const options = this[kConnectOptions];
     this._hadError = true;
-    const error = connResetException('Client network socket disconnected ' +
-                                     'before secure TLS connection was ' +
-                                     'established');
+    const error = connResetException(
+      "Client network socket disconnected " +
+        "before secure TLS connection was " +
+        "established",
+    );
     error.path = options.path;
     error.host = options.host;
     error.port = options.port;
@@ -119,7 +125,7 @@ export class TLSSocket extends net.Socket {
       verifyError() {
         return null; // Never fails, rejectUnauthorized is always true in Deno.
       }
-    };
+    }();
 
     let hostname = tlsOptions?.secureContext?.servername;
     hostname = "localhost";
@@ -135,7 +141,7 @@ export class TLSSocket extends net.Socket {
     }
 
     this._handle = socket._handle;
-    this._handle.verifyError = function() {
+    this._handle.verifyError = function () {
       return null; // Never fails, rejectUnauthorized is always true in Deno.
     };
 
@@ -170,17 +176,19 @@ export class TLSSocket extends net.Socket {
   }
 
   _tlsError(err) {
-    this.emit('_tlsError', err);
-    if (this._controlReleased)
+    this.emit("_tlsError", err);
+    if (this._controlReleased) {
       return err;
+    }
     return null;
   }
 
   _releaseControl() {
-    if (this._controlReleased)
+    if (this._controlReleased) {
       return false;
+    }
     this._controlReleased = true;
-    this.removeListener('error', this._tlsError);
+    this.removeListener("error", this._tlsError);
     return true;
   }
 
@@ -210,9 +218,9 @@ function normalizeConnectArgs(listArgs) {
   // find the options and merge them in, normalize's options has only
   // the host/port/path args that it knows about, not the tls options.
   // This means that options.host overrides a host arg.
-  if (listArgs[1] !== null && typeof listArgs[1] === 'object') {
+  if (listArgs[1] !== null && typeof listArgs[1] === "object") {
     ObjectAssign(options, listArgs[1]);
-  } else if (listArgs[2] !== null && typeof listArgs[2] === 'object') {
+  } else if (listArgs[2] !== null && typeof listArgs[2] === "object") {
     ObjectAssign(options, listArgs[2]);
   }
 
@@ -230,18 +238,23 @@ export function connect(...args) {
     ciphers: tls.DEFAULT_CIPHERS,
     checkServerIdentity: tls.checkServerIdentity,
     minDHSize: 1024,
-    ...options
+    ...options,
   };
 
-  if (!options.keepAlive)
+  if (!options.keepAlive) {
     options.singleUse = true;
+  }
 
-  assert(typeof options.checkServerIdentity === 'function');
-  assert(typeof options.minDHSize === 'number',
-         'options.minDHSize is not a number: ' + options.minDHSize);
-  assert(options.minDHSize > 0,
-         'options.minDHSize is not a positive number: ' +
-         options.minDHSize);
+  assert(typeof options.checkServerIdentity === "function");
+  assert(
+    typeof options.minDHSize === "number",
+    "options.minDHSize is not a number: " + options.minDHSize,
+  );
+  assert(
+    options.minDHSize > 0,
+    "options.minDHSize is not a positive number: " +
+      options.minDHSize,
+  );
 
   const context = options.secureContext || tls.createSecureContext(options);
 
@@ -272,8 +285,9 @@ export function connect(...args) {
 
   tlssock[kConnectOptions] = options;
 
-  if (cb)
-    tlssock.once('secureConnect', cb);
+  if (cb) {
+    tlssock.once("secureConnect", cb);
+  }
 
   if (!options.socket) {
     // If user provided the socket, it's their responsibility to manage its
@@ -287,27 +301,29 @@ export function connect(...args) {
 
   tlssock._releaseControl();
 
-  if (options.session)
+  if (options.session) {
     tlssock.setSession(options.session);
+  }
 
   if (options.servername) {
     if (!ipServernameWarned && net.isIP(options.servername)) {
       process.emitWarning(
-        'Setting the TLS ServerName to an IP address is not permitted by ' +
-        'RFC 6066. This will be ignored in a future version.',
-        'DeprecationWarning',
-        'DEP0123'
+        "Setting the TLS ServerName to an IP address is not permitted by " +
+          "RFC 6066. This will be ignored in a future version.",
+        "DeprecationWarning",
+        "DEP0123",
       );
       ipServernameWarned = true;
     }
     tlssock.setServername(options.servername);
   }
 
-  if (options.socket)
+  if (options.socket) {
     tlssock._start();
+  }
 
-  tlssock.on('secure', onConnectSecure);
-  tlssock.prependListener('end', onConnectEnd);
+  tlssock.on("secure", onConnectSecure);
+  tlssock.prependListener("end", onConnectEnd);
 
   return tlssock;
 }

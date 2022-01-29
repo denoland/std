@@ -61,7 +61,7 @@ export const DEFAULT_CIPHERS = [
 ].join(":");
 
 function unfqdn(host) {
-  return StringPrototypeReplace(host, /[.]$/, '');
+  return StringPrototypeReplace(host, /[.]$/, "");
 }
 
 // String#toLowerCase() is locale-sensitive so we use
@@ -73,70 +73,84 @@ function toLowerCase(c) {
 function splitHost(host) {
   return StringPrototypeSplit(
     StringPrototypeReplace(unfqdn(host), /[A-Z]/g, toLowerCase),
-    '.'
+    ".",
   );
 }
 
 function check(hostParts, pattern, wildcards) {
   // Empty strings, null, undefined, etc. never match.
-  if (!pattern)
+  if (!pattern) {
     return false;
+  }
 
   const patternParts = splitHost(pattern);
 
-  if (hostParts.length !== patternParts.length)
+  if (hostParts.length !== patternParts.length) {
     return false;
+  }
 
   // Pattern has empty components, e.g. "bad..example.com".
-  if (ArrayPrototypeIncludes(patternParts, ''))
+  if (ArrayPrototypeIncludes(patternParts, "")) {
     return false;
+  }
 
   // RFC 6125 allows IDNA U-labels (Unicode) in names but we have no
   // good way to detect their encoding or normalize them so we simply
   // reject them.  Control characters and blanks are rejected as well
   // because nothing good can come from accepting them.
   const isBad = (s) => RegExpPrototypeTest(/[^\u0021-\u007F]/u, s);
-  if (ArrayPrototypeSome(patternParts, isBad))
+  if (ArrayPrototypeSome(patternParts, isBad)) {
     return false;
+  }
 
   // Check host parts from right to left first.
   for (let i = hostParts.length - 1; i > 0; i -= 1) {
-    if (hostParts[i] !== patternParts[i])
+    if (hostParts[i] !== patternParts[i]) {
       return false;
+    }
   }
 
   const hostSubdomain = hostParts[0];
   const patternSubdomain = patternParts[0];
-  const patternSubdomainParts = StringPrototypeSplit(patternSubdomain, '*');
+  const patternSubdomainParts = StringPrototypeSplit(patternSubdomain, "*");
 
   // Short-circuit when the subdomain does not contain a wildcard.
   // RFC 6125 does not allow wildcard substitution for components
   // containing IDNA A-labels (Punycode) so match those verbatim.
-  if (patternSubdomainParts.length === 1 ||
-      StringPrototypeIncludes(patternSubdomain, 'xn--'))
+  if (
+    patternSubdomainParts.length === 1 ||
+    StringPrototypeIncludes(patternSubdomain, "xn--")
+  ) {
     return hostSubdomain === patternSubdomain;
+  }
 
-  if (!wildcards)
+  if (!wildcards) {
     return false;
+  }
 
   // More than one wildcard is always wrong.
-  if (patternSubdomainParts.length > 2)
+  if (patternSubdomainParts.length > 2) {
     return false;
+  }
 
   // *.tld wildcards are not allowed.
-  if (patternParts.length <= 2)
+  if (patternParts.length <= 2) {
     return false;
+  }
 
   const { 0: prefix, 1: suffix } = patternSubdomainParts;
 
-  if (prefix.length + suffix.length > hostSubdomain.length)
+  if (prefix.length + suffix.length > hostSubdomain.length) {
     return false;
+  }
 
-  if (!StringPrototypeStartsWith(hostSubdomain, prefix))
+  if (!StringPrototypeStartsWith(hostSubdomain, prefix)) {
     return false;
+  }
 
-  if (!StringPrototypeEndsWith(hostSubdomain, suffix))
+  if (!StringPrototypeEndsWith(hostSubdomain, suffix)) {
     return false;
+  }
 
   return true;
 }
@@ -148,37 +162,38 @@ export function checkServerIdentity(hostname, cert) {
   const uriNames = [];
   const ips = [];
 
-  hostname = '' + hostname;
+  hostname = "" + hostname;
 
   if (altNames) {
-    const splitAltNames = StringPrototypeSplit(altNames, ', ');
+    const splitAltNames = StringPrototypeSplit(altNames, ", ");
     ArrayPrototypeForEach(splitAltNames, (name) => {
-      if (StringPrototypeStartsWith(name, 'DNS:')) {
+      if (StringPrototypeStartsWith(name, "DNS:")) {
         ArrayPrototypePush(dnsNames, StringPrototypeSlice(name, 4));
-      } else if (StringPrototypeStartsWith(name, 'URI:')) {
+      } else if (StringPrototypeStartsWith(name, "URI:")) {
         const uri = new URL(StringPrototypeSlice(name, 4));
 
         // TODO(bnoordhuis) Also use scheme.
         ArrayPrototypePush(uriNames, uri.hostname);
-      } else if (StringPrototypeStartsWith(name, 'IP Address:')) {
+      } else if (StringPrototypeStartsWith(name, "IP Address:")) {
         ArrayPrototypePush(ips, canonicalizeIP(StringPrototypeSlice(name, 11)));
       }
     });
   }
 
   let valid = false;
-  let reason = 'Unknown reason';
+  let reason = "Unknown reason";
 
-  const hasAltNames =
-    dnsNames.length > 0 || ips.length > 0 || uriNames.length > 0;
+  const hasAltNames = dnsNames.length > 0 || ips.length > 0 ||
+    uriNames.length > 0;
 
-  hostname = unfqdn(hostname);  // Remove trailing dot for error messages.
+  hostname = unfqdn(hostname); // Remove trailing dot for error messages.
 
   if (net.isIP(hostname)) {
     valid = ArrayPrototypeIncludes(ips, canonicalizeIP(hostname));
-    if (!valid)
+    if (!valid) {
       reason = `IP: ${hostname} is not in the cert's list: ` +
-               ArrayPrototypeJoin(ips, ', ');
+        ArrayPrototypeJoin(ips, ", ");
+    }
     // TODO(bnoordhuis) Also check URI SANs that are IP addresses.
   } else if (hasAltNames || subject) {
     const hostParts = splitHost(hostname);
@@ -187,24 +202,27 @@ export function checkServerIdentity(hostname, cert) {
     if (hasAltNames) {
       const noWildcard = (pattern) => check(hostParts, pattern, false);
       valid = ArrayPrototypeSome(dnsNames, wildcard) ||
-              ArrayPrototypeSome(uriNames, noWildcard);
-      if (!valid)
+        ArrayPrototypeSome(uriNames, noWildcard);
+      if (!valid) {
         reason =
           `Host: ${hostname}. is not in the cert's altnames: ${altNames}`;
+      }
     } else {
       // Match against Common Name only if no supported identifiers exist.
       const cn = subject.CN;
 
-      if (ArrayIsArray(cn))
+      if (ArrayIsArray(cn)) {
         valid = ArrayPrototypeSome(cn, wildcard);
-      else if (cn)
+      } else if (cn) {
         valid = wildcard(cn);
+      }
 
-      if (!valid)
+      if (!valid) {
         reason = `Host: ${hostname}. is not cert's CN: ${cn}`;
+      }
     }
   } else {
-    reason = 'Cert is empty';
+    reason = "Cert is empty";
   }
 
   if (!valid) {
