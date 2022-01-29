@@ -36,10 +36,10 @@ import { watch, watchFile } from "./_fs/_fs_watch.ts";
 // @deno-types="./_fs/_fs_write.d.ts"
 import { write, writeSync } from "./_fs/_fs_write.js";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
-
 import { Stats } from "./internal/fs/utils.js";
+import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
 
-import * as promises from "./fs/promises.ts";
+import { promisify } from "./util.ts";
 
 const {
   F_OK,
@@ -47,6 +47,37 @@ const {
   W_OK,
   X_OK,
 } = constants;
+
+const promises = {
+  access: promisify(access),
+  copyFile: promisify(copyFile),
+  open: promisify(open),
+  // opendir: promisify(opendir),
+  rename: promisify(rename),
+  truncate: promisify(truncate),
+  rm: promisify(rm),
+  rmdir: promisify(rmdir),
+  mkdir: promisify(mkdir),
+  readdir: promisify(readdir),
+  readlink: promisify(readlink),
+  symlink: promisify(symlink),
+  lstat: promisify(lstat),
+  stat: promisify(stat),
+  link: promisify(link),
+  unlink: promisify(unlink),
+  chmod: promisify(chmod),
+  // lchmod: promisify(lchmod),
+  // lchown: promisify(lchown),
+  chown: promisify(chown),
+  utimes: promisify(utimes),
+  // lutimes = promisify(lutimes),
+  realpath: promisify(realpath),
+  mkdtemp: promisify(mkdtemp),
+  writeFile: promisify(writeFile),
+  appendFile: promisify(appendFile),
+  readFile: promisify(readFile),
+  watch: promisify(watch),
+};
 
 export default {
   access,
@@ -62,6 +93,7 @@ export default {
   constants,
   copyFile,
   copyFileSync,
+  createWriteStream,
   Dir,
   Dirent,
   exists,
@@ -120,9 +152,10 @@ export default {
   watch,
   watchFile,
   write,
-  writeSync,
   writeFile,
   writeFileSync,
+  WriteStream,
+  writeSync,
   X_OK,
 };
 
@@ -140,6 +173,7 @@ export {
   constants,
   copyFile,
   copyFileSync,
+  createWriteStream,
   Dir,
   Dirent,
   exists,
@@ -200,6 +234,7 @@ export {
   write,
   writeFile,
   writeFileSync,
+  WriteStream,
   writeSync,
   X_OK,
 };

@@ -32,7 +32,7 @@ import {
   ERR_STREAM_NULL_VALUES,
   ERR_STREAM_WRITE_AFTER_END,
   hideStackFrames,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 import { validateString } from "./internal/validators.js";
 import { isUint8Array } from "./internal/util/types.ts";
 

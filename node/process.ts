@@ -3,12 +3,11 @@
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.js";
-import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { ERR_INVALID_ARG_TYPE } from "./internal/errors.ts";
 import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import {
-  _exiting,
   arch,
   chdir,
   cwd,
@@ -19,6 +18,7 @@ import {
   version,
   versions,
 } from "./_process/process.ts";
+import { _exiting } from "./_process/exiting.ts";
 export {
   _nextTick as nextTick,
   arch,
@@ -30,7 +30,18 @@ export {
   version,
   versions,
 };
-import { stderr, stdin, stdout } from "./_process/streams.ts";
+import {
+  stderr as stderr_,
+  stdin as stdin_,
+  stdout as stdout_,
+} from "./_process/streams.js";
+// TODO(kt3k): Give better types to stdio objects
+// deno-lint-ignore no-explicit-any
+const stderr = stderr_ as any;
+// deno-lint-ignore no-explicit-any
+const stdin = stdin_ as any;
+// deno-lint-ignore no-explicit-any
+const stdout = stdout_ as any;
 export { stderr, stdin, stdout };
 import { getBinding } from "./internal_binding/mod.ts";
 import type { BindingName } from "./internal_binding/mod.ts";
@@ -55,9 +66,14 @@ Object.defineProperty(argv, "0", { get: Deno.execPath });
 Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
-export const exit = (code?: number) => {
+export const exit = (code?: number | string) => {
   if (code || code === 0) {
-    process.exitCode = code;
+    if (typeof code === "string") {
+      const parsedCode = parseInt(code);
+      process.exitCode = isNaN(parsedCode) ? undefined : parsedCode;
+    } else {
+      process.exitCode = code;
+    }
   }
 
   if (!process._exiting) {
@@ -401,6 +417,12 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#processexecpath */
   get execPath() {
     return argv[0];
+  }
+
+  #startTime = Date.now();
+  /** https://nodejs.org/api/process.html#processuptime */
+  uptime() {
+    return (Date.now() - this.#startTime) / 1000;
   }
 }
 

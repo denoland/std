@@ -10,9 +10,15 @@ import {
 import { validateString } from "./internal/validators.js";
 import {
   ERR_CHILD_PROCESS_IPC_REQUIRED,
+  ERR_CHILD_PROCESS_STDIO_MAXBUFFER,
   ERR_INVALID_ARG_VALUE,
-} from "./_errors.ts";
+  ERR_OUT_OF_RANGE,
+} from "./internal/errors.ts";
+import { getSystemErrorName } from "./util.ts";
 import { process } from "./process.ts";
+import { Buffer } from "./buffer.ts";
+
+const MAX_BUFFER = 1024 * 1024;
 
 const denoCompatArgv = [
   "run",
@@ -116,8 +122,303 @@ export function spawn(
   return new ChildProcess(command, args, options);
 }
 
-export function execFile() {
-  throw new Error("not implemented");
+interface ExecFileOptions extends ChildProcessOptions {
+  encoding?: string;
+  timeout?: number;
+  maxBuffer?: number;
+  killSignal?: string;
+}
+interface ChildProcessError extends Error {
+  code?: string | number;
+  killed?: boolean;
+  signal?: string;
+  cmd?: string;
+}
+class ExecFileError extends Error implements ChildProcessError {
+  code?: string | number;
+
+  constructor(message: string) {
+    super(message);
+    this.code = "UNKNOWN";
+  }
+}
+type ExecFileCallback = (
+  error: ChildProcessError | null,
+  stdout?: string | Buffer,
+  stderr?: string | Buffer,
+) => void;
+export function execFile(file: string): ChildProcess;
+export function execFile(
+  file: string,
+  callback: ExecFileCallback,
+): ChildProcess;
+export function execFile(file: string, args: string[]): ChildProcess;
+export function execFile(
+  file: string,
+  args: string[],
+  callback: ExecFileCallback,
+): ChildProcess;
+export function execFile(file: string, options: ExecFileOptions): ChildProcess;
+export function execFile(
+  file: string,
+  options: ExecFileOptions,
+  callback: ExecFileCallback,
+): ChildProcess;
+export function execFile(
+  file: string,
+  args: string[],
+  options: ExecFileOptions,
+  callback: ExecFileCallback,
+): ChildProcess;
+export function execFile(
+  file: string,
+  argsOrOptionsOrCallback?: string[] | ExecFileOptions | ExecFileCallback,
+  optionsOrCallback?: ExecFileOptions | ExecFileCallback,
+  maybeCallback?: ExecFileCallback,
+): ChildProcess {
+  let args: string[] = [];
+  let options: ExecFileOptions = {};
+  let callback: ExecFileCallback | undefined;
+
+  if (Array.isArray(argsOrOptionsOrCallback)) {
+    args = argsOrOptionsOrCallback;
+  } else if (argsOrOptionsOrCallback instanceof Function) {
+    callback = argsOrOptionsOrCallback;
+  } else if (argsOrOptionsOrCallback) {
+    options = argsOrOptionsOrCallback;
+  }
+  if (optionsOrCallback instanceof Function) {
+    callback = optionsOrCallback;
+  } else if (optionsOrCallback) {
+    options = optionsOrCallback;
+    callback = maybeCallback;
+  }
+
+  const execOptions = {
+    encoding: "utf8",
+    timeout: 0,
+    maxBuffer: MAX_BUFFER,
+    killSignal: "SIGTERM",
+    ...options,
+  };
+  if (!Number.isInteger(execOptions.timeout) || execOptions.timeout < 0) {
+    // TODO(Nautigsam) In Node source, the first argument to error constructor is "timeout" instead of "options.timeout".
+    // timeout is indeed a member of options object.
+    // If this is an error in Node, do we have to stick with it anyway for compatibility reason?
+    throw new ERR_OUT_OF_RANGE(
+      "options.timeout",
+      "an unsigned integer",
+      execOptions.timeout,
+    );
+  }
+  if (execOptions.maxBuffer < 0) {
+    throw new ERR_OUT_OF_RANGE(
+      "options.maxBuffer",
+      "a positive number",
+      execOptions.maxBuffer,
+    );
+  }
+  const spawnOptions = {
+    shell: false,
+    ...options,
+  };
+
+  const child = spawn(file, args, spawnOptions);
+
+  let encoding: string | null;
+  const _stdout: Uint8Array[] = [];
+  const _stderr: Uint8Array[] = [];
+  if (
+    execOptions.encoding !== "buffer" && Buffer.isEncoding(execOptions.encoding)
+  ) {
+    encoding = execOptions.encoding;
+  } else {
+    encoding = null;
+  }
+  let stdoutLen = 0;
+  let stderrLen = 0;
+  let exited = false;
+  let timeoutId: number | null;
+
+  let ex: ChildProcessError | null = null;
+
+  let cmd = file;
+
+  function exithandler(code = 0, signal?: string) {
+    if (exited) return;
+    exited = true;
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+
+    if (!callback) return;
+
+    // merge chunks
+    let stdout;
+    let stderr;
+    if (
+      encoding ||
+      (
+        child.stdout &&
+        child.stdout.readableEncoding
+      )
+    ) {
+      stdout = _stdout.join("");
+    } else {
+      stdout = Buffer.concat(_stdout);
+    }
+    if (
+      encoding ||
+      (
+        child.stderr &&
+        child.stderr.readableEncoding
+      )
+    ) {
+      stderr = _stderr.join("");
+    } else {
+      stderr = Buffer.concat(_stderr);
+    }
+
+    if (!ex && code === 0 && signal === null) {
+      callback(null, stdout, stderr);
+      return;
+    }
+
+    if (args?.length) {
+      cmd += ` ${args.join(" ")}`;
+    }
+
+    if (!ex) {
+      ex = new ExecFileError(
+        "Command failed: " + cmd + "\n" + stderr,
+      );
+      ex.code = code < 0 ? getSystemErrorName(code) : code;
+      ex.killed = child.killed;
+      ex.signal = signal;
+    }
+
+    ex.cmd = cmd;
+    callback(ex, stdout, stderr);
+  }
+
+  function errorhandler(e: ExecFileError) {
+    ex = e;
+
+    if (child.stdout) {
+      child.stdout.destroy();
+    }
+
+    if (child.stderr) {
+      child.stderr.destroy();
+    }
+
+    exithandler();
+  }
+
+  function kill() {
+    if (child.stdout) {
+      child.stdout.destroy();
+    }
+
+    if (child.stderr) {
+      child.stderr.destroy();
+    }
+
+    try {
+      child.kill(/** TODO use execOptions.killSignal */);
+    } catch (e) {
+      if (e) {
+        ex = e as ChildProcessError;
+      }
+      exithandler();
+    }
+  }
+
+  if (execOptions.timeout > 0) {
+    timeoutId = setTimeout(function delayedKill() {
+      kill();
+      timeoutId = null;
+    }, execOptions.timeout);
+  }
+
+  if (child.stdout) {
+    if (encoding) {
+      child.stdout.setEncoding(encoding);
+    }
+
+    child.stdout.on("data", function onChildStdout(chunk: string | Buffer) {
+      const encoding = child.stdout?.readableEncoding;
+
+      let chunkBuffer: Buffer;
+      if (Buffer.isBuffer(chunk)) {
+        chunkBuffer = chunk;
+      } else {
+        if (encoding) {
+          chunkBuffer = Buffer.from(chunk as string, encoding);
+        } else {
+          // TODO choose what to do if encoding is not set but chunk is a string (should not happen)
+          chunkBuffer = Buffer.from("");
+        }
+      }
+
+      const length = chunkBuffer.length;
+      stdoutLen += length;
+
+      if (stdoutLen > execOptions.maxBuffer) {
+        const truncatedLen = execOptions.maxBuffer - (stdoutLen - length);
+        const truncatedSlice = chunkBuffer.slice(0, truncatedLen).valueOf();
+        _stdout.push(truncatedSlice);
+
+        ex = new ERR_CHILD_PROCESS_STDIO_MAXBUFFER("stdout");
+        kill();
+      } else {
+        _stdout.push(chunkBuffer.valueOf());
+      }
+    });
+  }
+
+  if (child.stderr) {
+    if (encoding) {
+      child.stderr.setEncoding(encoding);
+    }
+
+    child.stderr.on("data", function onChildStderr(chunk: string | Buffer) {
+      const encoding = child.stderr?.readableEncoding;
+
+      let chunkBuffer: Buffer;
+      if (Buffer.isBuffer(chunk)) {
+        chunkBuffer = chunk;
+      } else {
+        if (encoding) {
+          chunkBuffer = Buffer.from(chunk as string, encoding);
+        } else {
+          // TODO choose what to do if encoding is not set but chunk is a string (should not happen)
+          chunkBuffer = Buffer.from("");
+        }
+      }
+
+      const length = chunkBuffer.length;
+      stderrLen += length;
+
+      if (stderrLen > execOptions.maxBuffer) {
+        const truncatedLen = execOptions.maxBuffer - (stderrLen - length);
+        const truncatedSlice = chunkBuffer.slice(0, truncatedLen).valueOf();
+        _stderr.push(truncatedSlice);
+
+        ex = new ERR_CHILD_PROCESS_STDIO_MAXBUFFER("stderr");
+        kill();
+      } else {
+        _stderr.push(chunkBuffer.valueOf());
+      }
+    });
+  }
+
+  child.addListener("close", exithandler);
+  child.addListener("error", errorhandler);
+
+  return child;
 }
 
 export default { fork, spawn, execFile, ChildProcess };

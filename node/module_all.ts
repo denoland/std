@@ -37,7 +37,7 @@ import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
-import internalErrors from "./internal/errors.js";
+import internalErrors from "./internal/errors.ts";
 import internalHttp from "./internal/http.ts";
 import internalReadlineUtils from "./internal/readline/utils.js";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.js";

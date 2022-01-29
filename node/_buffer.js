@@ -5,13 +5,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // Copyright Feross Aboukhadijeh, and other contributors. All rights reserved. MIT license.
 
-import {
-  ERR_BUFFER_OUT_OF_BOUNDS,
-  ERR_INVALID_ARG_TYPE,
-  ERR_INVALID_ARG_VALUE,
-  ERR_OUT_OF_RANGE,
-  ERR_UNKNOWN_ENCODING,
-} from "./_errors.ts";
+import { codes } from "./internal/error_codes.ts";
 import { isAnyArrayBuffer, isArrayBufferView } from "./internal/util/types.ts";
 import { normalizeEncoding } from "./internal/util.js";
 import {
@@ -136,7 +130,7 @@ function createBuffer(length) {
 export function Buffer(arg, encodingOrOffset, length) {
   if (typeof arg === "number") {
     if (typeof encodingOrOffset === "string") {
-      throw new ERR_INVALID_ARG_TYPE(
+      throw new codes.ERR_INVALID_ARG_TYPE(
         "string",
         "string",
         arg,
@@ -181,7 +175,7 @@ function _from(value, encodingOrOffset, length) {
     }
   }
 
-  throw new ERR_INVALID_ARG_TYPE(
+  throw new codes.ERR_INVALID_ARG_TYPE(
     "first argument",
     ["string", "Buffer", "ArrayBuffer", "Array", "Array-like Object"],
     value,
@@ -199,7 +193,7 @@ Object.setPrototypeOf(Buffer, Uint8Array);
 function assertSize(size) {
   validateNumber(size, "size");
   if (!(size >= 0 && size <= kMaxLength)) {
-    throw new ERR_INVALID_ARG_VALUE.RangeError("size", size);
+    throw new codes.ERR_INVALID_ARG_VALUE.RangeError("size", size);
   }
 }
 
@@ -331,7 +325,7 @@ Buffer.isEncoding = function isEncoding(encoding) {
 
 Buffer.concat = function concat(list, length) {
   if (!Array.isArray(list)) {
-    throw new ERR_INVALID_ARG_TYPE("list", "Array", list);
+    throw new codes.ERR_INVALID_ARG_TYPE("list", "Array", list);
   }
 
   if (list.length === 0) {
@@ -356,7 +350,7 @@ Buffer.concat = function concat(list, length) {
     if (!isUint8Array(buf)) {
       // TODO(BridgeAR): This should not be of type ERR_INVALID_ARG_TYPE.
       // Instead, find the proper error code for this.
-      throw new ERR_INVALID_ARG_TYPE(
+      throw new codes.ERR_INVALID_ARG_TYPE(
         `list[${i}]`,
         ["Buffer", "Uint8Array"],
         list[i],
@@ -382,7 +376,7 @@ function byteLength(string, encoding) {
       return string.byteLength;
     }
 
-    throw new ERR_INVALID_ARG_TYPE(
+    throw new codes.ERR_INVALID_ARG_TYPE(
       "string",
       ["string", "Buffer", "ArrayBuffer"],
       string,
@@ -484,7 +478,7 @@ Buffer.prototype.toString = function toString(encoding, start, end) {
 
   const ops = getEncodingOps(encoding);
   if (ops === undefined) {
-    throw new ERR_UNKNOWN_ENCODING(encoding);
+    throw new codes.ERR_UNKNOWN_ENCODING(encoding);
   }
 
   return ops.slice(this, start, end);
@@ -494,7 +488,7 @@ Buffer.prototype.toLocaleString = Buffer.prototype.toString;
 
 Buffer.prototype.equals = function equals(b) {
   if (!isUint8Array(b)) {
-    throw new ERR_INVALID_ARG_TYPE(
+    throw new codes.ERR_INVALID_ARG_TYPE(
       "otherBuffer",
       ["Buffer", "Uint8Array"],
       b,
@@ -531,7 +525,7 @@ Buffer.prototype.compare = function compare(
     target = Buffer.from(target, target.offset, target.byteLength);
   }
   if (!Buffer.isBuffer(target)) {
-    throw new ERR_INVALID_ARG_TYPE(
+    throw new codes.ERR_INVALID_ARG_TYPE(
       "target",
       ["Buffer", "Uint8Array"],
       target,
@@ -566,7 +560,7 @@ Buffer.prototype.compare = function compare(
     start < 0 || end > target.length || thisStart < 0 ||
     thisEnd > this.length
   ) {
-    throw new ERR_OUT_OF_RANGE("out of range index", "range");
+    throw new codes.ERR_OUT_OF_RANGE("out of range index", "range");
   }
 
   if (thisStart >= thisEnd && start >= end) {
@@ -636,7 +630,7 @@ function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
 
   if (typeof val === "string") {
     if (ops === undefined) {
-      throw new ERR_UNKNOWN_ENCODING(encoding);
+      throw new codes.ERR_UNKNOWN_ENCODING(encoding);
     }
     return ops.indexOf(buffer, val, byteOffset, dir);
   }
@@ -648,7 +642,7 @@ function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
     return indexOfBuffer(buffer, val, byteOffset, encodingVal, dir);
   }
 
-  throw new ERR_INVALID_ARG_TYPE(
+  throw new codes.ERR_INVALID_ARG_TYPE(
     "value",
     ["number", "string", "Buffer", "Uint8Array"],
     val,
@@ -816,7 +810,7 @@ Buffer.prototype.write = function write(string, offset, length, encoding) {
 
   const ops = getEncodingOps(encoding);
   if (ops === undefined) {
-    throw new ERR_UNKNOWN_ENCODING(encoding);
+    throw new codes.ERR_UNKNOWN_ENCODING(encoding);
   }
   return ops.write(this, string, offset, length);
 };
@@ -841,7 +835,7 @@ function fromArrayBuffer(obj, byteOffset, length) {
   const maxLength = obj.byteLength - byteOffset;
 
   if (maxLength < 0) {
-    throw new ERR_BUFFER_OUT_OF_BOUNDS("offset");
+    throw new codes.ERR_BUFFER_OUT_OF_BOUNDS("offset");
   }
 
   if (length === undefined) {
@@ -851,7 +845,7 @@ function fromArrayBuffer(obj, byteOffset, length) {
     length = +length;
     if (length > 0) {
       if (length > maxLength) {
-        throw new ERR_BUFFER_OUT_OF_BOUNDS("length");
+        throw new codes.ERR_BUFFER_OUT_OF_BOUNDS("length");
       }
     } else {
       length = 0;
@@ -1022,7 +1016,7 @@ Buffer.prototype.readUintLE = Buffer.prototype.readUIntLE = function readUIntLE(
   byteLength,
 ) {
   if (offset === undefined) {
-    throw new ERR_INVALID_ARG_TYPE("offset", "number", offset);
+    throw new codes.ERR_INVALID_ARG_TYPE("offset", "number", offset);
   }
   if (byteLength === 6) {
     return readUInt48LE(this, offset);
@@ -1051,7 +1045,7 @@ Buffer.prototype.readUintBE = Buffer.prototype.readUIntBE = function readUIntBE(
   byteLength,
 ) {
   if (offset === undefined) {
-    throw new ERR_INVALID_ARG_TYPE("offset", "number", offset);
+    throw new codes.ERR_INVALID_ARG_TYPE("offset", "number", offset);
   }
   if (byteLength === 6) {
     return readUInt48BE(this, offset);
@@ -1160,7 +1154,7 @@ Buffer.prototype.readIntLE = function readIntLE(
   byteLength,
 ) {
   if (offset === undefined) {
-    throw new ERR_INVALID_ARG_TYPE("offset", "number", offset);
+    throw new codes.ERR_INVALID_ARG_TYPE("offset", "number", offset);
   }
   if (byteLength === 6) {
     return readInt48LE(this, offset);
@@ -1186,7 +1180,7 @@ Buffer.prototype.readIntLE = function readIntLE(
 
 Buffer.prototype.readIntBE = function readIntBE(offset, byteLength) {
   if (offset === undefined) {
-    throw new ERR_INVALID_ARG_TYPE("offset", "number", offset);
+    throw new codes.ERR_INVALID_ARG_TYPE("offset", "number", offset);
   }
   if (byteLength === 6) {
     return readInt48BE(this, offset);
@@ -1633,7 +1627,7 @@ Buffer.prototype.copy = function copy(
   sourceEnd,
 ) {
   if (!isUint8Array(this)) {
-    throw new ERR_INVALID_ARG_TYPE(
+    throw new codes.ERR_INVALID_ARG_TYPE(
       "source",
       ["Buffer", "Uint8Array"],
       this,
@@ -1641,7 +1635,7 @@ Buffer.prototype.copy = function copy(
   }
 
   if (!isUint8Array(target)) {
-    throw new ERR_INVALID_ARG_TYPE(
+    throw new codes.ERR_INVALID_ARG_TYPE(
       "target",
       ["Buffer", "Uint8Array"],
       target,
@@ -1653,7 +1647,7 @@ Buffer.prototype.copy = function copy(
   } else {
     targetStart = toInteger(targetStart, 0);
     if (targetStart < 0) {
-      throw new ERR_OUT_OF_RANGE("targetStart", ">= 0", targetStart);
+      throw new codes.ERR_OUT_OF_RANGE("targetStart", ">= 0", targetStart);
     }
   }
 
@@ -1662,7 +1656,7 @@ Buffer.prototype.copy = function copy(
   } else {
     sourceStart = toInteger(sourceStart, 0);
     if (sourceStart < 0) {
-      throw new ERR_OUT_OF_RANGE("sourceStart", ">= 0", sourceStart);
+      throw new codes.ERR_OUT_OF_RANGE("sourceStart", ">= 0", sourceStart);
     }
   }
 
@@ -1671,7 +1665,7 @@ Buffer.prototype.copy = function copy(
   } else {
     sourceEnd = toInteger(sourceEnd, 0);
     if (sourceEnd < 0) {
-      throw new ERR_OUT_OF_RANGE("sourceEnd", ">= 0", sourceEnd);
+      throw new codes.ERR_OUT_OF_RANGE("sourceEnd", ">= 0", sourceEnd);
     }
   }
 
@@ -1792,7 +1786,7 @@ function checkIntBI(value, min, max, buf, offset, byteLength2) {
     } else {
       range = `>= ${min}${n} and <= ${max}${n}`;
     }
-    throw new ERR_OUT_OF_RANGE("value", range, value);
+    throw new codes.ERR_OUT_OF_RANGE("value", range, value);
   }
   checkBounds(buf, offset, byteLength2);
 }

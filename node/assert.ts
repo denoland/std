@@ -12,7 +12,7 @@ import {
   ERR_INVALID_ARG_VALUE,
   ERR_INVALID_RETURN_VALUE,
   ERR_MISSING_ARGS,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 
 interface ExtendedAssertionErrorConstructorOptions
   extends AssertionErrorConstructorOptions {

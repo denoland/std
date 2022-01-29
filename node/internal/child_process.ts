@@ -11,7 +11,7 @@ import { iterateReader, writeAll } from "../../streams/conversion.ts";
 import { isWindows } from "../../_util/os.ts";
 import { Buffer } from "../buffer.ts";
 import { nextTick } from "../_next_tick.ts";
-import { ERR_INVALID_ARG_VALUE } from "../_errors.ts";
+import { ERR_INVALID_ARG_VALUE } from "./errors.ts";
 import { mapValues } from "../../collections/map_values.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
@@ -175,8 +175,8 @@ export class ChildProcess extends EventEmitter {
   /**
    * @param signal NOTE: this parameter is not yet implemented.
    */
-  kill(signal?: number): boolean {
-    if (signal != null) {
+  kill(signal?: number | string): boolean {
+    if (signal !== undefined) {
       notImplemented("`ChildProcess.kill()` with the `signal` parameter");
     }
 

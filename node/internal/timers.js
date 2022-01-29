@@ -4,7 +4,7 @@
 import { notImplemented } from "../_utils.ts";
 import { inspect } from "./util/inspect.js";
 import { validateNumber } from "./validators.js";
-import { ERR_OUT_OF_RANGE } from "../_errors.ts";
+import { ERR_OUT_OF_RANGE } from "./errors.ts";
 import { emitWarning } from "../process.ts";
 
 // Timeout values > TIMEOUT_MAX are set to 1.

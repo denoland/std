@@ -26,7 +26,7 @@ import {
   AI_ALL,
   AI_V4MAPPED,
 } from "../internal_binding/cares_wrap.ts";
-import { ERR_INVALID_ARG_VALUE } from "../_errors.ts";
+import { ERR_INVALID_ARG_VALUE } from "../internal/errors.ts";
 
 export function validateHints(hints: number) {
   if ((hints & ~(AI_ADDRCONFIG | AI_ALL | AI_V4MAPPED)) !== 0) {

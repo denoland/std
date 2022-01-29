@@ -3,7 +3,7 @@ import {
   validateRmOptions,
   validateRmOptionsSync,
 } from "../internal/fs/utils.js";
-import { denoErrorToNodeError } from "../_errors.ts";
+import { denoErrorToNodeError } from "../internal/errors.ts";
 type rmOptions = {
   force?: boolean;
   maxRetries?: number;

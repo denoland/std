@@ -2,7 +2,7 @@
 
 import EventEmitter from "./events.ts";
 import http from "./http.ts";
-import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
+import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { deferred } from "../async/deferred.ts";
 

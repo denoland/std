@@ -8,14 +8,14 @@ import { getDefaultHighWaterMark, getHighWaterMark } from "./state.js";
 import { prependListener, Stream } from "./legacy.js";
 import { StringDecoder } from "../../string_decoder.ts";
 import { validateObject } from "../validators.js";
-import { Writable } from "./writable.js";
 import {
   ERR_INVALID_ARG_TYPE,
   ERR_METHOD_NOT_IMPLEMENTED,
   ERR_STREAM_PUSH_AFTER_EOF,
   ERR_STREAM_UNSHIFT_AFTER_END_EVENT,
-} from "../../_errors.ts";
-import * as process from "../../_process/process.ts";
+} from "../errors.ts";
+import { nextTick } from "../../_next_tick.ts";
+import { stdio } from "../../_process/stdio.js";
 import _from from "./from.js";
 import BufferList from "./buffer_list.js";
 import destroyImpl from "./destroy.js";
@@ -558,7 +558,7 @@ function emitReadable(stream) {
   if (!state.emittedReadable) {
     debug("emitReadable", state.flowing);
     state.emittedReadable = true;
-    process.nextTick(emitReadable_, stream);
+    nextTick(emitReadable_, stream);
   }
 }
 
@@ -591,7 +591,7 @@ function emitReadable_(stream) {
 function maybeReadMore(stream, state) {
   if (!state.readingMore && state.constructed) {
     state.readingMore = true;
-    process.nextTick(maybeReadMore_, stream, state);
+    nextTick(maybeReadMore_, stream, state);
   }
 }
 
@@ -660,12 +660,12 @@ Readable.prototype.pipe = function (dest, pipeOpts) {
   debug("pipe count=%d opts=%j", state.pipes.length, pipeOpts);
 
   const doEnd = (!pipeOpts || pipeOpts.end !== false) &&
-    dest !== stdout &&
-    dest !== stderr;
+    dest !== stdio.stdout &&
+    dest !== stdio.stderr;
 
   const endFn = doEnd ? onend : unpipe;
   if (state.endEmitted) {
-    process.nextTick(endFn);
+    nextTick(endFn);
   } else {
     src.once("end", endFn);
   }
@@ -895,7 +895,7 @@ Readable.prototype.on = function (ev, fn) {
       if (state.length) {
         emitReadable(this);
       } else if (!state.reading) {
-        process.nextTick(nReadingNextTick, this);
+        nextTick(nReadingNextTick, this);
       }
     }
   }
@@ -914,7 +914,7 @@ Readable.prototype.removeListener = function (ev, fn) {
     // support once('readable', fn) cycles. This means that calling
     // resume within the same tick will have no
     // effect.
-    process.nextTick(updateReadableListening, this);
+    nextTick(updateReadableListening, this);
   }
 
   return res;
@@ -931,7 +931,7 @@ Readable.prototype.removeAllListeners = function (ev) {
     // support once('readable', fn) cycles. This means that calling
     // resume within the same tick will have no
     // effect.
-    process.nextTick(updateReadableListening, this);
+    nextTick(updateReadableListening, this);
   }
 
   return res;
@@ -978,7 +978,7 @@ Readable.prototype.resume = function () {
 function resume(stream, state) {
   if (!state.resumeScheduled) {
     state.resumeScheduled = true;
-    process.nextTick(resume_, stream, state);
+    nextTick(resume_, stream, state);
   }
 }
 
@@ -1328,7 +1328,7 @@ function endReadable(stream) {
   debug("endReadable", state.endEmitted);
   if (!state.endEmitted) {
     state.ended = true;
-    process.nextTick(endReadableNT, state, stream);
+    nextTick(endReadableNT, state, stream);
   }
 }
 
@@ -1344,7 +1344,7 @@ function endReadableNT(state, stream) {
     stream.emit("end");
 
     if (stream.writable && stream.allowHalfOpen === false) {
-      process.nextTick(endWritableNT, stream);
+      nextTick(endWritableNT, stream);
     } else if (state.autoDestroy) {
       // In case of duplex streams we need a way to detect
       // if the writable side is ready for autoDestroy as well.
@@ -1394,67 +1394,3 @@ Readable.wrap = wrap;
 
 export default Readable;
 export { fromList as _fromList, readableFrom as from, ReadableState, wrap };
-
-// https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
-function createWritableStdioStream(writer, name) {
-  const stream = new Writable({
-    write(buf, enc, cb) {
-      if (!writer) {
-        this.destroy(
-          new Error(`Deno.${name} is not available in this environment`),
-        );
-        return;
-      }
-      writer.writeSync(buf instanceof Uint8Array ? buf : Buffer.from(buf, enc));
-      cb();
-    },
-    destroy(err, cb) {
-      cb(err);
-      this._undestroy();
-      if (!this._writableState.emitClose) {
-        nextTick(() => this.emit("close"));
-      }
-    },
-  });
-  stream.fd = writer?.rid ?? -1;
-  stream.destroySoon = stream.destroy;
-  stream._isStdio = true;
-  stream.once("close", () => writer?.close());
-  Object.defineProperties(stream, {
-    columns: {
-      enumerable: true,
-      configurable: true,
-      get: () =>
-        Deno.isatty?.(writer?.rid)
-          ? Deno.consoleSize?.(writer?.rid).columns
-          : undefined,
-    },
-    rows: {
-      enumerable: true,
-      configurable: true,
-      get: () =>
-        Deno.isatty?.(writer?.rid)
-          ? Deno.consoleSize?.(writer?.rid).rows
-          : undefined,
-    },
-    isTTY: {
-      enumerable: true,
-      configurable: true,
-      get: () => Deno.isatty?.(writer?.rid),
-    },
-    getWindowSize: {
-      enumerable: true,
-      configurable: true,
-      value: () =>
-        Deno.isatty?.(writer?.rid)
-          ? Object.values(Deno.consoleSize?.(writer?.rid))
-          : undefined,
-    },
-  });
-  return stream;
-}
-
-// The following are exports of the process module, they have to be instantiated here to prevent
-// a circular dependency between the process module and the stream module
-export const stderr = createWritableStdioStream(Deno.stderr, "stderr");
-export const stdout = createWritableStdioStream(Deno.stdout, "stdout");

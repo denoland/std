@@ -20,7 +20,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { charLengthAt, CSI, emitKeys } from "./utils.js";
-import { kSawKeyPress } from "./interface.js";
+import { kSawKeyPress } from "./symbols.js";
 import { clearTimeout, setTimeout } from "../../timers.ts";
 
 const {

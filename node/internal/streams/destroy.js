@@ -1,8 +1,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { aggregateTwoErrors } from "../errors.js";
-import { ERR_MULTIPLE_CALLBACK } from "../../_errors.ts";
+import { aggregateTwoErrors, ERR_MULTIPLE_CALLBACK } from "../errors.ts";
 import * as process from "../../_process/process.ts";
 
 const kDestroy = Symbol("kDestroy");

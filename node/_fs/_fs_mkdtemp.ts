@@ -4,7 +4,7 @@ import { mkdir, mkdirSync } from "./_fs_mkdir.ts";
 import {
   ERR_INVALID_CALLBACK,
   ERR_INVALID_OPT_VALUE_ENCODING,
-} from "../_errors.ts";
+} from "../internal/errors.ts";
 
 export type mkdtempCallback = (
   err: Error | null,

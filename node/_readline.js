@@ -30,7 +30,7 @@ import {
 import { emitKeypressEvents } from "./internal/readline/emitKeypressEvents.js";
 import { validateAbortSignal } from "./internal/validators.js";
 import { promisify } from "./internal/util.js";
-import { AbortError } from "./_errors.ts";
+import { AbortError } from "./internal/errors.ts";
 
 import {
   Interface as _Interface,

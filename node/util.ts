@@ -9,7 +9,8 @@ import {
   inspect,
   stripVTControlCharacters,
 } from "./internal/util/inspect.js";
-import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
+import { codes } from "./internal/error_codes.ts";
+import { errorMap } from "./internal_binding/uv.ts";
 import types from "./util/types.js";
 import { Buffer } from "./buffer.ts";
 import { isDeepStrictEqual } from "./internal/util/comparisons.ts";
@@ -127,10 +128,10 @@ export function _extend(
  */
 export function getSystemErrorName(code: number): string | undefined {
   if (typeof code !== "number") {
-    throw new ERR_INVALID_ARG_TYPE("err", "number", code);
+    throw new codes.ERR_INVALID_ARG_TYPE("err", "number", code);
   }
   if (code >= 0 || !NumberIsSafeInteger(code)) {
-    throw new ERR_OUT_OF_RANGE("err", "a negative integer", code);
+    throw new codes.ERR_OUT_OF_RANGE("err", "a negative integer", code);
   }
   return errorMap.get(code)?.[0];
 }
@@ -145,15 +146,15 @@ export function inherits<T, U>(
   superCtor: new (...args: unknown[]) => U,
 ) {
   if (ctor === undefined || ctor === null) {
-    throw new ERR_INVALID_ARG_TYPE("ctor", "Function", ctor);
+    throw new codes.ERR_INVALID_ARG_TYPE("ctor", "Function", ctor);
   }
 
   if (superCtor === undefined || superCtor === null) {
-    throw new ERR_INVALID_ARG_TYPE("superCtor", "Function", superCtor);
+    throw new codes.ERR_INVALID_ARG_TYPE("superCtor", "Function", superCtor);
   }
 
   if (superCtor.prototype === undefined) {
-    throw new ERR_INVALID_ARG_TYPE(
+    throw new codes.ERR_INVALID_ARG_TYPE(
       "superCtor.prototype",
       "Object",
       superCtor.prototype,

@@ -12,7 +12,7 @@ import {
   WriteFileOptions,
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
-import { AbortError, denoErrorToNodeError } from "../_errors.ts";
+import { AbortError, denoErrorToNodeError } from "../internal/errors.ts";
 import { validateStringAfterArrayBufferView } from "../internal/fs/utils.js";
 
 export function writeFile(
