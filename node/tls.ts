@@ -252,19 +252,21 @@ export function createSecurePair() {
 }
 
 export default {
+  CryptoStream,
+  SecurePair,
+  Server,
+  TLSSocket: _tls_wrap.TLSSocket,
+  checkServerIdentity,
+  connect: _tls_wrap.connect,
+  createSecureContext: _tls_common.createSecureContext,
+  createSecurePair,
+  createServer: _tls_wrap.createServer,
+  getCiphers,
+  rootCertificates,
   DEFAULT_CIPHERS,
   DEFAULT_ECDH_CURVE,
   DEFAULT_MAX_VERSION,
   DEFAULT_MIN_VERSION,
-  checkServerIdentity,
-  createSecurePair,
-  CryptoStream,
-  SecurePair,
-  Server,
-  createSecureContext: _tls_common.createSecureContext,
-  TLSSocket: _tls_wrap.TLSSocket,
-  createServer: _tls_wrap.createServer,
-  connect: _tls_wrap.connect,
 };
 
 export const createSecureContext = _tls_common.createSecureContext;
