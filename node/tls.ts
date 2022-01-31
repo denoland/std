@@ -267,3 +267,10 @@ export default {
   createServer: _tls_wrap.createServer,
   connect: _tls_wrap.connect,
 };
+
+export const createSecureContext = _tls_common.createSecureContext;
+export const SecureContext = _tls_common.SecureContext;
+export const TLSSocket = _tls_wrap.TLSSocket;
+export const Server = _tls_wrap.Server;
+export const createServer = _tls_wrap.createServer;
+export const connect = _tls_wrap.connect;
