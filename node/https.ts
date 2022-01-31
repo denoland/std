@@ -8,6 +8,8 @@ import {
   IncomingMessageForClient as IncomingMessage,
   type RequestOptions,
 } from "./http.ts";
+import { TLSSocket } from "./tls.ts";
+import type { Socket } from "./net.ts";
 
 export class Agent {
   constructor() {
@@ -79,6 +81,10 @@ class HttpsClientRequest extends ClientRequest {
     const caCert = await Deno.readTextFile(certFilename);
     caCerts = [caCert];
     return Deno.createHttpClient({ caCerts });
+  }
+
+  _createSocket(): Socket {
+    return new TLSSocket({});
   }
 }
 
