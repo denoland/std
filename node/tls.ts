@@ -21,7 +21,8 @@ import {
   StringPrototypeSplit,
   StringPrototypeStartsWith,
 } from "./internal/primordials.js";
-
+import { ERR_TLS_CERT_ALTNAME_INVALID } from "./internal/errors.ts";
+import { notImplemented } from "./_utils.ts";
 import net from "./net.ts";
 import _tls_common from "./_tls_common.ts";
 import _tls_wrap from "./_tls_wrap.ts";
@@ -59,17 +60,17 @@ export const DEFAULT_CIPHERS = [
   "ECDHE-RSA-CHACHA20-POLY1305",
 ].join(":");
 
-function unfqdn(host) {
+function unfqdn(host: string): string {
   return StringPrototypeReplace(host, /[.]$/, "");
 }
 
 // String#toLowerCase() is locale-sensitive so we use
 // a conservative version that only lowercases A-Z.
-function toLowerCase(c) {
+function toLowerCase(c: string): string {
   return StringFromCharCode(32 + StringPrototypeCharCodeAt(c, 0));
 }
 
-function splitHost(host) {
+function splitHost(host: string): string {
   return StringPrototypeSplit(
     StringPrototypeReplace(unfqdn(host), /[A-Z]/g, toLowerCase),
     ".",
@@ -158,7 +159,7 @@ export function checkServerIdentity(hostname, cert) {
   const subject = cert.subject;
   const altNames = cert.subjectaltname;
   const dnsNames = [];
-  const uriNames = [];
+  const uriNames: string[] = [];
   const ips = [];
 
   hostname = "" + hostname;
@@ -229,7 +230,7 @@ export function checkServerIdentity(hostname, cert) {
   }
 }
 
-function canonicalizeIP(ip) {
+function canonicalizeIP(ip: string): string {
   return ip; // TODO(bnoordhuis) emulate uv_inet_pton() + uv_inet_ntop()
 }
 
@@ -243,13 +244,11 @@ export const DEFAULT_ECDH_CURVE = "auto";
 export const DEFAULT_MAX_VERSION = "TLSv1.3";
 export const DEFAULT_MIN_VERSION = "TLSv1.2";
 
-class ERR_TLS_CERT_ALTNAME_INVALID extends Error {
-  constructor(reason, host, cert) {
-    super(`Hostname/IP does not match certificate's altnames: ${reason}`);
-    this.reason = reason;
-    this.host = host;
-    this.cert = cert;
-  }
+export class CryptoStream {}
+export class SecurePair {}
+export class Server {}
+export function createSecurePair() {
+  notImplemented();
 }
 
 export default {
@@ -258,18 +257,17 @@ export default {
   DEFAULT_MAX_VERSION,
   DEFAULT_MIN_VERSION,
   checkServerIdentity,
-
+  createSecurePair,
+  CryptoStream,
+  SecurePair,
+  Server,
   createSecureContext: _tls_common.createSecureContext,
-  SecureContext: _tls_common.SecureContext,
   TLSSocket: _tls_wrap.TLSSocket,
-  Server: _tls_wrap.Server,
   createServer: _tls_wrap.createServer,
   connect: _tls_wrap.connect,
 };
 
 export const createSecureContext = _tls_common.createSecureContext;
-export const SecureContext = _tls_common.SecureContext;
 export const TLSSocket = _tls_wrap.TLSSocket;
-export const Server = _tls_wrap.Server;
 export const createServer = _tls_wrap.createServer;
 export const connect = _tls_wrap.connect;

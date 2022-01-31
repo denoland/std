@@ -20,3 +20,4 @@ export const StringPrototypeSlice = (that, ...args) => that.slice(...args);
 export const StringPrototypeSplit = (that, ...args) => that.split(...args);
 export const StringPrototypeStartsWith = (that, ...args) =>
   that.startsWith(...args);
+export const ObjectAssign = Object.assign;

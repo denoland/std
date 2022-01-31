@@ -6,7 +6,7 @@ import net from "./net.ts";
 import tls from "./tls.ts";
 import { kStreamBaseField } from "./internal_binding/stream_wrap.ts";
 import { notImplemented } from "./_utils.ts";
-
+import { ObjectAssign } from "./internal/primordials.js";
 const kConnectOptions = Symbol("connect-options");
 const kIsVerified = Symbol("verified");
 const kPendingSession = Symbol("pendingSession");

@@ -1907,6 +1907,21 @@ export class ERR_SYNTHETIC extends NodeError {
     super("ERR_SYNTHETIC", `JavaScript Callstack`);
   }
 }
+export class ERR_TLS_CERT_ALTNAME_INVALID extends NodeError {
+  reason: string;
+  host: string;
+  cert: string;
+
+  constructor(reason: string, host: string, cert: string) {
+    super(
+      "ERR_TLS_CERT_ALTNAME_INVALID",
+      `Hostname/IP does not match certificate's altnames: ${reason}`,
+    );
+    this.reason = reason;
+    this.host = host;
+    this.cert = cert;
+  }
+}
 export class ERR_TLS_DH_PARAM_SIZE extends NodeError {
   constructor(x: string) {
     super("ERR_TLS_DH_PARAM_SIZE", `DH parameter size ${x} is less than 2048`);
