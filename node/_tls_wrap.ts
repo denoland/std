@@ -130,8 +130,8 @@ export class TLSSocket extends net.Socket {
     let hostname = tlsOptions?.secureContext?.servername;
     hostname = "localhost";
 
-    const cert = tlsOptions?.secureContext?.cert;
-    const key = tlsOptions?.secureContext?.key;
+    const _cert = tlsOptions?.secureContext?.cert;
+    const _key = tlsOptions?.secureContext?.key;
 
     let caCerts = tlsOptions?.secureContext?.ca;
     if (typeof caCerts === "string") caCerts = [caCerts];
@@ -200,7 +200,7 @@ export class TLSSocket extends net.Socket {
     return false;
   }
 
-  getPeerCertificate(detailed) {
+  getPeerCertificate(_detailed) {
     return {
       subject: "localhost", // TODO
       subjectaltname: "IP Address:127.0.0.1, IP Address:::1",

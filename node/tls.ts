@@ -2,7 +2,6 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import {
-  Array,
   ArrayIsArray,
   ArrayPrototypeForEach,
   ArrayPrototypeIncludes,
