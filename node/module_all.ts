@@ -119,7 +119,15 @@ export default {
   path,
   "perf_hooks": perfHooks,
   process,
-  punycode,
+  get punycode() {
+    process.emitWarning(
+      "The `punycode` module is deprecated. Please use a userland " +
+        "alternative instead.",
+      "DeprecationWarning",
+      "DEP0040",
+    );
+    return punycode;
+  },
   querystring,
   readline,
   repl,
