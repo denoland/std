@@ -65,7 +65,6 @@ const denoOptions = [
   execFile(process.execPath, [...denoOptions, fixture, 0], execOpts, common.mustSucceed());
 }
 
-/* TODO(Nautigsam) Uncomment when AbortController is supported in execFile
 {
   // Verify that the signal option works properly
   const ac = new AbortController();
@@ -77,7 +76,7 @@ const denoOptions = [
       assert.strictEqual(err.name, 'AbortError');
       assert.strictEqual(err.signal, undefined);
     });
-    execFile(process.execPath, [echoFixture, 0], { signal }, check);
+    execFile(process.execPath, [...denoOptions, echoFixture, 0], { signal }, check);
   };
 
   // Verify that it still works the same way now that the signal is aborted.
@@ -94,9 +93,10 @@ const denoOptions = [
     assert.strictEqual(err.name, 'AbortError');
     assert.strictEqual(err.signal, undefined);
   });
-  execFile(process.execPath, [echoFixture, 0], { signal }, check);
+  execFile(process.execPath, [...denoOptions, echoFixture, 0], { signal }, check);
 }
 
+/* TODO(Nautigsam) This test requires to check the type but isn't this already covered by tsc?
 {
   // Verify that if something different than Abortcontroller.signal
   // is passed, ERR_INVALID_ARG_TYPE is thrown
@@ -106,6 +106,8 @@ const denoOptions = [
     execFile(process.execPath, [echoFixture, 0], { signal: 'hello' }, callback);
   }, { code: 'ERR_INVALID_ARG_TYPE', name: 'TypeError' });
 }
+*/
+/* TODO(Nautigsam) fix use of require() in getEventListeners()
 {
   // Verify that the process completing removes the abort listener
   const ac = new AbortController();
@@ -115,6 +117,6 @@ const denoOptions = [
     assert.strictEqual(getEventListeners(ac.signal).length, 0);
     assert.strictEqual(err, null);
   });
-  execFile(process.execPath, [fixture, 0], { signal }, callback);
+  execFile(process.execPath, [...denoOptions, fixture, 0], { signal }, callback);
 }
 */
