@@ -202,11 +202,10 @@ export function execFile(
     ...options,
   };
   if (!Number.isInteger(execOptions.timeout) || execOptions.timeout < 0) {
-    // TODO(Nautigsam) In Node source, the first argument to error constructor is "timeout" instead of "options.timeout".
+    // In Node source, the first argument to error constructor is "timeout" instead of "options.timeout".
     // timeout is indeed a member of options object.
-    // If this is an error in Node, do we have to stick with it anyway for compatibility reason?
     throw new ERR_OUT_OF_RANGE(
-      "options.timeout",
+      "timeout",
       "an unsigned integer",
       execOptions.timeout,
     );
