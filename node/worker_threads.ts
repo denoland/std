@@ -1,127 +1,9 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
-/// <reference lib="webworker"/>
 
 import { resolve, toFileUrl } from "../path/mod.ts";
 import { notImplemented } from "./_utils.ts";
 import { EventEmitter, once } from "./events.ts";
-
-declare global {
-  interface WorkerLocation {
-    readonly hash: string;
-    readonly host: string;
-    readonly hostname: string;
-    readonly href: string;
-    toString(): string;
-    readonly origin: string;
-    readonly pathname: string;
-    readonly port: string;
-    readonly protocol: string;
-    readonly search: string;
-  }
-
-  interface WorkerNavigator {
-    readonly gpu: GPU;
-    readonly hardwareConcurrency: number;
-  }
-
-  interface WorkerGlobalScope extends EventTarget {
-    readonly location: WorkerLocation;
-    readonly navigator: WorkerNavigator;
-    onerror: ((this: WorkerGlobalScope, ev: ErrorEvent) => any) | null;
-
-    readonly self: WorkerGlobalScope & typeof globalThis;
-
-    addEventListener<K extends keyof WorkerGlobalScopeEventMap>(
-      type: K,
-      listener: (
-        this: WorkerGlobalScope,
-        ev: WorkerGlobalScopeEventMap[K],
-      ) => any,
-      options?: boolean | AddEventListenerOptions,
-    ): void;
-    addEventListener(
-      type: string,
-      listener: EventListenerOrEventListenerObject,
-      options?: boolean | AddEventListenerOptions,
-    ): void;
-    removeEventListener<K extends keyof WorkerGlobalScopeEventMap>(
-      type: K,
-      listener: (
-        this: WorkerGlobalScope,
-        ev: WorkerGlobalScopeEventMap[K],
-      ) => any,
-      options?: boolean | EventListenerOptions,
-    ): void;
-    removeEventListener(
-      type: string,
-      listener: EventListenerOrEventListenerObject,
-      options?: boolean | EventListenerOptions,
-    ): void;
-
-    Deno: typeof Deno;
-  }
-
-  var WorkerGlobalScope: {
-    prototype: WorkerGlobalScope;
-    new (): WorkerGlobalScope;
-  };
-
-  interface DedicatedWorkerGlobalScope extends WorkerGlobalScope {
-    readonly name: string;
-    onmessage:
-      | ((this: DedicatedWorkerGlobalScope, ev: MessageEvent) => any)
-      | null;
-    onmessageerror:
-      | ((this: DedicatedWorkerGlobalScope, ev: MessageEvent) => any)
-      | null;
-    close(): void;
-    postMessage(message: any, transfer: Transferable[]): void;
-    postMessage(message: any, options?: StructuredSerializeOptions): void;
-    addEventListener<K extends keyof DedicatedWorkerGlobalScopeEventMap>(
-      type: K,
-      listener: (
-        this: DedicatedWorkerGlobalScope,
-        ev: DedicatedWorkerGlobalScopeEventMap[K],
-      ) => any,
-      options?: boolean | AddEventListenerOptions,
-    ): void;
-    addEventListener(
-      type: string,
-      listener: EventListenerOrEventListenerObject,
-      options?: boolean | AddEventListenerOptions,
-    ): void;
-    removeEventListener<K extends keyof DedicatedWorkerGlobalScopeEventMap>(
-      type: K,
-      listener: (
-        this: DedicatedWorkerGlobalScope,
-        ev: DedicatedWorkerGlobalScopeEventMap[K],
-      ) => any,
-      options?: boolean | EventListenerOptions,
-    ): void;
-    removeEventListener(
-      type: string,
-      listener: EventListenerOrEventListenerObject,
-      options?: boolean | EventListenerOptions,
-    ): void;
-  }
-
-  var DedicatedWorkerGlobalScope: {
-    prototype: DedicatedWorkerGlobalScope;
-    new (): DedicatedWorkerGlobalScope;
-  };
-
-  interface WorkerGlobalScopeEventMap {
-    "error": ErrorEvent;
-  }
-
-  interface DedicatedWorkerGlobalScopeEventMap
-    extends WorkerGlobalScopeEventMap {
-    "message": MessageEvent;
-    "messageerror": MessageEvent;
-    "offline": Event;
-  }
-}
 
 let environmentData = new Map();
 let threads = 0;
@@ -209,8 +91,11 @@ class _Worker extends EventEmitter {
   readonly performance = globalThis.performance;
 }
 
-export const isMainThread = typeof DedicatedWorkerGlobalScope === "undefined" ||
-  self instanceof DedicatedWorkerGlobalScope === false;
+export const isMainThread =
+  // deno-lint-ignore no-explicit-any
+  typeof (globalThis as any).DedicatedWorkerGlobalScope === "undefined" ||
+  // deno-lint-ignore no-explicit-any
+  self instanceof (globalThis as any).DedicatedWorkerGlobalScope === false;
 
 // fake resourceLimits
 export const resourceLimits = isMainThread ? {} : {
@@ -231,8 +116,11 @@ interface NodeEventTarget extends
   > {
   setMaxListeners(n: number): void;
   getMaxListeners(): number;
+  // deno-lint-ignore no-explicit-any
   off(eventName: string, listener: (...args: any[]) => void): NodeEventTarget;
+  // deno-lint-ignore no-explicit-any
   on(eventName: string, listener: (...args: any[]) => void): NodeEventTarget;
+  // deno-lint-ignore no-explicit-any
   once(eventName: string, listener: (...args: any[]) => void): NodeEventTarget;
   addListener: NodeEventTarget["on"];
   removeListener: NodeEventTarget["off"];
@@ -308,8 +196,10 @@ export function setEnvironmentData(key: unknown, value?: unknown) {
   }
 }
 
+// deno-lint-ignore no-explicit-any
 const _MessagePort: typeof MessagePort = (globalThis as any).MessagePort;
 const _MessageChannel: typeof MessageChannel =
+  // deno-lint-ignore no-explicit-any
   (globalThis as any).MessageChannel;
 export const BroadcastChannel = globalThis.BroadcastChannel;
 export const SHARE_ENV = Symbol.for("nodejs.worker_threads.SHARE_ENV");
