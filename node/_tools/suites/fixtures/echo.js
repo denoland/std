@@ -26,4 +26,13 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-process.exit(process.argv[2] || 1);
+const common = require('../common');
+const assert = require('assert');
+
+process.stdout.write('hello world\r\n');
+
+var stdin = process.openStdin();
+
+stdin.on('data', function(data) {
+  process.stdout.write(data.toString());
+});

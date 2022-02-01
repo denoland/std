@@ -1,6 +1,6 @@
 import * as DenoUnstable from "../_deno_unstable.ts";
 import { core } from "./_core.ts";
-import { _normalizeArgs, ListenOptions } from "./net.ts";
+import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { EventEmitter } from "./events.ts";
@@ -93,7 +93,7 @@ class ClientRequest extends NodeWritable {
   controller: ReadableStreamDefaultController | null = null;
   constructor(
     public opts: RequestOptions,
-    public cb: (res: IncomingMessageForClient) => void,
+    public cb?: (res: IncomingMessageForClient) => void,
   ) {
     super();
   }
@@ -118,8 +118,17 @@ class ClientRequest extends NodeWritable {
   async _final() {
     const client = await this._createCustomClient();
     const opts = { body: this.body, method: this.opts.method, client };
+    const mayResponse = fetch(this.opts.href!, opts).catch((e) => {
+      if (e.message.includes("connection closed before message completed")) {
+        // Node.js seems ignoring this error
+      } else {
+        this.emit("error", e);
+      }
+      return undefined;
+    });
     const res = new IncomingMessageForClient(
-      await fetch(this.opts.href!, opts),
+      await mayResponse,
+      this._createSocket(),
     );
     this.emit("response", res);
     if (client) {
@@ -127,7 +136,7 @@ class ClientRequest extends NodeWritable {
         client.close();
       });
     }
-    this.cb(res);
+    this.cb?.(res);
   }
 
   abort() {
@@ -137,14 +146,21 @@ class ClientRequest extends NodeWritable {
   _createCustomClient(): Promise<DenoUnstable.HttpClient | undefined> {
     return Promise.resolve(undefined);
   }
+
+  _createSocket(): Socket {
+    // Note: Creates a dummy socket for the compatibility
+    // Sometimes the libraries check some properties of socket
+    // e.g. if (!response.socket.authorized) { ... }
+    return new Socket({});
+  }
 }
 
 /** IncomingMessage for http(s) client */
 export class IncomingMessageForClient extends NodeReadable {
   reader: ReadableStreamDefaultReader | undefined;
-  constructor(public resp: Response) {
+  constructor(public response: Response | undefined, public socket: Socket) {
     super();
-    this.reader = resp.body?.getReader();
+    this.reader = response?.body?.getReader();
   }
 
   async _read(_size: number) {
@@ -166,7 +182,10 @@ export class IncomingMessageForClient extends NodeReadable {
   }
 
   get headers() {
-    return Object.fromEntries(this.resp.headers.entries());
+    if (this.response) {
+      return Object.fromEntries(this.response.headers.entries());
+    }
+    return {};
   }
 
   get trailers() {
@@ -174,11 +193,11 @@ export class IncomingMessageForClient extends NodeReadable {
   }
 
   get statusCode() {
-    return this.resp.status;
+    return this.response?.status || 0;
   }
 
   get statusMessage() {
-    return this.resp.statusText;
+    return this.response?.statusText || "";
   }
 }
 

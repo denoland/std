@@ -26,4 +26,19 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-process.exit(process.argv[2] || 1);
+'use strict';
+require('../common');
+const assert = require('assert');
+
+console.error(process.uptime());
+// Add some wiggle room for different platforms.
+// Verify that the returned value is in seconds -
+// 15 seconds should be a good estimate.
+assert.ok(process.uptime() <= 15);
+
+const original = process.uptime();
+
+setTimeout(function() {
+  const uptime = process.uptime();
+  assert.ok(original < uptime);
+}, 10);

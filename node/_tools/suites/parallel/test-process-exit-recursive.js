@@ -26,4 +26,19 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-process.exit(process.argv[2] || 1);
+'use strict';
+require('../common');
+const assert = require('assert');
+
+// Recursively calling .exit() should not overflow the call stack
+let nexits = 0;
+
+process.on('exit', function(code) {
+  assert.strictEqual(nexits++, 0);
+  assert.strictEqual(code, 1);
+
+  // Now override the exit code of 1 with 0 so that the test passes
+  process.exit(0);
+});
+
+process.exit(1);
