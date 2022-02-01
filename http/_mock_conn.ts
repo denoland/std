@@ -24,8 +24,8 @@ export function mockConn(base: Partial<Deno.Conn> = {}): Deno.Conn {
       return Promise.resolve(-1);
     },
     close: (): void => {},
-    setNoDelay: (nodelay?: boolean): void => {},
-    setKeepAlive: (keepalive?: boolean): void => {},
+    setNoDelay: (_nodelay?: boolean): void => {},
+    setKeepAlive: (_keepalive?: boolean): void => {},
     ...base,
   };
 }
