@@ -766,10 +766,7 @@ function createNativeModule(id: string, exports: any): Module {
   mod.loaded = true;
   return mod;
 }
-// Set polyfills defined in ./module_all.ts
-for (const key of Object.keys(nodeMods)) {
-  nativeModulePolyfill.set(key, createNativeModule(key, nodeMods[key]));
-}
+
 const m = {
   _cache: Module._cache,
   _extensions: Module._extensions,
@@ -787,25 +784,30 @@ const m = {
   Module,
   wrap: Module.wrap,
 };
+
 Object.setPrototypeOf(m, Module);
-nativeModulePolyfill.set(
-  "module",
-  createNativeModule("module", m),
-);
+nodeMods.module = m;
 
 function loadNativeModule(
   _filename: string,
   request: string,
 ): Module | undefined {
-  return nativeModulePolyfill.get(request);
+  if (nativeModulePolyfill.has(request)) {
+    return nativeModulePolyfill.get(request);
+  }
+  const mod = nodeMods[request];
+  if (mod) {
+    const nodeMod = createNativeModule(request, mod);
+    nativeModulePolyfill.set(request, nodeMod);
+    return nodeMod;
+  }
+  return undefined;
 }
 function nativeModuleCanBeRequiredByUsers(request: string): boolean {
-  return nativeModulePolyfill.has(request);
+  return hasOwn(nodeMods, request);
 }
 // Populate with polyfill names
-for (const id of nativeModulePolyfill.keys()) {
-  Module.builtinModules.push(id);
-}
+Module.builtinModules.push(...Object.keys(nodeMods));
 
 // NOTE(@bartlomieju): temporary solution, to smooth out inconsistencies between
 // Deno and Node.js.
