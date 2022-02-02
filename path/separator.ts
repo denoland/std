@@ -3,5 +3,13 @@
 
 import { isWindows } from "../_util/os.ts";
 
-export const SEP = isWindows ? "\\" : "/";
+export const separators = {
+  win32: "\\",
+  posix: "/",
+};
+
+export const separator = isWindows ? separators.win32 : separators.posix;
+
+export const SEP = separator;
+export const sep = SEP;
 export const SEP_PATTERN = isWindows ? /[\\/]+/ : /\/+/;

@@ -1,9 +1,14 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-import type { FormatInputPathObject, ParsedPath } from "./mod.ts";
+import type { FormatInputPathObject, ParsedPath } from "./_interface.ts";
 
 import { assertEquals } from "../testing/asserts.ts";
-import { posix, win32 } from "./mod.ts";
+import { parse } from "./parse.ts";
+import { format } from "./format.ts";
+import { dirname } from "./dirname.ts";
+
+import { basename } from "./basename.ts";
+import { extname } from "./extname.ts";
 
 type FormatTestCase = [FormatInputPathObject, string];
 type ParseTestCase = [string, ParsedPath];
@@ -84,57 +89,57 @@ const unixSpecialCaseFormatTests: FormatTestCase[] = [
 ];
 
 function checkParseFormat(
-  path: typeof win32 | typeof posix,
   testCases: Array<[string, string]>,
+  os: typeof Deno.build.os,
 ): void {
   testCases.forEach(([element, root]) => {
-    const output = path.parse(element);
+    const output = parse(element, { os });
     assertEquals(typeof output.root, "string");
     assertEquals(typeof output.dir, "string");
     assertEquals(typeof output.base, "string");
     assertEquals(typeof output.ext, "string");
     assertEquals(typeof output.name, "string");
-    assertEquals(path.format(output), element);
+    assertEquals(format(output, { os }), element);
     assertEquals(output.root, root);
-    assertEquals(output.dir, output.dir ? path.dirname(element) : "");
-    assertEquals(output.base, path.basename(element));
-    assertEquals(output.ext, path.extname(element));
+    assertEquals(output.dir, output.dir ? dirname(element, { os }) : "");
+    assertEquals(output.base, basename(element, "", { os }));
+    assertEquals(output.ext, extname(element, { os }));
   });
 }
 
 function checkSpecialCaseParseFormat(
-  path: typeof win32 | typeof posix,
   testCases: ParseTestCase[],
+  os: typeof Deno.build.os,
 ): void {
   testCases.forEach(([element, expect]) => {
-    assertEquals(path.parse(element), expect);
+    assertEquals(parse(element, { os }), expect);
   });
 }
 
 function checkFormat(
-  path: typeof win32 | typeof posix,
   testCases: FormatTestCase[],
+  os: typeof Deno.build.os,
 ): void {
   testCases.forEach((testCase) => {
-    assertEquals(path.format(testCase[0]), testCase[1]);
+    assertEquals(format(testCase[0], { os }), testCase[1]);
   });
 }
 
 Deno.test("parseWin32", function () {
-  checkParseFormat(win32, winPaths);
-  checkSpecialCaseParseFormat(win32, winSpecialCaseParseTests);
+  checkParseFormat(winPaths, "windows");
+  checkSpecialCaseParseFormat(winSpecialCaseParseTests, "windows");
 });
 
 Deno.test("parse", function () {
-  checkParseFormat(posix, unixPaths);
+  checkParseFormat(unixPaths, "linux");
 });
 
 Deno.test("formatWin32", function () {
-  checkFormat(win32, winSpecialCaseFormatTests);
+  checkFormat(winSpecialCaseFormatTests, "windows");
 });
 
 Deno.test("format", function () {
-  checkFormat(posix, unixSpecialCaseFormatTests);
+  checkFormat(unixSpecialCaseFormatTests, "linux");
 });
 
 // Test removal of trailing path separators
@@ -171,7 +176,7 @@ const posixTrailingTests: ParseTestCase[] = [
 
 Deno.test("parseTrailingWin32", function () {
   windowsTrailingTests.forEach(function (p) {
-    const actual = win32.parse(p[0]);
+    const actual = parse(p[0], { os: "windows" });
     const expected = p[1];
     assertEquals(actual, expected);
   });
@@ -179,7 +184,7 @@ Deno.test("parseTrailingWin32", function () {
 
 Deno.test("parseTrailing", function () {
   posixTrailingTests.forEach(function (p) {
-    const actual = posix.parse(p[0]);
+    const actual = parse(p[0], { os: "linux" });
     const expected = p[1];
     assertEquals(actual, expected);
   });
