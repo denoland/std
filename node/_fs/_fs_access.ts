@@ -1,6 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 import { type CallbackWithError, makeCallback } from "./_fs_common.ts";
-import { fs } from "../internal_binding/constants.ts";
+import { fs, os } from "../internal_binding/constants.ts";
 import { getValidatedPath, getValidMode } from "../internal/fs/utils.js";
 import type { Buffer } from "../buffer.ts";
 
@@ -33,26 +33,24 @@ export function access(
       cb(null);
     } else {
       // some required flags don't
-      const e = new Error(`EACCES: permission denied, access '${path}'`);
       // deno-lint-ignore no-explicit-any
-      (e as any).code = "EACCES";
-      // deno-lint-ignore no-explicit-any
-      (e as any).path = path;
-      // deno-lint-ignore no-explicit-any
-      (e as any).syscall = "access";
+      const e: any = new Error(`EACCES: permission denied, access '${path}'`);
+      e.path = path;
+      e.syscall = "access";
+      e.errno = os.errno.EACCES;
+      e.code = "EACCES";
       cb(e);
     }
   }, (err) => {
     if (err instanceof Deno.errors.NotFound) {
-      const e = new Error(
+      // deno-lint-ignore no-explicit-any
+      const e: any = new Error(
         `ENOENT: no such file or directory, access '${path}'`,
       );
-      // deno-lint-ignore no-explicit-any
-      (e as any).code = "ENOENT";
-      // deno-lint-ignore no-explicit-any
-      (e as any).path = path;
-      // deno-lint-ignore no-explicit-any
-      (e as any).syscall = "access";
+      e.path = path;
+      e.syscall = "access";
+      e.errno = os.errno.ENOENT;
+      e.code = "ENOENT";
       cb(e);
     } else {
       cb(err);
@@ -74,26 +72,23 @@ export function accessSync(path: string | Buffer | URL, mode?: number): void {
       // all required flags exist
     } else {
       // some required flags don't
-      const e = new Error(`EACCES: permission denied, access '${path}'`);
       // deno-lint-ignore no-explicit-any
-      (e as any).code = "EACCES";
-      // deno-lint-ignore no-explicit-any
-      (e as any).path = path;
-      // deno-lint-ignore no-explicit-any
-      (e as any).syscall = "access";
+      const e: any = new Error(`EACCES: permission denied, access '${path}'`);
+      e.path = path;
+      e.syscall = "access";
+      e.errno = os.errno.EACCES;
+      e.code = "EACCES";
       throw e;
     }
   } catch (err) {
     if (err instanceof Deno.errors.NotFound) {
-      const e = new Error(
+      const e: any = new Error(
         `ENOENT: no such file or directory, access '${path}'`,
       );
-      // deno-lint-ignore no-explicit-any
-      (e as any).code = "ENOENT";
-      // deno-lint-ignore no-explicit-any
-      (e as any).path = path;
-      // deno-lint-ignore no-explicit-any
-      (e as any).syscall = "access";
+      e.path = path;
+      e.syscall = "access";
+      e.errno = os.errno.ENOENT;
+      e.code = "ENOENT";
       throw e;
     } else {
       throw err;
