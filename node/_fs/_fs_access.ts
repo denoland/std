@@ -82,6 +82,7 @@ export function accessSync(path: string | Buffer | URL, mode?: number): void {
     }
   } catch (err) {
     if (err instanceof Deno.errors.NotFound) {
+      // deno-lint-ignore no-explicit-any
       const e: any = new Error(
         `ENOENT: no such file or directory, access '${path}'`,
       );
