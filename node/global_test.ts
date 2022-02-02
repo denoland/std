@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import "./global.ts";
 import { assert, assertStrictEquals } from "../testing/asserts.ts";
 import { Buffer as BufferModule } from "./buffer.ts";

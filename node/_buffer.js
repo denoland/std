@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // TODO(Soremwar)
 // This implementation has an unreliable indexOf and includes implementation
 // It also lacks the resolveObjectURL, transcode and INSPECT_MAX_BYTES exports

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../_util/assert.ts";
 import type { BufReader } from "./buffer.ts";
 import type { Reader, Writer } from "./types.d.ts";

@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/4f538975138678878fed5b2555c0672aa578ab7d/types/node/stream.d.ts
@@ -1155,7 +1156,7 @@ type PipelineDestinationPromiseFunction<T, P> = (
   source: AsyncIterable<T>,
 ) => Promise<P>;
 type PipelineDestination<S extends PipelineTransformSource<any>, P> = S extends
-  PipelineTransformSource<infer ST> ? 
+  PipelineTransformSource<infer ST> ?
   | WritableStream
   | PipelineDestinationIterableFunction<ST>
   | PipelineDestinationPromiseFunction<ST, P>

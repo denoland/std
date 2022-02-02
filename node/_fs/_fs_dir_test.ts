@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, fail } from "../../testing/asserts.ts";
 import { assertCallbackErrorUncaught } from "../_utils.ts";
 import Dir from "./_fs_dir.ts";
