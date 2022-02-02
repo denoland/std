@@ -20,10 +20,14 @@ export function access(
 
   Deno.lstat(path).then((info) => {
     const m = +mode || 0;
-    const fileMode = +info.mode! || 0;
-    // FIXME(kt3k): use the last digit of file mode as its mode for now
-    // This is not correct if the user is the owner of the file
-    // or is a member of the owner group
+    let fileMode = +info.mode! || 0;
+    if (Deno.build.os !== "windows" && info.uid === Deno.getUid()) {
+      // If the user is the owner of the file, then use the owner bits of
+      // the file permission
+      fileMode >>= 6;
+    }
+    // TODO(kt3k): Also check the case when the user belong to the group
+    // of the file
     if ((m & fileMode) === m) {
       // all required flags exist
       cb(null);
