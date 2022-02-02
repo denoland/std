@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { listenAndServe } from "./server.ts";
 
 const DEFAULT_PORT = 4500;

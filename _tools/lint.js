@@ -1,4 +1,5 @@
 #!/usr/bin/env -S deno run --no-check --allow-read --allow-run
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as semver from "https://deno.land/x/semver@v1.0.0/mod.ts";
 if (semver.lt(Deno.version.deno, "1.18.0")) {
   console.log(

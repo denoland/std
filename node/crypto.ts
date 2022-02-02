@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { default as randomBytes } from "./_crypto/randomBytes.ts";
 import randomFill, { randomFillSync } from "./_crypto/randomFill.ts";

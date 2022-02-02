@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-read --allow-net=deno.land
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as denoGraph from "https://deno.land/x/deno_graph@0.18.0/mod.ts";
 const root = `${new URL("../node/module_all.ts", import.meta.url)}`;
 const seen = new Set<string>();

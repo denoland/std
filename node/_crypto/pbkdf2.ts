@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "../buffer.ts";
 import { createHash } from "./hash.ts";
 import { MAX_ALLOC } from "./constants.ts";

@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
  * Tests that run the fast-check property-based testing library in the Deno
  * runtime. See: https://github.com/dubzzz/fast-check

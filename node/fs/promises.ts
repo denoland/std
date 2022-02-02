@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { promises as fsPromises } from "../fs.ts";
 
 export const access = fsPromises.access;

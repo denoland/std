@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../../testing/asserts.ts";
 import { timingSafeEqual } from "./timingSafeEqual.ts";
 import { Buffer } from "../buffer.ts";
