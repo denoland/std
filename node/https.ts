@@ -5,6 +5,7 @@ import * as DenoUnstable from "../_deno_unstable.ts";
 import { notImplemented } from "./_utils.ts";
 import { urlToHttpOptions } from "./internal/url.ts";
 import {
+  Agent as HttpAgent,
   ClientRequest,
   IncomingMessageForClient as IncomingMessage,
   type RequestOptions,
@@ -12,11 +13,9 @@ import {
 import { TLSSocket } from "./tls.ts";
 import type { Socket } from "./net.ts";
 
-export class Agent {
-  constructor() {
-    notImplemented();
-  }
+export class Agent extends HttpAgent {
 }
+
 export class Server {
   constructor() {
     notImplemented();
