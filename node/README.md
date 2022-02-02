@@ -10,23 +10,23 @@ Deno standard library as it's a compatibility module.
 
 - [x] assert _partly_
 - [x] assert/strict _partly_
-- [ ] async_hooks
+- [x] async_hooks _partly_
 - [x] buffer
 - [x] child_process _partly_
-- [ ] cluster
+- [x] cluster _partly_
 - [x] console _partly_
 - [x] constants _partly_
 - [x] crypto _partly_
-- [ ] dgram
+- [x] dgram _partly_
 - [ ] diagnostics_channel
 - [x] dns _partly_
 - [x] events
 - [x] fs _partly_
 - [x] fs/promises _partly_
-- [ ] http
+- [x] http _partly_
 - [ ] http2
-- [ ] https
-- [ ] inspector
+- [x] https _partly_
+- [x] inspector _partly_
 - [x] module
 - [x] net
 - [x] os _partly_
@@ -35,9 +35,10 @@ Deno standard library as it's a compatibility module.
 - [x] path/win32
 - [x] perf_hooks
 - [x] process _partly_
+- [x] punycode
 - [x] querystring
-- [ ] readline
-- [ ] repl
+- [x] readline
+- [x] repl _partly_
 - [x] stream
 - [x] stream/promises
 - [x] stream/web _partly_
@@ -52,7 +53,7 @@ Deno standard library as it's a compatibility module.
 - [x] util _partly_
 - [x] util/types _partly_
 - [ ] v8
-- [ ] vm
+- [x] vm _partly_
 - [x] wasi
 - [ ] webcrypto
 - [ ] worker_threads
@@ -66,7 +67,6 @@ These modules are deprecated in Node.js and will probably not be polyfilled:
 
 - domain
 - freelist
-- punycode
 
 ### Experimental
 
@@ -79,7 +79,6 @@ are stable:
 - trace_events
 - wasi
 - webcrypto
-- stream/web
 
 ## CommonJS modules loading
 

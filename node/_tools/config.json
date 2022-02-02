@@ -209,6 +209,7 @@
       "test-process-exit-recursive.js",
       "test-process-exit.js",
       "test-process-uptime.js",
+      "test-punycode.js",
       "test-querystring-escape.js",
       "test-querystring-maxKeys-non-finite.js",
       "test-querystring-multichar-separator.js",
