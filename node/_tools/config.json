@@ -60,6 +60,7 @@
       "internet.js"
     ],
     "fixtures": [
+      "a.js",
       "child-process-spawn-node.js",
       "echo.js",
       "empty.txt",
@@ -161,6 +162,7 @@
       "test-fs-chmod-mask.js",
       "test-fs-chmod.js",
       "test-fs-chown-type-check.js",
+      "test-fs-copyfile.js",
       "test-fs-readdir-stack-overflow.js",
       "test-fs-readdir.js",
       "test-fs-readfile-empty.js",
