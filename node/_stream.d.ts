@@ -1156,7 +1156,7 @@ type PipelineDestinationPromiseFunction<T, P> = (
   source: AsyncIterable<T>,
 ) => Promise<P>;
 type PipelineDestination<S extends PipelineTransformSource<any>, P> = S extends
-  PipelineTransformSource<infer ST> ?
+  PipelineTransformSource<infer ST> ? 
   | WritableStream
   | PipelineDestinationIterableFunction<ST>
   | PipelineDestinationPromiseFunction<ST, P>
