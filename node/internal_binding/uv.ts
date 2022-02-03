@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,6 +29,10 @@
 import { unreachable } from "../../testing/asserts.ts";
 import { osType } from "../../_util/os.ts";
 import { uvTranslateSysError } from "./_libuv_winerror.ts";
+import { os } from "./constants.ts";
+
+export const UV_EEXIST = os.errno.EEXIST;
+export const UV_ENOENT = os.errno.ENOENT;
 
 // In Node these values are coming from libuv:
 // Ref: https://github.com/libuv/libuv/blob/v1.x/include/uv/errno.h

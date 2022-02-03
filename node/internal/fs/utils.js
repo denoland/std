@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 "use strict";
 
 import { Buffer } from "../../buffer.ts";
@@ -9,7 +10,7 @@ import {
   ERR_OUT_OF_RANGE,
   hideStackFrames,
   uvException,
-} from "../../_errors.ts";
+} from "../errors.ts";
 
 import {
   isArrayBufferView,
@@ -17,7 +18,7 @@ import {
   isDate,
   isUint8Array,
 } from "../util/types.ts";
-import { once } from "../util.ts";
+import { once } from "../util.js";
 import { toPathIfFileURL } from "../url.ts";
 import {
   validateAbortSignal,
@@ -32,7 +33,8 @@ import pathModule from "../../path.ts";
 const kType = Symbol("type");
 const kStats = Symbol("stats");
 import assert from "../assert.js";
-import fs from "../../fs.ts";
+import { lstat, lstatSync } from "../../_fs/_fs_lstat.ts";
+import { stat, statSync } from "../../_fs/_fs_stat.ts";
 import { isWindows } from "../../../_util/os.ts";
 import process from "../../process.ts";
 
@@ -116,7 +118,7 @@ const kReadFileBufferLength = 512 * 1024;
 
 const kWriteFileMaxChunkSize = 512 * 1024;
 
-const kMaxUserId = 2 ** 32 - 1;
+export const kMaxUserId = 2 ** 32 - 1;
 
 function assertEncoding(encoding) {
   if (encoding && !Buffer.isEncoding(encoding)) {
@@ -176,7 +178,7 @@ for (const name of Reflect.ownKeys(Dirent.prototype)) {
   };
 }
 
-function copyObject(source) {
+export function copyObject(source) {
   const target = {};
   for (const key in source) {
     target[key] = source[key];
@@ -233,7 +235,7 @@ function getDirents(path, { 0: names, 1: types }, callback) {
           callback(err);
           return;
         }
-        fs.lstat(filepath, (err, stats) => {
+        lstat(filepath, (err, stats) => {
           if (err) {
             callback(err);
             return;
@@ -269,7 +271,7 @@ function getDirent(path, name, type, callback) {
         callback(err);
         return;
       }
-      fs.lstat(filepath, (err, stats) => {
+      lstat(filepath, (err, stats) => {
         if (err) {
           callback(err);
           return;
@@ -280,14 +282,14 @@ function getDirent(path, name, type, callback) {
       callback(null, new Dirent(name, type));
     }
   } else if (type === UV_DIRENT_UNKNOWN) {
-    const stats = fs.lstatSync(join(path, name));
+    const stats = lstatSync(join(path, name));
     return new DirentFromStats(name, stats);
   } else {
     return new Dirent(name, type);
   }
 }
 
-function getOptions(options, defaultOptions) {
+export function getOptions(options, defaultOptions) {
   if (
     options === null || options === undefined ||
     typeof options === "function"
@@ -508,7 +510,7 @@ BigIntStats.prototype._checkModeProperty = function (property) {
   return (this.mode & BigInt(S_IFMT)) === BigInt(property);
 };
 
-function Stats(
+export function Stats(
   dev,
   mode,
   nlink,
@@ -748,11 +750,13 @@ const validatePath = hideStackFrames((path, propName = "path") => {
   }
 });
 
-const getValidatedPath = hideStackFrames((fileURLOrPath, propName = "path") => {
-  const path = toPathIfFileURL(fileURLOrPath);
-  validatePath(path, propName);
-  return path;
-});
+export const getValidatedPath = hideStackFrames(
+  (fileURLOrPath, propName = "path") => {
+    const path = toPathIfFileURL(fileURLOrPath);
+    validatePath(path, propName);
+    return path;
+  },
+);
 
 const getValidatedFd = hideStackFrames((fd, propName = "fd") => {
   if (Object.is(fd, -0)) {
@@ -836,7 +840,7 @@ export const validateRmOptions = hideStackFrames(
     options = validateRmdirOptions(options, defaultRmOptions);
     validateBoolean(options.force, "options.force");
 
-    fs.stat(path, (err, stats) => {
+    stat(path, (err, stats) => {
       if (err) {
         if (options.force && err.code === "ENOENT") {
           return cb(null, options);
@@ -870,8 +874,8 @@ export const validateRmOptionsSync = hideStackFrames(
     validateBoolean(options.force, "options.force");
 
     if (!options.force || expectDir || !options.recursive) {
-      const isDirectory = fs
-        .statSync(path, { throwIfNoEntry: !options.force })?.isDirectory();
+      const isDirectory = statSync(path, { throwIfNoEntry: !options.force })
+        ?.isDirectory();
 
       if (expectDir && !isDirectory) {
         return false;
@@ -893,7 +897,7 @@ export const validateRmOptionsSync = hideStackFrames(
 );
 
 let recursiveRmdirWarned = process.noDeprecation;
-function emitRecursiveRmdirWarning() {
+export function emitRecursiveRmdirWarning() {
   if (!recursiveRmdirWarned) {
     process.emitWarning(
       "In future versions of Node.js, fs.rmdir(path, { recursive: true }) " +
@@ -905,7 +909,7 @@ function emitRecursiveRmdirWarning() {
   }
 }
 
-const validateRmdirOptions = hideStackFrames(
+export const validateRmdirOptions = hideStackFrames(
   (options, defaults = defaultRmdirOptions) => {
     if (options === undefined) {
       return defaults;
@@ -922,7 +926,7 @@ const validateRmdirOptions = hideStackFrames(
   },
 );
 
-const getValidMode = hideStackFrames((mode, type) => {
+export const getValidMode = hideStackFrames((mode, type) => {
   let min = kMinimumAccessMode;
   let max = kMaximumAccessMode;
   let def = F_OK;
@@ -949,26 +953,28 @@ const getValidMode = hideStackFrames((mode, type) => {
   );
 });
 
-const validateStringAfterArrayBufferView = hideStackFrames((buffer, name) => {
-  if (typeof buffer === "string") {
-    return;
-  }
+export const validateStringAfterArrayBufferView = hideStackFrames(
+  (buffer, name) => {
+    if (typeof buffer === "string") {
+      return;
+    }
 
-  if (
-    typeof buffer === "object" &&
-    buffer !== null &&
-    typeof buffer.toString === "function" &&
-    Object.prototype.hasOwnProperty.call(buffer, "toString")
-  ) {
-    return;
-  }
+    if (
+      typeof buffer === "object" &&
+      buffer !== null &&
+      typeof buffer.toString === "function" &&
+      Object.prototype.hasOwnProperty.call(buffer, "toString")
+    ) {
+      return;
+    }
 
-  throw new ERR_INVALID_ARG_TYPE(
-    name,
-    ["string", "Buffer", "TypedArray", "DataView"],
-    buffer,
-  );
-});
+    throw new ERR_INVALID_ARG_TYPE(
+      name,
+      ["string", "Buffer", "TypedArray", "DataView"],
+      buffer,
+    );
+  },
+);
 
 const validatePosition = hideStackFrames((position) => {
   if (typeof position === "number") {

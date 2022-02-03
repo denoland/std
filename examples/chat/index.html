@@ -49,7 +49,7 @@
           timeline.appendChild(messageDom(data));
         });
         ws.addEventListener("close", () => {
-          applyState({connect: false});
+          applyState({connected: false});
         });
       }
       function close() {

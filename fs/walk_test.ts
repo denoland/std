@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// deno-lint-ignore-file no-explicit-any
 import { walk, WalkEntry, WalkOptions, walkSync } from "./walk.ts";
 import {
   assert,
@@ -8,8 +9,8 @@ import {
 } from "../testing/asserts.ts";
 
 export function testWalk(
-  setup: (arg0: string) => void | Promise<void>,
-  t: () => void | Promise<void>,
+  setup: (arg0: string) => any | Promise<any>,
+  t: (context: any) => void | Promise<void>,
   ignore = false,
 ): void {
   const name = t.name;
@@ -18,8 +19,8 @@ export function testWalk(
     const d = await Deno.makeTempDir();
     Deno.chdir(d);
     try {
-      await setup(d);
-      await t();
+      const context = await setup(d);
+      await t(context);
     } finally {
       Deno.chdir(origCwd);
       await Deno.remove(d, { recursive: true });
@@ -281,6 +282,20 @@ testWalk(
     assertEquals(files.length, 4);
     assert(files.some((f): boolean => f.endsWith("/b")));
   },
+);
+
+// https://github.com/denoland/deno_std/issues/1789
+testWalk(
+  (d: string) => {
+    return Deno.listen({ path: d + "/a", transport: "unix" });
+  },
+  async function unixSocket(listener: Deno.Listener) {
+    assertReady(2);
+    const files = await walkArray(".", { followSymlinks: true });
+    assertEquals(files, [".", "a"]);
+    listener.close();
+  },
+  Deno.build.os === "windows",
 );
 
 testWalk(

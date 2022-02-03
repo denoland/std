@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   GlobOptions,
   globToRegExp,
@@ -78,7 +78,7 @@ export async function* expandGlob(
     root = Deno.cwd(),
     exclude = [],
     includeDirs = true,
-    extended = false,
+    extended = true,
     globstar = false,
     caseInsensitive,
   }: ExpandGlobOptions = {},
@@ -186,7 +186,7 @@ export function* expandGlobSync(
     root = Deno.cwd(),
     exclude = [],
     includeDirs = true,
-    extended = false,
+    extended = true,
     globstar = false,
     caseInsensitive,
   }: ExpandGlobOptions = {},

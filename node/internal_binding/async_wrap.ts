@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -24,6 +25,15 @@
 // - https://github.com/nodejs/node/blob/master/src/async_wrap.cc
 // - https://github.com/nodejs/node/blob/master/src/async_wrap.h
 
+export function registerDestroyHook(
+  // deno-lint-ignore no-explicit-any
+  _target: any,
+  _asyncId: number,
+  _prop: { destroyed: boolean },
+) {
+  // TODO(kt3k): implement actual procedures
+}
+
 export enum constants {
   kInit,
   kBefore,
@@ -40,12 +50,16 @@ export enum constants {
   kStackLength,
 }
 
+const asyncHookFields = new Uint32Array(Object.keys(constants).length);
+
+export { asyncHookFields as async_hook_fields };
+
 // Increment the internal id counter and return the value.
 export function newAsyncId() {
   return ++asyncIdFields[constants.kAsyncIdCounter];
 }
 
-enum UidFields {
+export enum UidFields {
   kExecutionAsyncId,
   kTriggerAsyncId,
   kAsyncIdCounter,

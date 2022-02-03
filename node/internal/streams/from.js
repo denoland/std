@@ -1,8 +1,9 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
 import { Buffer } from "../../buffer.ts";
-import { ERR_INVALID_ARG_TYPE, ERR_STREAM_NULL_VALUES } from "../../_errors.ts";
+import { ERR_INVALID_ARG_TYPE, ERR_STREAM_NULL_VALUES } from "../errors.ts";
 import * as process from "../../_process/process.ts";
 
 function _from(Readable, iterable, opts) {

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible. Do not rely on good formatting of values
 // for AssertionError messages in browsers.
 
@@ -135,7 +135,10 @@ export function equal(c: unknown, d: unknown): boolean {
       if (Number.isNaN(aTime) && Number.isNaN(bTime)) {
         return true;
       }
-      return a.getTime() === b.getTime();
+      return aTime === bTime;
+    }
+    if (typeof a === "number" && typeof b === "number") {
+      return Number.isNaN(a) && Number.isNaN(b) || a === b;
     }
     if (Object.is(a, b)) {
       return true;
@@ -537,53 +540,45 @@ export function assertObjectMatch(
   expected: Record<PropertyKey, unknown>,
 ): void {
   type loose = Record<PropertyKey, unknown>;
-  const seen = new WeakMap();
-  function filter(a: loose, b: loose): loose {
-    // If the actual value is an array, let assertEquals do the assertion.
-    if (Array.isArray(a)) {
-      return a;
-    }
 
-    // Prevent infinite loop with circular references with same filter
-    if ((seen.has(a)) && (seen.get(a) === b)) {
-      return a;
-    }
-    seen.set(a, b);
-    // Filter keys and symbols which are present in both actual and expected
-    const filtered = {} as loose;
-    const entries = [
-      ...Object.getOwnPropertyNames(a),
-      ...Object.getOwnPropertySymbols(a),
-    ]
-      .filter((key) => key in b)
-      .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
-    for (const [key, value] of entries) {
-      // On array references, build a filtered array and filter nested objects inside
-      if (Array.isArray(value)) {
-        const subset = (b as loose)[key];
-        if (Array.isArray(subset)) {
-          filtered[key] = value
-            .slice(0, subset.length)
-            .map((element, index) => {
-              const subsetElement = subset[index];
-              if ((typeof subsetElement === "object") && (subsetElement)) {
-                return filter(element, subsetElement);
-              }
-              return element;
-            });
-          continue;
-        }
-      } // On nested objects references, build a filtered object recursively
-      else if (typeof value === "object") {
-        const subset = (b as loose)[key];
-        if ((typeof subset === "object") && (subset)) {
-          filtered[key] = filter(value as loose, subset as loose);
-          continue;
-        }
+  function filter(a: loose, b: loose) {
+    const seen = new WeakMap();
+    return fn(a, b);
+
+    function fn(a: loose, b: loose): loose {
+      // Prevent infinite loop with circular references with same filter
+      if ((seen.has(a)) && (seen.get(a) === b)) {
+        return a;
       }
-      filtered[key] = value;
+      seen.set(a, b);
+      // Filter keys and symbols which are present in both actual and expected
+      const filtered = {} as loose;
+      const entries = [
+        ...Object.getOwnPropertyNames(a),
+        ...Object.getOwnPropertySymbols(a),
+      ]
+        .filter((key) => key in b)
+        .map((key) => [key, a[key as string]]) as Array<[string, unknown]>;
+      for (const [key, value] of entries) {
+        // On array references, build a filtered array and filter nested objects inside
+        if (Array.isArray(value)) {
+          const subset = (b as loose)[key];
+          if (Array.isArray(subset)) {
+            filtered[key] = fn({ ...value }, { ...subset });
+            continue;
+          }
+        } // On nested objects references, build a filtered object recursively
+        else if (typeof value === "object") {
+          const subset = (b as loose)[key];
+          if ((typeof subset === "object") && (subset)) {
+            filtered[key] = fn(value as loose, subset as loose);
+            continue;
+          }
+        }
+        filtered[key] = value;
+      }
+      return filtered;
     }
-    return filtered;
   }
   return assertEquals(
     // get the intersection of "actual" and "expected"
@@ -772,15 +767,6 @@ export async function assertRejects<E extends Error = Error>(
     throw new AssertionError(msg);
   }
 }
-
-/**
- * Executes a function which returns a promise, expecting it to throw or reject.
- * If it does not, then it throws.  An error class and a string that should be
- * included in the error message can also be asserted.
- *
- * @deprecated Use assertRejects instead.
- */
-export const assertThrowsAsync = assertRejects;
 
 /** Use this to stub out methods that will throw when invoked. */
 export function unimplemented(msg?: string): never {

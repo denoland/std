@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { createRequire } from "../module.ts";
 import { isAbsolute } from "../../path/mod.ts";
 

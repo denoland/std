@@ -1,14 +1,14 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
+import * as DenoUnstable from "../_deno_unstable.ts";
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.js";
-import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { ERR_INVALID_ARG_TYPE } from "./internal/errors.ts";
 import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import {
-  _exiting,
   arch,
   chdir,
   cwd,
@@ -19,6 +19,7 @@ import {
   version,
   versions,
 } from "./_process/process.ts";
+import { _exiting } from "./_process/exiting.ts";
 export {
   _nextTick as nextTick,
   arch,
@@ -30,8 +31,21 @@ export {
   version,
   versions,
 };
-import { stderr, stdin, stdout } from "./_process/streams.ts";
+import {
+  stderr as stderr_,
+  stdin as stdin_,
+  stdout as stdout_,
+} from "./_process/streams.js";
+// TODO(kt3k): Give better types to stdio objects
+// deno-lint-ignore no-explicit-any
+const stderr = stderr_ as any;
+// deno-lint-ignore no-explicit-any
+const stdin = stdin_ as any;
+// deno-lint-ignore no-explicit-any
+const stdout = stdout_ as any;
 export { stderr, stdin, stdout };
+import { getBinding } from "./internal_binding/mod.ts";
+import type { BindingName } from "./internal_binding/mod.ts";
 
 const notImplementedEvents = [
   "beforeExit",
@@ -53,9 +67,14 @@ Object.defineProperty(argv, "0", { get: Deno.execPath });
 Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
-export const exit = (code?: number) => {
+export const exit = (code?: number | string) => {
   if (code || code === 0) {
-    process.exitCode = code;
+    if (typeof code === "string") {
+      const parsedCode = parseInt(code);
+      process.exitCode = isNaN(parsedCode) ? undefined : parsedCode;
+    } else {
+      process.exitCode = code;
+    }
   }
 
   if (!process._exiting) {
@@ -216,11 +235,11 @@ class Process extends EventEmitter {
   constructor() {
     super();
 
-    //This causes the exit event to be binded to the unload event
     globalThis.addEventListener("unload", () => {
-      //TODO(Soremwar)
-      //Get the exit code from the unload event
-      super.emit("exit", 0);
+      if (!process._exiting) {
+        process._exiting = true;
+        super.emit("exit", process.exitCode || 0);
+      }
     });
   }
 
@@ -252,7 +271,7 @@ class Process extends EventEmitter {
   env = env;
 
   /** https://nodejs.org/api/process.html#process_process_execargv */
-  execArgv = [];
+  execArgv: string[] = [];
 
   /** https://nodejs.org/api/process.html#process_process_exit_code */
   exit = exit;
@@ -280,7 +299,7 @@ class Process extends EventEmitter {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.on("${event}")`);
     } else if (event.startsWith("SIG")) {
-      Deno.addSignalListener(event as Deno.Signal, listener);
+      DenoUnstable.addSignalListener(event as Deno.Signal, listener);
     } else {
       super.on(event, listener);
     }
@@ -298,7 +317,7 @@ class Process extends EventEmitter {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.off("${event}")`);
     } else if (event.startsWith("SIG")) {
-      Deno.removeSignalListener(event as Deno.Signal, listener);
+      DenoUnstable.removeSignalListener(event as Deno.Signal, listener);
     } else {
       super.off(event, listener);
     }
@@ -373,6 +392,39 @@ class Process extends EventEmitter {
 
   /** https://nodejs.org/api/process.html#process_process_emitwarning_warning_options */
   emitWarning = emitWarning;
+
+  binding(name: BindingName) {
+    return getBinding(name);
+  }
+
+  /** https://nodejs.org/api/process.html#processumaskmask */
+  umask = DenoUnstable.umask;
+
+  /** https://nodejs.org/api/process.html#processgetuid */
+  getuid(): number {
+    // TODO(kt3k): return user id in mac and linux
+    return NaN;
+  }
+
+  /** https://nodejs.org/api/process.html#processgetgid */
+  getgid(): number {
+    // TODO(kt3k): return group id in mac and linux
+    return NaN;
+  }
+
+  // TODO(kt3k): Implement this when we added -e option to node compat mode
+  _eval: string | undefined = undefined;
+
+  /** https://nodejs.org/api/process.html#processexecpath */
+  get execPath() {
+    return argv[0];
+  }
+
+  #startTime = Date.now();
+  /** https://nodejs.org/api/process.html#processuptime */
+  uptime() {
+    return (Date.now() - this.#startTime) / 1000;
+  }
 }
 
 /** https://nodejs.org/api/process.html#process_process */

@@ -1,10 +1,14 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { listenAndServe } from "./server.ts";
 
-const addr = Deno.args[0] || "127.0.0.1:4500";
+const DEFAULT_PORT = 4500;
+const addr = Deno.args[0] || `127.0.0.1:${DEFAULT_PORT}`;
 const encoder = new TextEncoder();
 const body = encoder.encode("Hello World");
-
-listenAndServe(addr, () => new Response(body));
+const [hostname, p] = addr.split(":");
+listenAndServe({
+  hostname,
+  port: parseInt(p ?? DEFAULT_PORT),
+}, () => new Response(body));
 
 console.log("Server listening on", addr);

@@ -1,17 +1,19 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { AbortError, aggregateTwoErrors } from "../errors.js";
 import { isIterable, isNodeStream, isReadableNodeStream } from "./utils.js";
-import { once } from "../util.ts";
-import { stderr, stdout } from "./readable.js";
+import { once } from "../util.js";
+import { stdio } from "../../_process/stdio.js";
 import { validateAbortSignal, validateCallback } from "../validators.js";
 import {
+  AbortError,
+  aggregateTwoErrors,
   ERR_INVALID_ARG_TYPE,
   ERR_INVALID_RETURN_VALUE,
   ERR_MISSING_ARGS,
   ERR_STREAM_DESTROYED,
-} from "../../_errors.ts";
+} from "../errors.ts";
 import * as process from "../../_process/process.ts";
 import destroyImpl from "./destroy.js";
 import Duplex from "./duplex.js";
@@ -285,7 +287,7 @@ function pipelineImpl(streams, callback, opts) {
         // Compat. Before node v10.12.0 stdio used to throw an error so
         // pipe() did/does not end() stdio destinations.
         // Now they allow it but "secretly" don't close the underlying fd.
-        if (stream === stdout || stream === stderr) {
+        if (stream === stdio.stdout || stream === stdio.stderr) {
           ret.on("end", () => stream.end());
         }
       } else {

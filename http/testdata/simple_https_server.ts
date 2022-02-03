@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This is an example of a https server
 import { listenAndServeTls } from "../server.ts";
 import { dirname, fromFileUrl, join } from "../../path/mod.ts";

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -10,7 +10,7 @@ import { writeFile, writeFileSync } from "./_fs_writeFile.ts";
 import type { TextEncodings } from "../_utils.ts";
 import * as path from "../../path/mod.ts";
 import { isWindows } from "../../_util/os.ts";
-import { AbortError } from "./../_errors.ts";
+import { AbortError } from "./../internal/errors.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testDataDir = path.resolve(moduleDir, "testdata");

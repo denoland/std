@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // This program serves files in the current directory over HTTP.
 // TODO(bartlomieju): Add tests like these:
@@ -38,6 +38,8 @@ interface FileServerArgs {
   key: string;
   // -h --help
   help: boolean;
+  // --quiet
+  quiet: boolean;
 }
 
 const encoder = new TextEncoder();
@@ -204,9 +206,9 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
     .reverse()
     .slice(0, 3)
     .forEach((v): void => {
-      output = modeMap[+v] + output;
+      output = `${modeMap[+v]} ${output}`;
     });
-  output = `(${isDir ? "d" : "-"}${output})`;
+  output = `${isDir ? "d" : "-"} ${output}`;
   return output;
 }
 
@@ -273,8 +275,9 @@ export async function serveFile(
     const ifModifiedSince = req.headers.get("if-modified-since");
     if (
       (ifNoneMatch && ifNoneMatch === simpleEtag) ||
-      (ifNoneMatch === null && ifModifiedSince &&
-        fileInfo.mtime.getTime() < (new Date(ifModifiedSince).getTime() + 1000))
+      (ifNoneMatch === null &&
+        ifModifiedSince &&
+        fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
     ) {
       const status = Status.NotModified;
       const statusText = STATUS_TEXT.get(status);
@@ -310,8 +313,11 @@ export async function serveFile(
   const maxRange = fileInfo.size - 1;
 
   if (
-    range && (!parsed ||
-      typeof start !== "number" || start > end || start > maxRange ||
+    range &&
+    (!parsed ||
+      typeof start !== "number" ||
+      start > end ||
+      start > maxRange ||
       end > maxRange)
   ) {
     const status = Status.RequestedRangeNotSatisfiable;
@@ -334,7 +340,9 @@ export async function serveFile(
   let bytesSent = 0;
   const body = new ReadableStream({
     async start() {
-      await file.seek(start, Deno.SeekMode.Start);
+      if (start > 0) {
+        await file.seek(start, Deno.SeekMode.Start);
+      }
     },
     async pull(controller) {
       const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
@@ -446,7 +454,8 @@ function serverLog(req: Request, res: Response): void {
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const normalizedUrl = normalizeURL(req.url);
   const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${res.status}`;
-  console.log(s);
+  // using console.debug instead of console.log so chrome inspect users can hide request logs
+  console.debug(s);
 }
 
 function setBaseHeaders(): Headers {
@@ -486,8 +495,11 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           }
           @media (prefers-color-scheme: dark) {
             :root {
-              --background-color: #303030;
+              --background-color: #292929;
               --color: #fff;
+            }
+            thead {
+              color: #7f7f7f;
             }
           }
           @media (min-width: 960px) {
@@ -520,11 +532,21 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           a:hover {
             text-decoration: underline;
           }
-          table th {
+          thead {
             text-align: left;
           }
+          thead th {
+            padding-bottom: 12px;
+          }
           table td {
-            padding: 6px 24px 6px 4px;
+            padding: 6px 36px 6px 0px;
+          }
+          .size {
+            text-align: right;
+            padding: 6px 12px 6px 24px;
+          }
+          .mode {
+            font-family: monospace, monospace;
           }
         </style>
       </head>
@@ -532,27 +554,32 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
         <main>
           <h1>Index of
           <a href="/">home</a>${
-    paths.map((path, index, array) => {
-      if (path === "") return "";
-      const link = array.slice(0, index + 1).join("/");
-      return `<a href="${link}">${path}</a>`;
-    }).join("/")
+    paths
+      .map((path, index, array) => {
+        if (path === "") return "";
+        const link = array.slice(0, index + 1).join("/");
+        return `<a href="${link}">${path}</a>`;
+      })
+      .join("/")
   }
           </h1>
           <table>
-            <tr>
-              <th>Mode</th>
-              <th>Size</th>
-              <th>Name</th>
-            </tr>
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Size</th>
+                <th>Name</th>
+              </tr>
+            </thead>
             ${
-    entries.map(
-      (entry) => `
+    entries
+      .map(
+        (entry) => `
                   <tr>
                     <td class="mode">
                       ${entry.mode}
                     </td>
-                    <td>
+                    <td class="size">
                       ${entry.size}
                     </td>
                     <td>
@@ -560,7 +587,8 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                     </td>
                   </tr>
                 `,
-    ).join("")
+      )
+      .join("")
   }
           </table>
         </main>
@@ -576,7 +604,8 @@ function normalizeURL(url: string): string {
     //allowed per https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html
     const absoluteURI = new URL(normalizedUrl);
     normalizedUrl = absoluteURI.pathname;
-  } catch (e) { //wasn't an absoluteURI
+  } catch (e) {
+    //wasn't an absoluteURI
     if (!(e instanceof TypeError)) {
       throw e;
     }
@@ -605,15 +634,16 @@ function normalizeURL(url: string): string {
 function main(): void {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors", "quiet"],
     default: {
       "dir-listing": true,
-      "dotfiles": true,
-      "cors": true,
-      "host": "0.0.0.0",
-      "port": "4507",
-      "cert": "",
-      "key": "",
+      dotfiles: true,
+      cors: true,
+      quiet: false,
+      host: "0.0.0.0",
+      port: "4507",
+      cert: "",
+      key: "",
     },
     alias: {
       p: "port",
@@ -625,10 +655,10 @@ function main(): void {
   const CORSEnabled = serverArgs.cors;
   const port = serverArgs.port;
   const host = serverArgs.host;
-  const addr = `${host}:${port}`;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
   const dirListingEnabled = serverArgs["dir-listing"];
+  const quiet = serverArgs.quiet;
 
   if (serverArgs.help) {
     printUsage();
@@ -681,7 +711,7 @@ function main(): void {
       setCORS(response);
     }
 
-    serverLog(req, response!);
+    if (!quiet) serverLog(req, response!);
 
     return response!;
   };
@@ -690,15 +720,23 @@ function main(): void {
 
   if (keyFile || certFile) {
     proto += "s";
-    serveTls(handler, { addr, certFile, keyFile });
+    serveTls(handler, {
+      port: Number(port),
+      hostname: host,
+      certFile,
+      keyFile,
+    });
   } else {
-    serve(handler, { addr });
+    serve(handler, { port: Number(port), hostname: host });
   }
 
   console.log(
     `${proto.toUpperCase()} server listening on ${proto}://${
-      addr.replace("0.0.0.0", "localhost")
-    }/`,
+      host.replace(
+        "0.0.0.0",
+        "localhost",
+      )
+    }:${port}/`,
   );
 }
 
@@ -721,6 +759,7 @@ OPTIONS:
   -k, --key  <FILE>   TLS key file (enables TLS)
   --no-dir-listing    Disable directory listing
   --no-dotfiles       Do not show dotfiles
+  --quiet             Do not print request level logs
 
   All TLS options are required when one is provided.`);
 }

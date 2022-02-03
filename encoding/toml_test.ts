@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { existsSync } from "../fs/exists.ts";
 import * as path from "../path/mod.ts";
@@ -448,62 +448,62 @@ Deno.test({
       bool: true,
       bool2: false,
     };
-    const expected = `deno    = "is"
-not     = "[node]"
-regex   = "<ic*s*>"
-NANI    = "何?!"
+    const expected = `deno = "is"
+not = "[node]"
+regex = "<ic*s*>"
+NANI = "何?!"
 comment = "Comment inside # the comment"
-int1    = 99
-int2    = 42
-int3    = 0
-int4    = -17
-int5    = 1000
-int6    = 5349221
-int7    = 12345
-flt1    = 1
-flt2    = 3.1415
-flt3    = -0.01
-flt4    = 5e+22
-flt5    = 1000000
-flt6    = -0.02
-flt7    = 6.626e-34
-odt1    = 1979-05-01T07:32:00.000
-odt2    = 1979-05-27T07:32:00.000
-odt3    = 1979-05-27T07:32:00.999
-odt4    = 1979-05-27T07:32:00.000
-ld1     = 1979-05-27T00:00:00.000
-reg     = "/foo[bar]/"
-sf1     = inf
-sf2     = inf
-sf3     = -inf
-sf4     = NaN
-sf5     = NaN
-sf6     = NaN
-data    = [["gamma","delta"],[1,2]]
-hosts   = ["alpha","omega"]
-bool    = true
-bool2   = false
+int1 = 99
+int2 = 42
+int3 = 0
+int4 = -17
+int5 = 1000
+int6 = 5349221
+int7 = 12345
+flt1 = 1
+flt2 = 3.1415
+flt3 = -0.01
+flt4 = 5e+22
+flt5 = 1000000
+flt6 = -0.02
+flt7 = 6.626e-34
+odt1 = 1979-05-01T07:32:00.000
+odt2 = 1979-05-27T07:32:00.000
+odt3 = 1979-05-27T07:32:00.999
+odt4 = 1979-05-27T07:32:00.000
+ld1 = 1979-05-27T00:00:00.000
+reg = "/foo[bar]/"
+sf1 = inf
+sf2 = inf
+sf3 = -inf
+sf4 = NaN
+sf5 = NaN
+sf6 = NaN
+data = [["gamma","delta"],[1,2]]
+hosts = ["alpha","omega"]
+bool = true
+bool2 = false
 
 [foo]
-bar     = "deno"
+bar = "deno"
 
 [this.is]
-nested  = "denonono"
+nested = "denonono"
 
 ["https://deno.land/std"]
-"$"     = "doller"
+"$" = "doller"
 
 ["##".deno."https://deno.land"]
-proto   = "https"
-":80"   = "port"
+proto = "https"
+":80" = "port"
 
 [[arrayObjects]]
-stuff   = "in"
+stuff = "in"
 
 [[arrayObjects]]
 
 [[arrayObjects]]
-the     = "array"
+the = "array"
 `;
     const actual = stringify(src);
     assertEquals(actual, expected);
@@ -554,8 +554,8 @@ Deno.test({
     };
     const expected = `
 "\\"" = "\\""
-"'"  = "'"
-" "  = " "
+"'" = "'"
+" " = " "
 "\\\\" = "\\\\"
 "\\n" = "\\n"
 "\\t" = "\\t"
@@ -671,5 +671,43 @@ Deno.test({
       Error,
       "Contains invalid whitespaces: `\\u3000`",
     );
+  },
+});
+
+// https://github.com/denoland/deno_std/issues/1067#issuecomment-907740319
+Deno.test({
+  name: "[TOML] object value contains '='",
+  fn(): void {
+    const src = {
+      "a": "a = 1",
+      "helloooooooo": 1,
+    };
+
+    const actual = stringify(src, { keyAlignment: true });
+    const expected = `a            = "a = 1"
+helloooooooo = 1
+`;
+    assertEquals(actual, expected);
+  },
+});
+
+Deno.test({
+  name: "[TOML] stringfy with key alignment",
+  fn(): void {
+    const src = {
+      "a": 1,
+      "aa": 1,
+      "aaa": 1,
+      "aaaa": 1,
+      "aaaaa": 1,
+    };
+    const actual = stringify(src, { keyAlignment: true });
+    const expected = `a     = 1
+aa    = 1
+aaa   = 1
+aaaa  = 1
+aaaaa = 1
+`;
+    assertEquals(actual, expected);
   },
 });

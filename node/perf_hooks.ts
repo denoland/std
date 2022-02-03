@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { notImplemented } from "./_utils.ts";
 
 const { PerformanceObserver, PerformanceEntry, performance: shimPerformance } =

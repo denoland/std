@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -36,7 +37,7 @@ import {
   ERR_PACKAGE_IMPORT_NOT_DEFINED,
   ERR_PACKAGE_PATH_NOT_EXPORTED,
   NodeError,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 
 const { hasOwn } = Object;
 
@@ -85,7 +86,11 @@ function throwImportNotDefined(
   packageJSONUrl: URL | undefined,
   base: string | URL,
 ): TypeError & { code: string } {
-  throw new ERR_PACKAGE_IMPORT_NOT_DEFINED(specifier, packageJSONUrl, base);
+  throw new ERR_PACKAGE_IMPORT_NOT_DEFINED(
+    specifier,
+    packageJSONUrl && fileURLToPath(new URL(".", packageJSONUrl)),
+    fileURLToPath(base),
+  );
 }
 
 function throwExportsNotFound(
@@ -95,8 +100,8 @@ function throwExportsNotFound(
 ): Error & { code: string } {
   throw new ERR_PACKAGE_PATH_NOT_EXPORTED(
     subpath,
-    packageJSONUrl,
-    base,
+    fileURLToPath(new URL(".", packageJSONUrl)),
+    base && fileURLToPath(base),
   );
 }
 

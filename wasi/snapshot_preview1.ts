@@ -1,6 +1,7 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-unused-vars
 
+import * as DenoUnstable from "../_deno_unstable.ts";
 import { relative, resolve } from "../path/mod.ts";
 
 const CLOCKID_REALTIME = 0;
@@ -726,7 +727,7 @@ export default class Context {
           mtim = BigInt(Date.now() * 1e6);
         }
 
-        Deno.utimeSync(entry.path!, Number(atim), Number(mtim));
+        DenoUnstable.utimeSync(entry.path!, Number(atim), Number(mtim));
 
         return ERRNO_SUCCESS;
       }),
@@ -1220,7 +1221,7 @@ export default class Context {
           mtim = BigInt(Date.now()) * BigInt(1e6);
         }
 
-        Deno.utimeSync(path, Number(atim), Number(mtim));
+        DenoUnstable.utimeSync(path, Number(atim), Number(mtim));
 
         return ERRNO_SUCCESS;
       }),

@@ -15,21 +15,6 @@ serve(() => new Response("Hello World\n"));
 console.log("http://localhost:8000/");
 ```
 
-## Legacy Server (Deprecated)
-
-Legacy server APIs using a JavaScript HTTP server implementation.
-
-```ts
-import { serve } from "https://deno.land/std@$STD_VERSION/http/server_legacy.ts";
-
-const server = serve({ port: 8000 });
-console.log("http://localhost:8000/");
-
-for await (const req of server) {
-  req.respond({ body: "Hello World\n" });
-}
-```
-
 ## File Server
 
 A small program for serving local files over HTTP.

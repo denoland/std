@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as os from "./os.ts";
 
@@ -254,13 +254,6 @@ Deno.test({
     assertThrows(
       () => {
         os.getPriority();
-      },
-      Error,
-      "Not implemented",
-    );
-    assertThrows(
-      () => {
-        os.networkInterfaces();
       },
       Error,
       "Not implemented",

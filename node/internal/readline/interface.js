@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,7 +22,7 @@
 
 // deno-lint-ignore-file camelcase no-inner-declarations no-this-alias
 
-import { ERR_INVALID_ARG_VALUE } from "../../_errors.ts";
+import { ERR_INVALID_ARG_VALUE } from "../errors.ts";
 import {
   validateAbortSignal,
   validateArray,
@@ -44,6 +45,39 @@ import {
 import { clearScreenDown, cursorTo, moveCursor } from "./callbacks.js";
 
 import { StringDecoder } from "../../string_decoder.ts";
+import {
+  kAddHistory,
+  kDecoder,
+  kDeleteLeft,
+  kDeleteLineLeft,
+  kDeleteLineRight,
+  kDeleteRight,
+  kDeleteWordLeft,
+  kDeleteWordRight,
+  kGetDisplayPos,
+  kHistoryNext,
+  kHistoryPrev,
+  kInsertString,
+  kLine,
+  kLine_buffer,
+  kMoveCursor,
+  kNormalWrite,
+  kOldPrompt,
+  kOnLine,
+  kPreviousKey,
+  kPrompt,
+  kQuestionCallback,
+  kRefreshLine,
+  kSawKeyPress,
+  kSawReturnAt,
+  kSetRawMode,
+  kTabComplete,
+  kTabCompleter,
+  kTtyWrite,
+  kWordLeft,
+  kWordRight,
+  kWriteToOutput,
+} from "./symbols.js";
 
 // Lazy load Readable for startup performance.
 let Readable;
@@ -59,37 +93,39 @@ export const kQuestionCancel = Symbol("kQuestionCancel");
 // GNU readline library - keyseq-timeout is 500ms (default)
 const ESCAPE_CODE_TIMEOUT = 500;
 
-export const kAddHistory = Symbol("_addHistory");
-export const kDecoder = Symbol("_decoder");
-export const kDeleteLeft = Symbol("_deleteLeft");
-export const kDeleteLineLeft = Symbol("_deleteLineLeft");
-export const kDeleteLineRight = Symbol("_deleteLineRight");
-export const kDeleteRight = Symbol("_deleteRight");
-export const kDeleteWordLeft = Symbol("_deleteWordLeft");
-export const kDeleteWordRight = Symbol("_deleteWordRight");
-export const kGetDisplayPos = Symbol("_getDisplayPos");
-export const kHistoryNext = Symbol("_historyNext");
-export const kHistoryPrev = Symbol("_historyPrev");
-export const kInsertString = Symbol("_insertString");
-export const kLine = Symbol("_line");
-export const kLine_buffer = Symbol("_line_buffer");
-export const kMoveCursor = Symbol("_moveCursor");
-export const kNormalWrite = Symbol("_normalWrite");
-export const kOldPrompt = Symbol("_oldPrompt");
-export const kOnLine = Symbol("_onLine");
-export const kPreviousKey = Symbol("_previousKey");
-export const kPrompt = Symbol("_prompt");
-export const kQuestionCallback = Symbol("_questionCallback");
-export const kRefreshLine = Symbol("_refreshLine");
-export const kSawKeyPress = Symbol("_sawKeyPress");
-export const kSawReturnAt = Symbol("_sawReturnAt");
-export const kSetRawMode = Symbol("_setRawMode");
-export const kTabComplete = Symbol("_tabComplete");
-export const kTabCompleter = Symbol("_tabCompleter");
-export const kTtyWrite = Symbol("_ttyWrite");
-export const kWordLeft = Symbol("_wordLeft");
-export const kWordRight = Symbol("_wordRight");
-export const kWriteToOutput = Symbol("_writeToOutput");
+export {
+  kAddHistory,
+  kDecoder,
+  kDeleteLeft,
+  kDeleteLineLeft,
+  kDeleteLineRight,
+  kDeleteRight,
+  kDeleteWordLeft,
+  kDeleteWordRight,
+  kGetDisplayPos,
+  kHistoryNext,
+  kHistoryPrev,
+  kInsertString,
+  kLine,
+  kLine_buffer,
+  kMoveCursor,
+  kNormalWrite,
+  kOldPrompt,
+  kOnLine,
+  kPreviousKey,
+  kPrompt,
+  kQuestionCallback,
+  kRefreshLine,
+  kSawKeyPress,
+  kSawReturnAt,
+  kSetRawMode,
+  kTabComplete,
+  kTabCompleter,
+  kTtyWrite,
+  kWordLeft,
+  kWordRight,
+  kWriteToOutput,
+};
 
 export function InterfaceConstructor(input, output, completer, terminal) {
   this[kSawReturnAt] = 0;

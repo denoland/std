@@ -1,11 +1,12 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import { Buffer } from "../buffer.ts";
 
 /**
- * @typedef {import('../internal/webstreams/readablestream').ReadableStream
+ * @typedef {import('../_global.d.ts').ReadableStream
  * } ReadableStream
- * @typedef {import('../internal/streams/readable')} Readable
+ * @typedef {import('../_stream.d.ts')} Readable
  */
 
 /**
