@@ -105,8 +105,8 @@ export class WriteStreamClass extends Writable {
   }
 }
 
-// deno-lint-ignore no-explicit-any
 function closeStream(
+  // deno-lint-ignore no-explicit-any
   stream: any,
   err: Error,
   cb: (err?: Error | null) => void,
