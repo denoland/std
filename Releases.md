@@ -1,3 +1,15 @@
+### 0.124.0 / 2022.02.03
+
+- feat(node): add punycode module (#1857)
+- feat(node): add url.resolve (#1851)
+- feat(node/child_process): add support for AbortSignal in ChildProcess (#1864)
+- feat(node/fs): add fs.createWriteStream (#1859)
+- fix(node/fs): fix fs.access when the user owns the file (#1869)
+- fix(node/fs): fix fs.copyFile (support 4-arg call) (#1872)
+- fix(node/http): fix http.request (#1856)
+- fix(node/net): mock response.socket object (#1858)
+- fix: bypass TS errors for missing --unstable (#1819)
+
 ### 0.123.0 / 2022.01.27
 
 - feat(node): add os.networkInterfaces (#1846)
