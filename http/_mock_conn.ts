@@ -24,11 +24,10 @@ export function mockConn(base: Partial<Deno.Conn> = {}): Deno.Conn {
       return Promise.resolve(-1);
     },
     close: (): void => {},
-    // TODO(ry) Remove the following ts-ignore. This was added to workaround
-    // incompatibilities between Deno versions.
-    // @ts-ignore
+    // TODO(ry) Remove the following ts-ignore.
+    // @ts-ignore This was added to workaround incompatibilities between Deno versions.
     setNoDelay: (_nodelay?: boolean): void => {},
-    // @ts-ignore
+    // @ts-ignore This was added to workaround incompatibilities between Deno versions.
     setKeepAlive: (_keepalive?: boolean): void => {},
     ...base,
   };
