@@ -1,4 +1,4 @@
-### 0.124.0 / 2022.02.03
+### 0.125.0 / 2022.02.03
 
 - feat(node): add punycode module (#1857)
 - feat(node): add url.resolve (#1851)
@@ -9,6 +9,9 @@
 - fix(node/http): fix http.request (#1856)
 - fix(node/net): mock response.socket object (#1858)
 - fix: bypass TS errors for missing --unstable (#1819)
+
+Note 0.124.0 is the same as 0.125.0 but ignoring a typescript error related to a
+new feature added setNoDelay.
 
 ### 0.123.0 / 2022.01.27
 
