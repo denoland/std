@@ -5,6 +5,7 @@ import { Writable } from "../../stream.ts";
 import { toPathIfFileURL } from "../url.ts";
 import { open, type openFlags } from "../../_fs/_fs_open.ts";
 import { write } from "../../_fs/_fs_write.js";
+import { close } from "../../_fs/_fs_close.ts";
 import { Buffer } from "../../buffer.ts";
 
 const kFs = Symbol("kFs");
@@ -16,11 +17,13 @@ interface WriteStreamOptions {
   mode?: number;
   fs?: FS;
   encoding?: string;
+  highWaterMark?: number;
 }
 
 interface FS {
   open: typeof open;
   write: typeof write;
+  close: typeof close;
 }
 
 export class WriteStreamClass extends Writable {
@@ -33,20 +36,18 @@ export class WriteStreamClass extends Writable {
   [kFs] = { open, write };
   [kIsPerformingIO] = false;
   constructor(path: string | Buffer, opts: WriteStreamOptions = {}) {
-    super();
+    super(opts);
     this.path = toPathIfFileURL(path);
-    this.flags = opts.flags;
-    this.mode = opts.mode;
-    this[kFs] = opts.fs ?? { open, write };
+    this.flags = opts.flags || "w";
+    this.mode = opts.mode || 0o666;
+    this[kFs] = opts.fs ?? { open, write, close };
 
     if (opts.encoding) {
       this.setDefaultEncoding(opts.encoding);
     }
   }
 
-  async _construct(callback: (err?: Error) => void) {
-    // Note: this line is necessary to pass test-fs-write-stream.js test case.
-    await Promise.resolve();
+  _construct(callback: (err?: Error) => void) {
     this[kFs].open(
       this.path.toString(),
       this.flags!,
@@ -97,15 +98,15 @@ export class WriteStreamClass extends Writable {
 
   _destroy(err: Error, cb: (err?: Error | null) => void) {
     if (this[kIsPerformingIO]) {
-      this.once(kIoDone, (er) => close(this, err || er, cb));
+      this.once(kIoDone, (er) => closeStream(this, err || er, cb));
     } else {
-      close(this, err, cb);
+      closeStream(this, err, cb);
     }
   }
 }
 
 // deno-lint-ignore no-explicit-any
-function close(stream: any, err: Error, cb: (err?: Error | null) => void) {
+function closeStream(stream: any, err: Error, cb: (err?: Error | null) => void) {
   if (!stream.fd) {
     cb(err);
   } else {
