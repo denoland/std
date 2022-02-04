@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,10 +22,7 @@
 
 "use strict";
 
-import {
-  ERR_INVALID_ARG_VALUE,
-  ERR_INVALID_CURSOR_POS,
-} from "../../_errors.ts";
+import { ERR_INVALID_ARG_VALUE, ERR_INVALID_CURSOR_POS } from "../errors.ts";
 
 import { validateCallback } from "../validators.js";
 

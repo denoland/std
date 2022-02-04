@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { magenta } from "../../fmt/colors.ts";
 import { dirname, fromFileUrl, join } from "../../path/mod.ts";
 import { fail } from "../../testing/asserts.ts";
@@ -16,6 +17,7 @@ const filters = Deno.args;
  */
 
 const toolsPath = dirname(fromFileUrl(import.meta.url));
+const stdRootUrl = new URL("../../", import.meta.url).href;
 const testPaths = getPathsFromTestSuites(config.tests);
 const windowsIgnorePaths = new Set(
   getPathsFromTestSuites(config.windowsIgnore),
@@ -51,6 +53,9 @@ for await (const path of testPaths) {
       // That way the tests will respect the `--quiet` option when provided
       const test = Deno.run({
         cmd,
+        env: {
+          DENO_NODE_COMPAT_URL: stdRootUrl,
+        },
         stderr: "piped",
         stdout: "piped",
       });
@@ -70,7 +75,7 @@ for await (const path of testPaths) {
         console.log(`Error: "${path}" failed`);
         console.log(
           "You can repeat only this test with the command:",
-          magenta(cmd.join(" ")),
+          magenta(`deno test -A node/_tools/test.ts -- ${path}`),
         );
         fail(stderr);
       }

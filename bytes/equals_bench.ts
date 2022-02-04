@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { bench, runBenchmarks } from "../testing/bench.ts";
 import { equalsNaive, equalsSimd } from "./equals.ts";
 

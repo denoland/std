@@ -1,10 +1,11 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   NodeRangeError,
   NodeSyntaxError,
   NodeTypeError,
   NodeURIError,
-} from "./_errors.ts";
-import { assertEquals } from "../testing/asserts.ts";
+} from "./errors.ts";
+import { assertEquals } from "../../testing/asserts.ts";
 
 Deno.test("NodeSyntaxError string representation", () => {
   assertEquals(

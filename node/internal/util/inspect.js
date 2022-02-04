@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,7 +22,7 @@
 
 import * as types from "./types.ts";
 import { validateObject, validateString } from "../validators.js";
-import { ERR_INVALID_ARG_TYPE } from "../../_errors.ts";
+import { codes } from "../error_codes.ts";
 
 import {
   ALL_PROPERTIES,
@@ -2061,7 +2062,7 @@ export function format(...args) {
 
 export function formatWithOptions(inspectOptions, ...args) {
   if (typeof inspectOptions !== "object" || inspectOptions === null) {
-    throw new ERR_INVALID_ARG_TYPE(
+    throw new codes.ERR_INVALID_ARG_TYPE(
       "inspectOptions",
       "object",
       inspectOptions,

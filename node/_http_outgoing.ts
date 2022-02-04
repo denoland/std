@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import { getDefaultHighWaterMark } from "./internal/streams/state.js";
@@ -32,7 +32,7 @@ import {
   ERR_STREAM_NULL_VALUES,
   ERR_STREAM_WRITE_AFTER_END,
   hideStackFrames,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 import { validateString } from "./internal/validators.js";
 import { isUint8Array } from "./internal/util/types.ts";
 

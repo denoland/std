@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   _format,
   assert,
@@ -600,6 +600,17 @@ Deno.test("testingAssertObjectMatching", function (): void {
     assertObjectMatch({ test: { a: 1 } }, { test: { a: 1 } });
     assertObjectMatch({ test: { a: 1 } }, { test: new A(1) });
     assertObjectMatch({ test: new A(1) }, { test: new A(1) });
+  }
+  {
+    // actual/expected contains same instance of Map/TypedArray/etc
+    const body = new Uint8Array([0, 1, 2]);
+    assertObjectMatch({ body, foo: "foo" }, { body });
+  }
+  {
+    // match subsets of arrays
+    assertObjectMatch({ positions: [[1, 2, 3, 4]] }, {
+      positions: [[1, 2, 3]],
+    });
   }
 });
 

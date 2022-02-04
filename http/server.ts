@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { delay } from "../async/mod.ts";
 
 /** Thrown by Server after it has been closed. */
@@ -532,8 +532,8 @@ export async function serveListener(
  *
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
- * console.log("server is starting at localhost:3000");
  * serve((_req) => new Response("Hello, world"), { port: 3000 });
+ * console.log("Listening on http://localhost:3000");
  * ```
  *
  * @param handler The handler for individual HTTP requests.
@@ -578,8 +578,8 @@ interface ServeTlsInit extends ServeInit {
  * import { serveTls } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * const certFile = "/path/to/certFile.crt";
  * const keyFile = "/path/to/keyFile.key";
- * console.log("server is starting at https://localhost:8443");
  * serveTls((_req) => new Response("Hello, world"), { certFile, keyFile });
+ * console.log("Listening on https://localhost:8443");
  * ```
  *
  * @param handler The handler for individual HTTPS requests.

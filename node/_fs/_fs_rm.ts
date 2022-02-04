@@ -1,9 +1,9 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   validateRmOptions,
   validateRmOptionsSync,
 } from "../internal/fs/utils.js";
-import { denoErrorToNodeError } from "../_errors.ts";
+import { denoErrorToNodeError } from "../internal/errors.ts";
 type rmOptions = {
   force?: boolean;
   maxRetries?: number;

@@ -1,7 +1,8 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { ERR_METHOD_NOT_IMPLEMENTED } from "../../_errors.ts";
+import { ERR_METHOD_NOT_IMPLEMENTED } from "../errors.ts";
 import * as process from "../../_process/process.ts";
 import Duplex from "./duplex.js";
 

@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This aliases are used in some node tests and represent a legacy alias
 // for the stream modules
 // deno-lint-ignore camelcase
@@ -36,20 +37,21 @@ import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
-import internalErrors from "./internal/errors.js";
+import internalErrors from "./internal/errors.ts";
 import internalHttp from "./internal/http.ts";
 import internalReadlineUtils from "./internal/readline/utils.js";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.js";
 import internalStreamsAddBufferList from "./internal/streams/buffer_list.js";
 import internalStreamsState from "./internal/streams/state.js";
 import internalTestBinding from "./internal/test/binding.ts";
-import internalTimers from "./internal/timers.ts";
+import internalTimers from "./internal/timers.js";
 import internalUtilInspect from "./internal/util/inspect.js";
 import internalUtil from "./internal/util.js";
 import net from "./net.ts";
 import os from "./os.ts";
 import path from "./path.ts";
 import perfHooks from "./perf_hooks.ts";
+import punycode from "./punycode.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
 import readline from "./readline.ts";
@@ -117,6 +119,15 @@ export default {
   path,
   "perf_hooks": perfHooks,
   process,
+  get punycode() {
+    process.emitWarning(
+      "The `punycode` module is deprecated. Please use a userland " +
+        "alternative instead.",
+      "DeprecationWarning",
+      "DEP0040",
+    );
+    return punycode;
+  },
   querystring,
   readline,
   repl,

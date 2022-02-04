@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file ban-types
 import {
   AssertionError,
@@ -12,7 +12,7 @@ import {
   ERR_INVALID_ARG_VALUE,
   ERR_INVALID_RETURN_VALUE,
   ERR_MISSING_ARGS,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 
 interface ExtendedAssertionErrorConstructorOptions
   extends AssertionErrorConstructorOptions {

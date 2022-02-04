@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This file contains C++ node globals accesed in internal binding calls
 
 /**

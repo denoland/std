@@ -1,3 +1,55 @@
+### 0.125.0 / 2022.02.03
+
+- feat(node): add punycode module (#1857)
+- feat(node): add url.resolve (#1851)
+- feat(node/child_process): add support for AbortSignal in ChildProcess (#1864)
+- feat(node/fs): add fs.createWriteStream (#1859)
+- fix(node/fs): fix fs.access when the user owns the file (#1869)
+- fix(node/fs): fix fs.copyFile (support 4-arg call) (#1872)
+- fix(node/http): fix http.request (#1856)
+- fix(node/net): mock response.socket object (#1858)
+- fix: bypass TS errors for missing --unstable (#1819)
+
+Note 0.124.0 is the same as 0.125.0 but ignoring a typescript error related to a
+new feature added setNoDelay.
+
+### 0.123.0 / 2022.01.27
+
+- feat(node): add os.networkInterfaces (#1846)
+- feat(node): add process.uptime (#1853)
+- feat(node/child_process): add execFile (#1838)
+- fix(node/process): can not pass exit code as a string (#1849)
+- fix(testing): `assertObjectMatch` matches ArrayBuffer views correctly (#1843)
+
+### 0.122.0 / 2022.01.20
+
+- BREAKING(encoding/csv): add return type to csv's parse and remove a parse func
+  from args (#1724)
+- feat(node): add Timeout class (#1699)
+- feat(node): provide node compatible timer APIs in commonjs wrapper (#1834)
+- fix(log): flush to file when buffer is full (#1782)
+- fix(node): fix fs.write/fs.writeAll (#1832)
+- fix(node): make stdio streams optional if not present on Deno namespace
+  (#1829)
+- fix(node/net): setNoDelay and setKeepAlive no-ops (#1828)
+- fix(node/timers): work around |this| check in deno (#1827)
+
+### 0.121.0 / 2022.01.12
+
+- feat(crypto): add md4 hash (#1799)
+- feat(http): add eyecandy to file_server (#1804)
+- feat(http/file_server): add 'quiet' flag (#1773)
+- feat(node): add zlib (#1790)
+- feat(node): mock more APIs (#1802)
+- feat(node): upstream caller-path package (#1801)
+- feat(node/fs): fs.write()/fs.writeSync() (#1817)
+- fix(node): placeholder process.getgid() (#1814)
+- fix(node): process.env ownPropertyDescriptor (#1795)
+- fix(node): set prototype for Module (#1797)
+- fix(node/http): client emit response, trailers & abort (#1809)
+- fix(node/http/client): convert response's Headers to plain Object (#1811)
+- fix(node/url): format auth/search/hash corruption (#1810)
+
 ### 0.120.0 / 2022.01.05
 
 - feat(crypto): add Tiger hash (#1749)

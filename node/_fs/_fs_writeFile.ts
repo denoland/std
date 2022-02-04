@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Encodings } from "../_utils.ts";
 import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
@@ -12,7 +12,7 @@ import {
   WriteFileOptions,
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
-import { AbortError, denoErrorToNodeError } from "../_errors.ts";
+import { AbortError, denoErrorToNodeError } from "../internal/errors.ts";
 import { validateStringAfterArrayBufferView } from "../internal/fs/utils.js";
 
 export function writeFile(

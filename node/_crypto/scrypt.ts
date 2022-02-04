@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /*
 MIT License
 
@@ -23,7 +24,7 @@ SOFTWARE.
  */
 
 import { Buffer } from "../buffer.ts";
-import { pbkdf2Sync as pbkdf2 } from "../crypto.ts";
+import { pbkdf2Sync as pbkdf2 } from "./pbkdf2.ts";
 import { HASH_DATA } from "./types.ts";
 
 type Opts = Partial<{

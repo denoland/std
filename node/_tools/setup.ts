@@ -1,3 +1,6 @@
+#!/usr/bin/env -S deno run --no-check=remote --allow-read=. --allow-write=.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 import { gunzip } from "https://deno.land/x/denoflate@1.2.1/mod.ts";
 import { Untar } from "../../archive/tar.ts";
 import { walk } from "../../fs/walk.ts";

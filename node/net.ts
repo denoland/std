@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -43,8 +44,8 @@ import {
   exceptionWithHostPort,
   NodeError,
   uvExceptionWithHostPort,
-} from "./_errors.ts";
-import type { ErrnoException } from "./_errors.ts";
+} from "./internal/errors.ts";
+import type { ErrnoException } from "./internal/errors.ts";
 import { Encodings } from "./_utils.ts";
 import { isUint8Array } from "./internal/util/types.ts";
 import {
@@ -59,7 +60,7 @@ import {
   writeGeneric,
   writevGeneric,
 } from "./internal/stream_base_commons.ts";
-import { kTimeout } from "./internal/timers.ts";
+import { kTimeout } from "./internal/timers.js";
 import { nextTick } from "./_next_tick.ts";
 import {
   DTRACE_NET_SERVER_CONNECTION,

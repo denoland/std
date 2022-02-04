@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -30,7 +31,7 @@ import {
   ERR_INVALID_ARG_TYPE,
   ERR_OUT_OF_RANGE,
   ERR_UNHANDLED_ERROR,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 
 import {
   validateAbortSignal,

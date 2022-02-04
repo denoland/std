@@ -2,7 +2,7 @@
 // https://github.com/golang/go/blob/2cc15b1/src/encoding/csv/reader_test.go
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertRejects } from "../testing/asserts.ts";
 import {
@@ -550,69 +550,17 @@ const parseTestCases = [
     ],
   },
   {
-    name: "header mapping parse entry",
-    in: "a,b,c\ne,f,g\n",
-    columns: [
-      {
-        name: "this",
-        parse: (e: string): string => {
-          return `b${e}$$`;
-        },
-      },
-      {
-        name: "is",
-        parse: (e: string): number => {
-          return e.length;
-        },
-      },
-      {
-        name: "sparta",
-        parse: (e: string): unknown => {
-          return { bim: `boom-${e}` };
-        },
-      },
-    ],
-    result: [
-      { this: "ba$$", is: 1, sparta: { bim: `boom-c` } },
-      { this: "be$$", is: 1, sparta: { bim: `boom-g` } },
-    ],
-  },
-  {
-    name: "multiline parse",
-    in: "a,b,c\ne,f,g\n",
-    parse: (e: string[]): unknown => {
-      return { super: e[0], street: e[1], fighter: e[2] };
-    },
-    skipFirstRow: false,
-    result: [
-      { super: "a", street: "b", fighter: "c" },
-      { super: "e", street: "f", fighter: "g" },
-    ],
-  },
-  {
-    name: "header mapping object parseline",
-    in: "a,b,c\ne,f,g\n",
-    columns: [{ name: "this" }, { name: "is" }, { name: "sparta" }],
-    parse: (e: Record<string, unknown>): unknown => {
-      return { super: e.this, street: e.is, fighter: e.sparta };
-    },
-    result: [
-      { super: "a", street: "b", fighter: "c" },
-      { super: "e", street: "f", fighter: "g" },
-    ],
-  },
-  {
     name: "provides both opts.skipFirstRow and opts.columns",
     in: "a,b,1\nc,d,2\ne,f,3",
     skipFirstRow: true,
     columns: [
       { name: "foo" },
       { name: "bar" },
-      { name: "baz", parse: (e: string) => Number(e) },
+      { name: "baz" },
     ],
     result: [
-      { foo: "c", bar: "d", baz: 2 },
-      { foo: "e", bar: "f", baz: 3 },
+      { foo: "c", bar: "d", baz: "2" },
+      { foo: "e", bar: "f", baz: "3" },
     ],
   },
 ];
@@ -624,7 +572,6 @@ for (const testCase of parseTestCases) {
       const r = await parse(testCase.in, {
         skipFirstRow: testCase.skipFirstRow,
         columns: testCase.columns,
-        parse: testCase.parse as (input: unknown) => unknown,
       });
       assertEquals(r, testCase.result);
     },

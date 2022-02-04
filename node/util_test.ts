@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import {
   assert,
@@ -8,6 +8,9 @@ import {
 } from "../testing/asserts.ts";
 import { stripColor } from "../fmt/colors.ts";
 import * as util from "./util.ts";
+
+// Note: Need to import this to lazily initialize error classes
+import "./internal/errors.ts";
 
 Deno.test({
   name: "[util] format",

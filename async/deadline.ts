@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "./deferred.ts";
 
 export class DeadlineError extends Error {

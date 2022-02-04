@@ -1,6 +1,7 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { asyncIterableToCallback } from "./_fs_watch.ts";
 import Dirent from "./_fs_dirent.ts";
-import { denoErrorToNodeError } from "../_errors.ts";
+import { denoErrorToNodeError } from "../internal/errors.ts";
 import { getValidatedPath } from "../internal/fs/utils.js";
 import { Buffer } from "../buffer.ts";
 

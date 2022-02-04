@@ -1,10 +1,11 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Node.js contributors. All rights reserved. MIT License.
 import { existsSync } from "./_fs_exists.ts";
 import { mkdir, mkdirSync } from "./_fs_mkdir.ts";
 import {
   ERR_INVALID_CALLBACK,
   ERR_INVALID_OPT_VALUE_ENCODING,
-} from "../_errors.ts";
+} from "../internal/errors.ts";
 
 export type mkdtempCallback = (
   err: Error | null,

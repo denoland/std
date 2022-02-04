@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
@@ -11,7 +11,7 @@ import { iterateReader, writeAll } from "../../streams/conversion.ts";
 import { isWindows } from "../../_util/os.ts";
 import { Buffer } from "../buffer.ts";
 import { nextTick } from "../_next_tick.ts";
-import { ERR_INVALID_ARG_VALUE } from "../_errors.ts";
+import { AbortError, ERR_INVALID_ARG_VALUE } from "./errors.ts";
 import { mapValues } from "../../collections/map_values.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
@@ -105,6 +105,7 @@ export class ChildProcess extends EventEmitter {
       env = {},
       stdio = ["pipe", "pipe", "pipe"],
       shell = false,
+      signal,
     } = options || {};
     const [
       stdin = "pipe",
@@ -156,6 +157,27 @@ export class ChildProcess extends EventEmitter {
         this.#spawned.resolve();
       });
 
+      if (signal) {
+        const onAbortListener = () => {
+          try {
+            if (this.kill(/** TODO Pass killSignal (not implemented) */)) {
+              this.emit("error", new AbortError());
+            }
+          } catch (err) {
+            this.emit("error", err);
+          }
+        };
+        if (signal.aborted) {
+          nextTick(onAbortListener);
+        } else {
+          signal.addEventListener("abort", onAbortListener, { once: true });
+          this.addListener(
+            "exit",
+            () => signal.removeEventListener("abort", onAbortListener),
+          );
+        }
+      }
+
       (async () => {
         const status = await this.#process.status();
         this.exitCode = status.code;
@@ -175,8 +197,8 @@ export class ChildProcess extends EventEmitter {
   /**
    * @param signal NOTE: this parameter is not yet implemented.
    */
-  kill(signal?: number): boolean {
-    if (signal != null) {
+  kill(signal?: number | string): boolean {
+    if (signal !== undefined) {
       notImplemented("`ChildProcess.kill()` with the `signal` parameter");
     }
 
@@ -298,7 +320,7 @@ export interface ChildProcessOptions {
   shell?: string | boolean;
 
   /**
-   * NOTE: This option is not yet implemented.
+   * Allows aborting the child process using an AbortSignal.
    */
   signal?: AbortSignal;
 

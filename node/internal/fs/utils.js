@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 "use strict";
 
 import { Buffer } from "../../buffer.ts";
@@ -9,7 +10,7 @@ import {
   ERR_OUT_OF_RANGE,
   hideStackFrames,
   uvException,
-} from "../../_errors.ts";
+} from "../errors.ts";
 
 import {
   isArrayBufferView,
@@ -32,7 +33,8 @@ import pathModule from "../../path.ts";
 const kType = Symbol("type");
 const kStats = Symbol("stats");
 import assert from "../assert.js";
-import fs from "../../fs.ts";
+import { lstat, lstatSync } from "../../_fs/_fs_lstat.ts";
+import { stat, statSync } from "../../_fs/_fs_stat.ts";
 import { isWindows } from "../../../_util/os.ts";
 import process from "../../process.ts";
 
@@ -233,7 +235,7 @@ function getDirents(path, { 0: names, 1: types }, callback) {
           callback(err);
           return;
         }
-        fs.lstat(filepath, (err, stats) => {
+        lstat(filepath, (err, stats) => {
           if (err) {
             callback(err);
             return;
@@ -269,7 +271,7 @@ function getDirent(path, name, type, callback) {
         callback(err);
         return;
       }
-      fs.lstat(filepath, (err, stats) => {
+      lstat(filepath, (err, stats) => {
         if (err) {
           callback(err);
           return;
@@ -280,7 +282,7 @@ function getDirent(path, name, type, callback) {
       callback(null, new Dirent(name, type));
     }
   } else if (type === UV_DIRENT_UNKNOWN) {
-    const stats = fs.lstatSync(join(path, name));
+    const stats = lstatSync(join(path, name));
     return new DirentFromStats(name, stats);
   } else {
     return new Dirent(name, type);
@@ -838,7 +840,7 @@ export const validateRmOptions = hideStackFrames(
     options = validateRmdirOptions(options, defaultRmOptions);
     validateBoolean(options.force, "options.force");
 
-    fs.stat(path, (err, stats) => {
+    stat(path, (err, stats) => {
       if (err) {
         if (options.force && err.code === "ENOENT") {
           return cb(null, options);
@@ -872,8 +874,8 @@ export const validateRmOptionsSync = hideStackFrames(
     validateBoolean(options.force, "options.force");
 
     if (!options.force || expectDir || !options.recursive) {
-      const isDirectory = fs
-        .statSync(path, { throwIfNoEntry: !options.force })?.isDirectory();
+      const isDirectory = statSync(path, { throwIfNoEntry: !options.force })
+        ?.isDirectory();
 
       if (expectDir && !isDirectory) {
         return false;

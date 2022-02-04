@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { bytesToUuid, uuidToBytes } from "./_common.ts";
 import { concat } from "../bytes/mod.ts";
 import { assert } from "../_util/assert.ts";

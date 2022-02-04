@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import * as net from "./net.ts";
@@ -11,7 +11,7 @@ import { AsyncResource } from "./async_hooks.ts";
 import { symbols } from "./internal/async_hooks.ts";
 // deno-lint-ignore camelcase
 const { async_id_symbol } = symbols;
-import { ERR_OUT_OF_RANGE } from "./_errors.ts";
+import { ERR_OUT_OF_RANGE } from "./internal/errors.ts";
 import { once } from "./internal/util.js";
 import {
   validateNumber,

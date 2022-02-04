@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -165,7 +166,7 @@ export class TCP extends ConnectionWrap {
   }
 
   /**
-   * Bind to an IPv4 address.
+   * Bind to an IPv6 address.
    * @param address The hostname to bind to.
    * @param port The port to bind to
    * @return An error status code.
@@ -279,7 +280,8 @@ export class TCP extends ConnectionWrap {
    * @return An error status code.
    */
   setNoDelay(_noDelay: boolean): number {
-    notImplemented();
+    // TODO(bnoordhuis) https://github.com/denoland/deno/pull/13103
+    return 0;
   }
 
   /**
@@ -288,7 +290,8 @@ export class TCP extends ConnectionWrap {
    * @return An error status code.
    */
   setKeepAlive(_enable: boolean, _initialDelay: number): number {
-    notImplemented();
+    // TODO(bnoordhuis) https://github.com/denoland/deno/pull/13103
+    return 0;
   }
 
   /**

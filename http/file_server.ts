@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // This program serves files in the current directory over HTTP.
 // TODO(bartlomieju): Add tests like these:
@@ -340,7 +340,9 @@ export async function serveFile(
   let bytesSent = 0;
   const body = new ReadableStream({
     async start() {
-      await file.seek(start, Deno.SeekMode.Start);
+      if (start > 0) {
+        await file.seek(start, Deno.SeekMode.Start);
+      }
     },
     async pull(controller) {
       const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);

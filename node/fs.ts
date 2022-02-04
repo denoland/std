@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { access, accessSync } from "./_fs/_fs_access.ts";
 import { appendFile, appendFileSync } from "./_fs/_fs_appendFile.ts";
 import { chmod, chmodSync } from "./_fs/_fs_chmod.ts";
@@ -33,11 +33,13 @@ import { truncate, truncateSync } from "./_fs/_fs_truncate.ts";
 import { unlink, unlinkSync } from "./_fs/_fs_unlink.ts";
 import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
 import { watch, watchFile } from "./_fs/_fs_watch.ts";
+// @deno-types="./_fs/_fs_write.d.ts"
+import { write, writeSync } from "./_fs/_fs_write.js";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
-
 import { Stats } from "./internal/fs/utils.js";
+import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
 
-import * as promises from "./fs/promises.ts";
+import { promisify } from "./util.ts";
 
 const {
   F_OK,
@@ -45,6 +47,37 @@ const {
   W_OK,
   X_OK,
 } = constants;
+
+const promises = {
+  access: promisify(access),
+  copyFile: promisify(copyFile),
+  open: promisify(open),
+  // opendir: promisify(opendir),
+  rename: promisify(rename),
+  truncate: promisify(truncate),
+  rm: promisify(rm),
+  rmdir: promisify(rmdir),
+  mkdir: promisify(mkdir),
+  readdir: promisify(readdir),
+  readlink: promisify(readlink),
+  symlink: promisify(symlink),
+  lstat: promisify(lstat),
+  stat: promisify(stat),
+  link: promisify(link),
+  unlink: promisify(unlink),
+  chmod: promisify(chmod),
+  // lchmod: promisify(lchmod),
+  // lchown: promisify(lchown),
+  chown: promisify(chown),
+  utimes: promisify(utimes),
+  // lutimes = promisify(lutimes),
+  realpath: promisify(realpath),
+  mkdtemp: promisify(mkdtemp),
+  writeFile: promisify(writeFile),
+  appendFile: promisify(appendFile),
+  readFile: promisify(readFile),
+  watch: promisify(watch),
+};
 
 export default {
   access,
@@ -60,6 +93,7 @@ export default {
   constants,
   copyFile,
   copyFileSync,
+  createWriteStream,
   Dir,
   Dirent,
   exists,
@@ -117,8 +151,11 @@ export default {
   W_OK,
   watch,
   watchFile,
+  write,
   writeFile,
   writeFileSync,
+  WriteStream,
+  writeSync,
   X_OK,
 };
 
@@ -136,6 +173,7 @@ export {
   constants,
   copyFile,
   copyFileSync,
+  createWriteStream,
   Dir,
   Dirent,
   exists,
@@ -193,7 +231,10 @@ export {
   W_OK,
   watch,
   watchFile,
+  write,
   writeFile,
   writeFileSync,
+  WriteStream,
+  writeSync,
   X_OK,
 };

@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
@@ -17,7 +18,7 @@ import {
   ERR_STREAM_NULL_VALUES,
   ERR_STREAM_WRITE_AFTER_END,
   ERR_UNKNOWN_ENCODING,
-} from "../../_errors.ts";
+} from "../errors.ts";
 import * as process from "../../_process/process.ts";
 import destroyImpl from "./destroy.js";
 import EE from "../../events.ts";

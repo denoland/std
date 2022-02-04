@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -20,7 +21,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { charLengthAt, CSI, emitKeys } from "./utils.js";
-import { kSawKeyPress } from "./interface.js";
+import { kSawKeyPress } from "./symbols.js";
 import { clearTimeout, setTimeout } from "../../timers.ts";
 
 const {

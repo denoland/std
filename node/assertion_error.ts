@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // Adapted from Node.js. Copyright Joyent, Inc. and other Node contributors.
 
@@ -21,16 +21,17 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// TODO(schwarzkopfb): change this when `Deno.consoleSize()` will be stable
-interface DenoUnstable {
-  consoleSize?(rid: number): { columns: number };
-}
-function getConsoleWidth(): number {
-  return (Deno as DenoUnstable).consoleSize?.(Deno.stderr.rid).columns ?? 80;
-}
-
+import * as DenoUnstable from "../_deno_unstable.ts";
 import { inspect } from "./util.ts";
 import { stripColor as removeColors } from "../fmt/colors.ts";
+
+function getConsoleWidth(): number {
+  try {
+    return DenoUnstable.consoleSize(Deno.stderr.rid).columns;
+  } catch {
+    return 80;
+  }
+}
 
 // TODO(schwarzkopfb): we should implement Node's concept of "primordials"
 // Ref: https://github.com/denoland/deno/issues/6040#issuecomment-637305828
@@ -44,7 +45,7 @@ const {
   keys: ObjectKeys,
 } = Object;
 
-import { ERR_INVALID_ARG_TYPE } from "./_errors.ts";
+import { ERR_INVALID_ARG_TYPE } from "./internal/errors.ts";
 
 let blue = "";
 let green = "";

@@ -1,9 +1,9 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 // deno-lint-ignore camelcase
 import * as async_wrap from "../internal_binding/async_wrap.ts";
-import { ERR_ASYNC_CALLBACK } from "../_errors.ts";
+import { ERR_ASYNC_CALLBACK } from "./errors.ts";
 
 interface ActiveHooks {
   array: AsyncHook[];
