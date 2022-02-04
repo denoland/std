@@ -1,3 +1,5 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import * as DenoUnstable from "../_deno_unstable.ts";
 import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
@@ -142,7 +144,7 @@ class ClientRequest extends NodeWritable {
     this.destroy();
   }
 
-  _createCustomClient(): Promise<Deno.HttpClient | undefined> {
+  _createCustomClient(): Promise<DenoUnstable.HttpClient | undefined> {
     return Promise.resolve(undefined);
   }
 

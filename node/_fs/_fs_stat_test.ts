@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertCallbackErrorUncaught } from "../_utils.ts";
 import { BigIntStats, stat, Stats, statSync } from "./_fs_stat.ts";
 import { assertEquals, fail } from "../../testing/asserts.ts";

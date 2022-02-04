@@ -1,8 +1,9 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { serveTls } from "../http/server.ts";
 import { dirname, fromFileUrl, join } from "../path/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
+import { Agent } from "./https.ts";
 
 const stdRoot = dirname(dirname(fromFileUrl(import.meta.url)));
 const tlsDataDir = join(stdRoot, "http", "testdata", "tls");
@@ -78,4 +79,8 @@ Deno.test("[node/https] get makes https GET request", async () => {
   p.close();
   controller.abort();
   await serveFinish;
+});
+
+Deno.test("new Agent doesn't throw", () => {
+  new Agent();
 });
