@@ -156,6 +156,8 @@
       "test-event-emitter-symbols.js",
       "test-events-list.js",
       "test-events-once.js",
+      "test-file-write-stream.js",
+      "test-file-write-stream2.js",
       "test-fs-access.js",
       "test-fs-append-file-sync.js",
       "test-fs-append-file.js",
