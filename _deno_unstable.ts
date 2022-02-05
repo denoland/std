@@ -53,6 +53,16 @@ export function futimeSync(
   }
 }
 
+export function getUid(
+  ...args: Parameters<typeof Deno.getUid>
+): ReturnType<typeof Deno.getUid> {
+  if (typeof Deno.getUid == "function") {
+    return Deno.getUid(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}
+
 export function hostname(
   ...args: Parameters<typeof Deno.hostname>
 ): ReturnType<typeof Deno.hostname> {
