@@ -1,6 +1,5 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-// This module is browser compatible.
 
 import type { FormatInputPathObject, ParsedPath } from "./_interface.ts";
 import {
@@ -9,6 +8,7 @@ import {
   CHAR_DOT,
   CHAR_QUESTION_MARK,
 } from "./_constants.ts";
+import { ERR_INVALID_ARG_TYPE } from "../internal/errors.ts";
 
 import {
   _format,
@@ -632,7 +632,7 @@ export function dirname(path: string): string {
  */
 export function basename(path: string, ext = ""): string {
   if (ext !== undefined && typeof ext !== "string") {
-    throw new TypeError('"ext" argument must be a string');
+    throw new ERR_INVALID_ARG_TYPE("ext", ["string"], ext);
   }
 
   assertPath(path);

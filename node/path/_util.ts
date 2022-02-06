@@ -1,6 +1,5 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-// This module is browser compatible.
 
 import type { FormatInputPathObject } from "./_interface.ts";
 import {
@@ -12,12 +11,11 @@ import {
   CHAR_UPPERCASE_A,
   CHAR_UPPERCASE_Z,
 } from "./_constants.ts";
+import { ERR_INVALID_ARG_TYPE } from "../internal/errors.ts";
 
 export function assertPath(path: string): void {
   if (typeof path !== "string") {
-    throw new TypeError(
-      `Path must be a string. Received ${JSON.stringify(path)}`,
-    );
+    throw new ERR_INVALID_ARG_TYPE("path", ["string"], path);
   }
 }
 
