@@ -78,6 +78,7 @@
       "test-assert-async.js",
       "test-assert-fail.js",
       "test-assert.js",
+      "test-buffer-alloc.js",
       "test-buffer-arraybuffer.js",
       "test-buffer-ascii.js",
       "test-buffer-badhex.js",
