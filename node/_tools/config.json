@@ -30,6 +30,7 @@
       "test-fs-rmdir-recursive.js",
       "test-fs-write-file.js",
       "test-os.js",
+      "test-path.js",
       "test-querystring.js",
       "test-readline-interface.js",
       "test-stream-writable-change-default-encoding.js",
