@@ -24,24 +24,6 @@ Deno.test({
 });
 
 Deno.test({
-  name: "alloc(>0) fails if value is an empty Buffer/Uint8Array",
-  fn() {
-    const invalidValues = [new Uint8Array(), Buffer.alloc(0)];
-
-    for (const value of invalidValues) {
-      assertThrows(
-        () => {
-          Buffer.alloc(1, value);
-        },
-        TypeError,
-        'The value "" is invalid for argument "value"',
-        "should throw for empty Buffer/Uint8Array",
-      );
-    }
-  },
-});
-
-Deno.test({
   name: "alloc allocates a buffer with the expected size",
   fn() {
     const buffer: Buffer = Buffer.alloc(1);
