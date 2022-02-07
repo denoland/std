@@ -209,6 +209,7 @@
       "test-os.js",
       "test-outgoing-message-destroy.js",
       "test-outgoing-message-pipe.js",
+      "test-path-basename.js",
       "test-path.js",
       "test-process-binding-internalbinding-allowlist.js",
       "test-process-exit-handler.js",
