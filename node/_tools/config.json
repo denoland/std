@@ -12,6 +12,7 @@
     ],
     "parallel": [
       "test-assert.js",
+      "test-buffer-alloc.js",
       "test-buffer-arraybuffer.js",
       "test-buffer-bytelength.js",
       "test-buffer-from.js",

@@ -384,6 +384,7 @@ module.exports = {
   mustNotCall,
   mustSucceed,
   platformTimeout,
+  printSkipMessage,
   skipIfDumbTerminal,
   isDumbTerminal,
   isWindows,
