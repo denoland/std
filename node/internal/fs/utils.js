@@ -702,7 +702,7 @@ function toUnixTimestamp(time, name = "time") {
   throw new ERR_INVALID_ARG_TYPE(name, ["Date", "Time in seconds"], time);
 }
 
-const validateOffsetLengthRead = hideStackFrames(
+export const validateOffsetLengthRead = hideStackFrames(
   (offset, length, bufferLength) => {
     if (offset < 0) {
       throw new ERR_OUT_OF_RANGE("offset", ">= 0", offset);
@@ -720,7 +720,7 @@ const validateOffsetLengthRead = hideStackFrames(
   },
 );
 
-const validateOffsetLengthWrite = hideStackFrames(
+export const validateOffsetLengthWrite = hideStackFrames(
   (offset, length, byteLength) => {
     if (offset > byteLength) {
       throw new ERR_OUT_OF_RANGE("offset", `<= ${byteLength}`, offset);
@@ -758,7 +758,7 @@ export const getValidatedPath = hideStackFrames(
   },
 );
 
-const getValidatedFd = hideStackFrames((fd, propName = "fd") => {
+export const getValidatedFd = hideStackFrames((fd, propName = "fd") => {
   if (Object.is(fd, -0)) {
     return 0;
   }

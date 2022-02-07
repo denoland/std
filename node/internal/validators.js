@@ -4,6 +4,7 @@
 import { codes } from "./error_codes.ts";
 import { hideStackFrames } from "./hide_stack_frames.ts";
 import { isArrayBufferView } from "./util/types.ts";
+import { normalizeEncoding } from "./normalize_encoding.js";
 
 /**
  * @param {number} value
@@ -198,6 +199,19 @@ const validateOneOf = hideStackFrames(
     }
   },
 );
+
+export function validateEncoding(data, encoding) {
+  const normalizedEncoding = normalizeEncoding(encoding);
+  const length = data.length;
+
+  if (normalizedEncoding === "hex" && length % 2 !== 0) {
+    throw new codes.ERR_INVALID_ARG_VALUE(
+      "encoding",
+      encoding,
+      `is invalid for data of length ${length}`,
+    );
+  }
+}
 
 // Check that the port number is not NaN when coerced to a number,
 // is an integer and that it falls within the legal range of port numbers.
