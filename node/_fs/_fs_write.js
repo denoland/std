@@ -37,7 +37,7 @@ export function writeSync(fd, buffer, offset, length, position) {
       length = buffer.byteLength - offset;
     }
     validateOffsetLengthWrite(offset, length, buffer.byteLength);
-    return innerWriteSync(fd, buffer, offset, length, position);
+    return innerWriteSync(fd, new Uint8Array(buffer.buffer), offset, length, position);
   }
   validateStringAfterArrayBufferView(buffer, "buffer");
   validateEncoding(buffer, length);
@@ -80,7 +80,7 @@ export function write(fd, buffer, offset, length, position, callback) {
       position = null;
     }
     validateOffsetLengthWrite(offset, length, buffer.byteLength);
-    innerWrite(fd, buffer, offset, length, position).then((nwritten) => {
+    innerWrite(fd, new Uint8Array(buffer.buffer), offset, length, position).then((nwritten) => {
       callback(null, nwritten, buffer);
     }, (err) => callback(err));
     return;
