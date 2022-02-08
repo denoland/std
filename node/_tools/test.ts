@@ -35,10 +35,12 @@ for await (const path of testPaths) {
     continue;
   }
   const ignore = Deno.build.os === "windows" && windowsIgnorePaths.has(path);
+  const requireTs = join("node", "_tools", "require.ts");
   Deno.test({
     name: `Node.js compatibility "${path}"`,
     ignore,
     fn: async () => {
+      const targetTestPath = join(toolsPath, config.suitesFolder, path);
       const cmd = [
         Deno.execPath(),
         "run",
@@ -46,9 +48,14 @@ for await (const path of testPaths) {
         "--quiet",
         "--unstable",
         "--no-check",
-        join("node", "_tools", "require.ts"),
-        join(toolsPath, config.suitesFolder, path),
       ];
+      const testSourceCode = await Deno.readTextFile(targetTestPath);
+      // TODO(kt3k): Parse `Flags` directive correctly
+      if (testSourceCode.includes("Flags: --expose_externalize_string")) {
+        cmd.push("--v8-flags=--expose-externalize-string");
+      }
+      cmd.push(requireTs);
+      cmd.push(targetTestPath);
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided
       const test = Deno.run({
