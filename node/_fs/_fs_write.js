@@ -14,6 +14,9 @@ export function writeSync(fd, buffer, offset, length, position) {
   fd = getValidatedFd(fd);
 
   const innerWriteSync = (fd, buffer, offset, length, position) => {
+    if (buffer instanceof DataView) {
+      buffer = new Uint8Array(buffer.buffer);
+    }
     if (typeof position === "number") {
       Deno.seekSync(fd, position, Deno.SeekMode.Start);
     }
@@ -37,13 +40,7 @@ export function writeSync(fd, buffer, offset, length, position) {
       length = buffer.byteLength - offset;
     }
     validateOffsetLengthWrite(offset, length, buffer.byteLength);
-    return innerWriteSync(
-      fd,
-      new Uint8Array(buffer.buffer),
-      offset,
-      length,
-      position,
-    );
+    return innerWriteSync(fd, buffer, offset, length, position);
   }
   validateStringAfterArrayBufferView(buffer, "buffer");
   validateEncoding(buffer, length);
@@ -62,6 +59,9 @@ export function write(fd, buffer, offset, length, position, callback) {
   fd = getValidatedFd(fd);
 
   const innerWrite = async (fd, buffer, offset, length, position) => {
+    if (buffer instanceof DataView) {
+      buffer = new Uint8Array(buffer.buffer);
+    }
     if (typeof position === "number") {
       await Deno.seek(fd, position, Deno.SeekMode.Start);
     }
@@ -86,7 +86,7 @@ export function write(fd, buffer, offset, length, position, callback) {
       position = null;
     }
     validateOffsetLengthWrite(offset, length, buffer.byteLength);
-    innerWrite(fd, new Uint8Array(buffer.buffer), offset, length, position)
+    innerWrite(fd, buffer, offset, length, position)
       .then((nwritten) => {
         callback(null, nwritten, buffer);
       }, (err) => callback(err));
@@ -112,5 +112,10 @@ export function write(fd, buffer, offset, length, position, callback) {
   validateEncoding(str, length);
   callback = maybeCallback(position);
   buffer = Buffer.from(str, length);
-  innerWrite(fd, buffer, 0, buffer.length, offset, callback);
+  innerWrite(fd, buffer, 0, buffer.length, offset, callback).then(
+    (nwritten) => {
+      callback(null, nwritten, buffer);
+    },
+    (err) => callback(err),
+  );
 }
