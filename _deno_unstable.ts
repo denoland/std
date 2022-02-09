@@ -123,16 +123,6 @@ export function systemMemoryInfo(
   }
 }
 
-export function umask(
-  ...args: Parameters<typeof Deno.umask>
-): ReturnType<typeof Deno.umask> {
-  if (typeof Deno.umask == "function") {
-    return Deno.umask(...args);
-  } else {
-    throw new TypeError("Requires --unstable");
-  }
-}
-
 export function utime(
   ...args: Parameters<typeof Deno.utime>
 ): ReturnType<typeof Deno.utime> {
