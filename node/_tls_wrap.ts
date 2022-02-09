@@ -1,12 +1,35 @@
 // Copyright 2022 Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
-
+// deno-lint-ignore-file no-explicit-any
+import {
+  ArrayIsArray,
+  ArrayPrototypeForEach,
+  ArrayPrototypeIncludes,
+  ArrayPrototypeJoin,
+  ArrayPrototypePush,
+  ArrayPrototypeSome,
+  ObjectAssign,
+  RegExpPrototypeTest,
+  StringFromCharCode,
+  StringPrototypeCharCodeAt,
+  StringPrototypeEndsWith,
+  StringPrototypeIncludes,
+  StringPrototypeReplace,
+  StringPrototypeSlice,
+  StringPrototypeSplit,
+  StringPrototypeStartsWith,
+} from "./internal/primordials.js";
 import assert from "./internal/assert.js";
 import net from "./net.ts";
-import tls from "./tls.ts";
+import { createSecureContext } from "./_tls_common.ts";
 import { kStreamBaseField } from "./internal_binding/stream_wrap.ts";
 import { notImplemented } from "./_utils.ts";
-import { ObjectAssign } from "./internal/primordials.js";
+import {
+  connResetException,
+  ERR_TLS_CERT_ALTNAME_INVALID,
+  ERR_TLS_DH_PARAM_SIZE,
+} from "./internal/errors.ts";
+import { emitWarning } from "./process.ts";
 const kConnectOptions = Symbol("connect-options");
 const kIsVerified = Symbol("verified");
 const kPendingSession = Symbol("pendingSession");
@@ -14,7 +37,7 @@ const kRes = Symbol("res");
 
 const debug = console.log; // TODO(bnoordhuis)
 
-function onConnectSecure() {
+function onConnectSecure(this: any) {
   const options = this[kConnectOptions];
 
   // Check the size of DHE parameter above minimum requirement
@@ -82,12 +105,12 @@ function onConnectSecure() {
   this.removeListener("end", onConnectEnd);
 }
 
-function onConnectEnd() {
+function onConnectEnd(this: any) {
   // NOTE: This logic is shared with _http_client.js
   if (!this._hadError) {
     const options = this[kConnectOptions];
     this._hadError = true;
-    const error = connResetException(
+    const error: any = connResetException(
       "Client network socket disconnected " +
         "before secure TLS connection was " +
         "established",
@@ -101,8 +124,25 @@ function onConnectEnd() {
 }
 
 export class TLSSocket extends net.Socket {
-  constructor(socket, opts) {
-    super();
+  _tlsOptions: any;
+  _secureEstablished: boolean;
+  _securePending: boolean;
+  _newSessionPending: boolean;
+  _controlReleased: boolean;
+  secureConnecting: boolean;
+  _SNICallback: any;
+  servername: string | null;
+  alpnProtocol: any;
+  authorized: boolean;
+  authorizationError: any;
+  [kRes]: any;
+  [kIsVerified]: boolean;
+  [kPendingSession]: any;
+  [kConnectOptions]: any;
+  ssl: any;
+  _start: any;
+  constructor(socket: any, opts: any) {
+    super(opts);
 
     const tlsOptions = { ...opts };
     this._tlsOptions = tlsOptions;
@@ -141,7 +181,7 @@ export class TLSSocket extends net.Socket {
     }
 
     this._handle = socket._handle;
-    this._handle.verifyError = function () {
+    (this._handle as any).verifyError = function () {
       return null; // Never fails, rejectUnauthorized is always true in Deno.
     };
 
@@ -151,7 +191,7 @@ export class TLSSocket extends net.Socket {
       go(this, socket);
     }
 
-    async function go(that, socket) {
+    async function go(that: any, socket: any) {
       const handle = socket._handle;
       const options = { caCerts, hostname };
 
@@ -175,7 +215,7 @@ export class TLSSocket extends net.Socket {
     }
   }
 
-  _tlsError(err) {
+  _tlsError(err: Error) {
     this.emit("_tlsError", err);
     if (this._controlReleased) {
       return err;
@@ -200,7 +240,15 @@ export class TLSSocket extends net.Socket {
     return false;
   }
 
-  getPeerCertificate(_detailed) {
+  setSession(_session: any) {
+    // TODO(kt3k): implement this
+  }
+
+  setServername(_servername: any) {
+    // TODO(kt3k): implement this
+  }
+
+  getPeerCertificate(_detailed: boolean) {
     return {
       subject: "localhost", // TODO
       subjectaltname: "IP Address:127.0.0.1, IP Address:::1",
@@ -208,7 +256,7 @@ export class TLSSocket extends net.Socket {
   }
 }
 
-function normalizeConnectArgs(listArgs) {
+function normalizeConnectArgs(listArgs: any) {
   const args = net._normalizeArgs(listArgs);
   const options = args[0];
   const cb = args[1];
@@ -227,7 +275,9 @@ function normalizeConnectArgs(listArgs) {
   return cb ? [options, cb] : [options];
 }
 
-export function connect(...args) {
+let ipServernameWarned = false;
+
+export function connect(...args: any[]) {
   args = normalizeConnectArgs(args);
   let options = args[0];
   const cb = args[1];
@@ -235,8 +285,8 @@ export function connect(...args) {
 
   options = {
     rejectUnauthorized: !allowUnauthorized,
-    ciphers: tls.DEFAULT_CIPHERS,
-    checkServerIdentity: tls.checkServerIdentity,
+    ciphers: DEFAULT_CIPHERS,
+    checkServerIdentity,
     minDHSize: 1024,
     ...options,
   };
@@ -256,7 +306,7 @@ export function connect(...args) {
       options.minDHSize,
   );
 
-  const context = options.secureContext || tls.createSecureContext(options);
+  const context = options.secureContext || createSecureContext(options);
 
   const tlssock = new TLSSocket(options.socket, {
     allowHalfOpen: options.allowHalfOpen,
@@ -307,7 +357,7 @@ export function connect(...args) {
 
   if (options.servername) {
     if (!ipServernameWarned && net.isIP(options.servername)) {
-      process.emitWarning(
+      emitWarning(
         "Setting the TLS ServerName to an IP address is not permitted by " +
           "RFC 6066. This will be ignored in a future version.",
         "DeprecationWarning",
@@ -336,8 +386,201 @@ export function createServer() {
   notImplemented();
 }
 
+export function checkServerIdentity(hostname: string, cert: any) {
+  const subject = cert.subject;
+  const altNames = cert.subjectaltname;
+  const dnsNames: any[] = [];
+  const uriNames: string[] = [];
+  const ips: any[] = [];
+
+  hostname = "" + hostname;
+
+  if (altNames) {
+    const splitAltNames = StringPrototypeSplit(altNames, ", ");
+    ArrayPrototypeForEach(splitAltNames, (name: any) => {
+      if (StringPrototypeStartsWith(name, "DNS:")) {
+        ArrayPrototypePush(dnsNames, StringPrototypeSlice(name, 4));
+      } else if (StringPrototypeStartsWith(name, "URI:")) {
+        const uri = new URL(StringPrototypeSlice(name, 4));
+
+        // TODO(bnoordhuis) Also use scheme.
+        ArrayPrototypePush(uriNames, uri.hostname);
+      } else if (StringPrototypeStartsWith(name, "IP Address:")) {
+        ArrayPrototypePush(ips, canonicalizeIP(StringPrototypeSlice(name, 11)));
+      }
+    });
+  }
+
+  let valid = false;
+  let reason = "Unknown reason";
+
+  const hasAltNames = dnsNames.length > 0 || ips.length > 0 ||
+    uriNames.length > 0;
+
+  hostname = unfqdn(hostname); // Remove trailing dot for error messages.
+
+  if (net.isIP(hostname)) {
+    valid = ArrayPrototypeIncludes(ips, canonicalizeIP(hostname));
+    if (!valid) {
+      reason = `IP: ${hostname} is not in the cert's list: ` +
+        ArrayPrototypeJoin(ips, ", ");
+    }
+    // TODO(bnoordhuis) Also check URI SANs that are IP addresses.
+  } else if (hasAltNames || subject) {
+    const hostParts = splitHost(hostname);
+    const wildcard = (pattern: string) => check(hostParts, pattern, true);
+
+    if (hasAltNames) {
+      const noWildcard = (pattern: string) => check(hostParts, pattern, false);
+      valid = ArrayPrototypeSome(dnsNames, wildcard) ||
+        ArrayPrototypeSome(uriNames, noWildcard);
+      if (!valid) {
+        reason =
+          `Host: ${hostname}. is not in the cert's altnames: ${altNames}`;
+      }
+    } else {
+      // Match against Common Name only if no supported identifiers exist.
+      const cn = subject.CN;
+
+      if (ArrayIsArray(cn)) {
+        valid = ArrayPrototypeSome(cn, wildcard);
+      } else if (cn) {
+        valid = wildcard(cn);
+      }
+
+      if (!valid) {
+        reason = `Host: ${hostname}. is not cert's CN: ${cn}`;
+      }
+    }
+  } else {
+    reason = "Cert is empty";
+  }
+
+  if (!valid) {
+    return new ERR_TLS_CERT_ALTNAME_INVALID(reason, hostname, cert);
+  }
+}
+
+function canonicalizeIP(ip: string): string {
+  return ip; // TODO(bnoordhuis) emulate uv_inet_pton() + uv_inet_ntop()
+}
+
+function unfqdn(host: string): string {
+  return StringPrototypeReplace(host, /[.]$/, "");
+}
+
+function check(hostParts: any, pattern: any, wildcards: any) {
+  // Empty strings, null, undefined, etc. never match.
+  if (!pattern) {
+    return false;
+  }
+
+  const patternParts = splitHost(pattern);
+
+  if (hostParts.length !== patternParts.length) {
+    return false;
+  }
+
+  // Pattern has empty components, e.g. "bad..example.com".
+  if (ArrayPrototypeIncludes(patternParts, "")) {
+    return false;
+  }
+
+  // RFC 6125 allows IDNA U-labels (Unicode) in names but we have no
+  // good way to detect their encoding or normalize them so we simply
+  // reject them.  Control characters and blanks are rejected as well
+  // because nothing good can come from accepting them.
+  const isBad = (s: string) => RegExpPrototypeTest(/[^\u0021-\u007F]/u, s);
+  if (ArrayPrototypeSome(patternParts, isBad)) {
+    return false;
+  }
+
+  // Check host parts from right to left first.
+  for (let i = hostParts.length - 1; i > 0; i -= 1) {
+    if (hostParts[i] !== patternParts[i]) {
+      return false;
+    }
+  }
+
+  const hostSubdomain = hostParts[0];
+  const patternSubdomain = patternParts[0];
+  const patternSubdomainParts = StringPrototypeSplit(patternSubdomain, "*");
+
+  // Short-circuit when the subdomain does not contain a wildcard.
+  // RFC 6125 does not allow wildcard substitution for components
+  // containing IDNA A-labels (Punycode) so match those verbatim.
+  if (
+    patternSubdomainParts.length === 1 ||
+    StringPrototypeIncludes(patternSubdomain, "xn--")
+  ) {
+    return hostSubdomain === patternSubdomain;
+  }
+
+  if (!wildcards) {
+    return false;
+  }
+
+  // More than one wildcard is always wrong.
+  if (patternSubdomainParts.length > 2) {
+    return false;
+  }
+
+  // *.tld wildcards are not allowed.
+  if (patternParts.length <= 2) {
+    return false;
+  }
+
+  const { 0: prefix, 1: suffix } = patternSubdomainParts;
+
+  if (prefix.length + suffix.length > hostSubdomain.length) {
+    return false;
+  }
+
+  if (!StringPrototypeStartsWith(hostSubdomain, prefix)) {
+    return false;
+  }
+
+  if (!StringPrototypeEndsWith(hostSubdomain, suffix)) {
+    return false;
+  }
+
+  return true;
+}
+
+// String#toLowerCase() is locale-sensitive so we use
+// a conservative version that only lowercases A-Z.
+function toLowerCase(c: string): string {
+  return StringFromCharCode(32 + StringPrototypeCharCodeAt(c, 0));
+}
+
+function splitHost(host: string): string {
+  return StringPrototypeSplit(
+    StringPrototypeReplace(unfqdn(host), /[A-Z]/g, toLowerCase),
+    ".",
+  );
+}
+
+// Order matters. Mirrors ALL_CIPHER_SUITES from rustls/src/suites.rs but
+// using openssl cipher names instead. Mutable in Node but not (yet) in Deno.
+export const DEFAULT_CIPHERS = [
+  // TLSv1.3 suites
+  "AES256-GCM-SHA384",
+  "AES128-GCM-SHA256",
+  "TLS_CHACHA20_POLY1305_SHA256",
+  // TLSv1.2 suites
+  "ECDHE-ECDSA-AES256-GCM-SHA384",
+  "ECDHE-ECDSA-AES128-GCM-SHA256",
+  "ECDHE-ECDSA-CHACHA20-POLY1305",
+  "ECDHE-RSA-AES256-GCM-SHA384",
+  "ECDHE-RSA-AES128-GCM-SHA256",
+  "ECDHE-RSA-CHACHA20-POLY1305",
+].join(":");
+
 export default {
   TLSSocket,
   connect,
   createServer,
+  checkServerIdentity,
+  DEFAULT_CIPHERS,
+  unfqdn,
 };
