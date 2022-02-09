@@ -10,7 +10,6 @@ import {
   IncomingMessageForClient as IncomingMessage,
   type RequestOptions,
 } from "./http.ts";
-import { TLSSocket } from "./tls.ts";
 import type { Socket } from "./net.ts";
 
 export class Agent extends HttpAgent {
@@ -84,6 +83,7 @@ class HttpsClientRequest extends ClientRequest {
   }
 
   _createSocket(): Socket {
+    // deno-lint-ignore no-explicit-any
     return { authorized: true } as any;
   }
 }
