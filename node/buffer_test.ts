@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import "./internal/errors.ts";
 import { Buffer } from "./buffer.ts";
@@ -18,24 +18,6 @@ Deno.test({
         TypeError,
         '"size" argument must be of type number',
         "should throw on non-number size",
-      );
-    }
-  },
-});
-
-Deno.test({
-  name: "alloc(>0) fails if value is an empty Buffer/Uint8Array",
-  fn() {
-    const invalidValues = [new Uint8Array(), Buffer.alloc(0)];
-
-    for (const value of invalidValues) {
-      assertThrows(
-        () => {
-          Buffer.alloc(1, value);
-        },
-        TypeError,
-        'The value "" is invalid for argument "value"',
-        "should throw for empty Buffer/Uint8Array",
       );
     }
   },

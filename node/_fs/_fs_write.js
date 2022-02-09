@@ -1,56 +1,121 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { Buffer } from "../buffer.ts";
-import { validateInteger } from "../internal/validators.js";
+import { validateEncoding, validateInteger } from "../internal/validators.js";
+import {
+  getValidatedFd,
+  validateOffsetLengthWrite,
+  validateStringAfterArrayBufferView,
+} from "../internal/fs/utils.js";
+import { isArrayBufferView } from "../internal/util/types.ts";
+import { maybeCallback } from "./_fs_common.ts";
 
-export function writeSync(fd, bufferLike, ...args) {
-  const [buffer, pos] = bufferAndPos(bufferLike, args);
-  if (typeof pos === "number") {
-    Deno.seekSync(fd, pos, Deno.SeekMode.Start);
-  }
-  return writeAllSync(fd, buffer);
-}
+export function writeSync(fd, buffer, offset, length, position) {
+  fd = getValidatedFd(fd);
 
-export function write(fd, bufferLike, ...args) {
-  const cb = args[args.length - 1];
-  const [buffer, pos] = bufferAndPos(bufferLike, args.slice(0, -1));
-
-  async function innerWrite() {
-    if (typeof pos === "number") {
-      await Deno.seek(fd, pos, Deno.SeekMode.Start);
+  const innerWriteSync = (fd, buffer, offset, length, position) => {
+    if (buffer instanceof DataView) {
+      buffer = new Uint8Array(buffer.buffer);
     }
-    return writeAll(fd, buffer);
+    if (typeof position === "number") {
+      Deno.seekSync(fd, position, Deno.SeekMode.Start);
+    }
+    let currentOffset = offset;
+    while (currentOffset - offset < length) {
+      currentOffset += Deno.writeSync(fd, buffer.subarray(currentOffset));
+    }
+    return currentOffset - offset;
+  };
+
+  if (isArrayBufferView(buffer)) {
+    if (position === undefined) {
+      position = null;
+    }
+    if (offset == null) {
+      offset = 0;
+    } else {
+      validateInteger(offset, "offset", 0);
+    }
+    if (typeof length !== "number") {
+      length = buffer.byteLength - offset;
+    }
+    validateOffsetLengthWrite(offset, length, buffer.byteLength);
+    return innerWriteSync(fd, buffer, offset, length, position);
+  }
+  validateStringAfterArrayBufferView(buffer, "buffer");
+  validateEncoding(buffer, length);
+  if (offset === undefined) {
+    offset = null;
+  }
+  buffer = Buffer.from(buffer, length);
+  return innerWriteSync(fd, buffer, 0, buffer.length, position);
+}
+
+/** Writes the buffer to the file of the given descriptor.
+ * https://nodejs.org/api/fs.html#fswritefd-buffer-offset-length-position-callback
+ * https://github.com/nodejs/node/blob/42ad4137aadda69c51e1df48eee9bc2e5cebca5c/lib/fs.js#L797
+ */
+export function write(fd, buffer, offset, length, position, callback) {
+  fd = getValidatedFd(fd);
+
+  const innerWrite = async (fd, buffer, offset, length, position) => {
+    if (buffer instanceof DataView) {
+      buffer = new Uint8Array(buffer.buffer);
+    }
+    if (typeof position === "number") {
+      await Deno.seek(fd, position, Deno.SeekMode.Start);
+    }
+    let currentOffset = offset;
+    while (currentOffset - offset < length) {
+      currentOffset += await Deno.write(fd, buffer.subarray(currentOffset));
+    }
+    return currentOffset - offset;
+  };
+
+  if (isArrayBufferView(buffer)) {
+    callback = maybeCallback(callback || position || length || offset);
+    if (offset == null || typeof offset === "function") {
+      offset = 0;
+    } else {
+      validateInteger(offset, "offset", 0);
+    }
+    if (typeof length !== "number") {
+      length = buffer.byteLength - offset;
+    }
+    if (typeof position !== "number") {
+      position = null;
+    }
+    validateOffsetLengthWrite(offset, length, buffer.byteLength);
+    innerWrite(fd, buffer, offset, length, position)
+      .then((nwritten) => {
+        callback(null, nwritten, buffer);
+      }, (err) => callback(err));
+    return;
   }
 
-  innerWrite().then(
-    (n) => cb(null, n, bufferLike),
-    (e) => cb(e, 0, bufferLike),
+  // Here the call signature is
+  // `fs.write(fd, string[, position[, encoding]], callback)`
+
+  validateStringAfterArrayBufferView(buffer, "buffer");
+
+  if (typeof position !== "function") {
+    if (typeof offset === "function") {
+      position = offset;
+      offset = null;
+    } else {
+      position = length;
+    }
+    length = "utf-8";
+  }
+
+  const str = String(buffer);
+  validateEncoding(str, length);
+  callback = maybeCallback(position);
+  buffer = Buffer.from(str, length);
+  innerWrite(fd, buffer, 0, buffer.length, offset, callback).then(
+    (nwritten) => {
+      callback(null, nwritten, buffer);
+    },
+    (err) => callback(err),
   );
-}
-
-async function writeAll(fd, buf) {
-  let nwritten = 0;
-  while (nwritten < buf.length) {
-    nwritten += await Deno.write(fd, buf.subarray(nwritten));
-  }
-  return nwritten;
-}
-
-function writeAllSync(fd, buf) {
-  let nwritten = 0;
-  while (nwritten < buf.length) {
-    nwritten += Deno.writeSync(fd, buf.subarray(nwritten));
-  }
-  return nwritten;
-}
-
-function bufferAndPos(bufferLike, args) {
-  if (typeof bufferLike === "string") {
-    const [position, encoding] = args;
-    return [Buffer.from(bufferLike.buffer, encoding), position];
-  }
-
-  const [offset, length, position] = args;
-  if (typeof offset === "number") {
-    validateInteger(offset, "offset", 0);
-  }
-  return [Buffer.from(bufferLike.buffer, offset, length), position];
 }

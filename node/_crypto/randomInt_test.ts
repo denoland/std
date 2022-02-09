@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import randomInt from "./randomInt.ts";
 import { assert, assertThrows } from "../../testing/asserts.ts";
 

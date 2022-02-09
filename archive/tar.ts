@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
  * Ported and modified from: https://github.com/beatgammit/tar-js and
  * licensed as:
@@ -6,7 +7,7 @@
  *
  * Copyright (c) 2011 T. Jameson Little
  * Copyright (c) 2019 Jun Kato
- * Copyright (c) 2018-2021 the Deno authors
+ * Copyright (c) 2018-2022 the Deno authors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

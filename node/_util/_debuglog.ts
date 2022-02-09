@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { sprintf } from "../../fmt/printf.ts";
 import { inspect } from "../internal/util/inspect.js";
 

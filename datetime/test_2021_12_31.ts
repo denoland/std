@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This file contains test cases which needs to be run at the specific date (2021-12-31)
 import { assertEquals } from "../testing/asserts.ts";
 import { parse } from "./mod.ts";

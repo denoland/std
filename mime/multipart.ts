@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { equals, indexOf, lastIndexOf, startsWith } from "../bytes/mod.ts";
 import { Buffer, BufReader, BufWriter } from "../io/buffer.ts";
 import { copy } from "../streams/conversion.ts";

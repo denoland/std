@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // TODO(Soremwar)
 // This implementation has an unreliable indexOf and includes implementation
 // It also lacks the resolveObjectURL, transcode and INSPECT_MAX_BYTES exports
@@ -83,6 +84,7 @@ import * as base64url from "../encoding/base64url.ts";
 
 export const kMaxLength = 2147483647;
 export const kStringMaxLength = 536870888;
+const MAX_UINT32 = 2 ** 32;
 
 const customInspectSymbol =
   typeof Symbol === "function" && typeof Symbol["for"] === "function"
@@ -202,6 +204,13 @@ function _alloc(size, fill, encoding) {
 
   const buffer = createBuffer(size);
   if (fill !== undefined) {
+    if (encoding !== undefined && typeof encoding !== "string") {
+      throw new codes.ERR_INVALID_ARG_TYPE(
+        "encoding",
+        "string",
+        encoding,
+      );
+    }
     return buffer.fill(fill, encoding);
   }
   return buffer;
@@ -229,7 +238,7 @@ function fromString(string, encoding) {
     encoding = "utf8";
   }
   if (!Buffer.isEncoding(encoding)) {
-    throw new TypeError("Unknown encoding: " + encoding);
+    throw new codes.ERR_UNKNOWN_ENCODING(encoding);
   }
   const length = byteLength(string, encoding) | 0;
   let buf = createBuffer(length);
@@ -1658,6 +1667,13 @@ Buffer.prototype.copy = function copy(
     if (sourceStart < 0) {
       throw new codes.ERR_OUT_OF_RANGE("sourceStart", ">= 0", sourceStart);
     }
+    if (sourceStart >= MAX_UINT32) {
+      throw new codes.ERR_OUT_OF_RANGE(
+        "sourceStart",
+        `< ${MAX_UINT32}`,
+        sourceStart,
+      );
+    }
   }
 
   if (sourceEnd === undefined) {
@@ -1666,6 +1682,13 @@ Buffer.prototype.copy = function copy(
     sourceEnd = toInteger(sourceEnd, 0);
     if (sourceEnd < 0) {
       throw new codes.ERR_OUT_OF_RANGE("sourceEnd", ">= 0", sourceEnd);
+    }
+    if (sourceEnd >= MAX_UINT32) {
+      throw new codes.ERR_OUT_OF_RANGE(
+        "sourceEnd",
+        `< ${MAX_UINT32}`,
+        sourceEnd,
+      );
     }
   }
 
@@ -1753,8 +1776,9 @@ Buffer.prototype.fill = function fill(val, start, end, encoding) {
     const bytes = Buffer.isBuffer(val) ? val : Buffer.from(val, encoding);
     const len = bytes.length;
     if (len === 0) {
-      throw new TypeError(
-        'The value "' + val + '" is invalid for argument "value"',
+      throw new codes.ERR_INVALID_ARG_VALUE(
+        "value",
+        val,
       );
     }
     for (i = 0; i < end - start; ++i) {

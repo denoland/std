@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This aliases are used in some node tests and represent a legacy alias
 // for the stream modules
 // deno-lint-ignore camelcase
@@ -51,6 +51,7 @@ import net from "./net.ts";
 import os from "./os.ts";
 import path from "./path.ts";
 import perfHooks from "./perf_hooks.ts";
+import punycode from "./punycode.ts";
 import process from "./process.ts";
 import querystring from "./querystring.ts";
 import readline from "./readline.ts";
@@ -118,6 +119,15 @@ export default {
   path,
   "perf_hooks": perfHooks,
   process,
+  get punycode() {
+    process.emitWarning(
+      "The `punycode` module is deprecated. Please use a userland " +
+        "alternative instead.",
+      "DeprecationWarning",
+      "DEP0040",
+    );
+    return punycode;
+  },
   querystring,
   readline,
   repl,
