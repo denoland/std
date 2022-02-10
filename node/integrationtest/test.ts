@@ -8,7 +8,9 @@ const env = {
 };
 const yarnUrl = new URL("./yarn.js", import.meta.url).href;
 
-Deno.test("integration test of compat mode", async (t) => {
+Deno.test("integration test of compat mode", {
+  ignore: Deno.build.os === "windows",
+}, async (t) => {
   const tempDir = await Deno.makeTempDir();
   const opts = { env, cwd: tempDir };
   const npmPath = join(tempDir, "node_modules", "npm");
