@@ -398,7 +398,13 @@ class Process extends EventEmitter {
   }
 
   /** https://nodejs.org/api/process.html#processumaskmask */
-  umask = DenoUnstable.umask;
+  umask() {
+    // Always return the system default umask value.
+    // We don't use Deno.umask here because it has a race
+    // condition bug.
+    // See https://github.com/denoland/deno_std/issues/1893#issuecomment-1032897779
+    return 0o22;
+  }
 
   /** https://nodejs.org/api/process.html#processgetuid */
   getuid(): number {
