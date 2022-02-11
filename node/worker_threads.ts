@@ -4,7 +4,6 @@
 import { resolve, toFileUrl } from "../path/mod.ts";
 import { notImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
-import { deferred } from "../async/deferred.ts";
 
 let environmentData = new Map();
 let threads = 0;
@@ -183,7 +182,7 @@ if (!isMainThread) {
     workerData = data.workerData;
     environmentData = data.environmentData;
   });
-  
+
   // alias
   parentPort.addEventListener("offline", () => {
     parentPort.emit("close");
