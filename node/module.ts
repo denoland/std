@@ -212,11 +212,10 @@ class Module {
     // to avoid exposing them in global namespace.
     `
     (function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) {
-      const inner = function (exports, require, module, __filename, __dirname) {
+      (function (exports, require, module, __filename, __dirname) {
     `,
     `
-      };
-      inner.call(this, exports, require, module, __filename, __dirname);
+      }).call(this, exports, require, module, __filename, __dirname);
     })
     `,
   ];
