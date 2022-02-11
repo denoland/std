@@ -212,7 +212,7 @@ class Module {
     // to avoid exposing them in global namespace.
     `
     (function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) {
-      const inner = function(exports, require, module, __filename, __dirname) {
+      const inner = function (exports, require, module, __filename, __dirname) {
     `,
     `
       };
@@ -220,7 +220,6 @@ class Module {
     })
     `,
   ];
-
   // Loads a module at the given file path. Returns that module's
   // `exports` property.
   // deno-lint-ignore no-explicit-any

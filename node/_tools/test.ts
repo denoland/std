@@ -48,6 +48,7 @@ for await (const path of testPaths) {
         "--quiet",
         "--unstable",
         "--no-check",
+        "--v8-flags=--stack-size=1968",
       ];
       const testSourceCode = await Deno.readTextFile(targetTestPath);
       // TODO(kt3k): Parse `Flags` directive correctly
