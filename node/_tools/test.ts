@@ -42,7 +42,7 @@ for await (const path of testPaths) {
     fn: async () => {
       const targetTestPath = join(toolsPath, config.suitesFolder, path);
 
-      const v8Flags = ["--stack-size=2000"];
+      const v8Flags = ["--stack-size=4000"];
       const testSourceCode = await Deno.readTextFile(targetTestPath);
       // TODO(kt3k): Parse `Flags` directive correctly
       if (testSourceCode.includes("Flags: --expose_externalize_string")) {
