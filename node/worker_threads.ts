@@ -3,7 +3,8 @@
 
 import { resolve, toFileUrl } from "../path/mod.ts";
 import { notImplemented } from "./_utils.ts";
-import { EventEmitter, once } from "./events.ts";
+import { EventEmitter } from "./events.ts";
+import { deferred } from "../async/deferred.ts";
 
 let environmentData = new Map();
 let threads = 0;
@@ -72,11 +73,13 @@ class _Worker extends EventEmitter {
       "message",
       (event) => this.emit("message", event.data),
     );
+    console.log("posting initial message");
     handle.postMessage({
       environmentData,
       threadId: (this.threadId = ++threads),
       workerData: options?.workerData,
     }, options?.transferList || []);
+    console.log("posted initial message");
     this.postMessage = handle.postMessage.bind(handle);
     this.emit("online");
   }
@@ -173,11 +176,14 @@ if (!isMainThread) {
   parentPort.emit = () => notImplemented();
   parentPort.removeAllListeners = () => notImplemented();
 
-  [{ threadId, workerData, environmentData }] = await once(
-    parentPort,
-    "message",
-  );
-
+  // Receive startup message
+  parentPort.once("message", (data) => {
+    console.log("listener called");
+    threadId = data.threadId;
+    workerData = data.workerData;
+    environmentData = data.environmentData;
+  });
+  
   // alias
   parentPort.addEventListener("offline", () => {
     parentPort.emit("close");
