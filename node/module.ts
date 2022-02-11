@@ -211,7 +211,9 @@ class Module {
     // We provide non standard timer APIs in the CommonJS wrapper
     // to avoid exposing them in global namespace.
     "(function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) { {",
-    "} });",
+    // The new line char is necessary for the case when the last line
+    // of the module is a line comment.
+    "\n} });",
   ];
 
   // Loads a module at the given file path. Returns that module's
