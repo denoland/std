@@ -212,7 +212,6 @@ class Module {
     // to avoid exposing them in global namespace.
     `
     (function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) {
-      "use strict";
       const inner = function(exports, require, module, __filename, __dirname) {
     `,
     `
