@@ -177,7 +177,6 @@ if (!isMainThread) {
 
   // Receive startup message
   parentPort.once("message", (data) => {
-    console.log("listener called");
     threadId = data.threadId;
     workerData = data.workerData;
     environmentData = data.environmentData;
