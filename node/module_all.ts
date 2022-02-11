@@ -147,6 +147,6 @@ export default {
   v8,
   vm,
   wasi,
-  workerThreads,
+  "worker_threads": workerThreads,
   zlib,
 } as Record<string, unknown>;
