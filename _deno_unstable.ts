@@ -142,3 +142,13 @@ export function utimeSync(
     throw new TypeError("Requires --unstable");
   }
 }
+
+export function networkInterfaces(
+  ...args: Parameters<typeof Deno.networkInterfaces>
+): ReturnType<typeof Deno.networkInterfaces> {
+  if (typeof Deno.networkInterfaces == "function") {
+    return Deno.networkInterfaces(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}
