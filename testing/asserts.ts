@@ -432,7 +432,10 @@ export function assertAlmostEquals(
   if (actual === expected) {
     return;
   }
-  if (Math.abs(expected - actual) > epsilon) {
+  if (
+    (Number.isNaN(actual)) || (Number.isNaN(expected)) ||
+    (Math.abs(expected - actual) > epsilon)
+  ) {
     const f = (n: number) =>
       n.toFixed(-Math.log10(epsilon)).replace(/\.?0+$/, "");
     throw new AssertionError(

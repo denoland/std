@@ -930,6 +930,29 @@ Deno.test("assert almost equals number", () => {
     AssertionError,
     '"0.30000000000000004" expected to be close to "0.29999999999999999"',
   );
+
+  //Special cases
+  assertAlmostEquals(Infinity, Infinity);
+  assertThrows(
+    () => assertAlmostEquals(0, Infinity),
+    AssertionError,
+    '"0" expected to be close to "Infinity"',
+  );
+  assertThrows(
+    () => assertAlmostEquals(-Infinity, +Infinity),
+    AssertionError,
+    '"-Infinity" expected to be close to "Infinity"',
+  );
+  assertThrows(
+    () => assertAlmostEquals(Infinity, NaN),
+    AssertionError,
+    '"Infinity" expected to be close to "NaN"',
+  );
+  assertThrows(
+    () => assertAlmostEquals(NaN, NaN),
+    AssertionError,
+    '"NaN" expected to be close to "NaN"',
+  );
 });
 
 Deno.test({
