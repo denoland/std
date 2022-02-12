@@ -412,6 +412,36 @@ export function assertNotStrictEquals(
 }
 
 /**
+ * Make an assertion that `actual` and `expected` are almost equal numbers through
+ * a given epsilon. It can be used to take into account IEEE-754 double-precision
+ * floating-point representation limitations.
+ * If the values are not almost equal then throw.
+ *
+ * ```ts
+ * import { assertAlmostEquals } from "./asserts.ts";
+ *
+ * assertAlmostEquals(0.1, 0.2)
+ * ```
+ */
+export function assertAlmostEquals(
+  actual: number,
+  expected: number,
+  epsilon = 1e-7,
+  msg?: string,
+) {
+  if (actual === expected) {
+    return;
+  }
+  if (Math.abs(expected - actual) > epsilon) {
+    const f = (n: number) =>
+      n.toFixed(-Math.log10(epsilon)).replace(/\.?0+$/, "");
+    throw new AssertionError(
+      msg ?? `actual: "${f(actual)}" expected to be close to "${f(expected)}"`,
+    );
+  }
+}
+
+/**
  * Make an assertion that actual is not null or undefined.
  * If not then throw.
  */

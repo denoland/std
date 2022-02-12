@@ -2,6 +2,7 @@
 import {
   _format,
   assert,
+  assertAlmostEquals,
   assertArrayIncludes,
   assertEquals,
   assertExists,
@@ -912,6 +913,23 @@ Deno.test({
   fn(): void {
     assertThrows(() => assertNotStrictEquals(1, 1), AssertionError);
   },
+});
+
+Deno.test("assert almost equals number", () => {
+  //Default precision
+  assertAlmostEquals(-0, +0);
+  assertAlmostEquals(Math.PI, Math.PI);
+  assertAlmostEquals(0.1 + 0.2, 0.3);
+  assertThrows(() => assertAlmostEquals(1, 2));
+  assertThrows(() => assertAlmostEquals(1, 1.1));
+
+  //Higher precision
+  assertAlmostEquals(0.1 + 0.2, 0.3, 1e-16);
+  assertThrows(
+    () => assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17),
+    AssertionError,
+    '"0.30000000000000004" expected to be close to "0.29999999999999999"',
+  );
 });
 
 Deno.test({
