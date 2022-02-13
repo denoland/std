@@ -432,16 +432,16 @@ export function assertAlmostEquals(
   if (actual === expected) {
     return;
   }
-  if (
-    (Number.isNaN(actual)) || (Number.isNaN(expected)) ||
-    (Math.abs(expected - actual) > epsilon)
-  ) {
-    const f = (n: number) =>
-      n.toFixed(-Math.log10(epsilon)).replace(/\.?0+$/, "");
-    throw new AssertionError(
-      msg ?? `actual: "${f(actual)}" expected to be close to "${f(expected)}"`,
-    );
+  const delta = Math.abs(expected - actual);
+  if (delta <= epsilon) {
+    return;
   }
+  const f = (n: number) => Number.isInteger(n) ? n : n.toExponential();
+  throw new AssertionError(
+    msg ??
+      `actual: "${f(actual)}" expected to be close to "${f(expected)}": \
+delta "${f(delta)}" is greater than "${f(epsilon)}"`,
+  );
 }
 
 /**

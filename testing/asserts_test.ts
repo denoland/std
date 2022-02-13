@@ -928,7 +928,9 @@ Deno.test("assert almost equals number", () => {
   assertThrows(
     () => assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17),
     AssertionError,
-    '"0.30000000000000004" expected to be close to "0.29999999999999999"',
+    `"${(0.1 + 0.2).toExponential()}" expected to be close to "${
+      (0.3).toExponential()
+    }"`,
   );
 
   //Special cases
