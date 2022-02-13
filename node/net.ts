@@ -277,7 +277,7 @@ export function _normalizeArgs(args: unknown[]): NormalizedArgs {
   const arg0 = args[0] as Partial<NetConnectOptions> | number | string;
   let options: Partial<SocketConnectOptions> = {};
 
-  if (typeof arg0 === "object" && arg0 !== null) {
+  if (arg0 !== null) if (typeof arg0 === "object") {
     // (options[...][, cb])
     options = arg0;
   } else if (_isPipeName(arg0)) {
