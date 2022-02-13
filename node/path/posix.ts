@@ -380,9 +380,7 @@ export function extname(path: string): string {
  */
 export function format(pathObject: FormatInputPathObject): string {
   if (pathObject === null || typeof pathObject !== "object") {
-    throw new TypeError(
-      `The "pathObject" argument must be of type Object. Received type ${typeof pathObject}`,
-    );
+    throw new ERR_INVALID_ARG_TYPE("pathObject", ["Object"], pathObject);
   }
   return _format("/", pathObject);
 }
