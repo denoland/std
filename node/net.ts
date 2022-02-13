@@ -277,18 +277,20 @@ export function _normalizeArgs(args: unknown[]): NormalizedArgs {
   const arg0 = args[0] as Partial<NetConnectOptions> | number | string;
   let options: Partial<SocketConnectOptions> = {};
 
-  if (arg0 !== null) if (typeof arg0 === "object") {
-    // (options[...][, cb])
-    options = arg0;
-  } else if (_isPipeName(arg0)) {
-    // (path[...][, cb])
-    (options as IpcSocketConnectOptions).path = arg0;
-  } else {
-    // ([port][, host][...][, cb])
-    (options as TcpSocketConnectOptions).port = arg0;
+  if (arg0 !== null) {
+    if (typeof arg0 === "object") {
+      // (options[...][, cb])
+      options = arg0;
+    } else if (_isPipeName(arg0)) {
+      // (path[...][, cb])
+      (options as IpcSocketConnectOptions).path = arg0;
+    } else {
+      // ([port][, host][...][, cb])
+      (options as TcpSocketConnectOptions).port = arg0;
 
-    if (args.length > 1 && typeof args[1] === "string") {
-      (options as TcpSocketConnectOptions).host = args[1];
+      if (args.length > 1 && typeof args[1] === "string") {
+        (options as TcpSocketConnectOptions).host = args[1];
+      }
     }
   }
 
