@@ -30,12 +30,15 @@ import {
   ERR_TLS_DH_PARAM_SIZE,
 } from "./internal/errors.ts";
 import { emitWarning } from "./process.ts";
+import { debuglog } from "./internal/util/debuglog.ts";
 const kConnectOptions = Symbol("connect-options");
 const kIsVerified = Symbol("verified");
 const kPendingSession = Symbol("pendingSession");
 const kRes = Symbol("res");
 
-const debug = console.log; // TODO(bnoordhuis)
+let debug = debuglog('tls', (fn) => {
+  debug = fn;
+});
 
 function onConnectSecure(this: any) {
   const options = this[kConnectOptions];
