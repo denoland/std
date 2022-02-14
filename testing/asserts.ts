@@ -418,7 +418,7 @@ export function assertNotStrictEquals(
  * If the values are not almost equal then throw.
  *
  * ```ts
- * import { assertAlmostEquals } from "./asserts.ts";
+ * import { assertAlmostEquals, assertThrows } from "./asserts.ts";
  *
  * assertAlmostEquals(0.1, 0.2);
  *
