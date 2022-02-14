@@ -2,11 +2,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 import {
-  ArrayIsArray,
-  ArrayPrototypeForEach,
   ArrayPrototypeIncludes,
-  ArrayPrototypeJoin,
-  ArrayPrototypePush,
   ArrayPrototypeSome,
   ObjectAssign,
   RegExpPrototypeTest,
@@ -15,7 +11,6 @@ import {
   StringPrototypeEndsWith,
   StringPrototypeIncludes,
   StringPrototypeReplace,
-  StringPrototypeSlice,
   StringPrototypeSplit,
   StringPrototypeStartsWith,
 } from "./internal/primordials.js";
@@ -26,7 +21,6 @@ import { kStreamBaseField } from "./internal_binding/stream_wrap.ts";
 import { notImplemented } from "./_utils.ts";
 import {
   connResetException,
-  ERR_TLS_CERT_ALTNAME_INVALID,
   ERR_TLS_DH_PARAM_SIZE,
 } from "./internal/errors.ts";
 import { emitWarning } from "./process.ts";
@@ -36,7 +30,7 @@ const kIsVerified = Symbol("verified");
 const kPendingSession = Symbol("pendingSession");
 const kRes = Symbol("res");
 
-let debug = debuglog('tls', (fn) => {
+let debug = debuglog("tls", (fn) => {
   debug = fn;
 });
 
@@ -145,9 +139,21 @@ export class TLSSocket extends net.Socket {
   ssl: any;
   _start: any;
   constructor(socket: any, opts: any) {
-    super(opts);
-
     const tlsOptions = { ...opts };
+
+    let hostname = tlsOptions?.secureContext?.servername;
+    hostname = opts.host;
+
+    const _cert = tlsOptions?.secureContext?.cert;
+    const _key = tlsOptions?.secureContext?.key;
+
+    let caCerts = tlsOptions?.secureContext?.ca;
+    if (typeof caCerts === "string") caCerts = [caCerts];
+
+    if (!socket) {
+      socket = net.connect(tlsOptions);
+    }
+    super({ ...opts, socket });
     this._tlsOptions = tlsOptions;
     this._secureEstablished = false;
     this._securePending = false;
@@ -170,19 +176,6 @@ export class TLSSocket extends net.Socket {
       }
     }();
 
-    let hostname = tlsOptions?.secureContext?.servername;
-    hostname = "localhost";
-
-    const _cert = tlsOptions?.secureContext?.cert;
-    const _key = tlsOptions?.secureContext?.key;
-
-    let caCerts = tlsOptions?.secureContext?.ca;
-    if (typeof caCerts === "string") caCerts = [caCerts];
-
-    if (!socket) {
-      socket = net.connect(tlsOptions);
-    }
-
     this._handle = socket._handle;
     (this._handle as any).verifyError = function () {
       return null; // Never fails, rejectUnauthorized is always true in Deno.
@@ -194,26 +187,27 @@ export class TLSSocket extends net.Socket {
       go(this, socket);
     }
 
-    async function go(that: any, socket: any) {
+    async function go(that: TLSSocket, socket: any) {
       const handle = socket._handle;
       const options = { caCerts, hostname };
 
-      let conn;
+      let conn: any;
       try {
         conn = await Deno.startTls(handle[kStreamBaseField], options);
       } catch (err) {
-        console.log("error", err);
         that.emit("_tlsError", err);
         return;
       }
 
-      console.log("secure", conn);
       handle[kStreamBaseField] = {
-        conn,
-        write() {
-          throw Error("write");
+        ...conn,
+        write(...args: any[]) {
+          const p = conn.write(...args);
+          return p;
         },
       };
+      that.connecting = false;
+      that.emit("connect", socket);
       that.emit("secure");
     }
   }
@@ -342,6 +336,7 @@ export function connect(...args: any[]) {
     tlssock.once("secureConnect", cb);
   }
 
+  /*
   if (!options.socket) {
     // If user provided the socket, it's their responsibility to manage its
     // connectivity. If we created one internally, we connect it.
@@ -351,6 +346,7 @@ export function connect(...args: any[]) {
 
     tlssock.connect(options, tlssock._start);
   }
+  */
 
   tlssock._releaseControl();
 
@@ -389,7 +385,10 @@ export function createServer() {
   notImplemented();
 }
 
-export function checkServerIdentity(hostname: string, cert: any) {
+export function checkServerIdentity(_hostname: string, _cert: any) {
+  // TODO(kt3k): Implement this when Deno provides APIs for getting peer
+  // certificates.
+  /*
   const subject = cert.subject;
   const altNames = cert.subjectaltname;
   const dnsNames: any[] = [];
@@ -458,13 +457,13 @@ export function checkServerIdentity(hostname: string, cert: any) {
   } else {
     reason = "Cert is empty";
   }
-
   if (!valid) {
     return new ERR_TLS_CERT_ALTNAME_INVALID(reason, hostname, cert);
   }
+  */
 }
 
-function canonicalizeIP(ip: string): string {
+function _canonicalizeIP(ip: string): string {
   return ip; // TODO(bnoordhuis) emulate uv_inet_pton() + uv_inet_ntop()
 }
 
@@ -472,7 +471,7 @@ function unfqdn(host: string): string {
   return StringPrototypeReplace(host, /[.]$/, "");
 }
 
-function check(hostParts: any, pattern: any, wildcards: any) {
+function _check(hostParts: any, pattern: any, wildcards: any) {
   // Empty strings, null, undefined, etc. never match.
   if (!pattern) {
     return false;
