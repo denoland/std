@@ -224,6 +224,8 @@
       "test-path-makelong.js",
       "test-path-normalize.js",
       "test-path-parse-format.js",
+      "test-path-posix-exists.js",
+      "test-path-win32-exists.js",
       "test-path.js",
       "test-process-binding-internalbinding-allowlist.js",
       "test-process-exit-handler.js",
