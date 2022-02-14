@@ -421,7 +421,7 @@ export function assertNotStrictEquals(
  * import { assertAlmostEquals } from "./asserts.ts";
  *
  * assertAlmostEquals(0.1, 0.2);
- * 
+ *
  * // Using a custom epsilon value
  * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-16);
  * assertThrows(() => assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17));
