@@ -2,17 +2,8 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 import {
-  ArrayPrototypeIncludes,
-  ArrayPrototypeSome,
   ObjectAssign,
-  RegExpPrototypeTest,
-  StringFromCharCode,
-  StringPrototypeCharCodeAt,
-  StringPrototypeEndsWith,
-  StringPrototypeIncludes,
   StringPrototypeReplace,
-  StringPrototypeSplit,
-  StringPrototypeStartsWith,
 } from "./internal/primordials.js";
 import assert from "./internal/assert.js";
 import net from "./net.ts";
@@ -401,103 +392,8 @@ export function createServer() {
 export function checkServerIdentity(_hostname: string, _cert: any) {
 }
 
-function _canonicalizeIP(ip: string): string {
-  return ip; // TODO(bnoordhuis) emulate uv_inet_pton() + uv_inet_ntop()
-}
-
 function unfqdn(host: string): string {
   return StringPrototypeReplace(host, /[.]$/, "");
-}
-
-function _check(hostParts: any, pattern: any, wildcards: any) {
-  // Empty strings, null, undefined, etc. never match.
-  if (!pattern) {
-    return false;
-  }
-
-  const patternParts = splitHost(pattern);
-
-  if (hostParts.length !== patternParts.length) {
-    return false;
-  }
-
-  // Pattern has empty components, e.g. "bad..example.com".
-  if (ArrayPrototypeIncludes(patternParts, "")) {
-    return false;
-  }
-
-  // RFC 6125 allows IDNA U-labels (Unicode) in names but we have no
-  // good way to detect their encoding or normalize them so we simply
-  // reject them.  Control characters and blanks are rejected as well
-  // because nothing good can come from accepting them.
-  const isBad = (s: string) => RegExpPrototypeTest(/[^\u0021-\u007F]/u, s);
-  if (ArrayPrototypeSome(patternParts, isBad)) {
-    return false;
-  }
-
-  // Check host parts from right to left first.
-  for (let i = hostParts.length - 1; i > 0; i -= 1) {
-    if (hostParts[i] !== patternParts[i]) {
-      return false;
-    }
-  }
-
-  const hostSubdomain = hostParts[0];
-  const patternSubdomain = patternParts[0];
-  const patternSubdomainParts = StringPrototypeSplit(patternSubdomain, "*");
-
-  // Short-circuit when the subdomain does not contain a wildcard.
-  // RFC 6125 does not allow wildcard substitution for components
-  // containing IDNA A-labels (Punycode) so match those verbatim.
-  if (
-    patternSubdomainParts.length === 1 ||
-    StringPrototypeIncludes(patternSubdomain, "xn--")
-  ) {
-    return hostSubdomain === patternSubdomain;
-  }
-
-  if (!wildcards) {
-    return false;
-  }
-
-  // More than one wildcard is always wrong.
-  if (patternSubdomainParts.length > 2) {
-    return false;
-  }
-
-  // *.tld wildcards are not allowed.
-  if (patternParts.length <= 2) {
-    return false;
-  }
-
-  const { 0: prefix, 1: suffix } = patternSubdomainParts;
-
-  if (prefix.length + suffix.length > hostSubdomain.length) {
-    return false;
-  }
-
-  if (!StringPrototypeStartsWith(hostSubdomain, prefix)) {
-    return false;
-  }
-
-  if (!StringPrototypeEndsWith(hostSubdomain, suffix)) {
-    return false;
-  }
-
-  return true;
-}
-
-// String#toLowerCase() is locale-sensitive so we use
-// a conservative version that only lowercases A-Z.
-function toLowerCase(c: string): string {
-  return StringFromCharCode(32 + StringPrototypeCharCodeAt(c, 0));
-}
-
-function splitHost(host: string): string {
-  return StringPrototypeSplit(
-    StringPrototypeReplace(unfqdn(host), /[A-Z]/g, toLowerCase),
-    ".",
-  );
 }
 
 // Order matters. Mirrors ALL_CIPHER_SUITES from rustls/src/suites.rs but
