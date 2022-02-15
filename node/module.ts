@@ -210,14 +210,8 @@ class Module {
   static wrapper = [
     // We provide non standard timer APIs in the CommonJS wrapper
     // to avoid exposing them in global namespace.
-    `
-    (function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) {
-      (function (exports, require, module, __filename, __dirname) {
-    `,
-    `
-      }).call(this, exports, require, module, __filename, __dirname);
-    })
-    `,
+    "(function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) { (function (exports, require, module, __filename, __dirname) {",
+    "\n}).call(this, exports, require, module, __filename, __dirname); })",
   ];
   // Loads a module at the given file path. Returns that module's
   // `exports` property.
