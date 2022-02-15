@@ -32,7 +32,7 @@ import { notImplemented } from "../_utils.ts";
 import { HandleWrap } from "./handle_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { codeMap } from "./uv.ts";
-import { writeAll } from "../../io/util.ts";
+import { writeAll } from "../../streams/conversion.ts";
 
 enum StreamBaseStateFields {
   kReadBytesOrError,
@@ -257,13 +257,18 @@ export class LibuvStreamWrap extends HandleWrap {
 
   /** Internal method for reading from the attached stream. */
   async #read(): Promise<void> {
+    const r = Math.random().toString(36).slice(2);
+    console.log(r, "stream_wrap #read", this[kStreamBaseField]);
+    console.log(r, new Error().stack);
     let buf = new Uint8Array(SUGGESTED_SIZE);
 
     let nread: number | null;
-
     try {
       nread = await this[kStreamBaseField]!.read(buf);
+      console.log(r, "nread", nread);
+      //console.log(new TextDecoder().decode(buf));
     } catch (e) {
+      console.log(r, e);
       if (
         e instanceof Deno.errors.Interrupted ||
         e instanceof Deno.errors.BadResource
@@ -289,8 +294,12 @@ export class LibuvStreamWrap extends HandleWrap {
     streamBaseState[kArrayBufferOffset] = 0;
 
     try {
+      console.log(r, "onread");
+      console.log(r, "this.constructor.name", this.constructor.name);
+      console.log(r, this.onread.toString().slice(0, 100));
       this.onread!(buf, nread);
-    } catch {
+    } catch (e) {
+      console.log(e)
       // swallow callback errors.
     }
 

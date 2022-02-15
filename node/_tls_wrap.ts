@@ -1,6 +1,7 @@
 // Copyright 2022 Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
+import { readAll } from "../streams/conversion.ts";
 import {
   ArrayPrototypeIncludes,
   ArrayPrototypeSome,
@@ -18,6 +19,7 @@ import assert from "./internal/assert.js";
 import net from "./net.ts";
 import { createSecureContext } from "./_tls_common.ts";
 import { kStreamBaseField } from "./internal_binding/stream_wrap.ts";
+import { onStreamRead } from "./internal/stream_base_commons.ts";
 import { notImplemented } from "./_utils.ts";
 import {
   connResetException,
@@ -154,6 +156,7 @@ export class TLSSocket extends net.Socket {
       socket = net.connect(tlsOptions);
     }
     super({ ...opts, socket });
+    this._parent = socket;
     this._tlsOptions = tlsOptions;
     this._secureEstablished = false;
     this._securePending = false;
@@ -181,6 +184,7 @@ export class TLSSocket extends net.Socket {
       return null; // Never fails, rejectUnauthorized is always true in Deno.
     };
 
+    this.connecting = true;
     if (socket.connecting) {
       socket.once("connect", () => go(this, socket));
     } else {
@@ -199,13 +203,28 @@ export class TLSSocket extends net.Socket {
         return;
       }
 
+      console.log("sets handle[kStreamBaseField]")
       handle[kStreamBaseField] = {
         ...conn,
         write(...args: any[]) {
+          console.log("write", args)
           const p = conn.write(...args);
           return p;
         },
+        read(...args: any[]) {
+          console.log("read", conn);
+          const p = conn.read(...args);
+          return p
+        },
+        close() {
+          console.log("close", conn);
+          console.log("stack is", new Error().stack);
+          //conn.close();
+        }
       };
+      console.log("handle.onread", handle.onread);
+      handle.onread = onStreamRead;
+      console.log("handle.onread", handle.onread);
       that.connecting = false;
       that.emit("connect", socket);
       that.emit("secure");
@@ -246,8 +265,9 @@ export class TLSSocket extends net.Socket {
   }
 
   getPeerCertificate(_detailed: boolean) {
+    // TODO(kt3k): implement this
     return {
-      subject: "localhost", // TODO
+      subject: "localhost",
       subjectaltname: "IP Address:127.0.0.1, IP Address:::1",
     };
   }
