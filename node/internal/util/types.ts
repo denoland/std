@@ -22,6 +22,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import * as bindingTypes from "../../internal_binding/types.ts";
+export { isCryptoKey, isKeyObject } from "../crypto/keys.ts";
 
 const _toString = Object.prototype.toString;
 
@@ -133,6 +134,4 @@ export const {
   isModuleNamespaceObject,
   isAnyArrayBuffer,
   isBoxedPrimitive,
-  // isKeyObject,
-  // isCryptoKey
 } = bindingTypes;
