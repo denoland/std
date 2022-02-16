@@ -298,13 +298,12 @@ for (const [ value, _method ] of [
 //   assert.ok(types.isModuleNamespaceObject(m.namespace));
 // })().then(common.mustCall());
 
-// TODO(wafuwafu13): Implement `common.hasCrypto`
-// {
-//   // eslint-disable-next-line node-core/crypto-check
-//   if (common.hasCrypto) {
-//     const crypto = require('crypto');
-//     assert.ok(!types.isKeyObject(crypto.createHash('sha1')));
-//   }
-//   assert.ok(!types.isCryptoKey());
-//   assert.ok(!types.isKeyObject());
-// }
+{
+  // eslint-disable-next-line node-core/crypto-check
+  if (common.hasCrypto) {
+    const crypto = require('crypto');
+    assert.ok(!types.isKeyObject(crypto.createHash('sha1')));
+  }
+  assert.ok(!types.isCryptoKey());
+  assert.ok(!types.isKeyObject());
+}
