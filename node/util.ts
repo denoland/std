@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { promisify } from "./internal/util.js";
 import { callbackify } from "./_util/_util_callbackify.ts";
-import { debuglog } from "./_util/_debuglog.ts";
+import { debuglog } from "./internal/util/debuglog.ts";
 import { deprecate } from "./internal/util.js";
 import {
   format,
