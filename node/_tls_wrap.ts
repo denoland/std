@@ -6,14 +6,10 @@ import {
   StringPrototypeReplace,
 } from "./internal/primordials.js";
 import assert from "./internal/assert.js";
-import net from "./net.ts";
+import * as net from "./net.ts";
 import { createSecureContext } from "./_tls_common.ts";
 import { kStreamBaseField } from "./internal_binding/stream_wrap.ts";
-import { notImplemented } from "./_utils.ts";
-import {
-  connResetException,
-  ERR_TLS_DH_PARAM_SIZE,
-} from "./internal/errors.ts";
+import { connResetException } from "./internal/errors.ts";
 import { emitWarning } from "./process.ts";
 import { debuglog } from "./internal/util/debuglog.ts";
 import { constants as TCPConstants, TCP } from "./internal_binding/tcp_wrap.ts";
@@ -29,74 +25,6 @@ const kRes = Symbol("res");
 let debug = debuglog("tls", (fn) => {
   debug = fn;
 });
-
-function onConnectSecure(this: any) {
-  const options = this[kConnectOptions];
-
-  // Check the size of DHE parameter above minimum requirement
-  // specified in options.
-  const ekeyinfo = this.getEphemeralKeyInfo();
-  if (ekeyinfo.type === "DH" && ekeyinfo.size < options.minDHSize) {
-    const err = new ERR_TLS_DH_PARAM_SIZE(ekeyinfo.size);
-    debug("client emit:", err);
-    this.emit("error", err);
-    this.destroy();
-    return;
-  }
-
-  let verifyError = this._handle.verifyError();
-
-  // Verify that server's identity matches it's certificate's names
-  // Unless server has resumed our existing session
-  if (!verifyError && !this.isSessionReused()) {
-    const hostname = options.servername ||
-      options.host ||
-      (options.socket && options.socket._host) ||
-      "localhost";
-    const cert = this.getPeerCertificate(true);
-    verifyError = options.checkServerIdentity(hostname, cert);
-  }
-
-  if (verifyError) {
-    this.authorized = false;
-    this.authorizationError = verifyError.code || verifyError.message;
-
-    // rejectUnauthorized property can be explicitly defined as `undefined`
-    // causing the assignment to default value (`true`) fail. Before assigning
-    // it to the tlssock connection options, explicitly check if it is false
-    // and update rejectUnauthorized property. The property gets used by
-    // TLSSocket connection handler to allow or reject connection if
-    // unauthorized.
-    // This check is potentially redundant, however it is better to keep it
-    // in case the option object gets modified somewhere.
-    if (options.rejectUnauthorized !== false) {
-      this.destroy(verifyError);
-      return;
-    }
-    debug(
-      "client emit secureConnect. rejectUnauthorized: %s, " +
-        "authorizationError: %s",
-      options.rejectUnauthorized,
-      this.authorizationError,
-    );
-    this.secureConnecting = false;
-    this.emit("secureConnect");
-  } else {
-    this.authorized = true;
-    debug("client emit secureConnect. authorized:", this.authorized);
-    this.secureConnecting = false;
-    this.emit("secureConnect");
-  }
-
-  this[kIsVerified] = true;
-  const session = this[kPendingSession];
-  this[kPendingSession] = null;
-  if (session) {
-    this.emit("session", session);
-  }
-
-  this.removeListener("end", onConnectEnd);
-}
 
 function onConnectEnd(this: any) {
   // NOTE: This logic is shared with _http_client.js
@@ -149,7 +77,7 @@ export class TLSSocket extends net.Socket {
     tlsOptions.caCerts = caCerts;
 
     super({
-      handle: _wrapHandle(tlsOptions, opts.wrap),
+      handle: _wrapHandle(tlsOptions, socket),
       ...opts,
       manualStart: true, // This prevents premature reading from TLS handle
     });
@@ -180,7 +108,9 @@ export class TLSSocket extends net.Socket {
     // deno-lint-ignore no-this-alias
     const tlssock = this;
 
-    function _wrapHandle(tlsOptions: any, wrap: any) {
+    /** Wraps the given socket and adds the tls capability to the underlying
+     * handle */
+    function _wrapHandle(tlsOptions: any, wrap: net.Socket | undefined) {
       let handle: any;
 
       if (wrap) {
@@ -199,6 +129,7 @@ export class TLSSocket extends net.Socket {
       handle.afterConnect = async (req: any, status: number) => {
         try {
           const conn = await Deno.startTls(handle[kStreamBaseField], options);
+          tlssock.emit("secure");
           tlssock.removeListener("end", onConnectEnd);
           handle[kStreamBaseField] = conn;
         } catch {
@@ -277,6 +208,41 @@ function normalizeConnectArgs(listArgs: any) {
 }
 
 let ipServernameWarned = false;
+
+function tlsConnectionListener(this: ServerImpl, rawSocket: net.Socket) {
+  debug("net.Server.on(connection): new TLSSocket");
+  const socket = new TLSSocket(rawSocket, {
+    secureContext: this._sharedCreds,
+    isServer: true,
+    server: this,
+    pauseOnConnect: this.pauseOnConnect,
+  });
+
+  socket.on("secure", () => {
+    this.emit("secureConnection", this);
+  });
+}
+
+export function Server(options: any, listener: any) {
+  return new ServerImpl(options, listener);
+}
+
+export class ServerImpl extends net.Server {
+  _sharedCreds = null;
+  constructor(options: any, listener: any) {
+    super(options, tlsConnectionListener);
+
+    if (listener) {
+      this.on("secureConnection", listener);
+    }
+  }
+}
+
+Server.prototype = ServerImpl.prototype;
+
+export function createServer(options: any, listener: any) {
+  return new ServerImpl(options, listener);
+}
 
 export function connect(...args: any[]) {
   args = normalizeConnectArgs(args);
@@ -373,7 +339,6 @@ export function connect(...args: any[]) {
     tlssock._start();
   }
 
-  tlssock.on("secure", onConnectSecure);
   tlssock.prependListener("end", onConnectEnd);
 
   return tlssock;
@@ -381,10 +346,6 @@ export function connect(...args: any[]) {
 
 function getAllowUnauthorized() {
   return false;
-}
-
-export function createServer() {
-  notImplemented();
 }
 
 // TODO(kt3k): Implement this when Deno provides APIs for getting peer
