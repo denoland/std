@@ -197,3 +197,7 @@ Deno.test("module has proper members", function () {
   assert(module.Module === Module);
   assert(typeof module.wrap == "function");
 });
+
+Deno.test("a module can have its own timers declarations", function () {
+  require("./_module/cjs/cjs_declare_timers");
+});
