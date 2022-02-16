@@ -1,3 +1,15 @@
+### 0.126.0 / 2022.02.17
+
+- feat(node): add tls.connect (#1923)
+- fix(collections/group_by): improve type safety (#1880)
+- fix(io/buffer): super and initialized prop (#1917)
+- fix(node): add networkInterfaces to unstable (#1904)
+- fix(node): fix fs.createWriteStream (#1874)
+- fix(node): fix fs.write again, enable more test cases (#1892)
+- fix(node): support 6-arg fs.write (#1888)
+- fix(node/buffer): fix base64 decode (#1885)
+- fix(node/module): fix commonjs wrapper (#1902)
+
 ### 0.125.0 / 2022.02.03
 
 - feat(node): add punycode module (#1857)
