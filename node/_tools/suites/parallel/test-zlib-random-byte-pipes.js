@@ -150,7 +150,8 @@ class HashStream extends Stream {
 
 for (const [ createCompress, createDecompress ] of [
   [ zlib.createGzip, zlib.createGunzip ],
-  [ zlib.createBrotliCompress, zlib.createBrotliDecompress ],
+  // TODO(kt3k): Enable this when we support brotli in zlib
+  // [ zlib.createBrotliCompress, zlib.createBrotliDecompress ],
 ]) {
   const inp = new RandomReadStream({ total: 1024, block: 256, jitter: 16 });
   const out = new HashStream();

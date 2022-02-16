@@ -50,6 +50,7 @@
       "test-zlib-convenience-methods.js",
       "test-zlib-empty-buffer.js",
       "test-zlib-invalid-input.js",
+      "test-zlib-random-byte-pipes.js",
       "test-zlib-write-after-flush.js",
       "test-zlib-zero-byte.js",
       "test-zlib-zero-windowBits.js"
