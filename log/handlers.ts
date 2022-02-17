@@ -96,7 +96,7 @@ interface FileHandlerOptions extends HandlerOptions {
 }
 
 export class FileHandler extends WriterHandler {
-  protected _file: Deno.File | undefined;
+  protected _file: Deno.FsFile | undefined;
   protected _buf!: BufWriterSync;
   protected _filename: string;
   protected _mode: LogMode;
