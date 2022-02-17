@@ -65,7 +65,7 @@ Deno.test({
   name: "Async: Data is written to passed in rid",
   async fn() {
     const tempFile: string = await Deno.makeTempFile();
-    const file: Deno.File = await Deno.open(tempFile, {
+    const file: Deno.FsFile = await Deno.open(tempFile, {
       create: true,
       write: true,
       read: true,
@@ -163,7 +163,7 @@ Deno.test({
   name: "Sync: Data is written to passed in rid",
   fn() {
     const tempFile: string = Deno.makeTempFileSync();
-    const file: Deno.File = Deno.openSync(tempFile, {
+    const file: Deno.FsFile = Deno.openSync(tempFile, {
       create: true,
       write: true,
       read: true,
