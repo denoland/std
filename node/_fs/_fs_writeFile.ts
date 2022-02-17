@@ -56,7 +56,7 @@ export function writeFile(
   (async () => {
     try {
       file = isRid
-        ? new Deno.File(pathOrRid as number)
+        ? new Deno.FsFile(pathOrRid as number)
         : await Deno.open(pathOrRid as string, openOptions);
 
       // ignore mode because it's not supported on windows
@@ -111,7 +111,7 @@ export function writeFileSync(
   let error: Error | null = null;
   try {
     file = isRid
-      ? new Deno.File(pathOrRid as number)
+      ? new Deno.FsFile(pathOrRid as number)
       : Deno.openSync(pathOrRid as string, openOptions);
 
     // ignore mode because it's not supported on windows
