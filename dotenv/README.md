@@ -49,7 +49,7 @@ GREETING=hello world
 
 ```ts
 // app.ts
-import { load, loadSync } "https://deno.land/std@$STD_VERSION/dotenv/load.ts";
+import { load } from "https://deno.land/std@$STD_VERSION/dotenv/load.ts";
 await load(Deno.env);
 console.log(Deno.env.get("GREETING"));
 ```
@@ -58,7 +58,7 @@ console.log(Deno.env.get("GREETING"));
 
 ```ts
 // app.ts
-import { load, loadSync } "https://deno.land/std@$STD_VERSION/dotenv/load.ts";
+import { loadSync } from "https://deno.land/std@$STD_VERSION/dotenv/load.ts";
 loadSync(Deno.env);
 console.log(Deno.env.get("GREETING"));
 ```
