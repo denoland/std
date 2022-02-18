@@ -1,82 +1,44 @@
-import { Handler } from "./handlers.ts";
-import { LogLevel, logLevels } from "./levels.ts";
+export const logLevels = {
+  trace: 10,
+  debug: 20,
+  info: 30,
+  warn: 40,
+  error: 50,
+};
 
-export function asString(data: unknown): string {
-  if (typeof data === "string") {
-    return data;
-  } else if (
-    data === null ||
-    typeof data === "number" ||
-    typeof data === "bigint" ||
-    typeof data === "boolean" ||
-    typeof data === "undefined" ||
-    typeof data === "symbol"
-  ) {
-    return String(data);
-  } else if (typeof data === "object") {
-    return JSON.stringify(data);
+export abstract class BaseLogger<D = unknown> {
+  logLevel: number;
+  quiet = false;
+  constructor(logLevel: number) {
+    this.logLevel = logLevel;
   }
-  return "undefined";
+
+  protected dispatch(data: D, logLevel: number) {
+    if (this.quiet || this.logLevel > logLevel) return;
+    this.handler(data, logLevel);
+  }
+
+  protected abstract handler(data: D, logLevel: number): void;
 }
 
-export type LogRecord<M = unknown> = Readonly<{
-  message: M;
-  args: ReadonlyArray<unknown>;
-  datetime: Date;
-  logLevel: LogLevel;
-  logger: Logger;
-}>;
+export abstract class Logger<D extends unknown[]> extends BaseLogger<D> {
+  static logLevels = logLevels;
 
-export class Logger<M = unknown> {
-  name: string;
-  logLevel: LogLevel;
-  handlers: Handler[];
-
-  constructor(logLevel: LogLevel, {
-    name = "logger",
-    handlers = [],
-  }: {
-    name?: string;
-    handlers?: Handler[];
-  } = {}) {
-    this.name = name;
-    this.logLevel = logLevel;
-    this.handlers = handlers;
+  trace(...data: D) {
+    this.dispatch(data, logLevels.trace);
+  }
+  debug(...data: D) {
+    this.dispatch(data, logLevels.debug);
+  }
+  info(...data: D) {
+    this.dispatch(data, logLevels.info);
+  }
+  warn(...data: D) {
+    this.dispatch(data, logLevels.warn);
+  }
+  error(...data: D) {
+    this.dispatch(data, logLevels.error);
   }
 
-  protected dispatch(logLevel: LogLevel, message: unknown, ...args: unknown[]) {
-    if (this.logLevel.code > logLevel.code) return;
-
-    if (message instanceof Function) {
-      message = message(logLevel);
-    }
-
-    message = asString(message);
-
-    const record: LogRecord<unknown> = {
-      datetime: new Date(),
-      logger: this,
-      message,
-      args,
-      logLevel,
-    };
-
-    this.handlers.forEach((handler) => handler.handle(record));
-  }
-
-  trace(message: M, ...args: unknown[]) {
-    return this.dispatch(logLevels.trace, message, ...args);
-  }
-  debug(message: M, ...args: unknown[]) {
-    return this.dispatch(logLevels.debug, message, ...args);
-  }
-  info(message: M, ...args: unknown[]) {
-    return this.dispatch(logLevels.info, message, ...args);
-  }
-  warn(message: M, ...args: unknown[]) {
-    return this.dispatch(logLevels.warn, message, ...args);
-  }
-  error(message: M, ...args: unknown[]) {
-    return this.dispatch(logLevels.error, message, ...args);
-  }
+  protected abstract handler(data: D, logLevel: number): void;
 }
