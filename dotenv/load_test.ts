@@ -1,15 +1,19 @@
 import { load, loadSync } from "./load.ts";
 import { assertEquals } from "../testing/asserts.ts";
+import * as path from "../path/mod.ts";
 
 function clearDenoEnv() {
   Object.keys(Deno.env.toObject()).forEach((key) => Deno.env.delete(key));
 }
 
+const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+const testdataDir = path.resolve(moduleDir, "testdata");
+
 Deno.test("load", async () => {
   await load(Deno.env, {
-    envPath: new URL("./testdata/.env.test", import.meta.url),
-    examplePath: new URL("./testdata/.env.example.test", import.meta.url),
-    defaultsPath: new URL("./testdata/.env.defaults.test", import.meta.url),
+    envPath: path.join(testdataDir, ".env.test"),
+    examplePath: path.join(testdataDir, ".env.example.test"),
+    defaultsPath: path.join(testdataDir, ".env.defaults.test"),
   });
   assertEquals(Deno.env.get("GREETING"), "Hello World");
   assertEquals(Deno.env.get("DEFAULT1"), "Some Default");
@@ -18,9 +22,9 @@ Deno.test("load", async () => {
 
 Deno.test("loadSync", async () => {
   await loadSync(Deno.env, {
-    envPath: new URL("./testdata/.env.test", import.meta.url),
-    examplePath: new URL("./testdata/.env.example.test", import.meta.url),
-    defaultsPath: new URL("./testdata/.env.defaults.test", import.meta.url),
+    envPath: "./dotenv/testdata/.env.test",
+    examplePath: "./dotenv/testdata/.env.example.test",
+    defaultsPath: "./dotenv/testdata/.env.defaults.test",
   });
   assertEquals(Deno.env.get("GREETING"), "Hello World");
   assertEquals(Deno.env.get("DEFAULT1"), "Some Default");
