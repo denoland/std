@@ -13,10 +13,7 @@ Then import the configuration using the `parse` functions.
 
 ```ts
 // app.ts
-import {
-  assign,
-  parse,
-} from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+import { parse } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
 const source = await Deno.readTextFile("./path/to/.env");
 const { env } = parse(source);
 
