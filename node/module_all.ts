@@ -49,8 +49,6 @@ import internalUtilInspect from "./internal/util/inspect.js";
 import internalUtil from "./internal/util.js";
 import net from "./net.ts";
 import os from "./os.ts";
-import * as pathPosix from "./path/posix.ts";
-import * as pathWin32 from "./path/win32.ts";
 import path from "./path.ts";
 import perfHooks from "./perf_hooks.ts";
 import punycode from "./punycode.ts";
@@ -118,8 +116,8 @@ export default {
   "internal/util": internalUtil,
   net,
   os,
-  "path/posix": pathPosix,
-  "path/win32": pathWin32,
+  "path/posix": path,
+  "path/win32": path,
   path,
   "perf_hooks": perfHooks,
   process,
