@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -19,27 +20,27 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { nextTick } from "./process.ts";
-import { kCustomPromisifyArgsSymbol as customPromisifyArgs } from "./_util/_util_promisify.ts";
+import { nextTick } from "./_next_tick.ts";
+import { customPromisifyArgs } from "./internal/util.js";
 import {
   validateCallback,
   validateOneOf,
   validateString,
-} from "./_validators.ts";
-import { isIP } from "./_net.ts";
+} from "./internal/validators.js";
+import { isIP } from "./internal/net.ts";
 import {
   emitInvalidHostnameWarning,
   getDefaultVerbatim,
   validateHints,
 } from "./_dns/_utils.ts";
-import type { ErrnoException } from "./_errors.ts";
-import { dnsException } from "./_errors.ts";
+import type { ErrnoException } from "./internal/errors.ts";
+import { dnsException } from "./internal/errors.ts";
 import {
   AI_ADDRCONFIG as ADDRCONFIG,
   getaddrinfo,
   GetAddrInfoReqWrap,
 } from "./internal_binding/cares_wrap.ts";
-import { toASCII } from "./_idna.ts";
+import { toASCII } from "./internal/idna.ts";
 
 export interface LookupOptions {
   family?: number | undefined;

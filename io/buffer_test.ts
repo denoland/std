@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // This code has been ported almost directly from Go's src/bytes/buffer_test.go
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
@@ -650,6 +650,18 @@ Deno.test("bufioReadLineBadResource", async () => {
   assertRejects(async () => {
     await bufReader.readLine();
   }, Deno.errors.BadResource);
+});
+
+Deno.test("bufioReadLineBufferFullError", async () => {
+  const input = "@".repeat(5000) + "\n";
+  const bufReader = new BufReader(new StringReader(input));
+  const r = await bufReader.readLine();
+
+  assert(r !== null);
+
+  const { line, more } = r;
+  assertEquals(more, true);
+  assertEquals(line, encoder.encode("@".repeat(4096)));
 });
 
 Deno.test("[io] readStringDelim basic", async () => {

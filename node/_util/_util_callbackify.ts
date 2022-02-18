@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 //
 // Adapted from Node.js. Copyright Joyent, Inc. and other Node contributors.
 //
@@ -22,6 +22,9 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 // These are simplified versions of the "real" errors in Node.
+
+import { nextTick } from "../_next_tick.ts";
+
 class NodeFalsyValueRejectionError extends Error {
   public reason: unknown;
   public code = "ERR_FALSY_VALUE_REJECTION";
@@ -101,11 +104,11 @@ function callbackify<ResultT>(
     };
     original.apply(this, args).then(
       (ret: unknown) => {
-        queueMicrotask(cb.bind(this, null, ret));
+        nextTick(cb.bind(this, null, ret));
       },
       (rej: unknown) => {
         rej = rej || new NodeFalsyValueRejectionError(rej);
-        queueMicrotask(cb.bind(this, rej));
+        nextTick(cb.bind(this, rej));
       },
     );
   };

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
  * Converts the byte array to a UUID string
  * @param bytes Used to convert Byte to Hex
@@ -42,7 +42,7 @@ export function uuidToBytes(uuid: string): number[] {
  */
 export function stringToBytes(str: string): number[] {
   str = unescape(encodeURIComponent(str));
-  const bytes = new Array(str.length);
+  const bytes = Array.from<number>({ length: str.length });
   for (let i = 0; i < str.length; i++) {
     bytes[i] = str.charCodeAt(i);
   }

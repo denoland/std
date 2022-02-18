@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
  * Tar test
  *
@@ -100,7 +100,7 @@ Deno.test("appendFileWithLongNameToTarArchive", async function (): Promise<
   void
 > {
   // 9 * 15 + 13 = 148 bytes
-  const fileName = new Array(10).join("long-file-name/") + "file-name.txt";
+  const fileName = "long-file-name/".repeat(10) + "file-name.txt";
   const text = "hello tar world!";
 
   // create a tar archive

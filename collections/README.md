@@ -14,6 +14,36 @@ If you want to contribute or understand why this is done the way it is, see the
 
 ## Usage
 
+### aggregateGroups
+
+Applies the given aggregator to each group in the given grouping, returning the
+results together with the respective group keys
+
+```ts
+import { aggregateGroups } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const foodProperties = {
+  "Curry": ["spicy", "vegan"],
+  "Omelette": ["creamy", "vegetarian"],
+};
+const descriptions = aggregateGroups(
+  foodProperties,
+  (current, key, first, acc) => {
+    if (first) {
+      return `${key} is ${current}`;
+    }
+
+    return `${acc} and ${current}`;
+  },
+);
+
+assertEquals(descriptions, {
+  "Curry": "Curry is spicy and vegan",
+  "Omelette": "Omelette is creamy and vegetarian",
+});
+```
+
 ### associateBy
 
 Transforms the given array into a Record, extracting the key of each element
@@ -249,35 +279,6 @@ assertEquals(
 );
 ```
 
-### findLastIndex
-
-Returns the index of the last element in the given array matching the given
-predicate.
-
-```ts
-import { findLastIndex } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const numbers = [0, 1, 2, 3, 4, 5, 6];
-const lastIndexEvenNumber = findLastIndex(numbers, (it) => it % 2 === 0);
-
-assertEquals(lastIndexEvenNumber, 6);
-```
-
-### findLast
-
-Returns the last element in the given array matching the given predicate.
-
-```ts
-import { findLast } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
-import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
-
-const numbers = [4, 2, 7];
-const lastEvenNumber = findLast(numbers, (it) => it % 2 === 0);
-
-assertEquals(lastEvenNumber, 2);
-```
-
 ### findSingle
 
 Returns an element if and only if that element is the only one matching the
@@ -377,6 +378,36 @@ const kimInterests = ["Music", "Tennis", "Cooking"];
 const commonInterests = intersect(lisaInterests, kimInterests);
 
 assertEquals(commonInterests, ["Cooking", "Music"]);
+```
+
+### joinToString
+
+Transforms the elements in the given array to strings using the given selector.
+Joins the produced strings into one using the given `separator` and applying the
+given `prefix` and `suffix` to the whole string afterwards. If the array could
+be huge, you can specify a non-negative value of `limit`, in which case only the
+first `limit` elements will be appended, followed by the `truncated` string.
+Returns the resulting string.
+
+```ts
+import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const users = [
+  { name: "Kim" },
+  { name: "Anna" },
+  { name: "Tim" },
+];
+
+const message = joinToString(users, (it) => it.name, {
+  suffix: " are winners",
+  prefix: "result: ",
+  separator: " and ",
+  limit: 1,
+  truncated: "others",
+});
+
+assertEquals(message, "result: Kim and others are winners");
 ```
 
 ### mapEntries
@@ -665,6 +696,25 @@ const sumSteps = runningReduce(numbers, (sum, current) => sum + current, 0);
 assertEquals(sumSteps, [1, 3, 6, 10, 15]);
 ```
 
+### sumOf
+
+Applies the given selector to all elements in the given collection and
+calculates the sum of the results.
+
+```ts
+import { sumOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const people = [
+  { name: "Anna", age: 34 },
+  { name: "Kim", age: 42 },
+  { name: "John", age: 23 },
+];
+const totalAge = sumOf(people, (i) => i.age);
+
+assertEquals(totalAge, 99);
+```
+
 ### sample
 
 Returns a random element from the given array
@@ -830,8 +880,8 @@ assertEquals(withoutList, [3]);
 
 ### zip
 
-Builds 2-tuples of elements from the given array with matching indices, stopping
-when the smaller array's end is reached
+Builds N-tuples of elements from the given N arrays with matching indices,
+stopping when the smallest array's end is reached
 
 ```ts
 import { zip } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";

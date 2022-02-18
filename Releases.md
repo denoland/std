@@ -1,3 +1,244 @@
+### 0.126.0 / 2022.02.17
+
+- feat(node): add tls.connect (#1923)
+- fix(collections/group_by): improve type safety (#1880)
+- fix(io/buffer): super and initialized prop (#1917)
+- fix(node): add networkInterfaces to unstable (#1904)
+- fix(node): fix fs.createWriteStream (#1874)
+- fix(node): fix fs.write again, enable more test cases (#1892)
+- fix(node): support 6-arg fs.write (#1888)
+- fix(node/buffer): fix base64 decode (#1885)
+- fix(node/module): fix commonjs wrapper (#1902)
+
+### 0.125.0 / 2022.02.03
+
+- feat(node): add punycode module (#1857)
+- feat(node): add url.resolve (#1851)
+- feat(node/child_process): add support for AbortSignal in ChildProcess (#1864)
+- feat(node/fs): add fs.createWriteStream (#1859)
+- fix(node/fs): fix fs.access when the user owns the file (#1869)
+- fix(node/fs): fix fs.copyFile (support 4-arg call) (#1872)
+- fix(node/http): fix http.request (#1856)
+- fix(node/net): mock response.socket object (#1858)
+- fix: bypass TS errors for missing --unstable (#1819)
+
+Note 0.124.0 is the same as 0.125.0 but ignoring a typescript error related to a
+new feature added setNoDelay.
+
+### 0.123.0 / 2022.01.27
+
+- feat(node): add os.networkInterfaces (#1846)
+- feat(node): add process.uptime (#1853)
+- feat(node/child_process): add execFile (#1838)
+- fix(node/process): can not pass exit code as a string (#1849)
+- fix(testing): `assertObjectMatch` matches ArrayBuffer views correctly (#1843)
+
+### 0.122.0 / 2022.01.20
+
+- BREAKING(encoding/csv): add return type to csv's parse and remove a parse func
+  from args (#1724)
+- feat(node): add Timeout class (#1699)
+- feat(node): provide node compatible timer APIs in commonjs wrapper (#1834)
+- fix(log): flush to file when buffer is full (#1782)
+- fix(node): fix fs.write/fs.writeAll (#1832)
+- fix(node): make stdio streams optional if not present on Deno namespace
+  (#1829)
+- fix(node/net): setNoDelay and setKeepAlive no-ops (#1828)
+- fix(node/timers): work around |this| check in deno (#1827)
+
+### 0.121.0 / 2022.01.12
+
+- feat(crypto): add md4 hash (#1799)
+- feat(http): add eyecandy to file_server (#1804)
+- feat(http/file_server): add 'quiet' flag (#1773)
+- feat(node): add zlib (#1790)
+- feat(node): mock more APIs (#1802)
+- feat(node): upstream caller-path package (#1801)
+- feat(node/fs): fs.write()/fs.writeSync() (#1817)
+- fix(node): placeholder process.getgid() (#1814)
+- fix(node): process.env ownPropertyDescriptor (#1795)
+- fix(node): set prototype for Module (#1797)
+- fix(node/http): client emit response, trailers & abort (#1809)
+- fix(node/http/client): convert response's Headers to plain Object (#1811)
+- fix(node/url): format auth/search/hash corruption (#1810)
+
+### 0.120.0 / 2022.01.05
+
+- feat(crypto): add Tiger hash (#1749)
+- feat(node): add https.request (#1746)
+- feat(node): add process.execPath (#1748)
+- feat(node): add vm.runInThisContext (#1747)
+- feat(uuid): add function to detect RFC version of a UUID (#1766)
+- fix(examples/chat): fix applyState call (#1760)
+- fix(node): don't emit exit twice (#1753)
+- fix(node): fix fs.readdir (#1758)
+- fix(node): improve util.isDeepStrictEqual (#1765)
+- fix(node/child_process): allow number and boolean env vars (#1762)
+- fix(path): change default of 'extended' options of glob methods (#1719)
+- fix(testing/assert): inequality of -0 and 0 (#1783)
+
+### 0.119.0 / 2021.12.22
+
+- feat(hash): add Tiger hash (#1729)
+- feat(node): expose util.debuglog (#1735)
+- feat(node/util): implement `getOwnNonIndexProperties` (#1728)
+- feat(uuid): add `validate` function to check UUID (#1720)
+
+### 0.118.0 / 2021.12.16
+
+- [BREAKING] Remove 'findLast' from 'collections' module (#1527)
+- [BREAKING] Remove 'findLastIndex' from 'collections' module (#1528)
+- [BREAKING] Remove 'server_legacy' from 'http' module (#1648)
+- [BREAKING] Remove 'ws' module (#1647)
+- [BREAKING] Remove assertThrowsAsync from 'testing/' (#1646)
+- [BREAKING] Remove Go-style address in 'http' module (#1660)
+- [BREAKING] Remove onSignal from 'signals/' (#1644)
+- feat(http): add onError option to serveListener and serveTls (#1679)
+- feat(node): add child_process.fork (#1695)
+- feat(node): add http.Agent (#1706)
+- feat(node): add http.OutgoingMessage (#1705)
+- feat(node): add http.request (#1712)
+- feat(node): add missing url.parse (#1667)
+- feat(node): add mock inspector module (#1688)
+- feat(node): add mock zlib module (#1698)
+- feat(node): add util.isDeepStrictEqual (#1556)
+- feat(node): export fs.Stats class (#1696)
+- feat(node/fs): add fs.access (#1687)
+- feat(node/url): add url.resolveObject (#1691)
+- feat(node/util): add util.deprecate (#1697)
+- feat(toml): align keys by option (#1693)
+- fix(datetime): fix bug for parse at the end of the month (#1676)
+- fix(node/util/inspect): validate invalid options (#1672)
+- fix(toml): parse declaration correctly (#1682)
+
+### 0.117.0 / 2021.12.03
+
+- feat(http): introduce onError option on ServerInit (#1621)
+- feat(node/readline): Interface, createInterface (#1554)
+- fix(node): use async read for stdin (#1653)
+- fix(std/node): Add base64url encoding support, indexOf, lastIndexOf and
+  includes to Buffer (#1636)
+- test(node/fs): enable `test-fs-rm.js` (#1632)
+- fix(node/util/inspect): Fix some bugs (#1637)
+- fix(node): Use upstream implementation for streams (#1634)
+
+### 0.116.0 / 2021.11.24
+
+- feat(node/os): implement os.hostname() (#1631)
+- feat(node/util): add `util.inspect` (#1592)
+- fix(fmt/printf): print with rounding taken into account (#1623)
+- fix(node/http): ignore server request parse errors (#1624)
+- refactor(node): reorganize _next_tick.ts module (#1608)
+
+### 0.115.1 / 2021.11.17
+
+- fix(node): use old "process.nextTick" polyfill if Deno.core is not available
+  (#1612)
+
+### 0.115.0 / 2021.11.17
+
+- feat(node): add wasi module (#1534)
+- feat(node): process.config, process.exitCode, process._exiting (#1597)
+- feat(node): process.stdin.setRawMode (#1572)
+- feat(node/_fs): Add `fs.readSync` (#1598)
+- feat(node/fs): add `fs.read` API (#1557)
+- feat(node/fs): implement `fs.rm` and `fs.rmSync` (#1568)
+- feat(node/process): add process.hrtime.bigint() (#1600)
+- feat(node/util): Add `util.isBuffer` and `util._extend` (#1567)
+- fix(node): Align exports and declarations for Buffer and Events module (#1570)
+- fix(node): improve http.Server.listen() compat (#1574)
+- fix(node/http): fix no body chunked response (#1603)
+- fix(node/http): improve http.Server compatibility (#1595)
+- fix(node/http): improve http.Server#close() compat (#1602)
+- fix(node/util): improve test coverage (#1591)
+- node: add nextTick helper module (#1584)
+- node: polyfill process.nextTick using Deno.core bindings (#1588)
+- node: Use upstream source for "events" module (#1558)
+
+### 0.114.0 / 2021.11.09
+
+- BREAKING(http): update `serve`, add `serveListener`, deprecate
+  `listenAndServe` (#1506)
+- BREAKING(std/collections): deprecate findLast (#1532)
+- feat(http/file_server): add streaming support, fix empty file handling (#1479)
+- feat(node): add readline module (#1453)
+- feat(node): process.on and process.off for signals (#1466)
+- feat(node/_fs): Add watchFile function (#1483)
+- feat(node/http): HTTP Server/Response improvements (#1448)
+- feat(node/querystring): implement qs.unescapeBuffer (#1516)
+- feat(node): mock 'vm' module (#1501)
+- feat(node): os.cpus() (#1500)
+- feat(node): process.execArgv (#1499)
+- fix(collections): prevent calling `Object.prototype.__proto__` in
+  collections/deep_merge.ts (#1504)
+- fix(collections): remove default selector for `findSingle` (#1232)
+- fix(crypto/digest): always return the underlying ArrayBuffer (#1515)
+- fix(http/file_server): don't require --allow-read for showing help message
+  (#1521)
+- fix(node): //@ts-ignore Error.captureStackTrace (#1533)
+- fix(node): add proper module.export for 'module' (#1497)
+- fix(node): child_process stdio for binary data (#1477)
+- fix(node): fix flaky downloadFile test (#1460)
+- fix(node): fix process.arch (#1498)
+- fix(node): fix string representation of node errors (#1470)
+- fix(node): isAlreadyClosed for child_process (#1469)
+- fix(node/_tools): Better error and output logging (#1492)
+- fix(node/_util): Deno.permissions is no longer called unless it exists.
+  (#1520)
+- fix(node/events): enable remaining tests for EventEmitter (#1489)
+- fix(node/events): make EventEmitter's public methods enumerable (#1530)
+- fix(node/process): warn on not implemented event instead of throw (#1510)
+- fix(node/querystring): improve `querystring.parse` (#1473)
+- fix(node/querystring): Improve querystring.stringify (#1488)
+- fix(node/querystring/stringify): invalid surrogate pair throws URIError
+  (#1505)
+- fix(node/querystring/stringify): Remove initialValue (#1494)
+- fix(signal): update signal module for canary API change (#1468)
+- fix(testing): show special characters in assertEquals results (#1450)
+
+### 0.113.0 / 2021.10.25
+
+- feat(collections/running_reduce): support `currentIndex` (#1431)
+- feat(http/file_server): add color to log message (#1434)
+- feat(http/file_server): add breadcrumbs navigation (#1433)
+- feat(node): allow require with 'node:' prefix (#1438)
+- feat(node/url): add `url.urlToHttpOptions(url)` (#1426)
+- feat(testing): add assertIsError (#1376)
+- fix(async): fix async/tee concurent .next calls error (#1425)
+- fix(crypto): support length option in crypto.subtle.digest (#1386)
+- fix(http/file_server): fix encoded url in dir html (#1442)
+- fix(http/file_server): fix leak file resource (#1443)
+- fix(node): match Node's os.arch values (#1440)
+- fix(node): show warning when using import/export in CJS module (#1452)
+- fix(node/events): make on and emit methods callable by non-EventEmitter
+  objects (#1454)
+- fix(node/util): improve util.format (#1181)
+- fix(node/_tools): fix node test setup script (#1422)
+- chore(node): update Node version from 16.11.1 to 16.12.0 (#1441)
+
+### 0.112.0 / 2021.10.18
+
+- feat(collections): add joinToString (#1223)
+- feat(node): CJS-ESM integration (#1412)
+- feat(node): add helpers for determining CJS/ESM loader (#1407)
+- feat(node): barebones express compatibility (#1398)
+- feat(node): define process.mainModule (#1400)
+- feat(node/events): implement setMaxListeners (#1414)
+- feat(node/http): request & response streams (#1403)
+- feat(node/os): add devNull constant (#1397)
+- feat(node/url): add `url.format(URL[, options])` (#1420)
+- fix(datetime): fix dayOfYear for the southern hemisphere (#1384)
+- fix(fs/expand_glob): don't parse root as glob (#1417)
+- fix(node): 'Illegal invocation' in 'perf_hooks' module (#1410)
+- fix(node): add 'module' to native modules polyfill (#1408)
+- fix(node): declare 'global' types inline (#1409)
+- fix(node): export util.format() (#1401)
+- fix(node): require doesn't throw error (#1399)
+- fix(node): use hardcoded versions (#1406)
+- fix(std/io): fix readline when catch BufferFullError (#1377)
+- fix(testing): improve assertObjectMatch (#1419)
+- chore(node): upgrade Node.js version from 15.5.1 to 16.11.1 (#1405)
+
 ### 0.111.0 / 2021.10.12
 
 - BREAKING(fs): deprecate exists and existsSync (#1364)

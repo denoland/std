@@ -2,7 +2,7 @@
 // https://github.com/golang/go/blob/go1.12.5/src/encoding/csv/
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { BufReader } from "../io/buffer.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
@@ -342,12 +342,6 @@ export interface ColumnOptions {
    * Name of the column to be used as property
    */
   name: string;
-  /**
-   * Parse function for the column.
-   * This is executed on each entry of the header.
-   * This can be combined with the Parse function of the rows.
-   */
-  parse?: (input: string) => unknown;
 }
 
 export interface ParseOptions extends ReadOptions {
@@ -361,44 +355,45 @@ export interface ParseOptions extends ReadOptions {
    * If you provide `string[]` or `ColumnOptions[]`, those names will be used for header definition.
    */
   columns?: string[] | ColumnOptions[];
-
-  /** Parse function for rows.
-   * Example:
-   * ```ts
-   *     import { parse } from "./csv.ts";
-   *     const r = await parse('a,b,c\ne,f,g\n', {
-   *      columns: ["this", "is", "sparta"],
-   *       parse: (_e: unknown) => {
-   *         const e = _e as { this: unknown, is: unknown, sparta: unknown };
-   *         return { super: e.this, street: e.is, fighter: e.sparta };
-   *       }
-   *     });
-   * // output
-   * // [
-   * //   { super: "a", street: "b", fighter: "c" },
-   * //   { super: "e", street: "f", fighter: "g" }
-   * // ]
-   * ```
-   */
-  parse?: (input: unknown) => unknown;
 }
 
 /**
  * Csv parse helper to manipulate data.
- * Provides an auto/custom mapper for columns and parse function
- * for columns and rows.
+ * Provides an auto/custom mapper for columns.
  * @param input Input to parse. Can be a string or BufReader.
  * @param opt options of the parser.
- * @returns If you don't provide `opt.skipFirstRow`, `opt.parse`, and `opt.columns`, it returns `string[][]`.
- *   If you provide `opt.skipFirstRow` or `opt.columns` but not `opt.parse`, it returns `object[]`.
- *   If you provide `opt.parse`, it returns an array where each element is the value returned from `opt.parse`.
+ * @returns If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns `string[][]`.
+ *   If you provide `opt.skipFirstRow` or `opt.columns`, it returns `Record<string, unkown>[]`.
  */
+export async function parse(
+  input: string | BufReader,
+): Promise<string[][]>;
+export async function parse(
+  input: string | BufReader,
+  opt: Omit<ParseOptions, "columns" | "skipFirstRow">,
+): Promise<string[][]>;
+export async function parse(
+  input: string | BufReader,
+  opt: Omit<ParseOptions, "columns"> & {
+    columns: string[] | ColumnOptions[];
+  },
+): Promise<Record<string, unknown>[]>;
+export async function parse(
+  input: string | BufReader,
+  opt: Omit<ParseOptions, "skipFirstRow"> & {
+    skipFirstRow: true;
+  },
+): Promise<Record<string, unknown>[]>;
+export async function parse(
+  input: string | BufReader,
+  opt: ParseOptions,
+): Promise<string[][] | Record<string, unknown>[]>;
 export async function parse(
   input: string | BufReader,
   opt: ParseOptions = {
     skipFirstRow: false,
   },
-): Promise<unknown[]> {
+): Promise<string[][] | Record<string, unknown>[]> {
   let r: string[][];
   if (input instanceof BufReader) {
     r = await readMatrix(input, opt);
@@ -436,30 +431,17 @@ export async function parse(
         );
       }
     }
-    return r.map((e): unknown => {
+
+    return r.map((e) => {
       if (e.length !== headers.length) {
         throw `Error number of fields line:${i}`;
       }
       i++;
       const out: Record<string, unknown> = {};
       for (let j = 0; j < e.length; j++) {
-        const h = headers[j];
-        if (h.parse) {
-          out[h.name] = h.parse(e[j]);
-        } else {
-          out[h.name] = e[j];
-        }
-      }
-      if (opt.parse) {
-        return opt.parse(out);
+        out[headers[j].name] = e[j];
       }
       return out;
-    });
-  }
-  if (opt.parse) {
-    return r.map((e: string[]): unknown => {
-      assert(opt.parse, "opt.parse must be set");
-      return opt.parse(e);
     });
   }
   return r;

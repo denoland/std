@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -7,7 +7,7 @@ import {
 } from "../testing/asserts.ts";
 
 import * as path from "../path/mod.ts";
-import { createRequire } from "./module.ts";
+import Module, { createRequire } from "./module.ts";
 import nodeMods from "./module_all.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
@@ -57,6 +57,14 @@ Deno.test("requireBuiltin", function () {
 Deno.test("requireIndexJS", function () {
   const { isIndex } = require("./_module/cjs");
   assert(isIndex);
+});
+
+Deno.test("requireWithNodePrefix", function () {
+  const osWithPrefix = require("node:os");
+  const os = require("os");
+  assert(osWithPrefix === os);
+  assert(osWithPrefix.arch);
+  assert(typeof osWithPrefix.arch() == "string");
 });
 
 Deno.test("requireNodeOs", function () {
@@ -126,4 +134,70 @@ Deno.test("Require .mjs", () => {
     undefined,
     "Importing ESM module",
   );
+});
+
+Deno.test("requireErrorInEval", async function () {
+  const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+
+  const p = Deno.run({
+    cmd: [
+      Deno.execPath(),
+      "run",
+      "--unstable",
+      "--allow-read",
+      "./_module/cjs/test_cjs_import.js",
+    ],
+    cwd,
+    stdout: "piped",
+    stderr: "piped",
+  });
+
+  const decoder = new TextDecoder();
+  const output = await p.output();
+  const outputError = decoder.decode(await p.stderrOutput());
+
+  assert(!output.length);
+  assert(
+    outputError.includes(
+      'To load an ES module, set "type": "module" in the package.json or use the .mjs extension.',
+    ),
+  );
+  assert(
+    outputError.includes(
+      "SyntaxError: Cannot use import statement outside a module",
+    ),
+  );
+  p.close();
+});
+
+Deno.test("requireCjsWithDynamicImport", function () {
+  require("./_module/cjs/cjs_with_dynamic_import");
+});
+
+Deno.test("requireWithImportsExports", function () {
+  require("./_module/cjs/cjs_imports_exports");
+});
+
+Deno.test("module has proper members", function () {
+  const module = require("module");
+
+  assert(module._cache);
+  assert(module._extensions);
+  assert(typeof module._findPath == "function");
+  assert(typeof module._initPaths == "function");
+  assert(typeof module._load == "function");
+  assert(typeof module._nodeModulePaths == "function");
+  assert(module._pathCache);
+  assert(typeof module._preloadModules == "function");
+  assert(typeof module._resolveFilename == "function");
+  assert(typeof module._resolveLookupPaths == "function");
+  assert(module.builtinModules);
+  assert(typeof module.createRequire == "function");
+  assert(module.globalPaths);
+  assert(module.Module === Module);
+  assert(typeof module.wrap == "function");
+});
+
+Deno.test("a module can have its own timers declarations", function () {
+  require("./_module/cjs/cjs_declare_timers");
 });

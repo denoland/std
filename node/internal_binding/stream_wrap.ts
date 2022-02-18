@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26,11 +27,12 @@
 // - https://github.com/nodejs/node/blob/master/src/stream_wrap.h
 // - https://github.com/nodejs/node/blob/master/src/stream_wrap.cc
 
+import { Buffer } from "../buffer.ts";
 import { notImplemented } from "../_utils.ts";
 import { HandleWrap } from "./handle_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { codeMap } from "./uv.ts";
-import { writeAll } from "../../io/util.ts";
+import { writeAll } from "../../streams/conversion.ts";
 
 enum StreamBaseStateFields {
   kReadBytesOrError,
@@ -224,8 +226,9 @@ export class LibuvStreamWrap extends HandleWrap {
    * Write an LATIN1 string to the stream.
    * @return An error status code.
    */
-  writeLatin1String(_req: WriteWrap<LibuvStreamWrap>, _data: string): number {
-    notImplemented();
+  writeLatin1String(req: WriteWrap<LibuvStreamWrap>, data: string): number {
+    const buffer = Buffer.from(data, "latin1");
+    return this.writeBuffer(req, buffer);
   }
 
   async _onClose(): Promise<number> {
@@ -257,7 +260,6 @@ export class LibuvStreamWrap extends HandleWrap {
     let buf = new Uint8Array(SUGGESTED_SIZE);
 
     let nread: number | null;
-
     try {
       nread = await this[kStreamBaseField]!.read(buf);
     } catch (e) {

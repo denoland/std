@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -24,7 +24,7 @@
  */
 export function findSingle<T>(
   array: readonly T[],
-  predicate: (el: T) => boolean = (_) => true,
+  predicate: (el: T) => boolean,
 ): T | undefined {
   let match: T | undefined = undefined;
   let found = false;

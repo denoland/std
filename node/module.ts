@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,12 +22,31 @@
 
 import "./global.ts";
 
+import { core } from "./_core.ts";
 import nodeMods from "./module_all.ts";
+import upstreamMods from "./upstream_modules.ts";
 
 import * as path from "../path/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { fileURLToPath, pathToFileURL } from "./url.ts";
 import { isWindows } from "../_util/os.ts";
+import {
+  ERR_INVALID_MODULE_SPECIFIER,
+  ERR_MODULE_NOT_FOUND,
+  NodeError,
+} from "./internal/errors.ts";
+import type { PackageConfig } from "./module_esm.ts";
+import {
+  encodedSepRegEx,
+  packageExportsResolve,
+  packageImportsResolve,
+} from "./module_esm.ts";
+import {
+  clearInterval,
+  clearTimeout,
+  setInterval,
+  setTimeout,
+} from "./timers.ts";
 
 const { hasOwn } = Object;
 const CHAR_FORWARD_SLASH = "/".charCodeAt(0);
@@ -71,6 +91,93 @@ function updateChildren(
   }
 }
 
+function finalizeEsmResolution(
+  resolved: string,
+  parentPath: string,
+  pkgPath: string,
+) {
+  if (encodedSepRegEx.test(resolved)) {
+    throw new ERR_INVALID_MODULE_SPECIFIER(
+      resolved,
+      'must not include encoded "/" or "\\" characters',
+      parentPath,
+    );
+  }
+  const filename = fileURLToPath(resolved);
+  const actual = tryFile(filename, false);
+  if (actual) {
+    return actual;
+  }
+  throw new ERR_MODULE_NOT_FOUND(
+    filename,
+    path.resolve(pkgPath, "package.json"),
+  );
+}
+
+function createEsmNotFoundErr(request: string, path?: string) {
+  const err = new Error(`Cannot find module '${request}'`) as Error & {
+    code: string;
+    path?: string;
+  };
+  err.code = "MODULE_NOT_FOUND";
+  if (path) {
+    err.path = path;
+  }
+  return err;
+}
+
+function trySelfParentPath(parent: Module | undefined): string | undefined {
+  if (!parent) return undefined;
+
+  if (parent.filename) {
+    return parent.filename;
+  } else if (parent.id === "<repl>" || parent.id === "internal/preload") {
+    try {
+      return process.cwd() + path.sep;
+    } catch {
+      return undefined;
+    }
+  }
+
+  return undefined;
+}
+
+function trySelf(parentPath: string | undefined, request: string) {
+  if (!parentPath) return false;
+
+  const { data: pkg, path: pkgPath } = readPackageScope(parentPath) ||
+    { data: {}, path: "" };
+  if (!pkg || pkg.exports === undefined) return false;
+  if (typeof pkg.name !== "string") return false;
+
+  let expansion;
+  if (request === pkg.name) {
+    expansion = ".";
+  } else if (request.startsWith(`${pkg.name}/`)) {
+    expansion = "." + request.slice(pkg.name.length);
+  } else {
+    return false;
+  }
+
+  try {
+    return finalizeEsmResolution(
+      packageExportsResolve(
+        pathToFileURL(pkgPath + "/package.json").toString(),
+        expansion,
+        pkg as PackageConfig,
+        pathToFileURL(parentPath).toString(),
+        cjsConditions,
+      ).toString(),
+      parentPath,
+      pkgPath,
+    );
+  } catch (e) {
+    if (e instanceof NodeError && e.code === "ERR_MODULE_NOT_FOUND") {
+      throw createEsmNotFoundErr(request, pkgPath + "/package.json");
+    }
+    throw e;
+  }
+}
 class Module {
   id: string;
   // deno-lint-ignore no-explicit-any
@@ -100,12 +207,12 @@ class Module {
   static _cache: { [key: string]: Module } = Object.create(null);
   static _pathCache = Object.create(null);
   static globalPaths: string[] = [];
-  // Proxy related code removed.
   static wrapper = [
-    "(function (exports, require, module, __filename, __dirname) { ",
-    "\n});",
+    // We provide non standard timer APIs in the CommonJS wrapper
+    // to avoid exposing them in global namespace.
+    "(function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) { (function (exports, require, module, __filename, __dirname) {",
+    "\n}).call(this, exports, require, module, __filename, __dirname); })",
   ];
-
   // Loads a module at the given file path. Returns that module's
   // `exports` property.
   // deno-lint-ignore no-explicit-any
@@ -141,7 +248,7 @@ class Module {
   // deno-lint-ignore no-explicit-any
   _compile(content: string, filename: string): any {
     // manifest code removed
-    const compiledWrapper = wrapSafe(filename, content);
+    const compiledWrapper = wrapSafe(filename, content, this);
     // inspector code remove
     const dirname = path.dirname(filename);
     const require = makeRequireFunction(this);
@@ -157,6 +264,10 @@ class Module {
       this,
       filename,
       dirname,
+      setTimeout,
+      clearTimeout,
+      setInterval,
+      clearInterval,
     );
     if (requireDepth === 0) {
       statCache = null;
@@ -203,7 +314,10 @@ class Module {
     options?: { paths: string[] },
   ): string {
     // Polyfills.
-    if (nativeModuleCanBeRequiredByUsers(request)) {
+    if (
+      request.startsWith("node:") ||
+      nativeModuleCanBeRequiredByUsers(request)
+    ) {
       return request;
     }
 
@@ -242,6 +356,41 @@ class Module {
       }
     } else {
       paths = Module._resolveLookupPaths(request, parent)!;
+    }
+
+    if (parent?.filename) {
+      if (request[0] === "#") {
+        const pkg = readPackageScope(parent.filename) ||
+          { path: "", data: {} as PackageInfo };
+        if (pkg.data?.imports != null) {
+          try {
+            return finalizeEsmResolution(
+              packageImportsResolve(
+                request,
+                pathToFileURL(parent.filename).toString(),
+                cjsConditions,
+              ).toString(),
+              parent.filename,
+              pkg.path,
+            );
+          } catch (e) {
+            if (e instanceof NodeError && e.code === "ERR_MODULE_NOT_FOUND") {
+              throw createEsmNotFoundErr(request);
+            }
+            throw e;
+          }
+        }
+      }
+    }
+
+    // Try module self resolution first
+    const parentPath = trySelfParentPath(parent);
+    const selfResolved = trySelf(parentPath, request);
+    if (selfResolved) {
+      const cacheKey = request + "\x00" +
+        (paths.length === 1 ? paths[0] : paths.join("\x00"));
+      Module._pathCache[cacheKey] = selfResolved;
+      return selfResolved;
     }
 
     // Look up the filename first, since that's the cache key.
@@ -363,6 +512,14 @@ class Module {
     }
 
     const filename = Module._resolveFilename(request, parent, isMain);
+    if (filename.startsWith("node:")) {
+      // Slice 'node:' prefix
+      const id = filename.slice(5);
+      const module = loadNativeModule(id, id);
+      // NOTE: Skip checking if can be required by user,
+      // because we don't support internal modules anyway.
+      return module?.exports;
+    }
 
     const cachedModule = Module._cache[filename];
     if (cachedModule !== undefined) {
@@ -377,19 +534,22 @@ class Module {
     const mod = loadNativeModule(filename, request);
     if (mod) return mod.exports;
 
+    // NOTE(@bartlomieju): this is a temporary solution. We provide some
+    // npm modules with fixes in inconsistencies between Deno and Node.js.
+    const upstreamMod = loadUpstreamModule(filename, parent, request);
+    if (upstreamMod) return upstreamMod.exports;
+
     // Don't call updateChildren(), Module constructor already does.
     const module = new Module(filename, parent);
 
     if (isMain) {
-      // TODO(bartlomieju): set process info
-      // process.mainModule = module;
+      process.mainModule = module;
       module.id = ".";
     }
 
     Module._cache[filename] = module;
     if (parent !== undefined) {
-      assert(relResolveCacheIdentifier);
-      relativeResolveCache[relResolveCacheIdentifier] = filename;
+      relativeResolveCache[relResolveCacheIdentifier!] = filename;
     }
 
     let threw = true;
@@ -401,8 +561,7 @@ class Module {
       if (threw) {
         delete Module._cache[filename];
         if (parent !== undefined) {
-          assert(relResolveCacheIdentifier);
-          delete relativeResolveCache[relResolveCacheIdentifier];
+          delete relativeResolveCache[relResolveCacheIdentifier!];
         }
       } else if (
         module.exports &&
@@ -607,23 +766,79 @@ function createNativeModule(id: string, exports: any): Module {
   mod.loaded = true;
   return mod;
 }
-// Set polyfills defined in ./module_all.ts
-for (const key of Object.keys(nodeMods)) {
-  nativeModulePolyfill.set(key, createNativeModule(key, nodeMods[key]));
-}
+
+const m = {
+  _cache: Module._cache,
+  _extensions: Module._extensions,
+  _findPath: Module._findPath,
+  _initPaths: Module._initPaths,
+  _load: Module._load,
+  _nodeModulePaths: Module._nodeModulePaths,
+  _pathCache: Module._pathCache,
+  _preloadModules: Module._preloadModules,
+  _resolveFilename: Module._resolveFilename,
+  _resolveLookupPaths: Module._resolveLookupPaths,
+  builtinModules: Module.builtinModules,
+  createRequire: Module.createRequire,
+  globalPaths: Module.globalPaths,
+  Module,
+  wrap: Module.wrap,
+};
+
+Object.setPrototypeOf(m, Module);
+nodeMods.module = m;
 
 function loadNativeModule(
   _filename: string,
   request: string,
 ): Module | undefined {
-  return nativeModulePolyfill.get(request);
+  if (nativeModulePolyfill.has(request)) {
+    return nativeModulePolyfill.get(request);
+  }
+  const mod = nodeMods[request];
+  if (mod) {
+    const nodeMod = createNativeModule(request, mod);
+    nativeModulePolyfill.set(request, nodeMod);
+    return nodeMod;
+  }
+  return undefined;
 }
 function nativeModuleCanBeRequiredByUsers(request: string): boolean {
-  return nativeModulePolyfill.has(request);
+  return hasOwn(nodeMods, request);
 }
 // Populate with polyfill names
-for (const id of nativeModulePolyfill.keys()) {
-  Module.builtinModules.push(id);
+Module.builtinModules.push(...Object.keys(nodeMods));
+
+// NOTE(@bartlomieju): temporary solution, to smooth out inconsistencies between
+// Deno and Node.js.
+const upstreamModules = new Map<string, Module>();
+
+function loadUpstreamModule(
+  filename: string,
+  parent: Module | null,
+  request: string,
+): Module | undefined {
+  if (typeof upstreamMods[request] !== "undefined") {
+    if (!upstreamModules.has(filename)) {
+      upstreamModules.set(
+        filename,
+        createUpstreamModule(filename, parent, upstreamMods[request]),
+      );
+    }
+    return upstreamModules.get(filename);
+  }
+}
+function createUpstreamModule(
+  filename: string,
+  parent: Module | null,
+  content: string,
+): Module {
+  const mod = new Module(filename, parent);
+  mod.filename = filename;
+  mod.paths = Module._nodeModulePaths(path.dirname(filename));
+  mod._compile(content, filename);
+  mod.loaded = true;
+  return mod;
 }
 
 let modulePaths: string[] = [];
@@ -646,6 +861,8 @@ interface PackageInfo {
   main?: string;
   // deno-lint-ignore no-explicit-any
   exports?: any;
+  // deno-lint-ignore no-explicit-any
+  imports?: any;
   // deno-lint-ignore no-explicit-any
   type?: any;
 }
@@ -677,7 +894,9 @@ function readPackage(requestPath: string): PackageInfo | null {
     const filtered = {
       name: parsed.name,
       main: parsed.main,
+      path: jsonPath,
       exports: parsed.exports,
+      imports: parsed.imports,
       type: parsed.type,
     };
     packageJsonCache.set(jsonPath, filtered);
@@ -799,8 +1018,6 @@ function findLongestRegisteredExtension(filename: string): string {
   return ".js";
 }
 
-// --experimental-resolve-self trySelf() support removed.
-
 // deno-lint-ignore no-explicit-any
 function isConditionalDotExportSugar(exports: any, _basePath: string): boolean {
   if (typeof exports === "string") return true;
@@ -912,7 +1129,7 @@ function resolveExports(
 // Node.js uses these keys for resolving conditional exports.
 // ref: https://nodejs.org/api/packages.html#packages_conditional_exports
 // ref: https://github.com/nodejs/node/blob/2c77fe1/lib/internal/modules/cjs/helpers.js#L33
-const cjsConditions = new Set(["require", "node"]);
+const cjsConditions = new Set(["deno", "require", "node"]);
 
 function resolveExportsTarget(
   pkgPath: URL,
@@ -1068,18 +1285,41 @@ type RequireWrapper = (
   module: Module,
   __filename: string,
   __dirname: string,
+  setTimeout_: typeof setTimeout,
+  clearTimeout_: typeof clearTimeout,
+  setInterval_: typeof setInterval,
+  clearInterval_: typeof clearInterval,
 ) => void;
 
-function wrapSafe(filename: string, content: string): RequireWrapper {
+function enrichCJSError(error: Error) {
+  if (error instanceof SyntaxError) {
+    if (
+      error.message.includes("Cannot use import statement outside a module") ||
+      error.message.includes("Unexpected token 'export'")
+    ) {
+      console.error(
+        'To load an ES module, set "type": "module" in the package.json or use ' +
+          "the .mjs extension.",
+      );
+    }
+  }
+}
+
+function wrapSafe(
+  filename: string,
+  content: string,
+  cjsModuleInstance: Module,
+): RequireWrapper {
   // TODO(bartlomieju): fix this
   const wrapper = Module.wrap(content);
-  // deno-lint-ignore no-explicit-any
-  const [f, err] = (Deno as any).core.evalContext(wrapper, filename);
+  const [f, err] = core.evalContext(wrapper, filename);
   if (err) {
-    throw err;
+    if (process.mainModule === cjsModuleInstance) {
+      enrichCJSError(err.thrown);
+    }
+    throw err.thrown;
   }
   return f;
-  // ESM code removed.
 }
 
 // Native extension for .js
@@ -1160,8 +1400,8 @@ function makeRequireFunction(mod: Module): RequireFunction {
   }
 
   resolve.paths = paths;
-  // TODO(bartlomieju): set main
-  // require.main = process.mainModule;
+
+  require.main = process.mainModule;
 
   // Enable support to add extra extension types.
   require.extensions = Module._extensions;
@@ -1181,6 +1421,48 @@ function stripBOM(content: string): string {
     content = content.slice(1);
   }
   return content;
+}
+
+// These two functions are not exported in Node, but it's very
+// helpful to have them available for compat mode in CLI
+export function resolveMainPath(main: string): undefined | string {
+  // Note extension resolution for the main entry point can be deprecated in a
+  // future major.
+  // Module._findPath is monkey-patchable here.
+  const mainPath = Module._findPath(path.resolve(main), [], true);
+  if (!mainPath) {
+    return;
+  }
+
+  // NOTE(bartlomieju): checking for `--preserve-symlinks-main` flag
+  // is skipped as this flag is not supported by Deno CLI.
+  // const preserveSymlinksMain = getOptionValue('--preserve-symlinks-main');
+  // if (!preserveSymlinksMain)
+  //   mainPath = toRealPath(mainPath);
+
+  return mainPath as string;
+}
+
+export function shouldUseESMLoader(mainPath: string): boolean {
+  // NOTE(bartlomieju): these two are skipped, because Deno CLI
+  // doesn't suport these flags
+  // const userLoader = getOptionValue('--experimental-loader');
+  // if (userLoader)
+  //   return true;
+  // const esModuleSpecifierResolution =
+  //   getOptionValue('--experimental-specifier-resolution');
+  // if (esModuleSpecifierResolution === 'node')
+  //   return true;
+
+  // Determine the module format of the main
+  if (mainPath && mainPath.endsWith(".mjs")) {
+    return true;
+  }
+  if (!mainPath || mainPath.endsWith(".cjs")) {
+    return false;
+  }
+  const pkg = readPackageScope(mainPath);
+  return pkg && pkg.data.type === "module";
 }
 
 export const builtinModules = Module.builtinModules;

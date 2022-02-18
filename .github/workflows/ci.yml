@@ -28,8 +28,19 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
+      - name: Install fakedate
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt install faketime
+
       - name: Run tests canary
-        run: deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json
+        run: |
+          deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/
+
+      - name: Run test with the date 2021-12-31
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          faketime '2021-12-31' deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json datetime/test_2021_12_31.ts
 
       - name: Type check browser compatible modules
         shell: bash
@@ -38,12 +49,9 @@ jobs:
 
       - name: Generate lcov
         shell: bash
-        # TODO(kt3k): Excludes ubuntu for now because it panics while processing io/util.ts
-        # See https://github.com/denoland/deno/issues/10420
-        if: matrix.os != 'ubuntu-latest'
         # excludes tests, testdata, and generated sources from coverage report
         run: |
-          deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
+         deno coverage ./cov/ --lcov --exclude="test\\.(ts|js)|wasm\\.js|testdata|node/_tools|node/_module/cjs|node_modules" > cov.lcov
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
@@ -59,6 +67,39 @@ jobs:
           rm -rf ./cov/
           rm cov.lcov
 
+  node:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        deno: [canary]
+        os: [macOS-latest, ubuntu-latest, windows-2019]
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          persist-credentials: false
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1.0.0
+        with:
+          deno-version: ${{ matrix.deno }}
+
+      # FIXME(bartlomieju): currently doc tests are failing, we need --compat mode in "deno test" to get them working
+      # - name: Doctest node/
+      #   run: deno test --doc --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/
+
+      - name: Unit test node/
+        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/ --ignore=node/_tools/test.ts,node/_tools/versions/
+
+      - name: Run Node tests canary
+        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/_tools/test.ts
+        env:
+          DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -72,10 +113,16 @@ jobs:
         uses: denoland/setup-deno@v1.0.0
 
       - name: Format
-        run: deno fmt --check
+        shell: bash
+        run: ./_tools/format.js --check
 
       - name: Lint
-        run: deno lint
+        shell: bash
+        run: ./_tools/lint.js
+
+      - name: Check circular dependencies
+        shell: bash
+        run: ./_tools/check_circular_deps.ts
 
   hash-wasm:
     name: "_wasm_crypto/"
@@ -97,7 +144,7 @@ jobs:
           declare modifications="$(git diff --name-only HEAD~ -- ./_wasm_crypto)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "::set-output name=modified::$modified"
-          echo "Hash source modified in this commit? $modified"
+          echo "WASM crypto source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
@@ -108,15 +155,15 @@ jobs:
         uses: hecrj/setup-rust-action@v1
         if: success() && steps.source.outputs.modified == 'true'
         with:
-          # This must match the version in hash/_wasm/rust-toolchain:
-          rust-version: 1.55.0
+          # This must match the version in _wasm_crypto/rust-toolchain.toml:
+          rust-version: 1.57.0
           targets: wasm32-unknown-unknown
           components: rustfmt
 
       - name: Set up wasm-bindgen-cli
         run: |-
           # This must match the version in _wasm_crypto/Cargo.lock:
-          cargo install -f wasm-bindgen-cli --version 0.2.74
+          cargo install -f wasm-bindgen-cli --version 0.2.78
         if: success() && steps.source.outputs.modified == 'true'
 
       - name: Rebuild WASM

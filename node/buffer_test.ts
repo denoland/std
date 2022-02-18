@@ -1,20 +1,7 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import "./internal/errors.ts";
 import { Buffer } from "./buffer.ts";
-
-Deno.test({
-  name: "alloc fails on negative numbers",
-  fn() {
-    assertThrows(
-      () => {
-        Buffer.alloc(-1);
-      },
-      RangeError,
-      "Invalid typed array length: -1",
-      "should throw on negative numbers",
-    );
-  },
-});
 
 Deno.test({
   name: "alloc fails if size is not a number",
@@ -29,39 +16,9 @@ Deno.test({
           Buffer.alloc(size);
         },
         TypeError,
-        `The "size" argument must be of type number. Received type ${typeof size}`,
+        '"size" argument must be of type number',
         "should throw on non-number size",
       );
-    }
-  },
-});
-
-Deno.test({
-  name: "alloc(>0) fails if value is an empty Buffer/Uint8Array",
-  fn() {
-    const invalidValues = [new Uint8Array(), Buffer.alloc(0)];
-
-    for (const value of invalidValues) {
-      assertThrows(
-        () => {
-          console.log(value.constructor.name);
-          Buffer.alloc(1, value);
-        },
-        TypeError,
-        `The argument "value" is invalid. Received ${value.constructor.name} []`,
-        "should throw for empty Buffer/Uint8Array",
-      );
-    }
-  },
-});
-
-Deno.test({
-  name: "alloc(0) doesn't fail if value is an empty Buffer/Uint8Array",
-  fn() {
-    const invalidValues = [new Uint8Array(), Buffer.alloc(0)];
-
-    for (const value of invalidValues) {
-      assertEquals(Buffer.alloc(0, value).length, 0);
     }
   },
 });
@@ -356,15 +313,6 @@ Deno.test({
     assertEquals(buffer.readUIntBE(0, 1), 0x01);
     assertEquals(buffer.readUIntBE(0, 2), 0x0102);
     assertEquals(buffer.readUIntBE(0, 4), 0x01020304);
-    assertThrows(
-      () => {
-        assertEquals(buffer.readUIntBE(0, 5), 0x01020304);
-        assertEquals(buffer.readUIntBE(0, 6), 0x010203040506);
-        assertEquals(buffer.readUIntBE(1, 6), 0x020304050607);
-      },
-      Error,
-      `Not implemented: byteLength`,
-    );
   },
 });
 
@@ -384,15 +332,6 @@ Deno.test({
     assertEquals(buffer.readUIntLE(0, 1), 0x01);
     assertEquals(buffer.readUIntLE(0, 2), 0x0201);
     assertEquals(buffer.readUIntLE(0, 4), 0x04030201);
-    assertThrows(
-      () => {
-        assertEquals(buffer.readUIntLE(0, 5), 0x04030201);
-        assertEquals(buffer.readUIntLE(0, 6), 0x060504030201);
-        assertEquals(buffer.readUIntLE(1, 6), 0x070605040302);
-      },
-      Error,
-      `Not implemented: byteLength`,
-    );
   },
 });
 
@@ -548,35 +487,12 @@ Deno.test({
 });
 
 Deno.test({
-  name: "Buffer to string invalid encoding",
-  fn() {
-    const buffer: Buffer = Buffer.from("deno land");
-    const invalidEncodings = [null, 5, {}, true, false, "foo", ""];
-
-    for (const encoding of invalidEncodings) {
-      assertThrows(
-        () => {
-          // deno-lint-ignore ban-ts-comment
-          // @ts-expect-error
-          buffer.toString(encoding);
-        },
-        TypeError,
-        `Unknown encoding: ${encoding}`,
-        "Should throw on invalid encoding",
-      );
-    }
-  },
-});
-
-Deno.test({
   name: "Buffer from string invalid encoding",
   fn() {
     const defaultToUtf8Encodings = [null, 5, {}, true, false, ""];
     const invalidEncodings = ["deno", "base645"];
 
     for (const encoding of defaultToUtf8Encodings) {
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
       assertEquals(Buffer.from("yes", encoding).toString(), "yes");
     }
 
@@ -587,34 +503,6 @@ Deno.test({
         },
         TypeError,
         `Unknown encoding: ${encoding}`,
-      );
-    }
-  },
-});
-
-Deno.test({
-  name: "Buffer to/from string not implemented encodings",
-  fn() {
-    const buffer: Buffer = Buffer.from("deno land");
-    const notImplemented = ["ascii", "binary"];
-
-    for (const encoding of notImplemented) {
-      assertThrows(
-        () => {
-          buffer.toString(encoding);
-        },
-        Error,
-        `"${encoding}" encoding`,
-        "Should throw on invalid encoding",
-      );
-
-      assertThrows(
-        () => {
-          Buffer.from("", encoding);
-        },
-        Error,
-        `"${encoding}" encoding`,
-        "Should throw on invalid encoding",
       );
     }
   },
@@ -711,37 +599,8 @@ Deno.test({
       0,
       -1,
     ].forEach((enc) => {
+      // @ts-expect-error This deliberately ignores the type constraint
       assertEquals(Buffer.isEncoding(enc), false);
     });
-  },
-});
-
-// ported from:
-// https://github.com/nodejs/node/blob/56dbe466fdbc598baea3bfce289bf52b97b8b8f7/test/parallel/test-buffer-equals.js#L6
-Deno.test({
-  name: "buf.equals",
-  fn() {
-    const b = Buffer.from("abcdf");
-    const c = Buffer.from("abcdf");
-    const d = Buffer.from("abcde");
-    const e = Buffer.from("abcdef");
-
-    assertEquals(b.equals(c), true);
-    assertEquals(d.equals(d), true);
-    assertEquals(
-      d.equals(new Uint8Array([0x61, 0x62, 0x63, 0x64, 0x65])),
-      true,
-    );
-
-    assertEquals(c.equals(d), false);
-    assertEquals(d.equals(e), false);
-
-    assertThrows(
-      // deno-lint-ignore ban-ts-comment
-      // @ts-expect-error
-      () => Buffer.alloc(1).equals("abc"),
-      TypeError,
-      `The "otherBuffer" argument must be an instance of Buffer or Uint8Array. Received type string`,
-    );
   },
 });

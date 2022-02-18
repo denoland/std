@@ -1,5 +1,20 @@
-import { Status as STATUS_CODES } from "../http/http_status.ts";
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import * as DenoUnstable from "../_deno_unstable.ts";
+import { core } from "./_core.ts";
+import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
+import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
+import { EventEmitter } from "./events.ts";
+import { nextTick } from "./_next_tick.ts";
+import { Status as STATUS_CODES } from "../http/http_status.ts";
+import { validatePort } from "./internal/validators.js";
+import {
+  Readable as NodeReadable,
+  Writable as NodeWritable,
+} from "./stream.ts";
+import { OutgoingMessage } from "./_http_outgoing.ts";
+import { Agent } from "./_http_agent.js";
+import { urlToHttpOptions } from "./internal/url.ts";
 
 const METHODS = [
   "ACL",
@@ -39,120 +54,527 @@ const METHODS = [
 ];
 
 type Chunk = string | Buffer | Uint8Array;
-type Headers = Record<string, string>;
 
-export class ServerResponse {
-  status?: number;
-  headers: Headers;
-  chunks: Chunk[];
-  headersSent: boolean;
-  private reqEvent: Deno.RequestEvent;
+function chunkToU8(chunk: Chunk): Uint8Array {
+  if (typeof chunk === "string") {
+    return core.encode(chunk);
+  }
+  return chunk;
+}
 
-  constructor(reqEvent: Deno.RequestEvent) {
-    this.status = undefined;
-    this.headers = {};
-    this.chunks = [];
-    this.headersSent = false;
-    this.reqEvent = reqEvent;
+export interface RequestOptions {
+  agent?: Agent;
+  auth?: string;
+  createConnection?: () => unknown;
+  defaultPort?: number;
+  family?: number;
+  headers?: Record<string, string>;
+  hints?: number;
+  host?: string;
+  hostname?: string;
+  insecureHTTPParser?: boolean;
+  localAddress?: string;
+  localPort?: number;
+  lookup?: () => void;
+  maxHeaderSize?: number;
+  method?: string;
+  path?: string;
+  port?: number;
+  protocol?: string;
+  setHost?: boolean;
+  socketPath?: string;
+  timeout?: number;
+  signal?: AbortSignal;
+  href?: string;
+}
+
+/** ClientRequest represents the http(s) request from the client */
+class ClientRequest extends NodeWritable {
+  body: null | ReadableStream = null;
+  controller: ReadableStreamDefaultController | null = null;
+  constructor(
+    public opts: RequestOptions,
+    public cb?: (res: IncomingMessageForClient) => void,
+  ) {
+    super();
   }
 
-  setHeader(name: string, value: string) {
-    this.headers[name] = value;
-  }
-
-  getHeader(name: string) {
-    return this.headers[name];
-  }
-
-  writeHead(status: number, headers: Headers) {
-    this.status = status;
-    Object.assign(this.headers, headers);
-  }
-  write(chunk: Chunk) {
-    this._addChunk(chunk);
-  }
-
-  _addChunk(chunk: Chunk) {
-    if (this.status === null) {
-      this.status = 200;
-      this.headers = { "content-type": "text/plain" };
+  // deno-lint-ignore no-explicit-any
+  _write(chunk: any, _enc: string, cb: () => void) {
+    if (this.controller) {
+      this.controller.enqueue(chunk);
+      cb();
+      return;
     }
-    this.chunks.push(chunk);
+
+    this.body = new ReadableStream({
+      start: (controller) => {
+        this.controller = controller;
+        controller.enqueue(chunk);
+        cb();
+      },
+    });
   }
 
-  _body(lastChunk?: Chunk) {
-    // TODO: incorrectly assumes all chunks are strings
-    return this.chunks ? this.chunks.join("") + lastChunk : lastChunk;
+  async _final() {
+    const client = await this._createCustomClient();
+    const opts = { body: this.body, method: this.opts.method, client };
+    const mayResponse = fetch(this.opts.href!, opts).catch((e) => {
+      if (e.message.includes("connection closed before message completed")) {
+        // Node.js seems ignoring this error
+      } else {
+        this.emit("error", e);
+      }
+      return undefined;
+    });
+    const res = new IncomingMessageForClient(
+      await mayResponse,
+      this._createSocket(),
+    );
+    this.emit("response", res);
+    if (client) {
+      res.on("end", () => {
+        client.close();
+      });
+    }
+    this.cb?.(res);
   }
 
-  end(lastChunk: Chunk) {
-    const body = this._body(lastChunk);
-    this.headersSent = true;
-    this.reqEvent.respondWith(new Response(body, { headers: this.headers }));
+  abort() {
+    this.destroy();
+  }
+
+  _createCustomClient(): Promise<DenoUnstable.HttpClient | undefined> {
+    return Promise.resolve(undefined);
+  }
+
+  _createSocket(): Socket {
+    // Note: Creates a dummy socket for the compatibility
+    // Sometimes the libraries check some properties of socket
+    // e.g. if (!response.socket.authorized) { ... }
+    return new Socket({});
   }
 }
 
-export class IncomingMessage {
+/** IncomingMessage for http(s) client */
+export class IncomingMessageForClient extends NodeReadable {
+  reader: ReadableStreamDefaultReader | undefined;
+  constructor(public response: Response | undefined, public socket: Socket) {
+    super();
+    this.reader = response?.body?.getReader();
+  }
+
+  async _read(_size: number) {
+    if (this.reader === undefined) {
+      this.push(null);
+      return;
+    }
+    try {
+      const res = await this.reader.read();
+      if (res.done) {
+        this.push(null);
+        return;
+      }
+      this.push(res.value);
+    } catch (e) {
+      // deno-lint-ignore no-explicit-any
+      this.destroy(e as any);
+    }
+  }
+
+  get headers() {
+    if (this.response) {
+      return Object.fromEntries(this.response.headers.entries());
+    }
+    return {};
+  }
+
+  get trailers() {
+    return {};
+  }
+
+  get statusCode() {
+    return this.response?.status || 0;
+  }
+
+  get statusMessage() {
+    return this.response?.statusText || "";
+  }
+}
+
+export class ServerResponse extends NodeWritable {
+  statusCode?: number = undefined;
+  statusMessage?: string = undefined;
+  #headers = new Headers({});
+  private readable: ReadableStream;
+  headersSent = false;
+  #reqEvent: Deno.RequestEvent;
+  #firstChunk: Chunk | null = null;
+
+  constructor(reqEvent: Deno.RequestEvent) {
+    let controller: ReadableByteStreamController;
+    const readable = new ReadableStream({
+      start(c) {
+        controller = c as ReadableByteStreamController;
+      },
+    });
+    super({
+      autoDestroy: true,
+      defaultEncoding: "utf-8",
+      emitClose: true,
+      write: (chunk, _encoding, cb) => {
+        if (!this.headersSent) {
+          if (this.#firstChunk === null) {
+            this.#firstChunk = chunk;
+            return cb();
+          } else {
+            controller.enqueue(chunkToU8(this.#firstChunk));
+            this.#firstChunk = null;
+            this.respond(false);
+          }
+        }
+        controller.enqueue(chunkToU8(chunk));
+        return cb();
+      },
+      final: (cb) => {
+        if (this.#firstChunk) {
+          this.respond(true, this.#firstChunk);
+        } else if (!this.headersSent) {
+          this.respond(true);
+        }
+        controller.close();
+        return cb();
+      },
+      destroy: (err, cb) => {
+        if (err) {
+          controller.error(err);
+        }
+        return cb(null);
+      },
+    });
+    this.readable = readable;
+    this.#reqEvent = reqEvent;
+  }
+
+  setHeader(name: string, value: string) {
+    this.#headers.set(name, value);
+    return this;
+  }
+
+  getHeader(name: string) {
+    return this.#headers.get(name);
+  }
+  removeHeader(name: string) {
+    return this.#headers.delete(name);
+  }
+  getHeaderNames() {
+    return Array.from(this.#headers.keys());
+  }
+  hasHeader(name: string) {
+    return this.#headers.has(name);
+  }
+
+  writeHead(status: number, headers: Record<string, string>) {
+    this.statusCode = status;
+    for (const k in headers) {
+      this.#headers.set(k, headers[k]);
+    }
+    return this;
+  }
+
+  #ensureHeaders(singleChunk?: Chunk) {
+    if (this.statusCode === undefined) {
+      this.statusCode = 200;
+      this.statusMessage = "OK";
+    }
+    if (typeof singleChunk === "string" && !this.hasHeader("content-type")) {
+      this.setHeader("content-type", "text/plain;charset=UTF-8");
+    }
+  }
+
+  respond(final: boolean, singleChunk?: Chunk) {
+    this.headersSent = true;
+    this.#ensureHeaders(singleChunk);
+    const body = singleChunk ?? (final ? null : this.readable);
+    this.#reqEvent.respondWith(
+      new Response(body, {
+        headers: this.#headers,
+        status: this.statusCode,
+        statusText: this.statusMessage,
+      }),
+    );
+  }
+
+  // deno-lint-ignore no-explicit-any
+  end(chunk?: any, encoding?: any, cb?: any): this {
+    if (!chunk && this.#headers.has("transfer-encoding")) {
+      // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
+      // the trailing "0\r\n", but respondWith() just hangs when I try that.
+      this.#headers.set("content-length", "0");
+      this.#headers.delete("transfer-encoding");
+    }
+
+    // @ts-expect-error The signature for cb is stricter than the one implemented here
+    return super.end(chunk, encoding, cb);
+  }
+}
+
+// TODO(@AaronO): optimize
+export class IncomingMessageForServer extends NodeReadable {
   private req: Request;
+  url: string;
 
   constructor(req: Request) {
+    // Check if no body (GET/HEAD/OPTIONS/...)
+    const reader = req.body?.getReader();
+    super({
+      autoDestroy: true,
+      emitClose: true,
+      objectMode: false,
+      read: async function (_size) {
+        if (!reader) {
+          return this.push(null);
+        }
+
+        try {
+          const { value } = await reader!.read();
+          this.push(value !== undefined ? Buffer.from(value) : null);
+        } catch (err) {
+          this.destroy(err as Error);
+        }
+      },
+      destroy: (err, cb) => {
+        reader?.cancel().finally(() => cb(err));
+      },
+    });
     this.req = req;
+    // TODO: consider more robust path extraction, e.g:
+    // url: (new URL(request.url).pathname),
+    this.url = req.url.slice(this.req.url.indexOf("/", 8));
   }
 
   get aborted() {
     return false;
-  }
-  get completed() {
-    return true;
   }
   get httpVersion() {
     return "1.1";
   }
 
   get headers() {
-    return this.req.headers;
+    return Object.fromEntries(this.req.headers.entries());
   }
-
-  get url() {
-    // TODO: consider more robust path extraction, e.g:
-    // url: (new URL(request.url).pathname),
-    return this.req.url.slice(this.req.url.indexOf("/", 8));
+  get method() {
+    return this.req.method;
   }
 }
 
-type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
+type ServerHandler = (
+  req: IncomingMessageForServer,
+  res: ServerResponse,
+) => void;
 
-export class Server {
-  handler: ServerHandler;
+export function Server(handler?: ServerHandler): ServerImpl {
+  return new ServerImpl(handler);
+}
 
-  constructor(handler: ServerHandler) {
-    this.handler = handler;
-  }
+class ServerImpl extends EventEmitter {
+  #httpConnections: Set<Deno.HttpConn> = new Set();
+  #listener?: Deno.Listener;
 
-  async listen(port: number) {
-    for await (const conn of Deno.listen({ port })) {
-      (async () => {
-        for await (const reqEvent of Deno.serveHttp(conn)) {
-          this.handler(
-            new IncomingMessage(reqEvent.request),
-            new ServerResponse(reqEvent),
-          );
-        }
-      })();
+  constructor(handler?: ServerHandler) {
+    super();
+
+    if (handler !== undefined) {
+      this.on("request", handler);
     }
   }
+
+  listen(...args: unknown[]): this {
+    // TODO(bnoordhuis) Delegate to net.Server#listen().
+    const normalized = _normalizeArgs(args);
+    const options = normalized[0] as Partial<ListenOptions>;
+    const cb = normalized[1];
+
+    if (cb !== null) {
+      // @ts-ignore change EventEmitter's sig to use CallableFunction
+      this.once("listening", cb);
+    }
+
+    let port = 0;
+    if (typeof options.port === "number" || typeof options.port === "string") {
+      validatePort(options.port, "options.port");
+      port = options.port | 0;
+    }
+
+    // TODO(bnoordhuis) Node prefers [::] when host is omitted,
+    // we on the other hand default to 0.0.0.0.
+    const hostname = options.host ?? "";
+
+    this.#listener = Deno.listen({ port, hostname });
+    nextTick(() => this.#listenLoop());
+
+    return this;
+  }
+
+  async #listenLoop() {
+    const go = async (httpConn: Deno.HttpConn) => {
+      try {
+        for (;;) {
+          let reqEvent = null;
+          try {
+            // Note: httpConn.nextRequest() calls httpConn.close() on error.
+            reqEvent = await httpConn.nextRequest();
+          } catch {
+            // Connection closed.
+            // TODO(bnoordhuis) Emit "clientError" event on the http.Server
+            // instance? Node emits it when request parsing fails and expects
+            // the listener to send a raw 4xx HTTP response on the underlying
+            // net.Socket but we don't have one to pass to the listener.
+          }
+          if (reqEvent === null) {
+            break;
+          }
+          const req = new IncomingMessageForServer(reqEvent.request);
+          const res = new ServerResponse(reqEvent);
+          this.emit("request", req, res);
+        }
+      } finally {
+        this.#httpConnections.delete(httpConn);
+      }
+    };
+
+    const listener = this.#listener;
+
+    if (listener !== undefined) {
+      this.emit("listening");
+
+      for await (const conn of listener) {
+        let httpConn: Deno.HttpConn;
+        try {
+          httpConn = Deno.serveHttp(conn);
+        } catch {
+          continue; /// Connection closed.
+        }
+
+        this.#httpConnections.add(httpConn);
+        go(httpConn);
+      }
+    }
+  }
+
+  get listening() {
+    return this.#listener !== undefined;
+  }
+
+  close(cb?: (err?: Error) => void): this {
+    const listening = this.listening;
+
+    if (typeof cb === "function") {
+      if (listening) {
+        this.once("close", cb);
+      } else {
+        this.once("close", function close() {
+          cb(new ERR_SERVER_NOT_RUNNING());
+        });
+      }
+    }
+
+    nextTick(() => this.emit("close"));
+
+    if (listening) {
+      this.#listener!.close();
+      this.#listener = undefined;
+
+      for (const httpConn of this.#httpConnections) {
+        try {
+          httpConn.close();
+        } catch {
+          // Already closed.
+        }
+      }
+
+      this.#httpConnections.clear();
+    }
+
+    return this;
+  }
+
+  address() {
+    const addr = this.#listener!.addr as Deno.NetAddr;
+    return {
+      port: addr.port,
+      address: addr.hostname,
+    };
+  }
 }
 
-export function createServer(handler: ServerHandler) {
-  return new Server(handler);
+Server.prototype = ServerImpl.prototype;
+
+export function createServer(handler?: ServerHandler) {
+  return Server(handler);
 }
 
-export { METHODS, STATUS_CODES };
+/** Makes an HTTP request. */
+export function request(
+  url: string | URL,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function request(
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function request(
+  url: string | URL,
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+// deno-lint-ignore no-explicit-any
+export function request(...args: any[]) {
+  let options = {};
+  if (typeof args[0] === "string") {
+    options = urlToHttpOptions(new URL(args.shift()));
+  } else if (args[0] instanceof URL) {
+    options = urlToHttpOptions(args.shift());
+  }
+  if (args[0] && typeof args[0] !== "function") {
+    Object.assign(options, args.shift());
+  }
+  args.unshift(options);
+  return new ClientRequest(args[0], args[1]);
+}
+
+/** Makes a `GET` HTTP request. */
+export function get(
+  url: string | URL,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function get(
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function get(
+  url: string | URL,
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+// deno-lint-ignore no-explicit-any
+export function get(...args: any[]) {
+  const req = request(args[0], args[1], args[2]);
+  req.end();
+  return req;
+}
+
+export { Agent, ClientRequest, METHODS, OutgoingMessage, STATUS_CODES };
 export default {
+  Agent,
+  ClientRequest,
   STATUS_CODES,
   METHODS,
   createServer,
   Server,
-  IncomingMessage,
+  IncomingMessage: IncomingMessageForServer,
+  OutgoingMessage,
   ServerResponse,
+  request,
+  get,
 };

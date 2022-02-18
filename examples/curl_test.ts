@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { listenAndServe } from "../http/server.ts";
 import { assertStrictEquals } from "../testing/asserts.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
@@ -10,7 +10,7 @@ Deno.test({
   fn: async () => {
     const abortController = new AbortController();
     const serverPromise = listenAndServe(
-      ":8081",
+      { port: 8081 },
       () => new Response("Hello world"),
       { signal: abortController.signal },
     );

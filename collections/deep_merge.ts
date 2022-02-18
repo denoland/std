@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 // deno-lint-ignore-file ban-types
@@ -70,6 +70,11 @@ export function deepMerge<
 
   // Iterate through each key of other object and use correct merging strategy
   for (const key of keys) {
+    // Skip to prevent Object.prototype.__proto__ accessor property calls on non-Deno platforms
+    if (key === "__proto__") {
+      continue;
+    }
+
     type ResultMember = Result[typeof key];
 
     const a = record[key] as ResultMember;
@@ -170,7 +175,10 @@ function isNonNullObject(value: unknown): value is NonNullable<object> {
 
 function getKeys<T extends object>(record: T): Array<keyof T> {
   const ret = Object.getOwnPropertySymbols(record) as Array<keyof T>;
-  filterInPlace(ret, (key) => record.propertyIsEnumerable(key));
+  filterInPlace(
+    ret,
+    (key) => Object.prototype.propertyIsEnumerable.call(record, key),
+  );
   ret.push(...(Object.keys(record) as Array<keyof T>));
 
   return ret;

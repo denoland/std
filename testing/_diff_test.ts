@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { diff, diffstr } from "./_diff.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
@@ -118,30 +118,45 @@ Deno.test({
       [..."abxde"].join("\n"),
     );
     assertEquals(diffResult, [
-      { type: "common", value: "a\n" },
-      { type: "common", value: "b\n" },
-      { type: "added", value: "x\n" },
-      {
-        type: "removed",
-        value: "c\n",
-        details: [{ type: "removed", value: "c" }, {
-          type: "common",
-          value: "\n",
-        }],
-      },
-      { type: "common", value: "d\n" },
+      { type: "common", value: "a\\n\n" },
+      { type: "common", value: "b\\n\n" },
       {
         type: "added",
-        value: "e\n",
+        value: "x\\n\n",
         details: [
-          {
-            type: "added",
-            value: "e",
-          },
-          {
-            type: "common",
-            value: "\n",
-          },
+          { type: "added", value: "x" },
+          { type: "common", value: "\\" },
+          { type: "common", value: "n" },
+          { type: "common", value: "\n" },
+        ],
+      },
+      {
+        type: "added",
+        value: "d\\n\n",
+        details: [
+          { type: "common", value: "d" },
+          { type: "added", value: "\\" },
+          { type: "added", value: "n" },
+          { type: "common", value: "\n" },
+        ],
+      },
+      { type: "added", value: "e\n" },
+      {
+        type: "removed",
+        value: "c\\n\n",
+        details: [
+          { type: "removed", value: "c" },
+          { type: "common", value: "\\" },
+          { type: "common", value: "n" },
+          { type: "common", value: "\n" },
+        ],
+      },
+      {
+        type: "removed",
+        value: "d\n",
+        details: [
+          { type: "common", value: "d" },
+          { type: "common", value: "\n" },
         ],
       },
     ]);
@@ -225,6 +240,47 @@ Deno.test({
           { type: "common", value: "\n" },
         ],
       },
+    ]);
+  },
+});
+
+Deno.test({
+  name: `"\\b\\f\\r\\t\\v\\n" vs "\\r\\n" (diffstr)`,
+  fn(): void {
+    const diffResult = diffstr("\b\f\r\t\v\n", "\r\n");
+    assertEquals(diffResult, [
+      {
+        type: "removed",
+        value: "\\b\\f\\r\\t\\v\\n\n",
+        details: [
+          { type: "common", value: "\\" },
+          { type: "removed", value: "b" },
+          { type: "removed", value: "\\" },
+          { type: "removed", value: "f" },
+          { type: "removed", value: "\\" },
+          { type: "common", value: "r" },
+          { type: "common", value: "\\" },
+          { type: "removed", value: "t" },
+          { type: "removed", value: "\\" },
+          { type: "removed", value: "v" },
+          { type: "removed", value: "\\" },
+          { type: "common", value: "n" },
+          { type: "common", value: "\n" },
+        ],
+      },
+      {
+        type: "added",
+        value: "\\r\\n\r\n",
+        details: [
+          { type: "common", value: "\\" },
+          { type: "common", value: "r" },
+          { type: "common", value: "\\" },
+          { type: "common", value: "n" },
+          { type: "added", value: "\r" },
+          { type: "common", value: "\n" },
+        ],
+      },
+      { type: "common", value: "\n" },
     ]);
   },
 });

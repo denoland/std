@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -309,5 +310,12 @@ export class StringDecoder {
     this.write = decoder.write;
   }
 }
+// Allow calling StringDecoder() without new
+const PStringDecoder = new Proxy(StringDecoder, {
+  apply(_target, thisArg, args) {
+    // @ts-ignore tedious to replicate types ...
+    return Object.assign(thisArg, new StringDecoder(...args));
+  },
+});
 
-export default { StringDecoder };
+export default { StringDecoder: PStringDecoder };

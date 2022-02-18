@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   BinaryOptionsArgument,
   FileOptionsArgument,
@@ -18,7 +18,7 @@ function maybeDecode(
   data: Uint8Array,
   encoding: Encodings | null,
 ): string | Buffer {
-  const buffer = new Buffer(data.buffer, data.byteOffset, data.byteLength);
+  const buffer = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
   if (encoding && encoding !== "binary") return buffer.toString(encoding);
   return buffer;
 }

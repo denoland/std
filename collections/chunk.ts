@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 /**
@@ -31,7 +31,7 @@ export function chunk<T>(array: readonly T[], size: number): T[][] {
     return [];
   }
 
-  const ret = new Array(Math.ceil(array.length / size));
+  const ret = Array.from<T[]>({ length: Math.ceil(array.length / size) });
   let readIndex = 0;
   let writeIndex = 0;
 

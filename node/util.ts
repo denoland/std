@@ -1,47 +1,33 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { promisify } from "./_util/_util_promisify.ts";
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import { promisify } from "./internal/util.js";
 import { callbackify } from "./_util/_util_callbackify.ts";
-import { ERR_INVALID_ARG_TYPE, ERR_OUT_OF_RANGE, errorMap } from "./_errors.ts";
-import * as types from "./_util/_util_types.ts";
-export { callbackify, promisify, types };
+import { debuglog } from "./internal/util/debuglog.ts";
+import { deprecate } from "./internal/util.js";
+import {
+  format,
+  formatWithOptions,
+  inspect,
+  stripVTControlCharacters,
+} from "./internal/util/inspect.js";
+import { codes } from "./internal/error_codes.ts";
+import { errorMap } from "./internal_binding/uv.ts";
+import types from "./util/types.js";
+import { Buffer } from "./buffer.ts";
+import { isDeepStrictEqual } from "./internal/util/comparisons.ts";
 
-const NumberIsSafeInteger = Number.isSafeInteger;
-
-const DEFAULT_INSPECT_OPTIONS = {
-  showHidden: false,
-  depth: 2,
-  colors: false,
-  customInspect: true,
-  showProxy: false,
-  maxArrayLength: 100,
-  maxStringLength: Infinity,
-  breakLength: 80,
-  compact: 3,
-  sorted: false,
-  getters: false,
+export {
+  callbackify,
+  debuglog,
+  deprecate,
+  format,
+  formatWithOptions,
+  inspect,
+  promisify,
+  stripVTControlCharacters,
+  types,
 };
 
-inspect.defaultOptions = DEFAULT_INSPECT_OPTIONS;
-inspect.custom = Symbol.for("nodejs.util.inspect.custom");
-
-// TODO(schwarzkopfb): make it in-line with Node's implementation
-// Ref: https://nodejs.org/dist/latest-v14.x/docs/api/util.html#util_util_inspect_object_options
-// deno-lint-ignore no-explicit-any
-export function inspect(object: unknown, ...opts: any): string {
-  // In Node.js, strings should be enclosed in single quotes.
-  // TODO(uki00a): Strings in objects and arrays should also be enclosed in single quotes.
-  if (typeof object === "string" && !object.includes("'")) {
-    return `'${object}'`;
-  }
-  opts = { ...DEFAULT_INSPECT_OPTIONS, ...opts };
-  return Deno.inspect(object, {
-    depth: opts.depth,
-    iterableLimit: opts.maxArrayLength,
-    compact: !!opts.compact,
-    sorted: !!opts.sorted,
-    showProxy: !!opts.showProxy,
-  });
-}
+const NumberIsSafeInteger = Number.isSafeInteger;
 
 /** @deprecated - use `Array.isArray()` instead. */
 export function isArray(value: unknown): boolean {
@@ -98,9 +84,14 @@ export function isFunction(value: unknown): boolean {
   return typeof value === "function";
 }
 
-/** @deprecated - use `value instanceof RegExp` instead. */
+/** @deprecated Use util.types.RegExp() instead. */
 export function isRegExp(value: unknown): boolean {
-  return value instanceof RegExp;
+  return types.isRegExp(value);
+}
+
+/** @deprecated Use util.types.isDate() instead. */
+export function isDate(value: unknown): boolean {
+  return types.isDate(value);
 }
 
 /** @deprecated - use `value === null || (typeof value !== "object" && typeof value !== "function")` instead. */
@@ -110,159 +101,39 @@ export function isPrimitive(value: unknown): boolean {
   );
 }
 
+/** @deprecated  Use Buffer.isBuffer() instead. */
+export function isBuffer(value: unknown): boolean {
+  return Buffer.isBuffer(value);
+}
+
+/** @deprecated Use Object.assign() instead. */
+export function _extend(
+  target: Record<string, unknown>,
+  source: unknown,
+): Record<string, unknown> {
+  // Don't do anything if source isn't an object
+  if (source === null || typeof source !== "object") return target;
+
+  const keys = Object.keys(source!);
+  let i = keys.length;
+  while (i--) {
+    target[keys[i]] = (source as Record<string, unknown>)[keys[i]];
+  }
+  return target;
+}
+
 /**
  * Returns a system error name from an error code number.
  * @param code error code number
  */
 export function getSystemErrorName(code: number): string | undefined {
   if (typeof code !== "number") {
-    throw new ERR_INVALID_ARG_TYPE("err", "number", code);
+    throw new codes.ERR_INVALID_ARG_TYPE("err", "number", code);
   }
   if (code >= 0 || !NumberIsSafeInteger(code)) {
-    throw new ERR_OUT_OF_RANGE("err", "a negative integer", code);
+    throw new codes.ERR_OUT_OF_RANGE("err", "a negative integer", code);
   }
   return errorMap.get(code)?.[0];
-}
-
-/**
- * https://nodejs.org/api/util.html#util_util_deprecate_fn_msg_code
- * @param _code This implementation of deprecate won't apply the deprecation code
- */
-// deno-lint-ignore no-explicit-any
-export function deprecate<T extends (...args: any) => any>(
-  fn: T,
-  msg: string,
-  _code?: string,
-): (...args: Parameters<T>) => ReturnType<T> {
-  return function (...args) {
-    console.warn(msg);
-    return fn.apply(undefined, args);
-  };
-}
-
-function circularRemover(): (key: string, value: unknown) => unknown {
-  const seen = new WeakSet();
-  return (_key, value) => {
-    if (typeof value === "object" && value !== null) {
-      if (seen.has(value)) {
-        return;
-      }
-      seen.add(value);
-    }
-    return value;
-  };
-}
-
-function formatString(str: string) {
-  return `"${str.replace(/\\/, "\\\\").replace(/"/g, '\\"')}"`;
-}
-
-function thingToString(
-  thing: unknown,
-  maxDepth?: number,
-  depth = 1,
-): string {
-  let result = "";
-  if (typeof thing === "bigint") {
-    return thing + "n";
-  }
-  if (
-    typeof thing === "undefined" || typeof thing === "number" ||
-    typeof thing === "boolean" || typeof thing === "symbol" || thing === null
-  ) {
-    return String(thing);
-  }
-  if (typeof thing === "function") {
-    return `[Function ${thing.name || "(anonymous)"}]`;
-  }
-  if (typeof thing === "string") {
-    return formatString(thing);
-  }
-  if (Array.isArray(thing)) {
-    if (depth === maxDepth) {
-      return "[Array]";
-    }
-    result += "[";
-    const en = Object.entries(thing);
-    for (let i = 0; i < en.length; i++) {
-      const [key, value] = en[i];
-      if (isNaN(Number(key))) {
-        result += `${key}: `;
-      }
-      result += thingToString(value, maxDepth, depth + 1);
-      if (i !== en.length - 1) {
-        result += ", ";
-      }
-    }
-    result += "]";
-    return result;
-  }
-  if (depth === maxDepth) {
-    return "[Object]";
-  }
-  const en = Object.entries(thing as Record<string, unknown>);
-  result += "{ ";
-  for (let i = 0; i < en.length; i++) {
-    const [key, value] = en[i];
-    result += `${key}: ${thingToString(value, maxDepth, depth + 1)}`;
-    if (i !== en.length - 1) {
-      result += ", ";
-    }
-  }
-  result += " }";
-  return result;
-}
-
-function toReplace(specifier: string, value: unknown): string {
-  if (specifier === "%s") {
-    return thingToString(value, 2);
-  }
-  if (specifier === "%d") {
-    if (typeof value === "bigint") {
-      return value + "n";
-    }
-    return Number(value).toString();
-  }
-  if (specifier === "%i") {
-    if (typeof value === "bigint") {
-      return value + "n";
-    }
-    return parseInt(value as string).toString();
-  }
-  if (specifier === "%f") {
-    return parseFloat(value as string).toString();
-  }
-  if (specifier === "%j") {
-    return JSON.stringify(value, circularRemover());
-  }
-  if (specifier === "%o" || specifier === "%O") {
-    return thingToString(value);
-  }
-  if (specifier === "%c") {
-    return "";
-  }
-  return "";
-}
-
-export function format(input: string, ...args: unknown[]) {
-  const replacement: [number, string][] = [];
-  const regex = /%(s|d|i|f|j|o|O|c)/g;
-  let i = 0;
-  let arr: RegExpExecArray | null = null;
-  while ((arr = regex.exec(input)) !== null && i < args.length) {
-    replacement.push([arr["index"], toReplace(arr[0], args[i])]);
-    i++;
-  }
-  let result = "";
-  let last = 0;
-  for (let i = 0; i < replacement.length; i++) {
-    const item = replacement[i];
-    result += input.slice(last, item[0]);
-    result += item[1];
-    last = item[0] + 2;
-  }
-  result += input.slice(last);
-  return result;
 }
 
 /**
@@ -275,15 +146,15 @@ export function inherits<T, U>(
   superCtor: new (...args: unknown[]) => U,
 ) {
   if (ctor === undefined || ctor === null) {
-    throw new ERR_INVALID_ARG_TYPE("ctor", "Function", ctor);
+    throw new codes.ERR_INVALID_ARG_TYPE("ctor", "Function", ctor);
   }
 
   if (superCtor === undefined || superCtor === null) {
-    throw new ERR_INVALID_ARG_TYPE("superCtor", "Function", superCtor);
+    throw new codes.ERR_INVALID_ARG_TYPE("superCtor", "Function", superCtor);
   }
 
   if (superCtor.prototype === undefined) {
-    throw new ERR_INVALID_ARG_TYPE(
+    throw new codes.ERR_INVALID_ARG_TYPE(
       "superCtor.prototype",
       "Object",
       superCtor.prototype,
@@ -307,7 +178,50 @@ export const TextDecoder = _TextDecoder;
 export type TextEncoder = import("./_utils.ts")._TextEncoder;
 export const TextEncoder = _TextEncoder;
 
+function pad(n: number) {
+  return n.toString().padStart(2, "0");
+}
+
+const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+/**
+ * @returns 26 Feb 16:19:34
+ */
+function timestamp(): string {
+  const d = new Date();
+  const t = [
+    pad(d.getHours()),
+    pad(d.getMinutes()),
+    pad(d.getSeconds()),
+  ].join(":");
+  return `${(d.getDate())} ${months[(d).getMonth()]} ${t}`;
+}
+
+/**
+ * Log is just a thin wrapper to console.log that prepends a timestamp
+ * @deprecated
+ */
+// deno-lint-ignore no-explicit-any
+function log(...args: any[]): void {
+  console.log("%s - %s", timestamp(), format(...args));
+}
+
 export default {
+  format,
+  formatWithOptions,
   inspect,
   isArray,
   isBoolean,
@@ -321,13 +235,20 @@ export default {
   isError,
   isFunction,
   isRegExp,
+  isDate,
   isPrimitive,
+  isBuffer,
+  _extend,
   getSystemErrorName,
   deprecate,
   callbackify,
   promisify,
   inherits,
   types,
+  stripVTControlCharacters,
   TextDecoder,
   TextEncoder,
+  log,
+  debuglog,
+  isDeepStrictEqual,
 };

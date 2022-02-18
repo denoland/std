@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { tee } from "./tee.ts";
 import { assertEquals } from "../testing/asserts.ts";
 
@@ -59,4 +59,22 @@ Deno.test("async/tee - 3 branches - delayed consumption", async () => {
       [1, 2, 3],
     ],
   );
+});
+
+Deno.test("async/tee - concurent .next calls", async () => {
+  const [left] = tee(gen());
+  const l = left[Symbol.asyncIterator]();
+  assertEquals(await Promise.all([l.next(), l.next(), l.next(), l.next()]), [{
+    value: 1,
+    done: false,
+  }, {
+    value: 2,
+    done: false,
+  }, {
+    value: 3,
+    done: false,
+  }, {
+    value: undefined,
+    done: true,
+  }]);
 });

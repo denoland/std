@@ -1,7 +1,7 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import Context from "./snapshot_preview1.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { copy } from "../fs/mod.ts";
+import { copy } from "../fs/copy.ts";
 import * as path from "../path/mod.ts";
 import { readAll, writeAll } from "../streams/conversion.ts";
 import { isWindows } from "../_util/os.ts";

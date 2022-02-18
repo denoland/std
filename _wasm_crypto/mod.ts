@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 export * as crypto from "./crypto.js";
 
 /**
@@ -26,12 +26,14 @@ export const digestAlgorithms = [
   "SHA3-512",
   "SHAKE128",
   "SHAKE256",
+  "TIGER",
   // insecure (length-extendable):
   "RIPEMD-160",
   "SHA-224",
   "SHA-256",
   "SHA-512",
   // insecure (collidable and length-extendable):
+  "MD4",
   "MD5",
   "SHA-1",
 ] as const;

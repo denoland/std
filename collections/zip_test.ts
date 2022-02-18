@@ -1,7 +1,27 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
 import { zip } from "./zip.ts";
+
+function zip1Test<T>(
+  input: [Array<T>],
+  expected: Array<[T]>,
+  message?: string,
+) {
+  const actual = zip(...input);
+  assertEquals(actual, expected, message);
+}
+
+assertEquals(zip([]), []);
+
+Deno.test({
+  name: "[collections/zip] Correctly zips one array",
+  fn() {
+    zip1Test([
+      [1, 2, 3],
+    ], [[1], [2], [3]]);
+  },
+});
 
 function zipTest<T, U>(
   input: [Array<T>, Array<U>],
@@ -11,6 +31,38 @@ function zipTest<T, U>(
   const actual = zip(...input);
   assertEquals(actual, expected, message);
 }
+
+function zip3Test<T, U, V>(
+  input: [Array<T>, Array<U>, Array<V>],
+  expected: Array<[T, U, V]>,
+  message?: string,
+) {
+  const actual = zip(...input);
+  assertEquals(actual, expected, message);
+}
+
+Deno.test({
+  name: "[collections/zip] Correctly zips three arrays",
+  fn() {
+    zip3Test([
+      [1, 2, 3],
+      [4, 5, 6],
+      [7, 8, 9],
+    ], [[1, 4, 7], [2, 5, 8], [3, 6, 9]]);
+  },
+});
+
+Deno.test({
+  name:
+    "[collections/zip] Correctly zips three arrays when the first is the shortest",
+  fn() {
+    zip3Test([
+      [1, 2],
+      [4, 5, 6],
+      [7, 8, 9],
+    ], [[1, 4, 7], [2, 5, 8]]);
+  },
+});
 
 Deno.test({
   name: "[collections/zip] no mutation",

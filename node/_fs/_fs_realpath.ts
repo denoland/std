@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 type Options = { encoding: string };
 type Callback = (err: Error | null, path?: string) => void;
 

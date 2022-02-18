@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   _format,
   assert,
@@ -6,6 +6,7 @@ import {
   assertEquals,
   assertExists,
   AssertionError,
+  assertIsError,
   assertMatch,
   assertNotEquals,
   assertNotMatch,
@@ -21,6 +22,18 @@ import {
   unreachable,
 } from "./asserts.ts";
 import { bold, gray, green, red, stripColor, yellow } from "../fmt/colors.ts";
+
+Deno.test("testingEqualDifferentZero", () => {
+  assert(equal(0, -0));
+  assert(equal(0, +0));
+  assert(equal(+0, -0));
+  assert(equal([0], [-0]));
+  assert(equal(["hello", 12.21, 0], ["hello", 12.21, -0]));
+  assert(equal(["hello", 12.21, 0], ["hello", 12.21, +0]));
+  assert(equal(["hello", 12.21, -0], ["hello", 12.21, +0]));
+  assert(equal({ msg: "hello", case: 0 }, { msg: "hello", case: -0 }));
+  assert(equal({ msg: "hello", array: [0] }, { msg: "hello", array: [-0] }));
+});
 
 Deno.test("testingEqual", function (): void {
   assert(equal("world", "world"));
@@ -364,6 +377,9 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const g: r = { foo: true, bar: false };
   const h = { foo: [1, 2, 3], bar: true };
   const i = { foo: [a, e], bar: true };
+  const j = { foo: [[1, 2, 3]], bar: true };
+  const k = { foo: [[1, [2, [3]]]], bar: true };
+  const l = { foo: [[1, [2, [a, e, j, k]]]], bar: true };
 
   // Simple subset
   assertObjectMatch(a, {
@@ -421,6 +437,10 @@ Deno.test("testingAssertObjectMatching", function (): void {
       { bar: { bar: { bar: { foo: true } } } },
     ],
   });
+  // Subset with nested array inside
+  assertObjectMatch(j, { foo: [[1, 2, 3]] });
+  assertObjectMatch(k, { foo: [[1, [2, [3]]]] });
+  assertObjectMatch(l, { foo: [[1, [2, [a, e, j, k]]]] });
   // Missing key
   {
     let didThrow;
@@ -567,6 +587,30 @@ Deno.test("testingAssertObjectMatching", function (): void {
       didThrow = true;
     }
     assertEquals(didThrow, true);
+  }
+  // actual/expected value as instance of class
+  {
+    class A {
+      a: number;
+      constructor(a: number) {
+        this.a = a;
+      }
+    }
+    assertObjectMatch({ test: new A(1) }, { test: { a: 1 } });
+    assertObjectMatch({ test: { a: 1 } }, { test: { a: 1 } });
+    assertObjectMatch({ test: { a: 1 } }, { test: new A(1) });
+    assertObjectMatch({ test: new A(1) }, { test: new A(1) });
+  }
+  {
+    // actual/expected contains same instance of Map/TypedArray/etc
+    const body = new Uint8Array([0, 1, 2]);
+    assertObjectMatch({ body, foo: "foo" }, { body });
+  }
+  {
+    // match subsets of arrays
+    assertObjectMatch({ positions: [[1, 2, 3, 4]] }, {
+      positions: [[1, 2, 3]],
+    });
   }
 });
 
@@ -1010,12 +1054,13 @@ Deno.test("assert diff formatting (strings)", () => {
     },
     undefined,
     `
-    a
-    b
-${green("+   x")}
-${red("-   c")}
-    d
+    a\\n
+    b\\n
+${green("+   x")}\\n
+${green("+   d")}\\n
 ${green("+   e")}
+${red("-   c")}\\n
+${red("-   d")}
 `,
   );
 });
@@ -1092,6 +1137,54 @@ Deno.test("Assert Throws Async promise rejected with custom Error", async () => 
     () =>
       assertRejects(
         () => Promise.reject(new AnotherCustomError("failed")),
+        CustomError,
+        "fail",
+      ),
+    AssertionError,
+    'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
+  );
+});
+
+Deno.test("Assert Is Error Non-Error Fail", () => {
+  assertThrows(
+    () => assertIsError("Panic!", undefined, "Panic!"),
+    AssertionError,
+    `Expected "error" to be an Error object.`,
+  );
+
+  assertThrows(
+    () => assertIsError(null),
+    AssertionError,
+    `Expected "error" to be an Error object.`,
+  );
+
+  assertThrows(
+    () => assertIsError(undefined),
+    AssertionError,
+    `Expected "error" to be an Error object.`,
+  );
+});
+
+Deno.test("Assert Is Error Parent Error", () => {
+  assertIsError(
+    new AssertionError("Fail!"),
+    Error,
+    "Fail!",
+  );
+});
+
+Deno.test("Assert Is Error with custom Error", () => {
+  class CustomError extends Error {}
+  class AnotherCustomError extends Error {}
+  assertIsError(
+    new CustomError("failed"),
+    CustomError,
+    "fail",
+  );
+  assertThrows(
+    () =>
+      assertIsError(
+        new AnotherCustomError("failed"),
         CustomError,
         "fail",
       ),

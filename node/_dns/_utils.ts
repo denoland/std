@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26,7 +27,7 @@ import {
   AI_ALL,
   AI_V4MAPPED,
 } from "../internal_binding/cares_wrap.ts";
-import { ERR_INVALID_ARG_VALUE } from "../_errors.ts";
+import { ERR_INVALID_ARG_VALUE } from "../internal/errors.ts";
 
 export function validateHints(hints: number) {
   if ((hints & ~(AI_ADDRCONFIG | AI_ALL | AI_V4MAPPED)) !== 0) {

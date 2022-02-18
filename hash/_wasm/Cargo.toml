@@ -21,6 +21,7 @@ sha2 = "0.9.1"
 sha3 = "0.9.1"
 wasm-bindgen = "0.2.74"
 blake3 = "0.3.8"
+tiger = "0.1.0"
 
 [profile.release]
 lto = true

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   bench,
   BenchmarkRunError,
@@ -40,7 +40,7 @@ Deno.test({
     });
 
     bench(async function promiseAllFetchDenolandX10(b) {
-      const urls = new Array(10).fill("https://deno.land/");
+      const urls = Array.from({ length: 10 }, () => "https://deno.land/");
       b.start();
       await Promise.all(
         urls.map(

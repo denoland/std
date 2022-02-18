@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 //
 // A number of test-cases based on:
 //
@@ -108,6 +108,8 @@ Deno.test("testFloate", function (): void {
   assertEquals(S("%e", -4.1), "-4.100000e+00");
   assertEquals(S("%e", Number.MAX_SAFE_INTEGER), "9.007199e+15");
   assertEquals(S("%e", Number.MIN_SAFE_INTEGER), "-9.007199e+15");
+  assertEquals(S("%.3e", 1.9999), "2.000e+00");
+  assertEquals(S("%.3e", 29.99999), "3.000e+01");
 });
 Deno.test("testFloatE", function (): void {
   assertEquals(S("%E", 4), "4.000000E+00");
@@ -146,6 +148,8 @@ Deno.test("testFloatfF", function (): void {
     S("%F", Number.MAX_VALUE),
     "179769313486231570000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.000000",
   );
+  assertEquals(S("%.3f", 0.9999), "1.000");
+  assertEquals(S("%.3f", 1.9999), "2.000");
 });
 
 Deno.test("testString", function (): void {
@@ -265,16 +269,12 @@ const tests: Array<[string, any, string]> = [
   //["%c", '\U0010ffff'.codePointAt(0), "\U0010ffff"],
 
   // Runes that are not valid.
-  // TODO(kt3k): Disabled because of serde_v8 error
-  // Enable this when the issue is resolved.
-  // ["%c", -1, "�"],
+  ["%c", -1, "�"],
   // TODO(bartomieju): surrogate half, doesn't make sense in itself, how
   // to determine in JS?
   // ["%c", 0xDC80, "�"],
-  // TODO(kt3k): Disabled because of serde_v8 error
-  // Enable this when the issue is resolved.
-  // ["%c", 0x110000, "�"],
-  // ["%c", 0xfffffffff, "�"],
+  ["%c", 0x110000, "�"],
+  ["%c", 0xfffffffff, "�"],
   // TODO(bartlomieju):
   // escaped characters
   // Runes that are not printable.

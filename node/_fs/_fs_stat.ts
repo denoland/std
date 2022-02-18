@@ -1,5 +1,9 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import { denoErrorToNodeError } from "../internal/errors.ts";
+
 export type statOptions = {
   bigint: boolean;
+  throwIfNoEntry?: boolean;
 };
 
 export type Stats = {
@@ -233,10 +237,7 @@ export function CFISBIS(fileInfo: Deno.FileInfo, bigInt: boolean) {
   return convertFileInfoToStats(fileInfo);
 }
 
-export type statCallbackBigInt = (
-  err: Error | null,
-  stat: BigIntStats,
-) => void;
+export type statCallbackBigInt = (err: Error | null, stat: BigIntStats) => void;
 
 export type statCallback = (err: Error | null, stat: Stats) => void;
 
@@ -270,20 +271,37 @@ export function stat(
 
   Deno.stat(path).then(
     (stat) => callback(null, CFISBIS(stat, options.bigint)),
-    (err) => callback(err),
+    (err) => callback(denoErrorToNodeError(err, { syscall: "stat" })),
   );
 }
 
 export function statSync(path: string | URL): Stats;
-export function statSync(path: string | URL, options: { bigint: false }): Stats;
 export function statSync(
   path: string | URL,
-  options: { bigint: true },
+  options: { bigint: false; throwIfNoEntry?: boolean },
+): Stats;
+export function statSync(
+  path: string | URL,
+  options: { bigint: true; throwIfNoEntry?: boolean },
 ): BigIntStats;
 export function statSync(
   path: string | URL,
-  options: statOptions = { bigint: false },
-): Stats | BigIntStats {
-  const origin = Deno.statSync(path);
-  return CFISBIS(origin, options.bigint);
+  options: statOptions = { bigint: false, throwIfNoEntry: true },
+): Stats | BigIntStats | undefined {
+  try {
+    const origin = Deno.statSync(path);
+    return CFISBIS(origin, options.bigint);
+  } catch (err) {
+    if (
+      options?.throwIfNoEntry === false &&
+      err instanceof Deno.errors.NotFound
+    ) {
+      return;
+    }
+    if (err instanceof Error) {
+      throw denoErrorToNodeError(err, { syscall: "stat" });
+    } else {
+      throw err;
+    }
+  }
 }

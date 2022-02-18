@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -50,8 +51,10 @@ export function writeBuffer(
   assert(offset >= 0, "offset should be greater or equal to 0");
   assert(
     offset + length <= buffer.byteLength,
-    `buffer doesn't have enough data: byteLength = ${buffer.byteLength}, offset + length = ${offset +
-      length}`,
+    `buffer doesn't have enough data: byteLength = ${buffer.byteLength}, offset + length = ${
+      offset +
+      length
+    }`,
   );
 
   if (position) {

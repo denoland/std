@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -18,13 +19,14 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
+import * as DenoUnstable from "../_deno_unstable.ts";
 import { notImplemented } from "./_utils.ts";
 import { validateIntegerRange } from "./_utils.ts";
 import { EOL as fsEOL } from "../fs/eol.ts";
 import process from "./process.ts";
 import { isWindows, osType } from "../_util/os.ts";
 
-const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno/issues/3802";
+const SEE_GITHUB_ISSUE = "See https://github.com/denoland/deno_std/issues/1436";
 
 interface CPUTimes {
   /** The number of milliseconds the CPU has spent in user mode */
@@ -90,8 +92,12 @@ interface UserInfo {
   homedir: string;
 }
 
+export function arch(): string {
+  return process.arch;
+}
+
 // deno-lint-ignore no-explicit-any
-(arch as any)[Symbol.toPrimitive] = (): string => arch();
+(arch as any)[Symbol.toPrimitive] = (): string => process.arch;
 // deno-lint-ignore no-explicit-any
 (endianness as any)[Symbol.toPrimitive] = (): string => endianness();
 // deno-lint-ignore no-explicit-any
@@ -111,14 +117,20 @@ interface UserInfo {
 // deno-lint-ignore no-explicit-any
 (uptime as any)[Symbol.toPrimitive] = (): number => uptime();
 
-/** Returns the operating system CPU architecture for which the Deno binary was compiled */
-export function arch(): string {
-  return Deno.build.arch;
-}
-
-/** Not yet implemented */
 export function cpus(): CPUCoreInfo[] {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return Array.from(Array(navigator.hardwareConcurrency)).map(() => {
+    return {
+      model: "",
+      speed: 0,
+      times: {
+        user: 0,
+        nice: 0,
+        sys: 0,
+        idle: 0,
+        irq: 0,
+      },
+    };
+  });
 }
 
 /**
@@ -136,7 +148,7 @@ export function endianness(): "BE" | "LE" {
 
 /** Return free memory amount */
 export function freemem(): number {
-  return Deno.systemMemoryInfo().free;
+  return DenoUnstable.systemMemoryInfo().free;
 }
 
 /** Not yet implemented */
@@ -147,6 +159,9 @@ export function getPriority(pid = 0): number {
 
 /** Returns the string path of the current user's home directory. */
 export function homedir(): string | null {
+  // Note: Node/libuv calls getpwuid() / GetUserProfileDirectory() when the
+  // environment variable isn't set but that's the (very uncommon) fallback
+  // path. IMO, it's okay to punt on that for now.
   switch (osType) {
     case "windows":
       return Deno.env.get("USERPROFILE") || null;
@@ -160,7 +175,7 @@ export function homedir(): string | null {
 
 /** Returns the host name of the operating system as a string. */
 export function hostname(): string {
-  notImplemented(SEE_GITHUB_ISSUE);
+  return DenoUnstable.hostname();
 }
 
 /** Returns an array containing the 1, 5, and 15 minute load averages */
@@ -168,13 +183,43 @@ export function loadavg(): number[] {
   if (isWindows) {
     return [0, 0, 0];
   }
-  return Deno.loadavg();
+  return DenoUnstable.loadavg();
 }
 
-/** Not yet implemented */
+/** Returns an object containing network interfaces that have been assigned a network address.
+ * Each key on the returned object identifies a network interface. The associated value is an array of objects that each describe an assigned network address. */
 export function networkInterfaces(): NetworkInterfaces {
-  notImplemented(SEE_GITHUB_ISSUE);
+  const interfaces: NetworkInterfaces = {};
+  for (
+    const { name, address, netmask, family, mac, scopeid, cidr } of DenoUnstable
+      .networkInterfaces()
+  ) {
+    const addresses = interfaces[name] ||= [];
+    const networkAddress: NetworkAddress = {
+      address,
+      netmask,
+      family,
+      mac,
+      internal: (family === "IPv4" && isIPv4LoopbackAddr(address)) ||
+        (family === "IPv6" && isIPv6LoopbackAddr(address)),
+      cidr,
+    };
+    if (family === "IPv6") {
+      networkAddress.scopeid = scopeid!;
+    }
+    addresses.push(networkAddress);
+  }
+  return interfaces;
 }
+
+function isIPv4LoopbackAddr(addr: string) {
+  return addr.startsWith("127");
+}
+
+function isIPv6LoopbackAddr(addr: string) {
+  return addr === "::1" || addr === "fe80::1";
+}
+
 /** Returns the a string identifying the operating system platform. The value is set at compile time. Possible values are 'darwin', 'linux', and 'win32'. */
 export function platform(): string {
   return process.platform;
@@ -182,7 +227,7 @@ export function platform(): string {
 
 /** Returns the operating system as a string */
 export function release(): string {
-  return Deno.osRelease();
+  return DenoUnstable.osRelease();
 }
 
 /** Not yet implemented */
@@ -228,7 +273,7 @@ export function tmpdir(): string | null {
 
 /** Return total physical memory amount */
 export function totalmem(): number {
-  return Deno.systemMemoryInfo().total;
+  return DenoUnstable.systemMemoryInfo().total;
 }
 
 /** Returns operating system type (i.e. 'Windows_NT', 'Linux', 'Darwin') */
@@ -308,6 +353,7 @@ export const constants = {
 };
 
 export const EOL = isWindows ? fsEOL.CRLF : fsEOL.LF;
+export const devNull = isWindows ? "\\\\.\\nul" : "/dev/null";
 
 export default {
   arch,
@@ -329,4 +375,5 @@ export default {
   userInfo,
   constants,
   EOL,
+  devNull,
 };

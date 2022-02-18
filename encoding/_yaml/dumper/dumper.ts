@@ -1,7 +1,7 @@
 // Ported from js-yaml v3.13.1:
 // https://github.com/nodeca/js-yaml/commit/665aadda42349dcae869f12040d9b10ef18d12da
 // Copyright 2011-2015 by Vitaly Puzrin. All rights reserved. MIT license.
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { YAMLError } from "../error.ts";
 import type { RepresentFn, StyleVariant, Type } from "../type.ts";
@@ -872,7 +872,7 @@ function getDuplicateReferences(
   for (let index = 0; index < length; index += 1) {
     state.duplicates.push(objects[duplicatesIndexes[index]]);
   }
-  state.usedDuplicates = new Array(length);
+  state.usedDuplicates = Array.from({ length });
 }
 
 export function dump(input: Any, options?: DumperStateOptions): string {

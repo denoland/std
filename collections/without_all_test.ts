@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals } from "../testing/asserts.ts";
 import { withoutAll } from "./without_all.ts";
@@ -55,6 +55,10 @@ Deno.test({
 Deno.test({
   name: "[collection/withoutAll] leaves duplicate elements",
   fn() {
-    withoutAllTest(new Array(110).fill(3), [1], new Array(110).fill(3));
+    withoutAllTest(
+      Array.from({ length: 110 }, () => 3),
+      [1],
+      Array.from({ length: 110 }, () => 3),
+    );
   },
 });
