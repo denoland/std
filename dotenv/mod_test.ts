@@ -1,11 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { assign, parse, verify } from "./mod.ts";
-
-function clearDenoEnv() {
-  Object.keys(Deno.env.toObject()).forEach((key) => Deno.env.delete(key));
-}
+import { parse, verify } from "./mod.ts";
 
 Deno.test("parse", () => {
   const dotEnvTestSource = Deno.readTextFileSync("./testdata/.env.parse.test");
@@ -145,27 +141,4 @@ Deno.test("verify allowEmptyValues throw", () => {
   const dotEnv = { env: { foo: "" }, exports: [] };
   const example = { env: { foo: "bar" }, exports: [] };
   assertThrows(() => verify(dotEnv, { allowEmptyValues: false, example }));
-});
-
-Deno.test("assign", () => {
-  const dotEnv = { env: { GREETING: "hello world" }, exports: [] };
-  assign(Deno.env, dotEnv.env);
-  assertEquals(Deno.env.get("GREETING"), "hello world");
-  clearDenoEnv();
-});
-
-Deno.test("assign multiple", () => {
-  const dotEnv = { env: { GREETING: "hello world" }, exports: [] };
-  const defaults = { env: { GREETING: "default" }, exports: [] };
-  assign(Deno.env, defaults.env, dotEnv.env);
-  assertEquals(Deno.env.get("GREETING"), "hello world");
-  clearDenoEnv();
-});
-
-Deno.test("assign no override", () => {
-  Deno.env.set("DO_NOT_OVERRIDE", "Hello there");
-  const dotEnv = { env: { GREETING: "hello world" }, exports: [] };
-  assign(Deno.env, dotEnv.env);
-  assertEquals(Deno.env.get("DO_NOT_OVERRIDE"), "Hello there");
-  clearDenoEnv();
 });

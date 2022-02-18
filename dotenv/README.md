@@ -9,7 +9,7 @@ Setup a `.env` file in your project.
 GREETING=hello world
 ```
 
-Then import the configuration using the `parse` and `assign` functions.
+Then import the configuration using the `parse` functions.
 
 ```ts
 // app.ts
@@ -19,9 +19,8 @@ import {
 } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
 const source = await Deno.readTextFile("./path/to/.env");
 const { env } = parse(source);
-assign(Deno.env, env);
 
-console.log(Deno.env.toObject());
+console.log(env);
 ```
 
 Then run your app.
@@ -41,8 +40,8 @@ Then run your app.
 
 ## Auto loading
 
-`load` and `loadSync` automatically loads the local `.env` file on import and
-exports it to the process environment:
+`load` and `loadSync` automatically loads the local `.env` file and exports it
+to the passed process environment object:
 
 ```sh
 # .env

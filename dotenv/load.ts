@@ -1,4 +1,4 @@
-import { assign, DenoEnv, DotEnvObject, parse } from "./mod.ts";
+import { DenoEnv, parse } from "./mod.ts";
 
 export interface LoadOptions {
   envPath?: string | URL;
@@ -14,13 +14,12 @@ export function loadSync(
     defaultsPath = ".env.defaults",
   }: LoadOptions = {},
 ) {
-  const exampleSource = Deno.readTextFileSync(examplePath);
-  const example = parse(exampleSource);
-  const defaultsSource = Deno.readTextFileSync(defaultsPath);
-  const defaults = parse(defaultsSource);
+  let exampleSource;
+  let defaultsSource;
+  if (examplePath) exampleSource = Deno.readTextFileSync(examplePath);
+  if (defaultsPath) defaultsSource = Deno.readTextFileSync(defaultsPath);
   const source = Deno.readTextFileSync(envPath);
-  const object = parse(source, { example });
-  return assign(denoEnv, defaults.env, object.env);
+  return configure(denoEnv, source, exampleSource, defaultsSource);
 }
 
 export async function load(
@@ -31,17 +30,34 @@ export async function load(
     defaultsPath,
   }: LoadOptions = {},
 ) {
-  let example: DotEnvObject = { env: {}, exports: [] };
-  let defaults: DotEnvObject = { env: {}, exports: [] };
-  if (examplePath) {
-    const exampleSource = await Deno.readTextFile(examplePath);
-    example = parse(exampleSource);
-  }
-  if (defaultsPath) {
-    const defaultsSource = await Deno.readTextFile(defaultsPath);
-    defaults = parse(defaultsSource);
-  }
+  let exampleSource;
+  let defaultsSource;
+  if (examplePath) exampleSource = await Deno.readTextFile(examplePath);
+  if (defaultsPath) defaultsSource = await Deno.readTextFile(defaultsPath);
   const source = await Deno.readTextFile(envPath);
-  const object = parse(source, { example });
-  return assign(denoEnv, defaults.env, object.env);
+  return configure(denoEnv, source, exampleSource, defaultsSource);
+}
+
+function configure(
+  denoEnv: DenoEnv,
+  envSource: string,
+  exampleSource?: string,
+  defaultsSource?: string,
+) {
+  let example;
+  let defaultEnv = {};
+  if (exampleSource) example = parse(exampleSource);
+  if (defaultsSource) defaultEnv = parse(defaultsSource).env;
+  const object = parse(envSource, { example });
+  // initialEnv is passed at the end of assign to prevent overwrites
+  const initialEnv = denoEnv.toObject();
+  const combinedObject: Record<string, string> = {
+    ...defaultEnv,
+    ...object.env,
+    ...initialEnv,
+  };
+  Object.entries(combinedObject).forEach(([key, value]) =>
+    denoEnv.set(key, value)
+  );
+  return denoEnv;
 }

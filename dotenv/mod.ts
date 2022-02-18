@@ -5,6 +5,8 @@ export interface DotEnvObject {
   exports: string[];
 }
 
+// Deno should expose a type for Deno.env
+// Ideally Map-like as discussed in https://github.com/denoland/deno/issues/10349
 export interface DenoEnv {
   get(key: string): string | undefined;
   set(key: string, value: string): void;
@@ -103,14 +105,6 @@ export function parse(
   return object;
 }
 
-export function assign(
-  denoEnv: DenoEnv,
-  ...objects: Record<string, string>[]
-): DenoEnv {
-  const object: Record<string, string> = Object.assign({}, ...objects);
-  const keys = Object.keys(denoEnv.toObject());
-  Object.entries(object).forEach(([key, value]) => {
-    if (!keys.includes(key)) denoEnv.set(key, value);
-  });
-  return denoEnv;
-}
+// would be a nice to be able to generate .env files and complete parse/stringify pair like in JSON
+// export function stringify(object: DotEnvObject) {
+// }
