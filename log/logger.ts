@@ -1,3 +1,5 @@
+import { BaseLogger } from "./_util.ts";
+
 export const logLevels = {
   trace: 10,
   debug: 20,
@@ -5,21 +7,6 @@ export const logLevels = {
   warn: 40,
   error: 50,
 };
-
-export abstract class BaseLogger<D = unknown> {
-  logLevel: number;
-  quiet = false;
-  constructor(logLevel: number) {
-    this.logLevel = logLevel;
-  }
-
-  protected dispatch(data: D, logLevel: number) {
-    if (this.quiet || this.logLevel > logLevel) return;
-    this.handler(data, logLevel);
-  }
-
-  protected abstract handler(data: D, logLevel: number): void;
-}
 
 export abstract class Logger<D extends unknown[]> extends BaseLogger<D> {
   static logLevels = logLevels;
