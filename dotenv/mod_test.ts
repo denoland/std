@@ -2,9 +2,18 @@
 
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { parse, verify } from "./mod.ts";
+import * as path from "../path/mod.ts";
+
+const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
+const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test("parse", () => {
-  const dotEnvTestSource = Deno.readTextFileSync("./testdata/.env.parse.test");
+  const dotEnvTestSource = Deno.readTextFileSync(
+    path.join(
+      testdataDir,
+      ".env.parse.test",
+    ),
+  );
   const { env, exports } = parse(dotEnvTestSource);
   assertEquals(env.BASIC, "basic", "parses a basic variable");
   assertEquals(env.AFTER_EMPTY, "empty", "skips empty lines");
