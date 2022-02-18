@@ -98,7 +98,7 @@ Deno.test(
   "Data is written to correct rid",
   async function testCorrectWriteUsingRid() {
     const tempFile: string = await Deno.makeTempFile();
-    const file: Deno.File = await Deno.open(tempFile, {
+    const file: Deno.FsFile = await Deno.open(tempFile, {
       create: true,
       write: true,
       read: true,
@@ -204,7 +204,7 @@ Deno.test(
     if (isWindows) return;
 
     const filename: string = await Deno.makeTempFile();
-    const file: Deno.File = await Deno.open(filename, {
+    const file: Deno.FsFile = await Deno.open(filename, {
       create: true,
       write: true,
       read: true,
@@ -253,7 +253,7 @@ Deno.test(
   "Data is written synchronously to correct rid",
   function testCorrectWriteSyncUsingRid() {
     const tempFile: string = Deno.makeTempFileSync();
-    const file: Deno.File = Deno.openSync(tempFile, {
+    const file: Deno.FsFile = Deno.openSync(tempFile, {
       create: true,
       write: true,
       read: true,
