@@ -17,7 +17,7 @@ import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
 export class AssertionError extends Error {
-  name = "AssertionError";
+  override name = "AssertionError";
   constructor(message: string) {
     super(message);
   }

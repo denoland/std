@@ -254,14 +254,14 @@ const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
 export class BufferFullError extends Error {
-  name = "BufferFullError";
+  override name = "BufferFullError";
   constructor(public partial: Uint8Array) {
     super("Buffer full");
   }
 }
 
 export class PartialReadError extends Error {
-  name = "PartialReadError";
+  override name = "PartialReadError";
   partial?: Uint8Array;
   constructor() {
     super("Encountered UnexpectedEof, data only partially read");
