@@ -2,8 +2,12 @@
 import { deferred } from "./deferred.ts";
 
 export class AbortedError extends Error {
+  // This `reason` comes from `AbortSignal` thus must be `any`.
+  // deno-lint-ignore no-explicit-any
   reason?: any;
 
+  // This `reason` comes from `AbortSignal` thus must be `any`.
+  // deno-lint-ignore no-explicit-any
   constructor(reason?: any) {
     super(reason ? `Aborted: ${reason}` : "Aborted");
     this.name = "AbortedError";
