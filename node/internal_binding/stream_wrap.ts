@@ -231,7 +231,7 @@ export class LibuvStreamWrap extends HandleWrap {
     return this.writeBuffer(req, buffer);
   }
 
-  async _onClose(): Promise<number> {
+  override async _onClose(): Promise<number> {
     let status = 0;
     this.#reading = false;
 

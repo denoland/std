@@ -21,7 +21,7 @@ const LOG_FILE = "./test_log.file";
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
 
-  public log(str: string): void {
+  public override log(str: string): void {
     this.messages.push(str);
   }
 }
@@ -133,7 +133,7 @@ Deno.test({
   name: "FileHandler Shouldn't Have Broken line",
   async fn() {
     class TestFileHandler extends FileHandler {
-      flush() {
+      override flush() {
         super.flush();
         const decoder = new TextDecoder("utf-8");
         const data = Deno.readFileSync(LOG_FILE);
@@ -141,7 +141,7 @@ Deno.test({
         assertEquals(text.slice(-1), "\n");
       }
 
-      async destroy() {
+      override async destroy() {
         await super.destroy();
         await Deno.remove(LOG_FILE);
       }

@@ -289,13 +289,16 @@ class Process extends EventEmitter {
   nextTick = _nextTick;
 
   /** https://nodejs.org/api/process.html#process_process_events */
-  on(event: "exit", listener: (code: number) => void): this;
+  override on(event: "exit", listener: (code: number) => void): this;
   // deno-lint-ignore no-explicit-any
-  on(event: string, listener: (...args: any[]) => void): this;
-  // deno-lint-ignore ban-types
-  on(event: typeof notImplementedEvents[number], listener: Function): this;
+  override on(event: string, listener: (...args: any[]) => void): this;
+  override on(
+    event: typeof notImplementedEvents[number],
+    // deno-lint-ignore ban-types
+    listener: Function,
+  ): this;
   // deno-lint-ignore no-explicit-any
-  on(event: string, listener: (...args: any[]) => void): this {
+  override on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.on("${event}")`);
     } else if (event.startsWith("SIG")) {
@@ -307,13 +310,16 @@ class Process extends EventEmitter {
     return this;
   }
 
-  off(event: "exit", listener: (code: number) => void): this;
+  override off(event: "exit", listener: (code: number) => void): this;
   // deno-lint-ignore no-explicit-any
-  off(event: string, listener: (...args: any[]) => void): this;
-  // deno-lint-ignore ban-types
-  off(event: typeof notImplementedEvents[number], listener: Function): this;
+  override off(event: string, listener: (...args: any[]) => void): this;
+  override off(
+    event: typeof notImplementedEvents[number],
+    // deno-lint-ignore ban-types
+    listener: Function,
+  ): this;
   // deno-lint-ignore no-explicit-any
-  off(event: string, listener: (...args: any[]) => void): this {
+  override off(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.off("${event}")`);
     } else if (event.startsWith("SIG")) {
