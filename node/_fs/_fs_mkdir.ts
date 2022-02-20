@@ -1,6 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import type { CallbackWithError } from "./_fs_common.ts";
-import { fromFileUrl } from "../path.ts";
+import { getValidatedPath } from "../internal/fs/utils.js";
+import {
+  denoErrorToNodeError,
+} from "../internal/errors.ts";
 
 /**
  * TODO: Also accept 'path' parameter as a Node polyfill Buffer type once these
@@ -16,7 +19,7 @@ export function mkdir(
   options?: MkdirOptions | CallbackWithError,
   callback?: CallbackWithError,
 ): void {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  const normalizedPath = getValidatedPath(path).toString();
 
   let mode = 0o777;
   let recursive = false;
@@ -36,20 +39,24 @@ export function mkdir(
       "invalid recursive option , must be a boolean",
     );
   }
-  Deno.mkdir(path, { recursive, mode })
+  Deno.mkdir(normalizedPath, { recursive, mode })
     .then(() => {
       if (typeof callback === "function") {
         callback(null);
       }
-    }, (err) => {
+    }, (err: unknown) => {
       if (typeof callback === "function") {
-        callback(err);
+        callback(
+          err instanceof Error
+            ? denoErrorToNodeError(err, { syscall: "mkdir", path: normalizedPath, })
+            : err,
+        );
       }
     });
 }
 
 export function mkdirSync(path: string | URL, options?: MkdirOptions): void {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  const normalizedPath = getValidatedPath(path).toString();
   let mode = 0o777;
   let recursive = false;
 
@@ -67,5 +74,11 @@ export function mkdirSync(path: string | URL, options?: MkdirOptions): void {
     );
   }
 
-  Deno.mkdirSync(path, { recursive, mode });
+  try {
+    Deno.mkdirSync(normalizedPath, { recursive, mode });
+  } catch (err: unknown) {
+    throw (err instanceof Error
+      ? denoErrorToNodeError(err, { syscall: "mkdir", path: normalizedPath })
+      : err);
+  }
 }
