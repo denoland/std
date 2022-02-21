@@ -602,18 +602,19 @@ interface ServeDirOptions {
  * Serves the files under the given directory root (opts.fsRoot).
  *
  * ```ts
- * import { serve } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
  *
  * serve((req) => {
- *   const pathname = new URL(req).pathname;
+ *   const pathname = new URL(req.url).pathname;
  *   if (pathname.startsWith("/static")) {
  *     return serveDir(req, {
  *       fsRoot: "path/to/static/files/dir",
  *     });
  *   }
  *   // Do dynamic responses
- * })
+ *   return new Response();
+ * });
  * ```
  *
  * Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
@@ -622,7 +623,7 @@ interface ServeDirOptions {
  * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
  *
  * // ...
- * serveDir(req, {
+ * serveDir(new Request("http://localhost/static/path/to/file"), {
  *   fsRoot: "public",
  *   urlRoot: "static",
  * });
