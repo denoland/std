@@ -373,7 +373,7 @@ export async function serveFile(
 }
 
 // TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
-async function serveDir(
+async function serveDirIndex(
   req: Request,
   dirPath: string,
   options: {
@@ -449,11 +449,11 @@ function serveFallback(_req: Request, e: Error): Promise<Response> {
   );
 }
 
-function serverLog(req: Request, res: Response): void {
+function serverLog(req: Request, status: number): void {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const normalizedUrl = normalizeURL(req.url);
-  const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${res.status}`;
+  const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${status}`;
   // using console.debug instead of console.log so chrome inspect users can hide request logs
   console.debug(s);
 }
@@ -467,14 +467,6 @@ function setBaseHeaders(): Headers {
   headers.set("date", new Date().toUTCString());
 
   return headers;
-}
-
-function setCORS(res: Response): void {
-  res.headers.append("access-control-allow-origin", "*");
-  res.headers.append(
-    "access-control-allow-headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Range",
-  );
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
@@ -597,6 +589,101 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
   `;
 }
 
+interface ServeDirOptions {
+  fsRoot?: string;
+  urlRoot?: string;
+  showDirListing?: boolean;
+  showDotfiles?: boolean;
+  enableCors?: boolean;
+  quiet?: boolean;
+}
+
+/**
+ * Serves the files under the given directory root (opts.fsRoot).
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ *
+ * serve((req) => {
+ *   const pathname = new URL(req).pathname;
+ *   if (pathname.startsWith("/static")) {
+ *     return serveDir(req, {
+ *       fsRoot: "path/to/static/files/dir",
+ *     });
+ *   }
+ *   // Do dynamic responses
+ * })
+ * ```
+ *
+ * Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
+ *
+ * ```ts
+ * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ *
+ * // ...
+ * serveDir(req, {
+ *   fsRoot: "public",
+ *   urlRoot: "static",
+ * });
+ * ```
+ *
+ * The above example serves `./public/path/to/file` for the request to `/static/path/to/file`.
+ *
+ * @param request The request to handle
+ * @param opts
+ * @returns
+ */
+export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
+  let response: Response;
+  const target = opts.fsRoot || ".";
+  const urlRoot = opts.urlRoot;
+
+  try {
+    let normalizedPath = normalizeURL(req.url);
+    if (urlRoot) {
+      if (normalizedPath.startsWith("/" + urlRoot)) {
+        normalizedPath = normalizedPath.replace(urlRoot, "");
+      } else {
+        throw new Deno.errors.NotFound();
+      }
+    }
+    const fsPath = posix.join(target, normalizedPath);
+
+    const fileInfo = await Deno.stat(fsPath);
+
+    if (fileInfo.isDirectory) {
+      if (opts.showDirListing) {
+        response = await serveDirIndex(req, fsPath, {
+          dotfiles: opts.showDotfiles || false,
+          target,
+        });
+      } else {
+        throw new Deno.errors.NotFound();
+      }
+    } else {
+      response = await serveFile(req, fsPath);
+    }
+  } catch (e) {
+    const err = e instanceof Error ? e : new Error("[non-error thrown]");
+    console.error(red(err.message));
+    response = await serveFallback(req, err);
+  }
+
+  if (opts.enableCors) {
+    assert(response);
+    response.headers.append("access-control-allow-origin", "*");
+    response.headers.append(
+      "access-control-allow-headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Range",
+    );
+  }
+
+  if (!opts.quiet) serverLog(req, response!.status);
+
+  return response!;
+}
+
 function normalizeURL(url: string): string {
   let normalizedUrl = url;
 
@@ -652,13 +739,10 @@ function main(): void {
       h: "help",
     },
   }) as FileServerArgs;
-  const CORSEnabled = serverArgs.cors;
   const port = serverArgs.port;
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
-  const dirListingEnabled = serverArgs["dir-listing"];
-  const quiet = serverArgs.quiet;
 
   if (serverArgs.help) {
     printUsage();
@@ -675,51 +759,19 @@ function main(): void {
 
   const target = posix.resolve(serverArgs._[0] ?? "");
 
-  const handler = async (req: Request): Promise<Response> => {
-    let response: Response;
-
-    try {
-      const normalizedUrl = normalizeURL(req.url);
-      let fsPath = posix.join(target, normalizedUrl);
-
-      if (fsPath.indexOf(target) !== 0) {
-        fsPath = target;
-      }
-
-      const fileInfo = await Deno.stat(fsPath);
-
-      if (fileInfo.isDirectory) {
-        if (dirListingEnabled) {
-          response = await serveDir(req, fsPath, {
-            dotfiles: serverArgs.dotfiles,
-            target,
-          });
-        } else {
-          throw new Deno.errors.NotFound();
-        }
-      } else {
-        response = await serveFile(req, fsPath);
-      }
-    } catch (e) {
-      const err = e instanceof Error ? e : new Error("[non-error thrown]");
-      console.error(red(err.message));
-      response = await serveFallback(req, err);
-    }
-
-    if (CORSEnabled) {
-      assert(response!);
-      setCORS(response);
-    }
-
-    if (!quiet) serverLog(req, response!);
-
-    return response!;
+  const handler = (req: Request): Promise<Response> => {
+    return serveDir(req, {
+      fsRoot: target,
+      showDirListing: serverArgs["dir-listing"],
+      showDotfiles: serverArgs.dotfiles,
+      enableCors: serverArgs.cors,
+      quiet: serverArgs.quiet,
+    });
   };
 
-  let proto = "http";
+  const useTls = Boolean(keyFile || certFile);
 
-  if (keyFile || certFile) {
-    proto += "s";
+  if (useTls) {
     serveTls(handler, {
       port: Number(port),
       hostname: host,
@@ -730,8 +782,9 @@ function main(): void {
     serve(handler, { port: Number(port), hostname: host });
   }
 
+  const protocol = useTls ? "https" : "http";
   console.log(
-    `${proto.toUpperCase()} server listening on ${proto}://${
+    `${protocol.toUpperCase()} server listening on ${protocol}://${
       host.replace(
         "0.0.0.0",
         "localhost",
