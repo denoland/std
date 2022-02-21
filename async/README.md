@@ -21,7 +21,7 @@ const p = delay(1000);
 const c = new AbortController();
 setTimeout(() => c.abort(), 100);
 
-// Below throws `AbortedError` after 100 ms
+// Below throws `DOMException` after 100 ms
 await abortable(p, c.signal);
 ```
 
@@ -39,7 +39,7 @@ const p = async function* () {
 const c = new AbortController();
 setTimeout(() => c.abort(), 100);
 
-// Below throws `AbortedError` after 100 ms
+// Below throws `DOMException` after 100 ms
 // and items become `["Hello"]`
 const items: string[] = [];
 for await (const item of abortable(p(), c.signal)) {

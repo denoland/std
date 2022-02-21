@@ -1,20 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "./deferred.ts";
 
-export class AbortedError extends Error {
-  // This `reason` comes from `AbortSignal` thus must be `any`.
-  // deno-lint-ignore no-explicit-any
-  reason?: any;
-
-  // This `reason` comes from `AbortSignal` thus must be `any`.
-  // deno-lint-ignore no-explicit-any
-  constructor(reason?: any) {
-    super(reason ? `Aborted: ${reason}` : "Aborted");
-    this.name = "AbortedError";
-    this.reason = reason;
-  }
-}
-
 /**
  * Make Promise or AsyncIterable abortable with a given signal.
  */
@@ -36,10 +22,10 @@ export function abortable<T>(
 
 function abortablePromise<T>(p: Promise<T>, signal: AbortSignal): Promise<T> {
   if (signal.aborted) {
-    return Promise.reject(new AbortedError(signal.reason));
+    return Promise.reject(createAbortError(signal.reason));
   }
   const waiter = deferred<never>();
-  const abort = () => waiter.reject(new AbortedError(signal.reason));
+  const abort = () => waiter.reject(createAbortError(signal.reason));
   signal.addEventListener("abort", abort, { once: true });
   return Promise.race([
     waiter,
@@ -54,10 +40,10 @@ async function* abortableAsyncIterable<T>(
   signal: AbortSignal,
 ): AsyncGenerator<T> {
   if (signal.aborted) {
-    throw new AbortedError(signal.reason);
+    throw createAbortError(signal.reason);
   }
   const waiter = deferred<never>();
-  const abort = () => waiter.reject(new AbortedError(signal.reason));
+  const abort = () => waiter.reject(createAbortError(signal.reason));
   signal.addEventListener("abort", abort, { once: true });
 
   const it = p[Symbol.asyncIterator]();
@@ -69,4 +55,13 @@ async function* abortableAsyncIterable<T>(
     }
     yield value;
   }
+}
+
+// This `reason` comes from `AbortSignal` thus must be `any`.
+// deno-lint-ignore no-explicit-any
+function createAbortError(reason?: any): DOMException {
+  return new DOMException(
+    reason ? `Aborted: ${reason}` : "Aborted",
+    "AbortError",
+  );
 }

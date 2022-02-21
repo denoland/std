@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertRejects } from "../testing/asserts.ts";
 import { deferred } from "./deferred.ts";
-import { abortable, AbortedError } from "./abortable.ts";
+import { abortable } from "./abortable.ts";
 
 Deno.test("[async] abortable (Promise)", async () => {
   const c = new AbortController();
@@ -17,9 +17,13 @@ Deno.test("[async] abortable (Promise) with signal aborted after delay", async (
   const p = deferred();
   const t = setTimeout(() => p.resolve("Hello"), 100);
   setTimeout(() => c.abort(), 50);
-  await assertRejects(async () => {
-    await abortable(p, c.signal);
-  }, AbortedError);
+  await assertRejects(
+    async () => {
+      await abortable(p, c.signal);
+    },
+    DOMException,
+    "AbortError",
+  );
   clearTimeout(t);
 });
 
@@ -28,9 +32,13 @@ Deno.test("[async] abortable (Promise) with already aborted signal", async () =>
   const p = deferred();
   const t = setTimeout(() => p.resolve("Hello"), 100);
   c.abort();
-  await assertRejects(async () => {
-    await abortable(p, c.signal);
-  }, AbortedError);
+  await assertRejects(
+    async () => {
+      await abortable(p, c.signal);
+    },
+    DOMException,
+    "AbortError",
+  );
   clearTimeout(t);
 });
 
@@ -62,11 +70,15 @@ Deno.test("[async] abortable (AsyncIterable) with signal aborted after delay", a
   };
   setTimeout(() => c.abort(), 50);
   const items: string[] = [];
-  await assertRejects(async () => {
-    for await (const item of abortable(a(), c.signal)) {
-      items.push(item);
-    }
-  }, AbortedError);
+  await assertRejects(
+    async () => {
+      for await (const item of abortable(a(), c.signal)) {
+        items.push(item);
+      }
+    },
+    DOMException,
+    "AbortError",
+  );
   assertEquals(items, ["Hello"]);
   clearTimeout(t);
 });
@@ -82,11 +94,15 @@ Deno.test("[async] abortable (AsyncIterable) with already aborted signal", async
   };
   c.abort();
   const items: string[] = [];
-  await assertRejects(async () => {
-    for await (const item of abortable(a(), c.signal)) {
-      items.push(item);
-    }
-  }, AbortedError);
+  await assertRejects(
+    async () => {
+      for await (const item of abortable(a(), c.signal)) {
+        items.push(item);
+      }
+    },
+    DOMException,
+    "AbortError",
+  );
   assertEquals(items, []);
   clearTimeout(t);
 });
