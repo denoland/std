@@ -6,6 +6,47 @@ async is a module to provide help with asynchronous tasks.
 
 The following functions and class are exposed in `mod.ts`:
 
+## abortable
+
+The `abortable` is a wrapper function that makes `Promise` and `AsyncIterable`
+cancelable.
+
+For example, in the case of `Promise`, it looks like this
+
+```typescript
+import { abortable } from "https://deno.land/std/async/mod.ts";
+import { delay } from "https://deno.land/std/async/mod.ts";
+
+const p = delay(1000);
+const c = new AbortController();
+setTimeout(() => c.abort(), 100);
+
+// Below throws `DOMException` after 100 ms
+await abortable(p, c.signal);
+```
+
+and for `AsyncIterable` as follows
+
+```typescript
+import { abortable } from "https://deno.land/std/async/mod.ts";
+import { delay } from "https://deno.land/std/async/mod.ts";
+
+const p = async function* () {
+  yield "Hello";
+  await delay(1000);
+  yield "World";
+};
+const c = new AbortController();
+setTimeout(() => c.abort(), 100);
+
+// Below throws `DOMException` after 100 ms
+// and items become `["Hello"]`
+const items: string[] = [];
+for await (const item of abortable(p(), c.signal)) {
+  items.push(item);
+}
+```
+
 ## debounce
 
 Debounces a given function by a given time.

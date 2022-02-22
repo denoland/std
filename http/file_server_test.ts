@@ -7,7 +7,7 @@ import {
 import { BufReader } from "../io/buffer.ts";
 import { iterateReader, readAll, writeAll } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { serveFile } from "./file_server.ts";
+import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 
@@ -197,7 +197,7 @@ Deno.test(
   },
 );
 
-Deno.test("serveDirectory", async function () {
+Deno.test("serveDirIndex", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/");
@@ -217,7 +217,7 @@ Deno.test("serveDirectory", async function () {
     await killFileServer();
   }
 });
-Deno.test("serveDirectory with filename including percent symbol", async function () {
+Deno.test("serveDirIndex with filename including percent symbol", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/testdata/");
@@ -425,7 +425,7 @@ async function startTlsFileServer({
   assert(s !== null && s.includes("server listening"));
 }
 
-Deno.test("serveDirectory TLS", async function () {
+Deno.test("serveDirIndex TLS", async function () {
   await startTlsFileServer();
   try {
     // Valid request after invalid
@@ -529,7 +529,7 @@ Deno.test("file_server should show .. if it makes sense", async function (): Pro
 });
 
 Deno.test(
-  "file_server should download first byte of `hello.html` file",
+  "file_server should download first byte of hello.html file",
   async () => {
     await startFileServer();
     try {
@@ -965,5 +965,40 @@ Deno.test(
     const res = await serveFile(req, testdataPath);
     assertEquals(res.status, 304);
     assertEquals(res.statusText, "Not Modified");
+  },
+);
+
+Deno.test(
+  "serveDir (without options) serves files under the current dir",
+  async () => {
+    const req = new Request("http://localhost:4507/http/testdata/hello.html");
+    const res = await serveDir(req);
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), "Hello World");
+  },
+);
+
+Deno.test(
+  "serveDir (with fsRoot option) serves files under the given dir",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/hello.html");
+    const res = await serveDir(req, { fsRoot: "http" });
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), "Hello World");
+  },
+);
+
+Deno.test(
+  "serveDir (with fsRoot, urlRoot option) serves files under the given dir",
+  async () => {
+    const req = new Request(
+      "http://localhost:4507/my-static-root/testdata/hello.html",
+    );
+    const res = await serveDir(req, {
+      fsRoot: "http",
+      urlRoot: "my-static-root",
+    });
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), "Hello World");
   },
 );
