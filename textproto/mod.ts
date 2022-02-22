@@ -22,6 +22,28 @@ const invalidHeaderCharRegex = /[^\t\x20-\x7e\x80-\xff]/g;
 function str(buf: Uint8Array | null | undefined): string {
   return !buf ? "" : decoder.decode(buf);
 }
+function parseCodeLine(
+  line: string,
+  expectCode: number,
+): { code: number; continued: boolean; message: string } {
+  if (line.length < 4 || line[3] !== " " && line[3] !== "-") {
+    throw new Error("short response: " + line);
+  }
+  const continued = line[3] === "-";
+  const code = Number(line.substring(0, 3));
+  if (isNaN(code) || code < 100) {
+    throw new Error("invalid response code: " + line);
+  }
+  const message = line.substring(4);
+  if (
+    1 <= expectCode && expectCode < 10 && code / 100 !== expectCode ||
+    10 <= expectCode && expectCode < 100 && code / 10 !== expectCode ||
+    100 <= expectCode && expectCode < 1000 && code !== expectCode
+  ) {
+    throw new Error(`${code} ${message}`);
+  }
+  return { code, continued, message };
+}
 
 export class TextProtoReader {
   constructor(readonly r: BufReader) {}
@@ -122,7 +144,6 @@ export class TextProtoReader {
       }
     }
   }
-
   async readLineSlice(): Promise<Uint8Array | null> {
     let line = new Uint8Array(0);
     let r: ReadLineResult | null = null;
@@ -142,7 +163,40 @@ export class TextProtoReader {
 
     return r === null ? null : line;
   }
-
+  async readLineBytes(): Promise<Uint8Array | null> {
+    const line = await this.readLineSlice();
+    return line === null ? null : line.slice();
+  }
+  async readCodeLine(
+    expectCode: number,
+  ): Promise<{ code: number; continued: boolean; message: string }> {
+    const line = await this.readCodeLine(expectCode);
+    if (line.continued) {
+      throw new Error("unexpected multi-line response: " + line.message);
+    }
+    return line;
+  }
+  async readResponse(
+    expectCode: number,
+  ): Promise<{ code: number; message: string }> {
+    const codeLine = await this.readCodeLine(expectCode);
+    const multi = codeLine.continued;
+    while (codeLine.continued) {
+      const line = await this.readLine() || "";
+      const parsedCode = parseCodeLine(line, 0);
+      if (parsedCode.code != codeLine.code) {
+        codeLine.message += "\n" + line.trimEnd();
+        codeLine.continued = true;
+        continue;
+      }
+      codeLine.message += "\n" + parsedCode.message;
+    }
+    if (multi && codeLine.message != "") {
+      // replace one line error message with all lines (full message)
+      throw new Error(`${codeLine.code} ${codeLine.message}`);
+    }
+    return codeLine;
+  }
   skipSpace(l: Uint8Array): number {
     let n = 0;
 
