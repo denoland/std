@@ -584,7 +584,7 @@ export class HmacSha256 extends Sha256 {
     this.#sharedMemory = sharedMemory;
   }
 
-  protected finalize(): void {
+  protected override finalize(): void {
     super.finalize();
     if (this.#inner) {
       this.#inner = false;

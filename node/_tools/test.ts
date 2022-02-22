@@ -41,6 +41,14 @@ for await (const path of testPaths) {
     ignore,
     fn: async () => {
       const targetTestPath = join(toolsPath, config.suitesFolder, path);
+
+      const v8Flags = ["--stack-size=4000"];
+      const testSourceCode = await Deno.readTextFile(targetTestPath);
+      // TODO(kt3k): Parse `Flags` directive correctly
+      if (testSourceCode.includes("Flags: --expose_externalize_string")) {
+        v8Flags.push("--expose-externalize-string");
+      }
+
       const cmd = [
         Deno.execPath(),
         "run",
@@ -48,14 +56,11 @@ for await (const path of testPaths) {
         "--quiet",
         "--unstable",
         "--no-check",
+        "--v8-flags=" + v8Flags.join(),
+        requireTs,
+        targetTestPath,
       ];
-      const testSourceCode = await Deno.readTextFile(targetTestPath);
-      // TODO(kt3k): Parse `Flags` directive correctly
-      if (testSourceCode.includes("Flags: --expose_externalize_string")) {
-        cmd.push("--v8-flags=--expose-externalize-string");
-      }
-      cmd.push(requireTs);
-      cmd.push(targetTestPath);
+
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided
       const test = Deno.run({

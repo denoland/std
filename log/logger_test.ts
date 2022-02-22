@@ -8,12 +8,12 @@ class TestHandler extends BaseHandler {
   public messages: string[] = [];
   public records: LogRecord[] = [];
 
-  handle(record: LogRecord): void {
+  override handle(record: LogRecord): void {
     this.records.push(record);
     super.handle(record);
   }
 
-  public log(str: string): void {
+  public override log(str: string): void {
     this.messages.push(str);
   }
 }

@@ -14,7 +14,7 @@ export class YAMLError extends Error {
     this.name = this.constructor.name;
   }
 
-  public toString(_compact: boolean): string {
+  public override toString(_compact: boolean): string {
     return `${this.name}: ${this.message} ${this.mark}`;
   }
 }

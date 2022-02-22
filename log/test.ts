@@ -11,7 +11,7 @@ import {
 class TestHandler extends log.handlers.BaseHandler {
   public messages: string[] = [];
 
-  log(msg: string): void {
+  override log(msg: string): void {
     this.messages.push(msg);
   }
 }

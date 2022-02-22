@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "strict": true,
-    "useUnknownInCatchVariables": true
+    "useUnknownInCatchVariables": true,
+    "noImplicitOverride": true
   }
 }

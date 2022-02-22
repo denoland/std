@@ -32,7 +32,7 @@ import { notImplemented } from "../_utils.ts";
 import { HandleWrap } from "./handle_wrap.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { codeMap } from "./uv.ts";
-import { writeAll } from "../../io/util.ts";
+import { writeAll } from "../../streams/conversion.ts";
 
 enum StreamBaseStateFields {
   kReadBytesOrError,
@@ -231,7 +231,7 @@ export class LibuvStreamWrap extends HandleWrap {
     return this.writeBuffer(req, buffer);
   }
 
-  async _onClose(): Promise<number> {
+  override async _onClose(): Promise<number> {
     let status = 0;
     this.#reading = false;
 
@@ -260,7 +260,6 @@ export class LibuvStreamWrap extends HandleWrap {
     let buf = new Uint8Array(SUGGESTED_SIZE);
 
     let nread: number | null;
-
     try {
       nread = await this[kStreamBaseField]!.read(buf);
     } catch (e) {

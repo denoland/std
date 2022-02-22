@@ -7,7 +7,7 @@ const QUOTE = '"';
 export const NEWLINE = "\r\n";
 
 export class StringifyError extends Error {
-  readonly name = "StringifyError";
+  override readonly name = "StringifyError";
 }
 
 function getEscapedString(value: unknown, sep: string): string {

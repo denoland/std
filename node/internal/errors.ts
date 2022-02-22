@@ -325,7 +325,7 @@ export class NodeErrorAbstraction extends Error {
     this.stack = this.stack && `${name} [${this.code}]${this.stack.slice(20)}`;
   }
 
-  toString() {
+  override toString() {
     return `${this.name} [${this.code}]: ${this.message}`;
   }
 }
@@ -471,7 +471,7 @@ class NodeSystemError extends NodeErrorAbstraction {
     }
   }
 
-  toString() {
+  override toString() {
     return `${this.name} [${this.code}]: ${this.message}`;
   }
 }
@@ -1908,6 +1908,21 @@ export class ERR_SYNTHETIC extends NodeError {
     super("ERR_SYNTHETIC", `JavaScript Callstack`);
   }
 }
+export class ERR_TLS_CERT_ALTNAME_INVALID extends NodeError {
+  reason: string;
+  host: string;
+  cert: string;
+
+  constructor(reason: string, host: string, cert: string) {
+    super(
+      "ERR_TLS_CERT_ALTNAME_INVALID",
+      `Hostname/IP does not match certificate's altnames: ${reason}`,
+    );
+    this.reason = reason;
+    this.host = host;
+    this.cert = cert;
+  }
+}
 export class ERR_TLS_DH_PARAM_SIZE extends NodeError {
   constructor(x: string) {
     super("ERR_TLS_DH_PARAM_SIZE", `DH parameter size ${x} is less than 2048`);
@@ -2210,7 +2225,7 @@ export class ERR_HTTP2_INVALID_SETTING_VALUE extends NodeRangeError {
   }
 }
 export class ERR_HTTP2_STREAM_CANCEL extends NodeError {
-  cause?: Error;
+  override cause?: Error;
   constructor(error: Error) {
     super(
       "ERR_HTTP2_STREAM_CANCEL",

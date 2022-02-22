@@ -100,7 +100,7 @@ class ClientRequest extends NodeWritable {
   }
 
   // deno-lint-ignore no-explicit-any
-  _write(chunk: any, _enc: string, cb: () => void) {
+  override _write(chunk: any, _enc: string, cb: () => void) {
     if (this.controller) {
       this.controller.enqueue(chunk);
       cb();
@@ -116,7 +116,7 @@ class ClientRequest extends NodeWritable {
     });
   }
 
-  async _final() {
+  override async _final() {
     const client = await this._createCustomClient();
     const opts = { body: this.body, method: this.opts.method, client };
     const mayResponse = fetch(this.opts.href!, opts).catch((e) => {
@@ -164,7 +164,7 @@ export class IncomingMessageForClient extends NodeReadable {
     this.reader = response?.body?.getReader();
   }
 
-  async _read(_size: number) {
+  override async _read(_size: number) {
     if (this.reader === undefined) {
       this.push(null);
       return;
@@ -306,7 +306,7 @@ export class ServerResponse extends NodeWritable {
   }
 
   // deno-lint-ignore no-explicit-any
-  end(chunk?: any, encoding?: any, cb?: any): this {
+  override end(chunk?: any, encoding?: any, cb?: any): this {
     if (!chunk && this.#headers.has("transfer-encoding")) {
       // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
       // the trailing "0\r\n", but respondWith() just hangs when I try that.

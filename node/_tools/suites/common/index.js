@@ -378,6 +378,7 @@ module.exports = {
   expectsError,
   expectWarning,
   getBufferSources,
+  hasCrypto: true,
   invalidArgTypeHelper,
   mustCall,
   mustCallAtLeast,
