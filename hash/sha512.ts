@@ -1136,7 +1136,7 @@ export class HmacSha512 extends Sha512 {
     this.#sharedMemory = sharedMemory;
   }
 
-  protected finalize(): void {
+  protected override finalize(): void {
     super.finalize();
     if (this.#inner) {
       this.#inner = false;

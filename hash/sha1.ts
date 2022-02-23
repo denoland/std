@@ -443,7 +443,7 @@ export class HmacSha1 extends Sha1 {
     this.#inner = true;
     this.#sharedMemory = sharedMemory;
   }
-  protected finalize(): void {
+  protected override finalize(): void {
     super.finalize();
     if (this.#inner) {
       this.#inner = false;

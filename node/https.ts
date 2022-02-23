@@ -57,7 +57,9 @@ export function get(...args: any[]) {
 export const globalAgent = undefined;
 /** HttpsClientRequest class loosely follows http.ClientRequest class API. */
 class HttpsClientRequest extends ClientRequest {
-  async _createCustomClient(): Promise<DenoUnstable.HttpClient | undefined> {
+  override async _createCustomClient(): Promise<
+    DenoUnstable.HttpClient | undefined
+  > {
     if (caCerts === null) {
       return undefined;
     }
@@ -82,7 +84,7 @@ class HttpsClientRequest extends ClientRequest {
     return DenoUnstable.createHttpClient({ caCerts });
   }
 
-  _createSocket(): Socket {
+  override _createSocket(): Socket {
     // deno-lint-ignore no-explicit-any
     return { authorized: true } as any;
   }

@@ -19,6 +19,8 @@ const filters = Deno.args;
 const toolsPath = dirname(fromFileUrl(import.meta.url));
 const stdRootUrl = new URL("../../", import.meta.url).href;
 const testPaths = getPathsFromTestSuites(config.tests);
+const cwd = fromFileUrl(new URL("./", import.meta.url));
+const requireTs = "require.ts";
 const windowsIgnorePaths = new Set(
   getPathsFromTestSuites(config.windowsIgnore),
 );
@@ -35,7 +37,6 @@ for await (const path of testPaths) {
     continue;
   }
   const ignore = Deno.build.os === "windows" && windowsIgnorePaths.has(path);
-  const requireTs = join("node", "_tools", "require.ts");
   Deno.test({
     name: `Node.js compatibility "${path}"`,
     ignore,
@@ -68,6 +69,7 @@ for await (const path of testPaths) {
         env: {
           DENO_NODE_COMPAT_URL: stdRootUrl,
         },
+        cwd,
         stderr: "piped",
         stdout: "piped",
       });

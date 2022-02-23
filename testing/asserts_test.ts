@@ -2,6 +2,7 @@
 import {
   _format,
   assert,
+  assertAlmostEquals,
   assertArrayIncludes,
   assertEquals,
   assertExists,
@@ -912,6 +913,48 @@ Deno.test({
   fn(): void {
     assertThrows(() => assertNotStrictEquals(1, 1), AssertionError);
   },
+});
+
+Deno.test("assert almost equals number", () => {
+  //Default precision
+  assertAlmostEquals(-0, +0);
+  assertAlmostEquals(Math.PI, Math.PI);
+  assertAlmostEquals(0.1 + 0.2, 0.3);
+  assertThrows(() => assertAlmostEquals(1, 2));
+  assertThrows(() => assertAlmostEquals(1, 1.1));
+
+  //Higher precision
+  assertAlmostEquals(0.1 + 0.2, 0.3, 1e-16);
+  assertThrows(
+    () => assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17),
+    AssertionError,
+    `"${(0.1 + 0.2).toExponential()}" expected to be close to "${
+      (0.3).toExponential()
+    }"`,
+  );
+
+  //Special cases
+  assertAlmostEquals(Infinity, Infinity);
+  assertThrows(
+    () => assertAlmostEquals(0, Infinity),
+    AssertionError,
+    '"0" expected to be close to "Infinity"',
+  );
+  assertThrows(
+    () => assertAlmostEquals(-Infinity, +Infinity),
+    AssertionError,
+    '"-Infinity" expected to be close to "Infinity"',
+  );
+  assertThrows(
+    () => assertAlmostEquals(Infinity, NaN),
+    AssertionError,
+    '"Infinity" expected to be close to "NaN"',
+  );
+  assertThrows(
+    () => assertAlmostEquals(NaN, NaN),
+    AssertionError,
+    '"NaN" expected to be close to "NaN"',
+  );
 });
 
 Deno.test({
