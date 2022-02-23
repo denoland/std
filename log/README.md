@@ -62,7 +62,7 @@ error
 import { ConsoleLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
 class CustomConsoleLogger extends ConsoleLogger {
-  static logLevels = {
+  static override logLevels = {
     ...super.logLevels,
     fatal: 60,
   };
@@ -89,7 +89,7 @@ fatal
 import { FileLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
 class CustomFileLogger extends FileLogger {
-  protected handler(data: unknown[]) {
+  protected override handler(data: unknown[]) {
     super.handler([new Date().toISOString(), ...data.join("->")]);
   }
 }

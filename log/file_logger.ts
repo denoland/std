@@ -1,4 +1,4 @@
-import { BufWriterSync } from "https://deno.land/std@0.104.0/io/bufio.ts";
+import { BufWriterSync } from "../io/buffer.ts";
 import { Logger } from "./logger.ts";
 
 const encoder = new TextEncoder();
