@@ -1,4 +1,9 @@
 {
+  "compilerOptions": {
+    "strict": true,
+    "useUnknownInCatchVariables": true,
+    "noImplicitOverride": true
+  },
   "fmt": {
     "files": {
       "exclude": [
@@ -12,6 +17,7 @@
       ]
     }
   },
+  "importMap": "./test_import_map.json",
   "lint": {
     "files": {
       "exclude": [
