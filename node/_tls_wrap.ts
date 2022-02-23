@@ -17,13 +17,15 @@ import {
   constants as PipeConstants,
   Pipe,
 } from "./internal_binding/pipe_wrap.ts";
+import { EventEmitter } from "./events.ts";
+import { join } from "./path.ts";
 const kConnectOptions = Symbol("connect-options");
 const kIsVerified = Symbol("verified");
 const kPendingSession = Symbol("pendingSession");
 const kRes = Symbol("res");
 
-let debug = debuglog("tls", (fn) => {
-  debug = fn;
+let _debug = debuglog("tls", (fn) => {
+  _debug = fn;
 });
 
 function onConnectEnd(this: any) {
@@ -209,32 +211,67 @@ function normalizeConnectArgs(listArgs: any) {
 
 let ipServernameWarned = false;
 
-function tlsConnectionListener(this: ServerImpl, rawSocket: net.Socket) {
-  debug("net.Server.on(connection): new TLSSocket");
-  const socket = new TLSSocket(rawSocket, {
-    secureContext: this._sharedCreds,
-    isServer: true,
-    server: this,
-    pauseOnConnect: this.pauseOnConnect,
-  });
-
-  socket.on("secure", () => {
-    this.emit("secureConnection", this);
-  });
-}
-
 export function Server(options: any, listener: any) {
   return new ServerImpl(options, listener);
 }
 
-export class ServerImpl extends net.Server {
-  _sharedCreds = null;
-  constructor(options: any, listener: any) {
-    super(options, tlsConnectionListener);
-
+export class ServerImpl extends EventEmitter {
+  listener?: Deno.TlsListener;
+  #closed = false;
+  constructor(public options: any, listener: any) {
+    super();
     if (listener) {
       this.on("secureConnection", listener);
     }
+  }
+
+  listen(port: any, callback: any): this {
+    const { key, cert } = this.options;
+
+    // TODO(kt3k): We can avoid creating temp cert files
+    // when we land the below PR:
+    // https://github.com/denoland/deno/pull/13740
+    const tmpdir = Deno.makeTempDirSync();
+    const certFile = join(tmpdir, "cert");
+    const keyFile = join(tmpdir, "key");
+    Deno.writeTextFileSync(certFile, cert);
+    Deno.writeTextFileSync(keyFile, key);
+
+    // TODO(kt3k): Get this from optional 2nd argument.
+    const hostname = "localhost";
+
+    this.listener = Deno.listenTls({ port, hostname, certFile, keyFile });
+    Deno.remove(tmpdir, { recursive: true });
+
+    callback?.();
+    this.#listen(this.listener);
+    return this;
+  }
+
+  async #listen(listener: Deno.TlsListener) {
+    while (!this.#closed) {
+      try {
+        // Creates TCP handle and socket directly from Deno.TlsConn.
+        // This works as TLS socket. We don't use TLSSocket class for doing
+        // this because Deno.startTls only supports client side tcp connection.
+        const handle = new TCP(TCPConstants.SOCKET, await listener.accept());
+        const socket = new net.Socket({ handle });
+        this.emit("secureConnection", socket);
+      } catch (e) {
+        if (e instanceof Deno.errors.BadResource) {
+          this.#closed = true;
+        }
+        // swallow
+      }
+    }
+  }
+
+  close(cb?: (err?: Error) => void): this {
+    if (this.listener) {
+      this.listener.close();
+    }
+    cb?.();
+    return this;
   }
 }
 
