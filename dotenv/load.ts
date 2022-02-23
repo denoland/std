@@ -10,8 +10,8 @@ export function loadSync(
   denoEnv: DenoEnv,
   {
     envPath = ".env",
-    examplePath = ".env.example",
-    defaultsPath = ".env.defaults",
+    examplePath,
+    defaultsPath,
   }: LoadOptions = {},
 ) {
   let exampleSource;
