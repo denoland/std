@@ -325,7 +325,7 @@ export class NodeErrorAbstraction extends Error {
     this.stack = this.stack && `${name} [${this.code}]${this.stack.slice(20)}`;
   }
 
-  toString() {
+  override toString() {
     return `${this.name} [${this.code}]: ${this.message}`;
   }
 }
@@ -471,7 +471,7 @@ class NodeSystemError extends NodeErrorAbstraction {
     }
   }
 
-  toString() {
+  override toString() {
     return `${this.name} [${this.code}]: ${this.message}`;
   }
 }
@@ -2225,7 +2225,7 @@ export class ERR_HTTP2_INVALID_SETTING_VALUE extends NodeRangeError {
   }
 }
 export class ERR_HTTP2_STREAM_CANCEL extends NodeError {
-  cause?: Error;
+  override cause?: Error;
   constructor(error: Error) {
     super(
       "ERR_HTTP2_STREAM_CANCEL",
