@@ -13,14 +13,12 @@ const fs = require('fs');
 const filename = __filename.toLowerCase();
 
 assert.strictEqual(
-  // TODO(kt3k): Move `node/_tools/suites/` to `node/_tools/test`
-  fs.realpathSync.native('./suites/parallel/test-fs-realpath-native.js')
+  fs.realpathSync.native('./test/parallel/test-fs-realpath-native.js')
     .toLowerCase(),
   filename);
 
 fs.realpath.native(
-  // TODO(kt3k): Move `node/_tools/suites/` to `node/_tools/test`
-  './suites/parallel/test-fs-realpath-native.js',
+  './test/parallel/test-fs-realpath-native.js',
   common.mustSucceed(function(res) {
     assert.strictEqual(res.toLowerCase(), filename);
     assert.strictEqual(this, undefined);
