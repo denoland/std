@@ -1,3 +1,13 @@
+### 0.127.0 / 2022.02.24
+
+- feat(async): add `abortable` to async module. (#1939)
+- feat(dotenv): add dotenv library (#1877)
+- feat(http): expose serveDir function from file_server.ts (#1944)
+- feat(node): add fs.realpath.native (#1951)
+- feat(node/tls): basic support of tls.createServer (#1948)
+- feat(testing): add `assertAlmostEquals` (#1906)
+- fix(node): don't use globalThis.setTimeout types in node/timers (#1934)
+
 ### 0.126.0 / 2022.02.17
 
 - feat(node): add tls.connect (#1923)
