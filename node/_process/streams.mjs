@@ -3,7 +3,7 @@
 import * as DenoUnstable from "../../_deno_unstable.ts";
 import { Buffer } from "../buffer.ts";
 import { Readable, Writable } from "../stream.ts";
-import { stdio } from "./stdio.js";
+import { stdio } from "./stdio.mjs";
 
 // https://github.com/nodejs/node/blob/00738314828074243c9a52a228ab4c68b04259ef/lib/internal/bootstrap/switches/is_main_thread.js#L41
 function createWritableStdioStream(writer, name) {

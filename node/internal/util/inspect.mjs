@@ -21,7 +21,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import * as types from "./types.ts";
-import { validateObject, validateString } from "../validators.js";
+import { validateObject, validateString } from "../validators.mjs";
 import { codes } from "../error_codes.ts";
 
 import {

@@ -2,7 +2,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { getDefaultEncoding } from "../crypto/util.js";
+import { getDefaultEncoding } from "../crypto/util.mjs";
 import stream from "../../stream.ts";
 
 function LazyTransform(options) {

@@ -34,9 +34,9 @@ import { unlink, unlinkSync } from "./_fs/_fs_unlink.ts";
 import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
 import { watch, watchFile } from "./_fs/_fs_watch.ts";
 // @deno-types="./_fs/_fs_write.d.ts"
-import { write, writeSync } from "./_fs/_fs_write.js";
+import { write, writeSync } from "./_fs/_fs_write.mjs";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
-import { Stats } from "./internal/fs/utils.js";
+import { Stats } from "./internal/fs/utils.mjs";
 import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
 
 import { promisify } from "./util.ts";

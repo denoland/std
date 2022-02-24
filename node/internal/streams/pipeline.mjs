@@ -2,10 +2,10 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { isIterable, isNodeStream, isReadableNodeStream } from "./utils.js";
-import { once } from "../util.js";
-import { stdio } from "../../_process/stdio.js";
-import { validateAbortSignal, validateCallback } from "../validators.js";
+import { isIterable, isNodeStream, isReadableNodeStream } from "./utils.mjs";
+import { once } from "../util.mjs";
+import { stdio } from "../../_process/stdio.mjs";
+import { validateAbortSignal, validateCallback } from "../validators.mjs";
 import {
   AbortError,
   aggregateTwoErrors,
@@ -15,11 +15,11 @@ import {
   ERR_STREAM_DESTROYED,
 } from "../errors.ts";
 import * as process from "../../_process/process.ts";
-import destroyImpl from "./destroy.js";
-import Duplex from "./duplex.js";
-import eos from "./end-of-stream.js";
-import Readable from "./readable.js";
-import PassThrough from "./passthrough.js";
+import destroyImpl from "./destroy.mjs";
+import Duplex from "./duplex.mjs";
+import eos from "./end-of-stream.mjs";
+import Readable from "./readable.mjs";
+import PassThrough from "./passthrough.mjs";
 
 function destroyer(stream, reading, writing, callback) {
   callback = once(callback);

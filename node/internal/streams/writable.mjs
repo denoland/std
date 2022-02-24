@@ -3,11 +3,11 @@
 // deno-lint-ignore-file
 
 import { _uint8ArrayToBuffer } from "./_utils.ts";
-import { addAbortSignalNoValidate } from "./add-abort-signal.js";
+import { addAbortSignalNoValidate } from "./add-abort-signal.mjs";
 import { Buffer } from "../../buffer.ts";
-import { getDefaultHighWaterMark, getHighWaterMark } from "./state.js";
+import { getDefaultHighWaterMark, getHighWaterMark } from "./state.mjs";
 import { isUint8Array } from "../util/types.ts";
-import { Stream } from "./legacy.js";
+import { Stream } from "./legacy.mjs";
 import {
   ERR_INVALID_ARG_TYPE,
   ERR_METHOD_NOT_IMPLEMENTED,
@@ -20,9 +20,9 @@ import {
   ERR_UNKNOWN_ENCODING,
 } from "../errors.ts";
 import * as process from "../../_process/process.ts";
-import destroyImpl from "./destroy.js";
+import destroyImpl from "./destroy.mjs";
 import EE from "../../events.ts";
-import Readable from "./readable.js";
+import Readable from "./readable.mjs";
 
 const { errorOrDestroy } = destroyImpl;
 

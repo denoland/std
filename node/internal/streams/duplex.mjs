@@ -2,9 +2,9 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { createDeferredPromise } from "../util.js";
-import { destroyer } from "./destroy.js";
-import { isBlob } from "../blob.js";
+import { createDeferredPromise } from "../util.mjs";
+import { destroyer } from "./destroy.mjs";
+import { isBlob } from "../blob.mjs";
 import {
   AbortError,
   ERR_INVALID_ARG_TYPE,
@@ -18,12 +18,12 @@ import {
   isReadableNodeStream,
   isWritable,
   isWritableNodeStream,
-} from "./utils.js";
+} from "./utils.mjs";
 import * as process from "../../_process/process.ts";
-import _from from "./from.js";
-import eos from "./end-of-stream.js";
-import Readable from "./readable.js";
-import Writable from "./writable.js";
+import _from from "./from.mjs";
+import eos from "./end-of-stream.mjs";
+import Readable from "./readable.mjs";
+import Writable from "./writable.mjs";
 
 Object.setPrototypeOf(Duplex.prototype, Readable.prototype);
 Object.setPrototypeOf(Duplex, Readable);

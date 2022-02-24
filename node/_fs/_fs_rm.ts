@@ -2,7 +2,7 @@
 import {
   validateRmOptions,
   validateRmOptionsSync,
-} from "../internal/fs/utils.js";
+} from "../internal/fs/utils.mjs";
 import { denoErrorToNodeError } from "../internal/errors.ts";
 type rmOptions = {
   force?: boolean;

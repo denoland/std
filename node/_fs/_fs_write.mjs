@@ -1,12 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 import { Buffer } from "../buffer.ts";
-import { validateEncoding, validateInteger } from "../internal/validators.js";
+import { validateEncoding, validateInteger } from "../internal/validators.mjs";
 import {
   getValidatedFd,
   validateOffsetLengthWrite,
   validateStringAfterArrayBufferView,
-} from "../internal/fs/utils.js";
+} from "../internal/fs/utils.mjs";
 import { isArrayBufferView } from "../internal/util/types.ts";
 import { maybeCallback } from "./_fs_common.ts";
 

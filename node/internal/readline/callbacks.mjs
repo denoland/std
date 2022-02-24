@@ -24,9 +24,9 @@
 
 import { ERR_INVALID_ARG_VALUE, ERR_INVALID_CURSOR_POS } from "../errors.ts";
 
-import { validateCallback } from "../validators.js";
+import { validateCallback } from "../validators.mjs";
 
-import { CSI } from "./utils.js";
+import { CSI } from "./utils.mjs";
 
 const {
   kClearLine,

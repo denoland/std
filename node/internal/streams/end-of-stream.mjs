@@ -3,12 +3,12 @@
 // deno-lint-ignore-file
 
 import { AbortError, ERR_STREAM_PREMATURE_CLOSE } from "../errors.ts";
-import { once } from "../util.js";
+import { once } from "../util.mjs";
 import {
   validateAbortSignal,
   validateFunction,
   validateObject,
-} from "../validators.js";
+} from "../validators.mjs";
 import * as process from "../../_process/process.ts";
 
 function isRequest(stream) {

@@ -3,7 +3,7 @@
 import * as DenoUnstable from "../_deno_unstable.ts";
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
-import { validateString } from "./internal/validators.js";
+import { validateString } from "./internal/validators.mjs";
 import { ERR_INVALID_ARG_TYPE } from "./internal/errors.ts";
 import { getOptionValue } from "./_options.ts";
 import { assert } from "../_util/assert.ts";
@@ -35,7 +35,7 @@ import {
   stderr as stderr_,
   stdin as stdin_,
   stdout as stdout_,
-} from "./_process/streams.js";
+} from "./_process/streams.mjs";
 // TODO(kt3k): Give better types to stdio objects
 // deno-lint-ignore no-explicit-any
 const stderr = stderr_ as any;

@@ -2,15 +2,15 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { destroyer } from "./destroy.js";
-import { isNodeStream, isReadable, isWritable } from "./utils.js";
-import { pipeline } from "./pipeline.js";
+import { destroyer } from "./destroy.mjs";
+import { isNodeStream, isReadable, isWritable } from "./utils.mjs";
+import { pipeline } from "./pipeline.mjs";
 import {
   AbortError,
   ERR_INVALID_ARG_VALUE,
   ERR_MISSING_ARGS,
 } from "../errors.ts";
-import Duplex from "./duplex.js";
+import Duplex from "./duplex.mjs";
 
 // This is needed for pre node 17.
 class ComposeDuplex extends Duplex {

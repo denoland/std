@@ -3,7 +3,7 @@
 // deno-lint-ignore-file
 
 import { AbortError, ERR_INVALID_ARG_TYPE } from "../errors.ts";
-import eos from "./end-of-stream.js";
+import eos from "./end-of-stream.mjs";
 
 // This method is inlined here for readable-stream
 // It also does not allow for signal to not exist on the stream

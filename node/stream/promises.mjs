@@ -1,9 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import { isIterable, isNodeStream } from "../internal/streams/utils.js";
-import { pipelineImpl as pl } from "../internal/streams/pipeline.js";
-import eos from "../internal/streams/end-of-stream.js";
+import { isIterable, isNodeStream } from "../internal/streams/utils.mjs";
+import { pipelineImpl as pl } from "../internal/streams/pipeline.mjs";
+import eos from "../internal/streams/end-of-stream.mjs";
 
 function pipeline(...streams) {
   return new Promise((resolve, reject) => {

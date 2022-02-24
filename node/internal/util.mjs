@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { validateFunction, validateString } from "./validators.js";
-import { normalizeEncoding, slowCases } from "./normalize_encoding.js";
+import { validateFunction, validateString } from "./validators.mjs";
+import { normalizeEncoding, slowCases } from "./normalize_encoding.mjs";
 
 export { normalizeEncoding, slowCases };
 
