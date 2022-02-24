@@ -39,10 +39,84 @@ Deno.test("[textproto] Reader", async () => {
   s = await r.readLine();
   assert(s === null);
 });
+Deno.test(
+  "[textproto] Reader: Code Reader",
+  async () => {
+    const CODE_LINES = [
+      0,
+      23,
+      346,
+      1,
+    ];
+    const EXPECTED_OUTPUTS = {
+      codes: [
+        123,
+        234,
+        345,
+        0,
+      ],
+      messages: [
+        "hi",
+        "bye",
+        "no way",
+        "",
+      ],
+    };
+    for (const i in CODE_LINES) {
+      const READER = reader("123 hi\n234 bye\n345 no way\n");
+      const RESULT = await READER.readCodeLine(CODE_LINES[i]);
+      assertEquals(RESULT.code, EXPECTED_OUTPUTS.codes[i]);
+      assertEquals(RESULT.message, EXPECTED_OUTPUTS.messages[i]);
+    }
+  },
+);
 
-Deno.test({
-  name: "[textproto] Reader : MIME Header",
-  async fn() {
+Deno.test(
+  "[textproto] Reader: RFC959 Lines",
+  async () => {
+    const TESTS = [
+      {
+        in:
+          "230-Anonymous access granted, restrictions apply\nRead the file README.txt,\n230  please",
+        inCode: 23,
+        wantCode: 230,
+        wantMsg:
+          "Anonymous access granted, restrictions apply\nRead the file README.txt,\n please",
+      },
+
+      {
+        in: "230 Anonymous access granted, restrictions apply\n",
+        inCode: 23,
+        wantCode: 230,
+        wantMsg: "Anonymous access granted, restrictions apply",
+      },
+
+      {
+        in: "400-A\n400-B\n400 C",
+        inCode: 4,
+        wantCode: 400,
+        wantMsg: "A\nB\nC",
+      },
+
+      {
+        in: "400-A\r\n400-B\r\n400 C\r\n",
+        inCode: 4,
+        wantCode: 400,
+        wantMsg: "A\nB\nC",
+      },
+    ];
+    for (const t of TESTS) {
+      const r = reader(t.in + "\nFOLLOWING DATA");
+      const m = await r.readResponse(t.inCode);
+      assertEquals(m.code, t.wantCode);
+      assertEquals(m.message, t.wantMsg);
+    }
+  },
+);
+
+Deno.test(
+  "[textproto] Reader : MIME Header",
+  async () => {
     const input =
       "my-key: Value 1  \r\nLong-key: Even Longer Value\r\nmy-Key: " +
       "Value 2\r\n\n";
@@ -52,33 +126,33 @@ Deno.test({
     assertEquals(m.get("My-Key"), "Value 1, Value 2");
     assertEquals(m.get("Long-key"), "Even Longer Value");
   },
-});
+);
 
-Deno.test({
-  name: "[textproto] Reader : MIME Header Single",
-  async fn() {
+Deno.test(
+  "[textproto] Reader : MIME Header Single",
+  async () => {
     const input = "Foo: bar\n\n";
     const r = reader(input);
     const m = await r.readMIMEHeader();
     assert(m !== null);
     assertEquals(m.get("Foo"), "bar");
   },
-});
+);
 
-Deno.test({
-  name: "[textproto] Reader : MIME Header No Key",
-  async fn() {
+Deno.test(
+  "[textproto] Reader : MIME Header No Key",
+  async () => {
     const input = ": bar\ntest-1: 1\n\n";
     const r = reader(input);
     const m = await r.readMIMEHeader();
     assert(m !== null);
     assertEquals(m.get("Test-1"), "1");
   },
-});
+);
 
-Deno.test({
-  name: "[textproto] Reader : Large MIME Header",
-  async fn() {
+Deno.test(
+  "[textproto] Reader : Large MIME Header",
+  async () => {
     const data: string[] = [];
     // Go test is 16*1024. But seems it can't handle more
     for (let i = 0; i < 1024; i++) {
@@ -90,13 +164,13 @@ Deno.test({
     assert(m !== null);
     assertEquals(m.get("Cookie"), sdata);
   },
-});
+);
 
 // Test that we don't read MIME headers seen in the wild,
 // with spaces before colons, and spaces in keys.
-Deno.test({
-  name: "[textproto] Reader : MIME Header Non compliant",
-  async fn() {
+Deno.test(
+  "[textproto] Reader : MIME Header Non compliant",
+  async () => {
     const input = "Foo: bar\r\n" +
       "Content-Language: en\r\n" +
       "SID : 0\r\n" +
@@ -115,11 +189,11 @@ Deno.test({
       assertEquals(m.get("Audio Mode"), "None");
     });
   },
-});
+);
 
-Deno.test({
-  name: "[textproto] Reader : MIME Header Malformed",
-  async fn() {
+Deno.test(
+  "[textproto] Reader : MIME Header Malformed",
+  async () => {
     const input = [
       "No colon first line\r\nFoo: foo\r\n\r\n",
       " No colon first line with leading space\r\nFoo: foo\r\n\r\n",
@@ -138,11 +212,11 @@ Deno.test({
     }
     assert(err instanceof Deno.errors.InvalidData);
   },
-});
+);
 
-Deno.test({
-  name: "[textproto] Reader : MIME Header Trim Continued",
-  async fn() {
+Deno.test(
+  "[textproto] Reader : MIME Header Trim Continued",
+  async () => {
     const input = "a:\n" +
       " 0 \r\n" +
       "b:1 \t\r\n" +
@@ -158,11 +232,11 @@ Deno.test({
     }
     assert(err instanceof Deno.errors.InvalidData);
   },
-});
+);
 
-Deno.test({
-  name: "[textproto] #409 issue : multipart form boundary",
-  async fn() {
+Deno.test(
+  "[textproto] #409 issue : multipart form boundary",
+  async () => {
     const input = [
       "Accept: */*\r\n",
       'Content-Disposition: form-data; name="test"\r\n',
@@ -175,7 +249,7 @@ Deno.test({
     assertEquals(m.get("Accept"), "*/*");
     assertEquals(m.get("Content-Disposition"), 'form-data; name="test"');
   },
-});
+);
 
 /* TODO(kt3k): Enable this test
 Deno.test({
@@ -191,10 +265,9 @@ Deno.test({
   },
 });
 */
-
-Deno.test({
-  name: "[textproto] PR #859",
-  async fn() {
+Deno.test(
+  "[textproto] PR #859",
+  async () => {
     const TESTS: Array<string> = [
       "Hello, World!",
       "Hello, World!\n",
@@ -268,4 +341,4 @@ Deno.test({
       assertEquals(RESULT, EXPECTED_OUTPUTS[i]);
     }
   },
-});
+);
