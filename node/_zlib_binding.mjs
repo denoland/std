@@ -5,7 +5,7 @@
 // deno-lint-ignore-file
 
 import assert from "./assert.ts";
-import { constants, zlib_deflate, zlib_inflate, Zstream } from "./_pako.js";
+import { constants, zlib_deflate, zlib_inflate, Zstream } from "./_pako.mjs";
 
 export const Z_NO_FLUSH = constants.Z_NO_FLUSH;
 export const Z_PARTIAL_FLUSH = constants.Z_PARTIAL_FLUSH;

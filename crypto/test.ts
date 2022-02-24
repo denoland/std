@@ -158,7 +158,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
   await process.stdin.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.js";
+      import { _wasm } from "../_wasm_crypto/crypto.mjs";
 
       const { memory } = _wasm as { memory: WebAssembly.Memory };
 
@@ -252,7 +252,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
   await process.stdin.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.js";
+      import { _wasm } from "../_wasm_crypto/crypto.mjs";
 
       const { memory } = _wasm as { memory: WebAssembly.Memory };
 

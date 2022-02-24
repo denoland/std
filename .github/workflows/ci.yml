@@ -194,5 +194,5 @@ jobs:
         with:
           name: Rebuilt _wasm_crypto
           path: |-
-            ./_wasm_crypto/crypto.js
-            ./_wasm_crypto/crypto.wasm.js
+            ./_wasm_crypto/crypto.mjs
+            ./_wasm_crypto/crypto.wasm.mjs
