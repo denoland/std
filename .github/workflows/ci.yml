@@ -93,10 +93,10 @@ jobs:
       #   run: deno test --doc --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/
 
       - name: Unit test node/
-        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/ --ignore=node/_tools/test.ts,node/_tools/versions/
+        run: deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/
 
       - name: Run Node tests canary
-        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/_tools/test.ts
+        run: deno test --unstable --allow-all node/_tools/test.ts
         env:
           DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 
