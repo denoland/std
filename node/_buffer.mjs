@@ -8,7 +8,7 @@
 
 import { codes } from "./internal/error_codes.ts";
 import { isAnyArrayBuffer, isArrayBufferView } from "./internal/util/types.ts";
-import { normalizeEncoding } from "./internal/util.js";
+import { normalizeEncoding } from "./internal/util.mjs";
 import {
   _copyActual,
   _writeUInt32BE,
@@ -66,7 +66,7 @@ import {
   writeU_Int48LE,
   // deno-lint-ignore camelcase
   writeU_Int8,
-} from "./internal/buffer.js";
+} from "./internal/buffer.mjs";
 import {
   asciiToBytes,
   base64ToBytes,
@@ -77,7 +77,7 @@ import {
   utf16leToBytes,
 } from "./internal_binding/_utils.ts";
 import { indexOfBuffer, indexOfNumber } from "./internal_binding/buffer.ts";
-import { validateBuffer } from "./internal/validators.js";
+import { validateBuffer } from "./internal/validators.mjs";
 import { isUint8Array } from "./internal/util/types.ts";
 import * as base64 from "../encoding/base64.ts";
 import * as base64url from "../encoding/base64url.ts";

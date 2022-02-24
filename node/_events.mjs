@@ -24,7 +24,7 @@
 
 const kRejection = Symbol.for("nodejs.rejection");
 
-import { inspect } from "./internal/util/inspect.js";
+import { inspect } from "./internal/util/inspect.mjs";
 import {
   AbortError,
   // kEnhanceStackBeforeInspector,
@@ -37,7 +37,7 @@ import {
   validateAbortSignal,
   validateBoolean,
   validateFunction,
-} from "./internal/validators.js";
+} from "./internal/validators.mjs";
 import { spliceOne } from "./_utils.ts";
 
 const kCapture = Symbol("kCapture");

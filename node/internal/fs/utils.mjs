@@ -18,7 +18,7 @@ import {
   isDate,
   isUint8Array,
 } from "../util/types.ts";
-import { once } from "../util.js";
+import { once } from "../util.mjs";
 import { toPathIfFileURL } from "../url.ts";
 import {
   validateAbortSignal,
@@ -28,11 +28,11 @@ import {
   validateInteger,
   validateObject,
   validateUint32,
-} from "../validators.js";
+} from "../validators.mjs";
 import pathModule from "../../path.ts";
 const kType = Symbol("type");
 const kStats = Symbol("stats");
-import assert from "../assert.js";
+import assert from "../assert.mjs";
 import { lstat, lstatSync } from "../../_fs/_fs_lstat.ts";
 import { stat, statSync } from "../../_fs/_fs_stat.ts";
 import { isWindows } from "../../../_util/os.ts";

@@ -2,7 +2,7 @@
 import type { CallbackWithError } from "./_fs_common.ts";
 import { makeCallback } from "./_fs_common.ts";
 import { Buffer } from "../buffer.ts";
-import { getValidatedPath, getValidMode } from "../internal/fs/utils.js";
+import { getValidatedPath, getValidMode } from "../internal/fs/utils.mjs";
 import { fs, os } from "../internal_binding/constants.ts";
 
 export function copyFile(

@@ -2,21 +2,21 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import { _uint8ArrayToBuffer } from "./internal/streams/_utils.ts";
-import { addAbortSignal } from "./internal/streams/add-abort-signal.js";
-import { destroyer } from "./internal/streams/destroy.js";
-import { isDisturbed } from "./internal/streams/utils.js";
+import { addAbortSignal } from "./internal/streams/add-abort-signal.mjs";
+import { destroyer } from "./internal/streams/destroy.mjs";
+import { isDisturbed } from "./internal/streams/utils.mjs";
 import { isUint8Array } from "./internal/util/types.ts";
-import { pipeline } from "./internal/streams/pipeline.js";
-import { promisify } from "./internal/util.js";
-import { Stream } from "./internal/streams/legacy.js";
-import compose from "./internal/streams/compose.js";
-import Duplex from "./internal/streams/duplex.js";
-import eos from "./internal/streams/end-of-stream.js";
-import PassThrough from "./internal/streams/passthrough.js";
-import promises from "./stream/promises.js";
-import Readable from "./internal/streams/readable.js";
-import Transform from "./internal/streams/transform.js";
-import Writable from "./internal/streams/writable.js";
+import { pipeline } from "./internal/streams/pipeline.mjs";
+import { promisify } from "./internal/util.mjs";
+import { Stream } from "./internal/streams/legacy.mjs";
+import compose from "./internal/streams/compose.mjs";
+import Duplex from "./internal/streams/duplex.mjs";
+import eos from "./internal/streams/end-of-stream.mjs";
+import PassThrough from "./internal/streams/passthrough.mjs";
+import promises from "./stream/promises.mjs";
+import Readable from "./internal/streams/readable.mjs";
+import Transform from "./internal/streams/transform.mjs";
+import Writable from "./internal/streams/writable.mjs";
 
 const { custom: customPromisify } = promisify;
 

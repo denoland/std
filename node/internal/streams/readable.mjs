@@ -2,13 +2,13 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import { addAbortSignalNoValidate } from "./add-abort-signal.js";
+import { addAbortSignalNoValidate } from "./add-abort-signal.mjs";
 import { Buffer } from "../../buffer.ts";
 import { debuglog } from "../util/debuglog.ts";
-import { getDefaultHighWaterMark, getHighWaterMark } from "./state.js";
-import { prependListener, Stream } from "./legacy.js";
+import { getDefaultHighWaterMark, getHighWaterMark } from "./state.mjs";
+import { prependListener, Stream } from "./legacy.mjs";
 import { StringDecoder } from "../../string_decoder.ts";
-import { validateObject } from "../validators.js";
+import { validateObject } from "../validators.mjs";
 import {
   ERR_INVALID_ARG_TYPE,
   ERR_METHOD_NOT_IMPLEMENTED,
@@ -16,10 +16,10 @@ import {
   ERR_STREAM_UNSHIFT_AFTER_END_EVENT,
 } from "../errors.ts";
 import { nextTick } from "../../_next_tick.ts";
-import { stdio } from "../../_process/stdio.js";
-import _from from "./from.js";
-import BufferList from "./buffer_list.js";
-import destroyImpl from "./destroy.js";
+import { stdio } from "../../_process/stdio.mjs";
+import _from from "./from.mjs";
+import BufferList from "./buffer_list.mjs";
+import destroyImpl from "./destroy.mjs";
 import EE from "../../events.ts";
 
 let debug = debuglog("stream", (fn) => {

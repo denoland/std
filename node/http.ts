@@ -7,13 +7,13 @@ import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { EventEmitter } from "./events.ts";
 import { nextTick } from "./_next_tick.ts";
 import { Status as STATUS_CODES } from "../http/http_status.ts";
-import { validatePort } from "./internal/validators.js";
+import { validatePort } from "./internal/validators.mjs";
 import {
   Readable as NodeReadable,
   Writable as NodeWritable,
 } from "./stream.ts";
 import { OutgoingMessage } from "./_http_outgoing.ts";
-import { Agent } from "./_http_agent.js";
+import { Agent } from "./_http_agent.mjs";
 import { urlToHttpOptions } from "./internal/url.ts";
 
 const METHODS = [

@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { Timeout, TIMEOUT_MAX } from "./internal/timers.js";
-import { validateCallback } from "./internal/validators.js";
+import { Timeout, TIMEOUT_MAX } from "./internal/timers.mjs";
+import { validateCallback } from "./internal/validators.mjs";
 const setTimeout_ = globalThis.setTimeout;
 const clearTimeout_ = globalThis.clearTimeout;
 const setInterval_ = globalThis.setInterval;

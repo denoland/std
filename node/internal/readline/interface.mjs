@@ -28,21 +28,21 @@ import {
   validateArray,
   validateString,
   validateUint32,
-} from "../validators.js";
+} from "../validators.mjs";
 import {
   //   inspect,
   getStringWidth,
   stripVTControlCharacters,
-} from "../util/inspect.js";
+} from "../util/inspect.mjs";
 import EventEmitter from "../../events.ts";
-import { emitKeypressEvents } from "./emitKeypressEvents.js";
+import { emitKeypressEvents } from "./emitKeypressEvents.mjs";
 import {
   charLengthAt,
   charLengthLeft,
   commonPrefix,
   kSubstringSearch,
-} from "./utils.js";
-import { clearScreenDown, cursorTo, moveCursor } from "./callbacks.js";
+} from "./utils.mjs";
+import { clearScreenDown, cursorTo, moveCursor } from "./callbacks.mjs";
 
 import { StringDecoder } from "../../string_decoder.ts";
 import {
@@ -77,7 +77,7 @@ import {
   kWordLeft,
   kWordRight,
   kWriteToOutput,
-} from "./symbols.js";
+} from "./symbols.mjs";
 
 // Lazy load Readable for startup performance.
 let Readable;

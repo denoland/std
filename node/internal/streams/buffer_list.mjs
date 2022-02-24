@@ -3,7 +3,7 @@
 // deno-lint-ignore-file
 
 import { Buffer } from "../../buffer.ts";
-import { inspect } from "../util/inspect.js";
+import { inspect } from "../util/inspect.mjs";
 
 class BufferList {
   constructor() {

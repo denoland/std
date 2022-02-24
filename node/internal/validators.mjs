@@ -4,7 +4,7 @@
 import { codes } from "./error_codes.ts";
 import { hideStackFrames } from "./hide_stack_frames.ts";
 import { isArrayBufferView } from "./util/types.ts";
-import { normalizeEncoding } from "./normalize_encoding.js";
+import { normalizeEncoding } from "./normalize_encoding.mjs";
 
 /**
  * @param {number} value

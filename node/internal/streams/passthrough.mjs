@@ -2,7 +2,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 // deno-lint-ignore-file
 
-import Transform from "./transform.js";
+import Transform from "./transform.mjs";
 
 Object.setPrototypeOf(PassThrough.prototype, Transform.prototype);
 Object.setPrototypeOf(PassThrough, Transform);

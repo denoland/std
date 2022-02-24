@@ -12,12 +12,12 @@ import { symbols } from "./internal/async_hooks.ts";
 // deno-lint-ignore camelcase
 const { async_id_symbol } = symbols;
 import { ERR_OUT_OF_RANGE } from "./internal/errors.ts";
-import { once } from "./internal/util.js";
+import { once } from "./internal/util.mjs";
 import {
   validateNumber,
   validateOneOf,
   validateString,
-} from "./internal/validators.js";
+} from "./internal/validators.mjs";
 
 const kOnKeylog = Symbol("onkeylog");
 const kRequestOptions = Symbol("requestOptions");

@@ -20,8 +20,8 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { charLengthAt, CSI, emitKeys } from "./utils.js";
-import { kSawKeyPress } from "./symbols.js";
+import { charLengthAt, CSI, emitKeys } from "./utils.mjs";
+import { kSawKeyPress } from "./symbols.mjs";
 import { clearTimeout, setTimeout } from "../../timers.ts";
 
 const {

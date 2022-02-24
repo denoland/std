@@ -9,7 +9,7 @@ import {
   emitKeypressEvents,
   Interface,
   moveCursor,
-} from "./_readline.js";
+} from "./_readline.mjs";
 
 export {
   clearLine,

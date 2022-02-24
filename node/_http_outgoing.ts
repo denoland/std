@@ -1,11 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import { getDefaultHighWaterMark } from "./internal/streams/state.js";
-import assert from "./internal/assert.js";
+import { getDefaultHighWaterMark } from "./internal/streams/state.mjs";
+import assert from "./internal/assert.mjs";
 import EE from "./events.ts";
 import { Stream } from "./stream.ts";
-import * as internalUtil from "./internal/util.js";
+import * as internalUtil from "./internal/util.mjs";
 import type { Socket } from "./net.ts";
 import { kNeedDrain, kOutHeaders, utcDate } from "./internal/http.ts";
 import { Buffer } from "./buffer.ts";
@@ -33,7 +33,7 @@ import {
   ERR_STREAM_WRITE_AFTER_END,
   hideStackFrames,
 } from "./internal/errors.ts";
-import { validateString } from "./internal/validators.js";
+import { validateString } from "./internal/validators.mjs";
 import { isUint8Array } from "./internal/util/types.ts";
 
 import { debuglog } from "./internal/util/debuglog.ts";

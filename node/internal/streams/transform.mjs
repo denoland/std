@@ -4,7 +4,7 @@
 
 import { ERR_METHOD_NOT_IMPLEMENTED } from "../errors.ts";
 import * as process from "../../_process/process.ts";
-import Duplex from "./duplex.js";
+import Duplex from "./duplex.mjs";
 
 Object.setPrototypeOf(Transform.prototype, Duplex.prototype);
 Object.setPrototypeOf(Transform, Duplex);

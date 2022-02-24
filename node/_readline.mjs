@@ -27,10 +27,10 @@ import {
   clearScreenDown,
   cursorTo,
   moveCursor,
-} from "./internal/readline/callbacks.js";
-import { emitKeypressEvents } from "./internal/readline/emitKeypressEvents.js";
-import { validateAbortSignal } from "./internal/validators.js";
-import { promisify } from "./internal/util.js";
+} from "./internal/readline/callbacks.mjs";
+import { emitKeypressEvents } from "./internal/readline/emitKeypressEvents.mjs";
+import { validateAbortSignal } from "./internal/validators.mjs";
+import { promisify } from "./internal/util.mjs";
 import { AbortError } from "./internal/errors.ts";
 
 import {
@@ -68,7 +68,7 @@ import {
   kWordLeft,
   kWordRight,
   kWriteToOutput,
-} from "./internal/readline/interface.js";
+} from "./internal/readline/interface.mjs";
 
 function Interface(input, output, completer, terminal) {
   if (!(this instanceof Interface)) {
