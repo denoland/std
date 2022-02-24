@@ -19,6 +19,10 @@ export function realpath(
   );
 }
 
+realpath.native = realpath;
+
 export function realpathSync(path: string): string {
   return Deno.realPathSync(path);
 }
+
+realpathSync.native = realpathSync;
