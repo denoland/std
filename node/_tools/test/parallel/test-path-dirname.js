@@ -9,14 +9,9 @@
 const common = require('../common');
 const assert = require('assert');
 const path = require('path');
-console.log(path.dirname(__filename))
 
-// Don't need to fix
-// node: path/to/node/test/parallel
-// deno_std: path/to/deno_std/node/_tools/suites/parallel
-
-// assert.strictEqual(path.dirname(__filename).substr(-13),
-//                    common.isWindows ? 'test\\parallel' : 'test/parallel');
+assert.strictEqual(path.dirname(__filename).substr(-13),
+                   common.isWindows ? 'test\\parallel' : 'test/parallel');
 
 assert.strictEqual(path.posix.dirname('/a/b/'), '/a');
 assert.strictEqual(path.posix.dirname('/a/b'), '/a');

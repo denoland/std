@@ -6,7 +6,7 @@
         "_wasm_crypto/target",
         "cov",
         "node/_tools/versions",
-        "node/_tools/suites",
+        "node/_tools/test",
         "node/integrationtest/yarn.js",
         "wasi/testdata"
       ]
@@ -21,7 +21,7 @@
         "node/vendor",
         "node/_module/node_modules/",
         "node/_tools/versions",
-        "node/_tools/suites",
+        "node/_tools/test",
         "node/integrationtest/yarn.js",
         "wasi/testdata"
       ]
