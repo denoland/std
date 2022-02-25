@@ -9,6 +9,7 @@ import { timingSafeEqual } from "./_crypto/timingSafeEqual.ts";
 import { createHash, getHashes, Hash } from "./_crypto/hash.ts";
 
 const randomUUID = () => crypto.randomUUID();
+const webcrypto = crypto;
 
 export default {
   Hash,
@@ -20,10 +21,11 @@ export default {
   pbkdf2,
   pbkdf2Sync,
   randomBytes,
+  randomUUID,
   scrypt,
   scryptSync,
   timingSafeEqual,
-  randomUUID,
+  webcrypto,
 };
 export {
   createHash,
@@ -39,4 +41,5 @@ export {
   scrypt,
   scryptSync,
   timingSafeEqual,
+  webcrypto,
 };
