@@ -39,6 +39,17 @@ Deno.test("[textproto] Reader", async () => {
   s = await r.readLine();
   assert(s === null);
 });
+Deno.test("[textproto] Bytes Reader", async () => {
+  const r = reader("line1\nline2\n");
+  let s = await r.readLineBytes();
+  assertEquals(s, Uint8Array.from("line1", (c) => c.charCodeAt(0)));
+
+  s = await r.readLineBytes();
+  assertEquals(s, Uint8Array.from("line2", (c) => c.charCodeAt(0)));
+
+  s = await r.readLineBytes();
+  assert(s === null);
+});
 Deno.test(
   "[textproto] Reader: Code Reader",
   async () => {

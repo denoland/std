@@ -17,7 +17,7 @@ const invalidHeaderCharRegex = /[^\t\x20-\x7e\x80-\xff]/g;
 export function str(buf: Uint8Array | null | undefined): string {
   return !buf ? "" : decoder.decode(buf);
 }
-export function parseCodeLine(
+function parseCodeLine(
   line: string,
   expectCode: number,
 ): { code: number; continued: boolean; message: string } {
@@ -163,60 +163,6 @@ export class TextProtoReader {
 
     return r === null ? null : line;
   }
-  // readContinuedLineSlice reads continued lines from the reader buffer,
-  // returning a byte slice with all lines. The validateFirstLine function
-  // is run on the first read line, and if it returns an error then this
-  // error is returned from readContinuedLineSlice.
-  async readContinuedLineSlice(
-    validateFirstLine: null | ((line: Uint8Array) => void),
-  ): Promise<Uint8Array | null> {
-    if (validateFirstLine == null) {
-      throw new Error("missing validateFirstLine func");
-    }
-
-    // Read the first line.
-    let line = await this.readLineSlice();
-    if (line == null) {
-      return null;
-    }
-    if (line.length == 0) { // blank line - no continuation
-      return line;
-    }
-
-    validateFirstLine(line);
-
-    // Optimistically assume that we have started to buffer the next line
-    // and it starts with an ASCII letter (the next header key), or a blank
-    // line, so we can avoid copying that buffered data around in memory
-    // and skipping over non-existent whitespace.
-    if (this.r.buffered() > 1) {
-      const peek = await this.r.peek(2) || new Uint8Array(0);
-      if (
-        peek.length > 0 &&
-          ((String.fromCharCode(peek[0]).length === 1 &&
-            String.fromCharCode(peek[0]).match(/[a-z]/i)) ||
-            String.fromCharCode(peek[0]) == "\n") ||
-        peek.length == 2 && String.fromCharCode(peek[0]) == "\r" &&
-          String.fromCharCode(peek[1]) == "\n"
-      ) {
-        return this.trim(line);
-      }
-    }
-
-    // ReadByte or the next readLineSlice will flush the read buffer;
-    // copy the slice into buf.
-    const buf = new Uint8Array(line.length);
-
-    // Read continuation lines.
-    while (this.skipSpace(line) > 0) {
-      line = await this.readLineSlice();
-      if (line == null) {
-        break;
-      }
-      buf.set(this.trim(line), buf.length);
-    }
-    return buf;
-  }
   // trim returns s with leading and trailing spaces and tabs removed.
   // It does not assume Unicode or UTF-8.
   trim(s: Uint8Array): Uint8Array {
@@ -241,11 +187,11 @@ export class TextProtoReader {
   async readCodeLine(
     expectCode: number,
   ): Promise<{ code: number; continued: boolean; message: string }> {
-    const line = await this.readCodeLine(expectCode);
-    if (line.continued) {
-      throw new Error("unexpected multi-line response: " + line.message);
+    const line = await this.readLine();
+    if (line === null) {
+      throw new Deno.errors.UnexpectedEof();
     }
-    return line;
+    return parseCodeLine(line, expectCode);
   }
   async readResponse(
     expectCode: number,
