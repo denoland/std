@@ -4,7 +4,7 @@
 import { Writable } from "../../stream.ts";
 import { toPathIfFileURL } from "../url.ts";
 import { open, type openFlags } from "../../_fs/_fs_open.ts";
-import { write } from "../../_fs/_fs_write.js";
+import { write } from "../../_fs/_fs_write.mjs";
 import { close } from "../../_fs/_fs_close.ts";
 import { Buffer } from "../../buffer.ts";
 

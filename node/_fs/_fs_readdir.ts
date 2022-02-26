@@ -2,7 +2,7 @@
 import { asyncIterableToCallback } from "./_fs_watch.ts";
 import Dirent from "./_fs_dirent.ts";
 import { denoErrorToNodeError } from "../internal/errors.ts";
-import { getValidatedPath } from "../internal/fs/utils.js";
+import { getValidatedPath } from "../internal/fs/utils.mjs";
 import { Buffer } from "../buffer.ts";
 
 function toDirent(val: Deno.DirEntry): Dirent {

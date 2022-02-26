@@ -60,7 +60,7 @@ import {
   writeGeneric,
   writevGeneric,
 } from "./internal/stream_base_commons.ts";
-import { kTimeout } from "./internal/timers.js";
+import { kTimeout } from "./internal/timers.mjs";
 import { nextTick } from "./_next_tick.ts";
 import {
   DTRACE_NET_SERVER_CONNECTION,
@@ -75,7 +75,7 @@ import {
   validateNumber,
   validatePort,
   validateString,
-} from "./internal/validators.js";
+} from "./internal/validators.mjs";
 import {
   constants as TCPConstants,
   TCP,

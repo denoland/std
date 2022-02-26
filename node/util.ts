@@ -1,17 +1,17 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { promisify } from "./internal/util.js";
+import { promisify } from "./internal/util.mjs";
 import { callbackify } from "./_util/_util_callbackify.ts";
 import { debuglog } from "./internal/util/debuglog.ts";
-import { deprecate } from "./internal/util.js";
+import { deprecate } from "./internal/util.mjs";
 import {
   format,
   formatWithOptions,
   inspect,
   stripVTControlCharacters,
-} from "./internal/util/inspect.js";
+} from "./internal/util/inspect.mjs";
 import { codes } from "./internal/error_codes.ts";
 import { errorMap } from "./internal_binding/uv.ts";
-import types from "./util/types.js";
+import types from "./util/types.mjs";
 import { Buffer } from "./buffer.ts";
 import { isDeepStrictEqual } from "./internal/util/comparisons.ts";
 

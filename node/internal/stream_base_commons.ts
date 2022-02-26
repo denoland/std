@@ -31,9 +31,9 @@ import {
 } from "../internal_binding/stream_wrap.ts";
 import { isUint8Array } from "./util/types.ts";
 import { errnoException } from "./errors.ts";
-import { getTimerDuration, kTimeout } from "./timers.js";
+import { getTimerDuration, kTimeout } from "./timers.mjs";
 import { setUnrefTimeout } from "../timers.ts";
-import { validateCallback } from "./validators.js";
+import { validateCallback } from "./validators.mjs";
 import { codeMap } from "../internal_binding/uv.ts";
 import { Buffer } from "../buffer.ts";
 

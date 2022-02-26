@@ -15,7 +15,7 @@
  * *********** */
 
 import { getSystemErrorName } from "../util.ts";
-import { inspect } from "../internal/util/inspect.js";
+import { inspect } from "../internal/util/inspect.mjs";
 import { codes } from "./error_codes.ts";
 import {
   codeMap,

@@ -13,7 +13,7 @@ import {
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
 import { AbortError, denoErrorToNodeError } from "../internal/errors.ts";
-import { validateStringAfterArrayBufferView } from "../internal/fs/utils.js";
+import { validateStringAfterArrayBufferView } from "../internal/fs/utils.mjs";
 
 export function writeFile(
   pathOrRid: string | number | URL,

@@ -4,8 +4,8 @@
 import {
   ObjectAssign,
   StringPrototypeReplace,
-} from "./internal/primordials.js";
-import assert from "./internal/assert.js";
+} from "./internal/primordials.mjs";
+import assert from "./internal/assert.mjs";
 import * as net from "./net.ts";
 import { createSecureContext } from "./_tls_common.ts";
 import { kStreamBaseField } from "./internal_binding/stream_wrap.ts";

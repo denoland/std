@@ -21,12 +21,12 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { nextTick } from "./_next_tick.ts";
-import { customPromisifyArgs } from "./internal/util.js";
+import { customPromisifyArgs } from "./internal/util.mjs";
 import {
   validateCallback,
   validateOneOf,
   validateString,
-} from "./internal/validators.js";
+} from "./internal/validators.mjs";
 import { isIP } from "./internal/net.ts";
 import {
   emitInvalidHostnameWarning,
