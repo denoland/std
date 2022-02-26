@@ -62,6 +62,9 @@ export function verify(
   return true;
 }
 
+const regExp =
+  /^\s*(?<comment>#.+)|(?<export>export\s+)?(?<key>[a-zA-Z_]\w*)\s*=\s*((?<quotes>["'])?(?<value>.+?)\5?)?\s*?$/;
+
 export function parse(
   source: string,
   { allowEmptyValues = false, example }: {
@@ -74,29 +77,23 @@ export function parse(
 
   const lines = source.split("\n");
   for (const line of lines) {
-    if (
-      !/^\s*(?:export\s+)?[a-zA-Z_][a-zA-Z_0-9 ]*\s*=/.test(
-        line,
-      ) /* isAssignmentLine */
-    ) {
-      continue;
-    }
-    const lhs = line.slice(0, line.indexOf("=")).trim();
+    const groups = regExp.exec(line)?.groups;
 
-    const isExported = EXPORT_REGEX.test(lhs);
-    let key = lhs;
-    if (isExported) {
-      key = lhs.replace(EXPORT_REGEX, "");
-      exports.add(key);
+    if (!groups) continue;
+
+    if (groups.export != null) exports.add(groups.key);
+
+    let value = groups.value || "";
+
+    if (groups.quotes === `'`) {
+      // do nothing, preseve newlines
+    } else if (groups.quotes === `"`) {
+      value = value.replaceAll("\\n", "\n");
+    } else {
+      value = value.trim();
     }
-    let value = line.slice(line.indexOf("=") + 1).trim();
-    if (/^'([\s\S]*)'$/.test(value) /* hasSingleQuotes */) {
-      value = value.slice(1, -1);
-    } else if (/^"([\s\S]*)"$/.test(value) /* hasDoubleQuotes */) {
-      value = value.slice(1, -1);
-      value = value.replaceAll("\\n", "\n") /* expandNewlines */;
-    } else value = value.trim();
-    env[key] = value;
+
+    env[groups.key] = value;
   }
 
   const object = { env, exports: [...exports] };
