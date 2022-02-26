@@ -65,7 +65,7 @@ async function readBlock(
  * Simple file reader
  */
 class FileReader implements Reader {
-  private file?: Deno.File;
+  private file?: Deno.FsFile;
 
   constructor(private filePath: string) {}
 
