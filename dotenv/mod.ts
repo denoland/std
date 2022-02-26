@@ -105,6 +105,11 @@ export async function config(
 
 function parseFile(filepath: string) {
   try {
+    // Avoid errors that occur in deno deploy
+    // https://github.com/denoland/deno_std/issues/1957
+    if (typeof Deno.readFileSync !== "function") {
+      return {};
+    }
     return parse(new TextDecoder("utf-8").decode(Deno.readFileSync(filepath)));
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) return {};
