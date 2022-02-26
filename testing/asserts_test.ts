@@ -381,6 +381,7 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const j = { foo: [[1, 2, 3]], bar: true };
   const k = { foo: [[1, [2, [3]]]], bar: true };
   const l = { foo: [[1, [2, [a, e, j, k]]]], bar: true };
+  const m = { foo: /abc+/i, bar: true };
 
   // Simple subset
   assertObjectMatch(a, {
@@ -442,6 +443,9 @@ Deno.test("testingAssertObjectMatching", function (): void {
   assertObjectMatch(j, { foo: [[1, 2, 3]] });
   assertObjectMatch(k, { foo: [[1, [2, [3]]]] });
   assertObjectMatch(l, { foo: [[1, [2, [a, e, j, k]]]] });
+  // Regexp
+  assertObjectMatch(m, { foo: /abc+/i });
+
   // Missing key
   {
     let didThrow;
@@ -612,6 +616,19 @@ Deno.test("testingAssertObjectMatching", function (): void {
     assertObjectMatch({ positions: [[1, 2, 3, 4]] }, {
       positions: [[1, 2, 3]],
     });
+  }
+  //Regexp
+  {
+    let didThrow;
+    try {
+      assertObjectMatch(m, { foo: /abc+/ });
+      assertObjectMatch(m, { foo: /abc*/ });
+      didThrow = false;
+    } catch (e) {
+      assert(e instanceof AssertionError);
+      didThrow = true;
+    }
+    assertEquals(didThrow, true);
   }
 });
 

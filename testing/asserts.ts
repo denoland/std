@@ -605,7 +605,7 @@ export function assertObjectMatch(
             continue;
           }
         } // On nested objects references, build a filtered object recursively
-        else if (typeof value === "object") {
+        else if ((typeof value === "object") && (!(value instanceof RegExp))) {
           const subset = (b as loose)[key];
           if ((typeof subset === "object") && (subset)) {
             filtered[key] = fn(value as loose, subset as loose);
