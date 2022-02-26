@@ -622,7 +622,7 @@ Deno.test("testingAssertObjectMatching", function (): void {
     let didThrow;
     try {
       assertObjectMatch(m, { foo: /abc+/ });
-      assertObjectMatch(m, { foo: /abc*/ });
+      assertObjectMatch(m, { foo: /abc*/i });
       didThrow = false;
     } catch (e) {
       assert(e instanceof AssertionError);
