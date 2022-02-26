@@ -27,7 +27,7 @@ Then run your app.
 { GREETING: "hello world" }
 ```
 
-### Options
+### Parse options
 
 - `example?: DotEnvObject`: example object that the parsed data will be verified
   against.
@@ -37,8 +37,8 @@ Then run your app.
 
 ## Auto loading
 
-`load` and `loadSync` automatically loads the local `.env` file and exports it
-to the passed process environment object:
+`load` automatically loads the local `.env` file and exports it to the passed
+process environment object:
 
 ```sh
 # .env
@@ -50,16 +50,7 @@ GREETING=hello world
 ```ts
 // app.ts
 import { load } from "https://deno.land/std@$STD_VERSION/dotenv/load.ts";
-await load(Deno.env);
-console.log(Deno.env.get("GREETING"));
-```
-
-### loadSync
-
-```ts
-// app.ts
-import { loadSync } from "https://deno.land/std@$STD_VERSION/dotenv/load.ts";
-loadSync(Deno.env);
+await load();
 console.log(Deno.env.get("GREETING"));
 ```
 
