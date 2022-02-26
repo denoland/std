@@ -153,6 +153,19 @@ Deno.test("configure", () => {
     "returns empty object if file doesn't exist",
   );
 
+  const originalDenoReadFileSync = Deno.readFileSync;
+  try {
+    // @ts-ignore: for test
+    delete Deno.readFileSync;
+    assertEquals(
+      configSync(testOptions),
+      {},
+      "returns empty object if Deno.readFileSync is not a function",
+    );
+  } finally {
+    Deno.readFileSync = originalDenoReadFileSync;
+  }
+
   assertEquals(
     configSync({
       path: "./.some.non.existent.env",
