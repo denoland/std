@@ -41,6 +41,7 @@ export function BN(number, base, endian) {
     this._init(number || 0, base || 10, endian || "be");
   }
 }
+export default BN;
 
 BN.BN = BN;
 BN.wordSize = 26;
