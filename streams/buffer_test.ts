@@ -28,3 +28,11 @@ Deno.test("Buffer Write & get bytes", async function () {
   await writer.write(data);
   assertEquals(buf.bytes(), data);
 });
+
+Deno.test("Buffer truncate", async function () {
+  const buf = new Buffer();
+  const writer = buf.writable.getWriter();
+  await writer.write(new Uint8Array([4, 21, 45, 19]));
+  buf.truncate(3);
+  assertEquals(buf.bytes(), new Uint8Array([4, 21, 45]));
+});
