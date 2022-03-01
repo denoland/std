@@ -3,6 +3,7 @@
 // Copyright 2011 The Go Authors. All rights reserved. BSD license.
 // https://github.com/golang/go/blob/master/LICENSE
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 const KECCAK_ROUNDS = 24;
 const KECCAK_RC: number[] = [
