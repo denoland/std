@@ -1,4 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 /** Returns the index of the first occurrence of the pattern array in the source
  * array, or -1 if it is not present. */
