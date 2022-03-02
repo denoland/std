@@ -40,7 +40,9 @@ function calcIv(self, iv, ck) {
   ghash.update(Buffer.alloc(8, 0));
   var ivBits = len * 8;
   var tail = Buffer.alloc(8);
-  tail.writeUIntBE(ivBits, 0, 8);
+  // Fixed from the original
+  // https://github.com/crypto-browserify/browserify-aes/issues/58#issuecomment-451778917
+  tail.writeUIntBE(ivBits, 2, 6);
   ghash.update(tail);
   self._finID = ghash.state;
   var out = Buffer.from(self._finID);
