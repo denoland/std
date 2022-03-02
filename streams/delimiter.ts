@@ -5,7 +5,9 @@ import { BytesList } from "../bytes/bytes_list.ts";
 const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
-/** Transform a stream into a stream where each chunk is divided by a newline,
+/** @deprecated Use TextLineStream instead, as it can handle empty lines.
+ *
+ * Transform a stream into a stream where each chunk is divided by a newline,
  * be it `\n` or `\r\n`.
  *
  * ```ts
