@@ -382,6 +382,11 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const k = { foo: [[1, [2, [3]]]], bar: true };
   const l = { foo: [[1, [2, [a, e, j, k]]]], bar: true };
   const m = { foo: /abc+/i, bar: [/abc/g, /abc/m] };
+  const n = {
+    foo: new Set(["foo", "bar"]),
+    bar: new Map([["foo", 1], ["bar", 2]]),
+    baz: new Map([["a", a], ["b", b]]),
+  };
 
   // Simple subset
   assertObjectMatch(a, {
@@ -446,6 +451,11 @@ Deno.test("testingAssertObjectMatching", function (): void {
   // Regexp
   assertObjectMatch(m, { foo: /abc+/i });
   assertObjectMatch(m, { bar: [/abc/g, /abc/m] });
+  //Built-in data structures
+  assertObjectMatch(n, { foo: new Set(["foo"]) });
+  assertObjectMatch(n, { bar: new Map([["bar", 2]]) });
+  assertObjectMatch(n, { baz: new Map([["b", b]]) });
+  assertObjectMatch(n, { baz: new Map([["b", { foo: true }]]) });
 
   // Missing key
   {
@@ -619,19 +629,25 @@ Deno.test("testingAssertObjectMatching", function (): void {
     });
   }
   //Regexp
-  {
-    let didThrow;
-    try {
-      assertObjectMatch(m, { foo: /abc+/ });
-      assertObjectMatch(m, { foo: /abc*/i });
-      assertObjectMatch(m, { bar: [/abc/m, /abc/g] });
-      didThrow = false;
-    } catch (e) {
-      assert(e instanceof AssertionError);
-      didThrow = true;
-    }
-    assertEquals(didThrow, true);
-  }
+  assertThrows(() => assertObjectMatch(m, { foo: /abc+/ }), AssertionError);
+  assertThrows(() => assertObjectMatch(m, { foo: /abc*/i }), AssertionError);
+  assertThrows(
+    () => assertObjectMatch(m, { bar: [/abc/m, /abc/g] }),
+    AssertionError,
+  );
+  //Built-in data structures
+  assertThrows(
+    () => assertObjectMatch(n, { foo: new Set(["baz"]) }),
+    AssertionError,
+  );
+  assertThrows(
+    () => assertObjectMatch(n, { bar: new Map([["bar", 3]]) }),
+    AssertionError,
+  );
+  assertThrows(
+    () => assertObjectMatch(n, { baz: new Map([["a", { baz: true }]]) }),
+    AssertionError,
+  );
 });
 
 Deno.test("testingAssertsUnimplemented", function (): void {
