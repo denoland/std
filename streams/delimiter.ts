@@ -6,7 +6,9 @@ import { BytesList } from "../bytes/bytes_list.ts";
 const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
-/** Transform a stream into a stream where each chunk is divided by a newline,
+/** @deprecated Use TextLineStream instead, as it can handle empty lines.
+ *
+ * Transform a stream into a stream where each chunk is divided by a newline,
  * be it `\n` or `\r\n`.
  *
  * ```ts
@@ -69,6 +71,75 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
       return mergeBuf.subarray(0, -1);
     } else {
       return mergeBuf;
+    }
+  }
+}
+
+/** Transform a stream into a stream where each chunk is divided by a newline,
+ * be it `\n` or `\r\n`.
+ *
+ * ```ts
+ * import { TextLineStream } from "./delimiter.ts";
+ * const res = await fetch("https://example.com");
+ * const lines = res.body!
+ *   .pipeThrough(new TextDecoderStream())
+ *   .pipeThrough(new TextLineStream());
+ * ```
+ */
+export class TextLineStream extends TransformStream<string, string> {
+  #buf = "";
+  #prevHadCR = false;
+
+  constructor() {
+    super({
+      transform: (chunk, controller) => {
+        this.#handle(chunk, controller);
+      },
+      flush: (controller) => {
+        controller.enqueue(this.#getBuf(false));
+      },
+    });
+  }
+
+  #handle(
+    chunk: string,
+    controller: TransformStreamDefaultController<string>,
+  ) {
+    const lfIndex = chunk.indexOf("\n");
+
+    if (this.#prevHadCR) {
+      this.#prevHadCR = false;
+      if (lfIndex === 0) {
+        controller.enqueue(this.#getBuf(true));
+        this.#handle(chunk.slice(1), controller);
+        return;
+      }
+    }
+
+    if (lfIndex === -1) {
+      if (chunk.at(-1) === "\r") {
+        this.#prevHadCR = true;
+      }
+      this.#buf += chunk;
+    } else {
+      let crOrLfIndex = lfIndex;
+      if (chunk[lfIndex - 1] === "\r") {
+        crOrLfIndex--;
+      }
+      this.#buf += chunk.slice(0, crOrLfIndex);
+      controller.enqueue(this.#getBuf(false));
+      this.#handle(chunk.slice(lfIndex + 1), controller);
+    }
+  }
+
+  #getBuf(prevHadCR: boolean): string {
+    const buf = this.#buf;
+    this.#buf = "";
+
+    if (prevHadCR) {
+      return buf.slice(0, -1);
+    } else {
+      return buf;
     }
   }
 }
