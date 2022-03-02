@@ -72,7 +72,6 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
   }
 }
 
-
 /** Transform a stream into a stream where each chunk is divided by a newline,
  * be it `\n` or `\r\n`.
  *
@@ -141,7 +140,6 @@ export class TextLineStream extends TransformStream<string, string> {
     }
   }
 }
-
 
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *

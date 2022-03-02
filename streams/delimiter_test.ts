@@ -48,7 +48,7 @@ Deno.test("[streams] TextLineStream", async () => {
     },
   });
 
-  const lines = textStream.pipeThrough(new TextLineStream())
+  const lines = textStream.pipeThrough(new TextLineStream());
   const reader = lines.getReader();
 
   const a = await reader.read();
