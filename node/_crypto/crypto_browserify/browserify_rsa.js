@@ -3,6 +3,7 @@
 
 import { BN } from "./bn.js/bn.js";
 import { randomBytes } from "./randombytes.ts";
+import { Buffer } from "../../buffer.ts";
 
 function blind(priv) {
   const r = getr(priv);
