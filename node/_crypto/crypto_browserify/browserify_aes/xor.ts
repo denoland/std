@@ -6,7 +6,7 @@
 import { Buffer } from "../../../buffer.ts";
 
 export function xor(a: Buffer, b: Buffer): Buffer {
-  const length = Math.max(a.length, b.length);
+  const length = Math.min(a.length, b.length);
   const buffer = Buffer.allocUnsafe(length);
 
   for (let i = 0; i < length; ++i) {
