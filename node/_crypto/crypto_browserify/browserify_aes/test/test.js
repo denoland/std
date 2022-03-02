@@ -98,7 +98,7 @@ fixtures2.forEach((f, i) => {
       );
       if (f.aad) encrypt.setAAD(Buffer.from(f.aad, "hex"));
 
-      let hex = encrypt.update(f.plain, "ascii", "hex");
+      let hex = encrypt.update(f.plain, "utf-8", "hex");
       hex += encrypt.final("hex");
       const authTag = encrypt.getAuthTag();
 
@@ -116,15 +116,15 @@ fixtures2.forEach((f, i) => {
       );
       decrypt.setAuthTag(Buffer.from(f.tag, "hex"));
       if (f.aad) decrypt.setAAD(Buffer.from(f.aad, "hex"));
-      let msg = decrypt.update(f.ct, "hex", "ascii");
+      let msg = decrypt.update(f.ct, "hex", "utf-8");
       if (!f.tampered) {
-        msg += decrypt.final("ascii");
+        msg += decrypt.final("utf-8");
         assertEquals(msg, f.plain);
       } else {
         // assert that final throws if input data could not be verified!
         assertThrows(
           function () {
-            decrypt.final("ascii");
+            decrypt.final("utf-8");
           },
           undefined,
           " auth",
@@ -135,7 +135,7 @@ fixtures2.forEach((f, i) => {
       if (!f.password) return;
       const encrypt = crypto.createCipher(f.algo, f.password);
       if (f.aad) encrypt.setAAD(Buffer.from(f.aad, "hex"));
-      let hex = encrypt.update(f.plain, "ascii", "hex");
+      let hex = encrypt.update(f.plain, "utf-8", "hex");
       hex += encrypt.final("hex");
       const authTag = encrypt.getAuthTag();
       // only test basic encryption run if output is marked as tampered.
@@ -149,15 +149,15 @@ fixtures2.forEach((f, i) => {
       const decrypt = crypto.createDecipher(f.algo, f.password);
       decrypt.setAuthTag(Buffer.from(f.tag, "hex"));
       if (f.aad) decrypt.setAAD(Buffer.from(f.aad, "hex"));
-      let msg = decrypt.update(f.ct, "hex", "ascii");
+      let msg = decrypt.update(f.ct, "hex", "utf-8");
       if (!f.tampered) {
-        msg += decrypt.final("ascii");
+        msg += decrypt.final("utf-8");
         assertEquals(msg, f.plain);
       } else {
         // assert that final throws if input data could not be verified!
         assertThrows(
           function () {
-            decrypt.final("ascii");
+            decrypt.final("utf-8");
           },
           undefined,
           " auth",
@@ -178,13 +178,13 @@ fixtures2.forEach((f, i) => {
         "ipxp9a6i1Mb4USb4",
         "6fKjEjR3Vl30EUYC",
       );
-      encrypt.update("blah", "ascii");
+      encrypt.update("blah", "utf-8");
       encrypt.final();
       assertThrows(function () {
         encrypt.getAuthTag();
       });
       assertThrows(function () {
-        encrypt.setAAD(Buffer.from("123", "ascii"));
+        encrypt.setAAD(Buffer.from("123", "utf-8"));
       });
     })();
     (function () {
@@ -194,7 +194,7 @@ fixtures2.forEach((f, i) => {
         Buffer.from(f.key, "hex"),
         Buffer.from(f.iv, "hex"),
       );
-      encrypt.update("blah", "ascii");
+      encrypt.update("blah", "utf-8");
       assertThrows(
         function () {
           encrypt.getAuthTag();
