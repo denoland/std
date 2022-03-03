@@ -323,7 +323,7 @@ export function assertNotEquals(
  * assertStrictEquals(1, 2)
  * ```
  */
-export function assertStrictEquals <T>(
+export function assertStrictEquals<T>(
   actual: unknown,
   expected: T,
   msg?: string,
