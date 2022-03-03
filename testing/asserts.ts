@@ -251,7 +251,7 @@ export function assertNotEquals(
     expectedString = "[Cannot display]";
   }
   if (!msg) {
-    msg = `actual: ${actualString} expected: ${expectedString}`;
+    msg = `actual: ${actualString} expected not to be: ${expectedString}`;
   }
   throw new AssertionError(msg);
 }
