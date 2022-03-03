@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { join } from "../../path/mod.ts";
+import { fromFileUrl, join } from "../../path/mod.ts";
+import { delay } from "../../async/delay.ts";
 import { assert } from "../../testing/asserts.ts";
 
 const env = {
@@ -15,12 +16,24 @@ Deno.test("integration test of compat mode", {
   const opts = { env, cwd: tempDir };
   const npmPath = join(tempDir, "node_modules", "npm");
   const expressPath = join(tempDir, "node_modules", "express");
-  await t.step("yarn add npm", async () => {
-    await exec(`deno run --compat --unstable -A ${yarnUrl} add npm`, opts);
+  let hasDocker;
+  try {
+    await exec("docker help");
+    hasDocker = true;
+  } catch {
+    hasDocker = false;
+  }
+
+  await t.step("Runs `yarn add <mod>`", async () => {
+    await exec(
+      `deno run --compat --unstable -A ${yarnUrl} add npm mysql2`,
+      opts,
+    );
     const stat = await Deno.lstat(join(npmPath, "package.json"));
     assert(stat.isFile);
   });
-  await t.step("npm install express", async () => {
+
+  await t.step("Runs `npm install <mod>`", async () => {
     await exec(
       `deno run --compat --unstable -A ${
         join(npmPath, "index.js")
@@ -30,7 +43,8 @@ Deno.test("integration test of compat mode", {
     const stat = await Deno.lstat(join(expressPath, "package.json"));
     assert(stat.isFile);
   });
-  await t.step("run express example app", async () => {
+
+  await t.step("Runs express example app", async () => {
     await Deno.writeTextFile(
       join(tempDir, "app.js"),
       `
@@ -49,6 +63,26 @@ Deno.test("integration test of compat mode", {
     );
     await exec(`deno run --compat --unstable -A app.js`, opts);
   });
+
+  // Runs test only when docker command is available
+  if (hasDocker) {
+    const pwd = fromFileUrl(new URL(".", import.meta.url));
+    await exec(
+      `docker run -d --name mysql-test -e MYSQL_ALLOW_EMPTY_PASSWORD=1 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=test -v ${pwd}/testdata/mysql-conf:/etc/mysql/conf.d -v ${pwd}/testdata/mysql-certs:/certs -p 3306:3306 mysql:8.0.18`,
+    );
+    await t.step("Runs basic mysql2 example", async () => {
+      await Deno.copyFile(
+        fromFileUrl(new URL("mysql2-example.js", import.meta.url)),
+        join(tempDir, "mysql2-example.js"),
+      );
+      // Wait for the mysql server starting
+      // FIXME(kt3k): This is racy. Find a more reliable way to wait for
+      // mysql being ready
+      await delay(10000);
+      await exec(`deno run --compat --unstable -A mysql2-example.js`, opts);
+    });
+    await exec("docker rm -f mysql-test");
+  }
   await Deno.remove(tempDir, { recursive: true });
 });
 
