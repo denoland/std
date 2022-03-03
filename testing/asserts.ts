@@ -323,21 +323,11 @@ export function assertNotEquals(
  * assertStrictEquals(1, 2)
  * ```
  */
-export function assertStrictEquals(
+export function assertStrictEquals <T>(
   actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
-export function assertStrictEquals<T>(
-  actual: T,
   expected: T,
   msg?: string,
-): void;
-export function assertStrictEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void {
+): asserts actual is T {
   if (actual === expected) {
     return;
   }
