@@ -117,6 +117,10 @@ class ClientRequest extends NodeWritable {
   }
 
   override async _final() {
+    if (this.controller) {
+      this.controller.close();
+    }
+
     const client = await this._createCustomClient();
     const opts = { body: this.body, method: this.opts.method, client };
     const mayResponse = fetch(this.opts.href!, opts).catch((e) => {
