@@ -1,10 +1,10 @@
 ### 0.128.0 / 2022.03.03
 
+- feat(node): add crypto.webcrypto (#1961)
+- feat(streams): TextLineStream (#1978)
+- fix(dotenv): avoid top-level-await in load.ts (#1964)
 - fix(node): fix http client reqs with bodies (#1983)
 - fix(testing): fix assertObjectMatch for RegExp/Map/Set (#1967)
-- feat(streams): TextLineStream (#1978)
-- feat(node): add crypto.webcrypto (#1961)
-- fix(dotenv): avoid top-level-await in load.ts (#1964)
 
 ### 0.127.0 / 2022.02.24
 
