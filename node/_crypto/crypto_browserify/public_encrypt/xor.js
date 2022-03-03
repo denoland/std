@@ -2,8 +2,8 @@
 // Copyright 2017 Calvin Metcalf. All rights reserved. MIT license.
 
 export function xor(a, b) {
-  var len = a.length;
-  var i = -1;
+  const len = a.length;
+  let i = -1;
   while (++i < len) {
     a[i] ^= b[i];
   }
