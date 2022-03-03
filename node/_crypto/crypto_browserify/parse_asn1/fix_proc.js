@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright 2017 crypto-browserify. All rights reserved. MIT license.
-// adapted from https://github.com/apatil/pemstrip
+// from https://github.com/crypto-browserify/parse-asn1/blob/fbd70dca8670d17955893e083ca69118908570be/fixProc.js
 
 import evp from "../evp_bytes_to_key.ts";
 import * as ciphers from "../browserify_aes/mod.js";
