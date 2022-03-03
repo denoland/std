@@ -604,10 +604,28 @@ export function assertObjectMatch(
             filtered[key] = fn({ ...value }, { ...subset });
             continue;
           }
+        } // On regexp references, keep value as it to avoid loosing pattern and flags
+        else if (value instanceof RegExp) {
+          filtered[key] = value;
+          continue;
         } // On nested objects references, build a filtered object recursively
         else if (typeof value === "object") {
           const subset = (b as loose)[key];
           if ((typeof subset === "object") && (subset)) {
+            // When both operands are maps, build a filtered map with common keys and filter nested objects inside
+            if ((value instanceof Map) && (subset instanceof Map)) {
+              filtered[key] = new Map(
+                [...value].filter(([k]) => subset.has(k)).map((
+                  [k, v],
+                ) => [k, typeof v === "object" ? fn(v, subset.get(k)) : v]),
+              );
+              continue;
+            }
+            // When both operands are set, build a filtered set with common values
+            if ((value instanceof Set) && (subset instanceof Set)) {
+              filtered[key] = new Set([...value].filter((v) => subset.has(v)));
+              continue;
+            }
             filtered[key] = fn(value as loose, subset as loose);
             continue;
           }
