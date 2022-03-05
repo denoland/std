@@ -1,5 +1,8 @@
-import { TextProtoReader } from "../../textproto/mod.ts";
-import type { BufReader } from "../../io/buffer.ts";
+// Originally ported from Go:
+// https://github.com/golang/go/blob/go1.12.5/src/encoding/csv/
+// Copyright 2011 The Go Authors. All rights reserved. BSD license.
+// https://github.com/golang/go/blob/master/LICENSE
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../../_util/assert.ts";
 
 /**
@@ -25,19 +28,32 @@ export const defaultReadOptions: ReadOptions = {
   trimLeadingSpace: false,
 };
 
+export interface LineReader {
+  readLine(): Promise<string | null>;
+  isEOF(): Promise<boolean>;
+}
+
 export async function readRecord(
   startLine: number,
-  reader: BufReader,
+  reader: LineReader,
   opt: ReadOptions = defaultReadOptions,
 ): Promise<string[] | null> {
-  const tp = new TextProtoReader(reader);
-  let line = await readLine(tp);
-  let lineIndex = startLine + 1;
-
+  const line = await reader.readLine();
   if (line === null) return null;
   if (line.length === 0) {
     return [];
   }
+
+  return parseRecord(line, reader, opt, startLine, startLine + 1);
+}
+
+export async function parseRecord(
+  line: string,
+  reader: LineReader,
+  opt: ReadOptions = defaultReadOptions,
+  startLine: number,
+  lineIndex: number = startLine,
+): Promise<Array<string> | null> {
   // line starting with comment character is ignored
   if (opt.comment && line[0] === opt.comment) {
     return [];
@@ -55,7 +71,7 @@ export async function readRecord(
   parseField:
   for (;;) {
     if (opt.trimLeadingSpace) {
-      line = line.trimLeft();
+      line = line.trimStart();
     }
 
     if (line.length === 0 || !line.startsWith(quote)) {
@@ -126,10 +142,10 @@ export async function readRecord(
             );
             break parseField;
           }
-        } else if (line.length > 0 || !(await isEOF(tp))) {
+        } else if (line.length > 0 || !(await reader.isEOF())) {
           // Hit end of line (copy all data so far).
           recordBuffer += line;
-          const r = await readLine(tp);
+          const r = await reader.readLine();
           lineIndex++;
           line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
           fullLine = line;
@@ -182,34 +198,6 @@ export async function readRecord(
 function runeCount(s: string): number {
   // Array.from considers the surrogate pair.
   return Array.from(s).length;
-}
-
-async function readLine(tp: TextProtoReader): Promise<string | null> {
-  let line: string;
-  const r = await tp.readLine();
-  if (r === null) return null;
-  line = r;
-
-  // For backwards compatibility, drop trailing \r before EOF.
-  if ((await isEOF(tp)) && line.length > 0 && line[line.length - 1] === "\r") {
-    line = line.substring(0, line.length - 1);
-  }
-
-  // Normalize \r\n to \n on all input lines.
-  if (
-    line.length >= 2 &&
-    line[line.length - 2] === "\r" &&
-    line[line.length - 1] === "\n"
-  ) {
-    line = line.substring(0, line.length - 2);
-    line = line + "\n";
-  }
-
-  return line;
-}
-
-async function isEOF(tp: TextProtoReader): Promise<boolean> {
-  return (await tp.r.peek(0)) === null;
 }
 
 /**

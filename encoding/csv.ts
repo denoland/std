@@ -5,6 +5,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { BufReader } from "../io/buffer.ts";
+import { TextProtoReader } from "../textproto/mod.ts";
 import { StringReader } from "../io/readers.ts";
 import { assert } from "../_util/assert.ts";
 import {
@@ -13,7 +14,7 @@ import {
   ParseError,
   readRecord,
 } from "./csv/_io.ts";
-import type { ReadOptions } from "./csv/_io.ts";
+import type { LineReader, ReadOptions } from "./csv/_io.ts";
 
 export {
   ERR_BARE_QUOTE,
@@ -31,6 +32,43 @@ export type {
   DataItem,
   StringifyOptions,
 } from "./csv_stringify.ts";
+
+class TextProtoLineReader implements LineReader {
+  #tp: TextProtoReader;
+  constructor(bufReader: BufReader) {
+    this.#tp = new TextProtoReader(bufReader);
+  }
+
+  async readLine() {
+    let line: string;
+    const r = await this.#tp.readLine();
+    if (r === null) return null;
+    line = r;
+
+    // For backwards compatibility, drop trailing \r before EOF.
+    if (
+      (await this.isEOF()) && line.length > 0 && line[line.length - 1] === "\r"
+    ) {
+      line = line.substring(0, line.length - 1);
+    }
+
+    // Normalize \r\n to \n on all input lines.
+    if (
+      line.length >= 2 &&
+      line[line.length - 2] === "\r" &&
+      line[line.length - 1] === "\n"
+    ) {
+      line = line.substring(0, line.length - 2);
+      line = line + "\n";
+    }
+
+    return line;
+  }
+
+  async isEOF() {
+    return (await this.#tp.r.peek(0)) === null;
+  }
+}
 
 const INVALID_RUNE = ["\r", "\n", '"'];
 
@@ -71,8 +109,9 @@ export async function readMatrix(
   let lineIndex = 0;
   chkOptions(opt);
 
+  const lineReader = new TextProtoLineReader(reader);
   for (;;) {
-    const r = await readRecord(lineIndex, reader, opt);
+    const r = await readRecord(lineIndex, lineReader, opt);
     if (r === null) break;
     lineResult = r;
     lineIndex++;
