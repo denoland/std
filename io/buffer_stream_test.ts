@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals } from "../testing/asserts.ts";
-import { Buffer } from "./buffer.ts";
+import { Buffer } from "./buffer_stream.ts";
 
 Deno.test("Buffer Write & Read", async function () {
   const buf = new Buffer();
