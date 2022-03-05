@@ -242,4 +242,3 @@ Deno.test("test stripColor", function (): void {
     "foofoo",
   );
 });
-
