@@ -875,6 +875,30 @@ Deno.test({
 });
 
 Deno.test({
+  name: "strict types test",
+  fn(): void {
+    const x = { number: 2 };
+
+    const y = x as Record<never, never>;
+    const z = x as unknown;
+
+    // y.number;
+    //   ~~~~~~
+    // Property 'number' does not exist on type 'Record<never, never>'.deno-ts(2339)
+
+    assertStrictEquals(y, x);
+    y.number; // ok
+
+    // z.number;
+    // ~
+    // Object is of type 'unknown'.deno-ts(2571)
+
+    assertStrictEquals(z, x);
+    z.number; // ok
+  },
+});
+
+Deno.test({
   name: "strict pass case",
   fn(): void {
     assertStrictEquals(true, true);
