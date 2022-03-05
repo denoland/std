@@ -113,12 +113,10 @@ jobs:
         uses: denoland/setup-deno@v1.0.0
 
       - name: Format
-        shell: bash
-        run: ./_tools/format.js --check
+        run: deno fmt --config deno.json --check
 
       - name: Lint
-        shell: bash
-        run: ./_tools/lint.js
+        run: deno lint --config deno.json
 
       - name: Check circular dependencies
         shell: bash
