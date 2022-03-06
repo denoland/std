@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright 2017 crypto-browserify. All rights reserved. MIT license.
-// from https://github.com/indutny/self-signed/blob/gh-pages/lib/asn1.js
+// from https://github.com/crypto-browserify/parse-asn1/blob/fbd70dca8670d17955893e083ca69118908570be/asn1.js
 
 import asn1 from "../asn1.js/mod.js";
 import certificate from "./certificate.js";
