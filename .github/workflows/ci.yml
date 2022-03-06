@@ -113,7 +113,7 @@ jobs:
         uses: denoland/setup-deno@v1.0.0
 
       - name: Format
-        run: deno fmt --config deno.json --check
+        run: deno fmt --check
 
       - name: Lint
         run: deno lint --config deno.json
