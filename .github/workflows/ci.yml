@@ -116,7 +116,7 @@ jobs:
         run: deno fmt --check
 
       - name: Lint
-        run: deno lint --config deno.json
+        run: deno lint
 
       - name: Check circular dependencies
         shell: bash
