@@ -18,26 +18,22 @@ Deno.test("integration test of compat mode", {
   const expressPath = join(tempDir, "node_modules", "express");
 
   await t.step("yarn add npm express", async () => {
-    await exec(`deno run --compat --unstable -A ${yarnUrl} add npm`, opts);
-    const stat = await Deno.lstat(join(npmPath, "package.json"));
-    assert(stat.isFile);
+    // FIXME(kt3k): npm@8.5.3 doesn't work with compat mode
+    await exec(
+      `deno run --compat --unstable -A ${yarnUrl} add npm@8.5.2`,
+      opts,
+    );
+    assert((await Deno.lstat(join(npmPath, "package.json"))).isFile);
     await exec(`deno run --compat --unstable -A ${yarnUrl} add express`, opts);
     assert((await Deno.lstat(join(expressPath, "package.json"))).isFile);
   });
 
-  // FIXME(kt3k): npm in compat mode is broken in Linux and Mac
-  if (Deno.build.os === "windows") {
-    await t.step("npm install gulp", async () => {
-      await exec(
-        `deno run --compat --unstable -A ${
-          join(npmPath, "index.js")
-        } install gulp`,
-        opts,
-      );
-      const stat = await Deno.lstat(join(gulpPath, "package.json"));
-      assert(stat.isFile);
-    });
-  }
+  await t.step("npm install gulp", async () => {
+    const npmCli = join(npmPath, "index.js");
+    await exec(`deno run --compat --unstable -A ${npmCli} install gulp`, opts);
+    const stat = await Deno.lstat(join(gulpPath, "package.json"));
+    assert(stat.isFile);
+  });
 
   await t.step("run express example app", async () => {
     await Deno.writeTextFile(
