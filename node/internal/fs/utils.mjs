@@ -768,7 +768,7 @@ export const getValidatedFd = hideStackFrames((fd, propName = "fd") => {
   return fd;
 });
 
-const validateBufferArray = hideStackFrames((buffers, propName = "buffers") => {
+export const validateBufferArray = hideStackFrames((buffers, propName = "buffers") => {
   if (!Array.isArray(buffers)) {
     throw new ERR_INVALID_ARG_TYPE(propName, "ArrayBufferView[]", buffers);
   }
