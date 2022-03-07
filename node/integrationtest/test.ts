@@ -27,28 +27,24 @@ Deno.test("integration test of compat mode", {
   }
 
   await t.step("Runs `yarn add <mod>`", async () => {
-    await exec(`deno run --compat --unstable -A ${yarnUrl} add npm`, opts);
-    const stat = await Deno.lstat(join(npmPath, "package.json"));
-    assert(stat.isFile);
+    // FIXME(kt3k): npm@8.5.3 doesn't work with compat mode
+    await exec(
+      `deno run --compat --unstable -A ${yarnUrl} add npm@8.5.2`,
+      opts,
+    );
+    assert((await Deno.lstat(join(npmPath, "package.json"))).isFile);
     await exec(`deno run --compat --unstable -A ${yarnUrl} add express`, opts);
     assert((await Deno.lstat(join(expressPath, "package.json"))).isFile);
     await exec(`deno run --compat --unstable -A ${yarnUrl} add mysql2`, opts);
     assert((await Deno.lstat(join(mysql2Path, "package.json"))).isFile);
   });
 
-  // FIXME(kt3k): npm in compat mode is broken in Linux and Mac
-  if (Deno.build.os === "windows") {
-    await t.step("npm install gulp", async () => {
-      await exec(
-        `deno run --compat --unstable -A ${
-          join(npmPath, "index.js")
-        } install gulp`,
-        opts,
-      );
-      const stat = await Deno.lstat(join(gulpPath, "package.json"));
-      assert(stat.isFile);
-    });
-  }
+  await t.step("npm install gulp", async () => {
+    const npmCli = join(npmPath, "index.js");
+    await exec(`deno run --compat --unstable -A ${npmCli} install gulp`, opts);
+    const stat = await Deno.lstat(join(gulpPath, "package.json"));
+    assert(stat.isFile);
+  });
 
   await t.step("run express example app", async () => {
     await Deno.writeTextFile(
@@ -84,7 +80,7 @@ Deno.test("integration test of compat mode", {
       // Wait for the mysql server starting
       // FIXME(kt3k): This is racy. Find a more reliable way to wait for
       // mysql being ready
-      await delay(10000);
+      await delay(15000);
       await exec(`deno run --compat --unstable -A mysql2-example.js`, opts);
     });
     await exec("docker rm -f mysql-test");
