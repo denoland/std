@@ -217,7 +217,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new DelimiterStream("foo"));
+ *   .pipeThrough(new TextDelimiterStream("foo"));
  * ```
  */
 export class TextDelimiterStream extends TransformStream<string, string> {
