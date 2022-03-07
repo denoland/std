@@ -768,19 +768,21 @@ export const getValidatedFd = hideStackFrames((fd, propName = "fd") => {
   return fd;
 });
 
-export const validateBufferArray = hideStackFrames((buffers, propName = "buffers") => {
-  if (!Array.isArray(buffers)) {
-    throw new ERR_INVALID_ARG_TYPE(propName, "ArrayBufferView[]", buffers);
-  }
-
-  for (let i = 0; i < buffers.length; i++) {
-    if (!isArrayBufferView(buffers[i])) {
+export const validateBufferArray = hideStackFrames(
+  (buffers, propName = "buffers") => {
+    if (!Array.isArray(buffers)) {
       throw new ERR_INVALID_ARG_TYPE(propName, "ArrayBufferView[]", buffers);
     }
-  }
 
-  return buffers;
-});
+    for (let i = 0; i < buffers.length; i++) {
+      if (!isArrayBufferView(buffers[i])) {
+        throw new ERR_INVALID_ARG_TYPE(propName, "ArrayBufferView[]", buffers);
+      }
+    }
+
+    return buffers;
+  },
+);
 
 let nonPortableTemplateWarn = true;
 
