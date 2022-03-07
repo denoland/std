@@ -381,6 +381,12 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const j = { foo: [[1, 2, 3]], bar: true };
   const k = { foo: [[1, [2, [3]]]], bar: true };
   const l = { foo: [[1, [2, [a, e, j, k]]]], bar: true };
+  const m = { foo: /abc+/i, bar: [/abc/g, /abc/m] };
+  const n = {
+    foo: new Set(["foo", "bar"]),
+    bar: new Map([["foo", 1], ["bar", 2]]),
+    baz: new Map([["a", a], ["b", b]]),
+  };
 
   // Simple subset
   assertObjectMatch(a, {
@@ -442,6 +448,15 @@ Deno.test("testingAssertObjectMatching", function (): void {
   assertObjectMatch(j, { foo: [[1, 2, 3]] });
   assertObjectMatch(k, { foo: [[1, [2, [3]]]] });
   assertObjectMatch(l, { foo: [[1, [2, [a, e, j, k]]]] });
+  // Regexp
+  assertObjectMatch(m, { foo: /abc+/i });
+  assertObjectMatch(m, { bar: [/abc/g, /abc/m] });
+  //Built-in data structures
+  assertObjectMatch(n, { foo: new Set(["foo"]) });
+  assertObjectMatch(n, { bar: new Map([["bar", 2]]) });
+  assertObjectMatch(n, { baz: new Map([["b", b]]) });
+  assertObjectMatch(n, { baz: new Map([["b", { foo: true }]]) });
+
   // Missing key
   {
     let didThrow;
@@ -613,6 +628,26 @@ Deno.test("testingAssertObjectMatching", function (): void {
       positions: [[1, 2, 3]],
     });
   }
+  //Regexp
+  assertThrows(() => assertObjectMatch(m, { foo: /abc+/ }), AssertionError);
+  assertThrows(() => assertObjectMatch(m, { foo: /abc*/i }), AssertionError);
+  assertThrows(
+    () => assertObjectMatch(m, { bar: [/abc/m, /abc/g] }),
+    AssertionError,
+  );
+  //Built-in data structures
+  assertThrows(
+    () => assertObjectMatch(n, { foo: new Set(["baz"]) }),
+    AssertionError,
+  );
+  assertThrows(
+    () => assertObjectMatch(n, { bar: new Map([["bar", 3]]) }),
+    AssertionError,
+  );
+  assertThrows(
+    () => assertObjectMatch(n, { baz: new Map([["a", { baz: true }]]) }),
+    AssertionError,
+  );
 });
 
 Deno.test("testingAssertsUnimplemented", function (): void {
@@ -836,6 +871,30 @@ Deno.test({
         "",
       ].join("\n"),
     );
+  },
+});
+
+Deno.test({
+  name: "strict types test",
+  fn(): void {
+    const x = { number: 2 };
+
+    const y = x as Record<never, never>;
+    const z = x as unknown;
+
+    // y.number;
+    //   ~~~~~~
+    // Property 'number' does not exist on type 'Record<never, never>'.deno-ts(2339)
+
+    assertStrictEquals(y, x);
+    y.number; // ok
+
+    // z.number;
+    // ~
+    // Object is of type 'unknown'.deno-ts(2571)
+
+    assertStrictEquals(z, x);
+    z.number; // ok
   },
 });
 
