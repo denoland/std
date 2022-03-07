@@ -125,7 +125,7 @@ Deno.test("[streams] TextDelimiterStream", async () => {
   });
 
   const lines = textStream
-    .pipeThrough(new TextDelimiterStream("foo"))
+    .pipeThrough(new TextDelimiterStream("foo"));
   const reader = lines.getReader();
 
   const a = await reader.read();
