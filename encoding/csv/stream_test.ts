@@ -1,7 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { CSVStream } from "./stream.ts";
+import { ERR_QUOTE, ParseError } from "./_io.ts";
 import { readableStreamFromIterable } from "../../streams/conversion.ts";
-import { assertEquals } from "../../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertRejects,
+  assertStringIncludes,
+} from "../../testing/asserts.ts";
 import { fromFileUrl, join } from "../../path/mod.ts";
 
 const testdataDir = join(fromFileUrl(import.meta.url), "../../testdata");
@@ -51,7 +57,6 @@ Deno.test({
 
 Deno.test({
   name: "[encoding/csv/stream] CSVStream with `separator` option",
-  permissions: { read: [testdataDir] },
   fn: async () => {
     const encoder = new TextEncoder();
     const readable = readableStreamFromIterable([
@@ -74,5 +79,30 @@ Deno.test({
       ["2", "bar"],
       ["3", "baz"],
     ]);
+  },
+});
+
+Deno.test({
+  name: "[encoding/csv/stream] CSVStream with invalid csv",
+  fn: async () => {
+    const encoder = new TextEncoder();
+    const readable = readableStreamFromIterable([
+      encoder.encode("id,name\n"),
+      encoder.encode("\n"),
+      encoder.encode("1,foo\n"),
+      encoder.encode('2,"baz\n'),
+    ]).pipeThrough(
+      new CSVStream(),
+    );
+    const reader = readable.getReader();
+    assertEquals(await reader.read(), { done: false, value: ["id", "name"] });
+    assertEquals(await reader.read(), { done: false, value: ["1", "foo"] });
+    await assertRejects(() => reader.read(), (error: unknown) => {
+      assert(error instanceof ParseError);
+      assertEquals(error.startLine, 4);
+      assertEquals(error.line, 5);
+      assertEquals(error.column, 0);
+      assertStringIncludes(error.message, ERR_QUOTE);
+    });
   },
 });

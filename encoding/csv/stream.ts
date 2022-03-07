@@ -62,6 +62,7 @@ export class CSVStream implements TransformStream<Uint8Array, Array<string>> {
     const line = await this.#lineReader.readLine();
     if (line === "") {
       // Found an empty line
+      this.#lineIndex++;
       return this.#pull(controller);
     }
     if (line === null) {
