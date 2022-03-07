@@ -79,6 +79,7 @@ export function parse(
     const groups = regExp.exec(line)?.groups;
 
     if (!groups) continue;
+    if (groups.comment) continue;
 
     if (groups.export != null) exports.add(groups.key);
 
