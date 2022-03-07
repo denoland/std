@@ -8,7 +8,7 @@ import { maybeCallback } from "./_fs_common.ts";
 export function writev(fd, buffers, position, callback) {
   const innerWritev = async (fd, buffers, position) => {
     const chunks = [];
-    let offset = 0;
+    const offset = 0;
     for (let i = 0; i < buffers.length; i++) {
       if (Buffer.isBuffer(buffers[i])) {
         chunks.push(buffers[i]);
@@ -17,12 +17,12 @@ export function writev(fd, buffers, position, callback) {
       }
     }
     if (typeof position === "number") {
-      Deno.seekSync(fd, position, Deno.SeekMode.Start);
+      await Deno.seekSync(fd, position, Deno.SeekMode.Start);
     }
     const buffer = Buffer.concat(chunks);
     let currentOffset = 0;
     while (currentOffset < buffer.byteLength) {
-      currentOffset += Deno.writeSync(fd, buffer.subarray(currentOffset));
+      currentOffset += await Deno.writeSync(fd, buffer.subarray(currentOffset));
     }
     return currentOffset - offset;
   };
