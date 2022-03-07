@@ -123,14 +123,15 @@ class ClientRequest extends NodeWritable {
 
     const client = await this._createCustomClient();
     const opts = { body: this.body, method: this.opts.method, client };
-    const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts).catch((e) => {
-      if (e.message.includes("connection closed before message completed")) {
-        // Node.js seems ignoring this error
-      } else {
-        this.emit("error", e);
-      }
-      return undefined;
-    });
+    const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts)
+      .catch((e) => {
+        if (e.message.includes("connection closed before message completed")) {
+          // Node.js seems ignoring this error
+        } else {
+          this.emit("error", e);
+        }
+        return undefined;
+      });
     const res = new IncomingMessageForClient(
       await mayResponse,
       this._createSocket(),
@@ -165,14 +166,16 @@ class ClientRequest extends NodeWritable {
       return opts.href;
     } else {
       const {
-	auth,
-	protocol,
-	host,
-	hostname,
-	path,
-	port,
+        auth,
+        protocol,
+        host,
+        hostname,
+        path,
+        port,
       } = opts;
-      return `${protocol}//${auth ? `${auth}@` : ""}${host ?? hostname}${port ? `:${port}` : ""}${path}`
+      return `${protocol}//${auth ? `${auth}@` : ""}${host ?? hostname}${
+        port ? `:${port}` : ""
+      }${path}`;
     }
   }
 }
