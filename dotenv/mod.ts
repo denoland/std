@@ -16,8 +16,6 @@ export interface DenoEnv {
   };
 }
 
-export const EXPORT_REGEX = /^\s*export\s+/;
-
 export function verify(
   object: DotEnvObject,
   { allowEmptyValues, example }: {
@@ -63,7 +61,7 @@ export function verify(
 }
 
 const regExp =
-  /^\s*(?<comment>#.+)|(?<export>export\s+)?(?<key>[a-zA-Z_]\w*)\s*=\s*((?<quotes>["'])?(?<value>.+?)\5?)?\s*?$/;
+  /^\s*(?<comment>#.+)|(?<export>export\s+)?(?<key>[a-zA-Z_]\w*)\s*=\s*((?<quote>["'])?(?<value>.+?)\5?)?\s*?$/;
 
 export function parse(
   source: string,
@@ -85,9 +83,9 @@ export function parse(
 
     let value = groups.value || "";
 
-    if (groups.quotes === `'`) {
+    if (groups.quote === `'`) {
       // do nothing, preseve newlines
-    } else if (groups.quotes === `"`) {
+    } else if (groups.quote === `"`) {
       value = value.replaceAll("\\n", "\n");
     } else {
       value = value.trim();
