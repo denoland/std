@@ -213,7 +213,7 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
 /** Transform a stream into a stream where each chunk is divided by a given delimiter.
  *
  * ```ts
- * import { DelimiterStream } from "./delimiter.ts";
+ * import { TextDelimiterStream } from "./delimiter.ts";
  * const res = await fetch("https://example.com");
  * const parts = res.body!
  *   .pipeThrough(new TextDecoderStream())
