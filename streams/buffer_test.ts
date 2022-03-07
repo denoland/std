@@ -76,10 +76,11 @@ Deno.test("[streams] LimitedBytesTransformStream error", async function () {
 
   await assertRejects(async () => {
     for await (
-      const chunk of r.pipeThrough(
+      const _chunk of r.pipeThrough(
         new LimitedBytesTransformStream(7, { error: true }),
       )
     ) {
+      // needed to read
     }
   }, RangeError);
 });
@@ -119,10 +120,11 @@ Deno.test("[streams] LimitedTransformStream error", async function () {
 
   await assertRejects(async () => {
     for await (
-      const chunk of r.pipeThrough(
+      const _chunk of r.pipeThrough(
         new LimitedTransformStream(3, { error: true }),
       )
     ) {
+      // needed to read
     }
   }, RangeError);
 });
