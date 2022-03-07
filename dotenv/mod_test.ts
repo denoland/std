@@ -7,7 +7,7 @@ import * as path from "../path/mod.ts";
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-Deno.test("parse", () => {
+Deno.test("parse", async (t) => {
   const dotEnvTestSource = Deno.readTextFileSync(
     path.join(
       testdataDir,
@@ -15,122 +15,101 @@ Deno.test("parse", () => {
     ),
   );
   const { env, exports } = parse(dotEnvTestSource);
-  assertEquals(env.BASIC, "basic", "parses a basic variable");
-  assertEquals(env.AFTER_EMPTY, "empty", "skips empty lines");
-  assertEquals(env["#COMMENT"], undefined, "skips lines with comments");
-  assertEquals(env.EMPTY_VALUE, "", "empty values are empty strings");
 
-  assertEquals(
-    env.QUOTED_SINGLE,
-    "single quoted",
-    "single quotes are escaped",
+  await t.step("skip comments", () => assertEquals(env["#COMMENT"], undefined));
+  await t.step("empty value", () => assertEquals(env.EMPTY_VALUE, ""));
+
+  await t.step("basic variable", () => assertEquals(env.BASIC, "basic"));
+  await t.step(
+    "skip empty lines",
+    () => assertEquals(env.AFTER_EMPTY, "empty"),
+  );
+  await t.step(
+    "escape single quotes",
+    () => assertEquals(env.QUOTED_SINGLE, "single quoted"),
+  );
+  await t.step(
+    "escape double quotes",
+    () => assertEquals(env.QUOTED_DOUBLE, "double quoted"),
+  );
+  await t.step(
+    "expand newlines in double quotes",
+    () => assertEquals(env.MULTILINE, "hello\nworld"),
+  );
+  await t.step(
+    "maintain inner quotes",
+    () => assertEquals(JSON.parse(env.JSON).foo, "bar"),
   );
 
-  assertEquals(
-    env.QUOTED_DOUBLE,
-    "double quoted",
-    "double quotes are escaped",
+  await t.step(
+    "preserve whitespace in single-quoted value",
+    () => assertEquals(env.WHITESPACE, "    whitespace   "),
   );
 
-  assertEquals(
-    env.MULTILINE,
-    "hello\nworld",
-    "new lines are expanded in double quotes",
+  await t.step(
+    "preserve whitespace in double-quoted value",
+    () => assertEquals(env.WHITESPACE_DOUBLE, "    whitespace   "),
   );
 
-  assertEquals(
-    JSON.parse(env.JSON).foo,
-    "bar",
-    "inner quotes are maintained",
+  await t.step(
+    "escape newlines in single quotes",
+    () => assertEquals(env.MULTILINE_SINGLE_QUOTE, "hello\\nworld"),
   );
 
-  assertEquals(
-    env.WHITESPACE,
-    "    whitespace   ",
-    "whitespace in single-quoted values is preserved",
+  await t.step(
+    "accept value with non-word-characters",
+    () => assertEquals(env.EQUALS, "equ==als"),
   );
 
-  assertEquals(
-    env.WHITESPACE_DOUBLE,
-    "    whitespace   ",
-    "whitespace in double-quoted values is preserved",
+  await t.step(
+    "preserve whitespaces in value",
+    () => assertEquals(env.VAR_WITH_SPACE, "var with space"),
+  );
+  await t.step(
+    "trim whitespaces around value",
+    () => assertEquals(env.VAR_WITH_ENDING_WHITESPACE, "value"),
+  );
+  await t.step(
+    "key containing number",
+    () => assertEquals(env.V4R_W1TH_NUM8ER5, "var with numbers"),
+  );
+  await t.step(
+    "key starting with number",
+    () => assertEquals(env["1INVALID"], undefined),
+  );
+  await t.step(
+    "indented variables with spaces",
+    () => assertEquals(env.INDENTED_VAR, "indented var"),
+  );
+  await t.step(
+    "indented variables with tabs",
+    () => assertEquals(env.TAB_INDENTED_VAR, "indented var"),
   );
 
-  assertEquals(
-    env.MULTILINE_SINGLE_QUOTE,
-    "hello\\nworld",
-    "new lines are escaped in single quotes",
+  await t.step(
+    "exports",
+    () =>
+      assertEquals(exports, [
+        "EXPORTED_VAR",
+        "INDENTED_EXPORTED_ASSIGNMENT",
+        "TAB_INDENTED_EXPORTED_ASSIGNMENT",
+        "TAB_SPACED_ASSIGNMENT_VAR",
+      ]),
   );
 
-  assertEquals(env.EQUALS, "equ==als", "handles equals inside string");
-
-  assertEquals(
-    env.VAR_WITH_SPACE,
-    "var with space",
-    "variables defined with spaces are parsed",
-  );
-
-  assertEquals(
-    env.VAR_WITH_ENDING_WHITESPACE,
-    "value",
-    "variables defined with ending whitespace are trimmed",
-  );
-
-  assertEquals(
-    env.V4R_W1TH_NUM8ER5,
-    "var with numbers",
-    "accepts variables containing number",
-  );
-
-  assertEquals(
-    env["1INVALID"],
-    undefined,
-    "variables beginning with a number are not parsed",
-  );
-
-  assertEquals(
-    env.INDENTED_VAR,
-    "indented var",
-    "accepts variables that are indented with space",
-  );
-
-  assertEquals(
-    env.INDENTED_VALUE,
-    "indented value",
-    "accepts values that are indented with space",
-  );
-
-  assertEquals(
-    env.TAB_INDENTED_VAR,
-    "indented var",
-    "accepts variables that are indented with tabs",
-  );
-
-  assertEquals(
-    env.TAB_INDENTED_VALUE,
-    "indented value",
-    "accepts values that are indented with tabs",
-  );
-
-  assertEquals(exports, [
-    "EXPORTED_VAR",
-    "INDENTED_EXPORTED_ASSIGNMENT",
-    "TAB_INDENTED_EXPORTED_ASSIGNMENT",
-    "TAB_SPACED_ASSIGNMENT_VAR",
-  ]);
-
-  const values = Object.entries(env)
-    .filter(([key]) => exports.includes(key))
-    .map(([_, value]) => value);
-
-  assertEquals(
-    values,
-    [
-      "exported value 1",
-      "exported value 2",
-      "  exported value 3  ",
-      "		exported value 4		",
-    ],
+  await t.step(
+    "export values",
+    () => {
+      const values = Object.entries(env)
+        .filter(([key]) => exports.includes(key))
+        .map(([_key, value]) => value);
+      assertEquals(values, [
+        "exported value 1",
+        "exported value 2",
+        "  exported value 3  ",
+        "		exported value 4		",
+      ]);
+    },
   );
 });
 
