@@ -1,4 +1,4 @@
-import { DenoEnv, parse } from "./mod.ts";
+import { type DenoEnv, parse } from "./mod.ts";
 
 export interface LoadOptions {
   envPath?: string | URL;
