@@ -27,11 +27,7 @@ Deno.test("integration test of compat mode", {
   }
 
   await t.step("Runs `yarn add <mod>`", async () => {
-    // FIXME(kt3k): npm@8.5.3 doesn't work with compat mode
-    await exec(
-      `deno run --compat --unstable -A ${yarnUrl} add npm@8.5.2`,
-      opts,
-    );
+    await exec(`deno run --compat --unstable -A ${yarnUrl} add npm`, opts);
     assert((await Deno.lstat(join(npmPath, "package.json"))).isFile);
     await exec(`deno run --compat --unstable -A ${yarnUrl} add express`, opts);
     assert((await Deno.lstat(join(expressPath, "package.json"))).isFile);
