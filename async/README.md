@@ -14,8 +14,8 @@ cancelable.
 For example, in the case of `Promise`, it looks like this
 
 ```typescript
-import { abortable } from "https://deno.land/std/async/mod.ts";
-import { delay } from "https://deno.land/std/async/mod.ts";
+import { abortable } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
 
 const p = delay(1000);
 const c = new AbortController();
@@ -28,8 +28,8 @@ await abortable(p, c.signal);
 and for `AsyncIterable` as follows
 
 ```typescript
-import { abortable } from "https://deno.land/std/async/mod.ts";
-import { delay } from "https://deno.land/std/async/mod.ts";
+import { abortable } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
 
 const p = async function* () {
   yield "Hello";
@@ -52,7 +52,7 @@ for await (const item of abortable(p(), c.signal)) {
 Debounces a given function by a given time.
 
 ```typescript
-import { debounce } from "https://deno.land/std/async/mod.ts";
+import { debounce } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
 
 const p = debounce(
   (value: string) =>
@@ -71,7 +71,7 @@ p("baz");
 Create a Promise with the `reject` and `resolve` functions.
 
 ```typescript
-import { deferred } from "https://deno.land/std/async/mod.ts";
+import { deferred } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
 
 const p = deferred<number>();
 // ...
@@ -83,7 +83,7 @@ p.resolve(42);
 Resolve a Promise after a given amount of milliseconds.
 
 ```typescript
-import { delay } from "https://deno.land/std/async/mod.ts";
+import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
 
 // ...
 const delayedPromise = delay(100);
@@ -101,7 +101,7 @@ yielded from the iterator) does not matter. If there is any result, it is
 discarded.
 
 ```typescript
-import { MuxAsyncIterator } from "https://deno.land/std/async/mod.ts";
+import { MuxAsyncIterator } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
 
 async function* gen123(): AsyncIterableIterator<number> {
   yield 1;
@@ -131,7 +131,7 @@ transforms are done concurrently, with a max concurrency defined by the
 poolLimit.
 
 ```typescript
-import { pooledMap } from "https://deno.land/std/async/mod.ts";
+import { pooledMap } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
 
 const results = pooledMap(
   2,
@@ -149,7 +149,7 @@ for await (const value of results) {
 Branches the given async iterable into the n branches.
 
 ```typescript
-import { tee } from "https://deno.land/std/async/tee.ts";
+import { tee } from "https://deno.land/std@$STD_VERSION/async/tee.ts";
 
 const gen = async function* gen() {
   yield 1;
@@ -178,7 +178,8 @@ Create a promise which will be rejected with `DeadlineError` when a given delay
 is exceeded.
 
 ```typescript
-import { deadline } from "https://deno.land/std/async/mod.ts";
+import { deadline } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
+import { delay } from "https://deno.land/std@$STD_VERSION/async/mod.ts";
 
 const delayedPromise = delay(1000);
 // Below throws `DeadlineError` after 10 ms
