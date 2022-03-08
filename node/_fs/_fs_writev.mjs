@@ -31,7 +31,7 @@ export function writev(fd, buffers, position, callback) {
   validateBufferArray(buffers);
   callback = maybeCallback(callback || position);
 
-  if (buffers.lenght === 0) {
+  if (buffers.length === 0) {
     process.nextTick(callback, null, 0, buffers);
     return;
   }
