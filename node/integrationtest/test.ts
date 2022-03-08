@@ -15,7 +15,7 @@ Deno.test("integration test of compat mode", {
   const tempDir = await Deno.makeTempDir();
   const opts = { env, cwd: tempDir };
   const npmPath = join(tempDir, "node_modules", "npm");
-  const gulpPath = join(tempDir, "node_modules", "gulp");
+  const _gulpPath = join(tempDir, "node_modules", "gulp");
   const mysql2Path = join(tempDir, "node_modules", "mysql2");
   const expressPath = join(tempDir, "node_modules", "express");
   let hasDocker;
