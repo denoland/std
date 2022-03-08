@@ -17,18 +17,16 @@ Implements equivalent methods to Go's `encoding/binary` package.
 
 Available Functions:
 
-```typescript
-sizeof(dataType: RawTypes): number
-getNBytes(r: Deno.Reader, n: number): Promise<Uint8Array>
-varnum(b: Uint8Array, o: VarnumOptions = {}): number | null
-varbig(b: Uint8Array, o: VarbigOptions = {}): bigint | null
-putVarnum(b: Uint8Array, x: number, o: VarnumOptions = {}): number
-putVarbig(b: Uint8Array, x: bigint, o: VarbigOptions = {}): number
-readVarnum(r: Deno.Reader, o: VarnumOptions = {}): Promise<number>
-readVarbig(r: Deno.Reader, o: VarbigOptions = {}): Promise<bigint>
-writeVarnum(w: Deno.Writer, x: number, o: VarnumOptions = {}): Promise<number>
-writeVarbig(w: Deno.Writer, x: bigint, o: VarbigOptions = {}): Promise<number>
-```
+- `sizeof(dataType: DataTypes): number`
+- `getNBytes(r: Deno.Reader, n: number): Promise<Uint8Array>`
+- `varnum(b: Uint8Array, o: VarnumOptions = {}): number | null`
+- `varbig(b: Uint8Array, o: VarbigOptions = {}): bigint | null`
+- `putVarnum(b: Uint8Array, x: number, o: VarnumOptions = {}): number`
+- `putVarbig(b: Uint8Array, x: bigint, o: VarbigOptions = {}): number`
+- `readVarnum(r: Deno.Reader, o: VarnumOptions = {}): Promise<number>`
+- `readVarbig(r: Deno.Reader, o: VarbigOptions = {}): Promise<bigint>`
+- `writeVarnum(w: Deno.Writer, x: number, o: VarnumOptions = {}): Promise<number>`
+- `writeVarbig(w: Deno.Writer, x: bigint, o: VarbigOptions = {}): Promise<number>`
 
 ## CSV
 
