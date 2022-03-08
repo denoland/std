@@ -1,11 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assert, assertEquals, assertRejects } from "../testing/asserts.ts";
-import {
-  Buffer,
-  LimitedBytesTransformStream,
-  LimitedTransformStream,
-} from "./buffer.ts";
+import { Buffer, LimitedBytesStream, LimitedStream } from "./buffer.ts";
 
 Deno.test("[streams] Buffer Write & Read", async function () {
   const buf = new Buffer();
@@ -55,7 +51,7 @@ Deno.test("[streams] LimitedBytesTransformStream", async function () {
   });
 
   const chunks = [];
-  for await (const chunk of r.pipeThrough(new LimitedBytesTransformStream(7))) {
+  for await (const chunk of r.pipeThrough(new LimitedBytesStream(7))) {
     chunks.push(chunk);
   }
   assertEquals(chunks.length, 2);
@@ -76,9 +72,7 @@ Deno.test("[streams] LimitedBytesTransformStream error", async function () {
 
   await assertRejects(async () => {
     for await (
-      const _chunk of r.pipeThrough(
-        new LimitedBytesTransformStream(7, { error: true }),
-      )
+      const _chunk of r.pipeThrough(new LimitedBytesStream(7, { error: true }))
     ) {
       // needed to read
     }
@@ -99,7 +93,7 @@ Deno.test("[streams] LimitedTransformStream", async function () {
   });
 
   const chunks = [];
-  for await (const chunk of r.pipeThrough(new LimitedTransformStream(3))) {
+  for await (const chunk of r.pipeThrough(new LimitedStream(3))) {
     chunks.push(chunk);
   }
   assertEquals(chunks.length, 3);
@@ -120,9 +114,7 @@ Deno.test("[streams] LimitedTransformStream error", async function () {
 
   await assertRejects(async () => {
     for await (
-      const _chunk of r.pipeThrough(
-        new LimitedTransformStream(3, { error: true }),
-      )
+      const _chunk of r.pipeThrough(new LimitedStream(3, { error: true }))
     ) {
       // needed to read
     }
