@@ -166,3 +166,69 @@ export class Buffer {
     this.#reslice(m);
   }
 }
+
+/** A TransformStream that will only read & enqueue `size` amount of bytes.
+ * This operation is chunk based and not BYOB based,
+ * and as such will read more than needed.
+ *
+ * if options.error is set, then instead of terminating the stream,
+ * an error will be thrown.
+ *
+ * ```ts
+ * import { LimitedBytesTransformStream } from "./buffer.ts";
+ * const res = await fetch("https://example.com");
+ * const parts = res.body!
+ *   .pipeThrough(new LimitedBytesTransformStream(512 * 1024));
+ * ```
+ */
+export class LimitedBytesTransformStream
+  extends TransformStream<Uint8Array, Uint8Array> {
+  #read = 0;
+  constructor(size: number, options: { error?: boolean } = {}) {
+    super({
+      transform: (chunk, controller) => {
+        if ((this.#read + chunk.byteLength) > size) {
+          if (options.error) {
+            throw new RangeError(`Exceeded byte size limit of '${size}'`);
+          } else {
+            controller.terminate();
+          }
+        } else {
+          this.#read += chunk.byteLength;
+          controller.enqueue(chunk);
+        }
+      },
+    });
+  }
+}
+
+/** A TransformStream that will only read & enqueue `size` amount of chunks.
+ *
+ * if options.error is set, then instead of terminating the stream,
+ * an error will be thrown.
+ *
+ * ```ts
+ * import { LimitedTransformStream } from "./buffer.ts";
+ * const res = await fetch("https://example.com");
+ * const parts = res.body!.pipeThrough(new LimitedTransformStream(50));
+ * ```
+ */
+export class LimitedTransformStream<T> extends TransformStream<T, T> {
+  #read = 0;
+  constructor(size: number, options: { error?: boolean } = {}) {
+    super({
+      transform: (chunk, controller) => {
+        if ((this.#read + 1) > size) {
+          if (options.error) {
+            throw new RangeError(`Exceeded chunk limit of '${size}'`);
+          } else {
+            controller.terminate();
+          }
+        } else {
+          this.#read++;
+          controller.enqueue(chunk);
+        }
+      },
+    });
+  }
+}

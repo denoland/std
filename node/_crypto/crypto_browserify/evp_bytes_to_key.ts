@@ -2,7 +2,7 @@
 // Copyright 2017 crypto-browserify. All rights reserved. MIT license.
 
 import { Buffer } from "../../buffer.ts";
-import { createHash } from "../../crypto.ts";
+import { createHash } from "../hash.ts";
 
 export function EVP_BytesToKey(
   password: string | Buffer,
