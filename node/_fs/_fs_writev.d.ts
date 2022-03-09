@@ -52,3 +52,14 @@ export namespace writev {
     position?: number,
   ): Promise<WriteVResult>;
 }
+/**
+ * For detailed information, see the documentation of the asynchronous version of
+ * this API: {@link writev}.
+ * @since v12.9.0
+ * @return The number of bytes written.
+ */
+export function writevSync(
+  fd: number,
+  buffers: ReadonlyArray<ArrayBufferView>,
+  position?: number,
+): number;
