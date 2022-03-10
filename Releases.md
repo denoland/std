@@ -1,3 +1,17 @@
+### 0.129.9 / 2022.03.10
+
+- feat(node/fs): add `fs.writev(fd, buffers[, position], callback)` (#2008)
+- feat(streams): LimitedTransformStream & LimitedBytesTransformStream (#2007)
+- feat(streams): TextDelimiterStream (#2006)
+- feat(node/crypto): add crypto.publicEncrypt (#1987)
+- feat: streams based `Buffer` (#1970)
+- feat(testing/asserts): use assertion signature for "assertStrictEquals" (#1984)
+- fix(node/process): ignore SIGBREAK binding when the platform is not windows (#2014)
+- fix(async): re-export abortable in mod.ts (#1959)
+- fix(node): fix http.request for minipass-fetch 2.x (#2004)
+- fix(fmt/colors): update `ANSI_PATTERN` (#1996)
+- fix(testing): Misleading assertion error in assertNotEquals (#1989)
+
 ### 0.128.0 / 2022.03.03
 
 - feat(node): add crypto.webcrypto (#1961)
