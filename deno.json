@@ -32,5 +32,12 @@
         "wasi/testdata"
       ]
     }
+  },
+  "tasks": {
+    "test:canary": "deno test --doc --unstable --allow-all --coverage=./cov --ignore=node/",
+    "test:faketime": "faketime '2021-12-31' deno test --unstable --allow-all datetime/test_2021_12_31.ts",
+    "node:unit": "deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
+    "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
+    "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts"
   }
 }
