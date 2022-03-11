@@ -192,6 +192,7 @@
       "test-fs-write-stream.js",
       "test-fs-write-sync.js",
       "test-fs-write.js",
+      "test-fs-writev-sync.js",
       "test-fs-writev.js",
       "test-http-agent-getname.js",
       "test-http-client-get-url.js",
