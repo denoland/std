@@ -110,8 +110,6 @@ workflow.
 
 ```zsh
 $ deno task node:setup
-// or
-$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
 ```
 
 You can aditionally pass the `-y`/`-n` flag to use test cache or generating

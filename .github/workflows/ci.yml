@@ -34,7 +34,7 @@ jobs:
           sudo apt install faketime
 
       - name: Run tests canary
-        run: deno task test:canary
+        run: deno task test
 
       - name: Run test with the date 2021-12-31
         if: matrix.os == 'ubuntu-latest'
