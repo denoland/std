@@ -45,3 +45,4 @@ export * from "./sample.ts";
 export * from "./running_reduce.ts";
 export * from "./comparators.ts";
 export * from "./bs_tree.ts";
+export * from "./rb_tree.ts";
