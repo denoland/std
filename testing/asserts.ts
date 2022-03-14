@@ -449,22 +449,22 @@ new (...args: any) => infer C ? C
  * If not then throw.
  */
 export function assertInstanceOf<T extends AnyConstructor>(
-  obj: unknown,
-  type: T,
+  actual: unknown,
+  expectedType: T,
   msg = "",
-): asserts obj is GetConstructorType<T> {
+): asserts actual is GetConstructorType<T> {
   if (!msg) {
-    const expectedTypeStr = type.name;
+    const expectedTypeStr = expectedType.name;
 
     let actualTypeStr = "";
-    if (obj === null) {
+    if (actual === null) {
       actualTypeStr = "null";
-    } else if (obj === undefined) {
+    } else if (actual === undefined) {
       actualTypeStr = "undefined";
-    } else if (typeof obj === "object") {
-      actualTypeStr = obj.constructor.name;
+    } else if (typeof actual === "object") {
+      actualTypeStr = actual.constructor.name;
     } else {
-      actualTypeStr = typeof obj;
+      actualTypeStr = typeof actual;
     }
 
     if (expectedTypeStr == actualTypeStr) {
@@ -477,7 +477,7 @@ export function assertInstanceOf<T extends AnyConstructor>(
         `Expected object to be an instance of "${expectedTypeStr}" but was "${actualTypeStr}".`;
     }
   }
-  assert(obj instanceof type, msg);
+  assert(actual instanceof expectedType, msg);
 }
 
 /**
