@@ -438,6 +438,48 @@ delta "${f(delta)}" is greater than "${f(tolerance)}"`,
   );
 }
 
+// deno-lint-ignore no-explicit-any
+type AnyConstructor = new (...args: any[]) => any;
+type GetConstructorType<T extends AnyConstructor> = T extends // deno-lint-ignore no-explicit-any
+new (...args: any) => infer C ? C
+  : never;
+
+/**
+ * Make an assertion that `obj` is an instance of `type`.
+ * If not then throw.
+ */
+export function assertInstanceOf<T extends AnyConstructor>(
+  obj: unknown,
+  type: T,
+  msg = "",
+): asserts obj is GetConstructorType<T> {
+  if (!msg) {
+    const expectedTypeStr = type.name;
+
+    let actualTypeStr = "";
+    if (obj === null) {
+      actualTypeStr = "null";
+    } else if (obj === undefined) {
+      actualTypeStr = "undefined";
+    } else if (typeof obj === "object") {
+      actualTypeStr = obj.constructor.name;
+    } else {
+      actualTypeStr = typeof obj;
+    }
+
+    if (expectedTypeStr == actualTypeStr) {
+      msg = `Expected object to be an instance of "${expectedTypeStr}".`;
+    } else if (actualTypeStr == "function") {
+      msg =
+        `Expected object to be an instance of "${expectedTypeStr}" but was not an instanced object.`;
+    } else {
+      msg =
+        `Expected object to be an instance of "${expectedTypeStr}" but was "${actualTypeStr}".`;
+    }
+  }
+  assert(obj instanceof type, msg);
+}
+
 /**
  * Make an assertion that actual is not null or undefined.
  * If not then throw.
