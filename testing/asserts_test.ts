@@ -1092,19 +1092,31 @@ Deno.test({
       `Expected object to be an instance of "TestClass1" but was "undefined".`,
     );
 
-    // Test TypeScript types functionality
-    class ClassWithProperty {
-      property = "prop1";
+    // Test TypeScript types functionality, wrapped in a function that never runs
+    // deno-lint-ignore no-unused-vars
+    function typeScriptTests() {
+      class ClassWithProperty {
+        property = "prop1";
+      }
+      const testInstance = new ClassWithProperty() as unknown;
+
+      // @ts-expect-error: `testInstance` is `unknown` so setting its property before `assertInstanceOf` should give a type error.
+      testInstance.property = "prop2";
+
+      assertInstanceOf(testInstance, ClassWithProperty);
+
+      // Now `testInstance` should be of type `ClassWithProperty`
+      testInstance.property = "prop3";
+
+      let x = 5 as unknown;
+
+      // @ts-expect-error: `x` is `unknown` so adding to it shouldn't work
+      x += 5;
+      assertInstanceOf(x, Number);
+
+      // @ts-expect-error: `x` is now `Number` rather than `number`, so this should still give a type error.
+      x += 5;
     }
-    const testInstance = new ClassWithProperty() as unknown;
-
-    // @ts-expect-error: `testInstance` is `unknown` so setting its property before `assertInstanceOf` should give a type error.
-    testInstance.property = "prop2";
-
-    assertInstanceOf(testInstance, ClassWithProperty);
-
-    // Now `testInstance` should be of type `ClassWithProperty`
-    testInstance.property = "prop3";
   },
 });
 
