@@ -1091,6 +1091,16 @@ Deno.test({
       AssertionError,
       `Expected object to be an instance of "TestClass1" but was "undefined".`,
     );
+    assertThrows(
+      () => assertInstanceOf({}, TestClass1),
+      AssertionError,
+      `Expected object to be an instance of "TestClass1" but was "Object".`,
+    );
+    assertThrows(
+      () => assertInstanceOf(Object.create(null), TestClass1),
+      AssertionError,
+      `Expected object to be an instance of "TestClass1" but was "Object".`,
+    );
 
     // Test TypeScript types functionality, wrapped in a function that never runs
     // deno-lint-ignore no-unused-vars

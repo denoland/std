@@ -462,7 +462,7 @@ export function assertInstanceOf<T extends AnyConstructor>(
     } else if (actual === undefined) {
       actualTypeStr = "undefined";
     } else if (typeof actual === "object") {
-      actualTypeStr = actual.constructor.name;
+      actualTypeStr = actual.constructor?.name ?? "Object";
     } else {
       actualTypeStr = typeof actual;
     }
