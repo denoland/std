@@ -9,12 +9,13 @@ module.exports = () => {
 };
 `;
 
+// From: https://github.com/stefanpenner/get-caller-file/blob/2383bf9e98ed3c568ff69d7586cf59c0f1dcb9d3/index.ts
 const getCallerFile = `
-const re = /^file:/;
+const re = /^file:\\/\\//;
 
-function getCallerFile(position = 2) {
+module.exports = function getCallerFile(position = 2) {
   if (position >= Error.stackTraceLimit) {
-    throw new TypeError('getCallerFile(position) requires position be less then Error.stackTraceLimit but position was: \`' + position + '\` and Error.stackTraceLimit was: \`' + Error.stackTraceLimit + '\`');
+    throw new TypeError('getCallerFile(position) requires position be less then Error.stackTraceLimit but position was: "' + position + '" and Error.stackTraceLimit was: "' + Error.stackTraceLimit + '"');
   }
 
   const oldPrepareStackTrace = Error.prepareStackTrace;
@@ -27,7 +28,7 @@ function getCallerFile(position = 2) {
     // stack[0] holds this file
     // stack[1] holds where this function was called
     // stack[2] holds the file we're interested in
-    return stack[position] ? (stack[position] as any).getFileName().replace(re, "") : undefined;
+    return stack[position] ? stack[position].getFileName().replace(re, "") : undefined;
   }
 };
 `;
