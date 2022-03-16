@@ -1,9 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "./deferred.ts";
 
-/**
- * Make Promise or AsyncIterable abortable with a given signal.
- */
+/** Make Promise or AsyncIterable abortable with the given signal. */
 export function abortable<T>(p: Promise<T>, signal: AbortSignal): Promise<T>;
 export function abortable<T>(
   p: AsyncIterable<T>,
@@ -20,7 +18,11 @@ export function abortable<T>(
   }
 }
 
-function abortablePromise<T>(p: Promise<T>, signal: AbortSignal): Promise<T> {
+/** Make Promise abortable with the given signal. */
+export function abortablePromise<T>(
+  p: Promise<T>,
+  signal: AbortSignal,
+): Promise<T> {
   if (signal.aborted) {
     return Promise.reject(createAbortError(signal.reason));
   }
@@ -35,7 +37,8 @@ function abortablePromise<T>(p: Promise<T>, signal: AbortSignal): Promise<T> {
   ]);
 }
 
-async function* abortableAsyncIterable<T>(
+/** Make AsyncIterable abortable with the given signal. */
+export async function* abortableAsyncIterable<T>(
   p: AsyncIterable<T>,
   signal: AbortSignal,
 ): AsyncGenerator<T> {
