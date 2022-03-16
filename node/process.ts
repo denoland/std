@@ -445,7 +445,7 @@ class Process extends EventEmitter {
       return this;
     }
 
-    return this.on(event, listener);
+    return this.off(event, listener);
   }
 
   /**
