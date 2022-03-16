@@ -524,7 +524,7 @@ class Module {
     // N-API modules.
     if (filename.endsWith(".node")) {
       // @ts-ignore `Deno.core` is not a public API
-      return Deno.core.napiOpen(filename);
+      return Deno.core.opSync("op_napi_open", filename);
     }
 
     const cachedModule = Module._cache[filename];
