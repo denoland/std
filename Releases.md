@@ -1,4 +1,11 @@
-### 0.129.9 / 2022.03.10
+### 0.130.0 / 2022.03.16
+
+- feat(testing): add `assertInstanceOf` (#2028)
+- feat(node): shim get-caller-file (#2029)
+- fix(node): fix dynamic require (#2024)
+- feat(node/fs): add `fs.writevSync(fd, buffers[, position])` (#2020)
+
+### 0.129.0 / 2022.03.10
 
 - feat: streams based `Buffer` (#1970)
 - feat(node/crypto): add crypto.publicEncrypt (#1987)
