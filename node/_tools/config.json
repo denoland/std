@@ -465,6 +465,9 @@
     "parallel": [
       "test-child-process-execfile.js",
       "test-child-process-fork.js",
+      "test-console-log-throw-primitive.js",
+      "test-console-no-swallow-stack-overflow.js",
+      "test-console-sync-write-error.js",
       "test-fs-access.js",
       "test-fs-readdir-stack-overflow.js",
       "test-fs-write-file-invalid-path.js",
