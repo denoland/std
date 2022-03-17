@@ -3,7 +3,11 @@
     "a": 1,
     "b": 2
   },
-  "Snapshot Test > Snapshot Test": {
+  "Snapshot Test > babo": {
+    "b": 2,
+    "c": 3
+  },
+  "Snapshot Test > babo > merong": {
     "b": 2,
     "c": 3
   }

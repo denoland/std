@@ -872,7 +872,8 @@ let updatedSnapshotFile: Record<string, any> = {};
 const snapshotMap: Record<string, number> = {};
 
 export async function assertSnapshot(context: Deno.TestContext, actual: any) {
-  const count = getCount(context.name);
+  const name = getName(context);
+  const count = getCount(name);
 
   if (!snapshotFile) {
     const snapshotPath = await getSnapshotPath();
@@ -880,7 +881,7 @@ export async function assertSnapshot(context: Deno.TestContext, actual: any) {
     const file = Deno.readTextFileSync(snapshotPath);
     snapshotFile = file ? JSON.parse(file) : {};
   }
-  const snapshot = snapshotFile?.[context.name];
+  const snapshot = snapshotFile?.[name];
   if (!context.update) {
     assertEquals(actual, snapshot);
   } else {
@@ -890,16 +891,21 @@ export async function assertSnapshot(context: Deno.TestContext, actual: any) {
     } catch {
       isEqual = false;
     }
-    if (!isEqual) console.info("Snapshot updated", context.name);
+    if (!isEqual) console.info("Snapshot updated", name);
   }
-  updatedSnapshotFile[context.name] = actual;
+  updatedSnapshotFile[name] = actual;
 
   Deno.test.teardown(writeSnapshotFile);
 
   function getCount(ident: string) {
-    const count = snapshotMap?.[context.name] ? snapshotMap[context.name] : 1;
-    snapshotMap[context.name] = count + 1;
+    const count = snapshotMap?.[name] ? snapshotMap[name] : 1;
+    snapshotMap[name] = count + 1;
     return count;
+  }
+
+  function getName(context: Deno.TestContext): string {
+    if (context.parent) return `${getName(context.parent)} > ${context.name}`;
+    return context.name;
   }
 
   async function getSnapshotPath() {
