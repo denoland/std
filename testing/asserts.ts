@@ -12,6 +12,8 @@ import {
   stripColor,
   white,
 } from "../fmt/colors.ts";
+import { fromFileUrl, parse } from '../path/mod.ts';
+import { ensureFile } from '../fs/mod.ts';
 import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
@@ -863,4 +865,53 @@ export function unimplemented(msg?: string): never {
 /** Use this to assert unreachable code. */
 export function unreachable(): never {
   throw new AssertionError("unreachable");
+}
+
+let snapshotFile: Record<string, any> | undefined = undefined;
+let updatedSnapshotFile: Record<string, any> = {};
+const snapshotMap: Record<string, number> = {};
+
+export async function assertSnapshot(context: Deno.TestContext, actual: any) {
+  const count = getCount(context.name);
+
+  if (!snapshotFile) {
+    const snapshotPath = await getSnapshotPath();
+    await ensureFile(snapshotPath);
+    const file = Deno.readTextFileSync(snapshotPath);
+    snapshotFile = file ? JSON.parse(file) : {};
+  }
+  const snapshot = snapshotFile?.[context.name];
+  if (!context.update) {
+    assertEquals(actual, snapshot);
+  } else {
+    let isEqual = true;
+    try {
+      assertEquals(actual, snapshot);
+    } catch {
+      isEqual = false;
+    }
+    if (!isEqual) console.info("Snapshot updated", context.name);
+  }
+  updatedSnapshotFile[context.name] = actual;
+
+  Deno.test.teardown(writeSnapshotFile);
+
+  function getCount(ident: string) {
+    const count = snapshotMap?.[context.name] ? snapshotMap[context.name] : 1;
+    snapshotMap[context.name] = count + 1;
+    return count;
+  }
+
+  async function getSnapshotPath() {
+    const testFile = fromFileUrl(context.origin);
+    const parts = parse(testFile);
+    return `${parts.dir}/${parts.name}.snap`;
+  }
+
+  async function writeSnapshotFile() {
+    const snapshotPath = await getSnapshotPath();
+    await ensureFile(snapshotPath);
+    const file = JSON.stringify(updatedSnapshotFile, null, 2);
+    await Deno.writeTextFile(snapshotPath, file);
+  }
 }

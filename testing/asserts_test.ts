@@ -18,6 +18,7 @@ import {
   assertStrictEquals,
   assertStringIncludes,
   assertThrows,
+  assertSnapshot,
   equal,
   fail,
   unimplemented,
@@ -1408,3 +1409,10 @@ Deno.test("Assert Is Error with custom Error", () => {
     'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
   );
 });
+
+Deno.test("Snapshot Test", async (t) => {
+  await assertSnapshot(t, { a: 1, b: 2 });
+  await t.step('babo', async (t) => {
+    await assertSnapshot(t, { b: 2, c: 3 });
+  })
+})
