@@ -302,7 +302,11 @@ class Process extends EventEmitter {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.on("${event}")`);
     } else if (event.startsWith("SIG")) {
-      DenoUnstable.addSignalListener(event as Deno.Signal, listener);
+      if (event === "SIGBREAK" && Deno.build.os !== "windows") {
+        // Ignores SIGBREAK if the platform is not windows.
+      } else {
+        DenoUnstable.addSignalListener(event as Deno.Signal, listener);
+      }
     } else {
       super.on(event, listener);
     }
@@ -323,7 +327,11 @@ class Process extends EventEmitter {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.off("${event}")`);
     } else if (event.startsWith("SIG")) {
-      DenoUnstable.removeSignalListener(event as Deno.Signal, listener);
+      if (event === "SIGBREAK" && Deno.build.os !== "windows") {
+        // Ignores SIGBREAK if the platform is not windows.
+      } else {
+        DenoUnstable.removeSignalListener(event as Deno.Signal, listener);
+      }
     } else {
       super.off(event, listener);
     }

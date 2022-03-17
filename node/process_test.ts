@@ -202,6 +202,16 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.on SIGBREAK doesn't throw",
+  ignore: Deno.build.os == "windows",
+  fn() {
+    const listener = () => {};
+    process.on("SIGBREAK", listener);
+    process.off("SIGBREAK", listener);
+  },
+});
+
+Deno.test({
   name: "process.argv",
   fn() {
     assert(Array.isArray(process.argv));

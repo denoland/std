@@ -1,3 +1,34 @@
+### 0.130.0 / 2022.03.16
+
+- feat(testing): add `assertInstanceOf` (#2028)
+- feat(node): shim get-caller-file (#2029)
+- fix(node): fix dynamic require (#2024)
+- feat(node/fs): add `fs.writevSync(fd, buffers[, position])` (#2020)
+
+### 0.129.0 / 2022.03.10
+
+- feat: streams based `Buffer` (#1970)
+- feat(node/crypto): add crypto.publicEncrypt (#1987)
+- feat(node/fs): add `fs.writev(fd, buffers[, position], callback)` (#2008)
+- feat(streams): LimitedTransformStream & LimitedBytesTransformStream (#2007)
+- feat(streams): TextDelimiterStream (#2006)
+- feat(testing/asserts): use assertion signature for "assertStrictEquals"
+  (#1984)
+- fix(async): re-export abortable in mod.ts (#1959)
+- fix(fmt/colors): update `ANSI_PATTERN` (#1996)
+- fix(node): fix http.request for minipass-fetch 2.x (#2004)
+- fix(node/process): ignore SIGBREAK binding when the platform is not windows
+  (#2014)
+- fix(testing): Misleading assertion error in assertNotEquals (#1989)
+
+### 0.128.0 / 2022.03.03
+
+- feat(node): add crypto.webcrypto (#1961)
+- feat(streams): TextLineStream (#1978)
+- fix(dotenv): avoid top-level-await in load.ts (#1964)
+- fix(node): fix http client reqs with bodies (#1983)
+- fix(testing): fix assertObjectMatch for RegExp/Map/Set (#1967)
+
 ### 0.127.0 / 2022.02.24
 
 - feat(async): add `abortable` to async module. (#1939)

@@ -1,3 +1,5 @@
+// This module is browser compatible.
+
 // deno-lint-ignore-file
 import * as base64 from "../../encoding/base64.ts";
 
