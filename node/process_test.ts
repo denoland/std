@@ -370,6 +370,7 @@ Deno.test("process.on, process.off, process.removeListener doesn't throw on unim
     "uncaughtException",
     "uncaughtExceptionMonitor",
     "unhandledRejection",
+    "worker",
   ];
   const handler = () => {};
   events.forEach((ev) => {
