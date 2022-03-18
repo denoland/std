@@ -15,10 +15,10 @@ import {
   assertNotStrictEquals,
   assertObjectMatch,
   assertRejects,
+  assertSnapshot,
   assertStrictEquals,
   assertStringIncludes,
   assertThrows,
-  assertSnapshot,
   equal,
   fail,
   unimplemented,
@@ -1413,12 +1413,12 @@ Deno.test("Assert Is Error with custom Error", () => {
 Deno.test("Snapshot Test", { update: true }, async (t) => {
   console.log(t);
   await assertSnapshot(t, { a: 1, b: 2 });
-  await t.step('babo', async (t) => {
+  await t.step("babo", async (t) => {
     console.log(t);
     await assertSnapshot(t, { b: 2, c: 3 });
-    await t.step('merong', async (t) => {
+    await t.step("merong", async (t) => {
       console.log(t, t.parent);
       await assertSnapshot(t, { b: 2, c: 3 });
-    })  
-  })
-})
+    });
+  });
+});

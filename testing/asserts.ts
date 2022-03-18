@@ -12,8 +12,8 @@ import {
   stripColor,
   white,
 } from "../fmt/colors.ts";
-import { fromFileUrl, parse } from '../path/mod.ts';
-import { ensureFile } from '../fs/mod.ts';
+import { fromFileUrl, parse } from "../path/mod.ts";
+import { ensureFile } from "../fs/mod.ts";
 import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
@@ -867,16 +867,16 @@ export function unreachable(): never {
   throw new AssertionError("unreachable");
 }
 
-let snapshotFile: Record<string, any> | undefined = undefined;
-let updatedSnapshotFile: Record<string, any> = {};
-const snapshotMap: Record<string, number> = {};
+let snapshotFile: Record<string, unknown> | undefined = undefined;
+const updatedSnapshotFile: Record<string, unknown> = {};
+// const snapshotMap: Record<string, number> = {};
 
-export async function assertSnapshot(context: Deno.TestContext, actual: any) {
+export async function assertSnapshot(context: Deno.TestContext, actual: unknown) {
   const name = getName(context);
-  const count = getCount(name);
+  // const count = getCount(name);
 
   if (!snapshotFile) {
-    const snapshotPath = await getSnapshotPath();
+    const snapshotPath = getSnapshotPath();
     await ensureFile(snapshotPath);
     const file = Deno.readTextFileSync(snapshotPath);
     snapshotFile = file ? JSON.parse(file) : {};
@@ -897,18 +897,18 @@ export async function assertSnapshot(context: Deno.TestContext, actual: any) {
 
   Deno.test.teardown(writeSnapshotFile);
 
-  function getCount(ident: string) {
-    const count = snapshotMap?.[name] ? snapshotMap[name] : 1;
-    snapshotMap[name] = count + 1;
-    return count;
-  }
+  // function getCount() {
+  //   const count = snapshotMap?.[name] ? snapshotMap[name] : 1;
+  //   snapshotMap[name] = count + 1;
+  //   return count;
+  // }
 
   function getName(context: Deno.TestContext): string {
     if (context.parent) return `${getName(context.parent)} > ${context.name}`;
     return context.name;
   }
 
-  async function getSnapshotPath() {
+  function getSnapshotPath() {
     const testFile = fromFileUrl(context.origin);
     const parts = parse(testFile);
     return `${parts.dir}/${parts.name}.snap`;
