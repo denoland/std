@@ -12,7 +12,7 @@ import {
   stripColor,
   white,
 } from "../fmt/colors.ts";
-import { fromFileUrl, parse } from "../path/mod.ts";
+import { fromFileUrl, parse, join } from "../path/mod.ts";
 import { ensureFile } from "../fs/mod.ts";
 import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
@@ -878,7 +878,7 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
   if (!snapshotFile) {
     const snapshotPath = getSnapshotPath();
     await ensureFile(snapshotPath);
-    const file = Deno.readTextFileSync(snapshotPath);
+    const file = await Deno.readTextFile(snapshotPath);
     snapshotFile = file ? JSON.parse(file) : {};
   }
   const snapshot = snapshotFile?.[name];
@@ -911,11 +911,11 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
   function getSnapshotPath() {
     const testFile = fromFileUrl(context.origin);
     const parts = parse(testFile);
-    return `${parts.dir}/${parts.name}.snap`;
+    return `${join(parts.dir, parts.name)}.snap`;
   }
 
   async function writeSnapshotFile() {
-    const snapshotPath = await getSnapshotPath();
+    const snapshotPath = getSnapshotPath();
     await ensureFile(snapshotPath);
     const file = JSON.stringify(updatedSnapshotFile, null, 2);
     await Deno.writeTextFile(snapshotPath, file);
