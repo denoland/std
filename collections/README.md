@@ -914,7 +914,11 @@ by default, using JavaScript's built in comparison operators to sort the values.
 | push(value) | O(1)         | O(log n)   |
 
 ```ts
-import { BinaryHeap, ascend, descend } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import {
+  ascend,
+  BinaryHeap,
+  descend,
+} from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const maxHeap = new BinaryHeap<number>();
