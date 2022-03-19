@@ -918,14 +918,14 @@ import { BinaryHeap, ascend, descend } from "https://deno.land/std@$STD_VERSION/
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const maxHeap = new BinaryHeap<number>();
-maxHeap.push(4, 1, 3, 5, 2]);
+maxHeap.push(4, 1, 3, 5, 2);
 assertEquals(maxHeap.peek(), 5);
 assertEquals(maxHeap.pop(), 5);
 assertEquals([...maxHeap], [4, 3, 2, 1]);
 assertEquals([...maxHeap], []);
 
 const minHeap = new BinaryHeap<number>(ascend);
-minHeap.push(4, 1, 3, 5, 2]);
+minHeap.push(4, 1, 3, 5, 2);
 assertEquals(minHeap.peek(), 1);
 assertEquals(minHeap.pop(), 1);
 assertEquals([...minHeap], [2, 3, 4, 5]);
