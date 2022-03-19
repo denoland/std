@@ -44,4 +44,3 @@ export * from "./reduce_groups.ts";
 export * from "./sample.ts";
 export * from "./running_reduce.ts";
 export * from "./binary_heap.ts";
-export * from "./comparators.ts";

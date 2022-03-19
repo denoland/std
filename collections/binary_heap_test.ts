@@ -1,17 +1,6 @@
 import { assertEquals } from "../testing/asserts.ts";
-import { BinaryHeap } from "./binary_heap.ts";
-import { ascend, descend } from "./comparators.ts";
-
-export class MyMath {
-  multiply(a: number, b: number): number {
-    return a * b;
-  }
-}
-
-export interface Container {
-  id: number;
-  values: number[];
-}
+import { ascend, BinaryHeap, descend } from "./binary_heap.ts";
+import { Container, MyMath } from "./_test_utils.ts";
 
 Deno.test("[collections/BinaryHeap] with default descend comparator", () => {
   const maxHeap = new BinaryHeap<number>();
@@ -266,4 +255,27 @@ Deno.test("[collections/BinaryHeap] from BinaryHeap with ascend comparator", () 
   });
   assertEquals([...minHeap], expected);
   assertEquals([...heap].reverse(), expected.map((v: number) => 3 * v));
+});
+
+Deno.test("[collections/BinaryHeap] README example", () => {
+  const maxHeap = new BinaryHeap<number>();
+  maxHeap.push(4, 1, 3, 5, 2);
+  assertEquals(maxHeap.peek(), 5);
+  assertEquals(maxHeap.pop(), 5);
+  assertEquals([...maxHeap], [4, 3, 2, 1]);
+  assertEquals([...maxHeap], []);
+
+  const minHeap = new BinaryHeap<number>(ascend);
+  minHeap.push(4, 1, 3, 5, 2);
+  assertEquals(minHeap.peek(), 1);
+  assertEquals(minHeap.pop(), 1);
+  assertEquals([...minHeap], [2, 3, 4, 5]);
+  assertEquals([...minHeap], []);
+
+  const words = new BinaryHeap<string>((a, b) => descend(a.length, b.length));
+  words.push("truck", "car", "helicopter", "tank");
+  assertEquals(words.peek(), "helicopter");
+  assertEquals(words.pop(), "helicopter");
+  assertEquals([...words], ["truck", "tank", "car"]);
+  assertEquals([...words], []);
 });
