@@ -32,6 +32,7 @@
       "test-fs-write-file.js",
       "test-fs-write.js",
       "test-os.js",
+      "test-path-resolve.js",
       "test-path.js",
       "test-querystring.js",
       "test-readline-interface.js",
