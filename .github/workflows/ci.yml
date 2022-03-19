@@ -34,18 +34,15 @@ jobs:
           sudo apt install faketime
 
       - name: Run tests canary
-        run: |
-          deno test --doc --unstable --allow-all --coverage=./cov --ignore=node/
+        run: deno task test
 
       - name: Run test with the date 2021-12-31
         if: matrix.os == 'ubuntu-latest'
-        run: |
-          faketime '2021-12-31' deno test --unstable --allow-all datetime/test_2021_12_31.ts
+        run: deno task test:faketime
 
       - name: Type check browser compatible modules
         shell: bash
-        run: |
-          git grep --name-only "// This module is browser compatible." | grep -v ".github/workflows" | xargs deno cache --config browser-compat.tsconfig.json
+        run: deno task test:browser
 
       - name: Generate lcov
         shell: bash
@@ -93,10 +90,10 @@ jobs:
       #   run: deno test --doc --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/
 
       - name: Unit test node/
-        run: deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/
+        run: deno task node:unit
 
       - name: Run Node tests canary
-        run: deno test --unstable --allow-all node/_tools/test.ts
+        run: deno task node:test
         env:
           DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 

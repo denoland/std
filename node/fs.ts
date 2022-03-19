@@ -36,7 +36,7 @@ import { watch, watchFile } from "./_fs/_fs_watch.ts";
 // @deno-types="./_fs/_fs_write.d.ts"
 import { write, writeSync } from "./_fs/_fs_write.mjs";
 // @deno-types="./_fs/_fs_writev.d.ts"
-import { writev } from "./_fs/_fs_writev.mjs";
+import { writev, writevSync } from "./_fs/_fs_writev.mjs";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
 import { Stats } from "./internal/fs/utils.mjs";
 import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
@@ -156,6 +156,7 @@ export default {
   write,
   writeFile,
   writev,
+  writevSync,
   writeFileSync,
   WriteStream,
   writeSync,
@@ -240,5 +241,6 @@ export {
   WriteStream,
   writeSync,
   writev,
+  writevSync,
   X_OK,
 };
