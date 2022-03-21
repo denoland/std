@@ -321,6 +321,7 @@ class Process extends EventEmitter {
   override on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.on("${event}")`);
+      super.on(event, listener);
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
@@ -344,6 +345,7 @@ class Process extends EventEmitter {
   override off(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.off("${event}")`);
+      super.off(event, listener);
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
@@ -388,6 +390,7 @@ class Process extends EventEmitter {
   ): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.prependListener("${event}")`);
+      super.prependListener(event, listener);
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
@@ -420,7 +423,6 @@ class Process extends EventEmitter {
   ): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.addListener("${event}")`);
-      return this;
     }
 
     return this.on(event, listener);
@@ -442,7 +444,6 @@ class Process extends EventEmitter {
   ): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.removeListener("${event}")`);
-      return this;
     }
 
     return this.off(event, listener);
