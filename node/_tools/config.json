@@ -234,6 +234,7 @@
       "test-path-win32-exists.js",
       "test-path.js",
       "test-process-binding-internalbinding-allowlist.js",
+      "test-process-env-allowed-flags.js",
       "test-process-exit-handler.js",
       "test-process-exit-recursive.js",
       "test-process-exit.js",
