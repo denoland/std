@@ -46,6 +46,7 @@ const stdout = stdout_ as any;
 export { stderr, stdin, stdout };
 import { getBinding } from "./internal_binding/mod.ts";
 import type { BindingName } from "./internal_binding/mod.ts";
+import { buildAllowedFlags } from "./internal/process/per_thread.mjs";
 
 const notImplementedEvents = [
   "beforeExit",
@@ -524,6 +525,14 @@ class Process extends EventEmitter {
   uptime() {
     return (Date.now() - this.#startTime) / 1000;
   }
+
+  #allowedFlags = buildAllowedFlags();
+  /** https://nodejs.org/api/process.html#processallowednodeenvironmentflags */
+  get allowedNodeEnvironmentFlags() {
+    return this.#allowedFlags;
+  }
+
+  features = { inspector: false };
 }
 
 /** https://nodejs.org/api/process.html#process_process */
