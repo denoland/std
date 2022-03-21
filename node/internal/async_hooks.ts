@@ -234,7 +234,8 @@ export function getDefaultTriggerAsyncId() {
 
 export function defaultTriggerAsyncIdScope(
   triggerAsyncId: number | undefined,
-  block: (...arg: unknown[]) => void,
+  // deno-lint-ignore no-explicit-any
+  block: (...arg: any[]) => void,
   ...args: unknown[]
 ) {
   if (triggerAsyncId === undefined) {
