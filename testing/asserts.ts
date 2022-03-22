@@ -13,7 +13,7 @@ import {
   white,
 } from "../fmt/colors.ts";
 import { fromFileUrl, parse, join } from "../path/mod.ts";
-import { ensureFile } from "../fs/mod.ts";
+import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
@@ -882,7 +882,7 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
     snapshotFile = file ? JSON.parse(file) : {};
   }
   const snapshot = snapshotFile?.[name];
-  if (!context.update) {
+  if (!Deno.args.includes('--update')) {
     assertEquals(actual, snapshot);
   } else {
     let isEqual = true;
@@ -895,7 +895,7 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
   }
   updatedSnapshotFile[name] = actual;
 
-  Deno.test.teardown(writeSnapshotFile);
+  globalThis.onunload = writeSnapshotFileSync;
 
   // function getCount() {
   //   const count = snapshotMap?.[name] ? snapshotMap[name] : 1;
@@ -914,10 +914,11 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
     return `${join(parts.dir, parts.name)}.snap`;
   }
 
-  async function writeSnapshotFile() {
+  function writeSnapshotFileSync() {
     const snapshotPath = getSnapshotPath();
-    await ensureFile(snapshotPath);
+    ensureFileSync(snapshotPath);
     const file = JSON.stringify(updatedSnapshotFile, null, 2);
-    await Deno.writeTextFile(snapshotPath, file);
+    Deno.writeTextFileSync(snapshotPath, file);
+    console.log('Snapshot updated!');
   }
 }
