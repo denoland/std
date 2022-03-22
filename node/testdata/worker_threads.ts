@@ -10,6 +10,7 @@ import { once } from "../events.ts";
 async function message(expectedMessage: string) {
   const [message] = await once(parentPort, "message");
   if (message !== expectedMessage) {
+    console.log(`Expected the message "${expectedMessage}", but got`, message);
     // fail test
     parentPort.close();
   }
