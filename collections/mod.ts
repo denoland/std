@@ -1,4 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 export * from "./aggregate_groups.ts";
 export * from "./associate_by.ts";
@@ -42,3 +43,4 @@ export * from "./drop_last_while.ts";
 export * from "./reduce_groups.ts";
 export * from "./sample.ts";
 export * from "./running_reduce.ts";
+export * from "./binary_heap.ts";

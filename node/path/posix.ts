@@ -1,9 +1,9 @@
 // Copyright the Browserify authors. MIT License.
 // Ported from https://github.com/browserify/path-browserify/
-// This module is browser compatible.
 
 import type { FormatInputPathObject, ParsedPath } from "./_interface.ts";
 import { CHAR_DOT, CHAR_FORWARD_SLASH } from "./_constants.ts";
+import { ERR_INVALID_ARG_TYPE } from "../internal/errors.ts";
 
 import {
   _format,
@@ -248,7 +248,7 @@ export function dirname(path: string): string {
  */
 export function basename(path: string, ext = ""): string {
   if (ext !== undefined && typeof ext !== "string") {
-    throw new TypeError('"ext" argument must be a string');
+    throw new ERR_INVALID_ARG_TYPE("ext", ["string"], ext);
   }
   assertPath(path);
 
@@ -380,9 +380,7 @@ export function extname(path: string): string {
  */
 export function format(pathObject: FormatInputPathObject): string {
   if (pathObject === null || typeof pathObject !== "object") {
-    throw new TypeError(
-      `The "pathObject" argument must be of type Object. Received type ${typeof pathObject}`,
-    );
+    throw new ERR_INVALID_ARG_TYPE("pathObject", ["Object"], pathObject);
   }
   return _format("/", pathObject);
 }
@@ -513,3 +511,21 @@ export function toFileUrl(path: string): URL {
   );
   return url;
 }
+
+export default {
+  basename,
+  delimiter,
+  dirname,
+  extname,
+  format,
+  fromFileUrl,
+  isAbsolute,
+  join,
+  normalize,
+  parse,
+  relative,
+  resolve,
+  sep,
+  toFileUrl,
+  toNamespacedPath,
+};

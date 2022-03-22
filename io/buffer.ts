@@ -254,14 +254,14 @@ const CR = "\r".charCodeAt(0);
 const LF = "\n".charCodeAt(0);
 
 export class BufferFullError extends Error {
-  name = "BufferFullError";
+  override name = "BufferFullError";
   constructor(public partial: Uint8Array) {
     super("Buffer full");
   }
 }
 
 export class PartialReadError extends Error {
-  name = "PartialReadError";
+  override name = "PartialReadError";
   partial?: Uint8Array;
   constructor() {
     super("Encountered UnexpectedEof, data only partially read");
@@ -723,11 +723,7 @@ export class BufWriter extends AbstractBufBase implements Writer {
   }
 
   constructor(writer: Writer, size: number = DEFAULT_BUF_SIZE) {
-    if (size <= 0) {
-      size = DEFAULT_BUF_SIZE;
-    }
-    const buf = new Uint8Array(size);
-    super(buf);
+    super(new Uint8Array(size <= 0 ? DEFAULT_BUF_SIZE : size));
     this.#writer = writer;
   }
 
@@ -824,11 +820,7 @@ export class BufWriterSync extends AbstractBufBase implements WriterSync {
   }
 
   constructor(writer: WriterSync, size: number = DEFAULT_BUF_SIZE) {
-    if (size <= 0) {
-      size = DEFAULT_BUF_SIZE;
-    }
-    const buf = new Uint8Array(size);
-    super(buf);
+    super(new Uint8Array(size <= 0 ? DEFAULT_BUF_SIZE : size));
     this.#writer = writer;
   }
 

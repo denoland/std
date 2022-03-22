@@ -28,22 +28,16 @@
  * })
  * ```
  */
-export function groupBy<T>(
+export function groupBy<T, K extends string>(
   array: readonly T[],
-  selector: (el: T) => string,
-): Record<string, T[]> {
-  const ret: Record<string, T[]> = {};
+  selector: (el: T) => K,
+): Partial<Record<K, T[]>> {
+  const ret: Partial<Record<K, T[]>> = {};
 
   for (const element of array) {
     const key = selector(element);
-
-    if (ret[key] === undefined) {
-      ret[key] = [element];
-
-      continue;
-    }
-
-    ret[key].push(element);
+    const arr = ret[key] ??= [] as T[];
+    arr.push(element);
   }
 
   return ret;

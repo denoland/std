@@ -1,7 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import * as DenoUnstable from "../../_deno_unstable.ts";
 import { type CallbackWithError, makeCallback } from "./_fs_common.ts";
 import { fs, os } from "../internal_binding/constants.ts";
-import { getValidatedPath, getValidMode } from "../internal/fs/utils.js";
+import { getValidatedPath, getValidMode } from "../internal/fs/utils.mjs";
 import type { Buffer } from "../buffer.ts";
 
 export function access(
@@ -21,7 +22,7 @@ export function access(
   Deno.lstat(path).then((info) => {
     const m = +mode || 0;
     let fileMode = +info.mode! || 0;
-    if (Deno.build.os !== "windows" && info.uid === Deno.getUid()) {
+    if (Deno.build.os !== "windows" && info.uid === DenoUnstable.getUid()) {
       // If the user is the owner of the file, then use the owner bits of
       // the file permission
       fileMode >>= 6;

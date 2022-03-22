@@ -7,7 +7,7 @@ Deno.test({
   name: "ASYNC: File is closed",
   async fn() {
     const tempFile: string = await Deno.makeTempFile();
-    const file: Deno.File = await Deno.open(tempFile);
+    const file: Deno.FsFile = await Deno.open(tempFile);
 
     assert(Deno.resources()[file.rid]);
     await new Promise<void>((resolve, reject) => {
@@ -43,7 +43,7 @@ Deno.test({
   name: "close callback should be asynchronous",
   async fn() {
     const tempFile: string = Deno.makeTempFileSync();
-    const file: Deno.File = Deno.openSync(tempFile);
+    const file: Deno.FsFile = Deno.openSync(tempFile);
 
     let foo: string;
     const promise = new Promise<void>((resolve) => {
@@ -63,7 +63,7 @@ Deno.test({
   name: "SYNC: File is closed",
   fn() {
     const tempFile: string = Deno.makeTempFileSync();
-    const file: Deno.File = Deno.openSync(tempFile);
+    const file: Deno.FsFile = Deno.openSync(tempFile);
 
     assert(Deno.resources()[file.rid]);
     closeSync(file.rid);

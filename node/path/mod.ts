@@ -1,10 +1,9 @@
 // Copyright the Browserify authors. MIT License.
 // Ported mostly from https://github.com/browserify/path-browserify/
-// This module is browser compatible.
 
 import { isWindows } from "../../_util/os.ts";
-import * as _win32 from "./win32.ts";
-import * as _posix from "./posix.ts";
+import _win32 from "./win32.ts";
+import _posix from "./posix.ts";
 
 const path = isWindows ? _win32 : _posix;
 

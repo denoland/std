@@ -1,15 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { Timeout, TIMEOUT_MAX } from "./internal/timers.js";
-import { validateCallback } from "./internal/validators.js";
+import { Timeout, TIMEOUT_MAX } from "./internal/timers.mjs";
+import { validateCallback } from "./internal/validators.mjs";
 const setTimeout_ = globalThis.setTimeout;
 const clearTimeout_ = globalThis.clearTimeout;
 const setInterval_ = globalThis.setInterval;
 const clearInterval_ = globalThis.clearInterval;
-type TimerParams = Parameters<typeof globalThis.setTimeout>;
 export function setTimeout(
-  cb: TimerParams[0],
-  timeout?: TimerParams[1],
+  cb: (...args: unknown[]) => void,
+  timeout?: number,
   ...args: unknown[]
 ) {
   validateCallback(cb);
@@ -26,8 +25,8 @@ export function setTimeout(
   return timer;
 }
 export function setUnrefTimeout(
-  cb: TimerParams[0],
-  timeout?: TimerParams[1],
+  cb: (...args: unknown[]) => void,
+  timeout?: number,
   ...args: unknown[]
 ) {
   setTimeout(cb, timeout, ...args).unref();
@@ -39,8 +38,8 @@ export function clearTimeout(timeout?: Timeout | number) {
   clearTimeout_(+timeout);
 }
 export function setInterval(
-  cb: TimerParams[0],
-  timeout?: TimerParams[1],
+  cb: (...args: unknown[]) => void,
+  timeout?: number,
   ...args: unknown[]
 ) {
   validateCallback(cb);

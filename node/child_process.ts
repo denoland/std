@@ -7,7 +7,7 @@ import {
   ChildProcessOptions,
   stdioStringToArray,
 } from "./internal/child_process.ts";
-import { validateString } from "./internal/validators.js";
+import { validateString } from "./internal/validators.mjs";
 import {
   ERR_CHILD_PROCESS_IPC_REQUIRED,
   ERR_CHILD_PROCESS_STDIO_MAXBUFFER,

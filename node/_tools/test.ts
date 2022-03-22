@@ -19,6 +19,8 @@ const filters = Deno.args;
 const toolsPath = dirname(fromFileUrl(import.meta.url));
 const stdRootUrl = new URL("../../", import.meta.url).href;
 const testPaths = getPathsFromTestSuites(config.tests);
+const cwd = fromFileUrl(new URL("./", import.meta.url));
+const requireTs = "require.ts";
 const windowsIgnorePaths = new Set(
   getPathsFromTestSuites(config.windowsIgnore),
 );
@@ -39,6 +41,15 @@ for await (const path of testPaths) {
     name: `Node.js compatibility "${path}"`,
     ignore,
     fn: async () => {
+      const targetTestPath = join(toolsPath, config.suitesFolder, path);
+
+      const v8Flags = ["--stack-size=4000"];
+      const testSourceCode = await Deno.readTextFile(targetTestPath);
+      // TODO(kt3k): Parse `Flags` directive correctly
+      if (testSourceCode.includes("Flags: --expose_externalize_string")) {
+        v8Flags.push("--expose-externalize-string");
+      }
+
       const cmd = [
         Deno.execPath(),
         "run",
@@ -46,9 +57,11 @@ for await (const path of testPaths) {
         "--quiet",
         "--unstable",
         "--no-check",
-        join("node", "_tools", "require.ts"),
-        join(toolsPath, config.suitesFolder, path),
+        "--v8-flags=" + v8Flags.join(),
+        requireTs,
+        targetTestPath,
       ];
+
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided
       const test = Deno.run({
@@ -56,6 +69,7 @@ for await (const path of testPaths) {
         env: {
           DENO_NODE_COMPAT_URL: stdRootUrl,
         },
+        cwd,
         stderr: "piped",
         stdout: "piped",
       });

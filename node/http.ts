@@ -7,13 +7,13 @@ import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { EventEmitter } from "./events.ts";
 import { nextTick } from "./_next_tick.ts";
 import { Status as STATUS_CODES } from "../http/http_status.ts";
-import { validatePort } from "./internal/validators.js";
+import { validatePort } from "./internal/validators.mjs";
 import {
   Readable as NodeReadable,
   Writable as NodeWritable,
 } from "./stream.ts";
 import { OutgoingMessage } from "./_http_outgoing.ts";
-import { Agent } from "./_http_agent.js";
+import { Agent } from "./_http_agent.mjs";
 import { urlToHttpOptions } from "./internal/url.ts";
 
 const METHODS = [
@@ -100,7 +100,7 @@ class ClientRequest extends NodeWritable {
   }
 
   // deno-lint-ignore no-explicit-any
-  _write(chunk: any, _enc: string, cb: () => void) {
+  override _write(chunk: any, _enc: string, cb: () => void) {
     if (this.controller) {
       this.controller.enqueue(chunk);
       cb();
@@ -116,17 +116,22 @@ class ClientRequest extends NodeWritable {
     });
   }
 
-  async _final() {
+  override async _final() {
+    if (this.controller) {
+      this.controller.close();
+    }
+
     const client = await this._createCustomClient();
     const opts = { body: this.body, method: this.opts.method, client };
-    const mayResponse = fetch(this.opts.href!, opts).catch((e) => {
-      if (e.message.includes("connection closed before message completed")) {
-        // Node.js seems ignoring this error
-      } else {
-        this.emit("error", e);
-      }
-      return undefined;
-    });
+    const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts)
+      .catch((e) => {
+        if (e.message.includes("connection closed before message completed")) {
+          // Node.js seems ignoring this error
+        } else {
+          this.emit("error", e);
+        }
+        return undefined;
+      });
     const res = new IncomingMessageForClient(
       await mayResponse,
       this._createSocket(),
@@ -154,6 +159,25 @@ class ClientRequest extends NodeWritable {
     // e.g. if (!response.socket.authorized) { ... }
     return new Socket({});
   }
+
+  // deno-lint-ignore no-explicit-any
+  _createUrlStrFromOptions(opts: any) {
+    if (opts.href) {
+      return opts.href;
+    } else {
+      const {
+        auth,
+        protocol,
+        host,
+        hostname,
+        path,
+        port,
+      } = opts;
+      return `${protocol}//${auth ? `${auth}@` : ""}${host ?? hostname}${
+        port ? `:${port}` : ""
+      }${path}`;
+    }
+  }
 }
 
 /** IncomingMessage for http(s) client */
@@ -164,7 +188,7 @@ export class IncomingMessageForClient extends NodeReadable {
     this.reader = response?.body?.getReader();
   }
 
-  async _read(_size: number) {
+  override async _read(_size: number) {
     if (this.reader === undefined) {
       this.push(null);
       return;
@@ -306,7 +330,7 @@ export class ServerResponse extends NodeWritable {
   }
 
   // deno-lint-ignore no-explicit-any
-  end(chunk?: any, encoding?: any, cb?: any): this {
+  override end(chunk?: any, encoding?: any, cb?: any): this {
     if (!chunk && this.#headers.has("transfer-encoding")) {
       // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
       // the trailing "0\r\n", but respondWith() just hangs when I try that.

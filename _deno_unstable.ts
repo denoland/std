@@ -53,6 +53,16 @@ export function futimeSync(
   }
 }
 
+export function getUid(
+  ...args: Parameters<typeof Deno.getUid>
+): ReturnType<typeof Deno.getUid> {
+  if (typeof Deno.getUid == "function") {
+    return Deno.getUid(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}
+
 export function hostname(
   ...args: Parameters<typeof Deno.hostname>
 ): ReturnType<typeof Deno.hostname> {
@@ -113,16 +123,6 @@ export function systemMemoryInfo(
   }
 }
 
-export function umask(
-  ...args: Parameters<typeof Deno.umask>
-): ReturnType<typeof Deno.umask> {
-  if (typeof Deno.umask == "function") {
-    return Deno.umask(...args);
-  } else {
-    throw new TypeError("Requires --unstable");
-  }
-}
-
 export function utime(
   ...args: Parameters<typeof Deno.utime>
 ): ReturnType<typeof Deno.utime> {
@@ -138,6 +138,16 @@ export function utimeSync(
 ): ReturnType<typeof Deno.utimeSync> {
   if (typeof Deno.utimeSync == "function") {
     return Deno.utimeSync(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}
+
+export function networkInterfaces(
+  ...args: Parameters<typeof Deno.networkInterfaces>
+): ReturnType<typeof Deno.networkInterfaces> {
+  if (typeof Deno.networkInterfaces == "function") {
+    return Deno.networkInterfaces(...args);
   } else {
     throw new TypeError("Requires --unstable");
   }

@@ -1,6 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import "./global.ts";
-import { assert, assertStrictEquals } from "../testing/asserts.ts";
+import {
+  assert,
+  assertNotEquals,
+  assertStrictEquals,
+} from "../testing/asserts.ts";
 import { Buffer as BufferModule } from "./buffer.ts";
 import processModule from "./process.ts";
 import timers from "./timers.ts";
@@ -13,8 +17,6 @@ import timers from "./timers.ts";
 // probably gonna change in the future
 
 Deno.test("global is correctly defined", () => {
-  // deno-lint-ignore no-undef
-  assertStrictEquals(global, globalThis);
   // deno-lint-ignore no-undef
   assertStrictEquals(global.Buffer, BufferModule);
   // deno-lint-ignore no-undef
@@ -51,6 +53,20 @@ Deno.test("process is correctly defined", () => {
   assert(globalThis.process.arch);
   assertStrictEquals(window.process, processModule);
   assert(window.process.arch);
+});
+
+Deno.test("global timers are not Node.js timers", () => {
+  assertNotEquals(setTimeout, timers.setTimeout);
+  assertNotEquals(clearTimeout, timers.clearTimeout);
+  assertNotEquals(setInterval, timers.setInterval);
+  assertNotEquals(clearInterval, timers.clearInterval);
+});
+
+Deno.test("timers in `global` object are Node.js timers", () => {
+  assertStrictEquals(global.setTimeout, timers.setTimeout);
+  assertStrictEquals(global.clearTimeout, timers.clearTimeout);
+  assertStrictEquals(global.setInterval, timers.setInterval);
+  assertStrictEquals(global.clearInterval, timers.clearInterval);
 });
 
 Deno.test("setImmediate is correctly defined", () => {

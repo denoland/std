@@ -210,10 +210,9 @@ class Module {
   static wrapper = [
     // We provide non standard timer APIs in the CommonJS wrapper
     // to avoid exposing them in global namespace.
-    "(function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) { ",
-    "\n});",
+    "(function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) { (function (exports, require, module, __filename, __dirname) {",
+    "\n}).call(this, exports, require, module, __filename, __dirname); })",
   ];
-
   // Loads a module at the given file path. Returns that module's
   // `exports` property.
   // deno-lint-ignore no-explicit-any
@@ -512,6 +511,11 @@ class Module {
       }
     }
 
+    // NOTE(@bartlomieju): this is a temporary solution. We provide some
+    // npm modules with fixes in inconsistencies between Deno and Node.js.
+    const upstreamMod = loadUpstreamModule(request, parent, request);
+    if (upstreamMod) return upstreamMod.exports;
+
     const filename = Module._resolveFilename(request, parent, isMain);
     if (filename.startsWith("node:")) {
       // Slice 'node:' prefix
@@ -534,11 +538,6 @@ class Module {
     // Native module polyfills
     const mod = loadNativeModule(filename, request);
     if (mod) return mod.exports;
-
-    // NOTE(@bartlomieju): this is a temporary solution. We provide some
-    // npm modules with fixes in inconsistencies between Deno and Node.js.
-    const upstreamMod = loadUpstreamModule(filename, parent, request);
-    if (upstreamMod) return upstreamMod.exports;
 
     // Don't call updateChildren(), Module constructor already does.
     const module = new Module(filename, parent);

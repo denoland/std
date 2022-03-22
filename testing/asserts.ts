@@ -17,7 +17,7 @@ import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
 export class AssertionError extends Error {
-  name = "AssertionError";
+  override name = "AssertionError";
   constructor(message: string) {
     super(message);
   }
@@ -308,7 +308,7 @@ export function assertNotEquals(
     expectedString = "[Cannot display]";
   }
   if (!msg) {
-    msg = `actual: ${actualString} expected: ${expectedString}`;
+    msg = `actual: ${actualString} expected not to be: ${expectedString}`;
   }
   throw new AssertionError(msg);
 }
@@ -323,21 +323,11 @@ export function assertNotEquals(
  * assertStrictEquals(1, 2)
  * ```
  */
-export function assertStrictEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
 export function assertStrictEquals<T>(
-  actual: T,
+  actual: unknown,
   expected: T,
   msg?: string,
-): void;
-export function assertStrictEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void {
+): asserts actual is T {
   if (actual === expected) {
     return;
   }
@@ -409,6 +399,85 @@ export function assertNotStrictEquals(
   throw new AssertionError(
     msg ?? `Expected "actual" to be strictly unequal to: ${_format(actual)}\n`,
   );
+}
+
+/**
+ * Make an assertion that `actual` and `expected` are almost equal numbers through
+ * a given tolerance. It can be used to take into account IEEE-754 double-precision
+ * floating-point representation limitations.
+ * If the values are not almost equal then throw.
+ *
+ * ```ts
+ * import { assertAlmostEquals, assertThrows } from "./asserts.ts";
+ *
+ * assertAlmostEquals(0.1, 0.2);
+ *
+ * // Using a custom tolerance value
+ * assertAlmostEquals(0.1 + 0.2, 0.3, 1e-16);
+ * assertThrows(() => assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17));
+ * ```
+ */
+export function assertAlmostEquals(
+  actual: number,
+  expected: number,
+  tolerance = 1e-7,
+  msg?: string,
+) {
+  if (actual === expected) {
+    return;
+  }
+  const delta = Math.abs(expected - actual);
+  if (delta <= tolerance) {
+    return;
+  }
+  const f = (n: number) => Number.isInteger(n) ? n : n.toExponential();
+  throw new AssertionError(
+    msg ??
+      `actual: "${f(actual)}" expected to be close to "${f(expected)}": \
+delta "${f(delta)}" is greater than "${f(tolerance)}"`,
+  );
+}
+
+// deno-lint-ignore no-explicit-any
+type AnyConstructor = new (...args: any[]) => any;
+type GetConstructorType<T extends AnyConstructor> = T extends // deno-lint-ignore no-explicit-any
+new (...args: any) => infer C ? C
+  : never;
+
+/**
+ * Make an assertion that `obj` is an instance of `type`.
+ * If not then throw.
+ */
+export function assertInstanceOf<T extends AnyConstructor>(
+  actual: unknown,
+  expectedType: T,
+  msg = "",
+): asserts actual is GetConstructorType<T> {
+  if (!msg) {
+    const expectedTypeStr = expectedType.name;
+
+    let actualTypeStr = "";
+    if (actual === null) {
+      actualTypeStr = "null";
+    } else if (actual === undefined) {
+      actualTypeStr = "undefined";
+    } else if (typeof actual === "object") {
+      actualTypeStr = actual.constructor?.name ?? "Object";
+    } else {
+      actualTypeStr = typeof actual;
+    }
+
+    if (expectedTypeStr == actualTypeStr) {
+      msg = `Expected object to be an instance of "${expectedTypeStr}".`;
+    } else if (actualTypeStr == "function") {
+      msg =
+        `Expected object to be an instance of "${expectedTypeStr}" but was not an instanced object.`;
+    } else {
+      msg =
+        `Expected object to be an instance of "${expectedTypeStr}" but was "${actualTypeStr}".`;
+    }
+  }
+  assert(actual instanceof expectedType, msg);
 }
 
 /**
@@ -567,10 +636,28 @@ export function assertObjectMatch(
             filtered[key] = fn({ ...value }, { ...subset });
             continue;
           }
+        } // On regexp references, keep value as it to avoid loosing pattern and flags
+        else if (value instanceof RegExp) {
+          filtered[key] = value;
+          continue;
         } // On nested objects references, build a filtered object recursively
         else if (typeof value === "object") {
           const subset = (b as loose)[key];
           if ((typeof subset === "object") && (subset)) {
+            // When both operands are maps, build a filtered map with common keys and filter nested objects inside
+            if ((value instanceof Map) && (subset instanceof Map)) {
+              filtered[key] = new Map(
+                [...value].filter(([k]) => subset.has(k)).map((
+                  [k, v],
+                ) => [k, typeof v === "object" ? fn(v, subset.get(k)) : v]),
+              );
+              continue;
+            }
+            // When both operands are set, build a filtered set with common values
+            if ((value instanceof Set) && (subset instanceof Set)) {
+              filtered[key] = new Set([...value].filter((v) => subset.has(v)));
+              continue;
+            }
             filtered[key] = fn(value as loose, subset as loose);
             continue;
           }

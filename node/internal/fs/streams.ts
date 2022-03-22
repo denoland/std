@@ -4,7 +4,7 @@
 import { Writable } from "../../stream.ts";
 import { toPathIfFileURL } from "../url.ts";
 import { open, type openFlags } from "../../_fs/_fs_open.ts";
-import { write } from "../../_fs/_fs_write.js";
+import { write } from "../../_fs/_fs_write.mjs";
 import { close } from "../../_fs/_fs_close.ts";
 import { Buffer } from "../../buffer.ts";
 
@@ -47,7 +47,7 @@ export class WriteStreamClass extends Writable {
     }
   }
 
-  _construct(callback: (err?: Error) => void) {
+  override _construct(callback: (err?: Error) => void) {
     this[kFs].open(
       this.path.toString(),
       this.flags!,
@@ -66,7 +66,11 @@ export class WriteStreamClass extends Writable {
     );
   }
 
-  _write(data: Buffer, _encoding: string, cb: (err?: Error | null) => void) {
+  override _write(
+    data: Buffer,
+    _encoding: string,
+    cb: (err?: Error | null) => void,
+  ) {
     this[kIsPerformingIO] = true;
     this[kFs].write(
       this.fd!,
@@ -96,7 +100,7 @@ export class WriteStreamClass extends Writable {
     }
   }
 
-  _destroy(err: Error, cb: (err?: Error | null) => void) {
+  override _destroy(err: Error, cb: (err?: Error | null) => void) {
     if (this[kIsPerformingIO]) {
       this.once(kIoDone, (er) => closeStream(this, err || er, cb));
     } else {

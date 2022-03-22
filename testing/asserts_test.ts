@@ -2,9 +2,11 @@
 import {
   _format,
   assert,
+  assertAlmostEquals,
   assertArrayIncludes,
   assertEquals,
   assertExists,
+  assertInstanceOf,
   AssertionError,
   assertIsError,
   assertMatch,
@@ -380,6 +382,12 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const j = { foo: [[1, 2, 3]], bar: true };
   const k = { foo: [[1, [2, [3]]]], bar: true };
   const l = { foo: [[1, [2, [a, e, j, k]]]], bar: true };
+  const m = { foo: /abc+/i, bar: [/abc/g, /abc/m] };
+  const n = {
+    foo: new Set(["foo", "bar"]),
+    bar: new Map([["foo", 1], ["bar", 2]]),
+    baz: new Map([["a", a], ["b", b]]),
+  };
 
   // Simple subset
   assertObjectMatch(a, {
@@ -441,6 +449,15 @@ Deno.test("testingAssertObjectMatching", function (): void {
   assertObjectMatch(j, { foo: [[1, 2, 3]] });
   assertObjectMatch(k, { foo: [[1, [2, [3]]]] });
   assertObjectMatch(l, { foo: [[1, [2, [a, e, j, k]]]] });
+  // Regexp
+  assertObjectMatch(m, { foo: /abc+/i });
+  assertObjectMatch(m, { bar: [/abc/g, /abc/m] });
+  //Built-in data structures
+  assertObjectMatch(n, { foo: new Set(["foo"]) });
+  assertObjectMatch(n, { bar: new Map([["bar", 2]]) });
+  assertObjectMatch(n, { baz: new Map([["b", b]]) });
+  assertObjectMatch(n, { baz: new Map([["b", { foo: true }]]) });
+
   // Missing key
   {
     let didThrow;
@@ -612,6 +629,26 @@ Deno.test("testingAssertObjectMatching", function (): void {
       positions: [[1, 2, 3]],
     });
   }
+  //Regexp
+  assertThrows(() => assertObjectMatch(m, { foo: /abc+/ }), AssertionError);
+  assertThrows(() => assertObjectMatch(m, { foo: /abc*/i }), AssertionError);
+  assertThrows(
+    () => assertObjectMatch(m, { bar: [/abc/m, /abc/g] }),
+    AssertionError,
+  );
+  //Built-in data structures
+  assertThrows(
+    () => assertObjectMatch(n, { foo: new Set(["baz"]) }),
+    AssertionError,
+  );
+  assertThrows(
+    () => assertObjectMatch(n, { bar: new Map([["bar", 3]]) }),
+    AssertionError,
+  );
+  assertThrows(
+    () => assertObjectMatch(n, { baz: new Map([["a", { baz: true }]]) }),
+    AssertionError,
+  );
 });
 
 Deno.test("testingAssertsUnimplemented", function (): void {
@@ -839,6 +876,30 @@ Deno.test({
 });
 
 Deno.test({
+  name: "strict types test",
+  fn(): void {
+    const x = { number: 2 };
+
+    const y = x as Record<never, never>;
+    const z = x as unknown;
+
+    // y.number;
+    //   ~~~~~~
+    // Property 'number' does not exist on type 'Record<never, never>'.deno-ts(2339)
+
+    assertStrictEquals(y, x);
+    y.number; // ok
+
+    // z.number;
+    // ~
+    // Object is of type 'unknown'.deno-ts(2571)
+
+    assertStrictEquals(z, x);
+    z.number; // ok
+  },
+});
+
+Deno.test({
   name: "strict pass case",
   fn(): void {
     assertStrictEquals(true, true);
@@ -911,6 +972,161 @@ Deno.test({
   name: "strictly unequal fail case",
   fn(): void {
     assertThrows(() => assertNotStrictEquals(1, 1), AssertionError);
+  },
+});
+
+Deno.test("assert almost equals number", () => {
+  //Default precision
+  assertAlmostEquals(-0, +0);
+  assertAlmostEquals(Math.PI, Math.PI);
+  assertAlmostEquals(0.1 + 0.2, 0.3);
+  assertThrows(() => assertAlmostEquals(1, 2));
+  assertThrows(() => assertAlmostEquals(1, 1.1));
+
+  //Higher precision
+  assertAlmostEquals(0.1 + 0.2, 0.3, 1e-16);
+  assertThrows(
+    () => assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17),
+    AssertionError,
+    `"${(0.1 + 0.2).toExponential()}" expected to be close to "${
+      (0.3).toExponential()
+    }"`,
+  );
+
+  //Special cases
+  assertAlmostEquals(Infinity, Infinity);
+  assertThrows(
+    () => assertAlmostEquals(0, Infinity),
+    AssertionError,
+    '"0" expected to be close to "Infinity"',
+  );
+  assertThrows(
+    () => assertAlmostEquals(-Infinity, +Infinity),
+    AssertionError,
+    '"-Infinity" expected to be close to "Infinity"',
+  );
+  assertThrows(
+    () => assertAlmostEquals(Infinity, NaN),
+    AssertionError,
+    '"Infinity" expected to be close to "NaN"',
+  );
+  assertThrows(
+    () => assertAlmostEquals(NaN, NaN),
+    AssertionError,
+    '"NaN" expected to be close to "NaN"',
+  );
+});
+
+Deno.test({
+  name: "assertInstanceOf",
+  fn(): void {
+    class TestClass1 {}
+    class TestClass2 {}
+
+    // Regular types
+    assertInstanceOf(new Date(), Date);
+    assertInstanceOf(new Number(), Number);
+    assertInstanceOf(Promise.resolve(), Promise);
+    assertInstanceOf(new TestClass1(), TestClass1);
+
+    // Throwing cases
+    assertThrows(
+      () => assertInstanceOf(new Date(), RegExp),
+      AssertionError,
+      `Expected object to be an instance of "RegExp" but was "Date".`,
+    );
+    assertThrows(
+      () => assertInstanceOf(5, Date),
+      AssertionError,
+      `Expected object to be an instance of "Date" but was "number".`,
+    );
+    assertThrows(
+      () => assertInstanceOf(new TestClass1(), TestClass2),
+      AssertionError,
+      `Expected object to be an instance of "TestClass2" but was "TestClass1".`,
+    );
+
+    // Custom message
+    assertThrows(
+      () => assertInstanceOf(new Date(), RegExp, "Custom message"),
+      AssertionError,
+      "Custom message",
+    );
+
+    // Edge cases
+    assertThrows(
+      () => assertInstanceOf(5, Number),
+      AssertionError,
+      `Expected object to be an instance of "Number" but was "number".`,
+    );
+
+    let TestClassWithSameName: new () => unknown;
+    {
+      class TestClass1 {}
+      TestClassWithSameName = TestClass1;
+    }
+    assertThrows(
+      () => assertInstanceOf(new TestClassWithSameName(), TestClass1),
+      AssertionError,
+      `Expected object to be an instance of "TestClass1".`,
+    );
+
+    assertThrows(
+      () => assertInstanceOf(TestClass1, TestClass1),
+      AssertionError,
+      `Expected object to be an instance of "TestClass1" but was not an instanced object.`,
+    );
+    assertThrows(
+      () => assertInstanceOf(() => {}, TestClass1),
+      AssertionError,
+      `Expected object to be an instance of "TestClass1" but was not an instanced object.`,
+    );
+    assertThrows(
+      () => assertInstanceOf(null, TestClass1),
+      AssertionError,
+      `Expected object to be an instance of "TestClass1" but was "null".`,
+    );
+    assertThrows(
+      () => assertInstanceOf(undefined, TestClass1),
+      AssertionError,
+      `Expected object to be an instance of "TestClass1" but was "undefined".`,
+    );
+    assertThrows(
+      () => assertInstanceOf({}, TestClass1),
+      AssertionError,
+      `Expected object to be an instance of "TestClass1" but was "Object".`,
+    );
+    assertThrows(
+      () => assertInstanceOf(Object.create(null), TestClass1),
+      AssertionError,
+      `Expected object to be an instance of "TestClass1" but was "Object".`,
+    );
+
+    // Test TypeScript types functionality, wrapped in a function that never runs
+    // deno-lint-ignore no-unused-vars
+    function typeScriptTests() {
+      class ClassWithProperty {
+        property = "prop1";
+      }
+      const testInstance = new ClassWithProperty() as unknown;
+
+      // @ts-expect-error: `testInstance` is `unknown` so setting its property before `assertInstanceOf` should give a type error.
+      testInstance.property = "prop2";
+
+      assertInstanceOf(testInstance, ClassWithProperty);
+
+      // Now `testInstance` should be of type `ClassWithProperty`
+      testInstance.property = "prop3";
+
+      let x = 5 as unknown;
+
+      // @ts-expect-error: `x` is `unknown` so adding to it shouldn't work
+      x += 5;
+      assertInstanceOf(x, Number);
+
+      // @ts-expect-error: `x` is now `Number` rather than `number`, so this should still give a type error.
+      x += 5;
+    }
   },
 });
 

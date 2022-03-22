@@ -11,10 +11,29 @@ export function asciiToBytes(str: string) {
 }
 
 export function base64ToBytes(str: string) {
+  str = base64clean(str);
+  str = str.replaceAll("-", "+").replaceAll("_", "/");
   return base64.decode(str);
 }
 
+const INVALID_BASE64_RE = /[^+/0-9A-Za-z-_]/g;
+function base64clean(str: string) {
+  // Node takes equal signs as end of the Base64 encoding
+  str = str.split("=")[0];
+  // Node strips out invalid characters like \n and \t from the string, std/base64 does not
+  str = str.trim().replace(INVALID_BASE64_RE, "");
+  // Node converts strings with length < 2 to ''
+  if (str.length < 2) return "";
+  // Node allows for non-padded base64 strings (missing trailing ===), std/base64 does not
+  while (str.length % 4 !== 0) {
+    str = str + "=";
+  }
+  return str;
+}
+
 export function base64UrlToBytes(str: string) {
+  str = base64clean(str);
+  str = str.replaceAll("+", "-").replaceAll("/", "_");
   return base64url.decode(str);
 }
 
