@@ -1,5 +1,5 @@
 import { assertEquals } from "../testing/asserts.ts";
-import { ascend, descend } from "./comparators.ts";
+import { ascend, descend } from "./_comparators.ts";
 
 Deno.test("[collections/comparators] ascend", () => {
   assertEquals(ascend(2, 2), 0);

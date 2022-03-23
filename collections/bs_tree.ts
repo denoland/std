@@ -1,6 +1,6 @@
 /** This module is browser compatible. */
 
-import { ascend } from "./comparators.ts";
+import { ascend } from "./_comparators.ts";
 import { BSNode, direction } from "./bs_node.ts";
 
 /**

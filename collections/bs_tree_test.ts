@@ -1,6 +1,6 @@
 import { assertEquals, assertStrictEquals } from "../testing/asserts.ts";
 import { BSTree } from "./bs_tree.ts";
-import { ascend, descend } from "./comparators.ts";
+import { ascend, descend } from "./_comparators.ts";
 
 class MyMath {
   multiply(a: number, b: number): number {
