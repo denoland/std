@@ -464,3 +464,59 @@ Deno.test("[collections/BSTree] from BSTree with descend comparator", () => {
   assertEquals([...originalTree], expected);
   assertEquals([...tree].reverse(), expected.map((v: number) => 3 * v));
 });
+
+Deno.test("[collections/BSTree] README example", () => {
+  const values = [3, 10, 13, 4, 6, 7, 1, 14];
+  const tree = new BSTree<number>();
+  values.forEach((value) => tree.insert(value));
+  assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
+  assertEquals(tree.min(), 1);
+  assertEquals(tree.max(), 14);
+  assertEquals(tree.find(42), null);
+  assertEquals(tree.find(7), 7);
+  assertEquals(tree.remove(42), false);
+  assertEquals(tree.remove(7), true);
+  assertEquals([...tree], [1, 3, 4, 6, 10, 13, 14]);
+
+  const invertedTree = new BSTree<number>(descend);
+  values.forEach((value) => invertedTree.insert(value));
+  assertEquals([...invertedTree], [14, 13, 10, 7, 6, 4, 3, 1]);
+  assertEquals(invertedTree.min(), 14);
+  assertEquals(invertedTree.max(), 1);
+  assertEquals(invertedTree.find(42), null);
+  assertEquals(invertedTree.find(7), 7);
+  assertEquals(invertedTree.remove(42), false);
+  assertEquals(invertedTree.remove(7), true);
+  assertEquals([...invertedTree], [14, 13, 10, 6, 4, 3, 1]);
+
+  const words = new BSTree<string>((a, b) =>
+    ascend(a.length, b.length) || ascend(a, b)
+  );
+  ["truck", "car", "helicopter", "tank", "train", "suv", "semi", "van"]
+    .forEach((value) => words.insert(value));
+  assertEquals([...words], [
+    "car",
+    "suv",
+    "van",
+    "semi",
+    "tank",
+    "train",
+    "truck",
+    "helicopter",
+  ]);
+  assertEquals(words.min(), "car");
+  assertEquals(words.max(), "helicopter");
+  assertEquals(words.find("scooter"), null);
+  assertEquals(words.find("tank"), "tank");
+  assertEquals(words.remove("scooter"), false);
+  assertEquals(words.remove("tank"), true);
+  assertEquals([...words], [
+    "car",
+    "suv",
+    "van",
+    "semi",
+    "train",
+    "truck",
+    "helicopter",
+  ]);
+});

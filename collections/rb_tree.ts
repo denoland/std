@@ -5,7 +5,8 @@ import { direction, RBNode } from "./rb_node.ts";
 export * from "./_comparators.ts";
 
 /**
- * A red-black tree. The values are in ascending order by default,
+ * A red-black tree. This is a kind of self-balancing binary search tree.
+ * The values are in ascending order by default,
  * using JavaScript's built in comparison operators to sort the values.
  */
 export class RBTree<T> extends BSTree<T> {
