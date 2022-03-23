@@ -4,7 +4,7 @@ import { ascend } from "./_comparators.ts";
 import { BSNode, direction } from "./bs_node.ts";
 
 /**
- * A unbalanced binary search tree. The values are in ascending order by default,
+ * An unbalanced binary search tree. The values are in ascending order by default,
  * using JavaScript's built in comparison operators to sort the values.
  */
 export class BSTree<T> implements Iterable<T> {
