@@ -66,10 +66,11 @@ After cloning don't forget to `git submodule update --init`.
 
 Before opening a PR make sure to:
 
-- Add tests that cover your changes.
-- `deno test --unstable --allow-all` passes.
-- `deno run -A _tools/format.js` passes without changing files.
-- `deno run -A _tools/lint.js` passes.
+- have the latest Deno version installed locally
+- add tests that cover your changes.
+- `deno task test` passes.
+- `deno fmt` passes without changing files.
+- `deno lint` passes.
 
 Give the PR a descriptive title.
 

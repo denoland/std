@@ -4,6 +4,7 @@
 // deno-lint-ignore camelcase
 import * as async_wrap from "../internal_binding/async_wrap.ts";
 import { ERR_ASYNC_CALLBACK } from "./errors.ts";
+export { asyncIdSymbol, ownerSymbol } from "../internal_binding/symbols.ts";
 
 interface ActiveHooks {
   array: AsyncHook[];
@@ -47,8 +48,13 @@ const active_hooks: ActiveHooks = {
 
 export const registerDestroyHook = async_wrap.registerDestroyHook;
 // deno-lint-ignore camelcase
-const { async_hook_fields, asyncIdFields: async_id_fields, constants } =
-  async_wrap;
+const {
+  async_hook_fields,
+  asyncIdFields: async_id_fields,
+  newAsyncId,
+  constants,
+} = async_wrap;
+export { newAsyncId };
 const {
   kInit,
   kBefore,
@@ -57,7 +63,6 @@ const {
   kPromiseResolve,
   kTotals,
   kCheck,
-  kAsyncIdCounter,
   kDefaultTriggerAsyncId,
   kStackLength,
 } = constants;
@@ -214,10 +219,6 @@ function disableHooks() {
   // enqueueMicrotask(disablePromiseHookIfNecessary);
 }
 
-export function newAsyncId(): number {
-  return ++async_id_fields[kAsyncIdCounter];
-}
-
 // Return the triggerAsyncId meant for the constructor calling it. It's up to
 // the user to safeguard this call and make sure it's zero'd out when the
 // constructor is complete.
@@ -233,7 +234,8 @@ export function getDefaultTriggerAsyncId() {
 
 export function defaultTriggerAsyncIdScope(
   triggerAsyncId: number | undefined,
-  block: (...arg: unknown[]) => void,
+  // deno-lint-ignore no-explicit-any
+  block: (...arg: any[]) => void,
   ...args: unknown[]
 ) {
   if (triggerAsyncId === undefined) {

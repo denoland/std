@@ -56,7 +56,7 @@ Deno standard library as it's a compatibility module.
 - [x] vm _partly_
 - [x] wasi
 - [ ] webcrypto
-- [ ] worker_threads
+- [x] worker_threads
 - [ ] zlib
 
 * [x] node globals _partly_
@@ -109,7 +109,7 @@ file, this will pull the configured tests in and then add them to the test
 workflow.
 
 ```zsh
-$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
+$ deno task node:setup
 ```
 
 You can aditionally pass the `-y`/`-n` flag to use test cache or generating

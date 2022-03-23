@@ -45,3 +45,37 @@ export function writev(fd, buffers, position, callback) {
     (err) => callback(err),
   );
 }
+
+export function writevSync(fd, buffers, position) {
+  const innerWritev = (fd, buffers, position) => {
+    const chunks = [];
+    const offset = 0;
+    for (let i = 0; i < buffers.length; i++) {
+      if (Buffer.isBuffer(buffers[i])) {
+        chunks.push(buffers[i]);
+      } else {
+        chunks.push(new Buffer(buffers[i]));
+      }
+    }
+    if (typeof position === "number") {
+      Deno.seekSync(fd, position, Deno.SeekMode.Start);
+    }
+    const buffer = Buffer.concat(chunks);
+    let currentOffset = 0;
+    while (currentOffset < buffer.byteLength) {
+      currentOffset += Deno.writeSync(fd, buffer.subarray(currentOffset));
+    }
+    return currentOffset - offset;
+  };
+
+  fd = getValidatedFd(fd);
+  validateBufferArray(buffers);
+
+  if (buffers.length === 0) {
+    return 0;
+  }
+
+  if (typeof position !== "number") position = null;
+
+  return innerWritev(fd, buffers, position);
+}
