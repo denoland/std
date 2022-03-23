@@ -2,7 +2,7 @@
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 import { ERR_ASYNC_TYPE, ERR_INVALID_ASYNC_ID } from "./internal/errors.ts";
-import { validateFunction, validateString } from "./internal/validators.js";
+import { validateFunction, validateString } from "./internal/validators.mjs";
 import {
   // deno-lint-ignore camelcase
   async_id_symbol,

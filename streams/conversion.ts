@@ -218,7 +218,7 @@ export interface ReadableStreamFromReaderOptions {
  * will be read.  When `null` is returned from the reader, the stream will be
  * closed along with the reader (if it is also a `Deno.Closer`).
  *
- * An example converting a `Deno.File` into a readable stream:
+ * An example converting a `Deno.FsFile` into a readable stream:
  *
  * ```ts
  * import { readableStreamFromReader } from "./mod.ts";

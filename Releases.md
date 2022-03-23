@@ -1,3 +1,71 @@
+### 0.130.0 / 2022.03.16
+
+- feat(testing): add `assertInstanceOf` (#2028)
+- feat(node): shim get-caller-file (#2029)
+- fix(node): fix dynamic require (#2024)
+- feat(node/fs): add `fs.writevSync(fd, buffers[, position])` (#2020)
+
+### 0.129.0 / 2022.03.10
+
+- feat: streams based `Buffer` (#1970)
+- feat(node/crypto): add crypto.publicEncrypt (#1987)
+- feat(node/fs): add `fs.writev(fd, buffers[, position], callback)` (#2008)
+- feat(streams): LimitedTransformStream & LimitedBytesTransformStream (#2007)
+- feat(streams): TextDelimiterStream (#2006)
+- feat(testing/asserts): use assertion signature for "assertStrictEquals"
+  (#1984)
+- fix(async): re-export abortable in mod.ts (#1959)
+- fix(fmt/colors): update `ANSI_PATTERN` (#1996)
+- fix(node): fix http.request for minipass-fetch 2.x (#2004)
+- fix(node/process): ignore SIGBREAK binding when the platform is not windows
+  (#2014)
+- fix(testing): Misleading assertion error in assertNotEquals (#1989)
+
+### 0.128.0 / 2022.03.03
+
+- feat(node): add crypto.webcrypto (#1961)
+- feat(streams): TextLineStream (#1978)
+- fix(dotenv): avoid top-level-await in load.ts (#1964)
+- fix(node): fix http client reqs with bodies (#1983)
+- fix(testing): fix assertObjectMatch for RegExp/Map/Set (#1967)
+
+### 0.127.0 / 2022.02.24
+
+- feat(async): add `abortable` to async module. (#1939)
+- feat(dotenv): add dotenv library (#1877)
+- feat(http): expose serveDir function from file_server.ts (#1944)
+- feat(node): add fs.realpath.native (#1951)
+- feat(node/tls): basic support of tls.createServer (#1948)
+- feat(testing): add `assertAlmostEquals` (#1906)
+- fix(node): don't use globalThis.setTimeout types in node/timers (#1934)
+
+### 0.126.0 / 2022.02.17
+
+- feat(node): add tls.connect (#1923)
+- fix(collections/group_by): improve type safety (#1880)
+- fix(io/buffer): super and initialized prop (#1917)
+- fix(node): add networkInterfaces to unstable (#1904)
+- fix(node): fix fs.createWriteStream (#1874)
+- fix(node): fix fs.write again, enable more test cases (#1892)
+- fix(node): support 6-arg fs.write (#1888)
+- fix(node/buffer): fix base64 decode (#1885)
+- fix(node/module): fix commonjs wrapper (#1902)
+
+### 0.125.0 / 2022.02.03
+
+- feat(node): add punycode module (#1857)
+- feat(node): add url.resolve (#1851)
+- feat(node/child_process): add support for AbortSignal in ChildProcess (#1864)
+- feat(node/fs): add fs.createWriteStream (#1859)
+- fix(node/fs): fix fs.access when the user owns the file (#1869)
+- fix(node/fs): fix fs.copyFile (support 4-arg call) (#1872)
+- fix(node/http): fix http.request (#1856)
+- fix(node/net): mock response.socket object (#1858)
+- fix: bypass TS errors for missing --unstable (#1819)
+
+Note 0.124.0 is the same as 0.125.0 but ignoring a typescript error related to a
+new feature added setNoDelay.
+
 ### 0.123.0 / 2022.01.27
 
 - feat(node): add os.networkInterfaces (#1846)

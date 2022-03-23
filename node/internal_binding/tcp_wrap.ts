@@ -89,7 +89,7 @@ export enum constants {
 
 export class TCP extends ConnectionWrap {
   [ownerSymbol]: unknown = null;
-  reading = false;
+  override reading = false;
 
   #address?: string;
   #port?: number;
@@ -443,7 +443,7 @@ export class TCP extends ConnectionWrap {
   }
 
   /** Handle server closure. */
-  async _onClose(): Promise<number> {
+  override async _onClose(): Promise<number> {
     // TODO(cmorten): this isn't great
     this.#closed = true;
     this.reading = false;

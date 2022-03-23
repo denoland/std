@@ -31,7 +31,7 @@ import {
   Unzip,
   unzip,
   unzipSync,
-} from "./_zlib.js";
+} from "./_zlib.mjs";
 export class Options {
   constructor() {
     notImplemented();

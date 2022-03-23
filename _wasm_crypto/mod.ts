@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-export * as crypto from "./crypto.js";
+export * as crypto from "./crypto.mjs";
 
 /**
  * All cryptographic hash/digest algorithms supported by std/_wasm_crypto.

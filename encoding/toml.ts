@@ -1,4 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 export { parse } from "./_toml/parser.ts";
 
 // Bare keys may only contain ASCII letters,

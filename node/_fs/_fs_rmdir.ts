@@ -5,7 +5,7 @@ import {
   validateRmdirOptions,
   validateRmOptions,
   validateRmOptionsSync,
-} from "../internal/fs/utils.js";
+} from "../internal/fs/utils.mjs";
 import { toNamespacedPath } from "../path.ts";
 import {
   denoErrorToNodeError,

@@ -1,4 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 function n16(n: number): number {
   return n & 0xffff;

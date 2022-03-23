@@ -13,7 +13,7 @@ import {
 } from "./_fs_common.ts";
 import { isWindows } from "../../_util/os.ts";
 import { AbortError, denoErrorToNodeError } from "../internal/errors.ts";
-import { validateStringAfterArrayBufferView } from "../internal/fs/utils.js";
+import { validateStringAfterArrayBufferView } from "../internal/fs/utils.mjs";
 
 export function writeFile(
   pathOrRid: string | number | URL,
@@ -56,7 +56,7 @@ export function writeFile(
   (async () => {
     try {
       file = isRid
-        ? new Deno.File(pathOrRid as number)
+        ? new Deno.FsFile(pathOrRid as number)
         : await Deno.open(pathOrRid as string, openOptions);
 
       // ignore mode because it's not supported on windows
@@ -111,7 +111,7 @@ export function writeFileSync(
   let error: Error | null = null;
   try {
     file = isRid
-      ? new Deno.File(pathOrRid as number)
+      ? new Deno.FsFile(pathOrRid as number)
       : Deno.openSync(pathOrRid as string, openOptions);
 
     // ignore mode because it's not supported on windows

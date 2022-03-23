@@ -163,74 +163,89 @@ export class Socket extends EventEmitter {
   unref(): this {
     notImplemented();
   }
-  addListener(event: "close", listener: () => void): this;
-  addListener(event: "connect", listener: () => void): this;
-  addListener(event: "error", listener: (err: Error) => void): this;
-  addListener(event: "listening", listener: () => void): this;
-  addListener(
+  override addListener(event: "close", listener: () => void): this;
+  override addListener(event: "connect", listener: () => void): this;
+  override addListener(event: "error", listener: (err: Error) => void): this;
+  override addListener(event: "listening", listener: () => void): this;
+  override addListener(
     event: "message",
     listener: (msg: Buffer, rinfo: RemoteInfo) => void,
   ): this;
-  // deno-lint-ignore no-explicit-any
-  addListener(event: string, listener: (...args: any[]) => void): this {
+  override addListener(
+    event: string,
+    // deno-lint-ignore no-explicit-any
+    listener: (...args: any[]) => void,
+  ): this {
     return super.addListener(event, listener);
   }
 
-  emit(event: "close"): boolean;
-  emit(event: "connect"): boolean;
-  emit(event: "error", err: Error): boolean;
-  emit(event: "listening"): boolean;
-  emit(event: "message", msg: Buffer, rinfo: RemoteInfo): boolean;
+  override emit(event: "close"): boolean;
+  override emit(event: "connect"): boolean;
+  override emit(event: "error", err: Error): boolean;
+  override emit(event: "listening"): boolean;
+  override emit(event: "message", msg: Buffer, rinfo: RemoteInfo): boolean;
   // deno-lint-ignore no-explicit-any
-  emit(event: string | symbol, ...args: any[]): boolean {
+  override emit(event: string | symbol, ...args: any[]): boolean {
     return super.emit(event, ...args);
   }
-  on(event: "close", listener: () => void): this;
-  on(event: "connect", listener: () => void): this;
-  on(event: "error", listener: (err: Error) => void): this;
-  on(event: "listening", listener: () => void): this;
-  on(
+  override on(event: "close", listener: () => void): this;
+  override on(event: "connect", listener: () => void): this;
+  override on(event: "error", listener: (err: Error) => void): this;
+  override on(event: "listening", listener: () => void): this;
+  override on(
     event: "message",
     listener: (msg: Buffer, rinfo: RemoteInfo) => void,
   ): this;
   // deno-lint-ignore no-explicit-any
-  on(event: string, listener: (...args: any[]) => void): this {
+  override on(event: string, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
-  once(event: "close", listener: () => void): this;
-  once(event: "connect", listener: () => void): this;
-  once(event: "error", listener: (err: Error) => void): this;
-  once(event: "listening", listener: () => void): this;
-  once(
+  override once(event: "close", listener: () => void): this;
+  override once(event: "connect", listener: () => void): this;
+  override once(event: "error", listener: (err: Error) => void): this;
+  override once(event: "listening", listener: () => void): this;
+  override once(
     event: "message",
     listener: (msg: Buffer, rinfo: RemoteInfo) => void,
   ): this;
   // deno-lint-ignore no-explicit-any
-  once(event: string, listener: (...args: any[]) => void): this {
+  override once(event: string, listener: (...args: any[]) => void): this {
     return super.on(event, listener);
   }
-  prependListener(event: "close", listener: () => void): this;
-  prependListener(event: "connect", listener: () => void): this;
-  prependListener(event: "error", listener: (err: Error) => void): this;
-  prependListener(event: "listening", listener: () => void): this;
-  prependListener(
+  override prependListener(event: "close", listener: () => void): this;
+  override prependListener(event: "connect", listener: () => void): this;
+  override prependListener(
+    event: "error",
+    listener: (err: Error) => void,
+  ): this;
+  override prependListener(event: "listening", listener: () => void): this;
+  override prependListener(
     event: "message",
     listener: (msg: Buffer, rinfo: RemoteInfo) => void,
   ): this;
-  // deno-lint-ignore no-explicit-any
-  prependListener(event: string, listener: (...args: any[]) => void): this {
+  override prependListener(
+    event: string,
+    // deno-lint-ignore no-explicit-any
+    listener: (...args: any[]) => void,
+  ): this {
     return super.prependListener(event, listener);
   }
-  prependOnceListener(event: "close", listener: () => void): this;
-  prependOnceListener(event: "connect", listener: () => void): this;
-  prependOnceListener(event: "error", listener: (err: Error) => void): this;
-  prependOnceListener(event: "listening", listener: () => void): this;
-  prependOnceListener(
+  override prependOnceListener(event: "close", listener: () => void): this;
+  override prependOnceListener(event: "connect", listener: () => void): this;
+  override prependOnceListener(
+    event: "error",
+    listener: (err: Error) => void,
+  ): this;
+  override prependOnceListener(event: "listening", listener: () => void): this;
+  override prependOnceListener(
     event: "message",
     listener: (msg: Buffer, rinfo: RemoteInfo) => void,
   ): this;
-  // deno-lint-ignore no-explicit-any
-  prependOnceListener(event: string, listener: (...args: any[]) => void): this {
+  override prependOnceListener(
+    event: string,
+    // deno-lint-ignore no-explicit-any
+    listener: (...args: any[]) => void,
+  ): this {
     return super.prependOnceListener(event, listener);
   }
 }

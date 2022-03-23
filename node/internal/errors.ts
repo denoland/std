@@ -15,7 +15,7 @@
  * *********** */
 
 import { getSystemErrorName } from "../util.ts";
-import { inspect } from "../internal/util/inspect.js";
+import { inspect } from "../internal/util/inspect.mjs";
 import { codes } from "./error_codes.ts";
 import {
   codeMap,
@@ -71,6 +71,32 @@ export class AbortError extends Error {
 
 // deno-lint-ignore no-explicit-any
 type GenericFunction = (...args: any[]) => any;
+
+let maxStack_ErrorName: string | undefined;
+let maxStack_ErrorMessage: string | undefined;
+/**
+ * Returns true if `err.name` and `err.message` are equal to engine-specific
+ * values indicating max call stack size has been exceeded.
+ * "Maximum call stack size exceeded" in V8.
+ */
+export function isStackOverflowError(err: Error): boolean {
+  if (maxStack_ErrorMessage === undefined) {
+    try {
+      // deno-lint-ignore no-inner-declarations
+      function overflowStack() {
+        overflowStack();
+      }
+      overflowStack();
+      // deno-lint-ignore no-explicit-any
+    } catch (err: any) {
+      maxStack_ErrorMessage = err.message;
+      maxStack_ErrorName = err.name;
+    }
+  }
+
+  return err && err.name === maxStack_ErrorName &&
+    err.message === maxStack_ErrorMessage;
+}
 
 function addNumericalSeparator(val: string) {
   let res = "";
@@ -325,7 +351,7 @@ export class NodeErrorAbstraction extends Error {
     this.stack = this.stack && `${name} [${this.code}]${this.stack.slice(20)}`;
   }
 
-  toString() {
+  override toString() {
     return `${this.name} [${this.code}]: ${this.message}`;
   }
 }
@@ -471,7 +497,7 @@ class NodeSystemError extends NodeErrorAbstraction {
     }
   }
 
-  toString() {
+  override toString() {
     return `${this.name} [${this.code}]: ${this.message}`;
   }
 }
@@ -1908,6 +1934,21 @@ export class ERR_SYNTHETIC extends NodeError {
     super("ERR_SYNTHETIC", `JavaScript Callstack`);
   }
 }
+export class ERR_TLS_CERT_ALTNAME_INVALID extends NodeError {
+  reason: string;
+  host: string;
+  cert: string;
+
+  constructor(reason: string, host: string, cert: string) {
+    super(
+      "ERR_TLS_CERT_ALTNAME_INVALID",
+      `Hostname/IP does not match certificate's altnames: ${reason}`,
+    );
+    this.reason = reason;
+    this.host = host;
+    this.cert = cert;
+  }
+}
 export class ERR_TLS_DH_PARAM_SIZE extends NodeError {
   constructor(x: string) {
     super("ERR_TLS_DH_PARAM_SIZE", `DH parameter size ${x} is less than 2048`);
@@ -2210,7 +2251,7 @@ export class ERR_HTTP2_INVALID_SETTING_VALUE extends NodeRangeError {
   }
 }
 export class ERR_HTTP2_STREAM_CANCEL extends NodeError {
-  cause?: Error;
+  override cause?: Error;
   constructor(error: Error) {
     super(
       "ERR_HTTP2_STREAM_CANCEL",

@@ -18,6 +18,10 @@ pretty-printed diff of failing assertion.
   and `expected` are equal.
 - `assertStrictEquals()` - Compares `actual` and `expected` strictly, therefore
   for non-primitives the values must reference the same instance.
+- `assertAlmostEquals()` - Make an assertion that `actual` is almost equal to
+  `expected`, according to a given `epsilon` _(defaults to `1e-7`)_
+- `assertInstanceOf()` - Make an assertion that `actual` is an instance of
+  `expectedType`.
 - `assertStringIncludes()` - Make an assertion that `actual` includes
   `expected`.
 - `assertMatch()` - Make an assertion that `actual` match RegExp `expected`.

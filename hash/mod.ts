@@ -1,4 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { Hash } from "./_wasm/hash.ts";
 import type { Hasher } from "./hasher.ts";

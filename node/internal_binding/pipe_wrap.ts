@@ -36,7 +36,7 @@ export enum socketType {
 }
 
 export class Pipe extends ConnectionWrap {
-  reading = false;
+  override reading = false;
   ipc: boolean;
 
   constructor(type: number) {

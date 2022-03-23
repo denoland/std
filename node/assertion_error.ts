@@ -535,7 +535,7 @@ export class AssertionError extends Error {
     this.name = "AssertionError";
   }
 
-  toString() {
+  override toString() {
     return `${this.name} [${this.code}]: ${this.message}`;
   }
 
