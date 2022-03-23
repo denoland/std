@@ -964,8 +964,8 @@ create a self balancing binary search tree.
 ```ts
 import {
   ascend,
+  BSTree,
   descend,
-  RBTree,
 } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
