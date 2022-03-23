@@ -1,8 +1,8 @@
 /** This module is browser compatible. */
 
-import { ascend } from "./_comparators.ts";
-import { BSTree } from "./bs_tree.ts";
+import { ascend, BSTree } from "./bs_tree.ts";
 import { direction, RBNode } from "./rb_node.ts";
+export * from "./_comparators.ts";
 
 /**
  * A red-black tree. The values are in ascending order by default,

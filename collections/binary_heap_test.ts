@@ -1,6 +1,5 @@
 import { assertEquals } from "../testing/asserts.ts";
-import { BinaryHeap } from "./binary_heap.ts";
-import { ascend, descend } from "./_comparators.ts";
+import { ascend, BinaryHeap, descend } from "./binary_heap.ts";
 import { Container, MyMath } from "./_test_utils.ts";
 
 Deno.test("[collections/BinaryHeap] with default descend comparator", () => {

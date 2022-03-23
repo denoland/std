@@ -1,6 +1,7 @@
 /** This module is browser compatible. */
 
 import { descend } from "./_comparators.ts";
+export * from "./_comparators.ts";
 
 /** Swaps the values at two indexes in an array. */
 function swap<T>(array: T[], a: number, b: number) {

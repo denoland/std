@@ -2,6 +2,7 @@
 
 import { ascend } from "./_comparators.ts";
 import { BSNode, direction } from "./bs_node.ts";
+export * from "./_comparators.ts";
 
 /**
  * An unbalanced binary search tree. The values are in ascending order by default,
