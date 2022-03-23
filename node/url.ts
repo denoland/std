@@ -1389,13 +1389,12 @@ function urlToHttpOptions(url: URL): HttpOptions {
 
 export default {
   parse,
+  format,
   resolve,
   resolveObject,
-  Url,
-  format,
   fileURLToPath,
   pathToFileURL,
   urlToHttpOptions,
+  Url,
   URL,
-  URLSearchParams,
 };

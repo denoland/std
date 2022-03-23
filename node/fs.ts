@@ -28,16 +28,17 @@ import { rename, renameSync } from "./_fs/_fs_rename.ts";
 import { rmdir, rmdirSync } from "./_fs/_fs_rmdir.ts";
 import { rm, rmSync } from "./_fs/_fs_rm.ts";
 import { stat, statSync } from "./_fs/_fs_stat.ts";
-import { createReadStream } from "./_fs/_fs_streams.ts";
 import { symlink, symlinkSync } from "./_fs/_fs_symlink.ts";
 import { truncate, truncateSync } from "./_fs/_fs_truncate.ts";
 import { unlink, unlinkSync } from "./_fs/_fs_unlink.ts";
 import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
 import { watch, watchFile } from "./_fs/_fs_watch.ts";
 // @deno-types="./_fs/_fs_write.d.ts"
-import { write, writeSync } from "./_fs/_fs_write.js";
+import { write, writeSync } from "./_fs/_fs_write.mjs";
+// @deno-types="./_fs/_fs_writev.d.ts"
+import { writev, writevSync } from "./_fs/_fs_writev.mjs";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
-import { Stats } from "./internal/fs/utils.js";
+import { Stats } from "./internal/fs/utils.mjs";
 import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
 
 import { promisify } from "./util.ts";
@@ -80,11 +81,6 @@ const promises = {
   watch: promisify(watch),
 };
 
-realpath.native = realpath;
-realpathSync.native = realpathSync;
-function read() {
-}
-
 export default {
   access,
   accessSync,
@@ -99,7 +95,6 @@ export default {
   constants,
   copyFile,
   copyFileSync,
-  createReadStream,
   createWriteStream,
   Dir,
   Dirent,
@@ -160,6 +155,8 @@ export default {
   watchFile,
   write,
   writeFile,
+  writev,
+  writevSync,
   writeFileSync,
   WriteStream,
   writeSync,
@@ -243,5 +240,7 @@ export {
   writeFileSync,
   WriteStream,
   writeSync,
+  writev,
+  writevSync,
   X_OK,
 };
