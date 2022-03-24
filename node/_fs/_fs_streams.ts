@@ -4,10 +4,12 @@ import { fromFileUrl } from "../path.ts";
 import { Buffer } from "../buffer.ts";
 import { Readable as NodeReadable } from "../stream.ts";
 
+type ReadStreamOptions = Record<string, unknown>;
+
 class ReadStream extends NodeReadable {
   public path: string;
 
-  constructor(path: string | URL, opts: Record<string, unknown>) {
+  constructor(path: string | URL, opts?: ReadStreamOptions) {
     path = path instanceof URL ? fromFileUrl(path) : path;
     const hasBadOptions = opts && (
       opts.fd || opts.start || opts.end || opts.fs
@@ -32,6 +34,7 @@ class ReadStream extends NodeReadable {
       destroy: (err, cb) => {
         try {
           file.close();
+          // deno-lint-ignore no-empty
         } catch {}
         cb(err);
       },
@@ -42,7 +45,7 @@ class ReadStream extends NodeReadable {
 
 export function createReadStream(
   path: string | URL,
-  options: ReadStreamOptions,
+  options?: ReadStreamOptions,
 ): ReadStream {
   return new ReadStream(path, options);
 }
