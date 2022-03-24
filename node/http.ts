@@ -326,7 +326,9 @@ export class ServerResponse extends NodeWritable {
         status: this.statusCode,
         statusText: this.statusMessage,
       }),
-    );
+    ).catch(() => {
+      // ignore this error
+    });
   }
 
   // deno-lint-ignore no-explicit-any
