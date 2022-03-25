@@ -1,8 +1,9 @@
 ### 0.132.0 / 2022.03.25
 
-feat(collections): Add BSTree and RBTree (#2023)
-feat(node): add ReadStream and createReadStream (#1435)
-feat(node): export URLSearchParams via url module (#2056)
+- feat(collections): Add BSTree and RBTree (#2023)
+- feat(node): add ReadStream and createReadStream (#1435)
+- feat(node): export URLSearchParams via url module (#2056)
+
 ### 0.131.0 / 2022.03.24
 
 - feat(node): add NodeEventTarget (#2032)
