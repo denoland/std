@@ -68,7 +68,6 @@ export interface ExpectedSpyCall<
 
 /**
  * Asserts that a spy is called as expected.
- * Returns the call.
  */
 export function assertSpyCall<
   Self,
@@ -144,12 +143,10 @@ export function assertSpyCall<
       );
     }
   }
-  return call;
 }
 
 /**
  * Asserts that an async spy is called as expected.
- * Returns the call.
  */
 export async function assertSpyCallAsync<
   Self,
@@ -165,11 +162,8 @@ export async function assertSpyCallAsync<
     delete expectedSync.returned;
     delete expectedSync.error;
   }
-  const call: SpyCall = assertSpyCall(
-    spy,
-    callIndex,
-    expectedSync,
-  );
+  assertSpyCall(spy, callIndex, expectedSync);
+  const call = spy.calls[callIndex];
 
   if (call.error) {
     throw new AssertionError(
@@ -229,7 +223,6 @@ export async function assertSpyCallAsync<
       );
     }
   }
-  return call;
 }
 
 /**
@@ -247,7 +240,8 @@ export function assertSpyCallArg<
   argIndex: number,
   expected: ExpectedArg,
 ): ExpectedArg {
-  const call: SpyCall = assertSpyCall(spy, callIndex);
+  assertSpyCall(spy, callIndex);
+  const call = spy.calls[callIndex];
   const arg = call.args[argIndex];
   assertEquals(arg, expected);
   return arg as ExpectedArg;
@@ -258,7 +252,6 @@ export function assertSpyCallArg<
  * If a start and end index is not provided, the expected will be compared against all args.
  * If a start is provided without an end index, the expected will be compared against all args from the start index to the end.
  * The end index is not included in the range of args that are compared.
- * Returns the actual args.
  */
 export function assertSpyCallArgs<
   Self,
@@ -305,7 +298,8 @@ export function assertSpyCallArgs<
   argsEnd?: number | ExpectedArgs,
   expected?: ExpectedArgs,
 ): ExpectedArgs {
-  const call: SpyCall = assertSpyCall(spy, callIndex);
+  assertSpyCall(spy, callIndex);
+  const call = spy.calls[callIndex];
   if (!expected) {
     expected = argsEnd as ExpectedArgs;
     argsEnd = undefined;
