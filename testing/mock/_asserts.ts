@@ -227,7 +227,6 @@ export async function assertSpyCallAsync<
 
 /**
  * Asserts that a spy is called with a specific arg as expected.
- * Returns the actual arg.
  */
 export function assertSpyCallArg<
   Self,
