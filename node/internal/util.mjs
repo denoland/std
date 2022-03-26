@@ -1,8 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { validateFunction, validateString } from "./validators.mjs";
 import { normalizeEncoding, slowCases } from "./normalize_encoding.mjs";
-
 export { normalizeEncoding, slowCases };
+
+export const customInspectSymbol = Symbol.for("nodejs.util.inspect.custom");
+export const kEnumerableProperty = Object.create(null);
+kEnumerableProperty.enumerable = true;
 
 export function once(callback) {
   let called = false;
@@ -142,6 +145,8 @@ promisify.custom = kCustomPromisifiedSymbol;
 
 export default {
   createDeferredPromise,
+  customInspectSymbol,
+  kEnumerableProperty,
   normalizeEncoding,
   once,
   deprecate,

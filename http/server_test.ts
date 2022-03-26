@@ -106,6 +106,12 @@ class MockListener implements Deno.Listener {
       yield this.conn;
     }
   }
+
+  ref() {
+  }
+
+  unref() {
+  }
 }
 
 Deno.test(

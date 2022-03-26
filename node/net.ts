@@ -29,7 +29,7 @@ import {
   defaultTriggerAsyncIdScope,
   newAsyncId,
   ownerSymbol,
-} from "./_async_hooks.ts";
+} from "./internal/async_hooks.ts";
 import {
   ERR_INVALID_ADDRESS_FAMILY,
   ERR_INVALID_ARG_TYPE,

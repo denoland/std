@@ -56,7 +56,7 @@ Deno standard library as it's a compatibility module.
 - [x] vm _partly_
 - [x] wasi
 - [ ] webcrypto
-- [ ] worker_threads
+- [x] worker_threads
 - [ ] zlib
 
 * [x] node globals _partly_

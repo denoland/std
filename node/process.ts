@@ -5,7 +5,7 @@ import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
 import { validateString } from "./internal/validators.mjs";
 import { ERR_INVALID_ARG_TYPE, ERR_UNKNOWN_SIGNAL } from "./internal/errors.ts";
-import { getOptionValue } from "./_options.ts";
+import { getOptionValue } from "./internal/options.ts";
 import { assert } from "../_util/assert.ts";
 import { fromFileUrl } from "../path/mod.ts";
 import {
@@ -46,6 +46,7 @@ const stdout = stdout_ as any;
 export { stderr, stdin, stdout };
 import { getBinding } from "./internal_binding/mod.ts";
 import type { BindingName } from "./internal_binding/mod.ts";
+import { buildAllowedFlags } from "./internal/process/per_thread.mjs";
 
 const notImplementedEvents = [
   "beforeExit",
@@ -321,6 +322,7 @@ class Process extends EventEmitter {
   override on(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.on("${event}")`);
+      super.on(event, listener);
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
@@ -344,6 +346,7 @@ class Process extends EventEmitter {
   override off(event: string, listener: (...args: any[]) => void): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.off("${event}")`);
+      super.off(event, listener);
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
@@ -388,6 +391,7 @@ class Process extends EventEmitter {
   ): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.prependListener("${event}")`);
+      super.prependListener(event, listener);
     } else if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
@@ -420,7 +424,6 @@ class Process extends EventEmitter {
   ): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.addListener("${event}")`);
-      return this;
     }
 
     return this.on(event, listener);
@@ -442,7 +445,6 @@ class Process extends EventEmitter {
   ): this {
     if (notImplementedEvents.includes(event)) {
       warnNotImplemented(`process.removeListener("${event}")`);
-      return this;
     }
 
     return this.off(event, listener);
@@ -524,6 +526,14 @@ class Process extends EventEmitter {
   uptime() {
     return (Date.now() - this.#startTime) / 1000;
   }
+
+  #allowedFlags = buildAllowedFlags();
+  /** https://nodejs.org/api/process.html#processallowednodeenvironmentflags */
+  get allowedNodeEnvironmentFlags() {
+    return this.#allowedFlags;
+  }
+
+  features = { inspector: false };
 }
 
 /** https://nodejs.org/api/process.html#process_process */

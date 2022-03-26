@@ -1,3 +1,22 @@
+### 0.132.0 / 2022.03.25
+
+- feat(collections): Add BSTree and RBTree (#2023)
+- feat(node): add ReadStream and createReadStream (#1435)
+- feat(node): export URLSearchParams via url module (#2056)
+
+### 0.131.0 / 2022.03.24
+
+- feat(node): add NodeEventTarget (#2032)
+- feat(node): add Console constructor (#2037)
+- feat(node): worker_threads (#1151)
+- feat(node): add process.allowedNodeEnvironmentFlags (#2049)
+- feat(collections): add BinaryHeap (#2022)
+- feat(async): expose asyncPromise and asyncAsyncIterable (#2034)
+- fix(node/http): ignore error from `respondWith` (#2058)
+- fix(node): warn on non supported event, but still register listener (#2050)
+- fix(node): fix `EventEmitter` methods (#2035)
+- fix(node): make global.<timerFunc> Node.js timers (#2038)
+
 ### 0.130.0 / 2022.03.16
 
 - feat(testing): add `assertInstanceOf` (#2028)
