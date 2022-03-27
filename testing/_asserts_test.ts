@@ -1,4 +1,4 @@
-import { AssertionError, assertRejects, assertThrows } from "../asserts.ts";
+import { AssertionError, assertRejects, assertThrows } from "./asserts.ts";
 import {
   assertSpyCall,
   assertSpyCallArg,

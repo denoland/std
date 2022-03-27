@@ -5,7 +5,7 @@ import {
   AssertionError,
   assertIsError,
   assertRejects,
-} from "../asserts.ts";
+} from "./asserts.ts";
 import { Spy, SpyCall } from "./mock.ts";
 
 /** An error related to spying on a function or instance method. */

@@ -1,5 +1,5 @@
-import { assertEquals, assertRejects, assertThrows } from "../asserts.ts";
-import { delay } from "../../async/delay.ts";
+import { assertEquals, assertRejects, assertThrows } from "./asserts.ts";
+import { delay } from "../async/delay.ts";
 import {
   resolvesNext,
   returnsArg,

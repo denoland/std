@@ -1,4 +1,4 @@
-import { assertEquals, assertNotEquals, assertThrows } from "../asserts.ts";
+import { assertEquals, assertNotEquals, assertThrows } from "./asserts.ts";
 import {
   assertSpyCall,
   assertSpyCalls,
