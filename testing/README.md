@@ -359,6 +359,7 @@ following sections there are examples of how it can be converted to using nested
 test grouping, flat test grouping, and a mix of both.
 
 ```ts
+// https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_test.ts
 import {
   assertEquals,
   assertStrictEquals,
@@ -403,6 +404,7 @@ the new test suite it creates. The hooks can be created within it or be added to
 the options argument for describe.
 
 ```ts
+// https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_nested_test.ts
 import {
   assertEquals,
   assertStrictEquals,
@@ -464,6 +466,7 @@ callback. The gives you the ability to have test grouping without any extra
 indentation in front of the grouped tests.
 
 ```ts
+// https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_flat_test.ts
 import {
   assertEquals,
   assertStrictEquals,
@@ -523,6 +526,7 @@ be useful if you'd like to create deep groupings without all the extra
 indentation in front of each line.
 
 ```ts
+// https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_mixed_test.ts
 import {
   assertEquals,
   assertStrictEquals,
