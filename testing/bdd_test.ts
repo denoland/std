@@ -13,7 +13,7 @@ import {
   it,
 } from "./bdd.ts";
 import { TestSuiteInternal } from "./_test_suite.ts";
-import { assertSpyCall, assertSpyCalls, Spy, spy, stub } from "./mock/mod.ts";
+import { assertSpyCall, assertSpyCalls, Spy, spy, stub } from "./mock.ts";
 
 Deno.test("global", async (t) => {
   class TestContext implements Deno.TestContext {
