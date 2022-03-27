@@ -3,24 +3,41 @@
 // Copyright 2009 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
 import type { BufReader, ReadLineResult } from "../io/buffer.ts";
 import { concat } from "../bytes/mod.ts";
-
 // Constants created for DRY
 const CHAR_SPACE: number = " ".charCodeAt(0);
 const CHAR_TAB: number = "\t".charCodeAt(0);
 const CHAR_COLON: number = ":".charCodeAt(0);
-
 const WHITESPACES: Array<number> = [CHAR_SPACE, CHAR_TAB];
-
 const decoder = new TextDecoder();
-
 // FROM https://github.com/denoland/deno/blob/b34628a26ab0187a827aa4ebe256e23178e25d39/cli/js/web/headers.ts#L9
 const invalidHeaderCharRegex = /[^\t\x20-\x7e\x80-\xff]/g;
 
-function str(buf: Uint8Array | null | undefined): string {
+export function str(buf: Uint8Array | null | undefined): string {
   return !buf ? "" : decoder.decode(buf);
+}
+function parseCodeLine(
+  line: string,
+  expectCode: number,
+): { code: number; continued: boolean; message: string } {
+  if (line.length < 4 || line[3] !== " " && line[3] !== "-") {
+    throw new Error("short response: " + line);
+  }
+  const continued = line[3] === "-";
+  const code = Number(line.substring(0, 3));
+  if (isNaN(code) || code < 100) {
+    throw new Error("invalid response code: " + line);
+  }
+  const message = line.substring(4);
+  if (
+    1 <= expectCode && expectCode < 10 && code / 100 !== expectCode ||
+    10 <= expectCode && expectCode < 100 && code / 10 !== expectCode ||
+    100 <= expectCode && expectCode < 1000 && code !== expectCode
+  ) {
+    throw new Error(`${code} ${message}`);
+  }
+  return { code, continued, message };
 }
 
 export class TextProtoReader {
@@ -122,7 +139,11 @@ export class TextProtoReader {
       }
     }
   }
-
+  // ReadLineBytes is like ReadLine but returns a []byte instead of a string.
+  async readLineBytes(): Promise<Uint8Array | null> {
+    const line = await this.readLineSlice();
+    return line === null ? null : line.slice();
+  }
   async readLineSlice(): Promise<Uint8Array | null> {
     let line = new Uint8Array(0);
     let r: ReadLineResult | null = null;
@@ -141,6 +162,57 @@ export class TextProtoReader {
     } while (r !== null && r.more);
 
     return r === null ? null : line;
+  }
+  // trim returns s with leading and trailing spaces and tabs removed.
+  // It does not assume Unicode or UTF-8.
+  trim(s: Uint8Array): Uint8Array {
+    let i = 0;
+    while (
+      i < s.length &&
+      (String.fromCharCode(s[i]) == " " || String.fromCharCode(s[i]) == "\t")
+    ) {
+      i++;
+    }
+    let n = s.length;
+    while (
+      n > i &&
+      (String.fromCharCode(s[n - 1]) == " " ||
+        String.fromCharCode(s[n - 1]) == "\t")
+    ) {
+      n--;
+    }
+    return s.slice(i, n);
+  }
+
+  async readCodeLine(
+    expectCode: number,
+  ): Promise<{ code: number; continued: boolean; message: string }> {
+    const line = await this.readLine();
+    if (line === null) {
+      throw new Deno.errors.UnexpectedEof();
+    }
+    return parseCodeLine(line, expectCode);
+  }
+  async readResponse(
+    expectCode: number,
+  ): Promise<{ code: number; message: string }> {
+    const codeLine = await this.readCodeLine(expectCode);
+    const multi = codeLine.continued;
+    while (codeLine.continued) {
+      const line = await this.readLine() || "";
+      const parsedCode = parseCodeLine(line, 0);
+      if (parsedCode.code != codeLine.code) {
+        codeLine.message += "\n" + line.trimEnd();
+        codeLine.continued = true;
+        continue;
+      }
+      codeLine.message += "\n" + parsedCode.message;
+    }
+    if (multi && codeLine.message != "") {
+      // replace one line error message with all lines (full message)
+      throw new Error(`${codeLine.code} ${codeLine.message}`);
+    }
+    return codeLine;
   }
 
   skipSpace(l: Uint8Array): number {
