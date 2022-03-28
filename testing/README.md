@@ -488,3 +488,56 @@ Deno.test("randomMultiple uses randomInt to generate random multiples between -1
   assertSpyCalls(randomIntStub, 2);
 });
 ```
+
+### Faking time
+
+Say we have a function that has time based behavior that we would like to test.
+With real time, that could cause test's to take much longer than they should. If
+you fake time, you could simulate how your function would behave over time
+starting from any point in time. Below is an example where we want to test that
+the callback is called every second.
+
+```ts
+// https://deno.land/std@$STD_VERSION/testing/mock_examples/interval.ts
+export function secondInterval(cb: () => void): number {
+  return setInterval(cb, 1000);
+}
+```
+
+With `FakeTime` we can do that. When the `FakeTime` instance is created, it
+splits from real time. The Date, setTimeout, clearTimeout, setInterval, and
+clearInterval globals are replaced with versions that use the fake time until
+real time is restored. You can control how time ticks forward with the `tick`
+method on the `FakeTime` instance.
+
+```ts
+// https://deno.land/std@$STD_VERSION/testing/mock_examples/interval_test.ts
+import {
+  assertSpyCalls,
+  spy,
+} from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
+import { FakeTime } from "https://deno.land/std@$STD_VERSION/testing/time.ts";
+import { secondInterval } from "https://deno.land/std@$STD_VERSION/testing/mock_examples/interval.ts";
+
+Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
+  const time = new FakeTime();
+
+  try {
+    const cb = spy();
+    const intervalId = secondInterval(cb);
+    assertSpyCalls(cb, 0);
+    time.tick(500);
+    assertSpyCalls(cb, 0);
+    time.tick(500);
+    assertSpyCalls(cb, 1);
+    time.tick(3500);
+    assertSpyCalls(cb, 4);
+
+    clearInterval(intervalId);
+    time.tick(1000);
+    assertSpyCalls(cb, 4);
+  } finally {
+    time.restore();
+  }
+});
+```
