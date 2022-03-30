@@ -15,6 +15,8 @@ import {
 import { OutgoingMessage } from "./_http_outgoing.ts";
 import { Agent } from "./_http_agent.mjs";
 import { urlToHttpOptions } from "./internal/url.ts";
+import { LibuvStreamWrap } from "./internal_binding/stream_wrap.ts";
+import { providerType } from "./internal_binding/async_wrap.ts";
 
 const METHODS = [
   "ACL",
@@ -347,7 +349,7 @@ export class ServerResponse extends NodeWritable {
 
 // TODO(@AaronO): optimize
 export class IncomingMessageForServer extends NodeReadable {
-  private req: Request;
+  req: Request;
   url: string;
 
   constructor(req: Request) {
@@ -391,6 +393,9 @@ export class IncomingMessageForServer extends NodeReadable {
   }
   get method() {
     return this.req.method;
+  }
+  get upgrade(): boolean {
+    return Boolean(this.req.headers.get("connection")?.includes("upgrade") && this.req.headers.get("upgrade"));
   }
 }
 
@@ -462,6 +467,13 @@ class ServerImpl extends EventEmitter {
           }
           const req = new IncomingMessageForServer(reqEvent.request);
           const res = new ServerResponse(reqEvent);
+          if (req.upgrade && this.listenerCount("upgrade") > 0) {
+            Deno.upgradeHttp(req.req).then(([conn, head]) => {
+              const wrap = new LibuvStreamWrap(providerType.PIPESERVERWRAP, conn);
+
+              this.emit("request", req, duplex, new Buffer(head));
+            }).catch(() => {});
+          }
           this.emit("request", req, res);
         }
       } finally {
