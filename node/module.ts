@@ -1312,7 +1312,14 @@ function wrapSafe(
 ): RequireWrapper {
   // TODO(bartlomieju): fix this
   const wrapper = Module.wrap(content);
-  const [f, err] = core.evalContext(wrapper, filename);
+  const [f, err] = (() => {
+    try {
+      return core.evalContext(wrapper, filename);
+    }
+    catch (thrown: any) {
+      return [null, { thrown }];
+    }
+  })();
   if (err) {
     if (process.mainModule === cjsModuleInstance) {
       enrichCJSError(err.thrown);
