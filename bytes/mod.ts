@@ -236,7 +236,7 @@ export function includesNeedle(
  * An offset can be specified as the third argument that begins the copy at
  * that given index in the `dst` array. The offset defaults to the beginning of
  * the array.
- * 
+ *
  * ```ts
  * import { copy } from "./mod.ts";
  * const src = new Uint8Array([9, 8, 7]);
@@ -244,7 +244,7 @@ export function includesNeedle(
  * console.log(copy(src, dst)); // 3
  * console.log(dst); // [9, 8, 7, 3, 4, 5]
  * ```
- * 
+ *
  * ```ts
  * import { copy } from "./mod.ts";
  * const src = new Uint8Array([1, 1, 1, 1]);
