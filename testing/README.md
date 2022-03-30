@@ -712,8 +712,8 @@ second example.
 
 Say we have two functions, `randomMultiple` and `randomInt`, if we want to
 assert that `randomInt` is called during execution of `randomMultiple` we need a
-way to spy on the `randomInt` function. That could be done with either either of
-the spying techniques previously mentioned. To be able to verify that the
+way to spy on the `randomInt` function. That could be done with either of the
+spying techniques previously mentioned. To be able to verify that the
 `randomMultiple` function returns the value we expect it to for what `randomInt`
 returns, the easiest way would be to replace the `randomInt` function's behavior
 with more predictable behavior.
