@@ -108,7 +108,7 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * import { parse } from "./mod.ts";
  * const parsedArgs = parse(Deno.args);
  * ```
- * 
+ *
  * ```ts
  * import { parse } from "./mod.ts";
  * const parsedArgs = parse(["--foo", "--bar=baz", "--no-qux", "./quux.txt"]);
