@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Encodings } from "./_node.ts";
-import { indexOf } from "../../bytes/mod.ts";
+import { indexOfNeedle } from "../../bytes/mod.ts";
 
 export function numberToBytes(n: number): Uint8Array {
   if (n === 0) return new Uint8Array([0]);
@@ -100,7 +100,7 @@ function indexOfBuffer(
     return byteOffset <= targetBuffer.length ? byteOffset : targetBuffer.length;
   }
 
-  return indexOf(targetBuffer, buffer, byteOffset);
+  return indexOfNeedle(targetBuffer, buffer, byteOffset);
 }
 
 // TODO(Soremwar)
