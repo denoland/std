@@ -71,7 +71,7 @@ export function write(fd, buffer, offset, length, position, callback) {
     while (currentOffset - offset < length) {
       currentOffset += await Deno.write(
         fd,
-        buffer.subarray(currentOffset, end)
+        buffer.subarray(currentOffset, end),
       );
     }
     return currentOffset - offset;
@@ -95,7 +95,7 @@ export function write(fd, buffer, offset, length, position, callback) {
       (nwritten) => {
         callback(null, nwritten, buffer);
       },
-      (err) => callback(err)
+      (err) => callback(err),
     );
     return;
   }
@@ -123,6 +123,6 @@ export function write(fd, buffer, offset, length, position, callback) {
     (nwritten) => {
       callback(null, nwritten, buffer);
     },
-    (err) => callback(err)
+    (err) => callback(err),
   );
 }
