@@ -137,8 +137,6 @@ export function endsWith(source: Uint8Array, suffix: Uint8Array): boolean {
   return true;
 }
 
-String.prototype.repeat;
-
 /** Returns a new Uint8Array composed of `count` repetitions of the `source`
  * array.
  *
