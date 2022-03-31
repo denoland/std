@@ -1,3 +1,8 @@
+### 0.133.0 / 2022.03.31
+
+- BREAKING: improve bytes/ module (#2074)
+- feat(testing): add mocking utilities (#2048)
+
 ### 0.132.0 / 2022.03.25
 
 - feat(collections): Add BSTree and RBTree (#2023)
