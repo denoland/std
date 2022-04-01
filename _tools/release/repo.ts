@@ -26,7 +26,7 @@ export class VersionFile {
   updateVersion(version: semver.SemVer) {
     this.#fileText = this.#fileText.replace(
       VersionFile.#versionRe,
-      version.toString(),
+      `"${version}"`,
     );
     Deno.writeTextFileSync(this.#filePath, this.#fileText);
   }
