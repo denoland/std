@@ -5,7 +5,7 @@ on:
     inputs:
       releaseKind:
         description: 'Kind of version bump'
-        default: 'patch'
+        default: 'minor'
         type: choice
         options:
         - patch
