@@ -70,6 +70,8 @@ jobs:
           github.repository == 'denoland/deno_std' &&
           github.ref == 'refs/heads/main'
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./_tools/release/03_release.ts
 
   node:
