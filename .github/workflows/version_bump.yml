@@ -19,11 +19,6 @@ jobs:
     runs-on: ubuntu-20.04-xl
     timeout-minutes: 15
 
-    env:
-      CARGO_TERM_COLOR: always
-      RUST_BACKTRACE: full
-      RUSTC_FORCE_INCREMENTAL: 1
-
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
