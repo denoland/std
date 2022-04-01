@@ -2,6 +2,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { getReleasesMdFile, loadRepo, VersionFile } from "./repo.ts";
 
+const repo = await loadRepo();
 const versionFile = new VersionFile();
 const currentVersion = versionFile.version;
 const newVersion = versionFile.version.inc(getVersionIncrementKind());
@@ -18,6 +19,9 @@ releasesMdFile.updateWithGitLog({
   version: newVersion.toString(),
 });
 
+// run deno fmt
+await repo.runCommandWithOutput(["deno", "fmt"]);
+
 function getVersionIncrementKind() {
   if (Deno.args.some((a) => a === "--patch")) {
     return "patch";
@@ -31,8 +35,6 @@ function getVersionIncrementKind() {
 }
 
 async function getGitLogFromLastVersion() {
-  const repo = await loadRepo();
-
   // fetch the upstream tags and history
   await repo.gitFetchTags("upstream");
   await repo.gitFetchHistory("upstream");
