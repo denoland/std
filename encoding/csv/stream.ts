@@ -34,11 +34,11 @@ class StreamLineReader implements LineReader {
   }
 }
 
-export class CSVStream implements TransformStream<Uint8Array, Array<string>> {
+export class CSVStream implements TransformStream<string, Array<string>> {
   readonly #readable: ReadableStream<Array<string>>;
-  readonly #decoder: TextDecoderStream;
   readonly #options: CSVStreamOptions;
   readonly #lineReader: StreamLineReader;
+  readonly #textLine: TextLineStream;
   #lineIndex = 0;
 
   constructor(options: CSVStreamOptions = defaultReadOptions) {
@@ -47,13 +47,12 @@ export class CSVStream implements TransformStream<Uint8Array, Array<string>> {
       ...options,
     };
 
-    const decoder = new TextDecoderStream();
-    const textLine = decoder.readable.pipeThrough(new TextLineStream());
-    this.#lineReader = new StreamLineReader(textLine.getReader());
+    const textLine = new TextLineStream();
+    this.#textLine = textLine;
+    this.#lineReader = new StreamLineReader(textLine.readable.getReader());
     this.#readable = new ReadableStream<Array<string>>({
       pull: (controller) => this.#pull(controller),
     });
-    this.#decoder = decoder;
   }
 
   async #pull(
@@ -96,7 +95,7 @@ export class CSVStream implements TransformStream<Uint8Array, Array<string>> {
     return this.#readable;
   }
 
-  get writable(): WritableStream<Uint8Array> {
-    return this.#decoder.writable;
+  get writable(): WritableStream<string> {
+    return this.#textLine.writable;
   }
 }

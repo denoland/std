@@ -19,7 +19,9 @@ Deno.test({
   },
   fn: async () => {
     const file = await Deno.open(join(testdataDir, "simple.csv"));
-    const readable = file.readable.pipeThrough(new CSVStream());
+    const readable = file.readable
+      .pipeThrough(new TextDecoderStream())
+      .pipeThrough(new CSVStream());
     const records = [] as Array<Array<string>>;
     for await (const record of readable) {
       records.push(record);
@@ -37,11 +39,13 @@ Deno.test({
   permissions: { read: [testdataDir] },
   fn: async () => {
     const file = await Deno.open(join(testdataDir, "complex.csv"));
-    const readable = file.readable.pipeThrough(
-      new CSVStream({
-        comment: "#",
-      }),
-    );
+    const readable = file.readable
+      .pipeThrough(new TextDecoderStream())
+      .pipeThrough(
+        new CSVStream({
+          comment: "#",
+        }),
+      );
     const records = [] as Array<Array<string>>;
     for await (const record of readable) {
       records.push(record);
@@ -64,11 +68,13 @@ Deno.test({
       encoder.encode("1\tfoo\n"),
       encoder.encode("2\tbar\n"),
       encoder.encode("3\tbaz\n"),
-    ]).pipeThrough(
-      new CSVStream({
-        separator: "\t",
-      }),
-    );
+    ])
+      .pipeThrough(new TextDecoderStream())
+      .pipeThrough(
+        new CSVStream({
+          separator: "\t",
+        }),
+      );
     const records = [] as Array<Array<string>>;
     for await (const record of readable) {
       records.push(record);
@@ -91,7 +97,7 @@ Deno.test({
       encoder.encode("\n"),
       encoder.encode("1,foo\n"),
       encoder.encode('2,"baz\n'),
-    ]).pipeThrough(
+    ]).pipeThrough(new TextDecoderStream()).pipeThrough(
       new CSVStream(),
     );
     const reader = readable.getReader();
