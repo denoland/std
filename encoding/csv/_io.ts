@@ -204,7 +204,7 @@ function runeCount(s: string): number {
  * A ParseError is returned for parsing errors.
  * Line numbers are 1-indexed and columns are 0-indexed.
  */
-export class ParseError extends Error {
+export class ParseError extends SyntaxError {
   /** Line where the record starts*/
   startLine: number;
   /** Line where the error occurred */
