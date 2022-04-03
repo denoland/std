@@ -5,40 +5,40 @@ import {
   copy,
   endsWith,
   equals,
-  includes,
-  indexOf,
-  lastIndexOf,
+  includesNeedle,
+  indexOfNeedle,
+  lastIndexOfNeedle,
   repeat,
   startsWith,
 } from "./mod.ts";
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 
-Deno.test("[bytes] indexOf1", () => {
-  const i = indexOf(
+Deno.test("[bytes] indexOfNeedle1", () => {
+  const i = indexOfNeedle(
     new Uint8Array([1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 3]),
     new Uint8Array([0, 1, 2]),
   );
   assertEquals(i, 2);
 });
 
-Deno.test("[bytes] indexOf2", () => {
-  const i = indexOf(new Uint8Array([0, 0, 1]), new Uint8Array([0, 1]));
+Deno.test("[bytes] indexOfNeedle2", () => {
+  const i = indexOfNeedle(new Uint8Array([0, 0, 1]), new Uint8Array([0, 1]));
   assertEquals(i, 1);
 });
 
-Deno.test("[bytes] indexOf3", () => {
+Deno.test("[bytes] indexOfNeedle3", () => {
   const encoder = new TextEncoder();
-  const i = indexOf(encoder.encode("Deno"), encoder.encode("D"));
+  const i = indexOfNeedle(encoder.encode("Deno"), encoder.encode("D"));
   assertEquals(i, 0);
 });
 
-Deno.test("[bytes] indexOf4", () => {
-  const i = indexOf(new Uint8Array(), new Uint8Array([0, 1]));
+Deno.test("[bytes] indexOfNeedle4", () => {
+  const i = indexOfNeedle(new Uint8Array(), new Uint8Array([0, 1]));
   assertEquals(i, -1);
 });
 
-Deno.test("[bytes] indexOf with start index", () => {
-  const i = indexOf(
+Deno.test("[bytes] indexOfNeedle with start index", () => {
+  const i = indexOfNeedle(
     new Uint8Array([0, 1, 2, 0, 1, 2]),
     new Uint8Array([0, 1]),
     1,
@@ -46,8 +46,8 @@ Deno.test("[bytes] indexOf with start index", () => {
   assertEquals(i, 3);
 });
 
-Deno.test("[bytes] indexOf with start index 2", () => {
-  const i = indexOf(
+Deno.test("[bytes] indexOfNeedle with start index 2", () => {
+  const i = indexOfNeedle(
     new Uint8Array([0, 1, 2, 0, 1, 2]),
     new Uint8Array([0, 1]),
     7,
@@ -55,9 +55,9 @@ Deno.test("[bytes] indexOf with start index 2", () => {
   assertEquals(i, -1);
 });
 
-Deno.test("[bytes] indexOf with start index < 0", () => {
+Deno.test("[bytes] indexOfNeedle with start index < 0", () => {
   assertEquals(
-    indexOf(
+    indexOfNeedle(
       new Uint8Array([0, 1, 2, 0, 1, 2]),
       new Uint8Array([0, 1]),
       3,
@@ -65,7 +65,7 @@ Deno.test("[bytes] indexOf with start index < 0", () => {
     3,
   );
   assertEquals(
-    indexOf(
+    indexOfNeedle(
       new Uint8Array([0, 1, 2, 1, 1, 2]),
       new Uint8Array([0, 1]),
       3,
@@ -74,26 +74,29 @@ Deno.test("[bytes] indexOf with start index < 0", () => {
   );
 });
 
-Deno.test("[bytes] lastIndexOf1", () => {
-  const i = lastIndexOf(
+Deno.test("[bytes] lastIndexOfNeedle1", () => {
+  const i = lastIndexOfNeedle(
     new Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 3]),
     new Uint8Array([0, 1, 2]),
   );
   assertEquals(i, 3);
 });
 
-Deno.test("[bytes] lastIndexOf2", () => {
-  const i = lastIndexOf(new Uint8Array([0, 1, 1]), new Uint8Array([0, 1]));
+Deno.test("[bytes] lastIndexOfNeedle2", () => {
+  const i = lastIndexOfNeedle(
+    new Uint8Array([0, 1, 1]),
+    new Uint8Array([0, 1]),
+  );
   assertEquals(i, 0);
 });
 
-Deno.test("[bytes] lastIndexOf3", () => {
-  const i = lastIndexOf(new Uint8Array(), new Uint8Array([0, 1]));
+Deno.test("[bytes] lastIndexOfNeedle3", () => {
+  const i = lastIndexOfNeedle(new Uint8Array(), new Uint8Array([0, 1]));
   assertEquals(i, -1);
 });
 
-Deno.test("[bytes] lastIndexOf with start index", () => {
-  const i = lastIndexOf(
+Deno.test("[bytes] lastIndexOfNeedle with start index", () => {
+  const i = lastIndexOfNeedle(
     new Uint8Array([0, 1, 2, 0, 1, 2]),
     new Uint8Array([0, 1]),
     2,
@@ -101,8 +104,8 @@ Deno.test("[bytes] lastIndexOf with start index", () => {
   assertEquals(i, 0);
 });
 
-Deno.test("[bytes] lastIndexOf with start index 2", () => {
-  const i = lastIndexOf(
+Deno.test("[bytes] lastIndexOfNeedle with start index 2", () => {
+  const i = lastIndexOfNeedle(
     new Uint8Array([0, 1, 2, 0, 1, 2]),
     new Uint8Array([0, 1]),
     -1,
@@ -228,16 +231,16 @@ Deno.test("[bytes] concat multiple arrays", () => {
   assert(u2 !== joined);
 });
 
-Deno.test("[bytes] includes", () => {
+Deno.test("[bytes] includesNeedle", () => {
   const encoder = new TextEncoder();
   const source = encoder.encode("deno.land");
   const pattern = encoder.encode("deno");
 
-  assert(includes(source, pattern));
-  assert(includes(new Uint8Array([0, 1, 2, 3]), new Uint8Array([2, 3])));
+  assert(includesNeedle(source, pattern));
+  assert(includesNeedle(new Uint8Array([0, 1, 2, 3]), new Uint8Array([2, 3])));
 
-  assert(includes(source, pattern, -10));
-  assert(!includes(source, pattern, -1));
+  assert(includesNeedle(source, pattern, -10));
+  assert(!includesNeedle(source, pattern, -1));
 });
 
 Deno.test("[bytes] copy", function (): void {

@@ -2,6 +2,12 @@
 // deno-lint-ignore-file no-var
 import processModule from "./process.ts";
 import { Buffer as bufferModule } from "./buffer.ts";
+import {
+  clearInterval,
+  clearTimeout,
+  setInterval,
+  setTimeout,
+} from "./timers.ts";
 import timers from "./timers.ts";
 
 type GlobalType = {
@@ -9,6 +15,10 @@ type GlobalType = {
   Buffer: typeof bufferModule;
   setImmediate: typeof timers.setImmediate;
   clearImmediate: typeof timers.clearImmediate;
+  setTimeout: typeof timers.setTimeout;
+  clearTimeout: typeof timers.clearTimeout;
+  setInterval: typeof timers.setInterval;
+  clearInterval: typeof timers.clearInterval;
 };
 
 declare global {
@@ -29,7 +39,22 @@ declare global {
 }
 
 Object.defineProperty(globalThis, "global", {
-  value: globalThis,
+  value: new Proxy(globalThis, {
+    get(target, prop, receiver) {
+      switch (prop) {
+        case "setInterval":
+          return setInterval;
+        case "setTimeout":
+          return setTimeout;
+        case "clearInterval":
+          return clearInterval;
+        case "clearTimeout":
+          return clearTimeout;
+        default:
+          return Reflect.get(target, prop, receiver);
+      }
+    },
+  }),
   writable: false,
   enumerable: false,
   configurable: true,

@@ -38,6 +38,7 @@ import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
 import internalErrors from "./internal/errors.ts";
+import internalEventTarget from "./internal/event_target.mjs";
 import internalHttp from "./internal/http.ts";
 import internalReadlineUtils from "./internal/readline/utils.mjs";
 import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.mjs";
@@ -106,6 +107,7 @@ export default {
   https,
   inspector,
   "internal/errors": internalErrors,
+  "internal/event_target": internalEventTarget,
   "internal/fs/utils": internalFsUtils,
   "internal/http": internalHttp,
   "internal/readline/utils": internalReadlineUtils,
@@ -151,6 +153,6 @@ export default {
   v8,
   vm,
   wasi,
-  workerThreads,
+  "worker_threads": workerThreads,
   zlib,
 } as Record<string, unknown>;

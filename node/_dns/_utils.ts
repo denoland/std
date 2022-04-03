@@ -20,7 +20,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { getOptionValue } from "../_options.ts";
+import { getOptionValue } from "../internal/options.ts";
 import { emitWarning } from "../process.ts";
 import {
   AI_ADDRCONFIG,

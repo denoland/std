@@ -1,3 +1,50 @@
+### 0.133.0 / 2022.03.31
+
+- BREAKING: improve bytes/ module (#2074)
+- feat(testing): add mocking utilities (#2048)
+
+### 0.132.0 / 2022.03.25
+
+- feat(collections): Add BSTree and RBTree (#2023)
+- feat(node): add ReadStream and createReadStream (#1435)
+- feat(node): export URLSearchParams via url module (#2056)
+
+### 0.131.0 / 2022.03.24
+
+- feat(node): add NodeEventTarget (#2032)
+- feat(node): add Console constructor (#2037)
+- feat(node): worker_threads (#1151)
+- feat(node): add process.allowedNodeEnvironmentFlags (#2049)
+- feat(collections): add BinaryHeap (#2022)
+- feat(async): expose asyncPromise and asyncAsyncIterable (#2034)
+- fix(node/http): ignore error from `respondWith` (#2058)
+- fix(node): warn on non supported event, but still register listener (#2050)
+- fix(node): fix `EventEmitter` methods (#2035)
+- fix(node): make global.<timerFunc> Node.js timers (#2038)
+
+### 0.130.0 / 2022.03.16
+
+- feat(testing): add `assertInstanceOf` (#2028)
+- feat(node): shim get-caller-file (#2029)
+- fix(node): fix dynamic require (#2024)
+- feat(node/fs): add `fs.writevSync(fd, buffers[, position])` (#2020)
+
+### 0.129.0 / 2022.03.10
+
+- feat: streams based `Buffer` (#1970)
+- feat(node/crypto): add crypto.publicEncrypt (#1987)
+- feat(node/fs): add `fs.writev(fd, buffers[, position], callback)` (#2008)
+- feat(streams): LimitedTransformStream & LimitedBytesTransformStream (#2007)
+- feat(streams): TextDelimiterStream (#2006)
+- feat(testing/asserts): use assertion signature for "assertStrictEquals"
+  (#1984)
+- fix(async): re-export abortable in mod.ts (#1959)
+- fix(fmt/colors): update `ANSI_PATTERN` (#1996)
+- fix(node): fix http.request for minipass-fetch 2.x (#2004)
+- fix(node/process): ignore SIGBREAK binding when the platform is not windows
+  (#2014)
+- fix(testing): Misleading assertion error in assertNotEquals (#1989)
+
 ### 0.128.0 / 2022.03.03
 
 - feat(node): add crypto.webcrypto (#1961)
