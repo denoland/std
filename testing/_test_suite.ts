@@ -188,14 +188,8 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
     if (!suite.hasOnlyStep) {
       for (let i = 0; i < suite.steps.length; i++) {
         const step = suite.steps[i]!;
-        if (step instanceof TestSuiteInternal) {
-          if (!(step.hasOnlyStep || step.describe.only)) {
-            suite.steps.splice(i--, 1);
-          }
-        } else {
-          if (!step.only) {
-            suite.steps.splice(i--, 1);
-          }
+        if (!(step instanceof TestSuiteInternal) && !step.only) {
+          suite.steps.splice(i--, 1);
         }
       }
       suite.hasOnlyStep = true;
@@ -224,16 +218,11 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       }
     }
 
-    let omit = false;
-    if (suite.hasOnlyStep) {
-      if (step instanceof TestSuiteInternal) {
-        if (!(step.hasOnlyStep || step.describe.only)) omit = true;
-      } else {
-        if (!step.only) omit = true;
-      }
+    if (
+      !(suite.hasOnlyStep && !(step instanceof TestSuiteInternal) && !step.only)
+    ) {
+      suite.steps.push(step);
     }
-
-    if (!omit) suite.steps.push(step);
   }
 
   /** This is used internally to add hooks to a test suite. */
@@ -260,7 +249,15 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
     context: T,
     t: Deno.TestContext,
   ): Promise<void> {
+    const hasOnly = suite.hasOnlyStep || suite.describe.only || false;
     for (const step of suite.steps) {
+      if (
+        hasOnly && step instanceof TestSuiteInternal &&
+        !(step.hasOnlyStep || step.describe.only || false)
+      ) {
+        continue;
+      }
+
       const {
         name,
         fn,
