@@ -200,6 +200,13 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       }
       suite.hasOnlyStep = true;
     }
+
+    const parentSuite = suite.describe.suite;
+    const parentTestSuite = parentSuite &&
+      TestSuiteInternal.suites.get(parentSuite.symbol);
+    if (parentTestSuite) {
+      TestSuiteInternal.addingOnlyStep(parentTestSuite);
+    }
   }
 
   /** This is used internally to add steps to a test suite. */
