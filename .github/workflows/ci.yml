@@ -64,6 +64,16 @@ jobs:
           rm -rf ./cov/
           rm cov.lcov
 
+      - name: Release if version change
+        if: |
+          matrix.os == 'ubuntu-latest' &&
+          github.repository == 'denoland/deno_std' &&
+          github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./_tools/release/03_release.ts
+
   node:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
