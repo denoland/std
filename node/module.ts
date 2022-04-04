@@ -1315,8 +1315,7 @@ function wrapSafe(
   const [f, err] = (() => {
     try {
       return core.evalContext(wrapper, filename);
-    }
-    catch (thrown: any) {
+    } catch (thrown: any) {
       return [null, { thrown }];
     }
   })();
