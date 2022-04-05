@@ -192,15 +192,13 @@ export class ChildProcess extends EventEmitter {
         const status = await this.#process.status();
         this.exitCode = status.code;
         this.#spawned.then(async () => {
+          const exitCode = this.signalCode == null ? this.exitCode : null;
+          const signalCode = this.signalCode == null ? null : this.signalCode;
           // The 'exit' and 'close' events must be emitted after the 'spawn' event.
-          this.emit(
-            "exit",
-            this.signalCode == null ? this.exitCode : null,
-            this.signalCode == null ? null : this.signalCode,
-          );
+          this.emit("exit", exitCode, signalCode);
           await this._waitForChildStreamsToClose();
           this.#close();
-          this.emit("close", this.exitCode, status.signal ?? null);
+          this.emit("close", exitCode, signalCode);
         });
       })();
     } catch (err) {
