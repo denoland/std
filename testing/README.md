@@ -290,7 +290,7 @@ methods behavior.
 
 Say we have two functions, `square` and `multiply`, if we want to assert that
 the `multiply` function is called during execution of the `square` function we
-need a way to spy on the `multiple` function. There are a few ways to achieve
+need a way to spy on the `multiply` function. There are a few ways to achieve
 this with Spies, one is to have the `square` function take the `multiply`
 multiply as a parameter.
 
