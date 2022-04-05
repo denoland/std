@@ -134,6 +134,7 @@
       "test-buffer-zero-fill.js",
       "test-child-process-execfile.js",
       "test-child-process-fork.js",
+      "test-child-process-kill.js",
       "test-client-request-destroy.js",
       "test-console-async-write-error.js",
       "test-console-group.js",
@@ -473,6 +474,7 @@
     "parallel": [
       "test-child-process-execfile.js",
       "test-child-process-fork.js",
+      "test-child-process-kill.js",
       "test-console-log-throw-primitive.js",
       "test-console-no-swallow-stack-overflow.js",
       "test-console-sync-write-error.js",

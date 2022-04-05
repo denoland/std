@@ -4,6 +4,7 @@
 // ref: https://nodejs.org/api/child_process.html
 import { assert } from "../../_util/assert.ts";
 import { EventEmitter } from "../events.ts";
+import { os } from "../internal_binding/constants.ts";
 import { notImplemented } from "../_utils.ts";
 import { Readable, Stream, Writable } from "../stream.ts";
 import { deferred } from "../../async/deferred.ts";
@@ -11,7 +12,11 @@ import { iterateReader, writeAll } from "../../streams/conversion.ts";
 import { isWindows } from "../../_util/os.ts";
 import { Buffer } from "../buffer.ts";
 import { nextTick } from "../_next_tick.ts";
-import { AbortError, ERR_INVALID_ARG_VALUE } from "./errors.ts";
+import {
+  AbortError,
+  ERR_INVALID_ARG_VALUE,
+  ERR_UNKNOWN_SIGNAL,
+} from "./errors.ts";
 import { mapValues } from "../../collections/map_values.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
@@ -56,6 +61,11 @@ export class ChildProcess extends EventEmitter {
    * The PID of this child process.
    */
   pid!: number;
+
+  /**
+   * The signal received by this child process.
+   */
+  signalCode: string | null = null;
 
   /**
    * Command line arguments given to this child process.
@@ -160,7 +170,7 @@ export class ChildProcess extends EventEmitter {
       if (signal) {
         const onAbortListener = () => {
           try {
-            if (this.kill(/** TODO Pass killSignal (not implemented) */)) {
+            if (this.kill("SIGKILL")) {
               this.emit("error", new AbortError());
             }
           } catch (err) {
@@ -183,9 +193,13 @@ export class ChildProcess extends EventEmitter {
         this.exitCode = status.code;
         this.#spawned.then(async () => {
           // The 'exit' and 'close' events must be emitted after the 'spawn' event.
-          this.emit("exit", this.exitCode, status.signal ?? null);
+          this.emit(
+            "exit",
+            this.signalCode == null ? this.exitCode : null,
+            this.signalCode == null ? null : this.signalCode,
+          );
           await this._waitForChildStreamsToClose();
-          this.kill();
+          this.#close();
           this.emit("close", this.exitCode, status.signal ?? null);
         });
       })();
@@ -198,26 +212,22 @@ export class ChildProcess extends EventEmitter {
    * @param signal NOTE: this parameter is not yet implemented.
    */
   kill(signal?: number | string): boolean {
-    if (signal !== undefined) {
-      notImplemented("`ChildProcess.kill()` with the `signal` parameter");
-    }
-
     if (this.killed) {
       return this.killed;
     }
 
-    if (this.#process.stdin) {
-      assert(this.stdin);
-      ensureClosed(this.#process.stdin);
+    const denoSignal = signal == null ? "SIGTERM" : toDenoSignal(signal);
+    this.#closePipes();
+    try {
+      this.#process.kill(denoSignal);
+    } catch (err) {
+      // NOTE: `NotFound` is thrown when the child process has already been exited
+      if (!(err instanceof Deno.errors.NotFound)) {
+        throw err;
+      }
     }
-    if (this.#process.stdout) {
-      ensureClosed(this.#process.stdout);
-    }
-    if (this.#process.stderr) {
-      ensureClosed(this.#process.stderr);
-    }
-    ensureClosed(this.#process); // TODO Use `Deno.Process.kill` instead when it becomes stable.
     this.killed = true;
+    this.signalCode = denoSignal;
     return this.killed;
   }
 
@@ -250,6 +260,24 @@ export class ChildProcess extends EventEmitter {
       this.emit("error", err); // TODO(uki00a) Convert `err` into nodejs's `SystemError` class.
     });
   }
+
+  #close(): void {
+    this.#closePipes();
+    ensureClosed(this.#process);
+  }
+
+  #closePipes(): void {
+    if (this.#process.stdin) {
+      assert(this.stdin);
+      ensureClosed(this.#process.stdin);
+    }
+    if (this.#process.stdout) {
+      ensureClosed(this.#process.stdout);
+    }
+    if (this.#process.stderr) {
+      ensureClosed(this.#process.stderr);
+    }
+  }
 }
 
 const supportedNodeStdioTypes: NodeStdio[] = ["pipe", "ignore", "inherit"];
@@ -274,6 +302,27 @@ function toDenoStdio(
     default:
       notImplemented();
   }
+}
+
+function toDenoSignal(signal: number | string): Deno.Signal {
+  if (typeof signal === "number") {
+    for (const name of keys(os.signals)) {
+      if (os.signals[name] === signal) {
+        return name as Deno.Signal;
+      }
+    }
+    throw new ERR_UNKNOWN_SIGNAL(String(signal));
+  }
+
+  const denoSignal = signal as Deno.Signal;
+  if (os.signals[denoSignal] != null) {
+    return denoSignal;
+  }
+  throw new ERR_UNKNOWN_SIGNAL(signal);
+}
+
+function keys<T extends Record<string, unknown>>(object: T): Array<keyof T> {
+  return Object.keys(object);
 }
 
 export interface ChildProcessOptions {
