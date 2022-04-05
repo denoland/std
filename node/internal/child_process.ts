@@ -221,8 +221,9 @@ export class ChildProcess extends EventEmitter {
     try {
       this.#process.kill(denoSignal);
     } catch (err) {
-      // NOTE: `NotFound` is thrown when the child process has already been exited
-      if (!(err instanceof Deno.errors.NotFound)) {
+      const alreadyClosed = err instanceof Deno.errors.NotFound ||
+        err instanceof Deno.errors.PermissionDenied;
+      if (!alreadyClosed) {
         throw err;
       }
     }
