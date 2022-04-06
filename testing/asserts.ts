@@ -869,19 +869,19 @@ export function unreachable(): never {
 
 let snapshotFile: Record<string, unknown> | undefined = undefined;
 const updatedSnapshotFile: Record<string, unknown> = {};
-// const snapshotMap: Record<string, number> = {};
+const snapshotMap: Record<string, number> = {};
 
 export async function assertSnapshot(context: Deno.TestContext, actual: unknown) {
   const name = getName(context);
-  // const count = getCount(name);
-
+  const count = getCount();
+  const testName = `${name} #${count}`;
   if (!snapshotFile) {
     const snapshotPath = getSnapshotPath();
     await ensureFile(snapshotPath);
     const file = await Deno.readTextFile(snapshotPath);
     snapshotFile = file ? JSON.parse(file) : {};
   }
-  const snapshot = snapshotFile?.[name];
+  const snapshot = snapshotFile?.[testName];
   if (!Deno.args.includes('--update')) {
     assertEquals(actual, snapshot);
   } else {
@@ -891,29 +891,24 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
     } catch {
       isEqual = false;
     }
-    if (!isEqual) console.info("Snapshot updated", name);
+    if (!isEqual) console.info("Snapshot updated", testName);
   }
-  updatedSnapshotFile[name] = actual;
-
+  updatedSnapshotFile[testName] = actual;
   globalThis.onunload = writeSnapshotFileSync;
-
-  // function getCount() {
-  //   const count = snapshotMap?.[name] ? snapshotMap[name] : 1;
-  //   snapshotMap[name] = count + 1;
-  //   return count;
-  // }
-
   function getName(context: Deno.TestContext): string {
     if (context.parent) return `${getName(context.parent)} > ${context.name}`;
     return context.name;
   }
-
+  function getCount() {
+    const count = snapshotMap?.[name] ? snapshotMap[name] : 1;
+    snapshotMap[name] = count + 1;
+    return count;
+  }
   function getSnapshotPath() {
     const testFile = fromFileUrl(context.origin);
     const parts = parse(testFile);
     return `${join(parts.dir, parts.name)}.snap`;
   }
-
   function writeSnapshotFileSync() {
     const snapshotPath = getSnapshotPath();
     ensureFileSync(snapshotPath);
