@@ -1410,12 +1410,40 @@ Deno.test("Assert Is Error with custom Error", () => {
   );
 });
 
+class TestClass {
+  a = 1;
+  b = 2;
+  init() {
+    this.b = 3;
+  }
+  get getA() {
+    return this.a;
+  }
+  func() {}
+}
+
 Deno.test("Snapshot Test", async (t) => {
   await assertSnapshot(t, { a: 1, b: 2 });
-  await t.step("babo", async (t) => {
-    await assertSnapshot(t, { b: 2, c: 3 });
-    await t.step("merong", async (t) => {
-      await assertSnapshot(t, { b: 2, c: 4 });
+  await assertSnapshot(t, new TestClass());
+  await assertSnapshot(t, new Map());
+  await assertSnapshot(t, new Set([1, 2, 3]));
+  await assertSnapshot(t, { fn() {} });
+  await assertSnapshot(t, function fn() {});
+  await assertSnapshot(t, [1, 2, 3]);
+  await assertSnapshot(t, "hello world");
+});
+
+Deno.test("Snapshot Test - step", async (t) => {
+  await assertSnapshot(t, { a: 1, b: 2 });
+  await t.step("Nested", async (t) => {
+    await assertSnapshot(t, new TestClass());
+    await assertSnapshot(t, new Map());
+    await t.step("Nested Nested", async (t) => {
+      await assertSnapshot(t, new Set([1, 2, 3]));
+      await assertSnapshot(t, { fn() {} });
+      await assertSnapshot(t, function fn() {});
     });
+    await assertSnapshot(t, [1, 2, 3]);
   });
+  await assertSnapshot(t, "hello world");
 });
