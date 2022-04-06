@@ -795,7 +795,7 @@ export class Socket extends Duplex {
       this[asyncIdSymbol] = _getNewAsyncId(this._handle);
     } else if (options.fd !== undefined) {
       // REF: https://github.com/denoland/deno/issues/6529
-      notImplemented();
+      notImplemented("net.Socket.prototype.constructor with fd option");
     }
 
     const onread = options.onread;

@@ -152,7 +152,7 @@ export class TCP extends ConnectionWrap {
    */
   open(_fd: number): number {
     // REF: https://github.com/denoland/deno/issues/6529
-    notImplemented();
+    notImplemented("TCP.prototype.open");
   }
 
   /**
@@ -306,7 +306,7 @@ export class TCP extends ConnectionWrap {
    */
   setSimultaneousAccepts(_enable: boolean) {
     // Low priority to implement owing to it being deprecated in Node.
-    notImplemented();
+    notImplemented("TCP.prototype.setSimultaneousAccepts");
   }
 
   /**

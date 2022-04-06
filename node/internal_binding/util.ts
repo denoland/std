@@ -28,7 +28,7 @@
 import { notImplemented } from "../_utils.ts";
 
 export function guessHandleType(_fd: number): string {
-  notImplemented();
+  notImplemented("gessHandleType");
 }
 
 export const ALL_PROPERTIES = 0;
