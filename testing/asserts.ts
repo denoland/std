@@ -867,7 +867,7 @@ export function unreachable(): never {
   throw new AssertionError("unreachable");
 }
 
-let snapshotFile: Record<string, unknown> | undefined = undefined;
+let snapshotFile: Record<string, string> | undefined = undefined;
 const updatedSnapshotFile: Record<string, unknown> = {};
 const snapshotMap: Record<string, number> = {};
 
@@ -875,26 +875,27 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
   const name = getName(context);
   const count = getCount();
   const testName = `${name} #${count}`;
+  const isUpdate = Deno.args.includes('--update');
   if (!snapshotFile) {
     const snapshotPath = getSnapshotPath();
     await ensureFile(snapshotPath);
-    const file = await Deno.readTextFile(snapshotPath);
-    snapshotFile = file ? JSON.parse(file) : {};
+    const {snapshot} = await import(snapshotPath);
+    snapshotFile = snapshot;
   }
-  const snapshot = snapshotFile?.[testName];
-  if (!Deno.args.includes('--update')) {
-    assertEquals(actual, snapshot);
-  } else {
+  const snapshot = snapshotFile?.[testName] ?? '';
+  if (isUpdate) {
     let isEqual = true;
     try {
-      assertEquals(actual, snapshot);
+      assertEquals(_format(actual), snapshot.slice(1, -1));
     } catch {
       isEqual = false;
     }
     if (!isEqual) console.info("Snapshot updated", testName);
+    updatedSnapshotFile[testName] = actual;
+    globalThis.onunload = writeSnapshotFileSync;
+  } else {
+    assertEquals(_format(actual), snapshot.slice(1, -1));
   }
-  updatedSnapshotFile[testName] = actual;
-  globalThis.onunload = writeSnapshotFileSync;
   function getName(context: Deno.TestContext): string {
     if (context.parent) return `${getName(context.parent)} > ${context.name}`;
     return context.name;
@@ -912,8 +913,11 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
   function writeSnapshotFileSync() {
     const snapshotPath = getSnapshotPath();
     ensureFileSync(snapshotPath);
-    const file = JSON.stringify(updatedSnapshotFile, null, 2);
-    Deno.writeTextFileSync(snapshotPath, file);
+    const buf = ['export const snapshot = {};\n'];
+    for (const [key, value] of Object.entries(updatedSnapshotFile)) {
+      buf.push(`\nsnapshot[\`${key}\`] = \`\n${_format(value)}\n\`;\n`);
+    }
+    Deno.writeTextFileSync(snapshotPath, buf.join(""));
     console.log('Snapshot updated!');
   }
 }
