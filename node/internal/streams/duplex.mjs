@@ -6,7 +6,7 @@ import { validateObject, validateBoolean } from "../validators.mjs";
 import { createDeferredPromise } from "../util.mjs";
 import { destroyer } from "./destroy.mjs";
 import { isBlob } from "../blob.mjs";
-import { Buffer } from "../../buffer.mjs";
+import { Buffer } from "../../buffer.ts";
 import {
   AbortError,
   ERR_INVALID_ARG_TYPE,
