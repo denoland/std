@@ -287,7 +287,7 @@ function toDenoStdio(
     !supportedNodeStdioTypes.includes(pipe as NodeStdio) ||
     typeof pipe === "number" || pipe instanceof Stream
   ) {
-    notImplemented();
+    notImplemented(`toDenoStdio pipe=${typeof pipe} (${pipe})`);
   }
   switch (pipe) {
     case "pipe":
@@ -299,7 +299,7 @@ function toDenoStdio(
     case "inherit":
       return "inherit";
     default:
-      notImplemented();
+      notImplemented(`toDenoStdio pipe=${typeof pipe} (${pipe})`);
   }
 }
 
@@ -471,7 +471,7 @@ function normalizeStdioOption(
     switch (stdio) {
       case "overlapped":
         if (isWindows) {
-          notImplemented();
+          notImplemented("normalizeStdioOption overlapped (on windows)");
         }
         // 'overlapped' is same as 'piped' on non Windows system.
         return ["pipe", "pipe", "pipe"];
@@ -482,7 +482,7 @@ function normalizeStdioOption(
       case "ignore":
         return ["ignore", "ignore", "ignore"];
       default:
-        notImplemented();
+        notImplemented(`normalizeStdioOption stdio=${typeof stdio} (${stdio})`);
     }
   }
 }

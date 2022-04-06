@@ -16,22 +16,22 @@ class Session extends EventEmitter {
 
   constructor() {
     super();
-    notImplemented();
+    notImplemented("inspector.Session.prototype.constructor");
   }
 
   /** Connects the session to the inspector back-end. */
   connect() {
-    notImplemented();
+    notImplemented("inspector.Session.prototype.connect");
   }
 
   /** Connects the session to the main thread
    * inspector back-end. */
   connectToMainThread() {
-    notImplemented();
+    notImplemented("inspector.Session.prototype.connectToMainThread");
   }
 
   [onMessageSymbol](_message: string) {
-    notImplemented();
+    notImplemented("inspector.Session.prototype[Symbol('onMessage')]");
   }
 
   /** Posts a message to the inspector back-end. */
@@ -40,7 +40,7 @@ class Session extends EventEmitter {
     _params?: Record<string, unknown>,
     _callback?: (...args: unknown[]) => void,
   ): void {
-    notImplemented();
+    notImplemented("inspector.Session.prototype.post");
   }
 
   /** Immediately closes the session, all pending
@@ -48,20 +48,20 @@ class Session extends EventEmitter {
    * error.
    */
   disconnect() {
-    notImplemented();
+    notImplemented("inspector.Session.prototype.disconnect");
   }
 }
 
 /** Activates inspector on host and port.
  * See https://nodejs.org/api/inspector.html#inspectoropenport-host-wait */
 function open(_port?: number, _host?: string, _wait?: boolean): void {
-  notImplemented();
+  notImplemented("inspector.Session.prototype.open");
 }
 
 /** Deactivate the inspector. Blocks until there are no active connections.
  * See https://nodejs.org/api/inspector.html#inspectorclose */
 function close() {
-  notImplemented();
+  notImplemented("inspector.Session.prototype.close");
 }
 
 /** Return the URL of the active inspector, or undefined if there is none.
@@ -74,7 +74,7 @@ function url() {
 /** Blocks until a client (existing or connected later) has sent Runtime.runIfWaitingForDebugger command.
  * See https://nodejs.org/api/inspector.html#inspectorwaitfordebugger */
 function waitForDebugger() {
-  notImplemented();
+  notImplemented("inspector.wairForDebugger");
 }
 
 const console = globalThis.console;

@@ -34,47 +34,47 @@ import {
 } from "./_zlib.mjs";
 export class Options {
   constructor() {
-    notImplemented();
+    notImplemented("Options.prototype.constructor");
   }
 }
 export class BrotliOptions {
   constructor() {
-    notImplemented();
+    notImplemented("BrotliOptions.prototype.constructor");
   }
 }
 export class BrotliCompress {
   constructor() {
-    notImplemented();
+    notImplemented("BrotliCompress.prototype.constructor");
   }
 }
 export class BrotliDecompress {
   constructor() {
-    notImplemented();
+    notImplemented("BrotliDecompress.prototype.constructor");
   }
 }
 export class ZlibBase {
   constructor() {
-    notImplemented();
+    notImplemented("ZlibBase.prototype.constructor");
   }
 }
 export { constants };
 export function createBrotliCompress() {
-  notImplemented();
+  notImplemented("createBrotliCompress");
 }
 export function createBrotliDecompress() {
-  notImplemented();
+  notImplemented("createBrotliDecompress");
 }
 export function brotliCompress() {
-  notImplemented();
+  notImplemented("brotliCompress");
 }
 export function brotliCompressSync() {
-  notImplemented();
+  notImplemented("brotliCompressSync");
 }
 export function brotliDecompress() {
-  notImplemented();
+  notImplemented("brotliDecompress");
 }
 export function brotliDecompressSync() {
-  notImplemented();
+  notImplemented("brotliDecompressSync");
 }
 
 export default {
