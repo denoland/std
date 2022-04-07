@@ -35,7 +35,7 @@ function getPrBody() {
     `Please ensure:\n` +
     `- [ ] Version in version.ts is updated correctly\n` +
     `- [ ] Releases.md is updated correctly\n` +
-    `- [ ] You have run all the tests in this branch against the CLI build being done\n\n` +
+    `- [ ] You have run all the tests in this branch against the CLI release being done (\`../deno/target/release/deno test -A --unstable\`)\n\n` +
     `To make edits to this PR:\n` +
     "```shell\n" +
     `git fetch upstream ${newBranchName} && git checkout -b ${newBranchName} upstream/${newBranchName}\n` +

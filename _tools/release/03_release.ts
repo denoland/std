@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-read --allow-write --allow-env --allow-net --allow-run=git --no-check
+#!/usr/bin/env -S deno run --allow-read --allow-write --allow-env --allow-net --allow-run=git,deno --no-check
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { containsVersion, createOctoKit, getGitHubRepository } from "./deps.ts";
 import { getReleasesMdFile, loadRepo, VersionFile } from "./repo.ts";
