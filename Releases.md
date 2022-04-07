@@ -1,3 +1,12 @@
+### 0.134.0 / 2022.04.07
+
+- feat(node/child_process): support `signal` parameter for `ChildProcess.kill`
+  (#2083)
+- feat(node/net): add server.ref/unref methods (#2087)
+- feat: web streams based encoding/csv (#1993)
+- fix(log): fix log formatter issue (#2070)
+- fix(node/fs): fix writing redundant data (#2076)
+
 ### 0.133.0 / 2022.03.31
 
 - BREAKING: improve bytes/ module (#2074)
