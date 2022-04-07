@@ -1455,10 +1455,13 @@ Deno.test("global", async (t) => {
 
       await t.step("deep child it", async () =>
         await assertOnly((fns) => {
-          const suite = describe("example")
+          const suite = describe("example");
           assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
           const childSuite = describe(suite, "child");
-          assertEquals(it.only({ name: "b", suite: childSuite, fn: fns[1] }), undefined);
+          assertEquals(
+            it.only({ name: "b", suite: childSuite, fn: fns[1] }),
+            undefined,
+          );
           assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
         }));
 
@@ -1466,20 +1469,29 @@ Deno.test("global", async (t) => {
         await assertOnly((fns) => {
           const suite = describe("example");
           assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
-          const childSuite = describe.only(suite, "child")
-          assertEquals(it({ name: "b", suite: childSuite, fn: fns[1] }), undefined);
+          const childSuite = describe.only(suite, "child");
+          assertEquals(
+            it({ name: "b", suite: childSuite, fn: fns[1] }),
+            undefined,
+          );
           assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
         }));
 
-      await t.step("deep child describe", async () =>
-        await assertOnly((fns) => {
-          const suite = describe("example");
-          assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
-          const childSuite = describe(suite, "child");
-          const child2Suite = describe.only(childSuite, "child 2");
-          assertEquals(it({ name: "b", suite: child2Suite, fn: fns[1] }), undefined);
-          assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
-        }));
+      await t.step(
+        "deep child describe",
+        async () =>
+          await assertOnly((fns) => {
+            const suite = describe("example");
+            assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
+            const childSuite = describe(suite, "child");
+            const child2Suite = describe.only(childSuite, "child 2");
+            assertEquals(
+              it({ name: "b", suite: child2Suite, fn: fns[1] }),
+              undefined,
+            );
+            assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
+          }),
+      );
     });
 
     await t.step("with hooks", async (t) => {
