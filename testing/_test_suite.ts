@@ -105,12 +105,15 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
       const {
         name,
         ignore,
-        only,
         permissions,
         sanitizeExit,
         sanitizeOps,
         sanitizeResources,
       } = describe;
+      let { only } = describe;
+      if (!ignore && this.hasOnlyStep) {
+        only = true;
+      }
       TestSuiteInternal.registerTest({
         name,
         ignore,

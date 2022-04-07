@@ -155,6 +155,10 @@ Deno.test("global", async (t) => {
   });
 
   await t.step("it", async (t) => {
+    /**
+     * Asserts that `Deno.test` is called with the correct options for the `it` call in the callback function.
+     * This is used to reduce code duplication when testing calling `it` with different call signatures.
+     */
     async function assertOptions<T>(
       expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
       cb: (fn: Spy) => void,
@@ -193,12 +197,20 @@ Deno.test("global", async (t) => {
       }
     }
 
+    /**
+     * Asserts that `Deno.test` is called with just the name and function for the `it` call in the callback function.
+     * This is used to reduce code duplication when testing calling `it` with different call signatures.
+     */
     async function assertMinimumOptions(
       cb: (fn: Spy) => void,
     ): Promise<void> {
       await assertOptions({}, cb);
     }
 
+    /**
+     * Asserts that `Deno.test` is called with all of the options for the `it` call in the callback function.
+     * This is used to reduce code duplication when testing calling `it` with different call signatures.
+     */
     async function assertAllOptions(
       cb: (fn: Spy) => void,
     ): Promise<void> {
@@ -332,12 +344,20 @@ Deno.test("global", async (t) => {
     });
 
     await t.step("only", async (t) => {
+      /**
+       * Asserts that `Deno.test` is called with just the name, only, and function for the `it.only` call in the callback function.
+       * This is used to reduce code duplication when testing calling `it.only` with different call signatures.
+       */
       async function assertMinimumOptions(
         cb: (fn: Spy) => void,
       ): Promise<void> {
         await assertOptions({ only: true }, cb);
       }
 
+      /**
+       * Asserts that `Deno.test` is called with all of the options for the `it.only` call in the callback function.
+       * This is used to reduce code duplication when testing calling `it.only` with different call signatures.
+       */
       async function assertAllOptions(
         cb: (fn: Spy) => void,
       ): Promise<void> {
@@ -478,12 +498,20 @@ Deno.test("global", async (t) => {
     });
 
     await t.step("ignore", async (t) => {
+      /**
+       * Asserts that `Deno.test` is called with just the name, ignore, and function for the `it.ignore` call in the callback function.
+       * This is used to reduce code duplication when testing calling `it.ignore` with different call signatures.
+       */
       async function assertMinimumOptions(
         cb: (fn: Spy) => void,
       ): Promise<void> {
         await assertOptions({ ignore: true }, cb);
       }
 
+      /**
+       * Asserts that `Deno.test` is called with all of the options for the `it.ignore` call in the callback function.
+       * This is used to reduce code duplication when testing calling `it.ignore` with different call signatures.
+       */
       async function assertAllOptions(
         cb: (fn: Spy) => void,
       ): Promise<void> {
@@ -625,6 +653,11 @@ Deno.test("global", async (t) => {
   });
 
   await t.step("describe", async (t) => {
+    /**
+     * Asserts that `Deno.test` is called with the correct options for the `describe` call in the callback function.
+     * In addition to that, it asserts that the individual test cases registered with `it` use the test step API correctly.
+     * This is used to reduce code duplication when testing calling `describe` with different call signatures.
+     */
     async function assertOptions(
       expectedOptions: Omit<Deno.TestDefinition, "name" | "fn">,
       cb: (fns: Spy[]) => void,
@@ -675,12 +708,22 @@ Deno.test("global", async (t) => {
       }
     }
 
+    /**
+     * Asserts that `Deno.test` is called with just the name and function for the `describe` call in the callback function.
+     * In addition to that, it asserts that the individual test cases registered with `it` use the test step API correctly.
+     * This is used to reduce code duplication when testing calling `describe` with different call signatures.
+     */
     async function assertMinimumOptions(
       cb: (fns: Spy[]) => void,
     ): Promise<void> {
       await assertOptions({}, cb);
     }
 
+    /**
+     * Asserts that `Deno.test` is called with all of the options for the `describe` call in the callback function.
+     * In addition to that, it asserts that the individual test cases registered with `it` use the test step API correctly.
+     * This is used to reduce code duplication when testing calling `describe` with different call signatures.
+     */
     async function assertAllOptions(
       cb: (fns: Spy[]) => void,
     ): Promise<void> {
@@ -850,12 +893,22 @@ Deno.test("global", async (t) => {
     });
 
     await t.step("only", async (t) => {
+      /**
+       * Asserts that `Deno.test` is called with just the name, only, and function for the `describe.only` call in the callback function.
+       * In addition to that, it asserts that the individual test cases registered with `it` use the test step API correctly.
+       * This is used to reduce code duplication when testing calling `describe.only` with different call signatures.
+       */
       async function assertMinimumOptions(
         cb: (fns: Spy[]) => void,
       ): Promise<void> {
         await assertOptions({ only: true }, cb);
       }
 
+      /**
+       * Asserts that `Deno.test` is called with all of the options for the `describe.only` call in the callback function.
+       * In addition to that, it asserts that the individual test cases registered with `it` use the test step API correctly.
+       * This is used to reduce code duplication when testing calling `describe.only` with different call signatures.
+       */
       async function assertAllOptions(
         cb: (fns: Spy[]) => void,
       ): Promise<void> {
@@ -1041,12 +1094,22 @@ Deno.test("global", async (t) => {
     });
 
     await t.step("ignore", async (t) => {
+      /**
+       * Asserts that `Deno.test` is called with just the name, ignore, and function for the `describe.ignore` call in the callback function.
+       * In addition to that, it asserts that the individual test cases registered with `it` use the test step API correctly.
+       * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
+       */
       async function assertMinimumOptions(
         cb: (fns: Spy[]) => void,
       ): Promise<void> {
         await assertOptions({ ignore: true }, cb);
       }
 
+      /**
+       * Asserts that `Deno.test` is called with all of the options for the `describe.ignore` call in the callback function.
+       * In addition to that, it asserts that the individual test cases registered with `it` use the test step API correctly.
+       * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
+       */
       async function assertAllOptions(
         cb: (fns: Spy[]) => void,
       ): Promise<void> {
@@ -1232,6 +1295,10 @@ Deno.test("global", async (t) => {
     });
 
     await t.step("nested only", async (t) => {
+      /**
+       * Asserts that when only is used on a nested `describe` or `it` call, it will be the only test case or suite that runs in the file.
+       * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
+       */
       async function assertOnly(
         cb: (fns: Spy[]) => void,
       ): Promise<void> {
@@ -1245,10 +1312,11 @@ Deno.test("global", async (t) => {
           const options = call.args[0] as Deno.TestDefinition;
           assertEquals(
             Object.keys(options).sort(),
-            ["name", "fn"].sort(),
+            ["name", "only", "fn"].sort(),
           );
           assertObjectMatch(options, {
             name: "example",
+            only: true,
           });
 
           assertSpyCalls(fns[0], 0);
@@ -1324,7 +1392,101 @@ Deno.test("global", async (t) => {
         }));
     });
 
+    await t.step("flat child only", async (t) => {
+      /**
+       * Asserts that when only is used on a child `describe` or `it` call, it will be the only test case or suite that runs within the top test suite.
+       * This demonstrates the issue where `Deno.test` is called without `only` even though one of it's child steps are focused.
+       * This is used to reduce code duplication when testing calling `describe.ignore` with different call signatures.
+       */
+      async function assertOnly(
+        cb: (fns: Spy[]) => void,
+      ): Promise<void> {
+        const test = stub(Deno, "test");
+        const fns = [spy(), spy(), spy()];
+        try {
+          cb(fns);
+
+          assertSpyCall(test, 0);
+          const call = test.calls[0];
+          const options = call.args[0] as Deno.TestDefinition;
+          assertEquals(
+            Object.keys(options).sort(),
+            ["name", "fn"].sort(),
+          );
+          assertObjectMatch(options, {
+            name: "example",
+          });
+
+          assertSpyCalls(fns[0], 0);
+          assertSpyCalls(fns[1], 0);
+
+          const context = new TestContext();
+          const result = options.fn(context);
+          assertStrictEquals(Promise.resolve(result), result);
+          assertEquals(await result, undefined);
+          assertSpyCalls(context.spies.step, 1);
+
+          let fn = fns[0];
+          assertSpyCalls(fn, 0);
+
+          fn = fns[1];
+          assertSpyCall(fn, 0, {
+            self: {},
+            args: [],
+            returned: undefined,
+          });
+          assertSpyCalls(fn, 1);
+
+          fn = fns[2];
+          assertSpyCalls(fn, 0);
+        } finally {
+          TestSuiteInternal.reset();
+          test.restore();
+        }
+      }
+
+      await t.step("it", async () =>
+        await assertOnly((fns) => {
+          const suite = describe("example");
+          assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
+          assertEquals(it.only({ name: "b", suite, fn: fns[1] }), undefined);
+          assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
+        }));
+
+      await t.step("deep child it", async () =>
+        await assertOnly((fns) => {
+          const suite = describe("example")
+          assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
+          const childSuite = describe(suite, "child");
+          assertEquals(it.only({ name: "b", suite: childSuite, fn: fns[1] }), undefined);
+          assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
+        }));
+
+      await t.step("describe", async () =>
+        await assertOnly((fns) => {
+          const suite = describe("example");
+          assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
+          const childSuite = describe.only(suite, "child")
+          assertEquals(it({ name: "b", suite: childSuite, fn: fns[1] }), undefined);
+          assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
+        }));
+
+      await t.step("deep child describe", async () =>
+        await assertOnly((fns) => {
+          const suite = describe("example");
+          assertEquals(it({ name: "a", suite, fn: fns[0] }), undefined);
+          const childSuite = describe(suite, "child");
+          const child2Suite = describe.only(childSuite, "child 2");
+          assertEquals(it({ name: "b", suite: child2Suite, fn: fns[1] }), undefined);
+          assertEquals(it({ name: "c", suite, fn: fns[2] }), undefined);
+        }));
+    });
+
     await t.step("with hooks", async (t) => {
+      /**
+       * Asserts that all the different hook types are called in the correct order when the tests run.
+       * This is used to reduce code duplication when testing calling `describe` with different call signatures.
+       */
       async function assertHooks(
         cb: (
           options: {

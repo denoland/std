@@ -285,17 +285,15 @@ grouping tests and adding setup/teardown hooks used by other JavaScript testing
 frameworks like Jasmine, Jest, and Mocha.
 
 The `describe` function creates a block that groups together several related
-tests. The `it` function registers an individual test case. The `describe` and
-`it` functions have similar call signatures to `Deno.test`, making it easy to
-migrate from using `Deno.test`.
+tests. The `it` function registers an individual test case.
 
 ### Hooks
 
 There are 4 types of hooks available for test suites. A test suite can have
 multiples of each type of hook, they will be called in the order that they are
 registered. The `afterEach` and `afterAll` hooks will be called whether or not
-the test case passes. The all hooks will be called once for the whole group
-while the each hooks will be called for each individual test case.
+the test case passes. The *All hooks will be called once for the whole group
+while the *Each hooks will be called for each individual test case.
 
 - `beforeAll`: Runs before all of the tests in the test suite.
 - `afterAll`: Runs after all of the tests in the test suite finish.
@@ -308,18 +306,21 @@ registered before any individual test cases or test suites.
 
 ### Focusing tests
 
-If you would like to only run specific individual test cases, you can do so by
-calling `it.only` instead of `it`. If you would like to only run specific test
-suites, you can do so by calling `describe.only` instead of `describe`.
+If you would like to run only specific test cases, you can do so by calling
+`it.only` instead of `it`. If you would like to run only specific test suites,
+you can do so by calling `describe.only` instead of `describe`.
 
-There is one limitation to this when the individual test cases or test suites
-belong to another test suite, they will be the only ones to run within the top
-level test suite.
+There is one limitation to this when using the flat test grouping style. When
+`describe` is called without being nested, it registers the test with
+`Deno.test`. If a child test case or suite is registered with `it.only` or
+`describe.only`, it will be scoped to the top test suite instead of the file. To
+make them the only tests that run in the file, you would need to register the
+top test suite with `describe.only` too.
 
 ### Ignoring tests
 
 If you would like to not run specific individual test cases, you can do so by
-calling `it.ignore` instead of `it`. If you would like to only run specific test
+calling `it.ignore` instead of `it`. If you would like to not run specific test
 suites, you can do so by calling `describe.ignore` instead of `describe`.
 
 ### Sanitization options
@@ -327,36 +328,40 @@ suites, you can do so by calling `describe.ignore` instead of `describe`.
 Like `Deno.TestDefinition`, the `DescribeDefinition` and `ItDefinition` have
 sanitization options. They work in the same way.
 
-- sanitizeExit: Ensure the test case does not prematurely cause the process to
+- `sanitizeExit`: Ensure the test case does not prematurely cause the process to
   exit, for example via a call to Deno.exit. Defaults to true.
-- sanitizeOps: Check that the number of async completed ops after the test is
+- `sanitizeOps`: Check that the number of async completed ops after the test is
   the same as number of dispatched ops. Defaults to true.
-- sanitizeResources: Ensure the test case does not "leak" resources - ie. the
+- `sanitizeResources`: Ensure the test case does not "leak" resources - ie. the
   resource table after the test has exactly the same contents as before the
   test. Defaults to true.
 
 ### Permissions option
 
 Like `Deno.TestDefinition`, the `DescribeDefintion` and `ItDefinition` have a
-permissions option. They specify the permissions that should be used to run an
-individual test case or test suite. Set this to "inherit" to keep the calling
-thread's permissions. Set this to "none" to revoke all permissions.
+`permissions` option. They specify the permissions that should be used to run an
+individual test case or test suite. Set this to `"inherit"` to keep the calling
+thread's permissions. Set this to `"none"` to revoke all permissions.
 
-Defaults to "inherit".
+This setting defaults to `"inherit"`.
 
 There is currently one limitation to this, you cannot use the permissions option
 on an individual test case or test suite that belongs to another test suite.
+That's because internally those tests are registered with `t.step` which does
+not support the permissions option.
 
-### Migrating and usage
+### Comparing to Deno\.test
 
-To migrate from `Deno.test`, all you have to do is replace `Deno.test` with
-`it`. If you are using the step API, you will need to replace `Deno.test` with
-describe and steps with `describe` or `it`. The callback for individual test
-cases can be syncronous or asyncronous.
+The default way of writing tests is using `Deno.test` and `t.step`. The
+`describe` and `it` functions have similar call signatures to `Deno.test`,
+making it easy to switch between the default style and the behavior-driven
+development style of writing tests. Internally, `describe` and `it` are
+registering tests with `Deno.test` and `t.step`.
 
 Below is an example of a test file using `Deno.test` and `t.step`. In the
-following sections there are examples of how it can be converted to using nested
-test grouping, flat test grouping, and a mix of both.
+following sections there are examples of how the same test could be written with
+`describe` and `it` using nested test grouping, flat test grouping, or a mix of
+both styles.
 
 ```ts
 // https://deno.land/std@$STD_VERSION/testing/bdd_examples/user_test.ts
