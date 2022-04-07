@@ -236,6 +236,13 @@ export class TCP extends ConnectionWrap {
     return 0;
   }
 
+  override ref() {
+    this.#listener?.ref();
+  }
+  override unref() {
+    this.#listener?.unref();
+  }
+
   /**
    * Populates the provided object with local address entries.
    * @param sockname An object to add the local address entries to.
