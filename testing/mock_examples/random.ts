@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 export function randomInt(lowerBound: number, upperBound: number): number {
   return lowerBound + Math.floor(Math.random() * (upperBound - lowerBound));
 }
