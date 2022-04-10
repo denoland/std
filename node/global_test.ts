@@ -2,6 +2,7 @@
 import "./global.ts";
 import {
   assert,
+  assertEquals,
   assertNotEquals,
   assertStrictEquals,
 } from "../testing/asserts.ts";
@@ -85,4 +86,25 @@ Deno.test("clearImmediate is correctly defined", () => {
   assertStrictEquals(global.clearImmediate, timers.clearImmediate);
   assertStrictEquals(globalThis.clearImmediate, timers.clearImmediate);
   assertStrictEquals(window.clearImmediate, timers.clearImmediate);
+});
+
+Deno.test("global.ts evaluates synchronously", async () => {
+  const tempPath = await Deno.makeTempFile({ suffix: ".ts" });
+  await Deno.writeTextFile(
+    tempPath,
+    `\
+    import "data:application/javascript,import '${
+      new URL("global.ts", import.meta.url).href
+    }'; console.log(globalThis.async ? 'async' : 'sync')";
+    import "data:application/javascript,globalThis.async = true";`,
+  );
+  const process = Deno.run({
+    cmd: [Deno.execPath(), "run", "--no-check", tempPath],
+    stdin: "null",
+    stdout: "piped",
+    stderr: "null",
+  });
+  assertEquals((await process.status()).code, 0);
+  assertEquals(new TextDecoder().decode(await process.output()).trim(), "sync");
+  process.close();
 });
