@@ -91,21 +91,26 @@ Deno.test("clearImmediate is correctly defined", () => {
 // https://github.com/denoland/deno_std/issues/2097
 Deno.test("global.ts evaluates synchronously", async () => {
   const tempPath = await Deno.makeTempFile({ suffix: ".ts" });
-  await Deno.writeTextFile(
-    tempPath,
-    `\
-    import "data:application/javascript,import '${
-      new URL("global.ts", import.meta.url).href
-    }'; console.log(globalThis.async ? 'async' : 'sync')";
-    import "data:application/javascript,globalThis.async = true";`,
-  );
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "run", "--no-check", tempPath],
-    stdin: "null",
-    stdout: "piped",
-    stderr: "null",
-  });
-  assertEquals((await process.status()).code, 0);
-  assertEquals(new TextDecoder().decode(await process.output()).trim(), "sync");
-  process.close();
+  try {
+    await Deno.writeTextFile(
+      tempPath,
+      `\
+      import "data:application/javascript,import '${
+        new URL("global.ts", import.meta.url).href
+      }'; console.log(globalThis.async ? 'async' : 'sync')";
+      import "data:application/javascript,globalThis.async = true";`,
+    );
+    const process = Deno.run({
+      cmd: [Deno.execPath(), "run", "--no-check", tempPath],
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+    });
+    assertEquals((await process.status()).code, 0);
+    const stdout = new TextDecoder().decode(await process.output());
+    assertEquals(stdout.trim(), "sync");
+    process.close();
+  } finally {
+    await Deno.remove(tempPath).catch(() => {});
+  }
 });
