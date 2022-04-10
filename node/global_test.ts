@@ -88,6 +88,7 @@ Deno.test("clearImmediate is correctly defined", () => {
   assertStrictEquals(window.clearImmediate, timers.clearImmediate);
 });
 
+// https://github.com/denoland/deno_std/issues/2097
 Deno.test("global.ts evaluates synchronously", async () => {
   const tempPath = await Deno.makeTempFile({ suffix: ".ts" });
   await Deno.writeTextFile(
