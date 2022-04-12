@@ -148,7 +148,7 @@ function createBenchmarkTimer(clock: BenchmarkClock): BenchmarkTimer {
 const candidates: BenchmarkDefinition[] = [];
 
 /**
- * @deprecated Use Deno.bench() instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
+ * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
  * for details.
  *
  * Registers a benchmark as a candidate for the runBenchmarks executor. */
