@@ -187,7 +187,7 @@ export function clearBenchmarks({
 }
 
 /**
- * @deprecated Use Deno.bench() instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
+ * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
  * for details.
  *
  * Runs all registered and non-skipped benchmarks serially.
