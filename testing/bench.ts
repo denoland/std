@@ -170,7 +170,7 @@ export function bench(
 }
 
 /**
- * @deprecated Use Deno.bench() instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
+ * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
  * for details.
  *
  * Clears benchmark candidates which name matches `only` and doesn't match `skip`.
