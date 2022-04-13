@@ -1,3 +1,5 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
 /** This module is browser compatible. */
 
 import { ascend, RBTree } from "../collections/rb_tree.ts";
