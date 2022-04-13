@@ -368,7 +368,7 @@ export class MultipartReader {
         const file = await Deno.open(filepath, { write: true });
 
         try {
-          const size = await copy(new MultiReader(buf, p), file);
+          const size = await copy(new MultiReader([buf, p]), file);
 
           file.close();
           formFile = {

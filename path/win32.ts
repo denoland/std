@@ -717,8 +717,9 @@ export function basename(path: string, ext = ""): string {
 }
 
 /**
- * Return the extension of the `path`.
+ * Return the extension of the `path` with leading period.
  * @param path with extension
+ * @returns extension (ex. for `file.ts` returns `.ts`)
  */
 export function extname(path: string): string {
   assertPath(path);
