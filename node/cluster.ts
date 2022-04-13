@@ -9,16 +9,16 @@ import { notImplemented } from "./_utils.ts";
  */
 export class Worker {
   constructor() {
-    notImplemented();
+    notImplemented("cluster.Worker.prototype.constructor");
   }
 }
 /** Calls .disconnect() on each worker in cluster.workers. */
 export function disconnected() {
-  notImplemented();
+  notImplemented("cluster.disconnected");
 }
 /** Spawn a new worker process. */
 export function fork() {
-  notImplemented();
+  notImplemented("cluster.fork");
 }
 /** True if the process is a primary. This is determined by
  * the process.env.NODE_UNIQUE_ID. If process.env.NODE_UNIQUE_ID is undefined,
@@ -38,12 +38,12 @@ export const schedulingPolicy = undefined;
 export const settings = undefined;
 /** Deprecated alias for .setupPrimary(). */
 export function setupMaster() {
-  notImplemented();
+  notImplemented("cluster.setupMaster");
 }
 /** setupPrimary is used to change the default 'fork' behavior. Once called,
  * the settings will be present in cluster.settings. */
 export function setupPrimary() {
-  notImplemented();
+  notImplemented("cluster.setupPrimary");
 }
 /** A reference to the current worker object. Not available in the primary
  * process. */

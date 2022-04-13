@@ -18,7 +18,7 @@ export type TextEncodings =
 
 export type Encodings = BinaryEncodings | TextEncodings;
 
-export function notImplemented(msg?: string): never {
+export function notImplemented(msg: string): never {
   const message = msg ? `Not implemented: ${msg}` : "Not implemented";
   throw new Error(message);
 }

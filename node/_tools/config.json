@@ -134,6 +134,7 @@
       "test-buffer-zero-fill.js",
       "test-child-process-execfile.js",
       "test-child-process-fork.js",
+      "test-child-process-kill.js",
       "test-client-request-destroy.js",
       "test-console-async-write-error.js",
       "test-console-group.js",
@@ -224,6 +225,7 @@
       "test-http-url.parse-path.js",
       "test-http-url.parse-post.js",
       "test-http-url.parse-search.js",
+      "test-net-server-unref-persistent.js",
       "test-next-tick-doesnt-hang.js",
       "test-next-tick-fixed-queue-regression.js",
       "test-next-tick-intentional-starvation.js",
@@ -473,6 +475,7 @@
     "parallel": [
       "test-child-process-execfile.js",
       "test-child-process-fork.js",
+      "test-child-process-kill.js",
       "test-console-log-throw-primitive.js",
       "test-console-no-swallow-stack-overflow.js",
       "test-console-sync-write-error.js",

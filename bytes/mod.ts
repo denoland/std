@@ -1,47 +1,72 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-/** Returns the index of the first occurrence of the pattern array in the source
- * array, or -1 if it is not present. */
-export function indexOf(
+/** Returns the index of the first occurrence of the needle array in the source
+ * array, or -1 if it is not present.
+ *
+ * A start index can be specified as the third argument that begins the search
+ * at that given index. The start index defaults to the start of the array.
+ *
+ * The complexity of this function is O(source.lenth * needle.length).
+ *
+ * ```ts
+ * import { indexOfNeedle } from "./mod.ts";
+ * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+ * const needle = new Uint8Array([1, 2]);
+ * console.log(indexOfNeedle(source, needle)); // 1
+ * console.log(indexOfNeedle(source, needle, 2)); // 3
+ * ```
+ */
+export function indexOfNeedle(
   source: Uint8Array,
-  pattern: Uint8Array,
-  fromIndex = 0,
+  needle: Uint8Array,
+  start = 0,
 ): number {
-  if (fromIndex >= source.length) {
+  if (start >= source.length) {
     return -1;
   }
-  if (fromIndex < 0) {
-    fromIndex = Math.max(0, source.length + fromIndex);
+  if (start < 0) {
+    start = Math.max(0, source.length + start);
   }
-  const s = pattern[0];
-  for (let i = fromIndex; i < source.length; i++) {
+  const s = needle[0];
+  for (let i = start; i < source.length; i++) {
     if (source[i] !== s) continue;
     const pin = i;
     let matched = 1;
     let j = i;
-    while (matched < pattern.length) {
+    while (matched < needle.length) {
       j++;
-      if (source[j] !== pattern[j - pin]) {
+      if (source[j] !== needle[j - pin]) {
         break;
       }
       matched++;
     }
-    if (matched === pattern.length) {
+    if (matched === needle.length) {
       return pin;
     }
   }
   return -1;
 }
 
-/** Find last index of binary pattern from source. If not found, then return -1.
- * @param source source array
- * @param pat pattern to find in source array
- * @param start the index to start looking in the source
+/** Returns the index of the last occurrence of the needle array in the source
+ * array, or -1 if it is not present.
+ *
+ * A start index can be specified as the third argument that begins the search
+ * at that given index. The start index defaults to the end of the array.
+ *
+ * The complexity of this function is O(source.lenth * needle.length).
+ *
+ * ```ts
+ * import { lastIndexOfNeedle } from "./mod.ts";
+ * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+ * const needle = new Uint8Array([1, 2]);
+ * console.log(lastIndexOfNeedle(source, needle)); // 5
+ * console.log(lastIndexOfNeedle(source, needle, 4)); // 3
+ * ```
  */
-export function lastIndexOf(
+export function lastIndexOfNeedle(
   source: Uint8Array,
-  pat: Uint8Array,
+  needle: Uint8Array,
   start = source.length - 1,
 ): number {
   if (start < 0) {
@@ -50,29 +75,37 @@ export function lastIndexOf(
   if (start >= source.length) {
     start = source.length - 1;
   }
-  const e = pat[pat.length - 1];
+  const e = needle[needle.length - 1];
   for (let i = start; i >= 0; i--) {
     if (source[i] !== e) continue;
     const pin = i;
     let matched = 1;
     let j = i;
-    while (matched < pat.length) {
+    while (matched < needle.length) {
       j--;
-      if (source[j] !== pat[pat.length - 1 - (pin - j)]) {
+      if (source[j] !== needle[needle.length - 1 - (pin - j)]) {
         break;
       }
       matched++;
     }
-    if (matched === pat.length) {
-      return pin - pat.length + 1;
+    if (matched === needle.length) {
+      return pin - needle.length + 1;
     }
   }
   return -1;
 }
 
-/** Check whether binary array starts with prefix.
- * @param source source array
- * @param prefix prefix array to check in source
+/** Returns true if the prefix array appears at the start of the source array,
+ * false otherwise.
+ *
+ * The complexity of this function is O(prefix.length).
+ *
+ * ```ts
+ * import { startsWith } from "./mod.ts";
+ * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+ * const prefix = new Uint8Array([0, 1, 2]);
+ * console.log(startsWith(source, prefix)); // true
+ * ```
  */
 export function startsWith(source: Uint8Array, prefix: Uint8Array): boolean {
   for (let i = 0, max = prefix.length; i < max; i++) {
@@ -81,9 +114,17 @@ export function startsWith(source: Uint8Array, prefix: Uint8Array): boolean {
   return true;
 }
 
-/** Check whether binary array ends with suffix.
- * @param source source array
- * @param suffix suffix array to check in source
+/** Returns true if the suffix array appears at the end of the source array,
+ * false otherwise.
+ *
+ * The complexity of this function is O(suffix.length).
+ *
+ * ```ts
+ * import { endsWith } from "./mod.ts";
+ * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+ * const suffix = new Uint8Array([1, 2, 3]);
+ * console.log(endsWith(source, suffix)); // true
+ * ```
  */
 export function endsWith(source: Uint8Array, suffix: Uint8Array): boolean {
   for (
@@ -96,19 +137,27 @@ export function endsWith(source: Uint8Array, suffix: Uint8Array): boolean {
   return true;
 }
 
-/** Repeat bytes. returns a new byte slice consisting of `count` copies of `b`.
- * @param origin The origin bytes
- * @param count The count you want to repeat.
- * @throws `RangeError` When count is negative
+/** Returns a new Uint8Array composed of `count` repetitions of the `source`
+ * array.
+ *
+ * If `count` is negative, a `RangeError` is thrown.
+ *
+ * ```ts
+ * import { repeat } from "./mod.ts";
+ * const source = new Uint8Array([0, 1, 2]);
+ * console.log(repeat(source, 3)); // [0, 1, 2, 0, 1, 2, 0, 1, 2]
+ * console.log(repeat(source, 0)); // []
+ * console.log(repeat(source, -1)); // RangeError
+ * ```
  */
-export function repeat(origin: Uint8Array, count: number): Uint8Array {
+export function repeat(source: Uint8Array, count: number): Uint8Array {
   if (count === 0) {
     return new Uint8Array();
   }
 
   if (count < 0) {
     throw new RangeError("bytes: negative repeat count");
-  } else if ((origin.length * count) / count !== origin.length) {
+  } else if ((source.length * count) / count !== source.length) {
     throw new Error("bytes: repeat count causes overflow");
   }
 
@@ -118,9 +167,9 @@ export function repeat(origin: Uint8Array, count: number): Uint8Array {
     throw new Error("bytes: repeat count must be an integer");
   }
 
-  const nb = new Uint8Array(origin.length * count);
+  const nb = new Uint8Array(source.length * count);
 
-  let bp = copy(origin, nb);
+  let bp = copy(source, nb);
 
   for (; bp < nb.length; bp *= 2) {
     copy(nb.slice(0, bp), nb, bp);
@@ -129,8 +178,13 @@ export function repeat(origin: Uint8Array, count: number): Uint8Array {
   return nb;
 }
 
-/** Concatenate multiple binary arrays and return new one.
- * @param buf binary arrays to concatenate
+/** Concatenate the given arrays into a new Uint8Array.
+ *
+ * ```ts
+ * import { concat } from "./mod.ts";
+ * const a = new Uint8Array([0, 1, 2]);
+ * const b = new Uint8Array([3, 4, 5]);
+ * console.log(concat(a, b)); // [0, 1, 2, 3, 4, 5]
  */
 export function concat(...buf: Uint8Array[]): Uint8Array {
   let length = 0;
@@ -148,23 +202,54 @@ export function concat(...buf: Uint8Array[]): Uint8Array {
   return output;
 }
 
-/** Determines whether the source array includes the pattern array. */
-export function includes(
+/** Returns true if the source array contains the needle array, false otherwise.
+ *
+ * A start index can be specified as the third argument that begins the search
+ * at that given index. The start index defaults to the beginning of the array.
+ *
+ * The complexity of this function is O(source.length * needle.length).
+ *
+ * ```ts
+ * import { includesNeedle } from "./mod.ts";
+ * const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+ * const needle = new Uint8Array([1, 2]);
+ * console.log(includesNeedle(source, needle)); // true
+ * console.log(includesNeedle(source, needle, 6)); // false
+ * ```
+ */
+export function includesNeedle(
   source: Uint8Array,
-  pattern: Uint8Array,
-  fromIndex = 0,
+  needle: Uint8Array,
+  start = 0,
 ): boolean {
-  return indexOf(source, pattern, fromIndex) !== -1;
+  return indexOfNeedle(source, needle, start) !== -1;
 }
 
-/**
- * Copy bytes from one Uint8Array to another.  Bytes from `src` which don't fit
- * into `dst` will not be copied.
+/** Copy bytes from the `src` array to the `dst` array. Returns the number of
+ * bytes copied.
  *
- * @param src Source byte array
- * @param dst Destination byte array
- * @param off Offset into `dst` at which to begin writing values from `src`.
- * @return number of bytes copied
+ * If the `src` array is larger than what the `dst` array can hold, only the
+ * amount of bytes that fit in the `dst` array are copied.
+ *
+ * An offset can be specified as the third argument that begins the copy at
+ * that given index in the `dst` array. The offset defaults to the beginning of
+ * the array.
+ *
+ * ```ts
+ * import { copy } from "./mod.ts";
+ * const src = new Uint8Array([9, 8, 7]);
+ * const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
+ * console.log(copy(src, dst)); // 3
+ * console.log(dst); // [9, 8, 7, 3, 4, 5]
+ * ```
+ *
+ * ```ts
+ * import { copy } from "./mod.ts";
+ * const src = new Uint8Array([1, 1, 1, 1]);
+ * const dst = new Uint8Array([0, 0, 0, 0]);
+ * console.log(copy(src, dst, 1)); // 3
+ * console.log(dst); // [0, 1, 1, 1]
+ * ```
  */
 export function copy(src: Uint8Array, dst: Uint8Array, off = 0): number {
   off = Math.max(0, Math.min(off, dst.byteLength));
@@ -175,8 +260,5 @@ export function copy(src: Uint8Array, dst: Uint8Array, off = 0): number {
   dst.set(src, off);
   return src.byteLength;
 }
-
-/** @deprecated */
-export { includes as contains };
 
 export { equals } from "./equals.ts";

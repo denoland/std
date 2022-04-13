@@ -3,6 +3,7 @@
 
 import { assert } from "../_util/assert.ts";
 
+/** The value returned from `parse`. */
 export interface Args {
   /** Contains all the arguments that didn't have an option associated with
    * them. */
@@ -11,17 +12,18 @@ export interface Args {
   [key: string]: any;
 }
 
-export interface ArgParsingOptions {
+/** The options for the `parse` call. */
+export interface ParseOptions {
   /** When `true`, populate the result `_` with everything before the `--` and
    * the result `['--']` with everything after the `--`. Here's an example:
    *
    * ```ts
-   *      // $ deno run example.ts -- a arg1
-   *      import { parse } from "./mod.ts";
-   *      console.dir(parse(Deno.args, { "--": false }));
-   *      // output: { _: [ "a", "arg1" ] }
-   *      console.dir(parse(Deno.args, { "--": true }));
-   *      // output: { _: [], --: [ "a", "arg1" ] }
+   * // $ deno run example.ts -- a arg1
+   * import { parse } from "./mod.ts";
+   * console.dir(parse(Deno.args, { "--": false }));
+   * // output: { _: [ "a", "arg1" ] }
+   * console.dir(parse(Deno.args, { "--": true }));
+   * // output: { _: [], --: [ "a", "arg1" ] }
    * ```
    *
    * Defaults to `false`.
@@ -29,7 +31,7 @@ export interface ArgParsingOptions {
   "--"?: boolean;
 
   /** An object mapping string names to strings or arrays of string argument
-   * names to use as aliases */
+   * names to use as aliases. */
   alias?: Record<string, string | string[]>;
 
   /** A boolean, string or array of strings to always treat as booleans. If
@@ -94,12 +96,23 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
   return key in o;
 }
 
-/** Take a set of command line arguments, with an optional set of options, and
- * return an object representation of those argument.
+/** Take a set of command line arguments, optionally with a set of options, and
+ * return an object representing the flags found in the passed arguments.
+ *
+ * By default any arguments starting with `-` or `--` are considered boolean
+ * flags. If the argument name is followed by an equal sign (`=`) it is
+ * considered a key-value pair. Any arguments which could not be parsed are
+ * available in the `_` property of the returned object.
  *
  * ```ts
- *      import { parse } from "./mod.ts";
- *      const parsedArgs = parse(Deno.args);
+ * import { parse } from "./mod.ts";
+ * const parsedArgs = parse(Deno.args);
+ * ```
+ *
+ * ```ts
+ * import { parse } from "./mod.ts";
+ * const parsedArgs = parse(["--foo", "--bar=baz", "--no-qux", "./quux.txt"]);
+ * // parsedArgs: { foo: true, bar: "baz", qux: false, _: ["./quux.txt"] }
  * ```
  */
 export function parse(
@@ -112,7 +125,7 @@ export function parse(
     stopEarly = false,
     string = [],
     unknown = (i: string): unknown => i,
-  }: ArgParsingOptions = {},
+  }: ParseOptions = {},
 ): Args {
   const flags: Flags = {
     bools: {},

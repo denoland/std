@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertSpyCall, assertSpyCalls, spy } from "../mock.ts";
 import { assertEquals } from "../asserts.ts";
 import { multiply, square } from "./parameter_injection.ts";

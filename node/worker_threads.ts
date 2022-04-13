@@ -86,7 +86,8 @@ class _Worker extends EventEmitter {
     this.emit("exit", 0);
   }
 
-  readonly getHeapSnapshot = notImplemented;
+  readonly getHeapSnapshot = () =>
+    notImplemented("Worker.prototype.getHeapSnapshot");
   // fake performance
   readonly performance = globalThis.performance;
 }
@@ -170,8 +171,9 @@ if (!isMainThread) {
   parentPort.eventNames = () => [""];
   parentPort.listenerCount = () => 0;
 
-  parentPort.emit = () => notImplemented();
-  parentPort.removeAllListeners = () => notImplemented();
+  parentPort.emit = () => notImplemented("parentPort.emit");
+  parentPort.removeAllListeners = () =>
+    notImplemented("parentPort.removeAllListeners");
 
   // Receive startup message
   [{ threadId, workerData, environmentData }] = await once(
@@ -204,22 +206,28 @@ const _MessageChannel: typeof MessageChannel =
   (globalThis as any).MessageChannel;
 export const BroadcastChannel = globalThis.BroadcastChannel;
 export const SHARE_ENV = Symbol.for("nodejs.worker_threads.SHARE_ENV");
+export function markAsUntransferable() {
+  notImplemented("markAsUntransferable");
+}
+export function moveMessagePortToContext() {
+  notImplemented("moveMessagePortToContext");
+}
+export function receiveMessageOnPort() {
+  notImplemented("receiveMessageOnPort");
+}
 export {
   _MessageChannel as MessageChannel,
   _MessagePort as MessagePort,
   _Worker as Worker,
-  notImplemented as markAsUntransferable,
-  notImplemented as moveMessagePortToContext,
-  notImplemented as receiveMessageOnPort,
   parentPort,
   threadId,
   workerData,
 };
 
 export default {
-  markAsUntransferable: notImplemented,
-  moveMessagePortToContext: notImplemented,
-  receiveMessageOnPort: notImplemented,
+  markAsUntransferable,
+  moveMessagePortToContext,
+  receiveMessageOnPort,
   MessagePort: _MessagePort,
   MessageChannel: _MessageChannel,
   BroadcastChannel,

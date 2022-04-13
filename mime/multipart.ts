@@ -1,5 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { equals, indexOf, lastIndexOf, startsWith } from "../bytes/mod.ts";
+import {
+  equals,
+  indexOfNeedle,
+  lastIndexOfNeedle,
+  startsWith,
+} from "../bytes/mod.ts";
 import { Buffer, BufReader, BufWriter } from "../io/buffer.ts";
 import { copy } from "../streams/conversion.ts";
 import { copyN } from "../io/util.ts";
@@ -119,7 +124,7 @@ export function scanUntilBoundary(
   }
 
   // Search for "\n--boundary".
-  const i = indexOf(buf, newLineDashBoundary);
+  const i = indexOfNeedle(buf, newLineDashBoundary);
   if (i >= 0) {
     switch (matchAfterPrefix(buf.slice(i), newLineDashBoundary, eof)) {
       case -1:
@@ -137,7 +142,7 @@ export function scanUntilBoundary(
   // Otherwise, anything up to the final \n is not part of the boundary and so
   // must be part of the body. Also, if the section from the final \n onward is
   // not a prefix of the boundary, it too must be part of the body.
-  const j = lastIndexOf(buf, newLineDashBoundary.slice(0, 1));
+  const j = lastIndexOfNeedle(buf, newLineDashBoundary.slice(0, 1));
   if (j >= 0 && startsWith(newLineDashBoundary, buf.slice(j))) {
     return j;
   }
@@ -363,7 +368,7 @@ export class MultipartReader {
         const file = await Deno.open(filepath, { write: true });
 
         try {
-          const size = await copy(new MultiReader(buf, p), file);
+          const size = await copy(new MultiReader([buf, p]), file);
 
           file.close();
           formFile = {
