@@ -810,10 +810,10 @@ export function secondInterval(cb: () => void): number {
 ```
 
 With `FakeTime` we can do that. When the `FakeTime` instance is created, it
-splits from real time. The `Date`, `setTimeout`, `clearTimeout`, `setInterval` and
-`clearInterval` globals are replaced with versions that use the fake time until
-real time is restored. You can control how time ticks forward with the `tick`
-method on the `FakeTime` instance.
+splits from real time. The `Date`, `setTimeout`, `clearTimeout`, `setInterval`
+and `clearInterval` globals are replaced with versions that use the fake time
+until real time is restored. You can control how time ticks forward with the
+`tick` method on the `FakeTime` instance.
 
 ```ts
 // https://deno.land/std@$STD_VERSION/testing/mock_examples/interval_test.ts
