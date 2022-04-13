@@ -797,7 +797,7 @@ Deno.test("randomMultiple uses randomInt to generate random multiples between -1
 ### Faking time
 
 Say we have a function that has time based behavior that we would like to test.
-With real time, that could cause test's to take much longer than they should. If
+With real time, that could cause tests to take much longer than they should. If
 you fake time, you could simulate how your function would behave over time
 starting from any point in time. Below is an example where we want to test that
 the callback is called every second.
