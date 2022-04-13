@@ -1,7 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import type { CallbackWithError } from "./_fs_common.ts";
+import { getValidatedFd } from "../internal/fs/utils.mjs";
 
 export function close(fd: number, callback: CallbackWithError): void {
+  fd = getValidatedFd(fd);
   setTimeout(() => {
     let error = null;
     try {
@@ -14,5 +16,6 @@ export function close(fd: number, callback: CallbackWithError): void {
 }
 
 export function closeSync(fd: number): void {
+  fd = getValidatedFd(fd);
   Deno.close(fd);
 }
