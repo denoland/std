@@ -1,3 +1,14 @@
+### 0.135.0 / 2022.04.14
+
+- BREAKING(io/readers): use an array as a MultiReader constructor parameter to
+  avoid Maximum call stack size exceeded (#2016)
+- BREAKING(mime/multipart): deprecate mime/multipart module (#2105)
+- BREAKING(testing/bench): deprecate testing/bench module (#2104)
+- feat(node): `Duplex.fromWeb` (#2086)
+- feat(testing): add behavior-driven development (#2067)
+- feat(testing): add utility for faking time (#2069)
+- fix(node): Make global.ts evaluate synchronously (#2098)
+
 ### 0.134.0 / 2022.04.07
 
 - feat(node/child_process): support `signal` parameter for `ChildProcess.kill`
