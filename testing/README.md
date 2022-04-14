@@ -156,8 +156,8 @@ Deno.test("fails", async function () {
 
 ## Benching
 
-With this module you can benchmark your code and get information on how is it
-performing.
+These APIs are deprecated. Use Deno.bench() instead. See
+https://doc.deno.land/deno/unstable/~/Deno.bench for more details.
 
 ### Basic usage:
 
@@ -260,6 +260,9 @@ runBenchmarks({ silent: true }, (p: BenchmarkRunProgress) => {
 ```
 
 #### Benching API
+
+These APIs are deprecated. Use Deno.bench() instead. See
+https://doc.deno.land/deno/unstable/~/Deno.bench for more details.
 
 ##### `bench(benchmark: BenchmarkDefinition | BenchmarkFunction): void`
 
