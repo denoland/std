@@ -19,14 +19,11 @@ class A extends EventEmitter<ListenerMap> {
 
     this.on("connection", () => {}); // OK
     this.emit("connection", "ws", "someurl", 3); // OK
-    // @ts-expect-error
-    this.emit("connection", "asd"); // Error
-    // @ts-expect-error
-    this.emit("connection"); // Error
+    this.emit("connection", "asd"); // Deprecated
+    this.emit("connection"); // Deprecated
 
     this.emit("error", new Error("Message"));
-    // @ts-expect-error
-    this.emit("error"); // Error
+    this.emit("error"); // Deprecated
 
     this.emit("close", "Reason"); // OK
     this.emit("close"); // OK

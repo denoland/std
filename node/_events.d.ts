@@ -526,6 +526,10 @@ export class EventEmitter<
     eventName: K,
     ...args: Parameters<EventListenerMap[K]>
   ): boolean;
+
+  /** @deprecated usage of unsafe fallback */
+  emit(eventName: EventNameType, ...args: any[]): boolean; // fallback
+
   /**
    * Returns the number of listeners listening to the event named `eventName`.
    * @since v3.2.0
