@@ -28,17 +28,8 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Install fakedate
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt install faketime
-
       - name: Run tests canary
         run: deno task test
-
-      - name: Run test with the date 2021-12-31
-        if: matrix.os == 'ubuntu-latest'
-        run: deno task test:faketime
 
       - name: Type check browser compatible modules
         shell: bash
