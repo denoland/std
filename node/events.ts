@@ -10,4 +10,3 @@ export {
   on,
   once,
 } from "./_events.mjs";
-
