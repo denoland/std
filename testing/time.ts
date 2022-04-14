@@ -4,14 +4,7 @@
 
 import { ascend, RBTree } from "../collections/rb_tree.ts";
 import { DelayOptions } from "../async/delay.ts";
-
-export const _internals = {
-  Date,
-  setTimeout,
-  clearTimeout,
-  setInterval,
-  clearInterval,
-};
+import { _internals } from "./_time.ts";
 
 /** An error related to faking time. */
 export class TimeError extends Error {
@@ -141,7 +134,6 @@ function fakeClearTimeout(id?: number): void {
   }
 }
 
-/** The fake time replacement for se */
 function fakeSetInterval(
   // deno-lint-ignore no-explicit-any
   callback: (...args: any[]) => unknown,
@@ -221,6 +213,38 @@ let dueTree: RBTree<DueNode>;
 /**
  * Overrides the real Date object and timer functions with fake ones that can be
  * controlled through the fake time instance.
+ *
+ * ```ts
+ * // https://deno.land/std@$STD_VERSION/testing/mock_examples/interval_test.ts
+ * import {
+ *   assertSpyCalls,
+ *   spy,
+ * } from "https://deno.land/std@$STD_VERSION/testing/mock.ts";
+ * import { FakeTime } from "https://deno.land/std@$STD_VERSION/testing/time.ts";
+ * import { secondInterval } from "https://deno.land/std@$STD_VERSION/testing/mock_examples/interval.ts";
+ *
+ * Deno.test("secondInterval calls callback every second and stops after being cleared", () => {
+ *   const time = new FakeTime();
+ *
+ *   try {
+ *     const cb = spy();
+ *     const intervalId = secondInterval(cb);
+ *     assertSpyCalls(cb, 0);
+ *     time.tick(500);
+ *     assertSpyCalls(cb, 0);
+ *     time.tick(500);
+ *     assertSpyCalls(cb, 1);
+ *     time.tick(3500);
+ *     assertSpyCalls(cb, 4);
+ *
+ *     clearInterval(intervalId);
+ *     time.tick(1000);
+ *     assertSpyCalls(cb, 4);
+ *   } finally {
+ *     time.restore();
+ *   }
+ * });
+ * ```
  */
 export class FakeTime {
   constructor(

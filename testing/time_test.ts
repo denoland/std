@@ -7,7 +7,8 @@ import {
   assertRejects,
   assertStrictEquals,
 } from "./asserts.ts";
-import { _internals, FakeTime } from "./time.ts";
+import { FakeTime } from "./time.ts";
+import { _internals } from "./_time.ts";
 import { assertSpyCall, MockError, spy, SpyCall, stub } from "./mock.ts";
 
 function fromNow(): () => number {
