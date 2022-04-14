@@ -1,9 +1,4 @@
-import {
-  assert,
-  assertEquals,
-  assertNotEquals,
-  assertStrictEquals,
-} from "../testing/asserts.ts";
+import { assert } from "../testing/asserts.ts";
 import { EventEmitter } from "./events.ts";
 
 type ListenerMap = {
@@ -14,7 +9,7 @@ type ListenerMap = {
 
 class A extends EventEmitter<ListenerMap> {
   test() {
-    // @ts-expect-error
+    // @ts-expect-error: test typeguard
     this.on("asd", () => {}); // TypeError - "asd" is not defined in ListenerMap
 
     this.on("connection", () => {}); // OK
@@ -51,4 +46,3 @@ Deno.test("[node/EventEmitter/typings]", () => {
   assert(new A(), "Process typings for A");
   assert(new B(), "Process typings for B");
 });
-

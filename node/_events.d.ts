@@ -227,7 +227,10 @@ interface StaticEventEmitterOptions {
 
 export type EventNameType = string | symbol;
 export type EventListenerType = (...args: any[]) => void;
-export type EventListenerMapType<PassedListenerMap> = Record<keyof PassedListenerMap, EventListenerType>;
+export type EventListenerMapType<PassedListenerMap> = Record<
+  keyof PassedListenerMap,
+  EventListenerType
+>;
 type UnsafeListenerMapType = Record<EventNameType, EventListenerType>;
 /**
  * The `EventEmitter` class is defined and exposed by the `events` module:
@@ -243,7 +246,8 @@ type UnsafeListenerMapType = Record<EventNameType, EventListenerType>;
  * @since v0.1.26
  */
 export class EventEmitter<
-  EventListenerMap extends EventListenerMapType<EventListenerMap> = EventListenerMapType<UnsafeListenerMapType>
+  EventListenerMap extends EventListenerMapType<EventListenerMap> =
+    EventListenerMapType<UnsafeListenerMapType>,
 > {
   /**
    * Alias for `emitter.on(eventName, listener)`.
