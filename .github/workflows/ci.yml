@@ -61,7 +61,7 @@ jobs:
           github.ref == 'refs/heads/main'
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
         run: ./_tools/release/03_release.ts
 
   node:
