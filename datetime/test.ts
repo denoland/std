@@ -129,25 +129,6 @@ Deno.test("[std/datetime] parse: The date is 2021-12-31", () => {
       datetime.parse("31", "dd"),
       new Date(2021, 11, 31),
     );
-
-    assertEquals(
-      datetime.parse("01", "MM"),
-      new Date(2021, 0, 30),
-    );
-
-    assertEquals(
-      datetime.parse("12", "MM"),
-      new Date(2021, 11, 30),
-    );
-
-    assertEquals(
-      datetime.parse("2020", "yyyy"),
-      new Date(2020, 11, 30),
-    );
-    assertEquals(
-      datetime.parse("2022", "yyyy"),
-      new Date(2022, 11, 30),
-    );
   } finally {
     time.restore();
   }
