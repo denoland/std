@@ -5,6 +5,7 @@ deno.d.ts
 package.json
 package-lock.json
 .vscode/settings.json
+.vim
 **/cov/
 /_wasm_crypto/target
 # TODO(nayeemrmn): Remove (https://github.com/denoland/deno_std/pull/1819#issuecomment-1011136991).

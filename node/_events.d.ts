@@ -224,6 +224,11 @@ interface EventTarget {
 interface StaticEventEmitterOptions {
   signal?: AbortSignal | undefined;
 }
+
+export type EventNameType = string | symbol;
+export type EventListenerType = (...args: any[]) => void;
+export type EventListenerMapType<PassedListenerMap> = Record<keyof PassedListenerMap, EventListenerType>;
+type UnsafeListenerMapType = Record<EventNameType, EventListenerType>;
 /**
  * The `EventEmitter` class is defined and exposed by the `events` module:
  *
@@ -237,14 +242,16 @@ interface StaticEventEmitterOptions {
  * It supports the following option:
  * @since v0.1.26
  */
-export class EventEmitter {
+export class EventEmitter<
+  EventListenerMap extends EventListenerMapType<EventListenerMap> = EventListenerMapType<UnsafeListenerMapType>
+> {
   /**
    * Alias for `emitter.on(eventName, listener)`.
    * @since v0.1.26
    */
-  addListener(
-    eventName: string | symbol,
-    listener: (...args: any[]) => void,
+  addListener<K extends keyof EventListenerMap>(
+    eventName: K,
+    listener: EventListenerMap[K],
   ): this;
   /**
    * Adds the `listener` function to the end of the listeners array for the
@@ -276,7 +283,10 @@ export class EventEmitter {
    * @param eventName The name of the event.
    * @param listener The callback function
    */
-  on(eventName: string | symbol, listener: (...args: any[]) => void): this;
+  on<K extends keyof EventListenerMap>(
+    eventName: K,
+    listener: EventListenerMap[K],
+  ): this;
   /**
    * Adds a **one-time**`listener` function for the event named `eventName`. The
    * next time `eventName` is triggered, this listener is removed and then invoked.
@@ -305,7 +315,10 @@ export class EventEmitter {
    * @param eventName The name of the event.
    * @param listener The callback function
    */
-  once(eventName: string | symbol, listener: (...args: any[]) => void): this;
+  once<K extends keyof EventListenerMap>(
+    eventName: K,
+    listener: EventListenerMap[K],
+  ): this;
   /**
    * Removes the specified `listener` from the listener array for the event named`eventName`.
    *
@@ -385,15 +398,18 @@ export class EventEmitter {
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    * @since v0.1.26
    */
-  removeListener(
-    eventName: string | symbol,
-    listener: (...args: any[]) => void,
+  removeListener<K extends keyof EventListenerMap>(
+    eventName: K,
+    listener: EventListenerMap[K],
   ): this;
   /**
    * Alias for `emitter.removeListener()`.
    * @since v10.0.0
    */
-  off(eventName: string | symbol, listener: (...args: any[]) => void): this;
+  off<K extends keyof EventListenerMap>(
+    eventName: K,
+    listener: EventListenerMap[K],
+  ): this;
   /**
    * Removes all listeners, or those of the specified `eventName`.
    *
@@ -404,7 +420,7 @@ export class EventEmitter {
    * Returns a reference to the `EventEmitter`, so that calls can be chained.
    * @since v0.1.26
    */
-  removeAllListeners(event?: string | symbol): this;
+  removeAllListeners(event?: keyof EventListenerMap): this;
   /**
    * By default `EventEmitter`s will print a warning if more than `10` listeners are
    * added for a particular event. This is a useful default that helps finding
@@ -434,7 +450,7 @@ export class EventEmitter {
    * @since v0.1.26
    */
   // deno-lint-ignore ban-types
-  listeners(eventName: string | symbol): Function[];
+  listeners(eventName: keyof EventListenerMap): Function[];
   /**
    * Returns a copy of the array of listeners for the event named `eventName`,
    * including any wrappers (such as those created by `.once()`).
@@ -465,7 +481,7 @@ export class EventEmitter {
    * @since v9.4.0
    */
   // deno-lint-ignore ban-types
-  rawListeners(eventName: string | symbol): Function[];
+  rawListeners(eventName: keyof EventListenerMap): Function[];
   /**
    * Synchronously calls each of the listeners registered for the event named`eventName`, in the order they were registered, passing the supplied arguments
    * to each.
@@ -506,13 +522,16 @@ export class EventEmitter {
    * ```
    * @since v0.1.26
    */
-  emit(eventName: string | symbol, ...args: any[]): boolean;
+  emit<K extends keyof EventListenerMap>(
+    eventName: K,
+    ...args: Parameters<EventListenerMap[K]>
+  ): boolean;
   /**
    * Returns the number of listeners listening to the event named `eventName`.
    * @since v3.2.0
    * @param eventName The name of the event being listened for
    */
-  listenerCount(eventName: string | symbol): number;
+  listenerCount(eventName: keyof EventListenerMap): number;
   /**
    * Adds the `listener` function to the _beginning_ of the listeners array for the
    * event named `eventName`. No checks are made to see if the `listener` has
@@ -530,9 +549,9 @@ export class EventEmitter {
    * @param eventName The name of the event.
    * @param listener The callback function
    */
-  prependListener(
-    eventName: string | symbol,
-    listener: (...args: any[]) => void,
+  prependListener<K extends keyof EventListenerMap>(
+    eventName: K,
+    listener: EventListenerMap[K],
   ): this;
   /**
    * Adds a **one-time**`listener` function for the event named `eventName` to the_beginning_ of the listeners array. The next time `eventName` is triggered, this
@@ -549,9 +568,9 @@ export class EventEmitter {
    * @param eventName The name of the event.
    * @param listener The callback function
    */
-  prependOnceListener(
-    eventName: string | symbol,
-    listener: (...args: any[]) => void,
+  prependOnceListener<K extends keyof EventListenerMap>(
+    eventName: K,
+    listener: EventListenerMap[K],
   ): this;
   /**
    * Returns an array listing the events for which the emitter has registered
@@ -571,7 +590,7 @@ export class EventEmitter {
    * ```
    * @since v6.0.0
    */
-  eventNames(): Array<string | symbol>;
+  eventNames(): Array<keyof EventListenerMap>;
 
   constructor(options?: EventEmitterOptions);
   /**
