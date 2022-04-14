@@ -37,7 +37,7 @@ jobs:
 
       - name: Create PR
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
           GH_WORKFLOW_ACTOR: ${{ github.actor }}
         run: |
           git config user.email "${{ github.actor }}@users.noreply.github.com"
