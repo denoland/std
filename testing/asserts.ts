@@ -870,6 +870,7 @@ export function unreachable(): never {
 let snapshotFile: Record<string, string> | undefined = undefined;
 const updatedSnapshotFile: Record<string, unknown> = {};
 const snapshotMap: Record<string, number> = {};
+let snapshotsUpdated = 0;
 
 export async function assertSnapshot(context: Deno.TestContext, actual: unknown) {
   const name = getName(context);
@@ -889,7 +890,7 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
     try {
       assertEquals(_actual, _expected);
     } catch {
-      // TODO: update snapshot counter
+      snapshotsUpdated++;
     }
     updatedSnapshotFile[testName] = _actual;
     globalThis.onunload = writeSnapshotFileSync;
@@ -918,6 +919,8 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
       buf.push(`\nsnapshot[\`${key}\`] = \`\n${value}\n\`;\n`);
     }
     Deno.writeTextFileSync(snapshotPath, buf.join(""));
-    console.log('Snapshot updated!');
+    if (snapshotsUpdated > 0) {
+      console.log(green(bold(` > ${snapshotsUpdated} snapshots updated.`)));
+    }
   }
 }
