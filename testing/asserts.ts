@@ -12,7 +12,7 @@ import {
   stripColor,
   white,
 } from "../fmt/colors.ts";
-import { fromFileUrl, parse, join } from "../path/mod.ts";
+import { fromFileUrl, join, parse } from "../path/mod.ts";
 import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
@@ -874,7 +874,7 @@ let snapshotsUpdated = 0;
 
 function writeSnapshotFileSync(snapshotPath: string) {
   ensureFileSync(snapshotPath);
-  const buf = ['export const snapshot = {};\n'];
+  const buf = ["export const snapshot = {};\n"];
   for (const [key, value] of Object.entries(updatedSnapshotFile)) {
     buf.push(`\nsnapshot[\`${key}\`] = \`\n${value}\n\`;\n`);
   }
@@ -891,18 +891,21 @@ function registerWriteSnapshotFileOnce(snapshotPath: string) {
   registerWriteSnapshotFileOnce.registered = true;
 }
 
-export async function assertSnapshot(context: Deno.TestContext, actual: unknown) {
+export async function assertSnapshot(
+  context: Deno.TestContext,
+  actual: unknown,
+) {
   const name = getName(context);
   const count = getCount();
   const testName = `${name} ${count}`;
-  const isUpdate = Deno.args.includes('--update');
+  const isUpdate = Deno.args.includes("--update");
   const snapshotPath = getSnapshotPath();
   if (!snapshotFile) {
     await ensureFile(snapshotPath);
-    const {snapshot} = await import(snapshotPath);
+    const { snapshot } = await import(snapshotPath);
     snapshotFile = snapshot;
   }
-  const snapshot = snapshotFile?.[testName] ?? '';
+  const snapshot = snapshotFile?.[testName] ?? "";
   const _actual = _format(actual);
   const _expected = snapshot.slice(1, -1);
   if (isUpdate) {
