@@ -869,27 +869,29 @@ export function unreachable(): never {
 }
 
 type AssertSnapshotContext = {
-  currentSnapshot: Record<string, string> | null;
-  updatedSnapshot: Record<string, string>;
-  snapshotCounts: Record<string, number>;
+  currentSnapshot: Map<string, string> | null;
+  updatedSnapshot: Map<string, string>;
+  snapshotCounts: Map<string, number>;
   snapshotUpdatedCount: number;
 }
 
 const assertSnapshotContext: AssertSnapshotContext = {
   currentSnapshot: null,
-  updatedSnapshot: {},
-  snapshotCounts: {},
+  updatedSnapshot: new Map(),
+  snapshotCounts: new Map(),
   snapshotUpdatedCount: 0,
 }
 
-async function readSnapshotFile(snapshotPath: string): Promise<Record<string,string>> {
+async function readSnapshotFile(snapshotPath: string): Promise<Map<string, string>> {
   if (assertSnapshotContext.currentSnapshot) {
     return assertSnapshotContext.currentSnapshot;
   }
   try {
     const { snapshot } = await import(snapshotPath);
-    assertSnapshotContext.currentSnapshot = typeof snapshot === "undefined" ? {} : snapshot;
-    return assertSnapshotContext.currentSnapshot as Record<string,string>;
+    assertSnapshotContext.currentSnapshot = typeof snapshot === "undefined"
+      ? new Map()
+      : new Map(Object.entries(snapshot));
+    return assertSnapshotContext.currentSnapshot;
   }
   catch (error) {
     if (error instanceof TypeError && error.message.startsWith("Module not found")) {
@@ -901,11 +903,11 @@ async function readSnapshotFile(snapshotPath: string): Promise<Record<string,str
 
 function writeSnapshotFileSync(snapshotPath: string) {
   ensureFileSync(snapshotPath);
-  const buf = ["export const snapshot = {};\n"];
-  for (const [key, value] of Object.entries(assertSnapshotContext.updatedSnapshot)) {
-    buf.push(`\nsnapshot[\`${key}\`] = \`\n${value}\n\`;\n`);
-  }
-  Deno.writeTextFileSync(snapshotPath, buf.join(""));
+  const buf = ["export const snapshot = {};"];
+  assertSnapshotContext.updatedSnapshot.forEach((value, key) => {
+    buf.push(`\nsnapshot[\`${key}\`] = \`\n${value}\n\`;`);
+  });
+  Deno.writeTextFileSync(snapshotPath, buf.join("\n"));
   if (assertSnapshotContext.snapshotUpdatedCount > 0) {
     console.log(green(bold(` > ${assertSnapshotContext.snapshotUpdatedCount} snapshots updated.`)));
   }
@@ -931,7 +933,7 @@ export async function assertSnapshot(
     await ensureFile(snapshotPath);
   }
   const snapshotFile = await readSnapshotFile(snapshotPath);
-  const snapshot = snapshotFile[testName] || "";
+  const snapshot = snapshotFile.get(testName) || "";
   const _actual = _format(actual);
   const _expected = snapshot.slice(1, -1);
   if (isUpdate) {
@@ -940,7 +942,7 @@ export async function assertSnapshot(
     } catch {
       assertSnapshotContext.snapshotUpdatedCount++;
     }
-    assertSnapshotContext.updatedSnapshot[testName] = _actual;
+    assertSnapshotContext.updatedSnapshot.set(testName, _actual);
     registerWriteSnapshotFileOnce(snapshotPath);
   } else {
     assertEquals(_actual, _expected);
@@ -950,8 +952,8 @@ export async function assertSnapshot(
     return context.name;
   }
   function getCount() {
-    const count = assertSnapshotContext.snapshotCounts[name] || 1;
-    assertSnapshotContext.snapshotCounts[name] = count + 1;
+    const count = assertSnapshotContext.snapshotCounts.get(name) || 1;
+    assertSnapshotContext.snapshotCounts.set(name, count + 1);
     return count;
   }
   function getSnapshotPath() {
