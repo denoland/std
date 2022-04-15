@@ -1447,3 +1447,7 @@ Deno.test("Snapshot Test - step", async (t) => {
   });
   await assertSnapshot(t, "hello world");
 });
+
+Deno.test("Snapshot Test - Adverse String \\ ` ${}", async (t) => {
+  await assertSnapshot(t, "\\ ` ${}");
+});

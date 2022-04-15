@@ -12,11 +12,12 @@ import {
   stripColor,
   white,
 } from "../fmt/colors.ts";
-import { fromFileUrl, parse, join } from "../path/mod.ts";
+import { fromFileUrl, join, parse } from "../path/mod.ts";
 import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
+const SNAPSHOT_DIR = "__snapshots__";
 
 export class AssertionError extends Error {
   override name = "AssertionError";
@@ -99,7 +100,9 @@ function buildMessage(
         ? createColor(detail.type, { background: true })(detail.value)
         : detail.value
     ).join("") ?? result.value;
-    diffMessages.push(c(`${createSign(result.type)}${line}`));
+    diffMessages.push(c(`${
+      createSign(result.type)
+    }${line}`));
   });
   messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages));
   messages.push("");
@@ -679,6 +682,183 @@ export function assertObjectMatch(
   );
 }
 
+type AssertSnapshotContext = {
+  snapshotPath: string | null;
+  teardownRegistered: boolean;
+  currentSnapshot: Map<string, string> | null;
+  updatedSnapshot: Map<string, string>;
+  snapshotCounts: Map<string, number>;
+  snapshotUpdatedCount: number;
+};
+
+let _assertSnapshotContext: AssertSnapshotContext;
+
+/**
+ * Write updates to the snapshot file.
+ *
+ * @param context Assert snapshot context
+ */
+function writeSnapshotFileSync(context: AssertSnapshotContext) {
+  const buf = ["export const snapshot = {};"];
+  function escapeStringForJs(str: string) {
+    return str
+      .replace(/\\/g,"\\\\")
+      .replace(/`/g, '\\`')
+      .replace(/\$/g, '\\$');
+  }
+  context.updatedSnapshot.forEach((value, key) => {
+    let formattedValue = escapeStringForJs(value);
+    formattedValue = formattedValue.includes("\n") ? `\n${formattedValue}\n` : formattedValue;
+    const formattedKey = escapeStringForJs(key);
+    buf.push(`\nsnapshot[\`${formattedKey}\`] = \`${formattedValue}\`;`);
+  });
+  ensureFileSync(context.snapshotPath as string);
+  Deno.writeTextFileSync(context.snapshotPath as string, buf.join("\n"));
+}
+
+/**
+ * Register a teardown function which writes the snapshot file to disk and logs the number
+ * of snapshots updated after all tests have run.
+ *
+ * This function can safely be called more than once and will only register the teardown
+ * function once.
+ *
+ * @param context Assert snapshot context
+ */
+function registerSnapshotTeardown(context: AssertSnapshotContext) {
+  if (context.teardownRegistered) return;
+  globalThis.onunload = () => {
+    writeSnapshotFileSync(context);
+    if (context.snapshotUpdatedCount > 0) {
+      console.log(
+        green(bold(`\n > ${context.snapshotUpdatedCount} snapshots updated.`)),
+      );
+    }
+  };
+  context.teardownRegistered = true;
+}
+
+/**
+ * Make an assertion that `actual` matches a snapshot. If the snapshot and `actual` do
+ * not a match, then throw.
+ *
+ * Type parameter can be specified to ensure values under comparison have the same type.
+ * For example:
+ * ```ts
+ * import { assertSnapshot } from "./asserts.ts";
+ *
+ * Deno.test("snapshot", async (test) => {
+ *  await assertSnapshot<number>(test, 2);
+ * });
+ * ```
+ */
+export async function assertSnapshot(
+  context: Deno.TestContext,
+  actual: unknown,
+  msg?: string,
+): Promise<void>;
+export async function assertSnapshot<T>(
+  context: Deno.TestContext,
+  actual: T,
+  msg?: string,
+): Promise<void>;
+export async function assertSnapshot(
+  context: Deno.TestContext,
+  actual: unknown,
+  msg?: string,
+): Promise<void> {
+  const assertSnapshotContext = getAssertSnapshotContext();
+  const testName = getTestName(context);
+  const count = getCount();
+  const snapshotName = `${testName} ${count}`;
+  const snapshotPath = getSnapshotPath();
+  const isUpdate = Deno.args.some((arg) => arg === "--update" || arg === "-u");
+  const currentSnapshot = await readSnapshotFile();
+
+  const _actual = _format(actual);
+  const _expected = getExpected();
+  if (isUpdate) {
+    try {
+      assertEquals(_actual, _expected);
+    } catch {
+      assertSnapshotContext.snapshotUpdatedCount++;
+    }
+    assertSnapshotContext.updatedSnapshot.set(snapshotName, _actual);
+    registerSnapshotTeardown(assertSnapshotContext);
+  } else {
+    if (!_expected) {
+      throw new AssertionError(`Missing snapshot: ${snapshotName}`);
+    }
+    assertEquals(_actual, _expected, msg);
+  }
+
+  function getAssertSnapshotContext() {
+    if (!_assertSnapshotContext) {
+      _assertSnapshotContext = {
+        snapshotPath: null,
+        teardownRegistered: false,
+        currentSnapshot: null,
+        updatedSnapshot: new Map(),
+        snapshotCounts: new Map(),
+        snapshotUpdatedCount: 0,
+      };
+    }
+    return _assertSnapshotContext;
+  }
+  function getTestName(context: Deno.TestContext): string {
+    if (context.parent) {
+      return `${getTestName(context.parent)} > ${context.name}`;
+    }
+    return context.name;
+  }
+  function getCount() {
+    const count = assertSnapshotContext.snapshotCounts.get(testName) || 1;
+    assertSnapshotContext.snapshotCounts.set(testName, count + 1);
+    return count;
+  }
+  function getSnapshotPath() {
+    if (assertSnapshotContext.snapshotPath) {
+      return assertSnapshotContext.snapshotPath;
+    }
+    const testFile = fromFileUrl(context.origin);
+    const parts = parse(testFile);
+    assertSnapshotContext.snapshotPath = `${
+      join(parts.dir, SNAPSHOT_DIR, parts.name)
+    }.snap`;
+    return assertSnapshotContext.snapshotPath;
+  }
+  function getExpected() {
+    const snapshot = currentSnapshot.get(snapshotName);
+    if (typeof snapshot === 'undefined') {
+      return;
+    }
+    return snapshot.includes('\n') ? snapshot.slice(1, -1) : snapshot;
+  }
+  async function readSnapshotFile() {
+    if (assertSnapshotContext.currentSnapshot) {
+      return assertSnapshotContext.currentSnapshot;
+    }
+    if (isUpdate) {
+      await ensureFile(snapshotPath);
+    }
+    try {
+      const { snapshot } = await import(snapshotPath);
+      assertSnapshotContext.currentSnapshot = typeof snapshot === "undefined"
+        ? new Map()
+        : new Map(Object.entries(snapshot));
+      return assertSnapshotContext.currentSnapshot;
+    } catch (error) {
+      if (
+        error instanceof TypeError &&
+        error.message.startsWith("Module not found")
+      ) {
+        throw new AssertionError("Missing snapshot file.");
+      }
+      throw error;
+    }
+  }
+}
+
 /**
  * Forcefully throws a failed assertion
  */
@@ -865,59 +1045,4 @@ export function unimplemented(msg?: string): never {
 /** Use this to assert unreachable code. */
 export function unreachable(): never {
   throw new AssertionError("unreachable");
-}
-
-let snapshotFile: Record<string, string> | undefined = undefined;
-const updatedSnapshotFile: Record<string, unknown> = {};
-const snapshotMap: Record<string, number> = {};
-
-export async function assertSnapshot(context: Deno.TestContext, actual: unknown) {
-  const name = getName(context);
-  const count = getCount();
-  const testName = `${name} #${count}`;
-  const isUpdate = Deno.args.includes('--update');
-  if (!snapshotFile) {
-    const snapshotPath = getSnapshotPath();
-    await ensureFile(snapshotPath);
-    const {snapshot} = await import(snapshotPath);
-    snapshotFile = snapshot;
-  }
-  const snapshot = snapshotFile?.[testName] ?? '';
-  if (isUpdate) {
-    let isEqual = true;
-    try {
-      assertEquals(_format(actual), snapshot.slice(1, -1));
-    } catch {
-      isEqual = false;
-    }
-    if (!isEqual) console.info("Snapshot updated", testName);
-    updatedSnapshotFile[testName] = actual;
-    globalThis.onunload = writeSnapshotFileSync;
-  } else {
-    assertEquals(_format(actual), snapshot.slice(1, -1));
-  }
-  function getName(context: Deno.TestContext): string {
-    if (context.parent) return `${getName(context.parent)} > ${context.name}`;
-    return context.name;
-  }
-  function getCount() {
-    const count = snapshotMap?.[name] ? snapshotMap[name] : 1;
-    snapshotMap[name] = count + 1;
-    return count;
-  }
-  function getSnapshotPath() {
-    const testFile = fromFileUrl(context.origin);
-    const parts = parse(testFile);
-    return `${join(parts.dir, parts.name)}.snap`;
-  }
-  function writeSnapshotFileSync() {
-    const snapshotPath = getSnapshotPath();
-    ensureFileSync(snapshotPath);
-    const buf = ['export const snapshot = {};\n'];
-    for (const [key, value] of Object.entries(updatedSnapshotFile)) {
-      buf.push(`\nsnapshot[\`${key}\`] = \`\n${_format(value)}\n\`;\n`);
-    }
-    Deno.writeTextFileSync(snapshotPath, buf.join(""));
-    console.log('Snapshot updated!');
-  }
 }
