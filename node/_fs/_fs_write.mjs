@@ -21,8 +21,9 @@ export function writeSync(fd, buffer, offset, length, position) {
       Deno.seekSync(fd, position, Deno.SeekMode.Start);
     }
     let currentOffset = offset;
+    const end = offset + length;
     while (currentOffset - offset < length) {
-      currentOffset += Deno.writeSync(fd, buffer.subarray(currentOffset));
+      currentOffset += Deno.writeSync(fd, buffer.subarray(currentOffset, end));
     }
     return currentOffset - offset;
   };
@@ -66,8 +67,12 @@ export function write(fd, buffer, offset, length, position, callback) {
       await Deno.seek(fd, position, Deno.SeekMode.Start);
     }
     let currentOffset = offset;
+    const end = offset + length;
     while (currentOffset - offset < length) {
-      currentOffset += await Deno.write(fd, buffer.subarray(currentOffset));
+      currentOffset += await Deno.write(
+        fd,
+        buffer.subarray(currentOffset, end),
+      );
     }
     return currentOffset - offset;
   };
@@ -86,10 +91,12 @@ export function write(fd, buffer, offset, length, position, callback) {
       position = null;
     }
     validateOffsetLengthWrite(offset, length, buffer.byteLength);
-    innerWrite(fd, buffer, offset, length, position)
-      .then((nwritten) => {
+    innerWrite(fd, buffer, offset, length, position).then(
+      (nwritten) => {
         callback(null, nwritten, buffer);
-      }, (err) => callback(err));
+      },
+      (err) => callback(err),
+    );
     return;
   }
 

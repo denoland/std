@@ -1,3 +1,47 @@
+### 0.135.0 / 2022.04.14
+
+- BREAKING(io/readers): use an array as a MultiReader constructor parameter to
+  avoid Maximum call stack size exceeded (#2016)
+- BREAKING(mime/multipart): deprecate mime/multipart module (#2105)
+- BREAKING(testing/bench): deprecate testing/bench module (#2104)
+- feat(node): `Duplex.fromWeb` (#2086)
+- feat(testing): add behavior-driven development (#2067)
+- feat(testing): add utility for faking time (#2069)
+- fix(node): Make global.ts evaluate synchronously (#2098)
+
+### 0.134.0 / 2022.04.07
+
+- feat(node/child_process): support `signal` parameter for `ChildProcess.kill`
+  (#2083)
+- feat(node/net): add server.ref/unref methods (#2087)
+- feat: web streams based encoding/csv (#1993)
+- fix(log): fix log formatter issue (#2070)
+- fix(node/fs): fix writing redundant data (#2076)
+
+### 0.133.0 / 2022.03.31
+
+- BREAKING: improve bytes/ module (#2074)
+- feat(testing): add mocking utilities (#2048)
+
+### 0.132.0 / 2022.03.25
+
+- feat(collections): Add BSTree and RBTree (#2023)
+- feat(node): add ReadStream and createReadStream (#1435)
+- feat(node): export URLSearchParams via url module (#2056)
+
+### 0.131.0 / 2022.03.24
+
+- feat(node): add NodeEventTarget (#2032)
+- feat(node): add Console constructor (#2037)
+- feat(node): worker_threads (#1151)
+- feat(node): add process.allowedNodeEnvironmentFlags (#2049)
+- feat(collections): add BinaryHeap (#2022)
+- feat(async): expose asyncPromise and asyncAsyncIterable (#2034)
+- fix(node/http): ignore error from `respondWith` (#2058)
+- fix(node): warn on non supported event, but still register listener (#2050)
+- fix(node): fix `EventEmitter` methods (#2035)
+- fix(node): make global.<timerFunc> Node.js timers (#2038)
+
 ### 0.130.0 / 2022.03.16
 
 - feat(testing): add `assertInstanceOf` (#2028)

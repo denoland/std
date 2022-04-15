@@ -152,7 +152,7 @@ export class TCP extends ConnectionWrap {
    */
   open(_fd: number): number {
     // REF: https://github.com/denoland/deno/issues/6529
-    notImplemented();
+    notImplemented("TCP.prototype.open");
   }
 
   /**
@@ -236,6 +236,13 @@ export class TCP extends ConnectionWrap {
     return 0;
   }
 
+  override ref() {
+    this.#listener?.ref();
+  }
+  override unref() {
+    this.#listener?.unref();
+  }
+
   /**
    * Populates the provided object with local address entries.
    * @param sockname An object to add the local address entries to.
@@ -306,7 +313,7 @@ export class TCP extends ConnectionWrap {
    */
   setSimultaneousAccepts(_enable: boolean) {
     // Low priority to implement owing to it being deprecated in Node.
-    notImplemented();
+    notImplemented("TCP.prototype.setSimultaneousAccepts");
   }
 
   /**

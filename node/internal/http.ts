@@ -24,7 +24,7 @@ function resetCache() {
 export function emitStatistics(
   _statistics: { startTime: [number, number] } | null,
 ) {
-  notImplemented();
+  notImplemented("internal/http.emitStatistics");
 }
 
 export const kOutHeaders = Symbol("kOutHeaders");

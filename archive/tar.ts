@@ -447,7 +447,7 @@ export class Tar {
 
     // append 2 empty records
     readers.push(new Buffer(clean(recordSize * 2)));
-    return new MultiReader(...readers);
+    return new MultiReader(readers);
   }
 }
 

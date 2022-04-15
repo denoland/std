@@ -1397,4 +1397,5 @@ export default {
   urlToHttpOptions,
   Url,
   URL,
+  URLSearchParams,
 };

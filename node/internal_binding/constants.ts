@@ -120,6 +120,9 @@ export const os = {
     SIGIO: 23,
     SIGINFO: 29,
     SIGSYS: 12,
+    SIGEMT: 7,
+    SIGPWR: 30, // TODO(uki00a): In Solaris, this should be `19`. Is there any way to address this difference?
+    SIGSTKFLT: 16,
   },
   priority: {
     PRIORITY_LOW: 19,
