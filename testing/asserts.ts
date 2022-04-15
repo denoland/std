@@ -17,6 +17,7 @@ import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
+const SNAPSHOT_DIR = "__snapshots__";
 
 export class AssertionError extends Error {
   override name = "AssertionError";
@@ -931,6 +932,6 @@ export async function assertSnapshot(
   function getSnapshotPath() {
     const testFile = fromFileUrl(context.origin);
     const parts = parse(testFile);
-    return `${join(parts.dir, parts.name)}.snap`;
+    return `${join(parts.dir, SNAPSHOT_DIR, parts.name)}.snap`;
   }
 }
