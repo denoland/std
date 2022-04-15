@@ -891,7 +891,7 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
     } catch {
       // TODO: update snapshot counter
     }
-    updatedSnapshotFile[testName] = actual;
+    updatedSnapshotFile[testName] = _actual;
     globalThis.onunload = writeSnapshotFileSync;
   } else {
     assertEquals(_actual, _expected);
@@ -915,7 +915,7 @@ export async function assertSnapshot(context: Deno.TestContext, actual: unknown)
     ensureFileSync(snapshotPath);
     const buf = ['export const snapshot = {};\n'];
     for (const [key, value] of Object.entries(updatedSnapshotFile)) {
-      buf.push(`\nsnapshot[\`${key}\`] = \`\n${_format(value)}\n\`;\n`);
+      buf.push(`\nsnapshot[\`${key}\`] = \`\n${value}\n\`;\n`);
     }
     Deno.writeTextFileSync(snapshotPath, buf.join(""));
     console.log('Snapshot updated!');
