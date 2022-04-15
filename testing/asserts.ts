@@ -747,7 +747,9 @@ function registerSnapshotTeardown(context: AssertSnapshotContext) {
  * ```ts
  * import { assertSnapshot } from "./asserts.ts";
  *
- * assertSnapshot<number>(test, 2)
+ * Deno.test("snapshot", async (test) => {
+ *  await assertSnapshot<number>(test, 2);
+ * });
  * ```
  */
 export async function assertSnapshot(
