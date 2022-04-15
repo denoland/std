@@ -868,17 +868,28 @@ export function unreachable(): never {
   throw new AssertionError("unreachable");
 }
 
-let snapshotFile: Record<string, string> | undefined = undefined;
-const updatedSnapshotFile: Record<string, string> = {};
-const snapshotMap: Record<string, number> = {};
-let snapshotsUpdated = 0;
+type AssertSnapshotContext = {
+  currentSnapshot: Record<string, string> | null;
+  updatedSnapshot: Record<string, string>;
+  snapshotCounts: Record<string, number>;
+  snapshotUpdatedCount: number;
+}
+
+const assertSnapshotContext: AssertSnapshotContext = {
+  currentSnapshot: null,
+  updatedSnapshot: {},
+  snapshotCounts: {},
+  snapshotUpdatedCount: 0,
+}
 
 async function readSnapshotFile(snapshotPath: string): Promise<Record<string,string>> {
-  if (snapshotFile) return snapshotFile;
+  if (assertSnapshotContext.currentSnapshot) {
+    return assertSnapshotContext.currentSnapshot;
+  }
   try {
     const { snapshot } = await import(snapshotPath);
-    snapshotFile = typeof snapshot === "undefined" ? {} : snapshot;
-    return snapshotFile as Record<string,string>;
+    assertSnapshotContext.currentSnapshot = typeof snapshot === "undefined" ? {} : snapshot;
+    return assertSnapshotContext.currentSnapshot as Record<string,string>;
   }
   catch (error) {
     if (error instanceof TypeError && error.message.startsWith("Module not found")) {
@@ -891,12 +902,12 @@ async function readSnapshotFile(snapshotPath: string): Promise<Record<string,str
 function writeSnapshotFileSync(snapshotPath: string) {
   ensureFileSync(snapshotPath);
   const buf = ["export const snapshot = {};\n"];
-  for (const [key, value] of Object.entries(updatedSnapshotFile)) {
+  for (const [key, value] of Object.entries(assertSnapshotContext.updatedSnapshot)) {
     buf.push(`\nsnapshot[\`${key}\`] = \`\n${value}\n\`;\n`);
   }
   Deno.writeTextFileSync(snapshotPath, buf.join(""));
-  if (snapshotsUpdated > 0) {
-    console.log(green(bold(` > ${snapshotsUpdated} snapshots updated.`)));
+  if (assertSnapshotContext.snapshotUpdatedCount > 0) {
+    console.log(green(bold(` > ${assertSnapshotContext.snapshotUpdatedCount} snapshots updated.`)));
   }
 }
 
@@ -927,9 +938,9 @@ export async function assertSnapshot(
     try {
       assertEquals(_actual, _expected);
     } catch {
-      snapshotsUpdated++;
+      assertSnapshotContext.snapshotUpdatedCount++;
     }
-    updatedSnapshotFile[testName] = _actual;
+    assertSnapshotContext.updatedSnapshot[testName] = _actual;
     registerWriteSnapshotFileOnce(snapshotPath);
   } else {
     assertEquals(_actual, _expected);
@@ -939,8 +950,8 @@ export async function assertSnapshot(
     return context.name;
   }
   function getCount() {
-    const count = snapshotMap[name] || 1;
-    snapshotMap[name] = count + 1;
+    const count = assertSnapshotContext.snapshotCounts[name] || 1;
+    assertSnapshotContext.snapshotCounts[name] = count + 1;
     return count;
   }
   function getSnapshotPath() {
