@@ -780,9 +780,7 @@ export async function assertSnapshot(
   const _actual = _format(actual);
   const _expected = getExpected();
   if (isUpdate) {
-    try {
-      assertEquals(_actual, _expected);
-    } catch {
+    if (!equal(_actual, _expected)) {
       assertSnapshotContext.snapshotUpdatedCount++;
     }
     assertSnapshotContext.updatedSnapshot.set(snapshotName, _actual);
@@ -791,7 +789,25 @@ export async function assertSnapshot(
     if (!_expected) {
       throw new AssertionError(`Missing snapshot: ${snapshotName}`);
     }
-    assertEquals(_actual, _expected, msg);
+    if (equal(_actual, _expected)) {
+      return;
+    }
+    let message = "";
+    try {
+      const stringDiff = (!_actual.includes("\n")) &&
+        (!_actual.includes("\n"));
+      const diffResult = stringDiff
+        ? diffstr(_actual, _expected)
+        : diff(_actual.split("\n"), _expected.split("\n"));
+      const diffMsg = buildMessage(diffResult, { stringDiff }).join("\n");
+      message = `Snapshot does not match:\n${diffMsg}`;
+    } catch {
+      message = `Snapshot does not match:\n${red(CAN_NOT_DISPLAY)} \n\n`;
+    }
+    if (msg) {
+      message = msg;
+    }
+    throw new AssertionError(message);
   }
 
   function getAssertSnapshotContext() {

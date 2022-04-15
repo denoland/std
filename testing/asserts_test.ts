@@ -1451,3 +1451,24 @@ Deno.test("Snapshot Test - step", async (t) => {
 Deno.test("Snapshot Test - Adverse String \\ ` ${}", async (t) => {
   await assertSnapshot(t, "\\ ` ${}");
 });
+
+Deno.test("Snapshot Test - Failed Assertion", async (t) => {
+  await t.step("Object", async (t) => {
+    try {
+      await assertSnapshot(t, [1, 2]);
+      fail("Expected snapshot not to match");
+    } catch (error) {
+      assertInstanceOf(error, AssertionError);
+      await assertSnapshot(t, error.message.split("\n"));
+    }
+  });
+  await t.step("String", async (t) => {
+    try {
+      await assertSnapshot(t, "Hello!");
+      fail("Expected snapshot not to match");
+    } catch (error) {
+      assertInstanceOf(error, AssertionError);
+      await assertSnapshot(t, error.message.split("\n"));
+    }
+  });
+});
