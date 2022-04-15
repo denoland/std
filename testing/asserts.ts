@@ -702,13 +702,15 @@ function writeSnapshotFileSync(context: AssertSnapshotContext) {
   const buf = ["export const snapshot = {};"];
   function escapeStringForJs(str: string) {
     return str
-      .replace(/\\/g,"\\\\")
-      .replace(/`/g, '\\`')
-      .replace(/\$/g, '\\$');
+      .replace(/\\/g, "\\\\")
+      .replace(/`/g, "\\`")
+      .replace(/\$/g, "\\$");
   }
   context.updatedSnapshot.forEach((value, key) => {
     let formattedValue = escapeStringForJs(value);
-    formattedValue = formattedValue.includes("\n") ? `\n${formattedValue}\n` : formattedValue;
+    formattedValue = formattedValue.includes("\n")
+      ? `\n${formattedValue}\n`
+      : formattedValue;
     const formattedKey = escapeStringForJs(key);
     buf.push(`\nsnapshot[\`${formattedKey}\`] = \`${formattedValue}\`;`);
   });
@@ -829,10 +831,10 @@ export async function assertSnapshot(
   }
   function getExpected() {
     const snapshot = currentSnapshot.get(snapshotName);
-    if (typeof snapshot === 'undefined') {
+    if (typeof snapshot === "undefined") {
       return;
     }
-    return snapshot.includes('\n') ? snapshot.slice(1, -1) : snapshot;
+    return snapshot.includes("\n") ? snapshot.slice(1, -1) : snapshot;
   }
   async function readSnapshotFile() {
     if (assertSnapshotContext.currentSnapshot) {
