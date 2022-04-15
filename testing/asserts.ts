@@ -700,9 +700,17 @@ let _assertSnapshotContext: AssertSnapshotContext;
  */
 function writeSnapshotFileSync(context: AssertSnapshotContext) {
   const buf = ["export const snapshot = {};"];
+  function escapeStringForJs(str: string) {
+    return str
+      .replace(/\\/g,"\\\\")
+      .replace(/`/g, '\\`')
+      .replace(/\$/g, '\\$');
+  }
   context.updatedSnapshot.forEach((value, key) => {
-    const formattedValue = value.includes("\n") ? `\n${value}\n` : value;
-    buf.push(`\nsnapshot[\`${key}\`] = \`${formattedValue}\`;`);
+    let formattedValue = escapeStringForJs(value);
+    formattedValue = formattedValue.includes("\n") ? `\n${formattedValue}\n` : formattedValue;
+    const formattedKey = escapeStringForJs(key);
+    buf.push(`\nsnapshot[\`${formattedKey}\`] = \`${formattedValue}\`;`);
   });
   ensureFileSync(context.snapshotPath as string);
   Deno.writeTextFileSync(context.snapshotPath as string, buf.join("\n"));

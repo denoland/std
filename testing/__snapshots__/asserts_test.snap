@@ -91,3 +91,5 @@ snapshot[`Snapshot Test - step > Nested 3`] = `
 `;
 
 snapshot[`Snapshot Test - step 2`] = `"hello world"`;
+
+snapshot[`Snapshot Test - Adverse String \\ \` \${} 1`] = `"\\\\ \` \${}"`;
