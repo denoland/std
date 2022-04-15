@@ -826,7 +826,7 @@ export async function assertSnapshot(
     const parts = parse(testFile);
     assertSnapshotContext.snapshotPath = `${
       join(parts.dir, SNAPSHOT_DIR, parts.name)
-    }.snap`;
+    }${parts.ext}.snap`;
     return assertSnapshotContext.snapshotPath;
   }
   function getExpected() {
