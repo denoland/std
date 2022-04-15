@@ -873,6 +873,21 @@ const updatedSnapshotFile: Record<string, string> = {};
 const snapshotMap: Record<string, number> = {};
 let snapshotsUpdated = 0;
 
+async function readSnapshotFile(snapshotPath: string): Promise<Record<string,string>> {
+  if (snapshotFile) return snapshotFile;
+  try {
+    const { snapshot } = await import(snapshotPath);
+    snapshotFile = typeof snapshot === "undefined" ? {} : snapshot;
+    return snapshotFile as Record<string,string>;
+  }
+  catch (error) {
+    if (error instanceof TypeError && error.message.startsWith("Module not found")) {
+      throw new AssertionError("Missing snapshot file.");
+    }
+    throw error;
+  }
+}
+
 function writeSnapshotFileSync(snapshotPath: string) {
   ensureFileSync(snapshotPath);
   const buf = ["export const snapshot = {};\n"];
@@ -899,14 +914,13 @@ export async function assertSnapshot(
   const name = getName(context);
   const count = getCount();
   const testName = `${name} ${count}`;
-  const isUpdate = Deno.args.includes("--update");
   const snapshotPath = getSnapshotPath();
-  if (!snapshotFile) {
+  const isUpdate = Deno.args.some(arg => arg === "--update" || arg === "-u");
+  if (isUpdate) {
     await ensureFile(snapshotPath);
-    const { snapshot } = await import(snapshotPath);
-    snapshotFile = snapshot;
   }
-  const snapshot = snapshotFile?.[testName] ?? "";
+  const snapshotFile = await readSnapshotFile(snapshotPath);
+  const snapshot = snapshotFile[testName] || "";
   const _actual = _format(actual);
   const _expected = snapshot.slice(1, -1);
   if (isUpdate) {
