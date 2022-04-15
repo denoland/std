@@ -31,6 +31,7 @@ pretty-printed diff of failing assertion.
   `expected` values.
 - `assertObjectMatch()` - Make an assertion that `actual` object match
   `expected` subset object
+- `assertSnapshot()` - Make an assertion that `actual` matches a snapshot
 - `assertThrows()` - Expects the passed `fn` to throw. If `fn` does not throw,
   this function does. Also compares any errors thrown to an optional expected
   `Error` class and checks that the error `.message` includes an optional
@@ -84,6 +85,17 @@ Deno.test("isNotStrictlyEqual", function (): void {
   const a = {};
   const b = {};
   assertStrictEquals(a, b);
+});
+```
+
+Using `assertSnapshot()`:
+
+```ts
+import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+Deno.test("isSnapshotMatch", function (test): void {
+  const a = {};
+  assertSnapshot(test, a);
 });
 ```
 
