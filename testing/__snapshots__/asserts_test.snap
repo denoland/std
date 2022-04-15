@@ -34,9 +34,7 @@ snapshot[`Snapshot Test 5`] = `
 }
 `;
 
-snapshot[`Snapshot Test 6`] = `
-[Function: fn]
-`;
+snapshot[`Snapshot Test 6`] = `[Function: fn]`;
 
 snapshot[`Snapshot Test 7`] = `
 [
@@ -46,9 +44,7 @@ snapshot[`Snapshot Test 7`] = `
 ]
 `;
 
-snapshot[`Snapshot Test 8`] = `
-"hello world"
-`;
+snapshot[`Snapshot Test 8`] = `"hello world"`;
 
 snapshot[`Snapshot Test - step 1`] = `
 {
@@ -84,9 +80,7 @@ snapshot[`Snapshot Test - step > Nested > Nested Nested 2`] = `
 }
 `;
 
-snapshot[`Snapshot Test - step > Nested > Nested Nested 3`] = `
-[Function: fn]
-`;
+snapshot[`Snapshot Test - step > Nested > Nested Nested 3`] = `[Function: fn]`;
 
 snapshot[`Snapshot Test - step > Nested 3`] = `
 [
@@ -96,6 +90,4 @@ snapshot[`Snapshot Test - step > Nested 3`] = `
 ]
 `;
 
-snapshot[`Snapshot Test - step 2`] = `
-"hello world"
-`;
+snapshot[`Snapshot Test - step 2`] = `"hello world"`;

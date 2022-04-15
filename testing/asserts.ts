@@ -701,7 +701,8 @@ let _assertSnapshotContext: AssertSnapshotContext;
 function writeSnapshotFileSync(context: AssertSnapshotContext) {
   const buf = ["export const snapshot = {};"];
   context.updatedSnapshot.forEach((value, key) => {
-    buf.push(`\nsnapshot[\`${key}\`] = \`\n${value}\n\`;`);
+    const formattedValue = value.includes("\n") ? `\n${value}\n` : value;
+    buf.push(`\nsnapshot[\`${key}\`] = \`${formattedValue}\`;`);
   });
   ensureFileSync(context.snapshotPath as string);
   Deno.writeTextFileSync(context.snapshotPath as string, buf.join("\n"));
@@ -763,10 +764,9 @@ export async function assertSnapshot(
   const snapshotPath = getSnapshotPath();
   const isUpdate = Deno.args.some((arg) => arg === "--update" || arg === "-u");
   const currentSnapshot = await readSnapshotFile();
-  const snapshot = currentSnapshot.get(snapshotName) || "";
 
   const _actual = _format(actual);
-  const _expected = snapshot.slice(1, -1);
+  const _expected = getExpected();
   if (isUpdate) {
     try {
       assertEquals(_actual, _expected);
@@ -776,6 +776,9 @@ export async function assertSnapshot(
     assertSnapshotContext.updatedSnapshot.set(snapshotName, _actual);
     registerSnapshotTeardown(assertSnapshotContext);
   } else {
+    if (!_expected) {
+      throw new AssertionError(`Missing snapshot: ${snapshotName}`);
+    }
     assertEquals(_actual, _expected, msg);
   }
 
@@ -814,7 +817,14 @@ export async function assertSnapshot(
     }.snap`;
     return assertSnapshotContext.snapshotPath;
   }
-  async function readSnapshotFile(): Promise<Map<string, string>> {
+  function getExpected() {
+    const snapshot = currentSnapshot.get(snapshotName);
+    if (typeof snapshot === 'undefined') {
+      return;
+    }
+    return snapshot.includes('\n') ? snapshot.slice(1, -1) : snapshot;
+  }
+  async function readSnapshotFile() {
     if (assertSnapshotContext.currentSnapshot) {
       return assertSnapshotContext.currentSnapshot;
     }
