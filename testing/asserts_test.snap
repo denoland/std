@@ -1,26 +1,26 @@
 export const snapshot = {};
 
-snapshot[`Snapshot Test #1`] = `
+snapshot[`Snapshot Test 1`] = `
 {
   a: 1,
   b: 2,
 }
 `;
 
-snapshot[`Snapshot Test #2`] = `
+snapshot[`Snapshot Test 2`] = `
 TestClass {
   a: 1,
   b: 2,
 }
 `;
 
-snapshot[`Snapshot Test #3`] = `
+snapshot[`Snapshot Test 3`] = `
 Map {
   ,
 }
 `;
 
-snapshot[`Snapshot Test #4`] = `
+snapshot[`Snapshot Test 4`] = `
 Set {
   1,
   2,
@@ -28,17 +28,17 @@ Set {
 }
 `;
 
-snapshot[`Snapshot Test #5`] = `
+snapshot[`Snapshot Test 5`] = `
 {
   fn: [Function: fn],
 }
 `;
 
-snapshot[`Snapshot Test #6`] = `
+snapshot[`Snapshot Test 6`] = `
 [Function: fn]
 `;
 
-snapshot[`Snapshot Test #7`] = `
+snapshot[`Snapshot Test 7`] = `
 [
   1,
   2,
@@ -46,31 +46,31 @@ snapshot[`Snapshot Test #7`] = `
 ]
 `;
 
-snapshot[`Snapshot Test #8`] = `
+snapshot[`Snapshot Test 8`] = `
 "hello world"
 `;
 
-snapshot[`Snapshot Test - step #1`] = `
+snapshot[`Snapshot Test - step 1`] = `
 {
   a: 1,
   b: 2,
 }
 `;
 
-snapshot[`Snapshot Test - step > Nested #1`] = `
+snapshot[`Snapshot Test - step > Nested 1`] = `
 TestClass {
   a: 1,
   b: 2,
 }
 `;
 
-snapshot[`Snapshot Test - step > Nested #2`] = `
+snapshot[`Snapshot Test - step > Nested 2`] = `
 Map {
   ,
 }
 `;
 
-snapshot[`Snapshot Test - step > Nested > Nested Nested #1`] = `
+snapshot[`Snapshot Test - step > Nested > Nested Nested 1`] = `
 Set {
   1,
   2,
@@ -78,17 +78,17 @@ Set {
 }
 `;
 
-snapshot[`Snapshot Test - step > Nested > Nested Nested #2`] = `
+snapshot[`Snapshot Test - step > Nested > Nested Nested 2`] = `
 {
   fn: [Function: fn],
 }
 `;
 
-snapshot[`Snapshot Test - step > Nested > Nested Nested #3`] = `
+snapshot[`Snapshot Test - step > Nested > Nested Nested 3`] = `
 [Function: fn]
 `;
 
-snapshot[`Snapshot Test - step > Nested #3`] = `
+snapshot[`Snapshot Test - step > Nested 3`] = `
 [
   1,
   2,
@@ -96,6 +96,6 @@ snapshot[`Snapshot Test - step > Nested #3`] = `
 ]
 `;
 
-snapshot[`Snapshot Test - step #2`] = `
+snapshot[`Snapshot Test - step 2`] = `
 "hello world"
 `;
