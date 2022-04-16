@@ -42,7 +42,8 @@ interface FileServerArgs {
   quiet: boolean;
 }
 
-const encoder = new TextEncoder();
+// @ts-ignore `Deno.core` is not a public API
+const encode = Deno.core.encode || new TextEncoder().encode;
 
 const MEDIA_TYPES: Record<string, string> = {
   ".md": "text/markdown",
@@ -174,20 +175,51 @@ const MEDIA_TYPES: Record<string, string> = {
 
 /** Returns the content-type based on the extension of a path. */
 function contentType(path: string): string | undefined {
-  return MEDIA_TYPES[extname(path)];
+  const ext = path.split(".").pop();
+  return ext ? MEDIA_TYPES[ext] : undefined;
 }
 
-// Generates a SHA-1 hash for the provided string
-async function createEtagHash(message: string) {
-  const byteToHex = (b: number) => b.toString(16).padStart(2, "00");
-  const hashType = "SHA-1"; // Faster, and this isn't a security sensitive cryptographic use case
+const hexLookup: string[] = new Array(0xff);
+for (let n = 0; n <= 0xff; ++n) {
+  const hexOctet = n.toString(16).padStart(2, "0");
+  hexLookup[n] = hexOctet;
+}
 
-  // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-  const msgUint8 = encoder.encode(message);
-  const hashBuffer = await crypto.subtle.digest(hashType, msgUint8);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(byteToHex).join("");
-  return hashHex;
+function hex(buf: ArrayBuffer): string {
+  const u8arr = new Uint8Array(buf);
+  const len = u8arr.length;
+  let hexOctets = "";
+  for (let i = 0; i < len; ++i) hexOctets += hexLookup[u8arr[i]];
+  return hexOctets;
+}
+
+// The fnv-1a hash function.
+function fnv1a(buf: string): string {
+  let hash = 2166136261; // 32-bit FNV offset basis
+  for (let i = 0; i < buf.length; i++) {
+    hash ^= buf.charCodeAt(i);
+    // Equivalent to `hash *= 16777619` without using BigInt
+    // 32-bit FNV prime
+    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) +
+      (hash << 24);
+  }
+  // 32-bit hex string
+  return (hash >>> 0).toString(16);
+}
+
+type EtagAlgorithm = "fnv1a" | "sha-1" | "sha-256" | "sha-384" | "sha-512";
+
+// Generates a hash for the provided string
+async function createEtagHash(
+  message: string,
+  algorithm: EtagAlgorithm = "fnv1a",
+): Promise<string> {
+  if (algorithm === "fnv1a") {
+    return fnv1a(message);
+  }
+  const msgUint8 = encode(message);
+  const hashBuffer = await crypto.subtle.digest(algorithm, msgUint8);
+  return hex(hashBuffer);
 }
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
@@ -237,12 +269,10 @@ function fileLenToString(len: number): string {
 export async function serveFile(
   req: Request,
   filePath: string,
+  fileInfo: Deno.FileInfo,
+  etagAlgorithm: EtagAlgorithm = "fnv1a",
 ): Promise<Response> {
-  const [file, fileInfo] = await Promise.all([
-    Deno.open(filePath),
-    Deno.stat(filePath),
-  ]);
-
+  const file = await Deno.open(filePath);
   const headers = setBaseHeaders();
 
   // Set mime-type using the file extension in filePath
@@ -301,11 +331,8 @@ export async function serveFile(
   const start = parsed && parsed[1] ? +parsed[1] : 0;
   const end = parsed && parsed[2] ? +parsed[2] : fileInfo.size - 1;
 
-  let status = Status.OK;
-
   // If there is a range, set the status to 206, and set the "Content-range" header.
   if (range && parsed) {
-    status = Status.PartialContent;
     headers.set("content-range", `bytes ${start}-${end}/${fileInfo.size}`);
   }
 
@@ -335,39 +362,44 @@ export async function serveFile(
   // Set content length
   const contentLength = end - start + 1;
   headers.set("content-length", `${contentLength}`);
+  if (range && parsed) {
+    // Create a stream of the file instead of loading it into memory
+    let bytesSent = 0;
+    const body = new ReadableStream({
+      async start() {
+        if (start > 0) {
+          await file.seek(start, Deno.SeekMode.Start);
+        }
+      },
+      async pull(controller) {
+        const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
+        const bytesRead = await file.read(bytes);
+        if (bytesRead === null) {
+          file.close();
+          controller.close();
+          return;
+        }
+        controller.enqueue(
+          bytes.slice(0, Math.min(bytesRead, contentLength - bytesSent)),
+        );
+        bytesSent += bytesRead;
+        if (bytesSent > contentLength) {
+          file.close();
+          controller.close();
+        }
+      },
+    });
 
-  // Create a stream of the file instead of loading it into memory
-  let bytesSent = 0;
-  const body = new ReadableStream({
-    async start() {
-      if (start > 0) {
-        await file.seek(start, Deno.SeekMode.Start);
-      }
-    },
-    async pull(controller) {
-      const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
-      const bytesRead = await file.read(bytes);
-      if (bytesRead === null) {
-        file.close();
-        controller.close();
-        return;
-      }
-      controller.enqueue(
-        bytes.slice(0, Math.min(bytesRead, contentLength - bytesSent)),
-      );
-      bytesSent += bytesRead;
-      if (bytesSent > contentLength) {
-        file.close();
-        controller.close();
-      }
-    },
-  });
+    return new Response(body, {
+      status: 206,
+      statusText: "Partial Content",
+      headers,
+    });
+  }
 
-  const statusText = STATUS_TEXT.get(status);
-
-  return new Response(body, {
-    status,
-    statusText,
+  return new Response(file.readable, {
+    status: 200,
+    statusText: "OK",
     headers,
   });
 }
@@ -379,6 +411,7 @@ async function serveDirIndex(
   options: {
     dotfiles: boolean;
     target: string;
+    etagAlgorithm?: EtagAlgorithm;
   },
 ): Promise<Response> {
   const showDotfiles = options.dotfiles;
@@ -405,7 +438,8 @@ async function serveDirIndex(
     const fileUrl = encodeURI(posix.join(dirUrl, entry.name));
     if (entry.name === "index.html" && entry.isFile) {
       // in case index.html as dir...
-      return serveFile(req, filePath);
+      const fileInfo = await Deno.stat(filePath);
+      return serveFile(req, filePath, fileInfo, options.etagAlgorithm);
     }
     const fileInfo = await Deno.stat(filePath);
     listEntry.push({
@@ -419,7 +453,7 @@ async function serveDirIndex(
     a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
   );
   const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
-  const page = encoder.encode(dirViewerTemplate(formattedDirUrl, listEntry));
+  const page = encode(dirViewerTemplate(formattedDirUrl, listEntry));
 
   const headers = setBaseHeaders();
   headers.set("content-type", "text/html");
@@ -596,6 +630,7 @@ interface ServeDirOptions {
   showDotfiles?: boolean;
   enableCors?: boolean;
   quiet?: boolean;
+  etagAlgorithm?: EtagAlgorithm;
 }
 
 /**
@@ -649,8 +684,8 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
         throw new Deno.errors.NotFound();
       }
     }
-    const fsPath = posix.join(target, normalizedPath);
 
+    const fsPath = posix.join(target, normalizedPath);
     const fileInfo = await Deno.stat(fsPath);
 
     if (fileInfo.isDirectory) {
@@ -663,7 +698,7 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
         throw new Deno.errors.NotFound();
       }
     } else {
-      response = await serveFile(req, fsPath);
+      response = await serveFile(req, fsPath, fileInfo, opts.etagAlgorithm);
     }
   } catch (e) {
     const err = e instanceof Error ? e : new Error("[non-error thrown]");
@@ -722,12 +757,12 @@ function normalizeURL(url: string): string {
 function main(): void {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors", "quiet"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose"],
     default: {
       "dir-listing": true,
       dotfiles: true,
       cors: true,
-      quiet: false,
+      verbose: false,
       host: "0.0.0.0",
       port: "4507",
       cert: "",
@@ -738,8 +773,9 @@ function main(): void {
       c: "cert",
       k: "key",
       h: "help",
+      v: "verbose",
     },
-  }) as FileServerArgs;
+  });
   const port = serverArgs.port;
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
@@ -758,7 +794,8 @@ function main(): void {
     }
   }
 
-  const target = posix.resolve(serverArgs._[0] ?? "");
+  const wild = serverArgs._ as string[];
+  const target = posix.resolve(wild[0] ?? "");
 
   const handler = (req: Request): Promise<Response> => {
     return serveDir(req, {
@@ -766,7 +803,7 @@ function main(): void {
       showDirListing: serverArgs["dir-listing"],
       showDotfiles: serverArgs.dotfiles,
       enableCors: serverArgs.cors,
-      quiet: serverArgs.quiet,
+      quiet: !serverArgs.verbose,
     });
   };
 
@@ -813,7 +850,7 @@ OPTIONS:
   -k, --key  <FILE>   TLS key file (enables TLS)
   --no-dir-listing    Disable directory listing
   --no-dotfiles       Do not show dotfiles
-  --quiet             Do not print request level logs
+  -v, --verbose       Print request level logs
 
   All TLS options are required when one is provided.`);
 }
