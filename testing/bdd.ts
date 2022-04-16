@@ -17,21 +17,21 @@ export type ItArgs<T> =
   ]
   | [
     name: string,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
-  | [fn: (this: T) => void | Promise<void>]
+  | [fn: (this: T, t: Deno.TestContext) => void | Promise<void>]
   | [
     name: string,
     options: Omit<ItDefinition<T>, "fn" | "name">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     options: Omit<ItDefinition<T>, "fn">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     options: Omit<ItDefinition<T>, "fn" | "name">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     suite: TestSuite<T>,
@@ -41,27 +41,27 @@ export type ItArgs<T> =
   | [
     suite: TestSuite<T>,
     name: string,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     suite: TestSuite<T>,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     suite: TestSuite<T>,
     name: string,
     options: Omit<ItDefinition<T>, "fn" | "name" | "suite">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     suite: TestSuite<T>,
     options: Omit<ItDefinition<T>, "fn" | "suite">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     suite: TestSuite<T>,
     options: Omit<ItDefinition<T>, "fn" | "name" | "suite">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ];
 
 /** Generates an ItDefinition from ItArgs. */
@@ -166,9 +166,9 @@ export function it<T>(...args: ItArgs<T>): void {
       sanitizeExit,
       sanitizeOps,
       sanitizeResources,
-      async fn() {
+      async fn(t) {
         if (!TestSuiteInternal.running) TestSuiteInternal.running = true;
-        await fn.call({} as T);
+        await fn.call({} as T, t);
       },
     });
   }
