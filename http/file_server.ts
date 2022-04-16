@@ -5,7 +5,7 @@
 // TODO(bartlomieju): Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
-import { extname, posix } from "../path/mod.ts";
+import { posix } from "../path/mod.ts";
 import { serve, serveTls } from "./server.ts";
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
@@ -265,14 +265,20 @@ function fileLenToString(len: number): string {
  * Returns an HTTP Response with the requested file as the body.
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
+ * @param etagAlgorithm The algorithm to use for generating the ETag. Defaults to "fnv1a".
+ * @param fileInfo An optional FileInfo object returned by Deno.stat. It is used
+ * for optimization purposes.
  */
 export async function serveFile(
   req: Request,
   filePath: string,
-  fileInfo: Deno.FileInfo,
   etagAlgorithm: EtagAlgorithm = "fnv1a",
+  fileInfo?: Deno.FileInfo,
 ): Promise<Response> {
   const file = await Deno.open(filePath);
+  if (fileInfo === undefined) {
+    fileInfo = await Deno.stat(filePath);
+  }
   const headers = setBaseHeaders();
 
   // Set mime-type using the file extension in filePath
@@ -295,6 +301,7 @@ export async function serveFile(
     // Create a simple etag that is an md5 of the last modified date and filesize concatenated
     const simpleEtag = await createEtagHash(
       `${lastModified.toJSON()}${fileInfo.size}`,
+      etagAlgorithm,
     );
     headers.set("etag", simpleEtag);
 
@@ -436,12 +443,11 @@ async function serveDirIndex(
     }
     const filePath = posix.join(dirPath, entry.name);
     const fileUrl = encodeURI(posix.join(dirUrl, entry.name));
+    const fileInfo = await Deno.stat(filePath);
     if (entry.name === "index.html" && entry.isFile) {
       // in case index.html as dir...
-      const fileInfo = await Deno.stat(filePath);
-      return serveFile(req, filePath, fileInfo, options.etagAlgorithm);
+      return serveFile(req, filePath, options.etagAlgorithm, fileInfo);
     }
-    const fileInfo = await Deno.stat(filePath);
     listEntry.push({
       mode: modeToString(entry.isDirectory, fileInfo.mode),
       size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
@@ -698,7 +704,7 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
         throw new Deno.errors.NotFound();
       }
     } else {
-      response = await serveFile(req, fsPath, fileInfo, opts.etagAlgorithm);
+      response = await serveFile(req, fsPath, opts.etagAlgorithm, fileInfo);
     }
   } catch (e) {
     const err = e instanceof Error ? e : new Error("[non-error thrown]");
