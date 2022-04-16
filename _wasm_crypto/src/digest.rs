@@ -5,6 +5,30 @@ use digest::{
 };
 use typenum::{U32, U48};
 
+#[repr(u8)]
+pub enum ContextType {
+  Blake2b = 0,
+  Blake2b256 = 1,
+  Blake2b384 = 2,
+  Blake2s = 3,
+  Blake3 = 4,
+  Keccak224 = 5,
+  Keccak256 = 6,
+  Keccak384 = 7,
+  Keccak512 = 8,
+  Md4 = 9,
+  Md5 = 10,
+  Ripemd160 = 11,
+  Sha1 = 12,
+  Sha3_224 = 13,
+  Sha3_256 = 14,
+  Sha3_384 = 15,
+  Sha3_512 = 16,
+  Shake128 = 17,
+  Shake256 = 18,
+  Tiger = 19,
+}
+
 /// Enum wrapper over all supported digest implementations.
 #[derive(Clone)]
 pub enum Context {
@@ -37,34 +61,29 @@ pub enum Context {
 use Context::*;
 
 impl Context {
-  pub fn new(algorithm_name: &str) -> Result<Context, &'static str> {
-    Ok(match algorithm_name {
-      "BLAKE2B" => Blake2b(Default::default()),
-      "BLAKE2B-256" => Blake2b256(Default::default()),
-      "BLAKE2B-384" => Blake2b384(Default::default()),
-      "BLAKE2S" => Blake2s(Default::default()),
-      "BLAKE3" => Blake3(Default::default()),
-      "KECCAK-224" => Keccak224(Default::default()),
-      "KECCAK-256" => Keccak256(Default::default()),
-      "KECCAK-384" => Keccak384(Default::default()),
-      "KECCAK-512" => Keccak512(Default::default()),
-      "MD4" => Md4(Default::default()),
-      "MD5" => Md5(Default::default()),
-      "RIPEMD-160" => Ripemd160(Default::default()),
-      "SHA-1" => Sha1(Default::default()),
-      "SHA3-224" => Sha3_224(Default::default()),
-      "SHA3-256" => Sha3_256(Default::default()),
-      "SHA3-384" => Sha3_384(Default::default()),
-      "SHA3-512" => Sha3_512(Default::default()),
-      "SHA-224" => Sha224(Default::default()),
-      "SHA-256" => Sha256(Default::default()),
-      "SHA-384" => Sha384(Default::default()),
-      "SHA-512" => Sha512(Default::default()),
-      "SHAKE128" => Shake128(Default::default()),
-      "SHAKE256" => Shake256(Default::default()),
-      "TIGER" => Tiger(Default::default()),
-      _ => return Err("unsupported algorithm"),
-    })
+  pub fn new(algorithm: ContextType) -> Context {
+    match algorithm {
+      ContextType::Blake2b => Blake2b(Default::default()),
+        ContextType::Blake2b256 => Blake2b256(Default::default()),
+        ContextType::Blake2b384 => Blake2b384(Default::default()),
+        ContextType::Blake2s => Blake2s(Default::default()),
+        ContextType::Blake3 => Blake3(Default::default()),
+        ContextType::Keccak224 => Keccak224(Default::default()),
+        ContextType::Keccak256 => Keccak256(Default::default()),
+        ContextType::Keccak384 => Keccak384(Default::default()),
+        ContextType::Keccak512 => Keccak512(Default::default()),
+        ContextType::Md4 => Md4(Default::default()),
+        ContextType::Md5 => Md5(Default::default()),
+        ContextType::Ripemd160 => Ripemd160(Default::default()),
+        ContextType::Sha1 => Sha1(Default::default()),
+        ContextType::Sha3_224 => Sha3_224(Default::default()),
+        ContextType::Sha3_256 => Sha3_256(Default::default()),
+        ContextType::Sha3_384 => Sha3_384(Default::default()),
+        ContextType::Sha3_512 => Sha3_512(Default::default()),
+        ContextType::Shake128 => Shake128(Default::default()),
+        ContextType::Shake256 => Shake256(Default::default()),
+        ContextType::Tiger => Tiger(Default::default()),
+    }
   }
 
   /// The input block length for the algorithm, in bytes.
@@ -245,24 +264,16 @@ impl Context {
       Tiger(context) => Digest::update(&mut **context, data),
       Shake128(context) => (&mut **context).update(data),
       Shake256(context) => (&mut **context).update(data),
-    };
+    }
   }
 
   pub fn digest_and_drop(
     self,
     length: Option<usize>,
-  ) -> Result<Box<[u8]>, &'static str> {
-    if let Some(length) = length {
-      if !self.extendable() && length != self.output_length() {
-        return Err(
-          "non-default length specified for non-extendable algorithm",
-        );
-      }
-    }
+  ) -> Box<[u8]> {
+   let length = length.unwrap_or_else(|| self.output_length());
 
-    let length = length.unwrap_or_else(|| self.output_length());
-
-    Ok(match self {
+    match self {
       Blake2b(context) => context.finalize(),
       Blake2b256(context) => context.finalize(),
       Blake2b384(context) => context.finalize(),
@@ -287,23 +298,15 @@ impl Context {
       Tiger(context) => context.finalize(),
       Shake128(context) => context.finalize_boxed(length),
       Shake256(context) => context.finalize_boxed(length),
-    })
+    }
   }
 
   pub fn digest_and_reset(
     &mut self,
     length: Option<usize>,
-  ) -> Result<Box<[u8]>, &'static str> {
-    if let Some(length) = length {
-      if !self.extendable() && length != self.output_length() {
-        return Err(
-          "non-default length specified for non-extendable algorithm",
-        );
-      }
-    }
-
+  ) -> Box<[u8]> {
     let length = length.unwrap_or_else(|| self.output_length());
-    Ok(match self {
+    match self {
       Blake2b(context) => DynDigest::finalize_reset(context.as_mut()),
       Blake2b256(context) => DynDigest::finalize_reset(context.as_mut()),
       Blake2b384(context) => DynDigest::finalize_reset(context.as_mut()),
@@ -334,13 +337,13 @@ impl Context {
       Shake256(context) => {
         ExtendableOutputReset::finalize_boxed_reset(context.as_mut(), length)
       }
-    })
+    }
   }
 
   pub fn digest(
     &self,
     length: Option<usize>,
-  ) -> Result<Box<[u8]>, &'static str> {
+  ) -> Box<[u8]> {
     self.clone().digest_and_drop(length)
   }
 }
