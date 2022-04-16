@@ -97,7 +97,9 @@ function buildMessage(
         ? createColor(detail.type, { background: true })(detail.value)
         : detail.value
     ).join("") ?? result.value;
-    diffMessages.push(c(`${createSign(result.type)}${line}`));
+    diffMessages.push(c(`${
+      createSign(result.type)
+    }${line}`));
   });
   messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages));
   messages.push("");
