@@ -5,7 +5,8 @@
 // TODO(bartlomieju): Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
-import { posix } from "../path/mod.ts";
+import { extname, posix } from "../path/mod.ts";
+import { encode } from "../encoding/hex.ts";
 import { serve, serveTls } from "./server.ts";
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
@@ -42,8 +43,8 @@ interface FileServerArgs {
   quiet: boolean;
 }
 
-// @ts-ignore `Deno.core` is not a public API
-const encode = Deno.core.encode || new TextEncoder().encode;
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 const MEDIA_TYPES: Record<string, string> = {
   ".md": "text/markdown",
@@ -175,22 +176,7 @@ const MEDIA_TYPES: Record<string, string> = {
 
 /** Returns the content-type based on the extension of a path. */
 function contentType(path: string): string | undefined {
-  const ext = path.split(".").pop();
-  return ext ? MEDIA_TYPES[ext] : undefined;
-}
-
-const hexLookup: string[] = new Array(0xff);
-for (let n = 0; n <= 0xff; ++n) {
-  const hexOctet = n.toString(16).padStart(2, "0");
-  hexLookup[n] = hexOctet;
-}
-
-function hex(buf: ArrayBuffer): string {
-  const u8arr = new Uint8Array(buf);
-  const len = u8arr.length;
-  let hexOctets = "";
-  for (let i = 0; i < len; ++i) hexOctets += hexLookup[u8arr[i]];
-  return hexOctets;
+  return MEDIA_TYPES[extname(path)];
 }
 
 // The fnv-1a hash function.
@@ -217,9 +203,9 @@ async function createEtagHash(
   if (algorithm === "fnv1a") {
     return fnv1a(message);
   }
-  const msgUint8 = encode(message);
+  const msgUint8 = encoder.encode(message);
   const hashBuffer = await crypto.subtle.digest(algorithm, msgUint8);
-  return hex(hashBuffer);
+  return decoder.decode(encode(new Uint8Array(hashBuffer)));
 }
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
@@ -459,7 +445,7 @@ async function serveDirIndex(
     a.name.toLowerCase() > b.name.toLowerCase() ? 1 : -1
   );
   const formattedDirUrl = `${dirUrl.replace(/\/$/, "")}/`;
-  const page = encode(dirViewerTemplate(formattedDirUrl, listEntry));
+  const page = encoder.encode(dirViewerTemplate(formattedDirUrl, listEntry));
 
   const headers = setBaseHeaders();
   headers.set("content-type", "text/html");
