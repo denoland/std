@@ -1422,10 +1422,15 @@ class TestClass {
   func() {}
 }
 
+const map = new Map();
+map.set("Hello", "World!");
+map.set(() => "Hello", "World!");
+map.set(1, 2);
+
 Deno.test("Snapshot Test", async (t) => {
   await assertSnapshot(t, { a: 1, b: 2 });
   await assertSnapshot(t, new TestClass());
-  await assertSnapshot(t, new Map());
+  await assertSnapshot(t, map);
   await assertSnapshot(t, new Set([1, 2, 3]));
   await assertSnapshot(t, { fn() {} });
   await assertSnapshot(t, function fn() {});
@@ -1437,7 +1442,7 @@ Deno.test("Snapshot Test - step", async (t) => {
   await assertSnapshot(t, { a: 1, b: 2 });
   await t.step("Nested", async (t) => {
     await assertSnapshot(t, new TestClass());
-    await assertSnapshot(t, new Map());
+    await assertSnapshot(t, map);
     await t.step("Nested Nested", async (t) => {
       await assertSnapshot(t, new Set([1, 2, 3]));
       await assertSnapshot(t, { fn() {} });

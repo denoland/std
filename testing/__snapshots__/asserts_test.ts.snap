@@ -16,7 +16,9 @@ TestClass {
 
 snapshot[`Snapshot Test 3`] = `
 Map {
-  ,
+  "Hello" => "World!",
+  1 => 2,
+  [Function] => "World!",
 }
 `;
 
@@ -62,7 +64,9 @@ TestClass {
 
 snapshot[`Snapshot Test - step > Nested 2`] = `
 Map {
-  ,
+  "Hello" => "World!",
+  1 => 2,
+  [Function] => "World!",
 }
 `;
 
