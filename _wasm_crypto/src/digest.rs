@@ -24,9 +24,13 @@ pub enum ContextType {
   Sha3_256 = 14,
   Sha3_384 = 15,
   Sha3_512 = 16,
-  Shake128 = 17,
-  Shake256 = 18,
-  Tiger = 19,
+  Sha224 = 17,
+  Sha256 = 18,
+  Sha384 = 19,
+  Sha512 = 20,
+  Shake128 = 21,
+  Shake256 = 22,
+  Tiger = 23,
 }
 
 /// Enum wrapper over all supported digest implementations.
@@ -64,25 +68,29 @@ impl Context {
   pub fn new(algorithm: ContextType) -> Context {
     match algorithm {
       ContextType::Blake2b => Blake2b(Default::default()),
-        ContextType::Blake2b256 => Blake2b256(Default::default()),
-        ContextType::Blake2b384 => Blake2b384(Default::default()),
-        ContextType::Blake2s => Blake2s(Default::default()),
-        ContextType::Blake3 => Blake3(Default::default()),
-        ContextType::Keccak224 => Keccak224(Default::default()),
-        ContextType::Keccak256 => Keccak256(Default::default()),
-        ContextType::Keccak384 => Keccak384(Default::default()),
-        ContextType::Keccak512 => Keccak512(Default::default()),
-        ContextType::Md4 => Md4(Default::default()),
-        ContextType::Md5 => Md5(Default::default()),
-        ContextType::Ripemd160 => Ripemd160(Default::default()),
-        ContextType::Sha1 => Sha1(Default::default()),
-        ContextType::Sha3_224 => Sha3_224(Default::default()),
-        ContextType::Sha3_256 => Sha3_256(Default::default()),
-        ContextType::Sha3_384 => Sha3_384(Default::default()),
-        ContextType::Sha3_512 => Sha3_512(Default::default()),
-        ContextType::Shake128 => Shake128(Default::default()),
-        ContextType::Shake256 => Shake256(Default::default()),
-        ContextType::Tiger => Tiger(Default::default()),
+      ContextType::Blake2b256 => Blake2b256(Default::default()),
+      ContextType::Blake2b384 => Blake2b384(Default::default()),
+      ContextType::Blake2s => Blake2s(Default::default()),
+      ContextType::Blake3 => Blake3(Default::default()),
+      ContextType::Keccak224 => Keccak224(Default::default()),
+      ContextType::Keccak256 => Keccak256(Default::default()),
+      ContextType::Keccak384 => Keccak384(Default::default()),
+      ContextType::Keccak512 => Keccak512(Default::default()),
+      ContextType::Md4 => Md4(Default::default()),
+      ContextType::Md5 => Md5(Default::default()),
+      ContextType::Ripemd160 => Ripemd160(Default::default()),
+      ContextType::Sha1 => Sha1(Default::default()),
+      ContextType::Sha3_224 => Sha3_224(Default::default()),
+      ContextType::Sha3_256 => Sha3_256(Default::default()),
+      ContextType::Sha3_384 => Sha3_384(Default::default()),
+      ContextType::Sha3_512 => Sha3_512(Default::default()),
+      ContextType::Sha224 => Sha224(Default::default()),
+      ContextType::Sha256 => Sha256(Default::default()),
+      ContextType::Sha384 => Sha384(Default::default()),
+      ContextType::Sha512 => Sha512(Default::default()),
+      ContextType::Shake128 => Shake128(Default::default()),
+      ContextType::Shake256 => Shake256(Default::default()),
+      ContextType::Tiger => Tiger(Default::default()),
     }
   }
 
@@ -267,11 +275,8 @@ impl Context {
     }
   }
 
-  pub fn digest_and_drop(
-    self,
-    length: Option<usize>,
-  ) -> Box<[u8]> {
-   let length = length.unwrap_or_else(|| self.output_length());
+  pub fn digest_and_drop(self, length: Option<usize>) -> Box<[u8]> {
+    let length = length.unwrap_or_else(|| self.output_length());
 
     match self {
       Blake2b(context) => context.finalize(),
@@ -301,10 +306,7 @@ impl Context {
     }
   }
 
-  pub fn digest_and_reset(
-    &mut self,
-    length: Option<usize>,
-  ) -> Box<[u8]> {
+  pub fn digest_and_reset(&mut self, length: Option<usize>) -> Box<[u8]> {
     let length = length.unwrap_or_else(|| self.output_length());
     match self {
       Blake2b(context) => DynDigest::finalize_reset(context.as_mut()),
@@ -340,10 +342,7 @@ impl Context {
     }
   }
 
-  pub fn digest(
-    &self,
-    length: Option<usize>,
-  ) -> Box<[u8]> {
+  pub fn digest(&self, length: Option<usize>) -> Box<[u8]> {
     self.clone().digest_and_drop(length)
   }
 }

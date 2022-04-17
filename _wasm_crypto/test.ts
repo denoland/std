@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
 
-import { crypto as wasmCrypto } from "./mod.ts";
+import { digest } from "./mod.ts";
 import { _wasmBytes as wasmBytes } from "./crypto.mjs";
 import * as wasmFileModule from "./crypto.wasm.mjs";
 
@@ -10,7 +10,7 @@ const webCrypto = globalThis.crypto;
 Deno.test("test", async () => {
   const input = new TextEncoder().encode("SHA-384");
 
-  const wasmDigest = wasmCrypto.digest("SHA-384", input, undefined);
+  const wasmDigest = digest("SHA-384", input, undefined);
 
   const webDigest = new Uint8Array(
     await webCrypto.subtle!.digest("SHA-384", input),

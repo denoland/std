@@ -22,18 +22,17 @@ pub unsafe fn digest_malloc(len: usize) -> *mut u8 {
 ///
 /// An error will be thrown if `algorithm` is not a supported hash algorithm or
 /// `length` is not a supported length for the algorithm.
+#[no_mangle]
 pub fn digest(
   algorithm: digest::ContextType,
   data: *const u8,
   data_len: usize,
   out_length: Option<usize>,
-) -> *mut [u8] {
+) -> *mut u8 {
   let mut context = DigestContext::new(algorithm);
-  context.update(
-    unsafe { std::slice::from_raw_parts(data, data_len) },
-  );
+  context.update(unsafe { std::slice::from_raw_parts(data, data_len) });
   let boxed = context.digest_and_drop(out_length);
-  Box::into_raw(boxed)
+  Box::into_raw(boxed) as _
 }
 
 /// Creates a new context incrementally computing a digest using the given
@@ -41,7 +40,9 @@ pub fn digest(
 ///
 /// An error will be thrown if `algorithm` is not a supported hash algorithm.
 #[no_mangle]
-pub fn digest_context_new(algorithm: digest::ContextType) -> *mut DigestContext {
+pub fn digest_context_new(
+  algorithm: digest::ContextType,
+) -> *mut DigestContext {
   Box::into_raw(Box::new(DigestContext::new(algorithm)))
 }
 
@@ -71,27 +72,22 @@ pub unsafe fn digest_context_reset(context: *mut DigestContext) {
 
 /// Returns the digest of the input data so far. This may be called repeatedly
 /// without side effects.
-///
-/// `length` will usually be left `undefined` to use the default length for
-/// the algorithm. For algorithms with variable-length output, it can be used
-/// to specify a non-negative integer number of bytes.
-///
-/// An error will be thrown if `algorithm` is not a supported hash algorithm or
-/// `length` is not a supported length for the algorithm.
+#[no_mangle]
+pub fn digest_context_digest(
+  context: *mut DigestContext,
+  out_length: Option<usize>,
+) {
+  let context = unsafe { &mut *context };
+  let boxed = context.digest(out_length);
+  Box::into_raw(boxed);
+}
+
+#[no_mangle]
 pub unsafe fn digest_context_digest_and_drop(
   context: *mut DigestContext,
   out_length: Option<usize>,
-) -> *mut [u8] {
+) -> *mut u8 {
   let context = Box::from_raw(context);
   let boxed = context.digest_and_drop(out_length);
-  Box::into_raw(boxed)
-}
-
-pub unsafe fn digest_context_digest_and_reset(
-  context: *mut DigestContext,
-  out_length: Option<usize>,
-) -> *mut [u8] {
-  let mut context = Box::from_raw(context);
-  let boxed = context.digest_and_reset(out_length);
-  Box::into_raw(boxed)
+  Box::into_raw(boxed) as _
 }
