@@ -90,6 +90,8 @@ Deno.test("isNotStrictlyEqual", function (): void {
 
 Using `assertSnapshot()`:
 
+For more usage information, see [Snapshot Testing](#snapshot-testing).
+
 ```ts
 import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
