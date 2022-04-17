@@ -1,8 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
-  crypto as wasmCrypto,
+  digest,
   DigestAlgorithm as WasmDigestAlgorithm,
   digestAlgorithms as wasmDigestAlgorithms,
+  DigestContext,
 } from "../_wasm_crypto/mod.ts";
 
 /**
@@ -86,7 +87,7 @@ const stdCrypto = ((x) => x)({
         } else if (
           (data as AsyncIterable<BufferSource>)[Symbol.asyncIterator]
         ) {
-          const context = new wasmCrypto.DigestContext(name);
+          const context = new DigestContext(name);
           for await (const chunk of data as AsyncIterable<BufferSource>) {
             const chunkBytes = bufferSourceBytes(chunk);
             if (!chunkBytes) {
@@ -127,13 +128,13 @@ const stdCrypto = ((x) => x)({
       const bytes = bufferSourceBytes(data);
 
       if (bytes) {
-        return wasmCrypto.digest(algorithm.name, bytes, algorithm.length)
+        return digest(algorithm.name, bytes, algorithm.length)
           .buffer;
       } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
-        const context = new wasmCrypto.DigestContext(algorithm.name);
+        const context = new DigestContext(algorithm.name);
         for (const chunk of data as Iterable<BufferSource>) {
           const chunkBytes = bufferSourceBytes(chunk);
-          if (!chunkBytes) {
+          if (chunkBytes === undefined) {
             throw new TypeError("data contained chunk of the wrong type");
           }
           context.update(chunkBytes);

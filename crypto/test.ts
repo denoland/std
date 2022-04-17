@@ -138,7 +138,6 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
     ),
     new Uint8Array(0),
   );
-
   assertEquals(
     new Uint8Array(
       await stdCrypto.subtle.digest({ name: "BLAKE3", length: 6 }, inputBytes),
@@ -158,7 +157,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
   await process.stdin.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.mjs";
+      import { _wasm } from "../_wasm_crypto/mod.ts";
 
       const { memory } = _wasm as { memory: WebAssembly.Memory };
 
@@ -243,7 +242,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
   const process = Deno.run({
-    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+    cmd: [Deno.execPath(), "run", "--no-check", "-"],
     cwd: moduleDir,
     stdout: "piped",
     stdin: "piped",
@@ -252,8 +251,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
   await process.stdin.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.mjs";
-
+      import { _wasm } from "../_wasm_crypto/mod.ts";
       const { memory } = _wasm as { memory: WebAssembly.Memory };
 
       const heapBytesInitial = memory.buffer.byteLength;
@@ -1305,7 +1303,7 @@ for (const algorithm of digestAlgorithms) {
               i > 0 ? ` (but not until variation [${i}]!)` : ""
             } with options ${
               JSON.stringify(options)
-            }) returned unexpected value\n  actual: ${actual}\nexpected: ${expected}`,
+            } returned unexpected value\n  actual: ${actual}\nexpected: ${expected}`,
           );
         } catch (error) {
           if (expected instanceof Function) {

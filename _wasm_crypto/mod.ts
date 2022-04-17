@@ -42,7 +42,7 @@ const digestLengths = {
   "BLAKE2B-384": 48,
   "BLAKE2B": 64,
   "BLAKE2S": 32,
-  "BLAKE3": 48,
+  "BLAKE3": 32,
   "KECCAK-224": 28,
   "KECCAK-256": 32,
   "KECCAK-384": 48,
@@ -76,6 +76,7 @@ export type WasmModuleExports = {
     dataSize: number,
     outSize: number,
   ): number;
+  digest_free: (ptr: number, size: number) => void;
   digest_context_new(algorithm: number): number;
   digest_context_free(context: number): void;
   digest_context_update(
@@ -84,6 +85,10 @@ export type WasmModuleExports = {
     dataSize: number,
   ): void;
   digest_context_digest(
+    context: number,
+    outSize: number,
+  ): number;
+  digest_context_digest_and_drop(
     context: number,
     outSize: number,
   ): number;
@@ -98,6 +103,7 @@ const wasm = wasmInstance.exports as WasmModuleExports;
 
 // For testing
 export const _wasmBytes = wasmBytes;
+export const _wasm = wasm;
 
 function malloc(u8: Uint8Array, size: number): number {
   const ptr = wasm.digest_malloc(size);
@@ -110,8 +116,9 @@ function malloc(u8: Uint8Array, size: number): number {
 }
 
 function getBytes(ptr: number, size: number): Uint8Array {
-  const u8 = new Uint8Array(wasm.memory.buffer);
-  return u8.subarray(ptr, ptr + size);
+  const u8 = new Uint8Array(wasm.memory.buffer, ptr, size).slice();
+  wasm.digest_free(ptr, size);
+  return u8;
 }
 
 export function digest(
@@ -119,15 +126,9 @@ export function digest(
   data: Uint8Array,
   outLength?: number,
 ): Uint8Array {
-  const digestIndex = digestAlgorithms.indexOf(algorithm);
-  if (digestIndex === -1) {
-    throw new Error(`Unsupported digest algorithm: ${algorithm}`);
-  }
-  const dataLength = data.byteLength;
-  const dataPtr = malloc(data, dataLength);
-  const digestLength = outLength || digestLengths[algorithm];
-  const digestPtr = wasm.digest(digestIndex, dataPtr, dataLength, digestLength);
-  return getBytes(digestPtr, digestLength);
+  const context = new DigestContext(algorithm);
+  context.update(data);
+  return context.digestAndDrop(outLength);
 }
 
 export class DigestContext {
@@ -156,8 +157,23 @@ export class DigestContext {
    */
   update(data: Uint8Array): void {
     const dataLength = data.byteLength;
-    const dataPtr = malloc(data, dataLength);
-    wasm.digest_context_update(this.#ptr, dataPtr, dataLength);
+    if (dataLength === 0) {
+      return;
+    }
+    const chunkSize = 0x10000;
+    if (dataLength >= chunkSize) {
+      let offset = 0;
+      while (offset < dataLength) {
+        const chunk = data.slice(offset, offset + chunkSize);
+        const len = chunk.byteLength;
+        const dataPtr = malloc(chunk, len);
+        wasm.digest_context_update(this.#ptr, dataPtr, len);
+        offset += chunkSize;
+      }
+    } else {
+      const dataPtr = malloc(data, dataLength);
+      wasm.digest_context_update(this.#ptr, dataPtr, dataLength);
+    }
   }
 
   /**
@@ -173,14 +189,15 @@ export class DigestContext {
    * @param {number | undefined} length
    * @returns {Uint8Array}
    */
-  digest(length?: number): Uint8Array {
-    if (length === undefined) {
-      length = digestLengths[this.#algorithm];
-    }
-    if (length < 0) {
-      throw new Error(`Invalid digest length: ${length}`);
-    }
+  digest(len?: number): Uint8Array {
+    const length = len ?? digestLengths[this.#algorithm];
     const digestPtr = wasm.digest_context_digest(this.#ptr, length);
+    return getBytes(digestPtr, length);
+  }
+
+  digestAndDrop(len?: number): Uint8Array {
+    const length = len ?? digestLengths[this.#algorithm];
+    const digestPtr = wasm.digest_context_digest_and_drop(this.#ptr, length);
     return getBytes(digestPtr, length);
   }
 
@@ -190,5 +207,13 @@ export class DigestContext {
    */
   reset() {
     wasm.digest_context_reset(this.#ptr);
+  }
+
+  /**
+   * Frees the resources associated with this context.
+   * The context must not be used after this method has been called.
+   */
+  destroy() {
+    wasm.digest_context_free(this.#ptr);
   }
 }
