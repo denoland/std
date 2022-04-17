@@ -1,7 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-use digest::{
-  core_api::BlockSizeUser, Digest, DynDigest, ExtendableOutput, Reset, Update,
-};
+use alloc::boxed::Box;
+use digest::{Digest, DynDigest, ExtendableOutput, Reset, Update};
 use typenum::{U32, U48};
 
 #[repr(u8)]
@@ -93,51 +92,6 @@ impl Context {
     }
   }
 
-  /// The input block length for the algorithm, in bytes.
-  pub fn input_block_length(&self) -> usize {
-    // For algorithm types that implement BlockInput and have a statically
-    // available BlockSize as part of their type definition, we use that value.
-    fn static_block_length<T: BlockSizeUser>(_: &T) -> usize {
-      <T::BlockSize as typenum::Unsigned>::to_usize()
-    }
-
-    match self {
-      Blake2b(context) => static_block_length(&**context),
-      Blake2b256(context) => static_block_length(&**context),
-      Blake2b384(context) => static_block_length(&**context),
-      Blake2s(context) => static_block_length(&**context),
-      Blake3(_) => 64,
-      Keccak224(context) => static_block_length(&**context),
-      Keccak256(context) => static_block_length(&**context),
-      Keccak384(context) => static_block_length(&**context),
-      Keccak512(context) => static_block_length(&**context),
-      Md4(context) => static_block_length(&**context),
-      Md5(context) => static_block_length(&**context),
-      Ripemd160(context) => static_block_length(&**context),
-      Sha1(context) => static_block_length(&**context),
-      Sha3_224(context) => static_block_length(&**context),
-      Sha3_256(context) => static_block_length(&**context),
-      Sha3_384(context) => static_block_length(&**context),
-      Sha3_512(context) => static_block_length(&**context),
-      Sha224(context) => static_block_length(&**context),
-      Sha256(context) => static_block_length(&**context),
-      Sha384(context) => static_block_length(&**context),
-      Sha512(context) => static_block_length(&**context),
-      Tiger(context) => static_block_length(&**context),
-
-      // https://doi.org/10.6028/NIST.FIPS.202 specifies that:
-      // - In general, the input block size (in bits) of a sponge function is
-      //   its rate.
-      // - SPONGE[f, pad, r] = The sponge function in which the underlying
-      //   function is f, the padding rule is pad, and the rate is r.
-      // - KECCAK[c] = SPONGE[KECCAK-p[1600, 24], pad10*1, 1600–c]
-      // - SHAKE128(M, d) = KECCAK[256] (M || 1111, d)
-      Shake128(_) => 168, // implying a rate of (1600 - 256) bits = 168 bytes
-      // - SHAKE256(M, d) = KECCAK[512] (M || 1111, d).
-      Shake256(_) => 136, // implying a rate of (1600 - 512) bits = 136 bytes
-    }
-  }
-
   /// The output digest length for the algorithm, in bytes.
   ///
   /// If the algorithm is variable-length, this returns its default length.
@@ -173,12 +127,6 @@ impl Context {
       Shake128(_) => 32, // implying a length of (2 * 128) bits = 32 bytes
       Shake256(_) => 64, // implying a length of (2 * 256) bits = 64 bytes
     }
-  }
-
-  /// Whether the algorithm has an extendable variable-length digest output
-  /// (whether it is an "XOF").
-  pub const fn extendable(&self) -> bool {
-    matches!(self, Blake3(_) | Shake128(_) | Shake256(_))
   }
 
   pub fn reset(&mut self) {
@@ -239,9 +187,7 @@ impl Context {
     }
   }
 
-  pub fn digest_and_drop(self, length: Option<usize>) -> Box<[u8]> {
-    let length = length.unwrap_or_else(|| self.output_length());
-
+  pub fn digest_and_drop(self, length: usize) -> Box<[u8]> {
     match self {
       Blake2b(context) => context.finalize(),
       Blake2b256(context) => context.finalize(),
@@ -270,7 +216,7 @@ impl Context {
     }
   }
 
-  pub fn digest(&self, length: Option<usize>) -> Box<[u8]> {
+  pub fn digest(&self, length: usize) -> Box<[u8]> {
     self.clone().digest_and_drop(length)
   }
 }
