@@ -51,10 +51,26 @@ const copyrightLine = `// Copyright 2018-${
   new Date().getFullYear()
 } the Deno authors. All rights reserved. MIT license.`;
 
+const generatedWasmFile = "./target/wasm32-unknown-unknown/release/deno_std_wasm_crypto.wasm";
+
+// Run wasm-opt.
+if (
+  !((await Deno.run({
+    cmd: [
+      "wasm-opt",
+      "-Oz",
+      "-o",
+      generatedWasmFile,
+      generatedWasmFile,
+    ],
+  }).status()).success)
+) {
+  console.error(`Failed to run wasm-opt.`);
+  Deno.exit(1);
+}
+
 // Encode WASM binary as a JavaScript module.
-const generatedWasm = await Deno.readFile(
-  "./target/wasm32-unknown-unknown/release/deno_std_wasm_crypto.wasm",
-);
+const generatedWasm = await Deno.readFile(generatedWasmFile);
 
 // Format WASM binary size with _ thousands separators for human readability,
 // so that any changes in size will be clear in diffs.

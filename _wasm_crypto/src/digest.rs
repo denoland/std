@@ -1,7 +1,6 @@
 // Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
 use digest::{
-  core_api::BlockSizeUser, Digest, DynDigest, ExtendableOutput,
-  ExtendableOutputReset, Reset, Update,
+  core_api::BlockSizeUser, Digest, DynDigest, ExtendableOutput, Reset, Update,
 };
 use typenum::{U32, U48};
 
@@ -182,41 +181,6 @@ impl Context {
     matches!(self, Blake3(_) | Shake128(_) | Shake256(_))
   }
 
-  /// The name of the algorithm used by this context.
-  ///
-  /// Names are all uppercase (for ease of case-insensitive comparisons) and
-  /// will match the name formatting used in WebCrypto if the algorithm is
-  /// supported by WebCrypto, and otherwise match the formatting used in the
-  /// official specification for the algorithm.
-  pub const fn algorithm_name(&self) -> &'static str {
-    match self {
-      Blake2b(_) => "BLAKE2B",
-      Blake2b256(_) => "BLAKE2B-256",
-      Blake2b384(_) => "BLAKE2B-384",
-      Blake2s(_) => "BLAKE2S",
-      Blake3(_) => "BLAKE3",
-      Keccak224(_) => "KECCAK-224",
-      Keccak256(_) => "KECCAK-256",
-      Keccak384(_) => "KECCAK-384",
-      Keccak512(_) => "KECCAK-512",
-      Md4(_) => "MD5",
-      Md5(_) => "MD5",
-      Ripemd160(_) => "RIPEMD-160",
-      Sha1(_) => "SHA-1",
-      Sha3_224(_) => "SHA3-224",
-      Sha3_256(_) => "SHA3-256",
-      Sha3_384(_) => "SHA3-384",
-      Sha3_512(_) => "SHA3-512",
-      Sha224(_) => "SHA-224",
-      Sha256(_) => "SHA-256",
-      Sha384(_) => "SHA-384",
-      Sha512(_) => "SHA-512",
-      Shake128(_) => "SHAKE128",
-      Shake256(_) => "SHAKE256",
-      Tiger(_) => "TIGER",
-    }
-  }
-
   pub fn reset(&mut self) {
     match self {
       Blake2b(context) => Reset::reset(&mut **context),
@@ -303,42 +267,6 @@ impl Context {
       Tiger(context) => context.finalize(),
       Shake128(context) => context.finalize_boxed(length),
       Shake256(context) => context.finalize_boxed(length),
-    }
-  }
-
-  pub fn digest_and_reset(&mut self, length: Option<usize>) -> Box<[u8]> {
-    let length = length.unwrap_or_else(|| self.output_length());
-    match self {
-      Blake2b(context) => DynDigest::finalize_reset(context.as_mut()),
-      Blake2b256(context) => DynDigest::finalize_reset(context.as_mut()),
-      Blake2b384(context) => DynDigest::finalize_reset(context.as_mut()),
-      Blake2s(context) => DynDigest::finalize_reset(context.as_mut()),
-      Blake3(context) => {
-        ExtendableOutputReset::finalize_boxed_reset(context.as_mut(), length)
-      }
-      Keccak224(context) => DynDigest::finalize_reset(context.as_mut()),
-      Keccak256(context) => DynDigest::finalize_reset(context.as_mut()),
-      Keccak384(context) => DynDigest::finalize_reset(context.as_mut()),
-      Keccak512(context) => DynDigest::finalize_reset(context.as_mut()),
-      Md4(context) => DynDigest::finalize_reset(context.as_mut()),
-      Md5(context) => DynDigest::finalize_reset(context.as_mut()),
-      Ripemd160(context) => DynDigest::finalize_reset(context.as_mut()),
-      Sha1(context) => DynDigest::finalize_reset(context.as_mut()),
-      Sha3_224(context) => DynDigest::finalize_reset(context.as_mut()),
-      Sha3_256(context) => DynDigest::finalize_reset(context.as_mut()),
-      Sha3_384(context) => DynDigest::finalize_reset(context.as_mut()),
-      Sha3_512(context) => DynDigest::finalize_reset(context.as_mut()),
-      Sha224(context) => DynDigest::finalize_reset(context.as_mut()),
-      Sha256(context) => DynDigest::finalize_reset(context.as_mut()),
-      Sha384(context) => DynDigest::finalize_reset(context.as_mut()),
-      Sha512(context) => DynDigest::finalize_reset(context.as_mut()),
-      Tiger(context) => DynDigest::finalize_reset(context.as_mut()),
-      Shake128(context) => {
-        ExtendableOutputReset::finalize_boxed_reset(context.as_mut(), length)
-      }
-      Shake256(context) => {
-        ExtendableOutputReset::finalize_boxed_reset(context.as_mut(), length)
-      }
     }
   }
 
