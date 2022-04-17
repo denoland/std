@@ -78,7 +78,7 @@ pub fn digest_context_update(
 /// provided with any input data. (It will still use the same algorithm.)
 #[no_mangle]
 pub fn digest_context_reset(context: *mut DigestContext) {
-  let mut context = unsafe { &mut *context };
+  let context = unsafe { &mut *context };
   context.reset();
 }
 

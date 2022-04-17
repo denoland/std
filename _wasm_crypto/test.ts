@@ -1,8 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
 
-import { digest } from "./mod.ts";
-import { _wasmBytes as wasmBytes } from "./crypto.mjs";
+import { digest, _wasmBytes as wasmBytes } from "./mod.ts";
 import * as wasmFileModule from "./crypto.wasm.mjs";
 
 const webCrypto = globalThis.crypto;
