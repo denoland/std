@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { fromFileUrl, join, parse } from "../path/mod.ts";
+import { fromFileUrl, join, parse, toFileUrl } from "../path/mod.ts";
 import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { bold, green, red } from "../fmt/colors.ts";
 import { AssertionError, equal } from "./asserts.ts";
@@ -167,9 +167,9 @@ export async function assertSnapshot(
     }
     const testFile = fromFileUrl(context.origin);
     const parts = parse(testFile);
-    assertSnapshotContext.snapshotPath = `${
-      join(parts.dir, SNAPSHOT_DIR, parts.name)
-    }${parts.ext}.snap`;
+    assertSnapshotContext.snapshotPath = toFileUrl(
+      `${join(parts.dir, SNAPSHOT_DIR, parts.name)}${parts.ext}.snap`,
+    ).toString();
     return assertSnapshotContext.snapshotPath;
   }
   function getExpected() {
