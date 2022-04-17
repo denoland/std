@@ -247,6 +247,11 @@ function fileLenToString(len: number): string {
   return `${(len / base).toFixed(2)}${suffix[suffixIndex]}`;
 }
 
+interface ServeFileOptions {
+  etagAlgorithm?: EtagAlgorithm;
+  fileInfo?: Deno.FileInfo;
+}
+
 /**
  * Returns an HTTP Response with the requested file as the body.
  * @param req The server request context used to cleanup the file handle.
@@ -258,12 +263,16 @@ function fileLenToString(len: number): string {
 export async function serveFile(
   req: Request,
   filePath: string,
-  etagAlgorithm: EtagAlgorithm = "fnv1a",
-  fileInfo?: Deno.FileInfo,
+  { etagAlgorithm, fileInfo }: ServeFileOptions = {},
 ): Promise<Response> {
-  const file = await Deno.open(filePath);
+  let file: Deno.File;
   if (fileInfo === undefined) {
-    fileInfo = await Deno.stat(filePath);
+    [file, fileInfo] = await Promise.all([
+      Deno.open(filePath),
+      Deno.stat(filePath),
+    ]);
+  } else {
+    file = await Deno.open(filePath);
   }
   const headers = setBaseHeaders();
 
@@ -287,7 +296,7 @@ export async function serveFile(
     // Create a simple etag that is an md5 of the last modified date and filesize concatenated
     const simpleEtag = await createEtagHash(
       `${lastModified.toJSON()}${fileInfo.size}`,
-      etagAlgorithm,
+      etagAlgorithm || "fnv1a",
     );
     headers.set("etag", simpleEtag);
 
@@ -432,7 +441,10 @@ async function serveDirIndex(
     const fileInfo = await Deno.stat(filePath);
     if (entry.name === "index.html" && entry.isFile) {
       // in case index.html as dir...
-      return serveFile(req, filePath, options.etagAlgorithm, fileInfo);
+      return serveFile(req, filePath, {
+        etagAlgorithm: options.etagAlgorithm,
+        fileInfo,
+      });
     }
     listEntry.push({
       mode: modeToString(entry.isDirectory, fileInfo.mode),
@@ -690,7 +702,10 @@ export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
         throw new Deno.errors.NotFound();
       }
     } else {
-      response = await serveFile(req, fsPath, opts.etagAlgorithm, fileInfo);
+      response = await serveFile(req, fsPath, {
+        etagAlgorithm: opts.etagAlgorithm,
+        fileInfo,
+      });
     }
   } catch (e) {
     const err = e instanceof Error ? e : new Error("[non-error thrown]");
