@@ -265,7 +265,7 @@ export async function serveFile(
   filePath: string,
   { etagAlgorithm, fileInfo }: ServeFileOptions = {},
 ): Promise<Response> {
-  let file: Deno.File;
+  let file: Deno.FsFile;
   if (fileInfo === undefined) {
     [file, fileInfo] = await Promise.all([
       Deno.open(filePath),
