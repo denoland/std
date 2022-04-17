@@ -93,7 +93,7 @@ Using `assertSnapshot()`:
 For more usage information, see [Snapshot Testing](#snapshot-testing).
 
 ```ts
-import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
 
 Deno.test("isSnapshotMatch", function (test): void {
   const a = {
@@ -181,7 +181,7 @@ to a reference snapshot, which is stored alongside the test file in the
 
 ```ts
 // example_test.ts
-import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
 
 Deno.test("isSnapshotMatch", function (test): void {
   const a = {

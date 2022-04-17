@@ -1,6 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
-  _format,
   assert,
   assertAlmostEquals,
   assertArrayIncludes,
@@ -15,7 +14,6 @@ import {
   assertNotStrictEquals,
   assertObjectMatch,
   assertRejects,
-  assertSnapshot,
   assertStrictEquals,
   assertStringIncludes,
   assertThrows,
@@ -1264,69 +1262,6 @@ Deno.test("assertEquals diff for differently ordered objects", () => {
   );
 });
 
-Deno.test("assert diff formatting (strings)", () => {
-  assertThrows(
-    () => {
-      assertEquals([..."abcd"].join("\n"), [..."abxde"].join("\n"));
-    },
-    undefined,
-    `
-    a\\n
-    b\\n
-${green("+   x")}\\n
-${green("+   d")}\\n
-${green("+   e")}
-${red("-   c")}\\n
-${red("-   d")}
-`,
-  );
-});
-
-// Check that the diff formatter overrides some default behaviours of
-// `Deno.inspect()` which are problematic for diffing.
-Deno.test("assert diff formatting", () => {
-  // Wraps objects into multiple lines even when they are small. Prints trailing
-  // commas.
-  assertEquals(
-    stripColor(_format({ a: 1, b: 2 })),
-    `{
-  a: 1,
-  b: 2,
-}`,
-  );
-
-  // Same for nested small objects.
-  assertEquals(
-    stripColor(_format([{ x: { a: 1, b: 2 }, y: ["a", "b"] }])),
-    `[
-  {
-    x: {
-      a: 1,
-      b: 2,
-    },
-    y: [
-      "a",
-      "b",
-    ],
-  },
-]`,
-  );
-
-  // Grouping is disabled.
-  assertEquals(
-    stripColor(_format(["i", "i", "i", "i", "i", "i", "i"])),
-    `[
-  "i",
-  "i",
-  "i",
-  "i",
-  "i",
-  "i",
-  "i",
-]`,
-  );
-});
-
 Deno.test("Assert Throws Parent Error", () => {
   assertThrows(
     () => {
@@ -1408,72 +1343,4 @@ Deno.test("Assert Is Error with custom Error", () => {
     AssertionError,
     'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
   );
-});
-
-class TestClass {
-  a = 1;
-  b = 2;
-  init() {
-    this.b = 3;
-  }
-  get getA() {
-    return this.a;
-  }
-  func() {}
-}
-
-const map = new Map();
-map.set("Hello", "World!");
-map.set(() => "Hello", "World!");
-map.set(1, 2);
-
-Deno.test("Snapshot Test", async (t) => {
-  await assertSnapshot(t, { a: 1, b: 2 });
-  await assertSnapshot(t, new TestClass());
-  await assertSnapshot(t, map);
-  await assertSnapshot(t, new Set([1, 2, 3]));
-  await assertSnapshot(t, { fn() {} });
-  await assertSnapshot(t, function fn() {});
-  await assertSnapshot(t, [1, 2, 3]);
-  await assertSnapshot(t, "hello world");
-});
-
-Deno.test("Snapshot Test - step", async (t) => {
-  await assertSnapshot(t, { a: 1, b: 2 });
-  await t.step("Nested", async (t) => {
-    await assertSnapshot(t, new TestClass());
-    await assertSnapshot(t, map);
-    await t.step("Nested Nested", async (t) => {
-      await assertSnapshot(t, new Set([1, 2, 3]));
-      await assertSnapshot(t, { fn() {} });
-      await assertSnapshot(t, function fn() {});
-    });
-    await assertSnapshot(t, [1, 2, 3]);
-  });
-  await assertSnapshot(t, "hello world");
-});
-
-Deno.test("Snapshot Test - Adverse String \\ ` ${}", async (t) => {
-  await assertSnapshot(t, "\\ ` ${}");
-});
-
-Deno.test("Snapshot Test - Failed Assertion", async (t) => {
-  await t.step("Object", async (t) => {
-    try {
-      await assertSnapshot(t, [1, 2]);
-      fail("Expected snapshot not to match");
-    } catch (error) {
-      assertInstanceOf(error, AssertionError);
-      await assertSnapshot(t, error.message.split("\n"));
-    }
-  });
-  await t.step("String", async (t) => {
-    try {
-      await assertSnapshot(t, "Hello!");
-      fail("Expected snapshot not to match");
-    } catch (error) {
-      assertInstanceOf(error, AssertionError);
-      await assertSnapshot(t, error.message.split("\n"));
-    }
-  });
 });
