@@ -58,7 +58,7 @@ if (
   !((await Deno.run({
     cmd: [
       "wasm-opt",
-      "-Oz",
+      "-O3",
       "-o",
       generatedWasmFile,
       generatedWasmFile,
