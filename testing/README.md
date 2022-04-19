@@ -183,7 +183,7 @@ to a reference snapshot, which is stored alongside the test file in the
 // example_test.ts
 import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
 
-Deno.test("isSnapshotMatch", function (test): void {
+Deno.test("isSnapshotMatch", function (t): void {
   const a = {
     hello: "world!",
     example: 123,
