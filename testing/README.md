@@ -100,7 +100,7 @@ Deno.test("isSnapshotMatch", function (t): void {
     hello: "world!",
     example: 123,
   };
-  assertSnapshot(test, a);
+  assertSnapshot(t, a);
 });
 ```
 
@@ -188,7 +188,7 @@ Deno.test("isSnapshotMatch", function (t): void {
     hello: "world!",
     example: 123,
   };
-  assertSnapshot(test, a);
+  assertSnapshot(t, a);
 });
 ```
 
