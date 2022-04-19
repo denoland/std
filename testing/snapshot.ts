@@ -55,7 +55,7 @@ function writeSnapshotFileSync(context: AssertSnapshotContext) {
  *
  * @param context Assert snapshot context
  */
- function registerSnapshotTeardown(context: AssertSnapshotContext) {
+function registerSnapshotTeardown(context: AssertSnapshotContext) {
   if (context.teardownRegistered) return;
   globalThis.addEventListener("unload", () => {
     writeSnapshotFileSync(context);
