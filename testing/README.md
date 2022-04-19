@@ -95,12 +95,12 @@ For more usage information, see [Snapshot Testing](#snapshot-testing).
 ```ts
 import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
 
-Deno.test("isSnapshotMatch", function (t): void {
+Deno.test("isSnapshotMatch", async function (t): void {
   const a = {
     hello: "world!",
     example: 123,
   };
-  assertSnapshot(t, a);
+  await assertSnapshot(t, a);
 });
 ```
 
@@ -183,12 +183,12 @@ to a reference snapshot, which is stored alongside the test file in the
 // example_test.ts
 import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
 
-Deno.test("isSnapshotMatch", function (t): void {
+Deno.test("isSnapshotMatch", async function (t): void {
   const a = {
     hello: "world!",
     example: 123,
   };
-  assertSnapshot(t, a);
+  await assertSnapshot(t, a);
 });
 ```
 
