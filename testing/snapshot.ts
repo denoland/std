@@ -43,7 +43,7 @@ function writeSnapshotFileSync(context: AssertSnapshotContext) {
   });
   const snapshotFilePath = fromFileUrl(context.snapshotFileUrl as URL);
   ensureFileSync(snapshotFilePath);
-  Deno.writeTextFileSync(snapshotFilePath, buf.join("\n"));
+  Deno.writeTextFileSync(snapshotFilePath, buf.join("\n") + "\n");
 }
 
 /**
@@ -55,7 +55,7 @@ function writeSnapshotFileSync(context: AssertSnapshotContext) {
  *
  * @param context Assert snapshot context
  */
-function registerSnapshotTeardown(context: AssertSnapshotContext) {
+ function registerSnapshotTeardown(context: AssertSnapshotContext) {
   if (context.teardownRegistered) return;
   globalThis.onunload = () => {
     writeSnapshotFileSync(context);
