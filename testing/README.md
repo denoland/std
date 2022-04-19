@@ -95,7 +95,7 @@ For more usage information, see [Snapshot Testing](#snapshot-testing).
 ```ts
 import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
 
-Deno.test("isSnapshotMatch", async function (t): void {
+Deno.test("isSnapshotMatch", async function (t): Promise<void> {
   const a = {
     hello: "world!",
     example: 123,
@@ -183,7 +183,7 @@ to a reference snapshot, which is stored alongside the test file in the
 // example_test.ts
 import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
 
-Deno.test("isSnapshotMatch", async function (t): void {
+Deno.test("isSnapshotMatch", async function (t): Promise<void> {
   const a = {
     hello: "world!",
     example: 123,
@@ -226,8 +226,8 @@ Additionally, new snapshots will only be created when this flag is present.
 
 When running snapshot tests, the `--allow-read` permission must be enabled, or
 else any calls to `assertSnapshot` will fail due to insufficient permissions.
-Additionally, when updating snapshots, the `--allow-write` permission must be
-enabled, as this is required in order to update snapshot files.
+Additionally, when updating snapshots, the `--allow-write` permission must also
+be enabled, as this is required in order to update snapshot files.
 
 The `assertSnapshot` function will only attempt to read from and write to
 snapshot files. As such, the allow list for `--allow-read` and `--allow-write`
