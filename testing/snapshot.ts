@@ -57,14 +57,14 @@ function writeSnapshotFileSync(context: AssertSnapshotContext) {
  */
  function registerSnapshotTeardown(context: AssertSnapshotContext) {
   if (context.teardownRegistered) return;
-  globalThis.onunload = () => {
+  globalThis.addEventListener("unload", () => {
     writeSnapshotFileSync(context);
     if (context.snapshotUpdatedCount > 0) {
       console.log(
         green(bold(`\n > ${context.snapshotUpdatedCount} snapshots updated.`)),
       );
     }
-  };
+  });
   context.teardownRegistered = true;
 }
 
