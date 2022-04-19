@@ -508,9 +508,9 @@ export async function serveListener(
 ): Promise<void> {
   const server = new Server({ handler, onError: options?.onError });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
   return await server.serve(listener);
 }
@@ -550,9 +550,9 @@ export async function serve(
     onError: options.onError,
   });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
   return await server.listenAndServe();
 }
@@ -605,9 +605,9 @@ export async function serveTls(
     onError: options.onError,
   });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
   return await server.listenAndServeTls(options.certFile, options.keyFile);
 }
@@ -651,9 +651,9 @@ export async function listenAndServe(
 ): Promise<void> {
   const server = new Server({ ...config, handler });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
   return await server.listenAndServe();
 }
@@ -703,9 +703,9 @@ export async function listenAndServeTls(
 ): Promise<void> {
   const server = new Server({ ...config, handler });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
   return await server.listenAndServeTls(certFile, keyFile);
 }
