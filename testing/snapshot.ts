@@ -10,7 +10,7 @@ const CAN_NOT_DISPLAY = "[Cannot display]";
 const SNAPSHOT_DIR = "__snapshots__";
 
 type AssertSnapshotContext = {
-  snapshotPath: string | null;
+  snapshotFileUrl: URL | null;
   teardownRegistered: boolean;
   currentSnapshot: Map<string, string> | null;
   updatedSnapshot: Map<string, string>;
@@ -41,8 +41,9 @@ function writeSnapshotFileSync(context: AssertSnapshotContext) {
     const formattedKey = escapeStringForJs(key);
     buf.push(`\nsnapshot[\`${formattedKey}\`] = \`${formattedValue}\`;`);
   });
-  ensureFileSync(context.snapshotPath as string);
-  Deno.writeTextFileSync(context.snapshotPath as string, buf.join("\n"));
+  const snapshotFilePath = fromFileUrl(context.snapshotFileUrl as URL);
+  ensureFileSync(snapshotFilePath);
+  Deno.writeTextFileSync(snapshotFilePath, buf.join("\n"));
 }
 
 /**
@@ -100,7 +101,7 @@ export async function assertSnapshot(
   const testName = getTestName(context);
   const count = getCount();
   const snapshotName = `${testName} ${count}`;
-  const snapshotPath = getSnapshotPath();
+  const snapshotFileUrl = getSnapshotFileUrl();
   const isUpdate = Deno.args.some((arg) => arg === "--update" || arg === "-u");
   const currentSnapshot = await readSnapshotFile();
 
@@ -140,7 +141,7 @@ export async function assertSnapshot(
   function getAssertSnapshotContext() {
     if (!_assertSnapshotContext) {
       _assertSnapshotContext = {
-        snapshotPath: null,
+        snapshotFileUrl: null,
         teardownRegistered: false,
         currentSnapshot: null,
         updatedSnapshot: new Map(),
@@ -161,16 +162,16 @@ export async function assertSnapshot(
     assertSnapshotContext.snapshotCounts.set(testName, count + 1);
     return count;
   }
-  function getSnapshotPath() {
-    if (assertSnapshotContext.snapshotPath) {
-      return assertSnapshotContext.snapshotPath;
+  function getSnapshotFileUrl() {
+    if (assertSnapshotContext.snapshotFileUrl) {
+      return assertSnapshotContext.snapshotFileUrl;
     }
     const testFile = fromFileUrl(context.origin);
     const parts = parse(testFile);
-    assertSnapshotContext.snapshotPath = toFileUrl(
+    assertSnapshotContext.snapshotFileUrl = toFileUrl(
       `${join(parts.dir, SNAPSHOT_DIR, parts.name)}${parts.ext}.snap`,
-    ).toString();
-    return assertSnapshotContext.snapshotPath;
+    );
+    return assertSnapshotContext.snapshotFileUrl;
   }
   function getExpected() {
     const snapshot = currentSnapshot.get(snapshotName);
@@ -184,10 +185,10 @@ export async function assertSnapshot(
       return assertSnapshotContext.currentSnapshot;
     }
     if (isUpdate) {
-      await ensureFile(snapshotPath);
+      await ensureFile(fromFileUrl(snapshotFileUrl));
     }
     try {
-      const { snapshot } = await import(snapshotPath);
+      const { snapshot } = await import(snapshotFileUrl.toString());
       assertSnapshotContext.currentSnapshot = typeof snapshot === "undefined"
         ? new Map()
         : new Map(Object.entries(snapshot));
