@@ -142,7 +142,7 @@ snapshot[`Snapshot Test - Failed Assertion > String 2`] = `
 
 snapshot[`Snapshot Test - Update 1`] = `
 [
-  "running 1 test from testing/.tmp/test.ts",
+  "running 1 test from ./testing/.tmp/test.ts",
   "Snapshot Test - Update ... ok (--ms)",
   "",
   " > 1 snapshots updated.",
@@ -155,7 +155,7 @@ snapshot[`Snapshot Test - Update 1`] = `
 
 snapshot[`Snapshot Test - Update 2`] = `
 [
-  "running 1 test from testing/.tmp/test.ts",
+  "running 1 test from ./testing/.tmp/test.ts",
   "Snapshot Test - Update ... ok (--ms)",
   "",
   "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)",
@@ -166,7 +166,7 @@ snapshot[`Snapshot Test - Update 2`] = `
 
 snapshot[`Snapshot Test - Update 3`] = `
 [
-  "running 1 test from testing/.tmp/test.ts",
+  "running 1 test from ./testing/.tmp/test.ts",
   "Snapshot Test - Update ... ok (--ms)",
   "",
   " > 1 snapshots updated.",
