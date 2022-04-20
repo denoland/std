@@ -105,7 +105,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
 
   function formatOutput(string: string) {
     // Strip colors and obfuscate any timings
-    return stripColor(string).replace(/([0-9])+ms/g, "--ms");
+    return stripColor(string).replace(/([0-9])+m?s/g, "--ms");
   }
 
   function formatError(string: string) {
