@@ -1,0 +1,178 @@
+export const snapshot = {};
+
+snapshot[`Snapshot Test 1`] = `
+{
+  a: 1,
+  b: 2,
+}
+`;
+
+snapshot[`Snapshot Test 2`] = `
+TestClass {
+  a: 1,
+  b: 2,
+}
+`;
+
+snapshot[`Snapshot Test 3`] = `
+Map {
+  "Hello" => "World!",
+  1 => 2,
+  [Function] => "World!",
+}
+`;
+
+snapshot[`Snapshot Test 4`] = `
+Set {
+  1,
+  2,
+  3,
+}
+`;
+
+snapshot[`Snapshot Test 5`] = `
+{
+  fn: [Function: fn],
+}
+`;
+
+snapshot[`Snapshot Test 6`] = `[Function: fn]`;
+
+snapshot[`Snapshot Test 7`] = `
+[
+  1,
+  2,
+  3,
+]
+`;
+
+snapshot[`Snapshot Test 8`] = `"hello world"`;
+
+snapshot[`Snapshot Test - step 1`] = `
+{
+  a: 1,
+  b: 2,
+}
+`;
+
+snapshot[`Snapshot Test - step > Nested 1`] = `
+TestClass {
+  a: 1,
+  b: 2,
+}
+`;
+
+snapshot[`Snapshot Test - step > Nested 2`] = `
+Map {
+  "Hello" => "World!",
+  1 => 2,
+  [Function] => "World!",
+}
+`;
+
+snapshot[`Snapshot Test - step > Nested > Nested Nested 1`] = `
+Set {
+  1,
+  2,
+  3,
+}
+`;
+
+snapshot[`Snapshot Test - step > Nested > Nested Nested 2`] = `
+{
+  fn: [Function: fn],
+}
+`;
+
+snapshot[`Snapshot Test - step > Nested > Nested Nested 3`] = `[Function: fn]`;
+
+snapshot[`Snapshot Test - step > Nested 3`] = `
+[
+  1,
+  2,
+  3,
+]
+`;
+
+snapshot[`Snapshot Test - step 2`] = `"hello world"`;
+
+snapshot[`Snapshot Test - Adverse String \\ \` \${} 1`] = `"\\\\ \` \${}"`;
+
+snapshot[`Snapshot Test - Failed Assertion > Object 1`] = `
+[
+  1,
+  2,
+  3,
+]
+`;
+
+snapshot[`Snapshot Test - Failed Assertion > Object 2`] = `
+[
+  "Snapshot does not match:",
+  "",
+  "",
+  "    [Diff] Actual / Expected",
+  "",
+  "",
+  "    [",
+  "      1,",
+  "      2,",
+  "+     3,",
+  "    ]",
+  "",
+]
+`;
+
+snapshot[`Snapshot Test - Failed Assertion > String 1`] = `"Hello World!"`;
+
+snapshot[`Snapshot Test - Failed Assertion > String 2`] = `
+[
+  "Snapshot does not match:",
+  "",
+  "",
+  "    [Diff] Actual / Expected",
+  "",
+  "",
+  '-   "Hello!"',
+  '+   "Hello World!"',
+  "",
+  "",
+]
+`;
+
+snapshot[`Snapshot Test - Update 1`] = `
+[
+  "running 1 test from ./testing/.tmp/test.ts",
+  "Snapshot Test - Update ... ok (--ms)",
+  "",
+  " > 1 snapshots updated.",
+  "",
+  "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)",
+  "",
+  "",
+]
+`;
+
+snapshot[`Snapshot Test - Update 2`] = `
+[
+  "running 1 test from ./testing/.tmp/test.ts",
+  "Snapshot Test - Update ... ok (--ms)",
+  "",
+  "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)",
+  "",
+  "",
+]
+`;
+
+snapshot[`Snapshot Test - Update 3`] = `
+[
+  "running 1 test from ./testing/.tmp/test.ts",
+  "Snapshot Test - Update ... ok (--ms)",
+  "",
+  " > 1 snapshots updated.",
+  "",
+  "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)",
+  "",
+  "",
+]
+`;

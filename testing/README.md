@@ -31,6 +31,7 @@ pretty-printed diff of failing assertion.
   `expected` values.
 - `assertObjectMatch()` - Make an assertion that `actual` object match
   `expected` subset object
+- `assertSnapshot()` - Make an assertion that `actual` matches a snapshot
 - `assertThrows()` - Expects the passed `fn` to throw. If `fn` does not throw,
   this function does. Also compares any errors thrown to an optional expected
   `Error` class and checks that the error `.message` includes an optional
@@ -84,6 +85,22 @@ Deno.test("isNotStrictlyEqual", function (): void {
   const a = {};
   const b = {};
   assertStrictEquals(a, b);
+});
+```
+
+Using `assertSnapshot()`:
+
+For more usage information, see [Snapshot Testing](#snapshot-testing).
+
+```ts
+import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
+
+Deno.test("isSnapshotMatch", async function (t): Promise<void> {
+  const a = {
+    hello: "world!",
+    example: 123,
+  };
+  await assertSnapshot(t, a);
 });
 ```
 
@@ -153,6 +170,76 @@ Deno.test("fails", async function () {
   );
 });
 ```
+
+## Snapshot Testing
+
+### Basic usage:
+
+The `assertSnapshot` function will create a snapshot of a value and compare it
+to a reference snapshot, which is stored alongside the test file in the
+`__snapshots__` directory.
+
+```ts
+// example_test.ts
+import { assertSnapshot } from "https://deno.land/std@$STD_VERSION/testing/snapshot.ts";
+
+Deno.test("isSnapshotMatch", async function (t): Promise<void> {
+  const a = {
+    hello: "world!",
+    example: 123,
+  };
+  await assertSnapshot(t, a);
+});
+```
+
+```js
+// __snapshots__/example_test.ts.snap
+export const snapshot = {};
+
+snapshot[`isSnapshotMatch 1`] = `
+{
+  example: 123,
+  hello: "world!",
+}
+`;
+```
+
+Calling `assertSnapshot` in a test will throw an `AssertionError`, causing the
+test to fail, if the snapshot created during the test does not match the one in
+the snapshot file.
+
+### Updating Snapshots:
+
+When adding new snapshot assertions to your test suite, or when intentionally
+making changes which cause your snapshots to fail, you can update your snapshots
+by running the snapshot tests in update mode. Tests can be run in update mode by
+passing the `--update` or `-u` flag as an argument when running the test. When
+this flag is passed, then any snapshots which do not match will be updated.
+
+```sh
+deno test --allow-all -- --update
+```
+
+Additionally, new snapshots will only be created when this flag is present.
+
+### Permissions:
+
+When running snapshot tests, the `--allow-read` permission must be enabled, or
+else any calls to `assertSnapshot` will fail due to insufficient permissions.
+Additionally, when updating snapshots, the `--allow-write` permission must also
+be enabled, as this is required in order to update snapshot files.
+
+The `assertSnapshot` function will only attempt to read from and write to
+snapshot files. As such, the allow list for `--allow-read` and `--allow-write`
+can be limited to only include existing snapshot files, if so desired.
+
+### Version Control:
+
+Snapshot testing works best when changes to snapshot files are comitted
+alongside other code changes. This allows for changes to reference snapshots to
+be reviewed along side the code changes that caused them, and ensures that when
+others pull your changes, their tests will pass without needing to update
+snapshots locally.
 
 ## Benching
 

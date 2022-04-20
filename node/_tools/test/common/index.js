@@ -51,6 +51,7 @@ let knownGlobals = [
   getParent,
   window,
   self,
+  reportError,
 ];
 
 if (global.AbortController)
