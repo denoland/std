@@ -20,7 +20,7 @@ releasesMdFile.updateWithGitLog({
 });
 
 // run deno fmt
-await repo.runCommandWithOutput(["deno", "fmt"]);
+await repo.runCommandWithOutput(["deno", "fmt", "Releases.md"]);
 
 function getVersionIncrementKind() {
   if (Deno.args.some((a) => a === "--patch")) {
