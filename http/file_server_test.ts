@@ -805,18 +805,6 @@ Deno.test(
   },
 );
 
-Deno.test("file_server sets `content-length` header correctly", async () => {
-  await startFileServer();
-  try {
-    const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
-    const contentLength = await getTestFileSize();
-    assertEquals(res.headers.get("content-length"), contentLength.toString());
-    await res.text(); // Consuming the body so that the test doesn't leak resources
-  } finally {
-    await killFileServer();
-  }
-});
-
 Deno.test("file_server sets `Last-Modified` header correctly", async () => {
   await startFileServer();
   try {
@@ -863,7 +851,7 @@ Deno.test(
     try {
       const res = await fetch("http://localhost:4507/testdata/test%20file.txt");
       const expectedEtag = await getTestFileEtag();
-      assertEquals(res.headers.get("etag"), expectedEtag);
+      assertEquals(res.headers.get("etag"), `W/${expectedEtag}`);
       await res.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
