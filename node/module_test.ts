@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -196,4 +196,8 @@ Deno.test("module has proper members", function () {
   assert(module.globalPaths);
   assert(module.Module === Module);
   assert(typeof module.wrap == "function");
+});
+
+Deno.test("a module can have its own timers declarations", function () {
+  require("./_module/cjs/cjs_declare_timers");
 });

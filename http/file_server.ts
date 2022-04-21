@@ -1,11 +1,12 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // This program serves files in the current directory over HTTP.
 // TODO(bartlomieju): Add tests like these:
 // https://github.com/indexzero/http-server/blob/master/test/http-server-test.js
 
 import { extname, posix } from "../path/mod.ts";
+import { encode } from "../encoding/hex.ts";
 import { serve, serveTls } from "./server.ts";
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
@@ -38,9 +39,12 @@ interface FileServerArgs {
   key: string;
   // -h --help
   help: boolean;
+  // --quiet
+  quiet: boolean;
 }
 
 const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 const MEDIA_TYPES: Record<string, string> = {
   ".md": "text/markdown",
@@ -175,17 +179,33 @@ function contentType(path: string): string | undefined {
   return MEDIA_TYPES[extname(path)];
 }
 
-// Generates a SHA-1 hash for the provided string
-async function createEtagHash(message: string) {
-  const byteToHex = (b: number) => b.toString(16).padStart(2, "00");
-  const hashType = "SHA-1"; // Faster, and this isn't a security sensitive cryptographic use case
+// The fnv-1a hash function.
+function fnv1a(buf: string): string {
+  let hash = 2166136261; // 32-bit FNV offset basis
+  for (let i = 0; i < buf.length; i++) {
+    hash ^= buf.charCodeAt(i);
+    // Equivalent to `hash *= 16777619` without using BigInt
+    // 32-bit FNV prime
+    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) +
+      (hash << 24);
+  }
+  // 32-bit hex string
+  return (hash >>> 0).toString(16);
+}
 
-  // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
+type EtagAlgorithm = "fnv1a" | "sha-1" | "sha-256" | "sha-384" | "sha-512";
+
+// Generates a hash for the provided string
+async function createEtagHash(
+  message: string,
+  algorithm: EtagAlgorithm = "fnv1a",
+): Promise<string> {
+  if (algorithm === "fnv1a") {
+    return fnv1a(message);
+  }
   const msgUint8 = encoder.encode(message);
-  const hashBuffer = await crypto.subtle.digest(hashType, msgUint8);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(byteToHex).join("");
-  return hashHex;
+  const hashBuffer = await crypto.subtle.digest(algorithm, msgUint8);
+  return decoder.decode(encode(new Uint8Array(hashBuffer)));
 }
 
 function modeToString(isDir: boolean, maybeMode: number | null): string {
@@ -204,9 +224,9 @@ function modeToString(isDir: boolean, maybeMode: number | null): string {
     .reverse()
     .slice(0, 3)
     .forEach((v): void => {
-      output = modeMap[+v] + output;
+      output = `${modeMap[+v]} ${output}`;
     });
-  output = `(${isDir ? "d" : "-"}${output})`;
+  output = `${isDir ? "d" : "-"} ${output}`;
   return output;
 }
 
@@ -227,20 +247,33 @@ function fileLenToString(len: number): string {
   return `${(len / base).toFixed(2)}${suffix[suffixIndex]}`;
 }
 
+interface ServeFileOptions {
+  etagAlgorithm?: EtagAlgorithm;
+  fileInfo?: Deno.FileInfo;
+}
+
 /**
  * Returns an HTTP Response with the requested file as the body.
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
+ * @param etagAlgorithm The algorithm to use for generating the ETag. Defaults to "fnv1a".
+ * @param fileInfo An optional FileInfo object returned by Deno.stat. It is used
+ * for optimization purposes.
  */
 export async function serveFile(
   req: Request,
   filePath: string,
+  { etagAlgorithm, fileInfo }: ServeFileOptions = {},
 ): Promise<Response> {
-  const [file, fileInfo] = await Promise.all([
-    Deno.open(filePath),
-    Deno.stat(filePath),
-  ]);
-
+  let file: Deno.FsFile;
+  if (fileInfo === undefined) {
+    [file, fileInfo] = await Promise.all([
+      Deno.open(filePath),
+      Deno.stat(filePath),
+    ]);
+  } else {
+    file = await Deno.open(filePath);
+  }
   const headers = setBaseHeaders();
 
   // Set mime-type using the file extension in filePath
@@ -263,6 +296,7 @@ export async function serveFile(
     // Create a simple etag that is an md5 of the last modified date and filesize concatenated
     const simpleEtag = await createEtagHash(
       `${lastModified.toJSON()}${fileInfo.size}`,
+      etagAlgorithm || "fnv1a",
     );
     headers.set("etag", simpleEtag);
 
@@ -273,8 +307,9 @@ export async function serveFile(
     const ifModifiedSince = req.headers.get("if-modified-since");
     if (
       (ifNoneMatch && ifNoneMatch === simpleEtag) ||
-      (ifNoneMatch === null && ifModifiedSince &&
-        fileInfo.mtime.getTime() < (new Date(ifModifiedSince).getTime() + 1000))
+      (ifNoneMatch === null &&
+        ifModifiedSince &&
+        fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
     ) {
       const status = Status.NotModified;
       const statusText = STATUS_TEXT.get(status);
@@ -298,11 +333,8 @@ export async function serveFile(
   const start = parsed && parsed[1] ? +parsed[1] : 0;
   const end = parsed && parsed[2] ? +parsed[2] : fileInfo.size - 1;
 
-  let status = Status.OK;
-
   // If there is a range, set the status to 206, and set the "Content-range" header.
   if (range && parsed) {
-    status = Status.PartialContent;
     headers.set("content-range", `bytes ${start}-${end}/${fileInfo.size}`);
   }
 
@@ -310,8 +342,11 @@ export async function serveFile(
   const maxRange = fileInfo.size - 1;
 
   if (
-    range && (!parsed ||
-      typeof start !== "number" || start > end || start > maxRange ||
+    range &&
+    (!parsed ||
+      typeof start !== "number" ||
+      start > end ||
+      start > maxRange ||
       end > maxRange)
   ) {
     const status = Status.RequestedRangeNotSatisfiable;
@@ -329,48 +364,56 @@ export async function serveFile(
   // Set content length
   const contentLength = end - start + 1;
   headers.set("content-length", `${contentLength}`);
+  if (range && parsed) {
+    // Create a stream of the file instead of loading it into memory
+    let bytesSent = 0;
+    const body = new ReadableStream({
+      async start() {
+        if (start > 0) {
+          await file.seek(start, Deno.SeekMode.Start);
+        }
+      },
+      async pull(controller) {
+        const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
+        const bytesRead = await file.read(bytes);
+        if (bytesRead === null) {
+          file.close();
+          controller.close();
+          return;
+        }
+        controller.enqueue(
+          bytes.slice(0, Math.min(bytesRead, contentLength - bytesSent)),
+        );
+        bytesSent += bytesRead;
+        if (bytesSent > contentLength) {
+          file.close();
+          controller.close();
+        }
+      },
+    });
 
-  // Create a stream of the file instead of loading it into memory
-  let bytesSent = 0;
-  const body = new ReadableStream({
-    async start() {
-      await file.seek(start, Deno.SeekMode.Start);
-    },
-    async pull(controller) {
-      const bytes = new Uint8Array(DEFAULT_CHUNK_SIZE);
-      const bytesRead = await file.read(bytes);
-      if (bytesRead === null) {
-        file.close();
-        controller.close();
-        return;
-      }
-      controller.enqueue(
-        bytes.slice(0, Math.min(bytesRead, contentLength - bytesSent)),
-      );
-      bytesSent += bytesRead;
-      if (bytesSent > contentLength) {
-        file.close();
-        controller.close();
-      }
-    },
-  });
+    return new Response(body, {
+      status: 206,
+      statusText: "Partial Content",
+      headers,
+    });
+  }
 
-  const statusText = STATUS_TEXT.get(status);
-
-  return new Response(body, {
-    status,
-    statusText,
+  return new Response(file.readable, {
+    status: 200,
+    statusText: "OK",
     headers,
   });
 }
 
 // TODO(bartlomieju): simplify this after deno.stat and deno.readDir are fixed
-async function serveDir(
+async function serveDirIndex(
   req: Request,
   dirPath: string,
   options: {
     dotfiles: boolean;
     target: string;
+    etagAlgorithm?: EtagAlgorithm;
   },
 ): Promise<Response> {
   const showDotfiles = options.dotfiles;
@@ -395,11 +438,14 @@ async function serveDir(
     }
     const filePath = posix.join(dirPath, entry.name);
     const fileUrl = encodeURI(posix.join(dirUrl, entry.name));
+    const fileInfo = await Deno.stat(filePath);
     if (entry.name === "index.html" && entry.isFile) {
       // in case index.html as dir...
-      return serveFile(req, filePath);
+      return serveFile(req, filePath, {
+        etagAlgorithm: options.etagAlgorithm,
+        fileInfo,
+      });
     }
-    const fileInfo = await Deno.stat(filePath);
     listEntry.push({
       mode: modeToString(entry.isDirectory, fileInfo.mode),
       size: entry.isFile ? fileLenToString(fileInfo.size ?? 0) : "",
@@ -441,12 +487,13 @@ function serveFallback(_req: Request, e: Error): Promise<Response> {
   );
 }
 
-function serverLog(req: Request, res: Response): void {
+function serverLog(req: Request, status: number): void {
   const d = new Date().toISOString();
   const dateFmt = `[${d.slice(0, 10)} ${d.slice(11, 19)}]`;
   const normalizedUrl = normalizeURL(req.url);
-  const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${res.status}`;
-  console.log(s);
+  const s = `${dateFmt} [${req.method}] ${normalizedUrl} ${status}`;
+  // using console.debug instead of console.log so chrome inspect users can hide request logs
+  console.debug(s);
 }
 
 function setBaseHeaders(): Headers {
@@ -458,14 +505,6 @@ function setBaseHeaders(): Headers {
   headers.set("date", new Date().toUTCString());
 
   return headers;
-}
-
-function setCORS(res: Response): void {
-  res.headers.append("access-control-allow-origin", "*");
-  res.headers.append(
-    "access-control-allow-headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Range",
-  );
 }
 
 function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
@@ -486,8 +525,11 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           }
           @media (prefers-color-scheme: dark) {
             :root {
-              --background-color: #303030;
+              --background-color: #292929;
               --color: #fff;
+            }
+            thead {
+              color: #7f7f7f;
             }
           }
           @media (min-width: 960px) {
@@ -520,11 +562,21 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
           a:hover {
             text-decoration: underline;
           }
-          table th {
+          thead {
             text-align: left;
           }
+          thead th {
+            padding-bottom: 12px;
+          }
           table td {
-            padding: 6px 24px 6px 4px;
+            padding: 6px 36px 6px 0px;
+          }
+          .size {
+            text-align: right;
+            padding: 6px 12px 6px 24px;
+          }
+          .mode {
+            font-family: monospace, monospace;
           }
         </style>
       </head>
@@ -532,27 +584,32 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
         <main>
           <h1>Index of
           <a href="/">home</a>${
-    paths.map((path, index, array) => {
-      if (path === "") return "";
-      const link = array.slice(0, index + 1).join("/");
-      return `<a href="${link}">${path}</a>`;
-    }).join("/")
+    paths
+      .map((path, index, array) => {
+        if (path === "") return "";
+        const link = array.slice(0, index + 1).join("/");
+        return `<a href="${link}">${path}</a>`;
+      })
+      .join("/")
   }
           </h1>
           <table>
-            <tr>
-              <th>Mode</th>
-              <th>Size</th>
-              <th>Name</th>
-            </tr>
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Size</th>
+                <th>Name</th>
+              </tr>
+            </thead>
             ${
-    entries.map(
-      (entry) => `
+    entries
+      .map(
+        (entry) => `
                   <tr>
                     <td class="mode">
                       ${entry.mode}
                     </td>
-                    <td>
+                    <td class="size">
                       ${entry.size}
                     </td>
                     <td>
@@ -560,13 +617,114 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
                     </td>
                   </tr>
                 `,
-    ).join("")
+      )
+      .join("")
   }
           </table>
         </main>
       </body>
     </html>
   `;
+}
+
+interface ServeDirOptions {
+  fsRoot?: string;
+  urlRoot?: string;
+  showDirListing?: boolean;
+  showDotfiles?: boolean;
+  enableCors?: boolean;
+  quiet?: boolean;
+  etagAlgorithm?: EtagAlgorithm;
+}
+
+/**
+ * Serves the files under the given directory root (opts.fsRoot).
+ *
+ * ```ts
+ * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+ * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ *
+ * serve((req) => {
+ *   const pathname = new URL(req.url).pathname;
+ *   if (pathname.startsWith("/static")) {
+ *     return serveDir(req, {
+ *       fsRoot: "path/to/static/files/dir",
+ *     });
+ *   }
+ *   // Do dynamic responses
+ *   return new Response();
+ * });
+ * ```
+ *
+ * Optionally you can pass `urlRoot` option. If it's specified that part is stripped from the beginning of the requested pathname.
+ *
+ * ```ts
+ * import { serveDir } from "https://deno.land/std@$STD_VERSION/http/file_server.ts";
+ *
+ * // ...
+ * serveDir(new Request("http://localhost/static/path/to/file"), {
+ *   fsRoot: "public",
+ *   urlRoot: "static",
+ * });
+ * ```
+ *
+ * The above example serves `./public/path/to/file` for the request to `/static/path/to/file`.
+ *
+ * @param request The request to handle
+ * @param opts
+ * @returns
+ */
+export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
+  let response: Response;
+  const target = opts.fsRoot || ".";
+  const urlRoot = opts.urlRoot;
+
+  try {
+    let normalizedPath = normalizeURL(req.url);
+    if (urlRoot) {
+      if (normalizedPath.startsWith("/" + urlRoot)) {
+        normalizedPath = normalizedPath.replace(urlRoot, "");
+      } else {
+        throw new Deno.errors.NotFound();
+      }
+    }
+
+    const fsPath = posix.join(target, normalizedPath);
+    const fileInfo = await Deno.stat(fsPath);
+
+    if (fileInfo.isDirectory) {
+      if (opts.showDirListing) {
+        response = await serveDirIndex(req, fsPath, {
+          dotfiles: opts.showDotfiles || false,
+          target,
+        });
+      } else {
+        throw new Deno.errors.NotFound();
+      }
+    } else {
+      response = await serveFile(req, fsPath, {
+        etagAlgorithm: opts.etagAlgorithm,
+        fileInfo,
+      });
+    }
+  } catch (e) {
+    const err = e instanceof Error ? e : new Error("[non-error thrown]");
+    console.error(red(err.message));
+    response = await serveFallback(req, err);
+  }
+
+  if (opts.enableCors) {
+    assert(response);
+    response.headers.append("access-control-allow-origin", "*");
+    response.headers.append(
+      "access-control-allow-headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Range",
+    );
+  }
+
+  if (!opts.quiet) serverLog(req, response!.status);
+
+  return response!;
 }
 
 function normalizeURL(url: string): string {
@@ -576,7 +734,8 @@ function normalizeURL(url: string): string {
     //allowed per https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html
     const absoluteURI = new URL(normalizedUrl);
     normalizedUrl = absoluteURI.pathname;
-  } catch (e) { //wasn't an absoluteURI
+  } catch (e) {
+    //wasn't an absoluteURI
     if (!(e instanceof TypeError)) {
       throw e;
     }
@@ -605,30 +764,29 @@ function normalizeURL(url: string): string {
 function main(): void {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
-    boolean: ["help", "dir-listing", "dotfiles", "cors"],
+    boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose"],
     default: {
       "dir-listing": true,
-      "dotfiles": true,
-      "cors": true,
-      "host": "0.0.0.0",
-      "port": "4507",
-      "cert": "",
-      "key": "",
+      dotfiles: true,
+      cors: true,
+      verbose: false,
+      host: "0.0.0.0",
+      port: "4507",
+      cert: "",
+      key: "",
     },
     alias: {
       p: "port",
       c: "cert",
       k: "key",
       h: "help",
+      v: "verbose",
     },
-  }) as FileServerArgs;
-  const CORSEnabled = serverArgs.cors;
+  });
   const port = serverArgs.port;
   const host = serverArgs.host;
-  const addr = `${host}:${port}`;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
-  const dirListingEnabled = serverArgs["dir-listing"];
 
   if (serverArgs.help) {
     printUsage();
@@ -643,62 +801,40 @@ function main(): void {
     }
   }
 
-  const target = posix.resolve(serverArgs._[0] ?? "");
+  const wild = serverArgs._ as string[];
+  const target = posix.resolve(wild[0] ?? "");
 
-  const handler = async (req: Request): Promise<Response> => {
-    let response: Response;
-
-    try {
-      const normalizedUrl = normalizeURL(req.url);
-      let fsPath = posix.join(target, normalizedUrl);
-
-      if (fsPath.indexOf(target) !== 0) {
-        fsPath = target;
-      }
-
-      const fileInfo = await Deno.stat(fsPath);
-
-      if (fileInfo.isDirectory) {
-        if (dirListingEnabled) {
-          response = await serveDir(req, fsPath, {
-            dotfiles: serverArgs.dotfiles,
-            target,
-          });
-        } else {
-          throw new Deno.errors.NotFound();
-        }
-      } else {
-        response = await serveFile(req, fsPath);
-      }
-    } catch (e) {
-      const err = e instanceof Error ? e : new Error("[non-error thrown]");
-      console.error(red(err.message));
-      response = await serveFallback(req, err);
-    }
-
-    if (CORSEnabled) {
-      assert(response!);
-      setCORS(response);
-    }
-
-    serverLog(req, response!);
-
-    return response!;
+  const handler = (req: Request): Promise<Response> => {
+    return serveDir(req, {
+      fsRoot: target,
+      showDirListing: serverArgs["dir-listing"],
+      showDotfiles: serverArgs.dotfiles,
+      enableCors: serverArgs.cors,
+      quiet: !serverArgs.verbose,
+    });
   };
 
-  let proto = "http";
+  const useTls = Boolean(keyFile || certFile);
 
-  if (keyFile || certFile) {
-    proto += "s";
-    serveTls(handler, { addr, certFile, keyFile });
+  if (useTls) {
+    serveTls(handler, {
+      port: Number(port),
+      hostname: host,
+      certFile,
+      keyFile,
+    });
   } else {
-    serve(handler, { addr });
+    serve(handler, { port: Number(port), hostname: host });
   }
 
+  const protocol = useTls ? "https" : "http";
   console.log(
-    `${proto.toUpperCase()} server listening on ${proto}://${
-      addr.replace("0.0.0.0", "localhost")
-    }/`,
+    `${protocol.toUpperCase()} server listening on ${protocol}://${
+      host.replace(
+        "0.0.0.0",
+        "localhost",
+      )
+    }:${port}/`,
   );
 }
 
@@ -721,6 +857,7 @@ OPTIONS:
   -k, --key  <FILE>   TLS key file (enables TLS)
   --no-dir-listing    Disable directory listing
   --no-dotfiles       Do not show dotfiles
+  -v, --verbose       Print request level logs
 
   All TLS options are required when one is provided.`);
 }

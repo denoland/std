@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
 import { createHash, SupportedAlgorithm } from "./mod.ts";
 import { Message } from "./hasher.ts";
@@ -276,6 +276,20 @@ const testSetHex: Record<string, [Message, string][]> = {
       bufferCopy,
       "8549694280dea254adb1b856779d2d4f09256004e7536bbf544a1859e66b5f9c",
     ],
+  ],
+  tiger: [
+    ["", "3293ac630c13f0245f92bbb1766e16167a4e58492dde73f3"],
+    ["a", "77befbef2e7ef8ab2ec8f93bf587a7fc613e247f5f247809"],
+    ["abc", "2aab1484e8c158f2bfb8c5ff41b57a525129131c957b5f93"],
+    [
+      "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq",
+      "0f7bf9a19b9c58f2b7610df7e84f0ac3a71c631e7b53f78e",
+    ],
+    [millionAs, "6db0e2729cbead93d715c6a7d36302e9b3cee0d2bc314b41"],
+    [aboutAMeg, "111764e3c4f512abce83c7ebdf061caca4f9a04177046509"],
+    [slicedView, "affa436814964b03d0ab7d5743fcfdcaee2ad5ecb792e1eb"],
+    [slicedCopy, "affa436814964b03d0ab7d5743fcfdcaee2ad5ecb792e1eb"],
+    [bufferCopy, "affa436814964b03d0ab7d5743fcfdcaee2ad5ecb792e1eb"],
   ],
 };
 

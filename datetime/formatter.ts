@@ -1,4 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 import {
   CallbackResult,
   ReceiverResult,
@@ -539,6 +541,8 @@ export class DateTimeFormatter {
       (part) => part.type === "timeZoneName" && part.value === "UTC",
     );
 
+    const dayPart = parts.find((part) => part.type === "day");
+
     utc ? date.setUTCHours(0, 0, 0, 0) : date.setHours(0, 0, 0, 0);
     for (const part of parts) {
       switch (part.type) {
@@ -549,7 +553,13 @@ export class DateTimeFormatter {
         }
         case "month": {
           const value = Number(part.value) - 1;
-          utc ? date.setUTCMonth(value) : date.setMonth(value);
+          if (dayPart) {
+            utc
+              ? date.setUTCMonth(value, Number(dayPart.value))
+              : date.setMonth(value, Number(dayPart.value));
+          } else {
+            utc ? date.setUTCMonth(value) : date.setMonth(value);
+          }
           break;
         }
         case "day": {

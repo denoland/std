@@ -1,4 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 export { parse } from "./_toml/parser.ts";
 
 // Bare keys may only contain ASCII letters,
@@ -19,6 +21,10 @@ enum ArrayType {
   MIXED,
 }
 
+export interface FormatOptions {
+  keyAlignment?: boolean;
+}
+
 class Dumper {
   maxPad = 0;
   srcObject: Record<string, unknown>;
@@ -27,10 +33,10 @@ class Dumper {
   constructor(srcObjc: Record<string, unknown>) {
     this.srcObject = srcObjc;
   }
-  dump(): string[] {
+  dump(fmtOptions: FormatOptions = {}): string[] {
     // deno-lint-ignore no-explicit-any
     this.output = this.#printObject(this.srcObject as any);
-    this.output = this.#format();
+    this.output = this.#format(fmtOptions);
     return this.output;
   }
   #printObject(obj: Record<string, unknown>, keys: string[] = []): string[] {
@@ -73,7 +79,7 @@ class Dumper {
         } else {
           // this is a complex array, use the inline format.
           const str = value.map((x) => this.#printAsInlineValue(x)).join(",");
-          out.push(`${prop} = [${str}]`);
+          out.push(`${this.#declaration([prop])}[${str}]`);
         }
       } else if (typeof value === "object") {
         out.push("");
@@ -209,8 +215,9 @@ class Dumper {
   #dateDeclaration(keys: string[], value: Date): string {
     return `${this.#declaration(keys)}${this.#printDate(value)}`;
   }
-  #format(): string[] {
-    const rDeclaration = /(.*)\s=/;
+  #format(options: FormatOptions = {}): string[] {
+    const { keyAlignment = false } = options;
+    const rDeclaration = /^(\".*\"|[^=]*)\s=/;
     const out = [];
     for (let i = 0; i < this.output.length; i++) {
       const l = this.output[i];
@@ -223,9 +230,13 @@ class Dumper {
         }
         out.push(l);
       } else {
-        const m = rDeclaration.exec(l);
-        if (m) {
-          out.push(l.replace(m[1], m[1].padEnd(this.maxPad)));
+        if (keyAlignment) {
+          const m = rDeclaration.exec(l);
+          if (m) {
+            out.push(l.replace(m[1], m[1].padEnd(this.maxPad)));
+          } else {
+            out.push(l);
+          }
         } else {
           out.push(l);
         }
@@ -246,7 +257,12 @@ class Dumper {
 /**
  * Stringify dumps source object into TOML string and returns it.
  * @param srcObj
+ * @param [fmtOptions] format options
+ * @param [fmtOptions.keyAlignment] whether to algin key
  */
-export function stringify(srcObj: Record<string, unknown>): string {
-  return new Dumper(srcObj).dump().join("\n");
+export function stringify(
+  srcObj: Record<string, unknown>,
+  fmtOptions?: FormatOptions,
+): string {
+  return new Dumper(srcObj).dump(fmtOptions).join("\n");
 }

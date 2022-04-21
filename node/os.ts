@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -18,6 +19,7 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
+import * as DenoUnstable from "../_deno_unstable.ts";
 import { notImplemented } from "./_utils.ts";
 import { validateIntegerRange } from "./_utils.ts";
 import { EOL as fsEOL } from "../fs/eol.ts";
@@ -146,7 +148,7 @@ export function endianness(): "BE" | "LE" {
 
 /** Return free memory amount */
 export function freemem(): number {
-  return Deno.systemMemoryInfo().free;
+  return DenoUnstable.systemMemoryInfo().free;
 }
 
 /** Not yet implemented */
@@ -173,7 +175,7 @@ export function homedir(): string | null {
 
 /** Returns the host name of the operating system as a string. */
 export function hostname(): string {
-  return Deno.hostname();
+  return DenoUnstable.hostname();
 }
 
 /** Returns an array containing the 1, 5, and 15 minute load averages */
@@ -181,13 +183,43 @@ export function loadavg(): number[] {
   if (isWindows) {
     return [0, 0, 0];
   }
-  return Deno.loadavg();
+  return DenoUnstable.loadavg();
 }
 
-/** Not yet implemented */
+/** Returns an object containing network interfaces that have been assigned a network address.
+ * Each key on the returned object identifies a network interface. The associated value is an array of objects that each describe an assigned network address. */
 export function networkInterfaces(): NetworkInterfaces {
-  notImplemented(SEE_GITHUB_ISSUE);
+  const interfaces: NetworkInterfaces = {};
+  for (
+    const { name, address, netmask, family, mac, scopeid, cidr } of DenoUnstable
+      .networkInterfaces()
+  ) {
+    const addresses = interfaces[name] ||= [];
+    const networkAddress: NetworkAddress = {
+      address,
+      netmask,
+      family,
+      mac,
+      internal: (family === "IPv4" && isIPv4LoopbackAddr(address)) ||
+        (family === "IPv6" && isIPv6LoopbackAddr(address)),
+      cidr,
+    };
+    if (family === "IPv6") {
+      networkAddress.scopeid = scopeid!;
+    }
+    addresses.push(networkAddress);
+  }
+  return interfaces;
 }
+
+function isIPv4LoopbackAddr(addr: string) {
+  return addr.startsWith("127");
+}
+
+function isIPv6LoopbackAddr(addr: string) {
+  return addr === "::1" || addr === "fe80::1";
+}
+
 /** Returns the a string identifying the operating system platform. The value is set at compile time. Possible values are 'darwin', 'linux', and 'win32'. */
 export function platform(): string {
   return process.platform;
@@ -195,7 +227,7 @@ export function platform(): string {
 
 /** Returns the operating system as a string */
 export function release(): string {
-  return Deno.osRelease();
+  return DenoUnstable.osRelease();
 }
 
 /** Not yet implemented */
@@ -241,7 +273,7 @@ export function tmpdir(): string | null {
 
 /** Return total physical memory amount */
 export function totalmem(): number {
-  return Deno.systemMemoryInfo().total;
+  return DenoUnstable.systemMemoryInfo().total;
 }
 
 /** Returns operating system type (i.e. 'Windows_NT', 'Linux', 'Darwin') */

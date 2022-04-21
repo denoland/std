@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,14 +22,14 @@
 
 import { notImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
-import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./_net.ts";
+import { isIP, isIPv4, isIPv6, normalizedArgsSymbol } from "./internal/net.ts";
 import { Duplex } from "./stream.ts";
 import {
   asyncIdSymbol,
   defaultTriggerAsyncIdScope,
   newAsyncId,
   ownerSymbol,
-} from "./_async_hooks.ts";
+} from "./internal/async_hooks.ts";
 import {
   ERR_INVALID_ADDRESS_FAMILY,
   ERR_INVALID_ARG_TYPE,
@@ -43,10 +44,10 @@ import {
   exceptionWithHostPort,
   NodeError,
   uvExceptionWithHostPort,
-} from "./_errors.ts";
-import type { ErrnoException } from "./_errors.ts";
+} from "./internal/errors.ts";
+import type { ErrnoException } from "./internal/errors.ts";
 import { Encodings } from "./_utils.ts";
-import { isUint8Array } from "./_util/_util_types.ts";
+import { isUint8Array } from "./internal/util/types.ts";
 import {
   kAfterAsyncWrite,
   kBuffer,
@@ -59,12 +60,12 @@ import {
   writeGeneric,
   writevGeneric,
 } from "./internal/stream_base_commons.ts";
-import { kTimeout } from "./_timers.ts";
+import { kTimeout } from "./internal/timers.mjs";
 import { nextTick } from "./_next_tick.ts";
 import {
   DTRACE_NET_SERVER_CONNECTION,
   DTRACE_NET_STREAM_END,
-} from "./_dtrace.ts";
+} from "./internal/dtrace.ts";
 import { Buffer } from "./buffer.ts";
 import type { LookupOneOptions } from "./dns.ts";
 import {
@@ -74,7 +75,7 @@ import {
   validateNumber,
   validatePort,
   validateString,
-} from "./_validators.ts";
+} from "./internal/validators.mjs";
 import {
   constants as TCPConstants,
   TCP,
@@ -91,8 +92,9 @@ import { isWindows } from "../_util/os.ts";
 import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
 import { codeMap } from "./internal_binding/uv.ts";
 import { guessHandleType } from "./internal_binding/util.ts";
-import { debuglog } from "./_util/_debuglog.ts";
-import type { BufferEncoding, DuplexOptions } from "./_stream.d.ts";
+import { debuglog } from "./internal/util/debuglog.ts";
+import type { DuplexOptions } from "./_stream.d.ts";
+import type { BufferEncoding } from "./_global.d.ts";
 
 let debug = debuglog("net", (fn) => {
   debug = fn;
@@ -793,7 +795,7 @@ export class Socket extends Duplex {
       this[asyncIdSymbol] = _getNewAsyncId(this._handle);
     } else if (options.fd !== undefined) {
       // REF: https://github.com/denoland/deno/issues/6529
-      notImplemented();
+      notImplemented("net.Socket.prototype.constructor with fd option");
     }
 
     const onread = options.onread;
@@ -940,7 +942,7 @@ export class Socket extends Duplex {
    *
    * @return The socket itself.
    */
-  pause(): this {
+  override pause(): this {
     if (
       this[kBuffer] && !this.connecting && this._handle &&
       this._handle.reading
@@ -964,7 +966,7 @@ export class Socket extends Duplex {
    *
    * @return The socket itself.
    */
-  resume(): this {
+  override resume(): this {
     if (
       this[kBuffer] && !this.connecting && this._handle &&
       !this._handle.reading
@@ -1271,10 +1273,14 @@ export class Socket extends Duplex {
    * @param cb Optional callback for when the socket is finished.
    * @return The socket itself.
    */
-  end(cb?: () => void): this;
-  end(buffer: Uint8Array | string, cb?: () => void): this;
-  end(data: Uint8Array | string, encoding?: Encodings, cb?: () => void): this;
-  end(
+  override end(cb?: () => void): this;
+  override end(buffer: Uint8Array | string, cb?: () => void): this;
+  override end(
+    data: Uint8Array | string,
+    encoding?: Encodings,
+    cb?: () => void,
+  ): this;
+  override end(
     data?: Uint8Array | string | (() => void),
     encoding?: Encodings | (() => void),
     cb?: () => void,
@@ -1288,7 +1294,9 @@ export class Socket extends Duplex {
   /**
    * @param size Optional argument to specify how much data to read.
    */
-  read(size?: number): string | Uint8Array | Buffer | null | undefined {
+  override read(
+    size?: number,
+  ): string | Uint8Array | Buffer | null | undefined {
     if (
       this[kBuffer] && !this.connecting && this._handle &&
       !this._handle.reading
@@ -1323,7 +1331,7 @@ export class Socket extends Duplex {
   // The user has called .end(), and all the bytes have been
   // sent out to the other side.
   // deno-lint-ignore no-explicit-any
-  _final = (cb: any): any => {
+  override _final = (cb: any): any => {
     // If still connecting - defer handling `_final` until 'connect' will happen
     if (this.pending) {
       debug("_final: not yet connected");
@@ -1371,7 +1379,7 @@ export class Socket extends Duplex {
     this.emit("timeout");
   }
 
-  _read(size?: number): void {
+  override _read(size?: number): void {
     debug("_read");
     if (this.connecting || !this._handle) {
       debug("_read wait for connection");
@@ -1381,7 +1389,7 @@ export class Socket extends Duplex {
     }
   }
 
-  _destroy(
+  override _destroy(
     exception: Error | null,
     cb: (err: Error | null) => void,
   ) {
@@ -1505,7 +1513,7 @@ export class Socket extends Duplex {
     this._writeGeneric(true, chunks, "", cb);
   }
 
-  _write(
+  override _write(
     // deno-lint-ignore no-explicit-any
     data: any,
     encoding: string,

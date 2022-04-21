@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-undef
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import "./global.ts";
 import {
@@ -202,6 +202,16 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.on SIGBREAK doesn't throw",
+  ignore: Deno.build.os == "windows",
+  fn() {
+    const listener = () => {};
+    process.on("SIGBREAK", listener);
+    process.off("SIGBREAK", listener);
+  },
+});
+
+Deno.test({
   name: "process.argv",
   fn() {
     assert(Array.isArray(process.argv));
@@ -246,6 +256,14 @@ Deno.test({
 
     assert(Object.getOwnPropertyNames(process.env).includes("HELLO"));
     assert(Object.keys(process.env).includes("HELLO"));
+
+    assert(Object.prototype.hasOwnProperty.call(process.env, "HELLO"));
+    assert(
+      !Object.prototype.hasOwnProperty.call(
+        process.env,
+        "SURELY_NON_EXISTENT_VAR",
+      ),
+    );
   },
 });
 
@@ -342,39 +360,6 @@ Deno.test({
   },
 });
 
-// FIXME(bartlomieju):
-Deno.test({
-  name: "[process] stdio",
-  ignore: true,
-  async fn() {
-    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
-    const p = Deno.run({
-      cmd: [
-        Deno.execPath(),
-        "run",
-        "--unstable",
-        "--quiet",
-        "./testdata/process_stdio.ts",
-      ],
-      cwd,
-      stderr: "piped",
-      stdin: "piped",
-      stdout: "piped",
-    });
-    p.stdin.write(new TextEncoder().encode("it works?!"));
-    p.stdin.write(new TextEncoder().encode("yes!"));
-    p.stdin.close();
-    const stderr = new TextDecoder().decode(await p.stderrOutput());
-    const stdout = new TextDecoder().decode(await p.output());
-    assertEquals(
-      stderr + stdout,
-      "helloworldhelloworldfrom pipereceived:it works?!yes!helloworldhelloworldfrom pipe",
-    );
-  },
-  sanitizeResources: false,
-  sanitizeOps: false,
-});
-
 Deno.test("process.on, process.off, process.removeListener doesn't throw on unimplemented events", () => {
   const events = [
     "beforeExit",
@@ -385,13 +370,18 @@ Deno.test("process.on, process.off, process.removeListener doesn't throw on unim
     "uncaughtException",
     "uncaughtExceptionMonitor",
     "unhandledRejection",
+    "worker",
   ];
   const handler = () => {};
   events.forEach((ev) => {
     process.on(ev, handler);
+    assertEquals(process.listenerCount(ev), 1);
     process.off(ev, handler);
+    assertEquals(process.listenerCount(ev), 0);
     process.on(ev, handler);
+    assertEquals(process.listenerCount(ev), 1);
     process.removeListener(ev, handler);
+    assertEquals(process.listenerCount(ev), 0);
   });
 });
 
@@ -440,4 +430,35 @@ Deno.test("process.config", () => {
 
 Deno.test("process._exiting", () => {
   assert(process._exiting === false);
+});
+
+Deno.test("process.execPath", () => {
+  assertEquals(process.execPath, process.argv[0]);
+});
+
+Deno.test({
+  name: "process.exit",
+  async fn() {
+    const cwd = path.dirname(path.fromFileUrl(import.meta.url));
+
+    const p = Deno.run({
+      cmd: [
+        Deno.execPath(),
+        "run",
+        "--quiet",
+        "--unstable",
+        "./testdata/process_exit2.ts",
+      ],
+      cwd,
+      stdout: "piped",
+    });
+
+    const decoder = new TextDecoder();
+    const rawOutput = await p.output();
+    assertEquals(
+      stripColor(decoder.decode(rawOutput).trim()),
+      "exit",
+    );
+    p.close();
+  },
 });

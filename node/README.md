@@ -10,23 +10,23 @@ Deno standard library as it's a compatibility module.
 
 - [x] assert _partly_
 - [x] assert/strict _partly_
-- [ ] async_hooks
+- [x] async_hooks _partly_
 - [x] buffer
 - [x] child_process _partly_
-- [ ] cluster
+- [x] cluster _partly_
 - [x] console _partly_
 - [x] constants _partly_
 - [x] crypto _partly_
-- [ ] dgram
+- [x] dgram _partly_
 - [ ] diagnostics_channel
 - [x] dns _partly_
 - [x] events
 - [x] fs _partly_
 - [x] fs/promises _partly_
-- [ ] http
+- [x] http _partly_
 - [ ] http2
-- [ ] https
-- [ ] inspector
+- [x] https _partly_
+- [x] inspector _partly_
 - [x] module
 - [x] net
 - [x] os _partly_
@@ -35,9 +35,10 @@ Deno standard library as it's a compatibility module.
 - [x] path/win32
 - [x] perf_hooks
 - [x] process _partly_
+- [x] punycode
 - [x] querystring
-- [ ] readline
-- [ ] repl
+- [x] readline
+- [x] repl _partly_
 - [x] stream
 - [x] stream/promises
 - [x] stream/web _partly_
@@ -52,10 +53,10 @@ Deno standard library as it's a compatibility module.
 - [x] util _partly_
 - [x] util/types _partly_
 - [ ] v8
-- [ ] vm
+- [x] vm _partly_
 - [x] wasi
 - [ ] webcrypto
-- [ ] worker_threads
+- [x] worker_threads
 - [ ] zlib
 
 * [x] node globals _partly_
@@ -66,7 +67,6 @@ These modules are deprecated in Node.js and will probably not be polyfilled:
 
 - domain
 - freelist
-- punycode
 
 ### Experimental
 
@@ -79,7 +79,6 @@ are stable:
 - trace_events
 - wasi
 - webcrypto
-- stream/web
 
 ## CommonJS modules loading
 
@@ -110,7 +109,7 @@ file, this will pull the configured tests in and then add them to the test
 workflow.
 
 ```zsh
-$ deno run --allow-read --allow-net --allow-write node/_tools/setup.ts
+$ deno task node:setup
 ```
 
 You can aditionally pass the `-y`/`-n` flag to use test cache or generating
@@ -129,31 +128,26 @@ To run the tests you have set up, do the following:
 $ deno test --allow-read --allow-run node/_tools/test.ts
 ```
 
-If you want to run specific tests in a local environment, try one of the
-following:
+If you want to run specific Node.js test files, you can use the following
+command
 
-- Use `node/_tools/require.ts` as follows(recommended):
-
-```zsh
-$ deno run -A --unstable node/_tools/require.ts /Abs/path/to/deno_std/node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js
+```shellsession
+$ deno test -A node/_tools/test.ts -- <pattern-to-match>
 ```
 
-- Add `--only` flag to the `node/_tools/config.json`.
+For example, if you want to run only
+`node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js`, you
+can use:
 
-```json
-...
-  "tests": {
-    ...
-    "parallel": [
-      ...
-      "test-event-emitter-add-listeners.js",
-      "test-event-emitter-check-listener-leaks.js --only",
-      "test-event-emitter-invalid-listener.js",
-      ...
-    ]
-    ...
-  }
-...
+```shellsession
+$ deno test -A node/_tools/test.ts -- test-event-emitter-check-listener-leaks.js
+```
+
+If you want to run all test files which contains `event-emitter` in filename,
+then you can use:
+
+```shellsession
+$ deno test -A node/_tools/test.ts -- event-emitter
 ```
 
 The test should be passing with the latest deno, so if the test fails, try the
@@ -174,6 +168,25 @@ this is specially useful to keep track of files that have been manually edited
 to pass certain tests. However, avoid doing such manual changes to the test
 files, since that may cover up inconsistencies between the node library and
 actual node behavior.
+
+### Working with child processes ? Use `DENO_NODE_COMPAT_URL`
+
+When working with `child_process` modules, you will have to run tests pulled
+from Node.js. These tests usually spawn deno child processes via the use of
+`process.execPath`. The `deno` executable will use its own embedded version of
+std modules, then you may get the impression your code is not really working as
+it should.
+
+To prevent this, set `DENO_NODE_COMPAT_URL` with the absolute path to your
+`deno_std` repo, ending with a trailing slash:
+
+```
+export DENO_NODE_COMPAT_URL=$PWD/
+# or
+export DENO_NODE_COMPAT_URL=file:///path/to/deno_std/dir/
+```
+
+Then, `deno` will use your local copy of `deno_std` instead of latest version.
 
 ### Best practices
 

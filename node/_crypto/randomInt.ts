@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 export default function randomInt(max: number): number;
 export default function randomInt(min: number, max: number): number;
 export default function randomInt(
@@ -48,7 +49,7 @@ export default function randomInt(
   min = Math.ceil(min);
   max = Math.floor(max);
 
-  const result = Math.floor(randomNumber * (max - min + 1)) + min;
+  const result = Math.floor(randomNumber * (max - min)) + min;
 
   if (cb) {
     cb(null, result);

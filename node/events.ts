@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // @deno-types="./_events.d.ts"
 export {
   captureRejectionSymbol,
@@ -8,4 +9,4 @@ export {
   getEventListeners,
   on,
   once,
-} from "./_events.js";
+} from "./_events.mjs";

@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -38,11 +39,11 @@ export class HandleWrap extends AsyncWrap {
   }
 
   ref() {
-    notImplemented();
+    notImplemented("HandleWrap.prototype.ref");
   }
 
   unref() {
-    notImplemented();
+    notImplemented("HandleWrap.prototype.unref");
   }
 
   // deno-lint-ignore no-explicit-any

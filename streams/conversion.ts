@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { Buffer } from "../io/buffer.ts";
 
@@ -15,21 +15,16 @@ function isCloser(value: unknown): value is Deno.Closer {
  *
  * ```ts
  *      import { readerFromIterable } from "./conversion.ts";
- *      import { serve } from "../http/server_legacy.ts";
  *
- *      for await (const request of serve({ port: 8000 })) {
- *        // Server-sent events: Send runtime metrics to the client every second.
- *        request.respond({
- *          headers: new Headers({ "Content-Type": "text/event-stream" }),
- *          body: readerFromIterable((async function* () {
- *            while (true) {
- *              await new Promise((r) => setTimeout(r, 1000));
- *              const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
- *              yield new TextEncoder().encode(message);
- *            }
- *          })()),
- *        });
- *      }
+ *      const file = await Deno.open("metrics.txt", { write: true });
+ *      const reader = readerFromIterable((async function* () {
+ *        while (true) {
+ *          await new Promise((r) => setTimeout(r, 1000));
+ *          const message = `data: ${JSON.stringify(Deno.metrics())}\n\n`;
+ *          yield new TextEncoder().encode(message);
+ *        }
+ *      })());
+ *      await Deno.copy(reader, file);
  * ```
  */
 export function readerFromIterable(
@@ -223,7 +218,7 @@ export interface ReadableStreamFromReaderOptions {
  * will be read.  When `null` is returned from the reader, the stream will be
  * closed along with the reader (if it is also a `Deno.Closer`).
  *
- * An example converting a `Deno.File` into a readable stream:
+ * An example converting a `Deno.FsFile` into a readable stream:
  *
  * ```ts
  * import { readableStreamFromReader } from "./mod.ts";

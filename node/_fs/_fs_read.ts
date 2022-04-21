@@ -1,7 +1,7 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "../buffer.ts";
 import { assert } from "../../testing/asserts.ts";
-import { ERR_INVALID_ARG_VALUE } from "../_errors.ts";
+import { ERR_INVALID_ARG_VALUE } from "../internal/errors.ts";
 
 type readOptions = {
   buffer: Buffer | Uint8Array;

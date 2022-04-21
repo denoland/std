@@ -1,6 +1,7 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-/** Get log level numeric values through enum constants
- */
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+/** Get log level numeric values through enum constants */
 export enum LogLevels {
   NOTSET = 0,
   DEBUG = 10,

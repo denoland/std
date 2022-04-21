@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows, fail } from "../../testing/asserts.ts";
 import { appendFile, appendFileSync } from "./_fs_appendFile.ts";
 import { fromFileUrl } from "../path.ts";
@@ -14,7 +14,7 @@ Deno.test({
         appendFile("some/path", "some data", "utf8");
       },
       Error,
-      "No callback function supplied",
+      "Callback must be a function. Received 'utf8'",
     );
   },
 });
@@ -28,7 +28,7 @@ Deno.test({
         appendFile("some/path", "some data", "made-up-encoding", () => {});
       },
       Error,
-      "Only 'utf8' encoding is currently supported",
+      "The argument 'made-up-encoding' is invalid encoding. Received 'encoding'",
     );
     assertThrows(
       () => {
@@ -41,13 +41,13 @@ Deno.test({
         );
       },
       Error,
-      "Only 'utf8' encoding is currently supported",
+      "The argument 'made-up-encoding' is invalid encoding. Received 'encoding'",
     );
     assertThrows(
       // @ts-expect-error Type '"made-up-encoding"' is not assignable to type
       () => appendFileSync("some/path", "some data", "made-up-encoding"),
       Error,
-      "Only 'utf8' encoding is currently supported",
+      "The argument 'made-up-encoding' is invalid encoding. Received 'encoding'",
     );
     assertThrows(
       () =>
@@ -56,7 +56,7 @@ Deno.test({
           encoding: "made-up-encoding",
         }),
       Error,
-      "Only 'utf8' encoding is currently supported",
+      "The argument 'made-up-encoding' is invalid encoding. Received 'encoding'",
     );
   },
 });
@@ -65,7 +65,7 @@ Deno.test({
   name: "Async: Data is written to passed in rid",
   async fn() {
     const tempFile: string = await Deno.makeTempFile();
-    const file: Deno.File = await Deno.open(tempFile, {
+    const file: Deno.FsFile = await Deno.open(tempFile, {
       create: true,
       write: true,
       read: true,
@@ -163,7 +163,7 @@ Deno.test({
   name: "Sync: Data is written to passed in rid",
   fn() {
     const tempFile: string = Deno.makeTempFileSync();
-    const file: Deno.File = Deno.openSync(tempFile, {
+    const file: Deno.FsFile = Deno.openSync(tempFile, {
       create: true,
       write: true,
       read: true,
@@ -196,7 +196,7 @@ Deno.test({
     const tempFile: string = Deno.makeTempFileSync();
     assertThrows(
       () => appendFileSync(tempFile, "hello world", { flag: "ax" }),
-      Deno.errors.AlreadyExists,
+      Error,
       "",
     );
     assertEquals(Deno.resources(), openResourcesBeforeAppend);

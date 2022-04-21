@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
 import { isWindows, osType } from "../_util/os.ts";
@@ -394,7 +394,7 @@ export function normalizeGlob(
 /** Like join(), but doesn't collapse "**\/.." when `globstar` is true. */
 export function joinGlobs(
   globs: string[],
-  { extended = false, globstar = false }: GlobOptions = {},
+  { extended = true, globstar = false }: GlobOptions = {},
 ): string {
   if (!globstar || globs.length == 0) {
     return join(...globs);

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -204,7 +204,7 @@ for (const s of scenes) {
       );
 
       try {
-        const args = [Deno.execPath(), "run", "--quiet"];
+        const args = [Deno.execPath(), "run", "--quiet", "--no-prompt"];
 
         if (s.read) {
           args.push("--allow-read");

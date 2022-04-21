@@ -1,28 +1,44 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import type { CallbackWithError } from "./_fs_common.ts";
-import { fromFileUrl } from "../path.ts";
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import { type CallbackWithError, makeCallback } from "./_fs_common.ts";
+import { getValidatedPath, kMaxUserId } from "../internal/fs/utils.mjs";
+import * as pathModule from "../../path/mod.ts";
+import { validateInteger } from "../internal/validators.mjs";
+
+import type { Buffer } from "../buffer.ts";
 
 /**
- * TODO: Also accept 'path' parameter as a Node polyfill Buffer type once these
- * are implemented. See https://github.com/denoland/deno/issues/3403
+ * Asynchronously changes the owner and group
+ * of a file.
  */
 export function chown(
-  path: string | URL,
+  path: string | Buffer | URL,
   uid: number,
   gid: number,
   callback: CallbackWithError,
 ): void {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+  callback = makeCallback(callback);
+  path = getValidatedPath(path).toString();
+  validateInteger(uid, "uid", -1, kMaxUserId);
+  validateInteger(gid, "gid", -1, kMaxUserId);
 
-  Deno.chown(path, uid, gid).then(() => callback(null), callback);
+  Deno.chown(pathModule.toNamespacedPath(path), uid, gid).then(
+    () => callback(null),
+    callback,
+  );
 }
 
 /**
- * TODO: Also accept 'path' parameter as a Node polyfill Buffer type once these
- * are implemented. See https://github.com/denoland/deno/issues/3403
+ * Synchronously changes the owner and group
+ * of a file.
  */
-export function chownSync(path: string | URL, uid: number, gid: number): void {
-  path = path instanceof URL ? fromFileUrl(path) : path;
+export function chownSync(
+  path: string | Buffer | URL,
+  uid: number,
+  gid: number,
+): void {
+  path = getValidatedPath(path).toString();
+  validateInteger(uid, "uid", -1, kMaxUserId);
+  validateInteger(gid, "gid", -1, kMaxUserId);
 
-  Deno.chownSync(path, uid, gid);
+  Deno.chownSync(pathModule.toNamespacedPath(path), uid, gid);
 }

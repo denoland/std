@@ -1,4 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /*
  * Adapted to deno from:
  *
@@ -584,7 +586,7 @@ export class HmacSha256 extends Sha256 {
     this.#sharedMemory = sharedMemory;
   }
 
-  protected finalize(): void {
+  protected override finalize(): void {
     super.finalize();
     if (this.#inner) {
       this.#inner = false;

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -7,7 +7,7 @@ import {
 import { BufReader } from "../io/buffer.ts";
 import { iterateReader, readAll, writeAll } from "../streams/conversion.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
-import { serveFile } from "./file_server.ts";
+import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
 
@@ -197,7 +197,7 @@ Deno.test(
   },
 );
 
-Deno.test("serveDirectory", async function () {
+Deno.test("serveDirIndex", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/");
@@ -209,7 +209,7 @@ Deno.test("serveDirectory", async function () {
     // TODO(bartlomieju): `mode` should work correctly in the future.
     // Correct this test case accordingly.
     isWindows === false &&
-      assert(/<td class="mode">(\s)*\([a-zA-Z-]{10}\)(\s)*<\/td>/.test(page));
+      assert(/<td class="mode">(\s)*[a-zA-Z- ]{14}(\s)*<\/td>/.test(page));
     isWindows &&
       assert(/<td class="mode">(\s)*\(unknown mode\)(\s)*<\/td>/.test(page));
     assert(page.includes(`<a href="/README.md">README.md</a>`));
@@ -217,7 +217,7 @@ Deno.test("serveDirectory", async function () {
     await killFileServer();
   }
 });
-Deno.test("serveDirectory with filename including percent symbol", async function () {
+Deno.test("serveDirIndex with filename including percent symbol", async function () {
   await startFileServer();
   try {
     const res = await fetch("http://localhost:4507/testdata/");
@@ -425,7 +425,7 @@ async function startTlsFileServer({
   assert(s !== null && s.includes("server listening"));
 }
 
-Deno.test("serveDirectory TLS", async function () {
+Deno.test("serveDirIndex TLS", async function () {
   await startTlsFileServer();
   try {
     // Valid request after invalid
@@ -529,7 +529,7 @@ Deno.test("file_server should show .. if it makes sense", async function (): Pro
 });
 
 Deno.test(
-  "file_server should download first byte of `hello.html` file",
+  "file_server should download first byte of hello.html file",
   async () => {
     await startFileServer();
     try {
@@ -610,17 +610,18 @@ const getTestFileLastModified = async () => {
   }
 };
 
-const createEtagHash = async (message: string) => {
-  // see: https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest
-  const hashType = "SHA-1"; // Faster, and this isn't a security sensitive cryptographic use case
-  const msgUint8 = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest(hashType, msgUint8);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join(
-    "",
-  );
-  return hashHex;
-};
+function createEtagHash(buf: string): string {
+  let hash = 2166136261; // 32-bit FNV offset basis
+  for (let i = 0; i < buf.length; i++) {
+    hash ^= buf.charCodeAt(i);
+    // Equivalent to `hash *= 16777619` without using BigInt
+    // 32-bit FNV prime
+    hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) +
+      (hash << 24);
+  }
+  // 32-bit hex string
+  return (hash >>> 0).toString(16);
+}
 
 Deno.test(
   "file_server returns 206 for range request responses",
@@ -965,5 +966,40 @@ Deno.test(
     const res = await serveFile(req, testdataPath);
     assertEquals(res.status, 304);
     assertEquals(res.statusText, "Not Modified");
+  },
+);
+
+Deno.test(
+  "serveDir (without options) serves files under the current dir",
+  async () => {
+    const req = new Request("http://localhost:4507/http/testdata/hello.html");
+    const res = await serveDir(req);
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), "Hello World");
+  },
+);
+
+Deno.test(
+  "serveDir (with fsRoot option) serves files under the given dir",
+  async () => {
+    const req = new Request("http://localhost:4507/testdata/hello.html");
+    const res = await serveDir(req, { fsRoot: "http" });
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), "Hello World");
+  },
+);
+
+Deno.test(
+  "serveDir (with fsRoot, urlRoot option) serves files under the given dir",
+  async () => {
+    const req = new Request(
+      "http://localhost:4507/my-static-root/testdata/hello.html",
+    );
+    const res = await serveDir(req, {
+      fsRoot: "http",
+      urlRoot: "my-static-root",
+    });
+    assertEquals(res.status, 200);
+    assertStringIncludes(await res.text(), "Hello World");
   },
 );

@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 export * from "./aggregate_groups.ts";
 export * from "./associate_by.ts";
@@ -11,8 +12,6 @@ export * from "./drop_while.ts";
 export * from "./filter_entries.ts";
 export * from "./filter_keys.ts";
 export * from "./filter_values.ts";
-export * from "./find_last.ts";
-export * from "./find_last_index.ts";
 export * from "./group_by.ts";
 export * from "./intersect.ts";
 export * from "./map_entries.ts";
@@ -44,3 +43,6 @@ export * from "./drop_last_while.ts";
 export * from "./reduce_groups.ts";
 export * from "./sample.ts";
 export * from "./running_reduce.ts";
+export * from "./binary_heap.ts";
+export * from "./bs_tree.ts";
+export * from "./rb_tree.ts";

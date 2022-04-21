@@ -17,18 +17,16 @@ Implements equivalent methods to Go's `encoding/binary` package.
 
 Available Functions:
 
-```typescript
-sizeof(dataType: RawTypes): number
-getNBytes(r: Deno.Reader, n: number): Promise<Uint8Array>
-varnum(b: Uint8Array, o: VarnumOptions = {}): number | null
-varbig(b: Uint8Array, o: VarbigOptions = {}): bigint | null
-putVarnum(b: Uint8Array, x: number, o: VarnumOptions = {}): number
-putVarbig(b: Uint8Array, x: bigint, o: VarbigOptions = {}): number
-readVarnum(r: Deno.Reader, o: VarnumOptions = {}): Promise<number>
-readVarbig(r: Deno.Reader, o: VarbigOptions = {}): Promise<bigint>
-writeVarnum(w: Deno.Writer, x: number, o: VarnumOptions = {}): Promise<number>
-writeVarbig(w: Deno.Writer, x: bigint, o: VarbigOptions = {}): Promise<number>
-```
+- `sizeof(dataType: DataTypes): number`
+- `getNBytes(r: Deno.Reader, n: number): Promise<Uint8Array>`
+- `varnum(b: Uint8Array, o: VarnumOptions = {}): number | null`
+- `varbig(b: Uint8Array, o: VarbigOptions = {}): bigint | null`
+- `putVarnum(b: Uint8Array, x: number, o: VarnumOptions = {}): number`
+- `putVarbig(b: Uint8Array, x: bigint, o: VarbigOptions = {}): number`
+- `readVarnum(r: Deno.Reader, o: VarnumOptions = {}): Promise<number>`
+- `readVarbig(r: Deno.Reader, o: VarbigOptions = {}): Promise<bigint>`
+- `writeVarnum(w: Deno.Writer, x: number, o: VarnumOptions = {}): Promise<number>`
+- `writeVarbig(w: Deno.Writer, x: bigint, o: VarbigOptions = {}): Promise<number>`
 
 ## CSV
 
@@ -44,12 +42,10 @@ Parse the CSV from the `reader` with the options provided and return
 Parse the CSV string/buffer with the options provided. The result of this
 function is as follows:
 
-- If you don't provide `opt.skipFirstRow`, `opt.parse`, and `opt.columns`, it
-  returns `string[][]`.
-- If you provide `opt.skipFirstRow` or `opt.columns` but not `opt.parse`, it
-  returns `object[]`.
-- If you provide `opt.parse`, it returns an array where each element is the
-  value returned from `opt.parse`.
+- If you don't provide `opt.skipFirstRow` and `opt.columns`, it returns
+  `string[][]`.
+- If you provide `opt.skipFirstRow` or `opt.columns` it returns
+  `Record<string, unknown>[]`.
 
 ##### `ParseOptions`
 
@@ -57,18 +53,12 @@ function is as follows:
   `columns`, the first line will be skipped. If you provide `skipFirstRow: true`
   but not `columns`, the first line will be skipped and used as header
   definitions.
-- **`columns: string[] | HeaderOptions[];`**: If you provide `string[]` or
+- **`columns: string[] | ColumnOptions[];`**: If you provide `string[]` or
   `ColumnOptions[]`, those names will be used for header definition.
-- **`parse?: (input: unknown) => unknown;`**: Parse function for the row, which
-  will be executed after parsing of all columns. Therefore if you don't provide
-  `skipFirstRow`, `columns`, and `parse` function, input will be `string[]`.
 
-##### `HeaderOptions`
+##### `ColumnOptions`
 
 - **`name: string;`**: Name of the header to be used as property.
-- **`parse?: (input: string) => unknown;`**: Parse function for the column. This
-  is executed on each entry of the header. This can be combined with the Parse
-  function of the rows.
 
 ##### `ReadOptions`
 

@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -21,7 +22,9 @@
 
 import "./global.ts";
 
+import { core } from "./_core.ts";
 import nodeMods from "./module_all.ts";
+import upstreamMods from "./upstream_modules.ts";
 
 import * as path from "../path/mod.ts";
 import { assert } from "../_util/assert.ts";
@@ -31,13 +34,19 @@ import {
   ERR_INVALID_MODULE_SPECIFIER,
   ERR_MODULE_NOT_FOUND,
   NodeError,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 import type { PackageConfig } from "./module_esm.ts";
 import {
   encodedSepRegEx,
   packageExportsResolve,
   packageImportsResolve,
 } from "./module_esm.ts";
+import {
+  clearInterval,
+  clearTimeout,
+  setInterval,
+  setTimeout,
+} from "./timers.ts";
 
 const { hasOwn } = Object;
 const CHAR_FORWARD_SLASH = "/".charCodeAt(0);
@@ -198,12 +207,12 @@ class Module {
   static _cache: { [key: string]: Module } = Object.create(null);
   static _pathCache = Object.create(null);
   static globalPaths: string[] = [];
-  // Proxy related code removed.
   static wrapper = [
-    "(function (exports, require, module, __filename, __dirname) { ",
-    "\n});",
+    // We provide non standard timer APIs in the CommonJS wrapper
+    // to avoid exposing them in global namespace.
+    "(function (exports, require, module, __filename, __dirname, setTimeout, clearTimeout, setInterval, clearInterval) { (function (exports, require, module, __filename, __dirname) {",
+    "\n}).call(this, exports, require, module, __filename, __dirname); })",
   ];
-
   // Loads a module at the given file path. Returns that module's
   // `exports` property.
   // deno-lint-ignore no-explicit-any
@@ -255,6 +264,10 @@ class Module {
       this,
       filename,
       dirname,
+      setTimeout,
+      clearTimeout,
+      setInterval,
+      clearInterval,
     );
     if (requireDepth === 0) {
       statCache = null;
@@ -302,7 +315,8 @@ class Module {
   ): string {
     // Polyfills.
     if (
-      request.startsWith("node:") || nativeModuleCanBeRequiredByUsers(request)
+      request.startsWith("node:") ||
+      nativeModuleCanBeRequiredByUsers(request)
     ) {
       return request;
     }
@@ -496,6 +510,11 @@ class Module {
         delete relativeResolveCache[relResolveCacheIdentifier];
       }
     }
+
+    // NOTE(@bartlomieju): this is a temporary solution. We provide some
+    // npm modules with fixes in inconsistencies between Deno and Node.js.
+    const upstreamMod = loadUpstreamModule(request, parent, request);
+    if (upstreamMod) return upstreamMod.exports;
 
     const filename = Module._resolveFilename(request, parent, isMain);
     if (filename.startsWith("node:")) {
@@ -747,43 +766,79 @@ function createNativeModule(id: string, exports: any): Module {
   mod.loaded = true;
   return mod;
 }
-// Set polyfills defined in ./module_all.ts
-for (const key of Object.keys(nodeMods)) {
-  nativeModulePolyfill.set(key, createNativeModule(key, nodeMods[key]));
-}
-nativeModulePolyfill.set(
-  "module",
-  createNativeModule("module", {
-    _cache: Module._cache,
-    _extensions: Module._extensions,
-    _findPath: Module._findPath,
-    _initPaths: Module._initPaths,
-    _load: Module._load,
-    _nodeModulePaths: Module._nodeModulePaths,
-    _pathCache: Module._pathCache,
-    _preloadModules: Module._preloadModules,
-    _resolveFilename: Module._resolveFilename,
-    _resolveLookupPaths: Module._resolveLookupPaths,
-    builtinModules: Module.builtinModules,
-    createRequire: Module.createRequire,
-    globalPaths: Module.globalPaths,
-    Module,
-    wrap: Module.wrap,
-  }),
-);
+
+const m = {
+  _cache: Module._cache,
+  _extensions: Module._extensions,
+  _findPath: Module._findPath,
+  _initPaths: Module._initPaths,
+  _load: Module._load,
+  _nodeModulePaths: Module._nodeModulePaths,
+  _pathCache: Module._pathCache,
+  _preloadModules: Module._preloadModules,
+  _resolveFilename: Module._resolveFilename,
+  _resolveLookupPaths: Module._resolveLookupPaths,
+  builtinModules: Module.builtinModules,
+  createRequire: Module.createRequire,
+  globalPaths: Module.globalPaths,
+  Module,
+  wrap: Module.wrap,
+};
+
+Object.setPrototypeOf(m, Module);
+nodeMods.module = m;
 
 function loadNativeModule(
   _filename: string,
   request: string,
 ): Module | undefined {
-  return nativeModulePolyfill.get(request);
+  if (nativeModulePolyfill.has(request)) {
+    return nativeModulePolyfill.get(request);
+  }
+  const mod = nodeMods[request];
+  if (mod) {
+    const nodeMod = createNativeModule(request, mod);
+    nativeModulePolyfill.set(request, nodeMod);
+    return nodeMod;
+  }
+  return undefined;
 }
 function nativeModuleCanBeRequiredByUsers(request: string): boolean {
-  return nativeModulePolyfill.has(request);
+  return hasOwn(nodeMods, request);
 }
 // Populate with polyfill names
-for (const id of nativeModulePolyfill.keys()) {
-  Module.builtinModules.push(id);
+Module.builtinModules.push(...Object.keys(nodeMods));
+
+// NOTE(@bartlomieju): temporary solution, to smooth out inconsistencies between
+// Deno and Node.js.
+const upstreamModules = new Map<string, Module>();
+
+function loadUpstreamModule(
+  filename: string,
+  parent: Module | null,
+  request: string,
+): Module | undefined {
+  if (typeof upstreamMods[request] !== "undefined") {
+    if (!upstreamModules.has(filename)) {
+      upstreamModules.set(
+        filename,
+        createUpstreamModule(filename, parent, upstreamMods[request]),
+      );
+    }
+    return upstreamModules.get(filename);
+  }
+}
+function createUpstreamModule(
+  filename: string,
+  parent: Module | null,
+  content: string,
+): Module {
+  const mod = new Module(filename, parent);
+  mod.filename = filename;
+  mod.paths = Module._nodeModulePaths(path.dirname(filename));
+  mod._compile(content, filename);
+  mod.loaded = true;
+  return mod;
 }
 
 let modulePaths: string[] = [];
@@ -1230,6 +1285,10 @@ type RequireWrapper = (
   module: Module,
   __filename: string,
   __dirname: string,
+  setTimeout_: typeof setTimeout,
+  clearTimeout_: typeof clearTimeout,
+  setInterval_: typeof setInterval,
+  clearInterval_: typeof clearInterval,
 ) => void;
 
 function enrichCJSError(error: Error) {
@@ -1253,8 +1312,7 @@ function wrapSafe(
 ): RequireWrapper {
   // TODO(bartlomieju): fix this
   const wrapper = Module.wrap(content);
-  // deno-lint-ignore no-explicit-any
-  const [f, err] = (Deno as any).core.evalContext(wrapper, filename);
+  const [f, err] = core.evalContext(wrapper, filename);
   if (err) {
     if (process.mainModule === cjsModuleInstance) {
       enrichCJSError(err.thrown);

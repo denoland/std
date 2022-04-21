@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -10,7 +10,7 @@ import { writeFile, writeFileSync } from "./_fs_writeFile.ts";
 import type { TextEncodings } from "../_utils.ts";
 import * as path from "../../path/mod.ts";
 import { isWindows } from "../../_util/os.ts";
-import { AbortError } from "./../_errors.ts";
+import { AbortError } from "./../internal/errors.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testDataDir = path.resolve(moduleDir, "testdata");
@@ -98,7 +98,7 @@ Deno.test(
   "Data is written to correct rid",
   async function testCorrectWriteUsingRid() {
     const tempFile: string = await Deno.makeTempFile();
-    const file: Deno.File = await Deno.open(tempFile, {
+    const file: Deno.FsFile = await Deno.open(tempFile, {
       create: true,
       write: true,
       read: true,
@@ -204,7 +204,7 @@ Deno.test(
     if (isWindows) return;
 
     const filename: string = await Deno.makeTempFile();
-    const file: Deno.File = await Deno.open(filename, {
+    const file: Deno.FsFile = await Deno.open(filename, {
       create: true,
       write: true,
       read: true,
@@ -253,7 +253,7 @@ Deno.test(
   "Data is written synchronously to correct rid",
   function testCorrectWriteSyncUsingRid() {
     const tempFile: string = Deno.makeTempFileSync();
-    const file: Deno.File = Deno.openSync(tempFile, {
+    const file: Deno.FsFile = Deno.openSync(tempFile, {
       create: true,
       write: true,
       read: true,

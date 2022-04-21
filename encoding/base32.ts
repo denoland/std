@@ -1,5 +1,7 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Modified from https://github.com/beatgammit/base64-js
 // Copyright (c) 2014 Jameson Little. MIT License.
+// This module is browser compatible.
 
 const lookup: string[] = [];
 const revLookup: number[] = [];

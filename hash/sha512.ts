@@ -1,4 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /*
  * [js-sha512]{@link https://github.com/emn178/js-sha512}
  *
@@ -1136,7 +1138,7 @@ export class HmacSha512 extends Sha512 {
     this.#sharedMemory = sharedMemory;
   }
 
-  protected finalize(): void {
+  protected override finalize(): void {
     super.finalize();
     if (this.#inner) {
       this.#inner = false;

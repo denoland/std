@@ -1,300 +1,104 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
-import { assert } from "../_util/assert.ts";
-import { EventEmitter } from "./events.ts";
-import { notImplemented } from "./_utils.ts";
-import { Readable, Stream, Writable } from "./stream.ts";
-import { deferred } from "../async/deferred.ts";
-import { iterateReader, writeAll } from "../streams/conversion.ts";
-import { isWindows } from "../_util/os.ts";
+import {
+  ChildProcess,
+  ChildProcessOptions,
+  stdioStringToArray,
+} from "./internal/child_process.ts";
+import { validateString } from "./internal/validators.mjs";
+import {
+  ERR_CHILD_PROCESS_IPC_REQUIRED,
+  ERR_CHILD_PROCESS_STDIO_MAXBUFFER,
+  ERR_INVALID_ARG_VALUE,
+  ERR_OUT_OF_RANGE,
+} from "./internal/errors.ts";
+import { getSystemErrorName } from "./util.ts";
+import { process } from "./process.ts";
 import { Buffer } from "./buffer.ts";
-import { nextTick } from "./_next_tick.ts";
-export class ChildProcess extends EventEmitter {
-  /**
-   * The exit code of the child process. This property will be `null` until the child process exits.
-   */
-  exitCode: number | null = null;
 
-  /**
-   * This property is set to `true` after `kill()` is called.
-   */
-  killed = false;
+const MAX_BUFFER = 1024 * 1024;
 
-  /**
-   * The PID of this child process.
-   */
-  pid!: number;
+const denoCompatArgv = [
+  "run",
+  "--compat",
+  "--unstable",
+  "--no-check",
+  "--allow-all",
+];
+/**
+ * Spawns a new Node.js process + fork.
+ * @param modulePath
+ * @param args
+ * @param option
+ * @returns {ChildProcess}
+ */
+export function fork(
+  modulePath: string, /* args?: string[], options?: ForkOptions*/
+) {
+  validateString(modulePath, "modulePath");
 
-  /**
-   * Command line arguments given to this child process.
-   */
-  spawnargs: string[];
+  // Get options and args arguments.
+  let execArgv;
+  let options: SpawnOptions & {
+    execArgv?: string;
+    execPath?: string;
+    silent?: boolean;
+  } = {};
+  let args: string[] = [];
+  let pos = 1;
+  if (pos < arguments.length && Array.isArray(arguments[pos])) {
+    args = arguments[pos++];
+  }
 
-  /**
-   * The executable file name of this child process.
-   */
-  spawnfile: string;
+  if (pos < arguments.length && arguments[pos] == null) {
+    pos++;
+  }
 
-  /**
-   * This property represents the child process's stdin.
-   */
-  stdin: Writable | null = null;
+  if (pos < arguments.length && arguments[pos] != null) {
+    if (typeof arguments[pos] !== "object") {
+      throw new ERR_INVALID_ARG_VALUE(`arguments[${pos}]`, arguments[pos]);
+    }
 
-  /**
-   * This property represents the child process's stdout.
-   */
-  stdout: Readable | null = null;
+    options = { ...arguments[pos++] };
+  }
 
-  /**
-   * This property represents the child process's stderr.
-   */
-  stderr: Readable | null = null;
+  // Prepare arguments for fork:
+  execArgv = options.execArgv || process.execArgv;
 
-  /**
-   * Pipes to this child process.
-   */
-  stdio: [Writable | null, Readable | null, Readable | null] = [
-    null,
-    null,
-    null,
-  ];
+  if (execArgv === process.execArgv && process._eval != null) {
+    const index = execArgv.lastIndexOf(process._eval);
+    if (index > 0) {
+      // Remove the -e switch to avoid fork bombing ourselves.
+      execArgv = execArgv.slice(0);
+      execArgv.splice(index - 1, 2);
+    }
+  }
 
-  #process!: Deno.Process;
-  #spawned = deferred<void>();
+  args = [...denoCompatArgv, ...execArgv, modulePath, ...args];
 
-  constructor(
-    command: string,
-    args?: string[],
-    options?: ChildProcessOptions,
-  ) {
-    super();
-
-    const {
-      env = {},
-      stdio = ["pipe", "pipe", "pipe"],
-      shell = false,
-    } = options || {};
-
-    const [
-      stdin = "pipe",
-      stdout = "pipe",
-      stderr = "pipe",
-    ] = normalizeStdioOption(stdio);
-    const cmd = buildCommand(
-      command,
-      args || [],
-      shell,
+  if (typeof options.stdio === "string") {
+    options.stdio = stdioStringToArray(options.stdio, "ipc");
+  } else if (!Array.isArray(options.stdio)) {
+    // Use a separate fd=3 for the IPC channel. Inherit stdin, stdout,
+    // and stderr from the parent if silent isn't set.
+    options.stdio = stdioStringToArray(
+      options.silent ? "pipe" : "inherit",
+      "ipc",
     );
-    this.spawnfile = cmd[0];
-    this.spawnargs = cmd;
-
-    try {
-      this.#process = Deno.run({
-        cmd,
-        env,
-        stdin: toDenoStdio(stdin as NodeStdio | number),
-        stdout: toDenoStdio(stdout as NodeStdio | number),
-        stderr: toDenoStdio(stderr as NodeStdio | number),
-      });
-      this.pid = this.#process.pid;
-
-      if (stdin === "pipe") {
-        assert(this.#process.stdin);
-        this.stdin = createWritableFromStdin(this.#process.stdin);
-      }
-
-      if (stdout === "pipe") {
-        assert(this.#process.stdout);
-        this.stdout = createReadableFromReader(this.#process.stdout);
-      }
-
-      if (stderr === "pipe") {
-        assert(this.#process.stderr);
-        this.stderr = createReadableFromReader(this.#process.stderr);
-      }
-
-      this.stdio[0] = this.stdin;
-      this.stdio[1] = this.stdout;
-      this.stdio[2] = this.stderr;
-
-      nextTick(() => {
-        this.emit("spawn");
-        this.#spawned.resolve();
-      });
-
-      (async () => {
-        const status = await this.#process.status();
-        this.exitCode = status.code;
-        this.#spawned.then(async () => {
-          // The 'exit' and 'close' events must be emitted after the 'spawn' event.
-          this.emit("exit", this.exitCode, status.signal ?? null);
-          await this._waitForChildStreamsToClose();
-          this.kill();
-          this.emit("close", this.exitCode, status.signal ?? null);
-        });
-      })();
-    } catch (err) {
-      this._handleError(err);
-    }
+  } else if (!options.stdio.includes("ipc")) {
+    throw new ERR_CHILD_PROCESS_IPC_REQUIRED("options.stdio");
   }
 
-  /**
-   * @param signal NOTE: this parameter is not yet implemented.
-   */
-  kill(signal?: number): boolean {
-    if (signal != null) {
-      notImplemented("`ChildProcess.kill()` with the `signal` parameter");
-    }
+  options.execPath = options.execPath || Deno.execPath();
+  options.shell = false;
 
-    if (this.killed) {
-      return this.killed;
-    }
-
-    if (this.#process.stdin) {
-      assert(this.stdin);
-      ensureClosed(this.#process.stdin);
-    }
-    if (this.#process.stdout) {
-      ensureClosed(this.#process.stdout);
-    }
-    if (this.#process.stderr) {
-      ensureClosed(this.#process.stderr);
-    }
-    ensureClosed(this.#process); // TODO Use `Deno.Process.kill` instead when it becomes stable.
-    this.killed = true;
-    return this.killed;
-  }
-
-  ref(): void {
-    notImplemented("ChildProcess.ref()");
-  }
-
-  unref(): void {
-    notImplemented("ChildProcess.unref()");
-  }
-
-  private async _waitForChildStreamsToClose(): Promise<void> {
-    const promises = [] as Array<Promise<void>>;
-    if (this.stdin && !this.stdin.destroyed) {
-      assert(this.stdin);
-      this.stdin.destroy();
-      promises.push(waitForStreamToClose(this.stdin));
-    }
-    if (this.stdout && !this.stdout.destroyed) {
-      promises.push(waitForReadableToClose(this.stdout));
-    }
-    if (this.stderr && !this.stderr.destroyed) {
-      promises.push(waitForReadableToClose(this.stderr));
-    }
-    await Promise.all(promises);
-  }
-
-  private _handleError(err: unknown): void {
-    nextTick(() => {
-      this.emit("error", err); // TODO(uki00a) Convert `err` into nodejs's `SystemError` class.
-    });
-  }
-}
-
-const supportedNodeStdioTypes: NodeStdio[] = ["pipe", "ignore", "inherit"];
-function toDenoStdio(
-  pipe: NodeStdio | number | Stream | null | undefined,
-): DenoStdio {
-  if (
-    !supportedNodeStdioTypes.includes(pipe as NodeStdio) ||
-    typeof pipe === "number" || pipe instanceof Stream
-  ) {
-    notImplemented();
-  }
-  switch (pipe) {
-    case "pipe":
-    case undefined:
-    case null:
-      return "piped";
-    case "ignore":
-      return "null";
-    case "inherit":
-      return "inherit";
-    default:
-      notImplemented();
-  }
-}
-
-type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit";
-type DenoStdio = "inherit" | "piped" | "null";
-
-interface ChildProcessOptions {
-  /**
-   * Current working directory of the child process.
-   */
-  cwd?: string;
-
-  /**
-   * Environment variables passed to the child process.
-   */
-  env?: Record<string, string>;
-
-  /**
-   * This option defines child process's stdio configuration.
-   * @see https://nodejs.org/api/child_process.html#child_process_options_stdio
-   */
-  stdio?: Array<NodeStdio | number | Stream | null | undefined> | NodeStdio;
-
-  /**
-   * NOTE: This option is not yet implemented.
-   */
-  detached?: boolean;
-
-  /**
-   * NOTE: This option is not yet implemented.
-   */
-  uid?: number;
-
-  /**
-   * NOTE: This option is not yet implemented.
-   */
-  gid?: number;
-
-  /**
-   * NOTE: This option is not yet implemented.
-   */
-  argv0?: string;
-
-  /**
-   * * If this option is `true`, run the command in the shell.
-   * * If this option is a string, run the command in the specified shell.
-   */
-  shell?: string | boolean;
-
-  /**
-   * NOTE: This option is not yet implemented.
-   */
-  signal?: AbortSignal;
-
-  /**
-   * NOTE: This option is not yet implemented.
-   */
-  serialization?: "json" | "advanced";
-
-  /**
-   * NOTE: This option is not yet implemented.
-   *
-   * @see https://github.com/rust-lang/rust/issues/29494
-   * @see https://github.com/denoland/deno/issues/8852
-   */
-  windowsVerbatimArguments?: boolean;
-
-  /**
-   * NOTE: This option is not yet implemented.
-   */
-  windowsHide?: boolean;
+  return spawn(options.execPath, args, options);
 }
 
 // deno-lint-ignore no-empty-interface
 interface SpawnOptions extends ChildProcessOptions {}
-
 export function spawn(command: string): ChildProcess;
 export function spawn(command: string, options: SpawnOptions): ChildProcess;
 export function spawn(command: string, args: string[]): ChildProcess;
@@ -318,168 +122,302 @@ export function spawn(
   return new ChildProcess(command, args, options);
 }
 
-export default { spawn };
+interface ExecFileOptions extends ChildProcessOptions {
+  encoding?: string;
+  timeout?: number;
+  maxBuffer?: number;
+  killSignal?: string;
+}
+interface ChildProcessError extends Error {
+  code?: string | number;
+  killed?: boolean;
+  signal?: string;
+  cmd?: string;
+}
+class ExecFileError extends Error implements ChildProcessError {
+  code?: string | number;
 
-function ensureClosed(closer: Deno.Closer): void {
-  try {
-    closer.close();
-  } catch (err) {
-    if (isAlreadyClosed(err)) {
-      return;
-    }
-    throw err;
+  constructor(message: string) {
+    super(message);
+    this.code = "UNKNOWN";
   }
 }
-
-function isAlreadyClosed(err: unknown): boolean {
-  return err instanceof Deno.errors.BadResource ||
-    err instanceof Deno.errors.Interrupted;
-}
-
-function createReadableFromReader(
-  reader: Deno.Reader,
-): Readable {
-  // TODO(uki00a): This could probably be more efficient.
-  return Readable.from(cloneIterator(iterateReader(reader)), {
-    objectMode: false,
-  });
-}
-
-async function* cloneIterator(iterator: AsyncIterableIterator<Uint8Array>) {
-  try {
-    for await (const chunk of iterator) {
-      yield new Buffer(chunk);
-    }
-  } catch (e) {
-    if (isAlreadyClosed(e)) {
-      return;
-    }
-    throw e;
-  }
-}
-
-function createWritableFromStdin(stdin: Deno.Closer & Deno.Writer): Writable {
-  const encoder = new TextEncoder();
-  return new Writable({
-    async write(chunk, encoding, callback) {
-      try {
-        if (encoding !== "buffer") {
-          chunk = encoder.encode(chunk);
-        }
-        if (!(chunk instanceof Uint8Array)) {
-          throw new TypeError(
-            `Expected chunk to be of type Uint8Array, got ${typeof chunk}`,
-          );
-        }
-        await writeAll(stdin, chunk);
-        callback();
-      } catch (err) {
-        callback(err instanceof Error ? err : new Error("[non-error thrown]"));
-      }
-    },
-    final(callback) {
-      try {
-        ensureClosed(stdin);
-      } catch (err) {
-        callback(err instanceof Error ? err : new Error("[non-error thrown]"));
-      }
-    },
-  });
-}
-
-function normalizeStdioOption(
-  stdio: Array<NodeStdio | number | null | undefined | Stream> | NodeStdio = [
-    "pipe",
-    "pipe",
-    "pipe",
-  ],
-) {
-  if (Array.isArray(stdio)) {
-    if (stdio.length > 3) {
-      notImplemented();
-    } else {
-      return stdio;
-    }
-  } else {
-    switch (stdio) {
-      case "overlapped":
-        if (isWindows) {
-          notImplemented();
-        }
-        // 'overlapped' is same as 'piped' on non Windows system.
-        return ["pipe", "pipe", "pipe"];
-      case "pipe":
-        return ["pipe", "pipe", "pipe"];
-      case "inherit":
-        return ["inherit", "inherit", "inherit"];
-      case "ignore":
-        return ["ignore", "ignore", "ignore"];
-      default:
-        notImplemented();
-    }
-  }
-}
-
-function waitForReadableToClose(readable: Readable): Promise<void> {
-  readable.resume(); // Ensure buffered data will be consumed.
-  return waitForStreamToClose(readable as unknown as Stream);
-}
-
-function waitForStreamToClose(stream: Stream): Promise<void> {
-  const promise = deferred<void>();
-  const cleanup = () => {
-    stream.removeListener("close", onClose);
-    stream.removeListener("error", onError);
-  };
-  const onClose = () => {
-    cleanup();
-    promise.resolve();
-  };
-  const onError = (err: Error) => {
-    cleanup();
-    promise.reject(err);
-  };
-  stream.once("close", onClose);
-  stream.once("error", onError);
-  return promise;
-}
-
-/**
- * This function is based on https://github.com/nodejs/node/blob/fc6426ccc4b4cb73076356fb6dbf46a28953af01/lib/child_process.js#L504-L528.
- * Copyright Joyent, Inc. and other Node contributors. All rights reserved. MIT license.
- */
-function buildCommand(
+type ExecFileCallback = (
+  error: ChildProcessError | null,
+  stdout?: string | Buffer,
+  stderr?: string | Buffer,
+) => void;
+export function execFile(file: string): ChildProcess;
+export function execFile(
+  file: string,
+  callback: ExecFileCallback,
+): ChildProcess;
+export function execFile(file: string, args: string[]): ChildProcess;
+export function execFile(
   file: string,
   args: string[],
-  shell: string | boolean,
-): string[] {
-  const command = [file, ...args].join(" ");
-  if (shell) {
-    // Set the shell, switches, and commands.
-    if (isWindows) {
-      // TODO(uki00a): Currently, due to escaping issues, it is difficult to reproduce the same behavior as Node.js's `child_process` module.
-      // For more details, see the following issues:
-      // * https://github.com/rust-lang/rust/issues/29494
-      // * https://github.com/denoland/deno/issues/8852
-      if (typeof shell === "string") {
-        file = shell;
-      } else {
-        file = Deno.env.get("comspec") || "cmd.exe";
-      }
-      // '/d /s /c' is used only for cmd.exe.
-      if (/^(?:.*\\)?cmd(?:\.exe)?$/i.test(file)) {
-        args = ["/d", "/s", "/c", `"${command}"`];
-      } else {
-        args = ["-c", command];
-      }
+  callback: ExecFileCallback,
+): ChildProcess;
+export function execFile(file: string, options: ExecFileOptions): ChildProcess;
+export function execFile(
+  file: string,
+  options: ExecFileOptions,
+  callback: ExecFileCallback,
+): ChildProcess;
+export function execFile(
+  file: string,
+  args: string[],
+  options: ExecFileOptions,
+  callback: ExecFileCallback,
+): ChildProcess;
+export function execFile(
+  file: string,
+  argsOrOptionsOrCallback?: string[] | ExecFileOptions | ExecFileCallback,
+  optionsOrCallback?: ExecFileOptions | ExecFileCallback,
+  maybeCallback?: ExecFileCallback,
+): ChildProcess {
+  let args: string[] = [];
+  let options: ExecFileOptions = {};
+  let callback: ExecFileCallback | undefined;
+
+  if (Array.isArray(argsOrOptionsOrCallback)) {
+    args = argsOrOptionsOrCallback;
+  } else if (argsOrOptionsOrCallback instanceof Function) {
+    callback = argsOrOptionsOrCallback;
+  } else if (argsOrOptionsOrCallback) {
+    options = argsOrOptionsOrCallback;
+  }
+  if (optionsOrCallback instanceof Function) {
+    callback = optionsOrCallback;
+  } else if (optionsOrCallback) {
+    options = optionsOrCallback;
+    callback = maybeCallback;
+  }
+
+  const execOptions = {
+    encoding: "utf8",
+    timeout: 0,
+    maxBuffer: MAX_BUFFER,
+    killSignal: "SIGTERM",
+    ...options,
+  };
+  if (!Number.isInteger(execOptions.timeout) || execOptions.timeout < 0) {
+    // In Node source, the first argument to error constructor is "timeout" instead of "options.timeout".
+    // timeout is indeed a member of options object.
+    throw new ERR_OUT_OF_RANGE(
+      "timeout",
+      "an unsigned integer",
+      execOptions.timeout,
+    );
+  }
+  if (execOptions.maxBuffer < 0) {
+    throw new ERR_OUT_OF_RANGE(
+      "options.maxBuffer",
+      "a positive number",
+      execOptions.maxBuffer,
+    );
+  }
+  const spawnOptions = {
+    shell: false,
+    ...options,
+  };
+
+  const child = spawn(file, args, spawnOptions);
+
+  let encoding: string | null;
+  const _stdout: Uint8Array[] = [];
+  const _stderr: Uint8Array[] = [];
+  if (
+    execOptions.encoding !== "buffer" && Buffer.isEncoding(execOptions.encoding)
+  ) {
+    encoding = execOptions.encoding;
+  } else {
+    encoding = null;
+  }
+  let stdoutLen = 0;
+  let stderrLen = 0;
+  let exited = false;
+  let timeoutId: number | null;
+
+  let ex: ChildProcessError | null = null;
+
+  let cmd = file;
+
+  function exithandler(code = 0, signal?: string) {
+    if (exited) return;
+    exited = true;
+
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+
+    if (!callback) return;
+
+    // merge chunks
+    let stdout;
+    let stderr;
+    if (
+      encoding ||
+      (
+        child.stdout &&
+        child.stdout.readableEncoding
+      )
+    ) {
+      stdout = _stdout.join("");
     } else {
-      if (typeof shell === "string") {
-        file = shell;
-      } else {
-        file = "/bin/sh";
+      stdout = Buffer.concat(_stdout);
+    }
+    if (
+      encoding ||
+      (
+        child.stderr &&
+        child.stderr.readableEncoding
+      )
+    ) {
+      stderr = _stderr.join("");
+    } else {
+      stderr = Buffer.concat(_stderr);
+    }
+
+    if (!ex && code === 0 && signal === null) {
+      callback(null, stdout, stderr);
+      return;
+    }
+
+    if (args?.length) {
+      cmd += ` ${args.join(" ")}`;
+    }
+
+    if (!ex) {
+      ex = new ExecFileError(
+        "Command failed: " + cmd + "\n" + stderr,
+      );
+      ex.code = code < 0 ? getSystemErrorName(code) : code;
+      ex.killed = child.killed;
+      ex.signal = signal;
+    }
+
+    ex.cmd = cmd;
+    callback(ex, stdout, stderr);
+  }
+
+  function errorhandler(e: ExecFileError) {
+    ex = e;
+
+    if (child.stdout) {
+      child.stdout.destroy();
+    }
+
+    if (child.stderr) {
+      child.stderr.destroy();
+    }
+
+    exithandler();
+  }
+
+  function kill() {
+    if (child.stdout) {
+      child.stdout.destroy();
+    }
+
+    if (child.stderr) {
+      child.stderr.destroy();
+    }
+
+    try {
+      child.kill(/** TODO use execOptions.killSignal */);
+    } catch (e) {
+      if (e) {
+        ex = e as ChildProcessError;
       }
-      args = ["-c", command];
+      exithandler();
     }
   }
-  return [file, ...args];
+
+  if (execOptions.timeout > 0) {
+    timeoutId = setTimeout(function delayedKill() {
+      kill();
+      timeoutId = null;
+    }, execOptions.timeout);
+  }
+
+  if (child.stdout) {
+    if (encoding) {
+      child.stdout.setEncoding(encoding);
+    }
+
+    child.stdout.on("data", function onChildStdout(chunk: string | Buffer) {
+      const encoding = child.stdout?.readableEncoding;
+
+      let chunkBuffer: Buffer;
+      if (Buffer.isBuffer(chunk)) {
+        chunkBuffer = chunk;
+      } else {
+        if (encoding) {
+          chunkBuffer = Buffer.from(chunk as string, encoding);
+        } else {
+          // TODO choose what to do if encoding is not set but chunk is a string (should not happen)
+          chunkBuffer = Buffer.from("");
+        }
+      }
+
+      const length = chunkBuffer.length;
+      stdoutLen += length;
+
+      if (stdoutLen > execOptions.maxBuffer) {
+        const truncatedLen = execOptions.maxBuffer - (stdoutLen - length);
+        const truncatedSlice = chunkBuffer.slice(0, truncatedLen).valueOf();
+        _stdout.push(truncatedSlice);
+
+        ex = new ERR_CHILD_PROCESS_STDIO_MAXBUFFER("stdout");
+        kill();
+      } else {
+        _stdout.push(chunkBuffer.valueOf());
+      }
+    });
+  }
+
+  if (child.stderr) {
+    if (encoding) {
+      child.stderr.setEncoding(encoding);
+    }
+
+    child.stderr.on("data", function onChildStderr(chunk: string | Buffer) {
+      const encoding = child.stderr?.readableEncoding;
+
+      let chunkBuffer: Buffer;
+      if (Buffer.isBuffer(chunk)) {
+        chunkBuffer = chunk;
+      } else {
+        if (encoding) {
+          chunkBuffer = Buffer.from(chunk as string, encoding);
+        } else {
+          // TODO choose what to do if encoding is not set but chunk is a string (should not happen)
+          chunkBuffer = Buffer.from("");
+        }
+      }
+
+      const length = chunkBuffer.length;
+      stderrLen += length;
+
+      if (stderrLen > execOptions.maxBuffer) {
+        const truncatedLen = execOptions.maxBuffer - (stderrLen - length);
+        const truncatedSlice = chunkBuffer.slice(0, truncatedLen).valueOf();
+        _stderr.push(truncatedSlice);
+
+        ex = new ERR_CHILD_PROCESS_STDIO_MAXBUFFER("stderr");
+        kill();
+      } else {
+        _stderr.push(chunkBuffer.valueOf());
+      }
+    });
+  }
+
+  child.addListener("close", exithandler);
+  child.addListener("error", errorhandler);
+
+  return child;
 }
+
+export default { fork, spawn, execFile, ChildProcess };

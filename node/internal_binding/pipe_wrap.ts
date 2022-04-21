@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -35,7 +36,7 @@ export enum socketType {
 }
 
 export class Pipe extends ConnectionWrap {
-  reading = false;
+  override reading = false;
   ipc: boolean;
 
   constructor(type: number) {
@@ -71,11 +72,11 @@ export class Pipe extends ConnectionWrap {
   }
 
   bind() {
-    notImplemented();
+    notImplemented("Pipe.prototype.bind");
   }
 
   listen() {
-    notImplemented();
+    notImplemented("Pipe.prototype.listen");
   }
 
   connect(
@@ -89,21 +90,21 @@ export class Pipe extends ConnectionWrap {
       writable: boolean,
     ) => void,
   ) {
-    notImplemented();
+    notImplemented("Pipe.prototype.connect");
   }
 
   open(_fd: number): number {
     // REF: https://github.com/denoland/deno/issues/6529
-    notImplemented();
+    notImplemented("Pipe.prototype.open");
   }
 
   // Windows only
   setPendingInstances(_instances: number) {
-    notImplemented();
+    notImplemented("Pipe.prototype.setPendingInstances");
   }
 
   fchmod() {
-    notImplemented();
+    notImplemented("Pipe.prototype.fchmod");
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import * as log from "./mod.ts";
 import {
@@ -11,7 +11,7 @@ import {
 class TestHandler extends log.handlers.BaseHandler {
   public messages: string[] = [];
 
-  log(msg: string): void {
+  override log(msg: string): void {
     this.messages.push(msg);
   }
 }

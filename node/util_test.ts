@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import {
   assert,
@@ -8,6 +8,16 @@ import {
 } from "../testing/asserts.ts";
 import { stripColor } from "../fmt/colors.ts";
 import * as util from "./util.ts";
+
+// Note: Need to import this to lazily initialize error classes
+import "./internal/errors.ts";
+
+Deno.test({
+  name: "[util] format",
+  fn() {
+    assertEquals(util.format("%o", [10, 11]), "[ 10, 11, [length]: 2 ]");
+  },
+});
 
 Deno.test({
   name: "[util] inspect.custom",
@@ -231,86 +241,4 @@ Deno.test({
         break;
     }
   },
-});
-
-Deno.test("[util] deprecate", () => {
-  const warn = console.warn.bind(null);
-
-  let output;
-  console.warn = function (str: string) {
-    output = str;
-    warn(output);
-  };
-
-  const message = "testFunction is deprecated";
-
-  function testFunction(this: string): string {
-    return this;
-  }
-
-  const expected = "hello world";
-
-  const testFn1 = util.deprecate(testFunction.bind(expected), message);
-
-  assertEquals(testFn1(), expected);
-  assertEquals(output, message);
-
-  console.warn = warn;
-});
-
-Deno.test("[util] format", () => {
-  assertEquals(util.format("%c %j %d"), "%c %j %d");
-  assertEquals(util.format("%c", "color: red;"), "");
-
-  assertEquals(util.format("%d", 10), "10");
-  assertEquals(util.format("%d", 10n), "10n");
-  assertEquals(util.format("%d", "hello world"), "NaN");
-
-  assertEquals(util.format("%i", 10), "10");
-  assertEquals(util.format("%i", 10.123), "10");
-  assertEquals(util.format("%i", 10n), "10n");
-  assertEquals(util.format("%i", "hello world"), "NaN");
-
-  assertEquals(util.format("%f", 10), "10");
-  assertEquals(util.format("%f", 10.123), "10.123");
-  assertEquals(util.format("%f", 10n), "10");
-  assertEquals(util.format("%f", "hello world"), "NaN");
-
-  assertEquals(
-    util.format("%j", { hi: "hello" }),
-    JSON.stringify({ hi: "hello" }),
-  );
-  // deno-lint-ignore no-explicit-any
-  const a: any = {};
-  a.a = a;
-  assertEquals(util.format("%j", a), "[Circular]");
-
-  const testData = Object.assign([
-    10,
-    "hi",
-    null,
-    undefined,
-    NaN,
-    Infinity,
-    { hello: "world" },
-    [10, 11],
-  ], { hi: "hello" });
-
-  // in node there's an `hi: 'hello'` at the end but this seems to be entirely missing if just printing the object in deno, not sure why, removing for now so tests pass
-  const expected =
-    `[\n  10,\n  "hi",\n  null,\n  undefined,\n  NaN,\n  Infinity,\n  { hello: "world" },\n  [ 10, 11 ]\n]`;
-  assertEquals(util.format("%o", testData), expected);
-  assertEquals(util.format("%O", testData), expected);
-
-  // same thing as above regarding the `hi: 'hello'`
-  const expected2 =
-    `[\n  10,       "hi",\n  null,     undefined,\n  NaN,      Infinity,\n  [Object], [Array]\n]`;
-  assertEquals(util.format("%s", testData), expected2);
-
-  assertEquals(
-    util.format("%o %O %i", testData, testData, 10),
-    `${expected} ${expected} 10`,
-  );
-
-  assertEquals(util.format("hello %s", "there"), `hello there`);
 });

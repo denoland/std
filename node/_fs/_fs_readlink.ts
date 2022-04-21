@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   intoCallbackAPIWithIntercept,
   MaybeEmpty,
@@ -40,7 +40,7 @@ function getEncoding(
       } else if (optOrCallback.encoding === "buffer") {
         return "buffer";
       } else {
-        notImplemented();
+        notImplemented(`fs.readlink encoding=${optOrCallback.encoding}`);
       }
     }
     return null;

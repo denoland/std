@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "../async/mod.ts";
 import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
 import { readAll } from "../streams/conversion.ts";
@@ -18,7 +18,7 @@ export type TextEncodings =
 
 export type Encodings = BinaryEncodings | TextEncodings;
 
-export function notImplemented(msg?: string): never {
+export function notImplemented(msg: string): never {
   const message = msg ? `Not implemented: ${msg}` : "Not implemented";
   throw new Error(message);
 }

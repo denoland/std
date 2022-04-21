@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import { Hash } from "./_wasm/hash.ts";
 import type { Hasher } from "./hasher.ts";
@@ -26,6 +27,7 @@ export const supportedAlgorithms = [
   "keccak384",
   "keccak512",
   "blake3",
+  "tiger",
 ] as const;
 /** @deprecated */
 export type SupportedAlgorithm = typeof supportedAlgorithms[number];

@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/9b9cd671114a2a5178809798d8e7f4d8ca6c2671/types/node/events.d.ts
@@ -6,6 +7,12 @@ export const captureRejectionSymbol: unique symbol;
 export const defaultMaxListeners: number;
 export const errorMonitor: unique symbol;
 
+export interface Abortable {
+  /**
+   * When provided the corresponding `AbortController` can be used to cancel an asynchronous action.
+   */
+  signal?: AbortSignal | undefined;
+}
 /**
  * Returns a copy of the array of listeners for the event named `eventName`.
  *

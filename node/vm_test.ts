@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertThrows } from "../testing/asserts.ts";
 import * as vm from "./vm.ts";
 
@@ -6,13 +6,6 @@ Deno.test("createScript", function () {
   const script = vm.createScript("foo", {});
   assert(script instanceof vm.Script);
 
-  assertThrows(
-    () => {
-      script.runInThisContext({});
-    },
-    Error,
-    "Not implemented",
-  );
   assertThrows(
     () => {
       script.runInContext({}, {});
@@ -56,13 +49,6 @@ Deno.test({
     assertThrows(
       () => {
         vm.runInNewContext("", {}, {});
-      },
-      Error,
-      "Not implemented",
-    );
-    assertThrows(
-      () => {
-        vm.runInThisContext("", {});
       },
       Error,
       "Not implemented",

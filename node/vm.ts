@@ -1,33 +1,34 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // deno-lint-ignore-file no-explicit-any
 
 import { notImplemented } from "./_utils.ts";
 
 export class Script {
+  code: string;
   constructor(code: string, _options = {}) {
-    code = `${code}`;
+    this.code = `${code}`;
   }
 
   runInThisContext(_options: any) {
-    notImplemented();
+    return eval.call(globalThis, this.code);
   }
 
   runInContext(_contextifiedObject: any, _options: any) {
-    notImplemented();
+    notImplemented("Script.prototype.runInContext");
   }
 
   runInNewContext(_contextObject: any, _options: any) {
-    notImplemented();
+    notImplemented("Script.prototype.runInNewContext");
   }
 
   createCachedData() {
-    notImplemented();
+    notImplemented("Script.prototyp.createCachedData");
   }
 }
 
 export function createContext(_contextObject: any, _options: any) {
-  notImplemented();
+  notImplemented("createContext");
 }
 
 export function createScript(code: string, options: any) {
@@ -39,7 +40,7 @@ export function runInContext(
   _contextifiedObject: any,
   _options: any,
 ) {
-  notImplemented();
+  notImplemented("unInContext");
 }
 
 export function runInNewContext(
@@ -47,26 +48,26 @@ export function runInNewContext(
   _contextObject: any,
   _options: any,
 ) {
-  notImplemented();
+  notImplemented("runInNewContext");
 }
 
 export function runInThisContext(
-  _code: string,
-  _options: any,
+  code: string,
+  options: any,
 ) {
-  notImplemented();
+  return createScript(code, options).runInThisContext(options);
 }
 
 export function isContext(_maybeContext: any) {
-  notImplemented();
+  notImplemented("isContext");
 }
 
 export function compileFunction(_code: string, _params: any, _options: any) {
-  notImplemented();
+  notImplemented("compileFunction");
 }
 
 export function measureMemory(_options: any) {
-  notImplemented();
+  notImplemented("measureMemory");
 }
 
 export default {

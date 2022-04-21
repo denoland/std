@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 // The following are all the process APIs that don't depend on the stream module
@@ -6,9 +6,7 @@
 
 import { isWindows } from "../../_util/os.ts";
 import { nextTick as _nextTick } from "../_next_tick.ts";
-
-// deno-lint-ignore prefer-const
-export let _exiting = false;
+import { _exiting } from "./exiting.ts";
 
 /** Returns the operating system CPU architecture for which the Deno binary was compiled */
 function _arch(): string {
@@ -42,7 +40,17 @@ export const env: Record<string, string> = new Proxy({}, {
     return Deno.env.get(String(prop));
   },
   ownKeys: () => Reflect.ownKeys(Deno.env.toObject()),
-  getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }),
+  getOwnPropertyDescriptor: (_target, name) => {
+    const e = Deno.env.toObject();
+    if (name in Deno.env.toObject()) {
+      const o = { enumerable: true, configurable: true };
+      if (typeof name === "string") {
+        // @ts-ignore we do want to set it only when name is of type string
+        o.value = e[name];
+      }
+      return o;
+    }
+  },
   set(_target, prop, value) {
     Deno.env.set(String(prop), String(value));
     return value;
@@ -89,37 +97,4 @@ export const versions = {
   tz: "2021a",
   unicode: "13.0",
   ...Deno.version,
-};
-
-function hrtime(time?: [number, number]): [number, number] {
-  const milli = performance.now();
-  const sec = Math.floor(milli / 1000);
-  const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
-  if (!time) {
-    return [sec, nano];
-  }
-  const [prevSec, prevNano] = time;
-  return [sec - prevSec, nano - prevNano];
-}
-
-hrtime.bigint = function (): BigInt {
-  const [sec, nano] = hrtime();
-  return BigInt(sec) * 1_000_000_000n + BigInt(nano);
-};
-
-function memoryUsage(): {
-  rss: number;
-  heapTotal: number;
-  heapUsed: number;
-  external: number;
-  arrayBuffers: number;
-} {
-  return {
-    ...Deno.memoryUsage(),
-    arrayBuffers: 0,
-  };
-}
-
-memoryUsage.rss = function (): number {
-  return memoryUsage().rss;
 };

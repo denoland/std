@@ -1,3 +1,18 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import {
+  emitRecursiveRmdirWarning,
+  getValidatedPath,
+  validateRmdirOptions,
+  validateRmOptions,
+  validateRmOptionsSync,
+} from "../internal/fs/utils.mjs";
+import { toNamespacedPath } from "../path.ts";
+import {
+  denoErrorToNodeError,
+  ERR_FS_RMDIR_ENOTDIR,
+} from "../internal/errors.ts";
+import { Buffer } from "../buffer.ts";
+
 type rmdirOptions = {
   maxRetries?: number;
   recursive?: boolean;
@@ -17,6 +32,8 @@ export function rmdir(
   optionsOrCallback: rmdirOptions | rmdirCallback,
   maybeCallback?: rmdirCallback,
 ) {
+  path = toNamespacedPath(getValidatedPath(path) as string);
+
   const callback = typeof optionsOrCallback === "function"
     ? optionsOrCallback
     : maybeCallback;
@@ -26,10 +43,56 @@ export function rmdir(
 
   if (!callback) throw new Error("No callback function supplied");
 
-  Deno.remove(path, { recursive: options?.recursive })
-    .then((_) => callback(), callback);
+  if (options?.recursive) {
+    emitRecursiveRmdirWarning();
+    validateRmOptions(
+      path,
+      { ...options, force: false },
+      true,
+      (err: Error | null | false, options: rmdirOptions) => {
+        if (err === false) {
+          return callback(new ERR_FS_RMDIR_ENOTDIR(path.toString()));
+        }
+        if (err) {
+          return callback(err);
+        }
+
+        Deno.remove(path, { recursive: options?.recursive })
+          .then((_) => callback(), callback);
+      },
+    );
+  } else {
+    validateRmdirOptions(options);
+    Deno.remove(path, { recursive: options?.recursive })
+      .then((_) => callback(), (err: unknown) => {
+        callback(
+          err instanceof Error
+            ? denoErrorToNodeError(err, { syscall: "rmdir" })
+            : err,
+        );
+      });
+  }
 }
 
-export function rmdirSync(path: string | URL, options?: rmdirOptions) {
-  Deno.removeSync(path, { recursive: options?.recursive });
+export function rmdirSync(path: string | Buffer | URL, options?: rmdirOptions) {
+  path = getValidatedPath(path);
+  if (options?.recursive) {
+    emitRecursiveRmdirWarning();
+    options = validateRmOptionsSync(path, { ...options, force: false }, true);
+    if (options === false) {
+      throw new ERR_FS_RMDIR_ENOTDIR(path.toString());
+    }
+  } else {
+    validateRmdirOptions(options);
+  }
+
+  try {
+    Deno.removeSync(toNamespacedPath(path as string), {
+      recursive: options?.recursive,
+    });
+  } catch (err: unknown) {
+    throw (err instanceof Error
+      ? denoErrorToNodeError(err, { syscall: "rmdir" })
+      : err);
+  }
 }

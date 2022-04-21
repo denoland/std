@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import * as DenoUnstable from "../_deno_unstable.ts";
 import * as path from "../path/mod.ts";
 import { ensureDir, ensureDirSync } from "./ensure_dir.ts";
 import { getFileInfoType, isSubdir } from "./_util.ts";
@@ -93,7 +94,7 @@ async function copyFile(
     const statInfo = await Deno.stat(src);
     assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    await Deno.utime(dest, statInfo.atime, statInfo.mtime);
+    await DenoUnstable.utime(dest, statInfo.atime, statInfo.mtime);
   }
 }
 /* copy file to dest synchronously */
@@ -108,7 +109,7 @@ function copyFileSync(
     const statInfo = Deno.statSync(src);
     assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    Deno.utimeSync(dest, statInfo.atime, statInfo.mtime);
+    DenoUnstable.utimeSync(dest, statInfo.atime, statInfo.mtime);
   }
 }
 
@@ -132,7 +133,7 @@ async function copySymLink(
     const statInfo = await Deno.lstat(src);
     assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    await Deno.utime(dest, statInfo.atime, statInfo.mtime);
+    await DenoUnstable.utime(dest, statInfo.atime, statInfo.mtime);
   }
 }
 
@@ -157,7 +158,7 @@ function copySymlinkSync(
     const statInfo = Deno.lstatSync(src);
     assert(statInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(statInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    Deno.utimeSync(dest, statInfo.atime, statInfo.mtime);
+    DenoUnstable.utimeSync(dest, statInfo.atime, statInfo.mtime);
   }
 }
 
@@ -180,7 +181,7 @@ async function copyDir(
     const srcStatInfo = await Deno.stat(src);
     assert(srcStatInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(srcStatInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    await Deno.utime(dest, srcStatInfo.atime, srcStatInfo.mtime);
+    await DenoUnstable.utime(dest, srcStatInfo.atime, srcStatInfo.mtime);
   }
 
   for await (const entry of Deno.readDir(src)) {
@@ -211,7 +212,7 @@ function copyDirSync(src: string, dest: string, options: CopyOptions): void {
     const srcStatInfo = Deno.statSync(src);
     assert(srcStatInfo.atime instanceof Date, `statInfo.atime is unavailable`);
     assert(srcStatInfo.mtime instanceof Date, `statInfo.mtime is unavailable`);
-    Deno.utimeSync(dest, srcStatInfo.atime, srcStatInfo.mtime);
+    DenoUnstable.utimeSync(dest, srcStatInfo.atime, srcStatInfo.mtime);
   }
 
   for (const entry of Deno.readDirSync(src)) {
