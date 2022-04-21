@@ -14,7 +14,7 @@ import {
   publicEncrypt,
 } from "./_crypto/crypto_browserify/public_encrypt/mod.js";
 
-const randomUUID = () => crypto.randomUUID();
+const randomUUID = () => globalThis.crypto.randomUUID();
 const webcrypto = crypto;
 
 export default {
