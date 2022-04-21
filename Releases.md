@@ -1,3 +1,12 @@
+### 0.136.0 / 2022.04.21
+
+- feat(testing): Implement "assertSnapshot" (#2039)
+- feat(testing): add TestContext argument to "it" function (#2117)
+- fix(http): use the `addEventListener` method instead of `onabort` properties
+  (#2124)
+- fix(node/crypto): fix randomInt (#2101)
+- perf(http): optimize file server (#2116)
+
 ### 0.135.0 / 2022.04.14
 
 - BREAKING(io/readers): use an array as a MultiReader constructor parameter to

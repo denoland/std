@@ -109,6 +109,7 @@ Deno.test("global", async (t) => {
       fns = [spy(), spy()],
       { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
 
+    const context = new TestContext("global");
     try {
       beforeAll(beforeAllFn);
       afterAll(afterAllFn);
@@ -128,7 +129,6 @@ Deno.test("global", async (t) => {
       assertEquals(Object.keys(options).sort(), ["fn", "name"]);
       assertEquals(options.name, "global");
 
-      const context = new TestContext("global");
       const result = options.fn(context);
       assertStrictEquals(Promise.resolve(result), result);
       assertEquals(await result, undefined);
@@ -141,7 +141,7 @@ Deno.test("global", async (t) => {
     let fn = fns[0];
     assertSpyCall(fn, 0, {
       self: { allTimer: 1, eachTimer: 2 },
-      args: [],
+      args: [context.steps[0]],
       returned: undefined,
     });
     assertSpyCalls(fn, 1);
@@ -149,7 +149,7 @@ Deno.test("global", async (t) => {
     fn = fns[1];
     assertSpyCall(fn, 0, {
       self: { allTimer: 1, eachTimer: 3 },
-      args: [],
+      args: [context.steps[1]],
       returned: undefined,
     });
     assertSpyCalls(fn, 1);
@@ -194,7 +194,7 @@ Deno.test("global", async (t) => {
         assertSpyCalls(context.spies.step, 0);
         assertSpyCall(fn, 0, {
           self: {},
-          args: [],
+          args: [context],
           returned: undefined,
         });
       } finally {
@@ -697,14 +697,14 @@ Deno.test("global", async (t) => {
         let fn = fns[0];
         assertSpyCall(fn, 0, {
           self: {},
-          args: [],
+          args: [context.steps[0]],
           returned: undefined,
         });
 
         fn = fns[1];
         assertSpyCall(fn, 0, {
           self: {},
-          args: [],
+          args: [context.steps[1]],
           returned: undefined,
         });
         assertSpyCalls(fn, 1);
@@ -1340,7 +1340,6 @@ Deno.test("global", async (t) => {
           fn = fns[1];
           assertSpyCall(fn, 0, {
             self: {},
-            args: [],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
@@ -1438,7 +1437,6 @@ Deno.test("global", async (t) => {
           fn = fns[1];
           assertSpyCall(fn, 0, {
             self: {},
-            args: [],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
@@ -1520,6 +1518,7 @@ Deno.test("global", async (t) => {
           fns = [spy(), spy()],
           { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
 
+        const context = new TestContext("example");
         try {
           cb({ beforeAllFn, afterAllFn, beforeEachFn, afterEachFn, fns });
 
@@ -1532,7 +1531,6 @@ Deno.test("global", async (t) => {
           assertEquals(Object.keys(options).sort(), ["fn", "name"]);
           assertEquals(options.name, "example");
 
-          const context = new TestContext("example");
           const result = options.fn(context);
           assertStrictEquals(Promise.resolve(result), result);
           assertEquals(await result, undefined);
@@ -1545,7 +1543,7 @@ Deno.test("global", async (t) => {
         let fn = fns[0];
         assertSpyCall(fn, 0, {
           self: { allTimer: 1, eachTimer: 2 },
-          args: [],
+          args: [context.steps[0]],
           returned: undefined,
         });
         assertSpyCalls(fn, 1);
@@ -1553,7 +1551,7 @@ Deno.test("global", async (t) => {
         fn = fns[1];
         assertSpyCall(fn, 0, {
           self: { allTimer: 1, eachTimer: 3 },
-          args: [],
+          args: [context.steps[1]],
           returned: undefined,
         });
         assertSpyCalls(fn, 1);
@@ -1616,6 +1614,7 @@ Deno.test("global", async (t) => {
             fns = [spy(), spy()],
             { beforeAllFn, afterAllFn, beforeEachFn, afterEachFn } = hookFns();
 
+          const context = new TestContext("example");
           try {
             describe("example", () => {
               beforeAll(beforeAllFn);
@@ -1639,16 +1638,14 @@ Deno.test("global", async (t) => {
             assertEquals(Object.keys(options).sort(), ["fn", "name"]);
             assertEquals(options.name, "example");
 
-            let context = new TestContext("example");
             const result = options.fn(context);
             assertStrictEquals(Promise.resolve(result), result);
             assertEquals(await result, undefined);
             assertSpyCalls(context.spies.step, 1);
 
-            context = context.steps[0];
             assertStrictEquals(Promise.resolve(result), result);
             assertEquals(await result, undefined);
-            assertSpyCalls(context.spies.step, 2);
+            assertSpyCalls(context.steps[0].spies.step, 2);
           } finally {
             TestSuiteInternal.reset();
             test.restore();
@@ -1657,7 +1654,7 @@ Deno.test("global", async (t) => {
           let fn = fns[0];
           assertSpyCall(fn, 0, {
             self: { allTimer: 1, eachTimer: 2 },
-            args: [],
+            args: [context.steps[0].steps[0]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
@@ -1665,7 +1662,7 @@ Deno.test("global", async (t) => {
           fn = fns[1];
           assertSpyCall(fn, 0, {
             self: { allTimer: 1, eachTimer: 3 },
-            args: [],
+            args: [context.steps[0].steps[1]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
@@ -1717,6 +1714,7 @@ Deno.test("global", async (t) => {
               },
             );
 
+          const context = new TestContext("example");
           try {
             describe("example", () => {
               beforeAll(beforeAllFn);
@@ -1746,16 +1744,14 @@ Deno.test("global", async (t) => {
             assertEquals(Object.keys(options).sort(), ["fn", "name"]);
             assertEquals(options.name, "example");
 
-            let context = new TestContext("example");
             const result = options.fn(context);
             assertStrictEquals(Promise.resolve(result), result);
             assertEquals(await result, undefined);
             assertSpyCalls(context.spies.step, 1);
 
-            context = context.steps[0];
             assertStrictEquals(Promise.resolve(result), result);
             assertEquals(await result, undefined);
-            assertSpyCalls(context.spies.step, 2);
+            assertSpyCalls(context.steps[0].spies.step, 2);
           } finally {
             TestSuiteInternal.reset();
             test.restore();
@@ -1769,7 +1765,7 @@ Deno.test("global", async (t) => {
               eachTimer: 3,
               eachTimerNested: 4,
             },
-            args: [],
+            args: [context.steps[0].steps[0]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);
@@ -1782,7 +1778,7 @@ Deno.test("global", async (t) => {
               eachTimer: 5,
               eachTimerNested: 6,
             },
-            args: [],
+            args: [context.steps[0].steps[1]],
             returned: undefined,
           });
           assertSpyCalls(fn, 1);

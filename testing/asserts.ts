@@ -2,17 +2,9 @@
 // This module is browser compatible. Do not rely on good formatting of values
 // for AssertionError messages in browsers.
 
-import {
-  bgGreen,
-  bgRed,
-  bold,
-  gray,
-  green,
-  red,
-  stripColor,
-  white,
-} from "../fmt/colors.ts";
-import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
+import { red, stripColor } from "../fmt/colors.ts";
+import { buildMessage, diff, diffstr } from "./_diff.ts";
+import { format } from "./_format.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
@@ -21,90 +13,6 @@ export class AssertionError extends Error {
   constructor(message: string) {
     super(message);
   }
-}
-
-/**
- * Converts the input into a string. Objects, Sets and Maps are sorted so as to
- * make tests less flaky
- * @param v Value to be formatted
- */
-export function _format(v: unknown): string {
-  // deno-lint-ignore no-explicit-any
-  const { Deno } = globalThis as any;
-  return typeof Deno?.inspect === "function"
-    ? Deno.inspect(v, {
-      depth: Infinity,
-      sorted: true,
-      trailingComma: true,
-      compact: false,
-      iterableLimit: Infinity,
-    })
-    : `"${String(v).replace(/(?=["\\])/g, "\\")}"`;
-}
-
-/**
- * Colors the output of assertion diffs
- * @param diffType Difference type, either added or removed
- */
-function createColor(
-  diffType: DiffType,
-  { background = false } = {},
-): (s: string) => string {
-  switch (diffType) {
-    case DiffType.added:
-      return (s: string): string =>
-        background ? bgGreen(white(s)) : green(bold(s));
-    case DiffType.removed:
-      return (s: string): string => background ? bgRed(white(s)) : red(bold(s));
-    default:
-      return white;
-  }
-}
-
-/**
- * Prefixes `+` or `-` in diff output
- * @param diffType Difference type, either added or removed
- */
-function createSign(diffType: DiffType): string {
-  switch (diffType) {
-    case DiffType.added:
-      return "+   ";
-    case DiffType.removed:
-      return "-   ";
-    default:
-      return "    ";
-  }
-}
-
-function buildMessage(
-  diffResult: ReadonlyArray<DiffResult<string>>,
-  { stringDiff = false } = {},
-): string[] {
-  const messages: string[] = [], diffMessages: string[] = [];
-  messages.push("");
-  messages.push("");
-  messages.push(
-    `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
-      green(bold("Expected"))
-    }`,
-  );
-  messages.push("");
-  messages.push("");
-  diffResult.forEach((result: DiffResult<string>): void => {
-    const c = createColor(result.type);
-    const line = result.details?.map((detail) =>
-      detail.type !== DiffType.common
-        ? createColor(detail.type, { background: true })(detail.value)
-        : detail.value
-    ).join("") ?? result.value;
-    diffMessages.push(c(`${
-      createSign(result.type)
-    }${line}`));
-  });
-  messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages));
-  messages.push("");
-
-  return messages;
 }
 
 function isKeyedCollection(x: unknown): x is Set<unknown> {
@@ -252,8 +160,8 @@ export function assertEquals(
     return;
   }
   let message = "";
-  const actualString = _format(actual);
-  const expectedString = _format(expected);
+  const actualString = format(actual);
+  const expectedString = format(expected);
   try {
     const stringDiff = (typeof actual === "string") &&
       (typeof expected === "string");
@@ -339,8 +247,8 @@ export function assertStrictEquals<T>(
   if (msg) {
     message = msg;
   } else {
-    const actualString = _format(actual);
-    const expectedString = _format(expected);
+    const actualString = format(actual);
+    const expectedString = format(expected);
 
     if (actualString === expectedString) {
       const withOffset = actualString
@@ -399,7 +307,7 @@ export function assertNotStrictEquals(
   }
 
   throw new AssertionError(
-    msg ?? `Expected "actual" to be strictly unequal to: ${_format(actual)}\n`,
+    msg ?? `Expected "actual" to be strictly unequal to: ${format(actual)}\n`,
   );
 }
 
@@ -560,9 +468,9 @@ export function assertArrayIncludes(
     return;
   }
   if (!msg) {
-    msg = `actual: "${_format(actual)}" expected to include: "${
-      _format(expected)
-    }"\nmissing: ${_format(missing)}`;
+    msg = `actual: "${format(actual)}" expected to include: "${
+      format(expected)
+    }"\nmissing: ${format(missing)}`;
   }
   throw new AssertionError(msg);
 }

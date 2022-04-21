@@ -28,7 +28,7 @@ export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
 
 /** The options for creating an individual test case with the it function. */
 export interface ItDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
-  fn: (this: T) => void | Promise<void>;
+  fn: (this: T, t: Deno.TestContext) => void | Promise<void>;
   /**
    * The `describe` function returns a `TestSuite` representing the group of tests.
    * If `it` is called within a `describe` calls `fn`, the suite will default to that parent `describe` calls returned `TestSuite`.
@@ -309,7 +309,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
               }
             }
           } else {
-            await TestSuiteInternal.runTest(fn!, context);
+            await TestSuiteInternal.runTest(t, fn!, context);
           }
         },
       };
@@ -321,7 +321,8 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
   }
 
   static async runTest<T>(
-    fn: (this: T) => void | Promise<void>,
+    t: Deno.TestContext,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
     context: T,
     activeIndex = 0,
   ) {
@@ -338,7 +339,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
         }
       }
       try {
-        await TestSuiteInternal.runTest(fn, context, activeIndex + 1);
+        await TestSuiteInternal.runTest(t, fn, context, activeIndex + 1);
       } finally {
         const { afterEach } = testSuite.describe;
         if (typeof afterEach === "function") {
@@ -350,7 +351,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
         }
       }
     } else {
-      await fn.call(context);
+      await fn.call(context, t);
     }
   }
 }
