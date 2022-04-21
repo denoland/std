@@ -126,6 +126,16 @@ Deno.test("spy function", () => {
     "function cannot be restored",
   );
   assertEquals(func.restored, false);
+
+  const explicitTypesSpy = spy(point, "explicitTypes");
+  assertThrows(() => {
+    assertSpyCall(explicitTypesSpy, 0, {
+      // @ts-expect-error Test if passing incorrect argument types causes an error
+      args: ["not a number", "string"],
+      // @ts-expect-error Test if passing incorrect return type causes an error
+      returned: "not a boolean",
+    });
+  });
 });
 
 Deno.test("spy instance method", () => {
@@ -400,6 +410,16 @@ Deno.test("stub function", () => {
     "instance method already restored",
   );
   assertEquals(func.restored, true);
+
+  const explicitTypesFunc = stub(point, "explicitTypes");
+  assertThrows(() => {
+    assertSpyCall(explicitTypesFunc, 0, {
+      // @ts-expect-error Test if passing incorrect argument types causes an error
+      args: ["not a number", "string"],
+      // @ts-expect-error Test if passing incorrect return type causes an error
+      returned: "not a boolean",
+    });
+  });
 });
 
 Deno.test("mockSession and mockSessionAsync", async () => {

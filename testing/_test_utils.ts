@@ -8,6 +8,9 @@ export class Point {
   toString(): string {
     return [this.x, this.y].join(", ");
   }
+  explicitTypes(_x: number, _y: string) {
+    return true;
+  }
   *[Symbol.iterator](): IterableIterator<number> {
     yield this.x;
     yield this.y;
