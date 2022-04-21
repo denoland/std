@@ -371,8 +371,10 @@ export function stub<
   property: Prop,
   func: (
     this: Self,
-    ...args: Partial<GetParametersFromProp<Self, Prop>>
-  ) => GetReturnFromProp<Self, Prop>,
+    // deno-lint-ignore no-explicit-any
+    ...args: any[]
+    // deno-lint-ignore no-explicit-any
+  ) => any,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
 export function stub<
   Self,

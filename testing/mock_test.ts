@@ -127,6 +127,7 @@ Deno.test("spy function", () => {
   );
   assertEquals(func.restored, false);
 
+  // Check if the returned type is correct:
   const explicitTypesSpy = spy(point, "explicitTypes");
   assertThrows(() => {
     assertSpyCall(explicitTypesSpy, 0, {
@@ -411,7 +412,10 @@ Deno.test("stub function", () => {
   );
   assertEquals(func.restored, true);
 
-  const explicitTypesFunc = stub(point, "explicitTypes");
+  // Stubbing without arguments and return type should not cause any type errors:
+  const explicitTypesFunc = stub(point, "explicitTypes", () => {});
+
+  // Check if the returned type is correct:
   assertThrows(() => {
     assertSpyCall(explicitTypesFunc, 0, {
       // @ts-expect-error Test if passing incorrect argument types causes an error
