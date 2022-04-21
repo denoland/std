@@ -58,7 +58,7 @@ async function startFileServer({
   assert(fileServer.stdout != null);
   const r = new TextProtoReader(new BufReader(fileServer.stdout));
   const s = await r.readLine();
-  assert(s !== null && s.includes("server listening"));
+  assert(s !== null && s.includes("Listening"));
 }
 
 async function startFileServerAsLibrary({}: FileServerCfg = {}) {
@@ -422,7 +422,7 @@ async function startTlsFileServer({
   assert(fileServer.stdout != null);
   const r = new TextProtoReader(new BufReader(fileServer.stdout));
   const s = await r.readLine();
-  assert(s !== null && s.includes("server listening"));
+  assert(s !== null && s.includes("Listening"));
 }
 
 Deno.test("serveDirIndex TLS", async function () {
