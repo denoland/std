@@ -427,6 +427,9 @@ Deno.test("stub function", () => {
     return true;
   });
 
+  // Stubbing with returnsNext() should not give any type errors
+  stub(new Point(2, 3), "explicitTypes", returnsNext([true, false, true]));
+
   // Stubbing without argument types should not cause any type errors:
   const explicitTypesFunc = stub(new Point(2, 3), "explicitTypes", () => true);
 
