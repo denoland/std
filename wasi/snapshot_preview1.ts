@@ -346,7 +346,7 @@ export default class Context {
 
   exports: Record<string, WebAssembly.ImportValue>;
 
-  constructor(options: ContextOptions) {
+  constructor(options?: ContextOptions = {}) {
     this.#args = options.args ?? [];
     this.#env = options.env ?? {};
     this.#exitOnReturn = options.exitOnReturn ?? true;
