@@ -826,16 +826,6 @@ function main(): void {
   } else {
     serve(handler, { port: Number(port), hostname: host });
   }
-
-  const protocol = useTls ? "https" : "http";
-  console.log(
-    `${protocol.toUpperCase()} server listening on ${protocol}://${
-      host.replace(
-        "0.0.0.0",
-        "localhost",
-      )
-    }:${port}/`,
-  );
 }
 
 function printUsage() {
