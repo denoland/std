@@ -412,8 +412,8 @@ Deno.test("stub function", () => {
   );
   assertEquals(func.restored, true);
 
-  // Stubbing without arguments and return type should not cause any type errors:
-  const explicitTypesFunc = stub(point, "explicitTypes", () => {});
+  // Stubbing without argument types should not cause any type errors:
+  const explicitTypesFunc = stub(point, "explicitTypes", () => true);
 
   // Check if the returned type is correct:
   assertThrows(() => {

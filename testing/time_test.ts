@@ -79,8 +79,9 @@ Deno.test("Fake Date instance methods passthrough to real Date instance methods"
           }
           const returned = Symbol();
           const func = stub(
-            _internals.Date.prototype,
-            method as keyof Date,
+            // deno-lint-ignore no-explicit-any
+            _internals.Date.prototype as any,
+            method,
             () => returned,
           );
           try {
@@ -107,8 +108,9 @@ Deno.test("Fake Date instance methods passthrough to real Date instance methods"
           }
           const returned = Symbol();
           const func = stub(
-            _internals.Date.prototype,
-            method as keyof Date,
+            // deno-lint-ignore no-explicit-any
+            _internals.Date.prototype as any,
+            method,
             () => returned,
           );
           try {

@@ -373,8 +373,7 @@ export function stub<
     this: Self,
     // deno-lint-ignore no-explicit-any
     ...args: any[]
-    // deno-lint-ignore no-explicit-any
-  ) => any,
+  ) => GetReturnFromProp<Self, Prop>,
 ): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
 export function stub<
   Self,
