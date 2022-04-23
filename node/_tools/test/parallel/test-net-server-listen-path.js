@@ -28,54 +28,54 @@ function randomPipePath() {
   return `${common.PIPE}-listen-path-${counter++}`;
 }
 
-// // Test listen(path)
-// {
-//   const handlePath = randomPipePath();
-//   net.createServer()
-//     .listen(handlePath)
-//     .on('listening', closeServer());
-// }
+// Test listen(path)
+{
+  const handlePath = randomPipePath();
+  net.createServer()
+    .listen(handlePath)
+    .on('listening', closeServer());
+}
 
-// // Test listen({path})
-// {
-//   const handlePath = randomPipePath();
-//   net.createServer()
-//     .listen({ path: handlePath })
-//     .on('listening', closeServer());
-// }
+// Test listen({path})
+{
+  const handlePath = randomPipePath();
+  net.createServer()
+    .listen({ path: handlePath })
+    .on('listening', closeServer());
+}
 
-// // Test listen(path, cb)
-// {
-//   const handlePath = randomPipePath();
-//   net.createServer()
-//     .listen(handlePath, closeServer());
-// }
+// Test listen(path, cb)
+{
+  const handlePath = randomPipePath();
+  net.createServer()
+    .listen(handlePath, closeServer());
+}
 
-// // Test listen(path, cb)
-// {
-//   const handlePath = randomPipePath();
-//   net.createServer()
-//     .listen({ path: handlePath }, closeServer());
-// }
+// Test listen(path, cb)
+{
+  const handlePath = randomPipePath();
+  net.createServer()
+    .listen({ path: handlePath }, closeServer());
+}
 
-// // Test pipe chmod
-// {
-//   const handlePath = randomPipePath();
+// Test pipe chmod
+{
+  const handlePath = randomPipePath();
 
-//   const server = net.createServer()
-//     .listen({
-//       path: handlePath,
-//       readableAll: true,
-//       writableAll: true
-//     }, common.mustCall(() => {
-//       if (process.platform !== 'win32') {
-//         const mode = fs.statSync(handlePath).mode;
-//         assert.notStrictEqual(mode & fs.constants.S_IROTH, 0);
-//         assert.notStrictEqual(mode & fs.constants.S_IWOTH, 0);
-//       }
-//       server.close();
-//     }));
-// }
+  const server = net.createServer()
+    .listen({
+      path: handlePath,
+      readableAll: true,
+      writableAll: true
+    }, common.mustCall(() => {
+      if (process.platform !== 'win32') {
+        const mode = fs.statSync(handlePath).mode;
+        assert.notStrictEqual(mode & fs.constants.S_IROTH, 0);
+        assert.notStrictEqual(mode & fs.constants.S_IWOTH, 0);
+      }
+      server.close();
+    }));
+}
 
 // TODO(cmorten): seems Deno.listen() for Unix domains isn't throwing
 // Deno.errors.AddrInUse errors as would expect...?
