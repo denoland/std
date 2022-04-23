@@ -131,14 +131,22 @@ export class Pipe extends ConnectionWrap {
           // swallow callback errors.
         }
       },
-      () => {
+      (e) => {
+        // TODO(cmorten): correct mapping of connection error to status code.
+        let code: number;
+
+        if (e instanceof Deno.errors.NotFound) {
+          code = codeMap.get("ENOENT")!;
+        } else {
+          code = codeMap.get("ECONNREFUSED")!;
+        }
+
         try {
-          // TODO(cmorten): correct mapping of connection error to status code.
-          this.afterConnect(req, codeMap.get("ECONNREFUSED")!);
+          this.afterConnect(req, code);
         } catch {
           // swallow callback errors.
         }
-      }
+      },
     );
 
     return 0;
@@ -334,7 +342,7 @@ export class PipeConnectWrap extends AsyncWrap {
     handle: ConnectionWrap,
     req: PipeConnectWrap,
     readable: boolean,
-    writeable: boolean
+    writeable: boolean,
   ) => void;
   address!: string;
 

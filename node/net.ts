@@ -211,7 +211,7 @@ interface IpcSocketConnectOptions extends ConnectOptions {
 type SocketConnectOptions = TcpSocketConnectOptions | IpcSocketConnectOptions;
 
 function _getNewAsyncId(handle?: Handle): number {
-  return (!handle || typeof handle.getAsyncId !== "function")
+  return !handle || typeof handle.getAsyncId !== "function"
     ? newAsyncId()
     : handle.getAsyncId();
 }
@@ -227,7 +227,7 @@ const _noop = (_arrayBuffer: Uint8Array, _nread: number): undefined => {
 };
 
 function _toNumber(x: unknown): number | false {
-  return (x = Number(x)) >= 0 ? x as number : false;
+  return (x = Number(x)) >= 0 ? (x as number) : false;
 }
 
 function _isPipeName(s: unknown): s is string {
@@ -240,15 +240,11 @@ function _createHandle(fd: number, isServer: boolean): Handle {
   const type = guessHandleType(fd);
 
   if (type === "PIPE") {
-    return new Pipe(
-      isServer ? PipeConstants.SERVER : PipeConstants.SOCKET,
-    );
+    return new Pipe(isServer ? PipeConstants.SERVER : PipeConstants.SOCKET);
   }
 
   if (type === "TCP") {
-    return new TCP(
-      isServer ? TCPConstants.SERVER : TCPConstants.SOCKET,
-    );
+    return new TCP(isServer ? TCPConstants.SERVER : TCPConstants.SOCKET);
   }
 
   throw new ERR_INVALID_FD_TYPE(type);
@@ -495,7 +491,7 @@ function _writeAfterFIN(
     | BufferEncoding
     | null
     | ((error: Error | null | undefined) => void),
-  cb?: ((error: Error | null | undefined) => void),
+  cb?: (error: Error | null | undefined) => void,
 ): boolean {
   if (!this.writableEnded) {
     return Duplex.prototype.write.call(
@@ -518,12 +514,7 @@ function _writeAfterFIN(
   );
 
   if (typeof cb === "function") {
-    defaultTriggerAsyncIdScope(
-      this[asyncIdSymbol],
-      nextTick,
-      cb,
-      err,
-    );
+    defaultTriggerAsyncIdScope(this[asyncIdSymbol], nextTick, cb, err);
   }
 
   this.destroy(err);
@@ -614,24 +605,20 @@ function _lookupAndConnect(
   // If host is an IP, skip performing a lookup
   const addressType = isIP(host);
   if (addressType) {
-    defaultTriggerAsyncIdScope(
-      self[asyncIdSymbol],
-      nextTick,
-      () => {
-        if (self.connecting) {
-          defaultTriggerAsyncIdScope(
-            self[asyncIdSymbol],
-            _internalConnect,
-            self,
-            host,
-            port,
-            addressType,
-            localAddress,
-            localPort,
-          );
-        }
-      },
-    );
+    defaultTriggerAsyncIdScope(self[asyncIdSymbol], nextTick, () => {
+      if (self.connecting) {
+        defaultTriggerAsyncIdScope(
+          self[asyncIdSymbol],
+          _internalConnect,
+          self,
+          host,
+          port,
+          addressType,
+          localAddress,
+          localPort,
+        );
+      }
+    });
 
     return;
   }
@@ -801,7 +788,8 @@ export class Socket extends Duplex {
     const onread = options.onread;
 
     if (
-      onread !== null && typeof onread === "object" &&
+      onread !== null &&
+      typeof onread === "object" &&
       (isUint8Array(onread.buffer) || typeof onread.buffer === "function") &&
       typeof onread.callback === "function"
     ) {
@@ -944,7 +932,9 @@ export class Socket extends Duplex {
    */
   override pause(): this {
     if (
-      this[kBuffer] && !this.connecting && this._handle &&
+      this[kBuffer] &&
+      !this.connecting &&
+      this._handle &&
       this._handle.reading
     ) {
       this._handle.reading = false;
@@ -968,7 +958,9 @@ export class Socket extends Duplex {
    */
   override resume(): this {
     if (
-      this[kBuffer] && !this.connecting && this._handle &&
+      this[kBuffer] &&
+      !this.connecting &&
+      this._handle &&
       !this._handle.reading
     ) {
       _tryReadStart(this);
@@ -1034,7 +1026,8 @@ export class Socket extends Duplex {
     const newValue = noDelay === undefined ? true : !!noDelay;
 
     if (
-      "setNoDelay" in this._handle && this._handle.setNoDelay &&
+      "setNoDelay" in this._handle &&
+      this._handle.setNoDelay &&
       newValue !== this[kSetNoDelay]
     ) {
       this[kSetNoDelay] = newValue;
@@ -1298,7 +1291,9 @@ export class Socket extends Duplex {
     size?: number,
   ): string | Uint8Array | Buffer | null | undefined {
     if (
-      this[kBuffer] && !this.connecting && this._handle &&
+      this[kBuffer] &&
+      !this.connecting &&
+      this._handle &&
       !this._handle.reading
     ) {
       _tryReadStart(this);
@@ -1389,10 +1384,7 @@ export class Socket extends Duplex {
     }
   }
 
-  override _destroy(
-    exception: Error | null,
-    cb: (err: Error | null) => void,
-  ) {
+  override _destroy(exception: Error | null, cb: (err: Error | null) => void) {
     debug("destroy");
     this.connecting = false;
 
@@ -1628,8 +1620,11 @@ interface ServerOptions {
 function _isServerSocketOptions(
   options: unknown,
 ): options is null | undefined | ServerOptions {
-  return options === null || typeof options === "undefined" ||
-    typeof options === "object";
+  return (
+    options === null ||
+    typeof options === "undefined" ||
+    typeof options === "object"
+  );
 }
 
 function _isConnectionListener(
@@ -1774,11 +1769,7 @@ export function _createServerHandle(
 
     if (!address) {
       // Try binding to ipv6 first
-      err = (handle as TCP).bind6(
-        DEFAULT_IPV6_ADDR,
-        port ?? 0,
-        flags ?? 0,
-      );
+      err = (handle as TCP).bind6(DEFAULT_IPV6_ADDR, port ?? 0, flags ?? 0);
 
       if (err) {
         handle.close();
@@ -2067,6 +2058,7 @@ export class Server extends EventEmitter {
     const cb = normalized[1];
 
     if (this._handle) {
+      console.log("asdjhasgdjh");
       throw new ERR_SERVER_ALREADY_LISTEN();
     }
 
@@ -2077,7 +2069,7 @@ export class Server extends EventEmitter {
     const backlogFromArgs: number =
       // (handle, backlog) or (path, backlog) or (port, backlog)
       _toNumber(args.length > 1 && args[1]) ||
-      _toNumber(args.length > 2 && args[2]) as number; // (port, host, backlog)
+      (_toNumber(args.length > 2 && args[2]) as number); // (port, host, backlog)
 
     // deno-lint-ignore no-explicit-any
     options = (options as any)._handle || (options as any).handle || options;
@@ -2107,7 +2099,8 @@ export class Server extends EventEmitter {
     // or (options[, cb]) where options.port is explicitly set as undefined or
     // null, bind to an arbitrary unused port
     if (
-      args.length === 0 || typeof args[0] === "function" ||
+      args.length === 0 ||
+      typeof args[0] === "function" ||
       (typeof options.port === "undefined" && "port" in options) ||
       options.port === null
     ) {
@@ -2153,7 +2146,7 @@ export class Server extends EventEmitter {
     // (path[, backlog][, cb]) or (options[, cb])
     // where path or options.path is a UNIX domain socket or Windows pipe
     if (options.path && _isPipeName(options.path)) {
-      const pipeName = this._pipeName = options.path;
+      const pipeName = (this._pipeName = options.path);
       backlog = options.backlog || backlogFromArgs;
 
       _listenInCluster(
@@ -2196,7 +2189,7 @@ export class Server extends EventEmitter {
       return this;
     }
 
-    if (!(("port" in options) || ("path" in options))) {
+    if (!("port" in options || "path" in options)) {
       throw new ERR_INVALID_ARG_VALUE(
         "options",
         options,
