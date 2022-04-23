@@ -1,9 +1,10 @@
 import { assert } from "../testing/asserts.ts";
 import { EventEmitter, getEventListeners } from "./events.ts";
 import type { EventListenerType } from "./events.ts";
-import { expectType } from "https://raw.githubusercontent.com/TypeStrong/ts-expect/736658bd9f1c23ad9e2676c27e9bdc9297309ae9/src/index.ts"; 
-import type { TypeEqual, TypeOf } from "https://raw.githubusercontent.com/TypeStrong/ts-expect/736658bd9f1c23ad9e2676c27e9bdc9297309ae9/src/index.ts";
-
+import { expectType } from "https://raw.githubusercontent.com/TypeStrong/ts-expect/736658bd9f1c23ad9e2676c27e9bdc9297309ae9/src/index.ts";
+import type {
+  TypeEqual,
+} from "https://raw.githubusercontent.com/TypeStrong/ts-expect/736658bd9f1c23ad9e2676c27e9bdc9297309ae9/src/index.ts";
 
 // TODO: 1. Those tests doesn't do anything, just fail at compile-time when types are broken
 //          maybe exclude it to separate task taking <filename>_test_types.ts?
@@ -92,4 +93,3 @@ Deno.test("[node/EventEmitter/typings] module.getEventListenerstemplate", () => 
     expectType<TypeEqual<EventListenerType[], typeof _>>(true);
   }
 });
-

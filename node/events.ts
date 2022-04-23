@@ -11,7 +11,4 @@ export {
   once,
 } from "./_events.mjs";
 
-export type {
-  EventListenerType
-} from "./_events.d.ts";
-
+export type { EventListenerType } from "./_events.d.ts";
