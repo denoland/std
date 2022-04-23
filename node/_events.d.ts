@@ -487,8 +487,9 @@ export class EventEmitter<
    * ```
    * @since v0.1.26
    */
-  // deno-lint-ignore ban-types
-  listeners(eventName: keyof EventListenerMap): Function[];
+  listeners<K extends keyof EventListenerMap>(
+    eventName: K,
+  ): EventListenerMap[K];
   /**
    * Returns a copy of the array of listeners for the event named `eventName`,
    * including any wrappers (such as those created by `.once()`).
@@ -518,8 +519,9 @@ export class EventEmitter<
    * ```
    * @since v9.4.0
    */
-  // deno-lint-ignore ban-types
-  rawListeners(eventName: keyof EventListenerMap): Function[];
+  rawListeners<K extends keyof EventListenerMap>(
+    eventName: K,
+  ): EventListenerMap[K];
   /**
    * Synchronously calls each of the listeners registered for the event named`eventName`, in the order they were registered, passing the supplied arguments
    * to each.
@@ -564,9 +566,6 @@ export class EventEmitter<
     eventName: K,
     ...args: Parameters<EventListenerMap[K]>
   ): boolean;
-
-  /** @deprecated usage of unsafe fallback */
-  emit(eventName: EventNameT["EventEmitter"], ...args: any[]): boolean; // fallback
 
   /**
    * Returns the number of listeners listening to the event named `eventName`.
@@ -632,7 +631,7 @@ export class EventEmitter<
    * ```
    * @since v6.0.0
    */
-  eventNames(): Array<keyof EventListenerMap>;
+  eventNames(): (keyof EventListenerMap)[];
 
   constructor(options?: EventEmitterOptions);
   /**
@@ -717,16 +716,7 @@ export class EventEmitter<
    * ```
    * @since v11.13.0, v10.16.0
    */
-  static once(
-    emitter: NodeEventTarget,
-    eventName: string | symbol,
-    options?: StaticEventEmitterOptions,
-  ): Promise<any[]>;
-  static once(
-    emitter: EventTarget,
-    eventName: string,
-    options?: StaticEventEmitterOptions,
-  ): Promise<any[]>;
+  static once: typeof once; // module.once
   /**
    * ```js
    * const { on, EventEmitter } = require('events');
@@ -785,7 +775,7 @@ export class EventEmitter<
    * @param eventName The name of the event being listened for
    * @return that iterates `eventName` events emitted by the `emitter`
    */
-  static on: typeof on;
+  static on: typeof on; // module.on
   /**
    * A class method that returns the number of listeners for the given `eventName`registered on the given `emitter`.
    *
@@ -802,9 +792,13 @@ export class EventEmitter<
    * @param emitter The emitter to query
    * @param eventName The event name
    */
-  static listenerCount(
-    emitter: EventEmitter,
-    eventName: string | symbol,
+  static listenerCount<
+    E extends EventEmitter,
+    P extends UnpackListenerMap<E>,
+    K extends keyof P,
+  >(
+    emitter: E,
+    eventName: K,
   ): number;
 
   /**
