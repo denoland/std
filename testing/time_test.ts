@@ -70,19 +70,33 @@ Deno.test("Fake Date instance methods passthrough to real Date instance methods"
     const now = new Date("2020-05-25T05:00:00.12345Z");
     assertEquals(now.toISOString(), "2020-05-25T05:00:00.123Z");
 
-    const func = spy(
+    const func1 = spy(
       _internals.Date.prototype,
       "toISOString",
     );
     try {
       now.toISOString();
-      assertSpyCall(func, 0, {
+      assertSpyCall(func1, 0, {
         args: [],
         returned: "2020-05-25T05:00:00.123Z",
       });
-      assertInstanceOf(func.calls[0].self, _internals.Date);
+      assertInstanceOf(func1.calls[0].self, _internals.Date);
     } finally {
-      func.restore();
+      func1.restore();
+    }
+
+    const func2 = spy(
+      _internals.Date.prototype,
+      Symbol.toPrimitive,
+    );
+    try {
+      `${now}`;
+      assertSpyCall(func2, 0, {
+        args: ["string"],
+      });
+      assert(typeof func2.calls[0].returned === "string");
+    } finally {
+      func2.restore();
     }
   } finally {
     time.restore();
