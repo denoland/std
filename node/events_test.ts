@@ -1,5 +1,5 @@
 import { assert } from "../testing/asserts.ts";
-import { EventEmitter, getEventListeners } from "./events.ts";
+import { EventEmitter, getEventListeners, on } from "./events.ts";
 import type { EventListenerType } from "./events.ts";
 import { expectType } from "https://raw.githubusercontent.com/TypeStrong/ts-expect/736658bd9f1c23ad9e2676c27e9bdc9297309ae9/src/index.ts";
 import type {
@@ -10,10 +10,9 @@ import type {
 //          maybe exclude it to separate task taking <filename>_test_types.ts?
 // TODO: 2. Create a module in Deno.text for expecting types:
 //          something like this: https://github.com/TypeStrong/ts-expect/blob/736658bd9f1c23ad9e2676c27e9bdc9297309ae9/src/index.ts
-// TODO: 3. I am aware that typeguard checks are kinda hard to read - rework it when proper utils will come
 
 type ListenerMap = {
-  connection: (ws: string, url: string, count: number) => void;
+  connection: (ws: "ws", url: "url", count: number) => void;
   error: (err: Error) => void;
   close: (reason?: string) => void;
 };
@@ -58,19 +57,12 @@ const withoutMapping = new EventEmitter();
 const extendedWithMapping = new EventEmitterWithMapping();
 const extendedWithoutMapping = new EventEmitterWithoutMapping();
 
-// TODO: need that for quick debug
-type Extract<E> = E extends EventEmitter<infer M> ? M : never;
-type ExtractedWithMapping = Extract<typeof withMapping>;
-type ExtractedWithoutMapping = Extract<typeof withoutMapping>;
-type ExtractedExtendedWithMapping = Extract<typeof extendedWithMapping>;
-type ExtractedExtendedWithoutMapping = Extract<typeof extendedWithoutMapping>;
-
 Deno.test("[node/EventEmitter/typings] EventEmitter API", () => {
   assert(withMapping, "Process typings for withMapping");
   assert(withoutMapping, "Process typings for withoutMapping");
 });
 
-Deno.test("[node/EventEmitter/typings] module.getEventListenerstemplate", () => {
+Deno.test("[node/EventEmitter/typings] module.getEventListeners", () => {
   {
     const _existing = getEventListeners(withMapping, "connection");
     expectType<TypeEqual<ListenerMap["connection"][], typeof _existing>>(true);
@@ -84,12 +76,54 @@ Deno.test("[node/EventEmitter/typings] module.getEventListenerstemplate", () => 
   }
 
   {
-    const _ = getEventListeners(extendedWithMapping, "connection");
-    expectType<TypeEqual<ListenerMap["connection"][], typeof _>>(true);
+    const _existing = getEventListeners(extendedWithMapping, "connection");
+    expectType<TypeEqual<ListenerMap["connection"][], typeof _existing>>(true);
+    // @ts-expect-error: typeguard test
+    const _nonexisting = getEventListeners(extendedWithMapping, "doesntexist");
   }
 
   {
     const _ = getEventListeners(extendedWithoutMapping, "doesntexist");
     expectType<TypeEqual<EventListenerType[], typeof _>>(true);
+  }
+});
+
+Deno.test("[node/EventEmitter/typings] module.on", () => {
+  {
+    const _existing = on(withMapping, "connection");
+    expectType<
+      TypeEqual<
+        AsyncIterableIterator<Parameters<ListenerMap["connection"]>>,
+        typeof _existing
+      >
+    >(true);
+    // @ts-expect-error: typeguard test
+    const _nonexisting = on(withMapping, "doesntexist");
+  }
+
+  {
+    const _ = on(withoutMapping, "doesntexist");
+    expectType<
+      TypeEqual<AsyncIterableIterator<Parameters<EventListenerType>>, typeof _>
+    >(true);
+  }
+
+  {
+    const _existing = on(extendedWithMapping, "connection");
+    expectType<
+      TypeEqual<
+        AsyncIterableIterator<Parameters<ListenerMap["connection"]>>,
+        typeof _existing
+      >
+    >(true);
+    // @ts-expect-error: typeguard test
+    const _nonexisting = on(extendedWithMapping, "doesntexist");
+  }
+
+  {
+    const _ = on(extendedWithoutMapping, "doesntexist");
+    expectType<
+      TypeEqual<AsyncIterableIterator<Parameters<EventListenerType>>, typeof _>
+    >(true);
   }
 });

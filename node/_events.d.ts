@@ -13,7 +13,7 @@ export type EventListenerMapType<
 
 export type EventTargetOrEmitterType<
   PassedListenerMap = UnsafeListenerMapType,
-> = /* EventTarget<PassedListenerMap> | */ EventEmitter<PassedListenerMap>;
+> = EventTarget<PassedListenerMap> | EventEmitter<PassedListenerMap>;
 
 export type UnpackListenerMap<
   EventTargetOrEmitter extends EventTargetOrEmitterType,
@@ -59,7 +59,7 @@ export interface Abortable {
  * @since v15.2.0
  */
 export function getEventListeners<
-  E,
+  E extends EventTargetOrEmitterType,
   P extends UnpackListenerMap<E>,
   K extends keyof P,
 >(emitter: E, name: K): P[K][];
@@ -123,13 +123,14 @@ export function getEventListeners<
  * @return that iterates `eventName` events emitted by the `emitter`
  */
 export function on<
-  EventListenerMap extends EventListenerMapType<EventListenerMap> =
-    UnsafeListenerMapType,
+  E extends EventEmitter,
+  P extends UnpackListenerMap<E>,
+  K extends keyof P,
 >(
-  emitter: EventEmitter,
-  eventName: string,
+  emitter: E,
+  eventName: K,
   options?: StaticEventEmitterOptions,
-): AsyncIterableIterator<any>;
+): AsyncIterableIterator<Parameters<P[K]>>;
 
 /**
  * Creates a `Promise` that is fulfilled when the `EventEmitter` emits the given
@@ -266,6 +267,7 @@ export class EventEmitter<
   EventListenerMap extends EventListenerMapType<EventListenerMap> =
     EventListenerMapType<UnsafeListenerMapType>,
 > {
+  declare passedMap: EventListenerMap;
   /**
    * Alias for `emitter.on(eventName, listener)`.
    * @since v0.1.26
