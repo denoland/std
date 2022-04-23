@@ -230,7 +230,7 @@ export function once<
   K extends keyof P,
 >(
   emitter: E,
-  eventName: P,
+  eventName: K,
   options?: StaticEventEmitterOptions,
 ): Promise<Parameters<P[K]>>;
 
