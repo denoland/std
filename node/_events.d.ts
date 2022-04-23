@@ -4,22 +4,32 @@
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/9b9cd671114a2a5178809798d8e7f4d8ca6c2671/types/node/events.d.ts
 // Edited to be able to pass event schemes
 
-export type EventNameType = string | symbol;
-export type EventListenerType = (...args: any[]) => void;
-type UnsafeListenerMapType = { [key: EventNameType]: EventListenerType };
+export type EventNameT = {
+  EventEmitter: string | symbol;
+  NodeEventTarget: string | symbol;
+  EventTarget: string;
+};
+export type EventListenerT = (...args: any[]) => void;
+type UnsafeListenerMapT<K extends keyof EventNameT = "EventEmitter"> = Record<
+  EventNameT[K],
+  EventListenerT
+>;
 export type EventListenerMapType<
-  PassedListenerMap extends UnsafeListenerMapType,
+  PassedListenerMap extends UnsafeListenerMapT,
 > = { [key in keyof PassedListenerMap]: PassedListenerMap[key] };
 
-export type EventTargetOrEmitterType<
-  PassedListenerMap = UnsafeListenerMapType,
-> = EventTarget<PassedListenerMap> | EventEmitter<PassedListenerMap>;
+export type _UnionT<
+  PassedListenerMap = UnsafeListenerMapT,
+> =
+  | EventTarget<PassedListenerMap>
+  | EventEmitter<PassedListenerMap>
+  | NodeEventTarget<PassedListenerMap>;
 
 export type UnpackListenerMap<
-  EventTargetOrEmitter extends EventTargetOrEmitterType,
-> = EventTargetOrEmitter extends
-  EventTargetOrEmitterType<infer EventListenerMap> ? EventListenerMap
-  : UnsafeListenerMapType;
+  EventTargetOrEmitter extends _UnionT,
+> = EventTargetOrEmitter extends _UnionT<infer EventListenerMap>
+  ? EventListenerMap
+  : UnsafeListenerMapT;
 
 export const captureRejectionSymbol: unique symbol;
 export const defaultMaxListeners: number;
@@ -59,7 +69,7 @@ export interface Abortable {
  * @since v15.2.0
  */
 export function getEventListeners<
-  E extends EventTargetOrEmitterType,
+  E extends _UnionT,
   P extends UnpackListenerMap<E>,
   K extends keyof P,
 >(emitter: E, name: K): P[K][];
@@ -140,7 +150,7 @@ export function on<
  *
  * This method is intentionally generic and works with the web platform [EventTarget](https://dom.spec.whatwg.org/#interface-eventtarget) interface, which has no special`'error'` event
  * semantics and does not listen to the `'error'` event.
- *
+
  * ```js
  * const { once, EventEmitter } = require('events');
  *
@@ -214,16 +224,15 @@ export function on<
  * ```
  * @since v11.13.0, v10.16.0
  */
-export function once(
-  emitter: NodeEventTarget,
-  eventName: string | symbol,
+export function once<
+  E extends _UnionT,
+  P extends UnpackListenerMap<E>,
+  K extends keyof P,
+>(
+  emitter: E,
+  eventName: P,
   options?: StaticEventEmitterOptions,
-): Promise<any[]>;
-export function once(
-  emitter: EventTarget,
-  eventName: string,
-  options?: StaticEventEmitterOptions,
-): Promise<any[]>;
+): Promise<Parameters<P[K]>>;
 
 interface EventEmitterOptions {
   /**
@@ -231,20 +240,26 @@ interface EventEmitterOptions {
    */
   captureRejections?: boolean | undefined;
 }
-interface NodeEventTarget {
-  once(eventName: string | symbol, listener: (...args: any[]) => void): this;
+interface NodeEventTarget<
+  EventListenerMap extends EventListenerMapType<EventListenerMap> =
+    EventListenerMapType<UnsafeListenerMapT<"NodeEventTarget">>,
+> {
+  once<K extends keyof EventListenerMap>(
+    eventName: K,
+    listener: EventListenerMap[K],
+  ): this;
 }
 interface EventTarget<
   EventListenerMap extends EventListenerMapType<EventListenerMap> =
-    EventListenerMapType<UnsafeListenerMapType>,
+    EventListenerMapType<UnsafeListenerMapT<"EventTarget">>,
 > {
-  addEventListener(
-    eventName: string,
-    listener: (...args: any[]) => void,
+  addEventListener<K extends keyof EventListenerMap>(
+    eventName: K,
+    listener: EventListenerMap[K],
     opts?: {
       once: boolean;
     },
-  ): any;
+  ): unknown; // undefined behavior https://nodejs.org/api/events.html#eventtargetaddeventlistenertype-listener-options
 }
 interface StaticEventEmitterOptions {
   signal?: AbortSignal | undefined;
@@ -265,7 +280,7 @@ interface StaticEventEmitterOptions {
  */
 export class EventEmitter<
   EventListenerMap extends EventListenerMapType<EventListenerMap> =
-    EventListenerMapType<UnsafeListenerMapType>,
+    EventListenerMapType<UnsafeListenerMapT<"EventEmitter">>,
 > {
   declare passedMap: EventListenerMap;
   /**
@@ -551,7 +566,7 @@ export class EventEmitter<
   ): boolean;
 
   /** @deprecated usage of unsafe fallback */
-  emit(eventName: EventNameType, ...args: any[]): boolean; // fallback
+  emit(eventName: EventNameT["EventEmitter"], ...args: any[]): boolean; // fallback
 
   /**
    * Returns the number of listeners listening to the event named `eventName`.

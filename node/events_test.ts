@@ -1,6 +1,6 @@
 import { assert } from "../testing/asserts.ts";
 import { EventEmitter, getEventListeners, on } from "./events.ts";
-import type { EventListenerType } from "./events.ts";
+import type { EventListenerT } from "./events.ts";
 import { expectType } from "https://raw.githubusercontent.com/TypeStrong/ts-expect/736658bd9f1c23ad9e2676c27e9bdc9297309ae9/src/index.ts";
 import type {
   TypeEqual,
@@ -8,7 +8,7 @@ import type {
 
 // TODO: 1. Those tests doesn't do anything, just fail at compile-time when types are broken
 //          maybe exclude it to separate task taking <filename>_test_types.ts?
-// TODO: 2. Create a module in Deno.text for expecting types:
+// TODO: 2. Create a module in Deno.test for expecting types:
 //          something like this: https://github.com/TypeStrong/ts-expect/blob/736658bd9f1c23ad9e2676c27e9bdc9297309ae9/src/index.ts
 
 type ListenerMap = {
@@ -72,7 +72,7 @@ Deno.test("[node/EventEmitter/typings] module.getEventListeners", () => {
 
   {
     const _ = getEventListeners(withoutMapping, "doesntexist");
-    expectType<TypeEqual<EventListenerType[], typeof _>>(true);
+    expectType<TypeEqual<EventListenerT[], typeof _>>(true);
   }
 
   {
@@ -84,7 +84,7 @@ Deno.test("[node/EventEmitter/typings] module.getEventListeners", () => {
 
   {
     const _ = getEventListeners(extendedWithoutMapping, "doesntexist");
-    expectType<TypeEqual<EventListenerType[], typeof _>>(true);
+    expectType<TypeEqual<EventListenerT[], typeof _>>(true);
   }
 });
 
@@ -104,7 +104,7 @@ Deno.test("[node/EventEmitter/typings] module.on", () => {
   {
     const _ = on(withoutMapping, "doesntexist");
     expectType<
-      TypeEqual<AsyncIterableIterator<Parameters<EventListenerType>>, typeof _>
+      TypeEqual<AsyncIterableIterator<Parameters<EventListenerT>>, typeof _>
     >(true);
   }
 
@@ -123,7 +123,7 @@ Deno.test("[node/EventEmitter/typings] module.on", () => {
   {
     const _ = on(extendedWithoutMapping, "doesntexist");
     expectType<
-      TypeEqual<AsyncIterableIterator<Parameters<EventListenerType>>, typeof _>
+      TypeEqual<AsyncIterableIterator<Parameters<EventListenerT>>, typeof _>
     >(true);
   }
 });
