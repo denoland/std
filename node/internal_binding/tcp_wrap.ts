@@ -34,6 +34,11 @@ import { codeMap } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
 import { kStreamBaseField } from "./stream_wrap.ts";
 import { isIP } from "../internal/net.ts";
+import {
+  ceilPowOf2,
+  INITIAL_ACCEPT_BACKOFF_DELAY,
+  MAX_ACCEPT_BACKOFF_DELAY,
+} from "./_listen.ts";
 
 /** The type of TCP socket. */
 enum socketType {
@@ -45,22 +50,6 @@ interface AddressInfo {
   address: string;
   family?: string;
   port: number;
-}
-
-/** Initial backoff delay of 5ms following a temporary accept failure. */
-const INITIAL_ACCEPT_BACKOFF_DELAY = 5;
-
-/** Max backoff delay of 1s following a temporary accept failure. */
-const MAX_ACCEPT_BACKOFF_DELAY = 1000;
-
-/**
- * @param n Number to act on.
- * @return The number rounded up to the nearest power of 2.
- */
-function _ceilPowOf2(n: number) {
-  const roundPowOf2 = 1 << 31 - Math.clz32(n);
-
-  return roundPowOf2 < n ? roundPowOf2 * 2 : roundPowOf2;
 }
 
 export class TCPConnectWrap extends AsyncWrap {
@@ -199,11 +188,11 @@ export class TCP extends ConnectionWrap {
 
   /**
    * Listen for new connections.
-   * @param backlog
+   * @param backlog The maximum length of the queue of pending connections.
    * @return An error status code.
    */
   listen(backlog: number): number {
-    this.#backlog = _ceilPowOf2(backlog + 1);
+    this.#backlog = ceilPowOf2(backlog + 1);
 
     const listenOptions = {
       hostname: this.#address!,
@@ -239,6 +228,7 @@ export class TCP extends ConnectionWrap {
   override ref() {
     this.#listener?.ref();
   }
+
   override unref() {
     this.#listener?.unref();
   }
@@ -250,7 +240,8 @@ export class TCP extends ConnectionWrap {
    */
   getsockname(sockname: Record<string, never> | AddressInfo): number {
     if (
-      typeof this.#address === "undefined" || typeof this.#port === "undefined"
+      typeof this.#address === "undefined" ||
+      typeof this.#port === "undefined"
     ) {
       return codeMap.get("EADDRNOTAVAIL")!;
     }
@@ -326,11 +317,11 @@ export class TCP extends ConnectionWrap {
   #bind(address: string, port: number, _flags: number): number {
     // Deno doesn't currently separate bind from connect. For now we noop under
     // the assumption we will connect shortly.
-    // REF: https://doc.deno.land/builtin/stable#Deno.connect
+    // REF: https://doc.deno.land/deno/stable/~/Deno.connect
     //
     // This also means we won't be connecting from the specified local address
     // and port as providing these is not an option in Deno.
-    // REF: https://doc.deno.land/builtin/stable#Deno.ConnectOptions
+    // REF: https://doc.deno.land/deno/stable/~/Deno.ConnectOptions
     this.#address = address;
     this.#port = port;
 
@@ -355,27 +346,30 @@ export class TCP extends ConnectionWrap {
       transport: "tcp",
     };
 
-    Deno.connect(connectOptions).then((conn: Deno.Conn) => {
-      // Incorrect / backwards, but correcting the local address and port with
-      // what was actually used given we can't actually specify these in Deno.
-      const localAddr = conn.localAddr as Deno.NetAddr;
-      this.#address = req.localAddress = localAddr.hostname;
-      this.#port = req.localPort = localAddr.port;
-      this[kStreamBaseField] = conn;
+    Deno.connect(connectOptions).then(
+      (conn: Deno.Conn) => {
+        // Incorrect / backwards, but correcting the local address and port with
+        // what was actually used given we can't actually specify these in Deno.
+        const localAddr = conn.localAddr as Deno.NetAddr;
+        this.#address = req.localAddress = localAddr.hostname;
+        this.#port = req.localPort = localAddr.port;
+        this[kStreamBaseField] = conn;
 
-      try {
-        this.afterConnect(req, 0);
-      } catch {
-        // swallow callback errors.
-      }
-    }, () => {
-      try {
-        // TODO(cmorten): correct mapping of connection error to status code.
-        this.afterConnect(req, codeMap.get("ECONNREFUSED")!);
-      } catch {
-        // swallow callback errors.
-      }
-    });
+        try {
+          this.afterConnect(req, 0);
+        } catch {
+          // swallow callback errors.
+        }
+      },
+      () => {
+        try {
+          // TODO(cmorten): correct mapping of connection error to status code.
+          this.afterConnect(req, codeMap.get("ECONNREFUSED")!);
+        } catch {
+          // swallow callback errors.
+        }
+      },
+    );
 
     return 0;
   }

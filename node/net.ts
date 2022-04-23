@@ -467,7 +467,7 @@ function _internalConnect(
     req.oncomplete = _afterConnect;
     req.address = address;
 
-    err = (socket._handle as Pipe).connect(req, address, _afterConnect);
+    err = (socket._handle as Pipe).connect(req, address);
   }
 
   if (err) {
