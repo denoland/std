@@ -10,3 +10,8 @@ export {
   on,
   once,
 } from "./_events.mjs";
+
+export type {
+  EventListenerType
+} from "./_events.d.ts";
+

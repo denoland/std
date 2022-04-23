@@ -2,6 +2,22 @@
 // deno-lint-ignore-file no-explicit-any
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/9b9cd671114a2a5178809798d8e7f4d8ca6c2671/types/node/events.d.ts
+// Edited to be able to pass event schemes
+
+export type EventNameType = string | symbol;
+export type EventListenerType = (...args: any[]) => void;
+type UnsafeListenerMapType = { [key: EventNameType]: EventListenerType };
+export type EventListenerMapType<PassedListenerMap extends UnsafeListenerMapType> = { [key in keyof PassedListenerMap]: PassedListenerMap[key] };
+
+export type EventTargetOrEmitterType<
+  PassedListenerMap = UnsafeListenerMapType
+> = /* EventTarget<PassedListenerMap> | */ EventEmitter<PassedListenerMap>;
+
+export type UnpackListenerMap<EventTargetOrEmitter extends EventTargetOrEmitterType> =
+  EventTargetOrEmitter extends EventTargetOrEmitterType<infer EventListenerMap>
+    ? EventListenerMap
+    : UnsafeListenerMapType;
+
 
 export const captureRejectionSymbol: unique symbol;
 export const defaultMaxListeners: number;
@@ -40,11 +56,11 @@ export interface Abortable {
  * ```
  * @since v15.2.0
  */
-export function getEventListeners(
-  emitter: EventTarget | EventEmitter,
-  name: string | symbol,
-  // deno-lint-ignore ban-types
-): Function[];
+export function getEventListeners<
+  E,
+  P extends UnpackListenerMap<E>,
+  K extends keyof P
+>(emitter: E, name: K): P[K][];
 
 /**
  * ```js
@@ -104,10 +120,12 @@ export function getEventListeners(
  * @param eventName The name of the event being listened for
  * @return that iterates `eventName` events emitted by the `emitter`
  */
-export function on(
+export function on<
+  EventListenerMap extends EventListenerMapType<EventListenerMap> = UnsafeListenerMapType
+>(
   emitter: EventEmitter,
   eventName: string,
-  options?: StaticEventEmitterOptions,
+  options?: StaticEventEmitterOptions
 ): AsyncIterableIterator<any>;
 
 /**
@@ -195,12 +213,12 @@ export function on(
 export function once(
   emitter: NodeEventTarget,
   eventName: string | symbol,
-  options?: StaticEventEmitterOptions,
+  options?: StaticEventEmitterOptions
 ): Promise<any[]>;
 export function once(
   emitter: EventTarget,
   eventName: string,
-  options?: StaticEventEmitterOptions,
+  options?: StaticEventEmitterOptions
 ): Promise<any[]>;
 
 interface EventEmitterOptions {
@@ -212,26 +230,21 @@ interface EventEmitterOptions {
 interface NodeEventTarget {
   once(eventName: string | symbol, listener: (...args: any[]) => void): this;
 }
-interface EventTarget {
+interface EventTarget<
+  EventListenerMap extends EventListenerMapType<EventListenerMap> = EventListenerMapType<UnsafeListenerMapType>
+> {
   addEventListener(
     eventName: string,
     listener: (...args: any[]) => void,
     opts?: {
       once: boolean;
-    },
+    }
   ): any;
 }
 interface StaticEventEmitterOptions {
   signal?: AbortSignal | undefined;
 }
 
-export type EventNameType = string | symbol;
-export type EventListenerType = (...args: any[]) => void;
-export type EventListenerMapType<PassedListenerMap> = Record<
-  keyof PassedListenerMap,
-  EventListenerType
->;
-type UnsafeListenerMapType = Record<EventNameType, EventListenerType>;
 /**
  * The `EventEmitter` class is defined and exposed by the `events` module:
  *
@@ -246,8 +259,7 @@ type UnsafeListenerMapType = Record<EventNameType, EventListenerType>;
  * @since v0.1.26
  */
 export class EventEmitter<
-  EventListenerMap extends EventListenerMapType<EventListenerMap> =
-    EventListenerMapType<UnsafeListenerMapType>,
+  EventListenerMap extends EventListenerMapType<EventListenerMap> = EventListenerMapType<UnsafeListenerMapType>
 > {
   /**
    * Alias for `emitter.on(eventName, listener)`.
@@ -255,7 +267,7 @@ export class EventEmitter<
    */
   addListener<K extends keyof EventListenerMap>(
     eventName: K,
-    listener: EventListenerMap[K],
+    listener: EventListenerMap[K]
   ): this;
   /**
    * Adds the `listener` function to the end of the listeners array for the
@@ -289,7 +301,7 @@ export class EventEmitter<
    */
   on<K extends keyof EventListenerMap>(
     eventName: K,
-    listener: EventListenerMap[K],
+    listener: EventListenerMap[K]
   ): this;
   /**
    * Adds a **one-time**`listener` function for the event named `eventName`. The
@@ -321,7 +333,7 @@ export class EventEmitter<
    */
   once<K extends keyof EventListenerMap>(
     eventName: K,
-    listener: EventListenerMap[K],
+    listener: EventListenerMap[K]
   ): this;
   /**
    * Removes the specified `listener` from the listener array for the event named`eventName`.
@@ -404,7 +416,7 @@ export class EventEmitter<
    */
   removeListener<K extends keyof EventListenerMap>(
     eventName: K,
-    listener: EventListenerMap[K],
+    listener: EventListenerMap[K]
   ): this;
   /**
    * Alias for `emitter.removeListener()`.
@@ -412,7 +424,7 @@ export class EventEmitter<
    */
   off<K extends keyof EventListenerMap>(
     eventName: K,
-    listener: EventListenerMap[K],
+    listener: EventListenerMap[K]
   ): this;
   /**
    * Removes all listeners, or those of the specified `eventName`.
@@ -559,7 +571,7 @@ export class EventEmitter<
    */
   prependListener<K extends keyof EventListenerMap>(
     eventName: K,
-    listener: EventListenerMap[K],
+    listener: EventListenerMap[K]
   ): this;
   /**
    * Adds a **one-time**`listener` function for the event named `eventName` to the_beginning_ of the listeners array. The next time `eventName` is triggered, this
@@ -578,7 +590,7 @@ export class EventEmitter<
    */
   prependOnceListener<K extends keyof EventListenerMap>(
     eventName: K,
-    listener: EventListenerMap[K],
+    listener: EventListenerMap[K]
   ): this;
   /**
    * Returns an array listing the events for which the emitter has registered
@@ -686,12 +698,12 @@ export class EventEmitter<
   static once(
     emitter: NodeEventTarget,
     eventName: string | symbol,
-    options?: StaticEventEmitterOptions,
+    options?: StaticEventEmitterOptions
   ): Promise<any[]>;
   static once(
     emitter: EventTarget,
     eventName: string,
-    options?: StaticEventEmitterOptions,
+    options?: StaticEventEmitterOptions
   ): Promise<any[]>;
   /**
    * ```js
@@ -770,7 +782,7 @@ export class EventEmitter<
    */
   static listenerCount(
     emitter: EventEmitter,
-    eventName: string | symbol,
+    eventName: string | symbol
   ): number;
 
   /**
