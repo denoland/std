@@ -137,6 +137,13 @@ Deno.test("spy function", () => {
       returned: "not a boolean",
     });
   });
+
+  // Calling assertSpyCall with the correct types should not cause any type errors:
+  point.explicitTypes(1, "hello");
+  assertSpyCall(explicitTypesSpy, 0, {
+    args: [1, "hello"],
+    returned: true,
+  });
 });
 
 Deno.test("spy instance method", () => {
@@ -431,7 +438,8 @@ Deno.test("stub function", () => {
   stub(new Point(2, 3), "explicitTypes", returnsNext([true, false, true]));
 
   // Stubbing without argument types should not cause any type errors:
-  const explicitTypesFunc = stub(new Point(2, 3), "explicitTypes", () => true);
+  const point2 = new Point(2, 3);
+  const explicitTypesFunc = stub(point2, "explicitTypes", () => true);
 
   // Check if the returned type is correct:
   assertThrows(() => {
@@ -441,6 +449,13 @@ Deno.test("stub function", () => {
       // @ts-expect-error Test if passing incorrect return type causes an error
       returned: "not a boolean",
     });
+  });
+
+  // Calling assertSpyCall with the correct types should not cause any type errors
+  point2.explicitTypes(1, "hello");
+  assertSpyCall(explicitTypesFunc, 0, {
+    args: [1, "hello"],
+    returned: true,
   });
 });
 
