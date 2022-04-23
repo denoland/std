@@ -6,8 +6,9 @@ import type {
   TypeEqual,
 } from "https://raw.githubusercontent.com/TypeStrong/ts-expect/736658bd9f1c23ad9e2676c27e9bdc9297309ae9/src/index.ts";
 
-// TODO: 1. Those tests doesn't do anything, just fail at compile-time when types are broken
-//          maybe exclude it to separate task taking <filename>_test_types.ts?
+// TODO: 1. Those tests don't do much while running tests, they aren't testing the implementation but types added on top
+//          of mjs code, so their focus is to fail at compile-time when types are invalid
+//          Maybe exclude it to separate task taking <filename>_test_types.ts?
 // TODO: 2. Create a module in Deno.test for expecting types:
 //          Issue link https://github.com/denoland/deno_std/issues/2145
 // TODO: 3. Not sure if NodeEventTarget and EventTarget should be tested if they aren't exported - not sure about their use-case
@@ -652,7 +653,7 @@ Deno.test("[node/EventEmitter/typings] EventEmitter.listeners", () => {
     expectType<TypeEqual<ListenerMap["error"][], typeof __>>(true);
 
     // @ts-expect-error: typeguard test
-    getEventListeners(withMapping, "doesntexist");
+    withMapping.listeners(withMapping, "doesntexist");
   }
 
   {
@@ -673,6 +674,448 @@ Deno.test("[node/EventEmitter/typings] EventEmitter.listeners", () => {
 
   {
     const _ = extendedWithoutMapping.listeners("doesntexist");
+    expectType<TypeEqual<EventListenerT[], typeof _>>(true);
+  }
+});
+
+Deno.test("[node/EventEmitter/typings] EventEmitter.rawListeners", () => {
+  {
+    const _ = withMapping.rawListeners("connection");
+    expectType<TypeEqual<ListenerMap["connection"][], typeof _>>(true);
+
+    const __ = withMapping.rawListeners("error");
+    expectType<TypeEqual<ListenerMap["error"][], typeof __>>(true);
+
+    // @ts-expect-error: typeguard test
+    withMapping.rawListeners(withMapping, "doesntexist");
+  }
+
+  {
+    const _ = withoutMapping.rawListeners("doesntexist");
+    expectType<TypeEqual<EventListenerT[], typeof _>>(true);
+  }
+
+  {
+    const _ = extendedWithMapping.rawListeners("connection");
+    expectType<TypeEqual<ListenerMap["connection"][], typeof _>>(true);
+
+    const __ = extendedWithMapping.rawListeners("error");
+    expectType<TypeEqual<ListenerMap["error"][], typeof __>>(true);
+
+    // @ts-expect-error: typeguard test
+    extendedWithMapping.rawListeners("doesntexist");
+  }
+
+  {
+    const _ = extendedWithoutMapping.rawListeners("doesntexist");
+    expectType<TypeEqual<EventListenerT[], typeof _>>(true);
+  }
+});
+
+Deno.test("[node/EventEmitter/typings] EventEmitter.emit", () => {
+  withMapping.emit("connection", "ws", "url", 3);
+  withMapping.emit("error", new Error("error"));
+  withMapping.emit("close", "reason");
+  withMapping.emit("close");
+
+  // @ts-expect-error: typeguard test
+  withMapping.emit("connection", "ws", "url", 2, "too much");
+  // @ts-expect-error: typeguard test
+  withMapping.emit("connection", "wrong type");
+
+  withoutMapping.emit("whatever", "wild");
+  withoutMapping.emit("");
+  // @ts-expect-error: typeguard test
+  withoutMapping.emit([]);
+
+  extendedWithMapping.emit("connection", "ws", "url", 3);
+  extendedWithMapping.emit("error", new Error("error"));
+  extendedWithMapping.emit("close", "reason");
+  extendedWithMapping.emit("close");
+
+  // @ts-expect-error: typeguard test
+  extendedWithMapping.emit("connection", "ws", "url", 2, "too much");
+  // @ts-expect-error: typeguard test
+  extendedWithMapping.emit("connection", "wrong type");
+
+  extendedWithoutMapping.emit("whatever", "wild");
+  extendedWithoutMapping.emit("");
+  // @ts-expect-error: typeguard test
+  extendedWithoutMapping.emit([]);
+
+  assert(true);
+});
+
+Deno.test("[node/EventEmitter/typings] EventEmitter.listenerCount", () => {
+  withMapping.listenerCount("connection");
+  // @ts-expect-error: typeguard test
+  withMapping.listenerCount("doesntexist");
+
+  withoutMapping.listenerCount("whatever");
+  // @ts-expect-error: typeguard test
+  withoutMapping.listenerCount([]);
+
+  extendedWithMapping.listenerCount("connection");
+  // @ts-expect-error: typeguard test
+  extendedWithMapping.listenerCount([]);
+
+  extendedWithoutMapping.listenerCount("whatever");
+  // @ts-expect-error: typeguard test
+  extendedWithoutMapping.listenerCount([]);
+
+  assert(true);
+});
+
+Deno.test("[node/EventEmitter/typings] EventEmitter.prependListener", () => {
+  {
+    assert(withMapping === withMapping.prependListener("connection", () => {}));
+    assert(
+      withMapping === withMapping.prependListener("connection", (a, b, c) => {
+        [a, b, c];
+      }),
+    );
+
+    // @ts-expect-error: typeguard test
+    withMapping.prependListener("connection", (ws, url, count, doesntexist) => {
+      [ws, url, count, doesntexist];
+    });
+
+    // @ts-expect-error: typeguard test
+    withMapping.prependListener("doesntexist", () => {});
+  }
+
+  {
+    assert(
+      withoutMapping ===
+        withoutMapping.prependListener("doesntexist", () => {}),
+    );
+    assert(
+      withoutMapping ===
+        withoutMapping.prependListener("doesntexist", (a, b, c) => {
+          [a, b, c];
+        }),
+    );
+    assert(
+      withoutMapping ===
+        withoutMapping.prependListener(
+          "doesntexist",
+          (ws, url, count, doesntexist) => {
+            [ws, url, count, doesntexist];
+          },
+        ),
+    );
+  }
+
+  {
+    assert(
+      extendedWithMapping ===
+        extendedWithMapping.prependListener("connection", () => {}),
+    );
+    assert(
+      extendedWithMapping ===
+        extendedWithMapping.prependListener("connection", (a, b, c) => {
+          [a, b, c];
+        }),
+    );
+
+    extendedWithMapping.prependListener(
+      "connection",
+      // @ts-expect-error: typeguard test
+      (ws, url, count, doesntexist) => {
+        [ws, url, count, doesntexist];
+      },
+    );
+
+    // @ts-expect-error: typeguard test
+    extendedWithMapping.prependListener("doesntexist", () => {});
+  }
+
+  {
+    assert(
+      extendedWithoutMapping ===
+        extendedWithoutMapping.prependListener("doesntexist", () => {}),
+    );
+    assert(
+      extendedWithoutMapping ===
+        extendedWithoutMapping.prependListener("doesntexist", (a, b, c) => {
+          [a, b, c];
+        }),
+    );
+    assert(
+      extendedWithoutMapping ===
+        extendedWithoutMapping.prependListener(
+          "doesntexist",
+          (ws, url, count, doesntexist) => {
+            [ws, url, count, doesntexist];
+          },
+        ),
+    );
+  }
+});
+
+Deno.test("[node/EventEmitter/typings] EventEmitter.prependOnceListener", () => {
+  {
+    assert(
+      withMapping === withMapping.prependOnceListener("connection", () => {}),
+    );
+    assert(
+      withMapping ===
+        withMapping.prependOnceListener("connection", (a, b, c) => {
+          [a, b, c];
+        }),
+    );
+
+    withMapping.prependOnceListener(
+      "connection",
+      // @ts-expect-error: typeguard test
+      (ws, url, count, doesntexist) => {
+        [ws, url, count, doesntexist];
+      },
+    );
+
+    // @ts-expect-error: typeguard test
+    withMapping.prependOnceListener("doesntexist", () => {});
+  }
+
+  {
+    assert(
+      withoutMapping ===
+        withoutMapping.prependOnceListener("doesntexist", () => {}),
+    );
+    assert(
+      withoutMapping ===
+        withoutMapping.prependOnceListener("doesntexist", (a, b, c) => {
+          [a, b, c];
+        }),
+    );
+    assert(
+      withoutMapping ===
+        withoutMapping.prependOnceListener(
+          "doesntexist",
+          (ws, url, count, doesntexist) => {
+            [ws, url, count, doesntexist];
+          },
+        ),
+    );
+  }
+
+  {
+    assert(
+      extendedWithMapping ===
+        extendedWithMapping.prependOnceListener("connection", () => {}),
+    );
+    assert(
+      extendedWithMapping ===
+        extendedWithMapping.prependOnceListener("connection", (a, b, c) => {
+          [a, b, c];
+        }),
+    );
+
+    extendedWithMapping.prependOnceListener(
+      "connection",
+      // @ts-expect-error: typeguard test
+      (ws, url, count, doesntexist) => {
+        [ws, url, count, doesntexist];
+      },
+    );
+
+    // @ts-expect-error: typeguard test
+    extendedWithMapping.prependOnceListener("doesntexist", () => {});
+  }
+
+  {
+    assert(
+      extendedWithoutMapping ===
+        extendedWithoutMapping.prependOnceListener("doesntexist", () => {}),
+    );
+    assert(
+      extendedWithoutMapping ===
+        extendedWithoutMapping.prependOnceListener("doesntexist", (a, b, c) => {
+          [a, b, c];
+        }),
+    );
+    assert(
+      extendedWithoutMapping ===
+        extendedWithoutMapping.prependOnceListener(
+          "doesntexist",
+          (ws, url, count, doesntexist) => {
+            [ws, url, count, doesntexist];
+          },
+        ),
+    );
+  }
+});
+
+Deno.test("[node/EventEmitter/typings] EventEmitter.eventNames", () => {
+  {
+    const _ = withMapping.eventNames();
+    expectType<
+      TypeEqual<
+        (keyof ListenerMap)[],
+        typeof _
+      >
+    >(true);
+  }
+
+  {
+    const _ = withoutMapping.eventNames();
+    expectType<
+      TypeEqual<
+        (string | symbol)[],
+        typeof _
+      >
+    >(true);
+  }
+
+  {
+    const _ = extendedWithMapping.eventNames();
+    expectType<
+      TypeEqual<
+        (keyof ListenerMap)[],
+        typeof _
+      >
+    >(true);
+  }
+
+  {
+    const _ = extendedWithoutMapping.eventNames();
+    expectType<
+      TypeEqual<
+        (string | symbol)[],
+        typeof _
+      >
+    >(true);
+  }
+});
+
+Deno.test("[node/EventEmitter/typings] EventEmitter.once static", () => {
+  {
+    const _existing = EventEmitter.once(withMapping, "connection");
+    expectType<
+      TypeEqual<
+        Promise<Parameters<ListenerMap["connection"]>>,
+        typeof _existing
+      >
+    >(true);
+    // @ts-expect-error: typeguard test
+    EventEmitter.once(withMapping, "doesntexist");
+  }
+
+  {
+    const _ = EventEmitter.once(withoutMapping, "doesntexist");
+    expectType<
+      TypeEqual<Promise<Parameters<EventListenerT>>, typeof _>
+    >(true);
+  }
+
+  {
+    const _existing = EventEmitter.once(extendedWithMapping, "connection");
+    expectType<
+      TypeEqual<
+        Promise<Parameters<ListenerMap["connection"]>>,
+        typeof _existing
+      >
+    >(true);
+    // @ts-expect-error: typeguard test
+    EventEmitter.once(extendedWithMapping, "doesntexist");
+  }
+
+  {
+    const _ = EventEmitter.once(extendedWithoutMapping, "doesntexist");
+    expectType<
+      TypeEqual<Promise<Parameters<EventListenerT>>, typeof _>
+    >(true);
+  }
+});
+
+Deno.test("[node/EventEmitter/typings] EventEmitter.on static", () => {
+  {
+    const _existing = EventEmitter.on(withMapping, "connection");
+    expectType<
+      TypeEqual<
+        AsyncIterableIterator<Parameters<ListenerMap["connection"]>>,
+        typeof _existing
+      >
+    >(true);
+    // @ts-expect-error: typeguard test
+    EventEmitter.on(withMapping, "doesntexist");
+  }
+
+  {
+    const _ = EventEmitter.on(withoutMapping, "doesntexist");
+    expectType<
+      TypeEqual<AsyncIterableIterator<Parameters<EventListenerT>>, typeof _>
+    >(true);
+  }
+
+  {
+    const _existing = EventEmitter.on(extendedWithMapping, "connection");
+    expectType<
+      TypeEqual<
+        AsyncIterableIterator<Parameters<ListenerMap["connection"]>>,
+        typeof _existing
+      >
+    >(true);
+    // @ts-expect-error: typeguard test
+    EventEmitter.on(extendedWithMapping, "doesntexist");
+  }
+
+  {
+    const _ = EventEmitter.on(extendedWithoutMapping, "doesntexist");
+    expectType<
+      TypeEqual<AsyncIterableIterator<Parameters<EventListenerT>>, typeof _>
+    >(true);
+  }
+});
+
+Deno.test("[node/EventEmitter/typings] EventEmitter.listenerCount static", () => {
+  EventEmitter.listenerCount(withMapping, "connection");
+  // @ts-expect-error: typeguard test
+  EventEmitter.listenerCount(withMapping, "doesntexist");
+
+  EventEmitter.listenerCount(withoutMapping, "whatever");
+  // @ts-expect-error: typeguard test
+  EventEmitter.listenerCount(withoutMapping, []);
+
+  EventEmitter.listenerCount(extendedWithMapping, "connection");
+  // @ts-expect-error: typeguard test
+  EventEmitter.listenerCount(extendedWithMapping, []);
+
+  EventEmitter.listenerCount(extendedWithoutMapping, "whatever");
+  // @ts-expect-error: typeguard test
+  EventEmitter.listenerCount(extendedWithoutMapping, []);
+
+  assert(true);
+});
+
+Deno.test("[node/EventEmitter/typings] EventEmitter.getEventListeners static", () => {
+  {
+    const _existing = EventEmitter.getEventListeners(withMapping, "connection");
+    expectType<TypeEqual<ListenerMap["connection"][], typeof _existing>>(true);
+    // @ts-expect-error: typeguard test
+    EventEmitter.getEventListeners(withMapping, "doesntexist");
+  }
+
+  {
+    const _ = EventEmitter.getEventListeners(withoutMapping, "doesntexist");
+    expectType<TypeEqual<EventListenerT[], typeof _>>(true);
+  }
+
+  {
+    const _existing = EventEmitter.getEventListeners(
+      extendedWithMapping,
+      "connection",
+    );
+    expectType<TypeEqual<ListenerMap["connection"][], typeof _existing>>(true);
+    // @ts-expect-error: typeguard test
+    EventEmitter.getEventListeners(extendedWithMapping, "doesntexist");
+  }
+
+  {
+    const _ = EventEmitter.getEventListeners(
+      extendedWithoutMapping,
+      "doesntexist",
+    );
     expectType<TypeEqual<EventListenerT[], typeof _>>(true);
   }
 });

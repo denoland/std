@@ -521,7 +521,7 @@ export class EventEmitter<
    */
   rawListeners<K extends keyof EventListenerMap>(
     eventName: K,
-  ): EventListenerMap[K];
+  ): EventListenerMap[K][];
   /**
    * Synchronously calls each of the listeners registered for the event named`eventName`, in the order they were registered, passing the supplied arguments
    * to each.
