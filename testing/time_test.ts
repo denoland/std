@@ -93,8 +93,9 @@ Deno.test("Fake Date instance methods passthrough to real Date instance methods"
       `${now}`;
       assertSpyCall(func2, 0, {
         args: ["string"],
+        returned:
+          "Mon May 25 2020 07:00:00 GMT+0200 (Central European Summer Time)",
       });
-      assert(typeof func2.calls[0].returned === "string");
     } finally {
       func2.restore();
     }
