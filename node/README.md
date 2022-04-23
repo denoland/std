@@ -112,7 +112,7 @@ workflow.
 $ deno task node:setup
 ```
 
-You can aditionally pass the `-y`/`-n` flag to use test cache or generating
+You can additionally pass the `-y`/`-n` flag to use test cache or generating
 tests from scratch instead of being prompted at the moment of running it.
 
 ```zsh

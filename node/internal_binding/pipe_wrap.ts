@@ -37,6 +37,7 @@ import {
   MAX_ACCEPT_BACKOFF_DELAY,
 } from "./_listen.ts";
 import { isWindows } from "../../_util/os.ts";
+import { fs } from "./constants.ts";
 
 export enum socketType {
   SOCKET,
@@ -113,7 +114,7 @@ export class Pipe extends ConnectionWrap {
   }
 
   /**
-   * Connect to an IPv4 address.
+   * Connect to a Unix domain or Windows named pipe.
    * @param req A PipeConnectWrap instance.
    * @param address Unix domain or Windows named pipe the server should connect to.
    * @return An error status code.
@@ -137,7 +138,7 @@ export class Pipe extends ConnectionWrap {
         } catch {
           // swallow callback errors.
         }
-      },
+      }
     );
 
     return 0;
@@ -213,10 +214,19 @@ export class Pipe extends ConnectionWrap {
       return codeMap.get("EINVAL");
     }
 
+    let desired_mode = 0;
+
+    if (mode & constants.UV_READABLE) {
+      desired_mode |= fs.S_IRUSR | fs.S_IRGRP | fs.S_IROTH;
+    }
+    if (mode & constants.UV_WRITABLE) {
+      desired_mode |= fs.S_IWUSR | fs.S_IWGRP | fs.S_IWOTH;
+    }
+
     // TODO(cmorten): this will incorrectly throw on Windows
     // REF: https://github.com/denoland/deno/issues/4357
     try {
-      Deno.chmodSync(this.#address!, mode);
+      Deno.chmodSync(this.#address!, desired_mode);
     } catch {
       // TODO(cmorten): map errors to appropriate error codes.
       return codeMap.get("UNKNOWN")!;
@@ -324,7 +334,7 @@ export class PipeConnectWrap extends AsyncWrap {
     handle: ConnectionWrap,
     req: PipeConnectWrap,
     readable: boolean,
-    writeable: boolean,
+    writeable: boolean
   ) => void;
   address!: string;
 
@@ -337,6 +347,6 @@ export enum constants {
   SOCKET = socketType.SOCKET,
   SERVER = socketType.SERVER,
   IPC = socketType.IPC,
-  UV_READABLE,
-  UV_WRITABLE,
+  UV_READABLE = 1,
+  UV_WRITABLE = 2,
 }
