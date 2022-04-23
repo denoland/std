@@ -116,8 +116,8 @@ import wasmBytes from "./crypto.wasm.mjs";
 ${
   generatedScript.replace(
     /^const wasm_url =.*?;\nlet wasmCode =.*?;\n.*?const wasmInstance =.*?;\n/sm,
-    `const wasmModule = new WebAssembly.Module(wasmBytes);\n` +
-      `const wasmInstance = new WebAssembly.Instance(wasmModule, imports);`,
+    `const wasmModule = await WebAssembly.compile(wasmBytes);\n` +
+      `const wasmInstance = await WebAssembly.instantiate(wasmModule, imports);`,
   )
 }
 
