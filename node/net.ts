@@ -2058,7 +2058,6 @@ export class Server extends EventEmitter {
     const cb = normalized[1];
 
     if (this._handle) {
-      console.log("asdjhasgdjh");
       throw new ERR_SERVER_ALREADY_LISTEN();
     }
 
