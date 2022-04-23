@@ -489,7 +489,7 @@ export class EventEmitter<
    */
   listeners<K extends keyof EventListenerMap>(
     eventName: K,
-  ): EventListenerMap[K];
+  ): EventListenerMap[K][];
   /**
    * Returns a copy of the array of listeners for the event named `eventName`,
    * including any wrappers (such as those created by `.once()`).
