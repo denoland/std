@@ -32,6 +32,8 @@
       "test-fs-rmdir-recursive.js",
       "test-fs-write-file.js",
       "test-fs-write.js",
+      "test-net-better-error-messages-listen-path.js",
+      "test-net-better-error-messages-path.js",
       "test-net-server-listen-path.js",
       "test-os.js",
       "test-path-resolve.js",

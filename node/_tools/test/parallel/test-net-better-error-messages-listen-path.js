@@ -7,6 +7,13 @@
 
 'use strict';
 const common = require('../common');
+
+// TODO(cmorten): reenable for windows once named pipes are supported
+// REF: https://github.com/denoland/deno/issues/10244
+if (!common.isWindows) {
+  return;
+}
+
 const assert = require('assert');
 const net = require('net');
 const fp = '/blah/fadfa';
