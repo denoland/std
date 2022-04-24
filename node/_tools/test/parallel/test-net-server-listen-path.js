@@ -12,6 +12,12 @@ const net = require('net');
 const assert = require('assert');
 const fs = require('fs');
 
+// TODO(cmorten): reenable for windows once named pipes are supported
+// REF: https://github.com/denoland/deno/issues/10244
+if (!common.isWindows) {
+  return;
+}
+
 const tmpdir = require('../common/tmpdir');
 tmpdir.refresh();
 

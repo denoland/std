@@ -120,6 +120,11 @@ export class Pipe extends ConnectionWrap {
    * @return An error status code.
    */
   connect(req: PipeConnectWrap, address: string) {
+    if (isWindows) {
+      // REF: https://github.com/denoland/deno/issues/10244
+      notImplemented("Pipe.prototype.connect - Windows");
+    }
+
     Deno.connect({
       path: address,
       transport: "unix",
@@ -158,6 +163,11 @@ export class Pipe extends ConnectionWrap {
    * @return An error status code.
    */
   listen(backlog: number): number {
+    if (isWindows) {
+      // REF: https://github.com/denoland/deno/issues/10244
+      notImplemented("Pipe.prototype.listen - Windows");
+    }
+
     this.#backlog = isWindows
       ? this.#pendingInstances
       : ceilPowOf2(backlog + 1);
