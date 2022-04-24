@@ -4,7 +4,6 @@ import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { bold, green, red } from "../fmt/colors.ts";
 import { AssertionError, equal } from "./asserts.ts";
 import { buildMessage, diff, diffstr } from "./_diff.ts";
-import { format } from "./_format.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 const SNAPSHOT_DIR = "__snapshots__";
@@ -19,6 +18,19 @@ type AssertSnapshotContext = {
 };
 
 let _assertSnapshotContext: AssertSnapshotContext;
+
+export function serialize(actual: unknown): string;
+export function serialize<T>(actual: T): string;
+export function serialize(actual: unknown): string {
+  return Deno.inspect(actual, {
+    depth: Infinity,
+    sorted: true,
+    trailingComma: true,
+    compact: false,
+    iterableLimit: Infinity,
+    strAbbreviateSize: Infinity,
+  });
+}
 
 /**
  * Write updates to the snapshot file.
@@ -105,7 +117,7 @@ export async function assertSnapshot(
   const isUpdate = Deno.args.some((arg) => arg === "--update" || arg === "-u");
   const currentSnapshot = await readSnapshotFile();
 
-  const _actual = format(actual);
+  const _actual = serialize(actual);
   const _expected = getExpected();
   if (isUpdate) {
     if (!equal(_actual, _expected)) {

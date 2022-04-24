@@ -173,3 +173,21 @@ Deno.test("Snapshot Test - Update", async (t) => {
   await assertSnapshot(t, formatOutput(result3.output).split("\n"));
   assert(!formatError(result3.error), "unexpected output to stderr");
 });
+
+// Regression test for https://github.com/denoland/deno_std/issues/2140
+// Long strings should not be truncated with ellipsis
+Deno.test("Snapshot Test - Regression #2140", async (t) => {
+  await assertSnapshot(t, {
+    title: "Testing a page",
+    content: `
+      <h1>Testing a page</h1>
+      <p>This is a test</p>
+      <ul>
+        <li>1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+      </ul>
+      `,
+  });
+});
