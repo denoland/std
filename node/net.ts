@@ -1351,7 +1351,7 @@ export class Socket extends Duplex {
     } else if (err !== 0) {
       return cb(errnoException(err, "shutdown"));
     }
-  };
+  }
 
   _onTimeout() {
     const handle = this._handle;
