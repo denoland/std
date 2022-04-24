@@ -567,7 +567,7 @@ export async function serve(
   return await s;
 }
 
-interface ServeTlsInit extends ServeInit {
+export interface ServeTlsInit extends ServeInit {
   /** The path to the file containing the TLS private key. */
   keyFile: string;
 
