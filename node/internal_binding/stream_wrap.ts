@@ -185,13 +185,32 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   writev(
-    _req: WriteWrap<LibuvStreamWrap>,
-    // deno-lint-ignore no-explicit-any
-    _chunks: any,
-    _allBuffers: boolean,
+    req: WriteWrap<LibuvStreamWrap>,
+    chunks: Buffer[] | (string | Buffer)[],
+    allBuffers: boolean,
   ): number {
-    // TODO(cmorten)
-    notImplemented("LibuvStreamWrap.prototype.writev");
+    const count = allBuffers ? chunks.length : chunks.length >> 1;
+    const buffers: Buffer[] = new Array(count);
+
+    if (!allBuffers) {
+      for (let i = 0; i < count; i++) {
+        const chunk = chunks[i * 2];
+
+        if (Buffer.isBuffer(chunk)) {
+          buffers[i] = chunk;
+        }
+
+        // String chunk
+        const encoding: string = chunks[i * 2 + 1] as string;
+        buffers[i] = Buffer.from(chunk as string, encoding);
+      }
+    } else {
+      for (let i = 0; i < count; i++) {
+        buffers[i] = chunks[i] as Buffer;
+      }
+    }
+
+    return this.writeBuffer(req, Buffer.concat(buffers));
   }
 
   /**

@@ -1326,7 +1326,7 @@ export class Socket extends Duplex {
   // The user has called .end(), and all the bytes have been
   // sent out to the other side.
   // deno-lint-ignore no-explicit-any
-  override _final = (cb: any): any => {
+  override _final(cb: any): any {
     // If still connecting - defer handling `_final` until 'connect' will happen
     if (this.pending) {
       debug("_final: not yet connected");
