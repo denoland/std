@@ -183,3 +183,15 @@ snapshot[`Snapshot Test - Regression #2140 1`] = `
   title: "Testing a page",
 }
 `;
+
+snapshot[`Snapshot Test - Regression #2144 1`] = `
+{
+  fmt: {
+    files: {
+      exclude: [],
+      include: [],
+    },
+    options: {},
+  },
+}
+`;
