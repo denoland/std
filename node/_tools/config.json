@@ -236,6 +236,7 @@
       "test-net-better-error-messages-path.js",
       "test-net-better-error-messages-port-hostname.js",
       "test-net-bind-twice.js",
+      "test-net-buffersize.js",
       "test-net-can-reset-timeout.js",
       "test-net-connect-after-destroy.js",
       "test-net-server-listen-path.js",
