@@ -311,17 +311,21 @@ export class TCP extends ConnectionWrap {
    * Bind to an IPv4 or IPv6 address.
    * @param address The hostname to bind to.
    * @param port The port to bind to
-   * @param flags
+   * @param _flags
    * @return An error status code.
    */
   #bind(address: string, port: number, _flags: number): number {
-    // Deno doesn't currently separate bind from connect. For now we noop under
-    // the assumption we will connect shortly.
-    // REF: https://doc.deno.land/deno/stable/~/Deno.connect
+    // Deno doesn't currently separate bind from connect etc.
+    // REF:
+    // - https://doc.deno.land/deno/stable/~/Deno.connect
+    // - https://doc.deno.land/deno/stable/~/Deno.listen
     //
     // This also means we won't be connecting from the specified local address
     // and port as providing these is not an option in Deno.
-    // REF: https://doc.deno.land/deno/stable/~/Deno.ConnectOptions
+    // REF:
+    // - https://doc.deno.land/deno/stable/~/Deno.ConnectOptions
+    // - https://doc.deno.land/deno/stable/~/Deno.ListenOptions
+
     this.#address = address;
     this.#port = port;
 

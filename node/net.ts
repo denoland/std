@@ -106,7 +106,7 @@ const kBytesRead = Symbol("kBytesRead");
 const kBytesWritten = Symbol("kBytesWritten");
 
 const DEFAULT_IPV4_ADDR = "0.0.0.0";
-const DEFAULT_IPV6_ADDR = "::";
+const DEFAULT_IPV6_ADDR = "::1";
 
 type Handle = TCP | Pipe;
 
