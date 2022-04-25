@@ -159,7 +159,7 @@ export class Pipe extends ConnectionWrap {
         } catch {
           // swallow callback errors.
         }
-      }
+      },
     );
 
     return 0;
