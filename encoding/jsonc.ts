@@ -1,3 +1,5 @@
+import { assert } from "../_util/assert.ts";
+
 export interface ParseOptions {
   allowTrailingComma?: boolean;
 }
@@ -6,16 +8,24 @@ export function parse(
   text: string,
   { allowTrailingComma = true }: ParseOptions = {},
 ) {
-  return new JSONCParser(text, { allowTrailingComma }).parse();
+  return new JSONCParser(text, { allowTrailingComma }).parse() as JSONValue;
 }
 
+type JSONValue =
+  | { [key: string]: JSONValue }
+  | JSONValue[]
+  | string
+  | number
+  | boolean
+  | null;
+
 enum tokenType {
-  objectStart,
-  objectEnd,
-  arrayStart,
-  arrayEnd,
-  colon,
-  comma,
+  beginObject,
+  endObject,
+  beginArray,
+  endArray,
+  nameSeparator,
+  valueSeparator,
   nullOrTrueOrFalseOrNumber,
   string,
 }
@@ -39,42 +49,50 @@ type tokenized = {
 
 class JSONCParser {
   readonly #whitespace = new Set(" \t\r\n");
-  readonly #numberEndToken = new Set([..."[]{}:,", ...this.#whitespace]);
+  readonly #numberEndToken = new Set([..."[]{}:,/", ...this.#whitespace]);
   #text: string;
   #length: number;
-  #gen: Generator<tokenized, void>;
+  #tokenized: Generator<tokenized, void>;
   #options: ParseOptions;
   constructor(text: string, options: ParseOptions) {
     this.#text = text;
     this.#length = text.length;
-    this.#gen = this.#tokenize();
+    this.#tokenized = this.#tokenize();
     this.#options = options;
   }
   parse() {
     const token = this.#getNext();
     const res = this.#parseJSONValue(token);
-    const { done, value } = this.#gen.next();
+
+    // make sure all characters have been read
+    const { done, value } = this.#tokenized.next();
     if (!done) {
-      throw createUnexpectedTokenError(value);
+      throw new SyntaxError(buildErrorMessage(value));
     }
+
     return res;
   }
+  /** Read the next token. If the token is read to the end, it throws a SyntaxError. */
   #getNext() {
-    const { done, value } = this.#gen.next();
+    const { done, value } = this.#tokenized.next();
     if (done) {
       throw new SyntaxError("Unexpected end of JSONC input");
     }
     return value;
   }
+  /** Split the JSONC string into token units. */
   *#tokenize(): Generator<tokenized, void> {
     for (let i = 0; i < this.#length; i++) {
+      // skip whitespace
       if (this.#whitespace.has(this.#text[i])) {
         continue;
       }
+
+      // skip comment (`/*...*/`)
       if (this.#text[i] === "/" && this.#text[i + 1] === "*") {
         i += 2;
         let hasEndOfComment = false;
-        for (; i < this.#length; i++) {
+        for (; i < this.#length; i++) { // read until find `*/`
           if (this.#text[i] === "*" && this.#text[i + 1] === "/") {
             hasEndOfComment = true;
             break;
@@ -86,128 +104,173 @@ class JSONCParser {
         i++;
         continue;
       }
+
+      // skip comment (`//...`)
       if (this.#text[i] === "/" && this.#text[i + 1] === "/") {
         i += 2;
-        for (; i < this.#length; i++) {
+        for (; i < this.#length; i++) { // read until find `\n` or `\r\n`
           if (
             this.#text[i] === "\n" ||
-            this.#text[i] === "\r" && this.#text[i] === "\n"
+            this.#text[i] === "\r" && this.#text[i + 1] === "\n"
           ) {
             break;
           }
         }
         continue;
       }
-      if (this.#text[i] === "{") {
-        yield { type: tokenType.objectStart, position: i } as const;
-      } else if (this.#text[i] === "}") {
-        yield { type: tokenType.objectEnd, position: i } as const;
-      } else if (this.#text[i] === "[") {
-        yield { type: tokenType.arrayStart, position: i } as const;
-      } else if (this.#text[i] === "]") {
-        yield { type: tokenType.arrayEnd, position: i } as const;
-      } else if (this.#text[i] === ":") {
-        yield { type: tokenType.colon, position: i } as const;
-      } else if (this.#text[i] === ",") {
-        yield { type: tokenType.comma, position: i } as const;
-      } else if (this.#text[i] === '"') {
-        const startIndex = i;
-        i++;
-        for (; i < this.#length; i++) {
-          if (this.#text[i] === '"' && this.#text[i - 1] !== "\\") {
-            break;
+
+      switch (this.#text[i]) {
+        case "{":
+          yield { type: tokenType.beginObject, position: i } as const;
+          break;
+        case "}":
+          yield { type: tokenType.endObject, position: i } as const;
+          break;
+        case "[":
+          yield { type: tokenType.beginArray, position: i } as const;
+          break;
+        case "]":
+          yield { type: tokenType.endArray, position: i } as const;
+          break;
+        case ":":
+          yield { type: tokenType.nameSeparator, position: i } as const;
+          break;
+        case ",":
+          yield { type: tokenType.valueSeparator, position: i } as const;
+          break;
+        case '"': { // parse string token
+          const startIndex = i;
+          i++;
+          for (; i < this.#length; i++) { // read until find `"`
+            if (this.#text[i] === '"' && this.#text[i - 1] !== "\\") {
+              break;
+            }
           }
+          yield {
+            type: tokenType.string,
+            sourceText: this.#text.substring(startIndex, i + 1),
+            position: startIndex,
+          } as const;
+          break;
         }
-        yield {
-          type: tokenType.string,
-          sourceText: this.#text.substring(startIndex, i + 1),
-          position: startIndex,
-        } as const;
-      } else {
-        const startIndex = i;
-        for (; i < this.#length; i++) {
-          if (this.#numberEndToken.has(this.#text[i])) {
-            break;
+        default: { // parse null, true, false or number token
+          const startIndex = i;
+          for (; i < this.#length; i++) { // read until find numberEndToken
+            if (this.#numberEndToken.has(this.#text[i])) {
+              break;
+            }
           }
+          i--;
+          yield {
+            type: tokenType.nullOrTrueOrFalseOrNumber,
+            sourceText: this.#text.substring(startIndex, i + 1),
+            position: startIndex,
+          } as const;
         }
-        i--;
-        yield {
-          type: tokenType.nullOrTrueOrFalseOrNumber,
-          sourceText: this.#text.substring(startIndex, i + 1),
-          position: startIndex,
-        } as const;
       }
     }
   }
   #parseJSONValue(value: tokenized) {
     switch (value.type) {
-      case tokenType.objectStart:
+      case tokenType.beginObject:
         return this.#parseObject();
-      case tokenType.arrayStart:
+      case tokenType.beginArray:
         return this.#parseArray();
       case tokenType.nullOrTrueOrFalseOrNumber:
-        return this.#parseNumberOrNullOrTrueOrFalse(value);
+        return this.#parseNullOrTrueOrFalseOrNumber(value);
       case tokenType.string:
         return this.#parseString(value);
       default:
-        throw createUnexpectedTokenError(value);
+        throw new SyntaxError(buildErrorMessage(value));
     }
   }
   #parseObject() {
     const target: Record<string, unknown> = {};
-    let isFirst = true;
-    while (true) {
+    //   ┌─token1
+    // { }
+    //      ┌─────────────token1
+    //      │   ┌─────────token2
+    //      │   │   ┌─────token3
+    //      │   │   │   ┌─token4
+    //  { "key" : value }
+    //      ┌───────────────token1
+    //      │   ┌───────────token2
+    //      │   │   ┌───────token3
+    //      │   │   │   ┌───token4
+    //      │   │   │   │ ┌─token5
+    //  { "key" : value , }
+    //      ┌─────────────────────────────token1
+    //      │   ┌─────────────────────────token2
+    //      │   │   ┌─────────────────────token3
+    //      │   │   │   ┌─────────────────token4
+    //      │   │   │   │   ┌─────────────token1
+    //      │   │   │   │   │   ┌─────────token2
+    //      │   │   │   │   │   │   ┌─────token3
+    //      │   │   │   │   │   │   │   ┌─token4
+    //  { "key" : value , "key" : value }
+    for (let isFirst = true;; isFirst = false) {
       const token1 = this.#getNext();
       if (
         (isFirst || this.#options.allowTrailingComma) &&
-        token1.type === tokenType.objectEnd
+        token1.type === tokenType.endObject
       ) {
         return target;
       }
       if (token1.type !== tokenType.string) {
-        throw createUnexpectedTokenError(token1);
+        throw new SyntaxError(buildErrorMessage(token1));
       }
       const key = this.#parseString(token1);
 
       const token2 = this.#getNext();
-      if (token2.type !== tokenType.colon) {
-        throw createUnexpectedTokenError(token2);
+      if (token2.type !== tokenType.nameSeparator) {
+        throw new SyntaxError(buildErrorMessage(token2));
       }
 
       const token3 = this.#getNext();
-      const value = this.#parseJSONValue(token3);
-      target[key] = value;
+      target[key] = this.#parseJSONValue(token3);
 
       const token4 = this.#getNext();
-      if (token4.type === tokenType.objectEnd) {
+      if (token4.type === tokenType.endObject) {
         return target;
       }
-      if (token4.type !== tokenType.comma) {
-        throw createUnexpectedTokenError(token4);
+      if (token4.type !== tokenType.valueSeparator) {
+        throw new SyntaxError(buildErrorMessage(token4));
       }
-      isFirst = false;
     }
   }
   #parseArray() {
     const target: unknown[] = [];
-    let isFirst = true;
-    while (true) {
+    //   ┌─token1
+    // [ ]
+    //      ┌─────────────token1
+    //      │   ┌─────────token2
+    //  [ value ]
+    //      ┌───────token1
+    //      │   ┌───token2
+    //      │   │ ┌─token1
+    //  [ value , ]
+    //      ┌─────────────token1
+    //      │   ┌─────────token2
+    //      │   │   ┌─────token1
+    //      │   │   │   ┌─token2
+    //  [ value , value ]
+    for (let isFirst = true;; isFirst = false) {
       const token1 = this.#getNext();
       if (
         (isFirst || this.#options.allowTrailingComma) &&
-        token1.type === tokenType.arrayEnd
+        token1.type === tokenType.endArray
       ) {
         return target;
       }
       target.push(this.#parseJSONValue(token1));
+
       const token2 = this.#getNext();
-      if (token2.type === tokenType.arrayEnd) {
+      if (token2.type === tokenType.endArray) {
         return target;
       }
-      if (token2.type !== tokenType.comma) {
-        throw createUnexpectedTokenError(token2);
+      if (token2.type !== tokenType.valueSeparator) {
+        throw new SyntaxError(buildErrorMessage(token2));
       }
-      isFirst = false;
     }
   }
   #parseString(value: {
@@ -217,16 +280,15 @@ class JSONCParser {
   }): string {
     let parsed;
     try {
+      // Use JSON.parse to handle `\u0000` etc. correctly.
       parsed = JSON.parse(value.sourceText);
     } catch {
-      throw createUnexpectedTokenError(value);
+      throw new SyntaxError(buildErrorMessage(value));
     }
-    if (typeof parsed !== "string") {
-      throw createUnexpectedTokenError(value);
-    }
+    assert(typeof parsed === "string");
     return parsed;
   }
-  #parseNumberOrNullOrTrueOrFalse(value: {
+  #parseNullOrTrueOrFalseOrNumber(value: {
     type: tokenType.nullOrTrueOrFalseOrNumber;
     sourceText: string;
     position: number;
@@ -242,39 +304,35 @@ class JSONCParser {
     }
     let parsed;
     try {
+      // Use JSON.parse to handle `+100`, `Infinity` etc. correctly.
       parsed = JSON.parse(value.sourceText);
     } catch {
-      throw createUnexpectedTokenError(value);
+      throw new SyntaxError(buildErrorMessage(value));
     }
-    if (typeof parsed !== "number" || Number.isNaN(parsed)) {
-      throw createUnexpectedTokenError(value);
-    }
+    assert(typeof parsed === "number");
     return parsed;
   }
 }
 
-function createUnexpectedTokenError(
-  { type, sourceText, position }: tokenized,
-  options?: ErrorOptions,
-): SyntaxError {
+function buildErrorMessage({ type, sourceText, position }: tokenized) {
   let token = "";
   switch (type) {
-    case tokenType.objectStart:
+    case tokenType.beginObject:
       token = "{";
       break;
-    case tokenType.objectEnd:
+    case tokenType.endObject:
       token = "}";
       break;
-    case tokenType.arrayStart:
+    case tokenType.beginArray:
       token = "[";
       break;
-    case tokenType.arrayEnd:
+    case tokenType.endArray:
       token = "]";
       break;
-    case tokenType.colon:
+    case tokenType.nameSeparator:
       token = ":";
       break;
-    case tokenType.comma:
+    case tokenType.valueSeparator:
       token = ",";
       break;
     case tokenType.nullOrTrueOrFalseOrNumber:
@@ -284,8 +342,5 @@ function createUnexpectedTokenError(
     default:
       throw new Error("unreachable");
   }
-  return new SyntaxError(
-    `Unexpected token ${token} in JSONC at position ${position}`,
-    options,
-  );
+  return `Unexpected token ${token} in JSONC at position ${position}`;
 }
