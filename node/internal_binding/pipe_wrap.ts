@@ -31,6 +31,7 @@ import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { LibuvStreamWrap } from "./stream_wrap.ts";
 import { codeMap } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
+import { kStreamBaseField } from "./stream_wrap.ts";
 import {
   ceilPowOf2,
   INITIAL_ACCEPT_BACKOFF_DELAY,
@@ -125,11 +126,18 @@ export class Pipe extends ConnectionWrap {
       notImplemented("Pipe.prototype.connect - Windows");
     }
 
-    Deno.connect({
+    const connectOptions: Deno.UnixConnectOptions = {
       path: address,
       transport: "unix",
-    }).then(
-      (_conn: Deno.UnixConn) => {
+    };
+
+    Deno.connect(connectOptions).then(
+      (conn: Deno.UnixConn) => {
+        const localAddr = conn.localAddr as Deno.UnixAddr;
+
+        this.#address = req.address = localAddr.path;
+        this[kStreamBaseField] = conn;
+
         try {
           this.afterConnect(req, 0);
         } catch {
@@ -151,7 +159,7 @@ export class Pipe extends ConnectionWrap {
         } catch {
           // swallow callback errors.
         }
-      },
+      }
     );
 
     return 0;
@@ -191,6 +199,9 @@ export class Pipe extends ConnectionWrap {
       // TODO(cmorten): map errors to appropriate error codes.
       return codeMap.get("UNKNOWN")!;
     }
+
+    const address = listener.addr as Deno.UnixAddr;
+    this.#address = address.path;
 
     this.#listener = listener;
     this.#accept();
