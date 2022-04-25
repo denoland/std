@@ -10,6 +10,7 @@
         ".git",
         "_wasm_crypto/target",
         "cov",
+        "encoding/testdata/jsonc",
         "node/_tools/versions",
         "node/_tools/test",
         "node/integrationtest/yarn.js",
