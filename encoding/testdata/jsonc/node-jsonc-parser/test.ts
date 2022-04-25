@@ -21,7 +21,7 @@ function assertInvalidParse(
   );
 }
 
-Deno.test("parse: literals", () => {
+Deno.test("[jsonc] node-jsonc-parser parse: literals", () => {
   assertValidParse("true", true);
   assertValidParse("false", false);
   assertValidParse("null", null);
@@ -40,7 +40,7 @@ Deno.test("parse: literals", () => {
   assertValidParse("1.2E-3 // comment", 1.2E-3);
 });
 
-Deno.test("parse: objects", () => {
+Deno.test("[jsonc] node-jsonc-parser parse: objects", () => {
   assertValidParse("{}", {});
   assertValidParse('{ "foo": true }', { foo: true });
   assertValidParse('{ "bar": 8, "xoo": "foo" }', { bar: 8, xoo: "foo" });
@@ -66,14 +66,14 @@ Deno.test("parse: objects", () => {
   assertValidParse('{ "": true }', { "": true });
 });
 
-Deno.test("parse: arrays", () => {
+Deno.test("[jsonc] node-jsonc-parser parse: arrays", () => {
   assertValidParse("[]", []);
   assertValidParse("[ [],  [ [] ]]", [[], [[]]]);
   assertValidParse("[ 1, 2, 3 ]", [1, 2, 3]);
   assertValidParse('[ { "a": null } ]', [{ a: null }]);
 });
 
-Deno.test("parse: objects with errors", () => {
+Deno.test("[jsonc] node-jsonc-parser parse: objects with errors", () => {
   assertInvalidParse("{,}", SyntaxError);
   assertInvalidParse('{ "foo": true, }', SyntaxError, undefined, {
     allowTrailingComma: false,
@@ -85,19 +85,19 @@ Deno.test("parse: objects with errors", () => {
   assertInvalidParse('{ 8, "foo": 9 }', SyntaxError);
 });
 
-Deno.test("parse: array with errors", () => {
+Deno.test("[jsonc] node-jsonc-parser parse: array with errors", () => {
   assertInvalidParse("[,]", SyntaxError);
   assertInvalidParse("[ 1 2, 3 ]", SyntaxError);
   assertInvalidParse("[ ,1, 2, 3 ]", SyntaxError);
   assertInvalidParse("[ ,1, 2, 3, ]", SyntaxError);
 });
 
-Deno.test("parse: errors", () => {
+Deno.test("[jsonc] node-jsonc-parser parse: errors", () => {
   assertInvalidParse("", SyntaxError);
   assertInvalidParse("1,1", SyntaxError);
 });
 
-Deno.test("parse: trailing comma", () => {
+Deno.test("[jsonc] node-jsonc-parser parse: trailing comma", () => {
   const options = { allowTrailingComma: false };
   assertValidParse('{ "hello": [], }', { hello: [] });
   assertValidParse('{ "hello": [] }', { hello: [] });
