@@ -19,9 +19,9 @@ type AssertSnapshotContext = {
 
 let _assertSnapshotContext: AssertSnapshotContext;
 
-export function serialize(actual: unknown): string;
-export function serialize<T>(actual: T): string;
-export function serialize(actual: unknown): string {
+function serialize(actual: unknown): string;
+function serialize<T>(actual: T): string;
+function serialize(actual: unknown): string {
   return Deno.inspect(actual, {
     depth: Infinity,
     sorted: true,
