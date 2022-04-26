@@ -98,7 +98,7 @@ export class LibuvStreamWrap extends HandleWrap {
 
   constructor(
     provider: providerType,
-    stream?: Deno.Reader & Deno.Writer & Deno.Closer
+    stream?: Deno.Reader & Deno.Writer & Deno.Closer,
   ) {
     super(provider);
     this.#attachToObject(stream);
@@ -115,7 +115,7 @@ export class LibuvStreamWrap extends HandleWrap {
       this.#currentReads.add(readPromise);
       readPromise.then(
         () => this.#currentReads.delete(readPromise),
-        () => this.#currentReads.delete(readPromise)
+        () => this.#currentReads.delete(readPromise),
       );
     }
 
@@ -171,7 +171,7 @@ export class LibuvStreamWrap extends HandleWrap {
     this.#currentWrites.add(currentWrite);
     currentWrite.then(
       () => this.#currentWrites.delete(currentWrite),
-      () => this.#currentWrites.delete(currentWrite)
+      () => this.#currentWrites.delete(currentWrite),
     );
 
     return 0;
@@ -187,7 +187,7 @@ export class LibuvStreamWrap extends HandleWrap {
   writev(
     req: WriteWrap<LibuvStreamWrap>,
     chunks: Buffer[] | (string | Buffer)[],
-    allBuffers: boolean
+    allBuffers: boolean,
   ): number {
     const count = allBuffers ? chunks.length : chunks.length >> 1;
     const buffers: Buffer[] = new Array(count);
@@ -319,7 +319,7 @@ export class LibuvStreamWrap extends HandleWrap {
       this.#currentReads.add(readPromise);
       readPromise.then(
         () => this.#currentReads.delete(readPromise),
-        () => this.#currentReads.delete(readPromise)
+        () => this.#currentReads.delete(readPromise),
       );
     }
   }
