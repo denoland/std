@@ -91,7 +91,13 @@ export class Pipe extends ConnectionWrap {
     }
 
     super(provider, conn);
+
     this.ipc = ipc;
+
+    if (conn && provider === providerType.PIPEWRAP) {
+      const localAddr = conn.localAddr as Deno.UnixAddr;
+      this.#address = localAddr.path;
+    }
   }
 
   open(_fd: number): number {
