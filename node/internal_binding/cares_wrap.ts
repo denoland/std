@@ -75,11 +75,11 @@ export function getaddrinfo(
 
     const recordTypes: ("A" | "AAAA")[] = [];
 
-    if (family === 0 || family === 6) {
-      recordTypes.push("AAAA");
-    }
     if (family === 0 || family === 4) {
       recordTypes.push("A");
+    }
+    if (family === 0 || family === 6) {
+      recordTypes.push("AAAA");
     }
 
     await Promise.allSettled(
@@ -97,9 +97,9 @@ export function getaddrinfo(
     if (!verbatim) {
       addresses.sort((a: string, b: string): number => {
         if (isIPv4(a)) {
-          return 1;
-        } else if (isIPv4(b)) {
           return -1;
+        } else if (isIPv4(b)) {
+          return 1;
         }
 
         return 0;
