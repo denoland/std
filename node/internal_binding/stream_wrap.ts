@@ -282,7 +282,6 @@ export class LibuvStreamWrap extends HandleWrap {
     try {
       nread = await this[kStreamBaseField]!.read(buf);
     } catch (e) {
-      console.error((this[kStreamBaseField] as any).localAddr, e);
       if (
         e instanceof Deno.errors.Interrupted ||
         e instanceof Deno.errors.BadResource
