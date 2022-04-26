@@ -75,7 +75,7 @@ for await (
       if (hasJsonError !== hasJsoncError) {
         throw new AggregateError(
           [jsonError, jsoncError],
-          `failed: ${dirEntry.path}`,
+          `failed to parse: '${text}'`,
         );
       }
       assertEquals(jsonResult, jsoncResult);
@@ -91,7 +91,6 @@ Deno.test({
     assertValidParse(`["aaa"//comment\r,"aaa"]`, ["aaa", "aaa"]);
     assertValidParse(`["aaa"//comment\n\r,"aaa"]`, ["aaa", "aaa"]);
   },
-  only: true,
 });
 
 Deno.test({
@@ -179,6 +178,30 @@ Deno.test({
     assertStrictEquals(
       Object.getPrototypeOf(jsonc),
       Object.getPrototypeOf(json),
+    );
+  },
+});
+
+Deno.test({
+  name: "[jsonc] duplicate object key",
+  fn() {
+    // The result of JSON.parse and the result of JSONC.parse should match
+    const json = JSON.parse('{"aaa": 0, "aaa": 1}');
+    const jsonc = JSONC.parse('{"aaa": 0, "aaa": 1}');
+    assertEquals(jsonc, { aaa: 1 });
+    assertEquals(jsonc, json);
+  },
+});
+
+Deno.test({
+  name: "[jsonc] Non-string parsing will fail with a SyntaxError",
+  fn() {
+    // The result of JSON.parse and the result of JSONC.parse should match
+    assertInvalidParse(
+      // deno-lint-ignore no-explicit-any
+      undefined as any,
+      SyntaxError,
+      "Unexpected token undefined in JSONC at position 0",
     );
   },
 });

@@ -47,6 +47,7 @@ type tokenized = {
   position: number;
 };
 
+// First tokenize and then parse the token.
 class JSONCParser {
   readonly #whitespace = new Set(" \t\r\n");
   readonly #numberEndToken = new Set([..."[]{}:,/", ...this.#whitespace]);
@@ -55,8 +56,8 @@ class JSONCParser {
   #tokenized: Generator<tokenized, void>;
   #options: ParseOptions;
   constructor(text: string, options: ParseOptions) {
-    this.#text = text;
-    this.#length = text.length;
+    this.#text = `${text}`;
+    this.#length = this.#text.length;
     this.#tokenized = this.#tokenize();
     this.#options = options;
   }
@@ -194,7 +195,7 @@ class JSONCParser {
     //      │   ┌───────────token2
     //      │   │   ┌───────token3
     //      │   │   │   ┌───token4
-    //      │   │   │   │ ┌─token5
+    //      │   │   │   │ ┌─token1
     //  { "key" : value , }
     //      ┌─────────────────────────────token1
     //      │   ┌─────────────────────────token2
