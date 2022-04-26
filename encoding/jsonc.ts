@@ -8,8 +8,13 @@ export function parse(
   text: string,
   { allowTrailingComma = true }: ParseOptions = {},
 ) {
+  if (new.target) {
+    throw new TypeError("parse is not a constructor");
+  }
   return new JSONCParser(text, { allowTrailingComma }).parse() as JSONValue;
 }
+
+const originalJSONParse = globalThis.JSON.parse;
 
 type JSONValue =
   | { [key: string]: JSONValue }
@@ -279,7 +284,7 @@ class JSONCParser {
     let parsed;
     try {
       // Use JSON.parse to handle `\u0000` etc. correctly.
-      parsed = JSON.parse(value.sourceText);
+      parsed = originalJSONParse(value.sourceText);
     } catch {
       throw new SyntaxError(buildErrorMessage(value));
     }
@@ -303,7 +308,7 @@ class JSONCParser {
     let parsed;
     try {
       // Use JSON.parse to handle `+100`, `Infinity` etc. correctly.
-      parsed = JSON.parse(value.sourceText);
+      parsed = originalJSONParse(value.sourceText);
     } catch {
       throw new SyntaxError(buildErrorMessage(value));
     }
