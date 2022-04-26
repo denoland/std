@@ -188,8 +188,10 @@ snapshot[`Snapshot Test - Regression #2144 1`] = `
 {
   fmt: {
     files: {
-      exclude: [],
-      include: [],
+      exclude: [
+      ],
+      include: [
+      ],
     },
     options: {},
   },
