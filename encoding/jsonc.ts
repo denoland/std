@@ -80,7 +80,7 @@ class JSONCParser {
     }
     return value;
   }
-  /** Split the JSONC string into token units. */
+  /** Split the JSONC string into token units. Whitespace and comments are skipped. */
   *#tokenize(): Generator<tokenized, void> {
     for (let i = 0; i < this.#length; i++) {
       // skip whitespace
@@ -88,7 +88,7 @@ class JSONCParser {
         continue;
       }
 
-      // skip comment (`/*...*/`)
+      // skip multi line comment (`/*...*/`)
       if (this.#text[i] === "/" && this.#text[i + 1] === "*") {
         i += 2;
         let hasEndOfComment = false;
@@ -105,14 +105,11 @@ class JSONCParser {
         continue;
       }
 
-      // skip comment (`//...`)
+      // skip single line comment (`//...`)
       if (this.#text[i] === "/" && this.#text[i + 1] === "/") {
         i += 2;
-        for (; i < this.#length; i++) { // read until find `\n` or `\r\n`
-          if (
-            this.#text[i] === "\n" ||
-            this.#text[i] === "\r" && this.#text[i + 1] === "\n"
-          ) {
+        for (; i < this.#length; i++) { // read until find `\n` or `\r`
+          if (this.#text[i] === "\n" || this.#text[i] === "\r") {
             break;
           }
         }

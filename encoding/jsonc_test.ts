@@ -87,9 +87,11 @@ Deno.test({
   name: "[jsonc] parse with single line comment",
   fn() {
     assertValidParse(`"aaa"//comment`, "aaa");
-    assertValidParse(`"aaa"//comment\n`, "aaa");
-    assertValidParse(`"aaa"//comment\r\n`, "aaa");
+    assertValidParse(`["aaa"//comment\n,"aaa"]`, ["aaa", "aaa"]);
+    assertValidParse(`["aaa"//comment\r,"aaa"]`, ["aaa", "aaa"]);
+    assertValidParse(`["aaa"//comment\n\r,"aaa"]`, ["aaa", "aaa"]);
   },
+  only: true,
 });
 
 Deno.test({
@@ -179,5 +181,4 @@ Deno.test({
       Object.getPrototypeOf(json),
     );
   },
-  only: true,
 });
