@@ -3,6 +3,7 @@
 import * as DenoUnstable from "../_deno_unstable.ts";
 import { warnNotImplemented } from "./_utils.ts";
 import { EventEmitter } from "./events.ts";
+import type { EventListenerT } from "./events.ts";
 import { validateString } from "./internal/validators.mjs";
 import { ERR_INVALID_ARG_TYPE, ERR_UNKNOWN_SIGNAL } from "./internal/errors.ts";
 import { getOptionValue } from "./internal/options.ts";
@@ -58,7 +59,7 @@ const notImplementedEvents = [
   "uncaughtExceptionMonitor",
   "unhandledRejection",
   "worker",
-];
+] as const;
 
 // The first 2 items are placeholders.
 // They will be overwritten by the below Object.defineProperty calls.
@@ -67,6 +68,11 @@ const argv = ["", "", ...Deno.args];
 Object.defineProperty(argv, "0", { get: Deno.execPath });
 // Overwrites the 2st item with getter.
 Object.defineProperty(argv, "1", { get: () => fromFileUrl(Deno.mainModule) });
+
+interface Warning extends Error {
+  code?: string;
+  detail?: string;
+}
 
 /** https://nodejs.org/api/process.html#process_process_exit_code */
 export const exit = (code?: number | string) => {
@@ -114,8 +120,7 @@ function createWarningObject(
 ): Error {
   assert(typeof warning === "string");
 
-  // deno-lint-ignore no-explicit-any
-  const warningErr: any = new Error(warning);
+  const warningErr: Warning = new Error(warning);
   warningErr.name = String(type || "Warning");
 
   if (code !== undefined) {
@@ -131,7 +136,7 @@ function createWarningObject(
   return warningErr;
 }
 
-function doEmitWarning(warning: Error) {
+function doEmitWarning(warning: Warning) {
   process.emit("warning", warning);
 }
 
@@ -254,7 +259,25 @@ export function kill(pid: number, sig: Deno.Signal | number = "SIGTERM") {
   return true;
 }
 
-class Process extends EventEmitter {
+type NotImplementedListener = EventListenerT;
+type SignalListener = (signal?: number) => void;
+type ProcessListenerMap =
+  & {
+    SIGBREAK: SignalListener;
+    // internally used
+    warning: (warning: Warning) => void;
+    exit: (exitCode?: string | number) => void; // TODO: not sure about exitCode typings
+  }
+  & {
+    [key in typeof notImplementedEvents[number]]: NotImplementedListener;
+  }
+  & {
+    [key in Deno.Signal]: SignalListener;
+  };
+const ifStartsWithSigThenItIsDenoSignal = (
+  eventName: string,
+): eventName is Deno.Signal => eventName.startsWith("SIG");
+class Process extends EventEmitter<ProcessListenerMap> {
   constructor() {
     super();
 
@@ -312,23 +335,19 @@ class Process extends EventEmitter {
   nextTick = _nextTick;
 
   /** https://nodejs.org/api/process.html#process_process_events */
-  override on(event: "exit", listener: (code: number) => void): this;
-  override on(
-    event: typeof notImplementedEvents[number],
-    // deno-lint-ignore ban-types
-    listener: Function,
-  ): this;
-  // deno-lint-ignore no-explicit-any
-  override on(event: string, listener: (...args: any[]) => void): this {
-    if (notImplementedEvents.includes(event)) {
+  override on<K extends keyof ProcessListenerMap>(
+    event: K,
+    listener: ProcessListenerMap[K],
+  ): this {
+    if (event === "SIGBREAK" && Deno.build.os !== "windows") return this;
+    if (event in notImplementedEvents) {
       warnNotImplemented(`process.on("${event}")`);
       super.on(event, listener);
-    } else if (event.startsWith("SIG")) {
-      if (event === "SIGBREAK" && Deno.build.os !== "windows") {
-        // Ignores SIGBREAK if the platform is not windows.
-      } else {
-        DenoUnstable.addSignalListener(event as Deno.Signal, listener);
-      }
+    } else if (ifStartsWithSigThenItIsDenoSignal(event)) {
+      DenoUnstable.addSignalListener(
+        event,
+        listener as ProcessListenerMap[typeof event],
+      );
     } else {
       super.on(event, listener);
     }
@@ -336,23 +355,19 @@ class Process extends EventEmitter {
     return this;
   }
 
-  override off(event: "exit", listener: (code: number) => void): this;
-  override off(
-    event: typeof notImplementedEvents[number],
-    // deno-lint-ignore ban-types
-    listener: Function,
-  ): this;
-  // deno-lint-ignore no-explicit-any
-  override off(event: string, listener: (...args: any[]) => void): this {
-    if (notImplementedEvents.includes(event)) {
+  override off<K extends keyof ProcessListenerMap>(
+    event: K,
+    listener: ProcessListenerMap[K],
+  ): this {
+    if (event === "SIGBREAK" && Deno.build.os !== "windows") return this;
+    if (event in notImplementedEvents) {
       warnNotImplemented(`process.off("${event}")`);
       super.off(event, listener);
-    } else if (event.startsWith("SIG")) {
-      if (event === "SIGBREAK" && Deno.build.os !== "windows") {
-        // Ignores SIGBREAK if the platform is not windows.
-      } else {
-        DenoUnstable.removeSignalListener(event as Deno.Signal, listener);
-      }
+    } else if (ifStartsWithSigThenItIsDenoSignal(event)) {
+      DenoUnstable.removeSignalListener(
+        event,
+        listener as ProcessListenerMap[typeof event],
+      );
     } else {
       super.off(event, listener);
     }
@@ -360,8 +375,10 @@ class Process extends EventEmitter {
     return this;
   }
 
-  // deno-lint-ignore no-explicit-any
-  override emit(event: string, ...args: any[]): boolean {
+  override emit<K extends keyof ProcessListenerMap>(
+    event: K,
+    ...args: Parameters<ProcessListenerMap[K]>
+  ): boolean {
     if (event.startsWith("SIG")) {
       if (event === "SIGBREAK" && Deno.build.os !== "windows") {
         // Ignores SIGBREAK if the platform is not windows.
@@ -375,29 +392,20 @@ class Process extends EventEmitter {
     return true;
   }
 
-  override prependListener(
-    event: "exit",
-    listener: (code: number) => void,
-  ): this;
-  override prependListener(
-    event: typeof notImplementedEvents[number],
-    // deno-lint-ignore ban-types
-    listener: Function,
-  ): this;
-  override prependListener(
-    event: string,
-    // deno-lint-ignore no-explicit-any
-    listener: (...args: any[]) => void,
+  override prependListener<K extends keyof ProcessListenerMap>(
+    event: K,
+    listener: ProcessListenerMap[K],
   ): this {
-    if (notImplementedEvents.includes(event)) {
+    if (event === "SIGBREAK" && Deno.build.os !== "windows") return this;
+    if (event in notImplementedEvents) {
       warnNotImplemented(`process.prependListener("${event}")`);
       super.prependListener(event, listener);
-    } else if (event.startsWith("SIG")) {
-      if (event === "SIGBREAK" && Deno.build.os !== "windows") {
-        // Ignores SIGBREAK if the platform is not windows.
-      } else {
-        DenoUnstable.addSignalListener(event as Deno.Signal, listener);
-      }
+    } else if (ifStartsWithSigThenItIsDenoSignal(event)) {
+      // Ignores SIGBREAK if the platform is not windows.
+      DenoUnstable.addSignalListener(
+        event,
+        listener as ProcessListenerMap[typeof event],
+      );
     } else {
       super.prependListener(event, listener);
     }
@@ -411,39 +419,22 @@ class Process extends EventEmitter {
   /** https://nodejs.org/api/process.html#process_process_platform */
   platform = platform;
 
-  override addListener(event: "exit", listener: (code: number) => void): this;
-  override addListener(
-    event: typeof notImplementedEvents[number],
-    // deno-lint-ignore ban-types
-    listener: Function,
-  ): this;
-  override addListener(
-    event: string,
-    // deno-lint-ignore no-explicit-any
-    listener: (...args: any[]) => void,
+  override addListener<K extends keyof ProcessListenerMap>(
+    event: K,
+    listener: ProcessListenerMap[K],
   ): this {
-    if (notImplementedEvents.includes(event)) {
+    if (event in notImplementedEvents) {
       warnNotImplemented(`process.addListener("${event}")`);
     }
 
     return this.on(event, listener);
   }
 
-  override removeListener(
-    event: "exit",
-    listener: (code: number) => void,
-  ): this;
-  override removeListener(
-    event: typeof notImplementedEvents[number],
-    // deno-lint-ignore ban-types
-    listener: Function,
-  ): this;
-  override removeListener(
-    event: string,
-    // deno-lint-ignore no-explicit-any
-    listener: (...args: any[]) => void,
+  override removeListener<K extends keyof ProcessListenerMap>(
+    event: K,
+    listener: ProcessListenerMap[K],
   ): this {
-    if (notImplementedEvents.includes(event)) {
+    if (event in notImplementedEvents) {
       warnNotImplemented(`process.removeListener("${event}")`);
     }
 

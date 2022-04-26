@@ -14,7 +14,7 @@ type UnsafeListenerMapT<K extends keyof EventNameT = "EventEmitter"> = Record<
   EventNameT[K],
   EventListenerT
 >;
-export type EventListenerMapType<
+export type EventListenerMapT<
   PassedListenerMap extends UnsafeListenerMapT,
 > = { [key in keyof PassedListenerMap]: PassedListenerMap[key] };
 
@@ -241,8 +241,8 @@ interface EventEmitterOptions {
   captureRejections?: boolean | undefined;
 }
 interface NodeEventTarget<
-  EventListenerMap extends EventListenerMapType<EventListenerMap> =
-    EventListenerMapType<UnsafeListenerMapT<"NodeEventTarget">>,
+  EventListenerMap extends EventListenerMapT<EventListenerMap> =
+    EventListenerMapT<UnsafeListenerMapT<"NodeEventTarget">>,
 > {
   once<K extends keyof EventListenerMap>(
     eventName: K,
@@ -250,8 +250,8 @@ interface NodeEventTarget<
   ): this;
 }
 interface EventTarget<
-  EventListenerMap extends EventListenerMapType<EventListenerMap> =
-    EventListenerMapType<UnsafeListenerMapT<"EventTarget">>,
+  EventListenerMap extends EventListenerMapT<EventListenerMap> =
+    EventListenerMapT<UnsafeListenerMapT<"EventTarget">>,
 > {
   addEventListener<K extends keyof EventListenerMap>(
     eventName: K,
@@ -279,10 +279,10 @@ interface StaticEventEmitterOptions {
  * @since v0.1.26
  */
 export class EventEmitter<
-  EventListenerMap extends EventListenerMapType<EventListenerMap> =
-    EventListenerMapType<UnsafeListenerMapT<"EventEmitter">>,
+  EventListenerMap extends EventListenerMapT<EventListenerMap> =
+    EventListenerMapT<UnsafeListenerMapT<"EventEmitter">>,
 > {
-  declare passedMap: EventListenerMap;
+  declare EventListenerMap: EventListenerMap;
   /**
    * Alias for `emitter.on(eventName, listener)`.
    * @since v0.1.26
