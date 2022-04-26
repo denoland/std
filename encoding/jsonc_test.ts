@@ -1,5 +1,9 @@
 import * as JSONC from "./jsonc.ts";
-import { assertEquals, assertThrows } from "../testing/asserts.ts";
+import {
+  assertEquals,
+  assertStrictEquals,
+  assertThrows,
+} from "../testing/asserts.ts";
 import { walk } from "../fs/mod.ts";
 import { fromFileUrl } from "../path/mod.ts";
 
@@ -36,11 +40,14 @@ function assertInvalidParse(
   );
 }
 
+// Exclude these test cases as they are correctly parsed as JSONC.
 const ignoreFile = new Set([
   "n_object_trailing_comment.json",
   "n_object_trailing_comment_slash_open.json",
   "n_structure_object_with_comment.json",
 ]);
+
+// Make sure that the JSON.parse and JSONC.parse results match.
 for await (
   const dirEntry of walk(
     fromFileUrl(new URL("./testdata/jsonc/JSONTestSuite/", import.meta.url)),
@@ -155,4 +162,22 @@ Deno.test({
       "Unexpected token aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa... in JSONC at position 1",
     );
   },
+});
+
+Deno.test({
+  name: "[jsonc] __proto__",
+  fn() {
+    // The result of JSON.parse and the result of JSONC.parse should match
+    const json = JSON.parse('{"__proto__": 100}');
+    const jsonc = JSONC.parse('{"__proto__": 100}');
+    assertEquals(jsonc, json);
+    assertEquals((jsonc as Record<string, string>).__proto__, 100);
+    assertEquals((jsonc as Record<string, string>).__proto__, json.__proto__);
+    assertStrictEquals(Object.getPrototypeOf(jsonc), Object.prototype);
+    assertStrictEquals(
+      Object.getPrototypeOf(jsonc),
+      Object.getPrototypeOf(json),
+    );
+  },
+  only: true,
 });
