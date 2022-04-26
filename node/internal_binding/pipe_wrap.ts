@@ -156,6 +156,8 @@ export class Pipe extends ConnectionWrap {
 
         if (e instanceof Deno.errors.NotFound) {
           code = codeMap.get("ENOENT")!;
+        } else if (e instanceof Deno.errors.PermissionDenied) {
+          code = codeMap.get("EACCES")!;
         } else {
           code = codeMap.get("ECONNREFUSED")!;
         }

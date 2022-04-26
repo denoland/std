@@ -27,39 +27,37 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 'use strict';
-// Flags: --expose-gc
+
+// Test that unref'ed sockets with timeouts do not prevent exit.
 
 const common = require('../common');
-const onGC = require('../common/ongc');
-const assert = require('assert');
 const net = require('net');
 
-// Test that the implicit listener for an 'connect' event on net.Sockets is
-// added using `once()`, i.e. can be gc'ed once that event has occurred.
+const server = net.createServer(function(c) {
+  c.write('hello');
+  c.unref();
+});
+server.listen(0);
+server.unref();
 
-const server = net.createServer(common.mustCall()).listen(0);
+let connections = 0;
+const sockets = [];
+const delays = [8, 5, 3, 6, 2, 4];
 
-let collected = false;
-const gcListener = { ongc() { collected = true; } };
+delays.forEach(function(T) {
+  const socket = net.createConnection(server.address().port, 'localhost');
+  socket.on('connect', common.mustCall(function() {
+    if (++connections === delays.length) {
+      sockets.forEach(function(s) {
+        s.socket.setTimeout(s.timeout, function() {
+          s.socket.destroy();
+          throw new Error('socket timed out unexpectedly');
+        });
 
-{
-  const gcObject = {};
-  onGC(gcObject, gcListener);
+        s.socket.unref();
+      });
+    }
+  }));
 
-  const sock = net.createConnection(
-    server.address().port,
-    common.mustCall(() => {
-      assert.strictEqual(gcObject, gcObject); // Keep reference alive
-      assert.strictEqual(collected, false);
-      setImmediate(done, sock);
-    }));
-}
-
-function done(sock) {
-  global.gc();
-  setImmediate(() => {
-    assert.strictEqual(collected, true);
-    sock.end();
-    server.close();
-  });
-}
+  sockets.push({ socket: socket, timeout: T * 1000 });
+});
