@@ -337,7 +337,9 @@ function buildErrorMessage({ type, sourceText, position }: tokenized) {
       break;
     case tokenType.nullOrTrueOrFalseOrNumber:
     case tokenType.string:
-      token = sourceText;
+      token = 30 < sourceText.length
+        ? `${sourceText.slice(0, 30)}...`
+        : sourceText;
       break;
     default:
       throw new Error("unreachable");

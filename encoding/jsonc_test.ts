@@ -1,12 +1,14 @@
-import { parse, ParseOptions } from "./jsonc.ts";
+import * as JSONC from "./jsonc.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { walk } from "../fs/mod.ts";
 import { fromFileUrl } from "../path/mod.ts";
 
-function getError(fn: () => void): [hasError: boolean, error: unknown] {
+function getError<T>(
+  fn: () => T,
+): [hasError: boolean, error: unknown, result?: T] {
   try {
-    fn();
-    return [false, null];
+    const res = fn();
+    return [false, null, res];
   } catch (error: unknown) {
     return [true, error];
   }
@@ -15,9 +17,9 @@ function getError(fn: () => void): [hasError: boolean, error: unknown] {
 function assertValidParse(
   text: string,
   expected: unknown,
-  options?: ParseOptions,
+  options?: JSONC.ParseOptions,
 ) {
-  assertEquals(parse(text, options), expected);
+  assertEquals(JSONC.parse(text, options), expected);
 }
 
 function assertInvalidParse(
@@ -25,10 +27,10 @@ function assertInvalidParse(
   // deno-lint-ignore no-explicit-any
   ErrorClass?: (new (...args: any[]) => Error),
   msgIncludes?: string,
-  options?: ParseOptions,
+  options?: JSONC.ParseOptions,
 ) {
   assertThrows(
-    () => parse(text, options),
+    () => JSONC.parse(text, options),
     ErrorClass,
     msgIncludes,
   );
@@ -54,18 +56,22 @@ for await (
     name: `[jsonc] parse JSONTestSuite:${dirEntry.name}`,
     async fn() {
       const text = await Deno.readTextFile(dirEntry.path);
-      const [hasJsonParseError, jsonParseError] = getError(() => {
+
+      const [hasJsonError, jsonError, jsonResult] = getError(() => {
         JSON.parse(text);
       });
-      const [hasJsoncParseError, jsoncParseError] = getError(() => {
-        parse(text, { allowTrailingComma: false });
+      const [hasJsoncError, jsoncError, jsoncResult] = getError(() => {
+        JSONC.parse(text, { allowTrailingComma: false });
       });
-      if (hasJsonParseError !== hasJsoncParseError) {
+
+      // If an error occurs in JSON.parse() but no error occurs in JSONC.parse(), or vice versa, an error is thrown.
+      if (hasJsonError !== hasJsoncError) {
         throw new AggregateError(
-          [jsonParseError, jsoncParseError],
+          [jsonError, jsoncError],
           `failed: ${dirEntry.path}`,
         );
       }
+      assertEquals(jsonResult, jsoncResult);
     },
   });
 }
@@ -95,5 +101,58 @@ Deno.test({
   name: "[jsonc] parse special character",
   fn() {
     assertValidParse(`"👪"`, "👪");
+    assertValidParse(`"🦕"`, "🦕");
+    assertValidParse(
+      `"\u543e\u8f29\u306f\u732b\u3067\u3042\u308b\u3002"`,
+      "\u543e\u8f29\u306f\u732b\u3067\u3042\u308b\u3002",
+    );
+    assertValidParse(
+      `"\\" \\\\ \\/ \\b \\f \\n \\r \\t"`,
+      '" \\ \/ \b \f \n \r \t',
+    );
+  },
+});
+
+Deno.test({
+  name: "[jsonc] JSONCParser.#numberEndToken",
+  fn() {
+    // Correctly parses the letters after the numbers (` \t\r\n[]{}:,/`)
+    assertValidParse(`{"a":0}`, { a: 0 });
+    assertValidParse(`[0]`, [0]);
+    assertValidParse(`[0,]`, [0]);
+    assertValidParse(`0//`, 0);
+    assertValidParse(`0\r`, 0);
+    assertValidParse(`0\n`, 0);
+    assertValidParse(`0\t`, 0);
+    assertValidParse(`0 `, 0);
+    assertInvalidParse(`{"a":0{}`, SyntaxError);
+    assertInvalidParse(`{"a":0[}`, SyntaxError);
+    assertInvalidParse(`{"a":0:}`, SyntaxError);
+  },
+});
+
+Deno.test({
+  name: "[jsonc] error message",
+  fn() {
+    assertInvalidParse(
+      `:::::`,
+      SyntaxError,
+      "Unexpected token : in JSONC at position 0",
+    );
+    assertInvalidParse(
+      `[`,
+      SyntaxError,
+      "Unexpected end of JSONC input",
+    );
+    assertInvalidParse(
+      `[]100`,
+      SyntaxError,
+      "Unexpected token 100 in JSONC at position 2",
+    );
+    assertInvalidParse(
+      `[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]`,
+      SyntaxError,
+      "Unexpected token aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa... in JSONC at position 1",
+    );
   },
 });
