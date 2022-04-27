@@ -324,27 +324,6 @@ function keys<T extends Record<string, unknown>>(object: T): Array<keyof T> {
   return Object.keys(object);
 }
 
-function toDenoSignal(signal: number | string): Deno.Signal {
-  if (typeof signal === "number") {
-    for (const name of keys(os.signals)) {
-      if (os.signals[name] === signal) {
-        return name as Deno.Signal;
-      }
-    }
-    throw new ERR_UNKNOWN_SIGNAL(String(signal));
-  }
-
-  const denoSignal = signal as Deno.Signal;
-  if (os.signals[denoSignal] != null) {
-    return denoSignal;
-  }
-  throw new ERR_UNKNOWN_SIGNAL(signal);
-}
-
-function keys<T extends Record<string, unknown>>(object: T): Array<keyof T> {
-  return Object.keys(object);
-}
-
 export interface ChildProcessOptions {
   /**
    * Current working directory of the child process.
