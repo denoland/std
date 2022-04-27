@@ -1,18 +1,14 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../../testing/asserts.ts";
-import { TextProtoReader } from "../../textproto/mod.ts";
-import { BufReader } from "../../io/buffer.ts";
 import { delay } from "../../async/delay.ts";
 import { dirname, fromFileUrl, resolve } from "../../path/mod.ts";
+import { TextLineStream } from "../../streams/delimiter.ts";
 
 const moduleDir = resolve(dirname(fromFileUrl(import.meta.url)));
 
-async function startServer(): Promise<
-  Deno.Process<Deno.RunOptions & { stdout: "piped" }>
-> {
-  const server = Deno.run({
-    cmd: [
-      Deno.execPath(),
+async function startServer(): Promise<Deno.Child<Deno.SpawnOptions>> {
+  const server = Deno.spawnChild(Deno.execPath(), {
+    args: [
       "run",
       "--quiet",
       "--allow-net",
@@ -20,16 +16,17 @@ async function startServer(): Promise<
       "server.ts",
     ],
     cwd: moduleDir,
-    stdout: "piped",
   });
   try {
-    assert(server.stdout != null);
-    const r = new TextProtoReader(new BufReader(server.stdout));
-    const s = await r.readLine();
-    assert(s !== null && s.includes("chat server starting"));
+    const r = server.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+      new TextLineStream(),
+    );
+    const reader = r.getReader();
+    const res = await reader.read();
+    assert(!res.done && res.value.includes("chat server starting"));
+    reader.releaseLock();
   } catch {
-    server.stdout.close();
-    server.close();
+    await server.status;
   }
 
   return server;
@@ -46,8 +43,7 @@ Deno.test({
       const html = await resp.text();
       assert(html.includes("ws chat example"), "body is ok");
     } finally {
-      server.close();
-      server.stdout.close();
+      await server.status;
     }
     await delay(10);
   },
@@ -74,8 +70,7 @@ Deno.test({
     } catch (err) {
       console.log(err);
     } finally {
-      server.close();
-      server.stdout.close();
+      await server.status;
     }
   },
 });

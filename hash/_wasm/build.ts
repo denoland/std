@@ -15,9 +15,8 @@ if (new URL(import.meta.url).protocol === "file:") {
 }
 
 // 1. Build WASM from Rust.
-const cargoStatus = await Deno.run({
-  cmd: [
-    "cargo",
+const { status: cargoStatus } = await Deno.spawn("cargo", {
+  args: [
     "build",
     "--release",
     "--target",
@@ -30,7 +29,7 @@ const cargoStatus = await Deno.run({
     LC_ALL: "C",
     RUSTFLAGS: `--remap-path-prefix=${root}=. --remap-path-prefix=${home}=~`,
   },
-}).status();
+});
 
 if (!cargoStatus.success) {
   console.error(`Failed to build wasm: ${cargoStatus.code}`);
@@ -38,9 +37,8 @@ if (!cargoStatus.success) {
 }
 
 // 2. Generated JavaScript bindings for WASM.
-const bindgenStatus = await Deno.run({
-  cmd: [
-    "wasm-bindgen",
+const { status: bindgenStatus } = await Deno.spawn("wasm-bindgen", {
+  args: [
     "./target/wasm32-unknown-unknown/release/deno_hash.wasm",
     "--target",
     "deno",
@@ -48,7 +46,7 @@ const bindgenStatus = await Deno.run({
     "--out-dir",
     "./out/",
   ],
-}).status();
+});
 
 if (!bindgenStatus.success) {
   console.error(`Failed to generated wasm bindings: ${bindgenStatus.code}`);
@@ -79,13 +77,9 @@ const inlinedScript = `\
 await Deno.writeFile("wasm.js", new TextEncoder().encode(inlinedScript));
 
 // 4. Format generated code.
-const fmtStatus = await Deno.run({
-  cmd: [
-    "deno",
-    "fmt",
-    "wasm.js",
-  ],
-}).status();
+const { status: fmtStatus } = await Deno.spawn("deno", {
+  args: ["fmt", "wasm.js"],
+});
 
 if (!fmtStatus.success) {
   console.error(`Failed to format generated code: ${fmtStatus.code}`);

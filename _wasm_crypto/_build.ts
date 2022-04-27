@@ -14,26 +14,15 @@ if (new URL(import.meta.url).protocol === "file:") {
 }
 
 // Format the Rust code.
-if (
-  !((await Deno.run({
-    cmd: [
-      "cargo",
-      "fmt",
-    ],
-  }).status()).success)
-) {
+if (!((await Deno.spawn("cargo", { args: ["fmt"] })).status.success)) {
   console.error(`Failed to format the Rust code.`);
   Deno.exit(1);
 }
 
 // Compile the Rust code to WASM.
 if (
-  !((await Deno.run({
-    cmd: [
-      "cargo",
-      "build",
-      "--release",
-    ],
+  !((await Deno.spawn("cargo", {
+    args: ["build", "--release"],
     env: {
       // eliminate some potential sources of non-determinism
       SOURCE_DATE_EPOCH: "1600000000",
@@ -41,7 +30,7 @@ if (
       LC_ALL: "C",
       RUSTFLAGS: `--remap-path-prefix=${root}=. --remap-path-prefix=${home}=~`,
     },
-  }).status()).success)
+  })).status.success)
 ) {
   console.error(`Failed to compile the Rust code to WASM.`);
   Deno.exit(1);
@@ -53,9 +42,8 @@ const copyrightLine = `// Copyright 2018-${
 
 // Generate JavaScript bindings from WASM.
 if (
-  !((await Deno.run({
-    cmd: [
-      "wasm-bindgen",
+  !((await Deno.spawn("wasm-bindgen", {
+    args: [
       "./target/wasm32-unknown-unknown/release/deno_std_wasm_crypto.wasm",
       "--target",
       "deno",
@@ -63,7 +51,7 @@ if (
       "--out-dir",
       "./target/wasm32-bindgen-deno-js",
     ],
-  }).status()).success)
+  })).status.success)
 ) {
   console.error(`Failed to generate JavaScript bindings from WASM.`);
   Deno.exit(1);
@@ -133,14 +121,13 @@ await Deno.writeTextFile("./crypto.mjs", bindingsJs);
 
 // Format the generated files.
 if (
-  !(await Deno.run({
-    cmd: [
-      "deno",
+  !(await Deno.spawn("deno", {
+    args: [
       "fmt",
       "./crypto.wasm.mjs",
       "./crypto.mjs",
     ],
-  }).status()).success
+  })).status.success
 ) {
   console.error(
     `Failed to format generated code.`,

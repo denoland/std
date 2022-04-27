@@ -33,9 +33,8 @@ Deno.test("[std/node/fs] exists callback isn't called twice if error is thrown",
   // This doesn't use `assertCallbackErrorUncaught()` because `exists()` doesn't return a standard node callback, which is what it expects.
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_exists.ts", import.meta.url);
-  const p = Deno.run({
+  const { status, stderr } = await Deno.spawn(Deno.execPath(), {
     cmd: [
-      Deno.execPath(),
       "eval",
       "--no-check",
       `
@@ -49,11 +48,7 @@ Deno.test("[std/node/fs] exists callback isn't called twice if error is thrown",
     ],
     stderr: "piped",
   });
-  const status = await p.status();
-  const stderr = new TextDecoder().decode(await readAll(p.stderr));
-  p.close();
-  p.stderr.close();
   await Deno.remove(tempFile);
   assert(!status.success);
-  assertStringIncludes(stderr, "Error: success");
+  assertStringIncludes(new TextDecoder().decode(stderr), "Error: success");
 });

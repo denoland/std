@@ -6,9 +6,8 @@ const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 Deno.test("[examples/cat] print multiple files", async () => {
   const decoder = new TextDecoder();
-  const process = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--quiet",
       "--allow-read",
@@ -21,10 +20,8 @@ Deno.test("[examples/cat] print multiple files", async () => {
   });
 
   try {
-    const output = await process.output();
-    const actual = decoder.decode(output).trim();
+    const actual = decoder.decode(stdout).trim();
     assertStrictEquals(actual, "Hello\nWorld");
   } finally {
-    process.close();
   }
 });

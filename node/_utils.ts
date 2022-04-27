@@ -226,9 +226,8 @@ export async function assertCallbackErrorUncaught(
 ) {
   // Since the error has to be uncaught, and that will kill the Deno process,
   // the only way to test this is to spawn a subprocess.
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { status, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "eval",
       "--no-check", // Running TSC for every one of these tests would take way too long
       "--unstable",
@@ -240,15 +239,10 @@ export async function assertCallbackErrorUncaught(
         if (!err) throw new Error("success");
       });`,
     ],
-    stderr: "piped",
   });
-  const status = await p.status();
-  const stderr = new TextDecoder().decode(await readAll(p.stderr));
-  p.close();
-  p.stderr.close();
   await cleanup?.();
   assert(!status.success);
-  assertStringIncludes(stderr, "Error: success");
+  assertStringIncludes(new TextDecoder().decode(stderr), "Error: success");
 }
 
 export function makeMethodsEnumerable(klass: { new (): unknown }): void {

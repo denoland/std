@@ -139,9 +139,8 @@ Deno.test("Require .mjs", () => {
 Deno.test("requireErrorInEval", async function () {
   const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-  const p = Deno.run({
+  const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
     cmd: [
-      Deno.execPath(),
       "run",
       "--unstable",
       "--allow-read",
@@ -153,10 +152,9 @@ Deno.test("requireErrorInEval", async function () {
   });
 
   const decoder = new TextDecoder();
-  const output = await p.output();
-  const outputError = decoder.decode(await p.stderrOutput());
+  const outputError = decoder.decode(stderr);
 
-  assert(!output.length);
+  assert(!stdout.length);
   assert(
     outputError.includes(
       'To load an ES module, set "type": "module" in the package.json or use the .mjs extension.',
@@ -167,7 +165,6 @@ Deno.test("requireErrorInEval", async function () {
       "SyntaxError: Cannot use import statement outside a module",
     ),
   );
-  p.close();
 });
 
 Deno.test("requireCjsWithDynamicImport", function () {

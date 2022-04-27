@@ -1,29 +1,34 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assertNotEquals, assertStrictEquals } from "../testing/asserts.ts";
+import {
+  assertEquals,
+  assertNotEquals,
+  assertStrictEquals,
+} from "../testing/asserts.ts";
 import { BufReader, ReadLineResult } from "../io/buffer.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
+import { TextLineStream } from "../streams/delimiter.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 Deno.test("[examples/echo_server]", async () => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "run", "--quiet", "--allow-net", "echo_server.ts"],
+  const process = Deno.spawnChild(Deno.execPath(), {
+    cmd: ["run", "--quiet", "--allow-net", "echo_server.ts"],
     cwd: moduleDir,
-    stdout: "piped",
   });
 
   let conn: Deno.Conn | undefined;
   try {
-    const processReader = new BufReader(process.stdout);
-    const message = await processReader.readLine();
-
-    assertNotEquals(message, null);
-    assertStrictEquals(
-      decoder.decode((message as ReadLineResult).line).trim(),
-      "Listening on http://localhost:8080",
+    const r = process.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+      new TextLineStream(),
     );
+    const reader = r.getReader();
+    const res = await reader.read();
+    reader.releaseLock();
+
+    assertEquals(res.done, false);
+    assertStrictEquals(res.value!.trim(), "Listening on http://localhost:8080");
 
     conn = await Deno.connect({ hostname: "127.0.0.1", port: 8080 });
     const connReader = new BufReader(conn);
@@ -41,7 +46,5 @@ Deno.test("[examples/echo_server]", async () => {
     assertStrictEquals(actualResponse, expectedResponse);
   } finally {
     conn?.close();
-    process.stdout.close();
-    process.close();
   }
 });

@@ -10,8 +10,9 @@ import { TextProtoReader } from "../textproto/mod.ts";
 import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
+import { TextLineStream } from "../streams/delimiter.ts";
 
-let fileServer: Deno.Process<Deno.RunOptions & { stdout: "piped" }>;
+let fileServer: Deno.Child<Deno.SpawnOptions>;
 
 interface FileServerCfg {
   port?: string;
@@ -34,9 +35,8 @@ async function startFileServer({
   "dir-listing": dirListing = true,
   dotfiles = true,
 }: FileServerCfg = {}) {
-  fileServer = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  fileServer = Deno.spawnChild(Deno.execPath(), {
+    args: [
       "run",
       "--no-check",
       "--quiet",
@@ -51,20 +51,21 @@ async function startFileServer({
       `${dotfiles ? "" : "--no-dotfiles"}`,
     ],
     cwd: moduleDir,
-    stdout: "piped",
     stderr: "null",
   });
   // Once fileServer is ready it will write to its stdout.
-  assert(fileServer.stdout != null);
-  const r = new TextProtoReader(new BufReader(fileServer.stdout));
-  const s = await r.readLine();
-  assert(s !== null && s.includes("Listening"));
+  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+    new TextLineStream(),
+  );
+  const reader = r.getReader();
+  const res = await reader.read();
+  assert(!res.done && res.value.includes("Listening"));
+  reader.releaseLock();
 }
 
 async function startFileServerAsLibrary({}: FileServerCfg = {}) {
-  fileServer = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  fileServer = Deno.spawnChild(Deno.execPath(), {
+    args: [
       "run",
       "--no-check",
       "--quiet",
@@ -73,25 +74,20 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
       "testdata/file_server_as_library.ts",
     ],
     cwd: moduleDir,
-    stdout: "piped",
     stderr: "null",
   });
-  assert(fileServer.stdout != null);
-  const r = new TextProtoReader(new BufReader(fileServer.stdout));
-  const s = await r.readLine();
-  assert(s !== null && s.includes("Server running..."));
+  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+    new TextLineStream(),
+  );
+  const reader = r.getReader();
+  const res = await reader.read();
+  assert(!res.done && res.value.includes("Server running..."));
+  reader.releaseLock();
 }
 
 async function killFileServer() {
-  fileServer.close();
-  // Process.close() kills the file server process. However this termination
-  // happens asynchronously, and since we've just closed the process resource,
-  // we can't use `await fileServer.status()` to wait for the process to have
-  // exited. As a workaround, wait for its stdout to close instead.
-  // TODO(piscisaureus): when `Process.kill()` is stable and works on Windows,
-  // switch to calling `kill()` followed by `await fileServer.status()`.
-  await readAll(fileServer.stdout!);
-  fileServer.stdout!.close();
+  fileServer.kill("SIGILL");
+  await fileServer.status;
 }
 
 /* HTTP GET request allowing arbitrary paths */
@@ -332,9 +328,8 @@ Deno.test("CORS support", async function () {
 });
 
 Deno.test("printHelp", async function () {
-  const helpProcess = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const helpProcess = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--no-check",
       "--quiet",
@@ -342,14 +337,9 @@ Deno.test("printHelp", async function () {
       "--help",
     ],
     cwd: moduleDir,
-    stdout: "piped",
   });
-  assert(helpProcess.stdout != null);
-  const r = new TextProtoReader(new BufReader(helpProcess.stdout));
-  const s = await r.readLine();
-  assert(s !== null && s.includes("Deno File Server"));
-  helpProcess.close();
-  helpProcess.stdout.close();
+  const stdout = new TextDecoder().decode(helpProcess.stdout);
+  assert(stdout.includes("Deno File Server"));
 });
 
 Deno.test("contentType", async () => {
@@ -394,9 +384,8 @@ async function startTlsFileServer({
   target = ".",
   port = "4577",
 }: FileServerCfg = {}) {
-  fileServer = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  fileServer = Deno.spawnChild(Deno.execPath(), {
+    args: [
       "run",
       "--no-check",
       "--quiet",
@@ -415,14 +404,16 @@ async function startTlsFileServer({
       `${port}`,
     ],
     cwd: moduleDir,
-    stdout: "piped",
     stderr: "null",
   });
   // Once fileServer is ready it will write to its stdout.
-  assert(fileServer.stdout != null);
-  const r = new TextProtoReader(new BufReader(fileServer.stdout));
-  const s = await r.readLine();
-  assert(s !== null && s.includes("Listening"));
+  const r = fileServer.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
+    new TextLineStream(),
+  );
+  const reader = r.getReader();
+  const res = await reader.read();
+  assert(!res.done && res.value.includes("Listening"));
+  reader.releaseLock();
 }
 
 Deno.test("serveDirIndex TLS", async function () {
@@ -451,9 +442,8 @@ Deno.test("serveDirIndex TLS", async function () {
 });
 
 Deno.test("partial TLS arguments fail", async function () {
-  fileServer = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  fileServer = Deno.spawnChild(Deno.execPath(), {
+    args: [
       "run",
       "--no-check",
       "--quiet",
@@ -469,17 +459,18 @@ Deno.test("partial TLS arguments fail", async function () {
       `4578`,
     ],
     cwd: moduleDir,
-    stdout: "piped",
     stderr: "null",
   });
   try {
     // Once fileServer is ready it will write to its stdout.
-    assert(fileServer.stdout != null);
-    const r = new TextProtoReader(new BufReader(fileServer.stdout));
-    const s = await r.readLine();
+    const r = fileServer.stdout.pipeThrough(new TextDecoderStream())
+      .pipeThrough(new TextLineStream());
+    const reader = r.getReader();
+    const res = await reader.read();
     assert(
-      s !== null && s.includes("--key and --cert are required for TLS"),
+      !res.done && res.value.includes("--key and --cert are required for TLS"),
     );
+    reader.releaseLock();
   } finally {
     await killFileServer();
   }
