@@ -191,3 +191,18 @@ Deno.test("Snapshot Test - Regression #2140", async (t) => {
       `,
   });
 });
+
+// Regression test for https://github.com/denoland/deno_std/issues/2144
+// Empty arrays should be compacted
+Deno.test("Snapshot Test - Regression #2144", async (t) => {
+  const config = {
+    fmt: {
+      files: {
+        exclude: [],
+        include: [],
+      },
+      options: {},
+    },
+  };
+  await assertSnapshot(t, config);
+});
