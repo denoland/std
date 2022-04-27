@@ -1768,15 +1768,23 @@ export function _createServerHandle(
     debug("bind to", address || "any");
 
     if (!address) {
+      // TODO: differs from Node which tries to bind to IPv6 first when no
+      // address is provided.
+      //
+      // Forcing IPv4 as a workaround for Deno not aligning with Node on
+      // implicit binding on Windows.
+      //
+      // REF: https://github.com/denoland/deno/issues/10762
+
       // Try binding to ipv6 first
-      err = (handle as TCP).bind6(DEFAULT_IPV6_ADDR, port ?? 0, flags ?? 0);
+      // err = (handle as TCP).bind6(DEFAULT_IPV6_ADDR, port ?? 0, flags ?? 0);
 
-      if (err) {
-        handle.close();
+      // if (err) {
+      //   handle.close();
 
-        // Fallback to ipv4
-        return _createServerHandle(DEFAULT_IPV4_ADDR, port, 4, null, flags);
-      }
+      // Fallback to ipv4
+      return _createServerHandle(DEFAULT_IPV4_ADDR, port, 4, null, flags);
+      // }
     } else if (addressType === 6) {
       err = (handle as TCP).bind6(address, port ?? 0, flags ?? 0);
     } else {
@@ -1862,16 +1870,23 @@ function _setupListenHandle(
 
     // Try to bind to the unspecified IPv6 address, see if IPv6 is available
     if (!address && typeof fd !== "number") {
-      rval = _createServerHandle(DEFAULT_IPV6_ADDR, port, 6, fd, flags);
+      // TODO: differs from Node which tries to bind to IPv6 first when no
+      // address is provided.
+      //
+      // Forcing IPv4 as a workaround for Deno not aligning with Node on
+      // implicit binding on Windows.
+      //
+      // REF: https://github.com/denoland/deno/issues/10762
+      // rval = _createServerHandle(DEFAULT_IPV6_ADDR, port, 6, fd, flags);
 
-      if (typeof rval === "number") {
-        rval = null;
-        address = DEFAULT_IPV4_ADDR;
-        addressType = 4;
-      } else {
-        address = DEFAULT_IPV6_ADDR;
-        addressType = 6;
-      }
+      // if (typeof rval === "number") {
+      //   rval = null;
+      address = DEFAULT_IPV4_ADDR;
+      addressType = 4;
+      // } else {
+      //   address = DEFAULT_IPV6_ADDR;
+      //   addressType = 6;
+      // }
     }
 
     if (rval === null) {
