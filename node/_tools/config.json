@@ -308,7 +308,6 @@
       "test-net-socket-timeout.js",
       "test-net-socket-write-after-close.js",
       "test-net-socket-write-error.js",
-      "test-net-stream.js",
       "test-net-sync-cork.js",
       "test-net-timeout-no-handle.js",
       "test-net-writable.js",
