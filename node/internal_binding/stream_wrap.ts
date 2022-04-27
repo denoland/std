@@ -287,7 +287,10 @@ export class LibuvStreamWrap extends HandleWrap {
         e instanceof Deno.errors.BadResource
       ) {
         nread = codeMap.get("EOF")!;
-      } else if (e instanceof Deno.errors.ConnectionReset || e instanceof Deno.errors.ConnectionAborted) {
+      } else if (
+        e instanceof Deno.errors.ConnectionReset ||
+        e instanceof Deno.errors.ConnectionAborted
+      ) {
         nread = codeMap.get("ECONNRESET")!;
       } else {
         nread = codeMap.get("UNKNOWN")!;
