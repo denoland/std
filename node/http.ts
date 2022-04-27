@@ -15,8 +15,7 @@ import {
 import { OutgoingMessage } from "./_http_outgoing.ts";
 import { Agent } from "./_http_agent.mjs";
 import { urlToHttpOptions } from "./internal/url.ts";
-import { LibuvStreamWrap } from "./internal_binding/stream_wrap.ts";
-import { providerType } from "./internal_binding/async_wrap.ts";
+import Duplex from "./internal/streams/duplex.mjs";
 
 const METHODS = [
   "ACL",
@@ -175,9 +174,9 @@ class ClientRequest extends NodeWritable {
         path,
         port,
       } = opts;
-      return `${protocol}//${auth ? `${auth}@` : ""}${host ?? hostname}${
+      return `${protocol ?? "http:"}//${auth ? `${auth}@` : ""}${host ?? hostname ?? "localhost"}${
         port ? `:${port}` : ""
-      }${path}`;
+      }${path ?? ""}`;
     }
   }
 }
@@ -469,8 +468,7 @@ class ServerImpl extends EventEmitter {
           const res = new ServerResponse(reqEvent);
           if (req.upgrade && this.listenerCount("upgrade") > 0) {
             Deno.upgradeHttp(req.req).then(([conn, head]) => {
-              const wrap = new LibuvStreamWrap(providerType.PIPESERVERWRAP, conn);
-
+              const duplex = Duplex.fromWeb(conn);
               this.emit("request", req, duplex, new Buffer(head));
             }).catch(() => {});
           }
