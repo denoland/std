@@ -27,37 +27,54 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 'use strict';
-
-// Test that unref'ed sockets with timeouts do not prevent exit.
-
-const common = require('../common');
+require('../common');
 const net = require('net');
+const assert = require('assert');
 
-const server = net.createServer(function(c) {
-  c.write('hello');
-  c.unref();
+let cbcount = 0;
+const N = 500000;
+
+// TODO: support net.Server() without new
+
+const server = new net.Server(function(socket) {
+  socket.on('data', function(d) {
+    console.error(`got ${d.length} bytes`);
+  });
+
+  socket.on('end', function() {
+    console.error('end');
+    socket.destroy();
+    server.close();
+  });
 });
-server.listen(0);
-server.unref();
 
-let connections = 0;
-const sockets = [];
-const delays = [8, 5, 3, 6, 2, 4];
-
-delays.forEach(function(T) {
-  const socket = net.createConnection(server.address().port, 'localhost');
-  socket.on('connect', common.mustCall(function() {
-    if (++connections === delays.length) {
-      sockets.forEach(function(s) {
-        s.socket.setTimeout(s.timeout, function() {
-          s.socket.destroy();
-          throw new Error('socket timed out unexpectedly');
-        });
-
-        s.socket.unref();
-      });
+let lastCalled = -1;
+function makeCallback(c) {
+  let called = false;
+  return function() {
+    if (called)
+      throw new Error(`called callback #${c} more than once`);
+    called = true;
+    if (c < lastCalled) {
+      throw new Error(
+        `callbacks out of order. last=${lastCalled} current=${c}`);
     }
-  }));
+    lastCalled = c;
+    cbcount++;
+  };
+}
 
-  sockets.push({ socket: socket, timeout: T * 1000 });
+server.listen(0, function() {
+  const client = net.createConnection(server.address().port);
+
+  client.on('connect', function() {
+    for (let i = 0; i < N; i++) {
+      client.write('hello world', makeCallback(i));
+    }
+    client.end();
+  });
+});
+
+process.on('exit', function() {
+  assert.strictEqual(cbcount, N);
 });

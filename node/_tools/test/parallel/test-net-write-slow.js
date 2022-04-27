@@ -27,44 +27,44 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 'use strict';
-require('../common');
+const common = require('../common');
 const assert = require('assert');
 const net = require('net');
 
-const buf = Buffer.alloc(10 * 1024 * 1024, 0x62);
+const SIZE = 2E5;
+const N = 10;
+let flushed = 0;
+let received = 0;
+const buf = Buffer.alloc(SIZE, 'a');
 
-const errs = [];
-let clientSocket;
-let serverSocket;
+const server = net.createServer(function(socket) {
+  socket.setNoDelay();
+  socket.setTimeout(9999);
+  socket.on('timeout', function() {
+    assert.fail(`flushed: ${flushed}, received: ${received}/${SIZE * N}`);
+  });
 
-function ready() {
-  if (clientSocket && serverSocket) {
-    clientSocket.destroy();
-    serverSocket.write(buf);
+  for (let i = 0; i < N; ++i) {
+    socket.write(buf, function() {
+      ++flushed;
+      if (flushed === N) {
+        socket.setTimeout(0);
+      }
+    });
   }
-}
+  socket.end();
 
-const server = net.createServer(function onConnection(conn) {
-  conn.on('error', function(err) {
-    errs.push(err);
-    if (errs.length > 1 && errs[0] === errs[1])
-      assert.fail('Should not emit the same error twice');
+}).listen(0, common.mustCall(function() {
+  const conn = net.connect(this.address().port);
+  conn.on('data', function(buf) {
+    received += buf.length;
+    conn.pause();
+    setTimeout(function() {
+      conn.resume();
+    }, 20);
   });
-  conn.on('close', function() {
-    server.unref();
-  });
-  serverSocket = conn;
-  ready();
-}).listen(0, function() {
-  const client = net.connect({ port: this.address().port });
-
-  client.on('connect', function() {
-    clientSocket = client;
-    ready();
-  });
-});
-
-process.on('exit', function() {
-  console.log(errs);
-  assert.strictEqual(errs.length, 1);
-});
+  conn.on('end', common.mustCall(function() {
+    server.close();
+    assert.strictEqual(received, SIZE * N);
+  }));
+}));

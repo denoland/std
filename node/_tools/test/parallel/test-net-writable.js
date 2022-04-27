@@ -9,9 +9,14 @@
 const common = require('../common');
 const assert = require('assert');
 const net = require('net');
-const fp = '/blah/fadfa';
-const server = net.createServer(common.mustNotCall());
-server.listen(fp, common.mustNotCall());
-server.on('error', common.mustCall(function(e) {
-  assert.strictEqual(e.address, fp);
+
+const server = net.createServer(common.mustCall(function(s) {
+  server.close();
+  s.end();
+})).listen(0, 'localhost', common.mustCall(function() {
+  const socket = net.connect(this.address().port, 'localhost');
+  socket.on('end', common.mustCall(() => {
+    assert.strictEqual(socket.writable, true);
+    socket.write('hello world');
+  }));
 }));

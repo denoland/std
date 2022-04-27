@@ -12,12 +12,6 @@ const net = require('net');
 const assert = require('assert');
 const fs = require('fs');
 
-// TODO(cmorten): reenable for windows once named pipes are supported
-// REF: https://github.com/denoland/deno/issues/10244
-if (common.isWindows) {
-  return;
-}
-
 const tmpdir = require('../common/tmpdir');
 tmpdir.refresh();
 
@@ -83,24 +77,22 @@ function randomPipePath() {
     }));
 }
 
-// TODO(cmorten): seems Deno.listen() for Unix domains isn't throwing
-// Deno.errors.AddrInUse errors as would expect...?
 // Test should emit "error" events when listening fails.
-// {
-//   const handlePath = randomPipePath();
-//   const server1 = net.createServer().listen({ path: handlePath }, () => {
-//     // As the handlePath is in use, binding to the same address again should
-//     // make the server emit an 'EADDRINUSE' error.
-//     const server2 = net.createServer()
-//       .listen({
-//         path: handlePath,
-//         writableAll: true,
-//       }, common.mustNotCall());
+{
+  const handlePath = randomPipePath();
+  const server1 = net.createServer().listen({ path: handlePath }, () => {
+    // As the handlePath is in use, binding to the same address again should
+    // make the server emit an 'EADDRINUSE' error.
+    const server2 = net.createServer()
+      .listen({
+        path: handlePath,
+        writableAll: true,
+      }, common.mustNotCall());
 
-//     server2.on('error', common.mustCall((err) => {
-//       server1.close();
-//       assert.strictEqual(err.code, 'EADDRINUSE');
-//       assert.match(err.message, /^listen EADDRINUSE: address already in use/);
-//     }));
-//   });
-// }
+    server2.on('error', common.mustCall((err) => {
+      server1.close();
+      assert.strictEqual(err.code, 'EADDRINUSE');
+      assert.match(err.message, /^listen EADDRINUSE: address already in use/);
+    }));
+  });
+}

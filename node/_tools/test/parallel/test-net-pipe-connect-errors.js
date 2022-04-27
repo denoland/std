@@ -33,12 +33,6 @@ const fs = require('fs');
 const net = require('net');
 const assert = require('assert');
 
-// TODO(cmorten): reenable for windows once named pipes are supported
-// REF: https://github.com/denoland/deno/issues/10244
-if (common.isWindows) {
-  return;
-}
-
 // Test if ENOTSOCK is fired when trying to connect to a file which is not
 // a socket.
 

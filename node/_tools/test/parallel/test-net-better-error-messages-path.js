@@ -10,12 +10,6 @@ const common = require('../common');
 const assert = require('assert');
 const net = require('net');
 
-// TODO(cmorten): reenable for windows once named pipes are supported
-// REF: https://github.com/denoland/deno/issues/10244
-if (common.isWindows) {
-  return;
-}
-
 {
   const fp = '/tmp/fadagagsdfgsdf';
   const c = net.connect(fp);

@@ -32,14 +32,11 @@
       "test-fs-rmdir-recursive.js",
       "test-fs-write-file.js",
       "test-fs-write.js",
-      "test-net-better-error-messages-listen-path.js",
       "test-net-better-error-messages-path.js",
       "test-net-connect-buffer.js",
       "test-net-connect-buffer2.js",
       "test-net-listen-invalid-port.js",
-      "test-net-pipe-connect-errors.js",
       "test-net-server-call-listen-multiple-times.js",
-      "test-net-server-listen-path.js",
       "test-net-server-try-ports.js",
       "test-net-socket-timeout.js",
       "test-os.js",
@@ -66,6 +63,10 @@
       "test-zlib-write-after-flush.js",
       "test-zlib-zero-byte.js",
       "test-zlib-zero-windowBits.js"
+    ],
+    "pummel": [
+      "test-net-bytes-per-incoming-chunk-overhead.js",
+      "test-net-write-callbacks.js"
     ]
   },
   "tests": {
@@ -305,6 +306,15 @@
       "test-net-socket-timeout.js",
       "test-net-socket-write-after-close.js",
       "test-net-socket-write-error.js",
+      "test-net-stream.js",
+      "test-net-sync-cork.js",
+      "test-net-timeout-no-handle.js",
+      "test-net-writable.js",
+      "test-net-write-after-end-nt.js",
+      "test-net-write-arguments.js",
+      "test-net-write-fully-async-buffer.js",
+      "test-net-write-fully-async-hex-string.js",
+      "test-net-write-slow.js",
       "test-next-tick-doesnt-hang.js",
       "test-next-tick-fixed-queue-regression.js",
       "test-next-tick-intentional-starvation.js",
@@ -548,6 +558,11 @@
       "test-zlib-write-after-flush.js",
       "test-zlib-zero-byte.js",
       "test-zlib-zero-windowBits.js"
+    ],
+    "pummel": [
+      "test-net-bytes-per-incoming-chunk-overhead.js",
+      "test-net-pingpong-delay.js",
+      "test-net-write-callbacks.js"
     ]
   },
   "windowsIgnore": {
@@ -564,6 +579,10 @@
       "test-fs-write-file-sync.js",
       "test-fs-write-file.js",
       "test-http-client-reject-cr-no-lf.js",
+      "test-net-better-error-messages-listen-path.js",
+      "test-net-better-error-messages-path.js",
+      "test-net-pipe-connect-errors.js",
+      "test-net-server-listen-path.js",
       "test-util-inspect-getters-accessing-this.js",
       "test-util-inspect-long-running.js",
       "test-util-inspect.js"
