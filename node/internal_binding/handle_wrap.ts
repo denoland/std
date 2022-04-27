@@ -39,11 +39,11 @@ export class HandleWrap extends AsyncWrap {
   }
 
   ref() {
-    notImplemented();
+    notImplemented("HandleWrap.prototype.ref");
   }
 
   unref() {
-    notImplemented();
+    notImplemented("HandleWrap.prototype.unref");
   }
 
   // deno-lint-ignore no-explicit-any

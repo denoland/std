@@ -8,6 +8,7 @@ import {
   assert,
   assertEquals,
   assertRejects,
+  assertStrictEquals,
   assertThrows,
   unreachable,
 } from "../testing/asserts.ts";
@@ -258,7 +259,86 @@ Deno.test(
 );
 
 Deno.test(
-  "serve should not throw if abort when the server is already closed",
+  "serveListener should not overwrite an abort signal handler",
+  async () => {
+    const listenOptions = {
+      hostname: "localhost",
+      port: 4505,
+    };
+    const listener = Deno.listen(listenOptions);
+    const handler = () => new Response();
+    const onAbort = () => {};
+    const abortController = new AbortController();
+
+    abortController.signal.onabort = onAbort;
+
+    const servePromise = serveListener(listener, handler, {
+      signal: abortController.signal,
+    });
+
+    try {
+      assertStrictEquals(abortController.signal.onabort, onAbort);
+    } finally {
+      abortController.abort();
+      await servePromise;
+    }
+  },
+);
+
+Deno.test(
+  "serve should not overwrite an abort signal handler",
+  async () => {
+    const handler = () => new Response();
+    const onAbort = () => {};
+    const abortController = new AbortController();
+
+    abortController.signal.onabort = onAbort;
+
+    const servePromise = serve(handler, {
+      hostname: "localhost",
+      port: 4505,
+      signal: abortController.signal,
+    });
+
+    try {
+      assertStrictEquals(abortController.signal.onabort, onAbort);
+    } finally {
+      abortController.abort();
+      await servePromise;
+    }
+  },
+);
+
+Deno.test(
+  "serveTls should not overwrite an abort signal handler",
+  async () => {
+    const certFile = join(testdataDir, "tls/localhost.crt");
+    const keyFile = join(testdataDir, "tls/localhost.key");
+    const handler = () => new Response();
+    const onAbort = () => {};
+    const abortController = new AbortController();
+
+    abortController.signal.onabort = onAbort;
+
+    const servePromise = serveTls(handler, {
+      hostname: "localhost",
+      port: 4505,
+      certFile,
+      keyFile,
+      signal: abortController.signal,
+    });
+
+    try {
+      assertStrictEquals(abortController.signal.onabort, onAbort);
+    } finally {
+      abortController.abort();
+      await servePromise;
+    }
+  },
+);
+
+Deno.test(
+  "serveListener should not throw if abort when the server is already closed",
   async () => {
     const listenOptions = {
       hostname: "localhost",

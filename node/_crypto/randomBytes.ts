@@ -16,12 +16,12 @@ function generateRandomBytes(size: number) {
   //Work around for getRandomValues max generation
   if (size > MAX_RANDOM_VALUES) {
     for (let generated = 0; generated < size; generated += MAX_RANDOM_VALUES) {
-      crypto.getRandomValues(
+      globalThis.crypto.getRandomValues(
         bytes.slice(generated, generated + MAX_RANDOM_VALUES),
       );
     }
   } else {
-    crypto.getRandomValues(bytes);
+    globalThis.crypto.getRandomValues(bytes);
   }
 
   return bytes;

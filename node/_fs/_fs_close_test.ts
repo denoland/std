@@ -29,13 +29,10 @@ Deno.test({
 
 Deno.test({
   name: "ASYNC: Invalid fd",
-  async fn() {
-    await new Promise<void>((resolve, reject) => {
-      close(-1, (err) => {
-        if (err !== null) return resolve();
-        reject();
-      });
-    });
+  fn() {
+    assertThrows(() => {
+      close(-1, (_err) => {});
+    }, RangeError);
   },
 });
 

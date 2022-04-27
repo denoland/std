@@ -21,24 +21,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
-          persist-credentials: false
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1.0.0
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Install fakedate
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt install faketime
-
       - name: Run tests canary
         run: deno task test
-
-      - name: Run test with the date 2021-12-31
-        if: matrix.os == 'ubuntu-latest'
-        run: deno task test:faketime
 
       - name: Type check browser compatible modules
         shell: bash
@@ -71,7 +61,7 @@ jobs:
           github.ref == 'refs/heads/main'
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
         run: ./_tools/release/03_release.ts
 
   node:

@@ -1,6 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
-  _format,
   assert,
   assertAlmostEquals,
   assertArrayIncludes,
@@ -1260,69 +1259,6 @@ Deno.test("assertEquals diff for differently ordered objects", () => {
 -     ccccccccccccccccccccccc: 0,
 +     ccccccccccccccccccccccc: 1,
     }`,
-  );
-});
-
-Deno.test("assert diff formatting (strings)", () => {
-  assertThrows(
-    () => {
-      assertEquals([..."abcd"].join("\n"), [..."abxde"].join("\n"));
-    },
-    undefined,
-    `
-    a\\n
-    b\\n
-${green("+   x")}\\n
-${green("+   d")}\\n
-${green("+   e")}
-${red("-   c")}\\n
-${red("-   d")}
-`,
-  );
-});
-
-// Check that the diff formatter overrides some default behaviours of
-// `Deno.inspect()` which are problematic for diffing.
-Deno.test("assert diff formatting", () => {
-  // Wraps objects into multiple lines even when they are small. Prints trailing
-  // commas.
-  assertEquals(
-    stripColor(_format({ a: 1, b: 2 })),
-    `{
-  a: 1,
-  b: 2,
-}`,
-  );
-
-  // Same for nested small objects.
-  assertEquals(
-    stripColor(_format([{ x: { a: 1, b: 2 }, y: ["a", "b"] }])),
-    `[
-  {
-    x: {
-      a: 1,
-      b: 2,
-    },
-    y: [
-      "a",
-      "b",
-    ],
-  },
-]`,
-  );
-
-  // Grouping is disabled.
-  assertEquals(
-    stripColor(_format(["i", "i", "i", "i", "i", "i", "i"])),
-    `[
-  "i",
-  "i",
-  "i",
-  "i",
-  "i",
-  "i",
-  "i",
-]`,
   );
 });
 

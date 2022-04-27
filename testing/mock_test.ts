@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { delay } from "../async/delay.ts";
 import {
   assertEquals,
@@ -125,6 +126,24 @@ Deno.test("spy function", () => {
     "function cannot be restored",
   );
   assertEquals(func.restored, false);
+
+  // Check if the returned type is correct:
+  const explicitTypesSpy = spy(point, "explicitTypes");
+  assertThrows(() => {
+    assertSpyCall(explicitTypesSpy, 0, {
+      // @ts-expect-error Test if passing incorrect argument types causes an error
+      args: ["not a number", "string"],
+      // @ts-expect-error Test if passing incorrect return type causes an error
+      returned: "not a boolean",
+    });
+  });
+
+  // Calling assertSpyCall with the correct types should not cause any type errors:
+  point.explicitTypes(1, "hello");
+  assertSpyCall(explicitTypesSpy, 0, {
+    args: [1, "hello"],
+    returned: true,
+  });
 });
 
 Deno.test("spy instance method", () => {
@@ -399,6 +418,45 @@ Deno.test("stub function", () => {
     "instance method already restored",
   );
   assertEquals(func.restored, true);
+
+  // @ts-expect-error Stubbing with incorrect argument types should cause a type error
+  stub(new Point(2, 3), "explicitTypes", (_x: string, _y: number) => true);
+
+  // @ts-expect-error Stubbing with an incorrect return type should cause a type error
+  stub(new Point(2, 3), "explicitTypes", () => "string");
+
+  // Stubbing without argument types infers them from the real function
+  stub(new Point(2, 3), "explicitTypes", (_x, _y) => {
+    // `toExponential()` only exists on `number`, so this will error if _x is not a number
+    _x.toExponential();
+    // `toLowerCase()` only exists on `string`, so this will error if _y is not a string
+    _y.toLowerCase();
+    return true;
+  });
+
+  // Stubbing with returnsNext() should not give any type errors
+  stub(new Point(2, 3), "explicitTypes", returnsNext([true, false, true]));
+
+  // Stubbing without argument types should not cause any type errors:
+  const point2 = new Point(2, 3);
+  const explicitTypesFunc = stub(point2, "explicitTypes", () => true);
+
+  // Check if the returned type is correct:
+  assertThrows(() => {
+    assertSpyCall(explicitTypesFunc, 0, {
+      // @ts-expect-error Test if passing incorrect argument types causes an error
+      args: ["not a number", "string"],
+      // @ts-expect-error Test if passing incorrect return type causes an error
+      returned: "not a boolean",
+    });
+  });
+
+  // Calling assertSpyCall with the correct types should not cause any type errors
+  point2.explicitTypes(1, "hello");
+  assertSpyCall(explicitTypesFunc, 0, {
+    args: [1, "hello"],
+    returned: true,
+  });
 });
 
 Deno.test("mockSession and mockSessionAsync", async () => {

@@ -287,7 +287,7 @@ function toDenoStdio(
     !supportedNodeStdioTypes.includes(pipe as NodeStdio) ||
     typeof pipe === "number" || pipe instanceof Stream
   ) {
-    notImplemented();
+    notImplemented(`toDenoStdio pipe=${typeof pipe} (${pipe})`);
   }
   switch (pipe) {
     case "pipe":
@@ -299,8 +299,29 @@ function toDenoStdio(
     case "inherit":
       return "inherit";
     default:
-      notImplemented();
+      notImplemented(`toDenoStdio pipe=${typeof pipe} (${pipe})`);
   }
+}
+
+function toDenoSignal(signal: number | string): Deno.Signal {
+  if (typeof signal === "number") {
+    for (const name of keys(os.signals)) {
+      if (os.signals[name] === signal) {
+        return name as Deno.Signal;
+      }
+    }
+    throw new ERR_UNKNOWN_SIGNAL(String(signal));
+  }
+
+  const denoSignal = signal as Deno.Signal;
+  if (os.signals[denoSignal] != null) {
+    return denoSignal;
+  }
+  throw new ERR_UNKNOWN_SIGNAL(signal);
+}
+
+function keys<T extends Record<string, unknown>>(object: T): Array<keyof T> {
+  return Object.keys(object);
 }
 
 function toDenoSignal(signal: number | string): Deno.Signal {
@@ -471,7 +492,7 @@ function normalizeStdioOption(
     switch (stdio) {
       case "overlapped":
         if (isWindows) {
-          notImplemented();
+          notImplemented("normalizeStdioOption overlapped (on windows)");
         }
         // 'overlapped' is same as 'piped' on non Windows system.
         return ["pipe", "pipe", "pipe"];
@@ -482,7 +503,7 @@ function normalizeStdioOption(
       case "ignore":
         return ["ignore", "ignore", "ignore"];
       default:
-        notImplemented();
+        notImplemented(`normalizeStdioOption stdio=${typeof stdio} (${stdio})`);
     }
   }
 }
