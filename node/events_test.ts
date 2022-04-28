@@ -57,6 +57,8 @@ class EventEmitterWithoutMapping extends EventEmitter {
 
     this.emit("close", "Reason");
     this.emit("close");
+
+    this.emit(3);
   }
 }
 

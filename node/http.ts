@@ -2,6 +2,7 @@
 import * as DenoUnstable from "../_deno_unstable.ts";
 import { core } from "./_core.ts";
 import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
+import type { ConnectionListener } from "./net.ts";
 import { Buffer } from "./buffer.ts";
 import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { EventEmitter } from "./events.ts";
@@ -403,7 +404,14 @@ export function Server(handler?: ServerHandler): ServerImpl {
   return new ServerImpl(handler);
 }
 
-class ServerImpl extends EventEmitter {
+type CatchListener = (err?: Error) => void;
+type ServerImplListenerMap = {
+  request: ServerHandler;
+  // TODO(duelsik): Listening should be ConnectionListener but this place lacks socket to pass
+  listening: () => void;
+  close: CatchListener;
+};
+class ServerImpl extends EventEmitter<ServerImplListenerMap> {
   #httpConnections: Set<Deno.HttpConn> = new Set();
   #listener?: Deno.Listener;
 
@@ -422,8 +430,7 @@ class ServerImpl extends EventEmitter {
     const cb = normalized[1];
 
     if (cb !== null) {
-      // @ts-ignore change EventEmitter's sig to use CallableFunction
-      this.once("listening", cb);
+      this.once("listening", cb as () => void);
     }
 
     let port = 0;

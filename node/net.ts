@@ -1601,7 +1601,7 @@ export interface ListenOptions extends Abortable {
   ipv6Only?: boolean | undefined;
 }
 
-type ConnectionListener = (socket: Socket) => void;
+export type ConnectionListener = (socket: Socket) => void;
 
 interface ServerOptions {
   /**
