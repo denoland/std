@@ -34,7 +34,7 @@ const common = require('../common');
 const assert = require('assert');
 
 const dns = require('dns');
-// const dnsPromises = dns.promises;
+const dnsPromises = dns.promises;
 // const dgram = require('dgram');
 
 // const existing = dns.getServers();
@@ -193,11 +193,11 @@ const dns = require('dns');
   assert.throws(() => dns.lookup(common.mustNotCall(), common.mustNotCall()),
                 errorReg);
 
-  // assert.throws(() => dnsPromises.lookup({}), errorReg);
-  // assert.throws(() => dnsPromises.lookup([]), errorReg);
-  // assert.throws(() => dnsPromises.lookup(true), errorReg);
-  // assert.throws(() => dnsPromises.lookup(1), errorReg);
-  // assert.throws(() => dnsPromises.lookup(common.mustNotCall()), errorReg);
+  assert.throws(() => dnsPromises.lookup({}), errorReg);
+  assert.throws(() => dnsPromises.lookup([]), errorReg);
+  assert.throws(() => dnsPromises.lookup(true), errorReg);
+  assert.throws(() => dnsPromises.lookup(1), errorReg);
+  assert.throws(() => dnsPromises.lookup(common.mustNotCall()), errorReg);
 }
 
 // dns.lookup should accept falsey values

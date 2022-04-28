@@ -35,15 +35,15 @@ interface LookupAddress {
 }
 
 // REF: https://github.com/nodejs/node/blob/master/deps/cares/include/ares.h#L190
-export const ARES_AI_CANONNAME = (1 << 0);
-export const ARES_AI_NUMERICHOST = (1 << 1);
-export const ARES_AI_PASSIVE = (1 << 2);
-export const ARES_AI_NUMERICSERV = (1 << 3);
-export const AI_V4MAPPED = (1 << 4);
-export const AI_ALL = (1 << 5);
-export const AI_ADDRCONFIG = (1 << 6);
-export const ARES_AI_NOSORT = (1 << 7);
-export const ARES_AI_ENVHOSTS = (1 << 8);
+export const ARES_AI_CANONNAME = 1 << 0;
+export const ARES_AI_NUMERICHOST = 1 << 1;
+export const ARES_AI_PASSIVE = 1 << 2;
+export const ARES_AI_NUMERICSERV = 1 << 3;
+export const AI_V4MAPPED = 1 << 4;
+export const AI_ALL = 1 << 5;
+export const AI_ADDRCONFIG = 1 << 6;
+export const ARES_AI_NOSORT = 1 << 7;
+export const ARES_AI_ENVHOSTS = 1 << 8;
 
 export class GetAddrInfoReqWrap extends AsyncWrap {
   callback!: (
@@ -51,6 +51,8 @@ export class GetAddrInfoReqWrap extends AsyncWrap {
     addressOrAddresses?: string | LookupAddress[] | null,
     family?: number,
   ) => void;
+  resolve!: (addressOrAddresses: LookupAddress | LookupAddress[]) => void;
+  reject!: (err: ErrnoException | null) => void;
   family!: number;
   hostname!: string;
   oncomplete!: (err: number | null, addresses: string[]) => void;
@@ -66,22 +68,22 @@ export function getaddrinfo(
   family: number,
   _hints: number,
   verbatim: boolean,
-) {
+): number {
+  const addresses: string[] = [];
+
+  // TODO(cmorten): use hints
+  // REF: https://nodejs.org/api/dns.html#dns_supported_getaddrinfo_flags
+
+  const recordTypes: ("A" | "AAAA")[] = [];
+
+  if (family === 0 || family === 4) {
+    recordTypes.push("A");
+  }
+  if (family === 0 || family === 6) {
+    recordTypes.push("AAAA");
+  }
+
   (async () => {
-    const addresses: string[] = [];
-
-    // TODO(cmorten): use hints
-    // REF: https://nodejs.org/api/dns.html#dns_supported_getaddrinfo_flags
-
-    const recordTypes: ("A" | "AAAA")[] = [];
-
-    if (family === 0 || family === 4) {
-      recordTypes.push("A");
-    }
-    if (family === 0 || family === 6) {
-      recordTypes.push("AAAA");
-    }
-
     await Promise.allSettled(
       recordTypes.map((recordType) =>
         Deno.resolveDns(hostname, recordType).then((records) => {
@@ -106,4 +108,6 @@ export function getaddrinfo(
 
     req.oncomplete(error, addresses);
   })();
+
+  return 0;
 }

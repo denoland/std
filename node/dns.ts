@@ -31,8 +31,17 @@ import { isIP } from "./internal/net.ts";
 import {
   emitInvalidHostnameWarning,
   getDefaultVerbatim,
+  isLookupCallback,
+  isLookupOptions,
   validateHints,
-} from "./_dns/_utils.ts";
+} from "./internal/dns/utils.ts";
+import promises from "./internal/dns/promises.ts";
+import type {
+  LookupAddress,
+  LookupAllOptions,
+  LookupOneOptions,
+  LookupOptions,
+} from "./internal/dns/utils.ts";
 import type { ErrnoException } from "./internal/errors.ts";
 import { dnsException } from "./internal/errors.ts";
 import {
@@ -42,55 +51,26 @@ import {
 } from "./internal_binding/cares_wrap.ts";
 import { toASCII } from "./internal/idna.ts";
 
-export interface LookupOptions {
-  family?: number | undefined;
-  hints?: number | undefined;
-  all?: boolean | undefined;
-  verbatim?: boolean | undefined;
-}
-
-export interface LookupOneOptions extends LookupOptions {
-  all?: false | undefined;
-}
-
-export interface LookupAllOptions extends LookupOptions {
-  all: true;
-}
-
-export interface LookupAddress {
-  address: string;
-  family: number;
-}
-
-function _isLookupOptions(options: unknown): options is LookupOptions {
-  return options !== null && typeof options === "object";
-}
-
-function _isLookupCallback(
-  options: unknown,
-): options is (...args: unknown[]) => void {
-  return typeof options === "function";
-}
-
 function onlookup(
   this: GetAddrInfoReqWrap,
-  code: number | null,
+  err: number | null,
   addresses: string[],
 ) {
-  if (code) {
-    return this.callback(dnsException(code, "getaddrinfo", this.hostname));
+  if (err) {
+    return this.callback(dnsException(err, "getaddrinfo", this.hostname));
   }
 
-  this.callback(null, addresses[0], this.family || isIP(addresses[0]));
+  const family = this.family ? this.family : isIP(addresses[0]);
+  this.callback(null, addresses[0], family);
 }
 
 function onlookupall(
   this: GetAddrInfoReqWrap,
-  code: number | null,
+  err: number | null,
   addresses: string[],
 ) {
-  if (code) {
-    return this.callback(dnsException(code, "getaddrinfo", this.hostname));
+  if (err) {
+    return this.callback(dnsException(err, "getaddrinfo", this.hostname));
   }
 
   const family = this.family;
@@ -100,7 +80,7 @@ function onlookupall(
     const addr = addresses[i];
     parsedAddresses[i] = {
       address: addr,
-      family: family || isIP(addr),
+      family: family ? family : isIP(addr),
     };
   }
 
@@ -170,13 +150,13 @@ function lookup(
     validateString(hostname, "hostname");
   }
 
-  if (_isLookupCallback(options)) {
+  if (isLookupCallback(options)) {
     callback = options;
     family = 0;
   } else {
     validateCallback(callback);
 
-    if (_isLookupOptions(options)) {
+    if (isLookupOptions(options)) {
       hints = options.hints! >>> 0;
       family = options.family! >>> 0;
       all = options.all === true;
@@ -209,11 +189,9 @@ function lookup(
 
   if (matchedFamily) {
     if (all) {
-      nextTick(
-        callback as LookupCallback,
-        null,
-        [{ address: hostname, family: matchedFamily }],
-      );
+      nextTick(callback as LookupCallback, null, [
+        { address: hostname, family: matchedFamily },
+      ]);
     } else {
       nextTick(callback as LookupCallback, null, hostname, matchedFamily);
     }
@@ -227,13 +205,7 @@ function lookup(
   req.hostname = hostname;
   req.oncomplete = all ? onlookupall : onlookup;
 
-  getaddrinfo(
-    req,
-    toASCII(hostname),
-    family,
-    hints,
-    verbatim,
-  );
+  getaddrinfo(req, toASCII(hostname), family, hints, verbatim);
 
   return req;
 }
@@ -269,11 +241,12 @@ export const LOADIPHLPAPI = "ELOADIPHLPAPI";
 export const ADDRGETNETWORKPARAMS = "EADDRGETNETWORKPARAMS";
 export const CANCELLED = "ECANCELLED";
 
-export { ADDRCONFIG, lookup };
+export { ADDRCONFIG, lookup, promises };
 
 export default {
   ADDRCONFIG,
   lookup,
+  promises,
   NODATA,
   FORMERR,
   SERVFAIL,

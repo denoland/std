@@ -19,7 +19,7 @@ const assert = require('assert');
 // cares.getaddrinfo = () => internalBinding('uv').UV_ENOMEM;
 
 const dns = require('dns');
-// const dnsPromises = dns.promises;
+const dnsPromises = dns.promises;
 
 {
   const err = {
@@ -29,7 +29,7 @@ const dns = require('dns');
   };
 
   assert.throws(() => dns.lookup(1, {}), err);
-  // assert.throws(() => dnsPromises.lookup(1, {}), err);
+  assert.throws(() => dnsPromises.lookup(1, {}), err);
 }
 
 // This also verifies different expectWarning notations.
@@ -71,7 +71,7 @@ assert.throws(() => {
     all: false
   };
 
-  // assert.throws(() => { dnsPromises.lookup(false, options); }, err);
+  assert.throws(() => { dnsPromises.lookup(false, options); }, err);
   assert.throws(() => {
     dns.lookup(false, options, common.mustNotCall());
   }, err);
@@ -89,36 +89,36 @@ assert.throws(() => {
     all: false
   };
 
-  // assert.throws(() => { dnsPromises.lookup(false, options); }, err);
+  assert.throws(() => { dnsPromises.lookup(false, options); }, err);
   assert.throws(() => {
     dns.lookup(false, options, common.mustNotCall());
   }, err);
 }
 
-// (async function() {
-//   let res;
+(async function() {
+  let res;
 
-//   res = await dnsPromises.lookup(false, {
-//     hints: 0,
-//     family: 0,
-//     all: true
-//   });
-//   assert.deepStrictEqual(res, []);
+  res = await dnsPromises.lookup(false, {
+    hints: 0,
+    family: 0,
+    all: true
+  });
+  assert.deepStrictEqual(res, []);
 
-//   res = await dnsPromises.lookup('127.0.0.1', {
-//     hints: 0,
-//     family: 4,
-//     all: true
-//   });
-//   assert.deepStrictEqual(res, [{ address: '127.0.0.1', family: 4 }]);
+  res = await dnsPromises.lookup('127.0.0.1', {
+    hints: 0,
+    family: 4,
+    all: true
+  });
+  assert.deepStrictEqual(res, [{ address: '127.0.0.1', family: 4 }]);
 
-//   res = await dnsPromises.lookup('127.0.0.1', {
-//     hints: 0,
-//     family: 4,
-//     all: false
-//   });
-//   assert.deepStrictEqual(res, { address: '127.0.0.1', family: 4 });
-// })().then(common.mustCall());
+  res = await dnsPromises.lookup('127.0.0.1', {
+    hints: 0,
+    family: 4,
+    all: false
+  });
+  assert.deepStrictEqual(res, { address: '127.0.0.1', family: 4 });
+})().then(common.mustCall());
 
 dns.lookup(false, {
   hints: 0,
