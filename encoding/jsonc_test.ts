@@ -4,19 +4,8 @@ import {
   assertStrictEquals,
   assertThrows,
 } from "../testing/asserts.ts";
-import { walk } from "../fs/mod.ts";
-import { fromFileUrl } from "../path/mod.ts";
 
-function getError<T>(
-  fn: () => T,
-): [hasError: boolean, error: unknown, result?: T] {
-  try {
-    const res = fn();
-    return [false, null, res];
-  } catch (error: unknown) {
-    return [true, error];
-  }
-}
+// The test code for the jsonc module can also be found in the testcode directory.
 
 function assertValidParse(
   text: string,
@@ -38,49 +27,6 @@ function assertInvalidParse(
     ErrorClass,
     msgIncludes,
   );
-}
-
-// Exclude these test cases as they are correctly parsed as JSONC.
-const ignoreFile = new Set([
-  "n_object_trailing_comment.json",
-  "n_object_trailing_comment_slash_open.json",
-  "n_structure_object_with_comment.json",
-]);
-
-// Make sure that the JSON.parse and JSONC.parse results match.
-for await (
-  const dirEntry of walk(
-    fromFileUrl(new URL("./testdata/jsonc/JSONTestSuite/", import.meta.url)),
-  )
-) {
-  if (!dirEntry.isFile) {
-    continue;
-  }
-  if (ignoreFile.has(dirEntry.name)) {
-    continue;
-  }
-  Deno.test({
-    name: `[jsonc] parse JSONTestSuite:${dirEntry.name}`,
-    async fn() {
-      const text = await Deno.readTextFile(dirEntry.path);
-
-      const [hasJsonError, jsonError, jsonResult] = getError(() => {
-        JSON.parse(text);
-      });
-      const [hasJsoncError, jsoncError, jsoncResult] = getError(() => {
-        JSONC.parse(text, { allowTrailingComma: false });
-      });
-
-      // If an error occurs in JSON.parse() but no error occurs in JSONC.parse(), or vice versa, an error is thrown.
-      if (hasJsonError !== hasJsoncError) {
-        throw new AggregateError(
-          [jsonError, jsoncError],
-          `failed to parse: '${text}'`,
-        );
-      }
-      assertEquals(jsonResult, jsoncResult);
-    },
-  });
 }
 
 Deno.test({
@@ -194,14 +140,15 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[jsonc] Non-string parsing will fail with a SyntaxError",
+  name: "[jsonc] parse other than strings",
   fn() {
-    // The result of JSON.parse and the result of JSONC.parse should match
     assertInvalidParse(
       // deno-lint-ignore no-explicit-any
       undefined as any,
       SyntaxError,
       "Unexpected token undefined in JSONC at position 0",
     );
+    // deno-lint-ignore no-explicit-any
+    assertValidParse(0 as any, 0);
   },
 });
