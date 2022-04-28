@@ -20,4 +20,8 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-export * from "../internal/dns/promises.ts";
+import { default as promises, lookup } from "../internal/dns/promises.ts";
+
+export { lookup };
+
+export default promises;

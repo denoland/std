@@ -28,6 +28,7 @@ import constants from "./constants.ts";
 import crypto from "./crypto.ts";
 import dgram from "./dgram.ts";
 import dns from "./dns.ts";
+import dnsPromises from "./dns/promises.ts";
 import domain from "./domain.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
@@ -37,6 +38,7 @@ import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
+import internalDnsPromises from "./internal/dns/promises.ts";
 import internalErrors from "./internal/errors.ts";
 import internalEventTarget from "./internal/event_target.mjs";
 import internalHttp from "./internal/http.ts";
@@ -98,6 +100,7 @@ export default {
   cluster,
   dgram,
   dns,
+  "dns/promises": dnsPromises,
   domain,
   events,
   fs,
@@ -106,6 +109,7 @@ export default {
   http2,
   https,
   inspector,
+  "internal/dns/promises": internalDnsPromises,
   "internal/errors": internalErrors,
   "internal/event_target": internalEventTarget,
   "internal/fs/utils": internalFsUtils,
