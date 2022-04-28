@@ -30,7 +30,19 @@ export interface ErrnoException extends Error {
   syscall?: string | undefined;
 }
 
-export interface ReadableStream extends EventEmitter {
+// https://nodejs.org/api/stream.html#class-streamreadable
+type ReadableStreamListenerMap = {
+  close: () => void;
+  // (Node docs are explicitly listing any as possible chunk type)
+  // deno-lint-ignore no-explicit-any
+  data: (chunk?: Buffer | string | any) => void;
+  end: () => void;
+  error: (error: Error) => void;
+  pause: () => void;
+  readable: () => void;
+  resume: () => void;
+};
+export interface ReadableStreamI {
   readable: boolean;
   read(size?: number): string | Buffer;
   setEncoding(encoding: BufferEncoding): this;
@@ -46,8 +58,19 @@ export interface ReadableStream extends EventEmitter {
   wrap(oldStream: ReadableStream): this;
   [Symbol.asyncIterator](): AsyncIterableIterator<string | Buffer>;
 }
+export interface ReadableStream
+  extends ReadableStreamI, EventEmitter<ReadableStreamListenerMap> {}
 
-export interface WritableStream extends EventEmitter {
+// https://nodejs.org/api/stream.html#class-streamwritable
+type WritableStreamListenerMap = {
+  close: () => void;
+  drain: () => void;
+  error: (error: Error) => void; // Not sure if error exists when calling destroy without parameter
+  finish: () => void;
+  pipe: (src: ReadableStream) => void;
+  unpipe: (src: ReadableStream) => void;
+};
+export interface WritableStreamI {
   writable: boolean;
   write(
     buffer: Uint8Array | string,
@@ -62,5 +85,11 @@ export interface WritableStream extends EventEmitter {
   end(data: string | Uint8Array, cb?: () => void): void;
   end(str: string, encoding?: BufferEncoding, cb?: () => void): void;
 }
+export interface WritableStream
+  extends WritableStreamI, EventEmitter<WritableStreamListenerMap> {}
 
-export interface ReadWriteStream extends ReadableStream, WritableStream {}
+export interface ReadWriteStream
+  extends
+    ReadableStreamI,
+    WritableStreamI,
+    EventEmitter<WritableStreamListenerMap & ReadableStreamListenerMap> {}
