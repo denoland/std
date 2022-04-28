@@ -1601,7 +1601,7 @@ export interface ListenOptions extends Abortable {
   ipv6Only?: boolean | undefined;
 }
 
-export type ConnectionListener = (socket: Socket) => void;
+type ConnectionListener = (socket: Socket) => void;
 
 interface ServerOptions {
   /**
@@ -1945,8 +1945,16 @@ function _setupListenHandle(
   );
 }
 
+type CatchListener = (err?: Error) => void;
+type ErrorListener = (err: Error) => void;
+type ServerListenerMap = {
+  connection: ConnectionListener;
+  listening: ConnectionListener;
+  close: CatchListener;
+  error: ErrorListener;
+};
 /** This class is used to create a TCP or IPC server. */
-export class Server extends EventEmitter {
+export class Server extends EventEmitter<ServerListenerMap> {
   [asyncIdSymbol] = -1;
 
   allowHalfOpen = false;
