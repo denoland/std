@@ -27,34 +27,40 @@ function withTimeout<T>(timeoutInMS: number): Deferred<T> {
 }
 
 // TODO(uki00a): Once Node.js's `parallel/test-child-process-spawn-error.js` works, this test case should be removed.
-Deno.test("[node/child_process spawn] The 'error' event is emitted when no binary is found", async () => {
-  const promise = withTimeout(1000);
-  const childProcess = spawn("no-such-cmd");
-  childProcess.on("error", (_err: Error) => {
-    // TODO Assert an error message.
-    promise.resolve();
-  });
-  await promise;
-});
-
-Deno.test("[node/child_process spawn] The 'exit' event is emitted with an exit code after the child process ends", async () => {
-  const promise = withTimeout(3000);
-  const childProcess = spawn(Deno.execPath(), ["--help"], {
-    env: { NO_COLOR: "true" },
-  });
-  try {
-    let exitCode = null;
-    childProcess.on("exit", (code: number) => {
+Deno.test(
+  "[node/child_process spawn] The 'error' event is emitted when no binary is found",
+  async () => {
+    const promise = withTimeout(1000);
+    const childProcess = spawn("no-such-cmd");
+    childProcess.on("error", (_err: Error) => {
+      // TODO Assert an error message.
       promise.resolve();
-      exitCode = code;
     });
     await promise;
-    assertStrictEquals(exitCode, 0);
-    assertStrictEquals(childProcess.exitCode, exitCode);
-  } finally {
-    childProcess.kill();
-  }
-});
+  },
+);
+
+Deno.test(
+  "[node/child_process spawn] The 'exit' event is emitted with an exit code after the child process ends",
+  async () => {
+    const promise = withTimeout(3000);
+    const childProcess = spawn(Deno.execPath(), ["--help"], {
+      env: { NO_COLOR: "true" },
+    });
+    try {
+      let exitCode = null;
+      childProcess.on("exit", (code: number) => {
+        promise.resolve();
+        exitCode = code;
+      });
+      await promise;
+      assertStrictEquals(exitCode, 0);
+      assertStrictEquals(childProcess.exitCode, exitCode);
+    } finally {
+      childProcess.kill();
+    }
+  },
+);
 
 Deno.test({
   name: "[node/child_process spawn] Verify that stdin and stdout work",
@@ -121,13 +127,10 @@ async function spawnAndGetEnvValue(
   inputValue: string | number | boolean,
 ): Promise<string> {
   const promise = withTimeout<string>(3000);
-  const env = spawn(
-    `"${Deno.execPath()}" eval -p "Deno.env.toObject().BAZ"`,
-    {
-      env: { BAZ: inputValue, NO_COLOR: "true" },
-      shell: true,
-    },
-  );
+  const env = spawn(`"${Deno.execPath()}" eval -p "Deno.env.toObject().BAZ"`, {
+    env: { BAZ: inputValue, NO_COLOR: "true" },
+    shell: true,
+  });
   try {
     let envOutput = "";
 
@@ -172,7 +175,9 @@ Deno.test({
 // TODO(uki00a): Remove this case once Node's `parallel/test-child-process-spawn-event.js` works.
 Deno.test("[child_process spawn] 'spawn' event", async () => {
   const timeout = withTimeout(3000);
-  const subprocess = spawn("echo", ["ok"]);
+  const command = isWindows ? "cmd" : "echo";
+  const args = isWindows ? ["/c", "echo ok"] : ["ok"];
+  const subprocess = spawn(command, args);
 
   let didSpawn = false;
   subprocess.on("spawn", function () {
@@ -403,9 +408,10 @@ Deno.test({
       path.dirname(path.fromFileUrl(import.meta.url)),
       "./testdata/exec_file_text_error.js",
     );
-    const promise = new Promise<
-      { err: Error | null; stderr?: string | Buffer }
-    >((resolve) => {
+    const promise = new Promise<{
+      err: Error | null;
+      stderr?: string | Buffer;
+    }>((resolve) => {
       child = execFile(Deno.execPath(), ["run", script], (err, _, stderr) => {
         resolve({ err, stderr });
       });
@@ -434,15 +440,21 @@ Deno.test({
       path.dirname(path.fromFileUrl(import.meta.url)),
       "./testdata/exec_file_text_error.js",
     );
-    const promise = new Promise<
-      { err: Error | null; stderr?: string | Buffer }
-    >((resolve) => {
-      child = execFile(Deno.execPath(), ["run", script], {
-        encoding: "buffer",
-        maxBuffer: 3,
-      }, (err, _, stderr) => {
-        resolve({ err, stderr });
-      });
+    const promise = new Promise<{
+      err: Error | null;
+      stderr?: string | Buffer;
+    }>((resolve) => {
+      child = execFile(
+        Deno.execPath(),
+        ["run", script],
+        {
+          encoding: "buffer",
+          maxBuffer: 3,
+        },
+        (err, _, stderr) => {
+          resolve({ err, stderr });
+        },
+      );
     });
     try {
       const { err, stderr } = await promise;
