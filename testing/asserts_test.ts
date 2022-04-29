@@ -67,24 +67,9 @@ Deno.test("testingEqual", function (): void {
       { hello: "world", hi: { there: "everyone else" } },
     ),
   );
-  assert(
-    equal(
-      { [Symbol.for("foo")]: "bar" },
-      { [Symbol.for("foo")]: "bar" },
-    ),
-  );
-  assert(
-    !equal(
-      { [Symbol("foo")]: "bar" },
-      { [Symbol("foo")]: "bar" },
-    ),
-  );
-  assertFalse(
-    equal(
-      { [Symbol("foo")]: "bar" },
-      { [Symbol("foo")]: "bar" },
-    ),
-  );
+  assert(equal({ [Symbol.for("foo")]: "bar" }, { [Symbol.for("foo")]: "bar" }));
+  assert(!equal({ [Symbol("foo")]: "bar" }, { [Symbol("foo")]: "bar" }));
+  assertFalse(equal({ [Symbol("foo")]: "bar" }, { [Symbol("foo")]: "bar" }));
 
   assert(equal(/deno/, /deno/));
   assert(!equal(/deno/, /node/));
@@ -223,9 +208,7 @@ Deno.test("testingEqual", function (): void {
   assertFalse(
     equal({ a: undefined, b: undefined }, { a: undefined, c: undefined }),
   );
-  assertFalse(
-    equal({ a: undefined, b: undefined }, { a: undefined }),
-  );
+  assertFalse(equal({ a: undefined, b: undefined }, { a: undefined }));
   assertThrows(() => equal(new WeakMap(), new WeakMap()));
   assertThrows(() => equal(new WeakSet(), new WeakSet()));
   assert(!equal(new WeakMap(), new WeakSet()));
@@ -276,23 +259,23 @@ Deno.test("testingEqual", function (): void {
 
   assert(
     !equal(
-      new class A {
+      new (class A {
         private hello = "world";
-      }(),
-      new class B {
+      })(),
+      new (class B {
         private hello = "world";
-      }(),
+      })(),
     ),
   );
 
   assertFalse(
     equal(
-      new class A {
+      new (class A {
         private hello = "world";
-      }(),
-      new class B {
+      })(),
+      new (class B {
         private hello = "world";
-      }(),
+      })(),
     ),
   );
 });
@@ -306,10 +289,7 @@ Deno.test("testingNotEquals", function (): void {
     new Date(2019, 0, 3, 4, 20, 1, 10),
     new Date(2019, 0, 3, 4, 20, 1, 20),
   );
-  assertNotEquals(
-    new Date("invalid"),
-    new Date(2019, 0, 3, 4, 20, 1, 20),
-  );
+  assertNotEquals(new Date("invalid"), new Date(2019, 0, 3, 4, 20, 1, 20));
   let didThrow;
   try {
     assertNotEquals("Raptor", "Raptor");
@@ -476,8 +456,14 @@ Deno.test("testingAssertObjectMatching", function (): void {
   const m = { foo: /abc+/i, bar: [/abc/g, /abc/m] };
   const n = {
     foo: new Set(["foo", "bar"]),
-    bar: new Map([["foo", 1], ["bar", 2]]),
-    baz: new Map([["a", a], ["b", b]]),
+    bar: new Map([
+      ["foo", 1],
+      ["bar", 2],
+    ]),
+    baz: new Map([
+      ["a", a],
+      ["b", b],
+    ]),
   };
 
   // Simple subset
@@ -531,10 +517,7 @@ Deno.test("testingAssertObjectMatching", function (): void {
   assertObjectMatch(h, { foo: [1, 2, 3] });
   assertObjectMatch(i, { foo: [{ bar: false }] });
   assertObjectMatch(i, {
-    foo: [
-      { bar: false },
-      { bar: { bar: { bar: { foo: true } } } },
-    ],
+    foo: [{ bar: false }, { bar: { bar: { bar: { foo: true } } } }],
   });
   // Subset with nested array inside
   assertObjectMatch(j, { foo: [[1, 2, 3]] });
@@ -553,12 +536,15 @@ Deno.test("testingAssertObjectMatching", function (): void {
   {
     let didThrow;
     try {
-      assertObjectMatch({
-        foo: true,
-      }, {
-        foo: true,
-        bar: false,
-      });
+      assertObjectMatch(
+        {
+          foo: true,
+        },
+        {
+          foo: true,
+          bar: false,
+        },
+      );
       didThrow = false;
     } catch (e) {
       assert(e instanceof AssertionError);
@@ -716,9 +702,12 @@ Deno.test("testingAssertObjectMatching", function (): void {
   }
   {
     // match subsets of arrays
-    assertObjectMatch({ positions: [[1, 2, 3, 4]] }, {
-      positions: [[1, 2, 3]],
-    });
+    assertObjectMatch(
+      { positions: [[1, 2, 3, 4]] },
+      {
+        positions: [[1, 2, 3]],
+      },
+    );
   }
   //Regexp
   assertThrows(() => assertObjectMatch(m, { foo: /abc+/ }), AssertionError);
@@ -808,27 +797,33 @@ Deno.test("testingAssertRejectsWithReturnType", async () => {
 });
 
 Deno.test("testingAssertThrowsWithErrorCallback", () => {
-  assertThrows(() => {
-    throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
-  }, (error: Error) => {
-    assert(error instanceof AggregateError);
-    assertEquals(error.message, "baz");
-    assertEquals(error.errors.length, 2);
-    assertStringIncludes(error.errors[0].stack, "Error: foo");
-    assertStringIncludes(error.errors[1].stack, "Error: bar");
-  });
+  assertThrows(
+    () => {
+      throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
+    },
+    (error: Error) => {
+      assert(error instanceof AggregateError);
+      assertEquals(error.message, "baz");
+      assertEquals(error.errors.length, 2);
+      assertStringIncludes(error.errors[0].stack, "Error: foo");
+      assertStringIncludes(error.errors[1].stack, "Error: bar");
+    },
+  );
 });
 
 Deno.test("testingAssertRejectsWithErrorCallback", async () => {
-  await assertRejects(() => {
-    throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
-  }, (error: Error) => {
-    assert(error instanceof AggregateError);
-    assertEquals(error.message, "baz");
-    assertEquals(error.errors.length, 2);
-    assertStringIncludes(error.errors[0].stack, "Error: foo");
-    assertStringIncludes(error.errors[1].stack, "Error: bar");
-  });
+  await assertRejects(
+    () => {
+      throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
+    },
+    (error: Error) => {
+      assert(error instanceof AggregateError);
+      assertEquals(error.message, "baz");
+      assertEquals(error.errors.length, 2);
+      assertStringIncludes(error.errors[0].stack, "Error: foo");
+      assertStringIncludes(error.errors[1].stack, "Error: bar");
+    },
+  );
 });
 
 const createHeader = (): string[] => [
@@ -950,10 +945,7 @@ Deno.test({
     );
     assertThrows(
       (): void =>
-        assertEquals(
-          new Date("invalid"),
-          new Date(2019, 0, 3, 4, 20, 1, 20),
-        ),
+        assertEquals(new Date("invalid"), new Date(2019, 0, 3, 4, 20, 1, 20)),
       AssertionError,
       [
         "Values are not equal:",
@@ -1079,9 +1071,11 @@ Deno.test("assert almost equals number", () => {
   assertThrows(
     () => assertAlmostEquals(0.1 + 0.2, 0.3, 1e-17),
     AssertionError,
-    `"${(0.1 + 0.2).toExponential()}" expected to be close to "${
-      (0.3).toExponential()
-    }"`,
+    `"${
+      (
+        0.1 + 0.2
+      ).toExponential()
+    }" expected to be close to "${(0.3).toExponential()}"`,
   );
 
   //Special cases
@@ -1316,16 +1310,19 @@ Deno.test("Assert Throws Async Non-Error Fail", () => {
   );
 });
 
-Deno.test("assertEquals compares objects structurally if one object's constructor is undefined and the other is Object", () => {
-  const a = Object.create(null);
-  a.prop = "test";
-  const b = {
-    prop: "test",
-  };
+Deno.test(
+  "assertEquals compares objects structurally if one object's constructor is undefined and the other is Object",
+  () => {
+    const a = Object.create(null);
+    a.prop = "test";
+    const b = {
+      prop: "test",
+    };
 
-  assertEquals(a, b);
-  assertEquals(b, a);
-});
+    assertEquals(a, b);
+    assertEquals(b, a);
+  },
+);
 
 Deno.test("assertEquals diff for differently ordered objects", () => {
   assertThrows(
@@ -1437,20 +1434,23 @@ Deno.test("Assert Throws Async Parent Error", () => {
   );
 });
 
-Deno.test("Assert Throws Async promise rejected with custom Error", async () => {
-  class CustomError extends Error {}
-  class AnotherCustomError extends Error {}
-  await assertRejects(
-    () =>
-      assertRejects(
-        () => Promise.reject(new AnotherCustomError("failed")),
-        CustomError,
-        "fail",
-      ),
-    AssertionError,
-    'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
-  );
-});
+Deno.test(
+  "Assert Throws Async promise rejected with custom Error",
+  async () => {
+    class CustomError extends Error {}
+    class AnotherCustomError extends Error {}
+    await assertRejects(
+      () =>
+        assertRejects(
+          () => Promise.reject(new AnotherCustomError("failed")),
+          CustomError,
+          "fail",
+        ),
+      AssertionError,
+      'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
+    );
+  },
+);
 
 Deno.test("Assert Is Error Non-Error Fail", () => {
   assertThrows(
@@ -1473,29 +1473,32 @@ Deno.test("Assert Is Error Non-Error Fail", () => {
 });
 
 Deno.test("Assert Is Error Parent Error", () => {
-  assertIsError(
-    new AssertionError("Fail!"),
-    Error,
-    "Fail!",
-  );
+  assertIsError(new AssertionError("Fail!"), Error, "Fail!");
 });
 
 Deno.test("Assert Is Error with custom Error", () => {
   class CustomError extends Error {}
   class AnotherCustomError extends Error {}
-  assertIsError(
-    new CustomError("failed"),
-    CustomError,
-    "fail",
-  );
+  assertIsError(new CustomError("failed"), CustomError, "fail");
   assertThrows(
-    () =>
-      assertIsError(
-        new AnotherCustomError("failed"),
-        CustomError,
-        "fail",
-      ),
+    () => assertIsError(new AnotherCustomError("failed"), CustomError, "fail"),
     AssertionError,
     'Expected error to be instance of "CustomError", but was "AnotherCustomError".',
   );
+});
+
+Deno.test("Assert False with falsy values", () => {
+  assertFalse(false);
+  assertFalse(0);
+  assertFalse("");
+  assertFalse(null);
+  assertFalse(undefined);
+});
+
+Deno.test("Assert False with truthy values", () => {
+  assertThrows(() => assertFalse(true));
+  assertThrows(() => assertFalse(1));
+  assertThrows(() => assertFalse("a"));
+  assertThrows(() => assertFalse({}));
+  assertThrows(() => assertFalse([]));
 });
