@@ -21,10 +21,10 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import {
+  validateBoolean,
+  validateNumber,
   validateOneOf,
   validateString,
-  validateNumber,
-  validateBoolean,
 } from "../validators.mjs";
 import { isIP } from "../net.ts";
 import {

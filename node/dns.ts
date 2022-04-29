@@ -23,11 +23,11 @@
 import { nextTick } from "./_next_tick.ts";
 import { customPromisifyArgs } from "./internal/util.mjs";
 import {
+  validateBoolean,
+  validateFunction,
   validateNumber,
   validateOneOf,
   validateString,
-  validateFunction,
-  validateBoolean,
 } from "./internal/validators.mjs";
 import { isIP } from "./internal/net.ts";
 import {
@@ -184,7 +184,7 @@ function lookup(
       validateBoolean(options.all, "options.all");
       all = options.all;
     }
-    
+
     if (options?.verbatim != null) {
       validateBoolean(options.verbatim, "options.verbatim");
       verbatim = options.verbatim;
@@ -193,7 +193,7 @@ function lookup(
 
   if (!hostname) {
     emitInvalidHostnameWarning(hostname);
-    
+
     if (all) {
       nextTick(callback as LookupCallback, null, []);
     } else {
@@ -226,7 +226,10 @@ function lookup(
   const err = getaddrinfo(req, toASCII(hostname), family, hints, verbatim);
 
   if (err) {
-    nextTick(callback as LookupCallback, dnsException(err, "getaddrinfo", hostname));
+    nextTick(
+      callback as LookupCallback,
+      dnsException(err, "getaddrinfo", hostname),
+    );
 
     return {};
   }

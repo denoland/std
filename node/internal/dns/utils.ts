@@ -49,7 +49,9 @@ export interface LookupAddress {
   family: number;
 }
 
-export function isLookupOptions(options: unknown): options is LookupOptions | undefined {
+export function isLookupOptions(
+  options: unknown,
+): options is LookupOptions | undefined {
   return typeof options === "object" || typeof options === "undefined";
 }
 
