@@ -120,25 +120,31 @@ async function getValuesFromItem(
  *  - `"\t"` _tab_
  *  - `"|"` _pipe_
  *  - etc.
+ *
+ * @param columns Array of values specifying which data to include in the output
  */
 export type StringifyOptions = {
   headers?: boolean;
   separator?: string;
+  columns?: Column[];
 };
 
 /**
  * @param data The array of objects to encode
- * @param columns Array of values specifying which data to include in the output
  * @param options Output formatting options
  */
 export async function stringify(
   data: DataItem[],
-  columns: Column[],
   options: StringifyOptions = {},
 ): Promise<string> {
-  const { headers, separator: sep } = {
+  const {
+    headers,
+    separator: sep,
+    columns,
+  } = {
     headers: true,
     separator: ",",
+    columns: [],
     ...options,
   };
   if (sep.includes(QUOTE) || sep.includes(NEWLINE)) {
@@ -162,9 +168,7 @@ export async function stringify(
 
   for (const item of data) {
     const values = await getValuesFromItem(item, normalizedColumns);
-    output += values
-      .map((value) => getEscapedString(value, sep))
-      .join(sep);
+    output += values.map((value) => getEscapedString(value, sep)).join(sep);
     output += NEWLINE;
   }
 

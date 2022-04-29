@@ -3,7 +3,6 @@
 import { assertEquals, assertRejects } from "../testing/asserts.ts";
 
 import {
-  Column,
   DataItem,
   NEWLINE,
   stringify,
@@ -12,7 +11,6 @@ import {
 } from "./csv_stringify.ts";
 
 type StringifyTestCaseBase = {
-  columns: Column[];
   data: DataItem[];
   name: string;
   options?: StringifyOptions;
@@ -28,14 +26,15 @@ type StringifyTestCase = StringifyTestCaseBase & { expected: string };
 
 const stringifyTestCases: (StringifyTestCase | StringifyTestCaseError)[] = [
   {
-    columns: ["a"],
     data: [["foo"], ["bar"]],
     errorMessage: 'Property accessor is not of type "number"',
     name: "[CSV_stringify] Access array index using string",
+    options: {
+      columns: ["a"],
+    },
     throwsError: StringifyError,
   },
   {
-    columns: [0],
     data: [["foo"], ["bar"]],
     errorMessage: [
       "Separator cannot include the following strings:",
@@ -43,11 +42,10 @@ const stringifyTestCases: (StringifyTestCase | StringifyTestCaseError)[] = [
       "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
     ].join("\n"),
     name: "[CSV_stringify] Double quote in separator",
-    options: { separator: '"' },
+    options: { separator: '"', columns: [0] },
     throwsError: StringifyError,
   },
   {
-    columns: [0],
     data: [["foo"], ["bar"]],
     errorMessage: [
       "Separator cannot include the following strings:",
@@ -55,293 +53,359 @@ const stringifyTestCases: (StringifyTestCase | StringifyTestCaseError)[] = [
       "  - U+000D U+000A: Carriage Return + Line Feed (\\r\\n)",
     ].join("\n"),
     name: "[CSV_stringify] CRLF in separator",
-    options: { separator: "\r\n" },
+    options: { separator: "\r\n", columns: [0] },
     throwsError: StringifyError,
   },
   {
-    columns: [
-      {
-        fn: (obj) => obj.toUpperCase(),
-        prop: "msg",
-      },
-    ],
     data: [{ msg: { value: "foo" } }, { msg: { value: "bar" } }],
     name: "[CSV_stringify] Transform function",
+    options: {
+      columns: [
+        {
+          fn: (obj) => obj.toUpperCase(),
+          prop: "msg",
+        },
+      ],
+    },
     throwsError: TypeError,
   },
   {
-    columns: [],
     data: [],
     expected: NEWLINE,
     name: "[CSV_stringify] No data, no columns",
   },
   {
-    columns: [],
     data: [],
     expected: ``,
     name: "[CSV_stringify] No data, no columns, no headers",
     options: { headers: false },
   },
   {
-    columns: ["a"],
     data: [],
+    options: {
+      columns: ["a"],
+    },
     expected: `a${NEWLINE}`,
     name: "[CSV_stringify] No data, columns",
   },
   {
-    columns: ["a"],
     data: [],
     expected: ``,
     name: "[CSV_stringify] No data, columns, no headers",
-    options: { headers: false },
+    options: { headers: false, columns: ["a"] },
   },
   {
-    columns: [],
     data: [{ a: 1 }, { a: 2 }],
     expected: `${NEWLINE}${NEWLINE}${NEWLINE}`,
     name: "[CSV_stringify] Data, no columns",
   },
   {
-    columns: [0, 1],
-    data: [["foo", "bar"], ["baz", "qux"]],
+    data: [
+      ["foo", "bar"],
+      ["baz", "qux"],
+    ],
     expected: `0\r1${NEWLINE}foo\rbar${NEWLINE}baz\rqux${NEWLINE}`,
     name: "[CSV_stringify] Separator: CR",
-    options: { separator: "\r" },
+    options: { separator: "\r", columns: [0, 1] },
   },
   {
-    columns: [0, 1],
-    data: [["foo", "bar"], ["baz", "qux"]],
+    data: [
+      ["foo", "bar"],
+      ["baz", "qux"],
+    ],
     expected: `0\n1${NEWLINE}foo\nbar${NEWLINE}baz\nqux${NEWLINE}`,
     name: "[CSV_stringify] Separator: LF",
-    options: { separator: "\n" },
+    options: { separator: "\n", columns: [0, 1] },
   },
   {
-    columns: [1],
     data: [{ 1: 1 }, { 1: 2 }],
+    options: { columns: [1] },
     expected: `1${NEWLINE}1${NEWLINE}2${NEWLINE}`,
     name: "[CSV_stringify] Column: number accessor, Data: object",
   },
   {
-    columns: [{ header: "Value", prop: "value" }],
     data: [{ value: "foo" }, { value: "bar" }],
     expected: `foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Explicit header value, no headers",
-    options: { headers: false },
+    options: { headers: false, columns: [{ header: "Value", prop: "value" }] },
   },
   {
-    columns: [1],
-    data: [["key", "foo"], ["key", "bar"]],
+    data: [
+      ["key", "foo"],
+      ["key", "bar"],
+    ],
+    options: {
+      columns: [1],
+    },
     expected: `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Column: number accessor, Data: array",
   },
   {
-    columns: [[1]],
     data: [{ 1: 1 }, { 1: 2 }],
+    options: {
+      columns: [[1]],
+    },
     expected: `1${NEWLINE}1${NEWLINE}2${NEWLINE}`,
     name: "[CSV_stringify] Column: array number accessor, Data: object",
   },
   {
-    columns: [[1]],
-    data: [["key", "foo"], ["key", "bar"]],
+    data: [
+      ["key", "foo"],
+      ["key", "bar"],
+    ],
+    options: {
+      columns: [[1]],
+    },
     expected: `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Column: array number accessor, Data: array",
   },
   {
-    columns: [[1, 1]],
-    data: [["key", ["key", "foo"]], ["key", ["key", "bar"]]],
+    data: [
+      ["key", ["key", "foo"]],
+      ["key", ["key", "bar"]],
+    ],
+    options: {
+      columns: [[1, 1]],
+    },
     expected: `1${NEWLINE}foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Column: array number accessor, Data: array",
   },
   {
-    columns: ["value"],
     data: [{ value: "foo" }, { value: "bar" }],
+    options: {
+      columns: ["value"],
+    },
     expected: `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Column: string accessor, Data: object",
   },
   {
-    columns: [["value"]],
     data: [{ value: "foo" }, { value: "bar" }],
+    options: {
+      columns: [["value"]],
+    },
     expected: `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Column: array string accessor, Data: object",
   },
   {
-    columns: [["msg", "value"]],
     data: [{ msg: { value: "foo" } }, { msg: { value: "bar" } }],
+    options: {
+      columns: [["msg", "value"]],
+    },
     expected: `value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Column: array string accessor, Data: object",
   },
   {
-    columns: [
-      {
-        header: "Value",
-        prop: ["msg", "value"],
-      },
-    ],
     data: [{ msg: { value: "foo" } }, { msg: { value: "bar" } }],
+    options: {
+      columns: [
+        {
+          header: "Value",
+          prop: ["msg", "value"],
+        },
+      ],
+    },
     expected: `Value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Explicit header",
   },
   {
-    columns: [
-      {
-        fn: (str: string) => str.toUpperCase(),
-        prop: ["msg", "value"],
-      },
-    ],
     data: [{ msg: { value: "foo" } }, { msg: { value: "bar" } }],
+    options: {
+      columns: [
+        {
+          fn: (str: string) => str.toUpperCase(),
+          prop: ["msg", "value"],
+        },
+      ],
+    },
     expected: `value${NEWLINE}FOO${NEWLINE}BAR${NEWLINE}`,
     name: "[CSV_stringify] Transform function 1",
   },
   {
-    columns: [
-      {
-        fn: (str: string) => Promise.resolve(str.toUpperCase()),
-        prop: ["msg", "value"],
-      },
-    ],
     data: [{ msg: { value: "foo" } }, { msg: { value: "bar" } }],
+    options: {
+      columns: [
+        {
+          fn: (str: string) => Promise.resolve(str.toUpperCase()),
+          prop: ["msg", "value"],
+        },
+      ],
+    },
     expected: `value${NEWLINE}FOO${NEWLINE}BAR${NEWLINE}`,
     name: "[CSV_stringify] Transform function 1 async",
   },
   {
-    columns: [
-      {
-        fn: (obj: { value: string }) => obj.value,
-        prop: "msg",
-      },
-    ],
     data: [{ msg: { value: "foo" } }, { msg: { value: "bar" } }],
+    options: {
+      columns: [
+        {
+          fn: (obj: { value: string }) => obj.value,
+          prop: "msg",
+        },
+      ],
+    },
     expected: `msg${NEWLINE}foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Transform function 2",
   },
   {
-    columns: [
-      {
-        fn: (obj: { value: string }) => obj.value,
-        header: "Value",
-        prop: "msg",
-      },
-    ],
     data: [{ msg: { value: "foo" } }, { msg: { value: "bar" } }],
+    options: {
+      columns: [
+        {
+          fn: (obj: { value: string }) => obj.value,
+          header: "Value",
+          prop: "msg",
+        },
+      ],
+    },
     expected: `Value${NEWLINE}foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Transform function 2, explicit header",
   },
   {
-    columns: [0],
     data: [[{ value: "foo" }], [{ value: "bar" }]],
+    options: {
+      columns: [0],
+    },
     expected:
       `0${NEWLINE}"{""value"":""foo""}"${NEWLINE}"{""value"":""bar""}"${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: object",
   },
   {
-    columns: [0],
     data: [
       [[{ value: "foo" }, { value: "bar" }]],
       [[{ value: "baz" }, { value: "qux" }]],
     ],
+    options: {
+      columns: [0],
+    },
     expected:
       `0${NEWLINE}"[{""value"":""foo""},{""value"":""bar""}]"${NEWLINE}"[{""value"":""baz""},{""value"":""qux""}]"${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: arary of objects",
   },
   {
-    columns: [0],
     data: [[["foo", "bar"]], [["baz", "qux"]]],
+    options: {
+      columns: [0],
+    },
     expected:
       `0${NEWLINE}"[""foo"",""bar""]"${NEWLINE}"[""baz"",""qux""]"${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: array",
   },
   {
-    columns: [0],
     data: [[["foo", "bar"]], [["baz", "qux"]]],
     expected:
       `0${NEWLINE}"[""foo"",""bar""]"${NEWLINE}"[""baz"",""qux""]"${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: array, separator: tab",
-    options: { separator: "\t" },
+    options: { separator: "\t", columns: [0] },
   },
   {
-    columns: [0],
     data: [[], []],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}${NEWLINE}${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: undefined",
   },
   {
-    columns: [0],
     data: [[null], [null]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}${NEWLINE}${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: null",
   },
   {
-    columns: [0],
     data: [[0xa], [0xb]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}10${NEWLINE}11${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: hex number",
   },
   {
-    columns: [0],
     data: [[BigInt("1")], [BigInt("2")]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}1${NEWLINE}2${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: BigInt",
   },
   {
-    columns: [0],
     data: [[true], [false]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}true${NEWLINE}false${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: boolean",
   },
   {
-    columns: [0],
     data: [["foo"], ["bar"]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}foo${NEWLINE}bar${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: string",
   },
   {
-    columns: [0],
     data: [[Symbol("foo")], [Symbol("bar")]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}Symbol(foo)${NEWLINE}Symbol(bar)${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: symbol",
   },
   {
-    columns: [0],
     data: [[(n: number) => n]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}(n) => n${NEWLINE}`,
     name: "[CSV_stringify] Targeted value: function",
   },
   {
-    columns: [0],
     data: [['foo"']],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}"foo"""${NEWLINE}`,
     name: "[CSV_stringify] Value with double quote",
   },
   {
-    columns: [0],
     data: [["foo\r\n"]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}"foo\r\n"${NEWLINE}`,
     name: "[CSV_stringify] Value with CRLF",
   },
   {
-    columns: [0],
     data: [["foo\r"]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}foo\r${NEWLINE}`,
     name: "[CSV_stringify] Value with CR",
   },
   {
-    columns: [0],
     data: [["foo\n"]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}foo\n${NEWLINE}`,
     name: "[CSV_stringify] Value with LF",
   },
   {
-    columns: [0],
     data: [["foo,"]],
+    options: {
+      columns: [0],
+    },
     expected: `0${NEWLINE}"foo,"${NEWLINE}`,
     name: "[CSV_stringify] Value with comma",
   },
   {
-    columns: [0],
     data: [["foo,"]],
     expected: `0${NEWLINE}foo,${NEWLINE}`,
     name: "[CSV_stringify] Value with comma, tab separator",
-    options: { separator: "\t" },
+    options: { separator: "\t", columns: [0] },
   },
 ];
 
@@ -352,7 +416,7 @@ for (const tc of stringifyTestCases) {
       async fn() {
         await assertRejects(
           async () => {
-            await stringify(t.data, t.columns, t.options);
+            await stringify(t.data, t.options);
           },
           t.throwsError,
           t.errorMessage,
@@ -364,7 +428,7 @@ for (const tc of stringifyTestCases) {
     const t = tc as StringifyTestCase;
     Deno.test({
       async fn() {
-        const actual = await stringify(t.data, t.columns, t.options);
+        const actual = await stringify(t.data, t.options);
         assertEquals(actual, t.expected);
       },
       name: t.name,
