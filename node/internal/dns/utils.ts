@@ -49,14 +49,18 @@ export interface LookupAddress {
   family: number;
 }
 
-export function isLookupOptions(options: unknown): options is LookupOptions {
-  return options !== null && typeof options === "object";
+export function isLookupOptions(options: unknown): options is LookupOptions | undefined {
+  return typeof options === "object" || typeof options === "undefined";
 }
 
 export function isLookupCallback(
   options: unknown,
 ): options is (...args: unknown[]) => void {
   return typeof options === "function";
+}
+
+export function isFamily(options: unknown): options is number {
+  return typeof options === "number";
 }
 
 export function validateHints(hints: number) {

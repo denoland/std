@@ -20,11 +20,17 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { validateOneOf } from "../validators.mjs";
+import {
+  validateOneOf,
+  validateString,
+  validateNumber,
+  validateBoolean,
+} from "../validators.mjs";
 import { isIP } from "../net.ts";
 import {
   emitInvalidHostnameWarning,
   getDefaultVerbatim,
+  isFamily,
   isLookupOptions,
   validateHints,
 } from "../dns/utils.ts";
@@ -51,7 +57,7 @@ function onlookup(
     return;
   }
 
-  const family = this.family ? this.family : isIP(addresses[0]);
+  const family = this.family || isIP(addresses[0]);
   this.resolve({ address: addresses[0], family });
 }
 
@@ -120,6 +126,8 @@ function createLookupPromise(
   });
 }
 
+const validFamilies = [0, 4, 6];
+
 function lookup(
   hostname: string,
   family: number,
@@ -141,28 +149,42 @@ function lookup(
   options: unknown,
 ): Promise<void | LookupAddress | LookupAddress[]> {
   let hints = 0;
-  let family = -1;
+  let family = 0;
   let all = false;
   let verbatim = getDefaultVerbatim();
 
   // Parse arguments
-  if (hostname && typeof hostname !== "string") {
-    throw new ERR_INVALID_ARG_TYPE("hostname", "string", hostname);
-  } else if (isLookupOptions(options)) {
-    hints = options.hints! >>> 0;
-    family = options.family! >>> 0;
-    all = options.all === true;
-
-    if (typeof options.verbatim === "boolean") {
-      verbatim = options.verbatim === true;
-    }
-
-    validateHints(hints);
-  } else {
-    family = (options as number) >>> 0;
+  if (hostname) {
+    validateString(hostname, "hostname");
   }
 
-  validateOneOf(family, "family", [0, 4, 6]);
+  if (isFamily(options)) {
+    validateOneOf(options, "family", validFamilies);
+    family = options;
+  } else if (!isLookupOptions(options)) {
+    throw new ERR_INVALID_ARG_TYPE("options", ["integer", "object"], options);
+  } else {
+    if (options?.hints != null) {
+      validateNumber(options.hints, "options.hints");
+      hints = options.hints >>> 0;
+      validateHints(hints);
+    }
+
+    if (options?.family != null) {
+      validateOneOf(options.family, "options.family", validFamilies);
+      family = options.family;
+    }
+
+    if (options?.all != null) {
+      validateBoolean(options.all, "options.all");
+      all = options.all;
+    }
+
+    if (options?.verbatim != null) {
+      validateBoolean(options.verbatim, "options.verbatim");
+      verbatim = options.verbatim;
+    }
+  }
 
   return createLookupPromise(family, hostname, all, hints, verbatim);
 }

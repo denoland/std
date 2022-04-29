@@ -23,14 +23,17 @@
 import { nextTick } from "./_next_tick.ts";
 import { customPromisifyArgs } from "./internal/util.mjs";
 import {
-  validateCallback,
+  validateNumber,
   validateOneOf,
   validateString,
+  validateFunction,
+  validateBoolean,
 } from "./internal/validators.mjs";
 import { isIP } from "./internal/net.ts";
 import {
   emitInvalidHostnameWarning,
   getDefaultVerbatim,
+  isFamily,
   isLookupCallback,
   isLookupOptions,
   validateHints,
@@ -43,7 +46,7 @@ import type {
   LookupOptions,
 } from "./internal/dns/utils.ts";
 import type { ErrnoException } from "./internal/errors.ts";
-import { dnsException } from "./internal/errors.ts";
+import { dnsException, ERR_INVALID_ARG_TYPE } from "./internal/errors.ts";
 import {
   AI_ADDRCONFIG as ADDRCONFIG,
   getaddrinfo,
@@ -60,8 +63,7 @@ function onlookup(
     return this.callback(dnsException(err, "getaddrinfo", this.hostname));
   }
 
-  const family = this.family ? this.family : isIP(addresses[0]);
-  this.callback(null, addresses[0], family);
+  this.callback(null, addresses[0], this.family || isIP(addresses[0]));
 }
 
 function onlookupall(
@@ -80,7 +82,7 @@ function onlookupall(
     const addr = addresses[i];
     parsedAddresses[i] = {
       address: addr,
-      family: family ? family : isIP(addr),
+      family: family || isIP(addr),
     };
   }
 
@@ -92,6 +94,8 @@ type LookupCallback = (
   addressOrAddresses?: string | LookupAddress[] | null,
   family?: number,
 ) => void;
+
+const validFamilies = [0, 4, 6];
 
 // Easy DNS A/AAAA look up
 // lookup(hostname, [options,] callback)
@@ -141,7 +145,7 @@ function lookup(
   callback?: unknown,
 ): GetAddrInfoReqWrap | Record<string, never> {
   let hints = 0;
-  let family = -1;
+  let family = 0;
   let all = false;
   let verbatim = getDefaultVerbatim();
 
@@ -153,29 +157,43 @@ function lookup(
   if (isLookupCallback(options)) {
     callback = options;
     family = 0;
+  } else if (isFamily(options)) {
+    validateFunction(callback, "callback");
+
+    validateOneOf(options, "family", validFamilies);
+    family = options;
+  } else if (!isLookupOptions(options)) {
+    validateFunction(arguments.length === 2 ? options : callback, "callback");
+
+    throw new ERR_INVALID_ARG_TYPE("options", ["integer", "object"], options);
   } else {
-    validateCallback(callback);
+    validateFunction(callback, "callback");
 
-    if (isLookupOptions(options)) {
-      hints = options.hints! >>> 0;
-      family = options.family! >>> 0;
-      all = options.all === true;
-
-      if (typeof options.verbatim === "boolean") {
-        verbatim = options.verbatim === true;
-      }
-
+    if (options?.hints != null) {
+      validateNumber(options.hints, "options.hints");
+      hints = options.hints >>> 0;
       validateHints(hints);
-    } else {
-      family = (options as number) >>> 0;
+    }
+
+    if (options?.family != null) {
+      validateOneOf(options.family, "options.family", validFamilies);
+      family = options.family;
+    }
+
+    if (options?.all != null) {
+      validateBoolean(options.all, "options.all");
+      all = options.all;
+    }
+    
+    if (options?.verbatim != null) {
+      validateBoolean(options.verbatim, "options.verbatim");
+      verbatim = options.verbatim;
     }
   }
 
-  validateOneOf(family, "family", [0, 4, 6]);
-
   if (!hostname) {
     emitInvalidHostnameWarning(hostname);
-
+    
     if (all) {
       nextTick(callback as LookupCallback, null, []);
     } else {
@@ -205,7 +223,13 @@ function lookup(
   req.hostname = hostname;
   req.oncomplete = all ? onlookupall : onlookup;
 
-  getaddrinfo(req, toASCII(hostname), family, hints, verbatim);
+  const err = getaddrinfo(req, toASCII(hostname), family, hints, verbatim);
+
+  if (err) {
+    nextTick(callback as LookupCallback, dnsException(err, "getaddrinfo", hostname));
+
+    return {};
+  }
 
   return req;
 }

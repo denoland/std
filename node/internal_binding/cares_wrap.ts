@@ -92,7 +92,7 @@ export function getaddrinfo(
       ),
     );
 
-    const error = addresses.length ? null : codeMap.get("EAI_NODATA")!;
+    const error = addresses.length ? 0 : codeMap.get("EAI_NODATA")!;
 
     if (!verbatim) {
       addresses.sort((a: string, b: string): number => {
