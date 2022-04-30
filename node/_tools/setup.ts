@@ -10,6 +10,7 @@ import {
   fromFileUrl,
   join,
   resolve,
+  sep,
 } from "../../path/mod.ts";
 import { ensureFile } from "../../fs/ensure_file.ts";
 import { config, ignoreList } from "./common.ts";
@@ -74,9 +75,7 @@ function checkConfigTestFilesOrder(testFileLists: Array<string[]>) {
     const sortedTestList = JSON.parse(JSON.stringify(testFileList));
     sortedTestList.sort();
     if (JSON.stringify(testFileList) !== JSON.stringify(sortedTestList)) {
-      throw new Error(
-        `File names in \`config.json\` are not correct order.`,
-      );
+      throw new Error(`File names in \`config.json\` are not correct order.`);
     }
   }
 }
@@ -140,12 +139,17 @@ async function decompressTests(archivePath: string) {
  * passed file against it. If a match were to be found, it will return the test
  * suite specified for that file
  */
-function getRequestedFileSuite(file: string): string | undefined {
-  for (const suite in config.tests) {
-    for (const regex of config.tests[suite]) {
-      if (new RegExp("^" + regex).test(file)) {
-        return suite;
-      }
+function getRequestedFileSuite(
+  file: string,
+  expectedSuite: string,
+): string | undefined {
+  if (!config.tests[expectedSuite]) {
+    return;
+  }
+
+  for (const regex of config.tests[expectedSuite]) {
+    if (new RegExp("^" + regex).test(file)) {
+      return expectedSuite;
     }
   }
 }
@@ -159,25 +163,22 @@ async function copyTests(filePath: string): Promise<void> {
   const suitesFolder = fromFileUrl(
     new URL(config.suitesFolder, import.meta.url),
   );
+
   for await (const entry of walk(path, { skip: ignoreList })) {
-    const suite = getRequestedFileSuite(entry.name);
+    const expectedSuite = dirname(entry.path).split(sep).at(-1)!;
+    const suite = getRequestedFileSuite(entry.name, expectedSuite);
     if (!suite) continue;
 
-    const destPath = resolve(
-      suitesFolder,
-      suite,
-      basename(entry.name),
-    );
+    const destPath = resolve(suitesFolder, suite, basename(entry.name));
     await ensureFile(destPath);
     const destFile = await Deno.open(destPath, {
       create: true,
       truncate: true,
       write: true,
     });
-    const srcFile = await Deno.open(
-      join(path, suite, entry.name),
-      { read: true },
-    );
+    const srcFile = await Deno.open(join(path, suite, entry.name), {
+      read: true,
+    });
     // This will allow CI to pass without checking linting and formatting
     // on the test suite files, removing the need to maintain that as well
     await writeAll(
@@ -249,9 +250,12 @@ if (CACHE_MODE === "prompt") {
 
   if (testFolderExists) {
     while (true) {
-      const r = (prompt(
-        `Decompressed file "${decompressedSourcePath}" found, use file? Y/N:`,
-      ) ?? "").trim()
+      const r = (
+        prompt(
+          `Decompressed file "${decompressedSourcePath}" found, use file? Y/N:`,
+        ) ?? ""
+      )
+        .trim()
         .toUpperCase();
       if (r === "Y") {
         break;

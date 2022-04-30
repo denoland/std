@@ -176,3 +176,24 @@ snapshot[`Snapshot Test - Update 3`] = `
   "",
 ]
 `;
+
+snapshot[`Snapshot Test - Regression #2140 1`] = `
+{
+  content: "\\n      <h1>Testing a page</h1>\\n      <p>This is a test</p>\\n      <ul>\\n        <li>1</li>\\n        <li>2</li>\\n        <li>3</li>\\n        <li>4</li>\\n      </ul>\\n      ",
+  title: "Testing a page",
+}
+`;
+
+snapshot[`Snapshot Test - Regression #2144 1`] = `
+{
+  fmt: {
+    files: {
+      exclude: [
+      ],
+      include: [
+      ],
+    },
+    options: {},
+  },
+}
+`;

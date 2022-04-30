@@ -1,3 +1,11 @@
+### 0.137.0 / 2022.04.28
+
+- feat(testing): infer stub and spy return types from properties (#2137)
+- fix(http): export interface ServeTlsInit (#2148)
+- fix(node): use Web Crypto API via globalThis (#2115)
+- fix(wasi): ContextOptions is an optional argument (#2138)
+- http: serve() should log where it is listening (#1641)
+
 ### 0.136.0 / 2022.04.21
 
 - feat(testing): Implement "assertSnapshot" (#2039)
