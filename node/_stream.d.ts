@@ -39,6 +39,7 @@ interface ReadableOptions extends StreamOptions<Readable> {
   encoding?: BufferEncoding | undefined;
   read?(this: Readable, size: number): void;
 }
+// TODO(duelsik): Reduce overrides
 /**
  * @since v0.9.4
  */

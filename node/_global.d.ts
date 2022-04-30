@@ -31,7 +31,7 @@ export interface ErrnoException extends Error {
 }
 
 // https://nodejs.org/api/stream.html#class-streamreadable
-type ReadableStreamListenerMap = {
+export type ReadableStreamListenerMap = {
   close: () => void;
   // (Node docs are explicitly listing any as possible chunk type)
   // deno-lint-ignore no-explicit-any
@@ -62,7 +62,7 @@ export interface ReadableStream
   extends ReadableStreamI, EventEmitter<ReadableStreamListenerMap> {}
 
 // https://nodejs.org/api/stream.html#class-streamwritable
-type WritableStreamListenerMap = {
+export type WritableStreamListenerMap = {
   close: () => void;
   drain: () => void;
   error: (error: Error) => void; // Not sure if error exists when calling destroy without parameter
