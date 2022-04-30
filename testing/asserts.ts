@@ -133,6 +133,13 @@ export function assert(expr: unknown, msg = ""): asserts expr {
   }
 }
 
+/** Make an assertion, error will be thrown if `expr` have truthy value. */
+export function assertFalse(expr: unknown, msg = ""): asserts expr is false {
+  if (expr) {
+    throw new AssertionError(msg);
+  }
+}
+
 /**
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
  * deeply equal, then throw.
