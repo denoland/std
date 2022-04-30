@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { fromFileUrl } from "../path.ts";
 import { EventEmitter } from "../events.ts";
+import { Buffer } from "../buffer.ts";
 import { notImplemented } from "../_utils.ts";
 
 export function asyncIterableIteratorToCallback<T>(
@@ -23,7 +24,7 @@ export function asyncIterableIteratorToCallback<T>(
 export function asyncIterableToCallback<T>(
   iter: AsyncIterable<T>,
   callback: (val: T, done?: boolean) => void,
-  errCallback: (e: unknown) => void,
+  errCallback: (e: Error) => void,
 ) {
   const iterator = iter[Symbol.asyncIterator]();
   function next() {
@@ -45,7 +46,7 @@ type watchOptions = {
   encoding?: string;
 };
 
-type watchListener = (eventType: string, filename: string) => void;
+type watchListener = FSWatcherListenerMap["change"];
 
 export function watch(
   filename: string | URL,
@@ -102,7 +103,14 @@ export function watch(
 
 export { watch as watchFile };
 
-class FSWatcher extends EventEmitter {
+// https://nodejs.org/api/fs.html#class-fsfswatcher
+export type FSWatcherListenerMap = {
+  change: (eventType: string, filename?: string | Buffer) => void;
+  error: (error: Error) => void;
+  close: () => void;
+};
+
+class FSWatcher extends EventEmitter<FSWatcherListenerMap> {
   close: () => void;
   constructor(closer: () => void) {
     super();
