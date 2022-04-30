@@ -126,6 +126,7 @@ interface NodeEventTarget extends
   removeListener: NodeEventTarget["off"];
 }
 
+// TODO(duelsik): Post an issue about making this place less imperative and just export different class depending on `isMainThread`
 type ParentPort = typeof self & NodeEventTarget;
 
 // deno-lint-ignore no-explicit-any
