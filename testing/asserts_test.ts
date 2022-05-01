@@ -279,6 +279,20 @@ Deno.test("testingEqual", function (): void {
   );
 });
 
+Deno.test("testingEqualCircular", () => {
+  const objA: { prop?: unknown } = {};
+  objA.prop = objA;
+  const objB: { prop?: unknown } = {};
+  objB.prop = objB;
+  assert(equal(objA, objB));
+
+  const mapA = new Map();
+  mapA.set("prop", mapA);
+  const mapB = new Map();
+  mapB.set("prop", mapB);
+  assert(equal(mapA, mapB));
+});
+
 Deno.test("testingNotEquals", function (): void {
   const a = { foo: "bar" };
   const b = { bar: "foo" };
