@@ -1,5 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
+/** This module is browser compatible.
+ *  
+ * @module
+ */
 
 export * from "./aggregate_groups.ts";
 export * from "./associate_by.ts";

@@ -8,6 +8,8 @@ import {
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
  * safe to re-export.
+ * 
+ * @module
  */
 const webCrypto = ((crypto) => ({
   getRandomValues: crypto.getRandomValues?.bind(crypto),

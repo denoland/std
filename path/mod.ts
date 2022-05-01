@@ -1,7 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright the Browserify authors. MIT License.
-// Ported mostly from https://github.com/browserify/path-browserify/
-// This module is browser compatible.
+
+/**
+ * Ported mostly from https://github.com/browserify/path-browserify/
+ * This module is browser compatible.
+ * 
+ * @module
+ */
 
 import { isWindows } from "../_util/os.ts";
 import * as _win32 from "./win32.ts";
