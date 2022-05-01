@@ -225,7 +225,7 @@ let columns: Column[] = [
   "age",
 ];
 
-console.log(await stringify(data, columns));
+console.log(await stringify(data, { columns }));
 // first,age
 // Rick,70
 // Morty,14
@@ -243,7 +243,7 @@ columns = [
   },
 ];
 
-console.log(await stringify(data, columns, { separator: "\t" }));
+console.log(await stringify(data, { separator: "\t", columns }));
 // name	is_adult
 // Rick Sanchez	true
 // Morty Smith	false
