@@ -48,7 +48,7 @@ enum socketType {
 
 interface AddressInfo {
   address: string;
-  family?: string;
+  family?: number;
   port: number;
 }
 
@@ -84,7 +84,7 @@ export class TCP extends ConnectionWrap {
   #port?: number;
 
   #remoteAddress?: string;
-  #remoteFamily?: string;
+  #remoteFamily?: number;
   #remotePort?: number;
 
   #backlog?: number;
@@ -130,7 +130,7 @@ export class TCP extends ConnectionWrap {
       const remoteAddr = conn.remoteAddr as Deno.NetAddr;
       this.#remoteAddress = remoteAddr.hostname;
       this.#remotePort = remoteAddr.port;
-      this.#remoteFamily = isIP(remoteAddr.hostname) === 6 ? "IPv6" : "IPv4";
+      this.#remoteFamily = isIP(remoteAddr.hostname);
     }
   }
 
@@ -248,7 +248,7 @@ export class TCP extends ConnectionWrap {
 
     sockname.address = this.#address;
     sockname.port = this.#port;
-    sockname.family = isIP(this.#address) === 6 ? "IPv6" : "IPv4";
+    sockname.family = isIP(this.#address);
 
     return 0;
   }
@@ -342,7 +342,7 @@ export class TCP extends ConnectionWrap {
   #connect(req: TCPConnectWrap, address: string, port: number): number {
     this.#remoteAddress = address;
     this.#remotePort = port;
-    this.#remoteFamily = isIP(address) === 6 ? "IPv6" : "IPv4";
+    this.#remoteFamily = isIP(address);
 
     const connectOptions: Deno.ConnectOptions = {
       hostname: address,

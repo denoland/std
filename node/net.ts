@@ -67,7 +67,7 @@ import {
   DTRACE_NET_STREAM_END,
 } from "./internal/dtrace.ts";
 import { Buffer } from "./buffer.ts";
-import type { LookupOneOptions } from "./dns.ts";
+import type { LookupOneOptions } from "./internal/dns/utils.ts";
 import {
   validateAbortSignal,
   validateFunction,
@@ -1229,7 +1229,7 @@ export class Socket extends Duplex {
    * The string representation of the remote IP family. `"IPv4"` or `"IPv6"`.
    */
   get remoteFamily(): string | undefined {
-    return this._getpeername().family;
+    return `IPv${this._getpeername().family}`;
   }
 
   /**

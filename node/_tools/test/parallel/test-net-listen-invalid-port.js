@@ -21,7 +21,7 @@ const invalidPort = -1 >>> 0;
 
 new net.Server().listen(0, function() {
   const address = this.address();
-  const key = `${address.family.slice(-1)}:${address.address}:0`;
+  const key = `${address.family}:${address.address}:0`;
 
   assert.strictEqual(this._connectionKey, key);
   this.close();
