@@ -4,7 +4,6 @@
 /**
  * Ported mostly from https://github.com/browserify/path-browserify/
  * This module is browser compatible.
- * 
  * @module
  */
 

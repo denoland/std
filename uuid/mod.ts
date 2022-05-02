@@ -5,7 +5,6 @@
 // Supporting Support for RFC4122 version 1, 4, and 5 UUIDs
 /**
  * UUid
- * 
  * @module
  */
 
