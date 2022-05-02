@@ -272,7 +272,7 @@ Deno.test("Snapshot Test - Options", async (t) => {
 
       Deno.test("${snapshotName}", async (t) => {
         await assertSnapshot(t, [1, 2, 3], {
-          path: "${snapshotFilePath}",
+          path: "${snapshotFilePath.replace(/\\/g, "\\\\")}",
           mode: "update",
         });
       });
