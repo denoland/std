@@ -278,7 +278,7 @@ Deno.test("Snapshot Test - Options", async (t) => {
       });
     `);
 
-    const { snapshot } = await import(snapshotFilePath);
+    const { snapshot } = await import(toFileUrl(snapshotFilePath).toString());
 
     await assertSnapshot(t, snapshot[`${snapshotName} 1`]);
     await assertSnapshot(t, formatTestOutput(result.output));
