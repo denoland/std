@@ -1345,9 +1345,7 @@ function endReadableNT(state, stream) {
     stream.emit("end");
 
     if (stream.writable && stream.allowHalfOpen === false) {
-      // Differ from Node here to align on end vs write ordering in event loop
-      // nextTick(endWritableNT, stream);
-      endWritableNT(stream);
+      nextTick(endWritableNT, stream);
     } else if (state.autoDestroy) {
       // In case of duplex streams we need a way to detect
       // if the writable side is ready for autoDestroy as well.

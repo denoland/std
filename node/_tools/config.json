@@ -314,7 +314,6 @@
       "test-net-sync-cork.js",
       "test-net-timeout-no-handle.js",
       "test-net-writable.js",
-      "test-net-write-after-close.js",
       "test-net-write-after-end-nt.js",
       "test-net-write-arguments.js",
       "test-net-write-fully-async-buffer.js",
