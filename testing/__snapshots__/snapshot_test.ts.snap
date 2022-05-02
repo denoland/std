@@ -141,42 +141,17 @@ snapshot[`Snapshot Test - Failed Assertion > Object 1`] = `
 [
   1,
   2,
-  3,
 ]
 `;
 
-snapshot[`Snapshot Test - Failed Assertion > Object 2`] = `
-"Snapshot does not match:
+snapshot[`Snapshot Test - Failed Assertion > Object 2`] = `"Failed assertion: Expected snapshot not to match"`;
 
+snapshot[`Snapshot Test - Failed Assertion > String 1`] = `"Hello!"`;
 
-    [Diff] Actual / Expected
-
-
-    [
-      1,
-      2,
-+     3,
-    ]
-"
-`;
-
-snapshot[`Snapshot Test - Failed Assertion > String 1`] = `"Hello World!"`;
-
-snapshot[`Snapshot Test - Failed Assertion > String 2`] = `
-'Snapshot does not match:
-
-
-    [Diff] Actual / Expected
-
-
--   "Hello!"
-+   "Hello World!"
-
-'
-`;
+snapshot[`Snapshot Test - Failed Assertion > String 2`] = `"Failed assertion: Expected snapshot not to match"`;
 
 snapshot[`Snapshot Test - Update 1`] = `
-"running 1 test from ./testing/.tmp/test.ts
+"running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
 
  > 1 snapshots updated.
@@ -187,7 +162,7 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms
 `;
 
 snapshot[`Snapshot Test - Update 2`] = `
-"running 1 test from ./testing/.tmp/test.ts
+"running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
@@ -196,7 +171,7 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms
 `;
 
 snapshot[`Snapshot Test - Update 3`] = `
-"running 1 test from ./testing/.tmp/test.ts
+"running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
 
  > 1 snapshots updated.

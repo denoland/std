@@ -118,14 +118,15 @@ Deno.test("Snapshot Test - Failed Assertion", async (t) => {
 });
 
 Deno.test("Snapshot Test - Update", async (t) => {
-  const TEMP_DIR = ".tmp";
+  const tempDir = await Deno.makeTempDir();
+  const snapshotModulePath = join(
+    dirname(fromFileUrl(import.meta.url)),
+    "snapshot.ts",
+  );
 
-  async function runTestWithUpdateFlag(test: string, deleteTempDir = true) {
-    const testDir = dirname(fromFileUrl(import.meta.url));
-    const tempDir = join(testDir, TEMP_DIR);
+  async function runTestWithUpdateFlag(test: string) {
     const tempTestFileName = "test.ts";
     const tempTestFilePath = join(tempDir, tempTestFileName);
-    await ensureDir(tempDir);
     await Deno.writeTextFile(tempTestFilePath, test);
 
     const process = await Deno.run({
@@ -137,10 +138,6 @@ Deno.test("Snapshot Test - Update", async (t) => {
     const error = await process.stderrOutput();
     process.close();
 
-    if (deleteTempDir) {
-      await Deno.remove(tempDir, { recursive: true });
-    }
-
     return {
       output: new TextDecoder().decode(output),
       error: new TextDecoder().decode(error),
@@ -149,7 +146,10 @@ Deno.test("Snapshot Test - Update", async (t) => {
 
   function formatOutput(string: string) {
     // Strip colors and obfuscate any timings
-    return stripColor(string).replace(/([0-9])+m?s/g, "--ms");
+    return stripColor(string).replace(/([0-9])+m?s/g, "--ms").replace(
+      /(?<=running 1 test from )(.*)(?=test.ts)/g,
+      "<tempDir>/",
+    );
   }
 
   function formatError(string: string) {
@@ -163,7 +163,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
    */
   const result1 = await runTestWithUpdateFlag(
     `
-    import { assertSnapshot } from "../snapshot.ts";
+    import { assertSnapshot } from "${snapshotModulePath}";
 
     Deno.test("Snapshot Test - Update", async (t) => {
       await assertSnapshot(t, [
@@ -172,7 +172,6 @@ Deno.test("Snapshot Test - Update", async (t) => {
       ]);
     });
     `,
-    false,
   );
 
   await assertSnapshot(t, formatOutput(result1.output));
@@ -183,7 +182,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
    */
   const result2 = await runTestWithUpdateFlag(
     `
-    import { assertSnapshot } from "../snapshot.ts";
+    import { assertSnapshot } from "${snapshotModulePath}";
 
     Deno.test("Snapshot Test - Update", async (t) => {
       await assertSnapshot(t, [
@@ -192,7 +191,6 @@ Deno.test("Snapshot Test - Update", async (t) => {
       ]);
     });
     `,
-    false,
   );
 
   await assertSnapshot(t, formatOutput(result2.output));
@@ -202,7 +200,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
    * Existing snapshot - updates
    */
   const result3 = await runTestWithUpdateFlag(`
-    import { assertSnapshot } from "../snapshot.ts";
+    import { assertSnapshot } from "${snapshotModulePath}";
 
     Deno.test("Snapshot Test - Update", async (t) => {
       await assertSnapshot(t, [
@@ -216,6 +214,9 @@ Deno.test("Snapshot Test - Update", async (t) => {
 
   await assertSnapshot(t, formatOutput(result3.output));
   assert(!formatError(result3.error), "unexpected output to stderr");
+
+  // Tidyup
+  await Deno.remove(tempDir, { recursive: true });
 });
 
 // Regression test for https://github.com/denoland/deno_std/issues/2140
