@@ -1,8 +1,10 @@
 This directory contains the test cases copied from
 [JSONTestSuite](https://github.com/nst/JSONTestSuite) organization.
 
-The files in `./test_parsing/` have been copied from https://github.com/nst/JSONTestSuite/tree/d64aefb55228d9584d3e5b2433f720ea8fd00c82/test_parsing .
-The files in `./test_transform/` have been copied from https://github.com/nst/JSONTestSuite/tree/d64aefb55228d9584d3e5b2433f720ea8fd00c82/test_transform .
+The files in `./test_parsing/` have been copied from
+https://github.com/nst/JSONTestSuite/tree/d64aefb55228d9584d3e5b2433f720ea8fd00c82/test_parsing.
+The files in `./test_transform/` have been copied from
+https://github.com/nst/JSONTestSuite/tree/d64aefb55228d9584d3e5b2433f720ea8fd00c82/test_transform.
 
 The license of the copied JSON file is as follows.
 
