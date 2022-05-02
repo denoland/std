@@ -2558,15 +2558,17 @@ codes.ERR_UNKNOWN_ENCODING = ERR_UNKNOWN_ENCODING;
  * @param {object} errorProperties Object with additional properties to be added to the error.
  * @returns {Error}
  */
-const genericNodeError = hideStackFrames(function genericNodeError(message, errorProperties) {
-  // eslint-disable-next-line no-restricted-syntax
-  const err = new Error(message);
-  Object.assign(err, errorProperties);
+const genericNodeError = hideStackFrames(
+  function genericNodeError(message, errorProperties) {
+    // eslint-disable-next-line no-restricted-syntax
+    const err = new Error(message);
+    Object.assign(err, errorProperties);
 
-  return err;
-});
+    return err;
+  },
+);
 
-export { codes, hideStackFrames, genericNodeError };
+export { codes, genericNodeError, hideStackFrames };
 
 export default {
   AbortError,

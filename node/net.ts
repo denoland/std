@@ -510,7 +510,7 @@ function _writeAfterFIN(
 
   const err = genericNodeError(
     "This socket has been ended by the other party",
-    { code: "EPIPE" }
+    { code: "EPIPE" },
   );
 
   if (typeof cb === "function") {
@@ -713,7 +713,7 @@ function _afterShutdown(this: ShutdownWrap<TCP>) {
   this.callback();
 }
 
-function _emitCloseNT(s: Socket |Server) {
+function _emitCloseNT(s: Socket | Server) {
   debug("SERVER: emit close");
   s.emit("close");
 }

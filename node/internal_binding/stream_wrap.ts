@@ -319,7 +319,10 @@ export class LibuvStreamWrap extends HandleWrap {
       let status: number;
 
       // TODO(cmorten): map err to status codes
-      if (e instanceof Deno.errors.BadResource || e instanceof Deno.errors.BrokenPipe) {
+      if (
+        e instanceof Deno.errors.BadResource ||
+        e instanceof Deno.errors.BrokenPipe
+      ) {
         status = codeMap.get("EBADF")!;
       } else {
         status = codeMap.get("UNKNOWN")!;
