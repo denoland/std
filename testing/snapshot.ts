@@ -51,6 +51,10 @@ export type SnapshotOptions<T = unknown> = {
   serializer?: (actual: T) => string;
 };
 
+function getErrorMessage(message: string, options: SnapshotOptions) {
+  return typeof options.msg === "string" ? options.msg : message;
+}
+
 /**
  * Default serializer for `assertSnapshot`.
  */
@@ -216,7 +220,10 @@ class AssertSnapshotContext {
           Object.entries(snapshot).map(([name, snapshot]) => {
             if (typeof snapshot !== "string") {
               throw new AssertionError(
-                `Corrupt snapshot:\n\t(${name})\n\t${snapshotFileUrl}`,
+                getErrorMessage(
+                  `Corrupt snapshot:\n\t(${name})\n\t${snapshotFileUrl}`,
+                  options,
+                ),
               );
             }
             return [
@@ -231,7 +238,9 @@ class AssertSnapshotContext {
         error instanceof TypeError &&
         error.message.startsWith("Module not found")
       ) {
-        throw new AssertionError("Missing snapshot file.");
+        throw new AssertionError(
+          getErrorMessage("Missing snapshot file.", options),
+        );
       }
       throw error;
     }
@@ -342,7 +351,9 @@ export async function assertSnapshot(
     }
   } else {
     if (!snapshot) {
-      throw new AssertionError(`Missing snapshot: ${name}`);
+      throw new AssertionError(
+        getErrorMessage(`Missing snapshot: ${name}`, options),
+      );
     }
     if (equal(_actual, snapshot)) {
       return;
@@ -358,10 +369,9 @@ export async function assertSnapshot(
     } catch {
       message = `Snapshot does not match:\n${red(CAN_NOT_DISPLAY)} \n\n`;
     }
-    if (options.msg) {
-      message = options.msg;
-    }
-    throw new AssertionError(message);
+    throw new AssertionError(
+      getErrorMessage(message, options),
+    );
   }
 
   function getOptions(): SnapshotOptions {
