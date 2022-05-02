@@ -189,11 +189,17 @@ class AssertSnapshotContext {
     ensureFileSync(snapshotFilePath);
     Deno.writeTextFileSync(snapshotFilePath, buf.join("\n") + "\n");
 
-    if (this.#snapshotsUpdated.length > 0) {
-      // TODO: handle multiple files updated
-      console.log(
-        green(bold(`\n > ${this.#snapshotsUpdated.length} snapshots updated.`)),
-      );
+    const contexts = Array.from(AssertSnapshotContext.contexts.values());
+    if (contexts[contexts.length - 1] === this) {
+      let updated = 0;
+      for (const context of contexts) {
+        updated += context.getUpdatedCount();
+      }
+      if (updated > 0) {
+        console.log(
+          green(bold(`\n > ${updated} snapshots updated.`)),
+        );
+      }
     }
   };
 
@@ -292,6 +298,13 @@ class AssertSnapshotContext {
       currentSnapshots.set(snapshotName, undefined);
     }
     this.#updatedSnapshots.set(snapshotName, snapshot);
+  }
+
+  /**
+   * Get the number of updated snapshots.
+   */
+  public getUpdatedCount() {
+    return this.#snapshotsUpdated.length;
   }
 }
 
