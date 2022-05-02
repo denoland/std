@@ -4,9 +4,25 @@
 import { assert } from "../_util/assert.ts";
 
 export interface ParseOptions {
+  /** Allow trailing commas at the end of arrays and objects. (default: `true`) */
   allowTrailingComma?: boolean;
 }
 
+/**
+ * Converts a JSON with Comments (JSONC) string into an object.
+ * If a syntax error is found, throw a SyntaxError.
+ *
+ * @param text A valid JSONC string.
+ * @param options
+ * @param options.allowTrailingComma Allow trailing commas at the end of arrays and objects. (default: `true`)
+ *
+ * ```ts
+ * import * as JSONC from "https://deno.land/std@$STD_VERSION/encoding/jsonc.ts";
+ *
+ * JSONC.parse('{"foo": "bar", } // comment'); //=> { foo: "bar" }
+ * JSONC.parse('{"foo": "bar" } // comment', { allowTrailingComma: false }); //=> { foo: "bar" }
+ * ```
+ */
 export function parse(
   text: string,
   { allowTrailingComma = true }: ParseOptions = {},
@@ -16,8 +32,6 @@ export function parse(
   }
   return new JSONCParser(text, { allowTrailingComma }).parse() as JSONValue;
 }
-
-const originalJSONParse = globalThis.JSON.parse;
 
 type JSONValue =
   | { [key: string]: JSONValue }
@@ -54,6 +68,8 @@ type tokenized = {
   sourceText: string;
   position: number;
 };
+
+const originalJSONParse = globalThis.JSON.parse;
 
 // First tokenize and then parse the token.
 class JSONCParser {
@@ -343,6 +359,7 @@ function buildErrorMessage({ type, sourceText, position }: tokenized) {
       break;
     case tokenType.nullOrTrueOrFalseOrNumber:
     case tokenType.string:
+      // Truncate the string so that it is within 30 lengths.
       token = 30 < sourceText.length
         ? `${sourceText.slice(0, 30)}...`
         : sourceText;
