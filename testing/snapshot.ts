@@ -8,6 +8,41 @@ import { buildMessage, diff, diffstr } from "./_diff.ts";
 const CAN_NOT_DISPLAY = "[Cannot display]";
 const SNAPSHOT_DIR = "__snapshots__";
 
+export type SnapshotMode = 'assert' | 'update';
+
+export type SnapshotOptions<T = unknown> = {
+  /**
+   * Snapshot output directory. Snapshot files will be written to this directory.
+   * This can be relative to the test directory or an absolute path.
+   */
+  dir?: string;
+  /**
+   * Snapshot mode. Defaults to `assert`, unless the `-u` or `--update` flag is
+   * passed, in which case this will be set to `update`. This option takes higher
+   * priority than the update flag. If the `--update` flag is passed, it will be
+   * ignored if the `mode` option is set.
+   */
+  mode?: SnapshotMode;
+  /**
+   * Failure message to log when the assertion fails. Specifying this option will
+   * cause the diff not to be logged.
+   */
+  msg?: string;
+  /**
+   * Name of the snapshot to use in the snapshot file.
+   */
+  name?: string;
+  /**
+   * Snapshot output path. The shapshot will be written to this file. This can be
+   * a path relative to the test directory or an absolute path.
+   */
+  path?: string;
+  /**
+   * Function to use when serializing the snapshot.
+   */
+  serializer?: (actual: T) => string;
+};
+
 type AssertSnapshotContext = {
   snapshotFileUrl: URL | null;
   teardownRegistered: boolean;
@@ -94,21 +129,27 @@ function registerSnapshotTeardown(context: AssertSnapshotContext) {
  * });
  * ```
  */
+export async function assertSnapshot<T>(
+  t: Deno.TestContext,
+  actual: T,
+  options: SnapshotOptions<T>,
+): Promise<void>;
 export async function assertSnapshot(
   context: Deno.TestContext,
   actual: unknown,
-  msg?: string,
+  msgOrOpts?: string,
 ): Promise<void>;
 export async function assertSnapshot<T>(
   context: Deno.TestContext,
   actual: T,
-  msg?: string,
+  msgOrOpts?: string,
 ): Promise<void>;
 export async function assertSnapshot(
   context: Deno.TestContext,
   actual: unknown,
-  msg?: string,
+  msgOrOpts?: string | SnapshotOptions<unknown>,
 ): Promise<void> {
+  const options = getOptions();
   const assertSnapshotContext = getAssertSnapshotContext();
   const testName = getTestName(context);
   const count = getCount();
@@ -144,12 +185,23 @@ export async function assertSnapshot(
     } catch {
       message = `Snapshot does not match:\n${red(CAN_NOT_DISPLAY)} \n\n`;
     }
-    if (msg) {
-      message = msg;
+    if (options.msg) {
+      message = options.msg;
     }
     throw new AssertionError(message);
   }
 
+  function getOptions() {
+    if (msgOrOpts && typeof msgOrOpts === "object") {
+      return {
+        msg: msgOrOpts.msg,
+      };
+    }
+
+    return {
+      msg: msgOrOpts,
+    };
+  }
   function getAssertSnapshotContext() {
     if (!_assertSnapshotContext) {
       _assertSnapshotContext = {
