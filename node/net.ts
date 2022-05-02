@@ -42,7 +42,7 @@ import {
   ERR_SOCKET_CLOSED,
   errnoException,
   exceptionWithHostPort,
-  NodeError,
+  genericNodeError,
   uvExceptionWithHostPort,
 } from "./internal/errors.ts";
 import type { ErrnoException } from "./internal/errors.ts";
@@ -508,16 +508,20 @@ function _writeAfterFIN(
     encoding = null;
   }
 
-  const err = new NodeError(
-    "EPIPE",
+  const err = genericNodeError(
     "This socket has been ended by the other party",
+    { code: "EPIPE" }
   );
 
   if (typeof cb === "function") {
     defaultTriggerAsyncIdScope(this[asyncIdSymbol], nextTick, cb, err);
   }
 
-  this.destroy(err);
+  if (this._server) {
+    nextTick(() => this.destroy(err));
+  } else {
+    this.destroy(err);
+  }
 
   return false;
 }
@@ -709,9 +713,9 @@ function _afterShutdown(this: ShutdownWrap<TCP>) {
   this.callback();
 }
 
-function _emitCloseNT(socket: Socket) {
+function _emitCloseNT(s: Socket |Server) {
   debug("SERVER: emit close");
-  socket.emit("close");
+  s.emit("close");
 }
 
 /**
@@ -1401,15 +1405,10 @@ export class Socket extends Duplex {
       this[kBytesRead] = this._handle.bytesRead;
       this[kBytesWritten] = this._handle.bytesWritten;
 
-      // deno-lint-ignore no-this-alias
-      const that = this;
-
       this._handle.close(() => {
-        // Close is async, so we differ from Node here in explicitly waiting for
-        // the callback to have fired.
-        that._handle!.onread = _noop;
-        that._handle = null;
-        that._sockname = undefined;
+        this._handle!.onread = _noop;
+        this._handle = null;
+        this._sockname = undefined;
 
         cb(exception);
 
@@ -1839,6 +1838,8 @@ function _onconnection(this: any, err: number, clientHandle?: Handle) {
     readable: true,
     writable: true,
   });
+
+  // TODO: implement noDelay and setKeepAlive
 
   self._connections++;
   socket.server = self;

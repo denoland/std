@@ -448,8 +448,7 @@ export class TCP extends ConnectionWrap {
   }
 
   /** Handle server closure. */
-  override async _onClose(): Promise<number> {
-    // TODO(cmorten): this isn't great
+  override _onClose(): number {
     this.#closed = true;
     this.reading = false;
 
@@ -472,6 +471,6 @@ export class TCP extends ConnectionWrap {
       }
     }
 
-    return await LibuvStreamWrap.prototype._onClose.call(this);
+    return LibuvStreamWrap.prototype._onClose.call(this);
   }
 }
