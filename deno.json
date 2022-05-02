@@ -24,7 +24,7 @@
       "exclude": [
         ".git",
         "_wasm_crypto/target",
-        "encoding/testdata/jsonc/**.js",
+        "encoding/testdata/jsonc",
         "cov",
         "node/vendor",
         "node/_module/node_modules/",
