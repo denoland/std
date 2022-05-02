@@ -1,13 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { stripColor } from "../fmt/colors.ts";
-import { dirname, fromFileUrl, join } from "../path/mod.ts";
+import { dirname, fromFileUrl, join, toFileUrl } from "../path/mod.ts";
 import { assert, assertInstanceOf, AssertionError, fail } from "./asserts.ts";
 import { assertSnapshot, serialize } from "./snapshot.ts";
 
-const SNAPSHOT_MODULE_PATH = join(
+const SNAPSHOT_MODULE_URL = toFileUrl(join(
   dirname(fromFileUrl(import.meta.url)),
   "snapshot.ts",
-);
+));
 
 function formatTestOutput(string: string) {
   // Strip colors and obfuscate any timings
@@ -268,7 +268,7 @@ Deno.test("Snapshot Test - Options", async (t) => {
     }
 
     const result = await runTest(`
-      import { assertSnapshot } from "${SNAPSHOT_MODULE_PATH}";
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
       Deno.test("${snapshotName}", async (t) => {
         await assertSnapshot(t, [1, 2, 3], {
@@ -323,7 +323,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
    */
   const result1 = await runTestWithUpdateFlag(
     `
-    import { assertSnapshot } from "${SNAPSHOT_MODULE_PATH}";
+    import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
     Deno.test("Snapshot Test - Update", async (t) => {
       await assertSnapshot(t, [
@@ -342,7 +342,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
    */
   const result2 = await runTestWithUpdateFlag(
     `
-    import { assertSnapshot } from "${SNAPSHOT_MODULE_PATH}";
+    import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
     Deno.test("Snapshot Test - Update", async (t) => {
       await assertSnapshot(t, [
@@ -360,7 +360,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
    * Existing snapshot - updates
    */
   const result3 = await runTestWithUpdateFlag(`
-    import { assertSnapshot } from "${SNAPSHOT_MODULE_PATH}";
+    import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
     Deno.test("Snapshot Test - Update", async (t) => {
       await assertSnapshot(t, [
