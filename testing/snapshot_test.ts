@@ -312,6 +312,12 @@ Deno.test("Snapshot Test - Update", async (t) => {
     };
   }
 
+  function assertNoError(error: string) {
+    if (formatTestError(error)) {
+      throw new AssertionError(`Unexpected Error:\n\n${error}\n`);
+    }
+  }
+
   /**
    * New snapshot
    */
@@ -328,8 +334,8 @@ Deno.test("Snapshot Test - Update", async (t) => {
     `,
   );
 
+  assertNoError(result1.error);
   await assertSnapshot(t, formatTestOutput(result1.output));
-  assert(!formatTestError(result1.error), "unexpected output to stderr");
 
   /**
    * Existing snapshot - no changes
@@ -347,8 +353,8 @@ Deno.test("Snapshot Test - Update", async (t) => {
     `,
   );
 
+  assertNoError(result2.error);
   await assertSnapshot(t, formatTestOutput(result2.output));
-  assert(!formatTestError(result2.error), "unexpected output to stderr");
 
   /**
    * Existing snapshot - updates
@@ -366,8 +372,8 @@ Deno.test("Snapshot Test - Update", async (t) => {
     });
   `);
 
+  assertNoError(result3.error);
   await assertSnapshot(t, formatTestOutput(result3.output));
-  assert(!formatTestError(result3.error), "unexpected output to stderr");
 
   // Tidyup
   await Deno.remove(tempDir, { recursive: true });
