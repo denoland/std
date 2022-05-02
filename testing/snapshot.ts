@@ -54,9 +54,9 @@ export type SnapshotOptions<T = unknown> = {
 /**
  * Default serializer for `assertSnapshot`.
  */
-function serialize(actual: unknown): string;
-function serialize<T>(actual: T): string;
-function serialize(actual: unknown): string {
+export function serialize(actual: unknown): string;
+export function serialize<T>(actual: T): string;
+export function serialize(actual: unknown): string {
   return Deno.inspect(actual, {
     depth: Infinity,
     sorted: true,
@@ -325,7 +325,7 @@ export async function assertSnapshot(
     context,
     options,
   );
-  const testName = getTestName(context);
+  const testName = getTestName(context, options);
   const count = assertSnapshotContext.getCount(testName);
   const name = `${testName} ${count}`;
   const snapshot = await assertSnapshotContext.getSnapshot(
