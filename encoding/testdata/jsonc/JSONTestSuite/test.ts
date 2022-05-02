@@ -25,9 +25,7 @@ const ignoreFile = new Set([
 
 // Make sure that the JSON.parse and JSONC.parse results match.
 for await (
-  const dirEntry of walk(
-    fromFileUrl(new URL("./", import.meta.url)),
-  )
+  const dirEntry of walk(fromFileUrl(new URL("./", import.meta.url)))
 ) {
   if (!dirEntry.isFile) {
     continue;

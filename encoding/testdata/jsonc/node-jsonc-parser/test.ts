@@ -1,4 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Ported from node-jsonc-parser
+// https://github.com/microsoft/node-jsonc-parser/blob/35d94cd71bd48f9784453b2439262c938e21d49b/src/test/json.test.ts
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 import * as JSONC from "../../../jsonc.ts";
 import { assertEquals, assertThrows } from "../../../../testing/asserts.ts";
