@@ -1,4 +1,4 @@
-This directory contains the libraries ported from
+This directory contains the test codes copied from
 [test262](https://github.com/tc39/test262)
 organization.
 
