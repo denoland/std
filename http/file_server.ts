@@ -814,7 +814,7 @@ function main(): void {
     });
   };
 
-  const useTls = Boolean(keyFile || certFile);
+  const useTls = !!(keyFile && certFile);
 
   if (useTls) {
     serveTls(handler, {

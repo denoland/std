@@ -3,17 +3,88 @@
 
 import { assert } from "../_util/assert.ts";
 
+type Id<T> = T extends Record<string, unknown>
+  ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
+  : T;
+
+type Lower<V extends string> = V extends Uppercase<V> ? Lowercase<V>
+  : Uncapitalize<V>;
+
+type CamelCase<T extends string> = T extends `${infer V}_${infer Rest}`
+  ? `${Lower<V>}${Capitalize<CamelCase<Rest>>}`
+  : T extends `${infer V}-${infer Rest}`
+    ? `${Lower<V>}${Capitalize<CamelCase<Rest>>}`
+  : Lower<T>;
+
+type BooleanType = boolean | string | string[] | undefined;
+type StringType = string | string[] | undefined;
+type ArgType = BooleanType | StringType;
+
+type ArgName<T extends ArgType> = CamelCase<
+  T extends Array<infer U> ? U
+    : T extends true ? string
+    : T extends false ? never
+    : undefined extends T ? never
+    : T
+>;
+
+type Values<
+  B extends BooleanType,
+  S extends StringType,
+  D extends Record<string, unknown> | undefined = undefined,
+> =
+  & TypeValues<string, unknown>
+  // & TypeValues<string, undefined extends (B & S) ? any :unknown>
+  & SpreadValues<
+    & TypeValues<S, string>
+    & TypeValues<B, boolean>,
+    // deno-lint-ignore ban-types
+    undefined extends D ? {} : D
+  >;
+
+type SpreadValues<
+  A extends Record<string, unknown> | undefined,
+  D extends Record<string, unknown> | undefined,
+> =
+  & { [K in Exclude<keyof A, keyof D>]?: A[K] }
+  & { [K in keyof D]: NonNullable<K extends keyof A ? D[K] | A[K] : D[K]> };
+
+type Defaults<
+  B extends BooleanType,
+  S extends StringType,
+> = Id<
+  & TypeValues<string, unknown>
+  & TypeValues<S, unknown>
+  & TypeValues<B, unknown>
+>;
+
+// @TODO(c4spar): add support for dotted options.
+type TypeValues<T extends ArgType, V> = Partial<Record<ArgName<T>, V>>;
+
 /** The value returned from `parse`. */
-export interface Args {
-  /** Contains all the arguments that didn't have an option associated with
-   * them. */
-  _: Array<string | number>;
+export type Args<
+  B extends BooleanType = undefined,
+  S extends StringType = undefined,
+  D extends Record<string, unknown> | undefined = undefined,
+> = Id<
+  // & Values<B, S, D>
   // deno-lint-ignore no-explicit-any
-  [key: string]: any;
-}
+  & (undefined extends (B & S) ? Record<string, any> : Values<B, S, D>)
+  & {
+    /** Contains all the arguments that didn't have an option associated with
+     * them. */
+    _: Array<string | number>;
+    /** Contains all the arguments that appear after the double dash: "--". */
+    "--"?: Array<string>;
+  }
+>;
 
 /** The options for the `parse` call. */
-export interface ParseOptions {
+export interface ParseOptions<
+  B extends BooleanType,
+  S extends StringType,
+  D extends Record<string, unknown> | undefined,
+> {
   /** When `true`, populate the result `_` with everything before the `--` and
    * the result `['--']` with everything after the `--`. Here's an example:
    *
@@ -37,17 +108,17 @@ export interface ParseOptions {
   /** A boolean, string or array of strings to always treat as booleans. If
    * `true` will treat all double hyphenated arguments without equal signs as
    * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`) */
-  boolean?: boolean | string | string[];
+  boolean?: B | Array<B>;
 
   /** An object mapping string argument names to default values. */
-  default?: Record<string, unknown>;
+  default?: D & Defaults<B, S>;
 
   /** When `true`, populate the result `_` with everything after the first
    * non-option. */
   stopEarly?: boolean;
 
   /** A string or array of strings argument names to always treat as strings. */
-  string?: string | string[];
+  string?: S | Array<S>;
 
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
@@ -115,18 +186,22 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * // parsedArgs: { foo: true, bar: "baz", qux: false, _: ["./quux.txt"] }
  * ```
  */
-export function parse(
+export function parse<
+  B extends BooleanType = undefined,
+  S extends StringType = undefined,
+  D extends Record<string, unknown> | undefined = undefined,
+>(
   args: string[],
   {
     "--": doubleDash = false,
     alias = {},
     boolean = false,
-    default: defaults = {},
+    default: defaults = {} as D & Defaults<B, S>,
     stopEarly = false,
     string = [],
     unknown = (i: string): unknown => i,
-  }: ParseOptions = {},
-): Args {
+  }: ParseOptions<B, S, D> = {},
+): Args<B, S, D> {
   const flags: Flags = {
     bools: {},
     strings: {},
@@ -138,7 +213,9 @@ export function parse(
     if (typeof boolean === "boolean") {
       flags.allBools = !!boolean;
     } else {
-      const booleanArgs = typeof boolean === "string" ? [boolean] : boolean;
+      const booleanArgs = typeof boolean === "string"
+        ? [boolean]
+        : boolean as Array<string>;
 
       for (const key of booleanArgs.filter(Boolean)) {
         flags.bools[key] = true;
@@ -162,7 +239,9 @@ export function parse(
   }
 
   if (string !== undefined) {
-    const stringArgs = typeof string === "string" ? [string] : string;
+    const stringArgs = typeof string === "string"
+      ? [string]
+      : string as Array<string>;
 
     for (const key of stringArgs.filter(Boolean)) {
       flags.strings[key] = true;
@@ -175,7 +254,8 @@ export function parse(
     }
   }
 
-  const argv: Args = { _: [] };
+  // @TODO(c4spar): fix invalid index signature.
+  const argv: Args = { _: [] } as unknown as Args;
 
   function argDefined(key: string, arg: string): boolean {
     return (
@@ -236,7 +316,12 @@ export function parse(
   }
 
   for (const key of Object.keys(flags.bools)) {
-    setArg(key, defaults[key] === undefined ? false : defaults[key]);
+    setArg(
+      key,
+      defaults[key as keyof typeof defaults] === undefined
+        ? false
+        : defaults[key as keyof typeof defaults],
+    );
   }
 
   let notFlags: string[] = [];
@@ -351,11 +436,11 @@ export function parse(
 
   for (const key of Object.keys(defaults)) {
     if (!hasKey(argv, key.split("."))) {
-      setKey(argv, key.split("."), defaults[key]);
+      setKey(argv, key.split("."), defaults[key as keyof typeof defaults]);
 
       if (aliases[key]) {
         for (const x of aliases[key]) {
-          setKey(argv, x.split("."), defaults[key]);
+          setKey(argv, x.split("."), defaults[key as keyof typeof defaults]);
         }
       }
     }
@@ -372,5 +457,5 @@ export function parse(
     }
   }
 
-  return argv;
+  return argv as Args<B, S, D>;
 }
