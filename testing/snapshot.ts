@@ -117,7 +117,7 @@ class AssertSnapshotContext {
   ): AssertSnapshotContext {
     let path: string;
     if (options.path) {
-      path = options.path;
+      path = resolve(options.path);
     } else if (options.dir) {
       const testFilePath = fromFileUrl(testContext.origin);
       const testFileName = basename(testFilePath);
