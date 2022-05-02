@@ -269,7 +269,6 @@
       "test-net-end-close.js",
       "test-net-end-destroyed.js",
       "test-net-end-without-connect.js",
-      "test-net-error-twice.js",
       "test-net-isip.js",
       "test-net-isipv4.js",
       "test-net-isipv6.js",
