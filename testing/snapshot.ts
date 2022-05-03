@@ -173,7 +173,7 @@ class AssertSnapshotContext {
   }
 
   /**
-   * Write updates to the snapshot file and logs statistics.
+   * Write updates to the snapshot file and log statistics.
    */
   private teardown = () => {
     const buf = ["export const snapshot = {};"];
