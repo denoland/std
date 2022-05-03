@@ -3,19 +3,6 @@
 
 import { assert } from "../_util/assert.ts";
 
-type Id<T> = T extends Record<string, unknown>
-  ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
-  : T;
-
-type Lower<V extends string> = V extends Uppercase<V> ? Lowercase<V>
-  : Uncapitalize<V>;
-
-type CamelCase<T extends string> = T extends `${infer V}_${infer Rest}`
-  ? `${Lower<V>}${Capitalize<CamelCase<Rest>>}`
-  : T extends `${infer V}-${infer Rest}`
-    ? `${Lower<V>}${Capitalize<CamelCase<Rest>>}`
-  : Lower<T>;
-
 type BooleanType = boolean | string | undefined;
 type StringType = string | undefined;
 type ArgType = BooleanType | StringType;
@@ -456,3 +443,16 @@ export function parse<
 
   return argv as Args<Values<B, S, D>>;
 }
+
+type Id<T> = T extends Record<string, unknown>
+  ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
+  : T;
+
+type Lower<V extends string> = V extends Uppercase<V> ? Lowercase<V>
+  : Uncapitalize<V>;
+
+type CamelCase<T extends string> = T extends `${infer V}_${infer Rest}`
+  ? `${Lower<V>}${Capitalize<CamelCase<Rest>>}`
+  : T extends `${infer V}-${infer Rest}`
+    ? `${Lower<V>}${Capitalize<CamelCase<Rest>>}`
+  : Lower<T>;
