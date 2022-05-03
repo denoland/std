@@ -16,13 +16,12 @@ type CamelCase<T extends string> = T extends `${infer V}_${infer Rest}`
     ? `${Lower<V>}${Capitalize<CamelCase<Rest>>}`
   : Lower<T>;
 
-type BooleanType = boolean | string | string[] | undefined;
-type StringType = string | string[] | undefined;
+type BooleanType = boolean | string | undefined;
+type StringType = string | undefined;
 type ArgType = BooleanType | StringType;
 
 type ArgName<T extends ArgType> = CamelCase<
-  T extends Array<infer U> ? U
-    : T extends true ? string
+  T extends true ? string
     : T extends false ? never
     : undefined extends T ? never
     : T
@@ -32,15 +31,17 @@ type Values<
   B extends BooleanType,
   S extends StringType,
   D extends Record<string, unknown> | undefined = undefined,
-> =
-  & TypeValues<string, unknown>
-  // & TypeValues<string, undefined extends (B & S) ? any :unknown>
-  & SpreadValues<
-    & TypeValues<S, string>
-    & TypeValues<B, boolean>,
-    // deno-lint-ignore ban-types
-    undefined extends D ? {} : D
-  >;
+> // deno-lint-ignore no-explicit-any
+ = undefined extends (B & S) ? Record<string, any>
+  : 
+    & Record<string, unknown>
+    // & TypeValues<string, undefined extends (B & S) ? any :unknown>
+    & SpreadValues<
+      & TypeValues<S, string>
+      & TypeValues<B, boolean>,
+      // deno-lint-ignore ban-types
+      undefined extends D ? {} : D
+    >;
 
 type SpreadValues<
   A extends Record<string, unknown> | undefined,
@@ -53,7 +54,7 @@ type Defaults<
   B extends BooleanType,
   S extends StringType,
 > = Id<
-  & TypeValues<string, unknown>
+  & Record<string, unknown>
   & TypeValues<S, unknown>
   & TypeValues<B, unknown>
 >;
@@ -63,14 +64,10 @@ type TypeValues<T extends ArgType, V> = Partial<Record<ArgName<T>, V>>;
 
 /** The value returned from `parse`. */
 export type Args<
-  B extends BooleanType = undefined,
-  S extends StringType = undefined,
-  D extends Record<string, unknown> | undefined = undefined,
-> = Id<
-  // & Values<B, S, D>
   // deno-lint-ignore no-explicit-any
-  & (undefined extends (B & S) ? Record<string, any> : Values<B, S, D>)
-  & {
+  A extends Record<string, unknown> = Record<string, any>,
+> = Id<
+  A & {
     /** Contains all the arguments that didn't have an option associated with
      * them. */
     _: Array<string | number>;
@@ -201,7 +198,7 @@ export function parse<
     string = [],
     unknown = (i: string): unknown => i,
   }: ParseOptions<B, S, D> = {},
-): Args<B, S, D> {
+): Args<Values<B, S, D>> {
   const flags: Flags = {
     bools: {},
     strings: {},
@@ -457,5 +454,5 @@ export function parse<
     }
   }
 
-  return argv as Args<B, S, D>;
+  return argv as Args<Values<B, S, D>>;
 }
