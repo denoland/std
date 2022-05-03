@@ -34,7 +34,7 @@ type SpreadValues<
   D extends Record<string, unknown> | undefined,
 > =
   & { [K in Exclude<keyof A, keyof D>]?: A[K] }
-  & { [K in keyof D]: NonNullable<K extends keyof A ? D[K] | A[K] : D[K]> };
+  & { [K in keyof D]: NonNullable<K extends keyof A ? D[K] | A[K] : unknown> };
 
 type Defaults<
   B extends BooleanType,
