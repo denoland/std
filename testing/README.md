@@ -12,6 +12,7 @@ pretty-printed diff of failing assertion.
 - `equal()` - Deep comparison function, where `actual` and `expected` are
   compared deeply, and if they vary, `equal` returns `false`.
 - `assert()` - Expects a boolean value, throws if the value is `false`.
+- `assertFalse()` - Expects a boolean value, throws if the value is `true`.
 - `assertEquals()` - Uses the `equal` comparison and throws if the `actual` and
   `expected` are not equal.
 - `assertNotEquals()` - Uses the `equal` comparison and throws if the `actual`
