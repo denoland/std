@@ -327,15 +327,10 @@ export async function assertSnapshot<T>(
   actual: T,
   options: SnapshotOptions<T>,
 ): Promise<void>;
-export async function assertSnapshot(
-  context: Deno.TestContext,
-  actual: unknown,
-  msgOrOpts?: string,
-): Promise<void>;
 export async function assertSnapshot<T>(
   context: Deno.TestContext,
   actual: T,
-  msgOrOpts?: string,
+  message?: string,
 ): Promise<void>;
 export async function assertSnapshot(
   context: Deno.TestContext,
