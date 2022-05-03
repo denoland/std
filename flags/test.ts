@@ -977,7 +977,7 @@ Deno.test("typesOfDottedBooleanArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfDottedBooleanArgs", function (): void {
+Deno.test("typesOfDottedBooleanArgsWithDefaults", function (): void {
   const argv = parse(["--foo"], {
     boolean: ["blubb", "foo.bar", "foo.baz"],
     default: {
@@ -1027,7 +1027,7 @@ Deno.test("typesOfDottedStringArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfDottedStringArgs", function (): void {
+Deno.test("typesOfDottedStringArgsWithDefaults", function (): void {
   const argv = parse(["--foo"], {
     string: ["blubb", "foo.bar", "foo.baz"],
     default: {
@@ -1083,7 +1083,7 @@ Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
+Deno.test("typesOfDottedStringAndBooleanArgsWithDefaults", function (): void {
   const argv = parse(["--foo"], {
     boolean: ["blubb", "foo.bar", "foo.baz"],
     string: ["blubb", "beep.boop", "beep.loop"],
