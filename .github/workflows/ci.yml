@@ -34,9 +34,6 @@ jobs:
         shell: bash
         run: deno task test:browser
 
-      - name: Type check node modules
-        run: deno task node:check-unstable-api
-
       - name: Generate lcov
         shell: bash
         # excludes tests, testdata, and generated sources from coverage report
@@ -99,6 +96,10 @@ jobs:
         run: deno task node:test
         env:
           DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
+
+      - name: Type check node modules
+        shell: bash
+        run: deno task node:check-unstable-api
 
   lint:
     runs-on: ubuntu-latest
