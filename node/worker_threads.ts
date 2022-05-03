@@ -93,8 +93,8 @@ class _Worker extends EventEmitter {
   readonly performance = globalThis.performance;
 }
 
-// deno-lint-ignore no-explicit-any
 export const isMainThread =
+  // deno-lint-ignore no-explicit-any
   (globalThis as any).name !== PRIVATE_WORKER_THREAD_NAME;
 
 // fake resourceLimits
