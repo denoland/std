@@ -152,3 +152,25 @@ export function networkInterfaces(
     throw new TypeError("Requires --unstable");
   }
 }
+
+export function ListenerRef(
+  listener: Deno.Listener,
+  ...args: Parameters<Deno.Listener["ref"]>
+): ReturnType<typeof Deno.Listener["ref"]> {
+  if (typeof listener.ref == "function") {
+    return listener.ref(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}
+
+export function ListenerUnref(
+  listener: Deno.Listener,
+  ...args: Parameters<Deno.Listener["unref"]>
+): ReturnType<typeof Deno.Listener["unref"]> {
+  if (typeof listener.unref == "function") {
+    return listener.unref(...args);
+  } else {
+    throw new TypeError("Requires --unstable");
+  }
+}

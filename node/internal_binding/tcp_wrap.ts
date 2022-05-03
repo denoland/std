@@ -34,6 +34,7 @@ import { codeMap } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
 import { kStreamBaseField } from "./stream_wrap.ts";
 import { isIP } from "../internal/net.ts";
+import { ListenerRef, ListenerUnref } from "../../_deno_unstable.ts";
 
 /** The type of TCP socket. */
 enum socketType {
@@ -237,10 +238,14 @@ export class TCP extends ConnectionWrap {
   }
 
   override ref() {
-    this.#listener?.ref();
+    if (this.#listener) {
+      ListenerRef(this.#listener);
+    }
   }
   override unref() {
-    this.#listener?.unref();
+    if (this.#listener) {
+      ListenerUnref(this.#listener);
+    }
   }
 
   /**
