@@ -39,6 +39,6 @@
     "node:unit": "DENO_FUTURE_CHECK=1 deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
     "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
-    "node:check-unstable-api": "deno check ./node/module_all.ts"
+    "node:check-unstable-api": "deno check --reload ./node/module_all.ts"
   }
 }

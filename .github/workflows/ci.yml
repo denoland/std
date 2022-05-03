@@ -85,6 +85,10 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
+      - name: Type check node modules
+        shell: bash
+        run: deno task node:check-unstable-api
+
       # FIXME(bartlomieju): currently doc tests are failing, we need --compat mode in "deno test" to get them working
       # - name: Doctest node/
       #   run: deno test --doc --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/
@@ -96,10 +100,6 @@ jobs:
         run: deno task node:test
         env:
           DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
-
-      - name: Type check node modules
-        shell: bash
-        run: deno task node:check-unstable-api
 
   lint:
     runs-on: ubuntu-latest
