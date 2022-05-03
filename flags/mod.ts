@@ -17,24 +17,29 @@ type ArgName<T extends ArgType> = CamelCase<
 type Values<
   B extends BooleanType,
   S extends StringType,
-  D extends Record<string, unknown> | undefined = undefined,
+  D extends Record<string, unknown> | undefined,
 > // deno-lint-ignore no-explicit-any
  = undefined extends (B & S) ? Record<string, any>
-  : 
-    & Record<string, unknown>
-    & SpreadValues<
-      & TypeValues<S, string>
-      & TypeValues<B, boolean>,
-      // deno-lint-ignore ban-types
-      undefined extends D ? {} : D
-    >;
+  : (true extends B ? 
+    & Partial<Record<string, boolean>>
+    & SpreadValues<TypeValues<S, string>, D>
+    : 
+      & Record<string, unknown>
+      & SpreadValues<
+        & TypeValues<S, string>
+        & TypeValues<B, boolean>,
+        D
+      >);
 
 type SpreadValues<
-  A extends Record<string, unknown> | undefined,
+  A extends Record<string, unknown>,
   D extends Record<string, unknown> | undefined,
-> =
-  & { [K in Exclude<keyof A, keyof D>]?: A[K] }
-  & { [K in keyof D]: NonNullable<K extends keyof A ? D[K] | A[K] : unknown> };
+> = D extends undefined ? A
+  : 
+    & { [K in Exclude<keyof A, keyof D>]?: A[K] }
+    & {
+      [K in keyof D]: NonNullable<K extends keyof A ? D[K] | A[K] : unknown>;
+    };
 
 type Defaults<
   B extends BooleanType,
@@ -91,7 +96,7 @@ export interface ParseOptions<
   /** A boolean, string or array of strings to always treat as booleans. If
    * `true` will treat all double hyphenated arguments without equal signs as
    * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`) */
-  boolean?: B | Array<B>;
+  boolean?: B | Array<Exclude<B, boolean>>;
 
   /** An object mapping string argument names to default values. */
   default?: D & Defaults<B, S>;
