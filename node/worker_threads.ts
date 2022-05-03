@@ -177,12 +177,10 @@ if (!isMainThread) {
     notImplemented("parentPort.removeAllListeners");
 
   // Receive startup message
-  console.trace();
   [{ threadId, workerData, environmentData }] = await once(
     parentPort,
     "message",
   );
-  console.trace(threadId, workerData, environmentData);
 
   // alias
   parentPort.addEventListener("offline", () => {
