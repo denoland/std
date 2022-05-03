@@ -451,8 +451,6 @@ type Id<T> = T extends Record<string, unknown>
 type Lower<V extends string> = V extends Uppercase<V> ? Lowercase<V>
   : Uncapitalize<V>;
 
-type CamelCase<T extends string> = T extends `${infer V}_${infer Rest}`
+type CamelCase<T extends string> = T extends `${infer V}-${infer Rest}`
   ? `${Lower<V>}${Capitalize<CamelCase<Rest>>}`
-  : T extends `${infer V}-${infer Rest}`
-    ? `${Lower<V>}${Capitalize<CamelCase<Rest>>}`
   : Lower<T>;
