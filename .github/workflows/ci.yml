@@ -87,7 +87,7 @@ jobs:
 
       - name: Type check node modules
         shell: bash
-        run: deno check --reload ./node/module_all.ts
+        run: deno task node:check-unstable-api
 
       # FIXME(bartlomieju): currently doc tests are failing, we need --compat mode in "deno test" to get them working
       # - name: Doctest node/
