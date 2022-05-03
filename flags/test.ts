@@ -953,3 +953,169 @@ Deno.test("typesOfBooleanAndStringArgsWithDefaults", function (): void {
     >
   >(true);
 });
+
+/** ------------------------ DOTTED OPTIONS ------------------------ */
+
+Deno.test("typesOfDottedBooleanArgs", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: ["blubb", "foo.bar", "foo.baz"],
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb?: boolean | undefined;
+        foo?: {
+          bar?: boolean | undefined;
+          baz?: boolean | undefined;
+        };
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedBooleanArgs", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: ["blubb", "foo.bar", "foo.baz"],
+    default: {
+      blubb: "123",
+      foo: {
+        bar: 123,
+      },
+      bla: new Date(),
+    },
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb: boolean | string;
+        foo: {
+          bar: boolean | number;
+          baz?: boolean | undefined;
+        };
+        bla: unknown;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedStringArgs", function (): void {
+  const argv = parse(["--foo"], {
+    string: ["blubb", "foo.bar", "foo.baz"],
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb?: string | undefined;
+        foo?: {
+          bar?: string | undefined;
+          baz?: string | undefined;
+        };
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedStringArgs", function (): void {
+  const argv = parse(["--foo"], {
+    string: ["blubb", "foo.bar", "foo.baz"],
+    default: {
+      blubb: true,
+      foo: {
+        bar: 123,
+      },
+      bla: new Date(),
+    },
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb: string | boolean;
+        foo: {
+          bar: string | number;
+          baz?: string | undefined;
+        };
+        bla: unknown;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: ["blubb", "foo.bar", "foo.baz"],
+    string: ["bla", "beep.boop", "beep.loop"],
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb?: boolean | undefined;
+        foo?: {
+          bar?: boolean | undefined;
+          baz?: boolean | undefined;
+        };
+        bla?: string | undefined;
+        beep?: {
+          boop?: string | undefined;
+          loop?: string | undefined;
+        };
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: ["blubb", "foo.bar", "foo.baz"],
+    string: ["blubb", "beep.boop", "beep.loop"],
+    default: {
+      blubb: true,
+      foo: {
+        bar: 123,
+      },
+      beep: {
+        boop: true,
+      },
+      bla: new Date(),
+    },
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        blubb?: boolean | undefined;
+        foo: {
+          bar: boolean | number;
+          baz?: boolean | undefined;
+        };
+        beep: {
+          boop: string | boolean;
+          loop?: string | undefined;
+        };
+        bla?: string | undefined;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
