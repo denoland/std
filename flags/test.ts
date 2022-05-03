@@ -897,7 +897,7 @@ Deno.test("typesOfStringArgsWithDefaults", function (): void {
       & { [x: string]: unknown }
       & {
         foo?: string | undefined;
-        bar: string | undefined;
+        bar: string | boolean;
         baz: unknown;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
