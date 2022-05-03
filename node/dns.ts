@@ -270,6 +270,13 @@ export const CANCELLED = "ECANCELLED";
 
 export { ADDRCONFIG, lookup, promises };
 
+export type {
+  LookupAddress,
+  LookupAllOptions,
+  LookupOneOptions,
+  LookupOptions,
+};
+
 export default {
   ADDRCONFIG,
   lookup,
