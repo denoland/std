@@ -1,6 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
 import { parse } from "./mod.ts";
+import {
+  assert,
+  IsExact,
+} from "https://deno.land/x/conditional_type_checks@1.0.5/mod.ts";
 
 // flag boolean true (default all --args to boolean)
 Deno.test("flagBooleanTrue", function (): void {
@@ -735,4 +739,217 @@ Deno.test("valueFollowingDoubleHyphenIsNotUnknown", function (): void {
 
 Deno.test("whitespaceShouldBeWhitespace", function (): void {
   assertEquals(parse(["-x", "\t"]).x, "\t");
+});
+
+/** ---------------------- TYPE TESTS ---------------------- */
+
+Deno.test("typesOfAllBoolean", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: true,
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: boolean | undefined }
+      & {
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanWithDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: true,
+    default: {
+      foo: "123",
+      bar: 123,
+    },
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: boolean | undefined }
+      & {
+        foo: string | boolean;
+        bar: number | boolean;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanAndStringArgs", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: true,
+    string: ["foo", "bar"],
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: boolean | undefined }
+      & {
+        foo?: string | undefined;
+        bar?: string | undefined;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: true,
+    string: ["foo", "bar"],
+    default: {
+      bar: 123,
+      baz: new Date(),
+    },
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: boolean | undefined }
+      & {
+        foo?: string | undefined;
+        bar: string | number;
+        baz: boolean | Date;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfBooleanArgs", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: ["foo", "bar"],
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: boolean | undefined;
+        bar?: boolean | undefined;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfBooleanArgsWithDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: ["foo", "bar"],
+    default: {
+      bar: 123,
+      baz: "123",
+    },
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: boolean | undefined;
+        bar: number | boolean;
+        baz: unknown;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfStringArgs", function (): void {
+  const argv = parse(["--foo"], {
+    string: ["foo", "bar"],
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        bar?: string | undefined;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfStringArgsWithDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    string: ["foo", "bar"],
+    default: {
+      bar: true,
+      baz: 123,
+    },
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        bar: string | undefined;
+        baz: unknown;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfBooleanAndStringArgs", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: ["beep", "boop"],
+    string: ["foo", "bar"],
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        bar?: string | undefined;
+        beep?: boolean | undefined;
+        boop?: boolean | undefined;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfBooleanAndStringArgsWithDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: ["foo", "bar"],
+    string: ["beep", "boop"],
+    default: {
+      bar: 123,
+      baz: new Error(),
+      beep: new Date(),
+    },
+  });
+  assert<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: boolean | undefined;
+        boop?: string | undefined;
+        bar: number | boolean;
+        baz: unknown;
+        beep: string | Date;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
 });

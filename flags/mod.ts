@@ -22,7 +22,6 @@ type Values<
  = undefined extends (B & S) ? Record<string, any>
   : 
     & Record<string, unknown>
-    // & TypeValues<string, undefined extends (B & S) ? any :unknown>
     & SpreadValues<
       & TypeValues<S, string>
       & TypeValues<B, boolean>,
