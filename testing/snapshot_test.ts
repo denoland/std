@@ -52,6 +52,50 @@ Deno.test("Snapshot Test - Adverse String \\ ` ${}", async (t) => {
   await assertSnapshot(t, "\\ ` ${}");
 });
 
+Deno.test("Snapshot Test - Multi-Line Strings", async (t) => {
+  await t.step("string", async (t) => {
+    await assertSnapshot(
+      t,
+      `
+<html>
+  <head>
+    <title>Snapshot Test - Multi-Line Strings</title>
+  </head>
+  <body>
+    <h1>
+      Snapshot Test - Multi-Line Strings
+    </h2>
+    <p>
+      This is a snapshot of a multi-line string.
+    </p>
+  </body>
+</html>`,
+    );
+  });
+
+  await t.step("string in array", async (t) => {
+    await assertSnapshot(t, [
+      `
+<h1>
+  Header
+</h1>`,
+      `
+<p>
+  Content
+</p>`,
+    ]);
+  });
+
+  await t.step("string in object", async (t) => {
+    await assertSnapshot(t, {
+      str: `
+        Line #1
+        Line #2
+        Line #3`,
+    });
+  });
+});
+
 Deno.test("Snapshot Test - Failed Assertion", async (t) => {
   await t.step("Object", async (t) => {
     try {
@@ -59,7 +103,7 @@ Deno.test("Snapshot Test - Failed Assertion", async (t) => {
       fail("Expected snapshot not to match");
     } catch (error) {
       assertInstanceOf(error, AssertionError);
-      await assertSnapshot(t, stripColor(error.message).split("\n"));
+      await assertSnapshot(t, stripColor(error.message));
     }
   });
   await t.step("String", async (t) => {
@@ -68,7 +112,7 @@ Deno.test("Snapshot Test - Failed Assertion", async (t) => {
       fail("Expected snapshot not to match");
     } catch (error) {
       assertInstanceOf(error, AssertionError);
-      await assertSnapshot(t, stripColor(error.message).split("\n"));
+      await assertSnapshot(t, stripColor(error.message));
     }
   });
 });
@@ -131,7 +175,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
     false,
   );
 
-  await assertSnapshot(t, formatOutput(result1.output).split("\n"));
+  await assertSnapshot(t, formatOutput(result1.output));
   assert(!formatError(result1.error), "unexpected output to stderr");
 
   /**
@@ -151,7 +195,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
     false,
   );
 
-  await assertSnapshot(t, formatOutput(result2.output).split("\n"));
+  await assertSnapshot(t, formatOutput(result2.output));
   assert(!formatError(result2.error), "unexpected output to stderr");
 
   /**
@@ -170,7 +214,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
     });
   `);
 
-  await assertSnapshot(t, formatOutput(result3.output).split("\n"));
+  await assertSnapshot(t, formatOutput(result3.output));
   assert(!formatError(result3.error), "unexpected output to stderr");
 });
 

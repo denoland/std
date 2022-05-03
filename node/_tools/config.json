@@ -249,6 +249,7 @@
       "test-path-relative.js",
       "test-path-resolve.js",
       "test-path-win32-exists.js",
+      "test-path-zero-length-strings.js",
       "test-path.js",
       "test-process-binding-internalbinding-allowlist.js",
       "test-process-env-allowed-flags.js",
