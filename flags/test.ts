@@ -772,8 +772,8 @@ Deno.test("typesOfAllBooleanWithDefaults", function (): void {
       typeof argv,
       & { [x: string]: boolean | undefined }
       & {
-        foo: string | boolean;
-        bar: number | boolean;
+        foo: unknown;
+        bar: unknown;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }
@@ -816,7 +816,7 @@ Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
       & {
         foo?: string | undefined;
         bar: string | number;
-        baz: boolean | Date;
+        baz: unknown;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }
