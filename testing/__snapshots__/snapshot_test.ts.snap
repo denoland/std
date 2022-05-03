@@ -138,17 +138,83 @@ snapshot[`Snapshot Test - Multi-Line Strings > string in object 1`] = `
 `;
 
 snapshot[`Snapshot Test - Failed Assertion > Object 1`] = `
+"Snapshot does not match:
+
+
+    [Diff] Actual / Expected
+
+
+    [
+      1,
+      2,
++     3,
+    ]
+"
+`;
+
+snapshot[`Snapshot Test - Failed Assertion > String 1`] = `
+'Snapshot does not match:
+
+
+    [Diff] Actual / Expected
+
+
+-   "Hello!"
++   "Hello World!"
+
+'
+`;
+
+snapshot[`custom name 1`] = `
 [
   1,
   2,
+  3,
 ]
 `;
 
-snapshot[`Snapshot Test - Failed Assertion > Object 2`] = `"Failed assertion: Expected snapshot not to match"`;
+snapshot[`custom name 2`] = `
+[
+  1,
+  2,
+  3,
+]
+`;
 
-snapshot[`Snapshot Test - Failed Assertion > String 1`] = `"Hello!"`;
+snapshot[`Snapshot Test - Options > serializer 1`] = `
+Array Length: 3
 
-snapshot[`Snapshot Test - Failed Assertion > String 2`] = `"Failed assertion: Expected snapshot not to match"`;
+[
+  1,
+  2,
+  3,
+]
+`;
+
+snapshot[`Snapshot Test - Options > msg > missing snapshot 1`] = `"[CUSTOM ERROR MESSAGE - MISSING SNAPSHOT]"`;
+
+snapshot[`Snapshot Test - Options > msg > missing snapshot file 1`] = `"[CUSTOM ERROR MESSAGE - MISSING SNAPSHOT]"`;
+
+snapshot[`Snapshot Test - Options > mode 1`] = `
+"
+[
+  1,
+  2,
+  3,
+]
+"
+`;
+
+snapshot[`Snapshot Test - Options > mode 2`] = `
+"running 1 test from <tempDir>/test.ts
+snapshot ... ok (--ms)
+
+ > 1 snapshots updated.
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
+
+"
+`;
 
 snapshot[`Snapshot Test - Update 1`] = `
 "running 1 test from <tempDir>/test.ts
