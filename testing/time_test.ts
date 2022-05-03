@@ -9,7 +9,7 @@ import {
 } from "./asserts.ts";
 import { FakeTime } from "./time.ts";
 import { _internals } from "./_time.ts";
-import { assertSpyCall, MockError, spy, SpyCall, stub } from "./mock.ts";
+import { assertSpyCall, spy, SpyCall } from "./mock.ts";
 
 function fromNow(): () => number {
   const start: number = Date.now();
@@ -69,62 +69,35 @@ Deno.test("Fake Date instance methods passthrough to real Date instance methods"
   try {
     const now = new Date("2020-05-25T05:00:00.12345Z");
     assertEquals(now.toISOString(), "2020-05-25T05:00:00.123Z");
-    Object.getOwnPropertyNames(_internals.Date.prototype).forEach(
-      (method: string) => {
-        if (
-          typeof _internals.Date.prototype[method as keyof Date] === "function"
-        ) {
-          if (typeof now[method as keyof Date] !== "function") {
-            throw new MockError(`FakeDate missing ${method} method`);
-          }
-          const returned = Symbol();
-          const func = stub(
-            _internals.Date.prototype,
-            method as keyof Date,
-            () => returned,
-          );
-          try {
-            const args = Array(5).fill(undefined).map(() => Symbol());
-            (now[method as keyof Date] as CallableFunction)(...args);
-            assertSpyCall(func, 0, {
-              args,
-              returned,
-            });
-            assertInstanceOf(func.calls[0].self, _internals.Date);
-          } finally {
-            func.restore();
-          }
-        }
-      },
+
+    const func1 = spy(
+      _internals.Date.prototype,
+      "toISOString",
     );
-    Object.getOwnPropertySymbols(_internals.Date.prototype).forEach(
-      (method: symbol) => {
-        if (
-          typeof _internals.Date.prototype[method as keyof Date] === "function"
-        ) {
-          if (typeof now[method as keyof Date] !== "function") {
-            throw new MockError(`FakeDate missing ${method.toString()} method`);
-          }
-          const returned = Symbol();
-          const func = stub(
-            _internals.Date.prototype,
-            method as keyof Date,
-            () => returned,
-          );
-          try {
-            const args = Array(5).fill(undefined).map(() => Symbol());
-            (now[method as keyof Date] as CallableFunction)(...args);
-            assertSpyCall(func, 0, {
-              args,
-              returned,
-            });
-            assertInstanceOf(func.calls[0].self, _internals.Date);
-          } finally {
-            func.restore();
-          }
-        }
-      },
+    try {
+      now.toISOString();
+      assertSpyCall(func1, 0, {
+        args: [],
+        returned: "2020-05-25T05:00:00.123Z",
+      });
+      assertInstanceOf(func1.calls[0].self, _internals.Date);
+    } finally {
+      func1.restore();
+    }
+
+    const func2 = spy(
+      _internals.Date.prototype,
+      Symbol.toPrimitive,
     );
+    try {
+      Number(now);
+      assertSpyCall(func2, 0, {
+        args: ["number"],
+        returned: 1590382800123,
+      });
+    } finally {
+      func2.restore();
+    }
   } finally {
     time.restore();
   }

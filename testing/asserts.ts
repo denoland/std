@@ -71,6 +71,7 @@ export function equal(c: unknown, d: unknown): boolean {
       if (Object.keys(a || {}).length !== Object.keys(b || {}).length) {
         return false;
       }
+      seen.set(a, b);
       if (isKeyedCollection(a) && isKeyedCollection(b)) {
         if (a.size !== b.size) {
           return false;
@@ -108,7 +109,6 @@ export function equal(c: unknown, d: unknown): boolean {
           return false;
         }
       }
-      seen.set(a, b);
       if (a instanceof WeakRef || b instanceof WeakRef) {
         if (!(a instanceof WeakRef && b instanceof WeakRef)) return false;
         return compare(a.deref(), b.deref());
@@ -129,6 +129,13 @@ function constructorsEqual(a: object, b: object) {
 /** Make an assertion, error will be thrown if `expr` does not have truthy value. */
 export function assert(expr: unknown, msg = ""): asserts expr {
   if (!expr) {
+    throw new AssertionError(msg);
+  }
+}
+
+/** Make an assertion, error will be thrown if `expr` have truthy value. */
+export function assertFalse(expr: unknown, msg = ""): asserts expr is false {
+  if (expr) {
     throw new AssertionError(msg);
   }
 }

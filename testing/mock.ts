@@ -289,6 +289,21 @@ function methodSpy<
   return spy;
 }
 
+/** Utility for extracting the arguments type from a property */
+type GetParametersFromProp<
+  Self,
+  Prop extends keyof Self,
+> = Self[Prop] extends (...args: infer Args) => unknown ? Args
+  : unknown[];
+
+/** Utility for extracting the return type from a property */
+type GetReturnFromProp<
+  Self,
+  Prop extends keyof Self,
+> // deno-lint-ignore no-explicit-any
+ = Self[Prop] extends (...args: any[]) => infer Return ? Return
+  : unknown;
+
 /** Wraps a function or instance method with a Spy. */
 export function spy<
   // deno-lint-ignore no-explicit-any
@@ -304,9 +319,11 @@ export function spy<
 >(func: (this: Self, ...args: Args) => Return): Spy<Self, Args, Return>;
 export function spy<
   Self,
-  Args extends unknown[],
-  Return,
->(self: Self, property: keyof Self): Spy<Self, Args, Return>;
+  Prop extends keyof Self,
+>(
+  self: Self,
+  property: Prop,
+): Spy<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
 export function spy<
   Self,
   Args extends unknown[],
@@ -341,19 +358,22 @@ export interface Stub<
 /** Replaces an instance method with a Stub. */
 export function stub<
   Self,
-  // deno-lint-ignore no-explicit-any
-  Args extends unknown[] = any[],
-  Return = undefined,
->(self: Self, property: keyof Self): Stub<Self, Args, Return>;
-export function stub<
-  Self,
-  Args extends unknown[],
-  Return,
+  Prop extends keyof Self,
 >(
   self: Self,
-  property: keyof Self,
-  func: (this: Self, ...args: Args) => Return,
-): Stub<Self, Args, Return>;
+  property: Prop,
+): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
+export function stub<
+  Self,
+  Prop extends keyof Self,
+>(
+  self: Self,
+  property: Prop,
+  func: (
+    this: Self,
+    ...args: GetParametersFromProp<Self, Prop>
+  ) => GetReturnFromProp<Self, Prop>,
+): Stub<Self, GetParametersFromProp<Self, Prop>, GetReturnFromProp<Self, Prop>>;
 export function stub<
   Self,
   Args extends unknown[],

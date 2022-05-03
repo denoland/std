@@ -4,7 +4,7 @@
     "common": ["index.js", "tmpdir.js"],
     "fixtures": ["child-process-spawn-node.js", "empty.txt"],
     "internet": [
-      "test-dns-idna.js",
+      "test-dns-idna2008.js",
       "test-dns-ipv4.js",
       "test-dns-ipv6.js",
       "test-dns-lookup.js",
@@ -75,7 +75,7 @@
       "exit.js"
     ],
     "internet": [
-      "test-dns-idna.js",
+      "test-dns-idna2008.js",
       "test-dns-ipv4.js",
       "test-dns-ipv6.js",
       "test-dns-lookup.js",
