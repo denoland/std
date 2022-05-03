@@ -22,6 +22,9 @@ export type SnapshotOptions<T = unknown> = {
   /**
    * Snapshot output directory. Snapshot files will be written to this directory.
    * This can be relative to the test directory or an absolute path.
+   * 
+   * If both `dir` and `path` are specified, the `dir` option will be ignored and
+   * the `path` option will be handled as normal.
    */
   dir?: string;
   /**
@@ -43,6 +46,9 @@ export type SnapshotOptions<T = unknown> = {
   /**
    * Snapshot output path. The shapshot will be written to this file. This can be
    * a path relative to the test directory or an absolute path.
+   * 
+   * If both `dir` and `path` are specified, the `dir` option will be ignored and
+   * the `path` option will be handled as normal.
    */
   path?: string;
   /**
