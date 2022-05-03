@@ -156,7 +156,7 @@ export function networkInterfaces(
 export function ListenerRef(
   listener: Deno.Listener,
   ...args: Parameters<Deno.Listener["ref"]>
-): ReturnType<typeof Deno.Listener["ref"]> {
+): ReturnType<Deno.Listener["ref"]> {
   if (typeof listener.ref == "function") {
     return listener.ref(...args);
   } else {
@@ -167,7 +167,7 @@ export function ListenerRef(
 export function ListenerUnref(
   listener: Deno.Listener,
   ...args: Parameters<Deno.Listener["unref"]>
-): ReturnType<typeof Deno.Listener["unref"]> {
+): ReturnType<Deno.Listener["unref"]> {
   if (typeof listener.unref == "function") {
     return listener.unref(...args);
   } else {
