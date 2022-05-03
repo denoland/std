@@ -33,7 +33,8 @@ export function parse(
   return new JSONCParser(text, { allowTrailingComma }).parse() as JSONValue;
 }
 
-type JSONValue =
+/** Valid types as a result of JSON parsing */
+export type JSONValue =
   | { [key: string]: JSONValue }
   | JSONValue[]
   | string
