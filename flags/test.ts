@@ -740,6 +740,21 @@ Deno.test("whitespaceShouldBeWhitespace", function (): void {
 
 /** ---------------------- TYPE TESTS ---------------------- */
 
+Deno.test("typesOfDefaultOptions", function (): void {
+  const argv = parse(["--foo"]);
+  assertType<
+    IsExact<
+      typeof argv,
+      // deno-lint-ignore no-explicit-any
+      & { [x: string]: any }
+      & {
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
 Deno.test("typesOfAllBoolean", function (): void {
   const argv = parse(["--foo"], {
     boolean: true,
