@@ -1,13 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export interface DotEnvObject {
-  env: Record<string, string>;
-  exports: string[];
-}
+export type Env = Record<string, {
+  value: string;
+  export?: boolean;
+}>;
 
-// Deno should expose a type for Deno.env
-// Ideally Map-like as discussed in https://github.com/denoland/deno/issues/10349
 export interface DenoEnv {
   get(key: string): string | undefined;
   set(key: string, value: string): void;
@@ -18,24 +16,24 @@ export interface DenoEnv {
 }
 
 export function verify(
-  object: DotEnvObject,
+  env: Env,
   { allowEmptyValues, example }: {
     allowEmptyValues: boolean;
-    example?: DotEnvObject;
+    example?: Env;
   },
 ) {
   if (example) {
-    let entries = object.env;
+    let entries = env;
 
     if (!allowEmptyValues) {
       entries = Object.fromEntries(
-        Object.entries(object.env)
-          .filter(([_, value]) => value != null && value !== ""),
+        Object.entries(env)
+          .filter(([_, { value }]) => value != null && value !== ""),
       );
     }
 
     const keys = Object.keys(entries);
-    const missingVars = Object.keys(example.env)
+    const missingVars = Object.keys(example)
       .filter((key) => !keys.includes(key));
 
     if (missingVars.length) {
@@ -46,7 +44,11 @@ export function verify(
       );
     }
 
-    const missingExports = example.exports
+    const exports = Object.entries(example)
+      .filter(([_key, { export: isExport }]) => isExport)
+      .map((data) => data[0]);
+
+    const missingExports = exports
       .filter((key) => !keys.includes(key));
 
     if (missingExports.length) {
@@ -62,17 +64,16 @@ export function verify(
 }
 
 const regExp =
-  /^\s*(?<comment>#.+)|(?<export>export\s+)?(?<key>[a-zA-Z_]\w*)\s*=\s*((?<quote>["'])?(?<value>.+?)\5?)?\s*?$/;
+  /^\s*(?<comment>#.+)|(?<export>export\s+)?(?<key>[a-zA-Z_]\w*)\s*=\s*((?<quote>["'`])?(?<value>.+?)\5?)?\s*?$/;
 
 export function parse(
   source: string,
   { allowEmptyValues = false, example }: {
     allowEmptyValues?: boolean;
-    example?: DotEnvObject;
+    example?: Env;
   } = {},
-): DotEnvObject {
-  const env: Record<string, string> = {};
-  const exports: Set<string> = new Set();
+): Env {
+  const env: Env = {};
 
   const lines = source.split("\n");
   for (const line of lines) {
@@ -80,8 +81,6 @@ export function parse(
 
     if (!groups) continue;
     if (groups.comment) continue;
-
-    if (groups.export != null) exports.add(groups.key);
 
     let value = groups.value || "";
 
@@ -93,15 +92,87 @@ export function parse(
       value = value.trim();
     }
 
-    env[groups.key] = value;
+    const isExport = groups.export != null;
+    env[groups.key] = { value, export: isExport };
   }
 
-  const object = { env, exports: [...exports] };
-  verify(object, { allowEmptyValues, example });
+  verify(env, { allowEmptyValues, example });
 
-  return object;
+  return env;
 }
 
-// would be a nice to be able to generate .env files and complete parse/stringify pair like in JSON
-// export function stringify(object: DotEnvObject) {
-// }
+export interface LoadOptions {
+  envPath?: string | URL;
+  examplePath?: string | URL;
+  defaultsPath?: string | URL;
+}
+
+export function loadSync(
+  denoEnv: DenoEnv = Deno.env,
+  {
+    envPath = ".env",
+    examplePath = ".env.example",
+    defaultsPath = ".env.defaults",
+  }: LoadOptions = {},
+) {
+  let example;
+  let defaultsEnv = {};
+  try {
+    const exampleSource = Deno.readTextFileSync(examplePath);
+    example = parse(exampleSource);
+  } catch (error) {
+    if (!(error instanceof Deno.errors.NotFound)) {
+      throw error;
+    }
+  }
+  try {
+    const defaultsSource = Deno.readTextFileSync(defaultsPath);
+    defaultsEnv = parse(defaultsSource);
+  } catch (error) {
+    if (!(error instanceof Deno.errors.NotFound)) {
+      throw error;
+    }
+  }
+  const envSource = Deno.readTextFileSync(envPath);
+
+  const value = parse(envSource, { example });
+
+  // initialEnv is passed at the end of assign to prevent overwrites
+  const initialEnv = denoEnv.toObject();
+  const env: Env = {
+    ...defaultsEnv,
+    ...value,
+  };
+  for (const [key, { value }] of Object.entries(env)) {
+    if (initialEnv[key] != null) continue;
+    denoEnv.set(key, value);
+  }
+  return denoEnv;
+}
+
+export function stringify(env: Env) {
+  const lines: string[] = [];
+  for (const [key, { value, export: isExport }] of Object.entries(env)) {
+    let quote;
+
+    let escapedValue = value || "";
+
+    if (escapedValue.includes("\n")) {
+      // escape inner new lines
+      escapedValue = escapedValue.replaceAll("\n", "\\n");
+      quote = `"`;
+    } else if (escapedValue.match(/[ \W]/)) {
+      quote = "'";
+    }
+
+    if (quote) {
+      // escape inner quotes
+      escapedValue = escapedValue.replaceAll(quote, `\\${quote}`);
+      escapedValue = `${quote}${escapedValue}${quote}`;
+    }
+
+    const line = `${isExport ? "export " : ""}${key}=${escapedValue}`;
+    lines.push(line);
+  }
+  return lines.join("\n");
+}
