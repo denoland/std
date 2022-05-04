@@ -1,12 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import {
-  basename,
-  fromFileUrl,
-  join,
-  parse,
-  resolve,
-  toFileUrl,
-} from "../path/mod.ts";
+import { fromFileUrl, parse, resolve, toFileUrl } from "../path/mod.ts";
 import { ensureFile, ensureFileSync } from "../fs/mod.ts";
 import { bold, green, red } from "../fmt/colors.ts";
 import { assert, AssertionError, equal } from "./asserts.ts";
@@ -126,16 +119,14 @@ class AssertSnapshotContext {
     options: SnapshotOptions,
   ): AssertSnapshotContext {
     let path: string;
+    const testFilePath = fromFileUrl(testContext.origin);
+    const { dir, base } = parse(testFilePath);
     if (options.path) {
-      path = resolve(options.path);
+      path = resolve(dir, options.path);
     } else if (options.dir) {
-      const testFilePath = fromFileUrl(testContext.origin);
-      const testFileName = basename(testFilePath);
-      path = resolve(options.dir, `${testFileName}.${SNAPSHOT_EXT}`);
+      path = resolve(dir, options.dir, `${base}.${SNAPSHOT_EXT}`);
     } else {
-      const testFilePath = fromFileUrl(testContext.origin);
-      const { dir, name, ext } = parse(testFilePath);
-      path = `${join(dir, SNAPSHOT_DIR, name)}${ext}.${SNAPSHOT_EXT}`;
+      path = resolve(dir, SNAPSHOT_DIR, `${base}.${SNAPSHOT_EXT}`);
     }
 
     let context = this.contexts.get(path);
@@ -251,7 +242,10 @@ class AssertSnapshotContext {
         error.message.startsWith("Module not found")
       ) {
         throw new AssertionError(
-          getErrorMessage("Missing snapshot file.", options),
+          getErrorMessage(
+            "Missing snapshot file.",
+            options,
+          ),
         );
       }
       throw error;

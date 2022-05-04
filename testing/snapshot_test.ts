@@ -166,7 +166,7 @@ Deno.test("Snapshot Test - Options", async (t) => {
   await t.step("dir", async (t) => {
     await t.step("relative", async (t) => {
       await assertSnapshot(t, VALUE, {
-        dir: "testing/__snapshots__/options_tests/",
+        dir: "__snapshots__/options_tests/",
       });
     });
 
@@ -180,7 +180,7 @@ Deno.test("Snapshot Test - Options", async (t) => {
   await t.step("path", async (t) => {
     await t.step("relative", async (t) => {
       await assertSnapshot(t, VALUE, {
-        path: "testing/__snapshots__/options_tests/custom_path.snap",
+        path: "__snapshots__/options_tests/custom_path.snap",
       });
     });
 
