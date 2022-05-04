@@ -23,18 +23,19 @@ function formatTestError(string: string) {
   return stripColor(string).replace(/^Check file:\/\/(.+)\n/g, "");
 }
 
-function testFnWithTempDir(fn: (t: Deno.TestContext, tempDir: string) => Promise<void>) {
+function testFnWithTempDir(
+  fn: (t: Deno.TestContext, tempDir: string) => Promise<void>,
+) {
   return async (t: Deno.TestContext) => {
     const tempDir = await Deno.makeTempDir();
     try {
       await fn(t, tempDir);
       await Deno.remove(tempDir, { recursive: true });
-    }
-    catch (err) {
+    } catch (err) {
       await Deno.remove(tempDir, { recursive: true });
       throw err;
     }
-  }
+  };
 }
 
 class TestClass {
@@ -128,46 +129,49 @@ Deno.test("Snapshot Test - Multi-Line Strings", async (t) => {
   });
 });
 
-Deno.test("Snapshot Test - Failed Assertion", testFnWithTempDir(async (t, tempDir) => {
-  let count = 0;
-  async function testFailedAssertion<T>(
-    snapshot: T,
-    actual: T,
-  ): Promise<AssertionError> {
-    const snapshotFilePath = join(tempDir, `snapshot_file_${++count}.snap`);
-    await Deno.writeTextFile(
-      snapshotFilePath,
-      `export const snapshot = {};
+Deno.test(
+  "Snapshot Test - Failed Assertion",
+  testFnWithTempDir(async (t, tempDir) => {
+    let count = 0;
+    async function testFailedAssertion<T>(
+      snapshot: T,
+      actual: T,
+    ): Promise<AssertionError> {
+      const snapshotFilePath = join(tempDir, `snapshot_file_${++count}.snap`);
+      await Deno.writeTextFile(
+        snapshotFilePath,
+        `export const snapshot = {};
 
 snapshot[\`name 1\`] = \`
 ${serialize(snapshot)}
 \`;
 `,
-    );
+      );
 
-    try {
-      await assertSnapshot(t, actual, {
-        path: snapshotFilePath,
-        mode: "assert",
-        name: "name",
-      });
-      fail("Snapshot assertion passed when it was expected to fail");
-    } catch (error) {
-      assertInstanceOf(error, AssertionError);
-      return error as AssertionError;
+      try {
+        await assertSnapshot(t, actual, {
+          path: snapshotFilePath,
+          mode: "assert",
+          name: "name",
+        });
+        fail("Snapshot assertion passed when it was expected to fail");
+      } catch (error) {
+        assertInstanceOf(error, AssertionError);
+        return error as AssertionError;
+      }
     }
-  }
 
-  await t.step("Object", async (t) => {
-    const error = await testFailedAssertion([1, 2, 3], [1, 2]);
-    await assertSnapshot(t, stripColor(error.message));
-  });
+    await t.step("Object", async (t) => {
+      const error = await testFailedAssertion([1, 2, 3], [1, 2]);
+      await assertSnapshot(t, stripColor(error.message));
+    });
 
-  await t.step("String", async (t) => {
-    const error = await testFailedAssertion("Hello World!", "Hello!");
-    await assertSnapshot(t, stripColor(error.message));
-  });
-}));
+    await t.step("String", async (t) => {
+      const error = await testFailedAssertion("Hello World!", "Hello!");
+      await assertSnapshot(t, stripColor(error.message));
+    });
+  }),
+);
 
 Deno.test("Snapshot Test - Options", async (t) => {
   const VALUE = [1, 2, 3];
@@ -251,11 +255,56 @@ Deno.test("Snapshot Test - Options", async (t) => {
     });
   });
 
-  await t.step("mode", testFnWithTempDir(async (t, tempDir) => {
-    const snapshotFilePath = join(tempDir, "snapshot.snap");
-    const snapshotName = "snapshot";
+  await t.step(
+    "mode",
+    testFnWithTempDir(async (t, tempDir) => {
+      const snapshotFilePath = join(tempDir, "snapshot.snap");
+      const snapshotName = "snapshot";
 
-    async function runTest(test: string) {
+      async function runTest(test: string) {
+        const tempTestFileName = "test.ts";
+        const tempTestFilePath = join(tempDir, tempTestFileName);
+        await Deno.writeTextFile(tempTestFilePath, test);
+
+        const process = await Deno.run({
+          cmd: ["deno", "test", "--allow-all", tempTestFilePath, "--", "-u"],
+          stdout: "piped",
+          stderr: "piped",
+        });
+        const output = await process.output();
+        const error = await process.stderrOutput();
+        process.close();
+
+        return {
+          output: new TextDecoder().decode(output),
+          error: new TextDecoder().decode(error),
+        };
+      }
+
+      const result = await runTest(`
+        import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+        Deno.test("${snapshotName}", async (t) => {
+          await assertSnapshot(t, [1, 2, 3], {
+            path: "${snapshotFilePath.replace(/\\/g, "\\\\")}",
+            mode: "update",
+          });
+        });
+      `);
+
+      const { snapshot } = await import(toFileUrl(snapshotFilePath).toString());
+
+      await assertSnapshot(t, snapshot[`${snapshotName} 1`]);
+      await assertSnapshot(t, formatTestOutput(result.output));
+      assert(!formatTestError(result.error), "unexpected output to stderr");
+    }),
+  );
+});
+
+Deno.test(
+  "Snapshot Test - Update",
+  testFnWithTempDir(async (t, tempDir) => {
+    async function runTestWithUpdateFlag(test: string) {
       const tempTestFileName = "test.ts";
       const tempTestFilePath = join(tempDir, tempTestFileName);
       await Deno.writeTextFile(tempTestFilePath, test);
@@ -275,109 +324,68 @@ Deno.test("Snapshot Test - Options", async (t) => {
       };
     }
 
-    const result = await runTest(`
+    function assertNoError(error: string) {
+      if (formatTestError(error)) {
+        throw new AssertionError(`Unexpected Error:\n\n${error}\n`);
+      }
+    }
+
+    /**
+     * New snapshot
+     */
+    const result1 = await runTestWithUpdateFlag(
+      `
       import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
 
-      Deno.test("${snapshotName}", async (t) => {
-        await assertSnapshot(t, [1, 2, 3], {
-          path: "${snapshotFilePath.replace(/\\/g, "\\\\")}",
-          mode: "update",
-        });
+      Deno.test("Snapshot Test - Update", async (t) => {
+        await assertSnapshot(t, [
+          1,
+          2,
+        ]);
+      });`,
+    );
+
+    assertNoError(result1.error);
+    await assertSnapshot(t, formatTestOutput(result1.output));
+
+    /**
+     * Existing snapshot - no changes
+     */
+    const result2 = await runTestWithUpdateFlag(
+      `
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - Update", async (t) => {
+        await assertSnapshot(t, [
+          1,
+          2,
+        ]);
+      });`,
+    );
+
+    assertNoError(result2.error);
+    await assertSnapshot(t, formatTestOutput(result2.output));
+
+    /**
+     * Existing snapshot - updates
+     */
+    const result3 = await runTestWithUpdateFlag(`
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - Update", async (t) => {
+        await assertSnapshot(t, [
+          1,
+          2,
+          3,
+          5,
+        ]);
       });
     `);
 
-    const { snapshot } = await import(toFileUrl(snapshotFilePath).toString());
-
-    await assertSnapshot(t, snapshot[`${snapshotName} 1`]);
-    await assertSnapshot(t, formatTestOutput(result.output));
-    assert(!formatTestError(result.error), "unexpected output to stderr");
-  }));
-});
-
-Deno.test("Snapshot Test - Update", testFnWithTempDir(async (t, tempDir) => {
-  async function runTestWithUpdateFlag(test: string) {
-    const tempTestFileName = "test.ts";
-    const tempTestFilePath = join(tempDir, tempTestFileName);
-    await Deno.writeTextFile(tempTestFilePath, test);
-
-    const process = await Deno.run({
-      cmd: ["deno", "test", "--allow-all", tempTestFilePath, "--", "-u"],
-      stdout: "piped",
-      stderr: "piped",
-    });
-    const output = await process.output();
-    const error = await process.stderrOutput();
-    process.close();
-
-    return {
-      output: new TextDecoder().decode(output),
-      error: new TextDecoder().decode(error),
-    };
-  }
-
-  function assertNoError(error: string) {
-    if (formatTestError(error)) {
-      throw new AssertionError(`Unexpected Error:\n\n${error}\n`);
-    }
-  }
-
-  /**
-   * New snapshot
-   */
-  const result1 = await runTestWithUpdateFlag(
-    `
-    import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
-
-    Deno.test("Snapshot Test - Update", async (t) => {
-      await assertSnapshot(t, [
-        1,
-        2,
-      ]);
-    });
-    `,
-  );
-
-  assertNoError(result1.error);
-  await assertSnapshot(t, formatTestOutput(result1.output));
-
-  /**
-   * Existing snapshot - no changes
-   */
-  const result2 = await runTestWithUpdateFlag(
-    `
-    import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
-
-    Deno.test("Snapshot Test - Update", async (t) => {
-      await assertSnapshot(t, [
-        1,
-        2,
-      ]);
-    });
-    `,
-  );
-
-  assertNoError(result2.error);
-  await assertSnapshot(t, formatTestOutput(result2.output));
-
-  /**
-   * Existing snapshot - updates
-   */
-  const result3 = await runTestWithUpdateFlag(`
-    import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
-
-    Deno.test("Snapshot Test - Update", async (t) => {
-      await assertSnapshot(t, [
-        1,
-        2,
-        3,
-        5,
-      ]);
-    });
-  `);
-
-  assertNoError(result3.error);
-  await assertSnapshot(t, formatTestOutput(result3.output));
-}));
+    assertNoError(result3.error);
+    await assertSnapshot(t, formatTestOutput(result3.output));
+  }),
+);
 
 // Regression test for https://github.com/denoland/deno_std/issues/2140
 // Long strings should not be truncated with ellipsis
