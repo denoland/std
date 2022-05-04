@@ -1,10 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export type Env = Record<string, {
-  value: string;
-  export?: boolean;
-}>;
+type Env = Record<string, string>;
+
+export interface EnvObject {
+  env: Env;
+  exports: string[];
+}
 
 export interface DenoEnv {
   get(key: string): string | undefined;
@@ -16,24 +18,24 @@ export interface DenoEnv {
 }
 
 export function verify(
-  env: Env,
+  object: EnvObject,
   { allowEmptyValues, example }: {
     allowEmptyValues: boolean;
-    example?: Env;
+    example?: EnvObject;
   },
 ) {
   if (example) {
-    let entries = env;
+    let entries = object.env;
 
     if (!allowEmptyValues) {
       entries = Object.fromEntries(
-        Object.entries(env)
-          .filter(([_, { value }]) => value != null && value !== ""),
+        Object.entries(object.env)
+          .filter(([_, value]) => value != null && value !== ""),
       );
     }
 
     const keys = Object.keys(entries);
-    const missingVars = Object.keys(example)
+    const missingVars = Object.keys(example.env)
       .filter((key) => !keys.includes(key));
 
     if (missingVars.length) {
@@ -44,11 +46,7 @@ export function verify(
       );
     }
 
-    const exports = Object.entries(example)
-      .filter(([_key, { export: isExport }]) => isExport)
-      .map((data) => data[0]);
-
-    const missingExports = exports
+    const missingExports = object.exports
       .filter((key) => !keys.includes(key));
 
     if (missingExports.length) {
@@ -70,10 +68,11 @@ export function parse(
   source: string,
   { allowEmptyValues = false, example }: {
     allowEmptyValues?: boolean;
-    example?: Env;
+    example?: EnvObject;
   } = {},
-): Env {
+): EnvObject {
   const env: Env = {};
+  const exports: Set<string> = new Set();
 
   const lines = source.split("\n");
   for (const line of lines) {
@@ -92,13 +91,17 @@ export function parse(
       value = value.trim();
     }
 
-    const isExport = groups.export != null;
-    env[groups.key] = { value, export: isExport };
+    env[groups.key] = value;
+
+    if (groups.export != null) {
+      exports.add(groups.key);
+    }
   }
+  const object: EnvObject = { env, exports: [...exports] };
 
-  verify(env, { allowEmptyValues, example });
+  verify(object, { allowEmptyValues, example });
 
-  return env;
+  return object;
 }
 
 export interface LoadOptions {
@@ -127,7 +130,7 @@ export function loadSync(
   }
   try {
     const defaultsSource = Deno.readTextFileSync(defaultsPath);
-    defaultsEnv = parse(defaultsSource);
+    defaultsEnv = parse(defaultsSource).env;
   } catch (error) {
     if (!(error instanceof Deno.errors.NotFound)) {
       throw error;
@@ -135,24 +138,25 @@ export function loadSync(
   }
   const envSource = Deno.readTextFileSync(envPath);
 
-  const value = parse(envSource, { example });
+  const parsedObject = parse(envSource, { example });
 
   // initialEnv is passed at the end of assign to prevent overwrites
-  const initialEnv = denoEnv.toObject();
   const env: Env = {
     ...defaultsEnv,
-    ...value,
+    ...parsedObject.env,
   };
-  for (const [key, { value }] of Object.entries(env)) {
+
+  const initialEnv = denoEnv.toObject();
+  for (const [key, value] of Object.entries(env)) {
     if (initialEnv[key] != null) continue;
     denoEnv.set(key, value);
   }
   return denoEnv;
 }
 
-export function stringify(env: Env) {
+export function stringify(object: EnvObject) {
   const lines: string[] = [];
-  for (const [key, { value, export: isExport }] of Object.entries(env)) {
+  for (const [key, value] of Object.entries(object.env)) {
     let quote;
 
     let escapedValue = value || "";
@@ -170,8 +174,9 @@ export function stringify(env: Env) {
       escapedValue = escapedValue.replaceAll(quote, `\\${quote}`);
       escapedValue = `${quote}${escapedValue}${quote}`;
     }
-
-    const line = `${isExport ? "export " : ""}${key}=${escapedValue}`;
+    const line = `${
+      object.exports.includes(key) ? "export " : ""
+    }${key}=${escapedValue}`;
     lines.push(line);
   }
   return lines.join("\n");

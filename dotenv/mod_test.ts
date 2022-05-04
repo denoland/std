@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { Env, loadSync, parse, stringify, verify } from "./mod.ts";
+import { EnvObject, loadSync, parse, stringify, verify } from "./mod.ts";
 import * as path from "../path/mod.ts";
 
 function clearDenoEnv() {
@@ -15,81 +15,81 @@ Deno.test("parse", async (t) => {
   await t.step(
     "basic",
     () => {
-      const env = parse(`BASIC=basic`);
-      assertEquals(env["BASIC"].value, "basic");
+      const { env } = parse(`BASIC=basic`);
+      assertEquals(env["BASIC"], "basic");
     },
   );
   await t.step(
     "comment",
     () => {
-      const env = parse(`#COMMENT=comment`);
+      const { env } = parse(`#COMMENT=comment`);
       assertEquals(env["#COMMENT"], undefined);
     },
   );
   await t.step(
     "empty",
     () => {
-      const env = parse(`EMPTY=`);
-      assertEquals(env["EMPTY"].value, "");
+      const { env } = parse(`EMPTY=`);
+      assertEquals(env["EMPTY"], "");
     },
   );
   await t.step(
     "inner quotes",
     () => {
-      const env = parse(`JSON={"foo": "bar"}`);
-      assertEquals(env["JSON"].value, '{"foo": "bar"}');
+      const { env } = parse(`JSON={"foo": "bar"}`);
+      assertEquals(env["JSON"], '{"foo": "bar"}');
     },
   );
   await t.step(
     "unquoted whitespace trim",
     () => {
-      const env = parse(`FOO= some value`);
-      assertEquals(env["FOO"].value, "some value");
+      const { env } = parse(`FOO= some value`);
+      assertEquals(env["FOO"], "some value");
     },
   );
   await t.step(
     "single quote escape",
     () => {
-      const env = parse(`SINGLE_QUOTE='quoted'`);
-      assertEquals(env["SINGLE_QUOTE"].value, "quoted");
+      const { env } = parse(`SINGLE_QUOTE='quoted'`);
+      assertEquals(env["SINGLE_QUOTE"], "quoted");
     },
   );
   await t.step(
     "double quote escape",
     () => {
-      const env = parse(`DOUBLE_QUOTE="quoted"`);
-      assertEquals(env["DOUBLE_QUOTE"].value, "quoted");
+      const { env } = parse(`DOUBLE_QUOTE="quoted"`);
+      assertEquals(env["DOUBLE_QUOTE"], "quoted");
     },
   );
   await t.step(
     "single quote maintain whitespace",
     () => {
-      const env = parse(`FOO=' some value '`);
-      assertEquals(env["FOO"].value, " some value ");
+      const { env } = parse(`FOO=' some value '`);
+      assertEquals(env["FOO"], " some value ");
     },
   );
   await t.step(
     "double quote maintain whitespace",
     () => {
-      const env = parse(`FOO=" some value "`);
-      assertEquals(env["FOO"].value, " some value ");
+      const { env } = parse(`FOO=" some value "`);
+      assertEquals(env["FOO"], " some value ");
     },
   );
   await t.step(
     "double quote multiline",
     () => {
-      const env = parse(`MULTILINE="new\\nline"`);
-      assertEquals(env["MULTILINE"].value, "new\nline");
+      const { env } = parse(`MULTILINE="new\\nline"`);
+      assertEquals(env["MULTILINE"], "new\nline");
     },
   );
   await t.step(
     "backticks",
     () => {
-      const env = parse(
+      const { env } = parse(
         `BACKTICK_KEY=\`This has 'single' and "double" quotes inside of it.\``,
       );
       assertEquals(
-        env["BACKTICK_KEY"].value,
+        env["BACKTICK_KEY"],
         `This has 'single' and "double" quotes inside of it.`,
       );
     },
@@ -98,11 +98,11 @@ Deno.test("parse", async (t) => {
   await t.step(
     "non-word-characters",
     () => {
-      const env = parse(
+      const { env } = parse(
         `EQUALS=equ==als`,
       );
       assertEquals(
-        env["EQUALS"].value,
+        env["EQUALS"],
         "equ==als",
       );
     },
@@ -111,7 +111,7 @@ Deno.test("parse", async (t) => {
   await t.step(
     "key starting with number",
     () => {
-      const env = parse(
+      const { env } = parse(
         `1INVALID=invalid`,
       );
       assertEquals(
@@ -124,8 +124,8 @@ Deno.test("parse", async (t) => {
   await t.step(
     "export",
     () => {
-      const env = parse(`export BASIC=basic`);
-      assertEquals(env["BASIC"], { value: "basic", export: true });
+      const { env } = parse(`export BASIC=basic`);
+      assertEquals(env["BASIC"], "basic");
     },
   );
 });
@@ -134,7 +134,7 @@ Deno.test("stringify", async (t) => {
     "basic",
     () =>
       assertEquals(
-        stringify({ "BASIC": { value: "basic" } }),
+        stringify({ env: { "BASIC": "basic" }, exports: [] }),
         `BASIC=basic`,
       ),
   );
@@ -142,7 +142,7 @@ Deno.test("stringify", async (t) => {
     "comment",
     () =>
       assertEquals(
-        stringify({ "#COMMENT": { value: "comment" } }),
+        stringify({ env: { "#COMMENT": "comment" }, exports: [] }),
         `#COMMENT=comment`,
       ),
   );
@@ -150,7 +150,7 @@ Deno.test("stringify", async (t) => {
     "single quote",
     () =>
       assertEquals(
-        stringify({ "QUOTED_SINGLE": { value: "single quoted" } }),
+        stringify({ env: { "QUOTED_SINGLE": "single quoted" }, exports: [] }),
         `QUOTED_SINGLE='single quoted'`,
       ),
   );
@@ -158,7 +158,7 @@ Deno.test("stringify", async (t) => {
     "multiline",
     () =>
       assertEquals(
-        stringify({ "MULTILINE": { value: "hello\nworld" } }),
+        stringify({ env: { "MULTILINE": "hello\nworld" }, exports: [] }),
         `MULTILINE="hello\\nworld"`,
       ),
   );
@@ -166,7 +166,7 @@ Deno.test("stringify", async (t) => {
     "whitespace",
     () =>
       assertEquals(
-        stringify({ "WHITESPACE": { value: "    whitespace   " } }),
+        stringify({ env: { "WHITESPACE": "    whitespace   " }, exports: [] }),
         `WHITESPACE='    whitespace   '`,
       ),
   );
@@ -174,7 +174,7 @@ Deno.test("stringify", async (t) => {
     "equals",
     () =>
       assertEquals(
-        stringify({ "EQUALS": { value: "equ==als" } }),
+        stringify({ env: { "EQUALS": "equ==als" }, exports: [] }),
         `EQUALS='equ==als'`,
       ),
   );
@@ -182,7 +182,7 @@ Deno.test("stringify", async (t) => {
     "number",
     () =>
       assertEquals(
-        stringify({ "THE_ANSWER": { value: "42" } }),
+        stringify({ env: { "THE_ANSWER": "42" }, exports: [] }),
         `THE_ANSWER=42`,
       ),
   );
@@ -191,8 +191,9 @@ Deno.test("stringify", async (t) => {
     () =>
       assertEquals(
         stringify({
-          "UNDEFINED": { value: undefined },
-        } as unknown as Env),
+          env: { "UNDEFINED": undefined } as unknown as Record<string, string>,
+          exports: [],
+        }),
         `UNDEFINED=`,
       ),
   );
@@ -201,8 +202,9 @@ Deno.test("stringify", async (t) => {
     () =>
       assertEquals(
         stringify({
-          "NULL": { value: null },
-        } as unknown as Env),
+          env: { "NULL": null } as unknown as Record<string, string>,
+          exports: [],
+        }),
         `NULL=`,
       ),
   );
@@ -211,9 +213,12 @@ Deno.test("stringify", async (t) => {
     () =>
       assertEquals(
         stringify({
-          "EXPORTED_VAR": { value: "exported value 1", export: true },
+          env: {
+            "EXPORT": "exported",
+          },
+          exports: ["EXPORT"],
         }),
-        `export EXPORTED_VAR='exported value 1'`,
+        `export EXPORT=exported`,
       ),
   );
 });
@@ -229,17 +234,17 @@ Deno.test("loadSync", () => {
 });
 
 Deno.test("verify allowEmptyValues", () => {
-  const dotEnv = { foo: { value: "" } };
+  const dotEnv: EnvObject = { env: { foo: "" }, exports: [] };
   assertEquals(verify(dotEnv, { allowEmptyValues: true }), true);
   assertEquals(verify(dotEnv, { allowEmptyValues: false }), true);
 });
 Deno.test("verify allowEmptyValues example", () => {
-  const dotEnv = { foo: { value: "" } };
-  const example = { foo: { value: "var" } };
+  const dotEnv: EnvObject = { env: { foo: "" }, exports: [] };
+  const example: EnvObject = { env: { foo: "var" }, exports: [] };
   assertEquals(verify(dotEnv, { allowEmptyValues: true, example }), true);
 });
 Deno.test("verify allowEmptyValues throw", () => {
-  const dotEnv = { foo: { value: "" } };
-  const example = { foo: { value: "bar" } };
+  const dotEnv: EnvObject = { env: { foo: "" }, exports: [] };
+  const example: EnvObject = { env: { foo: "bar" }, exports: [] };
   assertThrows(() => verify(dotEnv, { allowEmptyValues: false, example }));
 });
