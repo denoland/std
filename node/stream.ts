@@ -19,4 +19,4 @@ export {
   Stream,
   Transform,
   Writable,
-} from "./_stream.js";
+} from "./_stream.mjs";

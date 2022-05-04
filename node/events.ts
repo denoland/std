@@ -9,4 +9,4 @@ export {
   getEventListeners,
   on,
   once,
-} from "./_events.js";
+} from "./_events.mjs";

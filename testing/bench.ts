@@ -147,7 +147,11 @@ function createBenchmarkTimer(clock: BenchmarkClock): BenchmarkTimer {
 
 const candidates: BenchmarkDefinition[] = [];
 
-/** Registers a benchmark as a candidate for the runBenchmarks executor. */
+/**
+ * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
+ * for details.
+ *
+ * Registers a benchmark as a candidate for the runBenchmarks executor. */
 export function bench(
   benchmark: BenchmarkDefinition | BenchmarkFunction,
 ): void {
@@ -165,7 +169,11 @@ export function bench(
   }
 }
 
-/** Clears benchmark candidates which name matches `only` and doesn't match `skip`.
+/**
+ * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
+ * for details.
+ *
+ * Clears benchmark candidates which name matches `only` and doesn't match `skip`.
  * Removes all candidates if options were not provided */
 export function clearBenchmarks({
   only = /[^\s]/,
@@ -179,6 +187,9 @@ export function clearBenchmarks({
 }
 
 /**
+ * @deprecated Use `Deno.bench()` instead. See https://doc.deno.land/deno/unstable/~/Deno.bench
+ * for details.
+ *
  * Runs all registered and non-skipped benchmarks serially.
  *
  * @param [progressCb] provides the possibility to get updates of the current progress during the run of the benchmarking

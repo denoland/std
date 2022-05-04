@@ -29,7 +29,7 @@ import {
   defaultTriggerAsyncIdScope,
   newAsyncId,
   ownerSymbol,
-} from "./_async_hooks.ts";
+} from "./internal/async_hooks.ts";
 import {
   ERR_INVALID_ADDRESS_FAMILY,
   ERR_INVALID_ARG_TYPE,
@@ -60,7 +60,7 @@ import {
   writeGeneric,
   writevGeneric,
 } from "./internal/stream_base_commons.ts";
-import { kTimeout } from "./internal/timers.js";
+import { kTimeout } from "./internal/timers.mjs";
 import { nextTick } from "./_next_tick.ts";
 import {
   DTRACE_NET_SERVER_CONNECTION,
@@ -75,7 +75,7 @@ import {
   validateNumber,
   validatePort,
   validateString,
-} from "./internal/validators.js";
+} from "./internal/validators.mjs";
 import {
   constants as TCPConstants,
   TCP,
@@ -795,7 +795,7 @@ export class Socket extends Duplex {
       this[asyncIdSymbol] = _getNewAsyncId(this._handle);
     } else if (options.fd !== undefined) {
       // REF: https://github.com/denoland/deno/issues/6529
-      notImplemented();
+      notImplemented("net.Socket.prototype.constructor with fd option");
     }
 
     const onread = options.onread;

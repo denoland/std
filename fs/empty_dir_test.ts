@@ -204,7 +204,7 @@ for (const s of scenes) {
       );
 
       try {
-        const args = [Deno.execPath(), "run", "--quiet"];
+        const args = [Deno.execPath(), "run", "--quiet", "--no-prompt"];
 
         if (s.read) {
           args.push("--allow-read");

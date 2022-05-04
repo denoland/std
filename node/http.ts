@@ -7,13 +7,13 @@ import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { EventEmitter } from "./events.ts";
 import { nextTick } from "./_next_tick.ts";
 import { Status as STATUS_CODES } from "../http/http_status.ts";
-import { validatePort } from "./internal/validators.js";
+import { validatePort } from "./internal/validators.mjs";
 import {
   Readable as NodeReadable,
   Writable as NodeWritable,
 } from "./stream.ts";
 import { OutgoingMessage } from "./_http_outgoing.ts";
-import { Agent } from "./_http_agent.js";
+import { Agent } from "./_http_agent.mjs";
 import { urlToHttpOptions } from "./internal/url.ts";
 
 const METHODS = [
@@ -117,16 +117,21 @@ class ClientRequest extends NodeWritable {
   }
 
   override async _final() {
+    if (this.controller) {
+      this.controller.close();
+    }
+
     const client = await this._createCustomClient();
     const opts = { body: this.body, method: this.opts.method, client };
-    const mayResponse = fetch(this.opts.href!, opts).catch((e) => {
-      if (e.message.includes("connection closed before message completed")) {
-        // Node.js seems ignoring this error
-      } else {
-        this.emit("error", e);
-      }
-      return undefined;
-    });
+    const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts)
+      .catch((e) => {
+        if (e.message.includes("connection closed before message completed")) {
+          // Node.js seems ignoring this error
+        } else {
+          this.emit("error", e);
+        }
+        return undefined;
+      });
     const res = new IncomingMessageForClient(
       await mayResponse,
       this._createSocket(),
@@ -153,6 +158,25 @@ class ClientRequest extends NodeWritable {
     // Sometimes the libraries check some properties of socket
     // e.g. if (!response.socket.authorized) { ... }
     return new Socket({});
+  }
+
+  // deno-lint-ignore no-explicit-any
+  _createUrlStrFromOptions(opts: any) {
+    if (opts.href) {
+      return opts.href;
+    } else {
+      const {
+        auth,
+        protocol,
+        host,
+        hostname,
+        path,
+        port,
+      } = opts;
+      return `${protocol}//${auth ? `${auth}@` : ""}${host ?? hostname}${
+        port ? `:${port}` : ""
+      }${path}`;
+    }
   }
 }
 
@@ -302,7 +326,9 @@ export class ServerResponse extends NodeWritable {
         status: this.statusCode,
         statusText: this.statusMessage,
       }),
-    );
+    ).catch(() => {
+      // ignore this error
+    });
   }
 
   // deno-lint-ignore no-explicit-any

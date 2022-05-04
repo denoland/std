@@ -98,36 +98,3 @@ export const versions = {
   unicode: "13.0",
   ...Deno.version,
 };
-
-function hrtime(time?: [number, number]): [number, number] {
-  const milli = performance.now();
-  const sec = Math.floor(milli / 1000);
-  const nano = Math.floor(milli * 1_000_000 - sec * 1_000_000_000);
-  if (!time) {
-    return [sec, nano];
-  }
-  const [prevSec, prevNano] = time;
-  return [sec - prevSec, nano - prevNano];
-}
-
-hrtime.bigint = function (): BigInt {
-  const [sec, nano] = hrtime();
-  return BigInt(sec) * 1_000_000_000n + BigInt(nano);
-};
-
-function memoryUsage(): {
-  rss: number;
-  heapTotal: number;
-  heapUsed: number;
-  external: number;
-  arrayBuffers: number;
-} {
-  return {
-    ...Deno.memoryUsage(),
-    arrayBuffers: 0,
-  };
-}
-
-memoryUsage.rss = function (): number {
-  return memoryUsage().rss;
-};

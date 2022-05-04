@@ -20,7 +20,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { ownerSymbol } from "../_async_hooks.ts";
+import { ownerSymbol } from "./async_hooks.ts";
 import {
   kArrayBufferOffset,
   kBytesWritten,
@@ -31,9 +31,9 @@ import {
 } from "../internal_binding/stream_wrap.ts";
 import { isUint8Array } from "./util/types.ts";
 import { errnoException } from "./errors.ts";
-import { getTimerDuration, kTimeout } from "./timers.js";
+import { getTimerDuration, kTimeout } from "./timers.mjs";
 import { setUnrefTimeout } from "../timers.ts";
-import { validateCallback } from "./validators.js";
+import { validateCallback } from "./validators.mjs";
 import { codeMap } from "../internal_binding/uv.ts";
 import { Buffer } from "../buffer.ts";
 

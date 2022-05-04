@@ -72,11 +72,11 @@ export class Pipe extends ConnectionWrap {
   }
 
   bind() {
-    notImplemented();
+    notImplemented("Pipe.prototype.bind");
   }
 
   listen() {
-    notImplemented();
+    notImplemented("Pipe.prototype.listen");
   }
 
   connect(
@@ -90,21 +90,21 @@ export class Pipe extends ConnectionWrap {
       writable: boolean,
     ) => void,
   ) {
-    notImplemented();
+    notImplemented("Pipe.prototype.connect");
   }
 
   open(_fd: number): number {
     // REF: https://github.com/denoland/deno/issues/6529
-    notImplemented();
+    notImplemented("Pipe.prototype.open");
   }
 
   // Windows only
   setPendingInstances(_instances: number) {
-    notImplemented();
+    notImplemented("Pipe.prototype.setPendingInstances");
   }
 
   fchmod() {
-    notImplemented();
+    notImplemented("Pipe.prototype.fchmod");
   }
 }
 

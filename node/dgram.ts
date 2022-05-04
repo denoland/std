@@ -45,55 +45,55 @@ export class Socket extends EventEmitter {
     super();
   }
   addMembership(_multicastAddress: string, _interfaceAddress?: string): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.addMembership");
   }
   addSourceSpecificMembership(
     _sourceAddress: string,
     _groupAddress: string,
     _interfaceAddress?: string,
   ): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.addSourceSpecifiMembership");
   }
   address(): AddressInfo {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.address");
   }
   bind(port?: number, address?: string, callback?: () => void): this;
   bind(port: number, callback?: () => void): this;
   bind(callback: () => void): this;
   bind(options: BindOptions, callback?: () => void): this;
   bind(..._args: unknown[]): this {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.bind");
   }
   close(_callback?: () => void): this {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.close");
   }
 
   connect(port: number, address?: string, callback?: () => void): void;
   connect(port: number, callback: () => void): void;
   connect(_port: number, _arg1?: unknown, _arg2?: unknown): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.connect");
   }
   disconnect(): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.");
   }
   dropMembership(_multicastAddress: string, _interfaceAddress?: string): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.dropMembership");
   }
   dropSourceSpecificMembership(
     _sourceAddress: string,
     _groupAddress: string,
     _interfaceAddress?: string,
   ): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.dropSourceSpecificMembership");
   }
   getRecvBufferSize(): number {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.getRecvBufferSize");
   }
   getSendBufferSize(): number {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.getSendBufferSize");
   }
   ref(): this {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.ref");
   }
   send(
     msg: MessageType | ReadonlyArray<MessageType>,
@@ -133,35 +133,35 @@ export class Socket extends EventEmitter {
   ): void;
   // deno-lint-ignore no-explicit-any
   send(_msg: MessageType | ReadonlyArray<any>, ..._args: unknown[]): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.send");
   }
 
   remoteAddress(): AddressInfo {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.remoteAddress");
   }
   setBroadcast(_arg: boolean): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.setBroadcast");
   }
   setMulticastInterface(_interfaceAddress: string): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.setMulticastInterface");
   }
   setMulticastLoopback(_arg: boolean): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.setMulticastLoopback");
   }
   setMulticastTTL(_ttl: number): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.setMulticastTTL");
   }
   setRecvBufferSize(_size: number): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.setRecvBufferSize");
   }
   setSendBufferSize(_size: number): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.setSendBufferSize");
   }
   setTTL(_ttl: number): void {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.setTTL");
   }
   unref(): this {
-    notImplemented();
+    notImplemented("dgram.Socket.prototype.unref");
   }
   override addListener(event: "close", listener: () => void): this;
   override addListener(event: "connect", listener: () => void): this;

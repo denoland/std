@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 import { sprintf } from "../../../fmt/printf.ts";
-import { inspect } from "./inspect.js";
+import { inspect } from "./inspect.mjs";
 
 // `debugImpls` and `testEnabled` are deliberately not initialized so any call
 // to `debuglog()` before `initializeDebugEnv()` is called will throw.
@@ -103,19 +103,16 @@ export function debuglog(
   return logger;
 }
 
-let state = "";
-
-if (Deno.permissions) {
-  state = (await Deno.permissions.query({
-    name: "env",
-    variable: "NODE_DEBUG",
-  })).state;
+let debugEnv;
+try {
+  debugEnv = Deno.env.get("NODE_DEBUG") ?? "";
+} catch (error) {
+  if (error instanceof Deno.errors.PermissionDenied) {
+    debugEnv = "";
+  } else {
+    throw error;
+  }
 }
-
-if (state === "granted") {
-  initializeDebugEnv(Deno.env.get("NODE_DEBUG") ?? "");
-} else {
-  initializeDebugEnv("");
-}
+initializeDebugEnv(debugEnv);
 
 export default { debuglog };

@@ -157,7 +157,7 @@ export class LibuvStreamWrap extends HandleWrap {
    */
   useUserBuffer(_userBuf: unknown): number {
     // TODO(cmorten)
-    notImplemented();
+    notImplemented("LibuvStreamWrap.prototype.useUserBuffer");
   }
 
   /**
@@ -191,7 +191,7 @@ export class LibuvStreamWrap extends HandleWrap {
     _allBuffers: boolean,
   ): number {
     // TODO(cmorten)
-    notImplemented();
+    notImplemented("LibuvStreamWrap.prototype.writev");
   }
 
   /**
@@ -219,7 +219,7 @@ export class LibuvStreamWrap extends HandleWrap {
    * @return An error status code.
    */
   writeUcs2String(_req: WriteWrap<LibuvStreamWrap>, _data: string): number {
-    notImplemented();
+    notImplemented("LibuvStreamWrap.prototype.writeUcs2String");
   }
 
   /**
