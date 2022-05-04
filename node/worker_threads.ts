@@ -59,7 +59,7 @@ class _Worker extends EventEmitter {
         type: "module",
         // unstable
         deno: { namespace: true },
-      },
+      } as globalThis.WorkerOptions, // bypass unstable type error
     );
     handle.addEventListener(
       "error",
