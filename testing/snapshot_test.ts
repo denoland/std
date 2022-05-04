@@ -26,7 +26,6 @@ function formatTestError(string: string) {
 function testFnWithTempDir(fn: (t: Deno.TestContext, tempDir: string) => Promise<void>) {
   return async (t: Deno.TestContext) => {
     const tempDir = await Deno.makeTempDir();
-    console.log(tempDir);
     try {
       await fn(t, tempDir);
       await Deno.remove(tempDir, { recursive: true });
