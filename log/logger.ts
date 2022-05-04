@@ -27,5 +27,5 @@ export abstract class Logger<D extends unknown[]> extends BaseLogger<D> {
     this.dispatch(data, logLevels.error);
   }
 
-  protected abstract override handler(data: D, logLevel: number): void;
+  protected abstract handler(data: D, logLevel: number): void;
 }

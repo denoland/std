@@ -1,15 +1,5 @@
 # log
 
-## Default logLevels
-
-| Name  | Number |
-| ----- | ------ |
-| trace | 10     |
-| debug | 20     |
-| info  | 30     |
-| warn  | 40     |
-| error | 50     |
-
 ## Loggers
 
 ### ConsoleLogger
@@ -56,13 +46,23 @@ warn
 error
 ```
 
-## Custom logLevels
+## Default log levels
+
+| Name  | Number |
+| ----- | ------ |
+| trace | 10     |
+| debug | 20     |
+| info  | 30     |
+| warn  | 40     |
+| error | 50     |
+
+## Custom log levels
 
 ```ts
 import { ConsoleLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
 class CustomConsoleLogger extends ConsoleLogger {
-  static override logLevels = {
+  static logLevels = {
     ...super.logLevels,
     fatal: 60,
   };
@@ -89,8 +89,8 @@ fatal
 import { FileLogger } from "https://deno.land/std@$STD_VERSION/log/mod.ts";
 
 class CustomFileLogger extends FileLogger {
-  protected override handler(data: unknown[]) {
-    super.handler([new Date().toISOString(), ...data.join("->")]);
+  protected handler(data: unknown[]) {
+    super.handler(["Custom Handler:", ...data]);
   }
 }
 const fileLogger = new CustomFileLogger(
@@ -103,5 +103,5 @@ fileLogger.info("some", "information");
 log.txt
 
 ```txt
-2021-11-15T01:27:39.314Z some->information
+Custom Handler: some information
 ```
