@@ -34,6 +34,7 @@ import { codeMap } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
 import { kStreamBaseField } from "./stream_wrap.ts";
 import { isIP } from "../internal/net.ts";
+import * as DenoUnstable from "../../_deno_unstable.ts";
 
 /** The type of TCP socket. */
 enum socketType {
@@ -152,7 +153,7 @@ export class TCP extends ConnectionWrap {
    */
   open(_fd: number): number {
     // REF: https://github.com/denoland/deno/issues/6529
-    notImplemented();
+    notImplemented("TCP.prototype.open");
   }
 
   /**
@@ -236,6 +237,17 @@ export class TCP extends ConnectionWrap {
     return 0;
   }
 
+  override ref() {
+    if (this.#listener) {
+      DenoUnstable.ListenerRef(this.#listener);
+    }
+  }
+  override unref() {
+    if (this.#listener) {
+      DenoUnstable.ListenerUnref(this.#listener);
+    }
+  }
+
   /**
    * Populates the provided object with local address entries.
    * @param sockname An object to add the local address entries to.
@@ -306,7 +318,7 @@ export class TCP extends ConnectionWrap {
    */
   setSimultaneousAccepts(_enable: boolean) {
     // Low priority to implement owing to it being deprecated in Node.
-    notImplemented();
+    notImplemented("TCP.prototype.setSimultaneousAccepts");
   }
 
   /**

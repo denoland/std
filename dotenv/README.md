@@ -71,8 +71,8 @@ The parsing engine currently supports the following rules:
 - double quoted values expand new lines (`MULTILINE="new\nline"` becomes
 
 ```
-{MULTILINE: 'new
-line'}
+{ MULTILINE: "new
+line" }
 ```
 
 - backticks are supported

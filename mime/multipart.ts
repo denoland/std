@@ -1,5 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { equals, indexOf, lastIndexOf, startsWith } from "../bytes/mod.ts";
+import {
+  equals,
+  indexOfNeedle,
+  lastIndexOfNeedle,
+  startsWith,
+} from "../bytes/mod.ts";
 import { Buffer, BufReader, BufWriter } from "../io/buffer.ts";
 import { copy } from "../streams/conversion.ts";
 import { copyN } from "../io/util.ts";
@@ -9,7 +14,11 @@ import { assert } from "../_util/assert.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 
 const { hasOwn } = Object;
-/** FormFile object */
+/**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
+ * FormFile object */
 export interface FormFile {
   /** filename  */
   filename: string;
@@ -25,7 +34,11 @@ export interface FormFile {
   tempfile?: string;
 }
 
-/** Type guard for FormFile */
+/**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
+ * Type guard for FormFile */
 // deno-lint-ignore no-explicit-any
 export function isFormFile(x: any): x is FormFile {
   return hasOwn(x, "filename") && hasOwn(x, "type");
@@ -42,6 +55,9 @@ function randomBoundary(): string {
 const encoder = new TextEncoder();
 
 /**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
  * Checks whether `buf` should be considered to match the boundary.
  *
  * The prefix is "--boundary" or "\r\n--boundary" or "\n--boundary", and the
@@ -79,6 +95,9 @@ export function matchAfterPrefix(
 }
 
 /**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
  * Scans `buf` to identify how much of it can be safely returned as part of the
  * `PartReader` body.
  *
@@ -119,7 +138,7 @@ export function scanUntilBoundary(
   }
 
   // Search for "\n--boundary".
-  const i = indexOf(buf, newLineDashBoundary);
+  const i = indexOfNeedle(buf, newLineDashBoundary);
   if (i >= 0) {
     switch (matchAfterPrefix(buf.slice(i), newLineDashBoundary, eof)) {
       case -1:
@@ -137,7 +156,7 @@ export function scanUntilBoundary(
   // Otherwise, anything up to the final \n is not part of the boundary and so
   // must be part of the body. Also, if the section from the final \n onward is
   // not a prefix of the boundary, it too must be part of the body.
-  const j = lastIndexOf(buf, newLineDashBoundary.slice(0, 1));
+  const j = lastIndexOfNeedle(buf, newLineDashBoundary.slice(0, 1));
   if (j >= 0 && startsWith(newLineDashBoundary, buf.slice(j))) {
     return j;
   }
@@ -277,7 +296,11 @@ export interface ReadFormOptions {
   suffix?: string;
 }
 
-/** Reader for parsing multipart/form-data */
+/**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
+ * Reader for parsing multipart/form-data */
 export class MultipartReader {
   readonly newLine: Uint8Array;
   readonly newLineDashBoundary: Uint8Array;
@@ -363,7 +386,7 @@ export class MultipartReader {
         const file = await Deno.open(filepath, { write: true });
 
         try {
-          const size = await copy(new MultiReader(buf, p), file);
+          const size = await copy(new MultiReader([buf, p]), file);
 
           file.close();
           formFile = {
@@ -552,7 +575,11 @@ function checkBoundary(b: string): string {
   return b;
 }
 
-/** Writer for creating multipart/form-data */
+/**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
+ * Writer for creating multipart/form-data */
 export class MultipartWriter {
   private readonly _boundary: string;
 

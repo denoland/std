@@ -4,70 +4,70 @@
 import { notImplemented } from "./_utils.ts";
 
 export function cachedDataVersionTag() {
-  notImplemented();
+  notImplemented("v8.cachedDataVersionTag");
 }
 export function getHeapCodeStatistics() {
-  notImplemented();
+  notImplemented("v8.getHeapCodeStatistics");
 }
 export function getHeapSnapshot() {
-  notImplemented();
+  notImplemented("v8.getHeapSnapshot");
 }
 export function getHeapSpaceStatistics() {
-  notImplemented();
+  notImplemented("v8.getHeapSpaceStatistics");
 }
 export function getHeapStatistics() {
-  notImplemented();
+  notImplemented("v8.getHeapStatistics");
 }
 export function setFlagsFromString() {
-  notImplemented();
+  notImplemented("v8.setFlagsFromString");
 }
 export function stopCoverage() {
-  notImplemented();
+  notImplemented("v8.stopCoverage");
 }
 export function takeCoverage() {
-  notImplemented();
+  notImplemented("v8.takeCoverage");
 }
 export function writeHeapSnapshot() {
-  notImplemented();
+  notImplemented("v8.writeHeapSnapshot");
 }
 export function serialize() {
-  notImplemented();
+  notImplemented("v8.serialize");
 }
 export function deserialize() {
-  notImplemented();
+  notImplemented("v8.deserialize");
 }
 export class Serializer {
   constructor() {
-    notImplemented();
+    notImplemented("v8.Serializer.prototype.constructor");
   }
 }
 export class Deserializer {
   constructor() {
-    notImplemented();
+    notImplemented("v8.Deserializer.prototype.constructor");
   }
 }
 export class DefaultSerializer {
   constructor() {
-    notImplemented();
+    notImplemented("v8.DefaultSerializer.prototype.constructor");
   }
 }
 export class DefaultDeserializer {
   constructor() {
-    notImplemented();
+    notImplemented("v8.DefaultDeserializer.prototype.constructor");
   }
 }
 export const promiseHooks = {
   onInit() {
-    notImplemented();
+    notImplemented("v8.promiseHooks.onInit");
   },
   onSettled() {
-    notImplemented();
+    notImplemented("v8.promiseHooks.onSetttled");
   },
   onBefore() {
-    notImplemented();
+    notImplemented("v8.promiseHooks.onBefore");
   },
   createHook() {
-    notImplemented();
+    notImplemented("v8.promiseHooks.createHook");
   },
 };
 export default {

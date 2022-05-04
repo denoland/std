@@ -3,4 +3,4 @@
 
 # Tell github these are vendored files.
 # Doesn't include them in the language statistics.
-/node/_tools/suites/ linguist-vendored
+node/_tools/test/ linguist-vendored

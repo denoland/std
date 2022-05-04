@@ -45,12 +45,15 @@ Deno.test("[async] debounce: flushed", function () {
 
 Deno.test("[async] debounce: with params & context", async function () {
   const params: Array<string | number> = [];
-  const d = debounce(function (param1: string, param2: number) {
-    assertEquals(d.pending, false);
-    params.push(param1);
-    params.push(param2);
-    assertStrictEquals(d, this);
-  }, 100);
+  const d: DebouncedFunction<[string, number]> = debounce(
+    function (param1: string, param2: number) {
+      assertEquals(d.pending, false);
+      params.push(param1);
+      params.push(param2);
+      assertStrictEquals(d, this);
+    },
+    100,
+  );
   // @ts-expect-error Argument of type 'number' is not assignable to parameter of type 'string'.
   d(1, 1);
   d("foo", 1);

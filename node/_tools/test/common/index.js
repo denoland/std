@@ -49,6 +49,9 @@ let knownGlobals = [
   onload,
   onunload,
   getParent,
+  window,
+  self,
+  reportError,
 ];
 
 if (global.AbortController)

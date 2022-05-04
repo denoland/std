@@ -29,7 +29,7 @@ import {
   defaultTriggerAsyncIdScope,
   newAsyncId,
   ownerSymbol,
-} from "./_async_hooks.ts";
+} from "./internal/async_hooks.ts";
 import {
   ERR_INVALID_ADDRESS_FAMILY,
   ERR_INVALID_ARG_TYPE,
@@ -795,7 +795,7 @@ export class Socket extends Duplex {
       this[asyncIdSymbol] = _getNewAsyncId(this._handle);
     } else if (options.fd !== undefined) {
       // REF: https://github.com/denoland/deno/issues/6529
-      notImplemented();
+      notImplemented("net.Socket.prototype.constructor with fd option");
     }
 
     const onread = options.onread;

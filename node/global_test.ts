@@ -1,6 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import "./global.ts";
-import { assert, assertStrictEquals } from "../testing/asserts.ts";
+import {
+  assert,
+  assertEquals,
+  assertNotEquals,
+  assertStrictEquals,
+} from "../testing/asserts.ts";
 import { Buffer as BufferModule } from "./buffer.ts";
 import processModule from "./process.ts";
 import timers from "./timers.ts";
@@ -13,8 +18,6 @@ import timers from "./timers.ts";
 // probably gonna change in the future
 
 Deno.test("global is correctly defined", () => {
-  // deno-lint-ignore no-undef
-  assertStrictEquals(global, globalThis);
   // deno-lint-ignore no-undef
   assertStrictEquals(global.Buffer, BufferModule);
   // deno-lint-ignore no-undef
@@ -53,6 +56,20 @@ Deno.test("process is correctly defined", () => {
   assert(window.process.arch);
 });
 
+Deno.test("global timers are not Node.js timers", () => {
+  assertNotEquals(setTimeout, timers.setTimeout);
+  assertNotEquals(clearTimeout, timers.clearTimeout);
+  assertNotEquals(setInterval, timers.setInterval);
+  assertNotEquals(clearInterval, timers.clearInterval);
+});
+
+Deno.test("timers in `global` object are Node.js timers", () => {
+  assertStrictEquals(global.setTimeout, timers.setTimeout);
+  assertStrictEquals(global.clearTimeout, timers.clearTimeout);
+  assertStrictEquals(global.setInterval, timers.setInterval);
+  assertStrictEquals(global.clearInterval, timers.clearInterval);
+});
+
 Deno.test("setImmediate is correctly defined", () => {
   // deno-lint-ignore no-undef
   assertStrictEquals(setImmediate, timers.setImmediate);
@@ -69,4 +86,31 @@ Deno.test("clearImmediate is correctly defined", () => {
   assertStrictEquals(global.clearImmediate, timers.clearImmediate);
   assertStrictEquals(globalThis.clearImmediate, timers.clearImmediate);
   assertStrictEquals(window.clearImmediate, timers.clearImmediate);
+});
+
+// https://github.com/denoland/deno_std/issues/2097
+Deno.test("global.ts evaluates synchronously", async () => {
+  const tempPath = await Deno.makeTempFile({ suffix: ".ts" });
+  try {
+    await Deno.writeTextFile(
+      tempPath,
+      `\
+      import "data:application/javascript,import '${
+        new URL("global.ts", import.meta.url).href
+      }'; console.log(globalThis.async ? 'async' : 'sync')";
+      import "data:application/javascript,globalThis.async = true";`,
+    );
+    const process = Deno.run({
+      cmd: [Deno.execPath(), "run", "--no-check", tempPath],
+      stdin: "null",
+      stdout: "piped",
+      stderr: "null",
+    });
+    assertEquals((await process.status()).code, 0);
+    const stdout = new TextDecoder().decode(await process.output());
+    assertEquals(stdout.trim(), "sync");
+    process.close();
+  } finally {
+    await Deno.remove(tempPath).catch(() => {});
+  }
 });
