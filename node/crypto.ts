@@ -7,8 +7,15 @@ import { pbkdf2, pbkdf2Sync } from "./_crypto/pbkdf2.ts";
 import { scrypt, scryptSync } from "./_crypto/scrypt.ts";
 import { timingSafeEqual } from "./_crypto/timingSafeEqual.ts";
 import { createHash, getHashes, Hash } from "./_crypto/hash.ts";
+import {
+  privateDecrypt,
+  privateEncrypt,
+  publicDecrypt,
+  publicEncrypt,
+} from "./_crypto/crypto_browserify/public_encrypt/mod.js";
 
-const randomUUID = () => crypto.randomUUID();
+const randomUUID = () => globalThis.crypto.randomUUID();
+const webcrypto = crypto;
 
 export default {
   Hash,
@@ -19,11 +26,16 @@ export default {
   randomFillSync,
   pbkdf2,
   pbkdf2Sync,
+  privateDecrypt,
+  privateEncrypt,
+  publicDecrypt,
+  publicEncrypt,
   randomBytes,
+  randomUUID,
   scrypt,
   scryptSync,
   timingSafeEqual,
-  randomUUID,
+  webcrypto,
 };
 export {
   createHash,
@@ -31,6 +43,10 @@ export {
   Hash,
   pbkdf2,
   pbkdf2Sync,
+  privateDecrypt,
+  privateEncrypt,
+  publicDecrypt,
+  publicEncrypt,
   randomBytes,
   randomFill,
   randomFillSync,
@@ -39,4 +55,5 @@ export {
   scrypt,
   scryptSync,
   timingSafeEqual,
+  webcrypto,
 };

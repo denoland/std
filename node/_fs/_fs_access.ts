@@ -2,7 +2,7 @@
 import * as DenoUnstable from "../../_deno_unstable.ts";
 import { type CallbackWithError, makeCallback } from "./_fs_common.ts";
 import { fs, os } from "../internal_binding/constants.ts";
-import { getValidatedPath, getValidMode } from "../internal/fs/utils.js";
+import { getValidatedPath, getValidMode } from "../internal/fs/utils.mjs";
 import type { Buffer } from "../buffer.ts";
 
 export function access(

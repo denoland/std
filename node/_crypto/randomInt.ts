@@ -42,14 +42,14 @@ export default function randomInt(
 
   const randomBuffer = new Uint32Array(1);
 
-  crypto.getRandomValues(randomBuffer);
+  globalThis.crypto.getRandomValues(randomBuffer);
 
   const randomNumber = randomBuffer[0] / (0xffffffff + 1);
 
   min = Math.ceil(min);
   max = Math.floor(max);
 
-  const result = Math.floor(randomNumber * (max - min + 1)) + min;
+  const result = Math.floor(randomNumber * (max - min)) + min;
 
   if (cb) {
     cb(null, result);

@@ -2,19 +2,19 @@
 // This aliases are used in some node tests and represent a legacy alias
 // for the stream modules
 // deno-lint-ignore camelcase
-import _http_agent from "./_http_agent.js";
+import _http_agent from "./_http_agent.mjs";
 // deno-lint-ignore camelcase
 import _http_outgoing from "./_http_outgoing.ts";
 // deno-lint-ignore camelcase
-import _stream_duplex from "./internal/streams/duplex.js";
+import _stream_duplex from "./internal/streams/duplex.mjs";
 // deno-lint-ignore camelcase
-import _stream_passthrough from "./internal/streams/passthrough.js";
+import _stream_passthrough from "./internal/streams/passthrough.mjs";
 // deno-lint-ignore camelcase
-import _stream_readable from "./internal/streams/readable.js";
+import _stream_readable from "./internal/streams/readable.mjs";
 // deno-lint-ignore camelcase
-import _stream_transform from "./internal/streams/transform.js";
+import _stream_transform from "./internal/streams/transform.mjs";
 // deno-lint-ignore camelcase
-import _stream_writable from "./internal/streams/writable.js";
+import _stream_writable from "./internal/streams/writable.mjs";
 
 import assert from "./assert.ts";
 import assertStrict from "./assert/strict.ts";
@@ -28,25 +28,28 @@ import constants from "./constants.ts";
 import crypto from "./crypto.ts";
 import dgram from "./dgram.ts";
 import dns from "./dns.ts";
+import dnsPromises from "./dns/promises.ts";
 import domain from "./domain.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
 import fsPromises from "./fs/promises.ts";
-import internalFsUtils from "./internal/fs/utils.js";
+import internalFsUtils from "./internal/fs/utils.mjs";
 import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
+import internalDnsPromises from "./internal/dns/promises.ts";
 import internalErrors from "./internal/errors.ts";
+import internalEventTarget from "./internal/event_target.mjs";
 import internalHttp from "./internal/http.ts";
-import internalReadlineUtils from "./internal/readline/utils.js";
-import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.js";
-import internalStreamsAddBufferList from "./internal/streams/buffer_list.js";
-import internalStreamsState from "./internal/streams/state.js";
+import internalReadlineUtils from "./internal/readline/utils.mjs";
+import internalStreamsAddAbortSignal from "./internal/streams/add-abort-signal.mjs";
+import internalStreamsAddBufferList from "./internal/streams/buffer_list.mjs";
+import internalStreamsState from "./internal/streams/state.mjs";
 import internalTestBinding from "./internal/test/binding.ts";
-import internalTimers from "./internal/timers.js";
-import internalUtilInspect from "./internal/util/inspect.js";
-import internalUtil from "./internal/util.js";
+import internalTimers from "./internal/timers.mjs";
+import internalUtilInspect from "./internal/util/inspect.mjs";
+import internalUtil from "./internal/util.mjs";
 import net from "./net.ts";
 import os from "./os.ts";
 import pathPosix from "./path/posix.ts";
@@ -59,8 +62,8 @@ import querystring from "./querystring.ts";
 import readline from "./readline.ts";
 import repl from "./repl.ts";
 import stream from "./stream.ts";
-import streamConsumers from "./stream/consumers.js";
-import streamPromises from "./stream/promises.js";
+import streamConsumers from "./stream/consumers.mjs";
+import streamPromises from "./stream/promises.mjs";
 import streamWeb from "./stream/web.ts";
 import stringDecoder from "./string_decoder.ts";
 import sys from "./sys.ts";
@@ -69,7 +72,7 @@ import timersPromises from "./timers/promises.ts";
 import tls from "./tls.ts";
 import tty from "./tty.ts";
 import url from "./url.ts";
-import utilTypes from "./util/types.js";
+import utilTypes from "./util/types.mjs";
 import util from "./util.ts";
 import v8 from "./v8.ts";
 import vm from "./vm.ts";
@@ -97,6 +100,7 @@ export default {
   cluster,
   dgram,
   dns,
+  "dns/promises": dnsPromises,
   domain,
   events,
   fs,
@@ -105,7 +109,9 @@ export default {
   http2,
   https,
   inspector,
+  "internal/dns/promises": internalDnsPromises,
   "internal/errors": internalErrors,
+  "internal/event_target": internalEventTarget,
   "internal/fs/utils": internalFsUtils,
   "internal/http": internalHttp,
   "internal/readline/utils": internalReadlineUtils,
@@ -151,6 +157,6 @@ export default {
   v8,
   vm,
   wasi,
-  workerThreads,
+  "worker_threads": workerThreads,
   zlib,
 } as Record<string, unknown>;

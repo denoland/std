@@ -901,3 +901,207 @@ assertEquals(
   ],
 );
 ```
+
+### BinaryHeap
+
+A priority queue implemented with a binary heap. The heap is in decending order
+by default, using JavaScript's built in comparison operators to sort the values.
+
+| Method      | Average Case | Worst Case |
+| ----------- | ------------ | ---------- |
+| peek()      | O(1)         | O(1)       |
+| pop()       | O(log n)     | O(log n)   |
+| push(value) | O(1)         | O(log n)   |
+
+```ts
+import {
+  ascend,
+  BinaryHeap,
+  descend,
+} from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const maxHeap = new BinaryHeap<number>();
+maxHeap.push(4, 1, 3, 5, 2);
+assertEquals(maxHeap.peek(), 5);
+assertEquals(maxHeap.pop(), 5);
+assertEquals([...maxHeap], [4, 3, 2, 1]);
+assertEquals([...maxHeap], []);
+
+const minHeap = new BinaryHeap<number>(ascend);
+minHeap.push(4, 1, 3, 5, 2);
+assertEquals(minHeap.peek(), 1);
+assertEquals(minHeap.pop(), 1);
+assertEquals([...minHeap], [2, 3, 4, 5]);
+assertEquals([...minHeap], []);
+
+const words = new BinaryHeap<string>((a, b) => descend(a.length, b.length));
+words.push("truck", "car", "helicopter", "tank");
+assertEquals(words.peek(), "helicopter");
+assertEquals(words.pop(), "helicopter");
+assertEquals([...words], ["truck", "tank", "car"]);
+assertEquals([...words], []);
+```
+
+### BSTree
+
+An unbalanced binary search tree. The values are in ascending order by default,
+using JavaScript's built in comparison operators to sort the values.
+
+For performance, it's recommended that you use a self balancing binary search
+tree instead of this one unless you are extending this to create a self
+balancing tree. See RBTree for an example of how BSTree can be extended to
+create a self balancing binary search tree.
+
+| Method        | Average Case | Worst Case |
+| ------------- | ------------ | ---------- |
+| find(value)   | O(log n)     | O(n)       |
+| insert(value) | O(log n)     | O(n)       |
+| remove(value) | O(log n)     | O(n)       |
+| min()         | O(log n)     | O(n)       |
+| max()         | O(log n)     | O(n)       |
+
+```ts
+import {
+  ascend,
+  BSTree,
+  descend,
+} from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const values = [3, 10, 13, 4, 6, 7, 1, 14];
+const tree = new BSTree<number>();
+values.forEach((value) => tree.insert(value));
+assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
+assertEquals(tree.min(), 1);
+assertEquals(tree.max(), 14);
+assertEquals(tree.find(42), null);
+assertEquals(tree.find(7), 7);
+assertEquals(tree.remove(42), false);
+assertEquals(tree.remove(7), true);
+assertEquals([...tree], [1, 3, 4, 6, 10, 13, 14]);
+
+const invertedTree = new BSTree<number>(descend);
+values.forEach((value) => invertedTree.insert(value));
+assertEquals([...invertedTree], [14, 13, 10, 7, 6, 4, 3, 1]);
+assertEquals(invertedTree.min(), 14);
+assertEquals(invertedTree.max(), 1);
+assertEquals(invertedTree.find(42), null);
+assertEquals(invertedTree.find(7), 7);
+assertEquals(invertedTree.remove(42), false);
+assertEquals(invertedTree.remove(7), true);
+assertEquals([...invertedTree], [14, 13, 10, 6, 4, 3, 1]);
+
+const words = new BSTree<string>((a, b) =>
+  ascend(a.length, b.length) || ascend(a, b)
+);
+["truck", "car", "helicopter", "tank", "train", "suv", "semi", "van"]
+  .forEach((value) => words.insert(value));
+assertEquals([...words], [
+  "car",
+  "suv",
+  "van",
+  "semi",
+  "tank",
+  "train",
+  "truck",
+  "helicopter",
+]);
+assertEquals(words.min(), "car");
+assertEquals(words.max(), "helicopter");
+assertEquals(words.find("scooter"), null);
+assertEquals(words.find("tank"), "tank");
+assertEquals(words.remove("scooter"), false);
+assertEquals(words.remove("tank"), true);
+assertEquals([...words], [
+  "car",
+  "suv",
+  "van",
+  "semi",
+  "train",
+  "truck",
+  "helicopter",
+]);
+```
+
+### RBTree
+
+A red-black tree. This is a kind of self-balancing binary search tree. The
+values are in ascending order by default, using JavaScript's built in comparison
+operators to sort the values.
+
+Red-Black Trees require fewer rotations than AVL Trees, so they can provide
+faster insertions and removal operations. If you need faster lookups, you should
+use an AVL Tree instead. AVL Trees are more strictly balanced than Red-Black
+Trees, so they can provide faster lookups.
+
+| Method        | Average Case | Worst Case |
+| ------------- | ------------ | ---------- |
+| find(value)   | O(log n)     | O(log n)   |
+| insert(value) | O(log n)     | O(log n)   |
+| remove(value) | O(log n)     | O(log n)   |
+| min()         | O(log n)     | O(log n)   |
+| max()         | O(log n)     | O(log n)   |
+
+```ts
+import {
+  ascend,
+  descend,
+  RBTree,
+} from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+
+const values = [3, 10, 13, 4, 6, 7, 1, 14];
+const tree = new RBTree<number>();
+values.forEach((value) => tree.insert(value));
+assertEquals([...tree], [1, 3, 4, 6, 7, 10, 13, 14]);
+assertEquals(tree.min(), 1);
+assertEquals(tree.max(), 14);
+assertEquals(tree.find(42), null);
+assertEquals(tree.find(7), 7);
+assertEquals(tree.remove(42), false);
+assertEquals(tree.remove(7), true);
+assertEquals([...tree], [1, 3, 4, 6, 10, 13, 14]);
+
+const invertedTree = new RBTree<number>(descend);
+values.forEach((value) => invertedTree.insert(value));
+assertEquals([...invertedTree], [14, 13, 10, 7, 6, 4, 3, 1]);
+assertEquals(invertedTree.min(), 14);
+assertEquals(invertedTree.max(), 1);
+assertEquals(invertedTree.find(42), null);
+assertEquals(invertedTree.find(7), 7);
+assertEquals(invertedTree.remove(42), false);
+assertEquals(invertedTree.remove(7), true);
+assertEquals([...invertedTree], [14, 13, 10, 6, 4, 3, 1]);
+
+const words = new RBTree<string>((a, b) =>
+  ascend(a.length, b.length) || ascend(a, b)
+);
+["truck", "car", "helicopter", "tank", "train", "suv", "semi", "van"]
+  .forEach((value) => words.insert(value));
+assertEquals([...words], [
+  "car",
+  "suv",
+  "van",
+  "semi",
+  "tank",
+  "train",
+  "truck",
+  "helicopter",
+]);
+assertEquals(words.min(), "car");
+assertEquals(words.max(), "helicopter");
+assertEquals(words.find("scooter"), null);
+assertEquals(words.find("tank"), "tank");
+assertEquals(words.remove("scooter"), false);
+assertEquals(words.remove("tank"), true);
+assertEquals([...words], [
+  "car",
+  "suv",
+  "van",
+  "semi",
+  "train",
+  "truck",
+  "helicopter",
+]);
+```

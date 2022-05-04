@@ -18,34 +18,21 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
-          persist-credentials: false
 
       - name: Set up Deno
         uses: denoland/setup-deno@v1.0.0
         with:
           deno-version: ${{ matrix.deno }}
 
-      - name: Install fakedate
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt install faketime
-
       - name: Run tests canary
-        run: |
-          deno test --doc --unstable --allow-all --coverage=./cov --import-map=test_import_map.json --config strict-ts44.tsconfig.json --ignore=node/
-
-      - name: Run test with the date 2021-12-31
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          faketime '2021-12-31' deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json datetime/test_2021_12_31.ts
+        run: deno task test
 
       - name: Type check browser compatible modules
         shell: bash
-        run: |
-          git grep --name-only "// This module is browser compatible." | grep -v ".github/workflows" | xargs deno cache --config browser-compat.tsconfig.json
+        run: deno task test:browser
 
       - name: Generate lcov
         shell: bash
@@ -66,6 +53,16 @@ jobs:
         run: |
           rm -rf ./cov/
           rm cov.lcov
+
+      - name: Release if version change
+        if: |
+          matrix.os == 'ubuntu-latest' &&
+          github.repository == 'denoland/deno_std' &&
+          github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.DENOBOT_PAT }}
+        run: ./_tools/release/03_release.ts
 
   node:
     runs-on: ${{ matrix.os }}
@@ -88,15 +85,19 @@ jobs:
         with:
           deno-version: ${{ matrix.deno }}
 
+      - name: Type check node modules
+        shell: bash
+        run: deno task node:check-unstable-api
+
       # FIXME(bartlomieju): currently doc tests are failing, we need --compat mode in "deno test" to get them working
       # - name: Doctest node/
       #   run: deno test --doc --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/
 
       - name: Unit test node/
-        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/ --ignore=node/_tools/test.ts,node/_tools/versions/
+        run: deno task node:unit
 
       - name: Run Node tests canary
-        run: deno test --unstable --allow-all --import-map=test_import_map.json --config strict-ts44.tsconfig.json node/_tools/test.ts
+        run: deno task node:test
         env:
           DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 
@@ -113,12 +114,10 @@ jobs:
         uses: denoland/setup-deno@v1.0.0
 
       - name: Format
-        shell: bash
-        run: ./_tools/format.js --check
+        run: deno fmt --check
 
       - name: Lint
-        shell: bash
-        run: ./_tools/lint.js
+        run: deno lint
 
       - name: Check circular dependencies
         shell: bash
@@ -194,5 +193,5 @@ jobs:
         with:
           name: Rebuilt _wasm_crypto
           path: |-
-            ./_wasm_crypto/crypto.js
-            ./_wasm_crypto/crypto.wasm.js
+            ./_wasm_crypto/crypto.mjs
+            ./_wasm_crypto/crypto.wasm.mjs

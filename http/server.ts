@@ -508,11 +508,18 @@ export async function serveListener(
 ): Promise<void> {
   const server = new Server({ handler, onError: options?.onError });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
   return await server.serve(listener);
+}
+
+function hostnameForDisplay(hostname: string) {
+  // If the hostname is "0.0.0.0", we display "localhost" in console
+  // because browsers in Windows don't resolve "0.0.0.0".
+  // See the discussion in https://github.com/denoland/deno_std/issues/1165
+  return hostname === "0.0.0.0" ? "localhost" : hostname;
 }
 
 /** Serves HTTP requests with the given handler.
@@ -533,7 +540,6 @@ export async function serveListener(
  * ```ts
  * import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
  * serve((_req) => new Response("Hello, world"), { port: 3000 });
- * console.log("Listening on http://localhost:3000");
  * ```
  *
  * @param handler The handler for individual HTTP requests.
@@ -543,21 +549,25 @@ export async function serve(
   handler: Handler,
   options: ServeInit = {},
 ): Promise<void> {
+  const port = options.port ?? 8000;
+  const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
-    port: options.port ?? 8000,
-    hostname: options.hostname ?? "0.0.0.0",
+    port,
+    hostname,
     handler,
     onError: options.onError,
   });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
-  return await server.listenAndServe();
+  const s = server.listenAndServe();
+  console.log(`Listening on http://${hostnameForDisplay(hostname)}:${port}/`);
+  return await s;
 }
 
-interface ServeTlsInit extends ServeInit {
+export interface ServeTlsInit extends ServeInit {
   /** The path to the file containing the TLS private key. */
   keyFile: string;
 
@@ -598,18 +608,22 @@ export async function serveTls(
     throw new Error("TLS config is given, but 'certFile' is missing.");
   }
 
+  const port = options.port ?? 8443;
+  const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
-    port: options.port ?? 8443,
-    hostname: options.hostname ?? "0.0.0.0",
+    port,
+    hostname,
     handler,
     onError: options.onError,
   });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
-  return await server.listenAndServeTls(options.certFile, options.keyFile);
+  const s = server.listenAndServeTls(options.certFile, options.keyFile);
+  console.log(`Listening on https://${hostnameForDisplay(hostname)}:${port}/`);
+  return await s;
 }
 
 /**
@@ -651,9 +665,9 @@ export async function listenAndServe(
 ): Promise<void> {
   const server = new Server({ ...config, handler });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
   return await server.listenAndServe();
 }
@@ -703,9 +717,9 @@ export async function listenAndServeTls(
 ): Promise<void> {
   const server = new Server({ ...config, handler });
 
-  if (options?.signal) {
-    options.signal.onabort = () => server.close();
-  }
+  options?.signal?.addEventListener("abort", () => server.close(), {
+    once: true,
+  });
 
   return await server.listenAndServeTls(certFile, keyFile);
 }
