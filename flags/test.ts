@@ -1,10 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
 import { parse } from "./mod.ts";
-import {
-  assert,
-  IsExact,
-} from "https://deno.land/x/conditional_type_checks@1.0.5/mod.ts";
+import { assertType, IsExact } from "../_util/assert_type.ts";
 
 // flag boolean true (default all --args to boolean)
 Deno.test("flagBooleanTrue", function (): void {
@@ -747,7 +744,7 @@ Deno.test("typesOfAllBoolean", function (): void {
   const argv = parse(["--foo"], {
     boolean: true,
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: boolean | undefined }
@@ -767,7 +764,7 @@ Deno.test("typesOfAllBooleanWithDefaults", function (): void {
       bar: 123,
     },
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: boolean | undefined }
@@ -786,7 +783,7 @@ Deno.test("typesOfAllBooleanAndStringArgs", function (): void {
     boolean: true,
     string: ["foo", "bar"],
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: boolean | undefined }
@@ -809,7 +806,7 @@ Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
       baz: new Date(),
     },
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: boolean | undefined }
@@ -828,7 +825,7 @@ Deno.test("typesOfBooleanArgs", function (): void {
   const argv = parse(["--foo"], {
     boolean: ["foo", "bar"],
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -850,7 +847,7 @@ Deno.test("typesOfBooleanArgsWithDefaults", function (): void {
       baz: "123",
     },
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -869,7 +866,7 @@ Deno.test("typesOfStringArgs", function (): void {
   const argv = parse(["--foo"], {
     string: ["foo", "bar"],
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -891,7 +888,7 @@ Deno.test("typesOfStringArgsWithDefaults", function (): void {
       baz: 123,
     },
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -911,7 +908,7 @@ Deno.test("typesOfBooleanAndStringArgs", function (): void {
     boolean: ["beep", "boop"],
     string: ["foo", "bar"],
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -937,7 +934,7 @@ Deno.test("typesOfBooleanAndStringArgsWithDefaults", function (): void {
       beep: new Date(),
     },
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -960,7 +957,7 @@ Deno.test("typesOfDottedBooleanArgs", function (): void {
   const argv = parse(["--foo"], {
     boolean: ["blubb", "foo.bar", "foo.baz"],
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -988,7 +985,7 @@ Deno.test("typesOfDottedBooleanArgsWithDefaults", function (): void {
       bla: new Date(),
     },
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -1010,7 +1007,7 @@ Deno.test("typesOfDottedStringArgs", function (): void {
   const argv = parse(["--foo"], {
     string: ["blubb", "foo.bar", "foo.baz"],
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -1038,7 +1035,7 @@ Deno.test("typesOfDottedStringArgsWithDefaults", function (): void {
       bla: new Date(),
     },
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -1061,7 +1058,7 @@ Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
     boolean: ["blubb", "foo.bar", "foo.baz"],
     string: ["bla", "beep.boop", "beep.loop"],
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
@@ -1098,7 +1095,7 @@ Deno.test("typesOfDottedStringAndBooleanArgsWithDefaults", function (): void {
       bla: new Date(),
     },
   });
-  assert<
+  assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
