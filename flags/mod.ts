@@ -3,14 +3,18 @@
 
 import { assert } from "../_util/assert.ts";
 
+type Id<T> = T extends Record<string, unknown>
+  ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
+  : T;
+
+type UnionToIntersection<T> =
+  (T extends unknown ? (args: T) => unknown : never) extends
+    (args: infer R) => unknown ? R extends Record<string, unknown> ? R : never
+    : never;
+
 type BooleanType = boolean | string | undefined;
 type StringType = string | undefined;
 type ArgType = BooleanType | StringType;
-
-type ArgName<T extends ArgType> = T extends true ? string
-  : T extends false ? never
-  : undefined extends T ? never
-  : T;
 
 type Values<
   B extends BooleanType,
@@ -48,8 +52,17 @@ type Defaults<
   & TypeValues<B, unknown>
 >;
 
-// @TODO(c4spar): add support for dotted options.
-type TypeValues<T extends ArgType, V> = Partial<Record<ArgName<T>, V>>;
+type TypeValues<T extends ArgType, V> = UnionToIntersection<MapTypes<T, V>>;
+
+type MapTypes<T extends ArgType, V> = undefined extends T ? Record<never, never>
+  : T extends false ? Record<never, never>
+  : T extends true ? Partial<Record<string, V>>
+  : string extends T ? Partial<Record<string, V>>
+  : T extends `${infer Name}.${infer Rest}` ? {
+    [K in Name]?: MapTypes<Rest, V>;
+  }
+  : T extends string ? Partial<Record<T, V>>
+  : Record<never, never>;
 
 /** The value returned from `parse`. */
 export type Args<
@@ -240,8 +253,7 @@ export function parse<
     }
   }
 
-  // @TODO(c4spar): fix invalid index signature.
-  const argv: Args = { _: [] } as unknown as Args;
+  const argv: Args = { _: [] };
 
   function argDefined(key: string, arg: string): boolean {
     return (
@@ -445,7 +457,3 @@ export function parse<
 
   return argv as Args<Values<B, S, D>>;
 }
-
-type Id<T> = T extends Record<string, unknown>
-  ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
-  : T;
