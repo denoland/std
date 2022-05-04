@@ -4,7 +4,7 @@
 // Based on https://github.com/kelektiv/node-uuid -> https://www.ietf.org/rfc/rfc4122.txt
 // Supporting Support for RFC4122 version 1, 4, and 5 UUIDs
 /**
- * UUid
+ * UUID
  * @module
  */
 
