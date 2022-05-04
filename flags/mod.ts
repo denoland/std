@@ -33,6 +33,7 @@ type Values<
         D
       >);
 
+// @TODO(c4spar): SpreadValues not working with doted options and defaults.
 type SpreadValues<
   A extends Record<string, unknown>,
   D extends Record<string, unknown> | undefined,
