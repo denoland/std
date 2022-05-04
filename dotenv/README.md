@@ -9,7 +9,7 @@ const object = parse(`
   export EXPORT=exported
 `);
 
-console.log(object); // { env: { GREETING: "hello world", EXPORT: "exported" } exports: ["EXPORT"] }
+console.log(object); // { env: { GREETING: "hello world", EXPORT: "exported" }, exports: ["EXPORT"] }
 ```
 
 ## Stringify
@@ -17,8 +17,8 @@ console.log(object); // { env: { GREETING: "hello world", EXPORT: "exported" } e
 ```ts
 import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
 const string = stringify({
-  env: { GREETING: "hello world", EXPORT: "exported" }
-  exports: ["EXPORT"]
+  env: { GREETING: "hello world", EXPORT: "exported" },
+  exports: ["EXPORT"],
 });
 
 console.log(string);
