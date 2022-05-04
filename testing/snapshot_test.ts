@@ -23,6 +23,21 @@ function formatTestError(string: string) {
   return stripColor(string).replace(/^Check file:\/\/(.+)\n/g, "");
 }
 
+function testFnWithTempDir(fn: (t: Deno.TestContext, tempDir: string) => Promise<void>) {
+  return async (t: Deno.TestContext) => {
+    const tempDir = await Deno.makeTempDir();
+    console.log(tempDir);
+    try {
+      await fn(t, tempDir);
+      await Deno.remove(tempDir, { recursive: true });
+    }
+    catch (err) {
+      await Deno.remove(tempDir, { recursive: true });
+      throw err;
+    }
+  }
+}
+
 class TestClass {
   a = 1;
   b = 2;
@@ -114,9 +129,7 @@ Deno.test("Snapshot Test - Multi-Line Strings", async (t) => {
   });
 });
 
-Deno.test("Snapshot Test - Failed Assertion", async (t) => {
-  const tempDir = await Deno.makeTempDir();
-
+Deno.test("Snapshot Test - Failed Assertion", testFnWithTempDir(async (t, tempDir) => {
   let count = 0;
   async function testFailedAssertion<T>(
     snapshot: T,
@@ -155,10 +168,7 @@ ${serialize(snapshot)}
     const error = await testFailedAssertion("Hello World!", "Hello!");
     await assertSnapshot(t, stripColor(error.message));
   });
-
-  // Tidyup
-  await Deno.remove(tempDir, { recursive: true });
-});
+}));
 
 Deno.test("Snapshot Test - Options", async (t) => {
   const VALUE = [1, 2, 3];
@@ -242,8 +252,7 @@ Deno.test("Snapshot Test - Options", async (t) => {
     });
   });
 
-  await t.step("mode", async (t) => {
-    const tempDir = await Deno.makeTempDir();
+  await t.step("mode", testFnWithTempDir(async (t, tempDir) => {
     const snapshotFilePath = join(tempDir, "snapshot.snap");
     const snapshotName = "snapshot";
 
@@ -283,15 +292,10 @@ Deno.test("Snapshot Test - Options", async (t) => {
     await assertSnapshot(t, snapshot[`${snapshotName} 1`]);
     await assertSnapshot(t, formatTestOutput(result.output));
     assert(!formatTestError(result.error), "unexpected output to stderr");
-
-    // Tidyup
-    await Deno.remove(tempDir, { recursive: true });
-  });
+  }));
 });
 
-Deno.test("Snapshot Test - Update", async (t) => {
-  const tempDir = await Deno.makeTempDir();
-
+Deno.test("Snapshot Test - Update", testFnWithTempDir(async (t, tempDir) => {
   async function runTestWithUpdateFlag(test: string) {
     const tempTestFileName = "test.ts";
     const tempTestFilePath = join(tempDir, tempTestFileName);
@@ -374,10 +378,7 @@ Deno.test("Snapshot Test - Update", async (t) => {
 
   assertNoError(result3.error);
   await assertSnapshot(t, formatTestOutput(result3.output));
-
-  // Tidyup
-  await Deno.remove(tempDir, { recursive: true });
-});
+}));
 
 // Regression test for https://github.com/denoland/deno_std/issues/2140
 // Long strings should not be truncated with ellipsis
