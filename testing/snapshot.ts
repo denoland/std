@@ -94,9 +94,10 @@ function getMode(options: SnapshotOptions) {
   } else if (_mode) {
     return _mode;
   } else {
-    return Deno.args.some((arg) => arg === "--update" || arg === "-u")
+    _mode = Deno.args.some((arg) => arg === "--update" || arg === "-u")
       ? "update"
       : "assert";
+    return _mode;
   }
 }
 
