@@ -7,12 +7,10 @@ type BooleanType = boolean | string | undefined;
 type StringType = string | undefined;
 type ArgType = BooleanType | StringType;
 
-type ArgName<T extends ArgType> = CamelCase<
-  T extends true ? string
-    : T extends false ? never
-    : undefined extends T ? never
-    : T
->;
+type ArgName<T extends ArgType> = T extends true ? string
+  : T extends false ? never
+  : undefined extends T ? never
+  : T;
 
 type Values<
   B extends BooleanType,
@@ -451,10 +449,3 @@ export function parse<
 type Id<T> = T extends Record<string, unknown>
   ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
   : T;
-
-type Lower<V extends string> = V extends Uppercase<V> ? Lowercase<V>
-  : Uncapitalize<V>;
-
-type CamelCase<T extends string> = T extends `${infer V}-${infer Rest}`
-  ? `${Lower<V>}${Capitalize<CamelCase<Rest>>}`
-  : Lower<T>;
