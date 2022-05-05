@@ -755,6 +755,84 @@ Deno.test("typesOfDefaultOptions", function (): void {
   >(true);
 });
 
+Deno.test("typesOfAllBooleanDisabled", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: false,
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      // deno-lint-ignore no-explicit-any
+      & { [x: string]: any }
+      & {
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanDisabledWithDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: false,
+    default: {
+      bar: 123,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      // deno-lint-ignore no-explicit-any
+      & { [x: string]: any }
+      & {
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanDisabledAndStringArgs", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: false,
+    string: ["foo"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo?: string | undefined;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAllBooleanDisabledAndStringArgsWithDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: false,
+    string: ["foo"],
+    default: {
+      foo: 123,
+      bar: false,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: string | number;
+        bar: unknown;
+        _: Array<string | number>;
+        "--"?: Array<string> | undefined;
+      }
+    >
+  >(true);
+});
+
 Deno.test("typesOfAllBoolean", function (): void {
   const argv = parse(["--foo"], {
     boolean: true,

@@ -20,8 +20,8 @@ type Values<
   B extends BooleanType,
   S extends StringType,
   D extends Record<string, unknown> | undefined,
-> // deno-lint-ignore no-explicit-any
- = undefined extends (B & S) ? Record<string, any>
+> = undefined extends ((false extends B ? undefined : B) & S) ? // deno-lint-ignore no-explicit-any
+Record<string, any>
   : (true extends B ? 
     & Partial<Record<string, boolean>>
     & SpreadValues<TypeValues<S, string>, D>
