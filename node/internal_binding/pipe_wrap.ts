@@ -39,6 +39,7 @@ import {
 } from "./_listen.ts";
 import { isWindows } from "../../_util/os.ts";
 import { fs } from "./constants.ts";
+import * as DenoUnstable from "../../_deno_unstable.ts";
 
 export enum socketType {
   SOCKET,
@@ -132,12 +133,12 @@ export class Pipe extends ConnectionWrap {
       notImplemented("Pipe.prototype.connect - Windows");
     }
 
-    const connectOptions: Deno.UnixConnectOptions = {
+    const connectOptions: DenoUnstable.UnixConnectOptions = {
       path: address,
       transport: "unix",
     };
 
-    Deno.connect(connectOptions).then(
+    DenoUnstable.connect(connectOptions).then(
       (conn: Deno.UnixConn) => {
         const localAddr = conn.localAddr as Deno.UnixAddr;
 
@@ -196,7 +197,7 @@ export class Pipe extends ConnectionWrap {
     let listener;
 
     try {
-      listener = Deno.listen(listenOptions);
+      listener = DenoUnstable.listen(listenOptions);
     } catch (e) {
       if (e instanceof Deno.errors.AddrInUse) {
         return codeMap.get("EADDRINUSE")!;
@@ -218,11 +219,15 @@ export class Pipe extends ConnectionWrap {
   }
 
   override ref() {
-    this.#listener?.ref();
+    if (this.#listener) {
+      DenoUnstable.ListenerRef(this.#listener);
+    }
   }
 
   override unref() {
-    this.#listener?.unref();
+    if (this.#listener) {
+      DenoUnstable.ListenerUnref(this.#listener);
+    }
   }
 
   /**
