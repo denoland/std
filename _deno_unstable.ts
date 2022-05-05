@@ -157,7 +157,7 @@ export function networkInterfaces(
 
 export async function connect(
   options: UnixConnectOptions,
-): ReturnType<typeof Deno.connect> {
+): Promise<Deno.UnixConn> {
   try {
     return await Deno.connect(options);
   } catch {
