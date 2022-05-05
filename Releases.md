@@ -1,6 +1,6 @@
 ### 0.138.0 / 2022.05.05
 
-- :bug: Export equalSimd and equalsNaive (#2187)
+- fix: Export equalSimd and equalsNaive (#2187)
 - BREAKING(testing/snapshot): change multiline string serialization (#2166)
 - feat(node/dns): support dns promises lookup (#2164)
 - feat(testing): assertFalse (#2093)
