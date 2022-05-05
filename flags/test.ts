@@ -796,7 +796,7 @@ Deno.test("typesOfAllBooleanWithDefaults", function (): void {
 Deno.test("typesOfAllBooleanAndStringArgs", function (): void {
   const argv = parse(["--foo"], {
     boolean: true,
-    string: ["foo", "bar"],
+    string: ["foo", "bar", "foo-bar"],
   });
   assertType<
     IsExact<
@@ -805,6 +805,7 @@ Deno.test("typesOfAllBooleanAndStringArgs", function (): void {
       & {
         foo?: string | undefined;
         bar?: string | undefined;
+        "foo-bar"?: string | undefined;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }
@@ -815,7 +816,7 @@ Deno.test("typesOfAllBooleanAndStringArgs", function (): void {
 Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
   const argv = parse(["--foo"], {
     boolean: true,
-    string: ["foo", "bar"],
+    string: ["foo", "bar", "foo-bar"],
     default: {
       bar: 123,
       baz: new Date(),
@@ -829,6 +830,7 @@ Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
         foo?: string | undefined;
         bar: string | number;
         baz: unknown;
+        "foo-bar"?: string | undefined;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }
@@ -838,7 +840,7 @@ Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
 
 Deno.test("typesOfBooleanArgs", function (): void {
   const argv = parse(["--foo"], {
-    boolean: ["foo", "bar"],
+    boolean: ["foo", "bar", "foo-bar"],
   });
   assertType<
     IsExact<
@@ -847,6 +849,7 @@ Deno.test("typesOfBooleanArgs", function (): void {
       & {
         foo?: boolean | undefined;
         bar?: boolean | undefined;
+        "foo-bar"?: boolean | undefined;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }
@@ -856,7 +859,7 @@ Deno.test("typesOfBooleanArgs", function (): void {
 
 Deno.test("typesOfBooleanArgsWithDefaults", function (): void {
   const argv = parse(["--foo"], {
-    boolean: ["foo", "bar"],
+    boolean: ["foo", "bar", "foo-bar"],
     default: {
       bar: 123,
       baz: "123",
@@ -870,6 +873,7 @@ Deno.test("typesOfBooleanArgsWithDefaults", function (): void {
         foo?: boolean | undefined;
         bar: number | boolean;
         baz: unknown;
+        "foo-bar"?: boolean | undefined;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }
@@ -879,7 +883,7 @@ Deno.test("typesOfBooleanArgsWithDefaults", function (): void {
 
 Deno.test("typesOfStringArgs", function (): void {
   const argv = parse(["--foo"], {
-    string: ["foo", "bar"],
+    string: ["foo", "bar", "foo-bar"],
   });
   assertType<
     IsExact<
@@ -888,6 +892,7 @@ Deno.test("typesOfStringArgs", function (): void {
       & {
         foo?: string | undefined;
         bar?: string | undefined;
+        "foo-bar"?: string | undefined;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }
@@ -897,7 +902,7 @@ Deno.test("typesOfStringArgs", function (): void {
 
 Deno.test("typesOfStringArgsWithDefaults", function (): void {
   const argv = parse(["--foo"], {
-    string: ["foo", "bar"],
+    string: ["foo", "bar", "foo-bar"],
     default: {
       bar: true,
       baz: 123,
@@ -911,6 +916,7 @@ Deno.test("typesOfStringArgsWithDefaults", function (): void {
         foo?: string | undefined;
         bar: string | boolean;
         baz: unknown;
+        "foo-bar"?: string | undefined;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }
@@ -920,18 +926,20 @@ Deno.test("typesOfStringArgsWithDefaults", function (): void {
 
 Deno.test("typesOfBooleanAndStringArgs", function (): void {
   const argv = parse(["--foo"], {
-    boolean: ["beep", "boop"],
-    string: ["foo", "bar"],
+    boolean: ["foo", "bar", "foo-bar"],
+    string: ["beep", "boop", "beep-boop"],
   });
   assertType<
     IsExact<
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
-        bar?: string | undefined;
-        beep?: boolean | undefined;
-        boop?: boolean | undefined;
+        beep?: string | undefined;
+        boop?: string | undefined;
+        "beep-boop"?: string | undefined;
+        foo?: boolean | undefined;
+        bar?: boolean | undefined;
+        "foo-bar"?: boolean | undefined;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }
@@ -941,8 +949,8 @@ Deno.test("typesOfBooleanAndStringArgs", function (): void {
 
 Deno.test("typesOfBooleanAndStringArgsWithDefaults", function (): void {
   const argv = parse(["--foo"], {
-    boolean: ["foo", "bar"],
-    string: ["beep", "boop"],
+    boolean: ["foo", "bar", "foo-bar"],
+    string: ["beep", "boop", "beep-boop"],
     default: {
       bar: 123,
       baz: new Error(),
@@ -956,9 +964,11 @@ Deno.test("typesOfBooleanAndStringArgsWithDefaults", function (): void {
       & {
         foo?: boolean | undefined;
         boop?: string | undefined;
+        "beep-boop"?: string | undefined;
         bar: number | boolean;
         baz: unknown;
         beep: string | Date;
+        "foo-bar"?: boolean | undefined;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }
