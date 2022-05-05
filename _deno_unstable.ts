@@ -158,21 +158,13 @@ export function networkInterfaces(
 export async function connect(
   options: UnixConnectOptions,
 ): Promise<Deno.UnixConn> {
-  try {
-    return await Deno.connect(options);
-  } catch {
-    throw new TypeError("Requires --unstable");
-  }
+  return await Deno.connect(options);
 }
 
 export function listen(
   options: UnixListenOptions & { transport: "unix" },
 ): ReturnType<typeof Deno.listen> {
-  try {
-    return Deno.listen(options);
-  } catch {
-    throw new TypeError("Requires --unstable");
-  }
+  return Deno.listen(options);
 }
 
 export function ListenerRef(
