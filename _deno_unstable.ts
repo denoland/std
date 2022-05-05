@@ -156,7 +156,7 @@ export function networkInterfaces(
 }
 
 export async function connect(
-  options: UnixConnectOptions
+  options: UnixConnectOptions,
 ): ReturnType<typeof Deno.connect> {
   try {
     return await Deno.connect(options);
@@ -166,7 +166,7 @@ export async function connect(
 }
 
 export function listen(
-  options: UnixListenOptions & { transport: "unix" }
+  options: UnixListenOptions & { transport: "unix" },
 ): ReturnType<typeof Deno.listen> {
   try {
     return Deno.listen(options);
