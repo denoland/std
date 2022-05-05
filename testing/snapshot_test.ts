@@ -30,10 +30,8 @@ function testFnWithTempDir(
     const tempDir = await Deno.makeTempDir();
     try {
       await fn(t, tempDir);
+    } finally {
       await Deno.remove(tempDir, { recursive: true });
-    } catch (err) {
-      await Deno.remove(tempDir, { recursive: true });
-      throw err;
     }
   };
 }
