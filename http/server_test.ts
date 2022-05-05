@@ -680,6 +680,7 @@ Deno.test(`serve listens on the port 8000 by default`, async () => {
   const servePromise = serve(handler, {
     signal: abortController.signal,
   });
+  servePromise.catch(() => {});
 
   try {
     const response = await fetch(url);

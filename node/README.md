@@ -136,8 +136,8 @@ $ deno test -A node/_tools/test.ts -- <pattern-to-match>
 ```
 
 For example, if you want to run only
-`node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js`, you
-can use:
+`node/_tools/test/parallel/test-event-emitter-check-listener-leaks.js`, you can
+use:
 
 ```shellsession
 $ deno test -A node/_tools/test.ts -- test-event-emitter-check-listener-leaks.js
