@@ -1088,8 +1088,8 @@ Deno.test("typesOfDottedStringArgsWithDefaults", function (): void {
 
 Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
   const argv = parse(["--foo"], {
-    boolean: ["blubb", "foo.bar", "foo.baz.biz", "foo.baz.buz"],
-    string: ["bla", "beep.boop", "beep.bib.bab", "beep.bib.bub"],
+    boolean: ["blubb", "foo.bar", "foo.baz.biz", "beep.bib.bub"],
+    string: ["bla", "beep.boop", "beep.bib.bab", "foo.baz.buz"],
   });
   assertType<
     IsExact<
@@ -1101,7 +1101,7 @@ Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
           bar?: boolean | undefined;
           baz?: {
             biz?: boolean | undefined;
-            buz?: boolean | undefined;
+            buz?: string | undefined;
           };
         };
         bla?: string | undefined;
@@ -1109,7 +1109,7 @@ Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
           boop?: string | undefined;
           bib?: {
             bab?: string | undefined;
-            bub?: string | undefined;
+            bub?: boolean | undefined;
           };
         };
         _: Array<string | number>;
@@ -1121,8 +1121,8 @@ Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
 
 Deno.test("typesOfDottedStringAndBooleanArgsWithDefaults", function (): void {
   const argv = parse(["--foo"], {
-    boolean: ["blubb", "foo.bar", "foo.baz.biz", "foo.baz.buz"],
-    string: ["blubb", "beep.boop", "beep.bib.bab", "beep.bib.bub"],
+    boolean: ["blubb", "foo.bar", "foo.baz.biz", "beep.bib.bub"],
+    string: ["blubb", "beep.boop", "beep.bib.bab", "foo.baz.buz"],
     default: {
       blubb: true,
       foo: {
@@ -1145,22 +1145,22 @@ Deno.test("typesOfDottedStringAndBooleanArgsWithDefaults", function (): void {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        blubb?: boolean | undefined;
+        blubb: boolean;
         foo: {
           bar: boolean | number;
           baz: {
             biz: boolean | Date;
-            buz?: boolean | undefined;
+            buz?: string | undefined;
           };
         };
         beep: {
           boop: string | boolean;
           bib: {
             bab: string | Date;
-            bub?: string | undefined;
+            bub?: boolean | undefined;
           };
         };
-        bla?: string | undefined;
+        bla: unknown;
         _: Array<string | number>;
         "--"?: Array<string> | undefined;
       }

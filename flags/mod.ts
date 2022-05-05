@@ -33,16 +33,18 @@ type Values<
         D
       >);
 
-// @TODO(c4spar): SpreadValues not working with doted options and defaults.
-type SpreadValues<
-  A extends Record<string, unknown>,
-  D extends Record<string, unknown> | undefined,
-> = D extends undefined ? A
-  : 
+type SpreadValues<A, D> = D extends undefined ? A
+  : A extends Record<string, unknown> ? 
     & { [K in Exclude<keyof A, keyof D>]?: A[K] }
     & {
-      [K in keyof D]: NonNullable<K extends keyof A ? D[K] | A[K] : unknown>;
-    };
+      [K in keyof D]: NonNullable<
+        K extends keyof A
+          ? Record<string, unknown> extends A[K] ? SpreadValues<A[K], D[K]>
+          : D[K] | A[K]
+          : unknown
+      >;
+    }
+  : A;
 
 type Defaults<
   B extends BooleanType,
