@@ -71,14 +71,20 @@ type MapTypes<T extends ArgType, V> = undefined extends T ? Record<never, never>
 export type Args<
   // deno-lint-ignore no-explicit-any
   A extends Record<string, unknown> = Record<string, any>,
+  DD extends boolean | undefined = undefined,
 > = Id<
-  A & {
+  & A
+  & {
     /** Contains all the arguments that didn't have an option associated with
      * them. */
     _: Array<string | number>;
-    /** Contains all the arguments that appear after the double dash: "--". */
-    "--"?: Array<string>;
   }
+  & (true extends DD ? {
+    /** Contains all the arguments that appear after the double dash: "--". */
+    "--": Array<string>;
+  }
+    : // deno-lint-ignore ban-types
+    {})
 >;
 
 /** The options for the `parse` call. */
@@ -86,6 +92,7 @@ export interface ParseOptions<
   B extends BooleanType,
   S extends StringType,
   D extends Record<string, unknown> | undefined,
+  DD extends boolean | undefined = undefined,
 > {
   /** When `true`, populate the result `_` with everything before the `--` and
    * the result `['--']` with everything after the `--`. Here's an example:
@@ -101,7 +108,7 @@ export interface ParseOptions<
    *
    * Defaults to `false`.
    */
-  "--"?: boolean;
+  "--"?: DD;
 
   /** An object mapping string names to strings or arrays of string argument
    * names to use as aliases. */
@@ -192,6 +199,7 @@ export function parse<
   B extends BooleanType = undefined,
   S extends StringType = undefined,
   D extends Record<string, unknown> | undefined = undefined,
+  DD extends boolean | undefined = undefined,
 >(
   args: string[],
   {
@@ -202,8 +210,8 @@ export function parse<
     stopEarly = false,
     string = [],
     unknown = (i: string): unknown => i,
-  }: ParseOptions<B, S, D> = {},
-): Args<Values<B, S, D>> {
+  }: ParseOptions<B, S, D, DD> = {},
+): Args<Values<B, S, D>, DD> {
   const flags: Flags = {
     bools: {},
     strings: {},
@@ -458,5 +466,5 @@ export function parse<
     }
   }
 
-  return argv as Args<Values<B, S, D>>;
+  return argv as Args<Values<B, S, D>, DD>;
 }
