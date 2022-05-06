@@ -35,7 +35,7 @@ Record<string, any>
 
 type SpreadValues<A, D> = D extends undefined ? A
   : A extends Record<string, unknown> ? 
-    & { [K in Exclude<keyof A, keyof D>]?: A[K] }
+    & Omit<A, keyof D>
     & {
       [K in keyof D]: K extends keyof A
         ? Record<string, unknown> extends A[K]
