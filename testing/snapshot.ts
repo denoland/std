@@ -146,6 +146,7 @@ class AssertSnapshotContext {
   private snapshotCounts = new Map<string, number>();
   private snapshotsUpdated = new Array<string>();
   private snapshotFileUrl: URL;
+  private snapshotUpdateQueue = new Array<string>();
 
   constructor(snapshotFileUrl: URL) {
     this.snapshotFileUrl = snapshotFileUrl;
@@ -170,13 +171,24 @@ class AssertSnapshotContext {
   private teardown = () => {
     const buf = ["export const snapshot = {};"];
     const currentSnapshots = this.getCurrentSnapshotsInitialized();
-    currentSnapshots.forEach((snapshot, name) => {
+    this.snapshotUpdateQueue.forEach((name) => {
       const updatedSnapshot = this.updatedSnapshots.get(name);
-      let formattedSnapshot = escapeStringForJs(
-        typeof updatedSnapshot === "string"
-          ? updatedSnapshot
-          : snapshot as string,
-      );
+      const currentSnapshot = currentSnapshots.get(name);
+      let formattedSnapshot: string;
+      if (typeof updatedSnapshot === "string") {
+        formattedSnapshot = updatedSnapshot;
+      }
+      else if (typeof currentSnapshot === "string") {
+        formattedSnapshot = currentSnapshot;
+      }
+      else {
+        // This occurs when `assertSnapshot` is called in "assert" mode but
+        // the snapshot doesn't exist and `assertSnapshot` is also called in
+        // "update" mode. In this case, we have nothing to write to the
+        // snapshot file so we can just exit early
+        return;
+      }
+      formattedSnapshot = escapeStringForJs(formattedSnapshot);
       formattedSnapshot = formattedSnapshot.includes("\n")
         ? `\n${formattedSnapshot}\n`
         : formattedSnapshot;
@@ -263,6 +275,7 @@ class AssertSnapshotContext {
   public registerTeardown() {
     if (!this.teardownRegistered) {
       globalThis.addEventListener("unload", this.teardown);
+      this.teardownRegistered = true;
     }
   }
 
@@ -306,6 +319,20 @@ class AssertSnapshotContext {
    */
   public getUpdatedCount() {
     return this.snapshotsUpdated.length;
+  }
+
+  /**
+   * Add a snapshot to the update queue.
+   *
+   * Tracks the order in which snapshots were created so that they can be written to
+   * the snapshot file in the correct order.
+   *
+   * Should be called with each snapshot, regardless of the mode, as a future call to
+   * `assertSnapshot` could cause updates to be written to the snapshot file if the
+   * `update` mode is passed in the options.
+   */
+  public pushSnapshotToUpdateQueue(snapshotName: string) {
+    this.snapshotUpdateQueue.push(snapshotName);
   }
 }
 
@@ -351,12 +378,13 @@ export async function assertSnapshot(
     options,
   );
 
+  assertSnapshotContext.pushSnapshotToUpdateQueue(name);
   const _serialize = options.serializer || serialize;
   const _actual = _serialize(actual);
   if (getIsUpdate(options)) {
+    assertSnapshotContext.registerTeardown();
     if (!equal(_actual, snapshot)) {
       assertSnapshotContext.updateSnapshot(name, _actual);
-      assertSnapshotContext.registerTeardown();
     }
   } else {
     if (!snapshot) {

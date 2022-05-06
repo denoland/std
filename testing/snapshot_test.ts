@@ -12,7 +12,7 @@ const SNAPSHOT_MODULE_URL = toFileUrl(join(
 function formatTestOutput(string: string) {
   // Strip colors and obfuscate any timings
   return stripColor(string).replace(/([0-9])+m?s/g, "--ms").replace(
-    /(?<=running 1 test from )(.*)(?=test.ts)/g,
+    /(?<=running ([0-9])+ test(s)? from )(.*)(?=test.ts)/g,
     "<tempDir>/",
   );
 }
@@ -302,9 +302,15 @@ Deno.test("Snapshot Test - Options", async (t) => {
 Deno.test(
   "Snapshot Test - Update",
   testFnWithTempDir(async (t, tempDir) => {
+    const tempTestFileName = "test.ts";
+    const tempTestFilePath = join(tempDir, tempTestFileName);
+    const tempSnapshotFilePath = join(
+      tempDir,
+      "__snapshots__",
+      `${tempTestFileName}.snap`,
+    );
+
     async function runTestWithUpdateFlag(test: string) {
-      const tempTestFileName = "test.ts";
-      const tempTestFilePath = join(tempDir, tempTestFileName);
       await Deno.writeTextFile(tempTestFilePath, test);
 
       const process = await Deno.run({
@@ -319,6 +325,7 @@ Deno.test(
       return {
         output: new TextDecoder().decode(output),
         error: new TextDecoder().decode(error),
+        snapshots: await Deno.readTextFile(tempSnapshotFilePath),
       };
     }
 
@@ -344,7 +351,12 @@ Deno.test(
     );
 
     assertNoError(result1.error);
-    await assertSnapshot(t, formatTestOutput(result1.output));
+    await assertSnapshot(t, formatTestOutput(result1.output), {
+      name: "Snapshot Test - Update - New snapshot"
+    });
+    await assertSnapshot(t, result1.snapshots, {
+      name: "Snapshot Test - Update - New snapshot"
+    });
 
     /**
      * Existing snapshot - no changes
@@ -362,7 +374,12 @@ Deno.test(
     );
 
     assertNoError(result2.error);
-    await assertSnapshot(t, formatTestOutput(result2.output));
+    await assertSnapshot(t, formatTestOutput(result2.output), {
+      name: "Snapshot Test - Update - Existing snapshot - no changes"
+    });
+    await assertSnapshot(t, result2.snapshots, {
+      name: "Snapshot Test - Update - Existing snapshot - no changes"
+    });
 
     /**
      * Existing snapshot - updates
@@ -381,7 +398,58 @@ Deno.test(
     `);
 
     assertNoError(result3.error);
-    await assertSnapshot(t, formatTestOutput(result3.output));
+    await assertSnapshot(t, formatTestOutput(result3.output), {
+      name: "Snapshot Test - Update - Existing snapshot - updates"
+    });
+    await assertSnapshot(t, result3.snapshots, {
+      name: "Snapshot Test - Update - Existing snapshot - updates"
+    });
+
+    /**
+     * Existing snapshots - reverse order 1
+     */
+    const result4 = await runTestWithUpdateFlag(`
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - First", async (t) => {
+        await assertSnapshot(t, "FIRST");
+      });
+
+      Deno.test("Snapshot Test - Second", async (t) => {
+        await assertSnapshot(t, "SECOND");
+      });
+   `);
+
+    assertNoError(result4.error);
+    await assertSnapshot(t, formatTestOutput(result4.output), {
+      name: "Snapshot Test - Update - Existing snapshots - reverse order 1"
+    });
+    await assertSnapshot(t, result4.snapshots, {
+      name: "Snapshot Test - Update - Existing snapshots - reverse order 1"
+    });
+
+    /**
+     * Existing snapshots - reverse order 2
+     */
+    const result5 = await runTestWithUpdateFlag(`
+      import { assertSnapshot } from "${SNAPSHOT_MODULE_URL}";
+
+      Deno.test("Snapshot Test - Second", async (t) => {
+        await assertSnapshot(t, "SECOND");
+      });
+
+      Deno.test("Snapshot Test - First", async (t) => {
+        await assertSnapshot(t, "FIRST");
+      });
+   `);
+
+    assertNoError(result5.error);
+    await assertSnapshot(t, formatTestOutput(result5.output), {
+      name: "Snapshot Test - Update - Existing snapshots - reverse order 2"
+    });
+    await assertSnapshot(t, result5.snapshots, {
+      name: "Snapshot Test - Update - Existing snapshots - reverse order 2"
+    });
   }),
 );
 
