@@ -1317,12 +1317,14 @@ Deno.test("typesOfParseOptionsGenerics", function (): void {
       { string?: "bar" | "baz" | Array<"bar" | "baz"> | undefined }
     >
   >(true);
+
   assertType<
     IsExact<
       Pick<Opts, "boolean">,
       { boolean?: "foo" | Array<"foo"> | undefined }
     >
   >(true);
+
   assertType<
     IsExact<
       Pick<Opts, "default">,
