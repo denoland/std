@@ -116,7 +116,7 @@ export interface ParseOptions<
   /** A boolean, string or array of strings to always treat as booleans. If
    * `true` will treat all double hyphenated arguments without equal signs as
    * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`) */
-  boolean?: B | Array<Exclude<B, boolean>>;
+  boolean?: B | Array<Extract<B, string>>;
 
   /** An object mapping string argument names to default values. */
   default?: D & Defaults<B, S>;
@@ -126,7 +126,7 @@ export interface ParseOptions<
   stopEarly?: boolean;
 
   /** A string or array of strings argument names to always treat as strings. */
-  string?: S | Array<S>;
+  string?: S | Array<Extract<S, string>>;
 
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
