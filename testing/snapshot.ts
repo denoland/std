@@ -177,11 +177,9 @@ class AssertSnapshotContext {
       let formattedSnapshot: string;
       if (typeof updatedSnapshot === "string") {
         formattedSnapshot = updatedSnapshot;
-      }
-      else if (typeof currentSnapshot === "string") {
+      } else if (typeof currentSnapshot === "string") {
         formattedSnapshot = currentSnapshot;
-      }
-      else {
+      } else {
         // This occurs when `assertSnapshot` is called in "assert" mode but
         // the snapshot doesn't exist and `assertSnapshot` is also called in
         // "update" mode. In this case, we have nothing to write to the

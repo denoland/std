@@ -352,10 +352,10 @@ Deno.test(
 
     assertNoError(result1.error);
     await assertSnapshot(t, formatTestOutput(result1.output), {
-      name: "Snapshot Test - Update - New snapshot"
+      name: "Snapshot Test - Update - New snapshot",
     });
     await assertSnapshot(t, result1.snapshots, {
-      name: "Snapshot Test - Update - New snapshot"
+      name: "Snapshot Test - Update - New snapshot",
     });
 
     /**
@@ -375,10 +375,10 @@ Deno.test(
 
     assertNoError(result2.error);
     await assertSnapshot(t, formatTestOutput(result2.output), {
-      name: "Snapshot Test - Update - Existing snapshot - no changes"
+      name: "Snapshot Test - Update - Existing snapshot - no changes",
     });
     await assertSnapshot(t, result2.snapshots, {
-      name: "Snapshot Test - Update - Existing snapshot - no changes"
+      name: "Snapshot Test - Update - Existing snapshot - no changes",
     });
 
     /**
@@ -399,10 +399,10 @@ Deno.test(
 
     assertNoError(result3.error);
     await assertSnapshot(t, formatTestOutput(result3.output), {
-      name: "Snapshot Test - Update - Existing snapshot - updates"
+      name: "Snapshot Test - Update - Existing snapshot - updates",
     });
     await assertSnapshot(t, result3.snapshots, {
-      name: "Snapshot Test - Update - Existing snapshot - updates"
+      name: "Snapshot Test - Update - Existing snapshot - updates",
     });
 
     /**
@@ -422,10 +422,10 @@ Deno.test(
 
     assertNoError(result4.error);
     await assertSnapshot(t, formatTestOutput(result4.output), {
-      name: "Snapshot Test - Update - Existing snapshots - reverse order 1"
+      name: "Snapshot Test - Update - Existing snapshots - reverse order 1",
     });
     await assertSnapshot(t, result4.snapshots, {
-      name: "Snapshot Test - Update - Existing snapshots - reverse order 1"
+      name: "Snapshot Test - Update - Existing snapshots - reverse order 1",
     });
 
     /**
@@ -445,10 +445,10 @@ Deno.test(
 
     assertNoError(result5.error);
     await assertSnapshot(t, formatTestOutput(result5.output), {
-      name: "Snapshot Test - Update - Existing snapshots - reverse order 2"
+      name: "Snapshot Test - Update - Existing snapshots - reverse order 2",
     });
     await assertSnapshot(t, result5.snapshots, {
-      name: "Snapshot Test - Update - Existing snapshots - reverse order 2"
+      name: "Snapshot Test - Update - Existing snapshots - reverse order 2",
     });
   }),
 );
