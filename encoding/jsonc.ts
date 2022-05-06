@@ -163,11 +163,18 @@ class JSONCParser {
           break;
         case '"': { // parse string token
           const startIndex = i;
+          // Need to handle consecutive backslashes correctly
+          // '"\\""' => '"'
+          // '"\\\\"' => '\\'
+          // '"\\\\\\""' => '\\"'
+          // '"\\\\\\\\"' => '\\\\'
+          let shouldEscapeNext = false;
           i++;
           for (; i < this.#length; i++) { // read until find `"`
-            if (this.#text[i] === '"' && this.#text[i - 1] !== "\\") {
+            if (this.#text[i] === '"' && !shouldEscapeNext) {
               break;
             }
+            shouldEscapeNext = this.#text[i] === "\\" && !shouldEscapeNext;
           }
           yield {
             type: tokenType.string,

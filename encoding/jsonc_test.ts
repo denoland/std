@@ -154,3 +154,20 @@ Deno.test({
     assertValidParse(0 as any, 0);
   },
 });
+
+Deno.test({
+  name: "[jsonc] parse consecutive backslash",
+  fn() {
+    assertValidParse('"foo\\\\"', "foo\\");
+
+    assertValidParse('  ["foo\\"", "bar"]', ['foo"', "bar"]);
+    assertInvalidParse('["foo\\\\"", "bar"]', SyntaxError);
+    assertValidParse('  ["foo\\\\\\"", "bar"]', ['foo\\"', "bar"]);
+    assertInvalidParse('["foo\\\\\\\\"", "bar"]', SyntaxError);
+
+    assertInvalidParse('["foo\\", "bar"]', SyntaxError);
+    assertValidParse('  ["foo\\\\", "bar"]', ["foo\\", "bar"]);
+    assertInvalidParse('["foo\\\\\\", "bar"]', SyntaxError);
+    assertValidParse('  ["foo\\\\\\\\", "bar"]', ["foo\\\\", "bar"]);
+  },
+});
