@@ -90,7 +90,7 @@ export type Args<
 export interface ParseOptions<
   B extends BooleanType = undefined,
   S extends StringType = undefined,
-  D extends Record<string, unknown> | undefined = undefined,
+  D extends Record<string, unknown> | undefined = Record<string, unknown>,
   DD extends boolean | undefined = undefined,
 > {
   /** When `true`, populate the result `_` with everything before the `--` and
