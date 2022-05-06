@@ -12,7 +12,7 @@
  * ERR_SYSTEM_ERROR //System error, shouldn't ever happen inside Deno
  * ERR_TTY_INIT_FAILED //System error, shouldn't ever happen inside Deno
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
- * *********** */
+ * ************/
 
 import { getSystemErrorName } from "../util.ts";
 import { inspect } from "../internal/util/inspect.mjs";
