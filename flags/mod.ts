@@ -195,10 +195,11 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * ```
  */
 export function parse<
+  A extends Values<B, S, D>,
+  DD extends boolean | undefined = undefined,
   B extends BooleanType = undefined,
   S extends StringType = undefined,
   D extends Record<string, unknown> | undefined = undefined,
-  DD extends boolean | undefined = undefined,
 >(
   args: string[],
   {
@@ -210,7 +211,7 @@ export function parse<
     string = [],
     unknown = (i: string): unknown => i,
   }: ParseOptions<B, S, D, DD> = {},
-): Args<Values<B, S, D>, DD> {
+): Args<A, DD> {
   const flags: Flags = {
     bools: {},
     strings: {},
@@ -465,5 +466,5 @@ export function parse<
     }
   }
 
-  return argv as Args<Values<B, S, D>, DD>;
+  return argv as Args<A, DD>;
 }

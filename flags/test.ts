@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals } from "../testing/asserts.ts";
-import { parse } from "./mod.ts";
+import { Args, parse } from "./mod.ts";
 import { assertType, IsExact } from "../_util/assert_type.ts";
 
 // flag boolean true (default all --args to boolean)
@@ -1274,6 +1274,35 @@ Deno.test("typesOfNullishDefaults", function (): void {
         bar: string | undefined;
         baz: string | null;
         _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfParseGenerics", function (): void {
+  const argv = parse<{ foo?: number } & { bar: string }, true>(["--foo"]);
+  assertType<
+    IsExact<
+      typeof argv,
+      {
+        foo?: number | undefined;
+        bar: string;
+        _: Array<string | number>;
+        "--": Array<string>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfArgsGenerics", function (): void {
+  assertType<
+    IsExact<
+      Args<{ foo?: number } & { bar: string }, true>,
+      {
+        foo?: number | undefined;
+        bar: string;
+        _: Array<string | number>;
+        "--": Array<string>;
       }
     >
   >(true);
