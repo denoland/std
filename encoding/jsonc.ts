@@ -53,7 +53,7 @@ enum tokenType {
   string,
 }
 
-type tokenized = {
+type Token = {
   type: Exclude<
     tokenType,
     tokenType.string | tokenType.nullOrTrueOrFalseOrNumber
@@ -78,7 +78,7 @@ class JSONCParser {
   readonly #numberEndToken = new Set([..."[]{}:,/", ...this.#whitespace]);
   #text: string;
   #length: number;
-  #tokenized: Generator<tokenized, void>;
+  #tokenized: Generator<Token, void>;
   #options: ParseOptions;
   constructor(text: string, options: ParseOptions) {
     this.#text = `${text}`;
@@ -107,7 +107,7 @@ class JSONCParser {
     return value;
   }
   /** Split the JSONC string into token units. Whitespace and comments are skipped. */
-  *#tokenize(): Generator<tokenized, void> {
+  *#tokenize(): Generator<Token, void> {
     for (let i = 0; i < this.#length; i++) {
       // skip whitespace
       if (this.#whitespace.has(this.#text[i])) {
@@ -193,7 +193,7 @@ class JSONCParser {
       }
     }
   }
-  #parseJSONValue(value: tokenized) {
+  #parseJSONValue(value: Token) {
     switch (value.type) {
       case tokenType.beginObject:
         return this.#parseObject();
@@ -337,7 +337,7 @@ class JSONCParser {
   }
 }
 
-function buildErrorMessage({ type, sourceText, position }: tokenized) {
+function buildErrorMessage({ type, sourceText, position }: Token) {
   let token = "";
   switch (type) {
     case tokenType.beginObject:
