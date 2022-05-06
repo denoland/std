@@ -37,12 +37,11 @@ type SpreadValues<A, D> = D extends undefined ? A
   : A extends Record<string, unknown> ? 
     & { [K in Exclude<keyof A, keyof D>]?: A[K] }
     & {
-      [K in keyof D]: NonNullable<
-        K extends keyof A
-          ? Record<string, unknown> extends A[K] ? SpreadValues<A[K], D[K]>
-          : D[K] | A[K]
-          : unknown
-      >;
+      [K in keyof D]: K extends keyof A
+        ? Record<string, unknown> extends A[K]
+          ? NonNullable<SpreadValues<A[K], D[K]>>
+        : D[K] | NonNullable<A[K]>
+        : unknown;
     }
   : A;
 

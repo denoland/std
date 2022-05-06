@@ -1255,3 +1255,26 @@ Deno.test("typesOfDoubleDashOption", function (): void {
     >
   >(true);
 });
+
+Deno.test("typesOfNullishDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    boolean: true,
+    string: ["foo", "bar", "baz"],
+    default: {
+      bar: undefined,
+      baz: null,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: boolean | undefined }
+      & {
+        foo?: string | undefined;
+        bar: string | undefined;
+        baz: string | null;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
