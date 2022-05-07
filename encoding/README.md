@@ -8,6 +8,7 @@ Helper module for dealing with external data structures.
 - [`base64url`](#base64url)
 - [`binary`](#binary)
 - [`csv`](#csv)
+- [`jsonc`](#JSONC)
 - [`toml`](#toml)
 - [`yaml`](#yaml)
 
@@ -505,6 +506,29 @@ Serializes `object` as a YAML document.
 ### More example
 
 See: https://github.com/nodeca/js-yaml/tree/master/examples
+
+## JSONC
+
+JSONC (JSON with Comments) parser for Deno.
+
+### API
+
+#### `parse(text: string, options: { allowTrailingComma?: boolean; })`
+
+Parses the JSONC string. Setting allowTrailingComma to false rejects trailing
+commas in objects and arrays. If parsing fails, throw a SyntaxError.
+
+### Basic usage
+
+```ts
+import * as JSONC from "https://deno.land/std@$STD_VERSION/encoding/jsonc.ts";
+
+console.log(JSONC.parse('{"foo": "bar", } // comment')); //=> { foo: "bar" }
+console.log(JSONC.parse('{"foo": "bar", } /* comment */')); //=> { foo: "bar" }
+console.log(JSONC.parse('{"foo": "bar" } // comment', {
+  allowTrailingComma: false,
+})); //=> { foo: "bar" }
+```
 
 ## base32
 
