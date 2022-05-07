@@ -112,7 +112,7 @@ workflow.
 $ deno task node:setup
 ```
 
-You can aditionally pass the `-y`/`-n` flag to use test cache or generating
+You can additionally pass the `-y`/`-n` flag to use test cache or generating
 tests from scratch instead of being prompted at the moment of running it.
 
 ```zsh
@@ -136,8 +136,8 @@ $ deno test -A node/_tools/test.ts -- <pattern-to-match>
 ```
 
 For example, if you want to run only
-`node/_tools/suites/parallel/test-event-emitter-check-listener-leaks.js`, you
-can use:
+`node/_tools/test/parallel/test-event-emitter-check-listener-leaks.js`, you can
+use:
 
 ```shellsession
 $ deno test -A node/_tools/test.ts -- test-event-emitter-check-listener-leaks.js

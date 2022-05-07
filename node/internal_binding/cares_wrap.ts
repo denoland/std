@@ -31,6 +31,7 @@ import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { ares_strerror } from "./ares.ts";
 import { notImplemented } from "../_utils.ts";
 import { ResolveCallback } from "../internal/dns/utils.ts";
+import { isWindows } from "../../_util/os.ts";
 
 interface LookupAddress {
   address: string;
@@ -62,7 +63,7 @@ export function getaddrinfo(
   _hints: number,
   verbatim: boolean,
 ): number {
-  const addresses: string[] = [];
+  let addresses: string[] = [];
 
   // TODO(cmorten): use hints
   // REF: https://nodejs.org/api/dns.html#dns_supported_getaddrinfo_flags
@@ -87,6 +88,8 @@ export function getaddrinfo(
 
     const error = addresses.length ? 0 : codeMap.get("EAI_NODATA")!;
 
+    // TODO(cmorten): needs work
+    // REF: https://github.com/nodejs/node/blob/master/src/cares_wrap.cc#L1444
     if (!verbatim) {
       addresses.sort((a: string, b: string): number => {
         if (isIPv4(a)) {
@@ -97,6 +100,13 @@ export function getaddrinfo(
 
         return 0;
       });
+    }
+
+    // TODO: Forces IPv4 as a workaround for Deno not
+    // aligning with Node on implicit binding on Windows
+    // REF: https://github.com/denoland/deno/issues/10762
+    if (isWindows && hostname === "localhost") {
+      addresses = addresses.filter((address) => isIPv4(address));
     }
 
     req.oncomplete(error, addresses);

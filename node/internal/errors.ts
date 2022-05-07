@@ -12,7 +12,7 @@
  * ERR_SYSTEM_ERROR //System error, shouldn't ever happen inside Deno
  * ERR_TTY_INIT_FAILED //System error, shouldn't ever happen inside Deno
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
- * *********** */
+ * ************/
 
 import { getSystemErrorName } from "../util.ts";
 import { inspect } from "../internal/util/inspect.mjs";
@@ -2551,7 +2551,24 @@ codes.ERR_BUFFER_OUT_OF_BOUNDS = ERR_BUFFER_OUT_OF_BOUNDS;
 codes.ERR_UNKNOWN_ENCODING = ERR_UNKNOWN_ENCODING;
 // TODO(kt3k): assign all error classes here.
 
-export { codes, hideStackFrames };
+/**
+ * This creates a generic Node.js error.
+ *
+ * @param {string} message The error message.
+ * @param {object} errorProperties Object with additional properties to be added to the error.
+ * @returns {Error}
+ */
+const genericNodeError = hideStackFrames(
+  function genericNodeError(message, errorProperties) {
+    // eslint-disable-next-line no-restricted-syntax
+    const err = new Error(message);
+    Object.assign(err, errorProperties);
+
+    return err;
+  },
+);
+
+export { codes, genericNodeError, hideStackFrames };
 
 export default {
   AbortError,
