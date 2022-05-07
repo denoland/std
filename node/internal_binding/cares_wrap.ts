@@ -30,7 +30,6 @@ import { codeMap } from "./uv.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 import { ares_strerror } from "./ares.ts";
 import { notImplemented } from "../_utils.ts";
-import { ResolveCallback } from "../internal/dns/utils.ts";
 import { isWindows } from "../../_util/os.ts";
 
 interface LookupAddress {
@@ -120,7 +119,11 @@ export class QueryReqWrap extends AsyncWrap {
   hostname!: string;
   ttl!: boolean;
 
-  callback!: ResolveCallback;
+  callback!: (
+    err: ErrnoException | null,
+    // deno-lint-ignore no-explicit-any
+    addressAddressesOrRecords?: any,
+  ) => void;
   resolve!: (addresses: string[], ttls?: number[]) => void;
   reject!: (err: ErrnoException | null) => void;
   oncomplete!: (err: number, addresses: string[], ttls?: number[]) => void;
