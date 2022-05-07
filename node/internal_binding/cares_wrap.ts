@@ -160,16 +160,35 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
     this.#tries = tries;
   }
 
+  async #query(req: QueryReqWrap, query: string, recordType: Deno.RecordType) {
+    // deno-lint-ignore no-explicit-any
+    let addresses: any[] = [];
+    let error = 0;
+
+    try {
+      addresses = await Deno.resolveDns(query, recordType);
+    } catch {
+      // TODO(cmorten): map errors to appropriate error codes.
+      error = codeMap.get("UNKNOWN")!;
+    }
+
+    req.oncomplete(error, addresses);
+  }
+
   queryAny(_req: QueryReqWrap, _name: string): number {
     notImplemented("ChannelWrap.queryAny");
   }
 
-  queryA(_req: QueryReqWrap, _name: string): number {
-    notImplemented("ChannelWrap.queryA");
+  queryA(req: QueryReqWrap, name: string): number {
+    this.#query(req, name, "A");
+
+    return 0;
   }
 
-  queryAaaa(_req: QueryReqWrap, _name: string): number {
-    notImplemented("ChannelWrap.queryAaaa");
+  queryAaaa(req: QueryReqWrap, name: string): number {
+    this.#query(req, name, "AAAA");
+
+    return 0;
   }
 
   queryCaa(_req: QueryReqWrap, _name: string): number {
@@ -177,19 +196,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
   }
 
   queryCname(req: QueryReqWrap, name: string): number {
-    (async () => {
-      let addresses: string[] = [];
-      let error = 0;
-
-      try {
-        addresses = await Deno.resolveDns(name, "CNAME");
-      } catch {
-        // TODO(cmorten): map errors to appropriate error codes.
-        error = codeMap.get("UNKNOWN")!;
-      }
-
-      req.oncomplete(error, addresses);
-    })();
+    this.#query(req, name, "CNAME");
 
     return 0;
   }
