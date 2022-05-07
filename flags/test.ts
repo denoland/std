@@ -1277,6 +1277,66 @@ Deno.test("typesOfDottedStringAndBooleanArgsWithFlattedDefaults", function (): v
   >(true);
 });
 
+Deno.test("typesOfDottedArgsWithUnionDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    string: ["foo.bar.baz"],
+    boolean: ["beep.boop.bab"],
+    default: {
+      "foo": 1,
+      "beep": new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: number | {
+          bar?: {
+            baz?: string | undefined;
+          } | undefined;
+        };
+        beep: Date | {
+          boop?: {
+            bab?: boolean | undefined;
+          } | undefined;
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfDottedArgsWithNestedUnionDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    string: ["foo.bar.baz"],
+    boolean: ["beep.boop.bab"],
+    default: {
+      "foo.bar": 1,
+      "beep.boop": new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: {
+          bar: number | {
+            baz?: string | undefined;
+          };
+        };
+        beep: {
+          boop: Date | {
+            bab?: boolean | undefined;
+          };
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
 /** ----------------------- OTHER TYPE TESTS ------------------------ */
 
 Deno.test("typesOfDoubleDashOption", function (): void {

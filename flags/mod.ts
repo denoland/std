@@ -45,12 +45,14 @@ type SpreadValues<A, D> = D extends undefined ? A
     & Omit<A, keyof D>
     & {
       [K in keyof D]: K extends keyof A
-        ? Record<string, unknown> extends A[K]
-          ? NonNullable<SpreadValues<A[K], D[K]>>
+        ? A[K] & D[K] extends Record<string, unknown>
+          ? D[K] extends Record<string, unknown>
+            ? NonNullable<SpreadValues<A[K], D[K]>>
+          : D[K] | NonNullable<A[K]>
         : D[K] | NonNullable<A[K]>
         : unknown;
     }
-  : A;
+  : never;
 
 /**
  * Defines the Record for the `default` parse option to add
