@@ -292,7 +292,7 @@ function onresolve(
   this: QueryReqWrap,
   err: number,
   addresses: string[],
-  ttls: number[],
+  ttls?: number[],
 ) {
   const parsedAddresses = ttls && this.ttl
     ? addresses.map((address: string, index: number) => ({
@@ -461,6 +461,9 @@ export function resolve(
 ) {
   return getDefaultResolver().resolve(hostname, rrtype, callback);
 }
+
+const defaultResolver = new Resolver();
+setDefaultResolver(defaultResolver);
 
 // ERROR CODES
 export const NODATA = "ENODATA";
