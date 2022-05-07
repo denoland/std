@@ -3,10 +3,12 @@
 
 import { assert } from "../_util/assert.ts";
 
+/** Combines recursivly all intersaction types and returns a new single type. */
 type Id<T> = T extends Record<string, unknown>
   ? T extends infer U ? { [K in keyof U]: Id<U[K]> } : never
   : T;
 
+/** Converts an union type `A | B | C` into an intersection type `A & B & C`. */
 type UnionToIntersection<T> =
   (T extends unknown ? (args: T) => unknown : never) extends
     (args: infer R) => unknown ? R extends Record<string, unknown> ? R : never
@@ -16,6 +18,10 @@ type BooleanType = boolean | string | undefined;
 type StringType = string | undefined;
 type ArgType = BooleanType | StringType;
 
+/**
+ * Creates a record with all available flags with the corresponding type and
+ * default type.
+ */
 type Values<
   B extends BooleanType,
   S extends StringType,
@@ -33,6 +39,7 @@ Record<string, any>
         DedotRecord<D>
       >);
 
+/** Spreads all values of Record `D` into Record `A`. */
 type SpreadValues<A, D> = D extends undefined ? A
   : A extends Record<string, unknown> ? 
     & Omit<A, keyof D>
@@ -45,6 +52,10 @@ type SpreadValues<A, D> = D extends undefined ? A
     }
   : A;
 
+/**
+ * Defines the Record for the `default` parse option to add
+ * autosuggestion support for IDE's.
+ */
 type Defaults<
   B extends BooleanType,
   S extends StringType,
@@ -74,6 +85,7 @@ type MapDefaults<T extends ArgType> = T extends string
   ? Partial<Record<T, unknown>>
   : Record<string, unknown>;
 
+/** Converts `{ "foo.bar.baz": unknown }` into `{ foo: { bar: { baz: unknown } } }`. */
 type DedotRecord<T> = T extends Record<string, unknown> ? UnionToIntersection<
   ValueOf<
     { [K in keyof T]: K extends string ? Dedot<K, T[K]> : never }
