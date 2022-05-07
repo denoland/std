@@ -24,13 +24,13 @@ type Values<
 Record<string, any>
   : (true extends B ? 
     & Partial<Record<string, boolean>>
-    & SpreadValues<TypeValues<S, string>, D>
+    & SpreadValues<TypeValues<S, string>, DedotRecord<D>>
     : 
       & Record<string, unknown>
       & SpreadValues<
         & TypeValues<S, string>
         & TypeValues<B, boolean>,
-        D
+        DedotRecord<D>
       >);
 
 type SpreadValues<A, D> = D extends undefined ? A
@@ -49,9 +49,13 @@ type Defaults<
   B extends BooleanType,
   S extends StringType,
 > = Id<
-  & Record<string, unknown>
-  & TypeValues<S, unknown>
-  & TypeValues<B, unknown>
+  UnionToIntersection<
+    & Record<string, unknown>
+    & TypeValues<S, unknown>
+    & TypeValues<B, unknown>
+    & MapDefaults<B>
+    & MapDefaults<S>
+  >
 >;
 
 type TypeValues<T extends ArgType, V> = UnionToIntersection<MapTypes<T, V>>;
@@ -65,6 +69,23 @@ type MapTypes<T extends ArgType, V> = undefined extends T ? Record<never, never>
   }
   : T extends string ? Partial<Record<T, V>>
   : Record<never, never>;
+
+type MapDefaults<T extends ArgType> = T extends string
+  ? Partial<Record<T, unknown>>
+  : Record<string, unknown>;
+
+type DedotRecord<T> = T extends Record<string, unknown> ? UnionToIntersection<
+  ValueOf<
+    { [K in keyof T]: K extends string ? Dedot<K, T[K]> : never }
+  >
+>
+  : T;
+
+type Dedot<T extends string, V> = T extends `${infer Name}.${infer Rest}`
+  ? { [K in Name]: Dedot<Rest, V> }
+  : { [K in T]: V };
+
+type ValueOf<T> = T[keyof T];
 
 /** The value returned from `parse`. */
 export type Args<
