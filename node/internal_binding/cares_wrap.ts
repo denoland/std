@@ -28,24 +28,19 @@ import type { ErrnoException } from "../internal/errors.ts";
 import { isIPv4 } from "../internal/net.ts";
 import { codeMap } from "./uv.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
+import { ares_strerror } from "./ares.ts";
+import { notImplemented } from "../_utils.ts";
+import { ResolveCallback } from "../internal/dns/utils.ts";
 
 interface LookupAddress {
   address: string;
   family: number;
 }
 
-// REF: https://github.com/nodejs/node/blob/master/deps/cares/include/ares.h#L190
-export const ARES_AI_CANONNAME = 1 << 0;
-export const ARES_AI_NUMERICHOST = 1 << 1;
-export const ARES_AI_PASSIVE = 1 << 2;
-export const ARES_AI_NUMERICSERV = 1 << 3;
-export const AI_V4MAPPED = 1 << 4;
-export const AI_ALL = 1 << 5;
-export const AI_ADDRCONFIG = 1 << 6;
-export const ARES_AI_NOSORT = 1 << 7;
-export const ARES_AI_ENVHOSTS = 1 << 8;
-
 export class GetAddrInfoReqWrap extends AsyncWrap {
+  family!: number;
+  hostname!: string;
+
   callback!: (
     err: ErrnoException | null,
     addressOrAddresses?: string | LookupAddress[] | null,
@@ -53,8 +48,6 @@ export class GetAddrInfoReqWrap extends AsyncWrap {
   ) => void;
   resolve!: (addressOrAddresses: LookupAddress | LookupAddress[]) => void;
   reject!: (err: ErrnoException | null) => void;
-  family!: number;
-  hostname!: string;
   oncomplete!: (err: number | null, addresses: string[]) => void;
 
   constructor() {
@@ -110,4 +103,124 @@ export function getaddrinfo(
   })();
 
   return 0;
+}
+
+export class QueryReqWrap extends AsyncWrap {
+  bindingName!: string;
+  hostname!: string;
+  ttl!: boolean;
+
+  callback!: ResolveCallback;
+  resolve!: (addresses: string[], ttls: number[]) => void;
+  reject!: (err: ErrnoException | null) => void;
+  oncomplete!: (err: number, addresses: string[], ttls: number[]) => void;
+
+  constructor() {
+    super(providerType.QUERYWRAP);
+  }
+}
+
+export interface ChannelWrapQuery {
+  queryAny(req: QueryReqWrap, name: string): number;
+  queryA(req: QueryReqWrap, name: string): number;
+  queryAaaa(req: QueryReqWrap, name: string): number;
+  queryCaa(req: QueryReqWrap, name: string): number;
+  queryCname(req: QueryReqWrap, name: string): number;
+  queryMx(req: QueryReqWrap, name: string): number;
+  queryNs(req: QueryReqWrap, name: string): number;
+  queryTxt(req: QueryReqWrap, name: string): number;
+  querySrv(req: QueryReqWrap, name: string): number;
+  queryPtr(req: QueryReqWrap, name: string): number;
+  queryNaptr(req: QueryReqWrap, name: string): number;
+  querySoa(req: QueryReqWrap, name: string): number;
+  getHostByAddr(req: QueryReqWrap, name: string): number;
+}
+
+export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
+  #timeout: number;
+  #tries: number;
+
+  constructor(timeout: number, tries: number) {
+    super(providerType.DNSCHANNEL);
+
+    this.#timeout = timeout;
+    this.#tries = tries;
+  }
+
+  queryAny(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.queryAny");
+  }
+
+  queryA(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.queryA");
+  }
+
+  queryAaaa(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.queryAaaa");
+  }
+
+  queryCaa(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.queryCaa");
+  }
+
+  queryCname(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.queryCname");
+  }
+
+  queryMx(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.queryMx");
+  }
+
+  queryNs(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.queryNs");
+  }
+
+  queryTxt(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.queryTxt");
+  }
+
+  querySrv(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.querySrv");
+  }
+
+  queryPtr(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.queryPtr");
+  }
+
+  queryNaptr(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.queryNaptr");
+  }
+
+  querySoa(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.querySoa");
+  }
+
+  getHostByAddr(_req: QueryReqWrap, _name: string): number {
+    notImplemented("ChannelWrap.getHostByAddr");
+  }
+
+  getServers(): [string, number][] {
+    notImplemented("ChannelWrap.getServers");
+  }
+
+  setServers(_servers: string | [number, string, number][]): number {
+    notImplemented("ChannelWrap.setServers");
+  }
+
+  setLocalAddress(_addr0: string, _addr1?: string): void {
+    notImplemented("ChannelWrap.setLocalAddress");
+  }
+
+  cancel() {
+    notImplemented("ChannelWrap.cancel");
+  }
+}
+
+const DNS_ESETSRVPENDING = -1000;
+const EMSG_ESETSRVPENDING = "There are pending queries.";
+
+export function strerror(code: number) {
+  return code === DNS_ESETSRVPENDING
+    ? EMSG_ESETSRVPENDING
+    : ares_strerror(code);
 }

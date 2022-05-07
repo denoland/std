@@ -32,25 +32,71 @@ import {
 import { isIP } from "./internal/net.ts";
 import {
   emitInvalidHostnameWarning,
+  getDefaultResolver,
   getDefaultVerbatim,
   isFamily,
   isLookupCallback,
   isLookupOptions,
+  isResolverOptions,
+  Resolver as ResolverBase,
+  setDefaultResolver,
+  setDefaultResultOrder,
   validateHints,
 } from "./internal/dns/utils.ts";
-import promises from "./internal/dns/promises.ts";
 import type {
   LookupAddress,
   LookupAllOptions,
   LookupOneOptions,
   LookupOptions,
+  Resolve4Addresses,
+  Resolve4Callback,
+  Resolve6Addresses,
+  Resolve6Callback,
+  ResolveCaaAddress,
+  ResolveCaaAddresses,
+  ResolveCaaCallback,
+  ResolveCallback,
+  ResolveCnameAddresses,
+  ResolveCnameCallback,
+  ResolveHostnames,
+  ResolveMxAddress,
+  ResolveMxAddresses,
+  ResolveMxCallback,
+  ResolveNaptrAddress,
+  ResolveNaptrAddresses,
+  ResolveNaptrCallback,
+  ResolveNsAddresses,
+  ResolveNsCallback,
+  ResolvePtrAddresses,
+  ResolvePtrCallback,
+  ResolveRecords,
+  ResolveSoaAddress,
+  ResolveSoaCallback,
+  ResolveSrvCallback,
+  ResolveSrvRecord,
+  ResolveSrvRecords,
+  ResolveTtlAddress,
+  ResolveTxtCallback,
+  ResolveTxtRecords,
+  ReverseCallback,
 } from "./internal/dns/utils.ts";
+import promises from "./internal/dns/promises.ts";
 import type { ErrnoException } from "./internal/errors.ts";
-import { dnsException, ERR_INVALID_ARG_TYPE } from "./internal/errors.ts";
+import {
+  dnsException,
+  ERR_INVALID_ARG_TYPE,
+  ERR_INVALID_ARG_VALUE,
+} from "./internal/errors.ts";
 import {
   AI_ADDRCONFIG as ADDRCONFIG,
+  AI_ALL as ALL,
+  AI_V4MAPPED as V4MAPPED,
+} from "./internal_binding/ares.ts";
+import {
+  ChannelWrapQuery,
   getaddrinfo,
   GetAddrInfoReqWrap,
+  QueryReqWrap,
 } from "./internal_binding/cares_wrap.ts";
 import { toASCII } from "./internal/idna.ts";
 
@@ -242,6 +288,180 @@ Object.defineProperty(lookup, customPromisifyArgs, {
   enumerable: false,
 });
 
+function onresolve(
+  this: QueryReqWrap,
+  err: number,
+  addresses: string[],
+  ttls: number[],
+) {
+  const parsedAddresses = ttls && this.ttl
+    ? addresses.map((address: string, index: number) => ({
+      address,
+      ttl: ttls[index],
+    }))
+    : addresses;
+
+  if (err) {
+    this.callback(dnsException(err, this.bindingName, this.hostname));
+  } else {
+    this.callback(null, parsedAddresses);
+  }
+}
+
+function resolver(bindingName: keyof ChannelWrapQuery) {
+  function query(
+    this: Resolver,
+    name: string,
+    /** options */ callback: unknown,
+  ) {
+    let options;
+
+    if (isResolverOptions(callback)) {
+      options = callback;
+      callback = arguments[2];
+    }
+
+    validateString(name, "name");
+    validateFunction(callback, "callback");
+
+    const req = new QueryReqWrap();
+    req.bindingName = bindingName;
+    req.callback = callback as ResolveCallback;
+    req.hostname = name;
+    req.oncomplete = onresolve;
+    req.ttl = !!(options && options.ttl);
+
+    const err = this._handle[bindingName](req, toASCII(name));
+
+    if (err) {
+      throw dnsException(err, bindingName, name);
+    }
+
+    return req;
+  }
+
+  Object.defineProperty(query, "name", { value: bindingName });
+
+  return query;
+}
+
+const resolveMap = Object.create(null);
+
+class Resolver extends ResolverBase {
+  override resolveAny = (resolveMap.ANY = resolver("queryAny"));
+  override resolve4 = (resolveMap.A = resolver("queryA"));
+  override resolve6 = (resolveMap.AAAA = resolver("queryAaaa"));
+  override resolveCaa = (resolveMap.CAA = resolver("queryCaa"));
+  override resolveCname = (resolveMap.CNAME = resolver("queryCname"));
+  override resolveMx = (resolveMap.MX = resolver("queryMx"));
+  override resolveNs = (resolveMap.NS = resolver("queryNs"));
+  override resolveTxt = (resolveMap.TXT = resolver("queryTxt"));
+  override resolveSrv = (resolveMap.SRV = resolver("querySrv"));
+  override resolvePtr = (resolveMap.PTR = resolver("queryPtr"));
+  override resolveNaptr = (resolveMap.NAPTR = resolver("queryNaptr"));
+  override resolveSoa = (resolveMap.SOA = resolver("querySoa"));
+  override reverse = resolver("getHostByAddr");
+  override resolve = _resolve;
+}
+
+function _resolve(
+  this: Resolver,
+  hostname: string,
+  rrtype: string,
+  callback: ResolveCallback,
+) {
+  let resolver;
+
+  if (typeof rrtype === "string") {
+    resolver = resolveMap[rrtype];
+  } else if (typeof rrtype === "function") {
+    resolver = resolveMap.A;
+    callback = rrtype;
+  } else {
+    throw new ERR_INVALID_ARG_TYPE("rrtype", "string", rrtype);
+  }
+
+  if (typeof resolver === "function") {
+    return Reflect.apply(resolver, this, [hostname, callback]);
+  }
+
+  throw new ERR_INVALID_ARG_VALUE("rrtype", rrtype);
+}
+
+function defaultResolverSetServers(servers: string[]) {
+  const resolver = new Resolver();
+
+  resolver.setServers(servers);
+  setDefaultResolver(resolver);
+}
+
+// Longhand equivalents of `bindDefaultResolver` which binds the default
+// resolver methods to the `module.exports` in Node implementation.
+
+export function getServers() {
+  return getDefaultResolver().getServers();
+}
+
+export function resolveAny(name: string, callback: ResolveCallback) {
+  return getDefaultResolver().resolveAny(name, callback);
+}
+
+export function resolve4(name: string, callback: Resolve4Callback) {
+  return getDefaultResolver().resolve4(name, callback);
+}
+
+export function resolve6(name: string, callback: Resolve6Callback) {
+  return getDefaultResolver().resolve6(name, callback);
+}
+
+export function resolveCaa(name: string, callback: ResolveCaaCallback) {
+  return getDefaultResolver().resolveCaa(name, callback);
+}
+
+export function resolveCname(name: string, callback: ResolveCnameCallback) {
+  return getDefaultResolver().resolveCname(name, callback);
+}
+
+export function resolveMx(name: string, callback: ResolveMxCallback) {
+  return getDefaultResolver().resolveMx(name, callback);
+}
+
+export function resolveNs(name: string, callback: ResolveNsCallback) {
+  return getDefaultResolver().resolveNs(name, callback);
+}
+
+export function resolveTxt(name: string, callback: ResolveTxtCallback) {
+  return getDefaultResolver().resolveTxt(name, callback);
+}
+
+export function resolveSrv(name: string, callback: ResolveSrvCallback) {
+  return getDefaultResolver().resolveSrv(name, callback);
+}
+
+export function resolvePtr(name: string, callback: ResolvePtrCallback) {
+  return getDefaultResolver().resolvePtr(name, callback);
+}
+
+export function resolveNaptr(name: string, callback: ResolveNaptrCallback) {
+  return getDefaultResolver().resolveNaptr(name, callback);
+}
+
+export function resolveSoa(name: string, callback: ResolveSoaCallback) {
+  return getDefaultResolver().resolveSoa(name, callback);
+}
+
+export function reverse(ip: string, callback: ReverseCallback) {
+  return getDefaultResolver().reverse(ip, callback);
+}
+
+export function resolve(
+  hostname: string,
+  rrtype: string,
+  callback: ResolveCallback,
+) {
+  return getDefaultResolver().resolve(hostname, rrtype, callback);
+}
+
 // ERROR CODES
 export const NODATA = "ENODATA";
 export const FORMERR = "EFORMERR";
@@ -268,11 +488,76 @@ export const LOADIPHLPAPI = "ELOADIPHLPAPI";
 export const ADDRGETNETWORKPARAMS = "EADDRGETNETWORKPARAMS";
 export const CANCELLED = "ECANCELLED";
 
-export { ADDRCONFIG, lookup, promises };
+export {
+  ADDRCONFIG,
+  ALL,
+  defaultResolverSetServers as setServers,
+  lookup,
+  promises,
+  setDefaultResultOrder,
+  V4MAPPED,
+};
+
+export type {
+  LookupAddress,
+  LookupAllOptions,
+  LookupOneOptions,
+  LookupOptions,
+  Resolve4Addresses,
+  Resolve4Callback,
+  Resolve6Addresses,
+  Resolve6Callback,
+  ResolveCaaAddress,
+  ResolveCaaAddresses,
+  ResolveCaaCallback,
+  ResolveCallback,
+  ResolveCnameAddresses,
+  ResolveCnameCallback,
+  ResolveHostnames,
+  ResolveMxAddress,
+  ResolveMxAddresses,
+  ResolveMxCallback,
+  ResolveNaptrAddress,
+  ResolveNaptrAddresses,
+  ResolveNaptrCallback,
+  ResolveNsAddresses,
+  ResolveNsCallback,
+  ResolvePtrAddresses,
+  ResolvePtrCallback,
+  ResolveRecords,
+  ResolveSoaAddress,
+  ResolveSoaCallback,
+  ResolveSrvCallback,
+  ResolveSrvRecord,
+  ResolveSrvRecords,
+  ResolveTtlAddress,
+  ResolveTxtCallback,
+  ResolveTxtRecords,
+  ReverseCallback,
+};
 
 export default {
   ADDRCONFIG,
+  ALL,
+  V4MAPPED,
   lookup,
+  getServers,
+  resolveAny,
+  resolve4,
+  resolve6,
+  resolveCaa,
+  resolveCname,
+  resolveMx,
+  resolveNs,
+  resolveTxt,
+  resolveSrv,
+  resolvePtr,
+  resolveNaptr,
+  resolveSoa,
+  resolve,
+  reverse,
+  setServers: defaultResolverSetServers,
+  setDefaultResultOrder,
   promises,
   NODATA,
   FORMERR,
