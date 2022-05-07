@@ -5,6 +5,8 @@ import {
   digestAlgorithms as wasmDigestAlgorithms,
 } from "../_wasm_crypto/mod.ts";
 
+import { fnv } from "./_fnv/index.ts";
+
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
  * safe to re-export.
@@ -33,11 +35,7 @@ const bufferSourceBytes = (data: BufferSource | unknown) => {
   if (data instanceof Uint8Array) {
     bytes = data;
   } else if (ArrayBuffer.isView(data)) {
-    bytes = new Uint8Array(
-      data.buffer,
-      data.byteOffset,
-      data.byteLength,
-    );
+    bytes = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
   } else if (data instanceof ArrayBuffer) {
     bytes = new Uint8Array(data);
   }
@@ -64,6 +62,10 @@ const stdCrypto = ((x) => x)({
     ): Promise<ArrayBuffer> {
       const { name, length } = normalizeAlgorithm(algorithm);
       const bytes = bufferSourceBytes(data);
+
+      if (FNVAlgorithms.includes(name)) {
+        return fnv(name, bytes);
+      }
 
       // We delegate to WebCrypto whenever possible,
       if (
@@ -107,7 +109,7 @@ const stdCrypto = ((x) => x)({
         // they're using.
         return webCrypto.subtle.digest(
           algorithm,
-          (data as unknown) as Uint8Array,
+          data as unknown as Uint8Array,
         );
       } else {
         throw new TypeError(`unsupported digest algorithm: ${algorithm}`);
@@ -125,6 +127,10 @@ const stdCrypto = ((x) => x)({
       algorithm = normalizeAlgorithm(algorithm);
 
       const bytes = bufferSourceBytes(data);
+
+      if (FNVAlgorithms.includes(algorithm.name)) {
+        return fnv(algorithm.name, bytes);
+      }
 
       if (bytes) {
         return wasmCrypto.digest(algorithm.name, bytes, algorithm.length)
@@ -148,6 +154,8 @@ const stdCrypto = ((x) => x)({
   },
 });
 
+const FNVAlgorithms = ["FNV32", "FNV32A", "FNV64", "FNV64A"];
+
 /** Digest algorithms supported by WebCrypto. */
 const webCryptoDigestAlgorithms = [
   "SHA-384",
@@ -158,16 +166,20 @@ const webCryptoDigestAlgorithms = [
 ] as const;
 
 type DigestAlgorithmName = WasmDigestAlgorithm;
+type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
 
 type DigestAlgorithmObject = {
   name: DigestAlgorithmName;
   length?: number;
 };
 
-type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
+type DigestAlgorithm =
+  | DigestAlgorithmName
+  | DigestAlgorithmObject
+  | FNVAlgorithms;
 
 const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
-  ((typeof algorithm === "string") ? { name: algorithm.toUpperCase() } : {
+  (typeof algorithm === "string" ? { name: algorithm.toUpperCase() } : {
     ...algorithm,
     name: algorithm.name.toUpperCase(),
   }) as DigestAlgorithmObject;
