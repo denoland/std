@@ -121,9 +121,9 @@ export class QueryReqWrap extends AsyncWrap {
   ttl!: boolean;
 
   callback!: ResolveCallback;
-  resolve!: (addresses: string[], ttls: number[]) => void;
+  resolve!: (addresses: string[], ttls?: number[]) => void;
   reject!: (err: ErrnoException | null) => void;
-  oncomplete!: (err: number, addresses: string[], ttls: number[]) => void;
+  oncomplete!: (err: number, addresses: string[], ttls?: number[]) => void;
 
   constructor() {
     super(providerType.QUERYWRAP);
@@ -173,8 +173,22 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
     notImplemented("ChannelWrap.queryCaa");
   }
 
-  queryCname(_req: QueryReqWrap, _name: string): number {
-    notImplemented("ChannelWrap.queryCname");
+  queryCname(req: QueryReqWrap, name: string): number {
+    (async () => {
+      let addresses: string[] = [];
+      let error = 0;
+
+      try {
+        addresses = await Deno.resolveDns(name, "CNAME");
+      } catch {
+        // TODO(cmorten): map errors to appropriate error codes.
+        error = codeMap.get("UNKNOWN")!;
+      }
+
+      req.oncomplete(error, addresses);
+    })();
+
+    return 0;
   }
 
   queryMx(_req: QueryReqWrap, _name: string): number {
