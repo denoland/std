@@ -126,7 +126,12 @@ export class QueryReqWrap extends AsyncWrap {
   ) => void;
   resolve!: (addresses: string[], ttls?: number[]) => void;
   reject!: (err: ErrnoException | null) => void;
-  oncomplete!: (err: number, addresses: string[], ttls?: number[]) => void;
+  oncomplete!: (
+    err: number,
+    // deno-lint-ignore no-explicit-any
+    addressAddressesOrRecords: any,
+    ttls?: number[],
+  ) => void;
 
   constructor() {
     super(providerType.QUERYWRAP);
@@ -160,33 +165,87 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
     this.#tries = tries;
   }
 
-  async #query(req: QueryReqWrap, query: string, recordType: Deno.RecordType) {
-    // deno-lint-ignore no-explicit-any
-    let addresses: any[] = [];
-    let error = 0;
+  async #query(query: string, recordType: Deno.RecordType) {
+    // TODO: TTL logic.
+
+    let ret: Awaited<ReturnType<typeof Deno.resolveDns>> = [];
+    let code = 0;
 
     try {
-      addresses = await Deno.resolveDns(query, recordType);
+      ret = await Deno.resolveDns(query, recordType);
     } catch {
       // TODO(cmorten): map errors to appropriate error codes.
-      error = codeMap.get("UNKNOWN")!;
+      code = codeMap.get("UNKNOWN")!;
     }
 
-    req.oncomplete(error, addresses);
+    return { code, ret };
   }
 
-  queryAny(_req: QueryReqWrap, _name: string): number {
-    notImplemented("ChannelWrap.queryAny");
+  queryAny(req: QueryReqWrap, name: string): number {
+    (async () => {
+      const records: { type: Deno.RecordType; [key: string]: unknown }[] = [];
+
+      await Promise.allSettled([
+        this.#query(name, "A").then(({ ret }) => {
+          ret.forEach((record) => records.push({ type: "A", address: record }));
+        }),
+        this.#query(name, "AAAA").then(({ ret }) => {
+          ret.forEach((record) =>
+            records.push({ type: "AAAA", address: record })
+          );
+        }),
+        this.#query(name, "CNAME").then(({ ret }) => {
+          ret.forEach((record) =>
+            records.push({ type: "CNAME", value: record })
+          );
+        }),
+        this.#query(name, "MX").then(({ ret }) => {
+          (ret as Deno.MXRecord[]).forEach(({ preference, exchange }) =>
+            records.push({ type: "MX", priority: preference, exchange })
+          );
+        }),
+        this.#query(name, "PTR").then(({ ret }) => {
+          ret.forEach((record) => records.push({ type: "PTR", value: record }));
+        }),
+        this.#query(name, "SRV").then(({ ret }) => {
+          (ret as Deno.SRVRecord[]).forEach(
+            ({ priority, weight, port, target }) =>
+              records.push({
+                type: "SRV",
+                priority,
+                weight,
+                port,
+                name: target,
+              }),
+          );
+        }),
+        this.#query(name, "TXT").then(({ ret }) => {
+          ret.forEach((record) =>
+            records.push({ type: "TXT", entries: record })
+          );
+        }),
+      ]);
+
+      const err = records.length ? 0 : codeMap.get("EAI_NODATA")!;
+
+      req.oncomplete(err, records);
+    })();
+
+    return 0;
   }
 
   queryA(req: QueryReqWrap, name: string): number {
-    this.#query(req, name, "A");
+    this.#query(name, "A").then(({ code, ret }) => {
+      req.oncomplete(code, ret);
+    });
 
     return 0;
   }
 
   queryAaaa(req: QueryReqWrap, name: string): number {
-    this.#query(req, name, "AAAA");
+    this.#query(name, "AAAA").then(({ code, ret }) => {
+      req.oncomplete(code, ret);
+    });
 
     return 0;
   }
@@ -196,40 +255,82 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
   }
 
   queryCname(req: QueryReqWrap, name: string): number {
-    this.#query(req, name, "CNAME");
+    this.#query(name, "CNAME").then(({ code, ret }) => {
+      req.oncomplete(code, ret);
+    });
 
     return 0;
   }
 
-  queryMx(_req: QueryReqWrap, _name: string): number {
-    notImplemented("ChannelWrap.queryMx");
+  queryMx(req: QueryReqWrap, name: string): number {
+    this.#query(name, "MX").then(({ code, ret }) => {
+      const records = (ret as Deno.MXRecord[]).map(
+        ({ preference, exchange }) => ({
+          priority: preference,
+          exchange,
+        }),
+      );
+
+      req.oncomplete(code, records);
+    });
+
+    return 0;
   }
 
   queryNs(_req: QueryReqWrap, _name: string): number {
+    // TODO:
+    // - https://github.com/denoland/deno/issues/14492
+    // - https://github.com/denoland/deno/pull/14372
     notImplemented("ChannelWrap.queryNs");
   }
 
-  queryTxt(_req: QueryReqWrap, _name: string): number {
-    notImplemented("ChannelWrap.queryTxt");
+  queryTxt(req: QueryReqWrap, name: string): number {
+    this.#query(name, "TXT").then(({ code, ret }) => {
+      req.oncomplete(code, ret);
+    });
+
+    return 0;
   }
 
-  querySrv(_req: QueryReqWrap, _name: string): number {
-    notImplemented("ChannelWrap.querySrv");
+  querySrv(req: QueryReqWrap, name: string): number {
+    this.#query(name, "SRV").then(({ code, ret }) => {
+      const records = (ret as Deno.SRVRecord[]).map(
+        ({ priority, weight, port, target }) => ({
+          priority,
+          weight,
+          port,
+          name: target,
+        }),
+      );
+
+      req.oncomplete(code, records);
+    });
+
+    return 0;
   }
 
-  queryPtr(_req: QueryReqWrap, _name: string): number {
-    notImplemented("ChannelWrap.queryPtr");
+  queryPtr(req: QueryReqWrap, name: string): number {
+    this.#query(name, "PTR").then(({ code, ret }) => {
+      req.oncomplete(code, ret);
+    });
+
+    return 0;
   }
 
   queryNaptr(_req: QueryReqWrap, _name: string): number {
+    // TODO: https://github.com/denoland/deno/issues/14492
     notImplemented("ChannelWrap.queryNaptr");
   }
 
   querySoa(_req: QueryReqWrap, _name: string): number {
+    // TODO:
+    // - https://github.com/denoland/deno/issues/14492
+    // - https://github.com/denoland/deno/pull/14374
     notImplemented("ChannelWrap.querySoa");
   }
 
   getHostByAddr(_req: QueryReqWrap, _name: string): number {
+    // TODO: https://github.com/denoland/deno/issues/14432
     notImplemented("ChannelWrap.getHostByAddr");
   }
 

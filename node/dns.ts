@@ -99,6 +99,7 @@ import {
   QueryReqWrap,
 } from "./internal_binding/cares_wrap.ts";
 import { toASCII } from "./internal/idna.ts";
+import { notImplemented } from "./_utils.ts";
 
 function onlookup(
   this: GetAddrInfoReqWrap,
@@ -329,7 +330,11 @@ function resolver(bindingName: keyof ChannelWrapQuery) {
     req.callback = callback as ResolveCallback;
     req.hostname = name;
     req.oncomplete = onresolve;
-    req.ttl = !!(options && options.ttl);
+
+    if (options && options.ttl) {
+      notImplemented("dns.resolve* ttl option");
+    }
+    // req.ttl = !!(options && options.ttl);
 
     const err = this._handle[bindingName](req, toASCII(name));
 
