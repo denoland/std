@@ -1337,6 +1337,27 @@ Deno.test("typesOfDottedArgsWithNestedUnionDefaults", function (): void {
   >(true);
 });
 
+Deno.test("typesOfArgsWithDottedDefaults", function (): void {
+  const argv = parse(["--foo"], {
+    string: ["foo"],
+    default: {
+      "foo.bar": 1,
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: string | {
+          bar: number;
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
 /** ----------------------- OTHER TYPE TESTS ------------------------ */
 
 Deno.test("typesOfDoubleDashOption", function (): void {
