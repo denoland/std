@@ -73,15 +73,20 @@ type Defaults<
 
 type TypeValues<T extends ArgType, V> = UnionToIntersection<MapTypes<T, V>>;
 
-type MapTypes<T extends ArgType, V> = undefined extends T ? Record<never, never>
-  : T extends false ? Record<never, never>
-  : T extends true ? Partial<Record<string, V>>
-  : string extends T ? Partial<Record<string, V>>
-  : T extends `${infer Name}.${infer Rest}` ? {
-    [K in Name]?: MapTypes<Rest, V>;
-  }
-  : T extends string ? Partial<Record<T, V>>
-  : Record<never, never>;
+type MaybeRequired<T, R> = true extends R ? Required<T> : T;
+
+type MapTypes<T extends ArgType, V> = MaybeRequired<
+  undefined extends T ? Record<never, never>
+    : T extends false ? Record<never, never>
+    : T extends true ? Partial<Record<string, V>>
+    : string extends T ? Partial<Record<string, V>>
+    : T extends `${infer Name}.${infer Rest}` ? {
+      [K in Name]?: MapTypes<Rest, V>;
+    }
+    : T extends string ? Partial<Record<T, V>>
+    : Record<never, never>,
+  V extends boolean ? true : false
+>;
 
 type MapDefaults<T extends ArgType> = T extends string
   ? Partial<Record<T, unknown>>
