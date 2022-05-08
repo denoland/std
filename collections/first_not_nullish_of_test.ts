@@ -9,7 +9,7 @@ function firstNotNullishOfTest<T, O>(
   message?: string,
 ) {
   const actual = firstNotNullishOf(...input);
-  assertEquals(actual, expected, message);
+  assertEquals<unknown>(actual, expected, message);
 }
 
 Deno.test({

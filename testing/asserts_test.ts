@@ -296,7 +296,7 @@ Deno.test("testingEqualCircular", () => {
 Deno.test("testingNotEquals", function (): void {
   const a = { foo: "bar" };
   const b = { bar: "foo" };
-  assertNotEquals(a, b);
+  assertNotEquals<unknown>(a, b);
   assertNotEquals("Denosaurus", "Tyrannosaurus");
   assertNotEquals(
     new Date(2019, 0, 3, 4, 20, 1, 10),
@@ -889,7 +889,7 @@ Deno.test({
   name: "failed with number vs string",
   fn(): void {
     assertThrows(
-      (): void => assertEquals(1, "1"),
+      (): void => assertEquals<unknown>(1, "1"),
       AssertionError,
       [
         "Values are not equal:",
@@ -1052,7 +1052,7 @@ Deno.test({
     assertNotStrictEquals(true, false);
     assertNotStrictEquals(10, 11);
     assertNotStrictEquals("abc", "xyz");
-    assertNotStrictEquals(1, "1");
+    assertNotStrictEquals<unknown>(1, "1");
 
     const xs = [1, false, "foo"];
     const ys = [1, true, "bar"];

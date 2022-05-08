@@ -95,7 +95,7 @@ Deno.test("deepMerge: prevent calling Object.prototype.__proto__ accessor proper
     configurable: true,
   });
   try {
-    assertEquals(
+    assertEquals<unknown>(
       deepMerge({
         foo: true,
       }, {

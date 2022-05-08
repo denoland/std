@@ -397,7 +397,7 @@ Deno.test("untarLinuxGeneratedTar", async function () {
     const content = expected.content;
     delete expected.content;
 
-    assertEquals({ ...entry }, expected);
+    assertEquals<unknown>({ ...entry }, expected);
 
     if (content) {
       assertEquals(content, await readAll(entry));

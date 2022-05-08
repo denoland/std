@@ -5,14 +5,14 @@ import { assertEquals } from "../testing/asserts.ts";
 Deno.test({
   name: "empty",
   fn(): void {
-    assertEquals(diff([], []), []);
+    assertEquals<unknown>(diff([], []), []);
   },
 });
 
 Deno.test({
   name: '"a" vs "b"',
   fn(): void {
-    assertEquals(diff(["a"], ["b"]), [
+    assertEquals<unknown>(diff(["a"], ["b"]), [
       { type: "removed", value: "a" },
       { type: "added", value: "b" },
     ]);
@@ -22,28 +22,28 @@ Deno.test({
 Deno.test({
   name: '"a" vs "a"',
   fn(): void {
-    assertEquals(diff(["a"], ["a"]), [{ type: "common", value: "a" }]);
+    assertEquals<unknown>(diff(["a"], ["a"]), [{ type: "common", value: "a" }]);
   },
 });
 
 Deno.test({
   name: '"a" vs ""',
   fn(): void {
-    assertEquals(diff(["a"], []), [{ type: "removed", value: "a" }]);
+    assertEquals<unknown>(diff(["a"], []), [{ type: "removed", value: "a" }]);
   },
 });
 
 Deno.test({
   name: '"" vs "a"',
   fn(): void {
-    assertEquals(diff([], ["a"]), [{ type: "added", value: "a" }]);
+    assertEquals<unknown>(diff([], ["a"]), [{ type: "added", value: "a" }]);
   },
 });
 
 Deno.test({
   name: '"a" vs "a, b"',
   fn(): void {
-    assertEquals(diff(["a"], ["a", "b"]), [
+    assertEquals<unknown>(diff(["a"], ["a", "b"]), [
       { type: "common", value: "a" },
       { type: "added", value: "b" },
     ]);
@@ -53,7 +53,7 @@ Deno.test({
 Deno.test({
   name: '"strength" vs "string"',
   fn(): void {
-    assertEquals(diff(Array.from("strength"), Array.from("string")), [
+    assertEquals<unknown>(diff(Array.from("strength"), Array.from("string")), [
       { type: "common", value: "s" },
       { type: "common", value: "t" },
       { type: "common", value: "r" },
@@ -70,7 +70,7 @@ Deno.test({
 Deno.test({
   name: '"strength" vs ""',
   fn(): void {
-    assertEquals(diff(Array.from("strength"), Array.from("")), [
+    assertEquals<unknown>(diff(Array.from("strength"), Array.from("")), [
       { type: "removed", value: "s" },
       { type: "removed", value: "t" },
       { type: "removed", value: "r" },
@@ -86,7 +86,7 @@ Deno.test({
 Deno.test({
   name: '"" vs "strength"',
   fn(): void {
-    assertEquals(diff(Array.from(""), Array.from("strength")), [
+    assertEquals<unknown>(diff(Array.from(""), Array.from("strength")), [
       { type: "added", value: "s" },
       { type: "added", value: "t" },
       { type: "added", value: "r" },
@@ -102,7 +102,7 @@ Deno.test({
 Deno.test({
   name: '"abc", "c" vs "abc", "bcd", "c"',
   fn(): void {
-    assertEquals(diff(["abc", "c"], ["abc", "bcd", "c"]), [
+    assertEquals<unknown>(diff(["abc", "c"], ["abc", "bcd", "c"]), [
       { type: "common", value: "abc" },
       { type: "added", value: "bcd" },
       { type: "common", value: "c" },
@@ -117,7 +117,7 @@ Deno.test({
       [..."abcd"].join("\n"),
       [..."abxde"].join("\n"),
     );
-    assertEquals(diffResult, [
+    assertEquals<unknown>(diffResult, [
       { type: "common", value: "a\\n\n" },
       { type: "common", value: "b\\n\n" },
       {
@@ -167,7 +167,7 @@ Deno.test({
   name: `"3.14" vs "2.71" (diffstr)`,
   fn(): void {
     const diffResult = diffstr("3.14", "2.71");
-    assertEquals(diffResult, [
+    assertEquals<unknown>(diffResult, [
       {
         type: "removed",
         value: "3.14\n",
@@ -220,7 +220,7 @@ Deno.test({
   name: `single line "a b" vs "c d" (diffstr)`,
   fn(): void {
     const diffResult = diffstr("a b", "c d");
-    assertEquals(diffResult, [
+    assertEquals<unknown>(diffResult, [
       {
         type: "removed",
         value: "a b\n",
@@ -248,7 +248,7 @@ Deno.test({
   name: `"\\b\\f\\r\\t\\v\\n" vs "\\r\\n" (diffstr)`,
   fn(): void {
     const diffResult = diffstr("\b\f\r\t\v\n", "\r\n");
-    assertEquals(diffResult, [
+    assertEquals<unknown>(diffResult, [
       {
         type: "removed",
         value: "\\b\\f\\r\\t\\v\\n\n",
