@@ -783,8 +783,13 @@ function main(): void {
       v: "verbose",
     },
   });
+  assert(typeof serverArgs.port === "string");
+  assert(typeof serverArgs.host === "string");
+  assert(typeof serverArgs.cert === "string");
+  assert(typeof serverArgs.key === "string");
+
   const port = Number(serverArgs.port);
-  const host = serverArgs.host === false ? undefined : serverArgs.host;
+  const host = serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
 
@@ -794,7 +799,7 @@ function main(): void {
   }
 
   if (keyFile || certFile) {
-    if (!keyFile || !certFile) {
+    if (keyFile === "" || certFile === "") {
       console.log("--key and --cert are required for TLS");
       printUsage();
       Deno.exit(1);
@@ -807,10 +812,10 @@ function main(): void {
   const handler = (req: Request): Promise<Response> => {
     return serveDir(req, {
       fsRoot: target,
-      showDirListing: serverArgs["dir-listing"],
-      showDotfiles: serverArgs.dotfiles,
-      enableCors: serverArgs.cors,
-      quiet: !serverArgs.verbose,
+      showDirListing: serverArgs["dir-listing"] === true,
+      showDotfiles: serverArgs.dotfiles === true,
+      enableCors: serverArgs.cors === true,
+      quiet: serverArgs.verbose === false,
     });
   };
 

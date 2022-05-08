@@ -29,13 +29,16 @@ type Values<
 > = undefined extends ((false extends B ? undefined : B) & S) ? // deno-lint-ignore no-explicit-any
 Record<string, any>
   : (true extends B ? 
-    & Partial<Record<string, boolean>>
-    & SpreadValues<TypeValues<S, string | false>, DedotRecord<D>>
+    & Partial<Record<string, boolean | Array<boolean>>>
+    & SpreadValues<
+      TypeValues<S, string | false | Array<string | false>>,
+      DedotRecord<D>
+    >
     : 
       & Record<string, unknown>
       & SpreadValues<
-        & TypeValues<S, string | false>
-        & RecursiveRequired<TypeValues<B, boolean>>,
+        & TypeValues<S, string | false | Array<string | false>>
+        & RecursiveRequired<TypeValues<B, boolean | Array<boolean>>>,
         DedotRecord<D>
       >);
 
@@ -71,10 +74,10 @@ type Defaults<
 
 type TypeValues<T extends ArgType, V> = UnionToIntersection<MapTypes<T, V>>;
 
-type RecursiveRequired<T> = {
-  [K in keyof T]-?: T extends Record<string, unknown> ? RecursiveRequired<T[K]>
-    : T;
-};
+type RecursiveRequired<T> = T extends Record<string, unknown> ? {
+  [K in keyof T]-?: RecursiveRequired<T[K]>;
+}
+  : T;
 
 type MapTypes<T extends ArgType, V> = undefined extends T ? Record<never, never>
   : T extends false ? Record<never, never>
