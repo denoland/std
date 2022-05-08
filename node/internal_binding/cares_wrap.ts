@@ -187,6 +187,11 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
   }
 
   queryAny(req: QueryReqWrap, name: string): number {
+    // TODO: implemented temporary measure to allow limited usage of
+    // `resolveAny` like APIs.
+    //
+    // Ideally we move to using the "ANY" / "*" DNS query in future
+    // REF: https://github.com/denoland/deno/issues/14492
     (async () => {
       const records: { type: Deno.RecordType; [key: string]: unknown }[] = [];
 
@@ -221,7 +226,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
                 weight,
                 port,
                 name: target,
-              }),
+              })
           );
         }),
         this.#query(name, "TXT").then(({ ret }) => {
