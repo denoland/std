@@ -324,7 +324,7 @@ function resolver(bindingName: keyof ChannelWrapQuery) {
     req.oncomplete = onresolve;
 
     if (options && (options as ResolveOptions).ttl) {
-      notImplemented("dns.resolve* ttl option");
+      notImplemented("dns.resolve* with ttl option");
     }
 
     req.ttl = !!(options && (options as ResolveOptions).ttl);

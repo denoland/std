@@ -261,7 +261,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
   }
 
   queryCaa(_req: QueryReqWrap, _name: string): number {
-    notImplemented("ChannelWrap.queryCaa");
+    notImplemented("cares.ChannelWrap.prototype.queryCaa");
   }
 
   queryCname(req: QueryReqWrap, name: string): number {
@@ -291,7 +291,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
     // TODO:
     // - https://github.com/denoland/deno/issues/14492
     // - https://github.com/denoland/deno/pull/14372
-    notImplemented("ChannelWrap.queryNs");
+    notImplemented("cares.ChannelWrap.prototype.queryNs");
   }
 
   queryTxt(req: QueryReqWrap, name: string): number {
@@ -329,35 +329,35 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
   queryNaptr(_req: QueryReqWrap, _name: string): number {
     // TODO: https://github.com/denoland/deno/issues/14492
-    notImplemented("ChannelWrap.queryNaptr");
+    notImplemented("cares.ChannelWrap.prototype.queryNaptr");
   }
 
   querySoa(_req: QueryReqWrap, _name: string): number {
     // TODO:
     // - https://github.com/denoland/deno/issues/14492
     // - https://github.com/denoland/deno/pull/14374
-    notImplemented("ChannelWrap.querySoa");
+    notImplemented("cares.ChannelWrap.prototype.querySoa");
   }
 
   getHostByAddr(_req: QueryReqWrap, _name: string): number {
     // TODO: https://github.com/denoland/deno/issues/14432
-    notImplemented("ChannelWrap.getHostByAddr");
+    notImplemented("cares.ChannelWrap.prototype.getHostByAddr");
   }
 
   getServers(): [string, number][] {
-    notImplemented("ChannelWrap.getServers");
+    notImplemented("cares.ChannelWrap.prototype.getServers");
   }
 
   setServers(_servers: string | [number, string, number][]): number {
-    notImplemented("ChannelWrap.setServers");
+    notImplemented("cares.ChannelWrap.prototype.setServers");
   }
 
   setLocalAddress(_addr0: string, _addr1?: string): void {
-    notImplemented("ChannelWrap.setLocalAddress");
+    notImplemented("cares.ChannelWrap.prototype.setLocalAddress");
   }
 
   cancel() {
-    notImplemented("ChannelWrap.cancel");
+    notImplemented("cares.ChannelWrap.prototype.cancel");
   }
 }
 
