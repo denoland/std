@@ -56,7 +56,7 @@ TEST(async function test_resolve4(done) {
     }
   }
 
-  // validateResult(await dnsPromises.resolve4(addresses.INET4_HOST));
+  validateResult(await dnsPromises.resolve4(addresses.INET4_HOST));
 
   const req = dns.resolve4(
     addresses.INET4_HOST,

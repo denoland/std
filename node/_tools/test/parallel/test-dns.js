@@ -36,7 +36,7 @@ const assert = require('assert');
 
 const dns = require('dns');
 const dnsPromises = dns.promises;
-const dgram = require('dgram');
+// const dgram = require('dgram');
 
 // const existing = dns.getServers();
 // assert(existing.length > 0);
@@ -159,21 +159,21 @@ const dgram = require('dgram');
   assert.throws(() => {
     dns.resolve('example.com', [], common.mustNotCall());
   }, errObj);
-  // assert.throws(() => {
-  //   dnsPromises.resolve('example.com', []);
-  // }, errObj);
+  assert.throws(() => {
+    dnsPromises.resolve('example.com', []);
+  }, errObj);
 }
-// {
-//   const errObj = {
-//     code: 'ERR_INVALID_ARG_TYPE',
-//     name: 'TypeError',
-//     message: 'The "name" argument must be of type string. ' +
-//              'Received undefined'
-//   };
-//   assert.throws(() => {
-//     dnsPromises.resolve();
-//   }, errObj);
-// }
+{
+  const errObj = {
+    code: 'ERR_INVALID_ARG_TYPE',
+    name: 'TypeError',
+    message: 'The "name" argument must be of type string. ' +
+             'Received undefined'
+  };
+  assert.throws(() => {
+    dnsPromises.resolve();
+  }, errObj);
+}
 
 // dns.lookup should accept only falsey and string values
 {

@@ -67,13 +67,13 @@ dns.resolve4(fixture.hostname, mustCall((err, addresses) => {
   assert.deepStrictEqual(addresses, [fixture.expectedAddress]);
 }));
 
-// const p = new dns.promises.Resolver().resolve4(fixture.hostname);
-// p.then((addresses) => {
-//   assert.deepStrictEqual(addresses, [fixture.expectedAddress]);
-// }, (err) => {
-//   if (err && err.errno === 'ESERVFAIL') {
-//     assert.ok(err.message.includes('queryA ESERVFAIL straße.de'));
-//   } else {
-//     throw err;
-//   }
-// }).finally(mustCall());
+const p = new dns.promises.Resolver().resolve4(fixture.hostname);
+p.then((addresses) => {
+  assert.deepStrictEqual(addresses, [fixture.expectedAddress]);
+}, (err) => {
+  if (err && err.errno === 'ESERVFAIL') {
+    assert.ok(err.message.includes('queryA ESERVFAIL straße.de'));
+  } else {
+    throw err;
+  }
+}).finally(mustCall());

@@ -122,14 +122,15 @@ export class QueryReqWrap extends AsyncWrap {
   callback!: (
     err: ErrnoException | null,
     // deno-lint-ignore no-explicit-any
-    addressAddressesOrRecords?: any,
+    records?: any,
   ) => void;
-  resolve!: (addresses: string[], ttls?: number[]) => void;
+  // deno-lint-ignore no-explicit-any
+  resolve!: (records: any) => void;
   reject!: (err: ErrnoException | null) => void;
   oncomplete!: (
     err: number,
     // deno-lint-ignore no-explicit-any
-    addressAddressesOrRecords: any,
+    records: any,
     ttls?: number[],
   ) => void;
 

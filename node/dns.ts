@@ -37,50 +37,41 @@ import {
   isFamily,
   isLookupCallback,
   isLookupOptions,
-  isResolverOptions,
-  Resolver as ResolverBase,
+  isResolveCallback,
+  Resolver as CallbackResolver,
   setDefaultResolver,
   setDefaultResultOrder,
   validateHints,
 } from "./internal/dns/utils.ts";
 import type {
+  AnyAaaaRecord,
+  AnyARecord,
+  AnyCnameRecord,
+  AnyMxRecord,
+  AnyNaptrRecord,
+  AnyNsRecord,
+  AnyPtrRecord,
+  AnyRecord,
+  AnySoaRecord,
+  AnySrvRecord,
+  AnyTxtRecord,
+  CaaRecord,
   LookupAddress,
   LookupAllOptions,
   LookupOneOptions,
   LookupOptions,
-  Resolve4Addresses,
-  Resolve4Callback,
-  Resolve6Addresses,
-  Resolve6Callback,
-  ResolveCaaAddress,
-  ResolveCaaAddresses,
-  ResolveCaaCallback,
+  MxRecord,
+  NaptrRecord,
+  Records,
+  RecordWithTtl,
   ResolveCallback,
-  ResolveCnameAddresses,
-  ResolveCnameCallback,
-  ResolveHostnames,
-  ResolveMxAddress,
-  ResolveMxAddresses,
-  ResolveMxCallback,
-  ResolveNaptrAddress,
-  ResolveNaptrAddresses,
-  ResolveNaptrCallback,
-  ResolveNsAddresses,
-  ResolveNsCallback,
-  ResolvePtrAddresses,
-  ResolvePtrCallback,
-  ResolveRecords,
-  ResolveSoaAddress,
-  ResolveSoaCallback,
-  ResolveSrvCallback,
-  ResolveSrvRecord,
-  ResolveSrvRecords,
-  ResolveTtlAddress,
-  ResolveTxtCallback,
-  ResolveTxtRecords,
-  ReverseCallback,
+  ResolveOptions,
+  ResolverOptions,
+  ResolveWithTtlOptions,
+  SoaRecord,
+  SrvRecord,
 } from "./internal/dns/utils.ts";
-import promises from "./internal/dns/promises.ts";
+import promisesBase from "./internal/dns/promises.ts";
 import type { ErrnoException } from "./internal/errors.ts";
 import {
   dnsException,
@@ -146,7 +137,7 @@ const validFamilies = [0, 4, 6];
 
 // Easy DNS A/AAAA look up
 // lookup(hostname, [options,] callback)
-function lookup(
+export function lookup(
   hostname: string,
   family: number,
   callback: (
@@ -155,7 +146,7 @@ function lookup(
     family: number,
   ) => void,
 ): GetAddrInfoReqWrap | Record<string, never>;
-function lookup(
+export function lookup(
   hostname: string,
   options: LookupOneOptions,
   callback: (
@@ -164,12 +155,12 @@ function lookup(
     family: number,
   ) => void,
 ): GetAddrInfoReqWrap | Record<string, never>;
-function lookup(
+export function lookup(
   hostname: string,
   options: LookupAllOptions,
   callback: (err: ErrnoException | null, addresses: LookupAddress[]) => void,
 ): GetAddrInfoReqWrap | Record<string, never>;
-function lookup(
+export function lookup(
   hostname: string,
   options: LookupOptions,
   callback: (
@@ -178,7 +169,7 @@ function lookup(
     family: number,
   ) => void,
 ): GetAddrInfoReqWrap | Record<string, never>;
-function lookup(
+export function lookup(
   hostname: string,
   callback: (
     err: ErrnoException | null,
@@ -186,7 +177,7 @@ function lookup(
     family: number,
   ) => void,
 ): GetAddrInfoReqWrap | Record<string, never>;
-function lookup(
+export function lookup(
   hostname: string,
   options: unknown,
   callback?: unknown,
@@ -292,34 +283,35 @@ Object.defineProperty(lookup, customPromisifyArgs, {
 function onresolve(
   this: QueryReqWrap,
   err: number,
-  addresses: string[],
+  records: Records,
   ttls?: number[],
-) {
-  const parsedAddresses = ttls && this.ttl
-    ? addresses.map((address: string, index: number) => ({
+): void {
+  if (err) {
+    this.callback(dnsException(err, this.bindingName, this.hostname));
+
+    return;
+  }
+
+  const parsedRecords = ttls && this.ttl
+    ? (records as string[]).map((address: string, index: number) => ({
       address,
       ttl: ttls[index],
     }))
-    : addresses;
+    : records;
 
-  if (err) {
-    this.callback(dnsException(err, this.bindingName, this.hostname));
-  } else {
-    this.callback(null, parsedAddresses);
-  }
+  this.callback(null, parsedRecords);
 }
 
 function resolver(bindingName: keyof ChannelWrapQuery) {
   function query(
     this: Resolver,
     name: string,
-    /** options */ callback: unknown,
-  ) {
-    let options;
-
-    if (isResolverOptions(callback)) {
-      options = callback;
-      callback = arguments[2];
+    options: unknown,
+    callback?: unknown,
+  ): QueryReqWrap {
+    if (isResolveCallback(options)) {
+      callback = options;
+      options = {};
     }
 
     validateString(name, "name");
@@ -331,10 +323,11 @@ function resolver(bindingName: keyof ChannelWrapQuery) {
     req.hostname = name;
     req.oncomplete = onresolve;
 
-    if (options && options.ttl) {
+    if (options && (options as ResolveOptions).ttl) {
       notImplemented("dns.resolve* ttl option");
     }
-    // req.ttl = !!(options && options.ttl);
+
+    req.ttl = !!(options && (options as ResolveOptions).ttl);
 
     const err = this._handle[bindingName](req, toASCII(name));
 
@@ -352,30 +345,37 @@ function resolver(bindingName: keyof ChannelWrapQuery) {
 
 const resolveMap = Object.create(null);
 
-class Resolver extends ResolverBase {
-  override resolveAny = (resolveMap.ANY = resolver("queryAny"));
-  override resolve4 = (resolveMap.A = resolver("queryA"));
-  override resolve6 = (resolveMap.AAAA = resolver("queryAaaa"));
-  override resolveCaa = (resolveMap.CAA = resolver("queryCaa"));
-  override resolveCname = (resolveMap.CNAME = resolver("queryCname"));
-  override resolveMx = (resolveMap.MX = resolver("queryMx"));
-  override resolveNs = (resolveMap.NS = resolver("queryNs"));
-  override resolveTxt = (resolveMap.TXT = resolver("queryTxt"));
-  override resolveSrv = (resolveMap.SRV = resolver("querySrv"));
-  override resolvePtr = (resolveMap.PTR = resolver("queryPtr"));
-  override resolveNaptr = (resolveMap.NAPTR = resolver("queryNaptr"));
-  override resolveSoa = (resolveMap.SOA = resolver("querySoa"));
-  override reverse = resolver("getHostByAddr");
-  override resolve = _resolve;
+export class Resolver extends CallbackResolver {
+  // deno-lint-ignore no-explicit-any
+  [resolveMethod: string]: any
 }
+
+Resolver.prototype.resolveAny = resolveMap.ANY = resolver("queryAny");
+Resolver.prototype.resolve4 = resolveMap.A = resolver("queryA");
+Resolver.prototype.resolve6 = resolveMap.AAAA = resolver("queryAaaa");
+Resolver.prototype.resolveCaa = resolveMap.CAA = resolver("queryCaa");
+Resolver.prototype.resolveCname = resolveMap.CNAME = resolver("queryCname");
+Resolver.prototype.resolveMx = resolveMap.MX = resolver("queryMx");
+Resolver.prototype.resolveNs = resolveMap.NS = resolver("queryNs");
+Resolver.prototype.resolveTxt = resolveMap.TXT = resolver("queryTxt");
+Resolver.prototype.resolveSrv = resolveMap.SRV = resolver("querySrv");
+Resolver.prototype.resolvePtr = resolveMap.PTR = resolver("queryPtr");
+Resolver.prototype.resolveNaptr = resolveMap.NAPTR = resolver("queryNaptr");
+Resolver.prototype.resolveSoa = resolveMap.SOA = resolver("querySoa");
+Resolver.prototype.reverse = resolver("getHostByAddr");
+Resolver.prototype.resolve = _resolve;
 
 function _resolve(
   this: Resolver,
   hostname: string,
-  rrtype: string,
-  callback: ResolveCallback,
-) {
-  let resolver;
+  rrtype: unknown,
+  callback?: unknown,
+): QueryReqWrap {
+  let resolver: Resolver;
+
+  if (typeof hostname !== "string") {
+    throw new ERR_INVALID_ARG_TYPE("name", "string", hostname);
+  }
 
   if (typeof rrtype === "string") {
     resolver = resolveMap[rrtype];
@@ -393,82 +393,480 @@ function _resolve(
   throw new ERR_INVALID_ARG_VALUE("rrtype", rrtype);
 }
 
-function defaultResolverSetServers(servers: string[]) {
+/**
+ * Sets the IP address and port of servers to be used when performing DNS
+ * resolution. The `servers` argument is an array of [RFC 5952](https://tools.ietf.org/html/rfc5952#section-6) formatted
+ * addresses. If the port is the IANA default DNS port (53) it can be omitted.
+ *
+ * ```js
+ * dns.setServers([
+ *   '4.4.4.4',
+ *   '[2001:4860:4860::8888]',
+ *   '4.4.4.4:1053',
+ *   '[2001:4860:4860::8888]:1053',
+ * ]);
+ * ```
+ *
+ * An error will be thrown if an invalid address is provided.
+ *
+ * The `dns.setServers()` method must not be called while a DNS query is in
+ * progress.
+ *
+ * The `setServers` method affects only `resolve`,`dns.resolve*()` and `reverse` (and specifically _not_ `lookup`).
+ *
+ * This method works much like [resolve.conf](https://man7.org/linux/man-pages/man5/resolv.conf.5.html).
+ * That is, if attempting to resolve with the first server provided results in a
+ * `NOTFOUND` error, the `resolve()` method will _not_ attempt to resolve with
+ * subsequent servers provided. Fallback DNS servers will only be used if the
+ * earlier ones time out or result in some other error.
+ *
+ * @param servers array of `RFC 5952` formatted addresses
+ */
+export function setServers(servers: ReadonlyArray<string>): void {
   const resolver = new Resolver();
 
   resolver.setServers(servers);
   setDefaultResolver(resolver);
 }
 
-// Longhand equivalents of `bindDefaultResolver` which binds the default
-// resolver methods to the `module.exports` in Node implementation.
+// The Node implementation uses `bindDefaultResolver` to set the follow methods
+// on `module.exports` bound to the current `defaultResolver`. We don't have
+// the same ability in ESM but can simulate this (at some cost) by explicitly
+// exporting these methods which dynamically bind to the default resolver when
+// called.
 
-export function getServers() {
-  return getDefaultResolver().getServers();
+/**
+ * Returns an array of IP address strings, formatted according to [RFC 5952](https://tools.ietf.org/html/rfc5952#section-6),
+ * that are currently configured for DNS resolution. A string will include a port
+ * section if a custom port is used.
+ *
+ * ```js
+ * [
+ *   '4.4.4.4',
+ *   '2001:4860:4860::8888',
+ *   '4.4.4.4:1053',
+ *   '[2001:4860:4860::8888]:1053',
+ * ]
+ * ```
+ */
+export function getServers(): string[] {
+  return Resolver.prototype.getServers.bind(getDefaultResolver())();
 }
 
-export function resolveAny(name: string, callback: ResolveCallback) {
-  return getDefaultResolver().resolveAny(name, callback);
+/**
+ * Uses the DNS protocol to resolve all records (also known as `ANY` or `*` query).
+ * The `ret` argument passed to the `callback` function will be an array containing
+ * various types of records. Each object has a property `type` that indicates the
+ * type of the current record. And depending on the `type`, additional properties
+ * will be present on the object.
+ *
+ * Here is an example of the `ret` object passed to the callback:
+ *
+ * ```js
+ * [ { type: 'A', address: '127.0.0.1', ttl: 299 },
+ *   { type: 'CNAME', value: 'example.com' },
+ *   { type: 'MX', exchange: 'alt4.aspmx.l.example.com', priority: 50 },
+ *   { type: 'NS', value: 'ns1.example.com' },
+ *   { type: 'TXT', entries: [ 'v=spf1 include:_spf.example.com ~all' ] },
+ *   { type: 'SOA',
+ *     nsname: 'ns1.example.com',
+ *     hostmaster: 'admin.example.com',
+ *     serial: 156696742,
+ *     refresh: 900,
+ *     retry: 900,
+ *     expire: 1800,
+ *     minttl: 60 } ]
+ * ```
+ *
+ * DNS server operators may choose not to respond to `ANY` queries. It may be
+ * better to call individual methods like `resolve4`, `resolveMx`, and so on.
+ * For more details, see [RFC 8482](https://tools.ietf.org/html/rfc8482).
+ */
+export function resolveAny(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: AnyRecord[]) => void,
+): QueryReqWrap {
+  return Resolver.prototype.resolveAny.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    callback,
+  );
 }
 
-export function resolve4(name: string, callback: Resolve4Callback) {
-  return getDefaultResolver().resolve4(name, callback);
+/**
+ * Uses the DNS protocol to resolve a IPv4 addresses (`A` records) for the
+ * `hostname`. The `addresses` argument passed to the `callback` function will
+ * contain an array of IPv4 addresses (e.g. `['74.125.79.104', '74.125.79.105','74.125.79.106']`).
+ *
+ * @param hostname Host name to resolve.
+ */
+export function resolve4(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): void;
+export function resolve4(
+  hostname: string,
+  options: ResolveWithTtlOptions,
+  callback: (err: ErrnoException | null, addresses: RecordWithTtl[]) => void,
+): void;
+export function resolve4(
+  hostname: string,
+  options: ResolveOptions,
+  callback: (
+    err: ErrnoException | null,
+    addresses: string[] | RecordWithTtl[],
+  ) => void,
+): void;
+export function resolve4(
+  hostname: string,
+  options: unknown,
+  callback?: unknown,
+) {
+  return Resolver.prototype.resolve4.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    options,
+    callback,
+  );
 }
 
-export function resolve6(name: string, callback: Resolve6Callback) {
-  return getDefaultResolver().resolve6(name, callback);
+/**
+ * Uses the DNS protocol to resolve a IPv6 addresses (`AAAA` records) for the
+ * `hostname`. The `addresses` argument passed to the `callback` function
+ * will contain an array of IPv6 addresses.
+ *
+ * @param hostname Host name to resolve.
+ */
+export function resolve6(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): void;
+export function resolve6(
+  hostname: string,
+  options: ResolveWithTtlOptions,
+  callback: (err: ErrnoException | null, addresses: RecordWithTtl[]) => void,
+): void;
+export function resolve6(
+  hostname: string,
+  options: ResolveOptions,
+  callback: (
+    err: ErrnoException | null,
+    addresses: string[] | RecordWithTtl[],
+  ) => void,
+): void;
+export function resolve6(
+  hostname: string,
+  options: unknown,
+  callback?: unknown,
+) {
+  return Resolver.prototype.resolve6.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    options,
+    callback,
+  );
 }
 
-export function resolveCaa(name: string, callback: ResolveCaaCallback) {
-  return getDefaultResolver().resolveCaa(name, callback);
+/**
+ * Uses the DNS protocol to resolve `CAA` records for the `hostname`. The
+ * `addresses` argument passed to the `callback` function will contain an array
+ * of certification authority authorization records available for the
+ * `hostname` (e.g. `[{critical: 0, iodef: 'mailto:pki@example.com'}, {critical: 128, issue: 'pki.example.com'}]`).
+ */
+export function resolveCaa(
+  hostname: string,
+  callback: (err: ErrnoException | null, records: CaaRecord[]) => void,
+): QueryReqWrap {
+  return Resolver.prototype.resolveCaa.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    callback,
+  );
 }
 
-export function resolveCname(name: string, callback: ResolveCnameCallback) {
-  return getDefaultResolver().resolveCname(name, callback);
+/**
+ * Uses the DNS protocol to resolve `CNAME` records for the `hostname`. The
+ * `addresses` argument passed to the `callback` function will contain an array
+ * of canonical name records available for the `hostname`(e.g. `['bar.example.com']`).
+ */
+export function resolveCname(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): QueryReqWrap {
+  return Resolver.prototype.resolveCname.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    callback,
+  );
 }
 
-export function resolveMx(name: string, callback: ResolveMxCallback) {
-  return getDefaultResolver().resolveMx(name, callback);
+/**
+ * Uses the DNS protocol to resolve mail exchange records (`MX` records) for the
+ * `hostname`. The `addresses` argument passed to the `callback` function will
+ * contain an array of objects containing both a `priority` and `exchange`
+ * property (e.g. `[{priority: 10, exchange: 'mx.example.com'}, ...]`).
+ */
+export function resolveMx(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: MxRecord[]) => void,
+): QueryReqWrap {
+  return Resolver.prototype.resolveMx.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    callback,
+  );
 }
 
-export function resolveNs(name: string, callback: ResolveNsCallback) {
-  return getDefaultResolver().resolveNs(name, callback);
+/**
+ * Uses the DNS protocol to resolve name server records (`NS` records) for the
+ * `hostname`. The `addresses` argument passed to the `callback` function will
+ * contain an array of name server records available for `hostname`
+ * (e.g. `['ns1.example.com', 'ns2.example.com']`).
+ */
+export function resolveNs(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): QueryReqWrap {
+  return Resolver.prototype.resolveNs.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    callback,
+  );
 }
 
-export function resolveTxt(name: string, callback: ResolveTxtCallback) {
-  return getDefaultResolver().resolveTxt(name, callback);
+/**
+ * Uses the DNS protocol to resolve text queries (`TXT` records) for the
+ * `hostname`. The `records` argument passed to the `callback` function is a
+ * two-dimensional array of the text records available for `hostname`
+ * (e.g.`[ ['v=spf1 ip4:0.0.0.0 ', '~all' ] ]`). Each sub-array contains TXT
+ * chunks of one record. Depending on the use case, these could be either
+ * joined together or treated separately.
+ */
+export function resolveTxt(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: string[][]) => void,
+): QueryReqWrap {
+  return Resolver.prototype.resolveTxt.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    callback,
+  );
 }
 
-export function resolveSrv(name: string, callback: ResolveSrvCallback) {
-  return getDefaultResolver().resolveSrv(name, callback);
+/**
+ * Uses the DNS protocol to resolve service records (`SRV` records) for the
+ * `hostname`. The `addresses` argument passed to the `callback` function will
+ * be an array of objects with the following properties:
+ *
+ * - `priority`
+ * - `weight`
+ * - `port`
+ * - `name`
+ *
+ * ```js
+ * {
+ *   priority: 10,
+ *   weight: 5,
+ *   port: 21223,
+ *   name: 'service.example.com'
+ * }
+ * ```
+ */
+export function resolveSrv(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: SrvRecord[]) => void,
+): QueryReqWrap {
+  return Resolver.prototype.resolveSrv.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    callback,
+  );
 }
 
-export function resolvePtr(name: string, callback: ResolvePtrCallback) {
-  return getDefaultResolver().resolvePtr(name, callback);
+/**
+ * Uses the DNS protocol to resolve pointer records (`PTR` records) for the
+ * `hostname`. The `addresses` argument passed to the `callback` function will
+ * be an array of strings containing the reply records.
+ */
+export function resolvePtr(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): QueryReqWrap {
+  return Resolver.prototype.resolvePtr.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    callback,
+  );
 }
 
-export function resolveNaptr(name: string, callback: ResolveNaptrCallback) {
-  return getDefaultResolver().resolveNaptr(name, callback);
+/**
+ * Uses the DNS protocol to resolve regular expression based records (`NAPTR`
+ * records) for the `hostname`. The `addresses` argument passed to the
+ * `callback` function will contain an array of objects with the following
+ * properties:
+ *
+ * - `flags`
+ * - `service`
+ * - `regexp`
+ * - `replacement`
+ * - `order`
+ * - `preference`
+ *
+ * ```js
+ * {
+ *   flags: 's',
+ *   service: 'SIP+D2U',
+ *   regexp: '',
+ *   replacement: '_sip._udp.example.com',
+ *   order: 30,
+ *   preference: 100
+ * }
+ * ```
+ */
+export function resolveNaptr(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: NaptrRecord[]) => void,
+): QueryReqWrap {
+  return Resolver.prototype.resolveNaptr.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    callback,
+  );
 }
 
-export function resolveSoa(name: string, callback: ResolveSoaCallback) {
-  return getDefaultResolver().resolveSoa(name, callback);
+/**
+ * Uses the DNS protocol to resolve a start of authority record (`SOA` record) for
+ * the `hostname`. The `address` argument passed to the `callback` function will
+ * be an object with the following properties:
+ *
+ * - `nsname`
+ * - `hostmaster`
+ * - `serial`
+ * - `refresh`
+ * - `retry`
+ * - `expire`
+ * - `minttl`
+ *
+ * ```js
+ * {
+ *   nsname: 'ns.example.com',
+ *   hostmaster: 'root.example.com',
+ *   serial: 2013101809,
+ *   refresh: 10000,
+ *   retry: 2400,
+ *   expire: 604800,
+ *   minttl: 3600
+ * }
+ * ```
+ */
+export function resolveSoa(
+  hostname: string,
+  callback: (err: ErrnoException | null, address: SoaRecord) => void,
+): QueryReqWrap {
+  return Resolver.prototype.resolveSoa.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    callback,
+  );
 }
 
-export function reverse(ip: string, callback: ReverseCallback) {
-  return getDefaultResolver().reverse(ip, callback);
+/**
+ * Performs a reverse DNS query that resolves an IPv4 or IPv6 address to an
+ * array of host names.
+ *
+ * On error, `err` is an `Error` object, where `err.code` is
+ * one of the `DNS error codes`.
+ */
+export function reverse(
+  ip: string,
+  callback: (err: ErrnoException | null, hostnames: string[]) => void,
+): QueryReqWrap {
+  return Resolver.prototype.reverse.bind(getDefaultResolver() as Resolver)(
+    ip,
+    callback,
+  );
 }
 
+/**
+ * Uses the DNS protocol to resolve a host name (e.g. `'nodejs.org'`) into an array
+ * of the resource records. The `callback` function has arguments`(err, records)`.]
+ * When successful, `records` will be an array of resource
+ * records. The type and structure of individual results varies based on `rrtype`.
+ *
+ * On error, `err` is an `Error` object, where `err.code` is one of the DNS error codes.
+ *
+ * @param hostname Host name to resolve.
+ * @param [rrtype='A'] Resource record type.
+ */
+export function resolve(
+  hostname: string,
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "A",
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "AAAA",
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "ANY",
+  callback: (err: ErrnoException | null, addresses: AnyRecord[]) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "CNAME",
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "MX",
+  callback: (err: ErrnoException | null, addresses: MxRecord[]) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "NAPTR",
+  callback: (err: ErrnoException | null, addresses: NaptrRecord[]) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "NS",
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "PTR",
+  callback: (err: ErrnoException | null, addresses: string[]) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "SOA",
+  callback: (err: ErrnoException | null, addresses: SoaRecord) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "SRV",
+  callback: (err: ErrnoException | null, addresses: SrvRecord[]) => void,
+): QueryReqWrap;
+export function resolve(
+  hostname: string,
+  rrtype: "TXT",
+  callback: (err: ErrnoException | null, addresses: string[][]) => void,
+): QueryReqWrap;
 export function resolve(
   hostname: string,
   rrtype: string,
-  callback: ResolveCallback,
-) {
-  return getDefaultResolver().resolve(hostname, rrtype, callback);
+  callback: (
+    err: ErrnoException | null,
+    addresses:
+      | string[]
+      | MxRecord[]
+      | NaptrRecord[]
+      | SoaRecord
+      | SrvRecord[]
+      | string[][]
+      | AnyRecord[],
+  ) => void,
+): QueryReqWrap;
+export function resolve(hostname: string, rrtype: unknown, callback?: unknown) {
+  return Resolver.prototype.resolve.bind(getDefaultResolver() as Resolver)(
+    hostname,
+    rrtype,
+    callback,
+  );
 }
-
-const defaultResolver = new Resolver();
-setDefaultResolver(defaultResolver);
 
 // ERROR CODES
 export const NODATA = "ENODATA";
@@ -496,52 +894,48 @@ export const LOADIPHLPAPI = "ELOADIPHLPAPI";
 export const ADDRGETNETWORKPARAMS = "EADDRGETNETWORKPARAMS";
 export const CANCELLED = "ECANCELLED";
 
-export {
-  ADDRCONFIG,
-  ALL,
-  defaultResolverSetServers as setServers,
-  lookup,
-  promises,
-  setDefaultResultOrder,
-  V4MAPPED,
-};
+const promises = Object.defineProperties(promisesBase, {
+  setServers: {
+    configurable: true,
+    enumerable: true,
+    value: setServers,
+  },
+  setDefaultResultOrder: {
+    configurable: true,
+    enumerable: true,
+    value: setDefaultResultOrder,
+  },
+});
+
+export { ADDRCONFIG, ALL, promises, setDefaultResultOrder, V4MAPPED };
 
 export type {
+  AnyAaaaRecord,
+  AnyARecord,
+  AnyCnameRecord,
+  AnyMxRecord,
+  AnyNaptrRecord,
+  AnyNsRecord,
+  AnyPtrRecord,
+  AnyRecord,
+  AnySoaRecord,
+  AnySrvRecord,
+  AnyTxtRecord,
+  CaaRecord,
   LookupAddress,
   LookupAllOptions,
   LookupOneOptions,
   LookupOptions,
-  Resolve4Addresses,
-  Resolve4Callback,
-  Resolve6Addresses,
-  Resolve6Callback,
-  ResolveCaaAddress,
-  ResolveCaaAddresses,
-  ResolveCaaCallback,
+  MxRecord,
+  NaptrRecord,
+  Records,
+  RecordWithTtl,
   ResolveCallback,
-  ResolveCnameAddresses,
-  ResolveCnameCallback,
-  ResolveHostnames,
-  ResolveMxAddress,
-  ResolveMxAddresses,
-  ResolveMxCallback,
-  ResolveNaptrAddress,
-  ResolveNaptrAddresses,
-  ResolveNaptrCallback,
-  ResolveNsAddresses,
-  ResolveNsCallback,
-  ResolvePtrAddresses,
-  ResolvePtrCallback,
-  ResolveRecords,
-  ResolveSoaAddress,
-  ResolveSoaCallback,
-  ResolveSrvCallback,
-  ResolveSrvRecord,
-  ResolveSrvRecords,
-  ResolveTtlAddress,
-  ResolveTxtCallback,
-  ResolveTxtRecords,
-  ReverseCallback,
+  ResolveOptions,
+  ResolverOptions,
+  ResolveWithTtlOptions,
+  SoaRecord,
+  SrvRecord,
 };
 
 export default {
@@ -564,7 +958,7 @@ export default {
   resolveSoa,
   resolve,
   reverse,
-  setServers: defaultResolverSetServers,
+  setServers,
   setDefaultResultOrder,
   promises,
   NODATA,

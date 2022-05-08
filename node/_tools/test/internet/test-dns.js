@@ -161,7 +161,7 @@ TEST(async function test_resolveMx(done) {
     }
   }
 
-  // validateResult(await dnsPromises.resolveMx(addresses.MX_HOST));
+  validateResult(await dnsPromises.resolveMx(addresses.MX_HOST));
 
   const req = dns.resolveMx(addresses.MX_HOST, function(err, result) {
     assert.ifError(err);
@@ -173,11 +173,11 @@ TEST(async function test_resolveMx(done) {
 });
 
 TEST(function test_resolveMx_failure(done) {
-  // dnsPromises.resolveMx(addresses.NOT_FOUND)
-  //   .then(common.mustNotCall())
-  //   .catch(common.mustCall((err) => {
-  //     assert.strictEqual(err.code, 'ENOTFOUND');
-  //   }));
+  dnsPromises.resolveMx(addresses.NOT_FOUND)
+    .then(common.mustNotCall())
+    .catch(common.mustCall((err) => {
+      assert.strictEqual(err.code, 'ENOTFOUND');
+    }));
 
   const req = dns.resolveMx(addresses.NOT_FOUND, function(err, result) {
     assert.ok(err instanceof Error);
@@ -245,7 +245,7 @@ TEST(async function test_resolveSrv(done) {
     }
   }
 
-  // validateResult(await dnsPromises.resolveSrv(addresses.SRV_HOST));
+  validateResult(await dnsPromises.resolveSrv(addresses.SRV_HOST));
 
   const req = dns.resolveSrv(addresses.SRV_HOST, function(err, result) {
     assert.ifError(err);
@@ -257,11 +257,11 @@ TEST(async function test_resolveSrv(done) {
 });
 
 TEST(function test_resolveSrv_failure(done) {
-  // dnsPromises.resolveSrv(addresses.NOT_FOUND)
-  //   .then(common.mustNotCall())
-  //   .catch(common.mustCall((err) => {
-  //     assert.strictEqual(err.code, 'ENOTFOUND');
-  //   }));
+  dnsPromises.resolveSrv(addresses.NOT_FOUND)
+    .then(common.mustNotCall())
+    .catch(common.mustCall((err) => {
+      assert.strictEqual(err.code, 'ENOTFOUND');
+    }));
 
   const req = dns.resolveSrv(addresses.NOT_FOUND, function(err, result) {
     assert.ok(err instanceof Error);
@@ -285,7 +285,7 @@ TEST(async function test_resolvePtr(done) {
     }
   }
 
-  // validateResult(await dnsPromises.resolvePtr(addresses.PTR_HOST));
+  validateResult(await dnsPromises.resolvePtr(addresses.PTR_HOST));
 
   const req = dns.resolvePtr(addresses.PTR_HOST, function(err, result) {
     assert.ifError(err);
@@ -297,11 +297,11 @@ TEST(async function test_resolvePtr(done) {
 });
 
 TEST(function test_resolvePtr_failure(done) {
-  // dnsPromises.resolvePtr(addresses.NOT_FOUND)
-  //   .then(common.mustNotCall())
-  //   .catch(common.mustCall((err) => {
-  //     assert.strictEqual(err.code, 'ENOTFOUND');
-  //   }));
+  dnsPromises.resolvePtr(addresses.NOT_FOUND)
+    .then(common.mustNotCall())
+    .catch(common.mustCall((err) => {
+      assert.strictEqual(err.code, 'ENOTFOUND');
+    }));
 
   const req = dns.resolvePtr(addresses.NOT_FOUND, function(err, result) {
     assert.ok(err instanceof Error);
@@ -459,7 +459,7 @@ TEST(async function test_resolveCname(done) {
     }
   }
 
-  // validateResult(await dnsPromises.resolveCname(addresses.CNAME_HOST));
+  validateResult(await dnsPromises.resolveCname(addresses.CNAME_HOST));
 
   const req = dns.resolveCname(addresses.CNAME_HOST, function(err, names) {
     assert.ifError(err);
@@ -471,11 +471,11 @@ TEST(async function test_resolveCname(done) {
 });
 
 TEST(function test_resolveCname_failure(done) {
-  // dnsPromises.resolveCname(addresses.NOT_FOUND)
-  //   .then(common.mustNotCall())
-  //   .catch(common.mustCall((err) => {
-  //     assert.strictEqual(err.code, 'ENOTFOUND');
-  //   }));
+  dnsPromises.resolveCname(addresses.NOT_FOUND)
+    .then(common.mustNotCall())
+    .catch(common.mustCall((err) => {
+      assert.strictEqual(err.code, 'ENOTFOUND');
+    }));
 
   const req = dns.resolveCname(addresses.NOT_FOUND, function(err, result) {
     assert.ok(err instanceof Error);
@@ -497,7 +497,7 @@ TEST(async function test_resolveTxt(done) {
     assert(result[0][0].startsWith('v=spf1'));
   }
 
-  // validateResult(await dnsPromises.resolveTxt(addresses.TXT_HOST));
+  validateResult(await dnsPromises.resolveTxt(addresses.TXT_HOST));
 
   const req = dns.resolveTxt(addresses.TXT_HOST, function(err, records) {
     assert.ifError(err);
@@ -509,14 +509,13 @@ TEST(async function test_resolveTxt(done) {
 });
 
 TEST(function test_resolveTxt_failure(done) {
-  // dnsPromises.resolveTxt(addresses.NOT_FOUND)
-  //   .then(common.mustNotCall())
-  //   .catch(common.mustCall((err) => {
-  //     assert.strictEqual(err.code, 'ENOTFOUND');
-  //   }));
+  dnsPromises.resolveTxt(addresses.NOT_FOUND)
+    .then(common.mustNotCall())
+    .catch(common.mustCall((err) => {
+      assert.strictEqual(err.code, 'ENOTFOUND');
+    }));
 
   const req = dns.resolveTxt(addresses.NOT_FOUND, function(err, result) {
-  console.log("this*****");
     assert.ok(err instanceof Error);
     assert.strictEqual(err.code, 'ENOTFOUND');
 

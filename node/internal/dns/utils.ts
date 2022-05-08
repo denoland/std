@@ -27,11 +27,7 @@ import {
   AI_ALL,
   AI_V4MAPPED,
 } from "../../internal_binding/ares.ts";
-import {
-  ChannelWrap,
-  QueryReqWrap,
-  strerror,
-} from "../../internal_binding/cares_wrap.ts";
+import { ChannelWrap, strerror } from "../../internal_binding/cares_wrap.ts";
 import {
   ERR_DNS_SET_SERVERS_FAILED,
   ERR_INVALID_ARG_VALUE,
@@ -45,7 +41,6 @@ import {
   validateString,
 } from "../validators.mjs";
 import { isIP } from "../net.ts";
-import { unreachable } from "../../../testing/asserts.ts";
 
 export interface LookupOptions {
   family?: number | undefined;
@@ -83,32 +78,46 @@ export function isFamily(options: unknown): options is number {
   return typeof options === "number";
 }
 
-export interface ResolveTtlAddress {
+export interface ResolveOptions {
+  ttl?: boolean;
+}
+
+export interface ResolveWithTtlOptions extends ResolveOptions {
+  ttl: true;
+}
+
+export interface RecordWithTtl {
   address: string;
   ttl: number;
 }
 
-export type Resolve4Addresses = ResolveTtlAddress[] | string[];
-export type Resolve6Addresses = ResolveTtlAddress[] | string[];
-
-export type ResolveCnameAddresses = string[];
-
-export interface ResolveCaaAddress {
-  critical: number;
-  iodef?: string;
-  issue?: string;
+export interface AnyARecord extends RecordWithTtl {
+  type: "A";
 }
 
-export type ResolveCaaAddresses = ResolveCaaAddress[];
+export interface AnyAaaaRecord extends RecordWithTtl {
+  type: "AAAA";
+}
 
-export interface ResolveMxAddress {
+export interface CaaRecord {
+  critial: number;
+  issue?: string | undefined;
+  issuewild?: string | undefined;
+  iodef?: string | undefined;
+  contactemail?: string | undefined;
+  contactphone?: string | undefined;
+}
+
+export interface MxRecord {
   priority: number;
   exchange: string;
 }
 
-export type ResolveMxAddresses = ResolveMxAddress[];
+export interface AnyMxRecord extends MxRecord {
+  type: "MX";
+}
 
-export interface ResolveNaptrAddress {
+export interface NaptrRecord {
   flags: string;
   service: string;
   regexp: string;
@@ -117,11 +126,11 @@ export interface ResolveNaptrAddress {
   preference: number;
 }
 
-export type ResolveNaptrAddresses = ResolveNaptrAddress[];
-export type ResolveNsAddresses = string[];
-export type ResolvePtrAddresses = string[];
+export interface AnyNaptrRecord extends NaptrRecord {
+  type: "NAPTR";
+}
 
-export interface ResolveSoaAddress {
+export interface SoaRecord {
   nsname: string;
   hostmaster: string;
   serial: number;
@@ -131,133 +140,148 @@ export interface ResolveSoaAddress {
   minttl: number;
 }
 
-export interface ResolveSrvRecord {
+export interface AnySoaRecord extends SoaRecord {
+  type: "SOA";
+}
+
+export interface SrvRecord {
   priority: number;
   weight: number;
   port: number;
   name: string;
 }
 
-export type ResolveSrvRecords = ResolveSrvRecord[];
-export type ResolveTxtRecords = string[][];
-export type ResolveHostnames = string[];
+export interface AnySrvRecord extends SrvRecord {
+  type: "SRV";
+}
 
-export type ResolveRecords =
-  | Resolve4Addresses
-  | Resolve6Addresses
-  | ResolveCnameAddresses
-  | ResolveCaaAddresses
-  | ResolveMxAddresses
-  | ResolveNaptrAddresses
-  | ResolveNsAddresses
-  | ResolvePtrAddresses
-  | ResolveSoaAddress
-  | ResolveSrvRecords
-  | ResolveTxtRecords
-  | ResolveHostnames;
+export interface AnyTxtRecord {
+  type: "TXT";
+  entries: string[];
+}
+
+export interface AnyNsRecord {
+  type: "NS";
+  value: string;
+}
+
+export interface AnyPtrRecord {
+  type: "PTR";
+  value: string;
+}
+
+export interface AnyCnameRecord {
+  type: "CNAME";
+  value: string;
+}
+
+export type AnyRecord =
+  | AnyARecord
+  | AnyAaaaRecord
+  | AnyCnameRecord
+  | AnyMxRecord
+  | AnyNaptrRecord
+  | AnyNsRecord
+  | AnyPtrRecord
+  | AnySoaRecord
+  | AnySrvRecord
+  | AnyTxtRecord;
+
+export type Records =
+  | string[]
+  | AnyRecord[]
+  | MxRecord[]
+  | NaptrRecord[]
+  | SoaRecord
+  | SrvRecord[]
+  | string[];
 
 export type ResolveCallback = (
   err: ErrnoException | null,
-  ret?: ResolveRecords,
+  addresses: Records,
 ) => void;
 
-export type Resolve4Callback = (
-  err: ErrnoException | null,
-  addresses?: Resolve4Addresses,
-) => void;
-
-export type Resolve6Callback = (
-  err: ErrnoException | null,
-  addresses?: Resolve6Addresses,
-) => void;
-
-export type ResolveCnameCallback = (
-  err: ErrnoException | null,
-  addresses?: ResolveCnameAddresses,
-) => void;
-
-export type ResolveCaaCallback = (
-  err: ErrnoException | null,
-  addresses?: ResolveCaaAddresses,
-) => void;
-
-export type ResolveMxCallback = (
-  err: ErrnoException | null,
-  addresses?: ResolveMxAddresses,
-) => void;
-
-export type ResolveNaptrCallback = (
-  err: ErrnoException | null,
-  addresses?: ResolveNaptrAddresses,
-) => void;
-
-export type ResolveNsCallback = (
-  err: ErrnoException | null,
-  addresses?: ResolveNsAddresses,
-) => void;
-
-export type ResolvePtrCallback = (
-  err: ErrnoException | null,
-  addresses?: ResolvePtrAddresses,
-) => void;
-
-export type ResolveSoaCallback = (
-  err: ErrnoException | null,
-  address?: ResolveSoaAddress,
-) => void;
-
-export type ResolveSrvCallback = (
-  err: ErrnoException | null,
-  records?: ResolveSrvRecords,
-) => void;
-
-export type ResolveTxtCallback = (
-  err: ErrnoException | null,
-  records?: ResolveTxtRecords,
-) => void;
-
-export type ReverseCallback = (
-  err: ErrnoException | null,
-  hostnames?: ResolveHostnames,
-) => void;
-
-export function isResolverOptions(
-  options: unknown,
-): options is Record<string, unknown> {
-  return typeof options === "object";
+export function isResolveCallback(
+  callback: unknown,
+): callback is ResolveCallback {
+  return typeof callback === "function";
 }
 
 const IANA_DNS_PORT = 53;
 const IPv6RE = /^\[([^[\]]*)\]/;
 const addrSplitRE = /(^.+?)(?::(\d+))?$/;
 
-function validateTimeout(options?: { timeout?: number }) {
+export function validateTimeout(options?: { timeout?: number }) {
   const { timeout = -1 } = { ...options };
   validateInt32(timeout, "options.timeout", -1, 2 ** 31 - 1);
   return timeout;
 }
 
-function validateTries(options?: { tries?: number }) {
+export function validateTries(options?: { tries?: number }) {
   const { tries = 4 } = { ...options };
   validateInt32(tries, "options.tries", 1, 2 ** 31 - 1);
   return tries;
 }
 
-// Resolver instances correspond 1:1 to c-ares channels.
+export interface ResolverOptions {
+  timeout?: number | undefined;
+  /**
+   * @default 4
+   */
+  tries?: number;
+}
+
+/**
+ * An independent resolver for DNS requests.
+ *
+ * Creating a new resolver uses the default server settings. Setting
+ * the servers used for a resolver using `resolver.setServers()` does not affect
+ * other resolvers:
+ *
+ * ```js
+ * const { Resolver } = require('dns');
+ * const resolver = new Resolver();
+ * resolver.setServers(['4.4.4.4']);
+ *
+ * // This request will use the server at 4.4.4.4, independent of global settings.
+ * resolver.resolve4('example.org', (err, addresses) => {
+ *   // ...
+ * });
+ * ```
+ *
+ * The following methods from the `dns` module are available:
+ *
+ * - `resolver.getServers()`
+ * - `resolver.resolve()`
+ * - `resolver.resolve4()`
+ * - `resolver.resolve6()`
+ * - `resolver.resolveAny()`
+ * - `resolver.resolveCaa()`
+ * - `resolver.resolveCname()`
+ * - `resolver.resolveMx()`
+ * - `resolver.resolveNaptr()`
+ * - `resolver.resolveNs()`
+ * - `resolver.resolvePtr()`
+ * - `resolver.resolveSoa()`
+ * - `resolver.resolveSrv()`
+ * - `resolver.resolveTxt()`
+ * - `resolver.reverse()`
+ * - `resolver.setServers()`
+ */
 export class Resolver {
   _handle!: ChannelWrap;
 
-  constructor(options?: { timeout?: number; tries?: number }) {
+  constructor(options?: ResolverOptions) {
     const timeout = validateTimeout(options);
     const tries = validateTries(options);
     this._handle = new ChannelWrap(timeout, tries);
   }
 
-  cancel() {
+  cancel(): void {
     this._handle.cancel();
   }
 
-  getServers() {
+  getServers(): string[] {
     return this._handle.getServers().map((val: [string, number]) => {
       if (!val[1] || val[1] === IANA_DNS_PORT) {
         return val[0];
@@ -268,7 +292,7 @@ export class Resolver {
     });
   }
 
-  setServers(servers: string[]) {
+  setServers(servers: ReadonlyArray<string>): void {
     validateArray(servers, "servers");
 
     // Cache the original servers because in the event of an error while
@@ -325,7 +349,22 @@ export class Resolver {
     }
   }
 
-  setLocalAddress(ipv4: string, ipv6: string) {
+  /**
+   * The resolver instance will send its requests from the specified IP address.
+   * This allows programs to specify outbound interfaces when used on multi-homed
+   * systems.
+   *
+   * If a v4 or v6 address is not specified, it is set to the default, and the
+   * operating system will choose a local address automatically.
+   *
+   * The resolver will use the v4 local address when making requests to IPv4 DNS
+   * servers, and the v6 local address when making requests to IPv6 DNS servers.
+   * The `rrtype` of resolution requests has no impact on the local address used.
+   *
+   * @param [ipv4='0.0.0.0'] A string representation of an IPv4 address.
+   * @param [ipv6='::0'] A string representation of an IPv6 address.
+   */
+  setLocalAddress(ipv4: string, ipv6?: string): void {
     validateString(ipv4, "ipv4");
 
     if (ipv6 !== undefined) {
@@ -333,80 +372,6 @@ export class Resolver {
     }
 
     this._handle.setLocalAddress(ipv4, ipv6);
-  }
-
-  resolveAny(_name: string, _callback: ResolveCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolve4(_name: string, _callback: Resolve4Callback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolve6(_name: string, _callback: Resolve6Callback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolveCaa(_name: string, _callback: ResolveCaaCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolveCname(_name: string, _callback: ResolveCnameCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolveMx(_name: string, _callback: ResolveMxCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolveNs(_name: string, _callback: ResolveNsCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolveTxt(_name: string, _callback: ResolveTxtCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolveSrv(_name: string, _callback: ResolveSrvCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolvePtr(_name: string, _callback: ResolvePtrCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolveNaptr(_name: string, _callback: ResolveNaptrCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolveSoa(_name: string, _callback: ResolveSoaCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  reverse(_ip: string, _callback: ReverseCallback): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
-  }
-
-  resolve(
-    _hostname: string,
-    _rrtype: string,
-    _callback: ResolveCallback,
-  ): QueryReqWrap {
-    // Expect to be overridden by specific Resolver implementation.
-    unreachable();
   }
 }
 
@@ -459,7 +424,21 @@ export function getDefaultVerbatim() {
   }
 }
 
-export function setDefaultResultOrder(order: string) {
+/**
+ * Set the default value of `verbatim` in `lookup` and `dnsPromises.lookup()`.
+ * The value could be:
+ *
+ * - `ipv4first`: sets default `verbatim` `false`.
+ * - `verbatim`: sets default `verbatim` `true`.
+ *
+ * The default is `ipv4first` and `setDefaultResultOrder` have higher
+ * priority than `--dns-result-order`. When using `worker threads`,
+ * `setDefaultResultOrder` from the main thread won't affect the default
+ * dns orders in workers.
+ *
+ * @param order must be `'ipv4first'` or `'verbatim'`.
+ */
+export function setDefaultResultOrder(order: "ipv4first" | "verbatim"): void {
   validateOneOf(order, "dnsOrder", ["verbatim", "ipv4first"]);
   dnsOrder = order;
 }

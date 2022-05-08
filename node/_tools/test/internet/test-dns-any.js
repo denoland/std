@@ -18,7 +18,7 @@ const net = require('net');
 let running = false;
 const queue = [];
 
-// const dnsPromises = dns.promises;
+const dnsPromises = dns.promises;
 const isIPv4 = net.isIPv4;
 const isIPv6 = net.isIPv6;
 
@@ -133,7 +133,7 @@ TEST(async function test_sip2sip_for_naptr(done) {
     );
   }
 
-  // validateResult(await dnsPromises.resolve('sip2sip.info', 'ANY'));
+  validateResult(await dnsPromises.resolve('sip2sip.info', 'ANY'));
 
   const req = dns.resolve(
     'sip2sip.info',
@@ -152,7 +152,7 @@ TEST(async function test_google_for_cname_and_srv(done) {
     assert.ok(types.SRV);
   }
 
-  // validateResult(await dnsPromises.resolve('_jabber._tcp.google.com', 'ANY'));
+  validateResult(await dnsPromises.resolve('_jabber._tcp.google.com', 'ANY'));
 
   const req = dns.resolve(
     '_jabber._tcp.google.com',
@@ -171,7 +171,7 @@ TEST(async function test_ptr(done) {
     assert.ok(types.PTR);
   }
 
-  // validateResult(await dnsPromises.resolve('8.8.8.8.in-addr.arpa', 'ANY'));
+  validateResult(await dnsPromises.resolve('8.8.8.8.in-addr.arpa', 'ANY'));
 
   const req = dns.resolve(
     '8.8.8.8.in-addr.arpa',
