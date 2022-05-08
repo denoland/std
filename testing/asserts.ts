@@ -152,17 +152,7 @@ export function assertFalse(expr: unknown, msg = ""): asserts expr is false {
  * assertEquals<number>(1, 2)
  * ```
  */
-export function assertEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
-export function assertEquals<T>(actual: T, expected: T, msg?: string): void;
-export function assertEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void {
+export function assertEquals<T>(actual: T, expected: T, msg?: string): void {
   if (equal(actual, expected)) {
     return;
   }
@@ -198,17 +188,7 @@ export function assertEquals(
  * assertNotEquals<number>(1, 2)
  * ```
  */
-export function assertNotEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
-export function assertNotEquals<T>(actual: T, expected: T, msg?: string): void;
-export function assertNotEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void {
+export function assertNotEquals<T>(actual: T, expected: T, msg?: string): void {
   if (!equal(actual, expected)) {
     return;
   }
@@ -294,19 +274,9 @@ export function assertStrictEquals<T>(
  * assertNotStrictEquals(1, 1)
  * ```
  */
-export function assertNotStrictEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
 export function assertNotStrictEquals<T>(
   actual: T,
   expected: T,
-  msg?: string,
-): void;
-export function assertNotStrictEquals(
-  actual: unknown,
-  expected: unknown,
   msg?: string,
 ): void {
   if (actual !== expected) {
@@ -443,19 +413,9 @@ export function assertStringIncludes(
  * assertArrayIncludes<number>([1, 2], [2])
  * ```
  */
-export function assertArrayIncludes(
-  actual: ArrayLike<unknown>,
-  expected: ArrayLike<unknown>,
-  msg?: string,
-): void;
 export function assertArrayIncludes<T>(
   actual: ArrayLike<T>,
   expected: ArrayLike<T>,
-  msg?: string,
-): void;
-export function assertArrayIncludes(
-  actual: ArrayLike<unknown>,
-  expected: ArrayLike<unknown>,
   msg?: string,
 ): void {
   const missing: unknown[] = [];
