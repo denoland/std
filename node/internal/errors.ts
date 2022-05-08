@@ -2574,4 +2574,5 @@ export default {
   AbortError,
   aggregateTwoErrors,
   codes,
+  dnsException,
 };

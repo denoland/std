@@ -338,3 +338,5 @@ export function mapSysErrnoToUvErrno(sysErrno: number): number {
     return -sysErrno;
   }
 }
+
+export const UV_EAI_MEMORY = codeMap.get("EAI_MEMORY")!;
