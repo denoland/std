@@ -226,7 +226,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
                 weight,
                 port,
                 name: target,
-              })
+              }),
           );
         }),
         this.#query(name, "TXT").then(({ ret }) => {
