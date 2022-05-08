@@ -34,6 +34,7 @@ export interface XevalOptions {
 }
 
 const DEFAULT_DELIMITER = "\n";
+const DEFAULT_REPL_VAR = "$";
 
 export async function xeval(
   reader: Deno.Reader,
@@ -59,7 +60,7 @@ async function main() {
     },
     default: {
       delim: DEFAULT_DELIMITER,
-      replvar: "$",
+      replvar: DEFAULT_REPL_VAR,
     },
   });
   if (parsedArgs._.length != 1) {
@@ -71,8 +72,8 @@ async function main() {
     return console.log(HELP_MSG);
   }
 
-  const delimiter = parsedArgs.delim;
-  const replVar = parsedArgs.replvar;
+  const delimiter = !parsedArgs.delim ? undefined : parsedArgs.delim;
+  const replVar = !parsedArgs.replvar ? DEFAULT_REPL_VAR : parsedArgs.replvar;
   const code = parsedArgs._[0];
 
   // new AsyncFunction()'s error message for this particular case isn't great.
