@@ -783,8 +783,8 @@ function main(): void {
       v: "verbose",
     },
   });
-  const port = serverArgs.port;
-  const host = serverArgs.host;
+  const port = Number(serverArgs.port);
+  const host = serverArgs.host === false ? undefined : serverArgs.host;
   const certFile = serverArgs.cert;
   const keyFile = serverArgs.key;
 
@@ -794,7 +794,7 @@ function main(): void {
   }
 
   if (keyFile || certFile) {
-    if (keyFile === "" || certFile === "") {
+    if (!keyFile || !certFile) {
       console.log("--key and --cert are required for TLS");
       printUsage();
       Deno.exit(1);
@@ -818,13 +818,13 @@ function main(): void {
 
   if (useTls) {
     serveTls(handler, {
-      port: Number(port),
+      port,
       hostname: host,
       certFile,
       keyFile,
     });
   } else {
-    serve(handler, { port: Number(port), hostname: host });
+    serve(handler, { port, hostname: host });
   }
 }
 
