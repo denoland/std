@@ -4,10 +4,10 @@
     "common": ["index.js", "tmpdir.js"],
     "fixtures": ["child-process-spawn-node.js", "empty.txt"],
     "internet": [
+      "test-dns-any.js",
       "test-dns-idna2008.js",
       "test-dns-ipv4.js",
       "test-dns-ipv6.js",
-      "test-dns-lookup.js",
       "test-dns.js"
     ],
     "parallel": [
@@ -89,10 +89,12 @@
       "exit.js"
     ],
     "internet": [
+      "test-dns-any.js",
       "test-dns-idna2008.js",
       "test-dns-ipv4.js",
       "test-dns-ipv6.js",
       "test-dns-lookup.js",
+      "test-dns-regress-6244.js",
       "test-dns.js"
     ],
     "parallel": [

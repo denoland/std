@@ -173,9 +173,13 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
     try {
       ret = await Deno.resolveDns(query, recordType);
-    } catch {
-      // TODO(cmorten): map errors to appropriate error codes.
-      code = codeMap.get("UNKNOWN")!;
+    } catch (e) {
+      if (e instanceof Deno.errors.NotFound) {
+        code = codeMap.get("EAI_NODATA")!;
+      } else {
+        // TODO(cmorten): map errors to appropriate error codes.
+        code = codeMap.get("UNKNOWN")!;
+      }
     }
 
     return { code, ret };
