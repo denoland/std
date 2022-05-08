@@ -113,3 +113,9 @@ assert.strictEqual(Buffer.alloc(4)
   assert.strictEqual(buf.write('ыы', 1, 'utf16le'), 4);
   assert.deepStrictEqual([...buf], [0, 0x4b, 0x04, 0x4b, 0x04, 0, 0, 0]);
 }
+
+{
+  const buf = Buffer.alloc(8);
+  assert.strictEqual(buf.utf8Write('abc', 0), 3);
+  assert.deepStrictEqual([...buf], [0x61, 0x62, 0x63, 0, 0, 0, 0, 0]);
+}
