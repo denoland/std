@@ -799,7 +799,7 @@ Deno.test("typesOfAllBooleanDisabledAndStringArgs", function (): void {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
+        foo?: string | false | undefined;
         _: Array<string | number>;
       }
     >
@@ -820,7 +820,7 @@ Deno.test("typesOfAllBooleanDisabledAndStringArgsWithDefaults", function (): voi
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo: string | number;
+        foo: string | false | number;
         bar: unknown;
         _: Array<string | number>;
       }
@@ -874,9 +874,9 @@ Deno.test("typesOfAllBooleanAndStringArgs", function (): void {
       typeof argv,
       & { [x: string]: boolean | undefined }
       & {
-        foo?: string | undefined;
-        bar?: string | undefined;
-        "foo-bar"?: string | undefined;
+        foo?: string | false | undefined;
+        bar?: string | false | undefined;
+        "foo-bar"?: string | false | undefined;
         _: Array<string | number>;
       }
     >
@@ -897,10 +897,10 @@ Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
       typeof argv,
       & { [x: string]: boolean | undefined }
       & {
-        foo?: string | undefined;
-        bar: string | number;
+        foo?: string | false | undefined;
+        bar: string | false | number;
         baz: unknown;
-        "foo-bar"?: string | undefined;
+        "foo-bar"?: string | false | undefined;
         _: Array<string | number>;
       }
     >
@@ -957,9 +957,9 @@ Deno.test("typesOfStringArgs", function (): void {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
-        bar?: string | undefined;
-        "foo-bar"?: string | undefined;
+        foo?: string | false | undefined;
+        bar?: string | false | undefined;
+        "foo-bar"?: string | false | undefined;
         _: Array<string | number>;
       }
     >
@@ -979,10 +979,10 @@ Deno.test("typesOfStringArgsWithDefaults", function (): void {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo?: string | undefined;
+        foo?: string | false | undefined;
         bar: string | boolean;
         baz: unknown;
-        "foo-bar"?: string | undefined;
+        "foo-bar"?: string | false | undefined;
         _: Array<string | number>;
       }
     >
@@ -999,9 +999,9 @@ Deno.test("typesOfBooleanAndStringArgs", function (): void {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        beep?: string | undefined;
-        boop?: string | undefined;
-        "beep-boop"?: string | undefined;
+        beep?: string | false | undefined;
+        boop?: string | false | undefined;
+        "beep-boop"?: string | false | undefined;
         foo: boolean;
         bar: boolean;
         "foo-bar": boolean;
@@ -1027,11 +1027,11 @@ Deno.test("typesOfBooleanAndStringArgsWithDefaults", function (): void {
       & { [x: string]: unknown }
       & {
         foo: boolean;
-        boop?: string | undefined;
-        "beep-boop"?: string | undefined;
+        boop?: string | false | undefined;
+        "beep-boop"?: string | false | undefined;
         bar: number | boolean;
         baz: unknown;
-        beep: string | Date;
+        beep: string | false | Date;
         "foo-bar": boolean;
         _: Array<string | number>;
       }
@@ -1107,12 +1107,12 @@ Deno.test("typesOfDottedStringArgs", function (): void {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        blubb?: string | undefined;
+        blubb?: string | false | undefined;
         foo?: {
-          bar?: string | undefined;
+          bar?: string | false | undefined;
           baz?: {
-            biz?: string | undefined;
-            buz?: string | undefined;
+            biz?: string | false | undefined;
+            buz?: string | false | undefined;
           };
         };
         _: Array<string | number>;
@@ -1142,10 +1142,10 @@ Deno.test("typesOfDottedStringArgsWithDefaults", function (): void {
       & {
         blubb: string | boolean;
         foo: {
-          bar: string | number;
+          bar: string | false | number;
           baz: {
-            biz: string | Date;
-            buz?: string | undefined;
+            biz: string | false | Date;
+            buz?: string | false | undefined;
           };
         };
         bla: unknown;
@@ -1170,14 +1170,14 @@ Deno.test("typesOfDottedStringAndBooleanArgs", function (): void {
           bar: boolean;
           baz: {
             biz: boolean;
-            buz?: string | undefined;
+            buz?: string | false | undefined;
           };
         };
-        bla?: string | undefined;
+        bla?: string | false | undefined;
         beep: {
-          boop?: string | undefined;
+          boop?: string | false | undefined;
           bib: {
-            bab?: string | undefined;
+            bab?: string | false | undefined;
             bub: boolean;
           };
         };
@@ -1219,13 +1219,13 @@ Deno.test("typesOfDottedStringAndBooleanArgsWithDefaults", function (): void {
           bar: boolean | number;
           baz: {
             biz: boolean | Date;
-            buz?: string | undefined;
+            buz?: string | false | undefined;
           };
         };
         beep: {
           boop: string | boolean;
           bib: {
-            bab: string | Date;
+            bab: string | false | Date;
             bub: boolean;
           };
         };
@@ -1261,13 +1261,13 @@ Deno.test("typesOfDottedStringAndBooleanArgsWithFlattedDefaults", function (): v
           bar: boolean | number;
           baz: {
             biz: boolean | Date;
-            buz?: string | undefined;
+            buz?: string | false | undefined;
           };
         };
         beep: {
           boop: string | boolean;
           bib: {
-            bab: string | Date;
+            bab: string | false | Date;
             bub: boolean;
           };
         };
@@ -1293,7 +1293,7 @@ Deno.test("typesOfDottedArgsWithUnionDefaults", function (): void {
       & {
         foo: number | {
           bar?: {
-            baz?: string | undefined;
+            baz?: string | false | undefined;
           } | undefined;
         };
         beep: Date | {
@@ -1323,7 +1323,7 @@ Deno.test("typesOfDottedArgsWithNestedUnionDefaults", function (): void {
       & {
         foo: {
           bar: number | {
-            baz?: string | undefined;
+            baz?: string | false | undefined;
           };
         };
         beep: {
@@ -1349,7 +1349,7 @@ Deno.test("typesOfArgsWithDottedDefaults", function (): void {
       typeof argv,
       & { [x: string]: unknown }
       & {
-        foo: string | {
+        foo: string | false | {
           bar: number;
         };
         _: Array<string | number>;
@@ -1371,7 +1371,7 @@ Deno.test("typesOfDoubleDashOption", function (): void {
       typeof argv,
       & { [x: string]: boolean | undefined }
       & {
-        foo?: string;
+        foo?: string | false | undefined;
         _: Array<string | number>;
         "--": Array<string>;
       }
@@ -1393,9 +1393,9 @@ Deno.test("typesOfNullishDefaults", function (): void {
       typeof argv,
       & { [x: string]: boolean | undefined }
       & {
-        foo?: string | undefined;
-        bar: string | undefined;
-        baz: string | null;
+        foo?: string | false | undefined;
+        bar: string | false | undefined;
+        baz: string | false | null;
         _: Array<string | number>;
       }
     >

@@ -30,12 +30,12 @@ type Values<
 Record<string, any>
   : (true extends B ? 
     & Partial<Record<string, boolean>>
-    & SpreadValues<TypeValues<S, string>, DedotRecord<D>>
+    & SpreadValues<TypeValues<S, string | false>, DedotRecord<D>>
     : 
       & Record<string, unknown>
       & SpreadValues<
-        & TypeValues<S, string>
-        & TypeValues<B, boolean>,
+        & TypeValues<S, string | false>
+        & RecursiveRequired<TypeValues<B, boolean>>,
         DedotRecord<D>
       >);
 
@@ -45,10 +45,8 @@ type SpreadValues<A, D> = D extends undefined ? A
     & Omit<A, keyof D>
     & {
       [K in keyof D]: K extends keyof A
-        ? A[K] & D[K] extends Record<string, unknown>
-          ? D[K] extends Record<string, unknown>
-            ? NonNullable<SpreadValues<A[K], D[K]>>
-          : D[K] | NonNullable<A[K]>
+        ? (A[K] & D[K] | D[K]) extends Record<string, unknown>
+          ? NonNullable<SpreadValues<A[K], D[K]>>
         : D[K] | NonNullable<A[K]>
         : unknown;
     }
@@ -73,20 +71,20 @@ type Defaults<
 
 type TypeValues<T extends ArgType, V> = UnionToIntersection<MapTypes<T, V>>;
 
-type MaybeRequired<T, R> = true extends R ? Required<T> : T;
+type RecursiveRequired<T> = {
+  [K in keyof T]-?: T extends Record<string, unknown> ? RecursiveRequired<T[K]>
+    : T;
+};
 
-type MapTypes<T extends ArgType, V> = MaybeRequired<
-  undefined extends T ? Record<never, never>
-    : T extends false ? Record<never, never>
-    : T extends true ? Partial<Record<string, V>>
-    : string extends T ? Partial<Record<string, V>>
-    : T extends `${infer Name}.${infer Rest}` ? {
-      [K in Name]?: MapTypes<Rest, V>;
-    }
-    : T extends string ? Partial<Record<T, V>>
-    : Record<never, never>,
-  V extends boolean ? true : false
->;
+type MapTypes<T extends ArgType, V> = undefined extends T ? Record<never, never>
+  : T extends false ? Record<never, never>
+  : T extends true ? Partial<Record<string, V>>
+  : string extends T ? Partial<Record<string, V>>
+  : T extends `${infer Name}.${infer Rest}` ? {
+    [K in Name]?: MapTypes<Rest, V>;
+  }
+  : T extends string ? Partial<Record<T, V>>
+  : Record<never, never>;
 
 type MapDefaults<T extends ArgType> = T extends string
   ? Partial<Record<T, unknown>>
