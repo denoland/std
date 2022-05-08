@@ -18,7 +18,6 @@ const errors = require('internal/errors');
 const { internalBinding } = require('internal/test/binding');
 
 const { UV_EAI_MEMORY } = internalBinding('uv');
-
 const memoryError = errors.dnsException(UV_EAI_MEMORY, 'fhqwhgads');
 
 assert.strictEqual(memoryError.code, 'EAI_MEMORY');

@@ -163,6 +163,7 @@
       "test-console-tty-colors.js",
       "test-dns-lookup.js",
       "test-dns-memory-error.js",
+      "test-dns-promises-exists.js",
       "test-dns.js",
       "test-event-emitter-add-listeners.js",
       "test-event-emitter-check-listener-leaks.js",
