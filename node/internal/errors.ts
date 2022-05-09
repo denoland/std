@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Node.js contributors. All rights reserved. MIT License.
-/** ********** NOT IMPLEMENTED
+/** NOT IMPLEMENTED
  * ERR_MANIFEST_ASSERT_INTEGRITY
  * ERR_QUICSESSION_VERSION_NEGOTIATION
  * ERR_REQUIRE_ESM
@@ -12,7 +12,7 @@
  * ERR_SYSTEM_ERROR //System error, shouldn't ever happen inside Deno
  * ERR_TTY_INIT_FAILED //System error, shouldn't ever happen inside Deno
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
- * ************/
+ */
 
 import { getSystemErrorName } from "../util.ts";
 import { inspect } from "../internal/util/inspect.mjs";
@@ -2574,4 +2574,5 @@ export default {
   AbortError,
   aggregateTwoErrors,
   codes,
+  dnsException,
 };

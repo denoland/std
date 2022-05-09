@@ -28,16 +28,15 @@
 
 'use strict';
 
-// TODO: enable remaining tests once functionality is implemented - note dns
-// module implementation based on Node 18.
+// TODO: enable remaining tests once functionality is implemented.
 
 const common = require('../common');
-const dnstools = require('../common/dns');
+// const dnstools = require('../common/dns');
 const assert = require('assert');
 
 const dns = require('dns');
 const dnsPromises = dns.promises;
-const dgram = require('dgram');
+// const dgram = require('dgram');
 
 // const existing = dns.getServers();
 // assert(existing.length > 0);
@@ -150,31 +149,31 @@ const dgram = require('dgram');
 // dns.setServers([]);
 // assert.deepStrictEqual(dns.getServers(), []);
 
-// {
-//   const errObj = {
-//     code: 'ERR_INVALID_ARG_TYPE',
-//     name: 'TypeError',
-//     message: 'The "rrtype" argument must be of type string. ' +
-//              'Received an instance of Array'
-//   };
-//   assert.throws(() => {
-//     dns.resolve('example.com', [], common.mustNotCall());
-//   }, errObj);
-//   assert.throws(() => {
-//     dnsPromises.resolve('example.com', []);
-//   }, errObj);
-// }
-// {
-//   const errObj = {
-//     code: 'ERR_INVALID_ARG_TYPE',
-//     name: 'TypeError',
-//     message: 'The "name" argument must be of type string. ' +
-//              'Received undefined'
-//   };
-//   assert.throws(() => {
-//     dnsPromises.resolve();
-//   }, errObj);
-// }
+{
+  const errObj = {
+    code: 'ERR_INVALID_ARG_TYPE',
+    name: 'TypeError',
+    message: 'The "rrtype" argument must be of type string. ' +
+             'Received an instance of Array'
+  };
+  assert.throws(() => {
+    dns.resolve('example.com', [], common.mustNotCall());
+  }, errObj);
+  assert.throws(() => {
+    dnsPromises.resolve('example.com', []);
+  }, errObj);
+}
+{
+  const errObj = {
+    code: 'ERR_INVALID_ARG_TYPE',
+    name: 'TypeError',
+    message: 'The "name" argument must be of type string. ' +
+             'Received undefined'
+  };
+  assert.throws(() => {
+    dnsPromises.resolve();
+  }, errObj);
+}
 
 // dns.lookup should accept only falsey and string values
 {
@@ -345,14 +344,14 @@ dns.lookup('', {
 //   name: 'TypeError'
 // });
 
-// {
-//   dns.resolveMx('foo.onion', function(err) {
-//     assert.deepStrictEqual(err.code, 'ENOTFOUND');
-//     assert.deepStrictEqual(err.syscall, 'queryMx');
-//     assert.deepStrictEqual(err.hostname, 'foo.onion');
-//     assert.deepStrictEqual(err.message, 'queryMx ENOTFOUND foo.onion');
-//   });
-// }
+{
+  dns.resolveMx('foo.onion', function(err) {
+    assert.deepStrictEqual(err.code, 'ENOTFOUND');
+    assert.deepStrictEqual(err.syscall, 'queryMx');
+    assert.deepStrictEqual(err.hostname, 'foo.onion');
+    assert.deepStrictEqual(err.message, 'queryMx ENOTFOUND foo.onion');
+  });
+}
 
 // {
 //   const cases = [
