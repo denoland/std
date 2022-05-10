@@ -299,14 +299,14 @@ export class Socket extends EventEmitter {
   address(): AddressInfo {
     healthCheck(this);
 
-    const out = {} as AddressInfo;
+    const out = {};
     const err = this[kStateSymbol].handle!.getsockname(out);
 
     if (err) {
       throw errnoException(err, "getsockname");
     }
 
-    return out;
+    return out as AddressInfo;
   }
 
   /**
@@ -473,7 +473,7 @@ export class Socket extends EventEmitter {
         return; // Handle has been closed in the mean time
       }
 
-      const err = state.handle.bind(ip, port || 0, flags);
+      const err = state.handle.bind(ip, port as number || 0, flags);
 
       if (err) {
         const ex = exceptionWithHostPort(err, "bind", ip, port as number);
@@ -721,14 +721,14 @@ export class Socket extends EventEmitter {
       throw new ERR_SOCKET_DGRAM_NOT_CONNECTED();
     }
 
-    const out = {} as AddressInfo;
+    const out = {};
     const err = state.handle!.getpeername(out);
 
     if (err) {
       throw errnoException(err, "getpeername");
     }
 
-    return out;
+    return out as AddressInfo;
   }
 
   /**

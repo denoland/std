@@ -1,6 +1,3 @@
-// TODO(cmorten): remove once typed
-// deno-lint-ignore-file no-explicit-any
-
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -30,6 +27,7 @@ import type { ErrnoException } from "../internal/errors.ts";
 import { GetAddrInfoReqWrap } from "./cares_wrap.ts";
 import { AsyncWrap } from "./async_wrap.ts";
 import { Buffer } from "../buffer.ts";
+import { notImplemented } from "../_utils.ts";
 
 type MessageType = string | Uint8Array | Buffer | DataView;
 
@@ -48,6 +46,21 @@ export class SendWrap extends AsyncWrap {
 
 export class UDP extends HandleWrap {
   [ownerSymbol]: unknown = null;
+  onmessage!: (
+    nread: number,
+    handle: UDP,
+    buf: Buffer,
+    rinfo: {
+      address: string;
+      family: "IPv4" | "IPv6";
+      port: number;
+      size: number;
+    },
+  ) => void;
+
+  constructor() {
+    super(providerType.UDPWRAP);
+  }
 
   lookup!: (
     address: string,
@@ -58,31 +71,116 @@ export class UDP extends HandleWrap {
     ) => void,
   ) => GetAddrInfoReqWrap | Record<string, never>;
 
-  bind!: any;
-  bind6!: any;
-  connect!: any;
-  connect6!: any;
-  send!: any;
-  send6!: any;
-  open!: any;
-  addMembership!: any;
-  addSourceSpecificMembership!: any;
-  getsockname!: any;
-  getpeername!: any;
-  onmessage!: any;
-  recvStart!: any;
-  recvStop!: any;
-  bufferSize!: any;
-  disconnect!: any;
-  dropMembership!: any;
-  dropSourceSpecificMembership!: any;
-  setTTL!: any;
-  setBroadcast!: any;
-  setMulticastInterface!: any;
-  setMulticastLoopback!: any;
-  setMulticastTTL!: any;
+  addMembership(_multicastAddress: string, _interfaceAddress?: string): number {
+    notImplemented("udp.UDP.prototype.addMembership");
+  }
 
-  constructor() {
-    super(providerType.UDPWRAP);
+  addSourceSpecificMembership(
+    _sourceAddress: string,
+    _groupAddress: string,
+    _interfaceAddress?: string,
+  ): number {
+    notImplemented("udp.UDP.prototype.addSourceSpecificMembership");
+  }
+
+  bind(_ip: string, _port: number, _flags: number): number {
+    notImplemented("udp.UDP.prototype.bind");
+  }
+
+  bind6(_ip: string, _port: number, _flags: number): number {
+    notImplemented("udp.UDP.prototype.bind6");
+  }
+
+  bufferSize(
+    _size: number,
+    _buffer: boolean,
+    _ctx: Record<string, unknown>,
+  ): number {
+    notImplemented("udp.UDP.prototype.bufferSize");
+  }
+
+  connect(_ip: string, _port: number): number {
+    notImplemented("udp.UDP.prototype.connect");
+  }
+
+  connect6(_ip: string, _port: number): number {
+    notImplemented("udp.UDP.prototype.connect6");
+  }
+
+  disconnect(): number {
+    notImplemented("udp.UDP.prototype.disconnect");
+  }
+
+  dropMembership(
+    _multicastAddress: string,
+    _interfaceAddress?: string,
+  ): number {
+    notImplemented("udp.UDP.prototype.dropMembership");
+  }
+
+  dropSourceSpecificMembership(
+    _sourceAddress: string,
+    _groupAddress: string,
+    _interfaceAddress?: string,
+  ): number {
+    notImplemented("udp.UDP.prototype.dropSourceSpecificMembership");
+  }
+
+  getpeername(_req: Record<string, unknown>): number {
+    notImplemented("udp.UDP.prototype.getpeername");
+  }
+
+  getsockname(_req: Record<string, unknown>): number {
+    notImplemented("udp.UDP.prototype.getsockname");
+  }
+
+  open(_fd: number): number {
+    notImplemented("udp.UDP.prototype.open");
+  }
+
+  recvStart(): void {
+    notImplemented("udp.UDP.prototype.recvStart");
+  }
+
+  recvStop(): void {
+    notImplemented("udp.UDP.prototype.recvStart");
+  }
+
+  send(
+    _req: SendWrap,
+    _bufs: MessageType[],
+    _count: number,
+    ..._args: unknown[]
+  ): number {
+    notImplemented("udp.UDP.prototype.send");
+  }
+
+  send6(
+    _req: SendWrap,
+    _bufs: MessageType[],
+    _count: number,
+    ..._args: unknown[]
+  ): number {
+    notImplemented("udp.UDP.prototype.send6");
+  }
+
+  setBroadcast(_bool: 0 | 1): number {
+    notImplemented("udp.UDP.prototype.setBroadcast");
+  }
+
+  setMulticastInterface(_interfaceAddress: string): number {
+    notImplemented("udp.UDP.prototype.setMulticastInterface");
+  }
+
+  setMulticastLoopback(_bool: 0 | 1): number {
+    notImplemented("udp.UDP.prototype.setMulticastLoopback");
+  }
+
+  setMulticastTTL(_ttl: number): number {
+    notImplemented("udp.UDP.prototype.setMulticastTTL");
+  }
+
+  setTTL(_ttl: number): number {
+    notImplemented("udp.UDP.prototype.setTTL");
   }
 }
