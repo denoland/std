@@ -50,6 +50,7 @@ const performance:
     timerify: () => notImplemented("timerify from performance"),
     // deno-lint-ignore no-explicit-any
     timeOrigin: (shimPerformance as any).timeOrigin,
+    toJSON: () => shimPerformance.toJSON(),
   };
 
 const monitorEventLoopDelay = () =>
