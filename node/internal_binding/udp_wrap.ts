@@ -56,6 +56,7 @@ export class UDP extends HandleWrap {
   [ownerSymbol]: unknown = null;
 
   #address?: string;
+  #family?: string;
   #port?: number;
 
   #remoteAddress?: string;
@@ -143,6 +144,9 @@ export class UDP extends HandleWrap {
 
   disconnect(): number {
     this.#connected = false;
+    this.#remoteAddress = undefined;
+    this.#remotePort = undefined;
+    this.#remoteAddress = undefined;
 
     return 0;
   }
@@ -197,7 +201,7 @@ export class UDP extends HandleWrap {
 
     sockname.address = this.#address;
     sockname.port = this.#port;
-    sockname.family = isIP(this.#address);
+    sockname.family = this.#family;
 
     return 0;
   }
@@ -300,13 +304,19 @@ export class UDP extends HandleWrap {
     const address = listener.addr as Deno.NetAddr;
     this.#address = address.hostname;
     this.#port = address.port;
+    this.#family = isIP(ip) === 6 ? ("IPv6" as const) : ("IPv4" as const);
     this.#listener = listener;
 
     return 0;
   }
 
-  #doConnect(_ip: string, _port: number, _family: number): number {
+  #doConnect(ip: string, port: number, _family: number): number {
     this.#connected = true;
+    this.#remoteAddress = ip;
+    this.#remotePort = port;
+    this.#remoteAddress = isIP(ip) === 6
+      ? ("IPv6" as const)
+      : ("IPv4" as const);
 
     return 0;
   }
@@ -453,6 +463,7 @@ export class UDP extends HandleWrap {
 
     this.#address = undefined;
     this.#port = undefined;
+    this.#family = undefined;
 
     try {
       this.#listener.close();
