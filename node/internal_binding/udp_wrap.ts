@@ -78,7 +78,7 @@ export class UDP extends HandleWrap {
       family: "IPv4" | "IPv6";
       port: number;
       size?: number;
-    }
+    },
   ) => void;
 
   lookup!: (
@@ -86,8 +86,8 @@ export class UDP extends HandleWrap {
     callback: (
       err: ErrnoException | null,
       address: string,
-      family: number
-    ) => void
+      family: number,
+    ) => void,
   ) => GetAddrInfoReqWrap | Record<string, never>;
 
   constructor() {
@@ -101,7 +101,7 @@ export class UDP extends HandleWrap {
   addSourceSpecificMembership(
     _sourceAddress: string,
     _groupAddress: string,
-    _interfaceAddress?: string
+    _interfaceAddress?: string,
   ): number {
     notImplemented("udp.UDP.prototype.addSourceSpecificMembership");
   }
@@ -129,7 +129,7 @@ export class UDP extends HandleWrap {
   bufferSize(
     size: number,
     buffer: boolean,
-    _ctx: Record<string, unknown>
+    _ctx: Record<string, unknown>,
   ): number {
     if (size !== 0) {
       if (buffer) {
@@ -160,7 +160,7 @@ export class UDP extends HandleWrap {
 
   dropMembership(
     _multicastAddress: string,
-    _interfaceAddress?: string
+    _interfaceAddress?: string,
   ): number {
     notImplemented("udp.UDP.prototype.dropMembership");
   }
@@ -168,7 +168,7 @@ export class UDP extends HandleWrap {
   dropSourceSpecificMembership(
     _sourceAddress: string,
     _groupAddress: string,
-    _interfaceAddress?: string
+    _interfaceAddress?: string,
   ): number {
     notImplemented("udp.UDP.prototype.dropSourceSpecificMembership");
   }
@@ -339,7 +339,7 @@ export class UDP extends HandleWrap {
     bufs: MessageType[],
     _count: number,
     args: unknown[],
-    _family: number
+    _family: number,
   ): number {
     const sendTo = args.length === 3;
     let hasCallback: boolean;
@@ -364,8 +364,8 @@ export class UDP extends HandleWrap {
           return Buffer.from(buf);
         }
 
-        return Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength)
-      })
+        return Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
+      }),
     ));
 
     (async () => {
@@ -413,7 +413,7 @@ export class UDP extends HandleWrap {
     try {
       [buf, remoteAddr] = (await this.#listener.receive(p)) as [
         Uint8Array,
-        Deno.NetAddr
+        Deno.NetAddr,
       ];
 
       nread = buf.length;
@@ -435,13 +435,12 @@ export class UDP extends HandleWrap {
 
     const rinfo = remoteAddr
       ? {
-          address: remoteAddr.hostname,
-          port: remoteAddr.port,
-          family:
-            isIP(remoteAddr.hostname) === 6
-              ? ("IPv6" as const)
-              : ("IPv4" as const),
-        }
+        address: remoteAddr.hostname,
+        port: remoteAddr.port,
+        family: isIP(remoteAddr.hostname) === 6
+          ? ("IPv6" as const)
+          : ("IPv4" as const),
+      }
       : undefined;
 
     try {
