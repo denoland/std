@@ -118,3 +118,9 @@ export function _createSocketHandle(
 
   return handle;
 }
+
+export default {
+  kStateSymbol,
+  newHandle,
+  _createSocketHandle,
+};

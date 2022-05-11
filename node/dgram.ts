@@ -358,7 +358,9 @@ export class Socket extends EventEmitter {
   bind(port: number, callback?: () => void): this;
   bind(callback: () => void): this;
   bind(options: BindOptions, callback?: () => void): this;
-  bind(port?: unknown, _address?: unknown /* callback */): this {
+  bind(port_?: unknown, address_?: unknown /* callback */): this {
+    let port = typeof port_ === "function" ? null : port_;
+
     healthCheck(this);
 
     const state = this[kStateSymbol];
@@ -431,7 +433,7 @@ export class Socket extends EventEmitter {
       address = port.address || "";
       port = port.port;
     } else {
-      address = typeof _address === "function" ? "" : (_address as string);
+      address = typeof address_ === "function" ? "" : (address_ as string);
     }
 
     // Defaulting address for bind to all interfaces

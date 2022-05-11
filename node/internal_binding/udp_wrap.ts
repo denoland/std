@@ -64,10 +64,10 @@ export class UDP extends HandleWrap {
   #remotePort?: number;
 
   #listener!: DenoUnstable.DatagramConn;
-
-  #bound = false;
   #receiving = false;
-  #connected = false;
+
+  #recvBufferSize = UDP_DGRAM_MAXSIZE;
+  #sendBufferSize = UDP_DGRAM_MAXSIZE;
 
   onmessage!: (
     nread: number,
@@ -78,7 +78,7 @@ export class UDP extends HandleWrap {
       family: "IPv4" | "IPv6";
       port: number;
       size?: number;
-    },
+    }
   ) => void;
 
   lookup!: (
@@ -86,8 +86,8 @@ export class UDP extends HandleWrap {
     callback: (
       err: ErrnoException | null,
       address: string,
-      family: number,
-    ) => void,
+      family: number
+    ) => void
   ) => GetAddrInfoReqWrap | Record<string, never>;
 
   constructor() {
@@ -101,7 +101,7 @@ export class UDP extends HandleWrap {
   addSourceSpecificMembership(
     _sourceAddress: string,
     _groupAddress: string,
-    _interfaceAddress?: string,
+    _interfaceAddress?: string
   ): number {
     notImplemented("udp.UDP.prototype.addSourceSpecificMembership");
   }
@@ -127,11 +127,19 @@ export class UDP extends HandleWrap {
   }
 
   bufferSize(
-    _size: number,
-    _buffer: boolean,
-    _ctx: Record<string, unknown>,
+    size: number,
+    buffer: boolean,
+    _ctx: Record<string, unknown>
   ): number {
-    notImplemented("udp.UDP.prototype.bufferSize");
+    if (size !== 0) {
+      if (buffer) {
+        this.#recvBufferSize = size;
+      } else {
+        this.#sendBufferSize = size;
+      }
+    }
+
+    return buffer ? this.#recvBufferSize : this.#sendBufferSize;
   }
 
   connect(ip: string, port: number): number {
@@ -143,17 +151,16 @@ export class UDP extends HandleWrap {
   }
 
   disconnect(): number {
-    this.#connected = false;
     this.#remoteAddress = undefined;
     this.#remotePort = undefined;
-    this.#remoteAddress = undefined;
+    this.#remoteFamily = undefined;
 
     return 0;
   }
 
   dropMembership(
     _multicastAddress: string,
-    _interfaceAddress?: string,
+    _interfaceAddress?: string
   ): number {
     notImplemented("udp.UDP.prototype.dropMembership");
   }
@@ -161,7 +168,7 @@ export class UDP extends HandleWrap {
   dropSourceSpecificMembership(
     _sourceAddress: string,
     _groupAddress: string,
-    _interfaceAddress?: string,
+    _interfaceAddress?: string
   ): number {
     notImplemented("udp.UDP.prototype.dropSourceSpecificMembership");
   }
@@ -176,7 +183,7 @@ export class UDP extends HandleWrap {
       typeof this.#remoteAddress === "undefined" ||
       typeof this.#remotePort === "undefined"
     ) {
-      return codeMap.get("EADDRNOTAVAIL")!;
+      return codeMap.get("EBADF")!;
     }
 
     peername.address = this.#remoteAddress;
@@ -196,7 +203,7 @@ export class UDP extends HandleWrap {
       typeof this.#address === "undefined" ||
       typeof this.#port === "undefined"
     ) {
-      return codeMap.get("EADDRNOTAVAIL")!;
+      return codeMap.get("EBADF")!;
     }
 
     sockname.address = this.#address;
@@ -212,6 +219,7 @@ export class UDP extends HandleWrap {
    * @return An error status code.
    */
   open(_fd: number): number {
+    // REF: https://github.com/denoland/deno/issues/6529
     notImplemented("udp.UDP.prototype.open");
   }
 
@@ -236,6 +244,10 @@ export class UDP extends HandleWrap {
     this.#receiving = false;
 
     return 0;
+  }
+
+  override ref(): void {
+    notImplemented("udp.UDP.prototype.ref");
   }
 
   send(
@@ -276,6 +288,10 @@ export class UDP extends HandleWrap {
     notImplemented("udp.UDP.prototype.setTTL");
   }
 
+  override unref(): void {
+    notImplemented("udp.UDP.prototype.unref");
+  }
+
   #doBind(ip: string, port: number, _flags: number, _family: number): number {
     // TODO(cmorten):
     // - validation of flags and family args
@@ -311,12 +327,9 @@ export class UDP extends HandleWrap {
   }
 
   #doConnect(ip: string, port: number, _family: number): number {
-    this.#connected = true;
     this.#remoteAddress = ip;
     this.#remotePort = port;
-    this.#remoteAddress = isIP(ip) === 6
-      ? ("IPv6" as const)
-      : ("IPv4" as const);
+    this.#remoteFamily = isIP(ip) === 6 ? ("IPv6" as const) : ("IPv4" as const);
 
     return 0;
   }
@@ -324,9 +337,9 @@ export class UDP extends HandleWrap {
   #doSend(
     req: SendWrap,
     bufs: MessageType[],
-    count: number,
+    _count: number,
     args: unknown[],
-    _family: number,
+    _family: number
   ): number {
     const sendTo = args.length === 3;
     let hasCallback: boolean;
@@ -345,48 +358,33 @@ export class UDP extends HandleWrap {
       transport: "udp",
     };
 
+    const payload = new Uint8Array(Buffer.concat(
+      bufs.map((buf) => {
+        if (typeof buf === "string") {
+          return Buffer.from(buf);
+        }
+
+        return Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength)
+      })
+    ));
+
     (async () => {
-      const ret: [number, number | null][] = await Promise.all(
-        bufs.map(async (buf) => {
-          let sent: number;
-          let err: number | null = null;
-
-          let payload: Uint8Array;
-
-          if (typeof buf === "string") {
-            payload = Buffer.from(buf);
-          } else if (buf instanceof DataView) {
-            payload = new Uint8Array(buf.buffer);
-          } else {
-            payload = buf;
-          }
-
-          try {
-            sent = await this.#listener.send(payload, addr);
-          } catch (e) {
-            // TODO(cmorten): map errors to appropriate error codes.
-            if (e instanceof Deno.errors.BadResource) {
-              err = codeMap.get("EBADF")!;
-            } else {
-              err = codeMap.get("UNKNOWN")!;
-            }
-
-            sent = 0;
-          }
-
-          return [sent, err];
-        }),
-      );
-
-      let sent = 0;
+      let sent: number;
       let err: number | null = null;
 
-      for (let i = 0; i < count; i++) {
-        sent += ret[i][0];
-
-        if (ret[i][1] !== null) {
-          err = ret[i][1];
+      try {
+        sent = await this.#listener.send(payload, addr);
+      } catch (e) {
+        // TODO(cmorten): map errors to appropriate error codes.
+        if (e instanceof Deno.errors.BadResource) {
+          err = codeMap.get("EBADF")!;
+        } else if (e instanceof Error && e.message.match(/Message too long/)) {
+          err = codeMap.get("EMSGSIZE")!;
+        } else {
+          err = codeMap.get("UNKNOWN")!;
         }
+
+        sent = 0;
       }
 
       if (hasCallback) {
@@ -402,11 +400,11 @@ export class UDP extends HandleWrap {
   }
 
   async #receive(): Promise<void> {
-    if (this.#bound || this.#receiving === false) {
+    if (this.#receiving === false) {
       return;
     }
 
-    const p = new Uint8Array(UDP_DGRAM_MAXSIZE);
+    const p = new Uint8Array(this.#recvBufferSize);
 
     let buf: Uint8Array;
     let remoteAddr: Deno.NetAddr | null;
@@ -415,7 +413,7 @@ export class UDP extends HandleWrap {
     try {
       [buf, remoteAddr] = (await this.#listener.receive(p)) as [
         Uint8Array,
-        Deno.NetAddr,
+        Deno.NetAddr
       ];
 
       nread = buf.length;
@@ -424,7 +422,7 @@ export class UDP extends HandleWrap {
         e instanceof Deno.errors.Interrupted ||
         e instanceof Deno.errors.BadResource
       ) {
-        nread = codeMap.get("EOF")!;
+        nread = 0;
       } else {
         nread = codeMap.get("UNKNOWN")!;
       }
@@ -433,16 +431,17 @@ export class UDP extends HandleWrap {
       remoteAddr = null;
     }
 
-    nread ??= codeMap.get("EOF")!;
+    nread ??= 0;
 
     const rinfo = remoteAddr
       ? {
-        address: remoteAddr.hostname,
-        port: remoteAddr.port,
-        family: isIP(remoteAddr.hostname) === 6
-          ? ("IPv6" as const)
-          : ("IPv4" as const),
-      }
+          address: remoteAddr.hostname,
+          port: remoteAddr.port,
+          family:
+            isIP(remoteAddr.hostname) === 6
+              ? ("IPv6" as const)
+              : ("IPv4" as const),
+        }
       : undefined;
 
     try {
@@ -458,9 +457,7 @@ export class UDP extends HandleWrap {
 
   /** Handle socket closure. */
   override _onClose(): number {
-    this.#bound = false;
     this.#receiving = false;
-
     this.#address = undefined;
     this.#port = undefined;
     this.#family = undefined;
