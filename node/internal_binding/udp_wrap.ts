@@ -378,7 +378,7 @@ export class UDP extends HandleWrap {
         // TODO(cmorten): map errors to appropriate error codes.
         if (e instanceof Deno.errors.BadResource) {
           err = codeMap.get("EBADF")!;
-        } else if (e instanceof Error && e.message.match(/Message too long/)) {
+        } else if (e instanceof Error && e.message.match(/os error (40|90|4065)/)) {
           err = codeMap.get("EMSGSIZE")!;
         } else {
           err = codeMap.get("UNKNOWN")!;
