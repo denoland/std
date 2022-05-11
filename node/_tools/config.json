@@ -24,6 +24,8 @@
       "test-dgram-custom-lookup.js",
       "test-dgram-ipv6only.js",
       "test-dgram-send-cb-quelches-error.js",
+      "test-dgram-socket-buffer-size.js",
+      "test-dgram-udp6-link-local-address.js",
       "test-dns-lookup.js",
       "test-dns.js",
       "test-event-emitter-max-listeners.js",
@@ -91,6 +93,7 @@
       "exit.js"
     ],
     "internet": [
+      "test-dgram-connect.js",
       "test-dns-any.js",
       "test-dns-idna2008.js",
       "test-dns-ipv4.js",
@@ -208,6 +211,10 @@
       "test-dgram-send-invalid-msg-type.js",
       "test-dgram-send-multi-buffer-copy.js",
       "test-dgram-send-multi-string-array.js",
+      "test-dgram-socket-buffer-size.js",
+      "test-dgram-udp4.js",
+      "test-dgram-udp6-link-local-address.js",
+      "test-dgram-udp6-send-default-host.js",
       "test-dns-lookup.js",
       "test-dns-memory-error.js",
       "test-dns-promises-exists.js",
@@ -617,7 +624,8 @@
       "test-net-bytes-per-incoming-chunk-overhead.js",
       "test-net-pingpong-delay.js",
       "test-net-write-callbacks.js"
-    ]
+    ],
+    "sequential": []
   },
   "windowsIgnore": {
     "parallel": [

@@ -23,13 +23,14 @@
 import { HandleWrap } from "./handle_wrap.ts";
 import { providerType } from "./async_wrap.ts";
 import { ownerSymbol } from "./symbols.ts";
-import { codeMap } from "./uv.ts";
+import { codeMap, errorMap } from "./uv.ts";
 import type { ErrnoException } from "../internal/errors.ts";
 import { GetAddrInfoReqWrap } from "./cares_wrap.ts";
 import { AsyncWrap } from "./async_wrap.ts";
 import { Buffer } from "../buffer.ts";
 import { isIP } from "../internal/net.ts";
 import { notImplemented } from "../_utils.ts";
+import { isWindows } from "../../_util/os.ts";
 import * as DenoUnstable from "../../_deno_unstable.ts";
 
 type MessageType = string | Uint8Array | Buffer | DataView;
@@ -129,8 +130,27 @@ export class UDP extends HandleWrap {
   bufferSize(
     size: number,
     buffer: boolean,
-    _ctx: Record<string, unknown>,
-  ): number {
+    ctx: Record<string, unknown>,
+  ): number | undefined {
+    let code: string | undefined;
+    if (size > UDP_DGRAM_MAXSIZE) {
+      code = "EINVAL";
+    }
+
+    if (!this.#address) {
+      code = isWindows ? "ENOTSOCK" : "EBADF";
+    }
+
+    if (code) {
+      const errno = codeMap.get(code)!;
+      ctx.errno = errno;
+      ctx.code = code;
+      ctx.message = errorMap.get(errno)![1];
+      ctx.syscall = buffer ? "uv_recv_buffer_size" : "uv_send_buffer_size";
+
+      return;
+    }
+
     if (size !== 0) {
       if (buffer) {
         this.#recvBufferSize = size;
@@ -378,7 +398,9 @@ export class UDP extends HandleWrap {
         // TODO(cmorten): map errors to appropriate error codes.
         if (e instanceof Deno.errors.BadResource) {
           err = codeMap.get("EBADF")!;
-        } else if (e instanceof Error && e.message.match(/os error (40|90|10040)/)) {
+        } else if (
+          e instanceof Error && e.message.match(/os error (40|90|10040)/)
+        ) {
           err = codeMap.get("EMSGSIZE")!;
         } else {
           err = codeMap.get("UNKNOWN")!;

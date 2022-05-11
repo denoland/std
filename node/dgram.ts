@@ -23,7 +23,7 @@
 import { Buffer } from "./buffer.ts";
 import { EventEmitter } from "./events.ts";
 import { lookup as defaultLookup } from "./dns.ts";
-import type { ErrnoException } from "./internal/errors.ts";
+import type { ErrnoException, NodeSystemErrorCtx } from "./internal/errors.ts";
 import {
   ERR_BUFFER_OUT_OF_BOUNDS,
   ERR_INVALID_ARG_TYPE,
@@ -31,6 +31,7 @@ import {
   ERR_MISSING_ARGS,
   ERR_SOCKET_ALREADY_BOUND,
   ERR_SOCKET_BAD_BUFFER_SIZE,
+  ERR_SOCKET_BUFFER_SIZE,
   ERR_SOCKET_DGRAM_IS_CONNECTED,
   ERR_SOCKET_DGRAM_NOT_CONNECTED,
   ERR_SOCKET_DGRAM_NOT_RUNNING,
@@ -1260,10 +1261,9 @@ function bufferSize(self: Socket, size: number, buffer: boolean): number {
   const ctx = {};
   const ret = self[kStateSymbol].handle!.bufferSize(size, buffer, ctx);
 
-  // System error apparently not possible in Deno
-  // if (ret === undefined) {
-  //   throw new ERR_SOCKET_BUFFER_SIZE(ctx);
-  // }
+  if (ret === undefined) {
+    throw new ERR_SOCKET_BUFFER_SIZE(ctx as NodeSystemErrorCtx);
+  }
 
   return ret;
 }

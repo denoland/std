@@ -605,9 +605,9 @@ Deno.test({
   },
 });
 
-
 Deno.test({
-  name: "utf8Write handle missing optional length argument (https://github.com/denoland/deno_std/issues/2046)",
+  name:
+    "utf8Write handle missing optional length argument (https://github.com/denoland/deno_std/issues/2046)",
   fn() {
     const buf = Buffer.alloc(8);
     // @ts-expect-error Buffer.prototype.utf8Write is an undocumented API
