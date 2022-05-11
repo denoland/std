@@ -340,3 +340,4 @@ export function mapSysErrnoToUvErrno(sysErrno: number): number {
 }
 
 export const UV_EAI_MEMORY = codeMap.get("EAI_MEMORY")!;
+export const UV_UNKNOWN = codeMap.get("UNKNOWN")!;

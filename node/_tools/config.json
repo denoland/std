@@ -24,7 +24,6 @@
       "test-dgram-custom-lookup.js",
       "test-dgram-ipv6only.js",
       "test-dgram-send-cb-quelches-error.js",
-      "test-dgram-send-error.js",
       "test-dns-lookup.js",
       "test-dns.js",
       "test-event-emitter-max-listeners.js",
