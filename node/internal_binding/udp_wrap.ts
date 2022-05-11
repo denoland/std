@@ -23,13 +23,21 @@
 import { HandleWrap } from "./handle_wrap.ts";
 import { providerType } from "./async_wrap.ts";
 import { ownerSymbol } from "./symbols.ts";
+import { codeMap } from "./uv.ts";
 import type { ErrnoException } from "../internal/errors.ts";
 import { GetAddrInfoReqWrap } from "./cares_wrap.ts";
 import { AsyncWrap } from "./async_wrap.ts";
 import { Buffer } from "../buffer.ts";
+import { isIP } from "../internal/net.ts";
 import { notImplemented } from "../_utils.ts";
+import * as DenoUnstable from "../../_deno_unstable.ts";
 
 type MessageType = string | Uint8Array | Buffer | DataView;
+
+const AF_INET = 2;
+const AF_INET6 = 10;
+
+const UDP_DGRAM_MAXSIZE = 64 * 1024;
 
 export class SendWrap extends AsyncWrap {
   list!: MessageType[];
@@ -46,21 +54,31 @@ export class SendWrap extends AsyncWrap {
 
 export class UDP extends HandleWrap {
   [ownerSymbol]: unknown = null;
+
+  #address?: string;
+  #port?: number;
+
+  #remoteAddress?: string;
+  #remoteFamily?: string;
+  #remotePort?: number;
+
+  #listener!: DenoUnstable.DatagramConn;
+
+  #bound = false;
+  #receiving = false;
+  #connected = false;
+
   onmessage!: (
     nread: number,
     handle: UDP,
-    buf: Buffer,
-    rinfo: {
+    buf?: Buffer,
+    rinfo?: {
       address: string;
       family: "IPv4" | "IPv6";
       port: number;
-      size: number;
+      size?: number;
     },
   ) => void;
-
-  constructor() {
-    super(providerType.UDPWRAP);
-  }
 
   lookup!: (
     address: string,
@@ -70,6 +88,10 @@ export class UDP extends HandleWrap {
       family: number,
     ) => void,
   ) => GetAddrInfoReqWrap | Record<string, never>;
+
+  constructor() {
+    super(providerType.UDPWRAP);
+  }
 
   addMembership(_multicastAddress: string, _interfaceAddress?: string): number {
     notImplemented("udp.UDP.prototype.addMembership");
@@ -83,12 +105,24 @@ export class UDP extends HandleWrap {
     notImplemented("udp.UDP.prototype.addSourceSpecificMembership");
   }
 
-  bind(_ip: string, _port: number, _flags: number): number {
-    notImplemented("udp.UDP.prototype.bind");
+  /**
+   * Bind to an IPv4 address.
+   * @param ip The hostname to bind to.
+   * @param port The port to bind to
+   * @return An error status code.
+   */
+  bind(ip: string, port: number, flags: number): number {
+    return this.#doBind(ip, port, flags, AF_INET);
   }
 
-  bind6(_ip: string, _port: number, _flags: number): number {
-    notImplemented("udp.UDP.prototype.bind6");
+  /**
+   * Bind to an IPv6 address.
+   * @param ip The hostname to bind to.
+   * @param port The port to bind to
+   * @return An error status code.
+   */
+  bind6(ip: string, port: number, flags: number): number {
+    return this.#doBind(ip, port, flags, AF_INET6);
   }
 
   bufferSize(
@@ -99,16 +133,18 @@ export class UDP extends HandleWrap {
     notImplemented("udp.UDP.prototype.bufferSize");
   }
 
-  connect(_ip: string, _port: number): number {
-    notImplemented("udp.UDP.prototype.connect");
+  connect(ip: string, port: number): number {
+    return this.#doConnect(ip, port, AF_INET);
   }
 
-  connect6(_ip: string, _port: number): number {
-    notImplemented("udp.UDP.prototype.connect6");
+  connect6(ip: string, port: number): number {
+    return this.#doConnect(ip, port, AF_INET6);
   }
 
   disconnect(): number {
-    notImplemented("udp.UDP.prototype.disconnect");
+    this.#connected = false;
+
+    return 0;
   }
 
   dropMembership(
@@ -126,42 +162,94 @@ export class UDP extends HandleWrap {
     notImplemented("udp.UDP.prototype.dropSourceSpecificMembership");
   }
 
-  getpeername(_req: Record<string, unknown>): number {
-    notImplemented("udp.UDP.prototype.getpeername");
+  /**
+   * Populates the provided object with remote address entries.
+   * @param peername An object to add the remote address entries to.
+   * @return An error status code.
+   */
+  getpeername(peername: Record<string, unknown>): number {
+    if (
+      typeof this.#remoteAddress === "undefined" ||
+      typeof this.#remotePort === "undefined"
+    ) {
+      return codeMap.get("EADDRNOTAVAIL")!;
+    }
+
+    peername.address = this.#remoteAddress;
+    peername.port = this.#remotePort;
+    peername.family = this.#remoteFamily;
+
+    return 0;
   }
 
-  getsockname(_req: Record<string, unknown>): number {
-    notImplemented("udp.UDP.prototype.getsockname");
+  /**
+   * Populates the provided object with local address entries.
+   * @param sockname An object to add the local address entries to.
+   * @return An error status code.
+   */
+  getsockname(sockname: Record<string, unknown>): number {
+    if (
+      typeof this.#address === "undefined" ||
+      typeof this.#port === "undefined"
+    ) {
+      return codeMap.get("EADDRNOTAVAIL")!;
+    }
+
+    sockname.address = this.#address;
+    sockname.port = this.#port;
+    sockname.family = isIP(this.#address);
+
+    return 0;
   }
 
+  /**
+   * Opens a file descriptor.
+   * @param fd The file descriptor to open.
+   * @return An error status code.
+   */
   open(_fd: number): number {
     notImplemented("udp.UDP.prototype.open");
   }
 
-  recvStart(): void {
-    notImplemented("udp.UDP.prototype.recvStart");
+  /**
+   * Start receiving on the connection.
+   * @return An error status code.
+   */
+  recvStart(): number {
+    if (!this.#receiving) {
+      this.#receiving = true;
+      this.#receive();
+    }
+
+    return 0;
   }
 
-  recvStop(): void {
-    notImplemented("udp.UDP.prototype.recvStart");
+  /**
+   * Stop receiving on the connection.
+   * @return An error status code.
+   */
+  recvStop(): number {
+    this.#receiving = false;
+
+    return 0;
   }
 
   send(
-    _req: SendWrap,
-    _bufs: MessageType[],
-    _count: number,
-    ..._args: unknown[]
+    req: SendWrap,
+    bufs: MessageType[],
+    count: number,
+    ...args: unknown[]
   ): number {
-    notImplemented("udp.UDP.prototype.send");
+    return this.#doSend(req, bufs, count, args, AF_INET);
   }
 
   send6(
-    _req: SendWrap,
-    _bufs: MessageType[],
-    _count: number,
-    ..._args: unknown[]
+    req: SendWrap,
+    bufs: MessageType[],
+    count: number,
+    ...args: unknown[]
   ): number {
-    notImplemented("udp.UDP.prototype.send6");
+    return this.#doSend(req, bufs, count, args, AF_INET6);
   }
 
   setBroadcast(_bool: 0 | 1): number {
@@ -182,5 +270,196 @@ export class UDP extends HandleWrap {
 
   setTTL(_ttl: number): number {
     notImplemented("udp.UDP.prototype.setTTL");
+  }
+
+  #doBind(ip: string, port: number, _flags: number, _family: number): number {
+    // TODO(cmorten):
+    // - validation of flags and family args
+    // - use flags to inform socket reuse etc.
+    const listenOptions = {
+      port,
+      hostname: ip,
+      transport: "udp" as const,
+    };
+
+    let listener;
+
+    try {
+      listener = DenoUnstable.listenDatagram(listenOptions);
+    } catch (e) {
+      if (e instanceof Deno.errors.AddrInUse) {
+        return codeMap.get("EADDRINUSE")!;
+      } else if (e instanceof Deno.errors.AddrNotAvailable) {
+        return codeMap.get("EADDRNOTAVAIL")!;
+      }
+
+      // TODO(cmorten): map errors to appropriate error codes.
+      return codeMap.get("UNKNOWN")!;
+    }
+
+    const address = listener.addr as Deno.NetAddr;
+    this.#address = address.hostname;
+    this.#port = address.port;
+    this.#listener = listener;
+
+    return 0;
+  }
+
+  #doConnect(_ip: string, _port: number, _family: number): number {
+    this.#connected = true;
+
+    return 0;
+  }
+
+  #doSend(
+    req: SendWrap,
+    bufs: MessageType[],
+    count: number,
+    args: unknown[],
+    _family: number,
+  ): number {
+    const sendTo = args.length === 3;
+    let hasCallback: boolean;
+
+    if (sendTo) {
+      this.#remotePort = args[0] as number;
+      this.#remoteAddress = args[1] as string;
+      hasCallback = args[2] as boolean;
+    } else {
+      hasCallback = args[0] as boolean;
+    }
+
+    const addr: Deno.NetAddr = {
+      hostname: this.#remoteAddress!,
+      port: this.#remotePort!,
+      transport: "udp",
+    };
+
+    (async () => {
+      const ret: [number, number | null][] = await Promise.all(
+        bufs.map(async (buf) => {
+          let sent: number;
+          let err: number | null = null;
+
+          let payload: Uint8Array;
+
+          if (typeof buf === "string") {
+            payload = Buffer.from(buf);
+          } else if (buf instanceof DataView) {
+            payload = new Uint8Array(buf.buffer);
+          } else {
+            payload = buf;
+          }
+
+          try {
+            sent = await this.#listener.send(payload, addr);
+          } catch (e) {
+            // TODO(cmorten): map errors to appropriate error codes.
+            if (e instanceof Deno.errors.BadResource) {
+              err = codeMap.get("EBADF")!;
+            } else {
+              err = codeMap.get("UNKNOWN")!;
+            }
+
+            sent = 0;
+          }
+
+          return [sent, err];
+        }),
+      );
+
+      let sent = 0;
+      let err: number | null = null;
+
+      for (let i = 0; i < count; i++) {
+        sent += ret[i][0];
+
+        if (ret[i][1] !== null) {
+          err = ret[i][1];
+        }
+      }
+
+      if (hasCallback) {
+        try {
+          req.oncomplete(err, sent);
+        } catch {
+          // swallow callback errors
+        }
+      }
+    })();
+
+    return 0;
+  }
+
+  async #receive(): Promise<void> {
+    if (this.#bound || this.#receiving === false) {
+      return;
+    }
+
+    const p = new Uint8Array(UDP_DGRAM_MAXSIZE);
+
+    let buf: Uint8Array;
+    let remoteAddr: Deno.NetAddr | null;
+    let nread: number | null;
+
+    try {
+      [buf, remoteAddr] = (await this.#listener.receive(p)) as [
+        Uint8Array,
+        Deno.NetAddr,
+      ];
+
+      nread = buf.length;
+    } catch (e) {
+      if (
+        e instanceof Deno.errors.Interrupted ||
+        e instanceof Deno.errors.BadResource
+      ) {
+        nread = codeMap.get("EOF")!;
+      } else {
+        nread = codeMap.get("UNKNOWN")!;
+      }
+
+      buf = new Uint8Array(0);
+      remoteAddr = null;
+    }
+
+    nread ??= codeMap.get("EOF")!;
+
+    const rinfo = remoteAddr
+      ? {
+        address: remoteAddr.hostname,
+        port: remoteAddr.port,
+        family: isIP(remoteAddr.hostname) === 6
+          ? ("IPv6" as const)
+          : ("IPv4" as const),
+      }
+      : undefined;
+
+    try {
+      this.onmessage(nread, this, Buffer.from(buf), rinfo);
+    } catch {
+      // swallow callback errors.
+    }
+
+    if (this.#receiving) {
+      this.#receive();
+    }
+  }
+
+  /** Handle socket closure. */
+  override _onClose(): number {
+    this.#bound = false;
+    this.#receiving = false;
+
+    this.#address = undefined;
+    this.#port = undefined;
+
+    try {
+      this.#listener.close();
+    } catch {
+      // listener already closed
+    }
+
+    return 0;
   }
 }

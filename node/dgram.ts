@@ -83,7 +83,7 @@ export type RemoteInfo = {
   address: string;
   family: "IPv4" | "IPv6";
   port: number;
-  size: number;
+  size?: number;
 };
 
 export interface BindOptions {
@@ -1291,8 +1291,8 @@ function stopReceiving(socket: Socket): void {
 function onMessage(
   nread: number,
   handle: UDP,
-  buf: Buffer,
-  rinfo: RemoteInfo,
+  buf?: Buffer,
+  rinfo?: RemoteInfo,
 ): void {
   const self = handle[ownerSymbol] as Socket;
 
@@ -1302,7 +1302,7 @@ function onMessage(
     return;
   }
 
-  rinfo.size = buf.length; // compatibility
+  rinfo!.size = buf!.length; // compatibility
 
   self.emit("message", buf, rinfo);
 }
