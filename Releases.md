@@ -1,3 +1,12 @@
+### 0.139.0 / 2022.05.12
+
+- feat(encoding): add jsonc parser (#2154)
+- feat(node/dns): Implement Resolver APIs (#2201)
+- feat(node/net): unix domain socket support (#2146)
+- feat(testing/snapshot): add "assertSnapshot" options overload (#2179)
+- fix(node/module): interpret length parameter as optional in blitBuffer (#2199)
+- fix(node/timers): set custom promisify function (#2198)
+
 ### 0.138.0 / 2022.05.05
 
 - fix: Export equalSimd and equalsNaive (#2187)
