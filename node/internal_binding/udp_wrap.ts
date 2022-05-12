@@ -20,18 +20,17 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+import { AsyncWrap, providerType } from "./async_wrap.ts";
+import { GetAddrInfoReqWrap } from "./cares_wrap.ts";
 import { HandleWrap } from "./handle_wrap.ts";
-import { providerType } from "./async_wrap.ts";
 import { ownerSymbol } from "./symbols.ts";
 import { codeMap, errorMap } from "./uv.ts";
-import type { ErrnoException } from "../internal/errors.ts";
-import { GetAddrInfoReqWrap } from "./cares_wrap.ts";
-import { AsyncWrap } from "./async_wrap.ts";
-import { Buffer } from "../buffer.ts";
-import { isIP } from "../internal/net.ts";
 import { notImplemented } from "../_utils.ts";
-import { isWindows } from "../../_util/os.ts";
+import { Buffer } from "../buffer.ts";
+import type { ErrnoException } from "../internal/errors.ts";
+import { isIP } from "../internal/net.ts";
 import * as DenoUnstable from "../../_deno_unstable.ts";
+import { isLinux, isWindows } from "../../_util/os.ts";
 
 type MessageType = string | Uint8Array | Buffer | DataView;
 
@@ -64,7 +63,7 @@ export class UDP extends HandleWrap {
   #remoteFamily?: string;
   #remotePort?: number;
 
-  #listener!: DenoUnstable.DatagramConn;
+  #listener?: DenoUnstable.DatagramConn;
   #receiving = false;
 
   #recvBufferSize = UDP_DGRAM_MAXSIZE;
@@ -130,33 +129,33 @@ export class UDP extends HandleWrap {
   bufferSize(
     size: number,
     buffer: boolean,
-    ctx: Record<string, unknown>,
+    ctx: Record<string, string | number>,
   ): number | undefined {
-    let code: string | undefined;
+    let err: string | undefined;
+
     if (size > UDP_DGRAM_MAXSIZE) {
-      code = "EINVAL";
+      err = "EINVAL";
+    } else if (!this.#address) {
+      err = isWindows ? "ENOTSOCK" : "EBADF";
     }
 
-    if (!this.#address) {
-      code = isWindows ? "ENOTSOCK" : "EBADF";
-    }
-
-    if (code) {
-      const errno = codeMap.get(code)!;
-      ctx.errno = errno;
-      ctx.code = code;
-      ctx.message = errorMap.get(errno)![1];
+    if (err) {
+      ctx.errno = codeMap.get(err)!;
+      ctx.code = err;
+      ctx.message = errorMap.get(ctx.errno)![1];
       ctx.syscall = buffer ? "uv_recv_buffer_size" : "uv_send_buffer_size";
 
       return;
     }
 
     if (size !== 0) {
+      size = isLinux ? size * 2 : size;
+
       if (buffer) {
-        this.#recvBufferSize = size;
-      } else {
-        this.#sendBufferSize = size;
+        return (this.#recvBufferSize = size);
       }
+
+      return (this.#sendBufferSize = size);
     }
 
     return buffer ? this.#recvBufferSize : this.#sendBufferSize;
@@ -198,17 +197,14 @@ export class UDP extends HandleWrap {
    * @param peername An object to add the remote address entries to.
    * @return An error status code.
    */
-  getpeername(peername: Record<string, unknown>): number {
-    if (
-      typeof this.#remoteAddress === "undefined" ||
-      typeof this.#remotePort === "undefined"
-    ) {
+  getpeername(peername: Record<string, string | number>): number {
+    if (this.#remoteAddress === undefined) {
       return codeMap.get("EBADF")!;
     }
 
     peername.address = this.#remoteAddress;
-    peername.port = this.#remotePort;
-    peername.family = this.#remoteFamily;
+    peername.port = this.#remotePort!;
+    peername.family = this.#remoteFamily!;
 
     return 0;
   }
@@ -218,17 +214,14 @@ export class UDP extends HandleWrap {
    * @param sockname An object to add the local address entries to.
    * @return An error status code.
    */
-  getsockname(sockname: Record<string, unknown>): number {
-    if (
-      typeof this.#address === "undefined" ||
-      typeof this.#port === "undefined"
-    ) {
+  getsockname(sockname: Record<string, string | number>): number {
+    if (this.#address === undefined) {
       return codeMap.get("EBADF")!;
     }
 
     sockname.address = this.#address;
-    sockname.port = this.#port;
-    sockname.family = this.#family;
+    sockname.port = this.#port!;
+    sockname.family = this.#family!;
 
     return 0;
   }
@@ -274,7 +267,7 @@ export class UDP extends HandleWrap {
     req: SendWrap,
     bufs: MessageType[],
     count: number,
-    ...args: unknown[]
+    ...args: [number, string, boolean] | [boolean]
   ): number {
     return this.#doSend(req, bufs, count, args, AF_INET);
   }
@@ -283,7 +276,7 @@ export class UDP extends HandleWrap {
     req: SendWrap,
     bufs: MessageType[],
     count: number,
-    ...args: unknown[]
+    ...args: [number, string, boolean] | [boolean]
   ): number {
     return this.#doSend(req, bufs, count, args, AF_INET6);
   }
@@ -312,10 +305,8 @@ export class UDP extends HandleWrap {
     notImplemented("udp.UDP.prototype.unref");
   }
 
-  #doBind(ip: string, port: number, _flags: number, _family: number): number {
-    // TODO(cmorten):
-    // - validation of flags and family args
-    // - use flags to inform socket reuse etc.
+  #doBind(ip: string, port: number, _flags: number, family: number): number {
+    // TODO(cmorten): use flags to inform socket reuse etc.
     const listenOptions = {
       port,
       hostname: ip,
@@ -340,16 +331,18 @@ export class UDP extends HandleWrap {
     const address = listener.addr as Deno.NetAddr;
     this.#address = address.hostname;
     this.#port = address.port;
-    this.#family = isIP(ip) === 6 ? ("IPv6" as const) : ("IPv4" as const);
+    this.#family = family === AF_INET6 ? ("IPv6" as const) : ("IPv4" as const);
     this.#listener = listener;
 
     return 0;
   }
 
-  #doConnect(ip: string, port: number, _family: number): number {
+  #doConnect(ip: string, port: number, family: number): number {
     this.#remoteAddress = ip;
     this.#remotePort = port;
-    this.#remoteFamily = isIP(ip) === 6 ? ("IPv6" as const) : ("IPv4" as const);
+    this.#remoteFamily = family === AF_INET6
+      ? ("IPv6" as const)
+      : ("IPv4" as const);
 
     return 0;
   }
@@ -358,13 +351,12 @@ export class UDP extends HandleWrap {
     req: SendWrap,
     bufs: MessageType[],
     _count: number,
-    args: unknown[],
+    args: [number, string, boolean] | [boolean],
     _family: number,
   ): number {
-    const sendTo = args.length === 3;
     let hasCallback: boolean;
 
-    if (sendTo) {
+    if (args.length === 3) {
       this.#remotePort = args[0] as number;
       this.#remoteAddress = args[1] as string;
       hasCallback = args[2] as boolean;
@@ -378,28 +370,32 @@ export class UDP extends HandleWrap {
       transport: "udp",
     };
 
-    const payload = new Uint8Array(Buffer.concat(
-      bufs.map((buf) => {
-        if (typeof buf === "string") {
-          return Buffer.from(buf);
-        }
+    // Deno.DatagramConn.prototype.send accepts only one Uint8Array
+    const payload = new Uint8Array(
+      Buffer.concat(
+        bufs.map((buf) => {
+          if (typeof buf === "string") {
+            return Buffer.from(buf);
+          }
 
-        return Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
-      }),
-    ));
+          return Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength);
+        }),
+      ),
+    );
 
     (async () => {
       let sent: number;
       let err: number | null = null;
 
       try {
-        sent = await this.#listener.send(payload, addr);
+        sent = await this.#listener!.send(payload, addr);
       } catch (e) {
         // TODO(cmorten): map errors to appropriate error codes.
         if (e instanceof Deno.errors.BadResource) {
           err = codeMap.get("EBADF")!;
         } else if (
-          e instanceof Error && e.message.match(/os error (40|90|10040)/)
+          e instanceof Error &&
+          e.message.match(/os error (40|90|10040)/)
         ) {
           err = codeMap.get("EMSGSIZE")!;
         } else {
@@ -422,7 +418,7 @@ export class UDP extends HandleWrap {
   }
 
   async #receive(): Promise<void> {
-    if (this.#receiving === false) {
+    if (!this.#receiving) {
       return;
     }
 
@@ -433,13 +429,14 @@ export class UDP extends HandleWrap {
     let nread: number | null;
 
     try {
-      [buf, remoteAddr] = (await this.#listener.receive(p)) as [
+      [buf, remoteAddr] = (await this.#listener!.receive(p)) as [
         Uint8Array,
         Deno.NetAddr,
       ];
 
       nread = buf.length;
     } catch (e) {
+      // TODO(cmorten): map errors to appropriate error codes.
       if (
         e instanceof Deno.errors.Interrupted ||
         e instanceof Deno.errors.BadResource
@@ -471,23 +468,24 @@ export class UDP extends HandleWrap {
       // swallow callback errors.
     }
 
-    if (this.#receiving) {
-      this.#receive();
-    }
+    this.#receive();
   }
 
   /** Handle socket closure. */
   override _onClose(): number {
     this.#receiving = false;
+
     this.#address = undefined;
     this.#port = undefined;
     this.#family = undefined;
 
     try {
-      this.#listener.close();
+      this.#listener!.close();
     } catch {
       // listener already closed
     }
+
+    this.#listener = undefined;
 
     return 0;
   }
