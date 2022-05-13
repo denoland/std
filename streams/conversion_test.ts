@@ -334,7 +334,7 @@ Deno.test("[streams] readableStreamFromIterable() cancel", async function () {
 Deno.test({
   name: "[streams] generatorToStream()",
   async fn() {
-    const reader = readableStreamFromIterable([0, 1, 2])
+    const readable = readableStreamFromIterable([0, 1, 2])
       .pipeThrough(generatorToStream(async function* (src) {
         for await (const i of src) {
           yield i * 100;
@@ -342,7 +342,7 @@ Deno.test({
       }));
 
     const res = [];
-    for await (const i of reader) {
+    for await (const i of readable) {
       res.push(i);
     }
     assertEquals(res, [0, 100, 200]);
@@ -352,7 +352,7 @@ Deno.test({
 Deno.test({
   name: "[streams] generatorToStream() - iterable, not asynciterable",
   async fn() {
-    const reader = readableStreamFromIterable([0, 1, 2])
+    const readable = readableStreamFromIterable([0, 1, 2])
       .pipeThrough(generatorToStream(function* (_src) {
         yield 0;
         yield 100;
@@ -360,7 +360,7 @@ Deno.test({
       }));
 
     const res = [];
-    for await (const i of reader) {
+    for await (const i of readable) {
       res.push(i);
     }
     assertEquals(res, [0, 100, 200]);
