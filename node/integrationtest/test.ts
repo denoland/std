@@ -76,7 +76,7 @@ Deno.test("integration test of compat mode", {
       // Wait for the mysql server starting
       // FIXME(kt3k): This is racy. Find a more reliable way to wait for
       // mysql being ready
-      await delay(20000);
+      await delay(15000);
       await exec(`deno run --compat --unstable -A mysql2-example.js`, opts);
     });
     await exec("docker rm -f mysql-test");
