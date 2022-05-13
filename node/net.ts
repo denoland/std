@@ -1807,6 +1807,9 @@ function _emitErrorNT(server: Server, err: Error) {
 function _emitListeningNT(server: Server) {
   // Ensure handle hasn't closed
   if (server._handle) {
+    // TODO(duelsik): afaik it differs from node docs, but if it works - let's leave it with
+    //                error suppression
+    // @ts-expect-error: it works, not sure where I can get the socket to pass to improve this
     server.emit("listening");
   }
 }

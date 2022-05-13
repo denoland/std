@@ -8,13 +8,13 @@ import {
   Buffered,
   BufferEncoding,
   ErrnoException,
-  ReadableStream,
+  ReadableStreamI,
   ReadWriteStream,
-  WritableStream,
+  WritableStreamI,
 } from "./_global.d.ts";
 
 export class Stream extends EventEmitter {
-  pipe<T extends WritableStream>(
+  pipe<T extends WritableStreamI>(
     destination: T,
     options?: {
       end?: boolean | undefined;
@@ -43,7 +43,7 @@ interface ReadableOptions extends StreamOptions<Readable> {
 /**
  * @since v0.9.4
  */
-export class Readable extends Stream implements ReadableStream {
+export class Readable extends Stream implements ReadableStreamI {
   /**
    * A utility method for creating Readable Streams out of iterators.
    */
@@ -302,7 +302,7 @@ export class Readable extends Stream implements ReadableStream {
    * @since v0.9.4
    * @param destination Optional specific stream to unpipe
    */
-  unpipe(destination?: WritableStream): this;
+  unpipe(destination?: WritableStreamI): this;
   /**
    * Passing `chunk` as `null` signals the end of the stream (EOF) and behaves the
    * same as `readable.push(null)`, after which no more data can be written. The EOF
@@ -394,7 +394,7 @@ export class Readable extends Stream implements ReadableStream {
    * @since v0.9.4
    * @param stream An "old style" readable stream
    */
-  wrap(stream: ReadableStream): this;
+  wrap(stream: ReadableStreamI): this;
   push(chunk: any, encoding?: BufferEncoding): boolean;
   _destroy(
     error: Error | null,
@@ -515,7 +515,7 @@ interface WritableOptions extends StreamOptions<Writable> {
 /**
  * @since v0.9.4
  */
-export class Writable extends Stream implements WritableStream {
+export class Writable extends Stream implements WritableStreamI {
   /**
    * Is `true` if it is safe to call `writable.write()`, which means
    * the stream has not been destroyed, errored or ended.

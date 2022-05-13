@@ -49,13 +49,13 @@ export interface ReadableStreamI {
   pause(): this;
   resume(): this;
   isPaused(): boolean;
-  pipe<T extends WritableStream>(
+  pipe<T extends WritableStreamI>(
     destination: T,
     options?: { end?: boolean | undefined },
   ): T;
-  unpipe(destination?: WritableStream): this;
+  unpipe(destination?: WritableStreamI): this;
   unshift(chunk: string | Uint8Array, encoding?: BufferEncoding): void;
-  wrap(oldStream: ReadableStream): this;
+  wrap(oldStream: ReadableStreamI): this;
   [Symbol.asyncIterator](): AsyncIterableIterator<string | Buffer>;
 }
 export interface ReadableStream
@@ -67,8 +67,8 @@ export type WritableStreamListenerMap = {
   drain: () => void;
   error: (error: Error) => void; // Not sure if error exists when calling destroy without parameter
   finish: () => void;
-  pipe: (src: ReadableStream) => void;
-  unpipe: (src: ReadableStream) => void;
+  pipe: (src: ReadableStreamI) => void;
+  unpipe: (src: ReadableStreamI) => void;
 };
 export interface WritableStreamI {
   writable: boolean;

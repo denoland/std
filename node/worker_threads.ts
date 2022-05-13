@@ -176,12 +176,18 @@ if (!isMainThread) {
   parentPort.emit = () => notImplemented("parentPort.emit");
   parentPort.removeAllListeners = () =>
     notImplemented("parentPort.removeAllListeners");
-
+    
+  // The parentPort is not well typed, I assumed that typing "once"
+  // in this way is okay for now
   // Receive startup message
-  [{ threadId, workerData, environmentData }] = await once(
+  [{ threadId, workerData, environmentData }] = (await once(
     parentPort,
-    "message",
-  );
+    "message" as never, 
+  )) as [{
+    threadId: typeof threadId,
+    workerData: typeof workerData,
+    environmentData: typeof environmentData,
+  }];
 
   // alias
   parentPort.addEventListener("offline", () => {
