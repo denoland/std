@@ -7,15 +7,14 @@
 
 'use strict';
 
-// TODO: enable remaining tests once functionality is implemented - note dns
-// module implementation based on Node 18.
+// TODO: enable remaining tests once functionality is implemented.
 
 const common = require('../common');
 const { addresses } = require('../common/internet');
 const assert = require('assert');
 const dns = require('dns');
 const net = require('net');
-const util = require('util');
+// const util = require('util');
 const isIPv4 = net.isIPv4;
 
 const dnsPromises = dns.promises;
@@ -48,26 +47,26 @@ function checkWrap(req) {
   assert.ok(typeof req === 'object');
 }
 
-// TEST(async function test_resolve4(done) {
-//   function validateResult(res) {
-//     assert.ok(res.length > 0);
+TEST(async function test_resolve4(done) {
+  function validateResult(res) {
+    assert.ok(res.length > 0);
 
-//     for (let i = 0; i < res.length; i++) {
-//       assert.ok(isIPv4(res[i]));
-//     }
-//   }
+    for (let i = 0; i < res.length; i++) {
+      assert.ok(isIPv4(res[i]));
+    }
+  }
 
-//   validateResult(await dnsPromises.resolve4(addresses.INET4_HOST));
+  validateResult(await dnsPromises.resolve4(addresses.INET4_HOST));
 
-//   const req = dns.resolve4(
-//     addresses.INET4_HOST,
-//     common.mustSucceed((ips) => {
-//       validateResult(ips);
-//       done();
-//     }));
+  const req = dns.resolve4(
+    addresses.INET4_HOST,
+    common.mustSucceed((ips) => {
+      validateResult(ips);
+      done();
+    }));
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
 // TEST(async function test_reverse_ipv4(done) {
 //   function validateResult(res) {

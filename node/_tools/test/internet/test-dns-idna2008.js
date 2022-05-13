@@ -7,8 +7,7 @@
 
 'use strict';
 
-// TODO: enable remaining tests once functionality is implemented - note dns
-// module implementation based on Node 18.
+// TODO: enable remaining tests once functionality is implemented.
 
 // Verify that non-ASCII hostnames are handled correctly as IDNA 2008.
 //
@@ -59,22 +58,22 @@ dns.promises.lookup(fixture.hostname, { family: fixture.family })
     }
   }).finally(mustCall());
 
-// dns.resolve4(fixture.hostname, mustCall((err, addresses) => {
-//   if (err && err.errno === 'ESERVFAIL') {
-//     assert.ok(err.message.includes('queryA ESERVFAIL straße.de'));
-//     return;
-//   }
-//   assert.ifError(err);
-//   assert.deepStrictEqual(addresses, [fixture.expectedAddress]);
-// }));
+dns.resolve4(fixture.hostname, mustCall((err, addresses) => {
+  if (err && err.errno === 'ESERVFAIL') {
+    assert.ok(err.message.includes('queryA ESERVFAIL straße.de'));
+    return;
+  }
+  assert.ifError(err);
+  assert.deepStrictEqual(addresses, [fixture.expectedAddress]);
+}));
 
-// const p = new dns.promises.Resolver().resolve4(fixture.hostname);
-// p.then((addresses) => {
-//   assert.deepStrictEqual(addresses, [fixture.expectedAddress]);
-// }, (err) => {
-//   if (err && err.errno === 'ESERVFAIL') {
-//     assert.ok(err.message.includes('queryA ESERVFAIL straße.de'));
-//   } else {
-//     throw err;
-//   }
-// }).finally(mustCall());
+const p = new dns.promises.Resolver().resolve4(fixture.hostname);
+p.then((addresses) => {
+  assert.deepStrictEqual(addresses, [fixture.expectedAddress]);
+}, (err) => {
+  if (err && err.errno === 'ESERVFAIL') {
+    assert.ok(err.message.includes('queryA ESERVFAIL straße.de'));
+  } else {
+    throw err;
+  }
+}).finally(mustCall());

@@ -25,7 +25,6 @@
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.h
 
 import { notImplemented } from "../_utils.ts";
-import { nextTick } from "../_next_tick.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 export class HandleWrap extends AsyncWrap {
@@ -33,9 +32,9 @@ export class HandleWrap extends AsyncWrap {
     super(provider);
   }
 
-  async close(cb: () => void = () => {}): Promise<void> {
-    await this._onClose();
-    nextTick(cb);
+  close(cb: () => void = () => {}): void {
+    this._onClose();
+    cb();
   }
 
   ref() {
@@ -47,5 +46,5 @@ export class HandleWrap extends AsyncWrap {
   }
 
   // deno-lint-ignore no-explicit-any
-  async _onClose(): Promise<any> {}
+  _onClose(): any {}
 }

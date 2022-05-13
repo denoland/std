@@ -10,6 +10,7 @@
         ".git",
         "_wasm_crypto/target",
         "cov",
+        "encoding/testdata/jsonc",
         "node/_tools/versions",
         "node/_tools/test",
         "node/integrationtest/yarn.js",
@@ -23,6 +24,7 @@
       "exclude": [
         ".git",
         "_wasm_crypto/target",
+        "encoding/testdata/jsonc",
         "cov",
         "node/vendor",
         "node/_module/node_modules/",

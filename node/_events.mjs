@@ -789,6 +789,7 @@ export function getEventListeners(emitterOrTarget, type) {
     return emitterOrTarget.listeners(type);
   }
   if (emitterOrTarget instanceof EventTarget) {
+    // TODO: kEvents is not defined
     const root = emitterOrTarget[kEvents].get(type);
     const listeners = [];
     let handler = root?.next;
