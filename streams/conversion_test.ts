@@ -381,7 +381,7 @@ Deno.test({
 
         const readable1 = new ReadableStream({
           start(controller) {
-            controller.error(expectedError);
+            controller.error(expectedError); // error from readable1
           },
         });
         const readable2 = readable1.pipeThrough(
@@ -395,7 +395,7 @@ Deno.test({
         try {
           await readable2.getReader().read();
         } catch (error) {
-          actualError = error;
+          actualError = error; // catch error in readable2
         }
 
         assertEquals(actualError, expectedError);
@@ -409,7 +409,7 @@ Deno.test({
 
         const readable1 = new ReadableStream({
           start(controller) {
-            controller.error(expectedError);
+            controller.error(expectedError); // error from readable1
           },
         });
         const readable2 = readable1.pipeThrough(
@@ -417,7 +417,7 @@ Deno.test({
             try {
               await src.getReader().read();
             } catch (error) {
-              actualError = error;
+              actualError = error; // catch error in generator
             }
             yield 0;
           }),
@@ -441,18 +441,18 @@ Deno.test({
 
     const readable1 = new ReadableStream({
       cancel(reason) {
-        actualError1 = reason;
+        actualError1 = reason; // catch error in readable1
       },
     });
     // deno-lint-ignore require-yield
     const readable2 = readable1.pipeThrough(generatorToStream(function* () {
-      throw expectedError;
+      throw expectedError; // error from generator
     }));
 
     try {
       await readable2.getReader().read();
     } catch (error) {
-      actualError2 = error;
+      actualError2 = error; // catch error in readable2
     }
 
     await t.step({
@@ -483,14 +483,14 @@ Deno.test({
 
         const readable1 = new ReadableStream({
           cancel(reason) {
-            actualError = reason;
+            actualError = reason; // catch error in readable1
           },
         });
         const readable2 = readable1.pipeThrough(generatorToStream(function* () {
           yield 0;
         }));
 
-        await readable2.cancel(expectedError);
+        await readable2.cancel(expectedError); // cancellation from readable2
         assertEquals(actualError, expectedError);
       },
     });
@@ -504,13 +504,13 @@ Deno.test({
           try {
             yield 0;
           } catch (error) {
-            actualError = error;
+            actualError = error; // catch error in generator
           }
         }));
 
         const reader = readable2.getReader();
         await reader.read();
-        await reader.cancel(expectedError);
+        await reader.cancel(expectedError); // cancellation from readable2
         assertEquals(actualError, expectedError);
       },
     });
