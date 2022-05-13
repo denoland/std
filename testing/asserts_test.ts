@@ -839,6 +839,26 @@ Deno.test("testingAssertRejectsWithErrorCallback", async () => {
   );
 });
 
+Deno.test("testingAssertThrowsWithReturnedValue", () => {
+  const error = assertThrows(
+    () => {
+      throw new Error("foo");
+    },
+  );
+  assert(error instanceof Error);
+  assertEquals(error.message, "foo");
+});
+
+Deno.test("testingAssertRejectsWithReturnedValue", async () => {
+  const error = await assertRejects(
+    () => {
+      throw new Error("foo");
+    },
+  );
+  assert(error instanceof Error);
+  assertEquals(error.message, "foo");
+});
+
 const createHeader = (): string[] => [
   "",
   "",

@@ -647,12 +647,12 @@ export function assertThrows<E extends Error = Error>(
   ErrorClass?: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
-): void;
+): Error | void;
 export function assertThrows(
   fn: () => unknown,
   errorCallback: (e: Error) => unknown,
   msg?: string,
-): void;
+): Error | void;
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
   errorClassOrCallback?:
@@ -661,11 +661,12 @@ export function assertThrows<E extends Error = Error>(
     | ((e: Error) => unknown),
   msgIncludesOrMsg?: string,
   msg?: string,
-): void {
+): Error | void {
   // deno-lint-ignore no-explicit-any
   let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
   let msgIncludes: string | undefined = undefined;
   let errorCallback;
+  let err;
   if (
     errorClassOrCallback == null ||
     errorClassOrCallback.prototype instanceof Error ||
@@ -695,12 +696,14 @@ export function assertThrows<E extends Error = Error>(
     if (typeof errorCallback == "function") {
       errorCallback(error);
     }
+    err = error;
     doesThrow = true;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
   }
+  return err;
 }
 
 /**
@@ -716,12 +719,12 @@ export function assertRejects<E extends Error = Error>(
   ErrorClass?: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
-): Promise<void>;
+): Promise<Error | void>;
 export function assertRejects(
   fn: () => Promise<unknown>,
   errorCallback: (e: Error) => unknown,
   msg?: string,
-): Promise<void>;
+): Promise<Error | void>;
 export async function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
   errorClassOrCallback?:
@@ -730,11 +733,12 @@ export async function assertRejects<E extends Error = Error>(
     | ((e: Error) => unknown),
   msgIncludesOrMsg?: string,
   msg?: string,
-): Promise<void> {
+): Promise<Error | void> {
   // deno-lint-ignore no-explicit-any
   let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
   let msgIncludes: string | undefined = undefined;
   let errorCallback;
+  let err;
   if (
     errorClassOrCallback == null ||
     errorClassOrCallback.prototype instanceof Error ||
@@ -764,12 +768,14 @@ export async function assertRejects<E extends Error = Error>(
     if (typeof errorCallback == "function") {
       errorCallback(error);
     }
+    err = error;
     doesThrow = true;
   }
   if (!doesThrow) {
     msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
     throw new AssertionError(msg);
   }
+  return err;
 }
 
 /** Use this to stub out methods that will throw when invoked. */
