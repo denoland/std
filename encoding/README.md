@@ -8,7 +8,7 @@ Helper module for dealing with external data structures.
 - [`base64url`](#base64url)
 - [`binary`](#binary)
 - [`csv`](#csv)
-- [`jsonc`](#JSONC)
+- [`jsonc`](#jsonc)
 - [`toml`](#toml)
 - [`yaml`](#yaml)
 
