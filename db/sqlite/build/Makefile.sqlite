@@ -1,0 +1,29 @@
+#!/usr/make
+#
+# Makefile copy for SQLITE
+TOP = ../sqlite-src
+BCC = gcc -g -O0
+USLEEP = -DHAVE_USLEEP=0
+THREADSAFE = -DTHREADSAFE=0
+
+OPTS += -DSQLITE_ENABLE_WHERETRACE
+OPTS += -DSQLITE_ENABLE_SELECTTRACE
+
+# receive options from top-level make file
+OPTS += $(SQLFLG)
+
+TCC = gcc -O0
+
+AR = ar cr
+RANLIB = ranlib
+MKSHLIB = gcc -shared
+SO = so
+SHPREFIX = lib
+
+TCL_FLAGS = -I/home/drh/tcl/include/tcl8.6
+LIBTCL = /home/drh/tcl/lib/libtcl8.6.a -lm -lpthread -ldl -lz
+TCLOBJ = tclsqlite.o
+
+# You should not have to change anything below this line
+###############################################################################
+include $(TOP)/main.mk
