@@ -7,9 +7,6 @@
 
 'use strict';
 
-// TODO: enable remaining tests once functionality is implemented - note dns
-// module implementation based on Node 18.
-
 require('../common');
 const common = require('../common');
 const dns = require('dns');

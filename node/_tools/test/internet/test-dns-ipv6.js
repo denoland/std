@@ -7,8 +7,7 @@
 
 'use strict';
 
-// TODO: enable remaining tests once functionality is implemented - note dns
-// module implementation based on Node 18.
+// TODO: enable remaining tests once functionality is implemented.
 
 const common = require('../common');
 const { addresses } = require('../common/internet');
@@ -50,26 +49,26 @@ function checkWrap(req) {
   assert.ok(typeof req === 'object');
 }
 
-// TEST(async function test_resolve6(done) {
-//   function validateResult(res) {
-//     assert.ok(res.length > 0);
+TEST(async function test_resolve6(done) {
+  function validateResult(res) {
+    assert.ok(res.length > 0);
 
-//     for (let i = 0; i < res.length; i++) {
-//       assert.ok(isIPv6(res[i]));
-//     }
-//   }
+    for (let i = 0; i < res.length; i++) {
+      assert.ok(isIPv6(res[i]));
+    }
+  }
 
-//   validateResult(await dnsPromises.resolve6(addresses.INET6_HOST));
+  // validateResult(await dnsPromises.resolve6(addresses.INET6_HOST));
 
-//   const req = dns.resolve6(
-//     addresses.INET6_HOST,
-//     common.mustSucceed((ips) => {
-//       validateResult(ips);
-//       done();
-//     }));
+  const req = dns.resolve6(
+    addresses.INET6_HOST,
+    common.mustSucceed((ips) => {
+      validateResult(ips);
+      done();
+    }));
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
 // TEST(async function test_reverse_ipv6(done) {
 //   function validateResult(res) {

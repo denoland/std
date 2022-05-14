@@ -20,8 +20,60 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { default as promises, lookup } from "../internal/dns/promises.ts";
+import {
+  default as promisesBase,
+  getServers,
+  lookup,
+  resolve,
+  resolve4,
+  resolve6,
+  resolveAny,
+  resolveCaa,
+  resolveCname,
+  resolveMx,
+  resolveNaptr,
+  resolveNs,
+  resolvePtr,
+  Resolver,
+  resolveSoa,
+  resolveSrv,
+  resolveTxt,
+  reverse,
+} from "../internal/dns/promises.ts";
+import { setDefaultResultOrder, setServers } from "../dns.ts";
 
-export { lookup };
+const promises = Object.defineProperties(promisesBase, {
+  setServers: {
+    configurable: true,
+    enumerable: true,
+    value: setServers,
+  },
+  setDefaultResultOrder: {
+    configurable: true,
+    enumerable: true,
+    value: setDefaultResultOrder,
+  },
+});
+
+export {
+  getServers,
+  lookup,
+  resolve,
+  resolve4,
+  resolve6,
+  resolveAny,
+  resolveCaa,
+  resolveCname,
+  resolveMx,
+  resolveNaptr,
+  resolveNs,
+  resolvePtr,
+  Resolver,
+  resolveSoa,
+  resolveSrv,
+  resolveTxt,
+  reverse,
+  setServers,
+};
 
 export default promises;

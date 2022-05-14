@@ -14,7 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         deno: [canary]
-        os: [macOS-latest, ubuntu-latest, windows-2019]
+        os:
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
+          - macOS-latest
 
     steps:
       - name: Clone repository
@@ -71,7 +74,10 @@ jobs:
       fail-fast: false
       matrix:
         deno: [canary]
-        os: [macOS-latest, ubuntu-latest, windows-2019]
+        os:
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
+          - macOS-latest
 
     steps:
       - name: Clone repository
@@ -84,6 +90,10 @@ jobs:
         uses: denoland/setup-deno@v1.0.0
         with:
           deno-version: ${{ matrix.deno }}
+
+      - name: Type check node modules
+        shell: bash
+        run: deno task node:check-unstable-api
 
       # FIXME(bartlomieju): currently doc tests are failing, we need --compat mode in "deno test" to get them working
       # - name: Doctest node/
