@@ -306,7 +306,7 @@ export async function serveFile(
     const ifNoneMatch = req.headers.get("if-none-match");
     const ifModifiedSince = req.headers.get("if-modified-since");
     if (
-      (ifNoneMatch && ifNoneMatch === simpleEtag) ||
+      (ifNoneMatch && ( ifNoneMatch === simpleEtag || 'W/' + ifNoneMatch === simpleEtag || ifNoneMatch === 'W/' +  simpleEtag ) ) ||
       (ifNoneMatch === null &&
         ifModifiedSince &&
         fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
