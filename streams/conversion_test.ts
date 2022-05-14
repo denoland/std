@@ -3,7 +3,6 @@
 import { assert, assertEquals } from "../testing/asserts.ts";
 import {
   copy,
-  generatorToStream,
   iterateReader,
   iterateReaderSync,
   readableStreamFromIterable,
@@ -12,6 +11,7 @@ import {
   readAllSync,
   readerFromIterable,
   readerFromStreamReader,
+  transformStreamFromGeneratorFunction,
   writableStreamFromWriter,
   writeAll,
   writeAllSync,
@@ -332,10 +332,10 @@ Deno.test("[streams] readableStreamFromIterable() cancel", async function () {
 });
 
 Deno.test({
-  name: "[streams] generatorToStream()",
+  name: "[streams] transformStreamFromGeneratorFunction()",
   async fn() {
     const readable = readableStreamFromIterable([0, 1, 2])
-      .pipeThrough(generatorToStream(async function* (src) {
+      .pipeThrough(transformStreamFromGeneratorFunction(async function* (src) {
         for await (const i of src) {
           yield i * 100;
         }
@@ -350,10 +350,11 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[streams] generatorToStream() - iterable, not asynciterable",
+  name:
+    "[streams] transformStreamFromGeneratorFunction() - iterable, not asynciterable",
   async fn() {
     const readable = readableStreamFromIterable([0, 1, 2])
-      .pipeThrough(generatorToStream(function* (_src) {
+      .pipeThrough(transformStreamFromGeneratorFunction(function* (_src) {
         yield 0;
         yield 100;
         yield 200;
@@ -368,7 +369,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[streams] generatorToStream() Propagate the error from readable 1",
+  name:
+    "[streams] transformStreamFromGeneratorFunction() Propagate the error from readable 1",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the error that occurred in readable1 to generator and readable2.
@@ -385,7 +387,7 @@ Deno.test({
           },
         });
         const readable2 = readable1.pipeThrough(
-          generatorToStream(async function* (src) {
+          transformStreamFromGeneratorFunction(async function* (src) {
             for await (const i of src) {
               yield i;
             }
@@ -413,7 +415,7 @@ Deno.test({
           },
         });
         const readable2 = readable1.pipeThrough(
-          generatorToStream(async function* (src) {
+          transformStreamFromGeneratorFunction(async function* (src) {
             try {
               await src.getReader().read();
             } catch (error) {
@@ -431,7 +433,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[streams] generatorToStream() Propagate the error from generator",
+  name:
+    "[streams] transformStreamFromGeneratorFunction() Propagate the error from generator",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the error that occurred in generator to readable2 and readable1.
@@ -444,10 +447,12 @@ Deno.test({
         actualError1 = reason; // catch error in readable1
       },
     });
-    // deno-lint-ignore require-yield
-    const readable2 = readable1.pipeThrough(generatorToStream(function* () {
-      throw expectedError; // error from generator
-    }));
+    const readable2 = readable1.pipeThrough(
+      // deno-lint-ignore require-yield
+      transformStreamFromGeneratorFunction(function* () {
+        throw expectedError; // error from generator
+      }),
+    );
 
     try {
       await readable2.getReader().read();
@@ -471,7 +476,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[streams] generatorToStream() Propagate cancellation from readable 2",
+  name:
+    "[streams] transformStreamFromGeneratorFunction() Propagate cancellation from readable 2",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the cancellation that occurred in readable2 to readable1 and generator.
@@ -486,9 +492,11 @@ Deno.test({
             actualError = reason; // catch error in readable1
           },
         });
-        const readable2 = readable1.pipeThrough(generatorToStream(function* () {
-          yield 0;
-        }));
+        const readable2 = readable1.pipeThrough(
+          transformStreamFromGeneratorFunction(function* () {
+            yield 0;
+          }),
+        );
 
         await readable2.cancel(expectedError); // cancellation from readable2
         assertEquals(actualError, expectedError);
@@ -500,13 +508,15 @@ Deno.test({
         let actualError = null;
 
         const readable1 = new ReadableStream();
-        const readable2 = readable1.pipeThrough(generatorToStream(function* () {
-          try {
-            yield 0;
-          } catch (error) {
-            actualError = error; // catch error in generator
-          }
-        }));
+        const readable2 = readable1.pipeThrough(
+          transformStreamFromGeneratorFunction(function* () {
+            try {
+              yield 0;
+            } catch (error) {
+              actualError = error; // catch error in generator
+            }
+          }),
+        );
 
         const reader = readable2.getReader();
         await reader.read();

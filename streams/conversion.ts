@@ -200,10 +200,10 @@ export function readableStreamFromIterable<T>(
  * Convert the generator function into a TransformStream.
  *
  * ```ts
- * import { readableStreamFromIterable, generatorToStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+ * import { readableStreamFromIterable, transformStreamFromGeneratorFunction } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
  *
  * const readable = readableStreamFromIterable([0, 1, 2])
- *   .pipeThrough(generatorToStream(async function* (src) {
+ *   .pipeThrough(transformStreamFromGeneratorFunction(async function* (src) {
  *     for await (const chunk of src) {
  *       yield chunk * 100;
  *     }
@@ -219,7 +219,7 @@ export function readableStreamFromIterable<T>(
  * @param writableStrategy An object that optionally defines a queuing strategy for the stream.
  * @param readableStrategy An object that optionally defines a queuing strategy for the stream.
  */
-export function generatorToStream<I, O>(
+export function transformStreamFromGeneratorFunction<I, O>(
   transformer: (src: ReadableStream<I>) => Iterable<O> | AsyncIterable<O>,
   writableStrategy?: QueuingStrategy<I>,
   readableStrategy?: QueuingStrategy<O>,
