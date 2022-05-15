@@ -812,10 +812,10 @@ function main(): void {
   const handler = (req: Request): Promise<Response> => {
     return serveDir(req, {
       fsRoot: target,
-      showDirListing: serverArgs["dir-listing"] === true,
-      showDotfiles: serverArgs.dotfiles === true,
-      enableCors: serverArgs.cors === true,
-      quiet: serverArgs.verbose === false,
+      showDirListing: serverArgs["dir-listing"],
+      showDotfiles: serverArgs.dotfiles,
+      enableCors: serverArgs.cors,
+      quiet: serverArgs.verbose,
     });
   };
 
