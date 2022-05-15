@@ -214,8 +214,30 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
             records.push({ type: "MX", priority: preference, exchange })
           );
         }),
+        this.#query(name, "NAPTR").then(({ ret }) => {
+          ret.forEach(
+            ({ order, preference, flags, services, regexp, replacement }) =>
+              records.push({
+                type: "NAPTR",
+                order,
+                preference,
+                flags,
+                service: services,
+                regexp,
+                replacement,
+              }),
+          );
+        }),
+        this.#query(name, "NS").then(({ ret }) => {
+          ret.forEach((record) => records.push({ type: "NS", value: record }));
+        }),
         this.#query(name, "PTR").then(({ ret }) => {
           ret.forEach((record) => records.push({ type: "PTR", value: record }));
+        }),
+        this.#query(name, "SOA").then(({ ret }) => {
+          ret.forEach(({ mname, rname }) =>
+            records.push({ type: "SOA", nsname: mname, hostmaster: rname })
+          );
         }),
         this.#query(name, "SRV").then(({ ret }) => {
           (ret as Deno.SRVRecord[]).forEach(
@@ -287,16 +309,51 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
     return 0;
   }
 
-  queryNs(_req: QueryReqWrap, _name: string): number {
-    // TODO:
-    // - https://github.com/denoland/deno/issues/14492
-    // - https://github.com/denoland/deno/pull/14372
-    notImplemented("cares.ChannelWrap.prototype.queryNs");
+  queryNaptr(req: QueryReqWrap, name: string): number {
+    this.#query(name, "NAPTR").then(({ code, ret }) => {
+      const records = (ret as Deno.NAPTRRecord[]).map(
+        ({ order, preference, flags, services, regexp, replacement }) => ({
+          flags,
+          service: services,
+          regexp,
+          replacement,
+          order,
+          preference,
+        }),
+      );
+
+      req.oncomplete(code, records);
+    });
+
+    return 0;
   }
 
-  queryTxt(req: QueryReqWrap, name: string): number {
-    this.#query(name, "TXT").then(({ code, ret }) => {
+  queryNs(req: QueryReqWrap, name: string): number {
+    this.#query(name, "NS").then(({ code, ret }) => {
       req.oncomplete(code, ret);
+    });
+
+    return 0;
+  }
+
+  queryPtr(req: QueryReqWrap, name: string): number {
+    this.#query(name, "PTR").then(({ code, ret }) => {
+      req.oncomplete(code, ret);
+    });
+
+    return 0;
+  }
+
+  querySoa(req: QueryReqWrap, name: string): number {
+    this.#query(name, "SOA").then(({ code, ret }) => {
+      const record = ret.length
+        ? {
+          nsname: ret[0].mname,
+          hostmaster: ret[0].rname,
+        }
+        : {};
+
+      req.oncomplete(code, record);
     });
 
     return 0;
@@ -319,24 +376,12 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
     return 0;
   }
 
-  queryPtr(req: QueryReqWrap, name: string): number {
-    this.#query(name, "PTR").then(({ code, ret }) => {
+  queryTxt(req: QueryReqWrap, name: string): number {
+    this.#query(name, "TXT").then(({ code, ret }) => {
       req.oncomplete(code, ret);
     });
 
     return 0;
-  }
-
-  queryNaptr(_req: QueryReqWrap, _name: string): number {
-    // TODO: https://github.com/denoland/deno/issues/14492
-    notImplemented("cares.ChannelWrap.prototype.queryNaptr");
-  }
-
-  querySoa(_req: QueryReqWrap, _name: string): number {
-    // TODO:
-    // - https://github.com/denoland/deno/issues/14492
-    // - https://github.com/denoland/deno/pull/14374
-    notImplemented("cares.ChannelWrap.prototype.querySoa");
   }
 
   getHostByAddr(_req: QueryReqWrap, _name: string): number {
