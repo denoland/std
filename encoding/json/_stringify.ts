@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 export interface StringifyStreamOptions {
-  /**a character to separate JSON. The character length must be 1. The default is '\n'. */
+  /**a character to separate JSON. The default is '\n'. */
   readonly separator?: string;
   /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
   readonly writableStrategy?: QueuingStrategy<unknown>;
@@ -11,7 +11,7 @@ export interface StringifyStreamOptions {
 }
 
 /**
- * stream to stringify JSON Lines.
+ * stream to stringify [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/) and [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464).
  *
  * ```ts
  * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
@@ -54,7 +54,7 @@ export class JSONLinesStringifyStream extends TransformStream<unknown, string> {
 }
 
 /**
- * stream to stringify concatenated JSON.
+ * stream to stringify [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
  *
  * ```ts
  * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";

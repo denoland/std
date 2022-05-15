@@ -21,7 +21,7 @@ export interface ParseStreamOptions {
 }
 
 /**
- * stream to parse JSON Lines.
+ * stream to parse [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/) and [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464).
  *
  * ```ts
  * import { JSONLinesParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
@@ -75,7 +75,7 @@ export class JSONLinesParseStream
 }
 
 /**
- * stream to parse concatenated JSON.
+ * stream to parse [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
  *
  * ```ts
  * import { ConcatenatedJSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
@@ -197,9 +197,9 @@ export class ConcatenatedJSONParseStream
 }
 
 /** JSON.parse with detailed error message */
-function parse(text: string) {
+function parse(text: string): JSONValue {
   try {
-    return JSON.parse(text) as JSONValue;
+    return JSON.parse(text);
   } catch (error: unknown) {
     if (error instanceof Error) {
       // Truncate the string so that it is within 30 lengths.

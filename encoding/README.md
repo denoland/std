@@ -510,7 +510,7 @@ See: https://github.com/nodeca/js-yaml/tree/master/examples
 
 ## JSON streaming
 
-Streams JSON concatenated with line breaks and special characters. This module
+Streams JSON concatenated with line breaks or special characters. This module
 supports the following formats:
 
 - [JSON lines](https://jsonlines.org/)
@@ -535,7 +535,7 @@ const { body } = await fetch(url);
 // body is a ReadableStream
 const readable = body!
   .pipeThrough(new TextDecoderStream()) // convert a Uint8Array stream to a string stream
-  .pipeThrough(new JSONLinesParseStream()); // parse json text
+  .pipeThrough(new JSONLinesParseStream()); // parse JSON lines or NDJSON text
 
 for await (const data of readable) {
   console.log(data);
@@ -543,7 +543,8 @@ for await (const data of readable) {
 ```
 
 You can optionally pass any separator character to `JSONLinesParseStream`. For
-example, you can pass a record separator to parse the JSON Text Sequences.
+example, you can pass a record separator to parse the
+[JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464).
 
 ```ts
 import { JSONLinesParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
@@ -562,8 +563,9 @@ for await (const data of readable) {
 }
 ```
 
-If you want to parse Concatenated JSON, use ConcatenatedJSONParseStream instead
-of JSONLinesParseStream.
+If you want to parse
+[Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON),
+use ConcatenatedJSONParseStream instead of JSONLinesParseStream.
 
 ```ts
 import { ConcatenatedJSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
@@ -607,7 +609,7 @@ readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
   .then(() => console.log("write success"));
 ```
 
-If you want to stream JSON lines from the server:
+If you want to stream [JSON lines](https://jsonlines.org/) from the server:
 
 ```ts
 import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
@@ -632,7 +634,7 @@ serve(() => {
   return new Response(
     readable
       .pipeThrough(new JSONLinesStringifyStream()) // convert data to JSON lines
-      .pipeThrough(new TextEncoderStream()),
+      .pipeThrough(new TextEncoderStream()), // convert a string stream to a Uint8Array stream
   );
 });
 ```
