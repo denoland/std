@@ -367,16 +367,16 @@ TEST(async function test_resolveSoa(done) {
     assert.ok(result.nsname.length > 0);
     assert.strictEqual(typeof result.hostmaster, 'string');
     assert.ok(result.hostmaster.length > 0);
-    // assert.strictEqual(typeof result.serial, 'number');
-    // assert.ok((result.serial > 0) && (result.serial < 4294967295));
-    // assert.strictEqual(typeof result.refresh, 'number');
-    // assert.ok((result.refresh > 0) && (result.refresh < 2147483647));
-    // assert.strictEqual(typeof result.retry, 'number');
-    // assert.ok((result.retry > 0) && (result.retry < 2147483647));
-    // assert.strictEqual(typeof result.expire, 'number');
-    // assert.ok((result.expire > 0) && (result.expire < 2147483647));
-    // assert.strictEqual(typeof result.minttl, 'number');
-    // assert.ok((result.minttl >= 0) && (result.minttl < 2147483647));
+    assert.strictEqual(typeof result.serial, 'number');
+    assert.ok((result.serial > 0) && (result.serial < 4294967295));
+    assert.strictEqual(typeof result.refresh, 'number');
+    assert.ok((result.refresh > 0) && (result.refresh < 2147483647));
+    assert.strictEqual(typeof result.retry, 'number');
+    assert.ok((result.retry > 0) && (result.retry < 2147483647));
+    assert.strictEqual(typeof result.expire, 'number');
+    assert.ok((result.expire > 0) && (result.expire < 2147483647));
+    assert.strictEqual(typeof result.minttl, 'number');
+    assert.ok((result.minttl >= 0) && (result.minttl < 2147483647));
   }
 
   validateResult(await dnsPromises.resolveSoa(addresses.SOA_HOST));
