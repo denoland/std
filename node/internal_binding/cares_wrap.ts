@@ -235,8 +235,26 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
           ret.forEach((record) => records.push({ type: "PTR", value: record }));
         }),
         this.#query(name, "SOA").then(({ ret }) => {
-          ret.forEach(({ mname, rname }) =>
-            records.push({ type: "SOA", nsname: mname, hostmaster: rname })
+          ret.forEach(
+            ({
+              mname,
+              rname,
+              serial,
+              refresh,
+              retry,
+              expire,
+              minimum,
+            }) =>
+              records.push({
+                type: "SOA",
+                nsname: mname,
+                hostmaster: rname,
+                serial,
+                refresh,
+                retry,
+                expire,
+                minttl: minimum,
+              }),
           );
         }),
         this.#query(name, "SRV").then(({ ret }) => {
@@ -346,12 +364,22 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
   querySoa(req: QueryReqWrap, name: string): number {
     this.#query(name, "SOA").then(({ code, ret }) => {
-      const record = ret.length
-        ? {
-          nsname: ret[0].mname,
-          hostmaster: ret[0].rname,
-        }
-        : {};
+      let record = {};
+
+      if (ret.length) {
+        const { mname, rname, serial, refresh, retry, expire, minimum } =
+          ret[0];
+
+        record = {
+          nsname: mname,
+          hostmaster: rname,
+          serial,
+          refresh,
+          retry,
+          expire,
+          minttl: minimum,
+        };
+      }
 
       req.oncomplete(code, record);
     });
