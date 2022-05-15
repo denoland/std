@@ -809,6 +809,12 @@ Deno.test("testingAssertRejectsFailIfGivenFunctionIsSynchronousAndThrow", async 
   }));
 });
 
+Deno.test("testingAssertRejectsFailWithRightMessageWhenFunctionIsSynchronousAndThrow", async () => {
+  await assertRejects(() => assertRejects(() => {
+    throw { wrong: 'true'} ;
+  }), AssertionError, 'Function throws when expected to reject.');
+});
+
 Deno.test("testingAssertRejectsWithReturnType", async () => {
   await assertRejects(() => {
     return Promise.reject(new Error());

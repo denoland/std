@@ -750,6 +750,7 @@ export async function assertRejects<E extends Error = Error>(
   }
   let doesThrow = false;
   let isPromiseReturned = false;
+  const msgToAppendToError = msg ? `: ${msg}` : ".";
   try {
     const possiblePromise = fn();
     if (possiblePromise instanceof Promise) {
@@ -757,6 +758,9 @@ export async function assertRejects<E extends Error = Error>(
       await possiblePromise;
     }
   } catch (error) {
+    if (!isPromiseReturned) {
+      throw new AssertionError(`Function throws when expected to reject${msgToAppendToError}`);
+    }
     if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was rejected.");
     }
@@ -771,12 +775,8 @@ export async function assertRejects<E extends Error = Error>(
     }
     doesThrow = true;
   }
-  msg = msg ? `: ${msg}` : ".";
-  if (!isPromiseReturned) {
-    throw new AssertionError(`Function throws when expected to reject${msg}`);
-  } else if (!doesThrow) {
-    msg = `Expected function to reject${msg}`;
-    throw new AssertionError(msg);
+  if (!doesThrow) {
+    throw new AssertionError(`Expected function to reject${msgToAppendToError}`);
   }
 }
 
