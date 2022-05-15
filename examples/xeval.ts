@@ -1,7 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { parse } from "../flags/mod.ts";
 import { readStringDelim } from "../io/buffer.ts";
-import { assert } from "../_util/assert.ts";
 
 // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncFunction.
 const AsyncFunction = Object.getPrototypeOf(async function () {})
@@ -71,9 +70,6 @@ async function main() {
   if (parsedArgs.help) {
     return console.log(HELP_MSG);
   }
-  assert(typeof parsedArgs.delim === "string");
-  assert(typeof parsedArgs.replvar === "string");
-
   const delimiter = parsedArgs.delim;
   const replVar = parsedArgs.replvar;
   const code = parsedArgs._[0];
