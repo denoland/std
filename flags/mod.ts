@@ -37,14 +37,14 @@ type Values<
   : true extends B ? (
     & Partial<TypeValues<string, boolean, C>>
     & SpreadValues<
-      TypeValues<S, string | false, C>,
+      TypeValues<S, string, C>,
       DedotRecord<D>
     >
   )
   : (
     & Record<string, C extends true ? Array<unknown> : unknown>
     & SpreadValues<
-      & TypeValues<S, string | false, C>
+      & TypeValues<S, string, C>
       & RecursiveRequired<TypeValues<B, boolean, C>>,
       DedotRecord<D>
     >
@@ -106,10 +106,19 @@ type MapTypes<
     >;
   }
   : T extends string ? Partial<
-    & Record<Exclude<T, C extends true ? string : C>, V>
-    & Record<Extract<T, C extends true ? string : C>, Array<V>>
+    & Record<
+      Exclude<NormalizeName<T>, C extends true ? string : C>,
+      Negatable<T, V>
+    >
+    & Record<
+      Extract<NormalizeName<T>, C extends true ? string : C>,
+      Array<Negatable<T, V>>
+    >
   >
   : Record<never, never>;
+
+type Negatable<T, V> = T extends `no-${string}` ? V | false : V;
+type NormalizeName<T> = T extends `no-${infer Name}` ? Name : T;
 
 type MapDefaults<T extends ArgType> = T extends string
   ? Partial<Record<T, unknown>>

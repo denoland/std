@@ -783,11 +783,6 @@ function main(): void {
       v: "verbose",
     },
   });
-  assert(typeof serverArgs.port === "string");
-  assert(typeof serverArgs.host === "string");
-  assert(typeof serverArgs.cert === "string");
-  assert(typeof serverArgs.key === "string");
-
   const port = Number(serverArgs.port);
   const host = serverArgs.host;
   const certFile = serverArgs.cert;
@@ -815,7 +810,7 @@ function main(): void {
       showDirListing: serverArgs["dir-listing"],
       showDotfiles: serverArgs.dotfiles,
       enableCors: serverArgs.cors,
-      quiet: serverArgs.verbose,
+      quiet: !serverArgs.verbose,
     });
   };
 
