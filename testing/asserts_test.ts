@@ -1277,8 +1277,8 @@ Deno.test("Assert Throws Non-Error Fail", () => {
   );
 });
 
-Deno.test("Assert Throws Async Non-Error Fail", () => {
-  assertRejects(
+Deno.test("Assert Throws Async Non-Error Fail", async () => {
+  await assertRejects(
     () => {
       return assertRejects(
         () => {
@@ -1292,7 +1292,7 @@ Deno.test("Assert Throws Async Non-Error Fail", () => {
     "A non-Error object was thrown or rejected.",
   );
 
-  assertRejects(
+  await assertRejects(
     () => {
       return assertRejects(() => {
         return Promise.reject(null);
@@ -1302,7 +1302,7 @@ Deno.test("Assert Throws Async Non-Error Fail", () => {
     "A non-Error object was thrown or rejected.",
   );
 
-  assertRejects(
+  await assertRejects(
     () => {
       return assertRejects(() => {
         return Promise.reject(undefined);
@@ -1312,7 +1312,7 @@ Deno.test("Assert Throws Async Non-Error Fail", () => {
     "A non-Error object was thrown or rejected.",
   );
 
-  assertRejects(
+  await assertRejects(
     () => {
       return assertRejects(() => {
         throw undefined;
@@ -1374,8 +1374,8 @@ Deno.test("Assert Throws Parent Error", () => {
   );
 });
 
-Deno.test("Assert Throws Async Parent Error", () => {
-  assertRejects(
+Deno.test("Assert Throws Async Parent Error", async () => {
+  await assertRejects(
     () => {
       throw new AssertionError("Fail!");
     },
