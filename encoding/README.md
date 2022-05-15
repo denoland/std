@@ -611,6 +611,7 @@ If you want to stream JSON lines from the server:
 
 ```ts
 import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+import { JSONLinesStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
 
 serve(() => {
   // A server that streams one line of JSON every second
