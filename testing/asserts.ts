@@ -749,9 +749,17 @@ export async function assertRejects<E extends Error = Error>(
     msg = msgIncludesOrMsg;
   }
   let doesThrow = false;
+  let isPromiseReturned = false;
   try {
-    await fn();
+    const possiblePromise = fn();
+    if (possiblePromise instanceof Promise) {
+      isPromiseReturned = true;
+      await possiblePromise;
+    }
   } catch (error) {
+    if (!isPromiseReturned) {
+      throw new AssertionError("An error was thrown but a promise was not rejected.");
+    }
     if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was thrown or rejected.");
     }

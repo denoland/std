@@ -803,6 +803,12 @@ Deno.test("testingAssertThrowsWithReturnType", () => {
   });
 });
 
+Deno.test("testingAssertRejectsFailIfGivenFunctionIsSynchronous", async () => {
+  await assertRejects(() => assertRejects(() => {
+    throw new Error();
+  }));
+});
+
 Deno.test("testingAssertRejectsWithReturnType", async () => {
   await assertRejects(() => {
     throw new Error();
@@ -826,7 +832,7 @@ Deno.test("testingAssertThrowsWithErrorCallback", () => {
 
 Deno.test("testingAssertRejectsWithErrorCallback", async () => {
   await assertRejects(
-    () => {
+    async () => {
       throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
     },
     (error: Error) => {
@@ -1314,7 +1320,7 @@ Deno.test("Assert Throws Async Non-Error Fail", async () => {
 
   await assertRejects(
     () => {
-      return assertRejects(() => {
+      return assertRejects(async () => {
         throw undefined;
       });
     },
@@ -1376,7 +1382,7 @@ Deno.test("Assert Throws Parent Error", () => {
 
 Deno.test("Assert Throws Async Parent Error", async () => {
   await assertRejects(
-    () => {
+    async () => {
       throw new AssertionError("Fail!");
     },
     Error,
