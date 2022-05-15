@@ -8,6 +8,7 @@ Helper module for dealing with external data structures.
 - [`base64url`](#base64url)
 - [`binary`](#binary)
 - [`csv`](#csv)
+- [`JSON streaming`](#json-streaming)
 - [`jsonc`](#jsonc)
 - [`toml`](#toml)
 - [`yaml`](#yaml)
@@ -506,6 +507,134 @@ Serializes `object` as a YAML document.
 ### More example
 
 See: https://github.com/nodeca/js-yaml/tree/master/examples
+
+## JSON streaming
+
+Streams JSON concatenated with line breaks and special characters. This module
+supports the following formats:
+
+- [JSON lines](https://jsonlines.org/)
+- [NDJSON](http://ndjson.org/)
+- [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464)
+- [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON)
+- JSON concatenated with any delimiter
+
+### Basic usage
+
+Both the decoder(ParseStream) and encoder(StringifyStream) are implemented as
+TransformStream. You can use this module like
+`readableStream.pipeThrough(new JSONLinesParseStream())`, for example.
+
+```ts
+import { JSONLinesParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+
+const url =
+  "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.jsonl";
+const { body } = await fetch(url);
+
+// body is a ReadableStream
+const readable = body!
+  .pipeThrough(new TextDecoderStream()) // convert a Uint8Array stream to a string stream
+  .pipeThrough(new JSONLinesParseStream()); // parse json text
+
+for await (const data of readable) {
+  console.log(data);
+}
+```
+
+You can optionally pass any separator character to `JSONLinesParseStream`. For
+example, you can pass a record separator to parse the JSON Text Sequences.
+
+```ts
+import { JSONLinesParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+
+const recordSeparator = "\x1E"; // record separator
+const url =
+  "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.json-seq";
+const { body } = await fetch(url);
+
+const readable = body!
+  .pipeThrough(new TextDecoderStream())
+  .pipeThrough(new JSONLinesParseStream({ separator: recordSeparator }));
+
+for await (const data of readable) {
+  console.log(data);
+}
+```
+
+If you want to parse Concatenated JSON, use ConcatenatedJSONParseStream instead
+of JSONLinesParseStream.
+
+```ts
+import { ConcatenatedJSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+
+const url =
+  "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.concatenated-json";
+const { body } = await fetch(url);
+
+const readable = body!
+  .pipeThrough(new TextDecoderStream())
+  .pipeThrough(new ConcatenatedJSONParseStream());
+
+for await (const data of readable) {
+  console.log(data);
+}
+```
+
+If you want to stringify the data, use `JSONLinesStringifyStream` or
+`ConcatenatedJSONStringifyStream`. `JSONLinesStringifyStream` can optionally
+specify a separator. In this example, `.pipeTo(file.writable)` is used to write
+the JSON data converted to a string to a file.
+
+```ts
+import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+import { JSONLinesStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+
+const file = await Deno.open(new URL("./tmp.jsonl", import.meta.url), {
+  create: true,
+  write: true,
+});
+
+readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
+  // stringify json data
+  .pipeThrough(new JSONLinesStringifyStream()) // convert to JSON lines (ndjson)
+  // or
+  // .pipeThrough(new JSONLinesStringifyStream({ separator: "\x1E" })) // convert to JSON Text Sequences
+  // or
+  // .pipeThrough(new ConcatenatedJSONParseStream()) // convert to Concatenated JSON
+  .pipeThrough(new TextEncoderStream()) // convert a string stream to a Uint8Array stream
+  .pipeTo(file.writable)
+  .then(() => console.log("write success"));
+```
+
+If you want to stream JSON lines from the server:
+
+```ts
+import { serve } from "https://deno.land/std@$STD_VERSION/http/server.ts";
+
+serve(() => {
+  // A server that streams one line of JSON every second
+
+  let intervalId: number | undefined;
+  const readable = new ReadableStream({
+    start(controller) {
+      // enqueue data once per second
+      intervalId = setInterval(() => {
+        controller.enqueue({ now: new Date() });
+      }, 1000);
+    },
+    cancel() {
+      clearInterval(intervalId);
+    },
+  });
+
+  return new Response(
+    readable
+      .pipeThrough(new JSONLinesStringifyStream()) // convert data to JSON lines
+      .pipeThrough(new TextEncoderStream()),
+  );
+});
+```
 
 ## JSONC
 
