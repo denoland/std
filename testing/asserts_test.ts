@@ -1295,7 +1295,7 @@ Deno.test("Assert Throws Async Non-Error Fail", async () => {
       );
     },
     AssertionError,
-    "A non-Error object was thrown or rejected.",
+    "A non-Error object was rejected.",
   );
 
   await assertRejects(
@@ -1305,7 +1305,7 @@ Deno.test("Assert Throws Async Non-Error Fail", async () => {
       });
     },
     AssertionError,
-    "A non-Error object was thrown or rejected.",
+    "A non-Error object was rejected.",
   );
 
   await assertRejects(
@@ -1315,7 +1315,7 @@ Deno.test("Assert Throws Async Non-Error Fail", async () => {
       });
     },
     AssertionError,
-    "A non-Error object was thrown or rejected.",
+    "A non-Error object was rejected.",
   );
 
   await assertRejects(
@@ -1325,7 +1325,7 @@ Deno.test("Assert Throws Async Non-Error Fail", async () => {
       });
     },
     AssertionError,
-    "A non-Error object was thrown or rejected.",
+    "A non-Error object was rejected.",
   );
 });
 

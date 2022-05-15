@@ -757,9 +757,6 @@ export async function assertRejects<E extends Error = Error>(
       await possiblePromise;
     }
   } catch (error) {
-    if (!isPromiseReturned) {
-      throw new AssertionError("Function throws when expected to reject.");
-    }
     if (error instanceof Error === false) {
       throw new AssertionError("A non-Error object was rejected.");
     }
@@ -774,8 +771,11 @@ export async function assertRejects<E extends Error = Error>(
     }
     doesThrow = true;
   }
-  if (!doesThrow) {
-    msg = `Expected function to reject${msg ? `: ${msg}` : "."}`;
+  msg = msg ? `: ${msg}` : ".";
+  if (!isPromiseReturned) {
+    throw new AssertionError(`Function throws when expected to reject${msg}`);
+  } else if (!doesThrow) {
+    msg = `Expected function to reject${msg}`;
     throw new AssertionError(msg);
   }
 }
