@@ -1472,8 +1472,8 @@ Deno.test("typesOfCollectArgsWithDefaults", function (): void {
 
 Deno.test("typesOfNegatableArgs", function (): void {
   const argv = parse([], {
-    boolean: ["foo", "no-bar", "dotted.no-tick", "dotted.tock"],
-    string: ["beep", "no-boop", "dotted.no-zig", "dotted.zag"],
+    boolean: ["foo", "no-bar", "no-dotted.tick", "dotted.tock"],
+    string: ["beep", "no-boop", "no-dotted.zig", "dotted.zag"],
   });
   assertType<
     IsExact<
@@ -1498,8 +1498,8 @@ Deno.test("typesOfNegatableArgs", function (): void {
 
 Deno.test("typesOfCollectAllArgsWithDefaults", function (): void {
   const argv = parse([], {
-    boolean: ["foo", "no-bar", "dotted.no-tick", "dotted.tock"],
-    string: ["beep", "no-boop", "dotted.no-zig", "dotted.zag"],
+    boolean: ["foo", "no-bar", "no-dotted.tick", "dotted.tock"],
+    string: ["beep", "no-boop", "no-dotted.zig", "dotted.zag"],
     default: {
       bar: 123,
       boop: new TextDecoder(),

@@ -96,6 +96,7 @@ type MapTypes<
   : T extends false ? Record<never, never>
   : T extends true ? Partial<Record<string, V>>
   : string extends T ? Partial<Record<string, V>>
+  : T extends `no-${infer Name}` ? MapTypes<Name, V | false, C>
   : T extends `${infer Name}.${infer Rest}` ? {
     [K in Name]?: MapTypes<
       Rest,
@@ -106,19 +107,10 @@ type MapTypes<
     >;
   }
   : T extends string ? Partial<
-    & Record<
-      Exclude<NormalizeName<T>, C extends true ? string : C>,
-      Negatable<T, V>
-    >
-    & Record<
-      Extract<NormalizeName<T>, C extends true ? string : C>,
-      Array<Negatable<T, V>>
-    >
+    & Record<Exclude<T, C extends true ? string : C>, V>
+    & Record<Extract<T, C extends true ? string : C>, Array<V>>
   >
   : Record<never, never>;
-
-type Negatable<T, V> = T extends `no-${string}` ? V | false : V;
-type NormalizeName<T> = T extends `no-${infer Name}` ? Name : T;
 
 type MapDefaults<T extends ArgType> = T extends string
   ? Partial<Record<T, unknown>>
