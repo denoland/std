@@ -3,7 +3,13 @@
 
 import { TextDelimiterStream } from "../../streams/delimiter.ts";
 import { transformStreamFromGeneratorFunction } from "../../streams/conversion.ts";
-import { JSONValue } from "./_types.ts";
+
+export type JSONValue =
+  | { [key: string]: JSONValue }
+  | JSONValue[]
+  | string
+  | number
+  | boolean;
 
 export interface ParseStreamOptions {
   /**a character to separate JSON. The default is '\n'. */

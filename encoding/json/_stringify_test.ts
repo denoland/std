@@ -2,7 +2,6 @@
 // This module is browser compatible.
 
 import { assertEquals, assertRejects } from "../../testing/asserts.ts";
-import { JSONValue } from "./_types.ts";
 import {
   ConcatenatedJSONStringifyStream,
   JSONLinesStringifyStream,
@@ -13,7 +12,7 @@ async function assertValidStringify(
   transform:
     | typeof ConcatenatedJSONStringifyStream
     | typeof JSONLinesStringifyStream,
-  chunks: JSONValue[],
+  chunks: unknown[],
   expect: string[],
   options?: StringifyStreamOptions,
 ) {
