@@ -32,21 +32,23 @@ type Values<
   S extends StringType,
   C extends CollectType,
   D extends Record<string, unknown> | undefined,
-> = undefined extends ((false extends B ? undefined : B) & S) ? // deno-lint-ignore no-explicit-any
-Record<string, any>
-  : (true extends B ? 
+> = undefined extends ((false extends B ? undefined : B) & S) // deno-lint-ignore no-explicit-any
+  ? Record<string, any>
+  : true extends B ? (
     & Partial<TypeValues<string, boolean, C>>
     & SpreadValues<
       TypeValues<S, string | false, C>,
       DedotRecord<D>
     >
-    : 
-      & Record<string, unknown>
-      & SpreadValues<
-        & TypeValues<S, string | false, C>
-        & RecursiveRequired<TypeValues<B, boolean, C>>,
-        DedotRecord<D>
-      >);
+  )
+  : (
+    & Record<string, C extends true ? Array<unknown> : unknown>
+    & SpreadValues<
+      & TypeValues<S, string | false, C>
+      & RecursiveRequired<TypeValues<B, boolean, C>>,
+      DedotRecord<D>
+    >
+  );
 
 /** Spreads all values of Record `D` into Record `A`. */
 type SpreadValues<A, D> = D extends undefined ? A
@@ -104,8 +106,8 @@ type MapTypes<
     >;
   }
   : T extends string ? Partial<
-    & Record<Exclude<T, C>, V>
-    & Record<Extract<T, C>, Array<V>>
+    & Record<Exclude<T, C extends true ? string : C>, V>
+    & Record<Extract<T, C extends true ? string : C>, Array<V>>
   >
   : Record<never, never>;
 
