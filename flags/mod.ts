@@ -95,7 +95,6 @@ type MapTypes<
 > = undefined extends T ? Record<never, never>
   : T extends false ? Record<never, never>
   : T extends true ? Partial<Record<string, V>>
-  : string extends T ? Partial<Record<string, V>>
   : T extends `no-${infer Name}` ? MapTypes<Name, V | false, C>
   : T extends `${infer Name}.${infer Rest}` ? {
     [K in Name]?: MapTypes<
