@@ -19,7 +19,9 @@ type UnionToIntersection<T> =
 
 type BooleanType = boolean | string | undefined;
 type StringType = string | undefined;
-type ArgType = BooleanType | StringType;
+type ArgType = StringType | CollectType;
+
+type CollectType = boolean | string | undefined;
 
 /**
  * Creates a record with all available flags with the corresponding type and
@@ -28,20 +30,21 @@ type ArgType = BooleanType | StringType;
 type Values<
   B extends BooleanType,
   S extends StringType,
+  C extends CollectType,
   D extends Record<string, unknown> | undefined,
 > = undefined extends ((false extends B ? undefined : B) & S) ? // deno-lint-ignore no-explicit-any
 Record<string, any>
   : (true extends B ? 
-    & Partial<Record<string, boolean | Array<boolean>>>
+    & Partial<TypeValues<string, boolean, C>>
     & SpreadValues<
-      TypeValues<S, string | false | Array<string | false>>,
+      TypeValues<S, string | false, C>,
       DedotRecord<D>
     >
     : 
       & Record<string, unknown>
       & SpreadValues<
-        & TypeValues<S, string | false | Array<string | false>>
-        & RecursiveRequired<TypeValues<B, boolean | Array<boolean>>>,
+        & TypeValues<S, string | false, C>
+        & RecursiveRequired<TypeValues<B, boolean, C>>,
         DedotRecord<D>
       >);
 
@@ -75,21 +78,35 @@ type Defaults<
   >
 >;
 
-type TypeValues<T extends ArgType, V> = UnionToIntersection<MapTypes<T, V>>;
+type TypeValues<T extends ArgType, V, C extends CollectType = undefined> =
+  UnionToIntersection<MapTypes<T, V, C>>;
 
 type RecursiveRequired<T> = T extends Record<string, unknown> ? {
   [K in keyof T]-?: RecursiveRequired<T[K]>;
 }
   : T;
 
-type MapTypes<T extends ArgType, V> = undefined extends T ? Record<never, never>
+type MapTypes<
+  T extends ArgType,
+  V,
+  C extends CollectType,
+> = undefined extends T ? Record<never, never>
   : T extends false ? Record<never, never>
   : T extends true ? Partial<Record<string, V>>
   : string extends T ? Partial<Record<string, V>>
   : T extends `${infer Name}.${infer Rest}` ? {
-    [K in Name]?: MapTypes<Rest, V>;
+    [K in Name]?: MapTypes<
+      Rest,
+      V,
+      C extends `${Name}.${infer Collect}` ? Collect
+        : C extends boolean ? C
+        : false
+    >;
   }
-  : T extends string ? Partial<Record<T, V>>
+  : T extends string ? Partial<
+    & Record<Exclude<T, C>, V>
+    & Record<Extract<T, C>, Array<V>>
+  >
   : Record<never, never>;
 
 type MapDefaults<T extends ArgType> = T extends string
@@ -134,6 +151,7 @@ export type Args<
 export interface ParseOptions<
   B extends BooleanType = undefined,
   S extends StringType = undefined,
+  C extends CollectType = undefined,
   D extends Record<string, unknown> | undefined = Record<string, unknown>,
   DD extends boolean | undefined = undefined,
 > {
@@ -171,6 +189,9 @@ export interface ParseOptions<
 
   /** A string or array of strings argument names to always treat as strings. */
   string?: S | Array<Extract<S, string>>;
+
+  /** A string or array of strings argument names to always treat as strings. */
+  collect?: C | Array<Extract<C, string>>;
 
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
@@ -239,10 +260,11 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * ```
  */
 export function parse<
-  A extends Values<B, S, D>,
+  A extends Values<B, S, C, D>,
   DD extends boolean | undefined = undefined,
   B extends BooleanType = undefined,
   S extends StringType = undefined,
+  C extends CollectType = undefined,
   D extends Record<string, unknown> | undefined = undefined,
 >(
   args: string[],
@@ -253,8 +275,10 @@ export function parse<
     default: defaults = {} as D & Defaults<B, S>,
     stopEarly = false,
     string = [],
+    // @TODO(c4spar): Implement collect option. I will open a separate PR for this.
+    collect: _collect = [],
     unknown = (i: string): unknown => i,
-  }: ParseOptions<B, S, D, DD> = {},
+  }: ParseOptions<B, S, C, D, DD> = {},
 ): Args<A, DD> {
   const flags: Flags = {
     bools: {},
