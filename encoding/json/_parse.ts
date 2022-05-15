@@ -136,7 +136,7 @@ export class ConcatenatedJSONParseStream
 
         // Parses number, true, false, null with a nesting level of 0.
         // example: 'null["foo"]' => null, ["foo"]
-        // example: 'false{"foo": "bar"}' => null, {foo: "bar"}
+        // example: 'false{"foo": "bar"}' => false, {foo: "bar"}
         if (
           hasValue && nestCount === 0 &&
           (char === "{" || char === "[" || char === '"' || char === " ")
