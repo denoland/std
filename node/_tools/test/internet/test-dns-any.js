@@ -74,11 +74,11 @@ const checkers = {
   checkSOA(r) {
     assert.strictEqual(typeof r.nsname, 'string');
     assert.strictEqual(typeof r.hostmaster, 'string');
-    // assert.strictEqual(typeof r.serial, 'number');
-    // assert.strictEqual(typeof r.refresh, 'number');
-    // assert.strictEqual(typeof r.retry, 'number');
-    // assert.strictEqual(typeof r.expire, 'number');
-    // assert.strictEqual(typeof r.minttl, 'number');
+    assert.strictEqual(typeof r.serial, 'number');
+    assert.strictEqual(typeof r.refresh, 'number');
+    assert.strictEqual(typeof r.retry, 'number');
+    assert.strictEqual(typeof r.expire, 'number');
+    assert.strictEqual(typeof r.minttl, 'number');
     assert.strictEqual(r.type, 'SOA');
   },
   checkSRV(r) {
