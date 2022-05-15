@@ -133,7 +133,7 @@ export interface it {
 
 /** Registers an individual test case. */
 export function it<T>(...args: ItArgs<T>): void {
-  if (TestSuiteInternal.running) {
+  if (TestSuiteInternal.runningCount > 0) {
     throw new Error(
       "cannot register new test cases after already registered test cases start running",
     );
@@ -167,8 +167,12 @@ export function it<T>(...args: ItArgs<T>): void {
       sanitizeOps,
       sanitizeResources,
       async fn(t) {
-        if (!TestSuiteInternal.running) TestSuiteInternal.running = true;
-        await fn.call({} as T, t);
+        TestSuiteInternal.runningCount++;
+        try {
+          await fn.call({} as T, t);
+        } finally {
+          TestSuiteInternal.runningCount--;
+        }
       },
     });
   }
@@ -376,7 +380,7 @@ export interface describe {
 export function describe<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
-  if (TestSuiteInternal.running) {
+  if (TestSuiteInternal.runningCount > 0) {
     throw new Error(
       "cannot register new test suites after already registered test cases start running",
     );
