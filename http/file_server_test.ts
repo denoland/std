@@ -1000,15 +1000,13 @@ Deno.test(
       const testurl = "http://localhost:4507/testdata/desktop.ini";
       const fileurl = new URL("./testdata/desktop.ini", import.meta.url);
       let etag: string | undefined | null;
-     
+
       {
         const res = await fetch(
           testurl,
           {
             headers: [
-             
               ["Accept-Encoding", "gzip, deflate, br"],
-             
             ],
           },
         );
@@ -1020,9 +1018,8 @@ Deno.test(
         );
         assertEquals(data, await res.text()); // Consuming the body so that the test doesn't leak resources
         etag = res.headers.get("etag");
-   
       }
- 
+
       assert(typeof etag === "string");
       assert(etag.length > 0);
       assert(etag.startsWith("W/"));
@@ -1032,8 +1029,6 @@ Deno.test(
           {
             headers: {
               "if-none-match": etag,
-
-              
             },
           },
         );
@@ -1044,7 +1039,6 @@ Deno.test(
           etag === res.headers.get("etag") ||
             etag === "W/" + res.headers.get("etag"),
         );
-       
       }
     } finally {
       await killFileServer();
