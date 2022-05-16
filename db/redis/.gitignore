@@ -1,0 +1,4 @@
+testdata/*/
+benchmark/node_modules
+tests/tmp/*/
+tmp

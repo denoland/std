@@ -10,6 +10,7 @@
         ".git",
         "_wasm_crypto/target",
         "cov",
+        "db/redis/benchmark/node_modules",
         "encoding/testdata/jsonc",
         "node/_tools/versions",
         "node/_tools/test",
@@ -24,6 +25,7 @@
       "exclude": [
         ".git",
         "_wasm_crypto/target",
+        "db/redis/benchmark/node_modules",
         "encoding/testdata/jsonc",
         "cov",
         "node/vendor",
@@ -36,7 +38,7 @@
     }
   },
   "tasks": {
-    "test": "deno test --doc --unstable --allow-all --coverage=./cov --ignore=node/",
+    "test": "deno test --doc --unstable --allow-all --coverage=./cov --ignore=node/,db/redis/",
     "test:browser": "git grep --name-only \"// This module is browser compatible.\" | grep -v \".github/workflows\" | xargs deno cache --config browser-compat.tsconfig.json",
     "node:unit": "DENO_FUTURE_CHECK=1 deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
