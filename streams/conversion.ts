@@ -200,7 +200,7 @@ export function readableStreamFromIterable<T>(
  * Convert the generator function into a TransformStream.
  *
  * ```ts
- * import { readableStreamFromIterable, transformStreamFromGenerator } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+ * import { readableStreamFromIterable, transformStreamFromGenerator } from "./conversion.ts";
  *
  * const readable = readableStreamFromIterable([0, 1, 2])
  *   .pipeThrough(transformStreamFromGenerator(async function* (src) {
