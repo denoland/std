@@ -645,8 +645,9 @@ function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
   }
 
   if (isUint8Array(val)) {
-    const encodingVal =
-      (ops === undefined ? encodingsMap.utf8 : ops.encodingVal);
+    const encodingVal = (ops === undefined
+      ? encodingsMap.utf8
+      : ops.encodingVal);
     return indexOfBuffer(buffer, val, byteOffset, encodingVal, dir);
   }
 
