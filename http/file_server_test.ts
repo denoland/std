@@ -1000,42 +1000,15 @@ Deno.test(
       const testurl = "http://localhost:4507/testdata/desktop.ini";
       const fileurl = new URL("./testdata/desktop.ini", import.meta.url);
       let etag: string | undefined | null;
-      let last_modified: string | null | undefined;
+     
       {
         const res = await fetch(
           testurl,
           {
             headers: [
-              [
-                "Accept",
-                "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-              ],
+             
               ["Accept-Encoding", "gzip, deflate, br"],
-              [
-                "Accept-Language",
-                "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-              ],
-              ["Cache-Control", "no-cache"],
-              ["Connection", "keep-alive"],
-              ["DNT", "1"],
-              ["Host", "localhost:4507"],
-              ["Pragma", "no-cache"],
-              ["Referer", "http://localhost:4507/testdata/"],
-              ["Sec-Fetch-Dest", "document"],
-              ["Sec-Fetch-Mode", "navigate"],
-              ["Sec-Fetch-Site", "same-origin"],
-              ["Sec-Fetch-User", "?1"],
-              ["Upgrade-Insecure-Requests", "1"],
-              [
-                "User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.64 Safari/537.36 Edg/101.0.1210.47",
-              ],
-              [
-                "sec-ch-ua",
-                '" Not A;Brand";v="99", "Chromium";v="101", "Microsoft Edge";v="101"',
-              ],
-              ["sec-ch-ua-mobile", "?0"],
-              ["sec-ch-ua-platform", '"Windows"'],
+             
             ],
           },
         );
@@ -1047,13 +1020,9 @@ Deno.test(
         );
         assertEquals(data, await res.text()); // Consuming the body so that the test doesn't leak resources
         etag = res.headers.get("etag");
-        last_modified = res.headers.get("last-modified");
+   
       }
-      assert(typeof last_modified === "string");
-      assert(last_modified.length > 0);
-      assert(last_modified.endsWith(" GMT"));
-      assert(last_modified.includes(","));
-      assert(last_modified.includes(":"));
+ 
       assert(typeof etag === "string");
       assert(etag.length > 0);
       assert(etag.startsWith("W/"));
@@ -1064,7 +1033,7 @@ Deno.test(
             headers: {
               "if-none-match": etag,
 
-              "If-Modified-Since": last_modified,
+              
             },
           },
         );
@@ -1075,7 +1044,7 @@ Deno.test(
           etag === res.headers.get("etag") ||
             etag === "W/" + res.headers.get("etag"),
         );
-        assertEquals(last_modified, res.headers.get("last-modified"));
+       
       }
     } finally {
       await killFileServer();
