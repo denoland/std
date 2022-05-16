@@ -991,3 +991,62 @@ Deno.test(
     assertStringIncludes(await res.text(), "Hello World");
   },
 );
+
+Deno.test(
+  "file_server returns 304 for requests with if-none-match set with the etag but with W/ prefixed etag in request headers.",
+  async () => {
+    await startFileServer();
+    try {
+      const testurl = "http://localhost:4507/testdata/desktop.ini";
+      const fileurl = new URL("./testdata/desktop.ini", import.meta.url);
+      let etag: string | undefined | null;
+      let last_modified: string | null | undefined;
+      {
+        const res = await fetch(
+          testurl,
+          {
+            headers: {
+              "Accept-Encoding": "gzip, deflate, br",
+            },
+          },
+        );
+        assertEquals(res.status, 200);
+        assertEquals(res.statusText, "OK");
+
+        const data = await Deno.readTextFile(
+          fileurl,
+        );
+        assertEquals(data, await res.text()); // Consuming the body so that the test doesn't leak resources
+        etag = res.headers.get("etag");
+        last_modified = res.headers.get("last-modified");
+      }
+      assert(typeof last_modified === "string");
+      assert(last_modified.length > 0);
+      assert(last_modified.endsWith(" GMT"));
+      assert(last_modified.includes(","));
+      assert(last_modified.includes(":"));
+      assert(typeof etag === "string");
+      assert(etag.length > 0);
+      assert(etag.startsWith("W/"));
+      {
+        const res = await fetch(
+          testurl,
+          {
+            headers: {
+              "if-none-match": etag,
+
+              "If-Modified-Since": last_modified,
+            },
+          },
+        );
+        assertEquals(res.status, 304);
+        assertEquals(res.statusText, "Not Modified");
+        assertEquals("", await res.text()); // Consuming the body so that the test doesn't leak resources
+        assertEquals(etag, res.headers.get("etag"));
+        assertEquals(last_modified, res.headers.get("last-modified"));
+      }
+    } finally {
+      await killFileServer();
+    }
+  },
+);
