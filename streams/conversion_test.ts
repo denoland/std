@@ -11,7 +11,7 @@ import {
   readAllSync,
   readerFromIterable,
   readerFromStreamReader,
-  transformStreamFromGeneratorFunction,
+  transformStreamFromGenerator,
   writableStreamFromWriter,
   writeAll,
   writeAllSync,
@@ -332,10 +332,10 @@ Deno.test("[streams] readableStreamFromIterable() cancel", async function () {
 });
 
 Deno.test({
-  name: "[streams] transformStreamFromGeneratorFunction()",
+  name: "[streams] transformStreamFromGenerator()",
   async fn() {
     const readable = readableStreamFromIterable([0, 1, 2])
-      .pipeThrough(transformStreamFromGeneratorFunction(async function* (src) {
+      .pipeThrough(transformStreamFromGenerator(async function* (src) {
         for await (const i of src) {
           yield i * 100;
         }
@@ -351,10 +351,10 @@ Deno.test({
 
 Deno.test({
   name:
-    "[streams] transformStreamFromGeneratorFunction() - iterable, not asynciterable",
+    "[streams] transformStreamFromGenerator() - iterable, not asynciterable",
   async fn() {
     const readable = readableStreamFromIterable([0, 1, 2])
-      .pipeThrough(transformStreamFromGeneratorFunction(function* (_src) {
+      .pipeThrough(transformStreamFromGenerator(function* (_src) {
         yield 0;
         yield 100;
         yield 200;
@@ -370,7 +370,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "[streams] transformStreamFromGeneratorFunction() Propagate the error from readable 1",
+    "[streams] transformStreamFromGenerator() Propagate the error from readable 1",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the error that occurred in readable1 to generator and readable2.
@@ -387,7 +387,7 @@ Deno.test({
           },
         });
         const readable2 = readable1.pipeThrough(
-          transformStreamFromGeneratorFunction(async function* (src) {
+          transformStreamFromGenerator(async function* (src) {
             for await (const i of src) {
               yield i;
             }
@@ -415,7 +415,7 @@ Deno.test({
           },
         });
         const readable2 = readable1.pipeThrough(
-          transformStreamFromGeneratorFunction(async function* (src) {
+          transformStreamFromGenerator(async function* (src) {
             try {
               await src.getReader().read();
             } catch (error) {
@@ -434,7 +434,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "[streams] transformStreamFromGeneratorFunction() Propagate the error from generator",
+    "[streams] transformStreamFromGenerator() Propagate the error from generator",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the error that occurred in generator to readable2 and readable1.
@@ -449,7 +449,7 @@ Deno.test({
     });
     const readable2 = readable1.pipeThrough(
       // deno-lint-ignore require-yield
-      transformStreamFromGeneratorFunction(function* () {
+      transformStreamFromGenerator(function* () {
         throw expectedError; // error from generator
       }),
     );
@@ -477,7 +477,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "[streams] transformStreamFromGeneratorFunction() Propagate cancellation from readable 2",
+    "[streams] transformStreamFromGenerator() Propagate cancellation from readable 2",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the cancellation that occurred in readable2 to readable1 and generator.
@@ -493,7 +493,7 @@ Deno.test({
           },
         });
         const readable2 = readable1.pipeThrough(
-          transformStreamFromGeneratorFunction(function* () {
+          transformStreamFromGenerator(function* () {
             yield 0;
           }),
         );
@@ -509,7 +509,7 @@ Deno.test({
 
         const readable1 = new ReadableStream();
         const readable2 = readable1.pipeThrough(
-          transformStreamFromGeneratorFunction(function* () {
+          transformStreamFromGenerator(function* () {
             try {
               yield 0;
             } catch (error) {
