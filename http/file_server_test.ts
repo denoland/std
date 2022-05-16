@@ -1071,7 +1071,10 @@ Deno.test(
         assertEquals(res.status, 304);
         assertEquals(res.statusText, "Not Modified");
         assertEquals("", await res.text()); // Consuming the body so that the test doesn't leak resources
-        assertEquals(etag, res.headers.get("etag"));
+        assert(
+          etag === res.headers.get("etag") ||
+            etag === "W/" + res.headers.get("etag"),
+        );
         assertEquals(last_modified, res.headers.get("last-modified"));
       }
     } finally {
