@@ -23,7 +23,7 @@ Deno.test("[async] pooledMap", async function () {
   assert(diff < 3000);
 });
 
-Deno.test("[async] pooledMap errors", async function () {
+Deno.test("[async] pooledMap errors", async () => {
   async function mapNumber(n: number): Promise<number> {
     if (n <= 2) {
       throw new Error(`Bad number: ${n}`);
@@ -43,4 +43,25 @@ Deno.test("[async] pooledMap errors", async function () {
     assertStringIncludes(error.errors[1].stack, "Error: Bad number: 2");
   });
   assertEquals(mappedNumbers, [3]);
+});
+
+Deno.test("pooledMap returns ordered items", async () => {
+  function getRandomInt(min: number, max: number): number {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+  }
+
+  const results = pooledMap(
+    2,
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    (i) =>
+      new Promise((r) => setTimeout(() => r(i), getRandomInt(5, 20) * 100)),
+  );
+
+  const returned = [];
+  for await (const value of results) {
+    returned.push(value);
+  }
+  assertEquals(returned, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 });

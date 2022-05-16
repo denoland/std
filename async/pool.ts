@@ -25,7 +25,14 @@ export function pooledMap<T, R>(
       p: Promise<R>,
       controller: TransformStreamDefaultController<R>,
     ) {
-      controller.enqueue(await p);
+      try {
+        const s = await p;
+        controller.enqueue(s);
+      } catch (e) {
+        if (e instanceof AggregateError) {
+          controller.error(e as unknown);
+        }
+      }
     },
   });
   // Start processing items from the iterator
@@ -40,7 +47,7 @@ export function pooledMap<T, R>(
         // fail the race, taking us to the catch block where all currently
         // executing jobs are allowed to finish and all rejections among them
         // can be reported together.
-        p.then((v) => writer.write(Promise.resolve(v))).catch(() => {});
+        writer.write(p);
         const e: Promise<unknown> = p.then(() =>
           executing.splice(executing.indexOf(e), 1)
         );
