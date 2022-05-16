@@ -46,7 +46,7 @@ interface FileServerArgs {
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-const MEDIA_TYPES: Record<string, string> = {
+export const MEDIA_TYPES: Record<string, string> = {
   ".md": "text/markdown",
   ".html": "text/html",
   ".htm": "text/html",
@@ -175,7 +175,7 @@ const MEDIA_TYPES: Record<string, string> = {
 };
 
 /** Returns the content-type based on the extension of a path. */
-function contentType(path: string): string | undefined {
+export function contentType(path: string): string | undefined {
   return MEDIA_TYPES[extname(path)];
 }
 
@@ -193,10 +193,10 @@ function fnv1a(buf: string): string {
   return (hash >>> 0).toString(16);
 }
 
-type EtagAlgorithm = "fnv1a" | "sha-1" | "sha-256" | "sha-384" | "sha-512";
+export type EtagAlgorithm = "fnv1a" | "sha-1" | "sha-256" | "sha-384" | "sha-512";
 
 // Generates a hash for the provided string
-async function createEtagHash(
+export async function createEtagHash(
   message: string,
   algorithm: EtagAlgorithm = "fnv1a",
 ): Promise<string> {
