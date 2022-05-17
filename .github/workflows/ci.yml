@@ -14,7 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         deno: [canary]
-        os: [macOS-latest, ubuntu-latest, windows-2019]
+        os:
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
+          - macOS-latest
 
     steps:
       - name: Clone repository
@@ -71,7 +74,10 @@ jobs:
       fail-fast: false
       matrix:
         deno: [canary]
-        os: [macOS-latest, ubuntu-latest, windows-2019]
+        os:
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
+          - macOS-latest
 
     steps:
       - name: Clone repository
