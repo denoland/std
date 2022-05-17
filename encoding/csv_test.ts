@@ -567,8 +567,10 @@ const parseTestCases = [
     name: "mismatching number of headers and fields",
     in: "a,b,c\nd,e",
     columns: [{ name: "a" }, { name: "b" }, { name: "c" }],
-    error: new Error(`Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2`)
-  }
+    error: new Error(
+      `Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2`,
+    ),
+  },
 ];
 
 for (const testCase of parseTestCases) {
@@ -580,12 +582,11 @@ for (const testCase of parseTestCases) {
           await parse(testCase.in, {
             skipFirstRow: testCase.skipFirstRow,
             columns: testCase.columns,
-          })
+          });
         }, (error: Error) => {
           assertEquals(error.message, testCase.error.message);
         });
-      }
-      else {
+      } else {
         const r = await parse(testCase.in, {
           skipFirstRow: testCase.skipFirstRow,
           columns: testCase.columns,
