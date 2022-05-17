@@ -417,8 +417,8 @@ Deno.test("runNext runs next timer without running microtasks", async () => {
     seq.push(1);
     time.next();
     seq.push(2);
-    const expectedCalls = [{ args: [], returned: 1000 }];
-    assertEquals<unknown>(cb.calls, expectedCalls);
+    const expectedCalls = [{ args: [] as [], returned: 1000 }];
+    assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
     await time.runMicrotasks();
 
@@ -429,7 +429,7 @@ Deno.test("runNext runs next timer without running microtasks", async () => {
     seq.push(6);
     await time.runMicrotasks();
 
-    assertEquals<unknown>(cb.calls, expectedCalls);
+    assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
     assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
   } finally {
@@ -450,8 +450,8 @@ Deno.test("runNextAsync runs all microtasks and next timer", async () => {
     seq.push(1);
     await time.nextAsync();
     seq.push(4);
-    const expectedCalls = [{ args: [], returned: 1000 }];
-    assertEquals<unknown>(cb.calls, expectedCalls);
+    const expectedCalls = [{ args: [] as [], returned: 1000 }];
+    assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
 
     queueMicrotask(() => seq.push(6));
@@ -460,7 +460,7 @@ Deno.test("runNextAsync runs all microtasks and next timer", async () => {
     await time.nextAsync();
     seq.push(8);
 
-    assertEquals<unknown>(cb.calls, expectedCalls);
+    assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
     assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
   } finally {
@@ -483,10 +483,10 @@ Deno.test("runAll runs all timers without running microtasks", async () => {
     time.runAll();
     seq.push(2);
     const expectedCalls = [
-      { args: [], returned: 1000 },
-      { args: [], returned: 1500 },
+      { args: [] as [], returned: 1000 },
+      { args: [] as [], returned: 1500 },
     ];
-    assertEquals<unknown>(cb.calls, expectedCalls);
+    assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1500);
     await time.runMicrotasks();
 
@@ -497,7 +497,7 @@ Deno.test("runAll runs all timers without running microtasks", async () => {
     seq.push(6);
     await time.runMicrotasks();
 
-    assertEquals<unknown>(cb.calls, expectedCalls);
+    assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1500);
     assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
   } finally {
@@ -520,10 +520,10 @@ Deno.test("runAllAsync runs all microtasks and timers", async () => {
     await time.runAllAsync();
     seq.push(4);
     const expectedCalls = [
-      { args: [], returned: 1000 },
-      { args: [], returned: 1500 },
+      { args: [] as [], returned: 1000 },
+      { args: [] as [], returned: 1500 },
     ];
-    assertEquals<unknown>(cb.calls, expectedCalls);
+    assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1500);
 
     queueMicrotask(() => seq.push(6));
@@ -532,7 +532,7 @@ Deno.test("runAllAsync runs all microtasks and timers", async () => {
     await time.runAllAsync();
     seq.push(8);
 
-    assertEquals<unknown>(cb.calls, expectedCalls);
+    assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1500);
     assertEquals(seq, [1, 2, 3, 4, 5, 6, 7, 8]);
   } finally {

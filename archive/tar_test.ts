@@ -13,6 +13,7 @@ import { assert, assertEquals } from "../testing/asserts.ts";
 
 import { dirname, fromFileUrl, resolve } from "../path/mod.ts";
 import { Tar, Untar } from "./tar.ts";
+import type { TarMeta } from "./tar.ts";
 import { Buffer } from "../io/buffer.ts";
 import { copy, readAll } from "../streams/conversion.ts";
 
@@ -317,7 +318,9 @@ Deno.test("untarLinuxGeneratedTar", async function () {
   const filePath = resolve(testdataDir, "deno.tar");
   const file = await Deno.open(filePath, { read: true });
 
-  const expectedEntries = [
+  type ExpectedEntry = TarMeta & { content?: Uint8Array };
+
+  const expectedEntries: ExpectedEntry[] = [
     {
       fileName: "archive/",
       fileSize: 0,
@@ -397,7 +400,7 @@ Deno.test("untarLinuxGeneratedTar", async function () {
     const content = expected.content;
     delete expected.content;
 
-    assertEquals<unknown>({ ...entry }, expected);
+    assertEquals({ ...entry }, expected);
 
     if (content) {
       assertEquals(content, await readAll(entry));

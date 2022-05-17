@@ -344,7 +344,7 @@ Deno.test({
         value: { main: "mail@example.com" },
       },
     );
-    assertEquals<unknown>(
+    assertEquals(
       source,
       {
         foo: {
@@ -359,7 +359,7 @@ Deno.test({
                 email: {
                   x: { main: "mail@example.com" },
                 },
-              },
+              } as unknown,
             },
           ],
         },

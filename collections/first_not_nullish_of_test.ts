@@ -5,11 +5,11 @@ import { firstNotNullishOf } from "./first_not_nullish_of.ts";
 
 function firstNotNullishOfTest<T, O>(
   input: [Array<T>, (el: T) => O | undefined | null],
-  expected: O,
+  expected: NonNullable<O> | undefined,
   message?: string,
 ) {
   const actual = firstNotNullishOf(...input);
-  assertEquals<unknown>(actual, expected, message);
+  assertEquals(actual, expected, message);
 }
 
 Deno.test({

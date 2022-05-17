@@ -120,7 +120,7 @@ Deno.test({
     const json = JSON.parse('{"__proto__": 100}');
     const jsonc = JSONC.parse('{"__proto__": 100}');
     assertEquals(jsonc, json);
-    assertEquals<unknown>((jsonc as Record<string, string>).__proto__, 100);
+    assertEquals((jsonc as Record<string, number>).__proto__, 100);
     assertEquals((jsonc as Record<string, string>).__proto__, json.__proto__);
     assertStrictEquals(Object.getPrototypeOf(jsonc), Object.prototype);
     assertStrictEquals(
