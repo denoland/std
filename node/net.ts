@@ -95,6 +95,7 @@ import { guessHandleType } from "./internal_binding/util.ts";
 import { debuglog } from "./internal/util/debuglog.ts";
 import type { DuplexOptions } from "./_stream.d.ts";
 import type { BufferEncoding } from "./_global.d.ts";
+import type { Abortable } from "./_events.d.ts";
 
 let debug = debuglog("net", (fn) => {
   debug = fn;
@@ -1578,13 +1579,6 @@ export function connect(...args: unknown[]) {
 }
 
 export const createConnection = connect;
-
-interface Abortable {
-  /**
-   * When provided the corresponding `AbortController` can be used to cancel an asynchronous action.
-   */
-  signal?: AbortSignal | undefined;
-}
 
 export interface ListenOptions extends Abortable {
   fd?: number;
