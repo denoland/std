@@ -214,7 +214,7 @@ Deno.test("require in a web worker", async () => {
   `;
   const worker = new Worker(
     `data:application/javascript;base64,${btoa(code)}`,
-    { type: "module", deno: { namespace: true } },
+    { type: "module" },
   );
   await new Promise((resolve, reject) => {
     worker.addEventListener("message", resolve);

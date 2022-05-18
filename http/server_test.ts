@@ -1357,3 +1357,52 @@ Deno.test("Server.listenAndServeTls should support custom onError", async () => 
     await servePromise;
   }
 });
+
+Deno.test("serve - onListen callback is called when the server started listening", () => {
+  const abortController = new AbortController();
+  return serve((_) => new Response("hello"), {
+    async onListen({ hostname, port }) {
+      const responseText = await (await fetch("http://localhost:8000/")).text();
+      assertEquals(hostname, "0.0.0.0");
+      assertEquals(port, 8000);
+      assertEquals(responseText, "hello");
+      abortController.abort();
+    },
+    signal: abortController.signal,
+  });
+});
+
+Deno.test("serve - doesn't print the message when onListen set to undefined", async () => {
+  const { status, stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "eval",
+      `
+        import { serve } from "./http/server.ts";
+        serve(() => new Response("hello"), { onListen: undefined });
+        Deno.exit(0);
+      `,
+    ],
+  });
+  assertEquals(status.code, 0);
+  assertEquals(new TextDecoder().decode(stdout), "");
+});
+
+Deno.test("serve - can print customized start-up message in onListen handler", async () => {
+  const { status, stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "eval",
+      `
+        import { serve } from "./http/server.ts";
+        serve(() => new Response("hello"), { onListen({ port, hostname }) {
+          console.log("Server started at " + hostname + " port " + port);
+        } });
+        Deno.exit(0);
+      `,
+    ],
+  });
+  assertEquals(status.code, 0);
+  assertEquals(
+    new TextDecoder().decode(stdout),
+    "Server started at 0.0.0.0 port 8000\n",
+  );
+});
