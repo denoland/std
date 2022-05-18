@@ -52,6 +52,9 @@ export interface ParseOptions {
   /** A string or array of strings argument names to always treat as strings. */
   string?: string | string[];
 
+  /** A string or array of strings argument names to always treat as arrays. */
+  collect?: string | string[];
+
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
    * unknown option is not added to `parsedArgs`. */
@@ -61,8 +64,10 @@ export interface ParseOptions {
 interface Flags {
   bools: Record<string, boolean>;
   strings: Record<string, boolean>;
+  collect: Record<string, boolean>;
   unknownFn: (arg: string, key?: string, value?: unknown) => unknown;
   allBools: boolean;
+  collectAll: boolean;
 }
 
 interface NestedMapping {
@@ -127,6 +132,7 @@ export function parse(
     default: defaults = {},
     stopEarly = false,
     string = [],
+    collect = [],
     unknown = (i: string): unknown => i,
   }: ParseOptions = {},
 ): Args {
@@ -135,6 +141,8 @@ export function parse(
     strings: {},
     unknownFn: unknown,
     allBools: false,
+    collectAll: false,
+    collect: {},
   };
 
   if (boolean !== undefined) {
@@ -178,6 +186,28 @@ export function parse(
     }
   }
 
+  const hasTypes = flags.allBools ||
+    Object.keys(flags.bools).length > 0 ||
+    Object.keys(flags.strings).length > 0;
+
+  if (typeof collect !== "undefined" && hasTypes) {
+    if (typeof collect === "boolean") {
+      flags.collectAll = collect;
+    } else {
+      const collectArgs = typeof collect === "string" ? [collect] : collect;
+
+      for (const key of collectArgs.filter(Boolean)) {
+        flags.collect[key] = true;
+        const alias = get(aliases, key);
+        if (alias) {
+          for (const al of alias) {
+            flags.collect[al] = true;
+          }
+        }
+      }
+    }
+  }
+
   const argv: Args = { _: [] };
 
   function argDefined(key: string, arg: string): boolean {
@@ -189,8 +219,14 @@ export function parse(
     );
   }
 
-  function setKey(obj: NestedMapping, keys: string[], value: unknown): void {
+  function setKey(
+    obj: NestedMapping,
+    name: string,
+    value: unknown,
+    collect = true,
+  ): void {
     let o = obj;
+    const keys = name.split(".");
     keys.slice(0, -1).forEach(function (key): void {
       if (get(o, key) === undefined) {
         o[key] = {};
@@ -199,12 +235,26 @@ export function parse(
     });
 
     const key = keys[keys.length - 1];
+    const collectable = collect && hasTypes &&
+      (flags.collectAll || !!flags.collect[name]);
+
     if (
-      get(o, key) === undefined ||
-      get(flags.bools, key) ||
-      typeof get(o, key) === "boolean"
+      !collectable && (
+        get(o, key) === undefined ||
+        get(flags.bools, key) ||
+        typeof get(o, key) === "boolean"
+      )
     ) {
+      // if (hasTypes && get(o, key) !== undefined) {
+      //   throw new Error(
+      //     `Option "${
+      //       name.length > 1 ? "--" : "-"
+      //     }${name}" can be used only once.`,
+      //   );
+      // }
       o[key] = value;
+    } else if (get(o, key) === undefined) {
+      o[key] = [value];
     } else if (Array.isArray(get(o, key))) {
       (o[key] as unknown[]).push(value);
     } else {
@@ -222,12 +272,12 @@ export function parse(
     }
 
     const value = !get(flags.strings, key) && isNumber(val) ? Number(val) : val;
-    setKey(argv, key.split("."), value);
+    setKey(argv, key, value);
 
     const alias = get(aliases, key);
     if (alias) {
       for (const x of alias) {
-        setKey(argv, x.split("."), value);
+        setKey(argv, x, value);
       }
     }
   }
@@ -236,10 +286,6 @@ export function parse(
     return getForce(aliases, key).some(
       (x) => typeof get(flags.bools, x) === "boolean",
     );
-  }
-
-  for (const key of Object.keys(flags.bools)) {
-    setArg(key, defaults[key] === undefined ? false : defaults[key]);
   }
 
   let notFlags: string[] = [];
@@ -352,15 +398,28 @@ export function parse(
     }
   }
 
-  for (const key of Object.keys(defaults)) {
+  for (const [key, value] of Object.entries(defaults)) {
     if (!hasKey(argv, key.split("."))) {
-      setKey(argv, key.split("."), defaults[key]);
+      setKey(argv, key, value);
 
       if (aliases[key]) {
         for (const x of aliases[key]) {
-          setKey(argv, x.split("."), defaults[key]);
+          setKey(argv, x, value);
         }
       }
+    }
+  }
+
+  for (const [key] of Object.entries(flags.bools)) {
+    if (!hasKey(argv, key.split("."))) {
+      const collectable = flags.collectAll || !!flags.collect[key];
+      const value = collectable ? [] : false;
+      setKey(
+        argv,
+        key,
+        value,
+        false,
+      );
     }
   }
 

@@ -736,3 +736,31 @@ Deno.test("valueFollowingDoubleHyphenIsNotUnknown", function (): void {
 Deno.test("whitespaceShouldBeWhitespace", function (): void {
   assertEquals(parse(["-x", "\t"]).x, "\t");
 });
+
+Deno.test("collectArgs", function (): void {
+  const argv = parse([
+    "--bool",
+    "--bool",
+    "--boolArr",
+    "--str",
+    "foo",
+    "--strArr",
+    "beep",
+    "--unknown",
+    "--unknown2",
+  ], {
+    boolean: ["bool", "boolArr"],
+    string: ["str", "strArr"],
+    collect: ["boolArr", "strArr", "unknown"],
+  });
+
+  assertEquals(argv, {
+    bool: true,
+    boolArr: [true],
+    str: "foo",
+    strArr: ["beep"],
+    unknown: [true],
+    unknown2: true,
+    _: [],
+  });
+});
