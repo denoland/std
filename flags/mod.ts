@@ -32,23 +32,48 @@ type Values<
   S extends StringType,
   C extends CollectType,
   D extends Record<string, unknown> | undefined,
+  A extends Aliases | undefined,
 > = undefined extends ((false extends B ? undefined : B) & S) // deno-lint-ignore no-explicit-any
   ? Record<string, any>
   : true extends B ? (
+    // all booleans enabled
     & Partial<TypeValues<string, boolean, C>>
-    & SpreadValues<
+    & AddAliases<
+      SpreadValues<
       TypeValues<S, string, C>,
       DedotRecord<D>
+      >,
+      A
     >
   )
   : (
+    // all booleans not enabled
     & Record<string, C extends true ? Array<unknown> : unknown>
-    & SpreadValues<
+    & AddAliases<
+      SpreadValues<
       & TypeValues<S, string, C>
       & RecursiveRequired<TypeValues<B, boolean, C>>,
       DedotRecord<D>
+      >,
+      A
     >
   );
+
+type Aliases<T = string, V extends string = string> = Partial<
+  Record<Extract<T, string>, V | Array<V>>
+>;
+
+type AddAliases<
+  T,
+  A extends Aliases | undefined,
+> = { [K in keyof T as AliasName<K, A>]: T[K] };
+
+type AliasName<
+  K,
+  A extends Aliases | undefined,
+> = K extends keyof A
+  ? string extends A[K] ? K : A[K] extends string ? K | A[K] : K
+  : K;
 
 /** Spreads all values of Record `D` into Record `A`. */
 type SpreadValues<A, D> = D extends undefined ? A
@@ -155,7 +180,10 @@ export interface ParseOptions<
   S extends StringType = undefined,
   C extends CollectType = undefined,
   D extends Record<string, unknown> | undefined = Record<string, unknown>,
+  A extends Aliases<AK, AV> | undefined = undefined,
   DD extends boolean | undefined = undefined,
+  AK extends string = string,
+  AV extends string = string,
 > {
   /** When `true`, populate the result `_` with everything before the `--` and
    * the result `['--']` with everything after the `--`. Here's an example:
@@ -175,7 +203,7 @@ export interface ParseOptions<
 
   /** An object mapping string names to strings or arrays of string argument
    * names to use as aliases. */
-  alias?: Record<string, string | string[]>;
+  alias?: A;
 
   /** A boolean, string or array of strings to always treat as booleans. If
    * `true` will treat all double hyphenated arguments without equal signs as
@@ -262,17 +290,20 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * ```
  */
 export function parse<
-  A extends Values<B, S, C, D>,
+  V extends Values<B, S, C, D, A>,
   DD extends boolean | undefined = undefined,
   B extends BooleanType = undefined,
   S extends StringType = undefined,
   C extends CollectType = undefined,
   D extends Record<string, unknown> | undefined = undefined,
+  A extends Aliases<AK, AV> | undefined = undefined,
+  AK extends string = string,
+  AV extends string = string,
 >(
   args: string[],
   {
     "--": doubleDash = false,
-    alias = {},
+    alias = {} as NonNullable<A>,
     boolean = false,
     default: defaults = {} as D & Defaults<B, S>,
     stopEarly = false,
@@ -280,8 +311,8 @@ export function parse<
     // @TODO(c4spar): Implement collect option. I will open a separate PR for this.
     collect: _collect = [],
     unknown = (i: string): unknown => i,
-  }: ParseOptions<B, S, C, D, DD> = {},
-): Args<A, DD> {
+  }: ParseOptions<B, S, C, D, A, DD, AK, AV> = {},
+): Args<V, DD> {
   const flags: Flags = {
     bools: {},
     strings: {},
@@ -293,9 +324,7 @@ export function parse<
     if (typeof boolean === "boolean") {
       flags.allBools = !!boolean;
     } else {
-      const booleanArgs = typeof boolean === "string"
-        ? [boolean]
-        : boolean as Array<string>;
+      const booleanArgs = typeof boolean === "string" ? [boolean] : boolean;
 
       for (const key of booleanArgs.filter(Boolean)) {
         flags.bools[key] = true;
@@ -310,7 +339,7 @@ export function parse<
       if (typeof val === "string") {
         aliases[key] = [val];
       } else {
-        aliases[key] = val;
+        aliases[key] = val as Array<string>;
       }
       for (const alias of getForce(aliases, key)) {
         aliases[alias] = [key].concat(aliases[key].filter((y) => alias !== y));
@@ -319,9 +348,7 @@ export function parse<
   }
 
   if (string !== undefined) {
-    const stringArgs = typeof string === "string"
-      ? [string]
-      : string as Array<string>;
+    const stringArgs = typeof string === "string" ? [string] : string;
 
     for (const key of stringArgs.filter(Boolean)) {
       flags.strings[key] = true;
@@ -536,5 +563,5 @@ export function parse<
     }
   }
 
-  return argv as Args<A, DD>;
+  return argv as Args<V, DD>;
 }

@@ -1530,6 +1530,64 @@ Deno.test("typesOfCollectAllArgsWithDefaults", function (): void {
   >(true);
 });
 
+/** ----------------------------- ALIAS OPTION ----------------------------- */
+
+Deno.test("typesOfAliasArgs", function (): void {
+  const argv = parse([], {
+    boolean: ["foo"],
+    string: ["beep"],
+    alias: {
+      foo: "bar",
+      beep: "boop",
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        beep?: string | undefined;
+        boop?: string | undefined;
+        foo: boolean;
+        bar: boolean;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
+Deno.test("typesOfAliasArgsWithDefaults", function (): void {
+  const argv = parse([], {
+    boolean: ["foo", "biz"],
+    string: ["beep", "bib"],
+    alias: {
+      foo: "bar",
+      beep: "boop",
+      biz: "baz",
+    },
+    default: {
+      foo: 1,
+      beep: new Date(),
+    },
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        baz: boolean;
+        biz: boolean;
+        bib?: string | undefined;
+        foo: number | boolean;
+        bar: number | boolean;
+        beep: string | Date;
+        boop: string | Date;
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
 /** ----------------------- OTHER TYPE TESTS ------------------------ */
 
 Deno.test("typesOfDoubleDashOption", function (): void {
