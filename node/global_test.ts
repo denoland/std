@@ -101,9 +101,8 @@ Deno.test("global.ts evaluates synchronously", async () => {
       import "data:application/javascript,globalThis.async = true";`,
     );
     const { status, stdout } = await Deno.spawn(Deno.execPath(), {
-      cmd: ["run", "--no-check", tempPath],
+      args: ["run", "--no-check", tempPath],
       stdin: "null",
-      stdout: "piped",
       stderr: "null",
     });
     assertEquals(status.code, 0);

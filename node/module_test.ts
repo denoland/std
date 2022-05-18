@@ -140,15 +140,13 @@ Deno.test("requireErrorInEval", async function () {
   const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
   const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
-    cmd: [
+    args: [
       "run",
       "--unstable",
       "--allow-read",
       "./_module/cjs/test_cjs_import.js",
     ],
     cwd,
-    stdout: "piped",
-    stderr: "piped",
   });
 
   const decoder = new TextDecoder();

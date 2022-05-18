@@ -33,7 +33,7 @@ Deno.test("[std/node/fs] exists callback isn't called twice if error is thrown",
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_exists.ts", import.meta.url);
   const { status, stderr } = await Deno.spawn(Deno.execPath(), {
-    cmd: [
+    args: [
       "eval",
       "--no-check",
       `
@@ -45,7 +45,6 @@ Deno.test("[std/node/fs] exists callback isn't called twice if error is thrown",
         if (exists) throw new Error("success");
       });`,
     ],
-    stderr: "piped",
   });
   await Deno.remove(tempFile);
   assert(!status.success);
