@@ -24,7 +24,7 @@
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.cc
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.h
 
-import { notImplemented } from "../_utils.ts";
+import { unreachable } from "../../testing/asserts.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 export class HandleWrap extends AsyncWrap {
@@ -38,11 +38,11 @@ export class HandleWrap extends AsyncWrap {
   }
 
   ref() {
-    notImplemented("HandleWrap.prototype.ref");
+    unreachable();
   }
 
   unref() {
-    notImplemented("HandleWrap.prototype.unref");
+    unreachable();
   }
 
   // deno-lint-ignore no-explicit-any

@@ -604,3 +604,14 @@ Deno.test({
     });
   },
 });
+
+Deno.test({
+  name:
+    "utf8Write handle missing optional length argument (https://github.com/denoland/deno_std/issues/2046)",
+  fn() {
+    const buf = Buffer.alloc(8);
+    // @ts-expect-error Buffer.prototype.utf8Write is an undocumented API
+    assertEquals(buf.utf8Write("abc", 0), 3);
+    assertEquals([...buf], [0x61, 0x62, 0x63, 0, 0, 0, 0, 0]);
+  },
+});
