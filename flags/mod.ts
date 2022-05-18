@@ -35,29 +35,17 @@ type Values<
   A extends Aliases | undefined,
 > = undefined extends ((false extends B ? undefined : B) & S) // deno-lint-ignore no-explicit-any
   ? Record<string, any>
-  : true extends B ? (
-    // all booleans enabled
-    & Partial<TypeValues<string, boolean, C>>
-    & AddAliases<
-      SpreadValues<
-        TypeValues<S, string, C>,
-        DedotRecord<D>
-      >,
-      A
-    >
-  )
-  : (
-    // all booleans not enabled
-    & Record<string, C extends true ? Array<unknown> : unknown>
+  : 
+    & Record<string, true extends C ? Array<unknown> : unknown>
     & AddAliases<
       SpreadValues<
         & TypeValues<S, string, C>
-        & RecursiveRequired<TypeValues<B, boolean, C>>,
+        & (true extends B ? Record<never, never>
+          : RecursiveRequired<TypeValues<B, boolean, C>>),
         DedotRecord<D>
       >,
       A
-    >
-  );
+    >;
 
 type Aliases<T = string, V extends string = string> = Partial<
   Record<Extract<T, string>, V | Array<V>>

@@ -835,7 +835,7 @@ Deno.test("typesOfAllBoolean", function (): void {
   assertType<
     IsExact<
       typeof argv,
-      & { [x: string]: boolean | undefined }
+      & { [x: string]: unknown }
       & {
         _: Array<string | number>;
       }
@@ -854,7 +854,7 @@ Deno.test("typesOfAllBooleanWithDefaults", function (): void {
   assertType<
     IsExact<
       typeof argv,
-      & { [x: string]: boolean | undefined }
+      & { [x: string]: unknown }
       & {
         foo: unknown;
         bar: unknown;
@@ -872,7 +872,7 @@ Deno.test("typesOfAllBooleanAndStringArgs", function (): void {
   assertType<
     IsExact<
       typeof argv,
-      & { [x: string]: boolean | undefined }
+      & { [x: string]: unknown }
       & {
         foo?: string | undefined;
         bar?: string | undefined;
@@ -895,7 +895,7 @@ Deno.test("typesOfAllBooleanAndStringArgsWithDefaults", function (): void {
   assertType<
     IsExact<
       typeof argv,
-      & { [x: string]: boolean | undefined }
+      & { [x: string]: unknown }
       & {
         foo?: string | undefined;
         bar: string | number;
@@ -1599,7 +1599,7 @@ Deno.test("typesOfDoubleDashOption", function (): void {
   assertType<
     IsExact<
       typeof argv,
-      & { [x: string]: boolean | undefined }
+      & { [x: string]: unknown }
       & {
         foo?: string | undefined;
         _: Array<string | number>;
@@ -1621,7 +1621,7 @@ Deno.test("typesOfNullishDefaults", function (): void {
   assertType<
     IsExact<
       typeof argv,
-      & { [x: string]: boolean | undefined }
+      & { [x: string]: unknown }
       & {
         foo?: string | undefined;
         bar: string | undefined;
