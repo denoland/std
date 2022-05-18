@@ -57,8 +57,6 @@ class _Worker extends EventEmitter {
       {
         name: PRIVATE_WORKER_THREAD_NAME,
         type: "module",
-        // unstable
-        deno: { namespace: true },
       } as globalThis.WorkerOptions, // bypass unstable type error
     );
     handle.addEventListener(
