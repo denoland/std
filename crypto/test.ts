@@ -151,6 +151,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
   const process = Deno.spawnChild(Deno.execPath(), {
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
+    stdin: "piped",
   });
 
   const writer = process.stdin.getWriter();
