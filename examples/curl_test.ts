@@ -16,7 +16,7 @@ Deno.test({
     );
     const decoder = new TextDecoder();
     const { stdout } = await Deno.spawn(Deno.execPath(), {
-      cmd: [
+      args: [
         "run",
         "--quiet",
         "--allow-net",

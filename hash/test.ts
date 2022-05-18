@@ -475,9 +475,8 @@ Deno.test("[hash/all/base64] testAllBase64", () => {
 
 Deno.test("[hash/memory_use] testMemoryUse", async () => {
   const process = Deno.spawnChild(Deno.execPath(), {
-    cmd: ["--quiet", "run", "--no-check", "-"],
+    args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
-    stdin: "piped",
   });
 
   const writer = process.stdin.getWriter();

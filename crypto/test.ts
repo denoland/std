@@ -149,10 +149,8 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
   const process = Deno.spawnChild(Deno.execPath(), {
-    cmd: ["--quiet", "run", "--no-check", "-"],
+    args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
-    stdout: "piped",
-    stdin: "piped",
   });
 
   const writer = process.stdin.getWriter();
@@ -244,7 +242,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
   const process = Deno.spawnChild(Deno.execPath(), {
-    cmd: ["--quiet", "run", "--no-check", "-"],
+    args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdout: "piped",
     stdin: "piped",

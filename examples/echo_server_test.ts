@@ -14,7 +14,7 @@ Deno.test("[examples/echo_server]", async () => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const process = Deno.spawnChild(Deno.execPath(), {
-    cmd: ["run", "--quiet", "--allow-net", "echo_server.ts"],
+    args: ["run", "--quiet", "--allow-net", "echo_server.ts"],
     cwd: moduleDir,
   });
 
