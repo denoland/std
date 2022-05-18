@@ -314,8 +314,8 @@ Deno.test(
       await Deno.writeTextFile(tempTestFilePath, test);
 
       const { stdout, stderr } = await Deno.spawn("deno", {
-      args: ["test", "--allow-all", tempTestFilePath, "--", "-u"],
-    });
+        args: ["test", "--allow-all", tempTestFilePath, "--", "-u"],
+      });
 
       return {
         output: new TextDecoder().decode(stdout),
