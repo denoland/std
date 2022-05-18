@@ -53,7 +53,7 @@ export interface ParseOptions {
   string?: string | string[];
 
   /** A string or array of strings argument names to always treat as arrays. */
-  collect?: string | string[];
+  collect?: boolean | string | string[];
 
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
