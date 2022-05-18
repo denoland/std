@@ -1211,7 +1211,7 @@ Deno.test("assertSpyCallAync on sync error", async () => {
     throw new ExampleError("failed");
   });
 
-  await assertRejects(() => spyFunc(), ExampleError, "fail");
+  assertThrows(() => spyFunc(), ExampleError, "fail");
   await assertRejects(
     () => assertSpyCallAsync(spyFunc, 0),
     AssertionError,

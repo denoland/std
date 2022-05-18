@@ -11,7 +11,9 @@
  */
 'use strict';
 const assert = require("assert");
+const path = require("path");
 const util = require("util");
+const tmpdir = require("./tmpdir");
 
 function platformTimeout(ms) {
   return ms;
@@ -345,6 +347,13 @@ function skip(msg) {
   process.exit(0);
 }
 
+const PIPE = (() => {
+  const localRelative = path.relative(process.cwd(), `${tmpdir.path}/`);
+  const pipePrefix = isWindows ? "\\\\.\\pipe\\" : localRelative;
+  const pipeName = `node-test.${process.pid}.sock`;
+  return path.join(pipePrefix, pipeName);
+})();
+
 function getArrayBufferViews(buf) {
   const { buffer, byteOffset, byteLength } = buf;
 
@@ -380,6 +389,7 @@ module.exports = {
   allowGlobals,
   expectsError,
   expectWarning,
+  getArrayBufferViews,
   getBufferSources,
   hasCrypto: true,
   invalidArgTypeHelper,
@@ -387,6 +397,7 @@ module.exports = {
   mustCallAtLeast,
   mustNotCall,
   mustSucceed,
+  PIPE,
   platformTimeout,
   printSkipMessage,
   skipIfDumbTerminal,

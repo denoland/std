@@ -34,6 +34,12 @@ import { codeMap } from "./uv.ts";
 import { delay } from "../../async/mod.ts";
 import { kStreamBaseField } from "./stream_wrap.ts";
 import { isIP } from "../internal/net.ts";
+import {
+  ceilPowOf2,
+  INITIAL_ACCEPT_BACKOFF_DELAY,
+  MAX_ACCEPT_BACKOFF_DELAY,
+} from "./_listen.ts";
+import * as DenoUnstable from "../../_deno_unstable.ts";
 
 /** The type of TCP socket. */
 enum socketType {
@@ -43,24 +49,8 @@ enum socketType {
 
 interface AddressInfo {
   address: string;
-  family?: string;
+  family?: number;
   port: number;
-}
-
-/** Initial backoff delay of 5ms following a temporary accept failure. */
-const INITIAL_ACCEPT_BACKOFF_DELAY = 5;
-
-/** Max backoff delay of 1s following a temporary accept failure. */
-const MAX_ACCEPT_BACKOFF_DELAY = 1000;
-
-/**
- * @param n Number to act on.
- * @return The number rounded up to the nearest power of 2.
- */
-function _ceilPowOf2(n: number) {
-  const roundPowOf2 = 1 << 31 - Math.clz32(n);
-
-  return roundPowOf2 < n ? roundPowOf2 * 2 : roundPowOf2;
 }
 
 export class TCPConnectWrap extends AsyncWrap {
@@ -95,7 +85,7 @@ export class TCP extends ConnectionWrap {
   #port?: number;
 
   #remoteAddress?: string;
-  #remoteFamily?: string;
+  #remoteFamily?: number;
   #remotePort?: number;
 
   #backlog?: number;
@@ -141,7 +131,7 @@ export class TCP extends ConnectionWrap {
       const remoteAddr = conn.remoteAddr as Deno.NetAddr;
       this.#remoteAddress = remoteAddr.hostname;
       this.#remotePort = remoteAddr.port;
-      this.#remoteFamily = isIP(remoteAddr.hostname) === 6 ? "IPv6" : "IPv4";
+      this.#remoteFamily = isIP(remoteAddr.hostname);
     }
   }
 
@@ -199,11 +189,11 @@ export class TCP extends ConnectionWrap {
 
   /**
    * Listen for new connections.
-   * @param backlog
+   * @param backlog The maximum length of the queue of pending connections.
    * @return An error status code.
    */
   listen(backlog: number): number {
-    this.#backlog = _ceilPowOf2(backlog + 1);
+    this.#backlog = ceilPowOf2(backlog + 1);
 
     const listenOptions = {
       hostname: this.#address!,
@@ -237,10 +227,15 @@ export class TCP extends ConnectionWrap {
   }
 
   override ref() {
-    this.#listener?.ref();
+    if (this.#listener) {
+      DenoUnstable.ListenerRef(this.#listener);
+    }
   }
+
   override unref() {
-    this.#listener?.unref();
+    if (this.#listener) {
+      DenoUnstable.ListenerUnref(this.#listener);
+    }
   }
 
   /**
@@ -250,14 +245,15 @@ export class TCP extends ConnectionWrap {
    */
   getsockname(sockname: Record<string, never> | AddressInfo): number {
     if (
-      typeof this.#address === "undefined" || typeof this.#port === "undefined"
+      typeof this.#address === "undefined" ||
+      typeof this.#port === "undefined"
     ) {
       return codeMap.get("EADDRNOTAVAIL")!;
     }
 
     sockname.address = this.#address;
     sockname.port = this.#port;
-    sockname.family = isIP(this.#address) === 6 ? "IPv6" : "IPv4";
+    sockname.family = isIP(this.#address);
 
     return 0;
   }
@@ -320,17 +316,21 @@ export class TCP extends ConnectionWrap {
    * Bind to an IPv4 or IPv6 address.
    * @param address The hostname to bind to.
    * @param port The port to bind to
-   * @param flags
+   * @param _flags
    * @return An error status code.
    */
   #bind(address: string, port: number, _flags: number): number {
-    // Deno doesn't currently separate bind from connect. For now we noop under
-    // the assumption we will connect shortly.
-    // REF: https://doc.deno.land/builtin/stable#Deno.connect
+    // Deno doesn't currently separate bind from connect etc.
+    // REF:
+    // - https://doc.deno.land/deno/stable/~/Deno.connect
+    // - https://doc.deno.land/deno/stable/~/Deno.listen
     //
     // This also means we won't be connecting from the specified local address
     // and port as providing these is not an option in Deno.
-    // REF: https://doc.deno.land/builtin/stable#Deno.ConnectOptions
+    // REF:
+    // - https://doc.deno.land/deno/stable/~/Deno.ConnectOptions
+    // - https://doc.deno.land/deno/stable/~/Deno.ListenOptions
+
     this.#address = address;
     this.#port = port;
 
@@ -347,7 +347,7 @@ export class TCP extends ConnectionWrap {
   #connect(req: TCPConnectWrap, address: string, port: number): number {
     this.#remoteAddress = address;
     this.#remotePort = port;
-    this.#remoteFamily = isIP(address) === 6 ? "IPv6" : "IPv4";
+    this.#remoteFamily = isIP(address);
 
     const connectOptions: Deno.ConnectOptions = {
       hostname: address,
@@ -355,27 +355,30 @@ export class TCP extends ConnectionWrap {
       transport: "tcp",
     };
 
-    Deno.connect(connectOptions).then((conn: Deno.Conn) => {
-      // Incorrect / backwards, but correcting the local address and port with
-      // what was actually used given we can't actually specify these in Deno.
-      const localAddr = conn.localAddr as Deno.NetAddr;
-      this.#address = req.localAddress = localAddr.hostname;
-      this.#port = req.localPort = localAddr.port;
-      this[kStreamBaseField] = conn;
+    Deno.connect(connectOptions).then(
+      (conn: Deno.Conn) => {
+        // Incorrect / backwards, but correcting the local address and port with
+        // what was actually used given we can't actually specify these in Deno.
+        const localAddr = conn.localAddr as Deno.NetAddr;
+        this.#address = req.localAddress = localAddr.hostname;
+        this.#port = req.localPort = localAddr.port;
+        this[kStreamBaseField] = conn;
 
-      try {
-        this.afterConnect(req, 0);
-      } catch {
-        // swallow callback errors.
-      }
-    }, () => {
-      try {
-        // TODO(cmorten): correct mapping of connection error to status code.
-        this.afterConnect(req, codeMap.get("ECONNREFUSED")!);
-      } catch {
-        // swallow callback errors.
-      }
-    });
+        try {
+          this.afterConnect(req, 0);
+        } catch {
+          // swallow callback errors.
+        }
+      },
+      () => {
+        try {
+          // TODO(cmorten): correct mapping of connection error to status code.
+          this.afterConnect(req, codeMap.get("ECONNREFUSED")!);
+        } catch {
+          // swallow callback errors.
+        }
+      },
+    );
 
     return 0;
   }
@@ -450,8 +453,7 @@ export class TCP extends ConnectionWrap {
   }
 
   /** Handle server closure. */
-  override async _onClose(): Promise<number> {
-    // TODO(cmorten): this isn't great
+  override _onClose(): number {
     this.#closed = true;
     this.reading = false;
 
@@ -474,6 +476,6 @@ export class TCP extends ConnectionWrap {
       }
     }
 
-    return await LibuvStreamWrap.prototype._onClose.call(this);
+    return LibuvStreamWrap.prototype._onClose.call(this);
   }
 }

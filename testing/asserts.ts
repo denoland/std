@@ -71,6 +71,7 @@ export function equal(c: unknown, d: unknown): boolean {
       if (Object.keys(a || {}).length !== Object.keys(b || {}).length) {
         return false;
       }
+      seen.set(a, b);
       if (isKeyedCollection(a) && isKeyedCollection(b)) {
         if (a.size !== b.size) {
           return false;
@@ -108,7 +109,6 @@ export function equal(c: unknown, d: unknown): boolean {
           return false;
         }
       }
-      seen.set(a, b);
       if (a instanceof WeakRef || b instanceof WeakRef) {
         if (!(a instanceof WeakRef && b instanceof WeakRef)) return false;
         return compare(a.deref(), b.deref());
@@ -129,6 +129,13 @@ function constructorsEqual(a: object, b: object) {
 /** Make an assertion, error will be thrown if `expr` does not have truthy value. */
 export function assert(expr: unknown, msg = ""): asserts expr {
   if (!expr) {
+    throw new AssertionError(msg);
+  }
+}
+
+/** Make an assertion, error will be thrown if `expr` have truthy value. */
+export function assertFalse(expr: unknown, msg = ""): asserts expr is false {
+  if (expr) {
     throw new AssertionError(msg);
   }
 }
@@ -742,11 +749,22 @@ export async function assertRejects<E extends Error = Error>(
     msg = msgIncludesOrMsg;
   }
   let doesThrow = false;
+  let isPromiseReturned = false;
+  const msgToAppendToError = msg ? `: ${msg}` : ".";
   try {
-    await fn();
+    const possiblePromise = fn();
+    if (possiblePromise instanceof Promise) {
+      isPromiseReturned = true;
+      await possiblePromise;
+    }
   } catch (error) {
+    if (!isPromiseReturned) {
+      throw new AssertionError(
+        `Function throws when expected to reject${msgToAppendToError}`,
+      );
+    }
     if (error instanceof Error === false) {
-      throw new AssertionError("A non-Error object was thrown or rejected.");
+      throw new AssertionError("A non-Error object was rejected.");
     }
     assertIsError(
       error,
@@ -760,8 +778,9 @@ export async function assertRejects<E extends Error = Error>(
     doesThrow = true;
   }
   if (!doesThrow) {
-    msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
-    throw new AssertionError(msg);
+    throw new AssertionError(
+      `Expected function to reject${msgToAppendToError}`,
+    );
   }
 }
 

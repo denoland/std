@@ -242,7 +242,9 @@ export async function parse(
 
     return r.map((e) => {
       if (e.length !== headers.length) {
-        throw `Error number of fields line:${i}`;
+        throw new Error(
+          `Error number of fields line: ${i}\nNumber of fields found: ${headers.length}\nExpected number of fields: ${e.length}`,
+        );
       }
       i++;
       const out: Record<string, unknown> = {};

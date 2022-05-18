@@ -398,7 +398,7 @@ Deno.test("process in worker", async () => {
 
   const worker = new Worker(
     new URL("./testdata/process_worker.ts", import.meta.url).href,
-    { type: "module", deno: true },
+    { type: "module" },
   );
   worker.addEventListener("message", (e) => {
     assertEquals(e.data, "hello");
