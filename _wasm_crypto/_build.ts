@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-run --allow-read --allow-write --allow-env
+#!/usr/bin/env -S deno run --allow-run --allow-read --allow-write --allow-env --unstable
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as base64 from "../encoding/base64.ts";
 
