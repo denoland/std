@@ -318,8 +318,8 @@ Deno.test(
     });
 
       return {
-        output: new TextDecoder().decode(output),
-        error: new TextDecoder().decode(error),
+        output: new TextDecoder().decode(stdout),
+        error: new TextDecoder().decode(stderr),
         snapshots: await Deno.readTextFile(tempSnapshotFilePath),
       };
     }
