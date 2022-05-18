@@ -40,8 +40,8 @@ type Values<
     & Partial<TypeValues<string, boolean, C>>
     & AddAliases<
       SpreadValues<
-      TypeValues<S, string, C>,
-      DedotRecord<D>
+        TypeValues<S, string, C>,
+        DedotRecord<D>
       >,
       A
     >
@@ -51,9 +51,9 @@ type Values<
     & Record<string, C extends true ? Array<unknown> : unknown>
     & AddAliases<
       SpreadValues<
-      & TypeValues<S, string, C>
-      & RecursiveRequired<TypeValues<B, boolean, C>>,
-      DedotRecord<D>
+        & TypeValues<S, string, C>
+        & RecursiveRequired<TypeValues<B, boolean, C>>,
+        DedotRecord<D>
       >,
       A
     >
