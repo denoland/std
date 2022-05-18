@@ -23,5 +23,6 @@ Deno.test("[examples/cat] print multiple files", async () => {
     const actual = decoder.decode(stdout).trim();
     assertStrictEquals(actual, "Hello\nWorld");
   } finally {
+    //
   }
 });

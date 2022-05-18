@@ -1,7 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { deferred } from "../async/mod.ts";
 import { assert, assertStringIncludes, fail } from "../testing/asserts.ts";
-import { readAll } from "../streams/conversion.ts";
 
 export type BinaryEncodings = "binary";
 

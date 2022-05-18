@@ -4,9 +4,7 @@ import {
   assertEquals,
   assertStringIncludes,
 } from "../testing/asserts.ts";
-import { BufReader } from "../io/buffer.ts";
-import { iterateReader, readAll, writeAll } from "../streams/conversion.ts";
-import { TextProtoReader } from "../textproto/mod.ts";
+import { iterateReader, writeAll } from "../streams/conversion.ts";
 import { serveDir, serveFile } from "./file_server.ts";
 import { dirname, fromFileUrl, join, resolve } from "../path/mod.ts";
 import { isWindows } from "../_util/os.ts";
