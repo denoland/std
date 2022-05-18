@@ -31,7 +31,10 @@ export function pooledMap<T, R>(
         const s = await p;
         controller.enqueue(s);
       } catch (e) {
-        if (e instanceof AggregateError && e.message == ERROR_WHILE_MAPPING_MESSAGE) {
+        if (
+          e instanceof AggregateError &&
+          e.message == ERROR_WHILE_MAPPING_MESSAGE
+        ) {
           controller.error(e as unknown);
         }
       }
