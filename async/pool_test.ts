@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { delay } from "./delay.ts";
-import { pooledMap } from "./pool.ts";
+import { ERROR_WHILE_MAPPING_MESSAGE, pooledMap } from './pool.ts';
 import {
   assert,
   assertEquals,
@@ -38,6 +38,7 @@ Deno.test("[async] pooledMap errors", async () => {
     }
   }, (error: Error) => {
     assert(error instanceof AggregateError);
+    assert(error.message === ERROR_WHILE_MAPPING_MESSAGE);
     assertEquals(error.errors.length, 2);
     assertStringIncludes(error.errors[0].stack, "Error: Bad number: 1");
     assertStringIncludes(error.errors[1].stack, "Error: Bad number: 2");
