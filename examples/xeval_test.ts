@@ -29,7 +29,7 @@ const xevalPath = "xeval.ts";
 Deno.test({
   name: "xevalCliReplvar",
   fn: async function () {
-    const p = await Deno.spawnChild(Deno.execPath(), {
+    const p = Deno.spawnChild(Deno.execPath(), {
       args: [
         "run",
         "--quiet",
@@ -43,8 +43,7 @@ Deno.test({
     });
     const writer = p.stdin.getWriter();
     await writer.write(new TextEncoder().encode("hello"));
-    writer.releaseLock();
-    await p.stdin.close();
+    await writer.close();
     const { status, stdout } = await p.output();
     assertEquals(status, { code: 0, success: true });
     assertEquals(new TextDecoder().decode(stdout).trimEnd(), "hello");
@@ -53,7 +52,7 @@ Deno.test({
 
 Deno.test("xevalCliSyntaxError", async function () {
   const { status, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
-    cmd: ["run", "--quiet", xevalPath, "("],
+    args: [ "run", "--quiet", xevalPath, "("],
     cwd: moduleDir,
   });
   const decoder = new TextDecoder();
