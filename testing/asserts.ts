@@ -245,7 +245,7 @@ export function assertStrictEquals<T>(
   expected: T,
   msg?: string,
 ): asserts actual is T {
-  if (actual === expected) {
+  if (Object.is(actual, expected)) {
     return;
   }
 
@@ -309,7 +309,7 @@ export function assertNotStrictEquals(
   expected: unknown,
   msg?: string,
 ): void {
-  if (actual !== expected) {
+  if (!Object.is(actual, expected)) {
     return;
   }
 
@@ -340,7 +340,7 @@ export function assertAlmostEquals(
   tolerance = 1e-7,
   msg?: string,
 ) {
-  if (actual === expected) {
+  if (Object.is(actual, expected)) {
     return;
   }
   const delta = Math.abs(expected - actual);
