@@ -45,7 +45,7 @@ Deno.test({
     await writer.write(new TextEncoder().encode("hello"));
     await writer.close();
     const { status, stdout } = await p.output();
-    assertEquals(status, { code: 0, success: true });
+    assertEquals(status, { code: 0, signal: null, success: true });
     assertEquals(new TextDecoder().decode(stdout).trimEnd(), "hello");
   },
 });
@@ -56,7 +56,8 @@ Deno.test("xevalCliSyntaxError", async function () {
     cwd: moduleDir,
   });
   const decoder = new TextDecoder();
-  assertEquals(status, { code: 1, success: false });
+  assertEquals(status.code, 1);
+  assertEquals(status.success, false);
   assertEquals(decoder.decode(stdout), "");
   assertStringIncludes(decoder.decode(stderr), "SyntaxError");
 });
