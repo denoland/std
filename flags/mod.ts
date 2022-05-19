@@ -23,6 +23,13 @@ type ArgType = StringType | CollectType;
 
 type CollectType = boolean | string | undefined;
 
+type NoTypes<B, S, C> = undefined extends (
+  & (false extends B ? undefined : B)
+  & (false extends C ? undefined : C)
+  & S
+) ? true
+  : false;
+
 /**
  * Creates a record with all available flags with the corresponding type and
  * default type.
@@ -33,15 +40,15 @@ type Values<
   C extends CollectType,
   D extends Record<string, unknown> | undefined,
   A extends Aliases | undefined,
-> = undefined extends ((false extends B ? undefined : B) & S) // deno-lint-ignore no-explicit-any
-  ? Record<string, any>
+> // deno-lint-ignore no-explicit-any
+ = NoTypes<B, S, C> extends true ? Record<string, any>
   : 
     & Record<string, true extends C ? Array<unknown> : unknown>
     & AddAliases<
       SpreadValues<
-        & TypeValues<S, string, C>
-        & (true extends B ? Record<never, never>
-          : RecursiveRequired<TypeValues<B, boolean, C>>),
+        & CollectValues<S, string, C>
+        & RecursiveRequired<CollectValues<B, boolean, C>>
+        & UnknownCollactable<B, S, C>,
         DedotRecord<D>
       >,
       A
@@ -80,49 +87,53 @@ type SpreadValues<A, D> = D extends undefined ? A
  * Defines the Record for the `default` parse option to add
  * autosuggestion support for IDE's.
  */
-type Defaults<
-  B extends BooleanType,
-  S extends StringType,
-> = Id<
+type Defaults<B extends BooleanType, S extends StringType> = Id<
   UnionToIntersection<
     & Record<string, unknown>
-    & TypeValues<S, unknown>
-    & TypeValues<B, unknown>
+    & MapTypes<S, unknown>
+    & MapTypes<B, unknown>
     & MapDefaults<B>
     & MapDefaults<S>
   >
 >;
-
-type TypeValues<T extends ArgType, V, C extends CollectType = undefined> =
-  UnionToIntersection<MapTypes<T, V, C>>;
 
 type RecursiveRequired<T> = T extends Record<string, unknown> ? {
   [K in keyof T]-?: RecursiveRequired<T[K]>;
 }
   : T;
 
-type MapTypes<
-  T extends ArgType,
-  V,
-  C extends CollectType,
-> = undefined extends T ? Record<never, never>
-  : T extends false ? Record<never, never>
-  : T extends true ? Partial<Record<string, V>>
-  : T extends `no-${infer Name}` ? MapTypes<Name, V | false, C>
+type CollectValues<T extends ArgType, V, C extends CollectType> =
+  UnionToIntersection<
+    C extends true ? MapTypes<T, Array<V>>
+      : C extends string ? 
+        & MapTypes<Exclude<T, C>, V>
+        & (T extends undefined ? Record<never, never> : RecursiveRequired<
+          MapTypes<Extract<C, T>, Array<V>>
+        >)
+      : MapTypes<T, V>
+  >;
+
+type MapTypes<T extends ArgType, V> = undefined extends T ? Record<never, never>
+  : T extends `no-${infer Name}` ? MapTypes<Name, V | false>
   : T extends `${infer Name}.${infer Rest}` ? {
     [K in Name]?: MapTypes<
       Rest,
-      V,
-      C extends `${Name}.${infer Collect}` ? Collect
-        : C extends boolean ? C
-        : false
+      V
     >;
   }
-  : T extends string ? Partial<
-    & Record<Exclude<T, C extends true ? string : C>, V>
-    & Record<Extract<T, C extends true ? string : C>, Array<V>>
-  >
+  : T extends string ? Partial<Record<T, V>>
   : Record<never, never>;
+
+type UnknownCollactable<B, S, C> = B & S extends C ? Record<never, never>
+  : DedotRecord<
+    Record<
+      Exclude<
+        Extract<C, string>,
+        Extract<S | B, string>
+      >,
+      Array<unknown>
+    >
+  >;
 
 type MapDefaults<T extends ArgType> = T extends string
   ? Partial<Record<T, unknown>>

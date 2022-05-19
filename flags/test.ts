@@ -1360,6 +1360,25 @@ Deno.test("typesOfArgsWithDottedDefaults", function (): void {
 
 /** ------------------------ COLLECT OPTION -------------------------- */
 
+Deno.test("typesOfCollectUnknownArgs", function (): void {
+  const argv = parse([], {
+    collect: ["foo", "bar.baz"],
+  });
+  assertType<
+    IsExact<
+      typeof argv,
+      & { [x: string]: unknown }
+      & {
+        foo: Array<unknown>;
+        bar: {
+          baz: Array<unknown>;
+        };
+        _: Array<string | number>;
+      }
+    >
+  >(true);
+});
+
 Deno.test("typesOfCollectAllArgs", function (): void {
   const argv = parse([], {
     boolean: ["foo", "dotted.beep"],
@@ -1427,7 +1446,7 @@ Deno.test("typesOfCollectArgs", function (): void {
       & {
         bar?: string | undefined;
         dotted: {
-          boop?: Array<string> | undefined;
+          boop: Array<string>;
           beep: boolean;
         };
         foo: Array<boolean>;
