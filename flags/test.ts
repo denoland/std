@@ -737,6 +737,82 @@ Deno.test("whitespaceShouldBeWhitespace", function (): void {
   assertEquals(parse(["-x", "\t"]).x, "\t");
 });
 
+Deno.test("collectArgsDefaultBehaviour", function (): void {
+  const argv = parse([
+    "--foo",
+    "bar",
+    "--foo",
+    "baz",
+    "--beep",
+    "boop",
+    "--bool",
+    "--bool",
+  ]);
+
+  assertEquals(argv, {
+    foo: ["bar", "baz"],
+    beep: "boop",
+    bool: true,
+    _: [],
+  });
+});
+
+Deno.test("collectUnknownArgs", function (): void {
+  const argv = parse([
+    "--foo",
+    "bar",
+    "--foo",
+    "baz",
+    "--beep",
+    "boop",
+    "--bib",
+    "--bib",
+    "--bab",
+    "--bab",
+  ], {
+    collect: ["beep", "bib"],
+  });
+
+  assertEquals(argv, {
+    foo: "baz",
+    beep: ["boop"],
+    bib: [true, true],
+    bab: true,
+    _: [],
+  });
+});
+
+Deno.test("collectAllArgs", function (): void {
+  const argv = parse([
+    "--bool",
+    "--no-bool",
+    "--bool",
+    "--str",
+    "foo",
+    "--str",
+    "bar",
+    "--num",
+    "123",
+    "--no-num",
+    "--num",
+    "456",
+    "--bib.bab",
+    "--no-bib.bab",
+    "--bib.bab",
+  ], {
+    collect: true,
+  });
+
+  assertEquals(argv, {
+    // TODO: fix negatable collactable options.
+    bool: [true, false, true],
+    str: ["foo", "bar"],
+    num: [123, false, 456],
+    bib: { bab: [true, false, true] },
+    _: [],
+  });
+});
+
 Deno.test("collectArgs", function (): void {
   const argv = parse([
     "--bool",
@@ -747,11 +823,11 @@ Deno.test("collectArgs", function (): void {
     "--strArr",
     "beep",
     "--unknown",
-    "--unknown2",
+    "--unknownArr",
   ], {
     boolean: ["bool", "boolArr"],
     string: ["str", "strArr"],
-    collect: ["boolArr", "strArr", "unknown"],
+    collect: ["boolArr", "strArr", "unknownArr"],
   });
 
   assertEquals(argv, {
@@ -759,8 +835,8 @@ Deno.test("collectArgs", function (): void {
     boolArr: [true],
     str: "foo",
     strArr: ["beep"],
-    unknown: [true],
-    unknown2: true,
+    unknown: true,
+    unknownArr: [true],
     _: [],
   });
 });

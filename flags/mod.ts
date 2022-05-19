@@ -190,7 +190,7 @@ export function parse(
     Object.keys(flags.bools).length > 0 ||
     Object.keys(flags.strings).length > 0;
 
-  if (typeof collect !== "undefined" && hasTypes) {
+  if (collect !== undefined) {
     if (typeof collect === "boolean") {
       flags.collectAll = collect;
     } else {
@@ -207,6 +207,8 @@ export function parse(
       }
     }
   }
+
+  const hasCollect = flags.collectAll || Object.keys(flags.collect).length > 0;
 
   const argv: Args = { _: [] };
 
@@ -235,11 +237,11 @@ export function parse(
     });
 
     const key = keys[keys.length - 1];
-    const collectable = collect && hasTypes &&
+    const collectable = collect &&
       (flags.collectAll || !!flags.collect[name]);
 
     if (
-      !collectable && (
+      hasCollect || hasTypes ? !collectable : (
         get(o, key) === undefined ||
         get(flags.bools, key) ||
         typeof get(o, key) === "boolean"
