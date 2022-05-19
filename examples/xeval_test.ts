@@ -52,7 +52,7 @@ Deno.test({
 
 Deno.test("xevalCliSyntaxError", async function () {
   const { status, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
-    args: [ "run", "--quiet", xevalPath, "("],
+    args: ["run", "--quiet", xevalPath, "("],
     cwd: moduleDir,
   });
   const decoder = new TextDecoder();
