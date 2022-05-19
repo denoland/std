@@ -16,6 +16,7 @@ async function startServer(): Promise<Deno.Child<Deno.SpawnOptions>> {
       "server.ts",
     ],
     cwd: moduleDir,
+    stderr: "null",
   });
   try {
     const r = server.stdout.pipeThrough(new TextDecoderStream()).pipeThrough(
@@ -43,7 +44,7 @@ Deno.test({
       const html = await resp.text();
       assert(html.includes("ws chat example"), "body is ok");
     } finally {
-      await server.status;
+      server.kill("SIGTERM");
     }
     await delay(10);
   },
@@ -70,7 +71,7 @@ Deno.test({
     } catch (err) {
       console.log(err);
     } finally {
-      await server.status;
+      server.kill("SIGTERM");
     }
   },
 });
