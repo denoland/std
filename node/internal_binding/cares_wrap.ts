@@ -155,7 +155,29 @@ export interface ChannelWrapQuery {
   getHostByAddr(req: QueryReqWrap, name: string): number;
 }
 
+function fqdnToHostname(fqdn: string): string {
+  return fqdn.replace(/\.$/, "");
+}
+
+function compressIPv6(address: string): string {
+  const formatted = address.replace(/\b(?:0+:){2,}/, ":");
+  const finalAddress = formatted
+    .split(":")
+    .map((octet) => {
+      if (octet.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+        // decimal
+        return Number(octet.replaceAll(".", "")).toString(16);
+      }
+
+      return octet.replace(/\b0+/g, "");
+    })
+    .join(":");
+
+  return finalAddress;
+}
+
 export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
+  #servers: [string, number][] = [];
   #timeout: number;
   #tries: number;
 
@@ -169,11 +191,48 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
   async #query(query: string, recordType: Deno.RecordType) {
     // TODO: TTL logic.
 
+    let code: number;
+    let ret: Awaited<ReturnType<typeof Deno.resolveDns>>;
+
+    if (this.#servers.length) {
+      for (const [ipAddr, port] of this.#servers) {
+        const resolveOptions = {
+          nameServer: {
+            ipAddr,
+            port,
+          },
+        };
+
+        ({ code, ret } = await this.#resolve(
+          query,
+          recordType,
+          resolveOptions,
+        ));
+
+        if (code === 0 || code === codeMap.get("EAI_NODATA")!) {
+          break;
+        }
+      }
+    } else {
+      ({ code, ret } = await this.#resolve(query, recordType));
+    }
+
+    return { code: code!, ret: ret! };
+  }
+
+  async #resolve(
+    query: string,
+    recordType: Deno.RecordType,
+    resolveOptions?: Deno.ResolveDnsOptions,
+  ): Promise<{
+    code: number;
+    ret: Awaited<ReturnType<typeof Deno.resolveDns>>;
+  }> {
     let ret: Awaited<ReturnType<typeof Deno.resolveDns>> = [];
     let code = 0;
 
     try {
-      ret = await Deno.resolveDns(query, recordType);
+      ret = await Deno.resolveDns(query, recordType, resolveOptions);
     } catch (e) {
       if (e instanceof Deno.errors.NotFound) {
         code = codeMap.get("EAI_NODATA")!;
@@ -200,8 +259,17 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
           ret.forEach((record) => records.push({ type: "A", address: record }));
         }),
         this.#query(name, "AAAA").then(({ ret }) => {
-          ret.forEach((record) =>
-            records.push({ type: "AAAA", address: record })
+          (ret as string[]).forEach((record) =>
+            records.push({ type: "AAAA", address: compressIPv6(record) })
+          );
+        }),
+        this.#query(name, "CAA").then(({ ret }) => {
+          (ret as Deno.CAARecord[]).forEach(({ critical, tag, value }) =>
+            records.push({
+              type: "CAA",
+              [tag]: value,
+              critical: !!(critical && 128),
+            })
           );
         }),
         this.#query(name, "CNAME").then(({ ret }) => {
@@ -211,11 +279,15 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
         }),
         this.#query(name, "MX").then(({ ret }) => {
           (ret as Deno.MXRecord[]).forEach(({ preference, exchange }) =>
-            records.push({ type: "MX", priority: preference, exchange })
+            records.push({
+              type: "MX",
+              priority: preference,
+              exchange: fqdnToHostname(exchange),
+            })
           );
         }),
         this.#query(name, "NAPTR").then(({ ret }) => {
-          ret.forEach(
+          (ret as Deno.NAPTRRecord[]).forEach(
             ({ order, preference, flags, services, regexp, replacement }) =>
               records.push({
                 type: "NAPTR",
@@ -229,26 +301,22 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
           );
         }),
         this.#query(name, "NS").then(({ ret }) => {
-          ret.forEach((record) => records.push({ type: "NS", value: record }));
+          (ret as string[]).forEach((record) =>
+            records.push({ type: "NS", value: fqdnToHostname(record) })
+          );
         }),
         this.#query(name, "PTR").then(({ ret }) => {
-          ret.forEach((record) => records.push({ type: "PTR", value: record }));
+          (ret as string[]).forEach((record) =>
+            records.push({ type: "PTR", value: fqdnToHostname(record) })
+          );
         }),
         this.#query(name, "SOA").then(({ ret }) => {
-          ret.forEach(
-            ({
-              mname,
-              rname,
-              serial,
-              refresh,
-              retry,
-              expire,
-              minimum,
-            }) =>
+          (ret as Deno.SOARecord[]).forEach(
+            ({ mname, rname, serial, refresh, retry, expire, minimum }) =>
               records.push({
                 type: "SOA",
-                nsname: mname,
-                hostmaster: rname,
+                nsname: fqdnToHostname(mname),
+                hostmaster: fqdnToHostname(rname),
                 serial,
                 refresh,
                 retry,
@@ -294,14 +362,27 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
   queryAaaa(req: QueryReqWrap, name: string): number {
     this.#query(name, "AAAA").then(({ code, ret }) => {
-      req.oncomplete(code, ret);
+      const records = (ret as string[]).map((record) => compressIPv6(record));
+
+      req.oncomplete(code, records);
     });
 
     return 0;
   }
 
-  queryCaa(_req: QueryReqWrap, _name: string): number {
-    notImplemented("cares.ChannelWrap.prototype.queryCaa");
+  queryCaa(req: QueryReqWrap, name: string): number {
+    this.#query(name, "CAA").then(({ code, ret }) => {
+      const records = (ret as Deno.CAARecord[]).map(
+        ({ critical, tag, value }) => ({
+          [tag]: value,
+          critical: !!(critical && 128),
+        }),
+      );
+
+      req.oncomplete(code, records);
+    });
+
+    return 0;
   }
 
   queryCname(req: QueryReqWrap, name: string): number {
@@ -317,7 +398,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
       const records = (ret as Deno.MXRecord[]).map(
         ({ preference, exchange }) => ({
           priority: preference,
-          exchange,
+          exchange: fqdnToHostname(exchange),
         }),
       );
 
@@ -348,7 +429,9 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
   queryNs(req: QueryReqWrap, name: string): number {
     this.#query(name, "NS").then(({ code, ret }) => {
-      req.oncomplete(code, ret);
+      const records = (ret as string[]).map((record) => fqdnToHostname(record));
+
+      req.oncomplete(code, records);
     });
 
     return 0;
@@ -356,7 +439,9 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
   queryPtr(req: QueryReqWrap, name: string): number {
     this.#query(name, "PTR").then(({ code, ret }) => {
-      req.oncomplete(code, ret);
+      const records = (ret as string[]).map((record) => fqdnToHostname(record));
+
+      req.oncomplete(code, records);
     });
 
     return 0;
@@ -368,11 +453,11 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
 
       if (ret.length) {
         const { mname, rname, serial, refresh, retry, expire, minimum } =
-          ret[0];
+          ret[0] as Deno.SOARecord;
 
         record = {
-          nsname: mname,
-          hostmaster: rname,
+          nsname: fqdnToHostname(mname),
+          hostmaster: fqdnToHostname(rname),
           serial,
           refresh,
           retry,
@@ -418,11 +503,23 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
   }
 
   getServers(): [string, number][] {
-    notImplemented("cares.ChannelWrap.prototype.getServers");
+    return this.#servers;
   }
 
-  setServers(_servers: string | [number, string, number][]): number {
-    notImplemented("cares.ChannelWrap.prototype.setServers");
+  setServers(servers: string | [number, string, number][]): number {
+    if (typeof servers === "string") {
+      const tuples: [string, number][] = [];
+
+      for (let i = 0; i < servers.length; i += 2) {
+        tuples.push([servers[i], parseInt(servers[i + 1])]);
+      }
+
+      this.#servers = tuples;
+    } else {
+      this.#servers = servers.map(([_ipVersion, ip, port]) => [ip, port]);
+    }
+
+    return 0;
   }
 
   setLocalAddress(_addr0: string, _addr1?: string): void {

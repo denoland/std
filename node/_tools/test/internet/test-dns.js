@@ -409,45 +409,45 @@ TEST(function test_resolveSoa_failure(done) {
   checkWrap(req);
 });
 
-// TEST(async function test_resolveCaa(done) {
-//   function validateResult(result) {
-//     assert.ok(Array.isArray(result),
-//               `expected array, got ${util.inspect(result)}`);
-//     assert.strictEqual(result.length, 1);
-//     assert.strictEqual(typeof result[0].critical, 'number');
-//     assert.strictEqual(result[0].critical, 0);
-//     assert.strictEqual(result[0].issue, 'pki.goog');
-//   }
+TEST(async function test_resolveCaa(done) {
+  function validateResult(result) {
+    assert.ok(Array.isArray(result),
+              `expected array, got ${util.inspect(result)}`);
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(typeof result[0].critical, 'number');
+    assert.strictEqual(result[0].critical, 0);
+    assert.strictEqual(result[0].issue, 'pki.goog');
+  }
 
-//   validateResult(await dnsPromises.resolveCaa(addresses.CAA_HOST));
+  validateResult(await dnsPromises.resolveCaa(addresses.CAA_HOST));
 
-//   const req = dns.resolveCaa(addresses.CAA_HOST, function(err, records) {
-//     assert.ifError(err);
-//     validateResult(records);
-//     done();
-//   });
+  const req = dns.resolveCaa(addresses.CAA_HOST, function(err, records) {
+    assert.ifError(err);
+    validateResult(records);
+    done();
+  });
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
-// TEST(function test_resolveCaa_failure(done) {
-//   dnsPromises.resolveTxt(addresses.NOT_FOUND)
-//     .then(common.mustNotCall())
-//     .catch(common.mustCall((err) => {
-//       assert.strictEqual(err.code, 'ENOTFOUND');
-//     }));
+TEST(function test_resolveCaa_failure(done) {
+  dnsPromises.resolveTxt(addresses.NOT_FOUND)
+    .then(common.mustNotCall())
+    .catch(common.mustCall((err) => {
+      assert.strictEqual(err.code, 'ENOTFOUND');
+    }));
 
-//   const req = dns.resolveCaa(addresses.NOT_FOUND, function(err, result) {
-//     assert.ok(err instanceof Error);
-//     assert.strictEqual(err.code, 'ENOTFOUND');
+  const req = dns.resolveCaa(addresses.NOT_FOUND, function(err, result) {
+    assert.ok(err instanceof Error);
+    assert.strictEqual(err.code, 'ENOTFOUND');
 
-//     assert.strictEqual(result, undefined);
+    assert.strictEqual(result, undefined);
 
-//     done();
-//   });
+    done();
+  });
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
 TEST(async function test_resolveCname(done) {
   function validateResult(result) {
