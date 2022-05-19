@@ -128,7 +128,7 @@ Deno.test("expandGlobPermError", async function () {
     ],
   });
   const decoder = new TextDecoder();
-  assertEquals(status, { code: 1, success: false });
+  assertEquals(status, { code: 1, signal: null, success: false });
   assertEquals(decoder.decode(stdout), "");
   assertStringIncludes(decoder.decode(stderr), "Uncaught PermissionDenied");
 });
