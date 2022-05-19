@@ -84,7 +84,7 @@ async function startFileServerAsLibrary({}: FileServerCfg = {}) {
 }
 
 async function killFileServer() {
-  fileServer.kill("SIGILL");
+  fileServer.kill("SIGTERM");
   await fileServer.status;
 }
 
