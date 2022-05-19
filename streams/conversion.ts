@@ -200,10 +200,10 @@ export function readableStreamFromIterable<T>(
  * Convert the generator function into a TransformStream.
  *
  * ```ts
- * import { readableStreamFromIterable, transformStreamFromGenerator } from "./conversion.ts";
+ * import { readableStreamFromIterable, toTransformStream } from "./conversion.ts";
  *
  * const readable = readableStreamFromIterable([0, 1, 2])
- *   .pipeThrough(transformStreamFromGenerator(async function* (src) {
+ *   .pipeThrough(toTransformStream(async function* (src) {
  *     for await (const chunk of src) {
  *       yield chunk * 100;
  *     }
@@ -219,7 +219,7 @@ export function readableStreamFromIterable<T>(
  * @param writableStrategy An object that optionally defines a queuing strategy for the stream.
  * @param readableStrategy An object that optionally defines a queuing strategy for the stream.
  */
-export function transformStreamFromGenerator<I, O>(
+export function toTransformStream<I, O>(
   transformer: (src: ReadableStream<I>) => Iterable<O> | AsyncIterable<O>,
   writableStrategy?: QueuingStrategy<I>,
   readableStrategy?: QueuingStrategy<O>,

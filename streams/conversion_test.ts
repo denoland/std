@@ -11,7 +11,7 @@ import {
   readAllSync,
   readerFromIterable,
   readerFromStreamReader,
-  transformStreamFromGenerator,
+  toTransformStream,
   writableStreamFromWriter,
   writeAll,
   writeAllSync,
@@ -332,10 +332,10 @@ Deno.test("[streams] readableStreamFromIterable() cancel", async function () {
 });
 
 Deno.test({
-  name: "[streams] transformStreamFromGenerator()",
+  name: "[streams] toTransformStream()",
   async fn() {
     const readable = readableStreamFromIterable([0, 1, 2])
-      .pipeThrough(transformStreamFromGenerator(async function* (src) {
+      .pipeThrough(toTransformStream(async function* (src) {
         for await (const i of src) {
           yield i * 100;
         }
@@ -350,11 +350,10 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "[streams] transformStreamFromGenerator() - iterable, not asynciterable",
+  name: "[streams] toTransformStream() - iterable, not asynciterable",
   async fn() {
     const readable = readableStreamFromIterable([0, 1, 2])
-      .pipeThrough(transformStreamFromGenerator(function* (_src) {
+      .pipeThrough(toTransformStream(function* (_src) {
         yield 0;
         yield 100;
         yield 200;
@@ -369,8 +368,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "[streams] transformStreamFromGenerator() Propagate the error from readable 1",
+  name: "[streams] toTransformStream() Propagate the error from readable 1",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the error that occurred in readable1 to generator and readable2.
@@ -387,7 +385,7 @@ Deno.test({
           },
         });
         const readable2 = readable1.pipeThrough(
-          transformStreamFromGenerator(async function* (src) {
+          toTransformStream(async function* (src) {
             for await (const i of src) {
               yield i;
             }
@@ -415,7 +413,7 @@ Deno.test({
           },
         });
         const readable2 = readable1.pipeThrough(
-          transformStreamFromGenerator(async function* (src) {
+          toTransformStream(async function* (src) {
             try {
               await src.getReader().read();
             } catch (error) {
@@ -433,8 +431,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "[streams] transformStreamFromGenerator() Propagate the error from generator",
+  name: "[streams] toTransformStream() Propagate the error from generator",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the error that occurred in generator to readable2 and readable1.
@@ -449,7 +446,7 @@ Deno.test({
     });
     const readable2 = readable1.pipeThrough(
       // deno-lint-ignore require-yield
-      transformStreamFromGenerator(function* () {
+      toTransformStream(function* () {
         throw expectedError; // error from generator
       }),
     );
@@ -476,8 +473,7 @@ Deno.test({
 });
 
 Deno.test({
-  name:
-    "[streams] transformStreamFromGenerator() Propagate cancellation from readable 2",
+  name: "[streams] toTransformStream() Propagate cancellation from readable 2",
   async fn(t) {
     // When data is pipelined in the order of readable1 → generator → readable2,
     // Propagate the cancellation that occurred in readable2 to readable1 and generator.
@@ -493,7 +489,7 @@ Deno.test({
           },
         });
         const readable2 = readable1.pipeThrough(
-          transformStreamFromGenerator(function* () {
+          toTransformStream(function* () {
             yield 0;
           }),
         );
@@ -509,7 +505,7 @@ Deno.test({
 
         const readable1 = new ReadableStream();
         const readable2 = readable1.pipeThrough(
-          transformStreamFromGenerator(function* () {
+          toTransformStream(function* () {
             try {
               yield 0;
             } catch (error) {
