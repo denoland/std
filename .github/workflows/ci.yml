@@ -45,14 +45,16 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
-        if: !startsWith(matrix.os, 'ubuntu')
+        if: |
+          !startsWith(matrix.os, 'ubuntu')
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
 
       - name: Remove coverage report
         shell: bash
-        if: !startsWith(matrix.os, 'ubuntu')
+        if: |
+          !startsWith(matrix.os, 'ubuntu')
         run: |
           rm -rf ./cov/
           rm cov.lcov
