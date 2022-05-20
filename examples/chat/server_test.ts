@@ -35,7 +35,7 @@ async function startServer(): Promise<Deno.Child<Deno.SpawnOptions>> {
 
 Deno.test({
   name: "[examples/chat] GET / should serve html",
-  sanitizeOps: false, // TODO(@crowlKats): re-enable once https://github.com/denoland/deno/pull/14686 lands
+  sanitizeResources: false, // TODO(@crowlKats): re-enable once https://github.com/denoland/deno/pull/14686 lands
   async fn() {
     const server = await startServer();
     try {
@@ -53,7 +53,7 @@ Deno.test({
 
 Deno.test({
   name: "[examples/chat] GET /ws should upgrade conn to ws",
-  sanitizeOps: false, // TODO(@crowlKats): re-enable once https://github.com/denoland/deno/pull/14686 lands
+  sanitizeResources: false, // TODO(@crowlKats): re-enable once https://github.com/denoland/deno/pull/14686 lands
   async fn() {
     const server = await startServer();
     let ws: WebSocket;
