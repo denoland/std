@@ -140,11 +140,12 @@ type MapDefaults<T extends ArgType> = T extends string
   : Record<string, unknown>;
 
 /** Converts `{ "foo.bar.baz": unknown }` into `{ foo: { bar: { baz: unknown } } }`. */
-type DedotRecord<T> = T extends Record<string, unknown> ? UnionToIntersection<
-  ValueOf<
-    { [K in keyof T]: K extends string ? Dedot<K, T[K]> : never }
+type DedotRecord<T> = Record<string, unknown> extends T ? T
+  : T extends Record<string, unknown> ? UnionToIntersection<
+    ValueOf<
+      { [K in keyof T]: K extends string ? Dedot<K, T[K]> : never }
+    >
   >
->
   : T;
 
 type Dedot<T extends string, V> = T extends `${infer Name}.${infer Rest}`
