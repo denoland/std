@@ -2,7 +2,7 @@
 // This module is browser compatible.
 
 import { TextDelimiterStream } from "../../streams/delimiter.ts";
-import { transformStreamFromGeneratorFunction } from "../../streams/conversion.ts";
+import { toTransformStream } from "../../streams/conversion.ts";
 
 export type JSONValue =
   | { [key: string]: JSONValue }
@@ -103,7 +103,7 @@ export class ConcatenatedJSONParseStream
    * @param options.readableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
    */
   constructor(options: ParseStreamOptions = {}) {
-    const { writable, readable } = transformStreamFromGeneratorFunction(
+    const { writable, readable } = toTransformStream(
       this.#concatenatedJSONIterator,
       options.writableStrategy,
       options.readableStrategy,
