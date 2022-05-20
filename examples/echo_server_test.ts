@@ -25,7 +25,7 @@ Deno.test("[examples/echo_server]", async () => {
     );
     const reader = r.getReader();
     const res = await reader.read();
-    reader.releaseLock();
+    reader.cancel();
 
     assertEquals(res.done, false);
     assertStrictEquals(res.value!.trim(), "Listening on http://localhost:8080");
