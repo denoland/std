@@ -45,21 +45,21 @@ Deno.test({
 
 Deno.test({
   name: "grantOrThrow invalid argument",
-  fn() {
-    assertRejects(
+  async fn() {
+    await assertRejects(
       () => {
         return grantOrThrow();
       },
       TypeError,
-      `Cannot read properties of undefined (reading 'name')`,
+      `The provided value "undefined" is not a valid permission name.`,
     );
   },
 });
 
 Deno.test({
   name: "grantOrThrow invalid permissionDescriptor name",
-  fn() {
-    assertRejects(
+  async fn() {
+    await assertRejects(
       () => {
         // deno-lint-ignore no-explicit-any
         return grantOrThrow({ name: "nett" } as any);
