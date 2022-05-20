@@ -93,7 +93,7 @@ Deno.test("booleanAndAliasWithOptionsHash", function (): void {
   const opts = {
     alias: { h: "herp" },
     boolean: "herp",
-  };
+  } as const;
   const aliasedArgv = parse(aliased, opts);
   const propertyArgv = parse(regular, opts);
   const expected = {
@@ -112,7 +112,7 @@ Deno.test("booleanAndAliasArrayWithOptionsHash", function (): void {
   const opts = {
     alias: { h: ["herp", "harp"] },
     boolean: "h",
-  };
+  } as const;
   const aliasedArgv = parse(aliased, opts);
   const propertyArgv = parse(regular, opts);
   const altPropertyArgv = parse(alt, opts);
@@ -133,7 +133,7 @@ Deno.test("booleanAndAliasUsingExplicitTrue", function (): void {
   const opts = {
     alias: { h: "herp" },
     boolean: "h",
-  };
+  } as const;
   const aliasedArgv = parse(aliased, opts);
   const propertyArgv = parse(regular, opts);
   const expected = {
