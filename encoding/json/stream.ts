@@ -3,4 +3,3 @@
 
 export * from "./_parse.ts";
 export * from "./_stringify.ts";
-export * from "./_types.ts";
