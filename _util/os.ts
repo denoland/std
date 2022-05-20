@@ -12,7 +12,7 @@ export const osType: OSType = (() => {
 
   // deno-lint-ignore no-explicit-any
   const { navigator } = globalThis as any;
-  if (navigator?.appVersion?.includes?.("Win") ?? false) {
+  if (navigator?.appVersion?.includes?.("Win")) {
     return "windows";
   }
 
@@ -20,3 +20,4 @@ export const osType: OSType = (() => {
 })();
 
 export const isWindows = osType === "windows";
+export const isLinux = osType === "linux";
