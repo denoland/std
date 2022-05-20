@@ -75,14 +75,9 @@ type AliasName<
  * and makes default values required.
  *
  * **Example:**
- * ```
- * SpreadValues<{ foo?: boolean, bar?: number }, { foo: number }>
- * ```
+ * `SpreadValues<{ foo?: boolean, bar?: number }, { foo: number }>`
  *
- * **Output:**
- * ```
- * { foo: boolan | number, bar?: number }
- * ```
+ * **Result:** `{ foo: boolan | number, bar?: number }`
  */
 type SpreadDefaults<A, D> = D extends undefined ? A
   : A extends Record<string, unknown> ? 
