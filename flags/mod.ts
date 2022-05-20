@@ -55,7 +55,7 @@ type Values<
     >;
 
 type Aliases<T = string, V extends string = string> = Partial<
-  Record<Extract<T, string>, V | Array<V>>
+  Record<Extract<T, string>, V | ReadonlyArray<V>>
 >;
 
 type AddAliases<
@@ -224,7 +224,7 @@ export interface ParseOptions<
   /** A boolean, string or array of strings to always treat as booleans. If
    * `true` will treat all double hyphenated arguments without equal signs as
    * `boolean` (e.g. affects `--foo`, not `-f` or `--foo=bar`) */
-  boolean?: B | Array<Extract<B, string>>;
+  boolean?: B | ReadonlyArray<Extract<B, string>>;
 
   /** An object mapping string argument names to default values. */
   default?: D & Defaults<B, S>;
@@ -234,10 +234,10 @@ export interface ParseOptions<
   stopEarly?: boolean;
 
   /** A string or array of strings argument names to always treat as strings. */
-  string?: S | Array<Extract<S, string>>;
+  string?: S | ReadonlyArray<Extract<S, string>>;
 
   /** A string or array of strings argument names to always treat as strings. */
-  collect?: C | Array<Extract<C, string>>;
+  collect?: C | ReadonlyArray<Extract<C, string>>;
 
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
@@ -340,7 +340,9 @@ export function parse<
     if (typeof boolean === "boolean") {
       flags.allBools = !!boolean;
     } else {
-      const booleanArgs = typeof boolean === "string" ? [boolean] : boolean;
+      const booleanArgs = typeof boolean === "string"
+        ? [boolean] as ReadonlyArray<string>
+        : boolean;
 
       for (const key of booleanArgs.filter(Boolean)) {
         flags.bools[key] = true;
@@ -364,7 +366,9 @@ export function parse<
   }
 
   if (string !== undefined) {
-    const stringArgs = typeof string === "string" ? [string] : string;
+    const stringArgs = typeof string === "string"
+      ? [string] as ReadonlyArray<string>
+      : string;
 
     for (const key of stringArgs.filter(Boolean)) {
       flags.strings[key] = true;
