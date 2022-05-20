@@ -417,7 +417,7 @@ Deno.test("runNext runs next timer without running microtasks", async () => {
     seq.push(1);
     time.next();
     seq.push(2);
-    const expectedCalls = [{ args: [], returned: 1000 }];
+    const expectedCalls = [{ args: [] as [], returned: 1000 }];
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
     await time.runMicrotasks();
@@ -450,7 +450,7 @@ Deno.test("runNextAsync runs all microtasks and next timer", async () => {
     seq.push(1);
     await time.nextAsync();
     seq.push(4);
-    const expectedCalls = [{ args: [], returned: 1000 }];
+    const expectedCalls = [{ args: [] as [], returned: 1000 }];
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1000);
 
@@ -483,8 +483,8 @@ Deno.test("runAll runs all timers without running microtasks", async () => {
     time.runAll();
     seq.push(2);
     const expectedCalls = [
-      { args: [], returned: 1000 },
-      { args: [], returned: 1500 },
+      { args: [] as [], returned: 1000 },
+      { args: [] as [], returned: 1500 },
     ];
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1500);
@@ -520,8 +520,8 @@ Deno.test("runAllAsync runs all microtasks and timers", async () => {
     await time.runAllAsync();
     seq.push(4);
     const expectedCalls = [
-      { args: [], returned: 1000 },
-      { args: [], returned: 1500 },
+      { args: [] as [], returned: 1000 },
+      { args: [] as [], returned: 1500 },
     ];
     assertEquals(cb.calls, expectedCalls);
     assertEquals(Date.now(), start + 1500);
