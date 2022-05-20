@@ -25,7 +25,7 @@ import {
 } from "./asserts.ts";
 import { bold, gray, green, red, stripColor, yellow } from "../fmt/colors.ts";
 
-Deno.test("testingEqualDifferentZero", () => {
+Deno.test("EqualDifferentZero", () => {
   assert(equal(0, -0));
   assert(equal(0, +0));
   assert(equal(+0, -0));
@@ -37,7 +37,7 @@ Deno.test("testingEqualDifferentZero", () => {
   assert(equal({ msg: "hello", array: [0] }, { msg: "hello", array: [-0] }));
 });
 
-Deno.test("testingEqual", function (): void {
+Deno.test("Equal", function (): void {
   assert(equal("world", "world"));
   assert(!equal("hello", "world"));
   assertFalse(equal("hello", "world"));
@@ -279,7 +279,7 @@ Deno.test("testingEqual", function (): void {
   );
 });
 
-Deno.test("testingEqualCircular", () => {
+Deno.test("EqualCircular", () => {
   const objA: { prop?: unknown } = {};
   objA.prop = objA;
   const objB: { prop?: unknown } = {};
@@ -293,7 +293,7 @@ Deno.test("testingEqualCircular", () => {
   assert(equal(mapA, mapB));
 });
 
-Deno.test("testingNotEquals", function (): void {
+Deno.test("NotEquals", function (): void {
   const a = { foo: "bar" };
   const b = { bar: "foo" };
   assertNotEquals<unknown>(a, b);
@@ -314,7 +314,7 @@ Deno.test("testingNotEquals", function (): void {
   assertEquals(didThrow, true);
 });
 
-Deno.test("testingAssertExists", function (): void {
+Deno.test("AssertExists", function (): void {
   assertExists("Denosaurus");
   assertExists(false);
   assertExists(0);
@@ -347,7 +347,7 @@ Deno.test("testingAssertExists", function (): void {
   assertEquals(didThrow, true);
 });
 
-Deno.test("testingAssertStringContains", function (): void {
+Deno.test("AssertStringContains", function (): void {
   assertStringIncludes("Denosaurus", "saur");
   assertStringIncludes("Denosaurus", "Deno");
   assertStringIncludes("Denosaurus", "rus");
@@ -362,7 +362,7 @@ Deno.test("testingAssertStringContains", function (): void {
   assertEquals(didThrow, true);
 });
 
-Deno.test("testingArrayContains", function (): void {
+Deno.test("ArrayContains", function (): void {
   const fixture = ["deno", "iz", "luv"];
   const fixtureObject = [{ deno: "luv" }, { deno: "Js" }];
   assertArrayIncludes(fixture, ["deno"]);
@@ -394,7 +394,7 @@ missing: [
   );
 });
 
-Deno.test("testingAssertStringContainsThrow", function (): void {
+Deno.test("AssertStringContainsThrow", function (): void {
   let didThrow = false;
   try {
     assertStringIncludes("Denosaurus from Jurassic", "Raptor");
@@ -409,11 +409,11 @@ Deno.test("testingAssertStringContainsThrow", function (): void {
   assert(didThrow);
 });
 
-Deno.test("testingAssertStringMatching", function (): void {
+Deno.test("AssertStringMatching", function (): void {
   assertMatch("foobar@deno.com", RegExp(/[a-zA-Z]+@[a-zA-Z]+.com/));
 });
 
-Deno.test("testingAssertStringMatchingThrows", function (): void {
+Deno.test("AssertStringMatchingThrows", function (): void {
   let didThrow = false;
   try {
     assertMatch("Denosaurus from Jurassic", RegExp(/Raptor/));
@@ -428,11 +428,11 @@ Deno.test("testingAssertStringMatchingThrows", function (): void {
   assert(didThrow);
 });
 
-Deno.test("testingAssertStringNotMatching", function (): void {
+Deno.test("AssertStringNotMatching", function (): void {
   assertNotMatch("foobar.deno.com", RegExp(/[a-zA-Z]+@[a-zA-Z]+.com/));
 });
 
-Deno.test("testingAssertStringNotMatchingThrows", function (): void {
+Deno.test("AssertStringNotMatchingThrows", function (): void {
   let didThrow = false;
   try {
     assertNotMatch("Denosaurus from Jurassic", RegExp(/from/));
@@ -447,7 +447,7 @@ Deno.test("testingAssertStringNotMatchingThrows", function (): void {
   assert(didThrow);
 });
 
-Deno.test("testingAssertObjectMatching", function (): void {
+Deno.test("AssertObjectMatching", function (): void {
   const sym = Symbol("foo");
   const a = { foo: true, bar: false };
   const b = { ...a, baz: a };
@@ -744,7 +744,7 @@ Deno.test("testingAssertObjectMatching", function (): void {
   );
 });
 
-Deno.test("testingAssertsUnimplemented", function (): void {
+Deno.test("AssertsUnimplemented", function (): void {
   let didThrow = false;
   try {
     unimplemented();
@@ -756,7 +756,7 @@ Deno.test("testingAssertsUnimplemented", function (): void {
   assert(didThrow);
 });
 
-Deno.test("testingAssertsUnreachable", function (): void {
+Deno.test("AssertsUnreachable", function (): void {
   let didThrow = false;
   try {
     unreachable();
@@ -768,7 +768,7 @@ Deno.test("testingAssertsUnreachable", function (): void {
   assert(didThrow);
 });
 
-Deno.test("testingAssertFail", function (): void {
+Deno.test("AssertFail", function (): void {
   assertThrows(fail, AssertionError, "Failed assertion.");
   assertThrows(
     (): void => {
@@ -779,7 +779,7 @@ Deno.test("testingAssertFail", function (): void {
   );
 });
 
-Deno.test("testingAssertFailWithWrongErrorClass", function (): void {
+Deno.test("AssertFailWithWrongErrorClass", function (): void {
   assertThrows(
     (): void => {
       //This next assertThrows will throw an AssertionError due to the wrong
@@ -797,19 +797,38 @@ Deno.test("testingAssertFailWithWrongErrorClass", function (): void {
   );
 });
 
-Deno.test("testingAssertThrowsWithReturnType", () => {
+Deno.test("AssertThrowsWithReturnType", () => {
   assertThrows(() => {
     throw new Error();
   });
 });
 
-Deno.test("testingAssertRejectsWithReturnType", async () => {
+Deno.test("AssertRejectsFailIfGivenFunctionIsSynchronousAndThrow", async () => {
+  await assertRejects(() =>
+    assertRejects(() => {
+      throw new Error();
+    })
+  );
+});
+
+Deno.test("AssertRejectsFailWithRightMessageWhenFunctionIsSynchronousAndThrow", async () => {
+  await assertRejects(
+    () =>
+      assertRejects(() => {
+        throw { wrong: "true" };
+      }),
+    AssertionError,
+    "Function throws when expected to reject.",
+  );
+});
+
+Deno.test("AssertRejectsWithReturnType", async () => {
   await assertRejects(() => {
-    throw new Error();
+    return Promise.reject(new Error());
   });
 });
 
-Deno.test("testingAssertThrowsWithErrorCallback", () => {
+Deno.test("AssertThrowsWithErrorCallback", () => {
   assertThrows(
     () => {
       throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
@@ -824,10 +843,12 @@ Deno.test("testingAssertThrowsWithErrorCallback", () => {
   );
 });
 
-Deno.test("testingAssertRejectsWithErrorCallback", async () => {
+Deno.test("AssertRejectsWithErrorCallback", async () => {
   await assertRejects(
     () => {
-      throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
+      return Promise.reject(
+        new AggregateError([new Error("foo"), new Error("bar")], "baz"),
+      );
     },
     (error: Error) => {
       assert(error instanceof AggregateError);
@@ -1001,6 +1022,7 @@ Deno.test({
     assertStrictEquals(true, true);
     assertStrictEquals(10, 10);
     assertStrictEquals("abc", "abc");
+    assertStrictEquals(NaN, NaN);
 
     const xs = [1, false, "foo"];
     const ys = xs;
@@ -1053,6 +1075,7 @@ Deno.test({
     assertNotStrictEquals(10, 11);
     assertNotStrictEquals("abc", "xyz");
     assertNotStrictEquals<unknown>(1, "1");
+    assertNotStrictEquals(-0, +0);
 
     const xs = [1, false, "foo"];
     const ys = [1, true, "bar"];
@@ -1068,6 +1091,7 @@ Deno.test({
   name: "strictly unequal fail case",
   fn(): void {
     assertThrows(() => assertNotStrictEquals(1, 1), AssertionError);
+    assertThrows(() => assertNotStrictEquals(NaN, NaN), AssertionError);
   },
 });
 
@@ -1076,6 +1100,8 @@ Deno.test("assert almost equals number", () => {
   assertAlmostEquals(-0, +0);
   assertAlmostEquals(Math.PI, Math.PI);
   assertAlmostEquals(0.1 + 0.2, 0.3);
+  assertAlmostEquals(NaN, NaN);
+  assertAlmostEquals(Number.NaN, Number.NaN);
   assertThrows(() => assertAlmostEquals(1, 2));
   assertThrows(() => assertAlmostEquals(1, 1.1));
 
@@ -1107,11 +1133,6 @@ Deno.test("assert almost equals number", () => {
     () => assertAlmostEquals(Infinity, NaN),
     AssertionError,
     '"Infinity" expected to be close to "NaN"',
-  );
-  assertThrows(
-    () => assertAlmostEquals(NaN, NaN),
-    AssertionError,
-    '"NaN" expected to be close to "NaN"',
   );
 });
 
@@ -1277,8 +1298,8 @@ Deno.test("Assert Throws Non-Error Fail", () => {
   );
 });
 
-Deno.test("Assert Throws Async Non-Error Fail", () => {
-  assertRejects(
+Deno.test("Assert Throws Async Non-Error Fail", async () => {
+  await assertRejects(
     () => {
       return assertRejects(
         () => {
@@ -1289,37 +1310,37 @@ Deno.test("Assert Throws Async Non-Error Fail", () => {
       );
     },
     AssertionError,
-    "A non-Error object was thrown or rejected.",
+    "A non-Error object was rejected.",
   );
 
-  assertRejects(
+  await assertRejects(
     () => {
       return assertRejects(() => {
         return Promise.reject(null);
       });
     },
     AssertionError,
-    "A non-Error object was thrown or rejected.",
+    "A non-Error object was rejected.",
   );
 
-  assertRejects(
+  await assertRejects(
     () => {
       return assertRejects(() => {
         return Promise.reject(undefined);
       });
     },
     AssertionError,
-    "A non-Error object was thrown or rejected.",
+    "A non-Error object was rejected.",
   );
 
-  assertRejects(
+  await assertRejects(
     () => {
       return assertRejects(() => {
-        throw undefined;
+        return Promise.reject(undefined);
       });
     },
     AssertionError,
-    "A non-Error object was thrown or rejected.",
+    "A non-Error object was rejected.",
   );
 });
 
@@ -1374,10 +1395,10 @@ Deno.test("Assert Throws Parent Error", () => {
   );
 });
 
-Deno.test("Assert Throws Async Parent Error", () => {
-  assertRejects(
+Deno.test("Assert Throws Async Parent Error", async () => {
+  await assertRejects(
     () => {
-      throw new AssertionError("Fail!");
+      return Promise.reject(new AssertionError("Fail!"));
     },
     Error,
     "Fail!",

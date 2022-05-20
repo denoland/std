@@ -1,3 +1,14 @@
+### 0.140.0 / 2022.05.18
+
+- feat(http): add onListen option to serve (#2218)
+- feat(node/dgram): support dgram (udp) node module compat (#2205)
+- fix(assertRejects): fails on synchronous throw #1302 (#2234)
+- fix(collections): prevent cycles in deepMerge() (#2228)
+- fix(encoding/csv): improve error message for csv's parse function (#2191)
+- fix(http/file_server): fix handling of 'W/' prefixed etag (#2229)
+- fix(testing/bdd): support using bdd tests with dnt (#2235)
+- fix: add toJSON to node/perf_hooks.ts (#2209)
+
 ### 0.139.0 / 2022.05.12
 
 - feat(encoding): add jsonc parser (#2154)
