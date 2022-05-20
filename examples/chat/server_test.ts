@@ -25,9 +25,9 @@ async function startServer(): Promise<Deno.Child<Deno.SpawnOptions>> {
     const reader = r.getReader();
     const res = await reader.read();
     assert(!res.done && res.value.includes("chat server starting"));
-    reader.releaseLock();
+    await reader.cancel();
   } catch {
-    await server.status;
+    server.kill("SIGTERM");
   }
 
   return server;
@@ -35,6 +35,7 @@ async function startServer(): Promise<Deno.Child<Deno.SpawnOptions>> {
 
 Deno.test({
   name: "[examples/chat] GET / should serve html",
+  sanitizeOps: false, // TODO(@crowlKats): re-enable once https://github.com/denoland/deno/pull/14686 lands
   async fn() {
     const server = await startServer();
     try {
@@ -52,6 +53,7 @@ Deno.test({
 
 Deno.test({
   name: "[examples/chat] GET /ws should upgrade conn to ws",
+  sanitizeOps: false, // TODO(@crowlKats): re-enable once https://github.com/denoland/deno/pull/14686 lands
   async fn() {
     const server = await startServer();
     let ws: WebSocket;
@@ -63,10 +65,10 @@ Deno.test({
           ws.onmessage = (message) => {
             assertEquals(message.data, "[1]: Hello");
             ws.close();
-            resolve();
           };
           ws.send("Hello");
         };
+        ws.onclose = () => resolve();
       });
     } catch (err) {
       console.log(err);
