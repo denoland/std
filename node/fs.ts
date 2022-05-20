@@ -4,7 +4,7 @@ import { appendFile, appendFileSync } from "./_fs/_fs_appendFile.ts";
 import { chmod, chmodSync } from "./_fs/_fs_chmod.ts";
 import { chown, chownSync } from "./_fs/_fs_chown.ts";
 import { close, closeSync } from "./_fs/_fs_close.ts";
-import { createReadStream } from "./_fs/_fs_streams.ts";
+import { createReadStream, ReadStream } from "./_fs/_fs_streams.ts";
 import * as constants from "./_fs/_fs_constants.ts";
 import { copyFile, copyFileSync } from "./_fs/_fs_copy.ts";
 import Dir from "./_fs/_fs_dir.ts";
@@ -133,6 +133,7 @@ export default {
   readFileSync,
   readlink,
   readlinkSync,
+  ReadStream,
   realpath,
   realpathSync,
   rename,
