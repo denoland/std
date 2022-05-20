@@ -24,7 +24,7 @@ import { nextTick } from "./_next_tick.ts";
 import { customPromisifyArgs } from "./internal/util.mjs";
 import {
   validateBoolean,
-  validateFunction,
+  validateCallback,
   validateNumber,
   validateOneOf,
   validateString,
@@ -196,16 +196,16 @@ export function lookup(
     callback = options;
     family = 0;
   } else if (isFamily(options)) {
-    validateFunction(callback, "callback");
+    validateCallback(callback);
 
     validateOneOf(options, "family", validFamilies);
     family = options;
   } else if (!isLookupOptions(options)) {
-    validateFunction(arguments.length === 2 ? options : callback, "callback");
+    validateCallback(arguments.length === 2 ? options : callback);
 
     throw new ERR_INVALID_ARG_TYPE("options", ["integer", "object"], options);
   } else {
-    validateFunction(callback, "callback");
+    validateCallback(callback);
 
     if (options?.hints != null) {
       validateNumber(options.hints, "options.hints");
@@ -315,7 +315,7 @@ function resolver(bindingName: keyof ChannelWrapQuery) {
     }
 
     validateString(name, "name");
-    validateFunction(callback, "callback");
+    validateCallback(callback);
 
     const req = new QueryReqWrap();
     req.bindingName = bindingName;
@@ -346,6 +346,10 @@ function resolver(bindingName: keyof ChannelWrapQuery) {
 const resolveMap = Object.create(null);
 
 export class Resolver extends CallbackResolver {
+  constructor(options?: ResolverOptions) {
+    super(options);
+  }
+
   // deno-lint-ignore no-explicit-any
   [resolveMethod: string]: any
 }
@@ -957,6 +961,7 @@ export default {
   resolveNaptr,
   resolveSoa,
   resolve,
+  Resolver,
   reverse,
   setServers,
   setDefaultResultOrder,

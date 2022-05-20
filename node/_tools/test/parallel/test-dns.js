@@ -241,12 +241,12 @@ assert.deepStrictEqual(dns.getServers(), []);
 }
 
 assert.throws(() => dns.lookup("nodejs.org"), {
-  code: "ERR_INVALID_ARG_TYPE",
+  code: "ERR_INVALID_CALLBACK",
   name: "TypeError",
 });
 
 assert.throws(() => dns.lookup("nodejs.org", 4), {
-  code: "ERR_INVALID_ARG_TYPE",
+  code: "ERR_INVALID_CALLBACK",
   name: "TypeError",
 });
 
@@ -377,6 +377,7 @@ dns.lookup('', {
       ],
     },
 
+    // TODO(cmorten): support ttl option
     // {
     //   method: "resolve4",
     //   options: { ttl: true },

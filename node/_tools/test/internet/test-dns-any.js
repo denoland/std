@@ -22,7 +22,7 @@ const dnsPromises = dns.promises;
 const isIPv4 = net.isIPv4;
 const isIPv6 = net.isIPv6;
 
-// dns.setServers([ '8.8.8.8', '8.8.4.4' ]);
+dns.setServers([ '8.8.8.8', '8.8.4.4' ]);
 
 function checkWrap(req) {
   assert.ok(typeof req === 'object');
