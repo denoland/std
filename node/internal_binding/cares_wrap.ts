@@ -268,7 +268,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
             records.push({
               type: "CAA",
               [tag]: value,
-              critical: !!(critical && 128),
+              critical: +critical && 128,
             })
           );
         }),
@@ -375,7 +375,7 @@ export class ChannelWrap extends AsyncWrap implements ChannelWrapQuery {
       const records = (ret as Deno.CAARecord[]).map(
         ({ critical, tag, value }) => ({
           [tag]: value,
-          critical: !!(critical && 128),
+          critical: +critical && 128,
         }),
       );
 
