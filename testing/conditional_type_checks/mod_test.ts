@@ -64,17 +64,26 @@ import {
   assert<IsExact<{ name: string; other?: Date }, { name: string }>>(false);
   assert<IsExact<{ prop: Date }, { prop: string }>>(false);
   assert<IsExact<{ other?: Date }, { prop?: string }>>(false);
-  assert<IsExact<{ prop: { prop?: string } }, { prop: { prop: string } }>>(false);
+  assert<IsExact<{ prop: { prop?: string } }, { prop: { prop: string } }>>(
+    false,
+  );
   assert<IsExact<{ prop: any }, { prop: string }>>(false);
   assert<IsExact<{ prop: any }, { prop: unknown }>>(false);
   assert<IsExact<{ prop: any }, { prop: never }>>(false);
   assert<IsExact<{ prop: unknown }, { prop: never }>>(false);
   assert<IsExact<{ prop: { prop: unknown } }, { prop: { prop: any } }>>(false);
-  assert<IsExact<{ prop: { prop: unknown } }, { prop: { prop: never } }>>(false);
+  assert<IsExact<{ prop: { prop: unknown } }, { prop: { prop: never } }>>(
+    false,
+  );
   assert<IsExact<{ prop: { prop: any } }, { prop: { prop: never } }>>(false);
   assert<IsExact<{ prop: string }, { prop: never }>>(false);
   assert<IsExact<{ prop: { prop: any } }, { prop: { prop: string } }>>(false);
-  assert<IsExact<{ prop: any } | { prop: string }, { prop: number } | { prop: string }>>(false);
+  assert<
+    IsExact<
+      { prop: any } | { prop: string },
+      { prop: number } | { prop: string }
+    >
+  >(false);
   assert<IsExact<{ prop: string | undefined }, { prop?: string }>>(false); // these are different
 }
 

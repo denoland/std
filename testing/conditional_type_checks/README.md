@@ -1,7 +1,8 @@
-Forked from https://raw.githubusercontent.com/dsherret/conditional-type-checks/fc9ed57bc0b5a65bc1e3bfcbc5299a7c157b2e2e/README.md
+Forked from
+https://raw.githubusercontent.com/dsherret/conditional-type-checks/fc9ed57bc0b5a65bc1e3bfcbc5299a7c157b2e2e/README.md
 
-🔗 Original repository: https://github.com/dsherret/conditional-type-checks
-👏 Original author: @dsherret
+🔗 Original repository: https://github.com/dsherret/conditional-type-checks 👏
+Original author: @dsherret
 
 # Conditional Type Checks
 
@@ -10,7 +11,8 @@ Forked from https://raw.githubusercontent.com/dsherret/conditional-type-checks/f
 [![deno doc](https://doc.deno.land/badge.svg)](https://doc.deno.land/https/deno.land/x/conditional_type_checks/mod.ts)
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
-As TypeScript's type system becomes more complex it's useful to be able to write tests for what a type should be.
+As TypeScript's type system becomes more complex it's useful to be able to write
+tests for what a type should be.
 
 This library offers reusable conditional types to do these checks.
 
@@ -55,7 +57,9 @@ type doTest =
   | Assert<Has<typeof result, number>, true>;
 ```
 
-**Warning:** Do not use an intersection type between checks (ex. `Has<string | number, string> & IsNever<never>`) because it will cause everything to pass if only one of the checks passes.
+**Warning:** Do not use an intersection type between checks (ex.
+`Has<string | number, string> & IsNever<never>`) because it will cause
+everything to pass if only one of the checks passes.
 
 ### Use with `assert`
 
