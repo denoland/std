@@ -3,6 +3,10 @@
 
 // Forked from https://raw.githubusercontent.com/dsherret/conditional-type-checks/fc9ed57bc0b5a65bc1e3bfcbc5299a7c157b2e2e/mod.test.ts
 
+// This test has to use `any` and `{}` for testing purposes
+// Ignoring lint warns about them for the whole file:
+// deno-lint-ignore-file no-explicit-any ban-types
+
 import {
   Assert,
   assert,
