@@ -182,24 +182,28 @@ export type Args<
      * them. */
     _: Array<string | number>;
   }
-  & (true extends DD ? {
-    /** Contains all the arguments that appear after the double dash: "--". */
-    "--": Array<string>;
-  }
-    : // deno-lint-ignore ban-types
-    {})
+  & (boolean extends DD ? DoubleDash
+    : true extends DD ? Required<DoubleDash>
+    : Record<never, never>)
 >;
+
+type DoubleDash = {
+  /** Contains all the arguments that appear after the double dash: "--". */
+  "--"?: Array<string>;
+};
 
 /** The options for the `parse` call. */
 export interface ParseOptions<
-  B extends BooleanType = undefined,
-  S extends StringType = undefined,
-  C extends CollectType = undefined,
-  D extends Record<string, unknown> | undefined = Record<string, unknown>,
-  A extends Aliases<AK, AV> | undefined = undefined,
-  DD extends boolean | undefined = undefined,
-  AK extends string = string,
-  AV extends string = string,
+  B extends BooleanType = BooleanType,
+  S extends StringType = StringType,
+  C extends CollectType = CollectType,
+  D extends Record<string, unknown> | undefined =
+    | Record<string, unknown>
+    | undefined,
+  A extends Aliases<string, string> | undefined =
+    | Aliases<string, string>
+    | undefined,
+  DD extends boolean | undefined = boolean | undefined,
 > {
   /** When `true`, populate the result `_` with everything before the `--` and
    * the result `['--']` with everything after the `--`. Here's an example:
@@ -327,7 +331,7 @@ export function parse<
     // @TODO(c4spar): Implement collect option. I will open a separate PR for this.
     collect: _collect = [],
     unknown = (i: string): unknown => i,
-  }: ParseOptions<B, S, C, D, A, DD, AK, AV> = {},
+  }: ParseOptions<B, S, C, D, A, DD> = {},
 ): Args<V, DD> {
   const flags: Flags = {
     bools: {},

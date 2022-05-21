@@ -1711,3 +1711,24 @@ Deno.test("typesOfParseOptionsGenerics", function (): void {
     >
   >(true);
 });
+
+Deno.test("typesOfParseOptionsGenericDefaults", function (): void {
+  const opts: ParseOptions = {
+    boolean: ["foo"],
+    string: ["bar"],
+  };
+
+  const args = parse([], opts);
+
+  assertType<
+    IsExact<
+      typeof args,
+      {
+        // deno-lint-ignore no-explicit-any
+        [x: string]: any;
+        _: (string | number)[];
+        "--"?: string[] | undefined;
+      }
+    >
+  >(true);
+});
