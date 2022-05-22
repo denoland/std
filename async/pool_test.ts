@@ -15,9 +15,11 @@ Deno.test("[async] pooledMap", async function () {
     [1, 2, 3],
     (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
   );
+  const array = [];
   for await (const value of results) {
-    console.log(value);
+    array.push(value);
   }
+  assertEquals(array, [1, 2, 3]);
   const diff = new Date().getTime() - start.getTime();
   assert(diff >= 2000);
   assert(diff < 3000);
