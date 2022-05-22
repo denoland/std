@@ -138,14 +138,6 @@ snapshot[`Snapshot Test - Multi-Line Strings > string in object 1`] = `
 `;
 
 snapshot[`Snapshot Test - Failed Assertion > Object 1`] = `
-[
-  1,
-  2,
-  3,
-]
-`;
-
-snapshot[`Snapshot Test - Failed Assertion > Object 2`] = `
 "Snapshot does not match:
 
 
@@ -160,9 +152,7 @@ snapshot[`Snapshot Test - Failed Assertion > Object 2`] = `
 "
 `;
 
-snapshot[`Snapshot Test - Failed Assertion > String 1`] = `"Hello World!"`;
-
-snapshot[`Snapshot Test - Failed Assertion > String 2`] = `
+snapshot[`Snapshot Test - Failed Assertion > String 1`] = `
 'Snapshot does not match:
 
 
@@ -175,9 +165,51 @@ snapshot[`Snapshot Test - Failed Assertion > String 2`] = `
 '
 `;
 
-snapshot[`Snapshot Test - Update 1`] = `
-"running 1 test from ./testing/.tmp/test.ts
-Snapshot Test - Update ... ok (--ms)
+snapshot[`custom name 1`] = `
+[
+  1,
+  2,
+  3,
+]
+`;
+
+snapshot[`custom name 2`] = `
+[
+  1,
+  2,
+  3,
+]
+`;
+
+snapshot[`Snapshot Test - Options > serializer 1`] = `
+Array Length: 3
+
+[
+  1,
+  2,
+  3,
+]
+`;
+
+snapshot[`Snapshot Test - Options > msg > missing snapshot 1`] = `"[CUSTOM ERROR MESSAGE - MISSING SNAPSHOT]"`;
+
+snapshot[`Snapshot Test - Options > msg > missing snapshot file 1`] = `"[CUSTOM ERROR MESSAGE - MISSING SNAPSHOT]"`;
+
+snapshot[`Snapshot Test - Options > mode 1`] = `
+"
+[
+  1,
+  2,
+  3,
+]
+"
+`;
+
+snapshot[`Snapshot Test - Options > mode 2`] = `
+"running 1 test from <tempDir>/test.ts
+snapshot ... ok (--ms)
+
+------- output -------
 
  > 1 snapshots updated.
 
@@ -186,8 +218,33 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms
 "
 `;
 
-snapshot[`Snapshot Test - Update 2`] = `
-"running 1 test from ./testing/.tmp/test.ts
+snapshot[`Snapshot Test - Update - New snapshot 1`] = `
+"running 1 test from <tempDir>/test.ts
+Snapshot Test - Update ... ok (--ms)
+
+------- output -------
+
+ > 1 snapshots updated.
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
+
+"
+`;
+
+snapshot[`Snapshot Test - Update - New snapshot 2`] = `
+"export const snapshot = {};
+
+snapshot[\`Snapshot Test - Update 1\`] = \`
+[
+  1,
+  2,
+]
+\`;
+"
+`;
+
+snapshot[`Snapshot Test - Update - Existing snapshot - no changes 1`] = `
+"running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
@@ -195,15 +252,85 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms
 "
 `;
 
-snapshot[`Snapshot Test - Update 3`] = `
-"running 1 test from ./testing/.tmp/test.ts
+snapshot[`Snapshot Test - Update - Existing snapshot - no changes 2`] = `
+"export const snapshot = {};
+
+snapshot[\`Snapshot Test - Update 1\`] = \`
+[
+  1,
+  2,
+]
+\`;
+"
+`;
+
+snapshot[`Snapshot Test - Update - Existing snapshot - updates 1`] = `
+"running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
+
+------- output -------
 
  > 1 snapshots updated.
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
 
 "
+`;
+
+snapshot[`Snapshot Test - Update - Existing snapshot - updates 2`] = `
+"export const snapshot = {};
+
+snapshot[\`Snapshot Test - Update 1\`] = \`
+[
+  1,
+  2,
+  3,
+  5,
+]
+\`;
+"
+`;
+
+snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 1 1`] = `
+"running 2 tests from <tempDir>/test.ts
+Snapshot Test - First ... ok (--ms)
+Snapshot Test - Second ... ok (--ms)
+
+------- output -------
+
+ > 2 snapshots updated.
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
+
+"
+`;
+
+snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 1 2`] = `
+'export const snapshot = {};
+
+snapshot[\`Snapshot Test - First 1\`] = \`"FIRST"\`;
+
+snapshot[\`Snapshot Test - Second 1\`] = \`"SECOND"\`;
+'
+`;
+
+snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 2 1`] = `
+"running 2 tests from <tempDir>/test.ts
+Snapshot Test - Second ... ok (--ms)
+Snapshot Test - First ... ok (--ms)
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
+
+"
+`;
+
+snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 2 2`] = `
+'export const snapshot = {};
+
+snapshot[\`Snapshot Test - Second 1\`] = \`"SECOND"\`;
+
+snapshot[\`Snapshot Test - First 1\`] = \`"FIRST"\`;
+'
 `;
 
 snapshot[`Snapshot Test - Regression #2140 1`] = `

@@ -27,7 +27,7 @@ import { downloadFile } from "../../_util/download_file.ts";
  *
  * Usage: `deno run --allow-read --allow-net --allow-write setup.ts`
  *
- * You can aditionally pass a flag to indicate if cache should be used for generating
+ * You can additionally pass a flag to indicate if cache should be used for generating
  * the tests, or to generate the tests from scratch (-y/-n)
  */
 

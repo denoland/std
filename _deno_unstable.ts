@@ -2,6 +2,9 @@
 // @ts-nocheck Bypass static errors for missing --unstable.
 
 export type HttpClient = Deno.HttpClient;
+export type UnixConnectOptions = Deno.UnixConnectOptions;
+export type UnixListenOptions = Deno.UnixListenOptions;
+export type DatagramConn = Deno.DatagramConn;
 
 export function addSignalListener(
   ...args: Parameters<typeof Deno.addSignalListener>
@@ -151,6 +154,24 @@ export function networkInterfaces(
   } else {
     throw new TypeError("Requires --unstable");
   }
+}
+
+export async function connect(
+  options: UnixConnectOptions,
+): Promise<Deno.UnixConn> {
+  return await Deno.connect(options);
+}
+
+export function listen(
+  options: UnixListenOptions & { transport: "unix" },
+): ReturnType<typeof Deno.listen> {
+  return Deno.listen(options);
+}
+
+export function listenDatagram(
+  options: Deno.ListenOptions & { transport: "udp" },
+): ReturnType<typeof Deno.listenDatagram> {
+  return Deno.listenDatagram(options);
 }
 
 export function ListenerRef(
