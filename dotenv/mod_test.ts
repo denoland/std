@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
-import { EnvObject, loadSync, parse, stringify, verify } from "./mod.ts";
+import { EnvObject, load, loadSync, parse, stringify, verify } from "./mod.ts";
 import * as path from "../path/mod.ts";
 
 function clearDenoEnv() {
@@ -221,6 +221,17 @@ Deno.test("stringify", async (t) => {
         `export EXPORT=exported`,
       ),
   );
+});
+
+Deno.test("load", async () => {
+  await load(Deno.env, {
+    envPath: path.join(testdataDir, ".env.test"),
+    examplePath: path.join(testdataDir, ".env.example.test"),
+    defaultsPath: path.join(testdataDir, ".env.defaults.test"),
+  });
+  assertEquals(Deno.env.get("GREETING"), "Hello World");
+  assertEquals(Deno.env.get("DEFAULT"), "Some Default");
+  clearDenoEnv();
 });
 Deno.test("loadSync", () => {
   loadSync(Deno.env, {

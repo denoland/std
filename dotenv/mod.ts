@@ -1,21 +1,16 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+import {
+  DenoEnv,
+  EnvObject,
+  optionalReadTextFile,
+  optionalReadTextFileSync,
+} from "./_util.ts";
+
+export type { EnvObject };
+
 type Env = Record<string, string>;
-
-export interface EnvObject {
-  env: Env;
-  exports: string[];
-}
-
-export interface DenoEnv {
-  get(key: string): string | undefined;
-  set(key: string, value: string): void;
-  delete(key: string): void;
-  toObject(): {
-    [index: string]: string;
-  };
-}
 
 export function verify(
   object: EnvObject,
@@ -104,56 +99,6 @@ export function parse(
   return object;
 }
 
-export interface LoadOptions {
-  envPath?: string | URL;
-  examplePath?: string | URL;
-  defaultsPath?: string | URL;
-}
-
-export function loadSync(
-  denoEnv: DenoEnv = Deno.env,
-  {
-    envPath = ".env",
-    examplePath = ".env.example",
-    defaultsPath = ".env.defaults",
-  }: LoadOptions = {},
-) {
-  let example;
-  let defaultsEnv = {};
-  try {
-    const exampleSource = Deno.readTextFileSync(examplePath);
-    example = parse(exampleSource);
-  } catch (error) {
-    if (!(error instanceof Deno.errors.NotFound)) {
-      throw error;
-    }
-  }
-  try {
-    const defaultsSource = Deno.readTextFileSync(defaultsPath);
-    defaultsEnv = parse(defaultsSource).env;
-  } catch (error) {
-    if (!(error instanceof Deno.errors.NotFound)) {
-      throw error;
-    }
-  }
-  const envSource = Deno.readTextFileSync(envPath);
-
-  const parsedObject = parse(envSource, { example });
-
-  // initialEnv is passed at the end of assign to prevent overwrites
-  const env: Env = {
-    ...defaultsEnv,
-    ...parsedObject.env,
-  };
-
-  const initialEnv = denoEnv.toObject();
-  for (const [key, value] of Object.entries(env)) {
-    if (initialEnv[key] != null) continue;
-    denoEnv.set(key, value);
-  }
-  return denoEnv;
-}
-
 export function stringify(object: EnvObject) {
   const lines: string[] = [];
   for (const [key, value] of Object.entries(object.env)) {
@@ -180,4 +125,72 @@ export function stringify(object: EnvObject) {
     lines.push(line);
   }
   return lines.join("\n");
+}
+
+export interface LoadOptions {
+  envPath?: string | URL;
+  examplePath?: string | URL;
+  defaultsPath?: string | URL;
+}
+
+function setDenoEnvFromDotEnv(
+  denoEnv: DenoEnv,
+  envSource: string,
+  { exampleSource, defaultsSource }: {
+    exampleSource?: string;
+    defaultsSource?: string;
+  },
+) {
+  const example = exampleSource ? parse(exampleSource) : undefined;
+  const parsedObject = parse(envSource, { example });
+  const defaultsEnv = defaultsSource ? parse(defaultsSource).env : {};
+
+  // initialEnv is passed at the end of assign to prevent overwrites
+  const env: Env = {
+    ...defaultsEnv,
+    ...parsedObject.env,
+  };
+
+  const initialEnv = denoEnv.toObject();
+  for (const [key, value] of Object.entries(env)) {
+    if (initialEnv[key] != null) continue;
+    denoEnv.set(key, value);
+  }
+  return denoEnv;
+}
+
+export async function load(
+  denoEnv: DenoEnv = Deno.env,
+  {
+    envPath = ".env",
+    examplePath = ".env.example",
+    defaultsPath = ".env.defaults",
+  }: LoadOptions = {},
+) {
+  const exampleSource = await optionalReadTextFile(examplePath);
+  const defaultsSource = await optionalReadTextFile(defaultsPath);
+
+  const envSource = await Deno.readTextFile(envPath);
+  return setDenoEnvFromDotEnv(denoEnv, envSource, {
+    exampleSource,
+    defaultsSource,
+  });
+}
+
+export function loadSync(
+  denoEnv: DenoEnv = Deno.env,
+  {
+    envPath = ".env",
+    examplePath = ".env.example",
+    defaultsPath = ".env.defaults",
+  }: LoadOptions = {},
+) {
+  const exampleSource = optionalReadTextFileSync(examplePath);
+  const defaultsSource = optionalReadTextFileSync(defaultsPath);
+
+  const envSource = Deno.readTextFileSync(envPath);
+  return setDenoEnvFromDotEnv(denoEnv, envSource, {
+    exampleSource,
+    defaultsSource,
+  });
 }
