@@ -8,7 +8,6 @@
  * ERR_WORKER_INVALID_EXEC_ARGV
  * ERR_WORKER_PATH
  * ERR_QUIC_ERROR
- * ERR_SOCKET_BUFFER_SIZE //System error, shouldn't ever happen inside Deno
  * ERR_SYSTEM_ERROR //System error, shouldn't ever happen inside Deno
  * ERR_TTY_INIT_FAILED //System error, shouldn't ever happen inside Deno
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
@@ -403,7 +402,7 @@ export class NodeURIError extends NodeErrorAbstraction implements URIError {
   }
 }
 
-interface NodeSystemErrorCtx {
+export interface NodeSystemErrorCtx {
   code: string;
   syscall: string;
   message: string;
@@ -1842,6 +1841,11 @@ export class ERR_SOCKET_BAD_TYPE extends NodeTypeError {
       "ERR_SOCKET_BAD_TYPE",
       `Bad socket type specified. Valid types are: udp4, udp6`,
     );
+  }
+}
+export class ERR_SOCKET_BUFFER_SIZE extends NodeSystemError {
+  constructor(ctx: NodeSystemErrorCtx) {
+    super("ERR_SOCKET_BUFFER_SIZE", ctx, "Could not get or set buffer size");
   }
 }
 export class ERR_SOCKET_CLOSED extends NodeError {

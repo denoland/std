@@ -389,6 +389,7 @@ module.exports = {
   allowGlobals,
   expectsError,
   expectWarning,
+  getArrayBufferViews,
   getBufferSources,
   hasCrypto: true,
   invalidArgTypeHelper,

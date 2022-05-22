@@ -38,6 +38,7 @@ import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
+import internalDgram from "./internal/dgram.ts";
 import internalDnsPromises from "./internal/dns/promises.ts";
 import internalErrors from "./internal/errors.ts";
 import internalEventTarget from "./internal/event_target.mjs";
@@ -109,6 +110,7 @@ export default {
   http2,
   https,
   inspector,
+  "internal/dgram": internalDgram,
   "internal/dns/promises": internalDnsPromises,
   "internal/errors": internalErrors,
   "internal/event_target": internalEventTarget,

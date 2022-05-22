@@ -152,17 +152,7 @@ export function assertFalse(expr: unknown, msg = ""): asserts expr is false {
  * assertEquals<number>(1, 2)
  * ```
  */
-export function assertEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
-export function assertEquals<T>(actual: T, expected: T, msg?: string): void;
-export function assertEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void {
+export function assertEquals<T>(actual: T, expected: T, msg?: string): void {
   if (equal(actual, expected)) {
     return;
   }
@@ -198,17 +188,7 @@ export function assertEquals(
  * assertNotEquals<number>(1, 2)
  * ```
  */
-export function assertNotEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
-export function assertNotEquals<T>(actual: T, expected: T, msg?: string): void;
-export function assertNotEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void {
+export function assertNotEquals<T>(actual: T, expected: T, msg?: string): void {
   if (!equal(actual, expected)) {
     return;
   }
@@ -245,7 +225,7 @@ export function assertStrictEquals<T>(
   expected: T,
   msg?: string,
 ): asserts actual is T {
-  if (actual === expected) {
+  if (Object.is(actual, expected)) {
     return;
   }
 
@@ -294,22 +274,12 @@ export function assertStrictEquals<T>(
  * assertNotStrictEquals(1, 1)
  * ```
  */
-export function assertNotStrictEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
 export function assertNotStrictEquals<T>(
   actual: T,
   expected: T,
   msg?: string,
-): void;
-export function assertNotStrictEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
 ): void {
-  if (actual !== expected) {
+  if (!Object.is(actual, expected)) {
     return;
   }
 
@@ -340,7 +310,7 @@ export function assertAlmostEquals(
   tolerance = 1e-7,
   msg?: string,
 ) {
-  if (actual === expected) {
+  if (Object.is(actual, expected)) {
     return;
   }
   const delta = Math.abs(expected - actual);
@@ -443,19 +413,9 @@ export function assertStringIncludes(
  * assertArrayIncludes<number>([1, 2], [2])
  * ```
  */
-export function assertArrayIncludes(
-  actual: ArrayLike<unknown>,
-  expected: ArrayLike<unknown>,
-  msg?: string,
-): void;
 export function assertArrayIncludes<T>(
   actual: ArrayLike<T>,
   expected: ArrayLike<T>,
-  msg?: string,
-): void;
-export function assertArrayIncludes(
-  actual: ArrayLike<unknown>,
-  expected: ArrayLike<unknown>,
   msg?: string,
 ): void {
   const missing: unknown[] = [];
@@ -749,11 +709,22 @@ export async function assertRejects<E extends Error = Error>(
     msg = msgIncludesOrMsg;
   }
   let doesThrow = false;
+  let isPromiseReturned = false;
+  const msgToAppendToError = msg ? `: ${msg}` : ".";
   try {
-    await fn();
+    const possiblePromise = fn();
+    if (possiblePromise instanceof Promise) {
+      isPromiseReturned = true;
+      await possiblePromise;
+    }
   } catch (error) {
+    if (!isPromiseReturned) {
+      throw new AssertionError(
+        `Function throws when expected to reject${msgToAppendToError}`,
+      );
+    }
     if (error instanceof Error === false) {
-      throw new AssertionError("A non-Error object was thrown or rejected.");
+      throw new AssertionError("A non-Error object was rejected.");
     }
     assertIsError(
       error,
@@ -767,8 +738,9 @@ export async function assertRejects<E extends Error = Error>(
     doesThrow = true;
   }
   if (!doesThrow) {
-    msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
-    throw new AssertionError(msg);
+    throw new AssertionError(
+      `Expected function to reject${msgToAppendToError}`,
+    );
   }
 }
 
