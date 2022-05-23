@@ -13,7 +13,7 @@ import * as aes from "./aes.js";
 import ebtk from "../evp_bytes_to_key.ts";
 import { MODES } from "./modes/mod.js";
 
-export function Decipher(mode, key, iv) {
+function Decipher(mode, key, iv) {
   Transform.call(this);
 
   this._cache = new Splitter();

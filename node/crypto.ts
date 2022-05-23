@@ -43,8 +43,6 @@ import {
 } from "./internal/crypto/diffiehellman.ts";
 import {
   Cipheriv,
-  createCipheriv as createCipherivBrowserify,
-  createDecipheriv as createDecipherivBrowserify,
   Decipheriv,
   getCipherInfo,
   privateDecrypt,
@@ -72,28 +70,22 @@ import Certificate from "./internal/crypto/certificate.ts";
 const webcrypto = globalThis.crypto;
 const fipsForced = getOptionValue("--force-fips");
 
-function createCipheriv(
-  cipher: unknown,
-  key: unknown,
-  iv: unknown,
-  _options?: unknown,
-) {
-  return createCipherivBrowserify(cipher, key, iv);
+// deno-lint-ignore no-explicit-any
+function createCipheriv(cipher: string, key: any, iv: any, options?: any) {
+  return new Cipheriv(cipher, key, iv, options);
 }
 
-function createDecipheriv(
-  cipher: unknown,
-  key: unknown,
-  iv: unknown,
-  _options?: unknown,
-) {
-  return createDecipherivBrowserify(cipher, key, iv);
+// deno-lint-ignore no-explicit-any
+function createDecipheriv(cipher: string, key: any, iv: any, options?: any) {
+  return new Decipheriv(cipher, key, iv, options);
 }
 
 function createDiffieHellman(
-  sizeOrKey: unknown,
+  // deno-lint-ignore no-explicit-any
+  sizeOrKey: any,
   keyEncoding: string,
-  generator: unknown,
+  // deno-lint-ignore no-explicit-any
+  generator: any,
   genEncoding: string,
 ) {
   return new DiffieHellman(sizeOrKey, keyEncoding, generator, genEncoding);

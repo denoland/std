@@ -1,13 +1,10 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { Cipher } from "../../_crypto/crypto_browserify/browserify_aes/encrypter.js";
-import { Decipher } from "../../_crypto/crypto_browserify/browserify_aes/decrypter.js";
 import { ERR_INVALID_ARG_TYPE } from "../errors.ts";
 import { validateInt32, validateObject } from "../validators.mjs";
+import { Buffer } from "../../buffer.ts";
 import { notImplemented } from "../../_utils.ts";
 
-export { createCipheriv } from "../../_crypto/crypto_browserify/browserify_aes/encrypter.js";
-export { createDecipheriv } from "../../_crypto/crypto_browserify/browserify_aes/decrypter.js";
 export {
   privateDecrypt,
   privateEncrypt,
@@ -15,8 +12,72 @@ export {
   publicEncrypt,
 } from "../../_crypto/crypto_browserify/public_encrypt/mod.js";
 
-export class Cipheriv extends Cipher {}
-export class Decipheriv extends Decipher {}
+export class Cipheriv {
+  // deno-lint-ignore no-explicit-any
+  constructor(_cipher: string, _key: any, _iv: any, _options: any) {
+    notImplemented("crypto.Cipheriv");
+  }
+
+  final(_outputEncoding?: string): Buffer | string {
+    notImplemented("crypto.Cipheriv.prototype.final");
+  }
+
+  getAuthTag(): Buffer {
+    notImplemented("crypto.Cipheriv.prototype.getAuthTag");
+  }
+
+  // deno-lint-ignore no-explicit-any
+  setAAD(_buffer: any, _options?: any): this {
+    notImplemented("crypto.Cipheriv.prototype.setAAD");
+  }
+
+  setAutoPadding(_autoPadding?: boolean): this {
+    notImplemented("crypto.Cipheriv.prototype.setAutoPadding");
+  }
+
+  update(
+    // deno-lint-ignore no-explicit-any
+    _data: any,
+    _inputEncoding?: string,
+    _outputEncoding?: string,
+  ): Buffer | string {
+    notImplemented("crypto.Cipheriv.prototype.update");
+  }
+}
+
+export class Decipheriv {
+  // deno-lint-ignore no-explicit-any
+  constructor(_cipher: string, _key: any, _iv: any, _options: any) {
+    notImplemented("crypto.Decipheriv");
+  }
+
+  final(_outputEncoding?: string): Buffer | string {
+    notImplemented("crypto.Decipheriv.prototype.final");
+  }
+
+  // deno-lint-ignore no-explicit-any
+  setAAD(_buffer: any, _options?: any): this {
+    notImplemented("crypto.Decipheriv.prototype.setAAD");
+  }
+
+  // deno-lint-ignore no-explicit-any
+  setAuthTag(_buffer: any, _encoding?: string): this {
+    notImplemented("crypto.Decipheriv.prototype.setAuthTag");
+  }
+
+  setAutoPadding(_autoPadding?: boolean): this {
+    notImplemented("crypto.Decipheriv.prototype.setAutoPadding");
+  }
+
+  update(
+    // deno-lint-ignore no-explicit-any
+    _data: any,
+    _inputEncoding?: string,
+    _outputEncoding?: string,
+  ): Buffer | string {
+    notImplemented("crypto.Decipheriv.prototype.update");
+  }
+}
 
 export function getCipherInfo(
   nameOrNid: string | number,
