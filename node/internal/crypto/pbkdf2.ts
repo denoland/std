@@ -1,8 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { Buffer } from "../buffer.ts";
+import { Buffer } from "../../buffer.ts";
 import { createHash } from "./hash.ts";
-import { MAX_ALLOC } from "./constants.ts";
 import { HASH_DATA } from "./types.ts";
+
+export const MAX_ALLOC = Math.pow(2, 30) - 1;
 
 export type NormalizedAlgorithms =
   | "md5"
@@ -50,7 +51,7 @@ function toBuffer(bufferable: HASH_DATA) {
   }
 }
 
-class Hmac {
+export class Hmac {
   hash: (value: Uint8Array) => Buffer;
   ipad1: Buffer;
   opad: Buffer;

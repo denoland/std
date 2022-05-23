@@ -4,13 +4,12 @@
 import {
   crypto as wasmCrypto,
   DigestAlgorithm,
-  digestAlgorithms,
-} from "../../_wasm_crypto/mod.ts";
-import { Buffer } from "../buffer.ts";
-import { Transform } from "../stream.ts";
-import { encode as encodeToHex } from "../../encoding/hex.ts";
-import { encode as encodeToBase64 } from "../../encoding/base64.ts";
-import type { TransformOptions } from "../_stream.d.ts";
+} from "../../../_wasm_crypto/mod.ts";
+import { Buffer } from "../../buffer.ts";
+import { Transform } from "../../stream.ts";
+import { encode as encodeToHex } from "../../../encoding/hex.ts";
+import { encode as encodeToBase64 } from "../../../encoding/base64.ts";
+import type { TransformOptions } from "../../_stream.d.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
@@ -140,11 +139,4 @@ const opensslToWebCryptoDigestNames: Record<string, DigestAlgorithm> = {
  */
 export function createHash(algorithm: string, opts?: TransformOptions) {
   return new Hash(algorithm, opts);
-}
-
-/**
- * Returns an array of the names of the supported hash algorithms, such as 'sha1'.
- */
-export function getHashes(): readonly string[] {
-  return digestAlgorithms;
 }

@@ -1,29 +1,189 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
-import { default as randomBytes } from "./_crypto/randomBytes.ts";
-import randomFill, { randomFillSync } from "./_crypto/randomFill.ts";
-import randomInt from "./_crypto/randomInt.ts";
-import { pbkdf2, pbkdf2Sync } from "./_crypto/pbkdf2.ts";
-import { scrypt, scryptSync } from "./_crypto/scrypt.ts";
-import { timingSafeEqual } from "./_crypto/timingSafeEqual.ts";
-import { createHash, getHashes, Hash } from "./_crypto/hash.ts";
+
+import { ERR_CRYPTO_FIPS_FORCED } from "./internal/errors.ts";
+import { crypto as constants } from "./internal_binding/constants.ts";
+import { getOptionValue } from "./internal/options.ts";
 import {
+  getFipsCrypto,
+  setFipsCrypto,
+  timingSafeEqual,
+} from "./internal_binding/crypto.ts";
+import {
+  checkPrime,
+  checkPrimeSync,
+  generatePrime,
+  generatePrimeSync,
+  randomBytes,
+  randomFill,
+  randomFillSync,
+  randomInt,
+  randomUUID,
+} from "./internal/crypto/random.ts";
+import { Hmac, pbkdf2, pbkdf2Sync } from "./internal/crypto/pbkdf2.ts";
+import { scrypt, scryptSync } from "./internal/crypto/scrypt.ts";
+import { hkdf, hkdfSync } from "./internal/crypto/hkdf.ts";
+import {
+  generateKey,
+  generateKeyPair,
+  generateKeyPairSync,
+  generateKeySync,
+} from "./internal/crypto/keygen.ts";
+import {
+  createPrivateKey,
+  createPublicKey,
+  createSecretKey,
+  KeyObject,
+} from "./internal/crypto/keys.ts";
+import {
+  DiffieHellman,
+  diffieHellman,
+  DiffieHellmanGroup,
+  ECDH,
+} from "./internal/crypto/diffiehellman.ts";
+import {
+  Cipheriv,
+  createCipheriv as createCipherivBrowserify,
+  createDecipheriv as createDecipherivBrowserify,
+  Decipheriv,
+  getCipherInfo,
   privateDecrypt,
   privateEncrypt,
   publicDecrypt,
   publicEncrypt,
-} from "./_crypto/crypto_browserify/public_encrypt/mod.js";
+} from "./internal/crypto/cipher.ts";
+import {
+  Sign,
+  signOneShot,
+  Verify,
+  verifyOneShot,
+} from "./internal/crypto/sig.ts";
+import { createHash, Hash } from "./internal/crypto/hash.ts";
+import { X509Certificate } from "./internal/crypto/x509.ts";
+import {
+  getCiphers,
+  getCurves,
+  getHashes,
+  secureHeapUsed,
+  setEngine,
+} from "./internal/crypto/util.ts";
+import Certificate from "./internal/crypto/certificate.ts";
+import { notImplemented } from "./_utils.ts";
 
-const randomUUID = () => globalThis.crypto.randomUUID();
-const webcrypto = crypto;
+const webcrypto = globalThis.crypto;
+const fipsForced = getOptionValue("--force-fips");
+
+function createCipheriv(
+  cipher: unknown,
+  key: unknown,
+  iv: unknown,
+  _options?: unknown,
+) {
+  return createCipherivBrowserify(cipher, key, iv);
+}
+
+function createDecipheriv(
+  cipher: unknown,
+  key: unknown,
+  iv: unknown,
+  _options?: unknown,
+) {
+  return createDecipherivBrowserify(cipher, key, iv);
+}
+
+function createDiffieHellman(
+  _sizeOrKey: unknown,
+  _keyEncoding: string,
+  _generator: unknown,
+  _genEncoding: string,
+) {
+  notImplemented("crypto.createDiffieHellman");
+}
+
+function createDiffieHellmanGroup(_name: string) {
+  notImplemented("crypto.createECDH");
+}
+
+function createECDH(_curve: string) {
+  notImplemented("crypto.createECDH");
+}
+
+function createHmac(_hmac: unknown, _key: unknown, _options: unknown) {
+  notImplemented("crypto.createHmac");
+}
+
+function createSign(_algorithm: unknown, _options: unknown) {
+  notImplemented("crypto.createSign");
+}
+
+function createVerify(_algorithm: unknown, _options: unknown) {
+  notImplemented("crypto.createVerify");
+}
+
+function setFipsForced(val: boolean) {
+  if (val) {
+    return;
+  }
+
+  throw new ERR_CRYPTO_FIPS_FORCED();
+}
+
+function getFipsForced() {
+  return 1;
+}
+
+Object.defineProperty(constants, "defaultCipherList", {
+  value: getOptionValue("--tls-cipher-list"),
+});
+
+const getDiffieHellman = createDiffieHellmanGroup;
+
+const getFips = fipsForced ? getFipsForced : getFipsCrypto;
+const setFips = fipsForced ? setFipsForced : setFipsCrypto;
+
+const sign = signOneShot;
+const verify = verifyOneShot;
 
 export default {
-  Hash,
+  Certificate,
+  checkPrime,
+  checkPrimeSync,
+  Cipheriv,
+  constants,
+  createCipheriv,
+  createDecipheriv,
+  createDiffieHellman,
+  createDiffieHellmanGroup,
+  createECDH,
   createHash,
+  createHmac,
+  createPrivateKey,
+  createPublicKey,
+  createSecretKey,
+  createSign,
+  createVerify,
+  Decipheriv,
+  DiffieHellman,
+  diffieHellman,
+  DiffieHellmanGroup,
+  ECDH,
+  generateKey,
+  generateKeyPair,
+  generateKeyPairSync,
+  generateKeySync,
+  generatePrime,
+  generatePrimeSync,
+  getCipherInfo,
+  getCiphers,
+  getCurves,
+  getDiffieHellman,
+  getFips,
   getHashes,
-  randomFill,
-  randomInt,
-  randomFillSync,
+  Hash,
+  hkdf,
+  hkdfSync,
+  Hmac,
+  KeyObject,
   pbkdf2,
   pbkdf2Sync,
   privateDecrypt,
@@ -31,16 +191,64 @@ export default {
   publicDecrypt,
   publicEncrypt,
   randomBytes,
+  randomFill,
+  randomFillSync,
+  randomInt,
   randomUUID,
   scrypt,
   scryptSync,
+  secureHeapUsed,
+  setEngine,
+  setFips,
+  Sign,
+  sign,
   timingSafeEqual,
+  Verify,
+  verify,
   webcrypto,
+  X509Certificate,
 };
+
 export {
+  Certificate,
+  checkPrime,
+  checkPrimeSync,
+  Cipheriv,
+  constants,
+  createCipheriv,
+  createDecipheriv,
+  createDiffieHellman,
+  createDiffieHellmanGroup,
+  createECDH,
   createHash,
+  createHmac,
+  createPrivateKey,
+  createPublicKey,
+  createSecretKey,
+  createSign,
+  createVerify,
+  Decipheriv,
+  DiffieHellman,
+  diffieHellman,
+  DiffieHellmanGroup,
+  ECDH,
+  generateKey,
+  generateKeyPair,
+  generateKeyPairSync,
+  generateKeySync,
+  generatePrime,
+  generatePrimeSync,
+  getCipherInfo,
+  getCiphers,
+  getCurves,
+  getDiffieHellman,
+  getFips,
   getHashes,
   Hash,
+  hkdf,
+  hkdfSync,
+  Hmac,
+  KeyObject,
   pbkdf2,
   pbkdf2Sync,
   privateDecrypt,
@@ -54,6 +262,14 @@ export {
   randomUUID,
   scrypt,
   scryptSync,
+  secureHeapUsed,
+  setEngine,
+  setFips,
+  Sign,
+  sign,
   timingSafeEqual,
+  Verify,
+  verify,
   webcrypto,
+  X509Certificate,
 };
