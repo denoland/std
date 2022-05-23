@@ -1379,60 +1379,6 @@ Deno.test("typesOfCollectUnknownArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfCollectAllArgs", function (): void {
-  const argv = parse([], {
-    boolean: ["foo", "dotted.beep"],
-    string: ["bar", "dotted.boop"],
-    collect: true,
-  });
-  assertType<
-    IsExact<
-      typeof argv,
-      & { [x: string]: Array<unknown> }
-      & {
-        bar?: Array<string> | undefined;
-        dotted: {
-          boop?: Array<string> | undefined;
-          beep: Array<boolean>;
-        };
-        foo: Array<boolean>;
-        _: Array<string | number>;
-      }
-    >
-  >(true);
-});
-
-Deno.test("typesOfCollectAllArgsWithDefaults", function (): void {
-  const argv = parse([], {
-    boolean: ["foo", "dotted.beep"],
-    string: ["bar", "dotted.boop"],
-    collect: true,
-    default: {
-      bar: 123,
-      dotted: {
-        beep: new Date(),
-        boop: /.*/,
-      },
-      foo: new TextDecoder(),
-    },
-  });
-  assertType<
-    IsExact<
-      typeof argv,
-      & { [x: string]: Array<unknown> }
-      & {
-        bar: number | Array<string>;
-        foo: TextDecoder | Array<boolean>;
-        dotted: {
-          beep: Array<boolean> | Date;
-          boop: RegExp | Array<string>;
-        };
-        _: Array<string | number>;
-      }
-    >
-  >(true);
-});
-
 Deno.test("typesOfCollectArgs", function (): void {
   const argv = parse([], {
     boolean: ["foo", "dotted.beep"],

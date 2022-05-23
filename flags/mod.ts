@@ -21,11 +21,11 @@ type BooleanType = boolean | string | undefined;
 type StringType = string | undefined;
 type ArgType = StringType | BooleanType;
 
-type CollectType = boolean | string | undefined;
+type CollectType = string | undefined;
 
 type NoTypes<B, S, C> = undefined extends (
   & (false extends B ? undefined : B)
-  & (false extends C ? undefined : C)
+  & C
   & S
 ) ? true
   : false;
@@ -43,7 +43,7 @@ type Values<
 > // deno-lint-ignore no-explicit-any
  = NoTypes<B, S, C> extends true ? Record<string, any>
   : 
-    & Record<string, true extends C ? Array<unknown> : unknown>
+    & Record<string, unknown>
     & AddAliases<
       SpreadDefaults<
         & CollectValues<S, string, C>
@@ -119,12 +119,11 @@ type RecursiveRequired<T> = T extends Record<string, unknown> ? {
 /** Same as `MapTypes` but also supports collectable options. */
 type CollectValues<T extends ArgType, V, C extends CollectType> =
   UnionToIntersection<
-    C extends true ? MapTypes<T, Array<V>>
-      : C extends string ? 
-        & MapTypes<Exclude<T, C>, V>
-        & (T extends undefined ? Record<never, never> : RecursiveRequired<
-          MapTypes<Extract<C, T>, Array<V>>
-        >)
+    C extends string ? 
+      & MapTypes<Exclude<T, C>, V>
+      & (T extends undefined ? Record<never, never> : RecursiveRequired<
+        MapTypes<Extract<C, T>, Array<V>>
+      >)
       : MapTypes<T, V>
   >;
 
