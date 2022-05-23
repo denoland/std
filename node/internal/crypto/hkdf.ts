@@ -13,7 +13,7 @@ export function hkdf(
   // deno-lint-ignore no-explicit-any
   _keylen: any,
   // deno-lint-ignore no-explicit-any
-  _callback: any
+  _callback: any,
 ) {
   notImplemented("crypto.hkdf");
 }
@@ -27,7 +27,7 @@ export function hkdfSync(
   // deno-lint-ignore no-explicit-any
   _info: any,
   // deno-lint-ignore no-explicit-any
-  _keylen: any
+  _keylen: any,
 ) {
   notImplemented("crypto.hkdfSync");
 }

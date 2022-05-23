@@ -14,7 +14,7 @@ export function signOneShot(
   // deno-lint-ignore no-explicit-any
   _key: any,
   // deno-lint-ignore no-explicit-any
-  _callback: any
+  _callback: any,
 ) {
   notImplemented("crypto.sign");
 }
@@ -29,7 +29,7 @@ export function verifyOneShot(
   // deno-lint-ignore no-explicit-any
   _signature: any,
   // deno-lint-ignore no-explicit-any
-  _callback: any
+  _callback: any,
 ) {
   notImplemented("crypto.verify");
 }

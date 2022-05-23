@@ -20,13 +20,13 @@ export class Decipheriv extends Decipher {}
 
 export function getCipherInfo(
   nameOrNid: string | number,
-  options?: { keyLength?: number; ivLength?: number }
+  options?: { keyLength?: number; ivLength?: number },
 ) {
   if (typeof nameOrNid !== "string" && typeof nameOrNid !== "number") {
     throw new ERR_INVALID_ARG_TYPE(
       "nameOrNid",
       ["string", "number"],
-      nameOrNid
+      nameOrNid,
     );
   }
 
