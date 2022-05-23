@@ -417,6 +417,17 @@ export function parse(
     }
   }
 
+  for (const key of Object.keys(flags.strings)) {
+    if (!hasKey(argv, key.split(".")) && flags.collect[key]) {
+      setKey(
+        argv,
+        key,
+        [],
+        false,
+      );
+    }
+  }
+
   if (doubleDash) {
     argv["--"] = [];
     for (const key of notFlags) {
