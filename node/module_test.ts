@@ -131,6 +131,7 @@ Deno.test("EventEmitter is exported correctly", () => {
 Deno.test("Require .mjs", () => {
   assertThrows(
     () => require("./testdata/inspect.mjs"),
+    Error,
     "Importing ESM module",
   );
 });

@@ -10,6 +10,7 @@ Deno.test("salt buffer length is 7", function () {
     function () {
       EVP_BytesToKey(Buffer.alloc(5), Buffer.alloc(7), 1, 1);
     },
+    Error,
     "salt should be Buffer with 8 byte length",
   );
 });

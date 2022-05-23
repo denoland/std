@@ -968,7 +968,7 @@ Deno.test("assertRejectes with error callback", async () => {
   );
 });
 
-Deno.test("assertThrows returns caught error", () => {
+Deno.test("assertThrows with thrown error returns caught error", () => {
   const error = assertThrows(
     () => {
       throw new Error("foo");
@@ -976,6 +976,39 @@ Deno.test("assertThrows returns caught error", () => {
   );
   assert(error instanceof Error);
   assertEquals(error.message, "foo");
+});
+
+Deno.test("assertThrows with thrown non-error returns caught error", () => {
+  const stringError = assertThrows(
+    () => {
+      throw "Panic!";
+    },
+  );
+  assert(typeof stringError === "string");
+  assertEquals(stringError, "Panic!");
+
+  const numberError = assertThrows(
+    () => {
+      throw 1;
+    },
+  );
+  assert(typeof numberError === "number");
+  assertEquals(numberError, 1);
+
+  const nullError = assertThrows(
+    () => {
+      throw null;
+    },
+  );
+  assert(nullError === null);
+
+  const undefinedError = assertThrows(
+    () => {
+      throw undefined;
+    },
+  );
+  assert(typeof undefinedError === "undefined");
+  assertEquals(undefinedError, undefined);
 });
 
 Deno.test("assertRejectes resolves with caught error", async () => {
