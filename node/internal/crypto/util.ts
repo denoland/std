@@ -2,6 +2,7 @@
 import { digestAlgorithms } from "../../../_wasm_crypto/mod.ts";
 import { getCiphers } from "../../_crypto/crypto_browserify/browserify_aes/mod.js";
 import { notImplemented } from "../../_utils.ts";
+import { Buffer } from "../../buffer.ts";
 
 let defaultEncoding = "buffer";
 
@@ -13,6 +14,21 @@ export function setDefaultEncoding(val: string) {
 
 export function getDefaultEncoding() {
   return defaultEncoding;
+}
+
+// This is here because many functions accepted binary strings without
+// any explicit encoding in older versions of node, and we don't want
+// to break them unnecessarily.
+export function toBuf(val: string | Buffer, encoding: string) {
+  if (typeof val === "string") {
+    if (encoding === "buffer") {
+      encoding = "utf8";
+    }
+
+    return Buffer.from(val, encoding);
+  }
+
+  return val;
 }
 
 /**

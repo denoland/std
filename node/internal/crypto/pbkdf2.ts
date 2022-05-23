@@ -14,7 +14,7 @@ export type NormalizedAlgorithms =
   | "sha384"
   | "sha512";
 
-type Algorithms =
+export type Algorithms =
   | "md5"
   | "ripemd160"
   | "rmd160"

@@ -10,6 +10,8 @@ import { Transform } from "../../stream.ts";
 import { encode as encodeToHex } from "../../../encoding/hex.ts";
 import { encode as encodeToBase64 } from "../../../encoding/base64.ts";
 import type { TransformOptions } from "../../_stream.d.ts";
+import { validateString } from "../validators.mjs";
+import { notImplemented } from "../../_utils.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
@@ -115,6 +117,24 @@ export class Hash extends Transform {
           `The output encoding for hash digest is not implemented: ${encoding}`,
         );
     }
+  }
+}
+
+export class Hmac {
+  // deno-lint-ignore no-explicit-any
+  constructor(hmac: string, _key: any, _options: any) {
+    validateString(hmac, "hmac");
+
+    notImplemented("crypto.Hmac");
+  }
+
+  digest(_encoding?: string): Buffer | string {
+    notImplemented("crypto.Hmac.prototype.digest");
+  }
+
+  // deno-lint-ignore no-explicit-any
+  update(_data: any, _inputEncoding?: string) {
+    notImplemented("crypto.Hmac.prototype.update");
   }
 }
 

@@ -20,7 +20,7 @@ import {
   randomInt,
   randomUUID,
 } from "./internal/crypto/random.ts";
-import { Hmac, pbkdf2, pbkdf2Sync } from "./internal/crypto/pbkdf2.ts";
+import { pbkdf2, pbkdf2Sync } from "./internal/crypto/pbkdf2.ts";
 import { scrypt, scryptSync } from "./internal/crypto/scrypt.ts";
 import { hkdf, hkdfSync } from "./internal/crypto/hkdf.ts";
 import {
@@ -58,7 +58,7 @@ import {
   Verify,
   verifyOneShot,
 } from "./internal/crypto/sig.ts";
-import { createHash, Hash } from "./internal/crypto/hash.ts";
+import { createHash, Hash, Hmac } from "./internal/crypto/hash.ts";
 import { X509Certificate } from "./internal/crypto/x509.ts";
 import {
   getCiphers,
@@ -68,7 +68,6 @@ import {
   setEngine,
 } from "./internal/crypto/util.ts";
 import Certificate from "./internal/crypto/certificate.ts";
-import { notImplemented } from "./_utils.ts";
 
 const webcrypto = globalThis.crypto;
 const fipsForced = getOptionValue("--force-fips");
@@ -92,32 +91,35 @@ function createDecipheriv(
 }
 
 function createDiffieHellman(
-  _sizeOrKey: unknown,
-  _keyEncoding: string,
-  _generator: unknown,
-  _genEncoding: string,
+  sizeOrKey: unknown,
+  keyEncoding: string,
+  generator: unknown,
+  genEncoding: string,
 ) {
-  notImplemented("crypto.createDiffieHellman");
+  return new DiffieHellman(sizeOrKey, keyEncoding, generator, genEncoding);
 }
 
-function createDiffieHellmanGroup(_name: string) {
-  notImplemented("crypto.createECDH");
+function createDiffieHellmanGroup(name: string) {
+  return new DiffieHellmanGroup(name);
 }
 
-function createECDH(_curve: string) {
-  notImplemented("crypto.createECDH");
+function createECDH(curve: string) {
+  return new ECDH(curve);
 }
 
-function createHmac(_hmac: unknown, _key: unknown, _options: unknown) {
-  notImplemented("crypto.createHmac");
+// deno-lint-ignore no-explicit-any
+function createHmac(hmac: string, key: any, options: any) {
+  return new Hmac(hmac, key, options);
 }
 
-function createSign(_algorithm: unknown, _options: unknown) {
-  notImplemented("crypto.createSign");
+// deno-lint-ignore no-explicit-any
+function createSign(algorithm: string, options: any) {
+  return new Sign(algorithm, options);
 }
 
-function createVerify(_algorithm: unknown, _options: unknown) {
-  notImplemented("crypto.createVerify");
+// deno-lint-ignore no-explicit-any
+function createVerify(algorithm: string, options: any) {
+  return new Verify(algorithm, options);
 }
 
 function setFipsForced(val: boolean) {
