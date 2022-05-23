@@ -6,6 +6,7 @@ import { Buffer } from "../../buffer.ts";
 
 let defaultEncoding = "buffer";
 
+export const kHandle = Symbol("kHandle");
 export const kKeyObject = Symbol("kKeyObject");
 
 export function setDefaultEncoding(val: string) {

@@ -1,9 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
-import { kKeyObject } from "./util.ts";
+import { kHandle, kKeyObject } from "./util.ts";
 import { ERR_INVALID_ARG_TYPE, ERR_INVALID_ARG_VALUE } from "../errors.ts";
 import { notImplemented } from "../../_utils.ts";
-import { kHandle } from "../stream_base_commons.ts";
 
 const kKeyType = Symbol("kKeyType");
 
@@ -47,19 +46,19 @@ export class KeyObject {
   }
 
   get asymmetricKeyDetails() {
-    notImplemented("crypto.KeyObject.asymmetricKeyDetails");
+    notImplemented("crypto.KeyObject.prototype.asymmetricKeyDetails");
 
     return {};
   }
 
   get asymmetricKeyType(): string | undefined {
-    notImplemented("crypto.KeyObject.asymmetricKeyType");
+    notImplemented("crypto.KeyObject.prototype.asymmetricKeyType");
 
     return undefined;
   }
 
   get symmetricKeySize(): number | undefined {
-    notImplemented("crypto.KeyObject.symmetricKeySize");
+    notImplemented("crypto.KeyObject.prototype.symmetricKeySize");
 
     return undefined;
   }
@@ -69,7 +68,7 @@ export class KeyObject {
       throw new ERR_INVALID_ARG_TYPE("key", "CryptoKey", key);
     }
 
-    notImplemented("crypto.KeyObject.from");
+    notImplemented("crypto.KeyObject.prototype.from");
   }
 
   // deno-lint-ignore no-explicit-any
@@ -90,7 +89,7 @@ export class KeyObject {
 
   // deno-lint-ignore no-explicit-any
   export(_options: any) {
-    notImplemented("crypto.KeyObject.asymmetricKeyType");
+    notImplemented("crypto.KeyObject.prototype.asymmetricKeyType");
   }
 }
 

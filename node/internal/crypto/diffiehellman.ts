@@ -1,8 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { notImplemented } from "../../_utils.ts";
-import { isArrayBufferView } from "../util/types.ts";
-import { isAnyArrayBuffer } from "../../internal_binding/types.ts";
+import { isAnyArrayBuffer, isArrayBufferView } from "../util/types.ts";
 import { ERR_INVALID_ARG_TYPE } from "../errors.ts";
 import { validateInt32, validateString } from "../validators.mjs";
 import { Buffer } from "../../buffer.ts";
