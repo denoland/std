@@ -782,37 +782,6 @@ Deno.test("collectUnknownArgs", function (): void {
   });
 });
 
-Deno.test("collectAllArgs", function (): void {
-  const argv = parse([
-    "--bool",
-    "--no-bool",
-    "--bool",
-    "--str",
-    "foo",
-    "--str",
-    "bar",
-    "--num",
-    "123",
-    "--no-num",
-    "--num",
-    "456",
-    "--bib.bab",
-    "--no-bib.bab",
-    "--bib.bab",
-  ], {
-    collect: true,
-  });
-
-  assertEquals(argv, {
-    // TODO: fix negatable collactable options.
-    bool: [true, false, true],
-    str: ["foo", "bar"],
-    num: [123, false, 456],
-    bib: { bab: [true, false, true] },
-    _: [],
-  });
-});
-
 Deno.test("collectArgs", function (): void {
   const argv = parse([
     "--bool",

@@ -53,7 +53,7 @@ export interface ParseOptions {
   string?: string | string[];
 
   /** A string or array of strings argument names to always treat as arrays. */
-  collect?: boolean | string | string[];
+  collect?: string | string[];
 
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
@@ -67,7 +67,6 @@ interface Flags {
   collect: Record<string, boolean>;
   unknownFn: (arg: string, key?: string, value?: unknown) => unknown;
   allBools: boolean;
-  collectAll: boolean;
 }
 
 interface NestedMapping {
@@ -141,7 +140,6 @@ export function parse(
     strings: {},
     unknownFn: unknown,
     allBools: false,
-    collectAll: false,
     collect: {},
   };
 
@@ -191,24 +189,20 @@ export function parse(
     Object.keys(flags.strings).length > 0;
 
   if (collect !== undefined) {
-    if (typeof collect === "boolean") {
-      flags.collectAll = collect;
-    } else {
-      const collectArgs = typeof collect === "string" ? [collect] : collect;
+    const collectArgs = typeof collect === "string" ? [collect] : collect;
 
-      for (const key of collectArgs.filter(Boolean)) {
-        flags.collect[key] = true;
-        const alias = get(aliases, key);
-        if (alias) {
-          for (const al of alias) {
-            flags.collect[al] = true;
-          }
+    for (const key of collectArgs.filter(Boolean)) {
+      flags.collect[key] = true;
+      const alias = get(aliases, key);
+      if (alias) {
+        for (const al of alias) {
+          flags.collect[al] = true;
         }
       }
     }
   }
 
-  const hasCollect = flags.collectAll || Object.keys(flags.collect).length > 0;
+  const hasCollect = Object.keys(flags.collect).length > 0;
 
   const argv: Args = { _: [] };
 
@@ -237,8 +231,7 @@ export function parse(
     });
 
     const key = keys[keys.length - 1];
-    const collectable = collect &&
-      (flags.collectAll || !!flags.collect[name]);
+    const collectable = collect && !!flags.collect[name];
 
     if (
       hasCollect || hasTypes ? !collectable : (
@@ -412,10 +405,9 @@ export function parse(
     }
   }
 
-  for (const [key] of Object.entries(flags.bools)) {
+  for (const key of Object.keys(flags.bools)) {
     if (!hasKey(argv, key.split("."))) {
-      const collectable = flags.collectAll || !!flags.collect[key];
-      const value = collectable ? [] : false;
+      const value = flags.collect[key] ? [] : false;
       setKey(
         argv,
         key,
