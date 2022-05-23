@@ -4,9 +4,9 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../../testing/asserts.ts";
-import { assertCallbackErrorUncaught } from "../_utils.ts";
-import randomBytes, { MAX_RANDOM_VALUES, MAX_SIZE } from "./randomBytes.ts";
+} from "../../../testing/asserts.ts";
+import { assertCallbackErrorUncaught } from "../../_utils.ts";
+import randomBytes, { MAX_RANDOM_VALUES, MAX_SIZE } from "./_randomBytes.ts";
 
 Deno.test("randomBytes sync works correctly", function () {
   assertEquals(randomBytes(0).length, 0, "len: " + 0);

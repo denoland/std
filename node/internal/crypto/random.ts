@@ -2,12 +2,9 @@
 
 import { notImplemented } from "../../_utils.ts";
 
-export { default as randomBytes } from "../../_crypto/randomBytes.ts";
-export {
-  default as randomFill,
-  randomFillSync,
-} from "../../_crypto/randomFill.ts";
-export { default as randomInt } from "../../_crypto/randomInt.ts";
+export { default as randomBytes } from "./_randomBytes.ts";
+export { default as randomFill, randomFillSync } from "./_randomFill.ts";
+export { default as randomInt } from "./_randomInt.ts";
 
 // deno-lint-ignore no-explicit-any
 export function checkPrime(_candidate: any, _options: any, _callback: any) {
