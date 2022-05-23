@@ -652,11 +652,6 @@ export function assertThrows<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): E;
-export function assertThrows(
-  fn: () => unknown,
-  msgIncludes: string,
-  msg?: string,
-): Error;
 /** @deprecated */
 export function assertThrows(
   fn: () => unknown,
@@ -742,11 +737,6 @@ export function assertRejects<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): Promise<E>;
-export function assertRejects(
-  fn: () => Promise<unknown>,
-  msgIncludes: string,
-  msg?: string,
-): Promise<Error>;
 /** @deprecated */
 export function assertRejects(
   fn: () => Promise<unknown>,
