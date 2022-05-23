@@ -52,7 +52,10 @@ export interface ParseOptions {
   /** A string or array of strings argument names to always treat as strings. */
   string?: string | string[];
 
-  /** A string or array of strings argument names to always treat as arrays. */
+  /** A string or array of strings argument names to always treat as arrays.
+   * Collectable options can be used multiple times. All values will be
+   * colelcted into one array. If a non-collectable option is used multiple
+   * times, the last value is used. */
   collect?: string | string[];
 
   /** A function which is invoked with a command line parameter not defined in
