@@ -19,7 +19,7 @@ type UnionToIntersection<T> =
 
 type BooleanType = boolean | string | undefined;
 type StringType = string | undefined;
-type ArgType = StringType | CollectType;
+type ArgType = StringType | BooleanType;
 
 type CollectType = boolean | string | undefined;
 
