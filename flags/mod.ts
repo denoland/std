@@ -240,13 +240,6 @@ export function parse(
         typeof get(o, key) === "boolean"
       )
     ) {
-      // if (hasTypes && get(o, key) !== undefined) {
-      //   throw new Error(
-      //     `Option "${
-      //       name.length > 1 ? "--" : "-"
-      //     }${name}" can be used only once.`,
-      //   );
-      // }
       o[key] = value;
     } else if (get(o, key) === undefined) {
       o[key] = [value];
@@ -261,7 +254,7 @@ export function parse(
     key: string,
     val: unknown,
     arg: string | undefined = undefined,
-    collect = true,
+    collect?: boolean,
   ): void {
     if (arg && flags.unknownFn && !argDefined(key, arg)) {
       if (flags.unknownFn(arg, key, val) === false) return;
