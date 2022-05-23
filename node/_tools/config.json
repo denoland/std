@@ -5,7 +5,6 @@
     "fixtures": ["child-process-spawn-node.js", "empty.txt"],
     "internet": [
       "test-dns-any.js",
-      "test-dns-idna2008.js",
       "test-dns-ipv4.js",
       "test-dns-ipv6.js",
       "test-dns.js"
@@ -27,6 +26,7 @@
       "test-dgram-socket-buffer-size.js",
       "test-dgram-udp6-link-local-address.js",
       "test-dns-lookup.js",
+      "test-dns-resolveany.js",
       "test-dns.js",
       "test-event-emitter-max-listeners.js",
       "test-event-emitter-no-error-provided-to-error-event.js",
@@ -99,7 +99,9 @@
       "test-dns-ipv4.js",
       "test-dns-ipv6.js",
       "test-dns-lookup.js",
+      "test-dns-promises-resolve.js",
       "test-dns-regress-6244.js",
+      "test-dns-setserver-in-callback-of-resolve4.js",
       "test-dns.js"
     ],
     "parallel": [
@@ -217,7 +219,11 @@
       "test-dgram-udp6-send-default-host.js",
       "test-dns-lookup.js",
       "test-dns-memory-error.js",
+      "test-dns-multi-channel.js",
       "test-dns-promises-exists.js",
+      "test-dns-resolveany.js",
+      "test-dns-resolvens-typeerror.js",
+      "test-dns-setservers-type-check.js",
       "test-dns.js",
       "test-event-emitter-add-listeners.js",
       "test-event-emitter-check-listener-leaks.js",

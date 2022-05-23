@@ -272,7 +272,7 @@ class Resolver extends CallbackResolver {
 }
 
 Resolver.prototype.resolveAny = resolveMap.ANY = resolver("queryAny");
-Resolver.prototype.resolve4 = resolver("queryA");
+Resolver.prototype.resolve4 = resolveMap.A = resolver("queryA");
 Resolver.prototype.resolve6 = resolveMap.AAAA = resolver("queryAaaa");
 Resolver.prototype.resolveCaa = resolveMap.CAA = resolver("queryCaa");
 Resolver.prototype.resolveCname = resolveMap.CNAME = resolver("queryCname");

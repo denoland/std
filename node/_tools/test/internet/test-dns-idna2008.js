@@ -7,8 +7,6 @@
 
 'use strict';
 
-// TODO: enable remaining tests once functionality is implemented.
-
 // Verify that non-ASCII hostnames are handled correctly as IDNA 2008.
 //
 // * Tests will fail with NXDOMAIN when UTF-8 leaks through to a getaddrinfo()
@@ -16,7 +14,6 @@
 //
 // * "straße.de" will resolve to the wrong address when the resolver supports
 //   only IDNA 2003 (e.g., glibc until 2.28) because it encodes it wrong.
-
 
 const { mustCall } = require('../common');
 const assert = require('assert');
@@ -32,7 +29,7 @@ const fixture = {
 
 // Explicitly use well-behaved DNS servers that are known to be able to resolve
 // the query (which is a.k.a xn--strae-oqa.de).
-// dns.setServers([fixture.dnsServer]);
+dns.setServers([fixture.dnsServer]);
 
 dns.lookup(
   fixture.hostname,
