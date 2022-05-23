@@ -52,7 +52,7 @@ assert.throws(
     dns.lookup(false, "cb");
   },
   {
-    code: "ERR_INVALID_ARG_TYPE",
+    code: "ERR_INVALID_CALLBACK",
     name: "TypeError",
   }
 );
@@ -62,7 +62,7 @@ assert.throws(
     dns.lookup(false, "options", "cb");
   },
   {
-    code: "ERR_INVALID_ARG_TYPE",
+    code: "ERR_INVALID_CALLBACK",
     name: "TypeError",
   }
 );
