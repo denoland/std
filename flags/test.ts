@@ -809,3 +809,21 @@ Deno.test("collectArgs", function (): void {
     _: [],
   });
 });
+
+Deno.test("collectNegateableArgs", function (): void {
+  const argv = parse([
+    "--foo",
+    "123",
+    "--foo",
+    "456",
+    "--no-foo",
+  ], {
+    string: ["foo"],
+    collect: ["foo"],
+  });
+
+  assertEquals(argv, {
+    foo: false,
+    _: [],
+  });
+});

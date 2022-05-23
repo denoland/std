@@ -261,18 +261,19 @@ export function parse(
     key: string,
     val: unknown,
     arg: string | undefined = undefined,
+    collect = true,
   ): void {
     if (arg && flags.unknownFn && !argDefined(key, arg)) {
       if (flags.unknownFn(arg, key, val) === false) return;
     }
 
     const value = !get(flags.strings, key) && isNumber(val) ? Number(val) : val;
-    setKey(argv, key, value);
+    setKey(argv, key, value, collect);
 
     const alias = get(aliases, key);
     if (alias) {
       for (const x of alias) {
-        setKey(argv, x, value);
+        setKey(argv, x, value, collect);
       }
     }
   }
@@ -308,7 +309,7 @@ export function parse(
     } else if (/^--no-.+/.test(arg)) {
       const m = arg.match(/^--no-(.+)/);
       assert(m != null);
-      setArg(m[1], false, arg);
+      setArg(m[1], false, arg, false);
     } else if (/^--.+/.test(arg)) {
       const m = arg.match(/^--(.+)/);
       assert(m != null);
