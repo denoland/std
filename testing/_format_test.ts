@@ -8,6 +8,7 @@ Deno.test("assert diff formatting (strings)", () => {
     () => {
       assertEquals([..."abcd"].join("\n"), [..."abxde"].join("\n"));
     },
+    Error,
     `
     a\\n
     b\\n
