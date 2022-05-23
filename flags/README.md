@@ -69,14 +69,14 @@ options can be:
 By default, the flags module tries to determine the type of all arguments
 automatically. All arguments are negatable by default, all string arguments are
 collectible, and the return type has an index signature with `any` as value
-(`{ [x:string]: any }`).
+(`{ [x: string]: any }`).
 
 If the `string`, `boolean` or `collect` option is set, the flags module will be
 more explicit:
 
-- The return value of the `parse method will be fully typed.
+- The return value of the `parse` method will be fully typed.
 - The index signature of the return type will change to
-  `{ [x:string]: unknown }`.
+  `{ [x: string]: unknown }`.
 - Collectible arguments must be explicitly defined with the `collect` option.
 - Negatable arguments must be prefixed with `no-`.
 - All `boolean` arguments will be set to `false` by default.
