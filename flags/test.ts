@@ -797,10 +797,14 @@ Deno.test("collectArgs", function (): void {
     boolean: ["bool", "boolArr"],
     string: ["str", "strArr"],
     collect: ["boolArr", "strArr", "unknownArr"],
+    alias: {
+      bool: "b",
+    },
   });
 
   assertEquals(argv, {
     bool: true,
+    b: true,
     boolArr: [true],
     str: "foo",
     strArr: ["beep"],
@@ -820,10 +824,14 @@ Deno.test("collectNegateableArgs", function (): void {
   ], {
     string: ["foo"],
     collect: ["foo"],
+    alias: {
+      foo: "f",
+    },
   });
 
   assertEquals(argv, {
     foo: false,
+    f: false,
     _: [],
   });
 });
