@@ -110,8 +110,8 @@ export class TextLineStream extends TransformStream<string, string> {
 
     if (this.#prevHadCR) {
       this.#prevHadCR = false;
+      controller.enqueue(this.#getBuf(true));
       if (lfIndex === 0) {
-        controller.enqueue(this.#getBuf(true));
         this.#handle(chunk.slice(1), controller);
         return;
       }

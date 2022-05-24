@@ -45,7 +45,7 @@ Deno.test("[streams] TextLineStream", async () => {
     start(controller) {
       controller.enqueue("qwertzu");
       controller.enqueue("iopasd\r\nmnbvc");
-      controller.enqueue("xylk\rjhgfds\napoiuzt");
+      controller.enqueue("xylk\rjhgfds\napoiuzt\r");
       controller.enqueue("qwr\r09ei\rqwrjiowqr\r");
       controller.enqueue("\nrewq0987\n\n654321");
       controller.enqueue("\nrewq0987\r\n\r\n654321");
@@ -61,7 +61,8 @@ Deno.test("[streams] TextLineStream", async () => {
     "qwertzuiopasd",
     "mnbvcxylk",
     "jhgfds",
-    "apoiuztqwr",
+    "apoiuzt",
+    "qwr",
     "09ei",
     "qwrjiowqr",
     "rewq0987",
