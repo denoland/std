@@ -38,16 +38,13 @@ Deno.test({
   sanitizeResources: false, // TODO(@crowlKats): re-enable once https://github.com/denoland/deno/pull/14686 lands
   async fn() {
     const server = await startServer();
-    try {
-      const resp = await fetch("http://127.0.0.1:8080/");
-      assertEquals(resp.status, 200);
-      assertEquals(resp.headers.get("content-type"), "text/html");
-      const html = await resp.text();
-      assert(html.includes("ws chat example"), "body is ok");
-    } finally {
-      server.kill("SIGTERM");
-    }
-    await delay(10);
+    const resp = await fetch("http://127.0.0.1:8080/");
+    assertEquals(resp.status, 200);
+    assertEquals(resp.headers.get("content-type"), "text/html");
+    const html = await resp.text();
+    assert(html.includes("ws chat example"), "body is ok");
+    server.kill("SIGTERM");
+    await server.status;
   },
 });
 
@@ -57,23 +54,19 @@ Deno.test({
   async fn() {
     const server = await startServer();
     let ws: WebSocket;
-    try {
-      ws = new WebSocket("ws://127.0.0.1:8080/ws");
-      await new Promise<void>((resolve) => {
+    ws = new WebSocket("ws://127.0.0.1:8080/ws");
+    await new Promise<void>((resolve) => {
+      ws.onmessage = (message) => {
+        assertEquals(message.data, "Connected: [1]");
         ws.onmessage = (message) => {
-          assertEquals(message.data, "Connected: [1]");
-          ws.onmessage = (message) => {
-            assertEquals(message.data, "[1]: Hello");
-            ws.close();
-          };
-          ws.send("Hello");
+          assertEquals(message.data, "[1]: Hello");
+          ws.close();
         };
-        ws.onclose = () => resolve();
-      });
-    } catch (err) {
-      console.log(err);
-    } finally {
-      server.kill("SIGTERM");
-    }
+        ws.send("Hello");
+      };
+      ws.onclose = () => resolve();
+    });
+    server.kill("SIGTERM");
+    await server.status;
   },
 });

@@ -6,7 +6,7 @@ import { Readable as NodeReadable } from "../stream.ts";
 
 type ReadStreamOptions = Record<string, unknown>;
 
-class ReadStream extends NodeReadable {
+export class ReadStream extends NodeReadable {
   public path: string;
 
   constructor(path: string | URL, opts?: ReadStreamOptions) {

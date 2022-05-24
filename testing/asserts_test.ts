@@ -296,7 +296,7 @@ Deno.test("EqualCircular", () => {
 Deno.test("NotEquals", function (): void {
   const a = { foo: "bar" };
   const b = { bar: "foo" };
-  assertNotEquals(a, b);
+  assertNotEquals<unknown>(a, b);
   assertNotEquals("Denosaurus", "Tyrannosaurus");
   assertNotEquals(
     new Date(2019, 0, 3, 4, 20, 1, 10),
@@ -910,7 +910,7 @@ Deno.test({
   name: "failed with number vs string",
   fn(): void {
     assertThrows(
-      (): void => assertEquals(1, "1"),
+      (): void => assertEquals<unknown>(1, "1"),
       AssertionError,
       [
         "Values are not equal:",
@@ -1022,6 +1022,7 @@ Deno.test({
     assertStrictEquals(true, true);
     assertStrictEquals(10, 10);
     assertStrictEquals("abc", "abc");
+    assertStrictEquals(NaN, NaN);
 
     const xs = [1, false, "foo"];
     const ys = xs;
@@ -1073,7 +1074,8 @@ Deno.test({
     assertNotStrictEquals(true, false);
     assertNotStrictEquals(10, 11);
     assertNotStrictEquals("abc", "xyz");
-    assertNotStrictEquals(1, "1");
+    assertNotStrictEquals<unknown>(1, "1");
+    assertNotStrictEquals(-0, +0);
 
     const xs = [1, false, "foo"];
     const ys = [1, true, "bar"];
@@ -1089,6 +1091,7 @@ Deno.test({
   name: "strictly unequal fail case",
   fn(): void {
     assertThrows(() => assertNotStrictEquals(1, 1), AssertionError);
+    assertThrows(() => assertNotStrictEquals(NaN, NaN), AssertionError);
   },
 });
 
@@ -1097,6 +1100,8 @@ Deno.test("assert almost equals number", () => {
   assertAlmostEquals(-0, +0);
   assertAlmostEquals(Math.PI, Math.PI);
   assertAlmostEquals(0.1 + 0.2, 0.3);
+  assertAlmostEquals(NaN, NaN);
+  assertAlmostEquals(Number.NaN, Number.NaN);
   assertThrows(() => assertAlmostEquals(1, 2));
   assertThrows(() => assertAlmostEquals(1, 1.1));
 
@@ -1128,11 +1133,6 @@ Deno.test("assert almost equals number", () => {
     () => assertAlmostEquals(Infinity, NaN),
     AssertionError,
     '"Infinity" expected to be close to "NaN"',
-  );
-  assertThrows(
-    () => assertAlmostEquals(NaN, NaN),
-    AssertionError,
-    '"NaN" expected to be close to "NaN"',
   );
 });
 

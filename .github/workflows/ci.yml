@@ -45,21 +45,23 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
-        if: matrix.os != 'ubuntu-latest'
+        if: |
+          !startsWith(matrix.os, 'ubuntu')
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
 
       - name: Remove coverage report
         shell: bash
-        if: matrix.os != 'ubuntu-latest'
+        if: |
+          !startsWith(matrix.os, 'ubuntu')
         run: |
           rm -rf ./cov/
           rm cov.lcov
 
       - name: Release if version change
         if: |
-          matrix.os == 'ubuntu-latest' &&
+          startsWith(matrix.os, 'ubuntu') &&
           github.repository == 'denoland/deno_std' &&
           github.ref == 'refs/heads/main'
         shell: bash
@@ -108,7 +110,7 @@ jobs:
           DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
@@ -131,7 +133,7 @@ jobs:
 
   hash-wasm:
     name: "_wasm_crypto/"
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v2

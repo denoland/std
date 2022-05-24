@@ -10,11 +10,15 @@ import { TextLineStream } from "../streams/delimiter.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
 
-Deno.test("[examples/echo_server]", async () => {
+Deno.test({
+  name: "[examples/echo_server]",
+  sanitizeResources: false, // TODO(@crowlKats): re-enable once https://github.com/denoland/deno/pull/14686 lands
+}, async () => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
   const process = Deno.spawnChild(Deno.execPath(), {
     args: ["run", "--quiet", "--allow-net", "echo_server.ts"],
+    stderr: "null",
     cwd: moduleDir,
   });
 
@@ -25,7 +29,7 @@ Deno.test("[examples/echo_server]", async () => {
     );
     const reader = r.getReader();
     const res = await reader.read();
-    reader.cancel();
+    await reader.cancel();
 
     assertEquals(res.done, false);
     assertStrictEquals(res.value!.trim(), "Listening on http://localhost:8080");
@@ -45,6 +49,8 @@ Deno.test("[examples/echo_server]", async () => {
 
     assertStrictEquals(actualResponse, expectedResponse);
   } finally {
+    process.kill("SIGTERM");
+    await process.status;
     conn?.close();
   }
 });
