@@ -6,7 +6,7 @@ import * as base64 from "../encoding/base64.ts";
 export const size = 15_989;
 export const name = "varint.wasm";
 export const type = "application/wasm";
-export const hash = "sha256-RP7FaoX0k+RGMArJoh4V7++9hWM6sqthUKxESREgYiY=";
+export const hash = "sha256-wQPIp4GaCJWTZZXQRBUb6pmRQByI/saZFPYC9+diei0=";
 export const data = base64.decode(
 "\
 AGFzbQEAAAABu4CAgAAKYAAAYAF/AGABfwF/YAF/AX5gAn9/AGACf38Bf2ADf39/AGADf39/AX9gBH\
@@ -282,7 +282,7 @@ hvb2s6OmhmOWMzOTNiYTNjZDI4N2UxHW9jb3JlOjpwdHI6OmRyb3BfaW5fcGxhY2U8JmNvcmU6Oml0\
 ZXI6OmFkYXB0ZXJzOjpjb3BpZWQ6OkNvcGllZDxjb3JlOjpzbGljZTo6aXRlcjo6SXRlcjx1OD4+Pj\
 o6aDYzYzJlMTQ5N2I1MmYzZDcA74CAgAAJcHJvZHVjZXJzAghsYW5ndWFnZQEEUnVzdAAMcHJvY2Vz\
 c2VkLWJ5AwVydXN0Yx0xLjU3LjAgKGYxZWRkMDQyOSAyMDIxLTExLTI5KQZ3YWxydXMGMC4xOS4wDH\
-dhc20tYmluZGdlbgYwLjIuNzg=\
+dhc20tYmluZGdlbgYwLjIuODA=\
 ",
 );
 

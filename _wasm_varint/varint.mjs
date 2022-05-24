@@ -84,9 +84,9 @@ function passArray8ToWasm0(arg, malloc) {
  * @returns {number}
  */
 export function decode_u32(buff) {
-  var ptr0 = passArray8ToWasm0(buff, wasm.__wbindgen_malloc);
-  var len0 = WASM_VECTOR_LEN;
-  var ret = wasm.decode_u32(ptr0, len0);
+  const ptr0 = passArray8ToWasm0(buff, wasm.__wbindgen_malloc);
+  const len0 = WASM_VECTOR_LEN;
+  const ret = wasm.decode_u32(ptr0, len0);
   return ret >>> 0;
 }
 
@@ -97,8 +97,8 @@ export function decode_u32(buff) {
 export function decode_u64(buff) {
   try {
     const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
-    var ptr0 = passArray8ToWasm0(buff, wasm.__wbindgen_malloc);
-    var len0 = WASM_VECTOR_LEN;
+    const ptr0 = passArray8ToWasm0(buff, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
     wasm.decode_u64(retptr, ptr0, len0);
     var r0 = getInt32Memory0()[retptr / 4 + 0];
     var r1 = getInt32Memory0()[retptr / 4 + 1];
