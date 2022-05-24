@@ -35,7 +35,7 @@ export function mergeReadableStreams<T>(
 /**
  * Merge multiple streams into a single one, taking order into account, and each stream
  * will wait for a chunk to enqueue before the next stream can append another chunk.
- * If a stream ends before other ones, the other will continue adding data in order,
+ * If a stream ends before other ones, the others will continue adding data in order,
  * and the finished one will not add any more data.
  */
 export function zipReadableStreams<T>(
@@ -65,6 +65,11 @@ export function zipReadableStreams<T>(
   });
 }
 
+/**
+ * Merge multiple streams into a single one, taking order into account, and each stream
+ * will wait for a chunk to enqueue before the next stream can append another chunk.
+ * If a stream ends before other ones, the others will be cancelled.
+ */
 export function earlyZipReadableStreams<T>(
   ...streams: ReadableStream<T>[]
 ): ReadableStream<T> {
