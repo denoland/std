@@ -799,6 +799,8 @@ Deno.test("collectArgs", function (): void {
     collect: ["boolArr", "strArr", "unknownArr"],
     alias: {
       bool: "b",
+      strArr: "S",
+      boolArr: "B",
     },
   });
 
@@ -806,8 +808,10 @@ Deno.test("collectArgs", function (): void {
     bool: true,
     b: true,
     boolArr: [true],
+    B: [true],
     str: "foo",
     strArr: ["beep"],
+    S: ["beep"],
     unknown: true,
     unknownArr: [true],
     _: [],
