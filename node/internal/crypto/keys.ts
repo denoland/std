@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// Copyright Joyent and Node contributors. All rights reserved. MIT license.
+// Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
+
 import { kHandle, kKeyObject } from "./constants.ts";
 import { ERR_INVALID_ARG_TYPE, ERR_INVALID_ARG_VALUE } from "../errors.ts";
 import { notImplemented } from "../../_utils.ts";

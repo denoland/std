@@ -1,4 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 import { ERR_INVALID_ARG_TYPE } from "../errors.ts";
 import { validateInt32, validateObject } from "../validators.mjs";

@@ -1,4 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
+
 import { digestAlgorithms } from "../../../_wasm_crypto/mod.ts";
 import { getCiphers } from "../../_crypto/crypto_browserify/browserify_aes/mod.js";
 import { notImplemented } from "../../_utils.ts";
