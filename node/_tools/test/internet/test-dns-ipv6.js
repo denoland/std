@@ -58,7 +58,7 @@ TEST(async function test_resolve6(done) {
     }
   }
 
-  // validateResult(await dnsPromises.resolve6(addresses.INET6_HOST));
+  validateResult(await dnsPromises.resolve6(addresses.INET6_HOST));
 
   const req = dns.resolve6(
     addresses.INET6_HOST,
