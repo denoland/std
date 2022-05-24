@@ -228,7 +228,7 @@ export function parse(
     });
 
     const key = keys[keys.length - 1];
-    const collectable = collect && !!flags.collect[name];
+    const collectable = collect && !!get(flags.collect, name);
 
     if (!collectable) {
       o[key] = value;
@@ -392,7 +392,7 @@ export function parse(
 
   for (const key of Object.keys(flags.bools)) {
     if (!hasKey(argv, key.split("."))) {
-      const value = flags.collect[key] ? [] : false;
+      const value = get(flags.collect, key) ? [] : false;
       setKey(
         argv,
         key,
@@ -403,7 +403,7 @@ export function parse(
   }
 
   for (const key of Object.keys(flags.strings)) {
-    if (!hasKey(argv, key.split(".")) && flags.collect[key]) {
+    if (!hasKey(argv, key.split(".")) && get(flags.collect, key)) {
       setKey(
         argv,
         key,
