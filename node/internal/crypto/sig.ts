@@ -5,7 +5,13 @@ import { notImplemented } from "../../_utils.ts";
 import { validateString } from "../validators.mjs";
 import { Buffer } from "../../buffer.ts";
 import { Writable, WritableOptions } from "../../_stream.d.ts";
-import { BinaryLike, BinaryToTextEncoding, Encoding } from "./types.ts";
+import {
+  BinaryLike,
+  BinaryToTextEncoding,
+  Encoding,
+  PrivateKeyInput,
+  PublicKeyInput,
+} from "./types.ts";
 import { KeyObject } from "./keys.ts";
 
 export type DSAEncoding = "der" | "ieee-p1363";
@@ -16,23 +22,13 @@ export interface SigningOptions {
   dsaEncoding?: DSAEncoding | undefined;
 }
 
-export interface PrivateKeyInput {
-  key: string | Buffer;
-  format?: KeyFormat | undefined;
-  type?: "pkcs1" | "pkcs8" | "sec1" | undefined;
-  passphrase?: string | Buffer | undefined;
-}
-export interface PublicKeyInput {
-  key: string | Buffer;
-  format?: KeyFormat | undefined;
-  type?: "pkcs1" | "spki" | undefined;
-}
-
 export interface SignPrivateKeyInput extends PrivateKeyInput, SigningOptions {}
+
 export interface SignKeyObjectInput extends SigningOptions {
   key: KeyObject;
 }
 export interface VerifyPublicKeyInput extends PublicKeyInput, SigningOptions {}
+
 export interface VerifyKeyObjectInput extends SigningOptions {
   key: KeyObject;
 }

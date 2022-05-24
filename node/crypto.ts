@@ -20,7 +20,18 @@ import {
   randomInt,
   randomUUID,
 } from "./internal/crypto/random.ts";
+import type {
+  CheckPrimeOptions,
+  GeneratePrimeOptions,
+  GeneratePrimeOptionsArrayBuffer,
+  GeneratePrimeOptionsBigInt,
+  LargeNumberLike,
+} from "./internal/crypto/random.ts";
 import { pbkdf2, pbkdf2Sync } from "./internal/crypto/pbkdf2.ts";
+import type {
+  Algorithms,
+  NormalizedAlgorithms,
+} from "./internal/crypto/pbkdf2.ts";
 import { scrypt, scryptSync } from "./internal/crypto/scrypt.ts";
 import { hkdf, hkdfSync } from "./internal/crypto/hkdf.ts";
 import {
@@ -29,11 +40,39 @@ import {
   generateKeyPairSync,
   generateKeySync,
 } from "./internal/crypto/keygen.ts";
+import type {
+  BasePrivateKeyEncodingOptions,
+  DSAKeyPairKeyObjectOptions,
+  DSAKeyPairOptions,
+  ECKeyPairKeyObjectOptions,
+  ECKeyPairOptions,
+  ED25519KeyPairKeyObjectOptions,
+  ED25519KeyPairOptions,
+  ED448KeyPairKeyObjectOptions,
+  ED448KeyPairOptions,
+  KeyPairKeyObjectResult,
+  KeyPairSyncResult,
+  RSAKeyPairKeyObjectOptions,
+  RSAKeyPairOptions,
+  RSAPSSKeyPairKeyObjectOptions,
+  RSAPSSKeyPairOptions,
+  X25519KeyPairKeyObjectOptions,
+  X25519KeyPairOptions,
+  X448KeyPairKeyObjectOptions,
+  X448KeyPairOptions,
+} from "./internal/crypto/keygen.ts";
 import {
   createPrivateKey,
   createPublicKey,
   createSecretKey,
   KeyObject,
+} from "./internal/crypto/keys.ts";
+import type {
+  AsymmetricKeyDetails,
+  JsonWebKeyInput,
+  JwkKeyExportOptions,
+  KeyExportOptions,
+  KeyObjectType,
 } from "./internal/crypto/keys.ts";
 import {
   DiffieHellman,
@@ -67,15 +106,40 @@ import type {
   DecipherGCM,
   DecipherOCB,
 } from "./internal/crypto/cipher.ts";
-import type { BinaryLike } from "./internal/crypto/types.ts";
+import type {
+  BinaryLike,
+  BinaryToTextEncoding,
+  CharacterEncoding,
+  ECDHKeyFormat,
+  Encoding,
+  HASH_DATA,
+  KeyFormat,
+  KeyType,
+  LegacyCharacterEncoding,
+  PrivateKeyInput,
+  PublicKeyInput,
+} from "./internal/crypto/types.ts";
 import {
   Sign,
   signOneShot,
   Verify,
   verifyOneShot,
 } from "./internal/crypto/sig.ts";
+import type {
+  DSAEncoding,
+  KeyLike,
+  SigningOptions,
+  SignKeyObjectInput,
+  SignPrivateKeyInput,
+  VerifyKeyObjectInput,
+  VerifyPublicKeyInput,
+} from "./internal/crypto/sig.ts";
 import { createHash, Hash, Hmac } from "./internal/crypto/hash.ts";
 import { X509Certificate } from "./internal/crypto/x509.ts";
+import type {
+  PeerCertificate,
+  X509CheckOptions,
+} from "./internal/crypto/x509.ts";
 import {
   getCiphers,
   getCurves,
@@ -83,9 +147,9 @@ import {
   secureHeapUsed,
   setEngine,
 } from "./internal/crypto/util.ts";
+import type { SecureHeapUsage } from "./internal/crypto/util.ts";
 import Certificate from "./internal/crypto/certificate.ts";
 import type { TransformOptions, WritableOptions } from "./_stream.d.ts";
-import type { BinaryToTextEncoding } from "./internal/crypto/types.ts";
 
 const webcrypto = globalThis.crypto;
 const fipsForced = getOptionValue("--force-fips");
@@ -295,6 +359,76 @@ export default {
   verify,
   webcrypto,
   X509Certificate,
+};
+
+export type {
+  Algorithms,
+  AsymmetricKeyDetails,
+  BasePrivateKeyEncodingOptions,
+  BinaryLike,
+  BinaryToTextEncoding,
+  CharacterEncoding,
+  CheckPrimeOptions,
+  Cipher,
+  CipherCCM,
+  CipherCCMOptions,
+  CipherCCMTypes,
+  CipherGCM,
+  CipherGCMOptions,
+  CipherGCMTypes,
+  CipherKey,
+  CipherOCB,
+  CipherOCBOptions,
+  CipherOCBTypes,
+  Decipher,
+  DecipherCCM,
+  DecipherGCM,
+  DecipherOCB,
+  DSAEncoding,
+  DSAKeyPairKeyObjectOptions,
+  DSAKeyPairOptions,
+  ECDHKeyFormat,
+  ECKeyPairKeyObjectOptions,
+  ECKeyPairOptions,
+  ED25519KeyPairKeyObjectOptions,
+  ED25519KeyPairOptions,
+  ED448KeyPairKeyObjectOptions,
+  ED448KeyPairOptions,
+  Encoding,
+  GeneratePrimeOptions,
+  GeneratePrimeOptionsArrayBuffer,
+  GeneratePrimeOptionsBigInt,
+  HASH_DATA,
+  JsonWebKeyInput,
+  JwkKeyExportOptions,
+  KeyExportOptions,
+  KeyFormat,
+  KeyLike,
+  KeyObjectType,
+  KeyPairKeyObjectResult,
+  KeyPairSyncResult,
+  KeyType,
+  LargeNumberLike,
+  LegacyCharacterEncoding,
+  NormalizedAlgorithms,
+  PeerCertificate,
+  PrivateKeyInput,
+  PublicKeyInput,
+  RSAKeyPairKeyObjectOptions,
+  RSAKeyPairOptions,
+  RSAPSSKeyPairKeyObjectOptions,
+  RSAPSSKeyPairOptions,
+  SecureHeapUsage,
+  SigningOptions,
+  SignKeyObjectInput,
+  SignPrivateKeyInput,
+  VerifyKeyObjectInput,
+  VerifyPublicKeyInput,
+  X25519KeyPairKeyObjectOptions,
+  X25519KeyPairOptions,
+  X448KeyPairKeyObjectOptions,
+  X448KeyPairOptions,
+  X509CheckOptions,
 };
 
 export {

@@ -4,7 +4,12 @@
 import { kHandle, kKeyObject } from "./constants.ts";
 import { ERR_INVALID_ARG_TYPE, ERR_INVALID_ARG_VALUE } from "../errors.ts";
 import { notImplemented } from "../../_utils.ts";
-import type { KeyFormat, KeyType } from "./types.ts";
+import type {
+  KeyFormat,
+  KeyType,
+  PrivateKeyInput,
+  PublicKeyInput,
+} from "./types.ts";
 import { Buffer } from "../../buffer.ts";
 import type { BufferEncoding } from "../../_global.d.ts";
 
@@ -137,19 +142,6 @@ export class KeyObject {
   export(_options?: unknown): string | Buffer | JsonWebKey {
     notImplemented("crypto.KeyObject.prototype.asymmetricKeyType");
   }
-}
-
-export interface PrivateKeyInput {
-  key: string | Buffer;
-  format?: KeyFormat | undefined;
-  type?: "pkcs1" | "pkcs8" | "sec1" | undefined;
-  passphrase?: string | Buffer | undefined;
-}
-
-export interface PublicKeyInput {
-  key: string | Buffer;
-  format?: KeyFormat | undefined;
-  type?: "pkcs1" | "spki" | undefined;
 }
 
 export interface JsonWebKeyInput {
