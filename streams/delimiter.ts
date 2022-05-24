@@ -96,7 +96,10 @@ export class TextLineStream extends TransformStream<string, string> {
         this.#handle(chunk, controller);
       },
       flush: (controller) => {
-        controller.enqueue(this.#getBuf(false));
+        controller.enqueue(this.#getBuf(this.#prevHadCR));
+        if (this.#prevHadCR) {
+          controller.enqueue("");
+        }
       },
     });
   }

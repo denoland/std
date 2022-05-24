@@ -48,7 +48,7 @@ Deno.test("[streams] TextLineStream", async () => {
       controller.enqueue("xylk\rjhgfds\napoiuzt\r");
       controller.enqueue("qwr\r09ei\rqwrjiowqr\r");
       controller.enqueue("\nrewq0987\n\n654321");
-      controller.enqueue("\nrewq0987\r\n\r\n654321");
+      controller.enqueue("\nrewq0987\r\n\r\n654321\r");
       controller.close();
     },
   });
@@ -71,6 +71,25 @@ Deno.test("[streams] TextLineStream", async () => {
     "rewq0987",
     "",
     "654321",
+    "",
+  ]);
+
+  const textStream2 = new ReadableStream({
+    start(controller) {
+      controller.enqueue("rewq0987\r\n\r\n654321\n");
+      controller.close();
+    },
+  });
+
+  const lines2 = [];
+  for await (const chunk of textStream2.pipeThrough(new TextLineStream())) {
+    lines2.push(chunk);
+  }
+  assertEquals(lines2, [
+    "rewq0987",
+    "",
+    "654321",
+    "",
   ]);
 });
 
