@@ -187,10 +187,6 @@ export function parse(
     }
   }
 
-  const hasTypes = flags.allBools ||
-    Object.keys(flags.bools).length > 0 ||
-    Object.keys(flags.strings).length > 0;
-
   if (collect !== undefined) {
     const collectArgs = typeof collect === "string" ? [collect] : collect;
 
@@ -204,8 +200,6 @@ export function parse(
       }
     }
   }
-
-  const hasCollect = Object.keys(flags.collect).length > 0;
 
   const argv: Args = { _: [] };
 
@@ -236,13 +230,7 @@ export function parse(
     const key = keys[keys.length - 1];
     const collectable = collect && !!flags.collect[name];
 
-    if (
-      hasCollect || hasTypes ? !collectable : (
-        get(o, key) === undefined ||
-        get(flags.bools, key) ||
-        typeof get(o, key) === "boolean"
-      )
-    ) {
+    if (!collectable) {
       o[key] = value;
     } else if (get(o, key) === undefined) {
       o[key] = [value];

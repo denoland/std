@@ -372,7 +372,7 @@ Deno.test("alreadyNumber", function (): void {
 Deno.test("parseArgs", function (): void {
   assertEquals(parse(["--no-moo"]), { moo: false, _: [] });
   assertEquals(parse(["-v", "a", "-v", "b", "-v", "c"]), {
-    v: ["a", "b", "c"],
+    v: "c",
     _: [],
   });
 });
@@ -412,7 +412,7 @@ Deno.test("comprehensive", function (): void {
       b: true,
       bool: true,
       key: "value",
-      multi: ["quux", "baz"],
+      multi: "baz",
       meep: false,
       name: "meowmers",
       _: ["bare", "--not-a-flag", "eek"],
@@ -750,7 +750,7 @@ Deno.test("collectArgsDefaultBehaviour", function (): void {
   ]);
 
   assertEquals(argv, {
-    foo: ["bar", "baz"],
+    foo: "baz",
     beep: "boop",
     bool: true,
     _: [],
