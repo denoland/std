@@ -5,7 +5,7 @@ import { ERR_INVALID_ARG_TYPE } from "../errors.ts";
 import { validateInt32, validateObject } from "../validators.mjs";
 import { Buffer } from "../../buffer.ts";
 import { notImplemented } from "../../_utils.ts";
-import { TransformOptions, Transform } from "../../_stream.d.ts";
+import { Transform, TransformOptions } from "../../_stream.d.ts";
 import { KeyObject } from "./keys.ts";
 import type { BufferEncoding } from "../../_global.d.ts";
 import type { BinaryLike, Encoding } from "./types.ts";
@@ -132,7 +132,7 @@ export class Cipheriv extends Transform implements Cipher {
     _cipher: string,
     _key: CipherKey,
     _iv: BinaryLike | null,
-    _options?: TransformOptions
+    _options?: TransformOptions,
   ) {
     super();
 
@@ -153,7 +153,7 @@ export class Cipheriv extends Transform implements Cipher {
     _buffer: ArrayBufferView,
     _options?: {
       plaintextLength: number;
-    }
+    },
   ): this {
     notImplemented("crypto.Cipheriv.prototype.setAAD");
   }
@@ -167,17 +167,17 @@ export class Cipheriv extends Transform implements Cipher {
   update(
     data: ArrayBufferView,
     inputEncoding: undefined,
-    outputEncoding: Encoding
+    outputEncoding: Encoding,
   ): string;
   update(
     data: string,
     inputEncoding: Encoding | undefined,
-    outputEncoding: Encoding
+    outputEncoding: Encoding,
   ): string;
   update(
     _data: string | BinaryLike | ArrayBufferView,
     _inputEncoding?: Encoding,
-    _outputEncoding?: Encoding
+    _outputEncoding?: Encoding,
   ): Buffer | string {
     notImplemented("crypto.Cipheriv.prototype.update");
   }
@@ -188,7 +188,7 @@ export class Decipheriv extends Transform implements Cipher {
     _cipher: string,
     _key: CipherKey,
     _iv: BinaryLike | null,
-    _options?: TransformOptions
+    _options?: TransformOptions,
   ) {
     super();
 
@@ -205,7 +205,7 @@ export class Decipheriv extends Transform implements Cipher {
     _buffer: ArrayBufferView,
     _options?: {
       plaintextLength: number;
-    }
+    },
   ): this {
     notImplemented("crypto.Decipheriv.prototype.setAAD");
   }
@@ -223,17 +223,17 @@ export class Decipheriv extends Transform implements Cipher {
   update(
     data: ArrayBufferView,
     inputEncoding: undefined,
-    outputEncoding: Encoding
+    outputEncoding: Encoding,
   ): string;
   update(
     data: string,
     inputEncoding: Encoding | undefined,
-    outputEncoding: Encoding
+    outputEncoding: Encoding,
   ): string;
   update(
     _data: string | BinaryLike | ArrayBufferView,
     _inputEncoding?: Encoding,
-    _outputEncoding?: Encoding
+    _outputEncoding?: Encoding,
   ): Buffer | string {
     notImplemented("crypto.Decipheriv.prototype.update");
   }
