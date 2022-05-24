@@ -21,7 +21,9 @@ Deno.test(
       "ae30c171b2b5a047b7986c185564407672441934a356686e6df3a8284f35214448c40738e65b8c308e38b068eed91676";
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
+      toHexString(
+        stdCrypto.subtle.digestSync("SHA-384", inputBytes) as ArrayBuffer,
+      ),
       expectedDigest,
     );
 
@@ -30,13 +32,15 @@ Deno.test(
         await stdCrypto.subtle.digest(
           "SHA-384",
           new Blob([inputBytes]).stream(),
-        ),
+        ) as ArrayBuffer,
       ),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", [inputBytes])),
+      toHexString(
+        stdCrypto.subtle.digestSync("SHA-384", [inputBytes]) as ArrayBuffer,
+      ),
       expectedDigest,
     );
 
@@ -50,7 +54,7 @@ Deno.test(
             yield new ArrayBuffer(0);
             yield inputPieces[1];
           })(),
-        ),
+        ) as ArrayBuffer,
       ),
       expectedDigest,
     );
@@ -64,7 +68,7 @@ Deno.test(
             yield* inputPieces;
             yield new Int8Array();
           })(),
-        ),
+        ) as ArrayBuffer,
       ),
       expectedDigest,
     );
@@ -76,7 +80,7 @@ Deno.test(
           (function* () {
             yield inputBytes;
           })(),
-        ),
+        ) as ArrayBuffer,
       ),
       expectedDigest,
     );
@@ -87,12 +91,22 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
+      toHexString(
+        stdCrypto.subtle.digestSync(
+          "SHA-384",
+          new ArrayBuffer(0),
+        ) as ArrayBuffer,
+      ),
       emptyDigest,
     );
 
     assertEquals(
-      toHexString(await stdCrypto.subtle.digest("SHA-384", new ArrayBuffer(0))),
+      toHexString(
+        await stdCrypto.subtle.digest(
+          "SHA-384",
+          new ArrayBuffer(0),
+        ) as ArrayBuffer,
+      ),
       emptyDigest,
     );
   },
@@ -132,14 +146,20 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 
   assertEquals(
     new Uint8Array(
-      await stdCrypto.subtle.digest({ name: "BLAKE3", length: 0 }, inputBytes),
+      await stdCrypto.subtle.digest(
+        { name: "BLAKE3", length: 0 },
+        inputBytes,
+      ) as ArrayBuffer,
     ),
     new Uint8Array(0),
   );
 
   assertEquals(
     new Uint8Array(
-      await stdCrypto.subtle.digest({ name: "BLAKE3", length: 6 }, inputBytes),
+      await stdCrypto.subtle.digest(
+        { name: "BLAKE3", length: 6 },
+        inputBytes,
+      ) as ArrayBuffer,
     ),
     new Uint8Array([167, 193, 151, 192, 40, 100]),
   );
@@ -1344,27 +1364,27 @@ Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
   const inputString = "deno";
   const inputBytes = new TextEncoder().encode(inputString);
 
-  const expectedDigest32 = "a9a7d56e";
-  const expectedDigest32a = "1147f68e";
+  const expectedDigest32 = "6ed5a7a9";
+  const expectedDigest32a = "8ef64711";
 
-  const expectedDigest64 = "7eb2ed14c9addaec";
-  const expectedDigest64a = "67fbd9a5b1486e42";
+  const expectedDigest64 = "14edb27eecdaadc9";
+  const expectedDigest64a = "a5d9fb67426e48b1";
 
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
+    stdCrypto.subtle.digestSync("FNV32", inputBytes),
     expectedDigest32,
   );
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
+    stdCrypto.subtle.digestSync("FNV32A", inputBytes),
     expectedDigest32a,
   );
 
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
+    stdCrypto.subtle.digestSync("FNV64", inputBytes),
     expectedDigest64,
   );
   assertEquals(
-    toHexString(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
+    stdCrypto.subtle.digestSync("FNV64A", inputBytes),
     expectedDigest64a,
   );
 });
@@ -1392,7 +1412,7 @@ for (const algorithm of digestAlgorithms) {
                 name: algorithm,
               },
               bytePieces,
-            ),
+            ) as ArrayBuffer,
           );
           assertEquals(
             expected,

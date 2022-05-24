@@ -9,7 +9,7 @@ import { mul32 } from "./util.ts";
 
 const prime32 = 16777619;
 
-export const fnv32 = (data: Uint8Array): ArrayBuffer => {
+export const fnv32 = (data: Uint8Array): string => {
   let hash = 2166136261;
 
   data.forEach((c) => {
@@ -17,10 +17,10 @@ export const fnv32 = (data: Uint8Array): ArrayBuffer => {
     hash ^= c;
   });
 
-  return new Uint32Array([hash >>> 0]).buffer;
+  return hash.toString(16);
 };
 
-export const fnv32a = (data: Uint8Array): ArrayBuffer => {
+export const fnv32a = (data: Uint8Array): string => {
   let hash = 2166136261;
 
   data.forEach((c) => {
@@ -28,5 +28,5 @@ export const fnv32a = (data: Uint8Array): ArrayBuffer => {
     hash = mul32(hash, prime32);
   });
 
-  return new Uint32Array([hash >>> 0]).buffer;
+  return hash.toString(16);
 };
