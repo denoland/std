@@ -45,7 +45,8 @@ options can be:
   as strings.
 - `options.boolean` - a boolean, string or array of strings to always treat as
   booleans. if `true` will treat all double hyphenated arguments without equal
-  signs as boolean (e.g. affects `--foo`, not `-f` or `--foo=bar`).
+  signs as boolean (e.g. affects `--foo`, not `-f` or `--foo=bar`). All
+  `boolean` arguments will be set to `false` by default.
 - `options.alias` - an object mapping string names to strings or arrays of
   string argument names to use as aliases.
 - `options.default` - an object mapping string argument names to default values.
@@ -67,17 +68,9 @@ options can be:
   `false`, the unknown option is not added to `parsedArgs`.
 
 By default, the flags module tries to determine the type of all arguments
-automatically. All arguments are negatable by default, all string arguments are
-collectible, and the return type has an index signature with `any` as value
-(`{ [x: string]: any }`).
+automatically and the return type of the `parse` method will have an index
+signature with `any` as value (`{ [x: string]: any }`).
 
-If the `string`, `boolean` or `collect` option is set, the flags module will be
-more explicit:
-
-- The return value of the `parse` method will be fully typed.
-- The index signature of the return type will change to
-  `{ [x: string]: unknown }`.
-- Collectible arguments must be explicitly defined with the `collect` option.
-- Negatable arguments must be prefixed with `no-`.
-- All `boolean` arguments will be set to `false` by default.
-- All collectible arguments will be set to `[]` by default.
+If the `string`, `boolean` or `collect` option is set, the return value of the
+`parse` method will be fully typed and the index signature of the return type
+will change to `{ [x: string]: unknown }`.
