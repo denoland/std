@@ -173,7 +173,10 @@ type DigestAlgorithmObject = {
   length?: number;
 };
 
-type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject | FNVAlgorithms;
+type DigestAlgorithm =
+  | DigestAlgorithmName
+  | DigestAlgorithmObject
+  | FNVAlgorithms;
 
 const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
   (typeof algorithm === "string" ? { name: algorithm.toUpperCase() } : {
