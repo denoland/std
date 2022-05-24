@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
-import { kHandle, kKeyObject } from "./constants.ts";
+import { kHandle } from "./constants.ts";
 import { ERR_INVALID_ARG_TYPE, ERR_INVALID_ARG_VALUE } from "../errors.ts";
 import { notImplemented } from "../../_utils.ts";
 import type {
@@ -11,21 +11,9 @@ import type {
   PublicKeyInput,
 } from "./types.ts";
 import { Buffer } from "../../buffer.ts";
-import type { BufferEncoding } from "../../_global.d.ts";
+import { isCryptoKey, isKeyObject, kKeyType } from "./_keys.ts";
 
-const kKeyType = Symbol("kKeyType");
-
-export function isKeyObject(obj: unknown): obj is KeyObject {
-  return (
-    obj != null && (obj as Record<symbol, unknown>)[kKeyType] !== undefined
-  );
-}
-
-export function isCryptoKey(obj: unknown) {
-  return (
-    obj != null && (obj as Record<symbol, unknown>)[kKeyObject] !== undefined
-  );
-}
+export { isCryptoKey, isKeyObject };
 
 export interface AsymmetricKeyDetails {
   /**
@@ -164,11 +152,11 @@ export function createPublicKey(
 export function createSecretKey(key: ArrayBufferView): KeyObject;
 export function createSecretKey(
   key: string,
-  encoding: BufferEncoding,
+  encoding: string,
 ): KeyObject;
 export function createSecretKey(
   _key: string | ArrayBufferView,
-  _encoding?: BufferEncoding,
+  _encoding?: string,
 ): KeyObject {
   notImplemented("crypto.createSecretKey");
 }
