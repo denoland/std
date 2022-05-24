@@ -4,13 +4,16 @@
 import {
   crypto as wasmCrypto,
   DigestAlgorithm,
-  digestAlgorithms,
-} from "../../_wasm_crypto/mod.ts";
-import { Buffer } from "../buffer.ts";
-import { Transform } from "../stream.ts";
-import { encode as encodeToHex } from "../../encoding/hex.ts";
-import { encode as encodeToBase64 } from "../../encoding/base64.ts";
-import type { TransformOptions } from "../_stream.d.ts";
+} from "../../../_wasm_crypto/mod.ts";
+import { Buffer } from "../../buffer.ts";
+import { Transform } from "../../stream.ts";
+import { encode as encodeToHex } from "../../../encoding/hex.ts";
+import { encode as encodeToBase64 } from "../../../encoding/base64.ts";
+import type { TransformOptions } from "../../_stream.d.ts";
+import { validateString } from "../validators.mjs";
+import { notImplemented } from "../../_utils.ts";
+import type { BinaryLike, BinaryToTextEncoding, Encoding } from "./types.ts";
+import { KeyObject } from "./keys.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
@@ -119,6 +122,32 @@ export class Hash extends Transform {
   }
 }
 
+export class Hmac extends Transform {
+  constructor(
+    hmac: string,
+    _key: BinaryLike | KeyObject,
+    _options?: TransformOptions,
+  ) {
+    validateString(hmac, "hmac");
+
+    super();
+
+    notImplemented("crypto.Hmac");
+  }
+
+  digest(): Buffer;
+  digest(encoding: BinaryToTextEncoding): string;
+  digest(_encoding?: BinaryToTextEncoding): Buffer | string {
+    notImplemented("crypto.Hmac.prototype.digest");
+  }
+
+  update(data: BinaryLike): this;
+  update(data: string, inputEncoding: Encoding): this;
+  update(_data: BinaryLike, _inputEncoding?: Encoding): this {
+    notImplemented("crypto.Hmac.prototype.update");
+  }
+}
+
 /**
  * Supported digest names that OpenSSL/Node and WebCrypto identify differently.
  */
@@ -142,9 +171,8 @@ export function createHash(algorithm: string, opts?: TransformOptions) {
   return new Hash(algorithm, opts);
 }
 
-/**
- * Returns an array of the names of the supported hash algorithms, such as 'sha1'.
- */
-export function getHashes(): readonly string[] {
-  return digestAlgorithms;
-}
+export default {
+  Hash,
+  Hmac,
+  createHash,
+};
