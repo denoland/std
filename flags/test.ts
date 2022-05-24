@@ -822,7 +822,7 @@ Deno.test("collectNegateableArgs", function (): void {
   const argv = parse([
     "--foo",
     "123",
-    "--foo",
+    "-f",
     "456",
     "--no-foo",
   ], {
