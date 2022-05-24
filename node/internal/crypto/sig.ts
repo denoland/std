@@ -4,8 +4,9 @@
 import { notImplemented } from "../../_utils.ts";
 import { validateString } from "../validators.mjs";
 import { Buffer } from "../../buffer.ts";
-import { Writable, WritableOptions } from "../../_stream.d.ts";
-import {
+import type { WritableOptions } from "../../_stream.d.ts";
+import Writable from "../streams/writable.mjs";
+import type {
   BinaryLike,
   BinaryToTextEncoding,
   Encoding,
