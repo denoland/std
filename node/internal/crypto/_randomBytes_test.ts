@@ -81,7 +81,7 @@ Deno.test("randomBytes async works correctly", function () {
 });
 
 Deno.test("[std/node/crypto] randomBytes callback isn't called twice if error is thrown", async () => {
-  const importUrl = new URL("./randomBytes.ts", import.meta.url);
+  const importUrl = new URL("./_randomBytes.ts", import.meta.url);
   await assertCallbackErrorUncaught({
     prelude: `import randomBytes from ${JSON.stringify(importUrl)}`,
     invocation: "randomBytes(0, ",
