@@ -31,8 +31,8 @@ pub fn decode_u64(buff: Vec<u8>) -> u64 {
   let mut value: u64 = 0;
   let mut length = 0;
   loop {
-    let byte = buff[length];
-    value |= ((byte & 0x7F) << 7 * length) as u64;
+    let byte = buff[length] as u64;
+    value |= (byte & 0x7F) << (7 * length);
     length += 1;
 
     if byte & 0x80 != 0x80 {
