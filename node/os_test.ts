@@ -180,6 +180,7 @@ Deno.test({
     assertEquals(os.constants.signals.SIGKILL, "SIGKILL");
     assertEquals(os.constants.signals.SIGCONT, "SIGCONT");
     assertEquals(os.constants.signals.SIGXFSZ, "SIGXFSZ");
+    assertEquals(os.constants.signals.SIGBREAK, "SIGBREAK");
   },
 });
 
