@@ -64,3 +64,30 @@ export function zipReadableStreams<T>(
     },
   });
 }
+
+export function earlyZipReadableStreams<T>(
+  ...streams: ReadableStream<T>[]
+): ReadableStream<T> {
+  const readers = streams.map((s) => s.getReader());
+  return new ReadableStream<T>({
+    async start(controller) {
+      try {
+        loop:
+        while (true) {
+          for (const reader of readers) {
+            const { value, done } = await reader.read();
+            if (!done) {
+              controller.enqueue(value!);
+            } else {
+              await Promise.all(readers.map((reader) => reader.cancel()));
+              break loop;
+            }
+          }
+        }
+        controller.close();
+      } catch (e) {
+        controller.error(e);
+      }
+    },
+  });
+}
