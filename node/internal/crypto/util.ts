@@ -3,24 +3,25 @@ import { digestAlgorithms } from "../../../_wasm_crypto/mod.ts";
 import { getCiphers } from "../../_crypto/crypto_browserify/browserify_aes/mod.js";
 import { notImplemented } from "../../_utils.ts";
 import { Buffer } from "../../buffer.ts";
+import { ERR_INVALID_ARG_TYPE, hideStackFrames } from "../errors.ts";
+import { isAnyArrayBuffer, isArrayBufferView } from "../util/types.ts";
+import { crypto as constants } from "../../internal_binding/constants.ts";
+import { kHandle, kKeyObject } from "./constants.ts";
 
 let defaultEncoding = "buffer";
 
-export const kHandle = Symbol("kHandle");
-export const kKeyObject = Symbol("kKeyObject");
-
-export function setDefaultEncoding(val: string) {
+export function setDefaultEncoding(val: string): void {
   defaultEncoding = val;
 }
 
-export function getDefaultEncoding() {
+export function getDefaultEncoding(): string {
   return defaultEncoding;
 }
 
 // This is here because many functions accepted binary strings without
 // any explicit encoding in older versions of node, and we don't want
 // to break them unnecessarily.
-export function toBuf(val: string | Buffer, encoding: string) {
+export function toBuf(val: string | Buffer, encoding?: string): Buffer {
   if (typeof val === "string") {
     if (encoding === "buffer") {
       encoding = "utf8";
@@ -31,6 +32,20 @@ export function toBuf(val: string | Buffer, encoding: string) {
 
   return val;
 }
+
+export const validateByteSource = hideStackFrames((val, name) => {
+  val = toBuf(val);
+
+  if (isAnyArrayBuffer(val) || isArrayBufferView(val)) {
+    return;
+  }
+
+  throw new ERR_INVALID_ARG_TYPE(
+    name,
+    ["string", "ArrayBuffer", "TypedArray", "DataView", "Buffer"],
+    val,
+  );
+});
 
 /**
  * Returns an array of the names of the supported hash algorithms, such as 'sha1'.
@@ -43,17 +58,22 @@ export function getCurves(): readonly string[] {
   notImplemented("crypto.getCurves");
 }
 
-// deno-lint-ignore no-explicit-any
-export function secureHeapUsed(): any {
+export interface SecureHeapUsage {
+  total: number;
+  min: number;
+  used: number;
+  utilization: number;
+}
+
+export function secureHeapUsed(): SecureHeapUsage {
   notImplemented("crypto.secureHeapUsed");
 }
 
-// deno-lint-ignore no-explicit-any
-export function setEngine(_engine: string, _flags: any) {
+export function setEngine(_engine: string, _flags: typeof constants): void {
   notImplemented("crypto.setEngine");
 }
 
-export { getCiphers };
+export { getCiphers, kHandle, kKeyObject };
 
 export default {
   getDefaultEncoding,
@@ -63,4 +83,8 @@ export default {
   getCurves,
   secureHeapUsed,
   setEngine,
+  validateByteSource,
+  toBuf,
+  kHandle,
+  kKeyObject,
 };

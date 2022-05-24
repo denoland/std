@@ -5,10 +5,36 @@ import { Buffer } from "../../buffer.ts";
 import { ERR_INVALID_ARG_TYPE } from "../errors.ts";
 import { isArrayBufferView } from "../util/types.ts";
 import { notImplemented } from "../../_utils.ts";
+import { BinaryLike } from "./types.ts";
+
+// deno-lint-ignore no-explicit-any
+export type PeerCertificate = any;
+
+export interface X509CheckOptions {
+  /**
+   * @default 'always'
+   */
+  subject: "always" | "never";
+  /**
+   * @default true
+   */
+  wildcards: boolean;
+  /**
+   * @default true
+   */
+  partialWildcards: boolean;
+  /**
+   * @default false
+   */
+  multiLabelWildcards: boolean;
+  /**
+   * @default false
+   */
+  singleLabelSubdomains: boolean;
+}
 
 export class X509Certificate {
-  // deno-lint-ignore no-explicit-any
-  constructor(buffer: any) {
+  constructor(buffer: BinaryLike) {
     if (typeof buffer === "string") {
       buffer = Buffer.from(buffer);
     }
@@ -30,13 +56,14 @@ export class X509Certificate {
     return false;
   }
 
-  // deno-lint-ignore no-explicit-any
-  checkEmail(_email: string, _options?: any): string | undefined {
+  checkEmail(
+    _email: string,
+    _options?: Pick<X509CheckOptions, "subject">,
+  ): string | undefined {
     notImplemented("crypto.X509Certificate.prototype.checkEmail");
   }
 
-  // deno-lint-ignore no-explicit-any
-  checkHost(_name: string, _options?: any): string | undefined {
+  checkHost(_name: string, _options?: X509CheckOptions): string | undefined {
     notImplemented("crypto.X509Certificate.prototype.checkHost");
   }
 
@@ -48,7 +75,7 @@ export class X509Certificate {
     notImplemented("crypto.X509Certificate.prototype.checkIssued");
   }
 
-  checkPrivateKey(_privateKey: KeyObject) {
+  checkPrivateKey(_privateKey: KeyObject): boolean {
     notImplemented("crypto.X509Certificate.prototype.checkPrivateKey");
   }
 
@@ -70,7 +97,7 @@ export class X509Certificate {
     return "";
   }
 
-  get infoAccess(): string {
+  get infoAccess(): string | undefined {
     notImplemented("crypto.X509Certificate.prototype.infoAccess");
 
     return "";
@@ -82,7 +109,7 @@ export class X509Certificate {
     return "";
   }
 
-  get issuerCertificate(): X509Certificate {
+  get issuerCertificate(): X509Certificate | undefined {
     notImplemented("crypto.X509Certificate.prototype.issuerCertificate");
 
     return {} as X509Certificate;
@@ -118,7 +145,7 @@ export class X509Certificate {
     return "";
   }
 
-  get subjectAltName(): string {
+  get subjectAltName(): string | undefined {
     notImplemented("crypto.X509Certificate.prototype.subjectAltName");
 
     return "";
@@ -128,8 +155,7 @@ export class X509Certificate {
     return this.toString();
   }
 
-  // deno-lint-ignore no-explicit-any
-  toLegacyObject(): any {
+  toLegacyObject(): PeerCertificate {
     notImplemented("crypto.X509Certificate.prototype.toLegacyObject");
   }
 
@@ -153,3 +179,7 @@ export class X509Certificate {
     notImplemented("crypto.X509Certificate.prototype.verify");
   }
 }
+
+export default {
+  X509Certificate,
+};

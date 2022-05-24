@@ -50,6 +50,24 @@ import {
   publicDecrypt,
   publicEncrypt,
 } from "./internal/crypto/cipher.ts";
+import type {
+  Cipher,
+  CipherCCM,
+  CipherCCMOptions,
+  CipherCCMTypes,
+  CipherGCM,
+  CipherGCMOptions,
+  CipherGCMTypes,
+  CipherKey,
+  CipherOCB,
+  CipherOCBOptions,
+  CipherOCBTypes,
+  Decipher,
+  DecipherCCM,
+  DecipherGCM,
+  DecipherOCB,
+} from "./internal/crypto/cipher.ts";
+import type { BinaryLike } from "./internal/crypto/types.ts";
 import {
   Sign,
   signOneShot,
@@ -66,51 +84,127 @@ import {
   setEngine,
 } from "./internal/crypto/util.ts";
 import Certificate from "./internal/crypto/certificate.ts";
+import type { TransformOptions, WritableOptions } from "./_stream.d.ts";
+import type { BinaryToTextEncoding } from "./internal/crypto/types.ts";
 
 const webcrypto = globalThis.crypto;
 const fipsForced = getOptionValue("--force-fips");
 
-// deno-lint-ignore no-explicit-any
-function createCipheriv(cipher: string, key: any, iv: any, options?: any) {
+function createCipheriv(
+  algorithm: CipherCCMTypes,
+  key: CipherKey,
+  iv: BinaryLike,
+  options: CipherCCMOptions,
+): CipherCCM;
+function createCipheriv(
+  algorithm: CipherOCBTypes,
+  key: CipherKey,
+  iv: BinaryLike,
+  options: CipherOCBOptions,
+): CipherOCB;
+function createCipheriv(
+  algorithm: CipherGCMTypes,
+  key: CipherKey,
+  iv: BinaryLike,
+  options?: CipherGCMOptions,
+): CipherGCM;
+function createCipheriv(
+  algorithm: string,
+  key: CipherKey,
+  iv: BinaryLike | null,
+  options?: TransformOptions,
+): Cipher;
+function createCipheriv(
+  cipher: string,
+  key: CipherKey,
+  iv: BinaryLike | null,
+  options?: TransformOptions,
+): Cipher {
   return new Cipheriv(cipher, key, iv, options);
 }
 
-// deno-lint-ignore no-explicit-any
-function createDecipheriv(cipher: string, key: any, iv: any, options?: any) {
-  return new Decipheriv(cipher, key, iv, options);
+function createDecipheriv(
+  algorithm: CipherCCMTypes,
+  key: CipherKey,
+  iv: BinaryLike,
+  options: CipherCCMOptions,
+): DecipherCCM;
+function createDecipheriv(
+  algorithm: CipherOCBTypes,
+  key: CipherKey,
+  iv: BinaryLike,
+  options: CipherOCBOptions,
+): DecipherOCB;
+function createDecipheriv(
+  algorithm: CipherGCMTypes,
+  key: CipherKey,
+  iv: BinaryLike,
+  options?: CipherGCMOptions,
+): DecipherGCM;
+function createDecipheriv(
+  algorithm: string,
+  key: CipherKey,
+  iv: BinaryLike | null,
+  options?: TransformOptions,
+): Decipher {
+  return new Decipheriv(algorithm, key, iv, options);
 }
 
 function createDiffieHellman(
-  // deno-lint-ignore no-explicit-any
-  sizeOrKey: any,
-  keyEncoding: string,
-  // deno-lint-ignore no-explicit-any
-  generator: any,
-  genEncoding: string,
-) {
-  return new DiffieHellman(sizeOrKey, keyEncoding, generator, genEncoding);
+  primeLength: number,
+  generator?: number | ArrayBufferView,
+): DiffieHellman;
+function createDiffieHellman(prime: ArrayBufferView): DiffieHellman;
+function createDiffieHellman(
+  prime: string,
+  primeEncoding: BinaryToTextEncoding,
+): DiffieHellman;
+function createDiffieHellman(
+  prime: string,
+  primeEncoding: BinaryToTextEncoding,
+  generator: number | ArrayBufferView,
+): DiffieHellman;
+function createDiffieHellman(
+  prime: string,
+  primeEncoding: BinaryToTextEncoding,
+  generator: string,
+  generatorEncoding: BinaryToTextEncoding,
+): DiffieHellman;
+function createDiffieHellman(
+  sizeOrKey: number | string | ArrayBufferView,
+  keyEncoding?: number | ArrayBufferView | BinaryToTextEncoding,
+  generator?: number | ArrayBufferView | string,
+  generatorEncoding?: BinaryToTextEncoding,
+): DiffieHellman {
+  return new DiffieHellman(
+    sizeOrKey,
+    keyEncoding,
+    generator,
+    generatorEncoding,
+  );
 }
 
-function createDiffieHellmanGroup(name: string) {
+function createDiffieHellmanGroup(name: string): DiffieHellmanGroup {
   return new DiffieHellmanGroup(name);
 }
 
-function createECDH(curve: string) {
+function createECDH(curve: string): ECDH {
   return new ECDH(curve);
 }
 
-// deno-lint-ignore no-explicit-any
-function createHmac(hmac: string, key: any, options: any) {
+function createHmac(
+  hmac: string,
+  key: BinaryLike | KeyObject,
+  options?: TransformOptions,
+): Hmac {
   return new Hmac(hmac, key, options);
 }
 
-// deno-lint-ignore no-explicit-any
-function createSign(algorithm: string, options: any) {
+function createSign(algorithm: string, options?: WritableOptions): Sign {
   return new Sign(algorithm, options);
 }
 
-// deno-lint-ignore no-explicit-any
-function createVerify(algorithm: string, options: any) {
+function createVerify(algorithm: string, options?: WritableOptions): Verify {
   return new Verify(algorithm, options);
 }
 

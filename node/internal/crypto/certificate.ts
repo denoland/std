@@ -1,20 +1,18 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { notImplemented } from "../../_utils.ts";
 import { Buffer } from "../../buffer.ts";
+import { BinaryLike } from "./types.ts";
 
 export class Certificate {
-  // deno-lint-ignore no-explicit-any
-  static exportChallenge(_spkac: any, _encoding: string): Buffer {
+  static exportChallenge(_spkac: BinaryLike, _encoding?: string): Buffer {
     notImplemented("crypto.Certificate.exportChallenge");
   }
 
-  // deno-lint-ignore no-explicit-any
-  static exportPublicKey(_spkac: any, _encoding: string): Buffer {
+  static exportPublicKey(_spkac: BinaryLike, _encoding?: string): Buffer {
     notImplemented("crypto.Certificate.exportPublicKey");
   }
 
-  // deno-lint-ignore no-explicit-any
-  static verifySpkac(_spkac: any, _encoding: string): Buffer {
+  static verifySpkac(_spkac: BinaryLike, _encoding?: string): boolean {
     notImplemented("crypto.Certificate.verifySpkac");
   }
 }

@@ -63,7 +63,7 @@ export class Hmac {
   constructor(alg: Algorithms, key: Buffer, saltLen: number) {
     this.hash = createHasher(alg);
 
-    const blocksize = (alg === "sha512" || alg === "sha384") ? 128 : 64;
+    const blocksize = alg === "sha512" || alg === "sha384" ? 128 : 64;
 
     if (key.length > blocksize) {
       key = this.hash(key);
@@ -75,7 +75,7 @@ export class Hmac {
     const opad = Buffer.allocUnsafe(blocksize + sizes[alg]);
     for (let i = 0; i < blocksize; i++) {
       ipad[i] = key[i] ^ 0x36;
-      opad[i] = key[i] ^ 0x5C;
+      opad[i] = key[i] ^ 0x5c;
     }
 
     const ipad1 = Buffer.allocUnsafe(blocksize + saltLen + 4);
@@ -158,18 +158,13 @@ export function pbkdf2(
   iterations: number,
   keylen: number,
   digest: Algorithms = "sha1",
-  callback: ((err: Error | null, derivedKey?: Buffer) => void),
+  callback: (err: Error | null, derivedKey?: Buffer) => void,
 ): void {
   setTimeout(() => {
-    let err = null, res;
+    let err = null,
+      res;
     try {
-      res = pbkdf2Sync(
-        password,
-        salt,
-        iterations,
-        keylen,
-        digest,
-      );
+      res = pbkdf2Sync(password, salt, iterations, keylen, digest);
     } catch (e) {
       err = e;
     }
@@ -180,3 +175,8 @@ export function pbkdf2(
     }
   }, 0);
 }
+
+export default {
+  pbkdf2,
+  pbkdf2Sync,
+};

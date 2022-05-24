@@ -4,6 +4,16 @@ import { ERR_INVALID_ARG_TYPE } from "../errors.ts";
 import { validateInt32, validateObject } from "../validators.mjs";
 import { Buffer } from "../../buffer.ts";
 import { notImplemented } from "../../_utils.ts";
+import { TransformOptions } from "../../_stream.d.ts";
+import { KeyObject } from "./keys.ts";
+import type { BufferEncoding } from "../../_global.d.ts";
+import type { BinaryLike, Encoding } from "./types.ts";
+import {
+  privateDecrypt,
+  privateEncrypt,
+  publicDecrypt,
+  publicEncrypt,
+} from "../../_crypto/crypto_browserify/public_encrypt/mod.js";
 
 export {
   privateDecrypt,
@@ -12,12 +22,124 @@ export {
   publicEncrypt,
 } from "../../_crypto/crypto_browserify/public_encrypt/mod.js";
 
-export class Cipheriv {
-  // deno-lint-ignore no-explicit-any
-  constructor(_cipher: string, _key: any, _iv: any, _options: any) {
+export type CipherCCMTypes =
+  | "aes-128-ccm"
+  | "aes-192-ccm"
+  | "aes-256-ccm"
+  | "chacha20-poly1305";
+export type CipherGCMTypes = "aes-128-gcm" | "aes-192-gcm" | "aes-256-gcm";
+export type CipherOCBTypes = "aes-128-ocb" | "aes-192-ocb" | "aes-256-ocb";
+
+export type CipherKey = BinaryLike | KeyObject;
+
+export interface CipherCCMOptions extends TransformOptions {
+  authTagLength: number;
+}
+
+export interface CipherGCMOptions extends TransformOptions {
+  authTagLength?: number | undefined;
+}
+
+export interface CipherOCBOptions extends TransformOptions {
+  authTagLength: number;
+}
+
+export interface Cipher extends TransformStream {
+  update(data: BinaryLike): Buffer;
+  update(data: string, inputEncoding: Encoding): Buffer;
+  update(
+    data: ArrayBufferView,
+    inputEncoding: undefined,
+    outputEncoding: Encoding,
+  ): string;
+  update(
+    data: string,
+    inputEncoding: Encoding | undefined,
+    outputEncoding: Encoding,
+  ): string;
+
+  final(): Buffer;
+  final(outputEncoding: BufferEncoding): string;
+
+  setAutoPadding(autoPadding?: boolean): this;
+}
+
+export type Decipher = Cipher;
+
+export interface CipherCCM extends Cipher {
+  setAAD(
+    buffer: ArrayBufferView,
+    options: {
+      plaintextLength: number;
+    },
+  ): this;
+  getAuthTag(): Buffer;
+}
+
+export interface CipherGCM extends Cipher {
+  setAAD(
+    buffer: ArrayBufferView,
+    options?: {
+      plaintextLength: number;
+    },
+  ): this;
+  getAuthTag(): Buffer;
+}
+
+export interface CipherOCB extends Cipher {
+  setAAD(
+    buffer: ArrayBufferView,
+    options?: {
+      plaintextLength: number;
+    },
+  ): this;
+  getAuthTag(): Buffer;
+}
+
+export interface DecipherCCM extends Decipher {
+  setAuthTag(buffer: ArrayBufferView): this;
+  setAAD(
+    buffer: ArrayBufferView,
+    options: {
+      plaintextLength: number;
+    },
+  ): this;
+}
+
+export interface DecipherGCM extends Decipher {
+  setAuthTag(buffer: ArrayBufferView): this;
+  setAAD(
+    buffer: ArrayBufferView,
+    options?: {
+      plaintextLength: number;
+    },
+  ): this;
+}
+
+export interface DecipherOCB extends Decipher {
+  setAuthTag(buffer: ArrayBufferView): this;
+  setAAD(
+    buffer: ArrayBufferView,
+    options?: {
+      plaintextLength: number;
+    },
+  ): this;
+}
+
+export class Cipheriv extends TransformStream implements Cipher {
+  constructor(
+    _cipher: string,
+    _key: CipherKey,
+    _iv: BinaryLike | null,
+    _options?: TransformOptions,
+  ) {
+    super();
+
     notImplemented("crypto.Cipheriv");
   }
 
+  final(): Buffer;
+  final(outputEncoding: BufferEncoding): string;
   final(_outputEncoding?: string): Buffer | string {
     notImplemented("crypto.Cipheriv.prototype.final");
   }
@@ -26,8 +148,12 @@ export class Cipheriv {
     notImplemented("crypto.Cipheriv.prototype.getAuthTag");
   }
 
-  // deno-lint-ignore no-explicit-any
-  setAAD(_buffer: any, _options?: any): this {
+  setAAD(
+    _buffer: ArrayBufferView,
+    _options?: {
+      plaintextLength: number;
+    },
+  ): this {
     notImplemented("crypto.Cipheriv.prototype.setAAD");
   }
 
@@ -35,33 +161,55 @@ export class Cipheriv {
     notImplemented("crypto.Cipheriv.prototype.setAutoPadding");
   }
 
+  update(data: BinaryLike): Buffer;
+  update(data: string, inputEncoding: Encoding): Buffer;
   update(
-    // deno-lint-ignore no-explicit-any
-    _data: any,
-    _inputEncoding?: string,
-    _outputEncoding?: string,
+    data: ArrayBufferView,
+    inputEncoding: undefined,
+    outputEncoding: Encoding,
+  ): string;
+  update(
+    data: string,
+    inputEncoding: Encoding | undefined,
+    outputEncoding: Encoding,
+  ): string;
+  update(
+    _data: string | BinaryLike | ArrayBufferView,
+    _inputEncoding?: Encoding,
+    _outputEncoding?: Encoding,
   ): Buffer | string {
     notImplemented("crypto.Cipheriv.prototype.update");
   }
 }
 
-export class Decipheriv {
-  // deno-lint-ignore no-explicit-any
-  constructor(_cipher: string, _key: any, _iv: any, _options: any) {
+export class Decipheriv extends TransformStream implements Cipher {
+  constructor(
+    _cipher: string,
+    _key: CipherKey,
+    _iv: BinaryLike | null,
+    _options?: TransformOptions,
+  ) {
+    super();
+
     notImplemented("crypto.Decipheriv");
   }
 
+  final(): Buffer;
+  final(outputEncoding: BufferEncoding): string;
   final(_outputEncoding?: string): Buffer | string {
     notImplemented("crypto.Decipheriv.prototype.final");
   }
 
-  // deno-lint-ignore no-explicit-any
-  setAAD(_buffer: any, _options?: any): this {
+  setAAD(
+    _buffer: ArrayBufferView,
+    _options?: {
+      plaintextLength: number;
+    },
+  ): this {
     notImplemented("crypto.Decipheriv.prototype.setAAD");
   }
 
-  // deno-lint-ignore no-explicit-any
-  setAuthTag(_buffer: any, _encoding?: string): this {
+  setAuthTag(_buffer: BinaryLike, _encoding?: string): this {
     notImplemented("crypto.Decipheriv.prototype.setAuthTag");
   }
 
@@ -69,11 +217,22 @@ export class Decipheriv {
     notImplemented("crypto.Decipheriv.prototype.setAutoPadding");
   }
 
+  update(data: BinaryLike): Buffer;
+  update(data: string, inputEncoding: Encoding): Buffer;
   update(
-    // deno-lint-ignore no-explicit-any
-    _data: any,
-    _inputEncoding?: string,
-    _outputEncoding?: string,
+    data: ArrayBufferView,
+    inputEncoding: undefined,
+    outputEncoding: Encoding,
+  ): string;
+  update(
+    data: string,
+    inputEncoding: Encoding | undefined,
+    outputEncoding: Encoding,
+  ): string;
+  update(
+    _data: string | BinaryLike | ArrayBufferView,
+    _inputEncoding?: Encoding,
+    _outputEncoding?: Encoding,
   ): Buffer | string {
     notImplemented("crypto.Decipheriv.prototype.update");
   }
@@ -113,3 +272,13 @@ export function getCipherInfo(
 
   notImplemented("crypto.getCipherInfo");
 }
+
+export default {
+  privateDecrypt,
+  privateEncrypt,
+  publicDecrypt,
+  publicEncrypt,
+  Cipheriv,
+  Decipheriv,
+  getCipherInfo,
+};

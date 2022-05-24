@@ -12,6 +12,8 @@ import { encode as encodeToBase64 } from "../../../encoding/base64.ts";
 import type { TransformOptions } from "../../_stream.d.ts";
 import { validateString } from "../validators.mjs";
 import { notImplemented } from "../../_utils.ts";
+import type { BinaryLike, BinaryToTextEncoding, Encoding } from "./types.ts";
+import { KeyObject } from "./keys.ts";
 
 const coerceToBytes = (data: string | BufferSource): Uint8Array => {
   if (data instanceof Uint8Array) {
@@ -120,20 +122,28 @@ export class Hash extends Transform {
   }
 }
 
-export class Hmac {
-  // deno-lint-ignore no-explicit-any
-  constructor(hmac: string, _key: any, _options: any) {
+export class Hmac extends Transform {
+  constructor(
+    hmac: string,
+    _key: BinaryLike | KeyObject,
+    _options?: TransformOptions,
+  ) {
     validateString(hmac, "hmac");
+
+    super();
 
     notImplemented("crypto.Hmac");
   }
 
-  digest(_encoding?: string): Buffer | string {
+  digest(): Buffer;
+  digest(encoding: BinaryToTextEncoding): string;
+  digest(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.Hmac.prototype.digest");
   }
 
-  // deno-lint-ignore no-explicit-any
-  update(_data: any, _inputEncoding?: string) {
+  update(data: BinaryLike): this;
+  update(data: string, inputEncoding: Encoding): this;
+  update(_data: BinaryLike, _inputEncoding?: Encoding): this {
     notImplemented("crypto.Hmac.prototype.update");
   }
 }
@@ -160,3 +170,9 @@ const opensslToWebCryptoDigestNames: Record<string, DigestAlgorithm> = {
 export function createHash(algorithm: string, opts?: TransformOptions) {
   return new Hash(algorithm, opts);
 }
+
+export default {
+  Hash,
+  Hmac,
+  createHash,
+};

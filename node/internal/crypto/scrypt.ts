@@ -271,3 +271,8 @@ export function scrypt(
     return cb(err);
   }
 }
+
+export default {
+  scrypt,
+  scryptSync,
+};

@@ -6,6 +6,13 @@ import { ERR_INVALID_ARG_TYPE } from "../errors.ts";
 import { validateInt32, validateString } from "../validators.mjs";
 import { Buffer } from "../../buffer.ts";
 import { getDefaultEncoding, toBuf } from "./util.ts";
+import type {
+  BinaryLike,
+  BinaryToTextEncoding,
+  ECDHKeyFormat,
+} from "./types.ts";
+import { KeyObject } from "./keys.ts";
+import type { BufferEncoding } from "../../_global.d.ts";
 
 const DH_GENERATOR = 2;
 
@@ -13,14 +20,10 @@ export class DiffieHellman {
   verifyError!: number;
 
   constructor(
-    // deno-lint-ignore no-explicit-any
-    sizeOrKey: any,
-    // deno-lint-ignore no-explicit-any
-    keyEncoding: any,
-    // deno-lint-ignore no-explicit-any
-    generator: any,
-    // deno-lint-ignore no-explicit-any
-    genEncoding: any,
+    sizeOrKey: unknown,
+    keyEncoding?: unknown,
+    generator?: unknown,
+    genEncoding?: unknown,
   ) {
     if (
       typeof sizeOrKey !== "number" &&
@@ -35,17 +38,13 @@ export class DiffieHellman {
       );
     }
 
-    // Sizes < 0 don't make sense but they _are_ accepted (and subsequently
-    // rejected with ERR_OSSL_BN_BITS_TOO_SMALL) by OpenSSL. The glue code
-    // in node_crypto.cc accepts values that are IsInt32() for that reason
-    // and that's why we do that here too.
     if (typeof sizeOrKey === "number") {
       validateInt32(sizeOrKey, "sizeOrKey");
     }
 
     if (
       keyEncoding &&
-      !Buffer.isEncoding(keyEncoding) &&
+      !Buffer.isEncoding(keyEncoding as BinaryToTextEncoding) &&
       keyEncoding !== "buffer"
     ) {
       genEncoding = generator;
@@ -58,7 +57,7 @@ export class DiffieHellman {
     genEncoding = genEncoding || encoding;
 
     if (typeof sizeOrKey !== "number") {
-      sizeOrKey = toBuf(sizeOrKey, keyEncoding);
+      sizeOrKey = toBuf(sizeOrKey as string, keyEncoding as string);
     }
 
     if (!generator) {
@@ -66,7 +65,7 @@ export class DiffieHellman {
     } else if (typeof generator === "number") {
       validateInt32(generator, "generator");
     } else if (typeof generator === "string") {
-      generator = toBuf(generator, genEncoding);
+      generator = toBuf(generator, genEncoding as string);
     } else if (!isArrayBufferView(generator) && !isAnyArrayBuffer(generator)) {
       throw new ERR_INVALID_ARG_TYPE(
         "generator",
@@ -78,42 +77,73 @@ export class DiffieHellman {
     notImplemented("crypto.DiffieHellman");
   }
 
+  computeSecret(otherPublicKey: ArrayBufferView): Buffer;
   computeSecret(
-    // deno-lint-ignore no-explicit-any
-    _otherPublicKey: any,
-    _inputEncoding: string,
-    _outputEncoding: string,
-  ) {
+    otherPublicKey: string,
+    inputEncoding: BinaryToTextEncoding,
+  ): Buffer;
+  computeSecret(
+    otherPublicKey: ArrayBufferView,
+    outputEncoding: BinaryToTextEncoding,
+  ): string;
+  computeSecret(
+    otherPublicKey: string,
+    inputEncoding: BinaryToTextEncoding,
+    outputEncoding: BinaryToTextEncoding,
+  ): string;
+  computeSecret(
+    _otherPublicKey: ArrayBufferView | string,
+    _inputEncoding?: BinaryToTextEncoding,
+    _outputEncoding?: BinaryToTextEncoding,
+  ): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.computeSecret");
   }
 
-  generateKeys(_encoding: string) {
+  generateKeys(): Buffer;
+  generateKeys(encoding: BinaryToTextEncoding): string;
+  generateKeys(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.generateKeys");
   }
 
-  getGenerator(_encoding: string) {
+  getGenerator(): Buffer;
+  getGenerator(encoding: BinaryToTextEncoding): string;
+  getGenerator(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.getGenerator");
   }
 
-  getPrime(_encoding: string) {
+  getPrime(): Buffer;
+  getPrime(encoding: BinaryToTextEncoding): string;
+  getPrime(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.getPrime");
   }
 
-  getPrivateKey(_encoding: string) {
+  getPrivateKey(): Buffer;
+  getPrivateKey(encoding: BinaryToTextEncoding): string;
+  getPrivateKey(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.getPrivateKey");
   }
 
-  getPublicKey(_encoding: string) {
+  getPublicKey(): Buffer;
+  getPublicKey(encoding: BinaryToTextEncoding): string;
+  getPublicKey(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.getPublicKey");
   }
 
-  // deno-lint-ignore no-explicit-any
-  setPrivateKey(_privateKey: any, _encoding: string) {
+  setPrivateKey(privateKey: ArrayBufferView): void;
+  setPrivateKey(privateKey: string, encoding: BufferEncoding): void;
+  setPrivateKey(
+    _privateKey: ArrayBufferView | string,
+    _encoding?: BufferEncoding,
+  ): void {
     notImplemented("crypto.DiffieHellman.prototype.setPrivateKey");
   }
 
-  // deno-lint-ignore no-explicit-any
-  setPublicKey(_publicKey: any, _encoding: string) {
+  setPublicKey(publicKey: ArrayBufferView): void;
+  setPublicKey(publicKey: string, encoding: BufferEncoding): void;
+  setPublicKey(
+    _publicKey: ArrayBufferView | string,
+    _encoding?: BufferEncoding,
+  ): void {
     notImplemented("crypto.DiffieHellman.prototype.setPublicKey");
   }
 }
@@ -125,32 +155,55 @@ export class DiffieHellmanGroup {
     notImplemented("crypto.DiffieHellmanGroup");
   }
 
+  computeSecret(otherPublicKey: ArrayBufferView): Buffer;
   computeSecret(
-    // deno-lint-ignore no-explicit-any
-    _otherPublicKey: any,
-    _inputEncoding: string,
-    _outputEncoding: string,
-  ) {
+    otherPublicKey: string,
+    inputEncoding: BinaryToTextEncoding,
+  ): Buffer;
+  computeSecret(
+    otherPublicKey: ArrayBufferView,
+    outputEncoding: BinaryToTextEncoding,
+  ): string;
+  computeSecret(
+    otherPublicKey: string,
+    inputEncoding: BinaryToTextEncoding,
+    outputEncoding: BinaryToTextEncoding,
+  ): string;
+  computeSecret(
+    _otherPublicKey: ArrayBufferView | string,
+    _inputEncoding?: BinaryToTextEncoding,
+    _outputEncoding?: BinaryToTextEncoding,
+  ): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.computeSecret");
   }
 
-  generateKeys(_encoding: string) {
+  generateKeys(): Buffer;
+  generateKeys(encoding: BinaryToTextEncoding): string;
+  generateKeys(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.generateKeys");
   }
 
-  getGenerator(_encoding: string) {
+  getGenerator(): Buffer;
+  getGenerator(encoding: BinaryToTextEncoding): string;
+  getGenerator(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.getGenerator");
   }
 
-  getPrime(_encoding: string) {
+  getPrime(): Buffer;
+  getPrime(encoding: BinaryToTextEncoding): string;
+  getPrime(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.getPrime");
   }
 
-  getPrivateKey(_encoding: string) {
+  getPrivateKey(): Buffer;
+  getPrivateKey(encoding: BinaryToTextEncoding): string;
+  getPrivateKey(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.getPrivateKey");
   }
 
-  getPublicKey(_encoding: string) {
+  getPublicKey(): Buffer;
+  getPublicKey(encoding: BinaryToTextEncoding): string;
+  getPublicKey(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.DiffieHellman.prototype.getPublicKey");
   }
 }
@@ -162,45 +215,82 @@ export class ECDH {
     notImplemented("crypto.ECDH");
   }
 
-  convertKey(
-    // deno-lint-ignore no-explicit-any
-    _key: any,
+  static convertKey(
+    _key: BinaryLike,
     _curve: string,
-    _inputEncoding: string,
-    _outputEncoding: string,
-    _format: string,
+    _inputEncoding?: BinaryToTextEncoding,
+    _outputEncoding?: "latin1" | "hex" | "base64" | "base64url",
+    _format?: "uncompressed" | "compressed" | "hybrid",
   ): Buffer | string {
     notImplemented("crypto.ECDH.prototype.convertKey");
   }
 
+  computeSecret(otherPublicKey: ArrayBufferView): Buffer;
   computeSecret(
-    // deno-lint-ignore no-explicit-any
-    _otherPublicKey: any,
-    _inputEncoding: string,
-    _outputEncoding: string,
+    otherPublicKey: string,
+    inputEncoding: BinaryToTextEncoding,
+  ): Buffer;
+  computeSecret(
+    otherPublicKey: ArrayBufferView,
+    outputEncoding: BinaryToTextEncoding,
+  ): string;
+  computeSecret(
+    otherPublicKey: string,
+    inputEncoding: BinaryToTextEncoding,
+    outputEncoding: BinaryToTextEncoding,
+  ): string;
+  computeSecret(
+    _otherPublicKey: ArrayBufferView | string,
+    _inputEncoding?: BinaryToTextEncoding,
+    _outputEncoding?: BinaryToTextEncoding,
   ): Buffer | string {
     notImplemented("crypto.ECDH.prototype.computeSecret");
   }
 
-  generateKeys(_encoding: string, _format: string): Buffer | string {
+  generateKeys(): Buffer;
+  generateKeys(encoding: BinaryToTextEncoding, format?: ECDHKeyFormat): string;
+  generateKeys(
+    _encoding?: BinaryToTextEncoding,
+    _format?: ECDHKeyFormat,
+  ): Buffer | string {
     notImplemented("crypto.ECDH.prototype.generateKeys");
   }
 
-  getPrivateKey(_encoding: string): Buffer | string {
+  getPrivateKey(): Buffer;
+  getPrivateKey(encoding: BinaryToTextEncoding): string;
+  getPrivateKey(_encoding?: BinaryToTextEncoding): Buffer | string {
     notImplemented("crypto.ECDH.prototype.getPrivateKey");
   }
 
-  getPublicKey(_encoding: string, _format: string): Buffer | string {
+  getPublicKey(): Buffer;
+  getPublicKey(encoding: BinaryToTextEncoding, format?: ECDHKeyFormat): string;
+  getPublicKey(
+    _encoding?: BinaryToTextEncoding,
+    _format?: ECDHKeyFormat,
+  ): Buffer | string {
     notImplemented("crypto.ECDH.prototype.getPublicKey");
   }
 
-  // deno-lint-ignore no-explicit-any
-  setPrivateKey(_privateKey: any, _encoding: string): Buffer | string {
+  setPrivateKey(privateKey: ArrayBufferView): void;
+  setPrivateKey(privateKey: string, encoding: BinaryToTextEncoding): void;
+  setPrivateKey(
+    _privateKey: ArrayBufferView | string,
+    _encoding?: BinaryToTextEncoding,
+  ): Buffer | string {
     notImplemented("crypto.ECDH.prototype.setPrivateKey");
   }
 }
 
-// deno-lint-ignore no-explicit-any
-export function diffieHellman(_options: any) {
+export function diffieHellman(_options: {
+  privateKey: KeyObject;
+  publicKey: KeyObject;
+}): Buffer {
   notImplemented("crypto.diffieHellman");
 }
+
+export default {
+  DiffieHellman,
+  DiffieHellmanGroup,
+  ECDH,
+  diffieHellman,
+};
