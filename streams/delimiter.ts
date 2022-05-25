@@ -134,12 +134,10 @@ export class TextLineStream extends TransformStream<string, string> {
     } else { // \n and \r
       if ((lfIndex - 1) === crIndex) { // \r\n
         this.#mergeHandle(chunk, crIndex, lfIndex, controller);
-      } else {
-        if (crIndex < lfIndex) { // \r first
-          this.#mergeHandle(chunk, crIndex, crIndex, controller);
-        } else { // \n first
-          this.#mergeHandle(chunk, lfIndex, lfIndex, controller);
-        }
+      } if (crIndex < lfIndex) { // \r first
+        this.#mergeHandle(chunk, crIndex, crIndex, controller);
+      } else { // \n first
+        this.#mergeHandle(chunk, lfIndex, lfIndex, controller);
       }
     }
   }
