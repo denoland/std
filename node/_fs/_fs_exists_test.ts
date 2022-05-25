@@ -5,7 +5,6 @@ import {
   assertStringIncludes,
 } from "../../testing/asserts.ts";
 import { exists, existsSync } from "./_fs_exists.ts";
-import { readAll } from "../../streams/conversion.ts";
 
 Deno.test("existsFile", async function () {
   const availableFile = await new Promise((resolve) => {
@@ -33,9 +32,8 @@ Deno.test("[std/node/fs] exists callback isn't called twice if error is thrown",
   // This doesn't use `assertCallbackErrorUncaught()` because `exists()` doesn't return a standard node callback, which is what it expects.
   const tempFile = await Deno.makeTempFile();
   const importUrl = new URL("./_fs_exists.ts", import.meta.url);
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { status, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "eval",
       "--no-check",
       `
@@ -47,13 +45,8 @@ Deno.test("[std/node/fs] exists callback isn't called twice if error is thrown",
         if (exists) throw new Error("success");
       });`,
     ],
-    stderr: "piped",
   });
-  const status = await p.status();
-  const stderr = new TextDecoder().decode(await readAll(p.stderr));
-  p.close();
-  p.stderr.close();
   await Deno.remove(tempFile);
   assert(!status.success);
-  assertStringIncludes(stderr, "Error: success");
+  assertStringIncludes(new TextDecoder().decode(stderr), "Error: success");
 });
