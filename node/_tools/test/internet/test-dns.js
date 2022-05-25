@@ -191,45 +191,45 @@ TEST(function test_resolveMx_failure(done) {
   checkWrap(req);
 });
 
-// TEST(async function test_resolveNs(done) {
-//   function validateResult(result) {
-//     assert.ok(result.length > 0);
+TEST(async function test_resolveNs(done) {
+  function validateResult(result) {
+    assert.ok(result.length > 0);
 
-//     for (const item of result) {
-//       assert.ok(item);
-//       assert.strictEqual(typeof item, 'string');
-//     }
-//   }
+    for (const item of result) {
+      assert.ok(item);
+      assert.strictEqual(typeof item, 'string');
+    }
+  }
 
-//   validateResult(await dnsPromises.resolveNs(addresses.NS_HOST));
+  validateResult(await dnsPromises.resolveNs(addresses.NS_HOST));
 
-//   const req = dns.resolveNs(addresses.NS_HOST, function(err, names) {
-//     assert.ifError(err);
-//     validateResult(names);
-//     done();
-//   });
+  const req = dns.resolveNs(addresses.NS_HOST, function(err, names) {
+    assert.ifError(err);
+    validateResult(names);
+    done();
+  });
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
-// TEST(function test_resolveNs_failure(done) {
-//   dnsPromises.resolveNs(addresses.NOT_FOUND)
-//     .then(common.mustNotCall())
-//     .catch(common.mustCall((err) => {
-//       assert.strictEqual(err.code, 'ENOTFOUND');
-//     }));
+TEST(function test_resolveNs_failure(done) {
+  dnsPromises.resolveNs(addresses.NOT_FOUND)
+    .then(common.mustNotCall())
+    .catch(common.mustCall((err) => {
+      assert.strictEqual(err.code, 'ENOTFOUND');
+    }));
 
-//   const req = dns.resolveNs(addresses.NOT_FOUND, function(err, result) {
-//     assert.ok(err instanceof Error);
-//     assert.strictEqual(err.code, 'ENOTFOUND');
+  const req = dns.resolveNs(addresses.NOT_FOUND, function(err, result) {
+    assert.ok(err instanceof Error);
+    assert.strictEqual(err.code, 'ENOTFOUND');
 
-//     assert.strictEqual(result, undefined);
+    assert.strictEqual(result, undefined);
 
-//     done();
-//   });
+    done();
+  });
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
 TEST(async function test_resolveSrv(done) {
   function validateResult(result) {
@@ -315,139 +315,139 @@ TEST(function test_resolvePtr_failure(done) {
   checkWrap(req);
 });
 
-// TEST(async function test_resolveNaptr(done) {
-//   function validateResult(result) {
-//     assert.ok(result.length > 0);
+TEST(async function test_resolveNaptr(done) {
+  function validateResult(result) {
+    assert.ok(result.length > 0);
 
-//     for (const item of result) {
-//       assert.strictEqual(typeof item, 'object');
-//       assert.strictEqual(typeof item.flags, 'string');
-//       assert.strictEqual(typeof item.service, 'string');
-//       assert.strictEqual(typeof item.regexp, 'string');
-//       assert.strictEqual(typeof item.replacement, 'string');
-//       assert.strictEqual(typeof item.order, 'number');
-//       assert.strictEqual(typeof item.preference, 'number');
-//     }
-//   }
+    for (const item of result) {
+      assert.strictEqual(typeof item, 'object');
+      assert.strictEqual(typeof item.flags, 'string');
+      assert.strictEqual(typeof item.service, 'string');
+      assert.strictEqual(typeof item.regexp, 'string');
+      assert.strictEqual(typeof item.replacement, 'string');
+      assert.strictEqual(typeof item.order, 'number');
+      assert.strictEqual(typeof item.preference, 'number');
+    }
+  }
 
-//   validateResult(await dnsPromises.resolveNaptr(addresses.NAPTR_HOST));
+  validateResult(await dnsPromises.resolveNaptr(addresses.NAPTR_HOST));
 
-//   const req = dns.resolveNaptr(addresses.NAPTR_HOST, function(err, result) {
-//     assert.ifError(err);
-//     validateResult(result);
-//     done();
-//   });
+  const req = dns.resolveNaptr(addresses.NAPTR_HOST, function(err, result) {
+    assert.ifError(err);
+    validateResult(result);
+    done();
+  });
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
-// TEST(function test_resolveNaptr_failure(done) {
-//   dnsPromises.resolveNaptr(addresses.NOT_FOUND)
-//     .then(common.mustNotCall())
-//     .catch(common.mustCall((err) => {
-//       assert.strictEqual(err.code, 'ENOTFOUND');
-//     }));
+TEST(function test_resolveNaptr_failure(done) {
+  dnsPromises.resolveNaptr(addresses.NOT_FOUND)
+    .then(common.mustNotCall())
+    .catch(common.mustCall((err) => {
+      assert.strictEqual(err.code, 'ENOTFOUND');
+    }));
 
-//   const req = dns.resolveNaptr(addresses.NOT_FOUND, function(err, result) {
-//     assert.ok(err instanceof Error);
-//     assert.strictEqual(err.code, 'ENOTFOUND');
+  const req = dns.resolveNaptr(addresses.NOT_FOUND, function(err, result) {
+    assert.ok(err instanceof Error);
+    assert.strictEqual(err.code, 'ENOTFOUND');
 
-//     assert.strictEqual(result, undefined);
+    assert.strictEqual(result, undefined);
 
-//     done();
-//   });
+    done();
+  });
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
-// TEST(async function test_resolveSoa(done) {
-//   function validateResult(result) {
-//     assert.strictEqual(typeof result, 'object');
-//     assert.strictEqual(typeof result.nsname, 'string');
-//     assert.ok(result.nsname.length > 0);
-//     assert.strictEqual(typeof result.hostmaster, 'string');
-//     assert.ok(result.hostmaster.length > 0);
-//     assert.strictEqual(typeof result.serial, 'number');
-//     assert.ok((result.serial > 0) && (result.serial < 4294967295));
-//     assert.strictEqual(typeof result.refresh, 'number');
-//     assert.ok((result.refresh > 0) && (result.refresh < 2147483647));
-//     assert.strictEqual(typeof result.retry, 'number');
-//     assert.ok((result.retry > 0) && (result.retry < 2147483647));
-//     assert.strictEqual(typeof result.expire, 'number');
-//     assert.ok((result.expire > 0) && (result.expire < 2147483647));
-//     assert.strictEqual(typeof result.minttl, 'number');
-//     assert.ok((result.minttl >= 0) && (result.minttl < 2147483647));
-//   }
+TEST(async function test_resolveSoa(done) {
+  function validateResult(result) {
+    assert.strictEqual(typeof result, 'object');
+    assert.strictEqual(typeof result.nsname, 'string');
+    assert.ok(result.nsname.length > 0);
+    assert.strictEqual(typeof result.hostmaster, 'string');
+    assert.ok(result.hostmaster.length > 0);
+    assert.strictEqual(typeof result.serial, 'number');
+    assert.ok((result.serial > 0) && (result.serial < 4294967295));
+    assert.strictEqual(typeof result.refresh, 'number');
+    assert.ok((result.refresh > 0) && (result.refresh < 2147483647));
+    assert.strictEqual(typeof result.retry, 'number');
+    assert.ok((result.retry > 0) && (result.retry < 2147483647));
+    assert.strictEqual(typeof result.expire, 'number');
+    assert.ok((result.expire > 0) && (result.expire < 2147483647));
+    assert.strictEqual(typeof result.minttl, 'number');
+    assert.ok((result.minttl >= 0) && (result.minttl < 2147483647));
+  }
 
-//   validateResult(await dnsPromises.resolveSoa(addresses.SOA_HOST));
+  validateResult(await dnsPromises.resolveSoa(addresses.SOA_HOST));
 
-//   const req = dns.resolveSoa(addresses.SOA_HOST, function(err, result) {
-//     assert.ifError(err);
-//     validateResult(result);
-//     done();
-//   });
+  const req = dns.resolveSoa(addresses.SOA_HOST, function(err, result) {
+    assert.ifError(err);
+    validateResult(result);
+    done();
+  });
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
-// TEST(function test_resolveSoa_failure(done) {
-//   dnsPromises.resolveSoa(addresses.NOT_FOUND)
-//     .then(common.mustNotCall())
-//     .catch(common.mustCall((err) => {
-//       assert.strictEqual(err.code, 'ENOTFOUND');
-//     }));
+TEST(function test_resolveSoa_failure(done) {
+  dnsPromises.resolveSoa(addresses.NOT_FOUND)
+    .then(common.mustNotCall())
+    .catch(common.mustCall((err) => {
+      assert.strictEqual(err.code, 'ENOTFOUND');
+    }));
 
-//   const req = dns.resolveSoa(addresses.NOT_FOUND, function(err, result) {
-//     assert.ok(err instanceof Error);
-//     assert.strictEqual(err.code, 'ENOTFOUND');
+  const req = dns.resolveSoa(addresses.NOT_FOUND, function(err, result) {
+    assert.ok(err instanceof Error);
+    assert.strictEqual(err.code, 'ENOTFOUND');
 
-//     assert.strictEqual(result, undefined);
+    assert.strictEqual(result, undefined);
 
-//     done();
-//   });
+    done();
+  });
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
-// TEST(async function test_resolveCaa(done) {
-//   function validateResult(result) {
-//     assert.ok(Array.isArray(result),
-//               `expected array, got ${util.inspect(result)}`);
-//     assert.strictEqual(result.length, 1);
-//     assert.strictEqual(typeof result[0].critical, 'number');
-//     assert.strictEqual(result[0].critical, 0);
-//     assert.strictEqual(result[0].issue, 'pki.goog');
-//   }
+TEST(async function test_resolveCaa(done) {
+  function validateResult(result) {
+    assert.ok(Array.isArray(result),
+              `expected array, got ${util.inspect(result)}`);
+    assert.strictEqual(result.length, 1);
+    assert.strictEqual(typeof result[0].critical, 'number');
+    assert.strictEqual(result[0].critical, 0);
+    assert.strictEqual(result[0].issue, 'pki.goog');
+  }
 
-//   validateResult(await dnsPromises.resolveCaa(addresses.CAA_HOST));
+  validateResult(await dnsPromises.resolveCaa(addresses.CAA_HOST));
 
-//   const req = dns.resolveCaa(addresses.CAA_HOST, function(err, records) {
-//     assert.ifError(err);
-//     validateResult(records);
-//     done();
-//   });
+  const req = dns.resolveCaa(addresses.CAA_HOST, function(err, records) {
+    assert.ifError(err);
+    validateResult(records);
+    done();
+  });
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
-// TEST(function test_resolveCaa_failure(done) {
-//   dnsPromises.resolveTxt(addresses.NOT_FOUND)
-//     .then(common.mustNotCall())
-//     .catch(common.mustCall((err) => {
-//       assert.strictEqual(err.code, 'ENOTFOUND');
-//     }));
+TEST(function test_resolveCaa_failure(done) {
+  dnsPromises.resolveTxt(addresses.NOT_FOUND)
+    .then(common.mustNotCall())
+    .catch(common.mustCall((err) => {
+      assert.strictEqual(err.code, 'ENOTFOUND');
+    }));
 
-//   const req = dns.resolveCaa(addresses.NOT_FOUND, function(err, result) {
-//     assert.ok(err instanceof Error);
-//     assert.strictEqual(err.code, 'ENOTFOUND');
+  const req = dns.resolveCaa(addresses.NOT_FOUND, function(err, result) {
+    assert.ok(err instanceof Error);
+    assert.strictEqual(err.code, 'ENOTFOUND');
 
-//     assert.strictEqual(result, undefined);
+    assert.strictEqual(result, undefined);
 
-//     done();
-//   });
+    done();
+  });
 
-//   checkWrap(req);
-// });
+  checkWrap(req);
+});
 
 TEST(async function test_resolveCname(done) {
   function validateResult(result) {

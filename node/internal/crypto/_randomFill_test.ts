@@ -1,11 +1,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { Buffer } from "../buffer.ts";
-import randomFill, { randomFillSync } from "./randomFill.ts";
+import { Buffer } from "../../buffer.ts";
+import randomFill, { randomFillSync } from "./_randomFill.ts";
 import {
   assertEquals,
   assertNotEquals,
   assertThrows,
-} from "../../testing/asserts.ts";
+} from "../../../testing/asserts.ts";
 
 const validateNonZero = (buf: Buffer) => {
   if (!buf.some((ch) => ch > 0)) throw new Error("Error");
@@ -31,7 +31,7 @@ Deno.test("[node/crypto.randomFillSync]", () => {
 
   const after = randomFillSync(buf, 5, 5);
 
-  assertNotEquals(before, after);
+  assertNotEquals(before, after.toString("hex"));
 });
 
 Deno.test("[node/crypto.randomFillSync] Complete fill, explicit size", () => {

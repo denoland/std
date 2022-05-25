@@ -47,6 +47,11 @@ options can be:
   booleans. if `true` will treat all double hyphenated arguments without equal
   signs as boolean (e.g. affects `--foo`, not `-f` or `--foo=bar`). All
   `boolean` arguments will be set to `false` by default.
+- `options.collect` - a string or array of strings argument names to always
+  treat as arrays. Collectable options can be used multiple times. All values
+  will be colelcted into an array. If a non collectable option is used multiple
+  times, the last value is used. All Collectable arguments will be set to `[]`
+  by default.
 - `options.alias` - an object mapping string names to strings or arrays of
   string argument names to use as aliases.
 - `options.default` - an object mapping string argument names to default values.

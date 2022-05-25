@@ -12,6 +12,7 @@ import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
 import { assert } from "../_util/assert.ts";
 import { red } from "../fmt/colors.ts";
+import { compareEtag } from "./util.ts";
 
 const DEFAULT_CHUNK_SIZE = 16_640;
 
@@ -306,9 +307,7 @@ export async function serveFile(
     const ifNoneMatch = req.headers.get("if-none-match");
     const ifModifiedSince = req.headers.get("if-modified-since");
     if (
-      (ifNoneMatch &&
-        (ifNoneMatch === simpleEtag || "W/" + ifNoneMatch === simpleEtag ||
-          ifNoneMatch === "W/" + simpleEtag)) ||
+      (ifNoneMatch && compareEtag(ifNoneMatch, simpleEtag)) ||
       (ifNoneMatch === null &&
         ifModifiedSince &&
         fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)

@@ -22,7 +22,7 @@ const dnsPromises = dns.promises;
 const isIPv4 = net.isIPv4;
 const isIPv6 = net.isIPv6;
 
-// dns.setServers([ '8.8.8.8', '8.8.4.4' ]);
+dns.setServers([ '8.8.8.8', '8.8.4.4' ]);
 
 function checkWrap(req) {
   assert.ok(typeof req === 'object');
@@ -49,19 +49,19 @@ const checkers = {
     assert.strictEqual(typeof r.priority, 'number');
     assert.strictEqual(r.type, 'MX');
   },
-  // checkNAPTR(r) {
-  //   assert.strictEqual(typeof r.flags, 'string');
-  //   assert.strictEqual(typeof r.service, 'string');
-  //   assert.strictEqual(typeof r.regexp, 'string');
-  //   assert.strictEqual(typeof r.replacement, 'string');
-  //   assert.strictEqual(typeof r.order, 'number');
-  //   assert.strictEqual(typeof r.preference, 'number');
-  //   assert.strictEqual(r.type, 'NAPTR');
-  // },
-  // checkNS(r) {
-  //   assert.strictEqual(typeof r.value, 'string');
-  //   assert.strictEqual(r.type, 'NS');
-  // },
+  checkNAPTR(r) {
+    assert.strictEqual(typeof r.flags, 'string');
+    assert.strictEqual(typeof r.service, 'string');
+    assert.strictEqual(typeof r.regexp, 'string');
+    assert.strictEqual(typeof r.replacement, 'string');
+    assert.strictEqual(typeof r.order, 'number');
+    assert.strictEqual(typeof r.preference, 'number');
+    assert.strictEqual(r.type, 'NAPTR');
+  },
+  checkNS(r) {
+    assert.strictEqual(typeof r.value, 'string');
+    assert.strictEqual(r.type, 'NS');
+  },
   checkPTR(r) {
     assert.strictEqual(typeof r.value, 'string');
     assert.strictEqual(r.type, 'PTR');
@@ -71,16 +71,16 @@ const checkers = {
     assert.ok(r.entries.length > 0);
     assert.strictEqual(r.type, 'TXT');
   },
-  // checkSOA(r) {
-  //   assert.strictEqual(typeof r.nsname, 'string');
-  //   assert.strictEqual(typeof r.hostmaster, 'string');
-  //   assert.strictEqual(typeof r.serial, 'number');
-  //   assert.strictEqual(typeof r.refresh, 'number');
-  //   assert.strictEqual(typeof r.retry, 'number');
-  //   assert.strictEqual(typeof r.expire, 'number');
-  //   assert.strictEqual(typeof r.minttl, 'number');
-  //   assert.strictEqual(r.type, 'SOA');
-  // },
+  checkSOA(r) {
+    assert.strictEqual(typeof r.nsname, 'string');
+    assert.strictEqual(typeof r.hostmaster, 'string');
+    assert.strictEqual(typeof r.serial, 'number');
+    assert.strictEqual(typeof r.refresh, 'number');
+    assert.strictEqual(typeof r.retry, 'number');
+    assert.strictEqual(typeof r.expire, 'number');
+    assert.strictEqual(typeof r.minttl, 'number');
+    assert.strictEqual(r.type, 'SOA');
+  },
   checkSRV(r) {
     assert.strictEqual(typeof r.name, 'string');
     assert.strictEqual(typeof r.port, 'number');
@@ -128,7 +128,7 @@ TEST(async function test_sip2sip_for_naptr(done) {
   function validateResult(res) {
     const types = processResult(res);
     assert.ok(
-      types.A /**&& types.NS && types.NAPTR && types.SOA*/,
+      types.A && types.NS && types.NAPTR && types.SOA,
       `Missing record type, found ${Object.keys(types)}`
     );
   }

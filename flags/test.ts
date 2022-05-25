@@ -373,7 +373,7 @@ Deno.test("alreadyNumber", function (): void {
 Deno.test("parseArgs", function (): void {
   assertEquals(parse(["--no-moo"]), { moo: false, _: [] });
   assertEquals(parse(["-v", "a", "-v", "b", "-v", "c"]), {
-    v: ["a", "b", "c"],
+    v: "c",
     _: [],
   });
 });
@@ -413,7 +413,7 @@ Deno.test("comprehensive", function (): void {
       b: true,
       bool: true,
       key: "value",
-      multi: ["quux", "baz"],
+      multi: "baz",
       meep: false,
       name: "meowmers",
       _: ["bare", "--not-a-flag", "eek"],
@@ -736,6 +736,109 @@ Deno.test("valueFollowingDoubleHyphenIsNotUnknown", function (): void {
 
 Deno.test("whitespaceShouldBeWhitespace", function (): void {
   assertEquals(parse(["-x", "\t"]).x, "\t");
+});
+
+Deno.test("collectArgsDefaultBehaviour", function (): void {
+  const argv = parse([
+    "--foo",
+    "bar",
+    "--foo",
+    "baz",
+    "--beep",
+    "boop",
+    "--bool",
+    "--bool",
+  ]);
+
+  assertEquals(argv, {
+    foo: "baz",
+    beep: "boop",
+    bool: true,
+    _: [],
+  });
+});
+
+Deno.test("collectUnknownArgs", function (): void {
+  const argv = parse([
+    "--foo",
+    "bar",
+    "--foo",
+    "baz",
+    "--beep",
+    "boop",
+    "--bib",
+    "--bib",
+    "--bab",
+    "--bab",
+  ], {
+    collect: ["beep", "bib"],
+  });
+
+  assertEquals(argv, {
+    foo: "baz",
+    beep: ["boop"],
+    bib: [true, true],
+    bab: true,
+    _: [],
+  });
+});
+
+Deno.test("collectArgs", function (): void {
+  const argv = parse([
+    "--bool",
+    "--bool",
+    "--boolArr",
+    "--str",
+    "foo",
+    "--strArr",
+    "beep",
+    "--unknown",
+    "--unknownArr",
+  ], {
+    boolean: ["bool", "boolArr"],
+    string: ["str", "strArr"],
+    collect: ["boolArr", "strArr", "unknownArr"],
+    alias: {
+      bool: "b",
+      strArr: "S",
+      boolArr: "B",
+    },
+  });
+
+  assertEquals(argv, {
+    bool: true,
+    b: true,
+    boolArr: [true],
+    B: [true],
+    str: "foo",
+    strArr: ["beep"],
+    S: ["beep"],
+    unknown: true,
+    unknownArr: [true],
+    _: [],
+  });
+});
+
+Deno.test("collectNegateableArgs", function (): void {
+  const argv = parse([
+    "--foo",
+    "123",
+    "-f",
+    "456",
+    "--no-foo",
+  ], {
+    string: ["foo"],
+    collect: ["foo"],
+    alias: {
+      foo: "f",
+    },
+  });
+
+  assertEquals(argv, {
+    foo: false,
+    f: false,
+    _: [],
+  });
 });
 
 /** ---------------------- TYPE TESTS ---------------------- */

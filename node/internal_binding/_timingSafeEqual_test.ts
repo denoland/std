@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert } from "../../testing/asserts.ts";
-import { timingSafeEqual } from "./timingSafeEqual.ts";
+import { timingSafeEqual } from "./_timingSafeEqual.ts";
 import { Buffer } from "../buffer.ts";
 
 Deno.test("timingSafeEqual accepts different types of data", () => {
