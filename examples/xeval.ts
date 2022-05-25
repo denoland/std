@@ -70,6 +70,7 @@ async function main() {
   if (parsedArgs.help) {
     return console.log(HELP_MSG);
   }
+
   const delimiter = parsedArgs.delim;
   const replVar = parsedArgs.replvar;
   const code = parsedArgs._[0];
