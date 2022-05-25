@@ -29,6 +29,8 @@ const { status: cargoStatus } = await Deno.spawn("cargo", {
     LC_ALL: "C",
     RUSTFLAGS: `--remap-path-prefix=${root}=. --remap-path-prefix=${home}=~`,
   },
+  stdout: "inherit",
+  stderr: "inherit",
 });
 
 if (!cargoStatus.success) {
@@ -46,6 +48,8 @@ const { status: bindgenStatus } = await Deno.spawn("wasm-bindgen", {
     "--out-dir",
     "./out/",
   ],
+  stdout: "inherit",
+  stderr: "inherit",
 });
 
 if (!bindgenStatus.success) {
@@ -79,6 +83,8 @@ await Deno.writeFile("wasm.js", new TextEncoder().encode(inlinedScript));
 // 4. Format generated code.
 const { status: fmtStatus } = await Deno.spawn("deno", {
   args: ["fmt", "wasm.js"],
+  stdout: "inherit",
+  stderr: "inherit",
 });
 
 if (!fmtStatus.success) {

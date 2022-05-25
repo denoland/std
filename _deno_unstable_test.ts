@@ -20,6 +20,8 @@ Deno.test({
           "--unstable",
           denoUnstableCheckedUrl.href,
         ],
+        stdout: "inherit",
+        stderr: "inherit",
       });
       assertEquals(status.code, 0);
     } finally {

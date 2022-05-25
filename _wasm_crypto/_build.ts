@@ -14,7 +14,13 @@ if (new URL(import.meta.url).protocol === "file:") {
 }
 
 // Format the Rust code.
-if (!((await Deno.spawn("cargo", { args: ["fmt"] })).status.success)) {
+if (
+  !((await Deno.spawn("cargo", {
+    args: ["fmt"],
+    stdout: "inherit",
+    stderr: "inherit",
+  })).status.success)
+) {
   console.error(`Failed to format the Rust code.`);
   Deno.exit(1);
 }
@@ -30,6 +36,8 @@ if (
       LC_ALL: "C",
       RUSTFLAGS: `--remap-path-prefix=${root}=. --remap-path-prefix=${home}=~`,
     },
+    stdout: "inherit",
+    stderr: "inherit",
   })).status.success)
 ) {
   console.error(`Failed to compile the Rust code to WASM.`);
@@ -51,6 +59,8 @@ if (
       "--out-dir",
       "./target/wasm32-bindgen-deno-js",
     ],
+    stdout: "inherit",
+    stderr: "inherit",
   })).status.success)
 ) {
   console.error(`Failed to generate JavaScript bindings from WASM.`);
@@ -127,6 +137,8 @@ if (
       "./crypto.wasm.mjs",
       "./crypto.mjs",
     ],
+    stdout: "inherit",
+    stderr: "inherit",
   })).status.success
 ) {
   console.error(
