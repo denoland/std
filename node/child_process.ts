@@ -27,6 +27,7 @@ const denoCompatArgv = [
   "--no-check",
   "--allow-all",
 ];
+
 /**
  * Spawns a new Node.js process + fork.
  * @param modulePath
@@ -34,6 +35,14 @@ const denoCompatArgv = [
  * @param option
  * @returns {ChildProcess}
  */
+// deno-lint-ignore no-explicit-any
+export function fork(modulePath: string, options?: any): ChildProcess;
+export function fork(
+  modulePath: string,
+  args?: ReadonlyArray<string>,
+  // deno-lint-ignore no-explicit-any
+  options?: any,
+): ChildProcess;
 export function fork(
   modulePath: string, /* args?: string[], options?: ForkOptions*/
 ) {
