@@ -76,7 +76,7 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
 }
 
 /** Transform a stream into a stream where each chunk is divided by a newline,
- * be it `\n` or `\r\n`.
+ * be it `\n`, `\r`, or `\r\n`.
  *
  * ```ts
  * import { TextLineStream } from "./delimiter.ts";
@@ -96,7 +96,10 @@ export class TextLineStream extends TransformStream<string, string> {
         this.#handle(chunk, controller);
       },
       flush: (controller) => {
-        controller.enqueue(this.#getBuf(false));
+        controller.enqueue(this.#getBuf(this.#prevHadCR));
+        if (this.#prevHadCR) {
+          controller.enqueue("");
+        }
       },
     });
   }
@@ -106,30 +109,48 @@ export class TextLineStream extends TransformStream<string, string> {
     controller: TransformStreamDefaultController<string>,
   ) {
     const lfIndex = chunk.indexOf("\n");
+    const crIndex = chunk.indexOf("\r");
 
     if (this.#prevHadCR) {
       this.#prevHadCR = false;
+      controller.enqueue(this.#getBuf(true));
       if (lfIndex === 0) {
-        controller.enqueue(this.#getBuf(true));
         this.#handle(chunk.slice(1), controller);
         return;
       }
     }
 
-    if (lfIndex === -1) {
-      if (chunk.at(-1) === "\r") {
-        this.#prevHadCR = true;
-      }
+    if (lfIndex === -1 && crIndex === -1) { // neither \n nor \r
       this.#buf += chunk;
-    } else {
-      let crOrLfIndex = lfIndex;
-      if (chunk[lfIndex - 1] === "\r") {
-        crOrLfIndex--;
+    } else if (lfIndex === -1 && crIndex !== -1) { // not \n but \r
+      if (crIndex === (chunk.length - 1)) { // \r is last character
+        this.#buf += chunk;
+        this.#prevHadCR = true;
+      } else {
+        this.#mergeHandle(chunk, crIndex, crIndex, controller);
       }
-      this.#buf += chunk.slice(0, crOrLfIndex);
-      controller.enqueue(this.#getBuf(false));
-      this.#handle(chunk.slice(lfIndex + 1), controller);
+    } else if (lfIndex !== -1 && crIndex === -1) { // \n but not \r
+      this.#mergeHandle(chunk, lfIndex, lfIndex, controller);
+    } else { // \n and \r
+      if ((lfIndex - 1) === crIndex) { // \r\n
+        this.#mergeHandle(chunk, crIndex, lfIndex, controller);
+      } else if (crIndex < lfIndex) { // \r first
+        this.#mergeHandle(chunk, crIndex, crIndex, controller);
+      } else { // \n first
+        this.#mergeHandle(chunk, lfIndex, lfIndex, controller);
+      }
     }
+  }
+
+  #mergeHandle(
+    chunk: string,
+    prevChunkEndIndex: number,
+    newChunkStartIndex: number,
+    controller: TransformStreamDefaultController<string>,
+  ) {
+    this.#buf += chunk.slice(0, prevChunkEndIndex);
+    controller.enqueue(this.#getBuf(false));
+    this.#handle(chunk.slice(newChunkStartIndex + 1), controller);
   }
 
   #getBuf(prevHadCR: boolean): string {
