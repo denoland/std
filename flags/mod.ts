@@ -243,7 +243,7 @@ export interface ParseOptions<
    * Collectable options can be used multiple times. All values will be
    * colelcted into one array. If a non-collectable option is used multiple
    * times, the last value is used. */
-  collect?: string | string[];
+  collect?: C | ReadonlyArray<Extract<C, string>>;
 
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
