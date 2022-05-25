@@ -290,7 +290,7 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
   });
 
   const key = keys[keys.length - 1];
-  return key in o;
+  return hasOwn(o, key);
 }
 
 /** Take a set of command line arguments, optionally with a set of options, and
