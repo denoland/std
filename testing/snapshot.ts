@@ -337,7 +337,9 @@ class AssertSnapshotContext {
    * Check if exist snapshot
    */
   public hasSnapshot(snapshotName: string): boolean {
-    return this.currentSnapshots ? this.currentSnapshots.has(snapshotName) : false
+    return this.currentSnapshots
+      ? this.currentSnapshots.has(snapshotName)
+      : false;
   }
 }
 
@@ -392,7 +394,10 @@ export async function assertSnapshot(
       assertSnapshotContext.updateSnapshot(name, _actual);
     }
   } else {
-    if (!assertSnapshotContext.hasSnapshot(name) || typeof snapshot === 'undefined') {
+    if (
+      !assertSnapshotContext.hasSnapshot(name) ||
+      typeof snapshot === "undefined"
+    ) {
       throw new AssertionError(
         getErrorMessage(`Missing snapshot: ${name}`, options),
       );

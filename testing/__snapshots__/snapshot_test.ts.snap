@@ -48,10 +48,6 @@ snapshot[`Snapshot Test 7`] = `
 
 snapshot[`Snapshot Test 8`] = `"hello world"`;
 
-snapshot[`Snapshot Test 9`] = `""`;
-
-snapshot[`Snapshot Test 10`] = ``;
-
 snapshot[`Snapshot Test - step 1`] = `
 {
   a: 1,
@@ -358,3 +354,5 @@ snapshot[`Snapshot Test - Regression #2144 1`] = `
   },
 }
 `;
+
+snapshot[`Snapshot Test - Empty #2245 1`] = ``;
