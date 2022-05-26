@@ -1,3 +1,6 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
+
 import type { Worker as IWorker, WorkerOptions } from "./types.ts";
 import { EventEmitter } from "../../events.ts";
 import { ChildProcess } from "../child_process.ts";
@@ -28,13 +31,11 @@ export class Worker extends EventEmitter implements IWorker {
 
     if (options.process) {
       this.process = options.process;
-      this.process.on(
-        "error",
-        (code, signal) => this.emit("error", code, signal),
+      this.process.on("error", (code, signal) =>
+        this.emit("error", code, signal)
       );
-      this.process.on(
-        "message",
-        (message, handle) => this.emit("message", message, handle),
+      this.process.on("message", (message, handle) =>
+        this.emit("message", message, handle)
       );
     }
   }
@@ -50,8 +51,10 @@ export class Worker extends EventEmitter implements IWorker {
   }
 
   isDead(): boolean {
-    return this.process.exitCode != null ||
-      (this.process as ChildProcess).signalCode != null;
+    return (
+      this.process.exitCode != null ||
+      (this.process as ChildProcess).signalCode != null
+    );
   }
 
   isConnected(): boolean {

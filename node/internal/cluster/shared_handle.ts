@@ -1,3 +1,6 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
+
 import assert from "../assert.mjs";
 import { _createSocketHandle } from "../dgram.ts";
 import { UDP } from "../../internal_binding/udp_wrap.ts";
@@ -14,7 +17,7 @@ export class SharedHandle {
   constructor(
     key: string,
     address: string,
-    { port, addressType, fd, flags }: Message,
+    { port, addressType, fd, flags }: Message
   ) {
     this.key = key;
     this.workers = new Map();
@@ -31,7 +34,7 @@ export class SharedHandle {
         port!,
         addressType as number,
         fd,
-        flags,
+        flags
       );
     }
 
@@ -47,8 +50,8 @@ export class SharedHandle {
     send: (
       errno: number,
       reply: Record<string, unknown> | null,
-      handle: UDP | Handle,
-    ) => void,
+      handle: UDP | Handle
+    ) => void
   ) {
     assert(!this.workers.has(worker.id));
     this.workers.set(worker.id, worker);
