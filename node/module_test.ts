@@ -144,6 +144,7 @@ Deno.test("requireErrorInEval", async function () {
       "run",
       "--unstable",
       "--allow-read",
+      "--allow-env",
       "./_module/cjs/test_cjs_import.js",
     ],
     cwd,
