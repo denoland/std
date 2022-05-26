@@ -31,11 +31,13 @@ export class Worker extends EventEmitter implements IWorker {
 
     if (options.process) {
       this.process = options.process;
-      this.process.on("error", (code, signal) =>
-        this.emit("error", code, signal)
+      this.process.on(
+        "error",
+        (code, signal) => this.emit("error", code, signal),
       );
-      this.process.on("message", (message, handle) =>
-        this.emit("message", message, handle)
+      this.process.on(
+        "message",
+        (message, handle) => this.emit("message", message, handle),
       );
     }
   }

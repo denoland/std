@@ -92,7 +92,7 @@ cluster.setupPrimary = function (options?: ClusterSettings) {
 
   assert(
     schedulingPolicy === SCHED_NONE || schedulingPolicy === SCHED_RR,
-    `Bad cluster.schedulingPolicy: ${schedulingPolicy}`
+    `Bad cluster.schedulingPolicy: ${schedulingPolicy}`,
   );
 
   process.nextTick(setupSettingsNT, settings);
@@ -134,8 +134,7 @@ function createWorkerProcess(id: number, env?: Record<string, unknown>) {
 
       validatePort(inspectPort);
     } else {
-      inspectPort =
-        (process as unknown as { debugPort: number }).debugPort +
+      inspectPort = (process as unknown as { debugPort: number }).debugPort +
         debugPortOffset;
 
       if (inspectPort > maxPort) {
@@ -192,7 +191,7 @@ cluster.fork = function (env) {
     "message",
     function (this: IWorker, message: Message, handle: Handle | UDP) {
       cluster.emit("message", this, message, handle);
-    }
+    },
   );
 
   worker.process.once("exit", (exitCode: number, signalCode: number) => {
@@ -298,8 +297,7 @@ function queryServer(worker: IWorker, message: Message) {
     return;
   }
 
-  const key =
-    `${message.address}:${message.port}:${message.addressType}:` +
+  const key = `${message.address}:${message.port}:${message.addressType}:` +
     `${message.fd}:${message.index}`;
 
   let handle = handles.get(key);
@@ -346,7 +344,7 @@ function queryServer(worker: IWorker, message: Message) {
     (
       errno: number,
       reply: Record<string, unknown> | null,
-      handle: Handle | UDP
+      handle: Handle | UDP,
     ) => {
       const { data } = handles.get(key);
 
@@ -363,9 +361,9 @@ function queryServer(worker: IWorker, message: Message) {
           data,
           ...reply,
         },
-        handle
+        handle,
       );
-    }
+    },
   );
 }
 
@@ -397,7 +395,7 @@ function send(
   worker: IWorker,
   message: Message,
   handle?: Handle | UDP,
-  cb?: unknown
+  cb?: unknown,
 ) {
   return sendHelper(worker.process, message, handle, cb);
 }

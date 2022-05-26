@@ -22,7 +22,7 @@ export class RoundRobinHandle {
   constructor(
     key: string,
     address: string,
-    { port, fd, flags, backlog }: Message
+    { port, fd, flags, backlog }: Message,
   ) {
     this.key = key;
     this.all = new Map();
@@ -61,8 +61,8 @@ export class RoundRobinHandle {
       errno: number | null,
       reply: Record<string, unknown> | null,
       // deno-lint-ignore no-explicit-any
-      handle: any
-    ) => void
+      handle: any,
+    ) => void,
   ) {
     assert(this.all.has(worker.id) === false);
     this.all.set(worker.id, worker);

@@ -76,7 +76,7 @@ const noop = Function.prototype;
     fd?: number | null;
     flags: number | null;
   },
-  cb: (err: number, handle: Handle | UDP | null) => void
+  cb: (err: number, handle: Handle | UDP | null) => void,
 ) {
   let address = options.address;
 
@@ -138,7 +138,7 @@ const noop = Function.prototype;
         // Round-robin.
         rr(reply!, { indexesKey, index }, cb);
       }
-    }
+    },
   );
 
   obj.once("listening", () => {
@@ -172,7 +172,7 @@ function shared(
     indexesKey,
     index,
   }: { handle: Handle | UDP; indexesKey: string; index: number },
-  cb: (errno: number, handle: Handle | UDP) => void
+  cb: (errno: number, handle: Handle | UDP) => void,
 ) {
   const key = message.key;
   // Monkey-patch the close() method so we can keep track of when it's
@@ -196,7 +196,7 @@ function shared(
 function rr(
   message: Message,
   { indexesKey, index }: { indexesKey: string; index: number },
-  cb: (errno: number, handle: Handle | UDP | null) => void
+  cb: (errno: number, handle: Handle | UDP | null) => void,
 ) {
   if (message.errno) {
     return cb(message.errno, null);
@@ -290,8 +290,7 @@ function _disconnect(this: IWorker, primaryInitiated: boolean) {
         send({ act: "exitedAfterDisconnect" }, () =>
           // TODO(cmorten): remove type cast once process interface is completed.
           // deno-lint-ignore no-explicit-any
-          (process as any).disconnect()
-        );
+          (process as any).disconnect());
       }
     }
   }

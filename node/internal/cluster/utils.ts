@@ -14,7 +14,7 @@ export function sendHelper(
   proc: ChildProcess | Process,
   message: Message,
   handle?: Handle | UDP | null,
-  cb?: unknown
+  cb?: unknown,
 ) {
   // TODO(cmorten): remove type cast once ChildProcess implements `connected`
   // property.
@@ -43,7 +43,7 @@ export function sendHelper(
 // to the callback but intercepts and redirects ACK messages.
 export function internal(
   worker: Worker,
-  cb: (message: Message, handle: Handle | UDP) => void
+  cb: (message: Message, handle: Handle | UDP) => void,
 ) {
   return function onInternalMessage(message: Message, _handle: Handle | UDP) {
     if (message.cmd !== "NODE_CLUSTER") {
