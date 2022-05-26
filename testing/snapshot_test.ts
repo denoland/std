@@ -483,4 +483,4 @@ Deno.test("Snapshot Test - Regression #2144", async (t) => {
 
 Deno.test("Snapshot Test - Empty #2245", async (t) => {
   await assertSnapshot(t, "", { serializer: (x) => x });
-})
+});
