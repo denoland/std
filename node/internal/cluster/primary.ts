@@ -12,9 +12,12 @@ import type {
   ClusterSettings,
   Message,
   Worker as IWorker,
+  WorkerClass,
 } from "./types.ts";
 import process from "../../process.ts";
-import { Server, Socket } from "../../net.ts";
+import { ChildProcess } from "../child_process.ts";
+import type { Handle } from "../../net.ts";
+import type { UDP } from "../../internal_binding/udp_wrap.ts";
 import { notImplemented } from "../../_utils.ts";
 
 const cluster: ICluster = new EventEmitter() as ICluster;
@@ -28,7 +31,7 @@ const handles = new Map();
 (cluster.isWorker as boolean) = false;
 (cluster.isMaster as boolean) = false;
 (cluster.isPrimary as boolean) = true;
-(cluster.worker as IWorker) = Worker;
+(cluster.Worker as WorkerClass) = Worker;
 (cluster.workers as Record<number, IWorker>) = {};
 (cluster.settings as ClusterSettings) = {};
 (cluster.SCHED_NONE as number) = SCHED_NONE; // Leave it to the operating system.
@@ -183,7 +186,7 @@ cluster.fork = function (env) {
 
   worker.on(
     "message",
-    function (this: IWorker, message: Message, handle: Socket | Server) {
+    function (this: IWorker, message: Message, handle: Handle | UDP) {
       cluster.emit("message", this, message, handle);
     },
   );
@@ -265,7 +268,7 @@ const methodMessageMapping = {
   queryServer,
 };
 
-function onmessage(this: IWorker, message: Message, _handle: Socket | Server) {
+function onmessage(this: IWorker, message: Message, _handle: Handle | UDP) {
   const fn =
     methodMessageMapping[message.act as keyof typeof methodMessageMapping];
 
@@ -320,9 +323,9 @@ function queryServer(worker: IWorker, message: Message) {
       message.addressType === "udp4" ||
       message.addressType === "udp6"
     ) {
-      handle = new SharedHandle(key, address, message);
+      handle = new SharedHandle(key, address!, message);
     } else {
-      handle = new RoundRobinHandle(key, address, message);
+      handle = new RoundRobinHandle(key, address!, message);
     }
 
     handles.set(key, handle);
@@ -337,8 +340,8 @@ function queryServer(worker: IWorker, message: Message) {
     worker,
     (
       errno: number,
-      reply: Record<string, unknown>,
-      handle: Socket | Server,
+      reply: Record<string, unknown> | null,
+      handle: Handle | UDP,
     ) => {
       const { data } = handles.get(key);
 
@@ -388,7 +391,7 @@ function close(worker: IWorker, message: Message) {
 function send(
   worker: IWorker,
   message: Message,
-  handle?: Socket | Server,
+  handle?: Handle | UDP,
   cb?: unknown,
 ) {
   return sendHelper(worker.process, message, handle, cb);
@@ -404,19 +407,19 @@ Worker.prototype.disconnect = function (): IWorker {
   return this;
 };
 
-Worker.prototype.destroy = function (signo: string): void {
+Worker.prototype.destroy = function (signo?: string): void {
   const proc = this.process;
 
   signo = signo || "SIGTERM";
 
   if (this.isConnected()) {
-    this.once("disconnect", () => proc.kill(signo));
+    this.once("disconnect", () => (proc as ChildProcess).kill(signo));
     this.disconnect();
 
     return;
   }
 
-  proc.kill(signo);
+  (proc as ChildProcess).kill(signo);
 };
 
 export default cluster;

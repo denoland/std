@@ -28,6 +28,12 @@ const denoCompatArgv = [
   "--allow-all",
 ];
 
+export interface ForkOptions extends ChildProcessOptions {
+  execPath?: string | undefined;
+  execArgv?: string[] | undefined;
+  silent?: boolean | undefined;
+}
+
 /**
  * Spawns a new Node.js process + fork.
  * @param modulePath
@@ -35,13 +41,11 @@ const denoCompatArgv = [
  * @param option
  * @returns {ChildProcess}
  */
-// deno-lint-ignore no-explicit-any
-export function fork(modulePath: string, options?: any): ChildProcess;
+export function fork(modulePath: string, options?: ForkOptions): ChildProcess;
 export function fork(
   modulePath: string,
   args?: ReadonlyArray<string>,
-  // deno-lint-ignore no-explicit-any
-  options?: any,
+  options?: ForkOptions,
 ): ChildProcess;
 export function fork(
   modulePath: string, /* args?: string[], options?: ForkOptions*/

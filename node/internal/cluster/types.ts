@@ -1,20 +1,12 @@
 import EventEmitter from "../../events.ts";
 import { Server, Socket } from "../../net.ts";
 import { ChildProcess } from "../child_process.ts";
+import { Process } from "../../process.ts";
+import type { ForkOptions } from "../../child_process.ts";
 
 export interface Message {
-  act?: string;
-  address?: string;
-  addressType?: string;
-  fd?: number;
-  index?: number;
-  port?: number;
-  data?: unknown;
-  seq?: unknown;
-  ack?: unknown;
-  cmd?: string;
-  key?: unknown;
-  errno?: number;
+  // deno-lint-ignore no-explicit-any
+  [key: string]: any;
 }
 
 export type Serializable =
@@ -28,24 +20,26 @@ export interface MessageOptions {
   keepOpen?: boolean | undefined;
 }
 
-export interface ClusterSettings {
-  execArgv?: string[]; // default: process.execArgv
+export interface ClusterSettings extends ForkOptions {
   exec?: string;
   args?: string[];
-  silent?: boolean;
-  stdio?: unknown[];
-  uid?: number;
-  gid?: number;
   inspectPort?: number | (() => number);
-  cwd?: number;
-  serialization?: "json" | "advanced";
-  windowsHide?: boolean;
 }
 
 export interface Address {
   address: string;
   port: number;
   addressType: number | "udp4" | "udp6"; // 4, 6, -1, "udp4", "udp6"
+}
+
+export interface WorkerOptions {
+  id?: number;
+  process?: ChildProcess | Process;
+  state?: string;
+}
+
+export interface WorkerClass extends Function {
+  new (options?: WorkerOptions | null): Worker;
 }
 
 export interface Worker extends EventEmitter {
@@ -68,7 +62,7 @@ export interface Worker extends EventEmitter {
    * on `process` and `.exitedAfterDisconnect` is not `true`. This protects against
    * accidental disconnection.
    */
-  process: ChildProcess;
+  process: ChildProcess | Process;
 
   /**
    * Send a message to a worker or primary, optionally with a handle.
@@ -258,7 +252,7 @@ export interface Worker extends EventEmitter {
    * worker.kill();
    * ```
    */
-  exitedAfterDisconnect: boolean;
+  exitedAfterDisconnect?: boolean;
 
   /**
    * events.EventEmitter
@@ -357,8 +351,9 @@ export interface Cluster extends EventEmitter {
   readonly isMaster: boolean;
   readonly isWorker: boolean;
   readonly settings: ClusterSettings;
-  readonly worker?: Worker | undefined;
-  readonly workers?: Record<number, Worker> | undefined;
+  readonly worker?: Worker | null;
+  readonly Worker?: WorkerClass;
+  readonly workers?: Record<number, Worker>;
   readonly SCHED_NONE: number;
   readonly SCHED_RR: number;
 

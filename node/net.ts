@@ -109,7 +109,7 @@ const kBytesWritten = Symbol("kBytesWritten");
 const DEFAULT_IPV4_ADDR = "0.0.0.0";
 const DEFAULT_IPV6_ADDR = "::";
 
-type Handle = TCP | Pipe;
+export type Handle = TCP | Pipe;
 
 interface HandleOptions {
   pauseOnCreate?: boolean;
@@ -179,7 +179,7 @@ interface IpcNetConnectOptions extends IpcSocketConnectOptions, SocketOptions {
 
 type NetConnectOptions = TcpNetConnectOptions | IpcNetConnectOptions;
 
-interface AddressInfo {
+export interface AddressInfo {
   address: string;
   family?: string;
   port: number;
@@ -2510,11 +2510,16 @@ export class Server extends EventEmitter {
  * @param connectionListener Automatically set as a listener for the `"connection"` event.
  * @return A `net.Server`.
  */
+export function createServer(connectionListener?: ConnectionListener): Server;
 export function createServer(
   options?: ServerOptions,
   connectionListener?: ConnectionListener,
+): Server;
+export function createServer(
+  options?: ServerOptions | ConnectionListener,
+  connectionListener?: ConnectionListener,
 ): Server {
-  return new Server(options, connectionListener);
+  return new Server(options as ServerOptions, connectionListener);
 }
 
 export { isIP, isIPv4, isIPv6 };

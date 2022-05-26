@@ -254,7 +254,7 @@ export function kill(pid: number, sig: Deno.Signal | number = "SIGTERM") {
   return true;
 }
 
-class Process extends EventEmitter {
+export class Process extends EventEmitter {
   constructor() {
     super();
 
