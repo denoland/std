@@ -2,10 +2,13 @@
 // Copyright Joyent, Inc. and Node.js contributors. All rights reserved. MIT license.
 
 import EventEmitter from "../../events.ts";
-import { Server, Socket } from "../../net.ts";
+import { Server } from "../../net.ts";
+import { Socket } from "../../dgram.ts";
 import { ChildProcess } from "../child_process.ts";
 import { Process } from "../../process.ts";
 import type { ForkOptions } from "../../child_process.ts";
+import type { Handle } from "../../net.ts";
+import type { UDP } from "../../internal_binding/udp_wrap.ts";
 
 export interface Message {
   // deno-lint-ignore no-explicit-any
@@ -361,6 +364,20 @@ export interface Cluster extends EventEmitter {
   readonly SCHED_RR: number;
 
   schedulingPolicy: number;
+
+  _setupWorker?: () => void;
+
+  _getServer?: (
+    obj: Server | Socket,
+    options: {
+      address?: string | null;
+      port?: number | null;
+      addressType?: string | null;
+      fd?: number | null;
+      flags: number | null;
+    },
+    cb: (err: number, handle: Handle | UDP | null) => void,
+  ) => void;
 
   disconnect(callback?: () => void): void;
 

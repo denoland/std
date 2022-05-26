@@ -3,8 +3,11 @@
 
 import assert from "../assert.mjs";
 import { createServer, Server } from "../../net.ts";
+import type { Handle } from "../../net.ts";
 import { sendHelper } from "./utils.ts";
 import { constants } from "../../internal_binding/tcp_wrap.ts";
+import { TCP } from "../../internal_binding/tcp_wrap.ts";
+import { ConnectionWrap } from "../../internal_binding/connection_wrap.ts";
 import type { Message } from "./types.ts";
 import type { Worker } from "./types.ts";
 import { append, init, isEmpty, peek, remove } from "../linkedlist.mjs";
@@ -13,8 +16,7 @@ export class RoundRobinHandle {
   key: string;
   all: Map<number, Worker>;
   free: Map<number, Worker>;
-  // deno-lint-ignore no-explicit-any
-  handle: any = null;
+  handle: Handle | null = null;
   // deno-lint-ignore no-explicit-any
   handles: any;
   server: Server | null;
@@ -47,8 +49,7 @@ export class RoundRobinHandle {
 
     this.server.once("listening", () => {
       this.handle = this.server!._handle;
-      // deno-lint-ignore no-explicit-any
-      this.handle.onconnection = (err: unknown, handle: any) =>
+      this.handle!.onconnection = (err: number, handle?: ConnectionWrap) =>
         this.distribute(err, handle);
       this.server!._handle = null;
       this.server = null;
@@ -60,17 +61,16 @@ export class RoundRobinHandle {
     send: (
       errno: number | null,
       reply: Record<string, unknown> | null,
-      // deno-lint-ignore no-explicit-any
-      handle: any,
+      handle: Handle | null,
     ) => void,
   ) {
     assert(this.all.has(worker.id) === false);
     this.all.set(worker.id, worker);
 
     const done = () => {
-      if (this.handle.getsockname) {
+      if ((this.handle as TCP).getsockname) {
         const out = {};
-        this.handle.getsockname(out);
+        (this.handle as TCP).getsockname(out);
         send(null, { sockname: out }, null);
       } else {
         send(null, null, null); // UNIX socket.
@@ -109,16 +109,14 @@ export class RoundRobinHandle {
       remove(handle);
     }
 
-    this.handle.close();
+    this.handle!.close();
     this.handle = null;
 
     return true;
   }
 
-  // deno-lint-ignore no-explicit-any
-  distribute(_err: unknown, handle: any) {
+  distribute(_err: number, handle?: ConnectionWrap) {
     append(this.handles, handle);
-    // eslint-disable-next-line node-core/no-array-destructuring
     const [workerEntry] = this.free; // this.free is a Map
 
     if (Array.isArray(workerEntry)) {
@@ -145,16 +143,20 @@ export class RoundRobinHandle {
 
     const message = { act: "newconn", key: this.key };
 
-    // deno-lint-ignore no-explicit-any
-    sendHelper(worker.process, message, handle, (reply: any) => {
-      if (reply.accepted) {
-        handle.close();
-      } else {
-        this.distribute(0, handle); // Worker is shutting down. Send to another.
-      }
+    sendHelper(
+      worker.process,
+      message,
+      handle,
+      (reply: Record<string, never>) => {
+        if (reply.accepted) {
+          handle.close();
+        } else {
+          this.distribute(0, handle); // Worker is shutting down. Send to another.
+        }
 
-      this.handoff(worker);
-    });
+        this.handoff(worker);
+      },
+    );
   }
 }
 

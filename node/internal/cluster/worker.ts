@@ -5,7 +5,6 @@ import type { Worker as IWorker, WorkerOptions } from "./types.ts";
 import { EventEmitter } from "../../events.ts";
 import { ChildProcess } from "../child_process.ts";
 import { Process } from "../../process.ts";
-import { notImplemented } from "../../_utils.ts";
 
 // Common Worker implementation shared between the cluster primary and workers.
 export class Worker extends EventEmitter implements IWorker {
@@ -47,9 +46,10 @@ export class Worker extends EventEmitter implements IWorker {
   }
 
   send(): boolean {
-    notImplemented("cluster.Worker.prototype.send");
-    // ChildProcess send method not yet implemented.
-    // return Reflect.apply(this.process.send, this.process, arguments);
+    // TODO(cmorten): remove type cast once ChildProcess implements `send`
+    // method.
+    // deno-lint-ignore no-explicit-any
+    return Reflect.apply((this.process as any).send, this.process, arguments);
   }
 
   isDead(): boolean {
@@ -60,9 +60,10 @@ export class Worker extends EventEmitter implements IWorker {
   }
 
   isConnected(): boolean {
-    notImplemented("cluster.Worker.prototype.isConnected");
-    // ChildProcess connection property not yet implemented.
-    // return this.process.connected;
+    // TODO(cmorten): remove type cast once ChildProcess implements `connected`
+    // property.
+    // deno-lint-ignore no-explicit-any
+    return (this.process as any).connected;
   }
 }
 

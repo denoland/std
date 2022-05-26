@@ -33,8 +33,7 @@ const noop = Function.prototype;
 (cluster.worker as null) = null;
 (cluster.Worker as WorkerClass) = Worker;
 
-// deno-lint-ignore no-explicit-any
-(cluster as any)._setupWorker = function () {
+cluster._setupWorker = function () {
   const worker = new Worker({
     id: +process.env.NODE_UNIQUE_ID | 0,
     process,
@@ -66,8 +65,7 @@ const noop = Function.prototype;
 };
 
 // `obj` is a net#Server or a dgram#Socket object.
-// deno-lint-ignore no-explicit-any
-(cluster as any)._getServer = function (
+cluster._getServer = function (
   obj: Server | Socket,
   options: {
     address?: string | null;
@@ -224,8 +222,7 @@ function rr(
     key = undefined;
   }
 
-  // deno-lint-ignore no-explicit-any
-  function getsockname(out: any) {
+  function getsockname(out: Record<string, never>): number {
     if (key) {
       Object.assign(out, message.sockname);
     }
