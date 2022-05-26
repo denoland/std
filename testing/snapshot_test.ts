@@ -62,6 +62,8 @@ Deno.test("Snapshot Test", async (t) => {
   await assertSnapshot(t, function fn() {});
   await assertSnapshot(t, [1, 2, 3]);
   await assertSnapshot(t, "hello world");
+  await assertSnapshot(t, "");
+  await assertSnapshot(t, "", { serializer: (x) => x })
 });
 
 Deno.test("Snapshot Test - step", async (t) => {
@@ -480,3 +482,4 @@ Deno.test("Snapshot Test - Regression #2144", async (t) => {
   };
   await assertSnapshot(t, config);
 });
+

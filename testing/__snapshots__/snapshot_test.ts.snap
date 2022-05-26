@@ -48,6 +48,10 @@ snapshot[`Snapshot Test 7`] = `
 
 snapshot[`Snapshot Test 8`] = `"hello world"`;
 
+snapshot[`Snapshot Test 9`] = `""`;
+
+snapshot[`Snapshot Test 10`] = ``;
+
 snapshot[`Snapshot Test - step 1`] = `
 {
   a: 1,
@@ -209,8 +213,6 @@ snapshot[`Snapshot Test - Options > mode 2`] = `
 "running 1 test from <tempDir>/test.ts
 snapshot ... ok (--ms)
 
-------- output -------
-
  > 1 snapshots updated.
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
@@ -221,8 +223,6 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms
 snapshot[`Snapshot Test - Update - New snapshot 1`] = `
 "running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
-
-------- output -------
 
  > 1 snapshots updated.
 
@@ -268,8 +268,6 @@ snapshot[`Snapshot Test - Update - Existing snapshot - updates 1`] = `
 "running 1 test from <tempDir>/test.ts
 Snapshot Test - Update ... ok (--ms)
 
-------- output -------
-
  > 1 snapshots updated.
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out (--ms)
@@ -295,8 +293,6 @@ snapshot[`Snapshot Test - Update - Existing snapshots - reverse order 1 1`] = `
 "running 2 tests from <tempDir>/test.ts
 Snapshot Test - First ... ok (--ms)
 Snapshot Test - Second ... ok (--ms)
-
-------- output -------
 
  > 2 snapshots updated.
 
