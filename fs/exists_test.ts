@@ -113,7 +113,7 @@ for (const s of scenes) {
   let title = `test ${s.async ? "exists" : "existsSync"}("testdata/${s.file}")`;
   title += ` ${s.read ? "with" : "without"} --allow-read`;
   Deno.test(`[fs] existsPermission ${title}`, async function () {
-    const args = [Deno.execPath(), "run", "--quiet", "--no-prompt"];
+    const args = ["run", "--quiet", "--no-prompt"];
 
     if (s.read) {
       args.push("--allow-read");
@@ -122,15 +122,12 @@ for (const s of scenes) {
     args.push(path.join(testdataDir, s.async ? "exists.ts" : "exists_sync.ts"));
     args.push(s.file);
 
-    const p = Deno.run({
-      stdout: "piped",
+    const { stdout } = await Deno.spawn(Deno.execPath(), {
       cwd: testdataDir,
-      cmd: args,
+      args,
     });
 
-    const output = await p.output();
-    p.close();
-    assertStringIncludes(new TextDecoder().decode(output), s.output);
+    assertStringIncludes(new TextDecoder().decode(stdout), s.output);
   });
   // done
 }
