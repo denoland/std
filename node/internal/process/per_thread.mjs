@@ -256,8 +256,10 @@ export function buildAllowedFlags() {
       return this[kInternal].set.values();
     }
   }
-  NodeEnvironmentFlagsSet.prototype.keys = NodeEnvironmentFlagsSet
-    .prototype[Symbol.iterator] = NodeEnvironmentFlagsSet.prototype.values;
+  NodeEnvironmentFlagsSet.prototype.keys =
+    NodeEnvironmentFlagsSet
+      .prototype[Symbol.iterator] =
+      NodeEnvironmentFlagsSet.prototype.values;
 
   Object.freeze(NodeEnvironmentFlagsSet.prototype.constructor);
   Object.freeze(NodeEnvironmentFlagsSet.prototype);
