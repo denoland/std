@@ -57,7 +57,7 @@ for await (const path of testPaths) {
         "--unstable",
         "--no-check",
         "--v8-flags=" + v8Flags.join(),
-        requireTs,
+        "--compat",
         targetTestPath,
       ];
 

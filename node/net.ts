@@ -96,6 +96,7 @@ import { debuglog } from "./internal/util/debuglog.ts";
 import type { DuplexOptions } from "./_stream.d.ts";
 import type { BufferEncoding } from "./_global.d.ts";
 import type { Abortable } from "./_events.d.ts";
+import cluster from "./cluster.ts";
 
 let debug = debuglog("net", (fn) => {
   debug = fn;
@@ -1642,22 +1643,42 @@ function _listenInCluster(
 ) {
   exclusive = !!exclusive;
 
-  // TODO(cmorten): here we deviate somewhat from the Node implementation which
-  // makes use of the https://nodejs.org/api/cluster.html module to run servers
-  // across a "cluster" of Node processes to take advantage of multi-core
-  // systems.
-  //
-  // Though Deno has has a Worker capability from which we could simulate this,
-  // for now we assert that we are _always_ on the primary process.
-  const isPrimary = true;
-
-  if (isPrimary || exclusive) {
+  if (cluster.isPrimary || exclusive) {
     // Will create a new handle
     // _listen2 sets up the listened handle, it is still named like this
     // to avoid breaking code that wraps this method
     server._listen2(address, port, addressType, backlog, fd, flags);
 
     return;
+  }
+
+  const serverQuery = {
+    address,
+    port,
+    addressType,
+    fd,
+    flags,
+    backlog,
+  };
+
+  // Get the primary's server handle, and listen on it
+  // deno-lint-ignore no-explicit-any
+  cluster._getServer!(server, serverQuery, listenOnPrimaryHandle as any);
+
+  function listenOnPrimaryHandle(err: number, handle: TCP) {
+    err = _checkBindError(err, port!, handle!);
+
+    if (err) {
+      const ex = exceptionWithHostPort(err, "bind", address!, port!);
+
+      return server.emit("error", ex);
+    }
+
+    // Reuse primary's server handle
+    server._handle = handle;
+    // _listen2 sets up the listened handle, it is still named like this
+    // to avoid breaking code that wraps this method
+    server._listen2(address, port, addressType, backlog, fd, flags);
   }
 }
 

@@ -5,6 +5,8 @@ import process from "./process.ts";
 import childCluster from "./internal/cluster/child.ts";
 import primaryCluster from "./internal/cluster/primary.ts";
 
-const cluster = "NODE_UNIQUE_ID" in process.env ? childCluster : primaryCluster;
+const cluster = process.env.NODE_UNIQUE_ID !== undefined
+  ? childCluster
+  : primaryCluster;
 
 export default cluster;

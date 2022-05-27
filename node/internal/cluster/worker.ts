@@ -13,8 +13,8 @@ export class Worker extends EventEmitter implements IWorker {
   process!: ChildProcess | Process;
   exitedAfterDisconnect?: boolean;
 
-  destroy!: (signal?: string) => void;
-  disconnect!: () => void;
+  destroy(_signal?: string): void {}
+  disconnect(): void {}
 
   constructor(options?: WorkerOptions | null) {
     super();
@@ -32,11 +32,17 @@ export class Worker extends EventEmitter implements IWorker {
       this.process = options.process;
       this.process.on(
         "error",
-        (code, signal) => this.emit("error", code, signal),
+        (code, signal) => {
+          console.log("Worker process error", code);
+          this.emit("error", code, signal);
+        },
       );
       this.process.on(
         "message",
-        (message, handle) => this.emit("message", message, handle),
+        (message, handle) => {
+          console.log("Worker process message", message);
+          this.emit("message", message, handle);
+        },
       );
     }
   }

@@ -6,6 +6,7 @@ import type { Handle } from "../../net.ts";
 import type { UDP } from "../../internal_binding/udp_wrap.ts";
 import { ChildProcess } from "../child_process.ts";
 import { Process } from "../../process.ts";
+import { notImplemented } from "../../_utils.ts";
 
 const callbacks = new Map();
 let seq = 0;
@@ -16,6 +17,9 @@ export function sendHelper(
   handle?: Handle | UDP | null,
   cb?: unknown,
 ) {
+  // TODO(cmorten): implement required process properties and methods.
+  notImplemented("process.connected, process.send");
+
   // TODO(cmorten): remove type cast once ChildProcess implements `connected`
   // property.
   // deno-lint-ignore no-explicit-any

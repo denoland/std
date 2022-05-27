@@ -70,9 +70,9 @@ cluster._getServer = function (
   options: {
     address?: string | null;
     port?: number | null;
-    addressType?: string | null;
+    addressType?: string | number | null;
     fd?: number | null;
-    flags: number | null;
+    flags?: number | null;
   },
   cb: (err: number, handle: Handle | UDP | null) => void,
 ) {
