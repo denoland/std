@@ -161,7 +161,10 @@ Deno.test(
     await startFileServer();
     try {
       const res = await fetch("http://localhost:4507/README.md");
-      assertEquals(res.headers.get("content-type"), "text/markdown; charset=UTF-8");
+      assertEquals(
+        res.headers.get("content-type"),
+        "text/markdown; charset=UTF-8",
+      );
       const downloadedFile = await res.text();
       const localFile = new TextDecoder().decode(
         await Deno.readFile(join(moduleDir, "README.md")),
@@ -754,11 +757,17 @@ Deno.test(
       const txtRes = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
       );
-      assertEquals(txtRes.headers.get("content-type"), "text/plain; charset=UTF-8");
+      assertEquals(
+        txtRes.headers.get("content-type"),
+        "text/plain; charset=UTF-8",
+      );
       await txtRes.text(); // Consuming the body so that the test doesn't leak resources
 
       const htmlRes = await fetch("http://localhost:4507/testdata/hello.html");
-      assertEquals(htmlRes.headers.get("content-type"), "text/html; charset=UTF-8");
+      assertEquals(
+        htmlRes.headers.get("content-type"),
+        "text/html; charset=UTF-8",
+      );
       await htmlRes.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
