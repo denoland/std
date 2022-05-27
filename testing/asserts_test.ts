@@ -259,10 +259,10 @@ Deno.test("Equal", function (): void {
   assert(
     !equal(
       new (class A {
-        private hello = "world";
+        #hello = "world";
       })(),
       new (class B {
-        private hello = "world";
+        #hello = "world";
       })(),
     ),
   );
@@ -270,10 +270,10 @@ Deno.test("Equal", function (): void {
   assertFalse(
     equal(
       new (class A {
-        private hello = "world";
+        #hello = "world";
       })(),
       new (class B {
-        private hello = "world";
+        #hello = "world";
       })(),
     ),
   );

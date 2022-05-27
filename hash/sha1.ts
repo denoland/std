@@ -147,7 +147,7 @@ export class Sha1 {
       if (i >= 64) {
         this.#block = blocks[16];
         this.#start = i - 64;
-        this.hash();
+        this.#hash();
         this.#hashed = true;
       } else {
         this.#start = i;
@@ -172,7 +172,7 @@ export class Sha1 {
     this.#block = blocks[16];
     if (i >= 56) {
       if (!this.#hashed) {
-        this.hash();
+        this.#hash();
       }
       blocks[0] = this.#block;
       blocks[16] =
@@ -195,10 +195,10 @@ export class Sha1 {
     }
     blocks[14] = (this.#hBytes << 3) | (this.#bytes >>> 29);
     blocks[15] = this.#bytes << 3;
-    this.hash();
+    this.#hash();
   }
 
-  private hash(): void {
+  #hash(): void {
     let a = this.#h0;
     let b = this.#h1;
     let c = this.#h2;
