@@ -3,4 +3,5 @@
  * Mime
  * @module
  */
+export * from "./content_type.ts";
 export * from "./multipart.ts";

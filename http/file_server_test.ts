@@ -161,7 +161,7 @@ Deno.test(
     await startFileServer();
     try {
       const res = await fetch("http://localhost:4507/README.md");
-      assertEquals(res.headers.get("content-type"), "text/markdown");
+      assertEquals(res.headers.get("content-type"), "text/markdown; charset=UTF-8");
       const downloadedFile = await res.text();
       const localFile = new TextDecoder().decode(
         await Deno.readFile(join(moduleDir, "README.md")),
@@ -179,7 +179,7 @@ Deno.test(
     await startFileServer({ target: "./testdata" });
     try {
       const res = await fetch("http://localhost:4507/hello.html");
-      assertEquals(res.headers.get("content-type"), "text/html");
+      assertEquals(res.headers.get("content-type"), "text/html; charset=UTF-8");
       const downloadedFile = await res.text();
       const localFile = new TextDecoder().decode(
         await Deno.readFile(join(testdataDir, "hello.html")),
@@ -345,7 +345,7 @@ Deno.test("contentType", async () => {
   try {
     const res = await fetch("http://localhost:4507/testdata/hello.html");
     const contentType = res.headers.get("content-type");
-    assertEquals(contentType, "text/html");
+    assertEquals(contentType, "text/html; charset=UTF-8");
     await res.text(); // Consuming the body so that the test doesn't leak resources
   } finally {
     await killFileServer();
@@ -754,11 +754,11 @@ Deno.test(
       const txtRes = await fetch(
         "http://localhost:4507/testdata/test%20file.txt",
       );
-      assertEquals(txtRes.headers.get("content-type"), "text/plain");
+      assertEquals(txtRes.headers.get("content-type"), "text/plain; charset=UTF-8");
       await txtRes.text(); // Consuming the body so that the test doesn't leak resources
 
       const htmlRes = await fetch("http://localhost:4507/testdata/hello.html");
-      assertEquals(htmlRes.headers.get("content-type"), "text/html");
+      assertEquals(htmlRes.headers.get("content-type"), "text/html; charset=UTF-8");
       await htmlRes.text(); // Consuming the body so that the test doesn't leak resources
     } finally {
       await killFileServer();
