@@ -6275,11 +6275,12 @@ const inflate$2 = (strm, flush) => {
           strm.total_out += _out;
           state.total += _out;
           if (_out) {
-            strm.adler = state.check =
-              /*UPDATE(state.check, put - _out, _out);*/
-              state.flags
-                ? crc32_1(state.check, output, _out, put - _out)
-                : adler32_1(state.check, output, _out, put - _out);
+            strm.adler =
+              state.check =
+                /*UPDATE(state.check, put - _out, _out);*/
+                state.flags
+                  ? crc32_1(state.check, output, _out, put - _out)
+                  : adler32_1(state.check, output, _out, put - _out);
           }
           _out = left;
           // NB: crc32 stored as signed 32-bit int, zswap32 returns signed too
@@ -6364,11 +6365,12 @@ const inflate$2 = (strm, flush) => {
   strm.total_out += _out;
   state.total += _out;
   if (state.wrap && _out) {
-    strm.adler = state
-      .check = /*UPDATE(state.check, strm.next_out - _out, _out);*/
-      state.flags
-        ? crc32_1(state.check, output, _out, strm.next_out - _out)
-        : adler32_1(state.check, output, _out, strm.next_out - _out);
+    strm.adler =
+      state
+        .check = /*UPDATE(state.check, strm.next_out - _out, _out);*/
+        state.flags
+          ? crc32_1(state.check, output, _out, strm.next_out - _out)
+          : adler32_1(state.check, output, _out, strm.next_out - _out);
   }
   strm.data_type = state.bits + (state.last ? 64 : 0) +
     (state.mode === TYPE ? 128 : 0) +
