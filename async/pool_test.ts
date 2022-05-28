@@ -34,7 +34,7 @@ Deno.test("[async] pooledMap errors", async () => {
     return n;
   }
   const mappedNumbers: number[] = [];
-  await assertRejects(async () => {
+  await assertRejects<AggregateError>(async () => {
     for await (const m of pooledMap(3, [1, 2, 3, 4], mapNumber)) {
       mappedNumbers.push(m);
     }
