@@ -22,10 +22,7 @@ export interface StringifyStreamOptions {
  * import { readableStreamFromIterable } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
  * import { JSONStringifyStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
- * const file = await Deno.open(new URL("./tmp.jsonl", import.meta.url), {
- *   create: true,
- *   write: true,
- * });
+ * const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
  *
  * readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
  *   .pipeThrough(new JSONStringifyStream())
