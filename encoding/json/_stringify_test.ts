@@ -21,10 +21,10 @@ async function assertValidStringify(
 async function assertInvalidStringify(
   transformer: typeof JSONStringifyStream,
   chunks: unknown[],
-  options?: StringifyStreamOptions,
+  options: StringifyStreamOptions,
   // deno-lint-ignore no-explicit-any
-  ErrorClass?: (new (...args: any[]) => Error) | undefined,
-  msgIncludes?: string | undefined,
+  ErrorClass: (new (...args: any[]) => Error),
+  msgIncludes: string | undefined,
 ) {
   const r = readableStreamFromIterable(chunks);
   await assertRejects(
