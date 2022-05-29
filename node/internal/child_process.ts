@@ -196,13 +196,13 @@ export class ChildProcess extends EventEmitter {
           const signalCode = this.signalCode == null ? null : this.signalCode;
           // The 'exit' and 'close' events must be emitted after the 'spawn' event.
           this.emit("exit", exitCode, signalCode);
-          await this._waitForChildStreamsToClose();
+          await this.#_waitForChildStreamsToClose();
           this.#close();
           this.emit("close", exitCode, signalCode);
         });
       })();
     } catch (err) {
-      this._handleError(err);
+      this.#_handleError(err);
     }
   }
 
@@ -238,7 +238,7 @@ export class ChildProcess extends EventEmitter {
     notImplemented("ChildProcess.unref()");
   }
 
-  private async _waitForChildStreamsToClose(): Promise<void> {
+  async #_waitForChildStreamsToClose(): Promise<void> {
     const promises = [] as Array<Promise<void>>;
     if (this.stdin && !this.stdin.destroyed) {
       assert(this.stdin);
@@ -254,7 +254,7 @@ export class ChildProcess extends EventEmitter {
     await Promise.all(promises);
   }
 
-  private _handleError(err: unknown): void {
+  #_handleError(err: unknown): void {
     nextTick(() => {
       this.emit("error", err); // TODO(uki00a) Convert `err` into nodejs's `SystemError` class.
     });

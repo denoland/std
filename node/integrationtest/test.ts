@@ -85,27 +85,22 @@ Deno.test("integration test of compat mode", {
   await Deno.remove(tempDir, { recursive: true });
 });
 
-type Opts = Pick<Deno.RunOptions, "env" | "cwd">;
+type Opts = Pick<Deno.SpawnOptions, "env" | "cwd">;
 function exec(cmd: string, opts: Opts = {}) {
-  return execCmd(cmd.split(" "), opts);
+  const [command, ...args] = cmd.split(" ");
+  return execCmd(command, args, opts);
 }
-async function execCmd(cmd: string[], opts: Opts) {
-  console.log(`Executing the command: "${cmd.join(" ")}"`);
-  const p = Deno.run({
-    cmd,
+async function execCmd(command: string, args: string[], opts: Opts) {
+  console.log(`Executing the command: "${args.join(" ")}"`);
+  const { status, stdout, stderr } = await Deno.spawn(command, {
+    args,
     stdout: "piped",
     stderr: "piped",
     ...opts,
   });
-  const [status, output, stderrOutput] = await Promise.all([
-    p.status(),
-    p.output(),
-    p.stderrOutput(),
-  ]);
-  p.close();
   if (status.code !== 0) {
-    console.log(new TextDecoder().decode(output));
-    console.log(new TextDecoder().decode(stderrOutput));
-    throw new Error(`The command: "${cmd.join(" ")}" failed`);
+    console.log(new TextDecoder().decode(stdout));
+    console.log(new TextDecoder().decode(stderr));
+    throw new Error(`The command: "${args.join(" ")}" failed`);
   }
 }

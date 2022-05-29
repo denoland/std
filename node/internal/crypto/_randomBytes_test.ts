@@ -4,9 +4,9 @@ import {
   assertEquals,
   assertRejects,
   assertThrows,
-} from "../../testing/asserts.ts";
-import { assertCallbackErrorUncaught } from "../_utils.ts";
-import randomBytes, { MAX_RANDOM_VALUES, MAX_SIZE } from "./randomBytes.ts";
+} from "../../../testing/asserts.ts";
+import { assertCallbackErrorUncaught } from "../../_utils.ts";
+import randomBytes, { MAX_RANDOM_VALUES, MAX_SIZE } from "./_randomBytes.ts";
 
 Deno.test("randomBytes sync works correctly", function () {
   assertEquals(randomBytes(0).length, 0, "len: " + 0);
@@ -81,7 +81,7 @@ Deno.test("randomBytes async works correctly", function () {
 });
 
 Deno.test("[std/node/crypto] randomBytes callback isn't called twice if error is thrown", async () => {
-  const importUrl = new URL("./randomBytes.ts", import.meta.url);
+  const importUrl = new URL("./_randomBytes.ts", import.meta.url);
   await assertCallbackErrorUncaught({
     prelude: `import randomBytes from ${JSON.stringify(importUrl)}`,
     invocation: "randomBytes(0, ",

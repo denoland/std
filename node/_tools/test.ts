@@ -50,8 +50,7 @@ for await (const path of testPaths) {
         v8Flags.push("--expose-externalize-string");
       }
 
-      const cmd = [
-        Deno.execPath(),
+      const args = [
         "run",
         "-A",
         "--quiet",
@@ -64,26 +63,17 @@ for await (const path of testPaths) {
 
       // Pipe stdout in order to output each test result as Deno.test output
       // That way the tests will respect the `--quiet` option when provided
-      const test = Deno.run({
-        cmd,
+      const { status, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+        args,
         env: {
           DENO_NODE_COMPAT_URL: stdRootUrl,
         },
         cwd,
-        stderr: "piped",
-        stdout: "piped",
       });
 
-      const [rawStderr, rawOutput, status] = await Promise.all([
-        test.stderrOutput(),
-        test.output(),
-        test.status(),
-      ]);
-      test.close();
-
-      const stderr = decoder.decode(rawStderr);
-      if (rawStderr.length) console.error(stderr);
-      if (rawOutput.length) console.log(decoder.decode(rawOutput));
+      const decodedStderr = decoder.decode(stderr);
+      if (stderr.length) console.error(decodedStderr);
+      if (stdout.length) console.log(decoder.decode(stdout));
 
       if (status.code !== 0) {
         console.log(`Error: "${path}" failed`);
@@ -91,7 +81,7 @@ for await (const path of testPaths) {
           "You can repeat only this test with the command:",
           magenta(`deno test -A node/_tools/test.ts -- ${path}`),
         );
-        fail(stderr);
+        fail(decodedStderr);
       }
     },
   });
