@@ -2,32 +2,24 @@
 
 import { assertEquals, assertRejects } from "../../testing/asserts.ts";
 import { readableStreamFromIterable } from "../../streams/conversion.ts";
-import {
-  ConcatenatedJSONStringifyStream,
-  JSONLinesStringifyStream,
-  StringifyStreamOptions,
-} from "./_stringify.ts";
+import { JSONStringifyStream, StringifyStreamOptions } from "./_stringify.ts";
 
 async function assertValidStringify(
-  transform:
-    | typeof ConcatenatedJSONStringifyStream
-    | typeof JSONLinesStringifyStream,
+  transformer: typeof JSONStringifyStream,
   chunks: unknown[],
   expect: string[],
   options?: StringifyStreamOptions,
 ) {
   const r = readableStreamFromIterable(chunks);
   const res = [];
-  for await (const data of r.pipeThrough(new transform(options))) {
+  for await (const data of r.pipeThrough(new transformer(options))) {
     res.push(data);
   }
   assertEquals(res, expect);
 }
 
 async function assertInvalidStringify(
-  transform:
-    | typeof ConcatenatedJSONStringifyStream
-    | typeof JSONLinesStringifyStream,
+  transformer: typeof JSONStringifyStream,
   chunks: unknown[],
   options?: StringifyStreamOptions,
   // deno-lint-ignore no-explicit-any
@@ -37,7 +29,7 @@ async function assertInvalidStringify(
   const r = readableStreamFromIterable(chunks);
   await assertRejects(
     async () => {
-      for await (const _ of r.pipeThrough(new transform(options)));
+      for await (const _ of r.pipeThrough(new transformer(options)));
     },
     ErrorClass,
     msgIncludes,
@@ -45,18 +37,23 @@ async function assertInvalidStringify(
 }
 
 Deno.test({
-  name: "[encoding/json/stream] stringify(concatenated)",
+  name: "[encoding/json/stream] JSONStringifyStream",
   async fn() {
     await assertValidStringify(
-      ConcatenatedJSONStringifyStream,
+      JSONStringifyStream,
       [{ foo: "bar" }, { foo: "bar" }],
       ['{"foo":"bar"}\n', '{"foo":"bar"}\n'],
     );
+  },
+});
 
+Deno.test({
+  name: "[encoding/json/stream] JSONStringifyStream: throws",
+  async fn() {
     const cyclic: Record<string, unknown> = {};
     cyclic.cyclic = cyclic;
     await assertInvalidStringify(
-      ConcatenatedJSONStringifyStream,
+      JSONStringifyStream,
       [cyclic],
       {},
       TypeError,
@@ -66,19 +63,16 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] stringify(separator)",
+  name: "[encoding/json/stream] JSONStringifyStream: prefix and suffix",
   async fn() {
     await assertValidStringify(
-      JSONLinesStringifyStream,
+      JSONStringifyStream,
       [{ foo: "bar" }, { foo: "bar" }],
-      ['{"foo":"bar"}aaa\n', '{"foo":"bar"}aaa\n'],
-      { separator: "aaa\n" },
-    );
-    await assertValidStringify(
-      JSONLinesStringifyStream,
-      [{ foo: "bar" }, { foo: "bar" }],
-      ['aaa{"foo":"bar"}\n', 'aaa{"foo":"bar"}\n'],
-      { separator: "aaa" },
+      [
+        '[[prefix]]{"foo":"bar"}[[suffix]]',
+        '[[prefix]]{"foo":"bar"}[[suffix]]',
+      ],
+      { prefix: "[[prefix]]", suffix: "[[suffix]]" },
     );
   },
 });
