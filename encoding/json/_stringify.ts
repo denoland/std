@@ -13,7 +13,8 @@ export interface StringifyStreamOptions {
 }
 
 /**
- * Convert chunk to JSON string.
+ * Convert each chunk to JSON string.
+ *
  * This can be used to stringify [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/), [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464), and [Concatenated JSON](https://en.wikipedia.org/wiki/JSON_streaming#Concatenated_JSON).
  * You can optionally specify a prefix and suffix for each chunk. The default prefix is "" and the default suffix is "\n".
  *

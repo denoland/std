@@ -19,8 +19,10 @@ export interface ParseStreamOptions {
 }
 
 /**
- * Parse each chunk as JSON. Chunks consisting of spaces, tab characters, or newline characters will be ignored.
+ * Parse each chunk as JSON.
+ *
  * This can be used to parse [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/) and [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464).
+ * Chunks consisting of spaces, tab characters, or newline characters will be ignored.
  *
  * ```ts
  * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";

@@ -555,9 +555,9 @@ const { body } = await fetch(url);
 
 const delimiter = "\x1E";
 const readable = body!
-  .pipeThrough(new TextDecoderStream()) // convert Uint8Array to string
+  .pipeThrough(new TextDecoderStream())
   .pipeThrough(new TextDelimiterStream(delimiter)) // transform into a stream where each chunk is divided by a delimiter
-  .pipeThrough(new JSONParseStream()); // parse each chunk as JSON
+  .pipeThrough(new JSONParseStream());
 
 for await (const data of readable) {
   console.log(data);
@@ -576,8 +576,8 @@ const url =
 const { body } = await fetch(url);
 
 const readable = body!
-  .pipeThrough(new TextDecoderStream())
-  .pipeThrough(new ConcatenatedJSONParseStream());
+  .pipeThrough(new TextDecoderStream()) // convert Uint8Array to string
+  .pipeThrough(new ConcatenatedJSONParseStream()); // parse Concatenated JSON
 
 for await (const data of readable) {
   console.log(data);
@@ -617,7 +617,7 @@ const file = await Deno.open("./tmp.jsonl", { create: true, write: true });
 
 readableStreamFromIterable([{ foo: "bar" }, { baz: 100 }])
   .pipeThrough(new JSONStringifyStream({ prefix: "\x1E", suffix: "\n" })) // convert to JSON Text Sequences
-  .pipeThrough(new TextEncoderStream()) // convert a string to a Uint8Array
+  .pipeThrough(new TextEncoderStream())
   .pipeTo(file.writable)
   .then(() => console.log("write success"));
 ```
