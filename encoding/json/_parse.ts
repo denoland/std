@@ -1,8 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import { TextDelimiterStream } from "../../streams/delimiter.ts";
 import { toTransformStream } from "../../streams/conversion.ts";
 
+/** The type of the result of parsing JSON. */
 export type JSONValue =
   | { [key: string]: JSONValue }
   | JSONValue[]
@@ -10,9 +10,8 @@ export type JSONValue =
   | number
   | boolean;
 
+/** Optional object interface for `JSONParseStream` and `ConcatenatedJSONParseStream`. */
 export interface ParseStreamOptions {
-  /**a character to separate JSON. The default is '\n'. */
-  readonly separator?: string;
   /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
   readonly writableStrategy?: QueuingStrategy<string>;
   /** Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream. */
@@ -20,57 +19,50 @@ export interface ParseStreamOptions {
 }
 
 /**
- * stream to parse [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/) and [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464).
+ * Parse each chunk as JSON. Chunks consisting of spaces, tab characters, or newline characters will be ignored.
+ * This can be used to parse [JSON lines](https://jsonlines.org/), [NDJSON](http://ndjson.org/) and [JSON Text Sequences](https://datatracker.ietf.org/doc/html/rfc7464).
  *
  * ```ts
- * import { JSONLinesParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
+ * import { TextLineStream } from "https://deno.land/std@$STD_VERSION/streams/mod.ts";
+ * import { JSONParseStream } from "https://deno.land/std@$STD_VERSION/encoding/json/stream.ts";
  *
  * const url = "https://deno.land/std@$STD_VERSION/encoding/testdata/json/test.jsonl";
  * const { body } = await fetch(url);
  *
  * const readable = body!
  *   .pipeThrough(new TextDecoderStream())
- *   .pipeThrough(new JSONLinesParseStream());
+ *   .pipeThrough(new TextLineStream()) // or `new TextDelimiterStream(delimiter)`
+ *   .pipeThrough(new JSONParseStream());
  *
  * for await (const data of readable) {
  *   console.log(data);
  * }
  * ```
  */
-export class JSONLinesParseStream
-  implements TransformStream<string, JSONValue> {
-  readonly writable: WritableStream<string>;
-  readonly readable: ReadableStream<JSONValue>;
+export class JSONParseStream extends TransformStream<string, JSONValue> {
   /**
    * @param options
-   * @param options.separator a character to separate JSON. The default is '\n'.
    * @param options.writableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
    * @param options.readableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
    */
-  constructor({
-    separator = "\n",
-    writableStrategy,
-    readableStrategy,
-  }: ParseStreamOptions = {}) {
-    const { writable, readable } = new TextDelimiterStream(separator);
-    this.writable = writable;
-    this.readable = readable.pipeThrough(
-      new TransformStream(
-        {
-          transform(
-            chunk: string,
-            controller: TransformStreamDefaultController<JSONValue>,
-          ) {
-            if (!isBrankString(chunk)) {
-              controller.enqueue(parse(chunk));
-            }
-          },
+  constructor({ writableStrategy, readableStrategy }: ParseStreamOptions = {}) {
+    super(
+      {
+        transform(chunk, controller) {
+          if (!isBrankString(chunk)) {
+            controller.enqueue(parse(chunk));
+          }
         },
-        writableStrategy,
-        readableStrategy,
-      ),
+      },
+      writableStrategy,
+      readableStrategy,
     );
   }
+}
+
+const branks = /^[ \t\r\n]*$/;
+function isBrankString(str: string) {
+  return branks.test(str);
 }
 
 /**
@@ -97,15 +89,14 @@ export class ConcatenatedJSONParseStream
   readonly readable: ReadableStream<JSONValue>;
   /**
    * @param options
-   * @param options.separator This parameter will be ignored.
    * @param options.writableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
    * @param options.readableStrategy Controls the buffer of the TransformStream used internally. Check https://developer.mozilla.org/en-US/docs/Web/API/TransformStream/TransformStream.
    */
-  constructor(options: ParseStreamOptions = {}) {
+  constructor({ writableStrategy, readableStrategy }: ParseStreamOptions = {}) {
     const { writable, readable } = toTransformStream(
       this.#concatenatedJSONIterator,
-      options.writableStrategy,
-      options.readableStrategy,
+      writableStrategy,
+      readableStrategy,
     );
     this.writable = writable;
     this.readable = readable;
@@ -195,7 +186,7 @@ export class ConcatenatedJSONParseStream
   }
 }
 
-/** JSON.parse with detailed error message */
+/** JSON.parse with detailed error message. */
 function parse(text: string): JSONValue {
   try {
     return JSON.parse(text);
@@ -214,9 +205,4 @@ function parse(text: string): JSONValue {
 const blank = new Set(" \t\r\n");
 function isBrankChar(char: string) {
   return blank.has(char);
-}
-
-const branks = /[^ \t\r\n]/;
-function isBrankString(str: string) {
-  return !branks.test(str);
 }

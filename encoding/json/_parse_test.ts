@@ -1,15 +1,19 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertRejects } from "../../testing/asserts.ts";
-import { readableStreamFromIterable } from "../../streams/conversion.ts";
+import {
+  readableStreamFromIterable,
+  TextDelimiterStream,
+  TextLineStream,
+} from "../../streams/mod.ts";
 import {
   ConcatenatedJSONParseStream,
-  JSONLinesParseStream,
+  JSONParseStream,
   ParseStreamOptions,
 } from "./_parse.ts";
 
 async function assertValidParse(
-  transform: typeof ConcatenatedJSONParseStream | typeof JSONLinesParseStream,
+  transform: typeof ConcatenatedJSONParseStream | typeof JSONParseStream,
   chunks: string[],
   expect: unknown[],
   options?: ParseStreamOptions,
@@ -23,7 +27,7 @@ async function assertValidParse(
 }
 
 async function assertInvalidParse(
-  transform: typeof ConcatenatedJSONParseStream | typeof JSONLinesParseStream,
+  transform: typeof ConcatenatedJSONParseStream | typeof JSONParseStream,
   chunks: string[],
   options?: ParseStreamOptions,
   // deno-lint-ignore no-explicit-any
@@ -41,7 +45,7 @@ async function assertInvalidParse(
 }
 
 Deno.test({
-  name: "[encoding/json/stream] parse(concatenated)",
+  name: "[encoding/json/stream] ConcatenatedJSONParseStream",
   async fn() {
     await assertValidParse(
       ConcatenatedJSONParseStream,
@@ -77,7 +81,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] parse(concatenated): primitive",
+  name: "[encoding/json/stream] ConcatenatedJSONParseStream: primitive",
   async fn() {
     await assertValidParse(
       ConcatenatedJSONParseStream,
@@ -207,7 +211,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] parse(concatenated): chunk",
+  name: "[encoding/json/stream] ConcatenatedJSONParseStream: chunk",
   async fn() {
     await assertValidParse(
       ConcatenatedJSONParseStream,
@@ -253,7 +257,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] parse(concatenated): surrogate pair",
+  name: "[encoding/json/stream] ConcatenatedJSONParseStream: surrogate pair",
   async fn() {
     await assertValidParse(
       ConcatenatedJSONParseStream,
@@ -265,7 +269,7 @@ Deno.test({
 
 Deno.test({
   name:
-    "[encoding/json/stream] parse(concatenated): All characters between double quotes are parsed into a string",
+    "[encoding/json/stream] ConcatenatedJSONParseStream: symbol between double quotes",
   async fn() {
     await assertValidParse(
       ConcatenatedJSONParseStream,
@@ -276,7 +280,7 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] parse(concatenated): halfway chunk",
+  name: "[encoding/json/stream] ConcatenatedJSONParseStream: halfway chunk",
   async fn() {
     await assertInvalidParse(
       ConcatenatedJSONParseStream,
@@ -289,7 +293,8 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] parse(concatenated): truncate error message",
+  name:
+    "[encoding/json/stream] ConcatenatedJSONParseStream: truncate error message",
   async fn() {
     await assertInvalidParse(
       ConcatenatedJSONParseStream,
@@ -302,141 +307,47 @@ Deno.test({
 });
 
 Deno.test({
-  name: "[encoding/json/stream] parse(separator)",
+  name: "[encoding/json/stream] JSONParseStream",
   async fn() {
     await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo": "bar"}'],
-      [{ foo: "bar" }],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo": "bar"}\n'],
-      [{ foo: "bar" }],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo": "bar"}\r\n'],
-      [{ foo: "bar" }],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ['\n{"foo": "bar"}\n'],
-      [{ foo: "bar" }],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ["[0]\n"],
-      [[0]],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ["0\n"],
-      [0],
+      JSONParseStream,
+      ['{"foo": "bar"}', '["foo"]', '"foo"', "0", "null", "true", "false"],
+      [{ foo: "bar" }, ["foo"], "foo", 0, null, true, false],
     );
   },
 });
 
 Deno.test({
-  name: "[encoding/json/stream] parse(separator): chunk",
+  name: "[encoding/json/stream] JSONParseStream: empty line",
   async fn() {
     await assertValidParse(
-      JSONLinesParseStream,
-      ["{", '"foo": "bar"}\n'],
-      [{ foo: "bar" }],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo', '": "bar"}\n'],
-      [{ foo: "bar" }],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo":', ' "bar"}\n'],
-      [{ foo: "bar" }],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo": "bar"', "}\n"],
-      [{ foo: "bar" }],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo": "bar"}', "\n"],
-      [{ foo: "bar" }],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo": "bar"}\n', ""],
-      [{ foo: "bar" }],
+      JSONParseStream,
+      [" \t\r\n", ""],
+      [],
     );
   },
 });
 
 Deno.test({
-  name: "[encoding/json/stream] parse(separator): special separator",
-  async fn() {
-    const separators = ["\x1E", "xxxxx", "😊", "🦕"];
-    for (const separator of separators) {
-      await assertValidParse(
-        JSONLinesParseStream,
-        [`${separator}{"foo": "bar"}${separator}{"foo": "bar"}${separator}`],
-        [{ foo: "bar" }, { foo: "bar" }],
-        { separator },
-      );
-    }
-  },
-});
-
-Deno.test({
-  name: "[encoding/json/stream] parse(separator): empty line",
+  name: "[encoding/json/stream] JSONParseStream: special character",
   async fn() {
     await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo": "bar"} \n {"foo": "bar"} \n'],
-      [{ foo: "bar" }, { foo: "bar" }],
-    );
-    await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo": "bar"} \n\n {"foo": "bar"}'],
-      [{ foo: "bar" }, { foo: "bar" }],
+      JSONParseStream,
+      ['"👪"', '"🦕"', '"\u3053\u3093\u306b\u3061\u306f"'],
+      ["👪", "🦕", "\u3053\u3093\u306b\u3061\u306f"],
     );
   },
 });
 
 Deno.test({
-  name: "[encoding/json/stream] parse(separator): surrogate pair",
-  async fn() {
-    await assertValidParse(
-      JSONLinesParseStream,
-      ['{"foo": "👪"}\n{"foo": "👪"}\n'],
-      [{ foo: "👪" }, { foo: "👪" }],
-    );
-  },
-});
-
-Deno.test({
-  name: "[encoding/json/stream] parse(separator): invalid line break",
+  name: "[encoding/json/stream] JSONParseStream: expect error",
   async fn() {
     await assertInvalidParse(
-      JSONLinesParseStream,
-      ['{"foo": \n "bar"} \n {"foo": \n "bar"}'],
+      JSONParseStream,
+      ['{"foo": "bar"}', '{"foo": '],
       {},
       SyntaxError,
       `Unexpected end of JSON input (parsing: '{"foo": ')`,
-    );
-  },
-});
-
-Deno.test({
-  name: "[encoding/json/stream] parse(separator): halfway chunk",
-  async fn() {
-    await assertInvalidParse(
-      JSONLinesParseStream,
-      ['{"foo": "bar"} \n {"foo": '],
-      {},
-      SyntaxError,
-      `Unexpected end of JSON input (parsing: ' {"foo": ')`,
     );
   },
 });
@@ -449,7 +360,8 @@ Deno.test({
     const { body } = await fetch(new URL(url, import.meta.url).toString());
     const readable = body!
       .pipeThrough(new TextDecoderStream())
-      .pipeThrough(new JSONLinesParseStream());
+      .pipeThrough(new TextLineStream())
+      .pipeThrough(new JSONParseStream());
 
     const result = [];
     for await (const data of readable) {
@@ -472,7 +384,8 @@ Deno.test({
     const { body } = await fetch(new URL(url, import.meta.url).toString());
     const readable = body!
       .pipeThrough(new TextDecoderStream())
-      .pipeThrough(new JSONLinesParseStream());
+      .pipeThrough(new TextLineStream())
+      .pipeThrough(new JSONParseStream());
 
     const result = [];
     for await (const data of readable) {
@@ -497,7 +410,8 @@ Deno.test({
     const { body } = await fetch(new URL(url, import.meta.url).toString());
     const readable = body!
       .pipeThrough(new TextDecoderStream())
-      .pipeThrough(new JSONLinesParseStream({ separator: recordSeparator }));
+      .pipeThrough(new TextDelimiterStream(recordSeparator))
+      .pipeThrough(new JSONParseStream());
 
     const result = [];
     for await (const data of readable) {
