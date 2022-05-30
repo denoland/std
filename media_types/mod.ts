@@ -9,9 +9,7 @@
  * @module
  */
 
-import db from "https://raw.githubusercontent.com/jshttp/mime-db/v1.52.0/db.json" assert {
-  type: "json",
-};
+import db from "./vendor/mime-db.v1.52.0.json" assert { type: "json" };
 import { extname } from "../path/mod.ts";
 import {
   consumeMediaParam,

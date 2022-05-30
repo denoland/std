@@ -7,6 +7,10 @@ and [jshttp/mime-types](https://github.com/jshttp/mime-types), and is designed
 to integrate and improve the APIs from
 [deno.land/x/media_types](https://deno.land/x/media_types).
 
+The `vendor` folder contains copy of the
+[jshttp/mime-db](https://github.com/jshttp/mime-types) `db.json` file along with
+its license.
+
 ## `contentType()`
 
 Given a extension or media type, return a fully qualified header value for
