@@ -188,6 +188,11 @@ export class ConcatenatedJSONParseStream
   }
 }
 
+const blank = new Set(" \t\r\n");
+function isBrankChar(char: string) {
+  return blank.has(char);
+}
+
 /** JSON.parse with detailed error message. */
 function parse(text: string): JSONValue {
   try {
@@ -202,9 +207,4 @@ function parse(text: string): JSONValue {
     }
     throw error;
   }
-}
-
-const blank = new Set(" \t\r\n");
-function isBrankChar(char: string) {
-  return blank.has(char);
 }
