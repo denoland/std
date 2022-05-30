@@ -4,6 +4,7 @@ const U32MAX = 4_294_967_295;
 const U64MAX = 18_446_744_073_709_551_615n;
 
 /**
+ * Encodes the given `number` into `Uint8Array` with LEB128. The number needs to be in the range of `0` and `0xffffffff`.
  * ```ts
  * import { encodeU32 } from "./varint.ts";
  *
@@ -19,6 +20,7 @@ export function encodeU32(val: number): Uint8Array {
 }
 
 /**
+ * Encodes the given `BigInt` into `Uint8Array` with LEB128. The number needs to be in the range of `0` and `0xffffffffffffffff`.
  * ```ts
  * import { encodeU64 } from "./varint.ts";
  *
@@ -33,6 +35,7 @@ export function encodeU64(val: bigint): Uint8Array {
 }
 
 /**
+ * Decodes the given `Uint8Array` into a `number` with LEB128.
  * ```ts
  * import { decodeU32 } from "./varint.ts";
  * const bytes = Uint8Array.from([221, 199, 1]);
@@ -52,6 +55,7 @@ export function decodeU32(val: Uint8Array): number {
 }
 
 /**
+ * Decodes the given `Uint8Array` into a `BigInt` with LEB128.
  * ```ts
  * import { decodeU64 } from "./varint.ts";
  * const bytes = Uint8Array.from([221, 199, 1]);
