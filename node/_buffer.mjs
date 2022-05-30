@@ -645,9 +645,8 @@ function bidirectionalIndexOf(buffer, val, byteOffset, encoding, dir) {
   }
 
   if (isUint8Array(val)) {
-    const encodingVal = (ops === undefined
-      ? encodingsMap.utf8
-      : ops.encodingVal);
+    const encodingVal =
+      (ops === undefined ? encodingsMap.utf8 : ops.encodingVal);
     return indexOfBuffer(buffer, val, byteOffset, encodingVal, dir);
   }
 
@@ -1889,8 +1888,9 @@ function utf8ToBytes(string, units) {
   return bytes;
 }
 
-function blitBuffer(src, dst, offset, length) {
+function blitBuffer(src, dst, offset, byteLength) {
   let i;
+  const length = byteLength === undefined ? src.length : byteLength;
   for (i = 0; i < length; ++i) {
     if (i + offset >= dst.length || i >= src.length) {
       break;

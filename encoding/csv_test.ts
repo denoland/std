@@ -563,17 +563,36 @@ const parseTestCases = [
       { foo: "e", bar: "f", baz: "3" },
     ],
   },
+  {
+    name: "mismatching number of headers and fields",
+    in: "a,b,c\nd,e",
+    columns: [{ name: "a" }, { name: "b" }, { name: "c" }],
+    error: new Error(
+      `Error number of fields line: 1\nNumber of fields found: 3\nExpected number of fields: 2`,
+    ),
+  },
 ];
 
 for (const testCase of parseTestCases) {
   Deno.test({
     name: `[CSV] Parse ${testCase.name}`,
     async fn() {
-      const r = await parse(testCase.in, {
-        skipFirstRow: testCase.skipFirstRow,
-        columns: testCase.columns,
-      });
-      assertEquals(r, testCase.result);
+      if (testCase.error) {
+        await assertRejects(async () => {
+          await parse(testCase.in, {
+            skipFirstRow: testCase.skipFirstRow,
+            columns: testCase.columns,
+          });
+        }, (error: Error) => {
+          assertEquals(error.message, testCase.error.message);
+        });
+      } else {
+        const r = await parse(testCase.in, {
+          skipFirstRow: testCase.skipFirstRow,
+          columns: testCase.columns,
+        });
+        assertEquals(r, testCase.result);
+      }
     },
   });
 }

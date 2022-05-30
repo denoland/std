@@ -28,10 +28,12 @@ export function randomBytes(
       for (let generated = 0; generated < size; generated += MAX_BYTES) {
         // buffer.slice automatically checks if the end is past the end of
         // the buffer so we don't have to here
-        crypto.getRandomValues(bytes.slice(generated, generated + MAX_BYTES));
+        globalThis.crypto.getRandomValues(
+          bytes.slice(generated, generated + MAX_BYTES),
+        );
       }
     } else {
-      crypto.getRandomValues(bytes);
+      globalThis.crypto.getRandomValues(bytes);
     }
   }
 

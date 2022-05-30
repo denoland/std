@@ -40,7 +40,7 @@ function getEncoding(
       } else if (optOrCallback.encoding === "buffer") {
         return "buffer";
       } else {
-        notImplemented();
+        notImplemented(`fs.readlink encoding=${optOrCallback.encoding}`);
       }
     }
     return null;

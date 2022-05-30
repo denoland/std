@@ -3,6 +3,7 @@
 import {
   assert,
   assertEquals,
+  assertExists,
   assertNotStrictEquals,
   assertStrictEquals,
 } from "../testing/asserts.ts";
@@ -462,5 +463,23 @@ Deno.test({
         child.kill();
       }
     }
+  },
+});
+
+Deno.test({
+  name: "[node/child_process] ChildProcess.kill()",
+  async fn() {
+    const script = path.join(
+      path.dirname(path.fromFileUrl(import.meta.url)),
+      "./testdata/infinite_loop.js",
+    );
+    const childProcess = spawn(Deno.execPath(), ["run", script]);
+    const p = withTimeout(3000);
+    childProcess.on("exit", () => p.resolve());
+    childProcess.kill("SIGKILL");
+    await p;
+    assert(childProcess.killed);
+    assertEquals(childProcess.signalCode, "SIGKILL");
+    assertExists(childProcess.exitCode);
   },
 });

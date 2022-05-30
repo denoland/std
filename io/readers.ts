@@ -18,8 +18,8 @@ export class MultiReader implements Deno.Reader {
   private readonly readers: Deno.Reader[];
   private currentIndex = 0;
 
-  constructor(...readers: Deno.Reader[]) {
-    this.readers = readers;
+  constructor(readers: Deno.Reader[]) {
+    this.readers = [...readers];
   }
 
   async read(p: Uint8Array): Promise<number | null> {

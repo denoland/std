@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Node.js contributors. All rights reserved. MIT License.
-/** ********** NOT IMPLEMENTED
+/** NOT IMPLEMENTED
  * ERR_MANIFEST_ASSERT_INTEGRITY
  * ERR_QUICSESSION_VERSION_NEGOTIATION
  * ERR_REQUIRE_ESM
@@ -8,11 +8,10 @@
  * ERR_WORKER_INVALID_EXEC_ARGV
  * ERR_WORKER_PATH
  * ERR_QUIC_ERROR
- * ERR_SOCKET_BUFFER_SIZE //System error, shouldn't ever happen inside Deno
  * ERR_SYSTEM_ERROR //System error, shouldn't ever happen inside Deno
  * ERR_TTY_INIT_FAILED //System error, shouldn't ever happen inside Deno
  * ERR_INVALID_PACKAGE_CONFIG // package.json stuff, probably useless
- * *********** */
+ */
 
 import { getSystemErrorName } from "../util.ts";
 import { inspect } from "../internal/util/inspect.mjs";
@@ -403,7 +402,7 @@ export class NodeURIError extends NodeErrorAbstraction implements URIError {
   }
 }
 
-interface NodeSystemErrorCtx {
+export interface NodeSystemErrorCtx {
   code: string;
   syscall: string;
   message: string;
@@ -1844,6 +1843,11 @@ export class ERR_SOCKET_BAD_TYPE extends NodeTypeError {
     );
   }
 }
+export class ERR_SOCKET_BUFFER_SIZE extends NodeSystemError {
+  constructor(ctx: NodeSystemErrorCtx) {
+    super("ERR_SOCKET_BUFFER_SIZE", ctx, "Could not get or set buffer size");
+  }
+}
 export class ERR_SOCKET_CLOSED extends NodeError {
   constructor() {
     super("ERR_SOCKET_CLOSED", `Socket is closed`);
@@ -2551,10 +2555,28 @@ codes.ERR_BUFFER_OUT_OF_BOUNDS = ERR_BUFFER_OUT_OF_BOUNDS;
 codes.ERR_UNKNOWN_ENCODING = ERR_UNKNOWN_ENCODING;
 // TODO(kt3k): assign all error classes here.
 
-export { codes, hideStackFrames };
+/**
+ * This creates a generic Node.js error.
+ *
+ * @param {string} message The error message.
+ * @param {object} errorProperties Object with additional properties to be added to the error.
+ * @returns {Error}
+ */
+const genericNodeError = hideStackFrames(
+  function genericNodeError(message, errorProperties) {
+    // eslint-disable-next-line no-restricted-syntax
+    const err = new Error(message);
+    Object.assign(err, errorProperties);
+
+    return err;
+  },
+);
+
+export { codes, genericNodeError, hideStackFrames };
 
 export default {
   AbortError,
   aggregateTwoErrors,
   codes,
+  dnsException,
 };

@@ -1,4 +1,9 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+/**
+ * Signal
+ *
+ * @module
+ */
 import { MuxAsyncIterator } from "../async/mux_async_iterator.ts";
 import { deferred } from "../async/deferred.ts";
 

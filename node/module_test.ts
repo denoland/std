@@ -201,3 +201,24 @@ Deno.test("module has proper members", function () {
 Deno.test("a module can have its own timers declarations", function () {
   require("./_module/cjs/cjs_declare_timers");
 });
+
+Deno.test("require in a web worker", async () => {
+  const code = `\
+    import { createRequire } from "${new URL("module.ts", import.meta.url)}";
+    const require = createRequire("${import.meta.url}");
+    const result = require("./_module/cjs/cjs_a.js");
+    if (result.helloA() != "A") {
+      throw new Error("assertion failed in worker");
+    }
+    postMessage(null);
+  `;
+  const worker = new Worker(
+    `data:application/javascript;base64,${btoa(code)}`,
+    { type: "module" },
+  );
+  await new Promise((resolve, reject) => {
+    worker.addEventListener("message", resolve);
+    worker.addEventListener("error", reject);
+  });
+  worker.terminate();
+});

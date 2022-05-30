@@ -6,7 +6,7 @@ import { Readable as NodeReadable } from "../stream.ts";
 
 type ReadStreamOptions = Record<string, unknown>;
 
-class ReadStream extends NodeReadable {
+export class ReadStream extends NodeReadable {
   public path: string;
 
   constructor(path: string | URL, opts?: ReadStreamOptions) {
@@ -15,7 +15,11 @@ class ReadStream extends NodeReadable {
       opts.fd || opts.start || opts.end || opts.fs
     );
     if (hasBadOptions) {
-      notImplemented();
+      notImplemented(
+        `fs.ReadStream.prototype.constructor with unsupported options (${
+          JSON.stringify(opts)
+        })`,
+      );
     }
     const file = Deno.openSync(path, { read: true });
     const buffer = new Uint8Array(16 * 1024);

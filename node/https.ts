@@ -17,11 +17,11 @@ export class Agent extends HttpAgent {
 
 export class Server {
   constructor() {
-    notImplemented();
+    notImplemented("https.Server.prototype.constructor");
   }
 }
 export function createServer() {
-  notImplemented();
+  notImplemented("https.createServer");
 }
 
 interface HttpsRequestOptions extends RequestOptions {

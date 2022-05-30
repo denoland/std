@@ -359,7 +359,7 @@ Deno.test({
                 email: {
                   x: { main: "mail@example.com" },
                 },
-              },
+              } as unknown,
             },
           ],
         },
