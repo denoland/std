@@ -29,10 +29,10 @@ Deno.test(
 
     assertEquals(
       toHexString(
-        await stdCrypto.subtle.digest(
+        (await stdCrypto.subtle.digest(
           "SHA-384",
           new Blob([inputBytes]).stream(),
-        ) as ArrayBuffer,
+        )) as ArrayBuffer,
       ),
       expectedDigest,
     );
@@ -46,7 +46,7 @@ Deno.test(
 
     assertEquals(
       toHexString(
-        await stdCrypto.subtle.digest(
+        (await stdCrypto.subtle.digest(
           "SHA-384",
           (async function* () {
             yield new Uint16Array();
@@ -54,7 +54,7 @@ Deno.test(
             yield new ArrayBuffer(0);
             yield inputPieces[1];
           })(),
-        ) as ArrayBuffer,
+        )) as ArrayBuffer,
       ),
       expectedDigest,
     );
@@ -75,12 +75,12 @@ Deno.test(
 
     assertEquals(
       toHexString(
-        await stdCrypto.subtle.digest(
+        (await stdCrypto.subtle.digest(
           "SHA-384",
           (function* () {
             yield inputBytes;
           })(),
-        ) as ArrayBuffer,
+        )) as ArrayBuffer,
       ),
       expectedDigest,
     );
@@ -102,10 +102,10 @@ Deno.test(
 
     assertEquals(
       toHexString(
-        await stdCrypto.subtle.digest(
+        (await stdCrypto.subtle.digest(
           "SHA-384",
           new ArrayBuffer(0),
-        ) as ArrayBuffer,
+        )) as ArrayBuffer,
       ),
       emptyDigest,
     );
@@ -146,20 +146,20 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 
   assertEquals(
     new Uint8Array(
-      await stdCrypto.subtle.digest(
+      (await stdCrypto.subtle.digest(
         { name: "BLAKE3", length: 0 },
         inputBytes,
-      ) as ArrayBuffer,
+      )) as ArrayBuffer,
     ),
     new Uint8Array(0),
   );
 
   assertEquals(
     new Uint8Array(
-      await stdCrypto.subtle.digest(
+      (await stdCrypto.subtle.digest(
         { name: "BLAKE3", length: 6 },
         inputBytes,
-      ) as ArrayBuffer,
+      )) as ArrayBuffer,
     ),
     new Uint8Array([167, 193, 151, 192, 40, 100]),
   );
@@ -1371,20 +1371,20 @@ Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
   const expectedDigest64a = "a5d9fb67426e48b1";
 
   assertEquals(
-    stdCrypto.subtle.digestSync("FNV32", inputBytes),
+    toHexString(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
     expectedDigest32,
   );
   assertEquals(
-    stdCrypto.subtle.digestSync("FNV32A", inputBytes),
+    toHexString(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
     expectedDigest32a,
   );
 
   assertEquals(
-    stdCrypto.subtle.digestSync("FNV64", inputBytes),
+    toHexString(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
     expectedDigest64,
   );
   assertEquals(
-    stdCrypto.subtle.digestSync("FNV64A", inputBytes),
+    toHexString(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
     expectedDigest64a,
   );
 });
@@ -1406,13 +1406,13 @@ for (const algorithm of digestAlgorithms) {
         ) as Array<BufferSource>;
         try {
           const actual = toHexString(
-            await stdCrypto.subtle.digest(
+            (await stdCrypto.subtle.digest(
               {
                 ...options,
                 name: algorithm,
               },
               bytePieces,
-            ) as ArrayBuffer,
+            )) as ArrayBuffer,
           );
           assertEquals(
             expected,

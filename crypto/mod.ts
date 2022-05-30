@@ -59,7 +59,7 @@ const stdCrypto = ((x) => x)({
     async digest(
       algorithm: DigestAlgorithm,
       data: BufferSource | AsyncIterable<BufferSource> | Iterable<BufferSource>,
-    ): Promise<ArrayBuffer | string> {
+    ): Promise<ArrayBuffer> {
       const { name, length } = normalizeAlgorithm(algorithm);
       const bytes = bufferSourceBytes(data);
 
@@ -123,7 +123,7 @@ const stdCrypto = ((x) => x)({
     digestSync(
       algorithm: DigestAlgorithm,
       data: BufferSource | Iterable<BufferSource>,
-    ): ArrayBuffer | string {
+    ): ArrayBuffer {
       algorithm = normalizeAlgorithm(algorithm);
 
       const bytes = bufferSourceBytes(data);
@@ -166,17 +166,14 @@ const webCryptoDigestAlgorithms = [
 ] as const;
 
 type FNVAlgorithms = "FNV32" | "FNV32A" | "FNV64" | "FNV64A";
-type DigestAlgorithmName = WasmDigestAlgorithm;
+type DigestAlgorithmName = WasmDigestAlgorithm | FNVAlgorithms;
 
 type DigestAlgorithmObject = {
   name: DigestAlgorithmName;
   length?: number;
 };
 
-type DigestAlgorithm =
-  | DigestAlgorithmName
-  | DigestAlgorithmObject
-  | FNVAlgorithms;
+type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 
 const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
   (typeof algorithm === "string" ? { name: algorithm.toUpperCase() } : {

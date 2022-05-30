@@ -1,6 +1,15 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
+export function swap32(val: number): number {
+  return (
+    ((val & 0xff) << 24) |
+    ((val & 0xff00) << 8) |
+    ((val >> 8) & 0xff00) |
+    ((val >> 24) & 0xff)
+  );
+}
+
 function n16(n: number): number {
   return n & 0xffff;
 }

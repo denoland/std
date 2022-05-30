@@ -5,11 +5,11 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { mul32 } from "./util.ts";
+import { mul32, swap32 } from "./util.ts";
 
 const prime32 = 16777619;
 
-export const fnv32 = (data: Uint8Array): string => {
+export const fnv32 = (data: Uint8Array): ArrayBuffer => {
   let hash = 2166136261;
 
   data.forEach((c) => {
@@ -17,10 +17,10 @@ export const fnv32 = (data: Uint8Array): string => {
     hash ^= c;
   });
 
-  return hash.toString(16);
+  return Uint32Array.from([swap32(hash)]).buffer;
 };
 
-export const fnv32a = (data: Uint8Array): string => {
+export const fnv32a = (data: Uint8Array): ArrayBuffer => {
   let hash = 2166136261;
 
   data.forEach((c) => {
@@ -28,5 +28,5 @@ export const fnv32a = (data: Uint8Array): string => {
     hash = mul32(hash, prime32);
   });
 
-  return hash.toString(16);
+  return Uint32Array.from([swap32(hash)]).buffer;
 };

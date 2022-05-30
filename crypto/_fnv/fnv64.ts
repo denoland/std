@@ -5,12 +5,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { mul64 } from "./util.ts";
+import { mul64, swap32 } from "./util.ts";
 
 const prime64Lo = 435;
 const prime64Hi = 256;
 
-export const fnv64 = (data: Uint8Array): string => {
+export const fnv64 = (data: Uint8Array): ArrayBuffer => {
   let hashLo = 2216829733;
   let hashHi = 3421674724;
 
@@ -19,10 +19,10 @@ export const fnv64 = (data: Uint8Array): string => {
     hashLo ^= c;
   });
 
-  return `${(hashHi >>> 0).toString(16)}${(hashLo >>> 0).toString(16)}`;
+  return new Uint32Array([swap32(hashHi >>> 0), swap32(hashLo >>> 0)]).buffer;
 };
 
-export const fnv64a = (data: Uint8Array): string => {
+export const fnv64a = (data: Uint8Array): ArrayBuffer => {
   let hashLo = 2216829733;
   let hashHi = 3421674724;
 
@@ -31,5 +31,5 @@ export const fnv64a = (data: Uint8Array): string => {
     [hashHi, hashLo] = mul64([hashHi, hashLo], [prime64Hi, prime64Lo]);
   });
 
-  return `${(hashHi >>> 0).toString(16)}${(hashLo >>> 0).toString(16)}`;
+  return new Uint32Array([swap32(hashHi >>> 0), swap32(hashLo >>> 0)]).buffer;
 };

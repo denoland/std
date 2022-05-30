@@ -4,7 +4,7 @@
 import { fnv32, fnv32a } from "./fnv32.ts";
 import { fnv64, fnv64a } from "./fnv64.ts";
 
-export const fnv = (name: string, buf: Uint8Array | undefined): string => {
+export const fnv = (name: string, buf: Uint8Array | undefined): ArrayBuffer => {
   if (!buf) {
     throw new TypeError("no data provided for hashing");
   }
