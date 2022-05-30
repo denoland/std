@@ -59,7 +59,7 @@ export function decodeU32(val: Uint8Array): number {
  * ```ts
  * import { decodeU64 } from "./varint.ts";
  * const bytes = Uint8Array.from([221, 199, 1]);
- * const decodedValue = decodeU32(bytes);
+ * const decodedValue = decodeU64(bytes);
  *
  * // Do something with the decoded value
  * console.log(decodedValue === 25565);
