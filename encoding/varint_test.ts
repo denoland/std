@@ -1,5 +1,9 @@
 import { decodeU32, decodeU64, encodeU32, encodeU64 } from "./varint.ts";
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assertThrows } from "../testing/asserts.ts";
+
+const U32MAX = 4_294_967_295;
+const U64MAX = 18_446_744_073_709_551_615n;
+
 Deno.test({
   name: "VarInt encode",
   fn: function () {
@@ -14,11 +18,10 @@ Deno.test({
       encodeU32(2147483647),
       new Uint8Array([255, 255, 255, 255, 7]),
     );
-    assertEquals(encodeU32(-1), new Uint8Array([255, 255, 255, 255, 15]));
-    assertEquals(
-      encodeU32(-2147483648),
-      new Uint8Array([128, 128, 128, 128, 8]),
-    );
+
+    assertThrows(() => encodeU32(-1), RangeError, "Signed");
+    assertThrows(() => encodeU32(U32MAX + 1), RangeError);
+    assertThrows(() => encodeU32(1.1), TypeError);
   },
 });
 
@@ -38,6 +41,12 @@ Deno.test({
     assertEquals(
       decodeU32(new Uint8Array([255, 255, 255, 255, 7])),
       2147483647,
+    );
+    assertThrows(() => decodeU32(new Uint8Array(6)), RangeError, "Too");
+    assertThrows(
+      () => decodeU32(new Uint8Array([255, 255])),
+      RangeError,
+      "Bad",
     );
   },
 });
@@ -59,18 +68,8 @@ Deno.test({
       encodeU64(9223372036854775807n),
       new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 127]),
     );
-    assertEquals(
-      encodeU64(-1n),
-      new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 255, 1]),
-    );
-    assertEquals(
-      encodeU64(-2147483648n),
-      new Uint8Array([128, 128, 128, 128, 248, 255, 255, 255, 255, 1]),
-    );
-    assertEquals(
-      encodeU64(-9223372036854775808n),
-      new Uint8Array([128, 128, 128, 128, 128, 128, 128, 128, 128, 1]),
-    );
+    assertThrows(() => encodeU64(-1n), RangeError, "Signed");
+    assertThrows(() => encodeU64(U64MAX + 1n), RangeError);
   },
 });
 
@@ -92,6 +91,12 @@ Deno.test({
         new Uint8Array([255, 255, 255, 255, 255, 255, 255, 255, 127]),
       ),
       9223372036854775807n,
+    );
+    assertThrows(() => decodeU32(new Uint8Array(11)), RangeError, "Too");
+    assertThrows(
+      () => decodeU32(new Uint8Array([255, 255])),
+      RangeError,
+      "Bad",
     );
   },
 });
