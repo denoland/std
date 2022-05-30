@@ -8,7 +8,7 @@ Deno standard library as it's a compatibility module.
 
 ## Supported modules
 
-- [x] assert _partly_
+- [x] assert
 - [x] assert/strict _partly_
 - [x] async_hooks _partly_
 - [x] buffer
