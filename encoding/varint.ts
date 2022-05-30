@@ -62,7 +62,7 @@ export function decodeU32(val: Uint8Array): number {
  * const decodedValue = decodeU64(bytes);
  *
  * // Do something with the decoded value
- * console.log(decodedValue === 25565);
+ * console.log(decodedValue === 25565n);
  * ```
  */
 export function decodeU64(val: Uint8Array): BigInt {
