@@ -230,7 +230,7 @@ export class ServerResponse extends NodeWritable {
   statusCode?: number = undefined;
   statusMessage?: string = undefined;
   #headers = new Headers({});
-  private readable: ReadableStream;
+  #readable: ReadableStream;
   headersSent = false;
   #reqEvent: Deno.RequestEvent;
   #firstChunk: Chunk | null = null;
@@ -276,7 +276,7 @@ export class ServerResponse extends NodeWritable {
         return cb(null);
       },
     });
-    this.readable = readable;
+    this.#readable = readable;
     this.#reqEvent = reqEvent;
   }
 
@@ -319,7 +319,7 @@ export class ServerResponse extends NodeWritable {
   respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
     this.#ensureHeaders(singleChunk);
-    const body = singleChunk ?? (final ? null : this.readable);
+    const body = singleChunk ?? (final ? null : this.#readable);
     this.#reqEvent.respondWith(
       new Response(body, {
         headers: this.#headers,
@@ -347,7 +347,7 @@ export class ServerResponse extends NodeWritable {
 
 // TODO(@AaronO): optimize
 export class IncomingMessageForServer extends NodeReadable {
-  private req: Request;
+  #req: Request;
   url: string;
 
   constructor(req: Request) {
@@ -373,10 +373,10 @@ export class IncomingMessageForServer extends NodeReadable {
         reader?.cancel().finally(() => cb(err));
       },
     });
-    this.req = req;
+    this.#req = req;
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
-    this.url = req.url.slice(this.req.url.indexOf("/", 8));
+    this.url = req.url.slice(this.#req.url.indexOf("/", 8));
   }
 
   get aborted() {
@@ -387,10 +387,10 @@ export class IncomingMessageForServer extends NodeReadable {
   }
 
   get headers() {
-    return Object.fromEntries(this.req.headers.entries());
+    return Object.fromEntries(this.#req.headers.entries());
   }
   get method() {
-    return this.req.method;
+    return this.#req.method;
   }
 }
 

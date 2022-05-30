@@ -22,6 +22,7 @@ interface Config {
    */
   tests: TestSuites;
   windowsIgnore: TestSuites;
+  darwinIgnore: TestSuites;
   suitesFolder: string;
   versionsFolder: string;
 }

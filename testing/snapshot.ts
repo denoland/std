@@ -140,16 +140,16 @@ class AssertSnapshotContext {
     return context;
   }
 
-  private teardownRegistered = false;
-  private currentSnapshots: Map<string, string | undefined> | undefined;
-  private updatedSnapshots = new Map<string, string>();
-  private snapshotCounts = new Map<string, number>();
-  private snapshotsUpdated = new Array<string>();
-  private snapshotFileUrl: URL;
-  private snapshotUpdateQueue = new Array<string>();
+  #teardownRegistered = false;
+  #currentSnapshots: Map<string, string | undefined> | undefined;
+  #updatedSnapshots = new Map<string, string>();
+  #snapshotCounts = new Map<string, number>();
+  #snapshotsUpdated = new Array<string>();
+  #snapshotFileUrl: URL;
+  snapshotUpdateQueue = new Array<string>();
 
   constructor(snapshotFileUrl: URL) {
-    this.snapshotFileUrl = snapshotFileUrl;
+    this.#snapshotFileUrl = snapshotFileUrl;
   }
 
   /**
@@ -157,22 +157,22 @@ class AssertSnapshotContext {
    *
    * Should only be called when `this.#currentSnapshots` has already been initialized.
    */
-  private getCurrentSnapshotsInitialized() {
+  #getCurrentSnapshotsInitialized() {
     assert(
-      this.currentSnapshots,
+      this.#currentSnapshots,
       "Snapshot was not initialized. This is a bug in `assertSnapshot`.",
     );
-    return this.currentSnapshots;
+    return this.#currentSnapshots;
   }
 
   /**
    * Write updates to the snapshot file and log statistics.
    */
-  private teardown = () => {
+  #teardown = () => {
     const buf = ["export const snapshot = {};"];
-    const currentSnapshots = this.getCurrentSnapshotsInitialized();
+    const currentSnapshots = this.#getCurrentSnapshotsInitialized();
     this.snapshotUpdateQueue.forEach((name) => {
-      const updatedSnapshot = this.updatedSnapshots.get(name);
+      const updatedSnapshot = this.#updatedSnapshots.get(name);
       const currentSnapshot = currentSnapshots.get(name);
       let formattedSnapshot: string;
       if (typeof updatedSnapshot === "string") {
@@ -193,7 +193,7 @@ class AssertSnapshotContext {
       const formattedName = escapeStringForJs(name);
       buf.push(`\nsnapshot[\`${formattedName}\`] = \`${formattedSnapshot}\`;`);
     });
-    const snapshotFilePath = fromFileUrl(this.snapshotFileUrl);
+    const snapshotFilePath = fromFileUrl(this.#snapshotFileUrl);
     ensureFileSync(snapshotFilePath);
     Deno.writeTextFileSync(snapshotFilePath, buf.join("\n") + "\n");
 
@@ -216,19 +216,19 @@ class AssertSnapshotContext {
    * snapshots from the snapshot file. If the snapshot mode is `update` and the snapshot file does
    * not exist then it will be created.
    */
-  private async readSnapshotFile(options: SnapshotOptions) {
-    if (this.currentSnapshots) {
-      return this.currentSnapshots;
+  async #readSnapshotFile(options: SnapshotOptions) {
+    if (this.#currentSnapshots) {
+      return this.#currentSnapshots;
     }
 
     if (getIsUpdate(options)) {
-      await ensureFile(fromFileUrl(this.snapshotFileUrl));
+      await ensureFile(fromFileUrl(this.#snapshotFileUrl));
     }
 
     try {
-      const snapshotFileUrl = this.snapshotFileUrl.toString();
+      const snapshotFileUrl = this.#snapshotFileUrl.toString();
       const { snapshot } = await import(snapshotFileUrl);
-      this.currentSnapshots = typeof snapshot === "undefined"
+      this.#currentSnapshots = typeof snapshot === "undefined"
         ? new Map()
         : new Map(
           Object.entries(snapshot).map(([name, snapshot]) => {
@@ -246,7 +246,7 @@ class AssertSnapshotContext {
             ];
           }),
         );
-      return this.currentSnapshots;
+      return this.#currentSnapshots;
     } catch (error) {
       if (
         error instanceof TypeError &&
@@ -271,9 +271,9 @@ class AssertSnapshotContext {
    * function once.
    */
   public registerTeardown() {
-    if (!this.teardownRegistered) {
-      globalThis.addEventListener("unload", this.teardown);
-      this.teardownRegistered = true;
+    if (!this.#teardownRegistered) {
+      globalThis.addEventListener("unload", this.#teardown);
+      this.#teardownRegistered = true;
     }
   }
 
@@ -282,8 +282,8 @@ class AssertSnapshotContext {
    * the count by 1.
    */
   public getCount(snapshotName: string) {
-    let count = this.snapshotCounts.get(snapshotName) || 0;
-    this.snapshotCounts.set(snapshotName, ++count);
+    let count = this.#snapshotCounts.get(snapshotName) || 0;
+    this.#snapshotCounts.set(snapshotName, ++count);
     return count;
   }
 
@@ -291,7 +291,7 @@ class AssertSnapshotContext {
    * Get an existing snapshot by name or returns `undefined` if the snapshot does not exist.
    */
   public async getSnapshot(snapshotName: string, options: SnapshotOptions) {
-    const snapshots = await this.readSnapshotFile(options);
+    const snapshots = await this.#readSnapshotFile(options);
     return snapshots.get(snapshotName);
   }
 
@@ -302,21 +302,21 @@ class AssertSnapshotContext {
    * Should only be called when mode is `update`.
    */
   public updateSnapshot(snapshotName: string, snapshot: string) {
-    if (!this.snapshotsUpdated.includes(snapshotName)) {
-      this.snapshotsUpdated.push(snapshotName);
+    if (!this.#snapshotsUpdated.includes(snapshotName)) {
+      this.#snapshotsUpdated.push(snapshotName);
     }
-    const currentSnapshots = this.getCurrentSnapshotsInitialized();
+    const currentSnapshots = this.#getCurrentSnapshotsInitialized();
     if (!currentSnapshots.has(snapshotName)) {
       currentSnapshots.set(snapshotName, undefined);
     }
-    this.updatedSnapshots.set(snapshotName, snapshot);
+    this.#updatedSnapshots.set(snapshotName, snapshot);
   }
 
   /**
    * Get the number of updated snapshots.
    */
   public getUpdatedCount() {
-    return this.snapshotsUpdated.length;
+    return this.#snapshotsUpdated.length;
   }
 
   /**

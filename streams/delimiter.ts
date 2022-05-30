@@ -75,8 +75,13 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
   }
 }
 
+interface TextLineStreamOptions {
+  /** Allow splitting by solo \r */
+  allowCR: boolean;
+}
+
 /** Transform a stream into a stream where each chunk is divided by a newline,
- * be it `\n`, `\r`, or `\r\n`.
+ * be it `\n` or `\r\n`. `\r` can be enabled via the `allowCR` option.
  *
  * ```ts
  * import { TextLineStream } from "./delimiter.ts";
@@ -89,8 +94,9 @@ export class LineStream extends TransformStream<Uint8Array, Uint8Array> {
 export class TextLineStream extends TransformStream<string, string> {
   #buf = "";
   #prevHadCR = false;
+  #allowCR: boolean;
 
-  constructor() {
+  constructor(options?: TextLineStreamOptions) {
     super({
       transform: (chunk, controller) => {
         this.#handle(chunk, controller);
@@ -102,6 +108,7 @@ export class TextLineStream extends TransformStream<string, string> {
         }
       },
     });
+    this.#allowCR = options?.allowCR ?? false;
   }
 
   #handle(
@@ -126,15 +133,18 @@ export class TextLineStream extends TransformStream<string, string> {
       if (crIndex === (chunk.length - 1)) { // \r is last character
         this.#buf += chunk;
         this.#prevHadCR = true;
-      } else {
+      } else if (this.#allowCR) {
         this.#mergeHandle(chunk, crIndex, crIndex, controller);
+      } else {
+        this.#buf += chunk.slice(0, crIndex + 1);
+        this.#handle(chunk.slice(crIndex + 1), controller);
       }
     } else if (lfIndex !== -1 && crIndex === -1) { // \n but not \r
       this.#mergeHandle(chunk, lfIndex, lfIndex, controller);
     } else { // \n and \r
       if ((lfIndex - 1) === crIndex) { // \r\n
         this.#mergeHandle(chunk, crIndex, lfIndex, controller);
-      } else if (crIndex < lfIndex) { // \r first
+      } else if (crIndex < lfIndex && this.#allowCR) { // \r first
         this.#mergeHandle(chunk, crIndex, crIndex, controller);
       } else { // \n first
         this.#mergeHandle(chunk, lfIndex, lfIndex, controller);
