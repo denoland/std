@@ -90,22 +90,36 @@ async function getValuesFromItem(
 ): Promise<unknown[]> {
   const values: unknown[] = [];
 
-  for (const column of normalizedColumns) {
-    let value: unknown = item;
+  if (normalizedColumns.length) {
+    for (const column of normalizedColumns) {
+      let value: unknown = item;
 
-    for (const prop of column.prop) {
-      if (typeof value !== "object" || value === null) continue;
-      if (Array.isArray(value)) {
-        if (typeof prop === "number") value = value[prop];
-        else {
-          throw new StringifyError('Property accessor is not of type "number"');
-        }
-      } // I think this assertion is safe. Confirm?
-      else value = (value as ObjectWithStringPropertyKeys)[prop];
+      for (const prop of column.prop) {
+        if (typeof value !== "object" || value === null) continue;
+        if (Array.isArray(value)) {
+          if (typeof prop === "number") value = value[prop];
+          else {
+            throw new StringifyError(
+              'Property accessor is not of type "number"',
+            );
+          }
+        } // I think this assertion is safe. Confirm?
+        else value = (value as ObjectWithStringPropertyKeys)[prop];
+      }
+
+      if (typeof column.fn === "function") value = await column.fn(value);
+      values.push(value);
     }
-
-    if (typeof column.fn === "function") value = await column.fn(value);
-    values.push(value);
+  } else {
+    if (Array.isArray(item)) {
+      values.push(...item);
+    } else if (typeof item === "object") {
+      throw new StringifyError(
+        "No property accessor function was provided for object",
+      );
+    } else {
+      values.push(item);
+    }
   }
 
   return values;
@@ -135,16 +149,17 @@ export type StringifyOptions = {
  */
 export async function stringify(
   data: DataItem[],
+  options?: StringifyOptions,
+): Promise<string>;
+export async function stringify(
+  data: DataItem[],
   options: StringifyOptions = {},
+  columns: Column[] = [],
 ): Promise<string> {
-  const {
-    headers,
-    separator: sep,
-    columns,
-  } = {
+  const columnsToMap = options.columns || columns;
+  const { headers, separator: sep } = {
     headers: true,
     separator: ",",
-    columns: [],
     ...options,
   };
   if (sep.includes(QUOTE) || sep.includes(NEWLINE)) {
@@ -156,7 +171,7 @@ export async function stringify(
     throw new StringifyError(message);
   }
 
-  const normalizedColumns = columns.map(normalizeColumn);
+  const normalizedColumns = columnsToMap.map(normalizeColumn);
   let output = "";
 
   if (headers) {

@@ -57,6 +57,12 @@ const stringifyTestCases: (StringifyTestCase | StringifyTestCaseError)[] = [
     throwsError: StringifyError,
   },
   {
+    data: [{ a: 1 }, { a: 2 }],
+    name: "[CSV_stringify] Data, no columns",
+    errorMessage: "No property accessor function was provided for object",
+    throwsError: StringifyError,
+  },
+  {
     data: [{ msg: { value: "foo" } }, { msg: { value: "bar" } }],
     name: "[CSV_stringify] Transform function",
     options: {
@@ -93,11 +99,6 @@ const stringifyTestCases: (StringifyTestCase | StringifyTestCaseError)[] = [
     expected: ``,
     name: "[CSV_stringify] No data, columns, no headers",
     options: { headers: false, columns: ["a"] },
-  },
-  {
-    data: [{ a: 1 }, { a: 2 }],
-    expected: `${NEWLINE}${NEWLINE}${NEWLINE}`,
-    name: "[CSV_stringify] Data, no columns",
   },
   {
     data: [
@@ -406,6 +407,15 @@ const stringifyTestCases: (StringifyTestCase | StringifyTestCaseError)[] = [
     expected: `0${NEWLINE}foo,${NEWLINE}`,
     name: "[CSV_stringify] Value with comma, tab separator",
     options: { separator: "\t", columns: [0] },
+  },
+  {
+    data: [
+      [1, 2, 3],
+      [4, 5, 6],
+    ],
+    expected: `${NEWLINE}1,2,3${NEWLINE}4,5,6${NEWLINE}`,
+    name: "[CSV_stringify] Two dimensions array and no columns",
+    options: {},
   },
 ];
 
