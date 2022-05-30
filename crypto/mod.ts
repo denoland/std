@@ -110,7 +110,7 @@ const stdCrypto = ((x) => x)({
         // they're using.
         return webCrypto.subtle.digest(
           algorithm,
-          data as unknown as Uint8Array,
+          (data as unknown) as Uint8Array,
         );
       } else {
         throw new TypeError(`unsupported digest algorithm: ${algorithm}`);
@@ -177,7 +177,7 @@ type DigestAlgorithmObject = {
 type DigestAlgorithm = DigestAlgorithmName | DigestAlgorithmObject;
 
 const normalizeAlgorithm = (algorithm: DigestAlgorithm) =>
-  (typeof algorithm === "string" ? { name: algorithm.toUpperCase() } : {
+  ((typeof algorithm === "string") ? { name: algorithm.toUpperCase() } : {
     ...algorithm,
     name: algorithm.name.toUpperCase(),
   }) as DigestAlgorithmObject;

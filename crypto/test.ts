@@ -21,32 +21,28 @@ Deno.test(
       "ae30c171b2b5a047b7986c185564407672441934a356686e6df3a8284f35214448c40738e65b8c308e38b068eed91676";
 
     assertEquals(
-      toHexString(
-        stdCrypto.subtle.digestSync("SHA-384", inputBytes) as ArrayBuffer,
-      ),
+      toHexString(stdCrypto.subtle.digestSync("SHA-384", inputBytes)),
       expectedDigest,
     );
 
     assertEquals(
       toHexString(
-        (await stdCrypto.subtle.digest(
+        await stdCrypto.subtle.digest(
           "SHA-384",
           new Blob([inputBytes]).stream(),
-        )) as ArrayBuffer,
+        ),
       ),
       expectedDigest,
     );
 
     assertEquals(
-      toHexString(
-        stdCrypto.subtle.digestSync("SHA-384", [inputBytes]) as ArrayBuffer,
-      ),
+      toHexString(stdCrypto.subtle.digestSync("SHA-384", [inputBytes])),
       expectedDigest,
     );
 
     assertEquals(
       toHexString(
-        (await stdCrypto.subtle.digest(
+        await stdCrypto.subtle.digest(
           "SHA-384",
           (async function* () {
             yield new Uint16Array();
@@ -54,7 +50,7 @@ Deno.test(
             yield new ArrayBuffer(0);
             yield inputPieces[1];
           })(),
-        )) as ArrayBuffer,
+        ),
       ),
       expectedDigest,
     );
@@ -68,19 +64,19 @@ Deno.test(
             yield* inputPieces;
             yield new Int8Array();
           })(),
-        ) as ArrayBuffer,
+        ),
       ),
       expectedDigest,
     );
 
     assertEquals(
       toHexString(
-        (await stdCrypto.subtle.digest(
+        await stdCrypto.subtle.digest(
           "SHA-384",
           (function* () {
             yield inputBytes;
           })(),
-        )) as ArrayBuffer,
+        ),
       ),
       expectedDigest,
     );
@@ -91,22 +87,12 @@ Deno.test(
     );
 
     assertEquals(
-      toHexString(
-        stdCrypto.subtle.digestSync(
-          "SHA-384",
-          new ArrayBuffer(0),
-        ) as ArrayBuffer,
-      ),
+      toHexString(stdCrypto.subtle.digestSync("SHA-384", new ArrayBuffer(0))),
       emptyDigest,
     );
 
     assertEquals(
-      toHexString(
-        (await stdCrypto.subtle.digest(
-          "SHA-384",
-          new ArrayBuffer(0),
-        )) as ArrayBuffer,
-      ),
+      toHexString(await stdCrypto.subtle.digest("SHA-384", new ArrayBuffer(0))),
       emptyDigest,
     );
   },
@@ -117,8 +103,10 @@ Deno.test("[crypto/digest] Should return an ArrayBuffer", async () => {
   const inputBytes = new TextEncoder().encode(inputString);
 
   assert(
-    (await stdCrypto.subtle.digest("BLAKE3", inputBytes)) instanceof
-      ArrayBuffer,
+    (await stdCrypto.subtle.digest(
+      "BLAKE3",
+      inputBytes,
+    )) instanceof ArrayBuffer,
   );
 
   assert(
@@ -146,20 +134,14 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 
   assertEquals(
     new Uint8Array(
-      (await stdCrypto.subtle.digest(
-        { name: "BLAKE3", length: 0 },
-        inputBytes,
-      )) as ArrayBuffer,
+      await stdCrypto.subtle.digest({ name: "BLAKE3", length: 0 }, inputBytes),
     ),
     new Uint8Array(0),
   );
 
   assertEquals(
     new Uint8Array(
-      (await stdCrypto.subtle.digest(
-        { name: "BLAKE3", length: 6 },
-        inputBytes,
-      )) as ArrayBuffer,
+      await stdCrypto.subtle.digest({ name: "BLAKE3", length: 6 }, inputBytes),
     ),
     new Uint8Array([167, 193, 151, 192, 40, 100]),
   );
@@ -242,25 +224,19 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
   assert(
     heapBytesInitial < 2_000_000,
     `WASM heap was too large initially: ${
-      (
-        heapBytesInitial / 1_000_000
-      ).toFixed(1)
+      (heapBytesInitial / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesAfterSmall < 2_000_000,
     `WASM heap was too large after small input: ${
-      (
-        heapBytesAfterSmall / 1_000_000
-      ).toFixed(1)
+      (heapBytesAfterSmall / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesAfterLarge < 2_000_000,
     `WASM heap was too large after large input: ${
-      (
-        heapBytesAfterLarge / 1_000_000
-      ).toFixed(1)
+      (heapBytesAfterLarge / 1_000_000).toFixed(1)
     } MB`,
   );
 });
@@ -329,17 +305,13 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
   assert(
     heapBytesInitial < 2_000_000,
     `WASM heap was too large initially: ${
-      (
-        heapBytesInitial / 1_000_000
-      ).toFixed(1)
+      (heapBytesInitial / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesFinal < 2_000_000,
     `WASM heap was too large after many digests: ${
-      (
-        heapBytesFinal / 1_000_000
-      ).toFixed(1)
+      (heapBytesFinal / 1_000_000).toFixed(1)
     } MB`,
   );
   assertEquals(
@@ -357,15 +329,15 @@ const aboutAMeg = bytes.repeat(
 );
 
 // The test input pattern used in BLAKE3's official test vectors.
-const blake3TestInput = new Uint8Array(1_000_000)
-  .fill(0)
-  .map((_, i) => i % 251);
+const blake3TestInput = new Uint8Array(1_000_000).fill(0).map((_, i) =>
+  i % 251
+);
 
 // These should all be equivalent views
 const slicedView = new Int16Array(aboutAMeg.buffer, 226, 494443);
-const dataView = new DataView(aboutAMeg.buffer, 226, (16 / 8) * 494443);
+const dataView = new DataView(aboutAMeg.buffer, 226, 16 / 8 * 494443);
 const slicedCopy = new Uint8Array(
-  aboutAMeg.subarray(226, 226 + (16 / 8) * 494443),
+  aboutAMeg.subarray(226, 226 + 16 / 8 * 494443),
 );
 const bufferCopy = slicedCopy.buffer;
 
@@ -410,62 +382,52 @@ const digestCases: [
   // algorithm isn't expected to this input.
   Record<DigestAlgorithm, string | ErrorConstructor>,
 ][] = [
-  [
-    "Empty",
-    [[], [""], [new ArrayBuffer(0), new BigInt64Array(0)]],
-    {},
-    {
-      BLAKE2B:
-        "786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce",
-      "BLAKE2B-256":
-        "0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8",
-      "BLAKE2B-384":
-        "b32811423377f52d7862286ee1a72ee540524380fda1724a6f25d7978c6fd3244a6caf0498812673c5e05ef583825100",
-      BLAKE2S:
-        "69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9",
-      BLAKE3:
-        "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
-      "KECCAK-224": "f71837502ba8e10837bdd8d365adb85591895602fc552b48b7390abd",
-      "KECCAK-256":
-        "c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
-      "KECCAK-384":
-        "2c23146a63a29acf99e73b88f8c24eaa7dc60aa771780ccc006afbfa8fe2479b2dd2b21362337441ac12b515911957ff",
-      "KECCAK-512":
-        "0eab42de4c3ceb9235fc91acffe746b29c29a8c366b7c60e4e67c466f36a4304c00fa9caf9d87976ba469bcbe06713b435f091ef2769fb160cdab33d3670680e",
-      MD4: "31d6cfe0d16ae931b73c59d7e0c089c0",
-      MD5: "d41d8cd98f00b204e9800998ecf8427e",
-      "RIPEMD-160": "9c1185a5c5e9fc54612808977ee8f548b2258d31",
-      "SHA-1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-      "SHA-224": "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f",
-      "SHA-256":
-        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "SHA3-224": "6b4e03423667dbb73b6e15454f0eb1abd4597f9a1b078e3f5b5a6bc7",
-      "SHA3-256":
-        "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a",
-      "SHA3-384":
-        "0c63a75b845e4f7d01107d852e4c2485c51a50aaaa94fc61995e71bbee983a2ac3713831264adb47fb6bd1e058d5f004",
-      "SHA3-512":
-        "a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26",
-      "SHA-384":
-        "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b",
-      "SHA-512":
-        "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
-      SHAKE128:
-        "7f9c2ba4e88f827d616045507605853ed73b8093f6efbc88eb1a6eacfa66ef26",
-      SHAKE256:
-        "46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762fd75dc4ddd8c0f200cb05019d67b592f6fc821c49479ab48640292eacb3b7c4be",
-      TIGER: "3293ac630c13f0245f92bbb1766e16167a4e58492dde73f3",
-    },
-  ],
+  ["Empty", [[], [""], [new ArrayBuffer(0), new BigInt64Array(0)]], {}, {
+    BLAKE2B:
+      "786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce",
+    "BLAKE2B-256":
+      "0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8",
+    "BLAKE2B-384":
+      "b32811423377f52d7862286ee1a72ee540524380fda1724a6f25d7978c6fd3244a6caf0498812673c5e05ef583825100",
+    BLAKE2S: "69217a3079908094e11121d042354a7c1f55b6482ca1a51e1b250dfd1ed0eef9",
+    BLAKE3: "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262",
+    "KECCAK-224": "f71837502ba8e10837bdd8d365adb85591895602fc552b48b7390abd",
+    "KECCAK-256":
+      "c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+    "KECCAK-384":
+      "2c23146a63a29acf99e73b88f8c24eaa7dc60aa771780ccc006afbfa8fe2479b2dd2b21362337441ac12b515911957ff",
+    "KECCAK-512":
+      "0eab42de4c3ceb9235fc91acffe746b29c29a8c366b7c60e4e67c466f36a4304c00fa9caf9d87976ba469bcbe06713b435f091ef2769fb160cdab33d3670680e",
+    MD4: "31d6cfe0d16ae931b73c59d7e0c089c0",
+    MD5: "d41d8cd98f00b204e9800998ecf8427e",
+    "RIPEMD-160": "9c1185a5c5e9fc54612808977ee8f548b2258d31",
+    "SHA-1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+    "SHA-224": "d14a028c2a3a2bc9476102bb288234c415a2b01f828ea62ac5b3e42f",
+    "SHA-256":
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "SHA3-224": "6b4e03423667dbb73b6e15454f0eb1abd4597f9a1b078e3f5b5a6bc7",
+    "SHA3-256":
+      "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a",
+    "SHA3-384":
+      "0c63a75b845e4f7d01107d852e4c2485c51a50aaaa94fc61995e71bbee983a2ac3713831264adb47fb6bd1e058d5f004",
+    "SHA3-512":
+      "a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26",
+    "SHA-384":
+      "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b",
+    "SHA-512":
+      "cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e",
+    SHAKE128:
+      "7f9c2ba4e88f827d616045507605853ed73b8093f6efbc88eb1a6eacfa66ef26",
+    SHAKE256:
+      "46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762fd75dc4ddd8c0f200cb05019d67b592f6fc821c49479ab48640292eacb3b7c4be",
+    TIGER: "3293ac630c13f0245f92bbb1766e16167a4e58492dde73f3",
+  }],
 
   [
     "One zeroed byte",
-    [
-      ["\x00"],
-      ["", "\x00", "", ""],
-      [new ArrayBuffer(1)],
-      [new Uint8ClampedArray(1)],
-    ],
+    [["\x00"], ["", "\x00", "", ""], [new ArrayBuffer(1)], [
+      new Uint8ClampedArray(1),
+    ]],
     {},
     {
       BLAKE2B:
@@ -511,147 +473,124 @@ const digestCases: [
     },
   ],
 
-  [
-    "Output length: 20",
-    [
-      ["", "hello world", ""],
-      ["hello ", "world"],
-    ],
-    {
-      length: 20,
-    },
-    {
-      BLAKE2B: Error,
-      "BLAKE2B-384": Error,
-      "BLAKE2B-256": Error,
-      BLAKE2S: Error,
-      BLAKE3: "d74981efa70a0c880b8d8c1985d075dbcbf679b9",
-      "KECCAK-224": Error,
-      "KECCAK-256": Error,
-      "KECCAK-384": Error,
-      "KECCAK-512": Error,
-      MD4: Error,
-      MD5: Error,
-      "RIPEMD-160": "98c615784ccb5fe5936fbc0cbe9dfdb408d92f0f",
-      "SHA-1": "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed",
-      "SHA-224": Error,
-      "SHA-256": Error,
-      "SHA3-224": Error,
-      "SHA3-256": Error,
-      "SHA3-384": Error,
-      "SHA3-512": Error,
-      "SHA-384": Error,
-      "SHA-512": Error,
-      SHAKE128: "3a9159f071e4dd1c8c4f968607c30942e120d815",
-      SHAKE256: "369771bb2cb9d2b04c1d54cca487e372d9f187f7",
-      TIGER: Error,
-    },
-  ],
+  ["Output length: 20", [["", "hello world", ""], ["hello ", "world"]], {
+    length: 20,
+  }, {
+    BLAKE2B: Error,
+    "BLAKE2B-384": Error,
+    "BLAKE2B-256": Error,
+    BLAKE2S: Error,
+    BLAKE3: "d74981efa70a0c880b8d8c1985d075dbcbf679b9",
+    "KECCAK-224": Error,
+    "KECCAK-256": Error,
+    "KECCAK-384": Error,
+    "KECCAK-512": Error,
+    MD4: Error,
+    MD5: Error,
+    "RIPEMD-160": "98c615784ccb5fe5936fbc0cbe9dfdb408d92f0f",
+    "SHA-1": "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed",
+    "SHA-224": Error,
+    "SHA-256": Error,
+    "SHA3-224": Error,
+    "SHA3-256": Error,
+    "SHA3-384": Error,
+    "SHA3-512": Error,
+    "SHA-384": Error,
+    "SHA-512": Error,
+    SHAKE128: "3a9159f071e4dd1c8c4f968607c30942e120d815",
+    SHAKE256: "369771bb2cb9d2b04c1d54cca487e372d9f187f7",
+    TIGER: Error,
+  }],
 
-  [
-    "Output length: 3",
-    [["hello world"], ["hell", "o w", "orld"]],
-    {
-      length: 3,
-    },
-    {
-      BLAKE2B: Error,
-      "BLAKE2B-384": Error,
-      "BLAKE2B-256": Error,
-      BLAKE2S: Error,
-      BLAKE3: "d74981",
-      "KECCAK-224": Error,
-      "KECCAK-256": Error,
-      "KECCAK-384": Error,
-      "KECCAK-512": Error,
-      MD4: Error,
-      MD5: Error,
-      "RIPEMD-160": Error,
-      "SHA-1": Error,
-      "SHA-224": Error,
-      "SHA-256": Error,
-      "SHA3-224": Error,
-      "SHA3-256": Error,
-      "SHA3-384": Error,
-      "SHA3-512": Error,
-      "SHA-384": Error,
-      "SHA-512": Error,
-      SHAKE128: "3a9159",
-      SHAKE256: "369771",
-      TIGER: Error,
-    },
-  ],
+  ["Output length: 3", [["hello world"], ["hell", "o w", "orld"]], {
+    length: 3,
+  }, {
+    BLAKE2B: Error,
+    "BLAKE2B-384": Error,
+    "BLAKE2B-256": Error,
+    BLAKE2S: Error,
+    BLAKE3: "d74981",
+    "KECCAK-224": Error,
+    "KECCAK-256": Error,
+    "KECCAK-384": Error,
+    "KECCAK-512": Error,
+    MD4: Error,
+    MD5: Error,
+    "RIPEMD-160": Error,
+    "SHA-1": Error,
+    "SHA-224": Error,
+    "SHA-256": Error,
+    "SHA3-224": Error,
+    "SHA3-256": Error,
+    "SHA3-384": Error,
+    "SHA3-512": Error,
+    "SHA-384": Error,
+    "SHA-512": Error,
+    SHAKE128: "3a9159",
+    SHAKE256: "369771",
+    TIGER: Error,
+  }],
 
-  [
-    "Output length: 123",
-    [["hello world"], ["hell", "o w", "orld"]],
-    {
-      length: 123,
-    },
-    {
-      BLAKE2B: Error,
-      "BLAKE2B-384": Error,
-      "BLAKE2B-256": Error,
-      BLAKE2S: Error,
-      BLAKE3:
-        "d74981efa70a0c880b8d8c1985d075dbcbf679b99a5f9914e5aaf96b831a9e24a020ed55aed9a6ab2eaf3fd70d2c98c949e142d8f42a10250190b699e02cf9eb68612e1a556fee6cf726bcb0994f7d3e669eda394788f8c80a4f0ea056be3d4dffd8069d7ef9a714a47a4cdef62c5402a25d7994384b07bfcf8479",
-      "KECCAK-224": Error,
-      "KECCAK-256": Error,
-      "KECCAK-384": Error,
-      "KECCAK-512": Error,
-      MD4: Error,
-      MD5: Error,
-      "RIPEMD-160": Error,
-      "SHA-1": Error,
-      "SHA-224": Error,
-      "SHA-256": Error,
-      "SHA3-224": Error,
-      "SHA3-256": Error,
-      "SHA3-384": Error,
-      "SHA3-512": Error,
-      "SHA-384": Error,
-      "SHA-512": Error,
-      SHAKE128:
-        "3a9159f071e4dd1c8c4f968607c30942e120d8156b8b1e72e0d376e8871cb8b899072665674f26cc494a4bcf027c58267e8ee2da60e942759de86d2670bba1aa47bffd20b48b1d2aa7c3349f8215d1b99ca65bdb1770a220f67456f602436032afce7f24e534e7bfcdab9b35affa0ff891074302c19970d7359a8c",
-      SHAKE256:
-        "369771bb2cb9d2b04c1d54cca487e372d9f187f73f7ba3f65b95c8ee7798c527f4f3c2d55c2d46a29f2e945d469c3df27853a8735271f5cc2d9e889544357116bb60a24af659151563156eebbf68810dd95c6fcccac0650132ba30bef9bf75b0d483becb935be8688b26ffb294d8284edd64a97325d6be0a423f23",
-      TIGER: Error,
-    },
-  ],
+  ["Output length: 123", [["hello world"], ["hell", "o w", "orld"]], {
+    length: 123,
+  }, {
+    BLAKE2B: Error,
+    "BLAKE2B-384": Error,
+    "BLAKE2B-256": Error,
+    BLAKE2S: Error,
+    BLAKE3:
+      "d74981efa70a0c880b8d8c1985d075dbcbf679b99a5f9914e5aaf96b831a9e24a020ed55aed9a6ab2eaf3fd70d2c98c949e142d8f42a10250190b699e02cf9eb68612e1a556fee6cf726bcb0994f7d3e669eda394788f8c80a4f0ea056be3d4dffd8069d7ef9a714a47a4cdef62c5402a25d7994384b07bfcf8479",
+    "KECCAK-224": Error,
+    "KECCAK-256": Error,
+    "KECCAK-384": Error,
+    "KECCAK-512": Error,
+    MD4: Error,
+    MD5: Error,
+    "RIPEMD-160": Error,
+    "SHA-1": Error,
+    "SHA-224": Error,
+    "SHA-256": Error,
+    "SHA3-224": Error,
+    "SHA3-256": Error,
+    "SHA3-384": Error,
+    "SHA3-512": Error,
+    "SHA-384": Error,
+    "SHA-512": Error,
+    SHAKE128:
+      "3a9159f071e4dd1c8c4f968607c30942e120d8156b8b1e72e0d376e8871cb8b899072665674f26cc494a4bcf027c58267e8ee2da60e942759de86d2670bba1aa47bffd20b48b1d2aa7c3349f8215d1b99ca65bdb1770a220f67456f602436032afce7f24e534e7bfcdab9b35affa0ff891074302c19970d7359a8c",
+    SHAKE256:
+      "369771bb2cb9d2b04c1d54cca487e372d9f187f73f7ba3f65b95c8ee7798c527f4f3c2d55c2d46a29f2e945d469c3df27853a8735271f5cc2d9e889544357116bb60a24af659151563156eebbf68810dd95c6fcccac0650132ba30bef9bf75b0d483becb935be8688b26ffb294d8284edd64a97325d6be0a423f23",
+    TIGER: Error,
+  }],
 
-  [
-    "Output length: 0",
-    [[""]],
-    {
-      length: 0,
-    },
-    {
-      BLAKE2B: Error,
-      "BLAKE2B-384": Error,
-      "BLAKE2B-256": Error,
-      BLAKE2S: Error,
-      BLAKE3: "",
-      "KECCAK-224": Error,
-      "KECCAK-256": Error,
-      "KECCAK-384": Error,
-      "KECCAK-512": Error,
-      MD4: Error,
-      MD5: Error,
-      "RIPEMD-160": Error,
-      "SHA-1": Error,
-      "SHA-224": Error,
-      "SHA-256": Error,
-      "SHA3-224": Error,
-      "SHA3-256": Error,
-      "SHA3-384": Error,
-      "SHA3-512": Error,
-      "SHA-384": Error,
-      "SHA-512": Error,
-      SHAKE128: "",
-      SHAKE256: "",
-      TIGER: Error,
-    },
-  ],
+  ["Output length: 0", [[""]], {
+    length: 0,
+  }, {
+    BLAKE2B: Error,
+    "BLAKE2B-384": Error,
+    "BLAKE2B-256": Error,
+    BLAKE2S: Error,
+    BLAKE3: "",
+    "KECCAK-224": Error,
+    "KECCAK-256": Error,
+    "KECCAK-384": Error,
+    "KECCAK-512": Error,
+    MD4: Error,
+    MD5: Error,
+    "RIPEMD-160": Error,
+    "SHA-1": Error,
+    "SHA-224": Error,
+    "SHA-256": Error,
+    "SHA3-224": Error,
+    "SHA3-256": Error,
+    "SHA3-384": Error,
+    "SHA3-512": Error,
+    "SHA-384": Error,
+    "SHA-512": Error,
+    SHAKE128: "",
+    SHAKE256: "",
+    TIGER: Error,
+  }],
 
   ["Negative length", [[""]], { length: -1 }, allErrors],
 
@@ -664,62 +603,50 @@ const digestCases: [
     allErrors,
   ],
 
-  [
-    "Too-large length",
-    [[""]],
-    {
-      length: Number.MAX_SAFE_INTEGER * Number.MAX_SAFE_INTEGER,
-    },
-    allErrors,
-  ],
+  ["Too-large length", [[""]], {
+    length: Number.MAX_SAFE_INTEGER * Number.MAX_SAFE_INTEGER,
+  }, allErrors],
 
-  [
-    "About a meg",
-    [[aboutAMeg]],
-    {},
-    {
-      BLAKE2B:
-        "81f197a4ced23ba7bfc9e5e84f417475371b22edb36089978734d1327c39ff75eeda6598ab1c63f0829aa437b68a526f04e622f714d9d7093150e6b2f9603b5c",
-      "BLAKE2B-256":
-        "84b033ca29abf242e3761b1657e14768cbfb4e7fc28b3d9f0f34905e5f2aa92b",
-      "BLAKE2B-384":
-        "0300b1c3d7deeca947263590d4777b0df0e7869ded64d63afafcfb3da4df5e542bfe309667436f534cd3b9cb9ee5f938",
-      BLAKE2S:
-        "c1b9bffb9bb1fa42f26ce72ad457bef071a7713532c37b772a3a7e8b353551fc",
-      BLAKE3:
-        "7fc79f34e187d62c474af7d57531a77f193ab6f2fae71c6de155b341cb592fe5",
-      "KECCAK-224": "8186d48ddde40e518b203db01cc105f0d4a1f46341322730f9c61b51",
-      "KECCAK-256":
-        "c1b36a3fdc9d8c4f337a8f9cf627e703718fd2d2559b366ec310d75cd03ddc94",
-      "KECCAK-384":
-        "6acf1af74a00ee20aa0b03647858ed749f7cef64fcf990da3b49e48232002b2ede1e50295755ca9a06f43157cfb36dd6",
-      "KECCAK-512":
-        "726580def2ce92c4345c0dfe768417b022a5fc9a9fec4f960b314bf078bdc93f05057d83a8334454977960e27afaf0d3b7500e5ee862ed91fff3817a93820f63",
-      MD4: "45c7d06ad9f5b7aefd65dca06ca8bfb6",
-      MD5: "65ee3c415a2316553ebf2fdb2ccafd0b",
-      "RIPEMD-160": "a7188285d5c8560c44deadbdbb095e8fe6ac8dec",
-      "SHA-1": "74de0faec24034e7415e7a6ee379e509b29985b2",
-      "SHA-224": "cfb9e6dd8dc52cb0e843067467e58a03224fbe84004b955078c98a20",
-      "SHA-256":
-        "ce0ae911a08c37d8e25605bc209c13e870ab3c4a40a7610ea3af989d9b0a00dd",
-      "SHA3-224": "c7b818905ca367b591d17b31cac9b3c3f9158f65968725a6c65c4d82",
-      "SHA3-256":
-        "ff7934eb30afb91390adbd02ef2bf808eeac30bb4a7779f346a71962610874bd",
-      "SHA3-384":
-        "7f97aca31fa48466fdcf029396305c09ee98c0a547ff095a24af7ada72beb8448fe5d12b8c2d7e0a48822e1fe8db0387",
-      "SHA3-512":
-        "61bbdae5203bbf8a9effd083da83ebf18951668e658a810987ea2feb1fb810be5800fb03489a99e9f25979aa6c345477036afabcda612066b3c1213a72c05534",
-      "SHA-384":
-        "6f6b2d594fc88bcdfb574524e580b79c7dd74980392ad526c357860a761c8075f27c4960a38c4668c56d64520a5bebff",
-      "SHA-512":
-        "b3d3a7531e6bea36639bd9cf5a5c462f32d4f74a4b9878aad7405149d7962ad02e4cc1922133c43e9a2685f2927345a72c697144cbd69a895778126c1c59d455",
-      SHAKE128:
-        "1e99e4ac28efec6bc3af203f6a161b976389a2d036d0e42026141860d1e3a08a",
-      SHAKE256:
-        "e39016c524adfa6efd8019d6bc6584bbb912bed38ab896a546a2ef648e120838085103118d3409caab6ed847a67b27085bdce9ffaa6408410431a706625f07bf",
-      TIGER: "111764e3c4f512abce83c7ebdf061caca4f9a04177046509",
-    },
-  ],
+  ["About a meg", [[aboutAMeg]], {}, {
+    BLAKE2B:
+      "81f197a4ced23ba7bfc9e5e84f417475371b22edb36089978734d1327c39ff75eeda6598ab1c63f0829aa437b68a526f04e622f714d9d7093150e6b2f9603b5c",
+    "BLAKE2B-256":
+      "84b033ca29abf242e3761b1657e14768cbfb4e7fc28b3d9f0f34905e5f2aa92b",
+    "BLAKE2B-384":
+      "0300b1c3d7deeca947263590d4777b0df0e7869ded64d63afafcfb3da4df5e542bfe309667436f534cd3b9cb9ee5f938",
+    BLAKE2S: "c1b9bffb9bb1fa42f26ce72ad457bef071a7713532c37b772a3a7e8b353551fc",
+    BLAKE3: "7fc79f34e187d62c474af7d57531a77f193ab6f2fae71c6de155b341cb592fe5",
+    "KECCAK-224": "8186d48ddde40e518b203db01cc105f0d4a1f46341322730f9c61b51",
+    "KECCAK-256":
+      "c1b36a3fdc9d8c4f337a8f9cf627e703718fd2d2559b366ec310d75cd03ddc94",
+    "KECCAK-384":
+      "6acf1af74a00ee20aa0b03647858ed749f7cef64fcf990da3b49e48232002b2ede1e50295755ca9a06f43157cfb36dd6",
+    "KECCAK-512":
+      "726580def2ce92c4345c0dfe768417b022a5fc9a9fec4f960b314bf078bdc93f05057d83a8334454977960e27afaf0d3b7500e5ee862ed91fff3817a93820f63",
+    MD4: "45c7d06ad9f5b7aefd65dca06ca8bfb6",
+    MD5: "65ee3c415a2316553ebf2fdb2ccafd0b",
+    "RIPEMD-160": "a7188285d5c8560c44deadbdbb095e8fe6ac8dec",
+    "SHA-1": "74de0faec24034e7415e7a6ee379e509b29985b2",
+    "SHA-224": "cfb9e6dd8dc52cb0e843067467e58a03224fbe84004b955078c98a20",
+    "SHA-256":
+      "ce0ae911a08c37d8e25605bc209c13e870ab3c4a40a7610ea3af989d9b0a00dd",
+    "SHA3-224": "c7b818905ca367b591d17b31cac9b3c3f9158f65968725a6c65c4d82",
+    "SHA3-256":
+      "ff7934eb30afb91390adbd02ef2bf808eeac30bb4a7779f346a71962610874bd",
+    "SHA3-384":
+      "7f97aca31fa48466fdcf029396305c09ee98c0a547ff095a24af7ada72beb8448fe5d12b8c2d7e0a48822e1fe8db0387",
+    "SHA3-512":
+      "61bbdae5203bbf8a9effd083da83ebf18951668e658a810987ea2feb1fb810be5800fb03489a99e9f25979aa6c345477036afabcda612066b3c1213a72c05534",
+    "SHA-384":
+      "6f6b2d594fc88bcdfb574524e580b79c7dd74980392ad526c357860a761c8075f27c4960a38c4668c56d64520a5bebff",
+    "SHA-512":
+      "b3d3a7531e6bea36639bd9cf5a5c462f32d4f74a4b9878aad7405149d7962ad02e4cc1922133c43e9a2685f2927345a72c697144cbd69a895778126c1c59d455",
+    SHAKE128:
+      "1e99e4ac28efec6bc3af203f6a161b976389a2d036d0e42026141860d1e3a08a",
+    SHAKE256:
+      "e39016c524adfa6efd8019d6bc6584bbb912bed38ab896a546a2ef648e120838085103118d3409caab6ed847a67b27085bdce9ffaa6408410431a706625f07bf",
+    TIGER: "111764e3c4f512abce83c7ebdf061caca4f9a04177046509",
+  }],
 
   [
     "Different views of the same bytes",
@@ -771,13 +698,15 @@ const digestCases: [
 
   [
     "Different combinations of different views of the same bytes",
-    [
-      [slicedView, bufferCopy],
-      [slicedCopy, "", slicedView],
-      [slicedCopy, "", slicedView],
-      ["", bufferCopy, dataView],
-      [dataView, new Uint8Array(), slicedCopy, ""],
-    ],
+    [[slicedView, bufferCopy], [slicedCopy, "", slicedView], [
+      slicedCopy,
+      "",
+      slicedView,
+    ], [
+      "",
+      bufferCopy,
+      dataView,
+    ], [dataView, new Uint8Array(), slicedCopy, ""]],
     {},
     {
       BLAKE2B:
@@ -1275,13 +1204,11 @@ const digestCases: [
 
   [
     "BLAKE3 official test vector input for hash with input length 8192",
-    [
-      [
-        blake3TestInput.slice(0, 1234),
-        blake3TestInput.slice(1234, 5678),
-        blake3TestInput.slice(5678, 8192),
-      ],
-    ],
+    [[
+      blake3TestInput.slice(0, 1234),
+      blake3TestInput.slice(1234, 5678),
+      blake3TestInput.slice(5678, 8192),
+    ]],
     { length: 131 },
     {
       ...allErrors,
@@ -1387,12 +1314,7 @@ Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
 for (const algorithm of digestAlgorithms) {
   Deno.test(`[crypto/digest/${algorithm}] test vectors`, async () => {
     for (
-      const [
-        caption,
-        piecesVariations,
-        options,
-        algorithms,
-      ] of digestCases
+      const [caption, piecesVariations, options, algorithms] of digestCases
     ) {
       const expected = algorithms[algorithm];
       for (const [i, pieces] of piecesVariations.entries()) {
@@ -1401,13 +1323,10 @@ for (const algorithm of digestAlgorithms) {
         ) as Array<BufferSource>;
         try {
           const actual = toHexString(
-            (await stdCrypto.subtle.digest(
-              {
-                ...options,
-                name: algorithm,
-              },
-              bytePieces,
-            )) as ArrayBuffer,
+            await stdCrypto.subtle.digest({
+              ...options,
+              name: algorithm,
+            }, bytePieces),
           );
           assertEquals(
             expected,
@@ -1415,9 +1334,7 @@ for (const algorithm of digestAlgorithms) {
             `${algorithm} of ${caption}${
               i > 0 ? ` (but not until variation [${i}]!)` : ""
             } with options ${
-              JSON.stringify(
-                options,
-              )
+              JSON.stringify(options)
             }) returned unexpected value\n  actual: ${actual}\nexpected: ${expected}`,
           );
         } catch (error) {
