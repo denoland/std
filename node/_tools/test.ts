@@ -24,6 +24,9 @@ const requireTs = "require.ts";
 const windowsIgnorePaths = new Set(
   getPathsFromTestSuites(config.windowsIgnore),
 );
+const darwinIgnorePaths = new Set(
+  getPathsFromTestSuites(config.darwinIgnore),
+);
 
 const decoder = new TextDecoder();
 
@@ -36,7 +39,9 @@ for await (const path of testPaths) {
   ) {
     continue;
   }
-  const ignore = Deno.build.os === "windows" && windowsIgnorePaths.has(path);
+  const ignore =
+    (Deno.build.os === "windows" && windowsIgnorePaths.has(path)) ||
+    (Deno.build.os === "darwin" && darwinIgnorePaths.has(path));
   Deno.test({
     name: `Node.js compatibility "${path}"`,
     ignore,
