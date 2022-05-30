@@ -337,8 +337,8 @@ class AssertSnapshotContext {
    * Check if exist snapshot
    */
   public hasSnapshot(snapshotName: string): boolean {
-    return this.currentSnapshots
-      ? this.currentSnapshots.has(snapshotName)
+    return this.#currentSnapshots
+      ? this.#currentSnapshots.has(snapshotName)
       : false;
   }
 }
