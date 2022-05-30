@@ -411,22 +411,18 @@ Deno.test("configureSafe async", async () => {
 });
 
 Deno.test("config defaults", async () => {
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--allow-read",
       "--allow-env",
       path.join(testdataDir, "./app_defaults.ts"),
     ],
     cwd: testdataDir,
-    stdout: "piped",
   });
 
   const decoder = new TextDecoder();
-  const rawOutput = await p.output();
-  const conf = JSON.parse(decoder.decode(rawOutput).trim());
-  p.close();
+  const conf = JSON.parse(decoder.decode(stdout).trim());
 
   assertEquals(conf.GREETING, "hello world", "fetches .env by default");
 

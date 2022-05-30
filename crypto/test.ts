@@ -165,18 +165,16 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
   );
 });
 
-Deno.test(
-  "[crypto/digest] Memory use should remain reasonable even with large inputs",
-  async () => {
-    const process = Deno.run({
-      cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
-      cwd: moduleDir,
-      stdout: "piped",
-      stdin: "piped",
-    });
+Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
+  const process = Deno.spawnChild(Deno.execPath(), {
+    args: ["--quiet", "run", "--no-check", "-"],
+    cwd: moduleDir,
+    stdin: "piped",
+  });
 
-    await process.stdin.write(
-      new TextEncoder().encode(`
+  const writer = process.stdin.getWriter();
+  await writer.write(
+    new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
       import { _wasm } from "../_wasm_crypto/crypto.mjs";
 
@@ -207,79 +205,77 @@ Deno.test(
         2,
       ));
     `),
-    );
-    process.stdin.close();
+  );
+  writer.releaseLock();
+  await process.stdin.close();
 
-    const stdout = new TextDecoder().decode(await process.output());
-    const status = await process.status();
-    process.close();
+  const res = await process.output();
+  const stdout = new TextDecoder().decode(res.stdout);
 
-    assertEquals(status.success, true, "test subprocess failed");
-    const {
-      heapBytesInitial,
-      smallDigest,
-      heapBytesAfterSmall,
-      largeDigest,
-      heapBytesAfterLarge,
-    }: {
-      heapBytesInitial: number;
-      smallDigest: string;
-      heapBytesAfterSmall: number;
-      largeDigest: string;
-      heapBytesAfterLarge: number;
-    } = JSON.parse(stdout);
+  assertEquals(res.status.success, true, "test subprocess failed");
+  const {
+    heapBytesInitial,
+    smallDigest,
+    heapBytesAfterSmall,
+    largeDigest,
+    heapBytesAfterLarge,
+  }: {
+    heapBytesInitial: number;
+    smallDigest: string;
+    heapBytesAfterSmall: number;
+    largeDigest: string;
+    heapBytesAfterLarge: number;
+  } = JSON.parse(stdout);
 
-    assertEquals(
-      smallDigest,
-      "4d006976636a8696d909a630a4081aad4d7c50f81afdee04020bf05086ab6a55",
-      `test subprocess returned wrong hash (${smallDigest})`,
-    );
-    assertEquals(
-      largeDigest,
-      "64fee39c5a30a8af6287b4862eed4af93c2c3fde42d10c5350ac82237c2804b5",
-      `test subprocess returned wrong hash (${largeDigest})`,
-    );
+  assertEquals(
+    smallDigest,
+    "4d006976636a8696d909a630a4081aad4d7c50f81afdee04020bf05086ab6a55",
+    `test subprocess returned wrong hash (${smallDigest})`,
+  );
+  assertEquals(
+    largeDigest,
+    "64fee39c5a30a8af6287b4862eed4af93c2c3fde42d10c5350ac82237c2804b5",
+    `test subprocess returned wrong hash (${largeDigest})`,
+  );
 
-    // Heap should stay under 2MB even though we provided a 64MB input.
-    assert(
-      heapBytesInitial < 2_000_000,
-      `WASM heap was too large initially: ${
-        (
-          heapBytesInitial / 1_000_000
-        ).toFixed(1)
-      } MB`,
-    );
-    assert(
-      heapBytesAfterSmall < 2_000_000,
-      `WASM heap was too large after small input: ${
-        (
-          heapBytesAfterSmall / 1_000_000
-        ).toFixed(1)
-      } MB`,
-    );
-    assert(
-      heapBytesAfterLarge < 2_000_000,
-      `WASM heap was too large after large input: ${
-        (
-          heapBytesAfterLarge / 1_000_000
-        ).toFixed(1)
-      } MB`,
-    );
-  },
-);
+  // Heap should stay under 2MB even though we provided a 64MB input.
+  assert(
+    heapBytesInitial < 2_000_000,
+    `WASM heap was too large initially: ${
+      (
+        heapBytesInitial / 1_000_000
+      ).toFixed(1)
+    } MB`,
+  );
+  assert(
+    heapBytesAfterSmall < 2_000_000,
+    `WASM heap was too large after small input: ${
+      (
+        heapBytesAfterSmall / 1_000_000
+      ).toFixed(1)
+    } MB`,
+  );
+  assert(
+    heapBytesAfterLarge < 2_000_000,
+    `WASM heap was too large after large input: ${
+      (
+        heapBytesAfterLarge / 1_000_000
+      ).toFixed(1)
+    } MB`,
+  );
+});
 
-Deno.test(
-  "[crypto/digest] Memory use should remain reasonable even with many calls",
-  async () => {
-    const process = Deno.run({
-      cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
-      cwd: moduleDir,
-      stdout: "piped",
-      stdin: "piped",
-    });
+Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
+  const process = Deno.spawnChild(Deno.execPath(), {
+    args: ["--quiet", "run", "--no-check", "-"],
+    cwd: moduleDir,
+    stdout: "piped",
+    stdin: "piped",
+  });
 
-    await process.stdin.write(
-      new TextEncoder().encode(`
+  const writer = process.stdin.getWriter();
+  await writer.write(
+    new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
       import { _wasm } from "../_wasm_crypto/crypto.mjs";
 
@@ -312,47 +308,46 @@ Deno.test(
         2,
       ));
     `),
-    );
-    process.stdin.close();
+  );
+  writer.releaseLock();
+  await process.stdin.close();
 
-    const stdout = new TextDecoder().decode(await process.output());
-    const status = await process.status();
-    process.close();
+  const res = await process.output();
+  const stdout = new TextDecoder().decode(res.stdout);
 
-    assertEquals(status.success, true, "test subprocess failed");
-    const {
-      heapBytesInitial,
-      heapBytesFinal,
-      stateFinal,
-    }: {
-      heapBytesInitial: number;
-      heapBytesFinal: number;
-      stateFinal: string;
-    } = JSON.parse(stdout);
+  assertEquals(res.status.success, true, "test subprocess failed");
+  const {
+    heapBytesInitial,
+    heapBytesFinal,
+    stateFinal,
+  }: {
+    heapBytesInitial: number;
+    heapBytesFinal: number;
+    stateFinal: string;
+  } = JSON.parse(stdout);
 
-    assert(
-      heapBytesInitial < 2_000_000,
-      `WASM heap was too large initially: ${
-        (
-          heapBytesInitial / 1_000_000
-        ).toFixed(1)
-      } MB`,
-    );
-    assert(
-      heapBytesFinal < 2_000_000,
-      `WASM heap was too large after many digests: ${
-        (
-          heapBytesFinal / 1_000_000
-        ).toFixed(1)
-      } MB`,
-    );
-    assertEquals(
-      stateFinal,
-      "bad332864a0cd62866c18ac5623585b4b8e4fa029661e909c82ada8c06bc34d6",
-      `test subprocess returned wrong hash (${stateFinal})`,
-    );
-  },
-);
+  assert(
+    heapBytesInitial < 2_000_000,
+    `WASM heap was too large initially: ${
+      (
+        heapBytesInitial / 1_000_000
+      ).toFixed(1)
+    } MB`,
+  );
+  assert(
+    heapBytesFinal < 2_000_000,
+    `WASM heap was too large after many digests: ${
+      (
+        heapBytesFinal / 1_000_000
+      ).toFixed(1)
+    } MB`,
+  );
+  assertEquals(
+    stateFinal,
+    "bad332864a0cd62866c18ac5623585b4b8e4fa029661e909c82ada8c06bc34d6",
+    `test subprocess returned wrong hash (${stateFinal})`,
+  );
+});
 
 // Simple periodic data, but the periods shouldn't line up with any block
 // or chunk sizes.
