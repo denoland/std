@@ -20,7 +20,6 @@ const toolsPath = dirname(fromFileUrl(import.meta.url));
 const stdRootUrl = new URL("../../", import.meta.url).href;
 const testPaths = getPathsFromTestSuites(config.tests);
 const cwd = fromFileUrl(new URL("./", import.meta.url));
-const requireTs = "require.ts";
 const windowsIgnorePaths = new Set(
   getPathsFromTestSuites(config.windowsIgnore),
 );
