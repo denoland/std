@@ -6,17 +6,15 @@ const moduleDir = dirname(fromFileUrl(import.meta.url));
 
 Deno.test("[examples/colors] print a colored text", async () => {
   const decoder = new TextDecoder();
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "run", "--quiet", "colors.ts"],
+  const { stdout } = await Deno.spawn(Deno.execPath(), {
+    args: ["run", "--quiet", "colors.ts"],
     cwd: moduleDir,
-    stdout: "piped",
   });
   try {
-    const output = await process.output();
-    const actual = decoder.decode(output).trim();
+    const actual = decoder.decode(stdout).trim();
     const expected = "[44m[3m[31m[1mHello world![22m[39m[23m[49m";
     assertStrictEquals(actual, expected);
   } finally {
-    process.close();
+    //
   }
 });

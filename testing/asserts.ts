@@ -2,17 +2,9 @@
 // This module is browser compatible. Do not rely on good formatting of values
 // for AssertionError messages in browsers.
 
-import {
-  bgGreen,
-  bgRed,
-  bold,
-  gray,
-  green,
-  red,
-  stripColor,
-  white,
-} from "../fmt/colors.ts";
-import { diff, DiffResult, diffstr, DiffType } from "./_diff.ts";
+import { red, stripColor } from "../fmt/colors.ts";
+import { buildMessage, diff, diffstr } from "./_diff.ts";
+import { format } from "./_format.ts";
 
 const CAN_NOT_DISPLAY = "[Cannot display]";
 
@@ -21,88 +13,6 @@ export class AssertionError extends Error {
   constructor(message: string) {
     super(message);
   }
-}
-
-/**
- * Converts the input into a string. Objects, Sets and Maps are sorted so as to
- * make tests less flaky
- * @param v Value to be formatted
- */
-export function _format(v: unknown): string {
-  // deno-lint-ignore no-explicit-any
-  const { Deno } = globalThis as any;
-  return typeof Deno?.inspect === "function"
-    ? Deno.inspect(v, {
-      depth: Infinity,
-      sorted: true,
-      trailingComma: true,
-      compact: false,
-      iterableLimit: Infinity,
-    })
-    : `"${String(v).replace(/(?=["\\])/g, "\\")}"`;
-}
-
-/**
- * Colors the output of assertion diffs
- * @param diffType Difference type, either added or removed
- */
-function createColor(
-  diffType: DiffType,
-  { background = false } = {},
-): (s: string) => string {
-  switch (diffType) {
-    case DiffType.added:
-      return (s: string): string =>
-        background ? bgGreen(white(s)) : green(bold(s));
-    case DiffType.removed:
-      return (s: string): string => background ? bgRed(white(s)) : red(bold(s));
-    default:
-      return white;
-  }
-}
-
-/**
- * Prefixes `+` or `-` in diff output
- * @param diffType Difference type, either added or removed
- */
-function createSign(diffType: DiffType): string {
-  switch (diffType) {
-    case DiffType.added:
-      return "+   ";
-    case DiffType.removed:
-      return "-   ";
-    default:
-      return "    ";
-  }
-}
-
-function buildMessage(
-  diffResult: ReadonlyArray<DiffResult<string>>,
-  { stringDiff = false } = {},
-): string[] {
-  const messages: string[] = [], diffMessages: string[] = [];
-  messages.push("");
-  messages.push("");
-  messages.push(
-    `    ${gray(bold("[Diff]"))} ${red(bold("Actual"))} / ${
-      green(bold("Expected"))
-    }`,
-  );
-  messages.push("");
-  messages.push("");
-  diffResult.forEach((result: DiffResult<string>): void => {
-    const c = createColor(result.type);
-    const line = result.details?.map((detail) =>
-      detail.type !== DiffType.common
-        ? createColor(detail.type, { background: true })(detail.value)
-        : detail.value
-    ).join("") ?? result.value;
-    diffMessages.push(c(`${createSign(result.type)}${line}`));
-  });
-  messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages));
-  messages.push("");
-
-  return messages;
 }
 
 function isKeyedCollection(x: unknown): x is Set<unknown> {
@@ -161,6 +71,7 @@ export function equal(c: unknown, d: unknown): boolean {
       if (Object.keys(a || {}).length !== Object.keys(b || {}).length) {
         return false;
       }
+      seen.set(a, b);
       if (isKeyedCollection(a) && isKeyedCollection(b)) {
         if (a.size !== b.size) {
           return false;
@@ -198,7 +109,6 @@ export function equal(c: unknown, d: unknown): boolean {
           return false;
         }
       }
-      seen.set(a, b);
       if (a instanceof WeakRef || b instanceof WeakRef) {
         if (!(a instanceof WeakRef && b instanceof WeakRef)) return false;
         return compare(a.deref(), b.deref());
@@ -223,6 +133,13 @@ export function assert(expr: unknown, msg = ""): asserts expr {
   }
 }
 
+/** Make an assertion, error will be thrown if `expr` have truthy value. */
+export function assertFalse(expr: unknown, msg = ""): asserts expr is false {
+  if (expr) {
+    throw new AssertionError(msg);
+  }
+}
+
 /**
  * Make an assertion that `actual` and `expected` are equal, deeply. If not
  * deeply equal, then throw.
@@ -235,23 +152,13 @@ export function assert(expr: unknown, msg = ""): asserts expr {
  * assertEquals<number>(1, 2)
  * ```
  */
-export function assertEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
-export function assertEquals<T>(actual: T, expected: T, msg?: string): void;
-export function assertEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void {
+export function assertEquals<T>(actual: T, expected: T, msg?: string): void {
   if (equal(actual, expected)) {
     return;
   }
   let message = "";
-  const actualString = _format(actual);
-  const expectedString = _format(expected);
+  const actualString = format(actual);
+  const expectedString = format(expected);
   try {
     const stringDiff = (typeof actual === "string") &&
       (typeof expected === "string");
@@ -281,17 +188,7 @@ export function assertEquals(
  * assertNotEquals<number>(1, 2)
  * ```
  */
-export function assertNotEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
-export function assertNotEquals<T>(actual: T, expected: T, msg?: string): void;
-export function assertNotEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void {
+export function assertNotEquals<T>(actual: T, expected: T, msg?: string): void {
   if (!equal(actual, expected)) {
     return;
   }
@@ -328,7 +225,7 @@ export function assertStrictEquals<T>(
   expected: T,
   msg?: string,
 ): asserts actual is T {
-  if (actual === expected) {
+  if (Object.is(actual, expected)) {
     return;
   }
 
@@ -337,8 +234,8 @@ export function assertStrictEquals<T>(
   if (msg) {
     message = msg;
   } else {
-    const actualString = _format(actual);
-    const expectedString = _format(expected);
+    const actualString = format(actual);
+    const expectedString = format(expected);
 
     if (actualString === expectedString) {
       const withOffset = actualString
@@ -377,27 +274,17 @@ export function assertStrictEquals<T>(
  * assertNotStrictEquals(1, 1)
  * ```
  */
-export function assertNotStrictEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
-): void;
 export function assertNotStrictEquals<T>(
   actual: T,
   expected: T,
   msg?: string,
-): void;
-export function assertNotStrictEquals(
-  actual: unknown,
-  expected: unknown,
-  msg?: string,
 ): void {
-  if (actual !== expected) {
+  if (!Object.is(actual, expected)) {
     return;
   }
 
   throw new AssertionError(
-    msg ?? `Expected "actual" to be strictly unequal to: ${_format(actual)}\n`,
+    msg ?? `Expected "actual" to be strictly unequal to: ${format(actual)}\n`,
   );
 }
 
@@ -423,7 +310,7 @@ export function assertAlmostEquals(
   tolerance = 1e-7,
   msg?: string,
 ) {
-  if (actual === expected) {
+  if (Object.is(actual, expected)) {
     return;
   }
   const delta = Math.abs(expected - actual);
@@ -526,19 +413,9 @@ export function assertStringIncludes(
  * assertArrayIncludes<number>([1, 2], [2])
  * ```
  */
-export function assertArrayIncludes(
-  actual: ArrayLike<unknown>,
-  expected: ArrayLike<unknown>,
-  msg?: string,
-): void;
 export function assertArrayIncludes<T>(
   actual: ArrayLike<T>,
   expected: ArrayLike<T>,
-  msg?: string,
-): void;
-export function assertArrayIncludes(
-  actual: ArrayLike<unknown>,
-  expected: ArrayLike<unknown>,
   msg?: string,
 ): void {
   const missing: unknown[] = [];
@@ -558,9 +435,9 @@ export function assertArrayIncludes(
     return;
   }
   if (!msg) {
-    msg = `actual: "${_format(actual)}" expected to include: "${
-      _format(expected)
-    }"\nmissing: ${_format(missing)}`;
+    msg = `actual: "${format(actual)}" expected to include: "${
+      format(expected)
+    }"\nmissing: ${format(missing)}`;
   }
   throw new AssertionError(msg);
 }
@@ -717,142 +594,182 @@ export function assertIsError<E extends Error = Error>(
   }
 }
 
-/**
- * Executes a function, expecting it to throw.  If it does not, then it
+/** Executes a function, expecting it to throw. If it does not, then it
+ * throws. */
+export function assertThrows(
+  fn: () => unknown,
+  msg?: string,
+): unknown;
+/** Executes a function, expecting it to throw. If it does not, then it
  * throws. An error class and a string that should be included in the
- * error message can also be asserted. Or you can pass a
- * callback which will be passed the error, usually to apply some custom
- * assertions on it.
- */
+ * error message can also be asserted. */
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
   // deno-lint-ignore no-explicit-any
-  ErrorClass?: new (...args: any[]) => E,
+  ErrorClass: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
-): void;
+): E;
+/** @deprecated Use assertThrows(fn, msg) instead, which now returns thrown
+ * value and you can assert on it. */
 export function assertThrows(
   fn: () => unknown,
   errorCallback: (e: Error) => unknown,
   msg?: string,
-): void;
+): Error;
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
-  errorClassOrCallback?:
+  errorClassOrCallbackOrMsg?:
     // deno-lint-ignore no-explicit-any
     | (new (...args: any[]) => E)
-    | ((e: Error) => unknown),
+    | ((e: Error) => unknown)
+    | string,
   msgIncludesOrMsg?: string,
   msg?: string,
-): void {
+): E | Error | unknown {
   // deno-lint-ignore no-explicit-any
   let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
   let msgIncludes: string | undefined = undefined;
-  let errorCallback;
-  if (
-    errorClassOrCallback == null ||
-    errorClassOrCallback.prototype instanceof Error ||
-    errorClassOrCallback.prototype === Error.prototype
-  ) {
-    // deno-lint-ignore no-explicit-any
-    ErrorClass = errorClassOrCallback as new (...args: any[]) => E;
-    msgIncludes = msgIncludesOrMsg;
-    errorCallback = null;
+  let errorCallback: ((e: Error) => unknown) | undefined = undefined;
+  let err;
+
+  if (typeof errorClassOrCallbackOrMsg !== "string") {
+    if (
+      errorClassOrCallbackOrMsg === undefined ||
+      errorClassOrCallbackOrMsg.prototype instanceof Error ||
+      errorClassOrCallbackOrMsg.prototype === Error.prototype
+    ) {
+      // deno-lint-ignore no-explicit-any
+      ErrorClass = errorClassOrCallbackOrMsg as new (...args: any[]) => E;
+      msgIncludes = msgIncludesOrMsg;
+    } else {
+      errorCallback = errorClassOrCallbackOrMsg as (e: Error) => unknown;
+      msg = msgIncludesOrMsg;
+    }
   } else {
-    errorCallback = errorClassOrCallback as (e: Error) => unknown;
-    msg = msgIncludesOrMsg;
+    msg = errorClassOrCallbackOrMsg;
   }
   let doesThrow = false;
+  const msgToAppendToError = msg ? `: ${msg}` : ".";
   try {
     fn();
   } catch (error) {
-    if (error instanceof Error === false) {
-      throw new AssertionError("A non-Error object was thrown.");
+    if (ErrorClass || errorCallback) {
+      if (error instanceof Error === false) {
+        throw new AssertionError("A non-Error object was thrown.");
+      }
+      assertIsError(
+        error,
+        ErrorClass,
+        msgIncludes,
+        msg,
+      );
+      if (typeof errorCallback === "function") {
+        errorCallback(error);
+      }
     }
-    assertIsError(
-      error,
-      ErrorClass,
-      msgIncludes,
-      msg,
-    );
-    if (typeof errorCallback == "function") {
-      errorCallback(error);
-    }
+    err = error;
     doesThrow = true;
   }
   if (!doesThrow) {
-    msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
+    msg = `Expected function to throw${msgToAppendToError}`;
     throw new AssertionError(msg);
   }
+  return err;
 }
 
-/**
- * Executes a function which returns a promise, expecting it to throw or reject.
+/** Executes a function which returns a promise, expecting it to reject. */
+export function assertRejects(
+  fn: () => Promise<unknown>,
+  msg?: string,
+): Promise<unknown>;
+/** Executes a function which returns a promise, expecting it to reject.
  * If it does not, then it throws. An error class and a string that should be
- * included in the error message can also be asserted. Or you can pass a
- * callback which will be passed the error, usually to apply some custom
- * assertions on it.
- */
+ * included in the error message can also be asserted. */
 export function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
   // deno-lint-ignore no-explicit-any
-  ErrorClass?: new (...args: any[]) => E,
+  ErrorClass: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
-): Promise<void>;
+): Promise<E>;
+/** @deprecated Use assertRejects(fn, msg) instead, which now returns rejected value
+ * and you can assert on it. */
 export function assertRejects(
   fn: () => Promise<unknown>,
   errorCallback: (e: Error) => unknown,
   msg?: string,
-): Promise<void>;
+): Promise<Error>;
 export async function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
-  errorClassOrCallback?:
+  errorClassOrCallbackOrMsg?:
     // deno-lint-ignore no-explicit-any
     | (new (...args: any[]) => E)
-    | ((e: Error) => unknown),
+    | ((e: Error) => unknown)
+    | string,
   msgIncludesOrMsg?: string,
   msg?: string,
-): Promise<void> {
+): Promise<E | Error | unknown> {
   // deno-lint-ignore no-explicit-any
   let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
   let msgIncludes: string | undefined = undefined;
-  let errorCallback;
-  if (
-    errorClassOrCallback == null ||
-    errorClassOrCallback.prototype instanceof Error ||
-    errorClassOrCallback.prototype === Error.prototype
-  ) {
-    // deno-lint-ignore no-explicit-any
-    ErrorClass = errorClassOrCallback as new (...args: any[]) => E;
-    msgIncludes = msgIncludesOrMsg;
-    errorCallback = null;
+  let errorCallback: ((e: Error) => unknown) | undefined = undefined;
+  let err;
+
+  if (typeof errorClassOrCallbackOrMsg !== "string") {
+    if (
+      errorClassOrCallbackOrMsg === undefined ||
+      errorClassOrCallbackOrMsg.prototype instanceof Error ||
+      errorClassOrCallbackOrMsg.prototype === Error.prototype
+    ) {
+      // deno-lint-ignore no-explicit-any
+      ErrorClass = errorClassOrCallbackOrMsg as new (...args: any[]) => E;
+      msgIncludes = msgIncludesOrMsg;
+    } else {
+      errorCallback = errorClassOrCallbackOrMsg as (e: Error) => unknown;
+      msg = msgIncludesOrMsg;
+    }
   } else {
-    errorCallback = errorClassOrCallback as (e: Error) => unknown;
-    msg = msgIncludesOrMsg;
+    msg = errorClassOrCallbackOrMsg;
   }
   let doesThrow = false;
+  let isPromiseReturned = false;
+  const msgToAppendToError = msg ? `: ${msg}` : ".";
   try {
-    await fn();
+    const possiblePromise = fn();
+    if (possiblePromise instanceof Promise) {
+      isPromiseReturned = true;
+      await possiblePromise;
+    }
   } catch (error) {
-    if (error instanceof Error === false) {
-      throw new AssertionError("A non-Error object was thrown or rejected.");
+    if (!isPromiseReturned) {
+      throw new AssertionError(
+        `Function throws when expected to reject${msgToAppendToError}`,
+      );
     }
-    assertIsError(
-      error,
-      ErrorClass,
-      msgIncludes,
-      msg,
-    );
-    if (typeof errorCallback == "function") {
-      errorCallback(error);
+    if (ErrorClass || errorCallback) {
+      if (error instanceof Error === false) {
+        throw new AssertionError("A non-Error object was rejected.");
+      }
+      assertIsError(
+        error,
+        ErrorClass,
+        msgIncludes,
+        msg,
+      );
+      if (typeof errorCallback == "function") {
+        errorCallback(error);
+      }
     }
+    err = error;
     doesThrow = true;
   }
   if (!doesThrow) {
-    msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
-    throw new AssertionError(msg);
+    throw new AssertionError(
+      `Expected function to reject${msgToAppendToError}`,
+    );
   }
+  return err;
 }
 
 /** Use this to stub out methods that will throw when invoked. */

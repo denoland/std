@@ -148,14 +148,14 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+  const process = Deno.spawnChild(Deno.execPath(), {
+    args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
-    stdout: "piped",
     stdin: "piped",
   });
 
-  await process.stdin.write(
+  const writer = process.stdin.getWriter();
+  await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
       import { _wasm } from "../_wasm_crypto/crypto.mjs";
@@ -188,13 +188,13 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
       ));
     `),
   );
-  process.stdin.close();
+  writer.releaseLock();
+  await process.stdin.close();
 
-  const stdout = new TextDecoder().decode(await process.output());
-  const status = await process.status();
-  process.close();
+  const res = await process.output();
+  const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(status.success, true, "test subprocess failed");
+  assertEquals(res.status.success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     smallDigest,
@@ -242,14 +242,15 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+  const process = Deno.spawnChild(Deno.execPath(), {
+    args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdout: "piped",
     stdin: "piped",
   });
 
-  await process.stdin.write(
+  const writer = process.stdin.getWriter();
+  await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
       import { _wasm } from "../_wasm_crypto/crypto.mjs";
@@ -284,13 +285,13 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
       ));
     `),
   );
-  process.stdin.close();
+  writer.releaseLock();
+  await process.stdin.close();
 
-  const stdout = new TextDecoder().decode(await process.output());
-  const status = await process.status();
-  process.close();
+  const res = await process.output();
+  const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(status.success, true, "test subprocess failed");
+  assertEquals(res.status.success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     heapBytesFinal,

@@ -86,7 +86,7 @@ If any of the defined variables is not in `.env`, an error will occur. This
 method is preferred because it prevents runtime errors in a production
 application due to improper configuration.
 
-Another way to suply required variables is externally, like so:
+Another way to supply required variables is externally, like so:
 
 ```sh
 GREETING="hello world" deno run --allow-env app.ts

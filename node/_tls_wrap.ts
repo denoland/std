@@ -18,7 +18,6 @@ import {
   Pipe,
 } from "./internal_binding/pipe_wrap.ts";
 import { EventEmitter } from "./events.ts";
-import { join } from "./path.ts";
 const kConnectOptions = Symbol("connect-options");
 const kIsVerified = Symbol("verified");
 const kPendingSession = Symbol("pendingSession");
@@ -228,20 +227,10 @@ export class ServerImpl extends EventEmitter {
   listen(port: any, callback: any): this {
     const { key, cert } = this.options;
 
-    // TODO(kt3k): We can avoid creating temp cert files
-    // when we land the below PR:
-    // https://github.com/denoland/deno/pull/13740
-    const tmpdir = Deno.makeTempDirSync();
-    const certFile = join(tmpdir, "cert");
-    const keyFile = join(tmpdir, "key");
-    Deno.writeTextFileSync(certFile, cert);
-    Deno.writeTextFileSync(keyFile, key);
-
     // TODO(kt3k): Get this from optional 2nd argument.
     const hostname = "localhost";
 
-    this.listener = Deno.listenTls({ port, hostname, certFile, keyFile });
-    Deno.remove(tmpdir, { recursive: true });
+    this.listener = Deno.listenTls({ port, hostname, cert, key });
 
     callback?.();
     this.#listen(this.listener);

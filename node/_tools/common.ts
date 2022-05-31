@@ -22,6 +22,7 @@ interface Config {
    */
   tests: TestSuites;
   windowsIgnore: TestSuites;
+  darwinIgnore: TestSuites;
   suitesFolder: string;
   versionsFolder: string;
 }
@@ -41,7 +42,7 @@ export const ignoreList = Object.entries(config.ignore).reduce(
 export function getPathsFromTestSuites(suites: TestSuites): string[] {
   const testPaths: string[] = [];
   for (const [dir, paths] of Object.entries(suites)) {
-    if (dir === "parallel" || dir === "internet") {
+    if (["parallel", "internet", "pummel", "sequential"].includes(dir)) {
       for (const path of paths) {
         testPaths.push(join(dir, path));
       }
