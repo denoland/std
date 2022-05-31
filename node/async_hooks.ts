@@ -28,7 +28,7 @@ type AsyncResourceOptions = number | {
 export class AsyncResource {
   [async_id_symbol]: number;
   [trigger_async_id_symbol]: number;
-  [destroyedSymbol]: { destroyed: boolean };
+  [destroyedSymbol]!: { destroyed: boolean };
 
   constructor(type: string, opts: AsyncResourceOptions = {}) {
     validateString(type, "type");
