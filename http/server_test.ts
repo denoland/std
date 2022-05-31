@@ -1141,7 +1141,7 @@ Deno.test(
     const servePromise = server.listenAndServe();
 
     try {
-      assertRejects(() => server.listenAndServe(), Deno.errors.AddrInUse);
+      await assertRejects(() => server.listenAndServe(), Deno.errors.AddrInUse);
     } finally {
       server.close();
       await servePromise;
@@ -1161,7 +1161,7 @@ Deno.test(
     const servePromise = server.listenAndServeTls(certFile, keyFile);
 
     try {
-      assertRejects(
+      await assertRejects(
         () => server.listenAndServeTls(certFile, keyFile),
         Deno.errors.AddrInUse,
       );

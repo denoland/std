@@ -362,3 +362,5 @@ snapshot[`Snapshot Test - Regression #2144 1`] = `
   },
 }
 `;
+
+snapshot[`Snapshot Test - Empty #2245 1`] = ``;

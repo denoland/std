@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-import { Buffer } from "../buffer.ts";
+import { Buffer } from "../../buffer.ts";
 import { pbkdf2Sync as pbkdf2 } from "./pbkdf2.ts";
 import { HASH_DATA } from "./types.ts";
 
@@ -271,3 +271,8 @@ export function scrypt(
     return cb(err);
   }
 }
+
+export default {
+  scrypt,
+  scryptSync,
+};

@@ -3,29 +3,29 @@ import Dirent from "./_fs_dirent.ts";
 import { assert } from "../../_util/assert.ts";
 
 export default class Dir {
-  private dirPath: string | Uint8Array;
-  private syncIterator!: Iterator<Deno.DirEntry> | null;
-  private asyncIterator!: AsyncIterator<Deno.DirEntry> | null;
+  #dirPath: string | Uint8Array;
+  #syncIterator!: Iterator<Deno.DirEntry> | null;
+  #asyncIterator!: AsyncIterator<Deno.DirEntry> | null;
 
   constructor(path: string | Uint8Array) {
-    this.dirPath = path;
+    this.#dirPath = path;
   }
 
   get path(): string {
-    if (this.dirPath instanceof Uint8Array) {
-      return new TextDecoder().decode(this.dirPath);
+    if (this.#dirPath instanceof Uint8Array) {
+      return new TextDecoder().decode(this.#dirPath);
     }
-    return this.dirPath;
+    return this.#dirPath;
   }
 
   // deno-lint-ignore no-explicit-any
   read(callback?: (...args: any[]) => void): Promise<Dirent | null> {
     return new Promise((resolve, reject) => {
-      if (!this.asyncIterator) {
-        this.asyncIterator = Deno.readDir(this.path)[Symbol.asyncIterator]();
+      if (!this.#asyncIterator) {
+        this.#asyncIterator = Deno.readDir(this.path)[Symbol.asyncIterator]();
       }
-      assert(this.asyncIterator);
-      this.asyncIterator
+      assert(this.#asyncIterator);
+      this.#asyncIterator
         .next()
         .then(({ value }) => {
           resolve(value ? value : null);
@@ -42,11 +42,11 @@ export default class Dir {
   }
 
   readSync(): Dirent | null {
-    if (!this.syncIterator) {
-      this.syncIterator = Deno.readDirSync(this.path)![Symbol.iterator]();
+    if (!this.#syncIterator) {
+      this.#syncIterator = Deno.readDirSync(this.path)![Symbol.iterator]();
     }
 
-    const file: Deno.DirEntry = this.syncIterator.next().value;
+    const file: Deno.DirEntry = this.#syncIterator.next().value;
 
     return file ? new Dirent(file) : null;
   }

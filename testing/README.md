@@ -36,12 +36,13 @@ pretty-printed diff of failing assertion.
 - `assertThrows()` - Expects the passed `fn` to throw. If `fn` does not throw,
   this function does. Also compares any errors thrown to an optional expected
   `Error` class and checks that the error `.message` includes an optional
-  string.
-- `assertRejects()` - Expects the passed `fn` to be async and throw and return a
-  `Promise` that rejects. If the `fn` does not throw or reject, this function
-  will reject _(⚠️ you should normally await this assertion)_. Also optionally
-  accepts an Error class which the expected error must be an instance of, and a
-  string which must be a substring of the error's `.message`.
+  string. If there is caught error, it gets returned.
+- `assertRejects()` - Expects the passed `fn` to be async and return a `Promise`
+  that rejects. If the `fn` does not reject, this function will reject _(⚠️ you
+  should normally await this assertion)_. Also optionally accepts an Error class
+  which the expected error must be an instance of, and a string which must be a
+  substring of the error's `.message`. If there is caught error, it gets
+  returned.
 - `unimplemented()` - Use this to stub out methods that will throw when invoked.
 - `unreachable()` - Used to assert unreachable code.
 

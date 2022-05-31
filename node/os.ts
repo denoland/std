@@ -315,6 +315,7 @@ export const constants = {
   signals: {
     "SIGABRT": "SIGABRT",
     "SIGALRM": "SIGALRM",
+    "SIGBREAK": "SIGBREAK",
     "SIGBUS": "SIGBUS",
     "SIGCHLD": "SIGCHLD",
     "SIGCONT": "SIGCONT",

@@ -33,7 +33,7 @@ export class Sponge {
   }
 
   /** Applies padding to internal state */
-  private pad(): void {
+  #pad(): void {
     this.#state[this.#rp] ^= this.#option.dsbyte;
     this.#state[this.#option.rate - 1] ^= 0x80;
   }
@@ -44,7 +44,7 @@ export class Sponge {
       throw new Error("sha3: length cannot be negative");
     }
 
-    this.pad();
+    this.#pad();
 
     const hash = new Uint8Array(length);
     let pos = 0;
