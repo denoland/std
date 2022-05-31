@@ -12,6 +12,14 @@ const object = parse(`
 console.log(object); // { env: { GREETING: "hello world", EXPORT: "exported" }, exports: ["EXPORT"] }
 ```
 
+### Parse options
+
+- `example?: DotEnvObject`: example object that the parsed data will be verified
+  against.
+- `allowEmptyValues?: boolean`: Set to `true` to allow required env variables to
+  be empty. Otherwise it will throw an error if any variable is empty. Defaults
+  to `false`.
+
 ## Stringify
 
 ```ts
@@ -28,18 +36,57 @@ export EXPORT=exported
 */
 ```
 
-### Parse options
+## Verify
 
-- `example?: DotEnvObject`: example object that the parsed data will be verified
+```ts
+import { verify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+const isValid = verify(
+  {
+    env: { GREETING: "hello world" },
+  },
+  {
+    example: { GREETING: "" },
+  },
+);
+
+console.log(isValid); // true
+```
+
+### Verify options
+
+- `allowEmptyValues?: boolean`: set to `false` to count variables with an empty
+  value as nonexistent.
+- `example?: EnvObject`:example object that the parsed data will be verified
   against.
-- `allowEmptyValues?: boolean`: Set to `true` to allow required env variables to
-  be empty. Otherwise it will throw an error if any variable is empty. Defaults
-  to `false`.
+
+## Load
+
+```ts
+import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+const object = await load(Deno.env, { envPath: "path/to/.env" });
+```
+
+## LoadSync
+
+```ts
+import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+const object = loadSync(Deno.env, { envPath: "path/to/.env" });
+```
+
+### Load options
+
+- `envPath?: string | URL`: the path or url to the .env file. Defaults to
+  ".env".
+- `examplePath?: string | URL`: the path or url to the .env.example file.
+  Defaults to ".env.example".
+- `defaultsPath?: string | URL`: the path or url to the .env.defaults file.
+  Defaults to ".env.defaults".
 
 ## Auto loading
 
-`load.ts` automatically loads the local `.env` file and exports it to the
-process environment object:
+`load.ts` automatically loads the local `.env` file, verifies it against
+`.env.exanple` if existent, adds defaults from `.env.defaults` if existent and
+exports it to the process environment object:
 
 ```sh
 # .env
