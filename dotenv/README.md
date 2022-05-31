@@ -42,7 +42,10 @@ export EXPORT=exported
 import { verify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
 const isValid = verify(
   { env: { GREETING: "hello world" }, exports: [] },
-  { example: { env: { GREETING: "someValue" }, exports: [] } },
+  {
+    allowEmptyValues: true,
+    example: { env: { GREETING: "someValue" }, exports: [] },
+  },
 );
 
 console.log(isValid); // true
