@@ -28,7 +28,7 @@ type AsyncResourceOptions = number | {
 export class AsyncResource {
   [async_id_symbol]: number;
   [trigger_async_id_symbol]: number;
-  [destroyedSymbol]?: { destroyed: boolean };
+  [destroyedSymbol]!: { destroyed: boolean };
 
   constructor(type: string, opts: AsyncResourceOptions = {}) {
     validateString(type, "type");
@@ -93,8 +93,8 @@ export class AsyncResource {
   }
 
   emitDestroy() {
-    if (this[destroyedSymbol] != null) {
-      this[destroyedSymbol] = { destroyed: true };
+    if (this[destroyedSymbol] !== undefined) {
+      this[destroyedSymbol].destroyed = true;
     }
     // TODO(kt3k): Uncomment the below
     // emitDestroy(this[async_id_symbol]);
