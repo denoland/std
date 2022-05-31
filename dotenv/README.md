@@ -41,12 +41,8 @@ export EXPORT=exported
 ```ts
 import { verify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
 const isValid = verify(
-  {
-    env: { GREETING: "hello world" },
-  },
-  {
-    example: { GREETING: "" },
-  },
+  { env: { GREETING: "hello world" }, exports: [] },
+  { example: { env: { GREETING: "someValue" }, exports: [] } },
 );
 
 console.log(isValid); // true
@@ -69,7 +65,7 @@ const object = await load(Deno.env, { envPath: "path/to/.env" });
 ## LoadSync
 
 ```ts
-import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+import { loadSync } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
 const object = loadSync(Deno.env, { envPath: "path/to/.env" });
 ```
 
