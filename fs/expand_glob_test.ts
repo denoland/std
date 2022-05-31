@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -119,26 +119,18 @@ Deno.test("expandGlobIncludeDirs", async function () {
 
 Deno.test("expandGlobPermError", async function () {
   const exampleUrl = new URL("testdata/expand_wildcard.js", import.meta.url);
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { status, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--quiet",
       "--unstable",
       exampleUrl.toString(),
     ],
-    stdin: "null",
-    stdout: "piped",
-    stderr: "piped",
   });
   const decoder = new TextDecoder();
-  assertEquals(await p.status(), { code: 1, success: false });
-  assertEquals(decoder.decode(await p.output()), "");
-  assertStringIncludes(
-    decoder.decode(await p.stderrOutput()),
-    "Uncaught PermissionDenied",
-  );
-  p.close();
+  assertEquals(status, { code: 1, signal: null, success: false });
+  assertEquals(decoder.decode(stdout), "");
+  assertStringIncludes(decoder.decode(stderr), "Uncaught PermissionDenied");
 });
 
 Deno.test("expandGlobRootIsNotGlob", async function () {

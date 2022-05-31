@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -21,7 +21,7 @@ const LOG_FILE = "./test_log.file";
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
 
-  public log(str: string): void {
+  public override log(str: string): void {
     this.messages.push(str);
   }
 }
@@ -94,6 +94,23 @@ Deno.test("testFormatterAsString", function (): void {
   assertEquals(handler.messages, ["test DEBUG Hello, world!"]);
 });
 
+Deno.test("testFormatterAsStringWithoutSpace", function (): void {
+  const handler = new TestHandler("DEBUG", {
+    formatter: "test:{levelName}:{msg}",
+  });
+
+  handler.handle(
+    new LogRecord({
+      msg: "Hello, world!",
+      args: [],
+      level: LogLevels.DEBUG,
+      loggerName: "default",
+    }),
+  );
+
+  assertEquals(handler.messages, ["test:DEBUG:Hello, world!"]);
+});
+
 Deno.test("testFormatterWithEmptyMsg", function () {
   const handler = new TestHandler("DEBUG", {
     formatter: "test {levelName} {msg}",
@@ -127,6 +144,45 @@ Deno.test("testFormatterAsFunction", function (): void {
   );
 
   assertEquals(handler.messages, ["fn formatter ERROR Hello, world!"]);
+});
+
+Deno.test({
+  name: "FileHandler Shouldn't Have Broken line",
+  async fn() {
+    class TestFileHandler extends FileHandler {
+      override flush() {
+        super.flush();
+        const decoder = new TextDecoder("utf-8");
+        const data = Deno.readFileSync(LOG_FILE);
+        const text = decoder.decode(data);
+        assertEquals(text.slice(-1), "\n");
+      }
+
+      override async destroy() {
+        await super.destroy();
+        await Deno.remove(LOG_FILE);
+      }
+    }
+
+    const testFileHandler = new TestFileHandler("WARNING", {
+      filename: LOG_FILE,
+      mode: "w",
+    });
+    await testFileHandler.setup();
+
+    for (let i = 0; i < 300; i++) {
+      testFileHandler.handle(
+        new LogRecord({
+          msg: "The starry heavens above me and the moral law within me.",
+          args: [],
+          level: LogLevels.WARNING,
+          loggerName: "default",
+        }),
+      );
+    }
+
+    await testFileHandler.destroy();
+  },
 });
 
 Deno.test({
@@ -458,6 +514,7 @@ Deno.test({
     ); // 'ERROR AAA\n' = 10 bytes
 
     assertEquals((await Deno.stat(LOG_FILE)).size, 0);
+    dispatchEvent(new Event("unload"));
     dispatchEvent(new Event("unload"));
     assertEquals((await Deno.stat(LOG_FILE)).size, 10);
 

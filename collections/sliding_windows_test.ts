@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { slidingWindows } from "./sliding_windows.ts";
@@ -22,7 +22,7 @@ function slidingWindowsThrowsTest<T>(
     size: number,
     config?: { step?: number; partial?: boolean },
   ],
-  ErrorClass?: ErrorConstructor | undefined,
+  ErrorClass: ErrorConstructor,
   msgIncludes?: string,
   msg?: string | undefined,
 ) {

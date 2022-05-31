@@ -1,3 +1,6 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
 /** Check whether binary arrays are equal to each other using 8-bit comparisons.
  * @private
  * @param a first array to check equality

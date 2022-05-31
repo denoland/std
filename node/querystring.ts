@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { Buffer } from "./buffer.ts";
 import { encodeStr, hexTable } from "./internal/querystring.ts";
 
@@ -38,7 +38,7 @@ function qsEscape(str: unknown): string {
  */
 export const escape = qsEscape;
 
-interface ParsedUrlQuery {
+export interface ParsedUrlQuery {
   [key: string]: string | string[] | undefined;
 }
 

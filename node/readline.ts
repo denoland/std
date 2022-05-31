@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // @deno-types="./_readline.d.ts"
 
 import {
@@ -8,7 +9,7 @@ import {
   emitKeypressEvents,
   Interface,
   moveCursor,
-} from "./_readline.js";
+} from "./_readline.mjs";
 
 export {
   clearLine,

@@ -1,8 +1,8 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { type CallbackWithError, makeCallback } from "./_fs_common.ts";
-import { getValidatedPath, kMaxUserId } from "../internal/fs/utils.js";
+import { getValidatedPath, kMaxUserId } from "../internal/fs/utils.mjs";
 import * as pathModule from "../../path/mod.ts";
-import { validateInteger } from "../internal/validators.js";
+import { validateInteger } from "../internal/validators.mjs";
 
 import type { Buffer } from "../buffer.ts";
 

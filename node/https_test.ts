@@ -1,15 +1,15 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-// deno-lint-ignore-file no-explicit-any
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
-import * as https from "./https.ts";
 import { serveTls } from "../http/server.ts";
 import { dirname, fromFileUrl, join } from "../path/mod.ts";
 import { assertEquals } from "../testing/asserts.ts";
+import { Agent } from "./https.ts";
 
 const stdRoot = dirname(dirname(fromFileUrl(import.meta.url)));
 const tlsDataDir = join(stdRoot, "http", "testdata", "tls");
 const keyFile = join(tlsDataDir, "localhost.key");
 const certFile = join(tlsDataDir, "localhost.crt");
+const dec = new TextDecoder();
 
 Deno.test("[node/https] request makes https request", async () => {
   const controller = new AbortController();
@@ -19,17 +19,22 @@ Deno.test("[node/https] request makes https request", async () => {
     return new Response("abcd\n".repeat(1_000));
   }, { keyFile, certFile, port: 4505, hostname: "localhost", signal });
 
-  https.request("https://localhost:4505", (res: any) => {
-    let data = "";
-    res.on("data", (chunk: any) => {
-      data += chunk;
-    });
-    res.on("end", () => {
-      assertEquals(data.length, 5_000);
-      controller.abort();
-    });
-  }).end();
-
+  const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "run",
+      "--quiet",
+      "--unstable",
+      "--allow-all",
+      "--no-check",
+      "node/testdata/https_request.ts",
+    ],
+    env: {
+      NODE_EXTRA_CA_CERTS: join(tlsDataDir, "RootCA.pem"),
+    },
+  });
+  assertEquals(dec.decode(stderr), "");
+  assertEquals(dec.decode(stdout), "abcd\n".repeat(1_000) + "\n");
+  controller.abort();
   await serveFinish;
 });
 
@@ -41,16 +46,27 @@ Deno.test("[node/https] get makes https GET request", async () => {
     return new Response("abcd\n".repeat(1_000));
   }, { keyFile, certFile, port: 4505, hostname: "localhost", signal });
 
-  https.get("https://localhost:4505", (res: any) => {
-    let data = "";
-    res.on("data", (chunk: any) => {
-      data += chunk;
-    });
-    res.on("end", () => {
-      assertEquals(data.length, 5_000);
-      controller.abort();
-    });
-  }).end();
-
+  const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "run",
+      "--quiet",
+      "--unstable",
+      "--allow-all",
+      "--no-check",
+      "node/testdata/https_get.ts",
+    ],
+    stdout: "piped",
+    stderr: "piped",
+    env: {
+      NODE_EXTRA_CA_CERTS: join(tlsDataDir, "RootCA.pem"),
+    },
+  });
+  assertEquals(dec.decode(stderr), "");
+  assertEquals(dec.decode(stdout), "abcd\n".repeat(1_000) + "\n");
+  controller.abort();
   await serveFinish;
+});
+
+Deno.test("new Agent doesn't throw", () => {
+  new Agent();
 });

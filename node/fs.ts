@@ -1,9 +1,10 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { access, accessSync } from "./_fs/_fs_access.ts";
 import { appendFile, appendFileSync } from "./_fs/_fs_appendFile.ts";
 import { chmod, chmodSync } from "./_fs/_fs_chmod.ts";
 import { chown, chownSync } from "./_fs/_fs_chown.ts";
 import { close, closeSync } from "./_fs/_fs_close.ts";
+import { createReadStream, ReadStream } from "./_fs/_fs_streams.ts";
 import * as constants from "./_fs/_fs_constants.ts";
 import { copyFile, copyFileSync } from "./_fs/_fs_copy.ts";
 import Dir from "./_fs/_fs_dir.ts";
@@ -33,11 +34,15 @@ import { truncate, truncateSync } from "./_fs/_fs_truncate.ts";
 import { unlink, unlinkSync } from "./_fs/_fs_unlink.ts";
 import { utimes, utimesSync } from "./_fs/_fs_utimes.ts";
 import { watch, watchFile } from "./_fs/_fs_watch.ts";
+// @deno-types="./_fs/_fs_write.d.ts"
+import { write, writeSync } from "./_fs/_fs_write.mjs";
+// @deno-types="./_fs/_fs_writev.d.ts"
+import { writev, writevSync } from "./_fs/_fs_writev.mjs";
 import { writeFile, writeFileSync } from "./_fs/_fs_writeFile.ts";
+import { Stats } from "./internal/fs/utils.mjs";
+import { createWriteStream, WriteStream } from "./internal/fs/streams.ts";
 
-import { Stats } from "./internal/fs/utils.js";
-
-import * as promises from "./fs/promises.ts";
+import { promisify } from "./util.ts";
 
 const {
   F_OK,
@@ -45,6 +50,37 @@ const {
   W_OK,
   X_OK,
 } = constants;
+
+const promises = {
+  access: promisify(access),
+  copyFile: promisify(copyFile),
+  open: promisify(open),
+  // opendir: promisify(opendir),
+  rename: promisify(rename),
+  truncate: promisify(truncate),
+  rm: promisify(rm),
+  rmdir: promisify(rmdir),
+  mkdir: promisify(mkdir),
+  readdir: promisify(readdir),
+  readlink: promisify(readlink),
+  symlink: promisify(symlink),
+  lstat: promisify(lstat),
+  stat: promisify(stat),
+  link: promisify(link),
+  unlink: promisify(unlink),
+  chmod: promisify(chmod),
+  // lchmod: promisify(lchmod),
+  // lchown: promisify(lchown),
+  chown: promisify(chown),
+  utimes: promisify(utimes),
+  // lutimes = promisify(lutimes),
+  realpath: promisify(realpath),
+  mkdtemp: promisify(mkdtemp),
+  writeFile: promisify(writeFile),
+  appendFile: promisify(appendFile),
+  readFile: promisify(readFile),
+  watch: promisify(watch),
+};
 
 export default {
   access,
@@ -60,6 +96,8 @@ export default {
   constants,
   copyFile,
   copyFileSync,
+  createReadStream,
+  createWriteStream,
   Dir,
   Dirent,
   exists,
@@ -95,6 +133,7 @@ export default {
   readFileSync,
   readlink,
   readlinkSync,
+  ReadStream,
   realpath,
   realpathSync,
   rename,
@@ -117,8 +156,13 @@ export default {
   W_OK,
   watch,
   watchFile,
+  write,
   writeFile,
+  writev,
+  writevSync,
   writeFileSync,
+  WriteStream,
+  writeSync,
   X_OK,
 };
 
@@ -136,6 +180,7 @@ export {
   constants,
   copyFile,
   copyFileSync,
+  createWriteStream,
   Dir,
   Dirent,
   exists,
@@ -193,7 +238,12 @@ export {
   W_OK,
   watch,
   watchFile,
+  write,
   writeFile,
   writeFileSync,
+  WriteStream,
+  writeSync,
+  writev,
+  writevSync,
   X_OK,
 };

@@ -1,9 +1,10 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 // This module implements 'child_process' module of Node.JS API.
 // ref: https://nodejs.org/api/child_process.html
 import { assert } from "../../_util/assert.ts";
 import { EventEmitter } from "../events.ts";
+import { os } from "../internal_binding/constants.ts";
 import { notImplemented } from "../_utils.ts";
 import { Readable, Stream, Writable } from "../stream.ts";
 import { deferred } from "../../async/deferred.ts";
@@ -11,7 +12,12 @@ import { iterateReader, writeAll } from "../../streams/conversion.ts";
 import { isWindows } from "../../_util/os.ts";
 import { Buffer } from "../buffer.ts";
 import { nextTick } from "../_next_tick.ts";
-import { ERR_INVALID_ARG_VALUE } from "../_errors.ts";
+import {
+  AbortError,
+  ERR_INVALID_ARG_VALUE,
+  ERR_UNKNOWN_SIGNAL,
+} from "./errors.ts";
+import { mapValues } from "../../collections/map_values.ts";
 
 type NodeStdio = "pipe" | "overlapped" | "ignore" | "inherit" | "ipc";
 type DenoStdio = "inherit" | "piped" | "null";
@@ -55,6 +61,11 @@ export class ChildProcess extends EventEmitter {
    * The PID of this child process.
    */
   pid!: number;
+
+  /**
+   * The signal received by this child process.
+   */
+  signalCode: string | null = null;
 
   /**
    * Command line arguments given to this child process.
@@ -104,6 +115,7 @@ export class ChildProcess extends EventEmitter {
       env = {},
       stdio = ["pipe", "pipe", "pipe"],
       shell = false,
+      signal,
     } = options || {};
     const [
       stdin = "pipe",
@@ -119,10 +131,12 @@ export class ChildProcess extends EventEmitter {
     this.spawnfile = cmd[0];
     this.spawnargs = cmd;
 
+    const stringEnv = mapValues(env, (value) => value.toString());
+
     try {
       this.#process = Deno.run({
         cmd,
-        env,
+        env: stringEnv,
         stdin: toDenoStdio(stdin as NodeStdio | number),
         stdout: toDenoStdio(stdout as NodeStdio | number),
         stderr: toDenoStdio(stderr as NodeStdio | number),
@@ -153,46 +167,66 @@ export class ChildProcess extends EventEmitter {
         this.#spawned.resolve();
       });
 
+      if (signal) {
+        const onAbortListener = () => {
+          try {
+            if (this.kill("SIGKILL")) {
+              this.emit("error", new AbortError());
+            }
+          } catch (err) {
+            this.emit("error", err);
+          }
+        };
+        if (signal.aborted) {
+          nextTick(onAbortListener);
+        } else {
+          signal.addEventListener("abort", onAbortListener, { once: true });
+          this.addListener(
+            "exit",
+            () => signal.removeEventListener("abort", onAbortListener),
+          );
+        }
+      }
+
       (async () => {
         const status = await this.#process.status();
         this.exitCode = status.code;
         this.#spawned.then(async () => {
+          const exitCode = this.signalCode == null ? this.exitCode : null;
+          const signalCode = this.signalCode == null ? null : this.signalCode;
           // The 'exit' and 'close' events must be emitted after the 'spawn' event.
-          this.emit("exit", this.exitCode, status.signal ?? null);
-          await this._waitForChildStreamsToClose();
-          this.kill();
-          this.emit("close", this.exitCode, status.signal ?? null);
+          this.emit("exit", exitCode, signalCode);
+          await this.#_waitForChildStreamsToClose();
+          this.#close();
+          this.emit("close", exitCode, signalCode);
         });
       })();
     } catch (err) {
-      this._handleError(err);
+      this.#_handleError(err);
     }
   }
 
   /**
    * @param signal NOTE: this parameter is not yet implemented.
    */
-  kill(signal?: number): boolean {
-    if (signal != null) {
-      notImplemented("`ChildProcess.kill()` with the `signal` parameter");
-    }
-
+  kill(signal?: number | string): boolean {
     if (this.killed) {
       return this.killed;
     }
 
-    if (this.#process.stdin) {
-      assert(this.stdin);
-      ensureClosed(this.#process.stdin);
+    const denoSignal = signal == null ? "SIGTERM" : toDenoSignal(signal);
+    this.#closePipes();
+    try {
+      this.#process.kill(denoSignal);
+    } catch (err) {
+      const alreadyClosed = err instanceof Deno.errors.NotFound ||
+        err instanceof Deno.errors.PermissionDenied;
+      if (!alreadyClosed) {
+        throw err;
+      }
     }
-    if (this.#process.stdout) {
-      ensureClosed(this.#process.stdout);
-    }
-    if (this.#process.stderr) {
-      ensureClosed(this.#process.stderr);
-    }
-    ensureClosed(this.#process); // TODO Use `Deno.Process.kill` instead when it becomes stable.
     this.killed = true;
+    this.signalCode = denoSignal;
     return this.killed;
   }
 
@@ -204,7 +238,7 @@ export class ChildProcess extends EventEmitter {
     notImplemented("ChildProcess.unref()");
   }
 
-  private async _waitForChildStreamsToClose(): Promise<void> {
+  async #_waitForChildStreamsToClose(): Promise<void> {
     const promises = [] as Array<Promise<void>>;
     if (this.stdin && !this.stdin.destroyed) {
       assert(this.stdin);
@@ -220,10 +254,28 @@ export class ChildProcess extends EventEmitter {
     await Promise.all(promises);
   }
 
-  private _handleError(err: unknown): void {
+  #_handleError(err: unknown): void {
     nextTick(() => {
       this.emit("error", err); // TODO(uki00a) Convert `err` into nodejs's `SystemError` class.
     });
+  }
+
+  #close(): void {
+    this.#closePipes();
+    ensureClosed(this.#process);
+  }
+
+  #closePipes(): void {
+    if (this.#process.stdin) {
+      assert(this.stdin);
+      ensureClosed(this.#process.stdin);
+    }
+    if (this.#process.stdout) {
+      ensureClosed(this.#process.stdout);
+    }
+    if (this.#process.stderr) {
+      ensureClosed(this.#process.stderr);
+    }
   }
 }
 
@@ -235,7 +287,7 @@ function toDenoStdio(
     !supportedNodeStdioTypes.includes(pipe as NodeStdio) ||
     typeof pipe === "number" || pipe instanceof Stream
   ) {
-    notImplemented();
+    notImplemented(`toDenoStdio pipe=${typeof pipe} (${pipe})`);
   }
   switch (pipe) {
     case "pipe":
@@ -247,8 +299,29 @@ function toDenoStdio(
     case "inherit":
       return "inherit";
     default:
-      notImplemented();
+      notImplemented(`toDenoStdio pipe=${typeof pipe} (${pipe})`);
   }
+}
+
+function toDenoSignal(signal: number | string): Deno.Signal {
+  if (typeof signal === "number") {
+    for (const name of keys(os.signals)) {
+      if (os.signals[name] === signal) {
+        return name as Deno.Signal;
+      }
+    }
+    throw new ERR_UNKNOWN_SIGNAL(String(signal));
+  }
+
+  const denoSignal = signal as Deno.Signal;
+  if (os.signals[denoSignal] != null) {
+    return denoSignal;
+  }
+  throw new ERR_UNKNOWN_SIGNAL(signal);
+}
+
+function keys<T extends Record<string, unknown>>(object: T): Array<keyof T> {
+  return Object.keys(object);
 }
 
 export interface ChildProcessOptions {
@@ -260,7 +333,7 @@ export interface ChildProcessOptions {
   /**
    * Environment variables passed to the child process.
    */
-  env?: Record<string, string>;
+  env?: Record<string, string | number | boolean>;
 
   /**
    * This option defines child process's stdio configuration.
@@ -295,7 +368,7 @@ export interface ChildProcessOptions {
   shell?: string | boolean;
 
   /**
-   * NOTE: This option is not yet implemented.
+   * Allows aborting the child process using an AbortSignal.
    */
   signal?: AbortSignal;
 
@@ -398,7 +471,7 @@ function normalizeStdioOption(
     switch (stdio) {
       case "overlapped":
         if (isWindows) {
-          notImplemented();
+          notImplemented("normalizeStdioOption overlapped (on windows)");
         }
         // 'overlapped' is same as 'piped' on non Windows system.
         return ["pipe", "pipe", "pipe"];
@@ -409,7 +482,7 @@ function normalizeStdioOption(
       case "ignore":
         return ["ignore", "ignore", "ignore"];
       default:
-        notImplemented();
+        notImplemented(`normalizeStdioOption stdio=${typeof stdio} (${stdio})`);
     }
   }
 }

@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as perfHooks from "./perf_hooks.ts";
 import { performance } from "./perf_hooks.ts";
 import { assertEquals } from "../testing/asserts.ts";
@@ -9,10 +10,12 @@ Deno.test({
     assertEquals(perfHooks.performance.clearMarks, performance.clearMarks);
     assertEquals(perfHooks.performance.mark, performance.mark);
     assertEquals(perfHooks.performance.now, performance.now);
+    assertEquals(perfHooks.performance.toJSON, performance.toJSON);
     perfHooks.performance.measure("test");
     perfHooks.performance.mark("test");
     perfHooks.performance.clearMarks("test");
     perfHooks.performance.now();
+    perfHooks.performance.toJSON();
   },
 });
 
@@ -23,6 +26,7 @@ Deno.test({
     performance.mark("test");
     performance.clearMarks("test");
     performance.now();
+    performance.toJSON();
   },
 });
 

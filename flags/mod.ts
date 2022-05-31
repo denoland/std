@@ -1,7 +1,12 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+/**
+ * This module is browser compatible.
+ *
+ * @module
+ */
 import { assert } from "../_util/assert.ts";
 
+/** The value returned from `parse`. */
 export interface Args {
   /** Contains all the arguments that didn't have an option associated with
    * them. */
@@ -10,17 +15,18 @@ export interface Args {
   [key: string]: any;
 }
 
-export interface ArgParsingOptions {
+/** The options for the `parse` call. */
+export interface ParseOptions {
   /** When `true`, populate the result `_` with everything before the `--` and
    * the result `['--']` with everything after the `--`. Here's an example:
    *
    * ```ts
-   *      // $ deno run example.ts -- a arg1
-   *      import { parse } from "./mod.ts";
-   *      console.dir(parse(Deno.args, { "--": false }));
-   *      // output: { _: [ "a", "arg1" ] }
-   *      console.dir(parse(Deno.args, { "--": true }));
-   *      // output: { _: [], --: [ "a", "arg1" ] }
+   * // $ deno run example.ts -- a arg1
+   * import { parse } from "./mod.ts";
+   * console.dir(parse(Deno.args, { "--": false }));
+   * // output: { _: [ "a", "arg1" ] }
+   * console.dir(parse(Deno.args, { "--": true }));
+   * // output: { _: [], --: [ "a", "arg1" ] }
    * ```
    *
    * Defaults to `false`.
@@ -28,7 +34,7 @@ export interface ArgParsingOptions {
   "--"?: boolean;
 
   /** An object mapping string names to strings or arrays of string argument
-   * names to use as aliases */
+   * names to use as aliases. */
   alias?: Record<string, string | string[]>;
 
   /** A boolean, string or array of strings to always treat as booleans. If
@@ -46,6 +52,12 @@ export interface ArgParsingOptions {
   /** A string or array of strings argument names to always treat as strings. */
   string?: string | string[];
 
+  /** A string or array of strings argument names to always treat as arrays.
+   * Collectable options can be used multiple times. All values will be
+   * colelcted into one array. If a non-collectable option is used multiple
+   * times, the last value is used. */
+  collect?: string | string[];
+
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
    * unknown option is not added to `parsedArgs`. */
@@ -55,6 +67,7 @@ export interface ArgParsingOptions {
 interface Flags {
   bools: Record<string, boolean>;
   strings: Record<string, boolean>;
+  collect: Record<string, boolean>;
   unknownFn: (arg: string, key?: string, value?: unknown) => unknown;
   allBools: boolean;
 }
@@ -93,12 +106,23 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
   return key in o;
 }
 
-/** Take a set of command line arguments, with an optional set of options, and
- * return an object representation of those argument.
+/** Take a set of command line arguments, optionally with a set of options, and
+ * return an object representing the flags found in the passed arguments.
+ *
+ * By default any arguments starting with `-` or `--` are considered boolean
+ * flags. If the argument name is followed by an equal sign (`=`) it is
+ * considered a key-value pair. Any arguments which could not be parsed are
+ * available in the `_` property of the returned object.
  *
  * ```ts
- *      import { parse } from "./mod.ts";
- *      const parsedArgs = parse(Deno.args);
+ * import { parse } from "./mod.ts";
+ * const parsedArgs = parse(Deno.args);
+ * ```
+ *
+ * ```ts
+ * import { parse } from "./mod.ts";
+ * const parsedArgs = parse(["--foo", "--bar=baz", "--no-qux", "./quux.txt"]);
+ * // parsedArgs: { foo: true, bar: "baz", qux: false, _: ["./quux.txt"] }
  * ```
  */
 export function parse(
@@ -110,14 +134,16 @@ export function parse(
     default: defaults = {},
     stopEarly = false,
     string = [],
+    collect = [],
     unknown = (i: string): unknown => i,
-  }: ArgParsingOptions = {},
+  }: ParseOptions = {},
 ): Args {
   const flags: Flags = {
     bools: {},
     strings: {},
     unknownFn: unknown,
     allBools: false,
+    collect: {},
   };
 
   if (boolean !== undefined) {
@@ -161,6 +187,20 @@ export function parse(
     }
   }
 
+  if (collect !== undefined) {
+    const collectArgs = typeof collect === "string" ? [collect] : collect;
+
+    for (const key of collectArgs.filter(Boolean)) {
+      flags.collect[key] = true;
+      const alias = get(aliases, key);
+      if (alias) {
+        for (const al of alias) {
+          flags.collect[al] = true;
+        }
+      }
+    }
+  }
+
   const argv: Args = { _: [] };
 
   function argDefined(key: string, arg: string): boolean {
@@ -172,8 +212,14 @@ export function parse(
     );
   }
 
-  function setKey(obj: NestedMapping, keys: string[], value: unknown): void {
+  function setKey(
+    obj: NestedMapping,
+    name: string,
+    value: unknown,
+    collect = true,
+  ): void {
     let o = obj;
+    const keys = name.split(".");
     keys.slice(0, -1).forEach(function (key): void {
       if (get(o, key) === undefined) {
         o[key] = {};
@@ -182,12 +228,12 @@ export function parse(
     });
 
     const key = keys[keys.length - 1];
-    if (
-      get(o, key) === undefined ||
-      get(flags.bools, key) ||
-      typeof get(o, key) === "boolean"
-    ) {
+    const collectable = collect && !!get(flags.collect, name);
+
+    if (!collectable) {
       o[key] = value;
+    } else if (get(o, key) === undefined) {
+      o[key] = [value];
     } else if (Array.isArray(get(o, key))) {
       (o[key] as unknown[]).push(value);
     } else {
@@ -199,18 +245,19 @@ export function parse(
     key: string,
     val: unknown,
     arg: string | undefined = undefined,
+    collect?: boolean,
   ): void {
     if (arg && flags.unknownFn && !argDefined(key, arg)) {
       if (flags.unknownFn(arg, key, val) === false) return;
     }
 
     const value = !get(flags.strings, key) && isNumber(val) ? Number(val) : val;
-    setKey(argv, key.split("."), value);
+    setKey(argv, key, value, collect);
 
     const alias = get(aliases, key);
     if (alias) {
       for (const x of alias) {
-        setKey(argv, x.split("."), value);
+        setKey(argv, x, value, collect);
       }
     }
   }
@@ -219,10 +266,6 @@ export function parse(
     return getForce(aliases, key).some(
       (x) => typeof get(flags.bools, x) === "boolean",
     );
-  }
-
-  for (const key of Object.keys(flags.bools)) {
-    setArg(key, defaults[key] === undefined ? false : defaults[key]);
   }
 
   let notFlags: string[] = [];
@@ -250,7 +293,7 @@ export function parse(
     } else if (/^--no-.+/.test(arg)) {
       const m = arg.match(/^--no-(.+)/);
       assert(m != null);
-      setArg(m[1], false, arg);
+      setArg(m[1], false, arg, false);
     } else if (/^--.+/.test(arg)) {
       const m = arg.match(/^--(.+)/);
       assert(m != null);
@@ -335,15 +378,38 @@ export function parse(
     }
   }
 
-  for (const key of Object.keys(defaults)) {
+  for (const [key, value] of Object.entries(defaults)) {
     if (!hasKey(argv, key.split("."))) {
-      setKey(argv, key.split("."), defaults[key]);
+      setKey(argv, key, value);
 
       if (aliases[key]) {
         for (const x of aliases[key]) {
-          setKey(argv, x.split("."), defaults[key]);
+          setKey(argv, x, value);
         }
       }
+    }
+  }
+
+  for (const key of Object.keys(flags.bools)) {
+    if (!hasKey(argv, key.split("."))) {
+      const value = get(flags.collect, key) ? [] : false;
+      setKey(
+        argv,
+        key,
+        value,
+        false,
+      );
+    }
+  }
+
+  for (const key of Object.keys(flags.strings)) {
+    if (!hasKey(argv, key.split(".")) && get(flags.collect, key)) {
+      setKey(
+        argv,
+        key,
+        [],
+        false,
+      );
     }
   }
 

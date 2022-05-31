@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import {
   critical,
@@ -17,7 +17,7 @@ import { BaseHandler } from "./handlers.ts";
 class TestHandler extends BaseHandler {
   public messages: string[] = [];
 
-  public log(str: string): void {
+  public override log(str: string): void {
     this.messages.push(str);
   }
 }

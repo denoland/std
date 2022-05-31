@@ -1,8 +1,8 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
-import { ERR_ASYNC_TYPE, ERR_INVALID_ASYNC_ID } from "./_errors.ts";
-import { validateFunction, validateString } from "./internal/validators.js";
+import { ERR_ASYNC_TYPE, ERR_INVALID_ASYNC_ID } from "./internal/errors.ts";
+import { validateFunction, validateString } from "./internal/validators.mjs";
 import {
   // deno-lint-ignore camelcase
   async_id_symbol,
@@ -143,9 +143,27 @@ export class AsyncResource {
   }
 }
 
+function executionAsyncId() {
+  return 1;
+}
+
+class AsyncHook {
+  enable() {
+  }
+
+  disable() {
+  }
+}
+
+function createHook() {
+  return new AsyncHook();
+}
+
 // Placing all exports down here because the exported classes won't export
 // otherwise.
 export default {
   // Embedder API
   AsyncResource,
+  executionAsyncId,
+  createHook,
 };

@@ -1,5 +1,10 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
-import { equals, indexOf, lastIndexOf, startsWith } from "../bytes/mod.ts";
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import {
+  equals,
+  indexOfNeedle,
+  lastIndexOfNeedle,
+  startsWith,
+} from "../bytes/mod.ts";
 import { Buffer, BufReader, BufWriter } from "../io/buffer.ts";
 import { copy } from "../streams/conversion.ts";
 import { copyN } from "../io/util.ts";
@@ -9,7 +14,11 @@ import { assert } from "../_util/assert.ts";
 import { TextProtoReader } from "../textproto/mod.ts";
 
 const { hasOwn } = Object;
-/** FormFile object */
+/**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
+ * FormFile object */
 export interface FormFile {
   /** filename  */
   filename: string;
@@ -25,7 +34,11 @@ export interface FormFile {
   tempfile?: string;
 }
 
-/** Type guard for FormFile */
+/**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
+ * Type guard for FormFile */
 // deno-lint-ignore no-explicit-any
 export function isFormFile(x: any): x is FormFile {
   return hasOwn(x, "filename") && hasOwn(x, "type");
@@ -42,6 +55,9 @@ function randomBoundary(): string {
 const encoder = new TextEncoder();
 
 /**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
  * Checks whether `buf` should be considered to match the boundary.
  *
  * The prefix is "--boundary" or "\r\n--boundary" or "\n--boundary", and the
@@ -79,6 +95,9 @@ export function matchAfterPrefix(
 }
 
 /**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
  * Scans `buf` to identify how much of it can be safely returned as part of the
  * `PartReader` body.
  *
@@ -119,7 +138,7 @@ export function scanUntilBoundary(
   }
 
   // Search for "\n--boundary".
-  const i = indexOf(buf, newLineDashBoundary);
+  const i = indexOfNeedle(buf, newLineDashBoundary);
   if (i >= 0) {
     switch (matchAfterPrefix(buf.slice(i), newLineDashBoundary, eof)) {
       case -1:
@@ -137,7 +156,7 @@ export function scanUntilBoundary(
   // Otherwise, anything up to the final \n is not part of the boundary and so
   // must be part of the body. Also, if the section from the final \n onward is
   // not a prefix of the boundary, it too must be part of the body.
-  const j = lastIndexOf(buf, newLineDashBoundary.slice(0, 1));
+  const j = lastIndexOfNeedle(buf, newLineDashBoundary.slice(0, 1));
   if (j >= 0 && startsWith(newLineDashBoundary, buf.slice(j))) {
     return j;
   }
@@ -193,16 +212,16 @@ class PartReader implements Deno.Reader, Deno.Closer {
 
   close(): void {}
 
-  private contentDisposition!: string;
-  private contentDispositionParams!: { [key: string]: string };
+  #contentDisposition!: string;
+  #contentDispositionParams!: { [key: string]: string };
 
-  private getContentDispositionParams(): { [key: string]: string } {
-    if (this.contentDispositionParams) return this.contentDispositionParams;
+  #getContentDispositionParams(): { [key: string]: string } {
+    if (this.#contentDispositionParams) return this.#contentDispositionParams;
     const cd = this.headers.get("content-disposition");
     const params: { [key: string]: string } = {};
     assert(cd != null, "content-disposition must be set");
     const comps = decodeURI(cd).split(";");
-    this.contentDisposition = comps[0];
+    this.#contentDisposition = comps[0];
     comps
       .slice(1)
       .map((v: string): string => v.trim())
@@ -218,16 +237,16 @@ class PartReader implements Deno.Reader, Deno.Closer {
           }
         }
       });
-    return (this.contentDispositionParams = params);
+    return (this.#contentDispositionParams = params);
   }
 
   get fileName(): string {
-    return this.getContentDispositionParams()["filename"];
+    return this.#getContentDispositionParams()["filename"];
   }
 
   get formName(): string {
-    const p = this.getContentDispositionParams();
-    if (this.contentDisposition === "form-data") {
+    const p = this.#getContentDispositionParams();
+    if (this.#contentDisposition === "form-data") {
       return p["name"];
     }
     return "";
@@ -277,7 +296,11 @@ export interface ReadFormOptions {
   suffix?: string;
 }
 
-/** Reader for parsing multipart/form-data */
+/**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
+ * Reader for parsing multipart/form-data */
 export class MultipartReader {
   readonly newLine: Uint8Array;
   readonly newLineDashBoundary: Uint8Array;
@@ -322,7 +345,7 @@ export class MultipartReader {
     let maxValueBytes = maxMemory + (10 << 20);
     const buf = new Buffer(new Uint8Array(maxValueBytes));
     for (;;) {
-      const p = await this.nextPart();
+      const p = await this.#nextPart();
       if (p === null) {
         break;
       }
@@ -363,7 +386,7 @@ export class MultipartReader {
         const file = await Deno.open(filepath, { write: true });
 
         try {
-          const size = await copy(new MultiReader(buf, p), file);
+          const size = await copy(new MultiReader([buf, p]), file);
 
           file.close();
           formFile = {
@@ -398,12 +421,12 @@ export class MultipartReader {
     return multipartFormData(fileMap, valueMap);
   }
 
-  private currentPart: PartReader | undefined;
-  private partsRead = 0;
+  #currentPart: PartReader | undefined;
+  #partsRead = 0;
 
-  private async nextPart(): Promise<PartReader | null> {
-    if (this.currentPart) {
-      this.currentPart.close();
+  async #nextPart(): Promise<PartReader | null> {
+    if (this.#currentPart) {
+      this.#currentPart.close();
     }
     if (equals(this.dashBoundary, encoder.encode("--"))) {
       throw new Error("boundary is empty");
@@ -414,24 +437,24 @@ export class MultipartReader {
       if (line === null) {
         throw new Deno.errors.UnexpectedEof();
       }
-      if (this.isBoundaryDelimiterLine(line)) {
-        this.partsRead++;
+      if (this.#isBoundaryDelimiterLine(line)) {
+        this.#partsRead++;
         const r = new TextProtoReader(this.bufReader);
         const headers = await r.readMIMEHeader();
         if (headers === null) {
           throw new Deno.errors.UnexpectedEof();
         }
         const np = new PartReader(this, headers);
-        this.currentPart = np;
+        this.#currentPart = np;
         return np;
       }
-      if (this.isFinalBoundary(line)) {
+      if (this.#isFinalBoundary(line)) {
         return null;
       }
       if (expectNewPart) {
         throw new Error(`expecting a new Part; got line ${line}`);
       }
-      if (this.partsRead === 0) {
+      if (this.#partsRead === 0) {
         continue;
       }
       if (equals(line, this.newLine)) {
@@ -442,7 +465,7 @@ export class MultipartReader {
     }
   }
 
-  private isFinalBoundary(line: Uint8Array): boolean {
+  #isFinalBoundary(line: Uint8Array): boolean {
     if (!startsWith(line, this.dashBoundaryDash)) {
       return false;
     }
@@ -450,7 +473,7 @@ export class MultipartReader {
     return rest.length === 0 || equals(skipLWSPChar(rest), this.newLine);
   }
 
-  private isBoundaryDelimiterLine(line: Uint8Array): boolean {
+  #isBoundaryDelimiterLine(line: Uint8Array): boolean {
     if (!startsWith(line, this.dashBoundary)) {
       return false;
     }
@@ -500,8 +523,8 @@ function multipartFormData(
 
 class PartWriter implements Deno.Writer {
   closed = false;
-  private readonly partHeader: string;
-  private headersWritten = false;
+  readonly #partHeader: string;
+  #headersWritten = false;
 
   constructor(
     private writer: Deno.Writer,
@@ -519,7 +542,7 @@ class PartWriter implements Deno.Writer {
       buf += `${key}: ${value}\r\n`;
     }
     buf += `\r\n`;
-    this.partHeader = buf;
+    this.#partHeader = buf;
   }
 
   close(): void {
@@ -530,9 +553,9 @@ class PartWriter implements Deno.Writer {
     if (this.closed) {
       throw new Error("part is closed");
     }
-    if (!this.headersWritten) {
-      await this.writer.write(encoder.encode(this.partHeader));
-      this.headersWritten = true;
+    if (!this.#headersWritten) {
+      await this.writer.write(encoder.encode(this.#partHeader));
+      this.#headersWritten = true;
     }
     return this.writer.write(p);
   }
@@ -552,25 +575,29 @@ function checkBoundary(b: string): string {
   return b;
 }
 
-/** Writer for creating multipart/form-data */
+/**
+ * @deprecated Use FormData instead. See https://doc.deno.land/deno/stable/~/FormData
+ * and https://developer.mozilla.org/en-US/docs/Web/API/FormData for more details.
+ *
+ * Writer for creating multipart/form-data */
 export class MultipartWriter {
-  private readonly _boundary: string;
+  readonly #_boundary: string;
 
   get boundary(): string {
-    return this._boundary;
+    return this.#_boundary;
   }
 
-  private lastPart: PartWriter | undefined;
-  private bufWriter: BufWriter;
-  private isClosed = false;
+  #lastPart: PartWriter | undefined;
+  #bufWriter: BufWriter;
+  #isClosed = false;
 
   constructor(private readonly writer: Deno.Writer, boundary?: string) {
     if (boundary !== void 0) {
-      this._boundary = checkBoundary(boundary);
+      this.#_boundary = checkBoundary(boundary);
     } else {
-      this._boundary = randomBoundary();
+      this.#_boundary = randomBoundary();
     }
-    this.bufWriter = new BufWriter(writer);
+    this.#bufWriter = new BufWriter(writer);
   }
 
   formDataContentType(): string {
@@ -578,19 +605,19 @@ export class MultipartWriter {
   }
 
   createPart(headers: Headers): Deno.Writer {
-    if (this.isClosed) {
+    if (this.#isClosed) {
       throw new Error("multipart: writer is closed");
     }
-    if (this.lastPart) {
-      this.lastPart.close();
+    if (this.#lastPart) {
+      this.#lastPart.close();
     }
     const part = new PartWriter(
       this.writer,
       this.boundary,
       headers,
-      !this.lastPart,
+      !this.#lastPart,
     );
-    this.lastPart = part;
+    this.#lastPart = part;
     return part;
   }
 
@@ -628,21 +655,21 @@ export class MultipartWriter {
     await copy(file, f);
   }
 
-  private flush() {
-    return this.bufWriter.flush();
+  #flush() {
+    return this.#bufWriter.flush();
   }
 
   /** Close writer. No additional data can be written to stream */
   async close() {
-    if (this.isClosed) {
+    if (this.#isClosed) {
       throw new Error("multipart: writer is closed");
     }
-    if (this.lastPart) {
-      this.lastPart.close();
-      this.lastPart = void 0;
+    if (this.#lastPart) {
+      this.#lastPart.close();
+      this.#lastPart = void 0;
     }
     await this.writer.write(encoder.encode(`\r\n--${this.boundary}--\r\n`));
-    await this.flush();
-    this.isClosed = true;
+    await this.#flush();
+    this.#isClosed = true;
   }
 }

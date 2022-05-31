@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -27,7 +28,7 @@
 import { notImplemented } from "../_utils.ts";
 
 export function guessHandleType(_fd: number): string {
-  notImplemented();
+  notImplemented("util.guessHandleType");
 }
 
 export const ALL_PROPERTIES = 0;

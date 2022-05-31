@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertThrows, fail } from "../../testing/asserts.ts";
 import { futimes, futimesSync } from "./_fs_futimes.ts";
 

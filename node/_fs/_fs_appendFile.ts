@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   CallbackWithError,
   isFd,
@@ -6,7 +6,7 @@ import {
   WriteFileOptions,
 } from "./_fs_common.ts";
 import { Encodings } from "../_utils.ts";
-import { copyObject, getOptions } from "../internal/fs/utils.js";
+import { copyObject, getOptions } from "../internal/fs/utils.mjs";
 import { writeFile, writeFileSync } from "./_fs_writeFile.ts";
 
 /**

@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertEquals } from "../testing/asserts.ts";
 import { crypto as stdCrypto } from "./mod.ts";
 import * as bytes from "../bytes/mod.ts";
@@ -148,17 +148,17 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+  const process = Deno.spawnChild(Deno.execPath(), {
+    args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
-    stdout: "piped",
     stdin: "piped",
   });
 
-  await process.stdin.write(
+  const writer = process.stdin.getWriter();
+  await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.js";
+      import { _wasm } from "../_wasm_crypto/crypto.mjs";
 
       const { memory } = _wasm as { memory: WebAssembly.Memory };
 
@@ -188,13 +188,13 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
       ));
     `),
   );
-  process.stdin.close();
+  writer.releaseLock();
+  await process.stdin.close();
 
-  const stdout = new TextDecoder().decode(await process.output());
-  const status = await process.status();
-  process.close();
+  const res = await process.output();
+  const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(status.success, true, "test subprocess failed");
+  assertEquals(res.status.success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     smallDigest,
@@ -242,17 +242,18 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+  const process = Deno.spawnChild(Deno.execPath(), {
+    args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdout: "piped",
     stdin: "piped",
   });
 
-  await process.stdin.write(
+  const writer = process.stdin.getWriter();
+  await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.js";
+      import { _wasm } from "../_wasm_crypto/crypto.mjs";
 
       const { memory } = _wasm as { memory: WebAssembly.Memory };
 
@@ -284,13 +285,13 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
       ));
     `),
   );
-  process.stdin.close();
+  writer.releaseLock();
+  await process.stdin.close();
 
-  const stdout = new TextDecoder().decode(await process.output());
-  const status = await process.status();
-  process.close();
+  const res = await process.output();
+  const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(status.success, true, "test subprocess failed");
+  assertEquals(res.status.success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     heapBytesFinal,
@@ -351,6 +352,7 @@ const allErrors = {
   "KECCAK-256": Error,
   "KECCAK-384": Error,
   "KECCAK-512": Error,
+  MD4: Error,
   MD5: Error,
   "RIPEMD-160": Error,
   "SHA-1": Error,
@@ -364,6 +366,7 @@ const allErrors = {
   "SHA-512": Error,
   SHAKE128: Error,
   SHAKE256: Error,
+  TIGER: Error,
 } as const;
 
 // Test inputs and expected results for each algorithm.
@@ -395,6 +398,7 @@ const digestCases: [
       "2c23146a63a29acf99e73b88f8c24eaa7dc60aa771780ccc006afbfa8fe2479b2dd2b21362337441ac12b515911957ff",
     "KECCAK-512":
       "0eab42de4c3ceb9235fc91acffe746b29c29a8c366b7c60e4e67c466f36a4304c00fa9caf9d87976ba469bcbe06713b435f091ef2769fb160cdab33d3670680e",
+    MD4: "31d6cfe0d16ae931b73c59d7e0c089c0",
     MD5: "d41d8cd98f00b204e9800998ecf8427e",
     "RIPEMD-160": "9c1185a5c5e9fc54612808977ee8f548b2258d31",
     "SHA-1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
@@ -416,6 +420,7 @@ const digestCases: [
       "7f9c2ba4e88f827d616045507605853ed73b8093f6efbc88eb1a6eacfa66ef26",
     SHAKE256:
       "46b9dd2b0ba88d13233b3feb743eeb243fcd52ea62b81b82b50c27646ed5762fd75dc4ddd8c0f200cb05019d67b592f6fc821c49479ab48640292eacb3b7c4be",
+    TIGER: "3293ac630c13f0245f92bbb1766e16167a4e58492dde73f3",
   }],
 
   [
@@ -442,6 +447,7 @@ const digestCases: [
         "9265ed0d889a1327114cffa6fa682dce051855e24f9393a3faa7e4791124c9db1abef28f95f677134edefc63b02066d9",
       "KECCAK-512":
         "40f0a44b4452c44baf401b49411f861caac716ba87be7d6894757f1114fcec44a4d4a9f44bcab569fabc676e761fe9d097dd191d5d9c71d66250b3e867071553",
+      MD4: "47c61a0fa8738ba77308a8a600f88e4b",
       MD5: "93b885adfe0da089cdf634904fd59f71",
       "RIPEMD-160": "c81b94933420221a7ac004a90242d8b1d3e5070d",
       "SHA-1": "5ba93c9db0cff93f52b521d7420e43f6eda2784f",
@@ -463,6 +469,7 @@ const digestCases: [
         "0b784469a0628e03861cd8a196dfafa0e9e8056d04cddcc49f0746b9ad43ccb2",
       SHAKE256:
         "b8d01df855f7075882c636f6ddeacf41e5de0bbf30042ef0a86e36f4b8600d546c516501a6a3c821678d3d9943fa9e74b9b99fccd47aecc91dd1f4946b8355b3",
+      TIGER: "5d9ed00a030e638bdb753a6a24fb900e5a63b8e73e6c25b6",
     },
   ],
 
@@ -478,6 +485,7 @@ const digestCases: [
     "KECCAK-256": Error,
     "KECCAK-384": Error,
     "KECCAK-512": Error,
+    MD4: Error,
     MD5: Error,
     "RIPEMD-160": "98c615784ccb5fe5936fbc0cbe9dfdb408d92f0f",
     "SHA-1": "2aae6c35c94fcfb415dbe95f408b9ce91ee846ed",
@@ -491,6 +499,7 @@ const digestCases: [
     "SHA-512": Error,
     SHAKE128: "3a9159f071e4dd1c8c4f968607c30942e120d815",
     SHAKE256: "369771bb2cb9d2b04c1d54cca487e372d9f187f7",
+    TIGER: Error,
   }],
 
   ["Output length: 3", [["hello world"], ["hell", "o w", "orld"]], {
@@ -505,6 +514,7 @@ const digestCases: [
     "KECCAK-256": Error,
     "KECCAK-384": Error,
     "KECCAK-512": Error,
+    MD4: Error,
     MD5: Error,
     "RIPEMD-160": Error,
     "SHA-1": Error,
@@ -518,6 +528,7 @@ const digestCases: [
     "SHA-512": Error,
     SHAKE128: "3a9159",
     SHAKE256: "369771",
+    TIGER: Error,
   }],
 
   ["Output length: 123", [["hello world"], ["hell", "o w", "orld"]], {
@@ -533,6 +544,7 @@ const digestCases: [
     "KECCAK-256": Error,
     "KECCAK-384": Error,
     "KECCAK-512": Error,
+    MD4: Error,
     MD5: Error,
     "RIPEMD-160": Error,
     "SHA-1": Error,
@@ -548,6 +560,7 @@ const digestCases: [
       "3a9159f071e4dd1c8c4f968607c30942e120d8156b8b1e72e0d376e8871cb8b899072665674f26cc494a4bcf027c58267e8ee2da60e942759de86d2670bba1aa47bffd20b48b1d2aa7c3349f8215d1b99ca65bdb1770a220f67456f602436032afce7f24e534e7bfcdab9b35affa0ff891074302c19970d7359a8c",
     SHAKE256:
       "369771bb2cb9d2b04c1d54cca487e372d9f187f73f7ba3f65b95c8ee7798c527f4f3c2d55c2d46a29f2e945d469c3df27853a8735271f5cc2d9e889544357116bb60a24af659151563156eebbf68810dd95c6fcccac0650132ba30bef9bf75b0d483becb935be8688b26ffb294d8284edd64a97325d6be0a423f23",
+    TIGER: Error,
   }],
 
   ["Output length: 0", [[""]], {
@@ -562,6 +575,7 @@ const digestCases: [
     "KECCAK-256": Error,
     "KECCAK-384": Error,
     "KECCAK-512": Error,
+    MD4: Error,
     MD5: Error,
     "RIPEMD-160": Error,
     "SHA-1": Error,
@@ -575,6 +589,7 @@ const digestCases: [
     "SHA-512": Error,
     SHAKE128: "",
     SHAKE256: "",
+    TIGER: Error,
   }],
 
   ["Negative length", [[""]], { length: -1 }, allErrors],
@@ -608,6 +623,7 @@ const digestCases: [
       "6acf1af74a00ee20aa0b03647858ed749f7cef64fcf990da3b49e48232002b2ede1e50295755ca9a06f43157cfb36dd6",
     "KECCAK-512":
       "726580def2ce92c4345c0dfe768417b022a5fc9a9fec4f960b314bf078bdc93f05057d83a8334454977960e27afaf0d3b7500e5ee862ed91fff3817a93820f63",
+    MD4: "45c7d06ad9f5b7aefd65dca06ca8bfb6",
     MD5: "65ee3c415a2316553ebf2fdb2ccafd0b",
     "RIPEMD-160": "a7188285d5c8560c44deadbdbb095e8fe6ac8dec",
     "SHA-1": "74de0faec24034e7415e7a6ee379e509b29985b2",
@@ -629,6 +645,7 @@ const digestCases: [
       "1e99e4ac28efec6bc3af203f6a161b976389a2d036d0e42026141860d1e3a08a",
     SHAKE256:
       "e39016c524adfa6efd8019d6bc6584bbb912bed38ab896a546a2ef648e120838085103118d3409caab6ed847a67b27085bdce9ffaa6408410431a706625f07bf",
+    TIGER: "111764e3c4f512abce83c7ebdf061caca4f9a04177046509",
   }],
 
   [
@@ -653,6 +670,7 @@ const digestCases: [
         "013efe9f790d52b7cd28d8763cc2c6f12583660298d02f5c151096496980d990be734074fd133a689533cc8046fc212f",
       "KECCAK-512":
         "c9cb0ac5c3be4861fc65ecd5a385b6fd10a4dd5ab7a57ffa13de7fd5df4fd12c7e39e0e96a065dae9958dcff76a86a8c3d1a156c54ce5e1096161be4601606a1",
+      MD4: "c52b6ab9e096c97956d5d38d000947d2",
       MD5: "81f7e24f254ca2af692188d17b5103d8",
       "RIPEMD-160": "e4d0ecd208850e00726c0c481b888f8de06fbfce",
       "SHA-1": "b0161602fcdd324d2d0222b5c8d2873ff1f6452e",
@@ -674,6 +692,7 @@ const digestCases: [
         "ab4c60827e1521de623d8b41227d6b4a7406875f44db2356091c10f9d78e55d7",
       SHAKE256:
         "ad4ffc105a791884afd92917a64af4d9d25b1c9d41a8e06683ad03a62ee5c7166a98fdcb4b60ee55722582c0eb9f103be3b55166efa4c20fdfcc5a4e026330dd",
+      TIGER: "affa436814964b03d0ab7d5743fcfdcaee2ad5ecb792e1eb",
     },
   ],
 
@@ -707,6 +726,7 @@ const digestCases: [
         "72a509f9279f48192871c212a12316ef231a0ccdc063e543750d4fc635f07b4c7dc34dc0ad269b3e57013ac3eb9f092c",
       "KECCAK-512":
         "63cac04fe488807d59860ab58a802bd177d7a9ac0848578f952121a802542d7f2caf67138a06004a7f33eb4a3ba4fcab6fa650ee3986fa699030255c87aec6e6",
+      MD4: "fd3fd27b70e242ab32adcfc3978ee0f0",
       MD5: "67162fd7a3a58a71b8dd3ee48d7a81de",
       "RIPEMD-160": "d4bdea1747dfc0cda2171c7b5a55b732feabb1cf",
       "SHA-1": "77fd495a283c66d4f9c28351c510fbff1458adf5",
@@ -728,6 +748,7 @@ const digestCases: [
         "8b8d4e2daec80c06cdf68170c54ade9745945bbd5f998763ac9f90586f203a3f",
       SHAKE256:
         "5eb886f6cfe4460a3bac6e19bae068ea67e2d13507f880b770fe32c57914e9f10b6ffee3154e4bef277499055eb6c59138ecfa74f47c47b63edc451d57606b28",
+      TIGER: "198fb3a090bd39a7f084a6296b466f49e47e81112268ec22",
     },
   ],
 

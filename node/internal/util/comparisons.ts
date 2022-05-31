@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
 // deno-lint-ignore-file
@@ -20,7 +21,7 @@ import {
   isTypedArray,
 } from "./types.ts";
 
-import { Buffer } from "../../_buffer.js";
+import { Buffer } from "../../_buffer.mjs";
 import {
   getOwnNonIndexProperties,
   ONLY_ENUMERABLE,
@@ -42,10 +43,13 @@ interface Memo {
 let memo: Memo;
 
 export function isDeepStrictEqual(val1: unknown, val2: unknown): boolean {
-  return isDeepEqual(val1, val2, true);
+  return innerDeepEqual(val1, val2, true);
+}
+function isDeepEqual(val1: unknown, val2: unknown): boolean {
+  return innerDeepEqual(val1, val2, false);
 }
 
-function isDeepEqual(
+function innerDeepEqual(
   val1: unknown,
   val2: unknown,
   strict: boolean,
@@ -85,17 +89,13 @@ function isDeepEqual(
     }
   }
 
-  let val1Tag;
-  let val2Tag;
-  if (typeof val1 === "object" && val1 !== null) {
-    val1Tag = (val1 as object).toString();
-  }
-  if (typeof val2 === "object" && val2 !== null) {
-    val2Tag = (val2 as object).toString();
-  }
+  const val1Tag = Object.prototype.toString.call(val1);
+  const val2Tag = Object.prototype.toString.call(val2);
 
   // prototype must be Strictly Equal
-  if (val1Tag !== val2Tag) {
+  if (
+    val1Tag !== val2Tag
+  ) {
     return false;
   }
 
@@ -330,7 +330,8 @@ function keyCheck(
 }
 
 function areSimilarRegExps(a: RegExp, b: RegExp) {
-  return a.source === b.source && a.flags === b.flags;
+  return a.source === b.source && a.flags === b.flags &&
+    a.lastIndex === b.lastIndex;
 }
 
 // TODO(standvpmnt): add type for arguments
@@ -366,41 +367,60 @@ function areEqualArrayBuffers(buf1: any, buf2: any): boolean {
   );
 }
 
+// TODO(standvpmnt):  this check of getOwnPropertySymbols and getOwnPropertyNames
+// length is sufficient to handle the current test case, however this will fail
+// to catch a scenario wherein the getOwnPropertySymbols and getOwnPropertyNames
+// length is the same(will be very contrived but a possible shortcoming
 function isEqualBoxedPrimitive(a: any, b: any): boolean {
+  if (
+    Object.getOwnPropertyNames(a).length !==
+      Object.getOwnPropertyNames(b).length
+  ) {
+    return false;
+  }
+  if (
+    Object.getOwnPropertySymbols(a).length !==
+      Object.getOwnPropertySymbols(b).length
+  ) {
+    return false;
+  }
   if (isNumberObject(a)) {
     return (
       isNumberObject(b) &&
       Object.is(
-        a.valueOf(),
-        b.valueOf(),
+        Number.prototype.valueOf.call(a),
+        Number.prototype.valueOf.call(b),
       )
     );
   }
   if (isStringObject(a)) {
     return (
       isStringObject(b) &&
-      (a.valueOf() === b.valueOf())
+      (String.prototype.valueOf.call(a) === String.prototype.valueOf.call(b))
     );
   }
   if (isBooleanObject(a)) {
     return (
       isBooleanObject(b) &&
-      (a.valueOf() === b.valueOf())
+      (Boolean.prototype.valueOf.call(a) === Boolean.prototype.valueOf.call(b))
     );
   }
   if (isBigIntObject(a)) {
     return (
       isBigIntObject(b) &&
-      (a.valueOf() === b.valueOf())
+      (BigInt.prototype.valueOf.call(a) === BigInt.prototype.valueOf.call(b))
     );
   }
   if (isSymbolObject(a)) {
     return (
       isSymbolObject(b) &&
-      (a.valueOf() === b.valueOf())
+      (Symbol.prototype.valueOf.call(a) ===
+        Symbol.prototype.valueOf.call(b))
     );
   }
-  return false;
+  // assert.fail(`Unknown boxed type ${val1}`);
+  // return false;
+  throw Error(`Unknown boxed type`);
 }
 
 function getEnumerables(val: any, keys: any) {
@@ -430,7 +450,7 @@ function objEquiv(
       if (obj1.hasOwnProperty(i)) {
         if (
           !obj2.hasOwnProperty(i) ||
-          !isDeepEqual(obj1[i], obj2[i], strict, memos)
+          !innerDeepEqual(obj1[i], obj2[i], strict, memos)
         ) {
           return false;
         }
@@ -442,7 +462,7 @@ function objEquiv(
           const key = keys1[i];
           if (
             !obj2.hasOwnProperty(key) ||
-            !isDeepEqual(obj1[key], obj2[key], strict, memos)
+            !innerDeepEqual(obj1[key], obj2[key], strict, memos)
           ) {
             return false;
           }
@@ -461,11 +481,58 @@ function objEquiv(
   // Expensive test
   for (i = 0; i < keys.length; i++) {
     const key = keys[i];
-    if (!isDeepEqual(obj1[key], obj2[key], strict, memos)) {
+    if (!innerDeepEqual(obj1[key], obj2[key], strict, memos)) {
       return false;
     }
   }
   return true;
+}
+
+function findLooseMatchingPrimitives(
+  primitive: unknown,
+): boolean | null | undefined {
+  switch (typeof primitive) {
+    case "undefined":
+      return null;
+    case "object":
+      return undefined;
+    case "symbol":
+      return false;
+    case "string":
+      primitive = +primitive;
+    case "number":
+      if (Number.isNaN(primitive)) {
+        return false;
+      }
+  }
+  return true;
+}
+
+function setMightHaveLoosePrim(
+  set1: Set<unknown>,
+  set2: Set<unknown>,
+  primitive: any,
+) {
+  const altValue = findLooseMatchingPrimitives(primitive);
+  if (altValue != null) return altValue;
+
+  return set2.has(altValue) && !set1.has(altValue);
+}
+
+function setHasEqualElement(
+  set: any,
+  val1: any,
+  strict: boolean,
+  memos: Memo,
+): boolean {
+  for (const val2 of set) {
+    if (innerDeepEqual(val1, val2, strict, memos)) {
+      set.delete(val2);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function setEquiv(set1: any, set2: any, strict: boolean, memos: Memo): boolean {
@@ -481,16 +548,14 @@ function setEquiv(set1: any, set2: any, strict: boolean, memos: Memo): boolean {
     } else if (!set2.has(item)) {
       if (strict) return false;
 
-      // TODO(standvpmnt): handling of non-strict is pending
-      // Since we do not need to handle non-strict case
-      // if (!setMightHaveLoosePrim(set1, set2, item)) {
-      //   return false;
-      // }
+      if (!setMightHaveLoosePrim(set1, set2, item)) {
+        return false;
+      }
 
-      // if (set === null) {
-      //   set = new Set();
-      // }
-      // set.add(item);
+      if (set === null) {
+        set = new Set();
+      }
+      set.add(item);
     }
   }
 
@@ -512,7 +577,28 @@ function setEquiv(set1: any, set2: any, strict: boolean, memos: Memo): boolean {
   return true;
 }
 
-// TODO(standvpmnt): Implementation of non-strict cases is pending
+// TODO(standvpmnt): add types for argument
+function mapMightHaveLoosePrimitive(
+  map1: Map<unknown, unknown>,
+  map2: Map<unknown, unknown>,
+  primitive: any,
+  item: any,
+  memos: Memo,
+): boolean {
+  const altValue = findLooseMatchingPrimitives(primitive);
+  if (altValue != null) {
+    return altValue;
+  }
+  const curB = map2.get(altValue);
+  if (
+    (curB === undefined && !map2.has(altValue)) ||
+    !innerDeepEqual(item, curB, false, memo)
+  ) {
+    return false;
+  }
+  return !map1.has(altValue) && innerDeepEqual(item, curB, false, memos);
+}
+
 function mapEquiv(map1: any, map2: any, strict: boolean, memos: Memo): boolean {
   let set = null;
 
@@ -525,11 +611,19 @@ function mapEquiv(map1: any, map2: any, strict: boolean, memos: Memo): boolean {
     } else {
       const item2 = map2.get(key);
       if (
-        (item2 === undefined && !map2.has(key)) ||
-        !isDeepEqual(item1, item2, strict, memos)
+        (
+          (item2 === undefined && !map2.has(key)) ||
+          !innerDeepEqual(item1, item2, strict, memos)
+        )
       ) {
         if (strict) return false;
-        // TODO(standvpmnt): Implementation of non-strict cases is pending
+        if (!mapMightHaveLoosePrimitive(map1, map2, key, item1, memos)) {
+          return false;
+        }
+        if (set === null) {
+          set = new Set();
+        }
+        set.add(key);
       }
     }
   }
@@ -540,44 +634,18 @@ function mapEquiv(map1: any, map2: any, strict: boolean, memos: Memo): boolean {
         if (!mapHasEqualEntry(set, map1, key, item, strict, memos)) {
           return false;
         }
+      } else if (
+        !strict && (!map1.has(key) ||
+          !innerDeepEqual(map1.get(key), item, false, memos)) &&
+        !mapHasEqualEntry(set, map1, key, item, false, memos)
+      ) {
+        return false;
       }
-      // TODO(standvpmnt): Implement handling of case with non-strict equal
-      // else if (
-      //   !strict &&
-      //   // (!map1.has(key) || !isDeepEqual(map1.get(key), item, false, memos)) &&
-      //   // !mapHasEqualEntry(set, map1, key, item, false, memos)
-      // ) {
-      //   return false;
-      // }
     }
     return set.size === 0;
   }
 
   return true;
-}
-
-// TODO(standvpmnt): Implement handling of case with non-strict equal
-// function setMightHaveLoosePrim(set1, set2, primitive) {
-//   const altValue = findLooseMatchingPrimitives(primitive);
-//   if (altValue != null) return altValue;
-
-//   return set2.has(altValue) && !set1.has(altValue);
-// }
-
-function setHasEqualElement(
-  set: any,
-  val1: any,
-  strict: boolean,
-  memos: Memo,
-): boolean {
-  for (const val2 of set) {
-    if (isDeepEqual(val1, val2, strict, memos)) {
-      set.delete(val2);
-      return true;
-    }
-  }
-
-  return false;
 }
 
 function mapHasEqualEntry(
@@ -590,13 +658,12 @@ function mapHasEqualEntry(
 ): boolean {
   for (const key2 of set) {
     if (
-      isDeepEqual(key1, key2, strict, memos) &&
-      isDeepEqual(item1, map.get(key2), strict, memos)
+      innerDeepEqual(key1, key2, strict, memos) &&
+      innerDeepEqual(item1, map.get(key2), strict, memos)
     ) {
       set.delete(key2);
       return true;
     }
   }
-
   return false;
 }

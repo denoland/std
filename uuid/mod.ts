@@ -1,7 +1,12 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 // Based on https://github.com/kelektiv/node-uuid -> https://www.ietf.org/rfc/rfc4122.txt
 // Supporting Support for RFC4122 version 1, 4, and 5 UUIDs
+/**
+ * UUID
+ * @module
+ */
 
 import * as v1 from "./v1.ts";
 import * as v4 from "./v4.ts";
@@ -38,6 +43,24 @@ export function validate(uuid: string): boolean {
     .test(
       uuid,
     );
+}
+
+/**
+ * Detect RFC version of a UUID.
+ *
+ * ```js
+ * import { version } from "./mod.ts"
+ *
+ * version("d9428888-122b-11e1-b85c-61cd3cbb3210") // 1
+ * version("109156be-c4fb-41ea-b1b4-efe1671c5836") // 4
+ * ```
+ */
+export function version(uuid: string): number {
+  if (!validate(uuid)) {
+    throw TypeError("Invalid UUID");
+  }
+
+  return parseInt(uuid[14], 16);
 }
 
 export { v1, v4, v5 };

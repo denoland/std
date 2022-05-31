@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
 
 import * as hex from "../encoding/hex.ts";
 
@@ -29,14 +30,14 @@ export class Md5 {
     this.#n1 = 0;
   }
 
-  private addLength(len: number): void {
+  #addLength(len: number): void {
     let n0 = this.#n0;
     n0 += len;
     if (n0 > 0xffffffff) this.#n1 += 1;
     this.#n0 = n0 >>> 0;
   }
 
-  private hash(block: Uint8Array): void {
+  #hash(block: Uint8Array): void {
     let a = this.#a;
     let b = this.#b;
     let c = this.#c;
@@ -173,12 +174,12 @@ export class Md5 {
     } else {
       // hash first block
       this.#block.set(msg.slice(0, free), pos);
-      this.hash(this.#block);
+      this.#hash(this.#block);
 
       // hash as many blocks as possible
       let i = free;
       while (i + BLOCK_SIZE <= msg.length) {
-        this.hash(msg.slice(i, i + BLOCK_SIZE));
+        this.#hash(msg.slice(i, i + BLOCK_SIZE));
         i += BLOCK_SIZE;
       }
 
@@ -188,7 +189,7 @@ export class Md5 {
     }
 
     this.#pos = pos;
-    this.addLength(msg.length);
+    this.#addLength(msg.length);
 
     return this;
   }

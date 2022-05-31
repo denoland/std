@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /* Copyright Joyent, Inc. and other Node contributors. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -153,7 +154,7 @@ export function uvTranslateSysError(sysErrno: number): string {
     case winErrors.ERROR_BAD_PATHNAME:
       return "ENOENT";
     case winErrors.ERROR_DIRECTORY:
-      return "ENOENT";
+      return "ENOTDIR";
     case winErrors.ERROR_ENVVAR_NOT_FOUND:
       return "ENOENT";
     case winErrors.ERROR_FILE_NOT_FOUND:

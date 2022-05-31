@@ -1,4 +1,6 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+
+export const ERROR_WHILE_MAPPING_MESSAGE = "Threw while mapping.";
 
 /**
  * pooledMap transforms values from an (async) iterable into another async
@@ -25,7 +27,17 @@ export function pooledMap<T, R>(
       p: Promise<R>,
       controller: TransformStreamDefaultController<R>,
     ) {
-      controller.enqueue(await p);
+      try {
+        const s = await p;
+        controller.enqueue(s);
+      } catch (e) {
+        if (
+          e instanceof AggregateError &&
+          e.message == ERROR_WHILE_MAPPING_MESSAGE
+        ) {
+          controller.error(e as unknown);
+        }
+      }
     },
   });
   // Start processing items from the iterator
@@ -40,7 +52,7 @@ export function pooledMap<T, R>(
         // fail the race, taking us to the catch block where all currently
         // executing jobs are allowed to finish and all rejections among them
         // can be reported together.
-        p.then((v) => writer.write(Promise.resolve(v))).catch(() => {});
+        writer.write(p);
         const e: Promise<unknown> = p.then(() =>
           executing.splice(executing.indexOf(e), 1)
         );
@@ -60,7 +72,7 @@ export function pooledMap<T, R>(
         }
       }
       writer.write(Promise.reject(
-        new AggregateError(errors, "Threw while mapping."),
+        new AggregateError(errors, ERROR_WHILE_MAPPING_MESSAGE),
       )).catch(() => {});
     }
   })();

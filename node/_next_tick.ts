@@ -1,12 +1,12 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 
 // deno-lint-ignore-file no-inner-declarations
 
 import { core } from "./_core.ts";
-import { validateCallback } from "./internal/validators.js";
-import { _exiting } from "./_process/process.ts";
-import { FixedQueue } from "./_fixed_queue.ts";
+import { validateCallback } from "./internal/validators.mjs";
+import { _exiting } from "./_process/exiting.ts";
+import { FixedQueue } from "./internal/fixed_queue.ts";
 
 interface Tock {
   callback: (...args: Array<unknown>) => void;

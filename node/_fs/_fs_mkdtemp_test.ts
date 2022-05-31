@@ -1,10 +1,10 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assert, assertRejects, assertThrows } from "../../testing/asserts.ts";
 import { mkdtemp, mkdtempSync } from "./_fs_mkdtemp.ts";
 import { existsSync } from "./_fs_exists.ts";
 import { env } from "../process.ts";
 import { isWindows } from "../../_util/os.ts";
-import { promisify } from "../_util/_util_promisify.ts";
+import { promisify } from "../internal/util.mjs";
 
 const prefix = isWindows ? env.TEMP + "\\" : (env.TMPDIR || "/tmp") + "/";
 const doesNotExists = "/does/not/exists/";

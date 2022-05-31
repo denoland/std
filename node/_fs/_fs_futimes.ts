@@ -1,4 +1,5 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import * as DenoUnstable from "../../_deno_unstable.ts";
 import type { CallbackWithError } from "./_fs_common.ts";
 
 function getValidTime(
@@ -34,7 +35,7 @@ export function futimes(
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 
-  Deno.futime(fd, atime, mtime).then(() => callback(null), callback);
+  DenoUnstable.futime(fd, atime, mtime).then(() => callback(null), callback);
 }
 
 export function futimesSync(
@@ -45,5 +46,5 @@ export function futimesSync(
   atime = getValidTime(atime, "atime");
   mtime = getValidTime(mtime, "mtime");
 
-  Deno.futimeSync(fd, atime, mtime);
+  DenoUnstable.futimeSync(fd, atime, mtime);
 }

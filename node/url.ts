@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -25,7 +26,7 @@ import {
   ERR_INVALID_FILE_URL_HOST,
   ERR_INVALID_FILE_URL_PATH,
   ERR_INVALID_URL_SCHEME,
-} from "./_errors.ts";
+} from "./internal/errors.ts";
 import {
   CHAR_0,
   CHAR_9,
@@ -67,6 +68,8 @@ import * as path from "./path.ts";
 import { toASCII } from "./internal/idna.ts";
 import { isWindows, osType } from "../_util/os.ts";
 import { encodeStr, hexTable } from "./internal/querystring.ts";
+import querystring from "./querystring.ts";
+import type { ParsedUrlQuery } from "./querystring.ts";
 
 const forwardSlashRegEx = /\//g;
 const percentRegEx = /%/g;
@@ -125,9 +128,6 @@ const noEscapeAuth = new Int8Array([
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0,  // 0x70 - 0x7F
 ]);
 
-// deno-lint-ignore no-explicit-any
-let querystring: any = null;
-
 const _url = URL;
 export { _url as URL };
 
@@ -141,7 +141,7 @@ export class Url {
   public hostname: string | null;
   public hash: string | null;
   public search: string | null;
-  public query: string | null;
+  public query: string | ParsedUrlQuery | null;
   public pathname: string | null;
   public path: string | null;
   public href: string | null;
@@ -162,7 +162,7 @@ export class Url {
     this.href = null;
   }
 
-  private parseHost() {
+  #parseHost() {
     let host = this.host || "";
     let port: RegExpExecArray | null | string = portPattern.exec(host);
     if (port) {
@@ -173,6 +173,10 @@ export class Url {
       host = host.slice(0, host.length - port.length);
     }
     if (host) this.hostname = host;
+  }
+
+  public resolve(relative: string) {
+    return this.resolveObject(parse(relative, false, true)).format();
   }
 
   public resolveObject(relative: string | Url) {
@@ -210,7 +214,8 @@ export class Url {
 
       // urlParse appends trailing / to urls like http://www.example.com
       if (
-        result.protocol && slashedProtocol.has(result.protocol) &&
+        result.protocol &&
+        slashedProtocol.has(result.protocol) &&
         result.hostname &&
         !result.pathname
       ) {
@@ -307,8 +312,7 @@ export class Url {
         }
         relative.host = null;
       }
-      mustEndAbs = mustEndAbs &&
-        (relPath[0] === "" || srcPath[0] === "");
+      mustEndAbs = mustEndAbs && (relPath[0] === "" || srcPath[0] === "");
     }
 
     if (isRelAbs) {
@@ -343,8 +347,7 @@ export class Url {
         // Occasionally the auth can get stuck only in host.
         // This especially happens in cases like
         // url.resolveObject('mailto:local1@domain1', 'local2@domain2')
-        const authInHost = result.host &&
-          result.host.indexOf("@") > 0 &&
+        const authInHost = result.host && result.host.indexOf("@") > 0 &&
           result.host.split("@");
         if (authInHost) {
           result.auth = authInHost.shift() || null;
@@ -390,12 +393,12 @@ export class Url {
     for (let i = srcPath.length - 1; i >= 0; i--) {
       last = srcPath[i];
       if (last === ".") {
-        srcPath.slice(i);
+        srcPath.splice(i, 1);
       } else if (last === "..") {
-        srcPath.slice(i);
+        srcPath.splice(i, 1);
         up++;
       } else if (up) {
-        srcPath.splice(i);
+        srcPath.splice(i, 1);
         up--;
       }
     }
@@ -465,7 +468,7 @@ export class Url {
     return result;
   }
 
-  private format() {
+  format() {
     let auth = this.auth || "";
     if (auth) {
       auth = encodeStr(auth, noEscapeAuth, hexTable);
@@ -491,18 +494,12 @@ export class Url {
     }
 
     if (this.query !== null && typeof this.query === "object") {
-      if (querystring === undefined) {
-        querystring = import("./querystring.ts");
-      }
       query = querystring.stringify(this.query);
     }
 
     let search = this.search || (query && "?" + query) || "";
 
-    if (
-      protocol &&
-      protocol.charCodeAt(protocol.length - 1) !== 58 /* : */
-    ) {
+    if (protocol && protocol.charCodeAt(protocol.length - 1) !== 58 /* : */) {
       protocol += ":";
     }
 
@@ -650,9 +647,6 @@ export class Url {
         if (simplePath[2]) {
           this.search = simplePath[2];
           if (parseQueryString) {
-            if (querystring === undefined) {
-              querystring = import("./querystring.ts");
-            }
             this.query = querystring.parse(this.search.slice(1));
           } else {
             this.query = this.search.slice(1);
@@ -665,9 +659,7 @@ export class Url {
       }
     }
 
-    let proto: RegExpExecArray | null | string = protocolPattern.exec(
-      rest,
-    );
+    let proto: RegExpExecArray | null | string = protocolPattern.exec(rest);
     let lowerProto = "";
     if (proto) {
       proto = proto[0];
@@ -760,7 +752,7 @@ export class Url {
       }
 
       // pull out port.
-      this.parseHost();
+      this.#parseHost();
 
       // We've indicated that there is a hostname,
       // so even if it's empty, it has to be present.
@@ -840,9 +832,6 @@ export class Url {
         this.query = rest.slice(questionIdx + 1, hashIdx);
       }
       if (parseQueryString) {
-        if (querystring === undefined) {
-          querystring = import("./querystring.ts");
-        }
         this.query = querystring.parse(this.query);
       }
     } else if (parseQueryString) {
@@ -859,11 +848,7 @@ export class Url {
     } else if (firstIdx > 0) {
       this.pathname = rest.slice(0, firstIdx);
     }
-    if (
-      slashedProtocol.has(lowerProto) &&
-      this.hostname &&
-      !this.pathname
-    ) {
+    if (slashedProtocol.has(lowerProto) && this.hostname && !this.pathname) {
       this.pathname = "/";
     }
 
@@ -880,6 +865,25 @@ export class Url {
   }
 }
 
+export function format(
+  urlObject: string | URL | Url,
+  options?: {
+    auth: boolean;
+    fragment: boolean;
+    search: boolean;
+    unicode: boolean;
+  },
+): string {
+  if (urlObject instanceof URL) {
+    return formatWhatwg(urlObject, options);
+  }
+
+  if (typeof urlObject === "string") {
+    urlObject = parse(urlObject, true, false);
+  }
+  return urlObject.format();
+}
+
 /**
  * The URL object has both a `toString()` method and `href` property that return string serializations of the URL.
  * These are not, however, customizable in any way.
@@ -893,8 +897,8 @@ export class Url {
  * @param options.unicode `true` if Unicode characters appearing in the host component of the URL string should be encoded directly as opposed to being Punycode encoded. **Default**: `false`.
  * @returns a customizable serialization of a URL `String` representation of a `WHATWG URL` object.
  */
-export function format(
-  urlObject: URL,
+function formatWhatwg(
+  urlObject: string | URL,
   options?: {
     auth: boolean;
     fragment: boolean;
@@ -902,6 +906,9 @@ export function format(
     unicode: boolean;
   },
 ): string {
+  if (typeof urlObject === "string") {
+    urlObject = new URL(urlObject);
+  }
   if (options) {
     if (typeof options !== "object") {
       throw new ERR_INVALID_ARG_TYPE("options", "object", options);
@@ -919,8 +926,8 @@ export function format(
   let ret = urlObject.protocol;
   if (urlObject.host !== null) {
     ret += "//";
-    const hasUsername = urlObject.username !== "";
-    const hasPassword = urlObject.password !== "";
+    const hasUsername = !!urlObject.username;
+    const hasPassword = !!urlObject.password;
     if (options.auth && (hasUsername || hasPassword)) {
       if (hasUsername) {
         ret += urlObject.username;
@@ -941,10 +948,10 @@ export function format(
 
   ret += urlObject.pathname;
 
-  if (options.search) {
+  if (options.search && urlObject.search) {
     ret += urlObject.search;
   }
-  if (options.fragment) {
+  if (options.fragment && urlObject.hash) {
     ret += urlObject.hash;
   }
 
@@ -983,19 +990,132 @@ function getHostname(self: Url, rest: string, hostname: string) {
 // Using Array is faster than Object/Map
 // deno-fmt-ignore
 const escapedCodes = [
-  /* 0 - 9 */ '', '', '', '', '', '', '', '', '', '%09',
-  /* 10 - 19 */ '%0A', '', '', '%0D', '', '', '', '', '', '',
-  /* 20 - 29 */ '', '', '', '', '', '', '', '', '', '',
-  /* 30 - 39 */ '', '', '%20', '', '%22', '', '', '', '', '%27',
-  /* 40 - 49 */ '', '', '', '', '', '', '', '', '', '',
-  /* 50 - 59 */ '', '', '', '', '', '', '', '', '', '',
-  /* 60 - 69 */ '%3C', '', '%3E', '', '', '', '', '', '', '',
-  /* 70 - 79 */ '', '', '', '', '', '', '', '', '', '',
-  /* 80 - 89 */ '', '', '', '', '', '', '', '', '', '',
-  /* 90 - 99 */ '', '', '%5C', '', '%5E', '', '%60', '', '', '',
-  /* 100 - 109 */ '', '', '', '', '', '', '', '', '', '',
-  /* 110 - 119 */ '', '', '', '', '', '', '', '', '', '',
-  /* 120 - 125 */ '', '', '', '%7B', '%7C', '%7D',
+  /* 0 - 9 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "%09",
+  /* 10 - 19 */ "%0A",
+  "",
+  "",
+  "%0D",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 20 - 29 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 30 - 39 */ "",
+  "",
+  "%20",
+  "",
+  "%22",
+  "",
+  "",
+  "",
+  "",
+  "%27",
+  /* 40 - 49 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 50 - 59 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 60 - 69 */ "%3C",
+  "",
+  "%3E",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 70 - 79 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 80 - 89 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 90 - 99 */ "",
+  "",
+  "%5C",
+  "",
+  "%5E",
+  "",
+  "%60",
+  "",
+  "",
+  "",
+  /* 100 - 109 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 110 - 119 */ "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  "",
+  /* 120 - 125 */ "",
+  "",
+  "",
+  "%7B",
+  "%7C",
+  "%7D"
 ];
 
 // Automatically escape all delimiters and unwise characters from RFC 2396.
@@ -1048,6 +1168,14 @@ export function parse(
   const urlObject = new Url();
   urlObject.urlParse(url, parseQueryString, slashesDenoteHost);
   return urlObject;
+}
+
+/** The url.resolve() method resolves a target URL relative to a base URL in a manner similar to that of a Web browser resolving an anchor tag HREF.
+ * @see https://nodejs.org/api/url.html#urlresolvefrom-to
+ * @legacy
+ */
+export function resolve(from: string, to: string) {
+  return parse(from, false, true).resolve(to);
 }
 
 export function resolveObject(source: string | Url, relative: string) {
@@ -1262,10 +1390,12 @@ function urlToHttpOptions(url: URL): HttpOptions {
 export default {
   parse,
   format,
+  resolve,
   resolveObject,
   fileURLToPath,
   pathToFileURL,
   urlToHttpOptions,
   Url,
   URL,
+  URLSearchParams,
 };

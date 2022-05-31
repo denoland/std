@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // deno-lint-ignore-file no-explicit-any
 
 // Forked from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/4f538975138678878fed5b2555c0672aa578ab7d/types/node/stream.d.ts
@@ -491,7 +492,7 @@ export class Readable extends Stream implements ReadableStream {
   ): this;
   [Symbol.asyncIterator](): AsyncIterableIterator<any>;
 }
-interface WritableOptions extends StreamOptions<Writable> {
+export interface WritableOptions extends StreamOptions<Writable> {
   decodeStrings?: boolean | undefined;
   defaultEncoding?: BufferEncoding | undefined;
   write?(

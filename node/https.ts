@@ -1,51 +1,31 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent and Node contributors. All rights reserved. MIT license.
 
+import * as DenoUnstable from "../_deno_unstable.ts";
 import { notImplemented } from "./_utils.ts";
-import { Readable, Writable } from "./stream.ts";
 import { urlToHttpOptions } from "./internal/url.ts";
+import {
+  Agent as HttpAgent,
+  ClientRequest,
+  IncomingMessageForClient as IncomingMessage,
+  type RequestOptions,
+} from "./http.ts";
+import type { Socket } from "./net.ts";
 
-export class Agent {
-  constructor() {
-    notImplemented();
-  }
+export class Agent extends HttpAgent {
 }
+
 export class Server {
   constructor() {
-    notImplemented();
+    notImplemented("https.Server.prototype.constructor");
   }
 }
 export function createServer() {
-  notImplemented();
+  notImplemented("https.createServer");
 }
 
-interface RequestOptions {
-  agent?: Agent | boolean;
-  auth?: string;
-  // deno-lint-ignore ban-types
-  createConnection?: Function;
-  defaultPort?: number;
-  family?: number;
-  // deno-lint-ignore ban-types
-  headers?: Object;
-  hints?: number;
-  host?: string;
-  hostname?: string;
-  insecureHTTPParser?: boolean;
-  localAddress?: string;
-  localPort?: number;
-  // deno-lint-ignore ban-types
-  lookup?: Function;
-  maxHeaderSize?: number;
-  method?: string;
-  path?: string;
-  port?: number;
-  protocol?: string;
-  setHost?: boolean;
-  socketPath?: string;
-  timeout?: number;
-  signal?: AbortSignal;
-  href?: string;
+interface HttpsRequestOptions extends RequestOptions {
+  _: unknown;
 }
 
 // Store additional root CAs.
@@ -56,16 +36,16 @@ let caCerts: string[] | undefined | null;
 /** Makes a request to an https server. */
 export function get(
   url: string | URL,
-  cb?: (res: HttpsIncomingMessage) => void,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 export function get(
-  opts: RequestOptions,
-  cb?: (res: HttpsIncomingMessage) => void,
+  opts: HttpsRequestOptions,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 export function get(
   url: string | URL,
-  opts: RequestOptions,
-  cb?: (res: HttpsIncomingMessage) => void,
+  opts: HttpsRequestOptions,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 // deno-lint-ignore no-explicit-any
 export function get(...args: any[]) {
@@ -76,51 +56,15 @@ export function get(...args: any[]) {
 
 export const globalAgent = undefined;
 /** HttpsClientRequest class loosely follows http.ClientRequest class API. */
-class HttpsClientRequest extends Writable {
-  body: null | ReadableStream = null;
-  controller: ReadableStreamDefaultController | null = null;
-  constructor(
-    public opts: RequestOptions,
-    public cb: (res: HttpsIncomingMessage) => void,
-  ) {
-    super();
-  }
-
-  // deno-lint-ignore no-explicit-any
-  _write(chunk: any, _enc: string, cb: () => void) {
-    if (this.controller) {
-      this.controller.enqueue(chunk);
-      cb();
-      return;
-    }
-
-    this.body = new ReadableStream({
-      start: (controller) => {
-        this.controller = controller;
-        controller.enqueue(chunk);
-        cb();
-      },
-    });
-  }
-
-  async _final() {
-    const client = await this.#createCustomClient();
-    const opts = { body: this.body, method: this.opts.method, client };
-    const res = new HttpsIncomingMessage(await fetch(this.opts.href!, opts));
-    if (client) {
-      res.on("end", () => {
-        client.close();
-      });
-    }
-    this.cb(res);
-  }
-
-  async #createCustomClient(): Promise<Deno.HttpClient | undefined> {
+class HttpsClientRequest extends ClientRequest {
+  override async _createCustomClient(): Promise<
+    DenoUnstable.HttpClient | undefined
+  > {
     if (caCerts === null) {
       return undefined;
     }
     if (caCerts !== undefined) {
-      return Deno.createHttpClient({ caCerts });
+      return DenoUnstable.createHttpClient({ caCerts });
     }
     const status = await Deno.permissions.query({
       name: "env",
@@ -137,62 +81,28 @@ class HttpsClientRequest extends Writable {
     }
     const caCert = await Deno.readTextFile(certFilename);
     caCerts = [caCert];
-    return Deno.createHttpClient({ caCerts });
-  }
-}
-
-/** HttpsIncomingMessage class loosely follows http.IncomingMessage class API. */
-class HttpsIncomingMessage extends Readable {
-  reader: ReadableStreamDefaultReader | undefined;
-  constructor(public resp: Response) {
-    super();
-    this.reader = resp.body?.getReader();
+    return DenoUnstable.createHttpClient({ caCerts });
   }
 
-  async _read(_size: number) {
-    if (this.reader === undefined) {
-      this.push(null);
-      return;
-    }
-    try {
-      const res = await this.reader.read();
-      if (res.done) {
-        this.push(null);
-        return;
-      }
-      this.push(res.value);
-    } catch (e) {
-      // deno-lint-ignore no-explicit-any
-      this.destroy(e as any);
-    }
-  }
-
-  get headers() {
-    return this.resp.headers;
-  }
-
-  get statusCode() {
-    return this.resp.status;
-  }
-
-  get statusMessage() {
-    return this.resp.statusText;
+  override _createSocket(): Socket {
+    // deno-lint-ignore no-explicit-any
+    return { authorized: true } as any;
   }
 }
 
 /** Makes a request to an https server. */
 export function request(
   url: string | URL,
-  cb?: (res: HttpsIncomingMessage) => void,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 export function request(
-  opts: RequestOptions,
-  cb?: (res: HttpsIncomingMessage) => void,
+  opts: HttpsRequestOptions,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 export function request(
   url: string | URL,
-  opts: RequestOptions,
-  cb?: (res: HttpsIncomingMessage) => void,
+  opts: HttpsRequestOptions,
+  cb?: (res: IncomingMessage) => void,
 ): HttpsClientRequest;
 // deno-lint-ignore no-explicit-any
 export function request(...args: any[]) {

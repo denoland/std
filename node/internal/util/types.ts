@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 //
 // Adapted from Node.js. Copyright Joyent, Inc. and other Node contributors.
 //
@@ -22,6 +22,7 @@
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import * as bindingTypes from "../../internal_binding/types.ts";
+export { isCryptoKey, isKeyObject } from "../crypto/_keys.ts";
 
 const _toString = Object.prototype.toString;
 
@@ -133,6 +134,4 @@ export const {
   isModuleNamespaceObject,
   isAnyArrayBuffer,
   isBoxedPrimitive,
-  // isKeyObject,
-  // isCryptoKey
 } = bindingTypes;

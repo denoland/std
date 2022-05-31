@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -23,8 +24,7 @@
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.cc
 // - https://github.com/nodejs/node/blob/master/src/handle_wrap.h
 
-import { notImplemented } from "../_utils.ts";
-import { nextTick } from "../_next_tick.ts";
+import { unreachable } from "../../testing/asserts.ts";
 import { AsyncWrap, providerType } from "./async_wrap.ts";
 
 export class HandleWrap extends AsyncWrap {
@@ -32,19 +32,19 @@ export class HandleWrap extends AsyncWrap {
     super(provider);
   }
 
-  async close(cb: () => void = () => {}): Promise<void> {
-    await this._onClose();
-    nextTick(cb);
+  close(cb: () => void = () => {}): void {
+    this._onClose();
+    cb();
   }
 
   ref() {
-    notImplemented();
+    unreachable();
   }
 
   unref() {
-    notImplemented();
+    unreachable();
   }
 
   // deno-lint-ignore no-explicit-any
-  async _onClose(): Promise<any> {}
+  _onClose(): any {}
 }

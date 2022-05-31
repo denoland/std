@@ -1,18 +1,20 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+import * as DenoUnstable from "../_deno_unstable.ts";
 import { core } from "./_core.ts";
-import { _normalizeArgs, ListenOptions } from "./net.ts";
+import { _normalizeArgs, ListenOptions, Socket } from "./net.ts";
 import { Buffer } from "./buffer.ts";
-import { ERR_SERVER_NOT_RUNNING } from "./_errors.ts";
+import { ERR_SERVER_NOT_RUNNING } from "./internal/errors.ts";
 import { EventEmitter } from "./events.ts";
 import { nextTick } from "./_next_tick.ts";
 import { Status as STATUS_CODES } from "../http/http_status.ts";
-import { validatePort } from "./internal/validators.js";
+import { validatePort } from "./internal/validators.mjs";
 import {
   Readable as NodeReadable,
   Writable as NodeWritable,
 } from "./stream.ts";
 import { OutgoingMessage } from "./_http_outgoing.ts";
-import { Agent } from "./_http_agent.js";
-import { ClientRequest } from "./_http_client.js";
+import { Agent } from "./_http_agent.mjs";
+import { urlToHttpOptions } from "./internal/url.ts";
 
 const METHODS = [
   "ACL",
@@ -60,11 +62,175 @@ function chunkToU8(chunk: Chunk): Uint8Array {
   return chunk;
 }
 
+export interface RequestOptions {
+  agent?: Agent;
+  auth?: string;
+  createConnection?: () => unknown;
+  defaultPort?: number;
+  family?: number;
+  headers?: Record<string, string>;
+  hints?: number;
+  host?: string;
+  hostname?: string;
+  insecureHTTPParser?: boolean;
+  localAddress?: string;
+  localPort?: number;
+  lookup?: () => void;
+  maxHeaderSize?: number;
+  method?: string;
+  path?: string;
+  port?: number;
+  protocol?: string;
+  setHost?: boolean;
+  socketPath?: string;
+  timeout?: number;
+  signal?: AbortSignal;
+  href?: string;
+}
+
+/** ClientRequest represents the http(s) request from the client */
+class ClientRequest extends NodeWritable {
+  body: null | ReadableStream = null;
+  controller: ReadableStreamDefaultController | null = null;
+  constructor(
+    public opts: RequestOptions,
+    public cb?: (res: IncomingMessageForClient) => void,
+  ) {
+    super();
+  }
+
+  // deno-lint-ignore no-explicit-any
+  override _write(chunk: any, _enc: string, cb: () => void) {
+    if (this.controller) {
+      this.controller.enqueue(chunk);
+      cb();
+      return;
+    }
+
+    this.body = new ReadableStream({
+      start: (controller) => {
+        this.controller = controller;
+        controller.enqueue(chunk);
+        cb();
+      },
+    });
+  }
+
+  override async _final() {
+    if (this.controller) {
+      this.controller.close();
+    }
+
+    const client = await this._createCustomClient();
+    const opts = { body: this.body, method: this.opts.method, client };
+    const mayResponse = fetch(this._createUrlStrFromOptions(this.opts), opts)
+      .catch((e) => {
+        if (e.message.includes("connection closed before message completed")) {
+          // Node.js seems ignoring this error
+        } else {
+          this.emit("error", e);
+        }
+        return undefined;
+      });
+    const res = new IncomingMessageForClient(
+      await mayResponse,
+      this._createSocket(),
+    );
+    this.emit("response", res);
+    if (client) {
+      res.on("end", () => {
+        client.close();
+      });
+    }
+    this.cb?.(res);
+  }
+
+  abort() {
+    this.destroy();
+  }
+
+  _createCustomClient(): Promise<DenoUnstable.HttpClient | undefined> {
+    return Promise.resolve(undefined);
+  }
+
+  _createSocket(): Socket {
+    // Note: Creates a dummy socket for the compatibility
+    // Sometimes the libraries check some properties of socket
+    // e.g. if (!response.socket.authorized) { ... }
+    return new Socket({});
+  }
+
+  // deno-lint-ignore no-explicit-any
+  _createUrlStrFromOptions(opts: any) {
+    if (opts.href) {
+      return opts.href;
+    } else {
+      const {
+        auth,
+        protocol,
+        host,
+        hostname,
+        path,
+        port,
+      } = opts;
+      return `${protocol}//${auth ? `${auth}@` : ""}${host ?? hostname}${
+        port ? `:${port}` : ""
+      }${path}`;
+    }
+  }
+}
+
+/** IncomingMessage for http(s) client */
+export class IncomingMessageForClient extends NodeReadable {
+  reader: ReadableStreamDefaultReader | undefined;
+  constructor(public response: Response | undefined, public socket: Socket) {
+    super();
+    this.reader = response?.body?.getReader();
+  }
+
+  override async _read(_size: number) {
+    if (this.reader === undefined) {
+      this.push(null);
+      return;
+    }
+    try {
+      const res = await this.reader.read();
+      if (res.done) {
+        this.push(null);
+        return;
+      }
+      this.push(res.value);
+    } catch (e) {
+      // deno-lint-ignore no-explicit-any
+      this.destroy(e as any);
+    }
+  }
+
+  get headers() {
+    if (this.response) {
+      return Object.fromEntries(this.response.headers.entries());
+    }
+    return {};
+  }
+
+  get trailers() {
+    return {};
+  }
+
+  get statusCode() {
+    return this.response?.status || 0;
+  }
+
+  get statusMessage() {
+    return this.response?.statusText || "";
+  }
+}
+
 export class ServerResponse extends NodeWritable {
   statusCode?: number = undefined;
   statusMessage?: string = undefined;
   #headers = new Headers({});
-  private readable: ReadableStream;
+  #readable: ReadableStream;
   headersSent = false;
   #reqEvent: Deno.RequestEvent;
   #firstChunk: Chunk | null = null;
@@ -110,7 +276,7 @@ export class ServerResponse extends NodeWritable {
         return cb(null);
       },
     });
-    this.readable = readable;
+    this.#readable = readable;
     this.#reqEvent = reqEvent;
   }
 
@@ -153,18 +319,20 @@ export class ServerResponse extends NodeWritable {
   respond(final: boolean, singleChunk?: Chunk) {
     this.headersSent = true;
     this.#ensureHeaders(singleChunk);
-    const body = singleChunk ?? (final ? null : this.readable);
+    const body = singleChunk ?? (final ? null : this.#readable);
     this.#reqEvent.respondWith(
       new Response(body, {
         headers: this.#headers,
         status: this.statusCode,
         statusText: this.statusMessage,
       }),
-    );
+    ).catch(() => {
+      // ignore this error
+    });
   }
 
   // deno-lint-ignore no-explicit-any
-  end(chunk?: any, encoding?: any, cb?: any): this {
+  override end(chunk?: any, encoding?: any, cb?: any): this {
     if (!chunk && this.#headers.has("transfer-encoding")) {
       // FIXME(bnoordhuis) Node sends a zero length chunked body instead, i.e.,
       // the trailing "0\r\n", but respondWith() just hangs when I try that.
@@ -178,8 +346,8 @@ export class ServerResponse extends NodeWritable {
 }
 
 // TODO(@AaronO): optimize
-export class IncomingMessage extends NodeReadable {
-  private req: Request;
+export class IncomingMessageForServer extends NodeReadable {
+  #req: Request;
   url: string;
 
   constructor(req: Request) {
@@ -205,10 +373,10 @@ export class IncomingMessage extends NodeReadable {
         reader?.cancel().finally(() => cb(err));
       },
     });
-    this.req = req;
+    this.#req = req;
     // TODO: consider more robust path extraction, e.g:
     // url: (new URL(request.url).pathname),
-    this.url = req.url.slice(this.req.url.indexOf("/", 8));
+    this.url = req.url.slice(this.#req.url.indexOf("/", 8));
   }
 
   get aborted() {
@@ -219,14 +387,17 @@ export class IncomingMessage extends NodeReadable {
   }
 
   get headers() {
-    return Object.fromEntries(this.req.headers.entries());
+    return Object.fromEntries(this.#req.headers.entries());
   }
   get method() {
-    return this.req.method;
+    return this.#req.method;
   }
 }
 
-type ServerHandler = (req: IncomingMessage, res: ServerResponse) => void;
+type ServerHandler = (
+  req: IncomingMessageForServer,
+  res: ServerResponse,
+) => void;
 
 export function Server(handler?: ServerHandler): ServerImpl {
   return new ServerImpl(handler);
@@ -289,7 +460,7 @@ class ServerImpl extends EventEmitter {
           if (reqEvent === null) {
             break;
           }
-          const req = new IncomingMessage(reqEvent.request);
+          const req = new IncomingMessageForServer(reqEvent.request);
           const res = new ServerResponse(reqEvent);
           this.emit("request", req, res);
         }
@@ -369,86 +540,53 @@ export function createServer(handler?: ServerHandler) {
   return Server(handler);
 }
 
-/**
- * @typedef {object} HTTPRequestOptions
- * @property {httpAgent.Agent | boolean} [agent]
- * @property {string} [auth]
- * @property {Function} [createConnection]
- * @property {number} [defaultPort]
- * @property {number} [family]
- * @property {object} [headers]
- * @property {number} [hints]
- * @property {string} [host]
- * @property {string} [hostname]
- * @property {boolean} [insecureHTTPParser]
- * @property {string} [localAddress]
- * @property {number} [localPort]
- * @property {Function} [lookup]
- * @property {number} [maxHeaderSize]
- * @property {string} [method]
- * @property {string} [path]
- * @property {number} [port]
- * @property {string} [protocol]
- * @property {boolean} [setHost]
- * @property {string} [socketPath]
- * @property {number} [timeout]
- * @property {AbortSignal} [signal]
- */
-interface HTTPRequestOptions {
-  agent?: Agent;
-  auth?: string;
-  createConnection?: () => unknown;
-  defaultPort?: number;
-  family?: number;
-  headers?: Record<string, string>;
-  hints?: number;
-  host?: string;
-  hostname?: string;
-  insecureHTTPParser?: boolean;
-  localAddress?: string;
-  localPort?: number;
-  lookup?: () => void;
-  maxHeaderSize?: number;
-  method?: string;
-  path?: string;
-  port?: number;
-  protocol?: string;
-  setHost?: boolean;
-  socketPath?: string;
-  timeout?: number;
-  signal?: AbortSignal;
-}
-
-/**
- * Makes an HTTP request.
- * @param url
- * @param options
- * @param cb
- */
+/** Makes an HTTP request. */
 export function request(
   url: string | URL,
-  options?: HTTPRequestOptions,
-  // deno-lint-ignore ban-types
-  cb?: Function,
-): ClientRequest {
-  return new ClientRequest(url, options, cb);
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function request(
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function request(
+  url: string | URL,
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+// deno-lint-ignore no-explicit-any
+export function request(...args: any[]) {
+  let options = {};
+  if (typeof args[0] === "string") {
+    options = urlToHttpOptions(new URL(args.shift()));
+  } else if (args[0] instanceof URL) {
+    options = urlToHttpOptions(args.shift());
+  }
+  if (args[0] && typeof args[0] !== "function") {
+    Object.assign(options, args.shift());
+  }
+  args.unshift(options);
+  return new ClientRequest(args[0], args[1]);
 }
 
-/**
- * Makes a `GET` HTTP request.
- * @param url
- * @param options
- * @param cb
- */
+/** Makes a `GET` HTTP request. */
 export function get(
   url: string | URL,
-  options?: HTTPRequestOptions,
-  // deno-lint-ignore ban-types
-  cb?: Function,
-) {
-  const req = request(url, options, cb);
-  // deno-lint-ignore no-explicit-any
-  (req as any).end();
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function get(
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+export function get(
+  url: string | URL,
+  opts: RequestOptions,
+  cb?: (res: IncomingMessageForClient) => void,
+): ClientRequest;
+// deno-lint-ignore no-explicit-any
+export function get(...args: any[]) {
+  const req = request(args[0], args[1], args[2]);
+  req.end();
   return req;
 }
 
@@ -460,7 +598,7 @@ export default {
   METHODS,
   createServer,
   Server,
-  IncomingMessage,
+  IncomingMessage: IncomingMessageForServer,
   OutgoingMessage,
   ServerResponse,
   request,

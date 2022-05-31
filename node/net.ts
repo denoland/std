@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,7 +29,7 @@ import {
   defaultTriggerAsyncIdScope,
   newAsyncId,
   ownerSymbol,
-} from "./_async_hooks.ts";
+} from "./internal/async_hooks.ts";
 import {
   ERR_INVALID_ADDRESS_FAMILY,
   ERR_INVALID_ARG_TYPE,
@@ -41,10 +42,10 @@ import {
   ERR_SOCKET_CLOSED,
   errnoException,
   exceptionWithHostPort,
-  NodeError,
+  genericNodeError,
   uvExceptionWithHostPort,
-} from "./_errors.ts";
-import type { ErrnoException } from "./_errors.ts";
+} from "./internal/errors.ts";
+import type { ErrnoException } from "./internal/errors.ts";
 import { Encodings } from "./_utils.ts";
 import { isUint8Array } from "./internal/util/types.ts";
 import {
@@ -59,14 +60,14 @@ import {
   writeGeneric,
   writevGeneric,
 } from "./internal/stream_base_commons.ts";
-import { kTimeout } from "./internal/timers.ts";
+import { kTimeout } from "./internal/timers.mjs";
 import { nextTick } from "./_next_tick.ts";
 import {
   DTRACE_NET_SERVER_CONNECTION,
   DTRACE_NET_STREAM_END,
 } from "./internal/dtrace.ts";
 import { Buffer } from "./buffer.ts";
-import type { LookupOneOptions } from "./dns.ts";
+import type { LookupOneOptions } from "./internal/dns/utils.ts";
 import {
   validateAbortSignal,
   validateFunction,
@@ -74,7 +75,7 @@ import {
   validateNumber,
   validatePort,
   validateString,
-} from "./internal/validators.js";
+} from "./internal/validators.mjs";
 import {
   constants as TCPConstants,
   TCP,
@@ -91,9 +92,10 @@ import { isWindows } from "../_util/os.ts";
 import { ADDRCONFIG, lookup as dnsLookup } from "./dns.ts";
 import { codeMap } from "./internal_binding/uv.ts";
 import { guessHandleType } from "./internal_binding/util.ts";
-import { debuglog } from "./_util/_debuglog.ts";
+import { debuglog } from "./internal/util/debuglog.ts";
 import type { DuplexOptions } from "./_stream.d.ts";
 import type { BufferEncoding } from "./_global.d.ts";
+import type { Abortable } from "./_events.d.ts";
 
 let debug = debuglog("net", (fn) => {
   debug = fn;
@@ -210,7 +212,7 @@ interface IpcSocketConnectOptions extends ConnectOptions {
 type SocketConnectOptions = TcpSocketConnectOptions | IpcSocketConnectOptions;
 
 function _getNewAsyncId(handle?: Handle): number {
-  return (!handle || typeof handle.getAsyncId !== "function")
+  return !handle || typeof handle.getAsyncId !== "function"
     ? newAsyncId()
     : handle.getAsyncId();
 }
@@ -226,7 +228,7 @@ const _noop = (_arrayBuffer: Uint8Array, _nread: number): undefined => {
 };
 
 function _toNumber(x: unknown): number | false {
-  return (x = Number(x)) >= 0 ? x as number : false;
+  return (x = Number(x)) >= 0 ? (x as number) : false;
 }
 
 function _isPipeName(s: unknown): s is string {
@@ -239,15 +241,11 @@ function _createHandle(fd: number, isServer: boolean): Handle {
   const type = guessHandleType(fd);
 
   if (type === "PIPE") {
-    return new Pipe(
-      isServer ? PipeConstants.SERVER : PipeConstants.SOCKET,
-    );
+    return new Pipe(isServer ? PipeConstants.SERVER : PipeConstants.SOCKET);
   }
 
   if (type === "TCP") {
-    return new TCP(
-      isServer ? TCPConstants.SERVER : TCPConstants.SOCKET,
-    );
+    return new TCP(isServer ? TCPConstants.SERVER : TCPConstants.SOCKET);
   }
 
   throw new ERR_INVALID_FD_TYPE(type);
@@ -466,7 +464,7 @@ function _internalConnect(
     req.oncomplete = _afterConnect;
     req.address = address;
 
-    err = (socket._handle as Pipe).connect(req, address, _afterConnect);
+    err = (socket._handle as Pipe).connect(req, address);
   }
 
   if (err) {
@@ -494,7 +492,7 @@ function _writeAfterFIN(
     | BufferEncoding
     | null
     | ((error: Error | null | undefined) => void),
-  cb?: ((error: Error | null | undefined) => void),
+  cb?: (error: Error | null | undefined) => void,
 ): boolean {
   if (!this.writableEnded) {
     return Duplex.prototype.write.call(
@@ -511,21 +509,20 @@ function _writeAfterFIN(
     encoding = null;
   }
 
-  const err = new NodeError(
-    "EPIPE",
+  const err = genericNodeError(
     "This socket has been ended by the other party",
+    { code: "EPIPE" },
   );
 
   if (typeof cb === "function") {
-    defaultTriggerAsyncIdScope(
-      this[asyncIdSymbol],
-      nextTick,
-      cb,
-      err,
-    );
+    defaultTriggerAsyncIdScope(this[asyncIdSymbol], nextTick, cb, err);
   }
 
-  this.destroy(err);
+  if (this._server) {
+    nextTick(() => this.destroy(err));
+  } else {
+    this.destroy(err);
+  }
 
   return false;
 }
@@ -613,24 +610,20 @@ function _lookupAndConnect(
   // If host is an IP, skip performing a lookup
   const addressType = isIP(host);
   if (addressType) {
-    defaultTriggerAsyncIdScope(
-      self[asyncIdSymbol],
-      nextTick,
-      () => {
-        if (self.connecting) {
-          defaultTriggerAsyncIdScope(
-            self[asyncIdSymbol],
-            _internalConnect,
-            self,
-            host,
-            port,
-            addressType,
-            localAddress,
-            localPort,
-          );
-        }
-      },
-    );
+    defaultTriggerAsyncIdScope(self[asyncIdSymbol], nextTick, () => {
+      if (self.connecting) {
+        defaultTriggerAsyncIdScope(
+          self[asyncIdSymbol],
+          _internalConnect,
+          self,
+          host,
+          port,
+          addressType,
+          localAddress,
+          localPort,
+        );
+      }
+    });
 
     return;
   }
@@ -721,9 +714,9 @@ function _afterShutdown(this: ShutdownWrap<TCP>) {
   this.callback();
 }
 
-function _emitCloseNT(socket: Socket) {
+function _emitCloseNT(s: Socket | Server) {
   debug("SERVER: emit close");
-  socket.emit("close");
+  s.emit("close");
 }
 
 /**
@@ -794,13 +787,14 @@ export class Socket extends Duplex {
       this[asyncIdSymbol] = _getNewAsyncId(this._handle);
     } else if (options.fd !== undefined) {
       // REF: https://github.com/denoland/deno/issues/6529
-      notImplemented();
+      notImplemented("net.Socket.prototype.constructor with fd option");
     }
 
     const onread = options.onread;
 
     if (
-      onread !== null && typeof onread === "object" &&
+      onread !== null &&
+      typeof onread === "object" &&
       (isUint8Array(onread.buffer) || typeof onread.buffer === "function") &&
       typeof onread.callback === "function"
     ) {
@@ -941,9 +935,11 @@ export class Socket extends Duplex {
    *
    * @return The socket itself.
    */
-  pause(): this {
+  override pause(): this {
     if (
-      this[kBuffer] && !this.connecting && this._handle &&
+      this[kBuffer] &&
+      !this.connecting &&
+      this._handle &&
       this._handle.reading
     ) {
       this._handle.reading = false;
@@ -965,9 +961,11 @@ export class Socket extends Duplex {
    *
    * @return The socket itself.
    */
-  resume(): this {
+  override resume(): this {
     if (
-      this[kBuffer] && !this.connecting && this._handle &&
+      this[kBuffer] &&
+      !this.connecting &&
+      this._handle &&
       !this._handle.reading
     ) {
       _tryReadStart(this);
@@ -1033,7 +1031,8 @@ export class Socket extends Duplex {
     const newValue = noDelay === undefined ? true : !!noDelay;
 
     if (
-      "setNoDelay" in this._handle && this._handle.setNoDelay &&
+      "setNoDelay" in this._handle &&
+      this._handle.setNoDelay &&
       newValue !== this[kSetNoDelay]
     ) {
       this[kSetNoDelay] = newValue;
@@ -1235,7 +1234,7 @@ export class Socket extends Duplex {
    * The string representation of the remote IP family. `"IPv4"` or `"IPv6"`.
    */
   get remoteFamily(): string | undefined {
-    return this._getpeername().family;
+    return `IPv${this._getpeername().family}`;
   }
 
   /**
@@ -1272,10 +1271,14 @@ export class Socket extends Duplex {
    * @param cb Optional callback for when the socket is finished.
    * @return The socket itself.
    */
-  end(cb?: () => void): this;
-  end(buffer: Uint8Array | string, cb?: () => void): this;
-  end(data: Uint8Array | string, encoding?: Encodings, cb?: () => void): this;
-  end(
+  override end(cb?: () => void): this;
+  override end(buffer: Uint8Array | string, cb?: () => void): this;
+  override end(
+    data: Uint8Array | string,
+    encoding?: Encodings,
+    cb?: () => void,
+  ): this;
+  override end(
     data?: Uint8Array | string | (() => void),
     encoding?: Encodings | (() => void),
     cb?: () => void,
@@ -1289,9 +1292,13 @@ export class Socket extends Duplex {
   /**
    * @param size Optional argument to specify how much data to read.
    */
-  read(size?: number): string | Uint8Array | Buffer | null | undefined {
+  override read(
+    size?: number,
+  ): string | Uint8Array | Buffer | null | undefined {
     if (
-      this[kBuffer] && !this.connecting && this._handle &&
+      this[kBuffer] &&
+      !this.connecting &&
+      this._handle &&
       !this._handle.reading
     ) {
       _tryReadStart(this);
@@ -1324,7 +1331,7 @@ export class Socket extends Duplex {
   // The user has called .end(), and all the bytes have been
   // sent out to the other side.
   // deno-lint-ignore no-explicit-any
-  _final = (cb: any): any => {
+  override _final(cb: any): any {
     // If still connecting - defer handling `_final` until 'connect' will happen
     if (this.pending) {
       debug("_final: not yet connected");
@@ -1349,7 +1356,7 @@ export class Socket extends Duplex {
     } else if (err !== 0) {
       return cb(errnoException(err, "shutdown"));
     }
-  };
+  }
 
   _onTimeout() {
     const handle = this._handle;
@@ -1372,7 +1379,7 @@ export class Socket extends Duplex {
     this.emit("timeout");
   }
 
-  _read(size?: number): void {
+  override _read(size?: number): void {
     debug("_read");
     if (this.connecting || !this._handle) {
       debug("_read wait for connection");
@@ -1382,10 +1389,7 @@ export class Socket extends Duplex {
     }
   }
 
-  _destroy(
-    exception: Error | null,
-    cb: (err: Error | null) => void,
-  ) {
+  override _destroy(exception: Error | null, cb: (err: Error | null) => void) {
     debug("destroy");
     this.connecting = false;
 
@@ -1402,15 +1406,10 @@ export class Socket extends Duplex {
       this[kBytesRead] = this._handle.bytesRead;
       this[kBytesWritten] = this._handle.bytesWritten;
 
-      // deno-lint-ignore no-this-alias
-      const that = this;
-
       this._handle.close(() => {
-        // Close is async, so we differ from Node here in explicitly waiting for
-        // the callback to have fired.
-        that._handle!.onread = _noop;
-        that._handle = null;
-        that._sockname = undefined;
+        this._handle!.onread = _noop;
+        this._handle = null;
+        this._sockname = undefined;
 
         cb(exception);
 
@@ -1506,7 +1505,7 @@ export class Socket extends Duplex {
     this._writeGeneric(true, chunks, "", cb);
   }
 
-  _write(
+  override _write(
     // deno-lint-ignore no-explicit-any
     data: any,
     encoding: string,
@@ -1581,13 +1580,6 @@ export function connect(...args: unknown[]) {
 
 export const createConnection = connect;
 
-interface Abortable {
-  /**
-   * When provided the corresponding `AbortController` can be used to cancel an asynchronous action.
-   */
-  signal?: AbortSignal | undefined;
-}
-
 export interface ListenOptions extends Abortable {
   fd?: number;
   port?: number | undefined;
@@ -1621,8 +1613,11 @@ interface ServerOptions {
 function _isServerSocketOptions(
   options: unknown,
 ): options is null | undefined | ServerOptions {
-  return options === null || typeof options === "undefined" ||
-    typeof options === "object";
+  return (
+    options === null ||
+    typeof options === "undefined" ||
+    typeof options === "object"
+  );
 }
 
 function _isConnectionListener(
@@ -1766,19 +1761,23 @@ export function _createServerHandle(
     debug("bind to", address || "any");
 
     if (!address) {
+      // TODO: differs from Node which tries to bind to IPv6 first when no
+      // address is provided.
+      //
+      // Forcing IPv4 as a workaround for Deno not aligning with Node on
+      // implicit binding on Windows.
+      //
+      // REF: https://github.com/denoland/deno/issues/10762
+
       // Try binding to ipv6 first
-      err = (handle as TCP).bind6(
-        DEFAULT_IPV6_ADDR,
-        port ?? 0,
-        flags ?? 0,
-      );
+      // err = (handle as TCP).bind6(DEFAULT_IPV6_ADDR, port ?? 0, flags ?? 0);
 
-      if (err) {
-        handle.close();
+      // if (err) {
+      //   handle.close();
 
-        // Fallback to ipv4
-        return _createServerHandle(DEFAULT_IPV4_ADDR, port, 4, null, flags);
-      }
+      // Fallback to ipv4
+      return _createServerHandle(DEFAULT_IPV4_ADDR, port, 4, null, flags);
+      // }
     } else if (addressType === 6) {
       err = (handle as TCP).bind6(address, port ?? 0, flags ?? 0);
     } else {
@@ -1834,6 +1833,8 @@ function _onconnection(this: any, err: number, clientHandle?: Handle) {
     writable: true,
   });
 
+  // TODO: implement noDelay and setKeepAlive
+
   self._connections++;
   socket.server = self;
   socket._server = self;
@@ -1864,16 +1865,23 @@ function _setupListenHandle(
 
     // Try to bind to the unspecified IPv6 address, see if IPv6 is available
     if (!address && typeof fd !== "number") {
-      rval = _createServerHandle(DEFAULT_IPV6_ADDR, port, 6, fd, flags);
+      // TODO: differs from Node which tries to bind to IPv6 first when no
+      // address is provided.
+      //
+      // Forcing IPv4 as a workaround for Deno not aligning with Node on
+      // implicit binding on Windows.
+      //
+      // REF: https://github.com/denoland/deno/issues/10762
+      // rval = _createServerHandle(DEFAULT_IPV6_ADDR, port, 6, fd, flags);
 
-      if (typeof rval === "number") {
-        rval = null;
-        address = DEFAULT_IPV4_ADDR;
-        addressType = 4;
-      } else {
-        address = DEFAULT_IPV6_ADDR;
-        addressType = 6;
-      }
+      // if (typeof rval === "number") {
+      //   rval = null;
+      address = DEFAULT_IPV4_ADDR;
+      addressType = 4;
+      // } else {
+      //   address = DEFAULT_IPV6_ADDR;
+      //   addressType = 6;
+      // }
     }
 
     if (rval === null) {
@@ -2070,7 +2078,7 @@ export class Server extends EventEmitter {
     const backlogFromArgs: number =
       // (handle, backlog) or (path, backlog) or (port, backlog)
       _toNumber(args.length > 1 && args[1]) ||
-      _toNumber(args.length > 2 && args[2]) as number; // (port, host, backlog)
+      (_toNumber(args.length > 2 && args[2]) as number); // (port, host, backlog)
 
     // deno-lint-ignore no-explicit-any
     options = (options as any)._handle || (options as any).handle || options;
@@ -2100,7 +2108,8 @@ export class Server extends EventEmitter {
     // or (options[, cb]) where options.port is explicitly set as undefined or
     // null, bind to an arbitrary unused port
     if (
-      args.length === 0 || typeof args[0] === "function" ||
+      args.length === 0 ||
+      typeof args[0] === "function" ||
       (typeof options.port === "undefined" && "port" in options) ||
       options.port === null
     ) {
@@ -2146,7 +2155,7 @@ export class Server extends EventEmitter {
     // (path[, backlog][, cb]) or (options[, cb])
     // where path or options.path is a UNIX domain socket or Windows pipe
     if (options.path && _isPipeName(options.path)) {
-      const pipeName = this._pipeName = options.path;
+      const pipeName = (this._pipeName = options.path);
       backlog = options.backlog || backlogFromArgs;
 
       _listenInCluster(
@@ -2189,7 +2198,7 @@ export class Server extends EventEmitter {
       return this;
     }
 
-    if (!(("port" in options) || ("path" in options))) {
+    if (!("port" in options || "path" in options)) {
       throw new ERR_INVALID_ARG_VALUE(
         "options",
         options,

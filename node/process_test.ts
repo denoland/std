@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-undef
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import "./global.ts";
 import {
@@ -129,25 +129,18 @@ Deno.test({
 
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-    const p = Deno.run({
-      cmd: [
-        Deno.execPath(),
+    const { stdout } = await Deno.spawn(Deno.execPath(), {
+      args: [
         "run",
         "--quiet",
         "--unstable",
         "./testdata/process_exit.ts",
       ],
       cwd,
-      stdout: "piped",
     });
 
     const decoder = new TextDecoder();
-    const rawOutput = await p.output();
-    assertEquals(
-      stripColor(decoder.decode(rawOutput).trim()),
-      "1\n2",
-    );
-    p.close();
+    assertEquals(stripColor(decoder.decode(stdout).trim()), "1\n2");
   },
 });
 
@@ -202,6 +195,16 @@ Deno.test({
 });
 
 Deno.test({
+  name: "process.on SIGBREAK doesn't throw",
+  ignore: Deno.build.os == "windows",
+  fn() {
+    const listener = () => {};
+    process.on("SIGBREAK", listener);
+    process.off("SIGBREAK", listener);
+  },
+});
+
+Deno.test({
   name: "process.argv",
   fn() {
     assert(Array.isArray(process.argv));
@@ -246,6 +249,14 @@ Deno.test({
 
     assert(Object.getOwnPropertyNames(process.env).includes("HELLO"));
     assert(Object.keys(process.env).includes("HELLO"));
+
+    assert(Object.prototype.hasOwnProperty.call(process.env, "HELLO"));
+    assert(
+      !Object.prototype.hasOwnProperty.call(
+        process.env,
+        "SURELY_NON_EXISTENT_VAR",
+      ),
+    );
   },
 });
 
@@ -352,13 +363,18 @@ Deno.test("process.on, process.off, process.removeListener doesn't throw on unim
     "uncaughtException",
     "uncaughtExceptionMonitor",
     "unhandledRejection",
+    "worker",
   ];
   const handler = () => {};
   events.forEach((ev) => {
     process.on(ev, handler);
+    assertEquals(process.listenerCount(ev), 1);
     process.off(ev, handler);
+    assertEquals(process.listenerCount(ev), 0);
     process.on(ev, handler);
+    assertEquals(process.listenerCount(ev), 1);
     process.removeListener(ev, handler);
+    assertEquals(process.listenerCount(ev), 0);
   });
 });
 
@@ -382,7 +398,7 @@ Deno.test("process in worker", async () => {
 
   const worker = new Worker(
     new URL("./testdata/process_worker.ts", import.meta.url).href,
-    { type: "module", deno: true },
+    { type: "module" },
   );
   worker.addEventListener("message", (e) => {
     assertEquals(e.data, "hello");
@@ -455,24 +471,17 @@ Deno.test({
   async fn() {
     const cwd = path.dirname(path.fromFileUrl(import.meta.url));
 
-    const p = Deno.run({
-      cmd: [
-        Deno.execPath(),
+    const { stdout } = await Deno.spawn(Deno.execPath(), {
+      args: [
         "run",
         "--quiet",
         "--unstable",
         "./testdata/process_exit2.ts",
       ],
       cwd,
-      stdout: "piped",
     });
 
     const decoder = new TextDecoder();
-    const rawOutput = await p.output();
-    assertEquals(
-      stripColor(decoder.decode(rawOutput).trim()),
-      "exit",
-    );
-    p.close();
+    assertEquals(stripColor(decoder.decode(stdout).trim()), "exit");
   },
 });

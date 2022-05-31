@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertCallbackErrorUncaught } from "../_utils.ts";
 import { readFile, readFileSync } from "./_fs_readFile.ts";
 import * as path from "../../path/mod.ts";

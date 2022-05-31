@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
   assert,
   assertEquals,
@@ -11,15 +11,15 @@ import { isWindows } from "../../_util/os.ts";
 
 const decoder = new TextDecoder("utf-8");
 
-Deno.test("Invalid encoding results in error()", function testEncodingErrors() {
-  assertRejects(
+Deno.test("Invalid encoding results in error()", async function testEncodingErrors() {
+  await assertRejects(
     async () => {
       await writeFile("some/path", "some data", "made-up-encoding");
     },
     Error,
     `The value "made-up-encoding" is invalid for option "encoding"`,
   );
-  assertRejects(
+  await assertRejects(
     async () => {
       await writeFile("some/path", "some data", {
         encoding: "made-up-encoding",
@@ -32,8 +32,8 @@ Deno.test("Invalid encoding results in error()", function testEncodingErrors() {
 
 Deno.test(
   "Unsupported encoding results in error()",
-  function testUnsupportedEncoding() {
-    assertRejects(
+  async function testUnsupportedEncoding() {
+    await assertRejects(
       async () => {
         await writeFile("some/path", "some data", "utf16le");
       },
@@ -47,7 +47,7 @@ Deno.test(
   "Data is written to correct rid",
   async function testCorrectWriteUsingRid() {
     const tempFile: string = await Deno.makeTempFile();
-    const file: Deno.File = await Deno.open(tempFile, {
+    const file: Deno.FsFile = await Deno.open(tempFile, {
       create: true,
       write: true,
       read: true,
@@ -119,7 +119,7 @@ Deno.test(
     if (isWindows) return;
 
     const filename: string = await Deno.makeTempFile();
-    const file: Deno.File = await Deno.open(filename, {
+    const file: Deno.FsFile = await Deno.open(filename, {
       create: true,
       write: true,
       read: true,

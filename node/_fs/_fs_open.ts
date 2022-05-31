@@ -1,8 +1,9 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { existsSync } from "../../fs/exists.ts";
 import { fromFileUrl } from "../path.ts";
 import { getOpenOptions } from "./_fs_common.ts";
 
-type openFlags =
+export type openFlags =
   | "a"
   | "ax"
   | "a+"

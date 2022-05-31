@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertRejects } from "../testing/asserts.ts";
 import { deferred } from "./deferred.ts";
 import { deadline, DeadlineError } from "./deadline.ts";
