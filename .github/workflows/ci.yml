@@ -131,6 +131,10 @@ jobs:
         shell: bash
         run: ./_tools/check_circular_deps.ts
 
+      - name: Check License headers
+        shell: bash
+        run: ./_tools/check_license.ts
+
   hash-wasm:
     name: "_wasm_crypto/"
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
