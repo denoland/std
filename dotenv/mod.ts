@@ -12,6 +12,16 @@ export type { EnvObject };
 
 type Env = Record<string, string>;
 
+/**
+ * @param object EnvObject that should be verified.
+ * @param options verification options
+ * @returns true if valid, else throws an error
+ * ```ts
+ * const object = { env: { GREETING: "hello world" }, exports: [] };
+ * const options = { allowEmptyValues: true, example: { env: { GREETING: "someValue" }, exports: [] } };
+ * const isValid = verify(object, options);
+ * ```
+ */
 export function verify(
   object: EnvObject,
   { allowEmptyValues, example }: {
@@ -59,6 +69,17 @@ export function verify(
 const regExp =
   /^\s*(?<comment>#.+)|(?<export>export\s+)?(?<key>[a-zA-Z_]\w*)\s*=\s*((?<quote>["'`])?(?<value>.+?)\5?)?\s*?$/;
 
+/**
+ * @param source dotenv string to be parsed
+ * @param options parsing options
+ * @returns EnvObject
+ * ```ts
+ * const object = parse(`
+ * GREETING=hello world
+ * export EXPORT=exported
+ * `);
+ * ```
+ */
 export function parse(
   source: string,
   { allowEmptyValues = false, example }: {
@@ -99,6 +120,14 @@ export function parse(
   return object;
 }
 
+/**
+ * @param object EnvObject to be stringified
+ * @returns string of EnvObject
+ * ```ts
+ * const obect = { env: { GREETING: "hello world", EXPORT: "exported" }, exports: ["EXPORT"] };
+ * const string = stringify(object);
+ * ```
+ */
 export function stringify(object: EnvObject) {
   const lines: string[] = [];
   for (const [key, value] of Object.entries(object.env)) {
@@ -159,6 +188,14 @@ function setDenoEnvFromDotEnv(
   return denoEnv;
 }
 
+/**
+ * @param denoEnv denoEnv to load variables into
+ * @param options load options
+ * @returns populated denoEnv
+ * ```ts
+ * const object = await load(Deno.env, { envPath: "path/to/.env" });
+ * ```
+ */
 export async function load(
   denoEnv: DenoEnv = Deno.env,
   {
@@ -177,6 +214,14 @@ export async function load(
   });
 }
 
+/**
+ * @param denoEnv denoEnv to load variables into
+ * @param options load options
+ * @returns populated denoEnv
+ * ```ts
+ * const object = loadSync(Deno.env, { envPath: "path/to/.env" });
+ * ```
+ */
 export function loadSync(
   denoEnv: DenoEnv = Deno.env,
   {
