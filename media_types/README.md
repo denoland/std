@@ -14,7 +14,15 @@ its license.
 ## `contentType()`
 
 Given a extension or media type, return a fully qualified header value for
-setting a `Content-Type` or `Content-Disposition` header.
+setting a `Content-Type` or `Content-Disposition` header. The function will
+process the value passed as a media type if it contains a `/`, otherwise will
+attempt to match as an extension, with or without the leading `.`.
+
+> Note: a side effect of `deno/x/media_types` was that you could pass a file
+> name (e.g. `file.json`) and it would return the content type. This behavior is
+> intentionally not supported here. If you want to get an extension for a file
+> name, use `extname()` from `std/path/mod.ts` to determine the extension and
+> pass it here.
 
 ```ts
 import { contentType } from "https://deno.land/std@$STD_VERSION/media_types/mod.ts";
@@ -23,6 +31,7 @@ contentType(".json"); // `application/json; charset=UTF-8`
 contentType("text/html"); // `text/html; charset=UTF-8`
 contentType("txt"); // `text/plain; charset=UTF-8`
 contentType("foo"); // undefined
+contentType("file.json"); // undefined
 ```
 
 ## `extension()`
@@ -114,4 +123,5 @@ import { typeByExtension } from "https://deno.land/std@$STD_VERSION/media_types/
 typeByExtension("js"); // `application/json`
 typeByExtension(".HTML"); // `text/html`
 typeByExtension("foo"); // undefined
+typeByExtension("file.json"); // undefined
 ```

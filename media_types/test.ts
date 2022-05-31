@@ -20,6 +20,7 @@ Deno.test({
       ["txt", "text/plain; charset=UTF-8"],
       ["text/plain; charset=ISO-8859-1", "text/plain; charset=ISO-8859-1"],
       ["foo", undefined],
+      ["file.json", undefined],
       ["application/foo", "application/foo"],
     ] as const;
     for (const [fixture, expected] of fixtures) {
@@ -235,6 +236,7 @@ Deno.test({
       ["html", "text/html"],
       [".html", "text/html"],
       [".HTML", "text/html"],
+      ["file.json", undefined],
       ["foo", undefined],
       [".foo", undefined],
     ] as const;

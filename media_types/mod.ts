@@ -10,7 +10,6 @@
  */
 
 import db from "./vendor/mime-db.v1.52.0.json" assert { type: "json" };
-import { extname } from "../path/mod.ts";
 import {
   consumeMediaParam,
   decode2331Encoding,
@@ -72,6 +71,10 @@ export const types = new Map<string, KeyOfDb>();
 /** Given an extension or media type, return a full `Content-Type` or
  * `Content-Disposition` header value.
  *
+ * The function will treat the `extensionOrType` as a media type when it
+ * contains a `/`, otherwise it will process it as an extension, with or without
+ * the leading `.`.
+ *
  * Returns `undefined` if unable to resolve the media type.
  *
  * ### Examples
@@ -81,8 +84,10 @@ export const types = new Map<string, KeyOfDb>();
  *
  * contentType(".json"); // `application/json; charset=UTF-8`
  * contentType("text/html"); // `text/html; charset=UTF-8`
+ * contentType("text/html; charset=UTF-8"); // `text/html; charset=UTF-8`
  * contentType("txt"); // `text/plain; charset=UTF-8`
  * contentType("foo"); // undefined
+ * contentType("file.json"); // undefined
  * ```
  */
 export function contentType(extensionOrType: string): string | undefined {
@@ -396,10 +401,11 @@ export function parseMediaType(
  * typeByExtension("js"); // `application/json`
  * typeByExtension(".HTML"); // `text/html`
  * typeByExtension("foo"); // undefined
+ * typeByExtension("file.json"); // undefined
  * ```
  */
 export function typeByExtension(extension: string): string | undefined {
-  extension = extname(`x.${extension}`).toLowerCase().slice(1);
+  extension = extension.startsWith(".") ? extension.slice(1) : extension;
   // @ts-ignore workaround around denoland/dnt#148
-  return types.get(extension);
+  return types.get(extension.toLowerCase());
 }
