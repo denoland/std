@@ -15,6 +15,24 @@ import {
 } from "./internal/errors.ts";
 import { isDeepEqual } from "./internal/util/comparisons.ts";
 
+function innerFail(obj: {
+  actual?: unknown;
+  expected?: unknown;
+  message?: string | Error;
+  operator?: string;
+}) {
+  if (obj.message instanceof Error) {
+    throw obj.message;
+  }
+
+  throw new AssertionError({
+    actual: obj.actual,
+    expected: obj.expected,
+    message: obj.message,
+    operator: obj.operator,
+  });
+}
+
 interface ExtendedAssertionErrorConstructorOptions
   extends AssertionErrorConstructorOptions {
   generatedMessage?: boolean;
@@ -327,25 +345,9 @@ function deepEqual(
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
 
-  if (isDeepEqual(actual, expected)) {
-    return;
+  if (!isDeepEqual(actual, expected)) {
+    innerFail({ actual, expected, message, operator: "deepEqual" });
   }
-
-  if (typeof message === "string") {
-    throw new AssertionError({
-      message,
-    });
-  } else if (message instanceof Error) {
-    throw message;
-  }
-
-  throw createAssertionError({
-    actual,
-    expected,
-    message,
-    operator: "deepEqual",
-    generatedMessage: true,
-  });
 }
 function notDeepEqual(
   actual: unknown,
@@ -356,25 +358,9 @@ function notDeepEqual(
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
 
-  if (!isDeepEqual(actual, expected)) {
-    return;
+  if (isDeepEqual(actual, expected)) {
+    innerFail({ actual, expected, message, operator: "notDeepEqual" });
   }
-
-  if (typeof message === "string") {
-    throw new AssertionError({
-      message,
-    });
-  } else if (message instanceof Error) {
-    throw message;
-  }
-
-  throw createAssertionError({
-    actual,
-    expected,
-    message,
-    operator: "notDeepEqual",
-    generatedMessage: true,
-  });
 }
 function deepStrictEqual(
   actual: unknown,
