@@ -159,7 +159,6 @@
       "test-child-process-fork.js",
       "test-child-process-kill.js",
       "test-client-request-destroy.js",
-      "test-cluster-basic.js",
       "test-console-async-write-error.js",
       "test-console-group.js",
       "test-console-instance.js",
