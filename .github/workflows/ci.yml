@@ -133,7 +133,7 @@ jobs:
 
       - name: Check License headers
         shell: bash
-        run: ./_tools/check_license.ts
+        run: ./_tools/check_licence.ts
 
   hash-wasm:
     name: "_wasm_crypto/"
