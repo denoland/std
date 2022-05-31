@@ -93,8 +93,8 @@ export class AsyncResource {
   }
 
   emitDestroy() {
-    if (this[destroyedSymbol] !== undefined) {
-      this[destroyedSymbol].destroyed = true;
+    if (this[destroyedSymbol] != null) {
+      this[destroyedSymbol] = { destroyed: true };
     }
     // TODO(kt3k): Uncomment the below
     // emitDestroy(this[async_id_symbol]);
