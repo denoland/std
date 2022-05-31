@@ -145,7 +145,6 @@ function setDenoEnvFromDotEnv(
   const parsedObject = parse(envSource, { example });
   const defaultsEnv = defaultsSource ? parse(defaultsSource).env : {};
 
-  // initialEnv is passed at the end of assign to prevent overwrites
   const env: Env = {
     ...defaultsEnv,
     ...parsedObject.env,
@@ -153,6 +152,7 @@ function setDenoEnvFromDotEnv(
 
   const initialEnv = denoEnv.toObject();
   for (const [key, value] of Object.entries(env)) {
+    // prevent overwrite if value already exists
     if (initialEnv[key] != null) continue;
     denoEnv.set(key, value);
   }
