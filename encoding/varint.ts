@@ -30,7 +30,7 @@ export function encodeU32(val: number): Uint8Array {
  */
 export function encodeU64(val: bigint): Uint8Array {
   if (val < 0) throw new RangeError("Signed integers are not supported");
-  if (val > U64MAX) throw new RangeError();
+  if (val > U64MAX) throw new RangeError(`The given number exceeds the limit of unsigned long integer: ${val}`);
   return wasm.encode_u64(val);
 }
 
