@@ -1,8 +1,9 @@
 #!/usr/bin/env -S deno run --allow-read
 // Copyright 2022-2022 the Deno authors. All rights reserved. MIT license.
 
-const EXTENSIONS = ["js", "ts", "rs"];
+const EXTENSIONS = [".mjs", ".js", ".ts", ".rs"];
 const EXCLUDED_PATHS = [
+  ".git",
   "node/_module",
   "dotenv/testdata",
   "fs/testdata",
