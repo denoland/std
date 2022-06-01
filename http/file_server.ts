@@ -640,17 +640,17 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
 
 /** Interface for serveDir options. */
 export interface ServeDirOptions {
-  /** Serves the files under the given directory root. */
+  /** Serves the files under the given directory root. Defaults to your current directory. */
   fsRoot?: string;
   /** Specified that part is stripped from the beginning of the requested pathname. */
   urlRoot?: string;
-  /** Enable directory listing. */
+  /** Enable directory listing. Defaults to false. */
   showDirListing?: boolean;
-  /** Serves dotfiles. */
+  /** Serves dotfiles. Defaults to false. */
   showDotfiles?: boolean;
-  /** Enable CORS via the "Access-Control-Allow-Origin" header. */
+  /** Enable CORS via the "Access-Control-Allow-Origin" header. Defaults to false. */
   enableCors?: boolean;
-  /** Do not print request level logs. */
+  /** Do not print request level logs. Defaults to false. Defaults to false. */
   quiet?: boolean;
   /** The algorithm to use for generating the ETag. Defaults to "fnv1a". */
   etagAlgorithm?: EtagAlgorithm;
@@ -691,12 +691,12 @@ export interface ServeDirOptions {
  *
  * @param req The request to handle
  * @param opts
- * @param opts.fsRoot Serves the files under the given directory root.
+ * @param opts.fsRoot Serves the files under the given directory root. Defaults to your current directory.
  * @param opts.urlRoot Specified that part is stripped from the beginning of the requested pathname.
- * @param opts.showDirListing Enable directory listing.
- * @param opts.showDotfiles Serves dotfiles.
- * @param opts.enableCors Enable CORS via the "Access-Control-Allow-Origin" header.
- * @param opts.quiet Do not print request level logs.
+ * @param opts.showDirListing Enable directory listing. Defaults to false.
+ * @param opts.showDotfiles Serves dotfiles. Defaults to false.
+ * @param opts.enableCors Enable CORS via the "Access-Control-Allow-Origin" header. Defaults to false.
+ * @param opts.quiet Do not print request level logs. Defaults to false.
  * @param opts.etagAlgorithm Etag The algorithm to use for generating the ETag. Defaults to "fnv1a".
  */
 export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
