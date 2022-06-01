@@ -15,7 +15,7 @@ const U64MAX = 18_446_744_073_709_551_615n;
 export function encodeU32(val: number): Uint8Array {
   if (!Number.isInteger(val)) throw new TypeError("Floats are not supported");
   if (val < 0) throw new RangeError("Signed integers are not supported");
-  if (val > U32MAX) throw new RangeError();
+  if (val > U32MAX) throw new RangeError(`The given number exceeds the limit of unsigned integer: ${val}`);
   return wasm.encode_u32(val);
 }
 
