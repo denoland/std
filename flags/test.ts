@@ -1540,8 +1540,9 @@ Deno.test("typesOfCollectArgsWithDefaults", function (): void {
 
 Deno.test("typesOfNegatableArgs", function (): void {
   const argv = parse([], {
-    boolean: ["foo", "no-bar", "no-dotted.tick", "dotted.tock"],
-    string: ["beep", "no-boop", "no-dotted.zig", "dotted.zag"],
+    boolean: ["foo", "bar", "dotted.tick", "dotted.tock"],
+    string: ["beep", "boop", "dotted.zig", "dotted.zag"],
+    negatable: ["bar", "boop", "dotted.tick", "dotted.zig"],
   });
   assertType<
     IsExact<
@@ -1566,8 +1567,9 @@ Deno.test("typesOfNegatableArgs", function (): void {
 
 Deno.test("typesOfCollectAllArgsWithDefaults", function (): void {
   const argv = parse([], {
-    boolean: ["foo", "no-bar", "no-dotted.tick", "dotted.tock"],
-    string: ["beep", "no-boop", "no-dotted.zig", "dotted.zag"],
+    boolean: ["foo", "bar", "dotted.tick", "dotted.tock"],
+    string: ["beep", "boop", "dotted.zig", "dotted.zag"],
+    negatable: ["bar", "boop", "dotted.tick", "dotted.zig"],
     default: {
       bar: 123,
       boop: new TextDecoder(),
@@ -1624,10 +1626,11 @@ Deno.test("typesOfAliasArgs", function (): void {
   >(true);
 });
 
-Deno.test("typesOfAliasArgsWithDefaults", function (): void {
+Deno.test("typesOfAliasArgsWithOptions", function (): void {
   const argv = parse([], {
     boolean: ["foo", "biz"],
     string: ["beep", "bib"],
+    negatable: ["foo", "beep"],
     alias: {
       foo: "bar",
       beep: "boop",
@@ -1648,8 +1651,8 @@ Deno.test("typesOfAliasArgsWithDefaults", function (): void {
         bib?: string | undefined;
         foo: number | boolean;
         bar: number | boolean;
-        beep: string | Date;
-        boop: string | Date;
+        beep: string | false | Date;
+        boop: string | false | Date;
         _: Array<string | number>;
       }
     >

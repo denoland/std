@@ -21,14 +21,16 @@ type BooleanType = boolean | string | undefined;
 type StringType = string | undefined;
 type ArgType = StringType | BooleanType;
 
-type CollectType = string | undefined;
+type Collectable = string | undefined;
+type Negatable = string | undefined;
 
-type NoTypes<B, S, C> = undefined extends (
+type UseTypes<B, S, C, N> = undefined extends (
   & (false extends B ? undefined : B)
   & C
+  & N
   & S
-) ? true
-  : false;
+) ? false
+  : true;
 
 /**
  * Creates a record with all available flags with the corresponding type and
@@ -37,22 +39,23 @@ type NoTypes<B, S, C> = undefined extends (
 type Values<
   B extends BooleanType,
   S extends StringType,
-  C extends CollectType,
+  C extends Collectable,
+  N extends Negatable,
   D extends Record<string, unknown> | undefined,
   A extends Aliases | undefined,
-> // deno-lint-ignore no-explicit-any
- = NoTypes<B, S, C> extends true ? Record<string, any>
-  : 
-    & Record<string, unknown>
-    & AddAliases<
-      SpreadDefaults<
-        & CollectValues<S, string, C>
-        & RecursiveRequired<CollectValues<B, boolean, C>>
-        & UnknownCollactable<B, S, C>,
-        DedotRecord<D>
-      >,
-      A
-    >;
+> = UseTypes<B, S, C, N> extends true ? 
+  & Record<string, unknown>
+  & AddAliases<
+    SpreadDefaults<
+      & CollectValues<S, string, C, N>
+      & RecursiveRequired<CollectValues<B, boolean, C>>
+      & CollectUnknownValues<B, S, C, N>,
+      DedotRecord<D>
+    >,
+    A
+  >
+  : // deno-lint-ignore no-explicit-any
+  Record<string, any>;
 
 type Aliases<T = string, V extends string = string> = Partial<
   Record<Extract<T, string>, V | ReadonlyArray<V>>
@@ -117,40 +120,55 @@ type RecursiveRequired<T> = T extends Record<string, unknown> ? {
   : T;
 
 /** Same as `MapTypes` but also supports collectable options. */
-type CollectValues<T extends ArgType, V, C extends CollectType> =
-  UnionToIntersection<
-    C extends string ? 
-      & MapTypes<Exclude<T, C>, V>
-      & (T extends undefined ? Record<never, never> : RecursiveRequired<
-        MapTypes<Extract<C, T>, Array<V>>
-      >)
-      : MapTypes<T, V>
-  >;
+type CollectValues<
+  T extends ArgType,
+  V,
+  C extends Collectable,
+  N extends Negatable = undefined,
+> = UnionToIntersection<
+  C extends string ? 
+    & MapTypes<Exclude<T, C>, V, N>
+    & (T extends undefined ? Record<never, never> : RecursiveRequired<
+      MapTypes<Extract<C, T>, Array<V>, N>
+    >)
+    : MapTypes<T, V, N>
+>;
 
 /** Same as `Record` but also supports dotted and negatable options. */
-type MapTypes<T extends ArgType, V> = undefined extends T ? Record<never, never>
-  : T extends `no-${infer Name}` ? MapTypes<Name, V | false>
-  : T extends `${infer Name}.${infer Rest}` ? {
-    [K in Name]?: MapTypes<
-      Rest,
-      V
-    >;
-  }
-  : T extends string ? Partial<Record<T, V>>
-  : Record<never, never>;
+type MapTypes<T extends ArgType, V, N extends Negatable = undefined> =
+  undefined extends T ? Record<never, never>
+    : T extends `${infer Name}.${infer Rest}` ? {
+      [K in Name]?: MapTypes<
+        Rest,
+        V,
+        N extends `${Name}.${infer Negate}` ? Negate : undefined
+      >;
+    }
+    : T extends string ? Partial<Record<T, N extends T ? V | false : V>>
+    : Record<never, never>;
 
-type UnknownCollactable<
+type CollectUnknownValues<
   B extends BooleanType,
   S extends StringType,
-  C extends CollectType,
+  C extends Collectable,
+  N extends Negatable,
 > = B & S extends C ? Record<never, never>
   : DedotRecord<
-    Record<
+    // Unknown collectable & non-negatable args.
+    & Record<
       Exclude<
-        Extract<C, string>,
+        Extract<Exclude<C, N>, string>,
         Extract<S | B, string>
       >,
       Array<unknown>
+    >
+    // Unknown collectable & negatable args.
+    & Record<
+      Exclude<
+        Extract<Extract<C, N>, string>,
+        Extract<S | B, string>
+      >,
+      Array<unknown> | false
     >
   >;
 
@@ -195,7 +213,8 @@ type DoubleDash = {
 export interface ParseOptions<
   B extends BooleanType = BooleanType,
   S extends StringType = StringType,
-  C extends CollectType = CollectType,
+  C extends Collectable = Collectable,
+  N extends Negatable = Negatable,
   D extends Record<string, unknown> | undefined =
     | Record<string, unknown>
     | undefined,
@@ -244,6 +263,10 @@ export interface ParseOptions<
    * colelcted into one array. If a non-collectable option is used multiple
    * times, the last value is used. */
   collect?: C | ReadonlyArray<Extract<C, string>>;
+
+  /** A string or array of strings argument names which can be negated
+   * by prefixing them with `--no-`, like `--no-config`. */
+  negatable?: N | ReadonlyArray<Extract<N, string>>;
 
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
@@ -313,11 +336,12 @@ function hasKey(obj: NestedMapping, keys: string[]): boolean {
  * ```
  */
 export function parse<
-  V extends Values<B, S, C, D, A>,
+  V extends Values<B, S, C, N, D, A>,
   DD extends boolean | undefined = undefined,
   B extends BooleanType = undefined,
   S extends StringType = undefined,
-  C extends CollectType = undefined,
+  C extends Collectable = undefined,
+  N extends Negatable = undefined,
   D extends Record<string, unknown> | undefined = undefined,
   A extends Aliases<AK, AV> | undefined = undefined,
   AK extends string = string,
@@ -333,7 +357,7 @@ export function parse<
     string = [],
     collect = [],
     unknown = (i: string): unknown => i,
-  }: ParseOptions<B, S, C, D, A, DD> = {},
+  }: ParseOptions<B, S, C, N, D, A, DD> = {},
 ): Args<V, DD> {
   const flags: Flags = {
     bools: {},
