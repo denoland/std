@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /** This module is browser compatible. */
 
 import { ascend, BSTree } from "./bs_tree.ts";
