@@ -16,7 +16,7 @@ function swap<T>(array: T[], a: number, b: number) {
  * using JavaScript's built in comparison operators to sort the values.
  */
 export class BinaryHeap<T> implements Iterable<T> {
-  private data: T[] = [];
+  #data: T[] = [];
   constructor(private compare: (a: T, b: T) => number = descend) {}
 
   /** Creates a new binary heap from an array like or iterable object. */
@@ -52,9 +52,9 @@ export class BinaryHeap<T> implements Iterable<T> {
         options?.compare ?? (collection as unknown as BinaryHeap<U>).compare,
       );
       if (options?.compare || options?.map) {
-        unmappedValues = collection.data;
+        unmappedValues = collection.#data;
       } else {
-        result.data = Array.from(collection.data as unknown as U[]);
+        result.#data = Array.from(collection.#data as unknown as U[]);
       }
     } else {
       result = options?.compare
@@ -71,32 +71,33 @@ export class BinaryHeap<T> implements Iterable<T> {
 
   /** The amount of values stored in the binary heap. */
   get length(): number {
-    return this.data.length;
+    return this.#data.length;
   }
 
   /** Returns the greatest value in the binary heap, or undefined if it is empty. */
   peek(): T | undefined {
-    return this.data[0];
+    return this.#data[0];
   }
 
   /** Removes the greatest value from the binary heap and returns it, or null if it is empty. */
   pop(): T | undefined {
-    const size: number = this.data.length - 1;
-    swap(this.data, 0, size);
+    const size: number = this.#data.length - 1;
+    swap(this.#data, 0, size);
     let parent = 0;
     let right: number = 2 * (parent + 1);
     let left: number = right - 1;
     while (left < size) {
       if (
-        this.compare(this.data[left], this.data[parent]) < 0 &&
-        (right === size || this.compare(this.data[left], this.data[right]) < 0)
+        this.compare(this.#data[left], this.#data[parent]) < 0 &&
+        (right === size ||
+          this.compare(this.#data[left], this.#data[right]) < 0)
       ) {
-        swap(this.data, parent, left);
+        swap(this.#data, parent, left);
         parent = left;
       } else if (
-        right < size && this.compare(this.data[right], this.data[parent]) < 0
+        right < size && this.compare(this.#data[right], this.#data[parent]) < 0
       ) {
-        swap(this.data, parent, right);
+        swap(this.#data, parent, right);
         parent = right;
       } else {
         break;
@@ -104,34 +105,34 @@ export class BinaryHeap<T> implements Iterable<T> {
       right = 2 * (parent + 1);
       left = right - 1;
     }
-    return this.data.pop();
+    return this.#data.pop();
   }
 
   /** Adds values to the binary heap. */
   push(...values: T[]): number {
     for (const value of values) {
-      let index: number = this.data.length;
+      let index: number = this.#data.length;
       let parent: number = Math.floor(index / 2);
-      this.data.push(value);
+      this.#data.push(value);
       while (
-        index !== 0 && this.compare(this.data[index], this.data[parent]) < 0
+        index !== 0 && this.compare(this.#data[index], this.#data[parent]) < 0
       ) {
-        swap(this.data, parent, index);
+        swap(this.#data, parent, index);
         index = parent;
         parent = Math.floor(index / 2);
       }
     }
-    return this.data.length;
+    return this.#data.length;
   }
 
   /** Removes all values from the binary heap. */
   clear(): void {
-    this.data = [];
+    this.#data = [];
   }
 
   /** Checks if the binary heap is empty. */
   isEmpty(): boolean {
-    return this.data.length === 0;
+    return this.#data.length === 0;
   }
 
   /** Returns an iterator for retrieving and removing values from the binary heap. */

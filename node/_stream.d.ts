@@ -492,7 +492,7 @@ export class Readable extends Stream implements ReadableStream {
   ): this;
   [Symbol.asyncIterator](): AsyncIterableIterator<any>;
 }
-interface WritableOptions extends StreamOptions<Writable> {
+export interface WritableOptions extends StreamOptions<Writable> {
   decodeStrings?: boolean | undefined;
   defaultEncoding?: BufferEncoding | undefined;
   write?(

@@ -162,7 +162,7 @@ export class Url {
     this.href = null;
   }
 
-  private parseHost() {
+  #parseHost() {
     let host = this.host || "";
     let port: RegExpExecArray | null | string = portPattern.exec(host);
     if (port) {
@@ -752,7 +752,7 @@ export class Url {
       }
 
       // pull out port.
-      this.parseHost();
+      this.#parseHost();
 
       // We've indicated that there is a hostname,
       // so even if it's empty, it has to be present.

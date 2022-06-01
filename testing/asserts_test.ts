@@ -259,10 +259,10 @@ Deno.test("Equal", function (): void {
   assert(
     !equal(
       new (class A {
-        private hello = "world";
+        #hello = "world";
       })(),
       new (class B {
-        private hello = "world";
+        #hello = "world";
       })(),
     ),
   );
@@ -270,10 +270,10 @@ Deno.test("Equal", function (): void {
   assertFalse(
     equal(
       new (class A {
-        private hello = "world";
+        #hello = "world";
       })(),
       new (class B {
-        private hello = "world";
+        #hello = "world";
       })(),
     ),
   );
@@ -779,7 +779,7 @@ Deno.test("AssertFail", function (): void {
   );
 });
 
-Deno.test("AssertFailWithWrongErrorClass", function (): void {
+Deno.test("assertThrows with wrong error class", () => {
   assertThrows(
     (): void => {
       //This next assertThrows will throw an AssertionError due to the wrong
@@ -797,21 +797,24 @@ Deno.test("AssertFailWithWrongErrorClass", function (): void {
   );
 });
 
-Deno.test("AssertThrowsWithReturnType", () => {
+Deno.test("assertThrows with return type", () => {
   assertThrows(() => {
     throw new Error();
   });
 });
 
-Deno.test("AssertRejectsFailIfGivenFunctionIsSynchronousAndThrow", async () => {
+Deno.test("assertRejects with return type", async () => {
+  await assertRejects(() => {
+    return Promise.reject(new Error());
+  });
+});
+
+Deno.test("assertRejects with synchronous function that throws", async () => {
   await assertRejects(() =>
     assertRejects(() => {
       throw new Error();
     })
   );
-});
-
-Deno.test("AssertRejectsFailWithRightMessageWhenFunctionIsSynchronousAndThrow", async () => {
   await assertRejects(
     () =>
       assertRejects(() => {
@@ -822,13 +825,118 @@ Deno.test("AssertRejectsFailWithRightMessageWhenFunctionIsSynchronousAndThrow", 
   );
 });
 
-Deno.test("AssertRejectsWithReturnType", async () => {
+Deno.test("assertThrows with non-error value thrown and error callback", () => {
+  assertThrows(
+    () => {
+      assertThrows(
+        () => {
+          throw "Panic!";
+        },
+        (error: Error) => error,
+        "Panic!",
+      );
+    },
+    AssertionError,
+    "A non-Error object was thrown.",
+  );
+});
+
+Deno.test("assertRejects with non-error value rejected and error callback", async () => {
+  await assertRejects(
+    () => {
+      return assertRejects(
+        () => {
+          return Promise.reject("Panic!");
+        },
+        (error: Error) => error,
+        "Panic!",
+      );
+    },
+    AssertionError,
+    "A non-Error object was rejected.",
+  );
+});
+
+Deno.test("assertThrows with non-error value thrown and error class", () => {
+  assertThrows(
+    () => {
+      assertThrows(
+        () => {
+          throw "Panic!";
+        },
+        Error,
+        "Panic!",
+      );
+    },
+    AssertionError,
+    "A non-Error object was thrown.",
+  );
+});
+
+Deno.test("assertRejects with non-error value rejected and error class", async () => {
+  await assertRejects(
+    () => {
+      return assertRejects(
+        () => {
+          return Promise.reject("Panic!");
+        },
+        Error,
+        "Panic!",
+      );
+    },
+    AssertionError,
+    "A non-Error object was rejected.",
+  );
+});
+
+Deno.test("assertThrows with non-error value thrown", () => {
+  assertThrows(
+    () => {
+      throw "Panic!";
+    },
+  );
+  assertThrows(
+    () => {
+      throw null;
+    },
+  );
+  assertThrows(
+    () => {
+      throw undefined;
+    },
+  );
+});
+
+Deno.test("assertRejects with non-error value rejected", async () => {
   await assertRejects(() => {
-    return Promise.reject(new Error());
+    return Promise.reject(null);
+  });
+  await assertRejects(() => {
+    return Promise.reject(undefined);
   });
 });
 
-Deno.test("AssertThrowsWithErrorCallback", () => {
+Deno.test("assertThrows with error class", () => {
+  assertThrows(
+    () => {
+      throw new Error("foo");
+    },
+    Error,
+    "foo",
+  );
+});
+
+Deno.test("assertRejects with error class", async () => {
+  await assertRejects(
+    () => {
+      return Promise.reject(new Error("foo"));
+    },
+    Error,
+    "foo",
+  );
+});
+
+Deno.test("assertThrows with error callback", () => {
   assertThrows(
     () => {
       throw new AggregateError([new Error("foo"), new Error("bar")], "baz");
@@ -843,7 +951,7 @@ Deno.test("AssertThrowsWithErrorCallback", () => {
   );
 });
 
-Deno.test("AssertRejectsWithErrorCallback", async () => {
+Deno.test("assertRejectes with error callback", async () => {
   await assertRejects(
     () => {
       return Promise.reject(
@@ -858,6 +966,59 @@ Deno.test("AssertRejectsWithErrorCallback", async () => {
       assertStringIncludes(error.errors[1].stack, "Error: bar");
     },
   );
+});
+
+Deno.test("assertThrows with thrown error returns caught error", () => {
+  const error = assertThrows(
+    () => {
+      throw new Error("foo");
+    },
+  );
+  assert(error instanceof Error);
+  assertEquals(error.message, "foo");
+});
+
+Deno.test("assertThrows with thrown non-error returns caught error", () => {
+  const stringError = assertThrows(
+    () => {
+      throw "Panic!";
+    },
+  );
+  assert(typeof stringError === "string");
+  assertEquals(stringError, "Panic!");
+
+  const numberError = assertThrows(
+    () => {
+      throw 1;
+    },
+  );
+  assert(typeof numberError === "number");
+  assertEquals(numberError, 1);
+
+  const nullError = assertThrows(
+    () => {
+      throw null;
+    },
+  );
+  assert(nullError === null);
+
+  const undefinedError = assertThrows(
+    () => {
+      throw undefined;
+    },
+  );
+  assert(typeof undefinedError === "undefined");
+  assertEquals(undefinedError, undefined);
+});
+
+Deno.test("assertRejectes resolves with caught error", async () => {
+  const error = await assertRejects(
+    () => {
+      return Promise.reject(new Error("foo"));
+    },
+  );
+  assert(error instanceof Error);
+  assertEquals(error.message, "foo");
 });
 
 const createHeader = (): string[] => [
@@ -1260,88 +1421,6 @@ Deno.test({
     // deno-lint-ignore ban-types
     assertNotStrictEquals<object>(value, { x: 1 });
   },
-});
-
-Deno.test("Assert Throws Non-Error Fail", () => {
-  assertThrows(
-    () => {
-      assertThrows(
-        () => {
-          throw "Panic!";
-        },
-        String,
-        "Panic!",
-      );
-    },
-    AssertionError,
-    "A non-Error object was thrown.",
-  );
-
-  assertThrows(
-    () => {
-      assertThrows(() => {
-        throw null;
-      });
-    },
-    AssertionError,
-    "A non-Error object was thrown.",
-  );
-
-  assertThrows(
-    () => {
-      assertThrows(() => {
-        throw undefined;
-      });
-    },
-    AssertionError,
-    "A non-Error object was thrown.",
-  );
-});
-
-Deno.test("Assert Throws Async Non-Error Fail", async () => {
-  await assertRejects(
-    () => {
-      return assertRejects(
-        () => {
-          return Promise.reject("Panic!");
-        },
-        String,
-        "Panic!",
-      );
-    },
-    AssertionError,
-    "A non-Error object was rejected.",
-  );
-
-  await assertRejects(
-    () => {
-      return assertRejects(() => {
-        return Promise.reject(null);
-      });
-    },
-    AssertionError,
-    "A non-Error object was rejected.",
-  );
-
-  await assertRejects(
-    () => {
-      return assertRejects(() => {
-        return Promise.reject(undefined);
-      });
-    },
-    AssertionError,
-    "A non-Error object was rejected.",
-  );
-
-  await assertRejects(
-    () => {
-      return assertRejects(() => {
-        return Promise.reject(undefined);
-      });
-    },
-    AssertionError,
-    "A non-Error object was rejected.",
-  );
 });
 
 Deno.test(

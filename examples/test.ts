@@ -15,19 +15,14 @@ Deno.test("t2", function (): void {
 
 /** A more complicated test that runs a subprocess. */
 Deno.test("catSmoke", async function () {
-  const p = Deno.run({
-    cmd: [
-      Deno.execPath(),
+  const { status } = await Deno.spawn(Deno.execPath(), {
+    args: [
       "run",
       "--quiet",
       "--allow-read",
       relative(Deno.cwd(), resolve(moduleDir, "cat.ts")),
       relative(Deno.cwd(), resolve(moduleDir, "..", "README.md")),
     ],
-    stdout: "null",
-    stderr: "null",
   });
-  const s = await p.status();
-  assertEquals(s.code, 0);
-  p.close();
+  assertEquals(status.code, 0);
 });

@@ -594,119 +594,143 @@ export function assertIsError<E extends Error = Error>(
   }
 }
 
-/**
- * Executes a function, expecting it to throw.  If it does not, then it
+/** Executes a function, expecting it to throw. If it does not, then it
+ * throws. */
+export function assertThrows(
+  fn: () => unknown,
+  msg?: string,
+): unknown;
+/** Executes a function, expecting it to throw. If it does not, then it
  * throws. An error class and a string that should be included in the
- * error message can also be asserted. Or you can pass a
- * callback which will be passed the error, usually to apply some custom
- * assertions on it.
- */
+ * error message can also be asserted. */
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
   // deno-lint-ignore no-explicit-any
-  ErrorClass?: new (...args: any[]) => E,
+  ErrorClass: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
-): void;
+): E;
+/** @deprecated Use assertThrows(fn, msg) instead, which now returns thrown
+ * value and you can assert on it. */
 export function assertThrows(
   fn: () => unknown,
   errorCallback: (e: Error) => unknown,
   msg?: string,
-): void;
+): Error;
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
-  errorClassOrCallback?:
+  errorClassOrCallbackOrMsg?:
     // deno-lint-ignore no-explicit-any
     | (new (...args: any[]) => E)
-    | ((e: Error) => unknown),
+    | ((e: Error) => unknown)
+    | string,
   msgIncludesOrMsg?: string,
   msg?: string,
-): void {
+): E | Error | unknown {
   // deno-lint-ignore no-explicit-any
   let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
   let msgIncludes: string | undefined = undefined;
-  let errorCallback;
-  if (
-    errorClassOrCallback == null ||
-    errorClassOrCallback.prototype instanceof Error ||
-    errorClassOrCallback.prototype === Error.prototype
-  ) {
-    // deno-lint-ignore no-explicit-any
-    ErrorClass = errorClassOrCallback as new (...args: any[]) => E;
-    msgIncludes = msgIncludesOrMsg;
-    errorCallback = null;
+  let errorCallback: ((e: Error) => unknown) | undefined = undefined;
+  let err;
+
+  if (typeof errorClassOrCallbackOrMsg !== "string") {
+    if (
+      errorClassOrCallbackOrMsg === undefined ||
+      errorClassOrCallbackOrMsg.prototype instanceof Error ||
+      errorClassOrCallbackOrMsg.prototype === Error.prototype
+    ) {
+      // deno-lint-ignore no-explicit-any
+      ErrorClass = errorClassOrCallbackOrMsg as new (...args: any[]) => E;
+      msgIncludes = msgIncludesOrMsg;
+    } else {
+      errorCallback = errorClassOrCallbackOrMsg as (e: Error) => unknown;
+      msg = msgIncludesOrMsg;
+    }
   } else {
-    errorCallback = errorClassOrCallback as (e: Error) => unknown;
-    msg = msgIncludesOrMsg;
+    msg = errorClassOrCallbackOrMsg;
   }
   let doesThrow = false;
+  const msgToAppendToError = msg ? `: ${msg}` : ".";
   try {
     fn();
   } catch (error) {
-    if (error instanceof Error === false) {
-      throw new AssertionError("A non-Error object was thrown.");
+    if (ErrorClass || errorCallback) {
+      if (error instanceof Error === false) {
+        throw new AssertionError("A non-Error object was thrown.");
+      }
+      assertIsError(
+        error,
+        ErrorClass,
+        msgIncludes,
+        msg,
+      );
+      if (typeof errorCallback === "function") {
+        errorCallback(error);
+      }
     }
-    assertIsError(
-      error,
-      ErrorClass,
-      msgIncludes,
-      msg,
-    );
-    if (typeof errorCallback == "function") {
-      errorCallback(error);
-    }
+    err = error;
     doesThrow = true;
   }
   if (!doesThrow) {
-    msg = `Expected function to throw${msg ? `: ${msg}` : "."}`;
+    msg = `Expected function to throw${msgToAppendToError}`;
     throw new AssertionError(msg);
   }
+  return err;
 }
 
-/**
- * Executes a function which returns a promise, expecting it to throw or reject.
+/** Executes a function which returns a promise, expecting it to reject. */
+export function assertRejects(
+  fn: () => Promise<unknown>,
+  msg?: string,
+): Promise<unknown>;
+/** Executes a function which returns a promise, expecting it to reject.
  * If it does not, then it throws. An error class and a string that should be
- * included in the error message can also be asserted. Or you can pass a
- * callback which will be passed the error, usually to apply some custom
- * assertions on it.
- */
+ * included in the error message can also be asserted. */
 export function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
   // deno-lint-ignore no-explicit-any
-  ErrorClass?: new (...args: any[]) => E,
+  ErrorClass: new (...args: any[]) => E,
   msgIncludes?: string,
   msg?: string,
-): Promise<void>;
+): Promise<E>;
+/** @deprecated Use assertRejects(fn, msg) instead, which now returns rejected value
+ * and you can assert on it. */
 export function assertRejects(
   fn: () => Promise<unknown>,
   errorCallback: (e: Error) => unknown,
   msg?: string,
-): Promise<void>;
+): Promise<Error>;
 export async function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
-  errorClassOrCallback?:
+  errorClassOrCallbackOrMsg?:
     // deno-lint-ignore no-explicit-any
     | (new (...args: any[]) => E)
-    | ((e: Error) => unknown),
+    | ((e: Error) => unknown)
+    | string,
   msgIncludesOrMsg?: string,
   msg?: string,
-): Promise<void> {
+): Promise<E | Error | unknown> {
   // deno-lint-ignore no-explicit-any
   let ErrorClass: (new (...args: any[]) => E) | undefined = undefined;
   let msgIncludes: string | undefined = undefined;
-  let errorCallback;
-  if (
-    errorClassOrCallback == null ||
-    errorClassOrCallback.prototype instanceof Error ||
-    errorClassOrCallback.prototype === Error.prototype
-  ) {
-    // deno-lint-ignore no-explicit-any
-    ErrorClass = errorClassOrCallback as new (...args: any[]) => E;
-    msgIncludes = msgIncludesOrMsg;
-    errorCallback = null;
+  let errorCallback: ((e: Error) => unknown) | undefined = undefined;
+  let err;
+
+  if (typeof errorClassOrCallbackOrMsg !== "string") {
+    if (
+      errorClassOrCallbackOrMsg === undefined ||
+      errorClassOrCallbackOrMsg.prototype instanceof Error ||
+      errorClassOrCallbackOrMsg.prototype === Error.prototype
+    ) {
+      // deno-lint-ignore no-explicit-any
+      ErrorClass = errorClassOrCallbackOrMsg as new (...args: any[]) => E;
+      msgIncludes = msgIncludesOrMsg;
+    } else {
+      errorCallback = errorClassOrCallbackOrMsg as (e: Error) => unknown;
+      msg = msgIncludesOrMsg;
+    }
   } else {
-    errorCallback = errorClassOrCallback as (e: Error) => unknown;
-    msg = msgIncludesOrMsg;
+    msg = errorClassOrCallbackOrMsg;
   }
   let doesThrow = false;
   let isPromiseReturned = false;
@@ -723,18 +747,21 @@ export async function assertRejects<E extends Error = Error>(
         `Function throws when expected to reject${msgToAppendToError}`,
       );
     }
-    if (error instanceof Error === false) {
-      throw new AssertionError("A non-Error object was rejected.");
+    if (ErrorClass || errorCallback) {
+      if (error instanceof Error === false) {
+        throw new AssertionError("A non-Error object was rejected.");
+      }
+      assertIsError(
+        error,
+        ErrorClass,
+        msgIncludes,
+        msg,
+      );
+      if (typeof errorCallback == "function") {
+        errorCallback(error);
+      }
     }
-    assertIsError(
-      error,
-      ErrorClass,
-      msgIncludes,
-      msg,
-    );
-    if (typeof errorCallback == "function") {
-      errorCallback(error);
-    }
+    err = error;
     doesThrow = true;
   }
   if (!doesThrow) {
@@ -742,6 +769,7 @@ export async function assertRejects<E extends Error = Error>(
       `Expected function to reject${msgToAppendToError}`,
     );
   }
+  return err;
 }
 
 /** Use this to stub out methods that will throw when invoked. */
