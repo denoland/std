@@ -70,6 +70,6 @@ export function decodeU64(val: Uint8Array): BigInt {
   try {
     return wasm.decode_u64(val);
   } catch {
-    throw new RangeError("Bad varint");
+    throw new RangeError(`Bad varint: ${val}`);
   }
 }
