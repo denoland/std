@@ -24,10 +24,13 @@ type ArgType = StringType | BooleanType;
 type Collectable = string | undefined;
 type Negatable = string | undefined;
 
-type UseTypes<B, S, C, N> = undefined extends (
+type UseTypes<
+  B extends BooleanType,
+  S extends StringType,
+  C extends Collectable,
+> = undefined extends (
   & (false extends B ? undefined : B)
   & C
-  & N
   & S
 ) ? false
   : true;
@@ -43,7 +46,7 @@ type Values<
   N extends Negatable,
   D extends Record<string, unknown> | undefined,
   A extends Aliases | undefined,
-> = UseTypes<B, S, C, N> extends true ? 
+> = UseTypes<B, S, C> extends true ? 
   & Record<string, unknown>
   & AddAliases<
     SpreadDefaults<
