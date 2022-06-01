@@ -50,7 +50,7 @@ export function decodeU32(val: Uint8Array): number {
   try {
     return wasm.decode_u32(val);
   } catch {
-    throw new RangeError("Bad varint");
+    throw new RangeError(`Bad varint: ${val}`);
   }
 }
 
