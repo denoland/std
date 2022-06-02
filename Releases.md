@@ -1,6 +1,5 @@
 ### 0.142.0 / 2022.06.02
 
-- CI: Add License header check (#2292)
 - feat(crypto): add fnv algorithms (#2200)
 - feat: add media_types (#2286)
 - fix(node): type checking on AsyncResource (#2289)
