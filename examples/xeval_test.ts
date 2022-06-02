@@ -1,11 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { xeval } from "./xeval.ts";
 import { StringReader } from "../io/readers.ts";
-import {
-  assert,
-  assertEquals,
-  assertStringIncludes,
-} from "../testing/asserts.ts";
+import { assertEquals, assertStringIncludes } from "../testing/asserts.ts";
 import { dirname, fromFileUrl } from "../path/mod.ts";
 
 const moduleDir = dirname(fromFileUrl(import.meta.url));
@@ -33,9 +29,8 @@ const xevalPath = "xeval.ts";
 Deno.test({
   name: "xevalCliReplvar",
   fn: async function () {
-    const p = Deno.run({
-      cmd: [
-        Deno.execPath(),
+    const p = Deno.spawnChild(Deno.execPath(), {
+      args: [
         "run",
         "--quiet",
         xevalPath,
@@ -44,29 +39,25 @@ Deno.test({
       ],
       cwd: moduleDir,
       stdin: "piped",
-      stdout: "piped",
       stderr: "null",
     });
-    assert(p.stdin != null);
-    await p.stdin.write(new TextEncoder().encode("hello"));
-    p.stdin.close();
-    assertEquals(await p.status(), { code: 0, success: true });
-    assertEquals(new TextDecoder().decode(await p.output()).trimEnd(), "hello");
-    p.close();
+    const writer = p.stdin.getWriter();
+    await writer.write(new TextEncoder().encode("hello"));
+    await writer.close();
+    const { status, stdout } = await p.output();
+    assertEquals(status, { code: 0, signal: null, success: true });
+    assertEquals(new TextDecoder().decode(stdout).trimEnd(), "hello");
   },
 });
 
 Deno.test("xevalCliSyntaxError", async function () {
-  const p = Deno.run({
-    cmd: [Deno.execPath(), "run", "--quiet", xevalPath, "("],
+  const { status, stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+    args: ["run", "--quiet", xevalPath, "("],
     cwd: moduleDir,
-    stdin: "null",
-    stdout: "piped",
-    stderr: "piped",
   });
   const decoder = new TextDecoder();
-  assertEquals(await p.status(), { code: 1, success: false });
-  assertEquals(decoder.decode(await p.output()), "");
-  assertStringIncludes(decoder.decode(await p.stderrOutput()), "SyntaxError");
-  p.close();
+  assertEquals(status.code, 1);
+  assertEquals(status.success, false);
+  assertEquals(decoder.decode(stdout), "");
+  assertStringIncludes(decoder.decode(stderr), "SyntaxError");
 });

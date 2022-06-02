@@ -148,14 +148,14 @@ Deno.test("[crypto/digest] Should not ignore length option", async () => {
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with large inputs", async () => {
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+  const process = Deno.spawnChild(Deno.execPath(), {
+    args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
-    stdout: "piped",
     stdin: "piped",
   });
 
-  await process.stdin.write(
+  const writer = process.stdin.getWriter();
+  await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
       import { _wasm } from "../_wasm_crypto/crypto.mjs";
@@ -188,13 +188,13 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
       ));
     `),
   );
-  process.stdin.close();
+  writer.releaseLock();
+  await process.stdin.close();
 
-  const stdout = new TextDecoder().decode(await process.output());
-  const status = await process.status();
-  process.close();
+  const res = await process.output();
+  const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(status.success, true, "test subprocess failed");
+  assertEquals(res.status.success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     smallDigest,
@@ -242,14 +242,15 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
 });
 
 Deno.test("[crypto/digest] Memory use should remain reasonable even with many calls", async () => {
-  const process = Deno.run({
-    cmd: [Deno.execPath(), "--quiet", "run", "--no-check", "-"],
+  const process = Deno.spawnChild(Deno.execPath(), {
+    args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdout: "piped",
     stdin: "piped",
   });
 
-  await process.stdin.write(
+  const writer = process.stdin.getWriter();
+  await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
       import { _wasm } from "../_wasm_crypto/crypto.mjs";
@@ -284,13 +285,13 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
       ));
     `),
   );
-  process.stdin.close();
+  writer.releaseLock();
+  await process.stdin.close();
 
-  const stdout = new TextDecoder().decode(await process.output());
-  const status = await process.status();
-  process.close();
+  const res = await process.output();
+  const stdout = new TextDecoder().decode(res.stdout);
 
-  assertEquals(status.success, true, "test subprocess failed");
+  assertEquals(res.status.success, true, "test subprocess failed");
   const {
     heapBytesInitial,
     heapBytesFinal,
@@ -1280,6 +1281,35 @@ const digestCases: [
     },
   ],
 ];
+
+Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
+  const inputString = "deno";
+  const inputBytes = new TextEncoder().encode(inputString);
+
+  const expectedDigest32 = "6ed5a7a9";
+  const expectedDigest32a = "8ef64711";
+
+  const expectedDigest64 = "14edb27eecdaadc9";
+  const expectedDigest64a = "a5d9fb67426e48b1";
+
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
+    expectedDigest32,
+  );
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
+    expectedDigest32a,
+  );
+
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
+    expectedDigest64,
+  );
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
+    expectedDigest64a,
+  );
+});
 
 for (const algorithm of digestAlgorithms) {
   Deno.test(`[crypto/digest/${algorithm}] test vectors`, async () => {

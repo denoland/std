@@ -22,7 +22,7 @@ function slidingWindowsThrowsTest<T>(
     size: number,
     config?: { step?: number; partial?: boolean },
   ],
-  ErrorClass?: ErrorConstructor | undefined,
+  ErrorClass: ErrorConstructor,
   msgIncludes?: string,
   msg?: string | undefined,
 ) {

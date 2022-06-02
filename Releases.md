@@ -1,3 +1,20 @@
+### 0.141.0 / 2022.05.27
+
+- BREAKING(flags): introduce `collect` option (#2247)
+- BREAKING(testing): use Object.is() for strict equality (#2244)
+- BREAKING(testing/asserts): remove implicit any types from assert signatures.
+  (#2203)
+- feat(http/util): add compareEtag (#2259)
+- feat(node/crypto): stub out missing exports (#2263)
+- feat(node/dns): `NAPTR`, `NS`, `CAA`, and `SOA` support (#2233)
+- feat(streams): toTransformStream (#2227)
+- feat(streams/delimiter): support `\r` in `TextLineStream` (#2267)
+- feat(streams/merge): earlyZipReadableStreams (#2264)
+- feat(testing/asserts): return error from `assertRejects` and `assertThrows`
+  (#2226)
+- fix(async/pooledMap): return ordered result (#2239)
+- fix(node/fs): export fs.ReadStream (#2253)
+
 ### 0.140.0 / 2022.05.18
 
 - feat(http): add onListen option to serve (#2218)
