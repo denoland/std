@@ -15,7 +15,7 @@
  * } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
  *
  * console.log(Status.NotFound); //=> 404
- * console.log(STATUS_TEXT.get(Status.NotFound)); //=> "Not Found"
+ * console.log(STATUS_TEXT[Status.NotFound]); //=> "Not Found"
  * ```
  *
  * ```ts
