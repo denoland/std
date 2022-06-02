@@ -18,7 +18,7 @@ Deno.test({
     // just spot check a few common codes
     assertEquals(Status.OK, 200);
     assertEquals(Status.NoContent, 204);
-    assertEquals(Status.NotFound, 400);
+    assertEquals(Status.NotFound, 404);
     assertEquals(Status.InternalServerError, 500);
   },
 });

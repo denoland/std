@@ -229,7 +229,7 @@ export const STATUS_TEXT: Readonly<Record<Status, string>> = {
   [Status.VariantAlsoNegotiates]: "Variant Also Negotiates",
 };
 
-/** An HTTP status that is a success (2XX). */
+/** An HTTP status that is a informational (1XX). */
 export type InformationalStatus =
   | Status.Continue
   | Status.SwitchingProtocols
@@ -290,7 +290,7 @@ export type ClientErrorStatus =
   | Status.RequestHeaderFieldsTooLarge
   | Status.UnavailableForLegalReasons;
 
-/** An HTTP status that is a server error (4XX). */
+/** An HTTP status that is a server error (5XX). */
 export type ServerErrorStatus =
   | Status.InternalServerError
   | Status.NotImplemented
