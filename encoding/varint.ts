@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import * as wasm from "../_wasm_varint/varint.mjs";
 
 const U32MAX = 4_294_967_295;
