@@ -105,6 +105,121 @@ the error.
 
 A type guard that checks if a value is an HTTP error.
 
+## Negotiation
+
+A set of functions which can be used to negotiate content types, encodings and
+languages when responding to requests.
+
+> Note: some libraries include accept charset functionality by analyzing the
+> `Accept-Charset` header. This is a legacy header that
+> [clients omit and servers should ignore](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset)
+> therefore is not provided.
+
+### accepts()
+
+Used to determine what content type the requestor supports via analyzing the
+`Accept` header. Just passing a request to the accept function will return the
+clients accepted content in order of preference:
+
+```ts
+import { accepts } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+
+const req = new Request("https://example.com/", {
+  headers: {
+    "accept":
+      "text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8",
+  },
+});
+
+console.log(accept(req));
+// [
+//   "text/html",
+//   "application/xhtml+xml",
+//   "image/webp",
+//   "application/xml",
+//   "*/*",
+// ]
+```
+
+Providing supported content types will cause the function to return the "best"
+match:
+
+```ts
+import { accepts } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+
+const req = new Request("https://example.com/", {
+  headers: {
+    "accept":
+      "text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8",
+  },
+});
+
+accepts(req, "text/html", "image/webp"); // "text/html";
+```
+
+### acceptsEncodings()
+
+Used to determine what content encoding the requestor supports via analyzing the
+`Accept-Encoding` header. Just passing a request to the function will return the
+clients accepted content encodings in order of preference:
+
+```ts
+import { acceptsEncodings } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+
+const req = new Request("https://example.com/", {
+  headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
+});
+
+acceptsEncodings(req); // ["deflate", "gzip", "*"]
+```
+
+Providing the supported content encodings will cause the function to return the
+"best" match. Note that `"indentity"` should always be included as it is the
+_base_ encoding:
+
+```ts
+import { acceptsEncodings } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+
+const req = new Request("https://example.com/", {
+  headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
+});
+
+assertEquals(acceptsEncodings(req, "gzip", "identity"), "gzip");
+```
+
+### acceptsLanguages()
+
+Used to determine what content languages the requestor supports via analyzing
+the `Accept-Language` header. Just passing a request to the function will return
+the clients accepted content languages in order of preference:
+
+```ts
+import { acceptsLanguages } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+
+const req = new Request("https://example.com/", {
+  headers: {
+    "accept-language": "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5",
+  },
+});
+
+acceptsLanguages(req); // ["fr-CH", "fr", "en", "de", "*"]
+```
+
+Providing the supported content languages will cause the function to return the
+"best" match:
+
+```ts
+import { acceptsLanguages } from "https://deno.land/std@$STD_VERSION/http/negotiation.ts";
+
+const req = new Request("https://example.com/", {
+  headers: {
+    "accept-language": "fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5",
+  },
+});
+
+acceptsLanguages(req, "en-gb", "en-us", "en"); // "en"
+```
+
 ## Cookie
 
 Helpers to manipulate the `Cookie` header.
