@@ -131,7 +131,7 @@ const req = new Request("https://example.com/", {
   },
 });
 
-console.log(accept(req));
+console.log(accepts(req));
 // [
 //   "text/html",
 //   "application/xhtml+xml",
@@ -184,7 +184,7 @@ const req = new Request("https://example.com/", {
   headers: { "accept-encoding": "deflate, gzip;q=1.0, *;q=0.5" },
 });
 
-assertEquals(acceptsEncodings(req, "gzip", "identity"), "gzip");
+acceptsEncodings(req, "gzip", "identity"); // "gzip"
 ```
 
 ### acceptsLanguages()
