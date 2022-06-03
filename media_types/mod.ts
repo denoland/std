@@ -45,6 +45,7 @@ export const types = new Map<string, KeyOfDb>();
       continue;
     }
 
+    // @ts-ignore work around denoland/dnt#148
     extensions.set(type, exts);
 
     for (const ext of exts) {
