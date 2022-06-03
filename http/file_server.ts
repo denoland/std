@@ -170,7 +170,7 @@ export async function serveFile(
         fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
     ) {
       const status = Status.NotModified;
-      const statusText = STATUS_TEXT.get(status);
+      const statusText = STATUS_TEXT[status];
 
       file.close();
 
@@ -208,7 +208,7 @@ export async function serveFile(
       end > maxRange)
   ) {
     const status = Status.RequestedRangeNotSatisfiable;
-    const statusText = STATUS_TEXT.get(status);
+    const statusText = STATUS_TEXT[status];
 
     file.close();
 
@@ -326,21 +326,24 @@ async function serveDirIndex(
 function serveFallback(_req: Request, e: Error): Promise<Response> {
   if (e instanceof URIError) {
     return Promise.resolve(
-      new Response(STATUS_TEXT.get(Status.BadRequest), {
+      new Response(STATUS_TEXT[Status.BadRequest], {
         status: Status.BadRequest,
+        statusText: STATUS_TEXT[Status.BadRequest],
       }),
     );
   } else if (e instanceof Deno.errors.NotFound) {
     return Promise.resolve(
-      new Response(STATUS_TEXT.get(Status.NotFound), {
+      new Response(STATUS_TEXT[Status.NotFound], {
         status: Status.NotFound,
+        statusText: STATUS_TEXT[Status.NotFound],
       }),
     );
   }
 
   return Promise.resolve(
-    new Response(STATUS_TEXT.get(Status.InternalServerError), {
+    new Response(STATUS_TEXT[Status.InternalServerError], {
       status: Status.InternalServerError,
+      statusText: STATUS_TEXT[Status.InternalServerError],
     }),
   );
 }
