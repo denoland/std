@@ -12,6 +12,10 @@
  *
  * The "polyfill" delegates to `WebCrypto` where possible.
  *
+ * The {@linkcode KeyStack} export implements the {@linkcode KeyRing} interface
+ * for managing rotatable keys for signing data to prevent tampering, like with
+ * HTTP cookies.
+ *
  * @module
  */
 
@@ -23,6 +27,8 @@ import {
 import { timingSafeEqual } from "./timing_safe_equal.ts";
 
 import { fnv } from "./_fnv/index.ts";
+
+export { type Data, type Key, type KeyRing, KeyStack } from "./keystack.ts";
 
 /**
  * A copy of the global WebCrypto interface, with methods bound so they're
