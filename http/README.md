@@ -38,6 +38,73 @@ console.log(Status.NotFound); //=> 404
 console.log(STATUS_TEXT[Status.NotFound]); //=> "Not Found"
 ```
 
+## HTTP errors
+
+Provides error classes for each HTTP error status code as well as utility
+functions for handling HTTP errors in a structured way.
+
+For example throwing an error and detecting thrown errors as HTTP errors, and
+setting values in a response.
+
+```ts
+import {
+  errors,
+  isHttpError,
+} from "https://deno.land/std@$STD_VERSION/http/http_errors.ts";
+
+try {
+  throw new errors.NotFound();
+} catch (e) {
+  if (isHttpError(e)) {
+    const response = new Response(e.message, { status: e.status });
+  } else {
+    throw e;
+  }
+}
+```
+
+Also the `createHttpError()` function can be used to create errors:
+
+```ts
+import { createHttpError } from "https://deno.land/std@$STD_VERSION/http/http_errors.ts";
+import { Status } from "https://deno.land/std@$STD_VERSION/http/http_status.ts";
+
+try {
+  throw createHttpError(
+    Status.BadRequest,
+    "The request was bad.",
+    { expose: false },
+  );
+} catch (e) {
+  // handle errors
+}
+```
+
+### `errors`
+
+A namespace that contains each error constructor. Each error extends `HTTPError`
+and provides `.status` and `.expose` properties, where the `.status` will be an
+error `Status` value and `.expose` indicates if information, like a stack trace,
+should be shared in the response.
+
+By default, `.expose` is set to false in server errors, and true for client
+errors.
+
+### `HttpError`
+
+The base case for all other HTTP errors, which extends `Error`.
+
+### `createHttpError()`
+
+A factory function which provides a way to create errors. It takes up to 3
+arguments, the error `Status`, an message, which defaults to the status text and
+error options, which incudes the `expose` property to set the `.expose` value on
+the error.
+
+### `isHttpError()`
+
+A type guard that checks if a value is an HTTP error.
+
 ## Cookie
 
 Helpers to manipulate the `Cookie` header.
