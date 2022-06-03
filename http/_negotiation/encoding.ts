@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /*!
  * Adapted directly from negotiator at https://github.com/jshttp/negotiator/
  * which is licensed as follows:
