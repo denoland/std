@@ -594,17 +594,15 @@ export function assertIsError<E extends Error = Error>(
   }
 }
 
-/**
- * Executes a function, expecting it to throw.  If it does not, then it
- * throws. An error class and a string that should be included in the
- * error message can also be asserted. Or you can pass a
- * callback which will be passed the error, usually to apply some custom
- * assertions on it.
- */
+/** Executes a function, expecting it to throw. If it does not, then it
+ * throws. */
 export function assertThrows(
   fn: () => unknown,
   msg?: string,
 ): unknown;
+/** Executes a function, expecting it to throw. If it does not, then it
+ * throws. An error class and a string that should be included in the
+ * error message can also be asserted. */
 export function assertThrows<E extends Error = Error>(
   fn: () => unknown,
   // deno-lint-ignore no-explicit-any
@@ -612,7 +610,8 @@ export function assertThrows<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): E;
-/** @deprecated */
+/** @deprecated Use assertThrows(fn, msg) instead, which now returns thrown
+ * value and you can assert on it. */
 export function assertThrows(
   fn: () => unknown,
   errorCallback: (e: Error) => unknown,
@@ -679,17 +678,14 @@ export function assertThrows<E extends Error = Error>(
   return err;
 }
 
-/**
- * Executes a function which returns a promise, expecting it to throw or reject.
- * If it does not, then it throws. An error class and a string that should be
- * included in the error message can also be asserted. Or you can pass a
- * callback which will be passed the error, usually to apply some custom
- * assertions on it.
- */
+/** Executes a function which returns a promise, expecting it to reject. */
 export function assertRejects(
   fn: () => Promise<unknown>,
   msg?: string,
 ): Promise<unknown>;
+/** Executes a function which returns a promise, expecting it to reject.
+ * If it does not, then it throws. An error class and a string that should be
+ * included in the error message can also be asserted. */
 export function assertRejects<E extends Error = Error>(
   fn: () => Promise<unknown>,
   // deno-lint-ignore no-explicit-any
@@ -697,7 +693,8 @@ export function assertRejects<E extends Error = Error>(
   msgIncludes?: string,
   msg?: string,
 ): Promise<E>;
-/** @deprecated */
+/** @deprecated Use assertRejects(fn, msg) instead, which now returns rejected value
+ * and you can assert on it. */
 export function assertRejects(
   fn: () => Promise<unknown>,
   errorCallback: (e: Error) => unknown,

@@ -841,8 +841,8 @@ Deno.test("assertThrows with non-error value thrown and error callback", () => {
   );
 });
 
-Deno.test("assertRejects with non-error value rejected and error callback", () => {
-  assertRejects(
+Deno.test("assertRejects with non-error value rejected and error callback", async () => {
+  await assertRejects(
     () => {
       return assertRejects(
         () => {
@@ -873,8 +873,8 @@ Deno.test("assertThrows with non-error value thrown and error class", () => {
   );
 });
 
-Deno.test("assertRejects with non-error value rejected and error class", () => {
-  assertRejects(
+Deno.test("assertRejects with non-error value rejected and error class", async () => {
+  await assertRejects(
     () => {
       return assertRejects(
         () => {
@@ -907,11 +907,11 @@ Deno.test("assertThrows with non-error value thrown", () => {
   );
 });
 
-Deno.test("assertRejects with non-error value rejected", () => {
-  assertRejects(() => {
+Deno.test("assertRejects with non-error value rejected", async () => {
+  await assertRejects(() => {
     return Promise.reject(null);
   });
-  assertRejects(() => {
+  await assertRejects(() => {
     return Promise.reject(undefined);
   });
 });
@@ -926,8 +926,8 @@ Deno.test("assertThrows with error class", () => {
   );
 });
 
-Deno.test("assertRejects with error class", () => {
-  assertRejects(
+Deno.test("assertRejects with error class", async () => {
+  await assertRejects(
     () => {
       return Promise.reject(new Error("foo"));
     },

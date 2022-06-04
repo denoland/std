@@ -655,6 +655,11 @@
       "test-util-inspect.js"
     ]
   },
+  "darwinIgnore": {
+    "parallel": [
+      "test-net-socket-close-after-end.js"
+    ]
+  },
   "suitesFolder": "test",
   "versionsFolder": "versions"
 }

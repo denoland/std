@@ -48,7 +48,7 @@ options can be:
   signs as boolean (e.g. affects `--foo`, not `-f` or `--foo=bar`).
 - `options.collect` - a string or array of strings argument names to always
   treat as arrays. Collectable options can be used multiple times. All values
-  will be colelcted into an array. If a non collectable option is used multiple
+  will be collected into an array. If a non collectable option is used multiple
   times, the last value is used. All Collectable arguments will be set to `[]`
   by default.
 - `options.alias` - an object mapping string names to strings or arrays of

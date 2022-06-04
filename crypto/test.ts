@@ -1282,6 +1282,35 @@ const digestCases: [
   ],
 ];
 
+Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
+  const inputString = "deno";
+  const inputBytes = new TextEncoder().encode(inputString);
+
+  const expectedDigest32 = "6ed5a7a9";
+  const expectedDigest32a = "8ef64711";
+
+  const expectedDigest64 = "14edb27eecdaadc9";
+  const expectedDigest64a = "a5d9fb67426e48b1";
+
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
+    expectedDigest32,
+  );
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
+    expectedDigest32a,
+  );
+
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
+    expectedDigest64,
+  );
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
+    expectedDigest64a,
+  );
+});
+
 for (const algorithm of digestAlgorithms) {
   Deno.test(`[crypto/digest/${algorithm}] test vectors`, async () => {
     for (
