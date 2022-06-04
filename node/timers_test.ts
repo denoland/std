@@ -1,6 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+import { assert } from "../testing/asserts.ts";
 import timers from "./timers.ts";
+import timersPromises from "./timers/promises.ts";
 
 Deno.test("[node/timers setTimeout]", () => {
   {
@@ -39,4 +41,12 @@ Deno.test("[node/timers setImmediate]", () => {
     const id = timers.setImmediate(() => {});
     timers.clearImmediate(id);
   }
+});
+
+Deno.test("[node/timers/promises setTimeout]", () => {
+  const { setTimeout } = timersPromises;
+  const p = setTimeout(0);
+
+  assert(p instanceof Promise);
+  return p;
 });

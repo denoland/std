@@ -30,6 +30,7 @@ export interface WorkerOptions {
 }
 
 const kHandle = Symbol("kHandle");
+const PRIVATE_WORKER_THREAD_NAME = "$DENO_STD_NODE_WORKER_THREAD";
 class _Worker extends EventEmitter {
   readonly threadId: number;
   readonly resourceLimits: Required<
@@ -54,11 +55,9 @@ class _Worker extends EventEmitter {
     const handle = this[kHandle] = new Worker(
       specifier,
       {
-        ...(options || {}),
+        name: PRIVATE_WORKER_THREAD_NAME,
         type: "module",
-        // unstable
-        deno: { namespace: true },
-      },
+      } as globalThis.WorkerOptions, // bypass unstable type error
     );
     handle.addEventListener(
       "error",
@@ -94,9 +93,7 @@ class _Worker extends EventEmitter {
 
 export const isMainThread =
   // deno-lint-ignore no-explicit-any
-  typeof (globalThis as any).DedicatedWorkerGlobalScope === "undefined" ||
-  // deno-lint-ignore no-explicit-any
-  self instanceof (globalThis as any).DedicatedWorkerGlobalScope === false;
+  (globalThis as any).name !== PRIVATE_WORKER_THREAD_NAME;
 
 // fake resourceLimits
 export const resourceLimits = isMainThread ? {} : {
@@ -133,6 +130,8 @@ type ParentPort = typeof self & NodeEventTarget;
 let parentPort: ParentPort = null as any;
 
 if (!isMainThread) {
+  // deno-lint-ignore no-explicit-any
+  delete (globalThis as any).name;
   // deno-lint-ignore no-explicit-any
   const listeners = new WeakMap<(...args: any[]) => void, (ev: any) => any>();
 

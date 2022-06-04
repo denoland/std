@@ -1,3 +1,75 @@
+### 0.142.0 / 2022.06.02
+
+- feat(crypto): add fnv algorithms (#2200)
+- feat: add media_types (#2286)
+- fix(node): type checking on AsyncResource (#2289)
+- fix: assertSnapshot errors on empty snapshot in non-update mode (#2269)
+- fix: put TextLineStream CR handling behind option (#2277)
+
+### 0.141.0 / 2022.05.27
+
+- BREAKING(flags): introduce `collect` option (#2247)
+- BREAKING(testing): use Object.is() for strict equality (#2244)
+- BREAKING(testing/asserts): remove implicit any types from assert signatures.
+  (#2203)
+- feat(http/util): add compareEtag (#2259)
+- feat(node/crypto): stub out missing exports (#2263)
+- feat(node/dns): `NAPTR`, `NS`, `CAA`, and `SOA` support (#2233)
+- feat(streams): toTransformStream (#2227)
+- feat(streams/delimiter): support `\r` in `TextLineStream` (#2267)
+- feat(streams/merge): earlyZipReadableStreams (#2264)
+- feat(testing/asserts): return error from `assertRejects` and `assertThrows`
+  (#2226)
+- fix(async/pooledMap): return ordered result (#2239)
+- fix(node/fs): export fs.ReadStream (#2253)
+
+### 0.140.0 / 2022.05.18
+
+- feat(http): add onListen option to serve (#2218)
+- feat(node/dgram): support dgram (udp) node module compat (#2205)
+- fix(assertRejects): fails on synchronous throw #1302 (#2234)
+- fix(collections): prevent cycles in deepMerge() (#2228)
+- fix(encoding/csv): improve error message for csv's parse function (#2191)
+- fix(http/file_server): fix handling of 'W/' prefixed etag (#2229)
+- fix(testing/bdd): support using bdd tests with dnt (#2235)
+- fix: add toJSON to node/perf_hooks.ts (#2209)
+
+### 0.139.0 / 2022.05.12
+
+- feat(encoding): add jsonc parser (#2154)
+- feat(node/dns): Implement Resolver APIs (#2201)
+- feat(node/net): unix domain socket support (#2146)
+- feat(testing/snapshot): add "assertSnapshot" options overload (#2179)
+- fix(node/module): interpret length parameter as optional in blitBuffer (#2199)
+- fix(node/timers): set custom promisify function (#2198)
+
+### 0.138.0 / 2022.05.05
+
+- fix: Export equalSimd and equalsNaive (#2187)
+- BREAKING(testing/snapshot): change multiline string serialization (#2166)
+- feat(node/dns): support dns promises lookup (#2164)
+- feat(testing): assertFalse (#2093)
+- fix(node/dns): export more types (#2185)
+- fix(node/worker_threads): Don't wait for parent message in web worker (#2182)
+- fix(testing): Compare circular objects (#2172)
+
+### 0.137.0 / 2022.04.28
+
+- feat(testing): infer stub and spy return types from properties (#2137)
+- fix(http): export interface ServeTlsInit (#2148)
+- fix(node): use Web Crypto API via globalThis (#2115)
+- fix(wasi): ContextOptions is an optional argument (#2138)
+- http: serve() should log where it is listening (#1641)
+
+### 0.136.0 / 2022.04.21
+
+- feat(testing): Implement "assertSnapshot" (#2039)
+- feat(testing): add TestContext argument to "it" function (#2117)
+- fix(http): use the `addEventListener` method instead of `onabort` properties
+  (#2124)
+- fix(node/crypto): fix randomInt (#2101)
+- perf(http): optimize file server (#2116)
+
 ### 0.135.0 / 2022.04.14
 
 - BREAKING(io/readers): use an array as a MultiReader constructor parameter to

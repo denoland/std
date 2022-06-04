@@ -28,6 +28,7 @@ import constants from "./constants.ts";
 import crypto from "./crypto.ts";
 import dgram from "./dgram.ts";
 import dns from "./dns.ts";
+import dnsPromises from "./dns/promises.ts";
 import domain from "./domain.ts";
 import events from "./events.ts";
 import fs from "./fs.ts";
@@ -37,6 +38,21 @@ import http from "./http.ts";
 import http2 from "./http2.ts";
 import https from "./https.ts";
 import inspector from "./inspector.ts";
+import internalCryptoCertificate from "./internal/crypto/certificate.ts";
+import internalCryptoCipher from "./internal/crypto/cipher.ts";
+import internalCryptoDiffiehellman from "./internal/crypto/diffiehellman.ts";
+import internalCryptoHash from "./internal/crypto/hash.ts";
+import internalCryptoHkdf from "./internal/crypto/hkdf.ts";
+import internalCryptoKeygen from "./internal/crypto/keygen.ts";
+import internalCryptoKeys from "./internal/crypto/keys.ts";
+import internalCryptoPbkdf2 from "./internal/crypto/pbkdf2.ts";
+import internalCryptoRandom from "./internal/crypto/random.ts";
+import internalCryptoScrypt from "./internal/crypto/scrypt.ts";
+import internalCryptoSig from "./internal/crypto/sig.ts";
+import internalCryptoUtil from "./internal/crypto/util.ts";
+import internalCryptoX509 from "./internal/crypto/x509.ts";
+import internalDgram from "./internal/dgram.ts";
+import internalDnsPromises from "./internal/dns/promises.ts";
 import internalErrors from "./internal/errors.ts";
 import internalEventTarget from "./internal/event_target.mjs";
 import internalHttp from "./internal/http.ts";
@@ -94,10 +110,11 @@ export default {
   crypto,
   console,
   constants,
-  "child_process": childProcess,
+  child_process: childProcess,
   cluster,
   dgram,
   dns,
+  "dns/promises": dnsPromises,
   domain,
   events,
   fs,
@@ -106,6 +123,21 @@ export default {
   http2,
   https,
   inspector,
+  "internal/crypto/certificate": internalCryptoCertificate,
+  "internal/crypto/cipher": internalCryptoCipher,
+  "internal/crypto/diffiehellman": internalCryptoDiffiehellman,
+  "internal/crypto/hash": internalCryptoHash,
+  "internal/crypto/hkdf": internalCryptoHkdf,
+  "internal/crypto/keygen": internalCryptoKeygen,
+  "internal/crypto/keys": internalCryptoKeys,
+  "internal/crypto/pbkdf2": internalCryptoPbkdf2,
+  "internal/crypto/random": internalCryptoRandom,
+  "internal/crypto/scrypt": internalCryptoScrypt,
+  "internal/crypto/sig": internalCryptoSig,
+  "internal/crypto/util": internalCryptoUtil,
+  "internal/crypto/x509": internalCryptoX509,
+  "internal/dgram": internalDgram,
+  "internal/dns/promises": internalDnsPromises,
   "internal/errors": internalErrors,
   "internal/event_target": internalEventTarget,
   "internal/fs/utils": internalFsUtils,
@@ -123,7 +155,7 @@ export default {
   "path/posix": pathPosix,
   "path/win32": pathWin32,
   path,
-  "perf_hooks": perfHooks,
+  perf_hooks: perfHooks,
   process,
   get punycode() {
     process.emitWarning(
@@ -141,7 +173,7 @@ export default {
   "stream/consumers": streamConsumers,
   "stream/promises": streamPromises,
   "stream/web": streamWeb,
-  "string_decoder": stringDecoder,
+  string_decoder: stringDecoder,
   sys,
   timers,
   "timers/promises": timersPromises,
@@ -153,6 +185,6 @@ export default {
   v8,
   vm,
   wasi,
-  "worker_threads": workerThreads,
+  worker_threads: workerThreads,
   zlib,
 } as Record<string, unknown>;

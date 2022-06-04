@@ -17,21 +17,21 @@ export type ItArgs<T> =
   ]
   | [
     name: string,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
-  | [fn: (this: T) => void | Promise<void>]
+  | [fn: (this: T, t: Deno.TestContext) => void | Promise<void>]
   | [
     name: string,
     options: Omit<ItDefinition<T>, "fn" | "name">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     options: Omit<ItDefinition<T>, "fn">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     options: Omit<ItDefinition<T>, "fn" | "name">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     suite: TestSuite<T>,
@@ -41,27 +41,27 @@ export type ItArgs<T> =
   | [
     suite: TestSuite<T>,
     name: string,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     suite: TestSuite<T>,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     suite: TestSuite<T>,
     name: string,
     options: Omit<ItDefinition<T>, "fn" | "name" | "suite">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     suite: TestSuite<T>,
     options: Omit<ItDefinition<T>, "fn" | "suite">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ]
   | [
     suite: TestSuite<T>,
     options: Omit<ItDefinition<T>, "fn" | "name" | "suite">,
-    fn: (this: T) => void | Promise<void>,
+    fn: (this: T, t: Deno.TestContext) => void | Promise<void>,
   ];
 
 /** Generates an ItDefinition from ItArgs. */
@@ -133,7 +133,7 @@ export interface it {
 
 /** Registers an individual test case. */
 export function it<T>(...args: ItArgs<T>): void {
-  if (TestSuiteInternal.running) {
+  if (TestSuiteInternal.runningCount > 0) {
     throw new Error(
       "cannot register new test cases after already registered test cases start running",
     );
@@ -166,9 +166,13 @@ export function it<T>(...args: ItArgs<T>): void {
       sanitizeExit,
       sanitizeOps,
       sanitizeResources,
-      async fn() {
-        if (!TestSuiteInternal.running) TestSuiteInternal.running = true;
-        await fn.call({} as T);
+      async fn(t) {
+        TestSuiteInternal.runningCount++;
+        try {
+          await fn.call({} as T, t);
+        } finally {
+          TestSuiteInternal.runningCount--;
+        }
       },
     });
   }
@@ -376,7 +380,7 @@ export interface describe {
 export function describe<T>(
   ...args: DescribeArgs<T>
 ): TestSuite<T> {
-  if (TestSuiteInternal.running) {
+  if (TestSuiteInternal.runningCount > 0) {
     throw new Error(
       "cannot register new test suites after already registered test cases start running",
     );

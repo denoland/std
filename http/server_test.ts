@@ -8,6 +8,7 @@ import {
   assert,
   assertEquals,
   assertRejects,
+  assertStrictEquals,
   assertThrows,
   unreachable,
 } from "../testing/asserts.ts";
@@ -258,7 +259,86 @@ Deno.test(
 );
 
 Deno.test(
-  "serve should not throw if abort when the server is already closed",
+  "serveListener should not overwrite an abort signal handler",
+  async () => {
+    const listenOptions = {
+      hostname: "localhost",
+      port: 4505,
+    };
+    const listener = Deno.listen(listenOptions);
+    const handler = () => new Response();
+    const onAbort = () => {};
+    const abortController = new AbortController();
+
+    abortController.signal.onabort = onAbort;
+
+    const servePromise = serveListener(listener, handler, {
+      signal: abortController.signal,
+    });
+
+    try {
+      assertStrictEquals(abortController.signal.onabort, onAbort);
+    } finally {
+      abortController.abort();
+      await servePromise;
+    }
+  },
+);
+
+Deno.test(
+  "serve should not overwrite an abort signal handler",
+  async () => {
+    const handler = () => new Response();
+    const onAbort = () => {};
+    const abortController = new AbortController();
+
+    abortController.signal.onabort = onAbort;
+
+    const servePromise = serve(handler, {
+      hostname: "localhost",
+      port: 4505,
+      signal: abortController.signal,
+    });
+
+    try {
+      assertStrictEquals(abortController.signal.onabort, onAbort);
+    } finally {
+      abortController.abort();
+      await servePromise;
+    }
+  },
+);
+
+Deno.test(
+  "serveTls should not overwrite an abort signal handler",
+  async () => {
+    const certFile = join(testdataDir, "tls/localhost.crt");
+    const keyFile = join(testdataDir, "tls/localhost.key");
+    const handler = () => new Response();
+    const onAbort = () => {};
+    const abortController = new AbortController();
+
+    abortController.signal.onabort = onAbort;
+
+    const servePromise = serveTls(handler, {
+      hostname: "localhost",
+      port: 4505,
+      certFile,
+      keyFile,
+      signal: abortController.signal,
+    });
+
+    try {
+      assertStrictEquals(abortController.signal.onabort, onAbort);
+    } finally {
+      abortController.abort();
+      await servePromise;
+    }
+  },
+);
+
+Deno.test(
+  "serveListener should not throw if abort when the server is already closed",
   async () => {
     const listenOptions = {
       hostname: "localhost",
@@ -600,6 +680,7 @@ Deno.test(`serve listens on the port 8000 by default`, async () => {
   const servePromise = serve(handler, {
     signal: abortController.signal,
   });
+  servePromise.catch(() => {});
 
   try {
     const response = await fetch(url);
@@ -1060,7 +1141,7 @@ Deno.test(
     const servePromise = server.listenAndServe();
 
     try {
-      assertRejects(() => server.listenAndServe(), Deno.errors.AddrInUse);
+      await assertRejects(() => server.listenAndServe(), Deno.errors.AddrInUse);
     } finally {
       server.close();
       await servePromise;
@@ -1080,7 +1161,7 @@ Deno.test(
     const servePromise = server.listenAndServeTls(certFile, keyFile);
 
     try {
-      assertRejects(
+      await assertRejects(
         () => server.listenAndServeTls(certFile, keyFile),
         Deno.errors.AddrInUse,
       );
@@ -1275,4 +1356,53 @@ Deno.test("Server.listenAndServeTls should support custom onError", async () => 
     abortController.abort();
     await servePromise;
   }
+});
+
+Deno.test("serve - onListen callback is called when the server started listening", () => {
+  const abortController = new AbortController();
+  return serve((_) => new Response("hello"), {
+    async onListen({ hostname, port }) {
+      const responseText = await (await fetch("http://localhost:8000/")).text();
+      assertEquals(hostname, "0.0.0.0");
+      assertEquals(port, 8000);
+      assertEquals(responseText, "hello");
+      abortController.abort();
+    },
+    signal: abortController.signal,
+  });
+});
+
+Deno.test("serve - doesn't print the message when onListen set to undefined", async () => {
+  const { status, stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "eval",
+      `
+        import { serve } from "./http/server.ts";
+        serve(() => new Response("hello"), { onListen: undefined });
+        Deno.exit(0);
+      `,
+    ],
+  });
+  assertEquals(status.code, 0);
+  assertEquals(new TextDecoder().decode(stdout), "");
+});
+
+Deno.test("serve - can print customized start-up message in onListen handler", async () => {
+  const { status, stdout } = await Deno.spawn(Deno.execPath(), {
+    args: [
+      "eval",
+      `
+        import { serve } from "./http/server.ts";
+        serve(() => new Response("hello"), { onListen({ port, hostname }) {
+          console.log("Server started at " + hostname + " port " + port);
+        } });
+        Deno.exit(0);
+      `,
+    ],
+  });
+  assertEquals(status.code, 0);
+  assertEquals(
+    new TextDecoder().decode(stdout),
+    "Server started at 0.0.0.0 port 8000\n",
+  );
 });

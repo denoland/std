@@ -2,6 +2,7 @@
 
 import { Timeout, TIMEOUT_MAX } from "./internal/timers.mjs";
 import { validateCallback } from "./internal/validators.mjs";
+import { promisify } from "./internal/util.mjs";
 const setTimeout_ = globalThis.setTimeout;
 const clearTimeout_ = globalThis.clearTimeout;
 const setInterval_ = globalThis.setInterval;
@@ -24,6 +25,12 @@ export function setTimeout(
   ));
   return timer;
 }
+Object.defineProperty(setTimeout, promisify.custom, {
+  value: (timeout: number, ...args: unknown[]) => {
+    return new Promise((cb) => setTimeout(cb, timeout, ...args));
+  },
+  enumerable: true,
+});
 export function setUnrefTimeout(
   cb: (...args: unknown[]) => void,
   timeout?: number,

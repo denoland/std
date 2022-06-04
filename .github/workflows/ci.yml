@@ -14,7 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         deno: [canary]
-        os: [macOS-latest, ubuntu-latest, windows-2019]
+        os:
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
+          - macOS-latest
 
     steps:
       - name: Clone repository
@@ -42,21 +45,23 @@ jobs:
 
       - name: Upload coverage
         uses: codecov/codecov-action@v1
-        if: matrix.os != 'ubuntu-latest'
+        if: |
+          !startsWith(matrix.os, 'ubuntu')
         with:
           name: ${{ matrix.os }}-${{ matrix.deno }}
           files: cov.lcov
 
       - name: Remove coverage report
         shell: bash
-        if: matrix.os != 'ubuntu-latest'
+        if: |
+          !startsWith(matrix.os, 'ubuntu')
         run: |
           rm -rf ./cov/
           rm cov.lcov
 
       - name: Release if version change
         if: |
-          matrix.os == 'ubuntu-latest' &&
+          startsWith(matrix.os, 'ubuntu') &&
           github.repository == 'denoland/deno_std' &&
           github.ref == 'refs/heads/main'
         shell: bash
@@ -71,7 +76,10 @@ jobs:
       fail-fast: false
       matrix:
         deno: [canary]
-        os: [macOS-latest, ubuntu-latest, windows-2019]
+        os:
+          - ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+          - ${{ github.repository_owner == 'denoland' && 'windows-2019-xl' || 'windows-2019' }}
+          - macOS-latest
 
     steps:
       - name: Clone repository
@@ -84,6 +92,10 @@ jobs:
         uses: denoland/setup-deno@v1.0.0
         with:
           deno-version: ${{ matrix.deno }}
+
+      - name: Type check node modules
+        shell: bash
+        run: deno task node:check-unstable-api
 
       # FIXME(bartlomieju): currently doc tests are failing, we need --compat mode in "deno test" to get them working
       # - name: Doctest node/
@@ -98,7 +110,7 @@ jobs:
           DENO_NODE_COMPAT_URL: file:///${{ github.workspace }}/
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v2
@@ -119,9 +131,13 @@ jobs:
         shell: bash
         run: ./_tools/check_circular_deps.ts
 
+      - name: Check License headers
+        shell: bash
+        run: ./_tools/check_licence.ts
+
   hash-wasm:
     name: "_wasm_crypto/"
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v2

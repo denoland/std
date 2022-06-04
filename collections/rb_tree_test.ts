@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertStrictEquals } from "../testing/asserts.ts";
 import { ascend, descend, RBTree } from "./rb_tree.ts";
 import { Container, MyMath } from "./_test_utils.ts";

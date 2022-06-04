@@ -10,6 +10,7 @@
         ".git",
         "_wasm_crypto/target",
         "cov",
+        "encoding/testdata/jsonc",
         "node/_tools/versions",
         "node/_tools/test",
         "node/integrationtest/yarn.js",
@@ -23,6 +24,7 @@
       "exclude": [
         ".git",
         "_wasm_crypto/target",
+        "encoding/testdata/jsonc",
         "cov",
         "node/vendor",
         "node/_module/node_modules/",
@@ -38,6 +40,7 @@
     "test:browser": "git grep --name-only \"// This module is browser compatible.\" | grep -v \".github/workflows\" | xargs deno cache --config browser-compat.tsconfig.json",
     "node:unit": "DENO_FUTURE_CHECK=1 deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
-    "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts"
+    "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
+    "node:check-unstable-api": "deno check --unstable ./node/module_all.ts"
   }
 }

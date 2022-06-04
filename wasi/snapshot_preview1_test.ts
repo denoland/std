@@ -3,7 +3,7 @@ import Context from "./snapshot_preview1.ts";
 import { assertEquals, assertThrows } from "../testing/asserts.ts";
 import { copy } from "../fs/copy.ts";
 import * as path from "../path/mod.ts";
-import { readAll, writeAll } from "../streams/conversion.ts";
+import { writeAll } from "../streams/conversion.ts";
 import { isWindows } from "../_util/os.ts";
 
 const tests = [
@@ -84,10 +84,9 @@ for (const pathname of tests) {
       );
 
       try {
-        const process = await Deno.run({
+        const process = await Deno.spawnChild(Deno.execPath(), {
           cwd: workdir,
-          cmd: [
-            `${Deno.execPath()}`,
+          args: [
             "run",
             "--quiet",
             "--unstable",
@@ -98,18 +97,17 @@ for (const pathname of tests) {
             path.resolve(rootdir, pathname),
           ],
           stdin: "piped",
-          stdout: "piped",
-          stderr: "piped",
         });
 
         if (options.stdin) {
-          const stdin = new TextEncoder().encode(options.stdin);
-          await writeAll(process.stdin, stdin);
+          const writer = process.stdin.getWriter();
+          await writer.write(new TextEncoder().encode(options.stdin));
+          writer.releaseLock();
         }
 
         process.stdin.close();
 
-        const stdout = await readAll(process.stdout);
+        const { status, stdout, stderr } = await process.output();
 
         if (options.stdout) {
           assertEquals(new TextDecoder().decode(stdout), options.stdout);
@@ -117,22 +115,13 @@ for (const pathname of tests) {
           await writeAll(Deno.stdout, stdout);
         }
 
-        process.stdout.close();
-
-        const stderr = await readAll(process.stderr);
-
         if (options.stderr) {
           assertEquals(new TextDecoder().decode(stderr), options.stderr);
         } else {
           await writeAll(Deno.stderr, stderr);
         }
 
-        process.stderr.close();
-
-        const status = await process.status();
         assertEquals(status.code, options.exitCode ? +options.exitCode : 0);
-
-        process.close();
       } catch (err) {
         throw err;
       } finally {
