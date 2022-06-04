@@ -328,7 +328,7 @@ export class TestSuiteInternal<T> implements TestSuite<T> {
     const suite = TestSuiteInternal.active[activeIndex];
     const testSuite = suite && TestSuiteInternal.suites.get(suite);
     if (testSuite) {
-      context = { ...context };
+      if (activeIndex === 0) context = { ...context };
       const { beforeEach } = testSuite.describe;
       if (typeof beforeEach === "function") {
         await beforeEach.call(context);
