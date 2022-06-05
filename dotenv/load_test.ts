@@ -3,7 +3,7 @@ import { assertEquals } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
-const testdataDir = path.resolve(moduleDir, "testdata");
+const testdataDir = path.resolve(moduleDir, "testdata/_config");
 
 Deno.test({
   name: "load",

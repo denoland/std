@@ -5,120 +5,281 @@ import {
   assertRejects,
   assertThrows,
 } from "../testing/asserts.ts";
-import { config, configSync, MissingEnvVarsError, parse } from "./mod.ts";
+import {
+  config,
+  configSync,
+  Env,
+  EnvObject,
+  load,
+  loadSync,
+  parse,
+  stringify,
+  verify,
+} from "./mod.ts";
 import * as path from "../path/mod.ts";
+
+function clearDenoEnv() {
+  Object.keys(Deno.env.toObject()).forEach((key) => Deno.env.delete(key));
+}
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
 const testdataDir = path.resolve(moduleDir, "testdata");
 
-const testOptions = {
-  path: path.join(testdataDir, "./.env"),
-  defaults: path.join(testdataDir, "./.env.defaults"),
-};
-
-Deno.test("parser", () => {
-  const testDotenv = Deno.readTextFileSync(
-    path.join(testdataDir, "./.env.test"),
+Deno.test("parse", async (t) => {
+  await t.step(
+    "basic",
+    () => {
+      const { env } = parse(`BASIC=basic`);
+      assertEquals(env["BASIC"], "basic");
+    },
+  );
+  await t.step(
+    "comment",
+    () => {
+      const { env } = parse(`#COMMENT=comment`);
+      assertEquals(env["#COMMENT"], undefined);
+    },
+  );
+  await t.step(
+    "empty",
+    () => {
+      const { env } = parse(`EMPTY=`);
+      assertEquals(env["EMPTY"], "");
+    },
+  );
+  await t.step(
+    "inner quotes",
+    () => {
+      const { env } = parse(`JSON={"foo": "bar"}`);
+      assertEquals(env["JSON"], '{"foo": "bar"}');
+    },
+  );
+  await t.step(
+    "unquoted whitespace trim",
+    () => {
+      const { env } = parse(`FOO= some value`);
+      assertEquals(env["FOO"], "some value");
+    },
+  );
+  await t.step(
+    "single quote escape",
+    () => {
+      const { env } = parse(`SINGLE_QUOTE='quoted'`);
+      assertEquals(env["SINGLE_QUOTE"], "quoted");
+    },
+  );
+  await t.step(
+    "double quote escape",
+    () => {
+      const { env } = parse(`DOUBLE_QUOTE="quoted"`);
+      assertEquals(env["DOUBLE_QUOTE"], "quoted");
+    },
+  );
+  await t.step(
+    "single quote maintain whitespace",
+    () => {
+      const { env } = parse(`FOO=' some value '`);
+      assertEquals(env["FOO"], " some value ");
+    },
+  );
+  await t.step(
+    "double quote maintain whitespace",
+    () => {
+      const { env } = parse(`FOO=" some value "`);
+      assertEquals(env["FOO"], " some value ");
+    },
+  );
+  await t.step(
+    "double quote multiline",
+    () => {
+      const { env } = parse(`MULTILINE="new\\nline"`);
+      assertEquals(env["MULTILINE"], "new\nline");
+    },
+  );
+  await t.step(
+    "backticks",
+    () => {
+      const { env } = parse(
+        `BACKTICK_KEY=\`This has 'single' and "double" quotes inside of it.\``,
+      );
+      assertEquals(
+        env["BACKTICK_KEY"],
+        `This has 'single' and "double" quotes inside of it.`,
+      );
+    },
   );
 
-  const config = parse(testDotenv);
-  assertEquals(config.BASIC, "basic", "parses a basic variable");
-  assertEquals(config.AFTER_EMPTY, "empty", "skips empty lines");
-  assertEquals(config["#COMMENT"], undefined, "skips lines with comments");
-  assertEquals(config.EMPTY_VALUE, "", "empty values are empty strings");
-
-  assertEquals(
-    config.QUOTED_SINGLE,
-    "single quoted",
-    "single quotes are escaped",
+  await t.step(
+    "non-word characters",
+    () => {
+      const { env } = parse(
+        `EQUALS=equ==als`,
+      );
+      assertEquals(
+        env["EQUALS"],
+        "equ==als",
+      );
+    },
   );
 
-  assertEquals(
-    config.QUOTED_DOUBLE,
-    "double quoted",
-    "double quotes are escaped",
+  await t.step(
+    "key starting with number",
+    () => {
+      const { env } = parse(
+        `1INVALID=invalid`,
+      );
+      assertEquals(
+        env["1INVALID"],
+        undefined,
+      );
+    },
   );
 
-  assertEquals(
-    config.MULTILINE,
-    "hello\nworld",
-    "new lines are expanded in double quotes",
-  );
-
-  assertEquals(
-    JSON.parse(config.JSON).foo,
-    "bar",
-    "inner quotes are maintained",
-  );
-
-  assertEquals(
-    config.WHITESPACE,
-    "    whitespace   ",
-    "whitespace in single-quoted values is preserved",
-  );
-
-  assertEquals(
-    config.WHITESPACE_DOUBLE,
-    "    whitespace   ",
-    "whitespace in double-quoted values is preserved",
-  );
-
-  assertEquals(
-    config.MULTILINE_SINGLE_QUOTE,
-    "hello\\nworld",
-    "new lines are escaped in single quotes",
-  );
-
-  assertEquals(config.EQUALS, "equ==als", "handles equals inside string");
-
-  assertEquals(
-    config.VAR_WITH_SPACE,
-    "var with space",
-    "variables defined with spaces are parsed",
-  );
-
-  assertEquals(
-    config.VAR_WITH_ENDING_WHITESPACE,
-    "value",
-    "variables defined with ending whitespace are trimmed",
-  );
-
-  assertEquals(
-    config.V4R_W1TH_NUM8ER5,
-    "var with numbers",
-    "accepts variables containing number",
-  );
-
-  assertEquals(
-    config["1INVALID"],
-    undefined,
-    "variables beginning with a number are not parsed",
-  );
-
-  assertEquals(
-    config.INDENTED_VAR,
-    "indented var",
-    "accepts variables that are indented with space",
-  );
-
-  assertEquals(
-    config.INDENTED_VALUE,
-    "indented value",
-    "accepts values that are indented with space",
-  );
-
-  assertEquals(
-    config.TAB_INDENTED_VAR,
-    "indented var",
-    "accepts variables that are indented with tabs",
-  );
-
-  assertEquals(
-    config.TAB_INDENTED_VALUE,
-    "indented value",
-    "accepts values that are indented with tabs",
+  await t.step(
+    "export",
+    () => {
+      const { env } = parse(`export BASIC=basic`);
+      assertEquals(env["BASIC"], "basic");
+    },
   );
 });
+Deno.test("stringify", async (t) => {
+  await t.step(
+    "basic",
+    () =>
+      assertEquals(
+        stringify({ env: { "BASIC": "basic" }, exports: [] }),
+        `BASIC=basic`,
+      ),
+  );
+  await t.step(
+    "comment",
+    () =>
+      assertEquals(
+        stringify({ env: { "#COMMENT": "comment" }, exports: [] }),
+        `#COMMENT=comment`,
+      ),
+  );
+  await t.step(
+    "single quote",
+    () =>
+      assertEquals(
+        stringify({ env: { "QUOTED_SINGLE": "single quoted" }, exports: [] }),
+        `QUOTED_SINGLE='single quoted'`,
+      ),
+  );
+  await t.step(
+    "multiline",
+    () =>
+      assertEquals(
+        stringify({ env: { "MULTILINE": "hello\nworld" }, exports: [] }),
+        `MULTILINE="hello\\nworld"`,
+      ),
+  );
+  await t.step(
+    "whitespace",
+    () =>
+      assertEquals(
+        stringify({ env: { "WHITESPACE": "    whitespace   " }, exports: [] }),
+        `WHITESPACE='    whitespace   '`,
+      ),
+  );
+  await t.step(
+    "equals",
+    () =>
+      assertEquals(
+        stringify({ env: { "EQUALS": "equ==als" }, exports: [] }),
+        `EQUALS='equ==als'`,
+      ),
+  );
+  await t.step(
+    "number",
+    () =>
+      assertEquals(
+        stringify({ env: { "THE_ANSWER": "42" }, exports: [] }),
+        `THE_ANSWER=42`,
+      ),
+  );
+  await t.step(
+    "undefined",
+    () =>
+      assertEquals(
+        stringify({
+          env: { "UNDEFINED": undefined } as unknown as Record<string, string>,
+          exports: [],
+        }),
+        `UNDEFINED=`,
+      ),
+  );
+  await t.step(
+    "null",
+    () =>
+      assertEquals(
+        stringify({
+          env: { "NULL": null } as unknown as Record<string, string>,
+          exports: [],
+        }),
+        `NULL=`,
+      ),
+  );
+  await t.step(
+    "export",
+    () =>
+      assertEquals(
+        stringify({
+          env: {
+            "EXPORT": "exported",
+          },
+          exports: ["EXPORT"],
+        }),
+        `export EXPORT=exported`,
+      ),
+  );
+});
+
+Deno.test("load", async () => {
+  clearDenoEnv(); // @timreichen remove after config and configSync tests are removed
+  await load(Deno.env, {
+    envPath: path.join(testdataDir, ".env.test"),
+    examplePath: path.join(testdataDir, ".env.example.test"),
+    defaultsPath: path.join(testdataDir, ".env.defaults.test"),
+  });
+  assertEquals(Deno.env.get("GREETING"), "Hello World");
+  assertEquals(Deno.env.get("DEFAULT"), "Some Default");
+  clearDenoEnv();
+});
+Deno.test("loadSync", () => {
+  clearDenoEnv(); // @timreichen remove after config and configSync tests are removed
+  loadSync(Deno.env, {
+    envPath: path.join(testdataDir, ".env.test"),
+    examplePath: path.join(testdataDir, ".env.example.test"),
+    defaultsPath: path.join(testdataDir, ".env.defaults.test"),
+  });
+  assertEquals(Deno.env.get("GREETING"), "Hello World");
+  assertEquals(Deno.env.get("DEFAULT"), "Some Default");
+  clearDenoEnv();
+});
+
+Deno.test("verify allowEmptyValues", () => {
+  const dotEnv: EnvObject = { env: { foo: "" }, exports: [] };
+  const exampleEnv: Env = { foo: "bar" };
+  assertEquals(verify(dotEnv, exampleEnv, { allowEmptyValues: true }), true);
+});
+Deno.test("verify allowEmptyValues throw", () => {
+  const dotEnv: EnvObject = { env: { foo: "" }, exports: [] };
+  const exampleEnv: Env = { foo: "bar" };
+  assertThrows(() => verify(dotEnv, exampleEnv));
+});
+
+/**
+ * @deprecated tests using `config` and `configSync`
+ */
+const configTestdataDir = path.resolve(moduleDir, "testdata/_config");
+
+const testOptions = {
+  path: path.join(configTestdataDir, "./.env"),
+  defaults: path.join(configTestdataDir, "./.env.defaults"),
+};
 
 Deno.test("configure", () => {
   let conf = configSync(testOptions);
@@ -153,18 +314,18 @@ Deno.test("configure", () => {
     "returns empty object if file doesn't exist",
   );
 
-  const originalDenoReadFileSync = Deno.readFileSync;
-  try {
-    // @ts-ignore: for test
-    delete Deno.readFileSync;
-    assertEquals(
-      configSync(testOptions),
-      {},
-      "returns empty object if Deno.readFileSync is not a function",
-    );
-  } finally {
-    Deno.readFileSync = originalDenoReadFileSync;
-  }
+  // const originalDenoReadFileSync = Deno.readFileSync;
+  // try {
+  //   // @ts-ignore: for test
+  //   delete Deno.readFileSync;
+  //   assertEquals(
+  //     configSync(testOptions),
+  //     {},
+  //     "returns empty object if Deno.readFileSync is not a function",
+  //   );
+  // } finally {
+  //   Deno.readFileSync = originalDenoReadFileSync;
+  // }
 
   assertEquals(
     configSync({
@@ -188,7 +349,7 @@ Deno.test("configureSafe", () => {
   conf = configSync({
     safe: true,
     ...testOptions,
-    example: path.join(testdataDir, "./.env.example.test"),
+    example: path.join(configTestdataDir, "./.env.example.test"),
   });
 
   assertEquals(
@@ -199,9 +360,9 @@ Deno.test("configureSafe", () => {
 
   // Custom .env and .env.example
   conf = configSync({
-    path: path.join(testdataDir, "./.env.safe.test"),
+    path: path.join(configTestdataDir, "./.env.safe.test"),
     safe: true,
-    example: path.join(testdataDir, "./.env.example.test"),
+    example: path.join(configTestdataDir, "./.env.example.test"),
   });
 
   assertEquals(
@@ -213,61 +374,61 @@ Deno.test("configureSafe", () => {
   // Throws if not all required vars are there
   assertThrows(() => {
     configSync({
-      path: path.join(testdataDir, "./.env.safe.test"),
+      path: path.join(configTestdataDir, "./.env.safe.test"),
       safe: true,
-      example: path.join(testdataDir, "./.env.example2.test"),
+      example: path.join(configTestdataDir, "./.env.example2.test"),
     });
-  }, MissingEnvVarsError);
+  });
 
   // Throws if any of the required vars is empty
   assertThrows(() => {
     configSync({
-      path: path.join(testdataDir, "./.env.safe.empty.test"),
+      path: path.join(configTestdataDir, "./.env.safe.empty.test"),
       safe: true,
-      example: path.join(testdataDir, "./.env.example2.test"),
+      example: path.join(configTestdataDir, "./.env.example2.test"),
     });
-  }, MissingEnvVarsError);
+  });
 
   // Does not throw if required vars are provided by example
   configSync({
-    path: path.join(testdataDir, "./.env.safe.empty.test"),
+    path: path.join(configTestdataDir, "./.env.safe.empty.test"),
     safe: true,
-    example: path.join(testdataDir, "./.env.example3.test"),
+    example: path.join(configTestdataDir, "./.env.example3.test"),
     defaults: path.join(moduleDir, "./.env.defaults"),
   });
 
   // Does not throw if any of the required vars is empty, *and* allowEmptyValues is present
   configSync({
-    path: path.join(testdataDir, "./.env.safe.empty.test"),
+    path: path.join(configTestdataDir, "./.env.safe.empty.test"),
     safe: true,
-    example: path.join(testdataDir, "./.env.example2.test"),
+    example: path.join(configTestdataDir, "./.env.example2.test"),
     allowEmptyValues: true,
   });
 
   // Does not throw if any of the required vars passed externally
   Deno.env.set("ANOTHER", "VAR");
   configSync({
-    path: path.join(testdataDir, "./.env.safe.test"),
+    path: path.join(configTestdataDir, "./.env.safe.test"),
     safe: true,
-    example: path.join(testdataDir, "./.env.example2.test"),
+    example: path.join(configTestdataDir, "./.env.example2.test"),
   });
 
   // Throws if any of the required vars passed externally is empty
   Deno.env.set("ANOTHER", "");
   assertThrows(() => {
     configSync({
-      path: path.join(testdataDir, "./.env.safe.test"),
+      path: path.join(configTestdataDir, "./.env.safe.test"),
       safe: true,
-      example: path.join(testdataDir, "./.env.example2.test"),
+      example: path.join(configTestdataDir, "./.env.example2.test"),
     });
   });
 
   // Does not throw if any of the required vars passed externally is empty, *and* allowEmptyValues is present
   Deno.env.set("ANOTHER", "");
   configSync({
-    path: path.join(testdataDir, "./.env.safe.test"),
+    path: path.join(configTestdataDir, "./.env.safe.test"),
     safe: true,
-    example: path.join(testdataDir, "./.env.example2.test"),
+    example: path.join(configTestdataDir, "./.env.example2.test"),
     allowEmptyValues: true,
   });
 });
@@ -278,7 +439,7 @@ Deno.test("configure async", async () => {
 
   assertEquals(conf.DEFAULT1, "Some Default", "default value loaded");
 
-  conf = await config({ path: path.join(testdataDir, "./.env.test") });
+  conf = await config({ path: path.join(configTestdataDir, "./.env.test") });
   assertEquals(conf.BASIC, "basic", "accepts a path to fetch env from");
 
   conf = await config({ ...testOptions, export: true });
@@ -326,7 +487,7 @@ Deno.test("configureSafe async", async () => {
   conf = await config({
     safe: true,
     ...testOptions,
-    example: path.join(testdataDir, "./.env.example.test"),
+    example: path.join(configTestdataDir, "./.env.example.test"),
   });
 
   assertEquals(
@@ -337,9 +498,9 @@ Deno.test("configureSafe async", async () => {
 
   // Custom .env and .env.example
   conf = await config({
-    path: path.join(testdataDir, "./.env.safe.test"),
+    path: path.join(configTestdataDir, "./.env.safe.test"),
     safe: true,
-    example: path.join(testdataDir, "./.env.example.test"),
+    example: path.join(configTestdataDir, "./.env.example.test"),
   });
 
   assertEquals(
@@ -351,61 +512,61 @@ Deno.test("configureSafe async", async () => {
   // Throws if not all required vars are there
   assertRejects(async () => {
     await config({
-      path: path.join(testdataDir, "./.env.safe.test"),
+      path: path.join(configTestdataDir, "./.env.safe.test"),
       safe: true,
-      example: path.join(testdataDir, "./.env.example2.test"),
+      example: path.join(configTestdataDir, "./.env.example2.test"),
     });
-  }, MissingEnvVarsError);
+  });
 
   // Throws if any of the required vars is empty
   assertRejects(async () => {
     await config({
-      path: path.join(testdataDir, "./.env.safe.empty.test"),
+      path: path.join(configTestdataDir, "./.env.safe.empty.test"),
       safe: true,
-      example: path.join(testdataDir, "./.env.example2.test"),
+      example: path.join(configTestdataDir, "./.env.example2.test"),
     });
-  }, MissingEnvVarsError);
+  });
 
   // Does not throw if required vars are provided by example
   await config({
-    path: path.join(testdataDir, "./.env.safe.empty.test"),
+    path: path.join(configTestdataDir, "./.env.safe.empty.test"),
     safe: true,
-    example: path.join(testdataDir, "./.env.example3.test"),
+    example: path.join(configTestdataDir, "./.env.example3.test"),
     defaults: path.join(moduleDir, "./.env.defaults"),
   });
 
   // Does not throw if any of the required vars is empty, *and* allowEmptyValues is present
   await config({
-    path: path.join(testdataDir, "./.env.safe.empty.test"),
+    path: path.join(configTestdataDir, "./.env.safe.empty.test"),
     safe: true,
-    example: path.join(testdataDir, "./.env.example2.test"),
+    example: path.join(configTestdataDir, "./.env.example2.test"),
     allowEmptyValues: true,
   });
 
   // Does not throw if any of the required vars passed externally
   Deno.env.set("ANOTHER", "VAR");
   await config({
-    path: path.join(testdataDir, "./.env.safe.test"),
+    path: path.join(configTestdataDir, "./.env.safe.test"),
     safe: true,
-    example: path.join(testdataDir, "./.env.example2.test"),
+    example: path.join(configTestdataDir, "./.env.example2.test"),
   });
 
   // Throws if any of the required vars passed externally is empty
   Deno.env.set("ANOTHER", "");
   assertRejects(async () => {
     await config({
-      path: path.join(testdataDir, "./.env.safe.test"),
+      path: path.join(configTestdataDir, "./.env.safe.test"),
       safe: true,
-      example: path.join(testdataDir, "./.env.example2.test"),
+      example: path.join(configTestdataDir, "./.env.example2.test"),
     });
   });
 
   // Does not throw if any of the required vars passed externally is empty, *and* allowEmptyValues is present
   Deno.env.set("ANOTHER", "");
   await config({
-    path: path.join(testdataDir, "./.env.safe.test"),
+    path: path.join(configTestdataDir, "./.env.safe.test"),
     safe: true,
-    example: path.join(testdataDir, "./.env.example2.test"),
+    example: path.join(configTestdataDir, "./.env.example2.test"),
     allowEmptyValues: true,
   });
 });
@@ -417,9 +578,9 @@ Deno.test("config defaults", async () => {
       "run",
       "--allow-read",
       "--allow-env",
-      path.join(testdataDir, "./app_defaults.ts"),
+      path.join(configTestdataDir, "./app_defaults.ts"),
     ],
-    cwd: testdataDir,
+    cwd: configTestdataDir,
     stdout: "piped",
   });
 
