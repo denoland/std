@@ -4,6 +4,7 @@
 
 ```ts
 import { parse } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+
 const object = parse(`
   GREETING=hello world
   export EXPORT=exported
@@ -16,14 +17,14 @@ console.log(object); // { env: { GREETING: "hello world", EXPORT: "exported" }, 
 
 - `example?: DotEnvObject`: example object that the parsed data will be verified
   against.
-- `allowEmptyValues?: boolean`: Set to `true` to allow required env variables to
-  be empty. Otherwise it will throw an error if any variable is empty. Defaults
-  to `false`.
+- `allowEmptyValues?: boolean`: set to `true` to allow variables with an empty
+  value.
 
 ## Stringify
 
 ```ts
 import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+
 const string = stringify({
   env: { GREETING: "hello world", EXPORT: "exported" },
   exports: ["EXPORT"],
@@ -40,28 +41,26 @@ export EXPORT=exported
 
 ```ts
 import { verify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
-const isValid = verify(
-  { env: { GREETING: "hello world" }, exports: [] },
-  {
-    allowEmptyValues: true,
-    example: { env: { GREETING: "someValue" }, exports: [] },
-  },
-);
+
+const object = { env: { GREETING: "" }, exports: [] };
+const exampleEnv = { GREETING: "someValue" };
+const options = { allowEmptyValues: true };
+
+const isValid = verify(object, exampleEnv, options);
 
 console.log(isValid); // true
 ```
 
 ### Verify options
 
-- `allowEmptyValues?: boolean`: set to `false` to count variables with an empty
-  value as nonexistent.
-- `example?: EnvObject`:example object that the parsed data will be verified
-  against.
+- `allowEmptyValues?: boolean`: set to `true` to allow variables with an empty
+  value.
 
 ## Load
 
 ```ts
 import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+
 const object = await load(Deno.env, { envPath: "path/to/.env" });
 ```
 
@@ -69,6 +68,7 @@ const object = await load(Deno.env, { envPath: "path/to/.env" });
 
 ```ts
 import { loadSync } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+
 const object = loadSync(Deno.env, { envPath: "path/to/.env" });
 ```
 
@@ -80,6 +80,8 @@ const object = loadSync(Deno.env, { envPath: "path/to/.env" });
   Defaults to ".env.example".
 - `defaultsPath?: string | URL`: the path or url to the .env.defaults file.
   Defaults to ".env.defaults".
+- `allowEmptyValues?: boolean`: set to `true` to allow variables with an empty
+  value.
 
 ## Auto loading
 
@@ -94,6 +96,7 @@ GREETING=hello world
 
 ```ts
 import "https://deno.land/std@$STD_VERSION/dotenv/load.ts";
+
 console.log(Deno.env.get("GREETING")); // hello world
 ```
 
@@ -116,10 +119,10 @@ The parsing engine currently supports the following rules:
   (`FOO="  some value  "` becomes `{FOO: '  some value  '}`)
 - double quoted values expand new lines (`MULTILINE="new\nline"` becomes
 
-```
-{ MULTILINE: "new
-line" }
-```
+  ```
+  { MULTILINE: "new
+  line" }
+  ```
 
 - backticks are supported
   (`` BACKTICK_KEY=`This has 'single' and "double" quotes inside of it.` ``)

@@ -1,66 +1,59 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
 import {
   DenoEnv,
+  Env,
   EnvObject,
   optionalReadTextFile,
   optionalReadTextFileSync,
+  setDenoEnv,
 } from "./_util.ts";
 
-export type { EnvObject };
+export type { DenoEnv, Env, EnvObject };
 
-type Env = Record<string, string>;
-
+export interface VerifyOptions {
+  allowEmptyValues?: boolean;
+  defaultsEnv?: Env;
+}
 /**
  * @param object EnvObject that should be verified.
  * @param options verification options
  * @returns true if valid, else throws an error
  * ```ts
+ * import { verify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ *
  * const object = { env: { GREETING: "hello world" }, exports: [] };
- * const options = { allowEmptyValues: true, example: { env: { GREETING: "someValue" }, exports: [] } };
- * const isValid = verify(object, options);
+ * const exampleEnv = { GREETING: "someValue" };
+ * const options = { allowEmptyValues: true };
+ * verify(object, exampleEnv, options);
  * ```
  */
 export function verify(
   object: EnvObject,
-  { allowEmptyValues, example }: {
-    allowEmptyValues: boolean;
-    example?: EnvObject;
-  },
+  exampleEnv: Env,
+  { allowEmptyValues, defaultsEnv = {} }: VerifyOptions = {},
 ) {
-  if (example) {
-    let entries = object.env;
+  const env = { ...defaultsEnv, ...object.env };
+  let entries = env;
 
-    if (!allowEmptyValues) {
-      entries = Object.fromEntries(
-        Object.entries(object.env)
-          .filter(([_, value]) => value != null && value !== ""),
-      );
-    }
+  if (!allowEmptyValues) {
+    const valueEntries = Object.entries(entries).filter(
+      ([_, value]) => (value != null && value !== ""),
+    );
+    entries = Object.fromEntries(valueEntries);
+  }
 
-    const keys = Object.keys(entries);
-    const missingVars = Object.keys(example.env)
-      .filter((key) => !keys.includes(key));
+  const keys = Object.keys(entries);
+  const exampleKeys = Object.keys(exampleEnv);
 
-    if (missingVars.length) {
-      throw new Error(
-        `The following variables were defined in the example file but are not present in the environment: ${
-          missingVars.join(", ")
-        }`,
-      );
-    }
+  const missingVariables = exampleKeys
+    .filter((key) => !keys.includes(key));
 
-    const missingExports = object.exports
-      .filter((key) => !keys.includes(key));
-
-    if (missingExports.length) {
-      throw new Error(
-        `The following variables were exported in the example file but are not exported in the environment: ${
-          missingExports.join(", ")
-        }`,
-      );
-    }
+  if (missingVariables.length) {
+    const missingExportsString = missingVariables.join(", ");
+    throw new Error(
+      `The following variables were defined in the example file but are not present in the environment: ${missingExportsString}`,
+    );
   }
 
   return true;
@@ -69,11 +62,17 @@ export function verify(
 const regExp =
   /^\s*(?<comment>#.+)|(?<export>export\s+)?(?<key>[a-zA-Z_]\w*)\s*=\s*((?<quote>["'`])?(?<value>.+?)\5?)?\s*?$/;
 
+export interface ParseOptions {
+  allowEmptyValues?: boolean;
+  example?: EnvObject;
+}
 /**
  * @param source dotenv string to be parsed
  * @param options parsing options
  * @returns EnvObject
  * ```ts
+ * import { parse } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ *
  * const object = parse(`
  * GREETING=hello world
  * export EXPORT=exported
@@ -82,10 +81,7 @@ const regExp =
  */
 export function parse(
   source: string,
-  { allowEmptyValues = false, example }: {
-    allowEmptyValues?: boolean;
-    example?: EnvObject;
-  } = {},
+  { allowEmptyValues = false, example }: ParseOptions = {},
 ): EnvObject {
   const env: Env = {};
   const exports: Set<string> = new Set();
@@ -94,10 +90,12 @@ export function parse(
   for (const line of lines) {
     const groups = regExp.exec(line)?.groups;
 
+    // if line is invalid
     if (!groups) continue;
+    // if line is a comment
     if (groups.comment) continue;
 
-    let value = groups.value || "";
+    let value = groups.value ?? "";
 
     if (groups.quote === `'`) {
       // do nothing, preseve newlines
@@ -115,7 +113,10 @@ export function parse(
   }
   const object: EnvObject = { env, exports: [...exports] };
 
-  verify(object, { allowEmptyValues, example });
+  if (example) {
+    const exampleEnv = example.env;
+    verify(object, exampleEnv, { allowEmptyValues });
+  }
 
   return object;
 }
@@ -124,7 +125,9 @@ export function parse(
  * @param object EnvObject to be stringified
  * @returns string of EnvObject
  * ```ts
- * const obect = { env: { GREETING: "hello world", EXPORT: "exported" }, exports: ["EXPORT"] };
+ * import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ *
+ * const object = { env: { GREETING: "hello world", EXPORT: "exported" }, exports: ["EXPORT"] };
  * const string = stringify(object);
  * ```
  */
@@ -133,7 +136,7 @@ export function stringify(object: EnvObject) {
   for (const [key, value] of Object.entries(object.env)) {
     let quote;
 
-    let escapedValue = value || "";
+    let escapedValue = value ?? "";
 
     if (escapedValue.includes("\n")) {
       // escape inner new lines
@@ -160,18 +163,20 @@ export interface LoadOptions {
   envPath?: string | URL;
   examplePath?: string | URL;
   defaultsPath?: string | URL;
+  allowEmptyValues?: boolean;
 }
 
-function setDenoEnvFromDotEnv(
+function setDenoEnvFromSources(
   denoEnv: DenoEnv,
   envSource: string,
-  { exampleSource, defaultsSource }: {
+  { allowEmptyValues, exampleSource, defaultsSource }: {
+    allowEmptyValues?: boolean;
     exampleSource?: string;
     defaultsSource?: string;
   },
 ) {
   const example = exampleSource ? parse(exampleSource) : undefined;
-  const parsedObject = parse(envSource, { example });
+  const parsedObject = parse(envSource, { example, allowEmptyValues });
   const defaultsEnv = defaultsSource ? parse(defaultsSource).env : {};
 
   const env: Env = {
@@ -179,13 +184,7 @@ function setDenoEnvFromDotEnv(
     ...parsedObject.env,
   };
 
-  const initialEnv = denoEnv.toObject();
-  for (const [key, value] of Object.entries(env)) {
-    // prevent overwrite if value already exists
-    if (initialEnv[key] != null) continue;
-    denoEnv.set(key, value);
-  }
-  return denoEnv;
+  return setDenoEnv(denoEnv, env);
 }
 
 /**
@@ -193,6 +192,8 @@ function setDenoEnvFromDotEnv(
  * @param options load options
  * @returns populated denoEnv
  * ```ts
+ * import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ *
  * const object = await load(Deno.env, { envPath: "path/to/.env" });
  * ```
  */
@@ -202,13 +203,15 @@ export async function load(
     envPath = ".env",
     examplePath = ".env.example",
     defaultsPath = ".env.defaults",
+    allowEmptyValues,
   }: LoadOptions = {},
 ) {
   const exampleSource = await optionalReadTextFile(examplePath);
   const defaultsSource = await optionalReadTextFile(defaultsPath);
 
   const envSource = await Deno.readTextFile(envPath);
-  return setDenoEnvFromDotEnv(denoEnv, envSource, {
+  return setDenoEnvFromSources(denoEnv, envSource, {
+    allowEmptyValues,
     exampleSource,
     defaultsSource,
   });
@@ -219,6 +222,8 @@ export async function load(
  * @param options load options
  * @returns populated denoEnv
  * ```ts
+ * import { loadSync } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+ *
  * const object = loadSync(Deno.env, { envPath: "path/to/.env" });
  * ```
  */
@@ -234,8 +239,98 @@ export function loadSync(
   const defaultsSource = optionalReadTextFileSync(defaultsPath);
 
   const envSource = Deno.readTextFileSync(envPath);
-  return setDenoEnvFromDotEnv(denoEnv, envSource, {
+  return setDenoEnvFromSources(denoEnv, envSource, {
     exampleSource,
     defaultsSource,
   });
+}
+
+/**
+ * @deprecated use `loadOptions` instead
+ */
+export interface ConfigOptions {
+  path: string;
+  export?: boolean;
+  safe?: boolean;
+  example?: string;
+  allowEmptyValues?: boolean;
+  defaults?: string;
+}
+
+/**
+ * @deprecated use `loadSync` instead
+ */
+export function configSync(
+  {
+    path = ".env",
+    example = ".env.example",
+    defaults = ".env.defaults",
+    export: _export,
+    safe,
+    allowEmptyValues,
+  }: Partial<ConfigOptions> = {},
+): Env {
+  const source = optionalReadTextFileSync(path);
+  const object: EnvObject = source ? parse(source) : { env: {}, exports: [] };
+
+  let defaultsEnv = {};
+  if (defaults) {
+    const defaultsSource = optionalReadTextFileSync(defaults);
+    if (defaultsSource) defaultsEnv = parse(defaultsSource).env;
+  }
+
+  const conf = { ...object.env, ...defaultsEnv };
+
+  if (safe && example) {
+    const exampleSource = optionalReadTextFileSync(example);
+    const exampleEnv = exampleSource ? parse(exampleSource).env : {};
+    const denoEnv = Deno.env.toObject();
+    verify(object, exampleEnv, {
+      allowEmptyValues,
+      defaultsEnv: denoEnv,
+    });
+  }
+
+  if (_export) setDenoEnv(Deno.env, conf);
+
+  return conf;
+}
+
+/**
+ * @deprecated use `load` instead
+ */
+export async function config(
+  {
+    path = ".env",
+    example = ".env.example",
+    defaults = ".env.defaults",
+    export: _export,
+    safe,
+    allowEmptyValues,
+  }: Partial<ConfigOptions> = {},
+): Promise<Env> {
+  const source = await optionalReadTextFile(path);
+  const object: EnvObject = source ? parse(source) : { env: {}, exports: [] };
+
+  let defaultsEnv = {};
+  if (defaults) {
+    const defaultsSource = await optionalReadTextFile(defaults);
+    if (defaultsSource) defaultsEnv = parse(defaultsSource).env;
+  }
+
+  const conf = { ...object.env, ...defaultsEnv };
+
+  if (safe && example) {
+    const exampleSource = await optionalReadTextFile(example);
+    const exampleEnv = exampleSource ? parse(exampleSource).env : {};
+    const denoEnv = Deno.env.toObject();
+    verify(object, exampleEnv, {
+      allowEmptyValues,
+      defaultsEnv: denoEnv,
+    });
+  }
+
+  if (_export) setDenoEnv(Deno.env, conf);
+
+  return conf;
 }

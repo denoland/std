@@ -1,7 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-// This module is browser compatible.
 
-type Env = Record<string, string>;
+export type Env = Record<string, string>;
 
 export interface EnvObject {
   env: Env;
@@ -34,4 +33,17 @@ export function optionalReadTextFileSync(path: string | URL) {
       throw error;
     }
   }
+}
+
+export function setDenoEnv(
+  denoEnv: DenoEnv,
+  env: Env,
+) {
+  const initialEnv = denoEnv.toObject();
+  for (const [key, value] of Object.entries(env)) {
+    // prevent overwrite if value already exists
+    if (initialEnv[key] != null) continue;
+    denoEnv.set(key, value);
+  }
+  return denoEnv;
 }
