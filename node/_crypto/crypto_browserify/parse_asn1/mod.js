@@ -6,7 +6,7 @@ import * as asn1 from "./asn1.js";
 import fixProc from "./fix_proc.js";
 import * as ciphers from "../browserify_aes/mod.js";
 import { Buffer } from "../../../buffer.ts";
-import { pbkdf2Sync } from "../../pbkdf2.ts";
+import { pbkdf2Sync } from "../../../internal/crypto/pbkdf2.ts";
 
 const aesid = {
   "2.16.840.1.101.3.4.1.1": "aes-128-ecb",

@@ -128,18 +128,18 @@ async function readBlock(
  * Simple file reader
  */
 class FileReader implements Reader {
-  private file?: Deno.FsFile;
+  #file?: Deno.FsFile;
 
   constructor(private filePath: string) {}
 
   public async read(p: Uint8Array): Promise<number | null> {
-    if (!this.file) {
-      this.file = await Deno.open(this.filePath, { read: true });
+    if (!this.#file) {
+      this.#file = await Deno.open(this.filePath, { read: true });
     }
-    const res = await Deno.read(this.file.rid, p);
+    const res = await Deno.read(this.#file.rid, p);
     if (res === null) {
-      Deno.close(this.file.rid);
-      this.file = undefined;
+      Deno.close(this.#file.rid);
+      this.#file = undefined;
     }
     return res;
   }

@@ -318,6 +318,7 @@ export class Resolver {
         if (ipVersion !== 0) {
           const port = Number.parseInt(serv.replace(addrSplitRE, "$2")) ||
             IANA_DNS_PORT;
+
           return newSet.push([ipVersion, match[1], port]);
         }
       }
@@ -345,6 +346,7 @@ export class Resolver {
       // Reset the servers to the old servers, because ares probably unset them.
       this._handle.setServers(orig.join(","));
       const err = strerror(errorNumber);
+
       throw new ERR_DNS_SET_SERVERS_FAILED(err, servers.toString());
     }
   }

@@ -1,6 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import randomBytes, { MAX_SIZE as kMaxUint32 } from "./randomBytes.ts";
-import { Buffer } from "../buffer.ts";
+import randomBytes, { MAX_SIZE as kMaxUint32 } from "./_randomBytes.ts";
+import { Buffer } from "../../buffer.ts";
 
 const kBufferMaxLength = 0x7fffffff;
 

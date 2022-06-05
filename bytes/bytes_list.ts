@@ -5,8 +5,8 @@
  * An abstraction of multiple Uint8Arrays
  */
 export class BytesList {
-  private len = 0;
-  private chunks: {
+  #len = 0;
+  #chunks: {
     value: Uint8Array;
     start: number; // start offset from head of chunk
     end: number; // end offset from head of chunk
@@ -18,7 +18,7 @@ export class BytesList {
    * Total size of bytes
    */
   size() {
-    return this.len;
+    return this.#len;
   }
   /**
    * Push bytes with given offset infos
@@ -28,13 +28,13 @@ export class BytesList {
       return;
     }
     checkRange(start, end, value.byteLength);
-    this.chunks.push({
+    this.#chunks.push({
       value,
       end,
       start,
-      offset: this.len,
+      offset: this.#len,
     });
-    this.len += end - start;
+    this.#len += end - start;
   }
 
   /**
@@ -44,24 +44,24 @@ export class BytesList {
     if (n === 0) {
       return;
     }
-    if (this.len <= n) {
-      this.chunks = [];
-      this.len = 0;
+    if (this.#len <= n) {
+      this.#chunks = [];
+      this.#len = 0;
       return;
     }
     const idx = this.getChunkIndex(n);
-    this.chunks.splice(0, idx);
-    const [chunk] = this.chunks;
+    this.#chunks.splice(0, idx);
+    const [chunk] = this.#chunks;
     if (chunk) {
       const diff = n - chunk.offset;
       chunk.start += diff;
     }
     let offset = 0;
-    for (const chunk of this.chunks) {
+    for (const chunk of this.#chunks) {
       chunk.offset = offset;
       offset += chunk.end - chunk.start;
     }
-    this.len = offset;
+    this.#len = offset;
   }
 
   /**
@@ -69,14 +69,14 @@ export class BytesList {
    * returns -1 if out of range
    */
   getChunkIndex(pos: number): number {
-    let max = this.chunks.length;
+    let max = this.#chunks.length;
     let min = 0;
     while (true) {
       const i = min + Math.floor((max - min) / 2);
-      if (i < 0 || this.chunks.length <= i) {
+      if (i < 0 || this.#chunks.length <= i) {
         return -1;
       }
-      const { offset, start, end } = this.chunks[i];
+      const { offset, start, end } = this.#chunks[i];
       const len = end - start;
       if (offset <= pos && pos < offset + len) {
         return i;
@@ -92,11 +92,11 @@ export class BytesList {
    * Get indexed byte from chunks
    */
   get(i: number): number {
-    if (i < 0 || this.len <= i) {
+    if (i < 0 || this.#len <= i) {
       throw new Error("out of range");
     }
     const idx = this.getChunkIndex(i);
-    const { value, offset, start } = this.chunks[idx];
+    const { value, offset, start } = this.#chunks[idx];
     return value[start + i - offset];
   }
 
@@ -106,10 +106,10 @@ export class BytesList {
   *iterator(start = 0): IterableIterator<number> {
     const startIdx = this.getChunkIndex(start);
     if (startIdx < 0) return;
-    const first = this.chunks[startIdx];
+    const first = this.#chunks[startIdx];
     let firstOffset = start - first.offset;
-    for (let i = startIdx; i < this.chunks.length; i++) {
-      const chunk = this.chunks[i];
+    for (let i = startIdx; i < this.#chunks.length; i++) {
+      const chunk = this.#chunks[i];
       for (let j = chunk.start + firstOffset; j < chunk.end; j++) {
         yield chunk.value[j];
       }
@@ -120,22 +120,22 @@ export class BytesList {
   /**
    * Returns subset of bytes copied
    */
-  slice(start: number, end: number = this.len): Uint8Array {
+  slice(start: number, end: number = this.#len): Uint8Array {
     if (end === start) {
       return new Uint8Array();
     }
-    checkRange(start, end, this.len);
+    checkRange(start, end, this.#len);
     const result = new Uint8Array(end - start);
     const startIdx = this.getChunkIndex(start);
     const endIdx = this.getChunkIndex(end - 1);
     let written = 0;
     for (let i = startIdx; i < endIdx; i++) {
-      const chunk = this.chunks[i];
+      const chunk = this.#chunks[i];
       const len = chunk.end - chunk.start;
       result.set(chunk.value.subarray(chunk.start, chunk.end), written);
       written += len;
     }
-    const last = this.chunks[endIdx];
+    const last = this.#chunks[endIdx];
     const rest = end - start - written;
     result.set(last.value.subarray(last.start, last.start + rest), written);
     return result;
@@ -144,9 +144,9 @@ export class BytesList {
    * Concatenate chunks into single Uint8Array copied.
    */
   concat(): Uint8Array {
-    const result = new Uint8Array(this.len);
+    const result = new Uint8Array(this.#len);
     let sum = 0;
-    for (const { value, start, end } of this.chunks) {
+    for (const { value, start, end } of this.#chunks) {
       result.set(value.subarray(start, end), sum);
       sum += end - start;
     }

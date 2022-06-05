@@ -24,7 +24,7 @@ import { nextTick } from "./_next_tick.ts";
 import { customPromisifyArgs } from "./internal/util.mjs";
 import {
   validateBoolean,
-  validateFunction,
+  validateCallback,
   validateNumber,
   validateOneOf,
   validateString,
@@ -196,16 +196,16 @@ export function lookup(
     callback = options;
     family = 0;
   } else if (isFamily(options)) {
-    validateFunction(callback, "callback");
+    validateCallback(callback);
 
     validateOneOf(options, "family", validFamilies);
     family = options;
   } else if (!isLookupOptions(options)) {
-    validateFunction(arguments.length === 2 ? options : callback, "callback");
+    validateCallback(arguments.length === 2 ? options : callback);
 
     throw new ERR_INVALID_ARG_TYPE("options", ["integer", "object"], options);
   } else {
-    validateFunction(callback, "callback");
+    validateCallback(callback);
 
     if (options?.hints != null) {
       validateNumber(options.hints, "options.hints");
@@ -315,7 +315,7 @@ function resolver(bindingName: keyof ChannelWrapQuery) {
     }
 
     validateString(name, "name");
-    validateFunction(callback, "callback");
+    validateCallback(callback);
 
     const req = new QueryReqWrap();
     req.bindingName = bindingName;
@@ -346,6 +346,10 @@ function resolver(bindingName: keyof ChannelWrapQuery) {
 const resolveMap = Object.create(null);
 
 export class Resolver extends CallbackResolver {
+  constructor(options?: ResolverOptions) {
+    super(options);
+  }
+
   // deno-lint-ignore no-explicit-any
   [resolveMethod: string]: any
 }
@@ -485,10 +489,10 @@ export function getServers(): string[] {
 export function resolveAny(
   hostname: string,
   callback: (err: ErrnoException | null, addresses: AnyRecord[]) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function resolveAny(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.resolveAny.bind(getDefaultResolver() as Resolver)(
-    hostname,
-    callback,
+    ...args,
   );
 }
 
@@ -573,10 +577,10 @@ export function resolve6(
 export function resolveCaa(
   hostname: string,
   callback: (err: ErrnoException | null, records: CaaRecord[]) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function resolveCaa(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.resolveCaa.bind(getDefaultResolver() as Resolver)(
-    hostname,
-    callback,
+    ...args,
   );
 }
 
@@ -588,10 +592,10 @@ export function resolveCaa(
 export function resolveCname(
   hostname: string,
   callback: (err: ErrnoException | null, addresses: string[]) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function resolveCname(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.resolveCname.bind(getDefaultResolver() as Resolver)(
-    hostname,
-    callback,
+    ...args,
   );
 }
 
@@ -604,10 +608,10 @@ export function resolveCname(
 export function resolveMx(
   hostname: string,
   callback: (err: ErrnoException | null, addresses: MxRecord[]) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function resolveMx(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.resolveMx.bind(getDefaultResolver() as Resolver)(
-    hostname,
-    callback,
+    ...args,
   );
 }
 
@@ -620,10 +624,10 @@ export function resolveMx(
 export function resolveNs(
   hostname: string,
   callback: (err: ErrnoException | null, addresses: string[]) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function resolveNs(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.resolveNs.bind(getDefaultResolver() as Resolver)(
-    hostname,
-    callback,
+    ...args,
   );
 }
 
@@ -638,10 +642,10 @@ export function resolveNs(
 export function resolveTxt(
   hostname: string,
   callback: (err: ErrnoException | null, addresses: string[][]) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function resolveTxt(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.resolveTxt.bind(getDefaultResolver() as Resolver)(
-    hostname,
-    callback,
+    ...args,
   );
 }
 
@@ -667,10 +671,10 @@ export function resolveTxt(
 export function resolveSrv(
   hostname: string,
   callback: (err: ErrnoException | null, addresses: SrvRecord[]) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function resolveSrv(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.resolveSrv.bind(getDefaultResolver() as Resolver)(
-    hostname,
-    callback,
+    ...args,
   );
 }
 
@@ -682,10 +686,10 @@ export function resolveSrv(
 export function resolvePtr(
   hostname: string,
   callback: (err: ErrnoException | null, addresses: string[]) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function resolvePtr(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.resolvePtr.bind(getDefaultResolver() as Resolver)(
-    hostname,
-    callback,
+    ...args,
   );
 }
 
@@ -716,10 +720,10 @@ export function resolvePtr(
 export function resolveNaptr(
   hostname: string,
   callback: (err: ErrnoException | null, addresses: NaptrRecord[]) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function resolveNaptr(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.resolveNaptr.bind(getDefaultResolver() as Resolver)(
-    hostname,
-    callback,
+    ...args,
   );
 }
 
@@ -751,10 +755,10 @@ export function resolveNaptr(
 export function resolveSoa(
   hostname: string,
   callback: (err: ErrnoException | null, address: SoaRecord) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function resolveSoa(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.resolveSoa.bind(getDefaultResolver() as Resolver)(
-    hostname,
-    callback,
+    ...args,
   );
 }
 
@@ -768,10 +772,10 @@ export function resolveSoa(
 export function reverse(
   ip: string,
   callback: (err: ErrnoException | null, hostnames: string[]) => void,
-): QueryReqWrap {
+): QueryReqWrap;
+export function reverse(...args: unknown[]): QueryReqWrap {
   return Resolver.prototype.reverse.bind(getDefaultResolver() as Resolver)(
-    ip,
-    callback,
+    ...args,
   );
 }
 
@@ -957,6 +961,7 @@ export default {
   resolveNaptr,
   resolveSoa,
   resolve,
+  Resolver,
   reverse,
   setServers,
   setDefaultResultOrder,
