@@ -1372,6 +1372,21 @@ Deno.test("serve - onListen callback is called when the server started listening
   });
 });
 
+Deno.test("serve - onListen callback is called with ephemeral port", () => {
+  const abortController = new AbortController();
+  return serve((_) => new Response("hello"), {
+    port: 0,
+    async onListen({ hostname, port }) {
+      const responseText = await (await fetch(`http://localhost:${port}/`))
+        .text();
+      assertEquals(hostname, "0.0.0.0");
+      assertEquals(responseText, "hello");
+      abortController.abort();
+    },
+    signal: abortController.signal,
+  });
+});
+
 Deno.test("serve - doesn't print the message when onListen set to undefined", async () => {
   const { status, stdout } = await Deno.spawn(Deno.execPath(), {
     args: [

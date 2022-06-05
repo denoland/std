@@ -573,7 +573,7 @@ export async function serve(
   handler: Handler,
   options: ServeInit = {},
 ): Promise<void> {
-  const port = options.port ?? 8000;
+  let port = options.port ?? 8000;
   const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
     port,
@@ -587,6 +587,8 @@ export async function serve(
   });
 
   const s = server.listenAndServe();
+
+  port = (server.addrs[0] as Deno.NetAddr).port;
 
   if ("onListen" in options) {
     options.onListen?.({ port, hostname });
@@ -668,7 +670,7 @@ export async function serveTls(
     throw new Error("TLS config is given, but 'certFile' is missing.");
   }
 
-  const port = options.port ?? 8443;
+  let port = options.port ?? 8443;
   const hostname = options.hostname ?? "0.0.0.0";
   const server = new Server({
     port,
@@ -682,6 +684,8 @@ export async function serveTls(
   });
 
   const s = server.listenAndServeTls(options.certFile, options.keyFile);
+
+  port = (server.addrs[0] as Deno.NetAddr).port;
 
   if ("onListen" in options) {
     options.onListen?.({ port, hostname });
