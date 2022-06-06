@@ -7,6 +7,7 @@ import { deferred, delay } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
+  assertNotEquals,
   assertRejects,
   assertStrictEquals,
   assertThrows,
@@ -1380,6 +1381,7 @@ Deno.test("serve - onListen callback is called with ephemeral port", () => {
       const responseText = await (await fetch(`http://localhost:${port}/`))
         .text();
       assertEquals(hostname, "0.0.0.0");
+      assertNotEquals(port, 0);
       assertEquals(responseText, "hello");
       abortController.abort();
     },
