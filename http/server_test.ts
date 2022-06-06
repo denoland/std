@@ -1378,10 +1378,10 @@ Deno.test("serve - onListen callback is called with ephemeral port", () => {
   return serve((_) => new Response("hello"), {
     port: 0,
     async onListen({ hostname, port }) {
-      const responseText = await (await fetch(`http://localhost:${port}/`))
-        .text();
       assertEquals(hostname, "0.0.0.0");
       assertNotEquals(port, 0);
+      const responseText = await (await fetch(`http://localhost:${port}/`))
+        .text();
       assertEquals(responseText, "hello");
       abortController.abort();
     },
@@ -1431,6 +1431,8 @@ Deno.test("serveTls - onListen callback is called with ephemeral port", () => {
     certFile: join(testdataDir, "tls/localhost.crt"),
     keyFile: join(testdataDir, "tls/localhost.key"),
     async onListen({ hostname, port }) {
+      assertEquals(hostname, "0.0.0.0");
+      assertNotEquals(port, 0);
       const caCert = await Deno.readTextFile(
         join(testdataDir, "tls/RootCA.pem"),
       );
@@ -1439,8 +1441,6 @@ Deno.test("serveTls - onListen callback is called with ephemeral port", () => {
         await (await fetch(`https://localhost:${port}/`, { client }))
           .text();
       client.close();
-      assertEquals(hostname, "0.0.0.0");
-      assertNotEquals(port, 0);
       assertEquals(responseText, "hello");
       abortController.abort();
     },
