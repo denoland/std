@@ -1,7 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import { DenoHash, instantiate } from "./lib/deno_hash.generated.js";
+import { DenoHash, instantiate } from "./lib/deno_hash.generated.mjs";
 
 import * as hex from "../../encoding/hex.ts";
 import * as base64 from "../../encoding/base64.ts";

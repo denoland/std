@@ -2,7 +2,7 @@
 export {
   DigestContext,
   instantiate as instantiateWasm,
-} from "./lib/deno_std_wasm_crypto.generated.js";
+} from "./lib/deno_std_wasm_crypto.generated.mjs";
 
 /**
  * All cryptographic hash/digest algorithms supported by std/_wasm_crypto.

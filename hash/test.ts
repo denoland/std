@@ -484,7 +484,7 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
   await writer.write(
     new TextEncoder().encode(`
       import { createHash } from "./mod.ts";
-      import { instantiateWithInstance } from "./_wasm/lib/deno_hash.generated.js";
+      import { instantiateWithInstance } from "./_wasm/lib/deno_hash.generated.mjs";
 
       const { memory } = instantiateWithInstance().instance.exports;
 

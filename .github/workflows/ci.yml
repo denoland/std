@@ -198,7 +198,7 @@ jobs:
         with:
           name: Rebuilt _wasm_crypto
           path: |-
-            ./_wasm_crypto/lib/deno_std_wasm_crypto.generated.js
+            ./_wasm_crypto/lib/deno_std_wasm_crypto.generated.mjs
 
   varint-wasm:
     name: "_wasm_varint/"
@@ -263,4 +263,4 @@ jobs:
         with:
           name: Rebuilt _wasm_varint
           path: |-
-            ./_wasm_varint/lib/deno_std_wasm_varint.generated.js
+            ./_wasm_varint/lib/deno_std_wasm_varint.generated.mjs

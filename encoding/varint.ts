@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { instantiate } from "../_wasm_varint/lib/deno_std_wasm_varint.generated.js";
+import { instantiate } from "../_wasm_varint/lib/deno_std_wasm_varint.generated.mjs";
 
 const U32MAX = 4_294_967_295;
 const U64MAX = 18_446_744_073_709_551_615n;
