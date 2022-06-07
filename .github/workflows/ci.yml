@@ -131,6 +131,10 @@ jobs:
         shell: bash
         run: ./_tools/check_circular_deps.ts
 
+      - name: Check License headers
+        shell: bash
+        run: ./_tools/check_licence.ts
+
   hash-wasm:
     name: "_wasm_crypto/"
     runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
@@ -203,3 +207,76 @@ jobs:
           path: |-
             ./_wasm_crypto/crypto.mjs
             ./_wasm_crypto/crypto.wasm.mjs
+
+  varint-wasm:
+    name: "_wasm_varint/"
+    runs-on: ${{ github.repository_owner == 'denoland' && 'ubuntu-20.04-xl' || 'ubuntu-20.04' }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+        with:
+          # required to check for changes
+          fetch-depth: 2
+          submodules: false
+          persist-credentials: false
+
+      - name: Check for changes to _wasm_varint/
+        id: source
+        run: |-
+          set -o errexit
+          shopt -s inherit_errexit
+          declare modifications="$(git diff --name-only HEAD~ -- ./_wasm_varint)"
+          declare modified="$([[ "$modifications" ]] && echo true || echo false)"
+          echo "::set-output name=modified::$modified"
+          echo "WASM varint source modified in this commit? $modified"
+          echo "$modifications"
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v1.0.0
+        if: success() && steps.source.outputs.modified == 'true'
+
+      - name: Set up Rust
+        uses: hecrj/setup-rust-action@v1
+        if: success() && steps.source.outputs.modified == 'true'
+        with:
+          # This must match the version in _wasm_varint/rust-toolchain.toml:
+          rust-version: 1.57.0
+          targets: wasm32-unknown-unknown
+          components: rustfmt
+
+      - name: Set up wasm-bindgen-cli
+        run: |-
+          # This must match the version in _wasm_varint/Cargo.lock:
+          cargo install -f wasm-bindgen-cli --version 0.2.80
+        if: success() && steps.source.outputs.modified == 'true'
+
+      - name: Rebuild WASM
+        if: success() && steps.source.outputs.modified == 'true'
+        run: |-
+          ./_wasm_varint/_build.ts
+
+      - name: Verify WASM hasn't changed
+        id: build
+        if: success() && steps.source.outputs.modified == 'true'
+        run: |-
+          set -o errexit
+          shopt -s inherit_errexit
+          declare modifications="$(git status --porcelain)"
+          declare modified="$([[ "$(git status --porcelain)" ]] && echo true || echo false)"
+          echo "::set-output name=modified::$modified"
+          echo "Generated code modified? $modified"
+          echo "$modifications"
+
+          if [[ "$modified" = "true" ]]; then
+            echo "::error ::Rebuilt WASM doesn't match committed WASM. Please rebuild and commit."
+            exit 1
+          fi
+
+      - name: Upload rebuilt ./_wasm_varint/ as artifact if it didn't match committed
+        if: failure() && steps.build.outputs.modified == 'true'
+        uses: actions/upload-artifact@v2
+        with:
+          name: Rebuilt _wasm_varint
+          path: |-
+            ./_wasm_varint/varint.mjs
+            ./_wasm_varint/varint.wasm.mjs

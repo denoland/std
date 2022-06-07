@@ -1,3 +1,11 @@
+### 0.142.0 / 2022.06.02
+
+- feat(crypto): add fnv algorithms (#2200)
+- feat: add media_types (#2286)
+- fix(node): type checking on AsyncResource (#2289)
+- fix: assertSnapshot errors on empty snapshot in non-update mode (#2269)
+- fix: put TextLineStream CR handling behind option (#2277)
+
 ### 0.141.0 / 2022.05.27
 
 - BREAKING(flags): introduce `collect` option (#2247)

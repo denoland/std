@@ -243,7 +243,7 @@ export function toTransformStream<I, O>(
         } catch (error) {
           // Propagate error to stream from iterator
           // If the stream status is "errored", it will be thrown, but ignore.
-          await readable.cancel(error).catch();
+          await readable.cancel(error).catch(() => {});
           controller.error(error);
           return;
         }
