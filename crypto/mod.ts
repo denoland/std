@@ -78,7 +78,7 @@ const stdCrypto = ((x) => x)({
         return webCrypto.subtle.digest(algorithm, bytes);
       } else if (wasmDigestAlgorithms.includes(name as WasmDigestAlgorithm)) {
         if (bytes) {
-          // Otherwise, we use our bundled WASM implementation via digestSync
+          // Otherwise, we use our bundled Wasm implementation via digestSync
           // if it supports the algorithm.
           return stdCrypto.subtle.digestSync(algorithm, bytes);
         } else if ((data as Iterable<BufferSource>)[Symbol.iterator]) {
