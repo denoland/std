@@ -152,15 +152,16 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdin: "piped",
+    stderr: "inherit",
   });
 
   const writer = process.stdin.getWriter();
   await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.mjs";
+      import { instantiateWithInstance } from "../_wasm_crypto/lib/deno_std_wasm_crypto.generated.js";
 
-      const { memory } = _wasm as { memory: WebAssembly.Memory };
+      const { memory } = instantiateWithInstance().instance.exports;
 
       const toHexString = (bytes: ArrayBuffer): string =>
         new Uint8Array(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
@@ -246,6 +247,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdout: "piped",
+    stderr: "inherit",
     stdin: "piped",
   });
 
@@ -253,9 +255,9 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
   await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.mjs";
+      import { instantiateWithInstance } from "../_wasm_crypto/lib/deno_std_wasm_crypto.generated.js";
 
-      const { memory } = _wasm as { memory: WebAssembly.Memory };
+      const { memory } = instantiateWithInstance().instance.exports;
 
       const heapBytesInitial = memory.buffer.byteLength;
 

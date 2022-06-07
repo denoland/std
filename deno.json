@@ -11,6 +11,7 @@
         "_wasm_crypto/target",
         "cov",
         "encoding/testdata/jsonc",
+        "hash/_wasm/target",
         "node/_tools/versions",
         "node/_tools/test",
         "node/integrationtest/yarn.js",
@@ -26,6 +27,7 @@
         "_wasm_crypto/target",
         "encoding/testdata/jsonc",
         "cov",
+        "hash/_wasm/target",
         "node/vendor",
         "node/_module/node_modules/",
         "node/_tools/versions",
@@ -41,6 +43,9 @@
     "node:unit": "DENO_FUTURE_CHECK=1 deno test --unstable --allow-all node/ --ignore=node/_tools/test.ts,node/_tools/versions/",
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
     "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
-    "node:check-unstable-api": "deno check --unstable ./node/module_all.ts"
+    "node:check-unstable-api": "deno check --unstable ./node/module_all.ts",
+    "build:crypto": "cd _wasm_crypto && deno run --unstable -A --no-check https://deno.land/x/wasmbuild@0.5.0/main.ts --sync",
+    "build:hash": "cd hash/_wasm && deno run --unstable -A --no-check https://deno.land/x/wasmbuild@0.5.0/main.ts --sync",
+    "build:varint": "cd _wasm_varint && deno run --unstable -A --no-check https://deno.land/x/wasmbuild@0.5.0/main.ts --sync"
   }
 }

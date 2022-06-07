@@ -1,8 +1,8 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import {
-  crypto as wasmCrypto,
   DigestAlgorithm as WasmDigestAlgorithm,
   digestAlgorithms as wasmDigestAlgorithms,
+  instantiateWasm,
 } from "../_wasm_crypto/mod.ts";
 
 import { fnv } from "./_fnv/index.ts";
@@ -89,6 +89,7 @@ const stdCrypto = ((x) => x)({
         } else if (
           (data as AsyncIterable<BufferSource>)[Symbol.asyncIterator]
         ) {
+          const wasmCrypto = instantiateWasm();
           const context = new wasmCrypto.DigestContext(name);
           for await (const chunk of data as AsyncIterable<BufferSource>) {
             const chunkBytes = bufferSourceBytes(chunk);
@@ -133,6 +134,7 @@ const stdCrypto = ((x) => x)({
         return fnv(algorithm.name, bytes);
       }
 
+      const wasmCrypto = instantiateWasm();
       if (bytes) {
         return wasmCrypto.digest(algorithm.name, bytes, algorithm.length)
           .buffer;

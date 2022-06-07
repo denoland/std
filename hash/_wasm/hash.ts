@@ -1,12 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-import {
-  create_hash as createHash,
-  DenoHash,
-  digest_hash as digestHash,
-  update_hash as updateHash,
-} from "./wasm.js";
+import { DenoHash, instantiate } from "./lib/deno_hash.generated.js";
 
 import * as hex from "../../encoding/hex.ts";
 import * as base64 from "../../encoding/base64.ts";
@@ -17,7 +12,7 @@ export class Hash implements Hasher {
   #digested: boolean;
 
   constructor(algorithm: string) {
-    this.#hash = createHash(algorithm);
+    this.#hash = instantiate().create_hash(algorithm);
     this.#digested = false;
   }
 
@@ -44,6 +39,7 @@ export class Hash implements Hasher {
     // increasing the size of the WASM heap.
 
     const chunkSize = 65_536;
+    const updateHash = instantiate().update_hash;
 
     for (
       let offset = 0;
@@ -68,7 +64,7 @@ export class Hash implements Hasher {
     if (this.#digested) throw new Error("hash: already digested");
 
     this.#digested = true;
-    return digestHash(this.#hash);
+    return instantiate().digest_hash(this.#hash);
   }
 
   /**
