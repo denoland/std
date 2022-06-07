@@ -19,16 +19,16 @@ export interface ConfigOptions {
   defaults?: string;
 }
 
-const RE_VariableStart = /^\s*[a-zA-Z_][a-zA-Z_0-9 ]*\s*=/
-const RE_SingleQuotes = /^'([\s\S]*)'$/
-const RE_DoubleQuotes = /^"([\s\S]*)"$/
+const RE_VariableStart = /^\s*[a-zA-Z_][a-zA-Z_0-9 ]*\s*=/;
+const RE_SingleQuotes = /^'([\s\S]*)'$/;
+const RE_DoubleQuotes = /^"([\s\S]*)"$/;
 
 export function parse(rawDotenv: string): DotenvConfig {
   const env: DotenvConfig = {};
 
   for (const line of rawDotenv.split("\n")) {
     if (!RE_VariableStart.test(line)) continue;
-    const eqIdx = line.indexOf("=")
+    const eqIdx = line.indexOf("=");
     const key = line.slice(0, eqIdx).trim();
     let value = line.slice(eqIdx + 1);
     const hashIdx = value.indexOf("#");
