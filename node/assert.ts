@@ -13,6 +13,25 @@ import {
   ERR_INVALID_RETURN_VALUE,
   ERR_MISSING_ARGS,
 } from "./internal/errors.ts";
+import { isDeepEqual } from "./internal/util/comparisons.ts";
+
+function innerFail(obj: {
+  actual?: unknown;
+  expected?: unknown;
+  message?: string | Error;
+  operator?: string;
+}) {
+  if (obj.message instanceof Error) {
+    throw obj.message;
+  }
+
+  throw new AssertionError({
+    actual: obj.actual,
+    expected: obj.expected,
+    message: obj.message,
+    operator: obj.operator,
+  });
+}
 
 interface ExtendedAssertionErrorConstructorOptions
   extends AssertionErrorConstructorOptions {
@@ -317,21 +336,31 @@ function notStrictEqual(
   );
 }
 
-function deepEqual() {
+function deepEqual(
+  actual: unknown,
+  expected: unknown,
+  message?: string | Error,
+) {
   if (arguments.length < 2) {
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
 
-  // TODO(kt3k): Implement deepEqual
-  throw new Error("Not implemented");
+  if (!isDeepEqual(actual, expected)) {
+    innerFail({ actual, expected, message, operator: "deepEqual" });
+  }
 }
-function notDeepEqual() {
+function notDeepEqual(
+  actual: unknown,
+  expected: unknown,
+  message?: string | Error,
+) {
   if (arguments.length < 2) {
     throw new ERR_MISSING_ARGS("actual", "expected");
   }
 
-  // TODO(kt3k): Implement notDeepEqual
-  throw new Error("Not implemented");
+  if (isDeepEqual(actual, expected)) {
+    innerFail({ actual, expected, message, operator: "notDeepEqual" });
+  }
 }
 function deepStrictEqual(
   actual: unknown,
