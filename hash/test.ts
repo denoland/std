@@ -484,9 +484,9 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
   await writer.write(
     new TextEncoder().encode(`
       import { createHash } from "./mod.ts";
-      import { _wasm } from "./_wasm/wasm.js";
+      import { instantiateWithInstance } from "./_wasm/lib/deno_hash.generated.js";
 
-      const { memory } = _wasm as { memory: WebAssembly.Memory };
+      const { memory } = instantiateWithInstance().instance.exports;
 
       const heapBytesInitial = memory.buffer.byteLength;
 
