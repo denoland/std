@@ -19,16 +19,24 @@ export interface ConfigOptions {
   defaults?: string;
 }
 
+const RE_VariableStart = /^\s*[a-zA-Z_][a-zA-Z_0-9 ]*\s*=/
+const RE_SingleQuotes = /^'([\s\S]*)'$/
+const RE_DoubleQuotes = /^"([\s\S]*)"$/
+
 export function parse(rawDotenv: string): DotenvConfig {
   const env: DotenvConfig = {};
 
   for (const line of rawDotenv.split("\n")) {
-    if (!isVariableStart(line)) continue;
-    const key = line.slice(0, line.indexOf("=")).trim();
-    let value = line.slice(line.indexOf("=") + 1).trim();
-    if (hasSingleQuotes(value)) {
+    if (!RE_VariableStart.test(line)) continue;
+    const eqIdx = line.indexOf("=")
+    const key = line.slice(0, eqIdx).trim();
+    let value = line.slice(eqIdx + 1);
+    const hashIdx = value.indexOf("#");
+    if (hashIdx >= 0) value = value.slice(0, hashIdx);
+    value = value.trim();
+    if (RE_SingleQuotes.test(value)) {
       value = value.slice(1, -1);
-    } else if (hasDoubleQuotes(value)) {
+    } else if (RE_DoubleQuotes.test(value)) {
       value = value.slice(1, -1);
       value = expandNewlines(value);
     } else value = value.trim();
@@ -130,18 +138,6 @@ async function parseFileAsync(filepath: string) {
     if (e instanceof Deno.errors.NotFound) return {};
     throw e;
   }
-}
-
-function isVariableStart(str: string): boolean {
-  return /^\s*[a-zA-Z_][a-zA-Z_0-9 ]*\s*=/.test(str);
-}
-
-function hasSingleQuotes(str: string): boolean {
-  return /^'([\s\S]*)'$/.test(str);
-}
-
-function hasDoubleQuotes(str: string): boolean {
-  return /^"([\s\S]*)"$/.test(str);
 }
 
 function expandNewlines(str: string): string {
