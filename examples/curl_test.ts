@@ -15,9 +15,8 @@ Deno.test({
       { signal: abortController.signal },
     );
     const decoder = new TextDecoder();
-    const process = Deno.run({
-      cmd: [
-        Deno.execPath(),
+    const { stdout } = await Deno.spawn(Deno.execPath(), {
+      args: [
         "run",
         "--quiet",
         "--allow-net",
@@ -25,18 +24,15 @@ Deno.test({
         "http://localhost:8081",
       ],
       cwd: moduleDir,
-      stdout: "piped",
     });
 
     try {
-      const output = await process.output();
-      const actual = decoder.decode(output).trim();
+      const actual = decoder.decode(stdout).trim();
       const expected = "Hello world";
 
       assertStrictEquals(actual, expected);
     } finally {
       abortController.abort();
-      process.close();
       await serverPromise;
     }
   },

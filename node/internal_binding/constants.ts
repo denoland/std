@@ -116,6 +116,7 @@ export const os = {
     SIGSTOP: 17,
     SIGTSTP: 18,
     SIGTTIN: 21,
+    SIGBREAK: 21,
     SIGTTOU: 22,
     SIGURG: 16,
     SIGXCPU: 24,

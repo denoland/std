@@ -313,18 +313,13 @@ Deno.test(
     async function runTestWithUpdateFlag(test: string) {
       await Deno.writeTextFile(tempTestFilePath, test);
 
-      const process = await Deno.run({
-        cmd: ["deno", "test", "--allow-all", tempTestFilePath, "--", "-u"],
-        stdout: "piped",
-        stderr: "piped",
+      const { stdout, stderr } = await Deno.spawn("deno", {
+        args: ["test", "--allow-all", tempTestFilePath, "--", "-u"],
       });
-      const output = await process.output();
-      const error = await process.stderrOutput();
-      process.close();
 
       return {
-        output: new TextDecoder().decode(output),
-        error: new TextDecoder().decode(error),
+        output: new TextDecoder().decode(stdout),
+        error: new TextDecoder().decode(stderr),
         snapshots: await Deno.readTextFile(tempSnapshotFilePath),
       };
     }
@@ -484,4 +479,8 @@ Deno.test("Snapshot Test - Regression #2144", async (t) => {
     },
   };
   await assertSnapshot(t, config);
+});
+
+Deno.test("Snapshot Test - Empty #2245", async (t) => {
+  await assertSnapshot(t, "", { serializer: (x) => x });
 });
