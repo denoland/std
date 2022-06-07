@@ -5,17 +5,7 @@ import {
   assertRejects,
   assertThrows,
 } from "../testing/asserts.ts";
-import {
-  config,
-  configSync,
-  Env,
-  EnvObject,
-  load,
-  loadSync,
-  parse,
-  stringify,
-  verify,
-} from "./mod.ts";
+import { config, configSync, load, loadSync, parse, stringify } from "./mod.ts";
 import * as path from "../path/mod.ts";
 
 function clearDenoEnv() {
@@ -258,17 +248,6 @@ Deno.test("loadSync", () => {
   assertEquals(Deno.env.get("GREETING"), "Hello World");
   assertEquals(Deno.env.get("DEFAULT"), "Some Default");
   clearDenoEnv();
-});
-
-Deno.test("verify allowEmptyValues", () => {
-  const dotEnv: EnvObject = { env: { foo: "" }, exports: [] };
-  const exampleEnv: Env = { foo: "bar" };
-  assertEquals(verify(dotEnv, exampleEnv, { allowEmptyValues: true }), true);
-});
-Deno.test("verify allowEmptyValues throw", () => {
-  const dotEnv: EnvObject = { env: { foo: "" }, exports: [] };
-  const exampleEnv: Env = { foo: "bar" };
-  assertThrows(() => verify(dotEnv, exampleEnv));
 });
 
 /**

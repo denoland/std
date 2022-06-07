@@ -7,57 +7,10 @@ import {
   optionalReadTextFile,
   optionalReadTextFileSync,
   setDenoEnv,
+  verify,
 } from "./_util.ts";
 
 export type { DenoEnv, Env, EnvObject };
-
-export interface VerifyOptions {
-  allowEmptyValues?: boolean;
-  defaultsEnv?: Env;
-}
-/**
- * @param object EnvObject that should be verified.
- * @param options verification options
- * @returns true if valid, else throws an error
- * ```ts
- * import { verify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
- *
- * const object = { env: { GREETING: "hello world" }, exports: [] };
- * const exampleEnv = { GREETING: "someValue" };
- * const options = { allowEmptyValues: true };
- * verify(object, exampleEnv, options);
- * ```
- */
-export function verify(
-  object: EnvObject,
-  exampleEnv: Env,
-  { allowEmptyValues, defaultsEnv = {} }: VerifyOptions = {},
-) {
-  const env = { ...defaultsEnv, ...object.env };
-  let entries = env;
-
-  if (!allowEmptyValues) {
-    const valueEntries = Object.entries(entries).filter(
-      ([_, value]) => (value != null && value !== ""),
-    );
-    entries = Object.fromEntries(valueEntries);
-  }
-
-  const keys = Object.keys(entries);
-  const exampleKeys = Object.keys(exampleEnv);
-
-  const missingVariables = exampleKeys
-    .filter((key) => !keys.includes(key));
-
-  if (missingVariables.length) {
-    const missingExportsString = missingVariables.join(", ");
-    throw new Error(
-      `The following variables were defined in the example file but are not present in the environment: ${missingExportsString}`,
-    );
-  }
-
-  return true;
-}
 
 const regExp =
   /^\s*(?<comment>#.+)|(?<export>export\s+)?(?<key>[a-zA-Z_]\w*)\s*=\s*((?<quote>["'`])?(?<value>.+?)\5?)?\s*?$/;

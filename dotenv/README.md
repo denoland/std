@@ -37,25 +37,6 @@ export EXPORT=exported
 */
 ```
 
-## Verify
-
-```ts
-import { verify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
-
-const object = { env: { GREETING: "" }, exports: [] };
-const exampleEnv = { GREETING: "someValue" };
-const options = { allowEmptyValues: true };
-
-const isValid = verify(object, exampleEnv, options);
-
-console.log(isValid); // true
-```
-
-### Verify options
-
-- `allowEmptyValues?: boolean`: set to `true` to allow variables with an empty
-  value.
-
 ## Load
 
 ```ts

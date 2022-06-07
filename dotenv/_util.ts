@@ -47,3 +47,37 @@ export function setDenoEnv(
   }
   return denoEnv;
 }
+export interface VerifyOptions {
+  allowEmptyValues?: boolean;
+  defaultsEnv?: Env;
+}
+export function verify(
+  object: EnvObject,
+  exampleEnv: Env,
+  { allowEmptyValues, defaultsEnv = {} }: VerifyOptions = {},
+) {
+  const env = { ...defaultsEnv, ...object.env };
+  let entries = env;
+
+  if (!allowEmptyValues) {
+    const valueEntries = Object.entries(entries).filter(
+      ([_, value]) => (value != null && value !== ""),
+    );
+    entries = Object.fromEntries(valueEntries);
+  }
+
+  const keys = Object.keys(entries);
+  const exampleKeys = Object.keys(exampleEnv);
+
+  const missingVariables = exampleKeys
+    .filter((key) => !keys.includes(key));
+
+  if (missingVariables.length) {
+    const missingExportsString = missingVariables.join(", ");
+    throw new Error(
+      `The following variables were defined in the example file but are not present in the environment: ${missingExportsString}`,
+    );
+  }
+
+  return true;
+}
