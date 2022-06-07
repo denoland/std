@@ -126,8 +126,8 @@ Deno.test("with comments", () => {
   );
 
   const config = parse(testDotenv);
-  assertEquals(config.FOO, "bar"); 
-  assertEquals(config.GREETING, "hello world"); 
+  assertEquals(config.FOO, "bar");
+  assertEquals(config.GREETING, "hello world");
 });
 
 Deno.test("configure", () => {
