@@ -2,4 +2,11 @@
 
 import { loadSync } from "./mod.ts";
 
-loadSync();
+if (!(Deno.readTextFileSync instanceof Function)) {
+  // deno deploy doesn't have Deno.readFileSync
+  console.warn(
+    `Deno.readTextFileSync is not a function: No .env data was read.`,
+  );
+} else {
+  loadSync();
+}
