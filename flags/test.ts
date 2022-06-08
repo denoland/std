@@ -211,13 +211,13 @@ Deno.test("booleanNegationAfterBoolean", function (): void {
 });
 
 Deno.test("booleanAfterBooleanNegation", function (): void {
-  const parsed = parse(["--no--foo", "--foo"], {
+  const parsed = parse(["--no-foo", "--foo"], {
     boolean: ["foo"],
     negatable: ["foo"],
   });
   assertEquals(parsed.foo, true);
 
-  const parsed2 = parse(["--no--foo", "--foo", "123"], {
+  const parsed2 = parse(["--no-foo", "--foo", "123"], {
     boolean: ["foo"],
     negatable: ["foo"],
   });
