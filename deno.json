@@ -9,6 +9,7 @@
       "exclude": [
         ".git",
         "_wasm_crypto/target",
+        "_wasm_varint/target",
         "cov",
         "encoding/testdata/jsonc",
         "node/_tools/versions",
@@ -24,6 +25,7 @@
       "exclude": [
         ".git",
         "_wasm_crypto/target",
+        "_wasm_varint/target",
         "encoding/testdata/jsonc",
         "cov",
         "node/vendor",
