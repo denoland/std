@@ -966,7 +966,7 @@ import {
   ascend,
   BSTree,
   descend,
-} from "https://deno.land/std@$STD_VERSION/collections/bstree.ts";
+} from "https://deno.land/std@$STD_VERSION/collections/bs_tree.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const values = [3, 10, 13, 4, 6, 7, 1, 14];
@@ -1048,7 +1048,7 @@ import {
   ascend,
   descend,
   RBTree,
-} from "https://deno.land/std@$STD_VERSION/collections/rbtree.ts";
+} from "https://deno.land/std@$STD_VERSION/collections/rb_tree.ts";
 import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
 
 const values = [3, 10, 13, 4, 6, 7, 1, 14];
