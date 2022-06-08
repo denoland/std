@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import * as wasm from "../_wasm_varint/varint.mjs";
+import { instantiate } from "../_wasm_varint/lib/deno_std_wasm_varint.generated.mjs";
 
 const U32MAX = 4_294_967_295;
 const U64MAX = 18_446_744_073_709_551_615n;
@@ -21,6 +21,7 @@ export function encodeU32(val: number): Uint8Array {
       `The given number exceeds the limit of unsigned integer: ${val}`,
     );
   }
+  const wasm = instantiate();
   return wasm.encode_u32(val);
 }
 
@@ -40,6 +41,7 @@ export function encodeU64(val: bigint): Uint8Array {
       `The given number exceeds the limit of unsigned long integer: ${val}`,
     );
   }
+  const wasm = instantiate();
   return wasm.encode_u64(val);
 }
 
@@ -56,6 +58,7 @@ export function encodeU64(val: bigint): Uint8Array {
  */
 export function decodeU32(val: Uint8Array): number {
   if (val.length > 5) throw RangeError("Too many bytes");
+  const wasm = instantiate();
   try {
     return wasm.decode_u32(val);
   } catch {
@@ -76,6 +79,7 @@ export function decodeU32(val: Uint8Array): number {
  */
 export function decodeU64(val: Uint8Array): BigInt {
   if (val.length > 10) throw RangeError("Too many bytes");
+  const wasm = instantiate();
   try {
     return wasm.decode_u64(val);
   } catch {
