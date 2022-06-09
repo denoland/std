@@ -113,6 +113,4 @@ If you want to run `deno test --doc x.md` you will need to specify the flag
 
 _For maintainers_:
 
-To release a new version a tag in the form of `x.y.z` should be added.
-
-
+To release a new version a tag in the form of `x.y.z` should be added. x
