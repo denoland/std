@@ -49,7 +49,6 @@ import type { BindingName } from "./internal_binding/mod.ts";
 import { buildAllowedFlags } from "./internal/process/per_thread.mjs";
 
 const notImplementedEvents = [
-  "beforeExit",
   "disconnect",
   "message",
   "multipleResolves",
@@ -89,6 +88,9 @@ export const exit = (code?: number | string) => {
 
   if (!process._exiting) {
     process._exiting = true;
+    // FIXME(bartlomieju): this is wrong, we won't be using syscall to exit
+    // and thus the `unload` event will be emitted to properly trigget "emit"
+    // event on `process`.
     process.emit("exit", process.exitCode || 0);
   }
 
@@ -265,6 +267,10 @@ export function kill(pid: number, sig: Deno.Signal | number = "SIGTERM") {
 class Process extends EventEmitter {
   constructor() {
     super();
+
+    globalThis.addEventListener("beforeunload", () => {
+      super.emit("beforeExit", process.exitCode || 0);
+    });
 
     globalThis.addEventListener("unload", () => {
       if (!process._exiting) {
