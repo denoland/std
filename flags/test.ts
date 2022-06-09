@@ -197,37 +197,57 @@ Deno.test("booleanParsingTrueLike", function (): void {
 });
 
 Deno.test("booleanNegationAfterBoolean", function (): void {
-  const parsed = parse(["--foo", "--no-foo"], { boolean: ["foo"] });
+  const parsed = parse(["--foo", "--no-foo"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed.foo, false);
 
-  const parsed2 = parse(["--foo", "--no-foo", "123"], { boolean: ["foo"] });
+  const parsed2 = parse(["--foo", "--no-foo", "123"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed2.foo, false);
 });
 
 Deno.test("booleanAfterBooleanNegation", function (): void {
-  const parsed = parse(["--no--foo", "--foo"], { boolean: ["foo"] });
+  const parsed = parse(["--no-foo", "--foo"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed.foo, true);
 
-  const parsed2 = parse(["--no--foo", "--foo", "123"], { boolean: ["foo"] });
+  const parsed2 = parse(["--no-foo", "--foo", "123"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed2.foo, true);
 });
 
 Deno.test("latestFlagIsBooleanNegation", function (): void {
-  const parsed = parse(["--no-foo", "--foo", "--no-foo"], { boolean: ["foo"] });
+  const parsed = parse(["--no-foo", "--foo", "--no-foo"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed.foo, false);
 
   const parsed2 = parse(["--no-foo", "--foo", "--no-foo", "123"], {
     boolean: ["foo"],
+    negatable: ["foo"],
   });
   assertEquals(parsed2.foo, false);
 });
 
 Deno.test("latestFlagIsBoolean", function (): void {
-  const parsed = parse(["--foo", "--no-foo", "--foo"], { boolean: ["foo"] });
+  const parsed = parse(["--foo", "--no-foo", "--foo"], {
+    boolean: ["foo"],
+    negatable: ["foo"],
+  });
   assertEquals(parsed.foo, true);
 
   const parsed2 = parse(["--foo", "--no-foo", "--foo", "123"], {
     boolean: ["foo"],
+    negatable: ["foo"],
   });
   assertEquals(parsed2.foo, true);
 });
@@ -370,7 +390,7 @@ Deno.test("alreadyNumber", function (): void {
 });
 
 Deno.test("parseArgs", function (): void {
-  assertEquals(parse(["--no-moo"]), { moo: false, _: [] });
+  assertEquals(parse(["--no-moo"]), { "no-moo": true, _: [] });
   assertEquals(parse(["-v", "a", "-v", "b", "-v", "c"]), {
     v: "c",
     _: [],
@@ -413,7 +433,7 @@ Deno.test("comprehensive", function (): void {
       bool: true,
       key: "value",
       multi: "baz",
-      meep: false,
+      "no-meep": true,
       name: "meowmers",
       _: ["bare", "--not-a-flag", "eek"],
     },
@@ -828,6 +848,7 @@ Deno.test("collectNegateableArgs", function (): void {
   ], {
     string: ["foo"],
     collect: ["foo"],
+    negatable: ["foo"],
     alias: {
       foo: "f",
     },
