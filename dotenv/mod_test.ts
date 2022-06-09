@@ -31,6 +31,27 @@ Deno.test("parse", async (t) => {
     },
   );
   await t.step(
+    "comment after key=value",
+    () => {
+      const { env } = parse(`FOO=  bar  # hi`);
+      assertEquals(env["FOO"], "bar");
+    },
+  );
+  await t.step(
+    "sharp in single quote",
+    () => {
+      const { env } = parse(`FOO=  'bar#baz'  `);
+      assertEquals(env["FOO"], "bar#baz");
+    },
+  );
+  await t.step(
+    "sharp in double quote",
+    () => {
+      const { env } = parse(`FOO=  "bar#baz"  `);
+      assertEquals(env["FOO"], "bar#baz");
+    },
+  );
+  await t.step(
     "empty",
     () => {
       const { env } = parse(`EMPTY=`);
