@@ -313,7 +313,7 @@ Deno.test(
     async function runTestWithUpdateFlag(test: string) {
       await Deno.writeTextFile(tempTestFilePath, test);
 
-      const { stdout, stderr } = await Deno.spawn(Deno.execPath(), {
+      const { stdout, stderr } = await Deno.spawn("deno", {
         args: ["test", "--allow-all", tempTestFilePath, "--", "-u"],
       });
 
