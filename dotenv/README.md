@@ -1,5 +1,20 @@
 # Dotenv handling for deno.
 
+Setup a `.env` file in the root of your project.
+
+```sh
+# .env
+GREETING=hello world
+```
+
+Then import the configuration using the `load` function.
+
+```ts
+import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+
+await load();
+```
+
 ## Parse
 
 ```ts
