@@ -15,45 +15,14 @@ Then import the configuration using the `load` function.
 import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
 
 await load();
+console.log("GREETING", Deno.env.get("GREETING"));
 ```
 
 Then run your app.
 
-## Parse
-
-```ts
-import { parse } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
-
-const object = parse(`
-  GREETING=hello world
-  export EXPORT=exported
-`);
-
-console.log(object); // { env: { GREETING: "hello world", EXPORT: "exported" }, exports: ["EXPORT"] }
 ```
-
-### Parse options
-
-- `example?: DotEnvObject`: example object that the parsed data will be verified
-  against.
-- `allowEmptyValues?: boolean`: set to `true` to allow variables with an empty
-  value.
-
-## Stringify
-
-```ts
-import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
-
-const string = stringify({
-  env: { GREETING: "hello world", EXPORT: "exported" },
-  exports: ["EXPORT"],
-});
-
-console.log(string);
-/*
-GREETING=hello world
-export EXPORT=exported
-*/
+> deno run --allow-read --allow-env app.ts
+GREETING hello world
 ```
 
 ## Load
@@ -126,6 +95,45 @@ The parsing engine currently supports the following rules:
 
 - backticks are supported
   (`` BACKTICK_KEY=`This has 'single' and "double" quotes inside of it.` ``)
+
+## Low level APIs
+
+## Parse
+
+```ts
+import { parse } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+
+const object = parse(`
+  GREETING=hello world
+  export EXPORT=exported
+`);
+
+console.log(object); // { env: { GREETING: "hello world", EXPORT: "exported" }, exports: ["EXPORT"] }
+```
+
+### Parse options
+
+- `example?: DotEnvObject`: example object that the parsed data will be verified
+  against.
+- `allowEmptyValues?: boolean`: set to `true` to allow variables with an empty
+  value.
+
+## Stringify
+
+```ts
+import { stringify } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
+
+const string = stringify({
+  env: { GREETING: "hello world", EXPORT: "exported" },
+  exports: ["EXPORT"],
+});
+
+console.log(string);
+/*
+GREETING=hello world
+export EXPORT=exported
+*/
+```
 
 ## Credit
 
