@@ -54,9 +54,10 @@ const object = loadSync(Deno.env, { envPath: "path/to/.env" });
 
 ## Auto loading
 
-`load.ts` automatically loads the local `.env` file, verifies it against
-`.env.exanple` if existent, adds defaults from `.env.defaults` if existent and
-exports it to the process environment object:
+`load.ts` automatically loads the local `.env` file. It also verifies `.env`
+contents against `.env.example` if the file exists, adds defaults from
+`.env.defaults` if the file exists, and exports variables to the process
+environment object:
 
 ```sh
 # .env
@@ -73,20 +74,20 @@ console.log(Deno.env.get("GREETING")); // hello world
 
 The parsing engine currently supports the following rules:
 
-- `BASIC=basic` becomes `{BASIC: 'basic'}`
-- empty lines are skipped
-- lines beginning with `#` are treated as comments
-- empty values become empty strings (`EMPTY=` becomes `{EMPTY: ''}`)
-- inner quotes are maintained (think JSON) (`JSON={"foo": "bar"}` becomes
-  `{JSON:"{\"foo\": \"bar\"}"`)
-- whitespace is removed from both ends of unquoted values (see more on
+- `BASIC=basic` becomes `{ BASIC: 'basic' }`.
+- Empty lines are skipped.
+- Strings after `#` are treated as comments.
+- Empty values become empty strings (`EMPTY=` becomes `{ EMPTY: '' }`).
+- Inner quotes are maintained (think JSON) (`JSON={"foo": "bar"}` becomes
+  `{JSON:"{\"foo\": \"bar\"}"`).
+- Whitespace is removed from both ends of unquoted values (see more on
   [`trim`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim))
-  (`FOO=  some value` becomes `{FOO: 'some value'}`)
-- single and double quoted values are escaped (`SINGLE_QUOTE='quoted'` becomes
-  `{SINGLE_QUOTE: "quoted"}`)
-- single and double quoted values maintain whitespace from both ends
-  (`FOO="  some value  "` becomes `{FOO: '  some value  '}`)
-- double quoted values expand new lines (`MULTILINE="new\nline"` becomes
+  (`FOO=  some value` becomes `{ FOO: 'some value' }`).
+- Single and double quoted values are escaped (`SINGLE_QUOTE='quoted'` becomes
+  `{ SINGLE_QUOTE: "quoted" }`).
+- Single and double quoted values maintain whitespace from both ends
+  (`FOO="  some value  "` becomes `{FOO: '  some value  '}`).
+- Double quoted values expand new lines (`MULTILINE="new\nline"` becomes:
 
   ```
   { MULTILINE: "new
@@ -94,7 +95,7 @@ The parsing engine currently supports the following rules:
   ```
 
 - backticks are supported
-  (`` BACKTICK_KEY=`This has 'single' and "double" quotes inside of it.` ``)
+  (`` BACKTICK_KEY=`This has 'single' and "double" quotes inside of it.` ``).
 
 ## Low level APIs
 
