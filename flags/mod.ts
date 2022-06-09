@@ -271,10 +271,6 @@ export interface ParseOptions<
    * by prefixing them with `--no-`, like `--no-config`. */
   negatable?: N | ReadonlyArray<Extract<N, string>>;
 
-  /** A string or array of strings argument names which can be negated
-   * by prefixing them with `--no-`, like `--no-config`. */
-  negatable?: string | string[];
-
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
    * unknown option is not added to `parsedArgs`. */
@@ -439,7 +435,7 @@ export function parse<
   }
 
   if (negatable !== undefined) {
-    const negatableArgs = typeof negatable === "string"
+    const negatableArgs: ReadonlyArray<string> = typeof negatable === "string"
       ? [negatable]
       : negatable;
 
