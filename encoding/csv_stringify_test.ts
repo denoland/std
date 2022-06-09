@@ -167,7 +167,7 @@ Deno.test(
       const columns = [1];
       const data = [{ 1: 1 }, { 1: 2 }];
       const output = `1${NEWLINE}1${NEWLINE}2${NEWLINE}`;
-      assertEquals(await stringify(data, columns, options), output);
+      assertEquals(await stringify(data, columns), output);
     },
   },
 );
