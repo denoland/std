@@ -8,6 +8,15 @@ import {
 import { config, configSync, load, loadSync, parse, stringify } from "./mod.ts";
 import * as path from "../path/mod.ts";
 
+const originalDenoEnv = Deno.env.toObject();
+
+function restoreDenoEnv() {
+  clearDenoEnv();
+  for (const [k, v] of Object.entries(originalDenoEnv)) {
+    Deno.env.set(k, v);
+  }
+}
+
 function clearDenoEnv() {
   Object.keys(Deno.env.toObject()).forEach((key) => Deno.env.delete(key));
 }
@@ -251,7 +260,7 @@ Deno.test("load", async () => {
   });
   assertEquals(Deno.env.get("GREETING"), "Hello World");
   assertEquals(Deno.env.get("DEFAULT"), "Some Default");
-  clearDenoEnv();
+  restoreDenoEnv();
 });
 Deno.test("loadSync", () => {
   clearDenoEnv(); // @timreichen remove after config and configSync tests are removed
@@ -262,7 +271,7 @@ Deno.test("loadSync", () => {
   });
   assertEquals(Deno.env.get("GREETING"), "Hello World");
   assertEquals(Deno.env.get("DEFAULT"), "Some Default");
-  clearDenoEnv();
+  restoreDenoEnv();
 });
 
 /**
@@ -308,19 +317,6 @@ Deno.test("configure", () => {
     "returns empty object if file doesn't exist",
   );
 
-  // const originalDenoReadFileSync = Deno.readFileSync;
-  // try {
-  //   // @ts-ignore: for test
-  //   delete Deno.readFileSync;
-  //   assertEquals(
-  //     configSync(testOptions),
-  //     {},
-  //     "returns empty object if Deno.readFileSync is not a function",
-  //   );
-  // } finally {
-  //   Deno.readFileSync = originalDenoReadFileSync;
-  // }
-
   assertEquals(
     configSync({
       path: "./.some.non.existent.env",
@@ -329,6 +325,7 @@ Deno.test("configure", () => {
     { DEFAULT1: "Some Default" },
     "returns with defaults if file doesn't exist",
   );
+  restoreDenoEnv();
 });
 
 Deno.test("configureSafe", () => {
@@ -425,6 +422,7 @@ Deno.test("configureSafe", () => {
     example: path.join(configTestdataDir, "./.env.example2.test"),
     allowEmptyValues: true,
   });
+  restoreDenoEnv();
 });
 
 Deno.test("configure async", async () => {
@@ -467,6 +465,7 @@ Deno.test("configure async", async () => {
     { DEFAULT1: "Some Default" },
     "returns with defaults if file doesn't exist",
   );
+  restoreDenoEnv();
 });
 
 Deno.test("configureSafe async", async () => {
@@ -563,6 +562,8 @@ Deno.test("configureSafe async", async () => {
     example: path.join(configTestdataDir, "./.env.example2.test"),
     allowEmptyValues: true,
   });
+
+  restoreDenoEnv();
 });
 
 Deno.test("config defaults", async () => {

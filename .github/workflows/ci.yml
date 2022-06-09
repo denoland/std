@@ -155,7 +155,7 @@ jobs:
           declare modifications="$(git diff --name-only HEAD~ -- ./_wasm_crypto)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "::set-output name=modified::$modified"
-          echo "WASM crypto source modified in this commit? $modified"
+          echo "Wasm crypto source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
@@ -171,18 +171,11 @@ jobs:
           targets: wasm32-unknown-unknown
           components: rustfmt
 
-      - name: Set up wasm-bindgen-cli
-        run: |-
-          # This must match the version in _wasm_crypto/Cargo.lock:
-          cargo install -f wasm-bindgen-cli --version 0.2.78
+      - name: Rebuild Wasm
         if: success() && steps.source.outputs.modified == 'true'
+        run: deno task build:crypto
 
-      - name: Rebuild WASM
-        if: success() && steps.source.outputs.modified == 'true'
-        run: |-
-          ./_wasm_crypto/_build.ts
-
-      - name: Verify WASM hasn't changed
+      - name: Verify Wasm hasn't changed
         id: build
         if: success() && steps.source.outputs.modified == 'true'
         run: |-
@@ -195,7 +188,7 @@ jobs:
           echo "$modifications"
 
           if [[ "$modified" = "true" ]]; then
-            echo "::error ::Rebuilt WASM doesn't match committed WASM. Please rebuild and commit."
+            echo "::error ::Rebuilt Wasm doesn't match committed Wasm. Please rebuild and commit."
             exit 1
           fi
 
@@ -205,8 +198,7 @@ jobs:
         with:
           name: Rebuilt _wasm_crypto
           path: |-
-            ./_wasm_crypto/crypto.mjs
-            ./_wasm_crypto/crypto.wasm.mjs
+            ./_wasm_crypto/lib/deno_std_wasm_crypto.generated.mjs
 
   varint-wasm:
     name: "_wasm_varint/"
@@ -228,7 +220,7 @@ jobs:
           declare modifications="$(git diff --name-only HEAD~ -- ./_wasm_varint)"
           declare modified="$([[ "$modifications" ]] && echo true || echo false)"
           echo "::set-output name=modified::$modified"
-          echo "WASM varint source modified in this commit? $modified"
+          echo "Wasm varint source modified in this commit? $modified"
           echo "$modifications"
 
       - name: Set up Deno
@@ -244,18 +236,11 @@ jobs:
           targets: wasm32-unknown-unknown
           components: rustfmt
 
-      - name: Set up wasm-bindgen-cli
-        run: |-
-          # This must match the version in _wasm_varint/Cargo.lock:
-          cargo install -f wasm-bindgen-cli --version 0.2.80
+      - name: Rebuild Wasm
         if: success() && steps.source.outputs.modified == 'true'
+        run: deno task build:varint
 
-      - name: Rebuild WASM
-        if: success() && steps.source.outputs.modified == 'true'
-        run: |-
-          ./_wasm_varint/_build.ts
-
-      - name: Verify WASM hasn't changed
+      - name: Verify Wasm hasn't changed
         id: build
         if: success() && steps.source.outputs.modified == 'true'
         run: |-
@@ -268,7 +253,7 @@ jobs:
           echo "$modifications"
 
           if [[ "$modified" = "true" ]]; then
-            echo "::error ::Rebuilt WASM doesn't match committed WASM. Please rebuild and commit."
+            echo "::error ::Rebuilt Wasm doesn't match committed Wasm. Please rebuild and commit."
             exit 1
           fi
 
@@ -278,5 +263,4 @@ jobs:
         with:
           name: Rebuilt _wasm_varint
           path: |-
-            ./_wasm_varint/varint.mjs
-            ./_wasm_varint/varint.wasm.mjs
+            ./_wasm_varint/lib/deno_std_wasm_varint.generated.mjs

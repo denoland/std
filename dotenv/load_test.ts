@@ -1,5 +1,5 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assertStringIncludes } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
@@ -76,7 +76,7 @@ Deno.test({
     const decoder = new TextDecoder();
     const output = await p.stderrOutput();
 
-    assertEquals(
+    assertStringIncludes(
       decoder.decode(output).trim(),
       "Deno.readTextFileSync is not a function: No .env data was read.",
     );
