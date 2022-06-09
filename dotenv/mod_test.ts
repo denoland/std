@@ -31,6 +31,21 @@ Deno.test("parse", async (t) => {
     },
   );
   await t.step(
+    "comment after unquoted",
+    () => {
+      const { env } = parse(`FOO=bar # this is a comment`);
+
+      assertEquals(env["FOO"], "bar");
+    },
+  );
+  await t.step(
+    "comment after quoted",
+    () => {
+      const { env } = parse(`GREETING= "hello world" # hello world`);
+      assertEquals(env["GREETING"], "hello world");
+    },
+  );
+  await t.step(
     "empty",
     () => {
       const { env } = parse(`EMPTY=`);

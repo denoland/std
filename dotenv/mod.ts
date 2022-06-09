@@ -1,5 +1,6 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
+import { Parser as ParserBase } from "./_parser.ts";
 import {
   DenoEnv,
   Env,
@@ -12,8 +13,97 @@ import {
 
 export type { DenoEnv, Env, EnvObject };
 
-const regExp =
-  /^\s*(?<comment>#.+)|(?<export>export\s+)?(?<key>[a-zA-Z_]\w*)\s*=\s*((?<quote>["'`])?(?<value>.+?)\5?)?\s*?$/;
+export class Parser extends ParserBase {
+  #parseQuotedValue(quote: string) {
+    this.skipManyChar(" ");
+    if (this.peekChar() !== quote) return null;
+    this.nextChar();
+    let value = "";
+    while (!this.isEOF()) {
+      const escapedNewline = "\\n";
+      if (this.parseString(escapedNewline)) {
+        value += "\n";
+        continue;
+      }
+      const char = this.nextChar();
+      if (char === quote) break;
+      value += char;
+    }
+    return value;
+  }
+  #parseUnquotedValue() {
+    let value = "";
+    this.skipChar(" ");
+    while (!this.isEOF()) {
+      if (this.peekString(2) === " #") break;
+      const char = this.nextChar();
+      if (char === "\n") break;
+      value += char;
+    }
+    return value;
+  }
+  #parseComment() {
+    if (!this.startsWith("#")) return null;
+    const nextIndex = this.indexOf("\n");
+    this.index = nextIndex !== -1 ? nextIndex : this.input.length;
+  }
+  #parseVariableExport() {
+    const exportKey = "export ";
+    return this.parseString(exportKey);
+  }
+  #parseVariableKey() {
+    const char = this.peekChar();
+
+    // if key doesn't start with letter, key is invalid
+    if (!/[a-z]/i.test(char)) return null;
+
+    let key = "";
+    while (!this.isEOF()) {
+      const char = this.nextChar();
+      if (char === "=") break;
+      if (char === " ") break;
+      key += char;
+    }
+    return key;
+  }
+  #parseVariableValue() {
+    return (
+      this.#parseQuotedValue("`") ||
+      this.#parseQuotedValue('"') ||
+      this.#parseQuotedValue("'") ||
+      this.#parseUnquotedValue()
+    );
+  }
+  parseVariable() {
+    const _export = this.#parseVariableExport();
+    const key = this.#parseVariableKey();
+    if (!key) return null;
+    const value = this.#parseVariableValue();
+
+    return { key, value, export: _export };
+  }
+  parse(text: string) {
+    this.input = text;
+    this.index = 0;
+    const env: Env = {};
+    const exports: Set<string> = new Set();
+    while (!this.isEOF()) {
+      if (this.startsWith("\n")) {
+        while (this.startsWith("\n")) {
+          this.nextChar();
+        }
+        continue;
+      }
+      this.#parseComment();
+      const variable = this.parseVariable();
+      if (!variable) break;
+      const { key, value, export: _export } = variable;
+      env[key] = value;
+      if (_export) exports.add(key);
+    }
+    return { env, exports: [...exports] };
+  }
+}
 
 export interface ParseOptions {
   allowEmptyValues?: boolean;
@@ -36,41 +126,13 @@ export function parse(
   source: string,
   { allowEmptyValues = false, example }: ParseOptions = {},
 ): EnvObject {
-  const env: Env = {};
-  const exports: Set<string> = new Set();
-
-  const lines = source.split("\n");
-  for (const line of lines) {
-    const groups = regExp.exec(line)?.groups;
-
-    // if line is invalid
-    if (!groups) continue;
-    // if line is a comment
-    if (groups.comment) continue;
-
-    let value = groups.value ?? "";
-
-    if (groups.quote === `'`) {
-      // do nothing, preseve newlines
-    } else if (groups.quote === `"`) {
-      value = value.replaceAll("\\n", "\n");
-    } else {
-      value = value.trim();
-    }
-
-    env[groups.key] = value;
-
-    if (groups.export != null) {
-      exports.add(groups.key);
-    }
-  }
-  const object: EnvObject = { env, exports: [...exports] };
+  const parser = new Parser();
+  const object = parser.parse(source);
 
   if (example) {
     const exampleEnv = example.env;
     verify(object, exampleEnv, { allowEmptyValues });
   }
-
   return object;
 }
 

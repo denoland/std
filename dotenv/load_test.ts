@@ -3,11 +3,11 @@ import { assertEquals } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
-const testdataDir = path.resolve(moduleDir, "testdata/_config");
+const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test({
   name: "load",
-  permissions: { read: true, env: true },
+  permissions: { read: true, env: true, run: true },
   async fn() {
     const p = Deno.run({
       cmd: [
@@ -33,7 +33,7 @@ Deno.test({
 
 Deno.test({
   name: "load when multiple files",
-  permissions: { read: true, env: true },
+  permissions: { read: true, env: true, run: true },
   async fn() {
     const p = Deno.run({
       cmd: [
@@ -56,9 +56,10 @@ Deno.test({
     p.close();
   },
 });
+
 Deno.test({
   name: "deploy",
-  permissions: { read: true, env: true },
+  permissions: { read: true, env: true, run: true },
   async fn() {
     const p = Deno.run({
       cmd: [
