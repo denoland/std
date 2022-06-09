@@ -1,13 +1,13 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
-import { assertEquals } from "../testing/asserts.ts";
+import { assertEquals, assertStringIncludes } from "../testing/asserts.ts";
 import * as path from "../path/mod.ts";
 
 const moduleDir = path.dirname(path.fromFileUrl(import.meta.url));
-const testdataDir = path.resolve(moduleDir, "testdata/_config");
+const testdataDir = path.resolve(moduleDir, "testdata");
 
 Deno.test({
   name: "load",
-  permissions: { read: true, env: true },
+  permissions: { read: true, env: true, run: true },
   async fn() {
     const p = Deno.run({
       cmd: [
@@ -33,7 +33,7 @@ Deno.test({
 
 Deno.test({
   name: "load when multiple files",
-  permissions: { read: true, env: true },
+  permissions: { read: true, env: true, run: true },
   async fn() {
     const p = Deno.run({
       cmd: [
@@ -58,7 +58,7 @@ Deno.test({
 });
 Deno.test({
   name: "deploy",
-  permissions: { read: true, env: true },
+  permissions: { read: true, env: true, run: true },
   async fn() {
     const p = Deno.run({
       cmd: [
@@ -75,7 +75,7 @@ Deno.test({
     const decoder = new TextDecoder();
     const output = await p.stderrOutput();
 
-    assertEquals(
+    assertStringIncludes(
       decoder.decode(output).trim(),
       "Deno.readTextFileSync is not a function: No .env data was read.",
     );
