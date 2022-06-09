@@ -1,3 +1,4 @@
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 import { assertEquals, assertStrictEquals } from "../testing/asserts.ts";
 import { ascend, BSTree, descend } from "./bs_tree.ts";
 

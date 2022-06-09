@@ -7,6 +7,7 @@
 
 import { extname, posix } from "../path/mod.ts";
 import { encode } from "../encoding/hex.ts";
+import { contentType } from "../media_types/mod.ts";
 import { serve, serveTls } from "./server.ts";
 import { Status, STATUS_TEXT } from "./http_status.ts";
 import { parse } from "../flags/mod.ts";
@@ -23,162 +24,8 @@ interface EntryInfo {
   name: string;
 }
 
-interface FileServerArgs {
-  _: string[];
-  // -p --port
-  port: string;
-  // --cors
-  cors: boolean;
-  // --no-dir-listing
-  "dir-listing": boolean;
-  dotfiles: boolean;
-  // --host
-  host: string;
-  // -c --cert
-  cert: string;
-  // -k --key
-  key: string;
-  // -h --help
-  help: boolean;
-  // --quiet
-  quiet: boolean;
-}
-
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
-
-const MEDIA_TYPES: Record<string, string> = {
-  ".md": "text/markdown",
-  ".html": "text/html",
-  ".htm": "text/html",
-  ".json": "application/json",
-  ".map": "application/json",
-  ".txt": "text/plain",
-  ".ts": "text/typescript",
-  ".tsx": "text/tsx",
-  ".js": "application/javascript",
-  ".jsx": "text/jsx",
-  ".gz": "application/gzip",
-  ".css": "text/css",
-  ".wasm": "application/wasm",
-  ".mjs": "application/javascript",
-  ".otf": "font/otf",
-  ".ttf": "font/ttf",
-  ".woff": "font/woff",
-  ".woff2": "font/woff2",
-  ".conf": "text/plain",
-  ".list": "text/plain",
-  ".log": "text/plain",
-  ".ini": "text/plain",
-  ".vtt": "text/vtt",
-  ".yaml": "text/yaml",
-  ".yml": "text/yaml",
-  ".mid": "audio/midi",
-  ".midi": "audio/midi",
-  ".mp3": "audio/mp3",
-  ".mp4a": "audio/mp4",
-  ".m4a": "audio/mp4",
-  ".ogg": "audio/ogg",
-  ".spx": "audio/ogg",
-  ".opus": "audio/ogg",
-  ".wav": "audio/wav",
-  ".webm": "audio/webm",
-  ".aac": "audio/x-aac",
-  ".flac": "audio/x-flac",
-  ".mp4": "video/mp4",
-  ".mp4v": "video/mp4",
-  ".mkv": "video/x-matroska",
-  ".mov": "video/quicktime",
-  ".svg": "image/svg+xml",
-  ".avif": "image/avif",
-  ".bmp": "image/bmp",
-  ".gif": "image/gif",
-  ".heic": "image/heic",
-  ".heif": "image/heif",
-  ".jpeg": "image/jpeg",
-  ".jpg": "image/jpeg",
-  ".png": "image/png",
-  ".tiff": "image/tiff",
-  ".psd": "image/vnd.adobe.photoshop",
-  ".ico": "image/vnd.microsoft.icon",
-  ".webp": "image/webp",
-  ".es": "application/ecmascript",
-  ".epub": "application/epub+zip",
-  ".jar": "application/java-archive",
-  ".war": "application/java-archive",
-  ".webmanifest": "application/manifest+json",
-  ".doc": "application/msword",
-  ".dot": "application/msword",
-  ".docx":
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ".dotx":
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
-  ".cjs": "application/node",
-  ".bin": "application/octet-stream",
-  ".pkg": "application/octet-stream",
-  ".dump": "application/octet-stream",
-  ".exe": "application/octet-stream",
-  ".deploy": "application/octet-stream",
-  ".img": "application/octet-stream",
-  ".msi": "application/octet-stream",
-  ".pdf": "application/pdf",
-  ".pgp": "application/pgp-encrypted",
-  ".asc": "application/pgp-signature",
-  ".sig": "application/pgp-signature",
-  ".ai": "application/postscript",
-  ".eps": "application/postscript",
-  ".ps": "application/postscript",
-  ".rdf": "application/rdf+xml",
-  ".rss": "application/rss+xml",
-  ".rtf": "application/rtf",
-  ".apk": "application/vnd.android.package-archive",
-  ".key": "application/vnd.apple.keynote",
-  ".numbers": "application/vnd.apple.keynote",
-  ".pages": "application/vnd.apple.pages",
-  ".geo": "application/vnd.dynageo",
-  ".gdoc": "application/vnd.google-apps.document",
-  ".gslides": "application/vnd.google-apps.presentation",
-  ".gsheet": "application/vnd.google-apps.spreadsheet",
-  ".kml": "application/vnd.google-earth.kml+xml",
-  ".mkz": "application/vnd.google-earth.kmz",
-  ".icc": "application/vnd.iccprofile",
-  ".icm": "application/vnd.iccprofile",
-  ".xls": "application/vnd.ms-excel",
-  ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ".xlm": "application/vnd.ms-excel",
-  ".ppt": "application/vnd.ms-powerpoint",
-  ".pot": "application/vnd.ms-powerpoint",
-  ".pptx":
-    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  ".potx":
-    "application/vnd.openxmlformats-officedocument.presentationml.template",
-  ".xps": "application/vnd.ms-xpsdocument",
-  ".odc": "application/vnd.oasis.opendocument.chart",
-  ".odb": "application/vnd.oasis.opendocument.database",
-  ".odf": "application/vnd.oasis.opendocument.formula",
-  ".odg": "application/vnd.oasis.opendocument.graphics",
-  ".odp": "application/vnd.oasis.opendocument.presentation",
-  ".ods": "application/vnd.oasis.opendocument.spreadsheet",
-  ".odt": "application/vnd.oasis.opendocument.text",
-  ".rar": "application/vnd.rar",
-  ".unityweb": "application/vnd.unity",
-  ".dmg": "application/x-apple-diskimage",
-  ".bz": "application/x-bzip",
-  ".crx": "application/x-chrome-extension",
-  ".deb": "application/x-debian-package",
-  ".php": "application/x-httpd-php",
-  ".iso": "application/x-iso9660-image",
-  ".sh": "application/x-sh",
-  ".sql": "application/x-sql",
-  ".srt": "application/x-subrip",
-  ".xml": "application/xml",
-  ".zip": "application/zip",
-};
-
-/** Returns the content-type based on the extension of a path. */
-function contentType(path: string): string | undefined {
-  return MEDIA_TYPES[extname(path)];
-}
 
 // The fnv-1a hash function.
 function fnv1a(buf: string): string {
@@ -194,7 +41,13 @@ function fnv1a(buf: string): string {
   return (hash >>> 0).toString(16);
 }
 
-type EtagAlgorithm = "fnv1a" | "sha-1" | "sha-256" | "sha-384" | "sha-512";
+/** Algorithm used to determine etag */
+export type EtagAlgorithm =
+  | "fnv1a"
+  | "sha-1"
+  | "sha-256"
+  | "sha-384"
+  | "sha-512";
 
 // Generates a hash for the provided string
 async function createEtagHash(
@@ -248,8 +101,11 @@ function fileLenToString(len: number): string {
   return `${(len / base).toFixed(2)}${suffix[suffixIndex]}`;
 }
 
-interface ServeFileOptions {
+/** Interface for serveFile options. */
+export interface ServeFileOptions {
+  /** The algorithm to use for generating the ETag. Defaults to "fnv1a". */
   etagAlgorithm?: EtagAlgorithm;
+  /** An optional FileInfo object returned by Deno.stat. It is used for optimization purposes. */
   fileInfo?: Deno.FileInfo;
 }
 
@@ -257,8 +113,9 @@ interface ServeFileOptions {
  * Returns an HTTP Response with the requested file as the body.
  * @param req The server request context used to cleanup the file handle.
  * @param filePath Path of the file to serve.
- * @param etagAlgorithm The algorithm to use for generating the ETag. Defaults to "fnv1a".
- * @param fileInfo An optional FileInfo object returned by Deno.stat. It is used
+ * @param options
+ * @param options.etagAlgorithm The algorithm to use for generating the ETag. Defaults to "fnv1a".
+ * @param options.fileInfo An optional FileInfo object returned by Deno.stat. It is used
  * for optimization purposes.
  */
 export async function serveFile(
@@ -278,7 +135,7 @@ export async function serveFile(
   const headers = setBaseHeaders();
 
   // Set mime-type using the file extension in filePath
-  const contentTypeValue = contentType(filePath);
+  const contentTypeValue = contentType(extname(filePath));
   if (contentTypeValue) {
     headers.set("content-type", contentTypeValue);
   }
@@ -313,7 +170,7 @@ export async function serveFile(
         fileInfo.mtime.getTime() < new Date(ifModifiedSince).getTime() + 1000)
     ) {
       const status = Status.NotModified;
-      const statusText = STATUS_TEXT.get(status);
+      const statusText = STATUS_TEXT[status];
 
       file.close();
 
@@ -351,7 +208,7 @@ export async function serveFile(
       end > maxRange)
   ) {
     const status = Status.RequestedRangeNotSatisfiable;
-    const statusText = STATUS_TEXT.get(status);
+    const statusText = STATUS_TEXT[status];
 
     file.close();
 
@@ -469,21 +326,24 @@ async function serveDirIndex(
 function serveFallback(_req: Request, e: Error): Promise<Response> {
   if (e instanceof URIError) {
     return Promise.resolve(
-      new Response(STATUS_TEXT.get(Status.BadRequest), {
+      new Response(STATUS_TEXT[Status.BadRequest], {
         status: Status.BadRequest,
+        statusText: STATUS_TEXT[Status.BadRequest],
       }),
     );
   } else if (e instanceof Deno.errors.NotFound) {
     return Promise.resolve(
-      new Response(STATUS_TEXT.get(Status.NotFound), {
+      new Response(STATUS_TEXT[Status.NotFound], {
         status: Status.NotFound,
+        statusText: STATUS_TEXT[Status.NotFound],
       }),
     );
   }
 
   return Promise.resolve(
-    new Response(STATUS_TEXT.get(Status.InternalServerError), {
+    new Response(STATUS_TEXT[Status.InternalServerError], {
       status: Status.InternalServerError,
+      statusText: STATUS_TEXT[Status.InternalServerError],
     }),
   );
 }
@@ -628,13 +488,21 @@ function dirViewerTemplate(dirname: string, entries: EntryInfo[]): string {
   `;
 }
 
-interface ServeDirOptions {
+/** Interface for serveDir options. */
+export interface ServeDirOptions {
+  /** Serves the files under the given directory root. Defaults to your current directory. */
   fsRoot?: string;
+  /** Specified that part is stripped from the beginning of the requested pathname. */
   urlRoot?: string;
+  /** Enable directory listing. Defaults to false. */
   showDirListing?: boolean;
+  /** Serves dotfiles. Defaults to false. */
   showDotfiles?: boolean;
+  /** Enable CORS via the "Access-Control-Allow-Origin" header. Defaults to false. */
   enableCors?: boolean;
+  /** Do not print request level logs. Defaults to false. Defaults to false. */
   quiet?: boolean;
+  /** The algorithm to use for generating the ETag. Defaults to "fnv1a". */
   etagAlgorithm?: EtagAlgorithm;
 }
 
@@ -671,9 +539,15 @@ interface ServeDirOptions {
  *
  * The above example serves `./public/path/to/file` for the request to `/static/path/to/file`.
  *
- * @param request The request to handle
+ * @param req The request to handle
  * @param opts
- * @returns
+ * @param opts.fsRoot Serves the files under the given directory root. Defaults to your current directory.
+ * @param opts.urlRoot Specified that part is stripped from the beginning of the requested pathname.
+ * @param opts.showDirListing Enable directory listing. Defaults to false.
+ * @param opts.showDotfiles Serves dotfiles. Defaults to false.
+ * @param opts.enableCors Enable CORS via the "Access-Control-Allow-Origin" header. Defaults to false.
+ * @param opts.quiet Do not print request level logs. Defaults to false.
+ * @param opts.etagAlgorithm Etag The algorithm to use for generating the ETag. Defaults to "fnv1a".
  */
 export async function serveDir(req: Request, opts: ServeDirOptions = {}) {
   let response: Response;
@@ -766,6 +640,7 @@ function main(): void {
   const serverArgs = parse(Deno.args, {
     string: ["port", "host", "cert", "key"],
     boolean: ["help", "dir-listing", "dotfiles", "cors", "verbose"],
+    negatable: ["dir-listing", "dotfiles", "cors"],
     default: {
       "dir-listing": true,
       dotfiles: true,
@@ -848,6 +723,7 @@ OPTIONS:
   -k, --key  <FILE>   TLS key file (enables TLS)
   --no-dir-listing    Disable directory listing
   --no-dotfiles       Do not show dotfiles
+  --no-cors           Disable cross-origin resource sharing
   -v, --verbose       Print request level logs
 
   All TLS options are required when one is provided.`);

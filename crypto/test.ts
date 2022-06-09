@@ -152,15 +152,16 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdin: "piped",
+    stderr: "inherit",
   });
 
   const writer = process.stdin.getWriter();
   await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.mjs";
+      import { instantiateWithInstance } from "../_wasm_crypto/lib/deno_std_wasm_crypto.generated.mjs";
 
-      const { memory } = _wasm as { memory: WebAssembly.Memory };
+      const { memory } = instantiateWithInstance().instance.exports;
 
       const toHexString = (bytes: ArrayBuffer): string =>
         new Uint8Array(bytes).reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
@@ -223,19 +224,19 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with large i
   // Heap should stay under 2MB even though we provided a 64MB input.
   assert(
     heapBytesInitial < 2_000_000,
-    `WASM heap was too large initially: ${
+    `Wasm heap was too large initially: ${
       (heapBytesInitial / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesAfterSmall < 2_000_000,
-    `WASM heap was too large after small input: ${
+    `Wasm heap was too large after small input: ${
       (heapBytesAfterSmall / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesAfterLarge < 2_000_000,
-    `WASM heap was too large after large input: ${
+    `Wasm heap was too large after large input: ${
       (heapBytesAfterLarge / 1_000_000).toFixed(1)
     } MB`,
   );
@@ -246,6 +247,7 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
     args: ["--quiet", "run", "--no-check", "-"],
     cwd: moduleDir,
     stdout: "piped",
+    stderr: "inherit",
     stdin: "piped",
   });
 
@@ -253,9 +255,9 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
   await writer.write(
     new TextEncoder().encode(`
       import { crypto as stdCrypto } from "./mod.ts";
-      import { _wasm } from "../_wasm_crypto/crypto.mjs";
+      import { instantiateWithInstance } from "../_wasm_crypto/lib/deno_std_wasm_crypto.generated.mjs";
 
-      const { memory } = _wasm as { memory: WebAssembly.Memory };
+      const { memory } = instantiateWithInstance().instance.exports;
 
       const heapBytesInitial = memory.buffer.byteLength;
 
@@ -304,13 +306,13 @@ Deno.test("[crypto/digest] Memory use should remain reasonable even with many ca
 
   assert(
     heapBytesInitial < 2_000_000,
-    `WASM heap was too large initially: ${
+    `Wasm heap was too large initially: ${
       (heapBytesInitial / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesFinal < 2_000_000,
-    `WASM heap was too large after many digests: ${
+    `Wasm heap was too large after many digests: ${
       (heapBytesFinal / 1_000_000).toFixed(1)
     } MB`,
   );
@@ -1281,6 +1283,35 @@ const digestCases: [
     },
   ],
 ];
+
+Deno.test("[crypto/digest/fnv] fnv algorithm implementation", () => {
+  const inputString = "deno";
+  const inputBytes = new TextEncoder().encode(inputString);
+
+  const expectedDigest32 = "6ed5a7a9";
+  const expectedDigest32a = "8ef64711";
+
+  const expectedDigest64 = "14edb27eecdaadc9";
+  const expectedDigest64a = "a5d9fb67426e48b1";
+
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV32", inputBytes)),
+    expectedDigest32,
+  );
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV32A", inputBytes)),
+    expectedDigest32a,
+  );
+
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV64", inputBytes)),
+    expectedDigest64,
+  );
+  assertEquals(
+    toHexString(stdCrypto.subtle.digestSync("FNV64A", inputBytes)),
+    expectedDigest64a,
+  );
+});
 
 for (const algorithm of digestAlgorithms) {
   Deno.test(`[crypto/digest/${algorithm}] test vectors`, async () => {

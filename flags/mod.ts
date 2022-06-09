@@ -271,6 +271,10 @@ export interface ParseOptions<
    * by prefixing them with `--no-`, like `--no-config`. */
   negatable?: N | ReadonlyArray<Extract<N, string>>;
 
+  /** A string or array of strings argument names which can be negated
+   * by prefixing them with `--no-`, like `--no-config`. */
+  negatable?: string | string[];
+
   /** A function which is invoked with a command line parameter not defined in
    * the `options` configuration object. If the function returns `false`, the
    * unknown option is not added to `parsedArgs`. */
@@ -281,6 +285,7 @@ interface Flags {
   bools: Record<string, boolean>;
   strings: Record<string, boolean>;
   collect: Record<string, boolean>;
+  negatable: Record<string, boolean>;
   unknownFn: (arg: string, key?: string, value?: unknown) => unknown;
   allBools: boolean;
 }
@@ -359,6 +364,7 @@ export function parse<
     stopEarly = false,
     string = [],
     collect = [],
+    negatable = [],
     unknown = (i: string): unknown => i,
   }: ParseOptions<B, S, C, N, D, A, DD> = {},
 ): Args<V, DD> {
@@ -368,6 +374,7 @@ export function parse<
     unknownFn: unknown,
     allBools: false,
     collect: {},
+    negatable: {},
   };
 
   if (boolean !== undefined) {
@@ -426,6 +433,22 @@ export function parse<
       if (alias) {
         for (const al of alias) {
           flags.collect[al] = true;
+        }
+      }
+    }
+  }
+
+  if (negatable !== undefined) {
+    const negatableArgs = typeof negatable === "string"
+      ? [negatable]
+      : negatable;
+
+    for (const key of negatableArgs.filter(Boolean)) {
+      flags.negatable[key] = true;
+      const alias = get(aliases, key);
+      if (alias) {
+        for (const al of alias) {
+          flags.negatable[al] = true;
         }
       }
     }
@@ -520,7 +543,9 @@ export function parse<
       } else {
         setArg(key, value, arg);
       }
-    } else if (/^--no-.+/.test(arg)) {
+    } else if (
+      /^--no-.+/.test(arg) && get(flags.negatable, arg.replace(/^--no-/, ""))
+    ) {
       const m = arg.match(/^--no-(.+)/);
       assert(m != null);
       setArg(m[1], false, arg, false);
