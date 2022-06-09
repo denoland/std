@@ -55,6 +55,10 @@ export function parse(
     } else if (groups.quote === `"`) {
       value = value.replaceAll("\\n", "\n");
     } else {
+      const hashIndex = value.indexOf("#");
+      if (hashIndex >= 0) {
+        value = value.slice(0, hashIndex);
+      }
       value = value.trim();
     }
 
