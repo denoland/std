@@ -1,5 +1,7 @@
 # Dotenv handling for deno.
 
+## Usage
+
 Setup a `.env` file in the root of your project.
 
 ```sh
@@ -14,6 +16,8 @@ import { load } from "https://deno.land/std@$STD_VERSION/dotenv/mod.ts";
 
 await load();
 ```
+
+Then run your app.
 
 ## Parse
 
