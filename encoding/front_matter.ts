@@ -1,4 +1,6 @@
-// Working version of https://github.com/jxson/front-matter/blob/36f139ef797bd9e5196a9ede03ef481d7fbca18e/index.js
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright (c) Jason Campbell. MIT license.
+// https://github.com/jxson/front-matter/blob/36f139ef797bd9e5196a9ede03ef481d7fbca18e/index.js
 
 import { parse } from "./yaml.ts";
 
@@ -13,31 +15,34 @@ const pattern = "^(" +
 const regex = new RegExp(pattern, "m");
 
 export type Extract<T> = {
-  yaml: string;
+  frontMatter: string;
   body: string;
   attrs: T;
 };
 
-// deno-lint-ignore no-explicit-any
-const defaultExtract: Extract<any> = {
-  yaml: "",
-  body: "",
-  attrs: {},
-};
-
-// deno-lint-ignore no-explicit-any
-export function extract<T = any>(str: string): Extract<T> {
+/**
+ * Extracts front matter from a string.
+ * @param str String to extract from.
+ *
+ * ```ts
+ * import { extract } from "https://deno.land/std@$STD_VERSION/encoding/front_matter.ts";
+ * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ *
+ * const { attrs, body, frontMatter } = extract<{ title: string }>("---\ntitle: Three dashes marks the spot\n---\n");
+ * assertEquals(attrs.title, "Three dashes marks the spot");
+ * assertEquals(body, "");
+ * assertEquals(frontMatter, "---\ntitle: Three dashes marks the spot\n---\n");
+ * ```
+ */
+export function extract<T = unknown>(str: string): Extract<T> {
   const lines = str.split(/(\r?\n)/);
-  if (lines[0] == undefined) return defaultExtract;
-
   if (/= yaml =|---/.test(lines[0])) {
     const match = regex.exec(str);
-    if (!match) return defaultExtract;
-    const yaml = match.at(-1)?.replace(/^\s+|\s+$/g, "") || "";
-    const attrs = parse(yaml) as T;
+    if (!match) throw new TypeError("Unexpected end of input");
+    const frontMatter = match.at(-1)?.replace(/^\s+|\s+$/g, "") || "";
+    const attrs = parse(frontMatter) as T;
     const body = str.replace(match[0], "");
-    return { yaml, body, attrs };
+    return { frontMatter, body, attrs };
   }
-
-  return defaultExtract;
+  throw new TypeError("Failed to extract front matter");
 }
