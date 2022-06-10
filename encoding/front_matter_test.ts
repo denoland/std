@@ -1,5 +1,28 @@
-import { extract } from "./front_matter.ts";
+import { extract, test } from "./front_matter.ts";
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
+
+Deno.test("test valid input true", () => {
+  [
+    "---\nname: deno\n---\n",
+    "= yaml =\nname: deno\n= yaml =\n",
+    "= yaml =\nname: deno\n= yaml =\ndeno is awesome\n",
+  ].forEach((str) => {
+    assert(test(str));
+  });
+});
+
+Deno.test("test invalid input false", () => {
+  [
+    "",
+    "---",
+    "= yaml =",
+    "---\n",
+    "= yaml =\n",
+    "---\nasdasdasd",
+  ].forEach((str) => {
+    assert(!test(str));
+  });
+});
 
 Deno.test("extract type error on invalid input", () => {
   [

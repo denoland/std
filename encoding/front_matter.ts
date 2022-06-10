@@ -46,3 +46,18 @@ export function extract<T = unknown>(str: string): Extract<T> {
   }
   throw new TypeError("Failed to extract front matter");
 }
+
+/**
+ * Tests if a string has valid front matter.
+ * @param str String to test.
+ *
+ * ```ts
+ * import { test } from "https://deno.land/std@$STD_VERSION/encoding/front_matter.ts";
+ * import { assert } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
+ *
+ * assert(test("---\ntitle: Three dashes marks the spot\n---\n"));
+ * ```
+ */
+export function test(str: string): boolean {
+  return regex.test(str);
+}
