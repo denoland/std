@@ -484,9 +484,9 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
   await writer.write(
     new TextEncoder().encode(`
       import { createHash } from "./mod.ts";
-      import { _wasm } from "./_wasm/wasm.js";
+      import { instantiateWithInstance } from "./_wasm/lib/deno_hash.generated.mjs";
 
-      const { memory } = _wasm as { memory: WebAssembly.Memory };
+      const { memory } = instantiateWithInstance().instance.exports;
 
       const heapBytesInitial = memory.buffer.byteLength;
 
@@ -542,19 +542,19 @@ Deno.test("[hash/memory_use] testMemoryUse", async () => {
   // Heap should stay under 2MB even though we provided a 64MB input.
   assert(
     heapBytesInitial < 2_000_000,
-    `WASM heap was too large initially: ${
+    `Wasm heap was too large initially: ${
       (heapBytesInitial / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesAfterSmall < 2_000_000,
-    `WASM heap was too large after small input: ${
+    `Wasm heap was too large after small input: ${
       (heapBytesAfterSmall / 1_000_000).toFixed(1)
     } MB`,
   );
   assert(
     heapBytesAfterLarge < 2_000_000,
-    `WASM heap was too large after large input: ${
+    `Wasm heap was too large after large input: ${
       (heapBytesAfterLarge / 1_000_000).toFixed(1)
     } MB`,
   );
