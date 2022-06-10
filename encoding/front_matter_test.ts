@@ -1,4 +1,4 @@
-// // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 
 import { extract, test } from "./front_matter.ts";
 import { assert, assertEquals, assertThrows } from "../testing/asserts.ts";
