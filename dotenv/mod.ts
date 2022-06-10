@@ -14,14 +14,56 @@ import {
 export type { DenoEnv, Env, EnvObject };
 
 export class Parser extends ParserBase {
+  #parseWhitespaces() {
+    if (this.startsWith(" ") || this.startsWith("\t")) {
+      this.nextChar();
+      while (this.startsWith(" ") || this.startsWith("\t")) {
+        this.nextChar();
+      }
+      return true;
+    }
+    return null;
+  }
+  #parseNewlines() {
+    if (this.startsWith("\n")) {
+      this.nextChar();
+      while (this.startsWith("\n")) {
+        this.nextChar();
+      }
+      return true;
+    }
+    return null;
+  }
+
+  #parseSingleQuotedValue() {
+    this.#parseWhitespaces();
+    if (this.peekChar() !== "'") return null;
+    this.nextChar();
+    let value = "";
+    while (!this.isEOF()) {
+      if (this.parseString("\n")) {
+        value += "\\n";
+        continue;
+      }
+      const char = this.nextChar();
+      if (char === "'") break;
+      value += char;
+    }
+    return value;
+  }
+  #parseDoubleQuotedValue() {
+    return this.#parseQuotedValue('"');
+  }
+  #parseBacktickQuotedValue() {
+    return this.#parseQuotedValue("`");
+  }
   #parseQuotedValue(quote: string) {
-    this.skipManyChar(" ");
+    this.#parseWhitespaces();
     if (this.peekChar() !== quote) return null;
     this.nextChar();
     let value = "";
     while (!this.isEOF()) {
-      const escapedNewline = "\\n";
-      if (this.parseString(escapedNewline)) {
+      if (this.parseString("\\n")) {
         value += "\n";
         continue;
       }
@@ -31,9 +73,10 @@ export class Parser extends ParserBase {
     }
     return value;
   }
+
   #parseUnquotedValue() {
+    this.#parseWhitespaces();
     let value = "";
-    this.skipChar(" ");
     while (!this.isEOF()) {
       if (this.peekString(2) === " #") break;
       const char = this.nextChar();
@@ -42,39 +85,48 @@ export class Parser extends ParserBase {
     }
     return value;
   }
+
   #parseComment() {
     if (!this.startsWith("#")) return null;
     const nextIndex = this.indexOf("\n");
+    const index = this.index;
     this.index = nextIndex !== -1 ? nextIndex : this.input.length;
+    return this.input.slice(index, nextIndex);
   }
+
   #parseVariableExport() {
     const exportKey = "export ";
     return this.parseString(exportKey);
   }
   #parseVariableKey() {
-    const char = this.peekChar();
+    this.#parseWhitespaces();
 
     // if key doesn't start with letter, key is invalid
-    if (!/[a-z]/i.test(char)) return null;
+    while (!/[a-z]/i.test(this.peekChar())) {
+      this.nextChar();
+    }
+
+    if (this.isEOF()) return null;
 
     let key = "";
     while (!this.isEOF()) {
       const char = this.nextChar();
       if (char === "=") break;
-      if (char === " ") break;
+      if (char === " ") continue;
+      if (char === "\t") continue;
       key += char;
     }
     return key;
   }
   #parseVariableValue() {
     return (
-      this.#parseQuotedValue("`") ||
-      this.#parseQuotedValue('"') ||
-      this.#parseQuotedValue("'") ||
+      this.#parseSingleQuotedValue() ||
+      this.#parseDoubleQuotedValue() ||
+      this.#parseBacktickQuotedValue() ||
       this.#parseUnquotedValue()
     );
   }
-  parseVariable() {
+  #parseVariable() {
     const _export = this.#parseVariableExport();
     const key = this.#parseVariableKey();
     if (!key) return null;
@@ -82,20 +134,16 @@ export class Parser extends ParserBase {
 
     return { key, value, export: _export };
   }
+
   parse(text: string) {
     this.input = text;
     this.index = 0;
     const env: Env = {};
     const exports: Set<string> = new Set();
     while (!this.isEOF()) {
-      if (this.startsWith("\n")) {
-        while (this.startsWith("\n")) {
-          this.nextChar();
-        }
-        continue;
-      }
-      this.#parseComment();
-      const variable = this.parseVariable();
+      if (this.#parseNewlines()) continue;
+      if (this.#parseComment()) continue;
+      const variable = this.#parseVariable();
       if (!variable) break;
       const { key, value, export: _export } = variable;
       env[key] = value;

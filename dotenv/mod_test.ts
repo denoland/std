@@ -48,9 +48,30 @@ Deno.test("parse", async (t) => {
     },
   );
   await t.step(
-    "comment after quoted",
+    "comment after single quoted",
+    () => {
+      const { env } = parse(`GREETING= 'hello world' # hello world`);
+      assertEquals(env["GREETING"], "hello world");
+    },
+  );
+  await t.step(
+    "comment after double quoted",
     () => {
       const { env } = parse(`GREETING= "hello world" # hello world`);
+      assertEquals(env["GREETING"], "hello world");
+    },
+  );
+  await t.step(
+    "comment after backticks",
+    () => {
+      const { env } = parse("GREETING= `hello world` # hello world");
+      assertEquals(env["GREETING"], "hello world");
+    },
+  );
+  await t.step(
+    "value after comment",
+    () => {
+      const { env } = parse(`# hello world\nGREETING= "hello world"`);
       assertEquals(env["GREETING"], "hello world");
     },
   );
@@ -69,9 +90,44 @@ Deno.test("parse", async (t) => {
     },
   );
   await t.step(
-    "unquoted whitespace trim",
+    "unquoted whitespace start trim",
     () => {
       const { env } = parse(`FOO= some value`);
+      assertEquals(env["FOO"], "some value");
+    },
+  );
+  await t.step(
+    "unquoted tab start trim",
+    () => {
+      const { env } = parse(`FOO=\tsome value`);
+      assertEquals(env["FOO"], "some value");
+    },
+  );
+  await t.step(
+    "single quoted whitespace start trim",
+    () => {
+      const { env } = parse(`FOO= 'some value'`);
+      assertEquals(env["FOO"], "some value");
+    },
+  );
+  await t.step(
+    "single quoted tab start trim",
+    () => {
+      const { env } = parse(`FOO=\t'some value'`);
+      assertEquals(env["FOO"], "some value");
+    },
+  );
+  await t.step(
+    "double quoted whitespace start trim",
+    () => {
+      const { env } = parse(`FOO= "some value"`);
+      assertEquals(env["FOO"], "some value");
+    },
+  );
+  await t.step(
+    "double quoted tab start trim",
+    () => {
+      const { env } = parse(`FOO=\t"some value"`);
       assertEquals(env["FOO"], "some value");
     },
   );
@@ -122,6 +178,20 @@ Deno.test("parse", async (t) => {
       );
     },
   );
+  await t.step(
+    "backticks whitespace start trim",
+    () => {
+      const { env } = parse("FOO= `some value`");
+      assertEquals(env["FOO"], "some value");
+    },
+  );
+  await t.step(
+    "backticks tab start trim",
+    () => {
+      const { env } = parse("FOO=\t`some value`");
+      assertEquals(env["FOO"], "some value");
+    },
+  );
 
   await t.step(
     "non-word characters",
@@ -133,6 +203,14 @@ Deno.test("parse", async (t) => {
         env["EQUALS"],
         "equ==als",
       );
+    },
+  );
+
+  await t.step(
+    "export",
+    () => {
+      const { env } = parse(`export BASIC=basic`);
+      assertEquals(env["BASIC"], "basic");
     },
   );
 
@@ -150,10 +228,32 @@ Deno.test("parse", async (t) => {
   );
 
   await t.step(
-    "export",
+    "key whitespace start trim",
     () => {
-      const { env } = parse(`export BASIC=basic`);
-      assertEquals(env["BASIC"], "basic");
+      const { env } = parse(`  INDENTED_VAR='indented var'`);
+      assertEquals(env["INDENTED_VAR"], "indented var");
+    },
+  );
+  await t.step(
+    "key tab start trim",
+    () => {
+      const { env } = parse(`\tINDENTED_VAR='indented var'`);
+      assertEquals(env["INDENTED_VAR"], "indented var");
+    },
+  );
+
+  await t.step(
+    "key whitespace end trim",
+    () => {
+      const { env } = parse(`VAR_WITH_ENDING_WHITESPACE   =value`);
+      assertEquals(env["VAR_WITH_ENDING_WHITESPACE"], "value");
+    },
+  );
+  await t.step(
+    "key tab end trim",
+    () => {
+      const { env } = parse(`VAR_WITH_ENDING_WHITESPACE\t=value`);
+      assertEquals(env["VAR_WITH_ENDING_WHITESPACE"], "value");
     },
   );
 });
@@ -181,6 +281,13 @@ Deno.test("stringify", async (t) => {
         stringify({ env: { "QUOTED_SINGLE": "single quoted" }, exports: [] }),
         `QUOTED_SINGLE='single quoted'`,
       ),
+  );
+  await t.step(
+    "single quote multiline",
+    () => {
+      const { env } = parse(`MULTILINE='hello\nworld'`);
+      assertEquals(env["MULTILINE"], "hello\\nworld");
+    },
   );
   await t.step(
     "multiline",
@@ -326,6 +433,37 @@ Deno.test("configure", () => {
     "returns with defaults if file doesn't exist",
   );
   restoreDenoEnv();
+});
+
+Deno.test("configure .env.test", () => {
+  const source = Deno.readTextFileSync(
+    path.join(configTestdataDir, ".env.test"),
+  );
+  assertEquals(parse(source), {
+    env: {
+      BASIC: "basic",
+      AFTER_EMPTY: "empty",
+      EMPTY_VALUE: "",
+      QUOTED_SINGLE: "single quoted",
+      QUOTED_DOUBLE: "double quoted",
+      MULTILINE: "hello\nworld",
+      JSON: '{"foo": "bar"}',
+      WHITESPACE: "    whitespace   ",
+      WHITESPACE_DOUBLE: "    whitespace   ",
+      MULTILINE_SINGLE_QUOTE: "hello\\nworld",
+      EQUALS: "equ==als",
+      THE_ANSWER: "42",
+      VAR_WITH_SPACE: "var with space",
+      VAR_WITH_ENDING_WHITESPACE: "value",
+      V4R_W1TH_NUM8ER5: "var with numbers",
+      INVALID: "var starting with a number",
+      INDENTED_VAR: "indented var",
+      INDENTED_VALUE: "indented value",
+      TAB_INDENTED_VAR: "indented var",
+      TAB_INDENTED_VALUE: "indented value",
+    },
+    exports: [],
+  });
 });
 
 Deno.test("configureSafe", () => {
@@ -566,7 +704,7 @@ Deno.test("configureSafe async", async () => {
   restoreDenoEnv();
 });
 
-Deno.test("config defaults", async () => {
+Deno.test("configure defaults", async () => {
   const p = Deno.run({
     cmd: [
       Deno.execPath(),
