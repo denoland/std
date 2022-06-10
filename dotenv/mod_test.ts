@@ -104,6 +104,20 @@ Deno.test("parse", async (t) => {
     },
   );
   await t.step(
+    "unquoted whitespace end trim",
+    () => {
+      const { env } = parse(`FOO=some value `);
+      assertEquals(env["FOO"], "some value");
+    },
+  );
+  await t.step(
+    "unquoted tab end trim",
+    () => {
+      const { env } = parse(`FOO=some value\t`);
+      assertEquals(env["FOO"], "some value");
+    },
+  );
+  await t.step(
     "single quoted whitespace start trim",
     () => {
       const { env } = parse(`FOO= 'some value'`);

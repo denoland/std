@@ -75,15 +75,14 @@ export class Parser extends ParserBase {
   }
 
   #parseUnquotedValue() {
-    this.#parseWhitespaces();
     let value = "";
     while (!this.isEOF()) {
-      if (this.peekString(2) === " #") break;
+      if (this.peekChar() === "#") break;
       const char = this.nextChar();
       if (char === "\n") break;
       value += char;
     }
-    return value;
+    return value.trim();
   }
 
   #parseComment() {
