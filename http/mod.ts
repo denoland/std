@@ -1,6 +1,7 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 /**
- * Http
+ * HTTP server implementation and other utilities for working with cookies and
+ * status codes.
  * @module
  */
 export * from "./cookie.ts";
