@@ -33,6 +33,6 @@ Deno.test({
 Deno.test({
   name: "[perf_hooks] PerformanceEntry",
   fn() {
-    assertEquals(perfHooks.PerformanceEntry, PerformanceEntry);
+    assertEquals<unknown>(perfHooks.PerformanceEntry, PerformanceEntry);
   },
 });
