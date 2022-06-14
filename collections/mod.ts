@@ -6,8 +6,8 @@
 // Not sure what's causing this warning? Run `deno info <entry-point-path>` to
 // analyze the module graph.
 console.warn(
-  "%c[WARN] deno_std/collections/mod.ts: prefer importing " +
-    "collections/<function-name>.ts",
+  "%c[WARN] deno_std: prefer importing collections/<function-name>.ts " +
+    "instead of collections/mod.ts",
   "color: yellow;",
 );
 
