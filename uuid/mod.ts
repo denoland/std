@@ -2,9 +2,10 @@
 // This module is browser compatible.
 
 // Based on https://github.com/kelektiv/node-uuid -> https://www.ietf.org/rfc/rfc4122.txt
-// Supporting Support for RFC4122 version 1, 4, and 5 UUIDs
+// Support for RFC4122 version 1, 4, and 5 UUIDs
+
 /**
- * UUID
+ * Generators and validators for UUIDs for versions 1, 4 and 5.
  * @module
  */
 

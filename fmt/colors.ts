@@ -1,9 +1,12 @@
 // Copyright 2018-2022 the Deno authors. All rights reserved. MIT license.
 // A module to print ANSI terminal colors. Inspired by chalk, kleur, and colors
 // on npm.
-// This module is browser compatible.
 
 /**
+ * String formatters and utilities for dealing with ANSI color codes.
+ *
+ * This module is browser compatible.
+ *
  * ```ts
  * import { bgBlue, red, bold } from "https://deno.land/std@$STD_VERSION/fmt/colors.ts";
  * console.log(bgBlue(red(bold("Hello world!"))));
@@ -14,7 +17,6 @@
  *
  * @module
  */
-// This module is browser compatible.
 
 // deno-lint-ignore no-explicit-any
 const { Deno } = globalThis as any;
