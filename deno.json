@@ -46,8 +46,9 @@
     "node:test": "deno test --unstable --allow-all node/_tools/test.ts",
     "node:setup": "deno run --allow-read --allow-net --allow-write node/_tools/setup.ts",
     "node:check-unstable-api": "deno check --unstable ./node/module_all.ts",
-    "build:crypto": "cd _wasm_crypto && deno run --unstable -A --no-check https://deno.land/x/wasmbuild@0.5.0/main.ts --sync && mv lib/deno_std_wasm_crypto.generated.js lib/deno_std_wasm_crypto.generated.mjs",
-    "build:hash": "cd hash/_wasm && deno run --unstable -A --no-check https://deno.land/x/wasmbuild@0.5.0/main.ts --sync && mv lib/deno_hash.generated.js lib/deno_hash.generated.mjs",
-    "build:varint": "cd _wasm_varint && deno run --unstable -A --no-check https://deno.land/x/wasmbuild@0.5.0/main.ts --sync && mv lib/deno_std_wasm_varint.generated.js lib/deno_std_wasm_varint.generated.mjs"
+    "build:crypto": "cd _wasm_crypto && deno task --cwd . wasmbuild && mv lib/deno_std_wasm_crypto.generated.js lib/deno_std_wasm_crypto.generated.mjs",
+    "build:hash": "cd hash/_wasm && deno task --cwd . wasmbuild && mv lib/deno_hash.generated.js lib/deno_hash.generated.mjs",
+    "build:varint": "cd _wasm_varint && deno task --cwd . wasmbuild && mv lib/deno_std_wasm_varint.generated.js lib/deno_std_wasm_varint.generated.mjs",
+    "wasmbuild": "deno run --unstable -A --no-check https://deno.land/x/wasmbuild@0.5.0/main.ts --sync"
   }
 }
