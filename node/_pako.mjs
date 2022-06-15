@@ -805,7 +805,7 @@ const build_tree = (s, desc) => //    deflate_state *s;
   /* The elements heap[heap_len/2+1 .. heap_len] are leaves of the tree,
    * establish sub-heaps of increasing lengths:
    */
-  for (n = (s.heap_len >> 1 /*int /2*/); n >= 1; n--) pqdownheap(s, tree, n);
+  for (n = s.heap_len >> 1 /*int /2*/; n >= 1; n--) pqdownheap(s, tree, n);
 
   /* Construct the Huffman tree by repeatedly combining the least two
    * frequent nodes.
