@@ -120,6 +120,16 @@ Deno.test("parser", () => {
   );
 });
 
+Deno.test("with comments", () => {
+  const testDotenv = Deno.readTextFileSync(
+    path.join(testdataDir, "./.env.comments"),
+  );
+
+  const config = parse(testDotenv);
+  assertEquals(config.FOO, "bar");
+  assertEquals(config.GREETING, "hello world");
+});
+
 Deno.test("configure", () => {
   let conf = configSync(testOptions);
 

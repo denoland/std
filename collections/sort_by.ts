@@ -7,7 +7,7 @@
  * Example:
  *
  * ```ts
- * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { sortBy } from "https://deno.land/std@$STD_VERSION/collections/sort_by.ts"
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = [

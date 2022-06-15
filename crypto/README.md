@@ -15,7 +15,7 @@ console.log(
   ),
 );
 
-// This will use a bundled WASM/Rust implementation.
+// This will use a bundled Wasm/Rust implementation.
 console.log(
   new Uint8Array(
     await crypto.subtle.digest(
@@ -29,7 +29,7 @@ console.log(
 ## Supported algorithms
 
 Here is a list of supported algorithms. If the algorithm name in WebCrypto and
-WASM/Rust is the same, this library prefers to use algorithms that are supported
+Wasm/Rust is the same, this library prefers to use algorithms that are supported
 by WebCrypto.
 
 WebCrypto
@@ -45,7 +45,7 @@ const webCryptoDigestAlgorithms = [
 ] as const;
 ```
 
-WASM/Rust
+Wasm/Rust
 
 ```ts
 // https://deno.land/std/_wasm_crypto/mod.ts
