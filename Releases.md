@@ -1,6 +1,6 @@
 ### 0.144.0 / 2022.06.15
 
-- Remove collections/mod.ts (#2321)
+- Add warning on usage of collections/mod.ts (#2321, #2346)
 - encoding: add front matter module (#2335)
 - feat(node): add missing TTY methods to stdout,stderr (#2337)
 - fix: update ci script and fix type errors (#2344)
