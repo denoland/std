@@ -7,7 +7,7 @@
  * Example:
  *
  * ```ts
- * import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { distinctBy } from "https://deno.land/std@$STD_VERSION/collections/distinct_by.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const names = [ 'Anna', 'Kim', 'Arnold', 'Kate' ]

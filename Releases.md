@@ -1,3 +1,13 @@
+### 0.143.0 / 2022.06.09
+
+- BREAKING feat(http): improve type safety and docs for http_status (#2297)
+- BREAKING(flags): introduce negatable option (#2301)
+- feat(encoding): add unsigned LEB128 varint encoding (#2265)
+- feat(node/assert): add deepEqual and notDeepEqual (#2288)
+- fix(dotenv): support inline comment (#2316)
+- fix(media_types): work around type issues under Node.js (#2304)
+- fix: pass resolved ephemeral port to onListen (#2311)
+
 ### 0.142.0 / 2022.06.02
 
 - feat(crypto): add fnv algorithms (#2200)

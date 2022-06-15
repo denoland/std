@@ -9,7 +9,7 @@
  * Example:
  *
  * ```ts
- * import { associateWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts"
+ * import { associateWith } from "https://deno.land/std@$STD_VERSION/collections/associate_with.ts"
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const names = [ 'Kim', 'Lara', 'Jonathan' ]

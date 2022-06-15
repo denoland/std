@@ -12,7 +12,7 @@
  * Example:
  *
  * ```ts
- * import { maxWith } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { maxWith } from "https://deno.land/std@$STD_VERSION/collections/max_with.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const people = ["Kim", "Anna", "John", "Arthur"];

@@ -14,7 +14,7 @@ function isCloser(value: unknown): value is Deno.Closer {
 /** Create a `Deno.Reader` from an iterable of `Uint8Array`s.
  *
  * ```ts
- *      import { readerFromIterable } from "./conversion.ts";
+ *      import { readerFromIterable, copy } from "./conversion.ts";
  *
  *      const file = await Deno.open("metrics.txt", { write: true });
  *      const reader = readerFromIterable((async function* () {
@@ -24,7 +24,7 @@ function isCloser(value: unknown): value is Deno.Closer {
  *          yield new TextEncoder().encode(message);
  *        }
  *      })());
- *      await Deno.copy(reader, file);
+ *      await copy(reader, file);
  * ```
  */
 export function readerFromIterable(
@@ -243,7 +243,7 @@ export function toTransformStream<I, O>(
         } catch (error) {
           // Propagate error to stream from iterator
           // If the stream status is "errored", it will be thrown, but ignore.
-          await readable.cancel(error).catch();
+          await readable.cancel(error).catch(() => {});
           controller.error(error);
           return;
         }
