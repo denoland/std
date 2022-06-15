@@ -8,7 +8,7 @@
  * Example:
  *
  * ```ts
- * import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { firstNotNullishOf } from "https://deno.land/std@$STD_VERSION/collections/first_not_nullish_of.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const tables = [

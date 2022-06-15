@@ -9,7 +9,7 @@ import { filterInPlace } from "./_utils.ts";
  * Example:
  *
  * ```ts
- * import { intersect } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { intersect } from "https://deno.land/std@$STD_VERSION/collections/intersect.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const lisaInterests = [ 'Cooking', 'Music', 'Hiking' ]

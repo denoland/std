@@ -21,7 +21,7 @@ export type JoinToStringOptions = {
  * Example:
  *
  * ```ts
- * import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/mod.ts";
+ * import { joinToString } from "https://deno.land/std@$STD_VERSION/collections/join_to_string.ts";
  * import { assertEquals } from "https://deno.land/std@$STD_VERSION/testing/asserts.ts";
  *
  * const users = [

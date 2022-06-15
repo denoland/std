@@ -7,6 +7,7 @@ import { deferred, delay } from "../async/mod.ts";
 import {
   assert,
   assertEquals,
+  assertNotEquals,
   assertRejects,
   assertStrictEquals,
   assertThrows,
@@ -1372,6 +1373,22 @@ Deno.test("serve - onListen callback is called when the server started listening
   });
 });
 
+Deno.test("serve - onListen callback is called with ephemeral port", () => {
+  const abortController = new AbortController();
+  return serve((_) => new Response("hello"), {
+    port: 0,
+    async onListen({ hostname, port }) {
+      assertEquals(hostname, "0.0.0.0");
+      assertNotEquals(port, 0);
+      const responseText = await (await fetch(`http://localhost:${port}/`))
+        .text();
+      assertEquals(responseText, "hello");
+      abortController.abort();
+    },
+    signal: abortController.signal,
+  });
+});
+
 Deno.test("serve - doesn't print the message when onListen set to undefined", async () => {
   const { status, stdout } = await Deno.spawn(Deno.execPath(), {
     args: [
@@ -1405,4 +1422,28 @@ Deno.test("serve - can print customized start-up message in onListen handler", a
     new TextDecoder().decode(stdout),
     "Server started at 0.0.0.0 port 8000\n",
   );
+});
+
+Deno.test("serveTls - onListen callback is called with ephemeral port", () => {
+  const abortController = new AbortController();
+  return serveTls((_) => new Response("hello"), {
+    port: 0,
+    certFile: join(testdataDir, "tls/localhost.crt"),
+    keyFile: join(testdataDir, "tls/localhost.key"),
+    async onListen({ hostname, port }) {
+      assertEquals(hostname, "0.0.0.0");
+      assertNotEquals(port, 0);
+      const caCert = await Deno.readTextFile(
+        join(testdataDir, "tls/RootCA.pem"),
+      );
+      const client = Deno.createHttpClient({ caCerts: [caCert] });
+      const responseText =
+        await (await fetch(`https://localhost:${port}/`, { client }))
+          .text();
+      client.close();
+      assertEquals(responseText, "hello");
+      abortController.abort();
+    },
+    signal: abortController.signal,
+  });
 });
